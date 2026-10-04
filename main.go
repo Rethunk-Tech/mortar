@@ -498,8 +498,15 @@ func run() error {
 		},
 		SignedIn: func() bool { return store.Get().NexusUserID != 0 },
 		Premium:  func() bool { return store.Get().NexusPremium },
-		Env:      problemsSvc.Environment,
-		Queue:    queueSvc,
+		CollectionArchive: func(ctx context.Context, link string) ([]byte, error) {
+			c, err := nexussvc.Authed(store, nexusClient)
+			if err != nil {
+				return nil, err
+			}
+			return c.CollectionArchive(ctx, link)
+		},
+		Env:   problemsSvc.Environment,
+		Queue: queueSvc,
 		Stored: func(gameID, key string) bool {
 			_, err := items.Path(gameID, key)
 			return err == nil
@@ -895,7 +902,7 @@ func serveNativeHost() error {
 	if img := os.Getenv("APPIMAGE"); img != "" {
 		exe = img
 	}
-	return nativehost.Serve(os.Stdin, os.Stdout, func(link string) error {
+	return nativehost.ServeFrom(os.Args[1:], os.Stdin, os.Stdout, func(link string) error {
 		if !nxm.IsLink(link) && !sharesvc.IsCollectionURL(link) {
 			return fmt.Errorf("not an nxm or collection link: %q", link)
 		}

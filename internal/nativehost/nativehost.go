@@ -199,6 +199,7 @@ const (
 )
 
 type handlers struct {
+	contact      func()
 	open         func(link string) error
 	installed    func(game string) []int
 	mod          func(game string, modID int) (modInProfile, []modInProfile)
@@ -211,8 +212,16 @@ type handlers struct {
 
 // Serve answers messages from r until it closes, handing each message's link to open.
 func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
+	return ServeFrom(nil, r, w, open)
+}
+
+// ServeFrom is Serve for a host the browser started with args (see Invoked); each message records that the
+// browser is in contact.
+func ServeFrom(args []string, r io.Reader, w io.Writer, open func(link string) error) error {
+	browser := browserName(args)
 	return serveHandlers(r, w, handlers{
-		open: open, installed: activeNexusModIDs, mod: nexusModProfiles, state: activeNexusState,
+		contact: func() { recordContact(browser, time.Now()) },
+		open:    open, installed: activeNexusModIDs, mod: nexusModProfiles, state: activeNexusState,
 		updates: activeNexusUpdates, broken: brokenNexusModIDs, problems: nexusModProblems,
 		requirements: nexusPageRequirements,
 	})
@@ -301,6 +310,9 @@ func serveHandlers(r io.Reader, w io.Writer, h handlers) error {
 		var req request
 		if err := json.NewDecoder(io.LimitReader(r, int64(n))).Decode(&req); err != nil {
 			return err
+		}
+		if h.contact != nil {
+			h.contact()
 		}
 		var rep reply
 		if req.Type == "" {

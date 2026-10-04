@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/logshare"
+	"github.com/Rethunk-AI/mortar/internal/nativehost"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -47,6 +48,11 @@ type Service struct {
 	RecentLog func(gameID, profileID string) string
 	// App is set after application.New so SaveDiagnostics can show the save dialog.
 	App *application.App
+}
+
+// ExtensionContact is the last time a browser extension talked to Mortar's native host; empty before any did.
+func (s *Service) ExtensionContact() nativehost.Contact {
+	return nativehost.LastContact()
 }
 
 // NewService takes Mortar's version, the environment reader the bug report quotes, and the user's home and profile

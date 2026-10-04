@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
@@ -562,5 +563,25 @@ func TestNexusArchiveNamesGiveTheirModID(t *testing.T) {
 		if got := nexusArchiveModID(name); got != want {
 			t.Errorf("%s: %d, want %d", name, got, want)
 		}
+	}
+}
+
+func TestRecordContactWritesOncePerMinute(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	contactWrote = time.Time{}
+	if !LastContact().LastSeen.IsZero() {
+		t.Fatal("contact before any message")
+	}
+	first := time.Date(2026, 10, 4, 12, 0, 0, 0, time.UTC)
+	recordContact("Firefox", first)
+	recordContact("Chrome", first.Add(30*time.Second))
+	got := LastContact()
+	if got.Browser != "Firefox" || !got.LastSeen.Equal(first) {
+		t.Fatalf("throttled contact = %+v", got)
+	}
+	recordContact("Chrome", first.Add(2*time.Minute))
+	if got := LastContact(); got.Browser != "Chrome" {
+		t.Fatalf("later contact = %+v", got)
 	}
 }
