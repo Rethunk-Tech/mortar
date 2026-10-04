@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -252,7 +253,8 @@ func syntheticEditPack(t *testing.T, content string) Installed {
 func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
 	first := syntheticEditPack(t, `{"ConfigSchema":{"Variant":{"Default":"Red","AllowValues":"Red, Blue, Green"}},"Changes":[
 		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Variant":"Red"}},
-		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Variant":"Blue"}}
+		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Variant":"Blue"}}`+
+		strings.Repeat(`,{"Action":"EditImage","Target":"Maps/Elsewhere","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}`, 9)+`
 	]}`)
 	second := syntheticEditPack(t, `{"Changes":[
 		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}
@@ -606,5 +608,78 @@ func TestEngagedIsOnePartnerAtATime(t *testing.T) {
 	}
 	if conflicts := assetConflicts([]Installed{agatha, socialPage("(fiancée)", `"Relationship:Lunna": "Dating, Engaged"`)}); len(conflicts) != 1 {
 		t.Fatalf("dating Lunna can coincide with marriage to Agatha, got %#v", conflicts)
+	}
+}
+
+func TestSwitchOffOffersTheNarrowestField(t *testing.T) {
+	npc := `{"AllowValues": "enabled, disabled", "Default": "enabled"}`
+	breakfast := syntheticLoadPack(t, `{
+		"ConfigSchema": {
+			"ImmersionMode": `+npc+`, "Gus": `+npc+`, "Lewis": `+npc+`, "Marnie": `+npc+`,
+			"PlotSchedules": {"AllowValues": "enabled, plot, disabled", "Default": "enabled"}
+		},
+		"DynamicTokens": [
+			{"Name": "ImmersionGus", "Value": "true"},
+			{"Name": "ImmersionGus", "Value": "false", "When": {"ImmersionMode": "disabled", "Gus": "disabled"}}
+		],
+		"Changes": [
+			{"Action": "Include", "FromFile": "mail.json"},
+			{"Action": "Include", "FromFile": "schedules.json", "When": {"PlotSchedules": "enabled"}},
+			{"Action": "Include", "FromFile": "plotschedules.json", "When": {"PlotSchedules": "plot"}}
+		]
+	}`, map[string]string{
+		"mail.json": `{"Changes": [{"Action": "EditData", "Target": "Data/Mail", "Entries": {"BreakfastMenu": "Gus is serving breakfast."}}]}`,
+		"schedules.json": `{"Changes": [
+			{"Action": "EditData", "Target": "Characters/schedules/Gus", "Entries": {"Tue": "700 Saloon 10 18 2"}, "When": {"ImmersionGus": "true"}},
+			{"Action": "EditData", "Target": "Characters/schedules/Lewis", "Entries": {"Tue": "800 Saloon 15 17 2"}, "When": {"Lewis": "enabled"}},
+			{"Action": "EditData", "Target": "Characters/schedules/Marnie", "Entries": {"Mon": "830 Saloon 16 17 2"}, "When": {"Marnie": "enabled"}}
+		]}`,
+		"plotschedules.json": `{"Changes": [
+			{"Action": "EditData", "Target": "Characters/schedules/Gus", "Entries": {"Tue": "700 Saloon 10 18 2/1900 Saloon 10 18 2"}, "When": {"ImmersionGus": "true"}}
+		]}`,
+	})
+	breakfast.Name = "Part of a Saloon Breakfast"
+	mayor := syntheticLoadPack(t, `{"Changes": [
+		{"Action": "EditData", "Target": "Characters/schedules/Gus", "Entries": {"Tue": "900 Town 30 60 2"}},
+		{"Action": "EditData", "Target": "Characters/schedules/Lewis", "Entries": {"Tue": "900 ManorHouse 4 5 2"}},
+		{"Action": "EditData", "Target": "Characters/schedules/Marnie", "Entries": {"Mon": "900 AnimalShop 12 14 2"}}
+	]}`, nil)
+	want := map[string]string{"characters/schedules/lewis": "Lewis", "characters/schedules/marnie": "Marnie", "characters/schedules/gus": ""}
+	for range 20 {
+		conflicts := assetConflicts([]Installed{breakfast, mayor})
+		if len(conflicts) != len(want) {
+			t.Fatalf("conflicts %#v", conflicts)
+		}
+		for _, c := range conflicts {
+			got := ""
+			for _, fix := range c.Fixes {
+				if fix.UniqueID == breakfast.UniqueID {
+					got = fix.Field + "=" + fix.Value
+				}
+			}
+			if field := want[c.Target]; (field == "" && got != "") || (field != "" && got != field+"=disabled") {
+				t.Fatalf("%s: offered %q, want the %q field and never PlotSchedules", c.Target, got, field)
+			}
+		}
+	}
+
+	mail := strings.Repeat(`{"Action": "EditData", "Target": "Data/Mail", "Entries": {"DwarfLetter": "Hello."}},`, 12)
+	dwarven := syntheticLoadPack(t, `{
+		"ConfigSchema": {
+			"EnableDwarfMagic": {"AllowValues": "true, false", "Default": "true"},
+			"EnableBaseTransmutationRecipes": {"AllowValues": "true, false", "Default": "true"}
+		},
+		"Changes": [`+mail+`
+			{"Action": "EditData", "Target": "Data/CraftingRecipes", "Entries": {"Copper Bar": "334 2/Field/378/false/null/"}, "When": {"EnableDwarfMagic": true, "EnableBaseTransmutationRecipes": true}},
+			{"Action": "EditData", "Target": "Data/Objects", "Entries": {"Dwarven Rune": {"Name": "Dwarven Rune"}}, "When": {"EnableDwarfMagic": true}},
+			{"Action": "EditData", "Target": "Data/Shops", "Entries": {"DwarfMagic": {"Owners": []}}, "When": {"EnableDwarfMagic": true}}
+		]
+	}`, nil)
+	alchemistry := syntheticLoadPack(t, `{"Changes": [{"Action": "EditData", "Target": "Data/CraftingRecipes", "Entries": {"Copper Bar": "378 5/Field/334/false/null/"}}]}`, nil)
+	conflicts := assetConflicts([]Installed{dwarven, alchemistry})
+	if len(conflicts) != 1 || !slices.ContainsFunc(conflicts[0].Fixes, func(f ConflictFix) bool {
+		return f.UniqueID == dwarven.UniqueID && f.Field == "EnableBaseTransmutationRecipes"
+	}) {
+		t.Fatalf("expected the recipe switch rather than all of Dwarf Magic: %#v", conflicts)
 	}
 }

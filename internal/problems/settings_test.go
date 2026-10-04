@@ -3,6 +3,7 @@ package problems
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -130,7 +131,8 @@ func TestConfigOffPatchDoesNotConflict(t *testing.T) {
 }
 
 func TestConflictOffersTheSettingThatRemovesOnePack(t *testing.T) {
-	changes := `[{"Action":"EditMap","Target":"Maps/Desert","FromFile":"cart.tmx","ToArea":{"X":2,"Y":38,"Width":2,"Height":2},"When":{"DesertMinecart":true}}]`
+	changes := `[{"Action":"EditMap","Target":"Maps/Desert","FromFile":"cart.tmx","ToArea":{"X":2,"Y":38,"Width":2,"Height":2},"When":{"DesertMinecart":true}}` +
+		strings.Repeat(`,{"Action":"EditData","Target":"Data/Objects","Entries":{"Cart":"x"}}`, 5) + `]`
 	cart := settingPack(t, `{"DesertMinecart":{"Default":true,"AllowValues":"true, false"}}`, changes, "")
 	desert := settingPack(t, `{}`, `[{"Action":"EditMap","Target":"Maps/Desert","FromFile":"d.tmx","ToArea":{"X":0,"Y":0,"Width":60,"Height":156}}]`, "")
 	desert.Key, desert.UniqueID, desert.Name = "desert", "Desert.Expansion", "Desert Expansion"

@@ -1542,68 +1542,99 @@ func markClashes(a, b *packHit) {
 }
 
 // switchOff finds an on/off field that every clashing edit of the pack needs; its other value removes the pack
-// from the conflict, such as Better Things' DesertMinecart for an expansion that redraws the desert.
+// from the conflict, such as Better Things' DesertMinecart for an expansion that redraws the desert. Of the
+// fields that would, it offers the narrowest: one named for what the target is about, then the one gating
+// the fewest of the pack's patches. When only the pack's master switch would, it offers nothing.
 func switchOff(h packHit, peerSets ...[]packHit) (ConflictFix, bool) {
 	if len(h.clashes) == 0 {
 		return ConflictFix{}, false
 	}
-	var first cpPatch
-	for i := range h.clashes {
-		first = h.edits[i]
-		break
-	}
-	for _, c := range first.when.config {
+	clashing := slices.Sorted(maps.Keys(h.clashes))
+	subject := h.edits[clashing[0]].target
+	subject = strings.ToLower(subject[strings.LastIndex(subject, "/")+1:])
+	var best ConflictFix
+	bestGated, bestNamed, found := 0, false, false
+	for _, c := range h.edits[clashing[0]].when.config {
 		field, ok := h.schema[strings.ToLower(c.field)]
 		if !ok || !field.toggle() {
 			continue
 		}
-		needed := map[string]bool{}
-		all := true
-		for i := range h.clashes {
-			j := slices.IndexFunc(h.edits[i].when.config, func(o cpConfig) bool { return strings.EqualFold(o.field, field.key) })
-			if j < 0 {
-				all = false
-				break
-			}
-			for _, v := range h.edits[i].when.config[j].values {
-				needed[strings.ToLower(v)] = true
-			}
-		}
-		if !all {
+		value, ok := offValue(h, clashing, field, peerSets...)
+		if !ok {
 			continue
 		}
-		values := field.allowValues
-		if len(values) == 0 {
-			values = []string{"true", "false"}
-		}
-		var off []string
-		for _, v := range values {
-			if !needed[strings.ToLower(strings.TrimSpace(v))] {
-				off = append(off, strings.TrimSpace(v))
+		named := strings.Contains(strings.ToLower(field.key), subject)
+		gated, total, left := 0, 0, 0
+		config := maps.Clone(h.config)
+		config[strings.ToLower(field.key)] = value
+		for _, p := range h.tokens {
+			if p.kind == "other" {
+				continue
+			}
+			total++
+			if slices.ContainsFunc(p.when.config, func(o cpConfig) bool { return strings.EqualFold(o.field, field.key) }) {
+				gated++
+			}
+			if configHolds(p.when.config, h.schema, config) {
+				left++
 			}
 		}
-		if len(off) == 0 {
+		// A field that switches off the whole pack, or a fifth of it without being named for this target, is
+		// the pack's master switch (Better Water's Color, a schedule pack's PlotSchedules): offering it
+		// would trade the conflict for most of the mod.
+		// ponytail: fixed one-fifth share; weigh by what the gated patches touch if it misjudges a pack.
+		if left == 0 || !named && gated*5 >= total {
 			continue
 		}
-		if len(peerSets) > 0 {
-			safe := off[:0]
-			for _, value := range off {
-				if !settingStillClashes(h, peerSets[0], field, value) {
-					safe = append(safe, value)
-				}
-			}
-			off = safe
-		}
-		if len(off) != 1 {
+		if found && (bestNamed && !named || bestNamed == named && (gated > bestGated || gated == bestGated && field.key >= best.Field)) {
 			continue
 		}
 		current, set := h.config[strings.ToLower(field.key)]
 		if !set {
 			current = field.defaultValue
 		}
-		return ConflictFix{Key: h.key, UniqueID: h.id, Name: h.name, Field: field.key, Current: current, Value: off[0]}, true
+		best = ConflictFix{Key: h.key, UniqueID: h.id, Name: h.name, Field: field.key, Current: current, Value: value}
+		bestGated, bestNamed, found = gated, named, true
 	}
-	return ConflictFix{}, false
+	return best, found
+}
+
+// offValue is the one value of field that switches off every clashing edit of h without leaving another of
+// its edits clashing with peerSets[0].
+func offValue(h packHit, clashing []int, field cpSchema, peerSets ...[]packHit) (string, bool) {
+	needed := map[string]bool{}
+	for _, i := range clashing {
+		j := slices.IndexFunc(h.edits[i].when.config, func(o cpConfig) bool { return strings.EqualFold(o.field, field.key) })
+		if j < 0 {
+			return "", false
+		}
+		for _, v := range h.edits[i].when.config[j].values {
+			needed[strings.ToLower(v)] = true
+		}
+	}
+	values := field.allowValues
+	if len(values) == 0 {
+		values = []string{"true", "false"}
+	}
+	var off []string
+	for _, v := range values {
+		if !needed[strings.ToLower(strings.TrimSpace(v))] {
+			off = append(off, strings.TrimSpace(v))
+		}
+	}
+	if len(peerSets) > 0 {
+		safe := off[:0]
+		for _, value := range off {
+			if !settingStillClashes(h, peerSets[0], field, value) {
+				safe = append(safe, value)
+			}
+		}
+		off = safe
+	}
+	if len(off) != 1 {
+		return "", false
+	}
+	return off[0], true
 }
 
 func settingStillClashes(h packHit, peers []packHit, field cpSchema, value string) bool {
