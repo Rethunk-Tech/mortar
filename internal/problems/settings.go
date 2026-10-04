@@ -47,7 +47,13 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 			continue
 		}
 		config := readPackConfig(packMod.Folder)
-		out = append(out, variantSettings(packMod, pack, config, present, byID)...)
+		variants := variantSettings(packMod, pack, config, present, byID)
+		covered := map[string]bool{}
+		for _, hint := range variants {
+			covered[strings.ToLower(hint.Field)] = true
+		}
+		out = append(out, variants...)
+		out = append(out, recolourSettings(packMod, pack, config, enabledRecolours(mods, packMod.UniqueID), covered)...)
 		groups := map[string]*settingGroup{}
 		for _, patch := range pack.patches {
 			if !patch.when.holds(present) || !dynamicWhenHolds(patch.when, pack.tokens, present, pack.schema, config) {
