@@ -20,7 +20,7 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
       return i18n._(msg`Show the game log`)
     case 'backupBeforePlay':
       return i18n._(msg`Back up saves before Play`)
-    case 'launchBackupsKept':
+    case 'saveBackupsKept':
       return i18n._(msg`Save backups kept`)
     case 'updateModsBeforePlayDefault':
       return i18n._(msg`Update mods before Play`)

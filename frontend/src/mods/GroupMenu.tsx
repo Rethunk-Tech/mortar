@@ -8,6 +8,7 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { AddToGroupMenuItem } from './AddToGroupDialog.tsx'
 import { LockedReason } from './LockedReason.tsx'
 import { useMods } from './store.ts'
 import { deleteGroup, removeModFromGroup, renameGroup, setGroupEnabled } from './storeEntries.ts'
@@ -68,7 +69,7 @@ export function GroupMenu({ name }: { name: string }) {
         onCancel={() => setRenaming(false)}
         onSubmit={(next) => {
           setRenaming(false)
-          renameGroup(name, next)
+          renameGroup(name, next).catch(reportUnexpected)
         }}
       />
       <ConfirmDialog
@@ -80,34 +81,50 @@ export function GroupMenu({ name }: { name: string }) {
         onCancel={() => setDeleting(false)}
         onConfirm={() => {
           setDeleting(false)
-          deleteGroup(name)
+          deleteGroup(name).catch(reportUnexpected)
         }}
       />
     </>
   )
 }
 
-// One "Remove from <group>" item for each group that holds the entry, for the mod menu.
-export function removeFromGroupItems(
-  profile: Profile | undefined,
-  entryKey: string,
-  locked: boolean,
-  close: () => void,
-  label: (name: string) => string,
-) {
-  return (profile?.groups ?? [])
-    .filter((g) => (g.keys ?? []).includes(entryKey))
-    .map((g) => (
-      <LockedReason key={g.name} locked={locked}>
-        <MenuAction
-          disabled={locked}
-          icon={<FolderMinus size={ICON_SIZE} />}
-          label={label(g.name ?? '')}
-          onClick={() => {
-            close()
-            removeModFromGroup(entryKey, g.name ?? '')
-          }}
-        />
-      </LockedReason>
-    ))
+// The mod menu's group items: add to a group, and one "Remove from <group>" for each group that holds the entry.
+export function ModGroupItems({
+  profile,
+  entryKey,
+  close,
+  onAdd,
+}: {
+  profile: Profile | undefined
+  entryKey: string
+  close: () => void
+  onAdd: () => void
+}) {
+  const { t } = useLingui()
+  const locked = useLocked()
+  const holding = (profile?.groups ?? []).filter((g) => (g.keys ?? []).includes(entryKey))
+  return (
+    <>
+      <AddToGroupMenuItem
+        locked={locked}
+        onClick={() => {
+          close()
+          onAdd()
+        }}
+      />
+      {holding.map((g) => (
+        <LockedReason key={g.name} locked={locked}>
+          <MenuAction
+            disabled={locked}
+            icon={<FolderMinus size={ICON_SIZE} />}
+            label={t`Remove from ${g.name}`}
+            onClick={() => {
+              close()
+              removeModFromGroup(entryKey, g.name ?? '').catch(reportUnexpected)
+            }}
+          />
+        </LockedReason>
+      ))}
+    </>
+  )
 }

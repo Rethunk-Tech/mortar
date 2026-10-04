@@ -6,7 +6,7 @@ export const OVERRIDE_KEYS = [
   'defaultLaunchMethod',
   'showSmapiConsole',
   'backupBeforePlay',
-  'launchBackupsKept',
+  'saveBackupsKept',
   'updateModsBeforePlayDefault',
   'skipPlayCheck',
 ] as const
@@ -17,7 +17,7 @@ export const OVERRIDE_VALUES: Record<OverrideKey, string[]> = {
   defaultLaunchMethod: ['steam', 'direct'],
   showSmapiConsole: ['true', 'false'],
   backupBeforePlay: ['changed', 'always', 'never'],
-  launchBackupsKept: Array.from({ length: 50 }, (_, i) => String(i + 1)),
+  saveBackupsKept: Array.from({ length: 50 }, (_, i) => String(i + 1)),
   updateModsBeforePlayDefault: ['true', 'false'],
   skipPlayCheck: ['true', 'false'],
 }

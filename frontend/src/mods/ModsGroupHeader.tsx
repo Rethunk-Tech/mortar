@@ -1,11 +1,13 @@
 import { Box, Switch, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { GroupMenu } from './GroupMenu.tsx'
 import { toggleCollapsed } from './group.ts'
+import { LockedReason } from './LockedReason.tsx'
 import type { ListRow } from './listColumns.ts'
 import { useMods } from './store.ts'
-import { LockedReason } from './LockedReason.tsx'
 import { setGroupEnabled } from './storeEntries.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -17,6 +19,7 @@ function ModsGroupHeader({
   hint,
   enabled,
   onEnabled,
+  menu,
 }: {
   label: string
   count: number
@@ -25,6 +28,7 @@ function ModsGroupHeader({
   hint?: string
   enabled?: boolean
   onEnabled?: (on: boolean) => void
+  menu?: ReactNode
 }) {
   const locked = useLocked()
   return (
@@ -53,7 +57,11 @@ function ModsGroupHeader({
         {count}
       </Box>
       {onEnabled ? (
-        <Box data-control={true} sx={{ ml: 'auto', position: 'relative' }}>
+        <Box
+          data-control={true}
+          sx={{ ml: 'auto', position: 'relative', display: 'flex', alignItems: 'center' }}
+        >
+          {menu}
           <LockedReason locked={locked}>
             <Switch
               size="small"
@@ -102,6 +110,7 @@ function GroupHeaderRow({
         ? {
             enabled:
               groups.find((g) => g.key === groupKey)?.items.every((r) => r.mod.enabled) === true,
+            menu: <GroupMenu name={groupKey} />,
             onEnabled: (on: boolean) => {
               setGroupEnabled(groupKey, on)
                 .then(() => useMods.getState().load())

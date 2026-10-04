@@ -86,6 +86,7 @@ export function NewFoldersCallout({ profile }: { profile: Profile }) {
         profile={profile}
         mods={mods}
         onDismiss={drop}
+        onRestore={reload}
         onClose={(moved) => {
           setOpen(false)
           if (moved) {

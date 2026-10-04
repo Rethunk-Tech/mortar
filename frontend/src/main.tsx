@@ -19,6 +19,7 @@ import { initNxm } from './nxm/store.ts'
 import { initProfilesChanged } from './profiles/store.ts'
 import { initQueue } from './queue/store.ts'
 import { initQuit } from './quit.ts'
+import { initScheduledBackups } from './saves/scheduledBackups.ts'
 import { initNexus } from './settings/nexus.ts'
 import { initSettings } from './settings/store.ts'
 import { initShare } from './share/arrivals.ts'
@@ -58,6 +59,7 @@ initPlayRequests()
 initShare().catch(reportUnexpected)
 initIncoming().catch(reportUnexpected)
 initQuit()
+initScheduledBackups()
 initTidyReport()
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

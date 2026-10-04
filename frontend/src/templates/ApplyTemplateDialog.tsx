@@ -20,12 +20,12 @@ import {
   PreviewApplyTemplate,
   UndoApplyTemplate,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/service.ts'
+import { bundleWants } from '../bundles/missingWants.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { templateWants } from './templateWants.ts'
 
 function PreviewGroups({ preview }: { preview: Preview }) {
   const { t } = useLingui()
@@ -57,7 +57,7 @@ function PreviewGroups({ preview }: { preview: Preview }) {
   )
 }
 
-function useApply(game: string, profileId: string, templates: Template[], onClose: () => void) {
+function useApply(game: string, profileId: string, onClose: () => void) {
   const { t } = useLingui()
   const [busy, run] = usePending()
   const apply = (name: string) =>
@@ -66,9 +66,8 @@ function useApply(game: string, profileId: string, templates: Template[], onClos
         const result = await ApplyTemplate(game, name, profileId)
         useProfiles.getState().replace(result.profile)
         onClose()
-        const template = templates.find((candidate) => candidate.name === name)
         const missing = result.missing ?? []
-        const wants = template ? templateWants(template, missing) : []
+        const wants = bundleWants(result.missingMods)
         const queued = wants.length > 0 && (await download(wants))
         const added = plural(result.added, { one: '# mod', other: '# mods' })
         const downloading = plural(missing.length, { one: '# mod', other: '# mods' })
@@ -111,7 +110,7 @@ export function ApplyTemplateDialog({
   const { t } = useLingui()
   const [name, setName] = useState('')
   const [preview, setPreview] = useState<Preview | null>(null)
-  const { busy, apply } = useApply(game, profileId, templates, onClose)
+  const { busy, apply } = useApply(game, profileId, onClose)
   useEffect(() => {
     if (open) {
       setName(templates[0]?.name ?? '')

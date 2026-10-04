@@ -19,6 +19,8 @@ import type {
   RemapVariant,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
+import { OverlayPlaceDialog } from './OverlayPlaceDialog.tsx'
+import { ArchivePreview } from './ArchivePreview.tsx'
 import { useInstall } from './store.ts'
 
 function NodeRow({
@@ -130,6 +132,23 @@ function VariantRows({
   )
 }
 
+function ArchiveContents({ path }: { path: string }) {
+  const { t } = useLingui()
+  const [open, setOpen] = useState(false)
+  return (
+    <Box sx={{ mb: 1 }}>
+      <Button size="small" onClick={() => setOpen(!open)} aria-expanded={open}>
+        {open ? t`Hide archive contents` : t`Show archive contents`}
+      </Button>
+      <Collapse in={open} unmountOnExit={true}>
+        <Box sx={{ maxHeight: 240, display: 'flex', flexDirection: 'column', mt: 0.5 }}>
+          <ArchivePreview path={path} />
+        </Box>
+      </Collapse>
+    </Box>
+  )
+}
+
 function RemapBody() {
   const { t } = useLingui()
   const session = useInstall((s) => s.remap)
@@ -156,6 +175,7 @@ function RemapBody() {
             ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`
             : t`This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json.`}
         </Typography>
+        {session.archivePath ? <ArchiveContents path={session.archivePath} /> : null}
         <List dense={true} disablePadding={true}>
           {variants.length > 0 ? (
             <VariantRows
@@ -199,6 +219,9 @@ export function RemapDialog() {
   const session = useInstall((s) => s.remap)
   if (!session) {
     return null
+  }
+  if (session.ask.overlay) {
+    return <OverlayPlaceDialog key={session.key} />
   }
   return <RemapBody key={session.key} />
 }

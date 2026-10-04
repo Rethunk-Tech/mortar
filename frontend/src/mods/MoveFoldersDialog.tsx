@@ -9,11 +9,12 @@ import type {
 import {
   DismissGameModsFolder,
   MoveGameModsFolders,
+  UndismissGameModsFolders,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { formatOutcomeDetail } from '../profiles/gameModsFormat.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { reportError } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { partitionPreview, selectedFolders, toggled } from './libraryRows.ts'
@@ -27,6 +28,7 @@ export function MoveFoldersDialog({
   profile,
   mods,
   onDismiss,
+  onRestore,
   onClose,
 }: {
   open: boolean
@@ -34,6 +36,7 @@ export function MoveFoldersDialog({
   profile: Profile
   mods: GameModPreview[]
   onDismiss: (folder: string) => void
+  onRestore: () => void
   onClose: (moved: boolean) => void
 }) {
   const { t } = useLingui()
@@ -47,6 +50,19 @@ export function MoveFoldersDialog({
   }, [open])
   const { pickable, blocked } = partitionPreview(mods)
   const chosen = selectedFolders(pickable, off)
+  const restore = async (folder: string) => {
+    await UndismissGameModsFolders(game, [folder])
+    onRestore()
+  }
+  const dismiss = async (folder: string) => {
+    await DismissGameModsFolder(game, folder)
+    onDismiss(folder)
+    useToasts.getState().push({
+      kind: 'success',
+      title: t`Stopped asking about ${folder}`,
+      action: { label: t`Undo`, run: () => restore(folder).catch(reportUnexpected) },
+    })
+  }
   const move = () =>
     run(
       async () => {
@@ -94,9 +110,7 @@ export function MoveFoldersDialog({
             aria-label={t`Don't ask again about ${row.folder ?? ''}`}
             disabled={busy}
             onClick={() => {
-              DismissGameModsFolder(game, row.folder ?? '')
-                .then(() => onDismiss(row.folder ?? ''))
-                .catch(reportError(t`Could not dismiss that folder`))
+              dismiss(row.folder ?? '').catch(reportError(t`Could not dismiss that folder`))
             }}
           >
             {t`Don't ask again`}

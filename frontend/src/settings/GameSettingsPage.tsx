@@ -17,6 +17,8 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { PrefKeys } from './PrefRow.tsx'
 import { SettingsSection } from './SettingsSection.tsx'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
+import { HistoryUsageRows } from './sections/DataHistory.tsx'
+import { DismissedFolders } from './sections/DismissedFolders.tsx'
 import { BackupsPage, ExtraModsFolder, GameFolder, SmapiPage } from './sections/GameSettings.tsx'
 import { StreamOverlay } from './sections/StreamOverlay.tsx'
 import { useSettings } from './store.ts'
@@ -83,21 +85,27 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
         )
       case 'mods':
         return (
-          <SettingsSection title={t`Mods`}>
-            <PrefKeys
-              keys={[
-                'enableRequirements',
-                'missingRequirements',
-                'cosmeticConflicts',
-                'conflictScanDepth',
-                'offerNewDownloads',
-                'oldFilesOnUpdate',
-                'showDotHiddenMods',
-              ]}
-              game={GAME}
-            />
-            <ExtraModsFolder />
-          </SettingsSection>
+          <>
+            <SettingsSection title={t`Mods`}>
+              <PrefKeys
+                keys={[
+                  'enableRequirements',
+                  'missingRequirements',
+                  'cosmeticConflicts',
+                  'conflictScanDepth',
+                  'offerNewDownloads',
+                  'oldFilesOnUpdate',
+                  'showDotHiddenMods',
+                ]}
+                game={GAME}
+              />
+              <ExtraModsFolder />
+            </SettingsSection>
+            <DismissedFolders />
+            <SettingsSection title={t`${name} profile history`}>
+              <HistoryUsageRows />
+            </SettingsSection>
+          </>
         )
       case 'backups':
         return <BackupsPage />

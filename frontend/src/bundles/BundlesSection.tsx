@@ -1,7 +1,6 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { PackagePlus, Pencil, Trash2 } from 'lucide-react'
+import { PackagePlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Bundle } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/models.ts'
 import {
@@ -14,10 +13,11 @@ import { idKey } from '../mods/dependents.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { ApplyBundleToProfile } from './ApplyBundleToProfile.tsx'
+import { BundleRow } from './BundleRow.tsx'
 import { BundleNameDialog } from './dialogs.tsx'
 
 function hasBundle(profile: Profile, bundle: Bundle) {
@@ -27,6 +27,13 @@ function hasBundle(profile: Profile, bundle: Bundle) {
     ),
   )
   return (bundle.mods ?? []).every((mod) => installed.has(idKey(mod.uniqueId)))
+}
+
+function holderNamesOf(profiles: Profile[], bundle: Bundle) {
+  return profiles
+    .filter((profile) => hasBundle(profile, bundle))
+    .map((profile) => profile.name)
+    .join(', ')
 }
 
 function NoBundles() {
@@ -73,6 +80,7 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
   const { bundles, setBundles, loading } = useBundleList(game)
   const [renaming, setRenaming] = useState<Bundle | null>(null)
   const [deleting, setDeleting] = useState<Bundle | null>(null)
+  const [applying, setApplying] = useState<Bundle | null>(null)
   const [busy, run] = usePending()
   return (
     <>
@@ -93,47 +101,27 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
         </Typography>
         {loading ? <LoadingRow>{t`Loading bundles…`}</LoadingRow> : null}
         {!loading && bundles.length === 0 ? <NoBundles /> : null}
-        {bundles.map((bundle) => {
-          const holders = profiles.filter((profile) => hasBundle(profile, bundle))
-          const modCount = plural(bundle.mods?.length ?? 0, { one: '# mod', other: '# mods' })
-          const holderNames =
-            holders.length === 0 ? t`none` : holders.map((profile) => profile.name).join(', ')
-          return (
-            <Box
-              key={bundle.id}
-              sx={{ p: 1.25, bgcolor: 'var(--mortar-raised)', borderRadius: '6px' }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography
-                  noWrap={true}
-                  title={bundle.name}
-                  sx={{ flex: 1, minWidth: 0, fontWeight: 600 }}
-                >
-                  {bundle.name}
-                </Typography>
-                <TipIconButton label={t`Rename ${bundle.name}`} onClick={() => setRenaming(bundle)}>
-                  <Pencil size={15} />
-                </TipIconButton>
-                <TipIconButton
-                  label={t`Delete ${bundle.name}`}
-                  color="error"
-                  onClick={() => setDeleting(bundle)}
-                >
-                  <Trash2 size={15} />
-                </TipIconButton>
-              </Box>
-              <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>{modCount}</Typography>
-              <Typography
-                sx={{ color: 'text.secondary', fontSize: 12 }}
-                noWrap={true}
-                title={holderNames}
-              >
-                {t`Profiles: ${holderNames}`}
-              </Typography>
-            </Box>
-          )
-        })}
+        {bundles.map((bundle) => (
+          <BundleRow
+            key={bundle.id}
+            game={game}
+            bundle={bundle}
+            holderNames={holderNamesOf(profiles, bundle) || t`none`}
+            onApply={() => setApplying(bundle)}
+            onRename={() => setRenaming(bundle)}
+            onDelete={() => setDeleting(bundle)}
+            onChanged={(updated) =>
+              setBundles((current) => current.map((b) => (b.id === updated.id ? updated : b)))
+            }
+          />
+        ))}
       </Box>
+      <ApplyBundleToProfile
+        bundle={applying}
+        game={game}
+        profiles={profiles}
+        onClose={() => setApplying(null)}
+      />
       <BundleNameDialog
         open={renaming !== null}
         title={t`Rename bundle`}

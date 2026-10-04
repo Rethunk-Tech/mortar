@@ -122,7 +122,7 @@ async function installOne(
   game: { id: string },
   profile: Profile,
   call: () => Promise<InstallResult>,
-  track: { dependentIds: string[]; batch: Landed[] | null },
+  track: { dependentIds: string[]; batch: Landed[] | null; archivePath?: string },
 ) {
   const { dependentIds, batch } = track
   const { push } = useToasts.getState()
@@ -145,6 +145,7 @@ async function installOne(
       key: remap.key,
       source: remap.source,
       ask: remap,
+      ...(track.archivePath === undefined ? {} : { archivePath: track.archivePath }),
     })
     return
   }
@@ -192,6 +193,8 @@ interface RemapSession {
   source: Source
   ask: RemapAsk
   queueId?: string
+  /** The archive the choice is about, when it came from a file, so the dialog can show its contents. */
+  archivePath?: string
 }
 
 async function afterDroppedRemap(
@@ -312,6 +315,7 @@ async function runInstalls(
   items: string[],
   set: InstallSet,
   callFor: (game: string, profile: string, item: string) => () => Promise<InstallResult>,
+  archives: boolean,
 ) {
   const { game } = useProfiles.getState()
   const profile = openProfileOf(useProfiles.getState())
@@ -338,7 +342,11 @@ async function runInstalls(
   set((s) => ({ pending: s.pending + items.length }))
   for (const item of items) {
     try {
-      await installOne(game, profile, callFor(game.id, profile.id, item), { dependentIds, batch })
+      await installOne(game, profile, callFor(game.id, profile.id, item), {
+        dependentIds,
+        batch,
+        ...(archives ? { archivePath: item } : {}),
+      })
     } catch (e) {
       failed += 1
       toastError(i18n._(msg`Could not add ${fileName(item)}`), e)
@@ -396,14 +404,15 @@ export const useInstall = create<{
       })
   },
   install: (paths) =>
-    runInstalls(paths, set, (game, profile, path) => () => InstallArchive(game, profile, path)),
+    runInstalls(paths, set, (g, p, file) => () => InstallArchive(g, p, file), true),
   installDownloads: (paths) =>
-    runInstalls(paths, set, (game, profile, path) => () => InstallDownload(game, profile, path)),
+    runInstalls(paths, set, (g, p, file) => () => InstallDownload(g, p, file), true),
   installFromExtraFolder: (folders) =>
     runInstalls(
       folders,
       set,
       (game, profile, folder) => () => InstallExtraFolderMod(game, profile, folder),
+      false,
     ),
   pick: async () => {
     try {

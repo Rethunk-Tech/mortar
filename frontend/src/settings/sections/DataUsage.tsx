@@ -8,15 +8,10 @@ import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/i
 import { formatBytes } from '../../i18n/bytes.ts'
 import { cmpText } from '../../mods/cmpText.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { PrefNumber } from '../PrefControls.tsx'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
-import { useSettings } from '../store.ts'
 import { MoveDataButton } from './DataMove.tsx'
 import { nowrap } from './dataStyles.ts'
 import { type SegmentId, storageSegments } from './storageSegments.ts'
-
-const MIN_KEPT = 1
-const MAX_KEPT = 50
 
 // Categorical slots validated for both themes (CVD and contrast); "other" stays neutral so it reads as remainder.
 const SEGMENT_COLORS: Record<'light' | 'dark', Record<SegmentId, string>> = {
@@ -185,25 +180,6 @@ function StorageBar({
       <Legend sizes={sizes} labels={labels} />
       <Box sx={{ display: 'flex', gap: 1, pt: 2, flexWrap: 'wrap' }}>{actions}</Box>
     </Box>
-  )
-}
-
-export function BackupsKept() {
-  const { t } = useLingui()
-  const kept = useSettings((s) => s.backupsKept)
-  return (
-    <SettingRow
-      label={t`Save backups kept`}
-      description={t`Saves are zipped before mods update; older backups beyond this many are deleted. ${MIN_KEPT} to ${MAX_KEPT}.`}
-    >
-      <PrefNumber
-        value={kept}
-        min={MIN_KEPT}
-        max={MAX_KEPT}
-        onCommit={SetBackupsKept}
-        label={t`Save backups kept`}
-      />
-    </SettingRow>
   )
 }
 

@@ -12,10 +12,10 @@ import {
 import { type SyntheticEvent, useEffect, useState } from 'react'
 import type { Template } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/models.ts'
 import { NewProfileFromTemplate } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/service.ts'
+import { bundleWants } from '../bundles/missingWants.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
-import { templateWants } from '../templates/templateWants.ts'
 import { useTemplates } from '../templates/useTemplates.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -80,7 +80,7 @@ function useCreate(game: string, onClose: () => void) {
         useProfiles.getState().open(result.profile.id)
         onClose()
         const missing = result.missing ?? []
-        const wants = templateWants(template, missing)
+        const wants = bundleWants(result.missingMods)
         const queued = wants.length > 0 && (await download(wants))
         const mods = plural(missing.length, { one: '# mod', other: '# mods' })
         let title = t`Created ${name}`

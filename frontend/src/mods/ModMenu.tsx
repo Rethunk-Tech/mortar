@@ -32,11 +32,12 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { AddToGroupDialog, AddToGroupMenuItem } from './AddToGroupDialog.tsx'
+import { AddToGroupDialog } from './AddToGroupDialog.tsx'
 import { actingMods, toggleActing } from './actingMods.ts'
 import { SetCategoryDialog } from './CategoryEditor.tsx'
 import { useDetail } from './detail.ts'
 import { EverywhereMenuItem } from './EverywhereMenuItem.tsx'
+import { ModGroupItems } from './GroupMenu.tsx'
 import { modId, nexusIdOf, updateFor } from './lookup.ts'
 import { ModActionItems } from './ModActionItems.tsx'
 import {
@@ -216,7 +217,6 @@ function ModActionMenu({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const locked = useLocked()
   const profile = useProfiles(openProfileOf)
   const byId = useNexusDetails((s) => s.byId)
   const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
@@ -248,12 +248,11 @@ function ModActionMenu({
           onAddBundle={() => setBundleOpen(true)}
           onRemoveOther={() => setRemoveOtherOpen(true)}
         />
-        <AddToGroupMenuItem
-          locked={locked}
-          onClick={() => {
-            onClose()
-            setGroupOpen(true)
-          }}
+        <ModGroupItems
+          profile={profile}
+          entryKey={mod.key}
+          close={onClose}
+          onAdd={() => setGroupOpen(true)}
         />
         {update ? <EverywhereMenuItem game={game} uniqueId={mod.uniqueId} close={onClose} /> : null}
       </Menu>

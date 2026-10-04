@@ -46,7 +46,6 @@ const defaults: Settings = {
   includePrereleaseModVersions: false,
   checkOnlyEnabledMods: false,
   enableModsWhenInstalled: true,
-  backupsKept: 5,
   listColumns: [
     'on',
     'name',
