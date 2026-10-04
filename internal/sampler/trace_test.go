@@ -94,14 +94,14 @@ func TestParseCompressedEvent(t *testing.T) {
 }
 
 func TestParseMetadataRecord(t *testing.T) {
-	payload := appendInt32ForTest(nil, 7)
+	payload := appendUint32ForTest(nil, 7)
 	payload = appendWideForTest(payload, "Provider")
-	payload = appendInt32ForTest(payload, 143)
+	payload = appendUint32ForTest(payload, 143)
 	payload = appendWideForTest(payload, "MethodLoadVerbose")
 	payload = appendUint64ForTest(payload, 0)
-	payload = appendInt32ForTest(payload, 1)
-	payload = appendInt32ForTest(payload, 5)
-	payload = appendInt32ForTest(payload, 0)
+	payload = appendUint32ForTest(payload, 1)
+	payload = appendUint32ForTest(payload, 5)
+	payload = appendUint32ForTest(payload, 0)
 	metadata := map[uint32]eventMetadata{}
 	parseV5Metadata(payload, metadata)
 	if metadata[7].provider != "Provider" || metadata[7].name != "MethodLoadVerbose" || metadata[7].eventID != 143 {
@@ -121,24 +121,20 @@ func TestParseStackRecord(t *testing.T) {
 	}
 }
 
-func appendInt32ForTest(data []byte, value int32) []byte {
-	return appendUint32ForTest(data, uint32(value))
-}
-
 func appendUint32ForTest(data []byte, value uint32) []byte {
-	return append(data, byte(value), byte(value>>8), byte(value>>16), byte(value>>24))
+	return append(data, byte(value&0xff), byte((value>>8)&0xff), byte((value>>16)&0xff), byte((value>>24)&0xff))
 }
 
 func appendUint64ForTest(data []byte, value uint64) []byte {
-	for index := 0; index < 8; index++ {
-		data = append(data, byte(value>>uint(index*8)))
+	for index := range 8 {
+		data = append(data, byte((value>>uint(index*8))&0xff))
 	}
 	return data
 }
 
 func appendWideForTest(data []byte, value string) []byte {
 	for _, r := range value {
-		data = append(data, byte(r), byte(r>>8))
+		data = append(data, byte(r&0xff), byte((r>>8)&0xff))
 	}
 	return append(data, 0, 0)
 }

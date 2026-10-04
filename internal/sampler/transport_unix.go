@@ -7,7 +7,9 @@ import (
 	"net"
 )
 
-func openDiagnostic(ctx context.Context, path string) (diagnosticConn, error) {
-	var dialer net.Dialer
-	return dialer.DialContext(ctx, "unix", path)
+func openDiagnostic(ctx context.Context, path string) (*net.UnixConn, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	return net.DialUnix("unix", nil, &net.UnixAddr{Name: path, Net: "unix"})
 }

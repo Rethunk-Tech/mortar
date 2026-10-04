@@ -12,7 +12,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"time"
 	"unicode/utf16"
 )
 
@@ -28,6 +27,10 @@ type diagnosticConn interface {
 	io.Reader
 	io.Writer
 	io.Closer
+}
+
+type diagnosticConnection struct {
+	diagnosticConn
 }
 
 // Session owns one EventPipe stream and its temporary nettrace file.
@@ -109,7 +112,9 @@ func (s *Session) stop(ctx context.Context) error {
 		_ = s.conn.Close()
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 	if err := writeMessage(conn, stopTracing, stopPayload(s.sessionID)); err != nil {
 		_ = s.conn.Close()
 		return err
@@ -171,11 +176,22 @@ func appendUint64(payload []byte, value uint64) []byte {
 
 func appendWideString(payload []byte, value string) []byte {
 	encoded := utf16.Encode([]rune(value))
-	payload = appendUint32(payload, uint32(len(encoded)+1))
+	payload = appendUint32(payload, uint32Length(len(encoded)+1))
 	for _, unit := range encoded {
-		payload = append(payload, byte(unit), byte(unit>>8))
+		payload = append(payload, byte(unit&0xff), byte((unit>>8)&0xff))
 	}
 	return append(payload, 0, 0)
+}
+
+func uint32Length(value int) uint32 {
+	if value <= 0 {
+		return 0
+	}
+	const maxUint32 = int(^uint32(0))
+	if value > maxUint32 {
+		return ^uint32(0)
+	}
+	return uint32(value)
 }
 
 func writeMessage(conn io.Writer, commandID byte, payload []byte) error {
@@ -224,7 +240,7 @@ func diagnosticSocketCandidates(pid int) ([]string, error) {
 	dirs := []string{os.TempDir()}
 	dirs = append(dirs, filepath.Join("/proc", fmt.Sprint(pid), "root", "tmp"))
 	if env, err := os.ReadFile(filepath.Join("/proc", fmt.Sprint(pid), "environ")); err == nil {
-		for _, entry := range strings.Split(string(env), "\x00") {
+		for entry := range strings.SplitSeq(string(env), "\x00") {
 			if value, ok := strings.CutPrefix(entry, "TMPDIR="); ok && value != "" {
 				dirs = append(dirs, value)
 			}
@@ -250,9 +266,9 @@ func diagnosticSocketCandidates(pid int) ([]string, error) {
 	return matches, nil
 }
 
-func dialDiagnostic(ctx context.Context, pid int) (diagnosticConn, error) {
+func dialDiagnostic(ctx context.Context, pid int) (*diagnosticConnection, error) {
 	if ctx == nil {
-		ctx = context.Background()
+		return nil, errors.New("sampler: nil diagnostics context")
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -265,7 +281,7 @@ func dialDiagnostic(ctx context.Context, pid int) (diagnosticConn, error) {
 	for _, path := range paths {
 		conn, err := openDiagnostic(ctx, path)
 		if err == nil {
-			return conn, nil
+			return &diagnosticConnection{diagnosticConn: conn}, nil
 		}
 		last = err
 	}
@@ -273,20 +289,4 @@ func dialDiagnostic(ctx context.Context, pid int) (diagnosticConn, error) {
 		last = os.ErrNotExist
 	}
 	return nil, last
-}
-
-func waitForDiagnostic(ctx context.Context, pid int, interval time.Duration) (diagnosticConn, error) {
-	for {
-		conn, err := dialDiagnostic(ctx, pid)
-		if err == nil {
-			return conn, nil
-		}
-		timer := time.NewTimer(interval)
-		select {
-		case <-ctx.Done():
-			timer.Stop()
-			return nil, ctx.Err()
-		case <-timer.C:
-		}
-	}
 }

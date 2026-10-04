@@ -6,11 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strings"
 	"unicode/utf16"
 	"unicode/utf8"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 const (
@@ -60,13 +61,13 @@ type Trace struct {
 
 type eventField struct {
 	name string
-	code int32
+	code uint32
 }
 
 type eventMetadata struct {
 	provider string
 	name     string
-	eventID  int32
+	eventID  uint32
 	fields   []eventField
 }
 
@@ -138,12 +139,11 @@ func Parse(r io.Reader) (*Trace, error) {
 
 // ParseFile parses a nettrace file produced by the sampler session.
 func ParseFile(path string) (*Trace, error) {
-	f, err := os.Open(path)
+	data, err := fsx.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	return Parse(f)
+	return Parse(bytes.NewReader(data))
 }
 
 func headerFrequency(data []byte) uint64 {
@@ -347,7 +347,7 @@ func parseCompressedV5Event(body []byte, state *v5EventState) (rawEvent, int, bo
 		if !ok {
 			return rawEvent{}, 0, false
 		}
-		state.metadataID = uint32(value)
+		state.metadataID = uint32FromUint64(value)
 	}
 	if flags&2 != 0 {
 		value, ok := read()
@@ -404,11 +404,12 @@ func parseCompressedV5Event(body []byte, state *v5EventState) (rawEvent, int, bo
 		}
 		state.payloadSize = value
 	}
-	if state.payloadSize > uint64(len(body)-offset) {
+	if state.payloadSize > uint64FromInt(len(body)-offset) {
 		return rawEvent{}, 0, false
 	}
-	payload := body[offset : offset+int(state.payloadSize)]
-	return rawEvent{timestamp: state.timestamp, threadID: uint32(state.thread), metadata: state.metadataID, stackID: state.stack, payload: payload}, offset + int(state.payloadSize), true
+	payloadEnd := offset + intFromUint64(state.payloadSize)
+	payload := body[offset:payloadEnd]
+	return rawEvent{timestamp: state.timestamp, threadID: uint32FromUint64(state.thread), metadata: state.metadataID, stackID: state.stack, payload: payload}, payloadEnd, true
 }
 
 func parseUncompressedV5Event(body []byte, state *v5EventState) (rawEvent, bool) {
@@ -437,12 +438,12 @@ func parseUncompressedV5Event(body []byte, state *v5EventState) (rawEvent, bool)
 	state.thread = thread
 	state.stack = stack
 	state.timestamp = timestamp
-	return rawEvent{timestamp: timestamp, threadID: uint32(thread), metadata: metadataID, stackID: stack, payload: body[offset : offset+payloadSize]}, true
+	return rawEvent{timestamp: timestamp, threadID: uint32FromUint64(thread), metadata: metadataID, stackID: stack, payload: body[offset : offset+payloadSize]}, true
 }
 
 func parseV5Metadata(payload []byte, metadata map[uint32]eventMetadata) {
 	cursor := 0
-	metadataID, ok := readInt32(payload, &cursor)
+	metadataID, ok := readUint32(payload, &cursor)
 	if !ok {
 		return
 	}
@@ -450,7 +451,7 @@ func parseV5Metadata(payload []byte, metadata map[uint32]eventMetadata) {
 	if !ok {
 		return
 	}
-	eventID, ok := readInt32(payload, &cursor)
+	eventID, ok := readUint32(payload, &cursor)
 	if !ok {
 		return
 	}
@@ -462,13 +463,14 @@ func parseV5Metadata(payload []byte, metadata map[uint32]eventMetadata) {
 		return
 	}
 	cursor += 8 + 2*4
-	fieldCount, ok := readInt32(payload, &cursor)
-	if !ok || fieldCount < 0 || fieldCount > 4096 {
+	fieldCount, ok := readUint32(payload, &cursor)
+	if !ok || fieldCount > 4096 {
 		return
 	}
-	fields := make([]eventField, 0, fieldCount)
-	for range fieldCount {
-		code, ok := readInt32(payload, &cursor)
+	fieldCountInt := intFromUint64(uint64(fieldCount))
+	fields := make([]eventField, 0, fieldCountInt)
+	for range fieldCountInt {
+		code, ok := readUint32(payload, &cursor)
 		if !ok {
 			return
 		}
@@ -478,7 +480,7 @@ func parseV5Metadata(payload []byte, metadata map[uint32]eventMetadata) {
 		}
 		fields = append(fields, eventField{name: fieldName, code: code})
 	}
-	metadata[uint32(metadataID)] = eventMetadata{provider: provider, name: name, eventID: eventID, fields: fields}
+	metadata[metadataID] = eventMetadata{provider: provider, name: name, eventID: eventID, fields: fields}
 }
 
 func parseV5StackBlock(block []byte, pointerSize int) []stackRecord {
@@ -488,7 +490,7 @@ func parseV5StackBlock(block []byte, pointerSize int) []stackRecord {
 	cursor := 0
 	firstID := uint64(binary.LittleEndian.Uint32(block[cursor:]))
 	cursor += 4
-	count := int(binary.LittleEndian.Uint32(block[cursor:]))
+	count := intFromUint64(uint64(binary.LittleEndian.Uint32(block[cursor:])))
 	cursor += 4
 	if count < 0 || count > 1_000_000 {
 		return nil
@@ -497,11 +499,11 @@ func parseV5StackBlock(block []byte, pointerSize int) []stackRecord {
 		pointerSize = 8
 	}
 	out := make([]stackRecord, 0, count)
-	for index := 0; index < count; index++ {
+	for index := range count {
 		if cursor+4 > len(block) {
 			return nil
 		}
-		stackSize := int(binary.LittleEndian.Uint32(block[cursor:]))
+		stackSize := intFromUint64(uint64(binary.LittleEndian.Uint32(block[cursor:])))
 		cursor += 4
 		if stackSize < 0 || cursor+stackSize > len(block) || stackSize%pointerSize != 0 {
 			return nil
@@ -515,16 +517,16 @@ func parseV5StackBlock(block []byte, pointerSize int) []stackRecord {
 			}
 			cursor += pointerSize
 		}
-		out = append(out, stackRecord{id: firstID + uint64(index), frames: frames})
+		out = append(out, stackRecord{id: firstID + uint64FromInt(index), frames: frames})
 	}
 	return out
 }
 
-func readInt32(data []byte, offset *int) (int32, bool) {
+func readUint32(data []byte, offset *int) (uint32, bool) {
 	if *offset+4 > len(data) {
 		return 0, false
 	}
-	value := int32(binary.LittleEndian.Uint32(data[*offset:]))
+	value := binary.LittleEndian.Uint32(data[*offset:])
 	*offset += 4
 	return value, true
 }
@@ -634,7 +636,7 @@ func parseMetadataBlock(payload []byte, metadata map[uint32]eventMetadata) {
 		case isProviderName(found.value):
 			provider = found.value
 		case isEventName(found.value):
-			id := uint32(len(metadata) + 1)
+			id := uint32Length(len(metadata) + 1)
 			if idIndex < len(ids) {
 				id = ids[idIndex]
 				idIndex++
@@ -711,11 +713,11 @@ func parseCompressedEvents(data []byte, metadata map[uint32]eventMetadata) []raw
 	var thread uint32
 	for offset := 0; offset < len(data); {
 		size, n := readVarint(data[offset:])
-		if n == 0 || size == 0 || size > uint64(len(data)-offset) {
+		if n == 0 || size == 0 || size > uint64FromInt(len(data)-offset) {
 			offset++
 			continue
 		}
-		record := data[offset : offset+int(size)]
+		record := data[offset : offset+intFromUint64(size)]
 		if len(record) < 4 {
 			offset++
 			continue
@@ -740,16 +742,16 @@ func parseCompressedEvents(data []byte, metadata map[uint32]eventMetadata) []raw
 		}
 		cursor += used
 		timestamp += timeDelta
-		thread = uint32(uint64(thread) + threadDelta)
+		thread = uint32FromUint64(uint64(thread) + threadDelta)
 		stack, used := readVarint(record[cursor:])
 		if used > 0 {
 			cursor += used
 		}
-		meta := uint32(metaValue)
+		meta := uint32FromUint64(metaValue)
 		if _, ok := metadata[meta]; ok || payloadLooksKnown(record[cursor:]) {
 			out = append(out, rawEvent{timestamp: timestamp, threadID: thread, metadata: meta, stackID: stack, payload: record[cursor:]})
 		}
-		offset += int(size)
+		offset += intFromUint64(size)
 	}
 	return out
 }
@@ -763,10 +765,10 @@ func parseStackBlock(payload []byte) []stackRecord {
 		if countOffset+4 > len(payload) {
 			break
 		}
-		count := int(binary.LittleEndian.Uint32(payload[countOffset : countOffset+4]))
+		count := intFromUint64(uint64(binary.LittleEndian.Uint32(payload[countOffset : countOffset+4])))
 		if count < 0 || count > 4096 || countOffset+countSize+count*8 > len(payload) {
 			id = uint64(binary.LittleEndian.Uint32(payload[offset : offset+4]))
-			count = int(binary.LittleEndian.Uint32(payload[offset+4 : offset+8]))
+			count = intFromUint64(uint64(binary.LittleEndian.Uint32(payload[offset+4 : offset+8])))
 			countOffset = offset
 			countSize = 4
 			if count < 0 || count > 4096 || offset+8+count*8 > len(payload) {
@@ -784,7 +786,7 @@ func parseStackBlock(payload []byte) []stackRecord {
 	return out
 }
 
-func decodeRuntimeEvent(trace *Trace, provider, name string, eventID int32, fields []eventField, payload []byte) {
+func decodeRuntimeEvent(trace *Trace, provider, name string, eventID uint32, fields []eventField, payload []byte) {
 	lowerName := strings.ToLower(name)
 	switch {
 	case strings.Contains(lowerName, "methodload") || strings.Contains(lowerName, "methoddcend"):
@@ -800,7 +802,7 @@ func decodeRuntimeEvent(trace *Trace, provider, name string, eventID int32, fiel
 	}
 }
 
-func decodeRuntimeByID(trace *Trace, eventID int32, fields []eventField, payload []byte) {
+func decodeRuntimeByID(trace *Trace, eventID uint32, fields []eventField, payload []byte) {
 	switch eventID {
 	case 143, 144:
 		decodeMethodRuntime(trace, payload)
@@ -1193,4 +1195,27 @@ func minInt(left, right int) int {
 		return left
 	}
 	return right
+}
+
+func uint32FromUint64(value uint64) uint32 {
+	const maxUint32 = uint64(1<<32 - 1)
+	if value > maxUint32 {
+		return ^uint32(0)
+	}
+	return uint32(value)
+}
+
+func intFromUint64(value uint64) int {
+	maxInt := uint64(^uint(0) >> 1)
+	if value > maxInt {
+		return int(maxInt)
+	}
+	return int(value)
+}
+
+func uint64FromInt(value int) uint64 {
+	if value < 0 {
+		return 0
+	}
+	return uint64(value)
 }

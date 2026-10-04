@@ -80,5 +80,10 @@ func assemblyBase(assembly string) string {
 }
 
 func nanosToMilliseconds(nanos uint64) int64 {
-	return int64((nanos + 500_000) / 1_000_000)
+	milliseconds := (nanos + 500_000) / 1_000_000
+	const maxInt64 = uint64(1<<63 - 1)
+	if milliseconds > maxInt64 {
+		return int64(maxInt64)
+	}
+	return int64(milliseconds)
 }

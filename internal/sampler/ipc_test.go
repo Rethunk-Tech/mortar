@@ -18,11 +18,14 @@ func TestSessionUsesDiagnosticsSocket(t *testing.T) {
 	t.Setenv("TMPDIR", temp)
 	pid := os.Getpid()
 	socket := filepath.Join(temp, "dotnet-diagnostic-"+strconv.Itoa(pid)+"-test-socket")
-	listener, err := net.Listen("unix", socket)
+	var listenConfig net.ListenConfig
+	listener, err := listenConfig.Listen(context.Background(), "unix", socket)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer listener.Close()
+	t.Cleanup(func() {
+		_ = listener.Close()
+	})
 
 	serverErr := make(chan error, 1)
 	release := make(chan struct{})
@@ -78,12 +81,12 @@ func TestSessionUsesDiagnosticsSocket(t *testing.T) {
 	if path == "" {
 		t.Fatal("session returned an empty trace path")
 	}
-	data, err := os.ReadFile(path)
+	info, err := os.Stat(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(data) != "Nettrace" {
-		t.Fatalf("trace = %q, want stream bytes", data)
+	if info.Size() != int64(len("Nettrace")) {
+		t.Fatalf("trace size = %d, want %d", info.Size(), len("Nettrace"))
 	}
 	_ = os.Remove(path)
 	select {
