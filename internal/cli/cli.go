@@ -428,13 +428,13 @@ func (c *cmd) dispatch() error {
 		return c.doctor()
 	case "uninstall-cleanup":
 		return c.uninstallCleanup()
+	case "quit":
+		return c.quit()
 	case "sweep":
 		return c.sweep()
 	case "launchers":
 		return c.launchers()
 	case "queue":
-	case "quit":
-		return c.quit()
 		return c.queue()
 	case "templates":
 		return c.templatesCmd()
@@ -2063,7 +2063,6 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   settings get [--game stardew] [key]     list settings, or one key
   settings set [--game stardew] <key> <value>  change a setting
   settings export <file>                  write portable settings JSON
-  quit                                    close the running app and wait until it has exited
   settings import <file>                  apply a portable settings JSON
   settings reset [key] [--game id]        restore defaults
   smapi versions <game>                   SMAPI versions in the store and on GitHub
@@ -2181,6 +2180,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   tools run <game> <profile> <tool>       start an external tool
   launchers [add|remove <id> <folder>]   launchers, the games in each, and your added folders
   doctor                                  versions, folders and link handling
+  quit                                    close the running app and wait until it has exited
   completion bash|zsh|fish                shell completion script
   version | help
 `
