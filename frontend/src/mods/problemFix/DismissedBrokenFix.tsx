@@ -37,7 +37,7 @@ export function DismissedBrokenFix({
       <Button
         size="small"
         color="warning"
-        variant="outlined"
+        variant="contained"
         onClick={() => openPage(replacement.url ?? '')}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >
@@ -47,8 +47,14 @@ export function DismissedBrokenFix({
   }
   return (
     <>
-      {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
       {replacementAction}
+      {mod
+        ? button(
+            t`Switch off`,
+            () => setEnabled(mod, false).catch(reportUnexpected),
+            Boolean(replacementAction),
+          )
+        : null}
       <Button
         size="small"
         color="inherit"

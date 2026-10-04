@@ -2,14 +2,15 @@ import { Button } from '@mui/material'
 import type { ReactNode } from 'react'
 import { useLocked } from '../useLocked.ts'
 
-export type WarningButton = (label: string, onClick: () => void) => ReactNode
+/** A warning action; outlined when a stronger fix sits beside it. */
+export type WarningButton = (label: string, onClick: () => void, secondary?: boolean) => ReactNode
 
 export function useWarningButton(): WarningButton {
   const locked = useLocked()
-  return (label, onClick) => (
+  return (label, onClick, secondary = false) => (
     <Button
       size="small"
-      variant="contained"
+      variant={secondary ? 'outlined' : 'contained'}
       color="warning"
       disabled={locked}
       onClick={onClick}

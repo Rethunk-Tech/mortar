@@ -48,7 +48,7 @@ export function BrokenFix({
       <Button
         size="small"
         color="warning"
-        variant="outlined"
+        variant="contained"
         onClick={() => openPage(where.url)}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >
@@ -72,8 +72,14 @@ export function BrokenFix({
     ) : null
   return (
     <>
-      {mod ? button(t`Switch off`, () => setEnabled(mod, false).catch(reportUnexpected)) : null}
       {replace}
+      {mod
+        ? button(
+            t`Switch off`,
+            () => setEnabled(mod, false).catch(reportUnexpected),
+            Boolean(replace),
+          )
+        : null}
       {dismiss}
     </>
   )
