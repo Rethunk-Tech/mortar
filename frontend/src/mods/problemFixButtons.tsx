@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import type { ComponentType } from 'react'
+import { type ComponentType, useState } from 'react'
 import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   AdoptDriftFolder,
@@ -11,6 +11,8 @@ import {
   RevertDriftEntry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { Problem } from './lookup.ts'
 import { AssetFix } from './problemFix/AssetFix.tsx'
@@ -97,18 +99,41 @@ export function DriftButtons({ drift }: { drift: Drift }) {
       .then(() => load())
       .catch(reportUnexpected)
   }
-  const button = (label: string, onClick: () => void) => (
-    <Button
-      size="small"
-      variant="contained"
-      color="warning"
-      disabled={locked}
-      onClick={onClick}
-      sx={{ flexShrink: 0 }}
-    >
-      {label}
-    </Button>
+  const [confirm, setConfirm] = useState<{
+    title: string
+    body: string
+    label: string
+    act: () => void
+  } | null>(null)
+  // The keeping action is the main one; the one that discards the user's files is secondary and asks first.
+  const button = (label: string, onClick: () => void, discard = false) => (
+    <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+      <Button
+        size="small"
+        variant={discard ? 'outlined' : 'contained'}
+        color="warning"
+        disabled={locked}
+        onClick={onClick}
+        sx={{ flexShrink: 0 }}
+      >
+        {label}
+      </Button>
+    </DisabledReason>
   )
+  const confirmDialog = confirm ? (
+    <ConfirmDialog
+      open={true}
+      title={confirm.title}
+      body={confirm.body}
+      confirmLabel={confirm.label}
+      color="error"
+      onCancel={() => setConfirm(null)}
+      onConfirm={() => {
+        setConfirm(null)
+        confirm.act()
+      }}
+    />
+  ) : null
   if (drift.kind === 'unknown') {
     return (
       <>
@@ -121,15 +146,25 @@ export function DriftButtons({ drift }: { drift: Drift }) {
             replace(await AdoptDriftFolder(open.game, open.id, drift.folder))
           }),
         )}
-        {button(t`Remove`, () =>
-          run(async () => {
-            const open = openTarget()
-            if (!open) {
-              return
-            }
-            await RemoveDriftFolder(open.game, open.id, drift.folder)
-          }),
+        {button(
+          t`Remove`,
+          () =>
+            setConfirm({
+              title: t`Remove ${drift.folder}?`,
+              body: t`Mortar did not install this folder. It moves to Mortar's trash.`,
+              label: t`Remove`,
+              act: () =>
+                run(async () => {
+                  const open = openTarget()
+                  if (!open) {
+                    return
+                  }
+                  await RemoveDriftFolder(open.game, open.id, drift.folder)
+                }),
+            }),
+          true,
         )}
+        {confirmDialog}
       </>
     )
   }
@@ -168,15 +203,25 @@ export function DriftButtons({ drift }: { drift: Drift }) {
           await KeepDriftChanges(open.game, open.id, drift.key)
         }),
       )}
-      {button(t`Revert`, () =>
-        run(async () => {
-          const open = openTarget()
-          if (!open) {
-            return
-          }
-          replace(await RevertDriftEntry(open.game, open.id, drift.key))
-        }),
+      {button(
+        t`Revert`,
+        () =>
+          setConfirm({
+            title: t`Revert ${drift.key}?`,
+            body: t`Your edits to its files are replaced with the installed copy.`,
+            label: t`Revert`,
+            act: () =>
+              run(async () => {
+                const open = openTarget()
+                if (!open) {
+                  return
+                }
+                replace(await RevertDriftEntry(open.game, open.id, drift.key))
+              }),
+          }),
+        true,
       )}
+      {confirmDialog}
     </>
   )
 }
