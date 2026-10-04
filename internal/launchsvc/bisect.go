@@ -123,8 +123,9 @@ func profileHasBridge(modsDir string) bool {
 	if modsDir == "" {
 		return false
 	}
-	info, err := os.Stat(filepath.Join(modsDir, bridge.ModFolder))
-	return err == nil && info.IsDir()
+	// The bridge sits inside its store entry's folder, like every installed mod.
+	matches, err := filepath.Glob(filepath.Join(modsDir, "*", bridge.ModFolder))
+	return err == nil && len(matches) > 0
 }
 
 func startupReportAfter(dir string, since time.Time) bool {

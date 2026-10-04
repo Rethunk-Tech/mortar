@@ -51,7 +51,7 @@ func TestProfileHasBridgeNeedsTheFolder(t *testing.T) {
 	if profileHasBridge(dir) {
 		t.Fatal("empty mods dir has no bridge")
 	}
-	if err := os.Mkdir(filepath.Join(dir, bridge.ModFolder), 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Join(dir, "bridge-1.3.0-f129f1a70915", bridge.ModFolder), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if !profileHasBridge(dir) {
