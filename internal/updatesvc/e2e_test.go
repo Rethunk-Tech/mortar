@@ -17,6 +17,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // These tests build two server-mode copies of testdata/fixture (0.1.1 and 0.1.2), serve a manifest from a local HTTP
@@ -25,8 +27,10 @@ import (
 
 var (
 	buildOnce sync.Once
-	oldBin    string
-	newBin    string
+	// binDir is shared by every test, so it is not t.TempDir.
+	binDir string
+	oldBin string
+	newBin string
 )
 
 func goBuild(t *testing.T, version, out string) {
@@ -40,14 +44,10 @@ func goBuild(t *testing.T, version, out string) {
 func binaries(t *testing.T) (string, string) {
 	t.Helper()
 	buildOnce.Do(func() {
-		// Shared by every test, so not t.TempDir; the OS tmp cleaner owns it.
-		dir, err := os.MkdirTemp("", "updatesvc-e2e-")
-		if err != nil {
-			t.Fatal(err)
-		}
-		oldBin, newBin = filepath.Join(dir, "old"), filepath.Join(dir, "new")
-		goBuild(t, "0.1.1", oldBin)
-		goBuild(t, "0.1.2", newBin)
+		oldB, newB := filepath.Join(binDir, "old"), filepath.Join(binDir, "new")
+		goBuild(t, "0.1.1", oldB)
+		goBuild(t, "0.1.2", newB)
+		oldBin, newBin = oldB, newB
 	})
 	if oldBin == "" {
 		t.Skip("fixture build failed in an earlier test")
@@ -64,7 +64,7 @@ func run(t *testing.T, name string, args ...string) {
 
 func readFile(t *testing.T, path string) []byte {
 	t.Helper()
-	b, err := os.ReadFile(path)
+	b, err := fsx.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,12 +179,12 @@ func waitLog(t *testing.T, logPath, want string) string {
 	t.Helper()
 	deadline := time.Now().Add(30 * time.Second)
 	for time.Now().Before(deadline) {
-		if b, err := os.ReadFile(logPath); err == nil && strings.Contains(string(b), want) {
+		if b, err := fsx.ReadFile(logPath); err == nil && strings.Contains(string(b), want) {
 			return string(b)
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	b, _ := os.ReadFile(logPath)
+	b, _ := fsx.ReadFile(logPath)
 	t.Fatalf("log never contained %q:\n%s", want, b)
 	return ""
 }
@@ -259,11 +259,12 @@ func TestUpdaterE2EDowngradeIgnored(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	code := m.Run()
-	if oldBin != "" {
-		_ = os.Remove(oldBin)
-		_ = os.Remove(newBin)
-		_ = os.Remove(filepath.Dir(oldBin))
+	dir, err := os.MkdirTemp("", "updatesvc-e2e-")
+	if err != nil {
+		panic(err)
 	}
+	binDir = dir
+	code := m.Run()
+	_ = os.RemoveAll(dir)
 	os.Exit(code)
 }
