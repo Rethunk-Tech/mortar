@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestDirRefusesAMissingRelocationTarget(t *testing.T) {
@@ -24,9 +24,7 @@ func TestDirRefusesAMissingRelocationTarget(t *testing.T) {
 		t.Fatal(err)
 	}
 	gone := filepath.Join(t.TempDir(), "unplugged")
-	if err := fsx.WriteFile(filepath.Join(d, PointerName), []byte(gone), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, d, PointerName, gone)
 	var miss *MissingLocationError
 	if _, err := Dir(); !errors.As(err, &miss) {
 		t.Fatalf("Dir = %v, want MissingLocationError", err)

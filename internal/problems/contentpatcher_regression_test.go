@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -46,16 +48,10 @@ func TestLoadConflictWithBlankLoserIsCosmetic(t *testing.T) {
 func syntheticLoadPack(t *testing.T, content string, files map[string]string) Installed {
 	t.Helper()
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "manifest.json"), []byte(`{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	testfs.WriteFile(t, root, "content.json", content)
 	for name, body := range files {
-		if err := os.WriteFile(filepath.Join(root, name), []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, root, name, body)
 	}
 	return fromDisk(Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)})
 }
@@ -115,13 +111,9 @@ func TestEditMapPatchModesUseSourceLayers(t *testing.T) {
 func syntheticMapShapes(t *testing.T, mapJSON, patchMode string) []cpShape {
 	t.Helper()
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "map.tmj"), []byte(mapJSON), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, root, "map.tmj", mapJSON)
 	content := `{"Changes":[{"Action":"EditMap","Target":"Maps/Test","FromFile":"map.tmj","FromArea":{"X":0,"Y":0,"Width":3,"Height":2},"ToArea":{"X":10,"Y":20,"Width":3,"Height":2},"PatchMode":"` + patchMode + `"}]}`
-	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, root, "content.json", content)
 	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
 	if len(pack.patches) != 1 {
@@ -150,9 +142,7 @@ func TestDynamicTokenWhenMergesDefinitionConditions(t *testing.T) {
 	],"Changes":[
 		{"Action":"Load","Target":"Maps/Test","FromFile":"map.json","When":{"{{FarmChoice}}":"A_TK.FarmProjectForaging"}}
 	]}`
-	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, root, "content.json", content)
 	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
 	var load cpPatch
@@ -180,9 +170,7 @@ func TestPriorityParsingKeepsOddChangesIsolated(t *testing.T) {
 		{"Action":"EditImage","Target":"Maps/Image","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"Priority":"Late - 10"},
 		{"Action":"Load","Target":"Maps/Odd","FromFile":"odd.json","Priority":{"unexpected":true}}
 	]}`
-	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, root, "content.json", content)
 	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
 	if len(pack.patches) != 3 {
@@ -243,12 +231,8 @@ func TestConflictWinnerUsesClashingPatchPriority(t *testing.T) {
 func syntheticEditPack(t *testing.T, content string) Installed {
 	t.Helper()
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "manifest.json"), []byte(`{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	testfs.WriteFile(t, root, "content.json", content)
 	return fromDisk(Installed{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)})
 }
 

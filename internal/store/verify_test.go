@@ -7,6 +7,8 @@ import (
 	"slices"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func addZip(t *testing.T, s *Store, files map[string]string) string {
@@ -29,12 +31,8 @@ func TestVerifyReportsMissingChangedAndExtraFiles(t *testing.T) {
 	if err := os.Remove(filepath.Join(dir, "a.txt")); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "b.txt"), []byte("BBB"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "new.txt"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, dir, "b.txt", "BBB")
+	testfs.WriteFile(t, dir, "new.txt", "x")
 	d, err := s.Verify(ctx, "stardew", key)
 	if err != nil {
 		t.Fatal(err)

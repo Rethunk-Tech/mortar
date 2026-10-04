@@ -1,7 +1,6 @@
 package store
 
 import (
-	"archive/zip"
 	"errors"
 	"os"
 	"path/filepath"
@@ -9,6 +8,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
@@ -23,28 +24,7 @@ func newStore(t *testing.T) *Store {
 
 func buildZip(t *testing.T, files map[string]string) string {
 	t.Helper()
-	p := filepath.Join(t.TempDir(), "mod.zip")
-	f, err := fsx.Create(p)
-	if err != nil {
-		t.Fatal(err)
-	}
-	zw := zip.NewWriter(f)
-	for name, body := range files {
-		w, err := zw.Create(name)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if _, err := w.Write([]byte(body)); err != nil {
-			t.Fatal(err)
-		}
-	}
-	if err := zw.Close(); err != nil {
-		t.Fatal(err)
-	}
-	if err := f.Close(); err != nil {
-		t.Fatal(err)
-	}
-	return p
+	return testfs.WriteZip(t, filepath.Join(t.TempDir(), "mod.zip"), files)
 }
 
 func names(t *testing.T, dir string) []string {
@@ -189,9 +169,7 @@ func TestAddDir(t *testing.T) {
 func TestIncompleteItemIsReinstalled(t *testing.T) {
 	s := newStore(t)
 	first := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(first, "mod.dll"), []byte("old"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, first, "mod.dll", "old")
 	if err := s.AddDir("stardew", "local-item", first); err != nil {
 		t.Fatal(err)
 	}
@@ -200,9 +178,7 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 		t.Fatal(err)
 	}
 	second := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(second, "mod.dll"), []byte("new"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, second, "mod.dll", "new")
 
 	if err := s.AddDir("stardew", "local-item", second); err != nil {
 		t.Fatal(err)
@@ -222,9 +198,7 @@ func TestLegacyItemsWithoutArchiveAreIncomplete(t *testing.T) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, "mod.dll"), []byte("old"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, dir, "mod.dll", "old")
 
 	_, err := s.Path("stardew", "legacy")
 	if !errors.Is(err, ErrIncomplete) {
@@ -238,9 +212,7 @@ func TestLegacyItemsWithoutArchiveAreIncomplete(t *testing.T) {
 func TestAddDirVerifiedChecksLocalKey(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()
-	if err := os.WriteFile(filepath.Join(src, "mod.dll"), []byte("mod"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "mod.dll", "mod")
 	key, err := hashDir(src)
 	if err != nil {
 		t.Fatal(err)
@@ -262,9 +234,7 @@ func TestCorruptIndexIsRebuiltForInstall(t *testing.T) {
 		t.Fatal(err)
 	}
 	src := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "mod.dll"), []byte("mod"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "mod.dll", "mod")
 
 	if err := s.AddDir("stardew", "local-corrupt-index", src); err != nil {
 		t.Fatal(err)
@@ -378,9 +348,7 @@ func TestDeclaredSize(t *testing.T) {
 func TestAddHashedDirCopiesInTreeSymlinksAndRejectsEscapes(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "a.txt"), []byte("a"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "a.txt", "a")
 	if err := os.Symlink(filepath.Join(src, "a.txt"), filepath.Join(src, "b.txt")); err != nil {
 		t.Fatal(err)
 	}

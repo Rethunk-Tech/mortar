@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -14,9 +16,7 @@ func TestRelocateCopiesThenRemovesAndLeavesAPointer(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
 	src := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "settings.json"), []byte(`{}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "settings.json", `{}`)
 	dest := filepath.Join(t.TempDir(), "new")
 	def := t.TempDir()
 	if err := Relocate(src, dest, def, nil); err != nil {
@@ -41,9 +41,7 @@ func TestRelocateRefusesATargetInsideTheSourceOrANonEmptyFolder(t *testing.T) {
 		t.Fatalf("inside = %v", err)
 	}
 	dest := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(dest, "x"), []byte("1"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, dest, "x", "1")
 	if err := Relocate(src, dest, t.TempDir(), nil); !errors.Is(err, ErrNotEmpty) {
 		t.Fatalf("empty = %v", err)
 	}
@@ -51,9 +49,7 @@ func TestRelocateRefusesATargetInsideTheSourceOrANonEmptyFolder(t *testing.T) {
 
 func TestRelocateRemovesPartialDestinationWhenCopyFails(t *testing.T) {
 	src := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "a"), []byte("copied"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "a", "copied")
 	if err := os.Symlink(filepath.Join(t.TempDir(), "outside"), filepath.Join(src, "z")); err != nil {
 		t.Fatal(err)
 	}

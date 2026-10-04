@@ -6,15 +6,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func TestCopyTreeCopiesSymlinkFilesThatStayInside(t *testing.T) {
 	src := t.TempDir()
 	dst := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "real.png"), []byte("png"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "real.png", "png")
 	if err := os.Mkdir(filepath.Join(src, "assets"), 0o750); err != nil {
 		t.Fatal(err)
 	}
@@ -48,12 +48,8 @@ func TestCopyTreeRejectsASymlinkFileThatEscapes(t *testing.T) {
 func TestCopyTreeSkipsASymlinkDirectory(t *testing.T) {
 	src := t.TempDir()
 	outside := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(outside, "secret.txt"), []byte("no"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(src, "ok.txt"), []byte("yes"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, outside, "secret.txt", "no")
+	testfs.WriteFile(t, src, "ok.txt", "yes")
 	if err := os.Symlink(outside, filepath.Join(src, "Innocent")); err != nil {
 		t.Fatal(err)
 	}

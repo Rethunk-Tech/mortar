@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -27,9 +29,7 @@ func TestMoveDataFolderRelocatesWhenIdle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(src, "settings.json"), []byte(`{"accent":"sand"}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "settings.json", `{"accent":"sand"}`)
 	s := NewService(items, profiles, nil)
 	restarted := false
 	s.Restart = func() error {

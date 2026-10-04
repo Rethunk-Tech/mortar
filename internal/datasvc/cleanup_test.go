@@ -116,9 +116,7 @@ func TestApplySkipsAStoreKeyThatBecameReferenced(t *testing.T) {
 	if err := os.MkdirAll(gone, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(gone, "b.bin"), []byte("gone!"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, gone, "b.bin", "gone!")
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 	preview, err := Select(root, items, map[string][]string{}, now, nil)
 	if err != nil {

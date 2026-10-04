@@ -3,9 +3,10 @@ package loadersvc
 import (
 	"context"
 	"errors"
-	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -65,9 +66,7 @@ func TestEnsureHonoursPin(t *testing.T) {
 func TestInstallVersionUsesCache(t *testing.T) {
 	svc, fake := testServiceWithReleases(t, []string{"4.1.0", "4.0.0"})
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, "ok"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, dir, "ok", "x")
 	if err := svc.items.AddDir("stardew", store.SMAPIKey("4.0.0"), dir); err != nil {
 		t.Fatal(err)
 	}

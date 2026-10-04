@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
@@ -49,9 +51,7 @@ func TestKeepSetSourcesProtectItemsFromCleanupAndCollect(t *testing.T) {
 		if err := os.MkdirAll(dir, 0o700); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(filepath.Join(dir, "m.bin"), []byte("mod"), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, dir, "m.bin", "mod")
 	}
 	sources := []KeySource{
 		func() (map[string][]string, error) { return map[string][]string{"stardew": {"local-bundle"}}, nil },

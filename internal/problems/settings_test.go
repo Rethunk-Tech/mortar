@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestCompatibilitySettingSuggestionWhenOff(t *testing.T) {
@@ -62,14 +64,10 @@ func settingPack(t *testing.T, schema, changes, config string) Installed {
 	manifestJSON := `{"Name":"Compatibility Pack","Author":"Test","Version":"1.0.0","UniqueID":"Pack.Compat","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher","MinimumVersion":"1.0.0"}}`
 	contentJSON := `{"ConfigSchema":` + schema + `,"Changes":` + changes + `}`
 	for name, body := range map[string]string{"manifest.json": manifestJSON, "content.json": contentJSON} {
-		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, dir, name, body)
 	}
 	if config != "" {
-		if err := os.WriteFile(filepath.Join(dir, "config.json"), []byte(config), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, dir, "config.json", config)
 	}
 	return fromDisk(Installed{Key: "pack", Enabled: true, Folder: dir, UniqueID: "Pack.Compat", Name: "Compatibility Pack"})
 }

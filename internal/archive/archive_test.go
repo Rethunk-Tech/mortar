@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -486,9 +488,7 @@ func TestRepairNamesRenamesLegacyEncodedEntries(t *testing.T) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, "note\xa1\xae.txt"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, dir, "note\xa1\xae.txt", "x")
 	n, err := RepairNames(root)
 	if err != nil {
 		t.Fatal(err)

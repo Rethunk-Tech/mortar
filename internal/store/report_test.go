@@ -1,10 +1,9 @@
 package store
 
 import (
-	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestReport(t *testing.T) {
@@ -83,9 +82,7 @@ func addTestItem(t *testing.T, s *Store, gameID string, it testItem) {
 	t.Helper()
 	src := t.TempDir()
 	body := `{"Name":"` + it.name + `","UniqueID":"` + it.uniqueID + `","Version":"` + it.version + `"}`
-	if err := fsx.WriteFile(filepath.Join(src, "manifest.json"), []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "manifest.json", body)
 	if err := s.AddDir(gameID, it.key, src); err != nil {
 		t.Fatal(err)
 	}

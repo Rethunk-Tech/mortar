@@ -10,7 +10,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -26,9 +25,7 @@ func TestRemoveItemsRefusesAReferencedKey(t *testing.T) {
 	if err := os.MkdirAll(itemDir, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(itemDir, "m.bin"), []byte("mod"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, itemDir, "m.bin", "mod")
 	profPath := filepath.Join(root, "profiles", "stardew", p.ID, "profile.json")
 	setEntry(t, profPath, "nexus-1-1")
 	svc := NewService(items, profiles, nil)

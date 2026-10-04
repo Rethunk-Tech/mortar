@@ -8,6 +8,8 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -211,9 +213,7 @@ func TestRemoveProfileLeavesStore(t *testing.T) {
 func TestMaterializeFallbackChain(t *testing.T) {
 	src := t.TempDir()
 	dst := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "f.bin"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "f.bin", "x")
 	var seq []string
 	track := func(name string, err error) func(string, string) error {
 		return func(s, d string) error {
@@ -242,9 +242,7 @@ func TestMaterializeFallbackChain(t *testing.T) {
 		t.Fatalf("seq %v", seq)
 	}
 	cfgSrc := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(cfgSrc, "config.json"), []byte("{}"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, cfgSrc, "config.json", "{}")
 	seq = nil
 	if err := MaterializeTreeOps(cfgSrc, t.TempDir(), ops); err != nil {
 		t.Fatal(err)
@@ -289,9 +287,7 @@ func TestEditableTextNeverSharesAnInode(t *testing.T) {
 
 func TestMaterializeFallbackNonFallbackError(t *testing.T) {
 	src := t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(src, "f.bin"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, src, "f.bin", "x")
 	want := errors.New("disk")
 	err := MaterializeTreeOps(src, t.TempDir(), Ops{
 		Tiers:        []Tier{TierClone},

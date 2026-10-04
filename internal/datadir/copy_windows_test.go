@@ -8,17 +8,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestCopyTreeSkipsAJunction(t *testing.T) {
 	src, outside := t.TempDir(), t.TempDir()
-	if err := fsx.WriteFile(filepath.Join(outside, "secret"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(src, "a.txt"), []byte("a"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, outside, "secret", "x")
+	testfs.WriteFile(t, src, "a.txt", "a")
 	junc := filepath.Join(src, "junc")
 	if out, err := exec.CommandContext(t.Context(), "cmd", "/c", "mklink", "/J", junc, outside).CombinedOutput(); err != nil {
 		t.Skipf("junction not permitted: %v %s", err, out)

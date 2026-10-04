@@ -1,9 +1,9 @@
 package problems
 
 import (
-	"os"
-	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // variantPack mirrors DaisyNiko's Tilesheets ("Off" lets the pack detect the recolour) or, with blank, Fish_Pond,
@@ -28,9 +28,7 @@ func variantPack(t *testing.T, current string, blank bool) Installed {
 		"config.json":   `{"Pick":"` + current + `"}`,
 	}
 	for name, body := range files {
-		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, dir, name, body)
 	}
 	return fromDisk(Installed{Key: "tiles", Enabled: true, Folder: dir, UniqueID: "Pack.Tiles", Name: "Tiles"})
 }

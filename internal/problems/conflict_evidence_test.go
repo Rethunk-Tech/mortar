@@ -13,8 +13,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
-
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func TestConflictEvidenceEditImageOverlap(t *testing.T) {
@@ -124,9 +122,7 @@ func imageConflictPack(t *testing.T, id string, x, y, w, h int) Installed {
 	writePNG(t, filepath.Join(root, "patch.png"), img)
 	content := `{"Changes":[{"Action":"EditImage","Target":"TileSheets/crops","FromFile":"patch.png","Priority":"Late","ToArea":{"X":` +
 		strconv.Itoa(x) + `,"Y":` + strconv.Itoa(y) + `,"Width":` + strconv.Itoa(w) + `,"Height":` + strconv.Itoa(h) + `}}]}`
-	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, root, "content.json", content)
 	return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 }
 
@@ -162,9 +158,7 @@ func TestTokenDataKeysDoNotClashAcrossPacks(t *testing.T) {
 		root := t.TempDir()
 		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"Changes":[{"Action":"EditData","Target":"Data/TriggerActions","Entries":{"{{ModId}}_MigrateIds":"` + value + `"}}]}`
-		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, root, "content.json", content)
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
 	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("Mizu.Quail", "a"), pack("Mizu.Turkey", "b")})
@@ -182,9 +176,7 @@ func TestTargetFieldScopesDataKeys(t *testing.T) {
 		root := t.TempDir()
 		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"Changes":[{"Action":"EditData","Target":"Data/Objects","TargetField":["` + item + `"],"Entries":{"Price":"` + id + `"}}]}`
-		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, root, "content.json", content)
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
 	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.One", "301"), pack("B.Two", "302")})
@@ -206,9 +198,7 @@ func TestListAppendsDoNotClash(t *testing.T) {
 		root := t.TempDir()
 		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"Changes":[{"Action":"EditData","Target":"Data/Objects","TargetField":["16","ContextTags"],"Entries":{"#-1":"` + id + `_tag"}}]}`
-		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, root, "content.json", content)
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
 	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.Tags"), pack("B.Tags")})
@@ -226,9 +216,7 @@ func TestTextOverwritesAreShownNotCounted(t *testing.T) {
 		root := t.TempDir()
 		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"Changes":[{"Action":"EditData","Target":"` + target + `","Entries":{"Mon2":"` + id + `"}}]}`
-		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, root, "content.json", content)
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
 	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.Lines", "Characters/Dialogue/Marnie"), pack("B.Lines", "Characters/Dialogue/Marnie")})
@@ -256,13 +244,9 @@ func TestConfigTokenValuesCompareResolved(t *testing.T) {
 		root := t.TempDir()
 		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"ConfigSchema":{"Incubation time":{"Default":"5"}},"Changes":[{"Action":"EditData","Target":"Data/FarmAnimals","TargetField":["Dinosaur"],"Entries":{"IncubationTime":"{{Incubation time}}"}}]}`
-		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteFile(t, root, "content.json", content)
 		if configured != "" {
-			if err := fsx.WriteFile(filepath.Join(root, "config.json"), []byte(`{"Incubation time":"`+configured+`"}`), 0o600); err != nil {
-				t.Fatal(err)
-			}
+			testfs.WriteFile(t, root, "config.json", `{"Incubation time":"`+configured+`"}`)
 		}
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}

@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
@@ -20,13 +22,9 @@ func writeFarm(t *testing.T, saves, folder, farm, body string) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := fsx.WriteFile(filepath.Join(dir, folder), []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, dir, folder, body)
 	info := `<Farmer><name>Ann</name><farmName>` + farm + `</farmName></Farmer>`
-	if err := fsx.WriteFile(filepath.Join(dir, "SaveGameInfo"), []byte(info), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, dir, "SaveGameInfo", info)
 }
 
 func TestSavesRecordsCauseBesideTheZip(t *testing.T) {
