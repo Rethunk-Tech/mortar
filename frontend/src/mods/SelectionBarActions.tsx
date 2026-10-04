@@ -21,8 +21,6 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 
-const noWrap = { whiteSpace: 'nowrap' } as const
-
 export function SelectionBarActions({
   selected,
   profile,
@@ -109,7 +107,6 @@ export function SelectionBarActions({
             disabled={locked}
             startIcon={<Power size={15} />}
             onClick={() => setEnabledMany(selected, true).catch(reportUnexpected)}
-            sx={noWrap}
           >{t`Switch on`}</Button>
           <Button
             size="small"
@@ -117,7 +114,6 @@ export function SelectionBarActions({
             disabled={locked}
             startIcon={<PowerOff size={15} />}
             onClick={() => setEnabledMany(selected, false).catch(reportUnexpected)}
-            sx={noWrap}
           >{t`Switch off`}</Button>
           <Button
             size="small"
@@ -126,7 +122,6 @@ export function SelectionBarActions({
             disabled={locked}
             startIcon={<Trash2 size={15} />}
             onClick={() => askRemove(selected)}
-            sx={noWrap}
           >{t`Remove`}</Button>
         </Box>
       </DisabledReason>

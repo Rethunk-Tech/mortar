@@ -100,7 +100,6 @@ export function Row({
             variant="outlined"
             endIcon={<ExternalLink size={12} />}
             onClick={() => openPage(update.url)}
-            sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Open page`}
           </Button>

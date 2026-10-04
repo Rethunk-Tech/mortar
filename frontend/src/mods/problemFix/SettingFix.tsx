@@ -52,7 +52,7 @@ export function SettingFix({
           color="warning"
           disabled={locked}
           onClick={() => apply(first)}
-          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {label(first)}
         </Button>
@@ -64,7 +64,7 @@ export function SettingFix({
           onClick={() =>
             useMods.getState().restoreDismissed(dismissedToken).catch(reportUnexpected)
           }
-          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Restore`}
         </Button>
@@ -98,7 +98,7 @@ export function SettingFix({
         color="inherit"
         variant="text"
         onClick={() => dismissSetting(setting).catch(reportUnexpected)}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Dismiss`}
       </Button>

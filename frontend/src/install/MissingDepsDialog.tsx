@@ -44,9 +44,7 @@ export function MissingDepsDialog() {
         </DialogContent>
       ) : null}
       <DialogActions>
-        <Button onClick={dismissOffer} sx={{ whiteSpace: 'nowrap' }}>
-          {t`Not now`}
-        </Button>
+        <Button onClick={dismissOffer}>{t`Not now`}</Button>
         {wants.length > 0 ? (
           <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
             <Button
@@ -56,7 +54,6 @@ export function MissingDepsDialog() {
                 download(wants).catch(reportUnexpected)
                 dismissOffer()
               }}
-              sx={{ whiteSpace: 'nowrap' }}
             >
               {t`Add them`}
             </Button>

@@ -112,7 +112,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
       color="warning"
       disabled={locked}
       onClick={onClick}
-      sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      sx={{ flexShrink: 0 }}
     >
       {label}
     </Button>

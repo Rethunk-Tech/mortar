@@ -101,14 +101,13 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
         </RadioGroup>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button variant="outlined" sx={{ whiteSpace: 'nowrap' }} onClick={() => resolve(null)}>
+        <Button variant="outlined" onClick={() => resolve(null)}>
           {t`Decide later`}
         </Button>
         {nexusKey === null || keep !== nexusKey ? (
           <Button
             variant={nexusKey === null ? 'contained' : 'outlined'}
             disabled={locked}
-            sx={{ whiteSpace: 'nowrap' }}
             onClick={() => {
               keepCopy(dup, keep).catch(reportUnexpected)
             }}
@@ -120,7 +119,6 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
           <Button
             variant="contained"
             disabled={locked}
-            sx={{ whiteSpace: 'nowrap' }}
             onClick={() => {
               keepCopy(dup, nexusKey).catch(reportUnexpected)
             }}

@@ -21,7 +21,7 @@ export function ListedFix({
         color="inherit"
         variant="text"
         onClick={() => dismiss(missing.uniqueId).catch(reportUnexpected)}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Dismiss`}
       </Button>

@@ -36,7 +36,7 @@ export function AssetFix({
       color={color}
       disabled={locked}
       onClick={onClick}
-      sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      sx={{ flexShrink: 0 }}
     >
       {label}
     </Button>
@@ -60,7 +60,7 @@ export function AssetFix({
       color="inherit"
       disabled={locked}
       onClick={() => setEnabled(mod, false).catch(reportUnexpected)}
-      sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      sx={{ flexShrink: 0 }}
     >
       {t`Switch off`}
     </Button>
@@ -77,7 +77,7 @@ export function AssetFix({
           color="inherit"
           variant="text"
           onClick={() => restoreDismissed(dismissedToken).catch(reportUnexpected)}
-          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Restore`}
         </Button>
@@ -99,7 +99,7 @@ export function AssetFix({
               dismissAsset(asset).catch(reportUnexpected)
             }
           }}
-          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Dismiss`}
         </Button>

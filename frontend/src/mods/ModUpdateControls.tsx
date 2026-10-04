@@ -9,7 +9,6 @@ import type {
 import { reportUnexpected } from '../toasts/report.ts'
 import { useMods } from './store.ts'
 
-const noWrap = { whiteSpace: 'nowrap' } as const
 const fieldSize = 13
 
 function channelOptions(i18n: I18n) {
@@ -30,7 +29,6 @@ function ModUpdateControls({ mod, entry }: { mod: Mod; entry: Entry | undefined 
       <Button
         variant="outlined"
         onClick={() => setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
-        sx={noWrap}
       >
         {entry?.pinned ? t`Unpin version` : t`Pin version`}
       </Button>

@@ -19,7 +19,6 @@ import { fieldLabel } from './configFields.ts'
 import { type ConfigNode, emptyItem, isKeybind } from './configForm.ts'
 
 const text = { fontSize: 13 } as const
-const noWrap = { whiteSpace: 'nowrap' } as const
 const row = { display: 'flex', alignItems: 'center', gap: 1, minHeight: 36, ...text } as const
 const numberPattern = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/
 
@@ -103,7 +102,6 @@ function Reset({ node, path, onChange }: Omit<FieldProps, 'label' | 'onOpen'>) {
           onChange(path, { ...node, value: fallback })
         }
       }}
-      sx={noWrap}
     >
       {t`Reset`}
     </Button>
@@ -288,7 +286,6 @@ function ListField(p: FieldProps) {
         size="small"
         startIcon={<Plus size={14} />}
         onClick={() => p.onChange(p.path, { kind: 'list', items: [...items, emptyItem(items)] })}
-        sx={noWrap}
       >
         {t`Add`}
       </Button>
@@ -350,7 +347,7 @@ function Field(p: FieldProps) {
 function ReadonlyLabel({ onOpen }: { onOpen: () => void }) {
   const { t } = useLingui()
   return (
-    <Button size="small" variant="outlined" onClick={onOpen} sx={noWrap}>
+    <Button size="small" variant="outlined" onClick={onOpen}>
       {t`Edit as JSON`}
     </Button>
   )

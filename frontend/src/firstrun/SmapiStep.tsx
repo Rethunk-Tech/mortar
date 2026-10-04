@@ -134,18 +134,13 @@ function LaunchLine({
           color="inherit"
           startIcon={<Copy size={16} />}
           onClick={copy}
-          sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Copy`}
         </Button>
       </Box>
       <Box>
-        <Button
-          variant="outlined"
-          disabled={set || writing}
-          onClick={write}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
+        <Button variant="outlined" disabled={set || writing} onClick={write}>
           {t`Set it in Steam for me`}
         </Button>
       </Box>

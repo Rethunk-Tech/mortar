@@ -62,14 +62,13 @@ export function SaveWarnDialog() {
         )}
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
-        <Button onClick={cancel} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
+        <Button onClick={cancel}>{t`Cancel`}</Button>
         {switchTo ? (
           <Button
             onClick={() => {
               useProfiles.getState().open(switchTo)
               cancel()
             }}
-            sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Switch profile`}
           </Button>
@@ -79,20 +78,13 @@ export function SaveWarnDialog() {
             onClick={() => {
               addRecordedMods(warn.game, warn.profile, save).catch(reportUnexpected)
             }}
-            sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Add them`}
           </Button>
         ) : (
-          <Button onClick={useLaunch.getState().openSaves} sx={{ whiteSpace: 'nowrap' }}>
-            {t`Open saves`}
-          </Button>
+          <Button onClick={useLaunch.getState().openSaves}>{t`Open saves`}</Button>
         )}
-        <Button
-          variant="contained"
-          onClick={() => playAnyway().catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
+        <Button variant="contained" onClick={() => playAnyway().catch(reportUnexpected)}>
           {t`Play anyway`}
         </Button>
       </DialogActions>

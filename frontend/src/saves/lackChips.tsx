@@ -108,7 +108,6 @@ export function AddAll({ missing, profile }: { missing: Lack[]; profile: Profile
         startIcon={<Plus size={14} />}
         disabled={pending || locked}
         onClick={() => run(() => download(wants))}
-        sx={nowrap}
       >
         {t`Add all ${wants.length}`}
       </Button>

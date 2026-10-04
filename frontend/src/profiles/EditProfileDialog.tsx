@@ -107,12 +107,10 @@ function CoverField({
               })
               .catch(reportUnexpected)
           }}
-          sx={{ whiteSpace: 'nowrap' }}
         >{t`Choose image…`}</Button>
         <Button
           disabled={!hasPickedCover(profile.cover, staged)}
           onClick={() => onStage(null)}
-          sx={{ whiteSpace: 'nowrap' }}
         >{t`Use default`}</Button>
       </Box>
     </>
@@ -429,14 +427,9 @@ export function EditProfileDialog({
           onOverrides={setOverrides}
         />
         <DialogActions>
-          <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
+          <Button onClick={onClose}>{t`Cancel`}</Button>
           <DisabledReason title={t`Loading game settings…`} disabled={!gameSettingsLoaded}>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={busy || !gameSettingsLoaded}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
+            <Button type="submit" variant="contained" disabled={busy || !gameSettingsLoaded}>
               {t`Save`}
             </Button>
           </DisabledReason>

@@ -103,7 +103,7 @@ function RecentRow({
           size="small"
           disabled={thisBusy || otherBusy}
           onClick={() => onUndo(ev.profileId, ev.id)}
-          sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Undo this change`}
         </Button>

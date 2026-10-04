@@ -34,7 +34,7 @@ function MortarUpdate() {
       <Alert
         severity="error"
         action={
-          <Button color="inherit" size="small" onClick={read} sx={{ whiteSpace: 'nowrap' }}>
+          <Button color="inherit" size="small" onClick={read}>
             {t`Retry`}
           </Button>
         }

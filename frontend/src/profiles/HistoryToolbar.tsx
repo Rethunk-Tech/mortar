@@ -13,10 +13,10 @@ export function HistoryToolbar({
   const { t } = useLingui()
   return (
     <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
-      <Button size="small" disabled={busy} onClick={onMark} sx={{ whiteSpace: 'nowrap' }}>
+      <Button size="small" disabled={busy} onClick={onMark}>
         {t`Mark known good`}
       </Button>
-      <Button size="small" disabled={busy} onClick={onRestore} sx={{ whiteSpace: 'nowrap' }}>
+      <Button size="small" disabled={busy} onClick={onRestore}>
         {t`Restore last known good`}
       </Button>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', alignSelf: 'center' }}>

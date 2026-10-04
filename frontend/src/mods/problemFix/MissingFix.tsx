@@ -31,7 +31,7 @@ export function MissingFix({
           color="inherit"
           variant="text"
           onClick={() => restoreDismissed(dismissedToken).catch(reportUnexpected)}
-          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Restore`}
         </Button>

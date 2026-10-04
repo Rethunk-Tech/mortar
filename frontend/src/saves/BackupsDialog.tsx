@@ -32,8 +32,6 @@ import { usePending } from '../toasts/usePending.ts'
 import { useSaveBackups } from './backups.ts'
 import { useSaves } from './store.ts'
 
-const nowrap = { whiteSpace: 'nowrap' } as const
-
 function overwriteMessage(snaps: Snap[], have: Set<string>): string {
   const names = snaps.map((s) => s.farm || s.folder)
   const hit = snaps.filter((s) => have.has(s.folder)).map((s) => s.farm || s.folder)
@@ -153,7 +151,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
               <Typography sx={{ fontSize: 13, color: 'error.main' }}>
                 {t`Could not list backups: ${error}`}
               </Typography>
-              <Button size="small" sx={nowrap} onClick={() => load().catch(reportUnexpected)}>
+              <Button size="small" onClick={() => load().catch(reportUnexpected)}>
                 {t`Retry`}
               </Button>
             </Box>
@@ -190,13 +188,10 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
             onClick={() => {
               openFolder().catch(reportUnexpected)
             }}
-            sx={nowrap}
           >
             {t`Open backups folder`}
           </Button>
-          <Button onClick={onClose} sx={nowrap}>
-            {t`Close`}
-          </Button>
+          <Button onClick={onClose}>{t`Close`}</Button>
         </DialogActions>
       </Dialog>
       <Menu

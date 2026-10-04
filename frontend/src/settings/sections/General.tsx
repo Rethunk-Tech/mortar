@@ -28,7 +28,6 @@ import { ImportSettingsDialog } from './DataImport.tsx'
 
 const maxLanPort = 65_535
 const defaultLanPort = 8080
-const nowrap = { whiteSpace: 'nowrap' } as const
 
 function useReportFailure() {
   const { t } = useLingui()
@@ -242,7 +241,6 @@ function SettingsFile() {
             variant="outlined"
             onClick={() => ExportSettings().catch(reportUnexpected)}
             startIcon={<Download size={16} />}
-            sx={nowrap}
           >
             {t`Export…`}
           </Button>
@@ -258,7 +256,6 @@ function SettingsFile() {
                 .catch(reportUnexpected)
             }}
             startIcon={<Upload size={16} />}
-            sx={nowrap}
           >
             {t`Import…`}
           </Button>

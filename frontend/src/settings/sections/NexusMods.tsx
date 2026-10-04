@@ -138,7 +138,6 @@ function NexusModsSignedIn({
                   )
                   .catch(reportUnexpected)
               }}
-              sx={{ whiteSpace: 'nowrap' }}
             >
               {t`Sign out`}
             </Button>
@@ -163,13 +162,11 @@ function NexusModsSignedIn({
               variant="outlined"
               disabled={untrackOff}
               onClick={() => setConfirming(true)}
-              sx={{ whiteSpace: 'nowrap' }}
             >{t`Untrack unused…`}</Button>
             <Button
               variant="outlined"
               disabled={untrackOff}
               onClick={() => setConfirming(false)}
-              sx={{ whiteSpace: 'nowrap' }}
             >{t`Untrack all…`}</Button>
           </Box>
         </SettingRow>

@@ -33,7 +33,7 @@ export function HistoryEventRow({
     <ListItem
       disableGutters={true}
       secondaryAction={
-        <Button size="small" sx={{ whiteSpace: 'nowrap' }} disabled={busy} onClick={onUndo}>
+        <Button size="small" disabled={busy} onClick={onUndo}>
           {t`Restore ${label}`}
         </Button>
       }
@@ -54,12 +54,7 @@ export function HistoryEventRow({
             {(items ?? []).map((item) => (
               <Box key={`${item.kind}:${item.mod}:${item.file ?? ''}`} sx={{ mt: 0.5 }}>
                 {item.detail}{' '}
-                <Button
-                  size="small"
-                  disabled={busy}
-                  onClick={() => onRevertItem(itemModKey(item))}
-                  sx={{ whiteSpace: 'nowrap' }}
-                >
+                <Button size="small" disabled={busy} onClick={() => onRevertItem(itemModKey(item))}>
                   {t`Restore ${label}`}
                 </Button>
               </Box>

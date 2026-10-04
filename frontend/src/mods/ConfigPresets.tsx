@@ -16,7 +16,6 @@ import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useLocked } from './useLocked.ts'
 
-const noWrap = { whiteSpace: 'nowrap' } as const
 const maxPresetName = 40
 
 function openTarget() {
@@ -95,7 +94,6 @@ function PresetsButton({ mod }: { mod: Mod }) {
           setAnchor(e.currentTarget)
           load()
         }}
-        sx={noWrap}
       >
         {t`Presets`}
       </Button>

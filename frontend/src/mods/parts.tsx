@@ -290,7 +290,6 @@ export function ShowFilesButton({ mod }: { mod: Mod }) {
   return (
     <Button
       variant="outlined"
-      sx={{ whiteSpace: 'nowrap' }}
       onClick={() => {
         showFiles(mod).catch(reportUnexpected)
       }}
@@ -306,13 +305,7 @@ export function RemoveButton({ mod }: { mod: Mod }) {
   const locked = useLocked()
   return (
     <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-      <Button
-        variant="outlined"
-        color="error"
-        disabled={locked}
-        sx={{ whiteSpace: 'nowrap' }}
-        onClick={() => askRemove(mod)}
-      >
+      <Button variant="outlined" color="error" disabled={locked} onClick={() => askRemove(mod)}>
         {t`Remove`}
       </Button>
     </DisabledReason>

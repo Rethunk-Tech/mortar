@@ -66,7 +66,7 @@ export function LoaderBanner({ game }: { game: string }) {
             startIcon={<Download size={16} />}
             disabled={pending || playing}
             onClick={() => install(game)}
-            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+            sx={{ flexShrink: 0 }}
           >
             {action}
           </Button>

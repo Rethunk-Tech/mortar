@@ -168,7 +168,6 @@ function Overlay({ game }: { game: string }) {
             setTab('console')
             hide()
           }}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Open console`}
         </Button>
@@ -212,7 +211,7 @@ function LaunchLine({ line }: { line: string }) {
             reportUnexpected,
           )
         }}
-        sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Copy`}
       </Button>

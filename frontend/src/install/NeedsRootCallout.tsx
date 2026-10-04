@@ -31,7 +31,6 @@ export function NeedsRootCallout({ item }: { item: Item }) {
           variant="outlined"
           color="inherit"
           onClick={() => Skip(item.id).catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Skip`}
         </Button>

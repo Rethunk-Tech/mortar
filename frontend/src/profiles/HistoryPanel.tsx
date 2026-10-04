@@ -116,9 +116,7 @@ export function HistoryPanel({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>
-          {t`Close`}
-        </Button>
+        <Button onClick={onClose}>{t`Close`}</Button>
       </DialogActions>
     </Dialog>
   )

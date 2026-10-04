@@ -33,7 +33,7 @@ import { SmapiRow } from './SmapiRow.tsx'
 
 const GAME = 'stardew'
 
-const nowrap = { whiteSpace: 'nowrap', flexShrink: 0 }
+const noShrink = { flexShrink: 0 }
 
 function StoreLabel({ store }: { store: string }) {
   const { t } = useLingui()
@@ -180,7 +180,7 @@ function GameFolder({
               variant="outlined"
               startIcon={<FolderOpen size={16} />}
               onClick={() => change(ChooseGameFolder(GAME))}
-              sx={nowrap}
+              sx={noShrink}
             >
               {t`Change folder…`}
             </Button>
@@ -189,7 +189,7 @@ function GameFolder({
                 variant="outlined"
                 startIcon={<Undo2 size={16} />}
                 onClick={() => change(SetGameFolder(GAME, ''))}
-                sx={nowrap}
+                sx={noShrink}
               >
                 {t`Use default`}
               </Button>
@@ -231,7 +231,7 @@ function GameFolder({
             color="error"
             disabled={resetting || !folder}
             onClick={() => setResetting(true)}
-            sx={nowrap}
+            sx={noShrink}
           >
             {t`Reset…`}
           </Button>
@@ -323,7 +323,7 @@ function BackupsPage() {
         prefKey="backupLocation"
         game={GAME}
         extra={
-          <Button variant="outlined" onClick={chooseBackupLocation} sx={nowrap}>
+          <Button variant="outlined" onClick={chooseBackupLocation} sx={noShrink}>
             {t`Change folder…`}
           </Button>
         }

@@ -65,11 +65,11 @@ export function FlatpakGrant() {
                 reportUnexpected,
               )
             }}
-            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+            sx={{ flexShrink: 0 }}
           >
             {t`Copy`}
           </Button>
-          <Button variant="contained" onClick={() => setAsk(true)} sx={{ whiteSpace: 'nowrap' }}>
+          <Button variant="contained" onClick={() => setAsk(true)}>
             {t`Grant access…`}
           </Button>
         </Box>

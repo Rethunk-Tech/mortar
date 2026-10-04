@@ -272,7 +272,7 @@ function ReinstallLoader({ game }: { game: string }) {
           startIcon={<Download size={16} />}
           disabled={pending || installing || playing}
           onClick={() => install(game)}
-          sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Reinstall`}
         </Button>

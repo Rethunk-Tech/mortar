@@ -124,7 +124,6 @@ function Click({ item }: { item: Item }) {
             variant="contained"
             disabled={pending}
             onClick={() => run(() => OpenPage(item.id))}
-            sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Open download page`}
           </Button>
@@ -141,7 +140,6 @@ function SkipButton({ item }: { item: Item }) {
       variant="outlined"
       color="inherit"
       onClick={() => Skip(item.id).catch(reportUnexpected)}
-      sx={{ whiteSpace: 'nowrap' }}
     >
       {t`Skip`}
     </Button>
@@ -188,7 +186,6 @@ function Confirmation({ item }: { item: Item }) {
             variant="contained"
             disabled={pending}
             onClick={() => run(() => Confirm(item.id))}
-            sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Install anyway`}
           </Button>
@@ -241,7 +238,6 @@ function Failed({ items }: { items: Item[] }) {
                 size="small"
                 startIcon={<RotateCcw size={14} />}
                 onClick={() => Retry(i.id).catch(reportUnexpected)}
-                sx={{ whiteSpace: 'nowrap' }}
               >
                 {t`Retry`}
               </Button>
@@ -306,17 +302,12 @@ function NextActions({ item }: { item: Item }) {
         {t`Skip every waiting download`}
       </Typography>
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <Button
-          size="small"
-          onClick={() => SkipAll().catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
+        <Button size="small" onClick={() => SkipAll().catch(reportUnexpected)}>
           {t`Skip all`}
         </Button>
         <Button
           size="small"
           onClick={() => SkipProfile(item.game, item.profileId).catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Skip this profile`}
         </Button>

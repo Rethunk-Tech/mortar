@@ -199,7 +199,7 @@ function VersionRow({
         variant="outlined"
         disabled={pending}
         onClick={() => onCopy(profileA, profileB, row.uniqueId)}
-        sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Use ${profileA.name}'s version in ${profileB.name}`}
       </Button>
@@ -208,7 +208,7 @@ function VersionRow({
         variant="outlined"
         disabled={pending}
         onClick={() => onCopy(profileB, profileA, row.uniqueId)}
-        sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Use ${profileB.name}'s version in ${profileA.name}`}
       </Button>

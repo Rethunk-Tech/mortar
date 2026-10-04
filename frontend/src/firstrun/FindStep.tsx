@@ -206,7 +206,6 @@ export function FindStep({
               color="inherit"
               startIcon={<RefreshCw size={15} />}
               onClick={refresh}
-              sx={{ whiteSpace: 'nowrap' }}
             >
               {t`Rescan`}
             </Button>

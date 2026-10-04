@@ -259,7 +259,6 @@ export function CrashDialog() {
                 openRun(crash, true)
                 dismiss()
               }}
-              sx={{ whiteSpace: 'nowrap' }}
             >
               {t`Open console`}
             </Button>

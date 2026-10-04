@@ -156,7 +156,7 @@ export function GameModsDialog({
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={busy} sx={{ whiteSpace: 'nowrap' }}>
+        <Button onClick={onClose} disabled={busy}>
           {t`Cancel`}
         </Button>
         <DisabledReason title={t`Nothing to import`} disabled={previewing || importable === 0}>
@@ -164,7 +164,6 @@ export function GameModsDialog({
             variant="contained"
             disabled={busy || previewing || importable === 0 || error !== ''}
             onClick={() => importMods().catch(reportUnexpected)}
-            sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Import`}
           </Button>

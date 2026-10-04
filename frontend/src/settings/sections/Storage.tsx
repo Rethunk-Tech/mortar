@@ -75,7 +75,7 @@ export function Storage() {
           sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2.5, py: 1.5, fontSize: 15 }}
         >
           {t`Could not measure disk use`}
-          <Button variant="outlined" onClick={restart} sx={{ whiteSpace: 'nowrap' }}>
+          <Button variant="outlined" onClick={restart}>
             {t`Retry`}
           </Button>
         </Box>

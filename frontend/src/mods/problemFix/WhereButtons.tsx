@@ -22,7 +22,7 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
       color="warning"
       variant="outlined"
       onClick={() => openPage(url)}
-      sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+      sx={{ flexShrink: 0 }}
     >
       {t`Open page`}
     </Button>
@@ -54,7 +54,7 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
         color="warning"
         disabled={queued}
         onClick={() => download([want]).catch(reportUnexpected)}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {queued ? t`Queued` : (addLabel ?? '')}
       </Button>

@@ -14,8 +14,6 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { isAbstained, isEndorsed, isTracked, type TrackedMod } from './nexusAccount.ts'
 
-const noWrap = { whiteSpace: 'nowrap', textTransform: 'none' } as const
-
 export function NexusAccountActions({
   modId,
   version,
@@ -80,7 +78,6 @@ export function NexusAccountActions({
             { errorTitle: t`Could not endorse` },
           )
         }
-        sx={noWrap}
       >
         {t`Endorse`}
       </Button>
@@ -97,7 +94,6 @@ export function NexusAccountActions({
             { errorTitle: t`Could not abstain` },
           )
         }
-        sx={noWrap}
       >
         {t`Abstain`}
       </Button>
@@ -116,7 +112,6 @@ export function NexusAccountActions({
               { errorTitle: t`Could not untrack` },
             )
           }
-          sx={noWrap}
         >
           {t`Untrack`}
         </Button>
@@ -138,7 +133,6 @@ export function NexusAccountActions({
               { errorTitle: t`Could not track` },
             )
           }
-          sx={noWrap}
         >
           {t`Track`}
         </Button>

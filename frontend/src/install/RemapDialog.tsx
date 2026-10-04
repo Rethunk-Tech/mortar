@@ -176,14 +176,11 @@ function RemapBody() {
         </List>
       </DialogContent>
       <DialogActions>
-        <Button onClick={close} sx={{ whiteSpace: 'nowrap' }}>
-          {t`Cancel`}
-        </Button>
+        <Button onClick={close}>{t`Cancel`}</Button>
         <Button
           variant="contained"
           disabled={!dir || selected === ''}
           onClick={() => choose(selected)}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Use this folder`}
         </Button>

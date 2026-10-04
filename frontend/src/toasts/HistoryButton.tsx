@@ -59,12 +59,7 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
       {action ? (
         <Tooltip title={state.disabled ? (state.reason ?? '') : ''}>
           <span>
-            <Button
-              size="small"
-              disabled={state.disabled}
-              onClick={run}
-              sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
-            >
+            <Button size="small" disabled={state.disabled} onClick={run} sx={{ flexShrink: 0 }}>
               {action.label}
             </Button>
           </span>
@@ -123,12 +118,7 @@ function HistoryPopover({
         }}
       >
         <Typography sx={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{t`Notifications`}</Typography>
-        <Button
-          size="small"
-          onClick={onClear}
-          disabled={history.length === 0}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
+        <Button size="small" onClick={onClear} disabled={history.length === 0}>
           {t`Clear`}
         </Button>
       </Box>

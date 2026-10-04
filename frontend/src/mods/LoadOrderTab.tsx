@@ -179,7 +179,6 @@ function OrderList({
               reportUnexpected,
             )
           }}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Copy load order`}
         </Button>

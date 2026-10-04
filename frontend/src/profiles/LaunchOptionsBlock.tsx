@@ -108,12 +108,10 @@ function LaunchPresetBar({
             }
             savePreset()
           }}
-          sx={{ whiteSpace: 'nowrap' }}
         >{t`Save as preset`}</Button>
         <Button
           disabled={!(gameId && selected)}
           onClick={() => setRemoving(true)}
-          sx={{ whiteSpace: 'nowrap' }}
         >{t`Remove preset`}</Button>
       </Box>
       <ConfirmDialog
@@ -204,7 +202,6 @@ function TestLaunchRow({
             .catch(reportUnexpected)
             .finally(() => setBusy(false))
         }}
-        sx={{ whiteSpace: 'nowrap' }}
       >{t`Test launch`}</Button>
       <Typography
         sx={{ fontSize: 13, color: 'text.secondary' }}

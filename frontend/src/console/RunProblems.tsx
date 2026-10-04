@@ -155,7 +155,7 @@ function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: 
             color="warning"
             disabled={locked}
             onClick={run}
-            sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+            sx={{ flexShrink: 0 }}
           >
             {label}
           </Button>
@@ -234,7 +234,6 @@ export function RunProblemsStrip({
             onClick={() =>
               Promise.all(bulk.map((problem) => applyFix(i18n, problem))).catch(reportUnexpected)
             }
-            sx={{ height: 28, whiteSpace: 'nowrap' }}
           >
             {t`Fix all`}
           </Button>

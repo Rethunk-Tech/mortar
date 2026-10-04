@@ -39,7 +39,7 @@ function StatusLine({
         <Typography sx={{ fontSize: 13, color: 'error.main' }} title={errorDetails(status.message)}>
           {errorMessage(status.message)}
         </Typography>
-        <Button size="small" onClick={onRetry} sx={{ whiteSpace: 'nowrap' }}>
+        <Button size="small" onClick={onRetry}>
           {t`Retry`}
         </Button>
       </Box>

@@ -65,7 +65,6 @@ export function UpdateActions({
           variant="contained"
           disabled={blocked}
           onClick={() => download([updateWant(update)]).catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {queued ? t`Queued` : t`Update`}
         </Button>

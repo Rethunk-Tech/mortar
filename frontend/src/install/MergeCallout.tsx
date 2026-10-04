@@ -22,7 +22,6 @@ export function MergeCallout({ item }: { item: Item }) {
       variant={addFirst ? 'contained' : 'outlined'}
       disabled={pending}
       onClick={() => run(() => AnswerMerge(item.id, true))}
-      sx={{ whiteSpace: 'nowrap' }}
     >
       {t`Install together`}
     </Button>
@@ -32,7 +31,6 @@ export function MergeCallout({ item }: { item: Item }) {
       variant={addFirst ? 'outlined' : 'contained'}
       disabled={pending}
       onClick={() => run(() => AnswerMerge(item.id, false))}
-      sx={{ whiteSpace: 'nowrap' }}
     >
       {t`Install separately`}
     </Button>
@@ -49,7 +47,6 @@ export function MergeCallout({ item }: { item: Item }) {
           variant="outlined"
           color="inherit"
           onClick={() => Skip(item.id).catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Skip`}
         </Button>

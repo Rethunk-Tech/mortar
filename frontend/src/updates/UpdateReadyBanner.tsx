@@ -25,7 +25,6 @@ export function UpdateReadyBanner() {
           size="small"
           startIcon={<RotateCcw size={16} />}
           onClick={() => restart().catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Restart now`}
         </Button>

@@ -44,7 +44,7 @@ export function WhatsNewDialog() {
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" onClick={close} sx={{ whiteSpace: 'nowrap' }}>
+        <Button variant="contained" onClick={close}>
           {t`Got it`}
         </Button>
       </DialogActions>

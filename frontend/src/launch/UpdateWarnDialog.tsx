@@ -44,13 +44,9 @@ export function UpdateWarnDialog() {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={cancel} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
-        <Button onClick={openProblems} sx={{ whiteSpace: 'nowrap' }}>{t`Open problems…`}</Button>
-        <Button
-          variant="contained"
-          onClick={() => playAnyway().catch(reportUnexpected)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
+        <Button onClick={cancel}>{t`Cancel`}</Button>
+        <Button onClick={openProblems}>{t`Open problems…`}</Button>
+        <Button variant="contained" onClick={() => playAnyway().catch(reportUnexpected)}>
           {t`Play anyway`}
         </Button>
       </DialogActions>

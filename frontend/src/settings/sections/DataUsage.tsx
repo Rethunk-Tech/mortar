@@ -282,7 +282,6 @@ export function Location({
             variant="outlined"
             startIcon={<FolderOpen size={16} />}
             onClick={() => OpenDataFolder().catch(reportUnexpected)}
-            sx={nowrap}
           >
             {t`Open folder`}
           </Button>

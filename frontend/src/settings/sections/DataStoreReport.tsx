@@ -373,7 +373,7 @@ function CleanupDialog({
             sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1.5, fontSize: 15 }}
           >
             {t`Could not load what can be cleaned up`}
-            <Button variant="outlined" onClick={load} sx={nowrap}>
+            <Button variant="outlined" onClick={load}>
               {t`Retry`}
             </Button>
           </Box>
@@ -391,15 +391,12 @@ function CleanupDialog({
         <Box sx={{ flex: 1, pl: 1, fontSize: 15 }}>
           {picked.size > 0 ? t`${picked.size} selected · ${formatBytes(bytes)}` : ''}
         </Box>
-        <Button onClick={close} sx={nowrap}>
-          {t`Close`}
-        </Button>
+        <Button onClick={close}>{t`Close`}</Button>
         <Button
           variant="contained"
           color="error"
           disabled={picked.size === 0}
           onClick={() => setConfirm(true)}
-          sx={nowrap}
         >
           {t`Remove`}
         </Button>

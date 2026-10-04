@@ -50,7 +50,7 @@ export function UpdateBar() {
         size="small"
         variant="contained"
         onClick={() => setReviewing(true)}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Review`}
       </Button>

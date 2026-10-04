@@ -132,7 +132,7 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
                 startIcon={<Download size={16} />}
                 disabled={locked || status === null}
                 onClick={() => (action.confirm ? setConfirm(true) : run())}
-                sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+                sx={{ flexShrink: 0 }}
               >
                 {labels[action.kind]}
               </Button>

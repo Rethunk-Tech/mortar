@@ -337,7 +337,7 @@ function OverlayConnection({
             }}
             sx={{ width: 240 }}
           />
-          <Button variant="outlined" onClick={() => setConfirm(true)} sx={{ whiteSpace: 'nowrap' }}>
+          <Button variant="outlined" onClick={() => setConfirm(true)}>
             {t`Regenerate…`}
           </Button>
         </Box>

@@ -185,7 +185,6 @@ function PanelHeader(props: HeaderProps) {
           startIcon={<Play size={14} />}
           disabled={!running || busy !== '' || measuring}
           onClick={onStart}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {measuring ? t`Measuring` : t`Start measuring`}
         </Button>
@@ -200,7 +199,6 @@ function PanelHeader(props: HeaderProps) {
           startIcon={<RefreshCw size={14} />}
           disabled={!running || busy !== '' || !measuring}
           onClick={onReport}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Show report`}
         </Button>
@@ -213,7 +211,6 @@ function PanelHeader(props: HeaderProps) {
           startIcon={<Copy size={14} />}
           disabled={!hasReport}
           onClick={onCopy}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Copy report`}
         </Button>

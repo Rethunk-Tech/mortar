@@ -61,7 +61,7 @@ export function RunErrorButtons({
         color="warning"
         variant="outlined"
         onClick={openHelp}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Show in log`}
       </Button>

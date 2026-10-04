@@ -39,7 +39,7 @@ export function DismissedBrokenFix({
         color="warning"
         variant="contained"
         onClick={() => openPage(replacement.url ?? '')}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Open replacement`}
       </Button>
@@ -60,7 +60,7 @@ export function DismissedBrokenFix({
         color="inherit"
         variant="text"
         onClick={() => restoreDismissed(dismissedToken).catch(reportUnexpected)}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Restore`}
       </Button>

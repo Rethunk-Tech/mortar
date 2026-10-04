@@ -36,7 +36,7 @@ export function BrokenFix({
           color="warning"
           variant="outlined"
           onClick={() => openPage(where.url)}
-          sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Open replacement`}
         </Button>
@@ -50,7 +50,7 @@ export function BrokenFix({
         color="warning"
         variant="contained"
         onClick={() => openPage(where.url)}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Open page`}
       </Button>
@@ -65,7 +65,7 @@ export function BrokenFix({
         color="inherit"
         variant="text"
         onClick={() => dismissAbandoned(broken.uniqueId).catch(reportUnexpected)}
-        sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+        sx={{ flexShrink: 0 }}
       >
         {t`Dismiss`}
       </Button>

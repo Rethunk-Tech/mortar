@@ -110,7 +110,7 @@ function Versions({
           <Typography sx={{ flex: 1, ...text }}>
             {t`${state.previousVersion} · kept for rollback`}
           </Typography>
-          <Button size="small" variant="outlined" disabled={locked} onClick={ask} sx={noWrap}>
+          <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
             {t`Roll back`}
           </Button>
         </Box>
@@ -149,11 +149,10 @@ function Settings({
               size="small"
               variant="outlined"
               onClick={() => openConfig(mod).catch(reportUnexpected)}
-              sx={noWrap}
             >
               {t`Open`}
             </Button>
-            <Button size="small" variant="outlined" disabled={locked} onClick={ask} sx={noWrap}>
+            <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
               {t`Reset`}
             </Button>
           </>

@@ -211,15 +211,14 @@ function UpdateBanner({ mod }: { mod: Mod }) {
           size="small"
           variant="outlined"
           onClick={() => setSkipVersion(mod, official.version).catch(reportUnexpected)}
-          sx={noWrap}
         >
           {t`Skip this update`}
         </Button>
       ) : null}
-      <Button size="small" variant="contained" onClick={() => setReviewing(true)} sx={noWrap}>
+      <Button size="small" variant="contained" onClick={() => setReviewing(true)}>
         {t`Update`}
       </Button>
-      <Button size="small" variant="outlined" onClick={() => setReviewing(true)} sx={noWrap}>
+      <Button size="small" variant="outlined" onClick={() => setReviewing(true)}>
         {t`Update in all profiles that have it`}
       </Button>
     </Box>
@@ -260,7 +259,6 @@ function LastRunLine({ mod, profile }: { mod: Mod; profile: Profile }) {
         size="small"
         variant="outlined"
         onClick={() => showLastRunInConsole(game, profile.id, mod)}
-        sx={noWrap}
       >
         {t`Show in Console`}
       </Button>
@@ -367,11 +365,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       <Field label={t`Version`} value={mod.version} />
       <ModUpdateControls mod={mod} entry={entry} />
       {entry?.skipVersion && !offered ? (
-        <Button
-          variant="outlined"
-          onClick={() => setSkipVersion(mod, '').catch(reportUnexpected)}
-          sx={noWrap}
-        >
+        <Button variant="outlined" onClick={() => setSkipVersion(mod, '').catch(reportUnexpected)}>
           {t`Show skipped update`}
         </Button>
       ) : null}
@@ -380,7 +374,6 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
           key={ignoredSource}
           variant="outlined"
           onClick={() => setSkipSource(mod, ignoredSource, false).catch(reportUnexpected)}
-          sx={noWrap}
         >
           {t`Stop ignoring ${ignoredSource} updates`}
         </Button>
@@ -398,7 +391,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         />
       ) : null}
       <UpdateBanner mod={mod} />
-      <Button variant="outlined" onClick={() => setAlsoOpen(true)} sx={noWrap}>
+      <Button variant="outlined" onClick={() => setAlsoOpen(true)}>
         {t`Also add to…`}
       </Button>
       <OtherProfilesDialog
@@ -431,7 +424,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         </Box>
       ) : null}
       <Box sx={{ flexGrow: 1 }} />
-      <Button variant="contained" onClick={() => setOpen(true)} sx={noWrap}>
+      <Button variant="contained" onClick={() => setOpen(true)}>
         {t`More details`}
       </Button>
       <Box

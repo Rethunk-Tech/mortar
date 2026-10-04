@@ -35,10 +35,10 @@ export function HistoryDiffView({
         </Box>
       )}
       <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
-        <Button size="small" disabled={busy} onClick={onRestoreA} sx={{ whiteSpace: 'nowrap' }}>
+        <Button size="small" disabled={busy} onClick={onRestoreA}>
           {t`Restore ${aLabel}`}
         </Button>
-        <Button size="small" disabled={busy} onClick={onRestoreB} sx={{ whiteSpace: 'nowrap' }}>
+        <Button size="small" disabled={busy} onClick={onRestoreB}>
           {t`Restore ${bLabel}`}
         </Button>
       </Box>

@@ -14,8 +14,6 @@ import { filterAndSortSaves } from './filterAndSortSaves.ts'
 import { SaveRow } from './SaveRow.tsx'
 import { useSaves } from './store.ts'
 
-const nowrap = { whiteSpace: 'nowrap' } as const
-
 export function SavesTab({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
   const { fits, status, error: detail, load } = useSaves()
@@ -32,7 +30,6 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
         </Typography>
         <Button
           size="small"
-          sx={nowrap}
           onClick={() => {
             load(game, profile.id, String(profile.updated)).catch(reportUnexpected)
           }}
@@ -52,7 +49,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   } else if (shown.length === 0 && query.trim() !== '') {
     body = (
       <EmptyState icon={<Search size={40} aria-hidden={true} />} title={t`No saves match`}>
-        <Button size="small" onClick={() => setQuery('')} sx={nowrap}>
+        <Button size="small" onClick={() => setQuery('')}>
           {t`Clear filter`}
         </Button>
       </EmptyState>
@@ -73,12 +70,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
           />
         )}
         <Box sx={{ flex: 1 }} />
-        <Button
-          size="small"
-          startIcon={<History size={14} />}
-          onClick={() => setBackupsOpen(true)}
-          sx={nowrap}
-        >
+        <Button size="small" startIcon={<History size={14} />} onClick={() => setBackupsOpen(true)}>
           {t`Save backups…`}
         </Button>
       </Box>

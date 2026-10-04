@@ -48,7 +48,7 @@ export function CompareDiffRow({
           variant="outlined"
           disabled={pending}
           onClick={copyToB}
-          sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Copy to ${bName}`}
         </Button>
@@ -59,7 +59,7 @@ export function CompareDiffRow({
           variant="outlined"
           disabled={pending}
           onClick={copyToA}
-          sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {t`Copy to ${aName}`}
         </Button>

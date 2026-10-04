@@ -33,7 +33,6 @@ import { useGmcmMenu } from './useGmcmMenu.ts'
 import { useLocked } from './useLocked.ts'
 
 const text = { fontSize: 13 } as const
-const noWrap = { whiteSpace: 'nowrap' } as const
 const cpFor = 'Pathoschild.ContentPatcher'
 
 function openTarget() {
@@ -253,9 +252,9 @@ function EditorDialog({
         </DialogContent>
         <DialogActions>
           {saved ? <Typography sx={{ mr: 'auto', ...text }}>{t`Saved`}</Typography> : null}
-          <Button onClick={onClose} sx={noWrap}>{t`Close`}</Button>
+          <Button onClick={onClose}>{t`Close`}</Button>
           <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-            <Button onClick={onSave} disabled={locked || (tab === 1 && !tree)} sx={noWrap}>
+            <Button onClick={onSave} disabled={locked || (tab === 1 && !tree)}>
               {t`Save`}
             </Button>
           </DisabledReason>
@@ -335,7 +334,6 @@ function EditConfigButton({ mod }: { mod: Mod }) {
         variant="outlined"
         startIcon={<Pencil size={14} />}
         onClick={() => setOpen(true)}
-        sx={noWrap}
       >
         {t`Edit…`}
       </Button>

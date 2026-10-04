@@ -126,19 +126,10 @@ export function PrePlayDialog() {
         />
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
-        <Button
-          onClick={() => persistThen(cancel)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >{t`Cancel`}</Button>
-        <Button
-          onClick={() => persistThen(openProblems)}
-          sx={{ whiteSpace: 'nowrap' }}
-        >{t`Open problems…`}</Button>
+        <Button onClick={() => persistThen(cancel)}>{t`Cancel`}</Button>
+        <Button onClick={() => persistThen(openProblems)}>{t`Open problems…`}</Button>
         {hasUpdates ? (
-          <Button
-            onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
+          <Button onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}>
             {t`Update and play`}
           </Button>
         ) : null}
@@ -150,7 +141,6 @@ export function PrePlayDialog() {
                 cancel()
               })
             }
-            sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Switch profile`}
           </Button>
@@ -164,7 +154,6 @@ export function PrePlayDialog() {
                   .catch(reportUnexpected)
               })
             }
-            sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Add them`}
           </Button>
@@ -172,7 +161,6 @@ export function PrePlayDialog() {
         <Button
           variant="contained"
           onClick={() => persistThen(() => playAnyway().catch(reportUnexpected))}
-          sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Play anyway`}
         </Button>

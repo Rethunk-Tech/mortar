@@ -67,8 +67,25 @@ function ToastCard({ toast }: { toast: Toast }) {
   }
   return (
     <Box
+      // Pointer or keyboard focus inside the toast keeps it up; it times out again only once both have left.
       onMouseEnter={() => hold(toast.id)}
-      onMouseLeave={() => release(toast.id)}
+      onMouseLeave={(e) => {
+        if (!e.currentTarget.contains(document.activeElement)) {
+          release(toast.id)
+        }
+      }}
+      onFocus={() => hold(toast.id)}
+      onBlur={(e) => {
+        const into = e.relatedTarget
+        if (
+          !(
+            (into instanceof Node && e.currentTarget.contains(into)) ||
+            e.currentTarget.matches(':hover')
+          )
+        ) {
+          release(toast.id)
+        }
+      }}
       role={toast.kind === 'error' || toast.kind === 'warning' ? 'alert' : 'status'}
       sx={{
         display: 'flex',
