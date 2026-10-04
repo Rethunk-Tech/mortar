@@ -4,7 +4,7 @@ import { Settings2, Share2 } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
-import { PerformancePanel } from '../console/PerformancePanel.tsx'
+import { PerformanceTab } from '../console/PerformanceTab.tsx'
 import { LoadOrderTab } from '../mods/LoadOrderTab.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
@@ -136,7 +136,7 @@ export function ProfileWorkspace({
       </Box>
       <ErrorBoundary resetKey={`${tab}-${profile.id}`}>
         {tab === 'console' ? <ConsoleTab game={game} /> : null}
-        {tab === 'performance' ? <PerformancePanel game={game} /> : null}
+        {tab === 'performance' ? <PerformanceTab game={game} /> : null}
         {tab === 'notes' ? <NotesTab key={`notes-${profile.id}`} profile={profile} /> : null}
         {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
         {tab === 'browse' ? (
