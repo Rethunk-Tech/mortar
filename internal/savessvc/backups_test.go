@@ -162,6 +162,22 @@ func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) 
 	if zips != 1 {
 		t.Fatalf("custom dir %v", names)
 	}
+	if err := s.SetBackupPinned(old[0].Name, true); err != nil {
+		t.Fatalf("pin a backup in the default folder: %v", err)
+	}
+	after, err := s.ListBackups()
+	if err != nil {
+		t.Fatal(err)
+	}
+	pinned := 0
+	for _, b := range after {
+		if b.Name == old[0].Name && b.Pinned {
+			pinned++
+		}
+	}
+	if pinned != 1 {
+		t.Fatalf("old backup not pinned: %+v", after)
+	}
 }
 
 func TestOpenSaveFolderRefusesPathsOutsideSaves(t *testing.T) {

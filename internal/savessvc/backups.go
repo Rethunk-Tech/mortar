@@ -70,11 +70,14 @@ func (s *Service) DeleteBackup(name string) error {
 
 // SetBackupPinned keeps or unkeeps a backup during rotation.
 func (s *Service) SetBackupPinned(name string, pinned bool) error {
-	_, dir, err := s.backupDirs()
+	if err := backupNameOK(name); err != nil {
+		return err
+	}
+	_, reads, err := s.backupReads()
 	if err != nil {
 		return err
 	}
-	return backup.SetPinned(dir, name, pinned)
+	return backup.SetPinned(filepath.Dir(findBackup(reads, name)), name, pinned)
 }
 
 // RestoreBackup copies folders from the named zip into the Saves folder after zipping the current saves.

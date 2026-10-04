@@ -41,3 +41,29 @@ func TestSaveGapSplitsMissingDisabledAndOlder(t *testing.T) {
 		t.Fatalf("unplayed %#v %v", none, err)
 	}
 }
+
+func TestSaveGapReportsSwitchedOffModAsDisabled(t *testing.T) {
+	e := newSaveEnv(t)
+	p, err := e.profiles.Create("stardew", "Main")
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.item(t, "local-a", map[string]string{"manifest.json": `{"Name":"Alpha","Author":"me","Version":"1.0.0","UniqueID":"A.Mod"}`})
+	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.profiles.SetModEnabled("stardew", p.ID, "local-a", "A.Mod", false); err != nil {
+		t.Fatal(err)
+	}
+	last := NewStore(t.TempDir())
+	if err := last.RecordRun("stardew", "Farm_1", "other", time.Now(), []PlayedMod{{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0.0"}}); err != nil {
+		t.Fatal(err)
+	}
+	gap, err := (&Service{last: last, profiles: e.profiles}).SaveGap("stardew", p.ID, "Farm_1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(gap.Disabled) != 1 || gap.Disabled[0].UniqueID != "A.Mod" || gap.Disabled[0].Version != "1.0.0" || len(gap.Missing) != 0 || len(gap.VersionOlder) != 0 {
+		t.Fatalf("gap %#v", gap)
+	}
+}
