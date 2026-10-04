@@ -104,7 +104,7 @@ function ShortcutRow({
         <Box
           component="button"
           type="button"
-          aria-label={t`Change shortcut`}
+          aria-label={t`Change shortcut for ${label}, currently ${keys}`}
           onClick={onRecord}
           sx={{
             color: 'var(--mortar-ink-sec)',
@@ -125,6 +125,7 @@ function ShortcutRow({
           size="small"
           disabled={keys === defaultBindings()[id]}
           onClick={onReset}
+          aria-label={t`Reset ${label}`}
           sx={{ whiteSpace: 'nowrap', minWidth: 0 }}
         >
           {t`Reset`}
