@@ -18,8 +18,9 @@ type RunError struct {
 	Updated  bool   `json:"updated,omitempty"`
 }
 
-// RunReader loads the newest recorded run's SMAPI log summary for a profile.
+// RunReader loads the newest recorded run's id and SMAPI log summary for a profile.
 type RunReader interface {
+	LastRunID(gameID, profileID string) (string, error)
 	LastRunSummary(gameID, profileID string) (runID string, summary launch.Summary, err error)
 }
 

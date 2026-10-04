@@ -68,6 +68,7 @@ func markUnreadable(flag *bool) error {
 }
 
 func cleanupHints(mods []Installed) []Cleanup {
+	defer flushMapScans(mods)
 	enabledNeeds := map[string]bool{}
 	disabledDependents := map[string]bool{}
 	tilesheets := unusedTilesheetPacks(mods)
@@ -214,7 +215,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 				id := strings.ToLower(candidate.UniqueID)
 				if ext == ".tbin" {
 					if slices.ContainsFunc(basenamesByID[id], func(name string) bool {
-						return slices.ContainsFunc(scan.runs, func(run string) bool {
+						return slices.ContainsFunc(scan.Runs, func(run string) bool {
 							return strings.Contains(run, name)
 						})
 					}) {
@@ -222,7 +223,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 					}
 					continue
 				}
-				if slices.ContainsFunc(scan.keys, func(key string) bool {
+				if slices.ContainsFunc(scan.Keys, func(key string) bool {
 					return assetsByID[id][key]
 				}) {
 					recordTilesheetUse(uses[id], mod)
@@ -307,15 +308,17 @@ func containsMod(mods []Installed, want Installed) bool {
 // mapScan is what the tilesheet scan needs from one map file, kept across checks until the
 // file's size or modification time changes, since maps are many and rarely change.
 type mapScan struct {
-	size    int64
-	modTime int64
-	keys    []string
-	runs    []string
+	Size    int64    `json:"size"`
+	ModTime int64    `json:"modTime"`
+	Keys    []string `json:"keys,omitempty"`
+	Runs    []string `json:"runs,omitempty"`
 }
 
 var mapScans = struct {
 	sync.Mutex
 	byPath map[string]mapScan
+	loaded bool
+	dirty  bool
 }{byPath: map[string]mapScan{}}
 
 func mapScanFor(path string, entry os.DirEntry, ext string) (mapScan, error) {
@@ -323,27 +326,29 @@ func mapScanFor(path string, entry os.DirEntry, ext string) (mapScan, error) {
 	if err != nil {
 		return mapScan{}, err
 	}
+	loadMapScans()
 	mapScans.Lock()
 	cached, hit := mapScans.byPath[path]
 	mapScans.Unlock()
-	if hit && cached.size == info.Size() && cached.modTime == info.ModTime().UnixNano() {
+	if hit && cached.Size == info.Size() && cached.ModTime == info.ModTime().UnixNano() {
 		return cached, nil
 	}
 	raw, err := fsx.ReadFile(path)
 	if err != nil {
 		return mapScan{}, err
 	}
-	scan := mapScan{size: info.Size(), modTime: info.ModTime().UnixNano()}
+	scan := mapScan{Size: info.Size(), ModTime: info.ModTime().UnixNano()}
 	if ext == ".tbin" {
-		scan.runs = printableRuns(raw)
+		scan.Runs = printableRuns(raw)
 	} else {
 		for _, source := range tmxImageSources(raw) {
 			normalized := normalizeAsset(source)
-			scan.keys = append(scan.keys, normalized, filepath.Base(normalized))
+			scan.Keys = append(scan.Keys, normalized, filepath.Base(normalized))
 		}
 	}
 	mapScans.Lock()
 	mapScans.byPath[path] = scan
+	mapScans.dirty = true
 	mapScans.Unlock()
 	return scan, nil
 }

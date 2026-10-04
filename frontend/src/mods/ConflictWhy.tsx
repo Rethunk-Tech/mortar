@@ -5,7 +5,10 @@ import type {
   AssetConflict,
   ConflictEvidence,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { ConflictImageCrop } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import {
+  ConflictImageCrop,
+  ConflictEvidence as FetchConflictEvidence,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
@@ -32,9 +35,25 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
   const gameId = useProfiles((s) => s.game?.id) ?? ''
   const openId = useProfiles((s) => s.openId)
   const [previews, setPreviews] = useState<Record<string, string>>({})
+  const [evidence, setEvidence] = useState<ConflictEvidence[]>([])
   useEffect(() => {
     let cancelled = false
-    const crops = (asset.evidence ?? []).filter(
+    if (gameId !== '' && openId !== '') {
+      FetchConflictEvidence(gameId, openId, asset.kind, asset.target)
+        .then((rows) => {
+          if (!cancelled) {
+            setEvidence(rows ?? [])
+          }
+        })
+        .catch(reportUnexpected)
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [asset.kind, asset.target, gameId, openId])
+  useEffect(() => {
+    let cancelled = false
+    const crops = evidence.filter(
       (e) => e.cropW > 0 && (e.fromFile ?? '') !== '' && e.packId !== '',
     )
     if (crops.length === 0 || gameId === '' || openId === '') {
@@ -74,11 +93,11 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
     return () => {
       cancelled = true
     }
-  }, [asset, gameId, openId])
-  const images = (asset.evidence ?? []).filter((e) => previews[previewKey(e)])
+  }, [evidence, gameId, openId])
+  const images = evidence.filter((e) => previews[previewKey(e)])
   return (
     <Box sx={{ mt: 0.75, display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {(asset.evidence ?? []).map((e) => (
+      {evidence.map((e) => (
         <Box key={evidenceKey(e)}>
           <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{e.packName || e.packId}</Typography>
           <EvidenceLine>{t`${e.source} · ${e.index}`}</EvidenceLine>

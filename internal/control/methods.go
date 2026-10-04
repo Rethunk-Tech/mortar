@@ -795,7 +795,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "install":
 		return s.changed(p.Game, func() (any, error) { return s.install(p.Game, id, p.Path) })
 	case "conflicts":
-		res, err := s.Problems.Problems(ctx, p.Game, id)
+		res, err := s.Problems.ProblemsWithEvidence(ctx, p.Game, id)
 		if err != nil {
 			return nil, err
 		}
@@ -811,7 +811,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "conflicts.map":
 		return s.Problems.AssetMap(ctx, p.Game, id, p.Query, 0)
 	case "problems":
-		return s.Problems.Problems(ctx, p.Game, id)
+		return s.Problems.ProblemsWithEvidence(ctx, p.Game, id)
 	case "compatibility":
 		return s.Problems.CompatibilityFor(ctx, p.Game, id)
 	case "problems.dismissed":

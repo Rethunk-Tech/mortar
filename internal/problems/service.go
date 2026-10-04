@@ -169,9 +169,50 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 	return mods, nil
 }
 
-// Problems checks the profile's mods. The answer is kept until the mods or versions change, unless a lookup
-// failed, in which case the next call tries again.
+// Problems checks the profile's mods and leaves out each conflict's evidence, which is most of the result and
+// only an expanded row shows; ConflictEvidence fetches it.
 func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, error) {
+	r, err := s.ProblemsWithEvidence(ctx, gameID, id)
+	if err != nil {
+		return r, err
+	}
+	r.AssetConflicts = slices.Clone(r.AssetConflicts)
+	for i := range r.AssetConflicts {
+		r.AssetConflicts[i].Evidence = nil
+	}
+	r.Dismissed = slices.Clone(r.Dismissed)
+	for i, d := range r.Dismissed {
+		if d.AssetConflict != nil {
+			c := *d.AssetConflict
+			c.Evidence = nil
+			r.Dismissed[i].AssetConflict = &c
+		}
+	}
+	return r, nil
+}
+
+// ConflictEvidence returns the per-pack evidence of one asset conflict, shown or dismissed.
+func (s *Service) ConflictEvidence(ctx context.Context, gameID, id, kind, target string) ([]ConflictEvidence, error) {
+	r, err := s.ProblemsWithEvidence(ctx, gameID, id)
+	if err != nil {
+		return nil, err
+	}
+	for _, c := range r.AssetConflicts {
+		if c.Kind == kind && c.Target == target {
+			return c.Evidence, nil
+		}
+	}
+	for _, d := range r.Dismissed {
+		if c := d.AssetConflict; c != nil && c.Kind == kind && c.Target == target {
+			return c.Evidence, nil
+		}
+	}
+	return []ConflictEvidence{}, nil
+}
+
+// ProblemsWithEvidence is Problems with every conflict's evidence. The answer is kept until the mods or versions
+// change, unless a lookup failed, in which case the next call tries again.
+func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (Result, error) {
 	mods, err := s.installed(gameID, id)
 	if err != nil {
 		return Result{}, err
@@ -179,7 +220,7 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	env := s.Environment(gameID)
 	runID := ""
 	if s.Runs != nil {
-		lastID, _, err := s.Runs.LastRunSummary(gameID, id)
+		lastID, err := s.Runs.LastRunID(gameID, id)
 		if err == nil {
 			runID = lastID
 		}
@@ -274,7 +315,7 @@ func (s *Service) ForgetCached() {
 	packDiskState.loaded, packDiskState.entries, packDiskState.dirty = false, nil, false
 	packDiskState.Unlock()
 	mapScans.Lock()
-	mapScans.byPath = map[string]mapScan{}
+	mapScans.byPath, mapScans.loaded, mapScans.dirty = map[string]mapScan{}, false, false
 	mapScans.Unlock()
 }
 
