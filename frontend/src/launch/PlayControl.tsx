@@ -71,57 +71,63 @@ export function PlayControl({ game }: { game: string }) {
   const runningProfile = profiles.find((p) => p.id === status?.profile)
 
   if (running) {
+    const who = runningProfile && runningProfile.id !== openId ? runningProfile.name : ''
     return (
       <>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 0.75,
-            p: 1,
-            [compact]: { alignItems: 'center', p: 0 },
-          }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <Box
             role="status"
             title={runningProfile?.name}
             sx={{
               display: 'flex',
-              alignItems: 'baseline',
-              justifyContent: 'space-between',
+              alignItems: 'center',
               gap: 1,
-              px: 0.5,
+              px: 1.5,
+              py: 1,
               [compact]: { display: 'none' },
             }}
           >
-            <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 700, color: 'success.main' }}>
-              {t`Running`}
+            <Box
+              aria-hidden={true}
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                bgcolor: 'success.main',
+                flexShrink: 0,
+              }}
+            />
+            <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 600, minWidth: 0, flex: 1 }}>
+              {who === '' ? t`Running` : t`Running ${who}`}
             </Typography>
-            <Typography noWrap={true} sx={{ fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>
-              {time}
-            </Typography>
-          </Box>
-          {runningProfile && runningProfile.id !== openId ? (
             <Typography
               noWrap={true}
               sx={{
-                px: 0.5,
-                fontSize: 12,
-                color: 'text.secondary',
-                [compact]: { display: 'none' },
+                fontSize: 15,
+                fontWeight: 600,
+                fontVariantNumeric: 'tabular-nums',
+                color: 'var(--mortar-ink-soft)',
               }}
             >
-              {t`Playing ${runningProfile.name}`}
+              {time}
             </Typography>
-          ) : null}
+          </Box>
           <Button
-            variant="outlined"
+            variant="contained"
             color="error"
             fullWidth={true}
             disabled={stopping}
-            startIcon={<Square size={16} />}
+            startIcon={<Square size={18} fill="currentColor" />}
             onClick={() => setConfirming(true)}
-            sx={{ whiteSpace: 'nowrap', [compact]: { display: 'none' } }}
+            sx={{
+              height: 58,
+              borderRadius: 0,
+              fontSize: 18,
+              fontWeight: 600,
+              boxShadow: 'none',
+              whiteSpace: 'nowrap',
+              [compact]: { display: 'none' },
+            }}
           >
             {t`Stop game`}
           </Button>
