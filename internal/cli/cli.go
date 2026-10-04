@@ -559,7 +559,7 @@ func (c *cmd) dispatch() error {
 }
 
 func absPath(p string) string {
-	if a, err := absolute(p); err == nil {
+	if a, err := filepath.Abs(p); err == nil {
 		return a
 	}
 	return p
@@ -1431,8 +1431,12 @@ func (c *cmd) mod(p control.Params) error {
 }
 
 func (c *cmd) install(p control.Params) error {
+	return c.installMethod("install", p)
+}
+
+func (c *cmd) installMethod(method string, p control.Params) error {
 	var res control.InstallOutcome
-	if err := c.ask("install", p, &res, installTimeout); err != nil {
+	if err := c.ask(method, p, &res, installTimeout); err != nil {
 		return err
 	}
 	if res.Needs != "" {
