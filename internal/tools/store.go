@@ -2,8 +2,6 @@
 package tools
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,6 +10,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-AI/mortar/internal/ids"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
@@ -70,14 +69,6 @@ func (s *Store) save(game string, tools []Tool) error {
 	return datadir.WriteJSON(path, file{Tools: tools})
 }
 
-func newID() (string, error) {
-	var b [8]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(b[:]), nil
-}
-
 func (s *Store) List(game string) ([]Tool, error) {
 	return s.load(game)
 }
@@ -98,12 +89,8 @@ func (s *Store) mutate(game string, fn func([]Tool) ([]Tool, error)) error {
 
 func (s *Store) Add(game string, t Tool) (Tool, error) {
 	t.Arguments = slices.Clone(t.Arguments)
-	id, err := newID()
-	if err != nil {
-		return Tool{}, err
-	}
-	t.ID = id
-	err = s.mutate(game, func(tools []Tool) ([]Tool, error) {
+	t.ID = ids.New()
+	err := s.mutate(game, func(tools []Tool) ([]Tool, error) {
 		return append(tools, t), nil
 	})
 	return t, err
