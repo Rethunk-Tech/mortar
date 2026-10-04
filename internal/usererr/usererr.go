@@ -90,7 +90,7 @@ func classify(err error) Kind {
 	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) {
 		return Network
 	}
-	if isENOSPC(err) {
+	if IsDiskFull(err) {
 		return DiskFull
 	}
 	if _, ok := errors.AsType[net.Error](err); ok {
@@ -105,12 +105,9 @@ func classify(err error) Kind {
 	return Unknown
 }
 
-func isENOSPC(err error) bool {
-	var errno syscall.Errno
-	if errors.As(err, &errno) && errno == syscall.ENOSPC {
-		return true
-	}
-	return false
+// IsDiskFull reports whether err is a write that ran out of space, on any platform.
+func IsDiskFull(err error) bool {
+	return errors.Is(err, syscall.ENOSPC) || platformDiskFull(err)
 }
 
 // Parse splits Error()'s "[kind] rest" form used on the Wails wire. Unknown if absent.

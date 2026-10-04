@@ -1,5 +1,5 @@
 //go:build !windows
 
-package store
+package usererr
 
 func platformDiskFull(error) bool { return false }

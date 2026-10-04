@@ -17,7 +17,6 @@ import (
 	"slices"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -323,7 +322,7 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 		err = syncPath(gdir)
 	}
 	if err != nil {
-		if diskFull(err) {
+		if usererr.IsDiskFull(err) {
 			err = usererr.Wrap(usererr.DiskFull, &DiskFullError{NeedMB: need()>>20 + 1, Err: err})
 		}
 		return &Error{Game: game, Key: key, Err: err}
@@ -381,11 +380,6 @@ func syncTree(root string) error {
 	}
 	return nil
 }
-
-// IsDiskFull reports whether err is a write that ran out of space.
-func IsDiskFull(err error) bool { return diskFull(err) }
-
-func diskFull(err error) bool { return errors.Is(err, syscall.ENOSPC) || platformDiskFull(err) }
 
 func exists(p string) bool {
 	_, err := os.Lstat(p)

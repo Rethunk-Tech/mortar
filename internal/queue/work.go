@@ -612,7 +612,7 @@ func (s *Service) batchFinished(rec *Item) bool {
 }
 
 func (s *Service) diskError(err error, total int64) error {
-	if err != nil && store.IsDiskFull(err) {
+	if err != nil && usererr.IsDiskFull(err) {
 		return usererr.Wrap(usererr.DiskFull, &store.DiskFullError{NeedMB: total>>20 + 1, Err: err})
 	}
 	return err

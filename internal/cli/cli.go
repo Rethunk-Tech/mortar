@@ -3,6 +3,7 @@
 package cli
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/control"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
@@ -1228,11 +1230,11 @@ func nexusPage(game, source string) string {
 	if modID == "" || modID == "0" {
 		return ""
 	}
-	domain := "stardewvalley"
-	if game != "" && game != "stardew" {
-		domain = game
+	g, ok := components.BundledGame(cmp.Or(game, "stardew"))
+	if !ok || g.Nexus.Domain == "" {
+		return ""
 	}
-	return "https://www.nexusmods.com/" + domain + "/mods/" + modID
+	return "https://www.nexusmods.com/" + g.Nexus.Domain + "/mods/" + modID
 }
 
 func (c *cmd) printEnabledMods(rows []control.ModRow, game string) {
