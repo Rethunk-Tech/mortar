@@ -1,4 +1,4 @@
-import { boundShortcut, describe, expect, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import {
   boundShortcut,
   conflictFor,
