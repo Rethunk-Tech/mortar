@@ -17,6 +17,10 @@ import { missingCount, problemCount } from './lookup.ts'
 import { openTarget } from './storeView.ts'
 import { useUpdates } from './updates.ts'
 
+// Loads overlap when installs finish back to back; only the newest one may write, or an older snapshot
+// replaces the newer list.
+let latestLoad = 0
+
 export function showUpdatesView() {
   useSettings.setState({ listGroupBy: 'status' })
   SetListGroupBy('status').catch(reportUnexpected)
@@ -50,17 +54,20 @@ export async function loadMods(
   if (!target) {
     return
   }
+  latestLoad += 1
+  const seq = latestLoad
+  const current = () => seq === latestLoad && openTarget()?.id === target.id
   set({ loadError: '' })
   try {
     const [mods, pages] = await Promise.all([
       Mods(target.game, target.id),
       Pages(target.game, target.id),
     ])
-    if (openTarget()?.id === target.id) {
+    if (current()) {
       set({ mods: mods ?? [], pages: pages ?? {}, loaded: true, modsFor: target.id })
     }
   } catch (e) {
-    if (openTarget()?.id === target.id) {
+    if (current()) {
       set({ loadError: errorMessage(e) })
     }
     return
