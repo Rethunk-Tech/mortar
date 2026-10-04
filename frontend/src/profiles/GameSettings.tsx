@@ -172,7 +172,7 @@ function WindowModeField({ disabled, value, onChange }: WindowModeFieldProps) {
           onChange(parseWindowMode(String(event.target.value)))
         }}
       >
-        <MenuItem value="">{t`Use normal setting`}</MenuItem>
+        <MenuItem value="">{t`Use default`}</MenuItem>
         <MenuItem value="windowed">{t`Windowed`}</MenuItem>
         <MenuItem value="fullscreen">{t`Fullscreen`}</MenuItem>
         <MenuItem value="borderless">{t`Borderless`}</MenuItem>
@@ -204,6 +204,7 @@ function PercentageField({ disabled, kind, value, onChange }: PercentageFieldPro
     <Stack spacing={1}>
       <Typography>{label}</Typography>
       <Slider
+        aria-label={label}
         disabled={disabled}
         min={PERCENT_MIN}
         max={PERCENT_MAX}
@@ -269,7 +270,7 @@ function ProfileGameSettingsFields({ disabled, value, onChange }: ProfileGameSet
       />
       <NumberField
         disabled={disabled}
-        label={t`Display`}
+        label={t`Display number`}
         value={numberValue('displayIndex')}
         onChange={(next) =>
           next === undefined ? clearField('displayIndex') : updateField('displayIndex', next)

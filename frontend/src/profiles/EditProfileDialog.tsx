@@ -113,7 +113,7 @@ function CoverField({
           disabled={!hasPickedCover(profile.cover, staged)}
           onClick={() => onStage(null)}
           sx={{ whiteSpace: 'nowrap' }}
-        >{t`Use the automatic cover`}</Button>
+        >{t`Use default`}</Button>
       </Box>
     </>
   )

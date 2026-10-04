@@ -229,7 +229,7 @@ function CoverMenuItems({
     <ProfileMenuItem
       key="automatic-cover"
       icon={<ImageOff size={16} />}
-      label={t`Use the automatic cover`}
+      label={t`Use default`}
       disabled={!hasPickedCover(profile.cover, undefined)}
       onClick={() => {
         close()
