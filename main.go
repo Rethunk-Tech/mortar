@@ -445,6 +445,13 @@ func run() error {
 	bundlesSvc := bundles.NewService(profiles, dataDir)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	problemsSvc.Runs = launches
+	problemsSvc.NexusFiles = func(ctx context.Context, ids []int) (map[int][]nexus.BatchFile, error) {
+		c, err := nexussvc.Authed(store, nexusClient)
+		if err != nil {
+			return nil, err
+		}
+		return c.FilesOf(ctx, ids)
+	}
 	supportSvc := support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)
 	supportSvc.RecentLog = func(gameID, profileID string) string {
 		entries, err := launches.Lines(gameID, profileID)

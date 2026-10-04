@@ -27,6 +27,8 @@ type Service struct {
 	profiles *profile.Store
 	meta     Meta
 	Runs     RunReader
+	// NexusFiles, when set, confirms flagged updates against Nexus's live file lists in one call.
+	NexusFiles NexusFilesOf
 
 	mu      sync.Mutex
 	cache   map[string]cached
@@ -405,7 +407,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		return hideUpdates(c.result, mods, s.settings.Get()), nil
 	}
 	set := s.settings.Get()
-	r := checkUpdates(ctx, s.meta, env, mods, set.CheckOnlyEnabledMods, fresh)
+	r := checkUpdates(ctx, s.meta, env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
 	if !r.Unknown {
 		s.mu.Lock()
 		s.updates[key] = cachedUpdates{fp, time.Now(), r}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
 
@@ -61,10 +62,13 @@ type UpdatesResult struct {
 // CheckUpdates asks SMAPI's API about every user mod (the bundled ones update with SMAPI). It never returns
 // an error: a failed lookup leaves Unknown set.
 func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly bool) UpdatesResult {
-	return checkUpdates(ctx, m, env, mods, enabledOnly, false)
+	return checkUpdates(ctx, m, env, mods, enabledOnly, false, nil)
 }
 
-func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly, fresh bool) UpdatesResult {
+// NexusFilesOf lists many Nexus mods' current files in one call (nexus.Client.FilesOf); nil when signed out.
+type NexusFilesOf func(ctx context.Context, modIDs []int) (map[int][]nexus.BatchFile, error)
+
+func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly, fresh bool, filesOf NexusFilesOf) UpdatesResult {
 	r := UpdatesResult{Updates: []Update{}}
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform, Fresh: fresh}
 	var asked []Installed
@@ -81,13 +85,23 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 	if len(asked) == 0 {
 		return r
 	}
-	for i, res := range m.CheckUpdates(ctx, req) {
+	results := m.CheckUpdates(ctx, req)
+	live := liveNexusFiles(ctx, filesOf, asked, results)
+	current := func(x Installed, url, version string) bool {
+		if files, ok := live[nexusUpdate(x.UpdateKeys, url)]; ok {
+			if is, known := liveFileIsCurrent(files, x, version); known {
+				return is
+			}
+		}
+		return nexusFileIsCurrent(ctx, m, x, url, version)
+	}
+	for i, res := range results {
 		if res.Suggested != nil && (downloaded(asked[i], res.Suggested.Version) ||
-			nexusFileIsCurrent(ctx, m, asked[i], res.Suggested.URL, res.Suggested.Version)) {
+			current(asked[i], res.Suggested.URL, res.Suggested.Version)) {
 			res.Suggested = nil
 		}
 		if res.Unofficial != nil && (downloaded(asked[i], res.Unofficial.Version) ||
-			nexusFileIsCurrent(ctx, m, asked[i], res.Unofficial.URL, res.Unofficial.Version)) {
+			current(asked[i], res.Unofficial.URL, res.Unofficial.Version)) {
 			res.Unofficial = nil
 		}
 		switch {
@@ -405,4 +419,59 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url, suggested
 		return !strings.EqualFold(installed.Type, "OLD_VERSION")
 	}
 	return !containsPreviewMod(latest, x.UniqueID)
+}
+
+// liveNexusFiles asks Nexus once for the current files of every flagged Nexus mod, so a stale dataset page cannot
+// hide a new file or invent one. It returns nothing when signed out or when the call fails.
+func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, asked []Installed, results []meta.UpdateResult) map[int][]nexus.BatchFile {
+	if filesOf == nil {
+		return nil
+	}
+	var ids []int
+	for i, res := range results {
+		for _, u := range []*meta.Update{res.Suggested, res.Unofficial} {
+			if u == nil || i >= len(asked) {
+				continue
+			}
+			if id := nexusUpdate(asked[i].UpdateKeys, u.URL); id != 0 && !slices.Contains(ids, id) {
+				ids = append(ids, id)
+			}
+		}
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	files, err := filesOf(ctx, ids)
+	if err != nil {
+		return nil
+	}
+	return files
+}
+
+// liveFileIsCurrent says whether the installed Nexus file is still the newest in its group (same display name) and
+// already at the suggested version. known is false when the installed file is not in the list.
+func liveFileIsCurrent(files []nexus.BatchFile, x Installed, suggested string) (current, known bool) {
+	_, fileID, ok := nexusEntryFile(x.Key)
+	if !ok {
+		return false, false
+	}
+	var installed nexus.BatchFile
+	for _, f := range files {
+		if int64(f.FileID) == fileID {
+			installed = f
+		}
+	}
+	if installed.FileID == 0 {
+		return false, false
+	}
+	for _, f := range files {
+		if f.FileID > installed.FileID && !strings.EqualFold(f.Category, "OLD_VERSION") &&
+			strings.EqualFold(strings.TrimSpace(f.Name), strings.TrimSpace(installed.Name)) {
+			return false, true
+		}
+	}
+	if c, ok := meta.CompareVersions(installed.Version, suggested); ok && c < 0 {
+		return false, true
+	}
+	return true, true
 }

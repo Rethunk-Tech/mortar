@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-AI/mortar/internal/nexus"
 )
 
 func TestCheckUpdatesUsesTheNewestFileInTheInstalledGroup(t *testing.T) {
@@ -102,5 +103,47 @@ func TestCheckUpdatesTrustsSMAPIOverAStaleDatasetPage(t *testing.T) {
 	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{installed}, false)
 	if len(got.Updates) != 1 || got.Updates[0].Version != "2.5.0" {
 		t.Fatalf("updates = %+v, want 2.5.0", got.Updates)
+	}
+}
+
+func TestLiveFileIsCurrentSeesANewerFileInTheGroup(t *testing.T) {
+	files := []nexus.BatchFile{
+		{FileID: 179112, Name: "Machine Control Panel", Version: "2.4.1", Category: "OLD_VERSION"},
+		{FileID: 185367, Name: "Machine Control Panel", Version: "2.5.0", Category: "MAIN"},
+	}
+	installed := mod("nexus-28261-179112", "x", "2.4.1", true)
+	if cur, known := liveFileIsCurrent(files, installed, "2.5.0"); cur || !known {
+		t.Fatalf("current %v known %v, want an update", cur, known)
+	}
+}
+
+func TestLiveFileIsCurrentAcceptsAnUnbumpedManifest(t *testing.T) {
+	files := []nexus.BatchFile{{FileID: 82663, Name: "Aspen", Version: "0.0.53", Category: "MAIN"}}
+	installed := mod("nexus-6754-82663", "invatorzen.AspenCP", "0.0.52", true)
+	if cur, known := liveFileIsCurrent(files, installed, "0.0.53"); !cur || !known {
+		t.Fatalf("current %v known %v, want current", cur, known)
+	}
+}
+
+func TestCheckUpdatesUsesOneLiveCallWhenAvailable(t *testing.T) {
+	const id = "Example.MachineControlPanel"
+	rm := fakeMeta{
+		compat: map[string]meta.UpdateResult{
+			id: {Known: true, Suggested: &meta.Update{Version: "2.5.0", URL: "https://www.nexusmods.com/stardewvalley/mods/28261"}},
+		},
+	}
+	installed := mod("nexus-28261-179112", id, "2.4.1", true)
+	installed.UpdateKeys = []string{"Nexus:28261"}
+	calls := 0
+	filesOf := func(_ context.Context, ids []int) (map[int][]nexus.BatchFile, error) {
+		calls++
+		return map[int][]nexus.BatchFile{28261: {
+			{FileID: 179112, Name: "Machine Control Panel", Version: "2.4.1", Category: "OLD_VERSION"},
+			{FileID: 185367, Name: "Machine Control Panel", Version: "2.5.0", Category: "MAIN"},
+		}}, nil
+	}
+	got := checkUpdates(context.Background(), rm, Environment{}, []Installed{installed}, false, false, filesOf)
+	if calls != 1 || len(got.Updates) != 1 {
+		t.Fatalf("calls %d updates %+v", calls, got.Updates)
 	}
 }
