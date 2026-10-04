@@ -294,3 +294,46 @@ func TestUpdateKeepsEntrySettingsAndRollBackRestoresSource(t *testing.T) {
 		t.Fatalf("rolled back = %+v", en)
 	}
 }
+
+func TestUpdateEntriesIsOneChangeAndAtomic(t *testing.T) {
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
+	e.item(t, "b-1", map[string]string{"B/manifest.json": manifestJSON("me.b")})
+	e.item(t, "b-2", map[string]string{"B/manifest.json": manifestJSON("me.b")})
+	if _, err := e.AddEntry("stardew", p.ID, "b-1", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	before, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// The second move names an entry the profile lacks, so the first must not stick.
+	bad := []EntryMove{{"a-1", "a-2"}, {"nope", "b-2"}}
+	if _, err := e.UpdateEntries("stardew", p.ID, bad); err == nil {
+		t.Fatal("moved an entry that is not in the profile")
+	}
+	if got := names(t, e.mods(p.ID)); !slices.Equal(got, []string{"a-1", "b-1"}) {
+		t.Fatalf("mods/ after failure = %v", got)
+	}
+
+	// A repeated move (an item with several mods yields one per mod) applies once, as one history event.
+	ok := []EntryMove{{"a-1", "a-2"}, {"a-1", "a-2"}, {"b-1", "b-2"}}
+	got, err := e.UpdateEntries("stardew", p.ID, ok)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if keys := []string{got.Entries[0].Key, got.Entries[1].Key}; !slices.Equal(keys, []string{"a-2", "b-2"}) {
+		t.Fatalf("keys = %v", keys)
+	}
+	after, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(after)-len(before) != 1 {
+		t.Fatalf("history grew by %d events, want 1", len(after)-len(before))
+	}
+	if _, err := e.UpdateEntries("stardew", p.ID, []EntryMove{{"a-2", "a-1"}, {"a-2", "b-1"}}); err == nil {
+		t.Fatal("accepted two targets for one entry")
+	}
+}

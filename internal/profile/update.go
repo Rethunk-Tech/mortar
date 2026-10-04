@@ -33,6 +33,79 @@ func (s *Store) UpdateEntry(game, id, oldKey, newKey string) (Profile, error) {
 	return s.moveTo(game, id, oldKey, newKey, nil)
 }
 
+// EntryMove is one entry switched to another store item by UpdateEntries.
+type EntryMove struct {
+	OldKey string `json:"oldKey"`
+	NewKey string `json:"newKey"`
+}
+
+// UpdateEntries applies every move as one change: one history event, and no entry is switched unless all are. Moves
+// repeated for the same entry, as a store item holding several mods yields, apply once; two different targets for
+// one entry are refused.
+func (s *Store) UpdateEntries(game, id string, moves []EntryMove) (Profile, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.unlocked(game, id); err != nil {
+		return Profile{}, err
+	}
+	target := map[string]string{}
+	var uniq []EntryMove
+	for _, m := range moves {
+		if prev, ok := target[m.OldKey]; ok {
+			if prev != m.NewKey {
+				return Profile{}, fmt.Errorf("%q cannot move to both %q and %q", m.OldKey, prev, m.NewKey)
+			}
+			continue
+		}
+		target[m.OldKey] = m.NewKey
+		uniq = append(uniq, m)
+	}
+	var swaps []swapped
+	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
+		for _, m := range uniq {
+			ei, err := requireEntry(p.Entries, m.OldKey)
+			if err != nil {
+				return err
+			}
+			for _, e := range p.Entries {
+				if e.Key == m.NewKey {
+					return &DuplicateError{Key: m.NewKey, Label: entryLabel(e)}
+				}
+			}
+			ne, w, err := s.swapOverlaid(game, p, dir, ei, m.NewKey, nil)
+			swaps = append(swaps, w)
+			if err != nil {
+				return err
+			}
+			p.Entries[ei] = ne
+		}
+		return nil
+	})
+	if err != nil {
+		for _, w := range slices.Backward(swaps) {
+			err = errors.Join(err, w.undo())
+		}
+		return Profile{}, err
+	}
+	var keys []string
+	for _, w := range swaps {
+		w.commit()
+	}
+	if err := s.RecordModsSnapshot(game, id); err != nil {
+		return Profile{}, err
+	}
+	for _, m := range uniq {
+		keys = append(keys, m.OldKey, m.NewKey)
+		for _, e := range p.Entries {
+			if e.Key == m.NewKey {
+				keys = append(keys, e.ExtraStoreKeys...)
+				keys = append(keys, e.PreviousExtraStoreKeys...)
+			}
+		}
+	}
+	return p, s.items.Touch(game, keys...)
+}
+
 // RollBack swaps the entry key back to its previous version, carrying over what the user and the mod wrote.
 func (s *Store) RollBack(game, id, key string) (Profile, error) {
 	return s.moveTo(game, id, key, "", nil)

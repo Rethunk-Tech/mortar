@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   CopyMods,
-  UpdateEntry,
+  UpdateEntries,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { applyWithUndo } from '../mods/menu.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
@@ -117,13 +117,12 @@ export function CompareDialog({
     const pairs = rows.map((row) => (from.id === profileA?.id ? [row.b, row.a] : [row.a, row.b]))
     apply(
       to,
-      async () => {
-        let last = to
-        for (const [mine, source] of pairs) {
-          last = await UpdateEntry(game, to.id, mine?.key ?? '', source?.key ?? '')
-        }
-        return last
-      },
+      () =>
+        UpdateEntries(
+          game,
+          to.id,
+          pairs.map(([mine, source]) => ({ oldKey: mine?.key ?? '', newKey: source?.key ?? '' })),
+        ),
       t`Matched ${rows.length} versions in ${to.name}`,
     )
   }

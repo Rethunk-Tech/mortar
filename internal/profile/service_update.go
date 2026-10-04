@@ -9,3 +9,8 @@ func (s *Service) UpdateEntry(game, id, oldKey, newKey string) (Profile, error) 
 func (s *Service) RollBack(game, id, key string) (Profile, error) {
 	return s.store.RollBack(game, id, key)
 }
+
+// UpdateEntries switches several entries to other store items as one change.
+func (s *Service) UpdateEntries(game, id string, moves []EntryMove) (Profile, error) {
+	return s.store.UpdateEntries(game, id, moves)
+}
