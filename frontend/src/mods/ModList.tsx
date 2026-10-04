@@ -390,7 +390,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     problems: t`Problems`,
     update: t`Update available`,
     enabled: t`Enabled`,
-    disabled: t`Disabled`,
+    disabled: t`Switched off`,
     smapi: t`SMAPI mods`,
   })
   const onCommit = () => {

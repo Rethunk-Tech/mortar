@@ -280,7 +280,11 @@ export function ModSwitch({ mod }: { mod: Mod }) {
           setEnabled(mod, e.target.checked).catch(reportUnexpected)
         }}
         onClick={(e) => e.stopPropagation()}
-        slotProps={{ input: { 'aria-label': t`Enable ${mod.name}` } }}
+        slotProps={{
+          input: {
+            'aria-label': mod.enabled ? t`Switch off ${mod.name}` : t`Switch on ${mod.name}`,
+          },
+        }}
       />
     </DisabledReason>
   )
@@ -354,7 +358,7 @@ export function RemoveDialog() {
   }
   const needLine =
     dependents.length > 0
-      ? t`${dependents.length} mods need this: ${dependents.map((m) => m.name).join(', ')}`
+      ? t`${plural(dependents.length, { one: '# mod needs this', other: '# mods need this' })}: ${dependents.map((m) => m.name).join(', ')}`
       : ''
   const allCount = removing.length + dependents.length
   return (
@@ -362,7 +366,7 @@ export function RemoveDialog() {
       <DialogTitle>
         {one
           ? t`Remove ${one.name} from this profile?`
-          : t`Remove ${removing.length} mods from this profile?`}
+          : t`${plural(removing.length, { one: 'Remove # mod from this profile?', other: 'Remove # mods from this profile?' })}`}
       </DialogTitle>
       <DialogContent>
         <DialogContentText>{body}</DialogContentText>
@@ -383,7 +387,7 @@ export function RemoveDialog() {
                 disabled={locked}
                 onClick={() => drop([...removing, ...dependents])}
               >
-                {t`Remove all ${allCount}`}
+                {t`${plural(allCount, { one: 'Remove all # mod', other: 'Remove all # mods' })}`}
               </Button>
             </DisabledReason>
           </>

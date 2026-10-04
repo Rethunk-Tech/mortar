@@ -75,7 +75,7 @@ export function SelectionBarActions({
       edits: true,
     },
     {
-      label: t`Skip current updates`,
+      label: t`Skip this update`,
       icon: <BellOff size={16} />,
       run: () =>
         setSkipVersionMany(selected.filter((mod) => latest.has(mod.key))).catch(reportUnexpected),
@@ -110,7 +110,7 @@ export function SelectionBarActions({
             startIcon={<Power size={15} />}
             onClick={() => setEnabledMany(selected, true).catch(reportUnexpected)}
             sx={noWrap}
-          >{t`Enable`}</Button>
+          >{t`Switch on`}</Button>
           <Button
             size="small"
             variant="outlined"
@@ -118,7 +118,7 @@ export function SelectionBarActions({
             startIcon={<PowerOff size={15} />}
             onClick={() => setEnabledMany(selected, false).catch(reportUnexpected)}
             sx={noWrap}
-          >{t`Disable`}</Button>
+          >{t`Switch off`}</Button>
           <Button
             size="small"
             variant="outlined"

@@ -32,7 +32,7 @@ function ModUpdateControls({ mod, entry }: { mod: Mod; entry: Entry | undefined 
         onClick={() => setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
         sx={noWrap}
       >
-        {entry?.pinned ? t`Unpin` : t`Pin this version`}
+        {entry?.pinned ? t`Unpin version` : t`Pin version`}
       </Button>
       <Box>
         <Typography

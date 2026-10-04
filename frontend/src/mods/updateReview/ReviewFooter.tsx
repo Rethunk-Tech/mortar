@@ -77,7 +77,7 @@ export function ReviewFooter({
             onClick={onEverywhere}
             sx={{ whiteSpace: 'nowrap' }}
           >
-            {t`Update all everywhere`}
+            {t`Update all everywhere…`}
           </Button>
         ) : null}
         {wantedCount > 0 ? (

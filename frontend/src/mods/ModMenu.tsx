@@ -110,7 +110,7 @@ function ModMenuItems({
     { label: string; icon: ReactNode; run: () => void }
   > = {
     toggle: {
-      label: mod.enabled ? t`Disable` : t`Enable`,
+      label: mod.enabled ? t`Switch off` : t`Switch on`,
       icon: mod.enabled ? <PowerOff size={ICON_SIZE} /> : <Power size={ICON_SIZE} />,
       run: () => setEnabled(mod, !mod.enabled).catch(reportUnexpected),
     },
@@ -147,7 +147,7 @@ function ModMenuItems({
       },
     },
     pin: {
-      label: state.pinned ? t`Unpin` : t`Pin this version`,
+      label: state.pinned ? t`Unpin version` : t`Pin version`,
       icon: state.pinned ? <PinOff size={ICON_SIZE} /> : <Pin size={ICON_SIZE} />,
       run: () => setPinned(mod, !state.pinned).catch(reportUnexpected),
     },

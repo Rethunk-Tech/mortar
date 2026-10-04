@@ -51,7 +51,9 @@ function TrackedRow({
           setName(n)
         }
       })
-      .catch(reportUnexpected)
+      .catch(() => {
+        // Keep the #id fallback when the name lookup fails.
+      })
 
     return () => {
       live = false
@@ -95,6 +97,7 @@ function TrackedRow({
 }
 
 function TrackedNotInProfile({ profile }: { profile: Profile }) {
+  const { t } = useLingui()
   const signedIn = useNexus((s) => s.signedIn)
   const premium = useNexus((s) => s.premium)
   const gameId = useProfiles((s) => s.game?.id)
@@ -121,10 +124,10 @@ function TrackedNotInProfile({ profile }: { profile: Profile }) {
   if (!signedIn || mods.length === 0) {
     return null
   }
-  const heading = plural(mods.length, {
-    one: 'Tracked on Nexus, not in this profile (#)',
-    other: 'Tracked on Nexus, not in this profile (#)',
-  })
+  const heading = t`${plural(mods.length, {
+    one: '# tracked mod on Nexus is not in this profile',
+    other: '# tracked mods on Nexus are not in this profile',
+  })}`
   return (
     <Accordion
       disableGutters={true}

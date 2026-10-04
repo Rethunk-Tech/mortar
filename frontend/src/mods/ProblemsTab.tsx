@@ -367,7 +367,7 @@ export function ProblemActions() {
                       count: cleanup.length,
                       lines: cleanup.map((item) => {
                         const who = item.name.trim() === '' ? t`Unknown mod` : item.name
-                        const reason = item.reason || 'Not needed by any enabled mod'
+                        const reason = item.reason || t`Not needed by any enabled mod`
                         return `${who}: ${reason}`
                       }),
                     },

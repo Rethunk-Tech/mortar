@@ -209,7 +209,7 @@ export function ReportToAuthorButton({
         onClick={start}
         sx={{ height: 28, whiteSpace: 'nowrap' }}
       >
-        {t`Report to author`}
+        {t`Report to author…`}
       </Button>
       <Dialog
         open={open}
