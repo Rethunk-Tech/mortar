@@ -2,6 +2,7 @@ import type {
   CustomCategory,
   Entry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { cmpText } from './cmpText.ts'
 import { idKey } from './dependents.ts'
 
 const MAX_ENTRY_NOTE = 500
@@ -89,7 +90,7 @@ function profileTags(entries: readonly Entry[] | null | undefined): string[] {
       }
     }
   }
-  out.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
+  out.sort((a, b) => cmpText(a, b))
   return out
 }
 
@@ -325,9 +326,7 @@ function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
   if (by === 'status') {
     return STATUS_GROUP_ORDER.filter((k) => keys.includes(k))
   }
-  const named = keys
-    .filter((k) => k !== '' && k !== SMAPI_MODS_GROUP)
-    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
+  const named = keys.filter((k) => k !== '' && k !== SMAPI_MODS_GROUP).sort((a, b) => cmpText(a, b))
   const tail: string[] = []
   if (keys.includes(SMAPI_MODS_GROUP)) {
     tail.push(SMAPI_MODS_GROUP)

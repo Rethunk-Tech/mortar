@@ -3,6 +3,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { SetListColumns } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { cmpText } from './cmpText.ts'
 import { lastRunOf } from './lastRun.ts'
 import { isNewer } from './nexusFormat.ts'
 
@@ -204,10 +205,6 @@ function missingLast(aMissing: boolean, bMissing: boolean, dir: ListSortDir, cmp
     return -cmp
   }
   return cmp
-}
-
-function cmpText(a: string, b: string): number {
-  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
 }
 
 function cmpNum(a: number, b: number): number {
