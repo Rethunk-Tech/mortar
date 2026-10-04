@@ -151,7 +151,6 @@ type Cleanup struct {
 	Reason   string `json:"reason,omitempty"`
 }
 
-type DismissedProblem struct {
 // Damaged is a mod whose stored files no longer match what was stored: files went missing, changed or appeared.
 // Files names the first few.
 type Damaged struct {
@@ -163,6 +162,7 @@ type Damaged struct {
 	Files   []string `json:"files"`
 }
 
+type DismissedProblem struct {
 	Token         string         `json:"token"`
 	AssetConflict *AssetConflict `json:"assetConflict,omitempty"`
 	Broken        *Broken        `json:"broken,omitempty"`
@@ -182,8 +182,8 @@ type Result struct {
 	Redundant      []Redundant        `json:"redundant,omitempty"`
 	RunErrors      []RunError         `json:"runErrors"`
 	Drift          []profile.Drift    `json:"drift,omitempty"`
-	Dismissed      []DismissedProblem `json:"dismissed"`
 	Damaged        []Damaged          `json:"damaged,omitempty"`
+	Dismissed      []DismissedProblem `json:"dismissed"`
 	Unknown        bool               `json:"unknown"`
 	Timings        []CheckTiming      `json:"timings,omitempty"`
 }
