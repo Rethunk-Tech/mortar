@@ -12,15 +12,6 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-// Offline runs the read-only data-folder checks when the app is not running.
-func Offline() (Report, error) {
-	dir, err := datadir.Dir()
-	if err != nil {
-		return Report{}, err
-	}
-	return Scan(dir), nil
-}
-
 // Scan checks a data folder the same way the CLI's offline doctor does.
 func Scan(dir string) Report {
 	var checks []Check
