@@ -21,6 +21,7 @@ interface State {
   status: 'idle' | 'loading' | 'ready' | 'error'
   error: string
   load: (game: string, profileId: string, stamp: string) => Promise<void>
+  reload: () => Promise<void>
   dismiss: (folder: string, uniqueId: string) => Promise<void>
   enable: (game: string, profile: Profile, uniqueId: string) => Promise<void>
 }
@@ -44,6 +45,12 @@ export const useSaves = create<State>((set, get) => ({
       if (get().key === key) {
         set({ fits: [], status: 'error', error: errorMessage(e) })
       }
+    }
+  },
+  reload: async () => {
+    const [game, profileId, ...stamp] = get().key.split('/')
+    if (game && profileId) {
+      await get().load(game, profileId, stamp.join('/'))
     }
   },
   dismiss: async (folder, uniqueId) => {

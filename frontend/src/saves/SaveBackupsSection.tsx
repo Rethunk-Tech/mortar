@@ -20,6 +20,7 @@ import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { causeLabel, useSaveBackups } from './backups.ts'
+import { useSaves } from './store.ts'
 
 interface Ask {
   kind: 'restore' | 'delete'
@@ -154,6 +155,9 @@ export function SaveBackupsSection({ folder, label }: { folder: string; label: s
               : RestoreBackup(backup.name, [folder]))
             setAsk(null)
             await refresh()
+            if (kind === 'restore') {
+              await useSaves.getState().reload()
+            }
           })
         }}
       />

@@ -9,6 +9,7 @@ import {
   SetBackupPinned,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { useSaves } from './store.ts'
 
 export type Status = 'idle' | 'loading' | 'ready' | 'error'
 
@@ -43,7 +44,7 @@ export const useSaveBackups = create<{
     },
     restore: async (name, folders) => {
       await RestoreBackup(name, folders)
-      await get().load()
+      await Promise.all([get().load(), useSaves.getState().reload()])
     },
     setPinned: async (name, pinned) => {
       await SetBackupPinned(name, pinned)
