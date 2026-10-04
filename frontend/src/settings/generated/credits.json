@@ -110,6 +110,11 @@
     "url": "https://github.com/bodgit/sevenzip"
   },
   {
+    "name": "github.com/coder/websocket",
+    "licence": "ISC",
+    "url": "https://github.com/coder/websocket"
+  },
+  {
     "name": "github.com/go-ole/go-ole",
     "licence": "MIT",
     "url": "https://github.com/go-ole/go-ole"
