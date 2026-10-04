@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { useEffect, useState } from 'react'
 import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
@@ -58,7 +59,7 @@ export function PropagateUpdate({
         await Promise.all(profiles.map((other) => UpdateEntry(game, other.id, update.key, newKey)))
         useToasts.getState().push({
           kind: 'success',
-          title: t`Updated in ${profiles.length} profiles`,
+          title: t`${plural(profiles.length, { one: 'Updated in # profile', other: 'Updated in # profiles' })}`,
           ...(pinned.length > 0
             ? { body: pinned.map((other) => t`pinned in ${other.name}`).join(', ') }
             : {}),

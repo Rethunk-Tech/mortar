@@ -355,7 +355,7 @@ function ResultCard({
   } = item
   const stats =
     source === NEXUS
-      ? t`${endorsements} endorsements · ${downloads} downloads`
+      ? t`${plural(endorsements, { one: '# endorsement', other: '# endorsements' })} · ${plural(downloads, { one: '# download', other: '# downloads' })}`
       : plural(stars, { one: '# star', other: '# stars' })
   let action: React.ReactNode = null
   if (installed) {

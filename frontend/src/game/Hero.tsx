@@ -253,7 +253,7 @@ function AttentionCards() {
           label={t`Updates`}
           value={String(updateN)}
           tone="primary"
-          ariaLabel={t`Review ${updateN} updates`}
+          ariaLabel={t`Review ${plural(updateN, { one: '# update', other: '# updates' })}`}
           onClick={() => setReviewing(true)}
         />
       ) : null}
