@@ -45,7 +45,6 @@ Not in the first release; re-weigh only when asked:
 - Bottles as a launcher (Linux): games there are Windows builds in a Wine prefix, so it needs SMAPI's Windows installer run inside the bottle (`bottles-cli run -b <bottle> -e <installer>`) and launches through `bottles-cli run` with `--mods-path`; the Linux SMAPI install would break such a copy. Detection is simple: bottles under `~/.local/share/bottles/bottles` and `~/.var/app/com.usebottles.bottles/data/bottles/bottles`, each searched for `drive_c/Program Files (x86)/Steam` and GOG folders.
 - A profile sync folder (Syncthing, Dropbox, a NAS) holding each profile's `.mortar` state, so another machine is offered the changes, with conflict detection when both sides edited; mod files still come from their sources.
 - Needs Nexus's approval through app registration first (below), since it starts downloads outside Nexus's own Mod Manager Download button: an "Add to Mortar" button on Nexus listing tiles.
-- Profile templates: a new profile started from a bundle plus game settings and launch options.
 - Per-profile save isolation.
 - Settings considered and not taken (2026-10-02): new profiles starting as a copy of the open profile or from a bundle; an offline mode that never contacts the network.
 - Registering Mortar with Nexus (Collections still to ask about): SSO and OAuth PKCE code is ready behind a build flag (`nexussso.Slug` / `ClientID`, off while empty), waiting for Nexus approval and a slug or client id; see docs/nexus-application.md.
