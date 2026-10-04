@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 // Restore copies the named save folders from zipPath into savesDir. An empty folders list restores every save
@@ -40,11 +41,11 @@ func Restore(zipPath, savesDir string, folders []string, keep int, now time.Time
 		dst := filepath.Join(savesDir, folder)
 		if _, err := os.Stat(dst); err == nil {
 			old := dst + ".mortar-restore"
-			if err := os.Rename(dst, old); err != nil {
+			if err := fsx.Rename(dst, old); err != nil {
 				return err
 			}
-			if err := os.Rename(src, dst); err != nil {
-				_ = os.Rename(old, dst)
+			if err := fsx.Rename(src, dst); err != nil {
+				_ = fsx.Rename(old, dst)
 				return err
 			}
 			if err := os.RemoveAll(old); err != nil {
@@ -54,7 +55,7 @@ func Restore(zipPath, savesDir string, folders []string, keep int, now time.Time
 		} else if !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
-		if err := os.Rename(src, dst); err != nil {
+		if err := fsx.Rename(src, dst); err != nil {
 			return err
 		}
 	}
