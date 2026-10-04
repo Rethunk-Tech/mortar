@@ -128,15 +128,29 @@ func Valid(id string) bool {
 	return Find(id) != nil || slices.ContainsFunc(comingLater, func(c listing) bool { return c.id == id })
 }
 
-func knownApp(appID string) bool {
+// listedApp returns the listing's own copy of appID, so values built from it never carry request text.
+func listedApp(appID string) (string, bool) {
 	if _, err := strconv.ParseUint(appID, 10, 32); err != nil {
-		return false
+		return "", false
 	}
-	return slices.ContainsFunc(games, func(g Game) bool { return g.SteamAppID() == appID }) ||
-		slices.ContainsFunc(comingLater, func(c listing) bool { return c.appID == appID })
+	for _, g := range games {
+		if g.SteamAppID() == appID {
+			return g.SteamAppID(), true
+		}
+	}
+	for _, c := range comingLater {
+		if c.appID == appID {
+			return c.appID, true
+		}
+	}
+	return "", false
 }
 
-// ArtMiddleware serves GET /steam-art/<appid> for listed games only, from Steam's cached hero image.
+// heroCDN is Steam's public copy of a game's hero image, the same file Steam caches locally.
+const heroCDN = "https://cdn.cloudflare.steamstatic.com/steam/apps/%s/library_hero.jpg"
+
+// ArtMiddleware serves GET /steam-art/<appid> for listed games only, from Steam's cached hero image, and redirects
+// to Steam's public copy when no local Steam has cached it, so a cover list never shows a broken image.
 func ArtMiddleware(home string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +159,8 @@ func ArtMiddleware(home string) func(http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
-			if r.Method != http.MethodGet || !knownApp(id) {
+			listed, ok := listedApp(id)
+			if r.Method != http.MethodGet || !ok {
 				http.NotFound(w, r)
 				return
 			}
@@ -157,7 +172,7 @@ func ArtMiddleware(home string) func(http.Handler) http.Handler {
 				}
 			}
 			if path == "" {
-				http.NotFound(w, r)
+				http.Redirect(w, r, fmt.Sprintf(heroCDN, listed), http.StatusFound)
 				return
 			}
 			art, err := fsx.Open(path)

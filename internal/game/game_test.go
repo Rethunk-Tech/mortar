@@ -60,7 +60,7 @@ func TestListAndArt(t *testing.T) {
 	h := ArtMiddleware(h0)(http.NotFoundHandler())
 	for path, want := range map[string]int{
 		"/steam-art/413150":  http.StatusOK,
-		"/steam-art/1966720": http.StatusNotFound,
+		"/steam-art/1966720": http.StatusFound,
 		"/steam-art/999":     http.StatusNotFound,
 		"/steam-art/../etc":  http.StatusNotFound,
 	} {
@@ -71,6 +71,11 @@ func TestListAndArt(t *testing.T) {
 		}
 	}
 	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/steam-art/1966720", nil))
+	if loc := rec.Header().Get("Location"); loc != "https://cdn.cloudflare.steamstatic.com/steam/apps/1966720/library_hero.jpg" {
+		t.Errorf("uncached art redirects to %q", loc)
+	}
+	rec = httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/steam-art/413150", nil))
 	if ct := rec.Header().Get("Content-Type"); ct != "image/jpeg" {
 		t.Errorf("content type = %q", ct)
