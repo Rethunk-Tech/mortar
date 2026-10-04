@@ -190,6 +190,9 @@ func TestApplyAddsStoreEntriesAndReportsMissingMods(t *testing.T) {
 	if result.Added != 1 || !slices.Equal(result.Missing, []string{"B Two"}) {
 		t.Fatalf("apply result = %+v", result)
 	}
+	if len(result.MissingMods) != 1 || result.MissingMods[0].UniqueID != "B.Two" {
+		t.Fatalf("missing mods = %+v", result.MissingMods)
+	}
 	if len(result.Profile.Entries) != 1 || result.Profile.Entries[0].Key != "local-a" {
 		t.Fatalf("applied profile = %+v", result.Profile)
 	}

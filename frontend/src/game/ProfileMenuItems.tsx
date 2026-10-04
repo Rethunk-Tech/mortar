@@ -29,10 +29,12 @@ import {
   Exists as ShortcutExists,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
 import { ApplyBundleDialog } from '../bundles/dialogs.tsx'
+import { bundleWants } from '../bundles/missingWants.ts'
 import { SendDialog } from '../lan/SendDialog.tsx'
 import { useMods } from '../mods/store.ts'
 import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { download } from '../queue/actions.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -324,6 +326,8 @@ function ProfileDialogs({
           }
           const missing = result.missing ?? []
           const added = plural(result.added, { one: '# mod added', other: '# mods added' })
+          const wants =
+            useProfiles.getState().openId === profile.id ? bundleWants(result.missingMods) : []
           useToasts.getState().push({
             kind: missing.length > 0 ? 'warning' : 'success',
             title: t`Bundle added`,
@@ -331,6 +335,14 @@ function ProfileDialogs({
               missing.length > 0
                 ? `${added}\n${t`Not downloaded yet: ${missing.join(', ')}`}`
                 : added,
+            ...(wants.length > 0
+              ? {
+                  action: {
+                    label: t`Download them`,
+                    run: () => download(wants, true).catch(reportUnexpected),
+                  },
+                }
+              : {}),
           })
         }}
       />

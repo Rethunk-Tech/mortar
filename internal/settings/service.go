@@ -3,6 +3,7 @@ package settings
 import (
 	"fmt"
 	"maps"
+	"path/filepath"
 	"slices"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
@@ -89,6 +90,15 @@ func (s *Service) SetNxmRedirectOtherGames(on bool) error {
 
 // CorruptSettingsPath returns the one-time path of settings preserved at startup.
 func (s *Service) CorruptSettingsPath() string { return s.store.CorruptPath() }
+
+// ShowCorruptSettings opens the folder holding the damaged settings file kept at startup.
+func (s *Service) ShowCorruptSettings() error {
+	path := s.store.CorruptPath()
+	if path == "" {
+		return nil
+	}
+	return datadir.Open(filepath.Dir(path))
+}
 
 // SetListColumns stores which Mods list-view columns are shown.
 func (s *Service) SetListColumns(ids []string) error {

@@ -45,6 +45,8 @@ type ApplyResult struct {
 	Profile profile.Profile `json:"profile"`
 	Added   int             `json:"added"`
 	Missing []string        `json:"missing"`
+	// MissingMods are the mods behind Missing with their sources, so the caller can queue their downloads.
+	MissingMods []Mod `json:"missingMods"`
 }
 
 // Service exposes bundles to the frontend.
@@ -407,7 +409,7 @@ func (s *Service) applyLocked(gameID, bundleID string, mods []Mod, profileID str
 		}
 		groups[at].mods = append(groups[at].mods, mod)
 	}
-	result := ApplyResult{Profile: current, Missing: []string{}}
+	result := ApplyResult{Profile: current, Missing: []string{}, MissingMods: []Mod{}}
 	for _, group := range groups {
 		next, err := s.profiles.AddEntry(gameID, profileID, group.key, group.source)
 		if err == nil {
@@ -421,6 +423,7 @@ func (s *Service) applyLocked(gameID, bundleID string, mods []Mod, profileID str
 		if errors.Is(err, modstore.ErrNotFound) {
 			for _, mod := range group.mods {
 				result.Missing = append(result.Missing, mod.Name)
+				result.MissingMods = append(result.MissingMods, mod)
 			}
 			continue
 		}

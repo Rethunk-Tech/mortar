@@ -4,9 +4,11 @@ import type { Settings } from '../../bindings/github.com/Rethunk-AI/mortar/inter
 import {
   CorruptSettingsPath,
   Get,
+  ShowCorruptSettings,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { follow } from '../shell/follow.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const defaults: Settings = {
@@ -154,6 +156,10 @@ export const initSettings = async () => {
       body: i18n._(
         msg`Mortar started with default settings. The damaged file was kept at ${path}.`,
       ),
+      action: {
+        label: i18n._(msg`Show file`),
+        run: () => ShowCorruptSettings().catch(reportUnexpected),
+      },
     })
   }
 }

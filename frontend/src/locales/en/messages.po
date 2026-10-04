@@ -212,7 +212,7 @@ msgstr "Make {name} win"
 #: src/mods/parts.tsx:307
 #: src/mods/parts.tsx:366
 #: src/mods/parts.tsx:371
-#: src/mods/parts.tsx:382
+#: src/mods/parts.tsx:383
 #: src/mods/problemFix/AssetFix.tsx:29
 #: src/mods/problemFix/DuplicateFix.tsx:31
 #: src/mods/problemFix/SettingFix.tsx:27
@@ -221,7 +221,7 @@ msgstr "Make {name} win"
 #: src/mods/problemFixButtons.tsx:135
 #: src/mods/SelectionBarActions.tsx:102
 #: src/mods/SplitCombineItems.tsx:34
-#: src/mods/Toolbar.tsx:242
+#: src/mods/Toolbar.tsx:252
 #: src/mods/TrackedNotInProfile.tsx:86
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChipActions.tsx:65
@@ -329,7 +329,7 @@ msgstr "Duplicate the open profile"
 msgid "The download could not finish. Retry or skip it from the queue."
 msgstr "The download could not finish. Retry or skip it from the queue."
 
-#: src/game/ProfileMenuItems.tsx:372
+#: src/game/ProfileMenuItems.tsx:375
 #: src/profiles/HistoryPanel.tsx:44
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:79
@@ -399,7 +399,7 @@ msgstr "You started this download on Nexus, but there is no {gameName} profile t
 msgid "No user mods in either profile."
 msgstr "No user mods in either profile."
 
-#: src/settings/sections/NexusMods.tsx:85
+#: src/settings/sections/NexusMods.tsx:86
 msgid "Untrack mods"
 msgstr "Untrack mods"
 
@@ -475,7 +475,7 @@ msgstr "Show token"
 msgid "Startup: {0} {1} added {2}"
 msgstr "Startup: {0} {1} added {2}"
 
-#: src/console/StartupPanel.tsx:319
+#: src/console/StartupPanel.tsx:322
 msgid "Assets and packs"
 msgstr "Assets and packs"
 
@@ -511,7 +511,7 @@ msgstr "Startup and window"
 msgid "Cosmetic or harmless"
 msgstr "Cosmetic or harmless"
 
-#: src/game/ProfileMenuItems.tsx:167
+#: src/game/ProfileMenuItems.tsx:169
 msgid "Could not add it to Steam"
 msgstr "Could not add it to Steam"
 
@@ -629,7 +629,7 @@ msgstr "Type a command, for example help"
 msgid "Try my Mortar profile \"{0}\" for {gameName} ({mods}): {1}"
 msgstr "Try my Mortar profile \"{0}\" for {gameName} ({mods}): {1}"
 
-#: src/game/ProfileMenuItems.tsx:430
+#: src/game/ProfileMenuItems.tsx:433
 msgid "Add a bundle…"
 msgstr "Add a bundle…"
 
@@ -637,7 +637,7 @@ msgstr "Add a bundle…"
 msgid "How timestamps are shown"
 msgstr "How timestamps are shown"
 
-#: src/game/ProfileMenuItems.tsx:136
+#: src/game/ProfileMenuItems.tsx:138
 msgid "Remove the shortcut"
 msgstr "Remove the shortcut"
 
@@ -691,7 +691,7 @@ msgstr "Untrack"
 msgid "More"
 msgstr "More"
 
-#: src/console/StartupPanel.tsx:550
+#: src/console/StartupPanel.tsx:553
 msgid "Mods' Entry is timed only on a measured launch."
 msgstr "Mods' Entry is timed only on a measured launch."
 
@@ -714,7 +714,7 @@ msgstr "Identical ({0})"
 msgid "Start the game without a backup."
 msgstr "Start the game without a backup."
 
-#: src/console/StartupPanel.tsx:320
+#: src/console/StartupPanel.tsx:323
 msgid "Time editing and loading game assets, including content packs it loads"
 msgstr "Time editing and loading game assets, including content packs it loads"
 
@@ -726,7 +726,7 @@ msgstr "Uploaded by"
 msgid "Make your first profile"
 msgstr "Make your first profile"
 
-#: src/settings/sections/NexusMods.tsx:153
+#: src/settings/sections/NexusMods.tsx:154
 #: src/shell/NexusAccount.tsx:36
 msgid "Free"
 msgstr "Free"
@@ -878,7 +878,7 @@ msgstr "That item could not be found."
 msgid "Switch to Problems"
 msgstr "Switch to Problems"
 
-#: src/console/StartupPanel.tsx:508
+#: src/console/StartupPanel.tsx:511
 msgid "Measure next launch"
 msgstr "Measure next launch"
 
@@ -892,7 +892,7 @@ msgstr "switched off"
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
-#: src/game/ProfileMenuItems.tsx:163
+#: src/game/ProfileMenuItems.tsx:165
 msgid "Already in Steam"
 msgstr "Already in Steam"
 
@@ -1014,11 +1014,7 @@ msgstr "{0}/{1} files · {2} / {3}"
 msgid "Bundled with SMAPI"
 msgstr "Bundled with SMAPI"
 
-#: src/mods/parts.tsx:338
-msgid "Its folder in this profile is deleted."
-msgstr "Its folder in this profile is deleted."
-
-#: src/settings/sections/NexusMods.tsx:160
+#: src/settings/sections/NexusMods.tsx:161
 msgid "Untrack on Nexus"
 msgstr "Untrack on Nexus"
 
@@ -1110,7 +1106,7 @@ msgstr "No matches"
 msgid "Add a bundle to {profileName}"
 msgstr "Add a bundle to {profileName}"
 
-#: src/game/ProfileMenuItems.tsx:262
+#: src/game/ProfileMenuItems.tsx:264
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
@@ -1227,8 +1223,8 @@ msgstr "Choose an existing bundle or create one."
 msgid "Could not trim save backups"
 msgstr "Could not trim save backups"
 
-#: src/settings/sections/NexusMods.tsx:237
-#: src/settings/sections/NexusMods.tsx:266
+#: src/settings/sections/NexusMods.tsx:249
+#: src/settings/sections/NexusMods.tsx:278
 #: src/shell/NexusAccount.tsx:59
 msgid "Sign in"
 msgstr "Sign in"
@@ -1300,7 +1296,7 @@ msgstr "What you expected"
 msgid "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 msgstr "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 
-#: src/launch/store.ts:124
+#: src/launch/store.ts:123
 #: src/mods/ModDetail.tsx:117
 #: src/mods/ModDetail.tsx:195
 msgid "Roll back"
@@ -1340,7 +1336,7 @@ msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
 #: src/firstrun/FirstRun.tsx:34
-#: src/firstrun/GameSetup.tsx:116
+#: src/firstrun/GameSetup.tsx:121
 #: src/firstrun/SmapiStep.tsx:199
 #: src/firstrun/SmapiStep.tsx:267
 #: src/game/detailStates.tsx:27
@@ -1491,7 +1487,7 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 msgid "No changelog on Nexus"
 msgstr "No changelog on Nexus"
 
-#: src/console/StartupPanel.tsx:301
+#: src/console/StartupPanel.tsx:304
 msgid "Total"
 msgstr "Total"
 
@@ -1600,8 +1596,8 @@ msgid "Tell me when a new SMAPI is out"
 msgstr "Tell me when a new SMAPI is out"
 
 #: src/commandPalette/CommandPalette.tsx:145
-#: src/settings/sections/NexusMods.tsx:126
-#: src/settings/sections/NexusMods.tsx:237
+#: src/settings/sections/NexusMods.tsx:127
+#: src/settings/sections/NexusMods.tsx:249
 #: src/settings/SettingsPage.tsx:38
 msgid "Nexus account"
 msgstr "Nexus account"
@@ -1702,9 +1698,9 @@ msgstr "No tools yet"
 msgid "Mortar is up to date"
 msgstr "Mortar is up to date"
 
-#: src/mods/Toolbar.tsx:291
-#: src/mods/Toolbar.tsx:317
-#: src/mods/Toolbar.tsx:329
+#: src/mods/Toolbar.tsx:301
+#: src/mods/Toolbar.tsx:327
+#: src/mods/Toolbar.tsx:339
 #: src/profiles/CompareBulkBody.tsx:79
 msgid "Filter mods"
 msgstr "Filter mods"
@@ -1729,7 +1725,7 @@ msgstr "Console timestamps"
 msgid "Will update"
 msgstr "Will update"
 
-#: src/mods/parts.tsx:377
+#: src/mods/parts.tsx:378
 msgid "{allCount, plural, one {Remove all # mod} other {Remove all # mods}}"
 msgstr "{allCount, plural, one {Remove all # mod} other {Remove all # mods}}"
 
@@ -1785,8 +1781,8 @@ msgstr "Sent to {0}"
 msgid "Show the first-run tips again"
 msgstr "Show the first-run tips again"
 
-#: src/mods/Toolbar.tsx:92
-#: src/mods/Toolbar.tsx:110
+#: src/mods/Toolbar.tsx:94
+#: src/mods/Toolbar.tsx:112
 #: src/nxm/store.ts:53
 #: src/queue/actions.ts:83
 #: src/queue/store.ts:218
@@ -1829,7 +1825,7 @@ msgstr "Dependency cycle"
 #: src/game/NewProfileDialog.tsx:125
 #: src/game/Sidebar.tsx:388
 #: src/game/Sidebar.tsx:406
-#: src/nxm/ArrivalDialog.tsx:158
+#: src/nxm/ArrivalDialog.tsx:157
 #: src/share/ImportFooter.tsx:35
 msgid "New profile"
 msgstr "New profile"
@@ -1843,7 +1839,7 @@ msgid "Not signed in"
 msgstr "Not signed in"
 
 #: src/firstrun/FindStep.tsx:163
-#: src/firstrun/GameSetup.tsx:144
+#: src/firstrun/GameSetup.tsx:149
 #: src/settings/sections/GameSettings.tsx:178
 #: src/settings/sections/GameSettings.tsx:180
 #: src/settings/sections/GameSettings.tsx:211
@@ -2111,13 +2107,13 @@ msgstr "No enabled mods"
 msgid "Cleanup"
 msgstr "Cleanup"
 
-#: src/mods/Toolbar.tsx:146
-#: src/mods/Toolbar.tsx:153
+#: src/mods/Toolbar.tsx:148
+#: src/mods/Toolbar.tsx:155
 msgid "Group by"
 msgstr "Group by"
 
 #. placeholder {0}: open.name
-#: src/nxm/ArrivalDialog.tsx:153
+#: src/nxm/ArrivalDialog.tsx:152
 msgid "Install into {0}"
 msgstr "Install into {0}"
 
@@ -2128,7 +2124,7 @@ msgstr "Install into {0}"
 msgid "Step {0} of {1}: {2}"
 msgstr "Step {0} of {1}: {2}"
 
-#: src/mods/DuplicateDialog.tsx:136
+#: src/mods/DuplicateDialog.tsx:134
 msgid "Keep the Nexus copy"
 msgstr "Keep the Nexus copy"
 
@@ -2152,7 +2148,7 @@ msgstr "Could not find Mortar users"
 msgid "Enter a number from {MIN_PORT} to {MAX_PORT}"
 msgstr "Enter a number from {MIN_PORT} to {MAX_PORT}"
 
-#: src/mods/Toolbar.tsx:329
+#: src/mods/Toolbar.tsx:339
 msgid "Filter mods, filter active"
 msgstr "Filter mods, filter active"
 
@@ -2218,7 +2214,7 @@ msgstr "game running"
 msgid "New profile from link"
 msgstr "New profile from link"
 
-#: src/console/StartupPanel.tsx:461
+#: src/console/StartupPanel.tsx:464
 msgid "Title screen"
 msgstr "Title screen"
 
@@ -2230,7 +2226,7 @@ msgstr "Title screen"
 #: src/mods/ModList.tsx:368
 #: src/mods/Sidebar.tsx:303
 #: src/mods/Sidebar.tsx:316
-#: src/mods/Toolbar.tsx:59
+#: src/mods/Toolbar.tsx:61
 #: src/profiles/CompareBulkBody.tsx:246
 #: src/profiles/overrideValue.ts:86
 #: src/profiles/ProfilesPage.tsx:269
@@ -2320,7 +2316,7 @@ msgid "Desktop"
 msgstr "Desktop"
 
 #. placeholder {0}: result.added
-#: src/game/ProfileMenuItems.tsx:326
+#: src/game/ProfileMenuItems.tsx:328
 msgid "{0, plural, one {# mod added} other {# mods added}}"
 msgstr "{0, plural, one {# mod added} other {# mods added}}"
 
@@ -2328,6 +2324,10 @@ msgstr "{0, plural, one {# mod added} other {# mods added}}"
 #: src/profiles/LaunchOptionsBlock.tsx:120
 msgid "Remove preset"
 msgstr "Remove preset"
+
+#: src/mods/parts.tsx:334
+msgid "Their folders in this profile are deleted. You can undo this."
+msgstr "Their folders in this profile are deleted. You can undo this."
 
 #: src/console/PerformancePanelParts.tsx:200
 msgid "Show report"
@@ -2363,7 +2363,7 @@ msgstr "Start measuring"
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
-#: src/mods/Toolbar.tsx:186
+#: src/mods/Toolbar.tsx:188
 msgid "Edit categories…"
 msgstr "Edit categories…"
 
@@ -2481,7 +2481,7 @@ msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
 #. placeholder {0}: active.label(i18n)
-#: src/mods/Toolbar.tsx:92
+#: src/mods/Toolbar.tsx:94
 msgid "Show: {0}"
 msgstr "Show: {0}"
 
@@ -2506,7 +2506,7 @@ msgstr "Search GitHub releases"
 msgid "Nexus links"
 msgstr "Nexus links"
 
-#: src/game/ProfileMenuItems.tsx:164
+#: src/game/ProfileMenuItems.tsx:166
 msgid "It shows in your Steam library the next time Steam starts."
 msgstr "It shows in your Steam library the next time Steam starts."
 
@@ -2597,7 +2597,7 @@ msgid "Downloaded mods no profile uses"
 msgstr "Downloaded mods no profile uses"
 
 #. placeholder {0}: folded.count
-#: src/console/StartupPanel.tsx:370
+#: src/console/StartupPanel.tsx:373
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
@@ -2671,7 +2671,7 @@ msgstr "Add to profile"
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
 
-#: src/settings/sections/NexusMods.tsx:230
+#: src/settings/sections/NexusMods.tsx:231
 msgid "Could not sign in"
 msgstr "Could not sign in"
 
@@ -2682,7 +2682,7 @@ msgstr "Could not sign in"
 msgid "Report a bug"
 msgstr "Report a bug"
 
-#: src/mods/ReportToAuthorButton.tsx:229
+#: src/mods/ReportToAuthorButton.tsx:224
 msgid "Skip sharing"
 msgstr "Skip sharing"
 
@@ -2716,7 +2716,7 @@ msgid "Grid card size"
 msgstr "Grid card size"
 
 #. placeholder {0}: result.remaining
-#: src/settings/sections/NexusMods.tsx:64
+#: src/settings/sections/NexusMods.tsx:65
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
@@ -2760,7 +2760,7 @@ msgstr "Duplicates"
 msgid "This version is only on a site Mortar cannot download from yet; open the link to get it."
 msgstr "This version is only on a site Mortar cannot download from yet; open the link to get it."
 
-#: src/console/StartupPanel.tsx:179
+#: src/console/StartupPanel.tsx:182
 msgid "Hide content packs"
 msgstr "Hide content packs"
 
@@ -2771,11 +2771,11 @@ msgstr "Collapsed"
 #: src/launch/SweepDialog.tsx:29
 #: src/mods/ModCards.tsx:460
 #: src/mods/ModList.tsx:366
-#: src/mods/Toolbar.tsx:60
+#: src/mods/Toolbar.tsx:62
 msgid "Update available"
 msgstr "Update available"
 
-#: src/console/StartupPanel.tsx:464
+#: src/console/StartupPanel.tsx:467
 msgid "Since the launch before"
 msgstr "Since the launch before"
 
@@ -2802,6 +2802,10 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 #: src/launch/StopDialog.tsx:21
 msgid "Stop the game?"
 msgstr "Stop the game?"
+
+#: src/mods/parts.tsx:338
+msgid "Its folder in this profile is deleted. You can undo this."
+msgstr "Its folder in this profile is deleted. You can undo this."
 
 #: src/settings/shortcutLabels.ts:39
 msgid "Go back"
@@ -2832,8 +2836,8 @@ msgid "Custom categories"
 msgstr "Custom categories"
 
 #: src/bundles/BundlesSection.tsx:155
-#: src/game/ProfileMenuItems.tsx:81
-#: src/game/ProfileMenuItems.tsx:444
+#: src/game/ProfileMenuItems.tsx:83
+#: src/game/ProfileMenuItems.tsx:447
 #: src/mods/CategoryEditor.tsx:163
 #: src/mods/ConfigPresets.tsx:143
 #: src/mods/OldFilesCallouts.tsx:62
@@ -2866,8 +2870,8 @@ msgstr "{crashed} crashed"
 msgid "No performance data was returned."
 msgstr "No performance data was returned."
 
-#: src/settings/sections/NexusMods.tsx:176
-#: src/settings/sections/NexusMods.tsx:180
+#: src/settings/sections/NexusMods.tsx:177
+#: src/settings/sections/NexusMods.tsx:181
 msgid "Ask me to endorse mods I keep using"
 msgstr "Ask me to endorse mods I keep using"
 
@@ -3010,7 +3014,7 @@ msgstr "Game log"
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
 
-#: src/mods/Toolbar.tsx:63
+#: src/mods/Toolbar.tsx:65
 msgid "Local"
 msgstr "Local"
 
@@ -3071,7 +3075,7 @@ msgstr "Where save backups are kept. Empty uses the default."
 #: src/bundles/dialogs.tsx:221
 #: src/bundles/dialogs.tsx:279
 #: src/console/HelpDialog.tsx:234
-#: src/console/StartupPanel.tsx:490
+#: src/console/StartupPanel.tsx:493
 #: src/fomod/Dialog.tsx:254
 #: src/game/NewProfileDialog.tsx:147
 #: src/install/DownloadsDialog.tsx:151
@@ -3093,7 +3097,7 @@ msgstr "Where save backups are kept. Empty uses the default."
 #: src/profiles/EditProfileDialog.tsx:440
 #: src/profiles/ExternalImportMenu.tsx:72
 #: src/profiles/GameModsDialog.tsx:160
-#: src/settings/sections/NexusSSO.tsx:68
+#: src/settings/sections/NexusSSO.tsx:67
 #: src/settings/sections/nxmHandler.tsx:77
 #: src/shell/BugReportDialog.tsx:98
 #: src/shell/ConfirmDialog.tsx:54
@@ -3122,7 +3126,7 @@ msgstr "Could not unpin the selected mods"
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
-#: src/mods/Toolbar.tsx:208
+#: src/mods/Toolbar.tsx:214
 msgid "Open Nexus Mods"
 msgstr "Open Nexus Mods"
 
@@ -3199,7 +3203,7 @@ msgstr "Created {name}; downloading {mods}"
 msgid "From the extra mods folder…"
 msgstr "From the extra mods folder…"
 
-#: src/firstrun/GameSetup.tsx:75
+#: src/firstrun/GameSetup.tsx:78
 #: src/firstrunTour/TourPopover.tsx:171
 #: src/queue/QueueHistory.tsx:57
 msgid "Done"
@@ -3209,7 +3213,7 @@ msgstr "Done"
 msgid "Accent: {from} → {to}"
 msgstr "Accent: {from} → {to}"
 
-#: src/settings/sections/NexusMods.tsx:82
+#: src/settings/sections/NexusMods.tsx:83
 msgid "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 msgstr "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 
@@ -3236,7 +3240,7 @@ msgstr " · Stardew Valley {0}"
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
-#: src/game/ProfileMenuItems.tsx:185
+#: src/game/ProfileMenuItems.tsx:187
 #: src/lan/SendDialog.tsx:106
 msgid "Send to…"
 msgstr "Send to…"
@@ -3280,7 +3284,7 @@ msgstr "Mortar: {label}"
 
 #: src/mods/ModCards.tsx:448
 #: src/mods/ModList.tsx:347
-#: src/mods/Toolbar.tsx:141
+#: src/mods/Toolbar.tsx:143
 msgid "A mod with several tags appears under its first tag."
 msgstr "A mod with several tags appears under its first tag."
 
@@ -3291,6 +3295,11 @@ msgstr "Summary"
 #: src/firstrun/ProfileStep.tsx:109
 msgid "A profile with only SMAPI. Add mods from Nexus or from archives."
 msgstr "A profile with only SMAPI. Add mods from Nexus or from archives."
+
+#. placeholder {0}: extra.join(', ')
+#: src/mods/parts.tsx:336
+msgid "Mods from the same download are removed together: {0}. You can undo this."
+msgstr "Mods from the same download are removed together: {0}. You can undo this."
 
 #: src/bundles/BundlesSection.tsx:52
 #: src/bundles/dialogs.tsx:88
@@ -3335,7 +3344,7 @@ msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 msgid "Archive…"
 msgstr "Archive…"
 
-#: src/console/StartupPanel.tsx:214
+#: src/console/StartupPanel.tsx:217
 #: src/settings/sections/About.tsx:62
 #: src/settings/sections/About.tsx:67
 #: src/settings/sections/Updates.tsx:158
@@ -3417,7 +3426,7 @@ msgstr "Get the extension"
 
 #: src/game/Hero.tsx:331
 #: src/mods/ModDependencyTree.tsx:178
-#: src/mods/Toolbar.tsx:157
+#: src/mods/Toolbar.tsx:159
 #: src/profiles/LaunchOptionsBlock.tsx:85
 #: src/settings/prefCopy.ts:120
 msgid "None"
@@ -3630,7 +3639,7 @@ msgstr "{name} has no file Mortar can use in place of the one shared"
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
-#: src/game/ProfileMenuItems.tsx:163
+#: src/game/ProfileMenuItems.tsx:165
 msgid "Added to Steam"
 msgstr "Added to Steam"
 
@@ -3638,7 +3647,7 @@ msgstr "Added to Steam"
 msgid "Enter text to search stored runs."
 msgstr "Enter text to search stored runs."
 
-#: src/game/ProfileMenuItems.tsx:381
+#: src/game/ProfileMenuItems.tsx:384
 msgid "Duplicate"
 msgstr "Duplicate"
 
@@ -3781,11 +3790,11 @@ msgstr "Play without mods"
 #. placeholder {0}: counts.skipped
 #. placeholder {0}: res.skipped
 #: src/mods/MoveFoldersDialog.tsx:56
-#: src/share/importCompletion.ts:65
+#: src/share/importCompletion.ts:21
 msgid "{0} skipped"
 msgstr "{0} skipped"
 
-#: src/console/StartupPanel.tsx:302
+#: src/console/StartupPanel.tsx:305
 msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 
@@ -3814,8 +3823,8 @@ msgstr "Could not permanently delete the profile"
 msgid "Heart"
 msgstr "Heart"
 
-#: src/settings/sections/NexusMods.tsx:126
-#: src/settings/sections/NexusMods.tsx:143
+#: src/settings/sections/NexusMods.tsx:127
+#: src/settings/sections/NexusMods.tsx:144
 #: src/shell/NexusAccount.tsx:43
 msgid "Sign out"
 msgstr "Sign out"
@@ -3829,7 +3838,7 @@ msgstr "Checking profiles…"
 msgid "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 msgstr "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 
-#: src/console/StartupPanel.tsx:212
+#: src/console/StartupPanel.tsx:215
 msgid "Mortar's own SMAPI mod; it records these timings"
 msgstr "Mortar's own SMAPI mod; it records these timings"
 
@@ -3846,7 +3855,7 @@ msgstr "When Mortar makes a save backup before launching"
 msgid "Settings backups"
 msgstr "Settings backups"
 
-#: src/settings/sections/NexusMods.tsx:171
+#: src/settings/sections/NexusMods.tsx:172
 msgid "Untrack all…"
 msgstr "Untrack all…"
 
@@ -3857,7 +3866,7 @@ msgid "{0} of {1}"
 msgstr "{0} of {1}"
 
 #. placeholder {0}: game.loader
-#: src/firstrun/GameSetup.tsx:148
+#: src/firstrun/GameSetup.tsx:154
 msgid "Install {0}"
 msgstr "Install {0}"
 
@@ -3983,7 +3992,7 @@ msgstr "Created · updated"
 msgid "Read the release notes on GitHub"
 msgstr "Read the release notes on GitHub"
 
-#: src/console/StartupPanel.tsx:472
+#: src/console/StartupPanel.tsx:475
 msgid "Mods measured"
 msgstr "Mods measured"
 
@@ -4040,7 +4049,7 @@ msgstr "Direct"
 msgid "No downloads in history."
 msgstr "No downloads in history."
 
-#: src/mods/Toolbar.tsx:61
+#: src/mods/Toolbar.tsx:63
 msgid "Has problems"
 msgstr "Has problems"
 
@@ -4074,7 +4083,7 @@ msgid "Show hidden mods"
 msgstr "Show hidden mods"
 
 #. placeholder {0}: profileName(rollback)
-#: src/launch/store.ts:121
+#: src/launch/store.ts:120
 msgid "New errors after updating {0}"
 msgstr "New errors after updating {0}"
 
@@ -4131,7 +4140,7 @@ msgid "Template saved"
 msgstr "Template saved"
 
 #: src/console/HelpDialog.tsx:238
-#: src/mods/ReportToAuthorButton.tsx:237
+#: src/mods/ReportToAuthorButton.tsx:232
 msgid "Uploading…"
 msgstr "Uploading…"
 
@@ -4237,7 +4246,7 @@ msgstr "Rose"
 msgid "Skip the installer wizard when saved choices still fit"
 msgstr "Skip the installer wizard when saved choices still fit"
 
-#: src/mods/Toolbar.tsx:115
+#: src/mods/Toolbar.tsx:117
 msgid "All mods"
 msgstr "All mods"
 
@@ -4324,7 +4333,7 @@ msgstr "Title intro"
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
-#: src/settings/sections/NexusMods.tsx:256
+#: src/settings/sections/NexusMods.tsx:268
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
@@ -4389,7 +4398,7 @@ msgstr "Before you play"
 msgid "Last played {0}"
 msgstr "Last played {0}"
 
-#: src/console/StartupPanel.tsx:378
+#: src/console/StartupPanel.tsx:381
 msgid "Game and SMAPI"
 msgstr "Game and SMAPI"
 
@@ -4496,6 +4505,10 @@ msgstr "Paste from clipboard"
 msgid "{0} copies of {1}"
 msgstr "{0} copies of {1}"
 
+#: src/firstrun/NexusStep.tsx:18
+msgid "Signed in as {name}."
+msgstr "Signed in as {name}."
+
 #: src/launch/PrePlayDialog.tsx:78
 msgid "and {extra} more"
 msgstr "and {extra} more"
@@ -4561,7 +4574,7 @@ msgstr "Choose variant…"
 #: src/mods/columnLabel.ts:14
 #: src/mods/NexusDetails.tsx:106
 #: src/mods/Sidebar.tsx:383
-#: src/settings/sections/NexusMods.tsx:175
+#: src/settings/sections/NexusMods.tsx:176
 msgid "Endorsements"
 msgstr "Endorsements"
 
@@ -4577,13 +4590,10 @@ msgstr "Keep forever"
 msgid "{daily} requests left today · {hourly} this hour"
 msgstr "{daily} requests left today · {hourly} this hour"
 
+#: src/firstrun/NexusStep.tsx:24
 #: src/firstrun/SmapiStep.tsx:258
 msgid "Skip for now"
 msgstr "Skip for now"
-
-#: src/mods/parts.tsx:334
-msgid "Their folders in this profile are deleted."
-msgstr "Their folders in this profile are deleted."
 
 #: src/profiles/RecentChangesButton.tsx:44
 msgid "Added"
@@ -4665,7 +4675,7 @@ msgstr "In Mortar"
 msgid "{name} settings"
 msgstr "{name} settings"
 
-#: src/console/StartupPanel.tsx:336
+#: src/console/StartupPanel.tsx:339
 msgid "Startup time by mod"
 msgstr "Startup time by mod"
 
@@ -4718,8 +4728,8 @@ msgstr "When you press Play"
 msgid "Next"
 msgstr "Next"
 
-#: src/mods/Toolbar.tsx:249
-#: src/mods/Toolbar.tsx:256
+#: src/mods/Toolbar.tsx:259
+#: src/mods/Toolbar.tsx:266
 msgid "Add archive…"
 msgstr "Add archive…"
 
@@ -4854,7 +4864,7 @@ msgstr "{queued, plural, one {# already queued} other {# already queued}}"
 msgid "Could not remove the selected mods"
 msgstr "Could not remove the selected mods"
 
-#: src/console/StartupPanel.tsx:308
+#: src/console/StartupPanel.tsx:311
 msgid "The mod's Entry method; timed only on a measured launch"
 msgstr "The mod's Entry method; timed only on a measured launch"
 
@@ -4912,7 +4922,7 @@ msgstr "Rescan"
 msgid "Back"
 msgstr "Back"
 
-#: src/game/ProfileMenuItems.tsx:211
+#: src/game/ProfileMenuItems.tsx:213
 msgid "Save as template…"
 msgstr "Save as template…"
 
@@ -4959,7 +4969,7 @@ msgstr "Could not switch off the other copy of {0}"
 msgid "Move…"
 msgstr "Move…"
 
-#: src/game/ProfileMenuItems.tsx:187
+#: src/game/ProfileMenuItems.tsx:189
 msgid "Turn on sharing nearby in Settings › General."
 msgstr "Turn on sharing nearby in Settings › General."
 
@@ -5004,7 +5014,7 @@ msgstr "Open recently deleted"
 msgid "Moon"
 msgstr "Moon"
 
-#: src/settings/sections/NexusMods.tsx:237
+#: src/settings/sections/NexusMods.tsx:249
 msgid "API key"
 msgstr "API key"
 
@@ -5012,7 +5022,7 @@ msgstr "API key"
 msgid "Share FOMOD choices"
 msgstr "Share FOMOD choices"
 
-#: src/settings/sections/NexusMods.tsx:117
+#: src/settings/sections/NexusMods.tsx:118
 msgid "Untrack every mod you track on Nexus"
 msgstr "Untrack every mod you track on Nexus"
 
@@ -5088,7 +5098,7 @@ msgstr "Mod list format"
 msgid "Open author page on Nexus"
 msgstr "Open author page on Nexus"
 
-#: src/launch/store.ts:269
+#: src/launch/store.ts:268
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
@@ -5293,11 +5303,11 @@ msgstr "Could not load what can be cleaned up"
 msgid "Unavailable"
 msgstr "Unavailable"
 
-#: src/console/StartupPanel.tsx:328
+#: src/console/StartupPanel.tsx:331
 msgid "Sampled on a measured launch: includes time in the mod's patches on game code"
 msgstr "Sampled on a measured launch: includes time in the mod's patches on game code"
 
-#: src/settings/sections/NexusSSO.tsx:59
+#: src/settings/sections/NexusSSO.tsx:58
 msgid "Connecting…"
 msgstr "Connecting…"
 
@@ -5321,7 +5331,7 @@ msgstr "Console log cap"
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
-#: src/game/ProfileMenuItems.tsx:143
+#: src/game/ProfileMenuItems.tsx:145
 msgid "Shortcut removed"
 msgstr "Shortcut removed"
 
@@ -5334,7 +5344,7 @@ msgstr "Delete {0} permanently"
 msgid "Could not reach Nexus"
 msgstr "Could not reach Nexus"
 
-#: src/game/ProfileMenuItems.tsx:146
+#: src/game/ProfileMenuItems.tsx:148
 msgid "Could not remove the shortcut"
 msgstr "Could not remove the shortcut"
 
@@ -5393,7 +5403,7 @@ msgstr "New group"
 msgid "This deletes the list of past downloads. In-progress downloads are not affected. Failed items lose Retry until you download them again."
 msgstr "This deletes the list of past downloads. In-progress downloads are not affected. Failed items lose Retry until you download them again."
 
-#: src/game/ProfileMenuItems.tsx:80
+#: src/game/ProfileMenuItems.tsx:82
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
@@ -5419,7 +5429,7 @@ msgstr "This update's notes mention breaking changes or new requirements"
 msgid "Copy {0}"
 msgstr "Copy {0}"
 
-#: src/game/ProfileMenuItems.tsx:338
+#: src/game/ProfileMenuItems.tsx:341
 #: src/settings/prefCopy.ts:109
 msgid "Download them"
 msgstr "Download them"
@@ -5440,7 +5450,7 @@ msgstr "Regenerate token"
 msgid "New profile from file"
 msgstr "New profile from file"
 
-#: src/game/ProfileMenuItems.tsx:127
+#: src/game/ProfileMenuItems.tsx:129
 msgid "Shortcut added"
 msgstr "Shortcut added"
 
@@ -5451,7 +5461,7 @@ msgstr "Large"
 #: src/mods/columnLabel.ts:13
 #: src/mods/NexusDetails.tsx:96
 #: src/mods/Sidebar.tsx:141
-#: src/mods/Toolbar.tsx:159
+#: src/mods/Toolbar.tsx:161
 #: src/settings/prefCopy.ts:122
 msgid "Category"
 msgstr "Category"
@@ -5472,7 +5482,7 @@ msgstr "Warm and bold"
 msgid "Badge checks for other profiles"
 msgstr "Badge checks for other profiles"
 
-#: src/settings/sections/NexusSSO.tsx:36
+#: src/settings/sections/NexusSSO.tsx:35
 msgid "Could not sign in with Nexus Mods"
 msgstr "Could not sign in with Nexus Mods"
 
@@ -5502,7 +5512,7 @@ msgstr "Could not list backups: {error}"
 msgid "Check mod updates on start: {from} → {to}"
 msgstr "Check mod updates on start: {from} → {to}"
 
-#: src/firstrun/GameSetup.tsx:111
+#: src/firstrun/GameSetup.tsx:116
 #: src/toasts/report.ts:26
 msgid "Something went wrong."
 msgstr "Something went wrong."
@@ -5586,12 +5596,12 @@ msgstr "Last {n} runs: {0}"
 msgid "Colour"
 msgstr "Colour"
 
-#: src/settings/sections/NexusMods.tsx:83
+#: src/settings/sections/NexusMods.tsx:84
 msgid "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus? Nexus has no undo for this.} other {Untrack all # tracked {gameName} mods on Nexus? Nexus has no undo for this.}}"
 msgstr "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus? Nexus has no undo for this.} other {Untrack all # tracked {gameName} mods on Nexus? Nexus has no undo for this.}}"
 
 #: src/console/UpdateNoteTag.tsx:19
-#: src/mods/Toolbar.tsx:62
+#: src/mods/Toolbar.tsx:64
 #: src/profiles/RecentChangesButton.tsx:59
 msgid "Pinned"
 msgstr "Pinned"
@@ -5713,7 +5723,7 @@ msgstr "Every game asset the profile's content packs change, and which mods chan
 msgid "Run again"
 msgstr "Run again"
 
-#: src/launch/store.ts:325
+#: src/launch/store.ts:324
 msgid "Could not stop the game"
 msgstr "Could not stop the game"
 
@@ -5757,7 +5767,7 @@ msgstr "Reset to default columns"
 msgid "Edit tool"
 msgstr "Edit tool"
 
-#: src/mods/Toolbar.tsx:164
+#: src/mods/Toolbar.tsx:166
 #: src/settings/prefCopy.ts:127
 msgid "Group"
 msgstr "Group"
@@ -5787,7 +5797,7 @@ msgstr "Share profile"
 msgid "Refresh"
 msgstr "Refresh"
 
-#: src/game/ProfileMenuItems.tsx:247
+#: src/game/ProfileMenuItems.tsx:249
 msgid "Choose cover image"
 msgstr "Choose cover image"
 
@@ -5875,7 +5885,7 @@ msgstr "No update checks, and it can't go in a share link."
 msgid "This pack has files that always install."
 msgstr "This pack has files that always install."
 
-#: src/game/ProfileMenuItems.tsx:409
+#: src/game/ProfileMenuItems.tsx:412
 msgid "Match a friend's profile…"
 msgstr "Match a friend's profile…"
 
@@ -5910,7 +5920,7 @@ msgstr "Open in Mortar"
 msgid "Download and install"
 msgstr "Download and install"
 
-#: src/mods/Toolbar.tsx:375
+#: src/mods/Toolbar.tsx:385
 msgid "Or import a shared profile…"
 msgstr "Or import a shared profile…"
 
@@ -5993,7 +6003,7 @@ msgstr "Could not skip the update for {0}"
 msgid "Nexus mod {id}"
 msgstr "Nexus mod {id}"
 
-#: src/game/ProfileMenuItems.tsx:118
+#: src/game/ProfileMenuItems.tsx:120
 msgid "Add a shortcut that plays this profile"
 msgstr "Add a shortcut that plays this profile"
 
@@ -6022,7 +6032,7 @@ msgid "·"
 msgstr "·"
 
 #: src/browse/BrowsePage.tsx:397
-#: src/mods/AddToGroupDialog.tsx:98
+#: src/mods/AddToGroupDialog.tsx:99
 #: src/mods/configFormUi.tsx:290
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/ModMenu.tsx:277
@@ -6041,7 +6051,7 @@ msgstr "Add"
 msgid "{0, plural, one {Filter # save} other {Filter # saves}}"
 msgstr "{0, plural, one {Filter # save} other {Filter # saves}}"
 
-#: src/mods/DuplicateDialog.tsx:123
+#: src/mods/DuplicateDialog.tsx:121
 msgid "Keep this one"
 msgstr "Keep this one"
 
@@ -6049,7 +6059,7 @@ msgstr "Keep this one"
 msgid "How to share"
 msgstr "How to share"
 
-#: src/game/ProfileMenuItems.tsx:256
+#: src/game/ProfileMenuItems.tsx:258
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
@@ -6057,7 +6067,7 @@ msgstr "Choose cover image…"
 msgid "Crash finding was stopped."
 msgstr "Crash finding was stopped."
 
-#: src/settings/sections/NexusSSO.tsx:62
+#: src/settings/sections/NexusSSO.tsx:61
 msgid "Approve Mortar in your browser…"
 msgstr "Approve Mortar in your browser…"
 
@@ -6160,11 +6170,6 @@ msgstr "Copy log"
 msgid "See startup"
 msgstr "See startup"
 
-#. placeholder {0}: extra.join(', ')
-#: src/mods/parts.tsx:336
-msgid "Mods from the same download are removed together: {0}."
-msgstr "Mods from the same download are removed together: {0}."
-
 #: src/nxm/store.ts:69
 msgid "Downloading {name} into {profileName}"
 msgstr "Downloading {name} into {profileName}"
@@ -6198,7 +6203,7 @@ msgstr "Manage templates"
 msgid "Could not track"
 msgstr "Could not track"
 
-#: src/settings/sections/NexusMods.tsx:138
+#: src/settings/sections/NexusMods.tsx:139
 msgid "Signed out of Nexus"
 msgstr "Signed out of Nexus"
 
@@ -6221,7 +6226,7 @@ msgstr "Restart now"
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
-#: src/console/StartupPanel.tsx:195
+#: src/console/StartupPanel.tsx:198
 msgid "Show in Mods"
 msgstr "Show in Mods"
 
@@ -6361,7 +6366,7 @@ msgstr "Retention"
 msgid "This session"
 msgstr "This session"
 
-#: src/nxm/ArrivalDialog.tsx:148
+#: src/nxm/ArrivalDialog.tsx:147
 msgid "Other profile…"
 msgstr "Other profile…"
 
@@ -6450,7 +6455,7 @@ msgstr "On Nexus"
 msgid "Couldn't read the window state"
 msgstr "Couldn't read the window state"
 
-#: src/console/StartupPanel.tsx:298
+#: src/console/StartupPanel.tsx:301
 msgid "Click a mod to show it in Mods"
 msgstr "Click a mod to show it in Mods"
 
@@ -6559,11 +6564,11 @@ msgstr "Something went wrong"
 msgid "already listed"
 msgstr "already listed"
 
-#: src/settings/sections/NexusMods.tsx:71
+#: src/settings/sections/NexusMods.tsx:72
 msgid "Could not untrack mods"
 msgstr "Could not untrack mods"
 
-#: src/console/StartupPanel.tsx:470
+#: src/console/StartupPanel.tsx:473
 msgid "Slowest mod"
 msgstr "Slowest mod"
 
@@ -6587,7 +6592,7 @@ msgstr "Winter"
 msgid "Jump to next error"
 msgstr "Jump to next error"
 
-#: src/mods/Toolbar.tsx:64
+#: src/mods/Toolbar.tsx:66
 msgid "Added this week"
 msgstr "Added this week"
 
@@ -6607,7 +6612,7 @@ msgstr "Change"
 msgid "Could not switch the group"
 msgstr "Could not switch the group"
 
-#: src/console/StartupPanel.tsx:179
+#: src/console/StartupPanel.tsx:182
 msgid "Show content packs"
 msgstr "Show content packs"
 
@@ -6623,7 +6628,7 @@ msgstr "Pick two to compare"
 msgid "Rename bundle"
 msgstr "Rename bundle"
 
-#: src/game/ProfileMenuItems.tsx:330
+#: src/game/ProfileMenuItems.tsx:333
 msgid "Bundle added"
 msgstr "Bundle added"
 
@@ -6657,7 +6662,7 @@ msgstr "Downloads come from Nexus with your account, so Mortar needs your API ke
 msgid "Mod or event"
 msgstr "Mod or event"
 
-#: src/settings/sections/NexusMods.tsx:121
+#: src/settings/sections/NexusMods.tsx:122
 msgid "Untrack every {gameName} mod on Nexus"
 msgstr "Untrack every {gameName} mod on Nexus"
 
@@ -6843,8 +6848,8 @@ msgstr "Show the game log"
 
 #. placeholder {0}: counts.installed
 #. placeholder {0}: game.loader
-#: src/firstrun/GameSetup.tsx:148
-#: src/share/importCompletion.ts:63
+#: src/firstrun/GameSetup.tsx:154
+#: src/share/importCompletion.ts:19
 msgid "{0} installed"
 msgstr "{0} installed"
 
@@ -6875,7 +6880,7 @@ msgstr "{0, plural, one {with # settings file, written once its mod is installed
 #. placeholder {0}: sum.failed
 #: src/mods/MoveFoldersDialog.tsx:57
 #: src/queue/QueueSheet.tsx:54
-#: src/share/importCompletion.ts:64
+#: src/share/importCompletion.ts:20
 msgid "{0} failed"
 msgstr "{0} failed"
 
@@ -7085,7 +7090,7 @@ msgid "Plain text"
 msgstr "Plain text"
 
 #. placeholder {0}: result.untracked
-#: src/settings/sections/NexusMods.tsx:59
+#: src/settings/sections/NexusMods.tsx:60
 msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
@@ -7153,7 +7158,7 @@ msgid "Reset every shortcut?"
 msgstr "Reset every shortcut?"
 
 #: src/firstrun/FirstRun.tsx:40
-#: src/firstrun/GameSetup.tsx:108
+#: src/firstrun/GameSetup.tsx:113
 #: src/firstrun/SmapiStep.tsx:219
 #: src/games/GameSelect.tsx:317
 #: src/profiles/GameSettings.tsx:98
@@ -7193,7 +7198,7 @@ msgstr "Keep"
 msgid "Settings file"
 msgstr "Settings file"
 
-#: src/console/StartupPanel.tsx:487
+#: src/console/StartupPanel.tsx:490
 msgid "Play now"
 msgstr "Play now"
 
@@ -7231,7 +7236,7 @@ msgstr "Search run logs"
 msgid "{0} not installed yet"
 msgstr "{0} not installed yet"
 
-#: src/console/StartupPanel.tsx:466
+#: src/console/StartupPanel.tsx:469
 msgid "faster"
 msgstr "faster"
 
@@ -7270,7 +7275,7 @@ msgstr "and {0} more"
 msgid "Open manifest.json"
 msgstr "Open manifest.json"
 
-#: src/mods/Toolbar.tsx:383
+#: src/mods/Toolbar.tsx:393
 #: src/share/ImportInput.tsx:36
 msgid "Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V."
 msgstr "Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V."
@@ -7490,7 +7495,7 @@ msgstr "none"
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
 
-#: src/console/StartupPanel.tsx:461
+#: src/console/StartupPanel.tsx:464
 msgid "Not reached"
 msgstr "Not reached"
 
@@ -7539,7 +7544,7 @@ msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folde
 msgid "Follow live log"
 msgstr "Follow live log"
 
-#: src/console/StartupPanel.tsx:495
+#: src/console/StartupPanel.tsx:498
 msgid "The next launch will be measured"
 msgstr "The next launch will be measured"
 
@@ -7571,7 +7576,7 @@ msgstr "Preview"
 msgid "Remove anyway"
 msgstr "Remove anyway"
 
-#: src/game/ProfileMenuItems.tsx:399
+#: src/game/ProfileMenuItems.tsx:402
 msgid "Show in sidebar"
 msgstr "Show in sidebar"
 
@@ -7658,7 +7663,7 @@ msgstr "Could not pin the selected mods"
 msgid "Pause all"
 msgstr "Pause all"
 
-#: src/console/StartupPanel.tsx:313
+#: src/console/StartupPanel.tsx:316
 msgid "Slowest event"
 msgstr "Slowest event"
 
@@ -7776,7 +7781,7 @@ msgstr "Auto-enable requirements"
 msgid "Enabled"
 msgstr "Enabled"
 
-#: src/settings/sections/NexusMods.tsx:153
+#: src/settings/sections/NexusMods.tsx:154
 #: src/shell/NexusAccount.tsx:36
 msgid "Premium"
 msgstr "Premium"
@@ -7841,7 +7846,7 @@ msgstr "copy of {name}"
 msgid "GOG via Heroic"
 msgstr "GOG via Heroic"
 
-#: src/console/StartupPanel.tsx:530
+#: src/console/StartupPanel.tsx:533
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
@@ -7862,7 +7867,7 @@ msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgid "Combined"
 msgstr "Combined"
 
-#: src/game/ProfileMenuItems.tsx:390
+#: src/game/ProfileMenuItems.tsx:393
 msgid "Export profile…"
 msgstr "Export profile…"
 
@@ -7900,7 +7905,7 @@ msgstr "Mortar checks Steam's settings for it: not found yet."
 msgid "Show labels"
 msgstr "Show labels"
 
-#: src/launch/store.ts:101
+#: src/launch/store.ts:100
 msgid "{shown} and {more, plural, one {# more} other {# more}}"
 msgstr "{shown} and {more, plural, one {# more} other {# more}}"
 
@@ -8036,7 +8041,7 @@ msgstr "Carry them into the new version's folder."
 msgid "Ask before removing mods from a profile"
 msgstr "Ask before removing mods from a profile"
 
-#: src/mods/Toolbar.tsx:290
+#: src/mods/Toolbar.tsx:300
 msgid "Filter {total, plural, one {# mod} other {# mods}}"
 msgstr "Filter {total, plural, one {# mod} other {# mods}}"
 
@@ -8093,7 +8098,7 @@ msgstr "Switch to Saves"
 #: src/mods/ModMenu.tsx:168
 #: src/mods/ModMenu.tsx:293
 #: src/mods/parts.tsx:309
-#: src/mods/parts.tsx:384
+#: src/mods/parts.tsx:390
 #: src/mods/problemFixButtons.tsx:175
 #: src/mods/problemFixButtons.tsx:180
 #: src/mods/SelectionBarActions.tsx:125
@@ -8161,7 +8166,7 @@ msgid "{dependentName} needs {dep}, which is switched off."
 msgstr "{dependentName} needs {dep}, which is switched off."
 
 #: src/console/PerformanceComparison.tsx:54
-#: src/console/StartupPanel.tsx:298
+#: src/console/StartupPanel.tsx:301
 msgid "Mod"
 msgstr "Mod"
 
@@ -8180,7 +8185,7 @@ msgstr "Done ({0}): {1}"
 #. placeholder {0}: pendingDelete ?? ''
 #. placeholder {0}: pendingDelete?.name ?? ''
 #: src/bundles/BundlesSection.tsx:153
-#: src/game/ProfileMenuItems.tsx:79
+#: src/game/ProfileMenuItems.tsx:81
 #: src/mods/CategoryEditor.tsx:161
 #: src/mods/ConfigPresets.tsx:141
 #: src/tools/ToolsManageDialog.tsx:85
@@ -8215,7 +8220,7 @@ msgstr "From Nexus"
 msgid "Settings view"
 msgstr "Settings view"
 
-#: src/game/ProfileMenuItems.tsx:399
+#: src/game/ProfileMenuItems.tsx:402
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
 
@@ -8249,7 +8254,7 @@ msgstr "Keep Mortar in the tray"
 msgid "{0, plural, one {# problem} other {# problems}}"
 msgstr "{0, plural, one {# problem} other {# problems}}"
 
-#: src/settings/sections/NexusSSO.tsx:57
+#: src/settings/sections/NexusSSO.tsx:56
 msgid "Sign in with Nexus Mods"
 msgstr "Sign in with Nexus Mods"
 
@@ -8345,7 +8350,7 @@ msgstr "Someone sent you a Mortar link? You see what it holds first. Mods from N
 msgid "{0} · in use"
 msgstr "{0} · in use"
 
-#: src/console/StartupPanel.tsx:529
+#: src/console/StartupPanel.tsx:532
 msgid "No startup measured yet"
 msgstr "No startup measured yet"
 
@@ -8375,6 +8380,10 @@ msgstr "Already installed"
 #: src/settings/sections/GameSettings.tsx:169
 msgid "Steam"
 msgstr "Steam"
+
+#: src/firstrun/NexusStep.tsx:15
+msgid "Mod Manager Download buttons on Nexus Mods only work in Mortar when you are signed in."
+msgstr "Mod Manager Download buttons on Nexus Mods only work in Mortar when you are signed in."
 
 #: src/mods/LoadOrderTab.tsx:367
 msgid "Reading load order…"
@@ -8425,7 +8434,7 @@ msgstr "Pinned: {0}"
 msgid "Unpin version"
 msgstr "Unpin version"
 
-#: src/settings/sections/NexusMods.tsx:158
+#: src/settings/sections/NexusMods.tsx:159
 msgid "Tracking"
 msgstr "Tracking"
 
@@ -8484,7 +8493,7 @@ msgid "Include pre-release mod versions"
 msgstr "Include pre-release mod versions"
 
 #: src/mods/columnLabel.ts:19
-#: src/mods/Toolbar.tsx:158
+#: src/mods/Toolbar.tsx:160
 #: src/settings/prefCopy.ts:121
 msgid "Status"
 msgstr "Status"
@@ -8515,7 +8524,7 @@ msgstr "Send other games' links to {redirectName}"
 msgid "When mods changed"
 msgstr "When mods changed"
 
-#: src/firstrun/GameSetup.tsx:152
+#: src/firstrun/GameSetup.tsx:158
 msgid "First profile"
 msgstr "First profile"
 
@@ -8588,7 +8597,7 @@ msgid "No launchers found. You can still continue and choose each game's folder 
 msgstr "No launchers found. You can still continue and choose each game's folder when you open it."
 
 #: src/mods/SelectionBarDialogs.tsx:47
-#: src/mods/Toolbar.tsx:161
+#: src/mods/Toolbar.tsx:163
 #: src/settings/prefCopy.ts:124
 msgid "Tag"
 msgstr "Tag"
@@ -8779,7 +8788,7 @@ msgid "Enjoying these mods? Endorse them on Nexus"
 msgstr "Enjoying these mods? Endorse them on Nexus"
 
 #: src/mods/columnLabel.ts:11
-#: src/mods/Toolbar.tsx:163
+#: src/mods/Toolbar.tsx:165
 #: src/settings/prefCopy.ts:126
 msgid "Author"
 msgstr "Author"
@@ -8802,7 +8811,7 @@ msgstr "Unknown mod"
 msgid "Move data folder"
 msgstr "Move data folder"
 
-#: src/game/ProfileMenuItems.tsx:249
+#: src/game/ProfileMenuItems.tsx:251
 #: src/profiles/EditProfileDialog.tsx:404
 msgid "Could not use that image"
 msgstr "Could not use that image"
@@ -8884,7 +8893,7 @@ msgstr "Mortar version"
 msgid "SMAPI version"
 msgstr "SMAPI version"
 
-#: src/console/StartupPanel.tsx:307
+#: src/console/StartupPanel.tsx:310
 msgid "Entry"
 msgstr "Entry"
 
@@ -8990,7 +8999,7 @@ msgstr "Delete category"
 msgid "Play {lastPlayedName}"
 msgstr "Play {lastPlayedName}"
 
-#: src/console/StartupPanel.tsx:327
+#: src/console/StartupPanel.tsx:330
 msgid "Sampled"
 msgstr "Sampled"
 
@@ -9045,7 +9054,7 @@ msgstr "Could not create the profile"
 msgid "Choose a profile to import"
 msgstr "Choose a profile to import"
 
-#: src/console/StartupPanel.tsx:466
+#: src/console/StartupPanel.tsx:469
 msgid "slower"
 msgstr "slower"
 
@@ -9116,14 +9125,14 @@ msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style 
 msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
-#: src/mods/Toolbar.tsx:162
+#: src/mods/Toolbar.tsx:164
 #: src/settings/prefCopy.ts:125
 msgid "Framework"
 msgstr "Framework"
 
 #: src/browse/BrowsePage.tsx:289
 #: src/mods/columnLabel.ts:12
-#: src/mods/Toolbar.tsx:160
+#: src/mods/Toolbar.tsx:162
 #: src/settings/prefCopy.ts:123
 msgid "Source"
 msgstr "Source"
@@ -9171,7 +9180,7 @@ msgstr "Download progress"
 msgid "Closing the window hides Mortar instead of quitting."
 msgstr "Closing the window hides Mortar instead of quitting."
 
-#: src/settings/sections/NexusMods.tsx:189
+#: src/settings/sections/NexusMods.tsx:190
 msgid "Free accounts click Download on Nexus for each file; Mortar opens each page in turn."
 msgstr "Free accounts click Download on Nexus for each file; Mortar opens each page in turn."
 
@@ -9201,7 +9210,7 @@ msgstr "Used by: {label}"
 msgid "SMAPI {0} is out"
 msgstr "SMAPI {0} is out"
 
-#: src/settings/sections/NexusMods.tsx:149
+#: src/settings/sections/NexusMods.tsx:150
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
@@ -9215,8 +9224,8 @@ msgstr "Check for updates"
 msgid "Gets update checks."
 msgstr "Gets update checks."
 
-#: src/settings/sections/NexusMods.tsx:185
-#: src/settings/sections/NexusMods.tsx:192
+#: src/settings/sections/NexusMods.tsx:186
+#: src/settings/sections/NexusMods.tsx:193
 msgid "API requests"
 msgstr "API requests"
 
@@ -9363,6 +9372,7 @@ msgid "{name} logged {errors} in the last run. First: {first}"
 msgstr "{name} logged {errors} in the last run. First: {first}"
 
 #: src/browse/BrowsePage.tsx:161
+#: src/firstrun/GameSetup.tsx:150
 #: src/mods/listRows.ts:88
 #: src/mods/Sidebar.tsx:339
 #: src/shell/NexusAccount.tsx:27
@@ -9382,7 +9392,7 @@ msgstr "Search Nexus Mods"
 msgid "Check only enabled mods"
 msgstr "Check only enabled mods"
 
-#: src/console/StartupPanel.tsx:496
+#: src/console/StartupPanel.tsx:499
 msgid "Press Play. Mortar samples the game until the title screen and skips the intro animation; the results, with a Sampled column, appear here when the title screen is reached."
 msgstr "Press Play. Mortar samples the game until the title screen and skips the intro animation; the results, with a Sampled column, appear here when the title screen is reached."
 
@@ -9416,7 +9426,7 @@ msgid "No differences."
 msgstr "No differences."
 
 #. placeholder {0}: packs.length - PACKS_SHOWN
-#: src/console/StartupPanel.tsx:264
+#: src/console/StartupPanel.tsx:267
 msgid "{0, plural, one {# more pack} other {# more packs}}"
 msgstr "{0, plural, one {# more pack} other {# more packs}}"
 
@@ -9484,7 +9494,7 @@ msgstr "Season"
 msgid "Tools"
 msgstr "Tools"
 
-#: src/mods/Toolbar.tsx:378
+#: src/mods/Toolbar.tsx:388
 msgid "Or add from the downloads folder…"
 msgstr "Or add from the downloads folder…"
 
@@ -9507,7 +9517,7 @@ msgid "Last game: {from} → {to}"
 msgstr "Last game: {from} → {to}"
 
 #: src/console/PerformancePanelParts.tsx:63
-#: src/game/ProfileMenuItems.tsx:418
+#: src/game/ProfileMenuItems.tsx:421
 msgid "Compare with…"
 msgstr "Compare with…"
 
@@ -9522,6 +9532,7 @@ msgstr "Remove {0}."
 
 #: src/firstrun/FindStep.tsx:222
 #: src/firstrun/FirstRun.tsx:95
+#: src/firstrun/NexusStep.tsx:24
 #: src/firstrun/SmapiStep.tsx:184
 #: src/firstrun/SmapiStep.tsx:371
 msgid "Continue"
@@ -9622,7 +9633,7 @@ msgstr "What to do when an installed mod still needs other mods"
 msgid "Pin selected versions"
 msgstr "Pin selected versions"
 
-#: src/mods/ReportToAuthorButton.tsx:237
+#: src/mods/ReportToAuthorButton.tsx:232
 msgid "Share log and continue"
 msgstr "Share log and continue"
 
@@ -9690,7 +9701,7 @@ msgstr "Fall"
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
-#: src/game/ProfileMenuItems.tsx:154
+#: src/game/ProfileMenuItems.tsx:156
 msgid "Add this profile to Steam"
 msgstr "Add this profile to Steam"
 
@@ -9703,7 +9714,7 @@ msgid "See which mods slow the game"
 msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
-#: src/firstrun/GameSetup.tsx:141
+#: src/firstrun/GameSetup.tsx:146
 msgid "Set up {0}"
 msgstr "Set up {0}"
 
@@ -9758,7 +9769,7 @@ msgstr "Support"
 msgid "{0} {1}"
 msgstr "{0} {1}"
 
-#: src/mods/Toolbar.tsx:362
+#: src/mods/Toolbar.tsx:372
 msgid "No mods yet"
 msgstr "No mods yet"
 
@@ -9903,7 +9914,7 @@ msgstr "UI scale ({value}%)"
 msgid "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 msgstr "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 
-#: src/settings/sections/NexusMods.tsx:192
+#: src/settings/sections/NexusMods.tsx:193
 msgid "rate limit"
 msgstr "rate limit"
 
@@ -9943,7 +9954,7 @@ msgstr "Open settings"
 msgid "Crashed: {0}"
 msgstr "Crashed: {0}"
 
-#: src/settings/sections/NexusMods.tsx:119
+#: src/settings/sections/NexusMods.tsx:120
 msgid "{trackedCount, plural, one {# {gameName} mod tracked on Nexus} other {# {gameName} mods tracked on Nexus}}"
 msgstr "{trackedCount, plural, one {# {gameName} mod tracked on Nexus} other {# {gameName} mods tracked on Nexus}}"
 
@@ -9975,7 +9986,7 @@ msgstr "Take over"
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
-#: src/game/ProfileMenuItems.tsx:129
+#: src/game/ProfileMenuItems.tsx:131
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
 
@@ -10010,7 +10021,7 @@ msgstr "Archives land here instead of Mortar's downloads folder. Empty uses the 
 msgid "What Mortar does when the game starts, then restore when it exits."
 msgstr "What Mortar does when the game starts, then restore when it exits."
 
-#: src/settings/sections/NexusMods.tsx:166
+#: src/settings/sections/NexusMods.tsx:167
 msgid "Untrack unused…"
 msgstr "Untrack unused…"
 
@@ -10083,7 +10094,7 @@ msgstr "Downloads finished"
 #: src/profiles/HistoryPanel.tsx:119
 #: src/saves/BackupsDialog.tsx:194
 #: src/settings/sections/About.tsx:99
-#: src/settings/sections/AboutDiagnostics.tsx:233
+#: src/settings/sections/AboutDiagnostics.tsx:232
 #: src/settings/sections/DataStoreReport.tsx:394
 #: src/share/ImportDialog.tsx:210
 #: src/share/ImportDialog.tsx:213
@@ -10138,8 +10149,8 @@ msgstr "Older."
 msgid "{0} rolled back"
 msgstr "{0} rolled back"
 
-#: src/mods/Toolbar.tsx:242
-#: src/mods/Toolbar.tsx:256
+#: src/mods/Toolbar.tsx:252
+#: src/mods/Toolbar.tsx:266
 msgid "Adding…"
 msgstr "Adding…"
 
@@ -10152,6 +10163,11 @@ msgstr "Remove {0} from this profile?"
 #: src/profiles/overrideValue.ts:83
 msgid "On"
 msgstr "On"
+
+#: src/firstrun/NexusStep.tsx:13
+#: src/mods/Toolbar.tsx:214
+msgid "Sign in to Nexus Mods"
+msgstr "Sign in to Nexus Mods"
 
 #: src/settings/prefCopy.ts:448
 msgid "Open in the tray instead of showing the window"
@@ -10225,7 +10241,7 @@ msgstr "1 time"
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
-#: src/console/StartupPanel.tsx:406
+#: src/console/StartupPanel.tsx:409
 msgid "Launch"
 msgstr "Launch"
 
@@ -10239,7 +10255,7 @@ msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 
 #. placeholder {0}: missing.join(', ')
-#: src/game/ProfileMenuItems.tsx:333
+#: src/game/ProfileMenuItems.tsx:336
 msgid "Not downloaded yet: {0}"
 msgstr "Not downloaded yet: {0}"
 
@@ -10257,7 +10273,7 @@ msgstr "Show SMAPI's own window on a direct launch"
 msgid "{0} · kept for rollback"
 msgstr "{0} · kept for rollback"
 
-#: src/mods/DuplicateDialog.tsx:112
+#: src/mods/DuplicateDialog.tsx:111
 msgid "Decide later"
 msgstr "Decide later"
 
@@ -10267,7 +10283,7 @@ msgid "Command palette"
 msgstr "Command palette"
 
 #: src/mods/ModsTab.tsx:281
-#: src/mods/Toolbar.tsx:365
+#: src/mods/Toolbar.tsx:375
 msgid "Drop archives anywhere on the window, or Open Nexus Mods to find mods."
 msgstr "Drop archives anywhere on the window, or Open Nexus Mods to find mods."
 
@@ -10362,7 +10378,7 @@ msgstr "Switch profile"
 msgid " · "
 msgstr " · "
 
-#: src/settings/sections/NexusMods.tsx:246
+#: src/settings/sections/NexusMods.tsx:258
 msgid "Personal API key"
 msgstr "Personal API key"
 
@@ -10382,7 +10398,7 @@ msgstr "Last played"
 msgid "Focus the previous mod"
 msgstr "Focus the previous mod"
 
-#: src/settings/sections/NexusMods.tsx:79
+#: src/settings/sections/NexusMods.tsx:80
 msgid "Untrack mods?"
 msgstr "Untrack mods?"
 
@@ -10398,7 +10414,7 @@ msgstr "Sidebar profile order"
 msgid "Checks the data folder, games, Nexus download links and the browser extension."
 msgstr "Checks the data folder, games, Nexus download links and the browser extension."
 
-#: src/console/StartupPanel.tsx:314
+#: src/console/StartupPanel.tsx:317
 msgid "The SMAPI event handler that took longest, and its time"
 msgstr "The SMAPI event handler that took longest, and its time"
 
