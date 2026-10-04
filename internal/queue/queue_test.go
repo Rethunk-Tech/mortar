@@ -193,10 +193,21 @@ func (f *fixture) item(state string) func(State) bool {
 	return func(st State) bool { return len(st.Items) > 0 && st.Items[0].State == state }
 }
 
+// leftovers fails when temp downloads outlive their item; a cancelled download's goroutine removes its files after
+// the item already reads Cancelled, so it gets a moment to finish.
 func (f *fixture) leftovers() {
 	f.t.Helper()
-	if entries, _ := os.ReadDir(filepath.Join(f.dir, downloadsDir)); len(entries) != 0 {
-		f.t.Errorf("temp downloads left behind: %v", entries)
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		entries, _ := os.ReadDir(filepath.Join(f.dir, downloadsDir))
+		if len(entries) == 0 {
+			return
+		}
+		if time.Now().After(deadline) {
+			f.t.Errorf("temp downloads left behind: %v", entries)
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
 	}
 }
 
@@ -516,7 +527,6 @@ func TestFailedRetrySkipAndCancel(t *testing.T) {
 	st = f.wait("downloading", func(st State) bool { return len(st.Items) == 3 && st.Items[2].State == StateDownloading })
 	f.s.Cancel(st.Items[2].ID)
 	f.wait("cancelled", func(st State) bool { return st.Items[2].State == StateCancelled })
-	time.Sleep(50 * time.Millisecond)
 	f.leftovers()
 	if len(f.installs) != 1 {
 		t.Errorf("installs %d", len(f.installs))
