@@ -6,6 +6,7 @@ import type { ImportPreview } from '../../../bindings/github.com/Rethunk-AI/mort
 import { ApplyImportedSettings } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { useToasts } from '../../toasts/store.ts'
 
 function changeLine(field: string, from: string, to: string) {
   switch (field) {
@@ -63,7 +64,12 @@ export function ImportSettingsDialog({
         if (!preview?.raw) {
           return
         }
-        ApplyImportedSettings(preview.raw).then(onClose).catch(reportUnexpected)
+        ApplyImportedSettings(preview.raw)
+          .then(() => {
+            useToasts.getState().push({ kind: 'success', title: t`Settings imported` })
+            onClose()
+          })
+          .catch(reportUnexpected)
       }}
     >
       {changes.length === 0 ? (

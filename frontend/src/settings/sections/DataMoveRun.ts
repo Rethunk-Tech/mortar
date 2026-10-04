@@ -1,9 +1,12 @@
+import { msg } from '@lingui/core/macro'
 import type { MoveEstimate } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
 import {
   MoveDataFolder,
   UsageProgress,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
+import { i18n } from '../../i18n/index.ts'
 import { errorText } from '../../toasts/report.ts'
+import { useToasts } from '../../toasts/store.ts'
 
 const MOVE_PROGRESS_INTERVAL = 200
 
@@ -35,7 +38,10 @@ export function moveDataFolder(options: {
     )
   }, MOVE_PROGRESS_INTERVAL)
   MoveDataFolder(move.dest)
-    .then(() => setMove(null))
+    .then(() => {
+      setMove(null)
+      useToasts.getState().push({ kind: 'success', title: i18n._(msg`Data folder moved`) })
+    })
     .catch((err: unknown) => setMoveError(errorText(err) || moveErrorText))
     .finally(() => {
       globalThis.clearInterval(poll)

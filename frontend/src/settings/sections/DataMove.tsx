@@ -78,7 +78,11 @@ export function MoveDialog({
               </Box>
             </>
           ) : null}
-          {error ? <Box sx={{ color: 'error.main' }}>{error}</Box> : null}
+          {error ? (
+            <Box role="alert" sx={{ color: 'error.main' }}>
+              {error}
+            </Box>
+          ) : null}
         </>
       ) : null}
     </ConfirmDialog>
