@@ -1,6 +1,7 @@
 import { Box } from '@mui/material'
+import { MONO } from '../../theme/theme.ts'
 import { accent } from '../paper.ts'
-import { MEDIUM, MONO } from './constants.ts'
+import { MEDIUM } from './constants.ts'
 
 export function Version({ children, isNew }: { children: string; isNew?: boolean }) {
   return (

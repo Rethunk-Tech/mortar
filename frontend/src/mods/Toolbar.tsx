@@ -16,7 +16,6 @@ import {
   Tooltip,
   useMediaQuery,
 } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import {
   Ban,
   Check,
@@ -48,6 +47,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { onFilterFocus } from './filterFocus.ts'
 import { type GroupBy, sanitizeListGroupBy } from './group.ts'
+import { openPage } from './menu.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -223,7 +223,7 @@ function BrowseNexus({
       aria-label={label}
       startIcon={<ExternalLink size={14} />}
       onClick={() => {
-        Browser.OpenURL(NEXUS).catch(reportUnexpected)
+        openPage(NEXUS).catch(reportUnexpected)
       }}
       sx={toolbar ? iconWhenCompact : undefined}
     >

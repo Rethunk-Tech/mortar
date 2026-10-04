@@ -1,8 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import type { Compat } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { openPage } from './menu.ts'
 
 function CompatInfoRow({ row }: { row: Compat }) {
   const { t } = useLingui()
@@ -14,7 +13,7 @@ function CompatInfoRow({ row }: { row: Compat }) {
         type="button"
         underline="hover"
         sx={{ fontSize: 13, textAlign: 'left' }}
-        onClick={() => Browser.OpenURL(row.unofficialUrl).catch(reportUnexpected)}
+        onClick={() => openPage(row.unofficialUrl)}
       >
         {t`Unofficial update`}
       </Link>

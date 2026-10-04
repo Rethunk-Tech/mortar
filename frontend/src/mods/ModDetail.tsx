@@ -9,7 +9,6 @@ import {
   Link,
   Typography,
 } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { type ReactNode, useEffect, useState } from 'react'
 import type {
   Need,
@@ -26,6 +25,7 @@ import { CompatDetail } from './CompatChip.tsx'
 import { EditConfigButton } from './ConfigEditor.tsx'
 import { useDetail } from './detail.ts'
 import { entryOf, modId, siblingsOf } from './lookup.ts'
+import { openPage } from './menu.ts'
 import { NexusDetails } from './NexusDetails.tsx'
 import { heading, paper } from './paper.ts'
 import { useMods } from './store.ts'
@@ -252,7 +252,7 @@ function PageLink({ url }: { url: string }) {
   return url ? (
     <Link
       component="button"
-      onClick={() => Browser.OpenURL(url).catch(reportUnexpected)}
+      onClick={() => openPage(url)}
       sx={{ ...text, alignSelf: 'flex-start' }}
     >
       {url.includes('github.com') ? t`GitHub page` : t`Nexus page`}

@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import type { ReactNode } from 'react'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { type Problem, sameId } from '../lookup.ts'
+import { openPage } from '../menu.ts'
 import { useMods } from '../store.ts'
 import { WhereButtons } from './WhereButtons.tsx'
 import type { WarningButton } from './warningButton.tsx'
@@ -38,7 +38,7 @@ export function DismissedBrokenFix({
         size="small"
         color="warning"
         variant="outlined"
-        onClick={() => Browser.OpenURL(replacement.url ?? '').catch(reportUnexpected)}
+        onClick={() => openPage(replacement.url ?? '')}
         sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
       >
         {t`Open replacement`}

@@ -2,7 +2,6 @@ import { i18n } from '@lingui/core'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
 
 const PERCENT = 100
-const KB = 1024
 const MS_PER_SECOND = 1000
 
 interface Totals {
@@ -61,14 +60,6 @@ export function totals(items: Item[]): Totals {
     failedShare: share(failed),
   }
 }
-
-// "12 MB", or "0.4 MB" for a small file, from a size in KB.
-export function megabytes(kb: number): string {
-  const mb = kb / KB
-  return mb >= 10 ? String(Math.round(mb)) : mb.toFixed(1)
-}
-
-export const megabytesPerSecond = (bytes: number) => (bytes / KB / KB).toFixed(1)
 
 export const downloadedKb = (i: Item) => (i.sizeKb * i.progress) / PERCENT
 

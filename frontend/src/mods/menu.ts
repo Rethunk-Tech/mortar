@@ -11,6 +11,7 @@ import {
   Revert,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { undoRevertTarget } from '../toasts/undo.ts'
 import { entryOf, modId, updateFor } from './lookup.ts'
 import { hostOf, type MenuState } from './modActions.ts'
@@ -38,7 +39,7 @@ export function useMenuState(mod: Mod): MenuState {
 
 export const ICON_SIZE = 16
 
-export const openPage = (url: string) => Browser.OpenURL(url)
+export const openPage = (url: string) => Browser.OpenURL(url).catch(reportUnexpected)
 
 export type MenuAnchor = { el: HTMLElement } | { top: number; left: number }
 

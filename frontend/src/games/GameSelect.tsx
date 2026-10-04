@@ -16,6 +16,8 @@ import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { gameSetupNeeded } from '../firstrun/needed.ts'
 import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { useNow } from '../i18n/useNow.ts'
+import { absoluteWhen } from '../i18n/when.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
@@ -122,6 +124,7 @@ function Row({
 }) {
   const { t, i18n } = useLingui()
   const start = useLaunch((s) => s.start)
+  useNow()
   const ago = formatWhen(lastPlayedAt)
   let lastLine = ''
   if (lastPlayedName && ago) {
@@ -178,14 +181,7 @@ function Row({
       >
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
         <Typography
-          title={
-            lastPlayedAt
-              ? new Intl.DateTimeFormat(i18n.locale, {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                }).format(new Date(lastPlayedAt))
-              : undefined
-          }
+          title={lastPlayedAt ? absoluteWhen(lastPlayedAt, i18n.locale) || undefined : undefined}
           sx={{ fontSize: 17 }}
         >
           {loaderLine}

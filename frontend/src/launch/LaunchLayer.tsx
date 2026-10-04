@@ -11,7 +11,7 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { Browser, Clipboard } from '@wailsio/runtime'
+import { Clipboard } from '@wailsio/runtime'
 import { CircleAlert, Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
@@ -26,10 +26,12 @@ import { useConsole } from '../console/store.ts'
 import { launchLine } from '../firstrun/logic.ts'
 import { useTab } from '../game/tab.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
+import { openPage } from '../mods/menu.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { controlsCutout } from '../shell/controlsCutout.ts'
+import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { holdFocus, launchEscHides } from './holdFocus.ts'
@@ -139,7 +141,7 @@ function Overlay({ game }: { game: string }) {
           px: 1.75,
           py: 1.5,
           bgcolor: 'var(--mortar-overlay-55)',
-          fontFamily: 'monospace',
+          fontFamily: MONO,
           fontSize: 13,
           lineHeight: `${LINE_HEIGHT}px`,
           color: 'text.secondary',
@@ -194,7 +196,7 @@ function LaunchLine({ line }: { line: string }) {
           bgcolor: 'var(--mortar-overlay-45)',
           border: '1px solid var(--mortar-hairline-15)',
           borderRadius: '6px',
-          fontFamily: 'monospace',
+          fontFamily: MONO,
           fontSize: 13,
           wordBreak: 'break-all',
           userSelect: 'text',
@@ -315,14 +317,16 @@ function Failure({ game }: { game: string }) {
           {t`Open console`}
         </Button>
         {mod ? (
-          <Button onClick={() => useMods.getState().setEnabled(mod, false).catch(reportUnexpected)}>
-            {t`Switch off`}
-          </Button>
+          <Button
+            onClick={() => useMods.getState().setEnabled(mod, false).catch(reportUnexpected)}
+          >{t`Switch off`}</Button>
         ) : null}
         {nexusID > 0 ? (
           <Button
             onClick={() =>
-              Browser.OpenURL(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`)
+              openPage(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`).catch(
+                reportUnexpected,
+              )
             }
           >
             {t`Open page`}

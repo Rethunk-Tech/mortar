@@ -1,15 +1,24 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, Typography } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
+import { alpha, type Theme, useTheme } from '@mui/material/styles'
+
+const SUCCESS_CHIP = 0.2
+const INFO_CHIP = 0.25
+const WARN_CHIP = 0.22
+const INFO_ROW = 0.12
+const INFO_LINE = 0.4
+const WARN_ROW = 0.12
+const WARN_LINE = 0.45
+
 import { Download, Info, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type {
   Mod,
   Problem,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
 import {
   formatSize,
   isModState,
@@ -21,21 +30,21 @@ import {
 
 const DIMMED = 0.5
 
-const CHIP: Record<ModState, { bg: string; fg: string }> = {
-  installed: { bg: 'rgba(12,223,100,0.2)', fg: '#6ff5a8' },
-  download: { bg: 'rgba(43,139,218,0.25)', fg: '#a3d3f7' },
-  dependency: { bg: 'rgba(43,139,218,0.25)', fg: '#a3d3f7' },
+const CHIP = (th: Theme): Record<ModState, { bg: string; fg: string }> => ({
+  installed: { bg: alpha(th.palette.success.main, SUCCESS_CHIP), fg: '#6ff5a8' },
+  download: { bg: alpha(th.palette.info.main, INFO_CHIP), fg: '#a3d3f7' },
+  dependency: { bg: alpha(th.palette.info.main, INFO_CHIP), fg: '#a3d3f7' },
   later: { bg: 'rgba(200,200,200,0.18)', fg: '#e0e0e0' },
-  unavailable: { bg: 'rgba(243,180,22,0.22)', fg: '#F3B416' },
-}
+  unavailable: { bg: alpha(th.palette.warning.main, WARN_CHIP), fg: th.palette.warning.main },
+})
 
-const DOT: Record<ModState, string> = {
-  installed: '#0CDF64',
-  download: '#2B8BDA',
-  dependency: '#2B8BDA',
+const DOT = (th: Theme): Record<ModState, string> => ({
+  installed: th.palette.success.main,
+  download: th.palette.info.main,
+  dependency: th.palette.info.main,
   later: '#c8c8c8',
-  unavailable: '#F3B416',
-}
+  unavailable: th.palette.warning.main,
+})
 
 function useStateLabel() {
   const { t } = useLingui()
@@ -51,6 +60,7 @@ function useStateLabel() {
 
 function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle: () => void }) {
   const { t } = useLingui()
+  const chip = CHIP(useTheme())
   const label = useStateLabel()
   const state = isModState(mod.state) ? mod.state : 'later'
   const fixed = state === 'installed' || state === 'unavailable'
@@ -115,18 +125,14 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
           fontSize: 11,
           fontWeight: 700,
           whiteSpace: 'nowrap',
-          bgcolor: CHIP[state].bg,
-          color: CHIP[state].fg,
+          bgcolor: chip[state].bg,
+          color: chip[state].fg,
         }}
       >
         {label(state)}
       </Box>
     </Box>
   )
-}
-
-function openPage(url: string) {
-  Browser.OpenURL(url).catch(reportUnexpected)
 }
 
 function ProblemRow({
@@ -137,6 +143,7 @@ function ProblemRow({
   onLeaveOut: (key: string) => void
 }) {
   const { t } = useLingui()
+  const theme = useTheme()
   const { name, detail } = problem
   const texts: Record<string, string> = {
     removed: t`${name} was removed from Nexus`,
@@ -150,9 +157,15 @@ function ProblemRow({
     t`Some files could not be checked against Nexus, so a few may differ from what was shared.`
   const info = problem.kind === 'free' || problem.kind === 'unconfirmed'
   const tone = info
-    ? { bg: 'rgba(43,139,218,0.12)', line: 'rgba(43,139,218,0.4)' }
-    : { bg: 'rgba(243,180,22,0.12)', line: 'rgba(243,180,22,0.45)' }
-  let icon = <TriangleAlert size={16} color="#F3B416" />
+    ? {
+        bg: alpha(theme.palette.info.main, INFO_ROW),
+        line: alpha(theme.palette.info.main, INFO_LINE),
+      }
+    : {
+        bg: alpha(theme.palette.warning.main, WARN_ROW),
+        line: alpha(theme.palette.warning.main, WARN_LINE),
+      }
+  let icon = <TriangleAlert size={16} color={theme.palette.warning.main} />
   if (problem.kind === 'free') {
     icon = <Download size={16} color="#a3d3f7" />
   } else if (info) {
@@ -306,6 +319,9 @@ export function Problems({
 
 export function StatusBar({ preview, summary }: { preview: ShownPreview; summary: Summary }) {
   const { t } = useLingui()
+  const th = useTheme()
+  const chip = CHIP(th)
+  const dot = DOT(th)
   const total = preview.mods.length
   const ready = summary.toImport > 0
   const mods = plural(total, { one: '# mod', other: '# mods' })
@@ -376,7 +392,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
       <Box sx={{ flex: 1 }} />
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {counts.map((s) => (
-          <Pill key={s} bg={CHIP[s].bg} fg={CHIP[s].fg} dot={DOT[s]}>
+          <Pill key={s} bg={chip[s].bg} fg={chip[s].fg} dot={dot[s]}>
             <CountLabel state={s} count={summary.counts[s]} />
           </Pill>
         ))}

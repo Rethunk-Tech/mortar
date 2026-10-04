@@ -5,6 +5,7 @@ import { Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -91,7 +92,7 @@ export function LaunchPreview({
             p: 1,
             overflowX: 'auto',
             color: 'text.secondary',
-            fontFamily: 'monospace',
+            fontFamily: MONO,
             fontSize: 12,
             userSelect: 'text',
           }}

@@ -9,7 +9,6 @@ import {
   Link,
   Typography,
 } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { useMemo } from 'react'
 import type {
   Mod,
@@ -17,8 +16,8 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
 import { nexusIdOf } from './lookup.ts'
+import { openPage } from './menu.ts'
 import { modsByAuthor } from './modsByAuthor.ts'
 import { nexusAuthorPageUrl } from './nexusAuthorPage.ts'
 import { useNexusEntry } from './nexusDetails.ts'
@@ -74,7 +73,7 @@ function NexusAuthorBlock({ nexusName, authorUrl }: { nexusName: string; authorU
       {authorUrl === '' ? null : (
         <Link
           component="button"
-          onClick={() => Browser.OpenURL(authorUrl).catch(reportUnexpected)}
+          onClick={() => openPage(authorUrl)}
           sx={{ ...text, alignSelf: 'flex-start' }}
         >
           {t`Open author page on Nexus`}

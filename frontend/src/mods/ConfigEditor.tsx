@@ -20,6 +20,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { PresetsButton } from './ConfigPresets.tsx'
 import { applyCPSchema, parseCPSchema } from './configFields.ts'
@@ -241,7 +242,7 @@ function EditorDialog({
               minRows={12}
               value={jsonDraft}
               onChange={(e) => onJson(e.target.value)}
-              slotProps={{ input: { sx: { fontFamily: 'ui-monospace, monospace', fontSize: 13 } } }}
+              slotProps={{ input: { sx: { fontFamily: MONO, fontSize: 13 } } }}
             />
           ) : null}
         </DialogContent>

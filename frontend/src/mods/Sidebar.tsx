@@ -1,7 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Drawer, Link, Tooltip, Typography, useMediaQuery } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { TriangleAlert, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -41,6 +40,7 @@ import {
 import { ModDependencyTree } from './ModDependencyTree.tsx'
 import { ModNoteTags } from './ModNoteTags.tsx'
 import { ModUpdateControls } from './ModUpdateControls.tsx'
+import { openPage } from './menu.ts'
 import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
@@ -196,7 +196,7 @@ function UpdateBanner({ mod }: { mod: Mod }) {
                 {' '}
                 <Link
                   component="button"
-                  onClick={() => Browser.OpenURL(unofficial.url).catch(reportUnexpected)}
+                  onClick={() => openPage(unofficial.url)}
                   sx={{ fontSize: 13 }}
                 >
                   {t`Open page`}
@@ -284,6 +284,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
         }
       })
       .catch(reportUnexpected)
+
     return () => {
       live = false
     }
@@ -488,7 +489,7 @@ export function ModSidebar({ profile }: { profile: Profile }) {
       sx={{
         width: 300,
         overflowY: 'auto',
-        bgcolor: 'rgba(40,40,48,0.72)',
+        bgcolor: 'var(--mortar-panel)',
         borderLeft: '1px solid var(--mortar-hairline)',
       }}
     >

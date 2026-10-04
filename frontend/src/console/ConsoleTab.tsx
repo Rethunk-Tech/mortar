@@ -22,6 +22,7 @@ import { onFilterFocus } from '../mods/filterFocus.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
+import { MONO } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { incompatibleSMAPI, isFiltered, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
@@ -125,7 +126,6 @@ function SearchBox() {
 }
 
 const NO_HISTORY: string[] = []
-const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace'
 
 function CauseBanner({ game, profile, run }: { game: string; profile: string; run: string }) {
   const { t } = useLingui()

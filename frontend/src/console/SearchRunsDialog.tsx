@@ -10,6 +10,7 @@ import { SearchRuns } from '../../bindings/github.com/Rethunk-AI/mortar/internal
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useOutcomeLabel } from './outcome.ts'
 import { useConsole } from './store.ts'
@@ -141,9 +142,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                       '&:hover': { bgcolor: 'var(--mortar-hairline-muted)' },
                     }}
                   >
-                    <Typography
-                      sx={{ minWidth: 42, color: 'text.secondary', fontFamily: 'monospace' }}
-                    >
+                    <Typography sx={{ minWidth: 42, color: 'text.secondary', fontFamily: MONO }}>
                       {t`L${hit.lineNumber}`}
                     </Typography>
                     <Typography
@@ -151,7 +150,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                         minWidth: 0,
                         whiteSpace: 'pre-wrap',
                         overflowWrap: 'anywhere',
-                        fontFamily: 'monospace',
+                        fontFamily: MONO,
                       }}
                     >
                       <Highlight text={hit.line} query={query.trim()} />

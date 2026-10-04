@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
@@ -15,6 +14,7 @@ import {
 } from './dependencyTree.ts'
 import { useDetail } from './detail.ts'
 import { problemsOf, sameId } from './lookup.ts'
+import { openPage } from './menu.ts'
 import { heading } from './paper.ts'
 import { useMods } from './store.ts'
 
@@ -44,19 +44,19 @@ function MissingAdd({ uniqueID }: { uniqueID: string }) {
   }
   const { url } = where
   const github = where.site === 'GitHub' && where.github !== ''
-  const openPage = (
+  const pageButton = (
     <Button
       size="small"
       color="warning"
       variant="outlined"
-      onClick={() => Browser.OpenURL(url).catch(reportUnexpected)}
+      onClick={() => openPage(url)}
       sx={{ height: rowMinHeight, ...noWrap, flexShrink: 0 }}
     >
       {t`Open page`}
     </Button>
   )
   if (!github && (where.site !== 'Nexus' || where.pageId <= 0)) {
-    return openPage
+    return pageButton
   }
   const queued = github
     ? pendingFor(queue, profileId, 0, where.github)
@@ -74,7 +74,7 @@ function MissingAdd({ uniqueID }: { uniqueID: string }) {
       }
   return (
     <>
-      {openPage}
+      {pageButton}
       <Button
         size="small"
         variant="contained"

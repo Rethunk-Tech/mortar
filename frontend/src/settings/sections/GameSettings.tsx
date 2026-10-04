@@ -37,6 +37,7 @@ import { storeName } from '../../games/storeName.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
+import { MONO } from '../../theme/theme.ts'
 import { errorText, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
@@ -340,7 +341,7 @@ function FlatpakAccess() {
               bgcolor: 'var(--mortar-overlay-45)',
               border: '1px solid var(--mortar-hairline-15)',
               borderRadius: '6px',
-              fontFamily: 'monospace',
+              fontFamily: MONO,
               fontSize: 13,
               wordBreak: 'break-all',
               userSelect: 'text',
@@ -372,9 +373,7 @@ function FlatpakAccess() {
           <DialogContentText>
             {t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}
           </DialogContentText>
-          <Box sx={{ mt: 1.5, fontFamily: 'monospace', fontSize: 13, userSelect: 'text' }}>
-            {cmd}
-          </Box>
+          <Box sx={{ mt: 1.5, fontFamily: MONO, fontSize: 13, userSelect: 'text' }}>{cmd}</Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAsk(false)}>{t`Cancel`}</Button>

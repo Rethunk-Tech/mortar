@@ -27,6 +27,7 @@ import {
   ClearHistory,
   RetryHistory,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -38,18 +39,12 @@ import {
   type HistoryFilters,
   historyProfiles,
 } from './history.ts'
-import { megabytes } from './totals.ts'
 
-const bytesInKb = 1024
 const millisecondsPerSecond = 1000
-
-function sizeKb(bytes: number) {
-  return Math.floor(bytes / bytesInKb)
-}
 
 const menu = {
   transitionDuration: 0,
-  PaperProps: { sx: { bgcolor: 'rgb(34,34,42)' } },
+  PaperProps: { sx: { bgcolor: 'var(--mortar-menu)' } },
 } as const
 
 function RetryHistoryButton({ entry }: { entry: HistoryEntry }) {
@@ -205,7 +200,7 @@ export function HistoryList({
                   <OutcomeText outcome={e.outcome} />
                   {` · ${e.source}`}
                   {e.profileId ? ` · ${nameOf(e.profileId)}` : ''}
-                  {e.size > 0 ? ` · ${megabytes(sizeKb(e.size))} MB` : ''}
+                  {e.size > 0 ? ` · ${formatBytes(e.size)}` : ''}
                   {e.finished ? (
                     <>
                       {t` · `}

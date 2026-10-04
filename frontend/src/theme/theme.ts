@@ -8,6 +8,7 @@ const THUMB_HOVER_ALPHA = 0.7
 const TRACK_ALPHA_DARK = 0.08
 const TRACK_ALPHA_LIGHT = 0.16
 const FONT = '"Open Sans", sans-serif'
+const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace'
 // MUI converts px to rem against this root size, so a larger value renders smaller text: compact shrinks type.
 const HTML_FONT_SIZE = 18
 const HTML_FONT_SIZE_COMPACT = 20
@@ -198,3 +199,5 @@ export function createMortarTheme(
   })
   return responsiveFontSizes(theme)
 }
+
+export { MONO }

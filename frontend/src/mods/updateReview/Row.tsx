@@ -1,13 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { ArrowRight, ExternalLink } from 'lucide-react'
 import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useQueue } from '../../queue/store.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
 import { changelogsBetween, changelogsHaveRiskyNotes } from '../changelogRange.ts'
 import { sameId, siblingsOf } from '../lookup.ts'
+import { openPage } from '../menu.ts'
 import { useNexusDetails } from '../nexusDetails.ts'
 import { LetterTile } from '../parts.tsx'
 import { useMods } from '../store.ts'
@@ -97,7 +96,7 @@ export function Row({
           <Button
             variant="outlined"
             endIcon={<ExternalLink size={12} />}
-            onClick={() => Browser.OpenURL(update.url).catch(reportUnexpected)}
+            onClick={() => openPage(update.url)}
             sx={{ whiteSpace: 'nowrap' }}
           >
             {t`Open page`}

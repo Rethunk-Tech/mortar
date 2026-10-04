@@ -1,5 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Typography } from '@mui/material'
+import { alpha, useTheme } from '@mui/material/styles'
+
+const STATUS_FILL = 0.14
+
 import { System } from '@wailsio/runtime'
 import { Check, Clock, Copy, Ellipsis, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -9,12 +13,12 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
+import { MONO } from '../theme/theme.ts'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { launchLine, launchOptionsSet } from './logic.ts'
 import { Panel } from './Panel.tsx'
 
-const MONO = '"IBM Plex Mono", monospace'
 const PERCENT = 100
 const ORDER = ['downloaded', 'files', 'launcher', 'bundled'] as const
 
@@ -77,6 +81,7 @@ function LaunchLine({
   onContinue: () => void
 }) {
   const { t } = useLingui()
+  const theme = useTheme()
   const line = launchLine(gameDir)
   const set = launchOptionsSet(options)
   const copy = () => {
@@ -162,10 +167,16 @@ function LaunchLine({
           borderRadius: '6px',
           border: '1px solid',
           borderColor: set ? 'success.main' : 'warning.main',
-          bgcolor: set ? 'rgba(12,223,100,0.14)' : 'rgba(243,180,22,0.14)',
+          bgcolor: set
+            ? alpha(theme.palette.success.main, STATUS_FILL)
+            : alpha(theme.palette.warning.main, STATUS_FILL),
         }}
       >
-        {set ? <Check size={16} color="#0CDF64" /> : <Clock size={16} color="#F3B416" />}
+        {set ? (
+          <Check size={16} color={theme.palette.success.main} />
+        ) : (
+          <Clock size={16} color={theme.palette.warning.main} />
+        )}
         {set
           ? t`Mortar found it in Steam's settings.`
           : t`Mortar checks Steam's settings for it: not found yet.`}
@@ -198,6 +209,7 @@ export function SmapiStep({
   onDone: () => void
 }) {
   const { t } = useLingui()
+  const ok = useTheme().palette.success.main
   const windows = System.IsWindows()
   const status = useLoader((s) => s.status)
   const installing = useLoader((s) => s.installing)
@@ -251,7 +263,7 @@ export function SmapiStep({
     return (
       <Panel width={720}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, fontSize: 15 }}>
-          <Check size={18} color="#0CDF64" />
+          <Check size={18} color={ok} />
           {t`SMAPI ${status.version} installed`}
         </Box>
         {showLaunch ? (

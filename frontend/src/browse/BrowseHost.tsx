@@ -1,6 +1,5 @@
-import { Browser } from '@wailsio/runtime'
-
 import { Search } from '../../bindings/github.com/Rethunk-AI/mortar/internal/browse/service.ts'
+import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -29,7 +28,7 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       hasCurseForgeKey={false}
       search={search}
       openUrl={(url) => {
-        Browser.OpenURL(url).catch(reportUnexpected)
+        openPage(url).catch(reportUnexpected)
       }}
       downloadNexus={(modID) => {
         download([{ kind: KIND_INSTALL, modId: Number(modID), latest: true }]).catch(

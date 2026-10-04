@@ -15,6 +15,7 @@ import {
   Pause,
   Resume,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
@@ -27,12 +28,10 @@ import {
 import { Body } from './QueueBody.tsx'
 import { HistoryList } from './QueueHistory.tsx'
 import { useQueue } from './store.ts'
-import { clockTime, megabytes, parallelDownloads, totals } from './totals.ts'
+import { clockTime, parallelDownloads, totals } from './totals.ts'
 
 const UNIX_MS_PER_SECOND = 1000
 const WIDTH = 500
-const GREEN = '#0cdf64'
-const BLUE = '#2b8bda'
 const RED = '#ff6b5f'
 
 function Header({
@@ -54,7 +53,7 @@ function Header({
       ? t`${plural(downloading, { one: '# downloading', other: '# downloading' })} · ${plural(waiting, { one: '# waiting', other: '# waiting' })}`
       : null
   const summary = parallel ? t`${parallel} · ${counts}` : counts
-  const line = sum.sizeKb > 0 ? t`${summary} · ${megabytes(sum.sizeKb)} MB` : summary
+  const line = sum.sizeKb > 0 ? t`${summary} · ${formatKb(sum.sizeKb)}` : summary
   const idle = !paused && sum.active === 0 && sum.left === 0
   const finished = items.filter((i) => ['done', 'failed', 'skipped', 'cancelled'].includes(i.state))
   return (
@@ -117,8 +116,8 @@ function Header({
           bgcolor: 'var(--mortar-hairline)',
         }}
       >
-        <Box sx={{ width: `${sum.doneShare}%`, bgcolor: GREEN }} />
-        <Box sx={{ width: `${sum.activeShare}%`, bgcolor: BLUE }} />
+        <Box sx={{ width: `${sum.doneShare}%`, bgcolor: 'success.main' }} />
+        <Box sx={{ width: `${sum.activeShare}%`, bgcolor: 'info.main' }} />
         <Box sx={{ width: `${sum.failedShare}%`, bgcolor: RED }} />
       </Box>
       {limitedUntil > 0 ? (
@@ -183,7 +182,7 @@ export function QueueSheet() {
             maxWidth: '100%',
             top: 'var(--title-bar)',
             height: 'calc(100% - var(--title-bar))',
-            bgcolor: 'rgb(34,34,42)',
+            bgcolor: 'var(--mortar-panel-solid)',
             borderLeft: '1px solid var(--mortar-hairline-12)',
           },
         },

@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import type { Ref } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { download, type Want } from '../../queue/actions.ts'
 import { useQueue } from '../../queue/store.ts'
 import { pendingFor } from '../../queue/totals.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { openPage } from '../menu.ts'
 
 export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string }) {
   const { t } = useLingui()
@@ -21,7 +21,7 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
       size="small"
       color="warning"
       variant="outlined"
-      onClick={() => Browser.OpenURL(url).catch(reportUnexpected)}
+      onClick={() => openPage(url)}
       sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
     >
       {t`Open page`}

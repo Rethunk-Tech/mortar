@@ -5,7 +5,9 @@ import type { ReactNode } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { useNow } from '../i18n/useNow.ts'
 import { When } from '../i18n/When.tsx'
+import { absoluteWhen } from '../i18n/when.ts'
 import { goldText, hoursPlayed } from './card.ts'
 import { AddAll, MissingChips } from './lackChips.tsx'
 
@@ -47,6 +49,7 @@ export function SaveDetails({
   status: ReactNode
 }) {
   const { t, i18n } = useLingui()
+  useNow()
   const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   const hours = hoursPlayed(fit.millisecondsPlayed)
   const missing = fit.missing ?? []
@@ -73,14 +76,7 @@ export function SaveDetails({
         <Typography
           sx={{ flex: 1, minWidth: 0, fontSize: 12, color: 'text.secondary' }}
           noWrap={true}
-          title={
-            fit.played
-              ? new Intl.DateTimeFormat(i18n.locale, {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                }).format(new Date(fit.played))
-              : undefined
-          }
+          title={fit.played ? absoluteWhen(fit.played, i18n.locale) || undefined : undefined}
         >
           {t`Last played ${formatWhen(fit.played)}`}
         </Typography>

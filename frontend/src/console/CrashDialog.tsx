@@ -10,7 +10,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { LifeBuoy, Terminal } from 'lucide-react'
 import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
@@ -18,11 +17,12 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { useTab } from '../game/tab.ts'
 import { useLaunch } from '../launch/store.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
+import { openPage } from '../mods/menu.ts'
 import { paper } from '../mods/paper.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BisectDialog } from './BisectDialog.tsx'
 import { canBisectCrash } from './canBisect.ts'
@@ -196,7 +196,9 @@ export function CrashDialog() {
           {nexusID > 0 ? (
             <Button
               onClick={() =>
-                Browser.OpenURL(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`)
+                openPage(`https://www.nexusmods.com/stardewvalley/mods/${nexusID}`).catch(
+                  reportUnexpected,
+                )
               }
             >
               {t`Open page`}

@@ -8,7 +8,6 @@ import {
   Button,
   Typography,
 } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { ChevronDown, ExternalLink, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
@@ -20,6 +19,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { openPage } from './menu.ts'
 import type { TrackedMod } from './nexusAccount.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -52,6 +52,7 @@ function TrackedRow({
         }
       })
       .catch(reportUnexpected)
+
     return () => {
       live = false
     }
@@ -73,7 +74,7 @@ function TrackedRow({
         variant="outlined"
         startIcon={<ExternalLink size={14} aria-hidden={true} />}
         onClick={() => {
-          Browser.OpenURL(url).catch(reportUnexpected)
+          openPage(url).catch(reportUnexpected)
         }}
       >
         {t`Open on Nexus`}
@@ -112,6 +113,7 @@ function TrackedNotInProfile({ profile }: { profile: Profile }) {
         }
       })
       .catch(reportUnexpected)
+
     return () => {
       live = false
     }

@@ -1,5 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
+import { alpha, useTheme } from '@mui/material/styles'
+
+const DONE_FILL = 0.08
+
 import { Download, RotateCcw, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
@@ -15,7 +19,7 @@ import {
   SkipAll,
   SkipProfile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
-import { formatBytes } from '../i18n/bytes.ts'
+import { formatBytes, formatKb } from '../i18n/bytes.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
 import { LetterTile } from '../mods/parts.tsx'
@@ -26,7 +30,6 @@ import { Callout, Title } from './Callout.tsx'
 import { Fold } from './QueueFold.tsx'
 import { downloadedKb, isActive, tile } from './totals.ts'
 
-const BLUE = '#2b8bda'
 const ROW = {
   display: 'flex',
   alignItems: 'center',
@@ -37,7 +40,6 @@ const ROW = {
   borderRadius: '6px',
 } as const
 const NAME_MAX = 3
-const KIB = 1024
 
 const names = (items: Item[]) =>
   items
@@ -259,7 +261,7 @@ function Active({ item }: { item: Item }) {
   const { t } = useLingui()
   const downloading = item.state === 'downloading'
   const text = downloading
-    ? t`${formatBytes(downloadedKb(item) * KIB)} of ${formatBytes(item.sizeKb * KIB)} · ${formatBytes(item.speed)}/s`
+    ? t`${formatKb(downloadedKb(item))} of ${formatKb(item.sizeKb)} · ${formatBytes(item.speed)}/s`
     : t`Installing`
   return (
     <Box sx={{ ...ROW, bgcolor: 'var(--mortar-raised)' }}>
@@ -270,7 +272,14 @@ function Active({ item }: { item: Item }) {
           <Typography sx={{ ...detail, flexShrink: 0 }}>{text}</Typography>
         </Box>
         <Box sx={{ height: 4, borderRadius: '2px', bgcolor: 'var(--mortar-hairline)' }}>
-          <Box sx={{ width: `${item.progress}%`, height: 4, borderRadius: '2px', bgcolor: BLUE }} />
+          <Box
+            sx={{
+              width: `${item.progress}%`,
+              height: 4,
+              borderRadius: '2px',
+              bgcolor: 'info.main',
+            }}
+          />
         </Box>
       </Box>
       {downloading ? (
@@ -316,6 +325,7 @@ function NextActions({ item }: { item: Item }) {
 
 export function Body({ items }: { items: Item[] }) {
   const { t } = useLingui()
+  const doneBg = alpha(useTheme().palette.success.main, DONE_FILL)
   const click = items.filter((i) => i.state === 'waiting-click')
   const choose = items.filter((i) => i.state === 'needs-choice')
   const confirm = items.filter((i) => i.state === 'needs-confirm')
@@ -394,11 +404,7 @@ export function Body({ items }: { items: Item[] }) {
         </Fold>
       ) : null}
       {done.length > 0 ? (
-        <Fold
-          bg="rgba(12,223,100,0.08)"
-          color="#6ff5a8"
-          line={t`Done (${done.length}): ${names(done)}`}
-        >
+        <Fold bg={doneBg} color="#6ff5a8" line={t`Done (${done.length}): ${names(done)}`}>
           {done.map((i) => (
             <Row
               key={i.id}

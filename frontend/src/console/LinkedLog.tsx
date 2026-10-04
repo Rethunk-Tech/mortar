@@ -11,12 +11,11 @@ import { useTab } from '../game/tab.ts'
 import { useDetail } from '../mods/detail.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { MONO } from '../theme/theme.ts'
 import { errorDetails, errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import type { InstalledMod } from './consoleLinks.ts'
 import { VirtualLog } from './VirtualLog.tsx'
-
-const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace'
 
 function installedOf(
   entries: { mods?: { name: string; uniqueId: string }[] | null }[] | null | undefined,

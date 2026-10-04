@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
-import { megabytes, parallelDownloads, pendingFor, profileOf, totals } from './totals.ts'
+import { parallelDownloads, pendingFor, profileOf, totals } from './totals.ts'
 
 const item = (state: string, sizeKb = 0, modId = 1): Item => ({
   id: state + modId,
@@ -68,11 +68,6 @@ test('a GitHub mod is pending by its repo, not by mod id', () => {
   expect(pendingFor([gh], 'p', 0, 'me/other')).toBe(false)
   expect(pendingFor([gh], 'p', 1)).toBe(false)
   expect(pendingFor([item('queued')], 'p', 1, 'me/mod')).toBe(false)
-})
-
-test('sizes show one decimal until 10 MB', () => {
-  expect(megabytes(512)).toBe('0.5')
-  expect(megabytes(20_480)).toBe('20')
 })
 
 test('profileOf names the profile, marks a deleted one and stays silent for another game', () => {

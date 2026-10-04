@@ -8,7 +8,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material'
-import { Application, Browser } from '@wailsio/runtime'
+import { Application } from '@wailsio/runtime'
 import {
   Bug,
   Code2,
@@ -23,6 +23,7 @@ import { useId, useState } from 'react'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
+import { openPage } from '../mods/menu.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
@@ -165,7 +166,7 @@ export function AppMenu() {
           <ListItemButton
             onClick={() => {
               close()
-              Browser.OpenURL(SOURCE).catch(reportUnexpected)
+              openPage(SOURCE).catch(reportUnexpected)
             }}
           >
             <ListItemIcon>

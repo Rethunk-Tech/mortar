@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { relativeWhen } from './when.ts'
+import { absoluteWhen, relativeWhen } from './when.ts'
 
 const now = Date.parse('2026-10-02T12:00:00Z')
 const at = (ms: number) => now - ms
@@ -15,4 +15,14 @@ test('relativeWhen is relative within a week and a date before that', () => {
   expect(relativeWhen('2026-03-15T02:54:41Z', opts)).toBe('Mar 15, 2026')
   expect(relativeWhen('0001-01-01T00:00:00Z', opts)).toBe('')
   expect(relativeWhen('nonsense', opts)).toBe('')
+})
+
+test('absoluteWhen uses a medium date and short time and skips a zero date', () => {
+  expect(absoluteWhen('0001-01-01T00:00:00Z', 'en')).toBe('')
+  expect(absoluteWhen('nonsense', 'en')).toBe('')
+  expect(absoluteWhen('2026-03-15T02:54:41Z', 'en')).toBe(
+    new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(
+      new Date('2026-03-15T02:54:41Z'),
+    ),
+  )
 })

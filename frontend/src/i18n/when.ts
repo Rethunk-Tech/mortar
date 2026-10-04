@@ -5,6 +5,14 @@ const DAYS_PER_WEEK = 7
 const WEEK = DAYS_PER_WEEK * DAY
 const FIRST_YEAR = 1970
 
+function parseWhen(value: string | number | Date): Date | undefined {
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime()) || d.getUTCFullYear() < FIRST_YEAR) {
+    return undefined
+  }
+  return d
+}
+
 export interface WhenOptions {
   withTime?: boolean
   now?: number
@@ -12,6 +20,17 @@ export interface WhenOptions {
   // The translated text for under a minute ago, which Intl words as "now".
   fewSeconds?: string
   absolute?: boolean
+}
+
+export function absoluteWhen(value: string | number | Date, locale = 'en'): string {
+  const d = parseWhen(value)
+  if (!d) {
+    return ''
+  }
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(d)
 }
 
 // relativeWhen reads a moment as "3 minutes ago" or "yesterday" within the last week and as a date before that,
@@ -26,8 +45,8 @@ export function relativeWhen(
     absolute = false,
   }: WhenOptions = {},
 ): string {
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime()) || d.getUTCFullYear() < FIRST_YEAR) {
+  const d = parseWhen(value)
+  if (!d) {
     return ''
   }
   if (absolute) {

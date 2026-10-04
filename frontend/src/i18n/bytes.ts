@@ -19,3 +19,7 @@ export function formatBytes(bytes: number): string {
     maximumFractionDigits: unitIndex === 0 ? 0 : 1,
   }).format(value)
 }
+
+export function formatKb(kb: number): string {
+  return formatBytes(kb * KIB)
+}

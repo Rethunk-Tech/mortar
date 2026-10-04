@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, IconButton, Tooltip } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { ExternalLink, Plus, Power, X } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
@@ -8,6 +7,7 @@ import type {
   Fit,
   Lack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -90,7 +90,7 @@ export function LackChipActions(p: {
             size="small"
             aria-label={nexusPage ? t`Open ${name} on Nexus` : t`Open the page of ${name}`}
             onClick={() => {
-              Browser.OpenURL(url).catch(reportUnexpected)
+              openPage(url).catch(reportUnexpected)
             }}
           >
             <ExternalLink size={14} />

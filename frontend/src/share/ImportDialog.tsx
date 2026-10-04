@@ -1,5 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
+
+const WARN_FILL = 0.12
+const WARN_LINE = 0.35
+
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { PreviewData } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
@@ -17,7 +22,7 @@ import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
 
 const dialogSx = {
   ...paper.sx,
-  bgcolor: 'rgb(34,34,40)',
+  bgcolor: 'var(--mortar-panel-solid)',
   border: '1px solid var(--mortar-hairline)',
   width: 'min(1180px, calc(100% - 72px))',
   maxHeight: 'none',
@@ -39,8 +44,9 @@ function MissingMods({
         mb: 1,
         px: 1.5,
         py: 1,
-        bgcolor: 'rgba(243,180,22,0.12)',
-        border: '1px solid rgba(243,180,22,0.35)',
+        bgcolor: (th) => alpha(th.palette.warning.main, WARN_FILL),
+        border: '1px solid',
+        borderColor: (th) => alpha(th.palette.warning.main, WARN_LINE),
         borderRadius: '4px',
       }}
     >

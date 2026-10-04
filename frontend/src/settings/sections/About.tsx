@@ -1,10 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { useState } from 'react'
 import { Logo } from '../../brand/Logo.tsx'
+import { openPage } from '../../mods/menu.ts'
 import { paper } from '../../mods/paper.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
 import credits from '../generated/credits.json' with { type: 'json' }
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { Diagnostics } from './AboutDiagnostics.tsx'
@@ -35,7 +34,7 @@ function CreditList() {
         >
           <Link
             component="button"
-            onClick={() => Browser.OpenURL(entry.url).catch(reportUnexpected)}
+            onClick={() => openPage(entry.url)}
             title={entry.name}
             sx={{
               minWidth: 0,
@@ -72,10 +71,7 @@ export function About() {
               {t`AGPL-3.0 · Rethunk-AI/mortar`}
             </Box>
           </Box>
-          <Button
-            variant="outlined"
-            onClick={() => Browser.OpenURL(LICENCE).catch(reportUnexpected)}
-          >
+          <Button variant="outlined" onClick={() => openPage(LICENCE)}>
             {t`Licence`}
           </Button>
         </Box>

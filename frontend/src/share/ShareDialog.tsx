@@ -11,6 +11,11 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
+
+const WARN_FILL = 0.14
+const WARN_LINE = 0.5
+
 import { Clipboard } from '@wailsio/runtime'
 import { Check, ChevronDown, Copy, FileText, List, MessageSquare, Save, Type } from 'lucide-react'
 import { useState } from 'react'
@@ -20,6 +25,7 @@ import { Logo } from '../brand/Logo.tsx'
 import { SendDialog } from '../lan/SendDialog.tsx'
 import { heading, paper } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { MONO } from '../theme/theme.ts'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
@@ -212,7 +218,7 @@ function LinkTab({
                   bgcolor: 'var(--mortar-overlay-45)',
                   border: '1px solid var(--mortar-hairline-15)',
                   borderRadius: '6px',
-                  fontFamily: '"IBM Plex Mono", monospace',
+                  fontFamily: MONO,
                   fontSize: 13,
                   userSelect: 'text',
                 }}
@@ -252,8 +258,9 @@ function LinkTab({
               alignItems: 'center',
               gap: 1.5,
               p: 1.5,
-              bgcolor: 'rgba(243,180,22,0.14)',
-              border: '1px solid rgba(243,180,22,0.5)',
+              bgcolor: (th) => alpha(th.palette.warning.main, WARN_FILL),
+              border: '1px solid',
+              borderColor: (th) => alpha(th.palette.warning.main, WARN_LINE),
               borderRadius: '6px',
             }}
           >

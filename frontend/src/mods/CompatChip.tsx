@@ -1,10 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Chip, Link, Typography } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import type { Compat } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { reportUnexpected } from '../toasts/report.ts'
 import { compatOf, showCompatChip } from './compatChip.ts'
+import { openPage } from './menu.ts'
 import { heading } from './paper.ts'
 import { useMods } from './store.ts'
 
@@ -47,7 +46,7 @@ export function CompatDetail({ mod }: { mod: Mod }) {
         type="button"
         underline="hover"
         sx={{ ...text, textAlign: 'left' }}
-        onClick={() => Browser.OpenURL(row.unofficialUrl).catch(reportUnexpected)}
+        onClick={() => openPage(row.unofficialUrl)}
       >
         {t`Unofficial update`}
       </Link>

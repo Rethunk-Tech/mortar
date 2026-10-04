@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Chip, Link, Typography } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
@@ -9,8 +8,8 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { Fold } from '../shell/Fold.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
+import { openPage } from './menu.ts'
 import { NewSinceLooked } from './NewSince.tsx'
 import { NexusAccountActions } from './NexusAccountActions.tsx'
 import {
@@ -28,8 +27,6 @@ const muted = { fontSize: 12, color: 'text.secondary' } as const
 const noWrap = { whiteSpace: 'nowrap' } as const
 const FILES_SHOWN = 5
 const BOLD = 700
-
-const open = (url: string) => Browser.OpenURL(url).catch(reportUnexpected)
 
 function Rich({ blocks }: { blocks: Block[] }) {
   return blocks.map((b) => (
@@ -50,7 +47,7 @@ function Rich({ blocks }: { blocks: Block[] }) {
           <Link
             key={r.id}
             component="button"
-            onClick={() => (r.href ? open(r.href) : undefined)}
+            onClick={() => (r.href ? openPage(r.href) : undefined)}
             sx={{ ...text, verticalAlign: 'baseline', textAlign: 'left' }}
           >
             {r.text}
@@ -98,7 +95,7 @@ function Facts({ details, mod }: { details: Details; mod: Mod }) {
       <Fact label={t`Category`}>{category || '—'}</Fact>
       <Fact label={t`Uploaded by`}>
         {uploader ? (
-          <Link component="button" onClick={() => open(uploader)} sx={text}>
+          <Link component="button" onClick={() => openPage(uploader)} sx={text}>
             {page.uploadedBy}
           </Link>
         ) : (

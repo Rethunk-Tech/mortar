@@ -11,7 +11,7 @@ import {
   Switch,
   Typography,
 } from '@mui/material'
-import { Browser, Clipboard } from '@wailsio/runtime'
+import { Clipboard } from '@wailsio/runtime'
 import { Copy, ExternalLink, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { RunLog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
@@ -19,14 +19,15 @@ import {
   Log,
   Upload,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+import { openPage } from '../mods/menu.ts'
 import { paper } from '../mods/paper.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { MONO } from '../theme/theme.ts'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { shareLogConfirm } from './shareLog.ts'
 import { useConsole } from './store.ts'
 
-const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace'
 const button = { whiteSpace: 'nowrap' } as const
 const homePath = /\/home\/([^/\\\s]+)/
 
@@ -69,7 +70,7 @@ function LinkRow({ link, onCopy }: { link: string; onCopy: () => void }) {
       <Button
         variant="outlined"
         startIcon={<ExternalLink size={16} />}
-        onClick={() => Browser.OpenURL(link).catch(reportUnexpected)}
+        onClick={() => openPage(link)}
         sx={button}
       >
         {t`Open`}
