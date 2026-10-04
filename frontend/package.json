@@ -31,13 +31,11 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
-    "@babel/core": "8.0.6",
-    "@lingui/babel-plugin-lingui-macro": "6.9.0",
     "@lingui/cli": "6.9.0",
     "@lingui/conf": "6.9.0",
+    "@lingui/native-tools": "^0.1.5",
     "@lingui/vite-plugin": "6.9.0",
     "@playwright/test": "1.63.0",
-    "@rolldown/plugin-babel": "0.2.4",
     "@types/bun": "1.4.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",

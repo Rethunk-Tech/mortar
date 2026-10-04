@@ -1,5 +1,4 @@
-import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin'
-import babel from '@rolldown/plugin-babel'
+import { lingui } from '@lingui/vite-plugin'
 import react from '@vitejs/plugin-react'
 import wails from '@wailsio/runtime/plugins/vite'
 import { defineConfig } from 'vite'
@@ -13,10 +12,5 @@ export default defineConfig({
     port: Number(process.env.WAILS_VITE_PORT) || DEFAULT_PORT,
     strictPort: true,
   },
-  plugins: [
-    react(),
-    lingui(),
-    babel({ presets: [linguiTransformerBabelPreset()] }),
-    wails('./bindings'),
-  ],
+  plugins: [react(), lingui({ macroTransform: true }), wails('./bindings')],
 })
