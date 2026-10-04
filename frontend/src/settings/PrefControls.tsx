@@ -1,9 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
-  ButtonBase,
+  FormControlLabel,
   MenuItem,
   Radio,
+  RadioGroup,
   Select,
   Switch,
   TextField,
@@ -102,43 +103,41 @@ export function PrefCards({
   label: string
 }) {
   return (
-    <Box
-      role="radiogroup"
+    <RadioGroup
       aria-label={label}
+      value={value}
+      onChange={(_, v) => onChange(v)}
       sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
     >
-      {options.map((o) => {
-        const on = o.value === value
-        return (
-          <ButtonBase
-            key={o.value}
-            role="radio"
-            aria-checked={on}
-            onClick={() => onChange(o.value)}
-            sx={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'flex-start',
-              textAlign: 'left',
-              gap: 1.5,
-              px: 1.5,
-              py: 1.25,
-              borderRadius: '6px',
-              bgcolor: on ? 'var(--mortar-hairline-12)' : 'var(--mortar-raised)',
-              outline: on ? '1px solid' : 'none',
-              outlineColor: 'primary.main',
-              '&:hover': { bgcolor: 'var(--mortar-hairline-12)' },
-            }}
-          >
-            <Radio checked={on} size="small" tabIndex={-1} sx={{ p: 0, mt: '2px' }} />
+      {options.map((o) => (
+        <FormControlLabel
+          key={o.value}
+          value={o.value}
+          control={<Radio size="small" sx={{ p: 0, mt: '2px' }} />}
+          label={
             <Box sx={{ minWidth: 0 }}>
               <Box sx={{ fontSize: 15, fontWeight: 600 }}>{o.label}</Box>
               {o.hint ? <Box sx={{ fontSize: 14, color: 'text.secondary' }}>{o.hint}</Box> : null}
             </Box>
-          </ButtonBase>
-        )
-      })}
-    </Box>
+          }
+          sx={{
+            m: 0,
+            alignItems: 'flex-start',
+            gap: 1.5,
+            px: 1.5,
+            py: 1.25,
+            borderRadius: '6px',
+            bgcolor: 'var(--mortar-raised)',
+            '&:hover': { bgcolor: 'var(--mortar-hairline-12)' },
+            '&:has(input:checked)': {
+              bgcolor: 'var(--mortar-hairline-12)',
+              outline: '1px solid',
+              outlineColor: 'primary.main',
+            },
+          }}
+        />
+      ))}
+    </RadioGroup>
   )
 }
 

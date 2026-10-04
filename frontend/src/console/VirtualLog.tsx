@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Box, Link } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -164,6 +165,7 @@ export function VirtualLog({
   onMod: (uniqueID: string) => void
   onPath: (path: string) => void
 }) {
+  const { t } = useLingui()
   const ref = useRef<HTMLDivElement>(null)
   const [top, setTop] = useState(0)
   const [height, setHeight] = useState(0)
@@ -200,6 +202,10 @@ export function VirtualLog({
     <Box
       ref={ref}
       role="log"
+      aria-label={t`Game log`}
+      // Scrolling mounts and unmounts rows, which a live log would read out as new output.
+      aria-live="off"
+      tabIndex={0}
       onScroll={(e) => {
         const el = e.currentTarget
         setTop(el.scrollTop)

@@ -58,6 +58,9 @@ function iconFor(item: PaletteItem): ReactNode {
   return <FolderPlus size={16} />
 }
 
+const PALETTE_LIST_ID = 'command-palette-results'
+const optionId = (id: string) => `command-palette-option-${id.replace(/[^\w-]/g, '_')}`
+
 function PaletteRows({
   shown,
   currentId,
@@ -67,11 +70,21 @@ function PaletteRows({
   currentId: string | undefined
   onPick: (id: string) => void
 }) {
+  const { t } = useLingui()
   return (
-    <List dense={true} sx={{ maxHeight: 420, overflow: 'auto', py: 1 }} role="listbox">
+    <List
+      id={PALETTE_LIST_ID}
+      dense={true}
+      sx={{ maxHeight: 420, overflow: 'auto', py: 1 }}
+      role="listbox"
+      aria-label={t`Results`}
+    >
       {shown.map((item) => (
         <ListItemButton
           key={item.id}
+          id={optionId(item.id)}
+          // The search field keeps focus and arrow keys move the selection, so options are not Tab stops.
+          tabIndex={-1}
           selected={item.id === currentId}
           onClick={() => onPick(item.id)}
           role="option"
@@ -216,7 +229,16 @@ export function CommandPalette() {
             setIndex(0)
           }}
           placeholder={t`Search actions and destinations`}
-          slotProps={{ htmlInput: { 'aria-label': t`Search actions and destinations` } }}
+          slotProps={{
+            htmlInput: {
+              'aria-label': t`Search actions and destinations`,
+              role: 'combobox',
+              'aria-expanded': shown.length > 0,
+              'aria-controls': PALETTE_LIST_ID,
+              'aria-autocomplete': 'list',
+              'aria-activedescendant': current ? optionId(current.id) : undefined,
+            },
+          }}
           sx={{ px: 2, pt: 2, '& .MuiInputBase-root': { userSelect: 'text' } }}
         />
         <PaletteRows shown={shown} currentId={current?.id} onPick={pick} />

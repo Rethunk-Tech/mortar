@@ -316,7 +316,7 @@ export function Toolbar({
       {narrow ? (
         <Button
           variant="outlined"
-          aria-label={t`Filter mods`}
+          aria-label={query === '' ? t`Filter mods` : t`Filter mods, filter active`}
           aria-expanded={fieldOpen}
           onClick={() => setExpanded(true)}
           sx={{ minWidth: 36, px: 0, position: 'relative' }}

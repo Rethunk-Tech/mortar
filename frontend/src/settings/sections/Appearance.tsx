@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase } from '@mui/material'
+import { Box, Button, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 import { ImagePlus, RotateCcw } from 'lucide-react'
 import {
   ChooseBackgroundImage,
@@ -49,6 +49,15 @@ function DefaultSort() {
   )
 }
 
+const visuallyHidden = {
+  position: 'absolute',
+  opacity: 0,
+  width: 1,
+  height: 1,
+  p: 0,
+  overflow: 'hidden',
+} as const
+
 export function Appearance() {
   const { t } = useLingui()
   const accent = useSettings((s) => s.accent)
@@ -73,58 +82,60 @@ export function Appearance() {
       <SettingsSection title={t`Accent colour`}>
         <Searchable terms={`${t`Accent colour`} ${t`colour`} ${t`color`} ${t`theme`}`}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', p: 2 }}>
-            <Box
-              role="radiogroup"
+            <RadioGroup
               aria-label={t`Accent colour`}
+              value={isAccent(accent) ? accent : ''}
+              onChange={(_, name) => {
+                SetAccent(name).catch(reportFailure)
+              }}
               sx={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                 gap: '10px',
               }}
             >
-              {cards.map((card) => {
-                const checked = isAccent(accent) && accent === card.name
-                return (
-                  <ButtonBase
-                    key={card.name}
-                    role="radio"
-                    aria-checked={checked}
-                    onClick={() => {
-                      SetAccent(card.name).catch(reportFailure)
-                    }}
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'flex-start',
-                      gap: '10px',
-                      p: '12px',
-                      bgcolor: 'var(--mortar-raised)',
-                      border: '2px solid',
-                      borderColor: checked ? 'var(--mortar-ink)' : 'transparent',
-                      borderRadius: '8px',
-                      color: 'var(--mortar-ink)',
-                      textAlign: 'left',
-                      fontFamily: 'inherit',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: 44,
-                        borderRadius: '6px',
-                        bgcolor: accents[card.name],
-                      }}
-                    />
-                    <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
-                      {card.label}
+              {cards.map((card) => (
+                <FormControlLabel
+                  key={card.name}
+                  value={card.name}
+                  // The swatch card is the visible control; the radio stays in the tab order for arrow keys.
+                  control={<Radio sx={visuallyHidden} />}
+                  label={
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <Box
+                        sx={{
+                          width: '100%',
+                          height: 44,
+                          borderRadius: '6px',
+                          bgcolor: accents[card.name],
+                        }}
+                      />
+                      <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
+                        {card.label}
+                      </Box>
+                      <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-sec)' }}>
+                        {card.note}
+                      </Box>
                     </Box>
-                    <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-sec)' }}>
-                      {card.note}
-                    </Box>
-                  </ButtonBase>
-                )
-              })}
-            </Box>
+                  }
+                  sx={{
+                    m: 0,
+                    p: '12px',
+                    position: 'relative',
+                    bgcolor: 'var(--mortar-raised)',
+                    border: '2px solid transparent',
+                    borderRadius: '8px',
+                    color: 'var(--mortar-ink)',
+                    '& .MuiFormControlLabel-label': { width: '100%' },
+                    '&:has(input:checked)': { borderColor: 'var(--mortar-ink)' },
+                    '&:has(input:focus-visible)': {
+                      outline: '2px solid',
+                      outlineColor: 'primary.main',
+                    },
+                  }}
+                />
+              ))}
+            </RadioGroup>
           </Box>
         </Searchable>
       </SettingsSection>

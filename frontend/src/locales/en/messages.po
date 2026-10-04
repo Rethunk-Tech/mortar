@@ -45,7 +45,7 @@ msgstr "Launch method"
 msgid "Hidden on Nexus · {0}"
 msgstr "Hidden on Nexus · {0}"
 
-#: src/settings/sections/Appearance.tsx:64
+#: src/settings/sections/Appearance.tsx:73
 msgid "Gentle violet"
 msgstr "Gentle violet"
 
@@ -120,7 +120,7 @@ msgstr "Open profile"
 msgid "Presets"
 msgstr "Presets"
 
-#: src/mods/ConflictWhy.tsx:105
+#: src/mods/ConflictWhy.tsx:124
 msgid "Priority Default"
 msgstr "Priority Default"
 
@@ -268,7 +268,7 @@ msgstr "{name} is broken for {detail}"
 msgid "More levels"
 msgstr "More levels"
 
-#: src/settings/sections/Appearance.tsx:59
+#: src/settings/sections/Appearance.tsx:68
 msgid "Sand"
 msgstr "Sand"
 
@@ -468,7 +468,7 @@ msgstr "Notes"
 msgid "Startup and window"
 msgstr "Startup and window"
 
-#: src/mods/ProblemsTab.tsx:68
+#: src/mods/ProblemsTab.tsx:69
 msgid "Cosmetic or harmless"
 msgstr "Cosmetic or harmless"
 
@@ -712,7 +712,7 @@ msgstr "gone"
 #. placeholder {1}: formatBytes(backup.size)
 #. placeholder {1}: outcome(hits[0].outcome)
 #: src/console/SearchRunsDialog.tsx:131
-#: src/mods/ConflictWhy.tsx:84
+#: src/mods/ConflictWhy.tsx:103
 #: src/profiles/CompareBulkBody.tsx:60
 #: src/saves/BackupsDialog.tsx:84
 msgid "{0} · {1}"
@@ -904,7 +904,7 @@ msgstr "Update {0} in other profiles"
 #. placeholder {0}: h.missingNames.join(', ')
 #. placeholder {0}: missingNames.join(', ')
 #: src/profiles/HistoryPanel.tsx:36
-#: src/profiles/RecentChangesButton.tsx:300
+#: src/profiles/RecentChangesButton.tsx:295
 msgid "Could not restore {0}"
 msgstr "Could not restore {0}"
 
@@ -969,7 +969,7 @@ msgstr "Create a bundle to reuse a set of mods."
 msgid "Show files"
 msgstr "Show files"
 
-#: src/launch/VanillaPlay.tsx:116
+#: src/launch/VanillaPlay.tsx:113
 msgid "More play options"
 msgstr "More play options"
 
@@ -1074,7 +1074,7 @@ msgstr "Before updating {0}"
 msgid "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
-#: src/settings/sections/Appearance.tsx:142
+#: src/settings/sections/Appearance.tsx:153
 msgid "Solid"
 msgstr "Solid"
 
@@ -1156,7 +1156,7 @@ msgstr "See load errors, missing dependencies, and other issues before you play.
 msgid "Remove {selected}?"
 msgstr "Remove {selected}?"
 
-#: src/games/GameSelect.tsx:368
+#: src/games/GameSelect.tsx:365
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -1178,7 +1178,7 @@ msgstr "Switched off in this profile"
 msgid "Confirm update for {name}"
 msgstr "Confirm update for {name}"
 
-#: src/mods/ProblemsTab.tsx:54
+#: src/mods/ProblemsTab.tsx:55
 msgid "Missing requirements"
 msgstr "Missing requirements"
 
@@ -1237,7 +1237,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/firstrun/SmapiStep.tsx:199
 #: src/firstrun/SmapiStep.tsx:273
 #: src/game/detailStates.tsx:27
-#: src/games/GameSelect.tsx:313
+#: src/games/GameSelect.tsx:310
 #: src/mods/LoadOrderTab.tsx:349
 #: src/mods/ModsTab.tsx:106
 #: src/notes/NotesTab.tsx:43
@@ -1251,7 +1251,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 msgid "Retry"
 msgstr "Retry"
 
-#: src/settings/sections/Appearance.tsx:61
+#: src/settings/sections/Appearance.tsx:70
 msgid "Copper"
 msgstr "Copper"
 
@@ -1459,7 +1459,7 @@ msgstr "Host:port"
 msgid "Tell me when a new SMAPI is out"
 msgstr "Tell me when a new SMAPI is out"
 
-#: src/commandPalette/CommandPalette.tsx:128
+#: src/commandPalette/CommandPalette.tsx:141
 #: src/settings/sections/NexusMods.tsx:125
 #: src/settings/sections/NexusMods.tsx:245
 #: src/settings/SettingsPage.tsx:38
@@ -1717,11 +1717,11 @@ msgstr "Remove from other profiles…"
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
-#: src/launch/PlayControl.tsx:161
+#: src/launch/PlayControl.tsx:159
 msgid "Installing SMAPI…"
 msgstr "Installing SMAPI…"
 
-#: src/mods/ProblemsTab.tsx:168
+#: src/mods/ProblemsTab.tsx:169
 msgid "Why?"
 msgstr "Why?"
 
@@ -1847,7 +1847,7 @@ msgstr "Unofficial update"
 msgid "Check only enabled mods: {from} → {to}"
 msgstr "Check only enabled mods: {from} → {to}"
 
-#: src/mods/ProblemsTab.tsx:344
+#: src/mods/ProblemsTab.tsx:345
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -1885,7 +1885,7 @@ msgstr "Install together"
 msgid "Add tool"
 msgstr "Add tool"
 
-#: src/commandPalette/CommandPalette.tsx:125
+#: src/commandPalette/CommandPalette.tsx:138
 #: src/settings/SettingsPage.tsx:35
 msgid "Appearance"
 msgstr "Appearance"
@@ -1910,7 +1910,7 @@ msgstr "Try another spelling, or install a mod by {author} in any profile."
 msgid "Lutris"
 msgstr "Lutris"
 
-#: src/commandPalette/CommandPalette.tsx:126
+#: src/commandPalette/CommandPalette.tsx:139
 #: src/settings/SettingsPage.tsx:36
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
@@ -1961,7 +1961,7 @@ msgid "No enabled mods"
 msgstr "No enabled mods"
 
 #: src/mods/CleanupSection.tsx:144
-#: src/mods/ProblemsTab.tsx:365
+#: src/mods/ProblemsTab.tsx:382
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -2000,6 +2000,10 @@ msgstr "Could not find Mortar users"
 #: src/settings/sections/StreamOverlay.tsx:271
 msgid "Enter a number from {MIN_PORT} to {MAX_PORT}"
 msgstr "Enter a number from {MIN_PORT} to {MAX_PORT}"
+
+#: src/mods/Toolbar.tsx:319
+msgid "Filter mods, filter active"
+msgstr "Filter mods, filter active"
 
 #: src/console/CrashDialog.tsx:200
 msgid "Stardew Valley closed with errors"
@@ -2114,7 +2118,7 @@ msgid "No recorded runs yet"
 msgstr "No recorded runs yet"
 
 #: src/mods/listRows.ts:87
-#: src/mods/Sidebar.tsx:338
+#: src/mods/Sidebar.tsx:337
 msgid "Archive"
 msgstr "Archive"
 
@@ -2143,7 +2147,7 @@ msgstr "Restore {when}"
 msgid "Open the next profile"
 msgstr "Open the next profile"
 
-#: src/settings/sections/Appearance.tsx:141
+#: src/settings/sections/Appearance.tsx:152
 #: src/settings/sections/Notifications.tsx:58
 msgid "Desktop"
 msgstr "Desktop"
@@ -2230,12 +2234,12 @@ msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
 
 #: src/profiles/EditProfileDialog.tsx:147
-#: src/settings/sections/Appearance.tsx:62
+#: src/settings/sections/Appearance.tsx:71
 msgid "Sky"
 msgstr "Sky"
 
 #. placeholder {0}: e.keys.join(', ')
-#: src/mods/ConflictWhy.tsx:98
+#: src/mods/ConflictWhy.tsx:117
 msgid "Both set: {0}"
 msgstr "Both set: {0}"
 
@@ -2261,7 +2265,7 @@ msgid "Fullscreen resolution height"
 msgstr "Fullscreen resolution height"
 
 #: src/console/HelpDialog.tsx:215
-#: src/mods/ReportToAuthorButton.tsx:211
+#: src/mods/ReportToAuthorButton.tsx:206
 msgid "Reading the log…"
 msgstr "Reading the log…"
 
@@ -2309,7 +2313,7 @@ msgid "Show: {0}"
 msgstr "Show: {0}"
 
 #. placeholder {0}: e.priority
-#: src/mods/ConflictWhy.tsx:105
+#: src/mods/ConflictWhy.tsx:124
 msgid "Priority {0}"
 msgstr "Priority {0}"
 
@@ -2338,7 +2342,7 @@ msgstr "It shows in your Steam library the next time Steam starts."
 msgid "Local-only mods kept ({0})"
 msgstr "Local-only mods kept ({0})"
 
-#: src/commandPalette/CommandPalette.tsx:131
+#: src/commandPalette/CommandPalette.tsx:144
 #: src/settings/sections/DataUsage.tsx:253
 #: src/settings/SettingsPage.tsx:41
 msgid "Storage"
@@ -2483,7 +2487,7 @@ msgstr "Could not sign in"
 msgid "Report a bug"
 msgstr "Report a bug"
 
-#: src/mods/ReportToAuthorButton.tsx:243
+#: src/mods/ReportToAuthorButton.tsx:238
 msgid "Skip sharing"
 msgstr "Skip sharing"
 
@@ -2549,7 +2553,7 @@ msgstr "Data folder moved"
 msgid "Keep downloaded archives"
 msgstr "Keep downloaded archives"
 
-#: src/mods/ProblemsTab.tsx:64
+#: src/mods/ProblemsTab.tsx:65
 msgid "Duplicates"
 msgstr "Duplicates"
 
@@ -2661,7 +2665,7 @@ msgstr "Ask me to endorse mods I keep using"
 
 #. placeholder {0}: e.keys.slice(0, KEYS_SHOWN).join(', ')
 #. placeholder {1}: e.keys.length - KEYS_SHOWN
-#: src/mods/ConflictWhy.tsx:97
+#: src/mods/ConflictWhy.tsx:116
 msgid "Both set: {0} +{1} more"
 msgstr "Both set: {0} +{1} more"
 
@@ -2682,7 +2686,7 @@ msgstr "Bundle deleted"
 msgid "Replace {targetName}?"
 msgstr "Replace {targetName}?"
 
-#: src/commandPalette/CommandPalette.tsx:133
+#: src/commandPalette/CommandPalette.tsx:146
 #: src/settings/SettingsPage.tsx:43
 msgid "Shortcuts"
 msgstr "Shortcuts"
@@ -2728,7 +2732,7 @@ msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On 
 msgid "SMAPI update check failed"
 msgstr "SMAPI update check failed"
 
-#: src/launch/PlayControl.tsx:164
+#: src/launch/PlayControl.tsx:162
 msgid "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 msgstr "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 
@@ -2771,6 +2775,10 @@ msgstr "Part of the OBS address; regenerate it if it leaks"
 #: src/profiles/SinceLastRun.tsx:117
 msgid "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 msgstr "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
+
+#: src/console/VirtualLog.tsx:205
+msgid "Game log"
+msgstr "Game log"
 
 #: src/launch/playStart.ts:111
 #: src/launch/vanillaStart.ts:6
@@ -2840,10 +2848,10 @@ msgstr "Cover image"
 #: src/mods/CategoryEditor.tsx:148
 #: src/mods/CategoryEditor.tsx:239
 #: src/mods/parts.tsx:363
-#: src/mods/ReportToAuthorButton.tsx:235
+#: src/mods/ReportToAuthorButton.tsx:230
 #: src/mods/SelectionBarDialogs.tsx:69
 #: src/mods/SelectionBarDialogs.tsx:120
-#: src/profiles/CompareDialog.tsx:59
+#: src/profiles/CompareDialog.tsx:54
 #: src/profiles/EditProfileDialog.tsx:430
 #: src/profiles/ExternalImportMenu.tsx:72
 #: src/profiles/GameModsDialog.tsx:160
@@ -2890,7 +2898,7 @@ msgstr "{name} is abandoned: {summary}"
 
 #: src/profiles/EditProfileDialog.tsx:102
 #: src/profiles/EditProfileDialog.tsx:110
-#: src/settings/sections/Appearance.tsx:162
+#: src/settings/sections/Appearance.tsx:173
 msgid "Choose image…"
 msgstr "Choose image…"
 
@@ -2980,7 +2988,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:65
-#: src/mods/ProblemsTab.tsx:369
+#: src/mods/ProblemsTab.tsx:386
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -3039,7 +3047,7 @@ msgstr "Skip every waiting download"
 msgid "{names} seems to cause the crash"
 msgstr "{names} seems to cause the crash"
 
-#: src/mods/ProblemsTab.tsx:506
+#: src/mods/ProblemsTab.tsx:527
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
 
@@ -3128,7 +3136,7 @@ msgid "Link copied"
 msgstr "Link copied"
 
 #: src/mods/columnLabel.ts:8
-#: src/mods/Sidebar.tsx:365
+#: src/mods/Sidebar.tsx:364
 msgid "Version"
 msgstr "Version"
 
@@ -3176,8 +3184,8 @@ msgstr "Removes cached Nexus and SMAPI details and problem scans. Use it if an A
 msgid "{mods} · about {size} to download"
 msgstr "{mods} · about {size} to download"
 
-#: src/commandPalette/CommandPalette.tsx:218
-#: src/commandPalette/CommandPalette.tsx:219
+#: src/commandPalette/CommandPalette.tsx:231
+#: src/commandPalette/CommandPalette.tsx:234
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
 
@@ -3275,9 +3283,9 @@ msgstr "Installed"
 
 #: src/firstrunTour/TourAgainButton.tsx:16
 #: src/firstrunTour/useFirstRunTour.ts:43
-#: src/settings/PrefControls.tsx:182
-#: src/settings/PrefControls.tsx:231
-#: src/settings/sections/Appearance.tsx:57
+#: src/settings/PrefControls.tsx:181
+#: src/settings/PrefControls.tsx:230
+#: src/settings/sections/Appearance.tsx:66
 #: src/settings/sections/General.tsx:34
 msgid "Could not save that setting"
 msgstr "Could not save that setting"
@@ -3316,7 +3324,7 @@ msgstr "Take Nexus links from {0}?"
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
-#: src/mods/ProblemsTab.tsx:507
+#: src/mods/ProblemsTab.tsx:528
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
@@ -3363,11 +3371,11 @@ msgstr "Meadowlands farm"
 msgid "Save as preset"
 msgstr "Save as preset"
 
-#: src/mods/ProblemsTab.tsx:62
+#: src/mods/ProblemsTab.tsx:63
 msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
-#: src/mods/ProblemsTab.tsx:385
+#: src/mods/ProblemsTab.tsx:404
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -3460,7 +3468,7 @@ msgstr "Log copied"
 
 #: src/launch/SmapiWarnDialog.tsx:20
 #: src/launch/VanillaPlay.tsx:47
-#: src/launch/VanillaPlay.tsx:157
+#: src/launch/VanillaPlay.tsx:154
 msgid "Play without mods"
 msgstr "Play without mods"
 
@@ -3509,7 +3517,7 @@ msgid "Mortar's own SMAPI mod; it records these timings"
 msgstr "Mortar's own SMAPI mod; it records these timings"
 
 #: src/settings/prefCopy.ts:173
-#: src/settings/sections/Appearance.tsx:70
+#: src/settings/sections/Appearance.tsx:79
 msgid "Theme"
 msgstr "Theme"
 
@@ -3560,7 +3568,7 @@ msgstr "Could not check for updates."
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
-#: src/commandPalette/CommandPalette.tsx:127
+#: src/commandPalette/CommandPalette.tsx:140
 #: src/mods/columnLabel.ts:15
 #: src/mods/NexusDetails.tsx:107
 #: src/mods/Sidebar.tsx:143
@@ -3646,7 +3654,7 @@ msgstr "Auto-accept from this Nexus account"
 msgid "Copy the command"
 msgstr "Copy the command"
 
-#: src/settings/sections/Appearance.tsx:151
+#: src/settings/sections/Appearance.tsx:162
 msgid "Background preview"
 msgstr "Background preview"
 
@@ -3728,7 +3736,7 @@ msgstr "Save backups…"
 msgid "Stop the game before moving the data folder."
 msgstr "Stop the game before moving the data folder."
 
-#: src/settings/sections/Appearance.tsx:60
+#: src/settings/sections/Appearance.tsx:69
 msgid "Earthy green"
 msgstr "Earthy green"
 
@@ -3781,7 +3789,7 @@ msgid "Cosmetic overlaps on the Problems tab"
 msgstr "Cosmetic overlaps on the Problems tab"
 
 #: src/console/HelpDialog.tsx:247
-#: src/mods/ReportToAuthorButton.tsx:251
+#: src/mods/ReportToAuthorButton.tsx:246
 msgid "Uploading…"
 msgstr "Uploading…"
 
@@ -3802,17 +3810,17 @@ msgstr "Could not run the command"
 msgid "About Mortar"
 msgstr "About Mortar"
 
-#: src/settings/sections/Appearance.tsx:64
+#: src/settings/sections/Appearance.tsx:73
 msgid "Lavender"
 msgstr "Lavender"
 
-#: src/mods/ProblemsTab.tsx:378
-#: src/mods/ProblemsTab.tsx:500
+#: src/mods/ProblemsTab.tsx:395
+#: src/mods/ProblemsTab.tsx:521
 msgid "Redundant"
 msgstr "Redundant"
 
-#: src/profiles/ProfilesPage.tsx:399
-#: src/profiles/ProfilesPage.tsx:485
+#: src/profiles/ProfilesPage.tsx:397
+#: src/profiles/ProfilesPage.tsx:483
 msgid "New profile…"
 msgstr "New profile…"
 
@@ -3877,7 +3885,7 @@ msgid "{0} ({gameName})"
 msgstr "{0} ({gameName})"
 
 #: src/profiles/EditProfileDialog.tsx:137
-#: src/settings/sections/Appearance.tsx:63
+#: src/settings/sections/Appearance.tsx:72
 msgid "Rose"
 msgstr "Rose"
 
@@ -3894,7 +3902,7 @@ msgid "Start measuring to view a report."
 msgstr "Start measuring to view a report."
 
 #: src/profiles/HistoryPanel.tsx:112
-#: src/profiles/RecentChangesButton.tsx:239
+#: src/profiles/RecentChangesButton.tsx:234
 msgid "Download missing mods"
 msgstr "Download missing mods"
 
@@ -3960,7 +3968,7 @@ msgstr "Up next: {0}"
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
-#: src/games/GameSelect.tsx:324
+#: src/games/GameSelect.tsx:321
 msgid "After the first release"
 msgstr "After the first release"
 
@@ -3976,9 +3984,9 @@ msgstr "The automatic cover is used after Save."
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
-#: src/settings/sections/Appearance.tsx:131
-#: src/settings/sections/Appearance.tsx:132
-#: src/settings/sections/Appearance.tsx:135
+#: src/settings/sections/Appearance.tsx:142
+#: src/settings/sections/Appearance.tsx:143
+#: src/settings/sections/Appearance.tsx:146
 msgid "Background"
 msgstr "Background"
 
@@ -4009,7 +4017,7 @@ msgstr "{0} saved by sharing files"
 msgid "Replace {0}?"
 msgstr "Replace {0}?"
 
-#: src/profiles/CompareDialog.tsx:96
+#: src/profiles/CompareDialog.tsx:91
 msgid "Mods copied"
 msgstr "Mods copied"
 
@@ -4161,8 +4169,8 @@ msgstr "Open the command palette"
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
-#: src/settings/sections/Appearance.tsx:140
-#: src/settings/sections/Appearance.tsx:147
+#: src/settings/sections/Appearance.tsx:151
+#: src/settings/sections/Appearance.tsx:158
 msgid "Image"
 msgstr "Image"
 
@@ -4179,7 +4187,7 @@ msgstr "Trace"
 msgid "Revision {review} is out — Review"
 msgstr "Revision {review} is out — Review"
 
-#: src/games/GameSelect.tsx:327
+#: src/games/GameSelect.tsx:324
 msgid "Not set up · Open it to set it up"
 msgstr "Not set up · Open it to set it up"
 
@@ -4193,7 +4201,7 @@ msgstr "Choose variant…"
 
 #: src/mods/columnLabel.ts:14
 #: src/mods/NexusDetails.tsx:106
-#: src/mods/Sidebar.tsx:383
+#: src/mods/Sidebar.tsx:382
 #: src/settings/sections/NexusMods.tsx:174
 msgid "Endorsements"
 msgstr "Endorsements"
@@ -4236,8 +4244,8 @@ msgstr "Honour OS"
 msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
-#: src/mods/ProblemsTab.tsx:465
-#: src/mods/ProblemsTab.tsx:508
+#: src/mods/ProblemsTab.tsx:486
+#: src/mods/ProblemsTab.tsx:529
 msgid "Dismiss all"
 msgstr "Dismiss all"
 
@@ -4458,7 +4466,7 @@ msgstr "The mod's Entry method; timed only on a measured launch"
 msgid "Saved"
 msgstr "Saved"
 
-#: src/commandPalette/CommandPalette.tsx:130
+#: src/commandPalette/CommandPalette.tsx:143
 #: src/settings/SettingsPage.tsx:40
 #: src/toasts/HistoryButton.tsx:121
 #: src/toasts/HistoryButton.tsx:166
@@ -4499,7 +4507,7 @@ msgstr "Rescan"
 
 #: src/firstrunTour/TourPopover.tsx:153
 #: src/fomod/Dialog.tsx:256
-#: src/profiles/ProfilesPage.tsx:323
+#: src/profiles/ProfilesPage.tsx:321
 #: src/settings/SettingsPage.tsx:62
 msgid "Back"
 msgstr "Back"
@@ -4508,7 +4516,7 @@ msgstr "Back"
 msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
-#: src/mods/Sidebar.tsx:482
+#: src/mods/Sidebar.tsx:481
 msgid "Selected mod"
 msgstr "Selected mod"
 
@@ -4684,7 +4692,7 @@ msgstr "Track"
 msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
-#: src/mods/ProblemsTab.tsx:70
+#: src/mods/ProblemsTab.tsx:71
 msgid "Dismissed"
 msgstr "Dismissed"
 
@@ -4694,7 +4702,7 @@ msgstr "updates"
 
 #: src/mods/ModMenu.tsx:194
 #: src/mods/SelectionBarActions.tsx:82
-#: src/mods/Sidebar.tsx:395
+#: src/mods/Sidebar.tsx:394
 msgid "Also add to…"
 msgstr "Also add to…"
 
@@ -4818,7 +4826,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:158
-#: src/mods/ProblemsTab.tsx:335
+#: src/mods/ProblemsTab.tsx:336
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -4838,7 +4846,7 @@ msgstr "requirements"
 msgid "Source code"
 msgstr "Source code"
 
-#: src/settings/sections/Appearance.tsx:74
+#: src/settings/sections/Appearance.tsx:83
 msgid "color"
 msgstr "color"
 
@@ -4940,9 +4948,9 @@ msgstr "Default for a profile you just created"
 msgid "Save as bundle…"
 msgstr "Save as bundle…"
 
+#: src/launch/PlayControl.tsx:133
 #: src/launch/PlayControl.tsx:135
-#: src/launch/PlayControl.tsx:137
-#: src/launch/PlayControl.tsx:140
+#: src/launch/PlayControl.tsx:138
 #: src/launch/StopDialog.tsx:23
 msgid "Stop game"
 msgstr "Stop game"
@@ -5033,7 +5041,7 @@ msgstr "Toast when background checks find new mod updates"
 msgid "Nothing in this profile"
 msgstr "Nothing in this profile"
 
-#: src/settings/sections/Appearance.tsx:61
+#: src/settings/sections/Appearance.tsx:70
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
@@ -5084,7 +5092,7 @@ msgstr "Check mod updates on start: {from} → {to}"
 msgid "Something went wrong."
 msgstr "Something went wrong."
 
-#: src/mods/ProblemsTab.tsx:56
+#: src/mods/ProblemsTab.tsx:57
 msgid "Conflicts"
 msgstr "Conflicts"
 
@@ -5109,7 +5117,7 @@ msgid "Stardew Valley crashed"
 msgstr "Stardew Valley crashed"
 
 #: src/console/HelpDialog.tsx:85
-#: src/mods/ReportToAuthorButton.tsx:228
+#: src/mods/ReportToAuthorButton.tsx:223
 msgid "Hide my user name"
 msgstr "Hide my user name"
 
@@ -5191,7 +5199,7 @@ msgstr "Not found"
 #: src/profiles/EditProfileDialog.tsx:114
 #: src/profiles/GameSettings.tsx:181
 #: src/profiles/OverrideRows.tsx:75
-#: src/settings/sections/Appearance.tsx:172
+#: src/settings/sections/Appearance.tsx:183
 #: src/settings/sections/GameSettings.tsx:199
 msgid "Use default"
 msgstr "Use default"
@@ -5250,8 +5258,12 @@ msgstr "{name}, ascending"
 msgid "Game select"
 msgstr "Game select"
 
+#: src/commandPalette/CommandPalette.tsx:80
+msgid "Results"
+msgstr "Results"
+
 #: src/mods/ModMenu.tsx:156
-#: src/mods/Sidebar.tsx:369
+#: src/mods/Sidebar.tsx:368
 msgid "Show skipped update"
 msgstr "Show skipped update"
 
@@ -5295,7 +5307,7 @@ msgstr "Four Corners farm"
 
 #: src/commandPalette/paletteLabels.ts:10
 #: src/profiles/GameModsDialog.tsx:168
-#: src/profiles/ProfilesPage.tsx:347
+#: src/profiles/ProfilesPage.tsx:345
 #: src/settings/sections/DataImport.tsx:59
 msgid "Import"
 msgstr "Import"
@@ -5351,7 +5363,7 @@ msgid "Mountain"
 msgstr "Mountain"
 
 #: src/mods/ModMenu.tsx:119
-#: src/mods/Sidebar.tsx:428
+#: src/mods/Sidebar.tsx:427
 msgid "More details"
 msgstr "More details"
 
@@ -5569,7 +5581,7 @@ msgstr "·"
 #: src/mods/problemFix/MissingFix.tsx:52
 #: src/mods/SelectionBar.tsx:115
 #: src/mods/SelectionBarDialogs.tsx:64
-#: src/mods/Sidebar.tsx:404
+#: src/mods/Sidebar.tsx:403
 #: src/mods/TrackedNotInProfile.tsx:92
 msgid "Add"
 msgstr "Add"
@@ -5726,7 +5738,7 @@ msgstr "Signed out of Nexus"
 
 #. placeholder {0}: mod.name
 #: src/mods/ModMenu.tsx:269
-#: src/mods/Sidebar.tsx:403
+#: src/mods/Sidebar.tsx:402
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
 
@@ -5838,7 +5850,7 @@ msgstr "Nothing to clean up."
 msgid "Add a program you run alongside the game, such as a save editor or a map viewer."
 msgstr "Add a program you run alongside the game, such as a save editor or a map viewer."
 
-#: src/mods/Sidebar.tsx:360
+#: src/mods/Sidebar.tsx:359
 msgid "Close details"
 msgstr "Close details"
 
@@ -5862,7 +5874,7 @@ msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
 #: src/mods/CompatSection.tsx:58
-#: src/mods/ProblemsTab.tsx:383
+#: src/mods/ProblemsTab.tsx:402
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -5911,8 +5923,8 @@ msgstr "Hide token"
 msgid " {winnerName} wins; {losers} overridden."
 msgstr " {winnerName} wins; {losers} overridden."
 
-#: src/commandPalette/CommandPalette.tsx:132
-#: src/games/GameSelect.tsx:371
+#: src/commandPalette/CommandPalette.tsx:145
+#: src/games/GameSelect.tsx:368
 #: src/settings/sections/Launchers.tsx:23
 #: src/settings/SettingsPage.tsx:42
 msgid "Launchers"
@@ -6055,7 +6067,7 @@ msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the nex
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
 #: src/mods/ProblemBar.tsx:54
-#: src/mods/ProblemsTab.tsx:309
+#: src/mods/ProblemsTab.tsx:310
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -6247,7 +6259,7 @@ msgstr "Edit as JSON"
 msgid "Couldn't close the window"
 msgstr "Couldn't close the window"
 
-#: src/profiles/ProfilesPage.tsx:479
+#: src/profiles/ProfilesPage.tsx:477
 msgid "No profiles yet."
 msgstr "No profiles yet."
 
@@ -6343,7 +6355,7 @@ msgid "{0} installed"
 msgstr "{0} installed"
 
 #: src/mods/configFormUi.tsx:213
-#: src/settings/sections/Appearance.tsx:59
+#: src/settings/sections/Appearance.tsx:68
 msgid "Default"
 msgstr "Default"
 
@@ -6375,7 +6387,7 @@ msgstr "Problems"
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
-#: src/settings/sections/Appearance.tsx:60
+#: src/settings/sections/Appearance.tsx:69
 msgid "Moss"
 msgstr "Moss"
 
@@ -6511,7 +6523,7 @@ msgstr "Install {0}…"
 msgid "The port Mortar uses for local sharing"
 msgstr "The port Mortar uses for local sharing"
 
-#: src/profiles/ProfilesPage.tsx:357
+#: src/profiles/ProfilesPage.tsx:355
 msgid "From the game's Mods folder…"
 msgstr "From the game's Mods folder…"
 
@@ -6524,7 +6536,7 @@ msgstr "Default for Share and Export. You can change it per share."
 
 #: src/App.tsx:60
 #: src/games/GameSelect.tsx:152
-#: src/games/GameSelect.tsx:302
+#: src/games/GameSelect.tsx:299
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
@@ -6567,7 +6579,7 @@ msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:70
-#: src/mods/ProblemsTab.tsx:389
+#: src/mods/ProblemsTab.tsx:410
 #: src/mods/ReportToAuthorButton.tsx:161
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
@@ -6632,7 +6644,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:40
 #: src/firstrun/GameSetup.tsx:108
 #: src/firstrun/SmapiStep.tsx:219
-#: src/games/GameSelect.tsx:319
+#: src/games/GameSelect.tsx:316
 #: src/profiles/GameSettings.tsx:98
 #: src/profiles/RecentChangesButton.tsx:128
 msgid "Loading…"
@@ -6647,7 +6659,7 @@ msgstr "Window mode"
 msgid "This profile ignores updates for this mod."
 msgstr "This profile ignores updates for this mod."
 
-#: src/profiles/ProfilesPage.tsx:488
+#: src/profiles/ProfilesPage.tsx:486
 msgid "Create a profile to manage a set of mods."
 msgstr "Create a profile to manage a set of mods."
 
@@ -6718,7 +6730,7 @@ msgid "faster"
 msgstr "faster"
 
 #: src/console/PerformancePanelParts.tsx:215
-#: src/mods/ProblemsTab.tsx:341
+#: src/mods/ProblemsTab.tsx:342
 #: src/settings/sections/AboutDiagnostics.tsx:220
 msgid "Copy report"
 msgstr "Copy report"
@@ -6765,11 +6777,11 @@ msgstr "Updates ignored"
 msgid "Stop the game to change mods"
 msgstr "Stop the game to change mods"
 
-#: src/settings/sections/Appearance.tsx:66
+#: src/settings/sections/Appearance.tsx:75
 msgid "Slate"
 msgstr "Slate"
 
-#: src/commandPalette/CommandPalette.tsx:129
+#: src/commandPalette/CommandPalette.tsx:142
 #: src/game/Hero.tsx:240
 #: src/settings/SettingsPage.tsx:39
 msgid "Updates"
@@ -6818,7 +6830,7 @@ msgid "Preview link…"
 msgstr "Preview link…"
 
 #. placeholder {0}: e.when
-#: src/mods/ConflictWhy.tsx:103
+#: src/mods/ConflictWhy.tsx:122
 msgid "When {0}"
 msgstr "When {0}"
 
@@ -6893,7 +6905,7 @@ msgid "Log link"
 msgstr "Log link"
 
 #: src/console/HelpDialog.tsx:110
-#: src/mods/ReportToAuthorButton.tsx:218
+#: src/mods/ReportToAuthorButton.tsx:213
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
@@ -7027,7 +7039,7 @@ msgstr "You skipped this version"
 msgid "Updates, missing dependencies and links from Nexus land here."
 msgstr "Updates, missing dependencies and links from Nexus land here."
 
-#: src/mods/Sidebar.tsx:381
+#: src/mods/Sidebar.tsx:380
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
@@ -7058,7 +7070,7 @@ msgstr "Report it so it can be fixed."
 
 #: src/browse/BrowsePage.tsx:161
 #: src/mods/listRows.ts:89
-#: src/mods/Sidebar.tsx:340
+#: src/mods/Sidebar.tsx:339
 msgid "GitHub"
 msgstr "GitHub"
 
@@ -7140,12 +7152,12 @@ msgstr "Install {0} into {profile}?"
 #: src/commandPalette/paletteLabels.ts:18
 #: src/profiles/RecentChangesButton.tsx:185
 #: src/profiles/RecentChangesButton.tsx:206
-#: src/profiles/RecentChangesButton.tsx:304
-#: src/profiles/RecentChangesButton.tsx:307
+#: src/profiles/RecentChangesButton.tsx:299
+#: src/profiles/RecentChangesButton.tsx:302
 msgid "Recent changes"
 msgstr "Recent changes"
 
-#: src/settings/PrefControls.tsx:221
+#: src/settings/PrefControls.tsx:220
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
 
@@ -7153,7 +7165,7 @@ msgstr "Enter a number from {min} to {max}"
 msgid "Close downloads"
 msgstr "Close downloads"
 
-#: src/mods/ProblemsTab.tsx:207
+#: src/mods/ProblemsTab.tsx:208
 msgid "{title} · {count}"
 msgstr "{title} · {count}"
 
@@ -7193,10 +7205,10 @@ msgstr "Auto-enable requirements"
 #: src/mods/ModDependencyTree.tsx:112
 #: src/mods/ModList.tsx:365
 #: src/mods/Sidebar.tsx:302
-#: src/mods/Sidebar.tsx:316
+#: src/mods/Sidebar.tsx:315
 #: src/profiles/CompareBulkBody.tsx:245
 #: src/profiles/ProfilesPage.tsx:269
-#: src/profiles/ProfilesPage.tsx:280
+#: src/profiles/ProfilesPage.tsx:278
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -7216,7 +7228,7 @@ msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
 #: src/mods/ModDetail.tsx:217
-#: src/mods/Sidebar.tsx:418
+#: src/mods/Sidebar.tsx:417
 msgid "In the same download"
 msgstr "In the same download"
 
@@ -7441,7 +7453,7 @@ msgstr "Quit"
 msgid "{loader} · {lastLine}"
 msgstr "{loader} · {lastLine}"
 
-#: src/profiles/ProfilesPage.tsx:373
+#: src/profiles/ProfilesPage.tsx:371
 msgid "From a backup…"
 msgstr "From a backup…"
 
@@ -7486,7 +7498,7 @@ msgstr "Enter a number from 1 to {maxLanPort}"
 msgid "Manage profiles"
 msgstr "Manage profiles"
 
-#: src/launch/PlayControl.tsx:141
+#: src/launch/PlayControl.tsx:139
 msgid "Running {time}"
 msgstr "Running {time}"
 
@@ -7518,7 +7530,7 @@ msgstr "Running {who}"
 msgid "It encountered an error."
 msgstr "It encountered an error."
 
-#: src/profiles/CompareDialog.tsx:107
+#: src/profiles/CompareDialog.tsx:102
 msgid "Compare {aName} and {bName}"
 msgstr "Compare {aName} and {bName}"
 
@@ -7531,8 +7543,8 @@ msgid "Find the crash cause"
 msgstr "Find the crash cause"
 
 #: src/firstrunTour/TourPopover.tsx:60
-#: src/games/GameSelect.tsx:229
-#: src/launch/PlayControl.tsx:159
+#: src/games/GameSelect.tsx:226
+#: src/launch/PlayControl.tsx:157
 #: src/settings/GameSettingsPage.tsx:55
 #: src/settings/GameSettingsPage.tsx:77
 msgid "Play"
@@ -7650,7 +7662,7 @@ msgstr "Keep Mortar in the tray"
 msgid "{0, plural, one {# problem} other {# problems}}"
 msgstr "{0, plural, one {# problem} other {# problems}}"
 
-#: src/profiles/CompareDialog.tsx:98
+#: src/profiles/CompareDialog.tsx:93
 msgid "Could not copy mods"
 msgstr "Could not copy mods"
 
@@ -7682,7 +7694,7 @@ msgid "Copy details"
 msgstr "Copy details"
 
 #. placeholder {0}: e.fromArea
-#: src/mods/ConflictWhy.tsx:102
+#: src/mods/ConflictWhy.tsx:121
 msgid "FromArea {0}"
 msgstr "FromArea {0}"
 
@@ -7708,7 +7720,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:43
-#: src/mods/ProblemsTab.tsx:410
+#: src/mods/ProblemsTab.tsx:431
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -7786,13 +7798,13 @@ msgstr "Reading load order…"
 msgid "Include"
 msgstr "Include"
 
-#: src/settings/sections/Appearance.tsx:74
+#: src/settings/sections/Appearance.tsx:83
 msgid "colour"
 msgstr "colour"
 
 #: src/commandPalette/paletteLabels.ts:22
 #: src/mods/ModDetail.tsx:142
-#: src/mods/ProblemsTab.tsx:66
+#: src/mods/ProblemsTab.tsx:67
 #: src/settings/SettingsPage.tsx:61
 #: src/shell/AppMenu.tsx:89
 #: src/shell/TitleBar.tsx:111
@@ -7944,7 +7956,7 @@ msgid "Diagnostics saved"
 msgstr "Diagnostics saved"
 
 #. placeholder {0}: st.profiles.length
-#: src/games/GameSelect.tsx:329
+#: src/games/GameSelect.tsx:326
 msgid "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 msgstr "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 
@@ -8070,11 +8082,11 @@ msgstr "Downloads resume {0}."
 msgid "Game install deleted"
 msgstr "Game install deleted"
 
-#: src/settings/sections/Appearance.tsx:185
+#: src/settings/sections/Appearance.tsx:196
 msgid "Sidebar"
 msgstr "Sidebar"
 
-#: src/settings/sections/Appearance.tsx:62
+#: src/settings/sections/Appearance.tsx:71
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
@@ -8096,7 +8108,7 @@ msgstr "Set {0} to {1}"
 msgid "Play the open profile without SMAPI"
 msgstr "Play the open profile without SMAPI"
 
-#: src/commandPalette/CommandPalette.tsx:134
+#: src/commandPalette/CommandPalette.tsx:147
 #: src/settings/SettingsPage.tsx:44
 msgid "About"
 msgstr "About"
@@ -8119,7 +8131,7 @@ msgstr "Saves"
 msgid "World"
 msgstr "World"
 
-#: src/settings/sections/Appearance.tsx:65
+#: src/settings/sections/Appearance.tsx:74
 msgid "Fresh and clear"
 msgstr "Fresh and clear"
 
@@ -8127,7 +8139,7 @@ msgstr "Fresh and clear"
 msgid "Acknowledge caution to include"
 msgstr "Acknowledge caution to include"
 
-#: src/mods/Sidebar.tsx:462
+#: src/mods/Sidebar.tsx:461
 msgid "Mod details"
 msgstr "Mod details"
 
@@ -8185,7 +8197,7 @@ msgstr "Import settings"
 #: src/mods/EnableRequirementsDialog.tsx:54
 #: src/mods/LoadOrderTab.tsx:66
 #: src/mods/LoadOrderTab.tsx:217
-#: src/mods/ProblemsTab.tsx:368
+#: src/mods/ProblemsTab.tsx:385
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -8231,7 +8243,7 @@ msgstr "A preset with this name already exists."
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
-#: src/mods/ProblemsTab.tsx:435
+#: src/mods/ProblemsTab.tsx:456
 #: src/saves/lackChips.tsx:112
 msgid "Add all {0}"
 msgstr "Add all {0}"
@@ -8241,7 +8253,7 @@ msgstr "Add all {0}"
 msgid "Stop the game to change SMAPI."
 msgstr "Stop the game to change SMAPI."
 
-#: src/mods/ProblemsTab.tsx:490
+#: src/mods/ProblemsTab.tsx:511
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -8293,7 +8305,7 @@ msgstr "Not enough disk space"
 msgid "Clean up storage"
 msgstr "Clean up storage"
 
-#: src/settings/sections/Appearance.tsx:181
+#: src/settings/sections/Appearance.tsx:192
 msgid "Mods view"
 msgstr "Mods view"
 
@@ -8309,9 +8321,9 @@ msgstr "Hide details"
 msgid "Preparing a temporary copy of this profile…"
 msgstr "Preparing a temporary copy of this profile…"
 
-#: src/settings/sections/Appearance.tsx:73
-#: src/settings/sections/Appearance.tsx:74
-#: src/settings/sections/Appearance.tsx:78
+#: src/settings/sections/Appearance.tsx:82
+#: src/settings/sections/Appearance.tsx:83
+#: src/settings/sections/Appearance.tsx:86
 msgid "Accent colour"
 msgstr "Accent colour"
 
@@ -8349,7 +8361,7 @@ msgstr "Player"
 
 #: src/firstrunTour/TourPopover.tsx:57
 #: src/game/Sidebar.tsx:346
-#: src/profiles/ProfilesPage.tsx:335
+#: src/profiles/ProfilesPage.tsx:333
 #: src/settings/sections/AboutDiagnostics.tsx:96
 #: src/settings/sections/DataUsage.tsx:229
 #: src/settings/sections/Shortcuts.tsx:168
@@ -8511,18 +8523,18 @@ msgstr "Framework"
 msgid "Source"
 msgstr "Source"
 
-#: src/commandPalette/CommandPalette.tsx:124
+#: src/commandPalette/CommandPalette.tsx:137
 #: src/settings/sections/Shortcuts.tsx:166
 #: src/settings/SettingsPage.tsx:34
 msgid "General"
 msgstr "General"
 
-#: src/mods/ReportToAuthorButton.tsx:208
+#: src/mods/ReportToAuthorButton.tsx:203
 msgid "Report to author"
 msgstr "Report to author"
 
 #: src/profiles/EditProfileDialog.tsx:145
-#: src/settings/sections/Appearance.tsx:65
+#: src/settings/sections/Appearance.tsx:74
 msgid "Teal"
 msgstr "Teal"
 
@@ -8678,11 +8690,11 @@ msgstr "What's new in Mortar {0}"
 #: src/mods/ModDetail.tsx:51
 #: src/mods/ModList.tsx:366
 #: src/mods/Sidebar.tsx:302
-#: src/mods/Sidebar.tsx:316
+#: src/mods/Sidebar.tsx:315
 #: src/mods/Toolbar.tsx:56
 #: src/profiles/CompareBulkBody.tsx:246
 #: src/profiles/ProfilesPage.tsx:269
-#: src/profiles/ProfilesPage.tsx:280
+#: src/profiles/ProfilesPage.tsx:278
 #: src/profiles/RecentChangesButton.tsx:56
 #: src/share/ShareDialog.tsx:296
 msgid "Switched off"
@@ -8719,7 +8731,7 @@ msgstr "Include switched off mods"
 
 #: src/browse/BrowsePage.tsx:160
 #: src/mods/listRows.ts:88
-#: src/mods/Sidebar.tsx:339
+#: src/mods/Sidebar.tsx:338
 #: src/shell/NexusAccount.tsx:27
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
@@ -8779,7 +8791,7 @@ msgstr "{0, plural, one {# more pack} other {# more packs}}"
 msgid "Also update other profiles that hold the same files"
 msgstr "Also update other profiles that hold the same files"
 
-#: src/settings/sections/Appearance.tsx:66
+#: src/settings/sections/Appearance.tsx:75
 msgid "Quiet grey-blue"
 msgstr "Quiet grey-blue"
 
@@ -8829,7 +8841,7 @@ msgstr "Season"
 msgid "Tools"
 msgstr "Tools"
 
-#: src/settings/sections/Appearance.tsx:63
+#: src/settings/sections/Appearance.tsx:72
 msgid "Soft and warm"
 msgstr "Soft and warm"
 
@@ -8910,7 +8922,7 @@ msgstr "this version skipped"
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
-#: src/settings/sections/Appearance.tsx:178
+#: src/settings/sections/Appearance.tsx:189
 msgid "Display"
 msgstr "Display"
 
@@ -8922,7 +8934,7 @@ msgstr "Welcome to Mortar"
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
-#: src/mods/Sidebar.tsx:381
+#: src/mods/Sidebar.tsx:380
 msgid "Mod id"
 msgstr "Mod id"
 
@@ -8967,7 +8979,7 @@ msgstr "What to do when an installed mod still needs other mods"
 msgid "Pin selected versions"
 msgstr "Pin selected versions"
 
-#: src/mods/ReportToAuthorButton.tsx:251
+#: src/mods/ReportToAuthorButton.tsx:246
 msgid "Share log and continue"
 msgstr "Share log and continue"
 
@@ -9055,7 +9067,7 @@ msgstr "GOG via Minigalaxy"
 msgid "Show times"
 msgstr "Show times"
 
-#: src/mods/ProblemsTab.tsx:58
+#: src/mods/ProblemsTab.tsx:59
 msgid "Broken or outdated mods"
 msgstr "Broken or outdated mods"
 
@@ -9090,7 +9102,7 @@ msgstr "Support"
 
 #. placeholder {0}: e.action
 #. placeholder {1}: e.target
-#: src/mods/ConflictWhy.tsx:85
+#: src/mods/ConflictWhy.tsx:104
 msgid "{0} {1}"
 msgstr "{0} {1}"
 
@@ -9200,7 +9212,7 @@ msgstr "{name}, descending"
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
 
-#: src/mods/ReportToAuthorButton.tsx:201
+#: src/mods/ReportToAuthorButton.tsx:196
 msgid "Report to author…"
 msgstr "Report to author…"
 
@@ -9331,7 +9343,7 @@ msgstr "Save current as…"
 msgid "Step {0} of {TOUR_STEP_COUNT}"
 msgstr "Step {0} of {TOUR_STEP_COUNT}"
 
-#: src/profiles/ProfilesPage.tsx:365
+#: src/profiles/ProfilesPage.tsx:363
 msgid "From a link or file…"
 msgstr "From a link or file…"
 
@@ -9374,7 +9386,7 @@ msgstr "Everything it changes, {by} also changes: {detail}"
 msgid "{0} ({1})"
 msgstr "{0} ({1})"
 
-#: src/mods/ProblemsTab.tsx:60
+#: src/mods/ProblemsTab.tsx:61
 msgid "Errors in the last run"
 msgstr "Errors in the last run"
 
@@ -9412,7 +9424,7 @@ msgstr "Downloads finished"
 #: src/mods/ModDetail.tsx:294
 #: src/mods/updateReview/ReviewFooter.tsx:66
 #: src/mods/updateReview/ReviewTitle.tsx:40
-#: src/profiles/CompareDialog.tsx:123
+#: src/profiles/CompareDialog.tsx:118
 #: src/profiles/HistoryPanel.tsx:119
 #: src/saves/BackupsDialog.tsx:194
 #: src/settings/sections/About.tsx:99
@@ -9431,16 +9443,16 @@ msgstr "Close"
 msgid "Link"
 msgstr "Link"
 
-#: src/settings/sections/Appearance.tsx:74
+#: src/settings/sections/Appearance.tsx:83
 msgid "theme"
 msgstr "theme"
 
-#: src/mods/Sidebar.tsx:378
+#: src/mods/Sidebar.tsx:377
 msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
 
 #. placeholder {0}: e.toArea
-#: src/mods/ConflictWhy.tsx:101
+#: src/mods/ConflictWhy.tsx:120
 msgid "ToArea {0}"
 msgstr "ToArea {0}"
 
@@ -9549,7 +9561,7 @@ msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {wai
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:492
+#: src/mods/ProblemsTab.tsx:513
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
@@ -9584,7 +9596,7 @@ msgstr "{0} · kept for rollback"
 msgid "Decide later"
 msgstr "Decide later"
 
-#: src/commandPalette/CommandPalette.tsx:204
+#: src/commandPalette/CommandPalette.tsx:217
 #: src/firstrunTour/TourPopover.tsx:69
 msgid "Command palette"
 msgstr "Command palette"
