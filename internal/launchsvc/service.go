@@ -612,7 +612,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	}
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
-		measure, err = prepareStartup(modsDir)
+		measure, err := prepareStartup(modsDir)
 		if err != nil {
 			return err
 		}
