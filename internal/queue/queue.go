@@ -120,6 +120,8 @@ type Item struct {
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Speed    int64                          `json:"speed"`
 	Error    string                         `json:"error"`
+	// ErrorKind classes a failed item's Error: network, blocked, auth, disk or other.
+	ErrorKind string `json:"errorKind,omitempty"`
 
 	Repo         string            `json:"repo"`
 	Tag          string            `json:"tag"`
@@ -564,7 +566,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 		if i := slices.IndexFunc(s.items, func(it *Item) bool { return sameDownload(it, r) }); i >= 0 {
 			it := s.items[i]
 			if it.State == StateFailed {
-				it.State, it.Error = StateQueued, ""
+				it.State, it.Error, it.ErrorKind = StateQueued, "", ""
 			}
 			if r.key != "" {
 				it.key, it.expires = r.key, r.expires
@@ -618,7 +620,7 @@ func (s *Service) Route(link nxm.Link) bool {
 				(it.State == StateWaitingClick || it.State == StateQueued || it.State == StateFailed)
 		})
 		if i >= 0 {
-			s.items[i].FileID, s.items[i].Error = link.FileID, ""
+			s.items[i].FileID, s.items[i].Error, s.items[i].ErrorKind = link.FileID, "", ""
 		}
 	}
 	if i < 0 {
@@ -656,7 +658,7 @@ func (s *Service) retry(match func(*Item) bool) {
 	s.mu.Lock()
 	for _, it := range s.items {
 		if (it.State == StateFailed || it.State == StateSkipped) && match(it) {
-			it.State, it.Error = StateQueued, ""
+			it.State, it.Error, it.ErrorKind = StateQueued, "", ""
 		}
 	}
 	s.mu.Unlock()
@@ -723,7 +725,7 @@ func (s *Service) RestoreProfile(game, profileID string) {
 	s.mu.Lock()
 	for _, it := range s.items {
 		if it.Game == game && it.Profile == profileID && it.State == StateSkipped && it.Error == "profile deleted" {
-			it.State, it.Error = StateQueued, ""
+			it.State, it.Error, it.ErrorKind = StateQueued, "", ""
 		}
 	}
 	s.mu.Unlock()
@@ -794,7 +796,7 @@ func (s *Service) FailRoot(id string) {
 	if it := s.find(id); it != nil && it.State == StateNeedsRoot {
 		snap := *it
 		rec = &snap
-		it.State, it.Error = StateFailed, msg
+		it.State, it.Error, it.ErrorKind = StateFailed, msg, FailOther
 		it.staged, it.Remap, it.chosenRoot = "", nil, ""
 	}
 	s.mu.Unlock()

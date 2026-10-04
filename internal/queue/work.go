@@ -322,6 +322,9 @@ func (s *Service) settle(id string, err error) {
 	default:
 		it.State, it.Error = StateFailed, err.Error()
 	}
+	if it.State == StateFailed {
+		it.ErrorKind = failureKind(err)
+	}
 	reopen := it.State == StateWaitingClick
 	var rec *Item
 	if it.State == StateFailed {
