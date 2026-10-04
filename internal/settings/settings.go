@@ -19,7 +19,7 @@ import (
 const fileName = "settings.json"
 
 var (
-	accents     = []string{"sand", "moss", "copper", "sky"}
+	accents     = []string{"sand", "moss", "copper", "sky", "rose", "lavender", "teal", "slate"}
 	backgrounds = []string{BackgroundImage, BackgroundDesktop, BackgroundSolid}
 )
 

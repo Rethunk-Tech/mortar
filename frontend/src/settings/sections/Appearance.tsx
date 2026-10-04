@@ -60,6 +60,10 @@ export function Appearance() {
     { name: 'moss', label: t`Moss`, note: t`Earthy green` },
     { name: 'copper', label: t`Copper`, note: t`Warm and bold` },
     { name: 'sky', label: t`Sky`, note: t`Cool and calm` },
+    { name: 'rose', label: t`Rose`, note: t`Soft and warm` },
+    { name: 'lavender', label: t`Lavender`, note: t`Gentle violet` },
+    { name: 'teal', label: t`Teal`, note: t`Fresh and clear` },
+    { name: 'slate', label: t`Slate`, note: t`Quiet grey-blue` },
   ]
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
