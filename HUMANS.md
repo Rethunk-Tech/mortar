@@ -87,17 +87,17 @@ wails3 task linux:create:appimage     # bin/mortar-linux-x86_64.AppImage
 wails3 task linux:nfpm                # .deb, .rpm, Arch package, bin/mortar-linux-amd64
 wails3 task linux:flatpak             # bin/mortar-linux-x86_64.flatpak (needs flatpak-builder)
 wails3 task linux:build:arm64         # bin/mortar-linux-arm64 and its .deb, .rpm, Arch package
-wails3 build GOOS=windows             # bin/mortar.exe
+wails3 build GOOS=windows             # bin/mortar.exe (ARCH=arm64 for Windows on ARM; wails3 task windows:package ARCH=arm64 also writes bin/mortar-arm64-installer.exe)
 MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.3
 ```
 
 `linux:build:arm64` cross-compiles on an x86_64 machine with no emulator registered: it needs `zig`, `docker` (to download the arm64 Ubuntu packages it links against, extracted under `tmp/`), `nfpm` and `qemu-aarch64`, which checks that every shared library resolves. The arm64 AppImage is built only in CI.
 
-`release:manifest` refuses a `VERSION` other than `build/config.yml`'s `info.version`, needs `bin/mortar-windows-amd64.exe` to exist (copy `bin/mortar.exe` to it first; `release.yml` does that copy), and writes `bin/manifest.json` signed with the private key `MORTAR_UPDATE_KEY` names, then verifies it against `build/updater/public.key`. The app reads the manifest from the latest release, or the latest pre-release when Settings › Updates includes beta releases; packaged Linux installs leave updating to the package manager. Where the key lives: [docs/architecture.md](docs/architecture.md#release).
+`release:manifest` refuses a `VERSION` other than `build/config.yml`'s `info.version`, needs `bin/mortar-windows-amd64.exe` to exist (copy `bin/mortar.exe` to it first; `release.yml` does that copy) and adds `mortar-windows-arm64.exe` and the arm64 AppImage when present, and writes `bin/manifest.json` signed with the private key `MORTAR_UPDATE_KEY` names, then verifies it against `build/updater/public.key`. The app reads the manifest from the latest release, or the latest pre-release when Settings › Updates includes beta releases; packaged Linux installs leave updating to the package manager. Where the key lives: [docs/architecture.md](docs/architecture.md#release).
 
 ### Cutting a release in CI
 
-`.github/workflows/release.yml` runs on a `v*` tag: the gate, then the AppImage, nfpm packages, Flatpak bundle, `bin/mortar.exe` and the per-user NSIS installer (`bin/mortar-amd64-installer.exe`) on x86_64, the AppImage and nfpm packages again on an `ubuntu-24.04-arm` runner, the signed `manifest.json`, and the GitHub release with all of those files. A manual dispatch (Actions › Release › Run workflow) builds and signs x86_64 only, for `build/config.yml`'s version, and publishes nothing.
+`.github/workflows/release.yml` runs on a `v*` tag: the gate (skipped when `ci.yml` already passed on that commit), then the AppImage, nfpm packages, Flatpak bundle (SDK cached between runs), the Windows exes and per-user NSIS installers for amd64 and arm64 (`bin/mortar-amd64-installer.exe`, `bin/mortar-arm64-installer.exe`, both cross-built on x86_64; the arm64 installer is arm64-native) and the browser extension zip on x86_64, the AppImage and nfpm packages again on an `ubuntu-24.04-arm` runner, the signed `manifest.json`, the rendered AUR `PKGBUILD` and `SRCINFO` (the release asset for `.SRCINFO`) and Flathub manifest and `SUBMISSION.md`, and the GitHub release with all of those files. Its notes list the `feat` and `fix` commits since the previous tag (`build/release/notes.sh`). A last step downloads every asset and checks it against the staged files and the manifest's digests (`build/release/verify.sh`). A manual dispatch (Actions › Release › Run workflow) builds and signs x86_64 only, for `build/config.yml`'s version, and publishes nothing.
 
 CI reads the repository secret `MORTAR_UPDATE_KEY`, which holds the private key file's PEM contents, not its path:
 
@@ -112,19 +112,19 @@ Per release:
 
 ### Flathub
 
-CI only attaches a single-file `.flatpak` for people who sideload. Listing on Flathub is a separate submission using `build/linux/flatpak/tech.rethunk.Mortar.yml`:
+CI only attaches a single-file `.flatpak` for people who sideload. Listing on Flathub is a separate submission. Each release attaches `flathub-tech.rethunk.Mortar.yml` (rendered from `build/linux/flathub/tech.rethunk.Mortar.yml` with release URLs and sha256 sums) and `flathub-SUBMISSION.md` with the PR text; the sideload bundle uses `build/linux/flatpak/tech.rethunk.Mortar.yml`:
 
 1. [Flathub app requirements](https://docs.flathub.org/docs/for-app-authors/requirements): AppStream metainfo (`tech.rethunk.Mortar.metainfo.xml`), 128×128 and 256×256 icons, screenshots, AGPL-3.0 license text.
 2. Fork [flathub/flathub](https://github.com/flathub/flathub), open a PR that adds `tech.rethunk.Mortar`, then maintain the app repo Flathub creates.
 3. Build from source inside the GNOME SDK (or keep the file-source binary and accept Flathub review of that choice). The GitHub bundle is not what Flathub builds.
-4. finish-args grant network, Wayland/X11, DRI, native and Flatpak Steam libraries, read-only Heroic (`xdg-config/heroic`) and Lutris game configs (`xdg-data/lutris`), read-write Flatpak Lutris and Heroic app data, default `~/GOG Games` and `~/Games/Heroic` install trees, `xdg-data/mortar`, and the single-instance bus name.
+4. finish-args grant network, Wayland/X11, DRI, native and Flatpak Steam libraries, read-only Heroic (`xdg-config/heroic`) and Lutris game configs (`xdg-data/lutris`), read-write Flatpak Lutris and Heroic app data, default `~/GOG Games` and `~/Games/Heroic` install trees, `xdg-data/mortar`, `xdg-download`, removable media (`/run/media`, `/mnt`) for second-drive Steam libraries, `xdg-config/autostart:create` and `xdg-data/applications:create` (launch at login and profile shortcuts on the host), the Secret Service (`org.freedesktop.secrets`, Nexus sign-in) and `org.freedesktop.Flatpak` (`flatpak-spawn --host`, which starts Steam and the game outside the sandbox), and the single-instance bus name.
 
 ### AUR mortar-bin
 
 `build/linux/aur/PKGBUILD` installs `mortar-linux-amd64` or `mortar-linux-arm64` from the GitHub release, plus the tagged desktop entry and icon. Publishing:
 
 1. `git clone ssh://aur@aur.archlinux.org/mortar-bin.git`
-2. Copy `PKGBUILD` in (its `pkgver` follows `build/config.yml` through `go run ./cmd/version`), run `updpkgsums` and `makepkg --printsrcinfo > .SRCINFO`.
+2. Copy the release's `PKGBUILD` and `SRCINFO` (saved as `.SRCINFO`) in; both carry real sums. The committed `PKGBUILD` keeps `SKIP` sums and its `pkgver` follows `build/config.yml` through `go run ./cmd/version`. If the source archive was not publicly downloadable when the release rendered them, its sum is `SKIP`: run `updpkgsums` and `makepkg --printsrcinfo > .SRCINFO`.
 3. `git add PKGBUILD .SRCINFO && git commit -m "mortar-bin $pkgver" && git push`
 
 ## Publishing components

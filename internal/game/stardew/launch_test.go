@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/sandbox"
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
@@ -226,5 +227,36 @@ func TestVanillaLaunchSucceedsWhenAProcessAppears(t *testing.T) {
 	}
 	if err := g.Launch(t.Context(), req, nil); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestLaunchInFlatpakGoesThroughFlatpakSpawn(t *testing.T) {
+	old := sandbox.Getenv
+	sandbox.Getenv = func(k string) string {
+		if k == "FLATPAK_ID" {
+			return sandbox.AppID
+		}
+		return ""
+	}
+	t.Cleanup(func() { sandbox.Getenv = old })
+	logDir := t.TempDir()
+	var ran []string
+	g := Game{
+		LogDir:       logDir,
+		LookPath:     func(string) (string, error) { return "/usr/bin/steam", nil },
+		LaunchTiming: launch.Timing{Timeout: 300 * time.Millisecond, Poll: 5 * time.Millisecond},
+		Runner: func(dir, name string, args ...string) (<-chan error, error) {
+			ran = append([]string{dir, name}, args...)
+			return make(chan error), os.WriteFile(filepath.Join(logDir, "SMAPI-latest.txt"), []byte("SMAPI 4.5.2\n"), 0o600)
+		},
+	}
+	mods := filepath.Join(t.TempDir(), "mods")
+	req := launch.Request{ModsDir: mods, Steam: &steam.Steam{Root: t.TempDir()}}
+	if err := g.Launch(t.Context(), req, func([]string) {}); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"", "flatpak-spawn", "--host", "/usr/bin/steam", "-applaunch", g.SteamAppID(), "--skip-terminal", "--", "--mods-path", mods}
+	if !slices.Equal(ran[:len(want)], want) {
+		t.Fatalf("ran %v, want prefix %v", ran, want)
 	}
 }

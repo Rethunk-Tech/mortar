@@ -11,10 +11,15 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/sandbox"
 )
 
 // create writes a desktop entry under the user's applications folder, where launchers and app menus find it.
 func create(exe, arg, name string) (string, error) {
+	execLine := `"` + strings.ReplaceAll(exe, `"`, `\"`) + `"`
+	if sandbox.InFlatpak() {
+		execLine = sandbox.HostExec
+	}
 	base, err := dataHome()
 	if err != nil {
 		return "", err
@@ -29,11 +34,11 @@ func create(exe, arg, name string) (string, error) {
 Type=Application
 Name=%s
 Comment=Play this Mortar profile
-Exec="%s" %s
+Exec=%s %s
 Icon=mortar
 Terminal=false
 Categories=Game;
-`, desktopValue(name), strings.ReplaceAll(exe, `"`, `\"`), arg)
+`, desktopValue(name), execLine, arg)
 	if err := datadir.WriteFile(path, []byte(entry), 0o600); err != nil {
 		return "", err
 	}
@@ -114,6 +119,10 @@ func desktopValue(s string) string {
 }
 
 func dataHome() (string, error) {
+	if sandbox.InFlatpak() {
+		// The host's menus read ~/.local/share/applications; XDG_DATA_HOME is Mortar's private sandbox folder.
+		return sandbox.HostDataHome()
+	}
 	if v := os.Getenv("XDG_DATA_HOME"); v != "" {
 		return v, nil
 	}

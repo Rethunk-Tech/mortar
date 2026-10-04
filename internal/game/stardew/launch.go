@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-AI/mortar/internal/sandbox"
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
@@ -37,12 +38,18 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]str
 	lookPath := g.LookPath
 	if lookPath == nil {
 		lookPath = exec.LookPath
+		if sandbox.InFlatpak() {
+			lookPath = sandbox.HostLookPath
+		}
 	}
 	steamPath, _ := lookPath("steam")
 	flatpakPath, _ := lookPath("flatpak")
 	cmd, err := g.command(runtime.GOOS, req, steamPath, flatpakPath)
 	if err != nil {
 		return err
+	}
+	if sandbox.InFlatpak() {
+		cmd = onHost(cmd)
 	}
 	cmd.OnExit = req.OnExit
 	if req.Vanilla {
@@ -64,6 +71,14 @@ func (g Game) Launch(ctx context.Context, req launch.Request, onLines func([]str
 		}
 	}
 	return launch.Run(ctx, run, cmd, g.LaunchTiming, onLines)
+}
+
+// onHost reruns cmd through flatpak-spawn: the sandbox has no Steam, and a direct launch must not inherit its
+// permissions, which also spares the manifest an audio socket and --device=all.
+func onHost(cmd launch.Command) launch.Command {
+	cmd.Name, cmd.Args = sandbox.HostArgv(cmd.Dir, cmd.Env, cmd.Name, cmd.Args...)
+	cmd.Dir, cmd.Env = "", nil
+	return cmd
 }
 
 // DirectCommand builds the command used for a direct profile launch without starting it.

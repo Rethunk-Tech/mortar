@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/sandbox"
 )
 
 // runs reports whether args start the program name, directly or through dotnet or mono.
@@ -31,6 +32,9 @@ func runs(args []string, name string) bool {
 
 // Processes lists running processes whose executable is name, from procDir (/proc) on Linux.
 func Processes(procDir, name string) ([]Process, error) {
+	if procDir == "/proc" && sandbox.InFlatpak() {
+		return hostProcesses(name)
+	}
 	entries, err := os.ReadDir(procDir)
 	if err != nil {
 		return nil, err
@@ -89,4 +93,40 @@ func startTime(procDir, pid string) time.Time {
 		}
 	}
 	return time.Time{}
+}
+
+// hostScript prints "pid<TAB>start-unix<TAB>arg<US>arg..." for every host process; /proc inside the sandbox
+// shows only Mortar's own. The proc entry's mtime is the process start for a process that has not changed owner.
+const hostScript = `for d in /proc/[0-9]*; do [ -r "$d/cmdline" ] || continue; printf '%s\t%s\t' "${d#/proc/}" "$(stat -c %Y "$d")"; tr '\0' '\037' <"$d/cmdline"; echo; done`
+
+func hostProcesses(name string) ([]Process, error) {
+	out, err := sandbox.HostOutput("sh", "-c", hostScript)
+	if err != nil {
+		return nil, err
+	}
+	return parseHostProcesses(string(out), name), nil
+}
+
+func parseHostProcesses(out, name string) []Process {
+	var procs []Process
+	for line := range strings.SplitSeq(out, "\n") {
+		f := strings.SplitN(line, "\t", 3)
+		if len(f) != 3 {
+			continue
+		}
+		pid, err := strconv.Atoi(f[0])
+		if err != nil {
+			continue
+		}
+		args := strings.Split(strings.TrimRight(f[2], "\x1f"), "\x1f")
+		if !runs(args, name) {
+			continue
+		}
+		p := Process{PID: pid, Args: args}
+		if sec, err := strconv.ParseInt(f[1], 10, 64); err == nil {
+			p.Start = time.Unix(sec, 0)
+		}
+		procs = append(procs, p)
+	}
+	return procs
 }

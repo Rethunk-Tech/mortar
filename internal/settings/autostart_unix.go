@@ -9,12 +9,19 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/sandbox"
 	"github.com/Rethunk-AI/mortar/internal/selfexe"
 )
 
 func applyAutostart(enable bool) error {
 	cfg := os.Getenv("XDG_CONFIG_HOME")
-	if cfg == "" {
+	if sandbox.InFlatpak() {
+		// The host session reads ~/.config/autostart; XDG_CONFIG_HOME is Mortar's private sandbox folder.
+		var err error
+		if cfg, err = sandbox.HostConfigHome(); err != nil {
+			return err
+		}
+	} else if cfg == "" {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return err

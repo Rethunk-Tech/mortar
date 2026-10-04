@@ -74,3 +74,11 @@ func TestProcessStartTime(t *testing.T) {
 		t.Fatalf("start = %v, want %v", procs[0].Start, want)
 	}
 }
+
+func TestParseHostProcesses(t *testing.T) {
+	out := "12\t1700000000\t/usr/bin/steam\x1f-silent\n34\t1700000100\t/g/Stardew Valley/StardewModdingAPI\x1f--mods-path\x1f/m\x1f\nx\ty\n"
+	got := parseHostProcesses(out, "StardewModdingAPI")
+	if len(got) != 1 || got[0].PID != 34 || got[0].Start.Unix() != 1700000100 || !got[0].UsesModsPath("/m") {
+		t.Fatalf("%+v", got)
+	}
+}

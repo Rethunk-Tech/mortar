@@ -59,7 +59,7 @@ linters:
   # named by a variable is the product; gosec has no per-call option for that.
   exclusions:
     rules:
-      - path: ^internal/(launch/launch|game/stardew/smapi|datadir/open|backdrop/desktop|nxm/handler_linux|nxm/handler_windows|steam/steam|nativehost/spawn|datasvc/restart)\.go$
+      - path: ^internal/(launch/launch|game/stardew/smapi|datadir/open|backdrop/desktop|nxm/handler_linux|nxm/handler_windows|steam/steam|sandbox/sandbox|nativehost/spawn|datasvc/restart)\.go$
         linters: [gosec]
         text: G204
   settings:
