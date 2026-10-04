@@ -4,6 +4,7 @@
 #                        writes them).
 # verify.sh --staged DIR checks the staged files in DIR against their own manifest.json (a dry run, no release).
 # verify.sh --public TAG fetches the published release's manifest, its assets and the extension zip with no token.
+# XPI=true (set when the release step signed the Firefox add-on) also requires mortar-browser-extension.xpi.
 # Every mode also fetches, with no token, the component assets the bundled components.json pins and the newest signed
 # components manifest, which is what a stranger's Mortar downloads. While the repo serving a URL is private an
 # unreachable URL is a warning; once it is public it fails the check.
@@ -115,6 +116,10 @@ case "$mode" in
         fail=1
       fi
     done
+    if [ "${XPI:-}" = true ] && [ ! -f "$dl/mortar-browser-extension.xpi" ]; then
+      echo "MISSING from release: mortar-browser-extension.xpi" >&2
+      fail=1
+    fi
     check_manifest "$dl"
     check_appimages "$dl"
     summary="release $tag: $(find "$dir" -mindepth 1 -maxdepth 1 | wc -l) staged files present, manifest digests match"
@@ -131,6 +136,9 @@ case "$mode" in
     anon "$base/manifest.json"
     anon "https://github.com/$repo/releases/latest/download/manifest.json"
     anon "https://github.com/$repo/releases/latest/download/mortar-browser-extension.zip"
+    if [ "${XPI:-}" = true ]; then
+      anon "https://github.com/$repo/releases/latest/download/mortar-browser-extension.xpi"
+    fi
     while IFS= read -r url; do
       anon "$url"
     done < <(curl -fsSL "$base/manifest.json" 2>/dev/null | jq -r '.artifacts[].url' 2>/dev/null || true)

@@ -21,7 +21,35 @@ The Windows builds are not code-signed, so SmartScreen shows "Windows protected 
   - **Add this profile to Steam** is refused, because Steam outside the sandbox cannot start Mortar inside it. The error shows the `flatpak run tech.rethunk.Mortar --play=<game>/<profile>` command to use instead.
   - With Flatpak Steam, Steam's own sandbox cannot read Mortar's profiles until Mortar grants it access. Mortar shows a **Grant access** button for this, in the game's settings.
   - Updates come through Flatpak, not from Mortar.
-- **`.deb`, `.rpm` and Arch package**: install with your package manager (for example `sudo apt install ./mortar_*_amd64.deb`, `sudo dnf install ./mortar-*.rpm`, `sudo pacman -U mortar-*.pkg.tar.zst`). Updates come from the package manager too: Settings › Updates says "Updated by your package manager".
+- **`.deb`, `.rpm` and Arch package files**: install with your package manager (for example `sudo apt install ./mortar_*_amd64.deb`, `sudo dnf install ./mortar-*.rpm`, `sudo pacman -U mortar-*.pkg.tar.zst`). A package installed this way does not update itself; add the package repository below to get updates.
+
+### Linux package repository
+
+On Debian, Ubuntu, Fedora and Arch, install Mortar from its package repository and it updates with the rest of your system; Settings › Updates says "Updated by your package manager". The repository is signed by the key "Mortar packages <security@rethunk.tech>", fingerprint `3283 6046 06CA E229 5D47 6F98 83BC 8751 EE6F 773D`.
+
+Debian and Ubuntu (amd64, arm64):
+
+```sh
+sudo curl -fsSLo /usr/share/keyrings/mortar-archive-keyring.gpg https://mortar.rethunk.tech/packages/mortar-archive-keyring.gpg
+sudo curl -fsSLo /etc/apt/sources.list.d/mortar.list https://mortar.rethunk.tech/packages/mortar.list
+sudo apt update && sudo apt install mortar
+```
+
+Fedora (x86_64, aarch64); dnf asks once to import the key, so check its fingerprint against the one above:
+
+```sh
+sudo curl -fsSLo /etc/yum.repos.d/mortar.repo https://mortar.rethunk.tech/packages/mortar.repo
+sudo dnf install mortar
+```
+
+Arch (x86_64, aarch64):
+
+```sh
+curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
+sudo pacman-key --lsign-key 3283604606CAE2295D476F9883BC8751EE6F773D
+curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
+sudo pacman -Sy mortar
+```
 
 ## First run
 
@@ -44,10 +72,10 @@ To make that button work, turn on **Handle "Mod Manager Download" links** in **S
 
 ## Browser extension
 
-The extension marks Nexus Mods pages with what your profile already has and sends Mod Manager Download clicks to Mortar. It is optional. **Settings › Downloads** has a **Download the extension** button; the same file is `mortar-browser-extension.zip` on the release. Unzip it first.
+The extension marks Nexus Mods pages with what your profile already has and sends Mod Manager Download clicks to Mortar. It is optional. **Settings › Downloads** has a **Download the extension** button; the same file is `mortar-browser-extension.zip` on the release. Unzip it for Chrome and Edge.
 
 - **Chrome, Edge or another Chromium browser:** open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the unzipped folder.
-- **Firefox:** open `about:debugging`, choose **This Firefox**, then **Load Temporary Add-on** and pick `manifest.json` in the unzipped folder. Firefox removes a temporary add-on when it restarts, so repeat this after each restart.
+- **Firefox:** download `mortar-browser-extension.xpi` from the [latest release](https://github.com/Rethunk-AI/mortar/releases/latest) (**Settings › Downloads** links it too) and open it in Firefox, or drop it on `about:addons`. It is signed by Mozilla, so it stays installed. A release without the `.xpi` needs the zip instead: open `about:debugging`, choose **This Firefox**, then **Load Temporary Add-on** and pick `manifest.json` in the unzipped folder; Firefox removes a temporary add-on when it restarts.
 
 ## Profiles
 
