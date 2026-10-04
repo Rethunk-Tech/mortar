@@ -431,18 +431,36 @@ func (s *Store) placeOverlayLocked(game, id, key string, source Source) (Profile
 			return Profile{}, &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 	}
+	replaced := func(e Entry) bool {
+		return source.replacing > 0 && e.OverlayOf == base.Key && e.Source.FileID == source.replacing
+	}
+	// A newer version of an installed optional file goes where the old one went when it still has that folder.
+	if old := slices.IndexFunc(cur.Entries, replaced); old >= 0 && source.overlay == nil {
+		o := cur.Entries[old]
+		if info, err := os.Stat(filepath.Join(itemDir, filepath.FromSlash(o.OverlayFrom))); err == nil && info.IsDir() {
+			source = source.WithOverlay(o.OverlayFrom, o.OverlayTo)
+		}
+	}
 	from, to, err := s.overlayTarget(game, id, key, source, base, itemDir)
 	if err != nil {
 		return Profile{}, err
 	}
 	place := source
-	place.fomod, place.disabled, place.overlay = nil, nil, nil
+	place.fomod, place.disabled, place.overlay, place.replacing = nil, nil, nil, 0
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
 		was := overlaysOf(p.Entries, base.Key)
+		if i := slices.IndexFunc(p.Entries, replaced); i >= 0 {
+			e := &p.Entries[i]
+			e.Key, e.Source, e.OverlayFrom, e.OverlayTo = key, place, from, to
+			return s.relayBase(game, p, dir, base.Key, was)
+		}
 		p.Entries = append(p.Entries, Entry{
 			Key: key, Source: place, Mods: []EntryMod{}, Disabled: []string{}, Added: time.Now().UTC(),
 			OverlayOf: base.Key, OverlayFrom: from, OverlayTo: to,
 		})
+		if err := s.offAlternatives(game, p, key); err != nil {
+			return err
+		}
 		return s.relayBase(game, p, dir, base.Key, was)
 	})
 	if err != nil {
@@ -517,6 +535,11 @@ func (s *Store) setOverlayLocked(game string, p *Profile, dir, key string, enabl
 	}
 	was := overlaysOf(p.Entries, p.Entries[i].OverlayOf)
 	p.Entries[i].OverlayOff = !enabled
+	if enabled {
+		if err := s.offAlternatives(game, p, key); err != nil {
+			return err
+		}
+	}
 	return s.relayBase(game, p, dir, p.Entries[i].OverlayOf, was)
 }
 

@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -24,6 +25,8 @@ const (
 	zipManifestName = "mortar-export.json"
 	zipProfileName  = "profile.json"
 	zipModsPrefix   = "mods/"
+	// zipOverlaysDir holds each optional file's store item, by entry key, apart from its main entry's folder.
+	zipOverlaysDir = "overlays"
 )
 
 type zipManifest struct {
@@ -47,6 +50,9 @@ func (s *Store) ExportZip(game, id, dest, mortarVersion string) error {
 	}
 	err = snapshotProfileExport(dir, snap, p)
 	defer func() { _ = fsx.RemoveAll(snap) }()
+	if err == nil {
+		err = s.snapshotOverlays(game, id, snap, p)
+	}
 	if err != nil {
 		return err
 	}
@@ -207,6 +213,65 @@ func writeProfileZip(w io.Writer, mortarVersion, profileDir string, p Profile) e
 	return zw.Close()
 }
 
+// snapshotOverlays takes the optional files back off each main entry's folder in the export snapshot, so it holds the
+// main file as installed, and copies each optional file's store item beside it.
+func (s *Store) snapshotOverlays(game, id, snap string, p Profile) error {
+	modsDir := filepath.Join(snap, "mods")
+	for _, e := range p.Entries {
+		if e.IsOverlay() {
+			dir, err := s.items.Path(game, e.Key)
+			if err != nil {
+				return err
+			}
+			if err := datadir.CopyTree(dir, filepath.Join(snap, zipOverlaysDir, e.Key)); err != nil {
+				return err
+			}
+			continue
+		}
+		if was := overlaysOf(p.Entries, e.Key); len(was) > 0 {
+			if err := s.layOverlays(game, id, e, liveEntryDir(modsDir, e.Key), was, nil); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// restoreOverlays adds each optional file of src back over its restored main entry, with its placement and switch.
+func (s *Store) restoreOverlays(game, id, tmp string, src Profile) (Profile, error) {
+	var out Profile
+	keys := map[string]string{}
+	for _, e := range src.Entries {
+		if !e.IsOverlay() {
+			continue
+		}
+		dst := filepath.Join(tmp, "stage", zipOverlaysDir, e.Key)
+		if err := datadir.CopyTree(filepath.Join(tmp, zipOverlaysDir, e.Key), dst); err != nil {
+			return Profile{}, fmt.Errorf("%s/%s: %w", zipOverlaysDir, e.Key, err)
+		}
+		key, err := s.items.AddHashedDir(game, dst)
+		if err != nil {
+			return Profile{}, err
+		}
+		if out, err = s.AddEntry(game, id, key, e.Source.WithOverlay(e.OverlayFrom, e.OverlayTo)); err != nil {
+			return Profile{}, err
+		}
+		keys[e.Key] = key
+	}
+	// Adding one switches its alternatives off, so each switch is set again once all are back, the off ones last.
+	for _, off := range []bool{false, true} {
+		for _, e := range src.Entries {
+			if e.IsOverlay() && e.OverlayOff == off {
+				var err error
+				if out, err = s.SetOverlayEnabled(game, id, keys[e.Key], !off); err != nil {
+					return Profile{}, err
+				}
+			}
+		}
+	}
+	return out, nil
+}
+
 // RestoreZip imports a profile zip as a new profile with a unique name. It never overwrites an existing profile.
 func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 	tmp, err := os.MkdirTemp(filepath.Dir(s.root), "mortar-restore-*")
@@ -279,7 +344,6 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 	defer s.setHistoryQuiet(created.ID, false)
 	restored := 0
 	for _, e := range src.Entries {
-		// An optional file's files were exported inside its main entry's folder and come back with it.
 		if e.Source.Bundled() || e.IsOverlay() {
 			continue
 		}
@@ -332,6 +396,11 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 			if err != nil {
 				return Profile{}, err
 			}
+		}
+	}
+	if slices.ContainsFunc(src.Entries, Entry.IsOverlay) {
+		if out, err = s.restoreOverlays(game, created.ID, tmp, src); err != nil {
+			return Profile{}, err
 		}
 	}
 	ok = true

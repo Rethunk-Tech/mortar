@@ -62,6 +62,8 @@ type Source struct {
 	fomod    *fomodChoices
 	disabled *disabledMods
 	overlay  *overlayPlace
+	// replacing is the Nexus file id of the optional file this one is a newer version of.
+	replacing int
 }
 
 type fomodChoices struct {

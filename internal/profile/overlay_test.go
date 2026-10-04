@@ -1,9 +1,12 @@
 package profile
 
 import (
+	"archive/zip"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
@@ -140,7 +143,16 @@ func TestOverlayAmbiguousAsksForTarget(t *testing.T) {
 	}
 }
 
-func TestOverlaysApplyInOrderAndRestoreWhenOff(t *testing.T) {
+func overlayEntry(p Profile, key string) Entry {
+	for _, en := range p.Entries {
+		if en.Key == key {
+			return en
+		}
+	}
+	return Entry{}
+}
+
+func TestOverlayAlternativesSwitchEachOtherOff(t *testing.T) {
 	e, p, baseKey, optKey := installOverlayPair(t)
 	second := buildZip(t, "opt2.zip", map[string]string{overlayDir + "/assets/a.png": "A-two"})
 	res, err := e.InstallNexus("stardew", p.ID, second, overlaySource(3, "opt2.zip"))
@@ -148,15 +160,25 @@ func TestOverlaysApplyInOrderAndRestoreWhenOff(t *testing.T) {
 		t.Fatal(err)
 	}
 	optKey2 := store.NexusKey(overlayModID, 3)
-	art := overlayDir + "/assets/a.png"
-	if got := readLive(t, e, res.Profile.ID, baseKey, art); got != "A-two" {
-		t.Fatalf("later overlay should win, got %q", got)
+	art, added := overlayDir+"/assets/a.png", overlayDir+"/assets/new.png"
+	if !overlayEntry(res.Profile, optKey).OverlayOff || readLive(t, e, p.ID, baseKey, art) != "A-two" {
+		t.Fatalf("adding an alternative should switch the other off: %+v", res.Profile.Entries)
 	}
-	if _, err := e.SetOverlayEnabled("stardew", p.ID, optKey2, false); err != nil {
-		t.Fatal(err)
+	if exists(filepath.Join(e.mods(p.ID), baseKey, filepath.FromSlash(added))) {
+		t.Fatal("a file only the switched-off alternative brought stayed")
 	}
-	if got := readLive(t, e, p.ID, baseKey, art); got != "A-opt" {
-		t.Fatalf("after second off = %q", got)
+	sets, err := e.OverlayFiles("stardew", p.ID, baseKey)
+	if err != nil || len(sets) != 2 {
+		t.Fatalf("sets = %+v, %v", sets, err)
+	}
+	if s := sets[0]; s.Key != optKey || !slices.Equal(s.Replaces, []string{art}) || !slices.Equal(s.Adds, []string{added}) ||
+		!slices.Equal(s.Alternatives, []string{optKey2}) {
+		t.Fatalf("first set = %+v", s)
+	}
+	got, err := e.SetOverlayEnabled("stardew", p.ID, optKey, true)
+	if err != nil || !overlayEntry(got, optKey2).OverlayOff || readLive(t, e, p.ID, baseKey, art) != "A-opt" ||
+		readLive(t, e, p.ID, baseKey, added) != "N-opt" {
+		t.Fatalf("switching one on = %+v, %v", got.Entries, err)
 	}
 	if _, err := e.SetModEnabled("stardew", p.ID, optKey, optKey, false); err != nil {
 		t.Fatal(err)
@@ -164,26 +186,54 @@ func TestOverlaysApplyInOrderAndRestoreWhenOff(t *testing.T) {
 	if got := readLive(t, e, p.ID, baseKey, art); got != "A-main" {
 		t.Fatalf("after both off = %q", got)
 	}
-	if exists(filepath.Join(e.mods(p.ID), baseKey, overlayDir, "assets", "new.png")) {
+	if exists(filepath.Join(e.mods(p.ID), baseKey, filepath.FromSlash(added))) {
 		t.Fatal("a file only the optional file brought stayed")
 	}
 	drift, err := e.ScanModsDrift("stardew", p.ID)
 	if err != nil || len(drift) != 0 {
 		t.Fatalf("drift = %+v, %v", drift, err)
 	}
-	if _, err := e.SetOverlayEnabled("stardew", p.ID, optKey, true); err != nil {
+	if _, err := e.SetOverlayEnabled("stardew", p.ID, optKey2, true); err != nil {
 		t.Fatal(err)
 	}
-	if got := readLive(t, e, p.ID, baseKey, art); got != "A-opt" {
+	if got := readLive(t, e, p.ID, baseKey, art); got != "A-two" {
 		t.Fatalf("back on = %q", got)
 	}
-	got, err := e.RemoveEntry("stardew", p.ID, optKey)
+	got, err = e.RemoveEntry("stardew", p.ID, optKey2)
 	if err != nil || len(got.Entries) != 2 || readLive(t, e, p.ID, baseKey, art) != "A-main" {
 		t.Fatalf("remove overlay = %+v, %v", got.Entries, err)
 	}
-	got, err = e.RemoveEntries("stardew", p.ID, []string{baseKey, optKey2})
+	got, err = e.RemoveEntries("stardew", p.ID, []string{baseKey, optKey})
 	if err != nil || len(got.Entries) != 0 {
 		t.Fatalf("remove base = %+v, %v", got.Entries, err)
+	}
+}
+
+func TestOverlayNewVersionTakesItsPlace(t *testing.T) {
+	e, p, baseKey, optKey := installOverlayPair(t)
+	if _, err := e.SetOverlayEnabled("stardew", p.ID, optKey, false); err != nil {
+		t.Fatal(err)
+	}
+	if NewestFromPage(p, overlayModID, 2) != 2 || NewestFromPage(p, overlayModID, 0) != 1 {
+		t.Fatal("NewestFromPage counts an optional file's own versions only for it")
+	}
+	v2 := buildZip(t, "opt-2.zip", map[string]string{overlayDir + "/assets/a.png": "A-opt2"})
+	res, err := e.InstallNexus("stardew", p.ID, v2, overlaySource(5, "opt-2.zip").WithReplacing(2))
+	newKey := store.NexusKey(overlayModID, 5)
+	if err != nil || len(res.Profile.Entries) != 2 {
+		t.Fatalf("new version = %+v, %v", res.Profile.Entries, err)
+	}
+	if o := res.Profile.Entries[1]; o.Key != newKey || !o.OverlayOff || o.OverlayOf != baseKey || o.OverlayTo != overlayDir {
+		t.Fatalf("replaced entry = %+v", o)
+	}
+	if _, err := e.SetOverlayEnabled("stardew", p.ID, newKey, true); err != nil {
+		t.Fatal(err)
+	}
+	if got := readLive(t, e, p.ID, baseKey, overlayDir+"/assets/a.png"); got != "A-opt2" {
+		t.Fatalf("new version laid = %q", got)
+	}
+	if exists(filepath.Join(e.mods(p.ID), baseKey, overlayDir, "assets", "new.png")) {
+		t.Fatal("a file only the old version brought stayed")
 	}
 }
 
@@ -247,5 +297,61 @@ func TestOverlayRevertAndRebuild(t *testing.T) {
 	}
 	if len(reverted.Entries) != 1 || readLive(t, e, p.ID, baseKey, art) != "A-main" {
 		t.Fatalf("revert = %+v", reverted.Entries)
+	}
+}
+
+func TestOverlayExportRestoreRoundTrip(t *testing.T) {
+	e, p, baseKey, optKey := installOverlayPair(t)
+	second := buildZip(t, "opt2.zip", map[string]string{overlayDir + "/assets/a.png": "A-two"})
+	if _, err := e.InstallNexus("stardew", p.ID, second, overlaySource(3, "opt2.zip")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.SetOverlayEnabled("stardew", p.ID, optKey, true); err != nil {
+		t.Fatal(err)
+	}
+	art := overlayDir + "/assets/a.png"
+	zipPath := filepath.Join(t.TempDir(), "farm.zip")
+	if err := e.ExportZip("stardew", p.ID, zipPath, "0.0.1"); err != nil {
+		t.Fatal(err)
+	}
+	if got := readLive(t, e, p.ID, baseKey, art); got != "A-opt" {
+		t.Fatalf("export changed the live folder: %q", got)
+	}
+	zr, err := zip.OpenReader(zipPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inZip := map[string]string{}
+	for _, f := range zr.File {
+		rc, _ := f.Open()
+		b, _ := io.ReadAll(rc)
+		_ = rc.Close()
+		inZip[f.Name] = string(b)
+	}
+	_ = zr.Close()
+	if inZip["mods/"+baseKey+"/"+art] != "A-main" || inZip["overlays/"+optKey+"/"+art] != "A-opt" {
+		t.Fatalf("zip does not keep the main folder and its optional files apart: %v", inZip)
+	}
+	if _, ok := inZip["mods/"+baseKey+"/"+overlayDir+"/assets/new.png"]; ok {
+		t.Fatal("a file only an optional file brings was exported in the main folder")
+	}
+	got, err := e.RestoreZip("stardew", zipPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Entries) != 3 {
+		t.Fatalf("restored entries = %+v", got.Entries)
+	}
+	base, one, two := got.Entries[0], got.Entries[1], got.Entries[2]
+	if one.OverlayOf != base.Key || two.OverlayOf != base.Key || one.OverlayOff || !two.OverlayOff ||
+		one.OverlayTo != overlayDir || one.Source.FileID != 2 {
+		t.Fatalf("restored optional files = %+v", got.Entries)
+	}
+	if readLive(t, e, got.ID, base.Key, art) != "A-opt" || readLive(t, e, got.ID, base.Key, overlayDir+"/assets/new.png") != "N-opt" {
+		t.Fatal("restored optional file not laid over its main file")
+	}
+	drift, err := e.ScanModsDrift("stardew", got.ID)
+	if err != nil || len(drift) != 0 {
+		t.Fatalf("drift = %+v, %v", drift, err)
 	}
 }
