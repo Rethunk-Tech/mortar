@@ -18,7 +18,7 @@ func Size(dir string) (int64, error) {
 			return nil
 		}
 		if info, infoErr := d.Info(); infoErr == nil {
-			if key, linked := linkedKey(info); linked {
+			if key, linked := linkedKey(path, info); linked {
 				if seen[key] {
 					return nil
 				}

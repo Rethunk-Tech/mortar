@@ -87,7 +87,7 @@ func linkingCopy() func(from, to, rel string) error {
 		if err != nil {
 			return err
 		}
-		key, linked := linkedKey(info)
+		key, linked := linkedKey(from, info)
 		if !linked {
 			return CopyFile(from, to)
 		}

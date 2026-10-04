@@ -8,7 +8,7 @@ import (
 )
 
 // linkedKey returns the inode key of a file with more than one hard link.
-func linkedKey(info os.FileInfo) (fileKey, bool) {
+func linkedKey(_ string, info os.FileInfo) (fileKey, bool) {
 	st, ok := info.Sys().(*syscall.Stat_t)
 	if !ok || st.Nlink < 2 {
 		return fileKey{}, false

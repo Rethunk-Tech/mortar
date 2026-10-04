@@ -101,7 +101,7 @@ func TestRelocatePreservesHardlinks(t *testing.T) {
 	if err := os.Link(a, b); err != nil {
 		t.Skipf("hard links unavailable: %v", err)
 	}
-	if _, ok := linkedKey(mustStat(t, a)); !ok {
+	if _, ok := linkedKey(a, mustStat(t, a)); !ok {
 		t.Skip("link counts unavailable on this platform")
 	}
 	if n, err := Size(src); err != nil || n != 4096 {
