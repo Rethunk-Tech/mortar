@@ -98,6 +98,13 @@ func newSite(t *testing.T) *site {
 
 func (s *site) publish(t *testing.T, version string, artifact []byte, key string) {
 	t.Helper()
+	s.publishAs(t, version, artifact, key, "linux-portable")
+}
+
+// publishAs lists the artifact under the manifest platform "linux" (the AppImage entries) or "linux-portable" (the
+// bare program).
+func (s *site) publishAs(t *testing.T, version string, artifact []byte, key, platform string) {
+	t.Helper()
 	// The manifest is built from the genuine artifact and then served alongside whatever bytes the caller supplies.
 	asset := filepath.Join(s.dir, "fixture-linux-"+runtime.GOARCH)
 	if err := os.WriteFile(asset, artifact, 0o600); err != nil {
@@ -108,11 +115,13 @@ func (s *site) publish(t *testing.T, version string, artifact []byte, key string
 		args = append(args, "-key", key)
 	}
 	run(t, "wails3", append(args, asset)...)
-	// The fixture runs as a bare Linux binary, which updates from the portable entry, as release:manifest marks it.
-	manifest := filepath.Join(s.dir, "manifest.json")
-	b := bytes.ReplaceAll(readFile(t, manifest), []byte(`"platform": "linux"`), []byte(`"platform": "linux-portable"`))
-	if err := os.WriteFile(manifest, b, 0o600); err != nil {
-		t.Fatal(err)
+	// wails3 infers "linux"; the bare program updates from the portable entry, as release:manifest marks it.
+	if platform != "linux" {
+		manifest := filepath.Join(s.dir, "manifest.json")
+		b := bytes.ReplaceAll(readFile(t, manifest), []byte(`"platform": "linux"`), []byte(`"platform": "`+platform+`"`))
+		if err := os.WriteFile(manifest, b, 0o600); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -149,6 +158,12 @@ func launch(t *testing.T, bin string, s *site, pubB64 string) (installed, logPat
 	if err := os.Link(bin, installed); err != nil {
 		t.Fatal(err)
 	}
+	return installed, runFixture(t, installed, root, s, pubB64)
+}
+
+// runFixture runs the program at path to completion against site, with extra environment, and returns the fixture's log file.
+func runFixture(t *testing.T, path, root string, s *site, pubB64 string, extraEnv ...string) (logPath string) {
+	t.Helper()
 	logPath = filepath.Join(root, "fixture.log")
 	env := slices.DeleteFunc(os.Environ(), func(kv string) bool { return strings.HasPrefix(kv, "WAILS_UPDATER_") })
 	env = append(env,
@@ -158,7 +173,8 @@ func launch(t *testing.T, bin string, s *site, pubB64 string) (installed, logPat
 		"WAILS_SERVER_PORT="+freePort(t),
 		"TMPDIR="+root,
 	)
-	cmd := exec.CommandContext(t.Context(), installed)
+	env = append(env, extraEnv...)
+	cmd := exec.CommandContext(t.Context(), path)
 	cmd.Env = env
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
@@ -171,7 +187,7 @@ func launch(t *testing.T, bin string, s *site, pubB64 string) (installed, logPat
 		_ = cmd.Process.Kill()
 		t.Fatal("fixture did not exit")
 	}
-	return installed, logPath
+	return logPath
 }
 
 // waitLog polls until the log holds want, which the relaunched process writes after the helper's swap.
@@ -216,6 +232,34 @@ func TestUpdaterE2EApplies(t *testing.T) {
 	}
 	if _, err := os.Stat(installed + ".bak"); err == nil {
 		t.Fatal("backup left behind after a successful swap")
+	}
+}
+
+// The AppImage's program runs from a mount that vanishes on exit, so the updater replaces the file $APPIMAGE names,
+// not the program under $APPDIR.
+func TestUpdaterE2EAppImageSwapsTheImageFile(t *testing.T) {
+	oldB, newB, s, key := setup(t)
+	s.publishAs(t, "0.1.2", newB, key.priv, "linux")
+	root := t.TempDir()
+	appDir := filepath.Join(root, "mnt")
+	mounted := filepath.Join(appDir, "usr", "bin", "mortar")
+	if err := os.MkdirAll(filepath.Dir(mounted), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Link(oldBin, mounted); err != nil {
+		t.Fatal(err)
+	}
+	image := filepath.Join(root, "Mortar.AppImage")
+	if err := os.WriteFile(image, oldB, 0o700); err != nil { // #nosec G306 -- the image has to be executable to relaunch
+		t.Fatal(err)
+	}
+	logPath := runFixture(t, mounted, root, s, key.pubB64, "APPIMAGE="+image, "APPDIR="+appDir)
+	waitLog(t, logPath, "start version=0.1.2")
+	if !bytes.Equal(readFile(t, image), newB) {
+		t.Fatal("the AppImage file is not the 0.1.2 build")
+	}
+	if !bytes.Equal(readFile(t, mounted), oldB) {
+		t.Fatal("the program under APPDIR was replaced instead of the image")
 	}
 }
 
