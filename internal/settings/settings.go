@@ -40,7 +40,7 @@ const (
 
 // Settings is the on-disk shape of settings.json.
 type Settings struct {
-	FormatVersion int    `json:"formatVersion"`
+	FormatVersion int    `json:"formatVersion,omitempty"`
 	Language      string `json:"language"`
 	Accent        string `json:"accent"`
 	// Background is one of the Background* constants.

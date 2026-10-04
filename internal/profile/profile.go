@@ -150,7 +150,7 @@ type CollectionRef struct {
 
 // Profile is the on-disk shape of profile.json.
 type Profile struct {
-	FormatVersion int       `json:"formatVersion"`
+	FormatVersion int       `json:"formatVersion,omitempty"`
 	ID            string    `json:"id"`
 	Name          string    `json:"name"`
 	Notes         string    `json:"notes"`
