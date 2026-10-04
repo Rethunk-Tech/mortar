@@ -148,7 +148,7 @@ jobs:
         run: |
           mkdir -p out
           cp "bin/mortar-linux-${{ matrix.appimage_arch }}.AppImage" out/
-          cp "bin/mortar-linux-${{ matrix.goarch }}" out/
+          cp "bin/mortar-linux-${{ matrix.goarch }}" "bin/mortar-aur-linux-${{ matrix.goarch }}" out/
           cp bin/mortar_*_${{ matrix.deb_arch }}.deb out/
           cp bin/mortar-*.${{ matrix.rpm_arch }}.rpm out/
           cp bin/mortar-*-${{ matrix.pkg_arch }}.pkg.tar.zst out/
@@ -218,12 +218,14 @@ jobs:
             bin/mortar-linux-x86_64.AppImage
             bin/mortar-linux-amd64
             bin/mortar_*_amd64.deb
+            bin/mortar-aur-linux-amd64
             bin/mortar-*-1.x86_64.rpm
             bin/mortar-*-1-x86_64.pkg.tar.zst
             bin/mortar-linux-x86_64.flatpak
             bin/mortar-linux-aarch64.AppImage
             bin/mortar-linux-arm64
             bin/mortar_*_arm64.deb
+            bin/mortar-aur-linux-arm64
             bin/mortar-*-1.aarch64.rpm
             bin/mortar-*-1-aarch64.pkg.tar.zst
             bin/mortar-windows-amd64.exe
