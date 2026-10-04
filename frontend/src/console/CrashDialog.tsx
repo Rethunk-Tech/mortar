@@ -53,7 +53,7 @@ function SwitchOffButton({ mod }: { mod: Mod }) {
               },
             })
           })
-          .catch(() => undefined)
+          .catch(reportUnexpected)
           .finally(() => setSwitching(false))
       }}
     >
@@ -79,7 +79,7 @@ function CrashLogButtons({ crash, onDone }: { crash: Crash; onDone: () => void }
         }}
         sx={{ whiteSpace: 'nowrap' }}
       >
-        {t`Share log`}
+        {t`Share log…`}
       </Button>
       <Button
         variant="contained"
@@ -201,7 +201,7 @@ export function CrashDialog() {
                 )
               }
             >
-              {t`Open page`}
+              {t`Open on Nexus`}
             </Button>
           ) : null}
           {canBisect ? (
@@ -223,3 +223,5 @@ export function CrashDialog() {
     </>
   )
 }
+
+export { SwitchOffButton }

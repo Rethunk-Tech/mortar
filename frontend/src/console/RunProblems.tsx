@@ -1,7 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 
 const WARN_FILL = 0.14
@@ -17,8 +17,11 @@ import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download, type Want } from '../queue/actions.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { duplicateCopies } from './runProblemsFix.ts'
 import { stillApplies } from './runProblemsLive.ts'
 
 function findMod(problem: SMAPIProblem): Mod | undefined {
@@ -31,7 +34,7 @@ function findMod(problem: SMAPIProblem): Mod | undefined {
     )
 }
 
-async function installDependency(uniqueId: string) {
+async function installDependency(i18n: I18n, uniqueId: string) {
   if (uniqueId === '') {
     return
   }
@@ -41,6 +44,10 @@ async function installDependency(uniqueId: string) {
   )
   const where = missing?.where
   if (!where) {
+    useToasts.getState().push({
+      kind: 'error',
+      title: i18n._(msg`No download source known for ${uniqueId}`),
+    })
     return
   }
   const want: Want =
@@ -61,7 +68,7 @@ async function installDependency(uniqueId: string) {
 async function applyFix(i18n: I18n, problem: SMAPIProblem) {
   switch (problem.fix) {
     case 'installDependency':
-      await installDependency(problem.dependency ?? '')
+      await installDependency(i18n, problem.dependency ?? '')
       return
     case 'update':
       useTab.getState().setTab('mods')
@@ -92,12 +99,11 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem) {
             (problem.modId !== '' && sameId(m.uniqueId, problem.modId)) ||
             (problem.modName !== '' && m.name === problem.modName),
         )
-      const extras = mods.length > 1 ? mods.slice(1) : mods
-      const [first, ...rest] = extras
-      if (rest.length === 0 && first) {
-        await useMods.getState().remove(first)
-      } else if (extras.length > 1) {
-        await useMods.getState().removeMany(extras)
+      const { remove } = duplicateCopies(mods)
+      if (remove.length === 1 && remove[0]) {
+        await useMods.getState().remove(remove[0])
+      } else if (remove.length > 1) {
+        await useMods.getState().removeMany(remove)
       }
       return
     }
@@ -106,10 +112,11 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem) {
   }
 }
 
-function ProblemRow({ problem }: { problem: SMAPIProblem }) {
+function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: boolean }) {
   const { t, i18n } = useLingui()
   const locked = useLocked()
   const lockHint = t`Stop the game to change mods.`
+  const [confirmDup, setConfirmDup] = useState(false)
   let label = ''
   if (problem.fix === 'installDependency') {
     label = t`Install`
@@ -120,6 +127,20 @@ function ProblemRow({ problem }: { problem: SMAPIProblem }) {
   } else if (problem.fix === 'removeDuplicate') {
     label = t`Remove duplicate`
   }
+  const copies = duplicateCopies(
+    useMods((s) => s.mods).filter(
+      (m) =>
+        (problem.modId !== '' && sameId(m.uniqueId, problem.modId)) ||
+        (problem.modName !== '' && m.name === problem.modName),
+    ),
+  )
+  const run = () => {
+    if (problem.fix === 'removeDuplicate') {
+      setConfirmDup(true)
+      return
+    }
+    applyFix(i18n, problem).catch(reportUnexpected)
+  }
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, fontSize: 14 }}>
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -127,21 +148,35 @@ function ProblemRow({ problem }: { problem: SMAPIProblem }) {
         <Box sx={{ color: 'text.secondary', mt: 0.25, whiteSpace: 'normal' }}>{problem.detail}</Box>
       </Box>
       {label ? (
-        <Tooltip title={locked ? lockHint : ''}>
-          <span>
-            <Button
-              size="small"
-              variant="contained"
-              color="warning"
-              disabled={locked}
-              onClick={() => applyFix(i18n, problem).catch(reportUnexpected)}
-              sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
-            >
-              {label}
-            </Button>
-          </span>
-        </Tooltip>
+        <DisabledReason title={lockHint} disabled={locked}>
+          <Button
+            size="small"
+            variant={contained ? 'contained' : 'outlined'}
+            color="warning"
+            disabled={locked}
+            onClick={run}
+            sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            {label}
+          </Button>
+        </DisabledReason>
       ) : null}
+      <ConfirmDialog
+        open={confirmDup}
+        color="error"
+        title={t`Remove duplicate?`}
+        body={
+          copies.keep
+            ? t`Keep ${copies.keep.name} and remove ${copies.remove.map((m) => m.name).join(', ')}.`
+            : t`Remove ${copies.remove.map((m) => m.name).join(', ')}.`
+        }
+        confirmLabel={t`Remove`}
+        onCancel={() => setConfirmDup(false)}
+        onConfirm={() => {
+          setConfirmDup(false)
+          applyFix(i18n, problem).catch(reportUnexpected)
+        }}
+      />
     </Box>
   )
 }
@@ -155,7 +190,7 @@ export function RunProblemsStrip({
   profile: string
   run: string
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const [found, setFound] = useState<SMAPIProblem[]>([])
   useEffect(() => {
     FetchRunProblems(game, profile, run).then(
@@ -165,6 +200,9 @@ export function RunProblemsStrip({
   }, [game, profile, run])
   const mods = useMods((s) => s.mods)
   const live = found.filter((p) => stillApplies(p, mods))
+  const bulk = live.filter(
+    (p) => p.fix === 'installDependency' || p.fix === 'update' || p.fix === 'disable',
+  )
   if (live.length === 0) {
     return null
   }
@@ -184,9 +222,30 @@ export function RunProblemsStrip({
         borderRadius: '6px',
       }}
     >
-      <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{t`Problems in this run`}</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          sx={{ fontSize: 13, fontWeight: 700, flex: 1 }}
+        >{t`Problems in this run`}</Typography>
+        {bulk.length > 0 ? (
+          <Button
+            size="small"
+            variant="contained"
+            color="warning"
+            onClick={() =>
+              Promise.all(bulk.map((problem) => applyFix(i18n, problem))).catch(reportUnexpected)
+            }
+            sx={{ height: 28, whiteSpace: 'nowrap' }}
+          >
+            {t`Fix all`}
+          </Button>
+        ) : null}
+      </Box>
       {live.map((problem) => (
-        <ProblemRow key={`${problem.kind}-${problem.modId}-${problem.detail}`} problem={problem} />
+        <ProblemRow
+          key={`${problem.kind}-${problem.modId}-${problem.detail}`}
+          problem={problem}
+          contained={false}
+        />
       ))}
     </Box>
   )

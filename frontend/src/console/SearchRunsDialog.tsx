@@ -1,5 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, DialogContent, DialogTitle, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { FileSearch } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type {
@@ -8,6 +17,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { SearchRuns } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { paper } from '../mods/paper.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MONO } from '../theme/theme.ts'
@@ -87,7 +97,14 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth={true}
+      maxWidth="md"
+      transitionDuration={0}
+      slotProps={{ paper }}
+    >
       <DialogTitle>{t`Search all runs`}</DialogTitle>
       <DialogContent>
         <TextField
@@ -167,6 +184,9 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
           </>
         ) : null}
       </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>{t`Close`}</Button>
+      </DialogActions>
     </Dialog>
   )
 }

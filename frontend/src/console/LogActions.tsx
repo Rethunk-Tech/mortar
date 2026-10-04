@@ -119,7 +119,7 @@ export function LogActions({ game }: { game: string }) {
         onClick={(e) => setMenu(e.currentTarget)}
       />
       <IconAction
-        label={t`Share log`}
+        label={t`Share log…`}
         icon={<LifeBuoy size={16} />}
         onClick={() => setHelping(true)}
       />

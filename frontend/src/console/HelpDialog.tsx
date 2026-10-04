@@ -23,7 +23,7 @@ import { openPage } from '../mods/menu.ts'
 import { paper } from '../mods/paper.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MONO } from '../theme/theme.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { shareLogConfirm } from './shareLog.ts'
 import { useConsole } from './store.ts'
@@ -181,12 +181,7 @@ export function HelpDialog({ game }: { game: string }) {
         if (!live) {
           return
         }
-        useToasts.getState().push({
-          kind: 'error',
-          title: t`Could not read the SMAPI log`,
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        })
+        reportError(t`Could not read the SMAPI log`)(e)
         setHelping(false)
       },
     )
@@ -219,12 +214,7 @@ export function HelpDialog({ game }: { game: string }) {
         if (uploadGen.current !== token) {
           return
         }
-        useToasts.getState().push({
-          kind: 'error',
-          title: t`Could not upload the log`,
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        })
+        reportError(t`Could not upload the log`)(e)
       })
       .finally(() => {
         if (uploadGen.current === token) {
@@ -247,7 +237,7 @@ export function HelpDialog({ game }: { game: string }) {
       transitionDuration={0}
       slotProps={{ paper: { sx: { ...paper.sx, width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
-      <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Share log`}</DialogTitle>
+      <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Share log…`}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {body ? (
           <>

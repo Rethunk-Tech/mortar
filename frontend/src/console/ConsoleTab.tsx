@@ -20,6 +20,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MONO } from '../theme/theme.ts'
@@ -275,16 +276,21 @@ function ReinstallLoader({ game }: { game: string }) {
         flexShrink: 0,
       }}
     >
-      <Button
-        variant="contained"
-        size="small"
-        startIcon={<Download size={16} />}
+      <DisabledReason
+        title={t`Stop the game to change SMAPI.`}
         disabled={pending || installing || playing}
-        onClick={() => install(game)}
-        sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
       >
-        {t`Reinstall`}
-      </Button>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<Download size={16} />}
+          disabled={pending || installing || playing}
+          onClick={() => install(game)}
+          sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {t`Reinstall`}
+        </Button>
+      </DisabledReason>
     </Box>
   )
 }

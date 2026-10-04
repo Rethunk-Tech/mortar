@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
@@ -14,7 +15,10 @@ import {
   Stop,
   SwitchOff,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
+import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 
 const pollDelayMs = 500
 
@@ -93,6 +97,8 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
     setStopping(true)
     try {
       await Stop(jobID)
+    } catch (error) {
+      reportUnexpected(error)
     } finally {
       setStopping(false)
     }
@@ -100,9 +106,28 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
 
   const switchOff = async () => {
     const mods = status?.result?.mods ?? []
-    await Promise.all(mods.map((mod) => SwitchOff(game, profile, mod.key, mod.uniqueId)))
-    useProfiles.getState().open(profile)
-    onClose()
+    try {
+      await Promise.all(mods.map((mod) => SwitchOff(game, profile, mod.key, mod.uniqueId)))
+      useProfiles.getState().open(profile)
+      const names = mods.map((mod) => mod.name).join(' + ')
+      useToasts.getState().push({
+        kind: 'success',
+        title: t`Switched off ${names}`,
+        action: {
+          label: t`Undo`,
+          run: () =>
+            Promise.all(
+              mods.map((mod) => {
+                const listed = useMods.getState().mods.find((m) => m.key === mod.key)
+                return listed ? useMods.getState().setEnabled(listed, true) : Promise.resolve()
+              }),
+            ),
+        },
+      })
+      onClose()
+    } catch (error) {
+      reportUnexpected(error)
+    }
   }
 
   const done = status?.state === 'done'
@@ -127,7 +152,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
     content = (
       <>
         <Typography>
-          {t`Step ${status.step} of ~${status.total}, ${status.modsLeft} mods left`}
+          {t`Step ${status.step} of ~${status.total}, ${plural(status.modsLeft, { one: '# mod left', other: '# mods left' })}`}
         </Typography>
         <LinearProgress />
       </>
@@ -144,7 +169,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
             useProfiles.getState().open(profile)
             onClose()
           }}
-        >{t`Open page`}</Button>
+        >{t`Open profile`}</Button>
         <Button variant="contained" onClick={switchOff}>{t`Switch off`}</Button>
       </>
     )
