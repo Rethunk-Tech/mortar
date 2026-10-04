@@ -338,23 +338,10 @@ function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
   return [...named, ...tail]
 }
 
-function entryGroupName(
-  groups: readonly { name?: string; keys?: string[] | null }[] | null | undefined,
-  key: string,
-): string {
-  for (const g of groups ?? []) {
-    if ((g.keys ?? []).includes(key)) {
-      return g.name ?? ''
-    }
-  }
-  return ''
-}
-
 export type { GroupBy }
 export {
   customCategoryById,
   emptyGroupLabel,
-  entryGroupName,
   firstTag,
   frameworkGroupKey,
   groupHeading,

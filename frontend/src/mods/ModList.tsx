@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, TableCell, type TableCellProps, TableRow, useMediaQuery } from '@mui/material'
 import { Pin } from 'lucide-react'
-import { type MouseEvent, type ReactNode, useEffect, useMemo, useState } from 'react'
+import { type MouseEvent, type ReactNode, useMemo, useState } from 'react'
 import type {
   Mod,
   Profile,
@@ -10,41 +10,26 @@ import { formatDuration } from '../console/startupView.ts'
 import { compactQuery } from '../game/compact.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
-import { useProfiles } from '../profiles/store.ts'
 import { boundShortcut, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CompatChip } from './CompatChip.tsx'
-import { useCustomCategories } from './customCategories.ts'
 import { useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
-import {
-  customCategoryById,
-  emptyGroupLabel,
-  type GroupBy,
-  groupHeading,
-  groupSorted,
-  installedNames,
-  loadCollapsed,
-  rowGroupKey,
-  sanitizeListGroupBy,
-} from './group.ts'
+import { emptyGroupLabel, type GroupBy, groupHeading } from './group.ts'
 import {
   columnMenuFromEvent,
-  compareListRows,
   type ListColumnId,
   type ListRow,
   listGridColumns,
   persistColumns,
   sanitizeListColumns,
-  sanitizeListSort,
   visibleListColumns,
 } from './listColumns.ts'
-import { toListRow, useEntrySizes, useStartupCosts } from './listRows.ts'
-import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
+import { modId, nexusIdOf } from './lookup.ts'
 import { ModListTable } from './ModListVirtual.tsx'
 import { contextMenuProps } from './menu.ts'
-import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
+import { useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import {
   LastRunBadge,
@@ -57,7 +42,7 @@ import {
 } from './parts.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
-import { useUpdates } from './updates.ts'
+import { useModGroups } from './useModGroups.ts'
 import { flattenModGroups } from './virtualRows.ts'
 
 const SELECTED_ALPHA = 0.14
@@ -345,49 +330,19 @@ function listHeadingFor(
 
 export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const { t, i18n } = useLingui()
+  const { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
+    mods,
+    profile,
+  )
   const narrow = useMediaQuery(compactQuery)
   const listColumns = useSettings((s) => s.listColumns)
-  const listSortColumn = useSettings((s) => s.listSortColumn)
-  const listSortDir = useSettings((s) => s.listSortDir)
-  const groupBy = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
   const visible = sanitizeListColumns(listColumns)
   const settled = visibleListColumns(listColumns, narrow)
   // While a header is dragged the table shows this order, so every row moves with it.
   const [preview, setPreview] = useState<ListColumnId[] | null>(null)
   const cols = preview ?? settled
-  const sort = sanitizeListSort(listSortColumn ?? '', listSortDir ?? '')
   const [menu, setMenu] = useState<{ top: number; left: number } | null>(null)
-  const gameId = useProfiles((s) => s.game?.id) ?? ''
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => loadCollapsed(gameId))
-  const byId = useNexusDetails((s) => s.byId)
-  const customCategories = useCustomCategories((s) => s.categories)
-  const customById = customCategoryById(customCategories)
-  useEntrySizes()
-  useStartupCosts(gameId, profile.id)
-  const problems = useMods((s) => s.problems)
-  const updates = useUpdates((s) => s.updates)
   const tagHint = t`A mod with several tags appears under its first tag.`
-  useEffect(() => {
-    setCollapsed(loadCollapsed(gameId))
-  }, [gameId])
-  useEffect(() => {
-    primeDetails(mods.map((m) => nexusIdOf(profile, m)).filter((id) => id > 0)).catch(
-      reportUnexpected,
-    )
-  }, [mods, profile])
-  const names = installedNames(mods)
-  const groups = groupSorted(
-    mods.map((m) => toListRow(m, profile, byId, customCategories)),
-    groupBy,
-    (row) =>
-      rowGroupKey(groupBy, row, {
-        hasProblem: modStatusProblem(problems, row.mod),
-        hasUpdate: Boolean(updateFor(updates, row.mod, profile)),
-        names,
-        customById,
-      }),
-    (a, b) => compareListRows(a, b, sort),
-  )
   const items = useMemo(
     () =>
       flattenModGroups(groups, {
@@ -397,7 +352,6 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
       }),
     [collapsed, groupBy, groups],
   )
-  const orderedIds = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
   const onMenu = (e: MouseEvent) => setMenu(columnMenuFromEvent(e))
   const grid = listGridColumns(cols)
   const headingFor = listHeadingFor(groupBy, {

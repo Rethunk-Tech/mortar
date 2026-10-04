@@ -5,17 +5,15 @@ import type { EntrySize } from '../../bindings/github.com/Rethunk-AI/mortar/inte
 import { EntrySizes } from '../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
 import { StartupReports } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type {
-  CustomCategory,
+  Entry,
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { modTotal } from '../console/startupView.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { customCategoryById, entryGroupName, resolvedCategoryLabel } from './group.ts'
+import { type customCategoryById, resolvedCategoryLabel } from './group.ts'
 import type { ListRow } from './listColumns.ts'
-import { kindLabel, nexusIdOf, sourceKind } from './lookup.ts'
-
-let entrySizes: Readonly<Record<string, number>> = {}
+import { kindLabel } from './lookup.ts'
 
 function useEntrySizes(): Readonly<Record<string, number>> {
   const [sizes, setSizes] = useState<Record<string, number>>({})
@@ -27,15 +25,11 @@ function useEntrySizes(): Readonly<Record<string, number>> {
           next[r.key] = r.size
         }
         setSizes(next)
-        entrySizes = next
       })
       .catch(reportUnexpected)
   }, [])
-  entrySizes = sizes
   return sizes
 }
-
-let startupCosts: Readonly<Record<string, number>> = {}
 
 /** Each mod's and content pack's share of the latest measured startup, by lower-cased UniqueID. */
 function useStartupCosts(game: string, profileId: string): Readonly<Record<string, number>> {
@@ -57,24 +51,45 @@ function useStartupCosts(game: string, profileId: string): Readonly<Record<strin
       })
       .catch(reportUnexpected)
   }, [game, profileId])
-  startupCosts = costs
   return costs
+}
+
+// One pass over the profile serves every row: lookups by key, not a scan of the entries per mod.
+function toListRows(
+  mods: readonly Mod[],
+  profile: Profile,
+  data: {
+    byId: Record<number, { details?: ListRow['details'] } | undefined>
+    customById: ReturnType<typeof customCategoryById>
+    sizes: Readonly<Record<string, number>>
+    costs: Readonly<Record<string, number>>
+  },
+): ListRow[] {
+  const entries = new Map((profile.entries ?? []).map((e) => [e.key, e]))
+  const groupOf = new Map<string, string>()
+  for (const g of profile.groups ?? []) {
+    for (const key of g.keys ?? []) {
+      if (!groupOf.has(key)) {
+        groupOf.set(key, g.name ?? '')
+      }
+    }
+  }
+  return mods.map((m) => toListRow(m, entries.get(m.key), groupOf.get(m.key) ?? '', data))
 }
 
 function toListRow(
   m: Mod,
-  profile: Profile,
-  byId: Record<number, { details?: ListRow['details'] } | undefined>,
-  customCategories: readonly CustomCategory[],
+  entry: Entry | undefined,
+  groupName: string,
+  { byId, customById, sizes, costs }: Parameters<typeof toListRows>[2],
 ): ListRow {
-  const entry = (profile.entries ?? []).find((e) => e.key === m.key)
-  const source = kindLabel(sourceKind(profile, m), {
+  const source = kindLabel(entry?.source.kind ?? '', {
     archive: i18n._(msg`Archive`),
     nexus: i18n._(msg`Nexus Mods`),
     github: i18n._(msg`GitHub`),
   })
-  const details = byId[nexusIdOf(profile, m)]?.details
-  const customById = customCategoryById(customCategories)
+  const nexusId = entry?.source.kind === 'nexus' ? (entry.source.modId ?? 0) : 0
+  const details = byId[nexusId]?.details
   const categoryLabel = resolvedCategoryLabel(
     entry?.categoryOverride,
     details?.category,
@@ -90,13 +105,13 @@ function toListRow(
     tags: [...(entry?.tags ?? [])],
     categoryOverride: entry?.categoryOverride ?? '',
     categoryLabel,
-    groupName: entryGroupName(profile.groups, m.key),
+    groupName,
   }
-  const n = entrySizes[m.key]
+  const n = sizes[m.key]
   if (n !== undefined) {
     row.size = n
   }
-  const ms = startupCosts[m.uniqueId.toLowerCase()]
+  const ms = costs[m.uniqueId.toLowerCase()]
   if (ms !== undefined) {
     row.startupMs = ms
   }
@@ -106,4 +121,4 @@ function toListRow(
   return row
 }
 
-export { toListRow, useEntrySizes, useStartupCosts }
+export { toListRows, useEntrySizes, useStartupCosts }

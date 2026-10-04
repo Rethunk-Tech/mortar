@@ -6,33 +6,19 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact, compactQuery } from '../game/compact.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { CompatChip } from './CompatChip.tsx'
-import { useCustomCategories } from './customCategories.ts'
 import { useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
-import {
-  customCategoryById,
-  emptyGroupLabel,
-  firstTag,
-  groupHeading,
-  groupSorted,
-  installedNames,
-  loadCollapsed,
-  rowGroupKey,
-  sanitizeListGroupBy,
-  toggleCollapsed,
-} from './group.ts'
-import { compareListRows, type ListRow, sanitizeListSort } from './listColumns.ts'
-import { toListRow } from './listRows.ts'
-import { entryOf, modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
+import { emptyGroupLabel, firstTag, groupHeading, toggleCollapsed } from './group.ts'
+import type { ListRow } from './listColumns.ts'
+import { entryOf, modId, nexusIdOf } from './lookup.ts'
 import { ModMenu } from './ModMenu.tsx'
 import { ModsGroupHeader } from './ModsGroupHeader.tsx'
 import { contextMenuProps } from './menu.ts'
-import { primeDetails, useNexusDetails, useNexusFresh } from './nexusDetails.ts'
+import { useNexusFresh } from './nexusDetails.ts'
 import {
   LastRunBadge,
   LetterTile,
@@ -44,7 +30,7 @@ import {
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
 import { setGroupEnabled } from './storeEntries.ts'
-import { useUpdates } from './updates.ts'
+import { useModGroups } from './useModGroups.ts'
 import {
   flattenModGroups,
   gridColumnCount,
@@ -397,40 +383,11 @@ function CardsPane({
 
 export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
   const { t } = useLingui()
-  const groupBy = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
-  const listSortColumn = useSettings((s) => s.listSortColumn)
-  const listSortDir = useSettings((s) => s.listSortDir)
-  const sort = sanitizeListSort(listSortColumn ?? '', listSortDir ?? '')
-  const byId = useNexusDetails((s) => s.byId)
-  const customCategories = useCustomCategories((s) => s.categories)
-  const customById = customCategoryById(customCategories)
-  const gameId = useProfiles((s) => s.game?.id) ?? ''
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => loadCollapsed(gameId))
-  const problems = useMods((s) => s.problems)
-  const updates = useUpdates((s) => s.updates)
-  const tagHint = t`A mod with several tags appears under its first tag.`
-  useEffect(() => {
-    setCollapsed(loadCollapsed(gameId))
-  }, [gameId])
-  useEffect(() => {
-    primeDetails(shown.map((m) => nexusIdOf(profile, m)).filter((id) => id > 0)).catch(
-      reportUnexpected,
-    )
-  }, [shown, profile])
-  const names = installedNames(shown)
-  const groups = groupSorted(
-    shown.map((m) => toListRow(m, profile, byId, customCategories)),
-    groupBy,
-    (row) =>
-      rowGroupKey(groupBy, row, {
-        hasProblem: modStatusProblem(problems, row.mod),
-        hasUpdate: Boolean(updateFor(updates, row.mod, profile)),
-        names,
-        customById,
-      }),
-    (a, b) => compareListRows(a, b, sort),
+  const { groupBy, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
+    shown,
+    profile,
   )
-  const orderedIds = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
+  const tagHint = t`A mod with several tags appears under its first tag.`
   const emptyLabel = emptyGroupLabel(groupBy, {
     category: t`Uncategorised`,
     source: t`Unknown source`,
