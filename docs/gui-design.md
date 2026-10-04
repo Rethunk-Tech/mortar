@@ -75,6 +75,7 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
   - A 40px **New profile** row at the foot of the list.
   - Downloads: full remaining width at that height, with a count while the queue has items.
   - Recent changes: a 40×40 control opening a solid dark panel of the latest history events from every non-hidden profile, newest first, each with the profile name, event label, relative time (`When`), change counts when present, and **Undo**.
+  - A startup repair notification, "Mortar tidied up N things", appears once after launch when startup repaired something; its details list what and where.
   - Notifications: a bell with an unread count, opening a solid dark panel of this session's recent toasts, newest first, with **Clear** and "No notifications yet" when empty; an action in it, such as Undo, is offered only while it still applies.
   - Support: a menu (Get help, which opens the Console tab's upload, and Report a Mortar bug). Each of those icon controls is 40×40.
   - Then a full-width **Play** button (58px) in the primary colour, split with a caret (More play options) whose dark menu holds, when the open profile has named launch presets, one **Play with <name>** row per preset (**Standard** is the profile's own settings; the default one carries a **Default** chip, the others a **Set as default** button) above a divider, then **Play without mods** (Lucide Gamepad2); in the compact layout the menu opens on right-click only.
@@ -197,6 +198,7 @@ A full-height scrollable list of every problem for this profile, grouped under h
 - Conflicts
 - Broken or outdated mods
   - Author-marked obsolete or deprecated mods include the source and a short quoted reason; a Nexus replacement offers **Open replacement** without downloading.
+- Damaged files (a mod whose stored files no longer match what was stored: "<mod> has damaged files" with **Repair**, which downloads it again from its source or, for a local mod, extracts it again from its archive if that is still in downloads; counted like the other problems)
 - Errors in the last run
 - Changed outside Mortar
 - Duplicates
@@ -435,6 +437,7 @@ Mortar's Settings holds only what is Mortar-wide, never one game's (the one exce
   - **Usage** is one tile, measured in the background ("Measuring…" with the bytes counted so far): the used total and, when measurable, the space saved by sharing files; a segmented bar (profiles, store, cache, save backups, trash, other) with an inline legend under it (dot, LABEL, size); then **Clean up…**, **Clear cache…** (confirm; problem scans rebuild on the next check) and **Deleted profiles…**.
   - **By game** lists each game's size.
   - **Clean up…** opens **Clean up storage**: **Select all**, store items no profile uses, older copies of the same mod (the newest is kept), and leftover files grouped by kind, each with a checkbox and its size right-aligned; the footer shows the selected count and size with **Remove** (error-coloured confirm), and on success the dialog closes, the sizes refresh and a toast reports the space freed.
+  - **Integrity**: **Check store files** with **Check now**, progress while it runs ("N of M" with a bar) and a result summary (items checked, which are damaged and how). Mortar also verifies slowly in the background about once a week.
   - **Retention**: unused store item days, trash days, history events kept, and **Save backups kept** (1 to 50, default 5; [architecture.md](architecture.md#storage)).
 - **Launchers:** the first-run launcher rows, to add, remove or rescan a launcher's folders later.
 - **Shortcuts:** grouped rows for General, Navigation, Profiles, Mods list and Tabs, with a filter and keycaps. Click a keycap to record a new combo (Esc cancels). A combo already used by another row is refused, naming that action. Each row has Reset; **Reset all** asks first and restores the defaults. Bindings persist in `settings.json`. Ctrl+J opens Downloads, Ctrl+Shift+N opens notification history, Ctrl+PageUp/PageDown move the open profile, Ctrl+B collapses the sidebar, Ctrl+Shift+F focuses find-in-all-profiles, and Ctrl+Shift+P plays without SMAPI. Except Esc they stay silent while typing or with a dialog open.

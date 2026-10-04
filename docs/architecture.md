@@ -38,6 +38,7 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
   - Keys: `nexus-<mod id>-<file id>`, `github-<owner>-<repo>-<tag>-<asset>-<sha256 prefix>` (the hash of the exact names tells apart names the folding makes equal), `local-<sha256 of the archive>`, `smapi-<version>` for SMAPI's bundled mods, and `bridge-<version>-<sha256 prefix>` for the Mortar SMAPI Bridge.
   - One Nexus file can hold several SMAPI mods, so the key is the file.
 - `store/index.json`: each store item's last use, meaning the last time any `profile.json` named it.
+- `store/.manifests/<game>/<key>.json` and `store/verify.json`: integrity records (see [Store integrity](#store-integrity)).
 - `profiles/<game>/<profile id>/`:
   - `profile.json`, and beside it `mods/`, the folder SMAPI is pointed at.
   - Each entry is copied to `mods/<store key>/` as extracted, or only the `mortar-root` subtree when one is set.
@@ -204,6 +205,12 @@ The frontend moves on when one fails to load and shows a solid tone after the la
 - Mod pictures have no lifetime and are counted but never cleaned.
 - The Mods list **Size** column uses the same per-entry store sizes.
 
+### Store integrity
+
+Installing an item records the SHA-256 and size of every file in it, beside the store (`.manifests/<game>/<key>.json`) so the hashes are never copied into a profile. `store.Verify` hashes the item again and reports files missing, changed or extra; an item stored before hashes were recorded is baselined by its first verification, which cannot see earlier damage. `store/verify.json` keeps each item's last verification time and verdict (`Damaged` feeds the Problems check). Removing an item drops its records.
+
+A background pass (`storecheck.Run`) starts three minutes after launch and verifies items not checked in the last 7 days, oldest first, one at a time. It waits while a game runs or a download or install is active, sleeps four times each item's check time (at least one second) between items so it uses about a fifth of one core, and pauses during a check from Settings. Settings › Storage › **Check store files** verifies every item now with progress and a summary. A damaged item shows on the Problems tab of each profile that holds it ("<mod> has damaged files") with **Repair**: the item is set aside, then a Nexus or GitHub item is queued for download again from the recorded source (the queue swaps it in; the damaged copy is put back if the queue refuses the request), and a local item is extracted again from its archive when that is still in the downloads folder, else Repair says so. Loader items (`smapi-*`, `bridge-*`) are repaired by reinstalling the loader.
+
 ## Profile operations
 
 **Materialising store items into a profile** (install, duplicate, rebuild, re-extract, update from the store) is per file, in this order, falling through on `EXDEV` / `EOPNOTSUPP` / `EINVAL` / `ERROR_INVALID_FUNCTION` (capability cached by filesystem device id):
@@ -299,6 +306,7 @@ Once mods are installed, nothing external is needed to open, edit or launch a pr
 - **SMAPI's API or the dataset unreachable:** the feature degrades and never blocks; update checks show "unknown", dependencies are checked after download.
 - **A download cut off or corrupt:** extraction goes to a temp folder on the store's volume and moves into the store only when every entry passed its checksum (CRC32 in zip, RAR and 7z); failure deletes the temp folder and the item can be retried. **Disk full** fails the same way and says how much space the item needs.
 - **Mortar quits mid-operation:** every write is temp-then-rename (`datadir.WriteFile` / `WriteJSON` / `WriteStream`), and startup removes leftover temp folders. `crash.log` is capped at startup once `crash.seen` already covers it (seen resets if the file was truncated). A `mods/` folder deleted outside Mortar is rebuilt from the store from `profile.json`.
+- **Startup repairs are reported once:** what startup repaired by itself (leftover store temp folders, a `mods/` folder rebuilt or cleaned, file names repaired, history snapshots compressed, an emptied crash log) is collected by `internal/tidy` and logged. When the startup work has finished and anything was repaired, the window shows one info notification, "Mortar tidied up N things", with the details (what, where, names) under **Details**; nothing is shown otherwise. Rebuilds that happen after startup are logged only.
 - **A newer Mortar wrote a state file:** `profile.json`, `settings.json`, `queue.json` and `history.json` carry `formatVersion` (1; a file without it is read as 1). When the file on disk names a higher version, `datadir.WriteVersioned` refuses to write it, keeps a copy as `<name>.newer`, and returns an error telling the user to update Mortar; `datadir.CheckVersion` is where a future format migrates.
 - **Steam not running:** `-applaunch` starts it. **Not installed:** a Steam copy can launch through SMAPI directly, without the overlay, after the user agrees.
 
@@ -311,6 +319,7 @@ Measured on an 819-mod profile; each holds until the profile size or the code pa
 | Mods tab load (`Mods`, `Pages`, `Problems`, `Updates` in parallel) | each re-reads `profile.json` (712 KiB) and every manifest under the profile store lock, so they serialise: 120–136 ms CPU, 72 ms wall | no cache; one call is 19–30 ms |
 | Problems check steady-state heap | 160 MiB after one check: pack cache 65 MiB (398 packs), map scans 10 MiB, result caches 6 MiB; decoding the 5 MB pack disk cache costs ~350 ms CPU once | bounded by installed packs, no leak |
 | Archive extraction peak heap | stored zip +0 MB; 3000-file zip +3 MB; solid 7z with a 256 MB LZMA2 dictionary +388 MB; RAR window capped at 256 MB | installs run one at a time, so ~0.4 GB worst case |
+| Store verification (`store.Verify`) of the whole store: 1.7 GiB, 772 items, 53,758 files, on a copy under `/var/tmp` | 3.3 s CPU for a compare pass (4.3 s CPU and 9.4 s wall for the first, baselining pass on a cold cache) | invisible: the background pass spreads it over at least one second per item, about 13 minutes at roughly a fifth of one core, once a week per item |
 | Bridge Content Patcher timing patches | prefix and finalizer stay on 6 methods after startup: a trampoline and a static check per context update | nanoseconds per call; unpatch after the title screen only if Harmony gains a cheap unpatch |
 
 ## Tests

@@ -129,6 +129,8 @@ export function useDescribe(): Describe {
       case 'runError': {
         return describeRunError(p.runError)
       }
+      case 'damaged':
+        return t`${p.damaged.name} has damaged files.`
       case 'setting': {
         const s = p.setting
         const installed = (s.forNames ?? []).join(', ')

@@ -63,6 +63,8 @@ function useSectionTitle() {
         return t`Conflicts`
       case 'broken':
         return t`Broken or outdated mods`
+      case 'damaged':
+        return t`Damaged files`
       case 'runErrors':
         return t`Errors in the last run`
       case 'drift':

@@ -2,6 +2,7 @@ import type {
   AssetConflict,
   Broken,
   Copy,
+  Damaged,
   Duplicate,
   Missing,
   Result,
@@ -71,6 +72,7 @@ export type Problem =
   | { kind: 'asset'; asset: AssetConflict; siblings?: AssetConflict[] }
   | { kind: 'runError'; runError: RunError }
   | { kind: 'setting'; setting: SettingHint }
+  | { kind: 'damaged'; damaged: Damaged }
 
 export const problemsOf = (result: Result | null): Problem[] =>
   result
@@ -86,6 +88,7 @@ export const problemsOf = (result: Result | null): Problem[] =>
         ),
         ...(result.runErrors ?? []).map((runError): Problem => ({ kind: 'runError', runError })),
         ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
+        ...(result.damaged ?? []).map((damaged): Problem => ({ kind: 'damaged', damaged })),
       ]
     : []
 
@@ -116,6 +119,9 @@ export function concerns(p: Problem, mod: Mod): boolean {
   }
   if (p.kind === 'setting') {
     return p.setting.key === mod.key && sameId(p.setting.uniqueId, mod.uniqueId)
+  }
+  if (p.kind === 'damaged') {
+    return p.damaged.key === mod.key
   }
   return sameId(p.missing.dependentId, mod.uniqueId)
 }

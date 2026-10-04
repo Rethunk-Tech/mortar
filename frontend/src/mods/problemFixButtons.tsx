@@ -21,6 +21,7 @@ import { useToasts } from '../toasts/store.ts'
 import type { Problem } from './lookup.ts'
 import { AssetFix } from './problemFix/AssetFix.tsx'
 import { BrokenFix } from './problemFix/BrokenFix.tsx'
+import { DamagedFix } from './problemFix/DamagedFix.tsx'
 import { DuplicateFix } from './problemFix/DuplicateFix.tsx'
 import { MissingFix } from './problemFix/MissingFix.tsx'
 import { SettingFix } from './problemFix/SettingFix.tsx'
@@ -64,6 +65,10 @@ function AssetKind({ problem, dismissedToken }: KindProps<'asset'>) {
   )
 }
 
+function DamagedKind({ problem, button }: KindProps<'damaged'>) {
+  return <DamagedFix problem={problem} button={button} />
+}
+
 function MissingKind({ problem, dismissedToken, button }: KindProps<'missing'>) {
   return <MissingFix problem={problem} dismissedToken={dismissedToken} button={button} />
 }
@@ -75,6 +80,7 @@ const problemFixes = {
   setting: SettingKind,
   asset: AssetKind,
   missing: MissingKind,
+  damaged: DamagedKind,
 } satisfies { [K in Problem['kind']]: ComponentType<KindProps<K>> }
 
 // Moves a folder Mortar did not install to its trash, with an Undo that puts it back.

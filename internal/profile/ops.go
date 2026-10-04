@@ -819,6 +819,7 @@ func (s *Store) modFolderLocked(game, id, key, uniqueID string) (string, error) 
 		return "", err
 	}
 	for _, e := range p.Entries {
+				s.tidied("Put back a mod folder an interrupted update left aside", p.Name, name)
 		if key != "" && e.Key != key {
 			continue
 		}
@@ -832,6 +833,7 @@ func (s *Store) modFolderLocked(game, id, key, uniqueID string) (string, error) 
 			}
 			if exists(plain) {
 				return plain, nil
+			s.tidied("Removed a leftover mod folder", p.Name, it.Name())
 			}
 			if exists(dotted) {
 				return dotted, nil
@@ -841,3 +843,13 @@ func (s *Store) modFolderLocked(game, id, key, uniqueID string) (string, error) 
 	}
 	return "", fmt.Errorf("no mod %q in this profile", uniqueID)
 }
+		if err := s.layOverlays(game, p.ID, e, liveEntryDir(modsDir, e.Key), nil, overlaysOn(p.Entries, e.Key)); err != nil {
+			return fmt.Errorf("rebuild %s: %w", e.Key, err)
+		}
+		s.tidied("Rebuilt a mod folder from the store", p.Name, e.Key)
+func (s *Store) tidied(what, profileName, folder string) {
+	if s.Tidied != nil {
+		s.Tidied(what, profileName, folder)
+	}
+}
+

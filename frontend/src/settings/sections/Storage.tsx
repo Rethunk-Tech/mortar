@@ -11,6 +11,7 @@ import { HistoryUsageRows } from './DataHistory.tsx'
 import { CacheClearDialog } from './DataMods.tsx'
 import { MoveDialog } from './DataMove.tsx'
 import { type MoveState, moveDataFolder } from './DataMoveRun.ts'
+import { StoreCheckRow } from './DataStoreCheck.tsx'
 import { CleanupDialog } from './DataStoreReport.tsx'
 import { BackupsKept, Location, UsageRows } from './DataUsage.tsx'
 import { useDataUsage } from './DataUsageLoad.ts'
@@ -89,6 +90,9 @@ export function Storage() {
           onClearCache={() => setClearing(true)}
           onDeletedProfiles={openProfiles}
         />
+      <SettingsSection title={t`Integrity`}>
+        <StoreCheckRow />
+      </SettingsSection>
       )}
       <SettingsSection title={t`Retention`}>
         <PrefKeys keys={['storeRetentionDays', 'trashRetentionDays', 'historyEventsKept']} />
