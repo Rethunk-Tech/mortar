@@ -221,7 +221,7 @@ msgstr "Make {name} win"
 #: src/mods/problemFixButtons.tsx:135
 #: src/mods/SelectionBarActions.tsx:102
 #: src/mods/SplitCombineItems.tsx:34
-#: src/mods/Toolbar.tsx:252
+#: src/mods/Toolbar.tsx:251
 #: src/mods/TrackedNotInProfile.tsx:86
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChipActions.tsx:65
@@ -1698,9 +1698,9 @@ msgstr "No tools yet"
 msgid "Mortar is up to date"
 msgstr "Mortar is up to date"
 
-#: src/mods/Toolbar.tsx:301
-#: src/mods/Toolbar.tsx:327
-#: src/mods/Toolbar.tsx:339
+#: src/mods/Toolbar.tsx:299
+#: src/mods/Toolbar.tsx:325
+#: src/mods/Toolbar.tsx:337
 #: src/profiles/CompareBulkBody.tsx:79
 msgid "Filter mods"
 msgstr "Filter mods"
@@ -1781,8 +1781,8 @@ msgstr "Sent to {0}"
 msgid "Show the first-run tips again"
 msgstr "Show the first-run tips again"
 
-#: src/mods/Toolbar.tsx:94
-#: src/mods/Toolbar.tsx:112
+#: src/mods/Toolbar.tsx:93
+#: src/mods/Toolbar.tsx:111
 #: src/nxm/store.ts:53
 #: src/queue/actions.ts:83
 #: src/queue/store.ts:218
@@ -2107,8 +2107,8 @@ msgstr "No enabled mods"
 msgid "Cleanup"
 msgstr "Cleanup"
 
-#: src/mods/Toolbar.tsx:148
-#: src/mods/Toolbar.tsx:155
+#: src/mods/Toolbar.tsx:147
+#: src/mods/Toolbar.tsx:154
 msgid "Group by"
 msgstr "Group by"
 
@@ -2148,7 +2148,7 @@ msgstr "Could not find Mortar users"
 msgid "Enter a number from {MIN_PORT} to {MAX_PORT}"
 msgstr "Enter a number from {MIN_PORT} to {MAX_PORT}"
 
-#: src/mods/Toolbar.tsx:339
+#: src/mods/Toolbar.tsx:337
 msgid "Filter mods, filter active"
 msgstr "Filter mods, filter active"
 
@@ -2226,7 +2226,7 @@ msgstr "Title screen"
 #: src/mods/ModList.tsx:368
 #: src/mods/Sidebar.tsx:303
 #: src/mods/Sidebar.tsx:316
-#: src/mods/Toolbar.tsx:61
+#: src/mods/Toolbar.tsx:60
 #: src/profiles/CompareBulkBody.tsx:246
 #: src/profiles/overrideValue.ts:86
 #: src/profiles/ProfilesPage.tsx:269
@@ -2363,7 +2363,7 @@ msgstr "Start measuring"
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
-#: src/mods/Toolbar.tsx:188
+#: src/mods/Toolbar.tsx:187
 msgid "Edit categories…"
 msgstr "Edit categories…"
 
@@ -2481,7 +2481,7 @@ msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
 #. placeholder {0}: active.label(i18n)
-#: src/mods/Toolbar.tsx:94
+#: src/mods/Toolbar.tsx:93
 msgid "Show: {0}"
 msgstr "Show: {0}"
 
@@ -2771,7 +2771,7 @@ msgstr "Collapsed"
 #: src/launch/SweepDialog.tsx:29
 #: src/mods/ModCards.tsx:460
 #: src/mods/ModList.tsx:366
-#: src/mods/Toolbar.tsx:62
+#: src/mods/Toolbar.tsx:61
 msgid "Update available"
 msgstr "Update available"
 
@@ -3014,7 +3014,7 @@ msgstr "Game log"
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
 
-#: src/mods/Toolbar.tsx:65
+#: src/mods/Toolbar.tsx:64
 msgid "Local"
 msgstr "Local"
 
@@ -3126,7 +3126,7 @@ msgstr "Could not unpin the selected mods"
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
-#: src/mods/Toolbar.tsx:214
+#: src/mods/Toolbar.tsx:213
 msgid "Open Nexus Mods"
 msgstr "Open Nexus Mods"
 
@@ -3199,7 +3199,7 @@ msgstr "Compare {0} with…"
 msgid "Created {name}; downloading {mods}"
 msgstr "Created {name}; downloading {mods}"
 
-#: src/mods/ExtraFolderMenu.tsx:64
+#: src/mods/ExtraFolderMenu.tsx:84
 msgid "From the extra mods folder…"
 msgstr "From the extra mods folder…"
 
@@ -3217,7 +3217,7 @@ msgstr "Accent: {from} → {to}"
 msgid "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 msgstr "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 
-#: src/mods/ExtraFolderMenu.tsx:23
+#: src/mods/ExtraFolderMenu.tsx:42
 msgid "More ways to add mods"
 msgstr "More ways to add mods"
 
@@ -3284,7 +3284,7 @@ msgstr "Mortar: {label}"
 
 #: src/mods/ModCards.tsx:448
 #: src/mods/ModList.tsx:347
-#: src/mods/Toolbar.tsx:143
+#: src/mods/Toolbar.tsx:142
 msgid "A mod with several tags appears under its first tag."
 msgstr "A mod with several tags appears under its first tag."
 
@@ -3340,7 +3340,7 @@ msgstr "Dismiss all harmless overlaps?"
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
-#: src/mods/ExtraFolderMenu.tsx:41
+#: src/mods/ExtraFolderMenu.tsx:61
 msgid "Archive…"
 msgstr "Archive…"
 
@@ -3426,7 +3426,7 @@ msgstr "Get the extension"
 
 #: src/game/Hero.tsx:331
 #: src/mods/ModDependencyTree.tsx:178
-#: src/mods/Toolbar.tsx:159
+#: src/mods/Toolbar.tsx:158
 #: src/profiles/LaunchOptionsBlock.tsx:85
 #: src/settings/prefCopy.ts:120
 msgid "None"
@@ -3948,10 +3948,6 @@ msgstr "Mod updates"
 msgid "{0, plural, one {Remove # mod from this profile?} other {Remove # mods from this profile?}}"
 msgstr "{0, plural, one {Remove # mod from this profile?} other {Remove # mods from this profile?}}"
 
-#: src/settings/sections/DataBackups.tsx:104
-msgid "Keep the newest N backups per save"
-msgstr "Keep the newest N backups per save"
-
 #: src/mods/describe.ts:108
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
@@ -4049,7 +4045,7 @@ msgstr "Direct"
 msgid "No downloads in history."
 msgstr "No downloads in history."
 
-#: src/mods/Toolbar.tsx:63
+#: src/mods/Toolbar.tsx:62
 msgid "Has problems"
 msgstr "Has problems"
 
@@ -4246,7 +4242,7 @@ msgstr "Rose"
 msgid "Skip the installer wizard when saved choices still fit"
 msgstr "Skip the installer wizard when saved choices still fit"
 
-#: src/mods/Toolbar.tsx:117
+#: src/mods/Toolbar.tsx:116
 msgid "All mods"
 msgstr "All mods"
 
@@ -4728,8 +4724,8 @@ msgstr "When you press Play"
 msgid "Next"
 msgstr "Next"
 
-#: src/mods/Toolbar.tsx:259
-#: src/mods/Toolbar.tsx:266
+#: src/mods/Toolbar.tsx:258
+#: src/mods/Toolbar.tsx:265
 msgid "Add archive…"
 msgstr "Add archive…"
 
@@ -5461,7 +5457,7 @@ msgstr "Large"
 #: src/mods/columnLabel.ts:13
 #: src/mods/NexusDetails.tsx:96
 #: src/mods/Sidebar.tsx:141
-#: src/mods/Toolbar.tsx:161
+#: src/mods/Toolbar.tsx:160
 #: src/settings/prefCopy.ts:122
 msgid "Category"
 msgstr "Category"
@@ -5583,6 +5579,10 @@ msgstr "Each mod's Entry method, run one after another"
 msgid "Could not roll back updates"
 msgstr "Could not roll back updates"
 
+#: src/settings/sections/DataBackups.tsx:104
+msgid "Backups to keep per save"
+msgstr "Backups to keep per save"
+
 #: src/settings/prefCopy.ts:74
 msgid "Default mods view"
 msgstr "Default mods view"
@@ -5601,7 +5601,7 @@ msgid "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus
 msgstr "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus? Nexus has no undo for this.} other {Untrack all # tracked {gameName} mods on Nexus? Nexus has no undo for this.}}"
 
 #: src/console/UpdateNoteTag.tsx:19
-#: src/mods/Toolbar.tsx:64
+#: src/mods/Toolbar.tsx:63
 #: src/profiles/RecentChangesButton.tsx:59
 msgid "Pinned"
 msgstr "Pinned"
@@ -5767,7 +5767,7 @@ msgstr "Reset to default columns"
 msgid "Edit tool"
 msgstr "Edit tool"
 
-#: src/mods/Toolbar.tsx:166
+#: src/mods/Toolbar.tsx:165
 #: src/settings/prefCopy.ts:127
 msgid "Group"
 msgstr "Group"
@@ -5800,10 +5800,6 @@ msgstr "Refresh"
 #: src/game/ProfileMenuItems.tsx:249
 msgid "Choose cover image"
 msgstr "Choose cover image"
-
-#: src/settings/sections/DataHistory.tsx:57
-msgid "Keep the newest N changes"
-msgstr "Keep the newest N changes"
 
 #: src/install/MergeCallout.tsx:35
 #: src/mods/SplitCombineItems.tsx:45
@@ -5920,7 +5916,7 @@ msgstr "Open in Mortar"
 msgid "Download and install"
 msgstr "Download and install"
 
-#: src/mods/Toolbar.tsx:385
+#: src/mods/Toolbar.tsx:383
 msgid "Or import a shared profile…"
 msgstr "Or import a shared profile…"
 
@@ -6592,7 +6588,7 @@ msgstr "Winter"
 msgid "Jump to next error"
 msgstr "Jump to next error"
 
-#: src/mods/Toolbar.tsx:66
+#: src/mods/Toolbar.tsx:65
 msgid "Added this week"
 msgstr "Added this week"
 
@@ -6786,7 +6782,7 @@ msgstr "Sign in to Nexus Mods in Settings before downloading from a link."
 msgid "Nexus is throttling requests until the window resets."
 msgstr "Nexus is throttling requests until the window resets."
 
-#: src/mods/ExtraFolderMenu.tsx:52
+#: src/mods/ExtraFolderMenu.tsx:72
 msgid "From the downloads folder…"
 msgstr "From the downloads folder…"
 
@@ -7246,6 +7242,10 @@ msgstr "faster"
 msgid "Copy report"
 msgstr "Copy report"
 
+#: src/settings/sections/DataHistory.tsx:57
+msgid "Changes to keep"
+msgstr "Changes to keep"
+
 #: src/profiles/GameSettings.tsx:207
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
@@ -7275,7 +7275,7 @@ msgstr "and {0} more"
 msgid "Open manifest.json"
 msgstr "Open manifest.json"
 
-#: src/mods/Toolbar.tsx:393
+#: src/mods/Toolbar.tsx:391
 #: src/share/ImportInput.tsx:36
 msgid "Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V."
 msgstr "Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V."
@@ -8041,7 +8041,7 @@ msgstr "Carry them into the new version's folder."
 msgid "Ask before removing mods from a profile"
 msgstr "Ask before removing mods from a profile"
 
-#: src/mods/Toolbar.tsx:300
+#: src/mods/Toolbar.tsx:298
 msgid "Filter {total, plural, one {# mod} other {# mods}}"
 msgstr "Filter {total, plural, one {# mod} other {# mods}}"
 
@@ -8493,7 +8493,7 @@ msgid "Include pre-release mod versions"
 msgstr "Include pre-release mod versions"
 
 #: src/mods/columnLabel.ts:19
-#: src/mods/Toolbar.tsx:160
+#: src/mods/Toolbar.tsx:159
 #: src/settings/prefCopy.ts:121
 msgid "Status"
 msgstr "Status"
@@ -8597,7 +8597,7 @@ msgid "No launchers found. You can still continue and choose each game's folder 
 msgstr "No launchers found. You can still continue and choose each game's folder when you open it."
 
 #: src/mods/SelectionBarDialogs.tsx:47
-#: src/mods/Toolbar.tsx:163
+#: src/mods/Toolbar.tsx:162
 #: src/settings/prefCopy.ts:124
 msgid "Tag"
 msgstr "Tag"
@@ -8788,7 +8788,7 @@ msgid "Enjoying these mods? Endorse them on Nexus"
 msgstr "Enjoying these mods? Endorse them on Nexus"
 
 #: src/mods/columnLabel.ts:11
-#: src/mods/Toolbar.tsx:165
+#: src/mods/Toolbar.tsx:164
 #: src/settings/prefCopy.ts:126
 msgid "Author"
 msgstr "Author"
@@ -9125,14 +9125,14 @@ msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style 
 msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
-#: src/mods/Toolbar.tsx:164
+#: src/mods/Toolbar.tsx:163
 #: src/settings/prefCopy.ts:125
 msgid "Framework"
 msgstr "Framework"
 
 #: src/browse/BrowsePage.tsx:289
 #: src/mods/columnLabel.ts:12
-#: src/mods/Toolbar.tsx:162
+#: src/mods/Toolbar.tsx:161
 #: src/settings/prefCopy.ts:123
 msgid "Source"
 msgstr "Source"
@@ -9494,7 +9494,7 @@ msgstr "Season"
 msgid "Tools"
 msgstr "Tools"
 
-#: src/mods/Toolbar.tsx:388
+#: src/mods/Toolbar.tsx:386
 msgid "Or add from the downloads folder…"
 msgstr "Or add from the downloads folder…"
 
@@ -9769,7 +9769,7 @@ msgstr "Support"
 msgid "{0} {1}"
 msgstr "{0} {1}"
 
-#: src/mods/Toolbar.tsx:372
+#: src/mods/Toolbar.tsx:370
 msgid "No mods yet"
 msgstr "No mods yet"
 
@@ -10149,8 +10149,8 @@ msgstr "Older."
 msgid "{0} rolled back"
 msgstr "{0} rolled back"
 
-#: src/mods/Toolbar.tsx:252
-#: src/mods/Toolbar.tsx:266
+#: src/mods/Toolbar.tsx:251
+#: src/mods/Toolbar.tsx:265
 msgid "Adding…"
 msgstr "Adding…"
 
@@ -10165,7 +10165,7 @@ msgid "On"
 msgstr "On"
 
 #: src/firstrun/NexusStep.tsx:13
-#: src/mods/Toolbar.tsx:214
+#: src/mods/Toolbar.tsx:213
 msgid "Sign in to Nexus Mods"
 msgstr "Sign in to Nexus Mods"
 
@@ -10283,7 +10283,7 @@ msgid "Command palette"
 msgstr "Command palette"
 
 #: src/mods/ModsTab.tsx:281
-#: src/mods/Toolbar.tsx:375
+#: src/mods/Toolbar.tsx:373
 msgid "Drop archives anywhere on the window, or Open Nexus Mods to find mods."
 msgstr "Drop archives anywhere on the window, or Open Nexus Mods to find mods."
 

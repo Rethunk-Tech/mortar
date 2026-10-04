@@ -54,7 +54,7 @@ function HistoryRow({
       <TrimDialog
         title={t`Trim history of ${usage.profileName}`}
         body={t`Older changes are dropped and can no longer be undone.`}
-        fieldLabel={t`Keep the newest N changes`}
+        fieldLabel={t`Changes to keep`}
         defaultKeep={50}
         open={open}
         busy={pending}

@@ -101,7 +101,7 @@ export function BackupsUsageRow() {
       <TrimDialog
         title={t`Trim save backups`}
         body={t`Keep the newest backups of each save and delete the rest. Pinned backups are never removed.`}
-        fieldLabel={t`Keep the newest N backups per save`}
+        fieldLabel={t`Backups to keep per save`}
         defaultKeep={5}
         open={open}
         busy={pending}
