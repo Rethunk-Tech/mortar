@@ -27,6 +27,7 @@ import type { Want } from '../queue/actions.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { useSettings } from '../settings/store.ts'
+import { errorDetails } from '../toasts/report.ts'
 
 interface AutoUpdatePlan {
   updates: Update[]
@@ -57,7 +58,7 @@ function isAutoUpdateError(error: unknown): error is AutoUpdateError {
 }
 
 function withRestorePoint(error: unknown, restorePoint: AutoUpdateRestorePoint): AutoUpdateError {
-  const failure = error instanceof Error ? error : new Error(textOf(error), { cause: error })
+  const failure = error instanceof Error ? error : new Error(errorDetails(error), { cause: error })
   Object.defineProperty(failure, 'restorePoint', { value: restorePoint })
   return failure as AutoUpdateError
 }
@@ -83,8 +84,6 @@ const FINISHED = new Set([
 
 const QUEUE_POLL_MS = 250
 const QUEUE_TIMEOUT_MS = 300_000
-
-const textOf = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
 const acknowledgedCautions = new Set<string>()
 

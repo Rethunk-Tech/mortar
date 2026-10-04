@@ -23,8 +23,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { errorMessage, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useIncomingShares } from './incoming.ts'
 
 export function IncomingPrompt() {
@@ -155,12 +154,7 @@ export function IncomingPrompt() {
           <Button
             onClick={() => {
               CancelTransfer(incoming.id).catch((error: unknown) => {
-                useToasts.getState().push({
-                  kind: 'error',
-                  title: t`Could not cancel transfer`,
-                  body: errorMessage(error),
-                  detail: errorDetails(error),
-                })
+                toastError(t`Could not cancel transfer`, error)
               })
             }}
           >

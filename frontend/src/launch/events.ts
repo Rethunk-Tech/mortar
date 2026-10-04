@@ -5,6 +5,7 @@ import type { SweepReport } from '../../bindings/github.com/Rethunk-AI/mortar/in
 import { useConsole } from '../console/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
+import { errorDetails, errorMessage, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useLaunch } from './store.ts'
 
@@ -53,19 +54,17 @@ export function initLaunch() {
   Events.On('launch:line', (event) => useConsole.getState().add(event.data))
   Events.On('launch:backup-warning', (event) => {
     const data = event.data as { error?: string }
+    const details = errorDetails(data.error)
     useToasts.getState().push({
       kind: 'warning',
       title: i18n._(msg`Could not back up saves before Play`),
-      body: data.error ?? '',
+      body: errorMessage(data.error),
+      ...(details === '' ? {} : { detail: details }),
     })
   })
   Events.On('launch:settings-restore-warning', (event) => {
     const data = event.data as { error?: string }
-    useToasts.getState().push({
-      kind: 'error',
-      title: i18n._(msg`Could not restore profile game settings`),
-      body: data.error ?? '',
-    })
+    toastError(i18n._(msg`Could not restore profile game settings`), data.error)
   })
   Events.On('launch:crash', (event) => {
     if (useSettings.getState().notifyRunCrashed === false) {

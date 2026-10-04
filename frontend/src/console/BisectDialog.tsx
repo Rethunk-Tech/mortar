@@ -17,7 +17,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const pollDelayMs = 500
@@ -75,7 +75,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
             step: 0,
             total: 0,
             modsLeft: 0,
-            error: error instanceof Error ? error.message : String(error),
+            error: errorDetails(error),
           })
         }
       }

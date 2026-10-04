@@ -5,8 +5,7 @@ import type { ReactNode } from 'react'
 import { SetTipsSeen } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { errorText } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError } from '../toasts/report.ts'
 import { type TipId, tipVisible } from './visible.ts'
 
 export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }) {
@@ -37,14 +36,7 @@ export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }
       <TipIconButton
         label={t`Dismiss`}
         onClick={() => {
-          SetTipsSeen([...(seen ?? []), tip]).catch((err: unknown) => {
-            const body = errorText(err)
-            useToasts.getState().push({
-              kind: 'error',
-              title: t`Couldn't save that setting`,
-              ...(body ? { body } : {}),
-            })
-          })
+          SetTipsSeen([...(seen ?? []), tip]).catch(reportError(t`Couldn't save that setting`))
         }}
         sx={{ whiteSpace: 'nowrap' }}
       >

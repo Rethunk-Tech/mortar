@@ -16,7 +16,7 @@ import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorDetails, errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
+import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type AutoUpdateRestorePoint, rollbackAutoUpdate } from './autoUpdate.ts'
 import { applyOnPlayWindow } from './onPlay.ts'
@@ -75,12 +75,7 @@ interface Failure {
 function rollbackAction(point: AutoUpdateRestorePoint) {
   return () =>
     rollbackAutoUpdate(point).catch((error) => {
-      useToasts.getState().push({
-        kind: 'error',
-        title: i18n._(msg`Could not roll back updates`),
-        body: errorMessage(error),
-        detail: errorDetails(error),
-      })
+      toastError(i18n._(msg`Could not roll back updates`), error)
     })
 }
 

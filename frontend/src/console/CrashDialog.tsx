@@ -173,7 +173,7 @@ export function CrashDialog() {
       setBisectError(null)
       dismiss()
     } catch (error) {
-      setBisectError(error instanceof Error ? error.message : String(error))
+      setBisectError(errorDetails(error))
     }
   }
   const causeKind = crash.cause ? crashCauseKind(crash.cause.reason) : ''

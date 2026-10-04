@@ -7,8 +7,7 @@ import {
   Owner,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
-import { errorDetails, errorMessage } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
+import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
 
 // 'offer' comes right after the first sign-in; 'takeover' when the switch would take the links from another app.
@@ -46,13 +45,7 @@ export function useNxmHandler(): {
       live = false
     }
   }, [handled])
-  const fail = (e: unknown) =>
-    useToasts.getState().push({
-      kind: 'error',
-      title: t`Could not change how Nexus links open`,
-      body: errorMessage(e),
-      detail: errorDetails(e),
-    })
+  const fail = (e: unknown) => toastError(t`Could not change how Nexus links open`, e)
   const change = (on: boolean) => {
     const done = on ? Enable() : Disable()
     done.catch(fail)

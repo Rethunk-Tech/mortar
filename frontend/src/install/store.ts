@@ -29,7 +29,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type MissingOffer, offersFor, wantsOf } from './missingDeps.ts'
 
@@ -71,12 +71,7 @@ async function undoArchiveInstall(
       : await RemoveEntry(game, profileId, entryKey)
     useProfiles.getState().replace(next)
   } catch (e) {
-    useToasts.getState().push({
-      kind: 'error',
-      title: i18n._(msg`Could not undo the install`),
-      body: errorMessage(e),
-      detail: errorDetails(e),
-    })
+    toastError(i18n._(msg`Could not undo the install`), e)
     return
   }
   await useMods.getState().load()
@@ -283,24 +278,14 @@ export const useInstall = create<{
     set({ remap: null })
     if (session.queueId) {
       AnswerRoot(session.queueId, root).catch((e) => {
-        useToasts.getState().push({
-          kind: 'error',
-          title: i18n._(msg`Could not add the chosen folder`),
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        })
+        toastError(i18n._(msg`Could not add the chosen folder`), e)
       })
       return
     }
     InstallRemap(session.game, session.profileId, session.key, root, session.source)
       .then((res) => afterDroppedRemap(session, res))
       .catch((e) => {
-        useToasts.getState().push({
-          kind: 'error',
-          title: i18n._(msg`Could not add the chosen folder`),
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        })
+        toastError(i18n._(msg`Could not add the chosen folder`), e)
       })
   },
   install: async (paths) => {
@@ -324,19 +309,13 @@ export const useInstall = create<{
     if (!(game && profile)) {
       return
     }
-    const { push } = useToasts.getState()
     const dependentIds: string[] = []
     set((s) => ({ pending: s.pending + paths.length }))
     for (const path of paths) {
       try {
         await installOneArchive(game, profile, path, dependentIds)
       } catch (e) {
-        push({
-          kind: 'error',
-          title: i18n._(msg`Could not add ${fileName(path)}`),
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        })
+        toastError(i18n._(msg`Could not add ${fileName(path)}`), e)
       } finally {
         set((s) => ({ pending: s.pending - 1 }))
       }
@@ -350,12 +329,7 @@ export const useInstall = create<{
         await get().install(paths)
       }
     } catch (e) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: i18n._(msg`Could not open the file dialog`),
-        body: errorMessage(e),
-        detail: errorDetails(e),
-      })
+      toastError(i18n._(msg`Could not open the file dialog`), e)
     }
   },
 }))

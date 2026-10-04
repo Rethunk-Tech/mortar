@@ -10,8 +10,7 @@ import {
 import { useFomod } from '../fomod/store.ts'
 import { useInstall } from '../install/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportUnexpected, toastError } from '../toasts/report.ts'
 
 export function DownloadsAsk() {
   const { t } = useLingui()
@@ -81,12 +80,7 @@ export function DownloadsAsk() {
                   }
                 })
                 .catch((e: unknown) => {
-                  useToasts.getState().push({
-                    kind: 'error',
-                    title: t`Could not install ${name}`,
-                    body: errorMessage(e),
-                    detail: errorDetails(e),
-                  })
+                  toastError(t`Could not install ${name}`, e)
                 })
             }}
           >

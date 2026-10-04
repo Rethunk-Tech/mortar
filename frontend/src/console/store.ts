@@ -17,8 +17,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { toastError } from '../toasts/report.ts'
 import { DEFAULT_FILTERS, type Filters, levelsFromFloor } from './filter.ts'
 import { pushCommand } from './history.ts'
 
@@ -141,12 +140,7 @@ export const useConsole = create<{
         const after = lastSeq(history)
         set((s) => ({ entries: [...history, ...s.entries.filter((e) => e.seq > after)] }))
       } catch (e) {
-        useToasts.getState().push({
-          kind: 'error',
-          title: i18n._(msg`Could not read the SMAPI log`),
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        })
+        toastError(i18n._(msg`Could not read the SMAPI log`), e)
       }
     },
     viewRun: (game, profile, runId) => {
@@ -167,12 +161,7 @@ export const useConsole = create<{
       try {
         await Send(game, command)
       } catch (e) {
-        useToasts.getState().push({
-          kind: 'error',
-          title: i18n._(msg`Could not run the command`),
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        })
+        toastError(i18n._(msg`Could not run the command`), e)
         return false
       }
       set((s) => ({

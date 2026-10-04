@@ -13,8 +13,7 @@ import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MONO } from '../theme/theme.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { toastError } from '../toasts/report.ts'
 import type { InstalledMod } from './consoleLinks.ts'
 import { smapiUpdateNotes } from './smapiUpdateNotes.ts'
 import { VirtualLog } from './VirtualLog.tsx'
@@ -127,12 +126,7 @@ export function LinkedLog({
           onMod={openMod}
           onPath={(path) => {
             OpenConsolePath(game, profile, path).catch((e: unknown) => {
-              useToasts.getState().push({
-                kind: 'error',
-                title: t`Could not open the folder`,
-                body: errorMessage(e),
-                detail: errorDetails(e),
-              })
+              toastError(t`Could not open the folder`, e)
             })
           }}
         />

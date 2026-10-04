@@ -29,7 +29,7 @@ import {
 import { shareLogConfirm } from '../console/shareLog.ts'
 import { useLoader } from '../loader/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { entryOf, nexusIdOf } from './lookup.ts'
 import { paper } from './paper.ts'
@@ -134,12 +134,7 @@ export function ReportToAuthorButton({
     read.then(
       (text) => setLog(text ?? ''),
       (e: unknown) => {
-        push({
-          kind: 'error',
-          title: t`Could not read the SMAPI log`,
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        })
+        toastError(t`Could not read the SMAPI log`, e)
         setOpen(false)
       },
     )
@@ -190,12 +185,7 @@ export function ReportToAuthorButton({
       const url = await Upload(hideUserName ? anonymize(log) : log)
       await runWithLink(url)
     } catch (e: unknown) {
-      push({
-        kind: 'error',
-        title: t`Could not upload the log`,
-        body: errorMessage(e),
-        detail: errorDetails(e),
-      })
+      toastError(t`Could not upload the log`, e)
     } finally {
       setUploading(false)
     }

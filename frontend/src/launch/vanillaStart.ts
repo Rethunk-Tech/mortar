@@ -1,16 +1,9 @@
 import { msg } from '@lingui/core/macro'
 import { StartVanilla } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { toastError } from '../toasts/report.ts'
 
-const reportFailure = (error: unknown) =>
-  useToasts.getState().push({
-    kind: 'error',
-    title: i18n._(msg`Could not launch the game`),
-    body: errorMessage(error),
-    detail: errorDetails(error),
-  })
+const reportFailure = (error: unknown) => toastError(i18n._(msg`Could not launch the game`), error)
 
 export async function startVanillaGame(opts: {
   get: () => { starting: boolean }

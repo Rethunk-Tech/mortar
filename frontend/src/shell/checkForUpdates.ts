@@ -3,7 +3,7 @@ import { i18n } from '../i18n/index.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useNav } from '../nav/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage, toastError } from '../toasts/report.ts'
 import { type ToastInput, useToasts } from '../toasts/store.ts'
 
 function failReason(
@@ -60,12 +60,7 @@ export async function checkForUpdates() {
   toasts.dismiss(checking)
   if (parts.length === 0) {
     if (fail !== null) {
-      toasts.push({
-        kind: 'error',
-        title: i18n._(msg`Update check failed`),
-        body: errorMessage(fail),
-        detail: errorDetails(fail),
-      })
+      toastError(i18n._(msg`Update check failed`), fail)
     }
     return
   }

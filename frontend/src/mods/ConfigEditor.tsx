@@ -22,7 +22,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MONO } from '../theme/theme.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, reportUnexpected } from '../toasts/report.ts'
 import { PresetsButton } from './ConfigPresets.tsx'
 import { applyCPSchema, parseCPSchema } from './configFields.ts'
 import { type ConfigNode, parseConfig, setAt, stringifyConfig } from './configForm.ts'
@@ -99,7 +99,7 @@ function useConfigDoc(mod: Mod, open: boolean) {
           return
         }
         setTree(null)
-        setError(e instanceof Error ? e.message : String(e))
+        setError(errorDetails(e))
       })
   }, [open, mod.key, mod.uniqueId, mod.contentPackFor, mod])
   const applyJson = (): boolean => {
@@ -108,7 +108,7 @@ function useConfigDoc(mod: Mod, open: boolean) {
       setError('')
       return true
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(errorDetails(e))
       return false
     }
   }

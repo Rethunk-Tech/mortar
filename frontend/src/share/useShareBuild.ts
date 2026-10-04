@@ -3,8 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Share } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { toastError } from '../toasts/report.ts'
 import { type ShownInfo, shownInfo, suggestFile } from './logic.ts'
 import { shareIncludeDefaults, toShareInclude } from './shareDefaults.ts'
 import { useShareDialog } from './store.ts'
@@ -49,12 +48,7 @@ export function useShareBuild() {
         if (stale) {
           return
         }
-        useToasts.getState().push({
-          kind: 'error',
-          title: t`Could not build the link`,
-          body: errorMessage(e),
-          detail: errorDetails(e),
-        })
+        toastError(t`Could not build the link`, e)
         close()
       },
     )

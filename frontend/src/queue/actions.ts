@@ -5,7 +5,7 @@ import { i18n } from '../i18n/index.ts'
 import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useQueue } from './store.ts'
 
@@ -73,12 +73,7 @@ export async function download(reqs: Want[], showQueue = false): Promise<boolean
       })),
     )
   } catch (e) {
-    toasts.push({
-      kind: 'error',
-      title: i18n._(msg`Could not add the download`),
-      body: errorMessage(e),
-      detail: errorDetails(e),
-    })
+    toastError(i18n._(msg`Could not add the download`), e)
     return false
   }
   if (showQueue) {

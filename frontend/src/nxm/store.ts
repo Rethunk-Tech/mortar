@@ -20,7 +20,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { nxmShowCategory, nxmShowWithIcon } from './minimisedNotice.ts'
 import { directProfile, NXM_GAME } from './route.ts'
@@ -60,12 +60,7 @@ async function install(arrival: Arrival, profile: Profile) {
     await Assign(arrival.id, NXM_GAME, profile.id)
   } catch (e) {
     // Nothing downloads, so the prompt keeps the link for another profile to take.
-    useToasts.getState().push({
-      kind: 'error',
-      title: i18n._(msg`Could not start the Nexus download`),
-      body: errorMessage(e),
-      detail: errorDetails(e),
-    })
+    toastError(i18n._(msg`Could not start the Nexus download`), e)
     useNxm.getState().add(arrival)
     return
   }

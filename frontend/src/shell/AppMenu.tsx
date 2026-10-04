@@ -16,8 +16,7 @@ import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
 import { openPage } from '../mods/menu.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { checkForUpdates } from './checkForUpdates.ts'
 import { NexusAccount } from './NexusAccount.tsx'
 import { reportBug } from './reportBug.ts'
@@ -32,14 +31,7 @@ export function AppMenu() {
   const close = () => setOpen(false)
   const quit = () => {
     close()
-    Application.Quit().catch((e: unknown) =>
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Could not quit Mortar`,
-        body: errorMessage(e),
-        detail: errorDetails(e),
-      }),
-    )
+    Application.Quit().catch((e: unknown) => toastError(t`Could not quit Mortar`, e))
   }
   return (
     <>

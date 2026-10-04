@@ -83,7 +83,7 @@ export function NotesTab({ profile }: { profile: Profile }) {
         inflight.current = false
         setStatus({
           kind: 'error',
-          message: error instanceof Error ? error.message : String(error),
+          message: errorDetails(error),
         })
       },
     )
