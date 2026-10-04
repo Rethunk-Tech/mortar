@@ -4,23 +4,26 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/bridge"
 	"github.com/Rethunk-AI/mortar/internal/launch"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
-const (
-	bisectRunTimeout = 3 * time.Minute
-	// Mods commonly crash on SMAPI's GameLaunched, which fires once the title screen has loaded: several seconds
-	// after the process counts as Running. A shorter grace calls the crashing step healthy and blames the other half.
-	// ponytail: fixed grace; a title-screen signal from the bridge would end each step as soon as it is safe.
-	bisectStartupGrace = 20 * time.Second
-)
+const bisectRunTimeout = 3 * time.Minute
+
+// Mods commonly crash on SMAPI's GameLaunched, which fires once the title screen has loaded: several seconds
+// after the process counts as Running. A shorter grace calls the crashing step healthy and blames the other half.
+// Used only when the profile has no bridge folder to write a title-screen report.
+var bisectStartupGrace = 20 * time.Second
 
 // RunForBisect launches one profile the way Play would (the profile's launch method) and returns whether it reached a
-// healthy running state.
+// healthy running state. A new startup report after launch means the title screen was reached; otherwise the step
+// waits for a crash, exit, the 20 s grace when the bridge is absent, or bisectRunTimeout.
 func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (bool, launch.Summary, error) {
 	runCtx, cancel := context.WithTimeout(ctx, bisectRunTimeout)
 	defer cancel()
@@ -28,15 +31,34 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 	if err != nil {
 		return false, launch.Summary{}, err
 	}
+	launched := time.Now()
 	if err := s.start(runCtx, gameID, profileID, s.launchesDirect(gameID, profileID)); err != nil {
 		return false, launch.Summary{}, err
 	}
+
+	startup := ""
+	modsDir := ""
+	if s.profiles != nil {
+		if dir, err := s.profiles.ProfileDir(gameID, profileID); err == nil {
+			startup = filepath.Join(dir, startupDir)
+		}
+		if dir, err := s.profiles.ModsDir(gameID, profileID); err == nil {
+			modsDir = dir
+		}
+	}
+	hasBridge := profileHasBridge(modsDir)
 
 	started := false
 	var runningSince time.Time
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 	for {
+		if hasBridge && startupReportAfter(startup, launched) {
+			if err := s.Stop(gameID); err != nil {
+				return false, launch.Summary{}, err
+			}
+			return true, launch.Summary{}, nil
+		}
 		status, err := s.Status(gameID)
 		if err != nil {
 			return false, launch.Summary{}, err
@@ -56,14 +78,16 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 				}
 				return false, launch.Summary{}, nil
 			}
-			if runningSince.IsZero() {
-				runningSince = time.Now()
-			}
-			if time.Since(runningSince) >= bisectStartupGrace {
-				if err := s.Stop(gameID); err != nil {
-					return false, launch.Summary{}, err
+			if !hasBridge {
+				if runningSince.IsZero() {
+					runningSince = time.Now()
 				}
-				return true, launch.Summary{}, nil
+				if time.Since(runningSince) >= bisectStartupGrace {
+					if err := s.Stop(gameID); err != nil {
+						return false, launch.Summary{}, err
+					}
+					return true, launch.Summary{}, nil
+				}
 			}
 		case NoSteam:
 			return false, launch.Summary{}, errors.New("the crash check needs a direct launch")
@@ -93,6 +117,34 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 		case <-ticker.C:
 		}
 	}
+}
+
+func profileHasBridge(modsDir string) bool {
+	if modsDir == "" {
+		return false
+	}
+	info, err := os.Stat(filepath.Join(modsDir, bridge.ModFolder))
+	return err == nil && info.IsDir()
+}
+
+func startupReportAfter(dir string, since time.Time) bool {
+	if dir == "" {
+		return false
+	}
+	names, err := filepath.Glob(filepath.Join(dir, "*.json"))
+	if err != nil {
+		return false
+	}
+	for _, name := range names {
+		info, err := os.Stat(name)
+		if err != nil {
+			continue
+		}
+		if info.ModTime().After(since) {
+			return true
+		}
+	}
+	return false
 }
 
 // bisectStartupFailure reports a SMAPI crash report while the game runs. Plain error lines (a skipped mod, missing

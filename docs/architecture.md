@@ -182,10 +182,12 @@ The frontend moves on when one fails to load and shows a solid tone after the la
 - `shortcuts` (the Settings › Shortcuts table): action id to a chord (`Ctrl+K`, `Ctrl+Shift+F`, …). Missing ids take the defaults; an unknown id is refused on write and dropped on load; a chord used by two actions is refused on write.
 
 **Export and import:** Settings › General › Settings file writes every portable preference: `language`, `accent`, `background`, `lastGame`, `backupsKept`, the four `list*` fields, the mod-update toggles (`checkModUpdatesOnStart`, `tellWhenSmapiOut`, `includePrereleaseModVersions`, `checkOnlyEnabledMods`, `enableModsWhenInstalled`), `keepInTray`, `includeBetaReleases`, `tipsSeen`, `nexusPreferredDownloadServer`, `nxmRedirectOtherGames`, app-scoped CLI prefs, and `games` (per-game prefs; an older export's root SMAPI/launch/console/requirement fields migrate into `games.stardew`) as `{"version": 1, ...}` through the native save dialog.
+
 - Import reads such a file, refuses any other version, ignores unknown fields, sanitises each present value as a load does, and applies it only after a preview of what would change.
 - Account and machine fields (`nexusUserId`, `nexusName`, `nexusPremium`, `nexusSeenDownloadServers`, `gameFolders`, `gameStores`, `loaders`, `lastProfile`, `lastPlayed`, `backgroundImage`, `dismissed`, `nxmHandled`, `nxmPrevious`, `nxmPreviousName`, `nxmAsked`, `lanSharing`, `lanPort`, `lanAddresses`) and `overlayToken` (with overlay enabled/port) are never exported, and the keyring is never read.
 
 **Disk use and clean-up:** Settings › Storage walks the data folder in the background without following symlinks and reports each live profile's `mods/` folder, then the store, cache, save backups, trash, space saved by sharing files (logical size minus allocated, unique inodes, omitted when allocated size is not measurable), and the total.
+
 - Cache size is that of `<datadir>/cache` (via the data-dir helpers).
 - **Clear** empties that folder after confirm; problem scans rebuild it on the next check (`mortar cache size` / `mortar cache clear`).
 - `mortar data usage --by-mod` lists each store item's size, the live profiles that name it, the size of those profile copies, and last use from the store index.
@@ -259,6 +261,7 @@ Files a mod may write (`config.json` at any depth, anything under `data/` or a s
 ## Command line
 
 Mortar is GUI-first: the command line exposes only what the window can already do, and a new capability lands in the window first.
+
 - Verbs: [HUMANS.md](../HUMANS.md#command-line).
 - `mortar <verb>` (`internal/cli`) is decided in `main` before `application.New`, so it never takes the single-instance lock or opens a window; any other first argument, a link, a file path, or `--play=<game>/<profile>`, is a window launch.
 - `--play` ids may not contain `/`, `\`, space or quotes; a running instance receives it as a second instance (`play:requested`) and Play follows the usual path, warnings included.
@@ -398,7 +401,7 @@ A launch through Flatpak Steam that times out while the override is missing uses
     - When the crash names no mods, the dialog offers **Find the broken mod**: `internal/bisect` copies the profile, halves enabled mods (keeping required dependencies), and relaunches through `launchsvc.RunForBisect` until one culprit remains; the window is `BisectDialog`.
     - Each step launches with the profile's launch method.
     - A step fails only when SMAPI logs an alert or the run ends crashed (abnormal exit); plain errors such as a skipped mod do not count, or the bisect would blame whichever mod logs one.
-    - A step passes after 20 s at Running, since mods commonly crash on `GameLaunched`, once the title screen has loaded.
+    - A step passes when the bridge writes a title-screen report under `<profile>/startup/` after that launch, or after 20 s at Running when the profile has no bridge folder; `bisectRunTimeout` still ends a hung step.
   - The Mods list, grid and sidebar badge each user mod that logged errors or warnings in that profile's newest stored run; a later run with none for that mod clears the badge.
 - Trap: launching through Steam makes Steam Cloud download the user's saves, and SMAPI's Save Backup mod zips them into `save-backups/` in the game folder.
 
@@ -408,7 +411,7 @@ A launch through Flatpak Steam that times out while the override is missing uses
 - **Load early:** before each launch Mortar adds the bridge's UniqueID to `ModsToLoadEarly` in `<profile>/mods/SMAPI-config.json` (SMAPI's per-mods-folder settings), keeping other keys; a file that is not plain JSON is left alone. With the bridge first, every other mod's Entry runs after it.
 - **Measured launch:** **Measure next launch** writes `<profile>/startup/.measure-next-launch`; the next launch removes it and writes `StartupProfile: true` into the bridge's `config.json`, so the bridge also times every other mod's Entry. Always-on timing skips Entry because patching every mod's Entry costs time itself.
 - **What is timed:** every SMAPI event handler (delegates swapped in place on SMAPI's event manager, restored at the title screen), every asset edit and load by mod and by the content pack it acts for, and Content Patcher's per-pack work (reading `content.json` and `config.json`, parsing patches, each patch's token update). Measured on the main profile (193 mods, 417 packs): 44 s of 46 s between the bridge's Entry and the title screen attributed; Content Patcher's first update tick is 26 s, Fashion Sense's GameLaunched 2.9 s.
-- **Shown in:** Performance › Startup ([gui-design.md](gui-design.md#performance-tab)); reports reload when a run starts or ends.
+- **Shown in:** Performance › Startup ([gui-design.md](gui-design.md#performance-tab)), reloaded when a run starts or ends; the Mods list's Startup column; and Since last run, which names each mod updated or added since the previous report that made startup at least 1 s slower (a smaller change is run-to-run noise).
 
 ### Saves
 
