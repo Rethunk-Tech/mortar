@@ -3,6 +3,9 @@ package sharesvc
 import (
 	"context"
 	"errors"
+	"os"
+	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -203,5 +206,103 @@ func TestCollectionStatusNewerSameAndError(t *testing.T) {
 	st, err = s.CollectionStatus(context.Background(), "stardew", p.ID)
 	if err != nil || !st.Linked || st.Latest != 0 || st.Revision != 3 {
 		t.Fatalf("error: %+v, %v", st, err)
+	}
+}
+
+func TestReadCollectionArchive(t *testing.T) {
+	raw, err := os.ReadFile("testdata/collection-archive.7z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, err := readCollectionArchive(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]map[string][]string{"Install Type": {"Options": {"Full"}}, "Extras": {"Bonus": {"A", "B"}}}
+	if len(d.Fomod) != 1 || !reflect.DeepEqual(d.Fomod[modFile{100, 11}], want) {
+		t.Fatalf("fomod = %+v", d.Fomod)
+	}
+	var paths []string
+	for _, c := range d.Configs {
+		if c.UniqueID != "Pat.Tweaks" {
+			t.Errorf("config for %q", c.UniqueID)
+		}
+		paths = append(paths, c.Path)
+	}
+	slices.Sort(paths)
+	if !reflect.DeepEqual(paths, []string{"config.json", "config/extra.json"}) {
+		t.Fatalf("config paths = %v", paths)
+	}
+	if _, err := readCollectionArchive([]byte("not an archive")); err == nil {
+		t.Fatal("garbage archive accepted")
+	}
+}
+
+func TestCollectionImportAppliesArchiveForPremiumOnly(t *testing.T) {
+	raw, err := os.ReadFile("testdata/collection-archive.7z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, premium := range []bool{true, false} {
+		t.Setenv("XDG_DATA_HOME", t.TempDir())
+		t.Setenv("LOCALAPPDATA", t.TempDir())
+		_, profiles := testenv.Stores(t)
+		var fetched []string
+		rec := &recorder{}
+		s := NewService(Deps{
+			Profiles: profiles,
+			Meta: fakeMeta{
+				pages: map[int]meta.Page{100: page(100, "One", dsFile(11, "1.0", meta.Mod{UniqueID: "A.One", Version: "1.0"}))},
+				coll: meta.Collection{
+					Name: "Cozy Farm", Slug: "cozy-farm", Revision: 1, Instructions: "Start a new save.",
+					DownloadLink: "/v2/collections/1/revisions/2/download_link",
+					External:     []meta.CollectionExternal{{Name: "Hand Mod", Type: "browse", URL: "https://example.com/mod"}},
+					Files:        []meta.CollectionFile{{ModID: 100, FileID: 11}},
+				},
+			},
+			Files: func(context.Context, int) ([]nexus.File, error) {
+				return []nexus.File{nf(11, "1.0", "MAIN", true)}, nil
+			},
+			SignedIn: func() bool { return true }, Premium: func() bool { return premium },
+			CollectionArchive: func(_ context.Context, link string) ([]byte, error) {
+				fetched = append(fetched, link)
+				return raw, nil
+			},
+			Env: func(string) problems.Environment { return problems.Environment{} }, Queue: rec,
+		})
+		pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		c := pv.Collection
+		wantDetails := DetailsListed
+		if premium {
+			wantDetails = DetailsArchive
+		}
+		if c == nil || c.Instructions != "Start a new save." || c.Details != wantDetails || len(c.External) != 1 || !c.External[0].InstallYourself || c.External[0].URL != "https://example.com/mod" {
+			t.Fatalf("premium=%v collection info = %+v", premium, c)
+		}
+		if len(fetched) != 0 {
+			t.Fatal("archive fetched before Import")
+		}
+		res, err := s.Import(context.Background(), "stardew", pv.Session, "", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(res.Profile.Notes, "Start a new save.") || !strings.Contains(res.Profile.Notes, "https://example.com/mod") {
+			t.Fatalf("notes = %q", res.Profile.Notes)
+		}
+		if !premium {
+			if len(fetched) != 0 || res.Collection != nil {
+				t.Fatalf("free account: fetched %v, applied %+v", fetched, res.Collection)
+			}
+			continue
+		}
+		if res.Collection == nil || res.Collection.FomodMods != 1 || res.Collection.Configs != 2 || res.Collection.Error != "" {
+			t.Fatalf("applied = %+v", res.Collection)
+		}
+		if len(rec.reqs) != 1 || !reflect.DeepEqual(rec.reqs[0].Fomod["Install Type"]["Options"], []string{"Full"}) {
+			t.Fatalf("queued = %+v", rec.reqs)
+		}
 	}
 }

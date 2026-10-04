@@ -87,8 +87,10 @@ type Deps struct {
 	Files    func(ctx context.Context, modID int) ([]nexus.File, error)
 	SignedIn func() bool
 	Premium  func() bool
-	Env      func(game string) problems.Environment
-	Queue    Queue
+	// CollectionArchive downloads a collection's curator archive by the API path Nexus reports; nil disables it.
+	CollectionArchive func(ctx context.Context, downloadLink string) ([]byte, error)
+	Env               func(game string) problems.Environment
+	Queue             Queue
 	// Stored reports whether a source key is already available in Mortar's store.
 	Stored func(game, key string) bool
 	// Dir is the data folder holding pending-configs.json; empty keeps pending imports in memory only.
@@ -138,6 +140,9 @@ type session struct {
 	configs     []share.Config
 	origin      string
 	collection  *profile.CollectionRef
+	// archiveLink is the collection's archive path; archiveTried marks that Import already fetched it.
+	archiveLink  string
+	archiveTried bool
 	// target is the profile the preview was resolved against; refs are what it resolved.
 	target   string
 	refs     []share.Ref
@@ -582,6 +587,8 @@ type Result struct {
 	Profile profile.Profile `json:"profile"`
 	Queued  int             `json:"queued"`
 	BatchID string          `json:"batchId,omitempty"`
+	// Collection is set when a collection import used the curator's archive.
+	Collection *CollectionApplied `json:"collection,omitempty"`
 }
 
 func requestFor(game, profileID string, m Mod) queue.Request {
@@ -686,6 +693,8 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			s.mu.Unlock()
 		}
 	}()
+	applied := s.applyArchive(ctx, cur)
+	defer func() { res.Collection = applied }()
 	mods := cur.preview.Mods
 	stored := cur.stored
 	if profileID != cur.target {

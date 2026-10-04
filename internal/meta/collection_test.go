@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -25,5 +26,23 @@ func TestDecodeCollection(t *testing.T) {
 	_, err = decodeCollection("gone", []byte(`{"errors":[{"message":"not found"}]}`))
 	if err == nil || !strings.Contains(err.Error(), `nexus has no collection "gone"`) {
 		t.Fatalf("errors: %v", err)
+	}
+}
+
+func TestDecodeCollectionRevisionFixture(t *testing.T) {
+	raw, err := os.ReadFile("testdata/collection-revision.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := decodeCollection("htknoa", raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Instructions != "Start a **new save**. See https://example.com/guide" || got.DownloadLink != "/v2/collections/636/revisions/948/download_link" {
+		t.Fatalf("collection = %+v", got)
+	}
+	want := CollectionExternal{Name: "Hand Mod", Type: "browse", URL: "https://example.com/mod", Version: "1.2", Author: "Sam", Optional: true}
+	if len(got.External) != 1 || got.External[0] != want || len(got.Files) != 3 {
+		t.Fatalf("external = %+v files = %d", got.External, len(got.Files))
 	}
 }

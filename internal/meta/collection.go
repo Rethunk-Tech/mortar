@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
 const (
 	collectionTTL   = 15 * time.Minute
-	collectionQuery = `query($slug:String!,$domain:String,$revision:Int){collectionRevision(slug:$slug,domainName:$domain,revision:$revision,viewAdultContent:true){revisionNumber collection{name slug user{name}} modFiles{fileId optional file{modId name version mod{name}}}}}`
+	collectionQuery = `query($slug:String!,$domain:String,$revision:Int){collectionRevision(slug:$slug,domainName:$domain,revision:$revision,viewAdultContent:true){revisionNumber downloadLink installationInfo externalResources{name resourceType resourceUrl optional version author} collection{name slug user{name}} modFiles{fileId optional file{modId name version mod{name}}}}}`
 )
 
 type Collection struct {
@@ -21,6 +22,22 @@ type Collection struct {
 	Slug     string
 	Revision int
 	Files    []CollectionFile
+	// Instructions is the curator's installationInfo text, shown before importing.
+	Instructions string
+	// External lists what the curator points to outside Nexus; Mortar never fetches these.
+	External []CollectionExternal
+	// DownloadLink is the Nexus API path that resolves to the curator's collection archive.
+	DownloadLink string
+}
+
+// CollectionExternal is one off-Nexus resource of a collection. Type is Nexus's resourceType ("direct", "browse" or "manual").
+type CollectionExternal struct {
+	Name     string
+	Type     string
+	URL      string
+	Version  string
+	Author   string
+	Optional bool
 }
 
 type CollectionFile struct {
@@ -65,8 +82,18 @@ type collectionGQL struct {
 	} `json:"errors"`
 	Data *struct {
 		CollectionRevision *struct {
-			RevisionNumber int `json:"revisionNumber"`
-			Collection     struct {
+			RevisionNumber    int    `json:"revisionNumber"`
+			DownloadLink      string `json:"downloadLink"`
+			InstallationInfo  string `json:"installationInfo"`
+			ExternalResources []struct {
+				Name         string `json:"name"`
+				ResourceType string `json:"resourceType"`
+				ResourceURL  string `json:"resourceUrl"`
+				Version      string `json:"version"`
+				Author       string `json:"author"`
+				Optional     bool   `json:"optional"`
+			} `json:"externalResources"`
+			Collection struct {
 				Name string `json:"name"`
 				Slug string `json:"slug"`
 				User struct {
@@ -98,6 +125,14 @@ func decodeCollection(slug string, raw []byte) (Collection, error) {
 		Author:   rev.Collection.User.Name,
 		Slug:     rev.Collection.Slug,
 		Revision: rev.RevisionNumber,
+
+		Instructions: strings.TrimSpace(rev.InstallationInfo),
+		DownloadLink: rev.DownloadLink,
+	}
+	for _, r := range rev.ExternalResources {
+		out.External = append(out.External, CollectionExternal{
+			Name: r.Name, Type: r.ResourceType, URL: r.ResourceURL, Version: r.Version, Author: r.Author, Optional: r.Optional,
+		})
 	}
 	for _, mf := range rev.ModFiles {
 		if mf.File == nil {

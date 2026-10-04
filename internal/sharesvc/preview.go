@@ -94,6 +94,36 @@ type Preview struct {
 	SignedIn        bool        `json:"signedIn"`
 	Premium         bool        `json:"premium"`
 	Replace         ReplacePlan `json:"replace"`
+	// Collection is set for a Nexus collection import.
+	Collection *CollectionInfo `json:"collection,omitempty"`
+}
+
+// Where a collection's installer choices and config files come from.
+const (
+	// DetailsArchive means Import downloads the curator's collection archive (Premium account) and applies its
+	// FOMOD choices and bundled config files.
+	DetailsArchive = "archive"
+	// DetailsListed means only what Nexus lists without a download: the mod files, instructions and external resources.
+	DetailsListed = "listed"
+)
+
+// CollectionInfo is what a collection import shows besides its mods. Instructions is the curator's text (markdown
+// links and emphasis). External resources are never fetched: each is marked InstallYourself.
+type CollectionInfo struct {
+	Instructions string             `json:"instructions"`
+	External     []ExternalResource `json:"external"`
+	Details      string             `json:"details"`
+}
+
+// ExternalResource is a collection's resource that is not on Nexus. Type is "direct", "browse" or "manual".
+type ExternalResource struct {
+	Name            string `json:"name"`
+	Type            string `json:"type"`
+	URL             string `json:"url"`
+	Version         string `json:"version"`
+	Author          string `json:"author"`
+	Optional        bool   `json:"optional"`
+	InstallYourself bool   `json:"installYourself"`
 }
 
 // Site names of a Mod.

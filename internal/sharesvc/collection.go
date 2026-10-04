@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/components"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/share"
 )
@@ -59,14 +60,92 @@ func (s *Service) previewCollection(ctx context.Context, game, domain, slug stri
 	if err != nil {
 		return Preview{}, err
 	}
+	info := &CollectionInfo{Instructions: col.Instructions, External: externalResources(col.External), Details: DetailsListed}
+	if col.DownloadLink != "" && s.d.CollectionArchive != nil && s.d.Premium() {
+		info.Details = DetailsArchive
+	}
+	pv.Collection = info
 	s.mu.Lock()
 	if s.current != nil && s.current.id == pv.Session {
 		s.current.collection = &profile.CollectionRef{
 			Domain: domain, Slug: slug, Name: col.Name, Revision: col.Revision,
 		}
+		s.current.preview.Collection = info
+		s.current.archiveLink = col.DownloadLink
+		s.current.notes = collectionNotes(info)
 	}
 	s.mu.Unlock()
 	return pv, nil
+}
+
+func externalResources(in []meta.CollectionExternal) []ExternalResource {
+	out := make([]ExternalResource, 0, len(in))
+	for _, e := range in {
+		out = append(out, ExternalResource{Name: e.Name, Type: e.Type, URL: e.URL, Version: e.Version, Author: e.Author, Optional: e.Optional, InstallYourself: true})
+	}
+	return out
+}
+
+// collectionNotes is what the new profile's notes keep of the curator's instructions and the resources to install by hand.
+func collectionNotes(info *CollectionInfo) string {
+	var b strings.Builder
+	if info.Instructions != "" {
+		b.WriteString("Curator instructions:\n" + info.Instructions)
+	}
+	for i, e := range info.External {
+		if i == 0 {
+			if b.Len() > 0 {
+				b.WriteString("\n\n")
+			}
+			b.WriteString("Install yourself:")
+		}
+		b.WriteString("\n- " + e.Name)
+		if e.URL != "" {
+			b.WriteString(" " + e.URL)
+		}
+	}
+	return b.String()
+}
+
+// CollectionApplied is what Import took from the curator's archive. Error is why it was skipped; the mods are
+// still imported and their installers ask as usual.
+type CollectionApplied struct {
+	FomodMods int    `json:"fomodMods"`
+	Configs   int    `json:"configs"`
+	Error     string `json:"error,omitempty"`
+}
+
+// applyArchive downloads the curator's archive for a Premium account that is importing the collection, then
+// presets each Nexus mod's FOMOD choices and queues the bundled config files. It runs once per preview.
+func (s *Service) applyArchive(ctx context.Context, cur *session) *CollectionApplied {
+	if cur.archiveLink == "" || cur.archiveTried || s.d.CollectionArchive == nil || !s.d.Premium() {
+		return nil
+	}
+	cur.archiveTried = true
+	raw, err := s.d.CollectionArchive(ctx, cur.archiveLink)
+	var d collectionDetails
+	if err == nil {
+		d, err = readCollectionArchive(raw)
+	}
+	if err != nil {
+		return &CollectionApplied{Error: err.Error()}
+	}
+	res := &CollectionApplied{}
+	for i := range cur.refs {
+		if c, ok := d.Fomod[modFile{cur.refs[i].ModID, cur.refs[i].FileID}]; ok && len(cur.refs[i].Fomod) == 0 {
+			cur.refs[i].Fomod = c
+			res.FomodMods++
+		}
+	}
+	for i := range cur.preview.Mods {
+		m := &cur.preview.Mods[i]
+		if c, ok := d.Fomod[modFile{m.ModID, m.FileID}]; ok && m.Site == SiteNexus && len(m.Fomod) == 0 {
+			m.Fomod = c
+		}
+	}
+	cur.configs = append(cur.configs, d.Configs...)
+	res.Configs = len(d.Configs)
+	return res
 }
 
 // CollectionStatus is whether a profile was imported from a Nexus collection, and whether a newer revision exists.

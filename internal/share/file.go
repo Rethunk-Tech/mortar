@@ -77,6 +77,12 @@ func validSegment(s string) bool {
 		!strings.HasSuffix(s, " ") && !reserved.MatchString(s)
 }
 
+// ValidConfigPath reports whether p is a path Apply would write.
+func ValidConfigPath(p string) bool { return validConfigPath(p) }
+
+// ValidFomod reports whether recorded FOMOD choices are within the bounds a share link enforces.
+func ValidFomod(f map[string]map[string][]string) bool { return validDetails(Ref{Fomod: f}) }
+
 // validConfigPath accepts a slash-separated relative .json path whose every segment is plain.
 func validConfigPath(p string) bool {
 	if len(p) > maxRelPath || !strings.HasSuffix(strings.ToLower(p), ".json") {
@@ -133,7 +139,7 @@ func Write(w io.Writer, p profile.Profile, modsDir string, include ...Include) (
 		if !inc.ConfigFiles {
 			break
 		}
-		if bundled(e) || (!enabled(e) && !inc.DisabledMods) {
+		if e.Source.Bundled() || (!enabled(e) && !inc.DisabledMods) {
 			continue
 		}
 		for _, m := range e.Mods {

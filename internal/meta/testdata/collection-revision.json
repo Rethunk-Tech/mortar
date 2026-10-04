@@ -1,0 +1,64 @@
+{
+  "data": {
+    "collectionRevision": {
+      "revisionNumber": 1,
+      "downloadLink": "/v2/collections/636/revisions/948/download_link",
+      "installationInfo": "Start a **new save**. See https://example.com/guide",
+      "externalResources": [
+        {
+          "name": "Hand Mod",
+          "resourceType": "browse",
+          "resourceUrl": "https://example.com/mod",
+          "optional": true,
+          "version": "1.2",
+          "author": "Sam"
+        }
+      ],
+      "collection": {
+        "name": "Coldguy's Stardew Valley Starter Set",
+        "slug": "htknoa",
+        "user": {
+          "name": "therealcoldguy"
+        }
+      },
+      "modFiles": [
+        {
+          "fileId": 44014,
+          "optional": false,
+          "file": {
+            "modId": 3753,
+            "name": "-Stardew Valley Expanded-",
+            "version": "1.13.11",
+            "mod": {
+              "name": "Stardew Valley Expanded"
+            }
+          }
+        },
+        {
+          "fileId": 38709,
+          "optional": false,
+          "file": {
+            "modId": 2213,
+            "name": "2021_02_27_UnlimitedPlayers",
+            "version": "2021.2.27",
+            "mod": {
+              "name": "Unlimited Players"
+            }
+          }
+        },
+        {
+          "fileId": 44615,
+          "optional": false,
+          "file": {
+            "modId": 9030,
+            "name": "Animated Downtown Zuzu Items",
+            "version": "1.3.0",
+            "mod": {
+              "name": "Animated Downtown Zuzu Stuff"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
