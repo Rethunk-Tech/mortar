@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/desktopnotify"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 const (
@@ -14,30 +15,7 @@ const (
 	modUpdateInterval     = 4 * time.Hour
 )
 
-type ModUpdateSetting interface {
-	ModUpdatesEnabled() bool
-}
-
-type ModUpdateSource interface {
-	ProfileModUpdates(context.Context) ([]ProfileModUpdates, error)
-}
-
-type ModDigestSettings interface {
-	UpdateDigestMode() string
-	LastModUpdateDigest() []string
-	LastModUpdateDigestAt() string
-}
-
-type ModDigestStore interface {
-	ModDigestSettings
-	SaveModUpdateDigest(keys []string, at string) error
-}
-
-type ModUpdateDigestNotifier interface {
-	NotifyDigest(ModUpdateDigestNotice)
-}
-
-func StartModBackground(ctx context.Context, enabled ModUpdateSetting, source ModUpdateSource, store ModDigestStore, notify ModUpdateDigestNotifier) {
+func StartModBackground(ctx context.Context, svc *settings.Service, source func(context.Context) ([]ProfileModUpdates, error), notify func(ModUpdateDigestNotice)) {
 	go func() {
 		timer := time.NewTimer(modUpdateInitialDelay)
 		defer timer.Stop()
@@ -47,10 +25,11 @@ func StartModBackground(ctx context.Context, enabled ModUpdateSetting, source Mo
 		case <-timer.C:
 		}
 		run := func() {
-			if !enabled.ModUpdatesEnabled() {
+			cur := svc.Get()
+			if cur.CheckModUpdatesOnStart == nil || !*cur.CheckModUpdatesOnStart {
 				return
 			}
-			profiles, err := source.ProfileModUpdates(ctx)
+			profiles, err := source(ctx)
 			if err != nil {
 				log.Printf("mod update check: %v", err)
 				return
@@ -58,22 +37,22 @@ func StartModBackground(ctx context.Context, enabled ModUpdateSetting, source Mo
 			keys, summary := DigestFromProfiles(profiles)
 			now := time.Now()
 			should, persist := DecideUpdateDigest(
-				store.UpdateDigestMode(),
-				store.LastModUpdateDigest(),
+				cur.UpdateDigest,
+				cur.LastModUpdateDigest,
 				keys,
-				store.LastModUpdateDigestAt(),
+				cur.LastModUpdateDigestAt,
 				now,
 			)
 			at := ""
 			if should {
 				at = now.Format(time.RFC3339)
 			}
-			if err := store.SaveModUpdateDigest(persist, at); err != nil {
+			if err := svc.SetLastModUpdateDigest(persist, at); err != nil {
 				log.Printf("mod update digest save: %v", err)
 				return
 			}
 			if should && summary.TotalUpdates > 0 {
-				notify.NotifyDigest(summary)
+				notify(summary)
 				desktopnotify.SendIf(
 					desktopnotify.Pref("desktopModUpdates"),
 					fmt.Sprintf("%d mod updates available", summary.TotalUpdates),

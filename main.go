@@ -852,12 +852,6 @@ func run() error {
 	return err
 }
 
-type modUpdateSettingFunc func() bool
-
-func (f modUpdateSettingFunc) ModUpdatesEnabled() bool {
-	return f()
-}
-
 func releaseLinks() error {
 	store, err := settings.Open()
 	if err != nil {

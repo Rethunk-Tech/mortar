@@ -21,15 +21,11 @@ func startModUpdateBackground(
 ) {
 	updatesvc.StartModBackground(
 		ctx,
-		modUpdateSettingFunc(func() bool {
-			check := svc.Get().CheckModUpdatesOnStart
-			return check != nil && *check
-		}),
-		modUpdateScanSource{gamesSvc: gamesSvc, profiles: profiles, problemsSvc: problemsSvc},
-		updatesvc.SettingsDigestStore{Svc: svc},
-		modUpdateDigestNotifierFunc(func(notice updatesvc.ModUpdateDigestNotice) {
+		svc,
+		modUpdateScanSource{gamesSvc: gamesSvc, profiles: profiles, problemsSvc: problemsSvc}.ProfileModUpdates,
+		func(notice updatesvc.ModUpdateDigestNotice) {
 			app.Event.Emit(updatesvc.ModUpdateDigestEvent, notice)
-		}),
+		},
 	)
 }
 
@@ -67,10 +63,4 @@ func (s modUpdateScanSource) ProfileModUpdates(ctx context.Context) ([]updatesvc
 		}
 	}
 	return out, nil
-}
-
-type modUpdateDigestNotifierFunc func(updatesvc.ModUpdateDigestNotice)
-
-func (f modUpdateDigestNotifierFunc) NotifyDigest(notice updatesvc.ModUpdateDigestNotice) {
-	f(notice)
 }
