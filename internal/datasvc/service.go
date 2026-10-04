@@ -17,11 +17,13 @@ import (
 type Service struct {
 	items    *store.Store
 	profiles *profile.Store
-	staged   func() map[string][]string
+	keep     []KeySource
 	mu       sync.Mutex
 	progress Progress
 	modCache ModUsage
 	modFP    string
+	usage    Usage
+	usageAt  time.Time
 	busy     []BusySource
 	// OnClearCache runs after ClearCache empties the cache folder, to drop copies held in memory.
 	OnClearCache func()
@@ -42,9 +44,31 @@ type MoveEstimate struct {
 	FreeBytes int64 `json:"freeBytes"`
 }
 
+// KeySource lists, per game, store keys something other than a profile still needs.
+type KeySource func() (map[string][]string, error)
+
+// KeepSet is the store keep set: every key a profile names (history snapshots too when history is set) plus what
+// the sources add. Clean up, Remove and the startup sweep all build it here, so they cannot disagree.
+func KeepSet(profiles *profile.Store, history bool, sources []KeySource) (map[string][]string, error) {
+	keys, err := profiles.StoreKeys(history)
+	if err != nil {
+		return nil, err
+	}
+	for _, source := range sources {
+		extra, err := source()
+		if err != nil {
+			return nil, err
+		}
+		for g, more := range extra {
+			keys[g] = append(keys[g], more...)
+		}
+	}
+	return keys, nil
+}
+
 // NewService measures and cleans the data folder using the store's Collect keep set.
-func NewService(items *store.Store, profiles *profile.Store, staged func() map[string][]string, busy ...BusySource) *Service {
-	return &Service{items: items, profiles: profiles, staged: staged, busy: busy}
+func NewService(items *store.Store, profiles *profile.Store, keep []KeySource, busy ...BusySource) *Service {
+	return &Service{items: items, profiles: profiles, keep: keep, busy: busy}
 }
 
 // UsageProgress is the in-flight size walk, or Measuring false when idle.
@@ -54,15 +78,34 @@ func (s *Service) UsageProgress() Progress {
 	return s.progress
 }
 
-// Usage walks the data folder in the background (Wails) and reports sizes.
-func (s *Service) Usage() (Usage, error) {
+// usageTTL is how long a measured Usage is reused; backups, caches and saves change without Mortar's store hooks
+// seeing it, so the Refresh button passes fresh to measure again.
+const usageTTL = time.Minute
+
+// Usage walks the data folder in the background (Wails) and reports sizes. It reuses the last walk for usageTTL
+// unless fresh is set or the store changed.
+func (s *Service) Usage(fresh bool) (Usage, error) {
 	dir, err := datadir.Dir()
 	if err != nil {
 		return Usage{}, err
 	}
+	s.mu.Lock()
+	if !fresh && !s.usageAt.IsZero() && time.Since(s.usageAt) < usageTTL && s.usage.Path == dir {
+		u := s.usage
+		s.mu.Unlock()
+		return u, nil
+	}
+	s.mu.Unlock()
 	s.setProgress(Progress{Measuring: true})
 	defer s.setProgress(Progress{})
-	return Measure(dir, s.setProgress)
+	u, err := Measure(dir, s.setProgress)
+	if err != nil {
+		return Usage{}, err
+	}
+	s.mu.Lock()
+	s.usage, s.usageAt = u, time.Now()
+	s.mu.Unlock()
+	return u, nil
 }
 
 // CacheInfo is the cache folder path and size.
@@ -85,6 +128,7 @@ func (s *Service) ClearCache() error {
 	if err := clearCache(filepath.Join(dir, "cache")); err != nil {
 		return err
 	}
+	s.forgetModUsage()
 	if s.OnClearCache != nil {
 		s.OnClearCache()
 	}
@@ -132,6 +176,7 @@ func (s *Service) EntrySizes() ([]EntrySize, error) {
 func (s *Service) forgetModUsage() {
 	s.mu.Lock()
 	s.modFP = ""
+	s.usageAt = time.Time{}
 	s.mu.Unlock()
 }
 
@@ -183,16 +228,7 @@ func (s *Service) applyPreview(root string, preview Preview) error {
 }
 
 func (s *Service) referenced() (map[string][]string, error) {
-	keys, err := s.profiles.StoreKeys(true)
-	if err != nil {
-		return nil, err
-	}
-	if s.staged != nil {
-		for g, staged := range s.staged() {
-			keys[g] = append(keys[g], staged...)
-		}
-	}
-	return keys, nil
+	return KeepSet(s.profiles, true, s.keep)
 }
 
 func (s *Service) setProgress(p Progress) {
@@ -206,11 +242,17 @@ func (s *Service) MoveDataFolderPreview(dest string) (MoveEstimate, error) {
 	if err != nil {
 		return MoveEstimate{}, err
 	}
-	estimate, err := datadir.EstimateRelocate(src, dest)
+	estimate, err := datadir.EstimateRelocate(src, dest, extentTotal)
 	if err != nil {
 		return MoveEstimate{}, err
 	}
 	return MoveEstimate{Bytes: estimate.Bytes, FreeBytes: estimate.FreeBytes}, nil
+}
+
+// extentTotal is Measure's total for root: bytes on disk with shared extents counted once.
+func extentTotal(root string) (int64, error) {
+	u, err := Measure(root, nil)
+	return u.Total, err
 }
 
 // DataLocation is where Mortar keeps its data and whether a portable marker put it there.
@@ -255,7 +297,7 @@ func (s *Service) MoveDataFolder(dest string) error {
 	if err != nil {
 		return err
 	}
-	if err := datadir.Relocate(src, dest, def, func(p datadir.CopyProgress) {
+	if err := datadir.Relocate(src, dest, def, extentTotal, func(p datadir.CopyProgress) {
 		s.setProgress(Progress{
 			Copying: true, Files: p.Files, TotalFiles: p.TotalFiles, Bytes: p.Bytes, TotalBytes: p.TotalBytes,
 		})

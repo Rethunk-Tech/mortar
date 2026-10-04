@@ -12,12 +12,12 @@ export function useDataUsage() {
   const [bytes, setBytes] = useState(0)
   const [error, setError] = useState(false)
   const stopRef = useRef<() => void>(() => undefined)
-  const restart = useCallback(() => {
+  const load = useCallback((fresh: boolean) => {
     stopRef.current()
     setUsage(null)
     setError(false)
     stopRef.current = beginUsageLoad({
-      usage: Usage,
+      usage: () => Usage(fresh),
       progress: UsageProgress,
       setBytes,
       setUsage,
@@ -27,9 +27,10 @@ export function useDataUsage() {
       },
     })
   }, [])
+  const restart = useCallback(() => load(true), [load])
   useEffect(() => {
-    restart()
+    load(false)
     return () => stopRef.current()
-  }, [restart])
+  }, [load])
   return { usage, bytes, restart, error }
 }
