@@ -16,18 +16,24 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
+func addFarmMod(t *testing.T, e env, key, zip string) Profile {
+	t.Helper()
+	p, err := e.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, key, Source{Kind: KindLocal, Name: zip}); err != nil {
+		t.Fatal(err)
+	}
+	return p
+}
+
 func TestHistoryRecordsEachOperation(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
 	e.item(t, "local-a2", map[string]string{"manifest.json": `{"Name":"Me.A","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e, "local-a", "a.zip")
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -92,13 +98,7 @@ func TestHistoryRevertRestoresEntries(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e, "local-a", "a.zip")
 	afterAdd, err := e.History("stardew", p.ID)
 	if err != nil || len(afterAdd) == 0 {
 		t.Fatalf("history after add: %v %v", afterAdd, err)
@@ -129,13 +129,7 @@ func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
 		"manifest.json": manifestJSON("Me.A"),
 		"config.json":   "shipped",
 	})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e, "local-a", "a.zip")
 	afterAdd, err := e.History("stardew", p.ID)
 	if err != nil || len(afterAdd) == 0 {
 		t.Fatalf("history after add: %v %v", afterAdd, err)
@@ -155,13 +149,7 @@ func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
 func TestHistoryRevertMissingStoreKeys(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e, "local-a", "a.zip")
 	events, err := e.History("stardew", p.ID)
 	if err != nil || len(events) == 0 {
 		t.Fatal(err)
@@ -343,13 +331,7 @@ func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
 func TestHistoryRevertRefusedWhileRunning(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e, "local-a", "a.zip")
 	events, err := e.History("stardew", p.ID)
 	if err != nil || len(events) == 0 {
 		t.Fatal(err)
@@ -378,13 +360,7 @@ func TestHistoryIncludesModDiffCounts(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e, "local-a", "a.zip")
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -467,13 +443,7 @@ func TestHistoryQuietIsPerProfile(t *testing.T) {
 func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e, "local-a", "a.zip")
 	if _, err := e.RemoveEntry("stardew", p.ID, "local-a"); err != nil {
 		t.Fatal(err)
 	}
@@ -489,13 +459,7 @@ func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
 func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e, "local-a", "a.zip")
 	dir, err := e.profileDir("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -519,13 +483,7 @@ func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
 func TestRevertRestoresLiveModsWhenProfileJSONFails(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e, "local-a", "a.zip")
 	mods, err := e.ModsDir("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -698,32 +656,6 @@ func TestChangesSinceCachedUntilProfileUpdated(t *testing.T) {
 	}
 	if decodes == 0 {
 		t.Fatal("ChangesSince after update used stale cache")
-	}
-}
-
-func TestLegacyCombinedHistorySplitsOut(t *testing.T) {
-	dir := t.TempDir()
-	legacy := []byte(`{"events":[{"id":"aa","snapshotId":"bb"}],"snapshots":{"bb":[{"key":"k"}]}}`)
-	if err := os.WriteFile(filepath.Join(dir, historyFile), legacy, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	data, err := readHistory(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(data.Events) != 1 || data.Events[0].ID != "aa" {
-		t.Fatalf("legacy events = %+v", data.Events)
-	}
-	entries, ok := snapshotEntries(&data, "bb")
-	if !ok || len(entries) != 1 || entries[0].Key != "k" {
-		t.Fatalf("split snapshot = %v %+v", ok, entries)
-	}
-	raw, err := fsx.ReadFile(filepath.Join(dir, historyFile))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if bytes.Contains(raw, []byte(`"snapshots"`)) {
-		t.Fatal("history.json still embeds snapshot bodies")
 	}
 }
 

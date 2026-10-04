@@ -31,6 +31,43 @@ func frame(t *testing.T, v any) []byte {
 	return buf.Bytes()
 }
 
+func listenControl(t *testing.T, settingsJSON string) string {
+	t.Helper()
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = ln.Close() })
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			_ = c.Close()
+		}
+	}()
+	addr, ok := ln.Addr().(*net.TCPAddr)
+	if !ok {
+		t.Fatalf("listen addr = %T", ln.Addr())
+	}
+	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(addr.Port)+`}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if settingsJSON != "" {
+		if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(settingsJSON), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return dir
+}
+
 func TestServeHandsEachLinkOverAndReplies(t *testing.T) {
 	in := append(frame(t, request{Link: "nxm://a"}), frame(t, request{Link: "nxm://bad"})...)
 	var got []string
@@ -89,36 +126,7 @@ func TestServeAnswersInstalledMods(t *testing.T) {
 }
 
 func TestActiveNexusConnectedOffWhenExtensionOff(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	dir, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = ln.Close() })
-	go func() {
-		for {
-			c, err := ln.Accept()
-			if err != nil {
-				return
-			}
-			_ = c.Close()
-		}
-	}()
-	addr, ok := ln.Addr().(*net.TCPAddr)
-	if !ok {
-		t.Fatalf("listen addr = %T", ln.Addr())
-	}
-	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(addr.Port)+`}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"extensionConnection":"off","lastProfile":{"stardew":"aaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	listenControl(t, `{"extensionConnection":"off","lastProfile":{"stardew":"aaaaaaaaaaaaaaaa"}}`)
 	if activeNexusConnected("stardewvalley") {
 		t.Fatal("extension off should reply not-connected")
 	}
@@ -193,38 +201,8 @@ func TestInvoked(t *testing.T) {
 }
 
 func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	dir, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = ln.Close() })
-	go func() {
-		for {
-			c, err := ln.Accept()
-			if err != nil {
-				return
-			}
-			_ = c.Close()
-		}
-	}()
-	addr, ok := ln.Addr().(*net.TCPAddr)
-	if !ok {
-		t.Fatalf("listen addr = %T", ln.Addr())
-	}
-	port := addr.Port
-	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(port)+`}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
 	openID := "aaaaaaaaaaaaaaaa"
-	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	dir := listenControl(t, `{"lastProfile":{"stardew":"`+openID+`"}}`)
 	writeProfile := func(id, name string, hidden bool, fileID int, body []byte) {
 		t.Helper()
 		pdir := filepath.Join(dir, "profiles", "stardew", id)
@@ -274,33 +252,7 @@ func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
 }
 
 func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	dir, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = ln.Close() })
-	go func() {
-		for {
-			c, err := ln.Accept()
-			if err != nil {
-				return
-			}
-			_ = c.Close()
-		}
-	}()
-	addr, ok := ln.Addr().(*net.TCPAddr)
-	if !ok {
-		t.Fatalf("listen addr = %T", ln.Addr())
-	}
-	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(addr.Port)+`}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	dir := listenControl(t, "")
 	openID := "aaaaaaaaaaaaaaaa"
 	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
 		t.Fatal(err)
@@ -379,33 +331,7 @@ func TestServeAnswersModUpdateAvailable(t *testing.T) {
 }
 
 func TestNexusModProfilesUpdateAvailableFromCache(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	dir, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = ln.Close() })
-	go func() {
-		for {
-			c, err := ln.Accept()
-			if err != nil {
-				return
-			}
-			_ = c.Close()
-		}
-	}()
-	addr, ok := ln.Addr().(*net.TCPAddr)
-	if !ok {
-		t.Fatalf("listen addr = %T", ln.Addr())
-	}
-	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(addr.Port)+`}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	dir := listenControl(t, "")
 	openID := "aaaaaaaaaaaaaaaa"
 	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
 		t.Fatal(err)
@@ -501,33 +427,7 @@ func TestServeAnswersUpdates(t *testing.T) {
 }
 
 func TestActiveNexusUpdatesFromCache(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	dir, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = ln.Close() })
-	go func() {
-		for {
-			c, err := ln.Accept()
-			if err != nil {
-				return
-			}
-			_ = c.Close()
-		}
-	}()
-	addr, ok := ln.Addr().(*net.TCPAddr)
-	if !ok {
-		t.Fatalf("listen addr = %T", ln.Addr())
-	}
-	if err := os.WriteFile(filepath.Join(dir, "control.json"), []byte(`{"port":`+strconv.Itoa(addr.Port)+`}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	dir := listenControl(t, "")
 	openID := "aaaaaaaaaaaaaaaa"
 	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
 		t.Fatal(err)
