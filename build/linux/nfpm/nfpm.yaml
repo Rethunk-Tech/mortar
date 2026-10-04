@@ -46,6 +46,12 @@ contents:
     file_info:
       owner: root
       group: root
+  - dst: /usr/share/doc/mortar
+    type: dir
+    file_info:
+      mode: 0755
+      owner: root
+      group: root
   - src: LICENSE
     dst: /usr/share/doc/mortar/LICENSE
     file_info:
