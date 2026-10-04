@@ -6,6 +6,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { formatDuration } from '../console/startupView.ts'
 import { compactQuery } from '../game/compact.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
@@ -38,7 +39,7 @@ import {
   sanitizeListSort,
   visibleListColumns,
 } from './listColumns.ts'
-import { toListRow, useEntrySizes } from './listRows.ts'
+import { toListRow, useEntrySizes, useStartupCosts } from './listRows.ts'
 import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
 import { ModListTable } from './ModListVirtual.tsx'
 import { contextMenuProps } from './menu.ts'
@@ -83,6 +84,23 @@ function ValueCell({ text, title, accent }: { text: ReactNode; title?: string; a
     >
       {text}
     </Cell>
+  )
+}
+
+function MeasureCell({
+  column,
+  row,
+  locale,
+}: {
+  column: 'size' | 'startup'
+  row: ListRow
+  locale: string
+}) {
+  if (column === 'size') {
+    return <ValueCell text={row.size === undefined ? '—' : formatBytes(row.size)} />
+  }
+  return (
+    <ValueCell text={row.startupMs === undefined ? '—' : formatDuration(row.startupMs, locale)} />
   )
 }
 
@@ -200,7 +218,8 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
         </Cell>
       )
     case 'size':
-      return <ValueCell key="size" text={row.size === undefined ? '—' : formatBytes(row.size)} />
+    case 'startup':
+      return <MeasureCell key={id} column={id} row={row} locale={locale} />
     default:
       return null
   }
@@ -345,6 +364,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const customCategories = useCustomCategories((s) => s.categories)
   const customById = customCategoryById(customCategories)
   useEntrySizes()
+  useStartupCosts(gameId, profile.id)
   const problems = useMods((s) => s.problems)
   const updates = useUpdates((s) => s.updates)
   const tagHint = t`A mod with several tags appears under its first tag.`

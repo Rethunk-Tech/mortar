@@ -10,7 +10,7 @@ import { isNewer } from './nexusFormat.ts'
 const LIST_COLUMN_GROUPS = [
   ['on', 'name', 'author', 'category', 'notes', 'uniqueId'],
   ['version', 'latest', 'status', 'needs'],
-  ['installed', 'updated', 'lastRun', 'size'],
+  ['installed', 'updated', 'lastRun', 'size', 'startup'],
   ['source', 'endorsements', 'downloads'],
 ] as const
 
@@ -29,6 +29,7 @@ const DEFAULT_VISIBLE_LIST_COLUMNS: readonly ListColumnId[] = [
   'category',
   'status',
   'size',
+  'startup',
 ]
 
 const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [
@@ -45,6 +46,7 @@ const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [
   'notes',
   'lastRun',
   'size',
+  'startup',
 ]
 
 type ListSortDir = 'asc' | 'desc'
@@ -80,6 +82,7 @@ const LIST_COLUMN_WIDTH: Record<ListColumnId, string> = {
   notes: '160px',
   lastRun: '88px',
   size: '88px',
+  startup: '88px',
 }
 
 interface ListRow {
@@ -90,6 +93,8 @@ interface ListRow {
   note: string
   tags: string[]
   size?: number
+  /** Milliseconds the mod (or content pack) added to the last measured startup. */
+  startupMs?: number
   categoryOverride?: string
   categoryLabel: string
   groupName?: string
@@ -260,6 +265,10 @@ function compareLastRun(a: ListRow, b: ListRow, dir: ListSortDir): number {
   return primary
 }
 
+function measureOf(column: 'size' | 'startup', row: ListRow): number | undefined {
+  return column === 'size' ? row.size : row.startupMs
+}
+
 function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
   const { column, dir } = sort
   let primary = 0
@@ -354,13 +363,12 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
       primary = compareLastRun(a, b, dir)
       break
     case 'size':
-      primary = missingLast(
-        a.size === undefined,
-        b.size === undefined,
-        dir,
-        cmpNum(a.size ?? 0, b.size ?? 0),
-      )
+    case 'startup': {
+      const av = measureOf(column, a)
+      const bv = measureOf(column, b)
+      primary = missingLast(av === undefined, bv === undefined, dir, cmpNum(av ?? 0, bv ?? 0))
       break
+    }
     default:
       primary = 0
   }
