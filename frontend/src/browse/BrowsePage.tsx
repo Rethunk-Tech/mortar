@@ -18,15 +18,18 @@ import { PrefSegmented } from '../settings/PrefControls.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
+import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { usePending } from '../toasts/usePending.ts'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
 import type { BrowseItem, BrowsePageProps } from './browseTypes.ts'
+import { useBrowseView } from './view.ts'
 
 const NEXUS = 'nexus'
 const GITHUB = 'github'
 const CURSEFORGE = 'curseforge'
 const FIRST_PAGE = 1
 const PICTURE_PX = 72
+const ROW_PICTURE_PX = 40
 const CARD_MIN_PX = 340
 const SKELETON_KEYS = ['a', 'b', 'c', 'd', 'e', 'f']
 const ICON_SIZE = 40
@@ -58,6 +61,8 @@ function openPageLabel(source: string): string {
   }
   return i18n._(msg`Open on Nexus`)
 }
+
+const list = { display: 'flex', flexDirection: 'column', gap: 0.75 } as const
 
 const grid = {
   display: 'grid',
@@ -144,6 +149,7 @@ function BrowsePage({
   addGitHub,
 }: BrowsePageProps) {
   const { t } = useLingui()
+  const view = useBrowseView((s) => s.view)
   const {
     source,
     setSource,
@@ -206,10 +212,16 @@ function BrowsePage({
         <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
           {plural(result.total, { one: '# result', other: '# results' })}
         </Typography>
-        <Box sx={{ ...grid, opacity: status === 'loading' ? STALE_OPACITY : 1 }}>
+        <Box
+          sx={{
+            ...(view === 'grid' ? grid : list),
+            opacity: status === 'loading' ? STALE_OPACITY : 1,
+          }}
+        >
           {result.items.map((item) => (
             <ResultCard
               key={`${item.source}:${item.id}`}
+              row={view === 'list'}
               item={item}
               premium={premium}
               openUrl={openUrl}
@@ -232,42 +244,17 @@ function BrowsePage({
 
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.25, pb: 0.75 }}>
-        <PrefSegmented
-          value={source}
-          label={t`Source`}
-          options={sources}
-          onChange={(next) => {
-            setSource(next)
-            setPage(FIRST_PAGE)
-          }}
-        />
-        <TextField
-          size="small"
-          autoFocus={true}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder={placeholder}
-          slotProps={{
-            htmlInput: { 'aria-label': placeholder },
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search size={14} />
-                </InputAdornment>
-              ),
-              sx: {
-                height: 36,
-                fontSize: 13,
-                borderRadius: '6px',
-                bgcolor: 'var(--mortar-overlay-30)',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--mortar-hairline-15)' },
-              },
-            },
-          }}
-          sx={{ flex: 1, minWidth: 0 }}
-        />
-      </Box>
+      <BrowseToolbar
+        sources={sources}
+        source={source}
+        onSource={(next) => {
+          setSource(next)
+          setPage(FIRST_PAGE)
+        }}
+        draft={draft}
+        onDraft={setDraft}
+        placeholder={placeholder}
+      />
       <Box
         sx={{
           flex: 1,
@@ -285,13 +272,66 @@ function BrowsePage({
   )
 }
 
+function BrowseToolbar({
+  sources,
+  source,
+  onSource,
+  draft,
+  onDraft,
+  placeholder,
+}: {
+  sources: { value: string; label: string }[]
+  source: string
+  onSource: (next: string) => void
+  draft: string
+  onDraft: (next: string) => void
+  placeholder: string
+}) {
+  const { t } = useLingui()
+  const view = useBrowseView((s) => s.view)
+  const setView = useBrowseView((s) => s.setView)
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.25, pb: 0.75 }}>
+      <ViewToggle value={view} onChange={setView} />
+      <PrefSegmented value={source} label={t`Source`} options={sources} onChange={onSource} />
+      <TextField
+        size="small"
+        autoFocus={true}
+        value={draft}
+        onChange={(e) => onDraft(e.target.value)}
+        placeholder={placeholder}
+        slotProps={{
+          htmlInput: { 'aria-label': placeholder },
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={14} />
+              </InputAdornment>
+            ),
+            sx: {
+              height: 36,
+              fontSize: 13,
+              borderRadius: '6px',
+              bgcolor: 'var(--mortar-overlay-30)',
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--mortar-hairline-15)' },
+            },
+          },
+        }}
+        sx={{ flex: 1, minWidth: 0 }}
+      />
+    </Box>
+  )
+}
+
 function ResultCard({
+  row,
   item,
   premium,
   openUrl,
   downloadNexus,
   addGitHub,
 }: {
+  row: boolean
   item: BrowseItem
   premium: boolean
   openUrl: (url: string) => void
@@ -353,13 +393,23 @@ function ResultCard({
       </DisabledReason>
     )
   }
+  const picturePx = row ? ROW_PICTURE_PX : PICTURE_PX
   return (
-    <Card sx={{ display: 'flex', gap: 1.25, p: 1, borderRadius: '6px', minWidth: 0 }}>
+    <Card
+      sx={{
+        display: 'flex',
+        alignItems: row ? 'center' : 'stretch',
+        gap: 1.25,
+        p: 1,
+        borderRadius: '6px',
+        minWidth: 0,
+      }}
+    >
       {picture === '' ? (
         <Box
           sx={{
-            width: PICTURE_PX,
-            height: PICTURE_PX,
+            width: picturePx,
+            height: picturePx,
             flexShrink: 0,
             borderRadius: '4px',
             bgcolor: 'var(--mortar-raised)',
@@ -372,8 +422,8 @@ function ResultCard({
           alt=""
           loading="lazy"
           sx={{
-            width: PICTURE_PX,
-            height: PICTURE_PX,
+            width: picturePx,
+            height: picturePx,
             flexShrink: 0,
             objectFit: 'cover',
             borderRadius: '4px',
@@ -393,7 +443,7 @@ function ResultCard({
             fontSize: 13,
             color: 'var(--mortar-ink-soft)',
             display: '-webkit-box',
-            WebkitLineClamp: 2,
+            WebkitLineClamp: row ? 1 : 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
           }}
@@ -404,8 +454,8 @@ function ResultCard({
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
+          flexDirection: row ? 'row' : 'column',
+          alignItems: row ? 'center' : 'flex-end',
           justifyContent: 'space-between',
           gap: 0.5,
         }}

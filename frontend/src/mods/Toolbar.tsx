@@ -4,7 +4,6 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
-  ButtonBase,
   CircularProgress,
   Divider,
   InputAdornment,
@@ -24,9 +23,7 @@ import {
   Filter,
   FolderTree,
   Layers,
-  LayoutGrid,
   Library,
-  List,
   Plus,
   Search,
   Settings2,
@@ -43,6 +40,7 @@ import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
@@ -74,15 +72,6 @@ const iconWhenCompact = {
     '& .label': { display: 'none' },
   },
 }
-
-const viewButton = (active: boolean) => ({
-  width: 34,
-  height: 30,
-  borderRadius: '6px',
-  bgcolor: active ? 'var(--mortar-hairline-16)' : 'transparent',
-  color: active ? 'var(--mortar-ink)' : 'text.secondary',
-  '&:hover': { bgcolor: active ? 'var(--mortar-hairline-16)' : 'var(--mortar-hairline-muted)' },
-})
 
 function persistGroupBy(by: GroupBy) {
   useSettings.setState({ listGroupBy: by })
@@ -303,34 +292,7 @@ export function Toolbar({
   useEffect(() => onFilterFocus(() => setExpanded(true)), [])
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.25, flexShrink: 0 }}>
-      <Box
-        role="group"
-        aria-label={t`View`}
-        sx={{
-          display: 'flex',
-          p: '3px',
-          gap: '2px',
-          bgcolor: 'var(--mortar-overlay-30)',
-          borderRadius: '8px',
-        }}
-      >
-        <ButtonBase
-          aria-label={t`Grid view`}
-          aria-pressed={view === 'grid'}
-          onClick={() => setView('grid')}
-          sx={viewButton(view === 'grid')}
-        >
-          <LayoutGrid size={15} />
-        </ButtonBase>
-        <ButtonBase
-          aria-label={t`List view`}
-          aria-pressed={view === 'list'}
-          onClick={() => setView('list')}
-          sx={viewButton(view === 'list')}
-        >
-          <List size={15} />
-        </ButtonBase>
-      </Box>
+      <ViewToggle value={view} onChange={setView} />
       <GroupByControl />
       {fieldOpen ? (
         <TextField
