@@ -11,6 +11,7 @@ import type {
 import { PreviewEverywhere } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
+import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useMods } from '../store.ts'
 import { EverywhereDialog } from './EverywhereDialog.tsx'
@@ -48,6 +49,10 @@ export function UpdateActions({
       .catch(() => setPreview(null))
   }, [game, update.uniqueId])
   const n = preview?.affected?.length ?? 0
+  const previewReady = preview !== null
+  const everywhereBlocked = !previewReady || n === 0
+  const everywhereWhy = previewReady ? t`No eligible profiles.` : t`Checking profiles…`
+  const missingWhy = t`This mod is not in the profile.`
   const blocked = queued || (caution !== '' && !acked)
   const act = (fn: () => Promise<unknown>) => () => {
     setAnchor(null)
@@ -80,32 +85,43 @@ export function UpdateActions({
         transitionDuration={0}
       >
         {downloadable(update) ? (
-          <MenuItem
-            disabled={blocked}
-            onClick={() => {
-              setAnchor(null)
-              setEverywhere(true)
-            }}
-          >
-            {t`Update in all profiles (${n})`}
-          </MenuItem>
+          <DisabledReason title={everywhereWhy} disabled={everywhereBlocked}>
+            <MenuItem
+              disabled={everywhereBlocked || blocked}
+              onClick={() => {
+                setAnchor(null)
+                setEverywhere(true)
+              }}
+            >
+              {t`Update in all profiles (${n})`}
+            </MenuItem>
+          </DisabledReason>
         ) : null}
-        <MenuItem
-          disabled={!mod}
-          onClick={act(async () => mod && setSkipVersion(mod, update.version))}
-        >
-          {t`Skip this version`}
-        </MenuItem>
-        <MenuItem disabled={!mod} onClick={act(async () => mod && setPinned(mod, !entry?.pinned))}>
-          {entry?.pinned ? t`Unpin` : t`Pin`}
-        </MenuItem>
-        {update.source && !entry?.skipSources?.includes(update.source) ? (
+        <DisabledReason title={missingWhy} disabled={!mod}>
           <MenuItem
             disabled={!mod}
-            onClick={act(async () => mod && setSkipSource(mod, update.source, true))}
+            onClick={act(async () => mod && setSkipVersion(mod, update.version))}
           >
-            {t`Ignore updates from ${update.source}`}
+            {t`Skip this update`}
           </MenuItem>
+        </DisabledReason>
+        <DisabledReason title={missingWhy} disabled={!mod}>
+          <MenuItem
+            disabled={!mod}
+            onClick={act(async () => mod && setPinned(mod, !entry?.pinned))}
+          >
+            {entry?.pinned ? t`Unpin version` : t`Pin version`}
+          </MenuItem>
+        </DisabledReason>
+        {update.source && !entry?.skipSources?.includes(update.source) ? (
+          <DisabledReason title={missingWhy} disabled={!mod}>
+            <MenuItem
+              disabled={!mod}
+              onClick={act(async () => mod && setSkipSource(mod, update.source, true))}
+            >
+              {t`Ignore updates from ${update.source}`}
+            </MenuItem>
+          </DisabledReason>
         ) : null}
       </Menu>
       <EverywhereDialog

@@ -11,6 +11,7 @@ import {
   OpenConsolePath,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { entryOf } from './lookup.ts'
 import { ICON_SIZE } from './menu.ts'
@@ -46,18 +47,15 @@ function RemoveOtherMenuItem({
 }) {
   const { t } = useLingui()
   return (
-    <MenuItem
+    <MenuAction
       disabled={locked}
+      icon={<Trash2 size={ICON_SIZE} />}
+      label={t`Remove from other profiles…`}
       onClick={() => {
         close()
         onClick()
       }}
-    >
-      <ListItemIcon sx={{ color: 'inherit' }}>
-        <Trash2 size={ICON_SIZE} />
-      </ListItemIcon>
-      <ListItemText>{t`Remove from other profiles…`}</ListItemText>
-    </MenuItem>
+    />
   )
 }
 
@@ -91,17 +89,16 @@ export function ModActionItems({
   splitCombine: ReactNode
 }) {
   const renderAction = (action: ModAction | 'reinstall', disabled = false) => (
-    <MenuItem
+    <MenuAction
       key={action}
       disabled={disabled}
+      icon={items[action].icon}
+      label={items[action].label}
       onClick={() => {
         close()
         items[action].run()
       }}
-    >
-      <ListItemIcon sx={{ color: 'inherit' }}>{items[action].icon}</ListItemIcon>
-      <ListItemText>{items[action].label}</ListItemText>
-    </MenuItem>
+    />
   )
   const has = (action: ModAction) => actions.includes(action)
   const result: ReactNode[] = []
@@ -121,48 +118,39 @@ export function ModActionItems({
       result.push(renderAction('reinstall', locked))
     }
     result.push(
-      <MenuItem
+      <MenuAction
         key="manifest"
+        icon={<FileJson size={ICON_SIZE} />}
+        label={labels.manifest}
         onClick={() => {
           close()
           openManifestOf(mod, profile)
         }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          <FileJson size={ICON_SIZE} />
-        </ListItemIcon>
-        <ListItemText>{labels.manifest}</ListItemText>
-      </MenuItem>,
+      />,
     )
     result.push(<Divider key="organisation-divider" />)
     result.push(
-      <MenuItem
+      <MenuAction
         key="category"
+        icon={<FolderTree size={ICON_SIZE} />}
+        label={labels.category}
         onClick={() => {
           close()
           onSetCategory()
         }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          <FolderTree size={ICON_SIZE} />
-        </ListItemIcon>
-        <ListItemText>{labels.category}</ListItemText>
-      </MenuItem>,
+      />,
     )
     result.push(
-      <MenuItem
+      <MenuAction
         key="add-bundle"
         disabled={locked}
+        icon={<PackagePlus size={ICON_SIZE} />}
+        label={labels.addBundle}
         onClick={() => {
           close()
           onAddBundle()
         }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          <PackagePlus size={ICON_SIZE} />
-        </ListItemIcon>
-        <ListItemText>{labels.addBundle}</ListItemText>
-      </MenuItem>,
+      />,
     )
     if (has('pin')) {
       result.push(renderAction('pin'))
@@ -172,19 +160,16 @@ export function ModActionItems({
     }
     result.push(<Divider key="other-profiles-divider" />)
     result.push(
-      <MenuItem
+      <MenuAction
         key="also-add"
         disabled={locked}
+        icon={<CopyPlus size={ICON_SIZE} />}
+        label={labels.alsoAdd}
         onClick={() => {
           close()
           onAlsoAdd()
         }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          <CopyPlus size={ICON_SIZE} />
-        </ListItemIcon>
-        <ListItemText>{labels.alsoAdd}</ListItemText>
-      </MenuItem>,
+      />,
     )
   }
   result.push(

@@ -31,6 +31,7 @@ import { ArrowDown, ArrowUp, Check, RotateCcw } from 'lucide-react'
 import { type MouseEvent, type ReactNode, useRef, useState } from 'react'
 import { SetListSort } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { columnLabel } from './columnLabel.ts'
 import {
@@ -269,17 +270,14 @@ function ListColumnMenu({
         }),
       ])}
       <Divider />
-      <MenuItem
+      <MenuAction
+        icon={<RotateCcw size={16} aria-hidden={true} />}
+        label={t`Reset to default columns`}
         onClick={() => {
           onReset()
           onClose()
         }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          <RotateCcw size={16} aria-hidden={true} />
-        </ListItemIcon>
-        <ListItemText>{t`Reset to default columns`}</ListItemText>
-      </MenuItem>
+      />
     </Menu>
   )
 }

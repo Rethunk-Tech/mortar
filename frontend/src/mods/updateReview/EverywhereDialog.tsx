@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -17,8 +18,9 @@ import {
   PreviewEverywhere,
   UpdateEverywhere,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
+import { errorMessage } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { usePending } from '../../toasts/usePending.ts'
 import { paper } from '../paper.ts'
 import { mergePreviews } from './mergePreviews.ts'
 
@@ -101,7 +103,7 @@ export function EverywhereDialog({
 }) {
   const { t } = useLingui()
   const [preview, setPreview] = useState<EverywherePreview | null>(null)
-  const [pending, setPending] = useState(false)
+  const [pending, run] = usePending()
   const [loadError, setLoadError] = useState('')
   const spec = mods.map((m) => `${m.id}\0${m.newKey}`).join('\n')
   useEffect(() => {
@@ -120,18 +122,17 @@ export function EverywhereDialog({
   }, [open, game, spec])
   const n = preview?.affected?.length ?? 0
   const apply = () => {
-    setPending(true)
-    Promise.all(mods.map((m) => UpdateEverywhere(game, m.id, m.newKey || 'latest')))
-      .then((parts) => {
-        const merged = mergeResults(parts)
-        useToasts.getState().push({
-          kind: 'success',
-          title: t`Updated in ${merged.updated?.length ?? 0} profiles`,
-        })
-        onClose()
+    run(async () => {
+      const parts = await Promise.all(
+        mods.map((m) => UpdateEverywhere(game, m.id, m.newKey || 'latest')),
+      )
+      const merged = mergeResults(parts)
+      useToasts.getState().push({
+        kind: 'success',
+        title: t`${plural(merged.updated?.length ?? 0, { one: 'Updated in # profile', other: 'Updated in # profiles' })}`,
       })
-      .catch(reportUnexpected)
-      .finally(() => setPending(false))
+      onClose()
+    })
   }
   return (
     <Dialog

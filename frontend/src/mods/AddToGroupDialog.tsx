@@ -5,8 +5,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  ListItemIcon,
-  ListItemText,
   MenuItem,
   TextField,
 } from '@mui/material'
@@ -14,6 +12,7 @@ import { FolderTree } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { addModToGroup } from './storeEntries.ts'
 import { useLocked } from './useLocked.ts'
@@ -24,12 +23,12 @@ function AddToGroupMenuItem({ locked, onClick }: { locked: boolean; onClick: () 
   const { t } = useLingui()
   return (
     <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
-      <MenuItem disabled={locked} onClick={onClick}>
-        <ListItemIcon sx={{ color: 'inherit' }}>
-          <FolderTree size={ICON_SIZE} />
-        </ListItemIcon>
-        <ListItemText>{t`Add to group…`}</ListItemText>
-      </MenuItem>
+      <MenuAction
+        disabled={locked}
+        icon={<FolderTree size={ICON_SIZE} />}
+        label={t`Add to group…`}
+        onClick={onClick}
+      />
     </DisabledReason>
   )
 }
@@ -61,37 +60,45 @@ function AddToGroupDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
       <DialogTitle>{t`Add to group…`}</DialogTitle>
-      <DialogContent>
-        {groups.map((g) => (
-          <MenuItem key={g.name} disabled={locked} onClick={() => add(g.name ?? '')}>
-            {g.name}
-          </MenuItem>
-        ))}
-        <TextField
-          autoFocus={true}
-          margin="dense"
-          label={t`New group`}
-          fullWidth={true}
-          value={name}
-          disabled={locked}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              add(name).catch(reportUnexpected)
-            }
-          }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-        <Button
-          disabled={locked || name.trim() === ''}
-          onClick={() => add(name).catch(reportUnexpected)}
-        >
-          {t`Add`}
-        </Button>
-      </DialogActions>
+      <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+        <DialogContent>
+          {groups.map((g) => (
+            <MenuItem
+              key={g.name}
+              disabled={locked}
+              onClick={() => {
+                add(g.name ?? '').catch(reportUnexpected)
+              }}
+            >
+              {g.name}
+            </MenuItem>
+          ))}
+          <TextField
+            autoFocus={true}
+            margin="dense"
+            label={t`New group`}
+            fullWidth={true}
+            value={name}
+            disabled={locked}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                add(name).catch(reportUnexpected)
+              }
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>{t`Cancel`}</Button>
+          <Button
+            disabled={locked || name.trim() === ''}
+            onClick={() => add(name).catch(reportUnexpected)}
+          >
+            {t`Add`}
+          </Button>
+        </DialogActions>
+      </DisabledReason>
     </Dialog>
   )
 }

@@ -1,15 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Menu,
-  MenuItem,
-  TextField,
-} from '@mui/material'
+import { Button, Divider, Menu, MenuItem } from '@mui/material'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
@@ -20,7 +10,9 @@ import {
   SaveConfigPreset,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -32,53 +24,16 @@ function openTarget() {
   return game && openId ? { game: game.id, id: openId } : null
 }
 
-function SavePresetDialog({
-  open,
-  draft,
-  onDraft,
-  onClose,
-  onSave,
-}: {
-  open: boolean
-  draft: string
-  onDraft: (value: string) => void
-  onClose: () => void
-  onSave: () => void
-}) {
-  const { t } = useLingui()
-  return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t`Save current as…`}</DialogTitle>
-      <DialogContent>
-        <TextField
-          size="small"
-          autoFocus={true}
-          fullWidth={true}
-          value={draft}
-          slotProps={{ htmlInput: { maxLength: maxPresetName } }}
-          onChange={(e) => onDraft(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-        <Button disabled={draft.trim() === ''} onClick={onSave}>
-          {t`Save`}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
-
 function PresetItems({
   names,
   locked,
   onApply,
-  onDelete,
+  onAskDelete,
 }: {
   names: string[]
   locked: boolean
   onApply: (name: string) => void
-  onDelete: (name: string) => void
+  onAskDelete: (name: string) => void
 }) {
   const { t } = useLingui()
   return (
@@ -95,7 +50,7 @@ function PresetItems({
         </DisabledReason>
       ))}
       {names.map((name) => (
-        <MenuItem key={`d-${name}`} onClick={() => onDelete(name)}>
+        <MenuItem key={`d-${name}`} sx={{ color: 'error.main' }} onClick={() => onAskDelete(name)}>
           {t`Delete ${name}`}
         </MenuItem>
       ))}
@@ -109,7 +64,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [names, setNames] = useState<string[]>([])
   const [saveOpen, setSaveOpen] = useState(false)
-  const [draft, setDraft] = useState('')
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const load = () => {
     const at = openTarget()
     if (!at) {
@@ -124,6 +79,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
       .then(() => {
         load()
         setSaveOpen(false)
+        setPendingDelete(null)
         setAnchor(null)
       })
       .catch(reportUnexpected)
@@ -149,7 +105,6 @@ function PresetsButton({ mod }: { mod: Mod }) {
       >
         <MenuItem
           onClick={() => {
-            setDraft('')
             setSaveOpen(true)
             setAnchor(null)
           }}
@@ -166,29 +121,46 @@ function PresetsButton({ mod }: { mod: Mod }) {
               run(() => ApplyConfigPreset(at.game, at.id, mod.key, mod.uniqueId, name))
             }
           }}
-          onDelete={(name) => {
-            const at = openTarget()
-            if (at) {
-              run(() => DeleteConfigPreset(at.game, mod.uniqueId, name))
-            }
+          onAskDelete={(name) => {
+            setAnchor(null)
+            setPendingDelete(name)
           }}
         />
       </Menu>
-      <SavePresetDialog
+      <PromptDialog
         open={saveOpen}
-        draft={draft}
-        onDraft={setDraft}
-        onClose={() => setSaveOpen(false)}
-        onSave={() => {
+        title={t`Save current as…`}
+        label={t`Preset name`}
+        maxLength={maxPresetName}
+        confirmLabel={t`Save`}
+        onCancel={() => setSaveOpen(false)}
+        onSubmit={(value) => {
           const at = openTarget()
           if (!at) {
             return
           }
           run(() =>
             ReadConfig(at.game, at.id, mod.key, mod.uniqueId).then((raw) =>
-              SaveConfigPreset(at.game, mod.uniqueId, draft.trim(), raw),
+              SaveConfigPreset(at.game, mod.uniqueId, value, raw),
             ),
           )
+        }}
+      />
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title={t`Delete ${pendingDelete ?? ''}?`}
+        body={t`This preset will be deleted.`}
+        confirmLabel={t`Delete`}
+        color="error"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          const name = pendingDelete
+          const at = openTarget()
+          if (!(name && at)) {
+            setPendingDelete(null)
+            return
+          }
+          run(() => DeleteConfigPreset(at.game, mod.uniqueId, name))
         }}
       />
     </>

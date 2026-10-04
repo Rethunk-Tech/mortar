@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { type ComponentProps, useState } from 'react'
@@ -15,7 +16,7 @@ function CleanupRow({
   const remove = useMods((s) => s.remove)
   const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
   const who = cleanup.name.trim() === '' ? t`Unknown mod` : cleanup.name
-  const reason = cleanup.reason || 'Not needed by any enabled mod'
+  const reason = cleanup.reason || t`Not needed by any enabled mod`
   return (
     <Box
       role="alert"
@@ -84,9 +85,11 @@ export function CleanupSection({
         <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
           {t`Cleanup`}
         </Typography>
-        <Button size="small" sx={{ ml: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
-          {t`Remove all`}
-        </Button>
+        {cleanup.length > 1 ? (
+          <Button size="small" sx={{ ml: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
+            {t`Remove all`}
+          </Button>
+        ) : null}
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {cleanup.map((item) => (
@@ -95,7 +98,7 @@ export function CleanupSection({
       </Box>
       <ConfirmDialog
         open={confirmCleanup}
-        title={t`Remove all ${cleanup.length} mods from this profile?`}
+        title={t`${plural(cleanup.length, { one: 'Remove all # mod from this profile?', other: 'Remove all # mods from this profile?' })}`}
         body={t`This change can be undone from History.`}
         confirmLabel={t`Remove all`}
         color="error"

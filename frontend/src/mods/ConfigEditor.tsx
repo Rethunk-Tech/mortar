@@ -19,6 +19,7 @@ import {
   WriteConfig,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -215,7 +216,11 @@ function EditorDialog({
       >
         <DialogTitle>{t`Edit config.json`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {error ? <Typography sx={text}>{error}</Typography> : null}
+          {error ? (
+            <Typography role="alert" sx={text}>
+              {error}
+            </Typography>
+          ) : null}
           <Tabs value={tab} onChange={(_, next: number) => onTab(next)}>
             <Tab label={t`Menu`} />
             <Tab label={t`Form`} />
@@ -242,7 +247,10 @@ function EditorDialog({
               minRows={12}
               value={jsonDraft}
               onChange={(e) => onJson(e.target.value)}
-              slotProps={{ input: { sx: { fontFamily: MONO, fontSize: 13 } } }}
+              slotProps={{
+                htmlInput: { 'aria-label': t`config.json` },
+                input: { sx: { fontFamily: MONO, fontSize: 13 } },
+              }}
             />
           ) : null}
         </DialogContent>
@@ -256,13 +264,14 @@ function EditorDialog({
           </DisabledReason>
         </DialogActions>
       </Dialog>
-      <Dialog open={discardOpen} onClose={onKeep}>
-        <DialogTitle>{t`Discard changes?`}</DialogTitle>
-        <DialogActions>
-          <Button onClick={onKeep}>{t`Cancel`}</Button>
-          <Button onClick={onDiscard} autoFocus={true}>{t`Discard`}</Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={discardOpen}
+        title={t`Discard changes?`}
+        confirmLabel={t`Discard`}
+        color="error"
+        onCancel={onKeep}
+        onConfirm={onDiscard}
+      />
     </>
   )
 }
@@ -331,7 +340,7 @@ function EditConfigButton({ mod }: { mod: Mod }) {
         onClick={() => setOpen(true)}
         sx={noWrap}
       >
-        {t`Edit`}
+        {t`Edit…`}
       </Button>
       <PresetsButton mod={mod} />
       <ConfigEditor mod={mod} open={open} onClose={() => setOpen(false)} />

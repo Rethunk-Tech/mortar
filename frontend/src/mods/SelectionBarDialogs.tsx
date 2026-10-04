@@ -7,6 +7,8 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -44,13 +46,28 @@ export function TagSelectionDialog({
           onInputChange={(_, value) => setTag(value)}
           renderInput={(params) => <TextField {...params} autoFocus={true} label={t`Tag`} />}
         />
-        <Button onClick={() => setAddTag(!addTag)} sx={{ mt: 1 }}>
-          {addTag ? t`Add tag` : t`Remove tag`}
-        </Button>
+        <ToggleButtonGroup
+          exclusive={true}
+          size="small"
+          value={addTag ? 'add' : 'remove'}
+          onChange={(_, value: string | null) => {
+            if (value === 'add') {
+              setAddTag(true)
+            }
+            if (value === 'remove') {
+              setAddTag(false)
+            }
+          }}
+          sx={{ mt: 1 }}
+        >
+          <ToggleButton value="add">{t`Add`}</ToggleButton>
+          <ToggleButton value="remove">{t`Remove`}</ToggleButton>
+        </ToggleButtonGroup>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t`Cancel`}</Button>
         <Button
+          variant="contained"
           disabled={tag.trim() === ''}
           onClick={() => {
             onClose()
@@ -101,6 +118,7 @@ export function CategorySelectionDialog({
       <DialogActions>
         <Button onClick={onClose}>{t`Cancel`}</Button>
         <Button
+          variant="contained"
           onClick={() => {
             onClose()
             setCategoryMany(mods, category).catch(reportUnexpected)

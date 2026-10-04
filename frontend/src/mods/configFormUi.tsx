@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   FormHelperText,
-  IconButton,
   MenuItem,
   Select,
   Switch,
@@ -15,6 +14,7 @@ import {
 } from '@mui/material'
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { IconAction } from '../shell/IconAction.tsx'
 import { fieldLabel } from './configFields.ts'
 import { type ConfigNode, emptyItem, isKeybind } from './configForm.ts'
 
@@ -244,8 +244,9 @@ function ListField(p: FieldProps) {
               onOpen={p.onOpen}
             />
           </Box>
-          <IconButton
-            size="small"
+          <IconAction
+            label={t`Move up`}
+            icon={<ChevronUp size={14} />}
             disabled={i === 0}
             onClick={() => {
               const next = [...items]
@@ -257,11 +258,10 @@ function ListField(p: FieldProps) {
                 p.onChange(p.path, { kind: 'list', items: next })
               }
             }}
-          >
-            <ChevronUp size={14} />
-          </IconButton>
-          <IconButton
-            size="small"
+          />
+          <IconAction
+            label={t`Move down`}
+            icon={<ChevronDown size={14} />}
             disabled={i === items.length - 1}
             onClick={() => {
               const next = [...items]
@@ -273,17 +273,14 @@ function ListField(p: FieldProps) {
                 p.onChange(p.path, { kind: 'list', items: next })
               }
             }}
-          >
-            <ChevronDown size={14} />
-          </IconButton>
-          <IconButton
-            size="small"
+          />
+          <IconAction
+            label={t`Remove item`}
+            icon={<Trash2 size={14} />}
             onClick={() =>
               p.onChange(p.path, { kind: 'list', items: items.filter((_, j) => j !== i) })
             }
-          >
-            <Trash2 size={14} />
-          </IconButton>
+          />
         </Box>
       ))}
       <Button

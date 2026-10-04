@@ -42,6 +42,7 @@ import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
@@ -56,7 +57,7 @@ const FILTERS: readonly {
   id: Exclude<ModFilter, 'all'>
   label: (i18n: I18n) => string
 }[] = [
-  { id: 'disabled', label: (i18n) => i18n._(msg`Disabled`) },
+  { id: 'disabled', label: (i18n) => i18n._(msg`Switched off`) },
   { id: 'update', label: (i18n) => i18n._(msg`Update available`) },
   { id: 'problem', label: (i18n) => i18n._(msg`Has problems`) },
   { id: 'pinned', label: (i18n) => i18n._(msg`Pinned`) },
@@ -188,17 +189,14 @@ function GroupByControl() {
           </Tooltip>
         ))}
         <Divider />
-        <MenuItem
+        <MenuAction
+          icon={<Settings2 size={16} aria-hidden={true} />}
+          label={t`Edit categories…`}
           onClick={() => {
             setAnchor(null)
             setEditorOpen(true)
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <Settings2 size={16} aria-hidden={true} />
-          </ListItemIcon>
-          <ListItemText>{t`Edit categories…`}</ListItemText>
-        </MenuItem>
+        />
       </Menu>
       <CategoryEditorDialog open={editorOpen} onClose={() => setEditorOpen(false)} />
     </>
@@ -215,7 +213,7 @@ function BrowseNexus({
   size?: 'large'
 }) {
   const { t } = useLingui()
-  const label = toolbar ? t`Open Nexus` : t`Browse Nexus`
+  const label = t`Open Nexus Mods`
   return (
     <Button
       variant={variant}
@@ -255,14 +253,14 @@ function AddArchive({
         variant={variant}
         size={size}
         disabled={blocked}
-        aria-label={t`Add archive`}
+        aria-label={t`Add archive…`}
         startIcon={installing ? <CircularProgress size={14} color="inherit" /> : <Plus size={14} />}
         onClick={() => {
           pick().catch(reportUnexpected)
         }}
         sx={toolbar ? iconWhenCompact : undefined}
       >
-        <span className="label">{installing ? t`Adding…` : t`Add archive`}</span>
+        <span className="label">{installing ? t`Adding…` : t`Add archive…`}</span>
       </Button>
     </DisabledReason>
   )
@@ -409,7 +407,7 @@ export function EmptyMods({ profileId }: { profileId: string }) {
       title={t`No mods yet`}
       action={
         <>
-          <TipBanner tip="mods">{t`Drop archives anywhere on the window, or Browse Nexus to find mods.`}</TipBanner>
+          <TipBanner tip="mods">{t`Drop archives anywhere on the window, or Open Nexus Mods to find mods.`}</TipBanner>
           <Box sx={{ display: 'flex', gap: 1.5 }}>
             <BrowseNexus variant="contained" size="large" />
             <AddArchive variant="outlined" size="large" />
@@ -419,7 +417,7 @@ export function EmptyMods({ profileId }: { profileId: string }) {
             onClick={() => openImport({ profileId })}
             sx={{ textDecoration: 'underline' }}
           >
-            {t`Or import a shared profile`}
+            {t`Or import a shared profile…`}
           </Button>
         </>
       }

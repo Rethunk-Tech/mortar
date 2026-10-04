@@ -16,8 +16,11 @@ import { useEffect, useState } from 'react'
 import type { CustomCategory } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { colorHex, PROFILE_COLORS } from '../profiles/appearance.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { useCustomCategories } from './customCategories.ts'
+import { usePending } from '../toasts/usePending.ts'
+import { categoriesDiffer, useCustomCategories } from './customCategories.ts'
 
 function CategoryRow({
   row,
@@ -57,11 +60,7 @@ function CategoryRow({
           </Tooltip>
         ))}
       </Box>
-      <Tooltip title={t`Delete category`}>
-        <IconButton aria-label={t`Delete category`} onClick={onDelete} size="small">
-          <Trash2 size={16} />
-        </IconButton>
-      </Tooltip>
+      <IconAction label={t`Delete category`} icon={<Trash2 size={16} />} onClick={onDelete} />
     </Box>
   )
 }
@@ -74,7 +73,8 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
   const load = useCustomCategories((s) => s.load)
   const [draft, setDraft] = useState<CustomCategory[]>([])
   const [pendingDelete, setPendingDelete] = useState<CustomCategory | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [discardOpen, setDiscardOpen] = useState(false)
+  const [pending, run] = usePending()
 
   useEffect(() => {
     if (open && gameId !== '') {
@@ -85,36 +85,41 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
   useEffect(() => {
     if (open) {
       setDraft(stored.map((c) => ({ ...c })))
+      setDiscardOpen(false)
     }
   }, [open, stored])
 
-  const persist = async (next: CustomCategory[]) => {
+  const persist = (next: CustomCategory[]) => {
     if (gameId === '') {
       return
     }
-    setBusy(true)
-    try {
+    run(async () => {
       const saved = await save(gameId, next)
       setDraft(saved.map((c) => ({ ...c })))
-    } catch (e) {
-      reportUnexpected(e)
-    } finally {
-      setBusy(false)
-    }
+    })
   }
 
-  const confirmDelete = async () => {
-    if (!pendingDelete) {
+  const dirty = categoriesDiffer(draft, stored)
+  const requestClose = () => {
+    if (pending) {
       return
     }
-    const next = draft.filter((c) => c.id !== pendingDelete.id)
-    setPendingDelete(null)
-    await persist(next)
+    if (dirty) {
+      setDiscardOpen(true)
+      return
+    }
+    onClose()
   }
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} transitionDuration={0} maxWidth="sm" fullWidth={true}>
+      <Dialog
+        open={open}
+        onClose={pending ? undefined : requestClose}
+        transitionDuration={0}
+        maxWidth="sm"
+        fullWidth={true}
+      >
         <DialogTitle>{t`Custom categories`}</DialogTitle>
         <DialogContent>
           <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 2 }}>
@@ -134,38 +139,53 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
           <Button
             startIcon={<Plus size={14} />}
             onClick={() => setDraft([...draft, { id: '', name: '', color: '' }])}
-            disabled={busy}
+            disabled={pending}
           >
             {t`Add category`}
           </Button>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>{t`Close`}</Button>
+          <Button onClick={requestClose} disabled={pending}>
+            {t`Cancel`}
+          </Button>
           <Button
             variant="contained"
-            disabled={busy || gameId === ''}
-            onClick={() => persist(draft).catch(reportUnexpected)}
+            disabled={pending || gameId === ''}
+            onClick={() => persist(draft)}
           >
             {t`Save`}
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
+      <ConfirmDialog
         open={pendingDelete !== null}
-        onClose={() => setPendingDelete(null)}
-        transitionDuration={0}
-      >
-        <DialogTitle>{t`Delete ${pendingDelete?.name ?? ''}?`}</DialogTitle>
-        <DialogContent>
-          <Typography>{t`Mods in this category will move to Uncategorized.`}</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPendingDelete(null)}>{t`Cancel`}</Button>
-          <Button color="error" onClick={() => confirmDelete().catch(reportUnexpected)}>
-            {t`Delete`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        title={t`Delete ${pendingDelete?.name ?? ''}?`}
+        body={t`Mods in this category will move to Uncategorized.`}
+        confirmLabel={t`Delete`}
+        color="error"
+        busy={pending}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (!pendingDelete) {
+            return
+          }
+          const next = draft.filter((c) => c.id !== pendingDelete.id)
+          setPendingDelete(null)
+          persist(next)
+        }}
+      />
+      <ConfirmDialog
+        open={discardOpen}
+        title={t`Discard changes?`}
+        confirmLabel={t`Discard`}
+        color="error"
+        onCancel={() => setDiscardOpen(false)}
+        onConfirm={() => {
+          setDiscardOpen(false)
+          setDraft(stored.map((c) => ({ ...c })))
+          onClose()
+        }}
+      />
     </>
   )
 }
