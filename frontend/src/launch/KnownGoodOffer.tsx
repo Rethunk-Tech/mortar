@@ -1,11 +1,11 @@
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import { MarkKnownGood } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useLaunch } from './store.ts'
@@ -39,30 +39,24 @@ export function KnownGoodOffer() {
     return null
   }
   return (
-    <Dialog open={true} onClose={() => setOffer(null)} transitionDuration={0}>
-      <DialogTitle>{t`Mark this profile known good?`}</DialogTitle>
-      <DialogContent>{t`That run reached the title screen without errors.`}</DialogContent>
-      <DialogActions>
-        <Button onClick={() => setOffer(null)} sx={{ whiteSpace: 'nowrap' }}>
-          {t`Not now`}
-        </Button>
-        <Button
-          onClick={() => {
-            MarkKnownGood(offer.game, offer.profile)
-              .then(() => {
-                useToasts.getState().push({
-                  kind: 'success',
-                  title: i18n._(msg`Marked known good`),
-                })
-                setOffer(null)
-              })
-              .catch(reportUnexpected)
-          }}
-          sx={{ whiteSpace: 'nowrap' }}
-        >
-          {t`Mark known good`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={true}
+      title={t`Mark this profile known good?`}
+      body={t`That run reached the title screen without errors.`}
+      confirmLabel={t`Mark known good`}
+      cancelLabel={t`Not now`}
+      onCancel={() => setOffer(null)}
+      onConfirm={() => {
+        MarkKnownGood(offer.game, offer.profile)
+          .then(() => {
+            useToasts.getState().push({
+              kind: 'success',
+              title: i18n._(msg`Marked known good`),
+            })
+            setOffer(null)
+          })
+          .catch(reportUnexpected)
+      }}
+    />
   )
 }

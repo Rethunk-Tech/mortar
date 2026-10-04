@@ -95,7 +95,7 @@ export function SaveWarnDialog() {
         )}
         <Button
           variant="contained"
-          onClick={() => playAnyway().catch(() => undefined)}
+          onClick={() => playAnyway().catch(reportUnexpected)}
           sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Play anyway`}

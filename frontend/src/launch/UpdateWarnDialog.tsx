@@ -10,6 +10,7 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useLaunch } from './store.ts'
 
 export function UpdateWarnDialog() {
@@ -49,10 +50,10 @@ export function UpdateWarnDialog() {
       </DialogContent>
       <DialogActions>
         <Button onClick={cancel} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
-        <Button onClick={openProblems} sx={{ whiteSpace: 'nowrap' }}>{t`Open problems`}</Button>
+        <Button onClick={openProblems} sx={{ whiteSpace: 'nowrap' }}>{t`Open problems…`}</Button>
         <Button
           variant="contained"
-          onClick={() => playAnyway().catch(() => undefined)}
+          onClick={() => playAnyway().catch(reportUnexpected)}
           sx={{ whiteSpace: 'nowrap' }}
         >
           {t`Play anyway`}

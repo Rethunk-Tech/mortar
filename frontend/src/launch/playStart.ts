@@ -10,7 +10,7 @@ import { isGameId, useNav } from '../nav/store.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { errorMessage, reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
   type AutoUpdateRestorePoint,
@@ -73,12 +73,6 @@ type LaunchGet = () => {
   playCheck: PlayCheck | null
   updateWarn: UpdateWarn | null
   saveWarn: SaveWarn | null
-}
-
-const reportError = (title: string) => (e: unknown) => {
-  useToasts
-    .getState()
-    .push({ kind: 'error', title, body: errorMessage(e), detail: errorDetails(e) })
 }
 
 function updateContext(result: AutoUpdateResult): UpdateContext | undefined {

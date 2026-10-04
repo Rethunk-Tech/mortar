@@ -1,4 +1,4 @@
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
@@ -19,8 +19,7 @@ import { LastSaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/interna
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { addRecordedMods } from '../saves/recordedActions.ts'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import type { PlayIssueGroup } from './playIssues.ts'
 import { overflowIssueCount } from './playIssues.ts'
 import { useLaunch } from './store.ts'
@@ -41,7 +40,7 @@ function GroupHeading({ group }: { group: PlayIssueGroup }) {
     case 'changes':
       return t`Changed since last run (${group.count})`
     case 'saveMods':
-      return t`This save was last played with ${group.count} mods this profile lacks`
+      return t`This save was last played with ${plural(group.count, { one: '# mod this profile lacks', other: '# mods this profile lacks' })}`
     default:
       return ''
   }
@@ -50,14 +49,7 @@ function GroupHeading({ group }: { group: PlayIssueGroup }) {
 function persistSkip(game: string, profile: string, on: boolean) {
   SetSkipPlayCheck(game, profile, on)
     .then((next) => useProfiles.getState().replace(next))
-    .catch((e: unknown) => {
-      useToasts.getState().push({
-        kind: 'error',
-        title: i18n._(msg`Could not save the profile`),
-        body: errorMessage(e),
-        detail: errorDetails(e),
-      })
-    })
+    .catch(reportError(i18n._(msg`Could not save the profile`)))
 }
 
 function Group({ group }: { group: PlayIssueGroup }) {
@@ -142,7 +134,7 @@ export function PrePlayDialog() {
         <Button
           onClick={() => persistThen(openProblems)}
           sx={{ whiteSpace: 'nowrap' }}
-        >{t`Open problems`}</Button>
+        >{t`Open problems…`}</Button>
         {hasUpdates ? (
           <Button
             onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}

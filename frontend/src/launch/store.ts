@@ -16,7 +16,7 @@ import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { errorDetails, errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type AutoUpdateRestorePoint, rollbackAutoUpdate } from './autoUpdate.ts'
 import { applyOnPlayWindow } from './onPlay.ts'
@@ -48,11 +48,6 @@ function resetConsole(status: Status, prev: Status | null) {
       : status.profile
   useConsole.getState().reset(status.game, keep || status.profile)
   return true
-}
-const reportError = (title: string) => (e: unknown) => {
-  useToasts
-    .getState()
-    .push({ kind: 'error', title, body: errorMessage(e), detail: errorDetails(e) })
 }
 function failureBody(status: Status): string {
   if (status.hint === Hint.HintSteam) {
@@ -196,7 +191,7 @@ function applyStatus(
       previous.game === rollback.game &&
       previous.profile === rollback.profile
     ) {
-      checkUpdatedRun(rollback, get, set).catch(() => undefined)
+      checkUpdatedRun(rollback, get, set).catch(reportUnexpected)
     }
   } else {
     set({ status: { ...status, state: State.Idle } })

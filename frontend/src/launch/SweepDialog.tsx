@@ -1,5 +1,5 @@
 import type { I18n } from '@lingui/core'
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -10,12 +10,11 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { useState } from 'react'
 import type { SweepReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { UpdateEverywhere } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { paper } from '../mods/paper.ts'
-import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { useSweepUi } from './events.ts'
 
 const DIALOG_WIDTH = 480
@@ -26,7 +25,7 @@ function fixLabel(i18n: I18n, fix: string): string {
     return i18n._(msg`Update`)
   }
   if (fix === 'off') {
-    return i18n._(msg`Turn off`)
+    return i18n._(msg`Switch off`)
   }
   return i18n._(msg`No fix yet`)
 }
@@ -56,7 +55,12 @@ function ProfileRows({ report, i18n }: { report: SweepReport; i18n: I18n }) {
           ))}
           {(row.missingDeps ?? 0) > 0 ? (
             <Typography sx={{ fontSize: 13 }} color="text.secondary">
-              {i18n._(msg`${row.missingDeps} missing dependencies`)}
+              {i18n._(
+                msg`${plural(row.missingDeps, {
+                  one: '# missing dependency',
+                  other: '# missing dependencies',
+                })}`,
+              )}
             </Typography>
           ) : null}
         </Box>
@@ -70,20 +74,17 @@ function SweepDialog() {
   const report = useSweepUi((s) => s.report)
   const open = useSweepUi((s) => s.open)
   const close = useSweepUi((s) => s.close)
-  const [pending, setPending] = useState(false)
+  const [pending, run] = usePending()
   const ids = report ? fixableIds(report) : []
   const apply = () => {
     if (!report) {
       return
     }
-    setPending(true)
-    Promise.all(ids.map((id) => UpdateEverywhere(report.game, id, 'latest')))
-      .then(() => {
-        useToasts.getState().push({ kind: 'success', title: t`Updated fixable mods` })
-        close()
-      })
-      .catch(reportUnexpected)
-      .finally(() => setPending(false))
+    run(async () => {
+      await Promise.all(ids.map((id) => UpdateEverywhere(report.game, id, 'latest')))
+      useToasts.getState().push({ kind: 'success', title: t`Updated fixable mods` })
+      close()
+    })
   }
   return (
     <Dialog

@@ -20,7 +20,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { CrashDialog } from '../console/CrashDialog.tsx'
+import { CrashDialog, SwitchOffButton } from '../console/CrashDialog.tsx'
 import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
 import { launchLine } from '../firstrun/logic.ts'
@@ -30,6 +30,7 @@ import { openPage } from '../mods/menu.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { controlsCutout } from '../shell/controlsCutout.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -237,28 +238,30 @@ function FlatpakGrant() {
     <>
       <LaunchLine line={cmd} />
       <Button variant="outlined" onClick={() => setAsk(true)} sx={{ whiteSpace: 'nowrap' }}>
-        {t`Grant access`}
+        {t`Grant access…`}
       </Button>
-      <Dialog open={ask} onClose={() => setAsk(false)} transitionDuration={0}>
-        <DialogTitle>{t`Grant Flatpak Steam access?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAsk(false)}>{t`Cancel`}</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setAsk(false)
-              GrantSteamAccess().catch(reportUnexpected)
-            }}
-          >
-            {t`Grant access`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={ask}
+        title={t`Grant Flatpak Steam access?`}
+        body={
+          <>
+            {t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}{' '}
+            {cmd}
+          </>
+        }
+        confirmLabel={t`Grant access`}
+        onCancel={() => setAsk(false)}
+        onConfirm={() => {
+          setAsk(false)
+          GrantSteamAccess()
+            .then(() => SteamAccess())
+            .then((a) => {
+              setCmd(a.command)
+              useToasts.getState().push({ kind: 'success', title: t`Access granted` })
+            })
+            .catch(reportUnexpected)
+        }}
+      />
     </>
   )
 }
@@ -316,11 +319,7 @@ function Failure({ game }: { game: string }) {
         >
           {t`Open console`}
         </Button>
-        {mod ? (
-          <Button
-            onClick={() => useMods.getState().setEnabled(mod, false).catch(reportUnexpected)}
-          >{t`Switch off`}</Button>
-        ) : null}
+        {mod ? <SwitchOffButton mod={mod} /> : null}
         {nexusID > 0 ? (
           <Button
             onClick={() =>
@@ -329,7 +328,7 @@ function Failure({ game }: { game: string }) {
               )
             }
           >
-            {t`Open page`}
+            {t`Open on Nexus`}
           </Button>
         ) : null}
         <Button
@@ -351,29 +350,20 @@ function DirectDialog() {
   const ask = useLaunch((s) => s.askDirect)
   const answer = useLaunch((s) => s.answerDirect)
   return (
-    <Dialog
+    <ConfirmDialog
       open={ask !== null}
-      onClose={() => answer(false)}
-      transitionDuration={0}
-      slotProps={{ paper: { sx: { maxWidth: 440 } } }}
-    >
-      <DialogTitle>{t`Steam was not found`}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {ask?.profile === ''
-            ? t`Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
-            : t`Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => answer(false)} sx={{ whiteSpace: 'nowrap' }}>
-          {t`Cancel`}
-        </Button>
-        <Button variant="contained" onClick={() => answer(true)} sx={{ whiteSpace: 'nowrap' }}>
-          {t`Launch without Steam`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      title={t`Steam was not found`}
+      body={
+        ask?.profile === ''
+          ? t`Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
+          : t`Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
+      }
+      confirmLabel={t`Launch without Steam`}
+      onCancel={() => answer(false)}
+      onConfirm={() => {
+        answer(true).catch(reportUnexpected)
+      }}
+    />
   )
 }
 

@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
 import { Square } from 'lucide-react'
@@ -151,7 +152,7 @@ export function PlayControl({ game }: { game: string }) {
     label = t`Installing SMAPI…`
   }
   if (updating > 0) {
-    label = t`Updating ${updating} mods…`
+    label = t`${plural(updating, { one: 'Updating # mod…', other: 'Updating # mods…' })}`
   }
   return (
     <VanillaPlay
