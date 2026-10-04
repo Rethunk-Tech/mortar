@@ -48,11 +48,7 @@ func loadWindowGeom(dataDir string, screens []screenRect) (windowGeom, bool) {
 
 func saveWindowGeom(dataDir string, g windowGeom) {
 	_ = os.MkdirAll(dataDir, 0o700)
-	b, err := json.Marshal(g)
-	if err != nil {
-		return
-	}
-	_ = datadir.WriteFile(windowGeomPath(dataDir), b, 0o600)
+	_ = datadir.WriteJSON(windowGeomPath(dataDir), g)
 }
 
 func clampWindow(x, y, w, h int, screens []screenRect) (int, int, int, int) {

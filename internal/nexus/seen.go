@@ -2,7 +2,6 @@ package nexus
 
 import (
 	"cmp"
-	"encoding/json"
 	"errors"
 	"maps"
 	"os"
@@ -114,14 +113,10 @@ func (s *SeenStore) evictLocked() {
 }
 
 func (s *SeenStore) writeLocked() error {
-	raw, err := json.Marshal(s.data)
-	if err != nil {
-		return err
-	}
 	if err := os.MkdirAll(filepath.Dir(s.path), 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteFile(s.path, raw, 0o600)
+	return datadir.WriteJSON(s.path, s.data)
 }
 
 // Snapshot copies the map for the frontend.

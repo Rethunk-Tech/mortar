@@ -3,6 +3,8 @@
 package templates
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/bundles"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/gamesettings"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -51,21 +54,44 @@ func NewService(d Deps, dataDir string) *Service {
 	return &Service{d: d, root: filepath.Join(dataDir, "templates")}
 }
 
-func (s *Service) file(game string) (string, error) {
-	if !gamepkg.Valid(game) {
-		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", game))
+func (s *Service) read(game string) ([]Template, error) {
+	path, err := gamepkg.File(s.root, game)
+	if err != nil {
+		return nil, err
+	}
+	list, err := readList(path)
+	if err != nil {
+		return nil, fmt.Errorf("read templates for %s: %w", game, err)
 	}
 	return filepath.Join(s.root, game+".json"), nil
 }
 
-func (s *Service) read(game string) ([]Template, error) {
-	path, err := s.file(game)
+// templatesFile is the on-disk shape; files written before it carried a version are a bare array.
+type templatesFile struct {
+	FormatVersion int        `json:"formatVersion"`
+	Templates     []Template `json:"templates"`
+}
+
+func readList(path string) ([]Template, error) {
+	b, err := fsx.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return []Template{}, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	list := []Template{}
-	if _, err := datadir.ReadJSON(path, &list); err != nil {
-		return nil, fmt.Errorf("read templates for %s: %w", game, err)
+	var list []Template
+	if bytes.HasPrefix(bytes.TrimSpace(b), []byte("[")) {
+		err = json.Unmarshal(b, &list)
+	} else {
+		var f templatesFile
+		if err = json.Unmarshal(b, &f); err == nil {
+			err = datadir.CheckVersion(f.FormatVersion)
+		}
+		list = f.Templates
+	}
+	if err != nil {
+		return nil, err
 	}
 	if list == nil {
 		list = []Template{}
@@ -81,7 +107,7 @@ func (s *Service) write(game string, list []Template) error {
 	if err := os.MkdirAll(s.root, 0o700); err != nil {
 		return err
 	}
-	return datadir.WriteJSON(path, list)
+	return datadir.WriteVersioned(path, templatesFile{FormatVersion: datadir.FormatVersion, Templates: list})
 }
 
 func cleanName(name string) (string, error) {

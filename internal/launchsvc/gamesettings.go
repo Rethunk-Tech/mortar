@@ -126,12 +126,7 @@ func (s *Service) prepareGameSettings(game, id string) (*settingsRestore, bool, 
 }
 
 func writeSettingsRestore(path string, restore *settingsRestore) error {
-	body, err := json.Marshal(settingsRestoreRecord{Path: restore.path, Original: restore.original, Written: restore.written})
-	if err != nil {
-		return err
-	}
-	body = append(body, '\n')
-	return datadir.WriteFile(path, body, 0o600)
+	return datadir.WriteJSON(path, settingsRestoreRecord{Path: restore.path, Original: restore.original, Written: restore.written})
 }
 
 func readSettingsRestore(path string) (*settingsRestore, error) {
