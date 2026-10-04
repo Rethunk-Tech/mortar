@@ -395,6 +395,66 @@ function ReportPicker({
   )
 }
 
+function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
+  return (
+    <Box
+      sx={{
+        px: 1.75,
+        py: 1,
+        borderRadius: '8px',
+        bgcolor: 'var(--mortar-overlay-30)',
+        border: '1px solid var(--mortar-hairline-12)',
+        minWidth: 0,
+      }}
+    >
+      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{label}</Typography>
+      <Typography
+        noWrap={true}
+        sx={{ fontSize: 20, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}
+      >
+        {value}
+      </Typography>
+      {note ? (
+        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary', maxWidth: 220 }}>
+          {note}
+        </Typography>
+      ) : null}
+    </Box>
+  )
+}
+
+// The launch at a glance: time to the title screen, the change since the launch before it, and the slowest mod.
+function Summary({
+  report,
+  previous,
+}: {
+  report: StartupReport
+  previous: StartupReport | undefined
+}) {
+  const { t } = useLingui()
+  const duration = useDuration()
+  const title = report.phases.titleScreen
+  const [slowest] = [...(report.mods ?? [])].sort((a, b) => modTotal(b) - modTotal(a))
+  const before = previous?.phases.titleScreen ?? 0
+  const change = title > 0 && before > 0 ? title - before : null
+  return (
+    <>
+      <Stat label={t`Title screen`} value={title > 0 ? duration(title) : t`Not reached`} />
+      {change === null ? null : (
+        <Stat
+          label={t`Since the launch before`}
+          value={duration(Math.abs(change))}
+          note={change > 0 ? t`slower` : t`faster`}
+        />
+      )}
+      {slowest ? (
+        <Stat label={t`Slowest mod`} value={duration(modTotal(slowest))} note={slowest.name} />
+      ) : null}
+      <Stat label={t`Mods measured`} value={String((report.mods ?? []).length)} />
+    </>
+  )
+}
+
 function MeasureBanner({ onCancel }: { onCancel: () => void }) {
   const { t } = useLingui()
   const running = useLaunch(
@@ -423,7 +483,6 @@ function MeasureBanner({ onCancel }: { onCancel: () => void }) {
 
 export function StartupPanel({ game }: { game: string }) {
   const { t } = useLingui()
-  const duration = useDuration()
   const openId = useProfiles((s) => s.openId)
   const { reports, pending, measureNext, cancelMeasure } = useStartupReports(game, openId)
   const [selected, setSelected] = useState('')
@@ -460,11 +519,9 @@ export function StartupPanel({ game }: { game: string }) {
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
       {banner}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-        <Typography variant="h6" sx={{ flex: '1 1 auto' }}>
-          {report.phases.titleScreen > 0
-            ? t`Title screen after ${duration(report.phases.titleScreen)}`
-            : t`The title screen was not reached`}
-        </Typography>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flex: '1 1 auto' }}>
+          <Summary report={report} previous={reports[reports.indexOf(report) + 1]} />
+        </Box>
         {reports.length > 1 ? (
           <ReportPicker reports={reports} value={report.id} onChange={setSelected} />
         ) : null}
