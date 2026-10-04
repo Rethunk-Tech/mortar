@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
 // Service exposes the problem checks to the frontend.
@@ -29,6 +30,8 @@ type Service struct {
 	profiles *profile.Store
 	meta     Meta
 	Runs     RunReader
+	// Damage lists the game's store items whose files failed verification; nil means none.
+	Damage func(game string) map[string]store.Damage
 	// NexusFiles, when set, confirms flagged updates against Nexus's live file lists in one call.
 	NexusFiles NexusFilesOf
 
@@ -333,6 +336,7 @@ type driftScan struct {
 }
 
 func (s *Service) withDrift(gameID, id, fp string, r Result) (Result, error) {
+	r.Damaged = s.damagedMods(gameID, id)
 	if s.settings != nil && !s.settings.Get().DriftChecksOn() {
 		r.Drift = []profile.Drift{}
 		return r, nil
@@ -619,4 +623,39 @@ func (s *Service) Pages(gameID, id string) (map[string]string, error) {
 		return nil, err
 	}
 	return Pages(mods), nil
+}
+
+// maxDamagedFiles bounds the file names a Damaged row carries.
+const maxDamagedFiles = 5
+
+// damagedMods is the profile's mods whose store item failed verification, one row per item.
+func (s *Service) damagedMods(gameID, id string) []Damaged {
+	if s.Damage == nil {
+		return nil
+	}
+	damaged := s.Damage(gameID)
+	if len(damaged) == 0 {
+		return nil
+	}
+	mods, err := s.installed(gameID, id)
+	if err != nil {
+		return nil
+	}
+	return damagedRows(mods, damaged)
+}
+
+func damagedRows(mods []Installed, damaged map[string]store.Damage) []Damaged {
+	var out []Damaged
+	for _, m := range mods {
+		d, ok := damaged[m.Key]
+		if !ok || slices.ContainsFunc(out, func(x Damaged) bool { return x.Key == m.Key }) {
+			continue
+		}
+		files := slices.Concat(d.Missing, d.Changed, d.Extra)
+		out = append(out, Damaged{
+			Key: m.Key, Name: m.Name, Missing: len(d.Missing), Changed: len(d.Changed), Extra: len(d.Extra),
+			Files: files[:min(len(files), maxDamagedFiles)],
+		})
+	}
+	return out
 }

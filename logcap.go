@@ -47,26 +47,28 @@ func (c *cappedWriter) Write(p []byte) (int, error) {
 	return c.w.Write(p)
 }
 
-func capCrashLog(dataDir string) {
-	capCrashLogAt(dataDir, maxCrashBytes)
+func capCrashLog(dataDir string) bool {
+	return capCrashLogAt(dataDir, maxCrashBytes)
 }
 
-func capCrashLogAt(dataDir string, limit int64) {
+// capCrashLogAt empties crash.log when it is over limit and already seen, and reports whether it did.
+func capCrashLogAt(dataDir string, limit int64) bool {
 	path := filepath.Join(dataDir, "crash.log")
 	info, err := os.Stat(path)
 	if err != nil || info.Size() <= limit {
-		return
+		return false
 	}
 	seenRaw, err := fsx.ReadFile(filepath.Join(dataDir, "crash.seen"))
 	if err != nil {
-		return
+		return false
 	}
 	seen, err := strconv.ParseInt(strings.TrimSpace(string(seenRaw)), 10, 64)
 	if err != nil || seen < info.Size() {
-		return
+		return false
 	}
 	if err := os.Truncate(path, 0); err != nil {
-		return
+		return false
 	}
 	_ = datadir.WriteFile(filepath.Join(dataDir, "crash.seen"), []byte("0\n"), 0o600)
+	return true
 }

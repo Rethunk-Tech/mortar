@@ -151,6 +151,17 @@ type Cleanup struct {
 }
 
 type DismissedProblem struct {
+// Damaged is a mod whose stored files no longer match what was stored: files went missing, changed or appeared.
+// Files names the first few.
+type Damaged struct {
+	Key     string   `json:"key"`
+	Name    string   `json:"name"`
+	Missing int      `json:"missing"`
+	Changed int      `json:"changed"`
+	Extra   int      `json:"extra"`
+	Files   []string `json:"files"`
+}
+
 	Token         string         `json:"token"`
 	AssetConflict *AssetConflict `json:"assetConflict,omitempty"`
 	Broken        *Broken        `json:"broken,omitempty"`
@@ -171,6 +182,7 @@ type Result struct {
 	RunErrors      []RunError         `json:"runErrors"`
 	Drift          []profile.Drift    `json:"drift,omitempty"`
 	Dismissed      []DismissedProblem `json:"dismissed"`
+	Damaged        []Damaged          `json:"damaged,omitempty"`
 	Unknown        bool               `json:"unknown"`
 	Timings        []CheckTiming      `json:"timings,omitempty"`
 }
@@ -191,7 +203,7 @@ func (r Result) Count() int {
 			duplicates++
 		}
 	}
-	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.Drift)
+	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.Drift) + len(r.Damaged)
 }
 
 // WarningCount is cosmetic asset conflicts plus compat, cleanup and redundancy hints.

@@ -320,6 +320,7 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 		}
 		return &Error{Game: game, Key: key, Err: err}
 	}
+	s.recordInstalled(game, key, final)
 	return s.touch(game, key)
 }
 
@@ -615,6 +616,8 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 				if err := os.RemoveAll(filepath.Join(s.root, g.name, key)); err != nil {
 					errs = append(errs, err)
 					next[g.name][key] = last
+				} else {
+					s.forget(g.name, key)
 				}
 				continue
 			}
@@ -693,6 +696,7 @@ func (s *Store) Remove(refs []Ref) error {
 			continue
 		}
 		errs = append(errs, os.RemoveAll(filepath.Join(s.root, it.Game, it.Key)))
+		s.forget(it.Game, it.Key)
 		if idx[it.Game] != nil {
 			delete(idx[it.Game], it.Key)
 		}
@@ -701,15 +705,16 @@ func (s *Store) Remove(refs []Ref) error {
 	return errors.Join(errs...)
 }
 
-// Cleanup removes temp folders an interrupted run left behind.
-func (s *Store) Cleanup() error {
+// Cleanup removes temp folders an interrupted run left behind and returns their game/name paths.
+func (s *Store) Cleanup() ([]string, error) {
 	games, err := os.ReadDir(s.root)
 	if errors.Is(err, fs.ErrNotExist) {
-		return nil
+		return nil, nil
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
+	var removed []string
 	var errs []error
 	for _, g := range games {
 		if !g.IsDir() {
@@ -722,9 +727,13 @@ func (s *Store) Cleanup() error {
 		}
 		for _, it := range items {
 			if strings.HasPrefix(it.Name(), tempPrefix) {
-				errs = append(errs, os.RemoveAll(filepath.Join(s.root, g.Name(), it.Name())))
+				if err := os.RemoveAll(filepath.Join(s.root, g.Name(), it.Name())); err != nil {
+					errs = append(errs, err)
+				} else {
+					removed = append(removed, g.Name()+"/"+it.Name())
+				}
 			}
 		}
 	}
-	return errors.Join(errs...)
+	return removed, errors.Join(errs...)
 }

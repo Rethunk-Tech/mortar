@@ -357,13 +357,13 @@ func TestTouchAndCleanup(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(tmp, "x"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.Cleanup(); err != nil {
-		t.Fatal(err)
+	if removed, err := s.Cleanup(); err != nil || len(removed) != 1 || removed[0] != "stardew/"+tempPrefix+"123" {
+		t.Fatalf("cleanup = %v, %v", removed, err)
 	}
 	if got := names(t, filepath.Join(s.root, "stardew")); len(got) != 1 || got[0] != "smapi-1" {
 		t.Fatalf("after cleanup: %v", got)
 	}
-	if err := (&Store{root: filepath.Join(t.TempDir(), "none")}).Cleanup(); err != nil {
+	if _, err := (&Store{root: filepath.Join(t.TempDir(), "none")}).Cleanup(); err != nil {
 		t.Fatalf("cleanup on missing root: %v", err)
 	}
 }
