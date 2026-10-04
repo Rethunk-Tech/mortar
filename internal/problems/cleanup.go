@@ -45,6 +45,7 @@ func cleanupHints(mods []Installed) []Cleanup {
 		out = append(out, Cleanup{Key: mod.Key, UniqueID: mod.UniqueID, Name: mod.Name})
 	}
 	out = append(out, tilesheets...)
+	out = append(out, recolourAddons(mods)...)
 	slices.SortFunc(out, func(a, b Cleanup) int {
 		if c := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); c != 0 {
 			return c

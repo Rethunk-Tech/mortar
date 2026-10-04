@@ -43,3 +43,17 @@ func TestRecolourChoiceLeftToThePack(t *testing.T) {
 		}
 	}
 }
+
+func TestRecolourAddonWithoutItsRecolour(t *testing.T) {
+	icons := Installed{Key: "icons", Enabled: true, UniqueID: "N3cro_92.EarthyIconsForWorldMapsEverywhere", Name: "Earthy Icons for Worldmaps Everywhere"}
+	got := recolourAddons([]Installed{icons, earthy(false)})
+	if len(got) != 1 || got[0].Key != "icons" || got[0].Reason != "Made for Earthy Recolour, which is not enabled" {
+		t.Fatalf("addons = %#v", got)
+	}
+	if got := recolourAddons([]Installed{icons, earthy(true)}); len(got) != 0 {
+		t.Fatalf("addon with its recolour flagged: %#v", got)
+	}
+	if got := recolourAddons([]Installed{earthy(true)}); len(got) != 0 {
+		t.Fatalf("recolour flagged as its own addon: %#v", got)
+	}
+}

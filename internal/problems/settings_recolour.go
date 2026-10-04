@@ -139,3 +139,32 @@ func mapsByHasMod(pack cachedPack, field string) bool {
 			slices.ContainsFunc(p.when.config, func(c cpConfig) bool { return strings.EqualFold(c.field, field) })
 	})
 }
+
+// Name words that mark a mod as made for one recolour. Broader aliases ("vibrant", "eemie") also name unrelated
+// mods, so only these are trusted in a mod's name.
+var recolourNameWords = map[string]int{"earthy": 0, "starblue": 1, "vpr": 2, "wittily": 3}
+
+// recolourAddons lists enabled mods made for a recolour the profile does not have enabled, such as "Earthy Icons
+// for Worldmaps Everywhere" without Earthy Recolour; their manifests rarely declare the recolour.
+func recolourAddons(mods []Installed) []Cleanup {
+	enabled := enabledRecolours(mods, "")
+	var out []Cleanup
+	for _, m := range mods {
+		if !m.Enabled {
+			continue
+		}
+		id := squash(m.UniqueID)
+		for _, word := range strings.FieldsFunc(strings.ToLower(m.Name), func(r rune) bool { return r < 'a' || r > 'z' }) {
+			f, ok := recolourNameWords[word]
+			if !ok {
+				continue
+			}
+			if _, on := enabled[f]; on || slices.ContainsFunc(recolourFamilies[f].idParts, func(p string) bool { return strings.Contains(id, p) }) {
+				break
+			}
+			out = append(out, Cleanup{Key: m.Key, UniqueID: m.UniqueID, Name: m.Name, Reason: "Made for " + recolourFamilies[f].name + ", which is not enabled"})
+			break
+		}
+	}
+	return out
+}
