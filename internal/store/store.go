@@ -302,7 +302,7 @@ func (s *Store) install(game, key string, fill func(tmp string) error, need func
 		err = writeCompleteMarker(tmp)
 	}
 	if err == nil {
-		err = os.Rename(tmp, final)
+		err = fsx.Rename(tmp, final)
 	}
 	if err == nil {
 		err = syncPath(gdir)

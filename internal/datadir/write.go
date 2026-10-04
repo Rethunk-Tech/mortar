@@ -66,5 +66,5 @@ func WriteStream(path string, perm os.FileMode, write func(io.Writer) error) (er
 	if err = f.Close(); err != nil {
 		return err
 	}
-	return os.Rename(f.Name(), path)
+	return fsx.Rename(f.Name(), path)
 }

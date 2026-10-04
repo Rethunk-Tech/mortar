@@ -208,7 +208,7 @@ func RepairNames(root string) (int, error) {
 		if _, err := os.Lstat(to); err == nil {
 			continue
 		}
-		if err := os.Rename(from, to); err != nil {
+		if err := fsx.Rename(from, to); err != nil {
 			return renamed, err
 		}
 		renamed++

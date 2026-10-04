@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"
 )
@@ -139,7 +140,7 @@ func Renamed(game, profile, profileName, gameName string) error {
 	if strings.EqualFold(matches[0], target) {
 		return nil
 	}
-	return os.Rename(matches[0], target)
+	return fsx.Rename(matches[0], target)
 }
 
 // Removed removes the Start menu shortcuts for a deleted profile.
