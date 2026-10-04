@@ -94,7 +94,7 @@ export function ProblemBar() {
         {detail}
       </Typography>
       <Typography component="span" sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600, px: 1 }}>
-        {t`Open problems`}
+        {t`Open Problems`}
       </Typography>
     </ButtonBase>
   )

@@ -1,9 +1,11 @@
+import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { Settings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import {
   CorruptSettingsPath,
   Get,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { i18n } from '../i18n/index.ts'
 import { follow } from '../shell/follow.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -148,8 +150,10 @@ export const initSettings = async () => {
   if (path) {
     useToasts.getState().push({
       kind: 'warning',
-      title: 'Settings could not be read',
-      body: `A copy was kept at ${path}`,
+      title: i18n._(msg`Your settings could not be read`),
+      body: i18n._(
+        msg`Mortar started with default settings. The damaged file was kept at ${path}.`,
+      ),
     })
   }
 }

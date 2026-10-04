@@ -33,7 +33,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
     },
     startScreen: {
       label: i18n._(msg`Start screen`),
-      description: i18n._(msg`Where Mortar opens after the launcher check.`),
+      description: i18n._(msg`What Mortar shows when it opens.`),
       options: [
         {
           value: 'last',
@@ -68,7 +68,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
     },
     lanAutoAcceptSameAccount: {
       label: i18n._(msg`Auto-accept from this Nexus account`),
-      description: i18n._(msg`Take LAN shares from machines signed in to the same Nexus account`),
+      description: i18n._(msg`Accept profiles sent from your own computers (same Nexus account)`),
     },
     defaultModsView: {
       label: i18n._(msg`Default mods view`),
@@ -171,7 +171,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
     },
     theme: {
       label: i18n._(msg`Theme`),
-      description: i18n._(msg`App chrome. Follow system uses the OS colour scheme.`),
+      description: i18n._(msg`Mortar's colours. Follow system matches your computer.`),
       options: [
         { value: 'dark', label: i18n._(msg`Dark`) },
         { value: 'light', label: i18n._(msg`Light`) },
@@ -200,8 +200,8 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
     notifyDownloadFailed: { label: i18n._(msg`Download failed`) },
     notifyRunCrashed: { label: i18n._(msg`Run crashed`) },
     backupBeforePlay: {
-      label: i18n._(msg`Backup before Play`),
-      description: i18n._(msg`When Mortar zips Saves before launching`),
+      label: i18n._(msg`Back up saves before Play`),
+      description: i18n._(msg`When Mortar makes a save backup before launching`),
       options: [
         {
           value: 'changed',
@@ -220,7 +220,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
         },
       ],
     },
-    launchBackupsKept: { label: i18n._(msg`Launch backups kept`) },
+    launchBackupsKept: { label: i18n._(msg`Save backups kept`) },
     extraModsFolder: {
       label: i18n._(msg`Extra mods folder`),
       description: i18n._(
@@ -289,7 +289,7 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
     consoleFollow: { label: i18n._(msg`Follow live log`) },
     keepDownloadArchives: {
       label: i18n._(msg`Keep downloaded archives`),
-      description: i18n._(msg`Leave the zip after it is installed into the store`),
+      description: i18n._(msg`Keep the zip after installing`),
     },
     downloadFolder: {
       label: i18n._(msg`Download folder`),
@@ -302,8 +302,10 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
       description: i18n._(msg`Scan the mods folder for changes Mortar did not make`),
     },
     storeRetentionDays: {
-      label: i18n._(msg`Unused store items`),
-      description: i18n._(msg`Days to keep unused store items. 0 keeps them forever.`),
+      label: i18n._(msg`Downloaded mods no profile uses`),
+      description: i18n._(
+        msg`Days to keep downloaded mods that no profile uses. 0 keeps them forever.`,
+      ),
     },
     trashRetentionDays: {
       label: i18n._(msg`Recently deleted retention`),
@@ -361,7 +363,9 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
     },
     nxmDefaultProfile: {
       label: i18n._(msg`Default profile for Nexus links`),
-      description: i18n._(msg`Where nxm downloads go. Empty follows the last opened profile.`),
+      description: i18n._(
+        msg`Where Mod Manager Download links install. Empty uses the last opened profile.`,
+      ),
     },
     watchDownloads: {
       label: i18n._(msg`Watch Downloads folder`),
@@ -382,8 +386,8 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
       ],
     },
     backupLocation: {
-      label: i18n._(msg`Backup location`),
-      description: i18n._(msg`Folder for launch backups. Empty uses the default.`),
+      label: i18n._(msg`Save backup folder`),
+      description: i18n._(msg`Where save backups are kept. Empty uses the default.`),
     },
     autoRetryDownloads: {
       label: i18n._(msg`Auto-retry failed downloads`),
@@ -449,7 +453,7 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
     },
     extensionConnection: {
       label: i18n._(msg`Browser extension connection`),
-      description: i18n._(msg`Allow the native host to talk to the browser extension`),
+      description: i18n._(msg`Let the Mortar browser extension talk to Mortar`),
       options: [
         { value: 'allow', label: i18n._(msg`Allow`) },
         { value: 'off', label: i18n._(msg`Off`) },

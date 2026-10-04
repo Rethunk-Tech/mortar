@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
+import { ModName } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import { Get } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import type { Arrival } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
 import { Inbox } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
@@ -52,9 +53,19 @@ async function openMod(a: Arrival): Promise<void> {
     }
     const modsState = useMods.getState()
     if (!selected && current && modsState.loaded && modsState.modsFor === current.id) {
+      const name = await ModName(modID).catch(() => '')
+      const label = name || i18n._(msg`Nexus mod ${modID}`)
       useToasts.getState().push({
         kind: 'warning',
-        title: i18n._(msg`${modID} is not in ${current.name}`),
+        title: i18n._(msg`${label} is not in ${current.name}`),
+        action: {
+          label: i18n._(msg`Add it`),
+          run: () =>
+            openImport({
+              profileId: current.id,
+              link: `https://www.nexusmods.com/stardewvalley/mods/${modID}`,
+            }),
+        },
       })
     }
   }

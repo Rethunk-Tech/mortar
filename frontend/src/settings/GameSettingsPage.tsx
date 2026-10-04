@@ -54,7 +54,7 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
     { id: 'smapi', label: t`SMAPI`, icon: Puzzle, groupEnd: true },
     { id: 'play', label: t`Play`, icon: Play },
     { id: 'mods', label: t`Mods`, icon: Package },
-    { id: 'backups', label: t`Play backups`, icon: Archive },
+    { id: 'backups', label: t`Save backups`, icon: Archive },
     { id: 'console', label: t`Console`, icon: SquareTerminal },
     { id: 'streaming', label: t`Streaming`, icon: RadioIcon },
   ]

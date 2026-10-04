@@ -18,6 +18,8 @@ import type { Arrival } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
+import { formatKb } from '../i18n/bytes.ts'
+import { useNexusDetails } from '../mods/nexusDetails.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
@@ -48,6 +50,9 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const dismiss = useNxm((s) => s.dismiss)
   const lastId = useSettings((s) => gamePrefs(s).nxmDefaultProfile || s.lastProfile?.[NXM_GAME])
   const name = useModName(arrival.link.modId)
+  const file = useNexusDetails((s) =>
+    s.byId[arrival.link.modId]?.details?.files?.find((f) => f.fileId === arrival.link.fileId),
+  )
   // New profile creates in the game the profiles store has open, so it is offered only when that is this game.
   const canCreate = useProfiles((s) => s.game?.id === NXM_GAME)
   const gameName = useProfiles((s) => s.game?.name ?? '')
@@ -99,12 +104,11 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
     >
       <DialogTitle>{t`Install ${name}?`}</DialogTitle>
       <DialogContent>
-        <DialogContentText
-          sx={{ mb: 1 }}
-          title={t`File ${arrival.link.fileId} · ${arrival.link.key}`}
-        >
-          {t`File from Nexus`}
-        </DialogContentText>
+        {file ? (
+          <DialogContentText sx={{ mb: 1 }}>
+            {t`${file.fileName} · ${formatKb(file.sizeKb)}`}
+          </DialogContentText>
+        ) : null}
         {arrivals.length > 1 ? (
           <DialogContentText sx={{ mb: 1 }}>
             {t`${arrivals.length - 1} more waiting`}
@@ -146,7 +150,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
         ) : null}
         {open ? (
           <Button variant="contained" disabled={busy} onClick={() => pick(open.id)}>
-            {open.name}
+            {t`Install into ${open.name}`}
           </Button>
         ) : null}
         {profiles?.length === 0 && canCreate ? (

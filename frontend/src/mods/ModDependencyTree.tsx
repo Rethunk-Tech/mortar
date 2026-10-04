@@ -111,7 +111,7 @@ function NodeRow({ node, mods, depth }: { node: DepViewNode; mods: Mod[]; depth:
   if (node.state === 'enabled') {
     status = t`Enabled`
   } else if (node.state === 'disabled') {
-    status = t`Switched off`
+    status = t`Off`
   } else if (node.state === 'missing') {
     status = t`Missing`
   }

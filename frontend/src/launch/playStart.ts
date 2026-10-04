@@ -303,7 +303,7 @@ function openProblems(get: LaunchGet, set: LaunchSet) {
     useNav.getState().openGame('stardew')
   }
   useProfiles.getState().open(warn.profile)
-  useTab.getState().setTab('mods')
+  useTab.getState().setTab('problems')
 }
 
 export type { PlayCheck, SaveWarn, UpdateContext, UpdateRollback, UpdateWarn }

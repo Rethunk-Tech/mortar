@@ -19,12 +19,9 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { formatTiming } from './formatTiming.ts'
 import { CompareTable, ReportSelect } from './PerformanceComparison.tsx'
 import type { PanelBusy, SortColumn, SortDirection } from './usePerformancePanel.ts'
-
-function formatTiming(value: number, locale: string) {
-  return value.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
 
 function callsLabel(value: number, locale: string) {
   if (value === 0) {

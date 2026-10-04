@@ -266,7 +266,7 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
             <Button
               key={`${h.profileId}/${h.key}/${h.uniqueId}`}
               onClick={() => openModInProfile(h)}
-              title={`${h.name} · ${h.uniqueId} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Switched off`}`}
+              title={`${h.name} · ${h.uniqueId} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Off`}`}
               sx={{
                 minWidth: 0,
                 overflow: 'hidden',
@@ -275,7 +275,7 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
                 fontSize: 13,
               }}
             >
-              {`${h.name} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Switched off`}`}
+              {`${h.name} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Off`}`}
             </Button>
           ))}
         </Box>

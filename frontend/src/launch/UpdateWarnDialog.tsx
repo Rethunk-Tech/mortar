@@ -45,7 +45,7 @@ export function UpdateWarnDialog() {
       </DialogContent>
       <DialogActions>
         <Button onClick={cancel}>{t`Cancel`}</Button>
-        <Button onClick={openProblems}>{t`Open problems…`}</Button>
+        <Button onClick={openProblems}>{t`Open Problems`}</Button>
         <Button variant="contained" onClick={() => playAnyway().catch(reportUnexpected)}>
           {t`Play anyway`}
         </Button>

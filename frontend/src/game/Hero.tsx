@@ -329,7 +329,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
           <Card
             label={t`Saves`}
             value={total === 0 ? t`None` : t`${fitting} of ${total}`}
-            ariaLabel={t`Open saves (${fitting} of ${total})`}
+            ariaLabel={t`Open Saves (${fitting} of ${total})`}
             onClick={() => setTab('saves')}
           />
           <Card label={t`Updated`} value={<When value={profile.updated} />} />

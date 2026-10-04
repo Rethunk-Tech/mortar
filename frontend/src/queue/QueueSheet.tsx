@@ -48,7 +48,14 @@ function Header({
   const { items, paused, limitedUntil } = useQueue((s) => s.state)
   const sum = totals(items)
   const { downloading, waiting } = parallelDownloads(items)
-  const counts = t`${sum.done} done · ${sum.active} in progress · ${sum.failed} failed · ${sum.left} left`
+  const counts = [
+    sum.done > 0 && t`${sum.done} done`,
+    sum.active > 0 && t`${sum.active} in progress`,
+    sum.failed > 0 && t`${sum.failed} failed`,
+    sum.left > 0 && t`${sum.left} left`,
+  ]
+    .filter(Boolean)
+    .join(' · ')
   const parallel =
     downloading > 0 || waiting > 0
       ? t`${plural(downloading, { one: '# downloading', other: '# downloading' })} · ${plural(waiting, { one: '# waiting', other: '# waiting' })}`

@@ -19,9 +19,9 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
     case 'showSmapiConsole':
       return i18n._(msg`Show the game log`)
     case 'backupBeforePlay':
-      return i18n._(msg`Backup before Play`)
+      return i18n._(msg`Back up saves before Play`)
     case 'launchBackupsKept':
-      return i18n._(msg`Launch backups kept`)
+      return i18n._(msg`Save backups kept`)
     case 'updateModsBeforePlayDefault':
       return i18n._(msg`Update mods before Play`)
     case 'skipPlayCheck':

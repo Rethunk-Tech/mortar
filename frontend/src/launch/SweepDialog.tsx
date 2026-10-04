@@ -8,10 +8,15 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Link,
   Typography,
 } from '@mui/material'
 import type { SweepReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { UpdateEverywhere } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { useTab } from '../game/tab.ts'
+import { isGameId, useNav } from '../nav/store.ts'
+import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSweepUi } from './events.ts'
@@ -21,10 +26,10 @@ const EDGE = 32
 
 function fixLabel(i18n: I18n, fix: string): string {
   if (fix === 'update') {
-    return i18n._(msg`Update`)
+    return i18n._(msg`Update available`)
   }
   if (fix === 'off') {
-    return i18n._(msg`Switch off`)
+    return i18n._(msg`Switch off suggested`)
   }
   return i18n._(msg`No fix yet`)
 }
@@ -41,12 +46,37 @@ function fixableIds(report: SweepReport): string[] {
   return [...new Set(ids.filter((id) => id !== ''))]
 }
 
-function ProfileRows({ report, i18n }: { report: SweepReport; i18n: I18n }) {
+async function openProblems(game: string, profileId: string, close: () => void) {
+  close()
+  if (!isGameId(game)) {
+    return
+  }
+  await useProfiles.getState().load(game)
+  useProfiles.getState().open(profileId)
+  useTab.getState().setTab('problems')
+  useNav.getState().openGame(game)
+}
+
+function ProfileRows({
+  report,
+  i18n,
+  close,
+}: {
+  report: SweepReport
+  i18n: I18n
+  close: () => void
+}) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       {(report.profiles ?? []).map((row) => (
         <Box key={row.profile}>
-          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{row.name}</Typography>
+          <Link
+            component="button"
+            onClick={() => openProblems(report.game, row.profile, close).catch(reportUnexpected)}
+            sx={{ fontSize: 13, fontWeight: 600, textAlign: 'left' }}
+          >
+            {row.name}
+          </Link>
           {(row.broken ?? []).map((mod) => (
             <Typography key={`${row.profile}-${mod.key}`} sx={{ fontSize: 13 }}>
               {i18n._(msg`${mod.name}: ${fixLabel(i18n, mod.fix)}`)}
@@ -93,14 +123,16 @@ function SweepDialog() {
         paper: { sx: { width: DIALOG_WIDTH, maxWidth: `calc(100% - ${EDGE}px)` } },
       }}
     >
-      <DialogTitle>{t`Patch-day review`}</DialogTitle>
-      <DialogContent>{report ? <ProfileRows report={report} i18n={i18n} /> : null}</DialogContent>
+      <DialogTitle>{t`${report?.gameName ?? ''} was updated: mods to check`}</DialogTitle>
+      <DialogContent>
+        {report ? <ProfileRows report={report} i18n={i18n} close={close} /> : null}
+      </DialogContent>
       <DialogActions sx={{ bgcolor: 'background.paper' }}>
         <Button onClick={close} disabled={pending}>
           {t`Close`}
         </Button>
         <Button variant="contained" onClick={apply} disabled={pending || ids.length === 0}>
-          {t`Update all fixable`}
+          {t`${plural(ids.length, { one: 'Update # mod', other: 'Update # mods' })}`}
         </Button>
       </DialogActions>
     </Dialog>

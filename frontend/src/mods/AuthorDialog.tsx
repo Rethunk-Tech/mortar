@@ -130,7 +130,7 @@ function AuthorDialogBody({
             uniqueId={row.uniqueId}
             profiles={row.profiles}
             enabledLabel={t`Enabled`}
-            disabledLabel={t`Switched off`}
+            disabledLabel={t`Off`}
           />
         ))}
       </Box>

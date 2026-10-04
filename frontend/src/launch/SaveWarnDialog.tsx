@@ -82,7 +82,7 @@ export function SaveWarnDialog() {
             {t`Add them`}
           </Button>
         ) : (
-          <Button onClick={useLaunch.getState().openSaves}>{t`Open saves`}</Button>
+          <Button onClick={useLaunch.getState().openSaves}>{t`Open Saves`}</Button>
         )}
         <Button variant="contained" onClick={() => playAnyway().catch(reportUnexpected)}>
           {t`Play anyway`}

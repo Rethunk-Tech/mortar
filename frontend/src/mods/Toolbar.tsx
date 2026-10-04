@@ -4,6 +4,7 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
+  ButtonGroup,
   CircularProgress,
   Divider,
   ListItemIcon,
@@ -42,6 +43,7 @@ import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
+import { ExtraFolderMenu } from './ExtraFolderMenu.tsx'
 import { onFilterFocus } from './filterFocus.ts'
 import { type GroupBy, sanitizeListGroupBy } from './group.ts'
 import { openPage } from './menu.ts'
@@ -53,7 +55,7 @@ const FILTERS: readonly {
   id: Exclude<ModFilter, 'all'>
   label: (i18n: I18n) => string
 }[] = [
-  { id: 'disabled', label: (i18n) => i18n._(msg`Switched off`) },
+  { id: 'disabled', label: (i18n) => i18n._(msg`Off`) },
   { id: 'update', label: (i18n) => i18n._(msg`Update available`) },
   { id: 'problem', label: (i18n) => i18n._(msg`Has problems`) },
   { id: 'pinned', label: (i18n) => i18n._(msg`Pinned`) },
@@ -233,7 +235,8 @@ function AddArchive({
   const pick = useInstall((s) => s.pick)
   const locked = useLocked()
   const blocked = installing || locked
-  return (
+  const extraFolder = useSettings((s) => s.games?.stardew?.extraModsFolder ?? '')
+  const add = (
     <DisabledReason
       title={locked ? t`Stop the game to change mods.` : t`Adding…`}
       disabled={blocked}
@@ -252,6 +255,14 @@ function AddArchive({
         <span className="label">{installing ? t`Adding…` : t`Add archive…`}</span>
       </Button>
     </DisabledReason>
+  )
+  return extraFolder === '' ? (
+    add
+  ) : (
+    <ButtonGroup variant={variant} size={size}>
+      {add}
+      <ExtraFolderMenu folder={extraFolder} blocked={blocked} />
+    </ButtonGroup>
   )
 }
 

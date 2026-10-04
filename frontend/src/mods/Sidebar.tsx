@@ -37,6 +37,7 @@ import {
   updateFor,
   visibleUpdates,
 } from './lookup.ts'
+import { HiddenInside } from './HiddenInside.tsx'
 import { ModDependencyTree } from './ModDependencyTree.tsx'
 import { ModNoteTags } from './ModNoteTags.tsx'
 import { ModUpdateControls } from './ModUpdateControls.tsx'
@@ -299,7 +300,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
           onClick={() =>
             openModInProfile({ profileId: r.profileId, key: r.key, uniqueId: r.uniqueId })
           }
-          title={`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Switched off`}`}
+          title={`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Off`}`}
           sx={{
             ...noWrap,
             display: 'block',
@@ -312,7 +313,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
             textOverflow: 'ellipsis',
           }}
         >
-          {`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Switched off`}`}
+          {`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Off`}`}
         </Button>
       ))}
     </Box>
@@ -411,14 +412,20 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       <LastRunLine mod={mod} profile={profile} />
       <ModDependencyTree mod={mod} />
       <AlsoInProfiles mod={mod} profile={profile} />
+      <HiddenInside mod={mod} profile={profile} />
       <ModNoteTags profile={profile} mod={mod} />
       {others.length > 0 ? (
         <Box>
           <Typography sx={heading}>{t`In the same download`}</Typography>
           {others.map((o) => (
-            <Typography key={o.uniqueId} sx={{ fontSize: 13 }}>
+            <Link
+              key={o.uniqueId}
+              component="button"
+              onClick={() => useDetail.getState().show(o)}
+              sx={{ display: 'block', fontSize: 13, textAlign: 'left', color: 'text.primary' }}
+            >
               {o.name}
-            </Typography>
+            </Link>
           ))}
         </Box>
       ) : null}

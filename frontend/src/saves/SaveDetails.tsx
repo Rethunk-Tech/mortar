@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, Link, Typography } from '@mui/material'
 import { CalendarDays, Clock, Coins } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -8,6 +8,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNow } from '../i18n/useNow.ts'
 import { When } from '../i18n/When.tsx'
 import { absoluteWhen } from '../i18n/when.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { goldText, hoursPlayed } from './card.ts'
 import { AddAll, MissingChips } from './lackChips.tsx'
 
@@ -86,7 +87,17 @@ export function SaveDetails({
             noWrap={true}
             title={lastGone ? fit.lastProfileId : lastLine}
           >
-            {lastLine}
+            {lastGone || fit.lastProfileId === profile.id ? (
+              lastLine
+            ) : (
+              <Link
+                component="button"
+                onClick={() => useProfiles.getState().open(fit.lastProfileId)}
+                sx={{ fontSize: 'inherit', color: 'inherit', verticalAlign: 'baseline' }}
+              >
+                {lastLine}
+              </Link>
+            )}
             {fit.lastProfileAt ? (
               <>
                 {' '}

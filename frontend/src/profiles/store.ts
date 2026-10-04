@@ -185,7 +185,7 @@ async function deleteProfile(
   get().ensureOpen()
   useToasts.getState().push({
     kind: 'success',
-    title: i18n._(msg`Deleted “${gone?.name ?? 'profile'}”`),
+    title: gone ? i18n._(msg`Deleted “${gone.name}”`) : i18n._(msg`Deleted a profile`),
     action: {
       label: i18n._(msg`Undo`),
       profileId: id,

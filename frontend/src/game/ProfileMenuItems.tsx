@@ -231,7 +231,7 @@ function CoverMenuItems({
     <ProfileMenuItem
       key="automatic-cover"
       icon={<ImageOff size={16} />}
-      label={t`Use default`}
+      label={t`Use the automatic cover`}
       disabled={!hasPickedCover(profile.cover, undefined)}
       onClick={() => {
         close()
@@ -297,11 +297,11 @@ function ProfileDialogs({
           const missing = result.missing ?? []
           const added = plural(result.added, { one: '# mod added', other: '# mods added' })
           useToasts.getState().push({
-            kind: 'success',
+            kind: missing.length > 0 ? 'warning' : 'success',
             title: t`Bundle added`,
             body:
               missing.length > 0
-                ? `${added}\n${t`Not in Mortar's store: ${missing.join(', ')}`}`
+                ? `${added}\n${t`Not downloaded yet: ${missing.join(', ')}`}`
                 : added,
           })
         }}

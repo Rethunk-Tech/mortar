@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { type Problem, sameId } from './lookup.ts'
@@ -16,7 +17,7 @@ export function useDescribeDrift(): (d: Drift) => string {
       .join(', ') || key
   return (d) => {
     if (d.kind === 'unknown') {
-      return t`${d.folder} is in this profile's mods folder and is not an installed entry.`
+      return t`Mortar did not install ${d.folder}. It was added to this profile's mods folder by hand.`
     }
     const name = entryName(d.key)
     if (d.kind === 'deleted') {
@@ -35,14 +36,15 @@ export function useDescribe(): Describe {
     runError: Extract<Problem, { kind: 'runError' }>['runError'],
   ): string => {
     const { name, first, count, updated } = runError
+    const errors = plural(count, { one: '# error', other: '# errors' })
     if (updated) {
       return first === ''
-        ? t`${name} was updated since this run and logged ${count} errors.`
-        : t`${name} was updated since this run and logged an error: ${first}`
+        ? t`${name} was updated since this run and logged ${errors}.`
+        : t`${name} was updated since this run and logged ${errors}. First: ${first}`
     }
     return first === ''
-      ? t`${name} logged ${count} errors in the last run.`
-      : t`${name} logged an error in the last run: ${first}`
+      ? t`${name} logged ${errors} in the last run.`
+      : t`${name} logged ${errors} in the last run. First: ${first}`
   }
 
   const describeBroken = (p: Extract<Problem, { kind: 'broken' }>): string => {

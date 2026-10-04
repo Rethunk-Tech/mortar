@@ -15,7 +15,7 @@ test('also-in-profiles rows and load-order names truncate with a title', () => {
   expect(/r\.profileName/.test(src('Sidebar.tsx'))).toBe(true)
   const load = src('LoadOrderTab.tsx')
   expect(load).toContain('noWrap={true}')
-  expect(load).toContain('title={row.name')
+  expect(load).toContain('title={title}')
 })
 
 test('saves copy-from uses a short label, tooltip, and usePending', () => {

@@ -58,15 +58,23 @@ export function isTrackedImportBatch(batchId: string): boolean {
   return batchId !== '' && batches.has(batchId)
 }
 
+function importCountsLine(counts: SettledImportCounts) {
+  return [
+    counts.installed > 0 && i18n._(msg`${counts.installed} installed`),
+    counts.failed > 0 && i18n._(msg`${counts.failed} failed`),
+    counts.skipped > 0 && i18n._(msg`${counts.skipped} skipped`),
+  ]
+    .filter(Boolean)
+    .join(', ')
+}
+
 export function observeImportState(items: readonly Pick<Item, 'batchId' | 'state'>[]) {
   for (const [batchId, batch] of batches) {
     const counts = settledImportCounts(items, batchId, batch.total)
     if (counts) {
       useToasts.getState().push({
         kind: counts.failed > 0 ? 'warning' : 'success',
-        title: i18n._(
-          msg`Imported ${batch.name}: ${counts.installed} installed, ${counts.failed} failed, ${counts.skipped} skipped`,
-        ),
+        title: i18n._(msg`Imported ${batch.name}: ${importCountsLine(counts)}`),
         ...(batch.pendingSettings > 0
           ? {
               body: i18n._(

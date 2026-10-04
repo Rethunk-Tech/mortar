@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import type { MouseEvent } from 'react'
@@ -21,10 +22,12 @@ import { useProfileCardsMeta } from './useProfileCardsMeta.ts'
 
 function ProfileCards({
   gameId,
+  gameName,
   profiles,
   lastPlayed,
 }: {
   gameId: GameId
+  gameName: string
   profiles: Profile[]
   lastPlayed: Played | undefined
 }) {
@@ -91,7 +94,7 @@ function ProfileCards({
       ))}
       {more > 0 ? (
         <ButtonBase
-          aria-label={t`Open ${more} more profiles`}
+          aria-label={t`Open ${gameName} (${plural(more, { one: '# more profile', other: '# more profiles' })})`}
           onClick={openGame}
           sx={{
             flexShrink: 0,

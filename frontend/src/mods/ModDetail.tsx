@@ -48,7 +48,7 @@ function NeedRow({ need }: { need: Need }) {
   const { t } = useLingui()
   const states: Record<string, string> = {
     absent: t`Missing`,
-    disabled: t`Switched off`,
+    disabled: t`Off`,
     outdated: t`Needs ${need.minimumVersion} or newer, has ${need.installedVersion}`,
   }
   return (

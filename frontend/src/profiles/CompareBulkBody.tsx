@@ -243,7 +243,7 @@ export function CompareBulkBody({
     needle,
   )
   const enabled = t`Enabled`
-  const disabled = t`Switched off`
+  const disabled = t`Off`
   const sectionProps = {
     aName,
     bName,

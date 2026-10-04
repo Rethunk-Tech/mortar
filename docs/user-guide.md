@@ -73,7 +73,7 @@ On Windows, Steam's own **Play** button is different: it starts SMAPI with the g
 
 ## Save backups and restore
 
-Mortar zips your saves before it changes them. **Backup before Play** (Settings, then the game's **Play backups**) backs up every time the game starts, and **Scheduled save backups** does it on a timer. Backups also happen before a profile update.
+Mortar zips your saves before it changes them. **Back up saves before Play** (Settings, then the game's **Save backups**) backs up every time the game starts, and **Scheduled save backups** does it on a timer. Backups also happen before a profile update.
 
 To restore, open the **Saves** tab, choose **Save backups…**, pick a backup and choose **Restore**. Mortar names the saves it will overwrite and backs up the current Saves folder first. Stop the game before restoring. **Open backups folder** shows the zips; **Backup location** in the game's settings moves where new ones go.
 

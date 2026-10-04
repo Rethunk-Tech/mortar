@@ -359,7 +359,7 @@ function BackupsPage() {
       t`Couldn't save that setting`,
     )
   return (
-    <SettingsSection title={t`Play backups`}>
+    <SettingsSection title={t`Save backups`}>
       <PrefKeys
         keys={['backupBeforePlay', 'launchBackupsKept', 'saveBackupHours', 'saveBackupKeep']}
         game={GAME}

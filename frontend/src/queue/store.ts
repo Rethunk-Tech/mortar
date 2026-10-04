@@ -104,6 +104,8 @@ function downloadFailCopy(error: string): { body: string; detail?: string } {
   }
 }
 
+const NETWORK_ERROR = /timeout|timed out|connection|network|no such host|dial |unreachable|EOF/i
+
 function failureToast(item: Item) {
   const error = item.error ?? ''
   if (error.includes('API key')) {
@@ -118,17 +120,25 @@ function failureToast(item: Item) {
       action: { label: i18n._(msg`Open storage settings`), run: () => openSettings('storage') },
     }
   }
+  const showQueue = { label: i18n._(msg`Show in queue`), run: show, live: showLive }
   if (error.includes('quarantined')) {
-    return { title: i18n._(msg`File quarantined`) }
+    return {
+      title: i18n._(msg`${item.name} was blocked by your antivirus`),
+      body: i18n._(msg`Allow it in your antivirus, then Retry.`),
+      action: showQueue,
+    }
   }
-  return {
-    title: i18n._(msg`Could not reach Nexus`),
-    action: {
-      label: i18n._(msg`Retry now`),
-      run: () => Retry(item.id),
-      live: () => retryLive(item.id),
-    },
+  if (NETWORK_ERROR.test(error)) {
+    return {
+      title: i18n._(msg`Could not reach Nexus`),
+      action: {
+        label: i18n._(msg`Retry now`),
+        run: () => Retry(item.id),
+        live: () => retryLive(item.id),
+      },
+    }
   }
+  return { title: i18n._(msg`Could not download ${item.name}`), action: showQueue }
 }
 
 function matchesItem(e: Entry, item: Pick<Item, 'modId' | 'name' | 'repo'>) {
@@ -193,6 +203,7 @@ function pushDownloadFailures(failed: Item[]) {
       kind: 'error',
       title: cause.title,
       ...downloadFailCopy(nexusFail.error ?? ''),
+      ...(cause.body === undefined ? {} : { body: cause.body }),
       ...(cause.action === undefined ? {} : { action: cause.action }),
     })
     return
@@ -250,7 +261,9 @@ function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
     const first = item.name
     installToast = useToasts.getState().push({
       kind: 'success',
-      title: i18n._(msg`${first} installed into ${profile?.name ?? 'profile'}`),
+      title: profile
+        ? i18n._(msg`${first} installed into ${profile.name}`)
+        : i18n._(msg`${first} installed`),
       ...(unblocked ? { body: i18n._(msg`${unblocked} can load now.`) } : {}),
       ...(extra
         ? {

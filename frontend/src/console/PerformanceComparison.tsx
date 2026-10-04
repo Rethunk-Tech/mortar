@@ -6,15 +6,12 @@ import type {
   SavedReport,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { formatTiming } from './formatTiming.ts'
 
 const PERCENT = 100
 
-function numberLabel(value: number) {
-  return value.toFixed(2)
-}
-
 export function CompareTable({ before, now }: { before: PerformanceRow[]; now: PerformanceRow[] }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const rows = useMemo(() => {
     const byName = new Map<string, { before?: PerformanceRow; now?: PerformanceRow }>()
     for (const row of before) {
@@ -65,10 +62,10 @@ export function CompareTable({ before, now }: { before: PerformanceRow[]; now: P
           <TableRow key={row.name} hover={true}>
             <TableCell>{row.name}</TableCell>
             <TableCell align="right">
-              {row.beforeMs === null ? t`new` : numberLabel(row.beforeMs)}
+              {row.beforeMs === null ? t`new` : formatTiming(row.beforeMs, i18n.locale)}
             </TableCell>
             <TableCell align="right">
-              {row.nowMs === null ? t`gone` : numberLabel(row.nowMs)}
+              {row.nowMs === null ? t`gone` : formatTiming(row.nowMs, i18n.locale)}
             </TableCell>
             <TableCell
               align="right"
@@ -78,10 +75,10 @@ export function CompareTable({ before, now }: { before: PerformanceRow[]; now: P
             >
               {row.change === null
                 ? '—'
-                : `${row.change >= 0 ? '+' : ''}${numberLabel(row.change)} ms (${
+                : `${row.change >= 0 ? '+' : ''}${formatTiming(row.change, i18n.locale)} ms (${
                     row.percent === null
                       ? '—'
-                      : `${row.percent >= 0 ? '+' : ''}${numberLabel(row.percent)}%`
+                      : `${row.percent >= 0 ? '+' : ''}${formatTiming(row.percent, i18n.locale)}%`
                   })`}
             </TableCell>
           </TableRow>

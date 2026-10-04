@@ -88,7 +88,12 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
   const canFromSave = (fit.lastMods ?? []).length > 0
   return (
     <>
-      <DisabledReason title={t`This save has no recorded mod list yet.`} disabled={!canFromSave}>
+      <DisabledReason
+        title={
+          locked ? t`Stop the game to change mods.` : t`This save has no recorded mod list yet.`
+        }
+        disabled={!canFromSave || locked}
+      >
         <TipIconButton
           label={t`New profile from this save`}
           disabled={!canFromSave || creating || locked}

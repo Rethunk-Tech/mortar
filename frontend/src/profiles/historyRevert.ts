@@ -64,7 +64,7 @@ async function missingFromError(
 function pushRevertUndo(game: string, profileId: string, beforeId: string, next: Profile) {
   useToasts.getState().push({
     kind: 'success',
-    title: i18n._(msg`Reverted the profile`),
+    title: i18n._(msg`Restored ${next.name} to before that change`),
     action: {
       label: i18n._(msg`Undo`),
       profileId,

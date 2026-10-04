@@ -198,6 +198,7 @@ function Row({
         {cards ? (
           <ProfileCards
             gameId={cards.gameId}
+            gameName={game.name}
             profiles={cards.profiles}
             lastPlayed={cards.lastPlayed}
           />
@@ -318,7 +319,7 @@ export function GameSelect() {
   const noteFor = (g: Game) => {
     const st = states[g.id]
     if (!g.available) {
-      return t`After the first release`
+      return t`Coming in a later Mortar version`
     }
     if (!st || st.setupNeeded) {
       return t`Not set up · Open it to set it up`
@@ -365,7 +366,7 @@ export function GameSelect() {
             {t`No supported game was found in your launchers.`}
           </Typography>
           <Link component="button" onClick={() => openSettings('launchers')} sx={{ fontSize: 14 }}>
-            {t`Launchers`}
+            {t`Check launchers…`}
           </Link>
         </Box>
       )}

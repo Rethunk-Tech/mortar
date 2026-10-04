@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Skeleton, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Chip, Link, Skeleton, Tooltip, Typography } from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, ListOrdered, TriangleAlert } from 'lucide-react'
@@ -13,6 +13,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { useDetail } from './detail.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 import { sameId } from './lookup.ts'
 import { useMods } from './store.ts'
@@ -46,6 +47,36 @@ function DepChip({
       onClick={onClick}
       sx={{ maxWidth: 240 }}
     />
+  )
+}
+
+function RowName({ row }: { row: Row }) {
+  const { t } = useLingui()
+  const mods = useMods((s) => s.mods)
+  const listed = mods.find((m) => sameId(m.uniqueId, row.uniqueId))
+  const known = row.name.trim() !== ''
+  const label = known ? row.name : t`Unknown mod`
+  const title = known ? row.name : row.uniqueId
+  if (!listed) {
+    return (
+      <Typography noWrap={true} title={title} sx={{ fontWeight: 600, minWidth: 0 }}>
+        {label}
+      </Typography>
+    )
+  }
+  return (
+    <Link
+      component="button"
+      noWrap={true}
+      title={title}
+      onClick={() => {
+        useTab.getState().setTab('mods')
+        useDetail.getState().show(listed)
+      }}
+      sx={{ fontWeight: 600, minWidth: 0, color: 'text.primary', textAlign: 'left' }}
+    >
+      {label}
+    </Link>
   )
 }
 
@@ -209,13 +240,7 @@ function OrderList({
                 </Typography>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-                    <Typography
-                      noWrap={true}
-                      title={row.name.trim() === '' ? row.uniqueId : row.name}
-                      sx={{ fontWeight: 600, minWidth: 0 }}
-                    >
-                      {row.name.trim() === '' ? t`Unknown mod` : row.name}
-                    </Typography>
+                    <RowName row={row} />
                     {row.cycle ? (
                       <Tooltip title={t`These mods require each other.`}>
                         <Chip

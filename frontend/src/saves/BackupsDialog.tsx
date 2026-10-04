@@ -167,7 +167,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
               compact={true}
               icon={<FolderOpen size={28} />}
               title={t`No save backups yet.`}
-            >{t`Backups appear when Mortar creates a save backup.`}</EmptyState>
+            >{t`Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself.`}</EmptyState>
           ) : null}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {items.map((b) => (
@@ -206,7 +206,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
       >
         <MenuAction
           icon={menu?.backup.pinned ? <PinOff size={16} /> : <Pin size={16} />}
-          label={menu?.backup.pinned ? t`Unkeep` : t`Keep`}
+          label={menu?.backup.pinned ? t`Allow cleanup` : t`Keep forever`}
           onClick={() => {
             if (menu) {
               const { backup } = menu
