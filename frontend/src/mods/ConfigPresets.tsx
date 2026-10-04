@@ -55,6 +55,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
   const [names, setNames] = useState<string[]>([])
   const [saveOpen, setSaveOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
+  const [replacing, setReplacing] = useState<string | null>(null)
   const load = () => {
     const at = openTarget()
     if (!at) {
@@ -70,9 +71,21 @@ function PresetsButton({ mod }: { mod: Mod }) {
         load()
         setSaveOpen(false)
         setPendingDelete(null)
+        setReplacing(null)
         setAnchor(null)
       })
       .catch(reportUnexpected)
+  }
+  const save = (name: string) => {
+    const at = openTarget()
+    if (!at) {
+      return
+    }
+    run(() =>
+      ReadConfig(at.game, at.id, mod.key, mod.uniqueId).then((raw) =>
+        SaveConfigPreset(at.game, mod.uniqueId, name, raw),
+      ),
+    )
   }
   return (
     <>
@@ -121,22 +134,27 @@ function PresetsButton({ mod }: { mod: Mod }) {
         confirmLabel={t`Save`}
         onCancel={() => setSaveOpen(false)}
         onSubmit={(value) => {
-          const at = openTarget()
-          if (!at) {
+          if (names.some((n) => n.toLowerCase() === value.toLowerCase())) {
+            setSaveOpen(false)
+            setReplacing(value)
             return
           }
-          run(() =>
-            ReadConfig(at.game, at.id, mod.key, mod.uniqueId).then((raw) =>
-              SaveConfigPreset(at.game, mod.uniqueId, value, raw),
-            ),
-          )
+          save(value)
         }}
+      />
+      <ConfirmDialog
+        open={replacing !== null}
+        title={t`Replace ${replacing ?? ''}?`}
+        body={t`A preset with this name already exists.`}
+        confirmLabel={t`Save as preset`}
+        onCancel={() => setReplacing(null)}
+        onConfirm={() => save(replacing ?? '')}
       />
       <ConfirmDialog
         open={pendingDelete !== null}
         title={t`Delete ${pendingDelete ?? ''}?`}
         body={t`This preset will be deleted.`}
-        confirmLabel={t`Delete`}
+        confirmLabel={t`Delete preset`}
         color="error"
         onCancel={() => setPendingDelete(null)}
         onConfirm={() => {

@@ -13,6 +13,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { idKey } from '../mods/dependents.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -40,8 +41,10 @@ function NoBundles() {
 function useBundleList(game: string) {
   const { t } = useLingui()
   const [bundles, setBundles] = useState<Bundle[]>([])
+  const [loading, setLoading] = useState(true)
   useEffect(() => {
     let active = true
+    setLoading(true)
     ListBundles(game)
       .then((listed) => {
         if (active) {
@@ -53,16 +56,21 @@ function useBundleList(game: string) {
           reportError(t`Could not read bundles`)(error)
         }
       })
+      .finally(() => {
+        if (active) {
+          setLoading(false)
+        }
+      })
     return () => {
       active = false
     }
   }, [game, t])
-  return [bundles, setBundles] as const
+  return { bundles, setBundles, loading }
 }
 
 export function BundlesSection({ game, profiles }: { game: string; profiles: Profile[] }) {
   const { t } = useLingui()
-  const [bundles, setBundles] = useBundleList(game)
+  const { bundles, setBundles, loading } = useBundleList(game)
   const [renaming, setRenaming] = useState<Bundle | null>(null)
   const [deleting, setDeleting] = useState<Bundle | null>(null)
   const [busy, run] = usePending()
@@ -83,53 +91,48 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
         <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700 }}>
           {t`Bundles`}
         </Typography>
-        {bundles.length === 0 ? (
-          <NoBundles />
-        ) : (
-          bundles.map((bundle) => {
-            const holders = profiles.filter((profile) => hasBundle(profile, bundle))
-            const modCount = plural(bundle.mods?.length ?? 0, { one: '# mod', other: '# mods' })
-            const holderNames =
-              holders.length === 0 ? t`none` : holders.map((profile) => profile.name).join(', ')
-            return (
-              <Box
-                key={bundle.id}
-                sx={{ p: 1.25, bgcolor: 'var(--mortar-raised)', borderRadius: '6px' }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography
-                    noWrap={true}
-                    title={bundle.name}
-                    sx={{ flex: 1, minWidth: 0, fontWeight: 600 }}
-                  >
-                    {bundle.name}
-                  </Typography>
-                  <TipIconButton
-                    label={t`Rename ${bundle.name}`}
-                    onClick={() => setRenaming(bundle)}
-                  >
-                    <Pencil size={15} />
-                  </TipIconButton>
-                  <TipIconButton
-                    label={t`Delete ${bundle.name}`}
-                    color="error"
-                    onClick={() => setDeleting(bundle)}
-                  >
-                    <Trash2 size={15} />
-                  </TipIconButton>
-                </Box>
-                <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>{modCount}</Typography>
+        {loading ? <LoadingRow>{t`Loading bundles…`}</LoadingRow> : null}
+        {!loading && bundles.length === 0 ? <NoBundles /> : null}
+        {bundles.map((bundle) => {
+          const holders = profiles.filter((profile) => hasBundle(profile, bundle))
+          const modCount = plural(bundle.mods?.length ?? 0, { one: '# mod', other: '# mods' })
+          const holderNames =
+            holders.length === 0 ? t`none` : holders.map((profile) => profile.name).join(', ')
+          return (
+            <Box
+              key={bundle.id}
+              sx={{ p: 1.25, bgcolor: 'var(--mortar-raised)', borderRadius: '6px' }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Typography
-                  sx={{ color: 'text.secondary', fontSize: 12 }}
                   noWrap={true}
-                  title={holderNames}
+                  title={bundle.name}
+                  sx={{ flex: 1, minWidth: 0, fontWeight: 600 }}
                 >
-                  {t`Profiles: ${holderNames}`}
+                  {bundle.name}
                 </Typography>
+                <TipIconButton label={t`Rename ${bundle.name}`} onClick={() => setRenaming(bundle)}>
+                  <Pencil size={15} />
+                </TipIconButton>
+                <TipIconButton
+                  label={t`Delete ${bundle.name}`}
+                  color="error"
+                  onClick={() => setDeleting(bundle)}
+                >
+                  <Trash2 size={15} />
+                </TipIconButton>
               </Box>
-            )
-          })
-        )}
+              <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>{modCount}</Typography>
+              <Typography
+                sx={{ color: 'text.secondary', fontSize: 12 }}
+                noWrap={true}
+                title={holderNames}
+              >
+                {t`Profiles: ${holderNames}`}
+              </Typography>
+            </Box>
+          )
+        })}
       </Box>
       <BundleNameDialog
         open={renaming !== null}

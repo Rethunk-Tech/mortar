@@ -262,7 +262,11 @@ function ApplyBundleDialog({
           loading={loading}
           bundles={bundles}
           busy={busy}
-          empty={<Typography sx={{ color: 'text.secondary' }}>{t`No bundles yet.`}</Typography>}
+          empty={
+            <EmptyState compact={true} icon={<PackagePlus size={28} />} title={t`No bundles yet.`}>
+              {t`Select mods on the Mods tab, then Add to bundle.`}
+            </EmptyState>
+          }
           onPick={(bundle) => {
             run(
               () =>
