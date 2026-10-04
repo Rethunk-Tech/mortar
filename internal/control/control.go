@@ -11,7 +11,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -19,14 +18,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/controlwire"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
-
-// FileName is the discovery file the app writes in its data folder while it runs.
-const FileName = "control.json"
-
-// maxLine bounds a request or reply line.
-const maxLine = 16 << 20
 
 // Params is every argument a method takes; each method reads the fields it needs.
 type Params struct {
@@ -57,18 +51,6 @@ type request struct {
 	Params Params `json:"params"`
 }
 
-type reply struct {
-	Result json.RawMessage `json:"result,omitempty"`
-	Error  string          `json:"error,omitempty"`
-}
-
-type discovery struct {
-	Port    int    `json:"port"`
-	Token   string `json:"token"`
-	PID     int    `json:"pid"`
-	Version string `json:"version"`
-}
-
 // Handler runs one method.
 type Handler func(ctx context.Context, method string, p Params) (any, error)
 
@@ -89,8 +71,8 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 		_ = ln.Close()
 		return errors.New("control: listener has no TCP address")
 	}
-	path := filepath.Join(dir, FileName)
-	b, err := json.Marshal(discovery{Port: tcp.Port, Token: token, PID: os.Getpid(), Version: version})
+	path := filepath.Join(dir, controlwire.FileName)
+	b, err := json.Marshal(controlwire.Discovery{Port: tcp.Port, Token: token, PID: os.Getpid(), Version: version})
 	if err != nil {
 		_ = ln.Close()
 		return err
@@ -120,37 +102,34 @@ func serveConn(ctx context.Context, conn net.Conn, token string, h Handler) {
 	defer func() { _ = conn.Close() }()
 	r := bufio.NewReaderSize(conn, 64<<10)
 	var req request
-	if err := json.NewDecoder(io.LimitReader(r, maxLine)).Decode(&req); err != nil {
+	if err := json.NewDecoder(io.LimitReader(r, controlwire.MaxLine)).Decode(&req); err != nil {
 		return
 	}
 	if subtle.ConstantTimeCompare([]byte(req.Token), []byte(token)) != 1 {
-		writeReply(conn, reply{Error: "unauthorized"})
+		writeReply(conn, controlwire.Reply{Error: "unauthorized"})
 		return
 	}
 	log.Printf("control: %s %s %s", req.Method, req.Params.Game, req.Params.Profile)
 	res, err := h(ctx, req.Method, req.Params)
 	if err != nil {
-		writeReply(conn, reply{Error: err.Error()})
+		writeReply(conn, controlwire.Reply{Error: err.Error()})
 		return
 	}
 	b, err := json.Marshal(res)
 	if err != nil {
-		writeReply(conn, reply{Error: err.Error()})
+		writeReply(conn, controlwire.Reply{Error: err.Error()})
 		return
 	}
-	writeReply(conn, reply{Result: b})
+	writeReply(conn, controlwire.Reply{Result: b})
 }
 
-func writeReply(w io.Writer, rep reply) {
+func writeReply(w io.Writer, rep controlwire.Reply) {
 	b, err := json.Marshal(rep)
 	if err != nil {
 		return
 	}
 	_, _ = w.Write(append(b, '\n'))
 }
-
-// ErrNotRunning means no running Mortar answered.
-var ErrNotRunning = errors.New("the Mortar app is not running: start it, then run this command again")
 
 // Call sends one request to the running app and decodes its result into out (nil to discard it). timeout bounds
 // the whole call; methods that wait on the game take longer than reads.
@@ -159,52 +138,5 @@ func Call(method string, p Params, out any, timeout time.Duration) error {
 	if err != nil {
 		return err
 	}
-	return CallDir(dir, method, p, out, timeout)
-}
-
-// CallDir is Call against the app whose data folder is dir.
-func CallDir(dir, method string, p Params, out any, timeout time.Duration) error {
-	root, err := os.OpenRoot(dir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return ErrNotRunning
-		}
-		return err
-	}
-	b, err := root.ReadFile(FileName)
-	_ = root.Close()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return ErrNotRunning
-		}
-		return err
-	}
-	var d discovery
-	if err := json.Unmarshal(b, &d); err != nil {
-		return fmt.Errorf("control: %s: %w", FileName, err)
-	}
-	conn, err := (&net.Dialer{Timeout: 2 * time.Second}).DialContext(context.Background(), "tcp", fmt.Sprintf("127.0.0.1:%d", d.Port))
-	if err != nil {
-		return ErrNotRunning
-	}
-	defer func() { _ = conn.Close() }()
-	_ = conn.SetDeadline(time.Now().Add(timeout))
-	req, err := json.Marshal(request{Token: d.Token, Method: method, Params: p})
-	if err != nil {
-		return err
-	}
-	if _, err := conn.Write(append(req, '\n')); err != nil {
-		return err
-	}
-	var rep reply
-	if err := json.NewDecoder(io.LimitReader(conn, maxLine)).Decode(&rep); err != nil {
-		return fmt.Errorf("control: reading the reply: %w", err)
-	}
-	if rep.Error != "" {
-		return errors.New(rep.Error)
-	}
-	if out == nil || len(rep.Result) == 0 {
-		return nil
-	}
-	return json.Unmarshal(rep.Result, out)
+	return controlwire.CallDir(dir, method, p, out, timeout)
 }

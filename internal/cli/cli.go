@@ -17,6 +17,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/components"
 	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/controlwire"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/doctor"
@@ -158,7 +159,7 @@ func (c *cmd) fail(err error) int {
 	if _, ok := errors.AsType[refusedError](err); ok {
 		code = 2
 	}
-	if errors.Is(err, control.ErrNotRunning) {
+	if errors.Is(err, controlwire.ErrNotRunning) {
 		code = 3
 	}
 	kind, raw := usererr.Parse(err.Error())
@@ -2085,7 +2086,7 @@ func (c *cmd) launchers() error {
 func (c *cmd) doctor() error {
 	var d control.Doctor
 	if err := c.ask("doctor", control.Params{}, &d, readTimeout); err != nil {
-		if errors.Is(err, control.ErrNotRunning) {
+		if errors.Is(err, controlwire.ErrNotRunning) {
 			return offlineDoctor()
 		}
 		return err

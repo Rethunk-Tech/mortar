@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/controlwire"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/problems"
@@ -65,20 +66,20 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 			return map[string]string{"method": method, "game": p.Game}, nil
 		})
 	}()
-	path := filepath.Join(dir, FileName)
+	path := filepath.Join(dir, controlwire.FileName)
 	waitFile(t, path, true)
 	if info, err := os.Stat(path); err == nil && info.Mode().Perm()&0o077 != 0 {
-		t.Errorf("discovery file mode %v is readable by others", info.Mode().Perm())
+		t.Errorf("controlwire.Discovery file mode %v is readable by others", info.Mode().Perm())
 	}
 
 	var got map[string]string
-	if err := CallDir(dir, "echo", Params{Game: "stardew"}, &got, time.Second); err != nil {
+	if err := controlwire.CallDir(dir, "echo", Params{Game: "stardew"}, &got, time.Second); err != nil {
 		t.Fatal(err)
 	}
 	if got["method"] != "echo" || got["game"] != "stardew" {
 		t.Fatalf("got %v", got)
 	}
-	if err := CallDir(dir, "fail", Params{}, nil, time.Second); err == nil || err.Error() != "boom" {
+	if err := controlwire.CallDir(dir, "fail", Params{}, nil, time.Second); err == nil || err.Error() != "boom" {
 		t.Fatalf("handler error not passed back: %v", err)
 	}
 
@@ -86,22 +87,22 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := root.ReadFile(FileName)
+	b, err := root.ReadFile(controlwire.FileName)
 	_ = root.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
-	var d discovery
+	var d controlwire.Discovery
 	if err := json.Unmarshal(b, &d); err != nil {
 		t.Fatal(err)
 	}
 	bad := t.TempDir()
 	d.Token = strings.Repeat("0", len(d.Token))
 	forged, _ := json.Marshal(d)
-	if err := os.WriteFile(filepath.Join(bad, FileName), forged, 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(bad, controlwire.FileName), forged, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := CallDir(bad, "echo", Params{}, nil, time.Second); err == nil || err.Error() != "unauthorized" {
+	if err := controlwire.CallDir(bad, "echo", Params{}, nil, time.Second); err == nil || err.Error() != "unauthorized" {
 		t.Fatalf("a wrong token must be refused, got %v", err)
 	}
 
@@ -110,7 +111,7 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 		t.Fatalf("Serve must end with the context's error, got %v", err)
 	}
 	waitFile(t, path, false)
-	if err := CallDir(dir, "echo", Params{}, nil, time.Second); !errors.Is(err, ErrNotRunning) {
+	if err := controlwire.CallDir(dir, "echo", Params{}, nil, time.Second); !errors.Is(err, controlwire.ErrNotRunning) {
 		t.Fatalf("after shutdown: %v", err)
 	}
 }

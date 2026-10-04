@@ -3,6 +3,9 @@
 package fsx
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -61,6 +64,20 @@ func WriteFile(path string, data []byte, perm os.FileMode) error {
 		return struct{}{}, r.WriteFile(name, data, perm)
 	})
 	return err
+}
+
+// SHA256 is the hex SHA-256 of path's contents.
+func SHA256(path string) (string, error) {
+	f, err := Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = f.Close() }()
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
 // Stat describes path.

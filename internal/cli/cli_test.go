@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/controlwire"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/problems"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -459,7 +460,7 @@ func TestIsTakesVerbsAndBareWordsButNotLinksOrFiles(t *testing.T) {
 func TestJSONErrorsUseStructuredExitCodes(t *testing.T) {
 	var out, errOut bytes.Buffer
 	if code := run("9.9.9", func(string, control.Params, any, time.Duration) error {
-		return control.ErrNotRunning
+		return controlwire.ErrNotRunning
 	}, []string{"games", "--json"}, &out, &errOut); code != 3 {
 		t.Fatalf("not running code = %d", code)
 	}

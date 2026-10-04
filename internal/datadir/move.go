@@ -1,10 +1,8 @@
 package datadir
 
 import (
-	"crypto/sha256"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -49,21 +47,6 @@ func (e *SpaceError) Error() string {
 
 func (e *SpaceError) Unwrap() error { return ErrNoSpace }
 
-func hashFile(path string) ([32]byte, error) {
-	var sum [32]byte
-	f, err := fsx.Open(path)
-	if err != nil {
-		return sum, err
-	}
-	defer func() { _ = f.Close() }()
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return sum, err
-	}
-	copy(sum[:], h.Sum(nil))
-	return sum, nil
-}
-
 func verifyCopy(src, dst string) error {
 	return filepath.WalkDir(src, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -80,11 +63,11 @@ func verifyCopy(src, dst string) error {
 			return nil
 		}
 		other := filepath.Join(dst, rel)
-		a, err := hashFile(p)
+		a, err := fsx.SHA256(p)
 		if err != nil {
 			return err
 		}
-		b, err := hashFile(other)
+		b, err := fsx.SHA256(other)
 		if err != nil {
 			return err
 		}

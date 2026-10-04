@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/ed25519"
-	"crypto/sha256"
 	"crypto/x509"
-	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -89,7 +87,7 @@ func run(ctx context.Context, o options) error {
 		return err
 	}
 	body := buf.Bytes()
-	if err := os.WriteFile(o.output, body, 0o600); err != nil {
+	if err := fsx.WriteFile(o.output, body, 0o600); err != nil {
 		return fmt.Errorf("write component manifest: %w", err)
 	}
 	if keyPath := os.Getenv("MORTAR_UPDATE_KEY"); keyPath != "" {
@@ -98,10 +96,10 @@ func run(ctx context.Context, o options) error {
 			return err
 		}
 		signature := ed25519.Sign(private, body)
-		if err := writeIn(o.signature, signature); err != nil {
+		if err := fsx.WriteFile(o.signature, signature, 0o600); err != nil {
 			return fmt.Errorf("write component signature: %w", err)
 		}
-		public, err := os.ReadFile(o.public)
+		public, err := fsx.ReadFile(o.public)
 		if err != nil {
 			return fmt.Errorf("read component public key: %w", err)
 		}
@@ -109,7 +107,7 @@ func run(ctx context.Context, o options) error {
 			return fmt.Errorf("verify component manifest: %w", err)
 		}
 	}
-	if err := os.WriteFile(o.bundled, body, 0o600); err != nil {
+	if err := fsx.WriteFile(o.bundled, body, 0o600); err != nil {
 		return fmt.Errorf("write bundled component manifest: %w", err)
 	}
 	return nil
@@ -143,7 +141,7 @@ func (t bearerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func readSource(file string) (components.SourceFile, error) {
-	body, err := os.ReadFile(filepath.Clean(file))
+	body, err := fsx.ReadFile(file)
 	if err != nil {
 		return components.SourceFile{}, fmt.Errorf("read component source: %w", err)
 	}
@@ -191,7 +189,7 @@ func resolve(ctx context.Context, client *github.Client, source components.Sourc
 	if err := downloadAsset(ctx, client.HTTP, downloadURL(client, source, asset), tempPath); err != nil {
 		return components.Component{}, fmt.Errorf("download %s: %w", asset.Name, err)
 	}
-	sum, err := fileSHA256(tempPath)
+	sum, err := fsx.SHA256(tempPath)
 	if err != nil {
 		return components.Component{}, err
 	}
@@ -285,7 +283,7 @@ func normalizeVersion(version string) string {
 
 func nextSerial(output string) (uint64, error) {
 	var previous components.Manifest
-	if body, err := os.ReadFile(filepath.Clean(output)); err == nil {
+	if body, err := fsx.ReadFile(output); err == nil {
 		if json.Unmarshal(body, &previous) != nil {
 			previous.Serial = 0
 		}
@@ -320,27 +318,4 @@ func readPrivateKey(path string) (ed25519.PrivateKey, error) {
 		return nil, errors.New("signing key is not Ed25519")
 	}
 	return private, nil
-}
-
-func fileSHA256(file string) (string, error) {
-	f, err := os.Open(filepath.Clean(file))
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = f.Close() }()
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(h.Sum(nil)), nil
-}
-
-// writeIn writes data to path through an os.Root on its directory, so the write cannot leave that directory.
-func writeIn(path string, data []byte) error {
-	root, err := os.OpenRoot(filepath.Dir(path))
-	if err != nil {
-		return err
-	}
-	defer func() { _ = root.Close() }()
-	return root.WriteFile(filepath.Base(path), data, 0o600)
 }

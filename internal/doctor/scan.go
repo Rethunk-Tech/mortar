@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-AI/mortar/internal/controlwire"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
@@ -57,7 +57,7 @@ func Scan(dir string) Report {
 	} else {
 		checks = append(checks, Check{ID: "profiles", Status: Pass, Detail: "profiles are readable"})
 	}
-	if info, statErr := os.Stat(filepath.Join(dir, control.FileName)); statErr == nil && time.Since(info.ModTime()) > 24*time.Hour {
+	if info, statErr := os.Stat(filepath.Join(dir, controlwire.FileName)); statErr == nil && time.Since(info.ModTime()) > 24*time.Hour {
 		checks = append(checks, Check{
 			ID: "control", Status: Warn, Detail: "control.json is stale",
 			Fix: "start Mortar once to refresh control.json",

@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 )
@@ -521,7 +522,7 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	if err := github.Download(ctx, c.HTTP, address, tmpPath, maxComponent, nil); err != nil {
 		return fmt.Errorf("download component %s: %w", component.Name, err)
 	}
-	sum, err := fileSHA256(tmpPath)
+	sum, err := fsx.SHA256(tmpPath)
 	if err != nil {
 		return err
 	}
@@ -529,7 +530,7 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 		return fmt.Errorf("component %s has sha256 %s, want %s", component.Name, sum, component.SHA256)
 	}
 	return datadir.WriteStream(dest, 0o600, func(w io.Writer) error {
-		f, err := os.Open(filepath.Clean(tmpPath))
+		f, err := fsx.Open(tmpPath)
 		if err != nil {
 			return err
 		}
@@ -537,17 +538,4 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 		_, err = io.Copy(w, f)
 		return err
 	})
-}
-
-func fileSHA256(path string) (string, error) {
-	f, err := os.Open(filepath.Clean(path))
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = f.Close() }()
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(h.Sum(nil)), nil
 }

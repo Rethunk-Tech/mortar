@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
@@ -244,7 +245,7 @@ func (t *tailer) poll() bool {
 	if err != nil || !st.ModTime().After(t.since) {
 		return false
 	}
-	f, err := os.Open(t.path)
+	f, err := fsx.Open(t.path)
 	if err != nil {
 		return false
 	}

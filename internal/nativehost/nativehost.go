@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/components"
+	"github.com/Rethunk-AI/mortar/internal/controlwire"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/meta"
@@ -297,62 +298,12 @@ func nexusModProblems(domain string, modID int) []modProblem {
 		return []modProblem{}
 	}
 	var rows []modProblem
-	if err := runningControlCall(dataDir, "modProblems", map[string]any{
+	if err := controlwire.CallDir(dataDir, "modProblems", map[string]any{
 		"game": info.ID, "profile": profileID, "modId": modID,
 	}, &rows, time.Second); err != nil {
 		return []modProblem{}
 	}
 	return rows
-}
-
-func runningControlCall(dir, method string, params map[string]any, out any, timeout time.Duration) error {
-	root, err := os.OpenRoot(dir)
-	if err != nil {
-		return err
-	}
-	b, err := root.ReadFile("control.json")
-	_ = root.Close()
-	if err != nil {
-		return err
-	}
-	var discovery struct {
-		Port  int    `json:"port"`
-		Token string `json:"token"`
-	}
-	if err := json.Unmarshal(b, &discovery); err != nil {
-		return err
-	}
-	conn, err := (&net.Dialer{Timeout: 2 * time.Second}).DialContext(
-		context.Background(),
-		"tcp",
-		net.JoinHostPort("127.0.0.1", strconv.Itoa(discovery.Port)),
-	)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = conn.Close() }()
-	_ = conn.SetDeadline(time.Now().Add(timeout))
-	req, err := json.Marshal(map[string]any{"token": discovery.Token, "method": method, "params": params})
-	if err != nil {
-		return err
-	}
-	if _, err := conn.Write(append(req, '\n')); err != nil {
-		return err
-	}
-	var rep struct {
-		Result json.RawMessage `json:"result"`
-		Error  string          `json:"error"`
-	}
-	if err := json.NewDecoder(io.LimitReader(conn, 16<<20)).Decode(&rep); err != nil {
-		return err
-	}
-	if rep.Error != "" {
-		return errors.New(rep.Error)
-	}
-	if out == nil || len(rep.Result) == 0 {
-		return nil
-	}
-	return json.Unmarshal(rep.Result, out)
 }
 
 // brokenNexusModIDs lists the Nexus pages SMAPI's compatibility list marks broken for the game version last played,

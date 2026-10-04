@@ -4,11 +4,11 @@ package datasvc
 
 import (
 	"os"
-	"path/filepath"
 	"reflect"
 	"runtime"
 	"strconv"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"golang.org/x/sys/unix"
 )
 
@@ -60,7 +60,7 @@ func fileExclusive(path string, info os.FileInfo, s *shareAcc) (int64, bool) {
 	if !ok {
 		return info.Size(), false
 	}
-	f, err := os.Open(filepath.Clean(path))
+	f, err := fsx.Open(path)
 	if err != nil {
 		return inodeExclusive(dev, ino, alloc, s)
 	}

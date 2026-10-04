@@ -459,16 +459,11 @@ func hashDir(root string) (string, error) {
 }
 
 func hashKey(path string) (string, error) {
-	f, err := fsx.Open(path)
+	sum, err := fsx.SHA256(path)
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = f.Close() }()
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", err
-	}
-	return LocalKey(hex.EncodeToString(h.Sum(nil))), nil
+	return LocalKey(sum), nil
 }
 
 // index maps game -> key -> last use.
