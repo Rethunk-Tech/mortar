@@ -140,5 +140,12 @@ function sideLabel(side: CompareSide, enabled: string, disabled: string): string
   return `${side.name} · ${side.version} · ${state}`
 }
 
-export type { ComparePair, CompareSide, ProfileCompare }
+interface SectionShared {
+  enabled: string
+  disabled: string
+  pending: boolean
+  lockedReason: (profile: Profile) => string
+}
+
+export type { ComparePair, CompareSide, ProfileCompare, SectionShared }
 export { compareProfiles, sideLabel }

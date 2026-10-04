@@ -3,11 +3,19 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/
 import { Inbox } from 'lucide-react'
 import { useMemo } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import {
+  CopyMods,
+  UpdateEntry,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { useLaunch } from '../launch/store.ts'
+import { isLocked } from '../mods/locked.ts'
+import { applyWithUndo } from '../mods/menu.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { useToasts } from '../toasts/store.ts'
+import { pushUndoToast } from '../toasts/undo.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { CompareBulkBody } from './CompareBulkBody.tsx'
+import type { ComparePair } from './compare.ts'
 import { compareProfiles } from './compare.ts'
 import { useProfiles } from './store.ts'
 
@@ -83,14 +91,42 @@ export function CompareDialog({
   }, [profileA, profileB])
   const [pending, run] = usePending()
 
-  const copy = (from: Profile, to: Profile, uniqueIds: string[]) => {
+  const status = useLaunch((st) => st.status)
+  const startingProfile = useLaunch((st) => (st.starting ? st.startingProfile : ''))
+  const lockedReason = (profile: Profile) =>
+    isLocked(status, profile.id, startingProfile)
+      ? t`${profile.name} is in use by the running game. Close the game to change its mods.`
+      : ''
+
+  const apply = (to: Profile, change: () => Promise<Profile>, title: string) => {
     run(
       async () => {
-        await CopyMods(game, from.id, to.id, uniqueIds)
+        await applyWithUndo(game, to.id, change, (undo) =>
+          pushUndoToast(useToasts.getState().push, title, t`Undo`, undo),
+        )
         await refresh()
-        useToasts.getState().push({ kind: 'success', title: t`Mods copied` })
       },
-      { errorTitle: t`Could not copy mods` },
+      { errorTitle: t`Could not change ${to.name}` },
+    )
+  }
+  const copy = (from: Profile, to: Profile, uniqueIds: string[]) =>
+    apply(
+      to,
+      () => CopyMods(game, from.id, to.id, uniqueIds),
+      t`Copied ${uniqueIds.length} mods to ${to.name}`,
+    )
+  const match = (from: Profile, to: Profile, rows: ComparePair[]) => {
+    const pairs = rows.map((row) => (from.id === profileA?.id ? [row.b, row.a] : [row.a, row.b]))
+    apply(
+      to,
+      async () => {
+        let last = to
+        for (const [mine, source] of pairs) {
+          last = await UpdateEntry(game, to.id, mine?.key ?? '', source?.key ?? '')
+        }
+        return last
+      },
+      t`Matched ${rows.length} versions in ${to.name}`,
     )
   }
 
@@ -109,8 +145,9 @@ export function CompareDialog({
             aName={aName}
             bName={bName}
             pending={pending}
-            onCopy={(from, to, uniqueId) => copy(from, to, [uniqueId])}
-            onCopyAll={copy}
+            lockedReason={lockedReason}
+            onCopy={copy}
+            onMatch={match}
           />
         ) : null}
       </DialogContent>

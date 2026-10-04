@@ -1,36 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Collapse, IconButton, Typography } from '@mui/material'
+import { Box, Collapse, IconButton, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, Inbox } from 'lucide-react'
-import type { ReactNode } from 'react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { CompareDiffRow, CompareSection } from './CompareRows.tsx'
-import type { ComparePair, CompareSide, ProfileCompare } from './compare.ts'
+import { OnlyInSection, VersionSection } from './CompareSections.tsx'
+import type { ComparePair, CompareSide, ProfileCompare, SectionShared } from './compare.ts'
 import { sideLabel } from './compare.ts'
-
-function BulkSection({
-  title,
-  action,
-  children,
-}: {
-  title: string
-  action: ReactNode
-  children: ReactNode
-}) {
-  return (
-    <Box sx={{ mb: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary' }}>
-          {title}
-        </Typography>
-        {action}
-      </Box>
-      {children}
-    </Box>
-  )
-}
 
 function IdenticalList({ rows }: { rows: ComparePair[] }) {
   const { t } = useLingui()
@@ -107,115 +85,6 @@ function filteredCompare(diff: ProfileCompare, needle: string) {
   return { onlyA, onlyB, differentVersion, differentEnabled, identical, hasDiff }
 }
 
-function OnlyInSection({
-  title,
-  rows,
-  from,
-  to,
-  direction,
-  aName,
-  bName,
-  enabled,
-  disabled,
-  pending,
-  onCopy,
-  onCopyAll,
-}: {
-  title: string
-  rows: CompareSide[]
-  from: Profile
-  to: Profile
-  direction: 'toB' | 'toA'
-  aName: string
-  bName: string
-  enabled: string
-  disabled: string
-  pending: boolean
-  onCopy: (from: Profile, to: Profile, uniqueId: string) => void
-  onCopyAll: (from: Profile, to: Profile, uniqueIds: string[]) => void
-}) {
-  const { t } = useLingui()
-  return (
-    <BulkSection
-      title={title}
-      action={
-        <Button
-          size="small"
-          variant="outlined"
-          disabled={pending}
-          onClick={() =>
-            onCopyAll(
-              from,
-              to,
-              rows.map((row) => row.uniqueId),
-            )
-          }
-        >
-          {t`Copy all to ${to.name}`}
-        </Button>
-      }
-    >
-      {rows.map((side) => (
-        <CompareDiffRow
-          key={side.uniqueId}
-          label={sideLabel(side, enabled, disabled)}
-          aName={aName}
-          bName={bName}
-          pending={pending}
-          {...(direction === 'toB'
-            ? { copyToB: () => onCopy(from, to, side.uniqueId) }
-            : { copyToA: () => onCopy(from, to, side.uniqueId) })}
-        />
-      ))}
-    </BulkSection>
-  )
-}
-
-function VersionRow({
-  row,
-  enabled,
-  disabled,
-  pending,
-  profileA,
-  profileB,
-  onCopy,
-}: {
-  row: ComparePair
-  profileA: Profile
-  profileB: Profile
-  enabled: string
-  disabled: string
-  pending: boolean
-  onCopy: (from: Profile, to: Profile, uniqueId: string) => void
-}) {
-  const { t } = useLingui()
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, minHeight: 36 }}>
-      <Typography sx={{ flex: 1, fontSize: 14, minWidth: 0 }} noWrap={true} title={row.name}>
-        {t`${row.name}: ${sideLabel(row.a, enabled, disabled)} → ${sideLabel(row.b, enabled, disabled)}`}
-      </Typography>
-      <Button
-        size="small"
-        variant="outlined"
-        disabled={pending}
-        onClick={() => onCopy(profileA, profileB, row.uniqueId)}
-        sx={{ flexShrink: 0 }}
-      >
-        {t`Use ${profileA.name}'s version in ${profileB.name}`}
-      </Button>
-      <Button
-        size="small"
-        variant="outlined"
-        disabled={pending}
-        onClick={() => onCopy(profileB, profileA, row.uniqueId)}
-        sx={{ flexShrink: 0 }}
-      >
-        {t`Use ${profileB.name}'s version in ${profileA.name}`}
-      </Button>
-    </Box>
-  )
-}
-
 export function CompareBulkBody({
   diff,
   profileA,
@@ -223,8 +92,9 @@ export function CompareBulkBody({
   aName,
   bName,
   pending,
+  lockedReason,
   onCopy,
-  onCopyAll,
+  onMatch,
 }: {
   diff: ProfileCompare
   profileA: Profile
@@ -232,8 +102,9 @@ export function CompareBulkBody({
   aName: string
   bName: string
   pending: boolean
-  onCopy: (from: Profile, to: Profile, uniqueId: string) => void
-  onCopyAll: (from: Profile, to: Profile, uniqueIds: string[]) => void
+  lockedReason: (profile: Profile) => string
+  onCopy: (from: Profile, to: Profile, uniqueIds: string[]) => void
+  onMatch: (from: Profile, to: Profile, rows: ComparePair[]) => void
 }) {
   const { t } = useLingui()
   const [filter, setFilter] = useState('')
@@ -244,15 +115,7 @@ export function CompareBulkBody({
   )
   const enabled = t`Enabled`
   const disabled = t`Off`
-  const sectionProps = {
-    aName,
-    bName,
-    enabled,
-    disabled,
-    pending,
-    onCopy,
-    onCopyAll,
-  }
+  const shared: SectionShared = { enabled, disabled, pending, lockedReason }
 
   if (!(needle || hasDiff) && identical.length > 0) {
     return (
@@ -272,37 +135,28 @@ export function CompareBulkBody({
         <OnlyInSection
           title={t`Only in ${aName}`}
           rows={onlyA}
-          from={profileA}
           to={profileB}
-          direction="toB"
-          {...sectionProps}
+          shared={shared}
+          onCopy={(to, ids) => onCopy(profileA, to, ids)}
         />
       ) : null}
       {onlyB.length > 0 ? (
         <OnlyInSection
           title={t`Only in ${bName}`}
           rows={onlyB}
-          from={profileB}
           to={profileA}
-          direction="toA"
-          {...sectionProps}
+          shared={shared}
+          onCopy={(to, ids) => onCopy(profileB, to, ids)}
         />
       ) : null}
       {differentVersion.length > 0 ? (
-        <CompareSection title={t`Different version`}>
-          {differentVersion.map((row) => (
-            <VersionRow
-              key={row.uniqueId}
-              row={row}
-              profileA={profileA}
-              profileB={profileB}
-              enabled={enabled}
-              disabled={disabled}
-              pending={pending}
-              onCopy={onCopy}
-            />
-          ))}
-        </CompareSection>
+        <VersionSection
+          rows={differentVersion}
+          profileA={profileA}
+          profileB={profileB}
+          shared={shared}
+          onMatch={onMatch}
+        />
       ) : null}
       {differentEnabled.length > 0 ? (
         <CompareSection title={t`Different enabled state`}>
@@ -313,8 +167,8 @@ export function CompareBulkBody({
               aName={aName}
               bName={bName}
               pending={pending}
-              copyToB={() => onCopy(profileA, profileB, row.uniqueId)}
-              copyToA={() => onCopy(profileB, profileA, row.uniqueId)}
+              copyToB={() => onCopy(profileA, profileB, [row.uniqueId])}
+              copyToA={() => onCopy(profileB, profileA, [row.uniqueId])}
             />
           ))}
         </CompareSection>
