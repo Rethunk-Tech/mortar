@@ -122,9 +122,9 @@ async function installOne(
   game: { id: string },
   profile: Profile,
   call: () => Promise<InstallResult>,
-  dependentIds: string[],
-  batch: Landed[] | null,
+  track: { dependentIds: string[]; batch: Landed[] | null },
 ) {
+  const { dependentIds, batch } = track
   const { push } = useToasts.getState()
   const { profile: next, added, updated, versionChanged, fomod, remap } = await call()
   if (fomod) {
@@ -263,8 +263,8 @@ async function undoBatchInstall(game: string, profileId: string, landed: Landed[
       profileId,
       landed.filter((l) => !l.updated).map((l) => l.key),
     )
-    for (const l of landed.filter((l) => l.updated)) {
-      next = await RollBack(game, profileId, l.key)
+    for (const done of landed.filter((l) => l.updated)) {
+      next = await RollBack(game, profileId, done.key)
     }
     useProfiles.getState().replace(next)
   } catch (e) {
@@ -338,7 +338,7 @@ async function runInstalls(
   set((s) => ({ pending: s.pending + items.length }))
   for (const item of items) {
     try {
-      await installOne(game, profile, callFor(game.id, profile.id, item), dependentIds, batch)
+      await installOne(game, profile, callFor(game.id, profile.id, item), { dependentIds, batch })
     } catch (e) {
       failed += 1
       toastError(i18n._(msg`Could not add ${fileName(item)}`), e)
