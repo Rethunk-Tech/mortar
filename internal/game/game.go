@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -126,6 +127,14 @@ func Require(id string) (Game, error) {
 // Valid reports whether id names a listed game.
 func Valid(id string) bool {
 	return Find(id) != nil || slices.ContainsFunc(comingLater, func(c listing) bool { return c.id == id })
+}
+
+// File is the path of a game's JSON file below root, for stores that keep one file per game.
+func File(root, id string) (string, error) {
+	if !Valid(id) {
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", id))
+	}
+	return filepath.Join(root, id+".json"), nil
 }
 
 // listedApp returns the listing's own copy of appID, so values built from it never carry request text.

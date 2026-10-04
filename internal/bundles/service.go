@@ -61,13 +61,6 @@ func NewService(profiles *profile.Store, dataDir string) *Service {
 	return &Service{profiles: profiles, root: filepath.Join(dataDir, "bundles")}
 }
 
-func (s *Service) file(gameID string) (string, error) {
-	if !gamepkg.Valid(gameID) {
-		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
-	}
-	return filepath.Join(s.root, gameID+".json"), nil
-}
-
 func bundleName(name string) (string, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
@@ -87,7 +80,7 @@ func bundleID(id string) error {
 }
 
 func (s *Service) readLocked(gameID string) ([]Bundle, error) {
-	path, err := s.file(gameID)
+	path, err := gamepkg.File(s.root, gameID)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +104,7 @@ func (s *Service) readLocked(gameID string) ([]Bundle, error) {
 }
 
 func (s *Service) writeLocked(gameID string, bundles []Bundle) error {
-	path, err := s.file(gameID)
+	path, err := gamepkg.File(s.root, gameID)
 	if err != nil {
 		return err
 	}

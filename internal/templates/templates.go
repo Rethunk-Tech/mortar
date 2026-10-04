@@ -100,7 +100,7 @@ func readList(path string) ([]Template, error) {
 }
 
 func (s *Service) write(game string, list []Template) error {
-	path, err := s.file(game)
+	path, err := gamepkg.File(s.root, game)
 	if err != nil {
 		return err
 	}

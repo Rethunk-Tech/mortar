@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/game"
+	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/ids"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
@@ -35,15 +35,8 @@ func Open() (*Store, error) {
 	return &Store{root: root}, nil
 }
 
-func (s *Store) path(gameID string) (string, error) {
-	if !game.Valid(gameID) {
-		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
-	}
-	return filepath.Join(s.root, gameID+".json"), nil
-}
-
 func (s *Store) load(game string) ([]Tool, error) {
-	path, err := s.path(game)
+	path, err := gamepkg.File(s.root, game)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +55,7 @@ func (s *Store) load(game string) ([]Tool, error) {
 }
 
 func (s *Store) save(game string, tools []Tool) error {
-	path, err := s.path(game)
+	path, err := gamepkg.File(s.root, game)
 	if err != nil {
 		return err
 	}
