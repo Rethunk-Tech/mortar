@@ -36,6 +36,8 @@ func (c *cmd) modsMenu() error {
 		return err
 	}
 	return c.emit(lines, func() {
-		writeModsMenu(c.out, lines)
+		for _, line := range lines {
+			fmt.Fprintln(c.out, line)
+		}
 	})
 }
