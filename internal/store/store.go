@@ -476,32 +476,59 @@ func (s *Store) loadIndex() (index, error) {
 	return idx, nil
 }
 
-func (s *Store) rebuildIndex() (index, error) {
-	now := time.Now().UTC()
-	idx := index{}
-	games, err := os.ReadDir(s.root)
+// storeGame is one game folder's store items: folders named like a key, not mid-extract.
+type storeGame struct {
+	name string
+	keys []string
+	err  error
+}
+
+// games lists every valid game folder and its items in name order; a game whose folder cannot be read carries the
+// error instead of keys.
+func (s *Store) games() ([]storeGame, error) {
+	entries, err := os.ReadDir(s.root)
 	if errors.Is(err, fs.ErrNotExist) {
-		return idx, s.saveIndex(idx)
+		return nil, nil
 	}
 	if err != nil {
 		return nil, err
 	}
-	for _, g := range games {
+	var out []storeGame
+	for _, g := range entries {
 		if !g.IsDir() || !game.Valid(g.Name()) {
 			continue
 		}
+		sg := storeGame{name: g.Name()}
 		items, err := os.ReadDir(filepath.Join(s.root, g.Name()))
 		if err != nil {
-			return nil, err
+			sg.err = err
 		}
-		for _, item := range items {
-			if !item.IsDir() || strings.HasPrefix(item.Name(), tempPrefix) || !keyPattern.MatchString(item.Name()) {
-				continue
+		for _, it := range items {
+			if it.IsDir() && !strings.HasPrefix(it.Name(), tempPrefix) && keyPattern.MatchString(it.Name()) {
+				sg.keys = append(sg.keys, it.Name())
 			}
-			if idx[g.Name()] == nil {
-				idx[g.Name()] = map[string]time.Time{}
+		}
+		out = append(out, sg)
+	}
+	return out, nil
+}
+
+func (s *Store) rebuildIndex() (index, error) {
+	now := time.Now().UTC()
+	idx := index{}
+	games, err := s.games()
+	if err != nil {
+		return nil, err
+	}
+	for _, g := range games {
+		if g.err != nil {
+			return nil, g.err
+		}
+		for _, key := range g.keys {
+			if idx[g.name] == nil {
+				idx[g.name] = map[string]time.Time{}
 			}
-			idx[g.Name()][item.Name()] = now
+			idx[g.name][key] = now
 		}
 	}
 	if err := s.saveIndex(idx); err != nil {
@@ -557,8 +584,8 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 	if err != nil {
 		return err
 	}
-	games, err := os.ReadDir(s.root)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	games, err := s.games()
+	if err != nil {
 		return err
 	}
 	next := index{}
@@ -567,33 +594,25 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 	}
 	var errs []error
 	for _, g := range games {
-		if !g.IsDir() || !game.Valid(g.Name()) {
+		if g.err != nil {
+			errs = append(errs, g.err)
 			continue
 		}
-		items, err := os.ReadDir(filepath.Join(s.root, g.Name()))
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-		keep := keepSet(referenced[g.Name()])
-		next[g.Name()] = map[string]time.Time{}
-		for _, it := range items {
-			key := it.Name()
-			if !it.IsDir() || strings.HasPrefix(key, tempPrefix) {
-				continue
-			}
-			last, seen := idx[g.Name()][key]
+		keep := keepSet(referenced[g.name])
+		next[g.name] = map[string]time.Time{}
+		for _, key := range g.keys {
+			last, seen := idx[g.name][key]
 			if keep[key] || !seen {
 				last = now
 			}
 			if !keep[key] && unusedPast(now, last, s.unusedFor()) {
-				if err := os.RemoveAll(filepath.Join(s.root, g.Name(), key)); err != nil {
+				if err := os.RemoveAll(filepath.Join(s.root, g.name, key)); err != nil {
 					errs = append(errs, err)
-					next[g.Name()][key] = last
+					next[g.name][key] = last
 				}
 				continue
 			}
-			next[g.Name()][key] = last
+			next[g.name][key] = last
 		}
 	}
 	errs = append(errs, s.saveIndex(next))
@@ -635,27 +654,19 @@ type Ref struct {
 func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	games, err := os.ReadDir(s.root)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	games, err := s.games()
+	if err != nil {
 		return nil, err
 	}
 	var out []Ref
 	for _, g := range games {
-		if !g.IsDir() || !game.Valid(g.Name()) {
-			continue
+		if g.err != nil {
+			return nil, g.err
 		}
-		items, err := os.ReadDir(filepath.Join(s.root, g.Name()))
-		if err != nil {
-			return nil, err
-		}
-		keep := keepSet(referenced[g.Name()])
-		for _, it := range items {
-			key := it.Name()
-			if !it.IsDir() || strings.HasPrefix(key, tempPrefix) {
-				continue
-			}
+		keep := keepSet(referenced[g.name])
+		for _, key := range g.keys {
 			if !keep[key] {
-				out = append(out, Ref{Game: g.Name(), Key: key})
+				out = append(out, Ref{Game: g.name, Key: key})
 			}
 		}
 	}

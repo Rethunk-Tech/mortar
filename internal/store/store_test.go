@@ -462,3 +462,24 @@ func TestPathUsesStoredRootWhenPresent(t *testing.T) {
 		t.Fatalf("missing root still used %s", dir)
 	}
 }
+
+func TestCollectLeavesFoldersThatAreNotStoreItems(t *testing.T) {
+	s := newStore(t)
+	stray := filepath.Join(s.root, "stardew", "Not A Key")
+	if err := os.MkdirAll(stray, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Collect(nil, time.Now().Add(365*24*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(stray); err != nil {
+		t.Fatalf("a folder that is not a store item was removed: %v", err)
+	}
+	refs, err := s.Unreferenced(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(refs) != 0 {
+		t.Fatalf("unreferenced = %v", refs)
+	}
+}
