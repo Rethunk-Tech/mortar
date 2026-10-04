@@ -47,6 +47,7 @@ type GameSettings struct {
 	LastSweepSMAPIVersion       string         `json:"lastSweepSMAPIVersion,omitempty"`
 	LaunchPresets               []LaunchPreset `json:"launchPresets,omitempty"`
 	ExtraModsFolder             string         `json:"extraModsFolder,omitempty"`
+	ShowDotHiddenMods           bool           `json:"showDotHiddenMods,omitempty"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -164,6 +165,11 @@ var registry = []pref{
 		putGame(s, g, gp)
 	}),
 	strPref("extraModsFolder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).ExtraModsFolder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ExtraModsFolder = v; putGame(s, g, gp) }),
+	boolPref("showDotHiddenMods", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).ShowDotHiddenMods }, func(s *Settings, g string, on bool) {
+		gp := s.GamePrefs(g)
+		gp.ShowDotHiddenMods = on
+		putGame(s, g, gp)
+	}),
 }
 
 func defaultGameSettings() GameSettings {
@@ -286,6 +292,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	}
 	dst.LaunchPresets = append([]LaunchPreset(nil), src.LaunchPresets...)
 	dst.ExtraModsFolder = src.ExtraModsFolder
+	dst.ShowDotHiddenMods = src.ShowDotHiddenMods
 }
 
 func normalizeGame(g *GameSettings) {
