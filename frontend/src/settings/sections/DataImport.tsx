@@ -1,70 +1,81 @@
 import { i18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box } from '@mui/material'
+import { Box, Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { useEffect, useState } from 'react'
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
-import { ApplyImportedSettings } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { ApplyImport } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { prefCopy } from '../prefCopy.ts'
 
-function changeLine(field: string, from: string, to: string) {
-  switch (field) {
-    case 'accent':
-      return i18n._(msg`Accent: ${from} → ${to}`)
-    case 'background':
-      return i18n._(msg`Background: ${from} → ${to}`)
-    case 'lastGame':
-      return i18n._(msg`Last game: ${from} → ${to}`)
-    case 'backupsKept':
-      return i18n._(msg`Backups kept: ${from} → ${to}`)
-    case 'listColumns':
-      return i18n._(msg`List columns: ${from} → ${to}`)
-    case 'listSortColumn':
-      return i18n._(msg`List sort: ${from} → ${to}`)
-    case 'listSortDir':
-      return i18n._(msg`List sort direction: ${from} → ${to}`)
-    case 'listGroupBy':
-      return i18n._(msg`List grouping: ${from} → ${to}`)
-    case 'checkModUpdatesOnStart':
-      return i18n._(msg`Check mod updates on start: ${from} → ${to}`)
-    case 'includePrereleaseModVersions':
-      return i18n._(msg`Include pre-release mod versions: ${from} → ${to}`)
-    case 'checkOnlyEnabledMods':
-      return i18n._(msg`Check only enabled mods: ${from} → ${to}`)
-    case 'enableModsWhenInstalled':
-      return i18n._(msg`Enable mods when installed: ${from} → ${to}`)
-    case 'tellWhenSmapiOut':
-      return i18n._(msg`Tell when SMAPI is out: ${from} → ${to}`)
-    case 'tipsSeen':
-      return i18n._(msg`Seen tips: ${from} → ${to}`)
+function sectionTitle(section: string): string {
+  switch (section) {
+    case 'appearance':
+      return i18n._(msg`Appearance`)
+    case 'notifications':
+      return i18n._(msg`Notifications`)
+    case 'downloads':
+      return i18n._(msg`Downloads and updates`)
+    case 'storage':
+      return i18n._(msg`Storage`)
+    case 'sharing':
+      return i18n._(msg`Sharing`)
+    case 'games':
+      return i18n._(msg`Games`)
     default:
-      return i18n._(msg`${field}: ${from} → ${to}`)
+      return i18n._(msg`General`)
   }
 }
 
+// The registry label where the settings pages have one, else the label the file preview carried.
+function changeLabel(key: string, fallback: string): string {
+  const { label } = prefCopy(i18n, key)
+  return label === key ? fallback : label
+}
+
 export function ImportSettingsDialog({
+  path,
   preview,
   onClose,
 }: {
+  path: string
   preview: ImportPreview | null
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const changes = preview?.changes ?? []
+  const sections = preview?.sections ?? []
+  const [off, setOff] = useState<Set<string>>(new Set())
+  useEffect(() => {
+    if (preview !== null) {
+      setOff(new Set())
+    }
+  }, [preview])
+  const chosen = sections.filter((s) => !off.has(s.section))
+  const count = chosen.reduce((n, s) => n + (s.changes?.length ?? 0), 0)
+  const ignored = preview?.ignored ?? []
+  const toggle = (section: string) =>
+    setOff((prev) => {
+      const next = new Set(prev)
+      if (!next.delete(section)) {
+        next.add(section)
+      }
+      return next
+    })
   return (
     <ConfirmDialog
       open={preview !== null}
       title={t`Import settings`}
-      confirmLabel={t`Import`}
-      confirmDisabled={changes.length === 0}
-      maxWidth={360}
+      confirmLabel={t`Import ${count} changes`}
+      confirmDisabled={count === 0}
+      maxWidth={460}
       onCancel={onClose}
       onConfirm={() => {
-        if (!preview?.raw) {
-          return
-        }
-        ApplyImportedSettings(preview.raw)
+        ApplyImport(
+          path,
+          chosen.map((s) => s.section),
+        )
           .then(() => {
             useToasts.getState().push({ kind: 'success', title: t`Settings imported` })
             onClose()
@@ -72,15 +83,34 @@ export function ImportSettingsDialog({
           .catch(reportUnexpected)
       }}
     >
-      {changes.length === 0 ? (
+      {sections.length === 0 ? (
         <Box sx={{ fontSize: 13 }}>{t`Nothing would change.`}</Box>
       ) : (
-        changes.map((c) => (
-          <Box key={c.field} sx={{ fontSize: 13 }}>
-            {changeLine(c.field, c.from, c.to)}
+        sections.map((s) => (
+          <Box key={s.section} sx={{ mb: 1 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={!off.has(s.section)}
+                  onChange={() => toggle(s.section)}
+                  size="small"
+                />
+              }
+              label={sectionTitle(s.section)}
+            />
+            {(s.changes ?? []).map((c) => (
+              <Box key={c.key} sx={{ fontSize: 13, pl: 4 }}>
+                {i18n._(msg`${changeLabel(c.key, c.label)}: ${c.from} → ${c.to}`)}
+              </Box>
+            ))}
           </Box>
         ))
       )}
+      {ignored.length > 0 ? (
+        <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1 }}>
+          {t`Ignored fields Mortar does not import: ${ignored.join(', ')}`}
+        </Typography>
+      ) : null}
     </ConfirmDialog>
   )
 }

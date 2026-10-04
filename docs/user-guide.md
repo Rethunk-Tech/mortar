@@ -99,6 +99,6 @@ Close Steam before uninstalling so the Steam cleanup sticks: Steam rewrites its 
 
 - **Run checks:** **Settings › About › Diagnostics › Run checks…** inspects the data folder, games, Nexus links and the extension, and **Repair** fixes what it can.
 - **Logs:** Mortar's own log is `mortar.log` in the data folder; `crash.log` is there too after a crash. Each profile's SMAPI log is shown on its log view, and every run is kept.
-- **Report a bug:** the Mortar menu's **Report a bug** opens a prefilled GitHub issue. Tick **Include diagnostics** to add Mortar's checks and recent log lines with your home folder hidden. You review everything before posting. **Save diagnostics…** in the same Diagnostics section writes a zip to attach.
+- **Report a bug:** the Mortar menu's **Report a bug** opens a prefilled GitHub issue. Leave **Attach diagnostics** ticked to save a zip (checks, logs, settings and recent runs, with secrets and your home folder removed) and add Mortar's checks to the issue; drag the zip into the issue before posting. **Save diagnostics…** in the Mortar menu and in Settings › About › Diagnostics writes the same zip.
 - **Share a SMAPI log:** on the profile's log view choose **Share log…**. It uploads the log to smapi.io/log and gives you a link to send to whoever is helping.
 - **A mod will not load:** the mod's page on Nexus lists what it needs. Mortar's problem checks warn about missing requirements and duplicates and never block Play.

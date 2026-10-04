@@ -9,7 +9,8 @@ import {
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import {
   ExportSettings,
-  PreviewImportSettings,
+  PickImportFile,
+  PreviewImport,
   SetKeepInTray,
   SetLanguage,
   SetLanPort,
@@ -229,6 +230,7 @@ function Help() {
 
 function SettingsFile() {
   const { t } = useLingui()
+  const [importPath, setImportPath] = useState('')
   const [importPreview, setImportPreview] = useState<ImportPreview | null>(null)
   return (
     <SettingsSection title={t`Settings file`}>
@@ -247,10 +249,14 @@ function SettingsFile() {
           <Button
             variant="outlined"
             onClick={() => {
-              PreviewImportSettings()
-                .then((next) => {
-                  if (next.raw) {
-                    setImportPreview(next)
+              PickImportFile()
+                .then((path) =>
+                  path ? PreviewImport(path).then((next) => ({ path, next })) : undefined,
+                )
+                .then((picked) => {
+                  if (picked) {
+                    setImportPath(picked.path)
+                    setImportPreview(picked.next)
                   }
                 })
                 .catch(reportUnexpected)
@@ -261,7 +267,11 @@ function SettingsFile() {
           </Button>
         </Box>
       </SettingRow>
-      <ImportSettingsDialog preview={importPreview} onClose={() => setImportPreview(null)} />
+      <ImportSettingsDialog
+        path={importPath}
+        preview={importPreview}
+        onClose={() => setImportPreview(null)}
+      />
     </SettingsSection>
   )
 }

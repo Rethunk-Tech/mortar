@@ -12,10 +12,12 @@ import (
 	"runtime"
 	"runtime/debug"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/doctor"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launch"
@@ -24,7 +26,10 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
-const diagnosticsLogLines = 2000
+const (
+	diagnosticsLogLines = 2000
+	diagnosticsRuns     = 3
+)
 
 // SaveZip, when set, writes the diagnostics zip after the user picks a path. Tests use it so the
 // native dialog and the real keyring are never touched. Nil uses App's save dialog.
@@ -56,11 +61,23 @@ func (s *Service) SaveDiagnostics(gameID, profileID string) (string, error) {
 	return s.saveZip(name, data)
 }
 
+// ShowDiagnostics opens the folder holding a diagnostics zip Mortar saved.
+func (s *Service) ShowDiagnostics(path string) error {
+	if !strings.EqualFold(filepath.Ext(path), ".zip") {
+		return errors.New("not a diagnostics zip")
+	}
+	if info, err := os.Stat(path); err != nil || !info.Mode().IsRegular() {
+		return errors.New("the diagnostics zip is gone")
+	}
+	return datadir.Open(filepath.Dir(path))
+}
+
 type bundleProfile struct {
-	Game    string        `json:"game"`
-	ID      string        `json:"id"`
-	Name    string        `json:"name"`
-	Entries []bundleEntry `json:"entries"`
+	Game       string        `json:"game"`
+	ID         string        `json:"id"`
+	Name       string        `json:"name"`
+	EntryCount int           `json:"entryCount"`
+	Entries    []bundleEntry `json:"entries"`
 }
 
 type bundleEntry struct {
@@ -82,7 +99,9 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 	included := []string{
 		"build.json: Mortar version, OS, architecture, Go, and Wails/WebKit when known",
 		"settings.json: settings with Nexus account fields cleared, API keys removed, and home-directory paths written as ~",
-		"profiles.json: profiles with mod names, versions and sources",
+		"profiles.json: profile ids, names, entry counts, mod names, versions and sources",
+		"doctor.txt: the checks `mortar doctor` runs, with home-directory paths written as ~",
+		"runs.json: the last " + fmt.Sprint(diagnosticsRuns) + " launch runs (outcome, versions, error counts; no log text)",
 		"queue.json: download queue without nxm keys",
 	}
 	removed := []string{
@@ -92,6 +111,7 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 		"absolute paths under the home directory (written as ~)",
 		"nxm download keys and expiry on queue items",
 		"profile notes",
+		"any settings field whose name says token, secret, key or password",
 	}
 
 	files := map[string][]byte{
@@ -101,17 +121,29 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 		"queue.json":      redactQueue(readFile(filepath.Join(dir, "queue.json"))),
 	}
 
+	if report, err := s.Doctor(); err == nil {
+		files["doctor.txt"] = []byte(hideHomeIn(doctor.PlainText(report), s.home))
+	}
+	if runs := recentRuns(filepath.Join(dir, "profiles"), diagnosticsRuns); len(runs) > 0 {
+		files["runs.json"] = []byte(hideHomeIn(string(jsonIndent(runs)), s.home))
+	}
 	logName, logBody := mortarLog(dir, s.recentLines(gameID, profileID))
 	if logName != "" {
-		files[logName] = []byte(logBody)
-		included = append(included, logName+": last "+fmt.Sprint(diagnosticsLogLines)+" lines of Mortar's log or in-memory console")
+		files[logName] = []byte(hideHomeIn(logBody, s.home))
+		included = append(included, logName+": last "+fmt.Sprint(diagnosticsLogLines)+" lines of Mortar's log or in-memory console, home folder written as ~")
+	}
+	for _, name := range []string{prevLogName, crashLogName} {
+		if b := readFile(filepath.Join(dir, name)); len(b) > 0 {
+			files[name] = []byte(hideHomeIn(lastLines(string(b), diagnosticsLogLines), s.home))
+			included = append(included, name+": last "+fmt.Sprint(diagnosticsLogLines)+" lines, home folder written as ~")
+		}
 	}
 	if smapi := s.smapiTail(gameID, profileID); smapi != "" {
-		files["smapi-latest.txt"] = []byte(smapi)
+		files["smapi-latest.txt"] = []byte(hideHomeIn(smapi, s.home))
 		included = append(included, "smapi-latest.txt: last "+fmt.Sprint(diagnosticsLogLines)+" lines of the open profile's SMAPI log")
 	}
 
-	files["README.txt"] = []byte(diagnosticsReadme(included, removed))
+	files["manifest.txt"] = []byte(diagnosticsManifest(included, removed))
 	return zipFiles(files)
 }
 
@@ -122,7 +154,7 @@ func (s *Service) recentLines(gameID, profileID string) string {
 	return s.RecentLog(gameID, profileID)
 }
 
-func diagnosticsReadme(included, removed []string) string {
+func diagnosticsManifest(included, removed []string) string {
 	var b strings.Builder
 	b.WriteString("Mortar diagnostics bundle\n\nIncluded:\n")
 	for _, line := range included {
@@ -141,10 +173,11 @@ func diagnosticsReadme(included, removed []string) string {
 
 func buildInfo(version string) map[string]string {
 	info := map[string]string{
-		"mortar": version,
-		"go":     runtime.Version(),
-		"os":     runtime.GOOS,
-		"arch":   runtime.GOARCH,
+		"mortar":   version,
+		"go":       runtime.Version(),
+		"os":       runtime.GOOS,
+		"arch":     runtime.GOARCH,
+		"portable": strconv.FormatBool(datadir.Portable()),
 	}
 	if v := wailsVersion(); v != "" {
 		info["wails"] = v
@@ -179,7 +212,7 @@ func mortarLog(dir, recent string) (string, string) {
 		if err != nil {
 			continue
 		}
-		return "mortar-log.txt", lastLines(string(b), diagnosticsLogLines)
+		return "mortar.log", lastLines(string(b), diagnosticsLogLines)
 	}
 	if strings.TrimSpace(recent) == "" {
 		return "", ""
@@ -251,13 +284,38 @@ func redactSettings(raw []byte, home string) []byte {
 	m["nexusName"] = ""
 	m["nexusUserId"] = 0
 	delete(m, "nexusPremium")
-	delete(m, "nexusKey")
-	delete(m, "apiKey")
-	delete(m, "nexusApiKey")
-	delete(m, "overlayToken")
-	delete(m, "OverlayToken")
+	dropSecretFields(m)
 	redactHomePaths(m, home)
 	return jsonIndent(m)
+}
+
+// dropSecretFields removes every field, at any depth, whose name marks a credential, so a key added later is
+// covered without a list to update.
+func dropSecretFields(v any) {
+	switch x := v.(type) {
+	case map[string]any:
+		for k, child := range x {
+			if secretName(k) {
+				delete(x, k)
+				continue
+			}
+			dropSecretFields(child)
+		}
+	case []any:
+		for _, child := range x {
+			dropSecretFields(child)
+		}
+	}
+}
+
+func secretName(k string) bool {
+	k = strings.ToLower(k)
+	for _, w := range []string{"token", "secret", "apikey", "nexuskey", "password", "keyring"} {
+		if strings.Contains(k, w) {
+			return true
+		}
+	}
+	return false
 }
 
 func redactHomePaths(v any, home string) {
@@ -351,7 +409,7 @@ func collectProfiles(root string) []bundleProfile {
 			if json.Unmarshal(raw, &p) != nil {
 				continue
 			}
-			bp := bundleProfile{Game: gameID, ID: p.ID, Name: p.Name}
+			bp := bundleProfile{Game: gameID, ID: p.ID, Name: p.Name, EntryCount: len(p.Entries)}
 			for _, ent := range p.Entries {
 				be := bundleEntry{Source: ent.Source}
 				for _, mod := range ent.Mods {
@@ -394,4 +452,35 @@ func zipFiles(files map[string][]byte) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+// recentRuns reads each profile's runs/index.json and returns the n newest runs across all of them. Run records
+// carry outcome, versions and counts; the log text stays out.
+func recentRuns(profilesRoot string, n int) []map[string]any {
+	var all []map[string]any
+	games, _ := os.ReadDir(profilesRoot)
+	for _, g := range games {
+		profs, _ := os.ReadDir(filepath.Join(profilesRoot, g.Name()))
+		for _, p := range profs {
+			var idx struct {
+				Runs []map[string]any `json:"runs"`
+			}
+			if json.Unmarshal(readFile(filepath.Join(profilesRoot, g.Name(), p.Name(), "runs", "index.json")), &idx) != nil {
+				continue
+			}
+			for _, r := range idx.Runs {
+				r["game"], r["profile"] = g.Name(), p.Name()
+				all = append(all, r)
+			}
+		}
+	}
+	slices.SortFunc(all, func(a, b map[string]any) int {
+		as, _ := a["started"].(string)
+		bs, _ := b["started"].(string)
+		return strings.Compare(bs, as)
+	})
+	if len(all) > n {
+		all = all[:n]
+	}
+	return all
 }

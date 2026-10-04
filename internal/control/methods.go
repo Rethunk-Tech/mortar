@@ -15,7 +15,6 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/dlwatch"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
@@ -293,11 +292,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if p.Path == "" {
 			return nil, fmt.Errorf("settings import needs a file")
 		}
-		raw, err := fsx.ReadFile(p.Path)
-		if err != nil {
-			return nil, err
-		}
-		return nil, s.SettingsSvc.ApplyImportedSettings(string(raw))
+		return nil, s.SettingsSvc.ApplyImport(p.Path, settings.ImportSections())
 	case "settings.reset":
 		return nil, resetSettings(s.SettingsSvc, p.Key, p.Game)
 	case "profiles":

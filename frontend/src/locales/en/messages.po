@@ -116,7 +116,7 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
-#: src/mods/ConfigPresets.tsx:93
+#: src/mods/ConfigPresets.tsx:106
 msgid "Presets"
 msgstr "Presets"
 
@@ -755,7 +755,7 @@ msgstr "Sign in to Nexus Mods to download these mods."
 msgid "Move into this profile…"
 msgstr "Move into this profile…"
 
-#: src/mods/ConfigPresets.tsx:142
+#: src/mods/ConfigPresets.tsx:160
 #: src/profiles/LaunchOptionsBlock.tsx:119
 msgid "This preset will be deleted."
 msgstr "This preset will be deleted."
@@ -2888,7 +2888,7 @@ msgstr "Custom categories"
 #: src/game/ProfileMenuItems.tsx:86
 #: src/game/ProfileMenuItems.tsx:478
 #: src/mods/CategoryEditor.tsx:163
-#: src/mods/ConfigPresets.tsx:143
+#: src/mods/ConfigPresets.tsx:161
 #: src/mods/OldFilesCallouts.tsx:103
 #: src/profiles/ProfilesPage.tsx:173
 #: src/saves/SaveBackupsSection.tsx:69
@@ -3763,6 +3763,7 @@ msgstr "Include beta releases"
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
+#: src/mods/ConfigPresets.tsx:153
 #: src/profiles/LaunchOptionsBlock.tsx:110
 #: src/profiles/LaunchOptionsBlock.tsx:137
 msgid "Save as preset"
@@ -4447,7 +4448,9 @@ msgstr "Mortar closed unexpectedly last time"
 msgid "{0} saved by sharing files"
 msgstr "{0} saved by sharing files"
 
+#. placeholder {0}: replacing ?? ''
 #. placeholder {0}: saveName.trim()
+#: src/mods/ConfigPresets.tsx:151
 #: src/profiles/LaunchOptionsBlock.tsx:135
 msgid "Replace {0}?"
 msgstr "Replace {0}?"
@@ -8374,7 +8377,7 @@ msgstr "Done ({0}): {1}"
 #: src/bundles/BundlesSection.tsx:153
 #: src/game/ProfileMenuItems.tsx:84
 #: src/mods/CategoryEditor.tsx:161
-#: src/mods/ConfigPresets.tsx:141
+#: src/mods/ConfigPresets.tsx:159
 #: src/tools/ToolsManageDialog.tsx:85
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
@@ -8386,7 +8389,7 @@ msgstr "Beach farm"
 #: src/bundles/BundlesSection.tsx:137
 #: src/mods/CategoryEditor.tsx:155
 #: src/mods/ConfigEditor.tsx:253
-#: src/mods/ConfigPresets.tsx:125
+#: src/mods/ConfigPresets.tsx:138
 #: src/mods/SelectionBar.tsx:76
 #: src/profiles/EditProfileDialog.tsx:443
 #: src/templates/TemplateDialogs.tsx:52
@@ -8949,7 +8952,7 @@ msgstr "Mod details"
 msgid "Resume"
 msgstr "Resume"
 
-#: src/mods/ConfigPresets.tsx:123
+#: src/mods/ConfigPresets.tsx:136
 #: src/profiles/LaunchOptionsBlock.tsx:95
 msgid "Preset name"
 msgstr "Preset name"
@@ -9043,6 +9046,7 @@ msgstr "last played {lastPlayedName} · {ago}"
 msgid "Change folder…"
 msgstr "Change folder…"
 
+#: src/mods/ConfigPresets.tsx:152
 #: src/profiles/LaunchOptionsBlock.tsx:136
 msgid "A preset with this name already exists."
 msgstr "A preset with this name already exists."
@@ -10203,8 +10207,8 @@ msgstr "Deleted profiles stay here, mods and settings included."
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
-#: src/mods/ConfigPresets.tsx:102
-#: src/mods/ConfigPresets.tsx:122
+#: src/mods/ConfigPresets.tsx:115
+#: src/mods/ConfigPresets.tsx:135
 msgid "Save current as…"
 msgstr "Save current as…"
 

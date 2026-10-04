@@ -8,19 +8,6 @@ import (
 
 const exportVersion = 1
 
-// Change is one field that import would replace.
-type Change struct {
-	Field string `json:"field"`
-	From  string `json:"from"`
-	To    string `json:"to"`
-}
-
-// ImportPreview is a validated export ready to apply, or empty Raw when the dialog was cancelled.
-type ImportPreview struct {
-	Raw     string   `json:"raw"`
-	Changes []Change `json:"changes"`
-}
-
 var portableFields = []string{
 	"language", "accent", "background", "lastGame", "backupsKept",
 	"listColumns", "listSortColumn", "listSortDir", "listGroupBy",
@@ -183,30 +170,4 @@ func sanitizePortable(s Settings) Settings {
 	normalizeTips(&s)
 	normalizeNexus(&s)
 	return s
-}
-
-func previewChanges(
-	cur Settings,
-	exported Settings,
-	present map[string]struct{},
-) []Change {
-	next := cur
-	ApplyExport(&next, exported, present)
-	curRaw, _ := asObject(cur)
-	nextRaw, _ := asObject(next)
-	var out []Change
-	for _, field := range portableFields {
-		if !has(present, field) {
-			continue
-		}
-		from, to := string(curRaw[field]), string(nextRaw[field])
-		if from == to {
-			continue
-		}
-		out = append(out, Change{Field: field, From: from, To: to})
-	}
-	if out == nil {
-		out = []Change{}
-	}
-	return out
 }

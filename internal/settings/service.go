@@ -271,37 +271,37 @@ func (s *Service) ExportSettings() (string, error) {
 	return picker.SaveFile(s.App, "Export settings", "mortar-settings.json", "JSON", "*.json", body)
 }
 
-// PreviewImportSettings opens a JSON file, validates it, and returns what would change. Empty Raw means cancelled.
-func (s *Service) PreviewImportSettings() (ImportPreview, error) {
+// PickImportFile asks for a settings file to import. It returns "" when cancelled.
+func (s *Service) PickImportFile() (string, error) {
 	d := s.App.Dialog.OpenFile().
 		SetTitle("Import settings").
 		AddFilter("JSON", "*.json").
 		AddFilter("All files", "*")
 	d.AttachToWindow(s.App.Window.Current())
-	path, err := d.PromptForSingleSelection()
-	if err != nil || path == "" {
-		return ImportPreview{}, err
-	}
+	return d.PromptForSingleSelection()
+}
+
+// PreviewImport validates the export at path and lists, per section, what importing it would change.
+func (s *Service) PreviewImport(path string) (ImportPreview, error) {
 	b, err := fsx.ReadFile(path)
 	if err != nil {
 		return ImportPreview{}, err
 	}
-	p, present, err := ParseExport(b)
-	if err != nil {
-		return ImportPreview{}, err
-	}
-	return ImportPreview{Raw: string(b), Changes: previewChanges(s.store.Get(), p, present)}, nil
+	return PreviewImport(s.store.Get(), b)
 }
 
-// ApplyImportedSettings applies a previewed export. Unknown fields stay ignored.
-func (s *Service) ApplyImportedSettings(raw string) error {
-	p, present, err := ParseExport([]byte(raw))
+// ApplyImport applies the export at path, only the fields in the chosen sections.
+func (s *Service) ApplyImport(path string, sections []string) error {
+	b, err := fsx.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	return s.set(func(v *Settings) {
-		ApplyExport(v, p, present)
-	})
+	var applyErr error
+	err = s.set(func(v *Settings) { applyErr = ApplyImport(v, b, sections) })
+	if applyErr != nil {
+		return applyErr
+	}
+	return err
 }
 
 func (s *Service) SetNxmDefaultProfile(id string) error {

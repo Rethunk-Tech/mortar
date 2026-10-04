@@ -15,6 +15,7 @@ import { type SyntheticEvent, useEffect, useState } from 'react'
 import { BugURL } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useBugReport } from './reportBug.ts'
+import { saveDiagnostics } from './saveDiagnostics.ts'
 import { useDiscardGuard } from './useDiscardGuard.tsx'
 
 const empty = { title: '', happened: '', expected: '', steps: '' }
@@ -44,7 +45,10 @@ export function BugReportDialog() {
     if (form.happened.trim() === '') {
       return
     }
-    BugURL(game ?? '', { ...form, diagnostics })
+    // The zip is saved first so the GitHub page opens after the user has a file to drag into it.
+    const attach = diagnostics ? saveDiagnostics(game ?? '', '', true) : Promise.resolve(false)
+    attach
+      .then(() => BugURL(game ?? '', { ...form, diagnostics }))
       .then((url) => Browser.OpenURL(url))
       .then(close, reportUnexpected)
   }
@@ -88,7 +92,7 @@ export function BugReportDialog() {
             control={
               <Checkbox checked={diagnostics} onChange={(e) => setDiagnostics(e.target.checked)} />
             }
-            label={t`Include diagnostics (Mortar's checks and recent log lines, with your home folder hidden)`}
+            label={t`Attach diagnostics (a zip of Mortar's checks, logs and settings with secrets and your home folder removed; you drag it into the issue)`}
           />
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {t`This opens a new issue on GitHub with these filled in; you can review everything before posting.`}

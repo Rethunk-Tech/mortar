@@ -111,15 +111,40 @@ func TestImportRejectsMissingOrUnknownVersion(t *testing.T) {
 	}
 }
 
-func TestImportPreviewListsChanges(t *testing.T) {
-	cur := Defaults()
-	raw := []byte(`{"version":1,"accent":"sky","backupsKept":9}`)
-	p, present, err := ParseExport(raw)
+func TestImportPreviewGroupsBySectionAndNotesUnknown(t *testing.T) {
+	raw := []byte(`{"version":1,"accent":"sky","backupsKept":9,"parallelDownloads":2,"mystery":1,"nexusName":"x"}`)
+	got, err := PreviewImport(Defaults(), raw)
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := previewChanges(cur, p, present)
-	if len(got) != 2 {
-		t.Fatalf("changes = %+v", got)
+	var secs []string
+	for _, s := range got.Sections {
+		secs = append(secs, s.Section)
+	}
+	if strings.Join(secs, ",") != "appearance,downloads,storage" {
+		t.Fatalf("sections = %+v", got.Sections)
+	}
+	if c := got.Sections[0].Changes[0]; c.Key != "accent" || c.To != "sky" || c.Label != "Accent" {
+		t.Fatalf("change = %+v", c)
+	}
+	if strings.Join(got.Ignored, ",") != "mystery,nexusName" {
+		t.Fatalf("ignored = %v", got.Ignored)
+	}
+	if _, err := PreviewImport(Defaults(), []byte(`{"version":2}`)); err == nil {
+		t.Fatal("version 2 accepted")
+	}
+}
+
+func TestApplyImportTakesOnlyChosenSections(t *testing.T) {
+	raw := []byte(`{"version":1,"accent":"sky","backupsKept":9}`)
+	cur := Defaults()
+	if err := ApplyImport(&cur, raw, []string{SectionStorage}); err != nil {
+		t.Fatal(err)
+	}
+	if cur.BackupsKept != 9 || cur.Accent != Defaults().Accent {
+		t.Fatalf("backupsKept=%d accent=%q", cur.BackupsKept, cur.Accent)
+	}
+	if err := ApplyImport(&cur, raw, nil); err != nil || cur.Accent != Defaults().Accent {
+		t.Fatalf("no sections changed accent: %v", err)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,16 +30,19 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	gameFolder := filepath.Join(home, "Games", "Stardew Valley")
 	bg := filepath.Join(home, "Pictures", "wall.png")
 	settingsIn := map[string]any{
-		"accent":          "sand",
-		"nexusName":       "FixtureUser",
-		"nexusUserId":     87654321,
-		"nexusPremium":    true,
-		"nexusKey":        apiKey,
-		"apiKey":          apiKey,
-		"backgroundImage": bg,
-		"gameFolders":     map[string]string{"stardew": gameFolder},
-		"lastPlayed":      map[string]any{"stardew": map[string]any{"profile": "Cozy Farm", "at": "2026-09-30T12:00:00Z"}},
-		"overlayToken":    "overlay-secret-token",
+		"accent":            "sand",
+		"nexusName":         "FixtureUser",
+		"nexusUserId":       87654321,
+		"nexusPremium":      true,
+		"nexusKey":          apiKey,
+		"apiKey":            apiKey,
+		"backgroundImage":   bg,
+		"gameFolders":       map[string]string{"stardew": gameFolder},
+		"lastPlayed":        map[string]any{"stardew": map[string]any{"profile": "Cozy Farm", "at": "2026-09-30T12:00:00Z"}},
+		"overlayToken":      "overlay-secret-token",
+		"nexusRefreshToken": "refresh-secret",
+		"keyringItem":       "keyring-secret-item",
+		"nested":            map[string]any{"clientSecret": "nested-secret"},
 	}
 	rawSettings, err := json.Marshal(settingsIn)
 	if err != nil {
@@ -67,6 +71,27 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 			"mods": [{"name": "Content Patcher", "uniqueId": "Pathoschild.ContentPatcher", "version": "2.1.0"}]
 		}]
 	}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	for name, body := range map[string]string{
+		"mortar.log":      "line one " + home + "/x\n",
+		"mortar.prev.log": "prev-line " + home + "/y\n",
+		"crash.log":       "crash-line\n",
+	} {
+		if err := os.WriteFile(filepath.Join(data, name), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	runsDir := filepath.Join(profDir, "runs")
+	if err := os.MkdirAll(runsDir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	var runs []string
+	for i := 1; i <= 4; i++ {
+		runs = append(runs, fmt.Sprintf(`{"id":"r%d","started":"2026-10-0%dT10:00:00Z","outcome":"ok"}`, i, i))
+	}
+	if err := os.WriteFile(filepath.Join(runsDir, "index.json"), []byte(`{"runs":[`+strings.Join(runs, ",")+`]}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -102,8 +127,20 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	}
 
 	files := zipNames(t, saved)
-	blob := files["settings.json"] + files["profiles.json"] + files["queue.json"] + files["README.txt"] + files["build.json"] + files["smapi-latest.txt"] + files["console.txt"]
-	for _, secret := range []string{apiKey, nxmKey, notes, "FixtureUser", "overlay-secret-token"} {
+	blob := files["settings.json"] + files["profiles.json"] + files["queue.json"] + files["manifest.txt"] + files["build.json"] + files["smapi-latest.txt"] + files["mortar.log"]
+	for _, name := range []string{"mortar.log", "mortar.prev.log", "crash.log", "doctor.txt", "runs.json", "manifest.txt"} {
+		if _, ok := files[name]; !ok {
+			t.Errorf("zip lacks %s", name)
+		}
+		blob += files[name]
+	}
+	if strings.Contains(files["runs.json"], `"r1"`) || !strings.Contains(files["runs.json"], `"r4"`) {
+		t.Errorf("runs.json should hold the 3 newest runs: %s", files["runs.json"])
+	}
+	if strings.Contains(blob, home) {
+		t.Error("zip still contains the home folder")
+	}
+	for _, secret := range []string{"refresh-secret", "keyring-secret-item", "nested-secret", apiKey, nxmKey, notes, "FixtureUser", "overlay-secret-token"} {
 		if strings.Contains(blob, secret) {
 			t.Errorf("zip still contains %q", secret)
 		}
@@ -117,11 +154,11 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	if !strings.Contains(files["smapi-latest.txt"], "smapi-fixture-line") {
 		t.Errorf("smapi log: %q", files["smapi-latest.txt"])
 	}
-	if !strings.Contains(files["console.txt"], "in-memory-console-line") {
-		t.Errorf("console: %q", files["console.txt"])
+	if !strings.Contains(files["mortar.log"], "line one ~/x") {
+		t.Errorf("mortar.log: %q", files["mortar.log"])
 	}
-	if !strings.Contains(files["README.txt"], "Removed") || !strings.Contains(files["README.txt"], "Included") {
-		t.Error("README.txt missing included/removed lists")
+	if !strings.Contains(files["manifest.txt"], "Removed") || !strings.Contains(files["manifest.txt"], "Included") {
+		t.Error("manifest.txt missing included/removed lists")
 	}
 	if !strings.Contains(files["build.json"], `"mortar": "1.2.3"`) {
 		t.Errorf("build.json: %s", files["build.json"])
