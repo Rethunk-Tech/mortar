@@ -15,6 +15,7 @@ import { type SyntheticEvent, useEffect, useState } from 'react'
 import { BugURL } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useBugReport } from './reportBug.ts'
+import { useDiscardGuard } from './useDiscardGuard.tsx'
 
 const empty = { title: '', happened: '', expected: '', steps: '' }
 
@@ -30,6 +31,10 @@ export function BugReportDialog() {
     }
   }, [game])
   const close = () => useBugReport.setState({ game: null })
+  const guard = useDiscardGuard(
+    Object.values(form).some((v) => v.trim() !== ''),
+    close,
+  )
   const field = (key: keyof typeof empty) => ({
     value: form[key],
     onChange: (e: { target: { value: string } }) => setForm({ ...form, [key]: e.target.value }),
@@ -44,7 +49,7 @@ export function BugReportDialog() {
       .then(close, reportUnexpected)
   }
   return (
-    <Dialog open={game !== null} onClose={close} fullWidth={true} maxWidth="sm">
+    <Dialog open={game !== null} onClose={guard.request} fullWidth={true} maxWidth="sm">
       <form onSubmit={submit}>
         <DialogTitle>{t`Report a bug`}</DialogTitle>
         <DialogContent
@@ -90,12 +95,13 @@ export function BugReportDialog() {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={close}>{t`Cancel`}</Button>
+          <Button onClick={guard.request}>{t`Cancel`}</Button>
           <Button type="submit" variant="contained" disabled={form.happened.trim() === ''}>
             {t`Open on GitHub`}
           </Button>
         </DialogActions>
       </form>
+      {guard.dialog}
     </Dialog>
   )
 }

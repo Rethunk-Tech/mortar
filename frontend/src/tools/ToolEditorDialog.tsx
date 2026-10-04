@@ -3,6 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } 
 import { useEffect, useState } from 'react'
 import { PickExecutable } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Tool } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/models.ts'
+import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 
@@ -49,6 +50,13 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
     setWorkingDir(initial?.workingDir ?? '')
   }, [open, initial])
 
+  const dirty =
+    name !== (initial?.name ?? '') ||
+    executable !== (initial?.executable ?? '') ||
+    argsText !== argsToText(initial?.arguments) ||
+    workingDir !== (initial?.workingDir ?? '')
+  const guard = useDiscardGuard(dirty, onClose)
+
   const browse = () => {
     PickExecutable(t`Choose executable`)
       .then((path) => {
@@ -71,7 +79,7 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true}>
+    <Dialog open={open} onClose={guard.request} maxWidth="sm" fullWidth={true}>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -121,7 +129,7 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button type="button" onClick={onClose}>
+          <Button type="button" onClick={guard.request}>
             {t`Cancel`}
           </Button>
           <Button
@@ -133,6 +141,7 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
           </Button>
         </DialogActions>
       </form>
+      {guard.dialog}
     </Dialog>
   )
 }

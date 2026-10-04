@@ -18,6 +18,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { colorHex, MAX_DESCRIPTION, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
@@ -350,8 +351,17 @@ export function EditProfileDialog({
   )
   const [launchError, setLaunchError] = useState<LaunchError>(null)
   const [busy, setBusy] = useState(false)
+  const [touched, setTouched] = useState(false)
+  const guard = useDiscardGuard(touched, onClose)
+  const edited =
+    <A,>(set: (value: A) => void) =>
+    (value: A) => {
+      setTouched(true)
+      set(value)
+    }
   useEffect(() => {
     if (open) {
+      setTouched(false)
       setColor(profile.color ?? '')
       setIcon(profile.icon ?? '')
       setDescription(profile.description ?? '')
@@ -394,7 +404,7 @@ export function EditProfileDialog({
       coverFailure: t`Could not use that image`,
     })
   return (
-    <Dialog open={open} onClose={onClose} slotProps={{ paper: { sx: { minWidth: 400 } } }}>
+    <Dialog open={open} onClose={guard.request} slotProps={{ paper: { sx: { minWidth: 400 } } }}>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -407,27 +417,27 @@ export function EditProfileDialog({
           gameId={gameId}
           color={color}
           icon={icon}
-          onColor={setColor}
-          onIcon={setIcon}
+          onColor={edited(setColor)}
+          onIcon={edited(setIcon)}
           stagedCover={stagedCover}
-          onStageCover={setStagedCover}
+          onStageCover={edited(setStagedCover)}
           description={description}
-          onDescription={setDescription}
+          onDescription={edited(setDescription)}
           launchOptions={launchOptions}
-          onLaunchOptions={setLaunchOptionsField}
+          onLaunchOptions={edited(setLaunchOptionsField)}
           launchPrefix={launchPrefix}
-          onLaunchPrefix={setLaunchPrefix}
+          onLaunchPrefix={edited(setLaunchPrefix)}
           launchEnv={launchEnv}
-          onLaunchEnv={setLaunchEnv}
+          onLaunchEnv={edited(setLaunchEnv)}
           launchError={launchError}
           onLaunchError={setLaunchError}
           gameSettings={gameSettings}
-          onGameSettings={setGameSettings}
+          onGameSettings={edited(setGameSettings)}
           overrides={overrides}
-          onOverrides={setOverrides}
+          onOverrides={edited(setOverrides)}
         />
         <DialogActions>
-          <Button onClick={onClose}>{t`Cancel`}</Button>
+          <Button onClick={guard.request}>{t`Cancel`}</Button>
           <DisabledReason title={t`Loading game settings…`} disabled={!gameSettingsLoaded}>
             <Button type="submit" variant="contained" disabled={busy || !gameSettingsLoaded}>
               {t`Save`}
@@ -435,6 +445,7 @@ export function EditProfileDialog({
           </DisabledReason>
         </DialogActions>
       </form>
+      {guard.dialog}
     </Dialog>
   )
 }
