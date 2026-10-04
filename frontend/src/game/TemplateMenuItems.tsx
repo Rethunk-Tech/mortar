@@ -8,7 +8,10 @@ import { ApplyTemplateDialog } from '../templates/ApplyTemplateDialog.tsx'
 import { ManageTemplatesDialog, SaveTemplateDialog } from '../templates/TemplateDialogs.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
 
-type Props = { profile: Profile; close: () => void }
+interface Props {
+  profile: Profile
+  close: () => void
+}
 
 function SaveTemplateMenuItem({ profile, close }: Props) {
   const { t } = useLingui()
