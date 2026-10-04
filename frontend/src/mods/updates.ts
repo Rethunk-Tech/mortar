@@ -32,17 +32,21 @@ function checkedWithSmapi(at: number | null, now: number, unknown: boolean): str
 const MS_PER_HOUR = 3_600_000
 let hourlyTimer: ReturnType<typeof setInterval> | undefined
 const inFlight = new Map<string, Promise<UpdatesResult>>()
+const countFor = (updates: UpdatesResult, id: string) =>
+  updateCount(
+    updates,
+    useProfiles.getState().profiles.find((p) => p.id === id),
+    useNexusDetails.getState().byId,
+  )
+
 
 function syncBadge() {
-  const { openId, profiles } = useProfiles.getState()
+  const { openId } = useProfiles.getState()
   const { updates } = useUpdates.getState()
   if (!(openId && updates)) {
     return
   }
-  const profile = profiles.find((p) => p.id === openId)
-  useBadges
-    .getState()
-    .patch(openId, { updates: updateCount(updates, profile, useNexusDetails.getState().byId) })
+  useBadges.getState().patch(openId, { updates: countFor(updates, openId) })
 }
 
 function loadUpdates(game: string, profile: string): Promise<UpdatesResult> {
@@ -94,10 +98,7 @@ const useUpdates = create<{
         set({ updates, checkedAt: Date.now() })
       }
       syncBadge()
-      const count = updateCount(
-        updates,
-        useProfiles.getState().profiles.find((p) => p.id === at.id),
-      )
+      const count = countFor(updates, at.id)
       if (count > 0 && useSettings.getState().notifyModUpdates) {
         useToasts.getState().push({
           kind: 'info',
@@ -137,10 +138,7 @@ const useUpdates = create<{
       set({ updates, checkedAt: Date.now() })
     }
     syncBadge()
-    return updateCount(
-      updates,
-      useProfiles.getState().profiles.find((p) => p.id === at.id),
-    )
+    return countFor(updates, at.id)
   },
   setReviewing: (reviewing) => set({ reviewing }),
 }))

@@ -3,8 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { ArrowUp } from 'lucide-react'
 import { useProfiles } from '../../profiles/store.ts'
-import { updateCount } from '../lookup.ts'
-import { useNexusDetails } from '../nexusDetails.ts'
+import { useBadges } from '../badges.ts'
 import { accent } from '../paper.ts'
 import { useUpdates } from '../updates.ts'
 
@@ -12,8 +11,8 @@ export function UpdateBar() {
   const { t } = useLingui()
   const updates = useUpdates((s) => s.updates)
   const setReviewing = useUpdates((s) => s.setReviewing)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
-  const count = updateCount(updates, profile, useNexusDetails.getState().byId)
+  const openId = useProfiles((s) => s.openId)
+  const count = useBadges((s) => s.byProfile[openId]?.updates ?? 0)
   if (count === 0) {
     return updates?.unknown ? (
       <Typography sx={{ mx: 2, mt: 1, fontSize: 12, color: 'text.secondary' }}>

@@ -5,9 +5,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
-import { updateCount } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
-import { useNexusDetails } from '../mods/nexusDetails.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useLoadProblemsOnFocus } from '../mods/useLoadProblemsOnFocus.ts'
 import { unlinkCollection } from '../profiles/collectionUnlink.ts'
@@ -230,11 +228,10 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
 // Updates live in the header so the Mods tab keeps its rows for the list; the Problems tab carries its own count.
 function AttentionCards() {
   const { t } = useLingui()
-  const updates = useUpdates((s) => s.updates)
   const setReviewing = useUpdates((s) => s.setReviewing)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
+  const openId = useProfiles((s) => s.openId)
+  const updateN = useBadges((s) => s.byProfile[openId]?.updates ?? 0)
   useLoadProblemsOnFocus()
-  const updateN = updateCount(updates, profile, useNexusDetails.getState().byId)
   return updateN > 0 ? (
     <Card
       label={t`Updates`}
