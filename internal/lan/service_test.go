@@ -299,8 +299,8 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 }
 
 func TestPeerNameUnescapesDNSInstanceName(t *testing.T) {
-	if got := peerName(`Damon\ Blais._mortar._tcp.local.`); got != "Damon Blais" {
-		t.Fatalf("peerName() = %q, want %q", got, "Damon Blais")
+	if got := peerName(`Pat\ Farmer._mortar._tcp.local.`); got != "Pat Farmer" {
+		t.Fatalf("peerName() = %q, want %q", got, "Pat Farmer")
 	}
 }
 
@@ -314,7 +314,7 @@ func TestAddPeerDropsOurInstance(t *testing.T) {
 	service := NewService(Deps{})
 	service.enabled = true
 	service.addPeer(&mdns.ServiceEntry{
-		Name:       `Damon\ Blais._mortar._tcp.local.`,
+		Name:       `Pat\ Farmer._mortar._tcp.local.`,
 		Port:       1234,
 		AddrV4:     net.ParseIP("192.0.2.1"),
 		InfoFields: []string{"instance=" + service.instanceID},

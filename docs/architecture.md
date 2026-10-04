@@ -362,7 +362,7 @@ A launch through Flatpak Steam that times out while the override is missing uses
 - **Linux:** `steam -applaunch 413150 --skip-terminal -- --mods-path <absolute path to the profile's mods/>`.
   - SMAPI's launcher script reads its own flags only before `--` and forwards only what follows it (SMAPI's unix launcher argument loop in the Pathoschild/SMAPI repository), which is why SMAPI's docs say arguments do not work on Linux.
   - `--skip-terminal` makes the script start SMAPI with `--no-terminal`; SMAPI still writes its log file then (`docs/technical/smapi.md:46`).
-  - Measured: without `--` the path is ignored; with it SMAPI loads the profile, including through NOMAD's real Steam client, where the game reached the main menu. Without `--skip-terminal` the launcher opened its console in `xterm`, unreadably small.
+  - Measured: without `--` the path is ignored; with it SMAPI loads the profile, including through a real Steam client, where the game reached the main menu. Without `--skip-terminal` the launcher opened its console in `xterm`, unreadably small.
 - **Windows:** Steam starts `Stardew Valley.exe`, not SMAPI. SMAPI's installer swaps the game's launcher only on Linux and macOS (`InteractiveInstaller.cs` `if (context.IsUnix)`), and on Windows asks for the launch option to keep achievements.
   - First run shows the line `"<game>\StardewModdingAPI.exe" %command%` to paste into Stardew's Steam launch options, with a copy button, and **Set it in Steam for me**, which writes `LaunchOptions` in the MostRecent account's `localconfig.vdf` while Steam is closed (Steam rewrites the file on exit).
     - The write merges the user's options: an existing SMAPI `%command%` line is left as it is; otherwise SMAPI is inserted before `%command%`, or `"<dir>\StardewModdingAPI.exe" %command%` is prepended to whatever was there.
@@ -428,14 +428,14 @@ A launch through Flatpak Steam that times out while the override is missing uses
 Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewValley/Saves`, which Steam Cloud syncs, so Mortar never moves it; profiles share saves.
 
 - Each profile's Saves card ([gui-design.md](gui-design.md#main-screen)) counts the saves that fit.
-- Its Saves tab lists every save with the mods it has used that the profile lacks, read from the save itself, as NOMAD recalled a mod once doing in game. A card also shows which profile last played that save, from `<game>/last-played.json`.
+- Its Saves tab lists every save with the mods it has used that the profile lacks, read from the save itself. A card also shows which profile last played that save, from `<game>/last-played.json`.
 - Players pick their save inside the game. Play still warns from the newest save when it needs mods this profile lacks ([Launch](#launch)); this tab is the full list.
 
 - **Where mods leave traces:** SMAPI writes no mod list into a save, but mods leave keys prefixed with their `UniqueID`:
   - SMAPI's save data `smapi/mod-data/<uniqueid>/<key>`, lowercased whole (SMAPI's `DataHelper` in the Pathoschild/SMAPI repository)
   - `modData` keys such as `Sonozuki.MoreGrass/GrassOffsetX0`
 - **Matching:** Mortar scans the save's `key` / `string` XML entries and, ignoring case, takes for each key the longest prefix ending at a `/`, `_` or `.` boundary that is a `UniqueID` in the mod dataset's index. Splitting at the first `_` would be wrong: 1,413 IDs contain `_`, and for 81 of them the part before it is another mod's ID; 1,081 have no dot.
-- **Cost:** measured on one of NOMAD's saves: 65 MB, 330,748 keys, 32 mods in 0.43 s. Results are cached by the save file's modification time. The same pass streams the file and writes nothing, and also reads `SaveGameInfo` for:
+- **Cost:** measured on a real save: 65 MB, 330,748 keys, 32 mods in 0.43 s. Results are cached by the save file's modification time. The same pass streams the file and writes nothing, and also reads `SaveGameInfo` for:
   - farmer, farm name, in-game date, `millisecondsPlayed` and `money`
   - farm layout `whichFarm`: 0 Standard, 1 Riverland, 2 Forest, 3 Hill-top, 4 Wilderness, 5 Four Corners, 6 Beach, 7 Meadowlands; -1 when the tag is missing
 - **Limits:** mods that keep no per-save data leave no trace, and keys outlive a mod removed on purpose, so the warning says "this save has used", and each mod can be dismissed for that save.
@@ -544,7 +544,7 @@ Sources: the API acceptable-use policy (help.nexusmods.com article 114), the SSO
   - Install uses the same archive path as a dropped file (FOMOD and folder asks included) and records `profile.KindNexus` with the mod id when known.
   - CLI: `mortar downloads` lists noticed archives (`asked` / `installed` / `ignored`); `mortar downloads install <n>` installs into the last-open profile.
   - `internal/dlwatch`.
-- **Rate limits** (measured on NOMAD's free account): `x-rl-daily-limit: 20000`, `x-rl-hourly-limit: 2000`, with `-remaining` and `-reset` headers; the client reads them on every response and pauses before running out. Settings › Nexus account shows the remaining daily and hourly counts from the last response, with no call of its own.
+- **Rate limits** (measured on a free account): `x-rl-daily-limit: 20000`, `x-rl-hourly-limit: 2000`, with `-remaining` and `-reset` headers; the client reads them on every response and pauses before running out. Settings › Nexus account shows the remaining daily and hourly counts from the last response, with no call of its own.
 - **Calls only on the user's action:** a mod's `picture_url` and `endorsement_count` (`GET /v1/games/stardewvalley/mods/<id>.json`) are fetched once, when it is installed, and cached; the picture itself is cached on disk under `cache/modpic` (startup prune by mtime to `MaxCacheBytes`, 64 MiB) and served to the window at `/mod-picture/` (Nexus image hosts only, images up to 8 MiB).
 - **Mod page details** (`nexussvc.Details`): the page (`name`, `summary`, `description`, `picture_url`, `version`, `author`, `uploaded_by`, `uploaded_users_profile_url`, `category_id`, `endorsement_count`, `mod_downloads`, `mod_unique_downloads`, `created_time`, `updated_time`, `contains_adult_content`, `status`, `available`), `files.json`, `changelogs.json` and the category name from the game's `categories` (`GET /v1/games/stardewvalley.json`, cached 30 days) are kept in `<datadir>/cache/nexus/details-v3-stardewvalley-<mod id>.json` through the meta cache, never in `profile.json`.
   - They are fetched after each Nexus install and again when the detail dialog opens once they are a day old; signed out, rate-limited or offline, the cached copy is served however old.

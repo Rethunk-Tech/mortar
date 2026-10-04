@@ -659,11 +659,16 @@ func TestChangesSinceCachedUntilProfileUpdated(t *testing.T) {
 	}
 }
 
-func TestNOMADHistoryBench(t *testing.T) {
-	const dir = "/var/tmp/hist-bench/bf8012eb5944d3ad"
+// TestHistoryBench times history reads and an append on a copy of a real profile's folder, named by
+// MORTAR_HISTORY_BENCH; it writes there, so never point it at a live profile.
+func TestHistoryBench(t *testing.T) {
+	dir := os.Getenv("MORTAR_HISTORY_BENCH")
+	if dir == "" {
+		t.Skip("set MORTAR_HISTORY_BENCH to a copied profile folder")
+	}
 	st, err := os.Stat(filepath.Join(dir, historyFile))
 	if err != nil {
-		t.Skip(err)
+		t.Fatal(err)
 	}
 	t.Logf("history.json before %d bytes", st.Size())
 	start := time.Now()

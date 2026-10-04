@@ -10,7 +10,7 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 	s := Defaults()
 	s.Language = "en"
 	s.Accent = "moss"
-	s.NexusName = "NOMAD"
+	s.NexusName = "Farmer"
 	s.NexusUserID = 99
 	s.NexusPremium = true
 	s.GameFolders = map[string]string{"stardew": "/games/Stardew Valley"}
@@ -50,7 +50,7 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 		}
 	}
 	raw := string(b)
-	for _, secret := range []string{"NOMAD", "/games/Stardew", "abc", "/home/u/wall", "overlay-secret-token"} {
+	for _, secret := range []string{"Farmer", "/games/Stardew", "abc", "/home/u/wall", "overlay-secret-token"} {
 		if strings.Contains(raw, secret) {
 			t.Fatalf("export still holds %q: %s", secret, raw)
 		}

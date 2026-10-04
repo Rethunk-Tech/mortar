@@ -12,13 +12,17 @@ Mortar is a desktop mod manager, built for more than one game. It finds your gam
 
 Version 1 supports Stardew Valley (SMAPI, Nexus Mods) only; Lethal Company (BepInEx, Thunderstore) is deferred to a later release. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
 
-## Quick start
+## Getting started
+
+Download the latest build from [Releases](https://github.com/Rethunk-AI/mortar/releases/latest) or the [download page](https://mortar.rethunk.tech/download/): a Windows installer, or for Linux an AppImage, Flatpak, `.deb`, `.rpm` or Arch package. Mortar finds Stardew Valley from Steam, GOG, Heroic or Lutris and installs SMAPI itself.
+
+To build it yourself:
 
 ```sh
 bun install && wails3 dev
 ```
 
-Prerequisites, build and gate: [HUMANS.md](HUMANS.md).
+Prerequisites (including the `wails3` CLI built from the pinned Wails fork), build and gate: [HUMANS.md](HUMANS.md).
 
 ## Features
 
