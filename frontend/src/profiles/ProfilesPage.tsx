@@ -179,7 +179,7 @@ function Damaged() {
             <Wrench size={16} />
           </TipIconButton>
           <TipIconButton
-            label={t`Move to trash`}
+            label={t`Delete`}
             color="error"
             disabled={pending}
             onClick={() => run(() => remove(item.id))}
@@ -228,7 +228,7 @@ function Trash() {
         )}
       </Box>
       <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>
-        {t`Deleted profiles stay here for 30 days, mods and settings included.`}
+        {t`Deleted profiles stay here, mods and settings included.`}
       </Typography>
       {trash.map((item) => (
         <TrashRow key={item.id} item={item} />
@@ -274,6 +274,11 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
           },
         }}
       />
+      {hits.length === 0 && query.trim() !== '' ? (
+        <Typography sx={{ mt: 1, fontSize: 13, color: 'text.secondary' }}>
+          {t`No mod matches`}
+        </Typography>
+      ) : null}
       {hits.length > 0 ? (
         <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
           {hits.map((h) => (
@@ -368,7 +373,7 @@ function ProfilesHeader({
       >
         <MenuAction
           icon={<FolderInput size={16} aria-hidden={true} />}
-          label={t`From the Mods folder`}
+          label={t`From the game's Mods folder…`}
           onClick={() => {
             closeImportMenu()
             onImportGame()
@@ -410,7 +415,7 @@ function ProfilesHeader({
         onClick={onCreate}
         sx={{ height: 40, px: 2, fontSize: 14 }}
       >
-        {t`New profile`}
+        {t`New profile…`}
       </Button>
     </Box>
   )
@@ -496,7 +501,7 @@ export function ProfilesPage() {
                   variant="contained"
                   startIcon={<Plus size={16} />}
                   onClick={() => setCreating(true)}
-                >{t`New profile`}</Button>
+                >{t`New profile…`}</Button>
               }
             >
               {t`Create a profile to manage a set of mods.`}
