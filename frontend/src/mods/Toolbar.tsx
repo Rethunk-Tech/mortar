@@ -4,7 +4,6 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   Button,
-  ButtonGroup,
   CircularProgress,
   Divider,
   ListItemIcon,
@@ -268,10 +267,9 @@ function AddArchive({
     </DisabledReason>
   )
   return (
-    <ButtonGroup variant={variant} size={size}>
+    <ExtraFolderMenu folder={extraFolder} blocked={blocked} variant={variant} size={size}>
       {add}
-      <ExtraFolderMenu folder={extraFolder} blocked={blocked} />
-    </ButtonGroup>
+    </ExtraFolderMenu>
   )
 }
 
