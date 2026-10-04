@@ -1058,7 +1058,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/babel-plugin-lingui-macro@6.8.0
+@lingui/babel-plugin-lingui-macro@6.9.0
 licence: MIT
 https://lingui.dev
 
@@ -1086,7 +1086,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/conf@6.8.0
+@lingui/conf@6.9.0
 licence: MIT
 https://lingui.dev
 
@@ -1114,7 +1114,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/core@6.8.0
+@lingui/core@6.9.0
 licence: MIT
 https://lingui.dev
 
@@ -1142,7 +1142,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/message-utils@6.8.0
+@lingui/message-utils@6.9.0
 licence: MIT
 https://lingui.dev
 
@@ -1170,7 +1170,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/react@6.8.0
+@lingui/react@6.9.0
 licence: MIT
 https://lingui.dev
 
@@ -1813,7 +1813,7 @@ MIT License
 
 --------------------------------------------------------------------------------
 
-@wailsio/runtime@3.0.0-beta.26
+@wailsio/runtime@3.0.0-beta.27
 licence: MIT
 https://v3.wails.io
 
@@ -2262,7 +2262,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/andybalholm/brotli@v1.2.5
+github.com/andybalholm/brotli@v1.2.6
 licence: MIT
 https://github.com/andybalholm/brotli
 
@@ -2852,7 +2852,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/klauspost/compress@v1.19.0
+github.com/klauspost/compress@v1.20.1
 licence: Apache-2.0
 https://github.com/klauspost/compress
 
@@ -3163,7 +3163,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 --------------------------------------------------------------------------------
 
-github.com/mattn/go-isatty@v0.0.20
+github.com/mattn/go-isatty@v0.0.24
 licence: MIT
 https://github.com/mattn/go-isatty
 
@@ -3179,7 +3179,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 --------------------------------------------------------------------------------
 
-github.com/miekg/dns@v1.1.72
+github.com/miekg/dns@v1.1.73
 licence: BSD-3-Clause
 https://github.com/miekg/dns
 
@@ -3245,7 +3245,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/pierrec/lz4/v4@v4.1.27
+github.com/pierrec/lz4/v4@v4.1.33
 licence: BSD-3-Clause
 https://github.com/pierrec/lz4
 
@@ -3489,7 +3489,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/ulikunitz/xz@v0.5.15
+github.com/ulikunitz/xz@v0.5.17
 licence: BSD-2-Clause
 https://github.com/ulikunitz/xz
 
@@ -3786,7 +3786,7 @@ Apache License
 
 --------------------------------------------------------------------------------
 
-golang.org/x/mod@v0.37.0
+golang.org/x/mod@v0.41.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/mod
 
@@ -3820,7 +3820,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-golang.org/x/net@v0.56.0
+golang.org/x/net@v0.59.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/net
 
@@ -3888,7 +3888,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-golang.org/x/text@v0.40.0
+golang.org/x/text@v0.42.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/text
 
@@ -4352,7 +4352,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-lucide-react@1.49.0
+lucide-react@1.51.0
 licence: MIT
 https://lucide.dev
 
@@ -4925,7 +4925,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-simple-icons@16.33.0
+simple-icons@16.34.0
 licence: CC0-1.0
 https://simpleicons.org
 
