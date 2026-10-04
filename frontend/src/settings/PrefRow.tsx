@@ -3,6 +3,7 @@ import { Box } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { PrefSpec } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { useToasts } from '../toasts/store.ts'
 import {
   PrefCards,
@@ -21,10 +22,20 @@ import { SettingRow } from './SettingsSection.tsx'
 import { useSettings } from './store.ts'
 
 // Game-scope prefs render only where a game is passed, so global pages never write to a guessed game.
-function PrefRow({ spec, extra, game }: { spec: PrefSpec; extra?: ReactNode; game?: string }) {
+function PrefRow({
+  spec,
+  extra,
+  game,
+  disabledReason = '',
+}: {
+  spec: PrefSpec
+  extra?: ReactNode
+  game?: string
+  disabledReason?: string
+}) {
   const { t, i18n } = useLingui()
   const push = useToasts((s) => s.push)
-  const fail = t`Couldn't save that setting`
+  const fail = t`Could not save that setting`
   const settings = useSettings()
   const copy = prefCopy(i18n, spec.key)
   if (spec.scope === 'game' && !game) {
@@ -67,6 +78,7 @@ function PrefRow({ spec, extra, game }: { spec: PrefSpec; extra?: ReactNode; gam
         max={spec.max || Number.MAX_SAFE_INTEGER}
         onCommit={(n) => SetByKey(spec.key, String(n), gameArg)}
         label={copy.label}
+        disabled={disabledReason !== ''}
       />
     )
   } else {
@@ -81,14 +93,16 @@ function PrefRow({ spec, extra, game }: { spec: PrefSpec; extra?: ReactNode; gam
   }
   return (
     <SettingRow label={copy.label} description={copy.description} block={style === 'cards'}>
-      {extra ? (
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {control}
-          {extra}
-        </Box>
-      ) : (
-        control
-      )}
+      <DisabledReason title={disabledReason} disabled={disabledReason !== ''}>
+        {extra ? (
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {control}
+            {extra}
+          </Box>
+        ) : (
+          control
+        )}
+      </DisabledReason>
     </SettingRow>
   )
 }
@@ -97,16 +111,25 @@ export function PrefByKey({
   prefKey,
   extra,
   game,
+  disabledReason,
 }: {
   prefKey: string
   extra?: ReactNode
   game?: string
+  disabledReason?: string
 }) {
   const spec = specByKey(usePrefSpecs(), prefKey)
   if (!spec) {
     return null
   }
-  return <PrefRow spec={spec} extra={extra} {...(game ? { game } : {})} />
+  return (
+    <PrefRow
+      spec={spec}
+      extra={extra}
+      {...(game ? { game } : {})}
+      {...(disabledReason ? { disabledReason } : {})}
+    />
+  )
 }
 
 export function PrefKeys({ keys, game }: { keys: string[]; game?: string }) {

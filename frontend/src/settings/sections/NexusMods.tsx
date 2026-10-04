@@ -219,7 +219,7 @@ export function NexusSignIn() {
   const nxm = useNxmHandler()
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<InlineError | null>(null)
   const submit = (e: SubmitEvent) => {
     e.preventDefault()
     setBusy(true)
@@ -229,7 +229,13 @@ export function NexusSignIn() {
         setKey('')
         nxm.offer()
       })
-      .catch((err: unknown) => setError(errorText(err) ?? t`Could not sign in`))
+      .catch((err: unknown) =>
+        setError(
+          errorKind(err) === 'invalid'
+            ? inlineError(err, t`Nexus rejected your API key`)
+            : inlineError(err),
+        ),
+      )
       .finally(() => setBusy(false))
   }
   // A sign-in through the browser ends with an event, not a promise; the account update unmounts the form first.
@@ -279,7 +285,11 @@ export function NexusSignIn() {
             {t`Sign in`}
           </Button>
         </Box>
-        {error ? <Alert severity="error">{error}</Alert> : null}
+        {error ? (
+          <Alert severity="error" title={error.details}>
+            {error.message}
+          </Alert>
+        ) : null}
       </Box>
     </Searchable>
   )

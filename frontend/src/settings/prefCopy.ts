@@ -220,7 +220,12 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
         },
       ],
     },
-    saveBackupsKept: { label: i18n._(msg`Save backups kept`) },
+    saveBackupsKept: {
+      label: i18n._(msg`Save backups kept`),
+      description: i18n._(
+        msg`How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never removed.`,
+      ),
+    },
     extraModsFolder: {
       label: i18n._(msg`Extra mods folder`),
       description: i18n._(
@@ -257,7 +262,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
     saveBackupHours: {
       label: i18n._(msg`Scheduled save backups`),
       description: i18n._(
-        msg`Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is off). Waits until the game closes.`,
+        msg`Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is Off). Waits until the game closes.`,
       ),
     },
     saveBackupKeep: { label: i18n._(msg`Scheduled backups kept per save`) },

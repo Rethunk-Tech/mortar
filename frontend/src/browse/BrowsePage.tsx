@@ -11,7 +11,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
-import { errorText } from '../toasts/errorKind.ts'
+import { type InlineError, inlineError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
 import type { BrowseItem, BrowsePageProps } from './browseTypes.ts'
@@ -77,7 +77,16 @@ function useBrowseQuery({
   const [retry, setRetry] = useState(0)
   const [result, setResult] = useState({ total: 0, items: [] as BrowseItem[] })
   const [status, setStatus] = useState<Status>('idle')
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
+
+  const pendingQuery = useBrowseView((s) => s.pendingQuery)
+  useEffect(() => {
+    if (pendingQuery !== '') {
+      setSource(NEXUS)
+      setDraft(pendingQuery)
+      useBrowseView.getState().setPendingQuery('')
+    }
+  }, [pendingQuery])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -107,7 +116,7 @@ function useBrowseQuery({
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setError(errorText(err) ?? '')
+          setError(inlineError(err))
           setStatus('error')
         }
       })
@@ -178,11 +187,13 @@ function BrowsePage({
         title={t`Search did not work`}
         action={
           <Button variant="outlined" onClick={() => setRetry((n) => n + 1)}>
-            {t`Try again`}
+            {t`Retry`}
           </Button>
         }
       >
-        {error || t`The service may be busy. Try again in a minute.`}
+        <span title={error?.details}>
+          {error?.message ?? t`The service may be busy. Try again in a minute.`}
+        </span>
       </EmptyState>
     )
   } else if (status === 'loading' && result.items.length === 0) {

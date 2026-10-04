@@ -40,9 +40,9 @@ function HistoryRow({
         useToasts.getState().push({
           kind: 'success',
           title:
-            freed > 0
-              ? t`Trimmed ${usage.profileName}'s history, freed ${formatBytes(freed)}`
-              : t`Trimmed ${usage.profileName}'s history`,
+            next.events === usage.events
+              ? t`No changes to remove`
+              : t`Trimmed ${usage.profileName}'s history, freed ${formatBytes(Math.max(freed, 0))}`,
         })
       },
       { errorTitle: t`Could not trim history` },
@@ -53,7 +53,7 @@ function HistoryRow({
       label={t`Profile history: ${usage.profileName}`}
       description={`${formatBytes(sizeOf(usage))} · ${events}`}
     >
-      <DisabledReason title={t`Nothing to trim`} disabled={usage.events <= 1}>
+      <DisabledReason title={t`Nothing to trim yet.`} disabled={usage.events <= 1}>
         <Button variant="outlined" disabled={usage.events <= 1} onClick={() => setOpen(true)}>
           {t`Trim…`}
         </Button>

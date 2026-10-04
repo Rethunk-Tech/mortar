@@ -90,18 +90,26 @@ export function TrimDialog({
 export function BackupsUsageRow() {
   const { t } = useLingui()
   const gameId = useProfiles((s) => s.game?.id)
+  const gameName = useProfiles((s) => s.game?.name ?? '')
   const [usage, setUsage] = useState<BackupsUsage | null>(null)
   const [open, setOpen] = useState(false)
   const [pending, run] = usePending()
-  useEffect(() => {
   const gameBusy = useGameBusy(gameId)
   const keepPerSave = useSettings((s) => gamePrefs(s).saveBackupKeep)
+  useEffect(() => {
     if (gameId) {
       LoadBackupsUsage(gameId).then(setUsage).catch(reportUnexpected)
     }
   }, [gameId])
-  if (!gameId || usage === null) {
+  if (!gameId) {
     return null
+  }
+  if (usage === null) {
+    return (
+      <SettingRow label={t`${gameName} save backups`} description={t`Measuring…`}>
+        {null}
+      </SettingRow>
+    )
   }
   const trim = (keep: number) =>
     run(

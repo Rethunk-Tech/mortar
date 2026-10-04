@@ -21,14 +21,15 @@ import { launchOptionsSet } from '../../firstrun/logic.ts'
 import { storeName } from '../../games/storeName.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { FlatpakGrant } from '../../shell/FlatpakGrant.tsx'
-import { errorText } from '../../toasts/errorKind.ts'
-import { reportError, toastError } from '../../toasts/report.ts'
+import { type InlineError, inlineError, reportError, toastError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
+import { BackupsUsageRow } from './DataBackups.tsx'
+import { ScheduledStatus } from './ScheduledStatus.tsx'
 import { SmapiRow } from './SmapiRow.tsx'
 
 const GAME = 'stardew'
@@ -156,14 +157,12 @@ function GameFolder({
 }) {
   const { t } = useLingui()
   const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
   const [resetting, setResetting] = useState(false)
   const [restoreBusy, setRestoreBusy] = useState(false)
   const change = (run: Promise<void>) => {
-    setError('')
-    run
-      .then(onRefresh)
-      .catch((e: unknown) => setError(errorText(e) ?? t`That folder cannot be used`))
+    setError(null)
+    run.then(onRefresh).catch((e: unknown) => setError(inlineError(e)))
   }
   const known = storeName(store)
   const foundIn = known ? t(known) : t`Steam`
@@ -202,8 +201,12 @@ function GameFolder({
           </Box>
         </SettingRow>
         {error ? (
-          <Box role="alert" sx={{ px: 2.5, py: 1.5, fontSize: 14, color: 'error.light' }}>
-            {error}
+          <Box
+            role="alert"
+            title={error.details}
+            sx={{ px: 2.5, py: 1.5, fontSize: 14, color: 'error.light' }}
+          >
+            {error.message}
           </Box>
         ) : null}
         {installs.length > 1 ? (
@@ -252,7 +255,7 @@ function GameFolder({
           }
         }}
         onConfirm={async () => {
-          setError('')
+          setError(null)
           setRestoreBusy(true)
           try {
             await ResetInstall(GAME)
@@ -261,7 +264,7 @@ function GameFolder({
                 useToasts.getState().push,
                 t`Game install deleted`,
                 t`Remove SMAPI from Steam's launch options`,
-                t`Couldn't update Steam's launch options`,
+                t`Could not update Steam's launch options`,
               )
             }
             if (store === 'steam' || store === 'flatpak-steam') {
@@ -297,7 +300,7 @@ function SmapiPage({ onVersion }: { onVersion: (v: string) => void }) {
         <PrefSwitch
           checked={tellWhenSmapiOut}
           onChange={(on) =>
-            persist(() => SetTellWhenSmapiOut(on), push, t`Couldn't save that setting`)
+            persist(() => SetTellWhenSmapiOut(on), push, t`Could not save that setting`)
           }
           label={t`Tell me when a new SMAPI is out`}
         />
@@ -320,10 +323,10 @@ function ExtraModsFolder() {
         }
       },
       push,
-      t`Couldn't save that setting`,
+      t`Could not save that setting`,
     )
   const clear = () =>
-    persist(() => SetByKey('extraModsFolder', '', GAME), push, t`Couldn't save that setting`)
+    persist(() => SetByKey('extraModsFolder', '', GAME), push, t`Could not save that setting`)
   return (
     <PrefByKey
       prefKey="extraModsFolder"
@@ -346,6 +349,7 @@ function ExtraModsFolder() {
 
 function BackupsPage() {
   const { t } = useLingui()
+  const scheduleOff = useSettings((s) => (s.games?.[GAME]?.saveBackupHours ?? 0) === 0)
   const push = useToasts((s) => s.push)
   const chooseBackupLocation = () =>
     persist(
@@ -356,13 +360,16 @@ function BackupsPage() {
         }
       },
       push,
-      t`Couldn't save that setting`,
+      t`Could not save that setting`,
     )
   return (
     <SettingsSection title={t`Save backups`}>
-      <PrefKeys
-        keys={['backupBeforePlay', 'launchBackupsKept', 'saveBackupHours', 'saveBackupKeep']}
+      <PrefKeys keys={['backupBeforePlay', 'saveBackupsKept', 'saveBackupHours']} game={GAME} />
+      <ScheduledStatus />
+      <PrefByKey
+        prefKey="saveBackupKeep"
         game={GAME}
+        disabledReason={scheduleOff ? t`Turn on scheduled save backups first.` : ''}
       />
       <PrefByKey
         prefKey="backupLocation"
@@ -373,6 +380,7 @@ function BackupsPage() {
           </Button>
         }
       />
+      <BackupsUsageRow />
     </SettingsSection>
   )
 }

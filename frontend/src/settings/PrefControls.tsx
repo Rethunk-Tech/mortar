@@ -206,12 +206,14 @@ export function PrefNumber({
   max,
   onCommit,
   label,
+  disabled = false,
 }: {
   value: number
   min: number
   max: number
   onCommit: (n: number) => Promise<void>
   label: string
+  disabled?: boolean
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(String(value))
@@ -238,6 +240,7 @@ export function PrefNumber({
       size="small"
       value={draft}
       error={invalid}
+      disabled={disabled}
       helperText={invalid ? range : undefined}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import type { SMAPIProblem } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { RunProblems as FetchRunProblems } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { useBrowseView } from '../browse/view.ts'
 import { useTab } from '../game/tab.ts'
 import { sameId } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
@@ -43,7 +44,14 @@ async function installDependency(i18n: I18n, uniqueId: string) {
   if (!want) {
     useToasts.getState().push({
       kind: 'error',
-      title: i18n._(msg`No download source known for ${uniqueId}`),
+      title: i18n._(msg`Mortar doesn't know where to get ${uniqueId}`),
+      action: {
+        label: i18n._(msg`Search Nexus`),
+        run: () => {
+          useBrowseView.getState().setPendingQuery(uniqueId)
+          useTab.getState().setTab('browse')
+        },
+      },
     })
     return
   }

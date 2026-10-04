@@ -18,7 +18,7 @@ import {
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const pollDelayMs = 500
@@ -148,7 +148,11 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   } else if (stopped) {
     content = <Typography>{t`Crash finding was stopped.`}</Typography>
   } else if (failed) {
-    content = <Typography color="error">{status.error || t`Crash finding failed.`}</Typography>
+    content = (
+      <Typography color="error" title={errorDetails(status.error)}>
+        {status.error ? errorMessage(status.error) : t`Crash finding failed.`}
+      </Typography>
+    )
   } else {
     content = (
       <>
