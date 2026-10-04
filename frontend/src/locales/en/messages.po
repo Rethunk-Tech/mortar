@@ -582,7 +582,7 @@ msgid "Dismiss"
 msgstr "Dismiss"
 
 #: src/profiles/RecentChangesButton.tsx:217
-#: src/queue/QueueHistory.tsx:164
+#: src/queue/QueueHistory.tsx:170
 msgid "All profiles"
 msgstr "All profiles"
 
@@ -904,7 +904,7 @@ msgstr "Nexus download links"
 msgid "{parallel} · {counts}"
 msgstr "{parallel} · {counts}"
 
-#: src/queue/QueueHistory.tsx:141
+#: src/queue/QueueHistory.tsx:147
 msgid "Filter by outcome"
 msgstr "Filter by outcome"
 
@@ -1053,7 +1053,7 @@ msgstr "More play options"
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
 
-#: src/queue/QueueHistory.tsx:145
+#: src/queue/QueueHistory.tsx:151
 msgid "All outcomes"
 msgstr "All outcomes"
 
@@ -1327,7 +1327,7 @@ msgstr "Unlink"
 msgid "It could not load an asset."
 msgstr "It could not load an asset."
 
-#: src/queue/QueueHistory.tsx:45
+#: src/queue/QueueHistory.tsx:51
 msgid "Download again"
 msgstr "Download again"
 
@@ -1508,7 +1508,7 @@ msgid "Got it"
 msgstr "Got it"
 
 #: src/console/outcome.ts:12
-#: src/queue/QueueHistory.tsx:59
+#: src/queue/QueueHistory.tsx:65
 msgid "Failed"
 msgstr "Failed"
 
@@ -1822,7 +1822,7 @@ msgstr "Dependency cycle"
 
 #: src/commandPalette/paletteLabels.ts:17
 #: src/firstrun/ProfileStep.tsx:131
-#: src/game/NewProfileDialog.tsx:125
+#: src/game/NewProfileDialog.tsx:126
 #: src/game/Sidebar.tsx:388
 #: src/game/Sidebar.tsx:406
 #: src/nxm/ArrivalDialog.tsx:157
@@ -1910,7 +1910,7 @@ msgstr "Track a Nexus mod when Mortar installs it"
 
 #: src/mods/updateReview/EverywhereDialog.tsx:49
 #: src/queue/QueueBody.tsx:437
-#: src/queue/QueueHistory.tsx:61
+#: src/queue/QueueHistory.tsx:67
 msgid "Skipped"
 msgstr "Skipped"
 
@@ -3082,7 +3082,7 @@ msgstr "Where save backups are kept. Empty uses the default."
 #: src/console/HelpDialog.tsx:234
 #: src/console/StartupPanel.tsx:493
 #: src/fomod/Dialog.tsx:254
-#: src/game/NewProfileDialog.tsx:147
+#: src/game/NewProfileDialog.tsx:148
 #: src/install/DownloadsDialog.tsx:151
 #: src/install/RemapDialog.tsx:179
 #: src/lan/IncomingPrompt.tsx:161
@@ -3200,7 +3200,7 @@ msgstr "Automatic"
 msgid "Compare {0} with…"
 msgstr "Compare {0} with…"
 
-#: src/game/NewProfileDialog.tsx:85
+#: src/game/NewProfileDialog.tsx:86
 msgid "Created {name}; downloading {mods}"
 msgstr "Created {name}; downloading {mods}"
 
@@ -3210,7 +3210,7 @@ msgstr "From the extra mods folder…"
 
 #: src/firstrun/GameSetup.tsx:78
 #: src/firstrunTour/TourPopover.tsx:171
-#: src/queue/QueueHistory.tsx:57
+#: src/queue/QueueHistory.tsx:63
 msgid "Done"
 msgstr "Done"
 
@@ -3357,7 +3357,7 @@ msgstr "Archive…"
 msgid "Mortar"
 msgstr "Mortar"
 
-#: src/game/NewProfileDialog.tsx:86
+#: src/game/NewProfileDialog.tsx:87
 msgid "Created {name}; {mods} still to download"
 msgstr "Created {name}; {mods} still to download"
 
@@ -3875,7 +3875,7 @@ msgstr "{0} of {1}"
 msgid "Install {0}"
 msgstr "Install {0}"
 
-#: src/queue/QueueHistory.tsx:160
+#: src/queue/QueueHistory.tsx:166
 msgid "Filter by profile"
 msgstr "Filter by profile"
 
@@ -4046,7 +4046,7 @@ msgstr "Unzip the download."
 msgid "Direct"
 msgstr "Direct"
 
-#: src/queue/QueueHistory.tsx:202
+#: src/queue/QueueHistory.tsx:208
 msgid "No downloads in history."
 msgstr "No downloads in history."
 
@@ -4220,7 +4220,7 @@ msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
 #: src/game/Hero.tsx:169
-#: src/game/NewProfileDialog.tsx:130
+#: src/game/NewProfileDialog.tsx:131
 #: src/profiles/ProfileRow.tsx:185
 msgid "Profile name"
 msgstr "Profile name"
@@ -4734,7 +4734,7 @@ msgstr "Next"
 msgid "Add archive…"
 msgstr "Add archive…"
 
-#: src/game/NewProfileDialog.tsx:150
+#: src/game/NewProfileDialog.tsx:151
 msgid "Create"
 msgstr "Create"
 
@@ -5087,7 +5087,7 @@ msgid "Roll back {0}?"
 msgstr "Roll back {0}?"
 
 #. placeholder {0}: e.name
-#: src/queue/QueueHistory.tsx:244
+#: src/queue/QueueHistory.tsx:254
 msgid "Show {0} in its profile"
 msgstr "Show {0} in its profile"
 
@@ -5178,7 +5178,7 @@ msgstr "Start the game with this profile, then measure here while you play."
 msgid "No backups to remove"
 msgstr "No backups to remove"
 
-#: src/mods/storeLoad.ts:93
+#: src/mods/storeLoad.ts:100
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
@@ -5365,7 +5365,7 @@ msgstr "Pick up where you left off."
 msgid "Every archive in the downloads folder is already in a profile or Mortar's store."
 msgstr "Every archive in the downloads folder is already in a profile or Mortar's store."
 
-#: src/queue/QueueHistory.tsx:187
+#: src/queue/QueueHistory.tsx:193
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
@@ -5404,7 +5404,7 @@ msgstr "Saving…"
 msgid "New group"
 msgstr "New group"
 
-#: src/queue/QueueHistory.tsx:188
+#: src/queue/QueueHistory.tsx:194
 msgid "This deletes the list of past downloads. In-progress downloads are not affected. Failed items lose Retry until you download them again."
 msgstr "This deletes the list of past downloads. In-progress downloads are not affected. Failed items lose Retry until you download them again."
 
@@ -5760,7 +5760,7 @@ msgstr "Import"
 msgid "Obsolete"
 msgstr "Obsolete"
 
-#: src/queue/QueueHistory.tsx:203
+#: src/queue/QueueHistory.tsx:209
 msgid "Completed downloads will appear here."
 msgstr "Completed downloads will appear here."
 
@@ -5975,7 +5975,7 @@ msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
-#: src/game/NewProfileDialog.tsx:82
+#: src/game/NewProfileDialog.tsx:83
 msgid "Created {name}"
 msgstr "Created {name}"
 
@@ -6828,8 +6828,8 @@ msgstr "Reset…"
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
-#: src/queue/QueueHistory.tsx:177
-#: src/queue/QueueHistory.tsx:189
+#: src/queue/QueueHistory.tsx:183
+#: src/queue/QueueHistory.tsx:195
 msgid "Clear history"
 msgstr "Clear history"
 
@@ -8885,7 +8885,7 @@ msgstr "Could not abstain"
 msgid "Include {0}"
 msgstr "Include {0}"
 
-#: src/game/NewProfileDialog.tsx:57
+#: src/game/NewProfileDialog.tsx:58
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
@@ -9032,7 +9032,7 @@ msgid "Downloaded"
 msgstr "Downloaded"
 
 #: src/queue/QueueBody.tsx:437
-#: src/queue/QueueHistory.tsx:63
+#: src/queue/QueueHistory.tsx:69
 msgid "Cancelled"
 msgstr "Cancelled"
 
@@ -9055,7 +9055,7 @@ msgstr "No game output yet"
 msgid "{0} left out"
 msgstr "{0} left out"
 
-#: src/game/NewProfileDialog.tsx:93
+#: src/game/NewProfileDialog.tsx:94
 msgid "Could not create the profile"
 msgstr "Could not create the profile"
 
@@ -9118,7 +9118,7 @@ msgstr "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 msgid "Could not repair the profile"
 msgstr "Could not repair the profile"
 
-#: src/game/NewProfileDialog.tsx:50
+#: src/game/NewProfileDialog.tsx:51
 msgid "Empty profile"
 msgstr "Empty profile"
 
@@ -9244,7 +9244,7 @@ msgstr "API requests"
 #: src/bundles/BundlesSection.tsx:90
 #: src/bundles/dialogs.tsx:136
 #: src/game/Hero.tsx:262
-#: src/game/NewProfileDialog.tsx:81
+#: src/game/NewProfileDialog.tsx:82
 #: src/share/ShareDialog.tsx:91
 #: src/share/ShareDialog.tsx:194
 #: src/share/useImportFlow.ts:109
@@ -10383,7 +10383,7 @@ msgstr "Not in this profile"
 msgid "Switch profile"
 msgstr "Switch profile"
 
-#: src/queue/QueueHistory.tsx:231
+#: src/queue/QueueHistory.tsx:237
 msgid " · "
 msgstr " · "
 
