@@ -1,17 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Switch,
-} from '@mui/material'
+import { Box, Button, FormControlLabel, Radio, RadioGroup, Switch } from '@mui/material'
 import { Browser, Clipboard, System } from '@wailsio/runtime'
 import { Copy, Download, FolderOpen, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
@@ -37,8 +25,9 @@ import { storeName } from '../../games/storeName.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { MONO } from '../../theme/theme.ts'
-import { errorText, reportUnexpected } from '../../toasts/report.ts'
+import { errorText, reportError, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
@@ -72,22 +61,16 @@ function ResetInstallDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
-      <DialogTitle>{t`Reset game install?`}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t`This deletes the game folder at ${folder}, including every file in it, SMAPI, and any mods placed there. Saves are not in this folder and will be kept. Profiles' mods are stored separately by Mortar and will be kept.`}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={busy}>
-          {t`Cancel`}
-        </Button>
-        <Button color="error" variant="contained" onClick={onConfirm} disabled={busy}>
-          {t`Delete and restore`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      title={t`Reset game install?`}
+      body={t`This deletes the game folder at ${folder}, including every file in it, SMAPI, and any mods placed there. Saves are not in this folder and will be kept. Profiles' mods are stored separately by Mortar and will be kept.`}
+      confirmLabel={t`Delete and restore`}
+      color="error"
+      busy={busy}
+      onCancel={onClose}
+      onConfirm={onConfirm}
+    />
   )
 }
 
@@ -105,11 +88,7 @@ async function offerLaunchOptionRemoval(
         title,
         action: {
           label,
-          run: () =>
-            ClearLaunchOption(GAME).then(undefined, (err: unknown) => {
-              const body = errorText(err)
-              push({ kind: 'error', title: errorTitle, ...(body ? { body } : {}) })
-            }),
+          run: () => ClearLaunchOption(GAME).then(undefined, reportError(errorTitle)),
         },
       })
     }
@@ -367,27 +346,19 @@ function FlatpakAccess() {
           </Button>
         </Box>
       </Box>
-      <Dialog open={ask} onClose={() => setAsk(false)} transitionDuration={0}>
-        <DialogTitle>{t`Grant Flatpak Steam access?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}
-          </DialogContentText>
-          <Box sx={{ mt: 1.5, fontFamily: MONO, fontSize: 13, userSelect: 'text' }}>{cmd}</Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAsk(false)}>{t`Cancel`}</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setAsk(false)
-              GrantSteamAccess().then(load, reportUnexpected)
-            }}
-          >
-            {t`Grant access`}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={ask}
+        title={t`Grant Flatpak Steam access?`}
+        body={t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}
+        confirmLabel={t`Grant access`}
+        onCancel={() => setAsk(false)}
+        onConfirm={() => {
+          setAsk(false)
+          GrantSteamAccess().then(load, reportUnexpected)
+        }}
+      >
+        <Box sx={{ mt: 1.5, fontFamily: MONO, fontSize: 13, userSelect: 'text' }}>{cmd}</Box>
+      </ConfirmDialog>
     </Searchable>
   )
 }

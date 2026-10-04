@@ -1,17 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  InputAdornment,
-  Switch,
-  TextField,
-  Tooltip,
-} from '@mui/material'
+import { Box, Button, IconButton, InputAdornment, Switch, TextField, Tooltip } from '@mui/material'
 import { Copy, Eye, EyeOff } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import {
@@ -20,8 +8,10 @@ import {
   SetOverlayEnabled,
   SetOverlayPort,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { errorText } from '../../toasts/report.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import {
@@ -40,13 +30,6 @@ const COPIED_MS = 1500
 type Push = ReturnType<typeof useToasts.getState>['push']
 type Snapshot = { ok: true; body: Record<string, unknown> } | { ok: false } | null
 
-function persist(run: () => Promise<void>, push: Push, title: string) {
-  run().catch((err: unknown) => {
-    const body = errorText(err)
-    push({ kind: 'error', title, ...(body ? { body } : {}) })
-  })
-}
-
 function previewLine(kind: OverlayPreview['kind'], value: string, idle: string, wait: string) {
   if (kind === 'unreachable') {
     return wait
@@ -60,10 +43,7 @@ function previewLine(kind: OverlayPreview['kind'], value: string, idle: string, 
 function copyText(text: string, push: Push, copied: string, failCopy: string) {
   return navigator.clipboard.writeText(text).then(
     () => push({ kind: 'success', title: copied }),
-    (err: unknown) => {
-      const body = errorText(err)
-      push({ kind: 'error', title: failCopy, ...(body ? { body } : {}) })
-    },
+    (err: unknown) => reportError(failCopy)(err),
   )
 }
 
@@ -149,10 +129,7 @@ function OverlayValues({
   const copyRow = (field: string | undefined, key: string) => {
     OverlayURL()
       .then((base) => copy(overlayPageUrl(base, field, labels), key))
-      .catch((err: unknown) => {
-        const body = errorText(err)
-        push({ kind: 'error', title: failCopy, ...(body ? { body } : {}) })
-      })
+      .catch(reportError(failCopy))
   }
   type Field = (typeof OVERLAY_FIELDS)[number]
   const groups: { title: string; fields: Field[] }[] = [
@@ -184,14 +161,16 @@ function OverlayValues({
           {preview.kind === 'value' ? preview.text : '\u2014'}
         </Box>
         <Tooltip title={copiedKey === key ? copied : t`Copy OBS URL`} placement="top">
-          <IconButton
-            size="small"
-            aria-label={t`Copy OBS URL`}
-            disabled={!token}
-            onClick={() => copyRow(field, key)}
-          >
-            <Copy size={16} />
-          </IconButton>
+          <span>
+            <IconButton
+              size="small"
+              aria-label={t`Copy OBS URL`}
+              disabled={!token}
+              onClick={() => copyRow(field, key)}
+            >
+              <Copy size={16} />
+            </IconButton>
+          </span>
         </Tooltip>
       </Box>
     )
@@ -258,20 +237,15 @@ function OverlayRegenDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t`Regenerate token?`}</DialogTitle>
-      <DialogContent>
-        {t`Existing OBS sources stop working until their URLs are copied again.`}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} sx={{ textTransform: 'none' }}>
-          {t`Cancel`}
-        </Button>
-        <Button onClick={onConfirm} sx={{ textTransform: 'none' }}>
-          {t`Regenerate token`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      title={t`Regenerate token?`}
+      body={t`Existing OBS sources stop working until their URLs are copied again.`}
+      confirmLabel={t`Regenerate token`}
+      color="error"
+      onCancel={onClose}
+      onConfirm={onConfirm}
+    />
   )
 }
 
@@ -442,12 +416,17 @@ export function StreamOverlay() {
       >
         <Switch
           checked={enabled}
+          inputProps={{ 'aria-label': t`Stream overlay` }}
           onChange={(_, on) => persist(() => SetOverlayEnabled(on), push, fail)}
         />
       </SettingRow>
       {enabled ? (
         <SettingRow label={t`Show labels`}>
-          <Switch checked={labels} onChange={(_, on) => setLabels(on)} />
+          <Switch
+            checked={labels}
+            inputProps={{ 'aria-label': t`Show labels` }}
+            onChange={(_, on) => setLabels(on)}
+          />
         </SettingRow>
       ) : null}
       {enabled ? (
