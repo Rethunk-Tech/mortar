@@ -23,7 +23,7 @@ const (
 	// Scope is what Vortex requests; Nexus has not published scopes for third-party clients.
 	Scope = "openid profile email"
 
-	tokenName     = "nexus-oauth"
+	keyringItem     = "nexus-oauth"
 	refreshMargin = time.Minute
 )
 
@@ -175,12 +175,12 @@ func (o OAuth) exchange(ctx context.Context, form url.Values) (Tokens, error) {
 // Save keeps the tokens in the OS keyring.
 func Save(t Tokens) error {
 	b, _ := json.Marshal(t)
-	return secret.Set(tokenName, string(b))
+	return secret.Set(keyringItem, string(b))
 }
 
 // Load returns the stored tokens, or secret.ErrNotFound.
 func Load() (Tokens, error) {
-	raw, err := secret.Get(tokenName)
+	raw, err := secret.Get(keyringItem)
 	if err != nil {
 		return Tokens{}, err
 	}
@@ -189,7 +189,7 @@ func Load() (Tokens, error) {
 }
 
 // Forget deletes the stored tokens.
-func Forget() error { return secret.Delete(tokenName) }
+func Forget() error { return secret.Delete(keyringItem) }
 
 // Fresh returns stored tokens, refreshing and re-saving them when they expire within a minute.
 func (o OAuth) Fresh(ctx context.Context) (Tokens, error) {
