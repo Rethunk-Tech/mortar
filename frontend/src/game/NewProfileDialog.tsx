@@ -45,6 +45,7 @@ function StartFromSelect({
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
+      slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
       sx={{ mt: 2 }}
     >
       <MenuItem value={EMPTY}>{t`Empty profile`}</MenuItem>
