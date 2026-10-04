@@ -280,7 +280,7 @@ func (l *System) Restore(previous string) error {
 		}
 		return nil
 	}
-	return l.dropDefault()
+	return l.dropDefault(nxmMime)
 }
 
 // ForwardOther runs the previous handler's desktop entry on link.
@@ -295,8 +295,8 @@ func (l *System) ForwardOther(link, previous string) error {
 	return err
 }
 
-// dropDefault removes Mortar's line from the user's mimeapps.list: xdg-mime cannot unset a default.
-func (l *System) dropDefault() error {
+// dropDefault removes Mortar's lines for mimes from the user's mimeapps.list: xdg-mime cannot unset a default.
+func (l *System) dropDefault(mimes ...string) error {
 	path := filepath.Join(l.configHome, "mimeapps.list")
 	// A dotfile manager's symlink is followed, so the rewrite lands in its target and the link stays.
 	if target, err := filepath.EvalSymlinks(path); err == nil {
@@ -312,7 +312,7 @@ func (l *System) dropDefault() error {
 	lines := strings.Split(string(b), "\n")
 	kept := slices.DeleteFunc(slices.Clone(lines), func(s string) bool {
 		k, v, ok := strings.Cut(strings.TrimSpace(s), "=")
-		return ok && k == nxmMime && strings.TrimSuffix(v, ";") == desktopID
+		return ok && slices.Contains(mimes, k) && strings.TrimSuffix(v, ";") == desktopID
 	})
 	if len(kept) == len(lines) {
 		return nil

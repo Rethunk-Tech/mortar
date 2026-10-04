@@ -62,6 +62,8 @@ contents:
     file_info:
       owner: root
       group: root
+scripts:
+  preremove: build/linux/nfpm/preremove.sh
 overrides:
   deb:
     depends:

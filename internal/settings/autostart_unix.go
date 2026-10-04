@@ -13,6 +13,9 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/selfexe"
 )
 
+// RemoveAutostart deletes the autostart entry that starts Mortar at sign-in.
+func RemoveAutostart() error { return applyAutostart(false) }
+
 func applyAutostart(enable bool) error {
 	cfg := os.Getenv("XDG_CONFIG_HOME")
 	if sandbox.InFlatpak() {

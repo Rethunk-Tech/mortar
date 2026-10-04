@@ -132,3 +132,20 @@ func dataHome() (string, error) {
 	}
 	return filepath.Join(home, ".local", "share"), nil
 }
+
+// RemoveStartMenu deletes every profile's desktop entry, for an uninstall.
+func RemoveStartMenu() error {
+	base, err := dataHome()
+	if err != nil {
+		return err
+	}
+	paths, err := filepath.Glob(filepath.Join(base, "applications", "tech.rethunk.Mortar.play-*.desktop"))
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, p := range paths {
+		errs = append(errs, fsx.RemoveAll(p))
+	}
+	return errors.Join(errs...)
+}

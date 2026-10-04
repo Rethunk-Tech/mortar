@@ -91,7 +91,7 @@ To move the data, stop the game and open **Settings › Storage**, then **Move�
 ## Uninstall
 
 - **Windows:** use Settings › Apps (or the uninstaller in the install folder). It removes the program, shortcuts, the start-at-login entry, the Start Menu **Mortar** folder with your profile shortcuts, and the profiles you added to Steam. Your data folder stays, with all profiles, mods and settings. Delete `%LOCALAPPDATA%\Mortar` by hand to remove them. SMAPI and the game folder are not touched.
-- **Linux:** remove the package, the AppImage or the Flatpak. Delete the data folder by hand to remove profiles and mods. Remove any profile shortcuts you made from your launcher, and turn off **Launch Mortar at login** first if you used it.
+- **Linux:** first run `mortar --release-links && mortar uninstall-cleanup` (for the AppImage, `./Mortar.AppImage --release-links && ./Mortar.AppImage uninstall-cleanup`; for the Flatpak, `flatpak run tech.rethunk.Mortar` with the same two arguments). That gives nxm:// links back to the app that had them, removes the browser extension's connection, the start-at-login entry, your profile shortcuts, the profiles you added to Steam, and the menu entry, icon and file types an AppImage or the portable binary added. Then remove the package, the AppImage or the Flatpak. Removing the `.deb`, `.rpm` or Arch package with `sudo` runs those two steps for you, for your own account only; other accounts on the machine, or a removal from a software centre, need the commands. Delete the data folder by hand to remove profiles and mods.
 
 Close Steam before uninstalling so the Steam cleanup sticks: Steam rewrites its shortcut list when it exits.
 

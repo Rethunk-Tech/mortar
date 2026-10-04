@@ -1,6 +1,6 @@
-//go:build !windows
+//go:build !windows && !linux
 
 package cli
 
-// Only the Windows installer has an uninstaller to run this; elsewhere the Steam shortcuts are all it can remove.
+// On macOS the Steam shortcuts are all it removes.
 func removePlatformLeftovers() error { return nil }

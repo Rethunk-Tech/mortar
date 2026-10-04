@@ -9,9 +9,10 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/steam"
 )
 
-// uninstallCleanup undoes what Mortar wrote outside its install folder: the sign-in Run value, the Start menu
-// profile shortcuts and the profiles added to Steam. The Windows uninstaller runs it before it deletes the exe,
-// which is why it is not listed in the usage text. Profiles and mods are left alone.
+// uninstallCleanup undoes what Mortar wrote outside its install folder: the start-at-sign-in entry, the profile
+// shortcuts, the profiles added to Steam and, on Linux, its desktop entry, icons and file types. The Windows
+// uninstaller and the Linux packages' remove scripts run it before the program goes, which is why it is not listed in
+// the usage text. Profiles and mods are left alone.
 func (c *cmd) uninstallCleanup() error {
 	exe, err := os.Executable()
 	if err != nil {
