@@ -863,7 +863,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 			reqs = append(reqs, queue.Request{
 				Kind: queue.KindUpdate, Game: p.Game, Profile: id, Name: u.Name, Version: u.Version,
-				CurrentKey: u.Key, ModID: u.NexusID, Repo: u.GitHubRepo, FallbackRepo: u.GitHubFallback, Latest: true,
+				CurrentKey: u.Key, ModID: u.NexusID, Repo: u.GitHubRepo, FallbackRepo: u.GitHubFallback, FallbackID: u.UniqueID, Latest: true,
 			})
 		}
 		if len(reqs) == 0 {

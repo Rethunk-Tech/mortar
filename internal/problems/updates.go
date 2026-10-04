@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"cmp"
 	"context"
 	"net/url"
 	"regexp"
@@ -116,7 +117,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
 				NexusID: nexusUpdate(x.UpdateKeys, res.Suggested.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
-				GitHubFallback: githubFallback(x.UpdateKeys, res.Suggested.URL),
+				GitHubFallback: cmp.Or(githubFallback(x.UpdateKeys, res.Suggested.URL), metadataFallback(res.GitHubRepo, res.Suggested.URL)),
 				Source:         updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
 			})
 			if res.Unofficial != nil {
@@ -327,6 +328,15 @@ func githubUpdate(keys []string, url string) string {
 		}
 	}
 	return ""
+}
+
+// metadataFallback is the GitHub repo SMAPI's metadata lists for a mod whose manifest has no GitHub key, unless the
+// suggested download is already on GitHub. A free Nexus account must click for every file, so GitHub goes first.
+func metadataFallback(repo, url string) string {
+	if strings.HasPrefix(strings.ToLower(url), "https://github.com/") || strings.Count(repo, "/") != 1 {
+		return ""
+	}
+	return repo
 }
 
 // githubFallback is the repo of the mod's GitHub update key when the suggested download is not on GitHub.

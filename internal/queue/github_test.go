@@ -358,3 +358,31 @@ func TestAClickBoundUpdateUsesTheSameGitHubVersionInstead(t *testing.T) {
 		t.Fatalf("missed item %+v", *miss)
 	}
 }
+
+func TestAGitHubFallbackWithoutTheModGoesBackToNexus(t *testing.T) {
+	g := newGitHubFixture(t)
+	run := func(id, fallbackID string) Item {
+		it := &Item{
+			ID: id, Kind: KindUpdate, ModID: 6304, Version: "2.0.0", State: StateDownloading,
+			Repo: "me/mod", Tag: "v2.0.0", Asset: "mod-2.0.0.zip", FileName: "mod-2.0.0.zip",
+			FallbackRepo: "me/mod", FallbackID: fallbackID, nexusFileName: "Mod-6304-2-0-0.zip", fallbackTried: true,
+		}
+		g.s.mu.Lock()
+		g.s.items = append(g.s.items, it)
+		g.s.mu.Unlock()
+		if err := g.s.downloadGitHub(t.Context(), *it); err != nil {
+			t.Fatal(err)
+		}
+		g.s.mu.Lock()
+		defer g.s.mu.Unlock()
+		return *g.s.find(id)
+	}
+	g.ok.Store(true)
+	other := run("other", "someone.else")
+	if other.Repo != "" || other.State != StateQueued || other.FileName != "Mod-6304-2-0-0.zip" || len(g.final) != 0 {
+		t.Fatalf("a release without the mod must go back to Nexus: %+v, installed %+v", other, g.final)
+	}
+	if same := run("same", "ME.MOD"); same.Repo != "me/mod" || len(g.final) != 1 {
+		t.Fatalf("a release holding the mod installs from GitHub: %+v, installed %+v", same, g.final)
+	}
+}

@@ -238,3 +238,15 @@ func TestPagesKeysByEntryAndID(t *testing.T) {
 		t.Fatalf("got %v", got)
 	}
 }
+
+func TestMetadataRepoIsTheGitHubFallbackWithoutAManifestKey(t *testing.T) {
+	if got := metadataFallback("1Avalon/Love-Festival", "https://www.nexusmods.com/stardewvalley/mods/17819"); got != "1Avalon/Love-Festival" {
+		t.Fatalf("Nexus update with a metadata repo: %q", got)
+	}
+	if got := metadataFallback("me/mod", "https://github.com/me/mod/releases"); got != "" {
+		t.Fatalf("a GitHub download needs no fallback: %q", got)
+	}
+	if got := metadataFallback("not-a-repo", "https://www.nexusmods.com/x"); got != "" {
+		t.Fatalf("malformed repo: %q", got)
+	}
+}

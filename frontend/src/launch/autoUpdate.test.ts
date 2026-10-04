@@ -72,5 +72,9 @@ test('a Nexus update carries the GitHub fallback when the mod has one', () => {
     [update({ key: 'both', githubFallback: 'Esca-MMC/DestroyableBushes' })],
     new Set(),
   )
-  expect(plan.wants[0]).toMatchObject({ modId: 42, fallbackRepo: 'Esca-MMC/DestroyableBushes' })
+  expect(plan.wants[0]).toMatchObject({
+    modId: 42,
+    fallbackRepo: 'Esca-MMC/DestroyableBushes',
+    fallbackId: 'mod',
+  })
 })

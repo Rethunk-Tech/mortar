@@ -20,6 +20,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { installableUpdate, sameId, visibleUpdates } from '../mods/lookup.ts'
+import { updateWant } from '../mods/updateReview/wants.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
 import type { Want } from '../queue/actions.ts'
@@ -36,18 +37,7 @@ function planAutoUpdates(updates: Update[], pinned: ReadonlySet<string>): AutoUp
   const selected = updates.filter((update) => !pinned.has(update.key) && installableUpdate(update))
   return {
     updates: selected,
-    wants: selected.map((update) => ({
-      kind: 'update',
-      ...(update.githubRepo
-        ? { repo: update.githubRepo }
-        : {
-            modId: update.nexusId,
-            ...(update.githubFallback ? { fallbackRepo: update.githubFallback } : {}),
-          }),
-      name: update.name,
-      version: update.version,
-      currentKey: update.key,
-    })),
+    wants: selected.map(updateWant),
   }
 }
 
@@ -225,18 +215,7 @@ async function updateBeforePlay(
     if (updates.length === 0) {
       return { restorePoint: null, previousRunId: before.id, previousErrors: before.errors }
     }
-    const wants = updates.map((update) => ({
-      kind: 'update' as const,
-      ...(update.githubRepo
-        ? { repo: update.githubRepo }
-        : {
-            modId: update.nexusId,
-            ...(update.githubFallback ? { fallbackRepo: update.githubFallback } : {}),
-          }),
-      name: update.name,
-      version: update.version,
-      currentKey: update.key,
-    }))
+    const wants = updates.map(updateWant)
     point.updates = updates
     const batchId = wants.length > 1 ? crypto.randomUUID() : ''
     if (useProfiles.getState().openId !== profileId) {

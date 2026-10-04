@@ -55,6 +55,9 @@ export function Row({
     ...(mod && !mod.enabled ? [t`Switched off in this profile`] : []),
     ...(entry?.pinned && entry.pinReason ? [t`Pinned: ${entry.pinReason}`] : []),
     ...(update.unofficial ? [t`Unofficial`] : []),
+    ...(update.githubFallback && !update.githubRepo
+      ? [t`From GitHub (${update.githubFallback}) when its release matches, else Nexus`]
+      : []),
   ]
   const reportedElsewhere =
     entry?.source.kind === 'nexus' && update.source !== '' && update.source !== 'Nexus'

@@ -115,6 +115,7 @@ type Item struct {
 	Asset        string            `json:"asset"`
 	Assets       []string          `json:"assets"`
 	FallbackRepo string            `json:"fallbackRepo,omitempty"`
+	FallbackID   string            `json:"fallbackId,omitempty"`
 	Unverified   bool              `json:"unverified"`
 	FomodKey     string            `json:"fomodKey,omitempty"`
 	Remap        *profile.RemapAsk `json:"remap,omitempty"`
@@ -124,6 +125,8 @@ type Item struct {
 
 	// fallbackTried stops a Nexus item from asking GitHub again once its fallback was looked up.
 	fallbackTried bool
+	// nexusFileName is the Nexus file name a GitHub fallback replaced, restored when the release is not this mod.
+	nexusFileName string
 	// The key and expiry of an nxm:// link supply a free account's download; they are never written to disk.
 	key     string
 	expires int64
@@ -178,6 +181,9 @@ type Request struct {
 	// FallbackRepo is the mod's GitHub repo (owner/name) for a Nexus update: when the account would have to click
 	// Mod Manager Download, the same version's GitHub release is used instead, if there is exactly one archive.
 	FallbackRepo string `json:"fallbackRepo,omitempty"`
+	// FallbackID is the UniqueID the GitHub release must contain: a repo SMAPI's metadata names may publish
+	// several mods, so a release at the same version is used only when it holds the mod being updated.
+	FallbackID string `json:"fallbackId,omitempty"`
 	// Latest asks for the newest file that updates FileID: a file found in the mod dataset, or that a save
 	// recorded, may have been superseded since. Share imports leave it off to reproduce the shared files.
 	Latest   bool                           `json:"latest"`
@@ -560,7 +566,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: newID(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod,
+			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod,
 		}
 		if it.Repo != "" {
 			it.Name = cmp.Or(it.Name, it.Repo)

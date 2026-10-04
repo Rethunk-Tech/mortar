@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"slices"
 	"strings"
@@ -54,11 +55,28 @@ func (s *Service) useGitHubFallback(ctx context.Context, it Item) bool {
 		s.mu.Unlock()
 		return false
 	}
+	cur.nexusFileName = cur.FileName
 	cur.Repo, cur.Tag, cur.Asset, cur.FileName = it.FallbackRepo, rel.Tag, assets[0].Name, assets[0].Name
 	cur.State, cur.key, cur.expires = StateQueued, "", 0
 	s.mu.Unlock()
 	s.publish(true)
 	return true
+}
+
+// backToNexus undoes a GitHub fallback whose release turned out not to hold the mod: the item downloads from Nexus
+// as it would have, and GitHub is not asked again.
+func (s *Service) backToNexus(id string) {
+	s.mu.Lock()
+	cur := s.find(id)
+	if cur == nil {
+		s.mu.Unlock()
+		return
+	}
+	log.Printf("queue: %s: the %s release does not contain %s; using Nexus", cur.Name, cur.Repo, cur.FallbackID)
+	cur.Repo, cur.Tag, cur.Asset, cur.FileName = "", "", "", cur.nexusFileName
+	cur.State, cur.Progress, cur.fallbackTried = StateQueued, 0, true
+	s.mu.Unlock()
+	s.publish(true)
 }
 
 // resolveGitHub fixes the item's release and asset, or hands the choice to the user when the release has several
@@ -134,6 +152,10 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	}
 	if s.d.KeepArchives == nil || !s.d.KeepArchives() {
 		dropDownload(path)
+	}
+	if it.FallbackID != "" && it.ModID != 0 && !slices.ContainsFunc(ids, func(id string) bool { return strings.EqualFold(id, it.FallbackID) }) {
+		s.backToNexus(it.ID)
+		return nil
 	}
 	owner, repo, _ := strings.Cut(it.Repo, "/")
 	unverified := false

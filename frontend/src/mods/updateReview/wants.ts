@@ -5,9 +5,16 @@ import type { Want } from '../../queue/actions.ts'
 import { pendingFor } from '../../queue/totals.ts'
 import { installableUpdate, sameId } from '../lookup.ts'
 
+/** The queue request for an update. A Nexus update of a mod with a GitHub repo tries that repo's release at the same
+ * version first, since a free Nexus account must click for every file. */
 export const updateWant = (u: Update): Want => ({
   kind: 'update',
-  ...(u.githubRepo ? { repo: u.githubRepo } : { modId: u.nexusId }),
+  ...(u.githubRepo
+    ? { repo: u.githubRepo }
+    : {
+        modId: u.nexusId,
+        ...(u.githubFallback ? { fallbackRepo: u.githubFallback, fallbackId: u.uniqueId } : {}),
+      }),
   name: u.name,
   version: u.version,
   currentKey: u.key,

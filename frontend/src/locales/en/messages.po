@@ -932,7 +932,7 @@ msgstr "Select all mods"
 msgid "Use this folder"
 msgstr "Use this folder"
 
-#: src/launch/autoUpdate.ts:248
+#: src/launch/autoUpdate.ts:227
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
 
@@ -1303,7 +1303,7 @@ msgstr "Copy mod list"
 msgid "Copied"
 msgstr "Copied"
 
-#: src/mods/runErrorFixButtons.tsx:79
+#: src/mods/runErrorFixButtons.tsx:66
 msgid "Show in log"
 msgstr "Show in log"
 
@@ -2581,7 +2581,7 @@ msgstr "Delete"
 msgid "Not checked yet."
 msgstr "Not checked yet."
 
-#: src/launch/autoUpdate.ts:151
+#: src/launch/autoUpdate.ts:141
 msgid "Timed out waiting for mod updates"
 msgstr "Timed out waiting for mod updates"
 
@@ -3118,7 +3118,7 @@ msgstr "Review {updateN, plural, one {# update} other {# updates}}"
 #: src/console/RunProblems.tsx:124
 #: src/launch/SweepDialog.tsx:25
 #: src/loader/Banner.tsx:39
-#: src/mods/runErrorFixButtons.tsx:62
+#: src/mods/runErrorFixButtons.tsx:49
 #: src/mods/Sidebar.tsx:220
 #: src/mods/updateReview/EverywhereDialog.tsx:133
 #: src/mods/updateReview/UpdateActions.tsx:70
@@ -4298,7 +4298,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/BrokenFix.tsx:55
 #: src/mods/problemFix/WhereButtons.tsx:27
 #: src/mods/Sidebar.tsx:202
-#: src/mods/updateReview/Row.tsx:102
+#: src/mods/updateReview/Row.tsx:105
 msgid "Open page"
 msgstr "Open page"
 
@@ -4545,7 +4545,7 @@ msgid "Track"
 msgstr "Track"
 
 #. placeholder {0}: item.name || i18n._(msg`the mod`)
-#: src/launch/autoUpdate.ts:123
+#: src/launch/autoUpdate.ts:113
 msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
@@ -5067,6 +5067,11 @@ msgstr "SMAPI"
 #: src/settings/sections/Updates.tsx:205
 msgid "Open game settings"
 msgstr "Open game settings"
+
+#. placeholder {0}: update.githubFallback
+#: src/mods/updateReview/Row.tsx:59
+msgid "From GitHub ({0}) when its release matches, else Nexus"
+msgstr "From GitHub ({0}) when its release matches, else Nexus"
 
 #: src/games/storeName.ts:7
 msgid "GOG"
@@ -7051,7 +7056,7 @@ msgstr "GOG via Heroic"
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
-#: src/launch/autoUpdate.ts:123
+#: src/launch/autoUpdate.ts:113
 msgid "the mod"
 msgstr "the mod"
 
@@ -7154,7 +7159,7 @@ msgstr "Install {name}?"
 #: src/mods/problemFix/AssetFix.tsx:65
 #: src/mods/problemFix/BrokenFix.tsx:78
 #: src/mods/problemFix/DismissedBrokenFix.tsx:53
-#: src/mods/runErrorFixButtons.tsx:60
+#: src/mods/runErrorFixButtons.tsx:47
 #: src/mods/SelectionBarActions.tsx:121
 #: src/mods/SlowStartupSection.tsx:74
 msgid "Switch off"

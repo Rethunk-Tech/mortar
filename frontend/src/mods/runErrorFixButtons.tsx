@@ -9,6 +9,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { installableUpdate, sameId, updateFor } from './lookup.ts'
 import { ReportToAuthorButton } from './ReportToAuthorButton.tsx'
 import { useMods } from './store.ts'
+import { updateWant } from './updateReview/wants.ts'
 import { useUpdates } from './updates.ts'
 
 export function RunErrorButtons({
@@ -30,21 +31,7 @@ export function RunErrorButtons({
     runError.updated && current
       ? updateFor(useUpdates.getState().updates, current, profile)
       : undefined
-  const want =
-    update && installableUpdate(update)
-      ? {
-          kind: 'update' as const,
-          ...(update.githubRepo
-            ? { repo: update.githubRepo }
-            : {
-                modId: update.nexusId,
-                ...(update.githubFallback ? { fallbackRepo: update.githubFallback } : {}),
-              }),
-          name: update.name,
-          version: update.version,
-          currentKey: update.key,
-        }
-      : undefined
+  const want = update && installableUpdate(update) ? updateWant(update) : undefined
   const openHelp = () => {
     const { game, openId } = useProfiles.getState()
     if (!(game && openId) || runError.runId === '') {
