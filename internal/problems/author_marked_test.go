@@ -2,47 +2,38 @@ package problems
 
 import (
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 )
 
 func TestAuthorMarkedMods(t *testing.T) {
 	home := t.TempDir()
-	cache := filepath.Join(home, "cache", "nexus")
-	if err := os.MkdirAll(cache, 0o700); err != nil {
-		t.Fatal(err)
+	c := &meta.Client{CacheDir: filepath.Join(home, "cache")}
+	cache := func(id int, d nexussvc.Details) {
+		if _, err := meta.Cached(c, nexussvc.DetailsName(id), time.Hour, func() (nexussvc.Details, error) { return d, nil }); err != nil {
+			t.Fatal(err)
+		}
 	}
-	details := cachedNexusDetails{
+	cache(10, nexussvc.Details{
 		Page: nexus.Page{
 			Name:    "Foo",
 			Summary: "This mod is deprecated, use Bar (https://www.nexusmods.com/stardewvalley/mods/123)",
 		},
 		Files: []nexus.File{{FileID: 42, Name: "Foo 1.6", Description: "Deprecated - use the 1.6 version"}},
-	}
-	data, err := json.Marshal(details)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(cache, "details-v3-stardewvalley-10.json"), data, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	fileOnly, err := json.Marshal(cachedNexusDetails{
+	})
+	cache(11, nexussvc.Details{
 		Page:  nexus.Page{Name: "File Only"},
 		Files: []nexus.File{{FileID: 43, Name: "File Only 1.6", Description: "Deprecated - use the 1.6 version"}},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(cache, "details-v3-stardewvalley-11.json"), fileOnly, 0o600); err != nil {
-		t.Fatal(err)
-	}
 
 	mods := []Installed{
 		{Key: "local-obsolete", Enabled: true, Name: "[OBSOLETE] Foo", UniqueID: "foo"},

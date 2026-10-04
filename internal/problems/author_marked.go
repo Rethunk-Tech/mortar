@@ -1,26 +1,21 @@
 package problems
 
 import (
-	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/nexussvc"
 )
 
 var (
 	authorStatusWord = regexp.MustCompile(`(?i)\b(obsolete|deprecated|depreciated)\b`)
 	nexusModLink     = regexp.MustCompile(`(?i)nexusmods\.com/stardewvalley/mods/([0-9]+)`)
 )
-
-type cachedNexusDetails struct {
-	Page  nexus.Page   `json:"page"`
-	Files []nexus.File `json:"files"`
-}
 
 func authorMarkedMods(home string, enabled []Installed) []Broken {
 	var out []Broken
@@ -49,14 +44,9 @@ func authorMarkedMods(home string, enabled []Installed) []Broken {
 	return out
 }
 
-func readCachedNexusDetails(home string, pageID int) (cachedNexusDetails, bool) {
-	path := filepath.Join(home, "cache", "nexus", fmt.Sprintf("details-v3-%s-%d.json", nexus.Game, pageID))
-	data, err := fsx.ReadFile(path)
-	if err != nil {
-		return cachedNexusDetails{}, false
-	}
-	var details cachedNexusDetails
-	return details, json.Unmarshal(data, &details) == nil
+// readCachedNexusDetails reads the details Nexus pages left in the cache, never fetching.
+func readCachedNexusDetails(home string, pageID int) (nexussvc.Details, bool) {
+	return meta.Peek[nexussvc.Details](&meta.Client{CacheDir: filepath.Join(home, "cache")}, nexussvc.DetailsName(pageID))
 }
 
 func markedManifest(mod Installed) *Broken {
