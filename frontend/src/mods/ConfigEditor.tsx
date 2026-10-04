@@ -22,7 +22,8 @@ import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MONO } from '../theme/theme.ts'
-import { errorDetails, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails } from '../toasts/errorKind.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { PresetsButton } from './ConfigPresets.tsx'
 import { applyCPSchema, parseCPSchema } from './configFields.ts'
 import { type ConfigNode, parseConfig, setAt, stringifyConfig } from './configForm.ts'
@@ -348,4 +349,4 @@ function EditConfigButton({ mod }: { mod: Mod }) {
   )
 }
 
-export { ConfigEditor, EditConfigButton }
+export { EditConfigButton }

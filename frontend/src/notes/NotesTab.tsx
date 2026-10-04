@@ -6,7 +6,8 @@ import { SetNotes } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNow } from '../i18n/useNow.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { errorDetails } from '../toasts/errorKind.ts'
+import { errorMessage } from '../toasts/report.ts'
 
 const DEBOUNCE_MS = 800
 // Keep this in sync with profile.MaxNotes.

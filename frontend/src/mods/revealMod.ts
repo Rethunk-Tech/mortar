@@ -7,7 +7,7 @@ import { nexusIdOf } from './lookup.ts'
 import { useMods } from './store.ts'
 
 // revealMod opens a profile's Mods tab with one mod selected in the sidebar, matched by its Nexus ID or else its name.
-export async function revealMod(game: string, profileId: string, nexusId: number, name: string) {
+async function revealMod(game: string, profileId: string, nexusId: number, name: string) {
   if (!isGameId(game)) {
     return
   }

@@ -115,10 +115,12 @@ function nodeState(uniqueID: string, byID: Map<string, InstalledModState>): DepN
   return inst.enabled ? 'enabled' : 'disabled'
 }
 
-export interface ManifestDep {
+interface ManifestDep {
   uniqueID: string
   isRequired?: boolean
 }
+
+type DepNodeState = 'enabled' | 'disabled' | 'missing' | 'broken'
 
 export interface ProfileManifest {
   uniqueID: string
@@ -143,8 +145,6 @@ export interface InstalledModState {
   enabled: boolean
   broken?: boolean
 }
-
-export type DepNodeState = 'enabled' | 'disabled' | 'missing' | 'broken'
 
 export interface DepViewNode {
   uniqueID: string

@@ -1,6 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { i18n } from '../i18n/index.ts'
-import { errorDetails as detailsOf, errorKind as kindOf, errorText as textOf } from './errorKind.ts'
+import { errorDetails, errorKind as kindOf } from './errorKind.ts'
+
 import { useToasts } from './store.ts'
 
 // Built on call, not at import: Lingui macros only run inside compiled code, and this module is
@@ -24,18 +25,6 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
     default:
       return i18n._(msg`Something went wrong.`)
   }
-}
-
-export function errorText(e: unknown): string | undefined {
-  return textOf(e)
-}
-
-export function errorKind(e: unknown): ReturnType<typeof kindOf> {
-  return kindOf(e)
-}
-
-export function errorDetails(e: unknown): string {
-  return detailsOf(e)
 }
 
 /** Plain sentence for a kind. Untagged errors use the generic sentence; raw Go text stays in errorDetails. */

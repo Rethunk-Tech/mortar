@@ -355,8 +355,6 @@ export const initQueue = () =>
   })
 
 export {
-  announce,
-  downloadFailCopy,
   entryForItem,
   installUndo,
   queueErrorDetail,

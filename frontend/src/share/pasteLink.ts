@@ -65,5 +65,4 @@ function classifyPastedLink(text: string): PastedLinkKind | null {
   return null
 }
 
-export type { PastedLinkKind }
 export { classifyPastedLink, pasteTargetIsEditable }

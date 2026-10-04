@@ -117,22 +117,6 @@ function idKey(id: string): string {
   return id.trim().toLowerCase()
 }
 
-function firstRequiredNeed(
-  uniqueId: string,
-  needs: readonly string[] | null | undefined,
-  optional: readonly string[] | null | undefined,
-): string {
-  const skip = new Set((optional ?? []).map(idKey))
-  skip.add(idKey(uniqueId))
-  for (const raw of needs ?? []) {
-    const id = raw.trim()
-    if (id !== '' && !skip.has(idKey(id))) {
-      return id
-    }
-  }
-  return ''
-}
-
 function frameworkGroupKey(
   contentPackFor: string | null | undefined,
   uniqueId: string,
@@ -369,28 +353,24 @@ function entryGroupName(
   return ''
 }
 
-export type { Group, GroupBy, StatusGroup }
+export type { GroupBy }
 export {
   customCategoryById,
   emptyGroupLabel,
   entryGroupName,
-  firstRequiredNeed,
   firstTag,
   frameworkGroupKey,
-  GROUP_BY_IDS,
   groupHeading,
   groupSorted,
   installedNames,
   loadCollapsed,
   MAX_ENTRY_NOTE,
   MAX_ENTRY_TAG,
-  MAX_ENTRY_TAGS,
   persistCollapsed,
   profileTags,
   resolvedCategoryLabel,
   rowGroupKey,
   SMAPI_MODS_GROUP,
-  STATUS_GROUP_ORDER,
   sanitizeListGroupBy,
   statusGroupKey,
   takeTags,

@@ -30,5 +30,4 @@ function prevPage(paging: Paging): number {
   return clampPage({ page: paging.page - FIRST_PAGE, total: paging.total })
 }
 
-export type { Paging }
 export { clampPage, DEBOUNCE_MS, debounceDue, nextPage, PAGE_SIZE, prevPage }

@@ -64,4 +64,4 @@ function smapiUpdateNotes(
   return notes
 }
 
-export { smapiUpdateNotes, type UpdateNote, type UpdateNoteKind }
+export { smapiUpdateNotes, type UpdateNote }

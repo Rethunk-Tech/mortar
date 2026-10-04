@@ -1,5 +1,4 @@
 import { sameId } from './lookup.ts'
-export type CompatStatus = 'ok' | 'optional' | 'unofficial' | 'broken' | 'obsolete' | 'abandoned'
 
 export function showCompatChip(status: string | undefined | null): boolean {
   const value = (status ?? '').toLowerCase()

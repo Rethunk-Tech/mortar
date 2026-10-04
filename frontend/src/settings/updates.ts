@@ -13,7 +13,8 @@ import {
 import { BusySummary } from '../../bindings/github.com/Rethunk-AI/mortar/quitservice.ts'
 import { i18n } from '../i18n/index.ts'
 import { askQuit } from '../quit.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { errorDetails } from '../toasts/errorKind.ts'
+import { errorMessage } from '../toasts/report.ts'
 
 type Phase =
   | 'idle'
@@ -120,7 +121,5 @@ export const useMortarUpdate = create<{
       }),
   }
 })
-
-export const getInitialState = () => useMortarUpdate.getInitialState()
 
 export type { Phase }

@@ -9,6 +9,12 @@ import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useQueue } from './store.ts'
 
+// The game and profile open now, or null when none is.
+function target() {
+  const { game, openId } = useProfiles.getState()
+  return game && openId ? { game: game.id, profileId: openId } : null
+}
+
 // What a caller says about a file; the rest is filled in.
 export type Want = Pick<Request, 'kind'> &
   Partial<
@@ -27,12 +33,6 @@ export type Want = Pick<Request, 'kind'> &
       | 'batchId'
     >
   >
-
-// The game and profile open now, or null when none is.
-export function target() {
-  const { game, openId } = useProfiles.getState()
-  return game && openId ? { game: game.id, profileId: openId } : null
-}
 
 // Queues files for the open profile. Nexus files cannot download while signed out: say so and point at the
 // sign-in instead. GitHub needs no account.

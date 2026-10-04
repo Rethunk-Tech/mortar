@@ -29,4 +29,4 @@ function choiceStyle(options: { label: string; hint?: string }[]): ChoiceStyle {
     : 'select'
 }
 
-export { type ChoiceStyle, choiceStyle, type PrefControl, prefControl }
+export { choiceStyle, prefControl }

@@ -17,7 +17,8 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorDetails, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails } from '../toasts/errorKind.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const pollDelayMs = 500

@@ -105,13 +105,13 @@ func TestBackground(t *testing.T) {
 			t.Fatalf("%s: %v", b, err)
 		}
 	}
-	// A file from before the field existed takes the defaults.
+	// A file without the field takes the default.
 	if err := os.WriteFile(filepath.Join(dir, fileName), []byte(`{"accent":"moss","translucent":false}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, _ := Open()
 	if got := s2.Get(); got.Accent != "moss" || got.Background != BackgroundImage {
-		t.Fatalf("legacy file = %+v", got)
+		t.Fatalf("file without background = %+v", got)
 	}
 }
 
@@ -230,6 +230,6 @@ func TestListColumns(t *testing.T) {
 	}
 	s3, _ := Open()
 	if got := s3.Get(); !slices.Equal(got.ListColumns, defaultListColumns) {
-		t.Fatalf("legacy = %v", got.ListColumns)
+		t.Fatalf("file without list columns = %v", got.ListColumns)
 	}
 }

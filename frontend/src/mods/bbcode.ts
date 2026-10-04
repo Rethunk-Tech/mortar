@@ -67,7 +67,7 @@ interface Open {
 }
 
 // Id is the position, fixed once parsed, for React keys.
-export interface Run {
+interface Run {
   id: number
   text: string
   bold?: boolean

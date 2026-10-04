@@ -43,6 +43,9 @@ function saveHistory(history: ToastHistoryItem[]) {
   }
 }
 
+// Failures stay longer: they are read, not glanced at.
+const lifetime = (kind: ToastKind) => (kind === 'info' || kind === 'success' ? QUICK_MS : SLOW_MS)
+
 export type ToastKind = 'info' | 'success' | 'warning' | 'error'
 
 export interface ToastAction {
@@ -77,10 +80,6 @@ export interface ToastHistoryItem {
   count?: number
   action?: ToastAction
 }
-
-// Failures stay longer: they are read, not glanced at.
-export const lifetime = (kind: ToastKind) =>
-  kind === 'info' || kind === 'success' ? QUICK_MS : SLOW_MS
 
 export const useToasts = create<{
   toasts: Toast[]

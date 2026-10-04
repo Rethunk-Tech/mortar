@@ -13,6 +13,6 @@ func TestHideDismissedAbandoned(t *testing.T) {
 	}
 	leftover, extra := hideDismissedBroken(in, []string{dismissToken("abandoned", "a")})
 	if len(leftover) != 2 || len(extra) != 0 {
-		t.Fatalf("legacy abandoned token still hides: got %+v dismissed %+v", leftover, extra)
+		t.Fatalf("a token of another kind hides the row: got %+v dismissed %+v", leftover, extra)
 	}
 }

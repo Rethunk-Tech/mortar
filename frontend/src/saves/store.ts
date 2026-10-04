@@ -83,5 +83,3 @@ export const useSaves = create<State>((set, get) => ({
     }
   },
 }))
-
-export const getInitialState = () => useSaves.getInitialState()

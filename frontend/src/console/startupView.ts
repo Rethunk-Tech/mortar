@@ -146,7 +146,6 @@ export {
   formatDuration,
   modTotal,
   type PhaseId,
-  type PhaseSegment,
   phaseSegments,
   type SlowStartup,
   type StartupRegression,

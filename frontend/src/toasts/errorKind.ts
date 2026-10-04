@@ -1,6 +1,6 @@
 const kindRe = /^\[([a-z_]+)] ([\s\S]*)$/
 
-const kinds = new Set([
+const knownKinds = [
   'not_found',
   'busy',
   'network',
@@ -8,17 +8,11 @@ const kinds = new Set([
   'disk_full',
   'damaged',
   'invalid',
-])
+] as const
 
-type ErrorKind =
-  | 'not_found'
-  | 'busy'
-  | 'network'
-  | 'permission'
-  | 'disk_full'
-  | 'damaged'
-  | 'invalid'
-  | 'unknown'
+const kinds = new Set<string>(knownKinds)
+
+type ErrorKind = (typeof knownKinds)[number] | 'unknown'
 
 function asText(e: unknown): string {
   if (e instanceof Error) {

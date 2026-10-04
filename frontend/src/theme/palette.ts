@@ -355,16 +355,13 @@ function honourTheme(setting: string, osLight: boolean): ThemeMode {
   return 'dark'
 }
 
-export type { Surfaces, ThemeMode }
+export type { ThemeMode }
 export {
   composite,
   contrastRatio,
-  ensureContrast,
   honourTheme,
   mortarPalette,
   paperForContrast,
-  parseColor,
-  relativeLuminance,
   surfaceCssVars,
   surfaces,
 }

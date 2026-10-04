@@ -27,7 +27,7 @@ import type { Want } from '../queue/actions.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorDetails } from '../toasts/report.ts'
+import { errorDetails } from '../toasts/errorKind.ts'
 
 interface AutoUpdatePlan {
   updates: Update[]
@@ -268,7 +268,7 @@ async function rollbackAutoUpdate(point: AutoUpdateRestorePoint): Promise<void> 
   await useMods.getState().load()
 }
 
-export type { AutoUpdatePlan, AutoUpdateRestorePoint, AutoUpdateResult }
+export type { AutoUpdateRestorePoint, AutoUpdateResult }
 export {
   acknowledgeUpdateCaution,
   cautionAcknowledged,

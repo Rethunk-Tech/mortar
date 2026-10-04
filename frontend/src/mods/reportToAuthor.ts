@@ -145,16 +145,5 @@ function buildModReport(i18n: I18n, fields: ModReportFields): ModReportResult {
   return buildAuthorReportUrl(text, fields)
 }
 
-export type { ModReportFields, ModReportResult }
-export {
-  buildAuthorReportUrl,
-  buildModReport,
-  buildModReportText,
-  githubIssueURL,
-  MAX_ERROR_LINES,
-  MAX_GITHUB_BODY,
-  modErrorLines,
-  nexusBugsURL,
-  STARDEW_NEXUS_DOMAIN,
-  truncateGithubBody,
-}
+export type { ModReportFields }
+export { buildModReport, buildModReportText, githubIssueURL, modErrorLines, truncateGithubBody }

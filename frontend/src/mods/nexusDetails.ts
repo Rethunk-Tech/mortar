@@ -86,24 +86,9 @@ const loadDetails = (id: number) => {
 
 // Shows what is cached for every mod at once, then reads the missing ones one at a time.
 const primeDetails = async (ids: number[]) => {
-  const { byId } = useNexusDetails.getState()
-  const unknown = [...new Set(ids)].filter((id) => !byId[id]?.details)
-  if (unknown.length === 0) {
-    return
-  }
-  const cached = (await CachedDetails(unknown)) ?? {}
-  useNexusDetails.setState((s) => {
-    const next = { ...s.byId }
-    for (const id of unknown) {
-      const details = cached[`${id}`]
-      if (details && !next[id]?.details) {
-        next[id] = { details }
-      }
-    }
-    return { byId: next }
-  })
-  for (const id of unknown) {
-    if (!useNexusDetails.getState().byId[id]?.details) {
+  await mergeCachedDetails(ids)
+  for (const id of new Set(ids)) {
+    if (id > 0 && !useNexusDetails.getState().byId[id]?.details) {
       enqueue(id)
     }
   }
@@ -237,4 +222,25 @@ export {
   useNexusFresh,
   useNexusSeen,
   watermarkOf,
+}
+
+// Fills the details store from the on-disk Nexus cache only, so Update review never hits the network.
+export async function mergeCachedDetails(ids: number[]): Promise<void> {
+  const want = [...new Set(ids)].filter((id) => id > 0)
+  const { byId } = useNexusDetails.getState()
+  const unknown = want.filter((id) => !byId[id]?.details)
+  if (unknown.length === 0) {
+    return
+  }
+  const cached = (await CachedDetails(unknown)) ?? {}
+  useNexusDetails.setState((s) => {
+    const next = { ...s.byId }
+    for (const id of unknown) {
+      const details = cached[`${id}`]
+      if (details && !next[id]?.details) {
+        next[id] = { details }
+      }
+    }
+    return { byId: next }
+  })
 }

@@ -17,11 +17,11 @@ mock.module('../../bindings/github.com/Rethunk-AI/mortar/quitservice.ts', () => 
   BusySummary: async () => '',
 }))
 
-const { getInitialState, useMortarUpdate } = await import('./updates.ts')
+const { useMortarUpdate } = await import('./updates.ts')
 
 beforeEach(() => {
   installs = 0
-  useMortarUpdate.setState(getInitialState(), true)
+  useMortarUpdate.setState(useMortarUpdate.getInitialState(), true)
 })
 
 test('checking again keeps a found or staged update on offer', async () => {

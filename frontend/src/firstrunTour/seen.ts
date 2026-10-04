@@ -24,4 +24,4 @@ function tourClearSeen(seen: readonly string[] | null | undefined): string[] {
   return seenList(seen).filter((id) => id !== TOUR_SEEN_ID)
 }
 
-export { TOUR_SEEN_ID, tourClearSeen, tourMarkSeen, tourSeen, tourShouldRun }
+export { tourClearSeen, tourMarkSeen, tourShouldRun }

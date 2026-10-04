@@ -8,7 +8,8 @@ import {
   Status as LoaderStatus,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadersvc/service.ts'
 import { i18n } from '../i18n/index.ts'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { errorDetails } from '../toasts/errorKind.ts'
+import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 export const useLoader = create<{

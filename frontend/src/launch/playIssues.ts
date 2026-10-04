@@ -192,5 +192,5 @@ function overflowIssueCount(group: Pick<PlayIssueGroup, 'count' | 'names'>): num
   return Math.max(0, group.count - group.names.length)
 }
 
-export type { PlayIssueGroup, PlayIssueKind }
+export type { PlayIssueGroup }
 export { gatherPlayIssues, overflowIssueCount, playIssueSummary }

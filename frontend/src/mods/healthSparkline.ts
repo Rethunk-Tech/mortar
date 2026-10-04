@@ -33,11 +33,9 @@ function buildHealthSparklinePath(
   return `M${coords.join(' L')}`
 }
 
-export type { SparklinePoint }
 export {
   buildHealthSparklinePath,
   HEALTH_SPARKLINE_HEIGHT,
-  HEALTH_SPARKLINE_POINTS,
   HEALTH_SPARKLINE_WIDTH,
   sparklineSeries,
 }

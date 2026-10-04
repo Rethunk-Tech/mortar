@@ -358,6 +358,8 @@ function ProfileGameSettingsFields({ disabled, value, onChange }: ProfileGameSet
   )
 }
 
+type WindowMode = 'windowed' | 'fullscreen' | 'borderless'
+
 export function GameSettings({ profileId, value, onChange }: GameSettingsProps) {
   const { t } = useLingui()
   const gameId = useProfiles((s) => s.game?.id ?? '')
@@ -377,8 +379,6 @@ export function GameSettings({ profileId, value, onChange }: GameSettingsProps) 
     </Stack>
   )
 }
-
-export type WindowMode = 'windowed' | 'fullscreen' | 'borderless'
 
 export interface GameSettingsValues {
   windowMode?: WindowMode

@@ -17,7 +17,7 @@ function vanillaBusy(game: string): boolean {
   return launching || starting || useLoader.getState().installing
 }
 
-export function linuxVanillaDirectAgreed(): boolean {
+function linuxVanillaDirectAgreed(): boolean {
   try {
     return localStorage.getItem(linuxVanillaDirectKey) === '1'
   } catch {

@@ -168,7 +168,7 @@ function wantsOf(missing: Missing[]): DepWant[] {
   return out
 }
 
-export type { MissingOffer, ProfileLike }
+export type { MissingOffer }
 export {
   andList,
   depName,

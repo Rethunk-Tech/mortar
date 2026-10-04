@@ -1,5 +1,9 @@
 import { create } from 'zustand'
 
+function clickRow(id: string): SelectionState {
+  return { ids: [id], anchor: id }
+}
+
 export interface SelectionState {
   ids: readonly string[]
   anchor: string | null
@@ -7,10 +11,6 @@ export interface SelectionState {
 
 export function getInitialState(): SelectionState {
   return { ids: [], anchor: null }
-}
-
-export function clickRow(id: string): SelectionState {
-  return { ids: [id], anchor: id }
 }
 
 export function toggleRow(state: SelectionState, id: string): SelectionState {

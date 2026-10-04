@@ -14,7 +14,7 @@ const downloads = (state: ModState) =>
   state === 'download' || state === 'dependency' || state === 'later'
 
 // The bindings type a Go slice as nullable; the dialogs work with lists.
-export type ShownGroup = Omit<Group, 'mods'> & { mods: string[] }
+type ShownGroup = Omit<Group, 'mods'> & { mods: string[] }
 export type ShownInfo = Omit<Info, 'groups' | 'leftOut'> & {
   groups: ShownGroup[]
   leftOut: NonNullable<Info['leftOut']>

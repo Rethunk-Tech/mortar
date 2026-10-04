@@ -12,5 +12,4 @@ function applyLaunchPreset(preset: Partial<LaunchPresetFields>): LaunchPresetFie
   }
 }
 
-export type { LaunchPresetFields }
 export { applyLaunchPreset }

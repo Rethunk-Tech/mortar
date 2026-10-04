@@ -1,4 +1,4 @@
-export const NXM_SHOW_CATEGORY = 'nxm-show'
+const NXM_SHOW_CATEGORY = 'nxm-show'
 
 export function nxmShowCategory(showLabel: string): {
   id: string

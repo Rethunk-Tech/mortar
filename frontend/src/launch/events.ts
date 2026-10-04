@@ -5,7 +5,8 @@ import type { SweepReport } from '../../bindings/github.com/Rethunk-AI/mortar/in
 import { useConsole } from '../console/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorDetails, errorMessage, toastError } from '../toasts/report.ts'
+import { errorDetails } from '../toasts/errorKind.ts'
+import { errorMessage, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useLaunch } from './store.ts'
 

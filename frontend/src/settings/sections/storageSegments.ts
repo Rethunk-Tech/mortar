@@ -29,4 +29,4 @@ function storageSegments(usage: UsageTotals): Segment[] {
   return [...named, { id: 'other', size: Math.max(0, usage.total - known) }]
 }
 
-export { type Segment, type SegmentId, storageSegments }
+export { type SegmentId, storageSegments }

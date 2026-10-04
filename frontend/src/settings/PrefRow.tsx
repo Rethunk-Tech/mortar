@@ -21,15 +21,7 @@ import { SettingRow } from './SettingsSection.tsx'
 import { useSettings } from './store.ts'
 
 // Game-scope prefs render only where a game is passed, so global pages never write to a guessed game.
-export function PrefRow({
-  spec,
-  extra,
-  game,
-}: {
-  spec: PrefSpec
-  extra?: ReactNode
-  game?: string
-}) {
+function PrefRow({ spec, extra, game }: { spec: PrefSpec; extra?: ReactNode; game?: string }) {
   const { t, i18n } = useLingui()
   const push = useToasts((s) => s.push)
   const fail = t`Couldn't save that setting`

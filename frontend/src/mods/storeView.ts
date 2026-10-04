@@ -10,6 +10,15 @@ type View = 'grid' | 'list'
 
 const VIEW_KEY = 'mortar.modsView'
 
+function setStoredView(set: (p: { view: View }) => void, view: View) {
+  set({ view })
+  try {
+    localStorage.setItem(VIEW_KEY, view)
+  } catch {
+    // Storage can be blocked; the view then lasts for this session only.
+  }
+}
+
 export function storedView(): View {
   try {
     const stored = localStorage.getItem(VIEW_KEY)
@@ -20,15 +29,6 @@ export function storedView(): View {
     // Storage can be blocked.
   }
   return useSettings.getState().defaultModsView === 'list' ? 'list' : 'grid'
-}
-
-export function setStoredView(set: (p: { view: View }) => void, view: View) {
-  set({ view })
-  try {
-    localStorage.setItem(VIEW_KEY, view)
-  } catch {
-    // Storage can be blocked; the view then lasts for this session only.
-  }
 }
 
 export function viewActions(set: (p: { view: View }) => void) {

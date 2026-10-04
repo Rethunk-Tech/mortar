@@ -113,6 +113,31 @@ function pushRemovedUndo(
   })
 }
 
+async function batchProfile(
+  mods: Mod[],
+  call: (game: string, id: string, keys: string[]) => Promise<Profile>,
+  title: string,
+  done?: string,
+) {
+  const target = open()
+  if (!target) {
+    return
+  }
+  const keys = mods.map((mod) => mod.key)
+  const profile = useProfiles.getState().profiles.find((p) => p.id === target.id)
+  const fields = entryFieldsOf((profile?.entries ?? []) as UndoEntry[], keys)
+  try {
+    useProfiles.getState().replace(await call(target.game, target.id, keys))
+  } catch (e) {
+    fail(title)(e)
+    return
+  }
+  if (done !== undefined) {
+    pushFieldsUndo(target.id, fields, done)
+  }
+  await useUpdates.getState().load()
+}
+
 export async function enableMany(
   set: (fn: (s: { mods: Mod[] }) => { mods: Mod[] }) => void,
   get: () => { mods: Mod[]; loadProblems: () => Promise<void> },
@@ -167,31 +192,6 @@ export async function enableMany(
     }
   }
   await get().loadProblems()
-}
-
-export async function batchProfile(
-  mods: Mod[],
-  call: (game: string, id: string, keys: string[]) => Promise<Profile>,
-  title: string,
-  done?: string,
-) {
-  const target = open()
-  if (!target) {
-    return
-  }
-  const keys = mods.map((mod) => mod.key)
-  const profile = useProfiles.getState().profiles.find((p) => p.id === target.id)
-  const fields = entryFieldsOf((profile?.entries ?? []) as UndoEntry[], keys)
-  try {
-    useProfiles.getState().replace(await call(target.game, target.id, keys))
-  } catch (e) {
-    fail(title)(e)
-    return
-  }
-  if (done !== undefined) {
-    pushFieldsUndo(target.id, fields, done)
-  }
-  await useUpdates.getState().load()
 }
 
 export async function dropMods(get: () => { load: () => Promise<void> }, mods: Mod[]) {

@@ -2,15 +2,31 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { type RefObject, useEffect, useRef } from 'react'
 
 const TYPEAHEAD_LETTER = /^\p{L}$/u
+const GROUP_HEADER_PX = 36
+
+const GRID_MIN_CARD_PX = 300
+
+const GRID_GAP_PX = 6
+
+const GRID_PAD_X_PX = 16
+
+const GRID_CARD_PX = 64
+
+const GRID_CARD_COMPACT_PX = 50
+
+function estimateVirtualSize<T>(row: VirtualRow<T>, lanePx: number): number {
+  if (row.kind === 'header') {
+    return GROUP_HEADER_PX
+  }
+  if (row.kind === 'lane') {
+    return lanePx
+  }
+  return LIST_ROW_PX
+}
+
 export const TYPEAHEAD_MS = 500
 
 export const LIST_ROW_PX = 36
-export const GROUP_HEADER_PX = 36
-export const GRID_MIN_CARD_PX = 300
-export const GRID_GAP_PX = 6
-export const GRID_PAD_X_PX = 16
-export const GRID_CARD_PX = 64
-export const GRID_CARD_COMPACT_PX = 50
 
 export type VirtualRow<T> =
   | { kind: 'header'; key: string; groupKey: string; count: number }
@@ -134,16 +150,6 @@ export function neighborId(
     return undefined
   }
   return ids[(i + dir + ids.length) % ids.length]
-}
-
-export function estimateVirtualSize<T>(row: VirtualRow<T>, lanePx: number): number {
-  if (row.kind === 'header') {
-    return GROUP_HEADER_PX
-  }
-  if (row.kind === 'lane') {
-    return lanePx
-  }
-  return LIST_ROW_PX
 }
 
 export function useModVirtual<T>(items: readonly VirtualRow<T>[], lanePx: number) {

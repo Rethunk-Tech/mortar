@@ -7,7 +7,25 @@ function on(v: boolean | null | undefined, fallback: boolean): boolean {
   return v
 }
 
-export const STARDEW = 'stardew'
+const STARDEW = 'stardew'
+
+const defaultGamePrefs: GamePrefBlock = {
+  backupBeforePlay: 'changed',
+  launchBackupsKept: 5,
+  updateModsBeforePlayDefault: false,
+  runsKept: 20,
+  consoleLogCap: 20_000,
+  nxmDefaultProfile: '',
+  cosmeticConflicts: 'collapsed',
+  enableRequirements: 'always',
+  missingRequirements: 'ask',
+  smapiBuilds: 'show',
+  defaultLaunchMethod: 'steam',
+  showSmapiConsole: true,
+  consoleLevel: 'info',
+  consoleTimestamps: true,
+  consoleFollow: true,
+}
 
 export interface GamePrefBlock {
   backupBeforePlay: string
@@ -25,24 +43,6 @@ export interface GamePrefBlock {
   consoleLevel: string
   consoleTimestamps: boolean
   consoleFollow: boolean
-}
-
-export const defaultGamePrefs: GamePrefBlock = {
-  backupBeforePlay: 'changed',
-  launchBackupsKept: 5,
-  updateModsBeforePlayDefault: false,
-  runsKept: 20,
-  consoleLogCap: 20_000,
-  nxmDefaultProfile: '',
-  cosmeticConflicts: 'collapsed',
-  enableRequirements: 'always',
-  missingRequirements: 'ask',
-  smapiBuilds: 'show',
-  defaultLaunchMethod: 'steam',
-  showSmapiConsole: true,
-  consoleLevel: 'info',
-  consoleTimestamps: true,
-  consoleFollow: true,
 }
 
 export function gamePrefs(s: Settings): GamePrefBlock {

@@ -404,7 +404,7 @@ function persistColumns(ids: ListColumnId[]) {
   SetListColumns(ids).catch(reportUnexpected)
 }
 
-export type { ListColumnId, ListColumnSort, ListRow, ListSortDir }
+export type { ListColumnId, ListRow }
 export {
   columnMenuFromEvent,
   compareListRows,
@@ -412,11 +412,9 @@ export {
   DEFAULT_VISIBLE_LIST_COLUMNS,
   LIST_COLUMN_GROUPS,
   LIST_COLUMN_IDS,
-  LIST_COLUMN_WIDTH,
   LOCKED_LIST_COLUMNS,
   listGridColumns,
   moveListColumn,
-  NARROW_HIDE_LIST_COLUMNS,
   nextListSort,
   persistColumns,
   sanitizeListColumns,

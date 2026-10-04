@@ -70,5 +70,4 @@ function levelSwatch(th: Theme, level: Level): string {
   return levelChrome(th, level).color
 }
 
-export type { LevelChrome }
 export { levelChrome, levelSwatch }

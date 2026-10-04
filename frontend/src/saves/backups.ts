@@ -56,5 +56,3 @@ export const useSaveBackups = create<{
     },
   }
 })
-
-export const getInitialState = () => useSaveBackups.getInitialState()

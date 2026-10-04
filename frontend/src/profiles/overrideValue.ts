@@ -74,35 +74,6 @@ export function foldedOverrides(profile: Pick<Profile, 'overrides'>): Record<str
   return out
 }
 
-export function gamePrefString(
-  key: OverrideKey,
-  prefs: {
-    defaultLaunchMethod: string
-    showSmapiConsole: boolean
-    backupBeforePlay: string
-    launchBackupsKept: number
-    updateModsBeforePlayDefault: boolean
-    skipPlayCheck?: boolean
-  },
-): string {
-  switch (key) {
-    case 'defaultLaunchMethod':
-      return prefs.defaultLaunchMethod
-    case 'showSmapiConsole':
-      return String(prefs.showSmapiConsole)
-    case 'backupBeforePlay':
-      return prefs.backupBeforePlay
-    case 'launchBackupsKept':
-      return String(prefs.launchBackupsKept)
-    case 'updateModsBeforePlayDefault':
-      return String(prefs.updateModsBeforePlayDefault)
-    case 'skipPlayCheck':
-      return String(prefs.skipPlayCheck ?? false)
-    default:
-      return ''
-  }
-}
-
 export function overrideChoiceLabel(key: OverrideKey, value: string, i18n: I18n): string {
   const hit = prefCopy(i18n, key).options?.find((option) => option.value === value)
   if (hit) {

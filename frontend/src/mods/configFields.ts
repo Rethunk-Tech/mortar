@@ -156,5 +156,4 @@ function setByPath(node: ConfigNode, path: string, raw: string): ConfigNode {
   return setParts(node, path.split('.').filter(Boolean), raw)
 }
 
-export type { CPField, CPSchema }
 export { applyCPSchema, fieldLabel, parseCPSchema, setByPath }

@@ -22,12 +22,12 @@ mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/servi
   OpenBackupsFolder: async () => undefined,
 }))
 
-const { getInitialState, useSaveBackups } = await import('./backups.ts')
+const { useSaveBackups } = await import('./backups.ts')
 const { formatBytes } = await import('../i18n/bytes.ts')
 
 test('load fills backups newest as returned', async () => {
   listImpl = async () => listed
-  useSaveBackups.setState(getInitialState(), true)
+  useSaveBackups.setState(useSaveBackups.getInitialState(), true)
   await useSaveBackups.getState().load()
   expect(useSaveBackups.getState().items).toEqual(listed)
   expect(useSaveBackups.getState().status).toBe('ready')
@@ -36,7 +36,10 @@ test('load fills backups newest as returned', async () => {
 test('restore asks for the chosen zip and folders then reloads', async () => {
   listImpl = async () => listed
   restored = { name: '', folders: null }
-  useSaveBackups.setState({ ...getInitialState(), items: listed, status: 'ready' }, true)
+  useSaveBackups.setState(
+    { ...useSaveBackups.getInitialState(), items: listed, status: 'ready' },
+    true,
+  )
   await useSaveBackups.getState().restore(firstBackup.name, ['Farm_1'])
   expect(restored).toEqual({ name: firstBackup.name, folders: ['Farm_1'] })
   expect(useSaveBackups.getState().items).toEqual(listed)
@@ -56,7 +59,7 @@ test('a slower first list does not overwrite a later load', async () => {
     }
     return [{ ...firstBackup, name: 'newer.zip' }]
   }
-  useSaveBackups.setState(getInitialState(), true)
+  useSaveBackups.setState(useSaveBackups.getInitialState(), true)
   const first = useSaveBackups.getState().load()
   const second = useSaveBackups.getState().load()
   await second

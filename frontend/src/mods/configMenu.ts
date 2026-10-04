@@ -112,14 +112,5 @@ function optionDraft(page: string, opt: GmcmOption, drafts: Record<string, unkno
   return key in drafts ? drafts[key] : opt.value
 }
 
-export type {
-  GmcmCapture,
-  GmcmChoice,
-  GmcmEdit,
-  GmcmOption,
-  GmcmPage,
-  GmcmPending,
-  GmcmResult,
-  GmcmSkipped,
-}
+export type { GmcmCapture, GmcmOption, GmcmPage, GmcmResult }
 export { draftMap, optionDraft, optionKey, pendingEdits, valuesEqual }

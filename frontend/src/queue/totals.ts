@@ -16,11 +16,16 @@ interface Totals {
   failedShare: number
 }
 
+const isDownloading = (i: Item) => i.state === 'downloading'
+
+const isWaiting = (i: Item) => i.state === 'queued'
+
+const isLeft = (i: Item) => !['done', 'skipped', 'cancelled'].includes(i.state)
+
+// A file that is queued or under way for this mod in this profile; a failed one does not count, so it can be added again.
+const isPending = (i: Item) => isLeft(i) && i.state !== 'failed'
+
 export const isActive = (i: Item) => i.state === 'downloading' || i.state === 'installing'
-
-export const isDownloading = (i: Item) => i.state === 'downloading'
-
-export const isWaiting = (i: Item) => i.state === 'queued'
 
 export function parallelDownloads(items: Item[]) {
   const counted = items.filter((i) => i.state !== 'skipped' && i.state !== 'cancelled')
@@ -33,11 +38,6 @@ export function parallelDownloads(items: Item[]) {
 // What the user still waits for: everything that neither finished nor was dropped, failures included.
 export const isClearableFinished = (state: string) =>
   state === 'done' || state === 'skipped' || state === 'cancelled'
-
-export const isLeft = (i: Item) => !['done', 'skipped', 'cancelled'].includes(i.state)
-
-// A file that is queued or under way for this mod in this profile; a failed one does not count, so it can be added again.
-export const isPending = (i: Item) => isLeft(i) && i.state !== 'failed'
 
 // A GitHub mod is named by its repo, with a modId of 0; a Nexus mod by its modId and an empty repo.
 export const pendingFor = (items: Item[], profileId: string, modId: number, repo = '') =>

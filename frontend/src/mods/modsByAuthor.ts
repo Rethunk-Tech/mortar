@@ -75,5 +75,4 @@ function modsByAuthor(profiles: Profile[], author: string): AuthorModRow[] {
   return out
 }
 
-export type { AuthorModProfile, AuthorModRow }
 export { modsByAuthor }

@@ -3,7 +3,8 @@ import { i18n } from '../i18n/index.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useNav } from '../nav/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
-import { errorDetails, errorMessage, toastError } from '../toasts/report.ts'
+import { errorDetails } from '../toasts/errorKind.ts'
+import { errorMessage, toastError } from '../toasts/report.ts'
 import { type ToastInput, useToasts } from '../toasts/store.ts'
 
 function failReason(

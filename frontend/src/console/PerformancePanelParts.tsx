@@ -71,7 +71,7 @@ function ComparePickers(props: HeaderProps) {
   )
 }
 
-export function ReportTable({
+function ReportTable({
   rows,
   sort,
   onSort,
@@ -149,7 +149,7 @@ export function ReportTable({
   )
 }
 
-export function PanelHeader(props: HeaderProps) {
+function PanelHeader(props: HeaderProps) {
   const { t } = useLingui()
   const {
     running,
@@ -228,7 +228,7 @@ export function PanelHeader(props: HeaderProps) {
   )
 }
 
-export function ReportBody({
+function ReportBody({
   rows,
   reportLines,
   sort,

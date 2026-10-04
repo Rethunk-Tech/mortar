@@ -1,4 +1,4 @@
-export const TIP_IDS = ['mods', 'console', 'share'] as const
+const TIP_IDS = ['mods', 'console', 'share'] as const
 
 export type TipId = (typeof TIP_IDS)[number]
 

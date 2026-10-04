@@ -1,6 +1,6 @@
 import type { ToastAction, ToastInput } from './store.ts'
 
-export const MISSING_STORE_PREFIX = 'missing from the store: '
+const MISSING_STORE_PREFIX = 'missing from the store: '
 
 export function pushUndoToast(
   push: (toast: ToastInput) => number,

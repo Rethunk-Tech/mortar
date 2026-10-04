@@ -4,7 +4,7 @@ const minute = 60_000
 const hour = 60 * minute
 
 // Stardew Game1.whichFarm / Farm layout ids (1.6).
-export const farmTypes = [
+const farmTypes = [
   'Standard',
   'Riverland',
   'Forest',

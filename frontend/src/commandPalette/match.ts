@@ -54,7 +54,7 @@ function rank(query: string, item: PaletteItem): number {
   return best
 }
 
-export type PaletteKind = 'profile' | 'mod' | 'settings' | 'action' | 'shortcut'
+type PaletteKind = 'profile' | 'mod' | 'settings' | 'action' | 'shortcut'
 
 export interface PaletteItem {
   id: string
