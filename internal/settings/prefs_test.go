@@ -115,7 +115,8 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeDisabledMods": "true", "shareIncludeFomodChoices": "false", "shareIncludeNotes": "false",
 		"shareIncludeConfigFiles": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
-		"watchDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true",
+		"watchDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
+		"saveBackupHours": "6", "saveBackupKeep": "3",
 	}
 	for _, p := range PrefKeys() {
 		v, ok := overrides[p.Key]

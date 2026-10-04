@@ -21,7 +21,7 @@ Remaining ([architecture.md](architecture.md#release)):
 
 ## Queued for v1
 
-- **Library:** asking before deleting old files on update; new folders in the game's own `Mods` folder offered for moving into a profile.
+- **Library:** new folders in the game's own `Mods` folder offered for moving into a profile.
 - **Packages:** an aarch64 Flatpak bundle is blocked without qemu binfmt (or an aarch64 host): `flatpak-builder --arch=aarch64` still runs `build-commands` via the aarch64 SDK's `/bin/sh` (`bwrap: execvp /bin/sh: Exec format error`), even with only `install` of a prebuilt binary.
 - **CurseForge** as a third source, after the repository is public: apply for a 3rd-party API key, then build it without caching API data, with a User-Agent on every request, and honouring each author's distribution setting.
 
@@ -30,7 +30,6 @@ Remaining ([architecture.md](architecture.md#release)):
 - **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
 - **Steam Deck / gamepad mode** (larger targets, gamepad focus navigation, Game Mode play: a `--play` launch from a Steam shortcut starts Mortar minimised or headless, shows only a small controller-friendly prompt when Play is blocked, and exits when the game closes so Steam tracks playtime): parked 2026-10-02 (not v1).
 - **macOS build**: Stardew runs on macOS, and Stardrop ships for x64 and arm64, but Mortar has no macOS CI or test machine; it needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on. Parked 2026-10-02 (not v1).
-- **Scheduled save backups** (daily or every N hours while Mortar runs, keep the last N per save, never while the game writes), beside the before-Play backups: parked 2026-10-03.
 - **Accessibility pass** (keyboard-only navigation of every screen, focus order, screen-reader labels on icon buttons, reduced motion everywhere): parked 2026-10-03.
 - **Offline mode banner** (clear banner when Nexus/GitHub are unreachable, cached data with "as of" times, network actions disabled with a reason): parked 2026-10-03.
 

@@ -86,6 +86,10 @@ const (
 	ExtensionAllow = "allow"
 	ExtensionOff   = "off"
 
+	OldFilesAsk    = "ask"
+	OldFilesDelete = "delete"
+	OldFilesKeep   = "keep"
+
 	DefaultRunsKept                   = 20
 	DefaultConsoleLogCap              = 20000
 	DefaultParallelDownloads          = 3
@@ -94,6 +98,7 @@ const (
 	DefaultTrashRetentionDays         = 30
 	DefaultHistoryEventsKept          = 200
 	DefaultLaunchBackupsKept          = 5
+	DefaultSaveBackupKeep             = 5
 
 	MinRunsKept                   = 1
 	MaxRunsKept                   = 100
@@ -111,6 +116,9 @@ const (
 	MaxHistoryEventsKept          = 2000
 	MinLaunchBackupsKept          = 1
 	MaxLaunchBackupsKept          = 50
+	// SaveBackupHours 0 is off and 24 is daily.
+	MinSaveBackupHours = 0
+	MaxSaveBackupHours = 7 * 24
 )
 
 func off() *bool { v := false; return &v }
@@ -363,6 +371,7 @@ var (
 	sidebarBadgesValues       = []string{SidebarBadgesAll, SidebarBadgesProblems, SidebarBadgesOff}
 	conflictScanValues        = []string{ConflictScanFull, ConflictScanSkipImages}
 	extensionConnectionValues = []string{ExtensionAllow, ExtensionOff}
+	oldFilesValues            = []string{OldFilesAsk, OldFilesDelete, OldFilesKeep}
 )
 
 func parseBool(raw string) (bool, error) {

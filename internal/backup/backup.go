@@ -18,12 +18,13 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
-// KindLaunch, KindUpdate, KindRestore, and KindManual are Cause.Kind values written beside a zip.
+// KindLaunch, KindUpdate, KindRestore, KindManual, and KindScheduled are Cause.Kind values written beside a zip.
 const (
-	KindLaunch  = "launch"
-	KindUpdate  = "update"
-	KindRestore = "restore"
-	KindManual  = "manual"
+	KindLaunch    = "launch"
+	KindUpdate    = "update"
+	KindRestore   = "restore"
+	KindManual    = "manual"
+	KindScheduled = "scheduled"
 )
 
 // Cause is why a backup was made, stored as a sidecar next to the zip so older timestamp-only names still parse.
@@ -31,6 +32,22 @@ type Cause struct {
 	Profile string `json:"profile,omitempty"`
 	Kind    string `json:"kind,omitempty"`
 	Pinned  bool   `json:"pinned,omitempty"`
+	// Save is the one save folder a scheduled backup holds.
+	Save string `json:"save,omitempty"`
+}
+
+// group is the retention pool a backup counts against: each save's scheduled backups rotate on their own, so a
+// scheduled run over many saves cannot evict the before-Play backups, nor they it.
+func (c Cause) group() string {
+	if c.Kind == KindScheduled {
+		return KindScheduled + "/" + c.Save
+	}
+	return ""
+}
+
+// wholeSaves reports whether the zip holds the whole Saves folder rather than one save.
+func (c Cause) wholeSaves() bool {
+	return c.Kind != KindManual && c.Kind != KindScheduled
 }
 
 // DefaultKeep is how many backups are retained unless the user chose otherwise.
@@ -60,22 +77,27 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (s
 	}
 	name := now.UTC().Truncate(time.Millisecond)
 	if len(zips) > 0 {
-		newest := zips[len(zips)-1]
-		if t, err := time.Parse(stamp, strings.TrimSuffix(newest, ".zip")); err == nil {
-			// A clock that went back must not name the new zip older than the rest, where prune would take it.
-			if !name.After(t) {
-				name = t.Add(time.Millisecond)
-			}
+		// A clock that went back must not name the new zip older than the rest, where prune would take it.
+		if t, err := time.Parse(stamp, strings.TrimSuffix(zips[len(zips)-1], ".zip")); err == nil && !name.After(t) {
+			name = t.Add(time.Millisecond)
+		}
+	}
+	for _, n := range slices.Backward(zips) {
+		if !readCause(filepath.Join(backupsDir, n)).wholeSaves() {
+			continue
+		}
+		if t, err := time.Parse(stamp, strings.TrimSuffix(n, ".zip")); err == nil {
 			if age := now.Sub(t); age >= 0 && age < MinGap {
 				changed, err := lastChange(savesDir)
 				if err != nil {
 					return "", err
 				}
 				if changed.Before(t) {
-					return filepath.Join(backupsDir, newest), nil
+					return filepath.Join(backupsDir, n), nil
 				}
 			}
 		}
+		break
 	}
 	if err := os.MkdirAll(backupsDir, 0o700); err != nil {
 		return "", err
@@ -119,9 +141,9 @@ func finishZip(backupsDir, savesDir, only string, keep int, now, name time.Time,
 		return "", err
 	}
 	if err := writeCause(dst, cause); err != nil {
-		return dst, errors.Join(err, prune(backupsDir, keep, now))
+		return dst, errors.Join(err, prune(backupsDir, keep, now, cause.group()))
 	}
-	return dst, prune(backupsDir, keep, now)
+	return dst, prune(backupsDir, keep, now, cause.group())
 }
 
 func writeCause(zipPath string, cause Cause) error {
@@ -241,26 +263,24 @@ func SetPinned(backupsDir, name string, pinned bool) error {
 	return writeCause(path, cause)
 }
 
-// prune removes the oldest unpinned backups beyond keep, and temp files older than MinGap: a backup still being
-// written is younger.
-func prune(dir string, keep int, now time.Time) error {
-	zips, err := list(dir)
+// prune removes the oldest unpinned backups of group beyond keep, and temp files older than MinGap: a backup still
+// being written is younger.
+func prune(dir string, keep int, now time.Time, group string) error {
+	all, err := list(dir)
 	if err != nil {
 		return err
 	}
-	unpinned := 0
-	for _, n := range zips {
-		if !readCause(filepath.Join(dir, n)).Pinned {
-			unpinned++
+	var zips []string
+	for _, n := range all {
+		if c := readCause(filepath.Join(dir, n)); !c.Pinned && c.group() == group {
+			zips = append(zips, n)
 		}
 	}
+	unpinned := len(zips)
 	var errs []error
 	for _, n := range zips {
 		if unpinned <= keep {
 			break
-		}
-		if readCause(filepath.Join(dir, n)).Pinned {
-			continue
 		}
 		p := filepath.Join(dir, n)
 		errs = append(errs, os.Remove(p))
