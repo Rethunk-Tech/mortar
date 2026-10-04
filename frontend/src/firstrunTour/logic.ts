@@ -1,4 +1,4 @@
-const TOUR_STEP_COUNT = 5
+const TOUR_STEP_COUNT = 6
 
 const LAST_TOUR_STEP = TOUR_STEP_COUNT - 1
 

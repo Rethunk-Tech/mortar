@@ -4,11 +4,11 @@ import { tourClearSeen, tourMarkSeen, tourShouldRun } from './seen.ts'
 
 test('tour step sequencing clamps at ends', () => {
   expect(tourStepNext(0)).toBe(1)
-  expect(tourStepNext(4)).toBe(4)
-  expect(tourStepBack(4)).toBe(3)
+  expect(tourStepNext(5)).toBe(5)
+  expect(tourStepBack(5)).toBe(4)
   expect(tourStepBack(0)).toBe(0)
-  expect(tourOnLastStep(3)).toBe(false)
-  expect(tourOnLastStep(4)).toBe(true)
+  expect(tourOnLastStep(4)).toBe(false)
+  expect(tourOnLastStep(5)).toBe(true)
 })
 
 test('tour seen state uses the tour tip id', () => {

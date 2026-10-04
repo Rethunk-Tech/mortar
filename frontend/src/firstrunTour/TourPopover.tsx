@@ -12,6 +12,7 @@ import {
   tourStepNext,
 } from './logic.ts'
 import {
+  TOUR_STEP_ADD,
   TOUR_STEP_COMMAND,
   TOUR_STEP_MODS,
   TOUR_STEP_PLAY,
@@ -23,7 +24,7 @@ const TOUR_Z_INDEX = 1400
 const POPPER_OFFSET = 12
 const SPOTLIGHT_PAD = 6
 
-const placements = ['right-start', 'right', 'bottom', 'bottom', 'bottom-start'] as const
+const placements = ['right-start', 'bottom', 'right', 'bottom', 'bottom', 'bottom-start'] as const
 
 function TourPopover({
   anchorEl,
@@ -56,7 +57,10 @@ function TourPopover({
 
   let title = t`Profiles`
   let body = t`Switch mod sets here. Right-click a profile for rename, duplicate, and more.`
-  if (step === TOUR_STEP_PLAY) {
+  if (step === TOUR_STEP_ADD) {
+    title = t`Add mods`
+    body = t`Search Nexus here, press Mod Manager Download on a Nexus page, or drop a downloaded archive anywhere on this window.`
+  } else if (step === TOUR_STEP_PLAY) {
     title = t`Play`
     body = t`Launch the game with this profile's mods. Mortar applies your list before SMAPI starts.`
   } else if (step === TOUR_STEP_MODS) {

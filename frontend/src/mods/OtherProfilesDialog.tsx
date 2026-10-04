@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Checkbox, FormControlLabel } from '@mui/material'
+import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { Inbox } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -125,6 +125,7 @@ export function OtherProfilesDialog({
   uniqueIds,
   mode = 'add',
   title,
+  helper,
   confirmLabel,
   update,
   onClose,
@@ -137,6 +138,7 @@ export function OtherProfilesDialog({
   uniqueIds?: string[]
   mode?: 'add' | 'remove'
   title: string
+  helper?: string
   confirmLabel: string
   update?: { oldKey: string } | undefined
   onClose: () => void
@@ -233,6 +235,11 @@ export function OtherProfilesDialog({
       onCancel={onClose}
       onConfirm={confirm}
     >
+      {helper && profiles.length > 0 ? (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          {helper}
+        </Typography>
+      ) : null}
       {profiles.length === 0 ? <NoOtherProfiles /> : null}
       <ProfileChoices
         profiles={profiles}

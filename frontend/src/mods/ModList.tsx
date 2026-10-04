@@ -13,6 +13,7 @@ import { When } from '../i18n/When.tsx'
 import { boundShortcut, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { actingMods, toggleActing } from './actingMods.ts'
 import { CompatChip } from './CompatChip.tsx'
 import { useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
@@ -231,7 +232,6 @@ function ModRow({
   const detailId = useDetail((s) => s.detailId)
   const selectedIds = useSelection((s) => s.ids)
   const show = useDetail((s) => s.show)
-  const setEnabled = useMods((s) => s.setEnabled)
   const askRemove = useMods((s) => s.askRemove)
   const m = row.mod
   const rowId = modId(m)
@@ -261,9 +261,9 @@ function ModRow({
         const run: Partial<Record<ShortcutId, () => void>> = {
           'mod-up': () => onArrow(rowId, -1),
           'mod-down': () => onArrow(rowId, 1),
-          'mod-toggle': () => setEnabled(m, !m.enabled).catch(reportUnexpected),
+          'mod-toggle': () => toggleActing(m).catch(reportUnexpected),
           'mod-details': () => show(m),
-          'mod-remove': () => askRemove(m),
+          'mod-remove': () => askRemove(actingMods(m)),
         }
         const action = run[boundShortcut(e, useSettings.getState().shortcuts) ?? 'dismiss']
         if (action) {
@@ -365,7 +365,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     problems: t`Problems`,
     update: t`Update available`,
     enabled: t`Enabled`,
-    disabled: t`Switched off`,
+    disabled: t`Off`,
     smapi: t`SMAPI mods`,
   })
   const onCommit = () => {

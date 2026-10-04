@@ -6,6 +6,7 @@ import {
   groupKeyHolding,
   neighborId,
   orderedModIds,
+  stepId,
   TYPEAHEAD_MS,
   typeaheadChar,
   typeaheadQuery,
@@ -77,4 +78,10 @@ test('firstNamePrefix matches the first name that starts with the typed text', (
       target: { tagName: 'DIV', isContentEditable: false } as HTMLElement,
     }),
   ).toBe('a')
+})
+
+test('stepId clamps at both ends instead of wrapping', () => {
+  expect(stepId(['a', 'b', 'c', 'd'], 'b', 3)).toBe('d')
+  expect(stepId(['a', 'b', 'c', 'd'], 'b', -3)).toBe('a')
+  expect(stepId(['a', 'b'], 'x', 1)).toBeUndefined()
 })

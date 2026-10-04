@@ -29,6 +29,7 @@ import {
 import { loadModProblems, loadMods, showUpdatesView } from './storeLoad.ts'
 import { problemActions } from './storeProblems.ts'
 import { removingOf, storedView, type View, viewActions } from './storeView.ts'
+import type { ModFilter } from './Toolbar.tsx'
 
 export const useMods = create<{
   mods: Mod[]
@@ -36,6 +37,7 @@ export const useMods = create<{
   // modsFor is the profile mods belongs to, so returning to that profile's tab shows them while they refresh.
   modsFor: string
   queries: Record<string, string>
+  filters: Record<string, ModFilter | undefined>
   loadError: string
   pages: Record<string, string | undefined>
   view: View
@@ -76,11 +78,13 @@ export const useMods = create<{
   ) => Promise<void>
   showUpdates: () => void
   setQuery: (profileId: string, query: string) => void
+  setFilter: (profileId: string, filter: ModFilter) => void
 }>((set, get) => ({
   mods: [],
   loaded: false,
   modsFor: '',
   queries: {},
+  filters: {},
   loadError: '',
   pages: {},
   view: storedView(),
@@ -91,6 +95,8 @@ export const useMods = create<{
   ...viewActions(set),
   load: () => loadMods(set, get),
   setQuery: (profileId, query) => set((s) => ({ queries: { ...s.queries, [profileId]: query } })),
+  setFilter: (profileId, filter) =>
+    set((s) => ({ filters: { ...s.filters, [profileId]: filter } })),
   loadProblems: () => loadModProblems(set, get),
   setEnabled: (mod, enabled) => setEnabledAction(set, get, mod, enabled),
   setEnabledMany: (mods, enabled) => enableMany(set, get, mods, enabled),

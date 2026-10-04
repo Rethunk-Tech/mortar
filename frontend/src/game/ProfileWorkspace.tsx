@@ -61,7 +61,7 @@ function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }
         },
       }}
     >
-      <Tab value="browse" label={t`Browse`} />
+      <Tab value="browse" label={t`Browse`} data-tour="browse-tab" />
       <Tab value="mods" label={t`Mods`} data-tour="mods-tab" />
       <Tab
         value="problems"

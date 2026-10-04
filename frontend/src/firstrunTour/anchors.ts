@@ -1,4 +1,5 @@
 import {
+  TOUR_STEP_ADD,
   TOUR_STEP_COMMAND,
   TOUR_STEP_MODS,
   TOUR_STEP_PLAY,
@@ -19,6 +20,8 @@ function resolveTourAnchor(step: number): HTMLElement | null {
   switch (step) {
     case TOUR_STEP_PROFILES:
       return nav
+    case TOUR_STEP_ADD:
+      return tourTarget('browse-tab')
     case TOUR_STEP_PLAY: {
       const play =
         nav?.querySelector<HTMLElement>('.MuiButtonGroup-root button') ??

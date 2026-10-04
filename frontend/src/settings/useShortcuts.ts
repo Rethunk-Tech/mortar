@@ -51,6 +51,10 @@ export function runShortcut(id: ShortcutId) {
       return checkForUpdates()
     case 'open-settings':
       return useNav.getState().openSettings()
+    case 'tab-browse':
+      return useTab.getState().setTab('browse')
+    case 'tab-load-order':
+      return useTab.getState().setTab('load-order')
     case 'tab-mods':
       return useTab.getState().setTab('mods')
     case 'tab-problems':

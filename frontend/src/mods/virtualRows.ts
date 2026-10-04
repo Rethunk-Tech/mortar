@@ -137,6 +137,15 @@ export function orderedModIds<T>(
   return ids
 }
 
+// Moves `delta` places without wrapping, stopping at the first or last id; grids step by a row's width.
+export function stepId(ids: readonly string[], current: string, delta: number): string | undefined {
+  const i = ids.indexOf(current)
+  if (i < 0) {
+    return undefined
+  }
+  return ids[Math.min(ids.length - 1, Math.max(0, i + delta))]
+}
+
 export function neighborId(
   ids: readonly string[],
   current: string,

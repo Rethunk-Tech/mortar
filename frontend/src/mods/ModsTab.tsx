@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Skeleton, Typography, useMediaQuery } from '@mui/material'
 import { SearchX } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import type {
   Mod,
@@ -36,7 +36,7 @@ import { ModSidebar } from './Sidebar.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
 import type { View } from './storeView.ts'
-import { EmptyMods, type ModFilter, Toolbar } from './Toolbar.tsx'
+import { EmptyMods, Toolbar } from './Toolbar.tsx'
 import { TrackedNotInProfile } from './TrackedNotInProfile.tsx'
 import { UpdateBar, UpdateReview } from './UpdateReview.tsx'
 import { useUpdates } from './updates.ts'
@@ -83,13 +83,13 @@ function ModsBody({
   profile,
   shown,
   view,
-  query,
+  filtering,
   onClear,
 }: {
   profile: Profile
   shown: Mod[]
   view: View
-  query: string
+  filtering: boolean
   onClear: () => void
 }) {
   const { t } = useLingui()
@@ -123,14 +123,14 @@ function ModsBody({
       </Box>
     )
   }
-  if (shown.length === 0 && query) {
+  if (shown.length === 0 && filtering) {
     return (
       <EmptyState
         icon={<SearchX />}
-        title={t`No mods match your search`}
-        action={<Button onClick={onClear}>{t`Clear search`}</Button>}
+        title={t`No mods match`}
+        action={<Button onClick={onClear}>{t`Show all mods`}</Button>}
       >
-        {t`Try a different search.`}
+        {t`Try a different search or filter.`}
       </EmptyState>
     )
   }
@@ -177,7 +177,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const setQuery = useMods((s) => s.setQuery)
   const problems = useMods((s) => s.problems)
   const updates = useUpdates((s) => s.updates)
-  const [filter, setFilter] = useState<ModFilter>('all')
+  const filter = useMods((s) => s.filters[profile.id]) ?? 'all'
+  const setFilter = useMods((s) => s.setFilter)
   const loadKey = `${profile.id}:${profile.updated}`
   const gameId = useProfiles((s) => s.game?.id)
   const launchState = useLaunch((s) => s.status?.state)
@@ -283,7 +284,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
         onQuery={(value) => setQuery(profile.id, value)}
         total={mods.length}
         filter={filter}
-        onFilter={setFilter}
+        onFilter={(value) => setFilter(profile.id, value)}
       />
       <TrackedNotInProfile profile={profile} />
       <LockedNote />
@@ -293,8 +294,11 @@ export function ModsTab({ profile }: { profile: Profile }) {
         profile={profile}
         shown={shown}
         view={view}
-        query={q}
-        onClear={() => setQuery(profile.id, '')}
+        filtering={q !== '' || filter !== 'all'}
+        onClear={() => {
+          setQuery(profile.id, '')
+          setFilter(profile.id, 'all')
+        }}
       />
       <ModDetail profile={profile} />
       <UpdateReview profile={profile} />

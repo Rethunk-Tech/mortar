@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
 import {
@@ -32,6 +33,7 @@ import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { AddToGroupDialog, AddToGroupMenuItem } from './AddToGroupDialog.tsx'
+import { actingMods, toggleActing } from './actingMods.ts'
 import { SetCategoryDialog } from './CategoryEditor.tsx'
 import { useDetail } from './detail.ts'
 import { EverywhereMenuItem } from './EverywhereMenuItem.tsx'
@@ -50,6 +52,7 @@ import { type ModAction, modActions } from './modActions.ts'
 import { useNexusDetails } from './nexusDetails.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { SplitCombineItems } from './SplitCombineItems.tsx'
+import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
@@ -90,7 +93,8 @@ function ModMenuItems({
   const { t } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
   const askRemove = useMods((s) => s.askRemove)
-  const setEnabled = useMods((s) => s.setEnabled)
+  const selectedIds = useSelection((s) => s.ids)
+  const acting = selectedIds.length > 1 ? actingMods(mod) : [mod]
   const setPinned = useMods((s) => s.setPinned)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const show = useDetail((s) => s.show)
@@ -113,7 +117,7 @@ function ModMenuItems({
     toggle: {
       label: mod.enabled ? t`Switch off` : t`Switch on`,
       icon: mod.enabled ? <PowerOff size={ICON_SIZE} /> : <Power size={ICON_SIZE} />,
-      run: () => setEnabled(mod, !mod.enabled).catch(reportUnexpected),
+      run: () => toggleActing(mod).catch(reportUnexpected),
     },
     details: {
       label: t`More details`,
@@ -158,9 +162,12 @@ function ModMenuItems({
       run: () => setSkipVersion(mod, update ? update.version : '').catch(reportUnexpected),
     },
     remove: {
-      label: t`Remove`,
+      label:
+        acting.length > 1
+          ? t`${plural(acting.length, { one: 'Remove # mod', other: 'Remove # mods' })}`
+          : t`Remove`,
       icon: <Trash2 size={ICON_SIZE} />,
-      run: () => askRemove(mod),
+      run: () => askRemove(acting),
     },
   }
   const splitCombine = (
@@ -281,7 +288,8 @@ function ModActionMenu({
         currentProfileId={currentProfileId}
         uniqueId={mod.uniqueId}
         mode="remove"
-        title={t`Remove ${mod.name} from other profiles (switches it off when it shares an entry)`}
+        title={t`Remove ${mod.name} from other profiles`}
+        helper={t`Where it came in one download with other mods, it is switched off instead.`}
         confirmLabel={t`Remove`}
         onConfirm={async (profiles, _pinned, rows) => {
           await Promise.all(
@@ -299,7 +307,10 @@ function ModActionMenu({
                 : RemoveEntry(game, other.id, row?.key ?? '')
             }),
           )
-          useToasts.getState().push({ kind: 'success', title: t`Mods removed from other profiles` })
+          useToasts.getState().push({
+            kind: 'success',
+            title: t`${mod.name} removed from ${plural(profiles.length, { one: '# profile', other: '# profiles' })}`,
+          })
         }}
       />
       <AddToBundleDialog

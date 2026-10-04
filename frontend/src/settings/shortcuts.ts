@@ -60,8 +60,10 @@ export type ShortcutId =
   | 'mod-toggle'
   | 'mod-details'
   | 'mod-remove'
+  | 'tab-browse'
   | 'tab-mods'
   | 'tab-problems'
+  | 'tab-load-order'
   | 'tab-saves'
   | 'tab-notes'
   | 'tab-console'
@@ -119,12 +121,14 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { id: 'mod-remove', keys: 'Delete', always: false, group: 'Mods list' },
   ...(
     [
-      ['tab-mods', 'Ctrl+1'],
-      ['tab-problems', 'Ctrl+2'],
-      ['tab-saves', 'Ctrl+3'],
-      ['tab-notes', 'Ctrl+4'],
-      ['tab-console', 'Ctrl+5'],
-      ['tab-performance', 'Ctrl+6'],
+      ['tab-browse', 'Ctrl+1'],
+      ['tab-mods', 'Ctrl+2'],
+      ['tab-problems', 'Ctrl+3'],
+      ['tab-load-order', 'Ctrl+4'],
+      ['tab-saves', 'Ctrl+5'],
+      ['tab-notes', 'Ctrl+6'],
+      ['tab-console', 'Ctrl+7'],
+      ['tab-performance', 'Ctrl+8'],
     ] as const
   ).map(([id, keys]) => ({ id, keys, always: false, group: 'Tabs' as const })),
   { id: 'new-profile', keys: 'Ctrl+N', always: false, group: 'Profiles' },

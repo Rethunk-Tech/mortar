@@ -38,7 +38,7 @@ describe('SHORTCUTS', () => {
     expect(matchShortcut({ key: ' ' })).toBe('mod-toggle')
     expect(matchShortcut({ key: 'Enter' })).toBe('mod-details')
     expect(matchShortcut({ key: 'Delete' })).toBe('mod-remove')
-    expect(matchShortcut({ key: '6', ctrlKey: true })).toBe('tab-performance')
+    expect(matchShortcut({ key: '8', ctrlKey: true })).toBe('tab-performance')
     expect(matchShortcut({ key: 'n', ctrlKey: true })).toBe('new-profile')
     expect(matchShortcut({ key: 'F2' })).toBe('rename-profile')
     expect(matchShortcut({ key: 'i', ctrlKey: true })).toBe('import')

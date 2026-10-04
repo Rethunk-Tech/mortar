@@ -6,9 +6,11 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { compact, compactQuery } from '../game/compact.ts'
+import { boundShortcut } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
+import { actingMods, toggleActing } from './actingMods.ts'
 import { CompatChip } from './CompatChip.tsx'
 import { useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
@@ -36,6 +38,8 @@ import {
   gridColumnCount,
   gridLanePx,
   groupKeyHolding,
+  orderedModIds,
+  stepId,
   useModTypeahead,
   useModVirtual,
   type VirtualRow,
@@ -68,19 +72,26 @@ function cardHeightPx(size: string): number {
   return CARD_HEIGHT_MEDIUM
 }
 
+const ARROWS: Record<string, string | undefined> = { ArrowLeft: 'left', ArrowRight: 'right' }
+
 function ModCard({
   mod: m,
   orderedIds,
   profile,
+  columns,
+  onMove,
 }: {
   mod: Mod
   orderedIds: readonly string[]
   profile: Profile
+  columns: number
+  onMove: (id: string, delta: number) => void
 }) {
   const { t } = useLingui()
   const openDetail = useDetail((s) => s.show)
   const selectedId = useDetail((s) => s.detailId)
   const selectedIds = useSelection((s) => s.ids)
+  const askRemove = useMods((s) => s.askRemove)
   const id = modId(m)
   const marked = selectedIds.includes(id) || (selectedIds.length === 0 && id === selectedId)
   const fresh = useNexusFresh(nexusIdOf(profile, m))
@@ -115,6 +126,25 @@ function ModCard({
         component="div"
         data-mod-id={id}
         aria-label={t`Details of ${m.name}`}
+        // One card is the grid's Tab stop: the open mod's, or the first when none is open.
+        tabIndex={(orderedIds.includes(selectedId) ? selectedId : orderedIds[0]) === id ? 0 : -1}
+        onKeyDown={(e) => {
+          const run: Partial<Record<string, () => void>> = {
+            left: () => onMove(id, -1),
+            right: () => onMove(id, 1),
+            'mod-up': () => onMove(id, -columns),
+            'mod-down': () => onMove(id, columns),
+            'mod-toggle': () => toggleActing(m).catch(reportUnexpected),
+            'mod-details': () => openDetail(m),
+            'mod-remove': () => askRemove(actingMods(m)),
+          }
+          const action =
+            run[boundShortcut(e, useSettings.getState().shortcuts) ?? ARROWS[e.key] ?? '']
+          if (action && e.target === e.currentTarget) {
+            e.preventDefault()
+            action()
+          }
+        }}
         onMouseDown={(e) => {
           if (e.shiftKey) {
             e.preventDefault()
@@ -196,6 +226,7 @@ function GridSlot({
   orderedIds,
   profile,
   groups,
+  onMove,
 }: {
   item: VirtualRow<ListRow>
   heading: (key: string) => string
@@ -208,6 +239,7 @@ function GridSlot({
   orderedIds: readonly string[]
   profile: Profile
   groups: readonly { key: string; items: readonly ListRow[] }[]
+  onMove: (id: string, delta: number) => void
 }) {
   if (item.kind === 'header') {
     return (
@@ -250,7 +282,14 @@ function GridSlot({
       }}
     >
       {item.items.map((r) => (
-        <ModCard key={modId(r.mod)} mod={r.mod} orderedIds={orderedIds} profile={profile} />
+        <ModCard
+          key={modId(r.mod)}
+          mod={r.mod}
+          orderedIds={orderedIds}
+          profile={profile}
+          columns={columns}
+          onMove={onMove}
+        />
       ))}
     </Box>
   )
@@ -324,6 +363,24 @@ function CardsPane({
     lastReveal.current = token
     virtualizer.scrollToIndex(idx, { align: 'auto' })
   }, [collapsed, detailId, gameId, groups, items, setCollapsed, virtualizer])
+  const navIds = useMemo(() => orderedModIds(items, (row) => modId(row.mod)), [items])
+  const onMove = (id: string, delta: number) => {
+    const next = stepId(navIds, id, delta)
+    if (!next || next === id) {
+      return
+    }
+    const idx = virtualIndexOf(items, next, (row) => modId(row.mod))
+    if (idx >= 0) {
+      virtualizer.scrollToIndex(idx, { align: 'auto' })
+    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        parentRef.current
+          ?.querySelector<HTMLElement>(`[data-mod-id="${CSS.escape(next)}"]`)
+          ?.focus()
+      })
+    })
+  }
   useModTypeahead({
     items,
     nameOf: (row) => row.mod.name,
@@ -372,6 +429,7 @@ function CardsPane({
                 orderedIds={orderedIds}
                 profile={profile}
                 groups={groups}
+                onMove={onMove}
               />
             </Box>
           )
@@ -401,7 +459,7 @@ export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
       problems: t`Problems`,
       update: t`Update available`,
       enabled: t`Enabled`,
-      disabled: t`Switched off`,
+      disabled: t`Off`,
       smapi: t`SMAPI mods`,
     })
   return (
