@@ -42,7 +42,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
         },
         {
           value: 'gameselect',
-          label: i18n._(msg`Game Select`),
+          label: i18n._(msg`Game select`),
           hint: i18n._(msg`Choose a game and profile each time.`),
         },
       ],
@@ -71,7 +71,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
       description: i18n._(msg`Take LAN shares from machines signed in to the same Nexus account`),
     },
     defaultModsView: {
-      label: i18n._(msg`Default Mods view`),
+      label: i18n._(msg`Default mods view`),
       description: i18n._(msg`Grid or list for new sessions`),
       options: [
         { value: 'grid', label: i18n._(msg`Grid`) },
@@ -266,7 +266,7 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
       description: i18n._(msg`Days to keep unused store items. 0 keeps them forever.`),
     },
     trashRetentionDays: {
-      label: i18n._(msg`Trash retention`),
+      label: i18n._(msg`Recently deleted retention`),
       description: i18n._(msg`Days a deleted profile stays restorable`),
     },
     historyEventsKept: {
