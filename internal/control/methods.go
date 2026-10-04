@@ -28,6 +28,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	"github.com/Rethunk-AI/mortar/internal/shortcut"
 	"github.com/Rethunk-AI/mortar/internal/tools"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // ChangedEvent tells the window a profile changed outside it, so it reloads that game's profiles.
@@ -864,6 +865,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 				Kind: queue.KindUpdate, Game: p.Game, Profile: id, Name: u.Name, Version: u.Version,
 				CurrentKey: u.Key, ModID: u.NexusID, Repo: u.GitHubRepo, FallbackRepo: u.GitHubFallback, Latest: true,
 			})
+		}
+		if len(reqs) == 0 {
+			if p.All || len(p.UniqueIDs) == 0 {
+				return nil, usererr.New(usererr.NotFound, "no updates available")
+			}
+			return nil, usererr.New(usererr.NotFound, "no update available for "+strings.Join(p.UniqueIDs, ", "))
 		}
 		if _, err := s.Queue.Add(reqs); err != nil {
 			return nil, err
