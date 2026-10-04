@@ -235,8 +235,8 @@ msgstr "Make {name} win"
 #: src/saves/lackChips.tsx:103
 #: src/saves/SaveGapLine.tsx:58
 #: src/saves/SaveRow.tsx:95
-#: src/share/ImportFooter.tsx:88
-#: src/share/ImportFooter.tsx:102
+#: src/share/ImportFooter.tsx:98
+#: src/share/ImportFooter.tsx:112
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
 #: src/toasts/HistoryButton.tsx:24
@@ -767,7 +767,7 @@ msgstr "Missing in {targetName}"
 msgid "Mortar found it in Steam's settings."
 msgstr "Mortar found it in Steam's settings."
 
-#: src/share/ImportFooter.tsx:57
+#: src/share/ImportFooter.tsx:58
 msgid "Sign in to Nexus Mods to download these mods."
 msgstr "Sign in to Nexus Mods to download these mods."
 
@@ -821,7 +821,7 @@ msgstr "What they see"
 msgid "Rename"
 msgstr "Rename"
 
-#: src/share/ImportFooter.tsx:97
+#: src/share/ImportFooter.tsx:107
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
@@ -1177,7 +1177,7 @@ msgstr "At most once a day"
 msgid "{0, plural, one {# failed} other {# failed}}"
 msgstr "{0, plural, one {# failed} other {# failed}}"
 
-#: src/settings/sections/DataStoreCheck.tsx:48
+#: src/settings/sections/DataStoreCheck.tsx:49
 msgid "{checked}; {bad}. Repair them from each profile's Problems tab."
 msgstr "{checked}; {bad}. Repair them from each profile's Problems tab."
 
@@ -1325,7 +1325,7 @@ msgstr "Search results"
 msgid "Import from {0}"
 msgstr "Import from {0}"
 
-#: src/settings/sections/DataStoreCheck.tsx:39
+#: src/settings/sections/DataStoreCheck.tsx:40
 msgid "{checked}. All files are intact."
 msgstr "{checked}. All files are intact."
 
@@ -1417,7 +1417,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/saves/BackupsDialog.tsx:136
 #: src/saves/SavesTab.tsx:37
 #: src/settings/sections/DataStoreReport.tsx:377
-#: src/settings/sections/Storage.tsx:80
+#: src/settings/sections/Storage.tsx:81
 #: src/settings/sections/Updates.tsx:37
 #: src/shell/ErrorRetry.tsx:12
 msgid "Retry"
@@ -1824,7 +1824,7 @@ msgstr "{0, plural, one {# missing dependency} other {# missing dependencies}}"
 msgid "Skip tour"
 msgstr "Skip tour"
 
-#: src/settings/sections/Storage.tsx:78
+#: src/settings/sections/Storage.tsx:79
 msgid "Could not measure disk use"
 msgstr "Could not measure disk use"
 
@@ -2121,7 +2121,7 @@ msgid "Install together"
 msgstr "Install together"
 
 #. placeholder {0}: damaged.length
-#: src/settings/sections/DataStoreCheck.tsx:43
+#: src/settings/sections/DataStoreCheck.tsx:44
 msgid "{0, plural, one {# has damaged files} other {# have damaged files}}"
 msgstr "{0, plural, one {# has damaged files} other {# have damaged files}}"
 
@@ -2629,7 +2629,7 @@ msgid "It shows in your Steam library the next time Steam starts."
 msgstr "It shows in your Steam library the next time Steam starts."
 
 #. placeholder {0}: (preview.replace?.keepLocal ?? []).length
-#: src/share/ImportFooter.tsx:152
+#: src/share/ImportFooter.tsx:162
 msgid "Local-only mods kept ({0})"
 msgstr "Local-only mods kept ({0})"
 
@@ -2723,7 +2723,7 @@ msgid "{gameName} · {mods}"
 msgstr "{gameName} · {mods}"
 
 #. placeholder {0}: summary.checked
-#: src/settings/sections/DataStoreCheck.tsx:33
+#: src/settings/sections/DataStoreCheck.tsx:34
 msgid "{0, plural, one {# mod checked} other {# mods checked}}"
 msgstr "{0, plural, one {# mod checked} other {# mods checked}}"
 
@@ -2769,7 +2769,7 @@ msgstr "config.json, changed from the mod's own"
 msgid "Grid or list for new sessions"
 msgstr "Grid or list for new sessions"
 
-#: src/settings/sections/DataStoreCheck.tsx:73
+#: src/settings/sections/DataStoreCheck.tsx:74
 msgid "Check store files"
 msgstr "Check store files"
 
@@ -3023,7 +3023,7 @@ msgstr "Extra SMAPI arguments for this profile. Mortar already sets the mods fol
 msgid "Bundle deleted"
 msgstr "Bundle deleted"
 
-#: src/share/ImportFooter.tsx:129
+#: src/share/ImportFooter.tsx:139
 msgid "Replace {targetName}?"
 msgstr "Replace {targetName}?"
 
@@ -3116,8 +3116,8 @@ msgstr "Hidden"
 msgid "Mortar · Install {name}?"
 msgstr "Mortar · Install {name}?"
 
-#: src/share/ImportFooter.tsx:110
-#: src/share/ImportFooter.tsx:130
+#: src/share/ImportFooter.tsx:120
+#: src/share/ImportFooter.tsx:140
 msgid "Replace {targetName}"
 msgstr "Replace {targetName}"
 
@@ -3647,7 +3647,7 @@ msgstr "{mods} · about {size} to download"
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
 
-#: src/share/ImportFooter.tsx:147
+#: src/share/ImportFooter.tsx:157
 msgid "Nothing will be removed."
 msgstr "Nothing will be removed."
 
@@ -3868,7 +3868,7 @@ msgstr "Harmless"
 msgid "This mod is not in the profile."
 msgstr "This mod is not in the profile."
 
-#: src/mods/updateReview/ReviewFooter.tsx:62
+#: src/mods/updateReview/ReviewFooter.tsx:65
 msgid "Loading changes…"
 msgstr "Loading changes…"
 
@@ -3996,7 +3996,7 @@ msgstr "Heart"
 msgid "Sign out"
 msgstr "Sign out"
 
-#: src/settings/sections/DataStoreCheck.tsx:68
+#: src/settings/sections/DataStoreCheck.tsx:69
 msgid "Could not check the store files"
 msgstr "Could not check the store files"
 
@@ -4035,7 +4035,7 @@ msgstr "Untrack all…"
 #. placeholder {1}: MAX_NOTES.toLocaleString(i18n.locale)
 #. placeholder {1}: progress.total
 #: src/notes/NotesTab.tsx:150
-#: src/settings/sections/DataStoreCheck.tsx:85
+#: src/settings/sections/DataStoreCheck.tsx:86
 msgid "{0} of {1}"
 msgstr "{0} of {1}"
 
@@ -5271,7 +5271,7 @@ msgstr "Untrack every mod you track on Nexus"
 msgid "New"
 msgstr "New"
 
-#: src/mods/updateReview/ReviewFooter.tsx:62
+#: src/mods/updateReview/ReviewFooter.tsx:65
 msgid "Load all changes"
 msgstr "Load all changes"
 
@@ -6080,7 +6080,7 @@ msgid "More details"
 msgstr "More details"
 
 #. placeholder {0}: (preview.replace?.remove ?? []).length
-#: src/share/ImportFooter.tsx:140
+#: src/share/ImportFooter.tsx:150
 msgid "These will be removed ({0})"
 msgstr "These will be removed ({0})"
 
@@ -6623,7 +6623,7 @@ msgstr "After"
 msgid "One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings."
 msgstr "One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings."
 
-#: src/settings/sections/Storage.tsx:92
+#: src/settings/sections/Storage.tsx:96
 msgid "Retention"
 msgstr "Retention"
 
@@ -7004,7 +7004,7 @@ msgstr "{label} is not in {0}"
 #: src/mods/ModDetail.tsx:195
 #: src/settings/sections/GameSettings.tsx:232
 #: src/settings/sections/Shortcuts.tsx:93
-#: src/share/ImportFooter.tsx:85
+#: src/share/ImportFooter.tsx:95
 msgid "Reset"
 msgstr "Reset"
 
@@ -7055,7 +7055,7 @@ msgstr "Default profile for Nexus links"
 msgid "Remove {0}?"
 msgstr "Remove {0}?"
 
-#: src/settings/sections/DataStoreCheck.tsx:74
+#: src/settings/sections/DataStoreCheck.tsx:75
 msgid "Compares every stored mod's files with what was saved when it was added. Mortar also does this slowly in the background, about once a week."
 msgstr "Compares every stored mod's files with what was saved when it was added. Mortar also does this slowly in the background, about once a week."
 
@@ -7506,7 +7506,7 @@ msgstr "Keep"
 #. placeholder {1}: item.missing
 #. placeholder {2}: item.changed
 #. placeholder {3}: item.extra
-#: src/settings/sections/DataStoreCheck.tsx:52
+#: src/settings/sections/DataStoreCheck.tsx:53
 msgid "{0}: {1} missing, {2} changed, {3} extra"
 msgstr "{0}: {1} missing, {2} changed, {3} extra"
 
@@ -7743,6 +7743,10 @@ msgstr "Add it"
 #: src/mods/LoadOrderTab.tsx:187
 msgid "Filter load order"
 msgstr "Filter load order"
+
+#: src/settings/sections/Storage.tsx:93
+msgid "Integrity"
+msgstr "Integrity"
 
 #: src/mods/pinReasonDialog.tsx:22
 msgid "Pin"
@@ -8162,7 +8166,7 @@ msgstr "Handle \"Mod Manager Download\" links"
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
-#: src/settings/sections/Storage.tsx:36
+#: src/settings/sections/Storage.tsx:37
 msgid "Could not inspect the destination folder"
 msgstr "Could not inspect the destination folder"
 
@@ -8238,7 +8242,7 @@ msgstr "Show labels"
 msgid "{shown} and {more, plural, one {# more} other {# more}}"
 msgstr "{shown} and {more, plural, one {# more} other {# more}}"
 
-#: src/settings/sections/DataStoreCheck.tsx:79
+#: src/settings/sections/DataStoreCheck.tsx:80
 #: src/settings/sections/Updates.tsx:80
 msgid "Check now"
 msgstr "Check now"
@@ -8856,7 +8860,7 @@ msgid "Pending"
 msgstr "Pending"
 
 #. placeholder {0}: summary.failed
-#: src/settings/sections/DataStoreCheck.tsx:38
+#: src/settings/sections/DataStoreCheck.tsx:39
 msgid "{checked}. {0, plural, one {# could not be read.} other {# could not be read.}}"
 msgstr "{checked}. {0, plural, one {# could not be read.} other {# could not be read.}}"
 
@@ -10269,7 +10273,7 @@ msgid "{name}, descending"
 msgstr "{name}, descending"
 
 #: src/queue/store.ts:110
-#: src/share/ImportFooter.tsx:59
+#: src/share/ImportFooter.tsx:60
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
 
@@ -10500,7 +10504,7 @@ msgstr "Downloads finished"
 #: src/mods/AuthorDialog.tsx:164
 #: src/mods/ConfigEditor.tsx:236
 #: src/mods/ModDetail.tsx:303
-#: src/mods/updateReview/ReviewFooter.tsx:66
+#: src/mods/updateReview/ReviewFooter.tsx:61
 #: src/mods/updateReview/ReviewTitle.tsx:40
 #: src/profiles/CompareDialog.tsx:152
 #: src/profiles/HistoryPanel.tsx:119
@@ -10510,6 +10514,7 @@ msgstr "Downloads finished"
 #: src/settings/sections/DataStoreReport.tsx:394
 #: src/share/ImportDialog.tsx:211
 #: src/share/ImportDialog.tsx:214
+#: src/share/ImportFooter.tsx:86
 #: src/share/ShareShell.tsx:64
 #: src/shell/TitleBar.tsx:122
 #: src/templates/TemplateDialogs.tsx:174

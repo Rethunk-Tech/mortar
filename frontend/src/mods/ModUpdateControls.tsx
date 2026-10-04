@@ -30,7 +30,7 @@ function ModUpdateControls({ mod, entry }: { mod: Mod; entry: Entry | undefined 
         variant="outlined"
         onClick={() => setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
       >
-        {entry?.pinned ? t`Unpin version` : t`Pin version`}
+        {entry?.pinned ? t`Unpin version` : t`Keep this version`}
       </Button>
       <Box>
         <Typography

@@ -67,7 +67,7 @@ export function SelectionBarActions({
     { label: t`Tag…`, icon: <Tag size={16} />, run: openTag, edits: true },
     { label: t`Set category…`, icon: <Folder size={16} />, run: openCategory, edits: true },
     {
-      label: pinned ? t`Unpin version` : t`Pin version`,
+      label: pinned ? t`Unpin version` : t`Keep this version`,
       icon: pinned ? <PinOff size={16} /> : <Pin size={16} />,
       run: () => setPinnedMany(selected, !pinned).catch(reportUnexpected),
       edits: true,

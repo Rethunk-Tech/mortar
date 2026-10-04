@@ -106,7 +106,7 @@ export function UpdateActions({
             disabled={!mod}
             onClick={act(async () => mod && setPinned(mod, !entry?.pinned))}
           >
-            {entry?.pinned ? t`Unpin version` : t`Pin version`}
+            {entry?.pinned ? t`Unpin version` : t`Keep this version`}
           </MenuItem>
         </DisabledReason>
         {update.source && !entry?.skipSources?.includes(update.source) ? (

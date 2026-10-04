@@ -13,6 +13,8 @@ import { mergeCachedDetails, useNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
 import { DIALOG_WIDTH } from './updateReview/constants.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
+import { KeptGroup } from './updateReview/KeptGroup.tsx'
+import { keptUpdates } from './updateReview/kept.ts'
 import { loadAllDetails } from './updateReview/loadAll.ts'
 import { PropagateUpdate } from './updateReview/PropagateUpdate.tsx'
 import { ReviewFooter } from './updateReview/ReviewFooter.tsx'
@@ -93,6 +95,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           onAck={(id, on) => setAcked((prev) => ({ ...prev, [id]: on }))}
           onInclude={(id, on) => setInclude((prev) => ({ ...prev, [id]: on }))}
         />
+        <KeptGroup kept={keptUpdates(updates, profile)} mods={mods} />
       </DialogContent>
       <ReviewFooter
         wantedCount={wanted.length}
