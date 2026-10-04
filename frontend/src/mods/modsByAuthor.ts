@@ -22,7 +22,7 @@ function addHit(
   row: AuthorModProfile,
   mod: { uniqueId: string; name: string },
 ) {
-  const key = mod.uniqueId.toLowerCase()
+  const key = idKey(mod.uniqueId)
   const existing = byId.get(key)
   if (existing) {
     if (existing.name === '') {

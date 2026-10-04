@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { HISTORY_CAP, type HistoryActionState, prependHistory } from './history.ts'
 
 const QUICK_MS = 5000
@@ -24,23 +25,16 @@ function isSavedItem(v: unknown): v is ToastHistoryItem {
 // The previous session's notifications come back without their actions (those closed over live state) and
 // with negative ids so they never collide with this session's.
 function loadSaved(): ToastHistoryItem[] {
-  try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(SAVED_KEY) ?? '[]')
-    return Array.isArray(parsed)
-      ? parsed.filter(isSavedItem).map((item, i) => ({ ...item, id: -(i + 1) }))
-      : []
-  } catch {
-    return []
-  }
+  return readStored(SAVED_KEY, [], Array.isArray)
+    .filter(isSavedItem)
+    .map((item, i) => ({ ...item, id: -(i + 1) }))
 }
 
 function saveHistory(history: ToastHistoryItem[]) {
-  try {
-    const kept = history.slice(0, SAVED_CAP).map(({ action: _, ...rest }) => rest)
-    localStorage.setItem(SAVED_KEY, JSON.stringify(kept))
-  } catch {
-    // Storage blocked: history stays for this session only.
-  }
+  writeStored(
+    SAVED_KEY,
+    history.slice(0, SAVED_CAP).map(({ action: _, ...rest }) => rest),
+  )
 }
 
 // Failures stay longer: they are read, not glanced at.

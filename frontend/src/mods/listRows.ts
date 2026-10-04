@@ -11,6 +11,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { modTotal } from '../console/startupView.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { idKey } from './dependents.ts'
 import { type customCategoryById, resolvedCategoryLabel } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { kindLabel } from './lookup.ts'
@@ -42,9 +43,9 @@ function useStartupCosts(game: string, profileId: string): Readonly<Record<strin
       .then((reports) => {
         const next: Record<string, number> = {}
         for (const mod of reports?.[0]?.mods ?? []) {
-          next[mod.id.toLowerCase()] = modTotal(mod)
+          next[idKey(mod.id)] = modTotal(mod)
           for (const pack of mod.packs ?? []) {
-            next[pack.id.toLowerCase()] = pack.ms
+            next[idKey(pack.id)] = pack.ms
           }
         }
         setCosts(next)
@@ -111,7 +112,7 @@ function toListRow(
   if (n !== undefined) {
     row.size = n
   }
-  const ms = costs[m.uniqueId.toLowerCase()]
+  const ms = costs[idKey(m.uniqueId)]
   if (ms !== undefined) {
     row.startupMs = ms
   }

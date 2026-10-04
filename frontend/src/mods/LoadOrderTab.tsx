@@ -13,6 +13,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { idKey } from './dependents.ts'
 import { useDetail } from './detail.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 import { sameId } from './lookup.ts'
@@ -92,7 +93,7 @@ function DepChips({
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
   const chip = (prefix: 'req' | 'opt' | 'dep', id: string, missing = false) => {
-    const name = (names.get(id.toLowerCase()) ?? '').trim()
+    const name = (names.get(idKey(id)) ?? '').trim()
     const known = name !== ''
     const label = known ? name : t`Unknown mod`
     const text = {
@@ -110,7 +111,7 @@ function DepChips({
       />
     )
   }
-  const missingIds = new Set((row.missingRequired ?? []).map((m) => m.toLowerCase()))
+  const missingIds = new Set((row.missingRequired ?? []).map(idKey))
   const required = row.required ?? []
   const optional = row.optional ?? []
   const users = row.dependents ?? []
@@ -121,7 +122,7 @@ function DepChips({
   }
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.75 }}>
-      {shownRequired.map((id) => chip('req', id, missingIds.has(id.toLowerCase())))}
+      {shownRequired.map((id) => chip('req', id, missingIds.has(idKey(id))))}
       {optional.map((id) => chip('opt', id))}
       {open || users.length <= INLINE_USERS ? users.map((id) => chip('dep', id)) : null}
       {long ? (
@@ -358,7 +359,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   const names = useMemo(() => {
     const map = new Map<string, string>()
     for (const row of rows ?? []) {
-      map.set(row.uniqueId.toLowerCase(), row.name)
+      map.set(idKey(row.uniqueId), row.name)
     }
     return map
   }, [rows])

@@ -15,6 +15,7 @@ import type {
 import { useLaunch } from '../launch/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { idKey } from './dependents.ts'
 import { useLastRun } from './lastRun.ts'
 import { nexusIdOf } from './lookup.ts'
 import { useNexusDetails } from './nexusDetails.ts'
@@ -41,7 +42,7 @@ function cleanNexusMods(
   }[] = []
   for (const mod of mods) {
     const modId = nexusIdOf(profile, mod)
-    const hit = byId[mod.uniqueId.toLowerCase()]
+    const hit = byId[idKey(mod.uniqueId)]
     if (mod.enabled && modId > 0 && !seen.has(modId) && !hit?.errors) {
       seen.add(modId)
       clean.push({

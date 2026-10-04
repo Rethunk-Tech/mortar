@@ -5,6 +5,7 @@ import { ForcesSMAPI } from '../../bindings/github.com/Rethunk-AI/mortar/interna
 import { useLoader } from '../loader/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { playDirect } from './directPref.ts'
 import { useLaunch } from './store.ts'
@@ -17,21 +18,12 @@ function vanillaBusy(game: string): boolean {
   return launching || starting || useLoader.getState().installing
 }
 
-function linuxVanillaDirectAgreed(): boolean {
-  try {
-    return localStorage.getItem(linuxVanillaDirectKey) === '1'
-  } catch {
-    return false
-  }
-}
+const isBool = (v: unknown): v is boolean => typeof v === 'boolean'
 
-export function rememberLinuxVanillaDirect() {
-  try {
-    localStorage.setItem(linuxVanillaDirectKey, '1')
-  } catch {
-    // Private mode can refuse localStorage; the next Play without mods asks again.
-  }
-}
+const linuxVanillaDirectAgreed = () => readStored(linuxVanillaDirectKey, false, isBool)
+
+// With storage blocked the next Play without mods asks again.
+export const rememberLinuxVanillaDirect = () => writeStored(linuxVanillaDirectKey, true)
 
 export const useVanillaPrompt = create<{
   smapiWarn: boolean

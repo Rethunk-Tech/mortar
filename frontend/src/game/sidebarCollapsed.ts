@@ -1,25 +1,16 @@
 import { create } from 'zustand'
+import { readStored, writeStored } from '../shell/useStoredState.ts'
 
 const KEY = 'mortar.sidebarCollapsed'
 
-function read(): boolean {
-  try {
-    return localStorage.getItem(KEY) === '1'
-  } catch {
-    return false
-  }
-}
+const isBool = (v: unknown): v is boolean => typeof v === 'boolean'
 
 export const useSidebarCollapsed = create<{ collapsed: boolean; toggle: () => void }>((set) => ({
-  collapsed: read(),
+  collapsed: readStored(KEY, false, isBool),
   toggle: () =>
     set((s) => {
       const collapsed = !s.collapsed
-      try {
-        localStorage.setItem(KEY, collapsed ? '1' : '0')
-      } catch {
-        // Storage can be blocked; the rail then lasts for this session only.
-      }
+      writeStored(KEY, collapsed)
       return { collapsed }
     }),
 }))

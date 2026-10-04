@@ -79,8 +79,8 @@ function unblockedDependent(
   if (!missing || installedIds.length === 0) {
     return
   }
-  const ids = new Set(installedIds.map((id) => id.toLowerCase()))
-  return missing.find((m) => ids.has(m.uniqueId.toLowerCase()))?.dependentName
+  const ids = new Set(installedIds.map(idKey))
+  return missing.find((m) => ids.has(idKey(m.uniqueId)))?.dependentName
 }
 
 const MS_PER_SEC = 1000

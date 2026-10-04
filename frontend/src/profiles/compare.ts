@@ -40,7 +40,7 @@ function indexUserMods(profile: Profile): Map<string, CompareSide> {
   const out = new Map<string, CompareSide>()
   for (const e of userModEntries(profile.entries)) {
     for (const m of e.mods ?? []) {
-      const k = m.uniqueId.toLowerCase()
+      const k = idKey(m.uniqueId)
       if (!out.has(k)) {
         out.set(k, {
           uniqueId: m.uniqueId,

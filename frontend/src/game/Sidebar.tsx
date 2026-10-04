@@ -14,6 +14,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { QueueButton } from '../queue/QueueButton.tsx'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
@@ -37,22 +38,11 @@ const rail = (sx: object) => ({ [compact]: sx, '[data-collapsed="true"] &': sx }
 
 const clamp = (w: number) => Math.min(MAX, Math.max(MIN, w))
 
-function storedWidth(): number {
-  try {
-    const n = Number(localStorage.getItem(KEY))
-    return n ? clamp(n) : DEFAULT_WIDTH
-  } catch {
-    return DEFAULT_WIDTH
-  }
-}
+const isWidth = (v: unknown): v is number => typeof v === 'number' && v > 0
 
-function saveWidth(w: number) {
-  try {
-    localStorage.setItem(KEY, String(w))
-  } catch {
-    // Storage can be blocked; the width then lasts for this session only.
-  }
-}
+const storedWidth = () => clamp(readStored(KEY, DEFAULT_WIDTH, isWidth))
+
+const saveWidth = (w: number) => writeStored(KEY, w)
 
 function initials(name: string): string {
   const words = name.trim().split(WHITESPACE)

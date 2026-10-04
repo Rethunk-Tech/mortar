@@ -10,6 +10,7 @@ import {
   Rename,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { idKey } from '../mods/dependents.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -21,10 +22,10 @@ import { BundleNameDialog } from './dialogs.tsx'
 function hasBundle(profile: Profile, bundle: Bundle) {
   const installed = new Set(
     (profile.entries ?? []).flatMap((entry) =>
-      (entry.mods ?? []).map((mod) => mod.uniqueId.toLowerCase()),
+      (entry.mods ?? []).map((mod) => idKey(mod.uniqueId)),
     ),
   )
-  return (bundle.mods ?? []).every((mod) => installed.has(mod.uniqueId.toLowerCase()))
+  return (bundle.mods ?? []).every((mod) => installed.has(idKey(mod.uniqueId)))
 }
 
 function NoBundles() {

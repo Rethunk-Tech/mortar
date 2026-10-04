@@ -3,6 +3,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { useToasts } from '../toasts/store.ts'
 
 type View = 'grid' | 'list'
@@ -10,22 +11,22 @@ type View = 'grid' | 'list'
 const VIEW_KEY = 'mortar.modsView'
 
 function setStoredView(set: (p: { view: View }) => void, view: View) {
+const isView = (v: unknown): v is View => v === 'list' || v === 'grid'
+
+const isFilter = (v: unknown): v is ModFilter =>
+  typeof v === 'string' &&
+  ['all', 'disabled', 'update', 'problem', 'pinned', 'local', 'recent'].includes(v)
+const isTags = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.every((t) => typeof t === 'string')
+
   set({ view })
-  try {
-    localStorage.setItem(VIEW_KEY, view)
-  } catch {
-    // Storage can be blocked; the view then lasts for this session only.
-  }
+  writeStored(VIEW_KEY, view)
 }
 
 export function storedView(): View {
-  try {
-    const stored = localStorage.getItem(VIEW_KEY)
-    if (stored === 'list' || stored === 'grid') {
-      return stored
-    }
-  } catch {
-    // Storage can be blocked.
+  const stored = readStored<View | ''>(VIEW_KEY, '', isView)
+  if (stored !== '') {
+    return stored
   }
   return useSettings.getState().defaultModsView === 'list' ? 'list' : 'grid'
 }

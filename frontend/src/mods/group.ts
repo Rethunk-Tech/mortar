@@ -2,6 +2,7 @@ import type {
   CustomCategory,
   Entry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { cmpText } from './cmpText.ts'
 import { idKey } from './dependents.ts'
 
@@ -160,49 +161,32 @@ function groupSorted<T>(
 
 const COLLAPSED_PREFIX = 'mortar.modsCollapsed.'
 
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+
 function loadCollapsed(game: string): Record<string, boolean> {
   if (game === '') {
     return {}
   }
-  try {
-    const raw = localStorage.getItem(COLLAPSED_PREFIX + game)
-    if (!raw) {
-      return {}
+  const parsed = readStored<Record<string, unknown>>(COLLAPSED_PREFIX + game, {}, isRecord)
+  const out: Record<string, boolean> = {}
+  for (const [key, value] of Object.entries(parsed)) {
+    if (value === true) {
+      out[key] = true
     }
-    const parsed: unknown = JSON.parse(raw)
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return {}
-    }
-    const out: Record<string, boolean> = {}
-    for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
-      if (value === true) {
-        out[key] = true
-      }
-    }
-    return out
-  } catch {
-    return {}
   }
+  return out
 }
 
 function persistCollapsed(game: string, collapsed: Record<string, boolean>) {
   if (game === '') {
     return
   }
-  const keys = Object.keys(collapsed).filter((k) => collapsed[k])
-  try {
-    if (keys.length === 0) {
-      localStorage.removeItem(COLLAPSED_PREFIX + game)
-      return
-    }
-    const stored: Record<string, true> = {}
-    for (const key of keys) {
-      stored[key] = true
-    }
-    localStorage.setItem(COLLAPSED_PREFIX + game, JSON.stringify(stored))
-  } catch {
-    // Storage can be blocked; collapse then lasts for this session only.
+  const stored: Record<string, true> = {}
+  for (const key of Object.keys(collapsed).filter((k) => collapsed[k])) {
+    stored[key] = true
   }
+  writeStored(COLLAPSED_PREFIX + game, stored)
 }
 
 function toggleCollapsed(
