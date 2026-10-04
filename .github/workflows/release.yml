@@ -109,9 +109,15 @@ jobs:
       - name: Linux Flatpak
         if: matrix.flatpak
         run: |
-          sudo apt-get install -y --no-install-recommends flatpak flatpak-builder
+          sudo apt-get install -y --no-install-recommends flatpak
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-          wails3 task linux:flatpak
+          # Flathub's own builder: the distro flatpak-builder composes AppStream with the runner's older appstream,
+          # which fails on the GNOME 51 SDK.
+          flatpak install --user -y --noninteractive flathub org.flatpak.Builder
+          mkdir -p "$RUNNER_TEMP/bin"
+          printf '#!/bin/sh\nexec flatpak run --filesystem=home --filesystem=/var/tmp org.flatpak.Builder "$@"\n' > "$RUNNER_TEMP/bin/flatpak-builder"
+          chmod +x "$RUNNER_TEMP/bin/flatpak-builder"
+          PATH="$RUNNER_TEMP/bin:$PATH" wails3 task linux:flatpak
 
       - name: Windows exe and installer
         if: matrix.windows
