@@ -117,7 +117,9 @@ jobs:
           mkdir -p "$RUNNER_TEMP/bin"
           printf '#!/bin/sh\nexec flatpak run --filesystem=home --filesystem=/var/tmp org.flatpak.Builder "$@"\n' > "$RUNNER_TEMP/bin/flatpak-builder"
           chmod +x "$RUNNER_TEMP/bin/flatpak-builder"
-          PATH="$RUNNER_TEMP/bin:$PATH" wails3 task linux:flatpak
+          # The sandboxed builder installs the SDK through the host's flatpak over the session bus, which a headless
+          # runner does not have.
+          PATH="$RUNNER_TEMP/bin:$PATH" dbus-run-session -- wails3 task linux:flatpak
 
       - name: Windows exe and installer
         if: matrix.windows
