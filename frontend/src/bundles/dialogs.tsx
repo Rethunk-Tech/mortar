@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -24,8 +25,10 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { PromptDialog } from '../shell/PromptDialog.tsx'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 
 interface BundleNameDialogProps {
   open: boolean
@@ -47,65 +50,26 @@ function BundleNameDialog({
   onSubmit,
 }: BundleNameDialogProps) {
   const { t } = useLingui()
-  const [name, setName] = useState(initialName)
-  const [busy, setBusy] = useState(false)
-  useEffect(() => {
-    if (open) {
-      setName(initialName)
-    }
-  }, [initialName, open])
-  const submit = async () => {
-    const trimmed = name.trim()
-    if (!trimmed || busy) {
-      return
-    }
-    setBusy(true)
-    try {
-      await onSubmit(trimmed)
-      onClose()
-    } catch (error) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: errorTitle,
-        body: errorMessage(error),
-        detail: errorDetails(error),
-      })
-    } finally {
-      setBusy(false)
-    }
-  }
+  const [busy, run] = usePending()
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
-      <DialogTitle>{title}</DialogTitle>
-      <DialogContent sx={{ minWidth: 360, maxWidth: 'calc(100vw - 64px)' }}>
-        <TextField
-          autoFocus={true}
-          fullWidth={true}
-          label={t`Name`}
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault()
-              submit().catch(() => undefined)
-            }
-          }}
-          sx={{ mt: 1 }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={busy}>
-          {t`Cancel`}
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => submit().catch(() => undefined)}
-          disabled={!name.trim() || busy}
-        >
-          {submitLabel}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <PromptDialog
+      open={open}
+      title={title}
+      label={t`Name`}
+      initial={initialName}
+      confirmLabel={submitLabel}
+      busy={busy}
+      onCancel={onClose}
+      onSubmit={(name) => {
+        run(() =>
+          onSubmit(name)
+            .then(() => onClose())
+            .catch((error: unknown) => {
+              reportError(errorTitle)(error)
+            }),
+        )
+      }}
+    />
   )
 }
 
@@ -127,12 +91,7 @@ function useListedBundles(open: boolean, game: string) {
       })
       .catch((error: unknown) => {
         if (active) {
-          useToasts.getState().push({
-            kind: 'error',
-            title: t`Could not read bundles`,
-            body: errorMessage(error),
-            detail: errorDetails(error),
-          })
+          reportError(t`Could not read bundles`)(error)
         }
       })
       .finally(() => {
@@ -158,7 +117,7 @@ function BundlePickList({
   bundles: Bundle[]
   busy: boolean
   empty: ReactNode
-  onPick: (bundle: Bundle) => Promise<void>
+  onPick: (bundle: Bundle) => void
 }) {
   const { t } = useLingui()
   if (loading) {
@@ -172,14 +131,15 @@ function BundlePickList({
       {bundles.map((bundle) => (
         <Button
           key={bundle.id}
+          type="button"
           variant="outlined"
           disabled={busy}
-          onClick={() => onPick(bundle).catch(() => undefined)}
+          onClick={() => onPick(bundle)}
           sx={{ justifyContent: 'space-between', textTransform: 'none' }}
         >
           <span>{bundle.name}</span>
           <Typography component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>
-            {t`${bundle.mods?.length ?? 0} mods`}
+            {plural(bundle.mods?.length ?? 0, { one: '# mod', other: '# mods' })}
           </Typography>
         </Button>
       ))}
@@ -199,95 +159,87 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
   const { t } = useLingui()
   const { bundles, loading } = useListedBundles(open, game)
   const [newName, setNewName] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, run] = usePending()
   useEffect(() => {
     if (open) {
       setNewName('')
     }
   }, [open])
-  const addTo = async (bundle: Bundle) => {
-    if (busy) {
-      return
-    }
-    setBusy(true)
-    try {
-      const updated = await AddMods(game, bundle.id, profileId, uniqueIds)
-      useToasts.getState().push({ kind: 'success', title: t`Added mods to ${updated.name}` })
-      onClose()
-    } catch (error) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Could not add mods to the bundle`,
-        body: errorMessage(error),
-        detail: errorDetails(error),
-      })
-    } finally {
-      setBusy(false)
-    }
-  }
-  const create = async () => {
-    const name = newName.trim()
-    if (!name || busy) {
-      return
-    }
-    setBusy(true)
-    try {
-      const created = await Create(game, name, profileId, uniqueIds)
-      useToasts.getState().push({ kind: 'success', title: t`Created ${created.name}` })
-      onClose()
-    } catch (error) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Could not create the bundle`,
-        body: errorMessage(error),
-        detail: errorDetails(error),
-      })
-    } finally {
-      setBusy(false)
-    }
-  }
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
-      <DialogTitle>{t`Add to bundle`}</DialogTitle>
-      <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
-        <Typography sx={{ mb: 1.25, color: 'text.secondary', fontSize: 13 }}>
-          {t`Choose an existing bundle or create one.`}
-        </Typography>
-        <BundlePickList
-          loading={loading}
-          bundles={bundles}
-          busy={busy}
-          empty={
-            <EmptyState
-              compact={true}
-              icon={<PackagePlus size={28} />}
-              title={t`No bundles yet.`}
-            >{t`Create a bundle to reuse a set of mods.`}</EmptyState>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          const name = newName.trim()
+          if (!name) {
+            return
           }
-          onPick={addTo}
-        />
-        <Divider sx={{ my: 2 }} />
-        <TextField
-          fullWidth={true}
-          label={t`New bundle name`}
-          value={newName}
-          onChange={(event) => setNewName(event.target.value)}
-          disabled={busy}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={busy}>
-          {t`Cancel`}
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<PackagePlus size={16} />}
-          onClick={() => create().catch(() => undefined)}
-          disabled={!newName.trim() || busy}
-        >
-          {t`Create and add`}
-        </Button>
-      </DialogActions>
+          run(() =>
+            Create(game, name, profileId, uniqueIds)
+              .then((created) => {
+                useToasts.getState().push({ kind: 'success', title: t`Created ${created.name}` })
+                onClose()
+              })
+              .catch((error: unknown) => {
+                reportError(t`Could not create the bundle`)(error)
+              }),
+          )
+        }}
+      >
+        <DialogTitle>{t`Add to bundle`}</DialogTitle>
+        <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
+          <Typography sx={{ mb: 1.25, color: 'text.secondary', fontSize: 13 }}>
+            {t`Choose an existing bundle or create one.`}
+          </Typography>
+          <BundlePickList
+            loading={loading}
+            bundles={bundles}
+            busy={busy}
+            empty={
+              <EmptyState
+                compact={true}
+                icon={<PackagePlus size={28} />}
+                title={t`No bundles yet.`}
+              >{t`Create a bundle to reuse a set of mods.`}</EmptyState>
+            }
+            onPick={(bundle) => {
+              run(() =>
+                AddMods(game, bundle.id, profileId, uniqueIds)
+                  .then((updated) => {
+                    useToasts
+                      .getState()
+                      .push({ kind: 'success', title: t`Added mods to ${updated.name}` })
+                    onClose()
+                  })
+                  .catch((error: unknown) => {
+                    reportError(t`Could not add mods to the bundle`)(error)
+                  }),
+              )
+            }}
+          />
+          <Divider sx={{ my: 2 }} />
+          <TextField
+            fullWidth={true}
+            label={t`New bundle name`}
+            value={newName}
+            onChange={(event) => setNewName(event.target.value)}
+            disabled={busy}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button type="button" onClick={onClose} disabled={busy}>
+            {t`Cancel`}
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            startIcon={<PackagePlus size={16} />}
+            disabled={!newName.trim() || busy}
+          >
+            {t`Create and add`}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 }
@@ -311,26 +263,7 @@ function ApplyBundleDialog({
 }: ApplyBundleDialogProps) {
   const { t } = useLingui()
   const { bundles, loading } = useListedBundles(open, game)
-  const [busy, setBusy] = useState(false)
-  const apply = async (bundle: Bundle) => {
-    if (busy) {
-      return
-    }
-    setBusy(true)
-    try {
-      await onApplied(await Apply(game, bundle.id, profileId))
-      onClose()
-    } catch (error) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Could not add the bundle`,
-        body: errorMessage(error),
-        detail: errorDetails(error),
-      })
-    } finally {
-      setBusy(false)
-    }
-  }
+  const [busy, run] = usePending()
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
       <DialogTitle>{t`Add a bundle to ${profileName}`}</DialogTitle>
@@ -340,11 +273,20 @@ function ApplyBundleDialog({
           bundles={bundles}
           busy={busy}
           empty={<Typography sx={{ color: 'text.secondary' }}>{t`No bundles yet.`}</Typography>}
-          onPick={apply}
+          onPick={(bundle) => {
+            run(() =>
+              Apply(game, bundle.id, profileId)
+                .then((result) => onApplied(result))
+                .then(() => onClose())
+                .catch((error: unknown) => {
+                  reportError(t`Could not add the bundle`)(error)
+                }),
+            )
+          }}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={busy}>
+        <Button type="button" onClick={onClose} disabled={busy}>
           {t`Cancel`}
         </Button>
       </DialogActions>

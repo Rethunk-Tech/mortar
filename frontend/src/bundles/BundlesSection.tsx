@@ -12,8 +12,9 @@ import {
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { errorDetails, errorMessage } from '../toasts/report.ts'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { BundleNameDialog } from './dialogs.tsx'
 
 function hasBundle(profile: Profile, bundle: Bundle) {
@@ -47,12 +48,7 @@ function useBundleList(game: string) {
       })
       .catch((error: unknown) => {
         if (active) {
-          useToasts.getState().push({
-            kind: 'error',
-            title: t`Could not read bundles`,
-            body: errorMessage(error),
-            detail: errorDetails(error),
-          })
+          reportError(t`Could not read bundles`)(error)
         }
       })
     return () => {
@@ -67,28 +63,7 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
   const [bundles, setBundles] = useBundleList(game)
   const [renaming, setRenaming] = useState<Bundle | null>(null)
   const [deleting, setDeleting] = useState<Bundle | null>(null)
-  const [busy, setBusy] = useState(false)
-  const confirmDelete = async () => {
-    if (!deleting || busy) {
-      return
-    }
-    setBusy(true)
-    try {
-      await Delete(game, deleting.id)
-      setBundles((current) => current.filter((bundle) => bundle.id !== deleting.id))
-      setDeleting(null)
-      useToasts.getState().push({ kind: 'success', title: t`Bundle deleted` })
-    } catch (error) {
-      useToasts.getState().push({
-        kind: 'error',
-        title: t`Could not delete the bundle`,
-        body: errorMessage(error),
-        detail: errorDetails(error),
-      })
-    } finally {
-      setBusy(false)
-    }
-  }
+  const [busy, run] = usePending()
   return (
     <>
       <Box
@@ -186,7 +161,23 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
         color="error"
         busy={busy}
         onCancel={() => setDeleting(null)}
-        onConfirm={() => confirmDelete().catch(() => undefined)}
+        onConfirm={() => {
+          if (deleting === null) {
+            return
+          }
+          const bundle = deleting
+          run(() =>
+            Delete(game, bundle.id)
+              .then(() => {
+                setBundles((current) => current.filter((item) => item.id !== bundle.id))
+                setDeleting(null)
+                useToasts.getState().push({ kind: 'success', title: t`Bundle deleted` })
+              })
+              .catch((error: unknown) => {
+                reportError(t`Could not delete the bundle`)(error)
+              }),
+          )
+        }}
       />
     </>
   )
