@@ -20,13 +20,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
-// frame encodes v as one native message; a request without a protocol is sent as the current one.
 func frame(t *testing.T, v any) []byte {
 	t.Helper()
-	if req, ok := v.(request); ok && req.Protocol == 0 {
-		req.Protocol = Protocol
-		v = req
-	}
 	b, err := json.Marshal(v)
 	if err != nil {
 		t.Fatal(err)
@@ -572,9 +567,10 @@ func TestRecordContactWritesOncePerMinute(t *testing.T) {
 }
 
 func TestServeRefusesAnExtensionProtocolOutOfRange(t *testing.T) {
-	in := append(frame(t, map[string]any{"link": "nxm://old"}),
-		frame(t, map[string]any{"protocol": MaxProtocol + 1, "type": "installed", "game": "stardewvalley"})...)
-	in = append(in, frame(t, request{Link: "nxm://ok"})...)
+	in := append(frame(t, map[string]any{"link": "nxm://unversioned"}),
+		frame(t, map[string]any{"protocol": MinProtocol - 1, "link": "nxm://zero"})...)
+	in = append(in, frame(t, map[string]any{"protocol": MaxProtocol + 1, "type": "installed", "game": "stardewvalley"})...)
+	in = append(in, frame(t, map[string]any{"protocol": Protocol, "link": "nxm://ok"})...)
 	var out bytes.Buffer
 	var opened, mismatches []string
 	err := serveHandlers(bytes.NewReader(in), &out, handlers{
@@ -584,16 +580,16 @@ func TestServeRefusesAnExtensionProtocolOutOfRange(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{ExtensionTooOld, ExtensionTooNew, ""} {
+	for _, want := range []string{"", ExtensionTooOld, ExtensionTooNew, ""} {
 		got := readReply(t, &out)
 		if got.Protocol != Protocol || got.ProtocolError != want || (want == "") != got.OK {
 			t.Fatalf("reply %+v, want protocolError %q", got, want)
 		}
 	}
-	if !slices.Equal(opened, []string{"nxm://ok"}) {
+	if !slices.Equal(opened, []string{"nxm://unversioned", "nxm://ok"}) {
 		t.Fatalf("opened %v", opened)
 	}
-	if !slices.Equal(mismatches, []string{ExtensionTooOld, ExtensionTooNew, ""}) {
+	if !slices.Equal(mismatches, []string{"", ExtensionTooOld, ExtensionTooNew, ""}) {
 		t.Fatalf("contacts %v", mismatches)
 	}
 }

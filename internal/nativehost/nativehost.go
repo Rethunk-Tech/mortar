@@ -39,7 +39,7 @@ const (
 	maxMessage = 64 * 1024
 	// Protocol is the native-messaging protocol Mortar speaks, sent in every reply; the extension checks it against
 	// its own range. MinProtocol and MaxProtocol are the extension protocols Mortar answers; an extension from before
-	// the protocol was versioned sends none and counts as 0.
+	// the protocol was versioned (0.1.1) sends none and already speaks protocol 1, so a missing one counts as 1.
 	Protocol    = 1
 	MinProtocol = 1
 	MaxProtocol = 1
@@ -52,7 +52,11 @@ const (
 )
 
 // protocolMismatch is ExtensionTooOld or ExtensionTooNew when Mortar does not speak the extension's protocol, else "".
-func protocolMismatch(protocol int) string {
+func protocolMismatch(sent *int) string {
+	protocol := Protocol
+	if sent != nil {
+		protocol = *sent
+	}
 	switch {
 	case protocol < MinProtocol:
 		return ExtensionTooOld
@@ -85,7 +89,7 @@ func Invoked(args []string) bool {
 }
 
 type request struct {
-	Protocol int    `json:"protocol"`
+	Protocol *int   `json:"protocol"`
 	Type     string `json:"type"`
 	Link     string `json:"link"`
 	Game     string `json:"game"`
