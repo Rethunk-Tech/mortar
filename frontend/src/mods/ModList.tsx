@@ -51,7 +51,7 @@ const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'no
 const cellBase = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
 
 function Cell({ sx, ...props }: TableCellProps) {
-  return <TableCell {...props} sx={{ ...cellBase, ...sx }} />
+  return <TableCell role="cell" {...props} sx={{ ...cellBase, ...sx }} />
 }
 
 function dash(value: string) {
@@ -240,6 +240,7 @@ function ModRow({
   const fresh = useNexusFresh(nexusIdOf(profile, m))
   return (
     <TableRow
+      role="row"
       hover={true}
       selected={marked}
       onMouseDown={(e) => {
@@ -253,7 +254,8 @@ function ModRow({
       }}
       data-mod-row="true"
       data-mod-id={rowId}
-      tabIndex={orderedIds[0] === rowId ? 0 : -1}
+      // One row is the list's Tab stop: the open mod's, or the first when none is open.
+      tabIndex={(orderedIds.includes(detailId) ? detailId : orderedIds[0]) === rowId ? 0 : -1}
       {...menu}
       onKeyDown={(e) => {
         const run: Partial<Record<ShortcutId, () => void>> = {

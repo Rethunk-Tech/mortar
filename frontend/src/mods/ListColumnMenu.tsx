@@ -56,7 +56,7 @@ const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'no
 const cellBase = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
 
 function Cell({ sx, ...props }: TableCellProps) {
-  return <TableCell {...props} sx={{ ...cellBase, ...sx }} />
+  return <TableCell role="columnheader" {...props} sx={{ ...cellBase, ...sx }} />
 }
 
 function HeaderCell({

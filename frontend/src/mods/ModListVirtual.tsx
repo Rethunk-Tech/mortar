@@ -61,19 +61,24 @@ function ListShell({
   children: ReactNode
 }) {
   return (
+    // Header and body are separate tables so the header stays put while rows scroll; ARIA joins them into one
+    // table so each cell is read with its column.
     <Box
+      role="table"
+      aria-label={label}
       sx={{ minWidth: 0, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column' }}
     >
       <Table
-        aria-label={label}
+        role="presentation"
         sx={{
           display: 'block',
           flex: '0 0 auto',
           '& thead': { display: 'block' },
         }}
       >
-        <TableHead>
+        <TableHead role="rowgroup">
           <TableRow
+            role="row"
             sx={{
               display: 'grid',
               gridTemplateColumns: grid,
@@ -101,6 +106,12 @@ function ListShell({
       <Box
         ref={parentRef}
         tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.target === e.currentTarget && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+            e.preventDefault()
+            e.currentTarget.querySelector<HTMLElement>('[data-mod-row]')?.focus()
+          }
+        }}
         sx={{
           flex: 1,
           minHeight: 0,
@@ -109,8 +120,8 @@ function ListShell({
           '&:focus-visible': { outlineOffset: -2 },
         }}
       >
-        <Table sx={{ display: 'block', '& tbody': { display: 'block' } }}>
-          <TableBody sx={{ display: 'block', position: 'relative', height: total }}>
+        <Table role="presentation" sx={{ display: 'block', '& tbody': { display: 'block' } }}>
+          <TableBody role="rowgroup" sx={{ display: 'block', position: 'relative', height: total }}>
             {children}
           </TableBody>
         </Table>
@@ -155,29 +166,34 @@ function ListSlot({
 }) {
   if (item.kind === 'header') {
     return (
-      <ModsGroupHeader
-        label={headingFor(item.groupKey)}
-        count={item.count}
-        open={collapsed[item.groupKey] !== true}
-        onToggle={() =>
-          setCollapsed((cur) =>
-            toggleCollapsed(gameId, cur, item.groupKey, collapsed[item.groupKey] !== true),
-          )
-        }
-        {...(groupBy === 'tag' ? { hint: tagHint } : {})}
-        {...(groupBy === 'group' && item.groupKey !== ''
-          ? {
-              enabled:
-                groups.find((g) => g.key === item.groupKey)?.items.every((r) => r.mod.enabled) ===
-                true,
-              onEnabled: (on: boolean) => {
-                setGroupEnabled(item.groupKey, on)
-                  .then(() => useMods.getState().load())
-                  .catch(reportUnexpected)
-              },
+      <Box role="row" sx={{ display: 'contents' }}>
+        <Box role="cell" sx={{ display: 'contents' }}>
+          <ModsGroupHeader
+            label={headingFor(item.groupKey)}
+            count={item.count}
+            open={collapsed[item.groupKey] !== true}
+            onToggle={() =>
+              setCollapsed((cur) =>
+                toggleCollapsed(gameId, cur, item.groupKey, collapsed[item.groupKey] !== true),
+              )
             }
-          : {})}
-      />
+            {...(groupBy === 'tag' ? { hint: tagHint } : {})}
+            {...(groupBy === 'group' && item.groupKey !== ''
+              ? {
+                  enabled:
+                    groups
+                      .find((g) => g.key === item.groupKey)
+                      ?.items.every((r) => r.mod.enabled) === true,
+                  onEnabled: (on: boolean) => {
+                    setGroupEnabled(item.groupKey, on)
+                      .then(() => useMods.getState().load())
+                      .catch(reportUnexpected)
+                  },
+                }
+              : {})}
+          />
+        </Box>
+      </Box>
     )
   }
   if (item.kind === 'row') {
