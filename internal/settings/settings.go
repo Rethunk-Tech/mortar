@@ -185,7 +185,7 @@ type Settings struct {
 	StartMinimised             bool   `json:"startMinimised"`
 	RememberWindow             bool   `json:"rememberWindow"`
 	ExtensionConnection        string `json:"extensionConnection"`
-	// Games holds per-game prefs (Stardew Valley today).
+	// Games holds per-game prefs.
 	Games map[string]*GameSettings `json:"games"`
 }
 
