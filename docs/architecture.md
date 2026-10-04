@@ -33,7 +33,7 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
 
 - `settings.json`: Mortar's preferences and small pieces of state, field by field under [Settings file](#settings-file).
 - `store/<game>/<key>/`: each downloaded archive, extracted once.
-  - A `.complete` file marks a finished extract; startup and each use re-extract from a sibling `<key>.zip` / `.rar` / `.7z` when that marker is missing and the archive is still there, otherwise the item is incomplete and an install reports it instead of copying a half-extracted folder.
+  - A `.complete` file marks a finished extract (items extract into a temp folder and are renamed into place); an item without it is incomplete, and an install reports it instead of copying a half-extracted folder.
   - A `mortar-root` file in that folder, when present, names the relative subfolder that is the mod (reused for the same Nexus file id; Mortar asks again if that path is gone).
   - Keys: `nexus-<mod id>-<file id>`, `github-<owner>-<repo>-<tag>-<asset>-<sha256 prefix>` (the hash of the exact names tells apart names the folding makes equal), `local-<sha256 of the archive>`, `smapi-<version>` for SMAPI's bundled mods, and `bridge-<version>-<sha256 prefix>` for the Mortar SMAPI Bridge.
   - One Nexus file can hold several SMAPI mods, so the key is the file.

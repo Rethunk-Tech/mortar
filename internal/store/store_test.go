@@ -235,44 +235,6 @@ func TestLegacyItemsWithoutArchiveAreIncomplete(t *testing.T) {
 	}
 }
 
-func TestIncompleteItemIsReextractedFromSourceArchive(t *testing.T) {
-	s := newStore(t)
-	zipPath := buildZip(t, map[string]string{"Mod/manifest.json": "{}"})
-	key, err := s.AddArchive("stardew", zipPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	dir := filepath.Join(s.root, "stardew", key)
-	if err := os.Remove(filepath.Join(dir, completeMarker)); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.RemoveAll(filepath.Join(dir, "Mod")); err != nil {
-		t.Fatal(err)
-	}
-	src := filepath.Join(s.root, "stardew", key+".zip")
-	if err := datadirCopy(t, zipPath, src); err != nil {
-		t.Fatal(err)
-	}
-	if err := s.RepairIncomplete(); err != nil {
-		t.Fatal(err)
-	}
-	if !completeItem(dir) {
-		t.Fatal("item was not re-extracted")
-	}
-	if b, err := fsx.ReadFile(filepath.Join(dir, "Mod", "manifest.json")); err != nil || string(b) != "{}" {
-		t.Fatalf("re-extracted = %q, %v", b, err)
-	}
-}
-
-func datadirCopy(t *testing.T, src, dst string) error {
-	t.Helper()
-	b, err := fsx.ReadFile(src)
-	if err != nil {
-		return err
-	}
-	return fsx.WriteFile(dst, b, 0o600)
-}
-
 func TestAddDirVerifiedChecksLocalKey(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()

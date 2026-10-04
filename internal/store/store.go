@@ -82,11 +82,7 @@ func Open() (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &Store{root: filepath.Join(dir, "store")}
-	if err := s.RepairIncomplete(); err != nil {
-		log.Printf("store repair: %v", err)
-	}
-	return s, nil
+	return &Store{root: filepath.Join(dir, "store")}, nil
 }
 
 // LocalKey is the key of a local archive with the given SHA-256.
@@ -176,17 +172,7 @@ func (s *Store) folder(game, key string) (string, error) {
 		return "", err
 	}
 	if !completeItem(dir) {
-		if src, ok := s.sourceArchive(game, key); ok {
-			if err := s.reextract(game, key, src); err != nil {
-				return "", err
-			}
-		}
-		if !completeItem(dir) {
-			if exists(dir) {
-				return "", &Error{Game: game, Key: key, Err: ErrIncomplete}
-			}
-			return "", usererr.Wrap(usererr.NotFound, &Error{Game: game, Key: key, Err: ErrNotFound})
-		}
+		return "", &Error{Game: game, Key: key, Err: ErrIncomplete}
 	}
 	return dir, nil
 }
@@ -529,83 +515,6 @@ func (s *Store) saveIndex(idx index) error {
 		return err
 	}
 	return datadir.WriteJSON(s.indexPath(), idx)
-}
-
-// RepairIncomplete re-extracts store items missing .complete when a source archive is still beside them.
-func (s *Store) RepairIncomplete() error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.repairIncompleteLocked()
-}
-
-func (s *Store) repairIncompleteLocked() error {
-	games, err := os.ReadDir(s.root)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	var errs []error
-	for _, g := range games {
-		if !g.IsDir() || !game.Valid(g.Name()) {
-			continue
-		}
-		items, err := os.ReadDir(filepath.Join(s.root, g.Name()))
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-		for _, item := range items {
-			if !item.IsDir() || strings.HasPrefix(item.Name(), tempPrefix) || !keyPattern.MatchString(item.Name()) {
-				continue
-			}
-			key := item.Name()
-			dir := filepath.Join(s.root, g.Name(), key)
-			if completeItem(dir) {
-				continue
-			}
-			src, ok := s.sourceArchive(g.Name(), key)
-			if !ok {
-				continue
-			}
-			if err := s.reextract(g.Name(), key, src); err != nil {
-				errs = append(errs, err)
-			}
-		}
-	}
-	return errors.Join(errs...)
-}
-
-func (s *Store) sourceArchive(game, key string) (string, bool) {
-	gdir, err := s.gameDir(game)
-	if err != nil {
-		return "", false
-	}
-	for _, ext := range []string{".zip", ".rar", ".7z"} {
-		p := filepath.Join(gdir, key+ext)
-		info, err := os.Lstat(p)
-		if err == nil && info.Mode().IsRegular() {
-			return p, true
-		}
-	}
-	return "", false
-}
-
-func (s *Store) reextract(game, key, archivePath string) error {
-	dir, err := s.itemDir(game, key)
-	if err != nil {
-		return err
-	}
-	if err := os.RemoveAll(dir); err != nil {
-		return &Error{Game: game, Key: key, Err: err}
-	}
-	return s.install(game, key, func(tmp string) error {
-		return archive.Extract(archivePath, tmp, archive.Options{})
-	}, func() int64 {
-		n, _ := archive.DeclaredSize(archivePath)
-		return n
-	})
 }
 
 func (s *Store) touch(game string, keys ...string) error {
