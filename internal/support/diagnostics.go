@@ -38,9 +38,7 @@ func (s *Service) saveZip(filename string, data []byte) (string, error) {
 	d.SetOptions(&application.SaveFileDialogOptions{Title: "Save diagnostics", Filename: filename})
 	d.AddFilter("Zip archives", "*.zip")
 	d.AddFilter("All files", "*")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	path, err := d.PromptForSingleSelection()
 	if err != nil || path == "" {
 		return path, err

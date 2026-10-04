@@ -6,8 +6,6 @@ func (s *Service) PickExecutable(title string) (string, error) {
 		SetTitle(title).
 		CanChooseDirectories(false).
 		CanChooseFiles(true)
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	return d.PromptForSingleSelection()
 }

@@ -130,9 +130,7 @@ func (s *Service) ChooseBackgroundImage() error {
 		SetTitle("Choose background image").
 		AddFilter("Images (PNG, JPEG, WebP)", "*.png;*.jpg;*.jpeg;*.webp").
 		AddFilter("All files", "*")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	path, err := d.PromptForSingleSelection()
 	if err != nil || path == "" {
 		return err
@@ -236,9 +234,7 @@ func (s *Service) ChooseGameFolder(game string) error {
 		SetTitle("Choose game folder").
 		CanChooseDirectories(true).
 		CanChooseFiles(false)
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	dir, err := d.PromptForSingleSelection()
 	if err != nil || dir == "" {
 		return err
@@ -265,9 +261,7 @@ func (s *Service) ExportSettings() (string, error) {
 	d.SetOptions(&application.SaveFileDialogOptions{Title: "Export settings", Filename: "mortar-settings.json"})
 	d.AddFilter("JSON", "*.json")
 	d.AddFilter("All files", "*")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	path, err := d.PromptForSingleSelection()
 	if err != nil || path == "" {
 		return path, err
@@ -281,9 +275,7 @@ func (s *Service) PreviewImportSettings() (ImportPreview, error) {
 		SetTitle("Import settings").
 		AddFilter("JSON", "*.json").
 		AddFilter("All files", "*")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	path, err := d.PromptForSingleSelection()
 	if err != nil || path == "" {
 		return ImportPreview{}, err

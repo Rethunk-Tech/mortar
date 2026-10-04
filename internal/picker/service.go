@@ -21,9 +21,7 @@ func (s *Service) PickArchives() ([]string, error) {
 		SetTitle("Add archive").
 		AddFilter("Archives (zip, RAR, 7z)", "*.zip;*.rar;*.7z").
 		AddFilter("All files", "*")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	return d.PromptForMultipleSelection()
 }
 
@@ -32,9 +30,7 @@ func (s *Service) PickImage(title string) (string, error) {
 	d := s.App.Dialog.OpenFile().
 		SetTitle(title).
 		AddFilter("Images (PNG, JPEG, WebP)", "*.png;*.jpg;*.jpeg;*.webp")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	return d.PromptForSingleSelection()
 }
 
@@ -44,9 +40,7 @@ func (s *Service) SaveFile(title, filename, contents string) (string, error) {
 	d.SetOptions(&application.SaveFileDialogOptions{Title: title, Filename: filename})
 	d.AddFilter("Text files", "*.txt")
 	d.AddFilter("All files", "*")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	path, err := d.PromptForSingleSelection()
 	if err != nil || path == "" {
 		return path, err

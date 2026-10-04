@@ -321,9 +321,7 @@ func (s *Service) SaveFile(game, profileID string, keys []string, include share.
 	d := s.App.Dialog.SaveFile().
 		SetFilename(fileNameUnsafe.Replace(p.Name)+".mortar").
 		AddFilter("Mortar profile (.mortar)", "*.mortar")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	dest, err := d.PromptForSingleSelection()
 	if err != nil || dest == "" {
 		return Saved{Skipped: []string{}}, err
@@ -368,9 +366,7 @@ func (s *Service) PickFile() (string, error) {
 	d := s.App.Dialog.OpenFile().
 		SetTitle("Open a .mortar file").
 		AddFilter("Mortar profile (.mortar)", "*.mortar")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	return d.PromptForSingleSelection()
 }
 
@@ -402,25 +398,20 @@ func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string)
 	if err != nil {
 		return Preview{}, err
 	}
-	out, err := s.preview(ctx, game, pv.Shared, pv.Notes, pv.Configs, profileID, profile.OriginMortar)
-	if err != nil {
-		return Preview{}, err
-	}
-	s.mu.Lock()
-	if s.current != nil && s.current.id == out.Session {
-		s.current.description = pv.Description
-		s.current.groups = pv.Groups
-	}
-	s.mu.Unlock()
-	return out, nil
+	return s.previewShared(ctx, game, pv, profileID)
 }
 
-// PreviewBytes reads a .mortar file received in memory and resolves what it names.
+// previewBytes reads a .mortar file received in memory and resolves what it names.
 func (s *Service) previewBytes(ctx context.Context, game string, data []byte, profileID string) (Preview, error) {
 	pv, err := share.ReadBytes(data)
 	if err != nil {
 		return Preview{}, err
 	}
+	return s.previewShared(ctx, game, pv, profileID)
+}
+
+// previewShared resolves a read .mortar file and keeps its description and groups on the session for the import.
+func (s *Service) previewShared(ctx context.Context, game string, pv share.Preview, profileID string) (Preview, error) {
 	out, err := s.preview(ctx, game, pv.Shared, pv.Notes, pv.Configs, profileID, profile.OriginMortar)
 	if err != nil {
 		return Preview{}, err

@@ -370,9 +370,7 @@ func (s *Service) ExportProfile(game, id string) (string, error) {
 		Filename: zipFileUnsafe.Replace(p.Name) + ".zip",
 	})
 	d.AddFilter("Zip archive", "*.zip")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	dest, err := d.PromptForSingleSelection()
 	if err != nil || dest == "" {
 		return dest, err
@@ -388,9 +386,7 @@ func (s *Service) RestoreFromZip(game string) (Profile, error) {
 	d := s.App.Dialog.OpenFile().
 		SetTitle("Restore from zip").
 		AddFilter("Zip archive", "*.zip")
-	if w := s.App.Window.Current(); w != nil {
-		d.AttachToWindow(w)
-	}
+	d.AttachToWindow(s.App.Window.Current())
 	path, err := d.PromptForSingleSelection()
 	if err != nil || path == "" {
 		return Profile{}, err
