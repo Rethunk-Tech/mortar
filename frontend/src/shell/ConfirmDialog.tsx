@@ -19,6 +19,7 @@ export function ConfirmDialog({
   cancelLabel,
   color = 'primary',
   busy = false,
+  confirmDisabled = false,
   maxWidth = 440,
   onCancel,
   onConfirm,
@@ -31,6 +32,7 @@ export function ConfirmDialog({
   cancelLabel?: ReactNode
   color?: 'primary' | 'error' | 'warning'
   busy?: boolean
+  confirmDisabled?: boolean | undefined
   maxWidth?: number
   onCancel: () => void
   onConfirm: () => void
@@ -54,7 +56,7 @@ export function ConfirmDialog({
         <Button
           variant="contained"
           color={color}
-          disabled={busy}
+          disabled={busy || confirmDisabled}
           autoFocus={color !== 'error'}
           onClick={onConfirm}
         >

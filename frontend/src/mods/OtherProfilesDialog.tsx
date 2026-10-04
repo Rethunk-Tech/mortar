@@ -1,14 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-} from '@mui/material'
+import { Checkbox, FormControlLabel } from '@mui/material'
 import { Inbox } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -18,8 +10,10 @@ import type {
 import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportError } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { isLocked } from './locked.ts'
 import { selectableProfileIds } from './otherProfiles.ts'
 
@@ -29,32 +23,6 @@ function NoOtherProfiles() {
     <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No other profile of this game.`}>
       {t`Create another profile to use this mod there.`}
     </EmptyState>
-  )
-}
-
-function DialogFooter({
-  pending,
-  selected,
-  confirmText,
-  onClose,
-  onConfirm,
-}: {
-  pending: boolean
-  selected: number
-  confirmText: string
-  onClose: () => void
-  onConfirm: () => void
-}) {
-  const { t } = useLingui()
-  return (
-    <DialogActions>
-      <Button onClick={onClose} disabled={pending}>
-        {t`Cancel`}
-      </Button>
-      <Button onClick={onConfirm} disabled={pending || selected === 0} variant="contained">
-        {confirmText}
-      </Button>
-    </DialogActions>
   )
 }
 
@@ -179,7 +147,7 @@ export function OtherProfilesDialog({
   const profiles = useProfiles((s) => s.profiles).filter((p) => p.id !== currentProfileId)
   const [rows, setRows] = useState<ModInProfile[]>([])
   const [selected, setSelected] = useState<string[]>([])
-  const [pending, setPending] = useState(false)
+  const [pending, run] = usePending()
   const launchStatus = useLaunch((s) => s.status)
   const launchStarting = useLaunch((s) => s.starting)
   const launchStartingProfile = useLaunch((s) => s.startingProfile)
@@ -234,52 +202,51 @@ export function OtherProfilesDialog({
   const locked = (profile: Profile) =>
     profileIsLocked(launchStatus, launchStarting, launchStartingProfile, profile)
   const pinned = (profile: Profile, row: ModInProfile) => profileHasPinned(profile, row, update)
-  const confirm = async () => {
-    setPending(true)
-    try {
-      const chosen = profiles.filter((profile) => selected.includes(profile.id))
-      const skipped = rows
-        .filter((row) => {
-          const profile = profiles.find((p) => p.id === row.profileId)
-          return profile !== undefined && pinned(profile, row)
-        })
-        .flatMap((row) => profiles.filter((profile) => profile.id === row.profileId))
-      await onConfirm(
-        chosen,
-        skipped,
-        rows.filter((row) => selected.includes(row.profileId)),
-      )
-      onClose()
-    } finally {
-      setPending(false)
-    }
+  const confirm = () => {
+    run(
+      async () => {
+        const chosen = profiles.filter((profile) => selected.includes(profile.id))
+        const skipped = rows
+          .filter((row) => {
+            const profile = profiles.find((p) => p.id === row.profileId)
+            return profile !== undefined && pinned(profile, row)
+          })
+          .flatMap((row) => profiles.filter((profile) => profile.id === row.profileId))
+        await onConfirm(
+          chosen,
+          skipped,
+          rows.filter((row) => selected.includes(row.profileId)),
+        )
+        onClose()
+      },
+      { errorTitle: t`Could not change mods` },
+    )
   }
   const confirmText =
     mode === 'remove'
       ? t`${plural(selected.length, { one: 'Remove from # profile', other: 'Remove from # profiles' })}`
       : confirmLabel
   return (
-    <Dialog open={open} onClose={pending ? undefined : onClose} transitionDuration={0}>
-      <DialogTitle>{title}</DialogTitle>
-      <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
-        {profiles.length === 0 ? <NoOtherProfiles /> : null}
-        <ProfileChoices
-          profiles={profiles}
-          rows={rows}
-          mode={mode}
-          selected={selected}
-          choose={choose}
-          pinned={pinned}
-          locked={locked}
-        />
-      </DialogContent>
-      <DialogFooter
-        pending={pending}
-        selected={profiles.length === 0 ? 0 : selected.length}
-        confirmText={confirmText}
-        onClose={onClose}
-        onConfirm={() => confirm().catch(reportError(t`Could not change mods`))}
+    <ConfirmDialog
+      open={open}
+      title={title}
+      confirmLabel={confirmText}
+      busy={pending}
+      confirmDisabled={profiles.length === 0 || selected.length === 0}
+      maxWidth={420}
+      onCancel={onClose}
+      onConfirm={confirm}
+    >
+      {profiles.length === 0 ? <NoOtherProfiles /> : null}
+      <ProfileChoices
+        profiles={profiles}
+        rows={rows}
+        mode={mode}
+        selected={selected}
+        choose={choose}
+        pinned={pinned}
+        locked={locked}
       />
-    </Dialog>
+    </ConfirmDialog>
   )
 }

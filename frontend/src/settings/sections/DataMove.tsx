@@ -1,19 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  LinearProgress,
-} from '@mui/material'
+import { Box, Button, LinearProgress } from '@mui/material'
 import { FolderInput } from 'lucide-react'
 import { State } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useLaunch } from '../../launch/store.ts'
-import { paper } from '../../mods/paper.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import type { MoveState } from './DataMoveRun.ts'
@@ -64,34 +56,31 @@ export function MoveDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog
+    <ConfirmDialog
       open={move !== null}
-      onClose={() => !moving && onClose()}
-      transitionDuration={0}
-      slotProps={{ paper }}
+      title={t`Move data folder`}
+      confirmLabel={t`Move`}
+      busy={moving}
+      confirmDisabled={move === null}
+      maxWidth={360}
+      onCancel={onClose}
+      onConfirm={onMove}
     >
-      <DialogTitle>{t`Move data folder`}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
-        {move ? (
-          <>
-            <Box>{t`Data to copy: ${formatBytes(move.estimate.bytes)}`}</Box>
-            <Box>{t`Free space at destination: ${formatBytes(move.estimate.freeBytes)}`}</Box>
-            {moving ? (
-              <>
-                <LinearProgress />
-                <Box sx={{ ...mono }}>
-                  {t`${progress.files}/${progress.totalFiles} files · ${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`}
-                </Box>
-              </>
-            ) : null}
-            {error ? <Box sx={{ color: 'error.main' }}>{error}</Box> : null}
-          </>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={moving} sx={nowrap}>{t`Cancel`}</Button>
-        <Button onClick={onMove} disabled={moving || move === null} sx={nowrap}>{t`Move`}</Button>
-      </DialogActions>
-    </Dialog>
+      {move ? (
+        <>
+          <Box>{t`Data to copy: ${formatBytes(move.estimate.bytes)}`}</Box>
+          <Box>{t`Free space at destination: ${formatBytes(move.estimate.freeBytes)}`}</Box>
+          {moving ? (
+            <>
+              <LinearProgress />
+              <Box sx={{ ...mono }}>
+                {t`${progress.files}/${progress.totalFiles} files · ${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`}
+              </Box>
+            </>
+          ) : null}
+          {error ? <Box sx={{ color: 'error.main' }}>{error}</Box> : null}
+        </>
+      ) : null}
+    </ConfirmDialog>
   )
 }

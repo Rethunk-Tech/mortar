@@ -1,12 +1,11 @@
 import { i18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { Box } from '@mui/material'
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
 import { ApplyImportedSettings } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { paper } from '../../mods/paper.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { nowrap } from './dataStyles.ts'
 
 function changeLine(field: string, from: string, to: string) {
   switch (field) {
@@ -53,36 +52,29 @@ export function ImportSettingsDialog({
   const { t } = useLingui()
   const changes = preview?.changes ?? []
   return (
-    <Dialog open={preview !== null} onClose={onClose} transitionDuration={0} slotProps={{ paper }}>
-      <DialogTitle>{t`Import settings`}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 360 }}>
-        {changes.length === 0 ? (
-          <Box sx={{ fontSize: 13 }}>{t`Nothing would change.`}</Box>
-        ) : (
-          changes.map((c) => (
-            <Box key={c.field} sx={{ fontSize: 13 }}>
-              {changeLine(c.field, c.from, c.to)}
-            </Box>
-          ))
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} sx={nowrap}>
-          {t`Cancel`}
-        </Button>
-        <Button
-          onClick={() => {
-            if (!preview?.raw) {
-              return
-            }
-            ApplyImportedSettings(preview.raw).then(onClose).catch(reportUnexpected)
-          }}
-          disabled={changes.length === 0}
-          sx={nowrap}
-        >
-          {t`Import`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={preview !== null}
+      title={t`Import settings`}
+      confirmLabel={t`Import`}
+      confirmDisabled={changes.length === 0}
+      maxWidth={360}
+      onCancel={onClose}
+      onConfirm={() => {
+        if (!preview?.raw) {
+          return
+        }
+        ApplyImportedSettings(preview.raw).then(onClose).catch(reportUnexpected)
+      }}
+    >
+      {changes.length === 0 ? (
+        <Box sx={{ fontSize: 13 }}>{t`Nothing would change.`}</Box>
+      ) : (
+        changes.map((c) => (
+          <Box key={c.field} sx={{ fontSize: 13 }}>
+            {changeLine(c.field, c.from, c.to)}
+          </Box>
+        ))
+      )}
+    </ConfirmDialog>
   )
 }

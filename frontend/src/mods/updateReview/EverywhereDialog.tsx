@@ -1,14 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type {
   EverywherePreview,
@@ -18,10 +10,10 @@ import {
   PreviewEverywhere,
   UpdateEverywhere,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { errorMessage } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
-import { paper } from '../paper.ts'
 import { mergePreviews } from './mergePreviews.ts'
 
 function PreviewLists({ preview }: { preview: EverywherePreview }) {
@@ -135,24 +127,17 @@ export function EverywhereDialog({
     })
   }
   return (
-    <Dialog
+    <ConfirmDialog
       open={open}
-      onClose={pending ? undefined : onClose}
-      transitionDuration={0}
-      slotProps={{ paper: { sx: { ...paper.sx, width: 420, maxWidth: 'calc(100% - 32px)' } } }}
+      title={t`Update in all profiles (${n})`}
+      confirmLabel={t`Update`}
+      busy={pending}
+      confirmDisabled={n === 0}
+      maxWidth={420}
+      onCancel={onClose}
+      onConfirm={apply}
     >
-      <DialogTitle>{t`Update in all profiles (${n})`}</DialogTitle>
-      <DialogContent>
-        <PreviewBody loadError={loadError} preview={preview} />
-      </DialogContent>
-      <DialogActions sx={{ bgcolor: 'background.paper' }}>
-        <Button onClick={onClose} disabled={pending}>
-          {t`Cancel`}
-        </Button>
-        <Button variant="contained" onClick={apply} disabled={pending || n === 0}>
-          {t`Update`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <PreviewBody loadError={loadError} preview={preview} />
+    </ConfirmDialog>
   )
 }
