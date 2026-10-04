@@ -63,7 +63,7 @@ func Restore(zipPath, savesDir string, folders []string, keep int, now time.Time
 }
 
 func extractSaves(zipPath, dest string, folders []string) ([]string, error) {
-	if err := archive.Extract(zipPath, dest, archive.Options{}); err != nil {
+	if err := archive.Extract(zipPath, dest); err != nil {
 		return nil, err
 	}
 	allow := map[string]bool{}

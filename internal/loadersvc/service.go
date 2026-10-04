@@ -156,7 +156,7 @@ func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
 	if err := os.Mkdir(unpacked, 0o700); err != nil {
 		return profile.Bundle{}, err
 	}
-	if err := archive.Extract(archivePath, unpacked, archive.Options{}); err != nil {
+	if err := archive.Extract(archivePath, unpacked); err != nil {
 		return profile.Bundle{}, err
 	}
 	return b, s.items.AddDir(id, key, unpacked)

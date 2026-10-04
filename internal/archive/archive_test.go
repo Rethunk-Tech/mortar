@@ -55,10 +55,10 @@ func writeTemp(t *testing.T, name string, b []byte) string {
 	return p
 }
 
-func extract(t *testing.T, archive string, opts Options) (string, error) {
+func extract(t *testing.T, archive string, opts options) (string, error) {
 	t.Helper()
 	dest := t.TempDir()
-	return dest, Extract(archive, dest, opts)
+	return dest, extractWith(archive, dest, opts)
 }
 
 func wantReason(t *testing.T, err, reason error, entry string) {
@@ -96,7 +96,7 @@ func TestValidExtractsAndNormalisesModes(t *testing.T) {
 	wantFile := map[string]string{"zip": "mod/sub/data.json", "7z": "sub/b.txt", "rar": "asd.go", "rar5": "sub/a.txt"}
 	for name, p := range cases {
 		t.Run(name, func(t *testing.T) {
-			dest, err := extract(t, p, Options{})
+			dest, err := extract(t, p, options{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -117,7 +117,7 @@ func TestValidExtractsAndNormalisesModes(t *testing.T) {
 			}
 		})
 	}
-	dest, _ := extract(t, "testdata/valid.7z", Options{})
+	dest, _ := extract(t, "testdata/valid.7z", options{})
 	if got := readFile(t, filepath.Join(dest, "a.txt")); got != "hello mortar\n" {
 		t.Fatalf("7z content = %q", got)
 	}
@@ -146,16 +146,16 @@ func TestUnsafeEntriesRejected(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run("zip "+c.name, func(t *testing.T) {
-			_, err := extract(t, buildZip(t, zentry{name: c.entry, body: "x"}), Options{})
+			_, err := extract(t, buildZip(t, zentry{name: c.entry, body: "x"}), options{})
 			wantReason(t, err, c.reason, c.entry)
 		})
 		t.Run("rar "+c.name, func(t *testing.T) {
-			_, err := extract(t, buildRar(t, rarFile{name: c.entry, data: "x"}), Options{})
+			_, err := extract(t, buildRar(t, rarFile{name: c.entry, data: "x"}), options{})
 			wantReason(t, err, c.reason, c.entry)
 		})
 	}
 	for _, p := range []string{"testdata/traversal.7z", "testdata/absolute.7z"} {
-		_, err := extract(t, p, Options{})
+		_, err := extract(t, p, options{})
 		var e *Error
 		if !errors.As(err, &e) || !errors.Is(err, ErrTraversal) {
 			t.Fatalf("%s: got %v", p, err)
@@ -169,7 +169,7 @@ func TestNothingWrittenOutsideDest(t *testing.T) {
 	if err := os.Mkdir(dest, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	err := Extract(buildZip(t, zentry{name: "../evil", body: "x"}), dest, Options{})
+	err := Extract(buildZip(t, zentry{name: "../evil", body: "x"}), dest)
 	if err == nil {
 		t.Fatal("want error")
 	}
@@ -179,41 +179,41 @@ func TestNothingWrittenOutsideDest(t *testing.T) {
 }
 
 func TestLinksAndSpecialFilesRejected(t *testing.T) {
-	_, err := extract(t, buildZip(t, zentry{name: "l", body: "target", mode: os.ModeSymlink | 0o777}), Options{})
+	_, err := extract(t, buildZip(t, zentry{name: "l", body: "target", mode: os.ModeSymlink | 0o777}), options{})
 	wantReason(t, err, ErrLink, "l")
-	_, err = extract(t, buildZip(t, zentry{name: "d", mode: os.ModeDevice | 0o666}), Options{})
+	_, err = extract(t, buildZip(t, zentry{name: "d", mode: os.ModeDevice | 0o666}), options{})
 	wantReason(t, err, ErrSpecialFile, "d")
-	_, err = extract(t, buildZip(t, zentry{name: "p", mode: os.ModeNamedPipe | 0o666}), Options{})
+	_, err = extract(t, buildZip(t, zentry{name: "p", mode: os.ModeNamedPipe | 0o666}), options{})
 	wantReason(t, err, ErrSpecialFile, "p")
-	_, err = extract(t, "testdata/symlink.7z", Options{})
+	_, err = extract(t, "testdata/symlink.7z", options{})
 	wantReason(t, err, ErrLink, "link")
-	_, err = extract(t, buildRar(t, rarFile{name: "l", symlinkTo: "a"}), Options{})
+	_, err = extract(t, buildRar(t, rarFile{name: "l", symlinkTo: "a"}), options{})
 	wantReason(t, err, ErrLink, "l")
 }
 
 func TestCaseCollision(t *testing.T) {
-	_, err := extract(t, buildZip(t, zentry{name: "Mod/a.txt", body: "1"}, zentry{name: "mod/b.txt", body: "2"}), Options{})
+	_, err := extract(t, buildZip(t, zentry{name: "Mod/a.txt", body: "1"}, zentry{name: "mod/b.txt", body: "2"}), options{})
 	wantReason(t, err, ErrCaseCollision, "mod/b.txt")
-	_, err = extract(t, buildZip(t, zentry{name: "a.txt", body: "1"}, zentry{name: "a.txt", body: "2"}), Options{})
+	_, err = extract(t, buildZip(t, zentry{name: "a.txt", body: "1"}, zentry{name: "a.txt", body: "2"}), options{})
 	wantReason(t, err, ErrCaseCollision, "a.txt")
-	_, err = extract(t, buildRar(t, rarFile{name: "A", data: "1"}, rarFile{name: "a", data: "2"}), Options{})
+	_, err = extract(t, buildRar(t, rarFile{name: "A", data: "1"}, rarFile{name: "a", data: "2"}), options{})
 	wantReason(t, err, ErrCaseCollision, "a")
 }
 
 func TestCaps(t *testing.T) {
 	big := string(make([]byte, 100))
-	_, err := extract(t, buildZip(t, zentry{name: "big", body: big}), Options{MaxEntryBytes: 99})
+	_, err := extract(t, buildZip(t, zentry{name: "big", body: big}), options{MaxEntryBytes: 99})
 	wantReason(t, err, ErrEntryTooLarge, "big")
-	if _, err := extract(t, buildZip(t, zentry{name: "big", body: big}), Options{MaxEntryBytes: 100}); err != nil {
+	if _, err := extract(t, buildZip(t, zentry{name: "big", body: big}), options{MaxEntryBytes: 100}); err != nil {
 		t.Fatalf("entry at the cap: %v", err)
 	}
-	_, err = extract(t, buildZip(t, zentry{name: "a", body: big}, zentry{name: "b", body: big}), Options{MaxTotalBytes: 150})
+	_, err = extract(t, buildZip(t, zentry{name: "a", body: big}, zentry{name: "b", body: big}), options{MaxTotalBytes: 150})
 	wantReason(t, err, ErrArchiveTooLarge, "b")
-	_, err = extract(t, buildZip(t, zentry{name: "a", body: "1"}, zentry{name: "b", body: "1"}, zentry{name: "c", body: "1"}), Options{MaxEntries: 2})
+	_, err = extract(t, buildZip(t, zentry{name: "a", body: "1"}, zentry{name: "b", body: "1"}, zentry{name: "c", body: "1"}), options{MaxEntries: 2})
 	wantReason(t, err, ErrTooManyEntries, "")
-	_, err = extract(t, buildRar(t, rarFile{name: "big", data: big}), Options{MaxEntryBytes: 50})
+	_, err = extract(t, buildRar(t, rarFile{name: "big", data: big}), options{MaxEntryBytes: 50})
 	wantReason(t, err, ErrEntryTooLarge, "big")
-	_, err = extract(t, "testdata/valid.7z", Options{MaxEntryBytes: 5})
+	_, err = extract(t, "testdata/valid.7z", options{MaxEntryBytes: 5})
 	wantReason(t, err, ErrEntryTooLarge, "a.txt")
 }
 
@@ -232,7 +232,7 @@ func TestCapCountsActualBytesNotDeclared(t *testing.T) {
 		}
 		binary.LittleEndian.PutUint32(b[off:], 1)
 	}
-	_, err = extract(t, writeTemp(t, "lie.zip", b), Options{MaxEntryBytes: 10})
+	_, err = extract(t, writeTemp(t, "lie.zip", b), options{MaxEntryBytes: 10})
 	if _, ok := errors.AsType[*Error](err); !ok {
 		t.Fatalf("got %v", err)
 	}
@@ -244,7 +244,7 @@ func TestChecksumMismatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	zb[bytes.Index(zb, []byte("payload"))] ^= 0xff
-	_, err = extract(t, writeTemp(t, "bad.zip", zb), Options{})
+	_, err = extract(t, writeTemp(t, "bad.zip", zb), options{})
 	wantReason(t, err, ErrChecksum, "f")
 
 	sb, err := os.ReadFile("testdata/valid.7z")
@@ -252,7 +252,7 @@ func TestChecksumMismatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	sb[bytes.Index(sb, []byte("hello mortar"))] ^= 0xff
-	_, err = extract(t, writeTemp(t, "bad.7z", sb), Options{})
+	_, err = extract(t, writeTemp(t, "bad.7z", sb), options{})
 	wantReason(t, err, ErrChecksum, "a.txt")
 
 	rb, err := os.ReadFile(buildRar(t, rarFile{name: "f", data: "payload"}))
@@ -260,18 +260,18 @@ func TestChecksumMismatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	rb[bytes.Index(rb, []byte("payload"))] ^= 0xff
-	_, err = extract(t, writeTemp(t, "bad.rar", rb), Options{})
+	_, err = extract(t, writeTemp(t, "bad.rar", rb), options{})
 	wantReason(t, err, ErrChecksum, "f")
 }
 
 func TestEncryptedRejected(t *testing.T) {
 	for _, p := range []string{"testdata/encrypted.7z", "testdata/encrypted-headers.7z"} {
-		_, err := extract(t, p, Options{})
+		_, err := extract(t, p, options{})
 		if !errors.Is(err, ErrEncrypted) {
 			t.Fatalf("%s: got %v", p, err)
 		}
 	}
-	_, err := extract(t, buildRar(t, rarFile{name: "f", data: "x", encrypted: true}), Options{})
+	_, err := extract(t, buildRar(t, rarFile{name: "f", data: "x", encrypted: true}), options{})
 	wantReason(t, err, ErrEncrypted, "f")
 
 	var buf bytes.Buffer
@@ -284,7 +284,7 @@ func TestEncryptedRejected(t *testing.T) {
 	if err := zw.Close(); err != nil {
 		t.Fatal(err)
 	}
-	_, err = extract(t, writeTemp(t, "enc.zip", buf.Bytes()), Options{})
+	_, err = extract(t, writeTemp(t, "enc.zip", buf.Bytes()), options{})
 	wantReason(t, err, ErrEncrypted, "f")
 }
 
@@ -293,10 +293,10 @@ func TestFormatDetectionIgnoresExtension(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := extract(t, writeTemp(t, "mod.zip", b), Options{}); err != nil {
+	if _, err := extract(t, writeTemp(t, "mod.zip", b), options{}); err != nil {
 		t.Fatal(err)
 	}
-	_, err = extract(t, writeTemp(t, "mod.zip", []byte("not an archive")), Options{})
+	_, err = extract(t, writeTemp(t, "mod.zip", []byte("not an archive")), options{})
 	wantReason(t, err, ErrUnsupportedFormat, "")
 }
 
@@ -334,7 +334,7 @@ func TestDecoderMemoryHeadersRejected(t *testing.T) {
 			runtime.GC()
 			var before, after runtime.MemStats
 			runtime.ReadMemStats(&before)
-			_, err := extract(t, tc.archive, Options{})
+			_, err := extract(t, tc.archive, options{})
 			runtime.ReadMemStats(&after)
 			t.Logf("HeapSys delta=%d TotalAlloc delta=%d", after.HeapSys-before.HeapSys, after.TotalAlloc-before.TotalAlloc)
 			if err == nil || !strings.Contains(err.Error(), tc.want) {
@@ -471,7 +471,7 @@ func buildRar(t *testing.T, files ...rarFile) string {
 
 func TestZipNamesInALegacyEncodingBecomeUTF8(t *testing.T) {
 	// GBK bytes for a left curly quote, as a Chinese-locale zip tool writes them without the UTF-8 flag.
-	dest, err := extract(t, buildZip(t, zentry{name: "[FS]Kyuya\xa1\xaes hats Pack/manifest.json", body: "{}"}), Options{})
+	dest, err := extract(t, buildZip(t, zentry{name: "[FS]Kyuya\xa1\xaes hats Pack/manifest.json", body: "{}"}), options{})
 	if err != nil {
 		t.Fatal(err)
 	}

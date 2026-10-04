@@ -24,15 +24,15 @@ import (
 	"github.com/nwaples/rardecode/v2"
 )
 
-// Default caps, applied to every zero field of Options.
+// Default caps, applied to every zero field of options.
 const (
 	DefaultMaxEntryBytes int64 = 256 << 20
 	DefaultMaxTotalBytes int64 = 2 << 30
 	DefaultMaxEntries          = 20000
 )
 
-// Options lowers or raises the extraction caps; a zero field means its default.
-type Options struct {
+// options lowers or raises the extraction caps; a zero field means its default.
+type options struct {
 	MaxEntryBytes int64
 	MaxTotalBytes int64
 	MaxEntries    int
@@ -74,7 +74,12 @@ func (e *Error) Unwrap() error { return e.Reason }
 // from its magic bytes. dest must exist. Extraction stops at the first
 // failure and leaves what it wrote in dest, so the caller passes a temp
 // directory and discards it on error.
-func Extract(archivePath, dest string, opts Options) error {
+func Extract(archivePath, dest string) error {
+	return extractWith(archivePath, dest, options{})
+}
+
+// extractWith is Extract with lowered or raised caps, which the tests use.
+func extractWith(archivePath, dest string, opts options) error {
 	f, err := fsx.Open(archivePath)
 	if err != nil {
 		return err
@@ -135,7 +140,7 @@ func detect(head []byte) int {
 
 type extractor struct {
 	dest    string
-	opts    Options
+	opts    options
 	entries int
 	total   int64
 	seen    map[string]string // lower-cased path -> spelling first used

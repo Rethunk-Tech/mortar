@@ -225,7 +225,7 @@ func (s *Store) AddArchiveKey(game, key, archivePath string) error {
 		return s.touch(game, key)
 	}
 	return s.install(game, key, func(tmp string) error {
-		return archive.Extract(archivePath, tmp, archive.Options{})
+		return archive.Extract(archivePath, tmp)
 	}, func() int64 {
 		n, _ := archive.DeclaredSize(archivePath)
 		return n

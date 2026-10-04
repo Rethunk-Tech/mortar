@@ -186,7 +186,7 @@ func (g Game) InstallLoaderAt(ctx context.Context, dir, version string, bundled 
 	if err := os.Mkdir(unpacked, 0o700); err != nil {
 		return "", err
 	}
-	if err := archive.Extract(zipPath, unpacked, archive.Options{}); err != nil {
+	if err := archive.Extract(zipPath, unpacked); err != nil {
 		return "", err
 	}
 
@@ -209,7 +209,7 @@ func (g Game) InstallLoaderAt(ctx context.Context, dir, version string, bundled 
 	if err := os.Mkdir(mods, 0o700); err != nil {
 		return "", err
 	}
-	if err := archive.Extract(filepath.Join(folder, "install.dat"), mods, archive.Options{}); err != nil {
+	if err := archive.Extract(filepath.Join(folder, "install.dat"), mods); err != nil {
 		return "", err
 	}
 	if err := bundled(version, filepath.Join(mods, "Mods")); err != nil {
