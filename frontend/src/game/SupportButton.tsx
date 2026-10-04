@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip } from '@mui/material'
+import { IconButton, Menu, Tooltip } from '@mui/material'
 import { Bug, LifeBuoy } from 'lucide-react'
 import { useState } from 'react'
 import { useConsole } from '../console/store.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportBug } from '../shell/reportBug.ts'
 import { useTab } from './tab.ts'
 
@@ -23,29 +24,23 @@ export function SupportButton({ game }: { game: string }) {
         </IconButton>
       </Tooltip>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
-        <MenuItem
+        <MenuAction
+          icon={<LifeBuoy size={16} />}
+          label={t`Get help`}
           onClick={() => {
             close()
             useTab.getState().setTab('console')
             useConsole.getState().setHelping(true)
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <LifeBuoy size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Get help`}</ListItemText>
-        </MenuItem>
-        <MenuItem
+        />
+        <MenuAction
+          icon={<Bug size={16} />}
+          label={t`Report a Mortar bug`}
           onClick={() => {
             close()
             reportBug(game)
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <Bug size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Report a Mortar bug`}</ListItemText>
-        </MenuItem>
+        />
       </Menu>
     </>
   )

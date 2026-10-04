@@ -1,5 +1,6 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Divider, ListItemIcon, ListItemText, MenuItem, Tooltip } from '@mui/material'
+import { Divider } from '@mui/material'
 import {
   Copy,
   Eye,
@@ -16,7 +17,7 @@ import {
   Trash2,
   Users,
 } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
@@ -33,16 +34,12 @@ import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
+import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
 
 // The profile actions shared by the profile page's buttons and the sidebar's context menu, so both offer the same.
-
-const toastError = (title: string) => (e: unknown) =>
-  useToasts
-    .getState()
-    .push({ kind: 'error', title, body: errorMessage(e), detail: errorDetails(e) })
 
 const sentenceCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
 
@@ -53,25 +50,14 @@ function ProfileMenuItem({
   tooltip,
   onClick,
 }: {
-  icon: ReactNode
-  label: string
+  icon: React.ReactNode
+  label: React.ReactNode
   disabled?: boolean
   tooltip?: string
   onClick: () => void
 }) {
-  const item = (
-    <MenuItem disabled={disabled} onClick={onClick}>
-      <ListItemIcon sx={{ color: 'inherit' }}>{icon}</ListItemIcon>
-      <ListItemText>{label}</ListItemText>
-    </MenuItem>
-  )
-  if (!tooltip) {
-    return item
-  }
   return (
-    <Tooltip title={tooltip}>
-      <span>{item}</span>
-    </Tooltip>
+    <MenuAction icon={icon} label={label} disabled={disabled} tooltip={tooltip} onClick={onClick} />
   )
 }
 
@@ -132,7 +118,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
                   .getState()
                   .push({ kind: 'success', title: t`Shortcut added`, body: path }),
               )
-              .catch(toastError(t`Could not add the shortcut`))
+              .catch(reportError(t`Could not add the shortcut`))
           }
         }}
       />
@@ -149,7 +135,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
                   useToasts.getState().push({ kind: 'success', title: t`Shortcut removed` })
                   setHasShortcut(false)
                 })
-                .catch(toastError(t`Could not remove the shortcut`))
+                .catch(reportError(t`Could not remove the shortcut`))
             }
           }}
         />
@@ -230,7 +216,7 @@ function CoverMenuItems({
     close()
     const path = await PickImage(t`Choose cover image`)
     if (path) {
-      await apply(path).catch(toastError(t`Could not use that image`))
+      await apply(path).catch(reportError(t`Could not use that image`))
     }
   }
   return [
@@ -307,7 +293,7 @@ function ProfileDialogs({
             useMods.getState().load().catch(reportUnexpected)
           }
           const missing = result.missing ?? []
-          const added = t`${result.added} mods added`
+          const added = plural(result.added, { one: '# mod added', other: '# mods added' })
           useToasts.getState().push({
             kind: 'success',
             title: t`Bundle added`,
