@@ -37,6 +37,7 @@ type Service struct {
 	cache   map[string]cached
 	updates map[string]cachedUpdates
 	checks  map[string]*problemCall
+	assets  map[string]cachedIndex
 }
 
 type problemCall struct {
@@ -98,7 +99,7 @@ func (c cached) fresh(fp string, now time.Time) bool {
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store, m *meta.Client) *Service {
-	return &Service{home: home, settings: s, profiles: profiles, meta: m, drift: map[string]driftScan{}, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}}
+	return &Service{home: home, settings: s, profiles: profiles, meta: m, drift: map[string]driftScan{}, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}, assets: map[string]cachedIndex{}}
 }
 
 func platform() string {
@@ -311,6 +312,7 @@ func (s *Service) ForgetCached() {
 	s.cache = map[string]cached{}
 	s.drift = map[string]driftScan{}
 	s.updates = map[string]cachedUpdates{}
+	s.assets = map[string]cachedIndex{}
 	s.mu.Unlock()
 	packDiskState.Lock()
 	packDiskState.loaded, packDiskState.entries, packDiskState.dirty = false, nil, false

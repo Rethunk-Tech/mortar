@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/loadorder"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 )
@@ -23,6 +24,9 @@ type AssetTouch struct {
 	DataKey   string `json:"dataKey,omitempty"`
 	Source    string `json:"source,omitempty"`
 	Index     int    `json:"index"`
+	// CanWin is set on a losing mod that loading later would make win: it ties the winner's priority and no
+	// other mod in the group already loads after it.
+	CanWin bool `json:"canWin,omitempty"`
 }
 
 // AssetTarget is every recorded touch of one normalised asset (and optional data key).
@@ -39,11 +43,19 @@ type WhoChangesPage struct {
 	Targets []AssetTarget `json:"targets"`
 }
 
-// AssetMapPage is a sorted, paged slice of touched assets.
+// AssetMapPage is a sorted, paged slice of touched assets. All and Shared count the assets the search matches,
+// and those of them more than one mod changes; Total is the count the page slices.
 type AssetMapPage struct {
 	Targets []AssetTarget `json:"targets"`
 	Total   int           `json:"total"`
 	Offset  int           `json:"offset"`
+	All     int           `json:"all"`
+	Shared  int           `json:"shared"`
+}
+
+type cachedIndex struct {
+	fingerprint string
+	targets     []AssetTarget
 }
 
 const assetMapPageSize = 100
@@ -80,23 +92,48 @@ type indexedTouch struct {
 }
 
 func (s *Service) WhoChanges(_ context.Context, gameID, id, query string) (WhoChangesPage, error) {
-	mods, err := s.installed(gameID, id)
+	index, err := s.assetIndex(gameID, id)
 	if err != nil {
 		return WhoChangesPage{}, err
 	}
-	return WhoChangesOf(mods, query), nil
+	return WhoChangesOf(index, query), nil
 }
 
-func (s *Service) AssetMap(_ context.Context, gameID, id, filter string, offset int) (AssetMapPage, error) {
-	mods, err := s.installed(gameID, id)
+// AssetMap pages the profile's touched assets; shared keeps only those more than one mod changes.
+func (s *Service) AssetMap(_ context.Context, gameID, id, filter string, shared bool, offset int) (AssetMapPage, error) {
+	index, err := s.assetIndex(gameID, id)
 	if err != nil {
 		return AssetMapPage{}, err
 	}
-	return AssetMapOf(mods, filter, offset), nil
+	return AssetMapOf(index, filter, shared, offset), nil
 }
 
-func WhoChangesOf(mods []Installed, query string) WhoChangesPage {
+// assetIndex builds the profile's index on first use and keeps it until the problems fingerprint changes, so
+// searching and paging do not re-read every content pack.
+func (s *Service) assetIndex(gameID, id string) ([]AssetTarget, error) {
+	mods, err := s.installed(gameID, id)
+	if err != nil {
+		return nil, err
+	}
+	key := gameID + "/" + id
+	fp := fingerprint(Environment{}, mods, "")
+	s.mu.Lock()
+	c, ok := s.assets[key]
+	s.mu.Unlock()
+	if ok && c.fingerprint == fp {
+		return c.targets, nil
+	}
 	index := buildAssetIndex(mods)
+	s.mu.Lock()
+	if s.assets == nil {
+		s.assets = map[string]cachedIndex{}
+	}
+	s.assets[key] = cachedIndex{fingerprint: fp, targets: index}
+	s.mu.Unlock()
+	return index, nil
+}
+
+func WhoChangesOf(index []AssetTarget, query string) WhoChangesPage {
 	needles := queryNeedles(query)
 	out := WhoChangesPage{Query: strings.TrimSpace(query), Targets: []AssetTarget{}}
 	if len(needles) == 0 {
@@ -110,23 +147,25 @@ func WhoChangesOf(mods []Installed, query string) WhoChangesPage {
 	return out
 }
 
-func AssetMapOf(mods []Installed, filter string, offset int) AssetMapPage {
-	index := buildAssetIndex(mods)
+func AssetMapOf(index []AssetTarget, filter string, shared bool, offset int) AssetMapPage {
 	needles := queryNeedles(filter)
-	matched := index
-	if len(needles) > 0 {
-		filtered := make([]AssetTarget, 0, len(index))
-		for _, target := range index {
-			if assetMatches(target, needles) {
-				filtered = append(filtered, target)
-			}
+	page := AssetMapPage{Offset: max(offset, 0), Targets: []AssetTarget{}}
+	matched := make([]AssetTarget, 0, len(index))
+	for _, target := range index {
+		if len(needles) > 0 && !assetMatches(target, needles) {
+			continue
 		}
-		matched = filtered
+		page.All++
+		many := sharedTarget(target)
+		if many {
+			page.Shared++
+		}
+		if many || !shared {
+			matched = append(matched, target)
+		}
 	}
-	if offset < 0 {
-		offset = 0
-	}
-	page := AssetMapPage{Total: len(matched), Offset: offset, Targets: []AssetTarget{}}
+	offset = page.Offset
+	page.Total = len(matched)
 	if offset >= len(matched) {
 		return page
 	}
@@ -135,17 +174,76 @@ func AssetMapOf(mods []Installed, filter string, offset int) AssetMapPage {
 	return page
 }
 
+func sharedTarget(target AssetTarget) bool {
+	for _, m := range target.Mods {
+		if !profile.SameID(m.ModID, target.Mods[0].ModID) {
+			return true
+		}
+	}
+	return false
+}
+
+// smapiOrder is each enabled mod's position in SMAPI's load order and the folded UniqueIDs it loads after.
+func smapiOrder(mods []Installed) (order map[string]int, after map[string][]string) {
+	in := make([]loadorder.Mod, 0, len(mods))
+	after = map[string][]string{}
+	for _, mod := range mods {
+		if !mod.Enabled {
+			continue
+		}
+		m := loadorder.Mod{UniqueID: mod.UniqueID, Name: mod.Name, ContentPackFor: mod.ContentPackFor}
+		id := manifest.FoldID(mod.UniqueID)
+		for _, d := range mod.Dependencies {
+			if d.Required {
+				m.Needs = append(m.Needs, d.UniqueID)
+			} else {
+				m.Optional = append(m.Optional, d.UniqueID)
+			}
+			after[id] = append(after[id], manifest.FoldID(d.UniqueID))
+		}
+		if mod.ContentPackFor != "" {
+			after[id] = append(after[id], manifest.FoldID(mod.ContentPackFor))
+		}
+		in = append(in, m)
+	}
+	order = map[string]int{}
+	for _, row := range loadorder.Resolve(in) {
+		order[manifest.FoldID(row.UniqueID)] = row.Position
+	}
+	return order, after
+}
+
+// loadsAfter reports whether mod a already loads after mod b through its dependencies.
+func loadsAfter(after map[string][]string, a, b string) bool {
+	seen := map[string]bool{}
+	stack := []string{manifest.FoldID(a)}
+	b = manifest.FoldID(b)
+	for len(stack) > 0 {
+		id := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		for _, dep := range after[id] {
+			if dep == b {
+				return true
+			}
+			if !seen[dep] {
+				seen[dep] = true
+				stack = append(stack, dep)
+			}
+		}
+	}
+	return false
+}
+
 func buildAssetIndex(mods []Installed) []AssetTarget {
 	defer flushPackDiskCache(mods)
 	preloadContentPacks(mods)
 	present := map[string]bool{}
-	order := map[string]int{}
-	for i, mod := range mods {
+	for _, mod := range mods {
 		if mod.Enabled {
 			present[manifest.FoldID(mod.UniqueID)] = true
 		}
-		order[manifest.FoldID(mod.UniqueID)] = i
 	}
+	order, after := smapiOrder(mods)
 	grouped := map[assetIndexKey][]indexedTouch{}
 	for _, mod := range mods {
 		if !mod.Enabled {
@@ -184,6 +282,7 @@ func buildAssetIndex(mods []Installed) []AssetTarget {
 		modsOut := make([]AssetTouch, len(touches))
 		for i, t := range touches {
 			t.touch.Winner = winner != "" && profile.SameID(t.touch.ModID, winner)
+			t.touch.CanWin = canWin(touches, t, winner, after)
 			modsOut[i] = t.touch
 		}
 		out = append(out, AssetTarget{Target: key.target, Key: key.key, Mods: modsOut, Winner: winner})
@@ -321,6 +420,12 @@ func dataKeysOf(p cpPatch) []string {
 	return keys
 }
 
+// indexWinner follows Content Patcher's order (touches are sorted by SMAPI load order). Edits apply by
+// priority, then load order, then patch order (docs/author-guide/action-editdata.md, Priority), so the
+// highest priority wins and a tie goes to the mod loaded last. Loads keep the highest priority; on a tie
+// PatchManager.ApplyPatchesToAsset replaces its pick with each later candidate, so the last loaded wins too
+// (the Load docs say "first", but the code only skips a strictly higher priority). Two Exclusive loads
+// apply neither.
 func indexWinner(touches []indexedTouch) string {
 	if len(touches) == 0 {
 		return ""
@@ -374,19 +479,29 @@ func indexWinner(touches []indexedTouch) string {
 	if kind == "load" && exclusiveCount >= 2 {
 		return ""
 	}
-	if best >= 0 && len(tied) == 1 {
-		return hits[best].id
+	if best < 0 {
+		return ""
 	}
-	if kind == "load" && len(tied) == 2 {
-		a, b := tied[0], tied[1]
-		if hits[a].order != hits[b].order {
-			if hits[a].order > hits[b].order {
-				return hits[a].id
-			}
-			return hits[b].id
+	return hits[tied[len(tied)-1]].id
+}
+
+// canWin reports whether making t's mod load after every other mod in the group would make it the winner.
+// Order only breaks a priority tie, and a mod that another already loads after cannot be moved past it
+// without a dependency cycle.
+func canWin(touches []indexedTouch, t indexedTouch, winner string, after map[string][]string) bool {
+	if winner == "" || profile.SameID(t.touch.ModID, winner) {
+		return false
+	}
+	top, own := t.rank, t.rank
+	for _, o := range touches {
+		top = max(top, o.rank)
+		if profile.SameID(o.touch.ModID, t.touch.ModID) {
+			own = max(own, o.rank)
+		} else if loadsAfter(after, o.touch.ModID, t.touch.ModID) {
+			return false
 		}
 	}
-	return ""
+	return own == top
 }
 
 func queryNeedles(query string) []string {

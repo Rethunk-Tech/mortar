@@ -1,40 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, Menu, MenuItem } from '@mui/material'
 import { type MouseEvent, useState } from 'react'
-import type { Profile } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { SetWinner } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { useProfiles } from '../../profiles/store.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { sameId } from '../lookup.ts'
-import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
+import { applyWins } from './applyWins.ts'
 
 const buttonHeight = 28
-
-function applyWins(winnerKey: string, packIds: string[], skip: number, on: boolean) {
-  const { game, openId } = useProfiles.getState()
-  const { loadProblems } = useMods.getState()
-  const { replace } = useProfiles.getState()
-  if (!(game && openId)) {
-    return
-  }
-  const run = async () => {
-    let profile: Profile | undefined
-    for (const [i, id] of packIds.entries()) {
-      if (i !== skip && id) {
-        profile = await SetWinner(game.id, openId, winnerKey, id, on)
-      }
-    }
-    if (!profile) {
-      return
-    }
-    replace(profile)
-    await loadProblems()
-  }
-  run().catch(reportUnexpected)
-}
 
 function WinFix({
   problem,
@@ -62,14 +36,14 @@ function WinFix({
     const index = packIds.findIndex((id) => sameId(id, winnerId))
     const winnerKey = keys[index]
     if (winnerKey) {
-      applyWins(winnerKey, packIds, index, false)
+      applyWins(winnerKey, packIds, index, false).catch(reportUnexpected)
     }
   }
   const choose = (index: number) => {
     setAnchor(null)
     const winnerKey = keys[index]
     if (winnerKey) {
-      applyWins(winnerKey, packIds, index, true)
+      applyWins(winnerKey, packIds, index, true).catch(reportUnexpected)
     }
   }
   const control = resolved ? (

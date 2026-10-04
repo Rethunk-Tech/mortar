@@ -516,7 +516,7 @@ func TestLoadsWithoutPriorityAreExclusive(t *testing.T) {
 	if len(conflicts) != 1 || conflicts[0].WinnerName != "CP applies neither" {
 		t.Fatalf("two loads without a priority are both Exclusive, got %#v", conflicts)
 	}
-	if target := findTarget(AssetMapOf(mods, "", 0).Targets, "maps/farmcave", ""); target.Winner != "" {
+	if target := findTarget(buildAssetIndex(mods), "maps/farmcave", ""); target.Winner != "" {
 		t.Fatalf("asset map names a winner Content Patcher never applies: %+v", target)
 	}
 }
