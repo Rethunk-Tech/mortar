@@ -9,8 +9,11 @@ import {
   SetNxmDefaultProfile,
   SetNxmRedirectOtherGames,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { ExtensionContact } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
 import { useProfiles } from '../../profiles/store.ts'
+import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
@@ -59,10 +62,34 @@ const EXTENSION_ZIP =
   'https://github.com/Rethunk-AI/mortar/releases/latest/download/mortar-browser-extension.zip'
 
 // Until the browser stores list the extension, it is installed from the zip on each release.
+function ExtensionConnection() {
+  const { t } = useLingui()
+  const [contact, setContact] = useState<{ browser: string; lastSeen: string } | null>(null)
+  useEffect(() => {
+    ExtensionContact().then(setContact).catch(reportUnexpected)
+  }, [])
+  const connected = contact !== null && contact.browser !== ''
+  return (
+    <SettingRow label={t`Connection`}>
+      <Box sx={{ fontSize: 14 }}>
+        {connected ? (
+          <>
+            {t`Connected from ${contact.browser}, last seen `}
+            <When value={contact.lastSeen} withTime={true} />
+          </>
+        ) : (
+          t`Not connected yet`
+        )}
+      </Box>
+    </SettingRow>
+  )
+}
+
 function ExtensionInstall() {
   const { t } = useLingui()
   return (
     <>
+      <ExtensionConnection />
       <SettingRow
         label={t`Get the extension`}
         description={t`It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar.`}

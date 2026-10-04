@@ -6,36 +6,46 @@ import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/inter
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useLaunch } from '../../launch/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import type { MoveState } from './DataMoveRun.ts'
 import { mono, nowrap } from './dataStyles.ts'
 
-export function MoveDataButton({ onPicked }: { onPicked: (dest: string) => void }) {
+export function MoveDataButton({
+  onPicked,
+  disabledReason = '',
+}: {
+  onPicked: (dest: string) => void
+  disabledReason?: string
+}) {
   const { t } = useLingui()
   return (
-    <Button
-      variant="outlined"
-      startIcon={<FolderInput size={16} />}
-      onClick={() => {
-        const st = useLaunch.getState().status
-        if (st?.state === State.Launching || st?.state === State.Running) {
-          useToasts.getState().push({
-            kind: 'error',
-            title: t`Stop the game before moving the data folder.`,
-          })
-          return
-        }
-        PickFolder(t`Move data folder…`)
-          .then((dest) => (dest ? onPicked(dest) : undefined))
-          .catch((err: unknown) => {
-            reportError(t`Could not prepare the data folder move`)(err)
-          })
-      }}
-      sx={{ ...nowrap, flexShrink: 0 }}
-    >
-      {t`Move…`}
-    </Button>
+    <DisabledReason title={disabledReason} disabled={disabledReason !== ''}>
+      <Button
+        disabled={disabledReason !== ''}
+        variant="outlined"
+        startIcon={<FolderInput size={16} />}
+        onClick={() => {
+          const st = useLaunch.getState().status
+          if (st?.state === State.Launching || st?.state === State.Running) {
+            useToasts.getState().push({
+              kind: 'error',
+              title: t`Stop the game before moving the data folder.`,
+            })
+            return
+          }
+          PickFolder(t`Move data folder…`)
+            .then((dest) => (dest ? onPicked(dest) : undefined))
+            .catch((err: unknown) => {
+              reportError(t`Could not prepare the data folder move`)(err)
+            })
+        }}
+        sx={{ ...nowrap, flexShrink: 0 }}
+      >
+        {t`Move…`}
+      </Button>
+    </DisabledReason>
   )
 }
 

@@ -31,6 +31,7 @@ import {
   type HistoryFilters,
   historyProfiles,
 } from './history.ts'
+import { RetryAllButton } from './RetryAllButton.tsx'
 
 const millisecondsPerSecond = 1000
 
@@ -170,6 +171,7 @@ export function HistoryList({
             ))}
           </Select>
         </FormControl>
+        <RetryAllButton failed={entries.filter((e) => e.outcome === 'failed').length} />
         {entries.length > 0 ? (
           <TipIconButton
             label={t`Clear history`}

@@ -23,6 +23,7 @@ import { useNexus } from '../nexus.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey } from '../PrefRow.tsx'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { NexusSSO } from './NexusSSO.tsx'
 import { useNxmHandler } from './nxmHandler.tsx'
 
 function UntrackConfirmDialog({
@@ -264,6 +265,7 @@ export function NexusMods() {
         onSubmit={submit}
         sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
       >
+        <NexusSSO />
         <Box component="label" htmlFor={keyId} sx={{ fontSize: 14, fontWeight: 600 }}>
           {t`Personal API key`}
         </Box>

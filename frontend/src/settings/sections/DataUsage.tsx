@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Skeleton, Tooltip, useTheme } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type { Usage as DiskUse } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
+import { DataLocation } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
 import {
   OpenDataFolder,
   SetBackupsKept,
@@ -274,9 +275,20 @@ export function Location({
   onPicked: (dest: string) => void
 }) {
   const { t } = useLingui()
+  const [portableDir, setPortableDir] = useState('')
+  useEffect(() => {
+    DataLocation()
+      .then((loc) => setPortableDir(loc.portable ? loc.dir : ''))
+      .catch(reportUnexpected)
+  }, [])
+  const portable = portableDir !== ''
+  let description = usage ? usage.path : t`Measuring…`
+  if (portable) {
+    description = t`Portable copy: data is kept in ${portableDir}`
+  }
   return (
     <SettingsSection title={t`Location`}>
-      <SettingRow label={t`Mortar's data`} description={usage ? usage.path : t`Measuring…`}>
+      <SettingRow label={t`Mortar's data`} description={description}>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outlined"
@@ -285,7 +297,10 @@ export function Location({
           >
             {t`Open folder`}
           </Button>
-          <MoveDataButton onPicked={onPicked} />
+          <MoveDataButton
+            onPicked={onPicked}
+            disabledReason={portable ? t`A portable copy keeps its data beside the program.` : ''}
+          />
         </Box>
       </SettingRow>
     </SettingsSection>

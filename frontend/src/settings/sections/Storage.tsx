@@ -6,6 +6,8 @@ import { useNav } from '../../nav/store.ts'
 import { reportError } from '../../toasts/report.ts'
 import { PrefKeys } from '../PrefRow.tsx'
 import { SettingsSection } from '../SettingsSection.tsx'
+import { BackupsUsageRow } from './DataBackups.tsx'
+import { HistoryUsageRows } from './DataHistory.tsx'
 import { CacheClearDialog } from './DataMods.tsx'
 import { MoveDialog } from './DataMove.tsx'
 import { type MoveState, moveDataFolder } from './DataMoveRun.ts'
@@ -91,6 +93,8 @@ export function Storage() {
       <SettingsSection title={t`Retention`}>
         <PrefKeys keys={['storeRetentionDays', 'trashRetentionDays', 'historyEventsKept']} />
         <BackupsKept />
+        <BackupsUsageRow />
+        <HistoryUsageRows />
       </SettingsSection>
       {move.dialog}
       <CleanupDialog open={cleaning} onClose={() => setCleaning(false)} onChanged={restart} />

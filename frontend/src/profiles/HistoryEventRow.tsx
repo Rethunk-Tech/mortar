@@ -29,20 +29,23 @@ export function HistoryEventRow({
   const changes = historyChangeSummary(ev)
   const marker = ev.kind === 'good'
   const label = marker ? t`Known good` : ev.label
+  const trimmed = ev.kind === 'trimmed'
   return (
     <ListItem
       disableGutters={true}
       secondaryAction={
-        <Button size="small" disabled={busy} onClick={onUndo}>
-          {t`Restore ${label}`}
-        </Button>
+        trimmed ? null : (
+          <Button size="small" disabled={busy} onClick={onUndo}>
+            {t`Undo ${label}`}
+          </Button>
+        )
       }
     >
       <Checkbox
         size="small"
         checked={selected}
         onChange={onToggle}
-        disabled={busy}
+        disabled={busy || trimmed}
         slotProps={{ input: { 'aria-label': t`Compare ${label}` } }}
       />
       <ListItemText
