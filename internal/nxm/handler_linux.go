@@ -1,6 +1,7 @@
 package nxm
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -202,6 +203,9 @@ func (l *System) NotificationIcon() string {
 
 func (l *System) installIcons() error {
 	png, svg := l.iconPNGPath(), l.iconSVGPath()
+	if same(png, iconPNG) && same(svg, iconSVG) {
+		return nil
+	}
 	if err := os.MkdirAll(filepath.Dir(png), 0o750); err != nil {
 		return err
 	}
@@ -362,9 +366,18 @@ func (l *System) RegisterLinks() error {
 
 // Refresh rewrites the desktop entry when Mortar has moved since it was written, as an AppImage does when the user
 // moves the file. When no entry exists yet it registers mortar:// and .mortar so a skipped first run still gets
-// those. Only a production build refreshes, so a dev build or go run does not take the entry from the installed Mortar.
+// those. Only a production build takes the entry, so a dev build or go run does not take it from the installed Mortar;
+// the icons are any build's to bring up to date, since they name no program.
 func (l *System) Refresh() error {
-	if !production || skipUserDesktop() {
+	if skipUserDesktop() {
+		return nil
+	}
+	if _, err := fsx.Stat(l.desktopPath()); err == nil {
+		if err := l.installIcons(); err != nil {
+			return err
+		}
+	}
+	if !production {
 		return nil
 	}
 	return l.refresh()
@@ -386,6 +399,11 @@ func (l *System) refresh() error {
 		}
 	}
 	return l.RegisterLinks()
+}
+
+func same(path string, want []byte) bool {
+	b, err := fsx.ReadFile(path)
+	return err == nil && bytes.Equal(b, want)
 }
 
 // execTarget is the program the desktop entry runs, as desktopFile writes it, or "" when it holds no such line.

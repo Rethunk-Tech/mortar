@@ -1,6 +1,7 @@
 package nxm
 
 import (
+	"bytes"
 	"errors"
 	"os"
 	"path/filepath"
@@ -408,5 +409,27 @@ func TestFlatpakSkipsXdgMime(t *testing.T) {
 	}
 	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("flatpak wrote a user desktop entry")
+	}
+}
+
+func TestRefreshUpdatesIconsWhenAnotherCopyOwnsTheEntry(t *testing.T) {
+	l, _ := newLinux(t, "")
+	other := filepath.Join(t.TempDir(), "other-mortar")
+	if err := fsx.WriteFile(other, nil, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	l.exe = other
+	if err := l.Register(); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(l.iconSVGPath(), []byte("<svg/>"), desktopPerm); err != nil {
+		t.Fatal(err)
+	}
+	l.exe = filepath.Join(t.TempDir(), "this-mortar")
+	if err := l.Refresh(); err != nil {
+		t.Fatal(err)
+	}
+	if svg, _ := fsx.ReadFile(l.iconSVGPath()); !bytes.Equal(svg, iconSVG) {
+		t.Errorf("stale icon kept: %s", svg)
 	}
 }
