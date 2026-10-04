@@ -223,3 +223,11 @@ func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 		t.Fatal("a game listed twice must be refused")
 	}
 }
+
+func TestComponentFallsBackToTheBundledManifestBeforeLoad(t *testing.T) {
+	c := NewClient(nil)
+	got, ok := c.Component("stardew", "bridge")
+	if !ok || got.Kind != "bridge" || got.Version == "" {
+		t.Fatalf("component %+v ok %v", got, ok)
+	}
+}

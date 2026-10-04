@@ -724,6 +724,8 @@ func run() error {
 		if g, ok := componentClient.Game("stardew"); ok {
 			nexus.Configure(g.Nexus.Domain, g.Nexus.ID)
 		}
+		// A fetched manifest can name a newer bridge than the one synced at startup from the bundled copy.
+		loadersvc.SyncBundled(loaders, "stardew")
 	}()
 	windowClosed = func() bool {
 		windowMu.Lock()

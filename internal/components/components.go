@@ -316,7 +316,20 @@ func (c *Client) Manifest() Manifest {
 
 // Component returns a component by game and name.
 func (c *Client) Component(game, name string) (Component, bool) {
-	for _, component := range c.manifest.Components {
+	if component, ok := findComponent(c.manifest.Components, game, name); ok {
+		return component, true
+	}
+	// Before Load (and when the fetched manifest lacks it) the manifest compiled into Mortar answers, as Game does,
+	// so startup work that runs ahead of the network fetch still finds its components.
+	m, err := BundledManifest()
+	if err != nil {
+		return Component{}, false
+	}
+	return findComponent(m.Components, game, name)
+}
+
+func findComponent(components []Component, game, name string) (Component, bool) {
+	for _, component := range components {
 		if component.Game == game && component.Name == name {
 			return component, true
 		}
