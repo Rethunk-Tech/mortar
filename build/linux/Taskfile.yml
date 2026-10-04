@@ -103,7 +103,8 @@ tasks:
     cmds:
       - |
         set -euo pipefail
-        VERSION="$(sed -n 's/^const version = "\(.*\)"$/\1/p' main.go)"
+        VERSION="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
+        : "${VERSION:?build/config.yml has no info.version}"
         export VERSION
         export NFPM_ARCH="${NFPM_ARCH:-$(go env GOARCH)}"
         case "$NFPM_ARCH" in

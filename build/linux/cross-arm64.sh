@@ -108,7 +108,8 @@ go build -buildmode=pie -tags production -trimpath -buildvcs=false \
 
 cp -a bin/mortar-packaged bin/mortar-linux-arm64
 
-VERSION="$(sed -n 's/^const version = "\(.*\)"$/\1/p' main.go)"
+VERSION="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)"
+: "${VERSION:?build/config.yml has no info.version}"
 export VERSION
 export NFPM_ARCH=arm64
 nfpm package --config build/linux/nfpm/nfpm.yaml --packager deb --target "bin/mortar_${VERSION}_arm64.deb"

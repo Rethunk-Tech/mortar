@@ -140,7 +140,7 @@ jobs:
           cp "bin/mortar-linux-${{ matrix.appimage_arch }}.AppImage" out/
           cp "bin/mortar-linux-${{ matrix.goarch }}" out/
           cp bin/mortar_*_${{ matrix.deb_arch }}.deb out/
-          cp bin/mortar-*-${{ matrix.rpm_arch }}.rpm out/
+          cp bin/mortar-*.${{ matrix.rpm_arch }}.rpm out/
           cp bin/mortar-*-${{ matrix.pkg_arch }}.pkg.tar.zst out/
           if [ "${{ matrix.flatpak }}" = true ]; then
             cp bin/mortar-linux-x86_64.flatpak out/
