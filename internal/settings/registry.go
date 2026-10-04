@@ -24,7 +24,7 @@ const (
 // GameSettings is the per-game preference block (Stardew Valley today).
 type GameSettings struct {
 	BackupBeforePlay            string `json:"backupBeforePlay"`
-	LaunchBackupsKept           int    `json:"launchBackupsKept"`
+	SaveBackupsKept             int    `json:"saveBackupsKept"`
 	SaveBackupHours             int    `json:"saveBackupHours"`
 	SaveBackupKeep              int    `json:"saveBackupKeep"`
 	UpdateModsBeforePlayDefault bool   `json:"updateModsBeforePlayDefault"`
@@ -44,7 +44,6 @@ type GameSettings struct {
 	ConsoleFollow               *bool  `json:"consoleFollow"`
 	BackupLocation              string `json:"backupLocation"`
 	ConflictScanDepth           string `json:"conflictScanDepth"`
-	WatchDownloads              *bool  `json:"watchDownloads"`
 	OfferNewDownloads           *bool  `json:"offerNewDownloads"`
 	// LastDownloadsSeen is the newest archive mtime (ms) in the download folder already offered or skipped.
 	LastDownloadsSeen     int64          `json:"lastDownloadsSeen,omitempty"`
@@ -131,14 +130,14 @@ var registry = []pref{
 	enumPref("extensionConnection", ScopeApp, ExtensionAllow, extensionConnectionValues, func(s Settings, _ string) string { return s.ExtensionConnection }, func(s *Settings, _, v string) { s.ExtensionConnection = v }),
 
 	overridable(enumPref("backupBeforePlay", ScopeGame, BackupBeforePlayChanged, backupBeforePlayValues, func(s Settings, g string) string { return s.GamePrefs(g).BackupBeforePlay }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupBeforePlay = v; putGame(s, g, gp) })),
-	overridable(intPref("launchBackupsKept", ScopeGame, DefaultLaunchBackupsKept, MinLaunchBackupsKept, MaxLaunchBackupsKept, func(s Settings, g string) int { return s.GamePrefs(g).LaunchBackupsKept }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.LaunchBackupsKept = n; putGame(s, g, gp) })),
+	overridable(intPref("saveBackupsKept", ScopeGame, DefaultSaveBackupsKept, MinSaveBackupsKept, MaxSaveBackupsKept, func(s Settings, g string) int { return s.GamePrefs(g).SaveBackupsKept }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.SaveBackupsKept = n; putGame(s, g, gp) })),
 	overridable(boolPref("updateModsBeforePlayDefault", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).UpdateModsBeforePlayDefault }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
 		gp.UpdateModsBeforePlayDefault = on
 		putGame(s, g, gp)
 	})),
 	intPref("saveBackupHours", ScopeGame, 0, MinSaveBackupHours, MaxSaveBackupHours, func(s Settings, g string) int { return s.GamePrefs(g).SaveBackupHours }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.SaveBackupHours = n; putGame(s, g, gp) }),
-	intPref("saveBackupKeep", ScopeGame, DefaultSaveBackupKeep, MinLaunchBackupsKept, MaxLaunchBackupsKept, func(s Settings, g string) int { return s.GamePrefs(g).SaveBackupKeep }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.SaveBackupKeep = n; putGame(s, g, gp) }),
+	intPref("saveBackupKeep", ScopeGame, DefaultSaveBackupKeep, MinSaveBackupsKept, MaxSaveBackupsKept, func(s Settings, g string) int { return s.GamePrefs(g).SaveBackupKeep }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.SaveBackupKeep = n; putGame(s, g, gp) }),
 	intPref("runsKept", ScopeGame, DefaultRunsKept, MinRunsKept, MaxRunsKept, func(s Settings, g string) int { return s.GamePrefs(g).RunsKept }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.RunsKept = n; putGame(s, g, gp) }),
 	intPref("consoleLogCap", ScopeGame, DefaultConsoleLogCap, MinConsoleLogCap, MaxConsoleLogCap, func(s Settings, g string) int { return s.GamePrefs(g).ConsoleLogCap }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.ConsoleLogCap = n; putGame(s, g, gp) }),
 	strPref("nxmDefaultProfile", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).NxmDefaultProfile }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.NxmDefaultProfile = v; putGame(s, g, gp) }),
@@ -167,11 +166,6 @@ var registry = []pref{
 	ptrPref("consoleFollow", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleFollow }, func(s *Settings, g string, on bool) { gp := s.GamePrefs(g); gp.ConsoleFollow = &on; putGame(s, g, gp) }),
 	strPref("backupLocation", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BackupLocation }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupLocation = v; putGame(s, g, gp) }),
 	enumPref("conflictScanDepth", ScopeGame, ConflictScanFull, conflictScanValues, func(s Settings, g string) string { return s.GamePrefs(g).ConflictScanDepth }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConflictScanDepth = v; putGame(s, g, gp) }),
-	ptrPref("watchDownloads", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).WatchDownloads }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.WatchDownloads = &on
-		putGame(s, g, gp)
-	}),
 	ptrPref("offerNewDownloads", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).OfferNewDownloads }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
 		gp.OfferNewDownloads = &on
@@ -189,7 +183,7 @@ var registry = []pref{
 func defaultGameSettings() GameSettings {
 	return GameSettings{
 		BackupBeforePlay:            BackupBeforePlayChanged,
-		LaunchBackupsKept:           DefaultLaunchBackupsKept,
+		SaveBackupsKept:             DefaultSaveBackupsKept,
 		SaveBackupKeep:              DefaultSaveBackupKeep,
 		UpdateModsBeforePlayDefault: false,
 		RunsKept:                    DefaultRunsKept,
@@ -206,7 +200,6 @@ func defaultGameSettings() GameSettings {
 		ConsoleFollow:               on(),
 		BackupLocation:              "",
 		ConflictScanDepth:           ConflictScanFull,
-		WatchDownloads:              on(),
 		OfferNewDownloads:           on(),
 		OldFilesOnUpdate:            OldFilesAsk,
 	}
@@ -249,8 +242,8 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.BackupBeforePlay != "" {
 		dst.BackupBeforePlay = src.BackupBeforePlay
 	}
-	if src.LaunchBackupsKept != 0 {
-		dst.LaunchBackupsKept = src.LaunchBackupsKept
+	if src.SaveBackupsKept != 0 {
+		dst.SaveBackupsKept = src.SaveBackupsKept
 	}
 	dst.SaveBackupHours = src.SaveBackupHours
 	if src.SaveBackupKeep != 0 {
@@ -297,9 +290,6 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.ConflictScanDepth != "" {
 		dst.ConflictScanDepth = src.ConflictScanDepth
 	}
-	if src.WatchDownloads != nil {
-		dst.WatchDownloads = src.WatchDownloads
-	}
 	if src.OfferNewDownloads != nil {
 		dst.OfferNewDownloads = src.OfferNewDownloads
 	}
@@ -325,13 +315,13 @@ func normalizeGame(g *GameSettings) {
 	if !slices.Contains(backupBeforePlayValues, g.BackupBeforePlay) {
 		g.BackupBeforePlay = d.BackupBeforePlay
 	}
-	if g.LaunchBackupsKept < MinLaunchBackupsKept || g.LaunchBackupsKept > MaxLaunchBackupsKept {
-		g.LaunchBackupsKept = d.LaunchBackupsKept
+	if g.SaveBackupsKept < MinSaveBackupsKept || g.SaveBackupsKept > MaxSaveBackupsKept {
+		g.SaveBackupsKept = d.SaveBackupsKept
 	}
 	if g.SaveBackupHours < MinSaveBackupHours || g.SaveBackupHours > MaxSaveBackupHours {
 		g.SaveBackupHours = d.SaveBackupHours
 	}
-	if g.SaveBackupKeep < MinLaunchBackupsKept || g.SaveBackupKeep > MaxLaunchBackupsKept {
+	if g.SaveBackupKeep < MinSaveBackupsKept || g.SaveBackupKeep > MaxSaveBackupsKept {
 		g.SaveBackupKeep = d.SaveBackupKeep
 	}
 	if g.RunsKept < MinRunsKept || g.RunsKept > MaxRunsKept {
@@ -370,9 +360,6 @@ func normalizeGame(g *GameSettings) {
 	if !slices.Contains(conflictScanValues, g.ConflictScanDepth) {
 		g.ConflictScanDepth = d.ConflictScanDepth
 	}
-	if g.WatchDownloads == nil {
-		g.WatchDownloads = d.WatchDownloads
-	}
 	if g.OfferNewDownloads == nil {
 		g.OfferNewDownloads = d.OfferNewDownloads
 	}
@@ -385,14 +372,14 @@ func validateGame(g GameSettings) error {
 	if !slices.Contains(backupBeforePlayValues, g.BackupBeforePlay) {
 		return fmt.Errorf("backup before play must be changed, always or never, got %q", g.BackupBeforePlay)
 	}
-	if g.LaunchBackupsKept < MinLaunchBackupsKept || g.LaunchBackupsKept > MaxLaunchBackupsKept {
-		return fmt.Errorf("launch backups kept must be %d to %d, got %d", MinLaunchBackupsKept, MaxLaunchBackupsKept, g.LaunchBackupsKept)
+	if g.SaveBackupsKept < MinSaveBackupsKept || g.SaveBackupsKept > MaxSaveBackupsKept {
+		return fmt.Errorf("launch backups kept must be %d to %d, got %d", MinSaveBackupsKept, MaxSaveBackupsKept, g.SaveBackupsKept)
 	}
 	if g.SaveBackupHours < MinSaveBackupHours || g.SaveBackupHours > MaxSaveBackupHours {
 		return fmt.Errorf("save backup hours must be %d to %d, got %d", MinSaveBackupHours, MaxSaveBackupHours, g.SaveBackupHours)
 	}
-	if g.SaveBackupKeep < MinLaunchBackupsKept || g.SaveBackupKeep > MaxLaunchBackupsKept {
-		return fmt.Errorf("scheduled save backups kept must be %d to %d, got %d", MinLaunchBackupsKept, MaxLaunchBackupsKept, g.SaveBackupKeep)
+	if g.SaveBackupKeep < MinSaveBackupsKept || g.SaveBackupKeep > MaxSaveBackupsKept {
+		return fmt.Errorf("scheduled save backups kept must be %d to %d, got %d", MinSaveBackupsKept, MaxSaveBackupsKept, g.SaveBackupKeep)
 	}
 	if g.RunsKept < MinRunsKept || g.RunsKept > MaxRunsKept {
 		return fmt.Errorf("runs kept must be %d to %d, got %d", MinRunsKept, MaxRunsKept, g.RunsKept)

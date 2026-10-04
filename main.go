@@ -29,7 +29,6 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
 	"github.com/Rethunk-AI/mortar/internal/desktopnotify"
-	"github.com/Rethunk-AI/mortar/internal/dlwatch"
 	"github.com/Rethunk-AI/mortar/internal/folderwatch"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
@@ -54,8 +53,10 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/sharesvc"
 	"github.com/Rethunk-AI/mortar/internal/shortcut"
 	modstore "github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/storecheck"
 	"github.com/Rethunk-AI/mortar/internal/support"
 	"github.com/Rethunk-AI/mortar/internal/templates"
+	"github.com/Rethunk-AI/mortar/internal/tidy"
 	"github.com/Rethunk-AI/mortar/internal/tools"
 	"github.com/Rethunk-AI/mortar/internal/updatesvc"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -108,7 +109,6 @@ func registerEvents() {
 	application.RegisterEvent[queue.Progress](queue.ProgressEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
-	application.RegisterEvent[dlwatch.Arrival](dlwatch.ArrivedEvent)
 	application.RegisterEvent[string](folderwatch.ModsFolderEvent)
 	application.RegisterEvent[string](folderwatch.ExtraFolderEvent)
 	application.RegisterEvent[string](folderwatch.DownloadsEvent)
@@ -246,7 +246,10 @@ func run() error {
 		slog.SetDefault(slog.New(slog.NewTextHandler(out, nil)))
 	}
 	support.DetectLastRunCrashed(dataDir)
-	capCrashLog(dataDir)
+	tidied := &tidy.Collector{}
+	if capCrashLog(dataDir) {
+		tidied.Add("Emptied the crash log after it was reported", "data folder", 1, "crash.log")
+	}
 
 	store, err = settings.Open()
 	if err != nil {
@@ -263,14 +266,17 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if err := items.Cleanup(); err != nil {
+	if removed, err := items.Cleanup(); err != nil {
 		log.Printf("store cleanup: %v", err)
+	} else {
+		tidied.Add("Removed leftover temporary folders", "store", 0, removed...)
 	}
 
 	profiles, err = profile.Open(items)
 	if err != nil {
 		return err
 	}
+	profiles.Tidied = func(what, profileName, folder string) { tidied.Add(what, "profile "+profileName, 1, folder) }
 	profiles.ShortcutRenamed = shortcut.Renamed
 	profiles.ShortcutRemoved = shortcut.Removed
 	plays.Covers = func(gameID, profileID string) ([]string, error) {
@@ -293,13 +299,10 @@ func run() error {
 		return covers, nil
 	}
 	launches := launchsvc.NewService(home, store, profiles)
-	gamesSvc.Running = func(id string) bool {
-		st, err := launches.Status(id)
-		return err == nil && st.State.Active()
-	}
+	gamesSvc.Running = launches.Busy
 	profiles.Running = launches.Running
+	profiles.GameRunning = launches.Busy
 	bisectSvc := bisect.NewService(profiles, launches)
-	profiles.BackupsKept = func() int { return store.Get().BackupsKept }
 	modMeta := &meta.Client{CacheDir: filepath.Join(dataDir, "cache")}
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)
@@ -433,14 +436,8 @@ func run() error {
 			}
 		},
 		PauseWhilePlaying: func() bool { return store.Get().PauseDownloadsWhilePlaying },
-		GameBusy: func() bool {
-			st, err := launches.Status("stardew")
-			if err != nil {
-				return false
-			}
-			return st.State.Active()
-		},
-		VerifyNexusMD5: func() bool { return store.Get().VerifyNexusMD5 },
+		GameBusy:          func() bool { return launches.Busy(settings.GameStardew) },
+		VerifyNexusMD5:    func() bool { return store.Get().VerifyNexusMD5 },
 		Track: func(ctx context.Context, modID int) {
 			if !store.Get().AutoTrackNexus || modID <= 0 {
 				return
@@ -540,61 +537,22 @@ func run() error {
 		return err
 	}
 
-	dataSvc := datasvc.NewService(items, profiles, queueSvc.StagedKeys,
-		queueSvc, lanSvc,
-		datasvc.BusyFunc(func() bool {
-			st, err := launches.Status("stardew")
-			return err == nil && st.State.Active()
-		}),
-	)
-	dataSvc.Restart = datasvc.RestartSelf
-	dataSvc.OnClearCache = problemsSvc.ForgetCached
 	quitSvc := &QuitService{app: app, queue: queueSvc, lan: lanSvc, launch: launches}
 
-	dlWatch := dlwatch.New(dlwatch.Deps{
-		Enabled: func() bool {
-			return settings.ToggleOn(store.Get().GamePrefs("stardew").WatchDownloads)
-		},
-		Current: func() (string, string, string, error) {
-			cur := store.Get()
-			gameID := cur.LastGame
-			if gameID == "" {
-				gameID = "stardew"
-			}
-			var id string
-			if cur.LastProfile != nil {
-				id = cur.LastProfile[gameID]
-			}
-			if id == "" {
-				return "", "", "", fmt.Errorf("no open profile")
-			}
-			all, err := profiles.List(gameID)
-			if err != nil {
-				return gameID, id, "", err
-			}
-			for _, p := range all {
-				if p.ID == id {
-					return gameID, id, p.Name, nil
-				}
-			}
-			return gameID, id, "", nil
-		},
+	archivesSvc := archivesvc.NewService(archivesvc.Deps{
+		Dirs: func() []string { return downloadDirs(store, dataDir) },
 		Install: func(game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
 			if src.ModID > 0 {
 				return profiles.InstallNexus(game, profileID, path, src)
 			}
 			return profileSvc.InstallArchive(game, profileID, path)
 		},
-		Emit: emit,
-	})
-
-	archivesSvc := archivesvc.NewService(archivesvc.Deps{
-		Dir:      func() string { return archiveDir(store, dataDir) },
-		Offer:    func(g string) bool { return settings.ToggleOn(store.Get().GamePrefs(g).OfferNewDownloads) },
-		Seen:     func(g string) int64 { return store.Get().GamePrefs(g).LastDownloadsSeen },
-		SetSeen:  store.RecordDownloadsSeen,
-		Keys:     items.Keys,
-		Profiles: profiles.List,
+		HashCache: filepath.Join(dataDir, "cache", "archive-hashes.json"),
+		Offer:     func(g string) bool { return settings.ToggleOn(store.Get().GamePrefs(g).OfferNewDownloads) },
+		Seen:      func(g string) int64 { return store.Get().GamePrefs(g).LastDownloadsSeen },
+		SetSeen:   store.RecordDownloadsSeen,
+		Keys:      items.Keys,
+		Profiles:  profiles.List,
 		NexusMods: func() map[int]bool {
 			ids := map[int]bool{}
 			for _, h := range queueSvc.History() {
@@ -610,6 +568,24 @@ func run() error {
 		GameSettings: launches.GameSettings, SetGameSettings: launches.SetGameSettings,
 	}, dataDir)
 
+	keepSources := []datasvc.KeySource{
+		bundlesSvc.ReferencedStoreKeys, templatesSvc.ReferencedStoreKeys,
+		func() (map[string][]string, error) { return queueSvc.StagedKeys(), nil },
+	}
+	dataSvc := datasvc.NewService(items, profiles, keepSources,
+		queueSvc, lanSvc,
+		datasvc.BusyFunc(func() bool { return launches.Busy(settings.GameStardew) }),
+	)
+	dataSvc.Restart = datasvc.RestartSelf
+	dataSvc.OnClearCache = problemsSvc.ForgetCached
+	checkSvc := storecheck.New(storecheck.Deps{
+		Items: items, Source: profiles.SourceOf, Add: queueSvc.Add,
+		ArchiveDir: func() string { return archiveDir(store, dataDir) },
+		Busy:       func() bool { return launches.Busy(settings.GameStardew) || queueSvc.Active() },
+		Emit:       emit,
+	})
+	problemsSvc.Damage = items.Damaged
+
 	for _, s := range []application.Service{
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
@@ -618,7 +594,7 @@ func run() error {
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc), application.NewService(lanSvc),
 		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
 		application.NewService(dataSvc), application.NewService(toolsSvc),
-		application.NewService(dlWatch),
+		application.NewService(checkSvc), application.NewService(&tidy.Service{Report: tidied}),
 		application.NewService(quitSvc),
 		application.NewService(browse.NewService(version, profileSvc)),
 	} {
@@ -634,9 +610,11 @@ func run() error {
 	updateCtx, stopUpdates := context.WithCancel(context.Background())
 	defer stopUpdates()
 	updates.StartBackground(updateCtx, emit)
+	savesSvc.Emit = emit
 	go savesSvc.RunScheduledBackups(updateCtx)
 	queueCtx, stopQueue := context.WithCancel(context.Background())
 	launchsvc.SetLife(launches, queueCtx)
+	go storecheck.Run(queueCtx, checkSvc)
 	watchLibraryFolders(queueCtx, home, dataDir, store, emit)
 	waitQueue := queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
 	defer func() {
@@ -646,7 +624,7 @@ func run() error {
 	ctl := &control.Services{
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, Bundles: bundlesSvc,
-		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Downloads: dlWatch, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Emit: emit,
+		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Emit: emit,
 	}
 	go func() {
 		if err := control.Serve(queueCtx, dataDir, version, ctl.Handle); err != nil && !errors.Is(err, context.Canceled) {
@@ -723,6 +701,12 @@ func run() error {
 	}
 	window = newWindow()
 	go func() {
+		defer func() {
+			if tidied.Pending() > 0 {
+				emit(tidy.ReportEvent, nil)
+			}
+			tidied.Close()
+		}()
 		// Mods extracted before zip names were decoded may sit in folders the game cannot open. Extraction decodes
 		// names now, so one clean pass over both trees is enough.
 		repairedMarker := filepath.Join(dataDir, "names-repaired")
@@ -734,10 +718,11 @@ func run() error {
 					log.Printf("repair names under %s: %v", root, err)
 				} else if n > 0 {
 					log.Printf("repaired %d file names under %s", n, root)
+					tidied.Add("Repaired mod file names", filepath.Base(root), n)
 				}
 			}
 			if clean {
-				if err := os.WriteFile(repairedMarker, nil, 0o600); err != nil {
+				if err := datadir.WriteFile(repairedMarker, nil, 0o600); err != nil {
 					log.Printf("repair names marker: %v", err)
 				}
 			}
@@ -746,23 +731,13 @@ func run() error {
 			log.Printf("history migration: %v", err)
 		} else if n > 0 || c > 0 {
 			log.Printf("history migration: gzipped %d snapshots, counted %d histories", n, c)
+			tidied.Add("Compressed profile history snapshots", "profiles", n)
 		}
 		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
 		retention := store.Get().StoreUnusedFor()
-		if keys, err := profiles.StoreKeys(retention != 0); err != nil {
+		if keys, err := datasvc.KeepSet(profiles, retention != 0, keepSources); err != nil {
 			log.Printf("store collect skipped: %v", err)
 		} else {
-			bundleKeys, err := bundlesSvc.ReferencedStoreKeys()
-			if err != nil {
-				log.Printf("store collect skipped: %v", err)
-				return
-			}
-			for g, bundle := range bundleKeys {
-				keys[g] = append(keys[g], bundle...)
-			}
-			for g, staged := range queueSvc.StagedKeys() {
-				keys[g] = append(keys[g], staged...)
-			}
 			items.UnusedFor = retention
 			if retention == 0 {
 				items.UnusedFor = -1
@@ -825,8 +800,7 @@ func run() error {
 		trayMenu.Add("Show Mortar").OnClick(func(*application.Context) {
 			showWindow()
 		})
-		st, _ := launches.Status("stardew")
-		running := st.State.Active()
+		running := launches.Busy(settings.GameStardew)
 		gameName := "Stardew Valley"
 		if g := game.Find("stardew"); g != nil {
 			gameName = g.Name()

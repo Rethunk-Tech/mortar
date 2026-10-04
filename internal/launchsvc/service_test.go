@@ -475,3 +475,16 @@ func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 	}
 	t.Fatal("the run was never recorded")
 }
+
+func TestStartPresetRefusesAnUnknownPreset(t *testing.T) {
+	svc, p := startEnv(t)
+	if err := svc.StartPreset(context.Background(), "stardew", p.ID, "nope", false); err == nil {
+		t.Fatal("unknown preset accepted")
+	}
+	svc.mu.Lock()
+	_, busy := svc.preparing["stardew"]
+	svc.mu.Unlock()
+	if busy {
+		t.Fatal("a refused launch left the game marked busy")
+	}
+}

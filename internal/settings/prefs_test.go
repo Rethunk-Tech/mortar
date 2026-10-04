@@ -11,7 +11,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if d.OnPlay != OnPlayStay || d.GamePrefs(GameStardew).BackupBeforePlay != BackupBeforePlayChanged {
 		t.Fatalf("play defaults = %s %s", d.OnPlay, d.GamePrefs(GameStardew).BackupBeforePlay)
 	}
-	if d.GamePrefs(GameStardew).LaunchBackupsKept != DefaultLaunchBackupsKept || d.GamePrefs(GameStardew).UpdateModsBeforePlayDefault {
+	if d.GamePrefs(GameStardew).SaveBackupsKept != DefaultSaveBackupsKept || d.GamePrefs(GameStardew).UpdateModsBeforePlayDefault {
 		t.Fatal("launch backup / update-before-play defaults")
 	}
 	if d.GamePrefs(GameStardew).RunsKept != DefaultRunsKept || d.GamePrefs(GameStardew).ConsoleLogCap != DefaultConsoleLogCap {
@@ -92,7 +92,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 	src.IncludePrereleaseModVersions = true
 	src.KeepInTray = true
 	overrides := map[string]string{
-		"onPlay": "hide", "backupBeforePlay": "always", "launchBackupsKept": "9",
+		"onPlay": "hide", "backupBeforePlay": "always", "saveBackupsKept": "9",
 		"updateModsBeforePlayDefault": "true", "runsKept": "10", "consoleLogCap": "5000",
 		"parallelDownloads": "4", "updateCheckIntervalMinutes": "30", "checkModUpdatesOnStart": "false",
 		"notifyModUpdates": "true", "keepDownloadArchives": "true", "storeRetentionDays": "7",
@@ -115,7 +115,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeDisabledMods": "true", "shareIncludeFomodChoices": "false", "shareIncludeNotes": "false",
 		"shareIncludeConfigFiles": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
-		"watchDownloads": "false", "offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
+		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
 		"saveBackupHours": "6", "saveBackupKeep": "3",
 	}
 	if len(overrides) != len(registry) {

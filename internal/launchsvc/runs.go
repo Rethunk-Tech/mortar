@@ -27,18 +27,20 @@ var runIDPattern = regexp.MustCompile(`^[0-9A-Za-z.-]+$`)
 
 // Run is one recorded launch of a profile, without the log body.
 type Run struct {
-	ID           string          `json:"id"`
-	Started      string          `json:"started"`
-	Ended        string          `json:"ended"`
-	DurationMs   int64           `json:"durationMs"`
-	SMAPIVersion string          `json:"smapiVersion"`
-	GameVersion  string          `json:"gameVersion"`
-	Outcome      launch.Outcome  `json:"outcome"`
-	Errors       int             `json:"errors"`
-	Warnings     int             `json:"warnings"`
-	Mods         []launch.ModRef `json:"mods,omitempty"`
-	Cause        *Cause          `json:"cause,omitempty"`
-	Exit         *launch.Exit    `json:"exit,omitempty"`
+	ID           string `json:"id"`
+	Started      string `json:"started"`
+	Ended        string `json:"ended"`
+	DurationMs   int64  `json:"durationMs"`
+	SMAPIVersion string `json:"smapiVersion"`
+	GameVersion  string `json:"gameVersion"`
+	// Preset is the name of the launch preset the run used.
+	Preset   string          `json:"preset,omitempty"`
+	Outcome  launch.Outcome  `json:"outcome"`
+	Errors   int             `json:"errors"`
+	Warnings int             `json:"warnings"`
+	Mods     []launch.ModRef `json:"mods,omitempty"`
+	Cause    *Cause          `json:"cause,omitempty"`
+	Exit     *launch.Exit    `json:"exit,omitempty"`
 }
 
 type Cause struct {
@@ -332,7 +334,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	run := Run{
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
 		DurationMs: ended.Sub(started).Milliseconds(), SMAPIVersion: stats.SMAPI, GameVersion: stats.Game,
-		Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
+		Preset: sess.preset, Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
 	}
 	if len(refs) > 0 {
 		run.Mods = append([]launch.ModRef{}, refs[0]...)

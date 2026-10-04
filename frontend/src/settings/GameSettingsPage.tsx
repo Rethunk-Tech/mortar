@@ -90,7 +90,6 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
                 'missingRequirements',
                 'cosmeticConflicts',
                 'conflictScanDepth',
-                'watchDownloads',
                 'offerNewDownloads',
                 'oldFilesOnUpdate',
                 'showDotHiddenMods',

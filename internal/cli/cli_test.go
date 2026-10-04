@@ -100,6 +100,10 @@ func TestCommandsSendTheirArguments(t *testing.T) {
 	if r.code != 0 || len(r.calls) != 1 || r.calls[0].method != "launch" || !r.calls[0].params.Force {
 		t.Fatalf("--force: %+v", r)
 	}
+	r = invoke(t, map[string]any{"launch": nil}, "launch", "stardew", "abc", "--preset", "Debug")
+	if r.code != 0 || len(r.calls) != 1 || r.calls[0].params.Preset != "Debug" {
+		t.Fatalf("--preset: %+v", r)
+	}
 }
 
 func TestSettingsGetSet(t *testing.T) {

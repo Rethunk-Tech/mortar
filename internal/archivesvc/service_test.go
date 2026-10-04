@@ -51,7 +51,7 @@ func TestDownloadsArchivesSkipsInstalledByKeyAndByName(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := NewService(Deps{
-		Dir:  func() string { return dir },
+		Dirs: func() []string { return []string{dir} },
 		Keys: func(string) ([]string, error) { return []string{store.LocalKey(sum)}, nil },
 		Profiles: func(string) ([]profile.Profile, error) {
 			return []profile.Profile{{Entries: []profile.Entry{{Source: profile.Source{Kind: profile.KindLocal, Name: "named.zip"}}}}}, nil
@@ -68,7 +68,7 @@ func TestDownloadsArchivesSkipsInstalledByKeyAndByName(t *testing.T) {
 }
 
 func TestDownloadsArchivesMissingDirAndPreview(t *testing.T) {
-	s := NewService(Deps{Dir: func() string { return filepath.Join(t.TempDir(), "none") }})
+	s := NewService(Deps{Dirs: func() []string { return []string{filepath.Join(t.TempDir(), "none")} }})
 	if got, err := s.DownloadsArchives("stardew"); err != nil || len(got) != 0 {
 		t.Fatalf("got %+v, %v", got, err)
 	}
@@ -87,7 +87,7 @@ func TestNewDownloadsOffersOnlyArrivalsAfterTheMark(t *testing.T) {
 	var seen int64
 	on := true
 	s := NewService(Deps{
-		Dir:     func() string { return dir },
+		Dirs: func() []string { return []string{dir} },
 		Offer:   func(string) bool { return on },
 		Seen:    func(string) int64 { return seen },
 		SetSeen: func(_ string, m int64) error { seen = m; return nil },
@@ -108,5 +108,51 @@ func TestNewDownloadsOffersOnlyArrivalsAfterTheMark(t *testing.T) {
 	writeZip(t, dir, "later.zip", `{"UniqueID":"A.Later"}`)
 	if got, _ := s.NewDownloads("stardew"); len(got) != 0 {
 		t.Fatalf("offer off: %+v", got)
+	}
+}
+
+func TestDownloadsArchivesReusesCachedHashes(t *testing.T) {
+	dir := t.TempDir()
+	stored := writeZip(t, dir, "stored.zip", `{"UniqueID":"A.One"}`)
+	sum, err := fsx.SHA256(stored)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cache := filepath.Join(t.TempDir(), "hashes.json")
+	s := NewService(Deps{
+		Dirs: func() []string { return []string{dir} },
+		HashCache: cache,
+		Keys:      func(string) ([]string, error) { return []string{store.LocalKey(sum)}, nil },
+	})
+	if got, err := s.DownloadsArchives("stardew"); err != nil || len(got) != 0 {
+		t.Fatalf("got %+v, %v", got, err)
+	}
+	// Same size and mtime with different bytes: only a cache hit can still say "installed".
+	info, _ := os.Stat(stored)
+	if err := os.WriteFile(stored, bytes.Repeat([]byte("x"), int(info.Size())), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(stored, info.ModTime(), info.ModTime()); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := s.DownloadsArchives("stardew"); err != nil || len(got) != 0 {
+		t.Fatalf("cache not used: %+v, %v", got, err)
+	}
+	if err := os.Chtimes(stored, info.ModTime().Add(time.Second), info.ModTime().Add(time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := s.DownloadsArchives("stardew"); len(got) != 1 {
+		t.Fatalf("changed file must be rehashed: %+v", got)
+	}
+}
+
+func TestDownloadsArchivesJoinsFoldersOncePerPath(t *testing.T) {
+	a, b := t.TempDir(), t.TempDir()
+	writeZip(t, a, "one.zip", `{"UniqueID":"A.One"}`)
+	writeZip(t, b, "two.zip", `{"UniqueID":"A.Two"}`)
+	s := NewService(Deps{Dirs: func() []string { return []string{a, b, a, "", filepath.Join(a, "missing")} }})
+	got, err := s.DownloadsArchives("stardew")
+	if err != nil || len(got) != 2 {
+		t.Fatalf("got %+v %v", got, err)
 	}
 }

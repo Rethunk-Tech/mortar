@@ -226,3 +226,20 @@ func mustJSON(t *testing.T, value any) []byte {
 	}
 	return data
 }
+
+func TestRecordKeepsThePresetName(t *testing.T) {
+	svc, p, cfg, home := runEnv(t)
+	mods, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeOwnedLog(t, cfg, home, mods, "")
+	svc.mu.Lock()
+	svc.logs["stardew"] = session{profile: p.ID, preset: "Debug"}
+	svc.mu.Unlock()
+	svc.record(game.Find("stardew"), p.ID, time.Now(), false)
+	runs, err := svc.Runs("stardew", p.ID)
+	if err != nil || len(runs) != 1 || runs[0].Preset != "Debug" {
+		t.Fatalf("runs = %+v, %v", runs, err)
+	}
+}

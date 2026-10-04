@@ -71,12 +71,11 @@ const defaults: Settings = {
   games: {
     stardew: {
       backupBeforePlay: 'changed',
-      launchBackupsKept: 5,
+      saveBackupsKept: 5,
       updateModsBeforePlayDefault: false,
       skipPlayCheck: false,
       runsKept: 20,
       consoleLogCap: 20_000,
-      watchDownloads: true,
       offerNewDownloads: true,
       nxmDefaultProfile: '',
       cosmeticConflicts: 'collapsed',

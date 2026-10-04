@@ -54,7 +54,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `conflicts`, `problems [--format text]`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
 | `problems dismissed`, `problems dismiss <index>`, `problems restore <token\|index>` (`--profile`, `--game stardew`) | dismiss and restore Problems-tab warnings like the GUI |
 | `share`, `export <game> <profile> [file]`, `open <link\|file>` | share links and `.mortar` files |
-| `launch <game> <profile> [--wait]`, `status`, `stop <game>`, `runs`, `logs`, `logs search <query> [--profile <name>]` | play and read past runs |
+| `launch <game> <profile> [--preset NAME] [--wait]`, `status`, `stop <game>`, `runs`, `logs`, `logs search <query> [--profile <name>]` | play and read past runs |
 | `launchers`, `launchers add\|remove <id> <folder>` | what Settings › Launchers shows and changes |
 | `tools <game>`, `tools run <game> <profile> <tool>` | configured external tools; start one |
 | `bundles <game>`, `bundles apply <game> <bundle> <profile>` | list saved bundles; copy one into a profile |

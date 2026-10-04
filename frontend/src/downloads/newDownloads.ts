@@ -32,7 +32,7 @@ async function offer(game: string) {
         run: () =>
           useInstall
             .getState()
-            .install([first.path])
+            .installDownloads([first.path])
             .catch(reportError(i18n._(msg`Could not add the archive`))),
       },
     })

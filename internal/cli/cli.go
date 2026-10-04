@@ -46,7 +46,7 @@ var verbs = map[string]bool{
 	"games": true, "game": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "who": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
-	"downloads": true, "templates": true, "library": true, "archive": true,
+	"templates": true, "library": true, "archive": true,
 	"browse":  true,
 	"bundles": true, "nexus": true, "trash": true, "cache": true, "data": true, "store": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "smapi": true, "sweep": true, "uninstall-cleanup": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
@@ -77,6 +77,7 @@ type cmd struct {
 	missing       bool
 	yesFlag       bool
 	force         bool
+	presetFlag    string
 	wait          bool
 	byMod         bool
 	check         bool
@@ -224,6 +225,14 @@ func (c *cmd) parse(args []string) error {
 			c.yesFlag = true
 		case a == "--force":
 			c.force = true
+		case a == "--preset":
+			if i+1 >= len(args) {
+				return usageError{"--preset needs a name"}
+			}
+			i++
+			c.presetFlag = args[i]
+		case strings.HasPrefix(a, "--preset="):
+			c.presetFlag = strings.TrimPrefix(a, "--preset=")
 		case a == "--item":
 			if i+1 >= len(args) {
 				return usageError{"--item needs a mod"}
@@ -420,8 +429,6 @@ func (c *cmd) dispatch() error {
 		return c.launchers()
 	case "queue":
 		return c.queue()
-	case "downloads":
-		return c.downloads()
 	case "templates":
 		return c.templatesCmd()
 	case "library":
@@ -547,7 +554,7 @@ func (c *cmd) dispatch() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force}
+	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force, Preset: c.presetFlag}
 	switch verb {
 	case "mods":
 		return c.mods(p)
@@ -1264,7 +1271,11 @@ func nexusPage(game, source string) string {
 	if !ok || g.Nexus.Domain == "" {
 		return ""
 	}
-	return "https://www.nexusmods.com/" + g.Nexus.Domain + "/mods/" + modID
+	id, err := strconv.Atoi(modID)
+	if err != nil {
+		return ""
+	}
+	return nexus.ModURL(g.Nexus.Domain, id)
 }
 
 func (c *cmd) printEnabledMods(rows []control.ModRow, game string) {
@@ -1765,10 +1776,10 @@ func (c *cmd) runs(p control.Params) error {
 		for _, r := range list {
 			t = append(t, []string{
 				runStartedLabel(r.Started), (time.Duration(r.DurationMs) * time.Millisecond).Round(time.Second).String(),
-				runOutcomeLabel(string(r.Outcome)), runEndedLabel(r.Exit), fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.SMAPIVersion, r.GameVersion,
+				runOutcomeLabel(string(r.Outcome)), runEndedLabel(r.Exit), r.Preset, fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.SMAPIVersion, r.GameVersion,
 			})
 		}
-		c.table("STARTED\tDURATION\tOUTCOME\tENDED\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
+		c.table("STARTED\tDURATION\tOUTCOME\tENDED\tPRESET\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
 		for _, r := range list {
 			if r.Cause != nil {
 				fmt.Fprintf(c.out, "%s\n", runCauseLine(r))
@@ -2241,7 +2252,8 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   open <link|file>                        hand a share link or .mortar file to Mortar
   play <game> <profile> --check           pre-Play summary; exits 3 when anything is wrong
   play <game> <profile> --test            launch, wait for the title screen, and stop
-  launch <game> <profile> [--wait] [--force] play; --force skips Play warnings
+  launch <game> <profile> [--preset NAME] [--wait] [--force]
+                                       play (default launch preset unless --preset); --force skips Play warnings
   status <game> | stop <game>
   runs <game> <profile>                   recent launches
 	logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
@@ -2252,8 +2264,6 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   queue retry|skip [<id>]                 retry or skip queued downloads
   queue retry-failed                      requeue every retryable failed download in the history
   queue pause|resume|clear                control the download queue
-  downloads                               archives noticed in Downloads this session
-  downloads install <n>                   install one into the open profile
   browse <game> <text> [--source nexus|github] [--page N]  search Nexus or GitHub
   update <game> <profile> <mod id>...|--all
                                           queue available mod updates

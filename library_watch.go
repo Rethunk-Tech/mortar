@@ -4,13 +4,22 @@ import (
 	"context"
 	"log"
 	"path/filepath"
+	"sync"
 
+	"github.com/Rethunk-AI/mortar/internal/dlwatch"
 	"github.com/Rethunk-AI/mortar/internal/folderwatch"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
-// archiveDir is where the queue's archives and hand-placed ones live.
+// downloadDirs are the folders new archives are offered from: Mortar's own download folder and the user's
+// Downloads folder, which is looked up once because it runs a command.
+func downloadDirs(store *settings.Store, dataDir string) []string {
+	return []string{archiveDir(store, dataDir), userDownloads()}
+}
+
+var userDownloads = sync.OnceValue(dlwatch.UserDir)
+
 func archiveDir(store *settings.Store, dataDir string) string {
 	if d := store.Get().ArchiveDir(); filepath.IsAbs(d) {
 		return d
@@ -30,9 +39,9 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 				if id == "" {
 					id = "stardew"
 				}
-				out := []folderwatch.Target{
-					{Event: folderwatch.ExtraFolderEvent, Game: id, Dir: cur.GamePrefs(id).ExtraModsFolder},
-					{Event: folderwatch.DownloadsEvent, Game: id, Dir: archiveDir(store, dataDir)},
+				out := []folderwatch.Target{{Event: folderwatch.ExtraFolderEvent, Game: id, Dir: cur.GamePrefs(id).ExtraModsFolder}}
+				for _, dir := range downloadDirs(store, dataDir) {
+					out = append(out, folderwatch.Target{Event: folderwatch.DownloadsEvent, Game: id, Dir: dir})
 				}
 				if dir, err := game.InstallDir(home, cur, id); err == nil && dir != "" {
 					out = append(out, folderwatch.Target{Event: folderwatch.ModsFolderEvent, Game: id, Dir: filepath.Join(dir, "Mods")})

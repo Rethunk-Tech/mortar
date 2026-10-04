@@ -10,6 +10,7 @@ import {
   List,
   ListItemButton,
   ListItemText,
+  Typography,
 } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +18,7 @@ import type { DownloadArchive } from '../../bindings/github.com/Rethunk-AI/morta
 import { DownloadsArchives } from '../../bindings/github.com/Rethunk-AI/mortar/internal/archivesvc/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -106,6 +108,7 @@ function Body({
   onQuery,
   selected,
   onSelect,
+  onClose,
 }: {
   archives: DownloadArchive[] | null
   error: string
@@ -115,6 +118,7 @@ function Body({
   onQuery: (query: string) => void
   selected: string
   onSelect: (path: string) => void
+  onClose: () => void
 }) {
   const { t } = useLingui()
   if (error !== '') {
@@ -125,7 +129,21 @@ function Body({
   }
   if (archives.length === 0) {
     return (
-      <EmptyState compact={true} icon={<FolderOpen size={28} />} title={t`No archives to add`}>
+      <EmptyState
+        compact={true}
+        icon={<FolderOpen size={28} />}
+        title={t`No archives to add`}
+        action={
+          <Button
+            onClick={() => {
+              onClose()
+              openSettings('downloads')
+            }}
+          >
+            {t`Change folder`}
+          </Button>
+        }
+      >
         {t`Every archive in the downloads folder is already in a profile or Mortar's store.`}
       </EmptyState>
     )
@@ -134,10 +152,20 @@ function Body({
     <>
       <Box sx={{ width: 340, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
         <SearchField label={t`Search archives`} value={query} onChange={onQuery} fullWidth={true} />
-        <ArchiveRows archives={shown} selected={selected} onSelect={onSelect} />
+        {shown.length === 0 ? (
+          <Typography sx={{ color: 'text.secondary', px: 1 }}>{t`No archives match`}</Typography>
+        ) : (
+          <ArchiveRows archives={shown} selected={selected} onSelect={onSelect} />
+        )}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        {selected ? <ArchivePreview path={selected} /> : null}
+        {selected ? (
+          <ArchivePreview path={selected} />
+        ) : (
+          <Typography sx={{ color: 'text.secondary', p: 1 }}>
+            {t`Choose an archive to see what is inside`}
+          </Typography>
+        )}
       </Box>
     </>
   )
@@ -175,6 +203,7 @@ export function DownloadsDialog() {
           onQuery={setQuery}
           selected={selected}
           onSelect={setSelected}
+          onClose={close}
         />
       </DialogContent>
       <DialogActions>
@@ -190,7 +219,7 @@ export function DownloadsDialog() {
               close()
               useInstall
                 .getState()
-                .install([selected])
+                .installDownloads([selected])
                 .catch(reportError(t`Could not add the archive`))
             }}
           >

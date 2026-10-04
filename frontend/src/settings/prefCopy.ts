@@ -220,7 +220,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
         },
       ],
     },
-    launchBackupsKept: { label: i18n._(msg`Save backups kept`) },
+    saveBackupsKept: { label: i18n._(msg`Save backups kept`) },
     extraModsFolder: {
       label: i18n._(msg`Extra mods folder`),
       description: i18n._(
@@ -367,14 +367,10 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
         msg`Where Mod Manager Download links install. Empty uses the last opened profile.`,
       ),
     },
-    watchDownloads: {
-      label: i18n._(msg`Watch Downloads folder`),
-      description: i18n._(msg`Offer to install new Nexus archives from your Downloads folder`),
-    },
     offerNewDownloads: {
       label: i18n._(msg`Offer new downloads`),
       description: i18n._(
-        msg`Show a notice when an archive lands in Mortar's download folder, with a button to add it`,
+        msg`Show a notice when a new mod archive lands in your Downloads folder or Mortar's download folder, with a button to add it`,
       ),
     },
   }

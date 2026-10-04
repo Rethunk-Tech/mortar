@@ -32,7 +32,7 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 		return false, launch.Summary{}, err
 	}
 	launched := time.Now()
-	if err := s.start(runCtx, gameID, profileID, s.launchesDirect(gameID, profileID)); err != nil {
+	if err := s.start(runCtx, gameID, profileID, "", s.launchesDirect(gameID, profileID)); err != nil {
 		return false, launch.Summary{}, err
 	}
 

@@ -1,6 +1,7 @@
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
+import { InstallDownload } from '../../bindings/github.com/Rethunk-AI/mortar/internal/archivesvc/service.ts'
 import { PickArchives } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type {
   InstallResult,
@@ -12,6 +13,7 @@ import {
   InstallArchive,
   InstallExtraFolderMod,
   InstallRemap,
+  RemoveEntries,
   RemoveEntry,
   RollBack,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
@@ -22,11 +24,10 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { useFomod } from '../fomod/store.ts'
 import { i18n } from '../i18n/index.ts'
-import { useLaunch } from '../launch/store.ts'
 import { idKey } from '../mods/dependents.ts'
 import { considerEnableRequirements } from '../mods/enableRequirementsApply.ts'
-import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
+import { profileLocked } from '../mods/useLocked.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
@@ -46,11 +47,6 @@ function dropInstallGate(hasRoute: boolean, hasTarget: boolean, locked: boolean)
   return 'ok' as const
 }
 
-function startingProfile() {
-  const { starting, startingProfile: id } = useLaunch.getState()
-  return starting ? id : ''
-}
-
 const PATH_SEPARATOR = /[\\/]/
 
 const fileName = (path: string) => path.split(PATH_SEPARATOR).pop() ?? path
@@ -65,7 +61,7 @@ async function undoArchiveInstall(
   entryKey: string,
   updated: boolean,
 ) {
-  if (isLocked(useLaunch.getState().status, profileId, startingProfile())) {
+  if (profileLocked(profileId)) {
     return
   }
   try {
@@ -115,11 +111,19 @@ async function maybeFinishInstall(profileId: string, dependentIds: string[]) {
   considerMissing(dependentIds)
 }
 
+// One mod of a multi-item install that landed; the batch reports them in a single toast.
+interface Landed {
+  key: string
+  updated: boolean
+  mods: string[]
+}
+
 async function installOne(
   game: { id: string },
   profile: Profile,
   call: () => Promise<InstallResult>,
   dependentIds: string[],
+  batch: Landed[] | null,
 ) {
   const { push } = useToasts.getState()
   const { profile: next, added, updated, versionChanged, fomod, remap } = await call()
@@ -151,6 +155,12 @@ async function installOne(
     if (mod.uniqueId) {
       dependentIds.push(mod.uniqueId)
     }
+  }
+  if (batch) {
+    if (landed) {
+      batch.push({ key: landed.key, updated, mods: names })
+    }
+    return
   }
   push({
     kind: 'success',
@@ -243,6 +253,58 @@ async function afterDroppedRemap(
   await maybeFinishInstall(session.profileId, ids)
 }
 
+async function undoBatchInstall(game: string, profileId: string, landed: Landed[]) {
+  if (profileLocked(profileId)) {
+    return
+  }
+  try {
+    let next = await RemoveEntries(
+      game,
+      profileId,
+      landed.filter((l) => !l.updated).map((l) => l.key),
+    )
+    for (const l of landed.filter((l) => l.updated)) {
+      next = await RollBack(game, profileId, l.key)
+    }
+    useProfiles.getState().replace(next)
+  } catch (e) {
+    toastError(i18n._(msg`Could not undo the install`), e)
+    return
+  }
+  await useMods.getState().load()
+}
+
+function pushBatchSummary(game: string, profile: Profile, landed: Landed[], failed: number) {
+  if (landed.length === 0) {
+    return
+  }
+  const names = landed.flatMap((l) => l.mods)
+  useToasts.getState().push({
+    kind: failed > 0 ? 'warning' : 'success',
+    title: plural(names.length, {
+      one: `Added # mod to ${profile.name}`,
+      other: `Added # mods to ${profile.name}`,
+    }),
+    ...(failed > 0 ? { body: i18n._(msg`${failed} could not be added`) } : {}),
+    detail: names.join('\n'),
+    action: {
+      label: i18n._(msg`Undo all`),
+      run: () => undoBatchInstall(game, profile.id, landed),
+      profileId: profile.id,
+      live: () => {
+        const current = useProfiles.getState().profiles.find((p) => p.id === profile.id)
+        for (const l of landed) {
+          const state = changeStillLatest(current, l.key, l.mods)
+          if (state.disabled) {
+            return state
+          }
+        }
+        return { disabled: false }
+      },
+    },
+  })
+}
+
 type InstallSet = (fn: (s: { pending: number }) => { pending: number }) => void
 
 // Installs each item into the open profile, one at a time, asking and reporting exactly as for a dropped archive.
@@ -256,7 +318,7 @@ async function runInstalls(
   const gate = dropInstallGate(
     routeGame(useNav.getState().route) !== null,
     Boolean(game && profile),
-    isLocked(useLaunch.getState().status, openId, startingProfile()),
+    profileLocked(openId),
   )
   if (gate === 'skip') {
     return
@@ -271,15 +333,21 @@ async function runInstalls(
     return
   }
   const dependentIds: string[] = []
+  const batch: Landed[] | null = items.length > 1 ? [] : null
+  let failed = 0
   set((s) => ({ pending: s.pending + items.length }))
   for (const item of items) {
     try {
-      await installOne(game, profile, callFor(game.id, profile.id, item), dependentIds)
+      await installOne(game, profile, callFor(game.id, profile.id, item), dependentIds, batch)
     } catch (e) {
+      failed += 1
       toastError(i18n._(msg`Could not add ${fileName(item)}`), e)
     } finally {
       set((s) => ({ pending: s.pending - 1 }))
     }
+  }
+  if (batch) {
+    pushBatchSummary(game.id, profile, batch, failed)
   }
   await maybeFinishInstall(profile.id, dependentIds)
 }
@@ -293,6 +361,7 @@ export const useInstall = create<{
   closeRemap: () => void
   chooseRoot: (root: string) => void
   install: (paths: string[]) => Promise<void>
+  installDownloads: (paths: string[]) => Promise<void>
   installFromExtraFolder: (folders: string[]) => Promise<void>
   pick: () => Promise<void>
 }>((set, get) => ({
@@ -328,6 +397,8 @@ export const useInstall = create<{
   },
   install: (paths) =>
     runInstalls(paths, set, (game, profile, path) => () => InstallArchive(game, profile, path)),
+  installDownloads: (paths) =>
+    runInstalls(paths, set, (game, profile, path) => () => InstallDownload(game, profile, path)),
   installFromExtraFolder: (folders) =>
     runInstalls(
       folders,

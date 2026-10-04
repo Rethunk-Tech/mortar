@@ -14,7 +14,6 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/bundles"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/datasvc"
-	"github.com/Rethunk-AI/mortar/internal/dlwatch"
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/loadersvc"
@@ -66,7 +65,6 @@ type Services struct {
 	Nexus       *nexussvc.Service
 	Shares      *sharesvc.Service
 	Data        *datasvc.Service
-	Downloads   *dlwatch.Service
 	Plays       *shortcut.Service
 	Loaders     *loadersvc.Service
 	Templates   *templates.Service
@@ -187,7 +185,7 @@ func modProblems(p profile.Profile, result problems.Result, nexusID int) []ModPr
 		}
 	}
 	involves := func(id string) bool {
-		return slices.ContainsFunc(ids, func(want string) bool { return strings.EqualFold(want, id) })
+		return slices.ContainsFunc(ids, func(want string) bool { return profile.SameID(want, id) })
 	}
 	out := []ModProblem{}
 	for _, missing := range result.Missing {
@@ -526,10 +524,6 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, err
 		}
 		return s.Launches.Status(p.Game)
-	case "downloads":
-		return s.downloads()
-	case "downloads.install":
-		return s.downloadsInstall(p)
 	case "updates.apply":
 		return s.changed(p.Game, func() (any, error) { return s.applyEverywhere(ctx, p) })
 	case "mods.by-author":
@@ -811,7 +805,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "who":
 		return s.Problems.WhoChanges(ctx, p.Game, id, p.Query)
 	case "conflicts.map":
-		return s.Problems.AssetMap(ctx, p.Game, id, p.Query, 0)
+		return s.Problems.AssetMap(ctx, p.Game, id, p.Query, false, 0)
 	case "problems":
 		return s.Problems.ProblemsWithEvidence(ctx, p.Game, id)
 	case "compatibility":
@@ -852,7 +846,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		var reqs []queue.Request
 		for _, u := range r.Updates {
 			if u.Unofficial || (!p.All && len(p.UniqueIDs) > 0 && !slices.ContainsFunc(p.UniqueIDs, func(want string) bool {
-				return strings.EqualFold(want, u.UniqueID)
+				return profile.SameID(want, u.UniqueID)
 			})) {
 				continue
 			}
@@ -899,7 +893,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "play.test":
 		return s.playTest(ctx, p.Game, id)
 	case "launch":
-		return s.launch(ctx, p.Game, id, p.Force)
+		return s.launch(ctx, p.Game, id, p.Preset, p.Force)
 	}
 	return nil, fmt.Errorf("unknown method %q", method)
 }
@@ -1038,22 +1032,12 @@ func modRows(p profile.Profile) []ModRow {
 		for _, m := range e.Mods {
 			out = append(out, ModRow{
 				UniqueID: m.UniqueID, Name: m.Name, Version: m.Version, Author: m.Author, Key: e.Key,
-				Enabled: !slices.ContainsFunc(e.Disabled, func(d string) bool { return strings.EqualFold(d, m.UniqueID) }),
+				Enabled: e.Enabled(m.UniqueID),
 				Pinned:  e.Pinned, PinReason: e.PinReason, Source: source(e.Source),
 			})
 		}
 	}
 	return out
-}
-
-// entryOf finds the entry holding a UniqueID, ignoring case.
-func entryOf(p profile.Profile, uniqueID string) (profile.Entry, bool) {
-	for _, e := range p.Entries {
-		if slices.ContainsFunc(e.Mods, func(m profile.EntryMod) bool { return strings.EqualFold(m.UniqueID, uniqueID) }) {
-			return e, true
-		}
-	}
-	return profile.Entry{}, false
 }
 
 func extraKeyOf(e profile.Entry, id string) (string, error) {
@@ -1068,7 +1052,7 @@ func extraKeyOf(e profile.Entry, id string) (string, error) {
 			if folder != extra && !strings.HasPrefix(folder, prefix) {
 				continue
 			}
-			if strings.EqualFold(m.UniqueID, id) || strings.EqualFold(m.Name, id) {
+			if profile.SameID(m.UniqueID, id) || strings.EqualFold(m.Name, id) {
 				return extra, nil
 			}
 		}
@@ -1082,7 +1066,7 @@ func refsFor(p profile.Profile, ids []string) ([]profile.EnableRef, error) {
 	}
 	refs := make([]profile.EnableRef, 0, len(ids))
 	for _, id := range ids {
-		e, ok := entryOf(p, id)
+		e, _, ok := p.FindMod("", id)
 		if !ok {
 			return nil, fmt.Errorf("profile %s has no mod %q", p.Name, id)
 		}
@@ -1156,18 +1140,18 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 		return ModInfo{}, errors.New("name one mod by UniqueID")
 	}
 	uid := ids[0]
-	e, ok := entryOf(p, uid)
+	e, _, ok := p.FindMod("", uid)
 	if !ok {
 		return ModInfo{}, fmt.Errorf("profile %s has no mod %q", p.Name, uid)
 	}
 	info := ModInfo{Needs: []string{}, Optional: []string{}, Dependents: []string{}, Missing: []problems.Missing{}, Conflicts: []problems.AssetConflict{}, Settings: []problems.SettingHint{}}
 	for _, r := range modRows(p) {
-		if strings.EqualFold(r.UniqueID, uid) {
+		if profile.SameID(r.UniqueID, uid) {
 			info.ModRow = r
 		}
 	}
 	for _, m := range e.Mods {
-		if strings.EqualFold(m.UniqueID, uid) {
+		if profile.SameID(m.UniqueID, uid) {
 			info.Optional = append(info.Optional, m.Optional...)
 			for _, n := range m.Needs {
 				if !slices.ContainsFunc(m.Optional, func(o string) bool { return strings.EqualFold(o, n) }) {
@@ -1178,7 +1162,7 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 	}
 	for _, other := range p.Entries {
 		for _, m := range other.Mods {
-			if slices.ContainsFunc(m.Needs, func(n string) bool { return strings.EqualFold(n, uid) }) {
+			if slices.ContainsFunc(m.Needs, func(n string) bool { return profile.SameID(n, uid) }) {
 				info.Dependents = append(info.Dependents, m.UniqueID)
 			}
 		}
@@ -1188,17 +1172,17 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 		return info, err
 	}
 	for _, m := range res.Missing {
-		if strings.EqualFold(m.DependentID, uid) {
+		if profile.SameID(m.DependentID, uid) {
 			info.Missing = append(info.Missing, m)
 		}
 	}
 	for _, c := range res.AssetConflicts {
-		if slices.ContainsFunc(c.PackIDs, func(id string) bool { return strings.EqualFold(id, uid) }) {
+		if slices.ContainsFunc(c.PackIDs, func(id string) bool { return profile.SameID(id, uid) }) {
 			info.Conflicts = append(info.Conflicts, c)
 		}
 	}
 	for _, h := range res.Settings {
-		if strings.EqualFold(h.UniqueID, uid) {
+		if profile.SameID(h.UniqueID, uid) {
 			info.Settings = append(info.Settings, h)
 		}
 	}
@@ -1450,7 +1434,7 @@ func resetSettings(svc *settings.Service, key, game string) error {
 	return nil
 }
 
-func (s *Services) launch(ctx context.Context, gameID, id string, force bool) (launchsvc.Status, error) {
+func (s *Services) launch(ctx context.Context, gameID, id, preset string, force bool) (launchsvc.Status, error) {
 	update, err := s.Problems.UpdateWarning(ctx, gameID, id)
 	if err != nil {
 		return launchsvc.Status{}, err
@@ -1462,7 +1446,7 @@ func (s *Services) launch(ctx context.Context, gameID, id string, force bool) (l
 	if !force && (update.Changed || gap) {
 		return launchsvc.Status{}, launchWarningError{update: update, save: save, gap: gap}
 	}
-	if err := s.Launches.Start(ctx, gameID, id, false); err != nil {
+	if err := s.Launches.StartPreset(ctx, gameID, id, preset, false); err != nil {
 		return launchsvc.Status{}, err
 	}
 	deadline := time.Now().Add(launchWait)

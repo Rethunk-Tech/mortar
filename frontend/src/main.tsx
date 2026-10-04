@@ -5,7 +5,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { App } from './App.tsx'
-import { DownloadsAsk } from './downloads/DownloadsAsk.tsx'
 import { initNewDownloads } from './downloads/newDownloads.ts'
 import { activateLanguage, i18n } from './i18n/index.ts'
 import { initInstallAsks } from './install/store.ts'
@@ -24,6 +23,7 @@ import { initNexus } from './settings/nexus.ts'
 import { initSettings } from './settings/store.ts'
 import { initShare } from './share/arrivals.ts'
 import { Themed } from './Themed.tsx'
+import { initTidyReport } from './tidy/report.ts'
 import { reportUnexpected } from './toasts/report.ts'
 import { initTrayNoticeClick } from './tray/noticeClick.ts'
 import { initMortarUpdateBackground } from './updates/background.ts'
@@ -58,6 +58,7 @@ initPlayRequests()
 initShare().catch(reportUnexpected)
 initIncoming().catch(reportUnexpected)
 initQuit()
+initTidyReport()
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -66,7 +67,6 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <CssBaseline />
         <App />
         <IncomingPrompt />
-        <DownloadsAsk />
       </Themed>
     </I18nProvider>
   </React.StrictMode>,

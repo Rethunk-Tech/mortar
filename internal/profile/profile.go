@@ -56,8 +56,12 @@ type Source struct {
 	Repo             string `json:"repo,omitempty"`
 	Tag              string `json:"tag,omitempty"`
 	Asset            string `json:"asset,omitempty"`
-	fomod            *fomodChoices
-	disabled         *disabledMods
+	// ModName is the Nexus mod page's name, and Category the file's category on that page (MAIN, OPTIONAL, ...).
+	ModName  string `json:"modName,omitempty"`
+	Category string `json:"category,omitempty"`
+	fomod    *fomodChoices
+	disabled *disabledMods
+	overlay  *overlayPlace
 }
 
 type fomodChoices struct {
@@ -138,6 +142,13 @@ type Entry struct {
 	ExtraStoreKeys []string `json:"extraStoreKeys,omitempty"`
 	// PreviousExtraStoreKeys parallels ExtraStoreKeys after an update or roll back, for restoring each extra file.
 	PreviousExtraStoreKeys []string `json:"previousExtraStoreKeys,omitempty"`
+	// OverlayOf is the key of the entry whose folder this optional file overlays; such an entry has no mods and no
+	// folder of its own. OverlayFrom is the folder of its store item that is laid over, OverlayTo where inside the
+	// base entry's folder it goes, and OverlayOff switches it off.
+	OverlayOf   string `json:"overlayOf,omitempty"`
+	OverlayFrom string `json:"overlayFrom,omitempty"`
+	OverlayTo   string `json:"overlayTo,omitempty"`
+	OverlayOff  bool   `json:"overlayOff,omitempty"`
 }
 
 // CollectionRef is the Nexus collection a profile was imported from.
@@ -181,6 +192,10 @@ type Profile struct {
 	LaunchPrefix string `json:"launchPrefix,omitempty"`
 	// LaunchEnv contains one NAME=value environment variable per line for direct launches.
 	LaunchEnv string `json:"launchEnv,omitempty"`
+	// LaunchPresets are named launch configurations beside the profile's own settings above.
+	LaunchPresets []LaunchPreset `json:"launchPresets,omitempty"`
+	// DefaultLaunchPreset is the id of the preset Play uses; empty means the profile's own settings.
+	DefaultLaunchPreset string `json:"defaultLaunchPreset,omitempty"`
 	// Overrides are profile values for settings.ProfileOverridable keys.
 	Overrides map[string]string `json:"overrides,omitempty"`
 	// Error is set on a list item whose profile.json could not be read.
@@ -202,14 +217,17 @@ type Store struct {
 	Bundled func(game string) []Bundle
 	// Created is called after Create has added a profile; nil means nothing.
 	Created func(game string)
+	// Tidied is told about each repair rebuild makes to a profile's mods folder (what was done, the profile's name, the
+	// folder); nil means nothing.
+	Tidied func(what, profileName, folder string)
 	// ShortcutRenamed updates an existing launcher after a profile is renamed; nil means nothing.
 	ShortcutRenamed func(game, id, profileName, gameName string) error
 	// ShortcutRemoved removes launchers after a profile is deleted; nil means nothing.
 	ShortcutRemoved func(game, id string) error
 	// Running reports whether the game is running this profile; nil means never.
 	Running func(game, id string) bool
-	// BackupsKept returns how many save backups to retain; nil means backup.DefaultKeep.
-	BackupsKept func() int
+	// GameRunning reports whether the game process is up at all, however it was started; nil means never.
+	GameRunning func(game string) bool
 	// NewModsEnabled reports whether newly installed entries start enabled; nil means enabled.
 	NewModsEnabled func() bool
 	// OldFilesMode returns the game's oldFilesOnUpdate setting; nil means ask.
@@ -488,7 +506,7 @@ func (s *Store) createBundled(game, name string) (Profile, error) {
 		}
 		if err != nil {
 			dir, _ := s.profileDir(game, p.ID)
-			return Profile{}, errors.Join(err, os.RemoveAll(dir))
+			return Profile{}, errors.Join(err, fsx.RemoveAll(dir))
 		}
 		out = withBundled
 	}
@@ -520,7 +538,7 @@ func (s *Store) create(game, name string) (Profile, error) {
 		p.Order = existing[len(existing)-1].Order + 1
 	}
 	if err := writeProfile(dir, p); err != nil {
-		return Profile{}, errors.Join(err, os.RemoveAll(dir))
+		return Profile{}, errors.Join(err, fsx.RemoveAll(dir))
 	}
 	return p, nil
 }
@@ -591,7 +609,7 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 		restoreModsOld(dir)
 		return Profile{}, err
 	}
-	_ = os.RemoveAll(filepath.Join(dir, "mods") + ".old")
+	_ = fsx.RemoveAll(filepath.Join(dir, "mods") + ".old")
 	kind, label := s.historyKind, s.historyLabel
 	s.historyKind, s.historyLabel = "", ""
 	if s.historyQuietIDs[id] == 0 {

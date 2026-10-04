@@ -30,12 +30,3 @@ func ParseNexusFilename(name string) (Info, bool) {
 	label := strings.ReplaceAll(m[1], "_", " ")
 	return Info{Name: label, ModID: id}, true
 }
-
-func archiveExt(name string) bool {
-	switch strings.ToLower(filepath.Ext(name)) {
-	case ".zip", ".7z", ".rar":
-		return true
-	default:
-		return false
-	}
-}
