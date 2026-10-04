@@ -201,6 +201,7 @@ A full-height scrollable list of every problem for this profile, grouped under h
 - Settings (Content Patcher compatibility setting suggestions)
 - Cosmetic or harmless (never counts toward the tab's chip, the profile badge or the Mods-tab row)
 - Dismissed (collapsed by default; dismissed rows are muted and can be restored)
+- Slow startup (from the latest startup report: a mod adding 3 s or more, or a content pack adding 1 s or more, named with its framework; a framework that loads content packs, such as Content Patcher, is never a row itself since so many mods need it; never counted)
 - Cleanup (unused frameworks and conservatively detected unused tilesheet packs; never counted)
 
 While the tab is open, the tab row holds an **Asset map** icon button and **Copy report**.

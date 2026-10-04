@@ -307,7 +307,7 @@ msgid "a new Mortar is ready"
 msgstr "a new Mortar is ready"
 
 #. placeholder {0}: row.name
-#: src/mods/SlowStartupSection.tsx:40
+#: src/mods/SlowStartupSection.tsx:39
 msgid "{0} adds {time} to startup"
 msgstr "{0} adds {time} to startup"
 
@@ -601,7 +601,7 @@ msgstr "Find mods to add"
 msgid "More languages are coming."
 msgstr "More languages are coming."
 
-#: src/mods/SlowStartupSection.tsx:95
+#: src/mods/SlowStartupSection.tsx:92
 msgid "other checks"
 msgstr "other checks"
 
@@ -1270,7 +1270,7 @@ msgstr "Startup"
 msgid "Peak ms"
 msgstr "Peak ms"
 
-#: src/mods/SlowStartupSection.tsx:92
+#: src/mods/SlowStartupSection.tsx:89
 msgid "conflicts"
 msgstr "conflicts"
 
@@ -4278,7 +4278,7 @@ msgstr "Restoring…"
 msgid "Load order"
 msgstr "Load order"
 
-#: src/mods/SlowStartupSection.tsx:117
+#: src/mods/SlowStartupSection.tsx:114
 msgid "Slow startup"
 msgstr "Slow startup"
 
@@ -4553,7 +4553,7 @@ msgstr "The update for {0} did not finish"
 msgid "Dismissed"
 msgstr "Dismissed"
 
-#: src/mods/SlowStartupSection.tsx:94
+#: src/mods/SlowStartupSection.tsx:91
 msgid "updates"
 msgstr "updates"
 
@@ -4696,7 +4696,7 @@ msgstr "Could not change how Nexus links open"
 msgid "When you switch a mod on, also enable its required mods already in the profile"
 msgstr "When you switch a mod on, also enable its required mods already in the profile"
 
-#: src/mods/SlowStartupSection.tsx:93
+#: src/mods/SlowStartupSection.tsx:90
 msgid "requirements"
 msgstr "requirements"
 
@@ -5526,7 +5526,7 @@ msgstr "Could not untrack"
 msgid "Copy log"
 msgstr "Copy log"
 
-#: src/mods/SlowStartupSection.tsx:68
+#: src/mods/SlowStartupSection.tsx:65
 msgid "See startup"
 msgstr "See startup"
 
@@ -6725,7 +6725,7 @@ msgstr "Handle Nexus download links?"
 msgid "none"
 msgstr "none"
 
-#: src/mods/SlowStartupSection.tsx:91
+#: src/mods/SlowStartupSection.tsx:88
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
 
@@ -7043,12 +7043,6 @@ msgstr "Could not inspect the destination folder"
 msgid "copy of {name}"
 msgstr "copy of {name}"
 
-#. placeholder {0}: row.name
-#. placeholder {1}: row.count
-#: src/mods/SlowStartupSection.tsx:42
-msgid "{0} spends {time} at startup on {1, plural, one {# content pack} other {# content packs}}"
-msgstr "{0} spends {time} at startup on {1, plural, one {# content pack} other {# content packs}}"
-
 #: src/games/storeName.ts:8
 msgid "GOG via Heroic"
 msgstr "GOG via Heroic"
@@ -7132,7 +7126,7 @@ msgstr "Reset the settings of {0}?"
 
 #. placeholder {0}: row.name
 #. placeholder {1}: row.framework
-#: src/mods/SlowStartupSection.tsx:44
+#: src/mods/SlowStartupSection.tsx:41
 msgid "{0} adds {time} to startup (through {1})"
 msgstr "{0} adds {time} to startup (through {1})"
 
@@ -7162,7 +7156,7 @@ msgstr "Install {name}?"
 #: src/mods/problemFix/DismissedBrokenFix.tsx:53
 #: src/mods/runErrorFixButtons.tsx:60
 #: src/mods/SelectionBarActions.tsx:121
-#: src/mods/SlowStartupSection.tsx:77
+#: src/mods/SlowStartupSection.tsx:74
 msgid "Switch off"
 msgstr "Switch off"
 
@@ -7698,7 +7692,7 @@ msgid "First profile"
 msgstr "First profile"
 
 #. placeholder {0}: formatDuration(total, i18n.locale)
-#: src/mods/SlowStartupSection.tsx:103
+#: src/mods/SlowStartupSection.tsx:100
 msgid "Checked in {0}: {parts}"
 msgstr "Checked in {0}: {parts}"
 

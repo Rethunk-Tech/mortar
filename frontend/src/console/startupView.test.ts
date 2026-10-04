@@ -86,7 +86,7 @@ test('regressions name updated or new mods that added a second or more', () => {
   expect(startupRegressions(latest, undefined)).toEqual([])
 })
 
-test('slow startup names a framework by its packs and offers plain mods and slow packs', () => {
+test('slow startup names plain mods and slow packs, never the framework that loads them', () => {
   const report = {
     mods: [
       mod('cp', { UpdateTicked: 14_000 }, {
@@ -101,7 +101,6 @@ test('slow startup names a framework by its packs and offers plain mods and slow
     ],
   } as StartupReport
   expect(slowStartups(report).map((s) => [s.kind, s.uniqueId])).toEqual([
-    ['packs', 'cp'],
     ['mod', 'fs'],
     ['pack', 'rsv'],
   ])

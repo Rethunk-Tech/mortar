@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
@@ -38,9 +37,7 @@ function SlowRow({ row }: { row: SlowStartup }) {
   const setEnabled = useMods((s) => s.setEnabled)
   const time = formatDuration(row.ms, i18n.locale)
   let text = t`${row.name} adds ${time} to startup`
-  if (row.kind === 'packs') {
-    text = t`${row.name} spends ${time} at startup on ${plural(row.count, { one: '# content pack', other: '# content packs' })}`
-  } else if (row.kind === 'pack') {
+  if (row.kind === 'pack') {
     text = t`${row.name} adds ${time} to startup (through ${row.framework})`
   }
   return (
@@ -67,7 +64,7 @@ function SlowRow({ row }: { row: SlowStartup }) {
       >
         {t`See startup`}
       </Button>
-      {row.kind !== 'packs' && mod?.enabled ? (
+      {mod?.enabled ? (
         <Button
           size="small"
           variant="outlined"
