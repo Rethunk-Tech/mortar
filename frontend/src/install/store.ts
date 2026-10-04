@@ -3,12 +3,14 @@ import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import { PickArchives } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
 import type {
+  InstallResult,
   Profile,
   RemapAsk,
   Source,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
   InstallArchive,
+  InstallExtraFolderMod,
   InstallRemap,
   RemoveEntry,
   RollBack,
@@ -113,21 +115,14 @@ async function maybeFinishInstall(profileId: string, dependentIds: string[]) {
   considerMissing(dependentIds)
 }
 
-async function installOneArchive(
+async function installOne(
   game: { id: string },
   profile: Profile,
-  path: string,
+  call: () => Promise<InstallResult>,
   dependentIds: string[],
 ) {
   const { push } = useToasts.getState()
-  const {
-    profile: next,
-    added,
-    updated,
-    versionChanged,
-    fomod,
-    remap,
-  } = await InstallArchive(game.id, profile.id, path)
+  const { profile: next, added, updated, versionChanged, fomod, remap } = await call()
   if (fomod) {
     useFomod.getState().open({
       game: game.id,
@@ -248,6 +243,47 @@ async function afterDroppedRemap(
   await maybeFinishInstall(session.profileId, ids)
 }
 
+type InstallSet = (fn: (s: { pending: number }) => { pending: number }) => void
+
+// Installs each item into the open profile, one at a time, asking and reporting exactly as for a dropped archive.
+async function runInstalls(
+  items: string[],
+  set: InstallSet,
+  callFor: (game: string, profile: string, item: string) => () => Promise<InstallResult>,
+) {
+  const { game, openId, profiles } = useProfiles.getState()
+  const profile = profiles.find((p) => p.id === openId)
+  const gate = dropInstallGate(
+    routeGame(useNav.getState().route) !== null,
+    Boolean(game && profile),
+    isLocked(useLaunch.getState().status, openId, startingProfile()),
+  )
+  if (gate === 'skip') {
+    return
+  }
+  if (gate === 'locked') {
+    useToasts
+      .getState()
+      .push({ kind: 'warning', title: i18n._(msg`Stop the game to change mods.`) })
+    return
+  }
+  if (!(game && profile)) {
+    return
+  }
+  const dependentIds: string[] = []
+  set((s) => ({ pending: s.pending + items.length }))
+  for (const item of items) {
+    try {
+      await installOne(game, profile, callFor(game.id, profile.id, item), dependentIds)
+    } catch (e) {
+      toastError(i18n._(msg`Could not add ${fileName(item)}`), e)
+    } finally {
+      set((s) => ({ pending: s.pending - 1 }))
+    }
+  }
+  await maybeFinishInstall(profile.id, dependentIds)
+}
+
 export const useInstall = create<{
   pending: number
   offers: MissingOffer[]
@@ -257,6 +293,7 @@ export const useInstall = create<{
   closeRemap: () => void
   chooseRoot: (root: string) => void
   install: (paths: string[]) => Promise<void>
+  installFromExtraFolder: (folders: string[]) => Promise<void>
   pick: () => Promise<void>
 }>((set, get) => ({
   pending: 0,
@@ -289,40 +326,14 @@ export const useInstall = create<{
         toastError(i18n._(msg`Could not add the chosen folder`), e)
       })
   },
-  install: async (paths) => {
-    const { game, openId, profiles } = useProfiles.getState()
-    const profile = profiles.find((p) => p.id === openId)
-    const gate = dropInstallGate(
-      routeGame(useNav.getState().route) !== null,
-      Boolean(game && profile),
-      isLocked(useLaunch.getState().status, openId, startingProfile()),
-    )
-    if (gate === 'skip') {
-      return
-    }
-    if (gate === 'locked') {
-      useToasts.getState().push({
-        kind: 'warning',
-        title: i18n._(msg`Stop the game to change mods.`),
-      })
-      return
-    }
-    if (!(game && profile)) {
-      return
-    }
-    const dependentIds: string[] = []
-    set((s) => ({ pending: s.pending + paths.length }))
-    for (const path of paths) {
-      try {
-        await installOneArchive(game, profile, path, dependentIds)
-      } catch (e) {
-        toastError(i18n._(msg`Could not add ${fileName(path)}`), e)
-      } finally {
-        set((s) => ({ pending: s.pending - 1 }))
-      }
-    }
-    await maybeFinishInstall(profile.id, dependentIds)
-  },
+  install: (paths) =>
+    runInstalls(paths, set, (game, profile, path) => () => InstallArchive(game, profile, path)),
+  installFromExtraFolder: (folders) =>
+    runInstalls(
+      folders,
+      set,
+      (game, profile, folder) => () => InstallExtraFolderMod(game, profile, folder),
+    ),
   pick: async () => {
     try {
       const paths = (await PickArchives()) ?? []

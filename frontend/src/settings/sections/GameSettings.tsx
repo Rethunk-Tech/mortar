@@ -307,6 +307,43 @@ function SmapiPage({ onVersion }: { onVersion: (v: string) => void }) {
   )
 }
 
+function ExtraModsFolder() {
+  const { t } = useLingui()
+  const push = useToasts((s) => s.push)
+  const folder = useSettings((s) => s.games?.[GAME]?.extraModsFolder ?? '')
+  const choose = () =>
+    persist(
+      async () => {
+        const dir = await PickFolder(t`Extra mods folder`)
+        if (dir) {
+          await SetByKey('extraModsFolder', dir, GAME)
+        }
+      },
+      push,
+      t`Couldn't save that setting`,
+    )
+  const clear = () =>
+    persist(() => SetByKey('extraModsFolder', '', GAME), push, t`Couldn't save that setting`)
+  return (
+    <PrefByKey
+      prefKey="extraModsFolder"
+      game={GAME}
+      extra={
+        <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+          {folder ? (
+            <Button onClick={clear} sx={noShrink}>
+              {t`Clear`}
+            </Button>
+          ) : null}
+          <Button variant="outlined" onClick={choose} sx={noShrink}>
+            {t`Choose folder…`}
+          </Button>
+        </Box>
+      }
+    />
+  )
+}
+
 function BackupsPage() {
   const { t } = useLingui()
   const push = useToasts((s) => s.push)
@@ -340,4 +377,4 @@ function BackupsPage() {
   )
 }
 
-export { BackupsPage, GameFolder, SmapiPage }
+export { BackupsPage, ExtraModsFolder, GameFolder, SmapiPage }

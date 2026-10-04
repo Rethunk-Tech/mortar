@@ -221,6 +221,39 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
       ],
     },
     launchBackupsKept: { label: i18n._(msg`Launch backups kept`) },
+    extraModsFolder: {
+      label: i18n._(msg`Extra mods folder`),
+      description: i18n._(
+        msg`A folder of unpacked mods you can add to a profile from the Add menu`,
+      ),
+    },
+    showDotHiddenMods: {
+      label: i18n._(msg`Show hidden mods`),
+      description: i18n._(
+        msg`List mods inside a folder whose name starts with a dot, which SMAPI skips`,
+      ),
+    },
+    oldFilesOnUpdate: {
+      label: i18n._(msg`Files an update no longer includes`),
+      description: i18n._(msg`What happens to files the new version of a mod leaves out`),
+      options: [
+        {
+          value: 'ask',
+          label: i18n._(msg`Ask`),
+          hint: i18n._(msg`Set them aside and ask whether to keep or delete them.`),
+        },
+        {
+          value: 'delete',
+          label: i18n._(msg`Delete`),
+          hint: i18n._(msg`Remove them; rolling back still restores the old version.`),
+        },
+        {
+          value: 'keep',
+          label: i18n._(msg`Keep`),
+          hint: i18n._(msg`Carry them into the new version's folder.`),
+        },
+      ],
+    },
     saveBackupHours: {
       label: i18n._(msg`Scheduled save backups`),
       description: i18n._(

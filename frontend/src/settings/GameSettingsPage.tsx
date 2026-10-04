@@ -17,7 +17,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { PrefKeys } from './PrefRow.tsx'
 import { SettingsSection } from './SettingsSection.tsx'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
-import { BackupsPage, GameFolder, SmapiPage } from './sections/GameSettings.tsx'
+import { BackupsPage, ExtraModsFolder, GameFolder, SmapiPage } from './sections/GameSettings.tsx'
 import { StreamOverlay } from './sections/StreamOverlay.tsx'
 import { useSettings } from './store.ts'
 
@@ -91,9 +91,12 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
                 'cosmeticConflicts',
                 'conflictScanDepth',
                 'watchDownloads',
+                'oldFilesOnUpdate',
+                'showDotHiddenMods',
               ]}
               game={GAME}
             />
+            <ExtraModsFolder />
           </SettingsSection>
         )
       case 'backups':

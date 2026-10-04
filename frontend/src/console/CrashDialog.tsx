@@ -1,4 +1,4 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -15,6 +15,7 @@ import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { useTab } from '../game/tab.ts'
+import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
@@ -147,19 +148,16 @@ function MoreActions({
   )
 }
 
-function causeText(
-  t: ReturnType<typeof useLingui>['t'],
-  cause: { reason: string; detail: string },
-) {
+function causeText(cause: { reason: string; detail: string }) {
   const kind = crashCauseKind(cause.reason)
   if (kind === 'missing-file') {
-    return t`A file it needs could not be opened.`
+    return i18n._(msg`A file it needs could not be opened.`)
   }
   if (kind === 'asset-load') {
-    return t`It could not load an asset.`
+    return i18n._(msg`It could not load an asset.`)
   }
   if (kind === 'mod-exception') {
-    return t`It encountered an error.`
+    return i18n._(msg`It encountered an error.`)
   }
   return crashCauseDetailLine(cause.detail)
 }
@@ -226,7 +224,7 @@ export function CrashDialog() {
       setBisectError(errorDetails(error))
     }
   }
-  const causeBody = crash.cause ? causeText(t, crash.cause) : ''
+  const causeBody = crash.cause ? causeText(crash.cause) : ''
   return (
     <>
       <Dialog

@@ -9,7 +9,8 @@ test('Nexus Download is only offered for Nexus results when the account is Premi
   expect(src).not.toMatch(/else if \(premium\)/)
 })
 
-test('free Nexus results show a disabled Download with a Premium-only reason', () => {
-  expect(src).toContain('Premium only')
-  expect(src).toContain('DisabledReason')
+test('free Nexus accounts get the files page and signed-out users a sign-in, never a dead Download', () => {
+  expect(src).toContain('Open files page')
+  expect(src).toContain('Sign in to download')
+  expect(src).not.toContain('Premium only')
 })
