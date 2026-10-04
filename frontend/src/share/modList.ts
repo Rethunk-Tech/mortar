@@ -5,13 +5,13 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { sameId } from '../mods/lookup.ts'
 
-const LIMIT = 2000
+const DISCORD_LIMIT = 2000
 const BUNDLED = new Set(['smapi', 'mortar'])
 const NEXUS_PAGE = 'https://www.nexusmods.com/stardewvalley/mods/'
 
-type Format = 'markdown' | 'plain' | 'discord'
+type ModListFormat = 'markdown' | 'plain' | 'discord'
 
-interface Item {
+interface ModListItem {
   name: string
   version: string
   url: string
@@ -39,20 +39,20 @@ function isOn(entry: Entry, uniqueId: string): boolean {
   return !(entry.disabled ?? []).some((id) => sameId(id, uniqueId))
 }
 
-function markdownLine(item: Item): string {
-  const name = escapeName(item.name)
+function markdownLine(item: ModListItem): string {
+  const name = escapeMarkdown(item.name)
   const body = item.url ? `[${name}](${item.url})` : name
   return item.version ? `- ${body} ${item.version}` : `- ${body}`
 }
 
-function plainLine(item: Item): string {
+function plainLine(item: ModListItem): string {
   const nameVer = item.version ? `${item.name} v${item.version}` : item.name
   return item.url ? `${nameVer} - ${item.url}` : nameVer
 }
 
 function grouped(
-  items: readonly Item[],
-  line: (item: Item) => string,
+  items: readonly ModListItem[],
+  line: (item: ModListItem) => string,
   labels: GroupLabels,
 ): string {
   if (!items.some((item) => !item.enabled)) {
@@ -75,28 +75,28 @@ function grouped(
 
 function sliceLine(line: string, chunks: string[]): string {
   let rest = line
-  while (rest.length > LIMIT) {
-    chunks.push(rest.slice(0, LIMIT))
-    rest = rest.slice(LIMIT)
+  while (rest.length > DISCORD_LIMIT) {
+    chunks.push(rest.slice(0, DISCORD_LIMIT))
+    rest = rest.slice(DISCORD_LIMIT)
   }
   return rest
 }
 
-function splitText(text: string): string[] {
-  if (text.length <= LIMIT) {
+function splitDiscord(text: string): string[] {
+  if (text.length <= DISCORD_LIMIT) {
     return text === '' ? [''] : [text]
   }
   const chunks: string[] = []
   let current = ''
   for (const line of text.split('\n')) {
     const next = current === '' ? line : `${current}\n${line}`
-    if (next.length <= LIMIT) {
+    if (next.length <= DISCORD_LIMIT) {
       current = next
     } else {
       if (current !== '') {
         chunks.push(current)
       }
-      current = line.length <= LIMIT ? line : sliceLine(line, chunks)
+      current = line.length <= DISCORD_LIMIT ? line : sliceLine(line, chunks)
     }
   }
   if (current !== '') {
@@ -110,12 +110,12 @@ function numbered(parts: string[]): DiscordPart[] {
 }
 
 // Bundled SMAPI mods and the Mortar bridge are left out, matching what a share carries.
-function itemsOf(profile: Profile | undefined, keys: readonly string[] = []): Item[] {
+function listItems(profile: Profile | undefined, keys: readonly string[] = []): ModListItem[] {
   if (!profile) {
     return []
   }
   const only = keys.length > 0 ? new Set(keys) : null
-  const items: Item[] = []
+  const items: ModListItem[] = []
   for (const entry of profile.entries ?? []) {
     const skip = BUNDLED.has(entry.source.kind) || (only !== null && !only.has(entry.key))
     if (!skip) {
@@ -143,34 +143,40 @@ function itemsOf(profile: Profile | undefined, keys: readonly string[] = []): It
 }
 
 // Names sit in Markdown link text, so the characters that would break a link or emphasis are escaped.
-function escapeName(name: string): string {
+function escapeMarkdown(name: string): string {
   return name.replace(/([\\`*_[\]()])/g, '\\$1')
 }
 
-function asMarkdown(items: readonly Item[], labels: GroupLabels = defaultLabels): string {
+function formatMarkdown(
+  items: readonly ModListItem[],
+  labels: GroupLabels = defaultLabels,
+): string {
   return grouped(items, markdownLine, labels)
 }
 
-function asPlain(items: readonly Item[], labels: GroupLabels = defaultLabels): string {
+function formatPlain(items: readonly ModListItem[], labels: GroupLabels = defaultLabels): string {
   return grouped(items, plainLine, labels)
 }
 
-function asDiscord(items: readonly Item[], labels: GroupLabels = defaultLabels): DiscordPart[] {
-  return numbered(splitText(asMarkdown(items, labels)))
+function asDiscord(
+  items: readonly ModListItem[],
+  labels: GroupLabels = defaultLabels,
+): DiscordPart[] {
+  return numbered(splitDiscord(formatMarkdown(items, labels)))
 }
 
-function formatted(
-  format: Format,
-  items: readonly Item[],
+function formatModList(
+  format: ModListFormat,
+  items: readonly ModListItem[],
   labels: GroupLabels = defaultLabels,
 ): DiscordPart[] {
   if (format === 'plain') {
-    return numbered([asPlain(items, labels)])
+    return numbered([formatPlain(items, labels)])
   }
   if (format === 'discord') {
     return asDiscord(items, labels)
   }
-  return numbered([asMarkdown(items, labels)])
+  return numbered([formatMarkdown(items, labels)])
 }
 
 interface DiscordPart {
@@ -179,14 +185,18 @@ interface DiscordPart {
   text: string
 }
 
-export type ModListFormat = Format
-export type ModListItem = Item
-export const DISCORD_LIMIT = LIMIT
-export const listItems = itemsOf
-export const escapeMarkdown = escapeName
-export const formatMarkdown = asMarkdown
-export const formatPlain = asPlain
-export const splitDiscord = splitText
-export const formatDiscord = (items: readonly Item[], labels?: GroupLabels) =>
-  asDiscord(items, labels).map((p) => p.text)
-export const formatModList = formatted
+function formatDiscord(items: readonly ModListItem[], labels?: GroupLabels): string[] {
+  return asDiscord(items, labels).map((p) => p.text)
+}
+
+export type { ModListFormat, ModListItem }
+export {
+  DISCORD_LIMIT,
+  escapeMarkdown,
+  formatDiscord,
+  formatMarkdown,
+  formatModList,
+  formatPlain,
+  listItems,
+  splitDiscord,
+}

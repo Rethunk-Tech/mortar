@@ -10,11 +10,11 @@ import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/inte
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useBadges } from './badges.ts'
 import { loadCollapsed, persistCollapsed } from './group.ts'
 import { missingCount, problemCount } from './lookup.ts'
-import { fail, open } from './storeView.ts'
+import { open } from './storeView.ts'
 import { useUpdates } from './updates.ts'
 
 export function showUpdatesView() {
@@ -90,6 +90,6 @@ export async function loadModProblems(
       problems: problemCount(problems) - missing,
     })
   } catch (e) {
-    fail(i18n._(msg`Could not check the mods for problems`))(e)
+    reportError(i18n._(msg`Could not check the mods for problems`))(e)
   }
 }

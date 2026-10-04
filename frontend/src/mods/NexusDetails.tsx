@@ -4,6 +4,7 @@ import { TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { Fold } from '../shell/Fold.tsx'
@@ -18,7 +19,7 @@ import {
   useLookedSnapshot,
   useNexusEntry,
 } from './nexusDetails.ts'
-import { currentFiles, formatCount, formatSize, isNewer, recentChangelogs } from './nexusFormat.ts'
+import { currentFiles, formatCount, isNewer, recentChangelogs } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { heading } from './paper.ts'
 
@@ -127,7 +128,7 @@ function Files({
   const installed = files[0]?.fileId === fileId ? files[0] : undefined
   const others = installed ? files.slice(1) : files
   const line = (f: (typeof files)[number]) =>
-    [f.version, formatSize(f.sizeKb), formatWhen(f.uploaded)].filter(Boolean).join(' · ')
+    [f.version, formatKb(f.sizeKb), formatWhen(f.uploaded)].filter(Boolean).join(' · ')
   return (
     <>
       {installed ? (

@@ -19,7 +19,6 @@ import { GAME_STARDEW } from '../prefValue.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useNxmHandler } from './nxmHandler.tsx'
-import { nxmOwnerName } from './nxmOwnerName.ts'
 
 // Nexus links carry no profile, so the target profile is per game; Stardew is the only game today.
 function NxmDefaultProfile() {
@@ -62,8 +61,8 @@ function NxmLinks() {
   const nxmPrevious = useSettings((s) => s.nxmPrevious)
   const nxmPreviousName = useSettings((s) => s.nxmPreviousName)
   const redirectOther = useSettings((s) => s.nxmRedirectOtherGames ?? nxmPrevious !== '')
-  const owner = nxmOwnerName(nxm.handled, nxm.owner)
-  const redirectName = nxmOwnerName(true, nxmPreviousName || nxmPrevious)
+  const owner = nxm.handled ? 'Mortar' : nxm.owner
+  const redirectName = nxmPreviousName || nxmPrevious
   return (
     <>
       <SettingRow

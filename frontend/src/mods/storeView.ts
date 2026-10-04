@@ -3,7 +3,6 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 type View = 'grid' | 'list'
@@ -47,8 +46,6 @@ export function announceAlso(names: string[] | null | undefined) {
     title: i18n._(msg`Also enabled ${also.join(', ')}`),
   })
 }
-
-export const fail = reportError
 
 export const open = () => {
   const { game, openId } = useProfiles.getState()

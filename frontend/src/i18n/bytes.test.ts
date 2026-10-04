@@ -6,3 +6,10 @@ test('formatKb formats kibibytes the same as formatBytes on the byte count', () 
   expect(formatKb(900)).toBe(formatBytes(900 * 1024))
   expect(formatKb(1536)).toBe(formatBytes(1536 * 1024))
 })
+
+test('formatKb reads as approximate KB, MB and GB', () => {
+  expect(formatKb(0)).toBe('0 bytes')
+  expect(formatKb(900)).toBe('900 kB')
+  expect(formatKb(1536)).toBe('1.5 MB')
+  expect(formatKb(1.5 * 1024 * 1024)).toBe('1.5 GB')
+})

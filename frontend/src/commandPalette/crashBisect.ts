@@ -1,6 +1,5 @@
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
 import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
-import { canBisectCrash } from '../console/canBisect.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useCommandPalette } from './store.ts'
 
@@ -14,7 +13,7 @@ export async function startCrashBisectFromPalette(): Promise<string | null> {
   if (!crashed) {
     return 'No crashed run found for this profile.'
   }
-  if (!canBisectCrash({ cause: crashed.cause })) {
+  if (crashed.cause !== null && crashed.cause !== undefined) {
     return 'A suspected mod is already known for the latest crash.'
   }
   const id = await StartBisect(game.id, openId)

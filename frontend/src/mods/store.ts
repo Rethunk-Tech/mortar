@@ -131,5 +131,3 @@ export const useMods = create<{
   ...problemActions(set, get),
   showUpdates: () => showUpdatesView(),
 }))
-
-export type { View } from './storeView.ts'

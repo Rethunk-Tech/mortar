@@ -2,7 +2,6 @@ import { Box } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { type ReactNode, useEffect, useState } from 'react'
 import { DropOverlay } from '../install/DropOverlay.tsx'
-import { dropTargetProps } from '../install/dropTarget.ts'
 import { SweepDialog } from '../launch/SweepDialog.tsx'
 import { useSettings } from '../settings/store.ts'
 import { TitleBar } from './TitleBar.tsx'
@@ -23,7 +22,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
   }, [])
   return (
     <Box
-      {...dropTargetProps}
+      data-file-drop-target=""
       ref={setFrame}
       sx={{
         position: 'fixed',

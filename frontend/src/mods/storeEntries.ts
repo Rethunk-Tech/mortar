@@ -29,6 +29,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
   entriesForKeys,
@@ -40,7 +41,7 @@ import { enableRequirementsDecision, pendingRequired } from './enableRequirement
 import { considerEnableRequirements } from './enableRequirementsApply.ts'
 import { modId } from './lookup.ts'
 import { useSelection } from './selection.ts'
-import { announceAlso, fail, open } from './storeView.ts'
+import { announceAlso, open } from './storeView.ts'
 import { useUpdates } from './updates.ts'
 
 function pushFieldsUndo(
@@ -129,7 +130,7 @@ async function batchProfile(
   try {
     useProfiles.getState().replace(await call(target.game, target.id, keys))
   } catch (e) {
-    fail(title)(e)
+    reportError(title)(e)
     return
   }
   if (done !== undefined) {
@@ -173,7 +174,7 @@ export async function enableMany(
         return was === undefined ? m : { ...m, enabled: was }
       }),
     }))
-    fail(i18n._(msg`Could not switch the selected mods`))(e)
+    reportError(i18n._(msg`Could not switch the selected mods`))(e)
     return
   }
   if (enabled) {
@@ -206,7 +207,7 @@ export async function dropMods(get: () => { load: () => Promise<void> }, mods: M
     useProfiles.getState().replace(await RemoveEntries(target.game, target.id, keys))
     pushRemovedUndo(target.id, removed, get().load)
   } catch (e) {
-    fail(i18n._(msg`Could not remove the selected mods`))(e)
+    reportError(i18n._(msg`Could not remove the selected mods`))(e)
   }
   await get().load()
   useSelection.getState().clear()
@@ -223,7 +224,7 @@ export async function dropMod(get: () => { load: () => Promise<void> }, mod: Mod
     useProfiles.getState().replace(await RemoveEntry(target.game, target.id, mod.key))
     pushRemovedUndo(target.id, removed, get().load)
   } catch (e) {
-    fail(i18n._(msg`Could not remove ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not remove ${mod.name}`))(e)
   }
   await get().load()
   useSelection.getState().clear()
@@ -239,7 +240,7 @@ export async function setEntryNoteTags(mod: Mod, note: string, tags: string[]) {
       .getState()
       .replace(await SetEntryNoteTags(target.game, target.id, mod.key, note, tags))
   } catch (e) {
-    fail(i18n._(msg`Could not save the note and tags for ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not save the note and tags for ${mod.name}`))(e)
   }
 }
 
@@ -280,7 +281,7 @@ export async function setEnabledAction(
     await get().loadProblems()
   } catch (e) {
     flip(!enabled)
-    fail(i18n._(msg`Could not switch ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not switch ${mod.name}`))(e)
   }
 }
 
@@ -294,7 +295,9 @@ export async function pinMod(mod: Mod, pinned: boolean, pinReason = '') {
       .getState()
       .replace(await SetPinned(target.game, target.id, mod.key, pinned, pinReason))
   } catch (e) {
-    fail(i18n._(pinned ? msg`Could not pin ${mod.name}` : msg`Could not unpin ${mod.name}`))(e)
+    reportError(i18n._(pinned ? msg`Could not pin ${mod.name}` : msg`Could not unpin ${mod.name}`))(
+      e,
+    )
     return
   }
   await useUpdates.getState().load()
@@ -317,7 +320,7 @@ export async function skipVersion(mod: Mod, version: string) {
   try {
     useProfiles.getState().replace(await SetSkipVersion(target.game, target.id, mod.key, version))
   } catch (e) {
-    fail(
+    reportError(
       i18n._(
         version === ''
           ? msg`Could not show the skipped update for ${mod.name}`
@@ -337,7 +340,7 @@ export async function setUpdateChannel(mod: Mod, channel: string) {
   try {
     useProfiles.getState().replace(await SetUpdateChannel(target.game, target.id, mod.key, channel))
   } catch (e) {
-    fail(i18n._(msg`Could not set the update channel for ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not set the update channel for ${mod.name}`))(e)
     return
   }
   await useUpdates.getState().load()
@@ -392,7 +395,7 @@ export async function showModFiles(mod: Mod) {
   try {
     await ShowFiles(target.game, target.id, mod.key, mod.uniqueId)
   } catch (e) {
-    fail(i18n._(msg`Could not open the folder of ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not open the folder of ${mod.name}`))(e)
   }
 }
 
@@ -404,7 +407,7 @@ export async function openModConfig(mod: Mod) {
   try {
     await OpenConfig(target.game, target.id, mod.key, mod.uniqueId)
   } catch (e) {
-    fail(i18n._(msg`Could not open config.json of ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not open config.json of ${mod.name}`))(e)
   }
 }
 
@@ -416,7 +419,7 @@ export async function addModToGroup(key: string, name: string) {
   try {
     useProfiles.getState().replace(await AddToGroup(target.game, target.id, name, key))
   } catch (e) {
-    fail(i18n._(msg`Could not add to the group`))(e)
+    reportError(i18n._(msg`Could not add to the group`))(e)
   }
 }
 
@@ -428,6 +431,6 @@ export async function setGroupEnabled(name: string, on: boolean) {
   try {
     useProfiles.getState().replace(await SetGroupEnabled(target.game, target.id, name, on))
   } catch (e) {
-    fail(i18n._(msg`Could not switch the group`))(e)
+    reportError(i18n._(msg`Could not switch the group`))(e)
   }
 }

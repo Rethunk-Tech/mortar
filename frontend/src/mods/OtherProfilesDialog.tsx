@@ -15,7 +15,6 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { isLocked } from './locked.ts'
-import { selectableProfileIds } from './otherProfiles.ts'
 
 function NoOtherProfiles() {
   const { t } = useLingui()
@@ -192,10 +191,7 @@ export function OtherProfilesDialog({
     setSelected(
       mode === 'remove'
         ? []
-        : selectableProfileIds(
-            profiles.map((profile) => profile.id),
-            unavailable,
-          ),
+        : profiles.map((profile) => profile.id).filter((id) => !unavailable.has(id)),
     )
   }, [launchStarting, launchStartingProfile, launchStatus, mode, open, profiles, rows, update])
   const choose = (id: string) => setSelected((current) => toggleSelected(current, id))

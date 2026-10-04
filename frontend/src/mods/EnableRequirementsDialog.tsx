@@ -4,9 +4,10 @@ import { SetModsEnabled } from '../../bindings/github.com/Rethunk-AI/mortar/inte
 import { andList } from '../install/missingDeps.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { reportError } from '../toasts/report.ts'
 import { useEnableAsk } from './enableAsk.ts'
 import { useMods } from './store.ts'
-import { announceAlso, fail, open } from './storeView.ts'
+import { announceAlso, open } from './storeView.ts'
 
 export function EnableRequirementsDialog() {
   const { t } = useLingui()
@@ -33,7 +34,7 @@ export function EnableRequirementsDialog() {
         announceAlso(r.alsoEnabled?.length ? r.alsoEnabled : names)
         return useMods.getState().load()
       })
-      .catch(fail(t`Could not enable required mods`))
+      .catch(reportError(t`Could not enable required mods`))
   }
   return (
     <ConfirmDialog

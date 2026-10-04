@@ -5,7 +5,6 @@ import type {
   Preview,
   Problem,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
-import { formatKb } from '../i18n/bytes.ts'
 
 const WARN_AT = 0.8
 const SOURCE_SITE_NEXUS = 'nexus'
@@ -101,5 +100,3 @@ export function summarize(mods: readonly Mod[], excluded: ReadonlySet<string>): 
   }
   return s
 }
-
-export const formatSize = formatKb

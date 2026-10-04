@@ -17,7 +17,8 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { fail, open } from './storeView.ts'
+import { reportError } from '../toasts/report.ts'
+import { open } from './storeView.ts'
 
 async function dismissAbandonedMod(
   get: () => { loadProblems: () => Promise<void> },
@@ -30,7 +31,7 @@ async function dismissAbandonedMod(
   try {
     await DismissAbandonedMod(target.game, target.id, uniqueId)
   } catch (e) {
-    fail(i18n._(msg`Could not dismiss the warning`))(e)
+    reportError(i18n._(msg`Could not dismiss the warning`))(e)
     return
   }
   await get().loadProblems()
@@ -47,7 +48,7 @@ async function dismissListedRequirement(
   try {
     await DismissListedRequirement(target.game, target.id, uniqueId)
   } catch (e) {
-    fail(i18n._(msg`Could not dismiss the warning`))(e)
+    reportError(i18n._(msg`Could not dismiss the warning`))(e)
     return
   }
   await get().loadProblems()
@@ -64,7 +65,7 @@ async function dismissSettingHint(
   try {
     await DismissSetting(target.game, target.id, setting.uniqueId, setting.field)
   } catch (e) {
-    fail(i18n._(msg`Could not dismiss the setting warning`))(e)
+    reportError(i18n._(msg`Could not dismiss the setting warning`))(e)
     return
   }
   await get().loadProblems()
@@ -89,7 +90,7 @@ async function setConfigSetting(
       value,
     )
   } catch (e) {
-    fail(i18n._(msg`Could not set ${setting.field} for ${setting.name}`))(e)
+    reportError(i18n._(msg`Could not set ${setting.field} for ${setting.name}`))(e)
     return
   }
   await get().loadProblems()
@@ -106,7 +107,7 @@ async function dismissAssetConflict(
   try {
     await DismissAssetConflict(target.game, target.id, conflict.kind, conflict.target)
   } catch (e) {
-    fail(i18n._(msg`Could not dismiss the overlap`))(e)
+    reportError(i18n._(msg`Could not dismiss the overlap`))(e)
     return
   }
   await get().loadProblems()
@@ -120,7 +121,7 @@ async function restoreDismissed(get: () => { loadProblems: () => Promise<void> }
   try {
     await RestoreDismissed(target.game, target.id, token)
   } catch (e) {
-    fail(i18n._(msg`Could not restore the warning`))(e)
+    reportError(i18n._(msg`Could not restore the warning`))(e)
     return
   }
   await get().loadProblems()
@@ -146,7 +147,7 @@ export function problemActions(
             )
         }
       } catch (e) {
-        fail(i18n._(msg`Could not switch off the other copy of ${dup.name}`))(e)
+        reportError(i18n._(msg`Could not switch off the other copy of ${dup.name}`))(e)
       }
       set({ resolving: null })
       await get().load()

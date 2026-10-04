@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
+import { formatKb } from '../i18n/bytes.ts'
 
 const SUCCESS_CHIP = 0.2
 const INFO_CHIP = 0.25
@@ -19,14 +20,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
 import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
-import {
-  formatSize,
-  isModState,
-  MOD_STATES,
-  type ModState,
-  type ShownPreview,
-  type Summary,
-} from './logic.ts'
+import { isModState, MOD_STATES, type ModState, type ShownPreview, type Summary } from './logic.ts'
 
 const DIMMED = 0.5
 const LATER_CHIP = 0.18
@@ -335,7 +329,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
   const total = preview.mods.length
   const ready = summary.toImport > 0
   const mods = plural(total, { one: '# mod', other: '# mods' })
-  const size = formatSize(summary.sizeKb)
+  const size = formatKb(summary.sizeKb)
   const settings = plural(preview.settings, {
     one: 'with # settings file, written once its mod is installed',
     other: 'with # settings files, written once their mods are installed',

@@ -1,7 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
 import {
-  formatSize,
   meter,
   missingModName,
   SUGGEST_FILE_AT,
@@ -66,14 +65,6 @@ test('summary counts each state, sums only what downloads and skips unticked mod
   expect(s.sizeKb).toBe(2048 + 1024 + 512)
   // An unavailable mod is never importable, so unticking it changes nothing.
   expect(summarize(mods, new Set(['f'])).counts.unavailable).toBe(1)
-})
-
-test('sizes read as approximate KB, MB and GB', () => {
-  expect(formatSize(0)).toBe('0 bytes')
-  expect(formatSize(900)).toBe('900 kB')
-  expect(formatSize(1536)).toBe('1.5 MB')
-  expect(formatSize(20 * 1024)).toBe('20 MB')
-  expect(formatSize(1.5 * 1024 * 1024)).toBe('1.5 GB')
 })
 
 // Go writes a nil slice as null, whatever the generated types say.

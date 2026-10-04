@@ -7,7 +7,7 @@ import {
   SetIncludeBetaReleases,
   SetIncludePrereleaseModVersions,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { useNav } from '../../nav/store.ts'
+import { isGameId, useNav } from '../../nav/store.ts'
 import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
@@ -16,7 +16,6 @@ import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useMortarUpdate } from '../updates.ts'
-import { lastOpenedGame } from './lastOpenedGame.ts'
 
 const button = { whiteSpace: 'nowrap', flexShrink: 0 }
 
@@ -147,7 +146,8 @@ function MortarUpdate() {
 
 export function Updates() {
   const { t } = useLingui()
-  const game = lastOpenedGame(useSettings((s) => s.lastGame))
+  const lastGame = useSettings((s) => s.lastGame)
+  const game = isGameId(lastGame) ? lastGame : null
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
   const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
   const checkOnlyEnabledMods = useSettings((s) => s.checkOnlyEnabledMods)

@@ -1,5 +1,4 @@
 import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
-import { formatKb } from '../i18n/bytes.ts'
 
 // Go's zero time, sent for a date Nexus left out.
 // Nexus leaves the category out on many old files, so only these count as current.
@@ -112,5 +111,3 @@ export const isNewer = (latest: string, installed: string) => {
 }
 
 export const recentChangelogs = <T>(logs: T[]) => logs.slice(0, CHANGELOG_CAP)
-
-export const formatSize = formatKb

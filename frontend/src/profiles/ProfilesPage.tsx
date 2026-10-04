@@ -53,7 +53,6 @@ import { ExternalImportMenuItems, ExternalImportProfileDialog } from './External
 import { useExternalImportSources } from './externalImportSources.ts'
 import { findModInProfiles, onFindAllFocus, openModInProfile } from './findMod.ts'
 import { GameModsDialog } from './GameModsDialog.tsx'
-import { shouldShowExternalImportDivider } from './importMenu.ts'
 import { ProfileRow } from './ProfileRow.tsx'
 import { useProfiles } from './store.ts'
 
@@ -377,7 +376,7 @@ function ProfilesHeader({
             onRestoreZip()
           }}
         />
-        {shouldShowExternalImportDivider(externalSources.length) ? <Divider /> : null}
+        {externalSources.length > 0 ? <Divider /> : null}
         <ExternalImportMenuItems
           sources={externalSources}
           onPick={(source) => {

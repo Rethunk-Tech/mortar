@@ -5,9 +5,10 @@ import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
+import { reportError } from '../toasts/report.ts'
 import { useEnableAsk } from './enableAsk.ts'
 import { enableRequirementsDecision, pendingRequired } from './enableRequirements.ts'
-import { announceAlso, fail, open } from './storeView.ts'
+import { announceAlso, open } from './storeView.ts'
 
 export function considerEnableRequirements(
   allMods: Mod[],
@@ -50,5 +51,5 @@ export function considerEnableRequirements(
       useProfiles.getState().replace(r.profile)
       announceAlso(r.alsoEnabled?.length ? r.alsoEnabled : pending.map((m) => m.name))
     })
-    .catch(fail(i18n._(msg`Could not enable required mods`)))
+    .catch(reportError(i18n._(msg`Could not enable required mods`)))
 }
