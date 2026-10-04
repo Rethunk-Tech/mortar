@@ -433,3 +433,48 @@ func TestRefreshUpdatesIconsWhenAnotherCopyOwnsTheEntry(t *testing.T) {
 		t.Errorf("stale icon kept: %s", svg)
 	}
 }
+
+func TestAnIntegratorsEntryHidesOurs(t *testing.T) {
+	l, _ := newLinux(t, "")
+	l.exe = "/home/u/Apps/mortar.appimage"
+	apps := filepath.Join(l.dataHome, "applications")
+	if err := os.MkdirAll(apps, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	// Our own profile shortcut and a hidden entry naming the same executable do not count as a launcher.
+	shortcut := "[Desktop Entry]\nExec=\"" + l.exe + "\" --play=stardew/x\n"
+	hiddenOther := "[Desktop Entry]\nExec=" + l.exe + "\nNoDisplay=true\n"
+	for name, body := range map[string]string{linuxAppID + ".play-stardew-x.desktop": shortcut, "other.desktop": hiddenOther} {
+		if err := fsx.WriteFile(filepath.Join(apps, name), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := l.Register(); err != nil {
+		t.Fatal(err)
+	}
+	if desktop, _ := fsx.ReadFile(l.desktopPath()); strings.Contains(string(desktop), "NoDisplay") {
+		t.Fatalf("hidden without an integrator: %s", desktop)
+	}
+
+	gear := filepath.Join(apps, "mortar.desktop")
+	if err := fsx.WriteFile(gear, []byte("[Desktop Entry]\nName=Mortar\nExec=env DESKTOPINTEGRATION=1 "+l.exe+" %u\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.refresh(); err != nil {
+		t.Fatal(err)
+	}
+	desktop, _ := fsx.ReadFile(l.desktopPath())
+	if !strings.Contains(string(desktop), "\nNoDisplay=true\n") || !strings.Contains(string(desktop), nxmMime) {
+		t.Fatalf("integrated entry: %s", desktop)
+	}
+
+	if err := os.Remove(gear); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.refresh(); err != nil {
+		t.Fatal(err)
+	}
+	if desktop, _ := fsx.ReadFile(l.desktopPath()); strings.Contains(string(desktop), "NoDisplay") {
+		t.Errorf("still hidden after the integrator's entry went: %s", desktop)
+	}
+}

@@ -170,7 +170,41 @@ Categories=Game;Utility;
 Keywords=mod;manager;nexus;stardew;
 StartupWMClass=%s
 MimeType=%s
-`, quoteExec(l.exe), linuxAppID, mime)
+%s`, quoteExec(l.exe), linuxAppID, mime, l.hidden())
+}
+
+// hidden keeps Mortar's own entry out of the launcher when another visible entry in the user's applications folder
+// runs this executable: an AppImage integrator such as GearLever owns the launcher then, and this entry stays only as
+// the link and file handler, so the launcher does not list Mortar twice.
+func (l *System) hidden() string {
+	dir := filepath.Join(l.dataHome, "applications")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return ""
+	}
+	for _, e := range entries {
+		name := e.Name()
+		// Mortar's own entry and its profile shortcuts all start with the app id.
+		if !strings.HasSuffix(name, ".desktop") || strings.HasPrefix(name, linuxAppID) {
+			continue
+		}
+		b, err := fsx.ReadFile(filepath.Join(dir, name))
+		if err != nil || strings.Contains(string(b), "\nNoDisplay=true") {
+			continue
+		}
+		for line := range strings.SplitSeq(string(b), "\n") {
+			exec, ok := strings.CutPrefix(line, "Exec=")
+			if !ok {
+				continue
+			}
+			for _, f := range strings.Fields(exec) {
+				if strings.Trim(f, `"`) == l.exe {
+					return "NoDisplay=true\n"
+				}
+			}
+		}
+	}
+	return ""
 }
 
 func quoteExec(path string) string {
