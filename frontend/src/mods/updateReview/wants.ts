@@ -8,7 +8,8 @@ import type { Item } from '../../../bindings/github.com/Rethunk-Tech/mortar/inte
 import type { Want } from '../../queue/actions.ts'
 import { pendingFor } from '../../queue/totals.ts'
 import { sameId } from '../lookup.ts'
-import { optionalUpdateWants } from '../optionalFiles.ts'
+import { loadDetails, useNexusDetails } from '../nexusDetails.ts'
+import { optionalUpdateWants, useOptionalSkips } from '../optionalFiles.ts'
 
 /** The queue request for an update. A Nexus update of a mod with a GitHub repo tries that repo's release at the same
  * version first, since a free Nexus account must click for every file. */
@@ -36,6 +37,24 @@ export const withOptional = (
   updateWant(u),
   ...(skipped || u.githubRepo ? [] : optionalUpdateWants(profile, u, files)),
 ]
+
+/** withOptional for an update that no review row decided, such as auto-update before Play or a run error's Update:
+ * reads the mod's Nexus files only when the profile holds optional files laid over the entry. */
+export async function withOptionalLoaded(
+  u: Update,
+  profile: Pick<Profile, 'entries'> | null | undefined,
+): Promise<Want[]> {
+  const skipped = useOptionalSkips.getState().skipped[u.key] === true
+  const hasOptional = (profile?.entries ?? []).some((e) => e.overlayOf === u.key)
+  if (!hasOptional || skipped || u.githubRepo) {
+    return [updateWant(u)]
+  }
+  if (!useNexusDetails.getState().byId[u.nexusId]?.details) {
+    await loadDetails(u.nexusId)
+  }
+  const files = useNexusDetails.getState().byId[u.nexusId]?.details?.files ?? []
+  return withOptional(u, profile, files, false)
+}
 
 export const installedCaution = (mods: Mod[], u: Update): string => {
   const mod = mods.find((m) => m.key === u.key && sameId(m.uniqueId, u.uniqueId))

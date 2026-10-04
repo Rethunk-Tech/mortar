@@ -20,7 +20,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { installableUpdate, sameId, visibleUpdates } from '../mods/lookup.ts'
-import { updateWant } from '../mods/updateReview/wants.ts'
+import { updateWant, withOptionalLoaded } from '../mods/updateReview/wants.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
 import type { Want } from '../queue/actions.ts'
@@ -214,7 +214,7 @@ async function updateBeforePlay(
     if (updates.length === 0) {
       return { restorePoint: null, previousRunId: before.id, previousErrors: before.errors }
     }
-    const wants = updates.map(updateWant)
+    const wants = (await Promise.all(updates.map((u) => withOptionalLoaded(u, profile)))).flat()
     point.updates = updates
     const batchId = wants.length > 1 ? crypto.randomUUID() : ''
     if (useProfiles.getState().openId !== profileId) {

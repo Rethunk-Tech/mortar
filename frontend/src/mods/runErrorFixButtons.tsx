@@ -10,7 +10,7 @@ import { installableUpdate, sameId, updateFor } from './lookup.ts'
 import { ReportToAuthorButton } from './ReportToAuthorButton.tsx'
 import { useMods } from './store.ts'
 import { openTarget } from './storeView.ts'
-import { updateWant } from './updateReview/wants.ts'
+import { withOptionalLoaded } from './updateReview/wants.ts'
 import { useUpdates } from './updates.ts'
 
 export function RunErrorButtons({
@@ -32,7 +32,7 @@ export function RunErrorButtons({
     runError.updated && current
       ? updateFor(useUpdates.getState().updates, current, profile)
       : undefined
-  const want = update && installableUpdate(update) ? updateWant(update) : undefined
+  const installable = update && installableUpdate(update) ? update : undefined
   const openHelp = () => {
     const at = openTarget()
     if (!at || runError.runId === '') {
@@ -47,7 +47,11 @@ export function RunErrorButtons({
       {current && !runError.updated
         ? button(t`Switch off`, () => setEnabled(current, false).catch(reportUnexpected))
         : null}
-      {want ? button(t`Update`, () => download([want]).catch(reportUnexpected)) : null}
+      {installable
+        ? button(t`Update`, () =>
+            withOptionalLoaded(installable, profile).then(download).catch(reportUnexpected),
+          )
+        : null}
       {current && profile && gameId && runError.runId !== '' ? (
         <ReportToAuthorButton
           game={gameId}
