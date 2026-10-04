@@ -6,75 +6,8 @@
     <meta name="referrer" content="no-referrer" />
     <meta name="color-scheme" content="dark" />
     <title>Download Mortar</title>
+    <link rel="stylesheet" href="../base.css" />
     <style>
-      @font-face {
-        font-family: "Open Sans";
-        font-style: normal;
-        font-display: swap;
-        font-weight: 300;
-        src: url("../fonts/open-sans-latin-300-normal.woff2") format("woff2");
-      }
-      @font-face {
-        font-family: "Open Sans";
-        font-style: normal;
-        font-display: swap;
-        font-weight: 400;
-        src: url("../fonts/open-sans-latin-400-normal.woff2") format("woff2");
-      }
-      @font-face {
-        font-family: "Open Sans";
-        font-style: normal;
-        font-display: swap;
-        font-weight: 500;
-        src: url("../fonts/open-sans-latin-500-normal.woff2") format("woff2");
-      }
-      @font-face {
-        font-family: "Open Sans";
-        font-style: normal;
-        font-display: swap;
-        font-weight: 700;
-        src: url("../fonts/open-sans-latin-700-normal.woff2") format("woff2");
-      }
-      :root {
-        --base: rgb(25, 25, 30);
-        --paper: rgb(38, 38, 44);
-        --text: rgba(255, 255, 255, 0.9);
-        --muted: rgba(200, 200, 200, 0.9);
-        --sand: rgb(214, 177, 122);
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background: var(--base);
-        color: var(--text);
-        font-family: "Open Sans", system-ui, sans-serif;
-        line-height: 1.5;
-      }
-      main {
-        max-width: 34rem;
-        margin: 0 auto;
-        padding: 2rem 1rem;
-      }
-      header {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        color: var(--sand);
-      }
-      header span {
-        font-weight: 700;
-        font-size: 1.25rem;
-        color: var(--text);
-      }
-      .card {
-        background: var(--paper);
-        border-radius: 8px;
-        padding: 1.25rem;
-        margin-top: 1.5rem;
-      }
       html.os-linux .linux,
       html.os-windows .windows {
         box-shadow: inset 0 0 0 2px var(--sand);
@@ -96,10 +29,6 @@
       p:last-child {
         margin-bottom: 0;
       }
-      .muted {
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
       code,
       pre {
         font-family: ui-monospace, monospace;
@@ -119,19 +48,8 @@
       li {
         margin: 0.35rem 0;
       }
-      a {
-        color: var(--muted);
-        text-decoration: underline dotted;
-      }
       .btn {
-        display: inline-block;
         margin: 0.5rem 0 0.75rem;
-        padding: 0.7rem 1.25rem;
-        border-radius: 6px;
-        background: var(--sand);
-        color: var(--base);
-        font-weight: 700;
-        text-decoration: none;
       }
       footer {
         margin-top: 1.5rem;
