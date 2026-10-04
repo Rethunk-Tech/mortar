@@ -30,7 +30,6 @@ import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
 import { paper } from '../../mods/paper.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
-import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { nowrap } from './dataStyles.ts'
@@ -216,18 +215,22 @@ function Section({
 function useCleanupData(open: boolean) {
   const [store, setStore] = useState<{ unused: Sel[]; older: Sel[] } | null>(null)
   const [preview, setPreview] = useState<Preview | null>(null)
+  const [error, setError] = useState(false)
   const load = useCallback(() => {
-    Report()
-      .then((rep) => setStore(removable(rep)))
-      .catch(reportUnexpected)
-    CleanupPreview().then(setPreview).catch(reportUnexpected)
+    setError(false)
+    Promise.all([Report(), CleanupPreview()])
+      .then(([rep, next]) => {
+        setStore(removable(rep))
+        setPreview(next)
+      })
+      .catch(() => setError(true))
   }, [])
   useEffect(() => {
     if (open) {
       load()
     }
   }, [open, load])
-  return { store, preview, load }
+  return { store, preview, load, error }
 }
 
 function CleanupBody({
@@ -314,12 +317,16 @@ function CleanupDialog({
   onChanged: () => void
 }) {
   const { t } = useLingui()
-  const { store, preview, load } = useCleanupData(open)
+  const { store, preview, load, error } = useCleanupData(open)
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState(false)
   const [busy, runCleanup] = usePending()
   const items = [...(store?.unused ?? []), ...(store?.older ?? [])]
   const leftovers = groupLeftovers(preview)
+  const close = () => {
+    setPicked(new Set())
+    onClose()
+  }
   const toggle = (id: string, on: boolean) =>
     setPicked((cur) => {
       const next = new Set(cur)
@@ -351,7 +358,7 @@ function CleanupDialog({
         setConfirm(false)
         setPicked(new Set())
         load()
-        onClose()
+        close()
         onChanged()
         useToasts.getState().push({ kind: 'success', title: t`Freed ${formatBytes(bytes)}` })
       }),
@@ -360,7 +367,7 @@ function CleanupDialog({
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={close}
       maxWidth="md"
       fullWidth={true}
       scroll="paper"
@@ -369,19 +376,31 @@ function CleanupDialog({
     >
       <DialogTitle>{t`Clean up storage`}</DialogTitle>
       <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', py: 0.5 }}>
-        <CleanupBody
-          store={store}
-          leftovers={leftovers}
-          picked={picked}
-          setPicked={setPicked}
-          toggle={toggle}
-        />
+        {error ? (
+          <Box
+            role="alert"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1.5, fontSize: 15 }}
+          >
+            {t`Could not load what can be cleaned up`}
+            <Button variant="outlined" onClick={load} sx={nowrap}>
+              {t`Retry`}
+            </Button>
+          </Box>
+        ) : (
+          <CleanupBody
+            store={store}
+            leftovers={leftovers}
+            picked={picked}
+            setPicked={setPicked}
+            toggle={toggle}
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <Box sx={{ flex: 1, pl: 1, fontSize: 15 }}>
           {picked.size > 0 ? t`${picked.size} selected · ${formatBytes(bytes)}` : ''}
         </Box>
-        <Button onClick={onClose} sx={nowrap}>
+        <Button onClick={close} sx={nowrap}>
           {t`Close`}
         </Button>
         <Button
