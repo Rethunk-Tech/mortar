@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/secret"
 	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -90,6 +91,9 @@ func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 		return Account{}, errors.New("paste your Nexus Mods personal API key")
 	}
 	user, err := s.client.WithKey(key).Validate(ctx)
+	if errors.Is(err, nexus.ErrUnauthorized) {
+		return Account{}, usererr.Wrap(usererr.Invalid, err)
+	}
 	if err != nil {
 		return Account{}, err
 	}

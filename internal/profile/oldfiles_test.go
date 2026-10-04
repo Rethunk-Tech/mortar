@@ -76,3 +76,25 @@ func TestPendingOldFilesDropsSetsOfReplacedVersions(t *testing.T) {
 		t.Fatal("stale set kept")
 	}
 }
+
+func TestTrashedOldFilesComeBack(t *testing.T) {
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/gone.json": "g"}, map[string]string{"A/manifest.json": m})
+	e.OldFilesMode = func(string) string { return settings.OldFilesAsk }
+	if _, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2"); err != nil {
+		t.Fatal(err)
+	}
+	token, err := e.TrashOldFiles("stardew", p.ID, "a-2")
+	if err != nil || token == "" {
+		t.Fatalf("trash = %q, %v", token, err)
+	}
+	if pending, _ := e.PendingOldFiles("stardew", p.ID); len(pending) != 0 {
+		t.Fatalf("still pending %+v", pending)
+	}
+	if err := e.RestoreOldFiles("stardew", p.ID, token); err != nil {
+		t.Fatal(err)
+	}
+	if pending, _ := e.PendingOldFiles("stardew", p.ID); len(pending) != 1 || len(pending[0].Files) != 1 {
+		t.Fatalf("pending = %+v", pending)
+	}
+}

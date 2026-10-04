@@ -153,6 +153,19 @@ func (s *Service) DismissGameModsFolder(game, folder string) error {
 	return s.settings.AppendDismissed(gameModsBucket(game), name)
 }
 
+// UndismissGameModsFolders offers folders again after DismissGameModsFolder stopped offering them.
+func (s *Service) UndismissGameModsFolders(game string, folders []string) error {
+	names := make([]string, 0, len(folders))
+	for _, f := range folders {
+		name, err := safeFolder(f)
+		if err != nil {
+			return err
+		}
+		names = append(names, name)
+	}
+	return s.settings.RemoveDismissed(gameModsBucket(game), names...)
+}
+
 // MoveGameModsFolders moves the given top-level folders of the game's Mods folder into the profile.
 func (s *Service) MoveGameModsFolders(game, id string, folders []string) (GameModsResult, error) {
 	dir, err := s.gameModsDir(game)
