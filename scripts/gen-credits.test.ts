@@ -12,9 +12,13 @@ of this software and associated documentation files.`
 })
 
 describe('collectNotices', () => {
-  test('includes compiled Go modules and lockfile npm packages with licence text', () => {
+  test('covers the shipped Go and npm closure only, with real licence text', () => {
     const notices = collectNotices()
     const names = notices.map((n) => n.name)
+    const blob = notices.map((n) => n.texts.join('\n')).join('\n')
+    expect(blob).not.toMatch(/no LICENSE or NOTICE/)
+    expect(names.some((n) => n.startsWith('vite@'))).toBe(false)
+    expect(names.some((n) => n.includes('@biomejs/'))).toBe(false)
     expect(names.some((n) => n.startsWith('github.com/miekg/dns@'))).toBe(true)
     expect(names.some((n) => n.startsWith('github.com/hashicorp/golang-lru/v2@'))).toBe(true)
     expect(names.some((n) => n.includes('@mui/system@'))).toBe(true)

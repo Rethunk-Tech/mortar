@@ -4,12 +4,37 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const LICENCE_ERROR_CHARS = 280
-
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, '..')
 const frontendRoot = join(repoRoot, 'frontend')
 const licenceFileName = /^(license|licence|copying)(\..+)?$/i
 const noticeFileName = /^notice(\..+)?$/i
+
+/** Shipped packages with neither a licence file nor a declared licence. Text is the upstream licence. */
+const NPM_LICENCE_ALLOWLIST: Record<string, { spdx: string; text: string; url?: string }> = {}
+const GO_LICENCE_ALLOWLIST: Record<string, { spdx: string; text: string; url?: string }> = {}
+
+const LICENCE_RULES: { id: string; re: RegExp; extra?: RegExp }[] = [
+  { id: 'AGPL-3.0', re: /GNU AFFERO GENERAL PUBLIC LICENSE/i, extra: /Version 3/i },
+  { id: 'LGPL-3.0', re: /GNU LESSER GENERAL PUBLIC LICENSE/i, extra: /Version 3/i },
+  { id: 'LGPL-2.1', re: /GNU LESSER GENERAL PUBLIC LICENSE/i, extra: /Version 2\.1/i },
+  { id: 'GPL-3.0', re: /GNU GENERAL PUBLIC LICENSE/i, extra: /Version 3/i },
+  { id: 'MPL-2.0', re: /mozilla public license/i, extra: /2\.0/i },
+  { id: 'Apache-2.0', re: /apache license/i, extra: /version 2\.0/i },
+  { id: 'OFL-1.1', re: /sil open font license/i },
+  { id: 'CC-BY-SA-4.0', re: /creative commons/i, extra: /attribution-sharealike 4\.0/i },
+  { id: 'MIT', re: /the mit license/i },
+  { id: 'MIT', re: /permission is hereby granted, free of charge/i },
+  { id: 'ISC', re: /permission to use, copy, modify, and\/or distribute this software/i },
+  {
+    id: 'BSD-3-Clause',
+    re: /redistribution and use in source and binary forms/i,
+    extra: /neither the name/i,
+  },
+  { id: 'BSD-3-Clause', re: /bsd 3-clause/i },
+  { id: 'BSD-2-Clause', re: /redistribution and use in source and binary forms/i },
+  { id: 'Unlicense', re: /unlicense/i },
+]
 
 function asRecord(v: unknown): Record<string, unknown> {
   return v !== null && typeof v === 'object' && !Array.isArray(v)
@@ -41,6 +66,14 @@ function npmLicence(pkgJson: unknown): string {
     }
   }
   throw new Error(`no licence in package.json for ${stringField(pkgJson, 'name') || '?'}`)
+}
+
+function declaredLicence(pkgJson: unknown): string {
+  try {
+    return npmLicence(pkgJson)
+  } catch {
+    return ''
+  }
 }
 
 function githubURL(raw: string): string {
@@ -116,9 +149,7 @@ function goListDir(modulePath: string): string {
 function goModuleURL(modulePath: string): string {
   if (modulePath.startsWith('github.com/')) {
     const parts = modulePath.split('/')
-    const owner = parts[1] ?? ''
-    const repo = parts[2] ?? ''
-    return `https://github.com/${owner}/${repo}`
+    return `https://github.com/${parts[1] ?? ''}/${parts[2] ?? ''}`
   }
   return `https://pkg.go.dev/${modulePath}`
 }
@@ -138,59 +169,13 @@ function readLicenceFile(dir: string): string {
 }
 
 function classifyLicenceText(text: string): string {
-  const body = text
-  if (/GNU AFFERO GENERAL PUBLIC LICENSE/i.test(body) && /Version 3/i.test(body)) {
-    return 'AGPL-3.0'
+  const hit = LICENCE_RULES.find(
+    (rule) => rule.re.test(text) && (!rule.extra || rule.extra.test(text)),
+  )
+  if (!hit) {
+    throw new Error(`unrecognised licence text:\n${text.slice(0, LICENCE_ERROR_CHARS)}`)
   }
-  if (/GNU LESSER GENERAL PUBLIC LICENSE/i.test(body) && /Version 3/i.test(body)) {
-    return 'LGPL-3.0'
-  }
-  if (/GNU LESSER GENERAL PUBLIC LICENSE/i.test(body) && /Version 2\.1/i.test(body)) {
-    return 'LGPL-2.1'
-  }
-  if (/GNU GENERAL PUBLIC LICENSE/i.test(body) && /Version 3/i.test(body)) {
-    return 'GPL-3.0'
-  }
-  if (/mozilla public license/i.test(body) && /2\.0/i.test(body)) {
-    return 'MPL-2.0'
-  }
-  if (/apache license/i.test(body) && /version 2\.0/i.test(body)) {
-    return 'Apache-2.0'
-  }
-  if (/sil open font license/i.test(body)) {
-    return 'OFL-1.1'
-  }
-  if (/creative commons/i.test(body) && /attribution-sharealike 4\.0/i.test(body)) {
-    return 'CC-BY-SA-4.0'
-  }
-  if (
-    /the mit license/i.test(body) ||
-    (/permission is hereby granted, free of charge/i.test(body) && /\bMIT\b/.test(body))
-  ) {
-    return 'MIT'
-  }
-  if (/permission is hereby granted, free of charge/i.test(body)) {
-    return 'MIT'
-  }
-  if (/permission to use, copy, modify, and\/or distribute this software/i.test(body)) {
-    return 'ISC'
-  }
-  if (
-    /redistribution and use in source and binary forms/i.test(body) &&
-    /neither the name/i.test(body)
-  ) {
-    return 'BSD-3-Clause'
-  }
-  if (/bsd 3-clause/i.test(body)) {
-    return 'BSD-3-Clause'
-  }
-  if (/redistribution and use in source and binary forms/i.test(body)) {
-    return 'BSD-2-Clause'
-  }
-  if (/unlicense/i.test(body)) {
-    return 'Unlicense'
-  }
-  throw new Error(`unrecognised licence text:\n${body.slice(0, LICENCE_ERROR_CHARS)}`)
+  return hit.id
 }
 
 interface CreditEntry {
@@ -230,8 +215,10 @@ function dirTexts(dir: string): { licence: string; texts: string[] } | null {
   } catch {
     return null
   }
-  const licenceHits = names.filter((n) => licenceFileName.test(n)).sort()
-  const noticeHits = names.filter((n) => noticeFileName.test(n)).sort()
+  const licenceHits = names
+    .filter((n) => licenceFileName.test(n))
+    .sort((a, b) => a.localeCompare(b))
+  const noticeHits = names.filter((n) => noticeFileName.test(n)).sort((a, b) => a.localeCompare(b))
   const texts = [...licenceHits, ...noticeHits].map((n) => readFileSync(join(dir, n), 'utf8'))
   if (texts.length === 0) {
     return null
@@ -247,132 +234,163 @@ function dirTexts(dir: string): { licence: string; texts: string[] } | null {
   return { licence, texts }
 }
 
-function parseGoListJSONStream(stdout: string): Record<string, unknown>[] {
-  const trimmed = stdout.trim()
-  if (!trimmed) {
-    return []
+function goModuleDir(path: string, version: string, listedDir: string): string {
+  if (listedDir && existsSync(listedDir)) {
+    return listedDir
   }
-  return trimmed.split(/\n}\s*\n\{/).map((chunk, i, arr) => {
-    let body = chunk
-    if (i > 0) {
-      body = `{${body}`
-    }
-    if (i < arr.length - 1) {
-      body = `${body}\n}`
-    }
-    return asRecord(JSON.parse(body))
+  const spec = version ? `${path}@${version}` : path
+  const proc = Bun.spawnSync(['go', 'list', '-m', '-f', '{{.Dir}}', spec], {
+    cwd: repoRoot,
+    stdout: 'pipe',
+    stderr: 'pipe',
   })
+  return proc.exitCode === 0 ? proc.stdout.toString().trim() : ''
+}
+
+function failMissing(kind: string, missing: string[]): void {
+  if (missing.length > 0) {
+    throw new Error(
+      `no licence file or declared licence for ${kind}:\n${missing.sort((a, b) => a.localeCompare(b)).join('\n')}`,
+    )
+  }
+}
+
+function appendGoNotice(
+  line: string,
+  seen: Set<string>,
+  out: NoticeEntry[],
+  missing: string[],
+): void {
+  const trimmed = line.trim()
+  const [path, version, listedDir] = trimmed ? trimmed.split('\t') : []
+  if (!(path && path !== 'github.com/Rethunk-AI/mortar')) {
+    return
+  }
+  const name = version ? `${path}@${version}` : path
+  if (seen.has(name)) {
+    return
+  }
+  seen.add(name)
+  const dir = goModuleDir(path, version ?? '', listedDir ?? '')
+  const found = dir ? dirTexts(dir) : null
+  const allowed = GO_LICENCE_ALLOWLIST[path]
+  if (found || allowed) {
+    out.push({
+      name,
+      licence: found?.licence ?? allowed?.spdx ?? 'unknown',
+      url: allowed?.url ?? goModuleURL(path),
+      texts: found?.texts ?? (allowed ? [allowed.text] : []),
+    })
+    return
+  }
+  missing.push(name)
 }
 
 function goModuleNotices(): NoticeEntry[] {
-  Bun.spawnSync(['go', 'mod', 'download'], {
-    cwd: repoRoot,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
-  const proc = Bun.spawnSync(['go', 'list', '-m', '-json', 'all'], {
-    cwd: repoRoot,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
+  const proc = Bun.spawnSync(
+    ['go', 'list', '-deps', '-f', '{{with .Module}}{{.Path}}\t{{.Version}}\t{{.Dir}}{{end}}', '.'],
+    { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' },
+  )
   if (proc.exitCode !== 0) {
-    throw new Error(`go list -m all: ${proc.stderr.toString()}`)
+    throw new Error(`go list -deps: ${proc.stderr.toString()}`)
   }
-  const recs = parseGoListJSONStream(proc.stdout.toString())
+  const seen = new Set<string>()
   const out: NoticeEntry[] = []
-  for (const rec of recs) {
-    const replace = asRecord(rec.Replace)
-    const path = stringField(replace, 'Path') || stringField(rec, 'Path')
-    const version = stringField(replace, 'Version') || stringField(rec, 'Version')
-    const dir = stringField(replace, 'Dir') || stringField(rec, 'Dir')
-    if (path && path !== 'github.com/Rethunk-AI/mortar') {
-      const found = dir ? dirTexts(dir) : null
-      const name = version ? `${path}@${version}` : path
-      out.push({
-        name,
-        licence: found?.licence ?? 'unknown',
-        url: goModuleURL(path),
-        texts: found?.texts ?? [`(no LICENSE or NOTICE in module directory for ${path})\n`],
-      })
-    }
+  const missing: string[] = []
+  for (const line of proc.stdout.toString().split('\n')) {
+    appendGoNotice(line, seen, out, missing)
   }
+  failMissing('Go modules', missing)
   return out
 }
 
-function parseBunLockPackages(lockText: string): { name: string; spec: string }[] {
-  const start = lockText.indexOf('"packages"')
-  if (start < 0) {
-    throw new Error('bun.lock: no packages table')
+function resolveNpmDir(name: string, fromDir: string): string | null {
+  try {
+    return dirname(Bun.resolveSync(`${name}/package.json`, fromDir))
+  } catch {
+    return null
   }
-  const body = lockText.slice(start)
-  const pkgs: { name: string; spec: string }[] = []
-  const re = /^\s+"([^"]+)": \["([^"]+)"/gm
-  for (const m of body.matchAll(re)) {
-    const name = m[1] ?? ''
-    const spec = m[2] ?? ''
-    if (name && spec && name !== 'mortar' && name !== 'mortar-frontend') {
-      pkgs.push({ name, spec })
-    }
-  }
-  if (pkgs.length === 0) {
-    throw new Error('bun.lock: empty packages table')
-  }
-  return pkgs
 }
 
-function npmPackageDir(name: string): string | null {
-  const candidates = [
-    join(frontendRoot, 'node_modules', ...name.split('/')),
-    join(repoRoot, 'node_modules', ...name.split('/')),
-  ]
-  for (const dir of candidates) {
-    if (existsSync(join(dir, 'package.json'))) {
-      return dir
-    }
+function npmNoticeFromDir(name: string, dir: string): NoticeEntry | { missing: string } {
+  const meta = readJSON(join(dir, 'package.json'))
+  const pkgName = stringField(meta, 'name') || name
+  const version = stringField(meta, 'version')
+  const key = version ? `${pkgName}@${version}` : pkgName
+  const found = dirTexts(dir)
+  const declared = declaredLicence(meta)
+  const allowed = NPM_LICENCE_ALLOWLIST[pkgName]
+  if (!(found || declared || allowed)) {
+    return { missing: key }
   }
-  for (const base of [frontendRoot, repoRoot]) {
-    try {
-      return dirname(Bun.resolveSync(`${name}/package.json`, base))
-    } catch {
-      // try the other base
-    }
-  }
-  return null
-}
-
-function npmNoticeFor(name: string, spec: string): NoticeEntry {
-  const dir = npmPackageDir(name)
-  const found = dir ? dirTexts(dir) : null
-  let licence = found?.licence ?? ''
-  let url = `https://www.npmjs.com/package/${encodeURIComponent(name)}`
-  if (dir) {
-    try {
-      const meta = readJSON(join(dir, 'package.json'))
-      licence = licence === 'see text' || licence === '' ? npmLicence(meta) : licence
-      url = npmHomepage(name, meta)
-    } catch {
-      licence = licence || 'unknown'
-    }
-  }
-  licence = licence || 'unknown'
+  const licence =
+    found?.licence && found.licence !== 'see text'
+      ? found.licence
+      : declared || allowed?.spdx || 'see text'
   return {
-    name: spec.includes('@') ? spec : `${name}@${spec}`,
+    name: key,
     licence,
-    url,
-    texts: found?.texts ?? [`(no LICENSE or NOTICE in ${name}; declared licence: ${licence})\n`],
+    url: allowed?.url ?? npmHomepage(pkgName, meta),
+    texts: found?.texts ?? (allowed ? [allowed.text] : []),
+  }
+}
+
+function visitNpm(
+  item: { name: string; from: string; optional: boolean },
+  ctx: {
+    seen: Set<string>
+    queue: { name: string; from: string; optional: boolean }[]
+    out: NoticeEntry[]
+    missing: string[]
+  },
+): void {
+  const dir = resolveNpmDir(item.name, item.from)
+  if (!dir) {
+    if (item.optional || item.from !== frontendRoot) {
+      return
+    }
+    throw new Error(`npm package not installed: ${item.name}`)
+  }
+  const meta = readJSON(join(dir, 'package.json'))
+  const pkgName = stringField(meta, 'name') || item.name
+  const version = stringField(meta, 'version')
+  const key = version ? `${pkgName}@${version}` : pkgName
+  if (ctx.seen.has(key)) {
+    return
+  }
+  ctx.seen.add(key)
+  const notice = npmNoticeFromDir(item.name, dir)
+  if ('missing' in notice) {
+    ctx.missing.push(notice.missing)
+  } else {
+    ctx.out.push(notice)
+  }
+  const rec = asRecord(meta)
+  for (const dep of Object.keys(asRecord(rec.dependencies))) {
+    ctx.queue.push({ name: dep, from: dir, optional: false })
+  }
+  for (const dep of Object.keys(asRecord(rec.optionalDependencies))) {
+    ctx.queue.push({ name: dep, from: dir, optional: true })
   }
 }
 
 function npmNotices(): NoticeEntry[] {
-  const pkgs = parseBunLockPackages(readFileSync(join(repoRoot, 'bun.lock'), 'utf8'))
+  const pkg = asRecord(readJSON(join(frontendRoot, 'package.json')))
+  const queue = Object.keys(asRecord(pkg.dependencies)).map((name) => ({
+    name,
+    from: frontendRoot,
+    optional: false,
+  }))
   const seen = new Set<string>()
   const out: NoticeEntry[] = []
-  for (const { name, spec } of pkgs) {
-    if (!seen.has(name)) {
-      seen.add(name)
-      out.push(npmNoticeFor(name, spec))
+  const missing: string[] = []
+  while (queue.length > 0) {
+    const item = queue.shift()
+    if (item) {
+      visitNpm(item, { seen, queue, out, missing })
     }
   }
+  failMissing('npm packages', missing)
   return out
 }
 
@@ -385,13 +403,15 @@ function collectNotices(): NoticeEntry[] {
 function formatNotices(entries: NoticeEntry[]): string {
   const blocks = entries.map((e) => {
     const header = `${e.name}\nlicence: ${e.licence}\n${e.url}`
-    return `${header}\n\n${e.texts.join('\n\n').trim()}\n`
+    const body = e.texts.join('\n\n').trim()
+    return body ? `${header}\n\n${body}\n` : `${header}\n`
   })
   return [
     'Third-party notices',
     '',
-    'Go modules compiled into Mortar and npm packages named in bun.lock, with the',
-    'licence and NOTICE text from each package directory.',
+    'Go modules compiled into Mortar and the frontend runtime npm closure (direct',
+    'dependencies of frontend/package.json and their installed dependency trees),',
+    'with licence and NOTICE text from each package directory.',
     '',
     '================================================================================',
     '',
@@ -404,21 +424,17 @@ function formatNotices(entries: NoticeEntry[]): string {
 
 function buildCredits(): CreditEntry[] {
   const pkg = asRecord(readJSON(join(frontendRoot, 'package.json')))
-  const deps = asRecord(pkg.dependencies)
-  const npm = Object.keys(deps)
-    .sort()
+  const npm = Object.keys(asRecord(pkg.dependencies))
+    .sort((a, b) => a.localeCompare(b))
     .map((name) => {
       const meta = readJSON(join(frontendRoot, 'node_modules', ...name.split('/'), 'package.json'))
       return { name, licence: npmLicence(meta), url: npmHomepage(name, meta) }
     })
-
-  const goModText = readFileSync(join(repoRoot, 'go.mod'), 'utf8')
-  const go = firstRequireBlock(goModText).map((mod) => ({
+  const go = firstRequireBlock(readFileSync(join(repoRoot, 'go.mod'), 'utf8')).map((mod) => ({
     name: mod,
     licence: classifyLicenceText(readLicenceFile(goListDir(mod))),
     url: goModuleURL(mod),
   }))
-
   const extra: CreditEntry[] = [
     {
       name: 'Mortar',
@@ -430,11 +446,7 @@ function buildCredits(): CreditEntry[] {
       licence: 'AGPL-3.0',
       url: 'https://github.com/Rethunk-AI/mortar-smapi-bridge',
     },
-    {
-      name: 'SMAPI',
-      licence: 'LGPL-3.0',
-      url: 'https://smapi.io/',
-    },
+    { name: 'SMAPI', licence: 'LGPL-3.0', url: 'https://smapi.io/' },
     {
       name: 'Minigalaxy icon',
       licence: 'GPL-3.0',
@@ -446,24 +458,26 @@ function buildCredits(): CreditEntry[] {
       url: 'https://fedoraproject.org/wiki/F44_Artwork',
     },
   ]
-
-  const excluded = new Set(['Mortar', 'Mortar SMAPI Bridge', 'SMAPI', 'BepInEx'])
-  return [...extra, ...npm, ...go].filter((entry) => !excluded.has(entry.name))
+  return [...extra, ...npm, ...go].filter(
+    (entry) => !new Set(['Mortar', 'Mortar SMAPI Bridge', 'SMAPI', 'BepInEx']).has(entry.name),
+  )
 }
 
 function main(): void {
+  Bun.spawnSync(['go', 'mod', 'download'], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' })
   const entries = buildCredits()
   if (!isCreditList(entries)) {
     throw new Error('generated credits failed shape check')
   }
+  const notices = collectNotices()
   const outDir = join(frontendRoot, 'src', 'settings', 'generated')
   mkdirSync(outDir, { recursive: true })
   writeFileSync(join(outDir, 'credits.json'), `${JSON.stringify(entries, null, 2)}\n`)
-  writeFileSync(join(repoRoot, 'THIRD_PARTY_NOTICES'), formatNotices(collectNotices()))
+  writeFileSync(join(repoRoot, 'THIRD_PARTY_NOTICES'), formatNotices(notices))
 }
 
 if (import.meta.main) {
   main()
 }
 
-export { classifyLicenceText, collectNotices, parseBunLockPackages }
+export { classifyLicenceText, collectNotices }
