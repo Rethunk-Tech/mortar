@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, MenuItem, Select, Switch, TextField } from '@mui/material'
+import { Box, Button, MenuItem, Select, TextField } from '@mui/material'
 import { Download, Upload } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import {
@@ -19,6 +19,8 @@ import {
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { availableLocales } from '../../i18n/locales.ts'
 import { reportError, reportUnexpected } from '../../toasts/report.ts'
+import { useToasts } from '../../toasts/store.ts'
+import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -45,9 +47,10 @@ function StartupAndWindow() {
         label={t`Keep Mortar in the tray`}
         description={t`Closing the window hides Mortar instead of quitting.`}
       >
-        <Switch
+        <PrefSwitch
           checked={useSettings((s) => s.keepInTray)}
-          onChange={(_, on) => SetKeepInTray(on).catch(reportFailure)}
+          onChange={(on) => SetKeepInTray(on).catch(reportFailure)}
+          label={t`Keep Mortar in the tray`}
         />
       </SettingRow>
     </SettingsSection>
@@ -96,22 +99,26 @@ function Sharing() {
   const lanSharing = useSettings((s) => s.lanSharing)
   const lanPort = useSettings((s) => s.lanPort)
   const [portText, setPortText] = useState(String(lanPort))
+  const [portError, setPortError] = useState(false)
   useEffect(() => {
     FirewallBlocked().then(setFirewallBlocked).catch(reportFailure)
   }, [reportFailure])
   useEffect(() => {
     setPortText(String(lanPort))
+    setPortError(false)
   }, [lanPort])
+  const portRange = t`Enter a number from 1 to ${maxLanPort}`
   const savePort = () => {
     if (portText.trim() === '') {
-      setPortText(String(lanPort))
+      setPortError(true)
       return
     }
     const port = Number(portText)
-    if (Number.isInteger(port) && port >= 0 && port <= maxLanPort) {
+    if (Number.isInteger(port) && port >= 1 && port <= maxLanPort) {
+      setPortError(false)
       SetLanPort(port).catch(reportFailure)
     } else {
-      setPortText(String(lanPort))
+      setPortError(true)
     }
   }
   return (
@@ -120,7 +127,11 @@ function Sharing() {
         label={t`Share profiles on the local network`}
         description={t`Lets nearby Mortar users find this installation and exchange profile links.`}
       >
-        <Switch checked={lanSharing} onChange={(_, on) => SetLanSharing(on).catch(reportFailure)} />
+        <PrefSwitch
+          checked={lanSharing}
+          onChange={(on) => SetLanSharing(on).catch(reportFailure)}
+          label={t`Share profiles on the local network`}
+        />
       </SettingRow>
       <PrefKeys
         keys={[
@@ -137,9 +148,10 @@ function Sharing() {
           label={t`Automatic port`}
           description={t`Let the operating system choose a free port`}
         >
-          <Switch
+          <PrefSwitch
             checked={lanPort === 0}
-            onChange={(_, on) => SetLanPort(on ? 0 : defaultLanPort).catch(reportFailure)}
+            onChange={(on) => SetLanPort(on ? 0 : defaultLanPort).catch(reportFailure)}
+            label={t`Automatic port`}
           />
         </SettingRow>
       ) : null}
@@ -149,6 +161,8 @@ function Sharing() {
             type="number"
             size="small"
             value={portText}
+            error={portError}
+            helperText={portError ? portRange : undefined}
             slotProps={{
               htmlInput: { min: 1, max: maxLanPort, step: 1, 'aria-label': t`LAN port` },
             }}
@@ -180,7 +194,7 @@ function Sharing() {
                 .finally(() => setFixingFirewall(false))
             }}
           >
-            {fixingFirewall ? t`Fixing…` : t`Fix`}
+            {t`Allow through firewall`}
           </Button>
         </SettingRow>
       ) : null}
@@ -191,12 +205,17 @@ function Sharing() {
 function Help() {
   const { t } = useLingui()
   const reportFailure = useReportFailure()
+  const push = useToasts((s) => s.push)
   return (
     <SettingsSection title={t`Help`}>
       <SettingRow label={t`Tips`} description={t`Show the first-run tips again`}>
         <Button
           variant="outlined"
-          onClick={() => SetTipsSeen([]).catch(reportFailure)}
+          onClick={() =>
+            SetTipsSeen([])
+              .then(() => push({ kind: 'success', title: t`Tips will show again` }))
+              .catch(reportFailure)
+          }
         >{t`Show again`}</Button>
       </SettingRow>
       <SettingRow
