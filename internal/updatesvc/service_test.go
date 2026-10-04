@@ -86,10 +86,7 @@ func TestOnlyASignedReleaseInstalls(t *testing.T) {
 
 func TestCheckKeepsAStagedRelease(t *testing.T) {
 	f := &fake{rel: &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}}
-	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
-		t.Fatal(err)
-	}
+	s := signedService(t, f)
 	if _, err := s.Check(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -111,10 +108,7 @@ func TestRestartWaitsUntilInstallHasStaged(t *testing.T) {
 		dlStart: started,
 	}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
-	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
-		t.Fatal(err)
-	}
+	s := signedService(t, f)
 	if _, err := s.Check(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -180,10 +174,7 @@ func TestCheckDoesNotHoldTheLockForTheNetwork(t *testing.T) {
 		checkStart: started,
 	}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
-	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
-		t.Fatal(err)
-	}
+	s := signedService(t, f)
 	errc := make(chan error, 1)
 	go func() {
 		_, err := s.Check(context.Background())
@@ -211,10 +202,7 @@ func TestInstallReleasesTheMutexDuringDownload(t *testing.T) {
 	started := make(chan struct{})
 	f := &stall{dlHold: hold, dlStart: started}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
-	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
-		t.Fatal(err)
-	}
+	s := signedService(t, f)
 	if _, err := s.Check(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -277,10 +265,7 @@ func TestClassifyCheckError(t *testing.T) {
 
 func TestCheckNetworkErrorHidesTheGoChain(t *testing.T) {
 	f := &fake{err: errors.New("updater: all providers failed: endpoint: fetch manifest: Get ...: wsarecv: connection timed out")}
-	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
-		t.Fatal(err)
-	}
+	s := signedService(t, f)
 	rel, err := s.Check(context.Background())
 	if rel != nil || !errors.Is(err, errUnreachable) {
 		t.Fatalf("check = %+v, %v", rel, err)
@@ -292,10 +277,7 @@ func TestCheckNetworkErrorHidesTheGoChain(t *testing.T) {
 
 func TestCheckMissingManifestIsNotUpToDate(t *testing.T) {
 	f := &fake{}
-	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
-		t.Fatal(err)
-	}
+	s := signedService(t, f)
 	s.empty = func(context.Context) error { return errors.New("HTTP 404") }
 	rel, err := s.Check(context.Background())
 	if rel != nil || !errors.Is(err, errNoRelease) {
@@ -305,13 +287,20 @@ func TestCheckMissingManifestIsNotUpToDate(t *testing.T) {
 
 func TestCheckNilReleaseIsCurrentWhenTheManifestExists(t *testing.T) {
 	f := &fake{}
-	s := &Service{}
-	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
-		t.Fatal(err)
-	}
+	s := signedService(t, f)
 	s.empty = func(context.Context) error { return nil }
 	rel, err := s.Check(context.Background())
 	if rel != nil || err != nil {
 		t.Fatalf("current = %+v, %v", rel, err)
 	}
+}
+
+// signedService is a production service on version 1.0.0 over u with a signing key.
+func signedService(t *testing.T, u Updater) *Service {
+	t.Helper()
+	s := &Service{}
+	if err := configure(s, u, "1.0.0", []byte("key"), true, "", nil); err != nil {
+		t.Fatal(err)
+	}
+	return s
 }

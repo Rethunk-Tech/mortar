@@ -22,10 +22,7 @@ func runEnv(t *testing.T) (*Service, profile.Profile, string, string) {
 	home := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", filepath.Join(home, "data"))
 	_, profiles := testenv.Stores(t)
-	p, err := profiles.Create("stardew", "A")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := testenv.Profile(t, profiles, "A")
 	return NewService(home, nil, profiles), p, cfg, home
 }
 

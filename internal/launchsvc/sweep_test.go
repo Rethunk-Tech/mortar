@@ -68,10 +68,7 @@ func TestSweepNoChangeSkips(t *testing.T) {
 
 func TestSweepBrokenWithAndWithoutFix(t *testing.T) {
 	svc, profiles := sweepEnv(t)
-	p, err := profiles.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := testenv.Profile(t, profiles, "Farm")
 	addSweepMod(t, profiles, p.ID, "A.Fixable", "Fixable")
 	addSweepMod(t, profiles, p.ID, "A.Stuck", "Stuck")
 	svc.SweepVersions = func(string) (string, string, error) { return "1.6.16", "4.2.0", nil }

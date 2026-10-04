@@ -4,13 +4,14 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/saves"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 func TestDismissHidesModForThatSaveOnly(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	store, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)

@@ -14,20 +14,8 @@ import (
 )
 
 func TestServiceListsAndRestoresWithTempDataDirs(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	cfg, err := os.UserConfigDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	savesDir := filepath.Join(cfg, "StardewValley", "Saves")
+	s, savesDir := backupService(t)
 	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	s := &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}}
 	if _, err := backup.Saves(savesDir, filepath.Join(mustData(t), "mortar", "backups"), backup.DefaultKeep, time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC), backup.Cause{Profile: "p1", Kind: backup.KindUpdate}); err != nil {
 		t.Fatal(err)
 	}
@@ -81,21 +69,9 @@ func writeFarm(t *testing.T, saves, folder, farm, body string) {
 }
 
 func TestCreateBackupIsManualPinnedAndOnlyThatSave(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	cfg, err := os.UserConfigDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	savesDir := filepath.Join(cfg, "StardewValley", "Saves")
+	s, savesDir := backupService(t)
 	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
 	writeFarm(t, savesDir, "Farm_2", "Rainy", "v2")
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	s := &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}}
 	if err := s.CreateBackup("Farm_1"); err != nil {
 		t.Fatal(err)
 	}
@@ -115,20 +91,8 @@ func TestCreateBackupIsManualPinnedAndOnlyThatSave(t *testing.T) {
 }
 
 func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	cfg, err := os.UserConfigDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	savesDir := filepath.Join(cfg, "StardewValley", "Saves")
+	s, savesDir := backupService(t)
 	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
-	store, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	s := &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}}
 	if err := s.CreateBackup("Farm_1"); err != nil {
 		t.Fatal(err)
 	}
@@ -137,7 +101,7 @@ func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) 
 		t.Fatalf("default list = %+v, %v", old, err)
 	}
 	custom := filepath.Join(t.TempDir(), "backups")
-	if _, err := store.Update(func(cur *settings.Settings) {
+	if _, err := s.settings.Update(func(cur *settings.Settings) {
 		_ = settings.ApplyKeyGame(cur, "backupLocation", custom, settings.GameStardew)
 	}); err != nil {
 		t.Fatal(err)

@@ -15,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
@@ -50,8 +52,7 @@ func readReply(t *testing.T, out *bytes.Buffer) reply {
 
 func listenControl(t *testing.T, settingsJSON string) string {
 	t.Helper()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	dir, err := datadir.Dir()
 	if err != nil {
 		t.Fatal(err)
@@ -83,6 +84,21 @@ func listenControl(t *testing.T, settingsJSON string) string {
 		}
 	}
 	return dir
+}
+
+func writeProfileJSON(t *testing.T, dir, id string, profile map[string]any) {
+	t.Helper()
+	pdir := filepath.Join(dir, "profiles", "stardew", id)
+	if err := os.MkdirAll(pdir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	body, err := json.Marshal(profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(pdir, "profile.json"), body, 0o600); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestServeHandsEachLinkOverAndReplies(t *testing.T) {
@@ -137,8 +153,7 @@ func TestActiveNexusStateOffWhenExtensionOff(t *testing.T) {
 }
 
 func TestActiveNexusStateNotRunningThenNoProfileThenReady(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	if st, _ := activeNexusState("stardewvalley"); st != stateNotRunning {
 		t.Fatalf("closed Mortar state = %q", st)
 	}
@@ -305,16 +320,9 @@ func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
 }
 
 func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
-	dir := listenControl(t, "")
 	openID := "aaaaaaaaaaaaaaaa"
-	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	pdir := filepath.Join(dir, "profiles", "stardew", openID)
-	if err := os.MkdirAll(pdir, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	body, err := json.Marshal(map[string]any{
+	dir := listenControl(t, `{"lastProfile":{"stardew":"`+openID+`"}}`)
+	writeProfileJSON(t, dir, openID, map[string]any{
 		"name": "Default",
 		"entries": []map[string]any{
 			{
@@ -337,12 +345,6 @@ func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
 			},
 		},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(pdir, "profile.json"), body, 0o600); err != nil {
-		t.Fatal(err)
-	}
 	openProfile, _ := nexusModProfiles("stardewvalley", 1915)
 	if !openProfile.Pinned || openProfile.SkipVersion != "3.0.0" || len(openProfile.SkipSources) != 1 || openProfile.SkipSources[0] != "github" {
 		t.Fatalf("pin/skip = %+v", openProfile)
@@ -377,30 +379,17 @@ func TestServeAnswersModUpdateAvailable(t *testing.T) {
 }
 
 func TestNexusModProfilesUpdateAvailableFromCache(t *testing.T) {
-	dir := listenControl(t, "")
 	openID := "aaaaaaaaaaaaaaaa"
-	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	dir := listenControl(t, `{"lastProfile":{"stardew":"`+openID+`"}}`)
 	write := func(id, name, version string, fileID int) {
 		t.Helper()
-		pdir := filepath.Join(dir, "profiles", "stardew", id)
-		if err := os.MkdirAll(pdir, 0o700); err != nil {
-			t.Fatal(err)
-		}
-		body, err := json.Marshal(map[string]any{
+		writeProfileJSON(t, dir, id, map[string]any{
 			"name": name,
 			"entries": []map[string]any{{
 				"source": map[string]any{"kind": "nexus", "modId": 1915, "fileId": fileID},
 				"mods":   []map[string]any{{"version": version}},
 			}},
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(filepath.Join(pdir, "profile.json"), body, 0o600); err != nil {
-			t.Fatal(err)
-		}
 	}
 	write(openID, "Default", "1.0.0", 10)
 	write("bbbbbbbbbbbbbbbb", "Co-op", "3.0.0", 30)
@@ -469,16 +458,9 @@ func TestServeAnswersUpdates(t *testing.T) {
 }
 
 func TestActiveNexusUpdatesFromCache(t *testing.T) {
-	dir := listenControl(t, "")
 	openID := "aaaaaaaaaaaaaaaa"
-	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"`+openID+`"}}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	pdir := filepath.Join(dir, "profiles", "stardew", openID)
-	if err := os.MkdirAll(pdir, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	body, err := json.Marshal(map[string]any{
+	dir := listenControl(t, `{"lastProfile":{"stardew":"`+openID+`"}}`)
+	writeProfileJSON(t, dir, openID, map[string]any{
 		"name": "Default",
 		"entries": []map[string]any{
 			{
@@ -495,12 +477,6 @@ func TestActiveNexusUpdatesFromCache(t *testing.T) {
 			},
 		},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(pdir, "profile.json"), body, 0o600); err != nil {
-		t.Fatal(err)
-	}
 	cacheDir := filepath.Join(dir, "cache", "nexus")
 	if err := os.MkdirAll(cacheDir, 0o700); err != nil {
 		t.Fatal(err)
@@ -568,8 +544,7 @@ func TestNexusArchiveNamesGiveTheirModID(t *testing.T) {
 }
 
 func TestRecordContactWritesOncePerMinute(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	contactWrote = time.Time{}
 	if !LastContact().LastSeen.IsZero() {
 		t.Fatal("contact before any message")

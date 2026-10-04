@@ -7,19 +7,17 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/testenv"
 )
 
 func TestRemoveItemsRefusesAReferencedKey(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	items, profiles := testenv.Stores(t)
-	p, err := profiles.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := testenv.Profile(t, profiles, "Farm")
 	root, err := datadir.Dir()
 	if err != nil {
 		t.Fatal(err)

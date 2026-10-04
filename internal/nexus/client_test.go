@@ -47,9 +47,7 @@ func serve(t *testing.T, status *atomic.Int32, hourly string, hits *atomic.Int32
 		w.Header().Set("X-Rl-Daily-Remaining", "19000")
 		w.Header().Set("X-Rl-Daily-Limit", "20000")
 		w.Header().Set("X-Rl-Daily-Reset", "2026-10-01 00:00:00 +0000")
-		w.Header().Set("X-Rl-Hourly-Remaining", hourly)
-		w.Header().Set("X-Rl-Hourly-Limit", "2000")
-		w.Header().Set("X-Rl-Hourly-Reset", "2026-09-30T13:00:00+00:00")
+		setRate(w.Header(), hourly)
 		if s := status.Load(); s != 0 {
 			w.WriteHeader(int(s))
 			return
@@ -219,4 +217,11 @@ func TestLimitsHookCanReadTheBudget(t *testing.T) {
 	if l := <-got; !l.Known || l.Daily.Remaining != 19000 {
 		t.Fatalf("hook read %+v", l)
 	}
+}
+
+// setRate sets the hourly rate-limit headers of a 2000-call quota with remaining calls left.
+func setRate(h http.Header, remaining string) {
+	h.Set("X-Rl-Hourly-Remaining", remaining)
+	h.Set("X-Rl-Hourly-Limit", "2000")
+	h.Set("X-Rl-Hourly-Reset", "2026-09-30T13:00:00+00:00")
 }

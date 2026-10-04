@@ -11,6 +11,8 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/problems"
@@ -32,8 +34,7 @@ func (r *recorder) Add(reqs []queue.Request) ([]queue.Item, error) {
 
 func newService(t *testing.T, signedIn bool) (*Service, *recorder) {
 	t.Helper()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	_, profiles := testenv.Stores(t)
 	r := testResolver(map[int][]nexus.File{
 		100: {nf(1, "1.0", "MAIN", true)},

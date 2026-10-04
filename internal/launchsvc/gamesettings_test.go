@@ -20,10 +20,7 @@ func newGameSettingsService(t *testing.T) (*Service, profile.Profile, string) {
 	t.Setenv("XDG_CONFIG_HOME", config)
 
 	_, profiles := testenv.Stores(t)
-	p, err := profiles.Create("stardew", "Settings")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := testenv.Profile(t, profiles, "Settings")
 	return NewService("", nil, profiles), p, config
 }
 

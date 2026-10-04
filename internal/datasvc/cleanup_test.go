@@ -7,13 +7,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
 func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	items, err := store.Open()
 	if err != nil {
 		t.Fatal(err)
@@ -102,8 +103,7 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 }
 
 func TestApplySkipsAStoreKeyThatBecameReferenced(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	items, err := store.Open()
 	if err != nil {
 		t.Fatal(err)

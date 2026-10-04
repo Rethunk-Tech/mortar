@@ -8,14 +8,15 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 func testStore(t *testing.T) *settings.Store {
 	t.Helper()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	store, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)

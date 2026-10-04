@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/problems"
@@ -42,8 +44,7 @@ func TestParseCollectionURL(t *testing.T) {
 }
 
 func TestPreviewLinkCollection(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	_, profiles := testenv.Stores(t)
 	fm := fakeMeta{
 		pages: map[int]meta.Page{
@@ -95,8 +96,7 @@ func TestPreviewLinkCollectionWrongGame(t *testing.T) {
 
 func cozyCollectionService(t *testing.T, revision int) (*Service, *profile.Store) {
 	t.Helper()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	_, profiles := testenv.Stores(t)
 	fm := fakeMeta{
 		pages: map[int]meta.Page{
@@ -139,10 +139,7 @@ func TestImportCollectionRecordsRefOnNewProfile(t *testing.T) {
 
 func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 	s, profiles := cozyCollectionService(t, 2)
-	p, err := profiles.Create("stardew", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := testenv.Profile(t, profiles, "Mine")
 	pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", p.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -179,10 +176,7 @@ func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 
 func TestCollectionStatusNewerSameAndError(t *testing.T) {
 	s, profiles := cozyCollectionService(t, 5)
-	p, err := profiles.Create("stardew", "Linked")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := testenv.Profile(t, profiles, "Linked")
 	st, err := s.CollectionStatus(context.Background(), "stardew", p.ID)
 	if err != nil || st.Linked {
 		t.Fatalf("unlinked: %+v, %v", st, err)
@@ -244,8 +238,7 @@ func TestCollectionImportAppliesArchiveForPremiumOnly(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, premium := range []bool{true, false} {
-		t.Setenv("XDG_DATA_HOME", t.TempDir())
-		t.Setenv("LOCALAPPDATA", t.TempDir())
+		testfs.DataHome(t)
 		_, profiles := testenv.Stores(t)
 		var fetched []string
 		rec := &recorder{}

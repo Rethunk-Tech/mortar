@@ -1,13 +1,14 @@
 package sharesvc
 
 import (
-	"archive/zip"
-	"errors"
 	"os"
 	"path/filepath"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/testenv"
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -17,33 +18,20 @@ import (
 
 func modZip(t *testing.T, uniqueID string) string {
 	t.Helper()
-	path := filepath.Join(t.TempDir(), "mod.zip")
-	f, err := fsx.Create(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	zw := zip.NewWriter(f)
-	w, err := zw.Create("Mod/manifest.json")
-	if err != nil {
-		t.Fatal(err)
-	}
 	manifest := `{"Name":"Mod","Author":"a","Version":"1.0.0","UniqueID":"` + uniqueID + `","EntryDll":"Mod.dll"}`
-	if _, err := w.Write([]byte(manifest)); err != nil {
-		t.Fatal(err)
-	}
-	if err := errors.Join(zw.Close(), f.Close()); err != nil {
-		t.Fatal(err)
-	}
-	return path
+	return testfs.WriteZip(t, filepath.Join(t.TempDir(), "mod.zip"), map[string]string{"Mod/manifest.json": manifest})
+}
+
+// pendingService is a signed-in service with its own state folder and an empty profile.
+func pendingService(t *testing.T) (*Service, profile.Profile) {
+	t.Helper()
+	s, _ := newService(t, true)
+	s.d.Dir = t.TempDir()
+	return s, testenv.Profile(t, s.d.Profiles, "P")
 }
 
 func TestPendingConfigsSurviveARestart(t *testing.T) {
-	first, _ := newService(t, true)
-	first.d.Dir = t.TempDir()
-	prof, err := first.d.Profiles.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	first, prof := pendingService(t)
 	first.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
@@ -81,12 +69,7 @@ func TestPendingConfigsSurviveARestart(t *testing.T) {
 }
 
 func TestPendingAppliesWhenTheDoneSetChangesAndSavesOnlyOnChange(t *testing.T) {
-	s, _ := newService(t, true)
-	s.d.Dir = t.TempDir()
-	prof, err := s.d.Profiles.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	s, prof := pendingService(t)
 	s.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted: []wantedFile{{ModID: 100, FileID: 1}, {ModID: 200, FileID: 2}, {ModID: 300, FileID: 3}},
@@ -130,12 +113,7 @@ func TestPendingAppliesWhenTheDoneSetChangesAndSavesOnlyOnChange(t *testing.T) {
 }
 
 func TestPendingWaitsWhileTheGameRunsTheProfile(t *testing.T) {
-	s, _ := newService(t, true)
-	s.d.Dir = t.TempDir()
-	prof, err := s.d.Profiles.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	s, prof := pendingService(t)
 	s.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
@@ -173,12 +151,7 @@ func TestPendingWaitsWhileTheGameRunsTheProfile(t *testing.T) {
 }
 
 func TestPendingRetriesAfterInModsWriteError(t *testing.T) {
-	s, _ := newService(t, true)
-	s.d.Dir = t.TempDir()
-	prof, err := s.d.Profiles.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	s, prof := pendingService(t)
 	s.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
@@ -212,12 +185,7 @@ func TestPendingRetriesAfterInModsWriteError(t *testing.T) {
 }
 
 func TestPendingKeepsUnappliedConfigsAfterTheQueueDrains(t *testing.T) {
-	s, _ := newService(t, true)
-	s.d.Dir = t.TempDir()
-	prof, err := s.d.Profiles.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	s, prof := pendingService(t)
 	s.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
@@ -235,12 +203,7 @@ func TestPendingKeepsUnappliedConfigsAfterTheQueueDrains(t *testing.T) {
 }
 
 func TestPendingAppliesAfterFinishedQueueRowsAreGone(t *testing.T) {
-	s, _ := newService(t, true)
-	s.d.Dir = t.TempDir()
-	prof, err := s.d.Profiles.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	s, prof := pendingService(t)
 	s.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},

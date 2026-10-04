@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/nxm"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
@@ -44,8 +46,7 @@ func (f *fakeHandler) ForwardOther(link, previous string) error {
 
 func newService(t *testing.T, h *fakeHandler) *Service {
 	t.Helper()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	store, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)

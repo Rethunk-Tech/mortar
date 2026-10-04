@@ -8,12 +8,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"golang.org/x/sys/unix"
 )
 
 func TestMeasureReflinkCountedOnce(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	root := t.TempDir()
 	buf := make([]byte, 256*1024)
 	for i := range buf {

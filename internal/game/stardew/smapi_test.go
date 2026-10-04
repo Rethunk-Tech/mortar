@@ -1,8 +1,6 @@
 package stardew
 
 import (
-	"archive/zip"
-	"bytes"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +11,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/meta"
@@ -161,31 +161,14 @@ func TestInstallerPathsAndNewer(t *testing.T) {
 	}
 }
 
-func zipBytes(t *testing.T, files map[string]string) []byte {
-	t.Helper()
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	for name, body := range files {
-		w, err := zw.Create(name)
-		if err != nil {
-			t.Fatal(err)
-		}
-		_, _ = w.Write([]byte(body))
-	}
-	if err := zw.Close(); err != nil {
-		t.Fatal(err)
-	}
-	return buf.Bytes()
-}
-
 // fakeSMAPI serves a release list and an installer zip whose installer script does what the real one does to the game folder.
 func fakeSMAPI(t *testing.T, script string) Game {
 	t.Helper()
-	installDat := zipBytes(t, map[string]string{
+	installDat := testfs.ZipBytes(t, map[string]string{
 		"Mods/ConsoleCommands/manifest.json": `{"Name":"Console Commands","UniqueID":"SMAPI.ConsoleCommands","Version":"9.9.9"}`,
 		"Mods/SaveBackup/manifest.json":      `{"Name":"Save Backup","UniqueID":"SMAPI.SaveBackup","Version":"9.9.9"}`,
 	})
-	installer := zipBytes(t, map[string]string{
+	installer := testfs.ZipBytes(t, map[string]string{
 		"SMAPI 9.9.9 installer/internal/linux/SMAPI.Installer": script,
 		"SMAPI 9.9.9 installer/internal/linux/install.dat":     string(installDat),
 	})

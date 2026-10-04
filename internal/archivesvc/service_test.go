@@ -1,12 +1,13 @@
 package archivesvc
 
 import (
-	"archive/zip"
 	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/profile"
@@ -15,23 +16,7 @@ import (
 
 func writeZip(t *testing.T, dir, name, body string) string {
 	t.Helper()
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	w, err := zw.Create("Mod/manifest.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := w.Write([]byte(body)); err != nil {
-		t.Fatal(err)
-	}
-	if err := zw.Close(); err != nil {
-		t.Fatal(err)
-	}
-	p := filepath.Join(dir, name)
-	if err := fsx.WriteFile(p, buf.Bytes(), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	return p
+	return testfs.WriteZip(t, filepath.Join(dir, name), map[string]string{"Mod/manifest.json": body})
 }
 
 func TestDownloadsArchivesSkipsInstalledByKeyAndByName(t *testing.T) {
@@ -87,7 +72,7 @@ func TestNewDownloadsOffersOnlyArrivalsAfterTheMark(t *testing.T) {
 	var seen int64
 	on := true
 	s := NewService(Deps{
-		Dirs: func() []string { return []string{dir} },
+		Dirs:    func() []string { return []string{dir} },
 		Offer:   func(string) bool { return on },
 		Seen:    func(string) int64 { return seen },
 		SetSeen: func(_ string, m int64) error { seen = m; return nil },
@@ -120,7 +105,7 @@ func TestDownloadsArchivesReusesCachedHashes(t *testing.T) {
 	}
 	cache := filepath.Join(t.TempDir(), "hashes.json")
 	s := NewService(Deps{
-		Dirs: func() []string { return []string{dir} },
+		Dirs:      func() []string { return []string{dir} },
 		HashCache: cache,
 		Keys:      func(string) ([]string, error) { return []string{store.LocalKey(sum)}, nil },
 	})
