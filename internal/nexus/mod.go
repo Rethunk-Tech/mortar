@@ -116,10 +116,13 @@ func (c *Client) Page(ctx context.Context, modID int) (Page, error) {
 	return p, nil
 }
 
-// Changelog is one version's notes, as plain text.
+// Changelog is one version's notes, as plain text. A GitHub release carries its markdown Body and publish Date
+// instead of Notes.
 type Changelog struct {
 	Version string   `json:"version"`
+	Date    string   `json:"date,omitempty"`
 	Notes   []string `json:"notes"`
+	Body    string   `json:"body,omitempty"`
 }
 
 // Changelogs returns a mod's limit newest changelog versions. The versions are object keys, which a map would

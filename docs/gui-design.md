@@ -364,9 +364,8 @@ Update review offers **Update** per mod and **Update all**, with **Open page** k
 
 - Every row also offers **Skip this version** and **Pin**, including updates Mortar cannot download.
 - Unofficial SMAPI versions are labelled unofficial and are never included in **Update all**.
-- Each Nexus update shows the cached changelog versions newer than the installed version and not newer than the latest (latest included), newest first, collapsed with a count ("3 versions of changes"); a mod with no changelog, none in that range, or nothing cached says so.
+- Each Nexus or GitHub update has a **What's new** disclosure that loads when opened: versions newer than the installed one up to the new one, newest first, each a subtitle with its notes as text and links (GitHub: release bodies, at most 10, with date); a failed lookup says **Changelog unavailable** and a mod with none says so.
 - A warning triangle on the name means those notes mention a breaking change or new requirement ([architecture.md](architecture.md#nexus-mods)).
-- GitHub updates have no Nexus changelog.
 - After an update finishes, **Update \<mod\> in other profiles** lists other profiles that still hold the old file, with **Update profiles** (pinned destinations named and skipped).
 - The Problems tab's missing dependency offers **Add**, with **Open page** kept.
 - While signed out, both show a toast linking to Settings › Nexus account.

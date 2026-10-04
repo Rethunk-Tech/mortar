@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/components"
+	"github.com/Rethunk-AI/mortar/internal/github"
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
@@ -50,6 +51,8 @@ type Service struct {
 	App *application.App
 	// Profiles is the app's profile store, read when untracking only the mods no profile uses.
 	Profiles *profile.Store
+	// GitHub serves release notes for updates that come from GitHub.
+	GitHub *github.Client
 
 	sso nexussso.Legacy
 	run ssoRun

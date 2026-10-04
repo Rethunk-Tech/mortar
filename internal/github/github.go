@@ -41,6 +41,8 @@ type Release struct {
 	Tag        string  `json:"tag_name"`
 	Draft      bool    `json:"draft"`
 	Prerelease bool    `json:"prerelease"`
+	Body       string  `json:"body,omitempty"`
+	Published  string  `json:"published_at,omitempty"`
 	Assets     []Asset `json:"assets"`
 }
 

@@ -848,7 +848,7 @@ msgstr "Steam's launch options for Stardew Valley lack the SMAPI line. In Steam,
 msgid "Clear cache…"
 msgstr "Clear cache…"
 
-#: src/mods/updateReview/Changes.tsx:58
+#: src/mods/updateReview/Changes.tsx:74
 msgid "What's new"
 msgstr "What's new"
 
@@ -1229,6 +1229,10 @@ msgstr "Could not trim save backups"
 msgid "Sign in"
 msgstr "Sign in"
 
+#: src/mods/updateReview/Changes.tsx:60
+msgid "Changelog unavailable"
+msgstr "Changelog unavailable"
+
 #: src/shell/ViewToggle.tsx:40
 msgid "List view"
 msgstr "List view"
@@ -1482,10 +1486,6 @@ msgstr "Name"
 #: src/firstrun/SmapiStep.tsx:386
 msgid "SMAPI is the loader every Stardew mod needs. It goes into the game folder."
 msgstr "SMAPI is the loader every Stardew mod needs. It goes into the game folder."
-
-#: src/mods/updateReview/Changes.tsx:54
-msgid "No changelog on Nexus"
-msgstr "No changelog on Nexus"
 
 #: src/console/StartupPanel.tsx:304
 msgid "Total"
@@ -8815,6 +8815,10 @@ msgstr "Import settings"
 #: src/mods/ProblemsTab.tsx:391
 msgid "Unknown mod"
 msgstr "Unknown mod"
+
+#: src/mods/updateReview/Changes.tsx:63
+msgid "No changelog for this update"
+msgstr "No changelog for this update"
 
 #: src/settings/sections/DataMove.tsx:70
 msgid "Move data folder"

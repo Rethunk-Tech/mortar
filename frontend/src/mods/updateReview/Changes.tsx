@@ -2,79 +2,77 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { Changelog } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
-import { ChangelogBetween } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+import { UpdateChangelog } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { useProfiles } from '../../profiles/store.ts'
+import { PageLink } from '../../share/CollectionNotes.tsx'
+import { parseInstructions } from '../../share/instructions.ts'
 import { Fold } from '../../shell/Fold.tsx'
-import { reportUnexpected } from '../../toasts/report.ts'
 import { changelogNoteIsRisky } from '../changelogRange.ts'
 
-export function Changes({ update }: { update: Update }) {
+function Text({ text, risky }: { text: string; risky?: boolean }) {
+  return (
+    <Box sx={{ fontSize: 13, overflowWrap: 'anywhere', color: risky ? 'warning.main' : undefined }}>
+      {parseInstructions(text).map(({ at, parts }) => (
+        <Box key={at} sx={{ minHeight: '1.4em' }}>
+          {parts.map((part) => (
+            <PageLink key={part.at} part={part} />
+          ))}
+        </Box>
+      ))}
+    </Box>
+  )
+}
+
+function Version({ entry }: { entry: Changelog }) {
+  return (
+    <Box>
+      <Typography variant="subtitle2">
+        {entry.date ? `${entry.version} · ${entry.date}` : entry.version}
+      </Typography>
+      {entry.body ? <Text text={entry.body} /> : null}
+      {(entry.notes ?? []).map((n) => (
+        <Text key={n} text={`• ${n}`} risky={changelogNoteIsRisky(n)} />
+      ))}
+    </Box>
+  )
+}
+
+// Mounted only while the disclosure is open, so nothing is fetched for a row nobody expands.
+function Loaded({ update }: { update: Update }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
-  const [logs, setLogs] = useState<Changelog[] | undefined>(undefined)
-  const [failed, setFailed] = useState(false)
+  const [logs, setLogs] = useState<Changelog[] | 'failed' | undefined>(undefined)
   useEffect(() => {
-    if (!(update.nexusId > 0 && game)) {
-      return
-    }
     let cancelled = false
-    setLogs(undefined)
-    setFailed(false)
-    ChangelogBetween(game, update.nexusId, update.installed, update.version).then(
-      (got) => {
-        if (!cancelled) {
-          setLogs(got ?? [])
-        }
-      },
-      (e: unknown) => {
-        if (!cancelled) {
-          setFailed(true)
-          reportUnexpected(e)
-        }
-      },
+    UpdateChangelog(game, update.nexusId, update.githubRepo, update.installed, update.version).then(
+      (got) => !cancelled && setLogs(got ?? []),
+      () => !cancelled && setLogs('failed'),
     )
     return () => {
       cancelled = true
     }
-  }, [game, update.installed, update.nexusId, update.version])
-  if (!update.nexusId) {
-    return null
-  }
-  if (failed) {
-    return null
-  }
+  }, [game, update.githubRepo, update.installed, update.nexusId, update.version])
   if (logs === undefined) {
     return <Box role="status" aria-busy={true} sx={{ minHeight: 20 }} />
   }
+  if (logs === 'failed') {
+    return <Typography sx={{ fontSize: 12 }}>{t`Changelog unavailable`}</Typography>
+  }
   if (logs.length === 0) {
-    return (
-      <Typography
-        sx={{ fontSize: 12, color: 'text.secondary' }}
-      >{t`No changelog on Nexus`}</Typography>
-    )
+    return <Typography sx={{ fontSize: 12 }}>{t`No changelog for this update`}</Typography>
+  }
+  return logs.map((c) => <Version key={c.version} entry={c} />)
+}
+
+export function Changes({ update }: { update: Update }) {
+  const { t } = useLingui()
+  if (!(update.nexusId > 0 || update.githubRepo)) {
+    return null
   }
   return (
     <Fold title={t`What's new`}>
-      {logs.map((c) => (
-        <Box key={c.version}>
-          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{c.version}</Typography>
-          {(c.notes ?? []).map((n) => (
-            <Typography
-              key={n}
-              sx={{
-                fontSize: 13,
-                pl: 2,
-                whiteSpace: 'pre-line',
-                overflowWrap: 'anywhere',
-                color: changelogNoteIsRisky(n) ? 'warning.main' : undefined,
-              }}
-            >
-              {`• ${n}`}
-            </Typography>
-          ))}
-        </Box>
-      ))}
+      <Loaded update={update} />
     </Fold>
   )
 }

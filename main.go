@@ -324,6 +324,7 @@ func run() error {
 	nexusClient := nexus.New(version)
 	nexusSvc := nexussvc.NewService(store, nexusClient, modMeta)
 	nexusSvc.Profiles = profiles
+	nexusSvc.GitHub = &github.Client{}
 
 	exe, err := os.Executable()
 	if err != nil {

@@ -209,3 +209,20 @@ func TestVerify(t *testing.T) {
 		t.Fatalf("unknown = %v, %v", ok, err)
 	}
 }
+
+func TestReleasesBetween(t *testing.T) {
+	var hits atomic.Int32
+	c := server(t, &hits, func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`[
+ {"tag_name":"v2.2.0","body":"too new","published_at":"2026-03-01T00:00:00Z"},
+ {"tag_name":"v2.1.0","body":"- fix crash\n- see https://x.test","published_at":"2026-02-01T10:00:00Z"},
+ {"tag_name":"v2.0.5","draft":true,"body":"draft"},
+ {"tag_name":"nightly","body":"not a version"},
+ {"tag_name":"v2.0.0","body":"rewrite","published_at":"2026-01-01T00:00:00Z"},
+ {"tag_name":"v1.0.0","body":"installed"}]`))
+	})
+	got, err := c.ReleasesBetween(context.Background(), "o", "r", "1.0.0", "2.1.0")
+	if err != nil || len(got) != 2 || got[0].Tag != "v2.1.0" || got[1].Tag != "v2.0.0" || got[0].Published != "2026-02-01T10:00:00Z" {
+		t.Fatalf("got %+v, %v", got, err)
+	}
+}
