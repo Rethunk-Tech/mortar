@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
@@ -608,9 +607,6 @@ func readHistory(dir string) (historyFileData, error) {
 		}
 		return historyFileData{}, err
 	}
-	if legacyCombinedHistory(b) {
-		return splitLegacyHistory(dir, path, b)
-	}
 	data, err := historyFromBytes(b)
 	if err != nil {
 		return quarantineHistory(path, err)
@@ -632,39 +628,6 @@ func historyFromBytes(b []byte) (historyFileData, error) {
 	}
 	if data.Snapshots == nil {
 		data.Snapshots = map[string][]Entry{}
-	}
-	return data, nil
-}
-
-func legacyCombinedHistory(b []byte) bool {
-	return bytes.Contains(b, []byte(`"snapshots"`))
-}
-
-func splitLegacyHistory(dir, path string, b []byte) (historyFileData, error) {
-	if onHistoryDecode != nil {
-		onHistoryDecode()
-	}
-	var legacy struct {
-		Events    []HistoryEvent     `json:"events"`
-		Snapshots map[string][]Entry `json:"snapshots"`
-	}
-	if err := json.Unmarshal(b, &legacy); err != nil {
-		return quarantineHistory(path, err)
-	}
-	data := historyFileData{Events: legacy.Events, Snapshots: legacy.Snapshots, dir: dir}
-	if data.Events == nil {
-		data.Events = []HistoryEvent{}
-	}
-	if data.Snapshots == nil {
-		data.Snapshots = map[string][]Entry{}
-	}
-	for id, entries := range data.Snapshots {
-		if err := writeSnapshotFile(dir, id, entries); err != nil {
-			return historyFileData{}, err
-		}
-	}
-	if err := writeHistory(dir, data, 0); err != nil {
-		return historyFileData{}, err
 	}
 	return data, nil
 }
@@ -931,7 +894,7 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 			from = entryVersion(be)
 			to = entryVersion(ae)
 			name = entryName(ae)
-		case !equalStrings(be.Disabled, ae.Disabled):
+		case !slices.Equal(be.Disabled, ae.Disabled):
 			if len(ae.Disabled) > len(be.Disabled) {
 				disabled++
 			} else {
@@ -1008,16 +971,4 @@ func entryVersion(e Entry) string {
 		return e.Mods[0].Version
 	}
 	return e.Key
-}
-
-func equalStrings(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
 }
