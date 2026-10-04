@@ -398,6 +398,9 @@ func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 
 // Enabled reports whether any mod of the entry is switched on; an entry with no recorded mods counts as on.
 func Enabled(e profile.Entry) bool {
+	if e.IsOverlay() {
+		return !e.OverlayOff
+	}
 	if len(e.Mods) == 0 {
 		return true
 	}
