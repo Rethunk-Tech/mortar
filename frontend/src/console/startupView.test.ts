@@ -17,7 +17,17 @@ const mod = (
   eventMs: Record<string, number>,
   rest: Partial<StartupMod> = {},
 ): StartupMod =>
-  ({ id, name: id, entryMs: 0, assetMs: 0, loadMs: 0, eventMs, packs: [], ...rest }) as StartupMod
+  ({
+    id,
+    name: id,
+    entryMs: 0,
+    assetMs: 0,
+    loadMs: 0,
+    sampleMs: 0,
+    eventMs,
+    packs: [],
+    ...rest,
+  }) as StartupMod
 
 test('phases run back to back and skip one the bridge did not see', () => {
   const segs = phaseSegments({
@@ -46,6 +56,14 @@ test('mods under the fold line collapse into one row; the rest sort slowest firs
   expect(folded).toEqual({ count: 2, ms: 23 })
   expect(modTotal(shown[0] as StartupMod)).toBe(25_941)
   expect(slowestEvent(shown[1] as StartupMod)).toEqual(['GameLaunched', 3546])
+})
+
+test('a mod with little bridge time but a large sampled time is not folded', () => {
+  const { shown } = foldMods([
+    mod('patcher', { GameLaunched: 4 }, { sampleMs: 900 }),
+    mod('small', { GameLaunched: 20 }),
+  ])
+  expect(shown.map((m) => m.id)).toEqual(['patcher'])
 })
 
 test('regressions name updated or new mods that added a second or more', () => {

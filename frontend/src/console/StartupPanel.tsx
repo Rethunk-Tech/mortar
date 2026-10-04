@@ -82,7 +82,10 @@ function PhaseBar({ report }: { report: StartupReport }) {
   )
 }
 
-function ModRow({ mod }: { mod: StartupMod }) {
+// Mod, Total, Entry, Slowest event, Assets and packs.
+const MOD_COLUMNS = 5
+
+function ModRow({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
   const { t } = useLingui()
   const duration = useDuration()
   const [open, setOpen] = useState(false)
@@ -118,10 +121,16 @@ function ModRow({ mod }: { mod: StartupMod }) {
         <TableCell align="right">
           {mod.assetMs + mod.loadMs > 0 ? duration(mod.assetMs + mod.loadMs) : '—'}
         </TableCell>
+        {sampled ? (
+          <TableCell align="right">{mod.sampleMs ? duration(mod.sampleMs) : '—'}</TableCell>
+        ) : null}
       </TableRow>
       {expandable ? (
         <TableRow>
-          <TableCell colSpan={5} sx={{ py: 0, borderBottom: open ? undefined : 'none' }}>
+          <TableCell
+            colSpan={sampled ? MOD_COLUMNS + 1 : MOD_COLUMNS}
+            sx={{ py: 0, borderBottom: open ? undefined : 'none' }}
+          >
             <Collapse in={open} unmountOnExit={true}>
               <Box
                 sx={{
@@ -162,6 +171,13 @@ function ModTable({ report }: { report: StartupReport }) {
   const { t } = useLingui()
   const duration = useDuration()
   const { shown, folded } = foldMods(report.mods)
+  // Sampled times exist only after a measured launch; they include time inside each mod's patches on game code.
+  const sampled = report.sampledOtherMs > 0
+  const shownIds = new Set(shown.map((mod) => mod.id))
+  const foldedSampled = (report.mods ?? []).reduce(
+    (sum, mod) => (shownIds.has(mod.id) ? sum : sum + mod.sampleMs),
+    0,
+  )
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
       <Table size="small" stickyHeader={true} aria-label={t`Startup time by mod`}>
@@ -172,11 +188,18 @@ function ModTable({ report }: { report: StartupReport }) {
             <TableCell align="right">{t`Entry`}</TableCell>
             <TableCell align="right">{t`Slowest event`}</TableCell>
             <TableCell align="right">{t`Assets and packs`}</TableCell>
+            {sampled ? (
+              <Tooltip
+                title={t`Sampled on a measured launch: includes time in the mod's patches on game code`}
+              >
+                <TableCell align="right">{t`Sampled`}</TableCell>
+              </Tooltip>
+            ) : null}
           </TableRow>
         </TableHead>
         <TableBody>
           {shown.map((mod) => (
-            <ModRow key={mod.id} mod={mod} />
+            <ModRow key={mod.id} mod={mod} sampled={sampled} />
           ))}
           {folded.count > 0 ? (
             <TableRow>
@@ -185,12 +208,16 @@ function ModTable({ report }: { report: StartupReport }) {
               </TableCell>
               <TableCell align="right">{duration(folded.ms)}</TableCell>
               <TableCell colSpan={3} />
+              {sampled ? <TableCell align="right">{duration(foldedSampled)}</TableCell> : null}
             </TableRow>
           ) : null}
           <TableRow>
             <TableCell sx={{ color: 'text.secondary', pl: 4.5 }}>{t`Game and SMAPI`}</TableCell>
             <TableCell align="right">{duration(report.otherMs)}</TableCell>
             <TableCell colSpan={3} />
+            {sampled ? (
+              <TableCell align="right">{duration(report.sampledOtherMs)}</TableCell>
+            ) : null}
           </TableRow>
         </TableBody>
       </Table>

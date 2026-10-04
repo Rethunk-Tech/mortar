@@ -128,16 +128,18 @@ function foldMods(mods: StartupMod[] | null): {
 } {
   const shown: StartupMod[] = []
   const folded = { count: 0, ms: 0 }
+  // A mod whose cost is mostly in its patches on game code shows only in the sampled time.
+  const weight = (mod: StartupMod): number => Math.max(modTotal(mod), mod.sampleMs)
   for (const mod of mods ?? []) {
     const total = modTotal(mod)
-    if (total >= FOLD_BELOW_MS) {
+    if (weight(mod) >= FOLD_BELOW_MS) {
       shown.push(mod)
     } else {
       folded.count += 1
       folded.ms += total
     }
   }
-  shown.sort((a, b) => modTotal(b) - modTotal(a))
+  shown.sort((a, b) => weight(b) - weight(a))
   return { shown, folded }
 }
 
