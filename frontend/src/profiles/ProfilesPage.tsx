@@ -22,9 +22,7 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  ListItemIcon,
   Menu,
-  MenuItem,
   TextField,
   Tooltip,
   Typography,
@@ -52,9 +50,12 @@ import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useProfilePageBadges } from '../game/useSidebarProfiles.ts'
 import { useNav } from '../nav/store.ts'
+import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
+import { shouldLeavePageOnEscape } from '../settings/shouldLeavePageOnEscape.ts'
 import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { errorDetails, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { ExternalImportMenuItems, ExternalImportProfileDialog } from './ExternalImportMenu.tsx'
@@ -238,14 +239,16 @@ function Trash() {
         >{t`Recently deleted`}</Typography>
         {trash.length === 0 ? null : (
           <Tooltip title={t`Empty trash`}>
-            <IconButton
-              aria-label={t`Empty trash`}
-              color="error"
-              disabled={pending}
-              onClick={() => setConfirming(true)}
-            >
-              <Trash2 size={16} />
-            </IconButton>
+            <span>
+              <IconButton
+                aria-label={t`Empty trash`}
+                color="error"
+                disabled={pending}
+                onClick={() => setConfirming(true)}
+              >
+                <Trash2 size={16} />
+              </IconButton>
+            </span>
           </Tooltip>
         )}
       </Box>
@@ -388,39 +391,30 @@ function ProfilesHeader({
         open={importAnchor !== null}
         onClose={closeImportMenu}
       >
-        <MenuItem
+        <MenuAction
+          icon={<FolderInput size={16} aria-hidden={true} />}
+          label={t`From the Mods folder`}
           onClick={() => {
             closeImportMenu()
             onImportGame()
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <FolderInput size={16} aria-hidden={true} />
-          </ListItemIcon>
-          {t`From the Mods folder`}
-        </MenuItem>
-        <MenuItem
+        />
+        <MenuAction
+          icon={<Download size={16} aria-hidden={true} />}
+          label={t`From a link or file…`}
           onClick={() => {
             closeImportMenu()
             onImport()
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <Download size={16} aria-hidden={true} />
-          </ListItemIcon>
-          {t`From a link or file…`}
-        </MenuItem>
-        <MenuItem
+        />
+        <MenuAction
+          icon={<FileUp size={16} aria-hidden={true} />}
+          label={t`From a backup…`}
           onClick={() => {
             closeImportMenu()
             onRestoreZip()
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <FileUp size={16} aria-hidden={true} />
-          </ListItemIcon>
-          {t`From a backup…`}
-        </MenuItem>
+        />
         {shouldShowExternalImportDivider(externalSources.length) ? <Divider /> : null}
         <ExternalImportMenuItems
           sources={externalSources}
@@ -469,7 +463,11 @@ export function ProfilesPage() {
   }, [loadTrash])
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !e.defaultPrevented) {
+      const typing = e.target instanceof HTMLElement ? e.target : null
+      if (isTypingTarget(typing)) {
+        return
+      }
+      if (shouldLeavePageOnEscape(e, dialogOpen())) {
         closeProfiles()
       }
     }

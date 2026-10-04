@@ -1,9 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Dialog, DialogContent, DialogTitle, ListItemIcon, MenuItem } from '@mui/material'
+import { Button, Dialog, DialogContent, DialogTitle } from '@mui/material'
 import { Download } from 'lucide-react'
 import type { SourceInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
 import { ExternalPreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { openImport } from '../share/store.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 
 export function ExternalImportMenuItems({
@@ -15,17 +16,14 @@ export function ExternalImportMenuItems({
 }) {
   const { t } = useLingui()
   return sources.map((item) => (
-    <MenuItem
+    <MenuAction
       key={item.kind}
+      icon={<Download size={16} aria-hidden={true} />}
+      label={t`From ${item.name}…`}
       onClick={() => {
         onPick(item)
       }}
-    >
-      <ListItemIcon sx={{ color: 'inherit' }}>
-        <Download size={16} aria-hidden={true} />
-      </ListItemIcon>
-      {t`From ${item.name}…`}
-    </MenuItem>
+    />
   ))
 }
 
