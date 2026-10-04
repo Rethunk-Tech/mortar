@@ -38,6 +38,9 @@ jobs:
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: read
     env:
       NFPM_ARCH: ${{ matrix.deb_arch }}
       APPIMAGE_ARCH: ${{ matrix.appimage_arch }}
@@ -97,7 +100,28 @@ jobs:
       - name: Frontend build
         run: bun run bindings && bun run --cwd frontend build
 
+      # A tag normally points at a commit CI already gated on main; re-running the gate then buys nothing.
+      # Dispatch runs always gate.
+      - name: Gate needed
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+          passed=0
+          if [ "$REF_TYPE" = tag ]; then
+            passed="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push&status=success" --jq .total_count)"
+          fi
+          if [ "$passed" -gt 0 ]; then
+            echo "CI already passed on $GITHUB_SHA; skipping the gate"
+            echo "run=false" >>"$GITHUB_OUTPUT"
+          else
+            echo "run=true" >>"$GITHUB_OUTPUT"
+          fi
+
       - name: Offline gate
+        if: steps.gate.outputs.run == 'true'
         run: bun run gate
 
       - name: Linux AppImage
@@ -105,6 +129,20 @@ jobs:
 
       - name: Linux deb, rpm and Arch packages
         run: sudo apt-get install -y --no-install-recommends rpm && wails3 task linux:nfpm
+
+      - name: Flatpak runtime version
+        id: flatpak-runtime
+        if: matrix.flatpak
+        run: |
+          echo "version=$(sed -n 's/^runtime-version: "\(.*\)"$/\1/p' build/linux/flatpak/tech.rethunk.Mortar.yml)" >>"$GITHUB_OUTPUT"
+
+      # The user installation holds the GNOME runtime, SDK and Flathub's builder, the slow part of the build.
+      - name: Flatpak SDK cache
+        if: matrix.flatpak
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/flatpak
+          key: flatpak-user-gnome-${{ steps.flatpak-runtime.outputs.version }}
 
       - name: Linux Flatpak
         if: matrix.flatpak
@@ -128,8 +166,12 @@ jobs:
       - name: Windows exe and installer
         if: matrix.windows
         run: |
-          wails3 task windows:package INSTALL_SCOPE=user
+          # Both architectures write bin/mortar.exe, so each is copied out before the next build. NSIS builds
+          # an arm64-native installer from the arm64 exe (bin/mortar-arm64-installer.exe).
+          wails3 task windows:package INSTALL_SCOPE=user ARCH=amd64
           cp bin/mortar.exe bin/mortar-windows-amd64.exe
+          wails3 task windows:package INSTALL_SCOPE=user ARCH=arm64
+          cp bin/mortar.exe bin/mortar-windows-arm64.exe
 
       - name: Signed manifest
         if: matrix.windows && github.ref_type != 'tag'
@@ -158,8 +200,9 @@ jobs:
             cp bin/mortar-linux-x86_64.flatpak out/
           fi
           if [ "${{ matrix.windows }}" = true ]; then
-            cp bin/mortar-windows-amd64.exe bin/mortar-amd64-installer.exe out/
-            (cd browser-extension && zip -q ../out/mortar-browser-extension.zip $(ls | grep -v '\.test\.js$'))
+            cp bin/mortar-windows-amd64.exe bin/mortar-amd64-installer.exe \
+              bin/mortar-windows-arm64.exe bin/mortar-arm64-installer.exe out/
+            (cd browser-extension && zip -q -r ../out/mortar-browser-extension.zip . -x '*.test.js')
           fi
 
       - name: Upload artifacts
@@ -178,10 +221,12 @@ jobs:
     permissions:
       contents: write
     steps:
+      # Full history: the release notes read the commits since the previous tag.
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Go
         uses: Rethunk-Tech/gh-actions/setup-go@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
@@ -236,28 +281,37 @@ jobs:
             bin/mortar-*-1-aarch64.pkg.tar.zst
             bin/mortar-windows-amd64.exe
             bin/mortar-amd64-installer.exe
+            bin/mortar-windows-arm64.exe
+            bin/mortar-arm64-installer.exe
+            bin/mortar-browser-extension.zip
             bin/manifest.json
           if-no-files-found: error
 
+      - name: Package manager sources
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          build/linux/aur/render.sh bin bin/aur
+          build/linux/flathub/render.sh bin bin/flathub
+          cp bin/aur/PKGBUILD bin/PKGBUILD
+          cp bin/aur/.SRCINFO bin/SRCINFO
+          cp bin/flathub/tech.rethunk.Mortar.yml bin/flathub-tech.rethunk.Mortar.yml
+          cp bin/flathub/SUBMISSION.md bin/flathub-SUBMISSION.md
+          rm -r bin/aur bin/flathub
+
       - name: Publish release
-        if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
-          version="${TAG#v}"
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes \
-            bin/mortar-linux-x86_64.AppImage \
-            bin/mortar-linux-amd64 \
-            "bin/mortar_${version}_amd64.deb" \
-            "bin/mortar-${version}-1.x86_64.rpm" \
-            "bin/mortar-${version}-1-x86_64.pkg.tar.zst" \
-            bin/mortar-linux-x86_64.flatpak \
-            bin/mortar-linux-aarch64.AppImage \
-            bin/mortar-linux-arm64 \
-            "bin/mortar_${version}_arm64.deb" \
-            "bin/mortar-${version}-1.aarch64.rpm" \
-            "bin/mortar-${version}-1-aarch64.pkg.tar.zst" \
-            bin/mortar-windows-amd64.exe \
-            bin/mortar-amd64-installer.exe \
-            bin/manifest.json
+          set -euo pipefail
+          build/release/notes.sh "$TAG" >notes.md
+          # Every file in bin/ is a release asset, so the verify step can hold the release to exactly this set.
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file notes.md bin/*
+
+      - name: Verify release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: build/release/verify.sh "$TAG" bin

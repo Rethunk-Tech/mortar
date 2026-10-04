@@ -57,13 +57,15 @@ tasks:
       - sh: go run ./cmd/version -check
         msg: "a copy of the version differs from build/config.yml; run go run ./cmd/version"
       - sh: test -f bin/mortar-linux-x86_64.AppImage && test -f bin/mortar-windows-amd64.exe
-        msg: "need the amd64 AppImage and Windows exe; include mortar-linux-aarch64.AppImage when the arm64 job has produced it"
+        msg: "need the amd64 AppImage and Windows exe; the arm64 AppImage and Windows exe join when present"
     cmds:
       - |
         set -euo pipefail
         assets=(bin/mortar-linux-x86_64.AppImage bin/mortar-windows-amd64.exe)
-        if [[ -f bin/mortar-linux-aarch64.AppImage ]]; then
-          assets+=(bin/mortar-linux-aarch64.AppImage)
-        fi
+        for optional in bin/mortar-linux-aarch64.AppImage bin/mortar-windows-arm64.exe; do
+          if [[ -f $optional ]]; then
+            assets+=("$optional")
+          fi
+        done
         wails3 updater manifest -version {{.VERSION}} -key "$MORTAR_UPDATE_KEY" -url-prefix https://github.com/Rethunk-AI/mortar/releases/download/v{{.VERSION}} -output bin/manifest.json "${assets[@]}"
       - wails3 updater verify -manifest bin/manifest.json -publickey build/updater/public.key
