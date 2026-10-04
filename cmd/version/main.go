@@ -25,6 +25,7 @@ var copies = []copyOf{
 	{"build/windows/info.json", regexp.MustCompile(`"(?:file_version|ProductVersion)": "([^"]*)"`)},
 	{"build/linux/tech.rethunk.Mortar.metainfo.xml", regexp.MustCompile(`<release version="([^"]*)" date="[^"]*"`)},
 	{"browser-extension/manifest.json", regexp.MustCompile(`"version": "([^"]*)"`)},
+	{"build/linux/aur/PKGBUILD", regexp.MustCompile(`(?m)^pkgver=(.*)$`)},
 }
 
 var releaseDate = regexp.MustCompile(`(<release version="[^"]*" date=")[^"]*(")`)

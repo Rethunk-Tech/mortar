@@ -147,6 +147,7 @@ jobs:
           fi
           if [ "${{ matrix.windows }}" = true ]; then
             cp bin/mortar-windows-amd64.exe bin/mortar-amd64-installer.exe out/
+            (cd browser-extension && zip -q ../out/mortar-browser-extension.zip $(ls | grep -v '\.test\.js$'))
           fi
 
       - name: Upload artifacts

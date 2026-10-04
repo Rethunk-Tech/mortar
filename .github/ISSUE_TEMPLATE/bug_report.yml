@@ -2,6 +2,35 @@ name: Bug report
 description: Something in the app does not work as it should.
 labels: [bug]
 body:
+  - type: input
+    id: version
+    attributes:
+      label: Mortar version
+      description: Shown in Settings › About.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: package
+    attributes:
+      label: Install
+      options:
+        - Windows installer
+        - Windows exe
+        - Flatpak
+        - AppImage
+        - deb
+        - rpm
+        - Arch package or AUR
+        - Linux binary
+        - Built from source
+    validations:
+      required: true
+  - type: input
+    id: launcher
+    attributes:
+      label: Game store or launcher
+      placeholder: Steam, GOG, Heroic, Lutris…
   - type: textarea
     id: what
     attributes:

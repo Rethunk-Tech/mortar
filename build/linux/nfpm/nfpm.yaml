@@ -5,7 +5,7 @@ version: ${VERSION}
 release: "1"
 section: games
 priority: optional
-maintainer: Rethunk.Tech <https://github.com/Rethunk-AI/mortar>
+maintainer: Rethunk.Tech <security@rethunk.tech>
 description: Desktop mod manager for Stardew Valley
 homepage: https://github.com/Rethunk-AI/mortar
 license: AGPL-3.0-only

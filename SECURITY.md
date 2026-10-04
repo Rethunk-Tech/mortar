@@ -8,4 +8,4 @@ Do not open an issue for a security report. Use GitHub's private vulnerability r
 
 ## Supported versions
 
-Only the tip of `main` is supported.
+Only the latest release is supported; fixes ship in a new release, not as patches to older ones.
