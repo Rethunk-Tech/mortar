@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/nxm"
+	"github.com/Rethunk-Tech/mortar/internal/nxm"
 )
 
 const nativeHostFix = "Repair"

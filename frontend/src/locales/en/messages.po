@@ -7844,8 +7844,8 @@ msgid "Search Nexus"
 msgstr "Search Nexus"
 
 #: src/settings/sections/About.tsx:70
-msgid "AGPL-3.0 · Rethunk-AI/mortar"
-msgstr "AGPL-3.0 · Rethunk-AI/mortar"
+msgid "AGPL-3.0 · Rethunk-Tech/mortar"
+msgstr "AGPL-3.0 · Rethunk-Tech/mortar"
 
 #: src/console/LogActions.tsx:116
 msgid "Log actions"

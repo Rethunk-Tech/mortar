@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import type {
   Entry,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   DISCORD_LIMIT,
   escapeMarkdown,

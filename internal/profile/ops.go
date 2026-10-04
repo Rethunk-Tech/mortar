@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/ids"
+	"github.com/Rethunk-Tech/mortar/internal/ids"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // tempPrefix holds a character no store key can contain, so a leftover temp folder never collides with an

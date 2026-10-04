@@ -3,7 +3,7 @@ package control
 import (
 	"errors"
 
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func (s *Services) storeReport(p Params) (any, error) {

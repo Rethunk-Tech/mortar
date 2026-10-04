@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/launch"
-	"github.com/Rethunk-AI/mortar/internal/sandbox"
-	"github.com/Rethunk-AI/mortar/internal/steam"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 func TestCommand(t *testing.T) {

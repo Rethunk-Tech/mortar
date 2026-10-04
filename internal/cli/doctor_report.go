@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/doctor"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/doctor"
 )
 
 func liveDoctorReport(d control.Doctor, version string) doctor.Report {

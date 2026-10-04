@@ -4,20 +4,20 @@ import { create } from 'zustand'
 import type {
   Entry,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   RemoveEntry,
   RollBack,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type {
   Item,
   Progress,
   State,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import {
   State as fetchState,
   Retry,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { considerMissing } from '../install/store.ts'
 import { idKey } from '../mods/dependents.ts'

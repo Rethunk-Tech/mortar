@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/components"
-	"github.com/Rethunk-AI/mortar/internal/modreport"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/modreport"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func (s *Services) modReport(gameID, profileID string, prof profile.Profile, p Params) (modreport.Result, error) {

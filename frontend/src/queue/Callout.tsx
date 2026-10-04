@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { accent } from '../mods/paper.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { useProfiles } from '../profiles/store.ts'

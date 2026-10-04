@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
 
 // problems.Dismissable is one problem row mortar problems may dismiss by index.

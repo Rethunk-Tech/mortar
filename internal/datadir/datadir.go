@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // PointerName is the file in the default data folder that names a relocated data folder.

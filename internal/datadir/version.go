@@ -5,8 +5,8 @@ import (
 	"errors"
 	"os"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // FormatVersion is the on-disk format this build reads and writes for profile.json, settings.json, queue.json and

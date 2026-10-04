@@ -4,7 +4,7 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 func (s *Service) extraModsFolder(game string) string {

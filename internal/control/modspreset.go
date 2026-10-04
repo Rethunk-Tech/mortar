@@ -3,7 +3,7 @@ package control
 import (
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func (s *Services) modsPreset(p Params, id string, prof profile.Profile) (any, error) {

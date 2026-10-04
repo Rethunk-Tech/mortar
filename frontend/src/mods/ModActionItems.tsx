@@ -5,11 +5,11 @@ import type { ReactNode } from 'react'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ModsDir,
   OpenConsolePath,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'

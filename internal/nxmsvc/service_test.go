@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-AI/mortar/internal/nxm"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/nxm"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 type fakeHandler struct {

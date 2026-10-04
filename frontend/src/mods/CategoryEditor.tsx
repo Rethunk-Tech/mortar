@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { CustomCategory } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { CustomCategory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { colorHex, PROFILE_COLORS } from '../profiles/appearance.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'

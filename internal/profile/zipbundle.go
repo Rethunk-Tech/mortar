@@ -15,10 +15,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/archive"
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 const (

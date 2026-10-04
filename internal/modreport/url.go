@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 const maxGitHubBody = 6000

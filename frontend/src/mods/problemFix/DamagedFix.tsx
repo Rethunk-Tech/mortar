@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Repair } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/storecheck/service.ts'
+import { Repair } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/storecheck/service.ts'
 import { i18n } from '../../i18n/index.ts'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'

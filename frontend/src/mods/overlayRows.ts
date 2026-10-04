@@ -1,7 +1,7 @@
 import type {
   Entry,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { OverlayRow, VirtualRow } from './virtualRows.ts'
 
 // The Nexus file name an optional file was installed from, or its store key.

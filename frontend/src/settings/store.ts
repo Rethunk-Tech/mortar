@@ -1,11 +1,11 @@
 import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
-import type { Settings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
+import type { Settings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
   CorruptSettingsPath,
   Get,
   ShowCorruptSettings,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { follow } from '../shell/follow.ts'
 import { reportUnexpected } from '../toasts/report.ts'

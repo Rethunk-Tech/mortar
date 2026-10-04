@@ -14,8 +14,8 @@ import { useEffect, useMemo, useState } from 'react'
 import type {
   RunHit,
   RunSearch,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { SearchRuns } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { SearchRuns } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'

@@ -13,13 +13,13 @@ import {
   LifeBuoy,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   RunLog,
   Runs,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
-import { SaveFile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
-import { Log } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import { Log } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'

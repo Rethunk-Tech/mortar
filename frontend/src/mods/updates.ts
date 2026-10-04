@@ -1,10 +1,10 @@
 import { msg, plural } from '@lingui/core/macro'
 import { create } from 'zustand'
-import type { UpdatesResult } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { UpdatesResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   CheckUpdatesNow,
   Updates,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'

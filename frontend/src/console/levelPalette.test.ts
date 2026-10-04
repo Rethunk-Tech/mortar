@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { alpha } from '@mui/material/styles'
-import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { createMortarTheme } from '../theme/theme.ts'
 import { levelChrome } from './levelPalette.ts'
 

@@ -1,9 +1,9 @@
-import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
+import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import {
   List,
   SteamStatus,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
-import type { Status } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loader/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
 
 export interface GameStatus {
   games: GameInfo[]

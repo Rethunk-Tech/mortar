@@ -1,4 +1,4 @@
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { authorFieldIncludes } from './authorNormalize.ts'
 import { cmpText } from './cmpText.ts'
 import { idKey } from './dependents.ts'

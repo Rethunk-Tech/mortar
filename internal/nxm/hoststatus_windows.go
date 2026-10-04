@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	"github.com/Rethunk-AI/mortar/internal/nativehost"
+	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
 type winHost struct {

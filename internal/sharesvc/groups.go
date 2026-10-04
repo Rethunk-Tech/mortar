@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
 func (s *Service) applySharedGroups(game, profileID string, groups []share.FileGroup) error {

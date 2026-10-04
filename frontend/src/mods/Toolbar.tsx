@@ -30,7 +30,7 @@ import {
   User,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
 import { openSettings } from '../nav/store.ts'

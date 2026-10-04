@@ -4,11 +4,11 @@ import { type ReactNode, useEffect, useState } from 'react'
 import type {
   AssetConflict,
   ConflictEvidence,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   ConflictImageCrop,
   ConflictEvidence as FetchConflictEvidence,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 

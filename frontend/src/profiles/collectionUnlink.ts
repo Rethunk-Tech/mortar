@@ -2,11 +2,11 @@ import { msg } from '@lingui/core/macro'
 import type {
   CollectionRef,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ClearCollection,
   SetCollection,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'

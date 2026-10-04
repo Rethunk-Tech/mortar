@@ -13,11 +13,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
-	"github.com/Rethunk-AI/mortar/internal/winname"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 const (

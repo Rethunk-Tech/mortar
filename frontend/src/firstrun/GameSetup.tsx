@@ -9,11 +9,11 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import type {
   GameInfo,
   StoreApp,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import {
   Launchers,
   List,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import type { GameId } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'

@@ -2,8 +2,8 @@ import { create } from 'zustand'
 import {
   Problems,
   Updates,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
 import { runBackgroundBadgeChecks } from './badgeDisplay.ts'
 import { missingCount, problemCount, updateCount } from './lookup.ts'

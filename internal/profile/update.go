@@ -10,12 +10,12 @@ import (
 	"slices"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/backup"
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // conflictSuffix names the profile's copy of a file the target version also changed.

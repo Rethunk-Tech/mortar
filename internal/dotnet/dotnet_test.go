@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // testdata/mod.dll is compiled from testdata/src (rebuild with testdata/src/build.sh). Its BuffEffects writes and the

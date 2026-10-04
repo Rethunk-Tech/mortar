@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/bridge"
-	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 func TestBisectFailsOnlyOnACrash(t *testing.T) {

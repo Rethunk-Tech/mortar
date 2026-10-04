@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { PrefSpec } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
-import { PrefSpecs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import type { PrefSpec } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
+import { PrefSpecs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 
 let cache: PrefSpec[] = []
 

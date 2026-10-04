@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/Rethunk-AI/mortar/internal/queue"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func queueHumanState(state string) string {

@@ -10,7 +10,7 @@
 # unreachable URL is a warning; once it is public it fails the check.
 set -euo pipefail
 usage="usage: verify.sh TAG DIR | --staged DIR | --public TAG"
-repo="${GITHUB_REPOSITORY:-Rethunk-AI/mortar}"
+repo="${GITHUB_REPOSITORY:-Rethunk-Tech/mortar}"
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 mode=release
 case "${1:-}" in

@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 func frame(t *testing.T, v any) []byte {

@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/saves"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // backupService is a service over fresh data and config homes, with the game's saves folder (empty) it scans.

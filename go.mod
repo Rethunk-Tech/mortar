@@ -1,4 +1,4 @@
-module github.com/Rethunk-AI/mortar
+module github.com/Rethunk-Tech/mortar
 
 go 1.27.1
 

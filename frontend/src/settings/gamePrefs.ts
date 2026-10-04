@@ -1,4 +1,4 @@
-import type { Settings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
+import type { Settings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 
 function on(v: boolean | null | undefined, fallback: boolean): boolean {
   if (v === null || v === undefined) {

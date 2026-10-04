@@ -3,7 +3,7 @@ package launch
 import (
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // SMAPIProblemKind is a recognised class of SMAPI log error.

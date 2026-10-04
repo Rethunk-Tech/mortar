@@ -2,8 +2,8 @@ import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Stack, Typography } from '@mui/material'
-import type { Run } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import type { HealthPoint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Run } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import type { HealthPoint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   buildHealthSparklinePath,
   HEALTH_SPARKLINE_HEIGHT,

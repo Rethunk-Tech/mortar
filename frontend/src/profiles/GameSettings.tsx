@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 import { type MouseEvent, type ReactNode, useCallback, useId, useState } from 'react'
-import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'

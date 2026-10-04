@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import {
   GrantSteamAccess,
   SteamAccess,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'

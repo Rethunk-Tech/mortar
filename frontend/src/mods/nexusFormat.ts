@@ -1,4 +1,4 @@
-import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
+import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 
 // Go's zero time, sent for a date Nexus left out.
 // Nexus leaves the category out on many old files, so only these count as current.

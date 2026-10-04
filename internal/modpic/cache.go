@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Path is the URL prefix cached mod pictures are served under.

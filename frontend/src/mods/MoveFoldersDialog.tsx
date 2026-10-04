@@ -5,12 +5,12 @@ import { useEffect, useState } from 'react'
 import type {
   GameModPreview,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   DismissGameModsFolder,
   MoveGameModsFolders,
   UndismissGameModsFolders,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { formatOutcomeDetail } from '../profiles/gameModsFormat.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'

@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { LayoutTemplate } from 'lucide-react'
 import { useState } from 'react'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { ApplyTemplateDialog } from '../templates/ApplyTemplateDialog.tsx'

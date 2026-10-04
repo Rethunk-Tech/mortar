@@ -10,8 +10,8 @@ import {
   TextField,
 } from '@mui/material'
 import { type SyntheticEvent, useEffect, useState } from 'react'
-import type { Template } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/models.ts'
-import { NewProfileFromTemplate } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/service.ts'
+import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
+import { NewProfileFromTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { bundleWants } from '../bundles/missingWants.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'

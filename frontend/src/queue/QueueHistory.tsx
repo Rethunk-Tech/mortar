@@ -16,7 +16,7 @@ import { type ReactNode, useMemo, useRef, useState } from 'react'
 import {
   ClearHistory,
   RetryHistory,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { showInProfile } from '../mods/revealMod.ts'

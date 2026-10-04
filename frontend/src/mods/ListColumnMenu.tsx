@@ -29,7 +29,7 @@ import {
 import { alpha } from '@mui/material/styles'
 import { ArrowDown, ArrowUp, Check, RotateCcw } from 'lucide-react'
 import { type MouseEvent, type ReactNode, useRef, useState } from 'react'
-import { SetListSort } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { SetListSort } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'

@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/nativehost"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
 func TestRegisterWritesHostManifestsForInstalledBrowsersAndRestoreRemovesThem(t *testing.T) {

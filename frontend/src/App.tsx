@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { useEffect, useState } from 'react'
-import { Get } from '../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { Get } from '../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { CommandPalette } from './commandPalette/CommandPalette.tsx'
 import { FirstRun } from './firstrun/FirstRun.tsx'
 import { GameSetup } from './firstrun/GameSetup.tsx'

@@ -1,16 +1,16 @@
 import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
-import type { Relations } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { Relations as ReadRelations } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import type { Relations } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { Relations as ReadRelations } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type {
   Mod,
   ModState,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ModState as ReadModState,
   ResetConfig,
   RollBack,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'

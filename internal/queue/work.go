@@ -11,13 +11,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
-	"github.com/Rethunk-AI/mortar/internal/github"
-	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/store"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 type action int

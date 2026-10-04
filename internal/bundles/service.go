@@ -12,13 +12,13 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/ids"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	modstore "github.com/Rethunk-AI/mortar/internal/store"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/ids"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	modstore "github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const maxName = 60

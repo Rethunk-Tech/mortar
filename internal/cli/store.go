@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func (c *cmd) storeCmd() error {

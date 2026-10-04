@@ -4,8 +4,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 func waitOnChild(req launch.Request) bool {

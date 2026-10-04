@@ -2,8 +2,8 @@ import type { I18n } from '@lingui/core'
 import {
   type Entry,
   Level,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
-import type { Source } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import type { Source } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { format } from '../console/filter.ts'
 import { NEXUS_DOMAIN, nexusModUrl } from './nexusUrl.ts'
 

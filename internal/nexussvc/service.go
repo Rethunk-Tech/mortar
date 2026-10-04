@@ -8,16 +8,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/components"
-	"github.com/Rethunk-AI/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
-	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/nexussso"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/secret"
-	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/nexussso"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/secret"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 

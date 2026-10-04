@@ -10,13 +10,13 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/archive"
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/dlwatch"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/ids"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/ids"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // maxHashed bounds the archives hashed per listing, newest first; older ones are matched by name only.

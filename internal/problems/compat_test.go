@@ -3,7 +3,7 @@ package problems
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 func TestMatchCompatByUniqueIDAndNexus(t *testing.T) {

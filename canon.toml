@@ -10,4 +10,4 @@ reconciled = "canon v0.1.0-poc"
 # with the GTK4 transparency fix, upstream PR wailsapp/wails#6197, is allowed via gomoddirectives.replace-allow-list;
 # G204 is excluded only in launch.go, smapi.go, open.go, backdrop/desktop.go and nxm/handler_linux.go, whose commands are fixed names or paths
 # built from validated install and profile dirs, never user strings).
-"go-golangci-lint-00013" = "the game registry returns the game.Game interface by design; allow adds github.com/Rethunk-AI/mortar/internal/game.Game"
+"go-golangci-lint-00013" = "the game registry returns the game.Game interface by design; allow adds github.com/Rethunk-Tech/mortar/internal/game.Game"

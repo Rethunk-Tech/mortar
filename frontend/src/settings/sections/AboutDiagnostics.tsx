@@ -14,11 +14,11 @@ import { useState } from 'react'
 import type {
   Check,
   Report,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/doctor/models.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/doctor/models.ts'
 import {
   Doctor,
   RepairNativeHosts,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { routeGame, useNav } from '../../nav/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'

@@ -20,9 +20,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/jsonc"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/jsonc"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // cpShape is part of a target one edit writes: an area (image pixels, or map tiles on every layer), one map

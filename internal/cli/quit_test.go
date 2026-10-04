@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 )
 
 func TestQuitWaitsUntilTheAppStopsAnswering(t *testing.T) {

@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/bridge"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestRunForBisectStopsWhenStartupReportAppears(t *testing.T) {

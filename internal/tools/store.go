@@ -8,10 +8,10 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	gamepkg "github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/ids"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/ids"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func errToolNotFound() error {

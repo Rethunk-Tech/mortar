@@ -1,6 +1,6 @@
 import { Events } from '@wailsio/runtime'
-import type { Request } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/models.ts'
-import { Take } from '../../bindings/github.com/Rethunk-AI/mortar/internal/shortcut/service.ts'
+import type { Request } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/shortcut/models.ts'
+import { Take } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/shortcut/service.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'

@@ -3,20 +3,20 @@ import { Box, Button, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 import { Browser, System } from '@wailsio/runtime'
 import { FolderOpen, Undo2 } from 'lucide-react'
 import { useState } from 'react'
-import type { FoundInstall } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
+import type { FoundInstall } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import {
   ClearLaunchOption,
   LaunchOptions,
   ResetInstall,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
-import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import {
   ChooseGameFolder,
   SetByKey,
   SetGameFolder,
   SetGameStore,
   SetTellWhenSmapiOut,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { launchOptionsSet } from '../../firstrun/logic.ts'
 import { storeName } from '../../games/storeName.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'

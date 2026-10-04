@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { Folder } from 'lucide-react'
 import { useState } from 'react'
-import type { RemapNode } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { RemapNode } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { chooseOverlay } from './overlayPlace.ts'
 import { useInstall } from './store.ts'

@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/loadorder"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/loadorder"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // AssetTouch is one mod or patch that writes a target (or a data key on that target).

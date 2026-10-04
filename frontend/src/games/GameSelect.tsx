@@ -3,15 +3,15 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
 import { Play } from 'lucide-react'
 import { type MouseEvent, useCallback, useEffect, useState } from 'react'
-import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { List } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import type { Played } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
+import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
   Get,
   SetLastGame,
   SetLastProfile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { gameSetupNeeded } from '../firstrun/needed.ts'
 import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'

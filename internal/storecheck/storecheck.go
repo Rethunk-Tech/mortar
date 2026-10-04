@@ -12,12 +12,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/dlwatch"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/queue"
-	"github.com/Rethunk-AI/mortar/internal/store"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // ProgressEvent carries Progress while a check from Settings runs.

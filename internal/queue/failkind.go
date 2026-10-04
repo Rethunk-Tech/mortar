@@ -4,10 +4,10 @@ import (
 	"errors"
 	"io"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/store"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // Failure kinds a failed Item carries, so the GUI picks its wording without parsing Error.

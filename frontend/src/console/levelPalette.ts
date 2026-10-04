@@ -1,5 +1,5 @@
 import { alpha, type Theme } from '@mui/material/styles'
-import { Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 
 const ROW_WARN = 0.08
 const ROW_ERROR = 0.1

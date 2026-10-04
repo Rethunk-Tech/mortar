@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func shadowedNames(t *testing.T, mods ...Installed) map[string][]string {

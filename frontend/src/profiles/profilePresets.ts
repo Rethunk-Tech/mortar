@@ -1,7 +1,7 @@
 import type {
   LaunchPreset,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 
 // The backend resolves this name to the profile's own launch settings.
 const BASE_PRESET = 'Standard'

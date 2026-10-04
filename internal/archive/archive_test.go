@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // zentry is one zip entry; a name ending in "/" is a directory, a zero mode a regular file.

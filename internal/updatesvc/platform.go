@@ -4,7 +4,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/Rethunk-AI/mortar/internal/selfexe"
+	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
 // PortablePlatform is the manifest platform of the bare Linux program. The "linux" artifacts are the AppImages, so

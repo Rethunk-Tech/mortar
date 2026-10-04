@@ -16,8 +16,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/winname"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 	"golang.org/x/text/encoding/simplifiedchinese"
 
 	"github.com/bodgit/sevenzip"

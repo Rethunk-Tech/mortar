@@ -1,6 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
-import type { ModUpdateDigestNotice } from '../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/models.ts'
+import type { ModUpdateDigestNotice } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/models.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'

@@ -1,5 +1,5 @@
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
-import type { UpdatesResult } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import type { UpdatesResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 
 /** Why Mortar's update list differs from one line of SMAPI's "You can update" alert. */
 type UpdateNoteKind =

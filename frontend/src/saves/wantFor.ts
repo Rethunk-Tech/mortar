@@ -1,4 +1,4 @@
-import type { Lack } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import type { Lack } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import type { Want } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
 

@@ -13,15 +13,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/launchsvc"
-	"github.com/Rethunk-AI/mortar/internal/meta"
-	"github.com/Rethunk-AI/mortar/internal/problems"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/queue"
-	"github.com/Rethunk-AI/mortar/internal/saves"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 const (

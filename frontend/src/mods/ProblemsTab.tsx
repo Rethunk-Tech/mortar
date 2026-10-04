@@ -11,7 +11,7 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { useState } from 'react'
-import { ConflictEvidence } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useTab } from '../game/tab.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'

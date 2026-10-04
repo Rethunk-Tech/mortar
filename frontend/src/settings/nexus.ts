@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import type { Account } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
-import { Account as fetchAccount } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+import type { Account } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
+import { Account as fetchAccount } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { follow } from '../shell/follow.ts'
 
 const emptyLimits = {

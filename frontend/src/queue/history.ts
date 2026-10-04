@@ -1,4 +1,4 @@
-import { History } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { History } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 
 export interface HistoryEntry {
   name: string

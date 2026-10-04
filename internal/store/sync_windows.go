@@ -6,7 +6,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // syncPath flushes a file to disk. FlushFileBuffers needs a handle with write access, so a read-only

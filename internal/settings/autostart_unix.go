@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/sandbox"
-	"github.com/Rethunk-AI/mortar/internal/selfexe"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
 // RemoveAutostart deletes the autostart entry that starts Mortar at sign-in.

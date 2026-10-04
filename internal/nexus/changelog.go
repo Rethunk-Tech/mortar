@@ -1,6 +1,6 @@
 package nexus
 
-import "github.com/Rethunk-AI/mortar/internal/meta"
+import "github.com/Rethunk-Tech/mortar/internal/meta"
 
 // ChangelogBetween keeps entries strictly newer than installed and not newer than latest.
 // all is already newest-first; that order is preserved.

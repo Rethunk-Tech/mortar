@@ -3,10 +3,10 @@ package game
 import (
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/gog"
-	"github.com/Rethunk-AI/mortar/internal/lutris"
-	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/steam"
+	"github.com/Rethunk-Tech/mortar/internal/gog"
+	"github.com/Rethunk-Tech/mortar/internal/lutris"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 const (

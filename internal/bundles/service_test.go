@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	modstore "github.com/Rethunk-AI/mortar/internal/store"
-	"github.com/Rethunk-AI/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	modstore "github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 func testService(t *testing.T) (*Service, *profile.Store, *modstore.Store) {

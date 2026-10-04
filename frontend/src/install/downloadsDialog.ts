@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { DownloadArchive } from '../../bindings/github.com/Rethunk-AI/mortar/internal/archivesvc/models.ts'
+import type { DownloadArchive } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/models.ts'
 
 export const useDownloadsDialog = create<{ open: boolean; setOpen: (open: boolean) => void }>(
   (set) => ({ open: false, setOpen: (open) => set({ open }) }),

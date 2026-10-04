@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
-import type { CollectionInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+import type { CollectionInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { openPage } from '../mods/menu.ts'
 import { type InstructionPart, parseInstructions } from './instructions.ts'
 

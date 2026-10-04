@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/manifest"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 const latestStoreKey = "latest"

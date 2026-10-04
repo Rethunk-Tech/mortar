@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
 
 func (s *Services) dismissProblem(ctx context.Context, gameID, profileID string, index int) error {

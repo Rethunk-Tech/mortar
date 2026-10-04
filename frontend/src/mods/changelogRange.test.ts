@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Changelog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
+import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import {
   changelogNoteIsRisky,
   changelogsBetween,

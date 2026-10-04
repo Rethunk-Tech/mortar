@@ -1,9 +1,9 @@
 import { beforeEach, expect, mock, test } from 'bun:test'
-import type { Info } from '../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/models.ts'
+import type { Info } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/models.ts'
 
 let installs = 0
 
-mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/service.ts', () => ({
+mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/service.ts', () => ({
   Check: async () => null,
   Info: async () => ({ version: '1.0.0', off: '' }),
   Install: async () => {
@@ -13,7 +13,7 @@ mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/serv
   Restart: async () => undefined,
 }))
 mock.module('../quit.ts', () => ({ askQuit: async () => true }))
-mock.module('../../bindings/github.com/Rethunk-AI/mortar/quitservice.ts', () => ({
+mock.module('../../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts', () => ({
   BusySummary: async () => '',
 }))
 

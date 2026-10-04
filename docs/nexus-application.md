@@ -17,7 +17,7 @@ Not verified: whether Nexus currently issues OAuth client ids to third parties, 
 - Proposed slug: `mortar`
 - One-line description: Mortar is a desktop mod manager for Stardew Valley (Windows and Linux) that installs mods into per-profile sets, launches the game with SMAPI and shares profiles.
 - Longer description: Mortar discovers the user's Stardew Valley install, installs SMAPI, keeps a separate mod set per profile and launches the game from the chosen profile. For Nexus it lets the user sign in, see which of their mods have updates, track and endorse mods, and download files they asked for. Mortar never re-hosts mod files; every download comes from Nexus's own servers (or the mod's other source).
-- Website / repository: https://github.com/Rethunk-AI/mortar
+- Website / repository: https://github.com/Rethunk-Tech/mortar
 - Logo: supply the app icon from the repository (confirm file and a 512x512 export before sending).
 - Testing build: attach the current release build from the GitHub releases page.
 - Contact: the maintainer through security@rethunk.tech (the project address that receives mail).
@@ -65,7 +65,7 @@ Subject: Application registration request: Mortar (Stardew Valley mod manager)
 
 Hello,
 
-I would like to register Mortar, an open-source desktop mod manager for Stardew Valley (https://github.com/Rethunk-AI/mortar), under the API acceptable use policy. It currently uses users' personal API keys held in their OS keyring and sends accurate `Application-Name: Mortar`, `Application-Version` and `User-Agent: Mortar/<version>` headers; it tracks the X-RL rate-limit headers and stops before the limits are reached. Downloads start only from the Mod Manager Download button or a Premium download the user asked for.
+I would like to register Mortar, an open-source desktop mod manager for Stardew Valley (https://github.com/Rethunk-Tech/mortar), under the API acceptable use policy. It currently uses users' personal API keys held in their OS keyring and sends accurate `Application-Name: Mortar`, `Application-Version` and `User-Agent: Mortar/<version>` headers; it tracks the X-RL rate-limit headers and stops before the limits are reached. Downloads start only from the Mod Manager Download button or a Premium download the user asked for.
 
 Could you tell me:
 1. Whether to register for legacy SSO (slug `mortar`) or an OAuth2 PKCE client, and how to get a client id.

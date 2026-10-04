@@ -3,7 +3,7 @@ package cli
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestSentence(t *testing.T) {

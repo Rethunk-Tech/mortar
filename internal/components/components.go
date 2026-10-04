@@ -22,16 +22,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/github"
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 const (
 	// ReleasesURL lists Mortar's releases. Published releases are immutable, so every signed manifest is its own
 	// components-<serial> release and the newest one is the current manifest.
-	ReleasesURL = "https://api.github.com/repos/Rethunk-AI/mortar/releases?per_page=100"
+	ReleasesURL = "https://api.github.com/repos/Rethunk-Tech/mortar/releases?per_page=100"
 	tagPrefix   = "components-"
 	cacheName   = "components-manifest.json"
 	day         = 24 * time.Hour

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"golang.org/x/sys/unix"
 )

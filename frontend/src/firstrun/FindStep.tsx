@@ -6,9 +6,9 @@ import { useEffect, useState } from 'react'
 import type {
   GameInfo,
   StoreApp,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
-import { PickFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
-import { SetGameFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
+import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { gameArt } from '../games/art.ts'
 import { storeName } from '../games/storeName.ts'
 import { useLoader } from '../loader/store.ts'

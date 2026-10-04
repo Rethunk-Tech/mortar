@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // Service is the window's browse API.

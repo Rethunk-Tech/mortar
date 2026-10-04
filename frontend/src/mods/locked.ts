@@ -1,4 +1,4 @@
-import type { Status } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 
 import { gameBusy } from '../launch/busy.ts'
 // The game holds that profile's mods from Play on; vanilla launch has no profile and does not lock mods/.

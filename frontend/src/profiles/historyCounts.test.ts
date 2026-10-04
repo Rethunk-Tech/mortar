@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { HistoryEvent } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { HistoryEvent } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { historyChangeSummary, historyEventKind } from './historyCounts.ts'
 
 const ev = (added = 0, removed = 0, updated = 0): HistoryEvent => ({

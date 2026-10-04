@@ -7,11 +7,11 @@ import (
 	"runtime"
 	"slices"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/gog"
-	"github.com/Rethunk-AI/mortar/internal/lutris"
-	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/steam"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/gog"
+	"github.com/Rethunk-Tech/mortar/internal/lutris"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 // StoreApp is a launcher (a store app) that tells Mortar which games are installed.

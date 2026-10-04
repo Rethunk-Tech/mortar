@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/archive"
-	"github.com/Rethunk-AI/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
 func (s *Service) downloadRoot() string {

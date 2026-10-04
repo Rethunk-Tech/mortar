@@ -1,6 +1,6 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { prefCopy } from '../settings/prefCopy.ts'
 export const OVERRIDE_KEYS = [
   'defaultLaunchMethod',

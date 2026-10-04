@@ -8,9 +8,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/jsonc"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/jsonc"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 func testdataPack(t *testing.T, name string) Installed {

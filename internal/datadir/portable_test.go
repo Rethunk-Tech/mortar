@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func fakeExe(t *testing.T, marker bool) string {

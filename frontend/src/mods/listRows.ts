@@ -1,14 +1,14 @@
 import { i18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useEffect, useState } from 'react'
-import type { EntrySize } from '../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
-import { EntrySizes } from '../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
-import { StartupReports } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import type { EntrySize } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
+import { EntrySizes } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
+import { StartupReports } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type {
   Entry,
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { modTotal } from '../console/startupView.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey } from './dependents.ts'

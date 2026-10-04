@@ -14,7 +14,7 @@ import { useState } from 'react'
 import type {
   Copy,
   Duplicate,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { nexusKeepKey, preselect } from './lookup.ts'

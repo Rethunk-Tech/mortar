@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 func TestLoadAfterEditConflictIsShownNotCounted(t *testing.T) {

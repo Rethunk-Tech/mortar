@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { directProfile } from './route.ts'
 
 const open = { id: 'p1', name: 'Main' } as Profile

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import {
   LastScheduledBackup,
   OpenBackupsFolder,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 

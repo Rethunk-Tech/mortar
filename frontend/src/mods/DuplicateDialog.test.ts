@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Copy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Copy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { nexusKeepKey } from './lookup.ts'
 
 const copy = (key: string, nexus: boolean): Copy => ({

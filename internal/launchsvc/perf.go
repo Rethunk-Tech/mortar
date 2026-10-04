@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 )
 
 // PerformanceRow is one parsed row from SMAPI's performance report.

@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestDismissThenRestoreALoadConflict(t *testing.T) {

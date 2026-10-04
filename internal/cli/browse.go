@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/browse"
-	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/browse"
+	"github.com/Rethunk-Tech/mortar/internal/control"
 )
 
 func (c *cmd) browse() error {

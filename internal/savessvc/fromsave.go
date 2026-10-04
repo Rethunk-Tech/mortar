@@ -4,9 +4,9 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/queue"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // FromSaveResult is a profile built from a save's last-played mod list.

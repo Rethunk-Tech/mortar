@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/desktopnotify"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 const (

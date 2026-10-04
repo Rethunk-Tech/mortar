@@ -3,8 +3,8 @@ package cli
 import (
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/savessvc"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/savessvc"
 )
 
 func (c *cmd) profileFromSave() error {

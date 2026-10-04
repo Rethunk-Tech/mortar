@@ -4,7 +4,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 func launchTool(t Tool, ctx Context) error {

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { isClearableFinished, parallelDownloads, pendingFor, profileOf, totals } from './totals.ts'
 
 const item = (state: string, sizeKb = 0, modId = 1): Item => ({

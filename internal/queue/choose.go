@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
-	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 const (

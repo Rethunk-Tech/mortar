@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/secret"
+	"github.com/Rethunk-Tech/mortar/internal/secret"
 )
 
 const (

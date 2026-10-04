@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/components"
-	"github.com/Rethunk-AI/mortar/internal/launch"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // Input is everything needed to build a mod problem report and author URL.

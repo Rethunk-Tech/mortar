@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { type Problem, sameId } from './lookup.ts'
 import { useMods } from './store.ts'
 

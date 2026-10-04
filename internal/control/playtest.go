@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/launchsvc"
+	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 )
 
 func (s *Services) playTest(ctx context.Context, game, profileID string) (launchsvc.TestLaunchResult, error) {

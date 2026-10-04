@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import type { ReactNode } from 'react'
-import type { PrefSpec } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
-import { SetByKey } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import type { PrefSpec } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
+import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { useToasts } from '../toasts/store.ts'
 import {

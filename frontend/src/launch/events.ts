@@ -1,7 +1,7 @@
 import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
-import type { SweepReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import type { SweepReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { useConsole } from '../console/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'

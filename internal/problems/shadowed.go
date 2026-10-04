@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // shapedFields are the change fields whose whole effect editShapes and dataShapes describe.

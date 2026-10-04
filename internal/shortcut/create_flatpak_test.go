@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 func TestCreateInFlatpakWritesHostEntryRunningFlatpak(t *testing.T) {

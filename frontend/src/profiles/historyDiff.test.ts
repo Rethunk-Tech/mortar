@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import type {
   HistoryDiff,
   HistoryItem,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { diffLines, itemModKey, selectedPair } from './historyDiff.ts'
 
 const items: HistoryItem[] = [

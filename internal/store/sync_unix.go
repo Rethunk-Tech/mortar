@@ -5,7 +5,7 @@ package store
 import (
 	"errors"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // syncPath flushes a file or directory to disk; a read-only handle is enough here.

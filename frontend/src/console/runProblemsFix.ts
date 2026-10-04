@@ -1,4 +1,4 @@
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 
 /** Which copies a Remove duplicate action keeps versus deletes from the profile. */
 export function duplicateCopies(mods: Mod[]): { keep?: Mod; remove: Mod[] } {

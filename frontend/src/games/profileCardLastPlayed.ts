@@ -1,4 +1,4 @@
-import type { Played } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
+import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 
 export function profileCardLastPlayedIso(
   profileId: string,

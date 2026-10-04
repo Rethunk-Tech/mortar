@@ -1,7 +1,7 @@
 import type {
   HistoryDiff,
   HistoryItem,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 
 export function diffLines(diff: HistoryDiff): string[] {
   return (diff.items ?? []).map((item) => item.detail).filter((line) => line !== '')

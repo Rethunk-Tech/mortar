@@ -4,13 +4,13 @@ import { useState } from 'react'
 import type {
   LaunchPreset,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   AddLaunchPreset,
   SetDefaultLaunchPreset,
   SetLaunchPresets,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { AddLaunchPresetTemplate } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { AddLaunchPresetTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'

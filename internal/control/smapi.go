@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
 func (s *Services) smapiVersions(ctx context.Context, gameID string) ([]string, error) {

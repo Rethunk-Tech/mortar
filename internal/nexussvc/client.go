@@ -3,9 +3,9 @@ package nexussvc
 import (
 	"errors"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/secret"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/secret"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // ErrSignedOut means a Nexus call was made without a signed-in account.

@@ -1,13 +1,13 @@
 import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { SetModEnabled } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import type { Fit } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { SetModEnabled } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import {
   Dismiss,
   RestoreDismissed,
   Saves,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { sameId } from '../mods/lookup.ts'
 import { useProfiles } from '../profiles/store.ts'

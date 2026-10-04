@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { lastRunOf, useLastRun } from './lastRun.ts'
 
 function mod(uniqueId: string): Mod {

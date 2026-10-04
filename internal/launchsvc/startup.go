@@ -10,9 +10,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/bridge"
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 const (

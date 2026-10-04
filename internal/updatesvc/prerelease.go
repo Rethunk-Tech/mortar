@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
 )
 
-const mortarRepo = "Rethunk-AI/mortar"
+const mortarRepo = "Rethunk-Tech/mortar"
 
 type prereleaseProvider struct {
 	client *http.Client

@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react'
 import type {
   Backup,
   Snap,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/backup/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { useGameBusy } from '../launch/store.ts'

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"os"
 
-	"github.com/Rethunk-AI/mortar/internal/nxm"
-	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/shortcut"
+	"github.com/Rethunk-Tech/mortar/internal/nxm"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/shortcut"
 )
 
 // removePlatformLeftovers removes the sign-in autostart entry, the profile desktop entries and Mortar's own desktop

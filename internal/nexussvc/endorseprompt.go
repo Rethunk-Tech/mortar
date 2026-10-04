@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 const (

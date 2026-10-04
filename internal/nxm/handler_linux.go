@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/selfexe"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
 const (
@@ -31,7 +31,7 @@ const (
 	desktopPerm = 0o644
 )
 
-// packaged is set by `-X github.com/Rethunk-AI/mortar/internal/nxm.packaged=` from the same PACKAGED
+// packaged is set by `-X github.com/Rethunk-Tech/mortar/internal/nxm.packaged=` from the same PACKAGED
 // value as main.packaged (deb, flatpak, …).
 var packaged string
 

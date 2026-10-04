@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { compactQuery } from '../game/compact.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { userModCount } from '../profiles/count.ts'

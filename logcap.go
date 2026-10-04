@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // maxLogBytes caps mortar.log so a long session cannot fill the disk; the previous run's log is kept separately.

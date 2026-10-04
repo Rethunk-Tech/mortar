@@ -1,9 +1,9 @@
 import { msg } from '@lingui/core/macro'
-import type { MoveEstimate } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
+import type { MoveEstimate } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import {
   MoveDataFolder,
   UsageProgress,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { i18n } from '../../i18n/index.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'

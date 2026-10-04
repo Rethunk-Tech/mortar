@@ -12,12 +12,12 @@ import {
 } from '@mui/material'
 import { Pencil } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ReadConfig,
   ReadContentSchema,
   WriteConfig,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { MONO } from '../theme/theme.ts'
 import { errorDetails } from '../toasts/errorKind.ts'

@@ -10,11 +10,11 @@ import type {
   SettingHint,
   Update,
   UpdatesResult,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { idKey } from './dependents.ts'

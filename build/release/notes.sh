@@ -13,7 +13,7 @@ fi
 tag="${1:?usage: notes.sh [--metainfo FILE] TAG [REF]}"
 ref="${2:-$tag}"
 cap="${NOTES_CAP:-15}"
-repo="${GITHUB_REPOSITORY:-Rethunk-AI/mortar}"
+repo="${GITHUB_REPOSITORY:-Rethunk-Tech/mortar}"
 prev="$(git describe --tags --match 'v*' --abbrev=0 "${ref}^" 2>/dev/null || true)"
 subjects="$(git log --no-merges --format=%s "${prev:+$prev..}$ref")"
 

@@ -3,7 +3,7 @@ import { Box, Button, Checkbox, ListItem, ListItemText } from '@mui/material'
 import type {
   HistoryEvent,
   HistoryItem,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { When } from '../i18n/When.tsx'
 import { historyChangeSummary } from './historyCounts.ts'
 import { itemModKey } from './historyDiff.ts'

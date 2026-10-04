@@ -3,7 +3,7 @@ package problems
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 func installedMod(key, name, id string, enabled bool) Installed {

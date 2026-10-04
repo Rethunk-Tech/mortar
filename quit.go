@@ -3,10 +3,10 @@ package main
 import (
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/lan"
-	"github.com/Rethunk-AI/mortar/internal/launchsvc"
-	"github.com/Rethunk-AI/mortar/internal/queue"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/lan"
+	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 

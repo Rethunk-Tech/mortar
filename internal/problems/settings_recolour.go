@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // recolourFamily is a map recolour that packs offer as a config choice. Packs spell the choice their own way

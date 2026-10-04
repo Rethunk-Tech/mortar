@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
-import type { UpdatesResult } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import type { UpdatesResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { smapiUpdateNotes } from './smapiUpdateNotes.ts'
 
 const row = (seq: number, message: string) =>

@@ -1,6 +1,6 @@
 package profile
 
-import "github.com/Rethunk-AI/mortar/internal/loadorder"
+import "github.com/Rethunk-Tech/mortar/internal/loadorder"
 
 // LoadOrder lists the profile's enabled mods in the order SMAPI loads them.
 func (s *Service) LoadOrder(game, id string) ([]loadorder.Row, error) {

@@ -1,10 +1,13 @@
 import { beforeEach, expect, test } from 'bun:test'
-import { Hint, Level } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import {
+  Hint,
+  Level,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   type Lines,
   State,
   type Status,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { useConsole } from '../console/store.ts'
 import { overlayGame, useLaunch } from './store.ts'
 

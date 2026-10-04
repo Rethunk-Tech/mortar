@@ -5,7 +5,7 @@ let startCalls = 0
 let warnWait: Promise<void> = Promise.resolve()
 let finishWarn: (() => void) | undefined
 
-mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts', () => ({
+mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts', () => ({
   Problems: async () => ({
     missing: null,
     duplicates: null,
@@ -28,7 +28,7 @@ mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/problems/servi
   },
 }))
 
-mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts', () => ({
+mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts', () => ({
   Status: async () => ({
     game: 'stardew',
     state: 0,

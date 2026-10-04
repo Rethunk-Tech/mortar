@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Row } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadorder/models.ts'
+import type { Row } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadorder/models.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 
 const row = (over: Partial<Row> = {}): Row => ({

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { AuthorDialog } from './AuthorDialog.tsx'
 import { splitManifestAuthors } from './authorNormalize.ts'
 

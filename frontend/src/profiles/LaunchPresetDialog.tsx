@@ -9,7 +9,7 @@ import {
   TextField,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type { LaunchPreset } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { LaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { presetNameError } from './profilePresets.ts'
 
 const FOLLOW = 'follow'

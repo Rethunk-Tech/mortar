@@ -3,7 +3,7 @@ package problems
 import (
 	"context"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 func (fakeMeta) PageRequirements(context.Context, int) ([]meta.Requirement, error) {

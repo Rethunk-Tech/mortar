@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { SourceInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
-import { ExternalSources } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import type { SourceInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
+import { ExternalSources } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 export function useExternalImportSources(game: string): SourceInfo[] {

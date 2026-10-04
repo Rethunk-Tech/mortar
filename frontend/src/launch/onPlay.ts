@@ -2,7 +2,7 @@ import { Window } from '@wailsio/runtime'
 import {
   State,
   type Status,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { useSettings } from '../settings/store.ts'
 import { gameBusy } from './busy.ts'
 

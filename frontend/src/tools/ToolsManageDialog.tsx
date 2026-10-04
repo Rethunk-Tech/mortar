@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { Inbox, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import type { Tool } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/models.ts'
+import type { Tool } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tools/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/zalando/go-keyring"
 )
 

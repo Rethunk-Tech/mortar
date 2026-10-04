@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
 
 func TestFromLiveMatchesCLIPrint(t *testing.T) {

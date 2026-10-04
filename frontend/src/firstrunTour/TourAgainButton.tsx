@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import { SetTipsSeen } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { SetTipsSeen } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { useTourReplay } from './replay.ts'

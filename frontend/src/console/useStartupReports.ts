@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useState } from 'react'
-import type { StartupReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import {
   CancelMeasureNextLaunch,
   MeasureNextLaunch,
   MeasureNextLaunchPending,
   StartupReports,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 

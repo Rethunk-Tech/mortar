@@ -4,8 +4,8 @@ package testenv
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // Stores opens the item store and the profile store over it in the data folder the test's environment names.

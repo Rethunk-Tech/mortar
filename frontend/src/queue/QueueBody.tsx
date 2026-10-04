@@ -8,7 +8,7 @@ const FAIL_LINE = 0.35
 
 import { Download, RotateCcw, X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import {
   Cancel,
   Choose,
@@ -20,7 +20,7 @@ import {
   Skip,
   SkipAll,
   SkipProfile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { formatBytes, formatKb } from '../i18n/bytes.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'

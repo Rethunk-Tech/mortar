@@ -17,7 +17,7 @@ import { useState } from 'react'
 import type {
   RemapNode,
   RemapVariant,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { ArchivePreview } from './ArchivePreview.tsx'
 import { OverlayPlaceDialog } from './OverlayPlaceDialog.tsx'

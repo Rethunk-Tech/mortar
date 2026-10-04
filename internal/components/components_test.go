@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 func signedManifest(t *testing.T, serial uint64, public ed25519.PrivateKey) ([]byte, []byte) {
@@ -21,7 +21,7 @@ func signedManifest(t *testing.T, serial uint64, public ed25519.PrivateKey) ([]b
 		Serial: serial,
 		Components: []Component{{
 			Game: "stardew", Name: "bridge", Kind: "bridge",
-			Source: Source{Host: "github.com", Owner: "Rethunk-AI", Repo: "mortar-smapi-bridge"},
+			Source: Source{Host: "github.com", Owner: "Rethunk-Tech", Repo: "mortar-smapi-bridge"},
 			Tag:    "v1.1.0", Asset: "bridge.zip", Version: "1.1.0",
 			SHA256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		}},

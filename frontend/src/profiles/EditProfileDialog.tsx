@@ -12,9 +12,9 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { GameSettings as GetGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
-import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { GameSettings as GetGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'

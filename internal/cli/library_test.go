@@ -4,13 +4,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/archive"
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/datasvc"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/queue"
-	"github.com/Rethunk-AI/mortar/internal/savessvc"
-	"github.com/Rethunk-AI/mortar/internal/templates"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/datasvc"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/savessvc"
+	"github.com/Rethunk-Tech/mortar/internal/templates"
 )
 
 func TestWaveCommandsSendTheirArguments(t *testing.T) {

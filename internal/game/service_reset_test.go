@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestResetInstallRefusesNonGameFolder(t *testing.T) {

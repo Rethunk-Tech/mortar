@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
-import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
+import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import {
   CachedDetails,
   MarkSeen,
   Details as readDetails,
   Seen,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { currentFiles, isNewer } from './nexusFormat.ts'

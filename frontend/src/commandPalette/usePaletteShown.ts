@@ -1,5 +1,5 @@
 import type { I18n } from '@lingui/core'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { collectionHeader } from '../game/collectionHeader.ts'
 import { useCollectionStatus } from '../game/useCollectionStatus.ts'
 import type { SettingsSection } from '../nav/store.ts'

@@ -1,6 +1,6 @@
 package queue
 
-import "github.com/Rethunk-AI/mortar/internal/archive"
+import "github.com/Rethunk-Tech/mortar/internal/archive"
 
 // waitsForSameMod reports an earlier item for the same Nexus mod and profile still under way. A file without a
 // manifest waits for it, so a mod's main file installs before the optional files that go on top of it; other files

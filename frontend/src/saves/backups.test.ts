@@ -13,7 +13,7 @@ const firstBackup = {
 const listed = [firstBackup]
 let listImpl: () => Promise<typeof listed> = async () => listed
 
-mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts', () => ({
+mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts', () => ({
   ListBackups: () => listImpl(),
   RestoreBackup: async (name: string, folders: string[] | null) => {
     restored = { name, folders }

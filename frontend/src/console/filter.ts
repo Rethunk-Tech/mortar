@@ -1,7 +1,7 @@
 import {
   type Entry,
   Level,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 
 const LEVEL_WIDTH = 5
 const INCOMPATIBLE_GAME = 'this version of SMAPI is only compatible up to Stardew Valley'

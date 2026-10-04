@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import {
   AnswerMerge,
   Skip,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { Callout } from '../queue/Callout.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'

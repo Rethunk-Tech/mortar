@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { ListItemText, MenuItem } from '@mui/material'
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   CombineEntries,
   SplitExtra,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { pushUndoToast } from '../toasts/undo.ts'

@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func write(t *testing.T, dir, name, body string) string {

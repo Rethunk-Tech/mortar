@@ -17,15 +17,15 @@ import { useState } from 'react'
 import {
   RunLines,
   RunLog,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   Log,
   Upload,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { anonymize } from '../console/anonymize.ts'
 import { shareLogConfirm } from '../console/shareLog.ts'
 import { useLoader } from '../loader/store.ts'

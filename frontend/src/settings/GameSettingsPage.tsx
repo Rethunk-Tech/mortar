@@ -9,7 +9,7 @@ import {
   SquareTerminal,
 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
-import type { FoundInstall } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
+import type { FoundInstall } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { loadGameStatus } from '../games/status.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'

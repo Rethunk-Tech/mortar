@@ -24,7 +24,7 @@ import { type ReactNode, useState } from 'react'
 import type {
   StartupMod,
   StartupReport,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { absoluteWhen } from '../i18n/when.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useGameBusy } from '../launch/store.ts'

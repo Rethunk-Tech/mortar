@@ -3,7 +3,7 @@ package support
 import (
 	"os"
 
-	"github.com/Rethunk-AI/mortar/internal/nxm"
+	"github.com/Rethunk-Tech/mortar/internal/nxm"
 )
 
 // RepairNativeHosts rewrites native-messaging host manifests for installed browsers.

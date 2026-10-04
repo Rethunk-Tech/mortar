@@ -5,7 +5,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/nexussso"
+	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 )
 
 // SSOEvent carries an SSOState for each stage of a browser sign-in.

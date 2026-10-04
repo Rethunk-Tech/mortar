@@ -1,4 +1,4 @@
-import { Search } from '../../bindings/github.com/Rethunk-AI/mortar/internal/browse/service.ts'
+import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
 import { useNexus } from '../settings/nexus.ts'

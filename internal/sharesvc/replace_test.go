@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
 func TestPlanReplaceKeepsLocalAndListsRemovals(t *testing.T) {

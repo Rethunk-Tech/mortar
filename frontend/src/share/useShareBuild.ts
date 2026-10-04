@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { useEffect, useRef, useState } from 'react'
-import { Share } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
+import { Share } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { toastError } from '../toasts/report.ts'

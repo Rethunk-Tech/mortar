@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
 // ReleaseNotes is one release's notes as the What's New dialog shows them. Available is false when the notes

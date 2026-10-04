@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/loadorder"
+	"github.com/Rethunk-Tech/mortar/internal/loadorder"
 )
 
 func TestProfileLoadOrder(t *testing.T) {

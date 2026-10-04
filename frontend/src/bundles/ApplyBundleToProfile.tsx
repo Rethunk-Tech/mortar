@@ -10,9 +10,9 @@ import {
   TextField,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type { Bundle } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/models.ts'
-import { Apply } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Bundle } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/models.ts'
+import { Apply } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'

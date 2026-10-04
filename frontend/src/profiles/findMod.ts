@@ -1,4 +1,4 @@
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useDetail } from '../mods/detail.ts'
 import { sameId } from '../mods/lookup.ts'
 import { useNav } from '../nav/store.ts'

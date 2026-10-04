@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 var index = map[string][]meta.Ref{

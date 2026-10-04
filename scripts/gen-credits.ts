@@ -236,7 +236,7 @@ function appendGoNotice(
 ): void {
   const trimmed = line.trim()
   const [path, version, listedDir] = trimmed ? trimmed.split('\t') : []
-  if (!(path && path !== 'github.com/Rethunk-AI/mortar')) {
+  if (!(path && path !== 'github.com/Rethunk-Tech/mortar')) {
     return
   }
   const name = version ? `${path}@${version}` : path

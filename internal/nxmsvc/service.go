@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/nxm"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/nxm"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 

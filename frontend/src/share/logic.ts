@@ -4,7 +4,7 @@ import type {
   Mod,
   Preview,
   Problem,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 
 const WARN_AT = 0.8
 const SOURCE_SITE_NEXUS = 'nexus'

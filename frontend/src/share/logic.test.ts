@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import {
   meter,
   missingModName,

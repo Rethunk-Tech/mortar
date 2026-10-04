@@ -1,8 +1,8 @@
 import type {
   Update,
   UpdatesResult,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import type { Profile } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { entryOf } from '../lookup.ts'
 
 // Updates the profile keeps back because the mod is pinned, one per mod.

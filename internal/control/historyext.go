@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func (s *Services) historyDiff(game, id, a, b string) (profile.HistoryDiff, error) {

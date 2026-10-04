@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Checkbox, FormControlLabel } from '@mui/material'
-import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useNexusDetails } from '../nexusDetails.ts'
 import { optionalUpdateWants, useOptionalSkips } from '../optionalFiles.ts'

@@ -14,12 +14,12 @@ import { useEffect, useState } from 'react'
 import type {
   Preview,
   Template,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
 import {
   ApplyTemplate,
   PreviewApplyTemplate,
   UndoApplyTemplate,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { bundleWants } from '../bundles/missingWants.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'

@@ -1,12 +1,12 @@
 import { create } from 'zustand'
-import type { Tool } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/models.ts'
+import type { Tool } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tools/models.ts'
 import {
   Add,
   Launch,
   List,
   Remove,
   Update,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tools/service.ts'
 
 interface State {
   tools: Tool[]

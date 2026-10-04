@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import {
   State,
   type Status,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { gameBusy } from './busy.ts'
 
 const status = (state: State, game: string) => ({ state, game }) as Status

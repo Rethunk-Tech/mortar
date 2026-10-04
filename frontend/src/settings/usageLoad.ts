@@ -1,4 +1,4 @@
-import type { Usage as DiskUse } from '../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
+import type { Usage as DiskUse } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 
 const PROGRESS_MS = 80
 

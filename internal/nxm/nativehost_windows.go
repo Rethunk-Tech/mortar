@@ -8,9 +8,9 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/nativehost"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
 // hostKeys are the HKCU keys, under software, whose default value points each browser at Mortar's host manifest,

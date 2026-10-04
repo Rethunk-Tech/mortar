@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import type {
   Missing,
   Result,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   andList,
   missingRequired,

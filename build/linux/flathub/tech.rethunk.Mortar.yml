@@ -27,7 +27,7 @@ modules:
       - cd frontend && ../node_modules/.bin/vite build --mode production
       - >-
         go build -buildmode=pie -tags production -trimpath -buildvcs=false -o /app/bin/mortar
-        -ldflags="-w -s -X main.packaged=flatpak -X github.com/Rethunk-AI/mortar/internal/nxm.packaged=flatpak -extldflags '-Wl,-z,relro,-z,now'"
+        -ldflags="-w -s -X main.packaged=flatpak -X github.com/Rethunk-Tech/mortar/internal/nxm.packaged=flatpak -extldflags '-Wl,-z,relro,-z,now'"
       - install -Dm644 build/linux/tech.rethunk.Mortar.desktop /app/share/applications/tech.rethunk.Mortar.desktop
       - install -Dm644 build/linux/mime/mortar.xml /app/share/mime/packages/tech.rethunk.Mortar.xml
       - install -Dm644 build/linux/tech.rethunk.Mortar.metainfo.xml /app/share/metainfo/tech.rethunk.Mortar.metainfo.xml
@@ -38,7 +38,7 @@ modules:
       - install -Dm644 THIRD_PARTY_NOTICES /app/share/doc/mortar/THIRD_PARTY_NOTICES
     sources:
       - type: git
-        url: https://github.com/Rethunk-AI/mortar.git
+        url: https://github.com/Rethunk-Tech/mortar.git
         tag: v@VERSION@
         commit: '@COMMIT@'
       - type: file

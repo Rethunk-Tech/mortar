@@ -11,8 +11,8 @@ import {
   Link,
   Typography,
 } from '@mui/material'
-import type { SweepReport } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { UpdateEverywhere } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import type { SweepReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { UpdateEverywhere } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useTab } from '../game/tab.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'

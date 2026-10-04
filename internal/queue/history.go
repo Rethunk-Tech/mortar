@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 const (

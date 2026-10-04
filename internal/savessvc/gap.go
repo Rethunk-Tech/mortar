@@ -4,8 +4,8 @@ import (
 	"cmp"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // GapMod is a mod a save was last played with. Version is the recorded one; Have is the profile's version of an

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 // ErrUnknown means SMAPI's update API could not be reached, so the source is neither verified nor contradicted.

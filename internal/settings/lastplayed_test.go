@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 func TestOpenDropsInvalidLastPlayed(t *testing.T) {

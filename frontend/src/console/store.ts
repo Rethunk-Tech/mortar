@@ -3,17 +3,17 @@ import { create } from 'zustand'
 import type {
   Entry,
   Level,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   type Lines as Batch,
   State,
   type Status,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import {
   Lines,
   RunLines,
   Send,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'

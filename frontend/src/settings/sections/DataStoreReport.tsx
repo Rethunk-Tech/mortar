@@ -15,17 +15,17 @@ import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type {
   Item as LeftoverItem,
   Preview,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import {
   Cleanup,
   CleanupPreview,
   RemoveItems,
   Report,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import type {
   Item,
   Report as StoreReport,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/store/models.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/store/models.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'

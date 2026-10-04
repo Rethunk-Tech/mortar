@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
+import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import { currentFiles, formatCount, isNewer, recentChangelogs } from './nexusFormat.ts'
 
 test('formats counts', () => {

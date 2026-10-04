@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // RefreshDependencies re-reads every entry's manifests from the store so the stored needs and optional lists

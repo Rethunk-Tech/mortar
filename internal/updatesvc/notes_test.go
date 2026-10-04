@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
 func TestReleaseNotes(t *testing.T) {
@@ -15,9 +15,9 @@ func TestReleaseNotes(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits.Add(1)
 		switch r.URL.Path {
-		case "/repos/Rethunk-AI/mortar/releases/tags/v1.2.0":
+		case "/repos/Rethunk-Tech/mortar/releases/tags/v1.2.0":
 			_, _ = w.Write([]byte(`{"body":"  ## Features\n- thing\n"}`))
-		case "/repos/Rethunk-AI/mortar/releases/tags/v1.3.0":
+		case "/repos/Rethunk-Tech/mortar/releases/tags/v1.3.0":
 			w.Header().Set("X-Ratelimit-Remaining", "0")
 			w.WriteHeader(http.StatusForbidden)
 		default:

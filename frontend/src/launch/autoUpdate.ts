@@ -1,23 +1,23 @@
 import { msg } from '@lingui/core/macro'
-import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
-import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { Updates } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import type { Update } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { Updates } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   History,
   List,
   Mods,
   Revert,
   RollBack,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type {
   Item,
   Request,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import {
   Add,
   State as QueueState,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { installableUpdate, sameId, visibleUpdates } from '../mods/lookup.ts'
 import { updateWant } from '../mods/updateReview/wants.ts'

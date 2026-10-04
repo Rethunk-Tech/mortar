@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/backup"
 )
 
 func TestBackupsUsageAndTrimKeepNewestPerSaveAndPinned(t *testing.T) {

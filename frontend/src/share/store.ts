@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import type { ProfilePreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
-import { Discard } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
+import type { ProfilePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
+import { Discard } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { openSettings, useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'

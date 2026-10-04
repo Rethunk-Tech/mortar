@@ -8,8 +8,8 @@
   <developer id="tech.rethunk">
     <name>Rethunk</name>
   </developer>
-  <url type="homepage">https://github.com/Rethunk-AI/mortar</url>
-  <url type="bugtracker">https://github.com/Rethunk-AI/mortar/issues</url>
+  <url type="homepage">https://github.com/Rethunk-Tech/mortar</url>
+  <url type="bugtracker">https://github.com/Rethunk-Tech/mortar/issues</url>
   <description>
     <p>
       Mortar is a desktop mod manager, built for more than one game. It finds your
@@ -26,19 +26,19 @@
   <screenshots>
     <screenshot type="default">
       <caption>A profile's mods, with a game folder's untracked mod offered for import</caption>
-      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-AI/mortar/main/build/linux/screenshots/mods.png</image>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/mods.png</image>
     </screenshot>
     <screenshot>
       <caption>Problems lists what a profile is missing, with one-click fixes</caption>
-      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-AI/mortar/main/build/linux/screenshots/problems.png</image>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/problems.png</image>
     </screenshot>
     <screenshot>
       <caption>Each save with its backups and whether its mods are present</caption>
-      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-AI/mortar/main/build/linux/screenshots/saves.png</image>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/saves.png</image>
     </screenshot>
     <screenshot>
       <caption>Settings for play, start-up and the window</caption>
-      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-AI/mortar/main/build/linux/screenshots/settings.png</image>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/settings.png</image>
     </screenshot>
   </screenshots>
   <branding>

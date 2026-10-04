@@ -1,4 +1,4 @@
-import type { Row } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadorder/models.ts'
+import type { Row } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadorder/models.ts'
 
 export function formatLoadOrderCopy(rows: readonly Row[]): string {
   return rows

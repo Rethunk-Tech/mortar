@@ -16,13 +16,13 @@ import { type ReactNode, useEffect, useState } from 'react'
 import type {
   ApplyResult,
   Bundle,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/models.ts'
 import {
   AddMods,
   Apply,
   Create,
   List as ListBundles,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'

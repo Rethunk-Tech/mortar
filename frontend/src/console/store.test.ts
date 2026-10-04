@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
-import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   State,
   type Status,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { canSendTo } from './store.ts'
 
 const status = (profile: string, state = State.Running): Status => ({

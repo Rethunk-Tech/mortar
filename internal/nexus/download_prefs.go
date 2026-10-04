@@ -3,7 +3,7 @@ package nexus
 import (
 	"slices"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func applyDownloadPreferences(links []Link) []Link {

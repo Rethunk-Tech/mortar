@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/jsonc"
+	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 )
 
 // Wiki-backed compatibility list behind https://smapi.io/mods. SMAPI.Web (Pathoschild/SMAPI

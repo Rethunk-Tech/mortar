@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { MenuItem } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type { EverywherePreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { PreviewEverywhere } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import type { EverywherePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { PreviewEverywhere } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 
 export function EverywhereMenuItem({

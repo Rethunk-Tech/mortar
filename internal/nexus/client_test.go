@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 var t0 = time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)

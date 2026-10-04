@@ -11,10 +11,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/dotnet"
-	"github.com/Rethunk-AI/mortar/internal/launchsvc"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // sameJobScore is how much of the larger footprint, by member weight, two mods must share to be flagged. They must

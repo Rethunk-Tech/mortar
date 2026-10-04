@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func TestFailureKind(t *testing.T) {

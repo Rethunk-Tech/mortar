@@ -1,12 +1,12 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useCallback, useRef, useState } from 'react'
-import type { ProfilePreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
-import { RegisterLinks } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
-import { SetLastGame } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import type { ProfilePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
+import { RegisterLinks } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
+import { SetLastGame } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import type {
   Preview,
   Result,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import {
   Discard,
   Import,
@@ -17,7 +17,7 @@ import {
   PreviewLink,
   ReadClipboard,
   Replace,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'

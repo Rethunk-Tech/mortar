@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { FileJson } from 'lucide-react'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ExportCollection,
   ShowExportedCollection,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'

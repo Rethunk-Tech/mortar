@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 type nexusSearchBody struct {

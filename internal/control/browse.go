@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/browse"
+	"github.com/Rethunk-Tech/mortar/internal/browse"
 )
 
 // Browse searches Nexus or GitHub for mods of game and marks hits already on profileID.

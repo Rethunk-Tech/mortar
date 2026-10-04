@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/jsonc"
+	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 )
 
 type jsonPair struct {

@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import type { ReactNode } from 'react'
-import type { RunError } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { RunError } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { useConsole } from '../console/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'

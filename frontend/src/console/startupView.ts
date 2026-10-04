@@ -2,7 +2,7 @@ import type {
   StartupMod,
   StartupPhases,
   StartupReport,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 
 type PhaseId = 'smapi' | 'entry' | 'content' | 'firstTicks' | 'intro'
 

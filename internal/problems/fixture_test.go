@@ -3,7 +3,7 @@ package problems
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // cpManifest is the manifest of a Content Patcher pack.

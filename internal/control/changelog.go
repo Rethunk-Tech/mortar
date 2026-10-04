@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 // updateChangelog returns the notes an update crosses: GitHub releases when repo is set, else the mod's Nexus changelog.

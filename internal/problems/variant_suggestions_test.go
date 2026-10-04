@@ -3,7 +3,7 @@ package problems
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 func TestVariantSettingsSuggestsOnlyValueMappedToEnabledMod(t *testing.T) {

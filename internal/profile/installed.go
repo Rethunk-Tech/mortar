@@ -3,8 +3,8 @@ package profile
 import (
 	"path/filepath"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // Installed is one mod of a profile with its manifest as it stands in mods/.

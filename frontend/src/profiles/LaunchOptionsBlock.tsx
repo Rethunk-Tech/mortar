@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { useState } from 'react'
-import { TestLaunch } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { TestLaunch } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { LaunchPreview } from './LaunchPreview.tsx'

@@ -1,8 +1,8 @@
 package profile
 
 import (
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/modconfig"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
 const historyConfigPreset = "config"

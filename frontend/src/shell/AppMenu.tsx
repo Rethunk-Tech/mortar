@@ -20,7 +20,7 @@ import {
   Settings,
 } from 'lucide-react'
 import { useId, useState } from 'react'
-import { OpenDataFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { compact } from '../game/compact.ts'
 import { openPage } from '../mods/menu.ts'
@@ -31,7 +31,7 @@ import { NexusAccount } from './NexusAccount.tsx'
 import { reportBug } from './reportBug.ts'
 import { saveDiagnostics } from './saveDiagnostics.ts'
 
-const SOURCE = 'https://github.com/Rethunk-AI/mortar'
+const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
 
 export function AppMenu() {
   const { t } = useLingui()

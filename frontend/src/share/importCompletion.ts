@@ -1,6 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
-import type { Result } from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
+import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { i18n } from '../i18n/index.ts'
 import { useToasts } from '../toasts/store.ts'
 

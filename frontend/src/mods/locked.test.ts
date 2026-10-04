@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
-import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
-import type { Status } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { isLocked } from './locked.ts'
 
 const status = (state: State, profile: string): Status => ({

@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // Terminate asks the process to exit and kills it if it is still there after grace.

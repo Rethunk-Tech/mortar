@@ -5,8 +5,8 @@ package cli
 import (
 	"errors"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/shortcut"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/shortcut"
 )
 
 func removePlatformLeftovers() error {

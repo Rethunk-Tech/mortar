@@ -17,7 +17,7 @@ import (
 
 	"github.com/andybalholm/brotli"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 const (

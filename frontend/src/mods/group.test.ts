@@ -2,8 +2,8 @@ import { expect, test } from 'bun:test'
 import type {
   Entry,
   Mod,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { DriftKind } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { DriftKind } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
 import {
   customCategoryById,

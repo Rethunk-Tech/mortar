@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Outcome } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { Outcome } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 
 // useOutcomeLabel words how a recorded run ended.
 export function useOutcomeLabel() {

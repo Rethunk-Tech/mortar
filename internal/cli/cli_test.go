@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/controlwire"
-	"github.com/Rethunk-AI/mortar/internal/launchsvc"
-	"github.com/Rethunk-AI/mortar/internal/problems"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/savessvc"
-	"github.com/Rethunk-AI/mortar/internal/sharesvc"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
+	"github.com/Rethunk-Tech/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/savessvc"
+	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 )
 
 type call struct {

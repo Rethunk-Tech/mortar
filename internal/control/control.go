@@ -18,8 +18,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/controlwire"
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // Params is every argument a method takes; each method reads the fields it needs.

@@ -4,7 +4,7 @@ import {
   GmcmResult,
   PendingGmcm,
   SetGmcmEdits,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
   draftMap,

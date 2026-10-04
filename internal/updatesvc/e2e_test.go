@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // These tests build two server-mode copies of testdata/fixture (0.1.1 and 0.1.2), serve a manifest from a local HTTP

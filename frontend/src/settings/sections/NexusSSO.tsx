@@ -7,7 +7,7 @@ import {
   CancelSSO,
   SSOAvailable,
   StartSSO,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 

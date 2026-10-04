@@ -2,15 +2,15 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { FolderInput, Link2, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { RegisterLinks } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
+import { RegisterLinks } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
 import {
   Create,
   PreviewGameMods,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
   SetLastGame,
   SetLastProfile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { type GameId, useNav } from '../nav/store.ts'
 import { GameModsDialog } from '../profiles/GameModsDialog.tsx'
 import { openImport } from '../share/store.ts'

@@ -14,13 +14,13 @@ import {
 } from '@mui/material'
 import { LayoutTemplate, Pencil, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
-import type { Template } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/models.ts'
+import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
 import {
   DeleteTemplate,
   RenameTemplate,
   RestoreTemplate,
   SaveTemplateFromProfile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'

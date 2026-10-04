@@ -2,7 +2,7 @@ import { msg } from '@lingui/core/macro'
 import {
   SaveDiagnostics,
   ShowDiagnostics,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'

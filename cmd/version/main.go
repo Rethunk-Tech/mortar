@@ -12,8 +12,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/appversion"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 type copyOf struct {

@@ -18,7 +18,7 @@ import {
 } from '@mui/material'
 import { ArrowUp, Ban, Pin, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { dependentsOf } from './dependents.ts'

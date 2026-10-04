@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react'
 import type {
   EverywherePreview,
   EverywhereResult,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   PreviewEverywhere,
   UpdateEverywhere,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { errorMessage } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'

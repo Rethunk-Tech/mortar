@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/doctor"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/launch"
-	"github.com/Rethunk-AI/mortar/internal/logshare"
-	"github.com/Rethunk-AI/mortar/internal/nativehost"
-	"github.com/Rethunk-AI/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/doctor"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/logshare"
+	"github.com/Rethunk-Tech/mortar/internal/nativehost"
+	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -27,7 +27,7 @@ const (
 	MaxLog = launch.MaxLines * 256
 
 	smapiBase = "https://smapi.io"
-	issuesURL = "https://github.com/Rethunk-AI/mortar/issues/new"
+	issuesURL = "https://github.com/Rethunk-Tech/mortar/issues/new"
 	timeout   = 60 * time.Second
 )
 

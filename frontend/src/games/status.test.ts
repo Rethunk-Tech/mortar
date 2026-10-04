@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Status } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loader/models.ts'
+import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
 import { loaderCaption } from './status.ts'
 
 const installed = (version: string): Status => ({

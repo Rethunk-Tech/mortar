@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
-import { SetTipsSeen } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { SetTipsSeen } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'

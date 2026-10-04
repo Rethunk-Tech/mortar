@@ -7,7 +7,7 @@ import {
   RegenerateOverlayToken,
   SetOverlayEnabled,
   SetOverlayPort,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { TipIconButton } from '../../shell/TipIconButton.tsx'
 import { reportError } from '../../toasts/report.ts'

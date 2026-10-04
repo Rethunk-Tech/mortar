@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/problems"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestDecideUpdateDigestSameSetNoToast(t *testing.T) {

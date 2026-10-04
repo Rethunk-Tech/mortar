@@ -3,12 +3,12 @@ import { useEffect, useMemo, useState } from 'react'
 import type {
   PerformanceRow,
   SavedReport,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import {
   PerformanceReport,
   PerformanceReports,
   SavePerformanceReport,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'

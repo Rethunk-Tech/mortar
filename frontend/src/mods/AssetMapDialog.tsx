@@ -19,8 +19,8 @@ import type {
   AssetMapPage,
   AssetTarget,
   AssetTouch,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import { AssetMap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { AssetMap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'

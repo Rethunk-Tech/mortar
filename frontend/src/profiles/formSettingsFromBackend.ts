@@ -1,4 +1,4 @@
-import type { Settings as BackendGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/gamesettings/models.ts'
+import type { Settings as BackendGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/gamesettings/models.ts'
 import type { GameSettingsValues } from './GameSettings.tsx'
 
 export function formSettingsFromBackend(value: BackendGameSettings): GameSettingsValues | null {

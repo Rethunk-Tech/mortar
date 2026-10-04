@@ -1,4 +1,4 @@
-import type { Changelog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
+import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import { isNewer } from './nexusFormat.ts'
 
 const riskyChangelogPhrases = [

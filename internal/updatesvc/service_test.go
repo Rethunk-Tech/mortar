@@ -252,7 +252,7 @@ func TestClassifyCheckError(t *testing.T) {
 		err  error
 		want error
 	}{
-		{errors.New("updater: all providers failed: endpoint: endpoint: fetch manifest: Get \"https://github.com/Rethunk-AI/mortar/releases/latest/download/manifest.json\": wsarecv: A connection attempt failed"), errUnreachable},
+		{errors.New("updater: all providers failed: endpoint: endpoint: fetch manifest: Get \"https://github.com/Rethunk-Tech/mortar/releases/latest/download/manifest.json\": wsarecv: A connection attempt failed"), errUnreachable},
 		{errors.New("Get \"https://github.com/...\": i/o timeout"), errUnreachable},
 		{errors.New("endpoint: manifest request failed: HTTP 404"), errNoRelease},
 		{errors.New("endpoint: decode manifest: unexpected end of JSON"), errCheckFailed},

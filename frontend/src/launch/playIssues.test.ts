@@ -4,7 +4,7 @@ import type {
   Broken,
   Missing,
   Update,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { overflowIssueCount, playIssueSummary } from './playIssues.ts'
 
 const missing = (over: Partial<Missing> = {}): Missing => ({

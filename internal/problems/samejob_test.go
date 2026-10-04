@@ -7,9 +7,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/launchsvc"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 func TestFootprintsJoinAssemblyWritesAndHarmonyReplaces(t *testing.T) {

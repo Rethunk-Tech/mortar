@@ -6,11 +6,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/bundles"
-	"github.com/Rethunk-AI/mortar/internal/gamesettings"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/bundles"
+	"github.com/Rethunk-Tech/mortar/internal/gamesettings"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // Preview is what applying a template to a profile would change.

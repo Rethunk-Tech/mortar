@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
-import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
-import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import type { Update } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   alternativeGroups,
   installedFileIds,

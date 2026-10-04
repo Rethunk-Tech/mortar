@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/Rethunk-AI/mortar/internal/selfexe"
+	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
 // RestartSelf starts this executable again, without the old arguments (a fresh start is what a data move needs, and

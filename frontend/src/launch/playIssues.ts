@@ -1,4 +1,4 @@
-import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type {
   AssetConflict,
   Broken,
@@ -6,14 +6,14 @@ import type {
   Result,
   Update,
   UpdatesResult,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   Problems,
   Updates,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
-import type { HistoryDiff } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { ChangesSince } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { LastSaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import type { HistoryDiff } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { ChangesSince } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { visibleUpdates } from '../mods/lookup.ts'
 import { diffLines } from '../profiles/historyDiff.ts'
 import { useProfiles } from '../profiles/store.ts'

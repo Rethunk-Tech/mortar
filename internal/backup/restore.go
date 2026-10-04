@@ -9,8 +9,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/archive"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Restore copies the named save folders from zipPath into savesDir. An empty folders list restores every save

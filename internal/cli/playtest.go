@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/launchsvc"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 )
 
 const playTestTimeout = 4 * time.Minute

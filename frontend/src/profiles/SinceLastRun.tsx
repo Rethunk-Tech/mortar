@@ -6,9 +6,9 @@ import { useEffect, useState } from 'react'
 import {
   Runs,
   StartupReports,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
-import type { HistoryDiff } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { ChangesSince } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import type { HistoryDiff } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { ChangesSince } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
   formatDuration,
   type StartupRegression,

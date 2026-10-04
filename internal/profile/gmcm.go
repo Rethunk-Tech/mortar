@@ -3,7 +3,7 @@ package profile
 import (
 	"path/filepath"
 
-	"github.com/Rethunk-AI/mortar/internal/gmcm"
+	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 )
 
 func (s *Store) ProfileDir(game, id string) (string, error) {

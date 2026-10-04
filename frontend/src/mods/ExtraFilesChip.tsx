@@ -4,7 +4,7 @@ import { Chip, Tooltip } from '@mui/material'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { entryOf, nexusIdOf } from './lookup.ts'
 import { extraFileLabel, useContextMenu } from './menu.ts'
 import { useNexusEntry } from './nexusDetails.ts'

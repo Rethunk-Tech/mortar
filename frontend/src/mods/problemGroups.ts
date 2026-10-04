@@ -1,8 +1,8 @@
 import type {
   AssetConflict,
   Result,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Problem } from './lookup.ts'
 
 export type Row = Problem | { kind: 'drift'; drift: Drift }

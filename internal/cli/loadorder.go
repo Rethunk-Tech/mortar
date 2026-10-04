@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/loadorder"
+	"github.com/Rethunk-Tech/mortar/internal/loadorder"
 )
 
 func loadOrderNames(rows []loadorder.Row) map[string]string {

@@ -1,4 +1,4 @@
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { MergeCallout } from './MergeCallout.tsx'
 
 export function QueueNeedsMerge({ items }: { items: Item[] }) {

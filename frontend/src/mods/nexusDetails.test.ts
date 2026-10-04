@@ -1,6 +1,6 @@
 import { beforeEach, expect, mock, test } from 'bun:test'
-import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
-import type { Details } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/models.ts'
+import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import { useNexus } from '../settings/nexus.ts'
 import {
   isNewSinceLooked,
@@ -40,7 +40,7 @@ const page = (id: number): Details => ({
   changelogs: null,
 })
 
-mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts', () => ({
+mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts', () => ({
   CachedDetails: async () => cached,
   Details: async (id: number) => {
     loads.push(id)

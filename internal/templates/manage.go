@@ -3,7 +3,7 @@ package templates
 import (
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // RestoreTemplate puts back a template DeleteTemplate removed, replacing one of the same name.

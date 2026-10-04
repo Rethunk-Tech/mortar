@@ -1,5 +1,5 @@
 import { Events } from '@wailsio/runtime'
-import type { NoticeClick } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import type { NoticeClick } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { useTab } from '../game/tab.ts'
 import { useMods } from '../mods/store.ts'
 import { isGameId, useNav } from '../nav/store.ts'

@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // Game is the domain name of the only game Mortar takes from Nexus so far, and GameID its numeric id in the v2 API.

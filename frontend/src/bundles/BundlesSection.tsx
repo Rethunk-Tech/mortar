@@ -2,13 +2,13 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { PackagePlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { Bundle } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/models.ts'
+import type { Bundle } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/models.ts'
 import {
   Delete,
   List as ListBundles,
   Rename,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/service.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { idKey } from '../mods/dependents.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'

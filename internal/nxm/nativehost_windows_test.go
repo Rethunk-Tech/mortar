@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func deleteTree(t *testing.T, path string) {

@@ -1,4 +1,4 @@
-import type { GameModPreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { GameModPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { willImport } from '../profiles/gameModsFormat.ts'
 
 // Rows that can be picked have a folder to act on; skipped and failed rows only explain themselves.

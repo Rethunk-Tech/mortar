@@ -1,12 +1,12 @@
 import { msg } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
-import type { Status } from '../../bindings/github.com/Rethunk-AI/mortar/internal/loader/models.ts'
+import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
 import {
   Install,
   InstallVersion,
   Status as LoaderStatus,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/loadersvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadersvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, toastError } from '../toasts/report.ts'

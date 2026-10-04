@@ -13,7 +13,7 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 const (

@@ -1,7 +1,7 @@
 import type {
   Missing,
   Result,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { sameId } from '../mods/lookup.ts'
 import type { Want } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'

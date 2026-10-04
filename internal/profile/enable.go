@@ -3,7 +3,7 @@ package profile
 import (
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func requiredNeeds(m EntryMod) []string {

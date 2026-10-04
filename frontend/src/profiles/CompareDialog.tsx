@@ -2,11 +2,11 @@ import { useLingui } from '@lingui/react/macro'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { Inbox } from 'lucide-react'
 import { useMemo } from 'react'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   CopyMods,
   UpdateEntries,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { applyWithUndo } from '../mods/menu.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'

@@ -5,7 +5,7 @@ import { type MouseEvent, type ReactNode, useMemo, useState } from 'react'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatDuration } from '../console/startupView.ts'
 import { compactQuery } from '../game/compact.ts'
 import { formatBytes } from '../i18n/bytes.ts'

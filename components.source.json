@@ -19,7 +19,7 @@
       "kind": "bridge",
       "source": {
         "host": "github.com",
-        "owner": "Rethunk-AI",
+        "owner": "Rethunk-Tech",
         "repo": "mortar-smapi-bridge"
       },
       "asset": "MortarSmapiBridge-{version}.zip",

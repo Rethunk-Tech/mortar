@@ -3,7 +3,7 @@ package launchsvc
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestLastPlayedRecordsOnRunningOnly(t *testing.T) {

@@ -14,12 +14,12 @@ import { useEffect, useState } from 'react'
 import type {
   ReleaseNotes as ReleaseNotesResult,
   WhatsNew,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/models.ts'
 import {
   AckWhatsNew,
   WhatsNew as LoadWhatsNew,
   ReleaseNotes,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/service.ts'
 import { openPage } from '../mods/menu.ts'
 import { PageLink } from '../share/CollectionNotes.tsx'
 import { parseInstructions } from '../share/instructions.ts'
@@ -129,7 +129,7 @@ export function WhatsNewDialog() {
             type="button"
             sx={{ mt: 1, fontSize: 13 }}
             onClick={() =>
-              openPage(`https://github.com/Rethunk-AI/mortar/releases/tag/v${payload?.version}`)
+              openPage(`https://github.com/Rethunk-Tech/mortar/releases/tag/v${payload?.version}`)
             }
           >
             {t`Read the release notes on GitHub`}

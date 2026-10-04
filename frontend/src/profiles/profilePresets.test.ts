@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { copyName, duplicatePreset, playPresets, presetNameError } from './profilePresets.ts'
 
 const profile = (extra: Partial<Profile>) => ({ id: 'a', name: 'Farm', ...extra }) as Profile

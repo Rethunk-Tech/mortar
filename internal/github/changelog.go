@@ -3,7 +3,7 @@ package github
 import (
 	"context"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 // MaxChangelog bounds how many releases ReleasesBetween returns.

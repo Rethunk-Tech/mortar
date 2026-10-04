@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { duplicateCopies } from './runProblemsFix.ts'
 
 const mod = (key: string, name: string): Mod =>

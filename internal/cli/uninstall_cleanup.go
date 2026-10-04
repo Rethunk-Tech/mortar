@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Rethunk-AI/mortar/internal/selfexe"
-	"github.com/Rethunk-AI/mortar/internal/steam"
+	"github.com/Rethunk-Tech/mortar/internal/selfexe"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 // uninstallCleanup undoes what Mortar wrote outside its install folder: the start-at-sign-in entry, the profile

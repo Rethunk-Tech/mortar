@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react'
 import {
   State,
   type Status,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { SetDefaultLaunchPreset } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { SetDefaultLaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { compact } from '../game/compact.ts'
 import { useLoader } from '../loader/store.ts'
 import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'

@@ -1,6 +1,6 @@
 package profile
 
-import "github.com/Rethunk-AI/mortar/internal/migrate"
+import "github.com/Rethunk-Tech/mortar/internal/migrate"
 
 // ExternalSources lists detected mod-manager profiles for the selected game.
 func (s *Service) ExternalSources(gameID string) ([]migrate.SourceInfo, error) {

@@ -2,13 +2,13 @@ import { useLingui } from '@lingui/react/macro'
 import { Button, IconButton, Menu, MenuItem } from '@mui/material'
 import { MoreHorizontal } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
   EverywherePreview,
   Mod,
   Profile,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { PreviewEverywhere } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { PreviewEverywhere } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'

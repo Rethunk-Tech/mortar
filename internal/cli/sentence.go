@@ -1,6 +1,6 @@
 package cli
 
-import "github.com/Rethunk-AI/mortar/internal/usererr"
+import "github.com/Rethunk-Tech/mortar/internal/usererr"
 
 // Sentence is the user-facing line for a kind. Same English as the GUI errorMessage mapper.
 func Sentence(kind usererr.Kind) string {

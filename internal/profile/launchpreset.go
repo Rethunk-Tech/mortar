@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/game/stardew"
-	"github.com/Rethunk-AI/mortar/internal/ids"
+	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
+	"github.com/Rethunk-Tech/mortar/internal/ids"
 )
 
 // BasePresetName is the display name of the profile's own launch settings, which are the preset every profile

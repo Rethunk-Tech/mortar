@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // ContactFile is the data-folder file recording the last time a browser's extension talked to Mortar.

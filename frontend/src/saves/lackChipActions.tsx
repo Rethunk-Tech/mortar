@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import { ExternalLink, Plus, Power, X } from 'lucide-react'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { CopyMods } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type {
   Fit,
   Lack,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'

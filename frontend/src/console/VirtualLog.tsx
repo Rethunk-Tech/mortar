@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Link } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   type ConsoleLink,
   type ConsoleLinkRoots,

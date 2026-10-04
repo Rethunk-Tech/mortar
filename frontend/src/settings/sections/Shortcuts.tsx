@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import { SetShortcuts } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { SetShortcuts } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingsSection } from '../SettingsSection.tsx'

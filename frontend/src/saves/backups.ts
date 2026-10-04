@@ -1,13 +1,13 @@
 import { i18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
-import type { Backup } from '../../bindings/github.com/Rethunk-AI/mortar/internal/backup/models.ts'
+import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import {
   ListBackups,
   OpenBackupsFolder,
   RestoreBackup,
   SetBackupPinned,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useSaves } from './store.ts'
 

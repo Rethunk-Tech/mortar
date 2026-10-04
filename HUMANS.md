@@ -110,10 +110,10 @@ MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.
 CI reads the repository secret `MORTAR_UPDATE_KEY`, which holds the private key file's PEM contents, not its path:
 
 ```sh
-gh secret set MORTAR_UPDATE_KEY --repo Rethunk-AI/mortar < ~/.config/mortar-release/updater.key
+gh secret set MORTAR_UPDATE_KEY --repo Rethunk-Tech/mortar < ~/.config/mortar-release/updater.key
 ```
 
-Two optional organisation secrets add release outputs (`gh secret set NAME --org Rethunk-AI --repos Rethunk-AI/mortar`); each is skipped with a notice in the run while unset:
+Two optional organisation secrets add release outputs (`gh secret set NAME --org Rethunk-Tech --repos Rethunk-Tech/mortar`); each is skipped with a notice in the run while unset:
 
 - `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` (the AMO API key pair): the release signs the browser extension on AMO's unlisted channel and attaches `mortar-browser-extension.xpi`; `verify.sh` then requires it in the draft and, after publishing, at the public URL. A dispatch only runs `web-ext lint`, since AMO accepts each extension version once. Details: [docs/extension-store/firefox-addons.md](docs/extension-store/firefox-addons.md#signed-xpi-on-each-release).
 - `MORTAR_REPO_GPG_KEY` (the armored private key of "Mortar packages <security@rethunk.tech>", fingerprint `3283604606CAE2295D476F9883BC8751EE6F773D`): after publishing, the `package-repo` job runs `scripts/package-repo.sh` on the release's `.deb`, `.rpm` and Arch packages and uploads the signed repository tree as the `package-repo` artifact, which the site deploy copies to https://mortar.rethunk.tech/packages. The tree holds `deb/` (apt-ftparchive `Packages`, `Release`, `InRelease`, `Release.gpg`), `rpm/<arch>/` (createrepo_c metadata with a signed `repomd.xml.asc`; the packages stay unsigned and byte-identical to the release assets, so `mortar.repo` sets `repo_gpgcheck=1`, `gpgcheck=0`), `arch/<arch>/` (`repo-add` database with package and database `.sig` files), the client snippets `mortar.list`, `mortar.repo` and `pacman.conf`, and the public key as `mortar-archive-keyring.asc` and `.gpg`. The script refuses a key whose fingerprint differs from the committed `build/linux/repo/mortar-archive-keyring.asc`. It holds only the latest release. Locally: `MORTAR_REPO_KEY=<private key file> MORTAR_REPO_URL=<base url> scripts/package-repo.sh <asset dir> <out dir>` (needs podman or docker and gpg).
@@ -151,8 +151,8 @@ wails3 task components:refresh
 The repository secret `MORTAR_UPDATE_KEY` contains the PEM contents, as for releases. Run the Components workflow manually from Actions, or dispatch it from a component release:
 
 ```sh
-gh workflow run components.yml --repo Rethunk-AI/mortar
-gh api repos/Rethunk-AI/mortar/dispatches -f event_type=components
+gh workflow run components.yml --repo Rethunk-Tech/mortar
+gh api repos/Rethunk-Tech/mortar/dispatches -f event_type=components
 ```
 
-The workflow writes the secret to a temporary file, runs the generator with `GOTMPDIR=/var/tmp TMPDIR=/var/tmp`, and creates a `components-<serial>` release (not marked latest) holding `components.json` and `components.json.sig`, each published once because releases are immutable. Until `Rethunk-AI/mortar-smapi-bridge` is public the generator fails with a 404 looking it up, since the workflow's token reads only this repo.
+The workflow writes the secret to a temporary file, runs the generator with `GOTMPDIR=/var/tmp TMPDIR=/var/tmp`, and creates a `components-<serial>` release (not marked latest) holding `components.json` and `components.json.sig`, each published once because releases are immutable. Until `Rethunk-Tech/mortar-smapi-bridge` is public the generator fails with a 404 looking it up, since the workflow's token reads only this repo.

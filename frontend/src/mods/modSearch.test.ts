@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { customCategoryById } from './group.ts'
 import { categoryNames, hasAllTags, matchesQuery } from './modSearch.ts'
 

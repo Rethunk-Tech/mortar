@@ -14,7 +14,7 @@ import {
   Status,
   Stop,
   SwitchOff,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/bisect/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorDetails } from '../toasts/errorKind.ts'

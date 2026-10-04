@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { MAX_ENTRY_NOTE, MAX_ENTRY_TAG, profileTags, takeTags } from './group.ts'
 import { entryOf } from './lookup.ts'

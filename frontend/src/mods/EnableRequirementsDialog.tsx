@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { List, ListItem } from '@mui/material'
-import { SetModsEnabled } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { SetModsEnabled } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { andList } from '../install/missingDeps.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'

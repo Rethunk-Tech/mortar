@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 // PluginType is the effective type of a plugin under flags and file dependencies.

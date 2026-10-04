@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/control"
 )
 
 func TestProfileShortcutAndSteam(t *testing.T) {

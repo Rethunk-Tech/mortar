@@ -3,7 +3,7 @@ package control
 import (
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/gmcm"
+	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 )
 
 func (s *Services) modsMenu(p Params) (any, error) {

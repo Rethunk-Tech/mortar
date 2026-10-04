@@ -2,11 +2,11 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type { HistoryUsage } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { HistoryUsage } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   HistoryUsage as LoadHistoryUsage,
   TrimHistory,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'

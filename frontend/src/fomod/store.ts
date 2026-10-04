@@ -3,15 +3,15 @@ import { create } from 'zustand'
 import type {
   FomodAsk,
   Source,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   FomodPreview,
   InstallFomod,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
   AnswerFomod,
   Skip,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { useMods } from '../mods/store.ts'
 import { openTarget } from '../mods/storeView.ts'
 import { useProfiles } from '../profiles/store.ts'

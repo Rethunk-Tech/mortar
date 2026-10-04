@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/control"
 )
 
 func (c *cmd) nexusUntrack() error {

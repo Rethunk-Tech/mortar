@@ -7,7 +7,7 @@ import credits from '../generated/credits.json' with { type: 'json' }
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { Diagnostics } from './AboutDiagnostics.tsx'
 
-const LICENCE = 'https://github.com/Rethunk-AI/mortar/blob/main/LICENSE'
+const LICENCE = 'https://github.com/Rethunk-Tech/mortar/blob/main/LICENSE'
 
 const body = { color: 'var(--mortar-ink-soft)' }
 
@@ -67,7 +67,7 @@ export function About() {
               {t`Mortar`}
             </Box>
             <Box component="span" sx={{ color: 'var(--mortar-ink-sec)', fontSize: 14 }}>
-              {t`AGPL-3.0 · Rethunk-AI/mortar`}
+              {t`AGPL-3.0 · Rethunk-Tech/mortar`}
             </Box>
           </Box>
           <Button variant="outlined" onClick={() => openPage(LICENCE)}>

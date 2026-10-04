@@ -28,11 +28,11 @@ import {
   Wrench,
 } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
-import type { SourceInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/migrate/models.ts'
+import type { SourceInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import type {
   Profile,
   TrashItem,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { BundlesSection } from '../bundles/BundlesSection.tsx'
 import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'

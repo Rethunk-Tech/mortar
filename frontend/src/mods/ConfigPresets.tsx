@@ -1,14 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, Divider, Menu, MenuItem } from '@mui/material'
 import { useState } from 'react'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ApplyConfigPreset,
   DeleteConfigPreset,
   ListConfigPresets,
   ReadConfig,
   SaveConfigPreset,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'

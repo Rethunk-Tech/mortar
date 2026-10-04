@@ -5,7 +5,7 @@ import {
   Disable,
   Enable,
   Owner,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'

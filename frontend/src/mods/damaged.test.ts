@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Result } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { problemCount, problemsOf } from './lookup.ts'
 import { problemSections } from './problemGroups.ts'
 

@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { StartVanilla } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { StartVanilla } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { toastError } from '../toasts/report.ts'
 

@@ -1,11 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import Box from '@mui/material/Box'
 import { useEffect, useState } from 'react'
-import type { CacheInfo as CacheInfoValue } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
+import type { CacheInfo as CacheInfoValue } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import {
   CacheInfo,
   ClearCache,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'

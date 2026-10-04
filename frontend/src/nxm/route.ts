@@ -1,4 +1,4 @@
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Route } from '../nav/store.ts'
 
 // The game an nxm link for stardewvalley belongs to.

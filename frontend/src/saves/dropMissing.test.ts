@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Fit } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { dropMissing } from './dropMissing.ts'
 
 function saveFit(folder: string, uniqueId: string): Fit {

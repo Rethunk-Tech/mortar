@@ -5,15 +5,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/archive"
-	"github.com/Rethunk-AI/mortar/internal/archivesvc"
-	"github.com/Rethunk-AI/mortar/internal/bundles"
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/datasvc"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/queue"
-	"github.com/Rethunk-AI/mortar/internal/savessvc"
-	"github.com/Rethunk-AI/mortar/internal/templates"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
+	"github.com/Rethunk-Tech/mortar/internal/bundles"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/datasvc"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/savessvc"
+	"github.com/Rethunk-Tech/mortar/internal/templates"
 )
 
 func (c *cmd) sub(want string) (string, error) {

@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ModsDir,
   OpenConsolePath,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useTab } from '../game/tab.ts'
 import { useDetail } from '../mods/detail.ts'
 import { useMods } from '../mods/store.ts'

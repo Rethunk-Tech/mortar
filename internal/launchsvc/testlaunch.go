@@ -3,7 +3,7 @@ package launchsvc
 import (
 	"context"
 
-	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 // TestLaunchResult is the outcome of a profile test launch.

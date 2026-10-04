@@ -1,5 +1,5 @@
 import { i18n } from '@lingui/core'
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 
 const PERCENT = 100
 const MS_PER_SECOND = 1000

@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react'
 import {
   CancelTransfer,
   Transfer,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'

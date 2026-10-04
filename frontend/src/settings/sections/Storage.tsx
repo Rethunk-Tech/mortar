@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
 import { useState } from 'react'
-import { MoveDataFolderPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
+import { MoveDataFolderPreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { useNav } from '../../nav/store.ts'
 import { type InlineError, reportError } from '../../toasts/report.ts'
 import { PrefKeys } from '../PrefRow.tsx'

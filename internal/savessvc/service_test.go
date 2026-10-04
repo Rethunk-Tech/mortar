@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-AI/mortar/internal/saves"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestDismissHidesModForThatSaveOnly(t *testing.T) {

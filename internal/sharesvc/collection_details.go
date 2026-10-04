@@ -10,8 +10,8 @@ import (
 
 	"github.com/bodgit/sevenzip"
 
-	"github.com/Rethunk-AI/mortar/internal/manifest"
-	"github.com/Rethunk-AI/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
 const (

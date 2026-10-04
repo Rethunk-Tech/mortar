@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/savessvc"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/savessvc"
 )
 
 func TestSavesCheckAndProfileFromSave(t *testing.T) {

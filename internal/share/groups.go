@@ -3,7 +3,7 @@ package share
 import (
 	"slices"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 type groupRef struct {

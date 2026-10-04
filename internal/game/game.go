@@ -10,17 +10,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/gog"
-	"github.com/Rethunk-AI/mortar/internal/lutris"
+	"github.com/Rethunk-Tech/mortar/internal/gog"
+	"github.com/Rethunk-Tech/mortar/internal/lutris"
 
-	"github.com/Rethunk-AI/mortar/internal/components"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
-	"github.com/Rethunk-AI/mortar/internal/game/stardew"
-	"github.com/Rethunk-AI/mortar/internal/launch"
-	"github.com/Rethunk-AI/mortar/internal/loader"
-	"github.com/Rethunk-AI/mortar/internal/steam"
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const artPrefix = "/steam-art/"

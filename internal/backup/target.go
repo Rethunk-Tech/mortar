@@ -3,7 +3,7 @@ package backup
 import (
 	"strconv"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // Target is where a game's save backups go and how many of each kind are kept.

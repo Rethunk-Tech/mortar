@@ -1,11 +1,11 @@
 import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
-import type { CustomCategory } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { CustomCategory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ListCustomCategories,
   SaveCustomCategories,
   SetEntryCategory,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportError } from '../toasts/report.ts'

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func fileCategory(ctx context.Context, c *nexus.Client, it Item) string {

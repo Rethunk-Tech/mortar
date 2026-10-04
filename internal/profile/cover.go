@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/modpic"
+	"github.com/Rethunk-Tech/mortar/internal/modpic"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 )
 
 // CoverPath is the URL prefix a picked cover is served under, as <CoverPath><game>/<profile id>.

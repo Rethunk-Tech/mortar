@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   LaunchOptions,
   SetLaunchOption,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'

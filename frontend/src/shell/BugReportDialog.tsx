@@ -12,7 +12,7 @@ import {
 } from '@mui/material'
 import { Browser } from '@wailsio/runtime'
 import { type SyntheticEvent, useEffect, useState } from 'react'
-import { BugURL } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+import { BugURL } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useBugReport } from './reportBug.ts'
 import { saveDiagnostics } from './saveDiagnostics.ts'

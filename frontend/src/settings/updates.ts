@@ -3,14 +3,14 @@ import { create } from 'zustand'
 import type {
   Info,
   Release,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/models.ts'
 import {
   Check,
   Info as GetInfo,
   Install,
   Restart,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/updatesvc/service.ts'
-import { BusySummary } from '../../bindings/github.com/Rethunk-AI/mortar/quitservice.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/service.ts'
+import { BusySummary } from '../../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
 import { i18n } from '../i18n/index.ts'
 import { askQuit } from '../quit.ts'
 import { errorDetails } from '../toasts/errorKind.ts'

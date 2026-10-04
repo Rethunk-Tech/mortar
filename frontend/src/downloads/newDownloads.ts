@@ -1,6 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
-import { NewDownloads } from '../../bindings/github.com/Rethunk-AI/mortar/internal/archivesvc/service.ts'
+import { NewDownloads } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { useInstall } from '../install/store.ts'

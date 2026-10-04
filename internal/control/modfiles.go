@@ -3,8 +3,8 @@ package control
 import (
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // ModExtraFile is one linked extra store item on a mod entry.

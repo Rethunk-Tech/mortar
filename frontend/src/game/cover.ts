@@ -1,8 +1,8 @@
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ClearCover,
   SetCover,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 
 /** `undefined` keeps the saved cover; `null` clears to automatic; a string is a picked path. */
 export type StagedCover = string | null | undefined

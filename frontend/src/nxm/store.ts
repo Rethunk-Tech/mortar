@@ -1,18 +1,18 @@
 import { msg } from '@lingui/core/macro'
 import { Events, Window } from '@wailsio/runtime'
 import { create } from 'zustand'
-import { ModName } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+import { ModName } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import type {
   Arrival,
   Rejection,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/models.ts'
 import {
   Assign,
   Ignore,
   Inbox,
   NotificationIcon,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/nxmsvc/service.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   RegisterNotificationCategory,
   SendNotificationWithActions,

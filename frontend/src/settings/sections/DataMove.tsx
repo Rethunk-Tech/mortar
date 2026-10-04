@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress } from '@mui/material'
 import { FolderInput } from 'lucide-react'
-import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
+import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useGameBusy } from '../../launch/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'

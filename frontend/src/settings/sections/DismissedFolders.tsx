@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import { UndismissGameModsFolders } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { UndismissGameModsFolders } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { reportError } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'

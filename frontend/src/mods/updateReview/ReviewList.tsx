@@ -1,9 +1,9 @@
 import { Box } from '@mui/material'
-import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
   Mod,
   Profile,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { acknowledgeUpdateCaution } from '../../launch/autoUpdate.ts'
 import { entryOf, modId } from '../lookup.ts'
 import { Row } from './Row.tsx'

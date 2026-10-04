@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 )
 
 // quitWait bounds how long quit waits for the app to stop answering; the Windows installer runs quit before it

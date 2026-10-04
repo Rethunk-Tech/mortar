@@ -13,7 +13,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import { FomodImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { FomodImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type FomodSession, useFomod, watchFomodQueue } from './store.ts'

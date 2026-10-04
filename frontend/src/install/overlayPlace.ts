@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
-import { InstallOverlay } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { AnswerOverlay } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+import { InstallOverlay } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { AnswerOverlay } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { toastError } from '../toasts/report.ts'

@@ -14,7 +14,7 @@ import {
   Dismiss,
   Pause,
   Resume,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'

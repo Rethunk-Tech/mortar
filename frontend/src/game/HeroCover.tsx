@@ -1,7 +1,7 @@
 import { Box } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { Covers } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { Covers } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { firstCoverSrc } from './cover.ts'
 

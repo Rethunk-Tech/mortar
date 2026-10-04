@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react'
 import type {
   Progress,
   Summary,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/storecheck/models.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/storecheck/models.ts'
 import {
   Check,
   CheckProgress,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/storecheck/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/storecheck/service.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 

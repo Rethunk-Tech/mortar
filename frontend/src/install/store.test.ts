@@ -1,7 +1,7 @@
 import { beforeEach, expect, mock, test } from 'bun:test'
-import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
-import { State as LaunchState } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import { State as LaunchState } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -19,7 +19,7 @@ const calls = {
   roll: [] as string[],
 }
 
-mock.module('../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts', () => ({
+mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts', () => ({
   InstallArchive: async () => ({
     profile: baseProfile(),
     added: ['SpaceCore'],

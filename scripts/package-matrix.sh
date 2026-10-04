@@ -4,7 +4,7 @@
 set -uo pipefail
 
 TAG=${1:-}
-REPO=Rethunk-AI/mortar
+REPO=Rethunk-Tech/mortar
 CT=$(command -v podman || command -v docker) || { echo "no podman or docker" >&2; exit 2; }
 case $(uname -m) in x86_64) DEB=amd64 ARCH=x86_64 ;; aarch64) DEB=arm64 ARCH=aarch64 ;; *) echo "unsupported arch" >&2; exit 2 ;; esac
 WORK=$(mktemp -d "${TMPDIR:-/var/tmp}/mortar-pkgmatrix.XXXXXX")

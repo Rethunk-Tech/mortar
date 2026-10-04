@@ -3,7 +3,7 @@ package doctor
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/nxm"
+	"github.com/Rethunk-Tech/mortar/internal/nxm"
 )
 
 func TestAppendNativeHostChecks(t *testing.T) {

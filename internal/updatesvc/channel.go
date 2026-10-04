@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 

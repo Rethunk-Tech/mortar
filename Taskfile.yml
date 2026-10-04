@@ -75,7 +75,7 @@ tasks:
             assets+=("$optional")
           fi
         done
-        wails3 updater manifest -version {{.VERSION}} -key "$MORTAR_UPDATE_KEY" -url-prefix https://github.com/Rethunk-AI/mortar/releases/download/v{{.VERSION}} -output bin/manifest.json "${assets[@]}"
+        wails3 updater manifest -version {{.VERSION}} -key "$MORTAR_UPDATE_KEY" -url-prefix https://github.com/Rethunk-Tech/mortar/releases/download/v{{.VERSION}} -output bin/manifest.json "${assets[@]}"
         # The bare Linux binaries get their own platform so an AppImage never updates into one, nor the reverse
         # (updatesvc.PortablePlatform). Signatures cover each file's bytes, not the manifest, so this edit keeps them.
         jq '(.artifacts[] | select(.platform == "linux" and (.url | endswith(".AppImage") | not)) | .platform) = "linux-portable"' bin/manifest.json >bin/manifest.json.tmp

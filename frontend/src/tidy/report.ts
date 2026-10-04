@@ -1,6 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
-import { Take } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tidy/service.ts'
+import { Take } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tidy/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'

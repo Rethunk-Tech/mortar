@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // OverlayFileSet is what one optional file does to its main file's folder: the paths it replaces (the main file

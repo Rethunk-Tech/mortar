@@ -1,4 +1,4 @@
-import type { Ref } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Ref } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Want } from './actions.ts'
 
 // The Want for a problem Ref, or null when the Ref names nothing downloadable (no GitHub repo, no Nexus page).

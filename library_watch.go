@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/dlwatch"
-	"github.com/Rethunk-AI/mortar/internal/folderwatch"
-	"github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
+	"github.com/Rethunk-Tech/mortar/internal/folderwatch"
+	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // downloadDirs are the folders new archives are offered from: Mortar's own download folder and the user's

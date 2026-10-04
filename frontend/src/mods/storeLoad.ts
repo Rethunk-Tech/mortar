@@ -1,12 +1,12 @@
 import { msg } from '@lingui/core/macro'
-import type { Result } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   Pages,
   Problems,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { Mods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
-import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { Mods } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'

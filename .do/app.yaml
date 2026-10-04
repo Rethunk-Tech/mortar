@@ -13,7 +13,7 @@ domains:
 static_sites:
   - name: site
     github:
-      repo: Rethunk-AI/mortar
+      repo: Rethunk-Tech/mortar
       branch: main
       deploy_on_push: false
     source_dir: site

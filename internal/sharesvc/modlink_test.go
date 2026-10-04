@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 func TestParseModPageURL(t *testing.T) {

@@ -3,7 +3,7 @@ package savessvc
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestErrBusyIsTaggedBusy(t *testing.T) {

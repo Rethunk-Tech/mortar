@@ -1,4 +1,4 @@
-import type { Fit } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 
 export function dropMissing(fits: Fit[], uniqueId: string, folder?: string): Fit[] {
   return fits.map((f) =>

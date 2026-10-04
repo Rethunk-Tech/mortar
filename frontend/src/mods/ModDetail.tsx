@@ -13,12 +13,12 @@ import { type ReactNode, useEffect, useState } from 'react'
 import type {
   Need,
   Relations,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
   Mod,
   ModState,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CompatDetail } from './CompatChip.tsx'

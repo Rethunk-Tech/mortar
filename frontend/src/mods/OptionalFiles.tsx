@@ -1,13 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type { File } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexus/models.ts'
+import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import type {
   Mod,
   OverlayFileSet,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import { OverlayFiles } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { OverlayFiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { entryOf } from './lookup.ts'

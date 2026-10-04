@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
-import type { Copy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Copy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   type Drift,
   DriftKind,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   entryHasDrift,
   installableUpdate,
@@ -72,7 +72,7 @@ test("drift on an entry flags that entry's mods for status grouping", () => {
   expect(
     modStatusProblem(
       result,
-      mod as import('../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts').Mod,
+      mod as import('../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts').Mod,
     ),
   ).toBe(true)
   expect(entryHasDrift(result, 'k')).toBe(true)

@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 
-	"github.com/Rethunk-AI/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
 // TestSmokeRealInstaller runs the real SMAPI installer against a copy of a real Stardew install.

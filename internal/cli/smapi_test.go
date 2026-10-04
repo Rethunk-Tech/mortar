@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
 func TestSmapiCommands(t *testing.T) {

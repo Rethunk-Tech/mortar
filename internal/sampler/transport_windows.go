@@ -6,7 +6,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // openDiagnostic opens the runtime's diagnostics named pipe, which Windows exposes as a file path.

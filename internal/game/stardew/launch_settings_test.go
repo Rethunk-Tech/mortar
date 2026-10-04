@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 func TestDirectCommandIncludesPrefixAndEnvironment(t *testing.T) {

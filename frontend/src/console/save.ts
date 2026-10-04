@@ -1,4 +1,4 @@
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { formatAll } from './filter.ts'
 
 const UNSAFE = /[<>:"/\\|?*]/g

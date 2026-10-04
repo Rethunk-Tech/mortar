@@ -1,17 +1,17 @@
 import { msg, plural } from '@lingui/core/macro'
 import { create } from 'zustand'
-import { Hint } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   type Crash,
   State,
   type Status,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import {
   LastRunIssues,
   Status as LaunchStatus,
   Runs,
   Stop,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'

@@ -6,7 +6,7 @@ import {
   SetCheckOnlyEnabledMods,
   SetIncludeBetaReleases,
   SetIncludePrereleaseModVersions,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { isGameId, useNav } from '../../nav/store.ts'
 import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'

@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
-import type { Update } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import type { Update } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import {
   acknowledgeUpdateCaution,
   cautionAcknowledged,

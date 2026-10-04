@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	modstore "github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	modstore "github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func addFiles(t *testing.T, items *modstore.Store, key string, files map[string]string) {

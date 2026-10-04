@@ -1,4 +1,4 @@
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/browse/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/models.ts'
 
 type BrowseItem = Item
 

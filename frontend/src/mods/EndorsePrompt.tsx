@@ -1,17 +1,17 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Card, Snackbar, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import {
   Endorse,
   EndorsePromptNever,
   EndorsePromptNotNow,
   RecordCleanRun,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'

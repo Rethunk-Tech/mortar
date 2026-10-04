@@ -10,12 +10,12 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { ChevronDown, CircleCheck, CircleX, Folder, FolderPlus, RefreshCw, X } from 'lucide-react'
 import { useState } from 'react'
-import type { StoreApp } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
-import { PickFolder } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
+import type { StoreApp } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
+import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import {
   AddLauncherRoot,
   RemoveLauncherRoot,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LauncherLogo } from '../brand/launchers/LauncherLogo.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { errorMessage } from '../toasts/report.ts'

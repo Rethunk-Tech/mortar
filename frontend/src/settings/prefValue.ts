@@ -1,7 +1,7 @@
 import type {
   PrefSpec,
   Settings,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 
 export const GAME_STARDEW = 'stardew'
 

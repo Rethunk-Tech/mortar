@@ -3,7 +3,7 @@ package modreport
 import (
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 const maxErrorLines = 20

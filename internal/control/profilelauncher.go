@@ -3,7 +3,7 @@ package control
 import (
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // ShortcutResult is what profile.shortcut returns.

@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { SetSmapiToastAt } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { SetSmapiToastAt } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLoader } from '../loader/store.ts'
 import { useToasts } from '../toasts/store.ts'

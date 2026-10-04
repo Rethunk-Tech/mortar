@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import type { EverywherePreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { EverywherePreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { mergePreviews } from './mergePreviews.ts'
 
 describe('mergePreviews', () => {

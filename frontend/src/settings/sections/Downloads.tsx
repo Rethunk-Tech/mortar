@@ -1,15 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { List as ListGames } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
-import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
+import { List as ListGames } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import {
   SetByKey,
   SetNexusPreferredDownloadServer,
   SetNxmDefaultProfile,
   SetNxmRedirectOtherGames,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
-import { ExtensionContact } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { ExtensionContact } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
 import { useProfiles } from '../../profiles/store.ts'
@@ -59,9 +59,9 @@ function NxmDefaultProfile() {
 }
 
 const EXTENSION_ZIP =
-  'https://github.com/Rethunk-AI/mortar/releases/latest/download/mortar-browser-extension.zip'
+  'https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-browser-extension.zip'
 const EXTENSION_XPI =
-  'https://github.com/Rethunk-AI/mortar/releases/latest/download/mortar-browser-extension.xpi'
+  'https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-browser-extension.xpi'
 
 // Until the browser stores list the extension, it is installed from the zip on each release.
 function ExtensionConnection() {

@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 // WaitPID waits until pid exits and reports how. The exit status is only readable for Mortar's own child

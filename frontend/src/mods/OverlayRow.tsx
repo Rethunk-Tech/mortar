@@ -5,7 +5,7 @@ import { CornerDownRight, Trash2 } from 'lucide-react'
 import type {
   Mod,
   Profile,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { removeOverlay, setOverlayEnabled } from './overlayActions.ts'

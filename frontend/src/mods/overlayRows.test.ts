@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import type { Entry } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { nestOverlays, overlaysByBase } from './overlayRows.ts'
 import type { VirtualRow } from './virtualRows.ts'
 

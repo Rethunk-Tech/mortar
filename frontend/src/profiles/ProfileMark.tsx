@@ -14,7 +14,7 @@ import {
   Sun,
   Wheat,
 } from 'lucide-react'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { colorHex, isProfileIcon, type ProfileIcon } from './appearance.ts'
 
 const ICONS: Record<ProfileIcon, LucideIcon> = {

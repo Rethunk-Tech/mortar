@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestEntryNamesListEachNameOnce(t *testing.T) {

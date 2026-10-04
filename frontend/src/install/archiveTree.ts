@@ -1,7 +1,7 @@
 import type {
   PreviewEntry,
   PreviewManifest,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/archive/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archive/models.ts'
 
 interface TreeRow {
   path: string

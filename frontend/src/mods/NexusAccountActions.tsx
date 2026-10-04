@@ -8,7 +8,7 @@ import {
   Track,
   TrackedMods,
   Untrack,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'

@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/updatesvc"
+	"github.com/Rethunk-Tech/mortar/internal/updatesvc"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 

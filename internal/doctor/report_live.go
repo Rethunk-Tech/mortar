@@ -3,7 +3,7 @@ package doctor
 import (
 	"os"
 
-	"github.com/Rethunk-AI/mortar/internal/nxm"
+	"github.com/Rethunk-Tech/mortar/internal/nxm"
 )
 
 // LiveWithNativeHosts is FromLive plus native-messaging host checks for this executable.

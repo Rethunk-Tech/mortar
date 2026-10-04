@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 )
 
 const recentLaunchLimit = 3

@@ -31,7 +31,7 @@ Desktop mod manager for Stardew Valley (SMAPI, Nexus Mods). Finds the game, inst
 set of mods in a profile, launches the game with the chosen profile and shares a profile as a link.
 
 ### Homepage / source
-https://github.com/Rethunk-AI/mortar (AGPL-3.0-only)
+https://github.com/Rethunk-Tech/mortar (AGPL-3.0-only)
 
 ### Checklist
 - [x] The manifest builds from source at a tagged commit, offline, from public URLs with checksums (no local paths)

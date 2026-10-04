@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useState } from 'react'
-import type { Template } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/models.ts'
-import { Templates } from '../../bindings/github.com/Rethunk-AI/mortar/internal/templates/service.ts'
+import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
+import { Templates } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { reportError } from '../toasts/report.ts'
 
 /** The game's templates, read when `active` turns on and again on `reload`. */

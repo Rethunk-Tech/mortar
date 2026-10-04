@@ -3,8 +3,8 @@ package launchsvc
 import (
 	"fmt"
 
-	"github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 // RunProblems returns recognised SMAPI errors in a stored run (or the live/latest log when runID is empty).

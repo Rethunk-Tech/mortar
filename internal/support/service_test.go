@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/doctor"
-	"github.com/Rethunk-AI/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/doctor"
+	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
 
 func upload(t *testing.T, handler http.HandlerFunc, log string) (string, error) {

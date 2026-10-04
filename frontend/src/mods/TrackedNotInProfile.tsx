@@ -13,8 +13,8 @@ import { useEffect, useState } from 'react'
 import {
   ModName,
   TrackedMissing,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { openImport } from '../share/store.ts'

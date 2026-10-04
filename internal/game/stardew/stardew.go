@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"sync/atomic"
 
-	"github.com/Rethunk-AI/mortar/internal/gog"
-	"github.com/Rethunk-AI/mortar/internal/lutris"
+	"github.com/Rethunk-Tech/mortar/internal/gog"
+	"github.com/Rethunk-Tech/mortar/internal/lutris"
 
-	"github.com/Rethunk-AI/mortar/internal/components"
-	"github.com/Rethunk-AI/mortar/internal/launch"
-	"github.com/Rethunk-AI/mortar/internal/steam"
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 // identity is Stardew Valley's names and store ids from the verified component manifest, which always carries them

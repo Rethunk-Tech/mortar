@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // PlayedMod is one enabled mod from the profile at the end of a run.

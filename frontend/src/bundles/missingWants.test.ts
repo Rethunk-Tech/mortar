@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Source } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Source } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { bundleWants } from './missingWants.ts'
 
 test('one want per archive; mods with no downloadable source are skipped', () => {

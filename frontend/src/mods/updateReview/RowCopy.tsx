@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Tooltip, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
-import type { Update } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { Changes } from './Changes.tsx'
 
 export function RowCopy({

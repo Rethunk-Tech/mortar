@@ -14,13 +14,13 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/components"
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/loader"
-	"github.com/Rethunk-AI/mortar/internal/profile"
-	"github.com/Rethunk-AI/mortar/internal/settings"
-	"github.com/Rethunk-AI/mortar/internal/store"
-	"github.com/Rethunk-AI/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 func put(t *testing.T, path, body string) {
@@ -64,7 +64,7 @@ func bridgeClient(t *testing.T) (*components.Client, string) {
 		Serial: 1,
 		Components: []components.Component{{
 			Game: "stardew", Name: "bridge", Kind: "bridge",
-			Source: components.Source{Host: "github.com", Owner: "Rethunk-AI", Repo: "mortar-smapi-bridge"},
+			Source: components.Source{Host: "github.com", Owner: "Rethunk-Tech", Repo: "mortar-smapi-bridge"},
 			Tag:    "v1.1.0", Asset: "MortarSmapiBridge-1.1.0.zip", Version: "1.1.0", SHA256: hash,
 		}},
 	})

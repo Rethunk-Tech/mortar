@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
 func TestProcesses(t *testing.T) {

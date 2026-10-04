@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/backup"
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // scheduleCheck is how often Mortar looks whether a scheduled save backup is due; a run blocked by the game waits at

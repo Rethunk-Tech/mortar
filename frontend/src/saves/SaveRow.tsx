@@ -12,12 +12,12 @@ import {
   TriangleAlert,
   UserPlus,
 } from 'lucide-react'
-import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
-import type { Fit } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import {
   CreateBackup,
   OpenSaveFolder,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'

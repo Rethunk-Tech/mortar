@@ -3,8 +3,8 @@ import { create } from 'zustand'
 import type {
   Arrival,
   TransferProgress,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/models.ts'
-import { Inbox } from '../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
+import { Inbox } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 
 interface IncomingState {
   items: Arrival[]

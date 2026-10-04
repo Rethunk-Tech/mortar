@@ -4,7 +4,7 @@ import { Box, Typography } from '@mui/material'
 import type {
   Mod,
   Preview,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 
 // CompareSummary is how a shared profile lines up with the profile it would join, so friends can match mods before
 // playing together: what already matches, what this import would download, what differs in version, and what only

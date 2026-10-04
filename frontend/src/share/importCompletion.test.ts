@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Item } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { settledImportCounts } from './importCompletion.ts'
 
 test('counts a settled import by queue outcome', () => {

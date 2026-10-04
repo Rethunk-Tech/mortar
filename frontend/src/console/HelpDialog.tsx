@@ -15,11 +15,11 @@ import {
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, ExternalLink, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { RunLog } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { RunLog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import {
   Log,
   Upload,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { openPage } from '../mods/menu.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MONO } from '../theme/theme.ts'

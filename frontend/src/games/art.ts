@@ -1,4 +1,4 @@
-import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
+import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 
 // The game's hero art: Steam's local cache when present, else the same image from Steam's public CDN, so a game
 // shows its art before any launcher is found. Nothing is bundled or re-hosted.

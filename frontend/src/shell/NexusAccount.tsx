@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip } from '@mui/material'
 import { LogIn, LogOut } from 'lucide-react'
-import { SignOut } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+import { SignOut } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { openSettings } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'

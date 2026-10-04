@@ -2,11 +2,11 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Button, TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
-import type { BackupsUsage } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
+import type { BackupsUsage } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import {
   BackupsUsage as LoadBackupsUsage,
   TrimBackups,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { useGameBusy } from '../../launch/store.ts'
 import { useProfiles } from '../../profiles/store.ts'

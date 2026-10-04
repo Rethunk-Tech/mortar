@@ -14,7 +14,7 @@ import type { ReactNode } from 'react'
 import type {
   Mod,
   Problem,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/sharesvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { isModState, MOD_STATES, type ModState, type ShownPreview, type Summary } from './logic.ts'

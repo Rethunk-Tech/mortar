@@ -1,4 +1,4 @@
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 
 interface SourceGroups {
   ignore: Map<string, Mod[]>

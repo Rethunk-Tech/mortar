@@ -2,7 +2,7 @@ import type {
   Entry,
   Profile,
   Source,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { idKey } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'

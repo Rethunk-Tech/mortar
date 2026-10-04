@@ -1,4 +1,4 @@
-import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/models.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/models.ts'
 import type { Want } from '../queue/actions.ts'
 
 // The download for one bundle mod; a mod with no Nexus or GitHub source cannot be fetched.

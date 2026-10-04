@@ -13,7 +13,7 @@ trap 'rm -f "$src"' EXIT
 # The AUR installs from the public archive URL, which a private repo does not serve; the tarball then stays SKIP
 # and the other sources still get real sums.
 src_sum=SKIP
-if curl -fsSL "https://github.com/${GITHUB_REPOSITORY:-Rethunk-AI/mortar}/archive/refs/tags/v${pkgver}.tar.gz" -o "$src"; then
+if curl -fsSL "https://github.com/${GITHUB_REPOSITORY:-Rethunk-Tech/mortar}/archive/refs/tags/v${pkgver}.tar.gz" -o "$src"; then
   src_sum="$(sha256sum "$src" | cut -d' ' -f1)"
 else
   echo "source archive not publicly downloadable; leaving its sha256sum as SKIP" >&2

@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/control"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // Each shell script asks `mortar __complete <words before the cursor> <word at the cursor>` for candidates.

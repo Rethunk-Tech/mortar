@@ -3,8 +3,8 @@ package queue
 import (
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestNexusOptionalFileOffersMergeIntoTheSamePageEntry(t *testing.T) {

@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Checkbox, FormControlLabel, List, ListItem, ListItemText } from '@mui/material'
 import type { ReactNode } from 'react'
-import type { GameModPreview } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { GameModPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatPreviewRow } from '../profiles/gameModsFormat.ts'
 
 // A checkbox per mod folder that can be acted on, then the folders that cannot, each with its reason.

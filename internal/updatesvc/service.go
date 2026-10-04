@@ -10,14 +10,14 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-AI/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
 )
 
 // ManifestURL is the signed update manifest attached to the latest GitHub release.
-const ManifestURL = "https://github.com/Rethunk-AI/mortar/releases/latest/download/manifest.json"
+const ManifestURL = "https://github.com/Rethunk-Tech/mortar/releases/latest/download/manifest.json"
 
 // Updater is the part of app.Updater the service drives.
 type Updater interface {

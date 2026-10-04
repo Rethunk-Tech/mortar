@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import {
   SMAPIFixKind,
   type SMAPIProblem,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { stillApplies } from './runProblemsLive.ts'
 
 const problem = (over: Partial<SMAPIProblem>): SMAPIProblem =>

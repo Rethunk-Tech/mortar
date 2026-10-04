@@ -1,14 +1,14 @@
 import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
-import { InstallDownload } from '../../bindings/github.com/Rethunk-AI/mortar/internal/archivesvc/service.ts'
-import { PickArchives } from '../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
+import { InstallDownload } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
+import { PickArchives } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type {
   InstallResult,
   Profile,
   RemapAsk,
   Source,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   InstallArchive,
   InstallExtraFolderMod,
@@ -16,12 +16,12 @@ import {
   RemoveEntries,
   RemoveEntry,
   RollBack,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
   Add,
   AnswerRoot,
   FailRoot,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { useFomod } from '../fomod/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { idKey } from '../mods/dependents.ts'

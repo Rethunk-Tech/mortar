@@ -2,13 +2,13 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, Pin, PinOff, RotateCcw, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import type { Backup } from '../../bindings/github.com/Rethunk-AI/mortar/internal/backup/models.ts'
+import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import {
   DeleteBackup,
   RestoreBackup,
   SaveBackups,
   SetBackupPinned,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { When } from '../i18n/When.tsx'

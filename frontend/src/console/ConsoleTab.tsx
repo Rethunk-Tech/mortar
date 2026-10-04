@@ -10,8 +10,8 @@ import {
   X,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { RunCause } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { RunCause } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useGameBusy, useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'

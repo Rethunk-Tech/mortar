@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import {
   type Entry,
   Level,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   countByLevel,
   DEFAULT_FILTERS,

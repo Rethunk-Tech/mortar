@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Usage as DiskUse } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/models.ts'
+import type { Usage as DiskUse } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import {
   Usage,
   UsageProgress,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/datasvc/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { beginUsageLoad } from '../usageLoad.ts'
 

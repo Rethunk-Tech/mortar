@@ -16,7 +16,7 @@ import { useMemo } from 'react'
 import type {
   PerformanceRow,
   SavedReport,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'

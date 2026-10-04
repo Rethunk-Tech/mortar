@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func find(t *testing.T, list []StoreApp, id string) StoreApp {

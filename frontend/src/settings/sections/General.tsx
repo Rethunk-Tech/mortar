@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   FirewallBlocked,
   FixFirewall,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/lan/service.ts'
-import type { ImportPreview } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
+import type { ImportPreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
   ExportSettings,
   PickImportFile,
@@ -16,7 +16,7 @@ import {
   SetLanPort,
   SetLanSharing,
   SetTipsSeen,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { availableLocales } from '../../i18n/locales.ts'
 import { reportError, reportUnexpected } from '../../toasts/report.ts'

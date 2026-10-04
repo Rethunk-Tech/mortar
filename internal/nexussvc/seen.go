@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 // UseDataDir opens the per-Nexus-mod seen-state file under dir.

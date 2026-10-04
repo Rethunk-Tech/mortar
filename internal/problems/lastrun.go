@@ -1,8 +1,8 @@
 package problems
 
 import (
-	"github.com/Rethunk-AI/mortar/internal/launch"
-	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // RunError is an enabled mod that logged errors in the profile's most recent stored run.

@@ -9,11 +9,11 @@ import {
   SignOut,
   TrackedCount,
   UntrackAll,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import {
   Get as GetSettings,
   SetAskEndorseMods,
-} from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { errorKind } from '../../toasts/errorKind.ts'

@@ -1,6 +1,6 @@
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
-import { ConfirmQuit } from '../bindings/github.com/Rethunk-AI/mortar/quitservice.ts'
+import { ConfirmQuit } from '../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
 import { useQueue } from './queue/store.ts'
 
 interface QuitState {

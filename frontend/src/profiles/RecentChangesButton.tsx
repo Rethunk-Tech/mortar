@@ -11,11 +11,11 @@ import {
 } from '@mui/material'
 import { History as HistoryIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import type { RecentEvent } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import type { RecentEvent } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   History,
   RecentHistory,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { compact } from '../game/compact.ts'
 import { When } from '../i18n/When.tsx'
 import { download } from '../queue/actions.ts'

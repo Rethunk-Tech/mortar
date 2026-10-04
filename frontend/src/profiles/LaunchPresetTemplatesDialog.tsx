@@ -9,11 +9,11 @@ import {
   Typography,
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
-import type { LaunchPresetTemplate } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/models.ts'
+import type { LaunchPresetTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
   ListLaunchPresetTemplates,
   RemoveLaunchPresetTemplate,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 

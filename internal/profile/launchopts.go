@@ -1,6 +1,6 @@
 package profile
 
-import "github.com/Rethunk-AI/mortar/internal/game/stardew"
+import "github.com/Rethunk-Tech/mortar/internal/game/stardew"
 
 // LaunchOptions returns the profile's extra SMAPI arguments as stored.
 func (s *Store) LaunchOptions(game, id string) (string, error) {

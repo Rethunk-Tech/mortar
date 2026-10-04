@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func seedTree(t *testing.T, dir string) {

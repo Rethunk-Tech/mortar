@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
-import type { Compat } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { openPage } from './menu.ts'
 

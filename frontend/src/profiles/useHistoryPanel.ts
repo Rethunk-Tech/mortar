@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type {
   HistoryDiff,
   HistoryEvent,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   EventDiff,
   History,
@@ -10,7 +10,7 @@ import {
   MarkKnownGood,
   RestoreKnownGood,
   RevertHistoryItem,
-} from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { selectedPair } from './historyDiff.ts'
 import { revertHistoryEvent } from './historyRevert.ts'

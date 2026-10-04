@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
-	"github.com/Rethunk-AI/mortar/internal/migrate"
-	"github.com/Rethunk-AI/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/migrate"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
 func TestExternalLocalModsKeepProfileStateForImport(t *testing.T) {

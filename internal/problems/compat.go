@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Rethunk-AI/mortar/internal/manifest"
-	"github.com/Rethunk-AI/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
 // Compat is one profile mod's SMAPI compatibility-list row. It is informational and is not counted.

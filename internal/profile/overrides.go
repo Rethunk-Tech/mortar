@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"maps"
 
-	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 const overrideSkipPlayCheck = "skipPlayCheck"
