@@ -70,7 +70,7 @@ func TestLanguagePortableRoundTrip(t *testing.T) {
 }
 
 func TestImportIgnoresUnknownAndSanitizesLikeLoad(t *testing.T) {
-	raw := []byte(`{"version":1,"accent":"neon","mystery":true,"nexusName":"x","gameFolders":{"stardew":"/nope"},"backupsKept":12}`)
+	raw := []byte(`{"version":1,"accent":"neon","mystery":true,"nexusName":"x","gameFolders":{"stardew":"/nope"},"storeRetentionDays":30}`)
 	p, present, err := ParseExport(raw)
 	if err != nil {
 		t.Fatal(err)
@@ -78,8 +78,8 @@ func TestImportIgnoresUnknownAndSanitizesLikeLoad(t *testing.T) {
 	if p.Accent != "sand" {
 		t.Fatalf("invalid accent as on load: %q", p.Accent)
 	}
-	if p.BackupsKept != 12 {
-		t.Fatalf("backupsKept = %d", p.BackupsKept)
+	if p.StoreRetentionDays != 30 {
+		t.Fatalf("storeRetentionDays = %d", p.StoreRetentionDays)
 	}
 	cur := Defaults()
 	cur.NexusName = "keep"
@@ -94,8 +94,8 @@ func TestImportIgnoresUnknownAndSanitizesLikeLoad(t *testing.T) {
 	if cur.GameFolders["stardew"] != "/keep" || cur.Loaders["stardew"] != "4.5.2" || cur.LastProfile["stardew"] != "abc" {
 		t.Fatalf("machine fields changed: %+v", cur)
 	}
-	if cur.BackupsKept != 12 {
-		t.Fatalf("backupsKept = %d", cur.BackupsKept)
+	if cur.StoreRetentionDays != 30 {
+		t.Fatalf("storeRetentionDays = %d", cur.StoreRetentionDays)
 	}
 	if cur.Accent != "sand" {
 		t.Fatalf("accent = %q", cur.Accent)
@@ -112,7 +112,7 @@ func TestImportRejectsMissingOrUnknownVersion(t *testing.T) {
 }
 
 func TestImportPreviewGroupsBySectionAndNotesUnknown(t *testing.T) {
-	raw := []byte(`{"version":1,"accent":"sky","backupsKept":9,"parallelDownloads":2,"mystery":1,"nexusName":"x"}`)
+	raw := []byte(`{"version":1,"accent":"sky","storeRetentionDays":60,"parallelDownloads":2,"mystery":1,"nexusName":"x"}`)
 	got, err := PreviewImport(Defaults(), raw)
 	if err != nil {
 		t.Fatal(err)
@@ -136,13 +136,13 @@ func TestImportPreviewGroupsBySectionAndNotesUnknown(t *testing.T) {
 }
 
 func TestApplyImportTakesOnlyChosenSections(t *testing.T) {
-	raw := []byte(`{"version":1,"accent":"sky","backupsKept":9}`)
+	raw := []byte(`{"version":1,"accent":"sky","storeRetentionDays":60}`)
 	cur := Defaults()
 	if err := ApplyImport(&cur, raw, []string{SectionStorage}); err != nil {
 		t.Fatal(err)
 	}
-	if cur.BackupsKept != 9 || cur.Accent != Defaults().Accent {
-		t.Fatalf("backupsKept=%d accent=%q", cur.BackupsKept, cur.Accent)
+	if cur.StoreRetentionDays != 60 || cur.Accent != Defaults().Accent {
+		t.Fatalf("storeRetentionDays=%d accent=%q", cur.StoreRetentionDays, cur.Accent)
 	}
 	if err := ApplyImport(&cur, raw, nil); err != nil || cur.Accent != Defaults().Accent {
 		t.Fatalf("no sections changed accent: %v", err)

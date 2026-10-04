@@ -12,6 +12,9 @@ func (s *Service) ProfileMods(gameID, profileID string) ([]Mod, error) {
 	}
 	var ids []string
 	for _, e := range p.Entries {
+		if e.Source.Bundled() {
+			continue
+		}
 		for _, m := range e.Mods {
 			ids = append(ids, m.UniqueID)
 		}

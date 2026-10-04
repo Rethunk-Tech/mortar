@@ -2,6 +2,7 @@ package profile
 
 import (
 	"errors"
+	"github.com/Rethunk-AI/mortar/internal/backup"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -193,6 +194,10 @@ func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
 	cfg, _ := os.UserConfigDir()
 	writeFile(t, filepath.Join(cfg, "StardewValley", "Saves"), "Farm_1/Farm_1", "save")
 
+	backups, _, err := backup.Locations("")
+	if err != nil {
+		t.Fatal(err)
+	}
 	e.Running = func(_, id string) bool { return id == p.ID }
 	var re *RunningError
 	if _, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2"); !errors.As(err, &re) {
@@ -201,7 +206,7 @@ func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
 	if _, err := e.RollBack("stardew", p.ID, "a-1"); !errors.As(err, &re) {
 		t.Fatalf("rollback err = %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(e.base, "backups")); err == nil {
+	if _, err := os.Stat(backups); err == nil {
 		t.Fatal("locked update took a backup")
 	}
 
@@ -209,7 +214,7 @@ func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
 	if _, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2"); err != nil {
 		t.Fatal(err)
 	}
-	got := names(t, filepath.Join(e.base, "backups"))
+	got := names(t, backups)
 	zips := 0
 	for _, n := range got {
 		if strings.HasSuffix(n, ".zip") {

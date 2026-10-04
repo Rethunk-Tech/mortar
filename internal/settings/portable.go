@@ -9,7 +9,7 @@ import (
 const exportVersion = 1
 
 var portableFields = []string{
-	"language", "accent", "background", "lastGame", "backupsKept",
+	"language", "accent", "background", "lastGame",
 	"listColumns", "listSortColumn", "listSortDir", "listGroupBy",
 	"checkModUpdatesOnStart", "tellWhenSmapiOut", "keepInTray", "includeBetaReleases",
 	"includePrereleaseModVersions", "checkOnlyEnabledMods", "enableModsWhenInstalled", "tipsSeen",
@@ -160,9 +160,6 @@ func sanitizePortable(s Settings) Settings {
 	}
 	if !slices.Contains(backgrounds, s.Background) {
 		s.Background = Defaults().Background
-	}
-	if s.BackupsKept < MinBackupsKept || s.BackupsKept > MaxBackupsKept {
-		s.BackupsKept = Defaults().BackupsKept
 	}
 	normalizeToggles(&s)
 	normalizePrefs(&s)

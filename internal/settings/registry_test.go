@@ -11,8 +11,8 @@ func TestRegistryDefaultsMatchToday(t *testing.T) {
 	if g.SmapiBuilds != SmapiBuildsShow || g.DefaultLaunchMethod != LaunchSteam || g.ConsoleLevel != ConsoleLevelWarn {
 		t.Fatalf("game defaults: smapi=%q launch=%q level=%q", g.SmapiBuilds, g.DefaultLaunchMethod, g.ConsoleLevel)
 	}
-	if g.RunsKept != DefaultRunsKept || g.ConsoleLogCap != DefaultConsoleLogCap || g.LaunchBackupsKept != DefaultLaunchBackupsKept {
-		t.Fatalf("game ints: runs=%d cap=%d backups=%d", g.RunsKept, g.ConsoleLogCap, g.LaunchBackupsKept)
+	if g.RunsKept != DefaultRunsKept || g.ConsoleLogCap != DefaultConsoleLogCap || g.SaveBackupsKept != DefaultSaveBackupsKept {
+		t.Fatalf("game ints: runs=%d cap=%d backups=%d", g.RunsKept, g.ConsoleLogCap, g.SaveBackupsKept)
 	}
 	if g.BackupBeforePlay != BackupBeforePlayChanged || g.EnableRequirements != EnableReqAlways || g.MissingRequirements != MissingReqAsk {
 		t.Fatalf("game enums: backup=%q enable=%q missing=%q", g.BackupBeforePlay, g.EnableRequirements, g.MissingRequirements)

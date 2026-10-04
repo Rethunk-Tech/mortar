@@ -245,3 +245,21 @@ func TestSaveDirRejectsEscapesAndMissing(t *testing.T) {
 		}
 	}
 }
+
+func TestKindsRotateSeparately(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Saves")
+	if err := os.MkdirAll(filepath.Join(saves, "A_1"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	out := t.TempDir()
+	start := time.Date(2026, 7, 1, 12, 0, 0, 0, time.UTC)
+	for i, kind := range []string{KindLaunch, KindUpdate, KindLaunch, KindUpdate} {
+		if _, err := Saves(saves, out, 1, start.Add(time.Duration(i)*time.Hour), Cause{Kind: kind}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	zips, err := list(out)
+	if err != nil || len(zips) != 2 {
+		t.Fatalf("zips = %v, %v: each kind keeps its own newest", zips, err)
+	}
+}

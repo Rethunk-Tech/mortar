@@ -85,6 +85,12 @@ func TestBundleStoreSnapshotsAndPersistsMods(t *testing.T) {
 	if b.Name != "SVE essentials" {
 		t.Fatalf("renamed bundle = %+v", b)
 	}
+	if b, err = svc.RemoveMods("stardew", b.ID, []string{"b.two"}); err != nil || len(b.Mods) != 1 || b.Mods[0].UniqueID != "A.One" {
+		t.Fatalf("after remove = %+v, %v", b, err)
+	}
+	if _, err := svc.RemoveMods("stardew", b.ID, []string{"A.One"}); err == nil {
+		t.Fatal("removing the last mod must fail")
+	}
 	if err := svc.Delete("stardew", b.ID); err != nil {
 		t.Fatal(err)
 	}

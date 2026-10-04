@@ -59,10 +59,22 @@ func TestScheduledBackupsFollowTheIntervalAndWaitForTheGame(t *testing.T) {
 		return n
 	}
 
+	var runs []ScheduledRun
+	s.Emit = func(name string, data any) {
+		if run, ok := data.(ScheduledRun); ok && name == ScheduledEvent {
+			runs = append(runs, run)
+		}
+	}
 	save(t0.Add(-time.Hour))
 	s.scheduledTick(t0)
 	if n := scheduled(); n != 1 {
 		t.Fatalf("first pass made %d", n)
+	}
+	if len(runs) != 1 || runs[0].Saved != 1 || runs[0].Error != "" || runs[0].At != t0.UnixMilli() {
+		t.Fatalf("event = %+v", runs)
+	}
+	if last, err := s.LastScheduledBackup(); err != nil || last != t0.UnixMilli() {
+		t.Fatalf("last = %d, %v", last, err)
 	}
 	save(t0.Add(time.Hour))
 	s.scheduledTick(t0.Add(5 * time.Hour))

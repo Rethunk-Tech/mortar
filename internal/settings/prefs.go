@@ -97,7 +97,7 @@ const (
 	DefaultStoreRetentionDays         = 30
 	DefaultTrashRetentionDays         = 30
 	DefaultHistoryEventsKept          = 200
-	DefaultLaunchBackupsKept          = 5
+	DefaultSaveBackupsKept            = 5
 	DefaultSaveBackupKeep             = 5
 
 	MinRunsKept                   = 1
@@ -114,8 +114,8 @@ const (
 	MaxTrashRetentionDays         = 365
 	MinHistoryEventsKept          = 20
 	MaxHistoryEventsKept          = 2000
-	MinLaunchBackupsKept          = 1
-	MaxLaunchBackupsKept          = 50
+	MinSaveBackupsKept            = 1
+	MaxSaveBackupsKept            = 50
 	// SaveBackupHours 0 is off and 24 is daily.
 	MinSaveBackupHours = 0
 	MaxSaveBackupHours = 7 * 24

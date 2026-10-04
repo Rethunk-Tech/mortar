@@ -14,8 +14,8 @@ import (
 )
 
 // Restore copies the named save folders from zipPath into savesDir. An empty folders list restores every save
-// in the zip. The current Saves folder is zipped first via Saves.
-func Restore(zipPath, savesDir string, folders []string, keep int, now time.Time) error {
+// in the zip. The current Saves folder is zipped first into backupsDir via Saves.
+func Restore(zipPath, savesDir, backupsDir string, folders []string, keep int, now time.Time) error {
 	parent := filepath.Dir(savesDir)
 	if err := os.MkdirAll(parent, 0o750); err != nil {
 		return err
@@ -29,7 +29,6 @@ func Restore(zipPath, savesDir string, folders []string, keep int, now time.Time
 	if err != nil {
 		return err
 	}
-	backupsDir := filepath.Dir(zipPath)
 	if _, err := Saves(savesDir, backupsDir, keep, now, Cause{Kind: KindRestore}); err != nil {
 		return err
 	}

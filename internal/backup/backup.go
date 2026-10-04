@@ -37,13 +37,13 @@ type Cause struct {
 	Save string `json:"save,omitempty"`
 }
 
-// group is the retention pool a backup counts against: each save's scheduled backups rotate on their own, so a
-// scheduled run over many saves cannot evict the before-Play backups, nor they it.
+// group is the retention pool a backup counts against: each kind rotates on its own, and each save's scheduled
+// backups apart again, so one kind cannot evict another's backups.
 func (c Cause) group() string {
 	if c.Kind == KindScheduled {
 		return KindScheduled + "/" + c.Save
 	}
-	return ""
+	return c.Kind
 }
 
 // wholeSaves reports whether the zip holds the whole Saves folder rather than one save.
@@ -51,7 +51,7 @@ func (c Cause) wholeSaves() bool {
 	return c.Kind != KindManual && c.Kind != KindScheduled
 }
 
-// DefaultKeep is how many backups are retained unless the user chose otherwise.
+// DefaultKeep is how many backups of one kind a caller without a setting retains.
 const DefaultKeep = 5
 
 // MinGap is how recent the newest backup must be to stand in for a new one, so a run of updates cannot

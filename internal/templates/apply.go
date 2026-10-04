@@ -2,6 +2,8 @@ package templates
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/bundles"
@@ -137,6 +139,7 @@ func (s *Service) PreviewApplyTemplate(game, templateName, profileID string) (Pr
 	} else if t.LaunchOptions != "" && strings.TrimSpace(opts) != strings.TrimSpace(t.LaunchOptions) {
 		out.SettingsChanges = append(out.SettingsChanges, "launch options")
 	}
+	out.SettingsChanges = append(out.SettingsChanges, launchDiff(p, t.LaunchConfig)...)
 	return out, nil
 }
 
@@ -147,6 +150,7 @@ type Undo struct {
 	ModsChanged   bool                  `json:"modsChanged"`
 	GameSettings  gamesettings.Settings `json:"gameSettings"`
 	LaunchOptions string                `json:"launchOptions"`
+	Launch        LaunchConfig          `json:"launch"`
 }
 
 // Applied is the result of ApplyTemplate with the means to undo it.
@@ -174,6 +178,7 @@ func (s *Service) ApplyTemplate(game, templateName, profileID string) (Applied, 
 	if undo.LaunchOptions, err = s.d.Profiles.LaunchOptions(game, profileID); err != nil {
 		return Applied{}, err
 	}
+	undo.Launch = launchOf(p)
 	if undo.EventID, err = s.d.Profiles.Baseline(game, profileID); err != nil {
 		return Applied{}, err
 	}
@@ -189,23 +194,68 @@ func (s *Service) ApplyTemplate(game, templateName, profileID string) (Applied, 
 // UndoApplyTemplate reverts the mods an ApplyTemplate added and restores the game settings and launch options it
 // replaced.
 func (s *Service) UndoApplyTemplate(game, profileID string, u Undo) (profile.Profile, error) {
-	var p profile.Profile
-	var err error
 	if u.ModsChanged {
-		if p, err = s.d.Profiles.Revert(game, profileID, u.EventID); err != nil {
+		if _, err := s.d.Profiles.Revert(game, profileID, u.EventID); err != nil {
 			return profile.Profile{}, err
 		}
 	}
 	if err := s.d.SetGameSettings(game, profileID, u.GameSettings); err != nil {
 		return profile.Profile{}, err
 	}
-	if p, err = s.d.Profiles.SetLaunchOptions(game, profileID, u.LaunchOptions); err != nil {
+	if _, err := s.d.Profiles.SetLaunchOptions(game, profileID, u.LaunchOptions); err != nil {
 		return profile.Profile{}, err
 	}
-	return p, nil
+	if _, err := s.d.Profiles.SetLaunchSettings(game, profileID, u.Launch.LaunchPrefix, u.Launch.LaunchEnv); err != nil {
+		return profile.Profile{}, err
+	}
+	if _, err := s.d.Profiles.SetOverrides(game, profileID, u.Launch.Overrides); err != nil {
+		return profile.Profile{}, err
+	}
+	return s.d.Profiles.SetLaunchPresets(game, profileID, u.Launch.LaunchPresets, u.Launch.DefaultLaunchPreset)
+}
+
+func launchOf(p profile.Profile) LaunchConfig {
+	return LaunchConfig{
+		LaunchPrefix: p.LaunchPrefix, LaunchEnv: p.LaunchEnv, Overrides: maps.Clone(p.Overrides),
+		LaunchPresets: slices.Clone(p.LaunchPresets), DefaultLaunchPreset: p.DefaultLaunchPreset,
+	}
+}
+
+func disabledMods(p profile.Profile) []string {
+	out := []string{}
+	for _, e := range p.Entries {
+		if !e.Source.Bundled() {
+			out = append(out, e.Disabled...)
+		}
+	}
+	return out
+}
+
+// launchDiff names the launch settings the template would replace; a part the template leaves empty is not applied.
+func launchDiff(have profile.Profile, want LaunchConfig) []string {
+	var out []string
+	for _, c := range []struct {
+		label   string
+		applies bool
+		differs bool
+	}{
+		{"launch prefix", want.LaunchPrefix != "", have.LaunchPrefix != want.LaunchPrefix},
+		{"launch environment", want.LaunchEnv != "", have.LaunchEnv != want.LaunchEnv},
+		{"setting overrides", len(want.Overrides) > 0, !maps.Equal(have.Overrides, want.Overrides)},
+		{"launch presets", len(want.LaunchPresets) > 0, !slices.Equal(have.LaunchPresets, want.LaunchPresets) || have.DefaultLaunchPreset != want.DefaultLaunchPreset},
+	} {
+		if c.applies && c.differs {
+			out = append(out, c.label)
+		}
+	}
+	return out
 }
 
 func (s *Service) fill(game, id string, t Template, mods []bundles.Mod) (bundles.ApplyResult, error) {
+	mods = slices.Clone(mods)
+	for i := range mods {
+		mods[i].Source = mods[i].Source.WithDisabled(t.Disabled)
+	}
 	res, err := s.d.Bundles.ApplyMods(game, "template", mods, id)
 	if err != nil {
 		return bundles.ApplyResult{}, err
@@ -215,6 +265,21 @@ func (s *Service) fill(game, id string, t Template, mods []bundles.Mod) (bundles
 	}
 	if t.LaunchOptions != "" {
 		if res.Profile, err = s.d.Profiles.SetLaunchOptions(game, id, t.LaunchOptions); err != nil {
+			return bundles.ApplyResult{}, err
+		}
+	}
+	if t.LaunchPrefix != "" || t.LaunchEnv != "" {
+		if res.Profile, err = s.d.Profiles.SetLaunchSettings(game, id, t.LaunchPrefix, t.LaunchEnv); err != nil {
+			return bundles.ApplyResult{}, err
+		}
+	}
+	if len(t.Overrides) > 0 {
+		if res.Profile, err = s.d.Profiles.SetOverrides(game, id, t.Overrides); err != nil {
+			return bundles.ApplyResult{}, err
+		}
+	}
+	if len(t.LaunchPresets) > 0 {
+		if res.Profile, err = s.d.Profiles.SetLaunchPresets(game, id, t.LaunchPresets, t.DefaultLaunchPreset); err != nil {
 			return bundles.ApplyResult{}, err
 		}
 	}

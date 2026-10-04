@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -155,28 +154,6 @@ func TestSetGameFolderValidates(t *testing.T) {
 	}
 	if err := svc.SetGameFolder("stardew", ""); err != nil || len(s.Get().GameFolders) != 0 {
 		t.Fatalf("clear: %v %v", err, s.Get().GameFolders)
-	}
-}
-
-func TestBackupsKeptRange(t *testing.T) {
-	s, dir := open(t)
-	for _, n := range []int{MinBackupsKept - 1, MaxBackupsKept + 1} {
-		if _, err := s.Update(func(v *Settings) { v.BackupsKept = n }); err == nil {
-			t.Fatalf("BackupsKept %d accepted", n)
-		}
-	}
-	if _, err := s.Update(func(v *Settings) { v.BackupsKept = MaxBackupsKept }); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"sand","background":"image","backupsKept":0}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	s2, err := Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got := s2.Get().BackupsKept; got != backup.DefaultKeep {
-		t.Fatalf("out-of-range file loaded as %d, want %d", got, backup.DefaultKeep)
 	}
 }
 

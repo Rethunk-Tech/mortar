@@ -60,7 +60,7 @@ func (s *Service) TrimBackups(_ string, keepPerSave int) (TrimResult, error) {
 	if s.gameBusy() {
 		return TrimResult{}, ErrBusy
 	}
-	_, reads, err := s.backupReads()
+	reads, err := s.backupReads()
 	if err != nil {
 		return TrimResult{}, err
 	}

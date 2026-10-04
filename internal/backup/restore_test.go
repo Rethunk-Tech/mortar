@@ -101,7 +101,7 @@ func TestRestoreOneLeavesTheOtherSave(t *testing.T) {
 	if err := os.Chtimes(filepath.Join(saves, "Alpha_1", "Alpha_1"), later, later); err != nil {
 		t.Fatal(err)
 	}
-	if err := Restore(zipPath, saves, []string{"Alpha_1"}, DefaultKeep, later); err != nil {
+	if err := Restore(zipPath, saves, filepath.Dir(zipPath), []string{"Alpha_1"}, DefaultKeep, later); err != nil {
 		t.Fatal(err)
 	}
 	a, err := fsx.ReadFile(filepath.Join(saves, "Alpha_1", "Alpha_1"))
@@ -136,7 +136,7 @@ func TestRestoreAllAndPreRestoreBackup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := Restore(zipPath, saves, nil, DefaultKeep, later); err != nil {
+	if err := Restore(zipPath, saves, filepath.Dir(zipPath), nil, DefaultKeep, later); err != nil {
 		t.Fatal(err)
 	}
 	after, err := List(backups)
@@ -167,7 +167,7 @@ func TestRestoreRejectsZipSlip(t *testing.T) {
 	if err := writeSlipZip(zipPath); err != nil {
 		t.Fatal(err)
 	}
-	err := Restore(zipPath, saves, nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
+	err := Restore(zipPath, saves, filepath.Dir(zipPath), nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
 	if !errors.Is(err, archive.ErrTraversal) {
 		t.Fatalf("err = %v", err)
 	}
@@ -198,7 +198,7 @@ func TestRestoreRejectsReservedName(t *testing.T) {
 	if err := fsx.WriteFile(zipPath, buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	err = Restore(zipPath, saves, nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
+	err = Restore(zipPath, saves, filepath.Dir(zipPath), nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
 	if !errors.Is(err, archive.ErrUnsafeName) {
 		t.Fatalf("err = %v", err)
 	}

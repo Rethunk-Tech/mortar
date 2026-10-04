@@ -17,9 +17,8 @@ func TestOpenDropsInvalidLastPlayed(t *testing.T) {
 		t.Fatal(err)
 	}
 	raw := Settings{
-		Accent:      "sand",
-		Background:  BackgroundImage,
-		BackupsKept: 5,
+		Accent:     "sand",
+		Background: BackgroundImage,
 		LastPlayed: map[string]Played{
 			"stardew": {Profile: "p1", At: "not-a-time"},
 			"":        {Profile: "p2", At: time.Now().UTC().Format(time.RFC3339)},

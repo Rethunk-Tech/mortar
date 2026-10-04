@@ -31,6 +31,11 @@ type Mod struct {
 	Name     string         `json:"name"`
 	EntryKey string         `json:"entryKey"`
 	Source   profile.Source `json:"source"`
+	// OverlayOf is set on an optional file without a manifest: the entry key of the mod it is laid over, with
+	// OverlayFrom and OverlayTo as recorded on the profile entry. Its UniqueID is empty.
+	OverlayOf   string `json:"overlayOf,omitempty"`
+	OverlayFrom string `json:"overlayFrom,omitempty"`
+	OverlayTo   string `json:"overlayTo,omitempty"`
 }
 
 // Bundle is a named set of mods for one game.
@@ -183,7 +188,25 @@ func snapshot(p profile.Profile, uniqueIDs []string) ([]Mod, error) {
 	if len(out) == 0 {
 		return nil, errors.New("select at least one mod")
 	}
-	return out, nil
+	return withOverlays(p, out), nil
+}
+
+// withOverlays adds the optional files laid over the chosen mods' entries, after them, so applying the bundle puts
+// each main file in first.
+func withOverlays(p profile.Profile, mods []Mod) []Mod {
+	for _, e := range p.Entries {
+		if !e.IsOverlay() || !slices.ContainsFunc(mods, func(m Mod) bool { return m.EntryKey == e.OverlayOf && m.UniqueID != "" }) {
+			continue
+		}
+		if slices.ContainsFunc(mods, func(m Mod) bool { return m.EntryKey == e.Key }) {
+			continue
+		}
+		mods = append(mods, Mod{
+			Name: e.Source.Name, EntryKey: e.Key, Source: e.Source,
+			OverlayOf: e.OverlayOf, OverlayFrom: e.OverlayFrom, OverlayTo: e.OverlayTo,
+		})
+	}
+	return mods
 }
 
 func (s *Service) modsFromProfile(gameID, profileID string, uniqueIDs []string) ([]Mod, error) {
@@ -345,6 +368,30 @@ func (s *Service) AddMods(gameID, bundleID, profileID string, uniqueIDs []string
 	})
 }
 
+// RemoveMods drops the mods with the given UniqueIDs from a bundle. A bundle keeps at least one mod: delete it to
+// empty it.
+func (s *Service) RemoveMods(gameID, bundleID string, uniqueIDs []string) (Bundle, error) {
+	return s.update(gameID, func(bundles []Bundle) ([]Bundle, Bundle, error) {
+		i, err := findBundle(bundles, bundleID)
+		if err != nil {
+			return nil, Bundle{}, err
+		}
+		drop := make(map[string]struct{}, len(uniqueIDs))
+		for _, id := range uniqueIDs {
+			drop[manifest.FoldID(id)] = struct{}{}
+		}
+		kept := slices.DeleteFunc(slices.Clone(bundles[i].Mods), func(m Mod) bool {
+			_, gone := drop[manifest.FoldID(m.UniqueID)]
+			return gone
+		})
+		if len(kept) == 0 {
+			return nil, Bundle{}, errors.New("a bundle needs at least one mod; delete it instead")
+		}
+		bundles[i].Mods = kept
+		return bundles, bundles[i], nil
+	})
+}
+
 type entryMods struct {
 	key    string
 	source profile.Source
@@ -397,7 +444,11 @@ func (s *Service) applyLocked(gameID, bundleID string, mods []Mod, profileID str
 		at, ok := groupAt[mod.EntryKey]
 		if !ok {
 			groupAt[mod.EntryKey] = len(groups)
-			groups = append(groups, entryMods{key: mod.EntryKey, source: mod.Source, mods: []Mod{mod}})
+			src := mod.Source
+			if mod.OverlayOf != "" {
+				src = src.WithOverlay(mod.OverlayFrom, mod.OverlayTo)
+			}
+			groups = append(groups, entryMods{key: mod.EntryKey, source: src, mods: []Mod{mod}})
 			continue
 		}
 		groups[at].mods = append(groups[at].mods, mod)

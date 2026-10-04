@@ -25,13 +25,25 @@ import (
 
 const maxName = 60
 
-// Template is a named starting point for new profiles of one game.
+// LaunchConfig is the per-profile launch state a template carries beyond game settings and launch options.
+type LaunchConfig struct {
+	LaunchPrefix        string                 `json:"launchPrefix"`
+	LaunchEnv           string                 `json:"launchEnv"`
+	Overrides           map[string]string      `json:"overrides"`
+	LaunchPresets       []profile.LaunchPreset `json:"launchPresets"`
+	DefaultLaunchPreset string                 `json:"defaultLaunchPreset"`
+}
+
+// Template is a named starting point for new profiles of one game. Disabled lists the UniqueIDs of its mods that
+// start switched off.
 type Template struct {
 	Name          string                `json:"name"`
 	Game          string                `json:"game"`
 	Bundle        []bundles.Mod         `json:"bundle"`
+	Disabled      []string              `json:"disabled"`
 	GameSettings  gamesettings.Settings `json:"gameSettings"`
 	LaunchOptions string                `json:"launchOptions"`
+	LaunchConfig
 }
 
 // Deps wires the service to the stores that hold the pieces a template captures.
@@ -63,7 +75,7 @@ func (s *Service) read(game string) ([]Template, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read templates for %s: %w", game, err)
 	}
-	return filepath.Join(s.root, game+".json"), nil
+	return list, nil
 }
 
 // templatesFile is the on-disk shape; files written before it carried a version are a bare array.
@@ -132,7 +144,7 @@ func (s *Service) Templates(game string) ([]Template, error) {
 	return s.read(game)
 }
 
-// SaveTemplateFromProfile captures a profile's mods, game settings and launch options under name, replacing a
+// SaveTemplateFromProfile captures a profile's mods (with which are off), game settings and launch configuration under name, replacing a
 // template of the same name.
 func (s *Service) SaveTemplateFromProfile(game, profileID, name string) (Template, error) {
 	name, err := cleanName(name)
@@ -151,7 +163,11 @@ func (s *Service) SaveTemplateFromProfile(game, profileID, name string) (Templat
 	if err != nil {
 		return Template{}, err
 	}
-	t := Template{Name: name, Game: game, Bundle: mods, GameSettings: settings, LaunchOptions: options}
+	p, err := s.profileOf(game, profileID)
+	if err != nil {
+		return Template{}, err
+	}
+	t := Template{Name: name, Game: game, Bundle: mods, Disabled: disabledMods(p), GameSettings: settings, LaunchOptions: options, LaunchConfig: launchOf(p)}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	list, err := s.read(game)
@@ -192,9 +208,42 @@ func (s *Service) NewProfileFromTemplate(game, templateName, profileName string)
 	if err != nil {
 		return bundles.ApplyResult{}, err
 	}
-	res, err := s.fill(game, p.ID, t, t.Bundle)
+	add, _, _ := split(p, t.Bundle)
+	res, err := s.fill(game, p.ID, t, add)
 	if err != nil {
 		return bundles.ApplyResult{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
 	}
 	return res, nil
+}
+
+// ReferencedStoreKeys lists, per game, the store items still needed by saved templates.
+func (s *Service) ReferencedStoreKeys() (map[string][]string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := map[string][]string{}
+	files, err := os.ReadDir(s.root)
+	if errors.Is(err, os.ErrNotExist) {
+		return out, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range files {
+		game := strings.TrimSuffix(file.Name(), ".json")
+		if file.IsDir() || game == file.Name() || !gamepkg.Valid(game) {
+			continue
+		}
+		list, err := s.read(game)
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range list {
+			for _, m := range t.Bundle {
+				if m.EntryKey != "" {
+					out[game] = append(out[game], m.EntryKey)
+				}
+			}
+		}
+	}
+	return out, nil
 }

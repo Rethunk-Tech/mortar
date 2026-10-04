@@ -20,7 +20,7 @@ var ErrBusy = usererr.New(usererr.Busy, "stop the game to change save backups")
 
 // ListBackups returns save backups newest first.
 func (s *Service) ListBackups() ([]backup.Backup, error) {
-	_, reads, err := s.backupReads()
+	reads, err := s.backupReads()
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (s *Service) DeleteBackup(name string) error {
 	if err := backupNameOK(name); err != nil {
 		return err
 	}
-	_, reads, err := s.backupReads()
+	reads, err := s.backupReads()
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (s *Service) SetBackupPinned(name string, pinned bool) error {
 	if err := backupNameOK(name); err != nil {
 		return err
 	}
-	_, reads, err := s.backupReads()
+	reads, err := s.backupReads()
 	if err != nil {
 		return err
 	}
@@ -89,16 +89,12 @@ func (s *Service) RestoreBackup(name string, folders []string) error {
 	if err := backupNameOK(name); err != nil {
 		return err
 	}
-	savesDir, reads, err := s.backupReads()
+	target, err := s.target()
 	if err != nil {
 		return err
 	}
-	keep := backup.DefaultKeep
-	if s.settings != nil {
-		keep = s.settings.Get().BackupsKept
-	}
-	src := findBackup(reads, name)
-	return backup.Restore(src, savesDir, folders, keep, time.Now())
+	src := findBackup(target.Reads, name)
+	return backup.Restore(src, s.scanner.Dir, target.Dir, folders, target.Keep, time.Now())
 }
 
 // OpenBackupsFolder shows the backups folder in the system file manager.
@@ -115,20 +111,12 @@ func (s *Service) OpenBackupsFolder() error {
 
 // CreateBackup zips one save and marks the zip kept, with cause kind manual.
 func (s *Service) CreateBackup(folder string) error {
-	savesDir, backupsDir, err := s.backupDirs()
+	target, err := s.target()
 	if err != nil {
 		return err
 	}
-	keep := backup.DefaultKeep
-	if s.settings != nil {
-		keep = s.settings.Get().BackupsKept
-	}
-	_, reads, err := s.backupReads()
-	if err != nil {
-		return err
-	}
-	now := uniqueBackupTime(reads, time.Now())
-	_, err = backup.Folder(savesDir, backupsDir, folder, keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
+	now := uniqueBackupTime(target.Reads, time.Now())
+	_, err = backup.Folder(s.scanner.Dir, target.Dir, folder, target.Keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
 	return err
 }
 
@@ -160,24 +148,22 @@ func (s *Service) OpenSaveFolder(folder string) error {
 	return datadir.Open(dir)
 }
 
-func (s *Service) backupDirs() (savesDir, backupsDir string, err error) {
-	savesDir = s.scanner.Dir
-	loc := ""
+func (s *Service) target() (backup.Target, error) {
+	set := settings.Defaults()
 	if s.settings != nil {
-		loc = settings.Resolve(s.settings.Get(), "backupLocation", settings.GameStardew, nil)
+		set = s.settings.Get()
 	}
-	backupsDir, _, err = backup.Locations(loc)
-	return savesDir, backupsDir, err
+	return backup.TargetFor(set, settings.GameStardew, nil)
 }
 
-func (s *Service) backupReads() (savesDir string, reads []string, err error) {
-	savesDir = s.scanner.Dir
-	loc := ""
-	if s.settings != nil {
-		loc = settings.Resolve(s.settings.Get(), "backupLocation", settings.GameStardew, nil)
-	}
-	_, reads, err = backup.Locations(loc)
-	return savesDir, reads, err
+func (s *Service) backupDirs() (savesDir, backupsDir string, err error) {
+	target, err := s.target()
+	return s.scanner.Dir, target.Dir, err
+}
+
+func (s *Service) backupReads() ([]string, error) {
+	target, err := s.target()
+	return target.Reads, err
 }
 
 func findBackup(reads []string, name string) string {

@@ -140,7 +140,7 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 				return &DuplicateError{Key: newKey, Label: entryLabel(e)}
 			}
 		}
-		ne, w, err := s.swapEntry(game, id, dir, p.Entries[ei], newKey, source)
+		ne, w, err := s.swapOverlaid(game, p, dir, ei, newKey, source)
 		sw = w
 		if err != nil {
 			return err
@@ -494,10 +494,18 @@ func (s *Store) saveBackup(game, profileID string) error {
 	if err != nil {
 		return err
 	}
-	keep := backup.DefaultKeep
-	if s.BackupsKept != nil {
-		keep = s.BackupsKept()
+	set := settings.Defaults()
+	if s.settings != nil {
+		set = s.settings.Get()
 	}
-	_, err = backup.Saves(savesDir, filepath.Join(filepath.Dir(s.root), "backups"), keep, time.Now(), backup.Cause{Profile: profileID, Kind: backup.KindUpdate})
+	var overrides map[string]string
+	if p, err := s.read(game, profileID); err == nil {
+		overrides = p.PrefOverrides()
+	}
+	target, err := backup.TargetFor(set, game, overrides)
+	if err != nil {
+		return err
+	}
+	_, err = backup.Saves(savesDir, target.Dir, target.Keep, time.Now(), backup.Cause{Profile: profileID, Kind: backup.KindUpdate})
 	return err
 }

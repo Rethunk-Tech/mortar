@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
@@ -83,8 +82,6 @@ type Settings struct {
 	NexusSeenDownloadServers []string `json:"nexusSeenDownloadServers"`
 	// AskEndorseMods is whether Mortar may suggest endorsing mods after clean runs. Nil or omitted means on.
 	AskEndorseMods *bool `json:"askEndorseMods"`
-	// BackupsKept is how many save backups to retain, from MinBackupsKept to MaxBackupsKept.
-	BackupsKept int `json:"backupsKept"`
 	// ListColumns is the Mods list-view columns that are shown. Unknown ids are dropped; an empty list is the default.
 	ListColumns []string `json:"listColumns"`
 	// ListSortColumn and ListSortDir are the Mods list sort; unknown values become name ascending.
@@ -191,8 +188,6 @@ type Settings struct {
 }
 
 const (
-	MinBackupsKept  = 1
-	MaxBackupsKept  = 50
 	DefaultLanPort  = 47630
 	MaxLanAddresses = 5
 )
@@ -215,7 +210,6 @@ func Defaults() Settings {
 	s.NexusSeenDownloadServers = []string{}
 	s.LanPort = DefaultLanPort
 	s.LanAddresses = []string{}
-	s.BackupsKept = backup.DefaultKeep
 	s.ListColumns = slices.Clone(defaultListColumns)
 	s.ListSortColumn = defaultListSortColumn
 	s.ListSortDir = defaultListSortDir
@@ -287,9 +281,6 @@ func Open() (*Store, error) {
 	if !slices.Contains(backgrounds, s.cur.Background) {
 		s.cur.Background = Defaults().Background
 	}
-	if s.cur.BackupsKept < MinBackupsKept || s.cur.BackupsKept > MaxBackupsKept {
-		s.cur.BackupsKept = Defaults().BackupsKept
-	}
 	normalizeToggles(&s.cur)
 	normalizePrefs(&s.cur)
 	normalizeList(&s.cur)
@@ -342,9 +333,6 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	}
 	if !slices.Contains(backgrounds, next.Background) {
 		return s.cur, fmt.Errorf("unknown background %q", next.Background)
-	}
-	if next.BackupsKept < MinBackupsKept || next.BackupsKept > MaxBackupsKept {
-		return s.cur, fmt.Errorf("backups kept must be %d to %d, got %d", MinBackupsKept, MaxBackupsKept, next.BackupsKept)
 	}
 	if next.LanPort < 0 || next.LanPort > 65535 {
 		return s.cur, fmt.Errorf("LAN port must be between 0 and 65535, got %d", next.LanPort)
