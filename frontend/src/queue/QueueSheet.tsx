@@ -128,6 +128,7 @@ function Header({
 }
 
 export function QueueSheet() {
+  const { t } = useLingui()
   const open = useQueue((s) => s.open)
   const setOpen = useQueue((s) => s.setOpen)
   const historyBatchId = useQueue((s) => s.historyBatchId)
@@ -172,6 +173,7 @@ export function QueueSheet() {
       slotProps={{
         paper: {
           role: 'dialog',
+          'aria-label': view === 'history' ? t`Download history` : t`Downloads`,
           sx: {
             width: WIDTH,
             maxWidth: '100%',
