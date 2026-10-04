@@ -221,6 +221,13 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
       ],
     },
     launchBackupsKept: { label: i18n._(msg`Launch backups kept`) },
+    saveBackupHours: {
+      label: i18n._(msg`Scheduled save backups`),
+      description: i18n._(
+        msg`Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is off). Waits until the game closes.`,
+      ),
+    },
+    saveBackupKeep: { label: i18n._(msg`Scheduled backups kept per save`) },
     runsKept: {
       label: i18n._(msg`Run logs kept`),
       description: i18n._(msg`Stored SMAPI logs per profile`),

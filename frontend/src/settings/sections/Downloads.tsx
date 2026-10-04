@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Tooltip } from '@mui/material'
+import { Box, Button, Tooltip } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { List as ListGames } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/game/service.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/picker/service.ts'
@@ -9,6 +9,7 @@ import {
   SetNxmDefaultProfile,
   SetNxmRedirectOtherGames,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { openPage } from '../../mods/menu.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
@@ -51,6 +52,45 @@ function NxmDefaultProfile() {
         label={copy.label}
       />
     </SettingRow>
+  )
+}
+
+const EXTENSION_ZIP =
+  'https://github.com/Rethunk-AI/mortar/releases/latest/download/mortar-browser-extension.zip'
+
+// Until the browser stores list the extension, it is installed from the zip on each release.
+function ExtensionInstall() {
+  const { t } = useLingui()
+  return (
+    <>
+      <SettingRow
+        label={t`Get the extension`}
+        description={t`It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar.`}
+      >
+        <Button variant="outlined" onClick={() => openPage(EXTENSION_ZIP)}>
+          {t`Download the extension`}
+        </Button>
+      </SettingRow>
+      <ExtensionSteps />
+    </>
+  )
+}
+
+function ExtensionSteps() {
+  const { t } = useLingui()
+  return (
+    <Box
+      component="ol"
+      sx={{ m: 0, px: 2.5, pl: 5, pb: 1.5, fontSize: 14, color: 'text.secondary', lineHeight: 1.6 }}
+    >
+      <li>{t`Unzip the download.`}</li>
+      <li>
+        {t`Chrome, Edge or another Chromium browser: open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder.`}
+      </li>
+      <li>
+        {t`Firefox: open about:debugging, choose This Firefox, then Load Temporary Add-on and pick manifest.json. Firefox removes it when it restarts.`}
+      </li>
+    </Box>
   )
 }
 
@@ -145,8 +185,11 @@ export function Downloads() {
     <>
       <SettingsSection title={t`Nexus links`}>
         <NxmLinks />
-        <PrefByKey prefKey="extensionConnection" />
         <NxmDefaultProfile />
+      </SettingsSection>
+      <SettingsSection title={t`Browser extension`}>
+        <ExtensionInstall />
+        <PrefByKey prefKey="extensionConnection" />
       </SettingsSection>
       <SettingsSection title={t`Downloading`}>
         <PrefKeys

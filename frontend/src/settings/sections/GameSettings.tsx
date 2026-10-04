@@ -323,7 +323,10 @@ function BackupsPage() {
     )
   return (
     <SettingsSection title={t`Play backups`}>
-      <PrefKeys keys={['backupBeforePlay', 'launchBackupsKept']} game={GAME} />
+      <PrefKeys
+        keys={['backupBeforePlay', 'launchBackupsKept', 'saveBackupHours', 'saveBackupKeep']}
+        game={GAME}
+      />
       <PrefByKey
         prefKey="backupLocation"
         game={GAME}

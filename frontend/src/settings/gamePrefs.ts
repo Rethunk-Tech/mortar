@@ -12,6 +12,8 @@ const STARDEW = 'stardew'
 const defaultGamePrefs: GamePrefBlock = {
   backupBeforePlay: 'changed',
   launchBackupsKept: 5,
+  saveBackupHours: 0,
+  saveBackupKeep: 5,
   updateModsBeforePlayDefault: false,
   runsKept: 20,
   consoleLogCap: 20_000,
@@ -30,6 +32,8 @@ const defaultGamePrefs: GamePrefBlock = {
 export interface GamePrefBlock {
   backupBeforePlay: string
   launchBackupsKept: number
+  saveBackupHours: number
+  saveBackupKeep: number
   updateModsBeforePlayDefault: boolean
   runsKept: number
   consoleLogCap: number
@@ -53,6 +57,8 @@ export function gamePrefs(s: Settings): GamePrefBlock {
   return {
     backupBeforePlay: got.backupBeforePlay || defaultGamePrefs.backupBeforePlay,
     launchBackupsKept: got.launchBackupsKept || defaultGamePrefs.launchBackupsKept,
+    saveBackupHours: got.saveBackupHours ?? defaultGamePrefs.saveBackupHours,
+    saveBackupKeep: got.saveBackupKeep || defaultGamePrefs.saveBackupKeep,
     updateModsBeforePlayDefault: Boolean(got.updateModsBeforePlayDefault),
     runsKept: got.runsKept || defaultGamePrefs.runsKept,
     consoleLogCap: got.consoleLogCap || defaultGamePrefs.consoleLogCap,

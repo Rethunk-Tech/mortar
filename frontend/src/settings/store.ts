@@ -86,6 +86,8 @@ const defaults: Settings = {
       consoleFollow: true,
       backupLocation: '',
       conflictScanDepth: 'full',
+      saveBackupHours: 0,
+      saveBackupKeep: 5,
     },
   },
   parallelDownloads: 3,

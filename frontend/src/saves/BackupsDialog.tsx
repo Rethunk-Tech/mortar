@@ -55,6 +55,9 @@ function causeLabel(b: Backup, profileName: (id: string) => string): string {
   if (b.kind === 'launch') {
     return i18n._(msg`Before playing`)
   }
+  if (b.kind === 'scheduled') {
+    return i18n._(msg`Scheduled`)
+  }
   if (b.kind === 'manual') {
     return i18n._(msg`Manual`)
   }
