@@ -22,6 +22,7 @@ import {
   setTagMany,
   showModFiles,
   skipSource,
+  skipSourceMany,
   skipVersion,
   skipVersionMany,
   setUpdateChannel as writeUpdateChannel,
@@ -65,6 +66,7 @@ export const useMods = create<{
   setSkipVersionMany: (mods: Mod[]) => Promise<void>
   setUpdateChannel: (mod: Mod, channel: string) => Promise<void>
   setSkipSource: (mod: Mod, source: string, skip: boolean) => Promise<void>
+  setSkipSourceMany: (groups: ReadonlyMap<string, Mod[]>, skip: boolean) => Promise<void>
   setCategoryMany: (mods: Mod[], category: string) => Promise<void>
   setTagMany: (mods: Mod[], tag: string, add: boolean) => Promise<void>
   setNoteTags: (mod: Mod, note: string, tags: string[]) => Promise<void>
@@ -128,6 +130,7 @@ export const useMods = create<{
   setSkipVersionMany: (mods) => skipVersionMany(mods),
   setUpdateChannel: (mod, channel) => writeUpdateChannel(mod, channel),
   setSkipSource: (mod, source, skip) => skipSource(mod, source, skip),
+  setSkipSourceMany: (groups, skip) => skipSourceMany(groups, skip),
   setCategoryMany: (mods, category) => setCategoryMany(mods, category),
   setTagMany: (mods, tag, add) => setTagMany(mods, tag, add),
   setNoteTags: (mod, note, tags) => setEntryNoteTags(mod, note, tags),

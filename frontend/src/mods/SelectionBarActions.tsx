@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
 import {
   BellOff,
+  BellRing,
   Copy,
   Ellipsis,
   Folder,
@@ -20,6 +21,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/p
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
+import type { SourceGroups } from './skipSources.ts'
 
 export function SelectionBarActions({
   selected,
@@ -30,6 +32,8 @@ export function SelectionBarActions({
   setEnabledMany,
   setPinnedMany,
   setSkipVersionMany,
+  sourceGroups,
+  setSkipSourceMany,
   askRemove,
   openAlso,
   openSave,
@@ -46,6 +50,8 @@ export function SelectionBarActions({
   setEnabledMany: (mods: Mod[], enabled: boolean) => Promise<void>
   setPinnedMany: (mods: Mod[], pinned: boolean) => Promise<void>
   setSkipVersionMany: (mods: Mod[]) => Promise<void>
+  sourceGroups: SourceGroups
+  setSkipSourceMany: (groups: ReadonlyMap<string, Mod[]>, skip: boolean) => Promise<void>
   askRemove: (mods: Mod[]) => void
   openAlso: () => void
   openSave: () => void
@@ -79,6 +85,26 @@ export function SelectionBarActions({
         setSkipVersionMany(selected.filter((mod) => latest.has(mod.key))).catch(reportUnexpected),
       edits: true,
     },
+    ...(sourceGroups.ignore.size > 0
+      ? [
+          {
+            label: t`Ignore update source`,
+            icon: <BellOff size={16} />,
+            run: () => setSkipSourceMany(sourceGroups.ignore, true).catch(reportUnexpected),
+            edits: true,
+          },
+        ]
+      : []),
+    ...(sourceGroups.use.size > 0
+      ? [
+          {
+            label: t`Use update source`,
+            icon: <BellRing size={16} />,
+            run: () => setSkipSourceMany(sourceGroups.use, false).catch(reportUnexpected),
+            edits: true,
+          },
+        ]
+      : []),
     { label: t`Also add to…`, icon: <Copy size={16} />, run: openAlso, edits: true },
     { label: t`Save as bundle…`, icon: <PackagePlus size={16} />, run: openSave, edits: true },
     { label: t`Share selection`, icon: <Share2 size={16} />, run: share, edits: false },

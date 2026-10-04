@@ -11,7 +11,6 @@ function anyModOn(base: Entry | undefined) {
   return (base?.mods ?? []).some((m) => !(base?.disabled ?? []).includes(m.uniqueId))
 }
 
-
 /** Each main entry's optional files, in the order they are laid over it. */
 export function overlaysByBase(
   profile: Pick<Profile, 'entries'> | null | undefined,

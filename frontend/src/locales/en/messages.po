@@ -108,7 +108,7 @@ msgstr "Auto-track installed mods"
 msgid "Sidebar badge counts"
 msgstr "Sidebar badge counts"
 
-#: src/mods/storeEntries.ts:227
+#: src/mods/storeEntries.ts:228
 msgid "Could not switch the selected mods"
 msgstr "Could not switch the selected mods"
 
@@ -171,7 +171,7 @@ msgstr "Allow cleanup"
 msgid "Skip this profile"
 msgstr "Skip this profile"
 
-#: src/mods/storeEntries.ts:394
+#: src/mods/storeEntries.ts:409
 msgid "Updated categories"
 msgstr "Updated categories"
 
@@ -227,8 +227,8 @@ msgstr "Could not delete the template"
 msgid "Mortar takes Stardew Valley links only."
 msgstr "Mortar takes Stardew Valley links only."
 
-#: src/mods/storeEntries.ts:72
-#: src/mods/storeEntries.ts:111
+#: src/mods/storeEntries.ts:73
+#: src/mods/storeEntries.ts:112
 #: src/profiles/historyRevert.ts:77
 msgid "That profile is gone."
 msgstr "That profile is gone."
@@ -593,7 +593,7 @@ msgstr "Open"
 msgid "A network request failed."
 msgstr "A network request failed."
 
-#: src/mods/SelectionBar.tsx:75
+#: src/mods/SelectionBar.tsx:79
 msgid "Save selection as bundle"
 msgstr "Save selection as bundle"
 
@@ -929,7 +929,7 @@ msgstr "Filter by outcome"
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 
-#: src/mods/storeEntries.ts:393
+#: src/mods/storeEntries.ts:408
 msgid "Could not set the category for the selected mods"
 msgstr "Could not set the category for the selected mods"
 
@@ -1231,7 +1231,7 @@ msgstr "{count} unavailable"
 msgid "Grid view"
 msgstr "Grid view"
 
-#: src/settings/sections/DataMods.tsx:20
+#: src/settings/sections/DataMods.tsx:36
 msgid "Clear cache?"
 msgstr "Clear cache?"
 
@@ -1460,6 +1460,10 @@ msgstr "{errors} with errors"
 #: src/toasts/report.ts:18
 msgid "Mortar does not have permission to do that."
 msgstr "Mortar does not have permission to do that."
+
+#: src/mods/storeEntries.ts:397
+msgid "Could not ignore updates from {source}"
+msgstr "Could not ignore updates from {source}"
 
 #: src/console/PerformanceTab.tsx:21
 #: src/mods/columnLabel.ts:23
@@ -2046,6 +2050,10 @@ msgstr "Could not prepare the data folder move"
 msgid "Compact"
 msgstr "Compact"
 
+#: src/mods/SelectionBarActions.tsx:91
+msgid "Ignore update source"
+msgstr "Ignore update source"
+
 #: src/console/BisectDialog.tsx:118
 #: src/console/CrashDialog.tsx:56
 #: src/console/RunProblems.tsx:81
@@ -2058,8 +2066,8 @@ msgstr "Compact"
 #: src/mods/problemFix/WinFix.tsx:51
 #: src/mods/problemFixButtons.tsx:97
 #: src/mods/SplitCombineItems.tsx:39
-#: src/mods/storeEntries.ts:59
-#: src/mods/storeEntries.ts:98
+#: src/mods/storeEntries.ts:60
+#: src/mods/storeEntries.ts:99
 #: src/profiles/collectionUnlink.ts:35
 #: src/profiles/CompareDialog.tsx:103
 #: src/profiles/historyRevert.ts:69
@@ -2567,7 +2575,7 @@ msgstr " · {0} more required"
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
-#: src/mods/storeEntries.ts:328
+#: src/mods/storeEntries.ts:329
 msgid "Unpinned selected mods"
 msgstr "Unpinned selected mods"
 
@@ -2671,7 +2679,7 @@ msgstr "Storage"
 msgid "Licence"
 msgstr "Licence"
 
-#: src/mods/storeEntries.ts:403
+#: src/mods/storeEntries.ts:418
 msgid "Updated tags"
 msgstr "Updated tags"
 
@@ -2716,6 +2724,10 @@ msgstr "Report a Mortar bug"
 #: src/settings/prefCopy.ts:320
 msgid "History events kept"
 msgstr "History events kept"
+
+#: src/mods/storeEntries.ts:398
+msgid "Could not stop ignoring {source} updates"
+msgstr "Could not stop ignoring {source} updates"
 
 #: src/console/StartupPanel.tsx:67
 msgid "First updates"
@@ -2832,6 +2844,10 @@ msgstr "Your edits to its files are replaced with the installed copy."
 #: src/shell/ErrorBoundary.tsx:31
 msgid "Report a bug"
 msgstr "Report a bug"
+
+#: src/settings/sections/DataMods.tsx:42
+msgid "{size} in {path}"
+msgstr "{size} in {path}"
 
 #: src/mods/ReportToAuthorButton.tsx:225
 msgid "Skip sharing"
@@ -3304,7 +3320,7 @@ msgstr "Delete template"
 msgid "{0, plural, one {The new version of {1} no longer includes # file. Keep it or delete it?} other {The new version of {2} no longer includes # files. Keep them or delete them?}}"
 msgstr "{0, plural, one {The new version of {1} no longer includes # file. Keep it or delete it?} other {The new version of {2} no longer includes # files. Keep them or delete them?}}"
 
-#: src/mods/storeEntries.ts:327
+#: src/mods/storeEntries.ts:328
 msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
@@ -3321,7 +3337,7 @@ msgstr "Open Nexus Mods"
 msgid "Standard farm"
 msgstr "Standard farm"
 
-#: src/settings/sections/DataMods.tsx:29
+#: src/settings/sections/DataMods.tsx:54
 msgid "Cache cleared"
 msgstr "Cache cleared"
 
@@ -3368,6 +3384,10 @@ msgstr "Added by you"
 #: src/console/BisectDialog.tsx:186
 msgid "Stopping…"
 msgstr "Stopping…"
+
+#: src/mods/SelectionBarActions.tsx:101
+msgid "Use update source"
+msgstr "Use update source"
 
 #. placeholder {0}: update.source
 #: src/mods/updateReview/RowCopy.tsx:58
@@ -3688,7 +3708,7 @@ msgstr "Wheat"
 msgid "Folder chosen by you"
 msgstr "Folder chosen by you"
 
-#: src/settings/sections/DataMods.tsx:21
+#: src/settings/sections/DataMods.tsx:39
 msgid "Removes cached Nexus and SMAPI details and problem scans. Use it if an API key was revoked or the details look wrong. Mortar fetches them again as needed, so the next problem check takes longer."
 msgstr "Removes cached Nexus and SMAPI details and problem scans. Use it if an API key was revoked or the details look wrong. Mortar fetches them again as needed, so the next problem check takes longer."
 
@@ -4062,7 +4082,7 @@ msgstr "Add mods"
 msgid "The banner at the top of a profile"
 msgstr "The banner at the top of a profile"
 
-#: src/mods/SelectionBarActions.tsx:136
+#: src/mods/SelectionBarActions.tsx:162
 msgid "Clear selection"
 msgstr "Clear selection"
 
@@ -4563,7 +4583,7 @@ msgstr "Restore {bLabel}"
 #. placeholder {0}: mod.name
 #. placeholder {0}: row.label
 #: src/mods/overlayActions.ts:42
-#: src/mods/storeEntries.ts:259
+#: src/mods/storeEntries.ts:260
 msgid "Could not remove {0}"
 msgstr "Could not remove {0}"
 
@@ -4994,7 +5014,7 @@ msgid "Startup time by mod"
 msgstr "Startup time by mod"
 
 #. placeholder {0}: new Set(uniqueIds).size
-#: src/mods/storeEntries.ts:95
+#: src/mods/storeEntries.ts:96
 msgid "{0, plural, one {Removed # mod} other {Removed # mods}}"
 msgstr "{0, plural, one {Removed # mod} other {Removed # mods}}"
 
@@ -5009,7 +5029,7 @@ msgstr "{found, plural, one {# mod update} other {# mod updates}}"
 msgid "Open {0}"
 msgstr "Open {0}"
 
-#: src/mods/SelectionBarActions.tsx:67
+#: src/mods/SelectionBarActions.tsx:73
 msgid "Tag…"
 msgstr "Tag…"
 
@@ -5080,7 +5100,7 @@ msgid "Add from the extra mods folder"
 msgstr "Add from the extra mods folder"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:427
+#: src/mods/storeEntries.ts:442
 msgid "Could not open config.json of {0}"
 msgstr "Could not open config.json of {0}"
 
@@ -5177,7 +5197,7 @@ msgstr "Moved {folder} to Mortar's trash"
 msgid "{queued, plural, one {# already queued} other {# already queued}}"
 msgstr "{queued, plural, one {# already queued} other {# already queued}}"
 
-#: src/mods/storeEntries.ts:239
+#: src/mods/storeEntries.ts:240
 msgid "Could not remove the selected mods"
 msgstr "Could not remove the selected mods"
 
@@ -5231,7 +5251,7 @@ msgstr "Stamina"
 #. placeholder {0}: first.mods[0].name
 #. placeholder {0}: row.label
 #: src/mods/overlayActions.ts:50
-#: src/mods/storeEntries.ts:93
+#: src/mods/storeEntries.ts:94
 msgid "Removed {0}"
 msgstr "Removed {0}"
 
@@ -5483,7 +5503,7 @@ msgid "updates"
 msgstr "updates"
 
 #: src/mods/ModMenu.tsx:202
-#: src/mods/SelectionBarActions.tsx:82
+#: src/mods/SelectionBarActions.tsx:108
 #: src/mods/Sidebar.tsx:399
 msgid "Also add to…"
 msgstr "Also add to…"
@@ -5508,7 +5528,7 @@ msgstr "Decline"
 msgid "Nothing to import"
 msgstr "Nothing to import"
 
-#: src/mods/SelectionBarActions.tsx:129
+#: src/mods/SelectionBarActions.tsx:155
 msgid "More actions"
 msgstr "More actions"
 
@@ -5520,7 +5540,7 @@ msgstr "Remove them; rolling back still restores the old version."
 msgid "Open on CurseForge"
 msgstr "Open on CurseForge"
 
-#: src/settings/sections/DataMods.tsx:22
+#: src/settings/sections/DataMods.tsx:47
 msgid "Clear cache"
 msgstr "Clear cache"
 
@@ -5549,7 +5569,7 @@ msgid "{owner} opens these links now."
 msgstr "{owner} opens these links now."
 
 #. placeholder {0}: ids.length
-#: src/mods/SelectionBar.tsx:41
+#: src/mods/SelectionBar.tsx:43
 msgid "{0, plural, one {# mod selected} other {# mods selected}}"
 msgstr "{0, plural, one {# mod selected} other {# mods selected}}"
 
@@ -5612,7 +5632,7 @@ msgid "Auto-retry failed downloads"
 msgstr "Auto-retry failed downloads"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:301
+#: src/mods/storeEntries.ts:302
 msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
@@ -5743,7 +5763,7 @@ msgstr "Update in all profiles that have it"
 msgid "Default for a profile you just created"
 msgstr "Default for a profile you just created"
 
-#: src/mods/SelectionBarActions.tsx:83
+#: src/mods/SelectionBarActions.tsx:109
 msgid "Save as bundle…"
 msgstr "Save as bundle…"
 
@@ -6385,7 +6405,7 @@ msgid "Nexus mod {modID}"
 msgstr "Nexus mod {modID}"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:344
+#: src/mods/storeEntries.ts:345
 msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
@@ -6430,7 +6450,7 @@ msgstr "·"
 #: src/mods/problemFix/ListedFix.tsx:18
 #: src/mods/problemFix/MissingFix.tsx:27
 #: src/mods/problemFix/MissingFix.tsx:43
-#: src/mods/SelectionBar.tsx:115
+#: src/mods/SelectionBar.tsx:119
 #: src/mods/SelectionBarDialogs.tsx:81
 #: src/mods/Sidebar.tsx:408
 #: src/mods/TrackedNotInProfile.tsx:91
@@ -6685,7 +6705,7 @@ msgstr "Mortar minimises while you play and comes back when the game exits."
 
 #. placeholder {0}: created.name
 #: src/bundles/dialogs.tsx:174
-#: src/mods/SelectionBar.tsx:84
+#: src/mods/SelectionBar.tsx:88
 msgid "Created {0}"
 msgstr "Created {0}"
 
@@ -6727,7 +6747,7 @@ msgid "Your download is already {have}; the mod's manifest still carries the old
 msgstr "Your download is already {have}; the mod's manifest still carries the old number, so SMAPI keeps asking."
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:415
+#: src/mods/storeEntries.ts:430
 msgid "Could not open the folder of {0}"
 msgstr "Could not open the folder of {0}"
 
@@ -6763,7 +6783,7 @@ msgid "Edit {0}"
 msgstr "Edit {0}"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:343
+#: src/mods/storeEntries.ts:344
 msgid "Could not show the skipped update for {0}"
 msgstr "Could not show the skipped update for {0}"
 
@@ -6797,7 +6817,7 @@ msgstr "One VAR=value per line; applies to direct launches only. Steam launches 
 msgid "Retention"
 msgstr "Retention"
 
-#: src/mods/storeEntries.ts:182
+#: src/mods/storeEntries.ts:183
 msgid "Could not remove from the group"
 msgstr "Could not remove from the group"
 
@@ -6934,7 +6954,7 @@ msgstr "{stars, plural, one {# star} other {# stars}}"
 msgid "Before playing"
 msgstr "Before playing"
 
-#: src/mods/storeEntries.ts:375
+#: src/mods/storeEntries.ts:376
 msgid "Could not skip updates for the selected mods"
 msgstr "Could not skip updates for the selected mods"
 
@@ -6964,7 +6984,7 @@ msgid "Press {paletteKeys} to jump anywhere — profiles, settings, downloads, a
 msgstr "Press {paletteKeys} to jump anywhere — profiles, settings, downloads, and more."
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:315
+#: src/mods/storeEntries.ts:316
 msgid "Could not pin {0}"
 msgstr "Could not pin {0}"
 
@@ -7070,7 +7090,7 @@ msgstr "What Mortar shows when it opens."
 msgid "Change"
 msgstr "Change"
 
-#: src/mods/storeEntries.ts:451
+#: src/mods/storeEntries.ts:466
 msgid "Could not switch the group"
 msgstr "Could not switch the group"
 
@@ -7492,7 +7512,7 @@ msgstr "From this file"
 msgid "Not now"
 msgstr "Not now"
 
-#: src/mods/SelectionBar.tsx:114
+#: src/mods/SelectionBar.tsx:118
 msgid "Also add selected mods to…"
 msgstr "Also add selected mods to…"
 
@@ -7529,7 +7549,7 @@ msgstr "Mortar stays on screen beside the game."
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
-#: src/mods/storeEntries.ts:187
+#: src/mods/storeEntries.ts:188
 msgid "Could not rename the group"
 msgstr "Could not rename the group"
 
@@ -7579,7 +7599,7 @@ msgstr "Open a profile to install mods"
 msgid "What the person opening the link sees"
 msgstr "What the person opening the link sees"
 
-#: src/mods/storeEntries.ts:376
+#: src/mods/storeEntries.ts:377
 msgid "Skipped updates for selected mods"
 msgstr "Skipped updates for selected mods"
 
@@ -7980,7 +8000,7 @@ msgstr "Pin"
 msgid "Could not send to {0}"
 msgstr "Could not send to {0}"
 
-#: src/mods/storeEntries.ts:328
+#: src/mods/storeEntries.ts:329
 msgid "Pinned selected mods"
 msgstr "Pinned selected mods"
 
@@ -8014,7 +8034,7 @@ msgid "Import as new profile"
 msgstr "Import as new profile"
 
 #: src/bundles/dialogs.tsx:177
-#: src/mods/SelectionBar.tsx:77
+#: src/mods/SelectionBar.tsx:81
 msgid "Could not create the bundle"
 msgstr "Could not create the bundle"
 
@@ -8185,7 +8205,7 @@ msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are of
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:360
+#: src/mods/storeEntries.ts:361
 msgid "Could not set the update channel for {0}"
 msgstr "Could not set the update channel for {0}"
 
@@ -8229,7 +8249,7 @@ msgstr "Add from game presets…"
 msgid "Include notes"
 msgstr "Include notes"
 
-#: src/mods/storeEntries.ts:327
+#: src/mods/storeEntries.ts:328
 msgid "Could not pin the selected mods"
 msgstr "Could not pin the selected mods"
 
@@ -8361,7 +8381,7 @@ msgid "{profileName} has {0} more than once. SMAPI loads only one, so pick which
 msgstr "{profileName} has {0} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted."
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:315
+#: src/mods/storeEntries.ts:316
 msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
@@ -8523,7 +8543,7 @@ msgstr "Install {name}?"
 #: src/mods/problemFix/AssetFix.tsx:70
 #: src/mods/problemFix/BrokenFix.tsx:87
 #: src/mods/runErrorFixButtons.tsx:48
-#: src/mods/SelectionBarActions.tsx:117
+#: src/mods/SelectionBarActions.tsx:143
 #: src/mods/SlowStartupSection.tsx:76
 msgid "Switch off"
 msgstr "Switch off"
@@ -8684,7 +8704,7 @@ msgstr "Switch to Saves"
 #: src/mods/parts.tsx:400
 #: src/mods/problemFixButtons.tsx:181
 #: src/mods/problemFixButtons.tsx:186
-#: src/mods/SelectionBarActions.tsx:125
+#: src/mods/SelectionBarActions.tsx:151
 #: src/mods/SelectionBarDialogs.tsx:82
 #: src/settings/sections/DataStoreReport.tsx:401
 #: src/settings/sections/DataStoreReport.tsx:408
@@ -8781,7 +8801,7 @@ msgstr "Beach farm"
 #: src/mods/CategoryEditor.tsx:150
 #: src/mods/ConfigEditor.tsx:239
 #: src/mods/ConfigPresets.tsx:134
-#: src/mods/SelectionBar.tsx:76
+#: src/mods/SelectionBar.tsx:80
 #: src/profiles/EditProfileDialog.tsx:451
 #: src/profiles/LaunchPresetDialog.tsx:92
 #: src/templates/TemplateDialogs.tsx:70
@@ -9021,7 +9041,7 @@ msgstr "Pinned: {0}"
 
 #: src/mods/ModMenu.tsx:156
 #: src/mods/ModUpdateControls.tsx:33
-#: src/mods/SelectionBarActions.tsx:70
+#: src/mods/SelectionBarActions.tsx:76
 #: src/mods/updateReview/UpdateActions.tsx:109
 msgid "Unpin version"
 msgstr "Unpin version"
@@ -9832,7 +9852,7 @@ msgstr "Select all"
 msgid "Foraging skill"
 msgstr "Foraging skill"
 
-#: src/mods/SelectionBarActions.tsx:84
+#: src/mods/SelectionBarActions.tsx:110
 msgid "Share selection"
 msgstr "Share selection"
 
@@ -9854,7 +9874,7 @@ msgstr "Free accounts click Download on Nexus for each file; Mortar opens each p
 
 #: src/mods/ModMenu.tsx:156
 #: src/mods/ModUpdateControls.tsx:33
-#: src/mods/SelectionBarActions.tsx:70
+#: src/mods/SelectionBarActions.tsx:76
 #: src/mods/updateReview/UpdateActions.tsx:109
 msgid "Keep this version"
 msgstr "Keep this version"
@@ -10016,11 +10036,11 @@ msgid "Run crashed"
 msgstr "Run crashed"
 
 #. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts:271
+#: src/mods/storeEntries.ts:272
 msgid "Could not save the note and tags for {0}"
 msgstr "Could not save the note and tags for {0}"
 
-#: src/mods/storeEntries.ts:439
+#: src/mods/storeEntries.ts:454
 msgid "Could not add to the group"
 msgstr "Could not add to the group"
 
@@ -10182,8 +10202,8 @@ msgid "Soft and warm"
 msgstr "Soft and warm"
 
 #: src/mods/overlayActions.ts:64
-#: src/mods/storeEntries.ts:76
-#: src/mods/storeEntries.ts:116
+#: src/mods/storeEntries.ts:77
+#: src/mods/storeEntries.ts:117
 #: src/profiles/historyRevert.ts:82
 msgid "This is no longer the latest change."
 msgstr "This is no longer the latest change."
@@ -10197,7 +10217,7 @@ msgstr "Nexus page"
 msgid "Compare with…"
 msgstr "Compare with…"
 
-#: src/mods/storeEntries.ts:402
+#: src/mods/storeEntries.ts:417
 msgid "Could not update tags for the selected mods"
 msgstr "Could not update tags for the selected mods"
 
@@ -10225,7 +10245,7 @@ msgstr "This archive has no SMAPI mod where Mortar expects one. Pick the folder 
 
 #: src/mods/ModMenu.tsx:161
 #: src/mods/parts.tsx:256
-#: src/mods/SelectionBarActions.tsx:76
+#: src/mods/SelectionBarActions.tsx:82
 #: src/mods/Sidebar.tsx:218
 #: src/mods/updateReview/UpdateActions.tsx:101
 msgid "Skip this update"
@@ -10361,7 +10381,7 @@ msgstr "{0, plural, one {Set category for # mod} other {Set category for # mods}
 
 #: src/mods/ModMenu.tsx:119
 #: src/mods/problemFix/MissingFix.tsx:37
-#: src/mods/SelectionBarActions.tsx:110
+#: src/mods/SelectionBarActions.tsx:136
 msgid "Switch on"
 msgstr "Switch on"
 
@@ -10984,7 +11004,7 @@ msgstr "A game update replaced SMAPI's launcher"
 msgid "Not downloaded yet: {0}"
 msgstr "Not downloaded yet: {0}"
 
-#: src/mods/storeEntries.ts:190
+#: src/mods/storeEntries.ts:191
 msgid "Could not delete the group"
 msgstr "Could not delete the group"
 
@@ -11049,7 +11069,7 @@ msgid "{gameName} settings"
 msgstr "{gameName} settings"
 
 #: src/mods/ModMenu.tsx:201
-#: src/mods/SelectionBarActions.tsx:68
+#: src/mods/SelectionBarActions.tsx:74
 msgid "Set category…"
 msgstr "Set category…"
 

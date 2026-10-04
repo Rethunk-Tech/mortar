@@ -14,6 +14,7 @@ import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { SelectionBarActions } from './SelectionBarActions.tsx'
 import { CategorySelectionDialog, TagSelectionDialog } from './SelectionBarDialogs.tsx'
 import { useSelection } from './selection.ts'
+import { skipSourceGroups } from './skipSources.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
@@ -25,6 +26,7 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
   const setEnabledMany = useMods((s) => s.setEnabledMany)
   const setPinnedMany = useMods((s) => s.setPinnedMany)
   const setSkipVersionMany = useMods((s) => s.setSkipVersionMany)
+  const setSkipSourceMany = useMods((s) => s.setSkipSourceMany)
   const setCategoryMany = useMods((s) => s.setCategoryMany)
   const setTagMany = useMods((s) => s.setTagMany)
   const askRemove = useMods((s) => s.askRemove)
@@ -61,6 +63,8 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
           setEnabledMany={setEnabledMany}
           setPinnedMany={setPinnedMany}
           setSkipVersionMany={setSkipVersionMany}
+          sourceGroups={skipSourceGroups(selected, updates, profile?.entries)}
+          setSkipSourceMany={setSkipSourceMany}
           askRemove={askRemove}
           openAlso={() => setAlsoOpen(true)}
           openSave={() => setSaveOpen(true)}

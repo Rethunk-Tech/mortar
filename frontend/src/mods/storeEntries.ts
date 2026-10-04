@@ -22,6 +22,7 @@ import {
   SetPinned,
   SetPinnedMany,
   SetSkipSource,
+  SetSkipSourceMany,
   SetSkipVersion,
   SetSkipVersionMany,
   SetUpdateChannel,
@@ -384,6 +385,20 @@ export async function skipSource(mod: Mod, source: string, skip: boolean) {
   }
   useProfiles.getState().replace(await SetSkipSource(target.game, target.id, mod.key, source, skip))
   await useUpdates.getState().load()
+}
+
+export async function skipSourceMany(groups: ReadonlyMap<string, Mod[]>, skip: boolean) {
+  for (const [source, mods] of groups) {
+    await batchProfile(
+      mods,
+      (game, id, keys) => SetSkipSourceMany(game, id, keys, source, skip),
+      i18n._(
+        skip
+          ? msg`Could not ignore updates from ${source}`
+          : msg`Could not stop ignoring ${source} updates`,
+      ),
+    )
+  }
 }
 
 export function setCategoryMany(mods: Mod[], category: string) {
