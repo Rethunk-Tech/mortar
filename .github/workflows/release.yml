@@ -237,17 +237,25 @@ jobs:
             bin/manifest.json
           if-no-files-found: error
 
+      # The Flathub render writes the npm sources with bun and flatpak-node-generator (run through uvx).
+      - name: Setup Bun
+        uses: Rethunk-Tech/gh-actions/setup-bun@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
+
+      - name: uv
+        run: pipx install uv==0.12.23
+
       - name: Package manager sources
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           build/linux/aur/render.sh bin bin/aur
-          build/linux/flathub/render.sh bin bin/flathub
+          build/linux/flathub/render.sh bin/flathub
           cp bin/aur/PKGBUILD bin/PKGBUILD
           cp bin/aur/.SRCINFO bin/SRCINFO
-          cp bin/flathub/tech.rethunk.Mortar.yml bin/flathub-tech.rethunk.Mortar.yml
-          cp bin/flathub/SUBMISSION.md bin/flathub-SUBMISSION.md
+          for f in tech.rethunk.Mortar.yml go-sources.json node-sources.json yarn.lock SUBMISSION.md; do
+            cp "bin/flathub/$f" "bin/flathub-$f"
+          done
           rm -r bin/aur bin/flathub
 
       # AMO signs each extension version once, so a dispatch only lints and a rerun reuses the draft's signed copy.
