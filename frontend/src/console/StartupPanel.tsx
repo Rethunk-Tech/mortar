@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   Collapse,
+  Link,
   MenuItem,
   Select,
   Table,
@@ -13,6 +14,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TableSortLabel,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -25,6 +27,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useLaunch } from '../launch/store.ts'
+import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import {
@@ -61,25 +64,34 @@ function PhaseBar({ report }: { report: StartupReport }) {
     firstTicks: t`First updates`,
     intro: t`Title intro`,
   }
+  const help: Record<PhaseId, string> = {
+    smapi: t`From launch until SMAPI has loaded every mod's code`,
+    entry: t`Each mod's Entry method, run one after another`,
+    content: t`The game loads its own content`,
+    firstTicks: t`The game's first frames; mods doing setup work in update events show up here`,
+    intro: t`The title screen's intro animation (Mortar skips it on measured launches)`,
+  }
   const segments = phaseSegments(report.phases)
   return (
     <Box>
       <Box sx={{ display: 'flex', height: 12, borderRadius: 1, overflow: 'hidden', gap: '2px' }}>
         {segments.map((s) => (
-          <Tooltip key={s.id} title={`${labels[s.id]}: ${duration(s.ms)}`}>
+          <Tooltip key={s.id} title={`${labels[s.id]}: ${duration(s.ms)}. ${help[s.id]}`}>
             <Box sx={{ flexGrow: s.ms, bgcolor: PHASE_COLORS[s.id] }} />
           </Tooltip>
         ))}
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.5, mt: 1 }}>
         {segments.map((s) => (
-          <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 13 }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: PHASE_COLORS[s.id] }} />
-            <span>{labels[s.id]}</span>
-            <Box component="span" sx={{ color: 'text.secondary' }}>
-              {duration(s.ms)}
+          <Tooltip key={s.id} title={help[s.id]}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 13 }}>
+              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: PHASE_COLORS[s.id] }} />
+              <span>{labels[s.id]}</span>
+              <Box component="span" sx={{ color: 'text.secondary' }}>
+                {duration(s.ms)}
+              </Box>
             </Box>
-          </Box>
+          </Tooltip>
         ))}
       </Box>
     </Box>
@@ -88,18 +100,61 @@ function PhaseBar({ report }: { report: StartupReport }) {
 
 // Mod, Total, Entry, Slowest event, Assets and packs.
 const MOD_COLUMNS = 5
+const BRIDGE_ID = 'Rethunk.MortarSmapiBridge'
 
-function ModRow({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
+type ModSort = 'name' | 'total' | 'entry' | 'event' | 'assets' | 'sampled'
+
+const sortValue: Record<Exclude<ModSort, 'name'>, (mod: StartupMod) => number> = {
+  total: modTotal,
+  entry: (mod) => mod.entryMs,
+  event: (mod) => slowestEvent(mod)?.[1] ?? 0,
+  assets: (mod) => mod.assetMs + mod.loadMs,
+  sampled: (mod) => mod.sampleMs,
+}
+
+function sortMods(mods: StartupMod[], column: ModSort, direction: 'asc' | 'desc'): StartupMod[] {
+  const sign = direction === 'asc' ? 1 : -1
+  return [...mods].sort((a, b) =>
+    column === 'name'
+      ? sign * a.name.localeCompare(b.name)
+      : sign * (sortValue[column](a) - sortValue[column](b)),
+  )
+}
+
+// Clicking the sorted column flips it; another column starts descending, or A to Z for names.
+function nextSort(
+  active: { column: ModSort; direction: 'asc' | 'desc' },
+  column: ModSort,
+): { column: ModSort; direction: 'asc' | 'desc' } {
+  if (active.column === column) {
+    return { column, direction: active.direction === 'desc' ? 'asc' : 'desc' }
+  }
+  return { column, direction: column === 'name' ? 'asc' : 'desc' }
+}
+
+function ModRow({
+  mod,
+  sampled,
+  sort,
+  game,
+}: {
+  mod: StartupMod
+  sampled: boolean
+  sort: ModSort
+  game: string
+}) {
   const { t } = useLingui()
   const duration = useDuration()
+  const openId = useProfiles((s) => s.openId)
   const [open, setOpen] = useState(false)
   const event = slowestEvent(mod)
   const packs = mod.packs ?? []
   const expandable = packs.length > 0
+  const strong = (column: ModSort) => (sort === column ? { fontWeight: 600 } : undefined)
   return (
     <>
       <TableRow
-        hover={expandable}
+        hover={true}
         onClick={expandable ? () => setOpen((o) => !o) : undefined}
         sx={{ cursor: expandable ? 'pointer' : 'default' }}
       >
@@ -115,18 +170,50 @@ function ModRow({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
           ) : (
             <Box component="span" sx={{ width: 14 }} />
           )}
-          {mod.name}
+          <Link
+            component="button"
+            underline="hover"
+            color="inherit"
+            title={t`Show in Mods`}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (openId !== '') {
+                showInProfile(game, openId, 0, mod.name)
+              }
+            }}
+            sx={{
+              textAlign: 'left',
+              font: 'inherit',
+              textDecoration: 'none',
+              '&:hover': { textDecoration: 'underline' },
+            }}
+          >
+            {mod.name}
+          </Link>
+          {mod.id === BRIDGE_ID ? (
+            <Tooltip title={t`Mortar's own SMAPI mod; it records these timings`}>
+              <Box component="span" sx={{ color: 'text.secondary', fontSize: 12, ml: 0.5 }}>
+                {t`Mortar`}
+              </Box>
+            </Tooltip>
+          ) : null}
         </TableCell>
-        <TableCell align="right" sx={{ fontWeight: 600 }}>
+        <TableCell align="right" sx={strong('total')}>
           {duration(modTotal(mod))}
         </TableCell>
-        <TableCell align="right">{mod.entryMs > 0 ? duration(mod.entryMs) : '—'}</TableCell>
-        <TableCell align="right">{event ? `${duration(event[1])} · ${event[0]}` : '—'}</TableCell>
-        <TableCell align="right">
+        <TableCell align="right" sx={strong('entry')}>
+          {mod.entryMs > 0 ? duration(mod.entryMs) : '—'}
+        </TableCell>
+        <TableCell align="right" sx={strong('event')}>
+          {event ? `${duration(event[1])} · ${event[0]}` : '—'}
+        </TableCell>
+        <TableCell align="right" sx={strong('assets')}>
           {mod.assetMs + mod.loadMs > 0 ? duration(mod.assetMs + mod.loadMs) : '—'}
         </TableCell>
         {sampled ? (
-          <TableCell align="right">{mod.sampleMs ? duration(mod.sampleMs) : '—'}</TableCell>
+          <TableCell align="right" sx={strong('sampled')}>
+            {mod.sampleMs ? duration(mod.sampleMs) : '—'}
+          </TableCell>
         ) : null}
       </TableRow>
       {expandable ? (
@@ -171,39 +258,89 @@ function ModRow({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
   )
 }
 
-function ModTable({ report }: { report: StartupReport }) {
+function ModTable({ report, game }: { report: StartupReport; game: string }) {
   const { t } = useLingui()
   const duration = useDuration()
   const { shown, folded } = foldMods(report.mods)
   // Sampled times exist only after a measured launch; they include time inside each mod's patches on game code.
   const sampled = report.sampledOtherMs > 0
+  const [sort, setSort] = useState<{ column: ModSort; direction: 'asc' | 'desc' } | null>(null)
+  const active = sort ?? { column: 'total' as ModSort, direction: 'desc' as const }
+  const rows = sortMods(shown, active.column, active.direction)
   const shownIds = new Set(shown.map((mod) => mod.id))
   const foldedSampled = (report.mods ?? []).reduce(
     (sum, mod) => (shownIds.has(mod.id) ? sum : sum + mod.sampleMs),
     0,
   )
+  const columns: { id: ModSort; label: string; help: string; align?: 'right' }[] = [
+    { id: 'name', label: t`Mod`, help: t`Click a mod to show it in Mods` },
+    {
+      id: 'total',
+      label: t`Total`,
+      help: t`Entry, event handlers and asset work the SMAPI Bridge timed before the title screen`,
+      align: 'right',
+    },
+    {
+      id: 'entry',
+      label: t`Entry`,
+      help: t`The mod's Entry method; timed only on a measured launch`,
+      align: 'right',
+    },
+    {
+      id: 'event',
+      label: t`Slowest event`,
+      help: t`The SMAPI event handler that took longest, and its time`,
+      align: 'right',
+    },
+    {
+      id: 'assets',
+      label: t`Assets and packs`,
+      help: t`Time editing and loading game assets, including content packs it loads`,
+      align: 'right',
+    },
+    ...(sampled
+      ? [
+          {
+            id: 'sampled' as const,
+            label: t`Sampled`,
+            help: t`Sampled on a measured launch: includes time in the mod's patches on game code`,
+            align: 'right' as const,
+          },
+        ]
+      : []),
+  ]
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
       <Table size="small" stickyHeader={true} aria-label={t`Startup time by mod`}>
         <TableHead>
           <TableRow>
-            <TableCell>{t`Mod`}</TableCell>
-            <TableCell align="right">{t`Total`}</TableCell>
-            <TableCell align="right">{t`Entry`}</TableCell>
-            <TableCell align="right">{t`Slowest event`}</TableCell>
-            <TableCell align="right">{t`Assets and packs`}</TableCell>
-            {sampled ? (
-              <Tooltip
-                title={t`Sampled on a measured launch: includes time in the mod's patches on game code`}
+            {columns.map((column) => (
+              <TableCell
+                key={column.id}
+                align={column.align}
+                sortDirection={active.column === column.id ? active.direction : false}
               >
-                <TableCell align="right">{t`Sampled`}</TableCell>
-              </Tooltip>
-            ) : null}
+                <Tooltip title={column.help}>
+                  <TableSortLabel
+                    active={active.column === column.id}
+                    direction={active.column === column.id ? active.direction : 'desc'}
+                    onClick={() => setSort(nextSort(active, column.id))}
+                    sx={{
+                      color: 'inherit',
+                      '&.Mui-active': { color: 'var(--mortar-ink)' },
+                      '& .MuiTableSortLabel-icon': { color: 'inherit !important' },
+                    }}
+                  >
+                    {column.label}
+                  </TableSortLabel>
+                </Tooltip>
+              </TableCell>
+            ))}
           </TableRow>
         </TableHead>
         <TableBody>
-          {shown.map((mod) => (
-            <ModRow key={mod.id} mod={mod} sampled={sampled} />
+          {rows.map((mod) => (
+            <ModRow key={mod.id} mod={mod} sampled={sampled} sort={active.column} game={game} />
           ))}
           {folded.count > 0 ? (
             <TableRow>
@@ -339,7 +476,7 @@ export function StartupPanel({ game }: { game: string }) {
           {t`Mods' Entry is timed only on a measured launch.`}
         </Typography>
       )}
-      <ModTable report={report} />
+      <ModTable report={report} game={game} />
     </Box>
   )
 }
