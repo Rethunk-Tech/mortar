@@ -9,6 +9,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { sameId } from './lookup.ts'
+import { LinkedText } from './ModLinks.tsx'
 import { useMods } from './store.ts'
 
 function useSlowStartups(): SlowStartup[] {
@@ -51,7 +52,12 @@ function SlowRow({ row }: { row: SlowStartup }) {
         borderRadius: '6px',
       }}
     >
-      <Typography sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>{text}</Typography>
+      <Typography sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
+        <LinkedText
+          text={text}
+          links={mod ? [{ name: row.name, key: mod.key, uniqueId: mod.uniqueId }] : []}
+        />
+      </Typography>
       <Button
         size="small"
         variant="text"

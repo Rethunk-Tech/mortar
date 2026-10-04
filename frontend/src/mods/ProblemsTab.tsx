@@ -32,6 +32,9 @@ import { CompatSection } from './CompatSection.tsx'
 import { ConflictWhy } from './ConflictWhy.tsx'
 import { compatReportChunks } from './compatChip.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
+import { LockedNote } from './LockedNote.tsx'
+import { LinkedText } from './ModLinks.tsx'
+import { modLinksOf } from './modLinks.ts'
 import { DriftButtons, FixButton } from './problemFixButtons.tsx'
 import {
   type DismissedRow,
@@ -149,7 +152,7 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
           </Link>
         ) : (
           <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
-            {text}
+            <LinkedText text={text} links={modLinksOf(row)} />
           </Typography>
         )}
         {authorNote === '' ? null : (
@@ -508,6 +511,9 @@ export function ProblemsTab() {
         gap: 2,
       }}
     >
+      <Box sx={{ mx: -2, mb: -1 }}>
+        <LockedNote />
+      </Box>
       {empty ? (
         <EmptyState
           icon={<ShieldCheck size={40} aria-hidden={true} />}

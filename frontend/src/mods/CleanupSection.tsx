@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { LinkedText } from './ModLinks.tsx'
 import { useMods } from './store.ts'
 
 interface CleanupItem {
@@ -84,7 +85,10 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
           title={cleanup.name.trim() === '' ? cleanup.uniqueId : undefined}
           sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
         >
-          {cleanup.text ?? t`${who}: ${reason}`}
+          <LinkedText
+            text={cleanup.text ?? t`${who}: ${reason}`}
+            links={[{ name: cleanup.name, key: cleanup.key, uniqueId: cleanup.uniqueId }]}
+          />
         </Typography>
       </Box>
       {cleanup.choices ? (
