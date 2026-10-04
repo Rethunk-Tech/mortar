@@ -226,6 +226,62 @@ function CheckGate({
   return null
 }
 
+function InstallFailed({
+  error,
+  detail,
+  pending,
+  onSkip,
+  onRetry,
+}: {
+  error: string
+  detail: string
+  pending: boolean
+  onSkip: () => void
+  onRetry: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <>
+      <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
+        {error}
+      </Typography>
+      {detail && detail !== error ? (
+        <Typography
+          sx={{
+            fontFamily: MONO,
+            fontSize: 12,
+            opacity: 0.8,
+            wordBreak: 'break-word',
+            userSelect: 'text',
+          }}
+        >
+          {detail}
+        </Typography>
+      ) : null}
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.25 }}>
+        <Button
+          variant="outlined"
+          color="inherit"
+          disabled={pending}
+          onClick={onSkip}
+          sx={{ height: 46, whiteSpace: 'nowrap' }}
+        >
+          {t`Skip for now`}
+        </Button>
+        <Button
+          variant="contained"
+          startIcon={<RefreshCw size={16} />}
+          disabled={pending}
+          onClick={onRetry}
+          sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
+        >
+          {t`Retry`}
+        </Button>
+      </Box>
+    </>
+  )
+}
+
 export function SmapiStep({
   game,
   gameDir,
@@ -300,9 +356,8 @@ export function SmapiStep({
     }
   }, [checked, smapiReady, installing, install, game])
 
-  const waiting = <CheckGate error={checkError} ready={checked} onRetry={runCheck} />
-  if (waiting) {
-    return waiting
+  if (checkError !== '' || !checked) {
+    return <CheckGate error={checkError} ready={checked} onRetry={runCheck} />
   }
   if (smapiReady && !installing) {
     const showLaunch = windows && !launchReady
@@ -353,46 +408,13 @@ export function SmapiStep({
         </>
       ) : null}
       {error && !installing ? (
-        <>
-          <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
-            {error}
-          </Typography>
-          {errorDetail && errorDetail !== error ? (
-            <Typography
-              sx={{
-                fontFamily: MONO,
-                fontSize: 12,
-                opacity: 0.8,
-                wordBreak: 'break-word',
-                userSelect: 'text',
-              }}
-            >
-              {errorDetail}
-            </Typography>
-          ) : null}
-          <Box
-            sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.25 }}
-          >
-            <Button
-              variant="outlined"
-              color="inherit"
-              disabled={pending}
-              onClick={onDone}
-              sx={{ height: 46, whiteSpace: 'nowrap' }}
-            >
-              {t`Skip for now`}
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<RefreshCw size={16} />}
-              disabled={pending}
-              onClick={() => install(game)}
-              sx={{ height: 46, fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}
-            >
-              {t`Retry`}
-            </Button>
-          </Box>
-        </>
+        <InstallFailed
+          error={error}
+          detail={errorDetail}
+          pending={pending}
+          onSkip={onDone}
+          onRetry={() => install(game)}
+        />
       ) : null}
     </Panel>
   )
