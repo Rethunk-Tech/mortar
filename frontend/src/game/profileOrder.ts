@@ -1,3 +1,5 @@
+import { cmpText } from '../mods/cmpText.ts'
+
 export interface OrderableProfile {
   id: string
   name: string
@@ -9,7 +11,7 @@ export function orderProfiles<T extends OrderableProfile>(
   lastPlayedProfile = '',
 ): T[] {
   if (order === 'name') {
-    return [...profiles].sort((a, b) => a.name.localeCompare(b.name))
+    return [...profiles].sort((a, b) => cmpText(a.name, b.name))
   }
   if (order === 'lastPlayed') {
     return [...profiles].sort((a, b) => {

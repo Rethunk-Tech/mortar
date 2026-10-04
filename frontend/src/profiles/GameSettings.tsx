@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import { type MouseEvent, type ReactNode, useCallback, useId, useState } from 'react'
 import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { cmpText } from '../mods/cmpText.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { useProfiles } from './store.ts'
@@ -67,7 +68,7 @@ function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps
         }
       }),
     )
-    found.sort((a, b) => a.name.localeCompare(b.name))
+    found.sort((a, b) => cmpText(a.name, b.name))
     setSources(found)
     setLoading(false)
   }, [gameId, profileId, profiles])

@@ -8,6 +8,7 @@ import {
   OpenDataFolder,
   SetBackupsKept,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
+import { cmpText } from '../../mods/cmpText.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { PrefNumber } from '../PrefControls.tsx'
@@ -224,7 +225,7 @@ export function UsageRows({
 }) {
   const { t } = useLingui()
   const games = usage
-    ? [...(usage.games ?? [])].sort((a, b) => b.size - a.size || a.name.localeCompare(b.name))
+    ? [...(usage.games ?? [])].sort((a, b) => b.size - a.size || cmpText(a.name, b.name))
     : null
   const labels: Record<SegmentId, string> = {
     profiles: t`Profiles`,

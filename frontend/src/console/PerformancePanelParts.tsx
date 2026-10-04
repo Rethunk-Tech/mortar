@@ -17,6 +17,7 @@ import type {
   PerformanceRow,
   SavedReport,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { cmpText } from '../mods/cmpText.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { formatTiming } from './formatTiming.ts'
@@ -88,7 +89,7 @@ function ReportTable({
     () =>
       [...rows].sort((a, b) => {
         if (sort.column === 'name') {
-          const result = a.name.localeCompare(b.name)
+          const result = cmpText(a.name, b.name)
           return sort.direction === 'asc' ? result : -result
         }
         const result = a[sort.column] - b[sort.column]

@@ -1,5 +1,7 @@
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { authorFieldIncludes } from './authorNormalize.ts'
+import { cmpText } from './cmpText.ts'
+import { idKey } from './dependents.ts'
 import { sameId } from './lookup.ts'
 
 interface AuthorModProfile {
@@ -61,16 +63,14 @@ function modsByAuthor(profiles: Profile[], author: string): AuthorModRow[] {
   }
   const out = [...byId.values()]
   for (const mod of out) {
-    mod.profiles.sort((a, b) =>
-      a.profileName.localeCompare(b.profileName, undefined, { sensitivity: 'base' }),
-    )
+    mod.profiles.sort((a, b) => cmpText(a.profileName, b.profileName))
   }
   out.sort((a, b) => {
-    const byName = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+    const byName = cmpText(a.name, b.name)
     if (byName !== 0) {
       return byName
     }
-    return a.uniqueId.localeCompare(b.uniqueId, undefined, { sensitivity: 'base' })
+    return cmpText(a.uniqueId, b.uniqueId)
   })
   return out
 }

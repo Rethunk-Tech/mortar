@@ -28,6 +28,7 @@ import type {
 import { absoluteWhen } from '../i18n/when.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useGameBusy } from '../launch/store.ts'
+import { cmpText } from '../mods/cmpText.ts'
 import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -132,7 +133,7 @@ function sortMods(mods: StartupMod[], column: ModSort, direction: 'asc' | 'desc'
   const sign = direction === 'asc' ? 1 : -1
   return [...mods].sort((a, b) =>
     column === 'name'
-      ? sign * a.name.localeCompare(b.name)
+      ? sign * cmpText(a.name, b.name)
       : sign * (sortValue[column](a) - sortValue[column](b)),
   )
 }

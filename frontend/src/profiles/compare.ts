@@ -3,6 +3,8 @@ import type {
   Profile,
   Source,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { cmpText } from '../mods/cmpText.ts'
+import { idKey } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'
 import { userModEntries } from './count.ts'
 
@@ -56,21 +58,21 @@ function indexUserMods(profile: Profile): Map<string, CompareSide> {
 
 function sortSides(sides: CompareSide[]): CompareSide[] {
   return [...sides].sort((a, b) => {
-    const n = a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' })
+    const n = cmpText(a.name, b.name)
     if (n !== 0) {
       return n
     }
-    return a.uniqueId.localeCompare(b.uniqueId, undefined, { sensitivity: 'accent' })
+    return cmpText(a.uniqueId, b.uniqueId)
   })
 }
 
 function sortPairs(pairs: ComparePair[]): ComparePair[] {
   return [...pairs].sort((a, b) => {
-    const n = a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' })
+    const n = cmpText(a.name, b.name)
     if (n !== 0) {
       return n
     }
-    return a.uniqueId.localeCompare(b.uniqueId, undefined, { sensitivity: 'accent' })
+    return cmpText(a.uniqueId, b.uniqueId)
   })
 }
 
