@@ -53,6 +53,7 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 		case it.State == StateWaitingClick:
 			waiting = true
 		case it.State != StateQueued:
+		case s.waitsForSameMod(it):
 		case running[it.Game+"\n"+it.Profile]:
 			held = true
 		case it.Repo != "":
@@ -532,6 +533,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if err := s.checkNexusMD5(path, wantMD5); err != nil {
 		return err
 	}
+	optional := manifestLess(path)
 	s.mu.Lock()
 	cur := s.find(it.ID)
 	if cur == nil || cur.State != StateDownloading {
@@ -542,7 +544,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if cur.Category == "" {
 		cur.Category = fileCategory(ctx, c, it)
 	}
-	if it.Kind != KindUpdate && s.d.SamePage != nil {
+	if it.Kind != KindUpdate && s.d.SamePage != nil && !optional {
 		if ask, ok := s.d.SamePage(it.Game, it.Profile, it.ModID, it.FileID, cur.Category); ok {
 			cur.State, cur.Merge, cur.MergeAdd = StateNeedsMerge, &ask, false
 			s.mu.Unlock()

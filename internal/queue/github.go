@@ -190,6 +190,12 @@ func (s *Service) installStaged(ctx context.Context, it Item) error {
 		return s.contentPatcherHint(ctx, it, err)
 	}
 	src := sourceOf(it)
+	if it.chosenOverlay && it.Remap != nil {
+		s.installMu.Lock()
+		res, err := s.d.InstallStaged(it.Game, it.Profile, it.staged, it.Remap.Source.WithOverlay(it.chosenRoot, it.chosenTo))
+		s.installMu.Unlock()
+		return s.afterInstall(it.ID, res, err, false)
+	}
 	if it.chosenRoot != "" {
 		if it.Remap != nil {
 			src = it.Remap.Source

@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/store"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
@@ -15,6 +16,7 @@ const (
 	FailBlocked = "blocked"
 	FailAuth    = "auth"
 	FailDisk    = "disk"
+	FailNoBase  = "nobase"
 	FailOther   = "other"
 )
 
@@ -28,6 +30,8 @@ func failureKind(err error) string {
 		return FailBlocked
 	case errors.As(err, &full), usererr.IsDiskFull(err):
 		return FailDisk
+	case errors.As(err, new(*profile.NoBaseError)):
+		return FailNoBase
 	case usererr.KindOf(err) == usererr.Network,
 		errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
 		return FailNetwork

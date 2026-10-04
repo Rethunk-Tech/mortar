@@ -35,7 +35,7 @@ func nexusSource(it Item, mod nexus.Mod) profile.Source {
 	}
 	return sourceWithOptions(it, profile.Source{
 		Kind: profile.KindNexus, Name: it.FileName, ModID: it.ModID, FileID: it.FileID, Version: it.Version,
-		Picture: pic, EndorsementCount: end,
+		Picture: pic, EndorsementCount: end, ModName: it.Name, Category: it.Category,
 	})
 }
 

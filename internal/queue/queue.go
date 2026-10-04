@@ -152,8 +152,11 @@ type Item struct {
 	fromStoreRefused bool
 	endorsed         int
 	fomod            map[string]map[string][]string
-	// chosenRoot is the folder AnswerRoot picked for a staged item; it is not persisted.
-	chosenRoot string
+	// chosenRoot is the folder AnswerRoot picked for a staged item; it is not persisted. AnswerOverlay sets
+	// chosenOverlay, and chosenRoot and chosenTo are then the optional file's folder and where it goes in its main file.
+	chosenRoot    string
+	chosenTo      string
+	chosenOverlay bool
 	// started is when this attempt left the queue for a fetch; it is not persisted.
 	started time.Time
 	fileMD5 string
@@ -776,6 +779,18 @@ func (s *Service) AnswerRoot(id, root string) {
 	s.poke()
 }
 
+// AnswerOverlay installs an item waiting in StateNeedsRoot on an optional file's question: the folder of the file
+// to lay over its main file, and where inside the main file's folder it goes.
+func (s *Service) AnswerOverlay(id, from, to string) {
+	s.mu.Lock()
+	if it := s.find(id); it != nil && it.State == StateNeedsRoot && it.staged != "" {
+		it.State, it.chosenRoot, it.chosenTo, it.chosenOverlay = StateQueued, from, to, true
+	}
+	s.mu.Unlock()
+	s.publish(true)
+	s.poke()
+}
+
 // AnswerMerge installs an item waiting in StateNeedsMerge, either into the existing same-page entry or as its own.
 func (s *Service) AnswerMerge(id string, add bool) {
 	s.mu.Lock()
@@ -796,7 +811,7 @@ func (s *Service) FailRoot(id string) {
 		snap := *it
 		rec = &snap
 		it.State, it.Error, it.ErrorKind = StateFailed, msg, FailOther
-		it.staged, it.Remap, it.chosenRoot = "", nil, ""
+		it.staged, it.Remap, it.chosenRoot, it.chosenTo, it.chosenOverlay = "", nil, "", "", false
 	}
 	s.mu.Unlock()
 	s.publish(true)
