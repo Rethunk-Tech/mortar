@@ -49,7 +49,7 @@ func defaultOps() Ops {
 // MaterializeTree puts src's files into dst using clone, hardlink, symlink, then copy.
 func MaterializeTree(src, dst string) error {
 	ops := defaultOps()
-	_, err := copyTree(src, dst, nil, ops.put)
+	_, err := copyTree(src, dst, ops.put)
 	return err
 }
 
@@ -63,7 +63,7 @@ func MaterializeFile(src, dst, rel string) error {
 func MaterializeTreeExclusive(src, dst string) error {
 	ops := defaultOps()
 	ops.Tiers = []Tier{TierClone, TierCopy}
-	_, err := copyTree(src, dst, nil, ops.put)
+	_, err := copyTree(src, dst, ops.put)
 	return err
 }
 

@@ -2,14 +2,11 @@
 
 package fsx
 
-import (
-	"errors"
-	"os"
-)
+import "errors"
 
 // SyncDir flushes a directory's entries (a rename into it) to disk.
 func SyncDir(dir string) error {
-	f, err := os.Open(dir)
+	f, err := Open(dir)
 	if err != nil {
 		return err
 	}

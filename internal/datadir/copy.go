@@ -24,7 +24,7 @@ type CopyProgress struct {
 // Directory junctions, mount points and symlink directories are not followed. Symlink files are copied by content
 // when they still resolve under src, and are an error when they escape.
 func CopyTree(src, dst string) error {
-	_, err := copyTree(src, dst, nil, nil)
+	_, err := copyTree(src, dst, nil)
 	return err
 }
 
@@ -41,9 +41,9 @@ func LinkedDir(p string, info os.FileInfo) bool {
 	return err == nil && st.IsDir()
 }
 
-// copyTree is CopyTree with progress and a custom per-file put; it also returns the linked folders it skipped.
-func copyTree(src, dst string, report func(CopyProgress), put func(from, to, rel string) error) (skipped []string, err error) {
-	return copyTreeFirst(src, dst, "", report, put)
+// copyTree is CopyTree with a custom per-file put; it also returns the linked folders it skipped.
+func copyTree(src, dst string, put func(from, to, rel string) error) (skipped []string, err error) {
+	return copyTreeFirst(src, dst, "", nil, put)
 }
 
 // copyTreeFirst is copyTree that, when first names a top-level entry of src, copies that entry before the rest.

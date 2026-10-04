@@ -54,7 +54,7 @@ func dataDirOrRecover() (string, error) {
 			}
 		case choiceNoDialog:
 			return "", err
-		default:
+		case choiceQuit:
 			os.Exit(0)
 		}
 	}

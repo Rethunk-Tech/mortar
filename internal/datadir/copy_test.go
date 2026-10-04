@@ -90,7 +90,7 @@ func TestCopyTreeReportsSkippedLinkedFolders(t *testing.T) {
 	if err := os.Symlink(outside, filepath.Join(src, "link")); err != nil {
 		t.Skipf("symlinks unavailable: %v", err)
 	}
-	skipped, err := copyTree(src, t.TempDir(), nil, nil)
+	skipped, err := copyTree(src, t.TempDir(), nil)
 	if err != nil || len(skipped) != 1 {
 		t.Fatalf("skipped = %v, err = %v", skipped, err)
 	}

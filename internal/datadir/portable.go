@@ -16,11 +16,10 @@ const PortableMarker = "portable"
 // portable is decided once per process: a marker added or removed while Mortar runs takes effect on the next start,
 // never by moving the data folder under a running session.
 var portable = sync.OnceValues(func() (string, error) {
-	exe, err := os.Executable()
-	if err != nil {
-		return "", nil
+	if exe, err := os.Executable(); err == nil {
+		return portableDir(exe)
 	}
-	return portableDir(exe)
+	return "", nil
 })
 
 // Portable reports whether this process keeps its data beside the executable.
@@ -55,7 +54,7 @@ func portableDir(exe string) (string, error) {
 	if os.Getenv("FLATPAK_ID") != "" || dir == "/app" || strings.HasPrefix(dir, "/app/") {
 		return "", nil
 	}
-	if info, err := fsx.Stat(filepath.Join(dir, PortableMarker)); err != nil || !info.Mode().IsRegular() {
+	if !hasMarker(dir) {
 		return "", nil
 	}
 	probe, err := os.CreateTemp(dir, ".mortar-write-*")
@@ -65,4 +64,9 @@ func portableDir(exe string) (string, error) {
 	_ = probe.Close()
 	_ = os.Remove(probe.Name())
 	return filepath.Join(dir, "data"), nil
+}
+
+func hasMarker(dir string) bool {
+	info, err := fsx.Stat(filepath.Join(dir, PortableMarker))
+	return err == nil && info.Mode().IsRegular()
 }

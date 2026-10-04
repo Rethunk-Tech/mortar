@@ -320,6 +320,6 @@ func MaterializeTreeOps(src, dst string, ops Ops) error {
 	if ops.Copy == nil {
 		ops.Copy = CopyFile
 	}
-	_, err := copyTree(src, dst, nil, ops.put)
+	_, err := copyTree(src, dst, ops.put)
 	return err
 }

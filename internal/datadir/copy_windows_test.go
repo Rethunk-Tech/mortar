@@ -20,11 +20,11 @@ func TestCopyTreeSkipsAJunction(t *testing.T) {
 		t.Fatal(err)
 	}
 	junc := filepath.Join(src, "junc")
-	if out, err := exec.Command("cmd", "/c", "mklink", "/J", junc, outside).CombinedOutput(); err != nil {
+	if out, err := exec.CommandContext(t.Context(), "cmd", "/c", "mklink", "/J", junc, outside).CombinedOutput(); err != nil {
 		t.Skipf("junction not permitted: %v %s", err, out)
 	}
 	dst := t.TempDir()
-	skipped, err := copyTree(src, dst, nil, nil)
+	skipped, err := copyTree(src, dst, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
