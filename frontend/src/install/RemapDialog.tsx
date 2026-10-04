@@ -38,7 +38,10 @@ function NodeRow({
         <ListItemText
           primary={node.name}
           secondary={formatBytes(node.size)}
-          slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
+          slotProps={{
+            primary: { noWrap: true, title: node.name },
+            secondary: { noWrap: true },
+          }}
         />
       </ListItemButton>
     )
@@ -77,7 +80,10 @@ function NodeRow({
         <ListItemText
           primary={node.name}
           secondary={formatBytes(node.size)}
-          slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
+          slotProps={{
+            primary: { noWrap: true, title: node.name },
+            secondary: { noWrap: true },
+          }}
         />
       </ListItemButton>
       <Collapse in={open}>
@@ -116,7 +122,7 @@ function VariantRows({
           <ListItemText
             primary={showVersion ? `${v.path} · ${v.version}` : v.path}
             secondary={showDescription ? v.description : undefined}
-            slotProps={{ primary: { noWrap: true } }}
+            slotProps={{ primary: { noWrap: true, title: v.path } }}
           />
         </ListItemButton>
       ))}

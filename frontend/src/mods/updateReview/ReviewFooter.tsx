@@ -57,16 +57,16 @@ export function ReviewFooter({
         ) : (
           <Box sx={{ mr: 'auto' }} />
         )}
+        <Button variant="text" color="inherit" onClick={onClose}>
+          {t`Close`}
+        </Button>
         {signedIn && uncachedIds.length > 0 ? (
           <Button variant="text" disabled={loadingAll} onClick={onLoadAll}>
             {loadingAll ? t`Loading changes…` : t`Load all changes`}
           </Button>
         ) : null}
-        <Button variant="text" color="inherit" onClick={onClose}>
-          {t`Close`}
-        </Button>
         {wantedCount > 0 ? (
-          <Button variant="outlined" color="inherit" onClick={onEverywhere}>
+          <Button variant="text" color="inherit" onClick={onEverywhere}>
             {t`Update all everywhere…`}
           </Button>
         ) : null}

@@ -405,7 +405,7 @@ export function StreamOverlay() {
   const port = useSettings((s) => s.overlayPort)
   const token = useSettings((s) => s.overlayToken)
   const push = useToasts((s) => s.push)
-  const fail = t`Couldn't save that setting`
+  const fail = t`Could not save that setting`
   const idle = t`Load a save to see values`
   const wait = t`Start the game to see values`
   const copied = t`Copied`

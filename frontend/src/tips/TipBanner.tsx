@@ -36,7 +36,7 @@ export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }
       <TipIconButton
         label={t`Dismiss`}
         onClick={() => {
-          SetTipsSeen([...(seen ?? []), tip]).catch(reportError(t`Couldn't save that setting`))
+          SetTipsSeen([...(seen ?? []), tip]).catch(reportError(t`Could not save that setting`))
         }}
         sx={{ whiteSpace: 'nowrap' }}
       >

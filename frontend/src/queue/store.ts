@@ -129,7 +129,7 @@ function failureToast(item: Item) {
     return {
       title: i18n._(msg`Could not reach Nexus`),
       action: {
-        label: i18n._(msg`Retry now`),
+        label: i18n._(msg`Retry`),
         run: () => Retry(item.id),
         live: () => retryLive(item.id),
       },

@@ -214,7 +214,7 @@ export function ProfileRow({ profile }: { profile: Profile }) {
             </Typography>
           </Tooltip>
         ) : null}
-        <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Typography noWrap={true} title={summary} sx={{ fontSize: 13, color: 'text.secondary' }}>
           {summary}
         </Typography>
       </Box>

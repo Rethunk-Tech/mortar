@@ -355,7 +355,7 @@ export function GameSelect() {
       </Box>
       {!status.games.some((g) => g.available && g.installed) && (
         <Box sx={{ px: 2, py: 0.75, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography noWrap={true} sx={{ fontSize: 14, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
             {t`No supported game was found in your launchers.`}
           </Typography>
           <Link component="button" onClick={() => openSettings('launchers')} sx={{ fontSize: 14 }}>

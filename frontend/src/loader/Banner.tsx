@@ -47,7 +47,7 @@ export function LoaderBanner({ game }: { game: string }) {
         borderLeftColor: status.installed && !status.broken ? 'info.main' : 'warning.main',
       }}
     >
-      <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
+      <Typography noWrap={true} title={message} sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
         {message}
       </Typography>
       {installing ? (

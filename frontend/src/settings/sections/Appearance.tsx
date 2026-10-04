@@ -40,7 +40,7 @@ function DefaultSort() {
         value={`${stored.column}:${stored.dir}`}
         onChange={(v) => {
           const [column = 'name', dir = 'asc'] = v.split(':')
-          persist(() => SetListSort(column, dir), push, t`Couldn't save that setting`)
+          persist(() => SetListSort(column, dir), push, t`Could not save that setting`)
         }}
         options={options}
         label={t`Default sort`}

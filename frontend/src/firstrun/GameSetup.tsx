@@ -92,15 +92,24 @@ export function GameSetup({ game: id }: { game: GameId }) {
   const [launchers, setLaunchers] = useState<StoreApp[]>([])
   const [loadError, setLoadError] = useState('')
   const [ready, setReady] = useState(false)
+  const loaded = useRef(false)
+  // Only the first read shows Loading; a refresh on window focus keeps the step and its row errors.
   const refresh = useCallback(() => {
-    setLoadError('')
-    setReady(false)
+    if (!loaded.current) {
+      setLoadError('')
+      setReady(false)
+    }
     Promise.all([List(), Launchers()])
       .then(([games, ls]) => {
+        loaded.current = true
         setGame((games ?? []).find((g) => g.id === id) ?? null)
         setLaunchers(ls ?? [])
       })
-      .catch((e: unknown) => setLoadError(errorMessage(e)))
+      .catch((e: unknown) => {
+        if (!loaded.current) {
+          setLoadError(errorMessage(e))
+        }
+      })
       .finally(() => setReady(true))
   }, [id])
   useEffect(refresh, [refresh])

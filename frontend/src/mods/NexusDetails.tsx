@@ -152,7 +152,11 @@ function Files({
         <Fold title={t`Current files on Nexus (${others.length})`}>
           {others.slice(0, FILES_SHOWN).map((f) => (
             <Box key={f.fileId} sx={{ display: 'flex', gap: 1, alignItems: 'baseline' }}>
-              <Typography noWrap={true} sx={{ ...text, flex: 1, minWidth: 0 }}>
+              <Typography
+                noWrap={true}
+                title={f.name || f.fileName}
+                sx={{ ...text, flex: 1, minWidth: 0 }}
+              >
                 {f.name || f.fileName}
               </Typography>
               <NewSinceLooked show={fileIsNewSinceLooked(f.uploaded, looked)} />

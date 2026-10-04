@@ -164,6 +164,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
           </Box>
         </DialogContent>
         <DialogActions>
+          <Button onClick={onClose}>{t`Close`}</Button>
           <Button
             startIcon={<FolderOpen size={16} />}
             onClick={() => {
@@ -172,7 +173,6 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
           >
             {t`Open backups folder`}
           </Button>
-          <Button onClick={onClose}>{t`Close`}</Button>
         </DialogActions>
       </Dialog>
       <Menu

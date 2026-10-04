@@ -152,7 +152,7 @@ export function Updates() {
   const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
   const checkOnlyEnabledMods = useSettings((s) => s.checkOnlyEnabledMods)
   const push = useToasts((s) => s.push)
-  const fail = t`Couldn't save that setting`
+  const fail = t`Could not save that setting`
   return (
     <>
       <SettingsSection title={t`Mortar`}>

@@ -17,7 +17,7 @@ export function ModsProfiles() {
         <PrefSwitch
           checked={enableModsWhenInstalled !== false}
           onChange={(on) =>
-            persist(() => SetEnableModsWhenInstalled(on), push, t`Couldn't save that setting`)
+            persist(() => SetEnableModsWhenInstalled(on), push, t`Could not save that setting`)
           }
           label={t`Enable mods when installed`}
         />

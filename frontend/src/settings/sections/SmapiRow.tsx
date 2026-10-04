@@ -43,7 +43,7 @@ function pinValue(raw: string | undefined): string {
 function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
   const { t, i18n } = useLingui()
   const push = useToasts((s) => s.push)
-  const fail = t`Couldn't save that setting`
+  const fail = t`Could not save that setting`
   const pin = useSettings((s) => s.games?.stardew?.smapiPin)
   const status = useLoader((s) => s.status)
   const check = useLoader((s) => s.check)

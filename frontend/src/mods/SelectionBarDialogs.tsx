@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Autocomplete,
@@ -6,6 +7,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -35,49 +39,56 @@ export function TagSelectionDialog({
   setTagMany: (mods: Mod[], tag: string, add: boolean) => Promise<void>
 }) {
   const { t } = useLingui()
+  const apply = () => {
+    if (tag.trim() === '') {
+      return
+    }
+    onClose()
+    setTagMany(mods, tag, addTag).catch(reportUnexpected)
+  }
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t`Tag selected mods`}</DialogTitle>
-      <DialogContent sx={{ minWidth: 320, pt: 2 }}>
-        <Autocomplete
-          freeSolo={true}
-          options={tags}
-          value={tag}
-          onInputChange={(_, value) => setTag(value)}
-          renderInput={(params) => <TextField {...params} autoFocus={true} label={t`Tag`} />}
-        />
-        <ToggleButtonGroup
-          aria-label={t`Add or remove the tag`}
-          exclusive={true}
-          size="small"
-          value={addTag ? 'add' : 'remove'}
-          onChange={(_, value: string | null) => {
-            if (value === 'add') {
-              setAddTag(true)
-            }
-            if (value === 'remove') {
-              setAddTag(false)
-            }
-          }}
-          sx={{ mt: 1 }}
-        >
-          <ToggleButton value="add">{t`Add`}</ToggleButton>
-          <ToggleButton value="remove">{t`Remove`}</ToggleButton>
-        </ToggleButtonGroup>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-        <Button
-          variant="contained"
-          disabled={tag.trim() === ''}
-          onClick={() => {
-            onClose()
-            setTagMany(mods, tag, addTag).catch(reportUnexpected)
-          }}
-        >
-          {t`Apply`}
-        </Button>
-      </DialogActions>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          apply()
+        }}
+      >
+        <DialogTitle>{plural(mods.length, { one: 'Tag # mod', other: 'Tag # mods' })}</DialogTitle>
+        <DialogContent sx={{ minWidth: 320, pt: 2 }}>
+          <Autocomplete
+            freeSolo={true}
+            options={tags}
+            value={tag}
+            onInputChange={(_, value) => setTag(value)}
+            renderInput={(params) => <TextField {...params} autoFocus={true} label={t`Tag`} />}
+          />
+          <ToggleButtonGroup
+            aria-label={t`Add or remove the tag`}
+            exclusive={true}
+            size="small"
+            value={addTag ? 'add' : 'remove'}
+            onChange={(_, value: string | null) => {
+              if (value === 'add') {
+                setAddTag(true)
+              }
+              if (value === 'remove') {
+                setAddTag(false)
+              }
+            }}
+            sx={{ mt: 1 }}
+          >
+            <ToggleButton value="add">{t`Add`}</ToggleButton>
+            <ToggleButton value="remove">{t`Remove`}</ToggleButton>
+          </ToggleButtonGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>{t`Cancel`}</Button>
+          <Button type="submit" variant="contained" disabled={tag.trim() === ''}>
+            {t`Apply`}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 }
@@ -102,19 +113,24 @@ export function CategorySelectionDialog({
   const { t } = useLingui()
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t`Set category for selected mods`}</DialogTitle>
+      <DialogTitle>
+        {plural(mods.length, { one: 'Set category for # mod', other: 'Set category for # mods' })}
+      </DialogTitle>
       <DialogContent sx={{ minWidth: 280, pt: 2 }}>
-        {[{ id: '', name: t`Uncategorized` }, ...categories].map((option) => (
-          <Button
-            key={option.id}
-            fullWidth={true}
-            variant={category === option.id ? 'contained' : 'text'}
-            onClick={() => setCategory(option.id)}
-            sx={{ justifyContent: 'flex-start' }}
-          >
-            {option.name}
-          </Button>
-        ))}
+        <RadioGroup
+          aria-label={t`Category`}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          {[{ id: '', name: t`Uncategorised` }, ...categories].map((option) => (
+            <FormControlLabel
+              key={option.id}
+              value={option.id}
+              control={<Radio />}
+              label={option.name}
+            />
+          ))}
+        </RadioGroup>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t`Cancel`}</Button>

@@ -17,12 +17,22 @@ export function FirstRun() {
   const [launchers, setLaunchers] = useState<StoreApp[] | null>(null)
   const [loadError, setLoadError] = useState('')
   const [busy, setBusy] = useState(false)
+  const loaded = useRef(false)
+  // Only the first read shows Loading; a refresh on window focus keeps the page, its scroll and row errors.
   const refresh = useCallback(() => {
-    setLoadError('')
-    setLaunchers(null)
+    if (!loaded.current) {
+      setLoadError('')
+    }
     Launchers()
-      .then((ls) => setLaunchers(ls ?? []))
-      .catch((e: unknown) => setLoadError(errorMessage(e)))
+      .then((ls) => {
+        loaded.current = true
+        setLaunchers(ls ?? [])
+      })
+      .catch((e: unknown) => {
+        if (!loaded.current) {
+          setLoadError(errorMessage(e))
+        }
+      })
   }, [])
   useEffect(refresh, [refresh])
   useRefreshOnFocus(refresh)

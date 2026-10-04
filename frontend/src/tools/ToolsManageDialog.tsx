@@ -76,8 +76,10 @@ export function ToolsManageDialog({
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAdding(true)}>{t`Add tool…`}</Button>
           <Button onClick={onClose}>{t`Close`}</Button>
+          <Button variant="contained" onClick={() => setAdding(true)}>
+            {t`Add tool…`}
+          </Button>
         </DialogActions>
       </Dialog>
       <ConfirmDialog

@@ -71,7 +71,7 @@ function Header({
           <Typography component="h2" sx={{ fontSize: 18, fontWeight: 700 }}>
             {view === 'history' ? t`History` : t`Downloads`}
           </Typography>
-          <Typography noWrap={true} sx={{ fontSize: 13 }}>
+          <Typography noWrap={true} title={line} sx={{ fontSize: 13 }}>
             {line}
           </Typography>
         </Box>

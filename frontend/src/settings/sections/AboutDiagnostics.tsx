@@ -216,6 +216,7 @@ function Diagnostics() {
           ))}
         </DialogContent>
         <DialogActions>
+          <Button onClick={() => setOpen(false)}>{t`Close`}</Button>
           <Button startIcon={<Copy size={16} />} disabled={!report} onClick={copy}>
             {t`Copy report`}
           </Button>
@@ -229,7 +230,6 @@ function Diagnostics() {
           <Button variant="contained" disabled={busy} onClick={run}>
             {t`Run again`}
           </Button>
-          <Button onClick={() => setOpen(false)}>{t`Close`}</Button>
         </DialogActions>
       </Dialog>
     </SettingsSection>

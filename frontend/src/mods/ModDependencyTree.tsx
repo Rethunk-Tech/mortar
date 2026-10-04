@@ -44,7 +44,6 @@ function MissingAdd({ uniqueID }: { uniqueID: string }) {
     return null
   }
   const { url } = where
-  const github = where.site === 'GitHub' && where.github !== ''
   const pageButton = (
     <Button
       size="small"
@@ -134,14 +133,14 @@ function NodeRow({ node, mods, depth }: { node: DepViewNode; mods: Mod[]; depth:
             {label}
           </Link>
         ) : (
-          <Typography noWrap={true} sx={{ fontSize: nameSize, minWidth: 0 }}>
+          <Typography noWrap={true} title={label} sx={{ fontSize: nameSize, minWidth: 0 }}>
             {label}
           </Typography>
         )}
-        <Typography noWrap={true} sx={{ ...caption, color: 'text.secondary' }}>
+        <Typography noWrap={true} title={edgeNote} sx={{ ...caption, color: 'text.secondary' }}>
           {edgeNote}
         </Typography>
-        <Typography noWrap={true} sx={{ ...caption, color: tone }}>
+        <Typography noWrap={true} title={status} sx={{ ...caption, color: tone }}>
           {status}
         </Typography>
         {node.state === 'missing' ? <MissingAdd uniqueID={node.uniqueID} /> : null}

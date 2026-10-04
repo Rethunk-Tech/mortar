@@ -22,7 +22,7 @@ function Fallback({ error, stack, onRetry }: { error: Error; stack: string; onRe
       action={
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button variant="contained" startIcon={<RotateCcw size={16} />} onClick={onRetry}>
-            {t`Try again`}
+            {t`Retry`}
           </Button>
           <Button startIcon={<Copy size={16} />} onClick={copy}>
             {t`Copy details`}

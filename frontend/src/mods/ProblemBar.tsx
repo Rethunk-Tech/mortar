@@ -89,6 +89,7 @@ export function ProblemBar() {
       <Typography
         component="span"
         noWrap={true}
+        title={detail}
         sx={{ flex: 1, minWidth: 0, fontSize: 14, color: 'text.secondary' }}
       >
         {detail}

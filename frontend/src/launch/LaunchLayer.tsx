@@ -287,7 +287,7 @@ function Failure({ game }: { game: string }) {
             start(game, failure.profile, false)
           }}
         >
-          {t`Try again`}
+          {t`Retry`}
         </Button>
       </DialogActions>
     </Dialog>

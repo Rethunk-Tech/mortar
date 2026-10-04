@@ -34,6 +34,7 @@ export function ImportFooter({
     runLabel = t`New profile`
   }
   const [askReplace, setAskReplace] = useState(false)
+  const closeDialog = useImportDialog((s) => s.close)
   const targetId = useImportDialog((s) => s.request?.profileId ?? '')
   const targetLocked = useProfileLocked(targetId)
   return (
@@ -69,12 +70,21 @@ export function ImportFooter({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: targetName ? '1fr 1fr 1fr 2fr' : '1fr 2fr',
+          gridTemplateColumns: targetName ? '1fr 1fr 1fr 1fr 2fr' : '1fr 1fr 2fr',
           gap: 1,
           px: 1,
           pb: 1,
         }}
       >
+        <Button
+          variant="text"
+          color="inherit"
+          onClick={closeDialog}
+          disabled={flow.busy}
+          sx={{ height: 40 }}
+        >
+          {t`Close`}
+        </Button>
         <Button
           variant="text"
           color="inherit"
@@ -87,7 +97,7 @@ export function ImportFooter({
         {targetName ? (
           <LockedReason locked={targetLocked}>
             <Button
-              variant="outlined"
+              variant="text"
               disabled={!canRun || targetLocked}
               onClick={() => {
                 flow.run(true).catch(reportUnexpected)
@@ -101,7 +111,7 @@ export function ImportFooter({
         {targetName ? (
           <LockedReason locked={targetLocked}>
             <Button
-              variant="outlined"
+              variant="text"
               color="error"
               disabled={!canRun || targetLocked}
               onClick={() => setAskReplace(true)}

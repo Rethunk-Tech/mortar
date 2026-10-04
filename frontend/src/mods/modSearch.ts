@@ -19,7 +19,6 @@ export function searchFields(
     m.uniqueId,
     ...(entry?.tags ?? []),
     entry?.note ?? '',
-    JSON.stringify(entry?.source ?? ''),
     ...categoryNames(entry, nexusById[nexusId]?.details?.category, customById),
   ]
 }

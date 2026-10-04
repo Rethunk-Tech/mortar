@@ -135,14 +135,6 @@ export function PrePlayDialog() {
       <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
         <Button onClick={() => persistThen(cancel)}>{t`Cancel`}</Button>
         <Button onClick={() => persistThen(openProblems)}>{t`Open Problems`}</Button>
-        {hasUpdates ? (
-          <Button
-            variant="contained"
-            onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}
-          >
-            {t`Update and play`}
-          </Button>
-        ) : null}
         {lastProfile?.switchProfileId ? (
           <Button
             onClick={() =>
@@ -183,6 +175,14 @@ export function PrePlayDialog() {
         >
           {t`Play anyway`}
         </Button>
+        {hasUpdates ? (
+          <Button
+            variant="contained"
+            onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}
+          >
+            {t`Update and play`}
+          </Button>
+        ) : null}
       </DialogActions>
     </Dialog>
   )

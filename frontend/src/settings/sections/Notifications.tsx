@@ -32,7 +32,7 @@ function ChannelSwitch({ prefKey, label }: { prefKey: string; label: string }) {
         checked={prefAsBool(prefRaw(settings, spec), spec)}
         label={label}
         onChange={(on) =>
-          persist(() => SetByKey(prefKey, String(on), ''), push, t`Couldn't save that setting`)
+          persist(() => SetByKey(prefKey, String(on), ''), push, t`Could not save that setting`)
         }
       />
     </Box>

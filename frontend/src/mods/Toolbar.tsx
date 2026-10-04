@@ -32,7 +32,6 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { SetListGroupBy } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
-import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { useInstall } from '../install/store.ts'
 import { openSettings } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -43,14 +42,13 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
-import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { ExtraFolderMenu } from './ExtraFolderMenu.tsx'
 import { onFilterFocus } from './filterFocus.ts'
-import { nexusModsUrl } from './nexusUrl.ts'
 import { type GroupBy, sanitizeListGroupBy } from './group.ts'
 import { openPage } from './menu.ts'
+import { nexusModsUrl } from './nexusUrl.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -425,7 +423,6 @@ export function EmptyMods({ profileId }: { profileId: string }) {
       title={t`No mods yet`}
       action={
         <>
-          <TipBanner tip="mods">{t`Drop archives anywhere on the window, or Open Nexus Mods to find mods.`}</TipBanner>
           <Box sx={{ display: 'flex', gap: 1.5 }}>
             <BrowseNexus variant="contained" size="large" signInFirst={true} />
             <AddArchive variant="outlined" size="large" />
@@ -435,15 +432,12 @@ export function EmptyMods({ profileId }: { profileId: string }) {
             onClick={() => openImport({ profileId })}
             sx={{ textDecoration: 'underline' }}
           >
-            {t`Or import a shared profile…`}
-          </Button>
-          <Button variant="text" onClick={openDownloadsDialog} sx={{ textDecoration: 'underline' }}>
-            {t`Or add from the downloads folder…`}
+            {t`Import a shared profile…`}
           </Button>
         </>
       }
     >
-      {t`Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V.`}
+      {t`Or paste a share or collection link with Ctrl+V.`}
     </EmptyState>
   )
 }

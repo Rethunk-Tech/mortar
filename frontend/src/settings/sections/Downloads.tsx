@@ -49,7 +49,7 @@ function NxmDefaultProfile() {
       <PrefSelect
         value={options.some((o) => o.value === value) ? value : ''}
         onChange={(v) =>
-          persist(() => SetNxmDefaultProfile(v), push, t`Couldn't save that setting`)
+          persist(() => SetNxmDefaultProfile(v), push, t`Could not save that setting`)
         }
         options={options}
         label={copy.label}
@@ -152,7 +152,7 @@ function NxmLinks() {
           <PrefSwitch
             checked={redirectOther}
             onChange={(on) =>
-              persist(() => SetNxmRedirectOtherGames(on), push, t`Couldn't save that setting`)
+              persist(() => SetNxmRedirectOtherGames(on), push, t`Could not save that setting`)
             }
             label={t`Send other games' links to ${redirectName}`}
           />
@@ -183,7 +183,7 @@ function PreferredServer() {
       <PrefSelect
         value={options.some((o) => o.value === preferred) ? preferred : ''}
         onChange={(v) =>
-          persist(() => SetNexusPreferredDownloadServer(v), push, t`Couldn't save that setting`)
+          persist(() => SetNexusPreferredDownloadServer(v), push, t`Could not save that setting`)
         }
         options={options}
         label={t`Preferred download server`}
@@ -204,7 +204,7 @@ export function Downloads() {
         }
       },
       push,
-      t`Couldn't save that setting`,
+      t`Could not save that setting`,
     )
   return (
     <>

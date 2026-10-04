@@ -1,5 +1,5 @@
 import type { I18n } from '@lingui/core'
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Stack, Typography } from '@mui/material'
 import type { Run } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
@@ -22,8 +22,11 @@ function runSummary(i18n: I18n, runs: Run[]): string {
     errors > 0 ? i18n._(msg`${errors} with errors`) : '',
     clean > 0 ? i18n._(msg`${clean} clean`) : '',
   ].filter((p) => p !== '')
-  const n = runs.length
-  return i18n._(msg`Last ${n} runs: ${parts.join(', ')}`)
+  const list = parts.join(', ')
+  return plural(runs.length, {
+    one: `Last run: ${list}`,
+    other: `Last # runs: ${list}`,
+  })
 }
 
 export function HealthTooltipContent({

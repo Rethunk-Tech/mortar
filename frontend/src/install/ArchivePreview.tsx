@@ -15,6 +15,7 @@ const INDENT = 14
 function Row({ row }: { row: TreeRow }) {
   const { manifest } = row
   const Icon = row.isDir ? Folder : File
+  const label = `${row.name}${manifest ? ` · ${manifest.name} ${manifest.version}` : ''}`
   return (
     <Box
       sx={{
@@ -32,10 +33,10 @@ function Row({ row }: { row: TreeRow }) {
       <Icon size={13} style={{ flexShrink: 0 }} />
       <Box
         component="span"
+        title={label}
         sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
       >
-        {row.name}
-        {manifest ? ` · ${manifest.name} ${manifest.version}` : ''}
+        {label}
       </Box>
       {row.isDir ? null : (
         <Box component="span" sx={{ color: 'text.secondary', flexShrink: 0, pr: 0.5 }}>
