@@ -15,6 +15,7 @@ import type {
   Copy,
   Duplicate,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { nexusKeepKey, preselect } from './lookup.ts'
 import { LetterTile } from './parts.tsx'
@@ -77,6 +78,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
   const resolve = useMods((s) => s.resolve)
   const keepCopy = useMods((s) => s.keepCopy)
   const locked = useLocked()
+  const lockedTitle = t`Stop the game to change mods.`
   const copies = dup.copies ?? []
   const [keep, setKeep] = useState(preselect(copies))
   const nexusKey = nexusKeepKey(copies)
@@ -106,30 +108,32 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
         </RadioGroup>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button variant="outlined" onClick={() => resolve(null)}>
-          {t`Decide later`}
-        </Button>
+        <Button onClick={() => resolve(null)}>{t`Decide later`}</Button>
         {nexusKey === null || keep !== nexusKey ? (
-          <Button
-            variant={nexusKey === null ? 'contained' : 'outlined'}
-            disabled={locked}
-            onClick={() => {
-              keepCopy(dup, keep).catch(reportUnexpected)
-            }}
-          >
-            {t`Keep this one`}
-          </Button>
+          <DisabledReason title={lockedTitle} disabled={locked}>
+            <Button
+              variant={nexusKey === null ? 'contained' : 'outlined'}
+              disabled={locked}
+              onClick={() => {
+                keepCopy(dup, keep).catch(reportUnexpected)
+              }}
+            >
+              {t`Keep this one`}
+            </Button>
+          </DisabledReason>
         ) : null}
         {nexusKey === null ? null : (
-          <Button
-            variant="contained"
-            disabled={locked}
-            onClick={() => {
-              keepCopy(dup, nexusKey).catch(reportUnexpected)
-            }}
-          >
-            {t`Keep the Nexus copy`}
-          </Button>
+          <DisabledReason title={lockedTitle} disabled={locked}>
+            <Button
+              variant="contained"
+              disabled={locked}
+              onClick={() => {
+                keepCopy(dup, nexusKey).catch(reportUnexpected)
+              }}
+            >
+              {t`Keep the Nexus copy`}
+            </Button>
+          </DisabledReason>
         )}
       </DialogActions>
     </>

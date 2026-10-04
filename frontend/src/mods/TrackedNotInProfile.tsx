@@ -18,6 +18,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/intern
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { openImport } from '../share/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { openPage } from './menu.ts'
 import type { TrackedMod } from './nexusAccount.ts'
@@ -82,15 +83,17 @@ function TrackedRow({
         {t`Open on Nexus`}
       </Button>
       {premium ? (
-        <Button
-          size="small"
-          variant="contained"
-          disabled={locked}
-          startIcon={<Plus size={14} aria-hidden={true} />}
-          onClick={() => openImport({ profileId, link: url })}
-        >
-          {t`Add`}
-        </Button>
+        <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+          <Button
+            size="small"
+            variant="contained"
+            disabled={locked}
+            startIcon={<Plus size={14} aria-hidden={true} />}
+            onClick={() => openImport({ profileId, link: url })}
+          >
+            {t`Add`}
+          </Button>
+        </DisabledReason>
       ) : null}
     </Box>
   )

@@ -31,6 +31,7 @@ export function SplitCombineItems({
 }) {
   const { t } = useLingui()
   const push = useToasts((s) => s.push)
+  const lockedTip = t`Stop the game to change mods.`
   if (extras.length === 0 && siblings.length === 0) {
     return null
   }
@@ -59,7 +60,9 @@ export function SplitCombineItems({
             ).catch(reportUnexpected)
           }}
         >
-          <ListItemText>{extraLabel(extraKey)}</ListItemText>
+          <ListItemText secondary={locked ? lockedTip : undefined}>
+            {extraLabel(extraKey)}
+          </ListItemText>
         </MenuItem>
       ))}
       {siblings.length > 0 ? (
@@ -82,7 +85,9 @@ export function SplitCombineItems({
             ).catch(reportUnexpected)
           }}
         >
-          <ListItemText>{entryFileLabel(other)}</ListItemText>
+          <ListItemText secondary={locked ? lockedTip : undefined}>
+            {entryFileLabel(other)}
+          </ListItemText>
         </MenuItem>
       ))}
     </>

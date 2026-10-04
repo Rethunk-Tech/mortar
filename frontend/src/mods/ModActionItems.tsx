@@ -38,10 +38,12 @@ function openManifestOf(mod: Mod, profile: Profile | undefined) {
 
 function RemoveOtherMenuItem({
   locked,
+  tooltip,
   close,
   onClick,
 }: {
   locked: boolean
+  tooltip: string
   close: () => void
   onClick: () => void
 }) {
@@ -49,6 +51,7 @@ function RemoveOtherMenuItem({
   return (
     <MenuAction
       disabled={locked}
+      tooltip={tooltip}
       icon={<Trash2 size={ICON_SIZE} />}
       label={t`Remove from other profiles…`}
       onClick={() => {
@@ -56,6 +59,32 @@ function RemoveOtherMenuItem({
         onClick()
       }}
     />
+  )
+}
+
+function RemoveMenuItem({
+  item,
+  locked,
+  tooltip,
+  close,
+}: {
+  item: { label: string; icon: ReactNode; run: () => void }
+  locked: boolean
+  tooltip: string
+  close: () => void
+}) {
+  return (
+    <MenuItem
+      disabled={locked}
+      sx={{ color: 'error.main' }}
+      onClick={() => {
+        close()
+        item.run()
+      }}
+    >
+      <ListItemIcon sx={{ color: 'inherit' }}>{item.icon}</ListItemIcon>
+      <ListItemText secondary={locked ? tooltip : undefined}>{item.label}</ListItemText>
+    </MenuItem>
   )
 }
 
@@ -88,10 +117,13 @@ export function ModActionItems({
   labels: { manifest: string; category: string; alsoAdd: string; addBundle: string }
   splitCombine: ReactNode
 }) {
+  const { t } = useLingui()
+  const lockedTip = t`Stop the game to change mods.`
   const renderAction = (action: ModAction | 'reinstall', disabled = false) => (
     <MenuAction
       key={action}
       disabled={disabled}
+      tooltip={lockedTip}
       icon={items[action].icon}
       label={items[action].label}
       onClick={() => {
@@ -144,6 +176,7 @@ export function ModActionItems({
       <MenuAction
         key="add-bundle"
         disabled={locked}
+        tooltip={lockedTip}
         icon={<PackagePlus size={ICON_SIZE} />}
         label={labels.addBundle}
         onClick={() => {
@@ -163,6 +196,7 @@ export function ModActionItems({
       <MenuAction
         key="also-add"
         disabled={locked}
+        tooltip={lockedTip}
         icon={<CopyPlus size={ICON_SIZE} />}
         label={labels.alsoAdd}
         onClick={() => {
@@ -176,6 +210,7 @@ export function ModActionItems({
     <RemoveOtherMenuItem
       key="remove-other"
       locked={locked}
+      tooltip={lockedTip}
       close={close}
       onClick={onRemoveOther}
     />,
@@ -186,18 +221,13 @@ export function ModActionItems({
   if (has('remove')) {
     result.push(<Divider key="remove-divider" />)
     result.push(
-      <MenuItem
+      <RemoveMenuItem
         key="remove"
-        disabled={locked}
-        sx={{ color: 'error.main' }}
-        onClick={() => {
-          close()
-          items.remove.run()
-        }}
-      >
-        <ListItemIcon sx={{ color: 'inherit' }}>{items.remove.icon}</ListItemIcon>
-        <ListItemText>{items.remove.label}</ListItemText>
-      </MenuItem>,
+        item={items.remove}
+        locked={locked}
+        tooltip={lockedTip}
+        close={close}
+      />,
     )
   }
   return result

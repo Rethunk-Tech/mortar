@@ -20,10 +20,12 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CompatDetail } from './CompatChip.tsx'
 import { EditConfigButton } from './ConfigEditor.tsx'
 import { useDetail } from './detail.ts'
+import { LockedNote } from './LockedNote.tsx'
 import { entryOf, modId, siblingsOf } from './lookup.ts'
 import { openPage } from './menu.ts'
 import { NexusDetails } from './NexusDetails.tsx'
@@ -110,9 +112,11 @@ function Versions({
           <Typography sx={{ flex: 1, ...text }}>
             {t`${state.previousVersion} · kept for rollback`}
           </Typography>
-          <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
-            {t`Roll back`}
-          </Button>
+          <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+            <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
+              {t`Roll back`}
+            </Button>
+          </DisabledReason>
         </Box>
       ) : null}
     </Section>
@@ -152,9 +156,11 @@ function Settings({
             >
               {t`Open`}
             </Button>
-            <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
-              {t`Reset`}
-            </Button>
+            <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
+              <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
+                {t`Reset`}
+              </Button>
+            </DisabledReason>
           </>
         ) : null}
       </Box>
@@ -278,6 +284,9 @@ function Details({ mod, profile }: { mod: Mod; profile: Profile }) {
     <Dialog open={true} onClose={() => setOpen(false)} fullWidth={true} maxWidth="sm">
       <DialogTitle>{mod.name}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ mx: -2 }}>
+          <LockedNote />
+        </Box>
         <PageLink url={mine?.relations.pageUrl ?? ''} />
         {source?.kind === 'nexus' && source.modId ? (
           <NexusDetails mod={mod} modId={source.modId} fileId={source.fileId ?? 0} />

@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, Tooltip } from '@mui/material'
 import type { ReactNode } from 'react'
+import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { type Problem, sameId } from '../lookup.ts'
 import { assetFixButtonStyle } from '../problemGroups.ts'
@@ -25,21 +26,24 @@ export function AssetFix({
   const dismissAsset = useMods((s) => s.dismissAsset)
   const setConfigValue = useMods((s) => s.setConfigValue)
   const locked = useLocked()
+  const lockedTitle = t`Stop the game to change mods.`
   const key = problem.asset.keys?.[0]
   const id = problem.asset.packIds?.[0]
   const mod = mods.find((m) => m.key === key && (id === undefined || sameId(m.uniqueId, id)))
   const { variant, color } = assetFixButtonStyle(problem.asset.cosmetic)
   const assetButton = (label: string, onClick: () => void) => (
-    <Button
-      size="small"
-      variant={variant}
-      color={color}
-      disabled={locked}
-      onClick={onClick}
-      sx={{ flexShrink: 0 }}
-    >
-      {label}
-    </Button>
+    <DisabledReason title={lockedTitle} disabled={locked}>
+      <Button
+        size="small"
+        variant={variant}
+        color={color}
+        disabled={locked}
+        onClick={onClick}
+        sx={{ flexShrink: 0 }}
+      >
+        {label}
+      </Button>
+    </DisabledReason>
   )
   const fixes = (problem.asset.fixes ?? []).map((fix) => (
     <Tooltip
@@ -54,16 +58,18 @@ export function AssetFix({
     </Tooltip>
   ))
   const off = mod ? (
-    <Button
-      size="small"
-      variant="outlined"
-      color="inherit"
-      disabled={locked}
-      onClick={() => setEnabled(mod, false).catch(reportUnexpected)}
-      sx={{ flexShrink: 0 }}
-    >
-      {t`Switch off`}
-    </Button>
+    <DisabledReason title={lockedTitle} disabled={locked}>
+      <Button
+        size="small"
+        variant="outlined"
+        color="inherit"
+        disabled={locked}
+        onClick={() => setEnabled(mod, false).catch(reportUnexpected)}
+        sx={{ flexShrink: 0 }}
+      >
+        {t`Switch off`}
+      </Button>
+    </DisabledReason>
   ) : null
   const winButton = win(fixes.length === 0 && !problem.asset.cosmetic)
   if (dismissedToken !== undefined) {
