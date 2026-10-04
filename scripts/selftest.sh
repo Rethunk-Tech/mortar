@@ -83,6 +83,12 @@ stop() {
   # A rebuild replaces the binary first, so the running server's exe then reads "<path> (deleted)".
   if [ -n "$pid" ] && [ "$(readlink "/proc/$pid/exe" | sed 's/ (deleted)$//')" = "$ROOT/mortar-server" ]; then
     kill "$pid"
+    # A restart must not start the next server before this one has shut down cleanly, or the next one reads
+    # the unfinished shutdown as a crash.
+    for _ in $(seq 1 50); do
+      kill -0 "$pid" 2>/dev/null || break
+      sleep 0.2
+    done
     echo "stopped $pid"
   elif [ -n "$pid" ]; then
     echo "port $PORT is held by pid $pid, which is not the self-test server; leaving it" >&2
