@@ -30,13 +30,37 @@ import (
 const (
 	// Name is the native messaging host name the extension connects to.
 	Name = "tech.rethunk.mortar"
-	// ChromeOrigin is the unpacked extension's origin, fixed by the key in browser-extension/manifest.json.
+	// ChromeOrigin is the unpacked extension's origin, fixed by the key in the extension's manifest.json
+	// (Rethunk-Tech/mortar-browser-extension).
 	ChromeOrigin = "chrome-extension://ifegpceemlkelinckndpmnaeepfcoplj/"
 	// FirefoxID is the extension's gecko id.
 	FirefoxID = "mortar@rethunk.tech"
 	// maxMessage bounds what Mortar reads; a link is a few hundred bytes.
 	maxMessage = 64 * 1024
+	// Protocol is the native-messaging protocol Mortar speaks, sent in every reply; the extension checks it against
+	// its own range. MinProtocol and MaxProtocol are the extension protocols Mortar answers; an extension from before
+	// the protocol was versioned sends none and counts as 0.
+	Protocol    = 1
+	MinProtocol = 1
+	MaxProtocol = 1
 )
+
+// Protocol mismatches Mortar reports on a refused message and records for Settings.
+const (
+	ExtensionTooOld = "extensionTooOld"
+	ExtensionTooNew = "extensionTooNew"
+)
+
+// protocolMismatch is ExtensionTooOld or ExtensionTooNew when Mortar does not speak the extension's protocol, else "".
+func protocolMismatch(protocol int) string {
+	switch {
+	case protocol < MinProtocol:
+		return ExtensionTooOld
+	case protocol > MaxProtocol:
+		return ExtensionTooNew
+	}
+	return ""
+}
 
 // storeChromeIDs are the ids Chrome Web Store and Edge Add-ons assign the published extension, which differ from the
 // unpacked id; they are added here when the listings are published, and each is allowed to reach the host.
@@ -61,26 +85,29 @@ func Invoked(args []string) bool {
 }
 
 type request struct {
-	Type  string `json:"type"`
-	Link  string `json:"link"`
-	Game  string `json:"game"`
-	ModID int    `json:"modId"`
+	Protocol int    `json:"protocol"`
+	Type     string `json:"type"`
+	Link     string `json:"link"`
+	Game     string `json:"game"`
+	ModID    int    `json:"modId"`
 }
 
 type reply struct {
-	OK           bool              `json:"ok,omitempty"`
-	Error        string            `json:"error,omitempty"`
-	Connected    bool              `json:"connected"`
-	ModIDs       *[]int            `json:"modIds,omitempty"`
-	BrokenIDs    []int             `json:"brokenIds,omitempty"`
-	Open         *modInProfile     `json:"open,omitempty"`
-	Others       []modInProfile    `json:"others,omitempty"`
-	Problems     []modProblem      `json:"problems,omitempty"`
-	Updates      *[]modUpdate      `json:"updates,omitempty"`
-	Requirements []requirementItem `json:"requirements,omitempty"`
-	Profile      string            `json:"profile,omitempty"`
-	State        string            `json:"state,omitempty"`
-	UpdateIDs    []int             `json:"updateIds,omitempty"`
+	Protocol      int               `json:"protocol"`
+	ProtocolError string            `json:"protocolError,omitempty"`
+	OK            bool              `json:"ok,omitempty"`
+	Error         string            `json:"error,omitempty"`
+	Connected     bool              `json:"connected"`
+	ModIDs        *[]int            `json:"modIds,omitempty"`
+	BrokenIDs     []int             `json:"brokenIds,omitempty"`
+	Open          *modInProfile     `json:"open,omitempty"`
+	Others        []modInProfile    `json:"others,omitempty"`
+	Problems      []modProblem      `json:"problems,omitempty"`
+	Updates       *[]modUpdate      `json:"updates,omitempty"`
+	Requirements  []requirementItem `json:"requirements,omitempty"`
+	Profile       string            `json:"profile,omitempty"`
+	State         string            `json:"state,omitempty"`
+	UpdateIDs     []int             `json:"updateIds,omitempty"`
 	// Games are the Nexus domains Mortar manages, so the extension draws its UI only on those games.
 	Games []string `json:"games,omitempty"`
 	// Accent is Mortar's accent colour, read on every reply so the extension follows a change in the app.
@@ -213,7 +240,7 @@ const (
 )
 
 type handlers struct {
-	contact      func()
+	contact      func(mismatch string)
 	open         func(link string) error
 	installed    func(game string) []int
 	mod          func(game string, modID int) (modInProfile, []modInProfile)
@@ -234,7 +261,7 @@ func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
 func ServeFrom(args []string, r io.Reader, w io.Writer, open func(link string) error) error {
 	browser := browserName(args)
 	return serveHandlers(r, w, handlers{
-		contact: func() { recordContact(browser, time.Now()) },
+		contact: func(mismatch string) { recordContact(browser, mismatch, time.Now()) },
 		open:    open, installed: activeNexusModIDs, mod: nexusModProfiles, state: activeNexusState,
 		updates: activeNexusUpdates, broken: brokenNexusModIDs, problems: nexusModProblems,
 		requirements: nexusPageRequirements,
@@ -318,18 +345,23 @@ func serveHandlers(r io.Reader, w io.Writer, h handlers) error {
 		if err := json.NewDecoder(io.LimitReader(r, int64(n))).Decode(&req); err != nil {
 			return err
 		}
+		mismatch := protocolMismatch(req.Protocol)
 		if h.contact != nil {
-			h.contact()
+			h.contact(mismatch)
 		}
 		var rep reply
-		if req.Type == "" {
+		switch {
+		case mismatch != "":
+			rep = reply{Error: "Mortar does not speak this browser extension's protocol", ProtocolError: mismatch}
+		case req.Type == "":
 			rep = reply{OK: true}
 			if err := h.open(req.Link); err != nil {
 				rep = reply{Error: err.Error()}
 			}
-		} else {
+		default:
 			rep = h.answer(req)
 		}
+		rep.Protocol = Protocol
 		rep.Accent = accentColor()
 		out, err := json.Marshal(rep)
 		if err != nil {

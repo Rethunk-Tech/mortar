@@ -20,8 +20,13 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
+// frame encodes v as one native message; a request without a protocol is sent as the current one.
 func frame(t *testing.T, v any) []byte {
 	t.Helper()
+	if req, ok := v.(request); ok && req.Protocol == 0 {
+		req.Protocol = Protocol
+		v = req
+	}
 	b, err := json.Marshal(v)
 	if err != nil {
 		t.Fatal(err)
@@ -545,20 +550,51 @@ func TestNexusArchiveNamesGiveTheirModID(t *testing.T) {
 
 func TestRecordContactWritesOncePerMinute(t *testing.T) {
 	testfs.DataHome(t)
-	contactWrote = time.Time{}
+	contactWrote = Contact{}
 	if !LastContact().LastSeen.IsZero() {
 		t.Fatal("contact before any message")
 	}
 	first := time.Date(2026, 10, 4, 12, 0, 0, 0, time.UTC)
-	recordContact("Firefox", first)
-	recordContact("Chrome", first.Add(30*time.Second))
+	recordContact("Firefox", "", first)
+	recordContact("Chrome", "", first.Add(30*time.Second))
 	got := LastContact()
 	if got.Browser != "Firefox" || !got.LastSeen.Equal(first) {
 		t.Fatalf("throttled contact = %+v", got)
 	}
-	recordContact("Chrome", first.Add(2*time.Minute))
+	recordContact("Chrome", "", first.Add(2*time.Minute))
 	if got := LastContact(); got.Browser != "Chrome" {
 		t.Fatalf("later contact = %+v", got)
+	}
+	recordContact("Chrome", ExtensionTooOld, first.Add(2*time.Minute+time.Second))
+	if got := LastContact(); got.Mismatch != ExtensionTooOld {
+		t.Fatalf("a protocol mismatch is recorded at once: %+v", got)
+	}
+}
+
+func TestServeRefusesAnExtensionProtocolOutOfRange(t *testing.T) {
+	in := append(frame(t, map[string]any{"link": "nxm://old"}),
+		frame(t, map[string]any{"protocol": MaxProtocol + 1, "type": "installed", "game": "stardewvalley"})...)
+	in = append(in, frame(t, request{Link: "nxm://ok"})...)
+	var out bytes.Buffer
+	var opened, mismatches []string
+	err := serveHandlers(bytes.NewReader(in), &out, handlers{
+		contact: func(mismatch string) { mismatches = append(mismatches, mismatch) },
+		open:    func(link string) error { opened = append(opened, link); return nil },
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{ExtensionTooOld, ExtensionTooNew, ""} {
+		got := readReply(t, &out)
+		if got.Protocol != Protocol || got.ProtocolError != want || (want == "") != got.OK {
+			t.Fatalf("reply %+v, want protocolError %q", got, want)
+		}
+	}
+	if !slices.Equal(opened, []string{"nxm://ok"}) {
+		t.Fatalf("opened %v", opened)
+	}
+	if !slices.Equal(mismatches, []string{ExtensionTooOld, ExtensionTooNew, ""}) {
+		t.Fatalf("contacts %v", mismatches)
 	}
 }
 

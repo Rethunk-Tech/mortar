@@ -21,11 +21,13 @@ const contactEvery = time.Minute
 type Contact struct {
 	Browser  string    `json:"browser"`
 	LastSeen time.Time `json:"lastSeen"`
+	// Mismatch is ExtensionTooOld or ExtensionTooNew when Mortar refused the extension's protocol.
+	Mismatch string `json:"mismatch,omitempty"`
 }
 
 var (
 	contactMu    sync.Mutex
-	contactWrote time.Time
+	contactWrote Contact
 )
 
 // browserName names the browser that started the host: Firefox passes its extension id, and a Chromium browser is
@@ -42,18 +44,19 @@ func browserName(args []string) string {
 	return "Chromium"
 }
 
-func recordContact(browser string, now time.Time) {
+func recordContact(browser, mismatch string, now time.Time) {
 	contactMu.Lock()
 	defer contactMu.Unlock()
-	if now.Sub(contactWrote) < contactEvery {
+	if now.Sub(contactWrote.LastSeen) < contactEvery && contactWrote.Mismatch == mismatch {
 		return
 	}
 	dir, err := datadir.Dir()
 	if err != nil {
 		return
 	}
-	if datadir.WriteJSON(filepath.Join(dir, ContactFile), Contact{Browser: browser, LastSeen: now.UTC()}) == nil {
-		contactWrote = now
+	c := Contact{Browser: browser, LastSeen: now.UTC(), Mismatch: mismatch}
+	if datadir.WriteJSON(filepath.Join(dir, ContactFile), c) == nil {
+		contactWrote = c
 	}
 }
 
