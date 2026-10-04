@@ -6,8 +6,6 @@ package queue
 import (
 	"cmp"
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,6 +18,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/ids"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/desktopnotify"
@@ -368,7 +368,7 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wa
 func (s *Service) reject(r Request, err error) {
 	log.Printf("queue: mod %d file %d could not be queued: %v", r.ModID, r.FileID, err)
 	it := &Item{
-		ID: newID(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
+		ID: ids.New(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 		State: StateFailed, Error: err.Error(), key: r.key, expires: r.expires,
 	}
 	s.mu.Lock()
@@ -409,12 +409,6 @@ func (s *Service) stored(it *Item) bool {
 }
 
 func storedOK(_ profile.Source, ok bool) bool { return ok }
-
-func newID() string {
-	b := make([]byte, 8)
-	_, _ = rand.Read(b)
-	return hex.EncodeToString(b)
-}
 
 func (s *Service) poke() {
 	select {
@@ -585,7 +579,7 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 			continue
 		}
 		it := &Item{
-			ID: newID(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
+			ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
 			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod,
 		}

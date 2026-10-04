@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
@@ -94,33 +93,17 @@ func bundledFolder(name string) string {
 	return ""
 }
 
-func nexusUpdateKey(key string) (int, bool) {
-	site, rest, ok := strings.Cut(key, ":")
-	if !ok || !strings.EqualFold(strings.TrimSpace(site), "nexus") {
-		return 0, false
-	}
-	rest, _, _ = strings.Cut(rest, "@")
-	n, err := strconv.Atoi(strings.TrimSpace(rest))
-	return n, err == nil
-}
-
-func githubUpdateKey(key string) (string, bool) {
-	site, rest, ok := strings.Cut(key, ":")
-	rest = strings.TrimSpace(rest)
-	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && strings.Count(rest, "/") == 1
-}
-
 func sourceFromMods(mods []manifest.Mod, folder string) Source {
 	for _, m := range mods {
 		for _, k := range m.UpdateKeys {
-			if n, ok := nexusUpdateKey(k); ok {
+			if n, ok := manifest.NexusUpdateKey(k); ok {
 				return Source{Kind: KindNexus, Name: folder, ModID: n, Version: m.Version}
 			}
 		}
 	}
 	for _, m := range mods {
 		for _, k := range m.UpdateKeys {
-			if repo, ok := githubUpdateKey(k); ok {
+			if repo, ok := manifest.GitHubUpdateKey(k); ok {
 				return Source{Kind: KindGitHub, Name: folder, Repo: repo, Version: m.Version}
 			}
 		}

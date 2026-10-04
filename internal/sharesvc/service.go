@@ -6,9 +6,7 @@ package sharesvc
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
 	"encoding/base64"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"maps"
@@ -20,6 +18,8 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
+
+	"github.com/Rethunk-AI/mortar/internal/ids"
 
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/migrate"
@@ -48,11 +48,7 @@ const (
 const filePerm = 0o644
 
 func historyBatchID() string {
-	var raw [8]byte
-	if _, err := rand.Read(raw[:]); err != nil {
-		return fmt.Sprintf("share-%d", time.Now().UnixNano())
-	}
-	return "share-" + hex.EncodeToString(raw[:])
+	return "share-" + ids.New()
 }
 
 var (
@@ -532,10 +528,8 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 		return Preview{}, err
 	}
 	mods, probs := r.resolve(ctx, shared.Entries)
-	var raw [8]byte
-	_, _ = rand.Read(raw[:])
 	pv := Preview{
-		Session: hex.EncodeToString(raw[:]), Name: shared.Name, Notes: notes, Settings: len(configs), Mods: mods, Problems: probs,
+		Session: ids.New(), Name: shared.Name, Notes: notes, Settings: len(configs), Mods: mods, Problems: probs,
 		SignedIn: r.signedIn, Premium: r.premium,
 	}
 	if profileID != "" {

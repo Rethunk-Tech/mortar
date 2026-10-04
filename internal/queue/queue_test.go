@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/ids"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
 	"github.com/Rethunk-AI/mortar/internal/nxm"
 	"github.com/Rethunk-AI/mortar/internal/nxmsvc"
@@ -340,7 +341,7 @@ func TestInstallsAreSerialized(t *testing.T) {
 	var wg sync.WaitGroup
 	for range 2 {
 		wg.Go(func() {
-			_ = f.s.installNexusPath(t.Context(), Item{ID: newID(), Game: "stardew", Profile: "p1"}, "", nexus.Mod{})
+			_ = f.s.installNexusPath(t.Context(), Item{ID: ids.New(), Game: "stardew", Profile: "p1"}, "", nexus.Mod{})
 		})
 	}
 	<-entered

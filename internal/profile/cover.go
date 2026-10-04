@@ -3,7 +3,6 @@ package profile
 import (
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,10 +10,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/modpic"
+
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/game"
-	"github.com/Rethunk-AI/mortar/internal/modpic"
 )
 
 // CoverPath is the URL prefix a picked cover is served under, as <CoverPath><game>/<profile id>.
@@ -50,12 +50,9 @@ func readCover(path string) ([]byte, string, error) {
 	if !info.Mode().IsRegular() {
 		return nil, "", fmt.Errorf("%s is not a regular file", filepath.Base(path))
 	}
-	b, err := io.ReadAll(io.LimitReader(f, MaxCover+1))
+	b, err := modpic.ReadCapped(f, MaxCover)
 	if err != nil {
 		return nil, "", err
-	}
-	if len(b) > MaxCover {
-		return nil, "", fmt.Errorf("the image is larger than %d MB", MaxCover>>20)
 	}
 	name, ok := coverFiles[http.DetectContentType(b)]
 	if !ok {

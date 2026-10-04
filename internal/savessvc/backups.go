@@ -12,7 +12,6 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
-	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
@@ -179,7 +178,7 @@ func (s *Service) gameBusy() bool {
 	if err != nil {
 		return false
 	}
-	return st.State == launchsvc.Launching || st.State == launchsvc.Running
+	return st.State.Active()
 }
 
 func backupNameOK(name string) error {

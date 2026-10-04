@@ -291,7 +291,7 @@ func run() error {
 	launches := launchsvc.NewService(home, store, profiles)
 	gamesSvc.Running = func(id string) bool {
 		st, err := launches.Status(id)
-		return err == nil && (st.State == launchsvc.Running || st.State == launchsvc.Launching)
+		return err == nil && st.State.Active()
 	}
 	profiles.Running = launches.Running
 	bisectSvc := bisect.NewService(profiles, launches)
@@ -433,7 +433,7 @@ func run() error {
 			if err != nil {
 				return false
 			}
-			return st.State == launchsvc.Launching || st.State == launchsvc.Running
+			return st.State.Active()
 		},
 		VerifyNexusMD5: func() bool { return store.Get().VerifyNexusMD5 },
 		Track: func(ctx context.Context, modID int) {
@@ -539,7 +539,7 @@ func run() error {
 		queueSvc, lanSvc,
 		datasvc.BusyFunc(func() bool {
 			st, err := launches.Status("stardew")
-			return err == nil && (st.State == launchsvc.Launching || st.State == launchsvc.Running)
+			return err == nil && st.State.Active()
 		}),
 	)
 	dataSvc.Restart = datasvc.RestartSelf
@@ -817,7 +817,7 @@ func run() error {
 			showWindow()
 		})
 		st, _ := launches.Status("stardew")
-		running := st.State == launchsvc.Launching || st.State == launchsvc.Running
+		running := st.State.Active()
 		gameName := "Stardew Valley"
 		if g := game.Find("stardew"); g != nil {
 			gameName = g.Name()
