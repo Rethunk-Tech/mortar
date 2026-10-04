@@ -79,6 +79,10 @@ func printLaunchPresetTemplates(c *cmd, presets []settings.LaunchPresetTemplate)
 		return
 	}
 	for _, preset := range presets {
-		fmt.Fprintf(c.out, "%s\t%s\t%s\t%s\n", preset.Name, preset.Options, preset.Prefix, preset.Env)
+		console := "follow"
+		if preset.ShowConsole != "" {
+			console = "console=" + preset.ShowConsole
+		}
+		fmt.Fprintf(c.out, "%s\t%s\t%s\t%s\t%s\n", preset.Name, preset.Options, preset.Prefix, preset.Env, console)
 	}
 }

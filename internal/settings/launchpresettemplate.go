@@ -11,6 +11,20 @@ type LaunchPresetTemplate struct {
 	Options string `json:"options"`
 	Prefix  string `json:"prefix"`
 	Env     string `json:"env"`
+	// ShowConsole is "true" or "false" to override the SMAPI console setting, or empty to follow it.
+	ShowConsole string `json:"showConsole,omitempty"`
+}
+
+func checkTemplate(t LaunchPresetTemplate) (LaunchPresetTemplate, error) {
+	name, err := presetName(t.Name)
+	if err != nil {
+		return t, err
+	}
+	t.Name = name
+	if t.ShowConsole != "" && t.ShowConsole != "true" && t.ShowConsole != "false" {
+		return t, fmt.Errorf("console must be true, false or empty")
+	}
+	return t, nil
 }
 
 func presetName(name string) (string, error) {
@@ -60,11 +74,10 @@ func (s *Store) ListLaunchPresetTemplates(game string) []LaunchPresetTemplate {
 
 // AddLaunchPresetTemplate stores preset for game, replacing an existing preset of the same name.
 func (s *Store) AddLaunchPresetTemplate(game string, preset LaunchPresetTemplate) error {
-	name, err := presetName(preset.Name)
+	preset, err := checkTemplate(preset)
 	if err != nil {
 		return err
 	}
-	preset.Name = name
 	_, err = s.Update(func(cur *Settings) {
 		writePresets(cur, game, replacePreset(cur.GamePrefs(game).LaunchPresetTemplates, preset))
 	})

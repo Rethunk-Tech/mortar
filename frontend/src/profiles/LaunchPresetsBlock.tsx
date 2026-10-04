@@ -87,8 +87,11 @@ function LaunchPresetsBlock({
     SetDefaultLaunchPreset(gameId, profileId, id)
       .then((p: Profile) => replace(p))
       .catch(reportError(t`Could not set the default launch preset`))
-  const saveTemplate = (name: string, options: string, prefix: string, env: string) =>
-    AddLaunchPresetTemplate(gameId, name, options, prefix, env)
+  const saveTemplate = (
+    name: string,
+    spec: { options: string; prefix: string; env: string; showConsole: string },
+  ) =>
+    AddLaunchPresetTemplate(gameId, name, spec.options, spec.prefix, spec.env, spec.showConsole)
       .then(() =>
         useToasts
           .getState()
@@ -115,7 +118,14 @@ function LaunchPresetsBlock({
         name={t`Standard`}
         isDefault={!presets.some((p) => p.id === defaultId)}
         onDefault={() => setDefault('')}
-        onTemplate={() => saveTemplate(t`Standard`, launchOptions, launchPrefix, launchEnv)}
+        onTemplate={() =>
+          saveTemplate(t`Standard`, {
+            options: launchOptions,
+            prefix: launchPrefix,
+            env: launchEnv,
+            showConsole: '',
+          })
+        }
       />
       {presets.map((preset) => (
         <PresetRow
@@ -124,12 +134,12 @@ function LaunchPresetsBlock({
           isDefault={preset.id === defaultId}
           onDefault={() => setDefault(preset.id)}
           onTemplate={() =>
-            saveTemplate(
-              preset.name,
-              preset.launchOptions ?? '',
-              preset.launchPrefix ?? '',
-              preset.launchEnv ?? '',
-            )
+            saveTemplate(preset.name, {
+              options: preset.launchOptions ?? '',
+              prefix: preset.launchPrefix ?? '',
+              env: preset.launchEnv ?? '',
+              showConsole: preset.showConsole ?? '',
+            })
           }
           actions={{
             edit: () => setEditing(preset),
@@ -152,6 +162,7 @@ function LaunchPresetsBlock({
             launchOptions: tpl.options,
             launchPrefix: tpl.prefix,
             launchEnv: tpl.env,
+            showConsole: tpl.showConsole ?? '',
           })
             .then((p: Profile) => replace(p))
             .catch(reportError(t`Could not add the launch preset`))

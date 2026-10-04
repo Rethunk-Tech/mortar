@@ -10,14 +10,17 @@ func TestLaunchPresetCRUD(t *testing.T) {
 	if got := s.ListLaunchPresetTemplates(GameStardew); len(got) != 0 {
 		t.Fatalf("empty list = %#v", got)
 	}
-	first := LaunchPresetTemplate{Name: "  Proton  ", Options: "--developer-mode", Prefix: "gamemoderun", Env: "MANGOHUD=1"}
+	first := LaunchPresetTemplate{Name: "  Proton  ", Options: "--developer-mode", Prefix: "gamemoderun", Env: "MANGOHUD=1", ShowConsole: "false"}
 	if err := s.AddLaunchPresetTemplate(GameStardew, first); err != nil {
 		t.Fatal(err)
 	}
 	got := s.ListLaunchPresetTemplates(GameStardew)
-	want := LaunchPresetTemplate{Name: "Proton", Options: first.Options, Prefix: first.Prefix, Env: first.Env}
+	want := LaunchPresetTemplate{Name: "Proton", Options: first.Options, Prefix: first.Prefix, Env: first.Env, ShowConsole: "false"}
 	if len(got) != 1 || !reflect.DeepEqual(got[0], want) {
 		t.Fatalf("after add = %#v", got)
+	}
+	if err := s.AddLaunchPresetTemplate(GameStardew, LaunchPresetTemplate{Name: "Bad", ShowConsole: "maybe"}); err == nil {
+		t.Fatal("an invalid console choice should be refused")
 	}
 	updated := LaunchPresetTemplate{Name: "proton", Options: "-foo", Prefix: "mangohud", Env: "A=1"}
 	if err := s.AddLaunchPresetTemplate(GameStardew, updated); err != nil {

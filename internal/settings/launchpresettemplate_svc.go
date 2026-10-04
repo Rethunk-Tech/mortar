@@ -18,13 +18,11 @@ func (s *Service) FindLaunchPresetTemplate(game, name string) (LaunchPresetTempl
 }
 
 // AddLaunchPresetTemplate stores a named launch preset for game, replacing the same name.
-func (s *Service) AddLaunchPresetTemplate(game, name, options, prefix, env string) error {
-	preset := LaunchPresetTemplate{Name: name, Options: options, Prefix: prefix, Env: env}
-	trimmed, err := presetName(preset.Name)
+func (s *Service) AddLaunchPresetTemplate(game, name, options, prefix, env, showConsole string) error {
+	preset, err := checkTemplate(LaunchPresetTemplate{Name: name, Options: options, Prefix: prefix, Env: env, ShowConsole: showConsole})
 	if err != nil {
 		return err
 	}
-	preset.Name = trimmed
 	return s.set(func(cur *Settings) {
 		writePresets(cur, game, replacePreset(cur.GamePrefs(game).LaunchPresetTemplates, preset))
 	})

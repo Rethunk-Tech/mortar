@@ -17,7 +17,7 @@ func (s *Services) gameLaunchPresetTemplates(p Params) (any, error) {
 	case "", "list":
 		return s.SettingsSvc.ListLaunchPresetTemplates(p.Game), nil
 	case "add":
-		if err := s.SettingsSvc.AddLaunchPresetTemplate(p.Game, p.Name, p.Value, p.Path, p.Query); err != nil {
+		if err := s.SettingsSvc.AddLaunchPresetTemplate(p.Game, p.Name, p.Value, p.Path, p.Query, p.Key); err != nil {
 			return nil, err
 		}
 		return s.SettingsSvc.ListLaunchPresetTemplates(p.Game), nil
@@ -31,7 +31,7 @@ func (s *Services) gameLaunchPresetTemplates(p Params) (any, error) {
 			return nil, fmt.Errorf("launch preset template %q not found", p.Name)
 		}
 		if _, err := s.Profiles.AddLaunchPreset(p.Game, prof.ID, profile.LaunchPreset{
-			Name: tmpl.Name, LaunchOptions: tmpl.Options, LaunchPrefix: tmpl.Prefix, LaunchEnv: tmpl.Env,
+			Name: tmpl.Name, LaunchOptions: tmpl.Options, LaunchPrefix: tmpl.Prefix, LaunchEnv: tmpl.Env, ShowConsole: tmpl.ShowConsole,
 		}); err != nil {
 			return nil, err
 		}
