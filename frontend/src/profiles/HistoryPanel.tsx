@@ -29,6 +29,7 @@ export function HistoryPanel({
 }) {
   const { t } = useLingui()
   const h = useHistoryPanel(profileId, open)
+  const { pair } = h
   const errorText =
     h.missingNames.length > 0
       ? t`Could not restore ${h.missingNames.join(', ')}`
@@ -73,11 +74,11 @@ export function HistoryPanel({
             ))}
           </List>
         )}
-        {h.pair ? (
+        {pair ? (
           <HistoryDiffView
-            diff={h.pair}
-            aLabel={h.events.find((ev) => ev.id === h.pair.a)?.label ?? h.pair.a}
-            bLabel={h.events.find((ev) => ev.id === h.pair.b)?.label ?? h.pair.b}
+            diff={pair}
+            aLabel={h.events.find((ev) => ev.id === pair.a)?.label ?? pair.a}
+            bLabel={h.events.find((ev) => ev.id === pair.b)?.label ?? pair.b}
             busy={h.busy !== ''}
             onRestoreA={() => {
               const id = h.pair?.a ?? ''
