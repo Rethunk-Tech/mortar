@@ -299,6 +299,17 @@ Once mods are installed, nothing external is needed to open, edit or launch a pr
 - **A newer Mortar wrote a state file:** `profile.json`, `settings.json`, `queue.json` and `history.json` carry `formatVersion` (1; a file without it is read as 1). When the file on disk names a higher version, `datadir.WriteVersioned` refuses to write it, keeps a copy as `<name>.newer`, and returns an error telling the user to update Mortar; `datadir.CheckVersion` is where a future format migrates.
 - **Steam not running:** `-applaunch` starts it. **Not installed:** a Steam copy can launch through SMAPI directly, without the overlay, after the user agrees.
 
+## Measured costs
+
+Measured on an 819-mod profile; each holds until the profile size or the code path changes.
+
+| Path | Cost | Verdict |
+| --- | --- | --- |
+| Mods tab load (`Mods`, `Pages`, `Problems`, `Updates` in parallel) | each re-reads `profile.json` (712 KiB) and every manifest under the profile store lock, so they serialise: 120–136 ms CPU, 72 ms wall | no cache; one call is 19–30 ms |
+| Problems check steady-state heap | 160 MiB after one check: pack cache 65 MiB (398 packs), map scans 10 MiB, result caches 6 MiB; decoding the 5 MB pack disk cache costs ~350 ms CPU once | bounded by installed packs, no leak |
+| Archive extraction peak heap | stored zip +0 MB; 3000-file zip +3 MB; solid 7z with a 256 MB LZMA2 dictionary +388 MB; RAR window capped at 256 MB | installs run one at a time, so ~0.4 GB worst case |
+| Bridge Content Patcher timing patches | prefix and finalizer stay on 6 methods after startup: a trampoline and a static check per context update | nanoseconds per call; unpatch after the title screen only if Harmony gains a cheap unpatch |
+
 ## Tests
 
 Go tests run against local HTTP test servers replaying recorded Nexus, SMAPI API and dataset responses, inside the 10 s warm / 30 s cold gate budget. Recordings are scrubbed before commit: `users/validate.json` returns the account's name and email, so fixtures carry placeholder account fields. An opt-in smoke test copies a real Stardew install to scratch space, installs SMAPI with `--no-prompt`, launches a profile, and reads `SMAPI-latest.txt` for the loaded mods. Tests must set `XDG_DATA_HOME` (or `LOCALAPPDATA` on Windows) to a directory under `os.TempDir()`; `datadir.Dir` refuses any other location while `testing.Testing()` is true (`internal/datadir`).
