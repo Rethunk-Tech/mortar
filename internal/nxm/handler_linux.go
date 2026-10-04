@@ -197,7 +197,7 @@ func (l *System) hidden() string {
 			if !ok {
 				continue
 			}
-			for _, f := range strings.Fields(exec) {
+			for f := range strings.FieldsSeq(exec) {
 				if strings.Trim(f, `"`) == l.exe {
 					return "NoDisplay=true\n"
 				}
