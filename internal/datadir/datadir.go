@@ -15,7 +15,8 @@ import (
 // PointerName is the file in the default data folder that names a relocated data folder.
 const PointerName = "data-location"
 
-// Dir returns the user data folder, creating it (0700) if needed.
+// Dir returns the user data folder, creating it (0700) if needed: <exe dir>/data in portable mode, else the folder
+// data-location names, else the OS default.
 func Dir() (string, error) {
 	dir, err := resolve()
 	if err != nil {
@@ -54,6 +55,12 @@ func defaultDir() (string, error) {
 var errRealDataInTest = fmt.Errorf("tests must point XDG_DATA_HOME (LOCALAPPDATA on Windows) at a temporary folder")
 
 func resolve() (string, error) {
+	if dir := portable(); dir != "" {
+		if testing.Testing() && !underTemp(dir) {
+			return "", errRealDataInTest
+		}
+		return dir, nil
+	}
 	def, err := defaultDir()
 	if err != nil {
 		return "", err

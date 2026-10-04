@@ -229,6 +229,23 @@ func (s *Service) MoveDataFolderPreview(dest string) (MoveEstimate, error) {
 	return MoveEstimate{Bytes: estimate.Bytes, FreeBytes: estimate.FreeBytes}, nil
 }
 
+// DataLocation is where Mortar keeps its data and whether a portable marker put it there.
+type DataLocation struct {
+	Dir      string `json:"dir"`
+	Portable bool   `json:"portable"`
+}
+
+// DataLocation reports the data folder in use; in portable mode Move is refused, so the UI hides it.
+func (s *Service) DataLocation() (DataLocation, error) {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return DataLocation{}, err
+	}
+	return DataLocation{Dir: dir, Portable: datadir.Portable()}, nil
+}
+
+var errPortable = errors.New("this copy of Mortar is portable: its data stays in the data folder beside it")
+
 var errGameRunning = errors.New("stop the game before moving the data folder")
 
 var errInUse = errors.New("a profile still uses this store item")
@@ -237,6 +254,9 @@ var errInUse = errors.New("a profile still uses this store item")
 func (s *Service) MoveDataFolder(dest string) error {
 	if dest == "" {
 		return errors.New("no folder chosen")
+	}
+	if datadir.Portable() {
+		return errPortable
 	}
 	for _, busy := range s.busy {
 		if busy != nil && busy.Busy() {

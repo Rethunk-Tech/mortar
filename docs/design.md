@@ -21,7 +21,7 @@ Remaining ([architecture.md](architecture.md#release)):
 
 ## Queued for v1
 
-- **Library:** a toggle to show dot-hidden mods; asking before deleting old files on update; new folders in the game's own `Mods` folder offered for moving into a profile.
+- **Library:** asking before deleting old files on update; new folders in the game's own `Mods` folder offered for moving into a profile.
 - **Packages:** an aarch64 Flatpak bundle is blocked without qemu binfmt (or an aarch64 host): `flatpak-builder --arch=aarch64` still runs `build-commands` via the aarch64 SDK's `/bin/sh` (`bwrap: execvp /bin/sh: Exec format error`), even with only `install` of a prebuilt binary.
 - **CurseForge** as a third source, after the repository is public: apply for a 3rd-party API key, then build it without caching API data, with a User-Agent on every request, and honouring each author's distribution setting.
 
@@ -43,7 +43,6 @@ Not in the first release; re-weigh only when asked:
 - A hosted share service with short codes and share versioning (running costs).
 - ModDrop as a source (no documented download API); the Xbox app version (WindowsApps folders are locked down).
 - Windows code signing.
-- Portable mode: the data folder beside the executable, switched by a marker file (Move data folder exists).
 - Previewing an archive's file tree before installing it (the folder picker shows it only when no manifest is found).
 - Bottles as a launcher (Linux): games there are Windows builds in a Wine prefix, so it needs SMAPI's Windows installer run inside the bottle (`bottles-cli run -b <bottle> -e <installer>`) and launches through `bottles-cli run` with `--mods-path`; the Linux SMAPI install would break such a copy. Detection is simple: bottles under `~/.local/share/bottles/bottles` and `~/.var/app/com.usebottles.bottles/data/bottles/bottles`, each searched for `drive_c/Program Files (x86)/Steam` and GOG folders.
 - A profile sync folder (Syncthing, Dropbox, a NAS) holding each profile's `.mortar` state, so another machine is offered the changes, with conflict detection when both sides edited; mod files still come from their sources.
