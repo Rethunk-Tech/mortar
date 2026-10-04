@@ -75,6 +75,18 @@ func TestDetectLastRunCrashedCleanLine(t *testing.T) {
 	}
 }
 
+func TestDetectLastRunCrashedLateLinesAfterShutdown(t *testing.T) {
+	dir := mortarDataDir(t)
+	body := "time=2026-01-02T03:04:05.000Z level=INFO msg=shutdown clean=true\n" +
+		"time=2026-01-02T03:04:05.001Z level=INFO msg=\"LAN sharing: LAN sharing service is shut down\"\n"
+	if err := os.WriteFile(filepath.Join(dir, prevLogName), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if DetectLastRunCrashed(dir) {
+		t.Fatal("want no crash when lines follow the clean-shutdown record")
+	}
+}
+
 func TestDetectLastRunCrashedUncleanPrevLog(t *testing.T) {
 	dir := mortarDataDir(t)
 	if err := os.WriteFile(filepath.Join(dir, prevLogName), []byte("time=2026-01-02T03:04:05.000Z level=INFO msg=still running\n"), 0o600); err != nil {

@@ -27,7 +27,7 @@ var lastRunCrashed atomic.Bool
 
 // DetectLastRunCrashed reports whether the previous process ended unexpectedly:
 // crash.log larger than the byte count in crash.seen, or mortar.prev.log whose
-// last line is not the clean-shutdown record. crash.seen is written after the
+// has no clean-shutdown record. crash.seen is written after the
 // check so a given growth is reported once.
 func DetectLastRunCrashed(dataDir string) bool {
 	crashPath := filepath.Join(dataDir, crashLogName)
@@ -85,18 +85,16 @@ func prevLogUnclean(prevPath string) bool {
 	}
 	defer func() { _ = f.Close() }()
 
-	var last string
+	// Late lines (a service logging as it stops) can follow the record, so it is looked for anywhere in the log.
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
-		if line := sc.Text(); line != "" {
-			last = line
+		line := sc.Text()
+		// slog text handler: msg=shutdown clean=true
+		if strings.Contains(line, "msg=shutdown") && strings.Contains(line, "clean=true") {
+			return false
 		}
 	}
-	if err := sc.Err(); err != nil || last == "" {
-		return true
-	}
-	// slog text handler: msg=shutdown clean=true
-	return !strings.Contains(last, "msg=shutdown") || !strings.Contains(last, "clean=true")
+	return true
 }
 
 // LastRunCrashed reports whether the previous Mortar process ended unexpectedly, once per run: a reloaded or
