@@ -46,6 +46,7 @@ type StartupPack struct {
 type StartupMod struct {
 	ID      string           `json:"id"`
 	Name    string           `json:"name"`
+	Version string           `json:"version"`
 	EntryMs int64            `json:"entryMs"`
 	EventMs map[string]int64 `json:"eventMs"`
 	AssetMs int64            `json:"assetMs"`
