@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import { type ComponentType, useState } from 'react'
@@ -8,12 +9,15 @@ import {
   KeepDriftChanges,
   RemoveDriftFolder,
   RestoreDriftEntry,
+  RestoreDriftFolder,
   RevertDriftEntry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import type { Problem } from './lookup.ts'
 import { AssetFix } from './problemFix/AssetFix.tsx'
 import { BrokenFix } from './problemFix/BrokenFix.tsx'
@@ -72,6 +76,27 @@ const problemFixes = {
   asset: AssetKind,
   missing: MissingKind,
 } satisfies { [K in Problem['kind']]: ComponentType<KindProps<K>> }
+
+// Moves a folder Mortar did not install to its trash, with an Undo that puts it back.
+async function removeUntracked(folder: string) {
+  const open = openTarget()
+  if (!open) {
+    return
+  }
+  const token = await RemoveDriftFolder(open.game, open.id, folder)
+  useToasts.getState().push({
+    kind: 'success',
+    title: i18n._(msg`Moved ${folder} to Mortar's trash`),
+    action: {
+      label: i18n._(msg`Undo`),
+      profileId: open.id,
+      run: () =>
+        RestoreDriftFolder(open.game, open.id, token)
+          .then(() => useMods.getState().load())
+          .catch(reportUnexpected),
+    },
+  })
+}
 
 export function FixButton({
   problem,
@@ -153,14 +178,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
               title: t`Remove ${drift.folder}?`,
               body: t`Mortar did not install this folder. It moves to Mortar's trash.`,
               label: t`Remove`,
-              act: () =>
-                run(async () => {
-                  const open = openTarget()
-                  if (!open) {
-                    return
-                  }
-                  await RemoveDriftFolder(open.game, open.id, drift.folder)
-                }),
+              act: () => run(() => removeUntracked(drift.folder)),
             }),
           true,
         )}

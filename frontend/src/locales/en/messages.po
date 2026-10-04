@@ -196,6 +196,8 @@ msgstr "Make {name} win"
 #: src/mods/ConfigPresets.tsx:38
 #: src/mods/LockedNote.tsx:9
 #: src/mods/ModsGroupHeader.tsx:54
+#: src/mods/OldFilesCallouts.tsx:55
+#: src/mods/OldFilesCallouts.tsx:60
 #: src/mods/OtherProfilesDialog.tsx:63
 #: src/mods/parts.tsx:268
 #: src/mods/parts.tsx:307
@@ -203,7 +205,7 @@ msgstr "Make {name} win"
 #: src/mods/parts.tsx:371
 #: src/mods/parts.tsx:382
 #: src/mods/problemFix/WinFix.tsx:58
-#: src/mods/problemFixButtons.tsx:112
+#: src/mods/problemFixButtons.tsx:135
 #: src/mods/SelectionBarActions.tsx:102
 #: src/mods/Toolbar.tsx:241
 #: src/saves/lackChipActions.tsx:44
@@ -1014,6 +1016,7 @@ msgid "Create a bundle to reuse a set of mods."
 msgstr "Create a bundle to reuse a set of mods."
 
 #: src/mods/ModMenu.tsx:140
+#: src/mods/OldFilesCallouts.tsx:53
 #: src/mods/parts.tsx:297
 msgid "Show files"
 msgstr "Show files"
@@ -1609,7 +1612,7 @@ msgstr "Files added"
 msgid "Loading bundles…"
 msgstr "Loading bundles…"
 
-#: src/mods/problemFixButtons.tsx:197
+#: src/mods/problemFixButtons.tsx:201
 msgid "Forget"
 msgstr "Forget"
 
@@ -1902,7 +1905,7 @@ msgstr "Compact"
 #: src/install/store.ts:162
 #: src/install/store.ts:223
 #: src/mods/problemFix/WinFix.tsx:77
-#: src/mods/problemFixButtons.tsx:169
+#: src/mods/problemFixButtons.tsx:91
 #: src/mods/SplitCombineItems.tsx:38
 #: src/mods/storeEntries.ts:56
 #: src/mods/storeEntries.ts:95
@@ -2380,7 +2383,7 @@ msgstr "Both set: {0}"
 msgid " · {0} more required"
 msgstr " · {0} more required"
 
-#: src/mods/problemFixButtons.tsx:211
+#: src/mods/problemFixButtons.tsx:215
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
@@ -2617,7 +2620,7 @@ msgstr "Could not read your profiles"
 msgid "{n, plural, one {# missing requirement} other {# missing requirements}}"
 msgstr "{n, plural, one {# missing requirement} other {# missing requirements}}"
 
-#: src/mods/problemFixButtons.tsx:225
+#: src/mods/problemFixButtons.tsx:229
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
 
@@ -2786,6 +2789,7 @@ msgstr "Custom categories"
 #: src/game/ProfileMenuItems.tsx:406
 #: src/mods/CategoryEditor.tsx:163
 #: src/mods/ConfigPresets.tsx:143
+#: src/mods/OldFilesCallouts.tsx:62
 #: src/profiles/ProfilesPage.tsx:173
 #: src/settings/prefCopy.ts:247
 #: src/tools/ToolsManageDialog.tsx:87
@@ -3041,6 +3045,13 @@ msgstr "Where save backups are kept. Empty uses the default."
 #: src/tools/ToolEditorDialog.tsx:125
 msgid "Cancel"
 msgstr "Cancel"
+
+#. placeholder {0}: files.length
+#. placeholder {1}: set.label
+#. placeholder {2}: set.label
+#: src/mods/OldFilesCallouts.tsx:43
+msgid "{0, plural, one {The new version of {1} no longer includes # file. Keep it or delete it?} other {The new version of {2} no longer includes # files. Keep them or delete them?}}"
+msgstr "{0, plural, one {The new version of {1} no longer includes # file. Keep it or delete it?} other {The new version of {2} no longer includes # files. Keep them or delete them?}}"
 
 #: src/mods/storeEntries.ts:312
 msgid "Could not unpin the selected mods"
@@ -3491,7 +3502,7 @@ msgstr "Working directory"
 msgid "Installed"
 msgstr "Installed"
 
-#: src/mods/problemFixButtons.tsx:156
+#: src/mods/problemFixButtons.tsx:179
 msgid "Mortar did not install this folder. It moves to Mortar's trash."
 msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 
@@ -4463,11 +4474,6 @@ msgstr "Hidden inside this mod"
 msgid "Keep forever"
 msgstr "Keep forever"
 
-#. placeholder {0}: drift.folder
-#: src/mods/problemFixButtons.tsx:167
-msgid "Moved {0} to Mortar's trash"
-msgstr "Moved {0} to Mortar's trash"
-
 #: src/settings/NexusMeter.tsx:23
 msgid "{daily} requests left today · {hourly} this hour"
 msgstr "{daily} requests left today · {hourly} this hour"
@@ -4731,6 +4737,10 @@ msgstr "Saves are zipped before mods update; older backups beyond this many are 
 #: src/profiles/GameModsDialog.tsx:103
 msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr "{0, plural, one {# skipped} other {# skipped}}"
+
+#: src/mods/problemFixButtons.tsx:89
+msgid "Moved {folder} to Mortar's trash"
+msgstr "Moved {folder} to Mortar's trash"
 
 #: src/queue/retryAll.ts:10
 msgid "{queued, plural, one {# already queued} other {# already queued}}"
@@ -5070,8 +5080,8 @@ msgstr "Add to group…"
 msgid "Restore {0}"
 msgstr "Restore {0}"
 
-#: src/mods/problemFixButtons.tsx:221
-#: src/mods/problemFixButtons.tsx:226
+#: src/mods/problemFixButtons.tsx:225
+#: src/mods/problemFixButtons.tsx:230
 msgid "Revert"
 msgstr "Revert"
 
@@ -6599,7 +6609,7 @@ msgid "Default profile for Nexus links"
 msgstr "Default profile for Nexus links"
 
 #. placeholder {0}: drift.folder
-#: src/mods/problemFixButtons.tsx:155
+#: src/mods/problemFixButtons.tsx:178
 msgid "Remove {0}?"
 msgstr "Remove {0}?"
 
@@ -7022,6 +7032,7 @@ msgstr "not found"
 msgid "Allow Mortar through the firewall so nearby users can send profiles."
 msgstr "Allow Mortar through the firewall so nearby users can send profiles."
 
+#: src/mods/OldFilesCallouts.tsx:57
 #: src/settings/prefCopy.ts:252
 msgid "Keep"
 msgstr "Keep"
@@ -7910,8 +7921,8 @@ msgstr "Switch to Saves"
 #: src/mods/ModMenu.tsx:293
 #: src/mods/parts.tsx:309
 #: src/mods/parts.tsx:384
-#: src/mods/problemFixButtons.tsx:152
-#: src/mods/problemFixButtons.tsx:157
+#: src/mods/problemFixButtons.tsx:175
+#: src/mods/problemFixButtons.tsx:180
 #: src/mods/SelectionBarActions.tsx:125
 #: src/mods/SelectionBarDialogs.tsx:65
 #: src/settings/sections/DataStoreReport.tsx:401
@@ -8725,7 +8736,7 @@ msgid "Hide details"
 msgstr "Hide details"
 
 #. placeholder {0}: drift.key
-#: src/mods/problemFixButtons.tsx:224
+#: src/mods/problemFixButtons.tsx:228
 msgid "Revert {0}?"
 msgstr "Revert {0}?"
 
@@ -9689,7 +9700,7 @@ msgid "rate limit"
 msgstr "rate limit"
 
 #: src/mods/problemFix/RestoreButton.tsx:17
-#: src/mods/problemFixButtons.tsx:188
+#: src/mods/problemFixButtons.tsx:192
 #: src/saves/BackupsDialog.tsx:245
 #: src/shell/TitleBar.tsx:119
 msgid "Restore"
@@ -10117,7 +10128,7 @@ msgstr "Sound volume ({value}%)"
 msgid "Reuse FOMOD choices"
 msgstr "Reuse FOMOD choices"
 
-#: src/mods/problemFixButtons.tsx:142
+#: src/mods/problemFixButtons.tsx:165
 msgid "Adopt"
 msgstr "Adopt"
 
