@@ -9,6 +9,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { ChevronDown, CircleCheck, CircleX, Folder, FolderPlus, RefreshCw, X } from 'lucide-react'
 import { useState } from 'react'
 import type { StoreApp } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
@@ -78,6 +79,7 @@ function LauncherRow({
   open?: boolean
 }) {
   const { t } = useLingui()
+  const ok = useTheme().palette.success.main
   const [error, setError] = useState('')
   const games = (launcher.games ?? []).map((g) => g.name)
   const roots = launcher.roots ?? []
@@ -130,7 +132,7 @@ function LauncherRow({
         </Box>
         <Box sx={{ display: 'flex', mr: 2.5 }}>
           {launcher.found ? (
-            <CircleCheck size={STATUS_ICON} color="#0CDF64" aria-label={t`Found`} />
+            <CircleCheck size={STATUS_ICON} color={ok} aria-label={t`Found`} />
           ) : (
             <CircleX size={STATUS_ICON} color="#8A909A" aria-label={t`Not found`} />
           )}

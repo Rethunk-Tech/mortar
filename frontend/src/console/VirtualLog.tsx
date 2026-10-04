@@ -1,4 +1,5 @@
 import { Box } from '@mui/material'
+import { alpha, useTheme } from '@mui/material/styles'
 import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   type Entry,
@@ -26,6 +27,7 @@ interface Look {
 }
 
 const CLEAR = 'transparent'
+const WARN_ROW = 0.08
 const looks: Record<Level, Look> = {
   [Level.$zero]: { color: '', bar: CLEAR, row: CLEAR, text: '' },
   [Level.Trace]: {
@@ -132,7 +134,16 @@ function Row({
   onMod: (uniqueID: string) => void
   onPath: (path: string) => void
 }) {
-  const look = looks[entry.level]
+  const theme = useTheme()
+  const look =
+    entry.level === Level.Warn
+      ? {
+          color: theme.palette.warning.main,
+          bar: theme.palette.warning.main,
+          row: alpha(theme.palette.warning.main, WARN_ROW),
+          text: '#f7d56a',
+        }
+      : looks[entry.level]
   const modLinks = useMemo(
     () => (entry.cont ? [] : linksForModColumn(entry.mod, mods)),
     [entry.cont, entry.mod, mods],

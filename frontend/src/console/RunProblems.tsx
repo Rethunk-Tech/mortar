@@ -2,6 +2,11 @@ import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Tooltip, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
+
+const WARN_FILL = 0.14
+const WARN_LINE = 0.5
+
 import { useEffect, useState } from 'react'
 import type { SMAPIProblem } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launch/models.ts'
 import { RunProblems as FetchRunProblems } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
@@ -173,8 +178,9 @@ export function RunProblemsStrip({
         display: 'flex',
         flexDirection: 'column',
         gap: 1,
-        bgcolor: 'rgba(243,180,22,0.14)',
-        border: '1px solid rgba(243,180,22,0.5)',
+        bgcolor: (th) => alpha(th.palette.warning.main, WARN_FILL),
+        border: '1px solid',
+        borderColor: (th) => alpha(th.palette.warning.main, WARN_LINE),
         borderRadius: '6px',
       }}
     >

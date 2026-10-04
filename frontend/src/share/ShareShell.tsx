@@ -42,7 +42,7 @@ export function ShareShell({
           ...paper,
           sx: {
             ...paper.sx,
-            bgcolor: 'rgb(36,36,44)',
+            bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',
             width: 'min(980px, calc(100% - 48px))',
             height: 'min(620px, calc(100% - 48px))',

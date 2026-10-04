@@ -8,6 +8,11 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
+
+const INFO_FILL = 0.16
+const INFO_LINE = 0.5
+
 import { ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { useLaunch } from '../launch/store.ts'
@@ -58,8 +63,9 @@ export function ImportFooter({
             gap: 1.5,
             m: '8px 8px 0',
             p: 1.25,
-            bgcolor: 'rgba(43,139,218,0.16)',
-            border: '1px solid rgba(43,139,218,0.5)',
+            bgcolor: (th) => alpha(th.palette.info.main, INFO_FILL),
+            border: '1px solid',
+            borderColor: (th) => alpha(th.palette.info.main, INFO_LINE),
             borderRadius: '4px',
             fontSize: 13,
           }}

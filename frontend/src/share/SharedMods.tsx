@@ -1,6 +1,11 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
+
+const WARN_FILL = 0.1
+const WARN_LINE = 0.4
+
 import type { ShownInfo } from './logic.ts'
 
 const SHOWN_NAMES = 30
@@ -76,8 +81,9 @@ export function SharedMods({ info, notIn }: { info: ShownInfo; notIn: string }) 
             gap: 1,
             m: '0 24px 18px',
             p: '12px 14px',
-            bgcolor: 'rgba(243,180,22,0.1)',
-            border: '1px solid rgba(243,180,22,0.4)',
+            bgcolor: (th) => alpha(th.palette.warning.main, WARN_FILL),
+            border: '1px solid',
+            borderColor: (th) => alpha(th.palette.warning.main, WARN_LINE),
             borderRadius: '6px',
           }}
         >

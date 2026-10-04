@@ -1,6 +1,13 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, CircularProgress, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
+
+const INFO_FILL = 0.12
+const WARN_FILL = 0.14
+const INFO_LINE = 0.45
+const WARN_LINE = 0.5
+
 import { TriangleAlert } from 'lucide-react'
 import { useTab } from '../game/tab.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
@@ -70,8 +77,11 @@ export function ProblemBar() {
         pl: 1.5,
         pr: 0.75,
         textAlign: 'left',
-        bgcolor: info ? 'rgba(56,189,248,0.12)' : 'rgba(243,180,22,0.14)',
-        border: info ? '1px solid rgba(56,189,248,0.45)' : '1px solid rgba(243,180,22,0.5)',
+        bgcolor: (th) =>
+          info ? alpha(th.palette.info.main, INFO_FILL) : alpha(th.palette.warning.main, WARN_FILL),
+        border: '1px solid',
+        borderColor: (th) =>
+          info ? alpha(th.palette.info.main, INFO_LINE) : alpha(th.palette.warning.main, WARN_LINE),
         borderRadius: '6px',
       }}
     >

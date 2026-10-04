@@ -8,6 +8,7 @@ import {
   DialogTitle,
   LinearProgress,
 } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { CircleCheck, CircleX, Copy, FileArchive, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type {
@@ -35,13 +36,14 @@ function diagnosticKind(id: string): string {
 }
 
 function StatusIcon({ status }: { status: string }) {
+  const { error, warning, success } = useTheme().palette
   if (status === 'fail') {
-    return <CircleX size={16} color="#C70A0A" aria-hidden={true} />
+    return <CircleX size={16} color={error.main} aria-hidden={true} />
   }
   if (status === 'warn') {
-    return <TriangleAlert size={16} color="#F3B416" aria-hidden={true} />
+    return <TriangleAlert size={16} color={warning.main} aria-hidden={true} />
   }
-  return <CircleCheck size={16} color="#0CDF64" aria-hidden={true} />
+  return <CircleCheck size={16} color={success.main} aria-hidden={true} />
 }
 
 interface Group {

@@ -1,5 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
+
+const DONE_FILL = 0.18
+
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type {
   GameInfo,
@@ -49,7 +53,7 @@ function StepChip({
         whiteSpace: 'nowrap',
         bgcolor: (theme) =>
           ({
-            done: 'rgba(12,223,100,0.18)',
+            done: alpha(theme.palette.success.main, DONE_FILL),
             current: theme.palette.primary.main,
             todo: 'var(--mortar-hairline)',
           })[state],

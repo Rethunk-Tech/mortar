@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, InputAdornment, TextField, Typography } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { Check, FolderOpen, RefreshCw, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -64,6 +65,7 @@ function Hero({ game, dim }: { game: GameInfo; dim?: boolean }) {
 // Where Mortar looked: each launcher, whether it was found, and whether it holds this game.
 function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) {
   const { t } = useLingui()
+  const ok = useTheme().palette.success.main
   return (
     <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: '6px' }}>
       {launchers.map((l) => {
@@ -80,7 +82,7 @@ function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) 
             key={l.id}
             sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14 }}
           >
-            {l.found ? <Check size={15} color="#0CDF64" /> : <X size={15} color="#9AA0AA" />}
+            {l.found ? <Check size={15} color={ok} /> : <X size={15} color="#9AA0AA" />}
             <Box component="span" sx={{ fontWeight: 600 }}>
               {l.name}
             </Box>
@@ -106,6 +108,7 @@ export function FindStep({
   onContinue: () => void
 }) {
   const { t } = useLingui()
+  const { success, warning } = useTheme().palette
   const found = game.installed
   const smapi = useLoader((s) => s.status)
   const check = useLoader((s) => s.check)
@@ -159,7 +162,7 @@ export function FindStep({
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Check size={16} color="#0CDF64" />
+                      <Check size={16} color={success.main} />
                     </InputAdornment>
                   ),
                 },
@@ -181,7 +184,7 @@ export function FindStep({
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-            <TriangleAlert size={18} color="#F3B416" />
+            <TriangleAlert size={18} color={warning.main} />
             <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
               {t`${game.name} was not found in your launchers`}
             </Typography>

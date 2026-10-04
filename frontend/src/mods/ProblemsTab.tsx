@@ -1,5 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
+
+const WARN_FILL = 0.14
+const WARN_LINE = 0.5
+
 import { Clipboard } from '@wailsio/runtime'
 import {
   ChevronDown,
@@ -106,8 +111,10 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
         pr: 0.75,
         py: 1,
         fontSize: 14,
-        bgcolor: info ? 'var(--mortar-overlay-45)' : 'rgba(243,180,22,0.14)',
-        border: info ? '1px solid transparent' : '1px solid rgba(243,180,22,0.5)',
+        bgcolor: (th) =>
+          info ? 'var(--mortar-overlay-45)' : alpha(th.palette.warning.main, WARN_FILL),
+        border: '1px solid',
+        borderColor: (th) => (info ? 'transparent' : alpha(th.palette.warning.main, WARN_LINE)),
         borderRadius: '6px',
         ...(dismissed ? { opacity: 0.75 } : {}),
       }}

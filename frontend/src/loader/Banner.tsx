@@ -47,7 +47,7 @@ export function LoaderBanner({ game }: { game: string }) {
         px: 2,
         py: 1,
         flexShrink: 0,
-        bgcolor: 'rgba(40,40,48,0.6)',
+        bgcolor: 'var(--mortar-panel)',
         borderLeft: '4px solid',
         borderLeftColor: status.installed && !status.broken ? 'info.main' : 'warning.main',
       }}
