@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -17,7 +18,7 @@ import (
 func zipFile(t *testing.T, dir, name string, files map[string]string) string {
 	t.Helper()
 	p := filepath.Join(dir, name)
-	f, err := os.Create(p)
+	f, err := fsx.Create(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,5 +125,37 @@ func TestPassWaitsWhileBusyThenVerifies(t *testing.T) {
 	s.pass(ctx)
 	if due, _ := s.d.Items.Refs(true, time.Now()); len(due) != 1 || due[0].Key != key {
 		t.Fatalf("busy pass verified: %v", due)
+	}
+}
+
+func TestCheckBaselinesANexusItemFromItsArchiveWhenTheMD5Matches(t *testing.T) {
+	s, downloads, _ := newService(t)
+	archive := zipFile(t, downloads, "Pack-5-1-0-1700000000.zip", map[string]string{"Mod/a.txt": "aaa"})
+	md5, err := fsx.MD5(archive)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key := store.NexusKey(5, 9)
+	if err := s.d.Items.AddArchiveKey("stardew", key, archive); err != nil {
+		t.Fatal(err)
+	}
+	dir, _ := s.d.Items.Path("stardew", key)
+	if err := os.Remove(filepath.Join(dir, "..", "..", ".manifests", "stardew", key+".json")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "Mod", "a.txt"), []byte("bad"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s.d.NexusMD5 = func(context.Context, int, int) (string, error) { return "0000", nil }
+	if sum, _ := s.Check(context.Background()); len(sum.Damaged) != 0 {
+		t.Fatalf("a different MD5 must fall back to the current files: %+v", sum)
+	}
+	if err := os.Remove(filepath.Join(dir, "..", "..", ".manifests", "stardew", key+".json")); err != nil {
+		t.Fatal(err)
+	}
+	s.d.NexusMD5 = func(context.Context, int, int) (string, error) { return md5, nil }
+	sum, err := s.Check(context.Background())
+	if err != nil || len(sum.Damaged) != 1 || sum.Damaged[0].Changed != 1 {
+		t.Fatalf("baseline from the archive = %+v, %v", sum, err)
 	}
 }

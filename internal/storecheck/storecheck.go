@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/dlwatch"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/queue"
@@ -40,6 +41,9 @@ type Deps struct {
 	Add func([]queue.Request) ([]queue.Item, error)
 	// ArchiveDir is the downloads folder, where a local item's archive may still be.
 	ArchiveDir func() string
+	// NexusMD5 is Nexus's recorded MD5 of a mod file; nil, or an error, leaves an item without hashes to be baselined
+	// from its current files.
+	NexusMD5 func(ctx context.Context, modID, fileID int) (string, error)
 	// Busy reports a running game or an active download or install; the background pass waits it out.
 	Busy func() bool
 	Emit func(name string, data any)
@@ -119,6 +123,7 @@ func (s *Service) Check(ctx context.Context) (Summary, error) {
 	p := Progress{Running: true, Total: len(refs)}
 	s.setProgress(p)
 	for _, r := range refs {
+		s.baseline(ctx, r)
 		d, err := s.d.Items.Verify(ctx, r.Game, r.Key)
 		switch {
 		case ctx.Err() != nil:
@@ -168,6 +173,7 @@ func (s *Service) pass(ctx context.Context) {
 			}
 		}
 		start := time.Now()
+		s.baseline(ctx, r)
 		d, err := s.d.Items.Verify(ctx, r.Game, r.Key)
 		if ctx.Err() != nil {
 			return
@@ -181,6 +187,47 @@ func (s *Service) pass(ctx context.Context) {
 			return
 		}
 	}
+}
+
+// baseline gives a Nexus item that has no recorded hashes a baseline from its original archive, when that archive is
+// still in the downloads folder and its MD5 is the one Nexus lists for the file. Otherwise Verify baselines the item
+// from its current files, which cannot see damage done before.
+func (s *Service) baseline(ctx context.Context, r store.Ref) {
+	modID, fileID, ok := store.NexusFile(r.Key)
+	if !ok || s.d.NexusMD5 == nil || s.d.ArchiveDir == nil || s.d.Items.HasBaseline(r.Game, r.Key) {
+		return
+	}
+	want, err := s.d.NexusMD5(ctx, modID, fileID)
+	if err != nil || want == "" {
+		return
+	}
+	path, ok := s.findNexusArchive(modID, want)
+	if !ok {
+		return
+	}
+	if err := s.d.Items.BaselineFromArchive(ctx, r.Game, r.Key, path); err != nil {
+		log.Printf("store check %s/%s: baseline from %s: %v", r.Game, r.Key, path, err)
+	}
+}
+
+// findNexusArchive looks in the downloads folder for an archive of the mod whose MD5 is want.
+func (s *Service) findNexusArchive(modID int, want string) (string, bool) {
+	dir := s.d.ArchiveDir()
+	ents, err := os.ReadDir(dir)
+	if dir == "" || err != nil {
+		return "", false
+	}
+	want = strings.ToLower(strings.TrimSpace(want))
+	for _, e := range ents {
+		if info, ok := dlwatch.ParseNexusFilename(e.Name()); !ok || info.ModID != modID {
+			continue
+		}
+		path := filepath.Join(dir, e.Name())
+		if sum, err := fsx.MD5(path); err == nil && sum == want {
+			return path, true
+		}
+	}
+	return "", false
 }
 
 func (s *Service) busy() bool {
@@ -213,13 +260,13 @@ type RepairResult struct {
 func (s *Service) Repair(gameID, profileID, key string) (RepairResult, error) {
 	switch {
 	case isNexus(key):
-		return s.refetch(gameID, profileID, key, nexusRequest(gameID, profileID, key, s.d.Source(gameID, key)))
+		return s.refetch(gameID, key, nexusRequest(gameID, profileID, key, s.d.Source(gameID, key)))
 	case strings.HasPrefix(key, "github-"):
 		src := s.d.Source(gameID, key)
 		if src.Repo == "" {
 			return RepairResult{}, usererr.New(usererr.NotFound, "Mortar no longer knows which GitHub release this came from, so it cannot download it again.")
 		}
-		return s.refetch(gameID, profileID, key, queue.Request{
+		return s.refetch(gameID, key, queue.Request{
 			Kind: queue.KindInstall, Game: gameID, Profile: profileID, Repo: src.Repo, Tag: src.Tag, Asset: src.Asset,
 			Name: src.Repo, FileName: src.Asset, Version: src.Version,
 		})
@@ -242,7 +289,7 @@ func nexusRequest(gameID, profileID, key string, src profile.Source) queue.Reque
 	}
 }
 
-func (s *Service) refetch(gameID, profileID, key string, req queue.Request) (RepairResult, error) {
+func (s *Service) refetch(gameID, key string, req queue.Request) (RepairResult, error) {
 	restore, err := s.d.Items.Quarantine(gameID, key)
 	if err != nil {
 		return RepairResult{}, err

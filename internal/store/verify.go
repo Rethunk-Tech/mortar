@@ -10,6 +10,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/archive"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
@@ -186,6 +187,44 @@ func (s *Store) forget(game string, keys ...string) {
 			log.Printf("store verify state: %v", err)
 		}
 	}
+}
+
+// HasBaseline reports that hashes are recorded for the item, so Verify compares instead of recording.
+func (s *Store) HasBaseline(game, key string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	var want hashRecord
+	found, err := datadir.ReadJSON(s.manifestPath(game, key), &want)
+	return err == nil && found
+}
+
+// BaselineFromArchive records the item's hashes from archivePath extracted the way an install extracts it, so the
+// next Verify compares the stored files with the archive instead of with themselves. The caller vouches that the
+// archive is the one the item came from.
+func (s *Store) BaselineFromArchive(ctx context.Context, game, key, archivePath string) error {
+	gdir, err := s.gameDir(game)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(gdir, 0o700); err != nil {
+		return err
+	}
+	tmp, err := os.MkdirTemp(gdir, tempPrefix)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = fsx.RemoveAll(tmp) }()
+	if err := archive.Extract(archivePath, tmp); err != nil {
+		return err
+	}
+	stripJunk(tmp)
+	files, err := sumTree(ctx, tmp)
+	if err != nil {
+		return err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.writeManifest(game, key, files)
 }
 
 // Verify hashes the item's files and compares them with the hashes recorded when it was stored, reporting

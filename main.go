@@ -581,6 +581,19 @@ func run() error {
 	dataSvc.OnClearCache = problemsSvc.ForgetCached
 	checkSvc := storecheck.New(storecheck.Deps{
 		Items: items, Source: profiles.SourceOf, Add: queueSvc.Add,
+		NexusMD5: func(ctx context.Context, modID, fileID int) (string, error) {
+			c, err := nexussvc.Authed(store, nexusClient)
+			if err != nil {
+				return "", err
+			}
+			files, err := c.Files(ctx, modID)
+			for _, f := range files {
+				if f.FileID == fileID {
+					return f.MD5, err
+				}
+			}
+			return "", err
+		},
 		ArchiveDir: func() string { return archiveDir(store, dataDir) },
 		Busy:       func() bool { return launches.Busy(settings.GameStardew) || queueSvc.Active() },
 		Emit:       emit,

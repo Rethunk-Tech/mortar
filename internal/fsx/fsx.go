@@ -3,6 +3,7 @@
 package fsx
 
 import (
+	"crypto/md5" // #nosec G501 -- Nexus file hashes are MD5
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
@@ -74,6 +75,21 @@ func SHA256(path string) (string, error) {
 	}
 	defer func() { _ = f.Close() }()
 	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+// MD5 is the hex MD5 of path's contents; Nexus publishes its file hashes as MD5, so this is for comparing with them
+// and nothing else.
+func MD5(path string) (string, error) {
+	f, err := Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = f.Close() }()
+	h := md5.New() // #nosec G401 -- Nexus file hashes are MD5
 	if _, err := io.Copy(h, f); err != nil {
 		return "", err
 	}
