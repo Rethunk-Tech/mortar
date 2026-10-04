@@ -5,8 +5,6 @@ import {
   AccordionSummary,
   Box,
   Button,
-  IconButton,
-  Tooltip,
   Typography,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -19,6 +17,7 @@ import {
   RemoveLauncherRoot,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { LauncherLogo } from '../brand/launchers/LauncherLogo.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { errorMessage } from '../toasts/report.ts'
 
 const STATUS_ICON = 30
@@ -59,11 +58,9 @@ function FolderRow({
         {note}
       </Typography>
       {onRemove ? (
-        <Tooltip title={t`Stop searching this folder`}>
-          <IconButton size="small" aria-label={t`Remove ${dir}`} onClick={onRemove}>
-            <X size={14} />
-          </IconButton>
-        </Tooltip>
+        <TipIconButton label={t`Remove ${dir}`} onClick={onRemove}>
+          <X size={14} />
+        </TipIconButton>
       ) : null}
     </Box>
   )

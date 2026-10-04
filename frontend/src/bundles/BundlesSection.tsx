@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, IconButton, Tooltip, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { PackagePlus, Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Bundle } from '../../bindings/github.com/Rethunk-AI/mortar/internal/bundles/models.ts'
@@ -12,6 +12,7 @@ import {
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -102,25 +103,19 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
                   >
                     {bundle.name}
                   </Typography>
-                  <Tooltip title={t`Rename`}>
-                    <IconButton
-                      aria-label={t`Rename ${bundle.name}`}
-                      size="small"
-                      onClick={() => setRenaming(bundle)}
-                    >
-                      <Pencil size={15} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={t`Delete`}>
-                    <IconButton
-                      aria-label={t`Delete ${bundle.name}`}
-                      size="small"
-                      color="error"
-                      onClick={() => setDeleting(bundle)}
-                    >
-                      <Trash2 size={15} />
-                    </IconButton>
-                  </Tooltip>
+                  <TipIconButton
+                    label={t`Rename ${bundle.name}`}
+                    onClick={() => setRenaming(bundle)}
+                  >
+                    <Pencil size={15} />
+                  </TipIconButton>
+                  <TipIconButton
+                    label={t`Delete ${bundle.name}`}
+                    color="error"
+                    onClick={() => setDeleting(bundle)}
+                  >
+                    <Trash2 size={15} />
+                  </TipIconButton>
                 </Box>
                 <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>{modCount}</Typography>
                 <Typography
@@ -166,16 +161,14 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
             return
           }
           const bundle = deleting
-          run(() =>
-            Delete(game, bundle.id)
-              .then(() => {
+          run(
+            () =>
+              Delete(game, bundle.id).then(() => {
                 setBundles((current) => current.filter((item) => item.id !== bundle.id))
                 setDeleting(null)
                 useToasts.getState().push({ kind: 'success', title: t`Bundle deleted` })
-              })
-              .catch((error: unknown) => {
-                reportError(t`Could not delete the bundle`)(error)
               }),
+            { errorTitle: t`Could not delete the bundle` },
           )
         }}
       />

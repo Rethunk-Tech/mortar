@@ -8,9 +8,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   Menu,
-  Tooltip,
   Typography,
 } from '@mui/material'
 import { FolderOpen, Pin, PinOff, RotateCcw } from 'lucide-react'
@@ -29,6 +27,7 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSaveBackups } from './backups.ts'
@@ -108,20 +107,15 @@ function BackupRow({
           {meta}
         </Typography>
       </Box>
-      <Tooltip title={busyGame ? t`Stop the game to restore saves.` : t`Restore`}>
-        <span>
-          <IconButton
-            size="small"
-            disabled={busyGame || pending}
-            aria-label={t`Restore ${when}`}
-            onClick={(e) => {
-              onRestore(e.currentTarget)
-            }}
-          >
-            <RotateCcw size={16} />
-          </IconButton>
-        </span>
-      </Tooltip>
+      <TipIconButton
+        label={busyGame ? t`Stop the game to restore saves.` : t`Restore ${when}`}
+        disabled={busyGame || pending}
+        onClick={(e) => {
+          onRestore(e.currentTarget)
+        }}
+      >
+        <RotateCcw size={16} />
+      </TipIconButton>
     </Box>
   )
 }

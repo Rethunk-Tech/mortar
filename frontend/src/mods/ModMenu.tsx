@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { IconButton, Menu, Tooltip } from '@mui/material'
+import { Menu } from '@mui/material'
 import {
   Ban,
   Ellipsis,
@@ -28,6 +28,7 @@ import {
 import { AddToBundleDialog } from '../bundles/dialogs.tsx'
 import { useFomod } from '../fomod/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { AddToGroupDialog, AddToGroupMenuItem } from './AddToGroupDialog.tsx'
@@ -324,18 +325,15 @@ export function ModMenu({ mod }: { mod: Mod }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   return (
     <>
-      <Tooltip title={t`More actions for ${mod.name}`}>
-        <IconButton
-          aria-label={t`More actions for ${mod.name}`}
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation()
-            setAnchor(e.currentTarget)
-          }}
-        >
-          <Ellipsis size={18} />
-        </IconButton>
-      </Tooltip>
+      <TipIconButton
+        label={t`More actions for ${mod.name}`}
+        onClick={(e) => {
+          e.stopPropagation()
+          setAnchor(e.currentTarget)
+        }}
+      >
+        <Ellipsis size={18} />
+      </TipIconButton>
       {anchor ? (
         <ModActionMenu mod={mod} anchor={{ el: anchor }} onClose={() => setAnchor(null)} />
       ) : null}

@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, InputAdornment, Switch, TextField, Tooltip } from '@mui/material'
+import { Box, Button, InputAdornment, Switch, TextField } from '@mui/material'
 import { Copy, Eye, EyeOff } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import {
@@ -9,6 +9,7 @@ import {
   SetOverlayPort,
 } from '../../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { TipIconButton } from '../../shell/TipIconButton.tsx'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { persist } from '../persist.ts'
@@ -160,18 +161,13 @@ function OverlayValues({
         >
           {preview.kind === 'value' ? preview.text : '\u2014'}
         </Box>
-        <Tooltip title={copiedKey === key ? copied : t`Copy OBS URL`} placement="top">
-          <span>
-            <IconButton
-              size="small"
-              aria-label={t`Copy OBS URL`}
-              disabled={!token}
-              onClick={() => copyRow(field, key)}
-            >
-              <Copy size={16} />
-            </IconButton>
-          </span>
-        </Tooltip>
+        <TipIconButton
+          label={copiedKey === key ? copied : t`Copy OBS URL`}
+          disabled={!token}
+          onClick={() => copyRow(field, key)}
+        >
+          <Copy size={16} />
+        </TipIconButton>
       </Box>
     )
   }
@@ -311,29 +307,21 @@ function OverlayConnection({
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <Tooltip title={shown ? t`Hide token` : t`Show token`}>
-                      <IconButton
-                        size="small"
-                        aria-label={shown ? t`Hide token` : t`Show token`}
-                        onClick={() => setShown((v) => !v)}
-                        edge="end"
-                      >
-                        {shown ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={t`Copy token`}>
-                      <span>
-                        <IconButton
-                          size="small"
-                          aria-label={t`Copy token`}
-                          disabled={!token}
-                          onClick={() => copyText(token, push, copied, failCopy)}
-                          edge="end"
-                        >
-                          <Copy size={16} />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
+                    <TipIconButton
+                      label={shown ? t`Hide token` : t`Show token`}
+                      onClick={() => setShown((v) => !v)}
+                      edge="end"
+                    >
+                      {shown ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </TipIconButton>
+                    <TipIconButton
+                      label={t`Copy token`}
+                      disabled={!token}
+                      onClick={() => copyText(token, push, copied, failCopy)}
+                      edge="end"
+                    >
+                      <Copy size={16} />
+                    </TipIconButton>
                   </InputAdornment>
                 ),
               },

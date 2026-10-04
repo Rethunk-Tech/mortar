@@ -5,17 +5,16 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   List,
   ListItem,
   ListItemText,
-  Tooltip,
 } from '@mui/material'
 import { Inbox, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Tool } from '../../bindings/github.com/Rethunk-AI/mortar/internal/tools/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportError } from '../toasts/report.ts'
 import { useTools } from './store.ts'
 import { ToolEditorDialog } from './ToolEditorDialog.tsx'
@@ -54,24 +53,20 @@ export function ToolsManageDialog({
                 key={tool.id}
                 secondaryAction={
                   <>
-                    <Tooltip title={t`Edit ${tool.name}`}>
-                      <IconButton
-                        edge="end"
-                        aria-label={t`Edit ${tool.name}`}
-                        onClick={() => setEditing(tool)}
-                      >
-                        <Pencil size={16} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={t`Delete ${tool.name}`}>
-                      <IconButton
-                        edge="end"
-                        aria-label={t`Delete ${tool.name}`}
-                        onClick={() => setDeleting(tool)}
-                      >
-                        <Trash2 size={16} />
-                      </IconButton>
-                    </Tooltip>
+                    <TipIconButton
+                      label={t`Edit ${tool.name}`}
+                      edge="end"
+                      onClick={() => setEditing(tool)}
+                    >
+                      <Pencil size={16} />
+                    </TipIconButton>
+                    <TipIconButton
+                      label={t`Delete ${tool.name}`}
+                      edge="end"
+                      onClick={() => setDeleting(tool)}
+                    >
+                      <Trash2 size={16} />
+                    </TipIconButton>
                   </>
                 }
               >

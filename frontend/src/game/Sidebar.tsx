@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
+import { Box, ButtonBase } from '@mui/material'
 import { ChevronRight, ListOrdered, Plus } from 'lucide-react'
 import { type PointerEvent, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
@@ -12,6 +12,7 @@ import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { RecentChangesButton } from '../profiles/RecentChangesButton.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { QueueButton } from '../queue/QueueButton.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
@@ -390,16 +391,12 @@ export function Sidebar({ game }: { game: string }) {
           }),
         }}
       >
-        <Tooltip title={t`Manage profiles`}>
-          <IconButton aria-label={t`Manage profiles`} onClick={openProfiles}>
-            <ListOrdered size={20} />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title={t`New profile`}>
-          <IconButton aria-label={t`New profile`} onClick={() => setCreating(true)}>
-            <Plus size={20} />
-          </IconButton>
-        </Tooltip>
+        <TipIconButton label={t`Manage profiles`} onClick={openProfiles}>
+          <ListOrdered size={20} />
+        </TipIconButton>
+        <TipIconButton label={t`New profile`} onClick={() => setCreating(true)}>
+          <Plus size={20} />
+        </TipIconButton>
       </Box>
       <BottomBlock game={game} />
       <ResizeHandle width={width} onWidth={setWidth} />

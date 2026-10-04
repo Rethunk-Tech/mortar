@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Drawer, IconButton, Tooltip, Typography } from '@mui/material'
+import { Box, Drawer, Typography } from '@mui/material'
 import {
   History as HistoryIcon,
   List,
@@ -17,6 +17,7 @@ import {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/queue/service.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
   emptyFilters,
@@ -67,41 +68,33 @@ function Header({
             {line}
           </Typography>
         </Box>
-        <Tooltip title={view === 'history' ? t`Queue` : t`History`}>
-          <IconButton
-            aria-label={view === 'history' ? t`Queue` : t`History`}
-            onClick={() => onView(view === 'history' ? 'queue' : 'history')}
-          >
-            {view === 'history' ? <List size={16} /> : <HistoryIcon size={16} />}
-          </IconButton>
-        </Tooltip>
+        <TipIconButton
+          label={view === 'history' ? t`Queue` : t`History`}
+          onClick={() => onView(view === 'history' ? 'queue' : 'history')}
+        >
+          {view === 'history' ? <List size={16} /> : <HistoryIcon size={16} />}
+        </TipIconButton>
         {finished.length > 0 && view === 'queue' ? (
-          <Tooltip title={t`Clear finished`}>
-            <IconButton
-              aria-label={t`Clear finished`}
-              onClick={() =>
-                Promise.all(finished.map((item) => Dismiss(item.id))).catch(reportUnexpected)
-              }
-            >
-              <ListX size={16} />
-            </IconButton>
-          </Tooltip>
+          <TipIconButton
+            label={t`Clear finished`}
+            onClick={() =>
+              Promise.all(finished.map((item) => Dismiss(item.id))).catch(reportUnexpected)
+            }
+          >
+            <ListX size={16} />
+          </TipIconButton>
         ) : null}
         {idle ? null : (
-          <Tooltip title={paused ? t`Resume` : t`Pause all`}>
-            <IconButton
-              aria-label={paused ? t`Resume` : t`Pause all`}
-              onClick={() => (paused ? Resume() : Pause()).catch(reportUnexpected)}
-            >
-              {paused ? <PlayIcon size={16} /> : <PauseIcon size={16} />}
-            </IconButton>
-          </Tooltip>
+          <TipIconButton
+            label={paused ? t`Resume` : t`Pause all`}
+            onClick={() => (paused ? Resume() : Pause()).catch(reportUnexpected)}
+          >
+            {paused ? <PlayIcon size={16} /> : <PauseIcon size={16} />}
+          </TipIconButton>
         )}
-        <Tooltip title={t`Close downloads`}>
-          <IconButton aria-label={t`Close downloads`} onClick={onClose}>
-            <X size={16} />
-          </IconButton>
-        </Tooltip>
+        <TipIconButton label={t`Close downloads`} onClick={onClose}>
+          <X size={16} />
+        </TipIconButton>
       </Box>
       <Box
         role="progressbar"

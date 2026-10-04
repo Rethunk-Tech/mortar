@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
 
 const DONE_FILL = 0.08
@@ -24,6 +24,7 @@ import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
 import { LetterTile } from '../mods/parts.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { errorDetails, errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { Callout, Title } from './Callout.tsx'
@@ -205,18 +206,14 @@ function Failed({ items }: { items: Item[] }) {
       <SectionTitle
         color="#ffb3ab"
         action={
-          <Tooltip title={t`Retry failed`}>
-            <span>
-              <IconButton
-                aria-label={t`Retry failed`}
-                color="error"
-                disabled={pending}
-                onClick={() => run(() => RetryFailed())}
-              >
-                <RotateCcw size={16} />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <TipIconButton
+            label={t`Retry failed`}
+            color="error"
+            disabled={pending}
+            onClick={() => run(() => RetryFailed())}
+          >
+            <RotateCcw size={16} />
+          </TipIconButton>
         }
       >
         {t`Failed (${items.length})`}
@@ -241,14 +238,12 @@ function Failed({ items }: { items: Item[] }) {
               >
                 {t`Retry`}
               </Button>
-              <Tooltip title={t`Dismiss ${i.name}`}>
-                <IconButton
-                  aria-label={t`Dismiss ${i.name}`}
-                  onClick={() => Dismiss(i.id).catch(reportUnexpected)}
-                >
-                  <X size={14} />
-                </IconButton>
-              </Tooltip>
+              <TipIconButton
+                label={t`Dismiss ${i.name}`}
+                onClick={() => Dismiss(i.id).catch(reportUnexpected)}
+              >
+                <X size={14} />
+              </TipIconButton>
             </>
           }
         />
@@ -290,14 +285,12 @@ function Active({ item }: { item: Item }) {
         </Box>
       </Box>
       {downloading ? (
-        <Tooltip title={t`Cancel ${item.name}`}>
-          <IconButton
-            aria-label={t`Cancel ${item.name}`}
-            onClick={() => Cancel(item.id).catch(reportUnexpected)}
-          >
-            <X size={14} />
-          </IconButton>
-        </Tooltip>
+        <TipIconButton
+          label={t`Cancel ${item.name}`}
+          onClick={() => Cancel(item.id).catch(reportUnexpected)}
+        >
+          <X size={14} />
+        </TipIconButton>
       ) : null}
     </Box>
   )
@@ -397,14 +390,12 @@ export function Body({ items }: { items: Item[] }) {
                 <Typography sx={{ ...detail, color: 'text.secondary' }}>{i.fileName}</Typography>
               }
               actions={
-                <Tooltip title={t`Skip ${i.name}`}>
-                  <IconButton
-                    aria-label={t`Skip ${i.name}`}
-                    onClick={() => Skip(i.id).catch(reportUnexpected)}
-                  >
-                    <X size={14} />
-                  </IconButton>
-                </Tooltip>
+                <TipIconButton
+                  label={t`Skip ${i.name}`}
+                  onClick={() => Skip(i.id).catch(reportUnexpected)}
+                >
+                  <X size={14} />
+                </TipIconButton>
               }
             />
           ))}
@@ -425,14 +416,12 @@ export function Body({ items }: { items: Item[] }) {
                 ) : null
               }
               actions={
-                <Tooltip title={t`Dismiss ${i.name}`}>
-                  <IconButton
-                    aria-label={t`Dismiss ${i.name}`}
-                    onClick={() => Dismiss(i.id).catch(reportUnexpected)}
-                  >
-                    <X size={14} />
-                  </IconButton>
-                </Tooltip>
+                <TipIconButton
+                  label={t`Dismiss ${i.name}`}
+                  onClick={() => Dismiss(i.id).catch(reportUnexpected)}
+                >
+                  <X size={14} />
+                </TipIconButton>
               }
             />
           ))}
@@ -451,14 +440,12 @@ export function Body({ items }: { items: Item[] }) {
                 </Typography>
               }
               actions={
-                <Tooltip title={t`Dismiss ${i.name}`}>
-                  <IconButton
-                    aria-label={t`Dismiss ${i.name}`}
-                    onClick={() => Dismiss(i.id).catch(reportUnexpected)}
-                  >
-                    <X size={14} />
-                  </IconButton>
-                </Tooltip>
+                <TipIconButton
+                  label={t`Dismiss ${i.name}`}
+                  onClick={() => Dismiss(i.id).catch(reportUnexpected)}
+                >
+                  <X size={14} />
+                </TipIconButton>
               }
             />
           ))}

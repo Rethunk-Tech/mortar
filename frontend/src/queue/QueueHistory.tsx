@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, FormControl, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material'
+import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material'
 import {
   ArrowUpRight,
   CircleCheck,
@@ -21,6 +21,7 @@ import { showInProfile } from '../mods/revealMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
   filterHistory,
@@ -42,15 +43,12 @@ function RetryHistoryButton({ entry }: { entry: HistoryEntry }) {
     return null
   }
   return (
-    <Tooltip title={t`Download again`}>
-      <IconButton
-        size="small"
-        aria-label={t`Download again`}
-        onClick={() => RetryHistory(entry).catch(reportUnexpected)}
-      >
-        <RotateCcw size={16} />
-      </IconButton>
-    </Tooltip>
+    <TipIconButton
+      label={t`Download again`}
+      onClick={() => RetryHistory(entry).catch(reportUnexpected)}
+    >
+      <RotateCcw size={16} />
+    </TipIconButton>
   )
 }
 
@@ -131,15 +129,13 @@ export function HistoryList({
           </Select>
         </FormControl>
         {entries.length > 0 ? (
-          <Tooltip title={t`Clear history`}>
-            <IconButton
-              aria-label={t`Clear history`}
-              onClick={() => setConfirmClear(true)}
-              sx={{ ml: 'auto' }}
-            >
-              <Trash2 size={16} />
-            </IconButton>
-          </Tooltip>
+          <TipIconButton
+            label={t`Clear history`}
+            onClick={() => setConfirmClear(true)}
+            sx={{ ml: 'auto' }}
+          >
+            <Trash2 size={16} />
+          </TipIconButton>
         ) : null}
         <ConfirmDialog
           open={confirmClear}
@@ -201,15 +197,12 @@ export function HistoryList({
                 ) : null}
               </Box>
               {e.game && profiles.some((p) => p.id === e.profileId) ? (
-                <Tooltip title={t`Show in profile`}>
-                  <IconButton
-                    size="small"
-                    aria-label={t`Show ${e.name} in its profile`}
-                    onClick={() => showInProfile(e.game, e.profileId, e.modId, e.name)}
-                  >
-                    <ArrowUpRight size={16} />
-                  </IconButton>
-                </Tooltip>
+                <TipIconButton
+                  label={t`Show ${e.name} in its profile`}
+                  onClick={() => showInProfile(e.game, e.profileId, e.modId, e.name)}
+                >
+                  <ArrowUpRight size={16} />
+                </TipIconButton>
               ) : null}
               <RetryHistoryButton entry={e} />
             </Box>

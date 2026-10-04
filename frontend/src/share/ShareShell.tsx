@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Dialog, IconButton, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Dialog, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { paper } from '../mods/paper.ts'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import type { ShownInfo } from './logic.ts'
 import { TabPills } from './TabPills.tsx'
@@ -63,15 +64,13 @@ export function ShareShell({
             minHeight: 0,
           }}
         >
-          <Tooltip title={t`Close`}>
-            <IconButton
-              aria-label={t`Close`}
-              onClick={close}
-              sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
-            >
-              <X size={18} />
-            </IconButton>
-          </Tooltip>
+          <TipIconButton
+            label={t`Close`}
+            onClick={close}
+            sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
+          >
+            <X size={18} />
+          </TipIconButton>
           <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
             <TipBanner tip="share">
               {t`A share link names this profile and the Nexus or GitHub files in it, not the archives.`}

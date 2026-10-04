@@ -20,11 +20,9 @@ import {
   Button,
   ButtonBase,
   Divider,
-  IconButton,
   InputAdornment,
   Menu,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material'
 import {
@@ -56,6 +54,7 @@ import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { errorDetails, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { ExternalImportMenuItems, ExternalImportProfileDialog } from './ExternalImportMenu.tsx'
@@ -92,29 +91,21 @@ function TrashRow({ item }: { item: TrashItem }) {
         </Typography>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{days}</Typography>
       </Box>
-      <Tooltip title={t`Restore`}>
-        <span>
-          <IconButton
-            aria-label={t`Restore ${item.name}`}
-            disabled={pending}
-            onClick={() => run(() => restore(item.id))}
-          >
-            <RotateCcw size={16} />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Tooltip title={t`Delete permanently`}>
-        <span>
-          <IconButton
-            aria-label={t`Delete ${item.name} permanently`}
-            color="error"
-            disabled={pending}
-            onClick={() => setConfirming(true)}
-          >
-            <Trash2 size={16} />
-          </IconButton>
-        </span>
-      </Tooltip>
+      <TipIconButton
+        label={t`Restore ${item.name}`}
+        disabled={pending}
+        onClick={() => run(() => restore(item.id))}
+      >
+        <RotateCcw size={16} />
+      </TipIconButton>
+      <TipIconButton
+        label={t`Delete ${item.name} permanently`}
+        color="error"
+        disabled={pending}
+        onClick={() => setConfirming(true)}
+      >
+        <Trash2 size={16} />
+      </TipIconButton>
       <ConfirmDialog
         open={confirming}
         title={t`Delete ${item.name} permanently?`}
@@ -173,40 +164,28 @@ function Damaged() {
               {t`Could not read this profile`}
             </Typography>
           </Box>
-          <Tooltip title={t`Open folder`}>
-            <span>
-              <IconButton
-                aria-label={t`Open folder`}
-                disabled={pending}
-                onClick={() => run(() => openFolder(item.id))}
-              >
-                <FolderOpen size={16} />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title={item.repairError || t`Repair`}>
-            <span>
-              <IconButton
-                aria-label={t`Repair`}
-                disabled={pending || Boolean(item.repairError)}
-                onClick={() => run(() => repair(item.id))}
-              >
-                <Wrench size={16} />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title={t`Move to trash`}>
-            <span>
-              <IconButton
-                aria-label={t`Move to trash`}
-                color="error"
-                disabled={pending}
-                onClick={() => run(() => remove(item.id))}
-              >
-                <Trash2 size={16} />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <TipIconButton
+            label={t`Open folder`}
+            disabled={pending}
+            onClick={() => run(() => openFolder(item.id))}
+          >
+            <FolderOpen size={16} />
+          </TipIconButton>
+          <TipIconButton
+            label={item.repairError || t`Repair`}
+            disabled={pending || Boolean(item.repairError)}
+            onClick={() => run(() => repair(item.id))}
+          >
+            <Wrench size={16} />
+          </TipIconButton>
+          <TipIconButton
+            label={t`Move to trash`}
+            color="error"
+            disabled={pending}
+            onClick={() => run(() => remove(item.id))}
+          >
+            <Trash2 size={16} />
+          </TipIconButton>
         </Box>
       ))}
     </Box>
@@ -238,18 +217,14 @@ function Trash() {
           sx={{ fontSize: 16, fontWeight: 700 }}
         >{t`Recently deleted`}</Typography>
         {trash.length === 0 ? null : (
-          <Tooltip title={t`Empty trash`}>
-            <span>
-              <IconButton
-                aria-label={t`Empty trash`}
-                color="error"
-                disabled={pending}
-                onClick={() => setConfirming(true)}
-              >
-                <Trash2 size={16} />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <TipIconButton
+            label={t`Empty trash`}
+            color="error"
+            disabled={pending}
+            onClick={() => setConfirming(true)}
+          >
+            <Trash2 size={16} />
+          </TipIconButton>
         )}
       </Box>
       <Typography sx={{ fontSize: 13, lineHeight: 1.45 }}>

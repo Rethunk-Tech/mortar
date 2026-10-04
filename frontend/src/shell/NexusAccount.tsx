@@ -1,10 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, IconButton, Tooltip } from '@mui/material'
+import { Box, Button, Chip } from '@mui/material'
 import { LogIn, LogOut } from 'lucide-react'
 import { SignOut } from '../../bindings/github.com/Rethunk-AI/mortar/internal/nexussvc/service.ts'
 import { openSettings } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { TipIconButton } from './TipIconButton.tsx'
 
 export function NexusAccount({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useLingui()
@@ -38,17 +39,14 @@ export function NexusAccount({ onNavigate }: { onNavigate: () => void }) {
         </Box>
       </Box>
       {signedIn ? (
-        <Tooltip title={t`Sign out`}>
-          <IconButton
-            aria-label={t`Sign out`}
-            size="small"
-            onClick={() => {
-              SignOut().catch(reportUnexpected)
-            }}
-          >
-            <LogOut size={16} />
-          </IconButton>
-        </Tooltip>
+        <TipIconButton
+          label={t`Sign out`}
+          onClick={() => {
+            SignOut().catch(reportUnexpected)
+          }}
+        >
+          <LogOut size={16} />
+        </TipIconButton>
       ) : (
         <Button
           size="small"

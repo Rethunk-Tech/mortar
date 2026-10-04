@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, IconButton, Tooltip } from '@mui/material'
+import { Button } from '@mui/material'
 import { ExternalLink, Plus, Power, X } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { CopyMods } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
@@ -10,6 +10,7 @@ import type {
 import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSaves } from './store.ts'
@@ -39,36 +40,26 @@ export function LackChipActions(p: {
   return (
     <>
       {lack.disabled ? (
-        <Tooltip title={locked ? t`Stop the game to change mods.` : t`Switch on in this profile`}>
-          <span>
-            <IconButton
-              size="small"
-              disabled={locked}
-              aria-label={t`Switch on ${name} in this profile`}
-              onClick={() => {
-                enable(game, profile, lack.uniqueId).catch(reportUnexpected)
-              }}
-            >
-              <Power size={14} />
-            </IconButton>
-          </span>
-        </Tooltip>
+        <TipIconButton
+          label={locked ? t`Stop the game to change mods.` : t`Switch on ${name} in this profile`}
+          disabled={locked}
+          onClick={() => {
+            enable(game, profile, lack.uniqueId).catch(reportUnexpected)
+          }}
+        >
+          <Power size={14} />
+        </TipIconButton>
       ) : null}
       {want ? (
-        <Tooltip title={plusTitle}>
-          <span>
-            <IconButton
-              size="small"
-              disabled={queued || locked}
-              aria-label={t`Add ${name} to this profile`}
-              onClick={() => {
-                download([want]).catch(reportUnexpected)
-              }}
-            >
-              <Plus size={14} />
-            </IconButton>
-          </span>
-        </Tooltip>
+        <TipIconButton
+          label={plusTitle}
+          disabled={queued || locked}
+          onClick={() => {
+            download([want]).catch(reportUnexpected)
+          }}
+        >
+          <Plus size={14} />
+        </TipIconButton>
       ) : null}
       {source ? (
         <DisabledReason title={t`Stop the game to change mods.`} disabled={locked}>
@@ -85,29 +76,23 @@ export function LackChipActions(p: {
         </DisabledReason>
       ) : null}
       {!(lack.disabled || want) && url ? (
-        <Tooltip title={nexusPage ? t`Open on Nexus` : t`Open page`}>
-          <IconButton
-            size="small"
-            aria-label={nexusPage ? t`Open ${name} on Nexus` : t`Open the page of ${name}`}
-            onClick={() => {
-              openPage(url).catch(reportUnexpected)
-            }}
-          >
-            <ExternalLink size={14} />
-          </IconButton>
-        </Tooltip>
-      ) : null}
-      <Tooltip title={t`Dismiss for this save`}>
-        <IconButton
-          size="small"
-          aria-label={t`Dismiss ${name} for this save`}
+        <TipIconButton
+          label={nexusPage ? t`Open ${name} on Nexus` : t`Open the page of ${name}`}
           onClick={() => {
-            dismiss(fit.folder, lack.uniqueId).catch(reportUnexpected)
+            openPage(url).catch(reportUnexpected)
           }}
         >
-          <X size={14} />
-        </IconButton>
-      </Tooltip>
+          <ExternalLink size={14} />
+        </TipIconButton>
+      ) : null}
+      <TipIconButton
+        label={t`Dismiss ${name} for this save`}
+        onClick={() => {
+          dismiss(fit.folder, lack.uniqueId).catch(reportUnexpected)
+        }}
+      >
+        <X size={14} />
+      </TipIconButton>
     </>
   )
 }
