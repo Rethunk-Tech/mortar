@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, InputAdornment, Switch, TextField } from '@mui/material'
+import { Box, Button, InputAdornment, TextField } from '@mui/material'
 import { Copy, Eye, EyeOff } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import {
@@ -12,6 +12,7 @@ import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { TipIconButton } from '../../shell/TipIconButton.tsx'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { PrefSwitch } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -260,15 +261,21 @@ function OverlayConnection({
   const copied = t`Copied`
   const failCopy = t`Could not copy`
   const [draft, setDraft] = useState(String(port))
+  const [portError, setPortError] = useState(false)
   const [shown, setShown] = useState(false)
   const [confirm, setConfirm] = useState(false)
-  useEffect(() => setDraft(String(port)), [port])
+  useEffect(() => {
+    setDraft(String(port))
+    setPortError(false)
+  }, [port])
+  const portRange = t`Enter a number from ${MIN_PORT} to ${MAX_PORT}`
   const commitPort = () => {
     const n = Number(draft)
     if (!Number.isInteger(n) || n < MIN_PORT || n > MAX_PORT) {
-      setDraft(String(port))
+      setPortError(true)
       return
     }
+    setPortError(false)
     if (n !== port) {
       persist(() => SetOverlayPort(n), push, fail)
     }
@@ -280,6 +287,8 @@ function OverlayConnection({
           type="number"
           size="small"
           value={draft}
+          error={portError}
+          helperText={portError ? portRange : undefined}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commitPort}
           onKeyDown={(e) => {
@@ -338,7 +347,14 @@ function OverlayConnection({
         onClose={() => setConfirm(false)}
         onConfirm={() => {
           setConfirm(false)
-          persist(() => RegenerateOverlayToken(), push, fail)
+          persist(
+            () =>
+              RegenerateOverlayToken().then(() => {
+                push({ kind: 'success', title: t`Token regenerated` })
+              }),
+            push,
+            fail,
+          )
         }}
       />
     </>
@@ -402,19 +418,15 @@ export function StreamOverlay() {
         label={t`Stream overlay`}
         description={t`Show live game info in OBS. Changes apply the next time you press Play.`}
       >
-        <Switch
+        <PrefSwitch
           checked={enabled}
-          slotProps={{ input: { 'aria-label': t`Stream overlay` } }}
-          onChange={(_, on) => persist(() => SetOverlayEnabled(on), push, fail)}
+          onChange={(on) => persist(() => SetOverlayEnabled(on), push, fail)}
+          label={t`Stream overlay`}
         />
       </SettingRow>
       {enabled ? (
         <SettingRow label={t`Show labels`}>
-          <Switch
-            checked={labels}
-            slotProps={{ input: { 'aria-label': t`Show labels` } }}
-            onChange={(_, on) => setLabels(on)}
-          />
+          <PrefSwitch checked={labels} onChange={(on) => setLabels(on)} label={t`Show labels`} />
         </SettingRow>
       ) : null}
       {enabled ? (
