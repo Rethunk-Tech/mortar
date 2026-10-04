@@ -4,7 +4,6 @@ import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
-import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { useToasts } from '../toasts/store.ts'
 import type { ModFilter } from './Toolbar.tsx'
 
@@ -12,13 +11,6 @@ type View = 'grid' | 'list'
 
 const VIEW_KEY = 'mortar.modsView'
 
-const isFilter = (v: unknown): v is ModFilter =>
-  typeof v === 'string' &&
-  ['all', 'disabled', 'update', 'problem', 'pinned', 'local', 'recent'].includes(v)
-const isTags = (v: unknown): v is string[] =>
-  Array.isArray(v) && v.every((t) => typeof t === 'string')
-
-function setStoredView(set: (p: { view: View }) => void, view: View) {
 const isView = (v: unknown): v is View => v === 'list' || v === 'grid'
 
 const isFilter = (v: unknown): v is ModFilter =>
@@ -27,6 +19,7 @@ const isFilter = (v: unknown): v is ModFilter =>
 const isTags = (v: unknown): v is string[] =>
   Array.isArray(v) && v.every((t) => typeof t === 'string')
 
+function setStoredView(set: (p: { view: View }) => void, view: View) {
   set({ view })
   writeStored(VIEW_KEY, view)
 }
