@@ -54,6 +54,8 @@ describe('notes.sh', () => {
         '- Faster profile switch',
         '- A crash on start',
         '',
+        'The Linux AppImage and portable program need glibc 2.38 or newer (Ubuntu 24.04, Debian 13, Fedora 39 or later); older systems use the Flatpak.',
+        '',
         '[Full changelog](https://github.com/o/r/compare/v0.1.0...v0.2.0)',
         '',
       ].join('\n'),
