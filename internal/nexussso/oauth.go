@@ -23,7 +23,7 @@ const (
 	// Scope is what Vortex requests; Nexus has not published scopes for third-party clients.
 	Scope = "openid profile email"
 
-	keyringItem     = "nexus-oauth"
+	keyringItem   = "nexus-oauth"
 	refreshMargin = time.Minute
 )
 
