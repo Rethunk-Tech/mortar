@@ -5,7 +5,7 @@ How to run, build and gate Mortar. What it is and the rules it keeps: [AGENTS.md
 ## Prerequisites
 
 - Go (the version in `go.mod`) and [bun](https://bun.sh)
-- The Wails CLI, `wails3`, built inside the `Rethunk-AI/wails` fork's module at the version `go.mod` pins, since `go install` ignores `replace`: `go mod download github.com/wailsapp/wails/v3`, then `(cd "$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)" && go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)`
+- The Wails CLI, `wails3`, built inside the `Rethunk-AI/wails` fork's module at the version `go.mod` pins, since `go install` ignores `replace`: `go mod download github.com/wailsapp/wails/v3`, then `(v=$(go env GOVERSION); cd "$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)" && GOTOOLCHAIN=$v go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)` (built with Mortar's Go version; the fork's own `go.mod` asks for an older one)
 - GTK4 and WebKitGTK 6.0 development packages: `sudo dnf install gtk4-devel webkitgtk6.0-devel gcc-c++ pkgconf-pkg-config`
 - `golangci-lint` and `govulncheck` (the gate's lint and vuln steps), and `lefthook` and `gitleaks` (the git hooks; pre-commit runs gitleaks on staged changes), on PATH
 
