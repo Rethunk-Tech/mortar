@@ -20,7 +20,8 @@ import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { paper } from '../mods/paper.ts'
 import type { SettingsSection } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { mergeBindings, type ShortcutId } from '../settings/shortcuts.ts'
+import { shortcutLabels } from '../settings/shortcutLabels.ts'
+import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import type { PaletteItem } from './match.ts'
 import { runPaletteItem } from './run.ts'
@@ -133,23 +134,6 @@ function paletteSections(i18n: I18n) {
     { id: 'shortcuts' as const, label: i18n._(msg`Shortcuts`) },
     { id: 'about' as const, label: i18n._(msg`About`) },
   ]
-}
-
-function shortcutLabels(i18n: I18n): Partial<Record<ShortcutId, string>> {
-  return {
-    'command-palette': i18n._(msg`Open the command palette`),
-    'filter-mods': i18n._(msg`Focus the search`),
-    play: i18n._(msg`Play the open profile`),
-    'check-updates': i18n._(msg`Check for updates`),
-    'open-settings': i18n._(msg`Open Settings`),
-    dismiss: i18n._(msg`Close dialog or clear selection`),
-    'select-all-mods': i18n._(msg`Select all mods`),
-    'mod-up': i18n._(msg`Focus the previous mod`),
-    'mod-down': i18n._(msg`Focus the next mod`),
-    'mod-toggle': i18n._(msg`Toggle the focused mod`),
-    'mod-details': i18n._(msg`Open focused mod details`),
-    'mod-remove': i18n._(msg`Remove the focused mod`),
-  }
 }
 
 export function CommandPalette() {

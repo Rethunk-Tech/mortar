@@ -11,7 +11,7 @@ import { compactQuery } from '../game/compact.ts'
 import { useLaunch } from '../launch/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { dialogOpen } from '../settings/shortcuts.ts'
+import { boundShortcut, dialogOpen } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipBanner } from '../tips/TipBanner.tsx'
@@ -56,12 +56,18 @@ function SelectionKeys({ shown }: { shown: Mod[] }) {
       if (dialogOpen()) {
         return
       }
-      if (e.key === 'Escape') {
-        useSelection.getState().clear()
-        useDetail.getState().show(null)
+      const id = boundShortcut(e, useSettings.getState().shortcuts)
+      // One press undoes one thing: a selection first, then the open details.
+      if (id === 'dismiss') {
+        const selection = useSelection.getState()
+        if (selection.ids.length > 0) {
+          selection.clear()
+        } else {
+          useDetail.getState().show(null)
+        }
         return
       }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+      if (id === 'select-all-mods') {
         e.preventDefault()
         useSelection.getState().selectAll(shown.map((m) => modId(m)))
       }

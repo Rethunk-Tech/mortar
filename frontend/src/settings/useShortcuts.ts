@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useCommandPalette } from '../commandPalette/store.ts'
+import { useConsole } from '../console/store.ts'
 import { useRenameRequest } from '../game/renameRequest.ts'
 import { useSidebarCollapsed } from '../game/sidebarCollapsed.ts'
 import { useTab } from '../game/tab.ts'
@@ -84,7 +85,7 @@ export function runShortcut(id: ShortcutId) {
       return
     }
     case 'help':
-      return useTab.getState().setTab('console')
+      return useConsole.getState().setHelping(true)
     case 'downloads': {
       const queue = useQueue.getState()
       return queue.setOpen(!queue.open)

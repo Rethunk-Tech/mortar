@@ -11,6 +11,7 @@ import { compactQuery } from '../game/compact.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { boundShortcut, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CompatChip } from './CompatChip.tsx'
@@ -270,19 +271,17 @@ function ModRow({
       tabIndex={orderedIds[0] === rowId ? 0 : -1}
       {...menu}
       onKeyDown={(e) => {
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-          e.preventDefault()
-          onArrow(rowId, e.key === 'ArrowDown' ? 1 : -1)
-          return
+        const run: Partial<Record<ShortcutId, () => void>> = {
+          'mod-up': () => onArrow(rowId, -1),
+          'mod-down': () => onArrow(rowId, 1),
+          'mod-toggle': () => setEnabled(m, !m.enabled).catch(reportUnexpected),
+          'mod-details': () => show(m),
+          'mod-remove': () => askRemove(m),
         }
-        if (e.key === ' ') {
+        const action = run[boundShortcut(e, useSettings.getState().shortcuts) ?? 'dismiss']
+        if (action) {
           e.preventDefault()
-          setEnabled(m, !m.enabled).catch(reportUnexpected)
-          return
-        }
-        if (e.key === 'Delete') {
-          e.preventDefault()
-          askRemove(m)
+          action()
           return
         }
         menu.onKeyDown(e)

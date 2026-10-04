@@ -5,6 +5,7 @@ import { SetShortcuts } from '../../../bindings/github.com/Rethunk-AI/mortar/int
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingsSection } from '../SettingsSection.tsx'
+import { shortcutLabels } from '../shortcutLabels.ts'
 import {
   conflictFor,
   defaultBindings,
@@ -21,44 +22,8 @@ import { useSettingsSearch } from '../useSettingsSearch.ts'
 type Labels = Record<ShortcutId, string>
 
 function useShortcutLabels(): Labels {
-  const { t } = useLingui()
-  return useMemo(
-    () => ({
-      'command-palette': t`Open the command palette`,
-      'filter-mods': t`Focus the search`,
-      play: t`Play the open profile`,
-      'check-updates': t`Check for updates`,
-      'open-settings': t`Open Settings`,
-      dismiss: t`Close dialog or clear selection`,
-      'select-all-mods': t`Select all mods`,
-      'mod-up': t`Focus the previous mod`,
-      'mod-down': t`Focus the next mod`,
-      'mod-toggle': t`Toggle the focused mod`,
-      'mod-details': t`Open focused mod details`,
-      'mod-remove': t`Remove the focused mod`,
-      'tab-mods': t`Switch to Mods`,
-      'tab-problems': t`Switch to Problems`,
-      'tab-saves': t`Switch to Saves`,
-      'tab-notes': t`Switch to Notes`,
-      'tab-console': t`Switch to Console`,
-      'tab-performance': t`Switch to Performance`,
-      'new-profile': t`Create a new profile`,
-      'duplicate-profile': t`Duplicate the open profile`,
-      'rename-profile': t`Rename the open profile`,
-      'find-all-mods': t`Find a mod in all profiles`,
-      import: t`Open the Import dialog`,
-      'export-profile': t`Export or share the open profile`,
-      downloads: t`Toggle Downloads`,
-      notifications: t`Open notification history`,
-      'previous-profile': t`Open the previous profile`,
-      'next-profile': t`Open the next profile`,
-      'collapse-sidebar': t`Collapse or expand the profile sidebar`,
-      back: t`Go back`,
-      help: t`Get help`,
-      'vanilla-play': t`Play the open profile without SMAPI`,
-    }),
-    [t],
-  )
+  const { i18n } = useLingui()
+  return useMemo(() => shortcutLabels(i18n), [i18n])
 }
 
 function ShortcutRow({

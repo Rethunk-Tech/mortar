@@ -1,5 +1,6 @@
-import { describe, expect, test } from 'bun:test'
+import { boundShortcut, describe, expect, test } from 'bun:test'
 import {
+  boundShortcut,
   conflictFor,
   defaultBindings,
   formatChord,
@@ -95,4 +96,11 @@ describe('shortcutAllowed', () => {
   test('allows chords on the page body', () => {
     expect(shortcutAllowed('check-updates', { tagName: 'DIV' })).toBe(true)
   })
+})
+
+test('a rebound list key triggers its action and the old key no longer does', () => {
+  const bindings = { 'mod-toggle': 'T' }
+  expect(boundShortcut({ key: 't' }, bindings)).toBe('mod-toggle')
+  expect(boundShortcut({ key: ' ' }, bindings)).not.toBe('mod-toggle')
+  expect(boundShortcut({ key: 'Enter' }, null)).toBe('mod-details')
 })

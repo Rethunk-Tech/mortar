@@ -277,3 +277,11 @@ export function matchShortcut(
   }
   return null
 }
+
+/** The shortcut a key event triggers under the user's current bindings. */
+export function boundShortcut(
+  e: Chord,
+  shortcuts: ShortcutBindings | null | undefined,
+): ShortcutId | null {
+  return matchShortcut(e, mergeBindings(shortcuts))
+}
