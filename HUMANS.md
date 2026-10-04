@@ -22,9 +22,12 @@ wails3 build    # production binary in bin/mortar
 wails3 task selftest -- start [--copy-data]   # sandboxed server-mode Mortar at http://127.0.0.1:9455
 wails3 task selftest -- restart               # rebuild and restart after changes
 wails3 task selftest -- stop
+bun run --cwd frontend e2e                    # UI smoke against the running self-test server
 ```
 
 `selftest` runs `scripts/selftest.sh`: a `server`-tagged binary, its own HOME, a copied (never linked) Stardew folder and a minimal Steam library, so the real data, game and Steam config are never touched. Optional `--copy-data` copies live Mortar profiles and settings into that sandbox once. The sandbox lives under `/var/tmp/mortar-selftest` unless `MORTAR_SELFTEST_DIR` is set; the script does not delete it.
+
+`e2e` (Playwright, Chromium only) opens every profile tab and every Settings page of the running self-test server and fails on a console error, a failed request, or a main-thread task over 200 ms. It reports itself skipped when no server is running, so it is not part of the gate or CI; run it after each wave of UI changes (`restart` first).
 
 The frontend build first runs `scripts/gen-credits.ts`, which rewrites `frontend/src/settings/generated/credits.json` (the licence list on Settings › About) from `frontend/package.json` and `go.mod`, then extracts and compiles the Lingui catalogs in `frontend/src/locales/`, so a build never shows a message id in place of its text; commit those files when they change.
 
