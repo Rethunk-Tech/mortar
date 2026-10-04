@@ -647,11 +647,6 @@ type progress struct {
 	last  time.Time
 }
 
-func (p *progress) Write(b []byte) (int, error) {
-	p.set(p.n + int64(len(b)))
-	return len(b), nil
-}
-
 // set records n bytes received in all.
 func (p *progress) set(n int64) {
 	p.n = n

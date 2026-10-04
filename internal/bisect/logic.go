@@ -21,15 +21,6 @@ type Progress struct {
 	ModsLeft int
 }
 
-// Split divides the candidate list into two non-empty halves when possible.
-func Split(mods []Mod) (left, right []Mod) {
-	if len(mods) < 2 {
-		return append([]Mod(nil), mods...), nil
-	}
-	mid := (len(mods) + 1) / 2
-	return append([]Mod(nil), mods[:mid]...), append([]Mod(nil), mods[mid:]...)
-}
-
 func dependencyGroups(mods []Mod) [][]Mod {
 	parent := make(map[string]string, len(mods))
 	known := make(map[string]Mod, len(mods))

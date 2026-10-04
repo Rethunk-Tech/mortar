@@ -73,16 +73,6 @@ func Start(ctx context.Context, pid int) (*Session, error) {
 	return session, nil
 }
 
-// Path returns the temporary nettrace path. It is valid after Wait returns.
-func (s *Session) Path() string {
-	return s.path
-}
-
-// Wait waits for the stream connection to close and returns its copy error.
-func (s *Session) Wait() error {
-	return <-s.streamErr
-}
-
 // Stop requests rundown, waits for the stream to finish, and returns the
 // completed nettrace path.
 func (s *Session) Stop(ctx context.Context) (string, error) {

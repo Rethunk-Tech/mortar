@@ -43,8 +43,3 @@ func PageAvailability(status string, available bool, updatedTime, createdTime st
 	}
 	return PageMark{}
 }
-
-// OffersDownloadableUpdate is false when the page cannot supply a file.
-func OffersDownloadableUpdate(status string, available bool) bool {
-	return PageAvailability(status, available, "", "").Kind == ""
-}

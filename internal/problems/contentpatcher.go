@@ -719,21 +719,6 @@ var packCache sync.Map // folder path -> cachedPack
 // pack read many times in one Check is stat'ed once. Check clears it at both ends, never mid-check.
 var packValidated sync.Map
 
-func contentPackTargets(mod Installed) (load, edit []string, skips int) {
-	pack := readContentPack(mod)
-	for _, p := range pack.patches {
-		if p.kind == "other" {
-			continue
-		}
-		if p.kind == "load" {
-			load = append(load, p.target)
-		} else {
-			edit = append(edit, p.target)
-		}
-	}
-	return load, edit, pack.skips
-}
-
 func readContentPack(mod Installed) cachedPack {
 	return readContentPackWithEnabled(mod, true)
 }
@@ -1848,11 +1833,6 @@ func inside(root, rel string) (string, bool) {
 	return joined, true
 }
 
-func assetConflicts(mods []Installed) []AssetConflict {
-	conflicts, _ := assetConflictResults(mods)
-	return conflicts
-}
-
 func preloadContentPacks(mods []Installed) {
 	workers := max(1, runtime.GOMAXPROCS(0))
 	sem := make(chan struct{}, workers)
@@ -1929,11 +1909,6 @@ func dropCheckScratch() {
 		mapCache.Delete(k)
 		return true
 	})
-}
-
-func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
-	conflicts, settings, _ := assetConflictScan(mods)
-	return conflicts, settings
 }
 
 // assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).

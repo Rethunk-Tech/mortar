@@ -16,7 +16,4 @@ func TestPageAvailability(t *testing.T) {
 	if ok.Kind != "" {
 		t.Fatalf("published: %+v", ok)
 	}
-	if OffersDownloadableUpdate("hidden", true) || !OffersDownloadableUpdate("published", true) {
-		t.Fatal("OffersDownloadableUpdate")
-	}
 }

@@ -100,8 +100,7 @@ func TestAssetConflicts(t *testing.T) {
 		}
 	})
 	t.Run("tokenized target skipped", func(t *testing.T) {
-		_, _, skips := contentPackTargets(tokenA)
-		if skips != 1 {
+		if skips := readContentPack(tokenA).skips; skips != 1 {
 			t.Fatalf("skips = %d", skips)
 		}
 		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{tokenA, tokenB})

@@ -7,22 +7,6 @@ import (
 	"testing"
 )
 
-func TestSplit(t *testing.T) {
-	left, right := Split([]Mod{{ID: "a"}, {ID: "b"}, {ID: "c"}, {ID: "d"}, {ID: "e"}})
-	if got, want := len(left), 3; got != want {
-		t.Fatalf("left length = %d, want %d", got, want)
-	}
-	if got, want := len(right), 2; got != want {
-		t.Fatalf("right length = %d, want %d", got, want)
-	}
-	if got, want := left[0].ID, "a"; got != want {
-		t.Fatalf("left[0] = %q, want %q", got, want)
-	}
-	if got, want := right[0].ID, "d"; got != want {
-		t.Fatalf("right[0] = %q, want %q", got, want)
-	}
-}
-
 func TestDisableClosureIncludesGroupedFrameworksAndDependents(t *testing.T) {
 	mods := []Mod{
 		{ID: "pack", Group: "pack"},

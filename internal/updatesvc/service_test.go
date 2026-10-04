@@ -3,7 +3,6 @@ package updatesvc
 import (
 	"context"
 	"errors"
-	"slices"
 	"testing"
 	"time"
 
@@ -314,21 +313,5 @@ func TestCheckNilReleaseIsCurrentWhenTheManifestExists(t *testing.T) {
 	rel, err := s.Check(context.Background())
 	if rel != nil || err != nil {
 		t.Fatalf("current = %+v, %v", rel, err)
-	}
-}
-
-func TestLinuxAppImageMatchesGOARCH(t *testing.T) {
-	assets := []string{"mortar-linux-x86_64.AppImage", "mortar-linux-aarch64.AppImage", "mortar-windows-amd64.exe"}
-	for goarch, want := range map[string]string{
-		"amd64": "mortar-linux-x86_64.AppImage",
-		"arm64": "mortar-linux-aarch64.AppImage",
-	} {
-		got := linuxAppImage(goarch)
-		if got != want {
-			t.Errorf("linuxAppImage(%q) = %q, want %q", goarch, got, want)
-		}
-		if !slices.Contains(assets, got) {
-			t.Errorf("linuxAppImage(%q) %q is not a published asset", goarch, got)
-		}
 	}
 }

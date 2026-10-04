@@ -683,3 +683,13 @@ func TestSwitchOffOffersTheNarrowestField(t *testing.T) {
 		t.Fatalf("expected the recipe switch rather than all of Dwarf Magic: %#v", conflicts)
 	}
 }
+
+func assetConflicts(mods []Installed) []AssetConflict {
+	conflicts, _ := assetConflictResults(mods)
+	return conflicts
+}
+
+func assetConflictResults(mods []Installed) ([]AssetConflict, []SettingHint) {
+	conflicts, settings, _ := assetConflictScan(mods)
+	return conflicts, settings
+}
