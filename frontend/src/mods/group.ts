@@ -305,6 +305,22 @@ function groupHeading(
   }
   return key || labels.empty
 }
+
+function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
+  if (by === 'status') {
+    return STATUS_GROUP_ORDER.filter((k) => keys.includes(k))
+  }
+  const named = keys.filter((k) => k !== '' && k !== SMAPI_MODS_GROUP).sort((a, b) => cmpText(a, b))
+  const tail: string[] = []
+  if (keys.includes(SMAPI_MODS_GROUP)) {
+    tail.push(SMAPI_MODS_GROUP)
+  }
+  if (keys.includes('')) {
+    tail.push('')
+  }
+  return [...named, ...tail]
+}
+
 type HeadingCopy = {
   category: string
   source: string
@@ -330,23 +346,6 @@ function listHeadingFor(groupBy: GroupBy, copy: HeadingCopy) {
     })
 }
 
-
-function orderedGroupKeys(by: GroupBy, keys: readonly string[]): string[] {
-  if (by === 'status') {
-    return STATUS_GROUP_ORDER.filter((k) => keys.includes(k))
-  }
-  const named = keys.filter((k) => k !== '' && k !== SMAPI_MODS_GROUP).sort((a, b) => cmpText(a, b))
-  const tail: string[] = []
-  if (keys.includes(SMAPI_MODS_GROUP)) {
-    tail.push(SMAPI_MODS_GROUP)
-  listHeadingFor,
-  }
-  if (keys.includes('')) {
-    tail.push('')
-  }
-  return [...named, ...tail]
-}
-
 export type { GroupBy }
 export {
   customCategoryById,
@@ -356,6 +355,7 @@ export {
   groupHeading,
   groupSorted,
   installedNames,
+  listHeadingFor,
   loadCollapsed,
   MAX_ENTRY_NOTE,
   MAX_ENTRY_TAG,
