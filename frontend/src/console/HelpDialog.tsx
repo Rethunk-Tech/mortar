@@ -25,20 +25,11 @@ import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { anonymize } from './anonymize.ts'
 import { shareLogConfirm } from './shareLog.ts'
 import { useConsole } from './store.ts'
 
 const button = { whiteSpace: 'nowrap' } as const
-const homePath = /\/home\/([^/\\\s]+)/
-
-function anonymize(log: string): string {
-  const user = log.match(homePath)?.[1]
-  return user
-    ? log
-        .replaceAll(new RegExp(`/home/${user}`, 'g'), '~')
-        .replaceAll(new RegExp(`\\b${user}\\b`, 'g'), '<user>')
-    : log
-}
 
 function LinkRow({ link, onCopy }: { link: string; onCopy: () => void }) {
   const { t } = useLingui()

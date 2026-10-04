@@ -26,6 +26,7 @@ import {
   Log,
   Upload,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/support/service.ts'
+import { anonymize } from '../console/anonymize.ts'
 import { shareLogConfirm } from '../console/shareLog.ts'
 import { useLoader } from '../loader/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
@@ -34,17 +35,7 @@ import { useToasts } from '../toasts/store.ts'
 import { entryOf, nexusIdOf } from './lookup.ts'
 import { buildModReport, type ModReportFields, modErrorLines } from './reportToAuthor.ts'
 
-const homePath = /\/home\/([^/\\\s]+)/
 const buttonSx = { whiteSpace: 'nowrap' } as const
-
-function anonymize(log: string): string {
-  const user = log.match(homePath)?.[1]
-  return user
-    ? log
-        .replaceAll(new RegExp(`/home/${user}`, 'g'), '~')
-        .replaceAll(new RegExp(`\\b${user}\\b`, 'g'), '<user>')
-    : log
-}
 
 interface ReportFieldsInput {
   profile: Profile
