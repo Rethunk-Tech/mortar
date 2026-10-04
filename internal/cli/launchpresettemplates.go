@@ -10,21 +10,21 @@ import (
 
 func (c *cmd) gameCmd() error {
 	if len(c.args) < 2 {
-		return usageError{"game needs steam-launch-option or launch-presets"}
+		return usageError{"game needs steam-launch-option or launch-preset-templates"}
 	}
 	switch c.args[1] {
 	case "steam-launch-option":
 		return c.gameSteamLaunchOption()
-	case "launch-presets":
-		return c.gameLaunchPresets()
+	case "launch-preset-templates":
+		return c.gameLaunchPresetTemplates()
 	default:
 		return usageError{"unknown game command " + c.args[1]}
 	}
 }
 
-func (c *cmd) gameLaunchPresets() error {
+func (c *cmd) gameLaunchPresetTemplates() error {
 	if len(c.args) < 3 {
-		return usageError{"game launch-presets needs a game"}
+		return usageError{"game launch-preset-templates needs a game"}
 	}
 	game := c.args[2]
 	sub := ""
@@ -50,26 +50,30 @@ func (c *cmd) gameLaunchPresets() error {
 		sub = "list"
 	case "add":
 		if name == "" {
-			return usageError{"game launch-presets add needs a name"}
+			return usageError{"game launch-preset-templates add needs a name"}
+		}
+	case "use":
+		if name == "" || options == "" {
+			return usageError{"game launch-preset-templates use needs a template name and a profile"}
 		}
 	case "remove":
 		if name == "" {
-			return usageError{"game launch-presets remove needs a name"}
+			return usageError{"game launch-preset-templates remove needs a name"}
 		}
 	default:
-		return usageError{"game launch-presets is list, add, or remove"}
+		return usageError{"game launch-preset-templates is list, add, use, or remove"}
 	}
-	var presets []settings.LaunchPreset
-	err := c.ask("game.launchPresets", control.Params{
-		Game: game, Sub: sub, Name: name, Value: options, Path: prefix, Query: env,
+	var presets []settings.LaunchPresetTemplate
+	err := c.call("game.launchPresetTemplates", control.Params{
+		Game: game, Sub: sub, Name: name, Value: options, Path: prefix, Query: env, Profile: options,
 	}, &presets, readTimeout)
 	if err != nil {
 		return err
 	}
-	return c.emit(presets, func() { printLaunchPresets(c, presets) })
+	return c.emit(presets, func() { printLaunchPresetTemplates(c, presets) })
 }
 
-func printLaunchPresets(c *cmd, presets []settings.LaunchPreset) {
+func printLaunchPresetTemplates(c *cmd, presets []settings.LaunchPresetTemplate) {
 	if len(presets) == 0 {
 		fmt.Fprintln(c.out, "No launch presets.")
 		return

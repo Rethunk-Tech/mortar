@@ -84,3 +84,27 @@ func TestSetLaunchPresets(t *testing.T) {
 		t.Fatal("default of a removed preset accepted")
 	}
 }
+
+func TestAddLaunchPresetUniquifiesName(t *testing.T) {
+	s := overrideStore(t)
+	p, err := s.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got Profile
+	for _, name := range []string{"Debug", "debug", "Standard"} {
+		if got, err = s.AddLaunchPreset("stardew", p.ID, LaunchPreset{ID: "x", Name: name, LaunchOptions: "--x"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	names := []string{}
+	for _, preset := range got.LaunchPresets {
+		names = append(names, preset.Name)
+		if preset.ID == "" || preset.ID == "x" {
+			t.Fatalf("id not fresh: %+v", preset)
+		}
+	}
+	if len(names) != 3 || names[0] != "Debug" || names[1] != "debug 2" || names[2] != "Standard 2" {
+		t.Fatalf("names = %v", names)
+	}
+}

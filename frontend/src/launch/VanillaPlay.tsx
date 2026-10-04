@@ -2,21 +2,28 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Button,
   ButtonGroup,
-  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
+  FormControlLabel,
   IconButton,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
+  Radio,
+  RadioGroup,
   Tooltip,
 } from '@mui/material'
-import { ChevronDown, Gamepad2, Play } from 'lucide-react'
+import { ChevronDown, Gamepad2, Play, Star } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
 import { compact } from '../game/compact.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { playMenuEntries } from './playMenu.ts'
 import { playVanillaOpen, rememberLinuxVanillaDirect, useVanillaPrompt } from './playOpen.ts'
 import { SmapiWarnDialog } from './SmapiWarnDialog.tsx'
 import { useLaunch } from './store.ts'
@@ -79,6 +86,8 @@ export function VanillaPlay({
 }) {
   const { t } = useLingui()
   const [menu, setMenu] = useState<HTMLElement | null>(null)
+  const [choosing, setChoosing] = useState(false)
+  const entries = playMenuEntries(presets)
   const openMenu = (el: HTMLElement) => {
     if (!vanillaDisabled) {
       setMenu(el)
@@ -150,48 +159,85 @@ export function VanillaPlay({
         </span>
       </Tooltip>
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
-        {presets.map((preset) => (
-          <MenuItem
-            key={preset.key}
-            disabled={playDisabled}
-            onClick={() => {
-              setMenu(null)
-              playWith(preset.key)
+        {entries.map((entry) => {
+          if (entry.kind === 'play') {
+            const preset = presets.find((p) => p.key === entry.key)
+            return (
+              <MenuItem
+                key={entry.key}
+                disabled={playDisabled}
+                onClick={() => {
+                  setMenu(null)
+                  playWith(entry.key)
+                }}
+              >
+                <ListItemIcon sx={{ color: 'inherit' }}>
+                  <Play size={16} />
+                </ListItemIcon>
+                <ListItemText
+                  secondary={preset?.isDefault ? t`Default` : undefined}
+                >{t`Play with ${preset?.base ? t`Standard` : preset?.name}`}</ListItemText>
+              </MenuItem>
+            )
+          }
+          if (entry.kind === 'setDefault') {
+            return [
+              <Divider key="divider" />,
+              <MenuItem
+                key="setDefault"
+                onClick={() => {
+                  setMenu(null)
+                  setChoosing(true)
+                }}
+              >
+                <ListItemIcon sx={{ color: 'inherit' }}>
+                  <Star size={16} />
+                </ListItemIcon>
+                <ListItemText>{t`Set default preset…`}</ListItemText>
+              </MenuItem>,
+            ]
+          }
+          return (
+            <MenuItem
+              key="vanilla"
+              disabled={vanillaDisabled}
+              onClick={() => {
+                setMenu(null)
+                playVanillaOpen()
+              }}
+            >
+              <ListItemIcon sx={{ color: 'inherit' }}>
+                <Gamepad2 size={16} />
+              </ListItemIcon>
+              <ListItemText>{t`Play without mods`}</ListItemText>
+            </MenuItem>
+          )
+        })}
+      </Menu>
+      <Dialog open={choosing} onClose={() => setChoosing(false)}>
+        <DialogTitle>{t`Default launch preset`}</DialogTitle>
+        <DialogContent>
+          <RadioGroup
+            value={presets.find((p) => p.isDefault)?.key ?? ''}
+            onChange={(e) => {
+              setChoosing(false)
+              setDefault(e.target.value)
             }}
           >
-            <ListItemIcon sx={{ color: 'inherit' }}>
-              <Play size={16} />
-            </ListItemIcon>
-            <ListItemText>{t`Play with ${preset.base ? t`Standard` : preset.name}`}</ListItemText>
-            {preset.isDefault ? (
-              <Chip size="small" label={t`Default`} sx={{ ml: 2 }} />
-            ) : (
-              <Button
-                size="small"
-                sx={{ ml: 2 }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setMenu(null)
-                  setDefault(preset.key)
-                }}
-              >{t`Set as default`}</Button>
-            )}
-          </MenuItem>
-        ))}
-        {presets.length > 0 ? <Divider /> : null}
-        <MenuItem
-          disabled={vanillaDisabled}
-          onClick={() => {
-            setMenu(null)
-            playVanillaOpen()
-          }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <Gamepad2 size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Play without mods`}</ListItemText>
-        </MenuItem>
-      </Menu>
+            {presets.map((p) => (
+              <FormControlLabel
+                key={p.key}
+                value={p.key}
+                control={<Radio />}
+                label={p.base ? t`Standard` : p.name}
+              />
+            ))}
+          </RadioGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setChoosing(false)}>{t`Cancel`}</Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

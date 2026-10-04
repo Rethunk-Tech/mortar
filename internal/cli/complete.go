@@ -44,7 +44,7 @@ var subverbs = map[string][]string{
 	"profile":    {"create", "from-save", "rename", "copy", "delete", "compare", "match", "collection", "history", "health", "revert", "load-order", "repair", "list", "shortcut", "steam", "changes", "good"},
 	"history":    {"diff", "revert", "usage", "trim"},
 	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "channel", "note", "skip-version", "split", "combine", "files", "config", "preset", "menu", "compat", "report", "by-author", "win", "group"},
-	"game":       {"steam-launch-option", "launch-presets"},
+	"game":       {"steam-launch-option", "launch-preset-templates"},
 	"bundles":    {"apply"},
 	"nexus":      {"untrack", "tracked"},
 	"trash":      {"list", "restore", "delete", "empty"},

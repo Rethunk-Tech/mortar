@@ -161,6 +161,11 @@ func (s *Service) SetLaunchPresets(game, id string, presets []LaunchPreset, defa
 	return s.store.SetLaunchPresets(game, id, presets, defaultID)
 }
 
+// AddLaunchPreset appends a copy of preset to the profile's launch presets.
+func (s *Service) AddLaunchPreset(game, id string, preset LaunchPreset) (Profile, error) {
+	return s.store.AddLaunchPreset(game, id, preset)
+}
+
 // SetDefaultLaunchPreset marks the preset Play uses; empty selects the profile's own settings.
 func (s *Service) SetDefaultLaunchPreset(game, id, presetID string) (Profile, error) {
 	return s.store.SetDefaultLaunchPreset(game, id, presetID)

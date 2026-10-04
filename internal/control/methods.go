@@ -266,8 +266,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.games()
 	case "game.steamLaunchOption":
 		return s.gameSteamLaunchOption(p.Game, p.Set, p.Clear)
-	case "game.launchPresets":
-		return s.gameLaunchPresets(p)
+	case "game.launchPresetTemplates":
+		return s.gameLaunchPresetTemplates(p)
 	case "settings.get":
 		cur := s.Settings.Get()
 		if p.Key == "" {

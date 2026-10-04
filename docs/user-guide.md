@@ -14,8 +14,7 @@ The Windows builds are not code-signed, so SmartScreen shows "Windows protected 
 
 ### Linux
 
-- **AppImage** (`mortar-linux-x86_64.AppImage` or `mortar-linux-aarch64.AppImage`): make it executable (`chmod +x`, or the file's Properties in your file manager) and run it. It needs Ubuntu 24.04, Debian 13, Fedora 39 or a newer Linux (glibc 2.38 or newer) and nothing else installed. On an older system it says so and does not start; use the Flatpak there, which brings its own libraries.
-- **Portable program** (`mortar-linux-amd64` or `mortar-linux-arm64`): the bare program, to run from any folder. It uses the system's GTK 4 and WebKitGTK 6.0 (`libwebkitgtk-6.0-4` on Debian and Ubuntu, `webkitgtk6.0` on Fedora, `webkitgtk-6.0` on Arch), so it needs the same Linux versions as the AppImage. Make it executable and run it. Like the AppImage, it updates itself in place, and on first run it adds Mortar to your applications menu and takes nxm:// links.
+- **AppImage** (`mortar-linux-x86_64.AppImage` or `mortar-linux-aarch64.AppImage`): make it executable (`chmod +x`, or the file's Properties in your file manager) and run it. It needs nothing else installed.
 - **Flatpak** (`mortar-linux-x86_64.flatpak`, x86-64 only): `flatpak install --user mortar-linux-x86_64.flatpak`. The Flatpak runs in a sandbox, which has these limits:
   - Mortar cannot see folders outside the ones the Flatpak is allowed to read (Steam, Heroic and Lutris folders and the usual game folders are allowed). A game installed somewhere else stays invisible until you run `flatpak override --user --filesystem=<folder> tech.rethunk.Mortar`.
   - **Add this profile to Steam** is refused, because Steam outside the sandbox cannot start Mortar inside it. The error shows the `flatpak run tech.rethunk.Mortar --play=<game>/<profile>` command to use instead.

@@ -6,12 +6,16 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import {
+  AddLaunchPreset,
   SetDefaultLaunchPreset,
   SetLaunchPresets,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import { AddLaunchPresetTemplate } from '../../bindings/github.com/Rethunk-AI/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { reportError } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { LaunchPresetDialog } from './LaunchPresetDialog.tsx'
+import { LaunchPresetTemplatesDialog } from './LaunchPresetTemplatesDialog.tsx'
 import { duplicatePreset } from './profilePresets.ts'
 import { useProfiles } from './store.ts'
 
@@ -22,11 +26,13 @@ function PresetRow({
   isDefault,
   onDefault,
   actions,
+  onTemplate,
 }: {
   name: string
   isDefault: boolean
   onDefault: () => void
   actions?: { edit: () => void; copy: () => void; remove: () => void }
+  onTemplate: () => void
 }) {
   const { t } = useLingui()
   return (
@@ -39,6 +45,7 @@ function PresetRow({
       ) : (
         <Button onClick={onDefault}>{t`Set as default`}</Button>
       )}
+      <Button onClick={onTemplate}>{t`Save as template`}</Button>
       {actions ? (
         <>
           <Button onClick={actions.edit}>{t`Edit`}</Button>
@@ -51,11 +58,24 @@ function PresetRow({
 }
 
 /** Named launch presets of one profile; every change is saved at once, since Play lists them. */
-function LaunchPresetsBlock({ gameId, profileId }: { gameId: string; profileId: string }) {
+function LaunchPresetsBlock({
+  gameId,
+  profileId,
+  launchOptions,
+  launchPrefix,
+  launchEnv,
+}: {
+  gameId: string
+  profileId: string
+  launchOptions: string
+  launchPrefix: string
+  launchEnv: string
+}) {
   const { t } = useLingui()
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
   const replace = useProfiles((s) => s.replace)
   const [editing, setEditing] = useState<LaunchPreset | null>(null)
+  const [templates, setTemplates] = useState(false)
   const [removing, setRemoving] = useState<LaunchPreset | null>(null)
   const presets = profile?.launchPresets ?? []
   const defaultId = profile?.defaultLaunchPreset ?? ''
@@ -67,6 +87,14 @@ function LaunchPresetsBlock({ gameId, profileId }: { gameId: string; profileId: 
     SetDefaultLaunchPreset(gameId, profileId, id)
       .then((p: Profile) => replace(p))
       .catch(reportError(t`Could not set the default launch preset`))
+  const saveTemplate = (name: string, options: string, prefix: string, env: string) =>
+    AddLaunchPresetTemplate(gameId, name, options, prefix, env)
+      .then(() =>
+        useToasts
+          .getState()
+          .push({ kind: 'success', title: t`Saved ${name} as a launch preset template` }),
+      )
+      .catch(reportUnexpected)
   const saveOne = (preset: LaunchPreset) => {
     setEditing(null)
     const exists = presets.some((p) => p.id === preset.id)
@@ -81,12 +109,13 @@ function LaunchPresetsBlock({ gameId, profileId }: { gameId: string; profileId: 
         sx={{ fontSize: 13, color: 'text.secondary', mb: 0.5 }}
       >{t`Launch presets`}</Typography>
       <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-        {t`The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once.`}
+        {t`The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in.`}
       </Typography>
       <PresetRow
         name={t`Standard`}
         isDefault={!presets.some((p) => p.id === defaultId)}
         onDefault={() => setDefault('')}
+        onTemplate={() => saveTemplate(t`Standard`, launchOptions, launchPrefix, launchEnv)}
       />
       {presets.map((preset) => (
         <PresetRow
@@ -94,6 +123,14 @@ function LaunchPresetsBlock({ gameId, profileId }: { gameId: string; profileId: 
           name={preset.name}
           isDefault={preset.id === defaultId}
           onDefault={() => setDefault(preset.id)}
+          onTemplate={() =>
+            saveTemplate(
+              preset.name,
+              preset.launchOptions ?? '',
+              preset.launchPrefix ?? '',
+              preset.launchEnv ?? '',
+            )
+          }
           actions={{
             edit: () => setEditing(preset),
             copy: () => save([...presets, duplicatePreset(preset, presets)], defaultId),
@@ -102,6 +139,24 @@ function LaunchPresetsBlock({ gameId, profileId }: { gameId: string; profileId: 
         />
       ))}
       <Button onClick={() => setEditing(NEW_PRESET)}>{t`Add preset`}</Button>
+      <Button onClick={() => setTemplates(true)}>{t`Add from game presets…`}</Button>
+      <LaunchPresetTemplatesDialog
+        open={templates}
+        gameId={gameId}
+        onClose={() => setTemplates(false)}
+        onAdd={(tpl) => {
+          setTemplates(false)
+          AddLaunchPreset(gameId, profileId, {
+            id: '',
+            name: tpl.name ?? '',
+            launchOptions: tpl.options,
+            launchPrefix: tpl.prefix,
+            launchEnv: tpl.env,
+          })
+            .then((p: Profile) => replace(p))
+            .catch(reportError(t`Could not add the launch preset`))
+        }}
+      />
       <LaunchPresetDialog
         open={editing !== null}
         preset={editing ?? NEW_PRESET}

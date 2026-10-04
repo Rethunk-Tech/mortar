@@ -46,13 +46,13 @@ type GameSettings struct {
 	ConflictScanDepth           string `json:"conflictScanDepth"`
 	OfferNewDownloads           *bool  `json:"offerNewDownloads"`
 	// LastDownloadsSeen is the newest archive mtime (ms) in the download folder already offered or skipped.
-	LastDownloadsSeen     int64          `json:"lastDownloadsSeen,omitempty"`
-	LastSweepGameVersion  string         `json:"lastSweepGameVersion,omitempty"`
-	LastSweepSMAPIVersion string         `json:"lastSweepSMAPIVersion,omitempty"`
-	LaunchPresets         []LaunchPreset `json:"launchPresets,omitempty"`
-	ExtraModsFolder       string         `json:"extraModsFolder,omitempty"`
-	ShowDotHiddenMods     bool           `json:"showDotHiddenMods,omitempty"`
-	OldFilesOnUpdate      string         `json:"oldFilesOnUpdate,omitempty"`
+	LastDownloadsSeen     int64                  `json:"lastDownloadsSeen,omitempty"`
+	LastSweepGameVersion  string                 `json:"lastSweepGameVersion,omitempty"`
+	LastSweepSMAPIVersion string                 `json:"lastSweepSMAPIVersion,omitempty"`
+	LaunchPresetTemplates []LaunchPresetTemplate `json:"launchPresetTemplates,omitempty"`
+	ExtraModsFolder       string                 `json:"extraModsFolder,omitempty"`
+	ShowDotHiddenMods     bool                   `json:"showDotHiddenMods,omitempty"`
+	OldFilesOnUpdate      string                 `json:"oldFilesOnUpdate,omitempty"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -302,7 +302,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.LastSweepSMAPIVersion != "" {
 		dst.LastSweepSMAPIVersion = src.LastSweepSMAPIVersion
 	}
-	dst.LaunchPresets = append([]LaunchPreset(nil), src.LaunchPresets...)
+	dst.LaunchPresetTemplates = append([]LaunchPresetTemplate(nil), src.LaunchPresetTemplates...)
 	dst.ExtraModsFolder = src.ExtraModsFolder
 	dst.ShowDotHiddenMods = src.ShowDotHiddenMods
 	if src.OldFilesOnUpdate != "" {

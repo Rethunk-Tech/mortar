@@ -2218,7 +2218,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
   profile steam <game> <profile>         add this profile to Steam as a non-Steam game
   game steam-launch-option <game> [--set|--clear]  read or change Steam's loader launch options
-  game launch-presets <game> [add|remove <name> [options [prefix [env]]]]  per-game launch presets
+  game launch-preset-templates <game> [add|remove <name> [options [prefix [env]]]|use <name> <profile>]  game-wide launch preset templates (use copies one into a profile)
   mods <game> <profile>                   mods with version, state and source
   mods enable|disable|pin|unpin|remove <game> <profile> <mod id>...  (pin accepts --reason)
   mods tag|untag|category|note|skip-version <game> <profile> <mod> [value]

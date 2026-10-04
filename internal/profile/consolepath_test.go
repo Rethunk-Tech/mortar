@@ -3,18 +3,8 @@ package profile
 import (
 	"os"
 	"path/filepath"
-	"runtime"
-	"strings"
 	"testing"
 )
-
-// samePath compares paths the way the OS does: Windows ignores case, and EvalSymlinks may normalise it.
-func samePath(a, b string) bool {
-	if runtime.GOOS == "windows" {
-		return strings.EqualFold(filepath.Clean(a), filepath.Clean(b))
-	}
-	return filepath.Clean(a) == filepath.Clean(b)
-}
 
 func TestConsoleRevealDirAllowsModsAndGameRoots(t *testing.T) {
 	mods := t.TempDir()
@@ -30,7 +20,7 @@ func TestConsoleRevealDirAllowsModsAndGameRoots(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !samePath(got, filepath.Dir(file)) {
+	if got != filepath.Dir(file) {
 		t.Fatalf("got %s, want %s", got, filepath.Dir(file))
 	}
 	insideGame := filepath.Join(gameDir, "Content")
@@ -41,7 +31,7 @@ func TestConsoleRevealDirAllowsModsAndGameRoots(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !samePath(got, insideGame) {
+	if got != insideGame {
 		t.Fatalf("dir = %s, want %s", got, insideGame)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/game/stardew"
@@ -131,6 +132,28 @@ func (s *Store) SetLaunchPresets(game, id string, presets []LaunchPreset, defaul
 	return s.update(game, id, func(p *Profile, _ string) error {
 		p.LaunchPresets = checked
 		p.DefaultLaunchPreset = defaultID
+		return nil
+	})
+}
+
+// AddLaunchPreset appends a copy of preset with a fresh id; a name already taken gets a number appended.
+func (s *Store) AddLaunchPreset(game, id string, preset LaunchPreset) (Profile, error) {
+	return s.update(game, id, func(p *Profile, _ string) error {
+		taken := map[string]bool{strings.ToLower(BasePresetName): true}
+		for _, existing := range p.LaunchPresets {
+			taken[strings.ToLower(existing.Name)] = true
+		}
+		base := strings.TrimSpace(preset.Name)
+		preset.ID = ""
+		preset.Name = base
+		for n := 2; taken[strings.ToLower(preset.Name)]; n++ {
+			preset.Name = fmt.Sprintf("%s %d", base, n)
+		}
+		checked, err := validateLaunchPresets(append(slices.Clone(p.LaunchPresets), preset), p.DefaultLaunchPreset)
+		if err != nil {
+			return err
+		}
+		p.LaunchPresets = checked
 		return nil
 	})
 }

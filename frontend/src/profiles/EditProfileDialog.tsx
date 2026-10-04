@@ -317,7 +317,13 @@ function ProfileFields({
         launchError={launchError}
         onLaunchError={onLaunchError}
       />
-      <LaunchPresetsBlock gameId={gameId} profileId={profile.id} />
+      <LaunchPresetsBlock
+        gameId={gameId}
+        profileId={profile.id}
+        launchOptions={launchOptions}
+        launchPrefix={launchPrefix}
+        launchEnv={launchEnv}
+      />
       <OverridesSection overrides={overrides} onChange={onOverrides} />
       <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
     </DialogContent>

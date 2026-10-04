@@ -64,21 +64,16 @@ tasks:
         msg: "build/config.yml info.version is not {{.VERSION}}; an app built from it would offer itself the same update"
       - sh: go run ./cmd/version -check
         msg: "a copy of the version differs from build/config.yml; run go run ./cmd/version"
-      - sh: test -f bin/mortar-linux-x86_64.AppImage && test -f bin/mortar-linux-amd64 && test -f bin/mortar-windows-amd64.exe
-        msg: "need the amd64 AppImage, portable Linux binary and Windows exe; the arm64 ones join when present"
+      - sh: test -f bin/mortar-linux-x86_64.AppImage && test -f bin/mortar-windows-amd64.exe
+        msg: "need the amd64 AppImage and Windows exe; the arm64 AppImage and Windows exe join when present"
     cmds:
       - |
         set -euo pipefail
-        assets=(bin/mortar-linux-x86_64.AppImage bin/mortar-linux-amd64 bin/mortar-windows-amd64.exe)
-        for optional in bin/mortar-linux-aarch64.AppImage bin/mortar-linux-arm64 bin/mortar-windows-arm64.exe; do
+        assets=(bin/mortar-linux-x86_64.AppImage bin/mortar-windows-amd64.exe)
+        for optional in bin/mortar-linux-aarch64.AppImage bin/mortar-windows-arm64.exe; do
           if [[ -f $optional ]]; then
             assets+=("$optional")
           fi
         done
         wails3 updater manifest -version {{.VERSION}} -key "$MORTAR_UPDATE_KEY" -url-prefix https://github.com/Rethunk-AI/mortar/releases/download/v{{.VERSION}} -output bin/manifest.json "${assets[@]}"
-        # The bare Linux binaries get their own platform so an AppImage never updates into one, nor the reverse
-        # (updatesvc.PortablePlatform). Signatures cover each file's bytes, not the manifest, so this edit keeps them.
-        jq '(.artifacts[] | select(.platform == "linux" and (.url | endswith(".AppImage") | not)) | .platform) = "linux-portable"' bin/manifest.json >bin/manifest.json.tmp
-        mv bin/manifest.json.tmp bin/manifest.json
-        test "$(jq '[.artifacts[] | select(.platform == "linux-portable")] | length' bin/manifest.json)" -ge 1
       - wails3 updater verify -manifest bin/manifest.json -publickey build/updater/public.key
