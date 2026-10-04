@@ -205,12 +205,33 @@ func dataLiteral(raw json.RawMessage, values map[string]string) string {
 		// so two packs set to the same value agree.
 		if m := singleToken.FindStringSubmatch(strings.TrimSpace(string(raw))); m != nil {
 			if v, ok := values[strings.ToLower(m[1])]; ok {
-				return strconv.Quote(v)
+				return scalarLiteral(v)
 			}
 		}
 		return ""
 	}
-	return string(jsonc.Clean(raw))
+	clean := bytes.TrimSpace(jsonc.Clean(raw))
+	if len(clean) == 0 || clean[0] == '{' || clean[0] == '[' {
+		return string(clean)
+	}
+	var text string
+	if clean[0] == '"' && json.Unmarshal(clean, &text) == nil {
+		return scalarLiteral(text)
+	}
+	return scalarLiteral(string(clean))
+}
+
+// scalarLiteral spells a scalar data value one way whether a pack wrote it as JSON or as text: the game reads
+// "true" and true, or "5" and 5, alike, and a config token always fills in text.
+func scalarLiteral(v string) string {
+	t := strings.TrimSpace(v)
+	switch {
+	case strings.EqualFold(t, "true"), strings.EqualFold(t, "false"):
+		return strings.ToLower(t)
+	case t != "" && (t[0] == '-' || (t[0] >= '0' && t[0] <= '9')) && json.Valid([]byte(t)):
+		return t
+	}
+	return strconv.Quote(v)
 }
 
 // editShapes is what one EditImage or EditMap change writes. An edit that only adds warps, rewrites text
@@ -1366,9 +1387,9 @@ func tokenName(name string) string {
 
 var spouseQuery = regexp.MustCompile(`(?i)^query:\s*'\{\{\s*spouse\s*\}\}'\s*=\s*'([^']+)'$`)
 
-// spouseOf is the NPC a When block requires the player to be married to ("Relationship:Abigail": "Married" or
-// "Query: '{{Spouse}}' = 'Abigail'": true), or "". A player has one spouse, so two patches that need
-// different spouses never apply together.
+// spouseOf is the NPC a When block requires the player to be engaged or married to ("Relationship:Abigail":
+// "Engaged, Married" or "Query: '{{Spouse}}' = 'Abigail'": true), or "". A player has one partner at a time,
+// so two patches that need different partners never apply together.
 func spouseOf(raw map[string]json.RawMessage) string {
 	for k, v := range raw {
 		key := strings.TrimSpace(k)
@@ -1390,8 +1411,10 @@ func spouseOf(raw map[string]json.RawMessage) string {
 		if !ok || !strings.EqualFold(strings.TrimSpace(name), "relationship") || hasToken(npc) {
 			continue
 		}
-		var state string
-		if json.Unmarshal(v, &state) == nil && strings.EqualFold(strings.TrimSpace(state), "married") {
+		var states []string
+		if condValues(v, &states) && !slices.ContainsFunc(states, func(s string) bool {
+			return !strings.EqualFold(s, "married") && !strings.EqualFold(s, "engaged")
+		}) {
 			return strings.ToLower(strings.TrimSpace(npc))
 		}
 	}

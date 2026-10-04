@@ -220,7 +220,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 9
+const contentPackParserVersion = 10
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -1105,6 +1105,9 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	// settings too. Content Patcher reads DynamicTokens only from content.json.
 	if key == "content.json" {
 		for _, tok := range doc.DynamicTokens {
+			withConfigValues(tok.When, pack.values)
+		}
+		for _, tok := range doc.DynamicTokens {
 			value, ok := scalarValue(tok.Value)
 			if !ok {
 				continue
@@ -1125,6 +1128,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			continue
 		}
 		action := strings.TrimSpace(ch.Action)
+		withConfigValues(ch.When, pack.values)
 		when := outer.with(parseWhenWithTokens(ch.When, pack.mentions, pack.schema, pack.tokens))
 		when.conditional = when.conditional || len(ch.When) > 0
 		var kind string
@@ -1217,6 +1221,23 @@ func recordReferencedPackFiles(root, rel string, image bool, pack *cachedPack) {
 
 // parseWhen reads the HasMod and schema-backed config conditions of a When block.
 // It understands "HasMod": "A, B" and "HasMod |contains=A, B": true/false.
+// withConfigValues replaces a condition value that is just one of the pack's config tokens, such as
+// "FarmType": "{{FarmToReplace}}", with that field's configured value, which is what Content Patcher compares.
+func withConfigValues(when map[string]json.RawMessage, values map[string]string) {
+	for k, v := range when {
+		if !hasToken(string(v)) {
+			continue
+		}
+		m := singleToken.FindStringSubmatch(strings.TrimSpace(string(v)))
+		if m == nil {
+			continue
+		}
+		if value, ok := values[strings.ToLower(m[1])]; ok {
+			when[k], _ = json.Marshal(value)
+		}
+	}
+}
+
 func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema) cpWhen {
 	return parseWhenWithTokens(raw, mentions, schema, nil)
 }

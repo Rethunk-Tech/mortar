@@ -539,3 +539,72 @@ func TestLowLoadThatNamesTheOtherPackIsAFallback(t *testing.T) {
 		t.Fatalf("a Low load from a pack that never names the other still conflicts, got %#v", conflicts)
 	}
 }
+
+func TestConfigTokenInConditionIsItsConfiguredValue(t *testing.T) {
+	blackberry := func(config string) Installed {
+		files := map[string]string{"Farm_Greenhouse_Dirt.tbin": "tBIN10 blackberry"}
+		if config != "" {
+			files["config.json"] = config
+		}
+		return syntheticLoadPack(t, `{
+			"ConfigSchema": {"FarmToReplace": {"AllowValues": "Standard, Forest, Riverland, Hilltop, Wilderness, FourCorners, Beach, Meadowlands", "Default": "Standard"}},
+			"Changes": [{"Action": "Load", "Target": "Maps/Farm_Greenhouse_Dirt", "FromFile": "Farm_Greenhouse_Dirt.tbin", "When": {"FarmType": "{{FarmToReplace}}"}}]
+		}`, files)
+	}
+	overgrown := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Farm_Greenhouse_Dirt","FromFile":"Farm_Greenhouse_Dirt.tbin","When":{"FarmType":"Forest"}}]}`, map[string]string{
+		"Farm_Greenhouse_Dirt.tbin": "tBIN10 overgrown",
+	})
+	if conflicts := assetConflicts([]Installed{blackberry(""), overgrown}); len(conflicts) != 0 {
+		t.Fatalf("a Standard farm replacement and a Forest one never load together, got %#v", conflicts)
+	}
+	if conflicts := assetConflicts([]Installed{blackberry(`{"FarmToReplace": "Forest"}`), overgrown}); len(conflicts) != 1 {
+		t.Fatalf("both replace the Forest farm, got %#v", conflicts)
+	}
+}
+
+func TestConfigTokenDataValueMatchesLiteral(t *testing.T) {
+	betterThings := syntheticLoadPack(t, `{
+		"ConfigSchema": {"MachinesCopyQuality": {"AllowValues": "true, false", "Default": "true"}},
+		"Changes": [{
+			"Action": "EditData", "Target": "Data/Machines",
+			"TargetField": [ "(BC)12", "OutputRules", "Default_Honey", "OutputItem", "(O)459" ],
+			"Entries": { "CopyQuality": true },
+			"When": { "MachinesCopyQuality": true }
+		}]
+	}`, nil)
+	mead := func(retains string) Installed {
+		return syntheticLoadPack(t, `{
+			"ConfigSchema": {"MeadRetainsQuality": {"AllowValues": "true, false", "Default": "true"}},
+			"Changes": [{
+				"Action": "EditData", "Target": "Data/Machines",
+				"TargetField": [ "(BC)12", "OutputRules", "Default_Honey", "OutputItem", "(O)459" ],
+				"Entries": { "CopyQuality": "{{MeadRetainsQuality}}" }
+			}]
+		}`, map[string]string{"config.json": `{"EnableColoredSprites": "true", "MeadRetainsQuality": "` + retains + `"}`})
+	}
+	if conflicts := assetConflicts([]Installed{betterThings, mead("true")}); len(conflicts) != 0 {
+		t.Fatalf("both set CopyQuality to true, got %#v", conflicts)
+	}
+	if conflicts := assetConflicts([]Installed{betterThings, mead("false")}); len(conflicts) != 1 {
+		t.Fatalf("CopyQuality true against false must conflict, got %#v", conflicts)
+	}
+}
+
+func TestEngagedIsOnePartnerAtATime(t *testing.T) {
+	socialPage := func(label, when string) Installed {
+		return syntheticLoadPack(t, `{"Changes":[{
+			"Action": "EditData", "Target": "Strings/StringsFromCSFiles",
+			"Entries": {"SocialPage_Relationship_Husband": "`+label+`"},
+			"When": {`+when+`}
+		}]}`, nil)
+	}
+	agatha := socialPage("(wife)", `"Relationship:Agatha": "Married", "Language": "en"`)
+	for _, when := range []string{`"Relationship:Lunna": "Engaged"`, `"Relationship:Lunna": "Engaged, Married"`} {
+		if conflicts := assetConflicts([]Installed{agatha, socialPage("(fiancée)", when)}); len(conflicts) != 0 {
+			t.Fatalf("%s needs a different partner than Agatha, got %#v", when, conflicts)
+		}
+	}
+	if conflicts := assetConflicts([]Installed{agatha, socialPage("(fiancée)", `"Relationship:Lunna": "Dating, Engaged"`)}); len(conflicts) != 1 {
+		t.Fatalf("dating Lunna can coincide with marriage to Agatha, got %#v", conflicts)
+	}
+}
