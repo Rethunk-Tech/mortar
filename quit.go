@@ -6,6 +6,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/lan"
 	"github.com/Rethunk-AI/mortar/internal/launchsvc"
 	"github.com/Rethunk-AI/mortar/internal/queue"
+	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -30,8 +31,7 @@ func (s *QuitService) BusySummary() string {
 	if s.lan.Busy() {
 		return "Downloads and the running game will be interrupted"
 	}
-	status, err := s.launch.Status("stardew")
-	if err == nil && status.State.Active() {
+	if s.launch.Busy(settings.GameStardew) {
 		return "Downloads and the running game will be interrupted"
 	}
 	return ""

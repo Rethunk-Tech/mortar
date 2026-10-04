@@ -2,7 +2,6 @@ package savessvc
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,10 +12,11 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/backup"
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
-// ErrBusy is returned when restore is refused because the game is launching or running.
-var ErrBusy = errors.New("stop the game to restore saves")
+// ErrBusy is returned when a restore or trim is refused because the game is launching or running.
+var ErrBusy = usererr.New(usererr.Busy, "stop the game to change save backups")
 
 // ListBackups returns save backups newest first.
 func (s *Service) ListBackups() ([]backup.Backup, error) {
@@ -197,11 +197,7 @@ func (s *Service) gameBusy() bool {
 	if s.Launches == nil {
 		return false
 	}
-	st, err := s.Launches.Status("stardew")
-	if err != nil {
-		return false
-	}
-	return st.State.Active()
+	return s.Launches.Busy(settings.GameStardew)
 }
 
 func backupNameOK(name string) error {

@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // Service is the Settings › Data backend.
@@ -229,7 +230,7 @@ func (s *Service) DataLocation() (DataLocation, error) {
 
 var errPortable = errors.New("this copy of Mortar is portable: its data stays in the data folder beside it")
 
-var errGameRunning = errors.New("stop the game before moving the data folder")
+var errGameRunning = usererr.New(usererr.Busy, "stop the game before moving the data folder")
 
 var errInUse = errors.New("a profile still uses this store item")
 

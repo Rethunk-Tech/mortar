@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 var errUnknownSMAPI = errors.New("unknown SMAPI version")
@@ -42,7 +43,7 @@ func (s *Service) InstallVersion(ctx context.Context, id, version string) (loade
 		return loader.Status{}, err
 	}
 	if running || s.profiles.AnyRunning(id) {
-		return loader.Status{}, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName())
+		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName()))
 	}
 	return s.installVersion(ctx, g, dir, id, version, false)
 }

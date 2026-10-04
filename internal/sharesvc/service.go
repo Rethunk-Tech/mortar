@@ -1076,7 +1076,7 @@ func (s *Service) retryPending() {
 }
 
 // errRunning stops an apply that found the game running the profile, under the lock a launch takes.
-var errRunning = errors.New("the game is running the profile")
+var errRunning = usererr.New(usererr.Busy, "the game is running the profile")
 
 // apply writes the config files whose mods are installed, and keeps the rest for later. While the game runs the
 // profile it waits for the next change.

@@ -9,6 +9,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/steam"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
 
 // GameInfo is one listed game with its install state.
@@ -48,7 +49,7 @@ func NewService(home string, store *settings.Store) *Service {
 // and paths that could erase the user's home or filesystem.
 func (s *Service) ResetInstall(id string) error {
 	if s.Running != nil && s.Running(id) {
-		return fmt.Errorf("cannot reset %s while it is running", id)
+		return usererr.Wrap(usererr.Busy, fmt.Errorf("cannot reset %s while it is running", id))
 	}
 	dir, err := InstallDir(s.home, s.store.Get(), id)
 	if err != nil {

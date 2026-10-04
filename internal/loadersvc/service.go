@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
+	"github.com/Rethunk-AI/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -294,7 +295,7 @@ func (s *Service) install(ctx context.Context, id string, fromStart bool) (st lo
 		return loader.Status{}, err
 	}
 	if running || (!fromStart && s.profiles.AnyRunning(id)) {
-		return loader.Status{}, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName())
+		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName()))
 	}
 	return s.installVersion(ctx, g, dir, id, s.settings.Get().GamePrefs(id).SmapiPin, fromStart)
 }
