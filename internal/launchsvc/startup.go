@@ -44,27 +44,29 @@ type StartupPack struct {
 
 // StartupMod is one mod's exclusive startup time by where it was spent.
 type StartupMod struct {
-	ID      string           `json:"id"`
-	Name    string           `json:"name"`
-	Version string           `json:"version"`
-	EntryMs int64            `json:"entryMs"`
-	EventMs map[string]int64 `json:"eventMs"`
-	AssetMs int64            `json:"assetMs"`
-	LoadMs  int64            `json:"loadMs"`
-	Packs   []StartupPack    `json:"packs"`
+	SampleMs int64            `json:"sampleMs"`
+	ID       string           `json:"id"`
+	Name     string           `json:"name"`
+	Version  string           `json:"version"`
+	EntryMs  int64            `json:"entryMs"`
+	EventMs  map[string]int64 `json:"eventMs"`
+	AssetMs  int64            `json:"assetMs"`
+	LoadMs   int64            `json:"loadMs"`
+	Packs    []StartupPack    `json:"packs"`
 }
 
 // StartupReport is one launch's startup timings as the bridge writes them.
 type StartupReport struct {
-	ID           string        `json:"id"`
-	Smapi        string        `json:"smapi"`
-	Game         string        `json:"game"`
-	ProcessStart string        `json:"processStart"`
-	Phases       StartupPhases `json:"phases"`
-	EntryTimed   bool          `json:"entryTimed"`
-	EntryMissed  int           `json:"entryMissed"`
-	Mods         []StartupMod  `json:"mods"`
-	OtherMs      int64         `json:"otherMs"`
+	SampledOtherMs int64         `json:"sampledOtherMs"`
+	ID             string        `json:"id"`
+	Smapi          string        `json:"smapi"`
+	Game           string        `json:"game"`
+	ProcessStart   string        `json:"processStart"`
+	Phases         StartupPhases `json:"phases"`
+	EntryTimed     bool          `json:"entryTimed"`
+	EntryMissed    int           `json:"entryMissed"`
+	Mods           []StartupMod  `json:"mods"`
+	OtherMs        int64         `json:"otherMs"`
 }
 
 // prepareStartup makes SMAPI load the bridge before every other mod, so the bridge can time their Entry and
@@ -146,6 +148,9 @@ func readStartupReports(dir string) ([]StartupReport, error) {
 	sort.Sort(sort.Reverse(sort.StringSlice(names)))
 	out := []StartupReport{}
 	for _, name := range names {
+		if strings.HasSuffix(name, ".samples.json") {
+			continue
+		}
 		var r StartupReport
 		if found, err := datadir.ReadJSON(name, &r); err != nil || !found {
 			continue
@@ -154,7 +159,21 @@ func readStartupReports(dir string) ([]StartupReport, error) {
 		if r.Mods == nil {
 			r.Mods = []StartupMod{}
 		}
+		mergeStartupSamples(name, &r)
 		out = append(out, r)
 	}
 	return out, nil
+}
+
+func mergeStartupSamples(reportPath string, report *StartupReport) {
+	var samples startupSamples
+	path := strings.TrimSuffix(reportPath, ".json") + ".samples.json"
+	found, err := datadir.ReadJSON(path, &samples)
+	if err != nil || !found || samples.Schema != 1 {
+		return
+	}
+	report.SampledOtherMs = samples.OtherMs
+	for index := range report.Mods {
+		report.Mods[index].SampleMs = samples.Mods[report.Mods[index].ID]
+	}
 }
