@@ -231,7 +231,7 @@ func run() error {
 		_ = crash.Close()
 	}
 	logPath := filepath.Join(dataDir, "mortar.log")
-	_ = os.Rename(logPath, filepath.Join(dataDir, "mortar.prev.log"))
+	_ = fsx.Rename(logPath, filepath.Join(dataDir, "mortar.prev.log"))
 	if logFile, err := fsx.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600); err == nil {
 		// The file comes first: MultiWriter stops at the first failing writer, and a GUI launch can have a dead
 		// stderr, which would otherwise leave mortar.log without the clean-shutdown line crash detection reads.

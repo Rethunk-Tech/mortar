@@ -264,7 +264,7 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 	old := modsDir + ".old"
 	_ = os.RemoveAll(old)
 	if _, err := os.Stat(modsDir); err == nil {
-		if err := os.Rename(modsDir, old); err != nil {
+		if err := fsx.Rename(modsDir, old); err != nil {
 			_ = os.RemoveAll(staging)
 			return err
 		}
@@ -272,9 +272,9 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 		_ = os.RemoveAll(staging)
 		return err
 	}
-	if err := os.Rename(staging, modsDir); err != nil {
+	if err := fsx.Rename(staging, modsDir); err != nil {
 		if _, statErr := os.Stat(old); statErr == nil {
-			_ = os.Rename(old, modsDir)
+			_ = fsx.Rename(old, modsDir)
 		}
 		_ = os.RemoveAll(staging)
 		return err
@@ -295,7 +295,7 @@ func restoreModsOld(dir string) {
 		return
 	}
 	_ = os.RemoveAll(modsDir)
-	_ = os.Rename(old, modsDir)
+	_ = fsx.Rename(old, modsDir)
 }
 
 func entryUsesKey(e Entry, want map[string]struct{}) bool {
@@ -672,7 +672,7 @@ func emptyHistoryAt(dir string) historyFileData {
 
 func quarantineHistory(path string, cause error) (historyFileData, error) {
 	corrupt := fmt.Sprintf("%s.corrupt-%d", path, time.Now().UnixNano())
-	if err := os.Rename(path, corrupt); err != nil {
+	if err := fsx.Rename(path, corrupt); err != nil {
 		return historyFileData{}, errors.Join(fmt.Errorf("read history: %w", cause), fmt.Errorf("quarantine history: %w", err))
 	}
 	return emptyHistory(), nil

@@ -103,7 +103,7 @@ func flip(plain, dotted string, enabled bool) error {
 	if !exists(from) {
 		return fmt.Errorf("mod folder %s is missing", filepath.Base(plain))
 	}
-	return os.Rename(from, to)
+	return fsx.Rename(from, to)
 }
 
 func isDisabled(e Entry, m EntryMod) bool { return hasID(e.Disabled, m.UniqueID) }
@@ -155,7 +155,7 @@ func (s *Store) place(game, modsDir string, e Entry) error {
 		return materialize(scratch, e)
 	}()
 	if err == nil {
-		err = os.Rename(scratch, filepath.Join(modsDir, final))
+		err = fsx.Rename(scratch, filepath.Join(modsDir, final))
 	}
 	if err != nil {
 		return errors.Join(err, os.RemoveAll(scratch))
@@ -678,7 +678,7 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 		err = writeProfile(tmp, dup)
 	}
 	if err == nil {
-		err = os.Rename(tmp, dstDir)
+		err = fsx.Rename(tmp, dstDir)
 	}
 	if err != nil {
 		return Profile{}, errors.Join(err, os.RemoveAll(tmp))
@@ -774,7 +774,7 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 		}
 		for _, name := range []string{e.Key, "." + e.Key} {
 			if aside := filepath.Join(modsDir, asidePrefix+name); exists(aside) {
-				if err := os.Rename(aside, filepath.Join(modsDir, name)); err != nil {
+				if err := fsx.Rename(aside, filepath.Join(modsDir, name)); err != nil {
 					return err
 				}
 				break

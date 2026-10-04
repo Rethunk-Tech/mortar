@@ -270,7 +270,7 @@ func (w swapped) commit() {
 	for _, h := range w.held {
 		dst := filepath.Join(w.heldDir, h.uniqueID, h.rel)
 		if os.MkdirAll(filepath.Dir(dst), 0o700) == nil {
-			_ = os.Rename(h.abs, dst)
+			_ = fsx.Rename(h.abs, dst)
 		}
 	}
 	if w.aside != "" {
@@ -285,7 +285,7 @@ func (w swapped) undo() error {
 	}
 	err := os.RemoveAll(w.placed)
 	if w.aside != "" {
-		err = errors.Join(err, os.Rename(w.aside, w.old))
+		err = errors.Join(err, fsx.Rename(w.aside, w.old))
 	}
 	return err
 }
@@ -302,13 +302,13 @@ func replaceFolder(modsDir, oldKey, tmp, final string) (swapped, error) {
 		if err := os.RemoveAll(w.aside); err != nil {
 			return swapped{}, err
 		}
-		if err := os.Rename(old, w.aside); err != nil {
+		if err := fsx.Rename(old, w.aside); err != nil {
 			return swapped{}, err
 		}
 	}
-	if err := os.Rename(tmp, w.placed); err != nil {
+	if err := fsx.Rename(tmp, w.placed); err != nil {
 		if w.aside != "" {
-			err = errors.Join(err, os.Rename(w.aside, old))
+			err = errors.Join(err, fsx.Rename(w.aside, old))
 		}
 		return swapped{}, err
 	}

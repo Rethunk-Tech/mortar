@@ -355,7 +355,7 @@ func undotEntry(stage string, e Entry) error {
 			return err
 		}
 		if exists(dotted) && !exists(plain) {
-			if err := os.Rename(dotted, plain); err != nil {
+			if err := fsx.Rename(dotted, plain); err != nil {
 				return err
 			}
 		}

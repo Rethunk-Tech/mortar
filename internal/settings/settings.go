@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"sync"
@@ -250,7 +249,7 @@ func Open() (*Store, error) {
 		var loaded Settings
 		if err := json.Unmarshal(b, &loaded); err != nil {
 			corrupt := fmt.Sprintf("%s.corrupt-%d", s.path, time.Now().UnixNano())
-			if renameErr := os.Rename(s.path, corrupt); renameErr != nil {
+			if renameErr := fsx.Rename(s.path, corrupt); renameErr != nil {
 				return nil, fmt.Errorf("preserve corrupt settings: %w", renameErr)
 			}
 			s.corruptPath = corrupt

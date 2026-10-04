@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -289,7 +291,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 	if err := os.RemoveAll(dest); err != nil {
 		return err
 	}
-	return os.Rename(scratch, dest)
+	return fsx.Rename(scratch, dest)
 }
 
 // InstallNexusExtra unpacks a Nexus archive into the store and adds it as an extra file of entryKey.
@@ -354,7 +356,7 @@ func (s *Store) copyExtraInto(game, id, entryDir, extraKey string, choices map[s
 	if err := datadir.MaterializeTree(src, scratch); err != nil {
 		return errors.Join(err, os.RemoveAll(scratch))
 	}
-	if err := os.Rename(scratch, dest); err != nil {
+	if err := fsx.Rename(scratch, dest); err != nil {
 		return errors.Join(err, os.RemoveAll(scratch))
 	}
 	return nil

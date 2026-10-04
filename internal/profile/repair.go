@@ -35,14 +35,14 @@ func (s *Store) Repair(game, id string) (Profile, error) {
 	src := filepath.Join(dir, fileName)
 	broken, _ := fsx.ReadFile(src)
 	aside := filepath.Join(dir, fmt.Sprintf("%s%d", damagedAsidePrefix, time.Now().UnixNano()))
-	if err := os.Rename(src, aside); err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err := fsx.Rename(src, aside); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return Profile{}, err
 	}
 	p := salvageProfile(broken, id)
 	p.Entries = entries
 	p.Updated = time.Now().UTC().Truncate(time.Second)
 	if err := datadir.WriteJSON(src, p); err != nil {
-		_ = os.Rename(aside, src)
+		_ = fsx.Rename(aside, src)
 		return Profile{}, err
 	}
 	return p, nil
@@ -62,7 +62,7 @@ func (s *Store) UndoRepair(game, id string) error {
 	}
 	src := filepath.Join(dir, fileName)
 	_ = os.Remove(src)
-	return os.Rename(aside, src)
+	return fsx.Rename(aside, src)
 }
 
 func salvageProfile(b []byte, id string) Profile {

@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
@@ -134,7 +136,7 @@ func (s *Store) ResolveOldFiles(game, id, key string, keep bool) error {
 				if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
 					return err
 				}
-				if err := os.Rename(filepath.Join(src, rel), to); err != nil {
+				if err := fsx.Rename(filepath.Join(src, rel), to); err != nil {
 					return err
 				}
 			}

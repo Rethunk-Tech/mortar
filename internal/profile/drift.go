@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/datadir"
 )
 
@@ -367,7 +369,7 @@ func (s *Store) parkUnknownModsLocked(dir string, p Profile) error {
 			return err
 		}
 		dst := uniqueHoldPath(hold, e.Name())
-		if err := os.Rename(filepath.Join(modsDir, e.Name()), dst); err != nil {
+		if err := fsx.Rename(filepath.Join(modsDir, e.Name()), dst); err != nil {
 			return err
 		}
 	}
@@ -650,7 +652,7 @@ func (s *Store) trashModsFolder(game, id, folder string) error {
 			return err
 		}
 	}
-	if err := os.Rename(src, dst); err != nil {
+	if err := fsx.Rename(src, dst); err != nil {
 		if err := datadir.CopyTree(src, dst); err != nil {
 			return err
 		}

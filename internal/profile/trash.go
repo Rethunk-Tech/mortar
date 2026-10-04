@@ -10,6 +10,8 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/usererr"
 )
@@ -60,7 +62,7 @@ func (s *Store) Delete(gameID, id string) error {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return err
 	}
-	if err := os.Rename(src, dst); err != nil {
+	if err := fsx.Rename(src, dst); err != nil {
 		return err
 	}
 	now := time.Now()
@@ -140,7 +142,7 @@ func (s *Store) Restore(gameID, id string) (Profile, error) {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return Profile{}, err
 	}
-	if err := os.Rename(src, dst); err != nil {
+	if err := fsx.Rename(src, dst); err != nil {
 		return Profile{}, err
 	}
 	return s.read(gameID, id)
