@@ -4,6 +4,8 @@ import (
 	"context"
 	"slices"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
 )
 
 func shadowedNames(t *testing.T, mods ...Installed) map[string][]string {
@@ -22,8 +24,7 @@ func shadowedNames(t *testing.T, mods ...Installed) map[string][]string {
 }
 
 func TestShadowedPacks(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 

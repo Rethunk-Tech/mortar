@@ -5,13 +5,14 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
 
 func TestAssetIndexFromFixturePacks(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
@@ -45,8 +46,7 @@ func TestAssetIndexFromFixturePacks(t *testing.T) {
 }
 
 func TestWhoChangesFuzzyAndAlias(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
@@ -74,8 +74,7 @@ func TestWhoChangesFuzzyAndAlias(t *testing.T) {
 }
 
 func TestAssetIndexExclusiveLoadsHaveNoWinner(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
@@ -113,20 +112,12 @@ func TestAssetIndexReplacedXnb(t *testing.T) {
 
 func loadPack(t *testing.T, id, target, priority string) Installed {
 	t.Helper()
-	root := t.TempDir()
-	writeManifest(t, root, id)
 	pri := ""
 	if priority != "" {
 		pri = `,"Priority":"` + priority + `"`
 	}
 	content := `{"Changes":[{"Action":"Load","Target":"` + target + `","FromFile":"a.png"` + pri + `}]}`
-	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(filepath.Join(root, "a.png"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
+	return diskPack(t, id, map[string]string{"manifest.json": cpManifest(id), "content.json": content, "a.png": "x"})
 }
 
 func findTarget(targets []AssetTarget, name, key string) AssetTarget {
@@ -141,7 +132,7 @@ func findTarget(targets []AssetTarget, name, key string) AssetTarget {
 func editPack(t *testing.T, id, priority string) Installed {
 	t.Helper()
 	root := t.TempDir()
-	writeManifest(t, root, id)
+	writeProblemFile(t, root, "manifest.json", cpManifest(id))
 	content := `{"Changes":[{"Action":"EditData","Target":"Data/Objects","Priority":"` + priority + `","Entries":{"123":"` + id + `"}}]}`
 	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 		t.Fatal(err)
@@ -161,8 +152,7 @@ func touchOf(t *testing.T, target AssetTarget, id string) AssetTouch {
 }
 
 func TestFilesWinnerFollowsSMAPILoadOrder(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
@@ -188,8 +178,7 @@ func TestFilesWinnerFollowsSMAPILoadOrder(t *testing.T) {
 }
 
 func TestFilesSharedFilterAndCounts(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 

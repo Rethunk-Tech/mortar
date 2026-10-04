@@ -1,9 +1,10 @@
 package problems
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
@@ -113,28 +114,12 @@ func TestCleanupHintsTilesheets(t *testing.T) {
 
 func tilesheetPack(t *testing.T, id, content string) Installed {
 	t.Helper()
-	root := t.TempDir()
-	writeProblemFile(t, root, "manifest.json", `{"UniqueID":"`+id+`","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	writeProblemFile(t, root, "content.json", content)
-	return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
+	return diskPack(t, id, map[string]string{"manifest.json": cpManifest(id), "content.json": content})
 }
 
 func modFolder(t *testing.T, name, file, content string) Installed {
 	t.Helper()
-	root := t.TempDir()
-	writeProblemFile(t, root, file, content)
-	return fromDisk(Installed{Key: name, Enabled: true, Folder: root, Name: name, UniqueID: name})
-}
-
-func writeProblemFile(t *testing.T, root, name, content string) {
-	t.Helper()
-	path := filepath.Join(root, name)
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	return diskPack(t, name, map[string]string{file: content})
 }
 
 func TestMapScanners(t *testing.T) {
@@ -151,13 +136,12 @@ func TestMapScanners(t *testing.T) {
 }
 
 func TestRetextureOfVanillaSheetIsNotUnusedTilesheets(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
 	root := t.TempDir()
-	writeManifest(t, root, "Colling.ElegantTools")
+	writeProblemFile(t, root, "manifest.json", cpManifest("Colling.ElegantTools"))
 	content := `{"Changes":[{"Action":"EditImage","Target":"TileSheets/tools","FromFile":"tools.png"}]}`
 	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 		t.Fatal(err)

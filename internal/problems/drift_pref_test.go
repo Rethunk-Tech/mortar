@@ -3,12 +3,13 @@ package problems
 import (
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/settings"
 )
 
 func TestDriftChecksOffSkipsScan(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	set, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)

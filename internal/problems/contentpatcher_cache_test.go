@@ -15,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/manifest"
 )
@@ -135,8 +137,7 @@ func diskCachePack(t *testing.T) (Installed, string, string) {
 }
 
 func TestReadContentPackConcurrent(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 	mods := make([]Installed, 8)
@@ -450,8 +451,7 @@ func TestScanBenchConflictRSS(t *testing.T) {
 	if os.Getenv("MORTAR_SCAN_BENCH") != "1" {
 		t.Skip("set MORTAR_SCAN_BENCH=1 to measure a reflink copy at /var/tmp/scan-bench")
 	}
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 

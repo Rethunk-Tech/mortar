@@ -7,18 +7,18 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
 func TestConflictEvidenceEditImageOverlap(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
@@ -52,8 +52,7 @@ func TestConflictEvidenceEditImageOverlap(t *testing.T) {
 }
 
 func TestConflictEvidenceEditData(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
@@ -119,7 +118,7 @@ func TestCropImageClampsToBounds(t *testing.T) {
 func imageConflictPack(t *testing.T, id string, x, y, w, h int) Installed {
 	t.Helper()
 	root := t.TempDir()
-	writeManifest(t, root, id)
+	writeProblemFile(t, root, "manifest.json", cpManifest(id))
 	img := image.NewNRGBA(image.Rect(0, 0, 32, 32))
 	img.SetNRGBA(0, 0, color.NRGBA{A: 255, R: id[len(id)-1]})
 	writePNG(t, filepath.Join(root, "patch.png"), img)
@@ -133,24 +132,8 @@ func imageConflictPack(t *testing.T, id string, x, y, w, h int) Installed {
 
 func dataConflictPack(t *testing.T, id, value string) Installed {
 	t.Helper()
-	root := t.TempDir()
-	writeManifest(t, root, id)
 	content := `{"Changes":[{"Action":"EditData","Target":"Data/Objects","Priority":"Late","When":{"Season":"Spring"},"Entries":{"123":"` + value + `"}}]}`
-	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
-}
-
-func writeManifest(t *testing.T, root, id string) {
-	t.Helper()
-	if err := os.MkdirAll(root, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	body := `{"Name":"` + id + `","UniqueID":"` + id + `","Version":"1","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`
-	if err := fsx.WriteFile(filepath.Join(root, "manifest.json"), []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	return diskPack(t, id, map[string]string{"manifest.json": cpManifest(id), "content.json": content})
 }
 
 func decodeDataURLPNG(t *testing.T, url string) image.Image {
@@ -171,14 +154,13 @@ func decodeDataURLPNG(t *testing.T, url string) image.Image {
 }
 
 func TestTokenDataKeysDoNotClashAcrossPacks(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
 	pack := func(id, value string) Installed {
 		root := t.TempDir()
-		writeManifest(t, root, id)
+		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"Changes":[{"Action":"EditData","Target":"Data/TriggerActions","Entries":{"{{ModId}}_MigrateIds":"` + value + `"}}]}`
 		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
@@ -192,14 +174,13 @@ func TestTokenDataKeysDoNotClashAcrossPacks(t *testing.T) {
 }
 
 func TestTargetFieldScopesDataKeys(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
 	pack := func(id, item string) Installed {
 		root := t.TempDir()
-		writeManifest(t, root, id)
+		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"Changes":[{"Action":"EditData","Target":"Data/Objects","TargetField":["` + item + `"],"Entries":{"Price":"` + id + `"}}]}`
 		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
@@ -217,14 +198,13 @@ func TestTargetFieldScopesDataKeys(t *testing.T) {
 }
 
 func TestListAppendsDoNotClash(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
 	pack := func(id string) Installed {
 		root := t.TempDir()
-		writeManifest(t, root, id)
+		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"Changes":[{"Action":"EditData","Target":"Data/Objects","TargetField":["16","ContextTags"],"Entries":{"#-1":"` + id + `_tag"}}]}`
 		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
@@ -238,14 +218,13 @@ func TestListAppendsDoNotClash(t *testing.T) {
 }
 
 func TestTextOverwritesAreShownNotCounted(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
 	pack := func(id, target string) Installed {
 		root := t.TempDir()
-		writeManifest(t, root, id)
+		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"Changes":[{"Action":"EditData","Target":"` + target + `","Entries":{"Mon2":"` + id + `"}}]}`
 		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
@@ -269,14 +248,13 @@ func TestKeyLabelDropsPackScope(t *testing.T) {
 }
 
 func TestConfigTokenValuesCompareResolved(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
+	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
 	pack := func(id, configured string) Installed {
 		root := t.TempDir()
-		writeManifest(t, root, id)
+		writeProblemFile(t, root, "manifest.json", cpManifest(id))
 		content := `{"ConfigSchema":{"Incubation time":{"Default":"5"}},"Changes":[{"Action":"EditData","Target":"Data/FarmAnimals","TargetField":["Dinosaur"],"Entries":{"IncubationTime":"{{Incubation time}}"}}]}`
 		if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
