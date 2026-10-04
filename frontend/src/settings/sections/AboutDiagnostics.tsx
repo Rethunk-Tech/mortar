@@ -117,7 +117,19 @@ function Diagnostics() {
   const [report, setReport] = useState<Report | null>(null)
   const [busy, runChecks] = usePending()
   const [repairing, runRepair] = usePending()
-  const run = () => runChecks(() => Doctor().then((r) => setReport(r ?? { checks: [] })))
+  const [failed, setFailed] = useState(false)
+  const run = () =>
+    runChecks(() =>
+      Doctor()
+        .then((r) => {
+          setFailed(false)
+          setReport(r ?? { checks: [] })
+        })
+        .catch(() => {
+          setFailed(true)
+          setReport(null)
+        }),
+    )
   const repair = () => runRepair(() => RepairNativeHosts().then(run))
   const groups = groupChecks(report?.checks ?? [])
   const copy = () => {
@@ -125,7 +137,7 @@ function Diagnostics() {
       .map((g) => `${title(g.kind)} (${g.status})\n${g.details.join('\n')}`)
       .join('\n\n')
     navigator.clipboard.writeText(`${text}\n`).then(
-      () => push({ kind: 'success', title: t`Copied the report` }),
+      () => push({ kind: 'success', title: t`Report copied` }),
       (err: unknown) => reportError(t`Could not copy the report`)(err),
     )
   }
@@ -169,6 +181,17 @@ function Diagnostics() {
         <DialogTitle>{t`Diagnostics`}</DialogTitle>
         <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {busy && !report ? <LinearProgress /> : null}
+          {failed ? (
+            <Box role="alert" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 15 }}>
+              {t`Could not run diagnostics`}
+              <Button size="small" variant="outlined" disabled={busy} onClick={run}>
+                {t`Run again`}
+              </Button>
+            </Box>
+          ) : null}
+          {!busy && report && groups.length === 0 ? (
+            <Box sx={{ fontSize: 15 }}>{t`All checks passed`}</Box>
+          ) : null}
           {groups.map((g) => (
             <Box key={g.kind} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
               <Box sx={{ pt: '3px' }}>

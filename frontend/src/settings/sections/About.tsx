@@ -80,7 +80,7 @@ export function About() {
           description={t`Libraries, icons and artwork built into Mortar, with their licences.`}
         >
           <Button variant="outlined" onClick={() => setCreditsOpen(true)}>
-            {t`View (${credits.length})`}
+            {t`View licences…`}
           </Button>
         </SettingRow>
       </SettingsSection>
