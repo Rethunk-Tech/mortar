@@ -10,21 +10,26 @@ import { beginUsageLoad } from '../usageLoad.ts'
 export function useDataUsage() {
   const [usage, setUsage] = useState<DiskUse | null>(null)
   const [bytes, setBytes] = useState(0)
+  const [error, setError] = useState(false)
   const stopRef = useRef<() => void>(() => undefined)
   const restart = useCallback(() => {
     stopRef.current()
     setUsage(null)
+    setError(false)
     stopRef.current = beginUsageLoad({
       usage: Usage,
       progress: UsageProgress,
       setBytes,
       setUsage,
-      onError: reportUnexpected,
+      onError: (e: unknown) => {
+        setError(true)
+        reportUnexpected(e)
+      },
     })
   }, [])
   useEffect(() => {
     restart()
     return () => stopRef.current()
   }, [restart])
-  return { usage, bytes, restart }
+  return { usage, bytes, restart, error }
 }
