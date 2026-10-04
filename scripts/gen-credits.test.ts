@@ -9,6 +9,15 @@ of this software and associated documentation files.`
 
     expect(classifyLicenceText(text)).toBe('MIT')
   })
+
+  test('recognises both wordings of ISC', () => {
+    expect(
+      classifyLicenceText('Permission to use, copy, modify, and distribute this software'),
+    ).toBe('ISC')
+    expect(
+      classifyLicenceText('Permission to use, copy, modify, and/or distribute this software'),
+    ).toBe('ISC')
+  })
 })
 
 describe('collectNotices', () => {

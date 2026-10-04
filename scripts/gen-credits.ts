@@ -27,7 +27,7 @@ const LICENCE_RULES: { id: string; re: RegExp; extra?: RegExp }[] = [
   { id: 'CC-BY-SA-4.0', re: /creative commons/i, extra: /attribution-sharealike 4\.0/i },
   { id: 'MIT', re: /the mit license/i },
   { id: 'MIT', re: /permission is hereby granted, free of charge/i },
-  { id: 'ISC', re: /permission to use, copy, modify, and\/or distribute this software/i },
+  { id: 'ISC', re: /permission to use, copy, modify, and(\/or)? distribute this software/i },
   {
     id: 'BSD-3-Clause',
     re: /redistribution and use in source and binary forms/i,
