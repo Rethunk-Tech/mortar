@@ -498,3 +498,44 @@ func writePNG(t *testing.T, path string, image image.Image) {
 		t.Fatal(err)
 	}
 }
+
+func TestLoadsWithoutPriorityAreExclusive(t *testing.T) {
+	cave := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"FarmCave_New.tmx"}]}`, map[string]string{
+		"FarmCave_New.tmx": `<map width="11" height="12"/>`,
+	})
+	farm := syntheticLoadPack(t, `{
+		"ConfigSchema": {"EnableFarmCave": {"AllowValues": "true, false", "Default": "true"}},
+		"Changes": [{"Action": "Load", "Target": "Maps/FarmCave", "FromFile": "FarmCave.tbin", "When": {"EnableFarmCave": "true"}}]
+	}`, map[string]string{"FarmCave.tbin": "tBIN10 farm cave"})
+	mods := []Installed{cave, farm}
+	conflicts := assetConflicts(mods)
+	if len(conflicts) != 1 || conflicts[0].WinnerName != "CP applies neither" {
+		t.Fatalf("two loads without a priority are both Exclusive, got %#v", conflicts)
+	}
+	if target := findTarget(AssetMapOf(mods, "", 0).Targets, "maps/farmcave", ""); target.Winner != "" {
+		t.Fatalf("asset map names a winner Content Patcher never applies: %+v", target)
+	}
+}
+
+func TestLowLoadThatNamesTheOtherPackIsAFallback(t *testing.T) {
+	aquarium := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Portraits/Curator","FromFile":"curator.png"}]}`, map[string]string{
+		"curator.png": "aquarium curator",
+	})
+	aquarium.UniqueID = "Gervig91.StardewAquariumCP"
+	portraits := func(compat string) Installed {
+		return syntheticLoadPack(t, `{"Changes":[
+			{"Action": "Load", "Target": "Portraits/Curator", "FromFile": "Curator.png", "Priority": "Low"}`+compat+`
+		]}`, map[string]string{
+			"Curator.png":   "extras curator",
+			"Aquarium.json": `{"Changes":[{"Action":"EditData","Target":"Data/Shops","TargetField":["Gervig91.StardewAquariumCP_BeachShop","Owners"],"Entries":{"Default":{"Name":"AnyOrNone"}}}]}`,
+		})
+	}
+	aware := portraits(`,{"Action": "Include", "FromFile": "Aquarium.json", "When": {"HasMod": "Gervig91.StardewAquariumCP"}}`)
+	if conflicts := assetConflicts([]Installed{aware, aquarium}); len(conflicts) != 0 {
+		t.Fatalf("a Low load from a pack with an Aquarium compatibility patch is its fallback, got %#v", conflicts)
+	}
+	unaware := portraits("")
+	if conflicts := assetConflicts([]Installed{unaware, aquarium}); len(conflicts) != 1 {
+		t.Fatalf("a Low load from a pack that never names the other still conflicts, got %#v", conflicts)
+	}
+}

@@ -345,7 +345,7 @@ func indexWinner(touches []indexedTouch) string {
 		if t.rank > cur.rank {
 			cur.rank = t.rank
 		}
-		if t.kind == "load" && strings.EqualFold(strings.TrimSpace(t.touch.Priority), "exclusive") {
+		if t.kind == "load" && exclusiveLoadPriority(t.touch.Priority) {
 			cur.exclusive = true
 		}
 	}

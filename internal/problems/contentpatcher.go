@@ -2001,7 +2001,7 @@ func clashingLoads(hits []packHit) (out []packHit) {
 		for j := i + 1; j < len(hits); j++ {
 			for ai, a := range hits[i].loads {
 				for bj, b := range hits[j].loads {
-					if exclusive(a, b) {
+					if exclusive(a, b) || fallbackLoad(hits[i], a, hits[j], b) || fallbackLoad(hits[j], b, hits[i], a) {
 						continue
 					}
 					in[i], in[j] = true, true
@@ -2022,6 +2022,13 @@ func clashingLoads(hits []packHit) (out []packHit) {
 		}
 	}
 	return out
+}
+
+// fallbackLoad reports a load below default priority from a pack that knows the other pack, which loads the
+// same asset at a higher priority: the author made it the fallback for when the other pack is absent.
+func fallbackLoad(h packHit, load cpPatch, other packHit, otherLoad cpPatch) bool {
+	rank := contentPatcherPriority("load", load.priority)
+	return rank < 0 && rank < contentPatcherPriority("load", otherLoad.priority) && h.mentions[strings.ToLower(other.id)]
 }
 
 // clashing keeps the packs that share an overlapping edit of one target with a pack they were not built
@@ -2209,11 +2216,18 @@ func hasExclusiveLoad(hit packHit) bool {
 		if hit.loadClashes != nil && !hit.loadClashes[i] {
 			continue
 		}
-		if strings.EqualFold(strings.TrimSpace(patch.priority), "exclusive") {
+		if exclusiveLoadPriority(patch.priority) {
 			return true
 		}
 	}
 	return false
+}
+
+// exclusiveLoadPriority reports a Load at Exclusive priority, which is also what Content Patcher gives a Load
+// that sets no Priority.
+func exclusiveLoadPriority(priority string) bool {
+	priority = strings.TrimSpace(priority)
+	return priority == "" || strings.EqualFold(priority, "exclusive")
 }
 
 func dependencyLoadWinner(hits []packHit, tied []int) (int, bool) {
