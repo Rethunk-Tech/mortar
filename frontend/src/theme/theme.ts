@@ -139,6 +139,9 @@ export function createMortarTheme(
         },
       },
       MuiPopover: { defaultProps: { transitionDuration: 0 } },
+      // A sliding exit leaves the modal's backdrop mounted for its duration, so the click right after a drawer closes
+      // lands on the backdrop and does nothing.
+      MuiDrawer: { defaultProps: { transitionDuration: 0 } },
       MuiTab: { styleOverrides: { root: { textTransform: 'none', whiteSpace: 'nowrap' } } },
       MuiToggleButton: {
         styleOverrides: { root: { textTransform: 'none', whiteSpace: 'nowrap' } },

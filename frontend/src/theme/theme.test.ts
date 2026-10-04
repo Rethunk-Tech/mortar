@@ -12,6 +12,14 @@ describe('createMortarTheme', () => {
     expect(root).toEqual({ backgroundImage: 'none' })
   })
 
+  test.each(['MuiDialog', 'MuiMenu', 'MuiPopover', 'MuiDrawer', 'MuiBackdrop'] as const)(
+    '%s closes without an exit transition that leaves its backdrop catching clicks',
+    (name) => {
+      const props = createMortarTheme('sand').components?.[name]?.defaultProps
+      expect(props).toEqual({ transitionDuration: 0 })
+    },
+  )
+
   test('dialog paper is solid', () => {
     const paper = createMortarTheme('sand').components?.MuiDialog?.styleOverrides?.paper
     expect(paper).toEqual({ backgroundColor: 'rgb(40,40,48)' })
