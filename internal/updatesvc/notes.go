@@ -2,41 +2,43 @@ package updatesvc
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
+	"path/filepath"
 	"strings"
-	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/github"
 )
 
-func mortarReleaseNotes(ctx context.Context, version string) (string, error) {
-	tag := strings.TrimPrefix(strings.TrimSpace(version), "v")
-	if tag == "" {
+// ReleaseNotes is one release's notes as the What's New dialog shows them. Available is false when the notes
+// could not be fetched (offline, rate limited, no such release), so the window shows "notes unavailable".
+type ReleaseNotes struct {
+	Version   string `json:"version"`
+	Notes     string `json:"notes"`
+	Available bool   `json:"available"`
+}
+
+func (s *Service) ghClient() *github.Client {
+	if s.gh != nil {
+		return s.gh
+	}
+	return &github.Client{CacheDir: filepath.Join(s.dir, "cache")}
+}
+
+func (s *Service) releaseNotes(ctx context.Context, version string) (string, error) {
+	v := strings.TrimPrefix(strings.TrimSpace(version), "v")
+	if v == "" {
 		return "", fmt.Errorf("empty version")
 	}
-	if !strings.HasPrefix(tag, "v") {
-		tag = "v" + tag
+	owner, repo, _ := strings.Cut(mortarRepo, "/")
+	return s.ghClient().ReleaseNotes(ctx, owner, repo, "v"+v)
+}
+
+// ReleaseNotes returns the notes of the Mortar release for version. A failed lookup is not an error: the result has
+// Available false.
+func (s *Service) ReleaseNotes(ctx context.Context, version string) ReleaseNotes {
+	notes, err := s.releaseNotes(ctx, version)
+	if err != nil || notes == "" {
+		return ReleaseNotes{Version: version}
 	}
-	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/tags/%s", mortarRepo, tag)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Accept", "application/vnd.github+json")
-	client := &http.Client{Timeout: 15 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("github release: HTTP %d", resp.StatusCode)
-	}
-	var rel struct {
-		Body string `json:"body"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&rel); err != nil {
-		return "", err
-	}
-	return strings.TrimSpace(rel.Body), nil
+	return ReleaseNotes{Version: version, Notes: notes, Available: true}
 }

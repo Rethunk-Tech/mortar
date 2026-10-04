@@ -450,6 +450,17 @@ type cacheEntry struct {
 	Releases []Release `json:"releases"`
 }
 
+func (c *Client) cacheDir() (string, error) {
+	if c.CacheDir != "" {
+		return c.CacheDir, nil
+	}
+	d, err := datadir.Dir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(d, "cache"), nil
+}
+
 // Releases lists owner/repo's releases, newest first. An answer younger than an hour comes from the cache and a
 // stale one stands in when the lookup fails, rate limit included.
 func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, error) {
@@ -457,13 +468,9 @@ func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, e
 	if base == "" {
 		base = apiBase
 	}
-	dir := c.CacheDir
-	if dir == "" {
-		d, err := datadir.Dir()
-		if err != nil {
-			return nil, err
-		}
-		dir = filepath.Join(d, "cache")
+	dir, err := c.cacheDir()
+	if err != nil {
+		return nil, err
 	}
 	path := filepath.Join(dir, Key(owner, repo, "", "")+"-releases.json")
 	var old cacheEntry

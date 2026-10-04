@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-AI/mortar/internal/github"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
@@ -71,6 +72,7 @@ type Service struct {
 	u    Updater
 	info Info
 	dir  string
+	gh   *github.Client
 	// empty runs when Check finds no newer release, so a missing manifest is not reported as up to date.
 	empty func(context.Context) error
 
@@ -250,7 +252,7 @@ func (s *Service) WhatsNew(ctx context.Context) (WhatsNew, error) {
 		}
 		return none, nil
 	}
-	notes, noteErr := mortarReleaseNotes(ctx, cur)
+	notes, noteErr := s.releaseNotes(ctx, cur)
 	if noteErr != nil {
 		return none, noteErr
 	}
