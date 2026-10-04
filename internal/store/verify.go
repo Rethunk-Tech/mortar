@@ -290,7 +290,7 @@ func (s *Store) Quarantine(game, key string) (restore func() error, err error) {
 		return nil, err
 	}
 	aside := filepath.Join(filepath.Dir(dir), tempPrefix+"damaged-"+key)
-	if err := os.RemoveAll(aside); err != nil {
+	if err := fsx.RemoveAll(aside); err != nil {
 		return nil, err
 	}
 	if err := fsx.Rename(dir, aside); err != nil {
