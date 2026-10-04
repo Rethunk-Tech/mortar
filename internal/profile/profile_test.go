@@ -9,7 +9,8 @@ import (
 
 func newStore(t *testing.T) *Store {
 	t.Helper()
-	return &Store{root: filepath.Join(t.TempDir(), "profiles")}
+	root := t.TempDir()
+	return &Store{root: filepath.Join(root, "profiles"), trash: filepath.Join(root, "trash")}
 }
 
 func TestCreateListRename(t *testing.T) {
@@ -17,14 +18,8 @@ func TestCreateListRename(t *testing.T) {
 	if got, err := s.List("stardew"); err != nil || len(got) != 0 {
 		t.Fatalf("empty list = %v, %v", got, err)
 	}
-	a, err := s.Create("stardew", "  Cookie farm ")
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := s.Create("stardew", "Second")
-	if err != nil {
-		t.Fatal(err)
-	}
+	a := mustCreate(t, s, "  Cookie farm ")
+	b := mustCreate(t, s, "Second")
 	if a.Name != "Cookie farm" || b.Order <= a.Order {
 		t.Fatalf("created = %+v, %+v", a, b)
 	}
@@ -47,10 +42,7 @@ func TestCreateListRename(t *testing.T) {
 
 func TestListReturnsDamagedProfiles(t *testing.T) {
 	s := newStore(t)
-	good, err := s.Create("stardew", "Good")
-	if err != nil {
-		t.Fatal(err)
-	}
+	good := mustCreate(t, s, "Good")
 	badID := "0123456789abcdef"
 	badDir := filepath.Join(s.root, "stardew", badID)
 	if err := os.MkdirAll(filepath.Join(badDir, "mods"), 0o700); err != nil {
@@ -82,10 +74,7 @@ func TestListReturnsDamagedProfiles(t *testing.T) {
 func TestStoreKeysSkipsDamagedAndListDamaged(t *testing.T) {
 	s := newStore(t)
 	s.trash = filepath.Join(t.TempDir(), "trash")
-	good, err := s.Create("stardew", "Good")
-	if err != nil {
-		t.Fatal(err)
-	}
+	good := mustCreate(t, s, "Good")
 	badID := "0123456789abcdef"
 	badDir := filepath.Join(s.root, "stardew", badID)
 	if err := os.MkdirAll(filepath.Join(badDir, "mods"), 0o700); err != nil {
@@ -117,10 +106,7 @@ func TestStoreKeysSkipsDamagedAndListDamaged(t *testing.T) {
 
 func TestRejects(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "ok")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "ok")
 	for _, name := range []string{"", "   ", strings.Repeat("x", 61)} {
 		if _, err := s.Create("stardew", name); err == nil {
 			t.Errorf("Create(%q) accepted", name)
@@ -147,10 +133,7 @@ func TestRejects(t *testing.T) {
 
 func TestModFolderRejectsUnknown(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "x")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "x")
 	if _, err := s.ModFolder("stardew", p.ID, "", "nope.Mod"); err == nil {
 		t.Fatal("unknown mod accepted")
 	}
@@ -158,10 +141,7 @@ func TestModFolderRejectsUnknown(t *testing.T) {
 
 func TestSetNotes(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	got, err := s.SetNotes("stardew", p.ID, "co-op friday")
 	if err != nil || got.Notes != "co-op friday" {
 		t.Fatalf("set = %+v, %v", got, err)
@@ -183,11 +163,8 @@ func TestSetNotes(t *testing.T) {
 
 func TestInModsHoldsTheStoreLock(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = s.InMods("stardew", p.ID, func(got Profile, modsDir string) error {
+	p := mustCreate(t, s, "Farm")
+	err := s.InMods("stardew", p.ID, func(got Profile, modsDir string) error {
 		if s.mu.TryLock() {
 			t.Error("the store lock is free while fn runs")
 		}

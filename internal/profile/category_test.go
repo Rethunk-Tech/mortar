@@ -8,6 +8,7 @@ import (
 )
 
 func testDataHome(t *testing.T) string {
+	t.Helper()
 	dir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", dir)
 	return dir
@@ -16,10 +17,8 @@ func testDataHome(t *testing.T) string {
 func TestSaveCustomCategoriesAndDeleteClearsOverrides(t *testing.T) {
 	home := testDataHome(t)
 	s := newStore(t)
-	p, err := s.Create("stardew", "farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "farm")
+	var err error
 	p, err = s.update("stardew", p.ID, func(prof *Profile, _ string) error {
 		prof.Entries = []Entry{{Key: "k", Source: Source{Kind: KindLocal, Name: "a.zip"}, Mods: []EntryMod{{UniqueID: "A.Mod", Name: "A", Folder: "."}}}}
 		return nil
@@ -57,10 +56,8 @@ func TestSaveCustomCategoriesAndDeleteClearsOverrides(t *testing.T) {
 
 func TestSetEntryCategoryNexusName(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "farm")
+	var err error
 	p, err = s.update("stardew", p.ID, func(prof *Profile, _ string) error {
 		prof.Entries = []Entry{{Key: "k", Source: Source{Kind: KindLocal, Name: "a.zip"}, Mods: []EntryMod{{UniqueID: "A.Mod", Name: "A", Folder: "."}}}}
 		return nil

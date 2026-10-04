@@ -11,10 +11,7 @@ import (
 
 func TestSetAppearance(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	got, err := s.SetAppearance("stardew", p.ID, " teal ", "sprout", "  co-op Fridays  ")
 	if err != nil || got.Color != "teal" || got.Icon != "sprout" || got.Description != "co-op Fridays" {
 		t.Fatalf("set = %+v, %v", got, err)
@@ -38,10 +35,7 @@ func TestSetAppearance(t *testing.T) {
 
 func TestSetAppearanceRejects(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	if _, err := s.SetAppearance("stardew", p.ID, "neon", "", ""); err == nil {
 		t.Fatal("unknown colour accepted")
 	}
@@ -59,10 +53,7 @@ func TestSetAppearanceRejects(t *testing.T) {
 
 func TestLoadSanitizesAppearance(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	path := filepath.Join(s.root, "stardew", p.ID, fileName)
 	raw, err := fsx.ReadFile(path)
 	if err != nil {

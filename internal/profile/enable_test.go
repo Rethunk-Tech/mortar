@@ -12,10 +12,7 @@ func TestEnableTurnsOnRequiredDisabledDependencies(t *testing.T) {
 	e.item(t, "core", map[string]string{"manifest.json": `{"Name":"Core","Author":"me","Version":"1.0.0","UniqueID":"Me.Core"}`})
 	e.item(t, "user", map[string]string{"manifest.json": `{"Name":"User","Author":"me","Version":"1.0.0","UniqueID":"Me.User","Dependencies":[{"UniqueID":"Me.Core"},{"UniqueID":"Me.Opt","IsRequired":false}]}`})
 	e.item(t, "opt", map[string]string{"manifest.json": `{"Name":"Opt","Author":"me","Version":"1.0.0","UniqueID":"Me.Opt"}`})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	if _, err := e.AddEntry("stardew", p.ID, "core", Source{Kind: KindLocal, Name: "core.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -70,10 +67,7 @@ func TestEnableSkipsRequiredWhenSettingIsNever(t *testing.T) {
 	e.settings = st
 	e.item(t, "core", map[string]string{"manifest.json": `{"Name":"Core","Author":"me","Version":"1.0.0","UniqueID":"Me.Core"}`})
 	e.item(t, "user", map[string]string{"manifest.json": `{"Name":"User","Author":"me","Version":"1.0.0","UniqueID":"Me.User","Dependencies":[{"UniqueID":"Me.Core"}]}`})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	if _, err := e.AddEntry("stardew", p.ID, "core", Source{Kind: KindLocal, Name: "core.zip"}); err != nil {
 		t.Fatal(err)
 	}

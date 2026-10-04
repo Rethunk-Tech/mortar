@@ -9,10 +9,8 @@ import (
 func TestRestoreEntriesReappliesEntryFields(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
+	var err error
 	p, err = e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"})
 	if err != nil {
 		t.Fatal(err)
@@ -57,13 +55,7 @@ func TestRestoreEntryFieldsWritesPreviousValues(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}

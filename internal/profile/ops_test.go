@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-AI/mortar/internal/settings"
 	"github.com/Rethunk-AI/mortar/internal/store"
@@ -36,13 +36,7 @@ func newEnv(t *testing.T) env {
 
 func writeFile(t *testing.T, root, rel, body string) {
 	t.Helper()
-	p := filepath.Join(root, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(p, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteFile(t, root, rel, body)
 }
 
 // item puts files into the store under key.
@@ -267,10 +261,7 @@ func TestDuplicateIsIndependent(t *testing.T) {
 
 func TestDuplicateUsesUniqueProfileName(t *testing.T) {
 	s := newStore(t)
-	source, err := s.Create("stardew", "A")
-	if err != nil {
-		t.Fatal(err)
-	}
+	source := mustCreate(t, s, "A")
 	if _, err := s.Create("stardew", "A copy"); err != nil {
 		t.Fatal(err)
 	}
@@ -345,10 +336,7 @@ func TestPurgeTrashUsesSettingsRetention(t *testing.T) {
 		t.Fatal(err)
 	}
 	e.settings = st
-	p, err := e.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "P")
 	if err := e.Delete("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -362,10 +350,7 @@ func TestPurgeTrashUsesSettingsRetention(t *testing.T) {
 
 func TestPurgeTrash(t *testing.T) {
 	e := newEnv(t)
-	p, err := e.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "P")
 	if err := e.Delete("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -385,10 +370,7 @@ func TestPurgeTrash(t *testing.T) {
 	if !exists(outside) {
 		t.Fatal("purge escaped trash")
 	}
-	q, err := e.Create("stardew", "Q")
-	if err != nil {
-		t.Fatal(err)
-	}
+	q := mustCreate(t, e, "Q")
 	if err := e.Delete("stardew", q.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -451,10 +433,7 @@ func TestRebuildAfterModsDeleted(t *testing.T) {
 
 func TestModsParkUnknownFoldersBeforeRebuild(t *testing.T) {
 	e := newEnv(t)
-	p, err := e.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "P")
 	writeFile(t, e.mods(p.ID), "dropped/keep.txt", "keep")
 
 	if _, err := e.Mods("stardew", p.ID); err != nil {
@@ -519,14 +498,8 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 	e.item(t, "smapi-1.0.0", bundle())
 	e.item(t, "smapi-2.0.0", bundle())
 	e.item(t, "local-x", map[string]string{"manifest.json": manifestJSON("Other")})
-	a, err := e.Create("stardew", "a")
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := e.Create("stardew", "b")
-	if err != nil {
-		t.Fatal(err)
-	}
+	a := mustCreate(t, e, "a")
+	b := mustCreate(t, e, "b")
 	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
 		t.Fatal(err)
 	}
@@ -603,14 +576,8 @@ func TestApplyBundledSkipsRunningProfile(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "smapi-1.0.0", bundle())
 	e.item(t, "smapi-2.0.0", bundle())
-	busy, err := e.Create("stardew", "busy")
-	if err != nil {
-		t.Fatal(err)
-	}
-	idle, err := e.Create("stardew", "idle")
-	if err != nil {
-		t.Fatal(err)
-	}
+	busy := mustCreate(t, e, "busy")
+	idle := mustCreate(t, e, "idle")
 	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
 		t.Fatal(err)
 	}
@@ -647,10 +614,7 @@ func TestApplyBundledSkipsRunningProfile(t *testing.T) {
 
 func TestRunningProfileIsLocked(t *testing.T) {
 	e := newEnv(t)
-	p, err := e.Create("stardew", "Locked")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Locked")
 	e.item(t, "a-1.0", map[string]string{"A/manifest.json": manifestJSON("me.a")})
 	if _, err := e.AddEntry("stardew", p.ID, "a-1.0", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
@@ -713,10 +677,7 @@ func TestUnreadableTrashedProfileBlocksOnlyItself(t *testing.T) {
 // A running check made before the lock lets a launch start between the check and the change.
 func TestRunningIsCheckedUnderTheLock(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "A")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "A")
 	s.Running = func(string, string) bool {
 		if s.mu.TryLock() {
 			s.mu.Unlock()

@@ -45,10 +45,7 @@ func TestCoversOrder(t *testing.T) {
 
 func TestSetCoverValidatesAndCopies(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	src := t.TempDir()
 	write := func(name string, b []byte) string {
 		path := filepath.Join(src, name)
@@ -107,10 +104,7 @@ func TestSetCoverValidatesAndCopies(t *testing.T) {
 
 func TestSetCoverKeepsTheOldFileWhenTheProfileCannotBeSaved(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	src := t.TempDir()
 	png := filepath.Join(src, "a.png")
 	if err := os.WriteFile(png, pngHeader, 0o600); err != nil {
@@ -152,14 +146,8 @@ func TestSetCoverKeepsTheOldFileWhenTheProfileCannotBeSaved(t *testing.T) {
 
 func TestCoverMiddlewarePathSafety(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	bare, err := s.Create("stardew", "Bare")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
+	bare := mustCreate(t, s, "Bare")
 	img := filepath.Join(t.TempDir(), "c.png")
 	if err := os.WriteFile(img, pngHeader, 0o600); err != nil {
 		t.Fatal(err)
@@ -167,10 +155,7 @@ func TestCoverMiddlewarePathSafety(t *testing.T) {
 	if _, err := s.SetCover("stardew", p.ID, img); err != nil {
 		t.Fatal(err)
 	}
-	tampered, err := s.Create("stardew", "Tampered")
-	if err != nil {
-		t.Fatal(err)
-	}
+	tampered := mustCreate(t, s, "Tampered")
 	tdir := filepath.Join(s.root, "stardew", tampered.ID)
 	tampered.Cover = "../" + p.ID + "/cover.png"
 	raw, _ := json.Marshal(tampered)

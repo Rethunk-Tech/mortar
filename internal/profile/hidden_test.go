@@ -6,10 +6,7 @@ func TestBundledModsAreHiddenAndKept(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "smapi-1.0.0", bundle())
 	e.item(t, "local-x", map[string]string{"manifest.json": manifestJSON("Other")})
-	p, err := e.Create("stardew", "a")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "a")
 	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
 		t.Fatal(err)
 	}
@@ -38,10 +35,7 @@ func TestBridgeEntryIsHiddenKeptAndNotRemovable(t *testing.T) {
 	e.item(t, "smapi-1.0.0", bundle())
 	e.item(t, "bridge-1.0.0", map[string]string{"manifest.json": manifestJSON("Rethunk.MortarSmapiBridge")})
 	e.item(t, "bridge-2.0.0", map[string]string{"manifest.json": manifestJSON("Rethunk.MortarSmapiBridge")})
-	p, err := e.Create("stardew", "a")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "a")
 	bridge := func(key string) Bundle { return Bundle{Key: key, Source: Source{Kind: SourceMortar, Name: "Mortar"}} }
 	for _, b := range []Bundle{smapiBundle("smapi-1.0.0"), bridge("bridge-1.0.0")} {
 		if err := e.ApplyBundled("stardew", b); err != nil {

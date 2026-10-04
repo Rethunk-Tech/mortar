@@ -41,14 +41,8 @@ func TestCopyModsAddsFromStoreAndRespectsTheRunningLock(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": `{"Name":"B","Author":"me","Version":"2.0.0","UniqueID":"Me.B"}`})
-	from, err := e.Create("stardew", "From")
-	if err != nil {
-		t.Fatal(err)
-	}
-	to, err := e.Create("stardew", "To")
-	if err != nil {
-		t.Fatal(err)
-	}
+	from := mustCreate(t, e, "From")
+	to := mustCreate(t, e, "To")
 	if _, err := e.AddEntry("stardew", from.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -73,7 +67,7 @@ func TestCopyModsAddsFromStoreAndRespectsTheRunningLock(t *testing.T) {
 	off := false
 	for _, entry := range got.Entries {
 		if entry.Key == "local-b" {
-			off = !enabledOf(entry, "Me.B")
+			off = !entry.Enabled("Me.B")
 		}
 	}
 	if !off {

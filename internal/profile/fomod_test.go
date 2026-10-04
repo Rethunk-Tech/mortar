@@ -13,10 +13,7 @@ import (
 
 func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
 	e := newEnv(t)
-	p, err := e.Create("stardew", "A")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "A")
 	xml, err := fsx.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)
@@ -59,10 +56,7 @@ func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
 
 func TestFomodReplayMismatchAsksAgain(t *testing.T) {
 	e := newEnv(t)
-	p, err := e.Create("stardew", "A")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "A")
 	xml, err := fsx.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)

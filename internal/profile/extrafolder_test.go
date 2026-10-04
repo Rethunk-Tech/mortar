@@ -14,10 +14,7 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc := NewService(e.Store, t.TempDir(), st)
-	p, err := e.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "P")
 	if got, err := svc.ExtraFolderMods("stardew"); err != nil || len(got.Mods) != 0 {
 		t.Fatalf("unset folder = %+v, %v", got, err)
 	}

@@ -39,7 +39,7 @@ func TestCleanEntryNoteTags(t *testing.T) {
 }
 
 func TestSetEntryNoteTags(t *testing.T) {
-	s := pinTestStore(t)
+	s := newStore(t)
 	p := pinTestProfile(t, s)
 	p, err := s.SetEntryNoteTags("stardew", p.ID, "nexus-1-1", "  keep  ", []string{"QoL", " qol "})
 	if err != nil {

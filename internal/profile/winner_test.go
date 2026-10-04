@@ -12,10 +12,7 @@ func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "win", map[string]string{"manifest.json": manifestJSON("Me.Win")})
 	e.item(t, "lose", map[string]string{"manifest.json": manifestJSON("Me.Lose")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	if _, err := e.AddEntry("stardew", p.ID, "win", Source{Kind: KindLocal, Name: "win.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -58,10 +55,7 @@ func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {
 func TestLoadAfterReappliedAfterUpdate(t *testing.T) {
 	e := newEnv(t)
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	p, err := e.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "P")
 	e.item(t, "a-1", map[string]string{"A/manifest.json": manifestJSON("me.a")})
 	e.item(t, "a-2", map[string]string{"A/manifest.json": manifestJSON("me.a")})
 	e.item(t, "b-1", map[string]string{"B/manifest.json": manifestJSON("me.b")})

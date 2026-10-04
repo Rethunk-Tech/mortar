@@ -1,22 +1,18 @@
 package profile
 
 import (
-	"path/filepath"
 	"testing"
 )
 
 func overrideStore(t *testing.T) *Store {
 	t.Helper()
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	return &Store{root: filepath.Join(t.TempDir(), "profiles")}
+	return newStore(t)
 }
 
 func TestSetOverridePersists(t *testing.T) {
 	s := overrideStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	got, err := s.SetOverride("stardew", p.ID, "defaultLaunchMethod", "direct")
 	if err != nil {
 		t.Fatal(err)
@@ -44,10 +40,7 @@ func TestSetOverridePersists(t *testing.T) {
 
 func TestSetSkipPlayCheckWritesOverride(t *testing.T) {
 	s := overrideStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	got, err := s.SetSkipPlayCheck("stardew", p.ID, true)
 	if err != nil {
 		t.Fatal(err)
@@ -62,10 +55,7 @@ func TestSetSkipPlayCheckWritesOverride(t *testing.T) {
 
 func TestSetOverrideRejectsUnknownKey(t *testing.T) {
 	s := overrideStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	if _, err := s.SetOverride("stardew", p.ID, "runsKept", "3"); err == nil {
 		t.Fatal("expected error")
 	}

@@ -18,10 +18,7 @@ import (
 
 func addFarmMod(t *testing.T, e env) Profile {
 	t.Helper()
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -169,10 +166,7 @@ func TestHistoryRevertMissingStoreKeys(t *testing.T) {
 
 func TestHistoryBounded(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	for i := range maxHistory + 20 {
 		if _, err := s.update("stardew", p.ID, func(p *Profile, _ string) error {
 			p.Entries = []Entry{{Key: "k", Mods: []EntryMod{{UniqueID: "x", Name: "X", Version: "1", Folder: "."}}}}
@@ -198,10 +192,7 @@ func TestHistoryBounded(t *testing.T) {
 
 func TestHistoryDeduplicatesSnapshots(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	entries := []Entry{{Key: "k", Mods: []EntryMod{{UniqueID: "x", Name: "X", Version: "1", Folder: "."}}}}
 	for _, version := range []string{"1", "2", "1"} {
 		next := cloneEntries(entries)
@@ -239,10 +230,7 @@ func TestHistoryDeduplicatesSnapshots(t *testing.T) {
 
 func TestCorruptHistoryIsQuarantined(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	dir, err := s.profileDir("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -271,10 +259,7 @@ func TestCorruptHistoryIsQuarantined(t *testing.T) {
 func TestProfileUpdateKeepsFilesWhenHistoryFails(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	dir, err := e.profileDir("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -300,10 +285,7 @@ func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
 	for _, key := range []string{"a", "b", "c"} {
 		e.item(t, key, map[string]string{"manifest.json": manifestJSON(key)})
 	}
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	if err := e.OpenHistoryBatch("stardew", p.ID, "batch-1"); err != nil {
 		t.Fatal(err)
 	}
@@ -396,10 +378,7 @@ func TestClassifyHistoryNamesTheEntryThatChanged(t *testing.T) {
 func TestApplyBundledDoesNotRecordHistory(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "smapi-1.0.0", bundle())
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
 		t.Fatal(err)
 	}
@@ -415,14 +394,8 @@ func TestApplyBundledDoesNotRecordHistory(t *testing.T) {
 func TestHistoryQuietIsPerProfile(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	a, err := e.Create("stardew", "A")
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := e.Create("stardew", "B")
-	if err != nil {
-		t.Fatal(err)
-	}
+	a := mustCreate(t, e, "A")
+	b := mustCreate(t, e, "B")
 	e.setHistoryQuiet(a.ID, true)
 	if _, err := e.AddEntry("stardew", a.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
@@ -548,18 +521,9 @@ func seedHistory(t *testing.T, e env, id string, events []HistoryEvent) {
 
 func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
 	e := newEnv(t)
-	alpha, err := e.Create("stardew", "Alpha")
-	if err != nil {
-		t.Fatal(err)
-	}
-	beta, err := e.Create("stardew", "Beta")
-	if err != nil {
-		t.Fatal(err)
-	}
-	hidden, err := e.Create("stardew", "Hidden")
-	if err != nil {
-		t.Fatal(err)
-	}
+	alpha := mustCreate(t, e, "Alpha")
+	beta := mustCreate(t, e, "Beta")
+	hidden := mustCreate(t, e, "Hidden")
 	if _, err := e.SetHidden("stardew", hidden.ID, true); err != nil {
 		t.Fatal(err)
 	}
@@ -631,10 +595,7 @@ func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
 
 func TestChangesSinceCachedUntilProfileUpdated(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	entry := Entry{Key: "k", Mods: []EntryMod{{UniqueID: "x", Name: "X", Version: "1", Folder: "."}}}
 	if _, err := s.update("stardew", p.ID, func(p *Profile, _ string) error {
 		p.Entries = []Entry{entry}

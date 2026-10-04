@@ -12,13 +12,7 @@ import (
 func TestRepairRebuildsFromSnapshotAndKeepsMods(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e)
 	dir := filepath.Join(e.root, "stardew", p.ID)
 	marker := filepath.Join(dir, "mods", "keep-me")
 	if err := os.WriteFile(marker, []byte("ok"), 0o600); err != nil {
@@ -75,13 +69,7 @@ func TestRepairNoSnapshot(t *testing.T) {
 func TestRepairKeepsDamagedFileAsideAndUndoRestoresIt(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e)
 	dir := filepath.Join(e.root, "stardew", p.ID)
 	if err := os.WriteFile(filepath.Join(dir, fileName), []byte("{"), 0o600); err != nil {
 		t.Fatal(err)

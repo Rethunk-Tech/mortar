@@ -4,10 +4,8 @@ import "testing"
 
 func TestBatchEntryOperationsWriteAllSelectedEntries(t *testing.T) {
 	s := newEnv(t)
-	p, err := s.Create("stardew", "Batch")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Batch")
+	var err error
 	for _, key := range []string{"a-1", "b-1"} {
 		s.item(t, key, map[string]string{"manifest.json": manifestJSON(key)})
 		if _, err := s.AddEntry("stardew", p.ID, key, Source{}); err != nil {

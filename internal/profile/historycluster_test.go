@@ -11,13 +11,7 @@ func TestHistoryDiffAddedRemovedVersionEnabled(t *testing.T) {
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
 	e.item(t, "local-a2", map[string]string{"A/manifest.json": `{"Name":"Alpha","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -80,13 +74,7 @@ func TestRevertHistoryItemKinds(t *testing.T) {
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A"), "A/config.json": `{"x":1}`})
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
 	e.item(t, "local-a2", map[string]string{"A/manifest.json": `{"Name":"Alpha","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`, "A/config.json": `{"x":1}`})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -135,13 +123,7 @@ func TestChangesSinceLastRun(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e)
 	mid := time.Now().UTC()
 	time.Sleep(time.Second)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
@@ -164,13 +146,7 @@ func TestKnownGoodMarkAndRestore(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := addFarmMod(t, e)
 	if _, err := e.MarkKnownGood("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}

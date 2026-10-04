@@ -1,28 +1,19 @@
 package profile
 
 import (
-	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
 )
 
-func pinTestStore(t *testing.T) *Store {
-	t.Helper()
-	root := t.TempDir()
-	return &Store{root: filepath.Join(root, "profiles"), trash: filepath.Join(root, "trash")}
-}
-
 func pinTestProfile(t *testing.T, s *Store) Profile {
 	t.Helper()
 	if !game.Valid("stardew") {
 		t.Fatal("stardew must be a valid game id")
 	}
-	p, err := s.Create("stardew", "Pin test")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Pin test")
+	var err error
 	entry := Entry{Key: "nexus-1-1", Mods: []EntryMod{{UniqueID: "A.B", Version: "1.0.0"}}, Added: time.Now().UTC().Truncate(time.Second)}
 	p, err = s.update("stardew", p.ID, func(cur *Profile, _ string) error {
 		cur.Entries = append(cur.Entries, entry)
@@ -57,7 +48,7 @@ func TestOffersUpdate(t *testing.T) {
 }
 
 func TestSetPinnedAndSkipVersion(t *testing.T) {
-	s := pinTestStore(t)
+	s := newStore(t)
 	p := pinTestProfile(t, s)
 	p, err := s.SetSkipVersion("stardew", p.ID, "nexus-1-1", "2.0.0")
 	if err != nil {

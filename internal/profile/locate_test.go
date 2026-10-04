@@ -4,14 +4,8 @@ import "testing"
 
 func TestProfilesWithModReadsProfileJSON(t *testing.T) {
 	s := newStore(t)
-	farm, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
-	coop, err := s.Create("stardew", "Co-op")
-	if err != nil {
-		t.Fatal(err)
-	}
+	farm := mustCreate(t, s, "Farm")
+	coop := mustCreate(t, s, "Co-op")
 	if _, err := s.Create("stardew", "Empty"); err != nil {
 		t.Fatal(err)
 	}

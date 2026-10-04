@@ -13,10 +13,7 @@ func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
 	writeFile(t, game, ".Off/manifest.json", manifestJSON("me.off"))
 	writeFile(t, game, "Held/manifest.json", manifestJSON("me.held"))
 	e.item(t, "held", map[string]string{"manifest.json": manifestJSON("me.held")})
-	p, err := e.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "P")
 	if _, err := e.AddEntry("stardew", p.ID, "held", Source{Kind: KindLocal, Name: "held.zip"}); err != nil {
 		t.Fatal(err)
 	}

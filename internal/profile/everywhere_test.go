@@ -9,14 +9,9 @@ func everywhereEnv(t *testing.T) (env, Profile, Profile) {
 	t.Helper()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	e := newEnv(t)
-	a, err := e.Create("stardew", "A")
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := e.Create("stardew", "B")
-	if err != nil {
-		t.Fatal(err)
-	}
+	a := mustCreate(t, e, "A")
+	b := mustCreate(t, e, "B")
+	var err error
 	m := manifestJSON("me.a")
 	e.item(t, "a-1", map[string]string{"A/manifest.json": m})
 	e.item(t, "a-2", map[string]string{"A/manifest.json": m})
@@ -40,10 +35,7 @@ func everywhereEnv(t *testing.T) (env, Profile, Profile) {
 
 func TestPreviewEverywhereExcludesPinnedSkippedLocked(t *testing.T) {
 	e, a, b := everywhereEnv(t)
-	c, err := e.Create("stardew", "C")
-	if err != nil {
-		t.Fatal(err)
-	}
+	c := mustCreate(t, e, "C")
 	if _, err := e.AddEntry("stardew", c.ID, "a-1", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}

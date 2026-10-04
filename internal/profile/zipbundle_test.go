@@ -23,10 +23,8 @@ func TestExportRestoreRoundTrip(t *testing.T) {
 		"Pack/A/manifest.json": manifestJSON("X.A"),
 		"Pack/A/hello.txt":     "from-store",
 	})
-	src, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	src := mustCreate(t, e, "Farm")
+	var err error
 	src, err = e.AddEntry("stardew", src.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"})
 	if err != nil {
 		t.Fatal(err)
@@ -96,10 +94,7 @@ func TestExportRestoreRoundTrip(t *testing.T) {
 func TestRestoreZipRejectsTamperedHash(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	p, err := e.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "P")
 	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -222,10 +217,7 @@ func writeRawZip(t *testing.T, dest string, files map[string][]byte) {
 func TestExportZipOmitsRunsAndHistory(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	p, err := e.Create("stardew", "P")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "P")
 	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}

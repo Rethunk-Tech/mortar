@@ -6,10 +6,7 @@ import (
 
 func TestSkipPlayCheckDefaultsFalseAndPersists(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	if p.Overrides["skipPlayCheck"] != "" {
 		t.Fatal("new profile skips the pre-Play check")
 	}

@@ -33,7 +33,7 @@ func TestNewestChannelFile(t *testing.T) {
 }
 
 func TestSetUpdateChannelOneHistoryEvent(t *testing.T) {
-	s := pinTestStore(t)
+	s := newStore(t)
 	p := pinTestProfile(t, s)
 	before, err := s.History("stardew", p.ID)
 	if err != nil {

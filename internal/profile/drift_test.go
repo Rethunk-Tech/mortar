@@ -154,10 +154,7 @@ func TestScanDriftLinkedShippedFileUnchanged(t *testing.T) {
 
 func TestScanModsDriftOnProfile(t *testing.T) {
 	s := newStore(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	dir, err := s.profileDir("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -202,10 +199,7 @@ func TestScanModsDriftOnProfile(t *testing.T) {
 
 func TestInstallThenScanReportsNoDrift(t *testing.T) {
 	e := newEnv(t)
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
 		t.Fatal(err)
@@ -221,10 +215,7 @@ func TestInstallThenScanReportsNoDrift(t *testing.T) {
 
 func TestParkUnknownFoldersKeepsEarlierCopy(t *testing.T) {
 	s := newEnv(t)
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, s, "Farm")
 	writeFile(t, s.mods(p.ID), "dropped/first.txt", "first")
 	if _, err := s.Mods("stardew", p.ID); err != nil {
 		t.Fatal(err)
@@ -245,10 +236,7 @@ func TestParkUnknownFoldersKeepsEarlierCopy(t *testing.T) {
 
 func TestSwitchingAModOffIsNotDrift(t *testing.T) {
 	e := newEnv(t)
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	zip := buildZip(t, "pack.zip", map[string]string{
 		"A/manifest.json": manifestJSON("X.A"),
 		"A/assets/a.png":  "a",
@@ -274,10 +262,7 @@ func TestSwitchingAModOffIsNotDrift(t *testing.T) {
 
 func TestRefreshDependenciesReadsOptionalFromStoreManifest(t *testing.T) {
 	e := newEnv(t)
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	zip := buildZip(t, "pack.zip", map[string]string{
 		"A/manifest.json": `{"UniqueID":"X.A","Name":"A","Version":"1.0","Dependencies":[{"UniqueID":"X.Opt","IsRequired":"false"}]}`,
 	})
@@ -304,10 +289,7 @@ func TestRefreshDependenciesReadsOptionalFromStoreManifest(t *testing.T) {
 
 func TestRestoreModsFolderUndoesTrash(t *testing.T) {
 	e := newEnv(t)
-	p, err := e.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mustCreate(t, e, "Farm")
 	dir, _ := e.profileDir("stardew", p.ID)
 	mod := filepath.Join(dir, "mods", "Loose")
 	if err := os.MkdirAll(mod, 0o700); err != nil {

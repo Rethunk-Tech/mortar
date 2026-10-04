@@ -1,17 +1,12 @@
 package profile
 
 import (
-	"path/filepath"
 	"testing"
 )
 
 func TestClearCollectionRecordsHistory(t *testing.T) {
-	root := t.TempDir()
-	s := &Store{root: filepath.Join(root, "profiles"), trash: filepath.Join(root, "trash")}
-	p, err := s.Create("stardew", "Farm")
-	if err != nil {
-		t.Fatal(err)
-	}
+	s := newStore(t)
+	p := mustCreate(t, s, "Farm")
 	ref := CollectionRef{Domain: "stardewvalley", Slug: "cozy", Name: "Cozy", Revision: 2}
 	if _, err := s.SetCollection("stardew", p.ID, ref); err != nil {
 		t.Fatal(err)
