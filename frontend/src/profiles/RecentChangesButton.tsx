@@ -19,6 +19,7 @@ import {
 import { compact } from '../game/compact.ts'
 import { When } from '../i18n/When.tsx'
 import { download } from '../queue/actions.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { historyChangeSummary, historyEventKind } from './historyCounts.ts'
@@ -97,18 +98,16 @@ function RecentRow({
           <When value={ev.at} withTime={true} />
         </Typography>
       </Box>
-      <Tooltip title={otherBusy ? t`Restoring…` : ''}>
-        <span>
-          <Button
-            size="small"
-            disabled={thisBusy}
-            onClick={() => onUndo(ev.profileId, ev.id)}
-            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            {t`Undo this change`}
-          </Button>
-        </span>
-      </Tooltip>
+      <DisabledReason title={t`Restoring…`} disabled={thisBusy || otherBusy}>
+        <Button
+          size="small"
+          disabled={thisBusy || otherBusy}
+          onClick={() => onUndo(ev.profileId, ev.id)}
+          sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
+          {t`Undo this change`}
+        </Button>
+      </DisabledReason>
     </Box>
   )
 }

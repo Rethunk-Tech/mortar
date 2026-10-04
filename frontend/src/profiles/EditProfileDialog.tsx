@@ -17,6 +17,7 @@ import { PickImage } from '../../bindings/github.com/Rethunk-AI/mortar/internal/
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { colorHex, MAX_DESCRIPTION, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
@@ -434,18 +435,16 @@ export function EditProfileDialog({
         />
         <DialogActions>
           <Button onClick={onClose} sx={{ whiteSpace: 'nowrap' }}>{t`Cancel`}</Button>
-          <Tooltip title={gameSettingsLoaded ? '' : t`Loading game settings…`}>
-            <span>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={busy || !gameSettingsLoaded}
-                sx={{ whiteSpace: 'nowrap' }}
-              >
-                {t`Save`}
-              </Button>
-            </span>
-          </Tooltip>
+          <DisabledReason title={t`Loading game settings…`} disabled={!gameSettingsLoaded}>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={busy || !gameSettingsLoaded}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              {t`Save`}
+            </Button>
+          </DisabledReason>
         </DialogActions>
       </form>
     </Dialog>
