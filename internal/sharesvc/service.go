@@ -114,8 +114,10 @@ type Service struct {
 	gen     int
 	pending []*pending
 	retry   *time.Timer
-	lastQ   queue.State
-	recheck time.Duration
+	// lastExport is the collection draft ExportCollection last wrote.
+	lastExport string
+	lastQ      queue.State
+	recheck    time.Duration
 }
 
 // NewService returns the service.

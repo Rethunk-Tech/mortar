@@ -1,0 +1,289 @@
+package sharesvc
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"path/filepath"
+	"slices"
+	"sort"
+	"strings"
+
+	"github.com/Rethunk-AI/mortar/internal/components"
+	"github.com/Rethunk-AI/mortar/internal/datadir"
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/manifest"
+	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/share"
+)
+
+// The collection.json shape is Vortex's ICollection (Nexus-Mods/Vortex,
+// src/renderer/src/extensions/collections/types/ICollection.ts). The importer reads it from the curator's archive
+// and the exporter writes it, through the same types.
+type collectionDoc struct {
+	Info     collectionInfo  `json:"info"`
+	Mods     []collectionMod `json:"mods"`
+	ModRules []struct{}      `json:"modRules"`
+}
+
+type collectionInfo struct {
+	Author              string `json:"author"`
+	AuthorURL           string `json:"authorUrl"`
+	Name                string `json:"name"`
+	Description         string `json:"description"`
+	InstallInstructions string `json:"installInstructions"`
+	DomainName          string `json:"domainName"`
+}
+
+type collectionMod struct {
+	Name         string             `json:"name"`
+	Version      string             `json:"version"`
+	Optional     bool               `json:"optional"`
+	DomainName   string             `json:"domainName"`
+	Source       collectionSource   `json:"source"`
+	Choices      *collectionChoices `json:"choices,omitempty"`
+	Instructions string             `json:"instructions,omitempty"`
+}
+
+type collectionSource struct {
+	Type            string `json:"type"`
+	URL             string `json:"url,omitempty"`
+	Instructions    string `json:"instructions,omitempty"`
+	ModID           int    `json:"modId,omitempty"`
+	FileID          int    `json:"fileId,omitempty"`
+	UpdatePolicy    string `json:"updatePolicy,omitempty"`
+	MD5             string `json:"md5,omitempty"`
+	FileSize        int64  `json:"fileSize,omitempty"`
+	LogicalFilename string `json:"logicalFilename,omitempty"`
+}
+
+type collectionChoices struct {
+	Type    string       `json:"type"`
+	Options []choiceStep `json:"options"`
+}
+
+type choiceStep struct {
+	Name   string        `json:"name"`
+	Groups []choiceGroup `json:"groups"`
+}
+
+type choiceGroup struct {
+	Name    string         `json:"name"`
+	Choices []choicePlugin `json:"choices"`
+}
+
+type choicePlugin struct {
+	Name string `json:"name"`
+	Idx  int    `json:"idx"`
+}
+
+// fileFacts looks up what the store records lack: Nexus's md5, size and category of a file. ok is false when
+// unknown (signed out, offline, file gone).
+type fileFacts func(modID, fileID int) (nexus.File, bool)
+
+func sortedKeys[V any](m map[string]V) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+func choicesOf(fomod map[string]map[string][]string) *collectionChoices {
+	if len(fomod) == 0 {
+		return nil
+	}
+	c := &collectionChoices{Type: "fomod"}
+	for _, step := range sortedKeys(fomod) {
+		st := choiceStep{Name: step}
+		for _, group := range sortedKeys(fomod[step]) {
+			g := choiceGroup{Name: group}
+			for i, plugin := range fomod[step][group] {
+				g.Choices = append(g.Choices, choicePlugin{Name: plugin, Idx: i})
+			}
+			st.Groups = append(st.Groups, g)
+		}
+		c.Options = append(c.Options, st)
+	}
+	return c
+}
+
+// modOf maps one enabled entry to a collection mod. Nexus files keep their ids; GitHub assets become direct
+// downloads; a local archive has no public source, so it is a manual one the curator must complete.
+func modOf(e profile.Entry, domain string, facts fileFacts) collectionMod {
+	name := e.Source.Name
+	if len(e.Mods) > 0 && e.Mods[0].Name != "" {
+		name = e.Mods[0].Name
+	}
+	if name == "" {
+		name = e.Key
+	}
+	m := collectionMod{Name: name, Version: e.Source.Version, DomainName: domain, Instructions: e.Note}
+	if len(e.Mods) > 0 && m.Version == "" {
+		m.Version = e.Mods[0].Version
+	}
+	switch e.Source.Kind {
+	case profile.KindNexus:
+		m.Source = collectionSource{Type: "nexus", ModID: e.Source.ModID, FileID: e.Source.FileID, UpdatePolicy: "exact", LogicalFilename: e.Source.Name}
+		if f, ok := facts(e.Source.ModID, e.Source.FileID); ok {
+			m.Source.MD5 = f.MD5
+			m.Source.FileSize = f.SizeKB * 1024
+			m.Optional = strings.EqualFold(f.Category, "OPTIONAL")
+		}
+		m.Choices = choicesOf(e.Fomod)
+	case profile.KindGitHub:
+		m.Source = collectionSource{Type: "direct", URL: "https://github.com/" + e.Source.Repo + "/releases/download/" + e.Source.Tag + "/" + e.Source.Asset, LogicalFilename: e.Source.Asset}
+	default:
+		m.Source = collectionSource{
+			Type: "manual", LogicalFilename: e.Source.Name,
+			Instructions: "Mortar had this mod from a local archive. Host it and replace this source before publishing.",
+		}
+	}
+	return m
+}
+
+// bundledFile is one file of the export's bundled/ folder, in the layout readCollectionArchive reads.
+type bundledFile struct {
+	Path string
+	Data []byte
+}
+
+// buildCollection is the draft of a profile: its enabled mods and notes, plus each mod's .json config files with
+// its manifest (which names the mod to the importer). Mortar cannot fill info.author, and a Nexus file's md5 and
+// size only when facts knows it.
+func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts) (collectionDoc, []bundledFile, []string, error) {
+	doc := collectionDoc{
+		Info: collectionInfo{Name: p.Name, Description: p.Description, InstallInstructions: p.Notes, DomainName: domain},
+		Mods: []collectionMod{}, ModRules: []struct{}{},
+	}
+	var files []bundledFile
+	var skipped []string
+	for _, e := range p.Entries {
+		if e.Source.Bundled() || !share.Enabled(e) {
+			continue
+		}
+		doc.Mods = append(doc.Mods, modOf(e, domain, facts))
+		for _, m := range e.Mods {
+			if slices.ContainsFunc(e.Disabled, func(x string) bool { return strings.EqualFold(x, m.UniqueID) }) {
+				continue
+			}
+			found, skip, err := share.ReadConfigs(modsDir, e.Key, m)
+			if err != nil {
+				return collectionDoc{}, nil, nil, err
+			}
+			skipped = append(skipped, skip...)
+			if len(found) == 0 {
+				continue
+			}
+			mf := filepath.Join(modsDir, e.Key)
+			if m.Folder != "." {
+				mf = filepath.Join(mf, filepath.FromSlash(m.Folder))
+			}
+			raw, err := fsx.ReadFile(filepath.Join(mf, manifest.FileName))
+			if err != nil {
+				skipped = append(skipped, m.UniqueID+"/"+manifest.FileName)
+				continue
+			}
+			dir := "bundled/" + m.UniqueID + "/"
+			files = append(files, bundledFile{dir + manifest.FileName, raw})
+			for _, c := range found {
+				files = append(files, bundledFile{dir + c.Path, c.Data})
+			}
+		}
+	}
+	return doc, files, skipped, nil
+}
+
+// ExportedCollection is the outcome of ExportCollection. Path is empty when the dialog was cancelled; Skipped lists
+// config files left out for their size or name.
+type ExportedCollection struct {
+	Path     string   `json:"path"`
+	Skipped  []string `json:"skipped"`
+	External int      `json:"external"`
+}
+
+// ExportCollection asks where to save collection.json for the profile, and writes it there with a bundled/ folder
+// beside it when any mod has config files. It makes no Nexus call that changes anything.
+func (s *Service) ExportCollection(ctx context.Context, game, profileID string) (ExportedCollection, error) {
+	p, err := s.find(game, profileID)
+	if err != nil {
+		return ExportedCollection{}, err
+	}
+	modsDir, err := s.d.Profiles.ModsDir(game, profileID)
+	if err != nil {
+		return ExportedCollection{}, err
+	}
+	info, ok := components.BundledGame(game)
+	if !ok || info.Nexus.Domain == "" {
+		return ExportedCollection{}, fmt.Errorf("%s has no Nexus page to make a collection for", game)
+	}
+	domain := info.Nexus.Domain
+	d := s.App.Dialog.SaveFile().SetFilename(collectionManifestName).AddFilter("Nexus collection draft (collection.json)", "*.json")
+	d.AttachToWindow(s.App.Window.Current())
+	dest, err := d.PromptForSingleSelection()
+	if err != nil || dest == "" {
+		return ExportedCollection{Skipped: []string{}}, err
+	}
+	return s.writeCollection(ctx, p, domain, modsDir, dest)
+}
+
+func (s *Service) writeCollection(ctx context.Context, p profile.Profile, domain, modsDir, dest string) (ExportedCollection, error) {
+	cache := map[int]map[int]nexus.File{}
+	facts := func(modID, fileID int) (nexus.File, bool) {
+		if s.d.Files == nil || !s.d.SignedIn() {
+			return nexus.File{}, false
+		}
+		byID, ok := cache[modID]
+		if !ok {
+			byID = map[int]nexus.File{}
+			if files, err := s.d.Files(ctx, modID); err == nil {
+				for _, f := range files {
+					byID[f.FileID] = f
+				}
+			}
+			cache[modID] = byID
+		}
+		f, ok := byID[fileID]
+		return f, ok
+	}
+	doc, files, skipped, err := buildCollection(p, domain, modsDir, facts)
+	if err != nil {
+		return ExportedCollection{}, err
+	}
+	raw, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return ExportedCollection{}, err
+	}
+	if err := datadir.WriteFile(dest, raw, filePerm); err != nil {
+		return ExportedCollection{}, err
+	}
+	root := filepath.Dir(dest)
+	for _, f := range files {
+		if err := datadir.WriteFile(filepath.Join(root, filepath.FromSlash(f.Path)), f.Data, filePerm); err != nil {
+			return ExportedCollection{}, err
+		}
+	}
+	external := 0
+	for _, m := range doc.Mods {
+		if m.Source.Type != "nexus" {
+			external++
+		}
+	}
+	s.mu.Lock()
+	s.lastExport = dest
+	s.mu.Unlock()
+	return ExportedCollection{Path: dest, Skipped: append([]string{}, skipped...), External: external}, nil
+}
+
+// ShowExportedCollection opens the folder of the draft ExportCollection last wrote.
+func (s *Service) ShowExportedCollection() error {
+	s.mu.Lock()
+	dest := s.lastExport
+	s.mu.Unlock()
+	if dest == "" {
+		return nil
+	}
+	return datadir.Open(filepath.Dir(dest))
+}

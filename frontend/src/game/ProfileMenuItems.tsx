@@ -45,6 +45,7 @@ import { useTemplates } from '../templates/useTemplates.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
+import { ExportCollectionMenuItem } from './ExportCollectionMenuItem.tsx'
 
 // The profile actions shared by the profile page's buttons and the sidebar's context menu, so both offer the same.
 
@@ -454,6 +455,7 @@ function MoreMenuItems({
       }}
     />,
     <SendProfileMenuItem key="send" profile={profile} close={close} />,
+    <ExportCollectionMenuItem key="export-collection" profile={profile} close={close} />,
     <Divider key="bundle-divider" />,
     <ProfileMenuItem
       key="bundle"

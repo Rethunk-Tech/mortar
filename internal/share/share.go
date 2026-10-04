@@ -412,8 +412,8 @@ func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 	}
 }
 
-// enabled reports whether any mod of the entry is switched on; an entry with no recorded mods counts as on.
-func enabled(e profile.Entry) bool {
+// Enabled reports whether any mod of the entry is switched on; an entry with no recorded mods counts as on.
+func Enabled(e profile.Entry) bool {
 	if len(e.Mods) == 0 {
 		return true
 	}
@@ -437,7 +437,7 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 		if e.Source.Bundled() {
 			continue
 		}
-		if !enabled(e) && !inc.DisabledMods {
+		if !Enabled(e) && !inc.DisabledMods {
 			off = append(off, e.Key)
 			continue
 		}

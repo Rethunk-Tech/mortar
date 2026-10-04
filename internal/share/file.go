@@ -139,7 +139,7 @@ func Write(w io.Writer, p profile.Profile, modsDir string, include ...Include) (
 		if !inc.ConfigFiles {
 			break
 		}
-		if e.Source.Bundled() || (!enabled(e) && !inc.DisabledMods) {
+		if e.Source.Bundled() || (!Enabled(e) && !inc.DisabledMods) {
 			continue
 		}
 		for _, m := range e.Mods {
@@ -187,6 +187,12 @@ func putFile(zw *zip.Writer, name string, data []byte) error {
 	}
 	_, err = f.Write(data)
 	return err
+}
+
+// ReadConfigs collects the .json files of one mod's folder, except its manifest; skipped are the ones left out for
+// their size or name.
+func ReadConfigs(modsDir, key string, m profile.EntryMod) (found []Config, skipped []string, err error) {
+	return readConfigs(modsDir, key, m)
 }
 
 // readConfigs collects the .json files under one enabled mod's folder, except its manifest.

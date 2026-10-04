@@ -30,28 +30,6 @@ type collectionDetails struct {
 	Configs []share.Config
 }
 
-type collectionJSON struct {
-	Mods []struct {
-		Source struct {
-			Type   string `json:"type"`
-			ModID  int    `json:"modId"`
-			FileID int    `json:"fileId"`
-		} `json:"source"`
-		Choices struct {
-			Type    string `json:"type"`
-			Options []struct {
-				Name   string `json:"name"`
-				Groups []struct {
-					Name    string `json:"name"`
-					Choices []struct {
-						Name string `json:"name"`
-					} `json:"choices"`
-				} `json:"groups"`
-			} `json:"options"`
-		} `json:"choices"`
-	} `json:"mods"`
-}
-
 // readCollectionArchive reads the curator's 7z: collection.json for FOMOD choices, and the config files inside
 // bundled/<mod>/. Only a bundled mod's config.json and config/*.json are taken, never its content.
 func readCollectionArchive(raw []byte) (collectionDetails, error) {
@@ -161,13 +139,13 @@ func readCapped(f *sevenzip.File, limit int64) ([]byte, error) {
 
 // parseChoices keeps Vortex's FOMOD choices (step, group and plugin names; the index is redundant) for Nexus mods.
 func parseChoices(raw []byte) (map[modFile]map[string]map[string][]string, error) {
-	var doc collectionJSON
+	var doc collectionDoc
 	if err := json.Unmarshal(raw, &doc); err != nil {
 		return nil, err
 	}
 	out := map[modFile]map[string]map[string][]string{}
 	for _, m := range doc.Mods {
-		if m.Source.Type != "nexus" || m.Source.ModID == 0 || m.Source.FileID == 0 || m.Choices.Type != "fomod" {
+		if m.Source.Type != "nexus" || m.Source.ModID == 0 || m.Source.FileID == 0 || m.Choices == nil || m.Choices.Type != "fomod" {
 			continue
 		}
 		choices := map[string]map[string][]string{}

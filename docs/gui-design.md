@@ -317,7 +317,7 @@ A page, as Concrete's:
 - **Profile menus** (sidebar context menu and Profiles page row ⋯; the hero has no actions beside the name): groups split by dividers.
   - First group: Rename (opens the profile and starts its name field), Edit profile, Choose cover image… and Use the automatic cover.
   - Then History, Duplicate, Export profile…, Hide from sidebar (or Show in sidebar).
-  - Then **Match a friend's profile…**, Compare with… (off when this game has fewer than two profiles) and **Send to…** (off unless Settings › General **Share profiles on the local network** is on).
+  - Then **Match a friend's profile…**, Compare with… (off when this game has fewer than two profiles) and **Send to…** (off unless Settings › General **Share profiles on the local network** is on), then **Export as Nexus collection draft…** (save dialog for `collection.json`; the toast says to create the collection on Nexus and upload the draft, with **Show file**).
   - Then **Add a bundle…**, **Apply a template…** (only when the game has templates) and **Save as template…**. Apply opens a dialog with a template select and a preview grouped **Adds N mods**, **Already has N**, **Different version N (kept as is)** and **Settings changes N**; **Apply** merges, queues downloads for mods the store lacks, and shows a toast with **Undo**, which reverts the history event (settings are not part of history, so Undo restores the mods only).
   - Then Add a shortcut that plays this profile, **Remove the shortcut** (only when one exists) and Add this profile to Steam.
   - Then Delete, in the last group.
