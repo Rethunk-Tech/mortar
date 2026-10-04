@@ -100,6 +100,7 @@ func registerEvents() {
 	application.RegisterEvent[control.InstallAsk](control.InstallAskEvent)
 	application.RegisterEvent[shortcut.Request](shortcut.RequestedEvent)
 	application.RegisterEvent[nexussvc.Account](nexussvc.ChangedEvent)
+	application.RegisterEvent[nexussvc.SSOState](nexussvc.SSOEvent)
 	application.RegisterEvent[queue.State](queue.ChangedEvent)
 	application.RegisterEvent[queue.Progress](queue.ProgressEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)

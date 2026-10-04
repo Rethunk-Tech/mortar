@@ -48,4 +48,4 @@ Not in the first release; re-weigh only when asked:
 - Profile templates: a new profile started from a bundle plus game settings and launch options.
 - Per-profile save isolation.
 - Settings considered and not taken (2026-10-02): new profiles starting as a copy of the open profile or from a bundle; an offline mode that never contacts the network.
-- Registering Mortar with Nexus (SSO slug; ask then about OAuth, which Vortex uses via `nxm://oauth/callback`, and Collections).
+- Registering Mortar with Nexus (Collections still to ask about): SSO and OAuth PKCE code is ready behind a build flag (`nexussso.Slug` / `ClientID`, off while empty), waiting for Nexus approval and a slug or client id; see docs/nexus-application.md.

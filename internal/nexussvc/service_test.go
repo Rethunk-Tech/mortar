@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -15,8 +16,10 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/nexussso"
 	"github.com/Rethunk-AI/mortar/internal/secret"
 	"github.com/Rethunk-AI/mortar/internal/settings"
+	"github.com/coder/websocket"
 	"github.com/zalando/go-keyring"
 )
 
@@ -179,5 +182,38 @@ func TestDetailsRefetchesUnversionedCache(t *testing.T) {
 	}
 	if hits.Load() == 0 {
 		t.Fatal("unversioned cache was served")
+	}
+}
+
+func TestStartSSOStoresKeyLikePasted(t *testing.T) {
+	store := testStore(t)
+	api, _ := serveFixtures(t)
+	ws := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c, err := websocket.Accept(w, r, nil)
+		if err != nil {
+			return
+		}
+		_, _, _ = c.Read(r.Context())
+		_ = c.Write(r.Context(), websocket.MessageText, []byte(`{"success":true,"data":{"connection_token":"t"}}`))
+		_ = c.Write(r.Context(), websocket.MessageText, []byte(`{"success":true,"data":{"api_key":"SSOKEY"}}`))
+		_ = c.Close(websocket.StatusNormalClosure, "")
+	}))
+	defer ws.Close()
+	client := nexus.New("test")
+	client.BaseURL = api.URL
+	s := NewService(store, client, &meta.Client{})
+	if s.SSOAvailable() {
+		t.Fatal("SSO available without a slug")
+	}
+	if _, err := s.StartSSO(context.Background()); err == nil {
+		t.Fatal("StartSSO ran without a slug")
+	}
+	s.sso = nexussso.Legacy{Slug: "mortar", SocketURL: "ws" + strings.TrimPrefix(ws.URL, "http"), OpenBrowser: func(string) error { return nil }}
+	acct, err := s.StartSSO(context.Background())
+	if err != nil || !acct.SignedIn {
+		t.Fatalf("acct %+v err %v", acct, err)
+	}
+	if k, _ := secret.Get(keyName); k != "SSOKEY" {
+		t.Fatalf("stored key %q", k)
 	}
 }

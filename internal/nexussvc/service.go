@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-AI/mortar/internal/meta"
 	"github.com/Rethunk-AI/mortar/internal/nexus"
+	"github.com/Rethunk-AI/mortar/internal/nexussso"
 	"github.com/Rethunk-AI/mortar/internal/profile"
 	"github.com/Rethunk-AI/mortar/internal/secret"
 	"github.com/Rethunk-AI/mortar/internal/settings"
@@ -49,11 +50,14 @@ type Service struct {
 	App *application.App
 	// Profiles is the app's profile store, read when untracking only the mods no profile uses.
 	Profiles *profile.Store
+
+	sso nexussso.Legacy
+	run ssoRun
 }
 
 // NewService keeps mod page details in m's cache.
 func NewService(store *settings.Store, client *nexus.Client, m *meta.Client) *Service {
-	s := &Service{store: store, client: client, meta: m}
+	s := &Service{store: store, client: client, meta: m, sso: nexussso.Legacy{Slug: nexussso.Slug}}
 	client.SetLimitsHook(func(lim nexus.Limits) {
 		if s.App != nil {
 			a := s.Account()
