@@ -4,6 +4,7 @@ import { Download } from 'lucide-react'
 import { useEffect } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 import { useLaunch } from '../launch/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { InstallSteps } from './InstallSteps.tsx'
 import { useLoader } from './store.ts'
 
@@ -58,16 +59,18 @@ export function LoaderBanner({ game }: { game: string }) {
       {installing ? (
         <InstallSteps steps={steps} />
       ) : (
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<Download size={16} />}
-          disabled={pending || playing}
-          onClick={() => install(game)}
-          sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
-        >
-          {action}
-        </Button>
+        <DisabledReason title={t`Stop the game to change SMAPI.`} disabled={pending || playing}>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<Download size={16} />}
+            disabled={pending || playing}
+            onClick={() => install(game)}
+            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            {action}
+          </Button>
+        </DisabledReason>
       )}
     </Box>
   )
