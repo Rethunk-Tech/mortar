@@ -659,49 +659,6 @@ func TestChangesSinceCachedUntilProfileUpdated(t *testing.T) {
 	}
 }
 
-// TestHistoryBench times history reads and an append on a copy of a real profile's folder, named by
-// MORTAR_HISTORY_BENCH; it writes there, so never point it at a live profile.
-func TestHistoryBench(t *testing.T) {
-	dir := os.Getenv("MORTAR_HISTORY_BENCH")
-	if dir == "" {
-		t.Skip("set MORTAR_HISTORY_BENCH to a copied profile folder")
-	}
-	st, err := os.Stat(filepath.Join(dir, historyFile))
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("history.json before %d bytes", st.Size())
-	start := time.Now()
-	data, err := readHistory(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	read1 := time.Since(start)
-	t.Logf("readHistory %s events=%d snapshots=%d", read1, len(data.Events), len(data.Snapshots))
-	after := []Entry{{Key: "bench", Mods: []EntryMod{{UniqueID: "bench", Name: "Bench", Version: "1", Folder: "."}}}}
-	if len(data.Events) > 0 {
-		if entries, ok := snapshotEntries(&data, data.Events[len(data.Events)-1].SnapshotID); ok && len(entries) > 0 {
-			after = cloneEntries(entries)
-			after[0].Pinned = !after[0].Pinned
-		}
-	}
-	start = time.Now()
-	if _, err := appendHistory(dir, HistoryEvent{Kind: historyPinned, Label: "bench", Count: 1}, after, maxHistory); err != nil {
-		t.Fatal(err)
-	}
-	append1 := time.Since(start)
-	t.Logf("appendHistory %s", append1)
-	start = time.Now()
-	if _, err := readHistory(dir); err != nil {
-		t.Fatal(err)
-	}
-	read2 := time.Since(start)
-	t.Logf("readHistory after append %s", read2)
-	if info, err := os.Stat(filepath.Join(dir, historyFile)); err == nil {
-		t.Logf("history.json after %d bytes", info.Size())
-	}
-}
-
 func TestAppendedEventsCarryTheirCounts(t *testing.T) {
 	dir := t.TempDir()
 	one := []Entry{{Key: "a", Mods: []EntryMod{{UniqueID: "A.Mod", Version: "1.0"}}}}
