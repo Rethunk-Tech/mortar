@@ -1,0 +1,79 @@
+package archivesvc
+
+import (
+	"archive/zip"
+	"bytes"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/profile"
+	"github.com/Rethunk-AI/mortar/internal/store"
+)
+
+func writeZip(t *testing.T, dir, name, body string) string {
+	t.Helper()
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	w, err := zw.Create("Mod/manifest.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Write([]byte(body)); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	p := filepath.Join(dir, name)
+	if err := fsx.WriteFile(p, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return p
+}
+
+func TestDownloadsArchivesSkipsInstalledByKeyAndByName(t *testing.T) {
+	dir := t.TempDir()
+	stored := writeZip(t, dir, "stored.zip", `{"UniqueID":"A.One"}`)
+	writeZip(t, dir, "named.zip", `{"UniqueID":"A.Two"}`)
+	fresh := writeZip(t, dir, "Cool Mod-1234-1-0-1700000000.zip", `{"UniqueID":"A.Three"}`)
+	older := time.Now().Add(-time.Hour)
+	if err := os.Chtimes(stored, older, older); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	sum, err := fsx.SHA256(stored)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(Deps{
+		Dir:  func() string { return dir },
+		Keys: func(string) ([]string, error) { return []string{store.LocalKey(sum)}, nil },
+		Profiles: func(string) ([]profile.Profile, error) {
+			return []profile.Profile{{Entries: []profile.Entry{{Source: profile.Source{Kind: profile.KindLocal, Name: "named.zip"}}}}}, nil
+		},
+		NexusMods: func() map[int]bool { return map[int]bool{1234: true} },
+	})
+	got, err := s.DownloadsArchives("stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0].Path != fresh || !got[0].KnownNexus || got[0].ModID != 1234 || got[0].Size == 0 {
+		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestDownloadsArchivesMissingDirAndPreview(t *testing.T) {
+	s := NewService(Deps{Dir: func() string { return filepath.Join(t.TempDir(), "none") }})
+	if got, err := s.DownloadsArchives("stardew"); err != nil || len(got) != 0 {
+		t.Fatalf("got %+v, %v", got, err)
+	}
+	p, err := s.ArchivePreview(writeZip(t, t.TempDir(), "a.zip", `{"UniqueID":"A.One","Name":"One","Version":"1.0"}`))
+	if err != nil || len(p.Manifests) != 1 || p.Manifests[0].UniqueID != "A.One" {
+		t.Fatalf("preview %+v, %v", p, err)
+	}
+}
