@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"maps"
 	"slices"
-	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/game"
 	"github.com/Rethunk-AI/mortar/internal/loader"
@@ -16,8 +15,6 @@ import (
 )
 
 var errUnknownSMAPI = errors.New("unknown SMAPI version")
-
-const smapiKeyPrefix = "smapi-"
 
 type loaderAt interface {
 	InstallLoaderAt(ctx context.Context, dir, version string, bundled loader.Bundled, progress func(loader.Step)) (string, error)
@@ -183,7 +180,7 @@ func (s *Service) storedVersions(id string) []string {
 	}
 	var out []string
 	for _, key := range keys {
-		if v, ok := strings.CutPrefix(key, smapiKeyPrefix); ok && v != "" {
+		if v, ok := store.SMAPIVersion(key); ok {
 			out = append(out, v)
 		}
 	}

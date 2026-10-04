@@ -5,7 +5,6 @@ package store
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -89,7 +88,15 @@ func Open() (*Store, error) {
 func LocalKey(sha256Hex string) string { return "local-" + sha256Hex }
 
 // SMAPIKey is the key of SMAPI's bundled-mods entry for a SMAPI version.
-func SMAPIKey(version string) string { return "smapi-" + version }
+func SMAPIKey(version string) string { return smapiPrefix + version }
+
+const smapiPrefix = "smapi-"
+
+// SMAPIVersion parses a SMAPIKey; ok is false for any other key.
+func SMAPIVersion(key string) (version string, ok bool) {
+	version, ok = strings.CutPrefix(key, smapiPrefix)
+	return version, ok && version != ""
+}
 
 // Keys lists store items for a game.
 func (s *Store) Keys(game string) ([]string, error) {
@@ -459,14 +466,11 @@ func (s *Store) indexPath() string { return filepath.Join(s.root, "index.json") 
 
 func (s *Store) loadIndex() (index, error) {
 	idx := index{}
-	b, err := fsx.ReadFile(s.indexPath())
-	if errors.Is(err, fs.ErrNotExist) {
-		return idx, nil
-	}
+	found, err := datadir.ReadJSON(s.indexPath(), &idx)
 	if err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal(b, &idx); err != nil {
+		if !found {
+			return nil, err
+		}
 		log.Printf("store index is corrupt, rebuilding: %v", err)
 		return s.rebuildIndex()
 	}

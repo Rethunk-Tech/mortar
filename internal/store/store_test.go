@@ -483,3 +483,14 @@ func TestCollectLeavesFoldersThatAreNotStoreItems(t *testing.T) {
 		t.Fatalf("unreferenced = %v", refs)
 	}
 }
+
+func TestSMAPIVersion(t *testing.T) {
+	if v, ok := SMAPIVersion(SMAPIKey("4.1.0")); !ok || v != "4.1.0" {
+		t.Fatalf("round trip = %q, %v", v, ok)
+	}
+	for _, key := range []string{"smapi-", "nexus-1-2", ""} {
+		if _, ok := SMAPIVersion(key); ok {
+			t.Fatalf("%q parsed", key)
+		}
+	}
+}
