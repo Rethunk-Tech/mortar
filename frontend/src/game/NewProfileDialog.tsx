@@ -161,9 +161,7 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
         open={managing}
         game={game}
         templates={templates}
-        onChanged={() => {
-          reload().catch(() => undefined)
-        }}
+        onChanged={reload}
         onClose={() => setManaging(false)}
       />
     </>

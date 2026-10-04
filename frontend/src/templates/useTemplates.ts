@@ -19,7 +19,7 @@ export function useTemplates(game: string, active: boolean) {
   )
   useEffect(() => {
     if (active) {
-      reload().catch(() => undefined)
+      reload()
     }
   }, [active, reload])
   return { templates, reload }

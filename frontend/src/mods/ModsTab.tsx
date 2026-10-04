@@ -20,7 +20,6 @@ import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import { EndorsePrompt } from './EndorsePrompt.tsx'
 import { customCategoryById, profileTags } from './group.ts'
-import { LibraryCallouts } from './LibraryCallouts.tsx'
 import { LockedNote } from './LockedNote.tsx'
 import { useLastRun } from './lastRun.ts'
 import { entryOf, modId, modStatusProblem, updateFor } from './lookup.ts'
@@ -30,7 +29,9 @@ import { ModList } from './ModList.tsx'
 import { ModContextMenu } from './ModMenu.tsx'
 import { useContextMenu } from './menu.ts'
 import { hasAllTags, matchesQuery, searchFields } from './modSearch.ts'
+import { NewFoldersCallout } from './NewFoldersCallout.tsx'
 import { useNexusDetails } from './nexusDetails.ts'
+import { OldFilesCallouts } from './OldFilesCallouts.tsx'
 import { ProblemBar } from './ProblemBar.tsx'
 import { RemoveDialog } from './parts.tsx'
 import { addedWithin, WEEK_MS } from './recent.ts'
@@ -253,7 +254,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
     return (
       <>
         <TrackedNotInProfile profile={profile} />
-        <LibraryCallouts profile={profile} />
+        <OldFilesCallouts profile={profile} />
+        <NewFoldersCallout profile={profile} />
         <EmptyMods profileId={profile.id} />
       </>
     )
@@ -285,7 +287,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
         {t`Drop archives anywhere on the window, or Open Nexus Mods to find mods.`}
       </TipBanner>
       <AttentionBars />
-      <LibraryCallouts profile={profile} />
+      <OldFilesCallouts profile={profile} />
+      <NewFoldersCallout profile={profile} />
       <Toolbar
         query={query}
         onQuery={(value) => setQuery(profile.id, value)}

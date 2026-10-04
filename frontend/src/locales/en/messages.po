@@ -692,7 +692,7 @@ msgstr "More"
 msgid "Mods' Entry is timed only on a measured launch."
 msgstr "Mods' Entry is timed only on a measured launch."
 
-#: src/mods/ModMenu.tsx:292
+#: src/mods/ModMenu.tsx:291
 msgid "Where it came in one download with other mods, it is switched off instead."
 msgstr "Where it came in one download with other mods, it is switched off instead."
 
@@ -1332,7 +1332,7 @@ msgstr "What you expected"
 
 #. placeholder {0}: mod.name
 #. placeholder {1}: profiles.length
-#: src/mods/ModMenu.tsx:312
+#: src/mods/ModMenu.tsx:311
 msgid "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 msgstr "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 
@@ -1655,7 +1655,7 @@ msgstr "Nexus account"
 
 #. placeholder {0}: mod.name
 #. placeholder {0}: update.name
-#: src/mods/ModMenu.tsx:340
+#: src/mods/ModMenu.tsx:339
 #: src/mods/updateReview/UpdateActions.tsx:74
 msgid "More actions for {0}"
 msgstr "More actions for {0}"
@@ -3610,7 +3610,7 @@ msgstr "This mod is pinned in this profile, so Mortar does not offer updates for
 msgid "Only assets more than one mod changes"
 msgstr "Only assets more than one mod changes"
 
-#: src/game/TemplateMenuItems.tsx:48
+#: src/game/TemplateMenuItems.tsx:51
 msgid "Apply a template…"
 msgstr "Apply a template…"
 
@@ -5177,7 +5177,7 @@ msgstr "{0, plural, one {Stopped asking about # folder} other {Stopped asking ab
 msgid "Back"
 msgstr "Back"
 
-#: src/game/TemplateMenuItems.tsx:21
+#: src/game/TemplateMenuItems.tsx:24
 msgid "Save as template…"
 msgstr "Save as template…"
 
@@ -6052,7 +6052,7 @@ msgid "Group"
 msgstr "Group"
 
 #. placeholder {0}: mod.name
-#: src/mods/ModMenu.tsx:291
+#: src/mods/ModMenu.tsx:290
 msgid "Remove {0} from other profiles"
 msgstr "Remove {0} from other profiles"
 
@@ -6315,7 +6315,7 @@ msgstr "·"
 #: src/mods/AddToGroupDialog.tsx:99
 #: src/mods/configFormUi.tsx:290
 #: src/mods/ModDependencyTree.tsx:74
-#: src/mods/ModMenu.tsx:277
+#: src/mods/ModMenu.tsx:276
 #: src/mods/problemFix/ListedFix.tsx:18
 #: src/mods/problemFix/MissingFix.tsx:27
 #: src/mods/problemFix/MissingFix.tsx:43
@@ -6486,7 +6486,7 @@ msgid "Signed out of Nexus"
 msgstr "Signed out of Nexus"
 
 #. placeholder {0}: mod.name
-#: src/mods/ModMenu.tsx:276
+#: src/mods/ModMenu.tsx:275
 #: src/mods/Sidebar.tsx:407
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
@@ -8502,7 +8502,7 @@ msgstr "Switch to Saves"
 #: src/mods/CleanupSection.tsx:36
 #: src/mods/CleanupSection.tsx:110
 #: src/mods/ModMenu.tsx:169
-#: src/mods/ModMenu.tsx:293
+#: src/mods/ModMenu.tsx:292
 #: src/mods/parts.tsx:309
 #: src/mods/parts.tsx:390
 #: src/mods/problemFixButtons.tsx:181
@@ -9339,7 +9339,7 @@ msgid "Include {0}"
 msgstr "Include {0}"
 
 #: src/game/NewProfileDialog.tsx:60
-#: src/game/TemplateMenuItems.tsx:74
+#: src/game/TemplateMenuItems.tsx:77
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
