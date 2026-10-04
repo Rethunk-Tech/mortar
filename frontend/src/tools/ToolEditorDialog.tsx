@@ -71,7 +71,7 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true} transitionDuration={0}>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true}>
       <form
         onSubmit={(e) => {
           e.preventDefault()

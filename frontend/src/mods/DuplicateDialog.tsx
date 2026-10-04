@@ -142,7 +142,6 @@ export function DuplicateDialog({ profileName }: { profileName: string }) {
       open={dup !== null}
       onClose={() => resolve(null)}
       maxWidth={false}
-      transitionDuration={0}
       slotProps={{ paper: { sx: { ...paper.sx, width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
       {dup ? <Resolver key={dup.uniqueId} dup={dup} profileName={profileName} /> : null}

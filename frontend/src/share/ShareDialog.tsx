@@ -333,7 +333,6 @@ function CopyModList() {
         open={Boolean(anchor)}
         anchorEl={anchor}
         onClose={() => setAnchor(null)}
-        transitionDuration={0}
         slotProps={{ paper }}
       >
         {options.map((o) => {
@@ -359,7 +358,6 @@ function CopyModList() {
         open={Boolean(partsAnchor)}
         anchorEl={partsAnchor}
         onClose={() => setPartsAnchor(null)}
-        transitionDuration={0}
         slotProps={{ paper }}
       >
         {parts.map((part) => (

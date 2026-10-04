@@ -154,14 +154,7 @@ export function AuthorDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth={true}
-      maxWidth="sm"
-      transitionDuration={0}
-      slotProps={{ paper }}
-    >
+    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm" slotProps={{ paper }}>
       <DialogTitle>{t`Author · ${author}`}</DialogTitle>
       <DialogContent>
         {open ? (

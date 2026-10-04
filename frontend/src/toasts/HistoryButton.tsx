@@ -95,7 +95,6 @@ function HistoryPopover({
       open={open}
       anchorEl={anchorEl}
       onClose={onClose}
-      transitionDuration={0}
       anchorReference={anchorEl ? 'anchorEl' : 'anchorPosition'}
       anchorPosition={{ top: 80, left: 16 }}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -108,7 +107,6 @@ function HistoryPopover({
             maxWidth: 'calc(100vw - 32px)',
             maxHeight: 440,
             bgcolor: 'var(--mortar-panel-solid)',
-            backgroundImage: 'none',
             border: '1px solid var(--mortar-hairline-12)',
             borderRadius: '8px',
           },

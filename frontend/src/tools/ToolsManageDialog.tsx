@@ -39,7 +39,7 @@ export function ToolsManageDialog({
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true} transitionDuration={0}>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true}>
         <DialogTitle>{t`Manage tools`}</DialogTitle>
         <DialogContent>
           {tools.length === 0 ? (

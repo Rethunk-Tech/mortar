@@ -35,7 +35,7 @@ export function MissingDepsDialog() {
   const names = missing.map(depName)
   const wants = wantsOf(missing)
   return (
-    <Dialog open={true} onClose={dismissOffer} slotProps={{ paper }} transitionDuration={0}>
+    <Dialog open={true} onClose={dismissOffer} slotProps={{ paper }}>
       <DialogTitle>{t`${offer.dependentName} needs ${andList(names)}`}</DialogTitle>
       {wants.length === 0 ? (
         <DialogContent>

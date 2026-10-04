@@ -123,6 +123,7 @@ export function createMortarTheme(
         },
       },
       MuiMenu: {
+        defaultProps: { transitionDuration: 0 },
         styleOverrides: {
           paper: {
             backgroundColor: s.menu,
@@ -131,6 +132,7 @@ export function createMortarTheme(
           },
         },
       },
+      MuiPopover: { defaultProps: { transitionDuration: 0 } },
       MuiTab: { styleOverrides: { root: { textTransform: 'none', whiteSpace: 'nowrap' } } },
       MuiToggleButton: {
         styleOverrides: { root: { textTransform: 'none', whiteSpace: 'nowrap' } },

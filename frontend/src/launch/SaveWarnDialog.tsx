@@ -34,12 +34,7 @@ export function SaveWarnDialog() {
       ? save.lastProfileId
       : ''
   return (
-    <Dialog
-      open={warn !== null}
-      onClose={cancel}
-      transitionDuration={0}
-      slotProps={{ paper: { sx: { maxWidth: 480 } } }}
-    >
+    <Dialog open={warn !== null} onClose={cancel} slotProps={{ paper: { sx: { maxWidth: 480 } } }}>
       <DialogTitle>
         {recorded ? t`This save needs other mods` : t`Your last save needs other mods`}
       </DialogTitle>

@@ -177,7 +177,6 @@ function RecentPanel({
       open={open}
       anchorEl={anchor}
       onClose={onClose}
-      transitionDuration={0}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       slotProps={{
@@ -188,7 +187,6 @@ function RecentPanel({
             maxWidth: 'calc(100vw - 32px)',
             maxHeight: 440,
             bgcolor: 'var(--mortar-panel-solid)',
-            backgroundImage: 'none',
             border: '1px solid var(--mortar-hairline-12)',
             borderRadius: '8px',
           },

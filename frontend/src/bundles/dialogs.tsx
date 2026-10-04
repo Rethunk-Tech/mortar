@@ -160,7 +160,7 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
     }
   }, [open])
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
+    <Dialog open={open} onClose={busy ? undefined : onClose}>
       <form
         onSubmit={(event) => {
           event.preventDefault()
@@ -255,7 +255,7 @@ function ApplyBundleDialog({
   const { bundles, loading } = useListedBundles(open, game)
   const [busy, run] = usePending()
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose} transitionDuration={0}>
+    <Dialog open={open} onClose={busy ? undefined : onClose}>
       <DialogTitle>{t`Add a bundle to ${profileName}`}</DialogTitle>
       <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
         <BundlePickList

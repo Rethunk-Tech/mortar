@@ -199,7 +199,6 @@ export function CommandPalette() {
       <Dialog
         open={open}
         onClose={close}
-        transitionDuration={0}
         onKeyDown={onKey}
         slotProps={{
           paper: { ...paper, sx: { ...paper.sx, width: 560, maxWidth: 'calc(100% - 48px)' } },

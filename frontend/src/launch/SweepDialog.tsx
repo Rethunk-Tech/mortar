@@ -90,7 +90,6 @@ function SweepDialog() {
     <Dialog
       open={open && report !== null}
       onClose={pending ? undefined : close}
-      transitionDuration={0}
       slotProps={{
         paper: { sx: { ...paper.sx, width: DIALOG_WIDTH, maxWidth: `calc(100% - ${EDGE}px)` } },
       }}

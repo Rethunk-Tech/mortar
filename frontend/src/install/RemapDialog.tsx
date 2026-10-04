@@ -132,7 +132,6 @@ function RemapBody() {
       open={true}
       onClose={close}
       slotProps={{ paper }}
-      transitionDuration={0}
       sx={{ '& .MuiDialog-paper': { minWidth: 420, maxHeight: '80vh' } }}
     >
       <DialogTitle>

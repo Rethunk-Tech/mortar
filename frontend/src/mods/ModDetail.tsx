@@ -281,7 +281,6 @@ function Details({ mod, profile }: { mod: Mod; profile: Profile }) {
       onClose={() => setOpen(false)}
       fullWidth={true}
       maxWidth="sm"
-      transitionDuration={0}
       slotProps={{ paper }}
     >
       <DialogTitle>{mod.name}</DialogTitle>

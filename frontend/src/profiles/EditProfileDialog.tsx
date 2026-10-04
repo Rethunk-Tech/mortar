@@ -396,12 +396,7 @@ export function EditProfileDialog({
       coverFailure: t`Could not use that image`,
     })
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      transitionDuration={0}
-      slotProps={{ paper: { sx: { minWidth: 400 } } }}
-    >
+    <Dialog open={open} onClose={onClose} slotProps={{ paper: { sx: { minWidth: 400 } } }}>
       <form
         onSubmit={(e) => {
           e.preventDefault()

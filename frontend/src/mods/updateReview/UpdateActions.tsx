@@ -78,12 +78,7 @@ export function UpdateActions({
       >
         <MoreHorizontal size={18} />
       </IconButton>
-      <Menu
-        open={anchor !== null}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        transitionDuration={0}
-      >
+      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {downloadable(update) ? (
           <DisabledReason title={everywhereWhy} disabled={everywhereBlocked}>
             <MenuItem

@@ -175,7 +175,6 @@ function FomodWizard({ session }: { session: FomodSession }) {
         }
       }}
       slotProps={{ paper }}
-      transitionDuration={0}
       maxWidth="sm"
       fullWidth={true}
     >

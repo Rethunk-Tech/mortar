@@ -97,14 +97,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth={true}
-      maxWidth="md"
-      transitionDuration={0}
-      slotProps={{ paper }}
-    >
+    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md" slotProps={{ paper }}>
       <DialogTitle>{t`Search all runs`}</DialogTitle>
       <DialogContent>
         <TextField

@@ -116,7 +116,6 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
       <Dialog
         open={open}
         onClose={pending ? undefined : requestClose}
-        transitionDuration={0}
         maxWidth="sm"
         fullWidth={true}
       >
@@ -222,7 +221,7 @@ function SetCategoryDialog({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} transitionDuration={0}>
+    <Dialog open={open} onClose={onClose}>
       <DialogTitle>{t`Set category`}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 280 }}>
         {options.map((opt) => (

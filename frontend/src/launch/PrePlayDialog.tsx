@@ -102,7 +102,6 @@ export function PrePlayDialog() {
     <Dialog
       open={check !== null}
       onClose={() => persistThen(cancel)}
-      transitionDuration={0}
       slotProps={{ paper: { sx: { maxWidth: 480 } } }}
     >
       <DialogTitle>{t`Before you play`}</DialogTitle>

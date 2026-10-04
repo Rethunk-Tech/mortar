@@ -20,12 +20,7 @@ export function UpdateWarnDialog() {
   const playAnyway = useLaunch((s) => s.playAnyway)
   const openProblems = useLaunch((s) => s.openProblems)
   return (
-    <Dialog
-      open={warn !== null}
-      onClose={cancel}
-      transitionDuration={0}
-      slotProps={{ paper: { sx: { maxWidth: 480 } } }}
-    >
+    <Dialog open={warn !== null} onClose={cancel} slotProps={{ paper: { sx: { maxWidth: 480 } } }}>
       <DialogTitle>{t`The game was updated`}</DialogTitle>
       <DialogContent>
         <DialogContentText>

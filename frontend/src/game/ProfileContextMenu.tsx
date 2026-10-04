@@ -31,7 +31,6 @@ export function ProfileContextMenu({
         onClose={onClose}
         anchorReference="anchorPosition"
         anchorPosition={position ?? undefined}
-        transitionDuration={0}
         keepMounted={true}
       >
         <ProfileMenuItem

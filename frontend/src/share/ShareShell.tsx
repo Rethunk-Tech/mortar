@@ -37,7 +37,6 @@ export function ShareShell({
       open={profileId !== '' && info !== null}
       onClose={close}
       maxWidth={false}
-      transitionDuration={0}
       aria-label={info ? t`Share ${info.name}` : undefined}
       slotProps={{
         paper: {

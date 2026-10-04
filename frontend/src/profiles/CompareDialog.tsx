@@ -26,7 +26,7 @@ export function PickCompareDialog({
   const all = useProfiles((s) => s.profiles)
   const profiles = all.filter((p) => p.id !== from?.id)
   return (
-    <Dialog open={from !== null} onClose={onClose} transitionDuration={0} slotProps={paper}>
+    <Dialog open={from !== null} onClose={onClose} slotProps={paper}>
       <DialogTitle>{t`Compare ${from?.name ?? ''} with…`}</DialogTitle>
       <DialogContent>
         {profiles.length === 0 ? (
@@ -103,12 +103,7 @@ export function CompareDialog({
   const bName = profileB?.name ?? ''
 
   return (
-    <Dialog
-      open={open}
-      onClose={pending ? undefined : onClose}
-      transitionDuration={0}
-      slotProps={paper}
-    >
+    <Dialog open={open} onClose={pending ? undefined : onClose} slotProps={paper}>
       <DialogTitle>{t`Compare ${aName} and ${bName}`}</DialogTitle>
       <DialogContent>
         {diff && profileA && profileB ? (

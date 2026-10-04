@@ -39,7 +39,6 @@ export function HistoryPanel({
     <Dialog
       open={open}
       onClose={onClose}
-      transitionDuration={0}
       slotProps={{ paper: { sx: { minWidth: 440, maxWidth: 'calc(100vw - 64px)' } } }}
     >
       <DialogTitle>{t`History`}</DialogTitle>

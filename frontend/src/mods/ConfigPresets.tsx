@@ -97,12 +97,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
       >
         {t`Presets`}
       </Button>
-      <Menu
-        anchorEl={anchor}
-        open={anchor !== null}
-        onClose={() => setAnchor(null)}
-        transitionDuration={0}
-      >
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
         <MenuItem
           onClick={() => {
             setSaveOpen(true)

@@ -156,7 +156,6 @@ export function AssetMapDialog({ open, onClose }: { open: boolean; onClose: () =
       maxWidth="md"
       fullWidth={true}
       scroll="paper"
-      transitionDuration={0}
       slotProps={{ paper }}
     >
       <DialogTitle>{t`Asset map`}</DialogTitle>

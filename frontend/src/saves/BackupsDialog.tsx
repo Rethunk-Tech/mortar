@@ -142,14 +142,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
 
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        transitionDuration={0}
-        slotProps={{ paper }}
-        maxWidth="sm"
-        fullWidth={true}
-      >
+      <Dialog open={open} onClose={onClose} slotProps={{ paper }} maxWidth="sm" fullWidth={true}>
         <DialogTitle>{t`Save backups`}</DialogTitle>
         <DialogContent>
           {status === 'error' ? (

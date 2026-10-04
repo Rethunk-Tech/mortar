@@ -107,12 +107,7 @@ function ShowFilterControl({
           <span className="label">{active ? active.label(i18n) : t`Show`}</span>
         </Button>
       </Tooltip>
-      <Menu
-        open={anchor !== null}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        transitionDuration={0}
-      >
+      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {[
           { id: 'all' as const, label: t`All mods` },
           ...FILTERS.map((item) => ({ id: item.id, label: item.label(i18n) })),
@@ -146,12 +141,7 @@ function GroupByControl() {
       >
         <span className="label">{t`Group by`}</span>
       </Button>
-      <Menu
-        open={anchor !== null}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        transitionDuration={0}
-      >
+      <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {[
           { id: 'none' as const, label: t`None`, Icon: Ban },
           { id: 'status' as const, label: t`Status`, Icon: ToggleRight },

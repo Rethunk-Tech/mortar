@@ -234,7 +234,6 @@ export function HelpDialog({ game }: { game: string }) {
     <Dialog
       open={open}
       onClose={uploading ? undefined : close}
-      transitionDuration={0}
       slotProps={{ paper: { sx: { ...paper.sx, width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Share log…`}</DialogTitle>

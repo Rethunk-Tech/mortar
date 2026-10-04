@@ -73,7 +73,6 @@ export function UpdateReview({ profile }: { profile: Profile }) {
     <Dialog
       open={open && list.length > 0}
       onClose={close}
-      transitionDuration={0}
       maxWidth={false}
       slotProps={{
         paper: { sx: { ...paper.sx, width: DIALOG_WIDTH, maxWidth: 'calc(100% - 32px)' } },

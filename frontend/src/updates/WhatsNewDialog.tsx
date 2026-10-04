@@ -33,12 +33,7 @@ export function WhatsNewDialog() {
     AckWhatsNew().catch(() => undefined)
   }
   return (
-    <Dialog
-      open={open}
-      onClose={close}
-      transitionDuration={0}
-      slotProps={{ paper: { sx: { maxWidth: 520 } } }}
-    >
+    <Dialog open={open} onClose={close} slotProps={{ paper: { sx: { maxWidth: 520 } } }}>
       <DialogTitle>{t`What's new in Mortar ${payload?.version ?? ''}`}</DialogTitle>
       <DialogContent>
         <DialogContentText

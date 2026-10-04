@@ -35,7 +35,7 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
         menu={true}
         onClick={(e) => setAnchor(e.currentTarget)}
       />
-      <Menu open={anchor !== null} anchorEl={anchor} onClose={close} transitionDuration={0}>
+      <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
         {tools.length === 0 ? (
           <MenuItem disabled={true} dense={true} sx={{ opacity: 1 }}>
             <ListItemText

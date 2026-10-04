@@ -111,7 +111,6 @@ function LauncherRow({
       disableGutters={true}
       sx={{
         bgcolor: 'var(--mortar-paper-78)',
-        backgroundImage: 'none',
         '&::before': { display: 'none' },
       }}
     >

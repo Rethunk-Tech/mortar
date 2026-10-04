@@ -91,7 +91,6 @@ export function About() {
         maxWidth="md"
         fullWidth={true}
         scroll="paper"
-        transitionDuration={0}
         slotProps={{ paper }}
       >
         <DialogTitle>{t`Open-source licences`}</DialogTitle>

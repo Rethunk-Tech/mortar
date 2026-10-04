@@ -185,11 +185,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   }
 
   return (
-    <Dialog
-      open={jobID !== null}
-      onClose={done || stopped || failed ? onClose : undefined}
-      transitionDuration={0}
-    >
+    <Dialog open={jobID !== null} onClose={done || stopped || failed ? onClose : undefined}>
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
         {t`Finding the mod causing the crash`}
       </DialogTitle>

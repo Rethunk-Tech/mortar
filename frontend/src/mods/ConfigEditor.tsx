@@ -207,14 +207,7 @@ function EditorDialog({
   const { t } = useLingui()
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        fullWidth={true}
-        maxWidth="sm"
-        transitionDuration={0}
-        slotProps={{ paper }}
-      >
+      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm" slotProps={{ paper }}>
         <DialogTitle>{t`Edit config.json`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {error ? (

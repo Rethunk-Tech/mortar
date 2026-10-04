@@ -371,7 +371,6 @@ function CleanupDialog({
       maxWidth="md"
       fullWidth={true}
       scroll="paper"
-      transitionDuration={0}
       slotProps={{ paper }}
     >
       <DialogTitle>{t`Clean up storage`}</DialogTitle>

@@ -175,7 +175,6 @@ function Diagnostics() {
         maxWidth="sm"
         fullWidth={true}
         scroll="paper"
-        transitionDuration={0}
         slotProps={{ paper }}
       >
         <DialogTitle>{t`Diagnostics`}</DialogTitle>

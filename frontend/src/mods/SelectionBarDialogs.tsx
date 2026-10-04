@@ -36,7 +36,7 @@ export function TagSelectionDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog open={open} onClose={onClose} transitionDuration={0}>
+    <Dialog open={open} onClose={onClose}>
       <DialogTitle>{t`Tag selected mods`}</DialogTitle>
       <DialogContent sx={{ minWidth: 320, pt: 2 }}>
         <Autocomplete
@@ -100,7 +100,7 @@ export function CategorySelectionDialog({
 }) {
   const { t } = useLingui()
   return (
-    <Dialog open={open} onClose={onClose} transitionDuration={0}>
+    <Dialog open={open} onClose={onClose}>
       <DialogTitle>{t`Set category for selected mods`}</DialogTitle>
       <DialogContent sx={{ minWidth: 280, pt: 2 }}>
         {[{ id: '', name: t`Uncategorized` }, ...categories].map((option) => (
