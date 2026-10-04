@@ -18,8 +18,11 @@ import { SetSkipPlayCheck } from '../../bindings/github.com/Rethunk-AI/mortar/in
 import { LastSaveGap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useQueue } from '../queue/store.ts'
 import { addRecordedMods } from '../saves/recordedActions.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 import type { PlayIssueGroup } from './playIssues.ts'
 import { overflowIssueCount } from './playIssues.ts'
 import { useLaunch } from './store.ts'
@@ -92,6 +95,10 @@ export function PrePlayDialog() {
   const hasUpdates = (check?.groups ?? []).some((g) => g.kind === 'updates')
   const lastProfile = (check?.groups ?? []).find((g) => g.kind === 'lastProfile')
   const saveMods = (check?.groups ?? []).find((g) => g.kind === 'saveMods')
+  const switchName = useProfiles(
+    (s) => s.profiles.find((p) => p.id === lastProfile?.switchProfileId)?.name ?? '',
+  )
+  const [adding, runAdding] = usePending()
   const persistThen = (fn: () => void) => {
     if (check) {
       persistSkip(check.game, check.profile, check.skipPlayCheck)
@@ -106,7 +113,7 @@ export function PrePlayDialog() {
     >
       <DialogTitle>{t`Before you play`}</DialogTitle>
       <DialogContent>
-        <DialogContentText>{t`This profile has problems that can affect a launch.`}</DialogContentText>
+        <DialogContentText>{t`Check these before you play.`}</DialogContentText>
         {(check?.groups ?? []).map((group) => (
           <Group key={group.kind} group={group} />
         ))}
@@ -127,9 +134,12 @@ export function PrePlayDialog() {
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
         <Button onClick={() => persistThen(cancel)}>{t`Cancel`}</Button>
-        <Button onClick={() => persistThen(openProblems)}>{t`Open problems…`}</Button>
+        <Button onClick={() => persistThen(openProblems)}>{t`Open Problems`}</Button>
         {hasUpdates ? (
-          <Button onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}>
+          <Button
+            variant="contained"
+            onClick={() => persistThen(() => updateAndPlay().catch(reportUnexpected))}
+          >
             {t`Update and play`}
           </Button>
         ) : null}
@@ -142,24 +152,33 @@ export function PrePlayDialog() {
               })
             }
           >
-            {t`Switch profile`}
+            {switchName ? t`Switch to ${switchName}` : t`Switch profile`}
           </Button>
         ) : null}
         {saveMods && check ? (
           <Button
+            disabled={adding}
             onClick={() =>
-              persistThen(() => {
-                LastSaveGap(check.game, check.profile)
-                  .then(([save]) => addRecordedMods(check.game, check.profile, save))
-                  .catch(reportUnexpected)
-              })
+              persistThen(() =>
+                runAdding(async () => {
+                  const [save] = await LastSaveGap(check.game, check.profile)
+                  await addRecordedMods(check.game, check.profile, save)
+                  cancel()
+                  useQueue.getState().setOpen(true)
+                  useToasts.getState().push({
+                    kind: 'info',
+                    title: i18n._(msg`Adding the missing mods`),
+                    body: i18n._(msg`Press Play when the downloads finish.`),
+                  })
+                }),
+              )
             }
           >
-            {t`Add them`}
+            {t`Add the missing mods`}
           </Button>
         ) : null}
         <Button
-          variant="contained"
+          variant={hasUpdates ? 'text' : 'contained'}
           onClick={() => persistThen(() => playAnyway().catch(reportUnexpected))}
         >
           {t`Play anyway`}
