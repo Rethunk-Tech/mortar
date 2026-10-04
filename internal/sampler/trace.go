@@ -79,6 +79,9 @@ type rawEvent struct {
 	metadata  uint32
 	stackID   uint64
 	payload   []byte
+	// frames is the event's stack when it was resolved in file order (resolved is then true).
+	frames   []uint64
+	resolved bool
 }
 
 type stackRecord struct {
@@ -104,7 +107,7 @@ func Parse(r io.Reader) (*Trace, error) {
 	metadata := make(map[uint32]eventMetadata)
 	var events []rawEvent
 	var stacks []stackRecord
-	if !parseV5(data, trace, metadata, &events, &stacks) {
+	if !parseV5(data, trace, metadata, &events) {
 		scanBlocks(data, metadata, &events, &stacks)
 	}
 	if len(events) == 0 && len(stacks) == 0 {
@@ -123,7 +126,11 @@ func Parse(r io.Reader) (*Trace, error) {
 		provider := metadata[event.metadata].provider
 		if isSampleEvent(provider, name, event.payload) {
 			frames := make([]Frame, 0)
-			for _, ip := range stackMap[event.stackID] {
+			ips := event.frames
+			if !event.resolved {
+				ips = stackMap[event.stackID]
+			}
+			for _, ip := range ips {
 				frames = append(frames, Frame{IP: ip})
 			}
 			trace.Samples = append(trace.Samples, Sample{
@@ -174,7 +181,7 @@ type v5Block struct {
 	blockEnd   int
 }
 
-func parseV5(data []byte, trace *Trace, metadata map[uint32]eventMetadata, events *[]rawEvent, stacks *[]stackRecord) bool {
+func parseV5(data []byte, trace *Trace, metadata map[uint32]eventMetadata, events *[]rawEvent) bool {
 	if len(data) < 32 || string(data[12:32]) != "!FastSerialization.1" {
 		return false
 	}
@@ -209,16 +216,27 @@ func parseV5(data []byte, trace *Trace, metadata map[uint32]eventMetadata, event
 		return false
 	}
 	for _, block := range blocks {
-		switch block.kind {
-		case "MetadataBlock":
+		if block.kind == "MetadataBlock" {
 			parseV5EventBlock(data[block.blockStart:block.blockEnd], metadata, true)
-		case "StackBlock":
-			*stacks = append(*stacks, parseV5StackBlock(data[block.blockStart:block.blockEnd], trace.PointerSize)...)
 		}
 	}
+	// Stack IDs are only unique until the next sequence point, which flushes the stack cache and lets later stack
+	// blocks reuse them, so each event's stack is resolved in file order against the stacks seen since then.
+	current := make(map[uint64][]uint64)
 	for _, block := range blocks {
-		if block.kind == "EventBlock" {
-			*events = append(*events, parseV5EventBlock(data[block.blockStart:block.blockEnd], metadata, false)...)
+		switch block.kind {
+		case "SPBlock":
+			clear(current)
+		case "StackBlock":
+			for _, stack := range parseV5StackBlock(data[block.blockStart:block.blockEnd], trace.PointerSize) {
+				current[stack.id] = stack.frames
+			}
+		case "EventBlock":
+			for _, event := range parseV5EventBlock(data[block.blockStart:block.blockEnd], metadata, false) {
+				event.frames = current[event.stackID]
+				event.resolved = true
+				*events = append(*events, event)
+			}
 		}
 	}
 	return true
