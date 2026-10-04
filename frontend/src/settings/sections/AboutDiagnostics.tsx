@@ -23,8 +23,9 @@ import { paper } from '../../mods/paper.ts'
 import { routeGame, useNav } from '../../nav/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
-import { errorText, reportUnexpected } from '../../toasts/report.ts'
+import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { usePending } from '../../toasts/usePending.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 
 const detail = { color: 'var(--mortar-ink-soft)' }
@@ -114,22 +115,10 @@ function Diagnostics() {
   const profile = useProfiles((s) => s.openId)
   const [open, setOpen] = useState(false)
   const [report, setReport] = useState<Report | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [repairing, setRepairing] = useState(false)
-  const run = () => {
-    setBusy(true)
-    Doctor()
-      .then((r) => setReport(r ?? { checks: [] }))
-      .catch(reportUnexpected)
-      .finally(() => setBusy(false))
-  }
-  const repair = () => {
-    setRepairing(true)
-    RepairNativeHosts()
-      .then(run)
-      .catch(reportUnexpected)
-      .finally(() => setRepairing(false))
-  }
+  const [busy, runChecks] = usePending()
+  const [repairing, runRepair] = usePending()
+  const run = () => runChecks(() => Doctor().then((r) => setReport(r ?? { checks: [] })))
+  const repair = () => runRepair(() => RepairNativeHosts().then(run))
   const groups = groupChecks(report?.checks ?? [])
   const copy = () => {
     const text = groups
@@ -137,10 +126,7 @@ function Diagnostics() {
       .join('\n\n')
     navigator.clipboard.writeText(`${text}\n`).then(
       () => push({ kind: 'success', title: t`Copied the report` }),
-      (err: unknown) => {
-        const msg = errorText(err)
-        push({ kind: 'error', title: t`Could not copy the report`, ...(msg ? { body: msg } : {}) })
-      },
+      (err: unknown) => reportError(t`Could not copy the report`)(err),
     )
   }
   return (

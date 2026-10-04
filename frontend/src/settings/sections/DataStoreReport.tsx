@@ -32,6 +32,7 @@ import { paper } from '../../mods/paper.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { usePending } from '../../toasts/usePending.ts'
 import { nowrap } from './dataStyles.ts'
 
 const SELECT_SEP = '\u0000'
@@ -316,7 +317,7 @@ function CleanupDialog({
   const { store, preview, load } = useCleanupData(open)
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState(false)
-  const [busy, setBusy] = useState(false)
+  const [busy, runCleanup] = usePending()
   const items = [...(store?.unused ?? []), ...(store?.older ?? [])]
   const leftovers = groupLeftovers(preview)
   const toggle = (id: string, on: boolean) =>
@@ -340,23 +341,21 @@ function CleanupDialog({
       byGame.set(s.game, [...(byGame.get(s.game) ?? []), s.item.key])
     }
     const files = chosenLeftovers.flatMap((g) => g.items)
-    setBusy(true)
-    Promise.all([
-      ...[...byGame.entries()].map(([game, keys]) => RemoveItems(game, keys)),
-      ...(preview && files.length > 0
-        ? [Cleanup({ ...preview, items: files, total: files.reduce((n, f) => n + f.size, 0) })]
-        : []),
-    ])
-      .then(() => {
+    runCleanup(() =>
+      Promise.all([
+        ...[...byGame.entries()].map(([game, keys]) => RemoveItems(game, keys)),
+        ...(preview && files.length > 0
+          ? [Cleanup({ ...preview, items: files, total: files.reduce((n, f) => n + f.size, 0) })]
+          : []),
+      ]).then(() => {
         setConfirm(false)
         setPicked(new Set())
         load()
         onClose()
         onChanged()
         useToasts.getState().push({ kind: 'success', title: t`Freed ${formatBytes(bytes)}` })
-      })
-      .catch(reportUnexpected)
-      .finally(() => setBusy(false))
+      }),
+    )
   }
   return (
     <Dialog
