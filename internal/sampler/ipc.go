@@ -199,15 +199,13 @@ func writeMessage(conn io.Writer, commandID byte, payload []byte) error {
 	if size > 0xffff {
 		return errors.New("sampler: diagnostics message is too large")
 	}
-	header := make([]byte, 20)
-	copy(header[:14], diagnosticMagic[:])
-	binary.LittleEndian.PutUint16(header[14:16], uint16(size))
-	header[16] = diagnosticCommandSet
-	header[17] = commandID
-	if _, err := conn.Write(header); err != nil {
-		return err
-	}
-	_, err := conn.Write(payload)
+	// One write per frame: a peer that has read the whole frame may hang up, and a second write would then fail.
+	frame := make([]byte, 20, size)
+	copy(frame[:14], diagnosticMagic[:])
+	binary.LittleEndian.PutUint16(frame[14:16], uint16(size))
+	frame[16] = diagnosticCommandSet
+	frame[17] = commandID
+	_, err := conn.Write(append(frame, payload...))
 	return err
 }
 
