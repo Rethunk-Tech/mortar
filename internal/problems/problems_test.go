@@ -256,3 +256,17 @@ func TestCheckPopulatesTimings(t *testing.T) {
 		}
 	}
 }
+
+func TestCountShowsConflictsBetweenTheSameModsOnce(t *testing.T) {
+	seasonal := func(target string) AssetConflict {
+		return AssetConflict{Kind: "edit", Target: target, PackIDs: []string{"B", "A"}, WinnerName: "unclear"}
+	}
+	r := Result{AssetConflicts: []AssetConflict{
+		seasonal("loosesprites/map"), seasonal("loosesprites/map_fall"),
+		{Kind: "edit", Target: "maps/forest", PackIDs: []string{"A", "C"}, WinnerName: "unclear"},
+		{Kind: "edit", Target: "x", PackIDs: []string{"A", "B"}, Cosmetic: true},
+	}}
+	if got := r.Count(); got != 2 {
+		t.Fatalf("count = %d, want 2", got)
+	}
+}

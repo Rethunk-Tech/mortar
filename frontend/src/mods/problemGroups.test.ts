@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import type { Result } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { problemCount } from './lookup.ts'
-import { problemSections } from './problemGroups.ts'
+import { assetRows, problemSections } from './problemGroups.ts'
 
 const emptyResult = (): Result => ({
   duplicates: [],
@@ -122,4 +122,31 @@ test('dismissed problems are listed but not counted', () => {
   }
   expect(problemSections(result).map((s) => s.id)).toEqual(['dismissed'])
   expect(problemCount(result)).toBe(0)
+})
+
+test('conflicts between the same mods with one outcome share a row', () => {
+  const conflict = (target: string, packIds: string[]) => ({
+    kind: 'edit',
+    target,
+    packIds,
+    names: packIds,
+    keys: packIds,
+    winnerId: '',
+    winnerName: 'unclear',
+    overridden: null,
+    cosmetic: true,
+    fixes: [],
+    evidence: [],
+  })
+  const seasonal = (target: string) => conflict(target, ['SVE', 'WorldMapGF'])
+  const rows = assetRows([
+    seasonal('loosesprites/map'),
+    seasonal('loosesprites/map_fall'),
+    conflict('maps/forest', ['SVE', 'Toothless']),
+  ])
+  expect(rows.length).toBe(2)
+  const [first] = rows
+  expect(first?.kind === 'asset' && first.siblings?.map((s) => s.target)).toEqual([
+    'loosesprites/map_fall',
+  ])
 })

@@ -1,4 +1,7 @@
-import type { Result } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
+import type {
+  AssetConflict,
+  Result,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import type { Drift } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import type { Problem } from './lookup.ts'
 
@@ -35,6 +38,30 @@ export interface ProblemSection {
   rows: (Row | DismissedRow)[]
 }
 
+// assetRows shows conflicts between the same mods, with the same outcome and fix, as one row: a pack that edits
+// four seasonal maps the same way would otherwise fill four rows with one story.
+export function assetRows(conflicts: AssetConflict[]): Row[] {
+  const groups = new Map<string, AssetConflict[]>()
+  for (const asset of conflicts) {
+    const key = JSON.stringify([
+      asset.kind,
+      [...(asset.packIds ?? [])].sort(),
+      asset.winnerName,
+      asset.fixes ?? [],
+    ])
+    groups.set(key, [...(groups.get(key) ?? []), asset])
+  }
+  const rows: Row[] = []
+  for (const [asset, ...siblings] of groups.values()) {
+    if (asset !== undefined) {
+      rows.push(
+        siblings.length === 0 ? { kind: 'asset', asset } : { kind: 'asset', asset, siblings },
+      )
+    }
+  }
+  return rows
+}
+
 export function problemSections(result: Result): ProblemSection[] {
   const sections: ProblemSection[] = [
     {
@@ -43,9 +70,7 @@ export function problemSections(result: Result): ProblemSection[] {
     },
     {
       id: 'conflicts',
-      rows: (result.assetConflicts ?? [])
-        .filter((asset) => !asset.cosmetic)
-        .map((asset): Row => ({ kind: 'asset', asset })),
+      rows: assetRows((result.assetConflicts ?? []).filter((asset) => !asset.cosmetic)),
     },
     {
       id: 'broken',
@@ -69,9 +94,7 @@ export function problemSections(result: Result): ProblemSection[] {
     },
     {
       id: 'cosmetic',
-      rows: (result.assetConflicts ?? [])
-        .filter((asset) => asset.cosmetic)
-        .map((asset): Row => ({ kind: 'asset', asset })),
+      rows: assetRows((result.assetConflicts ?? []).filter((asset) => asset.cosmetic)),
     },
     {
       id: 'dismissed',

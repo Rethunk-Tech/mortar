@@ -94,7 +94,11 @@ export function AssetFix({
           size="small"
           color="inherit"
           variant="text"
-          onClick={() => dismissAsset(problem.asset).catch(reportUnexpected)}
+          onClick={() => {
+            for (const asset of [problem.asset, ...(problem.siblings ?? [])]) {
+              dismissAsset(asset).catch(reportUnexpected)
+            }
+          }}
           sx={{ height: 28, whiteSpace: 'nowrap', flexShrink: 0 }}
         >
           {t`Dismiss`}

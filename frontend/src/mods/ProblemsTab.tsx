@@ -304,7 +304,9 @@ function dismissCosmetic(
   const cosmetic = sections.find((section) => section.id === 'cosmetic')
   for (const row of cosmetic?.rows ?? []) {
     if (!isDismissedRow(row) && row.kind === 'asset') {
-      dismissAsset(row.asset).catch(reportUnexpected)
+      for (const asset of [row.asset, ...(row.siblings ?? [])]) {
+        dismissAsset(asset).catch(reportUnexpected)
+      }
     }
   }
 }

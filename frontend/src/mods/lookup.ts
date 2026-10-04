@@ -17,6 +17,7 @@ import type {
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { offersNexusDownload } from './nexusMark.ts'
+import { assetRows } from './problemGroups.ts'
 
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
   mods.filter((m) => m.key === mod.key && m.uniqueId !== mod.uniqueId)
@@ -65,7 +66,8 @@ export type Problem =
   | { kind: 'broken'; broken: Broken }
   | { kind: 'missing'; missing: Missing }
   | { kind: 'duplicate'; duplicate: Duplicate }
-  | { kind: 'asset'; asset: AssetConflict }
+  // siblings are conflicts between the same mods on other assets, shown and dismissed with this one.
+  | { kind: 'asset'; asset: AssetConflict; siblings?: AssetConflict[] }
   | { kind: 'runError'; runError: RunError }
   | { kind: 'setting'; setting: SettingHint }
 
@@ -78,9 +80,9 @@ export const problemsOf = (result: Result | null): Problem[] =>
         ...(result.broken ?? []).map((broken): Problem => ({ kind: 'broken', broken })),
         ...(result.missing ?? []).map((missing): Problem => ({ kind: 'missing', missing })),
         // Cosmetic conflicts are listed on the Problems tab only; they are never a problem to count or fix.
-        ...(result.assetConflicts ?? [])
-          .filter((asset) => !asset.cosmetic)
-          .map((asset): Problem => ({ kind: 'asset', asset })),
+        ...assetRows((result.assetConflicts ?? []).filter((asset) => !asset.cosmetic)).filter(
+          (row): row is Extract<Problem, { kind: 'asset' }> => row.kind === 'asset',
+        ),
         ...(result.runErrors ?? []).map((runError): Problem => ({ kind: 'runError', runError })),
         ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
       ]

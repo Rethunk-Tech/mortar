@@ -28,7 +28,7 @@ export function useDescribeDrift(): (d: Drift) => string {
 
 // The one-line sentence for a problem, shared by the summary rows and the card badges.
 export function useDescribe(): Describe {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const mods = useMods((s) => s.mods)
   const nameOf = (id: string) => mods.find((m) => sameId(m.uniqueId, id))?.name ?? id
   const describeRunError = (
@@ -63,7 +63,11 @@ export function useDescribe(): Describe {
   }
 
   const describeAsset = (p: Extract<Problem, { kind: 'asset' }>): string => {
-    const { names, target, kind, winnerName, overridden } = p.asset
+    const { names, kind, winnerName, overridden } = p.asset
+    const target = new Intl.ListFormat(i18n.locale, { type: 'conjunction' }).format([
+      p.asset.target,
+      ...(p.siblings ?? []).map((s) => s.target),
+    ])
     const who = (names ?? []).join(', ')
     let winner = ''
     if (winnerName === 'unclear') {

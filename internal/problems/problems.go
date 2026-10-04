@@ -6,6 +6,7 @@ package problems
 import (
 	"cmp"
 	"context"
+	"encoding/json"
 	"log"
 	"slices"
 	"strconv"
@@ -182,12 +183,7 @@ type CheckTiming struct {
 
 // Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict, setting and last-run error.
 func (r Result) Count() int {
-	conflicts := 0
-	for _, c := range r.AssetConflicts {
-		if !c.Cosmetic {
-			conflicts++
-		}
-	}
+	conflicts := conflictRows(r.AssetConflicts)
 	duplicates := 0
 	for _, duplicate := range r.Duplicates {
 		if !duplicate.NexusOptional {
@@ -845,4 +841,20 @@ func newer(a, b Ref) bool {
 		return c > 0
 	}
 	return a.FileID > b.FileID
+}
+
+// conflictRows counts non-cosmetic conflicts as the Problems tab shows them: conflicts between the same mods with the
+// same winner and fix are one row however many assets they span.
+func conflictRows(conflicts []AssetConflict) int {
+	rows := map[string]bool{}
+	for _, c := range conflicts {
+		if c.Cosmetic {
+			continue
+		}
+		ids := slices.Clone(c.PackIDs)
+		slices.Sort(ids)
+		fixes, _ := json.Marshal(c.Fixes)
+		rows[c.Kind+"\x00"+strings.Join(ids, "\x00")+"\x00"+c.WinnerName+"\x00"+string(fixes)] = true
+	}
+	return len(rows)
 }
