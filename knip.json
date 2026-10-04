@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreBinaries": ["go", "golangci-lint", "govulncheck", "wails3"],
+  "ignore": ["site/vendor/**"],
+  "workspaces": {
+    ".": {
+      "entry": ["browser-extension/*.js", "site/stardew/p/app.js"],
+      "project": ["browser-extension/**/*.js", "site/**/*.js", "scripts/**/*.ts"]
+    },
+    "frontend": {
+      "entry": ["src/main.tsx", "lingui.config.ts", "vite.config.ts"],
+      "vite": false,
+      "ignoreDependencies": ["@lingui/native-tools"]
+    }
+  }
+}
