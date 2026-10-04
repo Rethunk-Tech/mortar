@@ -112,8 +112,8 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
   - Both virtualize so only on-screen group headers, rows and cards mount.
   - The last loaded list for a profile stays on screen when leaving the tab and returning; it is refreshed in the background.
   - The first load for a profile shows eight skeleton rows (`Loading mods`).
-  - Defaults shown are On, Name, Version, Author, Source, Category and Status.
-  - Further columns (Latest on Nexus, UniqueID, Endorsements, Downloads, Updated on Nexus, Installed, Needs, Notes and tags, Last run, Size) start hidden.
+  - Defaults shown are On, Name, Version, Author, Source, Category, Status, Size and Startup (the mod's or content pack's share of the latest startup report, from [Startup timings](architecture.md#startup-timings)).
+  - Further columns (Latest on Nexus, UniqueID, Endorsements, Downloads, Updated on Nexus, Installed, Needs, Notes and tags, Last run) start hidden.
   - Cells never wrap (ellipsis, full text in `title`).
   - Author, Source, Category and the extra columns drop out below 960px even when enabled.
   - Category is the Nexus category name from the cached page details, an em dash for other sources or before they are read: opening the list shows every cached category at once without a network call, then reads the missing Nexus mods one at a time while signed in.

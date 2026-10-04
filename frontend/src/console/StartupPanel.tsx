@@ -23,10 +23,16 @@ import type {
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { foldMods, modTotal, type PhaseId, phaseSegments, slowestEvent } from './startupView.ts'
+import {
+  foldMods,
+  formatDuration,
+  modTotal,
+  type PhaseId,
+  phaseSegments,
+  slowestEvent,
+} from './startupView.ts'
 import { useStartupReports } from './useStartupReports.ts'
 
-const MS_PER_SECOND = 1000
 const PACKS_SHOWN = 25
 const PHASE_COLORS: Record<PhaseId, string> = {
   smapi: 'text.disabled',
@@ -38,10 +44,7 @@ const PHASE_COLORS: Record<PhaseId, string> = {
 
 function useDuration() {
   const { i18n } = useLingui()
-  return (ms: number) =>
-    ms >= MS_PER_SECOND
-      ? `${(ms / MS_PER_SECOND).toLocaleString(i18n.locale, { maximumFractionDigits: 1 })} s`
-      : `${ms.toLocaleString(i18n.locale)} ms`
+  return (ms: number) => formatDuration(ms, i18n.locale)
 }
 
 function PhaseBar({ report }: { report: StartupReport }) {

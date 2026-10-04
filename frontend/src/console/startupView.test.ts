@@ -1,6 +1,15 @@
 import { expect, test } from 'bun:test'
-import type { StartupMod } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
-import { foldMods, modTotal, phaseSegments, slowestEvent } from './startupView.ts'
+import type {
+  StartupMod,
+  StartupReport,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import {
+  foldMods,
+  modTotal,
+  phaseSegments,
+  slowestEvent,
+  startupRegressions,
+} from './startupView.ts'
 
 const mod = (
   id: string,
@@ -36,4 +45,24 @@ test('mods under the fold line collapse into one row; the rest sort slowest firs
   expect(folded).toEqual({ count: 2, ms: 23 })
   expect(modTotal(shown[0] as StartupMod)).toBe(25_941)
   expect(slowestEvent(shown[1] as StartupMod)).toEqual(['GameLaunched', 3546])
+})
+
+test('regressions name updated or new mods that added a second or more', () => {
+  const report = (mods: StartupMod[]) => ({ mods }) as StartupReport
+  const previous = report([
+    mod('fs', { GameLaunched: 2900 }, { version: '7.0.0' }),
+    mod('cp', { UpdateTicked: 14_000 }, { version: '2.9.1' }),
+    mod('wol', { GameLaunched: 100 }, { version: '1.0.0' }),
+  ])
+  const latest = report([
+    mod('fs', { GameLaunched: 8900 }, { version: '7.1.0' }),
+    mod('cp', { UpdateTicked: 20_000 }, { version: '2.9.1' }),
+    mod('wol', { GameLaunched: 600 }, { version: '1.1.0' }),
+    mod('new', { GameLaunched: 1500 }, { version: '1.0.0' }),
+  ])
+  expect(startupRegressions(latest, previous)).toEqual([
+    { name: 'fs', version: '7.1.0', addedMs: 6000 },
+    { name: 'new', version: '1.0.0', addedMs: 1500 },
+  ])
+  expect(startupRegressions(latest, undefined)).toEqual([])
 })

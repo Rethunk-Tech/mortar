@@ -1,6 +1,7 @@
 import type {
   StartupMod,
   StartupPhases,
+  StartupReport,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
 
 type PhaseId = 'smapi' | 'entry' | 'content' | 'firstTicks' | 'intro'
@@ -12,6 +13,42 @@ interface PhaseSegment {
 
 /** Mods below this share fold into one row; a 190-mod list is mostly noise under it. */
 const FOLD_BELOW_MS = 50
+/** A launch-to-launch change smaller than this is run-to-run noise (measured spread on one profile: about 0.4 s). */
+const REGRESSION_MIN_MS = 1000
+const MS_PER_SECOND = 1000
+
+interface StartupRegression {
+  name: string
+  version: string
+  addedMs: number
+}
+
+function formatDuration(ms: number, locale: string): string {
+  return ms >= MS_PER_SECOND
+    ? `${(ms / MS_PER_SECOND).toLocaleString(locale, { maximumFractionDigits: 1 })} s`
+    : `${ms.toLocaleString(locale)} ms`
+}
+
+/** Mods that were updated or added since the previous launch and made startup slower by a noticeable amount. */
+function startupRegressions(
+  latest: StartupReport,
+  previous: StartupReport | undefined,
+): StartupRegression[] {
+  if (!previous) {
+    return []
+  }
+  const before = new Map((previous.mods ?? []).map((m) => [m.id, m]))
+  const out: StartupRegression[] = []
+  for (const mod of latest.mods ?? []) {
+    const old = before.get(mod.id)
+    const changed = !old || old.version !== mod.version
+    const added = modTotal(mod) - (old ? modTotal(old) : 0)
+    if (changed && added >= REGRESSION_MIN_MS) {
+      out.push({ name: mod.name, version: mod.version, addedMs: added })
+    }
+  }
+  return out.sort((a, b) => b.addedMs - a.addedMs)
+}
 
 function modTotal(mod: StartupMod): number {
   const events = Object.values(mod.eventMs ?? {}).reduce((n: number, ms) => n + (ms ?? 0), 0)
@@ -68,4 +105,14 @@ function foldMods(mods: StartupMod[] | null): {
   return { shown, folded }
 }
 
-export { foldMods, modTotal, type PhaseId, type PhaseSegment, phaseSegments, slowestEvent }
+export {
+  foldMods,
+  formatDuration,
+  modTotal,
+  type PhaseId,
+  type PhaseSegment,
+  phaseSegments,
+  type StartupRegression,
+  slowestEvent,
+  startupRegressions,
+}

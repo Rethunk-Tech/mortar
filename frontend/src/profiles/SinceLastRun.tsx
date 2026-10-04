@@ -3,16 +3,54 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Collapse, Typography } from '@mui/material'
 import { ChevronDown, History } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Runs } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import {
+  Runs,
+  StartupReports,
+} from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type { HistoryDiff } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { ChangesSince } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
+import {
+  formatDuration,
+  type StartupRegression,
+  startupRegressions,
+} from '../console/startupView.ts'
 import { diffLines } from './historyDiff.ts'
 import { useProfiles } from './store.ts'
 
 const changesSinceCache = new Map<string, HistoryDiff | null>()
 
+// Keyed by the profile's updated time, which changes after each run, when a new startup report may exist.
+function useStartupRegressions(
+  game: string,
+  profileId: string,
+  updated: string,
+): StartupRegression[] {
+  const key = `${game}\0${profileId}\0${updated}`
+  const [regressions, setRegressions] = useState<StartupRegression[]>([])
+  useEffect(() => {
+    const [g = '', id = ''] = key.split('\0')
+    let live = true
+    StartupReports(g, id)
+      .then((reports) => {
+        const [latest, previous] = reports ?? []
+        if (live) {
+          setRegressions(latest ? startupRegressions(latest, previous) : [])
+        }
+      })
+      .catch(() => {
+        if (live) {
+          setRegressions([])
+        }
+      })
+    return () => {
+      live = false
+    }
+  }, [key])
+  return regressions
+}
+
 export function SinceLastRun({ game, profileId }: { game: string; profileId: string }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const updated = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.updated ?? '')
   const [diff, setDiff] = useState<HistoryDiff | null>(null)
   const [open, setOpen] = useState(false)
@@ -42,7 +80,13 @@ export function SinceLastRun({ game, profileId }: { game: string; profileId: str
       live = false
     }
   }, [game, profileId, updated])
-  const lines = diff ? diffLines(diff) : []
+  const regressions = useStartupRegressions(game, profileId, updated)
+  const lines = [
+    ...regressions.map(
+      (r) => t`Startup: ${r.name} ${r.version} added ${formatDuration(r.addedMs, i18n.locale)}`,
+    ),
+    ...(diff ? diffLines(diff) : []),
+  ]
   if (lines.length === 0) {
     return null
   }
