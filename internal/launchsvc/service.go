@@ -604,15 +604,27 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 	ov := launchOverrides(s.profiles, g.ID(), profileID)
 	showConsole := settings.Resolve(s.settings.Get(), "showSmapiConsole", g.ID(), ov) == "true"
 	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g), HideWindow: !showConsole}
+	var measure bool
+	var startupBefore map[string]bool
 	if waitOnChild(req) {
 		req.OnExit = func(x launch.Exit) { s.finishWait(g, x) }
 		s.armReap(g.ID())
 	}
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
-		measure, err := prepareStartup(modsDir)
+		measure, err = prepareStartup(modsDir)
 		if err != nil {
 			return err
+		}
+		if measure {
+			profileDir, profileErr := s.profiles.ProfileDir(g.ID(), profileID)
+			if profileErr != nil {
+				log.Printf("startup sampler: %s: %v", g.ID(), profileErr)
+				measure = false
+			} else if startupBefore, profileErr = startupReportIDs(filepath.Join(profileDir, startupDir)); profileErr != nil {
+				log.Printf("startup sampler: %s: %v", g.ID(), profileErr)
+				measure = false
+			}
 		}
 		cfg := overlay.BridgeConfig{OverlayEnabled: st.OverlayEnabled, OverlayPort: st.OverlayPort, OverlayToken: st.OverlayToken, StartupProfile: measure}
 		if err := overlay.ApplyToMods(modsDir, cfg); err != nil {
@@ -694,6 +706,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, profileID, dir, modsDi
 		s.emit(BackupWarningEvent, BackupWarning{Game: gameID, Profile: profileID, Error: backupErr.Error()})
 	}
 	s.watch(g)
+	if measure {
+		go s.sampleStartup(runCtx, g, profileID, modsDir, startupBefore)
+	}
 	go s.run(runCtx, g, profileID, req, buf)
 	return nil
 }
