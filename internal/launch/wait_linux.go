@@ -4,7 +4,6 @@ package launch
 
 import (
 	"os"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -16,7 +15,7 @@ import (
 func WaitPID(pid int) (Exit, error) {
 	if sandbox.InFlatpak() {
 		// Host PIDs mean nothing in the sandbox's PID namespace.
-		for hostAlive(pid) {
+		for Alive(pid) {
 			time.Sleep(time.Second)
 		}
 		return Exit{}, nil
@@ -36,9 +35,4 @@ func WaitPID(pid int) (Exit, error) {
 		time.Sleep(100 * time.Millisecond)
 	}
 	return Exit{}, err
-}
-
-func hostAlive(pid int) bool {
-	_, err := sandbox.HostOutput("kill", "-0", strconv.Itoa(pid))
-	return err == nil
 }

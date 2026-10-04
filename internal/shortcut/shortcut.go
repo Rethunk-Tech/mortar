@@ -82,6 +82,19 @@ func (s *Service) Take() *Request {
 	return r
 }
 
+// Capabilities says which shortcut actions this install can do, so the UI can hide the rest.
+type Capabilities struct {
+	Flatpak    bool `json:"flatpak"`
+	Shortcuts  bool `json:"shortcuts"`
+	AddToSteam bool `json:"addToSteam"`
+}
+
+// Capabilities reports what shortcut actions are available; Add to Steam is unavailable inside a Flatpak.
+func (s *Service) Capabilities() Capabilities {
+	flatpak := sandbox.InFlatpak()
+	return Capabilities{Flatpak: flatpak, Shortcuts: true, AddToSteam: !flatpak}
+}
+
 // Create makes a shortcut named after the profile and game that plays it, and returns where it was written.
 func (s *Service) Create(game, gameName, profile, profileName string) (string, error) {
 	if !validID(game) || !validID(profile) {

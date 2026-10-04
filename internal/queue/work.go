@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -94,12 +95,16 @@ func (s *Service) checkNexusMD5(path, want string) error {
 	if want == "" {
 		return nil
 	}
-	b, err := fsx.ReadFile(path)
+	f, err := fsx.Open(path)
 	if err != nil {
 		return err
 	}
-	sum := md5.Sum(b) // #nosec G401 -- Nexus file hashes are MD5
-	got := hex.EncodeToString(sum[:])
+	defer func() { _ = f.Close() }()
+	h := md5.New() // #nosec G401 -- Nexus file hashes are MD5
+	if _, err := io.Copy(h, f); err != nil {
+		return err
+	}
+	got := hex.EncodeToString(h.Sum(nil))
 	if got != want {
 		return usererr.New(usererr.Damaged, fmt.Sprintf("Nexus MD5 mismatch: got %s, wanted %s", got, want))
 	}

@@ -3,11 +3,15 @@
 package launch
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-AI/mortar/internal/sandbox"
 )
 
 func TestProcesses(t *testing.T) {
@@ -80,5 +84,28 @@ func TestParseHostProcesses(t *testing.T) {
 	got := parseHostProcesses(out, "StardewModdingAPI")
 	if len(got) != 1 || got[0].PID != 34 || got[0].Start.Unix() != 1700000100 || !got[0].UsesModsPath("/m") {
 		t.Fatalf("%+v", got)
+	}
+}
+
+func TestHostTerminateSignalsThroughHostKill(t *testing.T) {
+	var calls []string
+	old, oldEnv := sandbox.Output, sandbox.Getenv
+	t.Cleanup(func() { sandbox.Output, sandbox.Getenv = old, oldEnv })
+	sandbox.Getenv = func(string) string { return "x" }
+	alive := true
+	sandbox.Output = func(args ...string) ([]byte, error) {
+		calls = append(calls, strings.Join(args, " "))
+		if !alive {
+			return nil, errors.New("no such process")
+		}
+		alive = args[len(args)-2] != "-TERM"
+		return nil, nil
+	}
+	if err := Terminate(42, time.Second); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"--host kill -0 42", "--host kill -TERM 42", "--host kill -0 42"}
+	if !slices.Equal(calls, want) {
+		t.Fatalf("calls %q", calls)
 	}
 }

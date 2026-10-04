@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/sandbox"
 )
 
 // fixture copies testdata/lib into a temp Steam root, pointing the library list at it.
@@ -140,5 +141,19 @@ func TestLaunchOptions(t *testing.T) {
 	}
 	if got, err := s.LaunchOptions("1"); err != nil || got != "" {
 		t.Fatalf("unknown app = %q, %v", got, err)
+	}
+}
+
+func TestRunFlatpakGoesThroughHostInFlatpak(t *testing.T) {
+	oldOut, oldEnv := sandbox.Output, sandbox.Getenv
+	t.Cleanup(func() { sandbox.Output, sandbox.Getenv = oldOut, oldEnv })
+	sandbox.Getenv = func(string) string { return "x" }
+	var got []string
+	sandbox.Output = func(args ...string) ([]byte, error) { got = args; return nil, nil }
+	if _, err := ShowOverride(); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(got, " ") != "--host flatpak override --user --show "+FlatpakID {
+		t.Fatalf("argv %v", got)
 	}
 }

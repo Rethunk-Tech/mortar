@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-AI/mortar/internal/fsx"
+	"github.com/Rethunk-AI/mortar/internal/sandbox"
 
 	"github.com/andygrunwald/vdf"
 )
@@ -117,6 +118,9 @@ func HasFilesystem(show, dataDir string) bool {
 }
 
 var runFlatpak = func(args ...string) ([]byte, error) {
+	if sandbox.InFlatpak() {
+		return sandbox.HostOutput("flatpak", args...)
+	}
 	return exec.Command("flatpak", args...).Output()
 }
 
