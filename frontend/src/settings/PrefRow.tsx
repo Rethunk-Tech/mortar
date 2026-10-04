@@ -50,7 +50,13 @@ export function PrefRow({
   const style = options.length > 0 ? choiceStyle(options) : 'select'
   let control: ReactNode
   if (kind === 'switch') {
-    control = <PrefSwitch checked={prefAsBool(raw, spec)} onChange={(on) => save(String(on))} />
+    control = (
+      <PrefSwitch
+        checked={prefAsBool(raw, spec)}
+        onChange={(on) => save(String(on))}
+        label={copy.label}
+      />
+    )
   } else if (style === 'cards') {
     control = <PrefCards value={selectValue} onChange={save} options={options} label={copy.label} />
   } else if (style === 'segmented' && options.length > 0) {
@@ -58,7 +64,9 @@ export function PrefRow({
       <PrefSegmented value={selectValue} onChange={save} options={options} label={copy.label} />
     )
   } else if (kind === 'select' || options.length > 0) {
-    control = <PrefSelect value={selectValue} onChange={save} options={options} />
+    control = (
+      <PrefSelect value={selectValue} onChange={save} options={options} label={copy.label} />
+    )
   } else if (kind === 'number') {
     control = (
       <PrefNumber
@@ -66,6 +74,7 @@ export function PrefRow({
         min={spec.min ?? 0}
         max={spec.max || Number.MAX_SAFE_INTEGER}
         onCommit={(n) => SetByKey(spec.key, String(n), gameArg)}
+        label={copy.label}
       />
     )
   } else {
@@ -74,6 +83,7 @@ export function PrefRow({
         value={prefAsString(raw, spec)}
         {...(copy.placeholder === undefined ? {} : { placeholder: copy.placeholder })}
         onCommit={(v) => SetByKey(spec.key, v, gameArg)}
+        label={copy.label}
       />
     )
   }

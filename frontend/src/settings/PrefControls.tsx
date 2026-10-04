@@ -17,16 +17,19 @@ export function PrefSelect({
   value,
   onChange,
   options,
+  label,
 }: {
   value: string
   onChange: (v: string) => void
   options: { value: string; label: string }[]
+  label: string
 }) {
   return (
     <Select
       size="small"
       displayEmpty={true}
       value={value}
+      inputProps={{ 'aria-label': label }}
       onChange={(e) => onChange(String(e.target.value))}
       sx={{ minWidth: 180 }}
     >
@@ -161,10 +164,12 @@ export function PrefText({
   value,
   onCommit,
   placeholder,
+  label,
 }: {
   value: string
   onCommit: (v: string) => Promise<void>
   placeholder?: string
+  label: string
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(value)
@@ -183,6 +188,7 @@ export function PrefText({
       size="small"
       value={draft}
       placeholder={placeholder}
+      slotProps={{ htmlInput: { 'aria-label': label } }}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
       onKeyDown={(e) => {
@@ -200,21 +206,26 @@ export function PrefNumber({
   min,
   max,
   onCommit,
+  label,
 }: {
   value: number
   min: number
   max: number
   onCommit: (n: number) => Promise<void>
+  label: string
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(String(value))
+  const [invalid, setInvalid] = useState(false)
   useEffect(() => setDraft(String(value)), [value])
+  const range = t`Enter a number from ${min} to ${max}`
   const commit = () => {
     const n = Number(draft)
     if (!Number.isInteger(n) || n < min || n > max) {
-      setDraft(String(value))
+      setInvalid(true)
       return
     }
+    setInvalid(false)
     if (n !== value) {
       onCommit(n).catch((err: unknown) => {
         reportError(t`Could not save that setting`)(err)
@@ -227,6 +238,8 @@ export function PrefNumber({
       type="number"
       size="small"
       value={draft}
+      error={invalid}
+      helperText={invalid ? range : undefined}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
       onKeyDown={(e) => {
@@ -234,7 +247,7 @@ export function PrefNumber({
           e.target.blur()
         }
       }}
-      slotProps={{ htmlInput: { min, max, step: 1 } }}
+      slotProps={{ htmlInput: { min, max, step: 1, 'aria-label': label } }}
       sx={{ width: 120 }}
     />
   )
