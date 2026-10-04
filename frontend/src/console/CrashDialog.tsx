@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogTitle,
   Menu,
-  Tooltip,
   Typography,
 } from '@mui/material'
 import { ChevronDown, ExternalLink, LifeBuoy, Search, Terminal } from 'lucide-react'
@@ -148,6 +147,53 @@ function MoreActions({
   )
 }
 
+function causeText(
+  t: ReturnType<typeof useLingui>['t'],
+  cause: { reason: string; detail: string },
+) {
+  const kind = crashCauseKind(cause.reason)
+  if (kind === 'missing-file') {
+    return t`A file it needs could not be opened.`
+  }
+  if (kind === 'asset-load') {
+    return t`It could not load an asset.`
+  }
+  if (kind === 'mod-exception') {
+    return t`It encountered an error.`
+  }
+  return crashCauseDetailLine(cause.detail)
+}
+
+// The one main action: switch off the mod that caused it, find the cause by halving, or read the log.
+function CrashPrimary({
+  mod,
+  canBisect,
+  onBisect,
+  onConsole,
+}: {
+  mod: Mod | undefined
+  canBisect: boolean
+  onBisect: () => void
+  onConsole: () => void
+}) {
+  const { t } = useLingui()
+  if (mod) {
+    return <SwitchOffButton mod={mod} primary={true} />
+  }
+  if (canBisect) {
+    return (
+      <Button variant="contained" startIcon={<Search size={16} />} onClick={onBisect}>
+        {t`Find the mod causing this`}
+      </Button>
+    )
+  }
+  return (
+    <Button variant="contained" startIcon={<Terminal size={16} />} onClick={onConsole}>
+      {t`Open console`}
+    </Button>
+  )
+}
+
 export function CrashDialog() {
   const { t } = useLingui()
   const crash = useLaunch((s) => s.crash)
@@ -180,15 +226,7 @@ export function CrashDialog() {
       setBisectError(errorDetails(error))
     }
   }
-  const causeKind = crash.cause ? crashCauseKind(crash.cause.reason) : ''
-  let causeBody = crash.cause ? crashCauseDetailLine(crash.cause.detail) : ''
-  if (causeKind === 'missing-file') {
-    causeBody = t`A file it needs could not be opened.`
-  } else if (causeKind === 'asset-load') {
-    causeBody = t`It could not load an asset.`
-  } else if (causeKind === 'mod-exception') {
-    causeBody = t`It encountered an error.`
-  }
+  const causeBody = crash.cause ? causeText(t, crash.cause) : ''
   return (
     <>
       <Dialog
@@ -209,9 +247,11 @@ export function CrashDialog() {
             </Box>
           ) : null}
           {crash.mods === null || crash.mods.length === 0 ? (
-            <Tooltip title={t`SMAPI`}>
-              <Typography sx={{ fontSize: 14 }}>{t`The game log has errors.`}</Typography>
-            </Tooltip>
+            <Typography sx={{ fontSize: 14 }}>
+              {canBisect
+                ? t`Mortar could not tell which mod caused this. Find the mod causing this tries halves of your mods until the crash stops; your profile is not changed.`
+                : t`The game log has errors.`}
+            </Typography>
           ) : (
             crash.mods.map((row: { mod: string; count: number; first: string }) => (
               <Box key={row.mod} sx={{ fontSize: 14, lineHeight: 1.45 }}>
@@ -235,8 +275,8 @@ export function CrashDialog() {
           <MoreActions
             crash={crash}
             nexusID={nexusID}
-            onBisect={canBisect ? startBisect : null}
-            withConsole={Boolean(mod)}
+            onBisect={canBisect && mod ? startBisect : null}
+            withConsole={Boolean(mod) || canBisect}
             onDone={dismiss}
           />
           {mod && profile && crash.cause ? (
@@ -248,20 +288,15 @@ export function CrashDialog() {
               modLogName={crash.cause.modName}
             />
           ) : null}
-          {mod ? (
-            <SwitchOffButton mod={mod} primary={true} />
-          ) : (
-            <Button
-              variant="contained"
-              startIcon={<Terminal size={16} />}
-              onClick={() => {
-                openRun(crash, true)
-                dismiss()
-              }}
-            >
-              {t`Open console`}
-            </Button>
-          )}
+          <CrashPrimary
+            mod={mod}
+            canBisect={canBisect}
+            onBisect={startBisect}
+            onConsole={() => {
+              openRun(crash, true)
+              dismiss()
+            }}
+          />
         </DialogActions>
       </Dialog>
       {bisectJob ? (
