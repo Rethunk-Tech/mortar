@@ -24,7 +24,8 @@ import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorKind } from '../toasts/errorKind.ts'
+import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import {
   filterHistory,
   type HistoryEntry,
@@ -34,6 +35,11 @@ import {
 import { RetryAllButton } from './RetryAllButton.tsx'
 
 const millisecondsPerSecond = 1000
+
+// A classified failure reads as the plain sentence; an unclassified one keeps its own text, which is all there is.
+function failureText(error: string): string {
+  return errorKind(error) === 'unknown' ? error : errorMessage(error)
+}
 
 function RetryHistoryButton({ entry }: { entry: HistoryEntry }) {
   const { t } = useLingui()
@@ -234,8 +240,12 @@ export function HistoryList({
                   ) : null}
                 </Typography>
                 {e.outcome === 'failed' && e.error ? (
-                  <Typography noWrap={true} title={e.error} sx={{ fontSize: 12, color: failColor }}>
-                    {e.error}
+                  <Typography
+                    noWrap={true}
+                    title={errorDetails(e.error)}
+                    sx={{ fontSize: 12, color: failColor }}
+                  >
+                    {failureText(e.error)}
                   </Typography>
                 ) : null}
               </Box>
