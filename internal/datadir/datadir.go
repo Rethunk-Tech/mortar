@@ -75,7 +75,16 @@ func resolve() (string, error) {
 	return p, nil
 }
 
+// underTemp reports whether dir is inside a temp root; t.TempDir creates under GOTMPDIR when it is set.
 func underTemp(dir string) bool {
-	rel, err := filepath.Rel(os.TempDir(), dir)
-	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+	for _, root := range []string{os.TempDir(), os.Getenv("GOTMPDIR")} {
+		if root == "" {
+			continue
+		}
+		rel, err := filepath.Rel(root, dir)
+		if err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			return true
+		}
+	}
+	return false
 }
