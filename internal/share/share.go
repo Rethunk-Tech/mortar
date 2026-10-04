@@ -130,15 +130,7 @@ func (r Ref) MarshalJSON() ([]byte, error) {
 	return json.Marshal(refDocument(r))
 }
 
-type refDocument struct {
-	ModID    int                            `json:"modId,omitempty"`
-	FileID   int                            `json:"fileId,omitempty"`
-	GitHub   string                         `json:"github,omitempty"`
-	Disabled []string                       `json:"disabled,omitempty"`
-	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
-	Note     string                         `json:"note,omitempty"`
-	Tags     []string                       `json:"tags,omitempty"`
-}
+type refDocument Ref
 
 func parseRef(raw json.RawMessage) (Ref, error) {
 	var s string
@@ -376,12 +368,20 @@ func withoutDetails(s Shared) Shared {
 
 // refOf maps an enabled, non-bundled entry to its Ref, or says why it cannot be shared.
 func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
+	var r Ref
+	var missing string
 	switch e.Source.Kind {
 	case profile.KindNexus:
 		r = Ref{ModID: e.Source.ModID, FileID: e.Source.FileID}
 		missing = "no Nexus file recorded"
 	case profile.KindGitHub:
 		r = Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}
+		missing = "no GitHub release asset recorded"
+	case profile.KindLocal:
+		return Ref{}, "local archive"
+	default:
+		return Ref{}, "unknown source"
+	}
 	r.Disabled = slices.Clone(e.Disabled)
 	if fomod {
 		r.Fomod = cloneFomod(e.Fomod)
@@ -394,12 +394,6 @@ func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 		return Ref{}, missing
 	}
 	return r, ""
-		missing = "no GitHub release asset recorded"
-	case profile.KindLocal:
-		return Ref{}, "local archive"
-	default:
-		return Ref{}, "unknown source"
-	}
 }
 
 // Enabled reports whether any mod of the entry is switched on; an entry with no recorded mods counts as on.

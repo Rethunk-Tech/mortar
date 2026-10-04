@@ -3,6 +3,7 @@ package profile
 import (
 	"fmt"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -15,6 +16,13 @@ const (
 	MaxEntryTag = 24
 )
 
+// CleanTag trims a tag and reports whether it is a usable one: non-empty, within MaxEntryTag runes, no control characters.
+func CleanTag(raw string) (string, bool) {
+	tag := strings.TrimSpace(raw)
+	ok := tag != "" && utf8.RuneCountInString(tag) <= MaxEntryTag && !strings.ContainsFunc(tag, unicode.IsControl)
+	return tag, ok
+}
+
 // CleanEntryNoteTags trims a note and tags and checks the caps.
 func CleanEntryNoteTags(note string, tags []string) (string, []string, error) {
 	note = strings.TrimSpace(note)
@@ -24,12 +32,12 @@ func CleanEntryNoteTags(note string, tags []string) (string, []string, error) {
 	out := make([]string, 0, len(tags))
 	seen := map[string]bool{}
 	for _, raw := range tags {
-		tag := strings.TrimSpace(raw)
-		if tag == "" {
+		if strings.TrimSpace(raw) == "" {
 			continue
 		}
-		if utf8.RuneCountInString(tag) > MaxEntryTag {
-			return "", nil, fmt.Errorf("tag is longer than %d characters", MaxEntryTag)
+		tag, ok := CleanTag(raw)
+		if !ok {
+			return "", nil, fmt.Errorf("a tag is longer than %d characters or has control characters", MaxEntryTag)
 		}
 		key := strings.ToLower(tag)
 		if seen[key] {
