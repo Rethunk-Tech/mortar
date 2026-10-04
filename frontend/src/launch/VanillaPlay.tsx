@@ -2,6 +2,8 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Button,
   ButtonGroup,
+  Chip,
+  Divider,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -13,6 +15,7 @@ import { ChevronDown, Gamepad2, Play } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
 import { compact } from '../game/compact.ts'
 import { routeGame, useNav } from '../nav/store.ts'
+import type { PlayPreset } from '../profiles/profilePresets.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { playVanillaOpen, rememberLinuxVanillaDirect, useVanillaPrompt } from './playOpen.ts'
 import { SmapiWarnDialog } from './SmapiWarnDialog.tsx'
@@ -61,12 +64,18 @@ export function VanillaPlay({
   vanillaDisabled,
   label,
   play,
+  presets,
+  playWith,
+  setDefault,
 }: {
   game: string
   playDisabled: boolean
   vanillaDisabled: boolean
   label: string
   play: () => void
+  presets: PlayPreset[]
+  playWith: (key: string) => void
+  setDefault: (key: string) => void
 }) {
   const { t } = useLingui()
   const [menu, setMenu] = useState<HTMLElement | null>(null)
@@ -141,6 +150,35 @@ export function VanillaPlay({
         </span>
       </Tooltip>
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
+        {presets.map((preset) => (
+          <MenuItem
+            key={preset.key}
+            disabled={playDisabled}
+            onClick={() => {
+              setMenu(null)
+              playWith(preset.key)
+            }}
+          >
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              <Play size={16} />
+            </ListItemIcon>
+            <ListItemText>{t`Play with ${preset.base ? t`Standard` : preset.name}`}</ListItemText>
+            {preset.isDefault ? (
+              <Chip size="small" label={t`Default`} sx={{ ml: 2 }} />
+            ) : (
+              <Button
+                size="small"
+                sx={{ ml: 2 }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setMenu(null)
+                  setDefault(preset.key)
+                }}
+              >{t`Set as default`}</Button>
+            )}
+          </MenuItem>
+        ))}
+        {presets.length > 0 ? <Divider /> : null}
         <MenuItem
           disabled={vanillaDisabled}
           onClick={() => {

@@ -7,9 +7,12 @@ import {
   State,
   type Status,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { SetDefaultLaunchPreset } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/service.ts'
 import { compact } from '../game/compact.ts'
 import { useLoader } from '../loader/store.ts'
+import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { reportError } from '../toasts/report.ts'
 import { playDirect } from './directPref.ts'
 import { StopDialog } from './StopDialog.tsx'
 import { useLaunch } from './store.ts'
@@ -69,6 +72,8 @@ export function PlayControl({ game }: { game: string }) {
   const running = state === State.Running
   const time = useElapsed(status?.since ?? 0, running)
   const runningProfile = profiles.find((p) => p.id === status?.profile)
+  const replaceProfile = useProfiles((s) => s.replace)
+  const presets = playPresets(profiles.find((p) => p.id === openId))
 
   if (running) {
     const who = runningProfile && runningProfile.id !== openId ? runningProfile.name : ''
@@ -167,7 +172,14 @@ export function PlayControl({ game }: { game: string }) {
       playDisabled={openId === '' || launching || busy}
       vanillaDisabled={launching || busy}
       label={label}
-      play={() => start(game, openId, playDirect())}
+      play={() => start(game, openId, playDirect(), '')}
+      presets={presets}
+      playWith={(key) => start(game, openId, playDirect(), key)}
+      setDefault={(key) =>
+        SetDefaultLaunchPreset(game, openId, key === BASE_PRESET ? '' : key)
+          .then(replaceProfile)
+          .catch(reportError(t`Could not set the default launch preset`))
+      }
     />
   )
 }

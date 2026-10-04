@@ -24,6 +24,7 @@ import { colorHex, MAX_DESCRIPTION, PROFILE_COLORS, PROFILE_ICONS } from './appe
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
+import { LaunchPresetsBlock } from './LaunchPresetsBlock.tsx'
 import { OverridesSection } from './OverrideRows.tsx'
 import { foldedOverrides } from './overrideValue.ts'
 import { ProfileMark } from './ProfileMark.tsx'
@@ -316,6 +317,7 @@ function ProfileFields({
         launchError={launchError}
         onLaunchError={onLaunchError}
       />
+      <LaunchPresetsBlock gameId={gameId} profileId={profile.id} />
       <OverridesSection overrides={overrides} onChange={onOverrides} />
       <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
     </DialogContent>

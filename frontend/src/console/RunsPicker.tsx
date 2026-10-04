@@ -45,7 +45,8 @@ export function RunsPicker({ game }: { game: string }) {
   const outcome = useOutcomeLabel()
   const label = (r: Run) => {
     const when = r.started ? formatWhen(r.started, { withTime: true }) : r.id
-    return `${when} · ${outcome(r.outcome)}`
+    const preset = r.preset ? ` · ${r.preset}` : ''
+    return `${when} · ${outcome(r.outcome)}${preset}`
   }
   const selected = runs.find((r) => r.id === viewingRun)
   let button = t`This session`

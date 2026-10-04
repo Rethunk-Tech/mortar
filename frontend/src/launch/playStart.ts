@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { Start } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
+import { StartPreset } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/service.ts'
 import type { Broken } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { UpdateWarning } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-AI/mortar/internal/savessvc/models.ts'
@@ -92,6 +92,14 @@ function updateFailure(error: unknown, resume: () => Promise<void>) {
   })
 }
 
+// The preset one Play was started with, kept until that launch ends so the warning dialogs a launch can pass through
+// resume with it.
+let pendingPreset = ''
+
+function setPendingPreset(name: string) {
+  pendingPreset = name
+}
+
 async function startProfile(opts: {
   set: LaunchSet
   game: string
@@ -105,8 +113,9 @@ async function startProfile(opts: {
     })
   }
   try {
-    await Start(opts.game, opts.profile, opts.direct)
+    await StartPreset(opts.game, opts.profile, pendingPreset, opts.direct)
   } catch (error) {
+    pendingPreset = ''
     opts.set({ starting: false, startingProfile: '', updateRollback: null })
     reportError(i18n._(msg`Could not launch the game`))(error)
   }
@@ -307,4 +316,4 @@ function openProblems(get: LaunchGet, set: LaunchSet) {
 }
 
 export type { PlayCheck, SaveWarn, UpdateContext, UpdateRollback, UpdateWarn }
-export { openProblems, playAnyway, startProfile, startWithWarning, updateAndPlay }
+export { openProblems, playAnyway, setPendingPreset, startProfile, startWithWarning, updateAndPlay }

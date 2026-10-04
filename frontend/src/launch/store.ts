@@ -27,6 +27,7 @@ import {
   type PlayCheck,
   playAnyway,
   type SaveWarn,
+  setPendingPreset,
   startProfile,
   startWithWarning,
   type UpdateContext,
@@ -166,6 +167,9 @@ function applyStatus(
   applyOnPlayWindow(status, previous)
   if (!polled || status.state !== State.Idle) {
     set({ starting: false, startingProfile: '' })
+    if (status.state !== State.Launching && status.state !== State.NoSteam) {
+      setPendingPreset('')
+    }
   }
   if (status.state === State.Launching) {
     if (resetConsole(status, previous)) {
@@ -231,7 +235,8 @@ export const useLaunch = create<{
   crash: Crash | null
   apply: (status: Status, polled?: boolean) => void
   refresh: (game: string) => Promise<void>
-  start: (game: string, profile: string, direct: boolean) => Promise<void>
+  /** preset names the launch preset for this Play only; omitted keeps the one a resumed launch already carries. */
+  start: (game: string, profile: string, direct: boolean, preset?: string) => Promise<void>
   startVanilla: (game: string, direct: boolean) => Promise<void>
   hide: () => void
   dismissFailure: () => void
@@ -268,15 +273,29 @@ export const useLaunch = create<{
       reportError(i18n._(msg`Could not check whether the game is running`))(e)
     }
   },
-  start: (game, profile, direct) => startWithWarning({ get, set, game, profile, direct }),
+  start: (game, profile, direct, preset) => {
+    if (preset !== undefined) {
+      setPendingPreset(preset)
+    }
+    return startWithWarning({ get, set, game, profile, direct })
+  },
   startVanilla: (game, direct) => startVanillaGame({ get, set, game, direct }),
   hide: () => set({ hidden: true }),
   dismissFailure: () => set({ failure: null }),
   dismissCrash: () => set({ crash: null }),
   setCrash: (crash) => set({ crash }),
-  dismissUpdateWarn: () => set({ updateWarn: null }),
-  dismissSaveWarn: () => set({ saveWarn: null }),
-  dismissPlayCheck: () => set({ playCheck: null }),
+  dismissUpdateWarn: () => {
+    setPendingPreset('')
+    set({ updateWarn: null })
+  },
+  dismissSaveWarn: () => {
+    setPendingPreset('')
+    set({ saveWarn: null })
+  },
+  dismissPlayCheck: () => {
+    setPendingPreset('')
+    set({ playCheck: null })
+  },
   openSaves: () => {
     const warn = get().saveWarn
     set({ saveWarn: null })
@@ -296,6 +315,7 @@ export const useLaunch = create<{
     const { askDirect } = get()
     set({ askDirect: null })
     if (!agreed) {
+      setPendingPreset('')
       set({ updateRollback: null })
       return
     }
