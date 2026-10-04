@@ -314,7 +314,6 @@ func (s *Store) Get() Settings {
 	return s.cur
 }
 
-// Update applies fn to a copy of the settings, validates, persists atomically and returns the result.
 // AppendDismissed records token in bucket unless it is already there.
 func (s *Store) AppendDismissed(bucket, token string) error {
 	_, err := s.Update(func(v *Settings) {
@@ -328,6 +327,7 @@ func (s *Store) AppendDismissed(bucket, token string) error {
 	return err
 }
 
+// Update applies fn to a copy of the settings, validates, persists atomically and returns the result.
 func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

@@ -16,13 +16,13 @@ import (
 	"github.com/Rethunk-AI/mortar/internal/store"
 )
 
-func addFarmMod(t *testing.T, e env, key, zip string) Profile {
+func addFarmMod(t *testing.T, e env) Profile {
 	t.Helper()
 	p, err := e.Create("stardew", "Farm")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.AddEntry("stardew", p.ID, key, Source{Kind: KindLocal, Name: zip}); err != nil {
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
 	return p
@@ -33,7 +33,7 @@ func TestHistoryRecordsEachOperation(t *testing.T) {
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
 	e.item(t, "local-a2", map[string]string{"manifest.json": `{"Name":"Me.A","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`})
-	p := addFarmMod(t, e, "local-a", "a.zip")
+	p := addFarmMod(t, e)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +98,7 @@ func TestHistoryRevertRestoresEntries(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
-	p := addFarmMod(t, e, "local-a", "a.zip")
+	p := addFarmMod(t, e)
 	afterAdd, err := e.History("stardew", p.ID)
 	if err != nil || len(afterAdd) == 0 {
 		t.Fatalf("history after add: %v %v", afterAdd, err)
@@ -129,7 +129,7 @@ func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
 		"manifest.json": manifestJSON("Me.A"),
 		"config.json":   "shipped",
 	})
-	p := addFarmMod(t, e, "local-a", "a.zip")
+	p := addFarmMod(t, e)
 	afterAdd, err := e.History("stardew", p.ID)
 	if err != nil || len(afterAdd) == 0 {
 		t.Fatalf("history after add: %v %v", afterAdd, err)
@@ -149,7 +149,7 @@ func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
 func TestHistoryRevertMissingStoreKeys(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p := addFarmMod(t, e, "local-a", "a.zip")
+	p := addFarmMod(t, e)
 	events, err := e.History("stardew", p.ID)
 	if err != nil || len(events) == 0 {
 		t.Fatal(err)
@@ -331,7 +331,7 @@ func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
 func TestHistoryRevertRefusedWhileRunning(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p := addFarmMod(t, e, "local-a", "a.zip")
+	p := addFarmMod(t, e)
 	events, err := e.History("stardew", p.ID)
 	if err != nil || len(events) == 0 {
 		t.Fatal(err)
@@ -360,7 +360,7 @@ func TestHistoryIncludesModDiffCounts(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
-	p := addFarmMod(t, e, "local-a", "a.zip")
+	p := addFarmMod(t, e)
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
@@ -443,7 +443,7 @@ func TestHistoryQuietIsPerProfile(t *testing.T) {
 func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p := addFarmMod(t, e, "local-a", "a.zip")
+	p := addFarmMod(t, e)
 	if _, err := e.RemoveEntry("stardew", p.ID, "local-a"); err != nil {
 		t.Fatal(err)
 	}
@@ -459,7 +459,7 @@ func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
 func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p := addFarmMod(t, e, "local-a", "a.zip")
+	p := addFarmMod(t, e)
 	dir, err := e.profileDir("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -483,7 +483,7 @@ func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
 func TestRevertRestoresLiveModsWhenProfileJSONFails(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
-	p := addFarmMod(t, e, "local-a", "a.zip")
+	p := addFarmMod(t, e)
 	mods, err := e.ModsDir("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
