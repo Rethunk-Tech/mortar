@@ -10,6 +10,13 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+const (
+	classKey   = `Software\Classes\nxm`
+	commandKey = classKey + `\shell\open\command`
+)
+
+func defaultIcon(exe string) string { return exe + ",0" }
+
 // System is the system's registration of the nxm scheme. software is the HKCU key the browsers' native messaging
 // keys live under.
 type System struct{ exe, software string }
