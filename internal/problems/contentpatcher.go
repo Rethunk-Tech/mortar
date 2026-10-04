@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"maps"
@@ -1558,11 +1559,39 @@ func dynamicConditionStateForReachable(condition cpDynamicCondition, reachable c
 	return cpConditionUnknown
 }
 
+type reachableKey struct {
+	tokens  *cpTokenDefinition
+	present uintptr
+	flags   string
+}
+
+// reachableMemo holds reachableDynamicTokens per pack, present set and flag set for the running Check; a pack's
+// config is fixed for the Check, so it is not part of the key.
+var reachableMemo = struct {
+	sync.Mutex
+	byKey map[reachableKey]map[string]cpTokenReachability
+}{byKey: map[reachableKey]map[string]cpTokenReachability{}}
+
+func cachedReachableTokens(tokens []cpTokenDefinition, present map[string]bool, schema map[string]cpSchema, config map[string]string, flags []cpFlagCondition) map[string]cpTokenReachability {
+	if len(tokens) == 0 {
+		return reachableDynamicTokens(tokens, present, schema, config, flags)
+	}
+	key := reachableKey{tokens: &tokens[0], present: reflect.ValueOf(present).Pointer(), flags: fmt.Sprint(flags)}
+	reachableMemo.Lock()
+	defer reachableMemo.Unlock()
+	reachable, ok := reachableMemo.byKey[key]
+	if !ok {
+		reachable = reachableDynamicTokens(tokens, present, schema, config, flags)
+		reachableMemo.byKey[key] = reachable
+	}
+	return reachable
+}
+
 func dynamicWhenHolds(when cpWhen, tokens []cpTokenDefinition, present map[string]bool, schema map[string]cpSchema, config map[string]string) bool {
 	if len(when.dynamic) == 0 {
 		return true
 	}
-	reachable := reachableDynamicTokens(tokens, present, schema, config, when.flags)
+	reachable := cachedReachableTokens(tokens, present, schema, config, when.flags)
 	for _, condition := range when.dynamic {
 		state, ok := reachable[condition.name]
 		if !ok || !state.known {
@@ -1868,7 +1897,17 @@ func dropPNGAlphaUnder(root string) {
 	})
 }
 
+func dropShapeMemos() {
+	shapeIndexes.Lock()
+	clear(shapeIndexes.sets)
+	shapeIndexes.Unlock()
+	reachableMemo.Lock()
+	clear(reachableMemo.byKey)
+	reachableMemo.Unlock()
+}
+
 func clearPackValidated() {
+	dropShapeMemos()
 	packValidated.Range(func(k, _ any) bool {
 		packValidated.Delete(k)
 		return true
@@ -1876,6 +1915,7 @@ func clearPackValidated() {
 }
 
 func dropCheckScratch() {
+	dropShapeMemos()
 	dropPNGAlphaMemo()
 	pngShapeCache.Range(func(k, _ any) bool {
 		pngShapeCache.Delete(k)

@@ -147,6 +147,27 @@ func indexShapes(shapes []cpShape) *shapeSet {
 	return set
 }
 
+// shapeIndexes holds each patch's shapeSet for the running Check, keyed by the patch's shapes backing array, so a
+// target edited by many packs indexes each patch once.
+var shapeIndexes = struct {
+	sync.Mutex
+	sets map[*cpShape]*shapeSet
+}{sets: map[*cpShape]*shapeSet{}}
+
+func shapeIndex(shapes []cpShape) *shapeSet {
+	if len(shapes) == 0 {
+		return indexShapes(shapes)
+	}
+	shapeIndexes.Lock()
+	defer shapeIndexes.Unlock()
+	set, ok := shapeIndexes.sets[&shapes[0]]
+	if !ok {
+		set = indexShapes(shapes)
+		shapeIndexes.sets[&shapes[0]] = set
+	}
+	return set
+}
+
 func (set *shapeSet) overlaps(shapes []cpShape) bool {
 	for _, x := range shapes {
 		others := set.rest
@@ -1471,9 +1492,8 @@ func exclusive(a, b cpPatch) bool {
 // such overlap is harmless (see harmless).
 func editsClash(a, b []cpPatch) (clash, minor bool) {
 	minor = true
-	sets := make([]*shapeSet, len(b))
 	for _, x := range a {
-		for j, y := range b {
+		for _, y := range b {
 			if mapOverlayHasUnknownLayer(x, y) {
 				continue
 			}
@@ -1486,10 +1506,7 @@ func editsClash(a, b []cpPatch) (clash, minor bool) {
 			if exclusive(x, y) {
 				continue
 			}
-			if sets[j] == nil {
-				sets[j] = indexShapes(y.shapes)
-			}
-			if sets[j].overlaps(x.shapes) {
+			if shapeIndex(y.shapes).overlaps(x.shapes) {
 				clash = true
 				// One overlap that matters settles it: nothing later can make the pair minor again.
 				if !harmless(x, y) {
