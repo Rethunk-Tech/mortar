@@ -161,6 +161,7 @@ type Item struct {
 // saved is queue.json: the state, and the staged key of each item that has one, so a restart still asks for
 // Confirm instead of downloading again. Staged keys stay out of State, which the window receives.
 type saved struct {
+	FormatVersion int `json:"formatVersion"`
 	State
 	Staged map[string]string `json:"staged,omitempty"`
 }
@@ -502,13 +503,13 @@ func (s *Service) publish(persist bool) {
 	s.mu.Unlock()
 	if persist {
 		// A queue that cannot be saved still runs; it only starts over after a restart.
-		out := saved{State: st, Staged: map[string]string{}}
+		out := saved{FormatVersion: datadir.FormatVersion, State: st, Staged: map[string]string{}}
 		for _, it := range st.Items {
 			if it.staged != "" {
 				out.Staged[it.ID] = it.staged
 			}
 		}
-		_ = datadir.WriteJSON(filepath.Join(s.d.Dir, fileName), out)
+		_ = datadir.WriteVersioned(filepath.Join(s.d.Dir, fileName), out)
 	}
 	if s.d.Emit != nil {
 		s.d.Emit(ChangedEvent, st)

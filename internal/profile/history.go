@@ -55,7 +55,8 @@ type HistoryEvent struct {
 }
 
 type historyFileData struct {
-	Events []HistoryEvent `json:"events"`
+	FormatVersion int            `json:"formatVersion"`
+	Events        []HistoryEvent `json:"events"`
 	// Counted marks a history whose events all carry their added, removed and updated counts.
 	Counted   bool               `json:"counted,omitempty"`
 	Snapshots map[string][]Entry `json:"-"`
@@ -687,7 +688,7 @@ func writeHistory(dir string, data historyFileData, keep int) error {
 			delete(data.Snapshots, id)
 		}
 	}
-	if err := datadir.WriteJSON(filepath.Join(dir, historyFile), historyFileData{Events: data.Events, Counted: data.Counted}); err != nil {
+	if err := datadir.WriteVersioned(filepath.Join(dir, historyFile), historyFileData{FormatVersion: datadir.FormatVersion, Events: data.Events, Counted: data.Counted}); err != nil {
 		return err
 	}
 	if err := pruneSnapshotFiles(dir, referenced); err != nil {

@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Rethunk-AI/mortar/internal/datadir"
 	"github.com/Rethunk-AI/mortar/internal/fsx"
 )
 
@@ -41,7 +40,7 @@ func (s *Store) Repair(game, id string) (Profile, error) {
 	p := salvageProfile(broken, id)
 	p.Entries = entries
 	p.Updated = time.Now().UTC().Truncate(time.Second)
-	if err := datadir.WriteJSON(src, p); err != nil {
+	if err := writeProfile(dir, p); err != nil {
 		_ = fsx.Rename(aside, src)
 		return Profile{}, err
 	}

@@ -150,15 +150,16 @@ type CollectionRef struct {
 
 // Profile is the on-disk shape of profile.json.
 type Profile struct {
-	ID      string    `json:"id"`
-	Name    string    `json:"name"`
-	Notes   string    `json:"notes"`
-	Cover   string    `json:"cover"`
-	Order   int       `json:"order"`
-	Hidden  bool      `json:"hidden"`
-	Created time.Time `json:"created"`
-	Updated time.Time `json:"updated"`
-	Entries []Entry   `json:"entries"`
+	FormatVersion int       `json:"formatVersion"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	Notes         string    `json:"notes"`
+	Cover         string    `json:"cover"`
+	Order         int       `json:"order"`
+	Hidden        bool      `json:"hidden"`
+	Created       time.Time `json:"created"`
+	Updated       time.Time `json:"updated"`
+	Entries       []Entry   `json:"entries"`
 	// Groups are named sets of entry keys that toggle together.
 	Groups []Group `json:"groups,omitempty"`
 	// Origin is how the profile was created when that is known: OriginLink, OriginMortar,

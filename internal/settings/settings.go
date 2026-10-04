@@ -40,8 +40,9 @@ const (
 
 // Settings is the on-disk shape of settings.json.
 type Settings struct {
-	Language string `json:"language"`
-	Accent   string `json:"accent"`
+	FormatVersion int    `json:"formatVersion"`
+	Language      string `json:"language"`
+	Accent        string `json:"accent"`
 	// Background is one of the Background* constants.
 	Background string `json:"background"`
 	// BackgroundImage is the absolute path of the user's wallpaper; empty means the default one.
@@ -381,7 +382,8 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	if err := rejectDuplicateShortcuts(next); err != nil {
 		return s.cur, err
 	}
-	if err := datadir.WriteJSON(s.path, next); err != nil {
+	next.FormatVersion = datadir.FormatVersion
+	if err := datadir.WriteVersioned(s.path, next); err != nil {
 		return s.cur, err
 	}
 	s.cur = next
