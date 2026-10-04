@@ -38,8 +38,8 @@ jobs:
           go mod download github.com/wailsapp/wails/v3
           wails_dir="$(go list -m -f '{{.Replace.Dir}}' github.com/wailsapp/wails/v3)"
           (cd "$wails_dir" && go build -o "$(go env GOPATH)/bin/wails3" ./cmd/wails3)
-          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
-          go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
+          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0
+          go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
 
       - name: Setup Bun
         uses: Rethunk-Tech/gh-actions/setup-bun@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
