@@ -21,6 +21,7 @@ import {
 import { useFomod } from '../fomod/store.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
+import { idKey } from '../mods/dependents.ts'
 import { considerEnableRequirements } from '../mods/enableRequirementsApply.ts'
 import { isLocked } from '../mods/locked.ts'
 import { useMods } from '../mods/store.ts'
@@ -102,10 +103,10 @@ async function maybeFinishInstall(profileId: string, dependentIds: string[]) {
   }
   await useMods.getState().load()
   const { mods } = useMods.getState()
-  const folded = new Set(dependentIds.map((id) => id.trim().toLowerCase()))
+  const folded = new Set(dependentIds.map(idKey))
   await considerEnableRequirements(
     mods,
-    mods.filter((m) => folded.has(m.uniqueId.trim().toLowerCase())),
+    mods.filter((m) => folded.has(idKey(m.uniqueId))),
     'install',
   )
   await useMods.getState().load()

@@ -1,10 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Collapse, IconButton, TextField, Typography } from '@mui/material'
+import { Box, Button, Collapse, IconButton, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, Inbox } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { SearchField } from '../shell/SearchField.tsx'
 import { CompareDiffRow, CompareSection } from './CompareRows.tsx'
 import type { ComparePair, CompareSide, ProfileCompare } from './compare.ts'
 import { sideLabel } from './compare.ts'
@@ -74,13 +75,11 @@ function CompareModFilter({
 }) {
   const { t } = useLingui()
   return (
-    <TextField
-      size="small"
+    <SearchField
+      label={t`Filter mods`}
       fullWidth={true}
-      placeholder={t`Filter mods`}
       value={value}
-      onChange={(event) => onChange(event.target.value)}
-      slotProps={{ htmlInput: { 'aria-label': t`Filter mods` } }}
+      onChange={onChange}
       sx={{ mb: 2 }}
     />
   )

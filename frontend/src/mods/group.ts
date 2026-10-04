@@ -2,6 +2,7 @@ import type {
   CustomCategory,
   Entry,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
+import { idKey } from './dependents.ts'
 
 const MAX_ENTRY_NOTE = 500
 const MAX_ENTRY_TAGS = 8
@@ -111,10 +112,6 @@ function statusGroupKey(hasProblem: boolean, hasUpdate: boolean, enabled: boolea
     return 'enabled'
   }
   return 'disabled'
-}
-
-function idKey(id: string): string {
-  return id.trim().toLowerCase()
 }
 
 function frameworkGroupKey(

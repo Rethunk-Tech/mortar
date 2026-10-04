@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
   Typography,
 } from '@mui/material'
 import { FileSearch } from 'lucide-react'
@@ -20,6 +19,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { paper } from '../mods/paper.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { SearchField } from '../shell/SearchField.tsx'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useOutcomeLabel } from './outcome.ts'
@@ -100,14 +100,12 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md" slotProps={{ paper }}>
       <DialogTitle>{t`Search all runs`}</DialogTitle>
       <DialogContent>
-        <TextField
+        <SearchField
+          label={t`Search run logs`}
           autoFocus={true}
           fullWidth={true}
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={t`Search run logs`}
-          slotProps={{ htmlInput: { 'aria-label': t`Search run logs` } }}
-          size="small"
+          onChange={setQuery}
           sx={{ mb: 1.5 }}
         />
         {loading ? <LoadingRow>{t`Searching…`}</LoadingRow> : null}

@@ -1,4 +1,5 @@
-function fold(id: string): string {
+// UniqueIDs compare case-insensitively and ignore surrounding space.
+export function idKey(id: string): string {
   return id.trim().toLowerCase()
 }
 
@@ -7,8 +8,8 @@ export function requiredIdsOf(mod: {
   optional?: readonly string[] | null
   contentPackFor?: string | null
 }): string[] {
-  const optional = new Set((mod.optional ?? []).map(fold))
-  const ids = (mod.needs ?? []).filter((id) => !optional.has(fold(id)))
+  const optional = new Set((mod.optional ?? []).map(idKey))
+  const ids = (mod.needs ?? []).filter((id) => !optional.has(idKey(id)))
   const pack = mod.contentPackFor?.trim()
   if (pack) {
     ids.push(pack)
@@ -26,16 +27,16 @@ export function dependentsOf<
     contentPackFor?: string | null
   },
 >(mods: readonly T[], removing: readonly T[]): T[] {
-  const gone = new Set(removing.map((m) => fold(m.uniqueId)))
+  const gone = new Set(removing.map((m) => idKey(m.uniqueId)))
   const out: T[] = []
   const seen = new Set<string>()
   for (const mod of mods) {
-    const id = fold(mod.uniqueId)
+    const id = idKey(mod.uniqueId)
     if (
       mod.enabled &&
       !gone.has(id) &&
       !seen.has(id) &&
-      requiredIdsOf(mod).some((need) => gone.has(fold(need)))
+      requiredIdsOf(mod).some((need) => gone.has(idKey(need)))
     ) {
       seen.add(id)
       out.push(mod)

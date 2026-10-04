@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, TextField, Typography } from '@mui/material'
+import { Box, ButtonBase, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
+import { SearchField } from '../shell/SearchField.tsx'
 import type { ShellPage } from './SettingsShell.tsx'
 
 const ACTIVE_WEIGHT = 600
@@ -61,12 +62,10 @@ export function SettingsNav<Id extends string>({
           {title}
         </Typography>
       </Box>
-      <TextField
-        size="small"
+      <SearchField
+        label={t`Search settings`}
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder={t`Search settings`}
-        slotProps={{ htmlInput: { 'aria-label': t`Search settings` } }}
+        onChange={setQuery}
         onKeyDown={(e) => {
           if (e.key === 'Escape' && query) {
             e.preventDefault()

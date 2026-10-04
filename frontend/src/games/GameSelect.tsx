@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
+import { Box, Button, Link, Typography } from '@mui/material'
 import { Play } from 'lucide-react'
 import { type MouseEvent, useCallback, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-AI/mortar/internal/game/models.ts'
@@ -22,6 +22,7 @@ import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
+import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { errorMessage, reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
@@ -175,13 +176,7 @@ function Row({
   const content = (
     <>
       {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
-      {openable ? (
-        <ButtonBase
-          onClick={open}
-          aria-label={t`Open ${game.name}`}
-          sx={{ position: 'absolute', inset: 0 }}
-        />
-      ) : null}
+      {openable ? <CoverButton onClick={open} aria-label={t`Open ${game.name}`} /> : null}
       <Box
         sx={{
           ...aboveOpen,

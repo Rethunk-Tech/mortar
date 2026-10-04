@@ -1,8 +1,4 @@
-import { requiredIdsOf } from './dependents.ts'
-
-function fold(id: string): string {
-  return id.trim().toLowerCase()
-}
+import { idKey, requiredIdsOf } from './dependents.ts'
 
 export interface RequirementSeed {
   uniqueId: string
@@ -19,15 +15,15 @@ export function pendingRequired<T extends RequirementSeed>(
 ): T[] {
   const byId = new Map<string, T>()
   for (const mod of mods) {
-    byId.set(fold(mod.uniqueId), mod)
+    byId.set(idKey(mod.uniqueId), mod)
   }
-  const seen = new Set(enabling.map((m) => fold(m.uniqueId)))
+  const seen = new Set(enabling.map((m) => idKey(m.uniqueId)))
   const out: T[] = []
   const queue = enabling.flatMap((m) => requiredIdsOf(m))
   while (queue.length > 0) {
     const id = queue.shift()
     if (id) {
-      const low = fold(id)
+      const low = idKey(id)
       if (!seen.has(low)) {
         seen.add(low)
         const dep = byId.get(low)

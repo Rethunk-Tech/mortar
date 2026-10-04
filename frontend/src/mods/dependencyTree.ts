@@ -1,7 +1,4 @@
-/** UniqueIDs compare case-insensitively; maps keep the first spelling seen. */
-function idKey(id: string): string {
-  return id.trim().toLowerCase()
-}
+import { idKey } from './dependents.ts'
 
 interface Edge {
   to: string

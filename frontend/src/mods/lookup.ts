@@ -16,6 +16,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/profile/models.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
+import { idKey } from './dependents.ts'
 import { offersNexusDownload } from './nexusMark.ts'
 import { assetRows } from './problemGroups.ts'
 
@@ -30,7 +31,7 @@ export const sourceKind = (profile: Profile, mod: Mod) =>
 
 // The Nexus mod ID a mod was installed from, or 0 for any other source.
 export const nexusIdOf = (profile: Profile, mod: Mod) => {
-  const source = (profile.entries ?? []).find((e) => e.key === mod.key)?.source
+  const source = entryOf(profile, mod.key)?.source
   return source?.kind === 'nexus' ? (source.modId ?? 0) : 0
 }
 
@@ -94,7 +95,7 @@ export const entryHasDrift = (result: Result | null, key: string): boolean =>
 export const modStatusProblem = (result: Result | null, mod: Mod): boolean =>
   problemsOf(result).some((p) => concerns(p, mod)) || entryHasDrift(result, mod.key)
 
-export const sameId = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+export const sameId = (a: string, b: string) => idKey(a) === idKey(b)
 
 // A card is flagged for a broken mod, for each copy of a duplicate, and for the dependent of a missing dependency.
 export function concerns(p: Problem, mod: Mod): boolean {

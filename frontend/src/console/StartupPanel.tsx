@@ -26,6 +26,7 @@ import {
   type StartupReport,
   State,
 } from '../../bindings/github.com/Rethunk-AI/mortar/internal/launchsvc/models.ts'
+import { absoluteWhen } from '../i18n/when.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { showInProfile } from '../mods/revealMod.ts'
@@ -391,10 +392,7 @@ function ReportPicker({
     >
       {reports.map((r) => (
         <MenuItem key={r.id} value={r.id}>
-          {new Date(r.processStart).toLocaleString(i18n.locale, {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-          })}
+          {absoluteWhen(r.processStart, i18n.locale)}
         </MenuItem>
       ))}
     </Select>

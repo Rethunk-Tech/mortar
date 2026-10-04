@@ -9,13 +9,13 @@ import {
   DialogContent,
   DialogTitle,
   LinearProgress,
-  TextField,
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { AssetTarget } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/models.ts'
 import { AssetMap } from '../../bindings/github.com/Rethunk-AI/mortar/internal/problems/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { paper } from './paper.ts'
 
@@ -163,14 +163,11 @@ export function AssetMapDialog({ open, onClose }: { open: boolean; onClose: () =
         <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
           {t`Every game asset the profile's content packs change, and which mods change it. Open one to see each mod's edit.`}
         </Typography>
-        <TextField
-          size="small"
-          value={filter}
-          onChange={(e) => {
-            setFilter(e.target.value)
-          }}
+        <SearchField
+          label={t`Find an asset`}
           placeholder={t`Find an asset, for example Maps/Town`}
-          slotProps={{ htmlInput: { 'aria-label': t`Find an asset` } }}
+          value={filter}
+          onChange={setFilter}
         />
         {mapTargets === null ? (
           <LinearProgress />
