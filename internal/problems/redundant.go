@@ -110,3 +110,35 @@ func namedIn(summary string, enabled []Installed, self string) []ModRef {
 	}
 	return out
 }
+
+// redundantCount counts each group of mods doing the same job once, as the Problems tab shows it, and every other
+// Redundant row on its own.
+func redundantCount(rows []Redundant) int {
+	parent := map[string]string{}
+	var find func(string) string
+	find = func(k string) string {
+		p, ok := parent[k]
+		if !ok || p == k {
+			parent[k] = k
+			return k
+		}
+		root := find(p)
+		parent[k] = root
+		return root
+	}
+	n := 0
+	for _, row := range rows {
+		if row.Kind != "sameJob" || row.Covered {
+			n++
+			continue
+		}
+		for _, by := range row.By {
+			parent[find(by.Key)] = find(row.Key)
+		}
+	}
+	groups := map[string]bool{}
+	for k := range parent {
+		groups[find(k)] = true
+	}
+	return n + len(groups)
+}

@@ -43,7 +43,7 @@ import {
   type Row,
 } from './problemGroups.ts'
 import { formatProblemReport, whyKeysOf } from './problemReport.ts'
-import { useRedundantReason } from './redundantReason.ts'
+import { useRedundantRows } from './redundantReason.ts'
 import { CheckTimings, SlowStartupSection } from './SlowStartupSection.tsx'
 import { useMods } from './store.ts'
 import { useLoadProblemsOnFocus } from './useLoadProblemsOnFocus.ts'
@@ -328,11 +328,8 @@ export function ProblemActions() {
   const sections = result === null ? [] : problemSections(result)
   const cleanup = result?.cleanup ?? []
   const compat = result?.compat ?? []
-  const redundantReason = useRedundantReason()
-  const redundant = (result?.redundant ?? []).map((item) => ({
-    ...item,
-    reason: redundantReason(item),
-  }))
+  const redundantRows = useRedundantRows()
+  const redundant = redundantRows(result?.redundant ?? [])
   const harmlessCount = (result?.assetConflicts ?? []).filter((asset) => asset.cosmetic).length
   const nothing =
     result === null ||
@@ -387,7 +384,7 @@ export function ProblemActions() {
                     {
                       title: t`Redundant`,
                       count: redundant.length,
-                      lines: redundant.map((item) => `${item.name}: ${item.reason}`),
+                      lines: redundant.map((item) => item.text ?? `${item.name}: ${item.reason}`),
                     },
                   ]),
               ...compatReportChunks(compat, t`Compatibility`),
@@ -414,7 +411,7 @@ export function ProblemsTab() {
   const [confirmDismissCosmetic, setConfirmDismissCosmetic] = useState(false)
   const [addingAll, runAddAll] = usePending()
   const cosmeticConflicts = useSettings((s) => gamePrefs(s).cosmeticConflicts)
-  const redundantReason = useRedundantReason()
+  const redundantRows = useRedundantRows()
 
   if (result === null) {
     return <LoadingRow>{t`Checking the mods for problems…`}</LoadingRow>
@@ -422,10 +419,7 @@ export function ProblemsTab() {
   const sections = problemSections(result)
   const cleanup = result.cleanup ?? []
   const compat = result.compat ?? []
-  const redundant = (result.redundant ?? []).map((item) => ({
-    ...item,
-    reason: redundantReason(item),
-  }))
+  const redundant = redundantRows(result.redundant ?? [])
   const installable =
     sections
       .find((section) => section.id === 'missing')
@@ -511,7 +505,7 @@ export function ProblemsTab() {
       <CleanupSection
         cleanup={redundant}
         title={t`Redundant`}
-        removeAll={redundant.every((item) => item.kind !== 'sameJob')}
+        removeAll={redundant.every((item) => item.choices === undefined)}
       />
       <CleanupSection cleanup={cleanup} />
       <ConfirmDialog

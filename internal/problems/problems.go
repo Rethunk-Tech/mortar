@@ -199,7 +199,7 @@ func (r Result) Count() int {
 
 // WarningCount is cosmetic asset conflicts plus compat, cleanup and redundancy hints.
 func (r Result) WarningCount() int {
-	n := len(r.Compat) + len(r.Cleanup) + len(r.Redundant)
+	n := len(r.Compat) + len(r.Cleanup) + redundantCount(r.Redundant)
 	for _, c := range r.AssetConflicts {
 		if c.Cosmetic {
 			n++

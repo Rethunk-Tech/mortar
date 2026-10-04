@@ -37,3 +37,22 @@ func TestSupersededSkipsAModAlreadyRedundant(t *testing.T) {
 		t.Fatalf("redundant = %+v", r.Redundant)
 	}
 }
+
+func TestRedundantCountsASameJobGroupOnce(t *testing.T) {
+	pair := func(key string, by ...string) Redundant {
+		r := Redundant{Kind: "sameJob", Key: key}
+		for _, b := range by {
+			r.By = append(r.By, ModRef{Key: b})
+		}
+		return r
+	}
+	rows := []Redundant{
+		pair("a", "b", "c"), pair("b", "a", "c"), pair("c", "a", "b"),
+		pair("x", "y"), pair("y", "x"),
+		{Kind: "sameJob", Key: "small", Covered: true, By: []ModRef{{Key: "big"}}},
+		{Kind: "superseded", Key: "old", By: []ModRef{{Key: "new"}}},
+	}
+	if got := redundantCount(rows); got != 4 {
+		t.Fatalf("count = %d, want 4", got)
+	}
+}

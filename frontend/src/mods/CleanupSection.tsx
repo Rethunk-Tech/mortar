@@ -1,17 +1,61 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
-import { type ComponentProps, useState } from 'react'
+import { Box, Button, Menu, MenuItem, Typography } from '@mui/material'
+import { ChevronDown } from 'lucide-react'
+import { useState } from 'react'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useMods } from './store.ts'
 
-function CleanupRow({
-  cleanup,
-}: {
-  cleanup: { key: string; uniqueId: string; name: string; reason?: string }
-}) {
+interface CleanupItem {
+  key: string
+  uniqueId: string
+  name: string
+  reason?: string
+  text?: string
+  choices?: { key: string; name: string }[]
+}
+
+// RemoveOne asks which mod of a group goes, since any one of them may be the one to keep.
+function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
+  const { t } = useLingui()
+  const remove = useMods((s) => s.remove)
+  const mods = useMods((s) => s.mods)
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  return (
+    <>
+      <Button
+        size="small"
+        endIcon={<ChevronDown size={14} />}
+        onClick={(e) => setAnchor(e.currentTarget)}
+      >
+        {t`Remove`}
+      </Button>
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
+        {choices.map((choice) => {
+          const mod = mods.find((m) => m.key === choice.key)
+          return (
+            <MenuItem
+              key={choice.key}
+              disabled={mod === undefined}
+              onClick={() => {
+                setAnchor(null)
+                if (mod !== undefined) {
+                  remove(mod).catch(reportUnexpected)
+                }
+              }}
+            >
+              {choice.name}
+            </MenuItem>
+          )
+        })}
+      </Menu>
+    </>
+  )
+}
+
+function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
   const { t } = useLingui()
   const remove = useMods((s) => s.remove)
   const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
@@ -38,22 +82,29 @@ function CleanupRow({
           title={cleanup.name.trim() === '' ? cleanup.uniqueId : undefined}
           sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
         >
-          {t`${who}: ${reason}`}
+          {cleanup.text ?? t`${who}: ${reason}`}
         </Typography>
       </Box>
-      <DisabledReason title={t`This mod is no longer in the profile.`} disabled={mod === undefined}>
-        <Button
-          size="small"
+      {cleanup.choices ? (
+        <RemoveOne choices={cleanup.choices} />
+      ) : (
+        <DisabledReason
+          title={t`This mod is no longer in the profile.`}
           disabled={mod === undefined}
-          onClick={() => {
-            if (mod !== undefined) {
-              remove(mod).catch(reportUnexpected)
-            }
-          }}
         >
-          {t`Remove`}
-        </Button>
-      </DisabledReason>
+          <Button
+            size="small"
+            disabled={mod === undefined}
+            onClick={() => {
+              if (mod !== undefined) {
+                remove(mod).catch(reportUnexpected)
+              }
+            }}
+          >
+            {t`Remove`}
+          </Button>
+        </DisabledReason>
+      )}
     </Box>
   )
 }
@@ -74,7 +125,7 @@ export function CleanupSection({
   title,
   removeAll = true,
 }: {
-  cleanup: ComponentProps<typeof CleanupRow>['cleanup'][]
+  cleanup: CleanupItem[]
   title?: string
   removeAll?: boolean
 }) {
