@@ -9,17 +9,7 @@ import {
   ListItemText,
 } from '@mui/material'
 import { Application } from '@wailsio/runtime'
-import {
-  Bug,
-  Code2,
-  FileArchive,
-  FolderOpen,
-  Info,
-  LogOut,
-  RefreshCw,
-  Settings,
-  Sparkles,
-} from 'lucide-react'
+import { Bug, Code2, FolderOpen, Info, LogOut, RefreshCw, Settings, Sparkles } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
@@ -32,7 +22,6 @@ import { showWhatsNew } from '../updates/whatsNew.ts'
 import { checkForUpdates } from './checkForUpdates.ts'
 import { NexusAccount } from './NexusAccount.tsx'
 import { reportBug } from './reportBug.ts'
-import { saveDiagnostics } from './saveDiagnostics.ts'
 
 const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
 
@@ -143,17 +132,6 @@ export function AppMenu() {
               <FolderOpen size={18} />
             </ListItemIcon>
             <ListItemText primary={t`Open data folder`} />
-          </ListItemButton>
-          <ListItemButton
-            onClick={() => {
-              close()
-              saveDiagnostics(game, '').catch(reportUnexpected)
-            }}
-          >
-            <ListItemIcon>
-              <FileArchive size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`Save diagnostics…`} />
           </ListItemButton>
           <ListItemButton
             onClick={() => {
