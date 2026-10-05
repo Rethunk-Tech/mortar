@@ -447,7 +447,6 @@ func (s Settings) AutoInstallMortar() bool {
 	return ToggleOn(s.AutoInstallMortarUpdates)
 }
 
-// ArchiveDir is where download zips land; empty means the data folder's downloads directory.
 // WatchedFolders lists the extra archive folders: absolute paths only, each once.
 func (s Settings) WatchedFolders() []string {
 	var out []string
@@ -459,6 +458,7 @@ func (s Settings) WatchedFolders() []string {
 	return out
 }
 
+// ArchiveDir is where download zips land; empty means the data folder's downloads directory.
 func (s Settings) ArchiveDir() string {
 	return strings.TrimSpace(s.DownloadFolder)
 }
