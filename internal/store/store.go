@@ -312,7 +312,7 @@ func (s *Store) AddHashedDir(game, srcDir string) (string, error) {
 	if err := checkGame(game); err != nil {
 		return "", err
 	}
-	key, err := hashDir(srcDir)
+	key, err := HashDir(srcDir)
 	if err != nil {
 		return "", &Error{Game: game, Err: err}
 	}
@@ -331,7 +331,7 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 		if _, _, ok := LoaderOf(key); ok {
 			return "", nil
 		}
-		h, err := hashDir(srcDir)
+		h, err := HashDir(srcDir)
 		return strings.TrimPrefix(h, "local-"), err
 	}, func(tmp string) error { return datadir.CopyTree(srcDir, tmp) }, func() int64 {
 		n, _ := datadir.Size(srcDir)
@@ -342,7 +342,7 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 // AddDirVerified copies srcDir under key and checks local content keys before installing them.
 func (s *Store) AddDirVerified(game, key, srcDir string) error {
 	if strings.HasPrefix(key, "local-") {
-		got, err := hashDir(srcDir)
+		got, err := HashDir(srcDir)
 		if err != nil {
 			return err
 		}
@@ -485,7 +485,8 @@ func exists(p string) bool {
 	return err == nil
 }
 
-func hashDir(root string) (string, error) {
+// HashDir is the content key of a folder: a hash of its file paths and bytes.
+func HashDir(root string) (string, error) {
 	base, err := filepath.EvalSymlinks(root)
 	if err != nil {
 		return "", err

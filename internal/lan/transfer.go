@@ -180,6 +180,13 @@ func (s *Service) fetchEntry(
 	}); err != nil {
 		return 0, fmt.Errorf("receive store entry %s: %w", key, err)
 	}
+	got, err := store.HashDir(temp)
+	if err != nil {
+		return 0, fmt.Errorf("check store entry %s: %w", key, err)
+	}
+	if item.Hash == "" || got != item.Hash {
+		return 0, fmt.Errorf("store entry %s does not match what the sender vouched for", key)
+	}
 	if err := s.deps.Store.AddDirVerified(incoming.Game, key, temp); err != nil {
 		return 0, fmt.Errorf("install store entry %s: %w", key, err)
 	}

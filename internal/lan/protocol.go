@@ -16,7 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
-const protocolVersion = "3"
+const protocolVersion = "4"
 
 type nonceRecord struct {
 	peer    string
@@ -59,6 +59,18 @@ func responseProof(key []byte, nonce, token string, keys []string) string {
 	return hmacProof(key, nonce, "response|"+token+"|"+strings.Join(keys, ","))
 }
 
+// entryDigest is a store entry's content hash and the sender's MAC over it.
+type entryDigest struct {
+	Hash string `json:"hash"`
+	MAC  string `json:"mac"`
+}
+
+// entryMAC binds an entry's content hash to the game and key under the pair key, so the receiver can tell what the
+// sender holds from what an eavesdropper serves on the unauthenticated transfer address.
+func entryMAC(key []byte, game, entry, hash string) string {
+	return hmacProof(key, "store|"+game+"|"+entry, hash)
+}
+
 func randomToken() (string, error) {
 	raw := make([]byte, 32)
 	if _, err := rand.Read(raw); err != nil {
@@ -70,7 +82,9 @@ func randomToken() (string, error) {
 // transferItem is one store entry a paired receiver copies from the sender, with what the store records about
 // its source.
 type transferItem struct {
-	Key     string
+	Key string
+	// Hash is the content hash the sender vouched for with the pair key; empty when it vouched for none.
+	Hash    string
 	Source  string
 	Package string
 	Version string

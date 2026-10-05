@@ -518,3 +518,18 @@ func TestPairTranscriptBindsBothNames(t *testing.T) {
 		}
 	}
 }
+
+func TestEntryMACBindsHashGameAndKey(t *testing.T) {
+	key := []byte("pair key")
+	mac := entryMAC(key, "stardew", "nexus-1-2", "local-aa")
+	for _, other := range []string{
+		entryMAC(key, "stardew", "nexus-1-2", "local-bb"),
+		entryMAC(key, "stardew", "nexus-1-3", "local-aa"),
+		entryMAC(key, "lethal-company", "nexus-1-2", "local-aa"),
+		entryMAC([]byte("other"), "stardew", "nexus-1-2", "local-aa"),
+	} {
+		if other == mac {
+			t.Fatal("the MAC does not bind its inputs")
+		}
+	}
+}

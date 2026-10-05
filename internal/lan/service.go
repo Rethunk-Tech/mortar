@@ -4,6 +4,7 @@ package lan
 import (
 	"bytes"
 	"context"
+	"crypto/hmac"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -120,6 +121,8 @@ type shareRequest struct {
 	Nonce      string `json:"nonce,omitempty"`
 	Proof      string `json:"proof,omitempty"`
 	SenderPort int    `json:"senderPort"`
+	// Digests vouches for each store entry the share lists, by entry key; only a paired sender sends them.
+	Digests map[string]entryDigest `json:"digests,omitempty"`
 }
 
 // NewService returns a LAN sharing service that is disabled until SetEnabled is called.
@@ -374,7 +377,8 @@ func (s *Service) Send(ctx context.Context, peerID, game, profileID string) erro
 
 func (s *Service) sendPayload(ctx context.Context, peerID, game string, payload []byte) error {
 	encoded := base64.RawStdEncoding.EncodeToString(payload)
-	if _, err := validateRequest(shareRequest{Sender: s.deviceName(), Game: game, Payload: encoded, Version: protocolVersion}); err != nil {
+	shared, err := validateRequest(shareRequest{Sender: s.deviceName(), Game: game, Payload: encoded, Version: protocolVersion})
+	if err != nil {
 		return err
 	}
 	hello, err := s.hello(ctx, peerID)
@@ -397,6 +401,7 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game string, payload 
 	key := s.book.key(hello.ID)
 	if key != nil {
 		request.Proof = hmacProof(key, hello.Nonce, encoded)
+		request.Digests = s.entryDigests(key, game, transferItems(shared))
 	}
 	body, err := json.Marshal(request)
 	if err != nil {
@@ -434,6 +439,23 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game string, payload 
 	}
 	s.rememberAddress(peerID)
 	return nil
+}
+
+// entryDigests hashes the listed entries the store holds and vouches for each with the pair key.
+func (s *Service) entryDigests(key []byte, game string, items []transferItem) map[string]entryDigest {
+	out := make(map[string]entryDigest, len(items))
+	for _, item := range items {
+		dir, err := s.deps.Store.Path(game, item.Key)
+		if err != nil {
+			continue
+		}
+		hash, err := store.HashDir(dir)
+		if err != nil {
+			continue
+		}
+		out[item.Key] = entryDigest{Hash: hash, MAC: entryMAC(key, game, item.Key, hash)}
+	}
+	return out
 }
 
 func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, error) {
@@ -598,6 +620,13 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	key := s.book.key(request.SenderID)
 	paired := request.SenderPort > 0 && s.consumeProof(peer, request) && proofMatches(key, request.Nonce, request.Payload, request.Proof)
 	items := transferItems(shared)
+	if paired {
+		for i, item := range items {
+			if d, ok := request.Digests[item.Key]; ok && hmac.Equal([]byte(entryMAC(key, request.Game, item.Key, d.Hash)), []byte(d.MAC)) {
+				items[i].Hash = d.Hash
+			}
+		}
+	}
 	response := shareResponse{Paired: paired}
 	var arrivalTransfer incomingTransfer
 	if paired {

@@ -230,7 +230,7 @@ func TestAddDirVerifiedChecksLocalKey(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()
 	testfs.WriteFile(t, src, "mod.dll", "mod")
-	key, err := hashDir(src)
+	key, err := HashDir(src)
 	if err != nil {
 		t.Fatal(err)
 	}
