@@ -44,6 +44,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
+	"github.com/Rethunk-Tech/mortar/internal/packsvc"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -638,6 +639,7 @@ func run() error {
 		application.NewService(checkSvc), application.NewService(&tidy.Service{Report: tidied}),
 		application.NewService(quitSvc),
 		application.NewService(browseSvc),
+		application.NewService(&packsvc.Service{Profiles: profiles, Queue: queueSvc}),
 	} {
 		app.RegisterService(s)
 	}
