@@ -4,11 +4,10 @@ import type { Update } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useNow } from '../i18n/useNow.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { download } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { installableUpdate, modId, updatesForReview } from './lookup.ts'
+import { modId, updatesForReview } from './lookup.ts'
 import { isFull, mergeCachedDetails, useNexusDetails } from './nexusDetails.ts'
 import { useOptionalSkips } from './optionalFiles.ts'
 import { useMods } from './store.ts'
@@ -17,11 +16,14 @@ import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { KeptGroup } from './updateReview/KeptGroup.tsx'
 import { keptUpdates } from './updateReview/kept.ts'
 import { loadAllDetails } from './updateReview/loadAll.ts'
+import { NeedsChoice } from './updateReview/NeedsChoice.tsx'
 import { PropagateUpdate } from './updateReview/PropagateUpdate.tsx'
 import { ReviewFooter } from './updateReview/ReviewFooter.tsx'
 import { ReviewList } from './updateReview/ReviewList.tsx'
 import { ReviewTitle } from './updateReview/ReviewTitle.tsx'
+import { UndoAllConfirm } from './updateReview/UndoAllConfirm.tsx'
 import { UpdateBar as ReviewBar } from './updateReview/UpdateBar.tsx'
+import { needChoiceUpdates, sameSourceUpdates, updateAll } from './updateReview/updateAll.ts'
 import { WithheldGroup } from './updateReview/WithheldGroup.tsx'
 import { installedCaution, pendingUpdate, withOptional } from './updateReview/wants.ts'
 import { useEmptyReviewNotice, withheldUpdates } from './updateReview/withheld.ts'
@@ -62,16 +64,19 @@ export function UpdateReview({ profile }: { profile: Profile }) {
     ).catch(reportUnexpected)
   }, [open, updates])
   useEmptyReviewNotice(open && updates !== null && list.length === 0 && withheld.length === 0)
-  const chosen = list.filter(
+  const needChoice = needChoiceUpdates(list)
+  const sameSource = list.filter((u) => !u.switch)
+  const chosen = sameSourceUpdates(list).filter(
     (u) =>
       include[modId(u)] !== false &&
-      installableUpdate(u) &&
       !pendingUpdate(items, profile.id, u) &&
       (installedCaution(mods, u) === '' || acked[modId(u)] === true),
   )
   const wanted = chosen.flatMap((u) =>
     withOptional(u, profile, byId[u.nexusId]?.details?.files ?? [], skipped[u.key] === true),
   )
+  const onAck = (id: string, on: boolean) => setAcked((prev) => ({ ...prev, [id]: on }))
+  const onInclude = (id: string, on: boolean) => setInclude((prev) => ({ ...prev, [id]: on }))
   const uncachedIds = [
     ...new Set(list.filter((u) => u.nexusId > 0 && !isFull(byId[u.nexusId])).map((u) => u.nexusId)),
   ]
@@ -92,13 +97,22 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       />
       <DialogContent sx={{ p: 0, borderTop: '1px solid var(--mortar-hairline-muted)' }}>
         <ReviewList
-          list={list}
+          list={sameSource}
           profile={profile}
           mods={mods}
           acked={acked}
           include={include}
-          onAck={(id, on) => setAcked((prev) => ({ ...prev, [id]: on }))}
-          onInclude={(id, on) => setInclude((prev) => ({ ...prev, [id]: on }))}
+          onAck={onAck}
+          onInclude={onInclude}
+        />
+        <NeedsChoice
+          list={needChoice}
+          profile={profile}
+          mods={mods}
+          acked={acked}
+          include={include}
+          onAck={onAck}
+          onInclude={onInclude}
         />
         <WithheldGroup withheld={withheld} mods={mods} />
         <KeptGroup kept={keptUpdates(updates, profile)} mods={mods} />
@@ -119,7 +133,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
         onPropagate={setPropagateAll}
         onUpdate={() => {
           close()
-          download(wanted, true)
+          updateAll(gameId, profile.id, wanted, needChoice.length)
             .then((added) => {
               if (added && propagateAll) {
                 setPropagating(list.filter((u) => wanted.some((w) => w.currentKey === u.key)))
@@ -136,6 +150,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           onDone={() => setPropagating((pending) => pending.slice(1))}
         />
       ) : null}
+      <UndoAllConfirm />
       <EverywhereDialog
         open={everywhereAll}
         game={gameId}

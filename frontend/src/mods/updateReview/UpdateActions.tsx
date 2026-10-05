@@ -11,6 +11,7 @@ import type {
 import { PreviewEverywhere } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { installableUpdate } from '../lookup.ts'
@@ -42,6 +43,7 @@ export function UpdateActions({
   const setSkipSource = useMods((s) => s.setSkipSource)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [everywhere, setEverywhere] = useState(false)
+  const [confirmSwitch, setConfirmSwitch] = useState(false)
   const [preview, setPreview] = useState<EverywherePreview | null>(null)
   useEffect(() => {
     if (game === '' || update.id === '') {
@@ -61,20 +63,21 @@ export function UpdateActions({
     setAnchor(null)
     fn().catch(reportUnexpected)
   }
+  const install = () => {
+    const { byId } = useNexusDetails.getState()
+    const skipped = useOptionalSkips.getState().skipped[update.key] === true
+    const profile = openProfileOf(useProfiles.getState())
+    download(
+      withOptional(update, profile, byId[update.nexusId]?.details?.files ?? [], skipped),
+    ).catch(reportUnexpected)
+  }
   return (
     <>
       {installableUpdate(update) ? (
         <Button
           variant="contained"
           disabled={blocked}
-          onClick={() => {
-            const { byId } = useNexusDetails.getState()
-            const skipped = useOptionalSkips.getState().skipped[update.key] === true
-            const profile = openProfileOf(useProfiles.getState())
-            download(
-              withOptional(update, profile, byId[update.nexusId]?.details?.files ?? [], skipped),
-            ).catch(reportUnexpected)
-          }}
+          onClick={update.switch ? () => setConfirmSwitch(true) : install}
         >
           {queued ? t`Queued` : t`Update`}
         </Button>
@@ -129,6 +132,17 @@ export function UpdateActions({
           </DisabledReason>
         ) : null}
       </Menu>
+      <ConfirmDialog
+        open={confirmSwitch}
+        title={t`Switch ${update.name} to ${update.source}?`}
+        body={t`${update.name} was installed from another site. Updating installs ${update.version} from ${update.source} instead and keeps your settings.`}
+        confirmLabel={t`Switch and update`}
+        onCancel={() => setConfirmSwitch(false)}
+        onConfirm={() => {
+          setConfirmSwitch(false)
+          install()
+        }}
+      />
       <EverywhereDialog
         open={everywhere}
         game={game}

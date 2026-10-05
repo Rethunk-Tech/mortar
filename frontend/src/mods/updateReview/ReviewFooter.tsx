@@ -72,7 +72,7 @@ export function ReviewFooter({
         ) : null}
         {wantedCount > 0 ? (
           <Button variant="contained" onClick={onUpdate}>
-            {t`Update ${wantedCount}`}
+            {t`Update all (${wantedCount})`}
           </Button>
         ) : null}
       </Box>
