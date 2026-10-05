@@ -851,7 +851,7 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 		}
 	}
 	for _, e := range p.Entries {
-		if e.IsOverlay() {
+		if e.IsOverlay() || !e.hasFolder() {
 			continue
 		}
 		if _, err := os.Stat(filepath.Join(modsDir, e.Key)); err == nil {

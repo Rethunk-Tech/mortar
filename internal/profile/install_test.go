@@ -214,6 +214,13 @@ func TestInstallThunderstorePackageRecordsAnEntryWithoutAFolder(t *testing.T) {
 	if err != nil || len(off.Entries[0].Disabled) != 1 {
 		t.Fatalf("disable = %+v, %v", off, err)
 	}
+	profileDir, _ := e.ProfileDir("lethal-company", p.ID)
+	if err := e.rebuild("lethal-company", profileDir, off); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(profileDir, "mods", en.Key)); err == nil {
+		t.Fatal("rebuild made a mods folder for a package")
+	}
 	if err := e.WriteFiles("lethal-company", p.ID, map[string][]byte{"BepInEx/config/a.cfg": []byte("x")}); err != nil {
 		t.Fatal(err)
 	}
