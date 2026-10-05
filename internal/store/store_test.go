@@ -3,8 +3,10 @@ package store
 import (
 	"errors"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"testing"
@@ -540,5 +542,57 @@ func TestKeysWithTheSameBytesShareOneBlobAndAreFoundBySource(t *testing.T) {
 	}
 	if got := names(t, filepath.Join(s.root, blobsDir)); len(got) != 0 {
 		t.Fatalf("blob outlived its last key: %v", got)
+	}
+}
+
+// The decoded index is reused between reads, so it must follow a write from another Store on the same folder and
+// must not pick up a change a caller makes to its own copy.
+func TestIndexReuseFollowsTheFile(t *testing.T) {
+	s := newStore(t)
+	other := &Store{root: s.root}
+	if err := s.AddDir("stardew", "smapi-1", t.TempDir()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Path("stardew", "smapi-1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := other.AddDir("stardew", "smapi-2", t.TempDir()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Path("stardew", "smapi-2"); err != nil {
+		t.Fatalf("a key another store added: %v", err)
+	}
+	idx, err := s.loadIndex()
+	if err != nil {
+		t.Fatal(err)
+	}
+	delete(idx["stardew"], "smapi-1")
+	if _, err := s.Path("stardew", "smapi-1"); err != nil {
+		t.Fatalf("a caller's change to its copy reached the shared index: %v", err)
+	}
+}
+
+// BenchmarkPath resolves one key against an index the size of a large profile's store (800 items).
+func BenchmarkPath(b *testing.B) {
+	s := &Store{root: filepath.Join(b.TempDir(), "store")}
+	recs := map[string]record{}
+	for i := range 800 {
+		recs["local-"+strings.Repeat("0", 60)+strconv.Itoa(1000+i)] = record{Source: "local", Used: time.Now()}
+	}
+	if err := s.AddDir("stardew", "smapi-1", b.TempDir()); err != nil {
+		b.Fatal(err)
+	}
+	idx, err := s.loadIndex()
+	if err != nil {
+		b.Fatal(err)
+	}
+	maps.Copy(idx["stardew"], recs)
+	if err := s.saveIndex(idx); err != nil {
+		b.Fatal(err)
+	}
+	for b.Loop() {
+		if _, err := s.Path("stardew", "smapi-1"); err != nil {
+			b.Fatal(err)
+		}
 	}
 }

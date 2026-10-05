@@ -82,6 +82,11 @@ var ErrIncomplete = errors.New("store item is incomplete")
 type Store struct {
 	root string
 	mu   sync.Mutex
+	// idx is the last index read or written, valid while index.json is still the file it came from. Every write
+	// replaces the file through a rename, so a new file identity means another writer changed it.
+	idxMu   sync.Mutex
+	idx     index
+	idxFile os.FileInfo
 	// UnusedFor is unused-item lifetime; 0 uses the built-in 30 days, negative means keep forever.
 	UnusedFor time.Duration
 }
@@ -232,7 +237,7 @@ func (s *Store) Dir(game, key string) (string, error) {
 }
 
 func (s *Store) folder(game, key string) (string, error) {
-	idx, err := s.loadIndex()
+	idx, err := s.viewIndex()
 	if err != nil {
 		return "", err
 	}
@@ -602,6 +607,20 @@ func (s *Store) indexPath() string { return filepath.Join(s.root, "index.json") 
 // loadIndex reads the index. One that cannot be parsed is set aside and replaced by an empty one; the blobs it named
 // stay on disk until they have been unreferenced for the retention period.
 func (s *Store) loadIndex() (index, error) {
+	idx, err := s.viewIndex()
+	return idx.clone(), err
+}
+
+// viewIndex is loadIndex for a caller that only reads: the index it returns is shared and must not be changed.
+func (s *Store) viewIndex() (index, error) {
+	fi, statErr := os.Stat(s.indexPath())
+	s.idxMu.Lock()
+	if statErr == nil && s.idxFile != nil && os.SameFile(fi, s.idxFile) && fi.ModTime().Equal(s.idxFile.ModTime()) {
+		idx := s.idx
+		s.idxMu.Unlock()
+		return idx, nil
+	}
+	s.idxMu.Unlock()
 	idx := index{}
 	found, err := datadir.ReadJSON(s.indexPath(), &idx)
 	if err != nil {
@@ -617,6 +636,9 @@ func (s *Store) loadIndex() (index, error) {
 	if idx == nil {
 		idx = index{}
 	}
+	if statErr == nil {
+		s.remember(idx, fi)
+	}
 	return idx, nil
 }
 
@@ -624,7 +646,25 @@ func (s *Store) saveIndex(idx index) error {
 	if err := os.MkdirAll(s.root, 0o700); err != nil {
 		return err
 	}
+	// The caller may go on changing idx, so the next read decodes the file again.
+	s.remember(nil, nil)
 	return datadir.WriteJSON(s.indexPath(), idx)
+}
+
+// remember keeps idx, which no caller changes afterwards, as the decoded form of the file fi describes; a nil fi
+// forgets it.
+func (s *Store) remember(idx index, fi os.FileInfo) {
+	s.idxMu.Lock()
+	defer s.idxMu.Unlock()
+	s.idx, s.idxFile = idx, fi
+}
+
+func (idx index) clone() index {
+	out := make(index, len(idx))
+	for g, recs := range idx {
+		out[g] = maps.Clone(recs)
+	}
+	return out
 }
 
 // bind records that key's folder is blob and starts its clock now. What the key says about itself fills the source,
