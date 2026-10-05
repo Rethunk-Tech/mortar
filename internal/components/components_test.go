@@ -301,30 +301,23 @@ func TestBundledGamesCarryPathTemplates(t *testing.T) {
 
 func TestBundledGamesCarryTargetsAndCompanions(t *testing.T) {
 	s, _ := BundledGame("stardew")
-	if tgt, ok := s.Target("mods"); !ok || tgt.Root != "{profileMods}" || tgt.Writable {
+	if tgt, ok := s.Target("mods"); !ok || tgt.Root != "{profileMods}" {
 		t.Fatalf("stardew mods target = %+v", tgt)
 	}
 	if s.Loaders[0].Companion != "bridge" {
 		t.Fatalf("smapi companion = %q", s.Loaders[0].Companion)
 	}
 	lc, _ := BundledGame("lethal-company")
-	if tgt, ok := lc.Target("profile"); !ok || tgt.Root != "{profile}" || tgt.Writable {
+	if tgt, ok := lc.Target("profile"); !ok || tgt.Root != "{profile}" {
 		t.Fatalf("lethal-company profile target = %+v", tgt)
 	}
-	if s.Deploy != DeployRedirect || lc.Deploy != DeployLink {
+	if s.Deploy != DeployRedirect || lc.Deploy != DeployProfile {
 		t.Fatalf("deploy = %q, %q", s.Deploy, lc.Deploy)
-	}
-	if c, _ := lc.Target("config"); !c.Writable || c.Install != "{install}/BepInEx/config" || c.Root != "{profile}/BepInEx/config" {
-		t.Fatalf("lethal-company config target = %+v", c)
 	}
 	bad := s
 	bad.Targets = []TargetDef{{ID: "mods", Root: "mods"}}
 	if bad.Validate() == nil {
 		t.Fatal("a target root without a token validated")
-	}
-	bad.Targets = []TargetDef{{ID: "mods", Root: "{profileMods}", Install: "{install}"}}
-	if bad.Validate() == nil {
-		t.Fatal("an install root on a redirected game validated")
 	}
 }
 

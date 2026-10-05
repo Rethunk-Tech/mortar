@@ -53,7 +53,7 @@ func TestInstallPackAndDoorstopFiles(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(root, "manifest.json")); err == nil {
 		t.Fatal("pack metadata leaked into the profile")
 	}
-	want := []string{".doorstop_version", "doorstop_config.ini", "doorstop_libs/x64/libdoorstop.so", "winhttp.dll"}
+	want := []string{"doorstop_config.ini", "winhttp.dll"}
 	if got := DoorstopFiles(root); strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Fatalf("doorstop files %v", got)
 	}

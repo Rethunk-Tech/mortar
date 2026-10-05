@@ -38,7 +38,7 @@ func tsPackage(t *testing.T, name string, files map[string]string) string {
 	return testfs.WriteZip(t, filepath.Join(t.TempDir(), name+".zip"), files)
 }
 
-func TestDeployIntoALethalCompanyInstallAndBack(t *testing.T) {
+func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	items, err := store.Open()
 	if err != nil {
@@ -53,10 +53,15 @@ func TestDeployIntoALethalCompanyInstallAndBack(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	var keyA string
 	for _, pkg := range []struct{ id, file string }{{"Ns-A", "A.dll"}, {"Ns-B", "B.dll"}} {
 		zip := tsPackage(t, pkg.id[3:], map[string]string{"plugins/" + pkg.file: pkg.id, "config/" + pkg.id + ".cfg": "default " + pkg.id})
-		if _, err := ps.InstallSource(lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: pkg.id, Version: "1.0.0"}); err != nil {
+		res, err := ps.InstallSource(lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: pkg.id, Version: "1.0.0"})
+		if err != nil {
 			t.Fatal(err)
+		}
+		if pkg.id == "Ns-A" {
+			keyA = res.Profile.Entries[0].Key
 		}
 	}
 	if err := ps.WriteFiles(lc, p.ID, map[string][]byte{"BepInEx/config/Ns-B.cfg": []byte("tuned Ns-B")}); err != nil {
@@ -66,71 +71,74 @@ func TestDeployIntoALethalCompanyInstallAndBack(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	testfs.WriteFile(t, profileDir, "winhttp.dll", "proxy")
+	testfs.WriteFile(t, profileDir, "doorstop_config.ini", "ini")
 
 	install := t.TempDir()
 	testfs.WriteFile(t, install, "Lethal Company.exe", "exe")
-	testfs.WriteFile(t, install, "BepInEx/config/user.cfg", "the player's own")
+	testfs.WriteFile(t, install, "winhttp.dll", "the player's own")
 	before := snapshotTree(t, install)
 	inst := game.Install{ID: "lc1", Dir: install}
 	svc := &Service{profiles: ps}
 
 	launch := func() *deployment {
 		plan := launchplan.New(launchplan.ModeProfile)
-		plan.AddFile(launchplan.PlanFile{Src: filepath.Join(profileDir, "winhttp.dll"), Dst: "winhttp.dll"})
+		for _, f := range []string{"winhttp.dll", "doorstop_config.ini"} {
+			plan.AddFile(launchplan.PlanFile{Src: filepath.Join(profileDir, f), Dst: f})
+		}
 		dep, err := svc.deployProfile(t.Context(), lc, inst, p.ID, plan)
 		if err != nil {
 			t.Fatal(err)
 		}
 		return dep
 	}
-	testfs.WriteFile(t, profileDir, "winhttp.dll", "proxy")
 
 	dep := launch()
 	for rel, want := range map[string]string{
-		"winhttp.dll":                "proxy",
 		"BepInEx/plugins/Ns-A/A.dll": "Ns-A",
 		"BepInEx/plugins/Ns-B/B.dll": "Ns-B",
 		"BepInEx/config/Ns-A.cfg":    "default Ns-A",
 		"BepInEx/config/Ns-B.cfg":    "tuned Ns-B",
-		"BepInEx/config/user.cfg":    "the player's own",
-	} {
-		if b, _ := fsx.ReadFile(filepath.Join(install, rel)); string(b) != want {
-			t.Errorf("%s = %q, want %q", rel, b, want)
-		}
-	}
-	// The game runs: it writes a config of its own, edits a placed one, and leaves a stray file.
-	testfs.WriteFile(t, install, "BepInEx/config/new.cfg", "generated")
-	testfs.WriteFile(t, install, "BepInEx/config/Ns-A.cfg", "edited in game")
-	testfs.WriteFile(t, install, "stray.log", "log")
-	dep.unwind(t.Context())
-
-	if got := snapshotTree(t, install); len(got) != len(before) {
-		t.Fatalf("install after the launch\n got %v\nwant %v", got, before)
-	}
-	for k, v := range before {
-		if snapshotTree(t, install)[k] != v {
-			t.Errorf("%s is not as it was", k)
-		}
-	}
-	for rel, want := range map[string]string{
-		"BepInEx/config/new.cfg":      "generated",
-		"BepInEx/config/Ns-A.cfg":     "edited in game",
-		"overwrite/profile/stray.log": "log",
 	} {
 		if b, _ := fsx.ReadFile(filepath.Join(profileDir, rel)); string(b) != want {
 			t.Errorf("profile %s = %q, want %q", rel, b, want)
 		}
 	}
+	for rel, want := range map[string]string{"winhttp.dll": "proxy", "doorstop_config.ini": "ini"} {
+		if b, _ := fsx.ReadFile(filepath.Join(install, rel)); string(b) != want {
+			t.Errorf("install %s = %q, want %q", rel, b, want)
+		}
+	}
+	if got := snapshotTree(t, install); len(got) != len(before)+1 {
+		t.Errorf("the game folder holds more than the two doorstop files: %v", got)
+	}
+
+	// Steam patches the game while it runs; neither that nor anything else the game leaves is Mortar's to take.
+	testfs.WriteFile(t, install, "Lethal Company.exe", "patched")
+	testfs.WriteFile(t, install, "Lethal Company_Data/new.assets", "added")
+	dep.unwind(t.Context())
+	got := snapshotTree(t, install)
+	if got["Lethal Company.exe"] != "patched" || got["Lethal Company_Data/new.assets"] != "added" || got["winhttp.dll"] != "the player's own" {
+		t.Errorf("install after the launch: %v", got)
+	}
+	if _, ok := got["doorstop_config.ini"]; ok {
+		t.Error("doorstop_config.ini outlives the launch")
+	}
+	if len(got) != len(before)+2 { // plus the added folder and file
+		t.Errorf("install after the launch: %v, before %v", got, before)
+	}
 
 	if dep, err := svc.deployProfile(t.Context(), "stardew", inst, p.ID, launchplan.New(launchplan.ModeProfile)); err != nil || dep.d != nil {
 		t.Fatalf("a redirected game deploys nothing: %v, %v", dep, err)
 	}
-	dep = launch()
-	if b, _ := fsx.ReadFile(filepath.Join(install, "stray.log")); string(b) != "log" {
-		t.Errorf("the overwrite folder is not deployed on the next launch: %q", b)
+	if _, err := ps.RemoveEntry(lc, p.ID, keyA); err != nil {
+		t.Fatal(err)
 	}
-	dep.unwind(t.Context())
-	if _, err := os.Lstat(filepath.Join(install, "stray.log")); err == nil {
-		t.Error("the overwrite file outlives the launch")
+	launch().unwind(t.Context())
+	if _, err := os.Lstat(filepath.Join(profileDir, "BepInEx", "plugins", "Ns-A")); err == nil {
+		t.Error("a removed package's plugin stays in the profile")
+	}
+	if b, _ := fsx.ReadFile(filepath.Join(profileDir, "BepInEx", "plugins", "Ns-B", "B.dll")); string(b) != "Ns-B" {
+		t.Errorf("the other package lost its plugin: %q", b)
 	}
 }

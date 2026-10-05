@@ -100,16 +100,8 @@
       "paths": {
         "saves": { "windows": "{localLow}/ZeekerssRBLX/Lethal Company" }
       },
-      "deploy": "link-into-install",
-      "targets": [
-        { "id": "profile", "root": "{profile}", "install": "{install}" },
-        {
-          "id": "config",
-          "root": "{profile}/BepInEx/config",
-          "install": "{install}/BepInEx/config",
-          "writable": true
-        }
-      ],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
       "stores": {
         "steam": {
           "appId": "1966720"

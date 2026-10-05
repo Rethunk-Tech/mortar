@@ -91,22 +91,14 @@ func doorstopMajor(profileRoot string) int {
 }
 
 // DoorstopFiles lists, relative to profileRoot and with forward slashes, the proxy files that must sit next to the game
-// executable: winhttp.dll, doorstop_config.ini, .doorstop_version and everything under doorstop_libs/. Absent ones are left out.
+// executable: winhttp.dll and doorstop_config.ini. Absent ones are left out. Everything else of the pack stays in the profile.
 func DoorstopFiles(profileRoot string) []string {
 	var files []string
-	for _, name := range []string{"winhttp.dll", "doorstop_config.ini", doorstopFile} {
+	for _, name := range []string{"doorstop_config.ini", "winhttp.dll"} {
 		if _, err := os.Stat(filepath.Join(profileRoot, name)); err == nil {
 			files = append(files, name)
 		}
 	}
-	_ = filepath.WalkDir(filepath.Join(profileRoot, "doorstop_libs"), func(p string, d fs.DirEntry, err error) error {
-		if err == nil && !d.IsDir() {
-			rel, _ := filepath.Rel(profileRoot, p)
-			files = append(files, filepath.ToSlash(rel))
-		}
-		return nil
-	})
-	slices.Sort(files)
 	return files
 }
 

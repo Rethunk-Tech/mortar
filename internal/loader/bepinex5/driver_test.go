@@ -42,7 +42,7 @@ func TestLoaderContract(t *testing.T) {
 	if got := strings.Join(plan.Args, " "); !strings.HasPrefix(got, `--doorstop-enabled true --doorstop-target-assembly Z:\`) {
 		t.Fatalf("args %q", got)
 	}
-	if len(plan.Files) != 4 || plan.Files[0].Dst != ".doorstop_version" || len(plan.RuntimeReqs) != 1 {
+	if len(plan.Files) != 2 || plan.Files[0].Dst != "doorstop_config.ini" || len(plan.RuntimeReqs) != 1 {
 		t.Fatalf("plan %+v", plan)
 	}
 	native := launchplan.New(launchplan.ModeProfile)

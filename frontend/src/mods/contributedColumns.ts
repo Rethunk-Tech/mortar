@@ -11,7 +11,7 @@ interface Offer {
 // Columns a deploy method, loader or source contributes appear only where the open profile has them; every other
 // column is core.
 const CONTRIBUTED: Partial<Record<ListColumnId, (o: Offer) => boolean>> = {
-  order: (o) => o.deploy === 'link-into-install',
+  order: (o) => o.deploy === 'profile',
   startup: (o) => o.loaders.includes('smapi'),
   endorsements: (o) => o.sources.has('nexus'),
   downloads: (o) => o.sources.has('nexus'),

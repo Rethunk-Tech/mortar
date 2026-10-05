@@ -64,7 +64,7 @@ function usePackageOverrides(
 ): Readonly<Record<string, number | undefined>> {
   const [wins, setWins] = useState<Readonly<Record<string, number | undefined>>>({})
   useEffect(() => {
-    if (deploy !== 'link-into-install' || game === '') {
+    if (deploy !== 'profile' || game === '') {
       return
     }
     PackageOverrides(game, profile.id)

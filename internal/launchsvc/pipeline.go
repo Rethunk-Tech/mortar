@@ -93,7 +93,7 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 
 // deployerID is the deployer that places a plan's install-side files into the game folder. A loader that redirects
 // the game to the profile's folder (SMAPI's --mods-path) declares no such files, so its launches skip the deploy.
-const deployerID = "link-into-install"
+const deployerID = "copy-into-install"
 
 // deployment is the placed files of one launch, taken back once the game has exited.
 type deployment struct {
@@ -114,23 +114,21 @@ func journalDir(installID string) (string, error) {
 	return filepath.Join(base, "journal", installID), nil
 }
 
-// deployProfile is startDeploy for a launch of profileID: a game that deploys into its install also places the
-// profile's packages.
+// deployProfile is startDeploy for a launch of profileID: a game whose profile holds the loader first lays the
+// profile's packages out in the profile, then places the loader's install-side files.
 func (s *Service) deployProfile(ctx context.Context, gameID string, inst game.Install, profileID string, plan *launchplan.Plan) (*deployment, error) {
-	var in profile.DeployInputs
 	if plan.Mode != launchplan.ModeVanilla && profileID != "" && s.profiles != nil {
-		var err error
-		if in, err = s.profiles.DeployInputs(gameID, profileID, inst.Dir); err != nil {
+		if err := s.profiles.SyncPackages(gameID, profileID); err != nil {
 			return nil, err
 		}
 	}
-	return startDeploy(ctx, inst, plan, in)
+	return startDeploy(ctx, inst, plan)
 }
 
-// startDeploy places plan's install-side files and the profile's packages into inst, journaled before the first file
-// moves. A launch with neither returns a deployment that has nothing to take back.
-func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, in profile.DeployInputs) (*deployment, error) {
-	if plan.Mode == launchplan.ModeVanilla || (len(plan.Files) == 0 && len(in.Packages) == 0) {
+// startDeploy places plan's install-side files into inst, journaled before the first file moves. A launch with none
+// returns a deployment that has nothing to take back.
+func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan) (*deployment, error) {
+	if plan.Mode == launchplan.ModeVanilla || len(plan.Files) == 0 {
 		return &deployment{}, nil
 	}
 	d, ok := deploy.Get(deployerID)
@@ -141,7 +139,7 @@ func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, 
 	if err != nil {
 		return nil, err
 	}
-	p, err := d.Plan(deploy.View{JournalDir: dir, Overwrite: in.Overwrite}, deploy.InstallView{Dir: inst.Dir, Targets: in.Targets}, in.Packages, plan.Files)
+	p, err := d.Plan(deploy.View{JournalDir: dir}, inst.Dir, plan.Files)
 	if err != nil {
 		return nil, err
 	}
@@ -151,23 +149,19 @@ func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, 
 	dep.finish = func() { dep.unwind(detached) }
 	if err != nil {
 		if len(m.Ops) > 0 {
-			dep.unwind(context.WithoutCancel(ctx))
+			dep.unwind(detached)
 		}
 		return nil, err
 	}
 	return dep, nil
 }
 
-// unwind takes back what the game wrote, then removes the placed files. It is safe to call again, on nil and on a
-// deployment that placed nothing.
+// unwind removes the placed files. It is safe to call again, on nil and on a deployment that placed nothing.
 func (dep *deployment) unwind(ctx context.Context) {
 	if dep == nil || dep.d == nil {
 		return
 	}
 	dep.once.Do(func() {
-		if _, err := dep.d.Harvest(ctx, dep.m); err != nil {
-			log.Printf("launch: harvest: %v", err)
-		}
 		if err := dep.d.Purge(ctx, dep.m); err != nil {
 			log.Printf("launch: purge: %v", err)
 		}

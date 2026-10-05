@@ -18,7 +18,7 @@ import (
 type GameInfo struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
-	// Deploy is how the profile reaches the game: "redirect" or "link-into-install", whose profiles have a package order.
+	// Deploy is how the profile reaches the game: "redirect" or "profile", whose profiles have a package order.
 	Deploy   string `json:"deploy"`
 	AppID    string `json:"appId"`
 	Loader   string `json:"loader"`

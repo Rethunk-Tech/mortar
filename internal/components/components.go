@@ -91,8 +91,9 @@ type GameInfo struct {
 	Metadata []string `json:"metadata"`
 	// Paths names folders and files outside the install by role (saves, startupPreferences).
 	Paths map[string]PathTemplate `json:"paths,omitempty"`
-	// Deploy is how the profile's files reach the game: redirect (the loader points the game at the profile's folder,
-	// nothing is placed) or link-into-install (files are placed into the install for the launch and taken back after).
+	// Deploy is how the profile reaches the game: redirect (the loader points the game at the profile's mods folder,
+	// nothing is placed) or profile (the profile holds the loader and its mods, and the loader's install-side files are
+	// placed into the install for the launch and taken back after).
 	Deploy string `json:"deploy"`
 	// Targets are the places the game's mod files go.
 	Targets []TargetDef  `json:"targets"`
@@ -119,19 +120,15 @@ type PathTemplate struct {
 // Deploy methods.
 const (
 	DeployRedirect = "redirect"
-	DeployLink     = "link-into-install"
+	DeployProfile  = "profile"
 )
 
 // TargetDef is a content target: a named place mod files go. Root is where it lives in the profile: {profileMods}
-// (the profile's mods folder), {profile} (the profile's root) or a folder below {profile}. Install is where the
-// deploy puts its files in the game: {install} or a folder below it, empty for a game that is redirected to Root.
-// Writable targets receive copies because the game writes into them; what it writes returns to Root. MaxDepth caps,
-// per lower-case file extension, how many folders deep a file may sit below the target.
+// (the profile's mods folder), {profile} (the profile's root) or a folder below {profile}. MaxDepth caps, per
+// lower-case file extension, how many folders deep a file may sit below the target.
 type TargetDef struct {
 	ID       string         `json:"id"`
 	Root     string         `json:"root"`
-	Install  string         `json:"install,omitempty"`
-	Writable bool           `json:"writable,omitempty"`
 	MaxDepth map[string]int `json:"maxDepth,omitempty"`
 }
 
@@ -257,16 +254,13 @@ func (g GameInfo) Validate() error {
 			}
 		}
 	}
-	if g.Deploy != DeployRedirect && g.Deploy != DeployLink {
+	if g.Deploy != DeployRedirect && g.Deploy != DeployProfile {
 		return fmt.Errorf("game %q has unknown deploy method %q", g.ID, g.Deploy)
 	}
 	targets := make(map[string]struct{}, len(g.Targets))
 	for _, t := range g.Targets {
 		if t.ID == "" || !underToken(t.Root, "{profileMods}", "{profile}") {
 			return fmt.Errorf("game %q has a target without an id or with an unknown root %q", g.ID, t.Root)
-		}
-		if (t.Install == "") != (g.Deploy == DeployRedirect) || (t.Install != "" && !underToken(t.Install, "{install}")) {
-			return fmt.Errorf("game %q target %q has install root %q, which its deploy method %q does not take", g.ID, t.ID, t.Install, g.Deploy)
 		}
 		if _, ok := targets[t.ID]; ok {
 			return fmt.Errorf("game %q lists target %q more than once", g.ID, t.ID)

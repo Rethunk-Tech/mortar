@@ -217,7 +217,7 @@ function PackageMoveItems({ mod, close }: { mod: Mod; close: () => void }) {
   const locked = useLocked()
   const game = useProfiles((s) => s.game)
   const profile = useProfiles(openProfileOf)
-  if (game?.deploy !== 'link-into-install' || !profile) {
+  if (game?.deploy !== 'profile' || !profile) {
     return null
   }
   const packages = (profile.entries ?? []).filter((e) => !e.overlayOf)

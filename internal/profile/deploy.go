@@ -1,109 +1,143 @@
 package profile
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/deploy"
-	"github.com/Rethunk-Tech/mortar/internal/installer"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-// OverwriteDir is where a launch keeps the files the game wrote outside its writable targets: <profile>/overwrite.
+// OverwriteDir is the profile's folder for files the game wrote outside the profile: <profile>/overwrite.
 const OverwriteDir = "overwrite"
 
-// DeployInputs is what a launch hands the deployer for a profile of a game that deploys into its install.
-type DeployInputs struct {
-	// Packages are lowest priority first: the profile's enabled entries in profile order, then the profile's own
-	// writable target folders (its saved configs), then the overwrite folder.
-	Packages []deploy.Package
-	Targets  []deploy.Target
-	// Overwrite is the folder harvest sends new files to.
-	Overwrite string
-}
+// placedFile lists, in the profile's root, the files SyncPackages put there, so it can take them away again.
+const placedFile = ".mortar-packages.json"
 
-// profileRoot resolves a catalog root token below the profile folder.
-func profileRoot(dir, root string) string {
-	return filepath.Join(dir, filepath.FromSlash(strings.TrimPrefix(strings.TrimPrefix(root, "{profile}"), "/")))
-}
-
-// DeployInputs lays out every enabled entry of the profile for the game's install-side targets. installDir is the
-// install folder, which the catalog's {install} token stands for. A game that is redirected gets none.
-func (s *Store) DeployInputs(gameID, id, installDir string) (DeployInputs, error) {
+// packageFiles are the files the profile's enabled packages lay out below the profile's root, by slash path, each the
+// package that wins it (lowest priority first, so a later entry overrides), and how many files each entry wins over an
+// earlier one.
+func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, wins map[string]int, err error) {
 	info, ok := components.BundledGame(gameID)
-	if !ok || info.Deploy != components.DeployLink {
-		return DeployInputs{}, nil
+	if !ok || info.Deploy != components.DeployProfile {
+		return nil, map[string]int{}, nil
 	}
-	p, dir, err := s.readDir(gameID, id)
+	p, _, err := s.readDir(gameID, id)
 	if err != nil {
-		return DeployInputs{}, err
+		return nil, nil, err
 	}
-	in := DeployInputs{Overwrite: filepath.Join(dir, OverwriteDir)}
-	for _, t := range info.Targets {
-		root := filepath.Join(installDir, filepath.FromSlash(strings.TrimPrefix(strings.TrimPrefix(t.Install, "{install}"), "/")))
-		dt := deploy.Target{ID: t.ID, Root: root, Writable: t.Writable}
-		if t.Writable {
-			dt.Home = profileRoot(dir, t.Root)
-		}
-		in.Targets = append(in.Targets, dt)
-	}
+	files, wins = map[string]packageFile{}, map[string]int{}
 	for _, e := range p.Entries {
 		if e.IsOverlay() || !e.hasPackageEnabled() {
 			continue
 		}
 		arch, l, _, err := s.layoutOf(gameID, id, e.Key, e.Fomod)
 		if err != nil {
-			return DeployInputs{}, fmt.Errorf("%s: %w", entryLabel(e), err)
+			return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
 		}
-		in.Packages = append(in.Packages, deploy.Package{ID: e.Key, Root: arch.Dir, Layout: l})
-	}
-	for _, t := range info.Targets {
-		if !t.Writable {
-			continue
-		}
-		pkg, err := folderPackage("profile-"+t.ID, profileRoot(dir, t.Root), t.ID)
-		if err != nil {
-			return DeployInputs{}, err
-		}
-		in.Packages = append(in.Packages, pkg)
-	}
-	over := deploy.Package{ID: "overwrite", Root: in.Overwrite}
-	for _, t := range info.Targets {
-		pkg, err := folderPackage("overwrite", filepath.Join(in.Overwrite, t.ID), t.ID)
-		if err != nil {
-			return DeployInputs{}, err
-		}
-		for _, f := range pkg.Layout.Files {
-			f.Src = t.ID + "/" + f.Src
-			over.Layout.Files = append(over.Layout.Files, f)
+		for _, f := range l.Files {
+			rel := path.Clean(f.Rel)
+			if !filepath.IsLocal(filepath.FromSlash(rel)) {
+				return nil, nil, fmt.Errorf("%s: %s leaves the profile", entryLabel(e), f.Rel)
+			}
+			if _, taken := files[rel]; taken {
+				wins[e.Key]++
+			}
+			files[rel] = packageFile{src: filepath.Join(arch.Dir, filepath.FromSlash(f.Src)), key: e.Key}
 		}
 	}
-	in.Packages = append(in.Packages, over)
-	return in, nil
+	return files, wins, nil
+}
+
+type packageFile struct{ src, key string }
+
+// PackageOverrides counts, for each entry key, the files it wins over an earlier package. A game that is
+// redirected holds its mods in the profile's mods folder and has none.
+func (s *Store) PackageOverrides(gameID, id string) (map[string]int, error) {
+	_, wins, err := s.packageFiles(gameID, id)
+	return wins, err
+}
+
+// SyncPackages lays the enabled packages' files out in the profile, where the loader reads them, and takes away the
+// files of packages no longer enabled. A package's config file only seeds the profile: once it is there the player's
+// edits stay. A game that is redirected has nothing to sync.
+func (s *Store) SyncPackages(gameID, id string) error {
+	files, _, err := s.packageFiles(gameID, id)
+	if err != nil || files == nil {
+		return err
+	}
+	_, dir, err := s.readDir(gameID, id)
+	if err != nil {
+		return err
+	}
+	var prev []string
+	if b, err := fsx.ReadFile(filepath.Join(dir, placedFile)); err == nil {
+		_ = json.Unmarshal(b, &prev)
+	}
+	for _, rel := range prev {
+		if _, keep := files[rel]; !keep {
+			removeUp(dir, filepath.Join(dir, filepath.FromSlash(rel)))
+		}
+	}
+	var placed []string
+	for rel, f := range files {
+		dst := filepath.Join(dir, filepath.FromSlash(rel))
+		if strings.HasPrefix(rel, "BepInEx/config/") {
+			if _, err := os.Lstat(dst); err == nil {
+				continue
+			}
+		} else {
+			placed = append(placed, rel)
+			if placedCurrent(f.src, dst) {
+				continue
+			}
+		}
+		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+			return err
+		}
+		if err := os.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		if err := datadir.CopyFile(f.src, dst); err != nil {
+			return err
+		}
+	}
+	slices.Sort(placed)
+	b, err := json.Marshal(placed)
+	if err != nil {
+		return err
+	}
+	return fsx.WriteFile(filepath.Join(dir, placedFile), b, 0o600)
+}
+
+// placedCurrent reports a placed file that still matches its source: same size and not older.
+func placedCurrent(src, dst string) bool {
+	a, err := os.Stat(src)
+	if err != nil {
+		return false
+	}
+	b, err := os.Stat(dst)
+	return err == nil && a.Size() == b.Size() && !b.ModTime().Before(a.ModTime())
+}
+
+// removeUp removes a file, then the folders it leaves empty below root.
+func removeUp(root, file string) {
+	if os.Remove(file) != nil {
+		return
+	}
+	for d := filepath.Dir(file); d != root && datadir.UnderRoot(root, d) && os.Remove(d) == nil; d = filepath.Dir(d) {
+	}
 }
 
 // hasPackageEnabled reports an entry with no mods to switch off, or with at least one switched on.
 func (e Entry) hasPackageEnabled() bool {
 	return len(e.Mods) == 0 || slices.ContainsFunc(e.Mods, func(m Component) bool { return e.Enabled(m.ID) })
-}
-
-// folderPackage is every file below root as a package of target.
-func folderPackage(id, root, target string) (deploy.Package, error) {
-	pkg := deploy.Package{ID: id, Root: root}
-	err := fs.WalkDir(os.DirFS(root), ".", func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !d.Type().IsRegular() {
-			return err
-		}
-		pkg.Layout.Files = append(pkg.Layout.Files, installer.File{Src: p, Target: target, Rel: p})
-		return nil
-	})
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return deploy.Package{}, err
-	}
-	return pkg, nil
 }
