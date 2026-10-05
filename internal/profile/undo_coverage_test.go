@@ -3,6 +3,7 @@ package profile
 import (
 	"bytes"
 	"encoding/json"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -247,5 +248,68 @@ func TestDeletingACustomCategoryRecordsAnEventInEachProfileItChanged(t *testing.
 	}
 	if i := entryIndex(prev.Entries, "local-a"); i < 0 || prev.Entries[i].CategoryOverride != saved[0].ID {
 		t.Fatalf("undo left %+v", prev.Entries)
+	}
+}
+
+// A history written before events carried settings has no state; reverting to one of its events restores the entries
+// and leaves every setting as it is now.
+func TestRevertToAnEventWithoutStateKeepsCurrentSettings(t *testing.T) {
+	t.Parallel()
+	e, p := undoFixture(t)
+	baseline, err := e.Baseline("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := e.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(dir, historyFile)
+	raw, err := fsx.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatal(err)
+	}
+	for _, ev := range doc["events"].([]any) {
+		delete(ev.(map[string]any), "state")
+	}
+	raw, err = json.Marshal(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(path, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.AddEntry("stardew", p.ID, "local-c", Source{Kind: KindLocal, Name: "c.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, step := range []func() (Profile, error){
+		func() (Profile, error) { return e.SetLoader("stardew", p.ID, "smapi") },
+		func() (Profile, error) { return e.SetInstall("stardew", p.ID, "abc") },
+		func() (Profile, error) { return e.SetSeparateSaves("stardew", p.ID, true, false) },
+		func() (Profile, error) { return e.SetOverride("stardew", p.ID, overrideSkipPlayCheck, "true") },
+		func() (Profile, error) { return e.SetLaunchOptions("stardew", p.ID, "--now") },
+		func() (Profile, error) { return e.DeleteGroup("stardew", p.ID, "G") },
+	} {
+		if _, err := step(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	current, err := e.read("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.Revert("stardew", p.ID, baseline)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Entries) != 2 {
+		t.Fatalf("entries after revert = %d, want the 2 before local-c", len(got.Entries))
+	}
+	if !sameState(got, current) {
+		t.Fatalf("settings after revert = %+v, want the current %+v", stateOf(got), stateOf(current))
 	}
 }
