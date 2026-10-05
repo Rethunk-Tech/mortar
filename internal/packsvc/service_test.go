@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"errors"
 	"maps"
 	"os"
 	"path/filepath"
@@ -20,13 +21,14 @@ import (
 )
 
 type fakeProfiles struct {
-	created []string
-	written map[string][]byte
+	created  []string
+	written  map[string][]byte
+	writeErr error
 }
 
 func (f *fakeProfiles) WriteFiles(_, _ string, files map[string][]byte) error {
 	f.written = files
-	return nil
+	return f.writeErr
 }
 
 func (f *fakeProfiles) Create(_, name string) (profile.Profile, error) {
@@ -90,6 +92,16 @@ func TestImportQueuesThePacksPackagesIntoANewProfile(t *testing.T) {
 	}
 	if len(q.got) != 2 || q.got[1].Package != "Alice-MoreCompany" || q.got[1].Version != "1.2.3" || q.got[1].Profile != "p1" || q.got[1].Game != "stardew" {
 		t.Errorf("queued %+v", q.got)
+	}
+}
+
+func TestImportQueuesNothingWhenThePacksFilesCannotBeWritten(t *testing.T) {
+	ps, q := &fakeProfiles{writeErr: errors.New("disk full")}, &fakeQueue{}
+	if _, err := (&Service{Profiles: ps, Queue: q}).Import(context.Background(), Source{Path: writeR2z(t)}, "stardew", "p1"); err == nil {
+		t.Fatal("a failed write reported success")
+	}
+	if len(q.got) != 0 || len(ps.created) != 0 {
+		t.Fatalf("queued %+v, created %v after a failed write", q.got, ps.created)
 	}
 }
 
