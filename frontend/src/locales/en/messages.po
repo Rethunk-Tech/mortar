@@ -287,7 +287,7 @@ msgstr "{name} is broken for {detail}"
 msgid "More levels"
 msgstr "More levels"
 
-#: src/games/GameSwitcher.tsx:63
+#: src/games/GameSwitcher.tsx:61
 msgid "Switch game"
 msgstr "Switch game"
 
@@ -1371,7 +1371,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:301
+#: src/games/GameSelect.tsx:308
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -3396,7 +3396,7 @@ msgstr "Apply"
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
-#: src/games/GameSelect.tsx:304
+#: src/games/GameSelect.tsx:311
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
@@ -5240,7 +5240,7 @@ msgstr "{found, plural, one {# mod update} other {# mod updates}}"
 
 #. placeholder {0}: game.name
 #. placeholder {0}: profile.name
-#: src/games/GameSelect.tsx:192
+#: src/games/GameSelect.tsx:197
 #: src/games/ProfileCards.tsx:134
 msgid "Open {0}"
 msgstr "Open {0}"
@@ -5270,7 +5270,7 @@ msgstr "No profiles yet"
 msgid "{0, plural, one {Removed # backup} other {Removed # backups}}, freed {1}"
 msgstr "{0, plural, one {Removed # backup} other {Removed # backups}}, freed {1}"
 
-#: src/games/GameSelect.tsx:169
+#: src/games/GameSelect.tsx:174
 #: src/games/ProfileCards.tsx:52
 #: src/profiles/store.ts:335
 msgid "Could not save the open profile"
@@ -6725,7 +6725,7 @@ msgstr "Game"
 msgid "Minutes between background update checks"
 msgstr "Minutes between background update checks"
 
-#: src/games/GameSelect.tsx:147
+#: src/games/GameSelect.tsx:152
 msgid "{playtime} played"
 msgstr "{playtime} played"
 
@@ -7667,7 +7667,7 @@ msgstr "Remove SMAPI from Steam's launch options"
 msgid "Check later"
 msgstr "Check later"
 
-#: src/games/GameSelect.tsx:143
+#: src/games/GameSelect.tsx:148
 msgid "last played {lastPlayedName}"
 msgstr "last played {lastPlayedName}"
 
@@ -7941,7 +7941,7 @@ msgid "Default for Share and Export. You can change it per share."
 msgstr "Default for Share and Export. You can change it per share."
 
 #: src/App.tsx:71
-#: src/games/GameSelect.tsx:160
+#: src/games/GameSelect.tsx:165
 #: src/games/useGameTiles.ts:89
 msgid "Could not read your games"
 msgstr "Could not read your games"
@@ -8082,7 +8082,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:43
 #: src/firstrun/GameSetup.tsx:122
 #: src/firstrun/LoaderStep.tsx:220
-#: src/games/GameSelect.tsx:280
+#: src/games/GameSelect.tsx:287
 #: src/profiles/GameSettings.tsx:99
 #: src/profiles/RecentChangesButton.tsx:128
 msgid "Loading…"
@@ -8948,7 +8948,7 @@ msgstr "Overrides"
 msgid "Import…"
 msgstr "Import…"
 
-#: src/games/GameSelect.tsx:180
+#: src/games/GameSelect.tsx:185
 msgid "{loader} | {store}"
 msgstr "{loader} | {store}"
 
@@ -9037,7 +9037,7 @@ msgstr "Sparkles"
 msgid "Quit"
 msgstr "Quit"
 
-#: src/games/GameSelect.tsx:182
+#: src/games/GameSelect.tsx:187
 msgid "{loader} · {lastLine}"
 msgstr "{loader} · {lastLine}"
 
@@ -9166,7 +9166,7 @@ msgid "Find the crash cause"
 msgstr "Find the crash cause"
 
 #: src/firstrunTour/TourPopover.tsx:64
-#: src/games/GameSelect.tsx:242
+#: src/games/GameSelect.tsx:249
 #: src/launch/PlayControl.tsx:162
 #: src/settings/GameSettingsPage.tsx:62
 #: src/settings/GameSettingsPage.tsx:88
@@ -9978,7 +9978,7 @@ msgstr "{0} (optional)"
 msgid "From the downloads folder"
 msgstr "From the downloads folder"
 
-#: src/games/GameSelect.tsx:141
+#: src/games/GameSelect.tsx:146
 msgid "last played {lastPlayedName} · {ago}"
 msgstr "last played {lastPlayedName} · {ago}"
 
@@ -10165,7 +10165,7 @@ msgstr "Your last save needs other mods"
 msgid "Delete category"
 msgstr "Delete category"
 
-#: src/games/GameSelect.tsx:228
+#: src/games/GameSelect.tsx:235
 msgid "Play {lastPlayedName}"
 msgstr "Play {lastPlayedName}"
 
@@ -10471,7 +10471,7 @@ msgstr "{0, plural, one {# config file} other {# config files}}"
 msgid "Open Problems"
 msgstr "Open Problems"
 
-#: src/games/GameSelect.tsx:178
+#: src/games/GameSelect.tsx:183
 msgid "{loader} | {store} · {lastLine}"
 msgstr "{loader} | {store} · {lastLine}"
 
@@ -10763,8 +10763,8 @@ msgstr "Skip this update"
 msgid "Command-line control"
 msgstr "Command-line control"
 
-#: src/games/GameSelect.tsx:155
-#: src/games/GameSelect.tsx:167
+#: src/games/GameSelect.tsx:160
+#: src/games/GameSelect.tsx:172
 #: src/games/ProfileCards.tsx:50
 #: src/games/ProfileCards.tsx:64
 msgid "Could not save the last game"
