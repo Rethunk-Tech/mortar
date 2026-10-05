@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -96,7 +97,7 @@ func pair(t *testing.T, host, joiner *Service, hostAddr string) {
 	}
 }
 
-func TestPairing(t *testing.T) {
+func TestPairingLocksOutAfterWrongCodes(t *testing.T) {
 	t.Parallel()
 	host, hostAddr := pairedService(t, nil, nil)
 	joiner, _ := pairedService(t, nil, nil)
@@ -109,22 +110,30 @@ func TestPairing(t *testing.T) {
 	if code == wrong {
 		wrong = "BBBB-BBBB"
 	}
+	// Each attempt spends a full key derivation, so they run side by side.
+	var wg sync.WaitGroup
 	for range maxFailures {
-		if err := joiner.Pair(t.Context(), hostAddr, wrong); err == nil {
-			t.Fatal("a wrong code paired")
-		}
+		wg.Go(func() {
+			if err := joiner.Pair(t.Context(), hostAddr, wrong); err == nil {
+				t.Error("a wrong code paired")
+			}
+		})
 	}
+	wg.Wait()
 	if err := joiner.Pair(t.Context(), hostAddr, code); err == nil {
 		t.Fatal("a locked-out computer paired")
 	}
+}
 
-	code, err = host.PairCode()
+func TestPairing(t *testing.T) {
+	t.Parallel()
+	host, hostAddr := pairedService(t, nil, nil)
+	joiner, _ := pairedService(t, nil, nil)
+
+	code, err := host.PairCode()
 	if err != nil {
 		t.Fatal(err)
 	}
-	host.pairing.mu.Lock()
-	host.pairing.locks = nil
-	host.pairing.mu.Unlock()
 	if err := joiner.Pair(t.Context(), hostAddr, code); err != nil {
 		t.Fatal(err)
 	}
