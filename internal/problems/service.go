@@ -134,7 +134,7 @@ func (s *Service) Environment(id string) Environment {
 	if err != nil || dir == "" {
 		return env
 	}
-	st, _ := game.LoaderStatus(id, dir, set.Loaders[id])
+	st, _ := game.LoaderStatus(id, "", dir, set.Loaders)
 	env.GameVersion, env.APIVersion = st.GameVersion, st.Version
 	return env
 }

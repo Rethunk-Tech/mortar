@@ -15,7 +15,6 @@ import (
 
 var (
 	authorStatusWord = regexp.MustCompile(`(?i)\b(obsolete|deprecated|depreciated)\b`)
-	nexusModLink     = regexp.MustCompile(`(?i)nexusmods\.com/([a-z0-9]+)/mods/([0-9]+)`)
 )
 
 func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
@@ -127,7 +126,7 @@ func authorBroken(im framework.Mod, domain, quote, where string) *Broken {
 
 func authorBrokenText(im framework.Mod, domain, quote, where, text string) *Broken {
 	b := authorBrokenWithReplacement(im, domain, quote, where)
-	if ids := modPageIDs(nexusModLink, text, domain); len(ids) > 0 {
+	if ids := modPageIDs(text, domain); len(ids) > 0 {
 		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexus.ModURL(domain, ids[0])}
 	}
 	return b
@@ -145,7 +144,7 @@ func authorBrokenWithReplacement(im framework.Mod, domain, quote, where string) 
 		Key: im.Key, ID: im.ModID(), Name: im.Name, Status: status,
 		Summary: fmt.Sprintf("%s says it is %s: %q", where, status, quote),
 	}
-	if ids := modPageIDs(nexusModLink, quote, domain); len(ids) > 0 {
+	if ids := modPageIDs(quote, domain); len(ids) > 0 {
 		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexus.ModURL(domain, ids[0])}
 	}
 	return b

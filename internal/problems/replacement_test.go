@@ -38,3 +38,13 @@ func TestBrokenIncludesAbandoned(t *testing.T) {
 		t.Fatalf("broken = %+v", got.Broken)
 	}
 }
+
+func TestLinksAreMatchedByHostNotBySubstring(t *testing.T) {
+	text := "see https://nexusmods.com.evil.example/stardewvalley/mods/1 or www.nexusmods.com/stardewvalley/mods/2, (https://github.com/o/r.git#x) https://notgithub.com/a/b"
+	if got := modPageIDs(text, "stardewvalley"); len(got) != 1 || got[0] != 2 {
+		t.Fatalf("modPageIDs = %v", got)
+	}
+	if got := githubLinkRepo(text); got != "o/r.git" {
+		t.Fatalf("githubLinkRepo = %q", got)
+	}
+}

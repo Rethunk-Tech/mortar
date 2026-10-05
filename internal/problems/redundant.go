@@ -69,7 +69,7 @@ func namedIn(domain, summary string, enabled []framework.Mod, self string) []fra
 		return nil
 	}
 	pages := map[int]bool{}
-	for _, id := range modPageIDs(nexusModURL, summary, domain) {
+	for _, id := range modPageIDs(summary, domain) {
 		pages[id] = true
 	}
 	ids := map[string]bool{}
