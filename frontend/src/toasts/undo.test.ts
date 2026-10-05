@@ -9,6 +9,7 @@ import {
   parseMissingStoreList,
   type UndoEntry,
   undoRevertTarget,
+  unfetchableNames,
 } from './undo.ts'
 
 const entry = (patch: Partial<UndoEntry> & Pick<UndoEntry, 'key' | 'source'>): UndoEntry => ({
@@ -103,4 +104,12 @@ test('fieldsStillUndoable is true only while the previous values differ', () => 
       prev,
     ),
   ).toBe(false)
+})
+
+test('unfetchableNames lists entries with no source to download from', () => {
+  const entries = [
+    entry({ key: 'k1', source: { kind: 'nexus', modId: 1, fileId: 2 } }),
+    entry({ key: 'k2', mods: [{ name: 'Local' }], source: { kind: 'local' } }),
+  ]
+  expect(unfetchableNames(entries)).toEqual(['Local'])
 })

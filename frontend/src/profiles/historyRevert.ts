@@ -9,6 +9,7 @@ import {
   Snapshot,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { download } from '../queue/actions.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
@@ -19,6 +20,7 @@ import {
   type RevertWant,
   type UndoEntry,
   undoRevertTarget,
+  unfetchableNames,
 } from '../toasts/undo.ts'
 import { useProfiles } from './store.ts'
 
@@ -36,6 +38,20 @@ const emptyMissing = {
   missingWants: [] as RevertWant[],
 }
 
+function pushMissingToast(names: string[], wants: RevertWant[], unfetchable: string[]) {
+  const list = names.join(', ')
+  useToasts.getState().push({
+    kind: 'error',
+    title: i18n._(msg`Could not undo. Missing from the store: ${list}`),
+    ...(unfetchable.length > 0
+      ? { body: i18n._(msg`Mortar cannot download ${unfetchable.join(', ')} again.`) }
+      : {}),
+    ...(wants.length > 0
+      ? { action: { label: i18n._(msg`Download missing`), run: () => download(wants) } }
+      : {}),
+  })
+}
+
 async function missingFromError(
   game: string,
   profileId: string,
@@ -50,6 +66,11 @@ async function missingFromError(
     const snap = ((await Snapshot(game, profileId, eventId)) ?? []) as UndoEntry[]
     const hit = entriesMatchingMissing(snap, listed)
     const names = missingModNames(hit)
+    pushMissingToast(
+      names.length > 0 ? names : listed,
+      downloadWantsForEntries(hit),
+      unfetchableNames(hit),
+    )
     return {
       error: message,
       missingEvent: eventId,
@@ -57,6 +78,7 @@ async function missingFromError(
       missingWants: downloadWantsForEntries(hit),
     }
   } catch {
+    pushMissingToast(listed, [], listed)
     return { error: message, missingEvent: eventId, missingNames: listed, missingWants: [] }
   }
 }

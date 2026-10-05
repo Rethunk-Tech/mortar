@@ -120,6 +120,11 @@ export function downloadWantsForEntries(entries: UndoEntry[]): RevertWant[] {
   return wants
 }
 
+/** Names of the entries with no Nexus file or GitHub release to fetch again (local files, other sources). */
+export function unfetchableNames(entries: UndoEntry[]): string[] {
+  return missingModNames(entries.filter((entry) => downloadWantsForEntries([entry]).length === 0))
+}
+
 export function entryFieldsOf(entries: UndoEntry[], keys: string[]): EntryFieldsPayload[] {
   const want = new Set(keys)
   return entries
