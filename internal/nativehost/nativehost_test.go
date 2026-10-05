@@ -150,7 +150,7 @@ func TestServeAnswersInstalledMods(t *testing.T) {
 }
 
 func TestActiveNexusStateOffWhenExtensionOff(t *testing.T) {
-	listenControl(t, `{"extensionConnection":"off","lastProfile":{"stardew":"aaaaaaaaaaaaaaaa"}}`)
+	listenControl(t, `{"global":{"extensionConnection":"off","lastProfile":{"stardew":"aaaaaaaaaaaaaaaa"}}}`)
 	if st, _ := activeNexusState("stardewvalley"); st != stateOff {
 		t.Fatalf("extension off state = %q", st)
 	}
@@ -165,7 +165,7 @@ func TestActiveNexusStateNotRunningThenNoProfileThenReady(t *testing.T) {
 	if st, _ := activeNexusState("stardewvalley"); st != stateNoProfile {
 		t.Fatalf("no profile state = %q", st)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"lastProfile":{"stardew":"p1"}}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"global":{"lastProfile":{"stardew":"p1"}}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	pdir := filepath.Join(dir, "profiles", "stardew", "p1")
@@ -274,7 +274,7 @@ func TestInvoked(t *testing.T) {
 
 func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
 	openID := "aaaaaaaaaaaaaaaa"
-	dir := listenControl(t, `{"lastProfile":{"stardew":"`+openID+`"}}`)
+	dir := listenControl(t, `{"global":{"lastProfile":{"stardew":"`+openID+`"}}}`)
 	writeProfile := func(id, name string, hidden bool, fileID int, body []byte) {
 		t.Helper()
 		pdir := filepath.Join(dir, "profiles", "stardew", id)
@@ -325,7 +325,7 @@ func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
 
 func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
 	openID := "aaaaaaaaaaaaaaaa"
-	dir := listenControl(t, `{"lastProfile":{"stardew":"`+openID+`"}}`)
+	dir := listenControl(t, `{"global":{"lastProfile":{"stardew":"`+openID+`"}}}`)
 	writeProfileJSON(t, dir, openID, map[string]any{
 		"name": "Default",
 		"entries": []map[string]any{
@@ -384,7 +384,7 @@ func TestServeAnswersModUpdateAvailable(t *testing.T) {
 
 func TestNexusModProfilesUpdateAvailableFromCache(t *testing.T) {
 	openID := "aaaaaaaaaaaaaaaa"
-	dir := listenControl(t, `{"lastProfile":{"stardew":"`+openID+`"}}`)
+	dir := listenControl(t, `{"global":{"lastProfile":{"stardew":"`+openID+`"}}}`)
 	write := func(id, name, version string, fileID int) {
 		t.Helper()
 		writeProfileJSON(t, dir, id, map[string]any{
@@ -463,7 +463,7 @@ func TestServeAnswersUpdates(t *testing.T) {
 
 func TestActiveNexusUpdatesFromCache(t *testing.T) {
 	openID := "aaaaaaaaaaaaaaaa"
-	dir := listenControl(t, `{"lastProfile":{"stardew":"`+openID+`"}}`)
+	dir := listenControl(t, `{"global":{"lastProfile":{"stardew":"`+openID+`"}}}`)
 	writeProfileJSON(t, dir, openID, map[string]any{
 		"name": "Default",
 		"entries": []map[string]any{

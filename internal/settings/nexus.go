@@ -31,7 +31,7 @@ func normalizeNexus(s *Settings) {
 
 // RedirectOtherGames is whether nxm links for games Mortar does not take go to the handler Mortar replaced.
 func (s Settings) RedirectOtherGames() bool {
-	if s.NxmPrevious == "" {
+	if s.NxmPreviousHandlers["nxm"] == "" {
 		return false
 	}
 	if s.NxmRedirectOtherGames == nil {

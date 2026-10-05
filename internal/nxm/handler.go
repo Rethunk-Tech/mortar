@@ -1,8 +1,14 @@
 package nxm
 
-import _ "github.com/Rethunk-Tech/mortar/internal/source/all"
+import (
+	"github.com/Rethunk-Tech/mortar/internal/source"
+	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
+)
 
-// Owner is the app the system currently opens nxm:// links with. ID is what Restore takes back (a desktop file id
+// Schemes are the URL schemes the registered sources claim, which Mortar registers for.
+func Schemes() []string { return source.Schemes() }
+
+// Owner is the app the system currently opens a source scheme's links with. ID is what Restore takes back (a desktop file id
 // on Linux, the open command on Windows); Name is for the user. An empty ID means no app owns the scheme.
 type Owner struct {
 	ID   string
@@ -12,12 +18,13 @@ type Owner struct {
 
 // Handler registers Mortar for the nxm scheme at runtime; nothing registers it at install time.
 type Handler interface {
-	Owner() (Owner, error)
+	// Owner is the current owner of one scheme.
+	Owner(scheme string) (Owner, error)
 	// Register makes Mortar the owner.
 	Register() error
-	// Restore hands the scheme back to previous, the ID of the owner before Mortar, or leaves it unowned when empty.
-	Restore(previous string) error
-	// ForwardOther runs the handler recorded in previous on a non-Stardew nxm link.
+	// Restore hands each scheme back to its previous owner's ID in previous, or leaves it unowned when it has none.
+	Restore(previous map[string]string) error
+	// ForwardOther runs the handler recorded in previous on a link for a game Mortar does not take.
 	ForwardOther(link, previous string) error
 	// RegisterLinks makes Mortar the app for mortar:// links and .mortar files where the installer did not, and
 	// changes nothing when it already is.

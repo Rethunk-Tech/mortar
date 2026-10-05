@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Pref scopes. Game keys live under Settings.Games[gameID].
+// Pref scopes: app (global), source (ScopeSource), game (under Settings.Games[gameID]) and profile overrides.
 const (
 	ScopeApp     = "app"
 	ScopeGame    = "game"
@@ -63,6 +63,8 @@ type PrefSpec struct {
 	Max                int      `json:"max,omitempty"`
 	Values             []string `json:"values,omitempty"`
 	ProfileOverridable bool     `json:"profileOverridable,omitempty"`
+	// Source is the mod source id a ScopeSource key belongs to.
+	Source string `json:"source,omitempty"`
 }
 
 type pref struct {
@@ -106,7 +108,7 @@ var registry = []pref{
 	ptrPref("reuseFomodChoices", ScopeApp, true, func(s Settings, _ string) *bool { return s.ReuseFomodChoices }, func(s *Settings, _ string, on bool) { s.ReuseFomodChoices = &on }),
 	ptrPref("driftChecks", ScopeApp, true, func(s Settings, _ string) *bool { return s.DriftChecks }, func(s *Settings, _ string, on bool) { s.DriftChecks = &on }),
 	ptrPref("autoInstallMortarUpdates", ScopeApp, true, func(s Settings, _ string) *bool { return s.AutoInstallMortarUpdates }, func(s *Settings, _ string, on bool) { s.AutoInstallMortarUpdates = &on }),
-	boolPref("autoTrackNexus", ScopeApp, func(s Settings, _ string) bool { return s.AutoTrackNexus }, func(s *Settings, _ string, on bool) { s.AutoTrackNexus = on }),
+	sourcePref("nexus", boolPref("autoTrackNexus", ScopeSource, func(s Settings, _ string) bool { return s.AutoTrackNexus }, func(s *Settings, _ string, on bool) { s.AutoTrackNexus = on })),
 	strPref("lanName", ScopeApp, func(s Settings, _ string) string { return s.LanName }, func(s *Settings, _, v string) { s.LanName = v }),
 	boolPref("lanAutoAcceptSameAccount", ScopeApp, func(s Settings, _ string) bool { return s.LanAutoAcceptSameAccount }, func(s *Settings, _ string, on bool) { s.LanAutoAcceptSameAccount = on }),
 	strPref("downloadFolder", ScopeApp, func(s Settings, _ string) string { return s.DownloadFolder }, func(s *Settings, _, v string) { s.DownloadFolder = v }),
@@ -118,7 +120,7 @@ var registry = []pref{
 	ptrPref("shareIncludeFomodChoices", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeFomodChoices }, func(s *Settings, _ string, on bool) { s.ShareIncludeFomodChoices = &on }),
 	ptrPref("shareIncludeNotes", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeNotes }, func(s *Settings, _ string, on bool) { s.ShareIncludeNotes = &on }),
 	ptrPref("shareIncludeConfigFiles", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeConfigFiles }, func(s *Settings, _ string, on bool) { s.ShareIncludeConfigFiles = &on }),
-	boolPref("verifyNexusMD5", ScopeApp, func(s Settings, _ string) bool { return s.VerifyNexusMD5 }, func(s *Settings, _ string, on bool) { s.VerifyNexusMD5 = on }),
+	sourcePref("nexus", boolPref("verifyNexusMD5", ScopeSource, func(s Settings, _ string) bool { return s.VerifyNexusMD5 }, func(s *Settings, _ string, on bool) { s.VerifyNexusMD5 = on })),
 	boolPref("launchAtLogin", ScopeApp, func(s Settings, _ string) bool { return s.LaunchAtLogin }, func(s *Settings, _ string, on bool) {
 		s.LaunchAtLogin = on
 		_ = applyAutostart(on)

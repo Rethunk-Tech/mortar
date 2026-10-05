@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
 	"net/url"
 	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -120,8 +122,8 @@ func (s *Service) Receive(args []string) bool {
 		}
 		if domain, gerr := nxm.LinkGame(arg); gerr == nil && !isMortarGame(domain) {
 			cur := s.store.Get()
-			if cur.NxmPrevious != "" && cur.RedirectOtherGames() {
-				err := s.handler.ForwardOther(arg, cur.NxmPrevious)
+			if previous := cur.NxmPreviousHandlers[linkScheme(arg)]; previous != "" && cur.RedirectOtherGames() {
+				err := s.handler.ForwardOther(arg, previous)
 				if err == nil {
 					log.Printf("nxm: %s link forwarded to the previous handler", domain)
 					continue
@@ -256,30 +258,50 @@ func (s *Service) Ignore(id int) {
 
 // Owner names the app that handles nxm links now, or is empty when none does or Mortar already does.
 func (s *Service) Owner() (string, error) {
-	o, err := s.handler.Owner()
+	o, err := s.handler.Owner(nxmScheme)
 	if err != nil || o.Mine {
 		return "", err
 	}
 	return o.Name, nil
 }
 
+// nxmScheme is the scheme whose previous owner is shown to the user.
+const nxmScheme = "nxm"
+
+func linkScheme(link string) string {
+	scheme, _, _ := strings.Cut(link, ":")
+	return strings.ToLower(scheme)
+}
+
 // Enable registers Mortar for nxm links and records the owner it replaces.
 func (s *Service) Enable() error {
-	o, err := s.handler.Owner()
-	if err != nil {
-		return err
+	previous := maps.Clone(s.store.Get().NxmPreviousHandlers)
+	if previous == nil {
+		previous = map[string]string{}
 	}
-	previous := s.store.Get().NxmPrevious
 	prevName := s.store.Get().NxmPreviousName
-	if !o.Mine {
-		previous = o.ID
-		prevName = o.Name
+	for _, scheme := range nxm.Schemes() {
+		o, err := s.handler.Owner(scheme)
+		if err != nil {
+			return err
+		}
+		if o.Mine {
+			continue
+		}
+		if o.ID == "" {
+			delete(previous, scheme)
+		} else {
+			previous[scheme] = o.ID
+		}
+		if scheme == nxmScheme {
+			prevName = o.Name
+		}
 	}
 	if err := s.handler.Register(); err != nil {
 		return err
 	}
 	return s.record(func(v *settings.Settings) {
-		v.NxmHandled, v.NxmPrevious, v.NxmPreviousName, v.NxmAsked = true, previous, prevName, true
+		v.NxmHandled, v.NxmPreviousHandlers, v.NxmPreviousName, v.NxmAsked = true, previous, prevName, true
 	})
 }
 
@@ -294,10 +316,10 @@ func ReleaseLinks(store *settings.Store, handler nxm.Handler) error {
 }
 
 func release(s *Service) error {
-	if err := s.handler.Restore(s.store.Get().NxmPrevious); err != nil {
+	if err := s.handler.Restore(s.store.Get().NxmPreviousHandlers); err != nil {
 		return err
 	}
-	return s.record(func(v *settings.Settings) { v.NxmHandled, v.NxmPrevious, v.NxmPreviousName = false, "", "" })
+	return s.record(func(v *settings.Settings) { v.NxmHandled, v.NxmPreviousHandlers, v.NxmPreviousName = false, nil, "" })
 }
 
 // RegisterLinks makes Mortar the app for mortar:// links and .mortar files; the window calls it once first run is

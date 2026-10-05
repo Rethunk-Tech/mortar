@@ -31,7 +31,7 @@ func TestTipsSeen(t *testing.T) {
 	if s.Get().TipsSeen != nil {
 		t.Fatal("clear failed")
 	}
-	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"tipsSeen":["mods","nope","saves","mods"]}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"global":{"tipsSeen":["mods","nope","saves","mods"]}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, err := Open()

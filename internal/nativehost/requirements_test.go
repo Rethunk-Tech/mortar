@@ -25,7 +25,7 @@ func TestMarkRequirementPresence(t *testing.T) {
 }
 
 func TestModReplyCarriesRequirements(t *testing.T) {
-	dir := listenControl(t, `{"lastProfile":{"stardew":"p1"}}`)
+	dir := listenControl(t, `{"global":{"lastProfile":{"stardew":"p1"}}}`)
 	cache := []byte(`{"fetched":"2026-01-01T00:00:00Z","value":[{"ModID":1915,"Name":"Content Patcher"},{"ModID":2400,"Name":"GMCM"},{"ModID":0,"Name":"SMAPI"}]}`)
 	if err := os.MkdirAll(filepath.Join(dir, "cache"), 0o700); err != nil {
 		t.Fatal(err)
@@ -68,7 +68,7 @@ func TestModReplyCarriesRequirements(t *testing.T) {
 }
 
 func TestModReplyOmitsRequirementsWithoutCache(t *testing.T) {
-	listenControl(t, `{"lastProfile":{"stardew":"p1"}}`)
+	listenControl(t, `{"global":{"lastProfile":{"stardew":"p1"}}}`)
 	var out bytes.Buffer
 	if err := Serve(bytes.NewReader(frame(t, request{Type: "mod", Source: "nexus", SourceGameKey: "stardewvalley", ModID: 1})), &out, func(string) error { return nil }); err != nil {
 		t.Fatal(err)

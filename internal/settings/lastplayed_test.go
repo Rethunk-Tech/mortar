@@ -26,7 +26,11 @@ func TestOpenDropsInvalidLastPlayed(t *testing.T) {
 			"ok":      {Profile: "keep", At: "2026-09-30T16:00:00Z"},
 		},
 	}
-	b, err := json.Marshal(raw)
+	doc, err := encodeFile(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := json.Marshal(doc)
 	if err != nil {
 		t.Fatal(err)
 	}

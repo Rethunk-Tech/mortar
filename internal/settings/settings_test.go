@@ -29,7 +29,7 @@ func TestDefaultsAndRoundTrip(t *testing.T) {
 	}
 	if _, err := s.Update(func(v *Settings) {
 		v.Accent, v.Background, v.BackgroundImage, v.LastGame = "moss", BackgroundSolid, "/pics/a.png", "lethal"
-		v.NxmHandled, v.NxmPrevious = true, "vortex.desktop"
+		v.NxmHandled, v.NxmPreviousHandlers = true, map[string]string{"nxm": "vortex.desktop"}
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +59,7 @@ func TestInvalidAccent(t *testing.T) {
 	if s.Get().Accent != "sand" {
 		t.Fatal("state changed on rejected set")
 	}
-	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"neon","background":"neon"}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"global":{"accent":"neon","background":"neon"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, _ := Open()
@@ -105,7 +105,7 @@ func TestBackground(t *testing.T) {
 		}
 	}
 	// A file without the field takes the default.
-	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"moss","translucent":false}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"global":{"accent":"moss","translucent":false}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, _ := Open()
@@ -192,7 +192,7 @@ func TestListColumns(t *testing.T) {
 	if _, err := s.Update(func(v *Settings) { v.ListGroupBy = "nope" }); err == nil {
 		t.Fatal("unknown group accepted")
 	}
-	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"sand","background":"image","listColumns":["nope","name"],"listSortColumn":"nope","listSortDir":"up","listGroupBy":"nope"}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"global":{"accent":"sand","background":"image","listColumns":["nope","name"],"listSortColumn":"nope","listSortDir":"up","listGroupBy":"nope"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, err := Open()
@@ -202,7 +202,7 @@ func TestListColumns(t *testing.T) {
 	if got := s2.Get(); !slices.Equal(got.ListColumns, []string{"on", "name"}) || got.ListSortColumn != defaultListSortColumn || got.ListSortDir != defaultListSortDir || got.ListGroupBy != defaultListGroupBy {
 		t.Fatalf("load = %+v", got)
 	}
-	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"sand","background":"image"}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"global":{"accent":"sand","background":"image"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s3, _ := Open()

@@ -14,14 +14,6 @@ import (
 func classKey(scheme string) string   { return `Software\Classes\` + scheme }
 func commandKey(scheme string) string { return classKey(scheme) + `\shell\open\command` }
 
-// primary is the scheme whose previous owner Mortar records: the first one a source claims.
-func primary() string {
-	if s := source.Schemes(); len(s) > 0 {
-		return s[0]
-	}
-	return ""
-}
-
 func defaultIcon(exe string) string { return exe + ",0" }
 
 // System is the system's registration of the source link schemes. software is the HKCU key the browsers' native messaging
@@ -33,11 +25,7 @@ func New(exe string) (*System, error) { return &System{exe: exe, software: "Soft
 
 func (w *System) command() string { return `"` + w.exe + `" "%1"` }
 
-func (w *System) Owner() (Owner, error) {
-	scheme := primary()
-	if scheme == "" {
-		return Owner{}, nil
-	}
+func (w *System) Owner(scheme string) (Owner, error) {
 	k, err := registry.OpenKey(registry.CURRENT_USER, commandKey(scheme), registry.QUERY_VALUE)
 	if errors.Is(err, registry.ErrNotExist) {
 		return Owner{}, nil
@@ -132,23 +120,29 @@ func setIcon(scheme, icon string) error {
 	return k.SetStringValue("", icon)
 }
 
-// Restore hands the primary scheme back to previous; with no previous owner every scheme's keys are deleted.
-func (w *System) Restore(previous string) error {
+// Restore hands each scheme back to its previous owner; a scheme with none has its keys deleted.
+func (w *System) Restore(previous map[string]string) error {
 	if err := w.removeNativeHosts(); err != nil {
 		return err
 	}
+	for _, scheme := range source.Schemes() {
+		if err := restoreScheme(scheme, previous[scheme]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func restoreScheme(scheme, previous string) error {
 	if previous == "" {
-		for _, scheme := range source.Schemes() {
-			class := classKey(scheme)
-			for _, key := range []string{class + `\DefaultIcon`, commandKey(scheme), class + `\shell\open`, class + `\shell`, class} {
-				if err := registry.DeleteKey(registry.CURRENT_USER, key); err != nil && !errors.Is(err, registry.ErrNotExist) {
-					return fmt.Errorf("delete %s: %w", key, err)
-				}
+		class := classKey(scheme)
+		for _, key := range []string{class + `\DefaultIcon`, commandKey(scheme), class + `\shell\open`, class + `\shell`, class} {
+			if err := registry.DeleteKey(registry.CURRENT_USER, key); err != nil && !errors.Is(err, registry.ErrNotExist) {
+				return fmt.Errorf("delete %s: %w", key, err)
 			}
 		}
 		return nil
 	}
-	scheme := primary()
 	p := splitPrevious(previous)
 	if err := setCommand(scheme, p.cmd); err != nil {
 		return err

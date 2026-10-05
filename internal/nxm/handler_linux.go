@@ -118,15 +118,11 @@ func (l *System) desktopPath() string {
 	return filepath.Join(l.dataHome, "applications", desktopID)
 }
 
-func (l *System) Owner() (Owner, error) {
+func (l *System) Owner(scheme string) (Owner, error) {
 	if skipXdgMime() {
 		return Owner{}, nil
 	}
-	mimes := schemeMimes()
-	if len(mimes) == 0 {
-		return Owner{}, nil
-	}
-	out, err := l.run(xdgMime, "query", "default", mimes[0])
+	out, err := l.run(xdgMime, "query", "default", schemeMime(scheme))
 	if err != nil {
 		return Owner{}, fmt.Errorf("xdg-mime query: %w", err)
 	}
@@ -323,7 +319,7 @@ func (l *System) Register() error {
 	return l.setDefaults()
 }
 
-func (l *System) Restore(previous string) error {
+func (l *System) Restore(previous map[string]string) error {
 	if err := l.removeNativeHosts(); err != nil {
 		return err
 	}
@@ -332,18 +328,23 @@ func (l *System) Restore(previous string) error {
 			return err
 		}
 	}
-	if previous != "" {
+	var unowned []string
+	for _, scheme := range source.Schemes() {
+		if previous[scheme] == "" {
+			unowned = append(unowned, schemeMime(scheme))
+			continue
+		}
 		if skipXdgMime() {
-			return nil
+			continue
 		}
-		for _, mime := range schemeMimes() {
-			if _, err := l.run(xdgMime, "default", previous, mime); err != nil {
-				return fmt.Errorf("xdg-mime default: %w", err)
-			}
+		if _, err := l.run(xdgMime, "default", previous[scheme], schemeMime(scheme)); err != nil {
+			return fmt.Errorf("xdg-mime default: %w", err)
 		}
+	}
+	if len(unowned) == 0 {
 		return nil
 	}
-	return l.dropDefault(schemeMimes()...)
+	return l.dropDefault(unowned...)
 }
 
 // ForwardOther runs the previous handler's desktop entry on link.

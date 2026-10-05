@@ -33,19 +33,20 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 	if m["version"] != float64(exportVersion) {
 		t.Fatalf("version = %v", m["version"])
 	}
-	if m["accent"] != "moss" {
-		t.Fatalf("accent = %v", m["accent"])
+	global, _ := m["global"].(map[string]any)
+	if global["accent"] != "moss" {
+		t.Fatalf("accent = %v", global["accent"])
 	}
-	if m["language"] != "en" {
-		t.Fatalf("language = %v", m["language"])
+	if global["language"] != "en" {
+		t.Fatalf("language = %v", global["language"])
 	}
 	for _, k := range []string{
 		"nexusName", "nexusUserId", "nexusPremium", "gameFolders", "gameStores", "loaders",
 		"lastProfile", "lastPlayed", "backgroundImage", "dismissed",
-		"nxmHandled", "nxmPrevious", "nxmAsked",
+		"nxmHandled", "nxmPreviousHandlers", "nxmAsked",
 		"overlayToken", "overlayEnabled", "overlayPort",
 	} {
-		if _, ok := m[k]; ok {
+		if strings.Contains(string(b), `"`+k+`"`) {
 			t.Fatalf("exported %s: %s", k, b)
 		}
 	}
@@ -58,7 +59,7 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 }
 
 func TestLanguagePortableRoundTrip(t *testing.T) {
-	p, present, err := ParseExport([]byte(`{"version":1,"language":"en"}`))
+	p, present, err := ParseExport([]byte(`{"version":1,"global":{"language":"en"}}`))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +71,7 @@ func TestLanguagePortableRoundTrip(t *testing.T) {
 }
 
 func TestImportIgnoresUnknownAndSanitizesLikeLoad(t *testing.T) {
-	raw := []byte(`{"version":1,"accent":"neon","mystery":true,"nexusName":"x","gameFolders":{"stardew":"/nope"},"storeRetentionDays":30}`)
+	raw := []byte(`{"version":1,"global":{"accent":"neon","mystery":true,"gameFolders":{"stardew":"/nope"},"storeRetentionDays":30},"sources":{"nexus":{"nexusName":"x"}}}`)
 	p, present, err := ParseExport(raw)
 	if err != nil {
 		t.Fatal(err)
@@ -103,16 +104,16 @@ func TestImportIgnoresUnknownAndSanitizesLikeLoad(t *testing.T) {
 }
 
 func TestImportRejectsMissingOrUnknownVersion(t *testing.T) {
-	if _, _, err := ParseExport([]byte(`{"accent":"moss"}`)); err == nil {
+	if _, _, err := ParseExport([]byte(`{"global":{"accent":"moss"}}`)); err == nil {
 		t.Fatal("missing version accepted")
 	}
-	if _, _, err := ParseExport([]byte(`{"version":2,"accent":"moss"}`)); err == nil {
+	if _, _, err := ParseExport([]byte(`{"version":2,"global":{"accent":"moss"}}`)); err == nil {
 		t.Fatal("version 2 accepted")
 	}
 }
 
 func TestImportPreviewGroupsBySectionAndNotesUnknown(t *testing.T) {
-	raw := []byte(`{"version":1,"accent":"sky","storeRetentionDays":60,"parallelDownloads":2,"mystery":1,"nexusName":"x"}`)
+	raw := []byte(`{"version":1,"global":{"accent":"sky","storeRetentionDays":60,"parallelDownloads":2,"mystery":1},"sources":{"nexus":{"nexusName":"x"}}}`)
 	got, err := PreviewImport(Defaults(), raw)
 	if err != nil {
 		t.Fatal(err)
@@ -136,7 +137,7 @@ func TestImportPreviewGroupsBySectionAndNotesUnknown(t *testing.T) {
 }
 
 func TestApplyImportTakesOnlyChosenSections(t *testing.T) {
-	raw := []byte(`{"version":1,"accent":"sky","storeRetentionDays":60}`)
+	raw := []byte(`{"version":1,"global":{"accent":"sky","storeRetentionDays":60}}`)
 	cur := Defaults()
 	if err := ApplyImport(&cur, raw, []string{SectionStorage}); err != nil {
 		t.Fatal(err)

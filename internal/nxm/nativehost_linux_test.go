@@ -41,7 +41,7 @@ func TestRegisterWritesHostManifestsForInstalledBrowsersAndRestoreRemovesThem(t 
 	if _, err := os.Stat(filepath.Join(l.configHome, "google-chrome")); err == nil {
 		t.Error("created a folder for a browser that is not installed")
 	}
-	if err := l.Restore(""); err != nil {
+	if err := l.Restore(nil); err != nil {
 		t.Fatal(err)
 	}
 	for _, p := range []string{chromium, firefox} {

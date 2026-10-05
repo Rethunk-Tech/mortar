@@ -32,7 +32,7 @@ func TestRememberNexusDownloadServers(t *testing.T) {
 
 func TestNxmRedirectDefaultsWithPrevious(t *testing.T) {
 	s, _ := open(t)
-	if _, err := s.Update(func(v *Settings) { v.NxmPrevious = "vortex.desktop" }); err != nil {
+	if _, err := s.Update(func(v *Settings) { v.NxmPreviousHandlers = map[string]string{"nxm": "vortex.desktop"} }); err != nil {
 		t.Fatal(err)
 	}
 	if !s.Get().RedirectOtherGames() {

@@ -17,7 +17,7 @@ type fakeHandler struct {
 	failNext bool
 }
 
-func (f *fakeHandler) Owner() (nxm.Owner, error) { return f.owner, nil }
+func (f *fakeHandler) Owner(string) (nxm.Owner, error) { return f.owner, nil }
 
 func (f *fakeHandler) Register() error {
 	if f.failNext {
@@ -33,9 +33,9 @@ func (f *fakeHandler) RegisterLinks() error {
 	return nil
 }
 
-func (f *fakeHandler) Restore(previous string) error {
-	f.owner = nxm.Owner{ID: previous, Name: previous, Mine: false}
-	f.registry = append(f.registry, "restore:"+previous)
+func (f *fakeHandler) Restore(previous map[string]string) error {
+	f.owner = nxm.Owner{ID: previous["nxm"], Name: previous["nxm"], Mine: false}
+	f.registry = append(f.registry, "restore:"+previous["nxm"])
 	return nil
 }
 
@@ -68,19 +68,19 @@ func TestEnableRecordsPreviousOwnerAndDisableRestoresIt(t *testing.T) {
 	if err := s.Enable(); err != nil {
 		t.Fatal(err)
 	}
-	if got := s.store.Get(); !got.NxmHandled || got.NxmPrevious != "vortex.desktop" || got.NxmPreviousName != "Vortex" || !got.NxmAsked {
+	if got := s.store.Get(); !got.NxmHandled || got.NxmPreviousHandlers["nxm"] != "vortex.desktop" || got.NxmPreviousName != "Vortex" || !got.NxmAsked {
 		t.Fatalf("settings after Enable: %+v", got)
 	}
 	if name, _ := s.Owner(); name != "" {
 		t.Errorf("Owner names %q once Mortar owns the scheme", name)
 	}
-	if err := s.Enable(); err != nil || s.store.Get().NxmPrevious != "vortex.desktop" {
+	if err := s.Enable(); err != nil || s.store.Get().NxmPreviousHandlers["nxm"] != "vortex.desktop" {
 		t.Fatalf("a second Enable lost the previous owner: %+v, %v", s.store.Get(), err)
 	}
 	if err := s.Disable(); err != nil {
 		t.Fatal(err)
 	}
-	if got := s.store.Get(); got.NxmHandled || got.NxmPrevious != "" || h.owner.ID != "vortex.desktop" {
+	if got := s.store.Get(); got.NxmHandled || len(got.NxmPreviousHandlers) != 0 || h.owner.ID != "vortex.desktop" {
 		t.Fatalf("after Disable: %+v, owner %+v", got, h.owner)
 	}
 }
@@ -94,7 +94,7 @@ func TestReleaseLinksRestoresTheRecordedHandler(t *testing.T) {
 	if err := ReleaseLinks(s.store, h); err != nil {
 		t.Fatal(err)
 	}
-	if got := s.store.Get(); got.NxmHandled || got.NxmPrevious != "" || h.owner.ID != "vortex.desktop" {
+	if got := s.store.Get(); got.NxmHandled || len(got.NxmPreviousHandlers) != 0 || h.owner.ID != "vortex.desktop" {
 		t.Fatalf("after ReleaseLinks: %+v, owner %+v", got, h.owner)
 	}
 	if len(h.registry) < 2 || h.registry[len(h.registry)-1] != "restore:vortex.desktop" {
@@ -131,7 +131,7 @@ func TestReceiveForwardsOtherGameLinks(t *testing.T) {
 	h := &fakeHandler{}
 	s := newService(t, h)
 	if _, err := s.store.Update(func(v *settings.Settings) {
-		v.NxmPrevious = "vortex.desktop"
+		v.NxmPreviousHandlers = map[string]string{"nxm": "vortex.desktop"}
 		on := true
 		v.NxmRedirectOtherGames = &on
 	}); err != nil {

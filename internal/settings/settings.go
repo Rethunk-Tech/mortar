@@ -2,7 +2,6 @@
 package settings
 
 import (
-	"encoding/json"
 	"fmt"
 	"maps"
 	"path/filepath"
@@ -67,14 +66,15 @@ type Settings struct {
 	NexusUserID  int    `json:"nexusUserId"`
 	NexusName    string `json:"nexusName"`
 	NexusPremium bool   `json:"nexusPremium"`
-	// NxmHandled is whether Mortar is registered for nxm:// links, and NxmPrevious the owner it took them from (empty
-	// when there was none), which turning the setting off restores. NxmAsked is whether the user has been offered it.
-	NxmHandled  bool   `json:"nxmHandled"`
-	NxmPrevious string `json:"nxmPrevious"`
-	NxmAsked    bool   `json:"nxmAsked"`
-	// NxmPreviousName is the display name of NxmPrevious when Mortar took over the scheme.
+	// NxmHandled is whether Mortar is registered for the source link schemes, and NxmPreviousHandlers maps each scheme
+	// to the owner Mortar took it from (absent when there was none), which turning the setting off restores. NxmAsked is
+	// whether the user has been offered it.
+	NxmHandled          bool              `json:"nxmHandled"`
+	NxmPreviousHandlers map[string]string `json:"nxmPreviousHandlers"`
+	NxmAsked            bool              `json:"nxmAsked"`
+	// NxmPreviousName is the display name of the nxm scheme's previous owner when Mortar took over the scheme.
 	NxmPreviousName string `json:"nxmPreviousName"`
-	// NxmRedirectOtherGames sends nxm:// links for other games to NxmPrevious when on.
+	// NxmRedirectOtherGames sends nxm:// links for other games to the nxm scheme's previous owner when on.
 	NxmRedirectOtherGames *bool `json:"nxmRedirectOtherGames"`
 	// NexusPreferredDownloadServer is a seen download_link.json short_name, or empty for Automatic.
 	NexusPreferredDownloadServer string `json:"nexusPreferredDownloadServer"`
@@ -241,8 +241,8 @@ func Open() (*Store, error) {
 	}
 	s := &Store{path: filepath.Join(dir, FileName), cur: Defaults()}
 	if b, err := fsx.ReadFile(s.path); err == nil {
-		var loaded Settings
-		if err := json.Unmarshal(b, &loaded); err != nil {
+		loaded, err := decodeFile(b)
+		if err != nil {
 			corrupt := fmt.Sprintf("%s.corrupt-%d", s.path, time.Now().UnixNano())
 			if renameErr := fsx.Rename(s.path, corrupt); renameErr != nil {
 				return nil, fmt.Errorf("preserve corrupt settings: %w", renameErr)
@@ -371,7 +371,11 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 		return s.cur, err
 	}
 	next.FormatVersion = datadir.FormatVersion
-	if err := datadir.WriteVersioned(s.path, next); err != nil {
+	doc, err := encodeFile(next)
+	if err != nil {
+		return s.cur, err
+	}
+	if err := datadir.WriteVersioned(s.path, doc); err != nil {
 		return s.cur, err
 	}
 	s.cur = next

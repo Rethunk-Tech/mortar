@@ -165,7 +165,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 
 func TestOmittedPrefsNormalizeToToday(t *testing.T) {
 	s, _ := open(t)
-	raw := `{"accent":"sand"}`
+	raw := `{"global":{"accent":"sand"}}`
 	if err := writeRaw(t, s, raw); err != nil {
 		t.Fatal(err)
 	}

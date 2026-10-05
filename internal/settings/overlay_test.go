@@ -25,7 +25,7 @@ func TestOverlayDefaultsAndPortRange(t *testing.T) {
 	if _, err := s.Update(func(v *Settings) { v.OverlayPort = 9000 }); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"accent":"sand","background":"image","overlayPort":80}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(`{"global":{"accent":"sand","background":"image","overlayPort":80}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	s2, err := Open()
@@ -104,7 +104,8 @@ func TestOverlayTokenStaysOutOfJSONLogsShape(t *testing.T) {
 	if err := json.Unmarshal(raw, &m); err != nil {
 		t.Fatal(err)
 	}
-	tok, _ := m["overlayToken"].(string)
+	global, _ := m["global"].(map[string]any)
+	tok, _ := global["overlayToken"].(string)
 	if tok == "" {
 		t.Fatal("token not stored")
 	}

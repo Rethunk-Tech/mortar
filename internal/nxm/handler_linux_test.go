@@ -51,7 +51,7 @@ func newLinux(t *testing.T, current string) (*System, *recorder) {
 
 func TestRegisterThenRestorePreviousHandler(t *testing.T) {
 	l, r := newLinux(t, "vortex.desktop")
-	owner, err := l.Owner()
+	owner, err := l.Owner("nxm")
 	if err != nil || owner.ID != "vortex.desktop" || owner.Mine || owner.Name != "vortex" {
 		t.Fatalf("owner before: %+v, %v", owner, err)
 	}
@@ -76,10 +76,10 @@ func TestRegisterThenRestorePreviousHandler(t *testing.T) {
 	if l.NotificationIcon() != l.iconPNGPath() {
 		t.Fatalf("NotificationIcon: %q", l.NotificationIcon())
 	}
-	if owner, _ := l.Owner(); !owner.Mine {
+	if owner, _ := l.Owner("nxm"); !owner.Mine {
 		t.Fatalf("owner after Register: %+v", owner)
 	}
-	if err := l.Restore("vortex.desktop"); err != nil {
+	if err := l.Restore(map[string]string{"nxm": "vortex.desktop"}); err != nil {
 		t.Fatal(err)
 	}
 	if r.current != "vortex.desktop" {
@@ -107,7 +107,7 @@ func TestRestoreWithoutPreviousDropsOurDefault(t *testing.T) {
 	if err := os.Symlink(target, list); err != nil {
 		t.Fatal(err)
 	}
-	if err := l.Restore(""); err != nil {
+	if err := l.Restore(nil); err != nil {
 		t.Fatal(err)
 	}
 	if fi, err := os.Lstat(list); err != nil || fi.Mode()&os.ModeSymlink == 0 {
@@ -401,7 +401,7 @@ func TestFlatpakSkipsXdgMime(t *testing.T) {
 	if err := l.RegisterLinks(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := l.Owner(); err != nil {
+	if _, err := l.Owner("nxm"); err != nil {
 		t.Fatal(err)
 	}
 	if len(r.calls) != 0 {

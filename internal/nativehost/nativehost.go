@@ -840,12 +840,14 @@ func Manifest(exe string, firefox bool) ([]byte, error) {
 // does not go through settings.Open, which moves a corrupt file aside.
 func accentColor() string {
 	var s struct {
-		Accent string `json:"accent"`
+		Global struct {
+			Accent string `json:"accent"`
+		} `json:"global"`
 	}
 	if dir, err := datadir.Dir(); err == nil {
 		if b, err := fsx.ReadFile(filepath.Join(dir, settings.FileName)); err == nil {
 			_ = json.Unmarshal(b, &s)
 		}
 	}
-	return settings.AccentColor(s.Accent)
+	return settings.AccentColor(s.Global.Accent)
 }

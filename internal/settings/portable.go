@@ -57,8 +57,7 @@ func asObject(v any) (map[string]json.RawMessage, error) {
 
 func filterPortableRaw(src map[string]json.RawMessage) map[string]json.RawMessage {
 	allow := portableSet()
-	out := make(map[string]json.RawMessage, len(portableFields)+1)
-	out["version"] = json.RawMessage(strconvVersion())
+	out := make(map[string]json.RawMessage, len(portableFields))
 	for k, v := range src {
 		if _, ok := allow[k]; ok {
 			out[k] = v
@@ -67,8 +66,10 @@ func filterPortableRaw(src map[string]json.RawMessage) map[string]json.RawMessag
 	return out
 }
 
-func strconvVersion() []byte {
-	return []byte(fmt.Sprintf("%d", exportVersion))
+// exportFile is an export: the version, then the portable settings by scope, as in settings.json.
+type exportFile struct {
+	Version int `json:"version"`
+	scoped
 }
 
 // MarshalExport writes a versioned JSON of s without secrets or machine-specific fields.
@@ -77,7 +78,7 @@ func MarshalExport(s Settings) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return json.MarshalIndent(filterPortableRaw(raw), "", "  ")
+	return json.MarshalIndent(exportFile{Version: exportVersion, scoped: split(filterPortableRaw(raw))}, "", "  ")
 }
 
 func overlayPortable(cur Settings, raw map[string]json.RawMessage, present map[string]struct{}) (Settings, error) {
@@ -108,21 +109,21 @@ func overlayPortable(cur Settings, raw map[string]json.RawMessage, present map[s
 
 // ParseExport validates an export. Unknown fields are ignored; each portable value is sanitised as on load.
 func ParseExport(b []byte) (Settings, map[string]struct{}, error) {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
+	var file struct {
+		Version *int `json:"version"`
+		scoped
+	}
+	if err := json.Unmarshal(b, &file); err != nil {
 		return Settings{}, nil, err
 	}
-	ver, ok := raw["version"]
-	if !ok {
+	if file.Version == nil {
 		return Settings{}, nil, fmt.Errorf("missing version")
 	}
-	var version int
-	if err := json.Unmarshal(ver, &version); err != nil {
-		return Settings{}, nil, err
+	if *file.Version != exportVersion {
+		return Settings{}, nil, fmt.Errorf("unsupported settings version %d", *file.Version)
 	}
-	if version != exportVersion {
-		return Settings{}, nil, fmt.Errorf("unsupported settings version %d", version)
-	}
+	raw := file.flatten()
+	raw["version"] = json.RawMessage(fmt.Sprint(exportVersion))
 	present := make(map[string]struct{}, len(raw))
 	for k := range raw {
 		present[k] = struct{}{}
