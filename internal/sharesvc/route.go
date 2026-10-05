@@ -20,10 +20,7 @@ func parseModRoute(value string) (modRoute, bool) {
 	}
 	id := u.Host
 	if !game.Valid(id) {
-		var ok bool
-		if id, ok = game.ByNexusDomain(id); !ok {
-			return modRoute{}, false
-		}
+		return modRoute{}, false
 	}
 	parts := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
 	if len(parts) != 2 || parts[0] != "mod" || parts[1] == "" || parts[1][0] < '1' || parts[1][0] > '9' {

@@ -42,7 +42,7 @@ func TestModReplyCarriesRequirements(t *testing.T) {
 	}
 
 	var out bytes.Buffer
-	if err := Serve(bytes.NewReader(frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 2400})), &out, func(string) error { return nil }); err != nil {
+	if err := Serve(bytes.NewReader(frame(t, request{Type: "mod", Source: "nexus", SourceGameKey: "stardewvalley", ModID: 2400})), &out, func(string) error { return nil }); err != nil {
 		t.Fatal(err)
 	}
 	var n uint32
@@ -70,7 +70,7 @@ func TestModReplyCarriesRequirements(t *testing.T) {
 func TestModReplyOmitsRequirementsWithoutCache(t *testing.T) {
 	listenControl(t, `{"lastProfile":{"stardew":"p1"}}`)
 	var out bytes.Buffer
-	if err := Serve(bytes.NewReader(frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 1})), &out, func(string) error { return nil }); err != nil {
+	if err := Serve(bytes.NewReader(frame(t, request{Type: "mod", Source: "nexus", SourceGameKey: "stardewvalley", ModID: 1})), &out, func(string) error { return nil }); err != nil {
 		t.Fatal(err)
 	}
 	var n uint32

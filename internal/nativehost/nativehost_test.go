@@ -22,6 +22,10 @@ import (
 
 func frame(t *testing.T, v any) []byte {
 	t.Helper()
+	if r, ok := v.(request); ok && r.Protocol == nil {
+		r.Protocol = new(Protocol)
+		v = r
+	}
 	b, err := json.Marshal(v)
 	if err != nil {
 		t.Fatal(err)
@@ -125,7 +129,7 @@ func TestServeHandsEachLinkOverAndReplies(t *testing.T) {
 }
 
 func TestServeAnswersInstalledMods(t *testing.T) {
-	in := frame(t, request{Type: "installed", Game: "stardewvalley"})
+	in := frame(t, request{Type: "installed", Source: "nexus", SourceGameKey: "stardewvalley"})
 	var out bytes.Buffer
 	err := serve(bytes.NewReader(in), &out, func(string) error {
 		t.Fatal("installed request opened a link")
@@ -189,7 +193,7 @@ func TestServeOffAnswersNothingAndModCarriesProblemsAndRequirements(t *testing.T
 	for _, st := range []string{stateOff, stateReady, stateNoProfile} {
 		h.state = func(string) (string, string) { return st, "Farm" }
 		var out bytes.Buffer
-		in := append(frame(t, request{Type: "installed", Game: "stardewvalley"}), frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 1})...)
+		in := append(frame(t, request{Type: "installed", Source: "nexus", SourceGameKey: "stardewvalley"}), frame(t, request{Type: "mod", Source: "nexus", SourceGameKey: "stardewvalley", ModID: 1})...)
 		if st == stateOff {
 			h.installed = func(string) []int { return nil }
 		}
@@ -211,7 +215,7 @@ func TestServeOffAnswersNothingAndModCarriesProblemsAndRequirements(t *testing.T
 }
 
 func TestServeReportsConnectedWhenProfileHasNoMods(t *testing.T) {
-	in := frame(t, request{Type: "installed", Game: "stardewvalley"})
+	in := frame(t, request{Type: "installed", Source: "nexus", SourceGameKey: "stardewvalley"})
 	var out bytes.Buffer
 	err := serveHandlers(bytes.NewReader(in), &out, handlers{
 		open:      func(string) error { return nil },
@@ -229,7 +233,7 @@ func TestServeReportsConnectedWhenProfileHasNoMods(t *testing.T) {
 }
 
 func TestServeAnswersModProfiles(t *testing.T) {
-	in := frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 123})
+	in := frame(t, request{Type: "mod", Source: "nexus", SourceGameKey: "stardewvalley", ModID: 123})
 	var out bytes.Buffer
 	err := serve(bytes.NewReader(in), &out, func(string) error {
 		t.Fatal("mod request opened a link")
@@ -358,7 +362,7 @@ func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
 }
 
 func TestServeAnswersModUpdateAvailable(t *testing.T) {
-	in := frame(t, request{Type: "mod", Game: "stardewvalley", ModID: 1915})
+	in := frame(t, request{Type: "mod", Source: "nexus", SourceGameKey: "stardewvalley", ModID: 1915})
 	var out bytes.Buffer
 	err := serve(bytes.NewReader(in), &out, func(string) error {
 		t.Fatal("mod request opened a link")
@@ -424,7 +428,7 @@ func TestNexusModProfilesUpdateAvailableFromCache(t *testing.T) {
 }
 
 func TestServeAnswersUpdates(t *testing.T) {
-	in := frame(t, request{Type: "updates", Game: "stardewvalley"})
+	in := frame(t, request{Type: "updates", Source: "nexus", SourceGameKey: "stardewvalley"})
 	var out bytes.Buffer
 	err := serveHandlers(bytes.NewReader(in), &out, handlers{
 		open: func(string) error {
@@ -514,7 +518,7 @@ func TestActiveNexusUpdatesFromCache(t *testing.T) {
 	if rows[1].Name != "Zed" || rows[1].ModID != 10 || rows[1].Latest != "2.0.0" {
 		t.Fatalf("named update = %+v", rows[1])
 	}
-	in := frame(t, request{Type: "updates", Game: "stardewvalley"})
+	in := frame(t, request{Type: "updates", Source: "nexus", SourceGameKey: "stardewvalley"})
 	var out bytes.Buffer
 	if err := Serve(bytes.NewReader(in), &out, func(string) error {
 		t.Fatal("updates request opened a link")
@@ -569,7 +573,7 @@ func TestRecordContactWritesOncePerMinute(t *testing.T) {
 func TestServeRefusesAnExtensionProtocolOutOfRange(t *testing.T) {
 	in := append(frame(t, map[string]any{"link": "nxm://unversioned"}),
 		frame(t, map[string]any{"protocol": MinProtocol - 1, "link": "nxm://zero"})...)
-	in = append(in, frame(t, map[string]any{"protocol": MaxProtocol + 1, "type": "installed", "game": "stardewvalley"})...)
+	in = append(in, frame(t, map[string]any{"protocol": MaxProtocol + 1, "type": "installed", "source": "nexus", "sourceGameKey": "stardewvalley"})...)
 	in = append(in, frame(t, map[string]any{"protocol": Protocol, "link": "nxm://ok"})...)
 	var out bytes.Buffer
 	var opened, mismatches []string
@@ -580,17 +584,36 @@ func TestServeRefusesAnExtensionProtocolOutOfRange(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"", ExtensionTooOld, ExtensionTooNew, ""} {
+	for _, want := range []string{ExtensionTooOld, ExtensionTooOld, ExtensionTooNew, ""} {
 		got := readReply(t, &out)
 		if got.Protocol != Protocol || got.ProtocolError != want || (want == "") != got.OK {
 			t.Fatalf("reply %+v, want protocolError %q", got, want)
 		}
 	}
-	if !slices.Equal(opened, []string{"nxm://unversioned", "nxm://ok"}) {
+	if !slices.Equal(opened, []string{"nxm://ok"}) {
 		t.Fatalf("opened %v", opened)
 	}
-	if !slices.Equal(mismatches, []string{"", ExtensionTooOld, ExtensionTooNew, ""}) {
+	if !slices.Equal(mismatches, []string{ExtensionTooOld, ExtensionTooOld, ExtensionTooNew, ""}) {
 		t.Fatalf("contacts %v", mismatches)
+	}
+}
+
+func TestRepliesNameTheGamesBySource(t *testing.T) {
+	var out bytes.Buffer
+	err := serveHandlers(bytes.NewReader(frame(t, request{Protocol: new(Protocol), Type: "installed", Source: "nexus", SourceGameKey: "stardewvalley"})), &out, handlers{
+		installed: func(key string) []int { return []int{len(key)} },
+		mod:       func(string, int) (modInProfile, []modInProfile) { return modInProfile{}, nil },
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := readReply(t, &out)
+	if got.Protocol != 2 || got.ModIDs == nil || (*got.ModIDs)[0] != len("stardewvalley") {
+		t.Fatalf("reply = %+v", got)
+	}
+	i := slices.IndexFunc(got.Games, func(g hostGame) bool { return g.ID == "stardew" })
+	if i < 0 || got.Games[i].Sources["nexus"] != "stardewvalley" || got.Games[i].Name == "" {
+		t.Fatalf("games = %+v", got.Games)
 	}
 }
 
@@ -622,11 +645,5 @@ func TestManifestAllowsStoreOrigins(t *testing.T) {
 	}
 	if !Invoked([]string{want[1]}) {
 		t.Fatal("store origin must start the host")
-	}
-}
-
-func TestSupportedNexusDomainsIncludeStardew(t *testing.T) {
-	if !slices.Contains(supportedNexusDomains(), "stardewvalley") {
-		t.Fatalf("supportedNexusDomains = %q", supportedNexusDomains())
 	}
 }

@@ -38,11 +38,11 @@ const (
 	// maxMessage bounds what Mortar reads; a link is a few hundred bytes.
 	maxMessage = 64 * 1024
 	// Protocol is the native-messaging protocol Mortar speaks, sent in every reply; the extension checks it against
-	// its own range. MinProtocol and MaxProtocol are the extension protocols Mortar answers; an extension from before
-	// the protocol was versioned (0.1.1) sends none and already speaks protocol 1, so a missing one counts as 1.
-	Protocol    = 1
-	MinProtocol = 1
-	MaxProtocol = 1
+	// its own range. MinProtocol and MaxProtocol are the extension protocols Mortar answers; a request that sends
+	// none counts as protocol 0.
+	Protocol    = 2
+	MinProtocol = 2
+	MaxProtocol = 2
 )
 
 // Protocol mismatches Mortar reports on a refused message and records for Settings.
@@ -53,7 +53,7 @@ const (
 
 // protocolMismatch is ExtensionTooOld or ExtensionTooNew when Mortar does not speak the extension's protocol, else "".
 func protocolMismatch(sent *int) string {
-	protocol := Protocol
+	protocol := 0
 	if sent != nil {
 		protocol = *sent
 	}
@@ -94,8 +94,26 @@ type request struct {
 	Protocol *int   `json:"protocol"`
 	Type     string `json:"type"`
 	Link     string `json:"link"`
-	Game     string `json:"game"`
-	ModID    int    `json:"modId"`
+	// Source and SourceGameKey name the page's game as its source does (nexus, "stardewvalley").
+	Source        string `json:"source"`
+	SourceGameKey string `json:"sourceGameKey"`
+	ModID         int    `json:"modId"`
+}
+
+// gameKey is the page's Nexus domain, the key the handlers resolve to a Mortar game; empty for a source Mortar does
+// not read pages of.
+func (r request) gameKey() string {
+	if r.Source != "nexus" {
+		return ""
+	}
+	return r.SourceGameKey
+}
+
+// hostGame is a game Mortar manages, with each source's name for it.
+type hostGame struct {
+	ID      string            `json:"id"`
+	Name    string            `json:"name"`
+	Sources map[string]string `json:"sources"`
 }
 
 type reply struct {
@@ -114,8 +132,9 @@ type reply struct {
 	Profile       string            `json:"profile,omitempty"`
 	State         string            `json:"state,omitempty"`
 	UpdateIDs     []int             `json:"updateIds,omitempty"`
-	// Games are the Nexus domains Mortar manages, so the extension draws its UI only on those games.
-	Games []string `json:"games,omitempty"`
+	// Games are the games Mortar manages, so the extension draws its UI only on those and maps a page's source key
+	// to the Mortar game id.
+	Games []hostGame `json:"games,omitempty"`
 	// Accent is Mortar's accent colour, read on every reply so the extension follows a change in the app.
 	Accent string `json:"accent,omitempty"`
 }
@@ -278,7 +297,7 @@ func ServeFrom(args []string, r io.Reader, w io.Writer, open func(link string) e
 func (h handlers) answer(req request) reply {
 	st, name := stateReady, ""
 	if h.state != nil {
-		st, name = h.state(req.Game)
+		st, name = h.state(req.gameKey())
 	}
 	var rep reply
 	switch req.Type {
@@ -286,15 +305,15 @@ func (h handlers) answer(req request) reply {
 		ids := []int{}
 		if st != stateOff {
 			if h.installed != nil {
-				if found := h.installed(req.Game); found != nil {
+				if found := h.installed(req.gameKey()); found != nil {
 					ids = found
 				}
 			}
 			if h.broken != nil {
-				rep.BrokenIDs = h.broken(req.Game)
+				rep.BrokenIDs = h.broken(req.gameKey())
 			}
 			if h.updates != nil && st == stateReady {
-				_, rows := h.updates(req.Game)
+				_, rows := h.updates(req.gameKey())
 				for _, row := range rows {
 					rep.UpdateIDs = append(rep.UpdateIDs, row.ModID)
 				}
@@ -305,20 +324,20 @@ func (h handlers) answer(req request) reply {
 		if st == stateOff {
 			break
 		}
-		openProfile, others := h.mod(req.Game, req.ModID)
+		openProfile, others := h.mod(req.gameKey(), req.ModID)
 		rep.Open, rep.Others = &openProfile, others
 		if st == stateReady {
 			if h.problems != nil {
-				rep.Problems = h.problems(req.Game, req.ModID)
+				rep.Problems = h.problems(req.gameKey(), req.ModID)
 			}
 			if h.requirements != nil {
-				rep.Requirements = h.requirements(req.Game, req.ModID)
+				rep.Requirements = h.requirements(req.gameKey(), req.ModID)
 			}
 		}
 	case "updates":
 		rows := []modUpdate{}
 		if st != stateOff && h.updates != nil {
-			name, rows = h.updates(req.Game)
+			name, rows = h.updates(req.gameKey())
 		}
 		if rows == nil {
 			rows = []modUpdate{}
@@ -331,7 +350,7 @@ func (h handlers) answer(req request) reply {
 		return reply{Error: fmt.Sprintf("unknown request type %q", req.Type)}
 	}
 	rep.State, rep.Connected, rep.Profile = st, st == stateReady, name
-	rep.Games = supportedNexusDomains()
+	rep.Games = hostGames()
 	return rep
 }
 
@@ -591,19 +610,25 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 	return profile.Name, rows
 }
 
-// supportedNexusDomains are the Nexus domains of the games Mortar manages.
-func supportedNexusDomains() []string {
+// hostGames are the games Mortar manages that a source names.
+func hostGames() []hostGame {
 	m, err := components.BundledManifest()
 	if err != nil {
 		return nil
 	}
-	var domains []string
+	var games []hostGame
 	for _, g := range m.Games {
-		if g.NexusDomain() != "" {
-			domains = append(domains, g.NexusDomain())
+		keys := map[string]string{}
+		for _, src := range g.Sources {
+			if src.Key != "" {
+				keys[src.ID] = src.Key
+			}
+		}
+		if len(keys) > 0 {
+			games = append(games, hostGame{ID: g.ID, Name: g.Name, Sources: keys})
 		}
 	}
-	return domains
+	return games
 }
 
 // activeNexusState is how far the page's game is from showing Mortar data, and the open profile's name when it is
