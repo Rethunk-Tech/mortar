@@ -22,6 +22,8 @@ type Service struct {
 	progress Progress
 	modCache ModUsage
 	modFP    string
+	sizes    []EntrySize
+	sizesFP  string
 	usage    Usage
 	usageAt  time.Time
 	busy     []BusySource
@@ -162,22 +164,34 @@ func (s *Service) ModUsage() (ModUsage, error) {
 	return u, nil
 }
 
-// EntrySizes is each store key's size, the same data ModUsage uses.
+// EntrySizes is each store key's size, as ModUsage measures it, without walking the profiles' copies.
 func (s *Service) EntrySizes() ([]EntrySize, error) {
-	u, err := s.ModUsage()
+	dir, err := datadir.Dir()
 	if err != nil {
 		return nil, err
 	}
-	out := make([]EntrySize, 0, len(u.Items))
-	for _, it := range u.Items {
-		out = append(out, EntrySize{Game: it.Game, Key: it.Key, Size: it.Size})
+	fp := usageFingerprint(dir)
+	s.mu.Lock()
+	if s.sizesFP == fp && fp != "" {
+		out := s.sizes
+		s.mu.Unlock()
+		return out, nil
 	}
+	s.mu.Unlock()
+	out, err := storeSizes(dir)
+	if err != nil {
+		return nil, err
+	}
+	s.mu.Lock()
+	s.sizes, s.sizesFP = out, fp
+	s.mu.Unlock()
 	return out, nil
 }
 
 func (s *Service) forgetModUsage() {
 	s.mu.Lock()
 	s.modFP = ""
+	s.sizesFP = ""
 	s.usageAt = time.Time{}
 	s.mu.Unlock()
 }

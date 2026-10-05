@@ -338,6 +338,19 @@ func MeasureMods(root string) (ModUsage, error) {
 	return out, nil
 }
 
+// storeSizes is the Size column of MeasureMods alone.
+func storeSizes(root string) ([]EntrySize, error) {
+	entries, err := store.OpenAt(filepath.Join(root, "store")).Entries()
+	if err != nil {
+		return nil, err
+	}
+	out := make([]EntrySize, 0, len(entries))
+	for _, e := range entries {
+		out = append(out, EntrySize{Game: e.Game, Key: e.Key, Size: dirSize(e.Dir)})
+	}
+	return out, nil
+}
+
 func profileUse(root string) (names map[string]string, uses map[string]int, copies map[string]int64) {
 	names = map[string]string{}
 	uses = map[string]int{}
