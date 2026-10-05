@@ -7,11 +7,15 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -76,6 +80,42 @@ var (
 	memo   = map[string][]pkg{}
 )
 
+// noDowngrade refuses a redirect from https to another scheme.
+func noDowngrade(req *http.Request, via []*http.Request) error {
+	if len(via) >= maxRedirects {
+		return errors.New("too many redirects")
+	}
+	if via[0].URL.Scheme == "https" && req.URL.Scheme != "https" {
+		return fmt.Errorf("refusing a redirect to %s://", req.URL.Scheme)
+	}
+	return nil
+}
+
+const (
+	maxRedirects = 10
+	maxChunks    = 500
+)
+
+var communityKey = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
+
+// chunkAllowed reports whether the index may point Mortar at raw: Thunderstore's own https hosts, or the host the
+// index itself came from.
+func (d Driver) chunkAllowed(raw string) bool {
+	u, err := url.Parse(raw)
+	if err != nil || u.Host == "" {
+		return false
+	}
+	base := d.URL
+	if base == "" {
+		base = BaseURL
+	}
+	if b, err := url.Parse(base); err == nil && u.Scheme == b.Scheme && u.Host == b.Host {
+		return true
+	}
+	host := u.Hostname()
+	return u.Scheme == "https" && (host == "thunderstore.io" || strings.HasSuffix(host, ".thunderstore.io"))
+}
+
 func (d Driver) now() time.Time {
 	if d.Now != nil {
 		return d.Now()
@@ -105,6 +145,11 @@ func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
 	client := d.HTTP
 	if client == nil {
 		client = http.DefaultClient
+	}
+	if client.CheckRedirect == nil {
+		secured := *client
+		secured.CheckRedirect = noDowngrade
+		client = &secured
 	}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -152,6 +197,9 @@ func (d Driver) indexURL(key string) string {
 // packages returns the community's listing, from the cache while it is under an hour old or the index blob is
 // unchanged, else rebuilt from the chunks.
 func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
+	if !communityKey.MatchString(key) {
+		return nil, fmt.Errorf("%q is not a Thunderstore community key", key)
+	}
 	dir := filepath.Join(d.cacheRoot(), "thunderstore")
 	metaPath := filepath.Join(dir, key+".meta.json")
 	var meta cacheMeta
@@ -176,6 +224,14 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 			}
 		}
 		return nil, err
+	}
+	if len(chunks) > maxChunks {
+		return nil, fmt.Errorf("index lists %d chunks", len(chunks))
+	}
+	for _, c := range chunks {
+		if !d.chunkAllowed(c) {
+			return nil, fmt.Errorf("index names a chunk outside Thunderstore: %s", c)
+		}
 	}
 	if hash != meta.Hash {
 		if _, err := os.Stat(pkgPath(hash)); err != nil {

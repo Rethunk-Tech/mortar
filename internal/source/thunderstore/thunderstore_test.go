@@ -50,7 +50,7 @@ type fake struct {
 	srv                 *httptest.Server
 	indexHits, chunkHit atomic.Int32
 	chunk0, chunk1      []map[string]any
-	third               atomic.Bool
+	third, evil         atomic.Bool
 }
 
 func newFake(t *testing.T) *fake {
@@ -75,6 +75,9 @@ func newFake(t *testing.T) *fake {
 			t.Errorf("user agent %q", r.Header.Get("User-Agent"))
 		}
 		urls := []string{f.srv.URL + "/chunk/0", f.srv.URL + "/chunk/1"}
+		if f.evil.Load() {
+			urls = []string{"http://169.254.169.254/latest/meta-data"}
+		}
 		if f.third.Load() {
 			urls = append(urls, f.srv.URL+"/chunk/2")
 		}
@@ -152,5 +155,19 @@ func TestChangedIndexRebuilds(t *testing.T) {
 	now = now.Add(2 * time.Hour)
 	if p, err := d.Search(t.Context(), q); err != nil || p.Total != 1 {
 		t.Fatalf("after refresh: %v %v", err, p.Total)
+	}
+}
+
+func TestIndexCannotSendMortarElsewhere(t *testing.T) {
+	f := newFake(t)
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	f.evil.Store(true)
+	q := source.Query{Key: "lethal-company", Page: 1, Version: "1.2.3"}
+	if _, err := d.Search(t.Context(), q); err == nil {
+		t.Fatal("followed a chunk URL on another host")
+	}
+	q.Key = "../../etc"
+	if _, err := d.Search(t.Context(), q); err == nil {
+		t.Fatal("accepted a community key that is a path")
 	}
 }
