@@ -596,3 +596,33 @@ func BenchmarkPath(b *testing.B) {
 		}
 	}
 }
+
+// An item's size is measured when it is added, and one added before that is filled in once and kept.
+func TestEntriesCarryRecordedSizes(t *testing.T) {
+	s := newStore(t)
+	src := t.TempDir()
+	testfs.WriteFile(t, src, "mod.dll", "12345")
+	if err := s.AddDir("stardew", "local-sized", src); err != nil {
+		t.Fatal(err)
+	}
+	entries, err := s.Entries()
+	if err != nil || len(entries) != 1 || entries[0].Size != 5 {
+		t.Fatalf("entries = %+v, %v", entries, err)
+	}
+	idx, err := s.loadIndex()
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := idx["stardew"]["local-sized"]
+	r.Size = 0
+	idx["stardew"]["local-sized"] = r
+	if err := s.saveIndex(idx); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.RecordSizes(map[string]map[string]int64{"stardew": {"local-sized": 5}}); err != nil {
+		t.Fatal(err)
+	}
+	if entries, _ := s.Entries(); entries[0].Size != 5 {
+		t.Fatalf("recorded size = %d", entries[0].Size)
+	}
+}

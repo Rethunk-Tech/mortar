@@ -576,6 +576,8 @@ type record struct {
 	Package string    `json:"package,omitempty"`
 	Version string    `json:"version,omitempty"`
 	Used    time.Time `json:"used"`
+	// Size is the folder's size on disk, measured once: an item never changes after it is added.
+	Size int64 `json:"size,omitempty"`
 }
 
 // index maps game -> key -> record.
@@ -679,6 +681,9 @@ func (s *Store) bind(game, key, blob string) error {
 	}
 	r := idx[game][key]
 	r.Blob, r.Used = blob, time.Now().UTC()
+	if dir, err := s.destOf(key, blob); err == nil {
+		r.Size, _ = datadir.Size(dir)
+	}
 	if r.Source == "" {
 		r.Source, r.Package, r.Version = describe(key)
 	}
@@ -710,6 +715,8 @@ func (s *Store) Describe(game, key, source, pkg, version string) error {
 type Entry struct {
 	Game, Key, Dir string
 	LastUsed       time.Time
+	// Size is 0 for an item added before sizes were recorded; RecordSizes fills it in.
+	Size int64
 }
 
 // Entries lists every complete item of every game, for sizes and usage reports.
@@ -725,11 +732,35 @@ func (s *Store) Entries() ([]Entry, error) {
 		for _, key := range slices.Sorted(maps.Keys(idx[game])) {
 			r := idx[game][key]
 			if dir, err := s.destOf(key, r.Blob); err == nil && completeItem(dir) {
-				out = append(out, Entry{Game: game, Key: key, Dir: dir, LastUsed: r.Used})
+				out = append(out, Entry{Game: game, Key: key, Dir: dir, LastUsed: r.Used, Size: r.Size})
 			}
 		}
 	}
 	return out, nil
+}
+
+// RecordSizes stores measured folder sizes, keyed by game then key, for items that have none.
+func (s *Store) RecordSizes(sizes map[string]map[string]int64) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	idx, err := s.loadIndex()
+	if err != nil {
+		return err
+	}
+	changed := false
+	for game, keys := range sizes {
+		for key, n := range keys {
+			if r, ok := idx[game][key]; ok && r.Size == 0 && n > 0 {
+				r.Size = n
+				idx[game][key] = r
+				changed = true
+			}
+		}
+	}
+	if !changed {
+		return nil
+	}
+	return s.saveIndex(idx)
 }
 
 // Find is the key of the game's item from this source, package and version.

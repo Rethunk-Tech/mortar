@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -320,7 +321,10 @@ func MeasureMods(root string) (ModUsage, error) {
 	}
 	for _, e := range entries {
 		id := e.Game + "/" + e.Key
-		n := dirSize(e.Dir)
+		n := e.Size
+		if n == 0 {
+			n = dirSize(e.Dir)
+		}
 		name := names[id]
 		if name == "" {
 			name = e.Key
@@ -338,15 +342,31 @@ func MeasureMods(root string) (ModUsage, error) {
 	return out, nil
 }
 
-// storeSizes is the Size column of MeasureMods alone.
+// storeSizes is the Size column of MeasureMods alone, from the sizes the store records; an item without one is
+// measured and its size recorded.
 func storeSizes(root string) ([]EntrySize, error) {
-	entries, err := store.OpenAt(filepath.Join(root, "store")).Entries()
+	items := store.OpenAt(filepath.Join(root, "store"))
+	entries, err := items.Entries()
 	if err != nil {
 		return nil, err
 	}
 	out := make([]EntrySize, 0, len(entries))
+	measured := map[string]map[string]int64{}
 	for _, e := range entries {
-		out = append(out, EntrySize{Game: e.Game, Key: e.Key, Size: dirSize(e.Dir)})
+		n := e.Size
+		if n == 0 {
+			n = dirSize(e.Dir)
+			if measured[e.Game] == nil {
+				measured[e.Game] = map[string]int64{}
+			}
+			measured[e.Game][e.Key] = n
+		}
+		out = append(out, EntrySize{Game: e.Game, Key: e.Key, Size: n})
+	}
+	if len(measured) > 0 {
+		if err := items.RecordSizes(measured); err != nil {
+			log.Printf("record store sizes: %v", err)
+		}
 	}
 	return out, nil
 }
