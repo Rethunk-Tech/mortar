@@ -1,5 +1,5 @@
 {
-  "serial": 1791095462,
+  "serial": 1791159128,
   "components": [
     {
       "game": "stardew",
@@ -25,10 +25,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-smapi-bridge"
       },
-      "tag": "v0.1.0",
-      "asset": "MortarSmapiBridge-0.1.0.zip",
-      "version": "0.1.0",
-      "sha256": "a40b688f1d17a7561bcaeec0ba140a6c768b107d302d5b7cf000ebd46cf8fddc"
+      "tag": "v0.2.0",
+      "asset": "MortarSmapiBridge-0.2.0.zip",
+      "version": "0.2.0",
+      "sha256": "81a804987b45ccb1f22a6650627fc72ef9e8917940bc696674e049831ba2de34"
     }
   ],
   "games": [
