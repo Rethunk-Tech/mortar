@@ -1523,13 +1523,14 @@ func adviceOnly(save savessvc.Fit, gap bool, err error) (savessvc.Fit, bool) {
 }
 
 func (s *Services) launch(ctx context.Context, gameID, id, installID, preset string, force bool) (launchsvc.Status, error) {
-	update, err := s.Problems.UpdateWarning(ctx, gameID, id)
-	if err != nil {
-		return launchsvc.Status{}, err
-	}
-	save, gap := adviceOnly(s.Saves.LastSaveGap(ctx, gameID, id))
-	if !force && (update.Changed || gap) {
-		return launchsvc.Status{}, launchWarningError{game: gameName(gameID), update: update, save: save, gap: gap}
+	if !force {
+		update, err := s.Problems.UpdateWarning(ctx, gameID, id)
+		if err != nil {
+			return launchsvc.Status{}, err
+		}
+		if save, gap := adviceOnly(s.Saves.LastSaveGap(ctx, gameID, id)); update.Changed || gap {
+			return launchsvc.Status{}, launchWarningError{game: gameName(gameID), update: update, save: save, gap: gap}
+		}
 	}
 	if err := s.Launches.StartPreset(ctx, gameID, id, installID, preset, s.Launches.LaunchesDirect(gameID, id)); err != nil {
 		return launchsvc.Status{}, err

@@ -616,7 +616,7 @@ func (s *Service) start(parent context.Context, gameID, profileID, installID, pr
 		} else {
 			// Reading the profile takes its lock, so a change to its mods already under way finishes first; any
 			// later one sees the profile as running.
-			if _, err = s.profiles.Mods(gameID, profileID); err == nil {
+			if err = s.profiles.Rebuild(gameID, profileID); err == nil {
 				// The run gets parent, not ctx: ctx is cancelled as soon as this goroutine returns, which would
 				// end the game Mortar just started.
 				err = s.begin(parent, sl, launchTarget{profileID: profileID, install: installID, preset: preset, dir: dir, modsDir: modsDir}, direct, false)
@@ -698,7 +698,7 @@ func (s *Service) target(g game.Game, profileID, installID string) (dir, modsDir
 		return "", "", fmt.Errorf("%s is not installed", g.Name())
 	}
 	dir = inst.Dir
-	if _, err := s.profiles.Mods(g.ID(), profileID); err != nil {
+	if err := s.profiles.Rebuild(g.ID(), profileID); err != nil {
 		return "", "", err
 	}
 	modsDir, err = s.profiles.ModsDir(g.ID(), profileID)

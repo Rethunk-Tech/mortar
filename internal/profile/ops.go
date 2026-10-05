@@ -769,6 +769,17 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 // Mods returns the profile's mods, first rebuilding any mods/ folder content that is missing from the store.
 func (s *Store) Mods(game, id string) ([]Mod, error) { return s.mods(game, id, true) }
 
+// Rebuild is Mods for a caller that needs the mods folder put right, under the profile's lock, and not the list.
+func (s *Store) Rebuild(game, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	p, dir, err := s.readDir(game, id)
+	if err != nil {
+		return err
+	}
+	return s.rebuild(game, dir, p)
+}
+
 // UserMods is Mods without the bundled mods (SMAPI's and the console bridge), which every profile has and users never manage.
 func (s *Store) UserMods(game, id string) ([]Mod, error) { return s.mods(game, id, false) }
 
