@@ -43,6 +43,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
+	"github.com/Rethunk-Tech/mortar/internal/netstate"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
@@ -722,6 +723,7 @@ func run() error {
 		application.NewService(checkSvc), application.NewService(&tidy.Service{Report: tidied}),
 		application.NewService(quitSvc),
 		application.NewService(browseSvc),
+		application.NewService(&netstate.Service{}),
 		application.NewService(&packsvc.Service{Profiles: profiles, Queue: queueSvc}),
 	} {
 		app.RegisterService(s)

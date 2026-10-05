@@ -24,6 +24,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/host"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )
 
 const (
@@ -99,6 +100,7 @@ func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release,
 		hc = http.DefaultClient
 	}
 	resp, err := hc.Do(req)
+	netstate.Record("github", err)
 	if err != nil {
 		return nil, fmt.Errorf("could not reach GitHub: %w", err)
 	}

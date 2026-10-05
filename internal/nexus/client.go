@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )
 
 // scanKey is one mod of one game, as mod ids repeat across games.
@@ -224,6 +225,7 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 		hc = http.DefaultClient
 	}
 	resp, err := hc.Do(req)
+	netstate.Record("nexus", err)
 	if err != nil {
 		return 0, "", nil, err
 	}

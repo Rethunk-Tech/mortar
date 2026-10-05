@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/netstate"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 )
@@ -178,9 +179,11 @@ var (
 )
 
 // searchCached runs the source's search, reusing an empty-text answer for topTTL. It returns a copy callers may edit.
-func searchCached(ctx context.Context, s source.Searcher, q source.Query) (Page, error) {
+func searchCached(ctx context.Context, id string, s source.Searcher, q source.Query) (Page, error) {
 	if strings.TrimSpace(q.Text) != "" {
-		return s.Search(ctx, q)
+		page, err := s.Search(ctx, q)
+		netstate.Record(id, err)
+		return page, err
 	}
 	key := fmt.Sprintf("%T|%s|%s|%d|%s|%q|%q", s, q.Game, q.Key, q.Page, q.Sort, q.Categories, q.ExcludeCategories)
 	topMu.Lock()
@@ -188,6 +191,7 @@ func searchCached(ctx context.Context, s source.Searcher, q source.Query) (Page,
 	topMu.Unlock()
 	if !ok || !time.Now().Before(e.until) {
 		page, err := s.Search(ctx, q)
+		netstate.Record(id, err)
 		if err != nil {
 			return Page{}, err
 		}
@@ -209,7 +213,7 @@ func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID,
 	if !listed || !registered || !canSearch {
 		return Page{}, fmt.Errorf("%w: %s", ErrUnknownSource, sourceID)
 	}
-	result, err := searchCached(ctx, searcher, source.Query{
+	result, err := searchCached(ctx, id, searcher, source.Query{
 		Game: info.ID, Key: gs.Key, Text: text, Page: max(page, source.FirstPage), Version: c.Version,
 		Categories: f.Include, ExcludeCategories: f.Exclude, Sort: f.Sort,
 	})
