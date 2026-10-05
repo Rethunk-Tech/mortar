@@ -44,7 +44,7 @@ function useModName(game: string, modId: number): string {
 
 function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const { t } = useLingui()
-  const game = arrival.link.game
+  const { game } = arrival.link
   const choose = useNxm((s) => s.choose)
   const arrivals = useNxm((s) => s.arrivals)
   const dismiss = useNxm((s) => s.dismiss)

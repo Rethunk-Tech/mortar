@@ -2,7 +2,9 @@ import { create } from 'zustand'
 
 export type GameId = string
 
-export const isGameId = (game: string): game is GameId => /^[a-z0-9-]+$/.test(game)
+const SLUG = /^[a-z0-9-]+$/
+
+export const isGameId = (game: string): game is GameId => SLUG.test(game)
 
 export type SettingsSection =
   | 'general'

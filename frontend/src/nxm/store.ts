@@ -125,7 +125,11 @@ export async function initNxm(): Promise<void> {
   }
   const arrive = (a: Arrival) => {
     const { game, openId, profiles } = useProfiles.getState()
-    const direct = directProfile(useNav.getState().route, a.link.game, game?.id, openId, profiles)
+    const direct = directProfile(useNav.getState().route, a.link.game, {
+      game: game?.id,
+      openId,
+      profiles,
+    })
     if (direct) {
       install(a, direct).catch(reportUnexpected)
       return
