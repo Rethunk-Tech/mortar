@@ -95,6 +95,10 @@ func (d *Driver) remember(key string, page source.Page) {
 // Search lists repositories tagged with the game's topic (q.Key), most starred first. Answers are cached for ten
 // minutes because GitHub's anonymous search limit is small.
 func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
+	// Without a topic the query would search every repository on GitHub, which is noise in a game's browse.
+	if q.Key == "" {
+		return source.Page{}, nil
+	}
 	key := q.Key + "\n" + q.Text + "\n" + strconv.Itoa(q.Page)
 	if hit, ok := d.cached(key); ok {
 		return hit, nil
@@ -107,10 +111,7 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	if client == nil {
 		client = http.DefaultClient
 	}
-	terms := strings.TrimSpace(q.Text)
-	if q.Key != "" {
-		terms = strings.TrimSpace(terms + " topic:" + q.Key)
-	}
+	terms := strings.TrimSpace(q.Text + " topic:" + q.Key)
 	params := url.Values{}
 	params.Set("q", terms)
 	params.Set("sort", "stars")

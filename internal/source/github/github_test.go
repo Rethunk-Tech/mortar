@@ -42,7 +42,7 @@ func TestSearchRateLimit(t *testing.T) {
 		w.WriteHeader(http.StatusForbidden)
 	}))
 	t.Cleanup(srv.Close)
-	_, err := (&Driver{URL: srv.URL}).Search(context.Background(), source.Query{Text: "x", Page: 1})
+	_, err := (&Driver{URL: srv.URL}).Search(context.Background(), source.Query{Key: "k", Text: "x", Page: 1})
 	if !errors.Is(err, source.ErrBusy) {
 		t.Fatalf("got %v", err)
 	}
@@ -58,12 +58,12 @@ func TestSearchCaches(t *testing.T) {
 	t.Cleanup(srv.Close)
 	now := time.Unix(1_700_000_000, 0).UTC()
 	d := &Driver{URL: srv.URL, Now: func() time.Time { return now }}
-	q := source.Query{Text: "x", Page: 1}
-	for range 2 {
+	for _, q := range []source.Query{{Key: "k", Text: "x", Page: 1}, {Key: "k", Text: "x", Page: 1}, {Text: "x", Page: 1}} {
 		if _, err := d.Search(context.Background(), q); err != nil {
 			t.Fatal(err)
 		}
 	}
+	// The second query is cached and the third has no topic, so neither reaches GitHub.
 	if hits != 1 {
 		t.Fatalf("hits %d", hits)
 	}
