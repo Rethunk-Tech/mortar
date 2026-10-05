@@ -242,14 +242,14 @@ func TestAVersionFileAheadOfItsPayloadShowsAsStalled(t *testing.T) {
 	b, mb := newMachine(t, fb, "Laptop", &clock)
 	copyFile := func(from, to, name string) {
 		t.Helper()
-		raw, err := os.ReadFile(filepath.Join(from, "stardew", name))
+		raw, err := fsx.ReadFile(filepath.Join(from, "stardew", name))
 		if err != nil {
 			t.Fatal(err)
 		}
 		if err := os.MkdirAll(filepath.Join(to, "stardew"), 0o700); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(filepath.Join(to, "stardew", name), raw, 0o600); err != nil {
+		if err := fsx.WriteFile(filepath.Join(to, "stardew", name), raw, 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}

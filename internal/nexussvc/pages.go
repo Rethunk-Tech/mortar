@@ -41,7 +41,7 @@ func (s *Service) PrimeDetails(ctx context.Context, gameID string, modIDs []int)
 	return out, nil
 }
 
-// PrimeDetails fills the page data of many mods at once: whatever is cached and fresh is kept, and the rest comes
+// Prime fills the page data of many mods at once: whatever is cached and fresh is kept, and the rest comes
 // from one GraphQL request per 100 mods, so a list of hundreds costs a handful of requests instead of several each.
 // It returns the best details held for each mod, which are partial (the page's headline data, no files or
 // changelogs) unless the full details were cached; Details fills in the rest when a mod is opened. A rate limit or

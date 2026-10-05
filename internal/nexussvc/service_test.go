@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -317,7 +318,7 @@ func TestPrimeDetailsAsksOncePerHundredMods(t *testing.T) {
 	}
 	// Nexus fails for the one new mod: the window still gets the 800 it has, with the reason for the rest.
 	down.Store(true)
-	primed, err := s.PrimeDetails(ctx, "lethal-company", append(ids, 801))
+	primed, err := s.PrimeDetails(ctx, "lethal-company", append(slices.Clone(ids), 801))
 	if err != nil || len(primed.Details) != 800 || primed.Error == "" {
 		t.Fatalf("a failed fetch: %d details, error %q, %v", len(primed.Details), primed.Error, err)
 	}
