@@ -187,7 +187,7 @@ func TestLaunchSettingsEditOnlyTheirLines(t *testing.T) {
 	if err := l.SetLaunchSetting(dir, "logLevel", "debug"); err != nil {
 		t.Fatal(err)
 	}
-	b, _ := os.ReadFile(cfg)
+	b, _ := fsx.ReadFile(cfg)
 	want := "## kept\r\n[Logging.Console]\r\n\r\nEnabled = false\r\nLogLevels = Fatal, Error, Warning, Message, Info, Debug\r\n\r\n[Other]\r\nX = 1\r\n\r\n[Logging.Disk]\r\n\r\nLogLevels = Fatal, Error, Warning, Message, Info, Debug\r\n"
 	if string(b) != want {
 		t.Fatalf("cfg = %q\nwant %q", b, want)

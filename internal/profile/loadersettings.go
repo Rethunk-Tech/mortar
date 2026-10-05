@@ -1,42 +1,46 @@
 package profile
 
 import (
-	"fmt"
+	"errors"
 
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
-func (s *Store) launchSettingsLoader(game, id string) (loader.WithLaunchSettings, string, error) {
+var errNoLaunchSettings = errors.New("the profile's loader has no launch settings")
+
+// withLaunchSettings runs f with the profile's loader and folder, or fails when the loader keeps no launch options.
+func (s *Store) withLaunchSettings(game, id string, f func(w loader.WithLaunchSettings, dir string) error) error {
 	dir, err := s.ProfileDir(game, id)
 	if err != nil {
-		return nil, "", err
+		return err
 	}
 	l, ok := gamereg.LoaderOf(game, s.LoaderID(game, id))
 	if !ok {
-		return nil, dir, nil
+		return errNoLaunchSettings
 	}
-	w, _ := l.(loader.WithLaunchSettings)
-	return w, dir, nil
+	w, ok := l.(loader.WithLaunchSettings)
+	if !ok {
+		return errNoLaunchSettings
+	}
+	return f(w, dir)
 }
 
 // LoaderLaunchSettings are the launch options the profile's loader keeps in the profile; none when it has no such options.
-func (s *Service) LoaderLaunchSettings(game, id string) ([]loader.LaunchSetting, error) {
-	w, dir, err := s.store.launchSettingsLoader(game, id)
-	if err != nil || w == nil {
-		return nil, err
+func (s *Service) LoaderLaunchSettings(game, id string) (out []loader.LaunchSetting, err error) {
+	err = s.store.withLaunchSettings(game, id, func(w loader.WithLaunchSettings, dir string) (e error) {
+		out, e = w.LaunchSettings(dir)
+		return e
+	})
+	if errors.Is(err, errNoLaunchSettings) {
+		return nil, nil
 	}
-	return w.LaunchSettings(dir)
+	return out, err
 }
 
 // SetLoaderLaunchSetting changes one of the profile's loader launch options.
 func (s *Service) SetLoaderLaunchSetting(game, id, setting, value string) error {
-	w, dir, err := s.store.launchSettingsLoader(game, id)
-	if err != nil {
-		return err
-	}
-	if w == nil {
-		return fmt.Errorf("the profile's loader has no launch settings")
-	}
-	return w.SetLaunchSetting(dir, setting, value)
+	return s.store.withLaunchSettings(game, id, func(w loader.WithLaunchSettings, dir string) error {
+		return w.SetLaunchSetting(dir, setting, value)
+	})
 }
