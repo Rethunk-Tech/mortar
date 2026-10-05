@@ -89,13 +89,13 @@ func TestImportIgnoresUnknownAndSanitizesLikeLoad(t *testing.T) {
 	cur.NexusName = "keep"
 	cur.NexusUserID = 7
 	cur.GameFolders["stardew"] = "/keep"
-	cur.Loaders["stardew"] = "4.5.2"
+	cur.Loaders["smapi"] = "4.5.2"
 	cur.LastProfile["stardew"] = "abc"
 	ApplyExport(&cur, p, present)
 	if cur.NexusName != "keep" || cur.NexusUserID != 7 {
 		t.Fatalf("nexus display changed: %+v", cur)
 	}
-	if cur.GameFolders["stardew"] != "/keep" || cur.Loaders["stardew"] != "4.5.2" || cur.LastProfile["stardew"] != "abc" {
+	if cur.GameFolders["stardew"] != "/keep" || cur.Loaders["smapi"] != "4.5.2" || cur.LastProfile["stardew"] != "abc" {
 		t.Fatalf("machine fields changed: %+v", cur)
 	}
 	if cur.StoreRetentionDays != 30 {

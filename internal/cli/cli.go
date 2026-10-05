@@ -2256,7 +2256,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   profile revert <game> <profile> <eventId>
   profile load-order <game> <profile>    enabled mods in SMAPI load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
-  profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|
+  profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|loader|
                                           defaultLaunchPreset|skipPlayCheck|hidden|cover, or a per-profile game setting
   profile steam <game> <profile>         add this profile to Steam as a non-Steam game
   game steam-launch-option <game> [--set|--clear]  read or change Steam's loader launch options

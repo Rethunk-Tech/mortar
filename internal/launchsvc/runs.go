@@ -1,6 +1,7 @@
 package launchsvc
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
@@ -341,7 +342,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	cause := s.cause(g.ID(), profileID, text)
 	run := Run{
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
-		DurationMs: ended.Sub(started).Milliseconds(), Loader: loaderID(g.ID()), LoaderVersion: stats.SMAPI, GameVersion: stats.Game,
+		DurationMs: ended.Sub(started).Milliseconds(), Loader: cmp.Or(s.profileLoader(g.ID(), profileID), loaderID(g.ID())), LoaderVersion: stats.SMAPI, GameVersion: stats.Game,
 		Preset: sess.preset, Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
 	}
 	if len(refs) > 0 {
@@ -371,6 +372,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	}
 	for _, old := range drop {
 		_ = os.Remove(runLogPath(dir, old.ID))
+	}
+	if !failed && s.settings != nil {
+		_, _ = s.settings.AddPlaytime(g.ID(), ended.Sub(started))
 	}
 	if !failed && (stats.Errors > 0 || stats.Crashed) {
 		var crashCause *Cause

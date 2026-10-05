@@ -89,6 +89,7 @@ beforeEach(() => {
         loader: '',
         sourceKeys: {},
         loaderId: '',
+        loaders: [],
         sources: [],
         available: true,
         installed: true,

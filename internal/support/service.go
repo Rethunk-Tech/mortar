@@ -134,7 +134,7 @@ func (s *Service) BugURL(gameID string, r BugReport) string {
 			about += " " + env.GameVersion
 		}
 		if env.APIVersion != "" {
-			about += fmt.Sprintf(" (%s %s)", game.LoaderName(gameID), env.APIVersion)
+			about += fmt.Sprintf(" (%s %s)", game.LoaderName(gameID, ""), env.APIVersion)
 		}
 	}
 	section := func(heading, text string) string {

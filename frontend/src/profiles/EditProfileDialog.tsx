@@ -25,6 +25,7 @@ import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 import { LaunchPresetsBlock } from './LaunchPresetsBlock.tsx'
+import { LoaderPicker } from './LoaderPicker.tsx'
 import { OverridesSection } from './OverrideRows.tsx'
 import { OverwriteRow } from './OverwriteRow.tsx'
 import { foldedOverrides } from './overrideValue.ts'
@@ -306,6 +307,7 @@ function ProfileFields({
           root: { sx: { userSelect: 'text' } },
         }}
       />
+      <LoaderPicker gameId={gameId} profileId={profile.id} loader={profile.loader ?? ''} />
       <LaunchOptionsBlock
         gameId={gameId}
         profileId={profile.id}

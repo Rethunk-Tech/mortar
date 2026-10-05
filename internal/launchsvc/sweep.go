@@ -117,7 +117,7 @@ func (s *Service) installedSweepVersions(gameID, installID string) (string, stri
 	if err != nil {
 		return "", "", err
 	}
-	st, err := game.LoaderStatus(gameID, inst.Dir, set.Loaders[gameID])
+	st, err := game.LoaderStatus(gameID, "", inst.Dir, set.Loaders)
 	return st.GameVersion, st.Version, err
 }
 

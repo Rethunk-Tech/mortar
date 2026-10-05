@@ -334,8 +334,8 @@ func run() error {
 	for _, id := range implemented {
 		loadersvc.SyncBundled(loaders, id)
 	}
-	launches.EnsureLoader = func(ctx context.Context, id string, fromStart bool) error {
-		_, err := loaders.Ensure(ctx, id, fromStart)
+	launches.EnsureLoader = func(ctx context.Context, id, loaderID string, fromStart bool) error {
+		_, err := loaders.Ensure(ctx, id, loaderID, fromStart)
 		return err
 	}
 	loaders.OnReady = func(id string) { launches.MaybeSweep(context.Background(), id) }

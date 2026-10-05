@@ -145,7 +145,7 @@ type Service struct {
 	App *application.App
 	// EnsureLoader installs the game's loader when it is missing or broken. Start calls it before launching.
 	// fromStart is true when Play requested the install, so a preparing claim for this Start must not skip it.
-	EnsureLoader func(ctx context.Context, gameID string, fromStart bool) error
+	EnsureLoader func(ctx context.Context, gameID, loaderID string, fromStart bool) error
 	// Unlocked is called when a game is no longer launching or running, so the queue can retry work it held.
 	Unlocked func()
 	// NotifyRunEnd sends a desktop notification when a Mortar-started run ends; main sets this from the tray wiring.
@@ -174,7 +174,9 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 		status: map[string]Status{}, watching: map[string]bool{},
 		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{}, startFailed: map[string]string{},
 		stopping: map[string]bool{}, reaping: map[string]bool{}, sampled: map[string]chan struct{}{},
-		EnsureLoader: func(context.Context, string, bool) error { return errors.New("the loader cannot be installed here") },
+		EnsureLoader: func(context.Context, string, string, bool) error {
+			return errors.New("the loader cannot be installed here")
+		},
 	}
 }
 
@@ -266,7 +268,7 @@ func (s *Service) current(g game.Game) Status {
 // procsFor returns the loader processes of g's install that run modsDir.
 func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Process, error) {
 	var procs []launch.Process
-	l, _ := game.PrimaryLoader(g.ID())
+	l, _ := s.loaderOf(g.ID(), profileID)
 	if names, ok := l.(loader.ProcessNames); ok {
 		for _, name := range names.ProcessNames() {
 			ps, err := launch.Processes(s.procDir, name)
@@ -595,9 +597,9 @@ func (s *Service) start(parent context.Context, gameID, profileID, installID, pr
 				}
 			}()
 		}
-		err := s.EnsureLoader(ctx, gameID, true)
+		err := s.EnsureLoader(ctx, gameID, s.profileLoader(gameID, profileID), true)
 		if err != nil {
-			err = fmt.Errorf("could not install %s: %w", game.LoaderName(g.ID()), err)
+			err = fmt.Errorf("could not install %s: %w", game.LoaderName(g.ID(), s.profileLoader(gameID, profileID)), err)
 		} else {
 			// Reading the profile takes its lock, so a change to its mods already under way finishes first; any
 			// later one sees the profile as running.
@@ -907,7 +909,7 @@ func (s *Service) backupChangedSaves(gameID, profileID, installID, installDir st
 	}
 	set := s.settings.Get()
 	recorded := set.LastPlayed[gameID].GameVersion
-	installedStatus, _ := game.LoaderStatus(gameID, installDir, set.Loaders[gameID])
+	installedStatus, _ := game.LoaderStatus(gameID, s.profileLoader(gameID, profileID), installDir, set.Loaders)
 	installed := installedStatus.GameVersion
 	ov := launchOverrides(s.profiles, gameID, profileID)
 	mode := settings.ResolveAt(set, "backupBeforePlay", settings.Scope{Game: gameID, Install: s.pinOf(gameID, profileID, installID), Profile: profileID}, ov)
@@ -1079,7 +1081,7 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 	case errors.As(err, &exited):
 		s.clearReap(g)
 		if len(buf.Lines()) == 0 {
-			s.say(g, profileID, fmt.Sprintf("%s exited with code %d.", game.LoaderName(g.ID()), exited.Code))
+			s.say(g, profileID, fmt.Sprintf("%s exited with code %d.", game.LoaderName(g.ID(), s.profileLoader(g.ID(), profileID)), exited.Code))
 		}
 		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, r.inst.Dir), Cause: causeFromBuffer(s, g, profileID, buf)})
@@ -1269,7 +1271,7 @@ func (s *Service) Send(gameID, command string) error {
 		return fmt.Errorf("%s is not running", g.Name())
 	}
 	cur := s.current(sl)
-	l, _ := game.PrimaryLoader(gameID)
+	l, _ := s.loaderOf(gameID, cur.Profile)
 	console, ok := l.(loader.Console)
 	if !ok {
 		return fmt.Errorf("%s has no console", g.Name())
@@ -1295,7 +1297,7 @@ func (s *Service) Send(gameID, command string) error {
 // bridgeFolder is the loader's companion mod's folder in the profile the game runs, under the key that profile holds:
 // a Mortar update can bundle a newer companion than the one the running game loaded.
 func (s *Service) bridgeFolder(g game.Game, profileID string) (string, error) {
-	l, _ := game.PrimaryLoader(g.ID())
+	l, _ := s.loaderOf(g.ID(), profileID)
 	companion, ok := l.(loader.WithCompanion)
 	if !ok {
 		return "", fmt.Errorf("%s has no console bridge", g.Name())

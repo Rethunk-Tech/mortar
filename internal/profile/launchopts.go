@@ -14,7 +14,7 @@ func (s *Store) LaunchOptions(game, id string) (string, error) {
 // SetLaunchOptions replaces a profile's extra SMAPI arguments. It never touches mods/, so a running
 // game does not block it.
 func (s *Store) SetLaunchOptions(game, id, options string) (Profile, error) {
-	if _, err := gamereg.ParseLaunchOptions(game, options); err != nil {
+	if _, err := gamereg.ParseLaunchOptions(game, s.LoaderID(game, id), options); err != nil {
 		return Profile{}, err
 	}
 	return s.update(game, id, func(p *Profile, _ string) error {

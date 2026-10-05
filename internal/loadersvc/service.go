@@ -56,7 +56,7 @@ type Service struct {
 	// background tracks installs started by ensureInBackground.
 	background sync.WaitGroup
 	// run installs or updates the loader with busy held; tests replace it.
-	run func(ctx context.Context, id string, fromStart bool) (loader.Status, error)
+	run func(ctx context.Context, id, loaderID string, fromStart bool) (loader.Status, error)
 	// App is set after application.New so events can be emitted.
 	App *application.App
 	// OnReady runs after a successful loader install (SMAPI version may have changed).
@@ -105,7 +105,8 @@ func (s *Service) bundles(id string) []profile.Bundle {
 	if key, err := s.ensureBundled(id); err != nil {
 		log.Printf("bundled mods for %s: %v", id, err)
 	} else if key != "" {
-		if b, ok := s.bundleOf(id, key); ok {
+		l, _ := game.PrimaryLoader(id)
+		if b, ok := bundleOf(l, key); ok {
 			out = append(out, b)
 		}
 	}
@@ -167,7 +168,7 @@ func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
 // Failures are logged and announced with StateEvent; the game may simply not be installed.
 func (s *Service) ensureInBackground(id string) {
 	s.background.Go(func() {
-		if _, err := s.Ensure(context.Background(), id, false); err != nil {
+		if _, err := s.Ensure(context.Background(), id, "", false); err != nil {
 			log.Printf("loader for %s: %v", id, err)
 		}
 	})
@@ -176,7 +177,7 @@ func (s *Service) ensureInBackground(id string) {
 // ensureBundled returns the store key of the installed loader's bundled mods, building the entry from the game
 // folder when the loader was installed outside Mortar. It returns "" when no loader is installed.
 func (s *Service) ensureBundled(id string) (string, error) {
-	st, err := s.LocalStatus(id)
+	st, err := s.LocalStatus(id, "")
 	if err != nil {
 		return "", err
 	}
@@ -212,10 +213,10 @@ func (s *Service) ensureBundled(id string) (string, error) {
 	if err := s.items.AddDir(id, key, tmp); err != nil {
 		return "", err
 	}
-	if s.settings.Get().Loaders[id] == "" {
+	if s.settings.Get().Loaders[l.ID()] == "" {
 		if _, err := s.settings.Update(func(v *settings.Settings) {
 			v.Loaders = maps.Clone(v.Loaders)
-			v.Loaders[id] = st.Version
+			v.Loaders[l.ID()] = st.Version
 		}); err != nil {
 			return "", err
 		}
@@ -248,19 +249,18 @@ func (s *Service) target(id string) (game.Game, string, error) {
 	return g, dir, nil
 }
 
-// LocalStatus reports the loader's state on disk without any network call.
-func (s *Service) LocalStatus(id string) (loader.Status, error) {
+// LocalStatus reports the state on disk of the game's loader (loaderID, "" for the primary) without any network call.
+func (s *Service) LocalStatus(id, loaderID string) (loader.Status, error) {
 	_, dir, err := s.target(id)
 	if err != nil {
 		return loader.Status{}, err
 	}
-	recorded := s.settings.Get().Loaders[id]
-	if l, ok := game.PrimaryLoader(id); ok {
+	if l, ok := game.LoaderOf(id, loaderID); ok {
 		if _, perProfile := l.(loader.InProfile); perProfile {
-			return s.profileStatus(id, l, dir, recorded)
+			return s.profileStatus(id, l, dir, s.settings.Get().Loaders[l.ID()])
 		}
 	}
-	return game.LoaderStatus(id, dir, recorded)
+	return game.LoaderStatus(id, loaderID, dir, s.settings.Get().Loaders)
 }
 
 // profileStatus is the state of a loader that lives in each profile: installed when a version is recorded and every
@@ -272,7 +272,7 @@ func (s *Service) profileStatus(id string, l loader.Loader, dir, recorded string
 	}
 	st := loader.Status{Installed: recorded != "", Version: recorded}
 	for _, p := range all {
-		if p.Error != "" {
+		if p.Error != "" || s.profiles.LoaderID(id, p.ID) != l.ID() {
 			continue
 		}
 		pdir, err := s.profiles.ProfileDir(id, p.ID)
@@ -291,18 +291,21 @@ func (s *Service) profileStatus(id string, l loader.Loader, dir, recorded string
 }
 
 // Status is LocalStatus plus whether a newer release exists. A failed release lookup only leaves Latest empty.
-func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) {
+func (s *Service) Status(ctx context.Context, id, loaderID string) (loader.Status, error) {
 	if _, _, err := s.target(id); err != nil {
 		return loader.Status{}, err
 	}
-	st, err := s.LocalStatus(id)
+	st, err := s.LocalStatus(id, loaderID)
 	if err != nil {
 		return loader.Status{}, err
 	}
-	if pin := s.settings.Get().LoaderPin(loaderIDOf(id)); pin != "" {
+	l, _ := game.LoaderOf(id, loaderID)
+	if l == nil {
 		return st, nil
 	}
-	l, _ := game.PrimaryLoader(id)
+	if pin := s.settings.Get().LoaderPin(l.ID()); pin != "" {
+		return st, nil
+	}
 	rel, ok := l.(loader.Releases)
 	if !ok {
 		return st, nil
@@ -315,12 +318,12 @@ func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) 
 }
 
 // Install installs the loader or, when it is already there, updates it, then puts its bundled mods in every profile.
-func (s *Service) Install(ctx context.Context, id string) (loader.Status, error) {
+func (s *Service) Install(ctx context.Context, id, loaderID string) (loader.Status, error) {
 	if !s.busy.TryLock() {
 		return loader.Status{}, errors.New("a loader install is already running")
 	}
 	defer s.busy.Unlock()
-	return s.run(ctx, id, false)
+	return s.run(ctx, id, loaderID, false)
 }
 
 // Ensure installs the loader when it is missing or broken, waiting for an install already running, and does
@@ -328,22 +331,22 @@ func (s *Service) Install(ctx context.Context, id string) (loader.Status, error)
 // fromStart is true when Play requested this install, so a preparing claim for that Start is not treated as running.
 //
 //wails:ignore
-func (s *Service) Ensure(ctx context.Context, id string, fromStart bool) (loader.Status, error) {
+func (s *Service) Ensure(ctx context.Context, id, loaderID string, fromStart bool) (loader.Status, error) {
 	s.busy.Lock()
 	defer s.busy.Unlock()
-	st, err := s.LocalStatus(id)
+	st, err := s.LocalStatus(id, loaderID)
 	if err != nil {
 		return loader.Status{}, err
 	}
-	pin := s.settings.Get().LoaderPin(loaderIDOf(id))
+	pin := s.settings.Get().LoaderPin(s.loaderID(id, loaderID))
 	if st.Installed && !st.Broken && (pin == "" || st.Version == pin) {
 		return st, nil
 	}
-	return s.run(ctx, id, fromStart)
+	return s.run(ctx, id, loaderID, fromStart)
 }
 
 // install runs one install with busy held and announces its start and end.
-func (s *Service) install(ctx context.Context, id string, fromStart bool) (st loader.Status, err error) {
+func (s *Service) install(ctx context.Context, id, loaderID string, fromStart bool) (st loader.Status, err error) {
 	g, dir, err := s.target(id)
 	if err != nil {
 		return loader.Status{}, err
@@ -353,9 +356,9 @@ func (s *Service) install(ctx context.Context, id string, fromStart bool) (st lo
 		return loader.Status{}, err
 	}
 	if running || (!fromStart && s.profiles.AnyRunning(id)) {
-		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), game.LoaderName(id)))
+		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), game.LoaderName(id, loaderID)))
 	}
-	return s.installVersion(ctx, g, dir, id, s.settings.Get().LoaderPin(loaderIDOf(id)), fromStart)
+	return s.installVersion(ctx, g, dir, id, loaderID, s.settings.Get().LoaderPin(s.loaderID(id, loaderID)), fromStart)
 }
 
 // gameRunning reports whether any process of the game runs, with or without its loader and however it was started.
@@ -378,9 +381,9 @@ func (s *Service) emit(name string, data any) {
 	}
 }
 
-// loaderIDOf is the id of the game's first loader, "" when it has none.
-func loaderIDOf(gameID string) string {
-	if l, ok := game.PrimaryLoader(gameID); ok {
+// loaderID is the id of the game's loader (loaderID, "" for the primary), "" when it has none.
+func (s *Service) loaderID(gameID, loaderID string) string {
+	if l, ok := game.LoaderOf(gameID, loaderID); ok {
 		return l.ID()
 	}
 	return ""

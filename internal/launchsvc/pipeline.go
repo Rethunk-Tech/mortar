@@ -27,6 +27,19 @@ func loaderID(gameID string) string {
 	return ""
 }
 
+// profileLoader is the id of the loader the profile runs; "" (the game's primary loader) without a profile.
+func (s *Service) profileLoader(gameID, profileID string) string {
+	if s.profiles == nil || profileID == "" {
+		return ""
+	}
+	return s.profiles.LoaderID(gameID, profileID)
+}
+
+// loaderOf is the loader the profile runs.
+func (s *Service) loaderOf(gameID, profileID string) (loader.Loader, bool) {
+	return game.LoaderOf(gameID, s.profileLoader(gameID, profileID))
+}
+
 // view is the profile as loaders see it.
 func (s *Service) view(g game.Game, inst game.Install, profileID string) (loader.ProfileView, error) {
 	dir, err := s.profiles.ProfileDir(g.ID(), profileID)
@@ -41,7 +54,7 @@ func (s *Service) view(g game.Game, inst game.Install, profileID string) (loader
 // environment follow, so its options come after the loader's arguments. A vanilla plan has the loader's way of
 // starting the game without it and nothing of the profile's.
 func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install, profileID string, mode launchplan.Mode, options, prefix, env string) (*launchplan.Plan, error) {
-	l, ok := game.PrimaryLoader(g.ID())
+	l, ok := s.loaderOf(g.ID(), profileID)
 	if !ok {
 		return nil, fmt.Errorf("%s has no loader", g.Name())
 	}
@@ -59,7 +72,7 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 	if err := l.Contribute(ctx, plan, view); err != nil {
 		return nil, err
 	}
-	extra, err := game.ParseLaunchOptions(g.ID(), options)
+	extra, err := game.ParseLaunchOptions(g.ID(), s.profileLoader(g.ID(), profileID), options)
 	if err != nil {
 		return nil, err
 	}

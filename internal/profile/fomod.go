@@ -123,7 +123,7 @@ func (s *Store) installedGameVersion(gameID string) string {
 	if err != nil || dir == "" {
 		return ""
 	}
-	st, err := game.LoaderStatus(gameID, dir, sett.Get().Loaders[gameID])
+	st, err := game.LoaderStatus(gameID, "", dir, sett.Get().Loaders)
 	if err != nil {
 		return ""
 	}

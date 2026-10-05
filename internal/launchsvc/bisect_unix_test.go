@@ -46,7 +46,7 @@ func TestRunForBisectStopsWhenStartupReportAppears(t *testing.T) {
 	if err := os.MkdirAll(startup, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	svc.EnsureLoader = func(context.Context, string, bool) error { return nil }
+	svc.EnsureLoader = func(context.Context, string, string, bool) error { return nil }
 
 	done := make(chan struct{})
 	var healthy bool

@@ -58,7 +58,7 @@ func TestTwoInstallsOfOneGameAreClaimedSideBySide(t *testing.T) {
 		t.Fatal("the installs share an id")
 	}
 	release := make(chan struct{})
-	svc.EnsureLoader = func(ctx context.Context, _ string, _ bool) error {
+	svc.EnsureLoader = func(ctx context.Context, _, _ string, _ bool) error {
 		select {
 		case <-release:
 		case <-ctx.Done():

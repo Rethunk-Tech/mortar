@@ -102,7 +102,7 @@ func validateLaunchPresets(gameID string, presets []LaunchPreset, defaultID stri
 			preset.ID = ids.New()
 		}
 		seenID[preset.ID] = true
-		if _, err := gamereg.ParseLaunchOptions(gameID, preset.LaunchOptions); err != nil {
+		if _, err := gamereg.ParseLaunchOptions(gameID, "", preset.LaunchOptions); err != nil {
 			return nil, fmt.Errorf("%s: %w", preset.Name, err)
 		}
 		if _, err := LaunchPrefixArgs(preset.LaunchPrefix); err != nil {

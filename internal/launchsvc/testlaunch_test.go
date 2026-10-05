@@ -12,7 +12,7 @@ import (
 func TestAStartIsLaunchingFromAcceptanceAndATestLaunchReportsItsFailure(t *testing.T) {
 	svc, p := startEnv(t)
 	release := make(chan struct{})
-	svc.EnsureLoader = func(context.Context, string, bool) error {
+	svc.EnsureLoader = func(context.Context, string, string, bool) error {
 		<-release
 		return errors.New("the game did not start in time")
 	}
@@ -31,7 +31,7 @@ func TestAStartIsLaunchingFromAcceptanceAndATestLaunchReportsItsFailure(t *testi
 		time.Sleep(10 * time.Millisecond)
 	}
 
-	svc.EnsureLoader = func(context.Context, string, bool) error { return errors.New("the game did not start in time") }
+	svc.EnsureLoader = func(context.Context, string, string, bool) error { return errors.New("the game did not start in time") }
 	res, err := svc.TestLaunch(context.Background(), "stardew", p.ID, "")
 	if err == nil || res.ReachedTitle {
 		t.Fatalf("a failed start reported %+v, %v", res, err)

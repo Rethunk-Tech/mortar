@@ -69,27 +69,40 @@ func PrimaryLoader(id string) (loader.Loader, bool) {
 	return all[0], true
 }
 
-// LoaderStatus is the game's first loader's state in the install in dir. recorded is the version Mortar installed,
-// which outranks the version the install itself reports.
-func LoaderStatus(id, dir, recorded string) (loader.Status, error) {
-	l, ok := PrimaryLoader(id)
+// LoaderOf is the game's loader with this id; "" is its primary loader.
+func LoaderOf(id, loaderID string) (loader.Loader, bool) {
+	if loaderID == "" {
+		return PrimaryLoader(id)
+	}
+	for _, l := range Loaders(id) {
+		if l.ID() == loaderID {
+			return l, true
+		}
+	}
+	return nil, false
+}
+
+// LoaderStatus is the state of the game's loader (loaderID, "" for the primary) in the install in dir. recorded is the
+// version Mortar installed per loader id (settings.Loaders), which outranks the version the install itself reports.
+func LoaderStatus(id, loaderID, dir string, recorded map[string]string) (loader.Status, error) {
+	l, ok := LoaderOf(id, loaderID)
 	if !ok {
-		return loader.Status{}, fmt.Errorf("game %q has no loader", id)
+		return loader.Status{}, fmt.Errorf("game %q has no loader %q", id, loaderID)
 	}
 	st, err := l.Status(loader.Target{Game: id, InstallDir: dir})
 	if err != nil {
 		return loader.Status{}, err
 	}
 	if st.Installed || st.Broken {
-		st.Version = cmp.Or(recorded, st.Version)
+		st.Version = cmp.Or(recorded[l.ID()], st.Version)
 	}
 	return st, nil
 }
 
 // ParseLaunchOptions splits a profile's extra launch arguments for the game, refusing the flags its loader sets itself.
-func ParseLaunchOptions(id, options string) ([]string, error) {
+func ParseLaunchOptions(id, loaderID, options string) ([]string, error) {
 	var denied []string
-	if l, ok := PrimaryLoader(id); ok {
+	if l, ok := LoaderOf(id, loaderID); ok {
 		if d, ok := l.(loader.DeniedArgs); ok {
 			denied = d.DeniedArgs()
 		}
@@ -107,13 +120,18 @@ func LogFile(id string) (string, error) {
 	return logs.Path(loader.ProfileView{})
 }
 
-// LoaderName is how the catalog names the game's first loader.
-func LoaderName(id string) string {
+// LoaderName is how the catalog names the game's loader with this id; "" is its first.
+func LoaderName(id, loaderID string) string {
 	g, ok := catalogGame(id)
-	if !ok || len(g.Loaders) == 0 {
+	if !ok {
 		return ""
 	}
-	return g.Loaders[0].Name
+	for _, l := range g.Loaders {
+		if loaderID == "" || l.ID == loaderID {
+			return l.Name
+		}
+	}
+	return ""
 }
 
 // ProcessNames are the executables a running game is found by: its own and its loaders'.

@@ -69,6 +69,8 @@ func (s *Services) profileSet(p Params, prof profile.Profile, id string) (any, e
 		return s.Profiles.SetAppearance(g, id, prof.Color, prof.Icon, v)
 	case "install":
 		return s.Profiles.SetInstall(g, id, v)
+	case "loader":
+		return s.Profiles.SetLoader(g, id, v)
 	case "launchOptions":
 		return s.Profiles.SetLaunchOptions(g, id, v)
 	case "launchPrefix":

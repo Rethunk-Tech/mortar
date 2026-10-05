@@ -185,7 +185,7 @@ func TestPreviewCommandUsesUnsavedLaunchFields(t *testing.T) {
 func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 	svc, p := startEnv(t)
 	asked, release := make(chan string), make(chan struct{})
-	svc.EnsureLoader = func(_ context.Context, id string, _ bool) error {
+	svc.EnsureLoader = func(_ context.Context, id, _ string, _ bool) error {
 		asked <- id
 		<-release
 		return errors.New("boom")
@@ -288,7 +288,7 @@ func TestConcurrentStartsLaunchOnce(t *testing.T) {
 	svc, p := startEnv(t)
 	var ensured atomic.Int32
 	release := make(chan struct{})
-	svc.EnsureLoader = func(context.Context, string, bool) error {
+	svc.EnsureLoader = func(context.Context, string, string, bool) error {
 		ensured.Add(1)
 		<-release
 		return errors.New("stop here")
@@ -322,7 +322,7 @@ func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
 		t.Fatal(err)
 	}
 	asked, release := make(chan struct{}), make(chan struct{})
-	svc.EnsureLoader = func(context.Context, string, bool) error {
+	svc.EnsureLoader = func(context.Context, string, string, bool) error {
 		close(asked)
 		<-release
 		return errors.New("update failed")
@@ -392,7 +392,7 @@ func TestStartLoaderUsesAppLifetime(t *testing.T) {
 	cancel()
 	SetLife(svc, ctx)
 	saw := make(chan context.Context, 1)
-	svc.EnsureLoader = func(ctx context.Context, _ string, _ bool) error {
+	svc.EnsureLoader = func(ctx context.Context, _, _ string, _ bool) error {
 		saw <- ctx
 		return ctx.Err()
 	}
@@ -438,7 +438,7 @@ func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	svc.EnsureLoader = func(context.Context, string, bool) error { return nil }
+	svc.EnsureLoader = func(context.Context, string, string, bool) error { return nil }
 	if err := svc.Start(context.Background(), "stardew", p.ID, true); err != nil {
 		t.Fatal(err)
 	}

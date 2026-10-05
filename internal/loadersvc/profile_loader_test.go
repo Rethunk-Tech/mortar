@@ -70,15 +70,15 @@ func TestEnsureInstallsAProfileLoaderIntoEveryProfile(t *testing.T) {
 	svc := NewService(t.TempDir(), set, items, profiles)
 	first := testenv.Profile(t, profiles, "lethal-company", "First")
 
-	st, err := svc.Ensure(t.Context(), "lethal-company", false)
+	st, err := svc.Ensure(t.Context(), "lethal-company", "", false)
 	if err != nil || !st.Installed || st.Version != "5.4.2304" {
 		t.Fatalf("ensure = %+v, %v", st, err)
 	}
 	second := testenv.Profile(t, profiles, "lethal-company", "Second")
-	if st, _ := svc.LocalStatus("lethal-company"); st.Installed {
+	if st, _ := svc.LocalStatus("lethal-company", ""); st.Installed {
 		t.Fatal("a profile without the loader still counts as installed")
 	}
-	if _, err := svc.Ensure(t.Context(), "lethal-company", false); err != nil {
+	if _, err := svc.Ensure(t.Context(), "lethal-company", "", false); err != nil {
 		t.Fatal(err)
 	}
 	for _, p := range []string{first.ID, second.ID} {

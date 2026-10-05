@@ -166,7 +166,7 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 	}
 	if name, body := s.loaderTail(gameID, profileID); body != "" {
 		files[name] = []byte(hideHomeIn(body, s.home))
-		included = append(included, name+": last "+fmt.Sprint(diagnosticsLogLines)+" lines of the open profile's "+game.LoaderName(gameID)+" log")
+		included = append(included, name+": last "+fmt.Sprint(diagnosticsLogLines)+" lines of the open profile's "+game.LoaderName(gameID, "")+" log")
 	}
 
 	files["manifest.txt"] = []byte(diagnosticsManifest(included, removed))

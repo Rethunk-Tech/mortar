@@ -61,7 +61,7 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
   useEffect(() => {
     check(game)
     refreshLaunch(game)
-    ListVersions(game)
+    ListVersions(game, '')
       .then((rows) => setVersions(rows ?? []))
       .catch(() => setVersions([]))
   }, [check, refreshLaunch, game])

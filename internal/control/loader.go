@@ -9,14 +9,14 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
-// loaderOf checks that the game has a loader named want, or names the game's own when want is empty.
+// loaderOf checks that the game has a loader named want, or names the game's primary when want is empty.
 func loaderOf(gameID, want string) (string, error) {
-	l, ok := game.PrimaryLoader(gameID)
+	l, ok := game.LoaderOf(gameID, want)
 	if !ok {
-		return "", fmt.Errorf("game %q has no loader", gameID)
-	}
-	if want != "" && want != l.ID() {
-		return "", fmt.Errorf("game %q uses the %s loader, not %q", gameID, l.ID(), want)
+		if want == "" {
+			return "", fmt.Errorf("game %q has no loader", gameID)
+		}
+		return "", fmt.Errorf("game %q has no %q loader", gameID, want)
 	}
 	return l.ID(), nil
 }
@@ -28,7 +28,7 @@ func (s *Services) loaderVersions(ctx context.Context, p Params) ([]string, erro
 	if _, err := loaderOf(p.Game, p.Loader); err != nil {
 		return nil, err
 	}
-	return s.Loaders.ListVersions(ctx, p.Game)
+	return s.Loaders.ListVersions(ctx, p.Game, p.Loader)
 }
 
 func (s *Services) loaderInstall(ctx context.Context, p Params) (loader.Status, error) {
@@ -41,7 +41,7 @@ func (s *Services) loaderInstall(ctx context.Context, p Params) (loader.Status, 
 	if p.Name == "" {
 		return loader.Status{}, fmt.Errorf("loader install needs a version")
 	}
-	return s.Loaders.InstallVersion(ctx, p.Game, p.Name)
+	return s.Loaders.InstallVersion(ctx, p.Game, p.Loader, p.Name)
 }
 
 func (s *Services) loaderPin(p Params) error {

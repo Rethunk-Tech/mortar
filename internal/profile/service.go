@@ -161,6 +161,11 @@ func (s *Service) SetInstall(game, id, install string) (Profile, error) {
 	return s.store.SetInstall(game, id, install)
 }
 
+// SetLoader makes the profile run the game's loader with this id; "" is the primary loader.
+func (s *Service) SetLoader(game, id, loaderID string) (Profile, error) {
+	return s.store.SetLoader(game, id, loaderID)
+}
+
 // SetLaunchOptions replaces a profile's extra SMAPI arguments.
 func (s *Service) SetLaunchOptions(game, id, options string) (Profile, error) {
 	return s.store.SetLaunchOptions(game, id, options)

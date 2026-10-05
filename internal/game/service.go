@@ -14,12 +14,14 @@ import (
 
 // GameInfo is one listed game with its install state.
 type GameInfo struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	AppID    string   `json:"appId"`
-	Loader   string   `json:"loader"`
-	LoaderID string   `json:"loaderId"`
-	Sources  []string `json:"sources"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	AppID    string `json:"appId"`
+	Loader   string `json:"loader"`
+	LoaderID string `json:"loaderId"`
+	// Loaders are all the loaders the catalog lists for the game, the first being the primary.
+	Loaders []LoaderRef `json:"loaders"`
+	Sources []string    `json:"sources"`
 	// SourceKeys maps a source id to the catalog's key for the game on it (Nexus domain, Thunderstore community); sources without a key are left out.
 	SourceKeys map[string]string `json:"sourceKeys"`
 	Available  bool              `json:"available"`
@@ -28,6 +30,12 @@ type GameInfo struct {
 	ArtURL     string            `json:"artUrl"`
 	Store      string            `json:"store"`
 	Installs   []Install         `json:"installs"`
+}
+
+// LoaderRef names one of a game's loaders.
+type LoaderRef struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // SteamAccess is whether Flatpak Steam can read Mortar's data folder.
@@ -101,6 +109,9 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 	for _, c := range catalog {
 		info := GameInfo{ID: c.ID, Name: c.Name, AppID: c.SteamAppID(), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
+		for _, l := range c.Loaders {
+			info.Loaders = append(info.Loaders, LoaderRef{ID: l.ID, Name: l.Name})
+		}
 		for i, src := range c.Sources {
 			info.Sources[i] = src.ID
 			if src.Key != "" {

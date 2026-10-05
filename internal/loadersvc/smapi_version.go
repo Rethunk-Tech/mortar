@@ -21,7 +21,7 @@ import (
 var errUnknownVersion = errors.New("unknown loader version")
 
 // InstallVersion installs the given SMAPI version. A copy already in the store is applied without downloading.
-func (s *Service) InstallVersion(ctx context.Context, id, version string) (loader.Status, error) {
+func (s *Service) InstallVersion(ctx context.Context, id, loaderID, version string) (loader.Status, error) {
 	if !s.busy.TryLock() {
 		return loader.Status{}, errors.New("a loader install is already running")
 	}
@@ -30,13 +30,13 @@ func (s *Service) InstallVersion(ctx context.Context, id, version string) (loade
 	if err != nil {
 		return loader.Status{}, err
 	}
-	l, ok := game.PrimaryLoader(id)
+	l, ok := game.LoaderOf(id, loaderID)
 	if !ok {
 		return loader.Status{}, fmt.Errorf("%s has no loader", g.Name())
 	}
 	// A version that does not exist is refused before asking the user to close the game.
 	if _, err := s.items.Path(id, store.LoaderKey(l.ID(), version)); version != "" && errors.Is(err, store.ErrNotFound) {
-		if err := s.ensureKnown(ctx, id, version); err != nil {
+		if err := s.ensureKnown(ctx, id, loaderID, version); err != nil {
 			return loader.Status{}, err
 		}
 	}
@@ -45,17 +45,17 @@ func (s *Service) InstallVersion(ctx context.Context, id, version string) (loade
 		return loader.Status{}, err
 	}
 	if running || s.profiles.AnyRunning(id) {
-		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), game.LoaderName(id)))
+		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), game.LoaderName(id, loaderID)))
 	}
-	return s.installVersion(ctx, g, dir, id, version, false)
+	return s.installVersion(ctx, g, dir, id, loaderID, version, false)
 }
 
 // ListVersions is store-held SMAPI versions plus the last GitHub releases, newest first, unique.
-func (s *Service) ListVersions(ctx context.Context, id string) ([]string, error) {
+func (s *Service) ListVersions(ctx context.Context, id, loaderID string) ([]string, error) {
 	if _, err := game.Require(id); err != nil {
 		return nil, err
 	}
-	remote, err := s.remoteVersions(ctx, id)
+	remote, err := s.remoteVersions(ctx, id, loaderID)
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +71,13 @@ func (s *Service) ListVersions(ctx context.Context, id string) ([]string, error)
 	for _, v := range remote {
 		add(v)
 	}
-	for _, v := range s.storedVersions(id) {
+	for _, v := range s.storedVersions(id, loaderID) {
 		add(v)
 	}
 	return out, nil
 }
 
-func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, version string, fromStart bool) (st loader.Status, err error) {
+func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, loaderID, version string, fromStart bool) (st loader.Status, err error) {
 	s.emit(StateEvent, State{Game: id, Installing: true})
 	defer func() {
 		state := State{Game: id}
@@ -86,40 +86,40 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, vers
 		}
 		s.emit(StateEvent, state)
 	}()
-	l, ok := game.PrimaryLoader(id)
+	l, ok := game.LoaderOf(id, loaderID)
 	if !ok {
 		return loader.Status{}, fmt.Errorf("%s has no loader", g.Name())
 	}
 	_, perProfile := l.(loader.InProfile)
 	if version == "" && perProfile {
-		version = s.settings.Get().Loaders[id]
+		version = s.settings.Get().Loaders[l.ID()]
 	}
-	version, err = s.resolveVersion(ctx, id, g, version)
+	version, err = s.resolveVersion(ctx, id, loaderID, g, version)
 	if err != nil {
 		return loader.Status{}, err
 	}
 	if perProfile {
-		return s.installInProfiles(ctx, id, dir, l, version, fromStart)
+		return s.installInProfiles(ctx, id, loaderID, dir, l, version, fromStart)
 	}
 	if _, err := s.items.Path(id, store.LoaderKey(l.ID(), version)); err == nil {
-		if err := s.recordLoader(id, version, fromStart); err != nil {
+		if err := s.recordLoader(id, l, version, fromStart); err != nil {
 			return loader.Status{}, err
 		}
-		return s.Status(ctx, id)
+		return s.Status(ctx, id, loaderID)
 	} else if !errors.Is(err, store.ErrNotFound) {
 		return loader.Status{}, err
 	}
-	if err := s.ensureKnown(ctx, id, version); err != nil {
+	if err := s.ensureKnown(ctx, id, loaderID, version); err != nil {
 		return loader.Status{}, err
 	}
 	if s.fetchInstall != nil {
 		if err := s.fetchInstall(ctx, id, version); err != nil {
 			return loader.Status{}, err
 		}
-		if err := s.recordLoader(id, version, fromStart); err != nil {
+		if err := s.recordLoader(id, l, version, fromStart); err != nil {
 			return loader.Status{}, err
 		}
-		return s.Status(ctx, id)
+		return s.Status(ctx, id, loaderID)
 	}
 	rel, canFetch := l.(loader.Releases)
 	if !canFetch {
@@ -130,7 +130,7 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, vers
 		if err := s.items.AddDir(id, key, modsDir); err != nil {
 			return err
 		}
-		return s.applyBundled(id, key, fromStart)
+		return s.applyBundled(id, l, key, fromStart)
 	}
 	work, err := os.MkdirTemp("", "mortar-loader-")
 	if err != nil {
@@ -147,13 +147,13 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, vers
 	if err != nil {
 		return loader.Status{}, err
 	}
-	if err := s.recordLoader(id, got, fromStart); err != nil {
+	if err := s.recordLoader(id, l, got, fromStart); err != nil {
 		return loader.Status{}, err
 	}
-	return s.Status(ctx, id)
+	return s.Status(ctx, id, loaderID)
 }
 
-func (s *Service) resolveVersion(ctx context.Context, id string, g game.Game, version string) (string, error) {
+func (s *Service) resolveVersion(ctx context.Context, id, loaderID string, g game.Game, version string) (string, error) {
 	if version != "" {
 		return version, nil
 	}
@@ -167,7 +167,7 @@ func (s *Service) resolveVersion(ctx context.Context, id string, g game.Game, ve
 		}
 		return all[0], nil
 	}
-	l, _ := game.PrimaryLoader(id)
+	l, _ := game.LoaderOf(id, loaderID)
 	rel, ok := l.(loader.Releases)
 	if !ok {
 		return "", fmt.Errorf("%s does not list loader versions", g.Name())
@@ -175,8 +175,8 @@ func (s *Service) resolveVersion(ctx context.Context, id string, g game.Game, ve
 	return rel.Latest(ctx, catalogGame(id))
 }
 
-func (s *Service) ensureKnown(ctx context.Context, id, version string) error {
-	all, err := s.remoteVersions(ctx, id)
+func (s *Service) ensureKnown(ctx context.Context, id, loaderID, version string) error {
+	all, err := s.remoteVersions(ctx, id, loaderID)
 	if err != nil {
 		return err
 	}
@@ -186,7 +186,7 @@ func (s *Service) ensureKnown(ctx context.Context, id, version string) error {
 	return fmt.Errorf("%w: %s", errUnknownVersion, version)
 }
 
-func (s *Service) remoteVersions(ctx context.Context, id string) ([]string, error) {
+func (s *Service) remoteVersions(ctx context.Context, id, loaderID string) ([]string, error) {
 	if s.listVersions != nil {
 		return s.listVersions(ctx, id)
 	}
@@ -194,7 +194,7 @@ func (s *Service) remoteVersions(ctx context.Context, id string) ([]string, erro
 	if err != nil {
 		return nil, err
 	}
-	l, _ := game.PrimaryLoader(id)
+	l, _ := game.LoaderOf(id, loaderID)
 	rel, ok := l.(loader.Releases)
 	if !ok {
 		return nil, fmt.Errorf("%s does not list loader versions", g.Name())
@@ -202,8 +202,8 @@ func (s *Service) remoteVersions(ctx context.Context, id string) ([]string, erro
 	return rel.Versions(ctx, catalogGame(id))
 }
 
-func (s *Service) storedVersions(id string) []string {
-	l, ok := game.PrimaryLoader(id)
+func (s *Service) storedVersions(id, loaderID string) []string {
+	l, ok := game.LoaderOf(id, loaderID)
 	if !ok {
 		return nil
 	}
@@ -221,8 +221,8 @@ func (s *Service) storedVersions(id string) []string {
 	return out
 }
 
-func (s *Service) applyBundled(id, key string, fromStart bool) error {
-	b, ok := s.bundleOf(id, key)
+func (s *Service) applyBundled(id string, l loader.Loader, key string, fromStart bool) error {
+	b, ok := bundleOf(l, key)
 	if !ok {
 		return nil
 	}
@@ -234,8 +234,7 @@ func (s *Service) applyBundled(id, key string, fromStart bool) error {
 }
 
 // bundleOf is the profile entry for the loader's bundled mods under key; ok is false for a loader that ships none.
-func (s *Service) bundleOf(id, key string) (profile.Bundle, bool) {
-	l, _ := game.PrimaryLoader(id)
+func bundleOf(l loader.Loader, key string) (profile.Bundle, bool) {
 	c, ok := l.(loader.BundledCopier)
 	if !ok {
 		return profile.Bundle{}, false
@@ -244,10 +243,9 @@ func (s *Service) bundleOf(id, key string) (profile.Bundle, bool) {
 	return profile.Bundle{Key: key, Source: profile.Source{Kind: kind, Name: name}}, true
 }
 
-func (s *Service) recordLoader(id, version string, fromStart bool) error {
-	l, _ := game.PrimaryLoader(id)
+func (s *Service) recordLoader(id string, l loader.Loader, version string, fromStart bool) error {
 	if _, err := s.items.Path(id, store.LoaderKey(l.ID(), version)); err == nil {
-		if err := s.applyBundled(id, store.LoaderKey(l.ID(), version), fromStart); err != nil {
+		if err := s.applyBundled(id, l, store.LoaderKey(l.ID(), version), fromStart); err != nil {
 			return err
 		}
 	} else if !errors.Is(err, store.ErrNotFound) {
@@ -255,7 +253,7 @@ func (s *Service) recordLoader(id, version string, fromStart bool) error {
 	}
 	next, err := s.settings.Update(func(v *settings.Settings) {
 		v.Loaders = maps.Clone(v.Loaders)
-		v.Loaders[id] = version
+		v.Loaders[l.ID()] = version
 	})
 	if err != nil {
 		return err
@@ -269,7 +267,7 @@ func (s *Service) recordLoader(id, version string, fromStart bool) error {
 
 // installInProfiles keeps the loader's installer in the store, so a later profile needs no download, and lays it into
 // every profile of the game.
-func (s *Service) installInProfiles(ctx context.Context, id, dir string, l loader.Loader, version string, fromStart bool) (loader.Status, error) {
+func (s *Service) installInProfiles(ctx context.Context, id, loaderID, dir string, l loader.Loader, version string, fromStart bool) (loader.Status, error) {
 	rel, ok := l.(loader.Releases)
 	if !ok {
 		return loader.Status{}, fmt.Errorf("%s does not install a chosen loader version", l.ID())
@@ -277,7 +275,7 @@ func (s *Service) installInProfiles(ctx context.Context, id, dir string, l loade
 	key := store.LoaderKey(l.ID(), version)
 	held, err := s.items.Path(id, key)
 	if errors.Is(err, store.ErrNotFound) {
-		if held, err = s.fetchIntoStore(ctx, id, rel, key, version); err != nil {
+		if held, err = s.fetchIntoStore(ctx, id, l.ID(), rel, key, version); err != nil {
 			return loader.Status{}, err
 		}
 	} else if err != nil {
@@ -289,7 +287,7 @@ func (s *Service) installInProfiles(ctx context.Context, id, dir string, l loade
 	}
 	progress := func(step loader.Step) { s.emit(ProgressEvent, Progress{Game: id, Step: step}) }
 	for _, p := range all {
-		if p.Error != "" {
+		if p.Error != "" || s.profiles.LoaderID(id, p.ID) != l.ID() {
 			continue
 		}
 		pdir, err := s.profiles.ProfileDir(id, p.ID)
@@ -301,18 +299,18 @@ func (s *Service) installInProfiles(ctx context.Context, id, dir string, l loade
 			return loader.Status{}, fmt.Errorf("install into %s: %w", p.Name, err)
 		}
 	}
-	if err := s.recordLoader(id, version, fromStart); err != nil {
+	if err := s.recordLoader(id, l, version, fromStart); err != nil {
 		return loader.Status{}, err
 	}
-	return s.Status(ctx, id)
+	return s.Status(ctx, id, loaderID)
 }
 
 // installerFile names the downloaded installer inside a per-profile loader's store entry.
 const installerFile = "installer.zip"
 
 // fetchIntoStore downloads the loader's installer into the store under key and returns its folder.
-func (s *Service) fetchIntoStore(ctx context.Context, id string, rel loader.Releases, key, version string) (string, error) {
-	if err := s.ensureKnown(ctx, id, version); err != nil {
+func (s *Service) fetchIntoStore(ctx context.Context, id, loaderID string, rel loader.Releases, key, version string) (string, error) {
+	if err := s.ensureKnown(ctx, id, loaderID, version); err != nil {
 		return "", err
 	}
 	work, err := os.MkdirTemp("", "mortar-loader-")
