@@ -12,9 +12,10 @@
     "test": "go test -race ./... && bun test",
     "version:check": "go run ./cmd/version -check",
     "metainfo": "appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml",
-    "gate": "bun run lint && bun run typecheck && bun run version:check && bun run metainfo && bun run test && bun run vuln",
+    "gate": "bun run lint && bun run typecheck && bun run version:check && bun run site:games && bun run metainfo && bun run test && bun run vuln",
     "e2e:updater": "go test -count=1 -tags updatetest -run TestUpdaterE2E ./internal/updatesvc",
-    "vuln": "govulncheck ./..."
+    "vuln": "govulncheck ./...",
+    "site:games": "bun scripts/site-games.ts --check"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
