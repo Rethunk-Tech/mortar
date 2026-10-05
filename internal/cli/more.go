@@ -2,7 +2,9 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -114,6 +116,8 @@ var moreVerbs = map[string]moreVerb{
 			return control.Params{Game: a[0], Profile: a[1], Name: a[2]}, nil
 		},
 	},
+	"lan paired":  {method: "lan.paired"},
+	"lan unpair":  {method: "lan.unpair", args: []string{"a paired computer id"}, msg: "Unpaired.", params: nameParam},
 	"lan inbox":   {method: "lan.inbox"},
 	"lan accept":  {method: "lan.accept", args: []string{"a transfer id"}, msg: "Accepted.", timeout: installTimeout, params: nameParam},
 	"lan decline": {method: "lan.decline", args: []string{"a transfer id"}, msg: "Declined.", params: nameParam},
@@ -162,6 +166,9 @@ func linkParams(_ []string, c *cmd) (control.Params, error) {
 
 // more runs the verb when it is one of moreVerbs; handled is false otherwise.
 func (c *cmd) more() (handled bool, err error) {
+	if len(c.args) >= 2 && c.args[0] == "lan" && c.args[1] == "pair" {
+		return true, c.lanPair()
+	}
 	var key string
 	var spec moreVerb
 	for n := min(3, len(c.args)); n >= 2; n-- {
@@ -206,4 +213,50 @@ func (c *cmd) more() (handled bool, err error) {
 			fmt.Fprintln(c.out, string(pretty))
 		}
 	})
+}
+
+// pairWait is how long `lan pair` waits for the other computer, the code's own lifetime.
+const pairWait = 5 * time.Minute
+
+// lanPair enters another computer's code (--code), or shows a code here and waits until a computer pairs with it.
+func (c *cmd) lanPair() error {
+	if c.codeFlag != "" {
+		peer := c.peerFlag
+		if peer == "" {
+			var nearby []struct{ ID string }
+			if err := c.call("lan.peers", control.Params{}, &nearby, readTimeout); err != nil {
+				return err
+			}
+			if len(nearby) != 1 {
+				return usageError{fmt.Sprintf("lan pair --code needs --peer host:port (%d computers found nearby)", len(nearby))}
+			}
+			peer = nearby[0].ID
+		}
+		if err := c.call("lan.pair", control.Params{Name: peer, Value: c.codeFlag}, nil, installTimeout); err != nil {
+			return err
+		}
+		return c.emit(map[string]bool{"ok": true}, func() { fmt.Fprintln(c.out, "Paired.") })
+	}
+	var before []struct{ ID, Name string }
+	if err := c.call("lan.paired", control.Params{}, &before, readTimeout); err != nil {
+		return err
+	}
+	var code string
+	if err := c.call("lan.paircode", control.Params{}, &code, readTimeout); err != nil {
+		return err
+	}
+	fmt.Fprintf(c.out, "Code: %s (works once, for 5 minutes). On the other computer run: mortar lan pair --code %s\n", code, code)
+	for deadline := time.Now().Add(pairWait); time.Now().Before(deadline); time.Sleep(2 * time.Second) {
+		var now []struct{ ID, Name string }
+		if err := c.call("lan.paired", control.Params{}, &now, readTimeout); err != nil {
+			return err
+		}
+		for _, peer := range now {
+			if !slices.ContainsFunc(before, func(known struct{ ID, Name string }) bool { return known.ID == peer.ID }) {
+				fmt.Fprintf(c.out, "Paired with %s.\n", peer.Name)
+				return nil
+			}
+		}
+	}
+	return errors.New("no computer entered the code in time")
 }

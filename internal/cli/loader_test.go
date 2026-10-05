@@ -49,7 +49,7 @@ func TestAutomationVerbs(t *testing.T) {
 }
 
 func TestMoreVerbsMapOntoControlMethods(t *testing.T) {
-	results := map[string]any{"bundles.create": nil, "templates.preview": map[string]any{"add": []string{"A"}}, "data.move": nil, "links.enable": nil, "lan.send": nil}
+	results := map[string]any{"bundles.create": nil, "templates.preview": map[string]any{"add": []string{"A"}}, "data.move": nil, "links.enable": nil, "lan.send": nil, "lan.pair": nil, "lan.unpair": nil}
 	r := invoke(t, results, "bundles", "create", "stardew", "Core", "Farm", "smapi:A", "smapi:B")
 	if p := r.calls[0].params; r.code != 0 || r.calls[0].method != "bundles.create" || p.Name != "Core" || p.Profile != "Farm" || len(p.IDs) != 2 {
 		t.Fatalf("bundles create: %+v", r)
@@ -65,5 +65,11 @@ func TestMoreVerbsMapOntoControlMethods(t *testing.T) {
 	}
 	if r = invoke(t, results, "lan", "send", "stardew", "Farm", "peer-1"); r.calls[0].params.Name != "peer-1" {
 		t.Fatalf("lan send: %+v", r)
+	}
+	if r = invoke(t, results, "lan", "pair", "--code", "ABCD-EFGH", "--peer", "10.0.0.2:47630"); r.calls[0].method != "lan.pair" || r.calls[0].params.Name != "10.0.0.2:47630" || r.calls[0].params.Value != "ABCD-EFGH" {
+		t.Fatalf("lan pair: %+v", r)
+	}
+	if r = invoke(t, results, "lan", "unpair", "abc"); r.calls[0].method != "lan.unpair" || r.calls[0].params.Name != "abc" {
+		t.Fatalf("lan unpair: %+v", r)
 	}
 }

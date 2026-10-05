@@ -101,6 +101,8 @@ type cmd struct {
 	mark          bool
 	restore       bool
 	sourceFlag    string
+	codeFlag      string
+	peerFlag      string
 	loaderFlag    string
 	previewFlag   bool
 	fileFlag      string
@@ -355,6 +357,20 @@ func (c *cmd) parse(args []string) error {
 			c.sourceFlag = args[i]
 		case strings.HasPrefix(a, "--source="):
 			c.sourceFlag = strings.TrimPrefix(a, "--source=")
+		case a == "--code" || a == "--peer":
+			if i+1 >= len(args) {
+				return usageError{a + " needs a value"}
+			}
+			i++
+			if a == "--code" {
+				c.codeFlag = args[i]
+			} else {
+				c.peerFlag = args[i]
+			}
+		case strings.HasPrefix(a, "--code="):
+			c.codeFlag = strings.TrimPrefix(a, "--code=")
+		case strings.HasPrefix(a, "--peer="):
+			c.peerFlag = strings.TrimPrefix(a, "--peer=")
 		case a == "--page":
 			if i+1 >= len(args) {
 				return usageError{"--page needs a number"}
@@ -2293,6 +2309,9 @@ takes --game <id>, which may be left out when exactly one game is installed.
   lan peers | inbox                       nearby Mortars; shares waiting for you
   lan send <game> <profile> <peer>        send a profile to a peer
   lan accept|decline <id>                 take or refuse a waiting share
+  lan pair                                show a code and wait for another computer to enter it
+  lan pair --code <code> [--peer host:port]  enter the code another computer shows
+  lan paired | unpair <id>                computers you paired; forget one
   data move <dir> [--preview]             move the data folder
   data cleanup [--preview]                remove unused store items and caches
   support diagnostics save <path.zip> [--game id] [--profile name]  write a redacted diagnostics zip

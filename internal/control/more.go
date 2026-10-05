@@ -23,7 +23,7 @@ func (s *Services) handleMore(ctx context.Context, method string, p Params) (res
 		res, err = s.templatesWrite(method, p)
 	case "tools.add", "tools.update", "tools.remove":
 		res, err = s.toolsWrite(method, p)
-	case "lan.peers", "lan.send", "lan.inbox", "lan.accept", "lan.decline":
+	case "lan.peers", "lan.send", "lan.inbox", "lan.accept", "lan.decline", "lan.paircode", "lan.pair", "lan.paired", "lan.unpair":
 		res, err = s.lanMethod(method, p)
 	case "data.move":
 		res, err = s.dataMove(p)
@@ -137,6 +137,14 @@ func (s *Services) lanMethod(method string, p Params) (any, error) {
 		return s.profileCall(p, func(id string) (any, error) { return nil, s.Lan.Send(p.Name, p.Game, id) })
 	case "lan.inbox":
 		return s.Lan.Pending(), nil
+	case "lan.paircode":
+		return s.Lan.PairCode()
+	case "lan.pair":
+		return nil, s.Lan.Pair(p.Name, p.Value)
+	case "lan.paired":
+		return s.Lan.Paired()
+	case "lan.unpair":
+		return nil, s.Lan.Unpair(p.Name)
 	}
 	id, err := strconv.Atoi(p.Name)
 	if err != nil {
