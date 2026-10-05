@@ -1,6 +1,6 @@
 # Mortar user guide
 
-Mortar manages mods for PC games: Stardew Valley and Lethal Company. It finds the game, installs its mod loader (SMAPI for Stardew Valley, BepInEx for Lethal Company), keeps each set of mods in its own profile and starts the game with the profile you pick. This guide is for players. For how Mortar works inside, see [architecture.md](architecture.md).
+Mortar manages mods for the PC games its catalog enables, starting with Stardew Valley. It finds the game, installs its mod loader (SMAPI for Stardew Valley), keeps each set of mods in its own profile and starts the game with the profile you pick. This guide is for players. For how Mortar works inside, see [architecture.md](architecture.md).
 
 ## Install
 
@@ -104,7 +104,7 @@ Mods Mortar already holds in the profile show **In this profile**, whichever sit
 
 ## Modrinth and itch.io
 
-Modrinth and itch.io are mod sites Mortar can search and install from for a game that lists them. They show as chips beside **All sources** on that game's Browse tab and take part in the merged search like any other site. Stardew Valley and Lethal Company list neither, so a game whose catalog entry names one gets its chip and the two games here do not.
+Modrinth and itch.io are mod sites Mortar can search and install from for a game that lists them. They show as chips beside **All sources** on that game's Browse tab and take part in the merged search like any other site. A game whose catalog entry names one gets its chip; Stardew Valley's does not.
 
 - **Modrinth** needs no account. **Add** installs the project's newest version together with the projects it requires, and Mortar checks each downloaded file against the SHA-512 Modrinth publishes.
 - **itch.io** needs your own API key, which keeps itch.io's search working for you:
@@ -129,7 +129,7 @@ Mortar does not save a change while the game runs the profile.
 
 ## Lethal Company and Thunderstore
 
-Lethal Company mods are Thunderstore packages that run on BepInEx. Mortar installs BepInEx, searches Thunderstore, and keeps each package in the profile, the way it does for Stardew Valley's mods.
+When the catalog enables Lethal Company, its mods are Thunderstore packages that run on BepInEx. Mortar installs BepInEx, searches Thunderstore, and keeps each package in the profile, the way it does for Stardew Valley's mods.
 
 - **Browse:** the Browse tab searches Thunderstore's Lethal Company community along with Nexus Mods and GitHub. **Add** puts the package in the profile together with the packages it depends on; a dependency the profile still lacks is flagged on the Load order tab and in the **Before you play** list.
 - **Thunderstore links:** the **Install with Mod Manager** button on thunderstore.io opens a `ror2mm://` link. Mortar does not take these links over from another manager until you ask: run `mortar links enable --source thunderstore` (and `mortar links disable --source thunderstore` to hand them back). A package link names no game, so it installs into the open game when that game has a Thunderstore community.
