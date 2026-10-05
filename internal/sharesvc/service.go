@@ -891,8 +891,12 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		return Result{}, err
 	}
+	var placed []string
 	if replace {
 		if err := s.d.Profiles.FollowOrder(game, profileID, refRank(cur.refs)); err != nil {
+			return Result{}, err
+		}
+		if placed, err = s.d.Profiles.PlaceArrivals(game, profileID, refRank(cur.refs), nil); err != nil {
 			return Result{}, err
 		}
 	}
@@ -902,7 +906,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		s.mu.Lock()
 		s.pending = append(s.pending, &pending{
 			Game: game, Profile: profileID, BatchID: batchID, Wanted: wanted, Configs: configs,
-			Refs: slices.Clone(cur.refs), Groups: slices.Clone(cur.groups), Follow: replace || created,
+			Refs: slices.Clone(cur.refs), Groups: slices.Clone(cur.groups), Follow: replace || created, Placed: placed,
 		})
 		s.mu.Unlock()
 		s.savePending()
@@ -995,6 +999,8 @@ type pending struct {
 	Groups  []share.FileGroup `json:"groups,omitempty"`
 	// Follow puts each mod that lands at its place in Refs instead of the end.
 	Follow bool `json:"follow,omitempty"`
+	// Placed are the keys of entries already in their shared place; the player may have moved them since.
+	Placed []string `json:"placed,omitempty"`
 	// ordered is the set of finished downloads the order was last fixed for; it starts over with the process.
 	ordered string
 	// seen is the set of finished downloads the configs were last applied for; it starts over with the process.
@@ -1075,10 +1081,11 @@ func (s *Service) queueChanged(st queue.State) {
 			changed = changed || len(p.Configs) != before
 		}
 		if p.Follow && len(p.Refs) > 0 && seen != p.ordered && (len(done) > 0 || settled >= len(p.Wanted) || seen == "on-profile") {
-			if err := s.d.Profiles.FollowOrder(p.Game, p.Profile, refRank(p.Refs)); err != nil {
+			if placed, err := s.d.Profiles.PlaceArrivals(p.Game, p.Profile, refRank(p.Refs), p.Placed); err != nil {
 				log.Printf("share: order %s/%s as shared: %v", p.Game, p.Profile, err)
 			} else {
-				p.ordered = seen
+				changed = changed || len(placed) != len(p.Placed)
+				p.Placed, p.ordered = placed, seen
 			}
 		}
 		if len(p.Refs) > 0 && (seen == "on-profile" || settled >= len(p.Wanted)) {

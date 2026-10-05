@@ -132,6 +132,15 @@ func TestEveryProfileChangeRecordsAnEventAndUndoesExactly(t *testing.T) {
 				return 1, true
 			})
 		}},
+		{"PlaceArrivals (load order)", func(e env, p Profile) error {
+			_, err := e.PlaceArrivals("stardew", p.ID, func(en Entry) (int, bool) {
+				if en.Key == "local-b" {
+					return 0, true
+				}
+				return 1, true
+			}, []string{"local-a"})
+			return err
+		}},
 		{"CreateGroup", func(e env, p Profile) error { _, err := e.CreateGroup("stardew", p.ID, "H"); return err }},
 		{"RenameGroup", func(e env, p Profile) error { _, err := e.RenameGroup("stardew", p.ID, "G", "G2"); return err }},
 		{"DeleteGroup", func(e env, p Profile) error { _, err := e.DeleteGroup("stardew", p.ID, "G"); return err }},

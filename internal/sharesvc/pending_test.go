@@ -1,8 +1,10 @@
 package sharesvc
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -239,5 +241,72 @@ func TestWantedFileItemMatchesGitHubAsset(t *testing.T) {
 	}
 	if w.item(queue.Item{Repo: "o/r", Tag: "1", Asset: "b.zip"}) {
 		t.Fatal("other asset from the same repo should not match")
+	}
+}
+
+// A mod of a shared profile that lands later takes its shared place without undoing the player's moves made while
+// it downloaded.
+func TestSharedArrivalKeepsThePlayersReorder(t *testing.T) {
+	s, _ := newService(t, true)
+	ctx := context.Background()
+	prof, err := s.d.Profiles.Create("stardew", "Mine")
+	if err != nil {
+		t.Fatal(err)
+	}
+	install := func(name string, modID, fileID int) {
+		t.Helper()
+		if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, name), profile.Source{Kind: profile.KindNexus, ModID: modID, FileID: fileID}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	install("A.One", 100, 1)
+	install("A.Two", 200, 2)
+	text := link(t, "Cozy", share.Ref{ModID: 200, FileID: 2}, share.Ref{ModID: 900, FileID: 9}, share.Ref{ModID: 100, FileID: 1}, share.Ref{ModID: 600, FileID: 6})
+	pv, err := s.PreviewLink(ctx, "stardew", text, prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Replace(ctx, "stardew", pv.Session, prof.ID, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	order := func() ([]int, []string) {
+		t.Helper()
+		got, err := s.find("stardew", prof.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var ids []int
+		var keys []string
+		for _, e := range got.Entries {
+			ids = append(ids, e.Source.ModID)
+			keys = append(keys, e.Key)
+		}
+		return ids, keys
+	}
+	ids := func() []int {
+		t.Helper()
+		ids, _ := order()
+		return ids
+	}
+	install("A.Three", 900, 9)
+	q := []queue.Item{
+		{ID: "q1", Game: "stardew", Profile: prof.ID, BatchID: res.BatchID, ModID: 900, FileID: 9, State: queue.StateDone},
+		{ID: "q2", Game: "stardew", Profile: prof.ID, BatchID: res.BatchID, ModID: 600, FileID: 6, State: queue.StateDownloading},
+	}
+	s.queueChanged(queue.State{Items: q})
+	if got := ids(); !slices.Equal(got, []int{200, 900, 100}) {
+		t.Fatalf("after the first arrival: %v, want [200 900 100]", got)
+	}
+	_, keys := order()
+	if _, err := s.d.Profiles.MovePackage("stardew", prof.ID, keys[2], -1); err != nil {
+		t.Fatal(err)
+	}
+	want := append(ids(), 600)
+	install("A.Four", 600, 6)
+	q[1].State = queue.StateDone
+	s.queueChanged(queue.State{Items: q})
+	if got := ids(); !slices.Equal(got, want) {
+		t.Fatalf("after the second arrival: %v, want the player's order kept %v", got, want)
 	}
 }
