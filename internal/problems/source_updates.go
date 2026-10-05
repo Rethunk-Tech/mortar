@@ -9,6 +9,7 @@ import (
 	"unicode"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -154,7 +155,8 @@ type NexusPagesOf func(ctx context.Context, gameID string, modIDs []int) (map[in
 
 // nexusPageUpdates offers the version a Nexus mod's page lists for the mods installed from Nexus that carry no update
 // key, so SMAPI's API cannot answer for them (every mod of a game with another loader): one batched lookup for all of
-// them, at a handful of requests per hundred mods.
+// them, at a handful of requests per hundred mods. A mod is offered only when the loader's version scheme orders both
+// versions and the page's is strictly newer; a pair it cannot order is not guessed at.
 func (s *Service) nexusPageUpdates(ctx context.Context, gameID string, mods []framework.Mod, have []Update) []Update {
 	title, err := game.NexusTitle(gameID)
 	if s.NexusPages == nil || err != nil {
@@ -174,6 +176,7 @@ func (s *Service) nexusPageUpdates(ctx context.Context, gameID string, mods []fr
 	if len(ids) == 0 {
 		return nil
 	}
+	scheme := versionScheme(gameID)
 	pages, _ := s.NexusPages(ctx, gameID, ids)
 	var out []Update
 	for _, id := range ids {
@@ -183,7 +186,7 @@ func (s *Service) nexusPageUpdates(ctx context.Context, gameID string, mods []fr
 		}
 		for _, x := range byID[id] {
 			installed := cmp.Or(x.SourceVersion, x.Version)
-			if c, ok := meta.CompareVersions(page.Version, installed); !ok || c <= 0 || coveredBy(append(slices.Clone(have), out...), x.Key, page.Version) {
+			if c, ok := deps.Compare(scheme, page.Version, installed); !ok || c <= 0 || coveredBy(append(slices.Clone(have), out...), x.Key, page.Version) {
 				continue
 			}
 			out = append(out, Update{

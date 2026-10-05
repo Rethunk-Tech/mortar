@@ -45,6 +45,16 @@ func compareStrict(a, b string) (int, bool) {
 	return 0, true
 }
 
+// Compare orders two versions under the named scheme: -1, 0 or 1. ok is false when the scheme (opaque, or unknown) or
+// the versions cannot be ordered.
+func Compare(scheme, a, b string) (cmp int, ok bool) {
+	order, known := schemes[scheme]
+	if !known {
+		return 0, false
+	}
+	return order(a, b)
+}
+
 // Satisfies reports whether version meets constraint under the named scheme; an unknown scheme is opaque. An empty
 // constraint is met, and so is a pair a semver scheme cannot order, since only orderable versions are worth
 // complaining about. Opaque is exact: any other version fails.
