@@ -196,7 +196,21 @@ export function createMortarTheme(
         ],
       },
       ...(mode === 'light'
-        ? { MuiIconButton: { styleOverrides: { colorPrimary: { color: s.ink } } } }
+        ? {
+            MuiIconButton: { styleOverrides: { colorPrimary: { color: s.ink } } },
+            // A checked mark is a glyph, so it reads as ink; the switch track is a fill, so it shows the full accent.
+            MuiRadio: { styleOverrides: { colorPrimary: { '&.Mui-checked': { color: s.ink } } } },
+            MuiCheckbox: {
+              styleOverrides: { colorPrimary: { '&.Mui-checked': { color: s.ink } } },
+            },
+            MuiSwitch: {
+              styleOverrides: {
+                switchBase: { '&.Mui-checked': { color: '#ffffff' } },
+                track: { '.Mui-checked.Mui-checked + &': { opacity: 1 } },
+                thumb: { boxShadow: '0 1px 2px rgba(0,0,0,0.3)' },
+              },
+            },
+          }
         : {}),
       MuiChip: { styleOverrides: { label: { whiteSpace: 'nowrap' } } },
       MuiLink: {
