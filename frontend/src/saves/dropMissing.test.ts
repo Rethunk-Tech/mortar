@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { dropMissing } from './dropMissing.ts'
 
-function saveFit(folder: string, uniqueId: string): Fit {
+function saveFit(folder: string, id: string): Fit {
   return {
     folder,
     farm: 'Sunny',
@@ -14,7 +14,7 @@ function saveFit(folder: string, uniqueId: string): Fit {
     whichFarm: 0,
     millisecondsPlayed: 0,
     money: 0,
-    missing: [{ uniqueId, name: uniqueId, disabled: true, where: null }],
+    missing: [{ id, name: id, disabled: true, where: null }],
     lastProfileId: '',
     lastProfileAt: 0,
     lastProfileExists: false,
@@ -40,6 +40,6 @@ test('dismiss drops a UniqueID only on that save folder', () => {
   )
   expect(next[0]?.missing).toEqual([])
   expect(next[1]?.missing).toEqual([
-    { uniqueId: 'SpaceCore', name: 'SpaceCore', disabled: true, where: null },
+    { id: 'SpaceCore', name: 'SpaceCore', disabled: true, where: null },
   ])
 })

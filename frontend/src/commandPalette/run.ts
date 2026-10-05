@@ -63,8 +63,7 @@ function runAction(id: string): void {
     const mod = useMods
       .getState()
       .mods.find(
-        (candidate) =>
-          candidate.key === rest.slice(0, cut) && candidate.uniqueId === rest.slice(cut + 1),
+        (candidate) => candidate.key === rest.slice(0, cut) && candidate.id === rest.slice(cut + 1),
       )
     if (mod) {
       useMods.getState().openConfig(mod).catch(reportUnexpected)
@@ -77,8 +76,7 @@ function runAction(id: string): void {
     const mod = useMods
       .getState()
       .mods.find(
-        (candidate) =>
-          candidate.key === rest.slice(0, cut) && candidate.uniqueId === rest.slice(cut + 1),
+        (candidate) => candidate.key === rest.slice(0, cut) && candidate.id === rest.slice(cut + 1),
       )
     if (mod) {
       useMods.getState().setEnabled(mod, !mod.enabled).catch(reportUnexpected)
@@ -161,7 +159,7 @@ export function runPaletteItem(id: string): void {
     openModInProfile({
       profileId: openId,
       key: rest.slice(0, cut),
-      uniqueId: rest.slice(cut + 1),
+      id: rest.slice(cut + 1),
     })
     leaveShellPages()
     return

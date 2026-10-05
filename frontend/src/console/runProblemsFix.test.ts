@@ -5,7 +5,7 @@ import { duplicateCopies } from './runProblemsFix.ts'
 const mod = (key: string, name: string): Mod =>
   ({
     key,
-    uniqueId: key,
+    id: key,
     name,
   }) as Mod
 

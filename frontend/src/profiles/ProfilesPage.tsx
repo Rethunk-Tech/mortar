@@ -37,6 +37,7 @@ import { BundlesSection } from '../bundles/BundlesSection.tsx'
 import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useProfilePageBadges } from '../game/useSidebarProfiles.ts'
+import { localId } from '../mods/dependents.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
 import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
@@ -265,9 +266,9 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
         <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
           {hits.map((h) => (
             <Button
-              key={`${h.profileId}/${h.key}/${h.uniqueId}`}
+              key={`${h.profileId}/${h.key}/${h.id}`}
               onClick={() => openModInProfile(h)}
-              title={`${h.name} · ${h.uniqueId} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Off`}`}
+              title={`${h.name} · ${localId(h.id)} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Off`}`}
               sx={{
                 minWidth: 0,
                 overflow: 'hidden',

@@ -16,6 +16,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { localId } from './dependents.ts'
 import { nexusIdOf } from './lookup.ts'
 import { openPage } from './menu.ts'
 import { modsByAuthor } from './modsByAuthor.ts'
@@ -37,13 +38,13 @@ function modPageUrl(profile: Profile, mod: Mod): string {
 
 function ModRow({
   name,
-  uniqueId,
+  id,
   profiles,
   enabledLabel,
   disabledLabel,
 }: {
   name: string
-  uniqueId: string
+  id: string
   profiles: { profileName: string; version: string; enabled: boolean }[]
   enabledLabel: string
   disabledLabel: string
@@ -51,7 +52,7 @@ function ModRow({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
       <Typography sx={{ fontWeight: 600, ...text }}>{name}</Typography>
-      <Typography sx={muted}>{uniqueId}</Typography>
+      <Typography sx={muted}>{localId(id)}</Typography>
       {profiles.map((row) => (
         <Typography key={`${row.profileName}-${row.version}`} sx={text}>
           {`${row.profileName} · ${row.version} · ${row.enabled ? enabledLabel : disabledLabel}`}
@@ -125,9 +126,9 @@ function AuthorDialogBody({
         >{t`Installed in your profiles`}</Typography>
         {rows.map((row) => (
           <ModRow
-            key={row.uniqueId}
+            key={row.id}
             name={row.name}
-            uniqueId={row.uniqueId}
+            id={row.id}
             profiles={row.profiles}
             enabledLabel={t`Enabled`}
             disabledLabel={t`Off`}

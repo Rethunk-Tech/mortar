@@ -118,11 +118,11 @@ function statusGroupKey(hasProblem: boolean, hasUpdate: boolean, enabled: boolea
 
 function frameworkGroupKey(
   contentPackFor: string | null | undefined,
-  uniqueId: string,
+  id: string,
   names: ReadonlyMap<string, string>,
 ): string {
   const packFor = contentPackFor?.trim() ?? ''
-  if (packFor === '' || idKey(packFor) === idKey(uniqueId)) {
+  if (packFor === '' || idKey(packFor) === idKey(id)) {
     return SMAPI_MODS_GROUP
   }
   const name = names.get(idKey(packFor))?.trim() ?? ''
@@ -200,8 +200,8 @@ function toggleCollapsed(
   return next
 }
 
-function installedNames(mods: readonly { uniqueId: string; name: string }[]): Map<string, string> {
-  return new Map(mods.map((m) => [idKey(m.uniqueId), m.name] as const))
+function installedNames(mods: readonly { id: string; name: string }[]): Map<string, string> {
+  return new Map(mods.map((m) => [idKey(m.id), m.name] as const))
 }
 
 function customCategoryById(
@@ -233,7 +233,7 @@ interface GroupRow {
   details?: { category?: string }
   groupName?: string
   mod: {
-    uniqueId: string
+    id: string
     author: string
     enabled: boolean
     needs?: string[] | null
@@ -268,7 +268,7 @@ function rowGroupKey(
     return statusGroupKey(ctx.hasProblem, ctx.hasUpdate, row.mod.enabled)
   }
   if (by === 'framework') {
-    return frameworkGroupKey(row.mod.contentPackFor, row.mod.uniqueId, ctx.names)
+    return frameworkGroupKey(row.mod.contentPackFor, row.mod.id, ctx.names)
   }
   if (by === 'group') {
     return row.groupName ?? ''

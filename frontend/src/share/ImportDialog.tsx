@@ -3,6 +3,7 @@ import { Box, Dialog, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/ma
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { PreviewData } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import { localId } from '../mods/dependents.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -32,7 +33,7 @@ function MissingMods({
   mods,
 }: {
   ids: string[]
-  mods: { name: string; uniqueIds?: string[] | null }[]
+  mods: { name: string; ids?: string[] | null }[]
 }) {
   const { t } = useLingui()
   return (
@@ -54,8 +55,8 @@ function MissingMods({
         {ids.map((id) => {
           const name = missingModName(id, mods)
           return (
-            <li key={id} title={id}>
-              {name ?? id}
+            <li key={id} title={localId(id)}>
+              {name ?? localId(id)}
             </li>
           )
         })}

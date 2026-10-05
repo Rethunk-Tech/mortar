@@ -1,4 +1,5 @@
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { localId } from '../mods/dependents.ts'
 import { useDetail } from '../mods/detail.ts'
 import { sameId } from '../mods/lookup.ts'
 import { useNav } from '../nav/store.ts'
@@ -12,7 +13,7 @@ export interface ModHit {
   profileId: string
   profileName: string
   key: string
-  uniqueId: string
+  id: string
   name: string
   version: string
   enabled: boolean
@@ -27,15 +28,15 @@ export function findModInProfiles(profiles: Profile[], query: string): ModHit[] 
   for (const p of profiles) {
     for (const e of p.entries ?? []) {
       for (const m of e.mods ?? []) {
-        if (m.name.toLowerCase().includes(q) || m.uniqueId.toLowerCase().includes(q)) {
+        if (m.name.toLowerCase().includes(q) || localId(m.id).toLowerCase().includes(q)) {
           out.push({
             profileId: p.id,
             profileName: p.name,
             key: e.key,
-            uniqueId: m.uniqueId,
+            id: m.id,
             name: m.name,
             version: m.version,
-            enabled: !(e.disabled ?? []).some((id) => sameId(id, m.uniqueId)),
+            enabled: !(e.disabled ?? []).some((id) => sameId(id, m.id)),
           })
         }
       }
@@ -44,8 +45,8 @@ export function findModInProfiles(profiles: Profile[], query: string): ModHit[] 
   return out
 }
 
-export function openModInProfile(hit: Pick<ModHit, 'profileId' | 'key' | 'uniqueId'>): void {
-  useDetail.getState().showAfterLoad({ key: hit.key, uniqueId: hit.uniqueId })
+export function openModInProfile(hit: Pick<ModHit, 'profileId' | 'key' | 'id'>): void {
+  useDetail.getState().showAfterLoad({ key: hit.key, id: hit.id })
   useProfiles.getState().open(hit.profileId)
   useNav.getState().closeProfiles()
 }

@@ -16,8 +16,8 @@ const problem = (over: Partial<SMAPIProblem>): SMAPIProblem =>
   }) as SMAPIProblem
 
 const mods = [
-  { uniqueId: 'spacechase0.CookingSkill', name: 'Cooking Skill', version: '1.5.0', enabled: true },
-  { uniqueId: 'a.Old', name: 'Old Thing', version: '1.0.0', enabled: false },
+  { id: 'spacechase0.CookingSkill', name: 'Cooking Skill', version: '1.5.0', enabled: true },
+  { id: 'a.Old', name: 'Old Thing', version: '1.0.0', enabled: false },
 ]
 
 test('a run problem drops once the mod is removed, updated, or already switched off', () => {

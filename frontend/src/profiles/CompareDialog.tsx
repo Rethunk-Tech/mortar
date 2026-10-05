@@ -107,12 +107,8 @@ export function CompareDialog({
       { errorTitle: t`Could not change ${to.name}` },
     )
   }
-  const copy = (from: Profile, to: Profile, uniqueIds: string[]) =>
-    apply(
-      to,
-      () => CopyMods(game, from.id, to.id, uniqueIds),
-      t`Copied ${uniqueIds.length} mods to ${to.name}`,
-    )
+  const copy = (from: Profile, to: Profile, ids: string[]) =>
+    apply(to, () => CopyMods(game, from.id, to.id, ids), t`Copied ${ids.length} mods to ${to.name}`)
   const match = (from: Profile, to: Profile, rows: ComparePair[]) => {
     const pairs = rows.map((row) => (from.id === profileA?.id ? [row.b, row.a] : [row.a, row.b]))
     apply(

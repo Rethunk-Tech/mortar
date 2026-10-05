@@ -1,3 +1,4 @@
+import { localId } from '../mods/dependents.ts'
 import type { SettingsSection } from '../nav/store.ts'
 import type { Shortcut, ShortcutId } from '../settings/shortcuts.ts'
 import type { PaletteItem } from './match.ts'
@@ -26,7 +27,7 @@ export interface PaletteLabels {
 
 export function buildPaletteItems(input: {
   profiles: { id: string; name: string }[]
-  mods: { key: string; uniqueId: string; name: string }[]
+  mods: { key: string; id: string; name: string }[]
   sections: { id: SettingsSection; label: string }[]
   shortcuts: readonly Shortcut[]
   shortcutLabels: Partial<Record<ShortcutId, string>>
@@ -45,25 +46,25 @@ export function buildPaletteItems(input: {
   }
   for (const mod of mods) {
     items.push({
-      id: `mod:${mod.key}/${mod.uniqueId}`,
+      id: `mod:${mod.key}/${mod.id}`,
       kind: 'mod',
       label: mod.name,
       hint: labels.modHint,
-      match: mod.uniqueId,
+      match: localId(mod.id),
     })
     items.push({
-      id: `toggle-mod:${mod.key}/${mod.uniqueId}`,
+      id: `toggle-mod:${mod.key}/${mod.id}`,
       kind: 'action',
       label: labels.toggle(mod.name),
       hint: labels.modHint,
-      match: mod.uniqueId,
+      match: localId(mod.id),
     })
     items.push({
-      id: `configure-mod:${mod.key}/${mod.uniqueId}`,
+      id: `configure-mod:${mod.key}/${mod.id}`,
       kind: 'action',
       label: labels.configureMod(mod.name),
       hint: labels.modHint,
-      match: mod.uniqueId,
+      match: localId(mod.id),
     })
   }
   for (const section of sections) {

@@ -145,11 +145,11 @@ interface AddToBundleDialogProps {
   open: boolean
   game: string
   profileId: string
-  uniqueIds: string[]
+  ids: string[]
   onClose: () => void
 }
 
-function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToBundleDialogProps) {
+function AddToBundleDialog({ open, game, profileId, ids, onClose }: AddToBundleDialogProps) {
   const { t } = useLingui()
   const { bundles, loading } = useListedBundles(open, game)
   const [newName, setNewName] = useState('')
@@ -170,7 +170,7 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
           }
           run(
             () =>
-              Create(game, name, profileId, uniqueIds).then((created) => {
+              Create(game, name, profileId, ids).then((created) => {
                 useToasts.getState().push({ kind: 'success', title: t`Created ${created.name}` })
                 onClose()
               }),
@@ -197,7 +197,7 @@ function AddToBundleDialog({ open, game, profileId, uniqueIds, onClose }: AddToB
             onPick={(bundle) => {
               run(
                 () =>
-                  AddMods(game, bundle.id, profileId, uniqueIds).then((updated) => {
+                  AddMods(game, bundle.id, profileId, ids).then((updated) => {
                     useToasts
                       .getState()
                       .push({ kind: 'success', title: t`Added mods to ${updated.name}` })

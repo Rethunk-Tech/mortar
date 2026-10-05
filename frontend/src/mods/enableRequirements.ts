@@ -1,7 +1,7 @@
 import { idKey, requiredIdsOf } from './dependents.ts'
 
 export interface RequirementSeed {
-  uniqueId: string
+  id: string
   name: string
   enabled?: boolean
   needs?: readonly string[] | null
@@ -15,9 +15,9 @@ export function pendingRequired<T extends RequirementSeed>(
 ): T[] {
   const byId = new Map<string, T>()
   for (const mod of mods) {
-    byId.set(idKey(mod.uniqueId), mod)
+    byId.set(idKey(mod.id), mod)
   }
-  const seen = new Set(enabling.map((m) => idKey(m.uniqueId)))
+  const seen = new Set(enabling.map((m) => idKey(m.id)))
   const out: T[] = []
   const queue = enabling.flatMap((m) => requiredIdsOf(m))
   while (queue.length > 0) {

@@ -20,16 +20,13 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { openTarget } from './storeView.ts'
 
-async function dismissAbandonedMod(
-  get: () => { loadProblems: () => Promise<void> },
-  uniqueId: string,
-) {
+async function dismissAbandonedMod(get: () => { loadProblems: () => Promise<void> }, id: string) {
   const target = openTarget()
   if (!target) {
     return
   }
   try {
-    await DismissAbandonedMod(target.game, target.id, uniqueId)
+    await DismissAbandonedMod(target.game, target.id, id)
   } catch (e) {
     reportError(i18n._(msg`Could not dismiss the warning`))(e)
     return
@@ -39,14 +36,14 @@ async function dismissAbandonedMod(
 
 async function dismissListedRequirement(
   get: () => { loadProblems: () => Promise<void> },
-  uniqueId: string,
+  id: string,
 ) {
   const target = openTarget()
   if (!target) {
     return
   }
   try {
-    await DismissListedRequirement(target.game, target.id, uniqueId)
+    await DismissListedRequirement(target.game, target.id, id)
   } catch (e) {
     reportError(i18n._(msg`Could not dismiss the warning`))(e)
     return
@@ -63,7 +60,7 @@ async function dismissSettingHint(
     return
   }
   try {
-    await DismissSetting(target.game, target.id, setting.uniqueId, setting.field)
+    await DismissSetting(target.game, target.id, setting.id, setting.field)
   } catch (e) {
     reportError(i18n._(msg`Could not dismiss the setting warning`))(e)
     return
@@ -73,7 +70,7 @@ async function dismissSettingHint(
 
 async function setConfigSetting(
   get: () => { loadProblems: () => Promise<void> },
-  setting: Pick<SettingHint, 'key' | 'uniqueId' | 'field' | 'name'>,
+  setting: Pick<SettingHint, 'key' | 'id' | 'field' | 'name'>,
   value: string,
 ) {
   const target = openTarget()
@@ -81,14 +78,7 @@ async function setConfigSetting(
     return
   }
   try {
-    await SetConfigValue(
-      target.game,
-      target.id,
-      setting.key,
-      setting.uniqueId,
-      setting.field,
-      value,
-    )
+    await SetConfigValue(target.game, target.id, setting.key, setting.id, setting.field, value)
   } catch (e) {
     reportError(i18n._(msg`Could not set ${setting.field} for ${setting.name}`))(e)
     return
@@ -142,9 +132,7 @@ export function problemActions(
         for (const c of (dup.copies ?? []).filter((x) => x.key !== keepKey)) {
           useProfiles
             .getState()
-            .replace(
-              (await SetModEnabled(target.game, target.id, c.key, dup.uniqueId, false)).profile,
-            )
+            .replace((await SetModEnabled(target.game, target.id, c.key, dup.id, false)).profile)
         }
       } catch (e) {
         reportError(i18n._(msg`Could not switch off the other copy of ${dup.name}`))(e)
@@ -154,12 +142,10 @@ export function problemActions(
     },
     dismissAsset: (conflict: AssetConflict) => dismissAssetConflict(get, conflict),
     restoreDismissed: (token: string) => restoreDismissed(get, token),
-    dismissAbandoned: (uniqueId: string) => dismissAbandonedMod(get, uniqueId),
-    dismissListed: (uniqueId: string) => dismissListedRequirement(get, uniqueId),
+    dismissAbandoned: (id: string) => dismissAbandonedMod(get, id),
+    dismissListed: (id: string) => dismissListedRequirement(get, id),
     dismissSetting: (setting: SettingHint) => dismissSettingHint(get, setting),
-    setConfigValue: (
-      setting: Pick<SettingHint, 'key' | 'uniqueId' | 'field' | 'name'>,
-      value: string,
-    ) => setConfigSetting(get, setting, value),
+    setConfigValue: (setting: Pick<SettingHint, 'key' | 'id' | 'field' | 'name'>, value: string) =>
+      setConfigSetting(get, setting, value),
   }
 }

@@ -29,7 +29,7 @@ function useSlowStartups(): SlowStartup[] {
 
 function SlowRow({ row }: { row: SlowStartup }) {
   const { t, i18n } = useLingui()
-  const mod = useMods((s) => s.mods.find((m) => sameId(m.uniqueId, row.uniqueId)))
+  const mod = useMods((s) => s.mods.find((m) => sameId(m.id, row.id)))
   const setEnabled = useMods((s) => s.setEnabled)
   const time = formatDuration(row.ms, i18n.locale)
   let text = t`${row.name} adds ${time} to startup`
@@ -53,10 +53,7 @@ function SlowRow({ row }: { row: SlowStartup }) {
       }}
     >
       <Typography sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
-        <LinkedText
-          text={text}
-          links={mod ? [{ name: row.name, key: mod.key, uniqueId: mod.uniqueId }] : []}
-        />
+        <LinkedText text={text} links={mod ? [{ name: row.name, key: mod.key, id: mod.id }] : []} />
       </Typography>
       <Button
         size="small"
@@ -117,7 +114,7 @@ export function SlowStartupSection() {
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {rows.map((row) => (
-          <SlowRow key={`${row.kind}/${row.uniqueId}`} row={row} />
+          <SlowRow key={`${row.kind}/${row.id}`} row={row} />
         ))}
       </Box>
     </Box>

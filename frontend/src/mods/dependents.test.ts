@@ -12,28 +12,26 @@ test('requiredIdsOf drops optional needs and keeps ContentPackFor', () => {
 })
 
 test('dependentsOf lists enabled mods that require a removed UniqueID', () => {
-  const core = { uniqueId: 'Core.Lib', name: 'Core', enabled: true, needs: [] as string[] }
+  const core = { id: 'Core.Lib', name: 'Core', enabled: true, needs: [] as string[] }
   const pack = {
-    uniqueId: 'Farm.Pack',
+    id: 'Farm.Pack',
     name: 'Farm pack',
     enabled: true,
     needs: ['Core.Lib'],
     optional: [] as string[],
   }
   const off = {
-    uniqueId: 'Off.Pack',
+    id: 'Off.Pack',
     name: 'Off',
     enabled: false,
     needs: ['Core.Lib'],
   }
   const extra = {
-    uniqueId: 'Extra.Opt',
+    id: 'Extra.Opt',
     name: 'Optional user',
     enabled: true,
     needs: ['Core.Lib'],
     optional: ['Core.Lib'],
   }
-  expect(dependentsOf([core, pack, off, extra], [core]).map((m) => m.uniqueId)).toEqual([
-    'Farm.Pack',
-  ])
+  expect(dependentsOf([core, pack, off, extra], [core]).map((m) => m.id)).toEqual(['Farm.Pack'])
 })

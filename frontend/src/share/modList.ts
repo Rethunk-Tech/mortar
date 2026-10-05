@@ -36,8 +36,8 @@ function pageUrl(source: Source): string {
   return ''
 }
 
-function isOn(entry: Entry, uniqueId: string): boolean {
-  return !(entry.disabled ?? []).some((id) => sameId(id, uniqueId))
+function isOn(entry: Entry, id: string): boolean {
+  return !(entry.disabled ?? []).some((disabled) => sameId(disabled, id))
 }
 
 function markdownLine(item: ModListItem): string {
@@ -134,7 +134,7 @@ function listItems(profile: Profile | undefined, keys: readonly string[] = []): 
             name: mod.name,
             version: mod.version,
             url: pageUrl(entry.source),
-            enabled: isOn(entry, mod.uniqueId),
+            enabled: isOn(entry, mod.id),
           })
         }
       }

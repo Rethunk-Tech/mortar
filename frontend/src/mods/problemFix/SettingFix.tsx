@@ -34,8 +34,8 @@ export function SettingFix({
       return
     }
     try {
-      await SetConfigValue(at.game, at.id, setting.key, setting.uniqueId, setting.field, value)
-      await RememberSettingChoice(at.game, at.id, setting.uniqueId, setting.field, value)
+      await SetConfigValue(at.game, at.id, setting.key, setting.id, setting.field, value)
+      await RememberSettingChoice(at.game, at.id, setting.id, setting.field, value)
       await loadProblems()
     } catch (error) {
       reportUnexpected(error)

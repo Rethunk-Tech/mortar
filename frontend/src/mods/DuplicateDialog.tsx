@@ -60,7 +60,7 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
           sx={{ p: 0 }}
           slotProps={{ input: { 'aria-label': t`${source}, version ${copy.version}` } }}
         />
-        <LetterTile mod={{ uniqueId: dup.uniqueId, name: copy.name }} size={40} />
+        <LetterTile mod={{ id: dup.id, name: copy.name }} size={40} />
         <Box sx={{ minWidth: 0 }}>
           <Typography sx={{ fontSize: 15, fontWeight: 700 }}>{source}</Typography>
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
@@ -150,7 +150,7 @@ export function DuplicateDialog({ profileName }: { profileName: string }) {
       maxWidth={false}
       slotProps={{ paper: { sx: { width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
-      {dup ? <Resolver key={dup.uniqueId} dup={dup} profileName={profileName} /> : null}
+      {dup ? <Resolver key={dup.id} dup={dup} profileName={profileName} /> : null}
     </Dialog>
   )
 }

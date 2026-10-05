@@ -4,7 +4,7 @@ import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 
 const row = (over: Partial<Row> = {}): Row => ({
   position: 1,
-  uniqueId: 'A.Mod',
+  id: 'A.Mod',
   name: 'Alpha',
   required: [],
   optional: [],
@@ -24,7 +24,7 @@ test('copy load order is numbered plain text', () => {
   expect(
     formatLoadOrderCopy([
       row({ position: 1, name: 'Alpha' }),
-      row({ position: 2, uniqueId: 'B.Mod', name: '' }),
+      row({ position: 2, id: 'B.Mod', name: '' }),
     ]),
   ).toBe('1. Alpha\n2. B.Mod')
 })

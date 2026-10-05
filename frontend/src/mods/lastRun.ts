@@ -28,8 +28,8 @@ export const useLastRun = create<{
       }
       const byId: Record<string, ModRunIssues> = {}
       for (const row of got.mods ?? []) {
-        if (row.uniqueId !== '') {
-          byId[idKey(row.uniqueId)] = row
+        if (row.id !== '') {
+          byId[idKey(row.id)] = row
         }
       }
       set({ runId: got.runId ?? '', byId })
@@ -42,12 +42,12 @@ export const useLastRun = create<{
 }))
 
 export function lastRunOf(mod: Mod): ModRunIssues | undefined {
-  return useLastRun.getState().byId[idKey(mod.uniqueId)]
+  return useLastRun.getState().byId[idKey(mod.id)]
 }
 
 export function showLastRunInConsole(game: string, profileId: string, mod: Mod) {
   const { runId } = useLastRun.getState()
-  const mods = [...new Set([mod.name, mod.uniqueId].filter((s) => s !== ''))]
+  const mods = [...new Set([mod.name, mod.id].filter((s) => s !== ''))]
   useTab.getState().setTab('console')
   if (runId !== '') {
     useConsole.getState().viewRun(game, profileId, runId)

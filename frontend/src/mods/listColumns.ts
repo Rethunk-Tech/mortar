@@ -9,7 +9,7 @@ import { isNewer } from './nexusFormat.ts'
 
 // Columns in menu and table order, grouped: the mod itself, its versions and state, dates, then Nexus figures.
 const LIST_COLUMN_GROUPS = [
-  ['on', 'name', 'author', 'category', 'notes', 'uniqueId'],
+  ['on', 'name', 'author', 'category', 'notes', 'id'],
   ['version', 'latest', 'status', 'needs'],
   ['installed', 'updated', 'lastRun', 'size', 'startup'],
   ['source', 'endorsements', 'downloads'],
@@ -38,7 +38,7 @@ const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [
   'source',
   'category',
   'latest',
-  'uniqueId',
+  'id',
   'endorsements',
   'downloads',
   'updated',
@@ -70,7 +70,7 @@ const LIST_COLUMN_WIDTH: Record<ListColumnId, string> = {
   name: 'minmax(0,1fr)',
   version: '88px',
   latest: '110px',
-  uniqueId: '140px',
+  id: '140px',
   author: '130px',
   source: '100px',
   category: '130px',
@@ -290,13 +290,8 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
       primary = missingLast(!av, !bv, dir, cmpVersion(av, bv))
       break
     }
-    case 'uniqueId':
-      primary = missingLast(
-        !a.mod.uniqueId,
-        !b.mod.uniqueId,
-        dir,
-        cmpText(a.mod.uniqueId, b.mod.uniqueId),
-      )
+    case 'id':
+      primary = missingLast(!a.mod.id, !b.mod.id, dir, cmpText(a.mod.id, b.mod.id))
       break
     case 'author':
       primary = missingLast(!a.mod.author, !b.mod.author, dir, cmpText(a.mod.author, b.mod.author))

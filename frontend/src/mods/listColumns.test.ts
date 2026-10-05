@@ -18,7 +18,7 @@ import {
 
 const mod = (over: Partial<Mod> & Pick<Mod, 'name'>): Mod => ({
   key: over.key ?? over.name,
-  uniqueId: over.uniqueId ?? over.name,
+  id: over.id ?? over.name,
   name: over.name,
   author: over.author ?? '',
   version: over.version ?? '',
@@ -136,7 +136,7 @@ test('hides low-priority columns below 960px even when shown', () => {
 test('compares numbers, versions, dates and text, with missing last in both directions', () => {
   const a = row({
     name: 'Beta',
-    mod: mod({ name: 'Beta', version: '2.0.0', uniqueId: 'B', author: 'Ann' }),
+    mod: mod({ name: 'Beta', version: '2.0.0', id: 'B', author: 'Ann' }),
     source: 'Nexus Mods',
     status: 'Enabled',
     added: '2026-01-02T00:00:00Z',
@@ -150,7 +150,7 @@ test('compares numbers, versions, dates and text, with missing last in both dire
   })
   const b = row({
     name: 'Alpha',
-    mod: mod({ name: 'Alpha', version: '10.0.0', uniqueId: 'A', author: 'Bob' }),
+    mod: mod({ name: 'Alpha', version: '10.0.0', id: 'A', author: 'Bob' }),
     source: 'Archive',
     status: 'Off',
     added: '2026-01-01T00:00:00Z',
@@ -162,7 +162,7 @@ test('compares numbers, versions, dates and text, with missing last in both dire
       updated: '2026-01-01T00:00:00Z',
     }),
   })
-  const missing = row({ name: 'Zed', mod: mod({ name: 'Zed', version: '', uniqueId: 'Z' }) })
+  const missing = row({ name: 'Zed', mod: mod({ name: 'Zed', version: '', id: 'Z' }) })
   expect(compareListRows(a, b, { column: 'version', dir: 'asc' })).toBeLessThan(0)
   expect(compareListRows(a, b, { column: 'name', dir: 'asc' })).toBeGreaterThan(0)
   expect(compareListRows(a, b, { column: 'endorsements', dir: 'desc' })).toBeLessThan(0)

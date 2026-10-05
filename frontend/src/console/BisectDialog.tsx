@@ -25,7 +25,7 @@ const pollDelayMs = 500
 
 interface ModResult {
   key: string
-  uniqueId: string
+  id: string
   name: string
 }
 
@@ -108,7 +108,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   const switchOff = async () => {
     const mods = status?.result?.mods ?? []
     try {
-      await Promise.all(mods.map((mod) => SwitchOff(game, profile, mod.key, mod.uniqueId)))
+      await Promise.all(mods.map((mod) => SwitchOff(game, profile, mod.key, mod.id)))
       useProfiles.getState().open(profile)
       const names = mods.map((mod) => mod.name).join(' + ')
       useToasts.getState().push({

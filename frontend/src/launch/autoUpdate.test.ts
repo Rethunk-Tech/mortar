@@ -10,7 +10,7 @@ import {
 
 const update = (overrides: Partial<Update>): Update => ({
   key: 'old',
-  uniqueId: 'mod',
+  id: 'mod',
   name: 'Mod',
   installed: '1.0.0',
   version: '2.0.0',

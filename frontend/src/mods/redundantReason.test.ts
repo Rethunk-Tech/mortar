@@ -5,7 +5,7 @@ test('same-job pairs join into one group per job', () => {
   const pair = (key: string, others: string[], detail = 'Farmer.CurrentToolIndex') => ({
     kind: 'sameJob',
     key,
-    uniqueId: key,
+    id: key,
     name: key,
     by: others.map((k) => ({ key: k, name: k })),
     detail,

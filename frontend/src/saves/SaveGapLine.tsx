@@ -69,7 +69,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
       </Box>
       {shown
         ? rows.map(({ m, state }) => (
-            <Typography key={`${state}-${m.uniqueId}`} sx={{ fontSize: 12 }} noWrap={true}>
+            <Typography key={`${state}-${m.id}`} sx={{ fontSize: 12 }} noWrap={true}>
               {`${m.name} · ${m.version} · ${state}`}
             </Typography>
           ))

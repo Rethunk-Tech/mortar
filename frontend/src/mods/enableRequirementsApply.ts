@@ -41,7 +41,7 @@ export function considerEnableRequirements(
   return SetModsEnabled(
     target.game,
     target.id,
-    pending.map((m) => ({ key: m.key, uniqueId: m.uniqueId })),
+    pending.map((m) => ({ key: m.key, id: m.id })),
     true,
   )
     .then((r) => {

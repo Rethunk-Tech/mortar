@@ -14,7 +14,7 @@ test('changeStillLatest allows undo only while that entry is still the latest fo
     entries: [
       {
         key: 'k1',
-        mods: [{ uniqueId: 'SpaceCore' }],
+        mods: [{ id: 'SpaceCore' }],
       },
     ],
   }

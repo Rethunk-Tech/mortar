@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { enableRequirementsDecision, pendingRequired } from './enableRequirements.ts'
 
 const mod = (
-  uniqueId: string,
+  id: string,
   over: {
     name?: string
     enabled?: boolean
@@ -11,8 +11,8 @@ const mod = (
     contentPackFor?: string
   } = {},
 ) => ({
-  uniqueId,
-  name: over.name ?? uniqueId,
+  id,
+  name: over.name ?? id,
   enabled: over.enabled ?? true,
   needs: over.needs ?? [],
   optional: over.optional ?? [],
@@ -29,10 +29,7 @@ test('pendingRequired includes uninstalled-but-present (disabled) transitive dep
   const base = mod('Me.Base', { name: 'Base', enabled: false })
   const mid = mod('Me.Mid', { name: 'Mid', enabled: false, needs: ['Me.Base'] })
   const user = mod('Me.User', { needs: ['Me.Mid'] })
-  expect(pendingRequired([base, mid, user], [user]).map((m) => m.uniqueId)).toEqual([
-    'Me.Mid',
-    'Me.Base',
-  ])
+  expect(pendingRequired([base, mid, user], [user]).map((m) => m.id)).toEqual(['Me.Mid', 'Me.Base'])
 })
 
 test('pendingRequired skips optional needs and already-enabled mods', () => {

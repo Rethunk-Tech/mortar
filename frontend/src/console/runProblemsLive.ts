@@ -1,14 +1,15 @@
 import type { SMAPIProblem } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { localId } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'
 
-type LiveMod = Pick<Mod, 'uniqueId' | 'name' | 'version' | 'enabled'>
+type LiveMod = Pick<Mod, 'id' | 'name' | 'version' | 'enabled'>
 
 // SMAPI names a mod as "<name> <version>" in its log, so the match tries the id, the bare name, then the
 // longest profile mod name that the logged name starts with.
 function matchMod(problem: SMAPIProblem, mods: readonly LiveMod[]): LiveMod | undefined {
   if (problem.modId !== '') {
-    const byId = mods.find((m) => sameId(m.uniqueId, problem.modId))
+    const byId = mods.find((m) => sameId(localId(m.id), problem.modId))
     if (byId) {
       return byId
     }
@@ -46,7 +47,7 @@ function loggedVersion(problem: SMAPIProblem, mod: LiveMod): string {
 export function stillApplies(problem: SMAPIProblem, mods: readonly LiveMod[]): boolean {
   if (problem.fix === 'installDependency') {
     const dep = problem.dependency ?? ''
-    return dep === '' || !mods.some((m) => sameId(m.uniqueId, dep))
+    return dep === '' || !mods.some((m) => sameId(localId(m.id), dep))
   }
   const mod = matchMod(problem, mods)
   if (!mod) {

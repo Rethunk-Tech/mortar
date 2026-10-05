@@ -4,7 +4,7 @@ import { useMods } from './store.ts'
 interface RedundantItem {
   kind: string
   key: string
-  uniqueId: string
+  id: string
   name: string
   by: { key: string; name: string }[] | null
   detail?: string
@@ -13,7 +13,7 @@ interface RedundantItem {
 
 export interface RedundantRow {
   key: string
-  uniqueId: string
+  id: string
   name: string
   reason: string
   // A group of mods doing the same job is one row; Remove then asks which of them goes.
@@ -88,7 +88,7 @@ export function useRedundantRows() {
       const { detail } = group
       rows.push({
         key: group.keys.join('|'),
-        uniqueId: '',
+        id: '',
         name: '',
         reason: '',
         choices,
@@ -104,7 +104,7 @@ export function useRedundantRows() {
       } else if (item.covered) {
         reason = t`Everything it changes, ${by} also changes: ${detail}`
       }
-      rows.push({ key: item.key, uniqueId: item.uniqueId, name: item.name, reason })
+      rows.push({ key: item.key, id: item.id, name: item.name, reason })
     }
     return rows
   }

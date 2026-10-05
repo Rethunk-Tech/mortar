@@ -134,7 +134,7 @@ function ToastCard({ toast }: { toast: Toast }) {
       {toast.picture === undefined ? (
         <KindIcon kind={toast.kind} />
       ) : (
-        <LetterTile mod={{ uniqueId: toast.title, name: toast.title, picture: toast.picture }} />
+        <LetterTile mod={{ id: toast.title, name: toast.title, picture: toast.picture }} />
       )}
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>

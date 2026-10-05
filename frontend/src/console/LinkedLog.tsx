@@ -19,18 +19,18 @@ import { smapiUpdateNotes } from './smapiUpdateNotes.ts'
 import { VirtualLog } from './VirtualLog.tsx'
 
 function installedOf(
-  entries: { mods?: { name: string; uniqueId: string }[] | null }[] | null | undefined,
+  entries: { mods?: { name: string; id: string }[] | null }[] | null | undefined,
 ): InstalledMod[] {
   const out: InstalledMod[] = []
   for (const entry of entries ?? []) {
     for (const m of entry.mods ?? []) {
-      out.push({ name: m.name, uniqueID: m.uniqueId })
+      out.push({ name: m.name, id: m.id })
     }
   }
   return out
 }
 
-function openMod(uniqueID: string) {
+function openMod(id: string) {
   useTab.getState().setTab('mods')
   const shown = (mod: Mod | undefined) => {
     if (!mod) {
@@ -39,7 +39,7 @@ function openMod(uniqueID: string) {
     useDetail.getState().show(mod)
     useDetail.getState().setOpen(true)
   }
-  const found = useMods.getState().mods.find((m) => m.uniqueId === uniqueID)
+  const found = useMods.getState().mods.find((m) => m.id === id)
   if (found) {
     shown(found)
     return
@@ -47,7 +47,7 @@ function openMod(uniqueID: string) {
   useMods
     .getState()
     .load()
-    .then(() => shown(useMods.getState().mods.find((m) => m.uniqueId === uniqueID)))
+    .then(() => shown(useMods.getState().mods.find((m) => m.id === id)))
 }
 
 export function LinkedLog({

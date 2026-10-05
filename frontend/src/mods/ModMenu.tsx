@@ -254,7 +254,7 @@ function ModActionMenu({
           close={onClose}
           onAdd={() => setGroupOpen(true)}
         />
-        {update ? <EverywhereMenuItem game={game} uniqueId={mod.uniqueId} close={onClose} /> : null}
+        {update ? <EverywhereMenuItem game={game} id={mod.id} close={onClose} /> : null}
       </Menu>
       <SetCategoryDialog
         open={categoryOpen}
@@ -271,12 +271,12 @@ function ModActionMenu({
         onClose={() => setAlsoOpen(false)}
         game={game}
         currentProfileId={currentProfileId}
-        uniqueId={mod.uniqueId}
+        id={mod.id}
         title={t`Also add ${mod.name} to…`}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {
           await Promise.all(
-            profiles.map((other) => CopyMods(game, currentProfileId, other.id, [mod.uniqueId])),
+            profiles.map((other) => CopyMods(game, currentProfileId, other.id, [mod.id])),
           )
         }}
       />
@@ -285,7 +285,7 @@ function ModActionMenu({
         onClose={() => setRemoveOtherOpen(false)}
         game={game}
         currentProfileId={currentProfileId}
-        uniqueId={mod.uniqueId}
+        id={mod.id}
         mode="remove"
         title={t`Remove ${mod.name} from other profiles`}
         helper={t`Where it came in one download with other mods, it is switched off instead.`}
@@ -300,8 +300,8 @@ function ModActionMenu({
                   .profiles.find((candidate) => candidate.id === other.id)
                   ?.entries?.find((profileEntry) => profileEntry.key === row?.key)?.mods ?? []
               return entryMods.length > 1
-                ? SetModEnabled(game, other.id, row?.key ?? '', mod.uniqueId, false).then(
-                    (result) => useProfiles.getState().replace(result.profile),
+                ? SetModEnabled(game, other.id, row?.key ?? '', mod.id, false).then((result) =>
+                    useProfiles.getState().replace(result.profile),
                   )
                 : RemoveEntry(game, other.id, row?.key ?? '')
             }),
@@ -317,7 +317,7 @@ function ModActionMenu({
         onClose={() => setBundleOpen(false)}
         game={game}
         profileId={currentProfileId}
-        uniqueIds={[mod.uniqueId]}
+        ids={[mod.id]}
       />
       <AddToGroupDialog
         open={groupOpen}

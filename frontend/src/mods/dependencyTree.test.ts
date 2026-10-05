@@ -7,8 +7,8 @@ import {
 } from './dependencyTree.ts'
 
 const pack: ProfileManifest = {
-  uniqueID: 'Pathoschild.ContentPatcher',
-  dependencies: [{ uniqueID: 'SMAPI', isRequired: true }],
+  id: 'Pathoschild.ContentPatcher',
+  dependencies: [{ id: 'SMAPI', isRequired: true }],
 }
 
 describe('buildDependencyTrees', () => {
@@ -17,7 +17,7 @@ describe('buildDependencyTrees', () => {
       [
         pack,
         {
-          uniqueID: 'Example.Pack',
+          id: 'Example.Pack',
           contentPackFor: 'Pathoschild.ContentPatcher',
         },
       ],
@@ -25,12 +25,12 @@ describe('buildDependencyTrees', () => {
     )
     expect(trees.needs).toEqual([
       {
-        uniqueID: 'Pathoschild.ContentPatcher',
+        id: 'Pathoschild.ContentPatcher',
         required: true,
         cycle: false,
         children: [
           {
-            uniqueID: 'SMAPI',
+            id: 'SMAPI',
             required: true,
             cycle: false,
             children: [],
@@ -45,21 +45,21 @@ describe('buildDependencyTrees', () => {
     const trees = buildDependencyTrees(
       [
         {
-          uniqueID: 'A.Mod',
-          dependencies: [{ uniqueID: 'B.Required' }, { uniqueID: 'C.Optional', isRequired: false }],
+          id: 'A.Mod',
+          dependencies: [{ id: 'B.Required' }, { id: 'C.Optional', isRequired: false }],
         },
       ],
       'A.Mod',
     )
     expect(trees.needs).toEqual([
       {
-        uniqueID: 'B.Required',
+        id: 'B.Required',
         required: true,
         cycle: false,
         children: [],
       },
       {
-        uniqueID: 'C.Optional',
+        id: 'C.Optional',
         required: false,
         cycle: false,
         children: [],
@@ -71,24 +71,24 @@ describe('buildDependencyTrees', () => {
     const trees = buildDependencyTrees(
       [
         {
-          uniqueID: 'A.Mod',
-          dependencies: [{ uniqueID: 'B.Mod' }],
+          id: 'A.Mod',
+          dependencies: [{ id: 'B.Mod' }],
         },
         {
-          uniqueID: 'B.Mod',
-          dependencies: [{ uniqueID: 'A.Mod' }],
+          id: 'B.Mod',
+          dependencies: [{ id: 'A.Mod' }],
         },
       ],
       'A.Mod',
     )
     expect(trees.needs).toEqual([
       {
-        uniqueID: 'B.Mod',
+        id: 'B.Mod',
         required: true,
         cycle: false,
         children: [
           {
-            uniqueID: 'A.Mod',
+            id: 'A.Mod',
             required: true,
             cycle: true,
             children: [],
@@ -98,12 +98,12 @@ describe('buildDependencyTrees', () => {
     ])
     expect(trees.neededBy).toEqual([
       {
-        uniqueID: 'B.Mod',
+        id: 'B.Mod',
         required: true,
         cycle: false,
         children: [
           {
-            uniqueID: 'A.Mod',
+            id: 'A.Mod',
             required: true,
             cycle: true,
             children: [],
@@ -118,23 +118,23 @@ describe('buildDependencyTrees', () => {
       [
         pack,
         {
-          uniqueID: 'Farm.Pack',
+          id: 'Farm.Pack',
           contentPackFor: 'Pathoschild.ContentPatcher',
         },
         {
-          uniqueID: 'Town.Pack',
+          id: 'Town.Pack',
           contentPackFor: 'Pathoschild.ContentPatcher',
-          dependencies: [{ uniqueID: 'Extra.Lib', isRequired: false }],
+          dependencies: [{ id: 'Extra.Lib', isRequired: false }],
         },
       ],
       'Pathoschild.ContentPatcher',
     )
-    expect(trees.neededBy.map((n) => n.uniqueID).toSorted((a, b) => a.localeCompare(b))).toEqual([
+    expect(trees.neededBy.map((n) => n.id).toSorted((a, b) => a.localeCompare(b))).toEqual([
       'Farm.Pack',
       'Town.Pack',
     ])
-    expect(trees.neededBy.find((n) => n.uniqueID === 'Town.Pack')).toEqual({
-      uniqueID: 'Town.Pack',
+    expect(trees.neededBy.find((n) => n.id === 'Town.Pack')).toEqual({
+      id: 'Town.Pack',
       required: true,
       cycle: false,
       children: [],
@@ -145,16 +145,16 @@ describe('buildDependencyTrees', () => {
     const trees = buildDependencyTrees(
       [
         {
-          uniqueID: 'SpaceCode',
-          dependencies: [{ uniqueID: 'json.assets', isRequired: false }],
+          id: 'SpaceCode',
+          dependencies: [{ id: 'json.assets', isRequired: false }],
         },
         {
-          uniqueID: 'Json.Assets',
+          id: 'Json.Assets',
         },
       ],
       'spacecode',
     )
-    expect(trees.needs[0]?.uniqueID).toBe('Json.Assets')
+    expect(trees.needs[0]?.id).toBe('Json.Assets')
     expect(trees.neededBy).toEqual([])
   })
 })
@@ -164,17 +164,17 @@ describe('manifestsFromMods', () => {
     expect(
       manifestsFromMods([
         {
-          uniqueId: 'A.Mod',
+          id: 'A.Mod',
           needs: ['B.Req', 'C.Opt'],
           optional: ['C.Opt'],
         },
       ]),
     ).toEqual([
       {
-        uniqueID: 'A.Mod',
+        id: 'A.Mod',
         dependencies: [
-          { uniqueID: 'B.Req', isRequired: true },
-          { uniqueID: 'C.Opt', isRequired: false },
+          { id: 'B.Req', isRequired: true },
+          { id: 'C.Opt', isRequired: false },
         ],
       },
     ])
@@ -186,23 +186,23 @@ describe('annotateTree', () => {
     const trees = buildDependencyTrees(
       [
         {
-          uniqueID: 'Root',
+          id: 'Root',
           dependencies: [
-            { uniqueID: 'On.Mod' },
-            { uniqueID: 'Off.Mod' },
-            { uniqueID: 'Gone.Mod' },
-            { uniqueID: 'Broke.Mod' },
+            { id: 'On.Mod' },
+            { id: 'Off.Mod' },
+            { id: 'Gone.Mod' },
+            { id: 'Broke.Mod' },
           ],
         },
       ],
       'Root',
     )
     const view = annotateTree(trees.needs, [
-      { uniqueID: 'On.Mod', enabled: true },
-      { uniqueID: 'Off.Mod', enabled: false },
-      { uniqueID: 'Broke.Mod', enabled: true, broken: true },
+      { id: 'On.Mod', enabled: true },
+      { id: 'Off.Mod', enabled: false },
+      { id: 'Broke.Mod', enabled: true, broken: true },
     ])
-    expect(view.map((n) => [n.uniqueID, n.state])).toEqual([
+    expect(view.map((n) => [n.id, n.state])).toEqual([
       ['On.Mod', 'enabled'],
       ['Off.Mod', 'disabled'],
       ['Gone.Mod', 'missing'],

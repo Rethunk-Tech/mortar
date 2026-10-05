@@ -39,7 +39,7 @@ function fixableIds(report: SweepReport): string[] {
   for (const row of report.profiles ?? []) {
     for (const mod of row.broken ?? []) {
       if (mod.fix === 'update') {
-        ids.push(mod.uniqueId || mod.key)
+        ids.push(mod.id || mod.key)
       }
     }
   }

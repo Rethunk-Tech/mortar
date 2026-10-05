@@ -104,7 +104,7 @@ async function maybeFinishInstall(profileId: string, dependentIds: string[]) {
   const folded = new Set(dependentIds.map(idKey))
   await considerEnableRequirements(
     mods,
-    mods.filter((m) => folded.has(idKey(m.uniqueId))),
+    mods.filter((m) => folded.has(idKey(m.id))),
     'install',
   )
   await useMods.getState().load()
@@ -153,8 +153,8 @@ async function installOne(
   const names = added ?? []
   const landed = entryForNames(next, names)
   for (const mod of landed?.mods ?? []) {
-    if (mod.uniqueId) {
-      dependentIds.push(mod.uniqueId)
+    if (mod.id) {
+      dependentIds.push(mod.id)
     }
   }
   if (batch) {
@@ -177,7 +177,7 @@ async function installOne(
               changeStillLatest(
                 useProfiles.getState().profiles.find((p) => p.id === profile.id),
                 landed.key,
-                (landed.mods ?? []).map((m) => m.uniqueId),
+                (landed.mods ?? []).map((m) => m.id),
               ),
           },
         }
@@ -241,7 +241,7 @@ async function afterDroppedRemap(
               changeStillLatest(
                 useProfiles.getState().profiles.find((p) => p.id === session.profileId),
                 landed.key,
-                (landed.mods ?? []).map((m) => m.uniqueId),
+                (landed.mods ?? []).map((m) => m.id),
               ),
           },
         }
@@ -249,8 +249,8 @@ async function afterDroppedRemap(
   })
   const ids: string[] = []
   for (const mod of landed?.mods ?? []) {
-    if (mod.uniqueId) {
-      ids.push(mod.uniqueId)
+    if (mod.id) {
+      ids.push(mod.id)
     }
   }
   await maybeFinishInstall(session.profileId, ids)

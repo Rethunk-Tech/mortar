@@ -2,8 +2,8 @@ import { expect, test } from 'bun:test'
 import { type InstalledMod, linksForModColumn, linksInText } from './consoleLinks.ts'
 
 const mods: InstalledMod[] = [
-  { name: 'Farm Type Manager', uniqueID: 'Esca.FarmTypeManager' },
-  { name: 'Farm', uniqueID: 'Me.Farm' },
+  { name: 'Farm Type Manager', id: 'Esca.FarmTypeManager' },
+  { name: 'Farm', id: 'Me.Farm' },
 ]
 
 const roots = {
@@ -14,7 +14,7 @@ const roots = {
 test('message links prefer the longest exact mod name and skip substrings', () => {
   const text = 'SMAPI loaded Farm Type Manager after Farm; skip Farming and Farmland'
   const links = linksInText(text, mods, roots).filter((l) => l.kind === 'mod')
-  expect(links.map((l) => ({ t: text.slice(l.start, l.end), id: l.uniqueID }))).toEqual([
+  expect(links.map((l) => ({ t: text.slice(l.start, l.end), id: l.id }))).toEqual([
     { t: 'Farm Type Manager', id: 'Esca.FarmTypeManager' },
     { t: 'Farm', id: 'Me.Farm' },
   ])
@@ -23,8 +23,8 @@ test('message links prefer the longest exact mod name and skip substrings', () =
 test('UniqueID matches are exact and do not fire inside a longer id', () => {
   const extra: InstalledMod[] = [
     ...mods,
-    { name: 'Patch', uniqueID: 'Me.Patch' },
-    { name: 'Content Patcher', uniqueID: 'Pathoschild.ContentPatcher' },
+    { name: 'Patch', id: 'Me.Patch' },
+    { name: 'Content Patcher', id: 'Pathoschild.ContentPatcher' },
   ]
   const text = 'Need Pathoschild.ContentPatcher; Me.Patch is separate'
   const links = linksInText(text, extra, roots).filter((l) => l.kind === 'mod')
@@ -36,10 +36,10 @@ test('UniqueID matches are exact and do not fire inside a longer id', () => {
 
 test('the mod column is a link only when it equals a name or UniqueID', () => {
   expect(linksForModColumn('Farm Type Manager', mods)).toEqual([
-    { kind: 'mod', start: 0, end: 17, uniqueID: 'Esca.FarmTypeManager' },
+    { kind: 'mod', start: 0, end: 17, id: 'Esca.FarmTypeManager' },
   ])
   expect(linksForModColumn('Esca.FarmTypeManager', mods)).toEqual([
-    { kind: 'mod', start: 0, end: 20, uniqueID: 'Esca.FarmTypeManager' },
+    { kind: 'mod', start: 0, end: 20, id: 'Esca.FarmTypeManager' },
   ])
   expect(linksForModColumn('Farm Type', mods)).toEqual([])
   expect(linksForModColumn('SMAPI', mods)).toEqual([])

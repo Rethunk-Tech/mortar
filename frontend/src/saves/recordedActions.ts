@@ -14,13 +14,13 @@ export async function addRecordedMods(game: string, profileId: string, fit: Fit)
   const missing = (fit.lastMissing?.length ? fit.lastMissing : fit.missing) ?? []
   const { enable } = useSaves.getState()
   const fromId = fit.lastProfileExists ? fit.lastProfileId : ''
-  const copyIds = missing.filter((m) => !m.disabled).map((m) => m.uniqueId)
+  const copyIds = missing.filter((m) => !m.disabled).map((m) => m.id)
   if (fromId && fromId !== profileId && copyIds.length > 0) {
     useProfiles.getState().replace(await CopyMods(game, fromId, profileId, copyIds))
   }
   for (const lack of missing) {
     if (lack.disabled) {
-      await enable(game, profile, lack.uniqueId)
+      await enable(game, profile, lack.id)
     }
   }
   const wants = missing

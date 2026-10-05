@@ -7,24 +7,24 @@ import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 
 export function EverywhereMenuItem({
   game,
-  uniqueId,
+  id,
   close,
 }: {
   game: string
-  uniqueId: string
+  id: string
   close: () => void
 }) {
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
   const [preview, setPreview] = useState<EverywherePreview | null>(null)
   useEffect(() => {
-    if (game === '' || uniqueId === '') {
+    if (game === '' || id === '') {
       return
     }
-    PreviewEverywhere(game, uniqueId)
+    PreviewEverywhere(game, id)
       .then(setPreview)
       .catch(() => setPreview(null))
-  }, [game, uniqueId])
+  }, [game, id])
   const n = preview?.affected?.length ?? 0
   return (
     <>
@@ -39,7 +39,7 @@ export function EverywhereMenuItem({
       <EverywhereDialog
         open={open}
         game={game}
-        mods={[{ id: uniqueId, newKey: 'latest' }]}
+        mods={[{ id, newKey: 'latest' }]}
         onClose={() => setOpen(false)}
       />
     </>

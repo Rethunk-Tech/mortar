@@ -14,6 +14,7 @@ import {
 import type { HistoryDiff } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ChangesSince } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import { localId } from '../mods/dependents.ts'
 import { visibleUpdates } from '../mods/lookup.ts'
 import { diffLines } from '../profiles/historyDiff.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -63,7 +64,7 @@ function missingName(m: Missing): { name: string; title?: string } {
   if (page !== '') {
     return { name: page }
   }
-  return { name: 'Unknown mod', title: m.uniqueId }
+  return { name: 'Unknown mod', title: localId(m.id) }
 }
 
 function conflictName(c: AssetConflict): { name: string } {
@@ -160,7 +161,7 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
             profileName: lastName,
           }
         : null,
-    saveMods: (fit?.lastMissing ?? []).map((m) => ({ name: m.name || m.uniqueId })),
+    saveMods: (fit?.lastMissing ?? []).map((m) => ({ name: m.name || localId(m.id) })),
     switchProfileId: fit?.lastProfileExists ? fit.lastProfileId : '',
   })
   try {

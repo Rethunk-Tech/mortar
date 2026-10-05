@@ -16,7 +16,7 @@ export function searchFields(
   return [
     m.name,
     m.author,
-    m.uniqueId,
+    m.id,
     ...(entry?.tags ?? []),
     entry?.note ?? '',
     ...categoryNames(entry, nexusById[nexusId]?.details?.category, customById),

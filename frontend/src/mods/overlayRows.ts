@@ -8,7 +8,7 @@ import type { OverlayRow, VirtualRow } from './virtualRows.ts'
 const overlayLabel = (e: Pick<Entry, 'key' | 'source'>) => e.source.name || e.key
 
 function anyModOn(base: Entry | undefined) {
-  return (base?.mods ?? []).some((m) => !(base?.disabled ?? []).includes(m.uniqueId))
+  return (base?.mods ?? []).some((m) => !(base?.disabled ?? []).includes(m.id))
 }
 
 /** Each main entry's optional files, in the order they are laid over it. */

@@ -14,7 +14,7 @@ import {
 } from './missingDeps.ts'
 
 const profile = (...ids: string[]) => ({
-  entries: [{ mods: ids.map((uniqueId) => ({ uniqueId })) }],
+  entries: [{ mods: ids.map((id) => ({ id })) }],
 })
 
 const ref = (over: Partial<NonNullable<Missing['where']>> = {}): NonNullable<Missing['where']> => ({
@@ -32,7 +32,7 @@ const ref = (over: Partial<NonNullable<Missing['where']>> = {}): NonNullable<Mis
 const absent = (over: Partial<Missing> = {}): Missing => ({
   dependentId: 'A.Mod',
   dependentName: 'A Mod',
-  uniqueId: 'Pathoschild.ContentPatcher',
+  id: 'Pathoschild.ContentPatcher',
   minimumVersion: '',
   reason: 'absent',
   installedVersion: '',
@@ -103,14 +103,14 @@ test('offersFor uses Problems absent rows for the installed dependents', () => {
         absent(),
         absent({
           dependentId: 'A.Mod',
-          uniqueId: 'Off.Mod',
+          id: 'Off.Mod',
           reason: 'disabled',
           where: null,
           listed: false,
           note: '',
           optional: false,
         }),
-        absent({ dependentId: 'Other.Mod', dependentName: 'Other', uniqueId: 'Skip.Me' }),
+        absent({ dependentId: 'Other.Mod', dependentName: 'Other', id: 'Skip.Me' }),
       ]),
     ),
   ).toEqual([{ dependentName: 'A Mod', missing: [absent()] }])
@@ -122,20 +122,20 @@ test('offersFor excludes optional listed requirements', () => {
       ['A.Mod'],
       result([
         absent({ listed: true, note: 'For a variant', optional: true }),
-        absent({ listed: true, optional: false, uniqueId: 'Required.Listed' }),
+        absent({ listed: true, optional: false, id: 'Required.Listed' }),
       ]),
     ),
   ).toEqual([
     {
       dependentName: 'A Mod',
-      missing: [absent({ listed: true, optional: false, uniqueId: 'Required.Listed' })],
+      missing: [absent({ listed: true, optional: false, id: 'Required.Listed' })],
     },
   ])
 })
 
 test('Add them queues through the same Want the Problems bar uses', () => {
   expect(wantOf(absent({ where: null }))).toBeNull()
-  expect(wantsOf([absent(), absent({ uniqueId: 'Other.CP' })])).toEqual([
+  expect(wantsOf([absent(), absent({ id: 'Other.CP' })])).toEqual([
     {
       kind: 'dependency',
       modId: 541,
@@ -152,8 +152,8 @@ test('Add them queues through the same Want the Problems bar uses', () => {
 })
 
 test('an offer drops deps the live problems no longer list', () => {
-  const meep = absent({ uniqueId: 'Spiderbuttons.MEEP' })
-  const core = absent({ uniqueId: 'spacechase0.SpaceCore' })
+  const meep = absent({ id: 'Spiderbuttons.MEEP' })
+  const core = absent({ id: 'spacechase0.SpaceCore' })
   const offer = { dependentName: 'A Mod', missing: [meep, core] }
   expect(stillMissing(offer, null)).toEqual([meep, core])
   expect(stillMissing(offer, result([core]))).toEqual([core])

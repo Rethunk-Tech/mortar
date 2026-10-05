@@ -5,6 +5,7 @@ import { andList } from '../install/missingDeps.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportError } from '../toasts/report.ts'
+import { localId } from './dependents.ts'
 import { useEnableAsk } from './enableAsk.ts'
 import { useMods } from './store.ts'
 import { announceAlso, openTarget } from './storeView.ts'
@@ -26,7 +27,7 @@ export function EnableRequirementsDialog() {
     SetModsEnabled(
       target.game,
       target.id,
-      offer.mods.map((m) => ({ key: m.key, uniqueId: m.uniqueId })),
+      offer.mods.map((m) => ({ key: m.key, id: m.id })),
       true,
     )
       .then((r) => {
@@ -48,8 +49,8 @@ export function EnableRequirementsDialog() {
       <List dense={true}>
         {offer.mods.map((m) => (
           <ListItem
-            key={`${m.key}:${m.uniqueId}`}
-            title={(m.name ?? '').trim() === '' ? m.uniqueId : undefined}
+            key={`${m.key}:${m.id}`}
+            title={(m.name ?? '').trim() === '' ? localId(m.id) : undefined}
           >
             {(m.name ?? '').trim() === '' ? t`Unknown mod` : m.name}
           </ListItem>

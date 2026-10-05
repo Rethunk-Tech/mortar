@@ -53,7 +53,7 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
       </Typography>
       <List dense={true} disablePadding={true}>
         {hidden.map((h) => (
-          <ListItem key={`${h.folder}-${h.uniqueId}`} disableGutters={true} sx={{ py: 0.25 }}>
+          <ListItem key={`${h.folder}-${h.id}`} disableGutters={true} sx={{ py: 0.25 }}>
             <ListItemText
               primary={h.version === '' ? h.name : `${h.name} · ${h.version}`}
               secondary={h.folder}

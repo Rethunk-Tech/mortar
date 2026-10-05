@@ -154,7 +154,7 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
             component="button"
             color="inherit"
             onClick={() =>
-              useTab.getState().revealLoadOrder(row.missing.uniqueId, row.missing.dependentId)
+              useTab.getState().revealLoadOrder(row.missing.id, row.missing.dependentId)
             }
             sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word', textAlign: 'left' }}
           >

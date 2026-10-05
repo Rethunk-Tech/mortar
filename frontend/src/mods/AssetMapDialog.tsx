@@ -51,7 +51,7 @@ function TouchActions({
   if (mod.winner) {
     return null
   }
-  const entry = mods.find((m) => m.key === mod.modKey && sameId(m.uniqueId, mod.modId))
+  const entry = mods.find((m) => m.key === mod.modKey && sameId(m.id, mod.modId))
   const others = (target.mods ?? [])
     .map((m) => m.modId)
     .filter((id, i, ids) => !sameId(id, mod.modId) && ids.findIndex((x) => sameId(x, id)) === i)
@@ -105,7 +105,7 @@ function ModTouches({ target, onChanged }: { target: AssetTarget; onChanged: () 
             sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}
           >
             <Typography sx={{ fontSize: 13, fontWeight: mod.winner ? 'bold' : 'normal' }}>
-              <LinkedText text={name} links={[{ name, key: mod.modKey, uniqueId: mod.modId }]} />
+              <LinkedText text={name} links={[{ name, key: mod.modKey, id: mod.modId }]} />
             </Typography>
             {mod.action ? <Chip size="small" label={mod.action} sx={chipSx} /> : null}
             {mod.priority ? (

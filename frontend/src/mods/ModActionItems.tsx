@@ -25,8 +25,7 @@ function openManifestOf(mod: Mod, profile: Profile | undefined) {
   if (!(gameId && openId)) {
     return
   }
-  const folder =
-    (entryOf(profile, mod.key)?.mods ?? []).find((m) => m.uniqueId === mod.uniqueId)?.folder ?? '.'
+  const folder = (entryOf(profile, mod.key)?.mods ?? []).find((m) => m.id === mod.id)?.folder ?? '.'
   const nested = folder !== '' && folder !== '.'
   const rel = nested ? `${folder}/manifest.json` : 'manifest.json'
   ModsDir(gameId, openId)

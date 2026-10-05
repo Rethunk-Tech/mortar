@@ -23,8 +23,8 @@ const SLOW_MOD_MS = 3000
 const SLOW_PACK_MS = 1000
 
 type SlowStartup =
-  | { kind: 'mod'; uniqueId: string; name: string; ms: number }
-  | { kind: 'pack'; uniqueId: string; name: string; ms: number; framework: string }
+  | { kind: 'mod'; id: string; name: string; ms: number }
+  | { kind: 'pack'; id: string; name: string; ms: number; framework: string }
 
 /** Mods and content packs slow enough to mention. A framework that loads content packs (Content Patcher) is never a
  * row itself: so many mods need it that it cannot be avoided, so only its slow packs are named. */
@@ -34,13 +34,13 @@ function slowStartups(report: StartupReport): SlowStartup[] {
     const packs = mod.packs ?? []
     const total = modTotal(mod)
     if (packs.length === 0 && total >= SLOW_MOD_MS) {
-      out.push({ kind: 'mod', uniqueId: mod.id, name: mod.name, ms: total })
+      out.push({ kind: 'mod', id: mod.id, name: mod.name, ms: total })
     }
     for (const pack of packs) {
       if (pack.ms >= SLOW_PACK_MS) {
         out.push({
           kind: 'pack',
-          uniqueId: pack.id,
+          id: pack.id,
           name: pack.name,
           ms: pack.ms,
           framework: mod.name,

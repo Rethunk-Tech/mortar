@@ -22,8 +22,8 @@ interface State {
   error: string
   load: (game: string, profileId: string, stamp: string) => Promise<void>
   reload: () => Promise<void>
-  dismiss: (folder: string, uniqueId: string) => Promise<void>
-  enable: (game: string, profile: Profile, uniqueId: string) => Promise<void>
+  dismiss: (folder: string, id: string) => Promise<void>
+  enable: (game: string, profile: Profile, id: string) => Promise<void>
 }
 
 export const useSaves = create<State>((set, get) => ({
@@ -53,18 +53,18 @@ export const useSaves = create<State>((set, get) => ({
       await get().load(game, profileId, stamp.join('/'))
     }
   },
-  dismiss: async (folder, uniqueId) => {
+  dismiss: async (folder, id) => {
     const previous = get().fits
     try {
-      await Dismiss(folder, uniqueId)
-      set({ fits: dropMissing(get().fits, uniqueId, folder) })
+      await Dismiss(folder, id)
+      set({ fits: dropMissing(get().fits, id, folder) })
       useToasts.getState().push({
         kind: 'success',
         title: i18n._(msg`Dismissed for this save`),
         action: {
           label: i18n._(msg`Undo`),
           run: async () => {
-            await RestoreDismissed(folder, uniqueId)
+            await RestoreDismissed(folder, id)
             set({ fits: previous })
           },
         },
@@ -73,18 +73,16 @@ export const useSaves = create<State>((set, get) => ({
       reportUnexpected(e)
     }
   },
-  enable: async (game, profile, uniqueId) => {
+  enable: async (game, profile, id) => {
     const key = (profile.entries ?? []).find((e) =>
-      (e.mods ?? []).some((m) => sameId(m.uniqueId, uniqueId)),
+      (e.mods ?? []).some((m) => sameId(m.id, id)),
     )?.key
     if (!key) {
       return
     }
     try {
-      useProfiles
-        .getState()
-        .replace((await SetModEnabled(game, profile.id, key, uniqueId, true)).profile)
-      set((s) => ({ fits: dropMissing(s.fits, uniqueId) }))
+      useProfiles.getState().replace((await SetModEnabled(game, profile.id, key, id, true)).profile)
+      set((s) => ({ fits: dropMissing(s.fits, id) }))
     } catch (e) {
       reportUnexpected(e)
     }

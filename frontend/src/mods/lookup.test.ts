@@ -56,7 +56,7 @@ test('preselect falls back to Nexus, then the first, when versions are unknown',
 })
 
 test("drift on an entry flags that entry's mods for status grouping", () => {
-  const mod = { key: 'k', uniqueId: 'me.a', name: 'A', enabled: true }
+  const mod = { key: 'k', id: 'me.a', name: 'A', enabled: true }
   const drift: Drift = { kind: DriftKind.DriftChanged, folder: 'k', key: 'k' }
   const result = {
     missing: [],
@@ -90,14 +90,14 @@ test('problems and updates are counted per finding', () => {
   expect(
     problemCount({
       missing: [],
-      duplicates: [{ uniqueId: 'me.a', name: 'A', copies: [] }],
-      broken: [{ key: 'k', uniqueId: 'me.b', name: 'B', status: 'broken', brokeIn: '' }],
+      duplicates: [{ id: 'me.a', name: 'A', copies: [] }],
+      broken: [{ key: 'k', id: 'me.b', name: 'B', status: 'broken', brokeIn: '' }],
       assetConflicts: [],
       settings: [],
       runErrors: [
         {
           key: 'k2',
-          uniqueId: 'me.c',
+          id: 'me.c',
           name: 'C',
           count: 1,
           first: 'err',
@@ -119,7 +119,7 @@ test('missingCount is the missing dependencies and is excluded from badge proble
       {
         dependentId: 'd',
         dependentName: 'Dep',
-        uniqueId: 'a',
+        id: 'a',
         minimumVersion: '',
         installedVersion: '',
         reason: 'absent',
@@ -148,7 +148,7 @@ test('missingCount is the missing dependencies and is excluded from badge proble
 test('an update belongs to one copy of a mod', () => {
   const update = {
     key: 'a-1',
-    uniqueId: 'Me.A',
+    id: 'Me.A',
     name: 'A',
     installed: '1',
     version: '2',
@@ -160,8 +160,8 @@ test('an update belongs to one copy of a mod', () => {
   }
   const result = { updates: [update], held: [], unknown: false }
   expect(updateCount(result)).toBe(1)
-  expect(updateFor(result, { key: 'a-1', uniqueId: 'me.a' })).toBe(update)
-  expect(updateFor(result, { key: 'a-2', uniqueId: 'me.a' })).toBeUndefined()
+  expect(updateFor(result, { key: 'a-1', id: 'me.a' })).toBe(update)
+  expect(updateFor(result, { key: 'a-2', id: 'me.a' })).toBeUndefined()
 })
 
 test('a pin or skipped version hides that update', () => {
@@ -173,7 +173,7 @@ test('a pin or skipped version hides that update', () => {
   expect(offersUpdate({ skipSources: ['GitHub'] }, '2.0.0', 'Nexus')).toBe(true)
   const update = {
     key: 'a-1',
-    uniqueId: 'me.a',
+    id: 'me.a',
     name: 'A',
     installed: '1',
     version: '2.0.0',
@@ -199,21 +199,21 @@ test('a pin or skipped version hides that update', () => {
     ],
   })
   expect(updateCount(result, pinned)).toBe(0)
-  expect(updateFor(result, { key: 'a-1', uniqueId: 'me.a' }, pinned)).toBeUndefined()
+  expect(updateFor(result, { key: 'a-1', id: 'me.a' }, pinned)).toBeUndefined()
 })
 
 test('reshow keeps the loaded extras when the open mod is shown again', () => {
   const extras = { id: 'a/b' }
   const open = { detailId: 'a/b', extras }
-  expect(reshow(open, { key: 'a', uniqueId: 'b' })).toEqual(open)
-  expect(reshow(open, { key: 'a', uniqueId: 'c' })).toEqual({ detailId: 'a/c', extras: null })
+  expect(reshow(open, { key: 'a', id: 'b' })).toEqual(open)
+  expect(reshow(open, { key: 'a', id: 'c' })).toEqual({ detailId: 'a/c', extras: null })
   expect(reshow(open, null)).toEqual({ detailId: '', extras: null })
 })
 
 test('a removed Nexus page and unofficial versions are not installed by Update all', () => {
   const row = {
     key: 'k',
-    uniqueId: 'me.a',
+    id: 'me.a',
     name: 'A',
     installed: '1',
     version: '2',
@@ -234,7 +234,7 @@ test('review updates use the same Nexus-filtered list as the count', () => {
     updates: [
       {
         key: 'a',
-        uniqueId: 'a',
+        id: 'a',
         name: 'A',
         installed: '1',
         version: '2',
@@ -246,7 +246,7 @@ test('review updates use the same Nexus-filtered list as the count', () => {
       },
       {
         key: 'b',
-        uniqueId: 'b',
+        id: 'b',
         name: 'B',
         installed: '1',
         version: '2',

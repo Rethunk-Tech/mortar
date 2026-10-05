@@ -19,12 +19,12 @@ export function Detail() {
   const loadSaves = useSaves((s) => s.load)
   const mods = useMods((s) => s.mods)
   const modState = useMemo(
-    () => mods.map((mod) => `${mod.key}:${mod.uniqueId}:${mod.enabled}`).join('|'),
+    () => mods.map((mod) => `${mod.key}:${mod.id}:${mod.enabled}`).join('|'),
     [mods],
   )
   const profileId = profile?.id
   const saveEntries = (profile?.entries ?? [])
-    .map((entry) => `${entry.key}:${(entry.mods ?? []).map((mod) => mod.uniqueId).join(',')}`)
+    .map((entry) => `${entry.key}:${(entry.mods ?? []).map((mod) => mod.id).join(',')}`)
     .join('|')
   const saveKey = `${saveEntries}|${modState}`
   useEffect(() => {

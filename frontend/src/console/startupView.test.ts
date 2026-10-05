@@ -100,7 +100,7 @@ test('slow startup names plain mods and slow packs, never the framework that loa
       mod('quick', { GameLaunched: 900 }),
     ],
   } as StartupReport
-  expect(slowStartups(report).map((s) => [s.kind, s.uniqueId])).toEqual([
+  expect(slowStartups(report).map((s) => [s.kind, s.id])).toEqual([
     ['mod', 'fs'],
     ['pack', 'rsv'],
   ])

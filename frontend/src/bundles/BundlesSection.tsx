@@ -22,13 +22,11 @@ import { BundleNameDialog } from './dialogs.tsx'
 
 function hasBundle(profile: Profile, bundle: Bundle) {
   const installed = new Set(
-    (profile.entries ?? []).flatMap((entry) =>
-      (entry.mods ?? []).map((mod) => idKey(mod.uniqueId)),
-    ),
+    (profile.entries ?? []).flatMap((entry) => (entry.mods ?? []).map((mod) => idKey(mod.id))),
   )
   // Optional files have no UniqueID and travel with their main mod.
   return (bundle.mods ?? []).every(
-    (mod) => (mod.overlayOf ?? '') !== '' || installed.has(idKey(mod.uniqueId)),
+    (mod) => (mod.overlayOf ?? '') !== '' || installed.has(idKey(mod.id)),
   )
 }
 

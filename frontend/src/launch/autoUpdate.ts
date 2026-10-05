@@ -207,7 +207,7 @@ async function updateBeforePlay(
     const plan = planAutoUpdates(visibleUpdates(result, profile), pinnedKeys(profile))
     const updates = plan.updates.filter((update) => {
       const mod = mods.find(
-        (candidate) => candidate.key === update.key && sameId(candidate.uniqueId, update.uniqueId),
+        (candidate) => candidate.key === update.key && sameId(candidate.id, update.id),
       )
       return !mod?.updateCautionMessage?.trim() || cautionAcknowledged(profileId, update)
     })

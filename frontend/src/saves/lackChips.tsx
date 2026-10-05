@@ -37,7 +37,7 @@ function LackChip({
   const locked = useLocked()
   const [source, setSource] = useState<{ id: string; name: string } | null>(null)
   useEffect(() => {
-    ProfilesWithMod(game, lack.uniqueId)
+    ProfilesWithMod(game, lack.id)
       .then((rows) => {
         const row = (rows ?? []).find((candidate) => candidate.profileId !== profile.id)
         const sourceName = useProfiles
@@ -46,7 +46,7 @@ function LackChip({
         setSource(row && sourceName ? { id: row.profileId, name: sourceName } : null)
       })
       .catch(reportUnexpected)
-  }, [game, lack.uniqueId, profile.id])
+  }, [game, lack.id, profile.id])
   const want = lack.disabled ? null : wantFor(lack)
   const queued = useQueue((s) =>
     want ? pendingFor(s.state.items, profile.id, want.modId ?? 0, want.repo ?? '') : false,
@@ -123,7 +123,7 @@ export function MissingChips({ fit, profile, game }: { fit: Fit; profile: Profil
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
       {missing.map((lack) => (
-        <LackChip key={lack.uniqueId} fit={fit} lack={lack} profile={profile} game={game} />
+        <LackChip key={lack.id} fit={fit} lack={lack} profile={profile} game={game} />
       ))}
     </Box>
   )

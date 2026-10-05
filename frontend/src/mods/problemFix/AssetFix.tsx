@@ -29,7 +29,7 @@ export function AssetFix({
   const lockedTitle = t`Stop the game to change mods.`
   const key = problem.asset.keys?.[0]
   const id = problem.asset.packIds?.[0]
-  const mod = mods.find((m) => m.key === key && (id === undefined || sameId(m.uniqueId, id)))
+  const mod = mods.find((m) => m.key === key && (id === undefined || sameId(m.id, id)))
   const { variant, color } = assetFixButtonStyle(problem.asset.cosmetic)
   const assetButton = (label: string, onClick: () => void) => (
     <DisabledReason title={lockedTitle} disabled={locked}>
@@ -46,10 +46,7 @@ export function AssetFix({
     </DisabledReason>
   )
   const fixes = (problem.asset.fixes ?? []).map((fix) => (
-    <Tooltip
-      key={`${fix.uniqueId}/${fix.field}`}
-      title={t`In ${fix.name}; turns off its edits here`}
-    >
+    <Tooltip key={`${fix.id}/${fix.field}`} title={t`In ${fix.name}; turns off its edits here`}>
       <span>
         {assetButton(t`Set ${fix.field} to ${fix.value}`, () =>
           setConfigValue(fix, fix.value).catch(reportUnexpected),

@@ -50,9 +50,9 @@ function fetchDoc(mod: Mod) {
   }
   const schemaP =
     mod.contentPackFor === cpFor
-      ? ReadContentSchema(target.game, target.id, mod.key, mod.uniqueId).catch(() => '{}')
+      ? ReadContentSchema(target.game, target.id, mod.key, mod.id).catch(() => '{}')
       : Promise.resolve('{}')
-  return Promise.all([ReadConfig(target.game, target.id, mod.key, mod.uniqueId), schemaP])
+  return Promise.all([ReadConfig(target.game, target.id, mod.key, mod.id), schemaP])
 }
 
 function useConfigDoc(mod: Mod, open: boolean) {
@@ -94,7 +94,7 @@ function useConfigDoc(mod: Mod, open: boolean) {
         setTree(null)
         setError(errorDetails(e))
       })
-  }, [open, mod.key, mod.uniqueId, mod.contentPackFor, mod])
+  }, [open, mod.key, mod.id, mod.contentPackFor, mod])
   const applyJson = (): boolean => {
     try {
       setTree(parseConfig(jsonDraft))
@@ -122,7 +122,7 @@ function useConfigDoc(mod: Mod, open: boolean) {
     } else if (tab === 0) {
       return
     }
-    WriteConfig(target.game, target.id, mod.key, mod.uniqueId, body)
+    WriteConfig(target.game, target.id, mod.key, mod.id, body)
       .then(() => {
         if (seq === readGen.current) {
           setSaved(true)
@@ -246,7 +246,7 @@ function EditorDialog({
 
 function ConfigEditor({ mod, open, onClose }: { mod: Mod; open: boolean; onClose: () => void }) {
   const doc = useConfigDoc(mod, open)
-  const menu = useGmcmMenu(mod.uniqueId, open)
+  const menu = useGmcmMenu(mod.id, open)
   const guard = useDiscardGuard(doc.dirty, onClose)
   return (
     <>

@@ -30,10 +30,10 @@ test('saves copy-from uses a short label, tooltip, and usePending', () => {
 test('find-mod hits drop UniqueID from the visible label and keep it in the tooltip', () => {
   const page = src('..', 'profiles', 'ProfilesPage.tsx')
   expect(page).toContain('title={`')
-  expect(page).toContain('h.uniqueId')
+  expect(page).toContain('h.id')
   expect(page).toContain('minWidth: 0')
   const kids = page.split('FindModSearch')[1] ?? ''
-  expect(/title=\{`\$\{h\.name\} · \$\{h\.uniqueId\}/.test(kids)).toBe(true)
+  expect(/title=\{`\$\{h\.name\} · \$\{localId\(h\.id\)\}/.test(kids)).toBe(true)
   expect(/\{`\$\{h\.name\} · \$\{h\.profileName\}/.test(kids)).toBe(true)
 })
 

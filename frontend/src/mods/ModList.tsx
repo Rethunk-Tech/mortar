@@ -136,7 +136,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
         />
       )
     }
-    case 'uniqueId':
+    case 'id':
     case 'author':
     case 'source':
     case 'category':
@@ -151,7 +151,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
         return <ValueCell key={id} text={<When value={row.added} />} />
       }
       const text = {
-        uniqueId: dash(m.uniqueId),
+        id: dash(m.id),
         author: dash(m.author),
         source: dash(row.source),
         category: dash(row.categoryLabel),

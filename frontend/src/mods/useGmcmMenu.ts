@@ -14,7 +14,7 @@ import {
 } from './configMenu.ts'
 import { openTarget } from './storeView.ts'
 
-export function useGmcmMenu(uniqueId: string, open: boolean) {
+export function useGmcmMenu(id: string, open: boolean) {
   const [capture, setCapture] = useState<GmcmCapture | null>(null)
   const [drafts, setDrafts] = useState<Record<string, unknown>>({})
   const [result, setResult] = useState<Result | null>(null)
@@ -35,9 +35,9 @@ export function useGmcmMenu(uniqueId: string, open: boolean) {
       return
     }
     Promise.all([
-      GmcmMenu(t.game, t.id, uniqueId).catch(() => null),
-      PendingGmcm(t.game, t.id, uniqueId).catch(() => ({ schema: 1, edits: [] })),
-      GmcmResult(t.game, t.id, uniqueId).catch(() => ({ applied: 0, skipped: [] })),
+      GmcmMenu(t.game, t.id, id).catch(() => null),
+      PendingGmcm(t.game, t.id, id).catch(() => ({ schema: 1, edits: [] })),
+      GmcmResult(t.game, t.id, id).catch(() => ({ applied: 0, skipped: [] })),
     ])
       .then(([menu, pending, last]) => {
         if (seq !== gen.current) {
@@ -50,13 +50,13 @@ export function useGmcmMenu(uniqueId: string, open: boolean) {
         setPageId(cap?.pages?.[0]?.id ?? '')
       })
       .catch(() => undefined)
-  }, [open, uniqueId])
+  }, [open, id])
   const persist = (next: Record<string, unknown>, cap: GmcmCapture | null) => {
     const t = openTarget()
     if (!(t && cap)) {
       return
     }
-    SetGmcmEdits(t.game, t.id, uniqueId, pendingEdits(cap, next)).catch(reportUnexpected)
+    SetGmcmEdits(t.game, t.id, id, pendingEdits(cap, next)).catch(reportUnexpected)
   }
   const change = (key: string, value: unknown) => {
     setDrafts((cur) => {
@@ -72,7 +72,7 @@ export function useGmcmMenu(uniqueId: string, open: boolean) {
       return
     }
     setDrafts({})
-    SetGmcmEdits(t.game, t.id, uniqueId, []).catch(reportUnexpected)
+    SetGmcmEdits(t.game, t.id, id, []).catch(reportUnexpected)
   }
   return { capture, drafts, result, pageId, setPageId, change, save, discard }
 }

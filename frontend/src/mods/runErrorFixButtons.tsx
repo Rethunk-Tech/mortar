@@ -24,9 +24,9 @@ export function RunErrorButtons({
   const mods = useMods((s) => s.mods)
   const setEnabled = useMods((s) => s.setEnabled)
   const profileId = useProfiles((s) => s.openId)
-  const mod = mods.find((m) => m.key === runError.key && sameId(m.uniqueId, runError.uniqueId))
+  const mod = mods.find((m) => m.key === runError.key && sameId(m.id, runError.id))
   const current =
-    mod ?? (runError.updated ? mods.find((m) => sameId(m.uniqueId, runError.uniqueId)) : undefined)
+    mod ?? (runError.updated ? mods.find((m) => sameId(m.id, runError.id)) : undefined)
   const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
   const update =
     runError.updated && current

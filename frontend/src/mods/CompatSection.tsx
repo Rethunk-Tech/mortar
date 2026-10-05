@@ -59,7 +59,7 @@ export function CompatSection({ rows }: { rows: Compat[] }) {
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {rows.map((row) => (
-          <CompatInfoRow key={`${row.key}/${row.uniqueId}`} row={row} />
+          <CompatInfoRow key={`${row.key}/${row.id}`} row={row} />
         ))}
       </Box>
     </Box>

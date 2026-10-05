@@ -8,6 +8,7 @@ import { RunProblems as FetchRunProblems } from '../../bindings/github.com/Rethu
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useBrowseView } from '../browse/view.ts'
 import { useTab } from '../game/tab.ts'
+import { localId } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
@@ -27,28 +28,28 @@ function findMod(problem: SMAPIProblem): Mod | undefined {
     .getState()
     .mods.find(
       (m) =>
-        (problem.modId !== '' && sameId(m.uniqueId, problem.modId)) ||
+        (problem.modId !== '' && sameId(localId(m.id), problem.modId)) ||
         (problem.modName !== '' && m.name === problem.modName),
     )
 }
 
-async function installDependency(i18n: I18n, uniqueId: string) {
-  if (uniqueId === '') {
+async function installDependency(i18n: I18n, id: string) {
+  if (id === '') {
     return
   }
   await useMods.getState().loadProblems()
   const missing = (useMods.getState().problems?.missing ?? []).find((m) =>
-    sameId(m.uniqueId, uniqueId),
+    sameId(localId(m.id), id),
   )
   const want = missing?.where ? refWant(missing.where, 'dependency') : null
   if (!want) {
     useToasts.getState().push({
       kind: 'error',
-      title: i18n._(msg`Mortar doesn't know where to get ${uniqueId}`),
+      title: i18n._(msg`Mortar doesn't know where to get ${id}`),
       action: {
         label: i18n._(msg`Search Nexus`),
         run: () => {
-          useBrowseView.getState().setPendingQuery(uniqueId)
+          useBrowseView.getState().setPendingQuery(id)
           useTab.getState().setTab('browse')
         },
       },
@@ -89,7 +90,7 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem) {
         .getState()
         .mods.filter(
           (m) =>
-            (problem.modId !== '' && sameId(m.uniqueId, problem.modId)) ||
+            (problem.modId !== '' && sameId(localId(m.id), problem.modId)) ||
             (problem.modName !== '' && m.name === problem.modName),
         )
       const { remove } = duplicateCopies(mods)
@@ -123,7 +124,7 @@ function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: 
   const copies = duplicateCopies(
     useMods((s) => s.mods).filter(
       (m) =>
-        (problem.modId !== '' && sameId(m.uniqueId, problem.modId)) ||
+        (problem.modId !== '' && sameId(localId(m.id), problem.modId)) ||
         (problem.modName !== '' && m.name === problem.modName),
     ),
   )

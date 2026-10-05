@@ -11,6 +11,7 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material'
+import { localId } from '../mods/dependents.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { addRecordedMods } from '../saves/recordedActions.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -24,7 +25,7 @@ export function SaveWarnDialog() {
   const save = warn?.save
   const recorded = (save?.lastMissing ?? []).length > 0
   const missing = recorded ? (save?.lastMissing ?? []) : (save?.missing ?? [])
-  const names = missing.map((m) => m.name || m.uniqueId)
+  const names = missing.map((m) => m.name || localId(m.id))
   const listed = names.join(', ')
   const switchTo =
     recorded &&
@@ -47,10 +48,10 @@ export function SaveWarnDialog() {
         {recorded ? null : (
           <List dense={true} sx={{ mt: 1 }}>
             {missing.map((m) => (
-              <ListItem key={m.uniqueId} disableGutters={true}>
+              <ListItem key={m.id} disableGutters={true}>
                 <ListItemText
                   primary={
-                    <span title={(m.name ?? '').trim() === '' ? m.uniqueId : undefined}>
+                    <span title={(m.name ?? '').trim() === '' ? localId(m.id) : undefined}>
                       {(m.name ?? '').trim() === '' ? t`Unknown mod` : m.name}
                     </span>
                   }

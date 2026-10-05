@@ -114,8 +114,8 @@ export function OtherProfilesDialog({
   open,
   game,
   currentProfileId,
-  uniqueId,
-  uniqueIds,
+  id,
+  ids,
   mode = 'add',
   title,
   helper,
@@ -127,8 +127,8 @@ export function OtherProfilesDialog({
   open: boolean
   game: string
   currentProfileId: string
-  uniqueId: string
-  uniqueIds?: string[]
+  id: string
+  ids?: string[]
   mode?: 'add' | 'remove'
   title: string
   helper?: string
@@ -147,7 +147,7 @@ export function OtherProfilesDialog({
     if (!open) {
       return
     }
-    Promise.all((uniqueIds ?? [uniqueId]).map((id) => ProfilesWithMod(game, id)))
+    Promise.all((ids ?? [id]).map((one) => ProfilesWithMod(game, one)))
       .then((lists) =>
         setRows(
           lists
@@ -162,7 +162,7 @@ export function OtherProfilesDialog({
         ),
       )
       .catch(reportError(t`Could not read other profiles`))
-  }, [currentProfileId, game, open, t, uniqueId, uniqueIds])
+  }, [currentProfileId, game, open, t, id, ids])
   useEffect(() => {
     if (!open) {
       return
@@ -180,10 +180,10 @@ export function OtherProfilesDialog({
     setSelected(
       mode === 'remove'
         ? []
-        : profiles.map((profile) => profile.id).filter((id) => !unavailable.has(id)),
+        : profiles.map((profile) => profile.id).filter((profileId) => !unavailable.has(profileId)),
     )
   }, [launch, mode, open, profiles, rows, update])
-  const choose = (id: string) => setSelected((current) => toggleSelected(current, id))
+  const choose = (profileId: string) => setSelected((current) => toggleSelected(current, profileId))
   const locked = (profile: Profile) => lockedIn(launch, profile.id)
   const pinned = (profile: Profile, row: ModInProfile) => profileHasPinned(profile, row, update)
   const confirm = () => {

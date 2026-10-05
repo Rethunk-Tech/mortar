@@ -30,7 +30,7 @@ export function KeptGroup({ kept, mods }: { kept: Update[]; mods: Mod[] }) {
       {open ? (
         <Box role="list">
           {kept.map((u) => {
-            const mod = mods.find((m) => m.key === u.key && sameId(m.uniqueId, u.uniqueId))
+            const mod = mods.find((m) => m.key === u.key && sameId(m.id, u.id))
             return (
               <Box
                 key={u.key}

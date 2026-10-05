@@ -12,7 +12,7 @@ interface AuthorModProfile {
 }
 
 interface AuthorModRow {
-  uniqueId: string
+  id: string
   name: string
   profiles: AuthorModProfile[]
 }
@@ -20,9 +20,9 @@ interface AuthorModRow {
 function addHit(
   byId: Map<string, AuthorModRow>,
   row: AuthorModProfile,
-  mod: { uniqueId: string; name: string },
+  mod: { id: string; name: string },
 ) {
-  const key = idKey(mod.uniqueId)
+  const key = idKey(mod.id)
   const existing = byId.get(key)
   if (existing) {
     if (existing.name === '') {
@@ -31,14 +31,14 @@ function addHit(
     existing.profiles.push(row)
     return
   }
-  byId.set(key, { uniqueId: mod.uniqueId, name: mod.name, profiles: [row] })
+  byId.set(key, { id: mod.id, name: mod.name, profiles: [row] })
 }
 
 function collectFromProfile(byId: Map<string, AuthorModRow>, profile: Profile, author: string) {
   for (const entry of profile.entries ?? []) {
     for (const mod of entry.mods ?? []) {
       if (authorFieldIncludes(mod.author, author)) {
-        const enabled = !(entry.disabled ?? []).some((id) => sameId(id, mod.uniqueId))
+        const enabled = !(entry.disabled ?? []).some((id) => sameId(id, mod.id))
         addHit(
           byId,
           {
@@ -70,7 +70,7 @@ function modsByAuthor(profiles: Profile[], author: string): AuthorModRow[] {
     if (byName !== 0) {
       return byName
     }
-    return cmpText(a.uniqueId, b.uniqueId)
+    return cmpText(a.id, b.id)
   })
   return out
 }

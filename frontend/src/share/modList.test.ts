@@ -57,7 +57,7 @@ test('listItems drops bundled SMAPI and the bridge and keeps disabled mods', () 
         source: source('smapi', { kind: 'smapi', name: 'SMAPI' }),
         mods: [
           {
-            uniqueId: 'SMAPI.ConsoleCommands',
+            id: 'SMAPI.ConsoleCommands',
             version: '1',
             name: 'Console',
             author: '',
@@ -68,16 +68,14 @@ test('listItems drops bundled SMAPI and the bridge and keeps disabled mods', () 
       entry({
         key: 'bridge-1',
         source: source('mortar', { kind: 'mortar', name: 'Mortar' }),
-        mods: [
-          { uniqueId: 'Mortar.Bridge', version: '1', name: 'Bridge', author: '', folder: '.' },
-        ],
+        mods: [{ id: 'Mortar.Bridge', version: '1', name: 'Bridge', author: '', folder: '.' }],
       }),
       entry({
         key: 'content-1',
         source: source('nexus', { kind: 'nexus', name: 'CP', modId: 1915 }),
         mods: [
           {
-            uniqueId: 'Pathoschild.ContentPatcher',
+            id: 'Pathoschild.ContentPatcher',
             version: '2.0.0',
             name: 'Content Patcher',
             author: '',
@@ -104,12 +102,12 @@ test('listItems can keep one entry and builds a GitHub page URL', () => {
       entry({
         key: 'keep',
         source: source('github', { kind: 'github', name: 'asset', repo: 'owner/mod' }),
-        mods: [{ uniqueId: 'A.Mod', version: '3', name: 'A Mod', author: '', folder: '.' }],
+        mods: [{ id: 'A.Mod', version: '3', name: 'A Mod', author: '', folder: '.' }],
       }),
       entry({
         key: 'skip',
         source: source('nexus', { kind: 'nexus', name: 'Other', modId: 2 }),
-        mods: [{ uniqueId: 'B.Mod', version: '1', name: 'B', author: '', folder: '.' }],
+        mods: [{ id: 'B.Mod', version: '1', name: 'B', author: '', folder: '.' }],
       }),
     ]),
     ['keep'],

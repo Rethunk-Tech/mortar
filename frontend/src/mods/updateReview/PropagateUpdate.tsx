@@ -37,9 +37,7 @@ export function PropagateUpdate({
     const next = useProfiles
       .getState()
       .profiles.find((candidate) => candidate.id === profile.id)
-      ?.entries?.find((entry) =>
-        entry.mods?.some((mod) => sameId(mod.uniqueId, update.uniqueId)),
-      )?.key
+      ?.entries?.find((entry) => entry.mods?.some((mod) => sameId(mod.id, update.id)))?.key
     if (next) {
       setNewKey(next)
     }
@@ -50,7 +48,7 @@ export function PropagateUpdate({
       onClose={onDone}
       game={useProfiles.getState().game?.id ?? ''}
       currentProfileId={profile.id}
-      uniqueId={update.uniqueId}
+      id={update.id}
       title={t`Update ${update.name} in other profiles`}
       confirmLabel={t`Update profiles`}
       update={{ oldKey: update.key }}

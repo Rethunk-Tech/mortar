@@ -214,7 +214,7 @@ function Body({ mod, profile, relations, state, ask }: BodyProps) {
     <>
       <Section title={t`Needs`}>
         {(relations?.needs ?? []).length > 0 ? (
-          (relations?.needs ?? []).map((n) => <NeedRow key={n.uniqueId} need={n} />)
+          (relations?.needs ?? []).map((n) => <NeedRow key={n.id} need={n} />)
         ) : (
           <Typography sx={text}>{t`Nothing`}</Typography>
         )}
@@ -222,7 +222,7 @@ function Body({ mod, profile, relations, state, ask }: BodyProps) {
       {others.length > 0 ? (
         <Section title={t`In the same download`}>
           {others.map((o) => (
-            <Typography key={o.uniqueId} sx={text}>
+            <Typography key={o.id} sx={text}>
               {o.name}{' '}
               <Box component="span" sx={{ color: 'text.secondary' }}>
                 {t`· updates and rolls back with this mod`}

@@ -23,7 +23,7 @@ test('finds mods by name or UniqueID across profiles', () => {
           source: { kind: 'nexus', name: 'CP' },
           mods: [
             {
-              uniqueId: 'Pathoschild.ContentPatcher',
+              id: 'Pathoschild.ContentPatcher',
               version: '2.1',
               name: 'Content Patcher',
               author: '',
@@ -46,7 +46,7 @@ test('finds mods by name or UniqueID across profiles', () => {
           source: { kind: 'local', name: 'x.zip' },
           mods: [
             {
-              uniqueId: 'SpaceChase0.SpaceCore',
+              id: 'SpaceChase0.SpaceCore',
               version: '1.0',
               name: 'SpaceCore',
               author: '',
@@ -61,7 +61,7 @@ test('finds mods by name or UniqueID across profiles', () => {
     }),
   ]
   expect(findModInProfiles(profiles, 'content').map((h) => h.profileId)).toEqual(['aaaa'])
-  expect(findModInProfiles(profiles, 'spacecore').map((h) => h.uniqueId)).toEqual([
+  expect(findModInProfiles(profiles, 'spacecore').map((h) => h.id)).toEqual([
     'SpaceChase0.SpaceCore',
   ])
   expect(findModInProfiles(profiles, '  ')).toEqual([])
@@ -69,7 +69,7 @@ test('finds mods by name or UniqueID across profiles', () => {
 
 test('opening a hit keeps the UniqueID to select after the profile loads', () => {
   useNav.setState({ route: { name: 'profiles', game: 'stardew' } })
-  openModInProfile({ profileId: 'bbbb', key: 'k2', uniqueId: 'SpaceChase0.SpaceCore' })
+  openModInProfile({ profileId: 'bbbb', key: 'k2', id: 'SpaceChase0.SpaceCore' })
   expect(useProfiles.getState().openId).toBe('bbbb')
   expect(useNav.getState().route.name).toBe('game')
   expect(useDetail.getState().pendingId).toBe('k2/SpaceChase0.SpaceCore')

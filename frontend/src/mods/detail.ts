@@ -39,18 +39,18 @@ async function redoUpdate(game: string, id: string, key: string) {
 }
 
 function versionAfterRollBack(
-  entries: { mods?: { uniqueId: string; version: string }[] | null }[] | null | undefined,
-  uniqueId: string,
+  entries: { mods?: { id: string; version: string }[] | null }[] | null | undefined,
+  id: string,
 ): string | undefined {
-  return entries?.flatMap((e) => e.mods ?? []).find((m) => m.uniqueId === uniqueId)?.version
+  return entries?.flatMap((e) => e.mods ?? []).find((m) => m.id === id)?.version
 }
 
 function keyAfterRollBack(
-  entries: { key: string; mods?: { uniqueId: string }[] | null }[] | null | undefined,
-  uniqueId: string,
+  entries: { key: string; mods?: { id: string }[] | null }[] | null | undefined,
+  id: string,
   fallback: string,
 ) {
-  return entries?.find((e) => (e.mods ?? []).some((m) => m.uniqueId === uniqueId))?.key ?? fallback
+  return entries?.find((e) => (e.mods ?? []).some((m) => m.id === id))?.key ?? fallback
 }
 
 // The selected mod (by modId) shown in the sidebar, whether its details dialog is open, and what the dialog reads beyond the mod list.
@@ -60,7 +60,7 @@ export const useDetail = create<{
   open: boolean
   extras: Extras | null
   show: (mod: Mod | null) => void
-  showAfterLoad: (mod: Pick<Mod, 'key' | 'uniqueId'>) => void
+  showAfterLoad: (mod: Pick<Mod, 'key' | 'id'>) => void
   takePending: () => string
   setOpen: (isOpen: boolean) => void
   loadExtras: (mod: Mod) => Promise<void>
@@ -86,8 +86,8 @@ export const useDetail = create<{
     }
     try {
       const [relations, state] = await Promise.all([
-        ReadRelations(target.game, target.id, mod.key, mod.uniqueId),
-        ReadModState(target.game, target.id, mod.key, mod.uniqueId),
+        ReadRelations(target.game, target.id, mod.key, mod.id),
+        ReadModState(target.game, target.id, mod.key, mod.id),
       ])
       if (get().detailId === modId(mod)) {
         set({ extras: { id: modId(mod), relations, state } })
@@ -109,8 +109,8 @@ export const useDetail = create<{
       return
     }
     const next = useProfiles.getState().profiles.find((p) => p.id === target.id)
-    const backTo = versionAfterRollBack(next?.entries, mod.uniqueId)
-    const key = keyAfterRollBack(next?.entries, mod.uniqueId, mod.key)
+    const backTo = versionAfterRollBack(next?.entries, mod.id)
+    const key = keyAfterRollBack(next?.entries, mod.id, mod.key)
     useToasts.getState().push({
       kind: 'success',
       title: i18n._(msg`${mod.name} rolled back`),
@@ -124,7 +124,7 @@ export const useDetail = create<{
           changeStillLatest(
             useProfiles.getState().profiles.find((p) => p.id === target.id),
             key,
-            [mod.uniqueId],
+            [mod.id],
           ),
       },
     })
@@ -137,7 +137,7 @@ export const useDetail = create<{
       return
     }
     try {
-      await ResetConfig(target.game, target.id, mod.key, mod.uniqueId)
+      await ResetConfig(target.game, target.id, mod.key, mod.id)
     } catch (e) {
       fail(i18n._(msg`Could not reset the settings of ${mod.name}`))(e)
     }

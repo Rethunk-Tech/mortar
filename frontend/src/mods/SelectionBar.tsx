@@ -83,7 +83,7 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
         onSubmit={async (name) => {
           const game = useProfiles.getState().game?.id ?? ''
           const created = await Create(game, name, profileId, [
-            ...new Set(selected.map((mod) => mod.uniqueId)),
+            ...new Set(selected.map((mod) => mod.id)),
           ])
           useToasts.getState().push({ kind: 'success', title: t`Created ${created.name}` })
         }}
@@ -113,15 +113,15 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
         onClose={() => setAlsoOpen(false)}
         game={useProfiles.getState().game?.id ?? ''}
         currentProfileId={profileId}
-        uniqueId={selected[0]?.uniqueId ?? ''}
-        uniqueIds={[...new Set(selected.map((mod) => mod.uniqueId))]}
+        id={selected[0]?.id ?? ''}
+        ids={[...new Set(selected.map((mod) => mod.id))]}
         title={t`Also add selected mods to…`}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {
           await Promise.all(
             profiles.map((other) =>
               CopyMods(useProfiles.getState().game?.id ?? '', profileId, other.id, [
-                ...new Set(selected.map((mod) => mod.uniqueId)),
+                ...new Set(selected.map((mod) => mod.id)),
               ]),
             ),
           )

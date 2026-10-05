@@ -94,7 +94,7 @@ test('groups by first tag, empty last, sort within groups', () => {
 })
 
 test('status grouping puts drift-affected entries in Problems', () => {
-  const mod = { key: 'k', uniqueId: 'me.a', name: 'A', enabled: true }
+  const mod = { key: 'k', id: 'me.a', name: 'A', enabled: true }
   const result = {
     missing: [],
     duplicates: [],
@@ -128,7 +128,7 @@ test('category grouping uses entry override before Nexus', () => {
     categoryOverride: 'abc123',
     details: { category: 'User Interface' },
     mod: {
-      uniqueId: 'A.Mod',
+      id: 'A.Mod',
       author: '',
       enabled: true,
     },
@@ -177,7 +177,7 @@ test('framework grouping uses contentPackFor when the pack has other required de
     source: '',
     tags: [],
     mod: {
-      uniqueId: 'Author.Pack',
+      id: 'Author.Pack',
       author: '',
       enabled: true,
       needs: ['B.Req', 'Pathoschild.ContentPatcher'],

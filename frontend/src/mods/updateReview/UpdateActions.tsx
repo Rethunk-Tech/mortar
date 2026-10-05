@@ -44,13 +44,13 @@ export function UpdateActions({
   const [everywhere, setEverywhere] = useState(false)
   const [preview, setPreview] = useState<EverywherePreview | null>(null)
   useEffect(() => {
-    if (game === '' || update.uniqueId === '') {
+    if (game === '' || update.id === '') {
       return
     }
-    PreviewEverywhere(game, update.uniqueId)
+    PreviewEverywhere(game, update.id)
       .then(setPreview)
       .catch(() => setPreview(null))
-  }, [game, update.uniqueId])
+  }, [game, update.id])
   const n = preview?.affected?.length ?? 0
   const previewReady = preview !== null
   const everywhereBlocked = !previewReady || n === 0
@@ -132,7 +132,7 @@ export function UpdateActions({
       <EverywhereDialog
         open={everywhere}
         game={game}
-        mods={[{ id: update.uniqueId, newKey: 'latest' }]}
+        mods={[{ id: update.id, newKey: 'latest' }]}
         onClose={() => setEverywhere(false)}
       />
     </>

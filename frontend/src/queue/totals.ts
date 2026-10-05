@@ -88,7 +88,7 @@ export function profileOf(
 
 // The letter-tile identity of a queue item.
 export const tile = (i: Item) => ({
-  uniqueId: i.repo || String(i.modId),
+  id: i.repo || String(i.modId),
   name: i.name || i.repo || String(i.modId),
   picture: i.picture ?? '',
 })

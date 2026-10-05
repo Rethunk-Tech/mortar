@@ -9,7 +9,7 @@ import { sameId } from '../mods/lookup.ts'
 import { userModEntries } from './count.ts'
 
 interface CompareSide {
-  uniqueId: string
+  id: string
   name: string
   version: string
   enabled: boolean
@@ -18,7 +18,7 @@ interface CompareSide {
 }
 
 interface ComparePair {
-  uniqueId: string
+  id: string
   name: string
   a: CompareSide
   b: CompareSide
@@ -32,21 +32,21 @@ interface ProfileCompare {
   identical: ComparePair[]
 }
 
-function enabledOf(entry: Entry, uniqueId: string): boolean {
-  return !(entry.disabled ?? []).some((id) => sameId(id, uniqueId))
+function enabledOf(entry: Entry, id: string): boolean {
+  return !(entry.disabled ?? []).some((disabled) => sameId(disabled, id))
 }
 
 function indexUserMods(profile: Profile): Map<string, CompareSide> {
   const out = new Map<string, CompareSide>()
   for (const e of userModEntries(profile.entries)) {
     for (const m of e.mods ?? []) {
-      const k = idKey(m.uniqueId)
+      const k = idKey(m.id)
       if (!out.has(k)) {
         out.set(k, {
-          uniqueId: m.uniqueId,
+          id: m.id,
           name: m.name,
           version: m.version,
-          enabled: enabledOf(e, m.uniqueId),
+          enabled: enabledOf(e, m.id),
           key: e.key,
           source: e.source,
         })
@@ -62,7 +62,7 @@ function sortSides(sides: CompareSide[]): CompareSide[] {
     if (n !== 0) {
       return n
     }
-    return cmpText(a.uniqueId, b.uniqueId)
+    return cmpText(a.id, b.id)
   })
 }
 
@@ -72,7 +72,7 @@ function sortPairs(pairs: ComparePair[]): ComparePair[] {
     if (n !== 0) {
       return n
     }
-    return cmpText(a.uniqueId, b.uniqueId)
+    return cmpText(a.id, b.id)
   })
 }
 
@@ -90,7 +90,7 @@ function classifyPair(
   },
 ) {
   const name = pairName(side, other)
-  const pair: ComparePair = { uniqueId: side.uniqueId, name, a: side, b: other }
+  const pair: ComparePair = { id: side.id, name, a: side, b: other }
   const versionDiff = side.version !== other.version
   const enabledDiff = side.enabled !== other.enabled
   if (versionDiff) {

@@ -9,7 +9,7 @@ test('groups by top folder, fills implicit folders and marks manifests', () => {
       { path: 'Mod/i18n/en.json', size: 3, isDir: false },
       { path: 'readme.txt', size: 1, isDir: false },
     ],
-    [{ folder: 'Mod', uniqueId: 'a.Mod', name: 'Mod', version: '1.0' }],
+    [{ folder: 'Mod', id: 'a.Mod', name: 'Mod', version: '1.0' }],
   )
   expect(groups.map((g) => g.folder)).toEqual(['Mod', 'Mod-b', ''])
   const [mod] = groups
@@ -19,6 +19,6 @@ test('groups by top folder, fills implicit folders and marks manifests', () => {
     ['Mod/i18n/en.json', 2],
     ['Mod/manifest.json', 1],
   ])
-  expect(mod?.rows[0]?.manifest?.uniqueId).toBe('a.Mod')
+  expect(mod?.rows[0]?.manifest?.id).toBe('a.Mod')
   expect(mod?.size).toBe(5)
 })

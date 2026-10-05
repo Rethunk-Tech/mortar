@@ -27,7 +27,7 @@ const mod = (key: string, state: string, sizeKb: number, site = 'nexus'): Mod =>
   sizeKb,
   different: false,
   unverified: false,
-  uniqueIds: [],
+  ids: [],
   enabled: true,
 })
 
@@ -80,7 +80,7 @@ test('null lists from Go become empty lists', () => {
 })
 
 test('missing mods list a known name and keep the UniqueID for the title', () => {
-  const mods = [{ name: 'Content Patcher', uniqueIds: ['Pathoschild.ContentPatcher'] }]
+  const mods = [{ name: 'Content Patcher', ids: ['Pathoschild.ContentPatcher'] }]
   expect(missingModName('Pathoschild.ContentPatcher', mods)).toBe('Content Patcher')
   expect(missingModName('Unknown.Mod', mods)).toBeUndefined()
 })

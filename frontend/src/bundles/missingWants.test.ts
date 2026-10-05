@@ -4,7 +4,7 @@ import { bundleWants } from './missingWants.ts'
 
 test('one want per archive; mods with no downloadable source are skipped', () => {
   const mod = (name: string, entryKey: string, source: Source) => ({
-    uniqueId: name,
+    id: name,
     name,
     entryKey,
     source,

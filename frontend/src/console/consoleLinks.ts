@@ -1,9 +1,11 @@
+import { localId } from '../mods/dependents.ts'
+
 const WORD_CHAR = /[A-Za-z0-9_]/
 const TRAILING_PUNCT = /[.,;:)\]]$/
 const ROOT_TRAILING_SEP = /[/\\]+$/
 
 type ConsoleLink =
-  | { kind: 'mod'; start: number; end: number; uniqueID: string }
+  | { kind: 'mod'; start: number; end: number; id: string }
   | { kind: 'path'; start: number; end: number; path: string }
 
 function overlap(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
@@ -81,7 +83,7 @@ function extendPath(text: string, minEnd: number): number {
 
 interface InstalledMod {
   name: string
-  uniqueID: string
+  id: string
 }
 
 interface ConsoleLinkRoots {
@@ -97,15 +99,15 @@ function linksInText(
   const found: ConsoleLink[] = []
   const names = mods
     .flatMap((m) => [
-      { key: m.uniqueID, uniqueID: m.uniqueID },
-      { key: m.name, uniqueID: m.uniqueID },
+      { key: localId(m.id), id: m.id },
+      { key: m.name, id: m.id },
     ])
     .filter((m) => m.key.length > 0)
     .sort((a, b) => b.key.length - a.key.length)
 
   const seen = new Set<string>()
   for (const n of names) {
-    const id = `${n.uniqueID}\0${n.key}`
+    const id = `${n.id}\0${n.key}`
     if (!seen.has(id)) {
       seen.add(id)
       let from = 0
@@ -120,7 +122,7 @@ function linksInText(
             kind: 'mod',
             start: i,
             end,
-            uniqueID: n.uniqueID,
+            id: n.id,
           })
         }
         from = i + 1
@@ -157,12 +159,12 @@ function linksForModColumn(modColumn: string, mods: readonly InstalledMod[]): Co
   if (key.length === 0) {
     return []
   }
-  const match = mods.find((m) => m.name === key || m.uniqueID === key)
+  const match = mods.find((m) => m.name === key || localId(m.id) === key)
   if (match === undefined) {
     return []
   }
   const start = modColumn.indexOf(key)
-  return [{ kind: 'mod', start, end: start + key.length, uniqueID: match.uniqueID }]
+  return [{ kind: 'mod', start, end: start + key.length, id: match.id }]
 }
 
 export type { ConsoleLink, ConsoleLinkRoots, InstalledMod }

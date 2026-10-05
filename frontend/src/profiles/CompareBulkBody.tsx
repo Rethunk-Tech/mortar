@@ -3,6 +3,7 @@ import { Box, Collapse, IconButton, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, Inbox } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { localId } from '../mods/dependents.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { CompareDiffRow, CompareSection } from './CompareRows.tsx'
@@ -34,7 +35,7 @@ function IdenticalList({ rows }: { rows: ComparePair[] }) {
       <Collapse in={open}>
         <Box sx={{ pl: 4, pt: 0.5 }}>
           {rows.map((row) => (
-            <Typography key={row.uniqueId} sx={{ fontSize: 14, py: 0.25 }}>
+            <Typography key={row.id} sx={{ fontSize: 14, py: 0.25 }}>
               {t`${row.name} · ${row.a.version}`}
             </Typography>
           ))}
@@ -67,11 +68,11 @@ function filteredCompare(diff: ProfileCompare, needle: string) {
   const matchesSide = (side: CompareSide) =>
     !needle ||
     side.name.toLowerCase().includes(needle) ||
-    side.uniqueId.toLowerCase().includes(needle)
+    localId(side.id).toLowerCase().includes(needle)
   const matchesPair = (row: ComparePair) =>
     !needle ||
     row.name.toLowerCase().includes(needle) ||
-    row.uniqueId.toLowerCase().includes(needle)
+    localId(row.id).toLowerCase().includes(needle)
   const onlyA = diff.onlyA.filter(matchesSide)
   const onlyB = diff.onlyB.filter(matchesSide)
   const differentVersion = diff.differentVersion.filter(matchesPair)
@@ -103,7 +104,7 @@ export function CompareBulkBody({
   bName: string
   pending: boolean
   lockedReason: (profile: Profile) => string
-  onCopy: (from: Profile, to: Profile, uniqueIds: string[]) => void
+  onCopy: (from: Profile, to: Profile, ids: string[]) => void
   onMatch: (from: Profile, to: Profile, rows: ComparePair[]) => void
 }) {
   const { t } = useLingui()
@@ -162,13 +163,13 @@ export function CompareBulkBody({
         <CompareSection title={t`Different enabled state`}>
           {differentEnabled.map((row) => (
             <CompareDiffRow
-              key={row.uniqueId}
+              key={row.id}
               label={t`${row.name}: ${sideLabel(row.a, enabled, disabled)} → ${sideLabel(row.b, enabled, disabled)}`}
               aName={aName}
               bName={bName}
               pending={pending}
-              copyToB={() => onCopy(profileA, profileB, [row.uniqueId])}
-              copyToA={() => onCopy(profileB, profileA, [row.uniqueId])}
+              copyToB={() => onCopy(profileA, profileB, [row.id])}
+              copyToA={() => onCopy(profileB, profileA, [row.id])}
             />
           ))}
         </CompareSection>

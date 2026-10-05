@@ -14,7 +14,7 @@ test('groups mods by normalised author across profiles', () => {
           source: { kind: 'local', name: 'x' },
           mods: [
             {
-              uniqueId: 'Author.One',
+              id: 'Author.One',
               name: 'One',
               version: '1',
               author: 'Pathoschild & Helper',
@@ -37,7 +37,7 @@ test('groups mods by normalised author across profiles', () => {
           source: { kind: 'local', name: 'y' },
           mods: [
             {
-              uniqueId: 'Author.Two',
+              id: 'Author.Two',
               name: 'Two',
               version: '2',
               author: 'pathoschild',
@@ -54,9 +54,9 @@ test('groups mods by normalised author across profiles', () => {
   const rows = modsByAuthor(profiles, 'Pathoschild')
   expect(
     rows
-      .map((r) => r.uniqueId)
+      .map((r) => r.id)
       .toSorted((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })),
   ).toEqual(['Author.One', 'Author.Two'])
-  const two = rows.find((r) => r.uniqueId === 'Author.Two')
+  const two = rows.find((r) => r.id === 'Author.Two')
   expect(two?.profiles[0]?.enabled).toBe(false)
 })

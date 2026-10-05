@@ -31,7 +31,7 @@ export function UpdateWarnDialog() {
         {(warn?.broken.length ?? 0) > 0 ? (
           <List dense={true} sx={{ mt: 1 }}>
             {warn?.broken.map((mod) => (
-              <ListItem key={`${mod.key}/${mod.uniqueId}`} disableGutters={true}>
+              <ListItem key={`${mod.key}/${mod.id}`} disableGutters={true}>
                 <ListItemText
                   primary={mod.name}
                   secondary={mod.brokeIn ? t`Broke in ${mod.brokeIn}` : t`Broken for this version`}

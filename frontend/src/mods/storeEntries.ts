@@ -85,15 +85,15 @@ function pushRemovedUndo(
   entries: NonNullable<Profile['entries']>,
   load: () => Promise<void>,
 ) {
-  const uniqueIds = entries.flatMap((entry) => (entry.mods ?? []).map((mod) => mod.uniqueId))
+  const ids = entries.flatMap((entry) => (entry.mods ?? []).map((mod) => mod.id))
   const [first] = entries
   useToasts.getState().push({
     kind: 'success',
     title:
-      new Set(uniqueIds).size === 1 && first?.mods?.[0]?.name
+      new Set(ids).size === 1 && first?.mods?.[0]?.name
         ? i18n._(msg`Removed ${first.mods[0].name}`)
         : i18n._(
-            msg`${plural(new Set(uniqueIds).size, { one: 'Removed # mod', other: 'Removed # mods' })}`,
+            msg`${plural(new Set(ids).size, { one: 'Removed # mod', other: 'Removed # mods' })}`,
           ),
     action: {
       label: i18n._(msg`Undo`),
@@ -111,7 +111,7 @@ function pushRemovedUndo(
         if (!(profile && first)) {
           return { disabled: true, reason: i18n._(msg`That profile is gone.`) }
         }
-        const state = changeStillLatest(profile, first.key, uniqueIds)
+        const state = changeStillLatest(profile, first.key, ids)
         return state.disabled
           ? { disabled: false }
           : { disabled: true, reason: i18n._(msg`This is no longer the latest change.`) }
@@ -211,7 +211,7 @@ export async function enableMany(
       await SetModsEnabled(
         target.game,
         target.id,
-        mods.map((m) => ({ key: m.key, uniqueId: m.uniqueId })),
+        mods.map((m) => ({ key: m.key, id: m.id })),
         enabled,
       ).then((r) => {
         announceAlso(r.alsoEnabled)
@@ -290,7 +290,7 @@ export async function setEnabledAction(
     }))
   flip(enabled)
   try {
-    const got = await SetModEnabled(target.game, target.id, mod.key, mod.uniqueId, enabled)
+    const got = await SetModEnabled(target.game, target.id, mod.key, mod.id, enabled)
     useProfiles.getState().replace(got.profile)
     announceAlso(got.alsoEnabled)
     if (enabled) {
@@ -425,7 +425,7 @@ export async function showModFiles(mod: Mod) {
     return
   }
   try {
-    await ShowFiles(target.game, target.id, mod.key, mod.uniqueId)
+    await ShowFiles(target.game, target.id, mod.key, mod.id)
   } catch (e) {
     reportError(i18n._(msg`Could not open the folder of ${mod.name}`))(e)
   }
@@ -437,7 +437,7 @@ export async function openModConfig(mod: Mod) {
     return
   }
   try {
-    await OpenConfig(target.game, target.id, mod.key, mod.uniqueId)
+    await OpenConfig(target.game, target.id, mod.key, mod.id)
   } catch (e) {
     reportError(i18n._(msg`Could not open config.json of ${mod.name}`))(e)
   }

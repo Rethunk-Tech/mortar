@@ -22,7 +22,7 @@ test('problemSections omits empty groups and keeps order', () => {
       {
         dependentId: 'd',
         dependentName: 'Dep',
-        uniqueId: 'a',
+        id: 'a',
         minimumVersion: '',
         installedVersion: '',
         reason: 'absent',
@@ -34,7 +34,7 @@ test('problemSections omits empty groups and keeps order', () => {
     ],
     duplicates: [
       {
-        uniqueId: 'u',
+        id: 'u',
         name: 'Dup',
         copies: null,
       },
@@ -55,7 +55,7 @@ test('settings are an info-level group and count as problems', () => {
     settings: [
       {
         key: 'pack',
-        uniqueId: 'Pack.Compat',
+        id: 'Pack.Compat',
         name: 'Pack',
         field: 'Enabled',
         current: 'false',

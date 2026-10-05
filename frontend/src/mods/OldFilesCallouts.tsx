@@ -115,7 +115,7 @@ function OldFilesCallout({
         >
           {files.map((f) => (
             <Typography
-              key={`${f.uniqueId}/${f.path}`}
+              key={`${f.id}/${f.path}`}
               sx={{ fontSize: 12, fontFamily: 'monospace', overflowWrap: 'anywhere' }}
             >
               {f.path}

@@ -1,16 +1,16 @@
 import { expect, test } from 'bun:test'
 import type {
+  Component,
   Entry,
-  EntryMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { compareProfiles } from './compare.ts'
 import { testProfile } from './testProfile.ts'
 
-function mod(uniqueId: string, name: string, version: string): EntryMod {
-  return { uniqueId, name, version, author: '', folder: '.' }
+function mod(id: string, name: string, version: string): Component {
+  return { id, name, version, author: '', folder: '.' }
 }
 
-function entry(key: string, mods: EntryMod[], disabled: string[] | null = null): Entry {
+function entry(key: string, mods: Component[], disabled: string[] | null = null): Entry {
   return {
     key,
     previousKey: '',
@@ -43,11 +43,11 @@ test('compare splits version, enabled, and identical mods in both profiles', () 
   })
 
   const d = compareProfiles(a, b)
-  expect(d.onlyA.map((m) => m.uniqueId)).toEqual(['Me.OnlyA'])
-  expect(d.onlyB.map((m) => m.uniqueId)).toEqual(['Me.OnlyB'])
-  expect(d.differentVersion.map((p) => p.uniqueId)).toEqual(['Me.Ver'])
-  expect(d.differentEnabled.map((p) => p.uniqueId)).toEqual(['Me.En'])
-  expect(d.identical.map((p) => p.uniqueId)).toEqual(['Me.Same'])
+  expect(d.onlyA.map((m) => m.id)).toEqual(['Me.OnlyA'])
+  expect(d.onlyB.map((m) => m.id)).toEqual(['Me.OnlyB'])
+  expect(d.differentVersion.map((p) => p.id)).toEqual(['Me.Ver'])
+  expect(d.differentEnabled.map((p) => p.id)).toEqual(['Me.En'])
+  expect(d.identical.map((p) => p.id)).toEqual(['Me.Same'])
 })
 
 test('a mod with both version and enabled differences appears in both diff groups', () => {
@@ -62,7 +62,7 @@ test('a mod with both version and enabled differences appears in both diff group
     entries: [entry('y', [mod('Me.Both', 'Both', '2.0')], ['Me.Both'])],
   })
   const d = compareProfiles(a, b)
-  expect(d.differentVersion.map((p) => p.uniqueId)).toEqual(['Me.Both'])
-  expect(d.differentEnabled.map((p) => p.uniqueId)).toEqual(['Me.Both'])
+  expect(d.differentVersion.map((p) => p.id)).toEqual(['Me.Both'])
+  expect(d.differentEnabled.map((p) => p.id)).toEqual(['Me.Both'])
   expect(d.identical).toEqual([])
 })

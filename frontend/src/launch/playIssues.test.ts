@@ -10,7 +10,7 @@ import { overflowIssueCount, playIssueSummary } from './playIssues.ts'
 const missing = (over: Partial<Missing> = {}): Missing => ({
   dependentId: 'A.Mod',
   dependentName: 'A',
-  uniqueId: 'Need.This',
+  id: 'Need.This',
   minimumVersion: '',
   reason: 'absent',
   installedVersion: '',
@@ -39,7 +39,7 @@ const conflict = (over: Partial<AssetConflict> = {}): AssetConflict => ({
 
 const broken = (over: Partial<Broken> = {}): Broken => ({
   key: 'k',
-  uniqueId: 'B.Mod',
+  id: 'B.Mod',
   name: 'Broke',
   status: 'broken',
   brokeIn: '',
@@ -49,7 +49,7 @@ const broken = (over: Partial<Broken> = {}): Broken => ({
 
 const update = (over: Partial<Update> = {}): Update => ({
   key: 'u',
-  uniqueId: '',
+  id: '',
   name: 'Newer',
   installed: '',
   version: '2.0.0',
@@ -96,7 +96,7 @@ test('playIssueSummary adds a last-profile group when the newest save used anoth
 test('playIssueSummary names a missing requirement Unknown mod when the page has no name', () => {
   expect(
     playIssueSummary({
-      missing: [missing({ uniqueId: 'Need.This', where: null })],
+      missing: [missing({ id: 'Need.This', where: null })],
     }),
   ).toEqual([
     {
@@ -114,7 +114,7 @@ test('playIssueSummary groups required missing, non-cosmetic conflicts, updates,
     playIssueSummary({
       missing: [
         missing({
-          uniqueId: 'SpaceCore',
+          id: 'SpaceCore',
           where: {
             site: 'Nexus',
             github: '',

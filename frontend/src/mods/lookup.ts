@@ -22,7 +22,7 @@ import { offersNexusDownload } from './nexusMark.ts'
 import { assetRows } from './problemGroups.ts'
 
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
-  mods.filter((m) => m.key === mod.key && m.uniqueId !== mod.uniqueId)
+  mods.filter((m) => m.key === mod.key && m.id !== mod.id)
 
 export const entryOf = (profile: Profile | null | undefined, key: string) =>
   (profile?.entries ?? []).find((e) => e.key === key)
@@ -53,12 +53,12 @@ export const kindLabel = (
 }
 
 // A mod is told apart by its entry too, since two entries can hold the same UniqueID.
-export const modId = (mod: Pick<Mod, 'key' | 'uniqueId'>) => `${mod.key}/${mod.uniqueId}`
+export const modId = (mod: Pick<Mod, 'key' | 'id'>) => `${mod.key}/${mod.id}`
 
 // Showing the mod already open keeps what the panel loaded: it will not load again, since the mod is unchanged.
 export const reshow = <E extends { id: string }>(
   s: { detailId: string; extras: E | null },
-  mod: Pick<Mod, 'key' | 'uniqueId'> | null,
+  mod: Pick<Mod, 'key' | 'id'> | null,
 ) => {
   const detailId = mod ? modId(mod) : ''
   return { detailId, extras: detailId === s.detailId ? s.extras : null }
@@ -103,27 +103,26 @@ export const sameId = (a: string, b: string) => idKey(a) === idKey(b)
 // A card is flagged for a broken mod, for each copy of a duplicate, and for the dependent of a missing dependency.
 export function concerns(p: Problem, mod: Mod): boolean {
   if (p.kind === 'broken') {
-    return p.broken.key === mod.key && sameId(p.broken.uniqueId, mod.uniqueId)
+    return p.broken.key === mod.key && sameId(p.broken.id, mod.id)
   }
   if (p.kind === 'duplicate') {
     return (
-      sameId(p.duplicate.uniqueId, mod.uniqueId) &&
-      (p.duplicate.copies ?? []).some((c) => c.key === mod.key)
+      sameId(p.duplicate.id, mod.id) && (p.duplicate.copies ?? []).some((c) => c.key === mod.key)
     )
   }
   if (p.kind === 'asset') {
-    return (p.asset.packIds ?? []).some((id) => sameId(id, mod.uniqueId))
+    return (p.asset.packIds ?? []).some((id) => sameId(id, mod.id))
   }
   if (p.kind === 'runError') {
-    return p.runError.key === mod.key && sameId(p.runError.uniqueId, mod.uniqueId)
+    return p.runError.key === mod.key && sameId(p.runError.id, mod.id)
   }
   if (p.kind === 'setting') {
-    return p.setting.key === mod.key && sameId(p.setting.uniqueId, mod.uniqueId)
+    return p.setting.key === mod.key && sameId(p.setting.id, mod.id)
   }
   if (p.kind === 'damaged') {
     return p.damaged.key === mod.key
   }
-  return sameId(p.missing.dependentId, mod.uniqueId)
+  return sameId(p.missing.dependentId, mod.id)
 }
 
 // The copy to keep unless the user picks another: the newest, and among equals the Nexus-sourced one.
@@ -204,7 +203,7 @@ export const updateCount = (
 // The update SMAPI's API suggests for this very copy of a mod, if any.
 export const updateFor = (
   result: UpdatesResult | null,
-  mod: Pick<Mod, 'key' | 'uniqueId'>,
+  mod: Pick<Mod, 'key' | 'id'>,
   profile?: Profile | null,
 ): Update | undefined =>
-  visibleUpdates(result, profile).find((u) => u.key === mod.key && sameId(u.uniqueId, mod.uniqueId))
+  visibleUpdates(result, profile).find((u) => u.key === mod.key && sameId(u.id, mod.id))

@@ -39,7 +39,7 @@ const entry = (): Entry => ({
   key: 'k1',
   previousKey: '',
   source: { kind: 'nexus', name: 'a.zip', modId: 1, picture: 'https://example.test/p.png' },
-  mods: [{ uniqueId: 'SpaceCore', version: '1', name: 'SpaceCore', author: '', folder: '.' }],
+  mods: [{ id: 'SpaceCore', version: '1', name: 'SpaceCore', author: '', folder: '.' }],
   disabled: null,
 })
 
@@ -158,13 +158,10 @@ test('a lone Nexus download failure is the one retried', () => {
 
 test('a finished download names the dependent it unblocks', () => {
   expect(
-    unblockedDependent(
-      [{ uniqueId: 'SpaceCore', dependentName: 'Love of Cooking' }],
-      ['spacecore'],
-    ),
+    unblockedDependent([{ id: 'SpaceCore', dependentName: 'Love of Cooking' }], ['spacecore']),
   ).toBe('Love of Cooking')
   expect(
-    unblockedDependent([{ uniqueId: 'SpaceCore', dependentName: 'Love of Cooking' }], []),
+    unblockedDependent([{ id: 'SpaceCore', dependentName: 'Love of Cooking' }], []),
   ).toBeUndefined()
 })
 

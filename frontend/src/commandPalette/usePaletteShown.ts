@@ -29,7 +29,7 @@ export function usePaletteShown(input: {
   const mods = userModEntries(profile?.entries).flatMap((entry) =>
     (entry.mods ?? []).map((mod) => ({
       key: entry.key,
-      uniqueId: mod.uniqueId,
+      id: mod.id,
       name: mod.name,
     })),
   )

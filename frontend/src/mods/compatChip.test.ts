@@ -15,10 +15,10 @@ test('showCompatChip is only for non-ok statuses', () => {
 
 test('compatOf matches UniqueID and key', () => {
   const rows = [
-    { key: 'a', uniqueId: 'Author.Broken', status: 'broken' },
-    { key: 'b', uniqueId: 'Author.Ok', status: 'ok' },
+    { key: 'a', id: 'Author.Broken', status: 'broken' },
+    { key: 'b', id: 'Author.Ok', status: 'ok' },
   ]
-  expect(compatOf(rows, { key: 'a', uniqueId: 'author.broken' })?.status).toBe('broken')
-  expect(compatOf(rows, { key: 'b', uniqueId: 'Author.Ok' })?.status).toBe('ok')
-  expect(compatOf(rows, { key: 'a', uniqueId: 'Author.Ok' })).toBeUndefined()
+  expect(compatOf(rows, { key: 'a', id: 'author.broken' })?.status).toBe('broken')
+  expect(compatOf(rows, { key: 'b', id: 'Author.Ok' })?.status).toBe('ok')
+  expect(compatOf(rows, { key: 'a', id: 'Author.Ok' })).toBeUndefined()
 })

@@ -5,11 +5,11 @@ export function showCompatChip(status: string | undefined | null): boolean {
   return value !== '' && value !== 'ok'
 }
 
-export function compatOf<T extends { uniqueId?: string; key?: string }>(
+export function compatOf<T extends { id?: string; key?: string }>(
   rows: T[] | null | undefined,
-  mod: { uniqueId: string; key: string },
+  mod: { id: string; key: string },
 ): T | undefined {
-  return (rows ?? []).find((row) => row.key === mod.key && sameId(row.uniqueId ?? '', mod.uniqueId))
+  return (rows ?? []).find((row) => row.key === mod.key && sameId(row.id ?? '', mod.id))
 }
 
 export function compatReportChunks(

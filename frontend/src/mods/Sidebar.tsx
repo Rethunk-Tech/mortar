@@ -19,6 +19,7 @@ import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { useCustomCategories } from './customCategories.ts'
+import { localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { useDetail } from './detail.ts'
 import { customCategoryById, resolvedCategoryLabel } from './group.ts'
@@ -159,9 +160,7 @@ function UpdateBanner({ mod }: { mod: Mod }) {
   const game = useProfiles((s) => s.game?.id ?? '')
   const [everywhere, setEverywhere] = useState(false)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
-  const mine = visibleUpdates(raw, profile).filter(
-    (u) => u.key === mod.key && sameId(u.uniqueId, mod.uniqueId),
-  )
+  const mine = visibleUpdates(raw, profile).filter((u) => u.key === mod.key && sameId(u.id, mod.id))
   const unofficial = mine.find((u) => u.unofficial)
   const update = mine.find((u) => !u.unofficial)
   const blocked =
@@ -228,7 +227,7 @@ function UpdateBanner({ mod }: { mod: Mod }) {
       <EverywhereDialog
         open={everywhere}
         game={game}
-        mods={[{ id: mod.uniqueId, newKey: 'latest' }]}
+        mods={[{ id: mod.id, newKey: 'latest' }]}
         onClose={() => setEverywhere(false)}
       />
     </Box>
@@ -253,7 +252,7 @@ function ProblemLine({ mod }: { mod: Mod }) {
 function LastRunLine({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id)
-  const hit = useLastRun((s) => s.byId[mod.uniqueId])
+  const hit = useLastRun((s) => s.byId[mod.id])
   if (!hit || (hit.errors === 0 && hit.warnings === 0) || !game) {
     return null
   }
@@ -281,7 +280,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
       return
     }
     let live = true
-    ProfilesWithMod(game, mod.uniqueId)
+    ProfilesWithMod(game, mod.id)
       .then((list) => {
         if (live) {
           setRows((list ?? []).filter((r) => r.profileId !== profile.id))
@@ -292,7 +291,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
     return () => {
       live = false
     }
-  }, [game, mod.uniqueId, profile.id])
+  }, [game, mod.id, profile.id])
   if (rows.length === 0) {
     return null
   }
@@ -302,9 +301,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
       {rows.map((r) => (
         <Button
           key={r.profileId}
-          onClick={() =>
-            openModInProfile({ profileId: r.profileId, key: r.key, uniqueId: r.uniqueId })
-          }
+          onClick={() => openModInProfile({ profileId: r.profileId, key: r.key, id: r.id })}
           title={`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Off`}`}
           sx={{
             ...noWrap,
@@ -383,7 +380,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
           {t`Stop ignoring ${ignoredSource} updates`}
         </Button>
       ))}
-      <Field label={t`Mod id`} value={mod.uniqueId} hint={t`SMAPI UniqueID`} />
+      <Field label={t`Mod id`} value={localId(mod.id)} hint={t`SMAPI UniqueID`} />
       {mod.endorsements > 0 ? (
         <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString(i18n.locale)} />
       ) : null}
@@ -405,13 +402,11 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         onClose={() => setAlsoOpen(false)}
         game={game}
         currentProfileId={profile.id}
-        uniqueId={mod.uniqueId}
+        id={mod.id}
         title={t`Also add ${mod.name} to…`}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {
-          await Promise.all(
-            profiles.map((other) => CopyMods(game, profile.id, other.id, [mod.uniqueId])),
-          )
+          await Promise.all(profiles.map((other) => CopyMods(game, profile.id, other.id, [mod.id])))
         }}
       />
       <ProblemLine mod={mod} />
@@ -425,7 +420,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
           <Typography sx={heading}>{t`In the same download`}</Typography>
           {others.map((o) => (
             <Link
-              key={o.uniqueId}
+              key={o.id}
               component="button"
               onClick={() => useDetail.getState().show(o)}
               sx={{ display: 'block', fontSize: 13, textAlign: 'left', color: 'text.primary' }}

@@ -44,7 +44,7 @@ export function LackChipActions(p: {
           label={locked ? t`Stop the game to change mods.` : t`Switch on ${name} in this profile`}
           disabled={locked}
           onClick={() => {
-            enable(game, profile, lack.uniqueId).catch(reportUnexpected)
+            enable(game, profile, lack.id).catch(reportUnexpected)
           }}
         >
           <Power size={14} />
@@ -68,7 +68,7 @@ export function LackChipActions(p: {
             disabled={copying || locked}
             title={source.name}
             aria-label={t`Copy ${source.name}`}
-            onClick={() => runCopy(() => CopyMods(game, source.id, profile.id, [lack.uniqueId]))}
+            onClick={() => runCopy(() => CopyMods(game, source.id, profile.id, [lack.id]))}
             sx={{ minWidth: 0, px: 0.5, ...nowrap }}
           >
             {t`Copy`}
@@ -88,7 +88,7 @@ export function LackChipActions(p: {
       <TipIconButton
         label={t`Dismiss ${name} for this save`}
         onClick={() => {
-          dismiss(fit.folder, lack.uniqueId).catch(reportUnexpected)
+          dismiss(fit.folder, lack.id).catch(reportUnexpected)
         }}
       >
         <X size={14} />

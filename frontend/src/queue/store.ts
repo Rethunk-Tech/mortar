@@ -75,14 +75,14 @@ function entryForItem(profile: Profile | undefined, item: Pick<Item, 'modId' | '
 }
 
 function unblockedDependent(
-  missing: { uniqueId: string; dependentName: string }[] | null | undefined,
+  missing: { id: string; dependentName: string }[] | null | undefined,
   installedIds: string[],
 ): string | undefined {
   if (!missing || installedIds.length === 0) {
     return
   }
   const ids = new Set(installedIds.map(idKey))
-  return missing.find((m) => ids.has(idKey(m.uniqueId)))?.dependentName
+  return missing.find((m) => ids.has(idKey(m.id)))?.dependentName
 }
 
 const MS_PER_SEC = 1000
@@ -280,7 +280,7 @@ function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
                 changeStillLatest(
                   useProfiles.getState().profiles.find((p) => p.id === extra.profileId),
                   extra.entry.key,
-                  (extra.entry.mods ?? []).map((m) => m.uniqueId),
+                  (extra.entry.mods ?? []).map((m) => m.id),
                 ),
             },
           }
@@ -324,8 +324,8 @@ function announce(prev: Snapshot, next: Snapshot) {
   for (const item of done) {
     const profile = useProfiles.getState().profiles.find((p) => p.id === item.profileId)
     for (const mod of entryForItem(profile, item)?.mods ?? []) {
-      if (mod.uniqueId) {
-        dependentIds.push(mod.uniqueId)
+      if (mod.id) {
+        dependentIds.push(mod.id)
       }
     }
   }

@@ -138,7 +138,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
         game={gameId}
         mods={list
           .filter((u) => wanted.some((w) => w.currentKey === u.key))
-          .map((u) => ({ id: u.uniqueId, newKey: 'latest' }))}
+          .map((u) => ({ id: u.id, newKey: 'latest' }))}
         onClose={() => setEverywhereAll(false)}
       />
     </Dialog>

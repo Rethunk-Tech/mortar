@@ -1,4 +1,11 @@
-// UniqueIDs compare case-insensitively and ignore surrounding space.
+// Mod ids read "<format>:<local>". The local part is what a person knows a mod by, and what SMAPI's log and
+// manifests call it.
+export function localId(id: string): string {
+  const colon = id.indexOf(':')
+  return colon < 0 ? id : id.slice(colon + 1)
+}
+
+// SMAPI ids compare case-insensitively and ignore surrounding space.
 export function idKey(id: string): string {
   return id.trim().toLowerCase()
 }
@@ -19,7 +26,7 @@ export function requiredIdsOf(mod: {
 
 export function dependentsOf<
   T extends {
-    uniqueId: string
+    id: string
     name: string
     enabled?: boolean
     needs?: readonly string[] | null
@@ -27,11 +34,11 @@ export function dependentsOf<
     contentPackFor?: string | null
   },
 >(mods: readonly T[], removing: readonly T[]): T[] {
-  const gone = new Set(removing.map((m) => idKey(m.uniqueId)))
+  const gone = new Set(removing.map((m) => idKey(m.id)))
   const out: T[] = []
   const seen = new Set<string>()
   for (const mod of mods) {
-    const id = idKey(mod.uniqueId)
+    const id = idKey(mod.id)
     if (
       mod.enabled &&
       !gone.has(id) &&

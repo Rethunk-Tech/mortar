@@ -3,7 +3,7 @@ import type { UpdatesResult } from '../../../bindings/github.com/Rethunk-Tech/mo
 import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { keptUpdates } from './kept.ts'
 
-const update = (key: string) => ({ key, uniqueId: key, name: key, version: '2', installed: '1' })
+const update = (key: string) => ({ key, id: key, name: key, version: '2', installed: '1' })
 
 test('only updates of pinned entries are kept back', () => {
   const profile = {

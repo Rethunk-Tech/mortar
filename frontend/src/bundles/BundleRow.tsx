@@ -68,7 +68,7 @@ export function BundleRow({
           {mods.map((mod) => (
             <Box
               component="li"
-              key={mod.uniqueId || mod.entryKey}
+              key={mod.id || mod.entryKey}
               sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
             >
               <Typography
@@ -87,7 +87,7 @@ export function BundleRow({
                   }
                   disabled={mods.length === 1}
                   onClick={() => {
-                    RemoveMods(game, bundle.id, [mod.uniqueId])
+                    RemoveMods(game, bundle.id, [mod.id])
                       .then(onChanged)
                       .catch(reportError(t`Could not remove the mod from the bundle`))
                   }}

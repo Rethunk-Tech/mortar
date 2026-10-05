@@ -79,11 +79,11 @@ export const useMods = create<{
   keepCopy: (dup: Duplicate, keepKey: string) => Promise<void>
   dismissAsset: (conflict: AssetConflict) => Promise<void>
   restoreDismissed: (token: string) => Promise<void>
-  dismissAbandoned: (uniqueId: string) => Promise<void>
-  dismissListed: (uniqueId: string) => Promise<void>
+  dismissAbandoned: (id: string) => Promise<void>
+  dismissListed: (id: string) => Promise<void>
   dismissSetting: (setting: SettingHint) => Promise<void>
   setConfigValue: (
-    setting: Pick<SettingHint, 'key' | 'uniqueId' | 'field' | 'name'>,
+    setting: Pick<SettingHint, 'key' | 'id' | 'field' | 'name'>,
     value: string,
   ) => Promise<void>
   showUpdates: () => void

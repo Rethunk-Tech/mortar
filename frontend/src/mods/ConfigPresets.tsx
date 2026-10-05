@@ -61,7 +61,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
     if (!at) {
       return
     }
-    ListConfigPresets(at.game, mod.uniqueId)
+    ListConfigPresets(at.game, mod.id)
       .then((list) => setNames(list ?? []))
       .catch(reportUnexpected)
   }
@@ -82,8 +82,8 @@ function PresetsButton({ mod }: { mod: Mod }) {
       return
     }
     run(() =>
-      ReadConfig(at.game, at.id, mod.key, mod.uniqueId).then((raw) =>
-        SaveConfigPreset(at.game, mod.uniqueId, name, raw),
+      ReadConfig(at.game, at.id, mod.key, mod.id).then((raw) =>
+        SaveConfigPreset(at.game, mod.id, name, raw),
       ),
     )
   }
@@ -117,7 +117,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
           onApply={(name) => {
             const at = openTarget()
             if (at) {
-              run(() => ApplyConfigPreset(at.game, at.id, mod.key, mod.uniqueId, name))
+              run(() => ApplyConfigPreset(at.game, at.id, mod.key, mod.id, name))
             }
           }}
           onAskDelete={(name) => {
@@ -164,7 +164,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
             setPendingDelete(null)
             return
           }
-          run(() => DeleteConfigPreset(at.game, mod.uniqueId, name))
+          run(() => DeleteConfigPreset(at.game, mod.id, name))
         }}
       />
     </>

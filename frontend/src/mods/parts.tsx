@@ -21,7 +21,7 @@ import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { dependentsOf } from './dependents.ts'
+import { dependentsOf, localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { lastRunSummary, useLastRun } from './lastRun.ts'
@@ -55,7 +55,7 @@ export function LetterTile({
   size = DEFAULT_TILE_SIZE,
   fresh = false,
 }: {
-  mod: Pick<Mod, 'uniqueId' | 'name'> & { picture?: string }
+  mod: Pick<Mod, 'id' | 'name'> & { picture?: string }
   size?: number
   fresh?: boolean
 }) {
@@ -75,7 +75,7 @@ export function LetterTile({
           overflow: 'hidden',
           fontWeight: 700,
           fontSize: size * TILE_FONT_RATIO,
-          bgcolor: `hsl(${hash(mod.uniqueId.toLowerCase()) % HUE_DEGREES} 35% 38% / 0.85)`,
+          bgcolor: `hsl(${hash(localId(mod.id).toLowerCase()) % HUE_DEGREES} 35% 38% / 0.85)`,
         }}
       >
         {picture ? (
@@ -147,7 +147,7 @@ export function NexusGoneBadge({ mod }: { mod: Mod }) {
 
 export function LastRunBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const hit = useLastRun((s) => s.byId[mod.uniqueId])
+  const hit = useLastRun((s) => s.byId[mod.id])
   if (!hit || (hit.errors === 0 && hit.warnings === 0)) {
     return null
   }

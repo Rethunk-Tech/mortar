@@ -24,11 +24,11 @@ function outgoing(manifests: readonly ProfileManifest[]): {
   const edges = new Map<string, Edge[]>()
 
   for (const man of manifests) {
-    canonical(spellings, man.uniqueID)
+    canonical(spellings, man.id)
   }
   for (const man of manifests) {
     for (const dep of man.dependencies ?? []) {
-      canonical(spellings, dep.uniqueID)
+      canonical(spellings, dep.id)
     }
     if (man.contentPackFor) {
       canonical(spellings, man.contentPackFor)
@@ -53,10 +53,10 @@ function outgoing(manifests: readonly ProfileManifest[]): {
 
   for (const man of manifests) {
     for (const dep of man.dependencies ?? []) {
-      add(man.uniqueID, dep.uniqueID, dep.isRequired !== false)
+      add(man.id, dep.id, dep.isRequired !== false)
     }
     if (man.contentPackFor) {
-      add(man.uniqueID, man.contentPackFor, true)
+      add(man.id, man.contentPackFor, true)
     }
   }
 
@@ -86,11 +86,11 @@ function walk(from: string, adj: Map<string, Edge[]>, stack: Set<string>): TreeN
     const key = idKey(e.to)
     const cycle = stack.has(key)
     if (cycle) {
-      children.push({ uniqueID: e.to, required: e.required, cycle: true, children: [] })
+      children.push({ id: e.to, required: e.required, cycle: true, children: [] })
     } else {
       stack.add(key)
       children.push({
-        uniqueID: e.to,
+        id: e.to,
         required: e.required,
         cycle: false,
         children: walk(e.to, adj, stack),
@@ -101,8 +101,8 @@ function walk(from: string, adj: Map<string, Edge[]>, stack: Set<string>): TreeN
   return children
 }
 
-function nodeState(uniqueID: string, byID: Map<string, InstalledModState>): DepNodeState {
-  const inst = byID.get(idKey(uniqueID))
+function nodeState(id: string, byID: Map<string, InstalledModState>): DepNodeState {
+  const inst = byID.get(idKey(id))
   if (!inst) {
     return 'missing'
   }
@@ -113,20 +113,20 @@ function nodeState(uniqueID: string, byID: Map<string, InstalledModState>): DepN
 }
 
 interface ManifestDep {
-  uniqueID: string
+  id: string
   isRequired?: boolean
 }
 
 type DepNodeState = 'enabled' | 'disabled' | 'missing' | 'broken'
 
 export interface ProfileManifest {
-  uniqueID: string
+  id: string
   dependencies?: readonly ManifestDep[]
   contentPackFor?: string
 }
 
 export interface TreeNode {
-  uniqueID: string
+  id: string
   required: boolean
   cycle: boolean
   children: TreeNode[]
@@ -138,13 +138,13 @@ export interface DependencyTrees {
 }
 
 export interface InstalledModState {
-  uniqueID: string
+  id: string
   enabled: boolean
   broken?: boolean
 }
 
 export interface DepViewNode {
-  uniqueID: string
+  id: string
   required: boolean
   cycle: boolean
   state: DepNodeState
@@ -166,7 +166,7 @@ export function buildDependencyTrees(
 
 export function manifestsFromMods(
   mods: readonly {
-    uniqueId: string
+    id: string
     needs?: string[] | null
     optional?: string[] | null
   }[],
@@ -174,9 +174,9 @@ export function manifestsFromMods(
   return mods.map((m) => {
     const optional = new Set((m.optional ?? []).map(idKey))
     return {
-      uniqueID: m.uniqueId,
+      id: m.id,
       dependencies: (m.needs ?? []).map((id) => ({
-        uniqueID: id,
+        id,
         isRequired: !optional.has(idKey(id)),
       })),
     }
@@ -189,13 +189,13 @@ export function annotateTree(
 ): DepViewNode[] {
   const byID = new Map<string, InstalledModState>()
   for (const m of installed) {
-    byID.set(idKey(m.uniqueID), m)
+    byID.set(idKey(m.id), m)
   }
   return nodes.map((n) => ({
-    uniqueID: n.uniqueID,
+    id: n.id,
     required: n.required,
     cycle: n.cycle,
-    state: nodeState(n.uniqueID, byID),
+    state: nodeState(n.id, byID),
     children: annotateTree(n.children, installed),
   }))
 }

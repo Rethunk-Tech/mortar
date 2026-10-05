@@ -10,16 +10,16 @@ export function prependHistory<T>(items: T[], item: T, cap = HISTORY_CAP): T[] {
 }
 
 export function changeStillLatest(
-  profile: { entries?: { key: string; mods?: { uniqueId: string }[] | null }[] | null } | undefined,
+  profile: { entries?: { key: string; mods?: { id: string }[] | null }[] | null } | undefined,
   entryKey: string,
-  uniqueIds: string[],
+  ids: string[],
 ): HistoryActionState {
   if (!profile) {
     return { disabled: true, reason: 'That profile is gone.' }
   }
   const entries = profile.entries ?? []
-  for (const id of uniqueIds) {
-    const current = entries.find((e) => (e.mods ?? []).some((m) => m.uniqueId === id))
+  for (const id of ids) {
+    const current = entries.find((e) => (e.mods ?? []).some((m) => m.id === id))
     if (current?.key !== entryKey) {
       return { disabled: true, reason: 'This is no longer the latest change to that mod.' }
     }

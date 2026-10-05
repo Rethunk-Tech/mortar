@@ -7,7 +7,7 @@ const COLUMN_LABELS: Record<ListColumnId, MessageDescriptor> = {
   name: msg`Name`,
   version: msg`Version`,
   latest: msg`Latest on Nexus`,
-  uniqueId: msg`UniqueID`,
+  id: msg`UniqueID`,
   author: msg`Author`,
   source: msg`Source`,
   category: msg`Category`,

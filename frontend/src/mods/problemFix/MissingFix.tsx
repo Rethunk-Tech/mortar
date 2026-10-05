@@ -33,7 +33,7 @@ export function MissingFix({
     return <ListedFix problem={problem} dismiss={dismissListed} />
   }
   if (missing.reason === 'disabled') {
-    const off = mods.find((m) => !m.enabled && sameId(m.uniqueId, missing.uniqueId))
+    const off = mods.find((m) => !m.enabled && sameId(m.id, missing.id))
     return off ? button(t`Switch on`, () => setEnabled(off, true).catch(reportUnexpected)) : null
   }
   const { where } = missing

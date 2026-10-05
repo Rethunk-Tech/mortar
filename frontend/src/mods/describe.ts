@@ -31,7 +31,7 @@ export function useDescribeDrift(): (d: Drift) => string {
 export function useDescribe(): Describe {
   const { t, i18n } = useLingui()
   const mods = useMods((s) => s.mods)
-  const nameOf = (id: string) => mods.find((m) => sameId(m.uniqueId, id))?.name ?? id
+  const nameOf = (id: string) => mods.find((m) => sameId(m.id, id))?.name ?? id
   const describeRunError = (
     runError: Extract<Problem, { kind: 'runError' }>['runError'],
   ): string => {
@@ -91,8 +91,8 @@ export function useDescribe(): Describe {
   const describeMissing = (p: Extract<Problem, { kind: 'missing' }>): string => {
     const { dependentName, minimumVersion, installedVersion, reason } = p.missing
     const dep = p.missing.listed
-      ? p.missing.where?.pageName?.trim() || nameOf(p.missing.uniqueId)
-      : nameOf(p.missing.uniqueId)
+      ? p.missing.where?.pageName?.trim() || nameOf(p.missing.id)
+      : nameOf(p.missing.id)
     if (p.missing.listed) {
       const note = p.missing.note.trim()
       return note === ''

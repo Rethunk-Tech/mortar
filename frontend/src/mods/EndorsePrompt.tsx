@@ -43,7 +43,7 @@ function cleanNexusMods(
   }[] = []
   for (const mod of mods) {
     const modId = nexusIdOf(profile, mod)
-    const hit = byId[idKey(mod.uniqueId)]
+    const hit = byId[idKey(mod.id)]
     if (mod.enabled && modId > 0 && !seen.has(modId) && !hit?.errors) {
       seen.add(modId)
       clean.push({

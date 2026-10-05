@@ -12,7 +12,7 @@ const entry = (key: string, extra: Partial<Entry> = {}) =>
     ...extra,
   }) as Entry
 
-const base = entry('main', { mods: [{ uniqueId: 'x.main', name: 'Main' } as never] })
+const base = entry('main', { mods: [{ id: 'x.main', name: 'Main' } as never] })
 const profile = {
   entries: [
     base,

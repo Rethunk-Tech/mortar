@@ -13,7 +13,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { idKey } from './dependents.ts'
+import { idKey, localId } from './dependents.ts'
 import { useDetail } from './detail.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 import { sameId } from './lookup.ts'
@@ -54,10 +54,10 @@ function DepChip({
 function RowName({ row }: { row: Row }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
-  const listed = mods.find((m) => sameId(m.uniqueId, row.uniqueId))
+  const listed = mods.find((m) => sameId(m.id, row.id))
   const known = row.name.trim() !== ''
   const label = known ? row.name : t`Unknown mod`
-  const title = known ? row.name : row.uniqueId
+  const title = known ? row.name : localId(row.id)
   if (!listed) {
     return (
       <Typography noWrap={true} title={title} sx={{ fontWeight: 600, minWidth: 0 }}>
@@ -160,7 +160,8 @@ function OrderList({
       ? rows
       : rows.filter(
           (row) =>
-            row.name.toLowerCase().includes(needle) || row.uniqueId.toLowerCase().includes(needle),
+            row.name.toLowerCase().includes(needle) ||
+            localId(row.id).toLowerCase().includes(needle),
         )
   const parentRef = useRef<HTMLDivElement>(null)
   const virtualizer = useVirtualizer({
@@ -168,10 +169,10 @@ function OrderList({
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_ESTIMATE_PX,
     overscan: 8,
-    getItemKey: (index) => shown[index]?.uniqueId ?? index,
+    getItemKey: (index) => shown[index]?.id ?? index,
   })
   const onScroll = (id: string): boolean => {
-    const index = shown.findIndex((row) => sameId(row.uniqueId, id))
+    const index = shown.findIndex((row) => sameId(row.id, id))
     if (index < 0) {
       return false
     }
@@ -308,7 +309,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   const [retry, setRetry] = useState(0)
   const enabledKey = mods
     .filter((mod) => mod.enabled)
-    .map((mod) => `${mod.uniqueId}:${mod.needs?.join(',')}:${mod.optional?.join(',')}`)
+    .map((mod) => `${mod.id}:${mod.needs?.join(',')}:${mod.optional?.join(',')}`)
     .join('|')
   const request = `${game}\0${profile.id}\0${enabledKey}\0${retry}`
   const [rows, setRows] = useState<Row[] | null>(null)
@@ -359,7 +360,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   const names = useMemo(() => {
     const map = new Map<string, string>()
     for (const row of rows ?? []) {
-      map.set(idKey(row.uniqueId), row.name)
+      map.set(idKey(row.id), row.name)
     }
     return map
   }, [rows])

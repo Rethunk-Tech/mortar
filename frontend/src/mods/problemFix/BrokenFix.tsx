@@ -23,7 +23,7 @@ export function BrokenFix({
   const setEnabled = useMods((s) => s.setEnabled)
   const dismissAbandoned = useMods((s) => s.dismissAbandoned)
   const { broken } = problem
-  const mod = mods.find((m) => m.key === broken.key && sameId(m.uniqueId, broken.uniqueId))
+  const mod = mods.find((m) => m.key === broken.key && sameId(m.id, broken.id))
   const where = broken.replacement
   const replaceName =
     where?.pageName?.trim() ||
@@ -72,7 +72,7 @@ export function BrokenFix({
         size="small"
         color="inherit"
         variant="text"
-        onClick={() => dismissAbandoned(broken.uniqueId).catch(reportUnexpected)}
+        onClick={() => dismissAbandoned(broken.id).catch(reportUnexpected)}
         sx={{ flexShrink: 0 }}
       >
         {t`Dismiss`}

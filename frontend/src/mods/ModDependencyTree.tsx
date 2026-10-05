@@ -13,6 +13,7 @@ import {
   type DepViewNode,
   manifestsFromMods,
 } from './dependencyTree.ts'
+import { localId } from './dependents.ts'
 import { useDetail } from './detail.ts'
 import { problemsOf, sameId } from './lookup.ts'
 import { openPage } from './menu.ts'
@@ -28,16 +29,13 @@ const nameSize = 13
 const headingGap = 0.5
 const caption = { fontSize: captionSize, flexShrink: 0 } as const
 
-function MissingAdd({ uniqueID }: { uniqueID: string }) {
+function MissingAdd({ id }: { id: string }) {
   const { t } = useLingui()
   const result = useMods((s) => s.problems)
   const queue = useQueue((s) => s.state.items)
   const profileId = useProfiles((s) => s.openId)
   const hit = problemsOf(result).find(
-    (p) =>
-      p.kind === 'missing' &&
-      sameId(p.missing.uniqueId, uniqueID) &&
-      p.missing.reason !== 'disabled',
+    (p) => p.kind === 'missing' && sameId(p.missing.id, id) && p.missing.reason !== 'disabled',
   )
   const where = hit?.kind === 'missing' ? hit.missing.where : undefined
   if (!where?.url) {
@@ -90,8 +88,8 @@ function stateTone(state: DepViewNode['state']): string | undefined {
 function NodeRow({ node, mods, depth }: { node: DepViewNode; mods: Mod[]; depth: number }) {
   const { t } = useLingui()
   const show = useDetail((s) => s.show)
-  const listed = mods.find((m) => sameId(m.uniqueId, node.uniqueID))
-  const label = listed?.name || node.uniqueID
+  const listed = mods.find((m) => sameId(m.id, node.id))
+  const label = listed?.name || localId(node.id)
   const mark = node.required ? t`Required` : t`Optional`
   const already = t`already listed`
   const edgeNote = node.cycle ? `${mark} · ${already}` : mark
@@ -143,15 +141,10 @@ function NodeRow({ node, mods, depth }: { node: DepViewNode; mods: Mod[]; depth:
         <Typography noWrap={true} title={status} sx={{ ...caption, color: tone }}>
           {status}
         </Typography>
-        {node.state === 'missing' ? <MissingAdd uniqueID={node.uniqueID} /> : null}
+        {node.state === 'missing' ? <MissingAdd id={node.id} /> : null}
       </Box>
       {node.children.map((c) => (
-        <NodeRow
-          key={`${c.uniqueID}:${c.required}:${c.cycle}`}
-          node={c}
-          mods={mods}
-          depth={depth + 1}
-        />
+        <NodeRow key={`${c.id}:${c.required}:${c.cycle}`} node={c} mods={mods} depth={depth + 1} />
       ))}
     </Box>
   )
@@ -166,7 +159,7 @@ function Branch({ title, nodes, mods }: { title: string; nodes: DepViewNode[]; m
         <Typography sx={{ fontSize: nameSize, color: 'text.secondary' }}>{t`None`}</Typography>
       ) : (
         nodes.map((n) => (
-          <NodeRow key={`${n.uniqueID}:${n.required}:${n.cycle}`} node={n} mods={mods} depth={0} />
+          <NodeRow key={`${n.id}:${n.required}:${n.cycle}`} node={n} mods={mods} depth={0} />
         ))
       )}
     </Box>
@@ -177,11 +170,11 @@ export function ModDependencyTree({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const broken = useMods((s) => s.problems?.broken)
-  const trees = buildDependencyTrees(manifestsFromMods(mods), mod.uniqueId)
+  const trees = buildDependencyTrees(manifestsFromMods(mods), mod.id)
   const installed = mods.map((m) => ({
-    uniqueID: m.uniqueId,
+    id: m.id,
     enabled: m.enabled,
-    broken: (broken ?? []).some((b) => sameId(b.uniqueId, m.uniqueId)),
+    broken: (broken ?? []).some((b) => sameId(b.id, m.id)),
   }))
   const needs = annotateTree(trees.needs, installed)
   const neededBy = annotateTree(trees.neededBy, installed)

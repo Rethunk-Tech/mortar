@@ -4,9 +4,9 @@ import { useTab } from '../game/tab.ts'
 import { useDetail } from './detail.ts'
 import type { ModLink } from './modLinks.ts'
 
-const showInMods = ({ key, uniqueId }: ModLink) => {
+const showInMods = ({ key, id }: ModLink) => {
   useTab.getState().setTab('mods')
-  useDetail.getState().showAfterLoad({ key, uniqueId })
+  useDetail.getState().showAfterLoad({ key, id })
 }
 
 // LinkedText turns the first mention of each mod's name into a link that opens that mod on the Mods tab.
@@ -19,7 +19,7 @@ export function LinkedText({ text, links }: { text: string; links: ModLink[] }) 
       parts.push(rest.slice(0, at))
       parts.push(
         <Link
-          key={`${link.key}/${link.uniqueId}`}
+          key={`${link.key}/${link.id}`}
           component="button"
           color="inherit"
           onClick={() => showInMods(link)}

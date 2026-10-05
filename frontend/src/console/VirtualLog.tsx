@@ -32,7 +32,7 @@ function Linked({
 }: {
   text: string
   links: ConsoleLink[]
-  onMod: (uniqueID: string) => void
+  onMod: (id: string) => void
   onPath: (path: string) => void
 }) {
   if (links.length === 0) {
@@ -54,7 +54,7 @@ function Linked({
         underline="always"
         onClick={() => {
           if (link.kind === 'mod') {
-            onMod(link.uniqueID)
+            onMod(link.id)
           } else {
             onPath(link.path)
           }
@@ -86,7 +86,7 @@ function Row({
   timestamps: boolean
   mods: readonly InstalledMod[]
   roots: ConsoleLinkRoots
-  onMod: (uniqueID: string) => void
+  onMod: (id: string) => void
   onPath: (path: string) => void
 }) {
   const theme = useTheme()
@@ -162,7 +162,7 @@ export function VirtualLog({
   jump: { index: number; n: number } | null
   mods: readonly InstalledMod[]
   roots: ConsoleLinkRoots
-  onMod: (uniqueID: string) => void
+  onMod: (id: string) => void
   onPath: (path: string) => void
 }) {
   const { t } = useLingui()

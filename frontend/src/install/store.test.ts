@@ -52,7 +52,7 @@ function baseProfile(): Profile {
         key: 'k1',
         previousKey: '',
         source: { kind: 'local', name: 'a.zip', picture: '' },
-        mods: [{ uniqueId: 'SpaceCore', version: '1', name: 'SpaceCore', author: '', folder: '.' }],
+        mods: [{ id: 'SpaceCore', version: '1', name: 'SpaceCore', author: '', folder: '.' }],
         disabled: null,
       },
     ],

@@ -68,11 +68,11 @@ function OnlyInSection({
   rows: CompareSide[]
   to: Profile
   shared: SectionShared
-  onCopy: (to: Profile, uniqueIds: string[]) => void
+  onCopy: (to: Profile, ids: string[]) => void
 }) {
   const { t } = useLingui()
   const [unchecked, setUnchecked] = useState<ReadonlySet<string>>(new Set())
-  const picked = rows.filter((row) => !unchecked.has(row.uniqueId)).map((row) => row.uniqueId)
+  const picked = rows.filter((row) => !unchecked.has(row.id)).map((row) => row.id)
   const toggle = (id: string) =>
     setUnchecked((prev) => {
       const next = new Set(prev)
@@ -96,14 +96,14 @@ function OnlyInSection({
     >
       {rows.map((side) => (
         <FormControlLabel
-          key={side.uniqueId}
+          key={side.id}
           sx={{ display: 'flex', mx: 0, minHeight: 36 }}
           control={
             <Checkbox
               size="small"
-              checked={!unchecked.has(side.uniqueId)}
+              checked={!unchecked.has(side.id)}
               disabled={shared.pending}
-              onChange={() => toggle(side.uniqueId)}
+              onChange={() => toggle(side.id)}
             />
           }
           label={
@@ -155,7 +155,7 @@ function VersionSection({
     >
       {rows.map((row) => (
         <Typography
-          key={row.uniqueId}
+          key={row.id}
           noWrap={true}
           sx={{ fontSize: 14, py: 0.5, minHeight: 36 }}
           title={row.name}

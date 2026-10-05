@@ -3681,7 +3681,7 @@ msgstr "None"
 msgid "Link copied"
 msgstr "Link copied"
 
-#. placeholder {0}: uniqueIds.length
+#. placeholder {0}: ids.length
 #. placeholder {1}: to.name
 #: src/profiles/CompareDialog.tsx:114
 msgid "Copied {0} mods to {1}"
@@ -5053,7 +5053,7 @@ msgstr "{name} settings"
 msgid "Startup time by mod"
 msgstr "Startup time by mod"
 
-#. placeholder {0}: new Set(uniqueIds).size
+#. placeholder {0}: new Set(ids).size
 #: src/mods/storeEntries.ts:96
 msgid "{0, plural, one {Removed # mod} other {Removed # mods}}"
 msgstr "{0, plural, one {Removed # mod} other {Removed # mods}}"
@@ -10593,8 +10593,8 @@ msgid "Settings sections"
 msgstr "Settings sections"
 
 #: src/console/RunProblems.tsx:47
-msgid "Mortar doesn't know where to get {uniqueId}"
-msgstr "Mortar doesn't know where to get {uniqueId}"
+msgid "Mortar doesn't know where to get {id}"
+msgstr "Mortar doesn't know where to get {id}"
 
 #. placeholder {0}: bundle.name
 #. placeholder {0}: template.name

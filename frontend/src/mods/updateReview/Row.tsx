@@ -40,7 +40,7 @@ export function Row({
 }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
-  const mod = mods.find((m) => m.key === update.key && sameId(m.uniqueId, update.uniqueId))
+  const mod = mods.find((m) => m.key === update.key && sameId(m.id, update.id))
   const entries = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.entries)
   const entry = entries?.find((e) => e.key === update.key)
   const optional = entries?.filter((e) => e.overlayOf === update.key).length ?? 0
@@ -84,7 +84,7 @@ export function Row({
       }}
     >
       <LetterTile
-        mod={{ uniqueId: update.uniqueId, name: update.name, ...(picture ? { picture } : {}) }}
+        mod={{ id: update.id, name: update.name, ...(picture ? { picture } : {}) }}
         size={ROW_TILE}
       />
       <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.75 }}>

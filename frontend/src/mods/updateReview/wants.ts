@@ -19,7 +19,7 @@ export const updateWant = (u: Update): Want => ({
     ? { repo: u.githubRepo }
     : {
         modId: u.nexusId,
-        ...(u.githubFallback ? { fallbackRepo: u.githubFallback, fallbackId: u.uniqueId } : {}),
+        ...(u.githubFallback ? { fallbackRepo: u.githubFallback, fallbackId: u.id } : {}),
       }),
   name: u.name,
   version: u.version,
@@ -57,7 +57,7 @@ export async function withOptionalLoaded(
 }
 
 export const installedCaution = (mods: Mod[], u: Update): string => {
-  const mod = mods.find((m) => m.key === u.key && sameId(m.uniqueId, u.uniqueId))
+  const mod = mods.find((m) => m.key === u.key && sameId(m.id, u.id))
   return mod?.updateCautionMessage?.trim() ?? ''
 }
 

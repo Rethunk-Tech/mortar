@@ -2,12 +2,13 @@ import type {
   Missing,
   Result,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { localId } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'
 import type { Want } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
 
 interface ProfileLike {
-  entries?: Array<{ mods?: Array<{ uniqueId?: string }> | null }> | null
+  entries?: Array<{ mods?: Array<{ id?: string }> | null }> | null
 }
 
 interface MissingOffer {
@@ -55,13 +56,13 @@ function requiredUniqueIds(manifest: Record<string, unknown>): string[] {
 
 function installedUniqueIds(profile: ProfileLike): string[] {
   return (profile.entries ?? []).flatMap((e) =>
-    (e.mods ?? []).map((m) => m.uniqueId?.trim() ?? '').filter((id) => id !== ''),
+    (e.mods ?? []).map((m) => m.id?.trim() ?? '').filter((id) => id !== ''),
   )
 }
 
 function missingRequired(manifest: Record<string, unknown>, profile: ProfileLike): string[] {
   const have = installedUniqueIds(profile)
-  return requiredUniqueIds(manifest).filter((id) => !have.some((h) => sameId(h, id)))
+  return requiredUniqueIds(manifest).filter((id) => !have.some((h) => sameId(localId(h), id)))
 }
 
 function andList(names: string[]): string {
@@ -76,7 +77,7 @@ function andList(names: string[]): string {
 
 function depName(missing: Missing): string {
   const named = missing.where?.pageName?.trim() ?? ''
-  return named === '' ? missing.uniqueId : named
+  return named === '' ? localId(missing.id) : named
 }
 
 function offersFor(dependentIds: readonly string[], result: Result | null): MissingOffer[] {
@@ -93,7 +94,7 @@ function offersFor(dependentIds: readonly string[], result: Result | null): Miss
       const key = missing.dependentId.toLowerCase()
       const group = groups.get(key)
       if (group) {
-        if (!group.missing.some((m) => sameId(m.uniqueId, missing.uniqueId))) {
+        if (!group.missing.some((m) => sameId(m.id, missing.id))) {
           group.missing.push(missing)
         }
       } else {
@@ -110,10 +111,7 @@ function stillMissing(offer: MissingOffer, result: Result | null): Missing[] {
   }
   return offer.missing.filter((m) =>
     (result.missing ?? []).some(
-      (r) =>
-        r.reason === 'absent' &&
-        sameId(r.dependentId, m.dependentId) &&
-        sameId(r.uniqueId, m.uniqueId),
+      (r) => r.reason === 'absent' && sameId(r.dependentId, m.dependentId) && sameId(r.id, m.id),
     ),
   )
 }

@@ -9,7 +9,7 @@ export function ListedFix({
   dismiss,
 }: {
   problem: Extract<Problem, { kind: 'missing' }>
-  dismiss: (uniqueId: string) => Promise<void>
+  dismiss: (id: string) => Promise<void>
 }) {
   const { t } = useLingui()
   const { missing } = problem
@@ -20,7 +20,7 @@ export function ListedFix({
         size="small"
         color="inherit"
         variant="text"
-        onClick={() => dismiss(missing.uniqueId).catch(reportUnexpected)}
+        onClick={() => dismiss(missing.id).catch(reportUnexpected)}
         sx={{ flexShrink: 0 }}
       >
         {t`Dismiss`}

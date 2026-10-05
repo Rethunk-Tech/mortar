@@ -11,7 +11,7 @@ import { useMods } from './store.ts'
 
 interface CleanupItem {
   key: string
-  uniqueId: string
+  id: string
   name: string
   reason?: string
   text?: string
@@ -82,12 +82,12 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
-          title={cleanup.name.trim() === '' ? cleanup.uniqueId : undefined}
+          title={cleanup.name.trim() === '' ? cleanup.id : undefined}
           sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
         >
           <LinkedText
             text={cleanup.text ?? t`${who}: ${reason}`}
-            links={[{ name: cleanup.name, key: cleanup.key, uniqueId: cleanup.uniqueId }]}
+            links={[{ name: cleanup.name, key: cleanup.key, id: cleanup.id }]}
           />
         </Typography>
       </Box>

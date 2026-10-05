@@ -112,7 +112,7 @@ function toListRow(
   if (n !== undefined) {
     row.size = n
   }
-  const ms = costs[idKey(m.uniqueId)]
+  const ms = costs[idKey(m.id)]
   if (ms !== undefined) {
     row.startupMs = ms
   }
