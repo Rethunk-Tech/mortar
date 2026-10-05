@@ -1,6 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
@@ -54,7 +55,7 @@ export function announceAlso(names: string[] | null | undefined) {
   }
   useToasts.getState().push({
     kind: 'info',
-    title: i18n._(msg`Also enabled ${also.join(', ')}`),
+    title: i18n._(msg`Also enabled ${listNames(also)}`),
   })
 }
 

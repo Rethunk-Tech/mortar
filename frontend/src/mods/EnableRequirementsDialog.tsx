@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { List, ListItem } from '@mui/material'
 import { SetModsEnabled } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { andList } from '../install/missingDeps.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportError } from '../toasts/report.ts'
@@ -40,7 +40,7 @@ export function EnableRequirementsDialog() {
   return (
     <ConfirmDialog
       open={true}
-      title={t`${offer.dependentName} needs ${andList(names)}`}
+      title={t`${offer.dependentName} needs ${listNames(names)}`}
       confirmLabel={t`Enable them too`}
       cancelLabel={t`Just this mod`}
       onCancel={dismiss}

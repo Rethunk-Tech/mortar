@@ -5,6 +5,7 @@ import {
   ExportCollection,
   ShowExportedCollection,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
@@ -29,7 +30,7 @@ export function ExportCollectionMenuItem({
     useToasts.getState().push({
       kind: skipped.length > 0 ? 'warning' : 'success',
       title: t`Collection draft saved`,
-      body: skipped.length > 0 ? `${next}\n${t`Left out: ${skipped.join(', ')}`}` : next,
+      body: skipped.length > 0 ? `${next}\n${t`Left out: ${listNames(skipped)}`}` : next,
       action: {
         label: t`Show file`,
         run: () => ShowExportedCollection().catch(reportUnexpected),

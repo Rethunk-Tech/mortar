@@ -5,6 +5,7 @@ import { Box, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { ApplyImport } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { listNames } from '../../i18n/list.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -108,7 +109,7 @@ export function ImportSettingsDialog({
       )}
       {ignored.length > 0 ? (
         <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1 }}>
-          {t`Ignored fields Mortar does not import: ${ignored.join(', ')}`}
+          {t`Ignored fields Mortar does not import: ${listNames(ignored)}`}
         </Typography>
       ) : null}
     </ConfirmDialog>

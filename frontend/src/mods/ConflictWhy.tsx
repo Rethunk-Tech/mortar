@@ -9,6 +9,7 @@ import {
   ConflictImageCrop,
   ConflictEvidence as FetchConflictEvidence,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
@@ -112,9 +113,7 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
                 overflowWrap: 'anywhere',
               }}
             >
-              {e.keys.length > KEYS_SHOWN
-                ? t`Both set: ${e.keys.slice(0, KEYS_SHOWN).join(', ')} +${e.keys.length - KEYS_SHOWN} more`
-                : t`Both set: ${e.keys.join(', ')}`}
+              {t`Both set: ${listNames(e.keys, KEYS_SHOWN)}`}
             </Typography>
           ) : null}
           {e.toArea ? <EvidenceLine>{t`ToArea ${e.toArea}`}</EvidenceLine> : null}

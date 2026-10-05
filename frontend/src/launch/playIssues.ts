@@ -14,6 +14,7 @@ import {
 import type { HistoryDiff } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ChangesSince } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import { listNames } from '../i18n/list.ts'
 import { localId } from '../mods/dependents.ts'
 import { visibleUpdates } from '../mods/lookup.ts'
 import { diffLines } from '../profiles/historyDiff.ts'
@@ -69,7 +70,7 @@ function missingName(m: Missing): { name: string; title?: string } {
 
 function conflictName(c: AssetConflict): { name: string } {
   const names = (c.names ?? []).filter((n) => n !== '')
-  return { name: names.length > 0 ? names.join(', ') : c.target }
+  return { name: names.length > 0 ? listNames(names) : c.target }
 }
 
 function playIssueSummary(input: {

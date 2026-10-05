@@ -15,6 +15,7 @@ import {
   Stop,
   SwitchOff,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
+import { listNames } from '../i18n/list.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
@@ -110,7 +111,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
     try {
       await Promise.all(mods.map((mod) => SwitchOff(game, profile, mod.key, mod.id)))
       useProfiles.getState().open(profile)
-      const names = mods.map((mod) => mod.name).join(' + ')
+      const names = listNames(mods.map((mod) => mod.name))
       useToasts.getState().push({
         kind: 'success',
         title: t`Disabled ${names}`,
@@ -134,7 +135,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   const done = status?.state === 'done'
   const stopped = status?.state === 'stopped'
   const failed = status?.state === 'failed'
-  const names = status?.result?.mods.map((mod) => mod.name).join(' + ') ?? ''
+  const names = listNames(status?.result?.mods.map((mod) => mod.name) ?? [])
   let content: ReactNode
   if (status === null || status.state === 'starting') {
     content = <Typography>{t`Preparing a temporary copy of this profile…`}</Typography>

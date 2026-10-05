@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { listNames } from '../i18n/list.ts'
 import { useMods } from './store.ts'
 
 interface RedundantItem {
@@ -96,7 +97,7 @@ export function useRedundantRows() {
       })
     }
     for (const item of items.filter((x) => x.kind !== 'sameJob' || x.covered)) {
-      const by = (item.by ?? []).map((b) => b.name).join(', ')
+      const by = listNames((item.by ?? []).map((b) => b.name))
       const detail = item.detail ?? ''
       let reason = t`Every edit it makes is overwritten by ${by}`
       if (item.kind === 'superseded') {

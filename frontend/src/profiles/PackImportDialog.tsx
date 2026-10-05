@@ -21,6 +21,7 @@ import {
   Preview as PreviewPack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { PickPackFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import { listNames } from '../i18n/list.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { packageLine } from './packImport.ts'
@@ -84,7 +85,7 @@ export function PackImportDialog({
           kind: unsupported.length > 0 ? 'warning' : 'success',
           title: t`Imported ${preview?.name ?? ''}: ${result.queued} to install`,
           ...(unsupported.length > 0
-            ? { body: t`Not from Thunderstore: ${unsupported.join(', ')}` }
+            ? { body: t`Not from Thunderstore: ${listNames(unsupported)}` }
             : {}),
         })
         close()

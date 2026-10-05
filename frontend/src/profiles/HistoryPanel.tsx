@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import { History as HistoryIcon } from 'lucide-react'
+import { listNames } from '../i18n/list.ts'
 import { download } from '../queue/actions.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
@@ -33,7 +34,7 @@ export function HistoryPanel({
   const { pair } = h
   const errorText =
     h.missingNames.length > 0
-      ? t`Could not restore ${h.missingNames.join(', ')}`
+      ? t`Could not restore ${listNames(h.missingNames)}`
       : errorMessage(h.error)
   return (
     <Dialog

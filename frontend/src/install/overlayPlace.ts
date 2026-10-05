@@ -2,6 +2,7 @@ import { msg } from '@lingui/core/macro'
 import { InstallOverlay } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { AnswerOverlay } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -28,7 +29,7 @@ export async function chooseOverlay(from: string, to: string) {
       session.source,
     )
     useProfiles.getState().replace(res.profile)
-    const names = (res.added ?? []).join(', ')
+    const names = listNames(res.added ?? [])
     useToasts.getState().push({
       kind: 'success',
       title: i18n._(msg`Added ${{ mods: names }} to ${{ profile: session.profileName }}`),

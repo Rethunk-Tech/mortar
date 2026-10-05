@@ -9,6 +9,7 @@ import {
   Snapshot,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { download } from '../queue/actions.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -58,14 +59,14 @@ function pushMissingToast(outcome: RevertOutcome) {
   if (outcome.missingNames.length === 0) {
     return
   }
-  const list = outcome.missingNames.join(', ')
+  const list = listNames(outcome.missingNames)
   const wants = outcome.missingWants
   useToasts.getState().push({
     kind: 'error',
     title: i18n._(msg`Could not undo. Missing from the store: ${list}`),
     ...(outcome.missingUnfetchable.length > 0
       ? {
-          body: i18n._(msg`Mortar cannot download ${outcome.missingUnfetchable.join(', ')} again.`),
+          body: i18n._(msg`Mortar cannot download ${listNames(outcome.missingUnfetchable)} again.`),
         }
       : {}),
     ...(wants.length > 0

@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Pagination, Skeleton, Typography } from '@mui/material'
 import { CloudOff, Search, SearchX } from 'lucide-react'
+import { listNames } from '../i18n/list.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import type { InlineError } from '../toasts/report.ts'
 import {
@@ -48,7 +49,7 @@ function ResultList({
         {plural(result.total, { one: '# result', other: '# results' })}
         {result.hidden ? ` · ${t`${result.hidden} hidden`}` : ''}
         {result.failed && result.failed.length > 0
-          ? ` · ${t`${result.failed.join(', ')} did not answer`}`
+          ? ` · ${t`${listNames(result.failed)} did not answer`}`
           : ''}
       </Typography>
       <Box sx={{ ...(view === 'grid' ? grid : list), opacity: loading ? STALE_OPACITY : 1 }}>

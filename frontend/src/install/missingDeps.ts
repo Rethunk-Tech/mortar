@@ -65,16 +65,6 @@ function missingRequired(manifest: Record<string, unknown>, profile: ProfileLike
   return requiredUniqueIds(manifest).filter((id) => !have.some((h) => sameId(localId(h), id)))
 }
 
-function andList(names: string[]): string {
-  if (names.length <= 1) {
-    return names[0] ?? ''
-  }
-  if (names.length === 2) {
-    return `${names[0]} and ${names[1]}`
-  }
-  return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
-}
-
 function depName(missing: Missing): string {
   const named = missing.where?.pageName?.trim() ?? ''
   return named === '' ? localId(missing.id) : named
@@ -138,13 +128,4 @@ function wantsOf(missing: Missing[]): Want[] {
 }
 
 export type { MissingOffer }
-export {
-  andList,
-  depName,
-  missingRequired,
-  offersFor,
-  requiredUniqueIds,
-  stillMissing,
-  wantOf,
-  wantsOf,
-}
+export { depName, missingRequired, offersFor, requiredUniqueIds, stillMissing, wantOf, wantsOf }

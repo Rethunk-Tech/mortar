@@ -2,6 +2,7 @@ import { msg } from '@lingui/core/macro'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SetModsEnabled } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
@@ -26,10 +27,7 @@ export function considerEnableRequirements(
   if (decision === 'skip' || (decision === 'enable' && source === 'toggle')) {
     return Promise.resolve()
   }
-  const dependentName = enabling
-    .map((m) => m.name)
-    .filter(Boolean)
-    .join(', ')
+  const dependentName = listNames(enabling.map((m) => m.name).filter(Boolean))
   if (decision === 'ask') {
     useEnableAsk.getState().enqueue({ dependentName, mods: pending })
     return Promise.resolve()

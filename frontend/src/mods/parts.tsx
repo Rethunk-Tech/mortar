@@ -20,6 +20,7 @@ import { ArrowUp, Ban, Pin, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { errorsLabel } from '../i18n/counts.ts'
+import { listNames } from '../i18n/list.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { dependentsOf, localId } from './dependents.ts'
@@ -342,7 +343,7 @@ export function RemoveDialog() {
   const close = () => askRemove(null)
   let body = t`Their folders are removed from this profile. You can undo this.`
   if (extra.length > 0) {
-    body = t`Mods from the same download are removed together: ${extra.join(', ')}. You can undo this.`
+    body = t`Mods from the same download are removed together: ${listNames(extra)}. You can undo this.`
   } else if (one) {
     body = t`Its folder is removed from this profile. You can undo this.`
   }
@@ -354,7 +355,7 @@ export function RemoveDialog() {
   }
   const needLine =
     dependents.length > 0
-      ? t`${plural(dependents.length, { one: '# mod needs this', other: '# mods need this' })}: ${dependents.map((m) => m.name).join(', ')}`
+      ? t`${plural(dependents.length, { one: '# mod needs this', other: '# mods need this' })}: ${listNames(dependents.map((m) => m.name))}`
       : ''
   const allCount = removing.length + dependents.length
   return (

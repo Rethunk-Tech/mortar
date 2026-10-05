@@ -1,6 +1,7 @@
 import { msg, plural } from '@lingui/core/macro'
 import type { ApplyResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/models.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -23,7 +24,7 @@ export function bundleApplied(result: ApplyResult, profileId: string): void {
     title: i18n._(msg`Bundle added`),
     body:
       missing.length > 0
-        ? `${added}\n${i18n._(msg`Not downloaded yet: ${missing.join(', ')}`)}`
+        ? `${added}\n${i18n._(msg`Not downloaded yet: ${listNames(missing)}`)}`
         : added,
     ...(wants.length > 0
       ? {

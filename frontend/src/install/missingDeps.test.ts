@@ -4,7 +4,6 @@ import type {
   Result,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
-  andList,
   missingRequired,
   offersFor,
   requiredUniqueIds,
@@ -146,9 +145,6 @@ test('Add them queues through the same Want the Problems bar uses', () => {
       version: '2.0.0',
     },
   ])
-  expect(andList(['Content Patcher', 'Lookup Anything'])).toBe(
-    'Content Patcher and Lookup Anything',
-  )
 })
 
 test('an offer drops deps the live problems no longer list', () => {

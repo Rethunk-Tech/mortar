@@ -1,4 +1,4 @@
-import { msg, plural } from '@lingui/core/macro'
+import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
@@ -16,6 +16,7 @@ import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { gameName } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
@@ -90,17 +91,10 @@ function profileName(rollback: UpdateRollback): string {
   )
 }
 
-const MODS_NAMED = 3
-
 async function erroredMods(game: string, profile: string): Promise<string> {
   const issues = await LastRunIssues(game, profile).catch(() => null)
   const names = (issues?.mods ?? []).filter((m) => m.errors > 0).map((m) => m.name)
-  const shown = names.slice(0, MODS_NAMED).join(', ')
-  const more = names.length - MODS_NAMED
-  if (more <= 0) {
-    return shown
-  }
-  return i18n._(msg`${shown} and ${plural(more, { one: '# more', other: '# more' })}`)
+  return listNames(names)
 }
 
 async function checkUpdatedRun(

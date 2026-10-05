@@ -2,11 +2,12 @@ import { msg } from '@lingui/core/macro'
 import type { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { savedAt, unreachable, useOffline } from './offline.ts'
 
 // The sentence for the banner and for the tooltip of each action it disables.
 function offlineMessage(down: State[], locale: string): string {
-  const names = down.map((s) => sourceLabel(s.id)).join(', ')
+  const names = listNames(down.map((s) => sourceLabel(s.id)))
   const time = down.length === 1 ? savedAt(down[0] as State, locale) : ''
   return time
     ? i18n._(msg`${names} can't be reached; showing what Mortar saved at ${time}`)

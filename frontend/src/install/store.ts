@@ -24,6 +24,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { useFomod } from '../fomod/store.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { idKey } from '../mods/dependents.ts'
 import { considerEnableRequirements } from '../mods/enableRequirementsApply.ts'
 import { useMods } from '../mods/store.ts'
@@ -165,7 +166,7 @@ async function installOne(
   }
   push({
     kind: 'success',
-    title: installTitle(names.join(', '), profile.name, updated, versionChanged),
+    title: installTitle(listNames(names), profile.name, updated, versionChanged),
     picture: landed?.source.picture ?? '',
     ...(landed
       ? {
@@ -224,7 +225,7 @@ async function afterDroppedRemap(
   useToasts.getState().push({
     kind: 'success',
     title: installTitle(
-      names.join(', '),
+      listNames(names),
       session.profileName,
       res.updated ?? false,
       res.versionChanged ?? false,

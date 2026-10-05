@@ -8,12 +8,13 @@ import {
   DialogTitle,
 } from '@mui/material'
 import { useEffect } from 'react'
+import { listNames } from '../i18n/list.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useMods } from '../mods/store.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { download } from '../queue/actions.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { andList, depName, stillMissing, wantsOf } from './missingDeps.ts'
+import { depName, stillMissing, wantsOf } from './missingDeps.ts'
 import { useInstall } from './store.ts'
 
 export function MissingDepsDialog() {
@@ -35,11 +36,11 @@ export function MissingDepsDialog() {
   const wants = wantsOf(missing)
   return (
     <Dialog open={true} onClose={dismissOffer}>
-      <DialogTitle>{t`${offer.dependentName} needs ${andList(names)}`}</DialogTitle>
+      <DialogTitle>{t`${offer.dependentName} needs ${listNames(names)}`}</DialogTitle>
       {wants.length === 0 ? (
         <DialogContent>
           <DialogContentText>
-            {t`No download source is known for ${andList(names)}.`}
+            {t`No download source is known for ${listNames(names)}.`}
           </DialogContentText>
         </DialogContent>
       ) : null}

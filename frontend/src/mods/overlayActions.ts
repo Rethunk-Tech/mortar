@@ -9,6 +9,7 @@ import {
   SetOverlayEnabled,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -26,7 +27,7 @@ function toastSwitchedOff(row: OverlayRow, before: Entry[], after: Profile, prof
   if (off.length === 0) {
     return
   }
-  const names = off.map(overlayLabel).join(', ')
+  const names = listNames(off.map(overlayLabel))
   useToasts.getState().push({
     kind: 'success',
     title: i18n._(msg`Enabled ${row.label}`),

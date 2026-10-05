@@ -18,6 +18,7 @@ import type {
   Snap,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
+import { listNames } from '../i18n/list.ts'
 import { When } from '../i18n/When.tsx'
 import { useGameBusy } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -36,11 +37,11 @@ function overwriteMessage(snaps: Snap[], have: Set<string>): string {
   const hit = snaps.filter((s) => have.has(s.folder)).map((s) => s.farm || s.folder)
   if (hit.length === 0) {
     return i18n._(
-      msg`None of ${names.join(', ')} are in Saves yet; they will be added. The current Saves folder is backed up first.`,
+      msg`None of ${listNames(names)} are in Saves yet; they will be added. The current Saves folder is backed up first.`,
     )
   }
   return i18n._(
-    msg`${hit.join(', ')} will be overwritten. A backup of the current Saves folder is made first.`,
+    msg`${listNames(hit)} will be overwritten. A backup of the current Saves folder is made first.`,
   )
 }
 

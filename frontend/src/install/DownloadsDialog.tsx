@@ -21,6 +21,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { listNames } from '../i18n/list.ts'
 import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -86,7 +87,7 @@ function FolderLine({ open, onClose }: { open: boolean; onClose: () => void }) {
         title={dirs.join('\n')}
         sx={{ color: 'text.secondary', minWidth: 0 }}
       >
-        {t`Reading ${dirs.join(', ')}`}
+        {t`Reading ${listNames(dirs)}`}
       </Typography>
       <Button
         size="small"

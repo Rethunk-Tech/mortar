@@ -136,7 +136,7 @@ test('playIssueSummary groups required missing, non-cosmetic conflicts, updates,
     }),
   ).toEqual([
     { kind: 'missing', count: 1, names: ['SpaceCore'] },
-    { kind: 'conflicts', count: 1, names: ['SVE, Other'] },
+    { kind: 'conflicts', count: 1, names: ['SVE and Other'] },
     { kind: 'updates', count: 6, names: ['A', 'B', 'C', 'D', 'E'] },
     { kind: 'broken', count: 1, names: ['Old'] },
   ])

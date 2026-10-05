@@ -11,6 +11,7 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material'
+import { listNames } from '../i18n/list.ts'
 import { localId } from '../mods/dependents.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { addRecordedMods } from '../saves/recordedActions.ts'
@@ -26,7 +27,7 @@ export function SaveWarnDialog() {
   const recorded = (save?.lastMissing ?? []).length > 0
   const missing = recorded ? (save?.lastMissing ?? []) : (save?.missing ?? [])
   const names = missing.map((m) => m.name || localId(m.id))
-  const listed = names.join(', ')
+  const listed = listNames(names)
   const switchTo =
     recorded &&
     save?.lastProfileExists &&
