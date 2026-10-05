@@ -64,9 +64,11 @@ const (
 
 // Status is a game's launch state. Profile and Since (Unix milliseconds) are set while launching or running.
 type Status struct {
-	Game    string      `json:"game"`
-	State   State       `json:"state"`
-	Profile string      `json:"profile"`
+	Game    string `json:"game"`
+	State   State  `json:"state"`
+	Profile string `json:"profile"`
+	// Install is the id of the game install the launch runs; a game Mortar did not start is credited to the selected install.
+	Install string      `json:"install,omitempty"`
 	Since   int64       `json:"since"`
 	Hint    launch.Hint `json:"hint"`
 	Error   string      `json:"error"`
@@ -180,6 +182,12 @@ func (s *Service) emit(name string, data any) {
 
 // set records st and announces it. Failed and NoSteam are announced but not kept.
 func (s *Service) set(st Status) {
+	if st.Install == "" && st.State.Active() && s.settings != nil {
+		if st.Install = s.current(st.Game).Install; st.Install == "" {
+			in, _ := game.ResolveInstall(s.home, s.settings.Get(), st.Game, "")
+			st.Install = in.ID
+		}
+	}
 	stored := st
 	switch st.State {
 	case Failed, NoSteam:
@@ -395,6 +403,33 @@ func (s *Service) watch(g game.Game) {
 func (s *Service) Busy(gameID string) bool {
 	st, err := s.Status(gameID)
 	return err == nil && st.State.Active()
+}
+
+// BusyInstall reports whether the install with this id is launching or running.
+func (s *Service) BusyInstall(installID string) bool {
+	return s.runningInstall(installID) != ""
+}
+
+// runningInstall returns the game whose launch or run uses the install, or "".
+//
+// ponytail: Mortar finds a running game by process name, so two installs of one game cannot run side by side and
+// each game holds one status; the lock is therefore per install in what it reports and stops, not in what it admits.
+func (s *Service) runningInstall(installID string) string {
+	for _, id := range game.Implemented() {
+		if st, err := s.Status(id); err == nil && st.State.Active() && st.Install == installID {
+			return id
+		}
+	}
+	return ""
+}
+
+// StopInstall stops the game running from the install with this id.
+func (s *Service) StopInstall(installID string) error {
+	id := s.runningInstall(installID)
+	if id == "" {
+		return usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q is not running", installID))
+	}
+	return s.Stop(id)
 }
 
 // AnyBusy reports whether any implemented game is launching or running.
@@ -735,7 +770,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		settingsMissing: settingsMissing,
 	}, cancel
 	s.mu.Unlock()
-	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Since: started.UnixMilli()})
+	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Install: inst.ID, Since: started.UnixMilli()})
 	if settingsMissing {
 		s.say(gameID, profileID, "startup_preferences is missing; skipped profile game settings.")
 	}
