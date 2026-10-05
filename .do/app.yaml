@@ -16,6 +16,7 @@ static_sites:
       repo: Rethunk-Tech/mortar
       branch: main
       deploy_on_push: false
+    environment_slug: html
     source_dir: site
     routes:
       - path: /
@@ -25,6 +26,7 @@ static_sites:
       repo: Rethunk-Tech/mortar
       branch: packages
       deploy_on_push: true
+    environment_slug: html
     source_dir: /
     routes:
       - path: /packages

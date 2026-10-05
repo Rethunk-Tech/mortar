@@ -126,4 +126,19 @@ cat >"$OUT/pacman.conf" <<EOF
 SigLevel = Required
 Server = $URL/arch/\$arch
 EOF
+# The site serves this folder as a static site, which needs a root page; it points people at the setup steps.
+cat >"$OUT/index.html" <<EOF
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Mortar package repository</title>
+  </head>
+  <body>
+    <p>Signed apt, dnf and pacman repository for Mortar (key $FPR). Setup steps:
+      <a href="https://github.com/Rethunk-Tech/mortar/blob/main/docs/user-guide.md">the Mortar user guide</a>.</p>
+  </body>
+</html>
+EOF
 echo "package repo for key $FPR in $OUT"
