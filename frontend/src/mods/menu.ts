@@ -97,7 +97,7 @@ export function extraFileLabel(
 }
 
 export function entryFileLabel(entry: Entry): string {
-  const name = entry.source?.name || entry.mods?.[0]?.name || entry.key
+  const name = entry.mods?.[0]?.name || entry.source?.name || entry.key
   const version = entry.source?.version || entry.mods?.[0]?.version || ''
   return version ? `${name} (${version})` : name
 }

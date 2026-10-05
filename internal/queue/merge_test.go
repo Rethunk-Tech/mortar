@@ -77,6 +77,23 @@ func TestNexusUpdateFromTheSamePageInstallsInPlaceOfTheEntry(t *testing.T) {
 	f.leftovers()
 }
 
+func TestANexusEntryIsNamedForItsFileNotItsStoragePath(t *testing.T) {
+	f := newFixture(t)
+	f.start()
+	r := req(10)
+	r.FileName = "4a/35/fc/4a35fc45-ad1a-40a7-aa11-3eeab1cbd426"
+	if _, err := f.s.Add(t.Context(), []Request{r}); err != nil {
+		t.Fatal(err)
+	}
+	f.wait("installed", f.item(StateDone))
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if len(f.installs) != 1 || f.installs[0].Name != "a-1.0.zip" {
+		t.Fatalf("installs %+v", f.installs)
+	}
+	f.leftovers()
+}
+
 func TestAWantJoiningAFailedItemTakesItsBatch(t *testing.T) {
 	f := newFixture(t)
 	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
