@@ -86,6 +86,7 @@ linters:
         - github.com/Rethunk-Tech/mortar/internal/host.Host
         - github.com/Rethunk-Tech/mortar/internal/loader.Loader
         - github.com/Rethunk-Tech/mortar/internal/installer.Installer
+        - github.com/Rethunk-Tech/mortar/internal/deploy.Deployer
     # canon go-golangci-lint-00011
     gomoddirectives:
       replace-local: true
