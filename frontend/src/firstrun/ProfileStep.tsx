@@ -78,7 +78,7 @@ export function ProfileStep({ game }: { game: GameId }) {
       >
         {gameMods ? (
           <Box sx={cardSx('primary.main')}>
-            <Box sx={{ color: 'primary.main', display: 'flex' }}>
+            <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>
               <FolderInput size={28} />
             </Box>
             <Typography sx={{ fontSize: 18, fontWeight: 700 }}>
@@ -101,7 +101,7 @@ export function ProfileStep({ game }: { game: GameId }) {
           }}
           sx={cardSx(gameMods ? 'transparent' : 'primary.main')}
         >
-          <Box sx={{ color: 'primary.main', display: 'flex' }}>
+          <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>
             <Plus size={28} />
           </Box>
           <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`Start empty`}</Typography>
@@ -139,7 +139,7 @@ export function ProfileStep({ game }: { game: GameId }) {
           }}
           sx={cardSx('transparent')}
         >
-          <Box sx={{ color: 'primary.main', display: 'flex' }}>
+          <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>
             <Link2 size={28} />
           </Box>
           <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`From a shared link`}</Typography>

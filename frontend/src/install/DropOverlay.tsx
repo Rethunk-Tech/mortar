@@ -85,7 +85,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
               p: 3,
             })}
           >
-            <Box sx={{ color: 'primary.main', display: 'flex' }}>
+            <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>
               <Download size={80} strokeWidth={1.8} />
             </Box>
             {ready ? (

@@ -25,7 +25,7 @@ export function ReviewTitle({
           display: 'grid',
           placeItems: 'center',
           borderRadius: '10px',
-          color: 'primary.main',
+          color: 'var(--mortar-accent-ink)',
           bgcolor: (th) => alpha(th.palette.primary.main, ICON_FILL),
         }}
       >

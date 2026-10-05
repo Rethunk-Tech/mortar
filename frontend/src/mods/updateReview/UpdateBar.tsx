@@ -39,7 +39,10 @@ export function UpdateBar() {
         borderRadius: '6px',
       }}
     >
-      <Box component="span" sx={{ display: 'flex', flexShrink: 0, color: 'primary.main' }}>
+      <Box
+        component="span"
+        sx={{ display: 'flex', flexShrink: 0, color: 'var(--mortar-accent-ink)' }}
+      >
         <ArrowUp size={16} aria-hidden={true} />
       </Box>
       <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>

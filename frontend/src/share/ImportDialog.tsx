@@ -201,7 +201,7 @@ function Body({ request }: { request: ImportRequest }) {
               fontSize: 13,
               fontWeight: 600,
               color: 'text.secondary',
-              '&.Mui-selected': { color: 'primary.main', fontWeight: 700 },
+              '&.Mui-selected': { color: 'var(--mortar-accent-ink)', fontWeight: 700 },
             },
           }}
         >

@@ -369,7 +369,7 @@ export function Sidebar({ game }: { game: string }) {
             fontFamily: 'inherit',
             fontSize: 14,
             whiteSpace: 'nowrap',
-            color: 'primary.main',
+            color: 'var(--mortar-accent-ink)',
             '&:hover': { bgcolor: 'action.hover' },
             ...rail({ display: 'none' }),
           }}

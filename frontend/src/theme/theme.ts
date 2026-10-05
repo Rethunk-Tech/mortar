@@ -49,6 +49,8 @@ function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode) {
       '--window-button': `${WINDOW_BUTTON_PX}px`,
       '--window-controls': `${WINDOW_BUTTON_PX * WINDOW_BUTTONS}px`,
       ...surfaceCssVars(mode),
+      // Text and icons tinted with the accent; pastel accents are unreadable as ink on light surfaces.
+      '--mortar-accent-ink': mode === 'light' ? 'var(--mortar-ink)' : main,
       colorScheme: mode,
       [compact]: {
         '--title-bar': `${TITLE_BAR_COMPACT_PX}px`,
@@ -182,8 +184,20 @@ export function createMortarTheme(
               },
             },
           },
+          // Pastel accents are fills, not ink: on a light surface a text button in the accent colour is unreadable.
+          ...(mode === 'light'
+            ? [
+                {
+                  props: { variant: 'text' as const, color: 'primary' as const },
+                  style: { color: s.ink },
+                },
+              ]
+            : []),
         ],
       },
+      ...(mode === 'light'
+        ? { MuiIconButton: { styleOverrides: { colorPrimary: { color: s.ink } } } }
+        : {}),
       MuiChip: { styleOverrides: { label: { whiteSpace: 'nowrap' } } },
       MuiLink: {
         styleOverrides: {

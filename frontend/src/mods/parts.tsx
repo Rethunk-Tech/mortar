@@ -233,7 +233,7 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
             e.stopPropagation()
             setAnchor(e.currentTarget)
           }}
-          sx={{ p: 0, flexShrink: 0, color: 'primary.main', borderRadius: '4px' }}
+          sx={{ p: 0, flexShrink: 0, color: 'var(--mortar-accent-ink)', borderRadius: '4px' }}
         >
           <ArrowUp size={16} />
         </IconButton>

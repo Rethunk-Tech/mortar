@@ -65,7 +65,7 @@ export function Callout({
               fontWeight: 700,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              color: 'primary.main',
+              color: 'var(--mortar-accent-ink)',
             }}
           >
             {label}
