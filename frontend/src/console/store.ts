@@ -140,7 +140,9 @@ export const useConsole = create<{
         const after = lastSeq(history)
         set((s) => ({ entries: [...history, ...s.entries.filter((e) => e.seq > after)] }))
       } catch (e) {
-        toastError(i18n._(msg`Could not read the SMAPI log`), e)
+        toastError(i18n._(msg`Could not read the SMAPI log`), e, {
+          retry: () => get().load(game, profile),
+        })
       }
     },
     viewRun: (game, profile, runId) => {
@@ -161,7 +163,9 @@ export const useConsole = create<{
       try {
         await Send(game, command)
       } catch (e) {
-        toastError(i18n._(msg`Could not run the command`), e)
+        toastError(i18n._(msg`Could not run the command`), e, {
+          retry: () => get().send(game, command),
+        })
         return false
       }
       set((s) => ({

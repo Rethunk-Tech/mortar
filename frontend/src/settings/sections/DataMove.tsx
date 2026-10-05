@@ -6,6 +6,7 @@ import { formatBytes } from '../../i18n/bytes.ts'
 import { useGameBusy } from '../../launch/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
+import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { type InlineError, reportError } from '../../toasts/report.ts'
 import type { MoveState } from './DataMoveRun.ts'
 import { mono, nowrap } from './dataStyles.ts'
@@ -96,11 +97,7 @@ export function MoveDialog({
               </Box>
             </>
           ) : null}
-          {error ? (
-            <Box role="alert" title={error.details} sx={{ color: 'error.main' }}>
-              {error.message}
-            </Box>
-          ) : null}
+          {error ? <ErrorRetry error={error} onRetry={onMove} /> : null}
         </>
       ) : null}
     </ConfirmDialog>

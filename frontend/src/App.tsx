@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { Get } from '../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { CommandPalette } from './commandPalette/CommandPalette.tsx'
 import { gameSetupNeeded } from './firstrun/needed.ts'
@@ -53,7 +53,7 @@ export function App() {
     useLaunch((s) => s.status?.game ?? ''),
   )
   const [ready, setReady] = useState(false)
-  useEffect(() => {
+  const boot = useCallback((): void => {
     Promise.all([Get(), loadGameStatus()])
       .then(async ([settings, { games }]) => {
         if (!settings.launchersConfirmed) {
@@ -68,9 +68,10 @@ export function App() {
           useNav.getState().openGame(last.id)
         }
       })
-      .catch((e: unknown) => toastError(t`Could not read your games`, e))
+      .catch((e: unknown) => toastError(t`Could not read your games`, e, { retry: boot }))
       .finally(() => setReady(true))
   }, [t])
+  useEffect(boot, [boot])
   return (
     <>
       <AppFrame>

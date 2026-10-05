@@ -53,9 +53,11 @@ export function AppMenu() {
       .catch(() => undefined)
   }, [])
   const close = () => setOpen(false)
-  const quit = () => {
+  const quit = (): void => {
     close()
-    Application.Quit().catch((e: unknown) => toastError(t`Could not quit Mortar`, e))
+    Application.Quit().catch((e: unknown) =>
+      toastError(t`Could not quit Mortar`, e, { retry: quit }),
+    )
   }
   return (
     <>

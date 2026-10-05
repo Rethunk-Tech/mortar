@@ -56,7 +56,12 @@ export function ToolsMenu({ game, profileID }: { game: string; profileID: string
             label={tool.name}
             onClick={() => {
               close()
-              launch(game, profileID, tool.id).catch(reportError(t`Could not start ${tool.name}`))
+              const start = (): void => {
+                launch(game, profileID, tool.id).catch(
+                  reportError(t`Could not start ${tool.name}`, start),
+                )
+              }
+              start()
             }}
           />
         ))}

@@ -1,5 +1,7 @@
 import { msg } from '@lingui/core/macro'
+import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
+import { openSettings, routeGame, useNav } from '../nav/store.ts'
 import { errorDetails, errorKind as kindOf } from './errorKind.ts'
 
 import { type ToastAction, useToasts } from './store.ts'
@@ -27,9 +29,34 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
   }
 }
 
-/** Plain sentence for a kind. Untagged errors use the generic sentence; raw Go text stays in errorDetails. */
-export function errorMessage(e: unknown): string {
-  return sentence(kindOf(e))
+/** Brings the console tab of the current (or originating) game forward; false when no game is open. */
+function openLog(): boolean {
+  const nav = useNav.getState()
+  const game = routeGame(nav.route)
+  if (game === null) {
+    return false
+  }
+  if (nav.route.name !== 'game') {
+    nav.openGame(game)
+  }
+  useTab.getState().setTab('console')
+  return true
+}
+
+// Every error toast offers a next step: the caller's own action, Retry for a repeatable one, Settings for
+// permission and storage failures, else the log (when a game is open to hold one).
+function nextStep(e: unknown, retry: (() => unknown) | undefined): ToastAction | undefined {
+  const kind = kindOf(e)
+  if (kind === 'permission' || kind === 'disk_full') {
+    return { label: i18n._(msg`Open storage settings`), run: () => openSettings('storage') }
+  }
+  if (retry !== undefined) {
+    return { label: i18n._(msg`Retry`), run: retry }
+  }
+  if (routeGame(useNav.getState().route) === null) {
+    return undefined
+  }
+  return { label: i18n._(msg`Open log`), run: openLog }
 }
 
 /** A failure shown in place: the plain sentence to read, the cause for its title tooltip. */
@@ -38,28 +65,34 @@ export interface InlineError {
   details: string
 }
 
+/** Plain sentence for a kind. Untagged errors use the generic sentence; raw Go text stays in errorDetails. */
+export function errorMessage(e: unknown): string {
+  return sentence(kindOf(e))
+}
+
 export function inlineError(e: unknown, message = errorMessage(e)): InlineError {
   return { message, details: errorDetails(e) }
 }
 
-/** `detail` is a line appended after the error's own text; `action` is the button the toast offers. */
+/** `detail` is a line appended after the error's own text; `action` replaces the default next step; `retry` repeats the failed action. */
 export function toastError(
   title: string,
   e: unknown,
-  extra: { action?: ToastAction; detail?: string } = {},
+  extra: { action?: ToastAction; detail?: string; retry?: () => unknown } = {},
 ): void {
   const details = [errorDetails(e), extra.detail ?? ''].filter((part) => part !== '').join('\n')
+  const action = extra.action ?? nextStep(e, extra.retry)
   useToasts.getState().push({
     kind: 'error',
     title,
     body: errorMessage(e),
     ...(details === '' ? {} : { detail: details }),
-    ...(extra.action === undefined ? {} : { action: extra.action }),
+    ...(action === undefined ? {} : { action }),
   })
 }
 
-export const reportError = (title: string) => (e: unknown) => {
-  toastError(title, e)
+export const reportError = (title: string, retry?: () => unknown) => (e: unknown) => {
+  toastError(title, e, retry === undefined ? {} : { retry })
 }
 
 // The sink for a promise nobody awaits. Stores report their own failures, so this only fires for one they did not expect.

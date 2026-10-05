@@ -23,16 +23,17 @@ async function offer(game: string) {
   const profile = openProfileOf(useProfiles.getState())
   const { push } = useToasts.getState()
   if (found.length === 1 && profile) {
+    const add = (): Promise<void> =>
+      useInstall
+        .getState()
+        .installDownloads([first.path])
+        .catch(reportError(i18n._(msg`Could not add the archive`), add))
     push({
       kind: 'info',
       title: i18n._(msg`Add ${first.name} to ${profile.name}?`),
       action: {
         label: i18n._(msg`Add`),
-        run: () =>
-          useInstall
-            .getState()
-            .installDownloads([first.path])
-            .catch(reportError(i18n._(msg`Could not add the archive`))),
+        run: add,
       },
     })
     return

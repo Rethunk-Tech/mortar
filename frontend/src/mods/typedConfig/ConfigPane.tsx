@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
+import { reportUnexpected } from '../../toasts/report.ts'
 import { PresetsButton } from '../ConfigPresets.tsx'
 import { filterFile, isModified, modifiedCount } from './entries.ts'
 import { useTypedConfig } from './store.ts'
@@ -89,6 +90,13 @@ export function ConfigPane() {
   const { mod, files, current, loadError } = useTypedConfig()
   const close = useTypedConfig((s) => s.close)
   const select = useTypedConfig((s) => s.select)
+  const target = useTypedConfig((s) => s.target)
+  const open = useTypedConfig((s) => s.open)
+  const reload = () => {
+    if (mod && target) {
+      open(mod, target).catch(reportUnexpected)
+    }
+  }
   const resetAll = useTypedConfig((s) => s.resetAll)
   const [query, setQuery] = useState('')
   const [confirming, setConfirming] = useState(false)
@@ -134,7 +142,15 @@ export function ConfigPane() {
         </IconButton>
       </Box>
       {loadError ? (
-        <Alert severity="error" sx={{ mx: 2 }}>
+        <Alert
+          severity="error"
+          sx={{ mx: 2 }}
+          action={
+            <Button color="inherit" size="small" onClick={reload}>
+              {t`Retry`}
+            </Button>
+          }
+        >
           {loadError}
         </Alert>
       ) : null}

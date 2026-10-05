@@ -32,7 +32,7 @@ function useMove() {
         setMove({ dest, estimate })
       })
       .catch((err: unknown) => {
-        reportError(t`Could not inspect the destination folder`)(err)
+        reportError(t`Could not inspect the destination folder`, () => prepare(dest))(err)
       })
   }
   const run = () => {

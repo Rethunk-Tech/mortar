@@ -23,6 +23,7 @@ import { useNexusDetails } from '../mods/nexusDetails.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { arrivalGame, arrivalName, fallbackName, useNxm } from './store.ts'
@@ -121,9 +122,14 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           <DialogContentText>{text}</DialogContentText>
         )}
         {error ? (
-          <DialogContentText color="error" title={error.details} sx={{ mt: 1 }}>
-            {error.message}
-          </DialogContentText>
+          <ErrorRetry
+            error={error}
+            onRetry={() => {
+              if (open) {
+                pick(open.id)
+              }
+            }}
+          />
         ) : null}
         {arrivals.length > 1 ? (
           <FormControlLabel

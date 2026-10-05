@@ -94,9 +94,12 @@ export function ToolsManageDialog({
             return
           }
           const tool = deleting
-          remove(game, tool.id)
-            .then(() => setDeleting(null))
-            .catch(reportError(t`Could not remove ${tool.name}`))
+          const drop = (): void => {
+            remove(game, tool.id)
+              .then(() => setDeleting(null))
+              .catch(reportError(t`Could not remove ${tool.name}`, drop))
+          }
+          drop()
         }}
       />
       <ToolEditorDialog

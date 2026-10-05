@@ -67,7 +67,7 @@ export async function checkForUpdates() {
   toasts.dismiss(checking)
   if (parts.length === 0) {
     if (fail !== null) {
-      toastError(i18n._(msg`Update check failed`), fail)
+      toastError(i18n._(msg`Update check failed`), fail, { retry: checkForUpdates })
     }
     return
   }

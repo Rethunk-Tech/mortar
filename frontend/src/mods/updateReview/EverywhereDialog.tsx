@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type {
   EverywherePreview,
   EverywhereResult,
@@ -11,6 +11,7 @@ import {
   UpdateEverywhere,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
@@ -61,17 +62,15 @@ function PreviewLists({ preview }: { preview: EverywherePreview }) {
 function PreviewBody({
   loadError,
   preview,
+  onRetry,
 }: {
   loadError: InlineError | null
   preview: EverywherePreview | null
+  onRetry: () => void
 }) {
   const { t } = useLingui()
   if (loadError) {
-    return (
-      <Typography color="error" title={loadError.details}>
-        {loadError.message}
-      </Typography>
-    )
+    return <ErrorRetry error={loadError} onRetry={onRetry} />
   }
   if (preview === null) {
     return <Typography>{t`Checking profiles…`}</Typography>
@@ -102,8 +101,8 @@ export function EverywhereDialog({
   const [pending, run] = usePending()
   const [loadError, setLoadError] = useState<InlineError | null>(null)
   const spec = mods.map((m) => `${m.id}\0${m.newKey}`).join('\n')
-  useEffect(() => {
-    if (!open || game === '' || spec === '') {
+  const load = useCallback(() => {
+    if (game === '' || spec === '') {
       return
     }
     setPreview(null)
@@ -115,7 +114,12 @@ export function EverywhereDialog({
     Promise.all(items.map((m) => PreviewEverywhere(game, m.id)))
       .then((parts) => setPreview(mergePreviews(parts)))
       .catch((err: unknown) => setLoadError(inlineError(err)))
-  }, [open, game, spec])
+  }, [game, spec])
+  useEffect(() => {
+    if (open) {
+      load()
+    }
+  }, [open, load])
   const n = preview?.affected?.length ?? 0
   const apply = () => {
     run(async () => {
@@ -141,7 +145,7 @@ export function EverywhereDialog({
       onCancel={onClose}
       onConfirm={apply}
     >
-      <PreviewBody loadError={loadError} preview={preview} />
+      <PreviewBody loadError={loadError} preview={preview} onRetry={load} />
     </ConfirmDialog>
   )
 }

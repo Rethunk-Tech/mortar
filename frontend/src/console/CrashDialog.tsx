@@ -27,6 +27,7 @@ import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
@@ -279,9 +280,12 @@ export function CrashDialog() {
             ))
           )}
           {bisectError ? (
-            <Typography color="error" title={errorDetails(bisectError)}>
-              {errorMessage(bisectError)}
-            </Typography>
+            <ErrorRetry
+              error={{ message: errorMessage(bisectError), details: errorDetails(bisectError) }}
+              onRetry={() => {
+                startBisect().catch(reportUnexpected)
+              }}
+            />
           ) : null}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>

@@ -102,7 +102,7 @@ function LaunchLine({
         useToasts.getState().push({ kind: 'success', title: t`Launch options set in Steam` })
         recheck()
       })
-      .catch(reportError(t`Could not set it in Steam`))
+      .catch(reportError(t`Could not set it in Steam`, write))
       .finally(() => setWriting(false))
   }
   return (

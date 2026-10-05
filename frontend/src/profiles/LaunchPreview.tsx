@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, IconButton, Typography } from '@mui/material'
+import { Box, Button, IconButton, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { Copy } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { MONO } from '../theme/theme.ts'
@@ -39,29 +39,20 @@ export function LaunchPreview({
   const { t } = useLingui()
   const [preview, setPreview] = useState<CommandPreview>({ env: [], argv: [], error: '' })
   const [loadError, setLoadError] = useState('')
+  const read = useCallback(
+    () =>
+      PreviewCommand(gameId, profileId, options, prefix, env)
+        .then((next) => {
+          setLoadError('')
+          setPreview(next)
+        })
+        .catch((e: unknown) => setLoadError(errorMessage(e))),
+    [env, gameId, options, prefix, profileId],
+  )
   useEffect(() => {
-    let active = true
-    const timer = setTimeout(
-      () =>
-        PreviewCommand(gameId, profileId, options, prefix, env)
-          .then((next) => {
-            if (active) {
-              setLoadError('')
-              setPreview(next)
-            }
-          })
-          .catch((e: unknown) => {
-            if (active) {
-              setLoadError(errorMessage(e))
-            }
-          }),
-      PREVIEW_DEBOUNCE_MS,
-    )
-    return () => {
-      active = false
-      clearTimeout(timer)
-    }
-  }, [env, gameId, options, prefix, profileId])
+    const timer = setTimeout(read, PREVIEW_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [read])
   const copyCommand = () => {
     Clipboard.SetText(formatShellLine(preview)).then(
       () => useToasts.getState().push({ kind: 'success', title: t`Command copied` }),
@@ -89,6 +80,11 @@ export function LaunchPreview({
       {preview.error || loadError ? (
         <Typography color="error" sx={{ fontSize: 12 }}>
           {preview.error || loadError}
+          {loadError && !preview.error ? (
+            <Button size="small" onClick={read}>
+              {t`Retry`}
+            </Button>
+          ) : null}
         </Typography>
       ) : (
         <Box
