@@ -88,6 +88,21 @@ const loadDetails = (id: number) => {
 }
 
 let primed: number[] = []
+const primeAsked = new Set<number>()
+
+// Stores the details that are new; when there are none the state object stays as it was, so subscribers do not wake.
+const addDetails = (ids: number[], found: Record<string, Details | undefined>) =>
+  useNexusDetails.setState((s) => {
+    let next: Record<number, Entry | undefined> | undefined
+    for (const id of ids) {
+      const details = found[`${id}`]
+      if (details && !s.byId[id]?.details) {
+        next ??= { ...s.byId }
+        next[id] = { details }
+      }
+    }
+    return next ? { byId: next } : s
+  })
 
 // Shows what is cached for every mod at once, then fills the rest with the page data of all of them in a few batched
 // requests. A mod's files and changelogs are read when it is opened, not for the whole list.
@@ -97,21 +112,18 @@ const primeDetails = async (ids: number[]) => {
   if (!useNexus.getState().signedIn) {
     return
   }
-  const unknown = ids.filter((id) => id > 0 && !useNexusDetails.getState().byId[id]?.details)
+  // A mod Nexus does not return (hidden, removed, a wrong id) stays unknown, so it is asked for once per session.
+  const unknown = ids.filter(
+    (id) => id > 0 && !useNexusDetails.getState().byId[id]?.details && !primeAsked.has(id),
+  )
   if (unknown.length === 0) {
     return
   }
+  for (const id of unknown) {
+    primeAsked.add(id)
+  }
   const got = (await PrimeDetails(currentGame(), unknown).catch(() => null)) ?? {}
-  useNexusDetails.setState((s) => {
-    const next = { ...s.byId }
-    for (const id of unknown) {
-      const details = got[`${id}`]
-      if (details && !next[id]?.details) {
-        next[id] = { details }
-      }
-    }
-    return { byId: next }
-  })
+  addDetails(unknown, got)
 }
 
 // Whether the entry holds a mod's whole details, not just the batched page data.
@@ -263,15 +275,5 @@ export async function mergeCachedDetails(ids: number[]): Promise<void> {
   if (unknown.length === 0) {
     return
   }
-  const cached = (await CachedDetails(currentGame(), unknown)) ?? {}
-  useNexusDetails.setState((s) => {
-    const next = { ...s.byId }
-    for (const id of unknown) {
-      const details = cached[`${id}`]
-      if (details && !next[id]?.details) {
-        next[id] = { details }
-      }
-    }
-    return { byId: next }
-  })
+  addDetails(unknown, (await CachedDetails(currentGame(), unknown)) ?? {})
 }

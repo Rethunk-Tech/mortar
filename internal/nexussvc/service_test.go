@@ -311,3 +311,31 @@ func TestPrimeDetailsAsksOncePerHundredMods(t *testing.T) {
 		t.Fatalf("a fresh cache must not be asked again: %d requests, %v", requests.Load()-before, err)
 	}
 }
+
+func TestPrimeDetailsDoesNotAskAgainForAModNexusDoesNotReturn(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/users/validate.json" {
+			_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":false}`))
+			return
+		}
+		requests.Add(1)
+		_, _ = w.Write([]byte(`{"data":{"legacyModsByDomain":{"nodes":[]}}}`))
+	}))
+	t.Cleanup(srv.Close)
+	c := nexus.New("1")
+	c.BaseURL = srv.URL
+	s := NewService(testStore(t), c, &meta.Client{CacheDir: t.TempDir()})
+	ctx := context.Background()
+	if _, err := s.SignIn(ctx, "k"); err != nil {
+		t.Fatal(err)
+	}
+	for range 3 {
+		if got, err := s.PrimeDetails(ctx, "lethal-company", []int{9999}); err != nil || len(got) != 0 {
+			t.Fatalf("got %v, %v", got, err)
+		}
+	}
+	if requests.Load() != 1 {
+		t.Fatalf("a mod Nexus does not return was asked for %d times", requests.Load())
+	}
+}

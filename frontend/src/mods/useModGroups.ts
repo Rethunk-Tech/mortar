@@ -44,11 +44,14 @@ export function useModGroups(mods: Mod[], profile: Profile) {
   useEffect(() => {
     setCollapsed(loadCollapsed(gameId))
   }, [gameId])
+  const nexusIds = mods
+    .map((m) => nexusIdOf(profile, m))
+    .filter((id) => id > 0)
+    .sort((a, b) => a - b)
+    .join(',')
   useEffect(() => {
-    primeDetails(mods.map((m) => nexusIdOf(profile, m)).filter((id) => id > 0)).catch(
-      reportUnexpected,
-    )
-  }, [mods, profile])
+    primeDetails(nexusIds === '' ? [] : nexusIds.split(',').map(Number)).catch(reportUnexpected)
+  }, [nexusIds])
   const groups = useMemo(() => {
     const names = installedNames(mods)
     return groupSorted(

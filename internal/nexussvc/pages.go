@@ -13,6 +13,14 @@ func PageName(domain string, modID int) string {
 	return fmt.Sprintf("nexus/page-v1-%s-%d.json", domain, modID)
 }
 
+// absentName marks a mod the batched lookup asked Nexus for and got nothing back (hidden, removed, a wrong id), so
+// the next look within the details TTL does not ask again.
+func absentName(domain string, modID int) string {
+	return fmt.Sprintf("nexus/page-absent-v1-%s-%d.json", domain, modID)
+}
+
+type absent struct{}
+
 // PrimeDetails fills the page data of many mods at once: whatever is cached and fresh is kept, and the rest comes
 // from one GraphQL request per 100 mods, so a list of hundreds costs a handful of requests instead of several each.
 // It returns the best details held for each mod, which are partial (the page's headline data, no files or
@@ -30,7 +38,8 @@ func (s *Service) PrimeDetails(ctx context.Context, gameID string, modIDs []int)
 			continue
 		}
 		seen[id] = true
-		if !meta.Fresh[Details](s.meta, DetailsName(t.Domain, id), detailsTTL) && !meta.Fresh[Details](s.meta, PageName(t.Domain, id), detailsTTL) {
+		if !meta.Fresh[Details](s.meta, DetailsName(t.Domain, id), detailsTTL) && !meta.Fresh[Details](s.meta, PageName(t.Domain, id), detailsTTL) &&
+			!meta.Fresh[absent](s.meta, absentName(t.Domain, id), detailsTTL) {
 			missing = append(missing, id)
 		}
 	}
@@ -57,6 +66,13 @@ func (s *Service) fetchPages(ctx context.Context, domain string, ids []int) erro
 	infos, err := c.ModsByDomain(ctx, domain, ids)
 	for id, info := range infos {
 		meta.Put(s.meta, PageName(domain, id), Details{Page: info.Page(), Category: info.Category, Partial: true})
+	}
+	if err == nil {
+		for _, id := range ids {
+			if _, ok := infos[id]; !ok {
+				meta.Put(s.meta, absentName(domain, id), absent{})
+			}
+		}
 	}
 	return err
 }
