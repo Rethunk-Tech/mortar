@@ -6,6 +6,7 @@ import (
 )
 
 func TestDuplicateRecordsCopyOrigin(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	src := mustCreate(t, e, "Farm")
 	dup, err := e.Duplicate("stardew", src.ID)
@@ -22,6 +23,7 @@ func TestDuplicateRecordsCopyOrigin(t *testing.T) {
 }
 
 func TestImportGameModsRecordsOrigin(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	mods := t.TempDir()
 	writeFile(t, mods, "Loud/manifest.json",

@@ -8,6 +8,7 @@ import (
 )
 
 func TestTrimHistoryDropsOldEventsAndRecordsIt(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
@@ -45,6 +46,7 @@ func TestTrimHistoryDropsOldEventsAndRecordsIt(t *testing.T) {
 }
 
 func TestMigrateHistoryGzipsPlainSnapshotsAndFillsCounts(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)

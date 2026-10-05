@@ -27,14 +27,19 @@ type env struct {
 func newEnv(t *testing.T) env {
 	t.Helper()
 	base := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", base)
-	t.Setenv("XDG_CONFIG_HOME", base)
-	t.Setenv("LOCALAPPDATA", base)
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
+	items := store.OpenAt(filepath.Join(base, "mortar", "store"))
 	return env{&Store{root: filepath.Join(base, "profiles"), trash: filepath.Join(base, "trash"), items: items}, items, base}
+}
+
+// newEnvWithData is newEnv for a test that also reaches the data and config folders through the environment
+// (settings, the installed game); it cannot run in parallel.
+func newEnvWithData(t *testing.T) env {
+	t.Helper()
+	e := newEnv(t)
+	t.Setenv("XDG_DATA_HOME", e.base)
+	t.Setenv("XDG_CONFIG_HOME", e.base)
+	t.Setenv("LOCALAPPDATA", e.base)
+	return e
 }
 
 func writeFile(t *testing.T, root, rel, body string) {
@@ -74,6 +79,7 @@ func names(t *testing.T, dir string) []string {
 }
 
 func TestAddEntryScansAndRejectsDuplicates(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{
 		"Pack/A/manifest.json":    manifestJSON("X.A"),
@@ -121,6 +127,7 @@ func TestAddEntryScansAndRejectsDuplicates(t *testing.T) {
 }
 
 func TestToggleNestedAndRoot(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-n", map[string]string{"W/A/manifest.json": manifestJSON("X.A"), "W/B/manifest.json": manifestJSON("X.B")})
 	e.item(t, "local-r", map[string]string{"manifest.json": manifestJSON("X.R"), "data.txt": "d"})
@@ -178,6 +185,7 @@ func TestToggleNestedAndRoot(t *testing.T) {
 }
 
 func TestSetModsEnabledAndRemoveEntriesOneWrite(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
@@ -213,6 +221,7 @@ func TestSetModsEnabledAndRemoveEntriesOneWrite(t *testing.T) {
 }
 
 func TestRootToggleRoundTrip(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-r", map[string]string{"manifest.json": manifestJSON("X.R")})
 	p, _ := e.Create("stardew", "P")
@@ -230,6 +239,7 @@ func TestRootToggleRoundTrip(t *testing.T) {
 }
 
 func TestDuplicateIsIndependent(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("X.A")})
 	a, _ := e.Create("stardew", "A")
@@ -281,6 +291,7 @@ func TestDuplicateUsesUniqueProfileName(t *testing.T) {
 }
 
 func TestTrashRestorePurge(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	a, _ := e.Create("stardew", "A")
 	b, _ := e.Create("stardew", "B")
@@ -332,7 +343,7 @@ func TestTrashRestorePurge(t *testing.T) {
 }
 
 func TestPurgeTrashUsesSettingsRetention(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	st, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)
@@ -354,6 +365,7 @@ func TestPurgeTrashUsesSettingsRetention(t *testing.T) {
 }
 
 func TestPurgeTrash(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "P")
 	if err := e.Delete("stardew", p.ID); err != nil {
@@ -388,6 +400,7 @@ func TestPurgeTrash(t *testing.T) {
 }
 
 func TestRebuildAfterModsDeleted(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-n", map[string]string{"W/A/manifest.json": manifestJSON("X.A"), "W/B/manifest.json": manifestJSON("X.B")})
 	e.item(t, "local-r", map[string]string{"manifest.json": manifestJSON("X.R")})
@@ -437,6 +450,7 @@ func TestRebuildAfterModsDeleted(t *testing.T) {
 }
 
 func TestModsParkUnknownFoldersBeforeRebuild(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "P")
 	writeFile(t, e.mods(p.ID), "dropped/keep.txt", "keep")
@@ -457,6 +471,7 @@ func TestModsParkUnknownFoldersBeforeRebuild(t *testing.T) {
 }
 
 func TestHiddenReorderAndStoreKeys(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("X.A")})
 	a, _ := e.Create("stardew", "A")
@@ -499,6 +514,7 @@ func bundle() map[string]string {
 }
 
 func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "smapi-1.0.0", bundle())
 	e.item(t, "smapi-2.0.0", bundle())
@@ -553,6 +569,7 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 }
 
 func TestCreateGetsBundledEntry(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	key := ""
 	e.Bundled = func(string) []Bundle {
@@ -578,6 +595,7 @@ func TestCreateGetsBundledEntry(t *testing.T) {
 }
 
 func TestApplyBundledSkipsRunningProfile(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "smapi-1.0.0", bundle())
 	e.item(t, "smapi-2.0.0", bundle())
@@ -618,6 +636,7 @@ func TestApplyBundledSkipsRunningProfile(t *testing.T) {
 }
 
 func TestRunningProfileIsLocked(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "Locked")
 	e.item(t, "a-1.0", map[string]string{"A/manifest.json": manifestJSON("me.a")})
@@ -656,6 +675,7 @@ func TestRunningProfileIsLocked(t *testing.T) {
 }
 
 func TestUnreadableTrashedProfileBlocksOnlyItself(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	good, _ := e.Create("stardew", "Good")
 	bad, _ := e.Create("stardew", "Bad")

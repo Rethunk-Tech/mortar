@@ -9,6 +9,7 @@ import (
 )
 
 func TestFixStaleManifestSetsOnlyTheVersionInStoreAndProfile(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "nexus-1-2", map[string]string{
 		"Pack/A/manifest.json": `{
@@ -51,6 +52,7 @@ func TestFixStaleManifestSetsOnlyTheVersionInStoreAndProfile(t *testing.T) {
 }
 
 func TestFixStaleManifestLeavesAManifestFromAnotherFile(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "nexus-1-2", map[string]string{"Pack/A/manifest.json": manifestJSON("X.A")})
 	p, _ := e.Create("stardew", "P")
@@ -67,6 +69,7 @@ func TestFixStaleManifestLeavesAManifestFromAnotherFile(t *testing.T) {
 }
 
 func TestFixStaleManifestLeavesAModFromAnExtraFile(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "nexus-1-2", map[string]string{"Main/manifest.json": manifestJSON("X.Main")})
 	p, _ := e.Create("stardew", "P")

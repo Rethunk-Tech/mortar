@@ -7,22 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
-
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
-	testfs.DataHome(t)
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	root, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Parallel()
+	root := t.TempDir()
+	items := store.OpenAt(filepath.Join(root, "store"))
 	put := func(rel string, body []byte) {
 		t.Helper()
 		p := filepath.Join(root, filepath.FromSlash(rel))
@@ -93,15 +84,9 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 }
 
 func TestApplySkipsAStoreKeyThatBecameReferenced(t *testing.T) {
-	testfs.DataHome(t)
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	root, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Parallel()
+	root := t.TempDir()
+	items := store.OpenAt(filepath.Join(root, "store"))
 	addItem(t, items, "gone", map[string]string{"b.bin": "gone!"})
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 	preview, err := Select(root, items, map[string][]string{}, now, nil)

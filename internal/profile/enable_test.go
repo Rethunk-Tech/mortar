@@ -8,6 +8,7 @@ import (
 )
 
 func TestEnableTurnsOnRequiredDisabledDependencies(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "core", map[string]string{"manifest.json": `{"Name":"Core","Author":"me","Version":"1.0.0","UniqueID":"Me.Core"}`})
 	e.item(t, "user", map[string]string{"manifest.json": `{"Name":"User","Author":"me","Version":"1.0.0","UniqueID":"Me.User","Dependencies":[{"UniqueID":"Me.Core"},{"UniqueID":"Me.Opt","IsRequired":false}]}`})
@@ -50,7 +51,7 @@ func TestEnableTurnsOnRequiredDisabledDependencies(t *testing.T) {
 }
 
 func TestEnableSkipsRequiredWhenSettingIsNever(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	st, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)

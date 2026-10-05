@@ -20,6 +20,7 @@ func buildZip(t *testing.T, name string, files map[string]string) string {
 }
 
 func TestInstallArchive(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	good := buildZip(t, "Pack.zip", map[string]string{"Pack/A/manifest.json": manifestJSON("X.A"), "Pack/B/manifest.json": manifestJSON("X.B")})
@@ -61,6 +62,7 @@ func TestInstallArchive(t *testing.T) {
 }
 
 func TestInstallArchiveRawXNBExplainsContentPatcherAlternative(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	raw := buildZip(t, "raw-woods.zip", map[string]string{"Woods.xnb": "raw"})
@@ -73,7 +75,7 @@ func TestInstallArchiveRawXNBExplainsContentPatcherAlternative(t *testing.T) {
 }
 
 func TestInstallArchiveSameModVersionIsAReplace(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	res, err := e.InstallArchive("stardew", p.ID, v1)
@@ -88,7 +90,7 @@ func TestInstallArchiveSameModVersionIsAReplace(t *testing.T) {
 }
 
 func TestInstallArchiveNewModVersionIsAnUpdate(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	if _, err := e.InstallArchive("stardew", p.ID, v1); err != nil {
@@ -102,7 +104,7 @@ func TestInstallArchiveNewModVersionIsAnUpdate(t *testing.T) {
 }
 
 func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindNexus, Name: "a-1.zip", ModID: 7, FileID: 1, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 3}
@@ -129,6 +131,7 @@ func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
 }
 
 func TestStageThenInstallGitHubKeepsTheTypedSource(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
@@ -150,7 +153,7 @@ func TestStageThenInstallGitHubKeepsTheTypedSource(t *testing.T) {
 }
 
 func TestConcurrentInstallsOfOneModKeepOneEntry(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	p, _ := e.Create("stardew", "P")
 	a := buildZip(t, "A.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/one.txt": "1"})
 	b := buildZip(t, "B.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/two.txt": "2"})

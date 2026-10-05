@@ -6,6 +6,7 @@ import (
 )
 
 func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	game := t.TempDir()
 	writeFile(t, game, "New/manifest.json", manifestJSON("me.new"))

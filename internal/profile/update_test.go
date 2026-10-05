@@ -29,7 +29,7 @@ func read(t *testing.T, path string) string {
 func updEnv(t *testing.T, v1, v2 map[string]string) (env, Profile) {
 	t.Helper()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	p, err := e.Create("stardew", "P")
 	if err != nil {
 		t.Fatal(err)
@@ -148,7 +148,7 @@ func TestUpdateKeepsDisabledFolderAndRollsBack(t *testing.T) {
 
 func TestInstallArchiveUpdatesHeldEntry(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "A1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/cfg.json": "v1"})
 	v2 := buildZip(t, "A2.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/cfg.json": "v2"})

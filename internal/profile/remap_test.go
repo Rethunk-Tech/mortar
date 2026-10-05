@@ -18,6 +18,7 @@ func TestHasRawXNBReportsWalkErrors(t *testing.T) {
 }
 
 func TestRemapJunkWrapperSkippedSilently(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	z := buildZip(t, "junk.zip", map[string]string{
@@ -38,6 +39,7 @@ func TestRemapJunkWrapperSkippedSilently(t *testing.T) {
 }
 
 func TestRemapNestedManifestAsks(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	z := buildZip(t, "loose.zip", map[string]string{"readme.txt": "hello", "notes.md": "x", "Mod/.hidden/manifest.json": manifestJSON("X.A")})
@@ -54,6 +56,7 @@ func TestRemapNestedManifestAsks(t *testing.T) {
 }
 
 func TestRemapStoredRootReused(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	z := buildZip(t, "wrap.zip", map[string]string{
@@ -115,7 +118,7 @@ func TestRemapStoredRootReused(t *testing.T) {
 }
 
 func TestRemapVariantsAskThenUpdateReuses(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	p, _ := e.Create("stardew", "P")
 	variantZip := func(name, a, b string) string {
 		return buildZip(t, name, map[string]string{

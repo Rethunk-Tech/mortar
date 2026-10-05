@@ -203,6 +203,7 @@ func TestScanModsDriftOnProfile(t *testing.T) {
 }
 
 func TestInstallThenScanReportsNoDrift(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "Farm")
 	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
@@ -219,6 +220,7 @@ func TestInstallThenScanReportsNoDrift(t *testing.T) {
 }
 
 func TestParkUnknownFoldersKeepsEarlierCopy(t *testing.T) {
+	t.Parallel()
 	s := newEnv(t)
 	p := mustCreate(t, s, "Farm")
 	writeFile(t, s.mods(p.ID), "dropped/first.txt", "first")
@@ -240,6 +242,7 @@ func TestParkUnknownFoldersKeepsEarlierCopy(t *testing.T) {
 }
 
 func TestSwitchingAModOffIsNotDrift(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "Farm")
 	zip := buildZip(t, "pack.zip", map[string]string{
@@ -266,6 +269,7 @@ func TestSwitchingAModOffIsNotDrift(t *testing.T) {
 }
 
 func TestRefreshDependenciesReadsOptionalFromStoreManifest(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "Farm")
 	zip := buildZip(t, "pack.zip", map[string]string{
@@ -293,6 +297,7 @@ func TestRefreshDependenciesReadsOptionalFromStoreManifest(t *testing.T) {
 }
 
 func TestRestoreModsFolderUndoesTrash(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "Farm")
 	dir, _ := e.profileDir("stardew", p.ID)

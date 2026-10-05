@@ -7,6 +7,7 @@ import (
 )
 
 func TestRestoreEntriesReappliesEntryFields(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := mustCreate(t, e, "Farm")
@@ -52,6 +53,7 @@ func TestRestoreEntriesReappliesEntryFields(t *testing.T) {
 }
 
 func TestRestoreEntryFieldsWritesPreviousValues(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 )
 
 // Tier is one way to put a store file into a profile folder.
@@ -25,7 +26,7 @@ type Ops struct {
 }
 
 type devCaps struct {
-	clone, hardlink, symlink int8
+	clone, hardlink, symlink atomic.Int32
 }
 
 var capCache sync.Map // uint64 device -> *devCaps
@@ -132,15 +133,15 @@ func (ops Ops) put(src, dst, rel string) error {
 		if caps != nil {
 			switch t {
 			case TierClone:
-				if caps.clone < 0 {
+				if caps.clone.Load() < 0 {
 					continue
 				}
 			case TierHardlink:
-				if caps.hardlink < 0 {
+				if caps.hardlink.Load() < 0 {
 					continue
 				}
 			case TierSymlink:
-				if caps.symlink < 0 {
+				if caps.symlink.Load() < 0 {
 					continue
 				}
 			case TierCopy:
@@ -157,11 +158,11 @@ func (ops Ops) put(src, dst, rel string) error {
 			if caps != nil {
 				switch t {
 				case TierClone:
-					caps.clone = 1
+					caps.clone.Store(1)
 				case TierHardlink:
-					caps.hardlink = 1
+					caps.hardlink.Store(1)
 				case TierSymlink:
-					caps.symlink = 1
+					caps.symlink.Store(1)
 				case TierCopy:
 				default:
 				}
@@ -174,11 +175,11 @@ func (ops Ops) put(src, dst, rel string) error {
 		if caps != nil && !isCrossDevice(err) {
 			switch t {
 			case TierClone:
-				caps.clone = -1
+				caps.clone.Store(-1)
 			case TierHardlink:
-				caps.hardlink = -1
+				caps.hardlink.Store(-1)
 			case TierSymlink:
-				caps.symlink = -1
+				caps.symlink.Store(-1)
 			case TierCopy:
 			default:
 			}

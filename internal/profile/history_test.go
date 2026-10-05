@@ -28,7 +28,7 @@ func addFarmMod(t *testing.T, e env) Profile {
 }
 
 func TestHistoryRecordsEachOperation(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
 	e.item(t, "local-a2", map[string]string{"manifest.json": `{"Name":"Me.A","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`})
@@ -94,6 +94,7 @@ func kinds(events []HistoryEvent) []string {
 }
 
 func TestHistoryRevertRestoresEntries(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
@@ -123,6 +124,7 @@ func TestHistoryRevertRestoresEntries(t *testing.T) {
 }
 
 func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{
 		"manifest.json": manifestJSON("Me.A"),
@@ -146,6 +148,7 @@ func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
 }
 
 func TestHistoryRevertMissingStoreKeys(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
@@ -272,6 +275,7 @@ func TestCorruptHistoryIsQuarantined(t *testing.T) {
 }
 
 func TestProfileUpdateKeepsFilesWhenHistoryFails(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := mustCreate(t, e, "Farm")
@@ -296,6 +300,7 @@ func TestProfileUpdateKeepsFilesWhenHistoryFails(t *testing.T) {
 }
 
 func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	for _, key := range []string{"a", "b", "c"} {
 		e.item(t, key, map[string]string{"manifest.json": manifestJSON(key)})
@@ -326,6 +331,7 @@ func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
 }
 
 func TestHistoryRevertRefusedWhileRunning(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
@@ -355,6 +361,7 @@ func TestModDiffCounts(t *testing.T) {
 }
 
 func TestHistoryIncludesModDiffCounts(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
@@ -393,6 +400,7 @@ func TestClassifyHistoryNamesTheEntryThatChanged(t *testing.T) {
 }
 
 func TestApplyBundledDoesNotRecordHistory(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "smapi-1.0.0", bundle())
 	p := mustCreate(t, e, "Farm")
@@ -409,6 +417,7 @@ func TestApplyBundledDoesNotRecordHistory(t *testing.T) {
 }
 
 func TestHistoryQuietIsPerProfile(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	a := mustCreate(t, e, "A")
@@ -431,6 +440,7 @@ func TestHistoryQuietIsPerProfile(t *testing.T) {
 }
 
 func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
@@ -462,6 +472,7 @@ func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
 }
 
 func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
@@ -486,6 +497,7 @@ func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
 }
 
 func TestRevertRestoresLiveModsWhenProfileJSONFails(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
@@ -537,6 +549,7 @@ func seedHistory(t *testing.T, e env, id string, events []HistoryEvent) {
 }
 
 func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	alpha := mustCreate(t, e, "Alpha")
 	beta := mustCreate(t, e, "Beta")

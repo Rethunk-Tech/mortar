@@ -3,6 +3,7 @@ package profile
 import "testing"
 
 func TestBundledModsAreHiddenAndKept(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "smapi-1.0.0", bundle())
 	e.item(t, "local-x", map[string]string{"manifest.json": manifestJSON("Other")})
@@ -31,6 +32,7 @@ func smapiBundle(key string) Bundle {
 }
 
 func TestBridgeEntryIsHiddenKeptAndNotRemovable(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "smapi-1.0.0", bundle())
 	e.item(t, "bridge-1.0.0", map[string]string{"manifest.json": manifestJSON("Rethunk.MortarSmapiBridge")})

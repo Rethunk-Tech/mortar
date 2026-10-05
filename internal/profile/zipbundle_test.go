@@ -18,6 +18,7 @@ import (
 )
 
 func TestExportRestoreRoundTrip(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{
 		"Pack/A/manifest.json": manifestJSON("X.A"),
@@ -92,6 +93,7 @@ func TestExportRestoreRoundTrip(t *testing.T) {
 }
 
 func TestRestoreZipRejectsTamperedHash(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	p := mustCreate(t, e, "P")
@@ -119,6 +121,7 @@ func TestRestoreZipRejectsTamperedHash(t *testing.T) {
 }
 
 func TestRestoreZipRejectsZipSlip(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	evil := filepath.Join(t.TempDir(), "slip.zip")
 	writeRawZip(t, evil, map[string][]byte{"../evil": []byte("nope")})
@@ -215,6 +218,7 @@ func writeRawZip(t *testing.T, dest string, files map[string][]byte) {
 }
 
 func TestExportZipOmitsRunsAndHistory(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	p := mustCreate(t, e, "P")
@@ -261,6 +265,7 @@ func TestExportZipOmitsRunsAndHistory(t *testing.T) {
 }
 
 func TestRestoreZipIgnoresAbsoluteCover(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	img := filepath.Join(t.TempDir(), "c.png")
 	if err := os.WriteFile(img, pngHeader, 0o600); err != nil {

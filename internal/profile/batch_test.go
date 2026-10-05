@@ -3,6 +3,7 @@ package profile
 import "testing"
 
 func TestBatchEntryOperationsWriteAllSelectedEntries(t *testing.T) {
+	t.Parallel()
 	s := newEnv(t)
 	p := mustCreate(t, s, "Batch")
 	var err error

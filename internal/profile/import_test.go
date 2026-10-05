@@ -41,6 +41,7 @@ func dumpTree(t *testing.T, root string) string {
 }
 
 func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	gameDir := filepath.Join(t.TempDir(), "Stardew Valley")
 	mods := filepath.Join(gameDir, "Mods")
@@ -140,6 +141,7 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 }
 
 func TestImportGameModsPrefersEnabledDuplicateAndOmitsBundled(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	gameDir := filepath.Join(t.TempDir(), "Stardew Valley")
 	mods := filepath.Join(gameDir, "Mods")
@@ -198,6 +200,7 @@ func TestImportGameModsPrefersEnabledDuplicateAndOmitsBundled(t *testing.T) {
 }
 
 func TestImportGameModsPicksNewestWhenBothCopiesAreOff(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	gameDir := filepath.Join(t.TempDir(), "Stardew Valley")
 	mods := filepath.Join(gameDir, "Mods")
@@ -241,6 +244,7 @@ func TestImportGameModsPicksNewestWhenBothCopiesAreOff(t *testing.T) {
 }
 
 func TestInstallFolderUsesTheSameStorePathAsAnArchive(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	src := t.TempDir()
@@ -252,6 +256,7 @@ func TestInstallFolderUsesTheSameStorePathAsAnArchive(t *testing.T) {
 }
 
 func TestPreviewGameModsSkipsASymlinkDirectory(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	mods := filepath.Join(t.TempDir(), "Mods")
 	writeFile(t, mods, "Loud/manifest.json", `{"Name":"Loud","Version":"1.0.0","UniqueID":"Me.Loud"}`)

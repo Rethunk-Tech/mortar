@@ -41,6 +41,7 @@ func TestDiffProfilesSplitsByUniqueID(t *testing.T) {
 }
 
 func TestCopyModsAddsFromStoreAndRespectsTheRunningLock(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": `{"Name":"B","Author":"me","Version":"2.0.0","UniqueID":"Me.B"}`})

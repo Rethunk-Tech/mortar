@@ -40,7 +40,7 @@ func TestSamePageAsk(t *testing.T) {
 }
 
 func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	p := mustCreate(t, e, "P")
 	main := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0"}
@@ -114,6 +114,7 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 }
 
 func TestSplitAndCombineEntries(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "P")
 	main := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})

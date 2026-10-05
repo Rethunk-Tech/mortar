@@ -8,7 +8,7 @@ import (
 )
 
 func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	st, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)

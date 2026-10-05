@@ -6,6 +6,7 @@ import (
 )
 
 func TestSetGroupEnabledOneHistoryEvent(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
@@ -52,6 +53,7 @@ func TestSetGroupEnabledOneHistoryEvent(t *testing.T) {
 }
 
 func TestRemoveEntryDropsGroupKeys(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
 	p := mustCreate(t, e, "P")

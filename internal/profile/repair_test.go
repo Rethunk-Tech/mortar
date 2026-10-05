@@ -10,6 +10,7 @@ import (
 )
 
 func TestRepairRebuildsFromSnapshotAndKeepsMods(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
@@ -68,6 +69,7 @@ func TestRepairNoSnapshot(t *testing.T) {
 }
 
 func TestRepairKeepsDamagedFileAsideAndUndoRestoresIt(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)

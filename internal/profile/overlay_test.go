@@ -45,7 +45,7 @@ func readLive(t *testing.T, e env, profileID, key, rel string) string {
 
 func installOverlayPair(t *testing.T) (env, Profile, string, string) {
 	t.Helper()
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	p, _ := e.Create("stardew", "P")
 	if _, err := e.InstallNexus("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
 		t.Fatal(err)
@@ -87,6 +87,7 @@ func TestOverlayInstallsOverItsMainFile(t *testing.T) {
 }
 
 func TestOverlayWithoutMainFileIsRefused(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	opt := buildZip(t, "opt.zip", map[string]string{overlayDir + "/assets/a.png": "A-opt"})
@@ -127,6 +128,7 @@ func TestMapOverlay(t *testing.T) {
 }
 
 func TestOverlayAmbiguousAsksForTarget(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	if _, err := e.InstallNexus("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
@@ -360,6 +362,7 @@ func TestOverlayExportRestoreRoundTrip(t *testing.T) {
 }
 
 func TestOverlayPlacedWithoutAskingAndOff(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	if _, err := e.InstallNexus("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {

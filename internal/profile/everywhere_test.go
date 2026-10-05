@@ -8,7 +8,7 @@ import (
 func everywhereEnv(t *testing.T) (env, Profile, Profile) {
 	t.Helper()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	a := mustCreate(t, e, "A")
 	b := mustCreate(t, e, "B")
 	var err error

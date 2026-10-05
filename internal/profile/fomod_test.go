@@ -14,6 +14,7 @@ import (
 )
 
 func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "A")
 	xml, err := fsx.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
@@ -57,6 +58,7 @@ func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
 }
 
 func TestFomodReplayMismatchAsksAgain(t *testing.T) {
+	t.Parallel()
 	e := newEnv(t)
 	p := mustCreate(t, e, "A")
 	xml, err := fsx.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
@@ -97,7 +99,7 @@ func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
 		{"plugin gone", strings.Replace(base, `name="Alpha"`, `name="Alpha2"`, 1), map[string]map[string][]string{}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			e := newEnv(t)
+			e := newEnvWithData(t)
 			p, err := e.Create("stardew", "A")
 			if err != nil {
 				t.Fatal(err)

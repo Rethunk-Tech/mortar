@@ -8,7 +8,7 @@ import (
 )
 
 func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	st, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)
@@ -56,7 +56,7 @@ func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
 }
 
 func TestUnhideModRenamesDottedFoldersAndRegistersTheMod(t *testing.T) {
-	e := newEnv(t)
+	e := newEnvWithData(t)
 	st, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)
