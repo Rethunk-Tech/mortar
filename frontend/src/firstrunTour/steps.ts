@@ -27,4 +27,4 @@ const TOUR_ANCHORS: Record<TourStep, string[]> = {
   command: ['[data-tour="app-menu"]'],
 }
 
-export { TOUR_ANCHORS, TOUR_STEPS, type TourStep }
+export { TOUR_ANCHORS, TOUR_STEPS }
