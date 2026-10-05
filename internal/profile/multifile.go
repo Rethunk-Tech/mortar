@@ -61,22 +61,61 @@ func SamePageAsk(p Profile, in IncomingFile) (ask MergeAsk, updates int, ok bool
 		}
 		page = append(page, e)
 	}
-	for _, e := range page {
-		if updatesEntry(e, in) {
-			return MergeAsk{}, e.Source.FileID, false
-		}
-	}
 	if len(page) == 0 {
 		return MergeAsk{}, 0, false
 	}
-	return MergeAsk{EntryKey: page[0].Key, Label: entryLabel(page[0]), DefaultAdd: DefaultMerge(in.Category)}, 0, true
+	if e, ok := updatedEntry(page, in); ok {
+		return MergeAsk{}, e.Source.FileID, false
+	}
+	target := page[0]
+	if i := slices.IndexFunc(page, func(e Entry) bool { return sharesMods(e, in.ModIDs) }); i >= 0 {
+		target = page[i]
+	}
+	return MergeAsk{EntryKey: target.Key, Label: entryLabel(target), DefaultAdd: DefaultMerge(in.Category)}, 0, true
 }
 
-// updatesEntry reports whether in is a newer version of e's file: the author's file_updates chain leads from e's
-// file to in, e's main file has since been retired in favour of a main file, or in holds exactly e's mods.
-func updatesEntry(e Entry, in IncomingFile) bool {
+// updatedEntry finds the entry in is a newer version of. The mods inside in decide when they are known: exactly an
+// entry's mods is its update, anything else is another file. Unknown (a FOMOD or a listing cut short), the author's
+// file_updates chain decides, or else a retired main file when it is the page's only main file the profile holds.
+func updatedEntry(page []Entry, in IncomingFile) (Entry, bool) {
+	if len(in.ModIDs) > 0 {
+		i := slices.IndexFunc(page, func(e Entry) bool {
+			return len(e.Mods) == len(in.ModIDs) && !slices.ContainsFunc(e.Mods, func(m Component) bool {
+				return !slices.ContainsFunc(in.ModIDs, func(id mod.ID) bool { return mod.Equal(id, m.ID) })
+			})
+		})
+		if i < 0 {
+			return Entry{}, false
+		}
+		return page[i], true
+	}
+	if i := slices.IndexFunc(page, func(e Entry) bool { return chainedTo(e.Source.FileID, in) }); i >= 0 {
+		return page[i], true
+	}
+	if !strings.EqualFold(in.Category, "MAIN") {
+		return Entry{}, false
+	}
+	var mains []Entry
+	for _, e := range page {
+		if e.Source.Category == "" || strings.EqualFold(e.Source.Category, "MAIN") {
+			mains = append(mains, e)
+		}
+	}
+	if len(mains) != 1 {
+		return Entry{}, false
+	}
+	for _, f := range in.Files {
+		if f.FileID == mains[0].Source.FileID && (strings.EqualFold(f.Category, "OLD_VERSION") || strings.EqualFold(f.Category, "ARCHIVED")) {
+			return mains[0], true
+		}
+	}
+	return Entry{}, false
+}
+
+// chainedTo reports whether the author's file_updates chain leads from fileID to in.
+func chainedTo(fileID int, in IncomingFile) bool {
 	seen := map[int]bool{}
-	for id := e.Source.FileID; id != 0 && !seen[id]; {
+	for id := fileID; id != 0 && !seen[id]; {
 		seen[id] = true
 		next := 0
 		for _, f := range in.Files {
@@ -89,15 +128,12 @@ func updatesEntry(e Entry, in IncomingFile) bool {
 		}
 		id = next
 	}
-	if strings.EqualFold(in.Category, "MAIN") && (e.Source.Category == "" || strings.EqualFold(e.Source.Category, "MAIN")) {
-		for _, f := range in.Files {
-			if f.FileID == e.Source.FileID && (strings.EqualFold(f.Category, "OLD_VERSION") || strings.EqualFold(f.Category, "ARCHIVED")) {
-				return true
-			}
-		}
-	}
-	return len(in.ModIDs) > 0 && len(in.ModIDs) == len(e.Mods) && !slices.ContainsFunc(e.Mods, func(m Component) bool {
-		return !slices.ContainsFunc(in.ModIDs, func(id mod.ID) bool { return mod.Equal(id, m.ID) })
+	return false
+}
+
+func sharesMods(e Entry, ids []mod.ID) bool {
+	return slices.ContainsFunc(e.Mods, func(m Component) bool {
+		return slices.ContainsFunc(ids, func(id mod.ID) bool { return mod.Equal(id, m.ID) })
 	})
 }
 

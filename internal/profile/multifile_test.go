@@ -84,6 +84,35 @@ func TestSamePageAskTakesANewerFileAsAnUpdate(t *testing.T) {
 	}
 }
 
+// A page with two main files, Core and Addon, whose first versions were both retired without file_updates.
+func TestSamePageAskNeverTakesAnotherModForAnUpdate(t *testing.T) {
+	t.Parallel()
+	addon := Entry{Key: "nexus-7-11", Source: Source{Kind: KindNexus, ModID: 7, FileID: 11, Category: "MAIN"}, Mods: []Component{{Name: "Addon", ID: "smapi:Addon"}}}
+	core := Entry{Key: "nexus-7-10", Source: Source{Kind: KindNexus, ModID: 7, FileID: 10, Category: "MAIN"}, Mods: []Component{{Name: "Core", ID: "smapi:Core"}}}
+	files := []nexus.File{
+		{FileID: 10, Category: "OLD_VERSION"},
+		{FileID: 11, Category: "OLD_VERSION", ReplacedBy: 20},
+		{FileID: 20, Category: "MAIN"},
+		{FileID: 21, Category: "MAIN"},
+	}
+	coreV2 := IncomingFile{ModID: 7, FileID: 20, Category: "MAIN", Files: files, ModIDs: []mod.ID{"smapi:Core"}}
+	if _, up, _ := SamePageAsk(Profile{Entries: []Entry{addon, core}}, coreV2); up != 10 {
+		t.Errorf("Core v2 updates Core v1, not %d", up)
+	}
+	if ask, up, ok := SamePageAsk(Profile{Entries: []Entry{addon}}, coreV2); up != 0 || !ok || ask.EntryKey != addon.Key {
+		t.Errorf("Core v2 beside Addon v1 alone is another file, even on a file_updates chain: %+v %d %v", ask, up, ok)
+	}
+	unknown := coreV2
+	unknown.ModIDs, unknown.Files = nil, files[:1:1]
+	unknown.Files = append(unknown.Files, nexus.File{FileID: 11, Category: "OLD_VERSION"})
+	if _, up, ok := SamePageAsk(Profile{Entries: []Entry{addon, core}}, unknown); up != 0 || !ok {
+		t.Errorf("with two retired main files and unknown mods, ask: %d %v", up, ok)
+	}
+	if _, up, _ := SamePageAsk(Profile{Entries: []Entry{core}}, unknown); up != 10 {
+		t.Errorf("the only retired main file is updated when the mods are unknown: %d", up)
+	}
+}
+
 func TestANewerMainFileReplacesItsEntryWhenItsModsWereRenamed(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)

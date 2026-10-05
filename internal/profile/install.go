@@ -221,7 +221,8 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 		return Profile{}, false, false, err
 	}
 	if len(held) == 0 && source.replacing > 0 {
-		// A newer file of an installed main file replaces it even when its author renamed the mods inside.
+		// replacing names the entry this file updates: one the queue matched by file_updates or as the page's only
+		// retired main file, when the archive's mods were unknown, or one the user is updating.
 		p, err := s.read(game, id)
 		if err != nil {
 			return Profile{}, false, false, err
