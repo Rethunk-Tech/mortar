@@ -5,11 +5,486 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="referrer" content="no-referrer" />
     <meta name="color-scheme" content="dark" />
-    <meta http-equiv="refresh" content="0; url=/download/" />
-    <title>Mortar</title>
+    <title>Mortar: the Stardew Valley mod manager</title>
+    <meta
+      name="description"
+      content="Mortar is a free, open source desktop mod manager for Stardew Valley. It installs SMAPI, keeps each set of mods in its own profile, explains conflicts and shares profiles as a link."
+    />
+    <meta
+      property="og:title"
+      content="Mortar: the Stardew Valley mod manager"
+    />
+    <meta
+      property="og:description"
+      content="Profiles, SMAPI, Nexus Mods downloads, conflict explanations and shareable profiles. Free and open source for Linux and Windows."
+    />
+    <meta
+      property="og:image"
+      content="https://mortar.rethunk.tech/img/mods.webp"
+    />
+    <meta property="og:url" content="https://mortar.rethunk.tech/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="favicon.png" />
+    <link rel="apple-touch-icon" href="img/icon-192.png" />
     <link rel="stylesheet" href="base.css" />
+    <link rel="stylesheet" href="landing.css" />
   </head>
   <body>
-    <p>Mortar is a desktop mod manager for Stardew Valley. <a href="/download/">Download Mortar</a>.</p>
+    <nav class="nav" aria-label="Main">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <svg width="28" height="28" aria-hidden="true"><use href="img/icons.svg#brand" /></svg>
+          Mortar
+        </a>
+        <div class="nav-links">
+          <a class="optional" href="#features">Features</a>
+          <a class="optional" href="#faq">FAQ</a>
+          <a href="#download">Download</a>
+          <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="hero">
+      <div class="wrap">
+        <a
+          class="eyebrow"
+          id="release"
+          href="https://github.com/Rethunk-Tech/mortar/releases/latest"
+          >Free and open source · Linux and Windows</a
+        >
+        <h1>Mod Stardew Valley <em>without the mess</em></h1>
+        <p class="lede">
+          Mortar installs SMAPI, keeps every playthrough's mods in its own
+          profile, tells you why something broke before you launch, and shares a
+          whole profile as a link.
+        </p>
+        <div class="cta">
+          <a class="btn" id="primary-download" href="#download">
+            <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i1" /></svg>
+            <span>Download Mortar</span>
+          </a>
+          <a class="btn-ghost" href="https://github.com/Rethunk-Tech/mortar">
+            <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i2" /></svg>
+            View source
+          </a>
+        </div>
+        <p class="cta-note" id="cta-note">
+          Windows installer, AppImage, Flatpak, .deb, .rpm and Arch packages
+        </p>
+        <img
+          class="shot"
+          src="img/mods.webp"
+          width="1280"
+          height="800"
+          alt="Mortar showing a Stardew Valley profile of 817 mods with cover art"
+        />
+      </div>
+      <ul class="facts wrap">
+        <li><strong>Finds your game</strong><span>Steam, GOG, Heroic and Lutris</span></li>
+        <li><strong>Installs SMAPI</strong><span>and keeps it up to date</span></li>
+        <li><strong>Nexus Mods and GitHub</strong><span>straight from each mod's page</span></li>
+        <li><strong>AGPL-3.0</strong><span>free, no account needed</span></li>
+      </ul>
+    </div>
+
+    <main class="wrap">
+      <section class="block" id="features">
+        <div class="center">
+          <p class="kicker">Features</p>
+          <h2>Built for big mod lists</h2>
+          <p class="lede">
+            Hundreds of mods, several farms, friends on the same pack. Mortar is
+            made for that setup, not just the first five mods.
+          </p>
+        </div>
+
+        <div class="feature">
+          <div class="copy">
+            <h2>A profile for every playthrough</h2>
+            <p>
+              Keep a vanilla-plus farm, a Stardew Valley Expanded run and a
+              co-op pack side by side. Each profile has its own mods, settings
+              and launch options, and switching is one click.
+            </p>
+            <ul class="ticks">
+              <li>Install, update and roll back mods per profile</li>
+              <li>Updates show the changelog before you take them</li>
+              <li>Start new profiles from templates</li>
+              <li>Save backups on a schedule, with a timeline per farm</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/profile.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="A mod's detail panel in Mortar with its version, update channel and Keep this version"
+          />
+        </div>
+
+        <div class="feature flip">
+          <div class="copy">
+            <h2>Know what broke before you launch</h2>
+            <p>
+              Mortar reads every mod's manifest and content packs, then explains
+              problems in plain words: missing dependencies, outdated versions
+              and which mod wins each content conflict.
+            </p>
+            <ul class="ticks">
+              <li>Missing dependencies found and queued for you</li>
+              <li>Content conflicts explained file by file</li>
+              <li>One-click fixes: switch a mod off or make a pack win</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/problems.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="The Problems tab explaining which mod wins each content conflict"
+          />
+        </div>
+
+        <div class="feature">
+          <div class="copy">
+            <h2>See what slows your startup</h2>
+            <p>
+              With the bundled SMAPI bridge, Mortar measures how long the game
+              takes to reach the title screen and what each mod costs along the
+              way, so a slow load has a name.
+            </p>
+            <ul class="ticks">
+              <li>Time to title screen, compared with the last launch</li>
+              <li>Per-mod startup and in-game cost</li>
+              <li>Game console and logs inside Mortar</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/performance.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="The Performance tab with time to title screen and each mod's startup cost"
+          />
+        </div>
+
+        <div class="feature flip">
+          <div class="copy">
+            <h2>Looks the way you like</h2>
+            <p>
+              Dark or light, eight accent colours, and your own image, your
+              desktop wallpaper or a solid colour behind the window.
+            </p>
+          </div>
+          <img
+            class="shot"
+            src="img/settings.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="Appearance settings with theme, accent colours and window background"
+          />
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="more-heading">
+        <div class="center">
+          <p class="kicker">And more</p>
+          <h2 id="more-heading">Everything a modded farm needs</h2>
+          <p class="lede">
+            The small things that save an evening of troubleshooting.
+          </p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i3" /></svg>
+            </div>
+            <h3>Share a profile as a link</h3>
+            <p>
+              Send a link or a .mortar file. Whoever opens it gets the same
+              mods, downloaded from each mod's own page.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i4" /></svg>
+            </div>
+            <h3>Mod Manager Download</h3>
+            <p>
+              Click the button on Nexus Mods and the file lands in the right
+              profile. Works with free Nexus accounts.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i5" /></svg>
+            </div>
+            <h3>Nexus collections</h3>
+            <p>
+              Import a collection with its FOMOD choices, bundled configs and
+              instructions intact.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i6" /></svg>
+            </div>
+            <h3>Save backups</h3>
+            <p>
+              Scheduled and manual backups of every farm, with restore, pinning
+              and a size you control.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i7" /></svg>
+            </div>
+            <h3>Pin a version</h3>
+            <p>
+              Keep a mod on the version that works for your save while
+              everything else updates.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i8" /></svg>
+            </div>
+            <h3>Store integrity check</h3>
+            <p>
+              Mortar checks stored mod files against what it saved and repairs
+              anything that changed.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i9" /></svg>
+            </div>
+            <h3>Send to another PC</h3>
+            <p>
+              Send a profile to another computer on your network, mod files
+              included when it's your own.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i10" /></svg>
+            </div>
+            <h3>A command line too</h3>
+            <p>
+              List games, mods and conflicts from a terminal, with JSON output
+              for scripts.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i11" /></svg>
+            </div>
+            <h3>Updates itself</h3>
+            <p>
+              Mortar updates in place, or through apt, dnf and pacman from its
+              own signed package repository.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="companions-heading">
+        <div class="center">
+          <p class="kicker">Companions</p>
+          <h2 id="companions-heading">Works with your browser and your game</h2>
+          <p class="lede">
+            Two optional add-ons, both open source, both installed from inside
+            Mortar.
+          </p>
+        </div>
+        <div class="duo">
+          <article class="card">
+            <h3>Browser extension</h3>
+            <p>
+              Marks Nexus Mods pages with what your profile already has and
+              hands Mod Manager Download clicks to Mortar. For Firefox, Chrome,
+              Edge and other Chromium browsers.
+            </p>
+            <img
+              src="img/extension.webp"
+              width="380"
+              height="264"
+              loading="lazy"
+              alt="The Mortar browser extension popup connected to Mortar"
+            />
+            <div class="links">
+              <a href="https://github.com/Rethunk-Tech/mortar-browser-extension"
+                >mortar-browser-extension</a
+              >
+            </div>
+          </article>
+          <article class="card">
+            <h3>SMAPI bridge</h3>
+            <p>
+              A small SMAPI mod Mortar adds to each profile. It runs console
+              commands sent from Mortar, exposes Generic Mod Config Menu
+              settings, records startup timings and drives an overlay for
+              streaming.
+            </p>
+            <div class="links">
+              <a href="https://github.com/Rethunk-Tech/mortar-smapi-bridge"
+                >mortar-smapi-bridge</a
+              >
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="block center" id="download">
+        <p class="kicker">Download</p>
+        <h2>Get Mortar</h2>
+        <p class="lede">
+          Free, no account needed. Your current version is always on the
+          releases page.
+        </p>
+        <div class="platforms">
+          <article class="card platform windows">
+            <h3>
+              <svg width="22" height="22" aria-hidden="true"><use href="img/icons.svg#i12" /></svg>
+              Windows
+            </h3>
+            <p class="muted">
+              Windows 10 and 11. Installs for your user, no administrator rights
+              needed.
+            </p>
+            <a
+              class="btn"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-amd64-installer.exe"
+              >Download installer (x64)</a
+            >
+            <div class="more">
+              <a
+                href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-arm64-installer.exe"
+                >ARM64 installer</a
+              >
+              <a
+                href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-windows-amd64.exe"
+                >Portable .exe</a
+              >
+            </div>
+          </article>
+          <article class="card platform linux">
+            <h3>
+              <svg width="22" height="22" aria-hidden="true"><use href="img/icons.svg#i13" /></svg>
+              Linux
+            </h3>
+            <p class="muted">
+              x86_64 and ARM64. Ubuntu 24.04, Debian 13, Fedora 39 or newer; the
+              Flatpak runs anywhere.
+            </p>
+            <a
+              class="btn"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.AppImage"
+              >Download AppImage</a
+            >
+            <div class="more">
+              <a
+                href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.flatpak"
+                >Flatpak</a
+              >
+              <a href="https://github.com/Rethunk-Tech/mortar/releases/latest"
+                >.deb, .rpm and Arch</a
+              >
+              <a href="/packages/">apt, dnf and pacman repository</a>
+            </div>
+          </article>
+        </div>
+        <p class="muted" style="margin-top: 1.5rem">
+          Install steps, ARM builds and checksums:
+          <a href="/download/">all downloads</a>.
+        </p>
+      </section>
+
+      <section class="block" id="faq">
+        <div class="center">
+          <p class="kicker">FAQ</p>
+          <h2>Questions</h2>
+        </div>
+        <div class="faq">
+          <details>
+            <summary>Is Mortar free?</summary>
+            <p>
+              Yes. Mortar is free and open source under the AGPL-3.0 licence,
+              with no account, ads or tracking in the app.
+            </p>
+          </details>
+          <details>
+            <summary>Do I need Nexus Mods Premium?</summary>
+            <p>
+              No. With a free Nexus account you click Mod Manager Download on a
+              mod's page and Mortar takes it from there. Premium members can
+              also download from inside Mortar.
+            </p>
+          </details>
+          <details>
+            <summary>Does Mortar host mod files?</summary>
+            <p>
+              No. Every mod downloads from its own page on Nexus Mods or GitHub,
+              so authors keep their downloads and endorsements. The one
+              exception is sending a profile to another of your own computers on
+              your network.
+            </p>
+          </details>
+          <details>
+            <summary>Which games does it support?</summary>
+            <p>
+              Stardew Valley, from Steam (including Flatpak Steam), GOG, Heroic
+              and Lutris. Mortar is built for more than one game, and Lethal
+              Company support is planned for a later release.
+            </p>
+          </details>
+          <details>
+            <summary>Windows says it protected my PC. Is that normal?</summary>
+            <p>
+              Yes. The Windows builds are not code-signed yet, so SmartScreen
+              warns the first time. Choose More info, then Run anyway. The
+              source and the release builds are public on GitHub.
+            </p>
+          </details>
+          <details>
+            <summary>What happened to Concrete?</summary>
+            <p>
+              <a href="https://github.com/LethalModding/Concrete">Concrete</a>,
+              our Lethal Company mod manager, is archived. Mortar is its
+              successor, rebuilt from scratch for several games.
+            </p>
+          </details>
+          <details>
+            <summary>Where do I report a bug?</summary>
+            <p>
+              Use Report a Mortar bug in the app's help menu, which attaches
+              diagnostics, or open an issue on
+              <a href="https://github.com/Rethunk-Tech/mortar/issues">GitHub</a
+              >.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap">
+        <span
+          >Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not
+          affiliated with ConcernedApe or Nexus Mods.</span
+        >
+        <span>
+          <a href="https://github.com/Rethunk-Tech/mortar">Source</a> ·
+          <a href="/download/">Downloads</a> ·
+          <a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a>
+        </span>
+      </div>
+    </footer>
+    <script defer src="landing.js"></script>
   </body>
 </html>
