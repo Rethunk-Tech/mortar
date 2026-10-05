@@ -1,6 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
+import { sandboxEnv } from './e2e/sandbox.ts'
 
-// Starts and seeds its own self-test sandbox on port 9465 (e2e/sandbox.ts), never the real data folder; Chromium only.
+const { port } = sandboxEnv()
+
+// Starts and seeds its own self-test sandbox in a folder and on a port of its own (e2e/sandbox.ts), never the real data folder; Chromium only.
 export default defineConfig({
   testDir: './e2e',
   // Not .spec/.test, so bun test leaves these to Playwright.
@@ -13,7 +16,7 @@ export default defineConfig({
   reporter: 'list',
   use: {
     ...devices['Desktop Chrome'],
-    baseURL: 'http://127.0.0.1:9465',
+    baseURL: `http://127.0.0.1:${port}`,
     viewport: { width: 1400, height: 840 },
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

@@ -28,8 +28,12 @@ export MORTAR_ENABLE_GAMES=${MORTAR_SELFTEST_ENABLE:-lethal-company}
 
 build() {
   echo "building frontend and server-mode binary"
+  # The server embeds frontend/dist, which every sandbox's build rewrites, so concurrent sandboxes build one at a time.
+  exec 9>/var/tmp/mortar-selftest-build.lock
+  flock 9
   (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
   (cd "$REPO" && GOTMPDIR=/var/tmp go build -tags server -o "$ROOT/mortar-server.new" .)
+  exec 9>&-
   mv "$ROOT/mortar-server.new" "$ROOT/mortar-server"
 }
 
