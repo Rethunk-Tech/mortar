@@ -47,13 +47,13 @@ type incomingTransfer struct {
 	Peer    string
 	Game    string
 	Token   string
-	Keys    []string
+	Items   []transferItem
 	Expires time.Time
 }
 
 var errRemoteStoreEntryMissing = errors.New("peer does not have this store entry")
 
-// Transfer copies missing store entries for an accepted same-account share.
+// Transfer copies missing store entries for an accepted paired share.
 func (s *Service) Transfer(id int) error {
 	s.mu.Lock()
 	incoming, ok := s.incoming[id]
@@ -79,19 +79,19 @@ func (s *Service) Transfer(id int) error {
 	}
 	started := time.Now()
 	var bytes int64
-	total := len(incoming.Keys)
-	for current, key := range incoming.Keys {
+	total := len(incoming.Items)
+	for current, item := range incoming.Items {
 		if err := ctx.Err(); err != nil {
 			s.emitTransfer(TransferProgress{ID: id, Current: current, Total: total, Bytes: bytes, Rate: transferRate(bytes, started), Error: err.Error()})
 			return err
 		}
-		exists, err := s.storeHas(incoming.Game, key)
+		exists, err := s.storeHas(incoming.Game, item.Key)
 		if err != nil {
 			s.emitTransferError(id, current, total, bytes, started, err)
 			return err
 		}
 		if !exists {
-			n, err := s.fetchEntry(ctx, incoming, key, id, current, total, bytes, started)
+			n, err := s.fetchEntry(ctx, incoming, item, id, current, total, bytes, started)
 			if errors.Is(err, errRemoteStoreEntryMissing) {
 				n = 0
 			} else if err != nil {
@@ -135,11 +135,12 @@ func (s *Service) storeHas(game, key string) (bool, error) {
 func (s *Service) fetchEntry(
 	ctx context.Context,
 	incoming incomingTransfer,
-	key string,
+	item transferItem,
 	id, current, total int,
 	bytes int64,
 	started time.Time,
 ) (int64, error) {
+	key := item.Key
 	endpoint, err := shareEndpoint(incoming.Peer, "/store/"+incoming.Game+"/"+key)
 	if err != nil {
 		return 0, err
@@ -181,6 +182,11 @@ func (s *Service) fetchEntry(
 	}
 	if err := s.deps.Store.AddDirVerified(incoming.Game, key, temp); err != nil {
 		return 0, fmt.Errorf("install store entry %s: %w", key, err)
+	}
+	if item.Source != "" {
+		if err := s.deps.Store.Describe(incoming.Game, key, item.Source, item.Package, item.Version); err != nil {
+			return 0, fmt.Errorf("record store entry %s: %w", key, err)
+		}
 	}
 	return received, nil
 }

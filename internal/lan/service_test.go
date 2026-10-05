@@ -70,17 +70,77 @@ func TestValidateRequestCapsPayload(t *testing.T) {
 	}
 }
 
-func TestAccountProof(t *testing.T) {
+// pairedService is a LAN service with its own data folder, served over loopback.
+func pairedService(t *testing.T, items *store.Store, emit func(string, any)) (*Service, string) {
+	t.Helper()
+	service := NewService(Deps{Store: items, Dir: t.TempDir(), Emit: emit})
+	server := httptest.NewServer(service.handler())
+	t.Cleanup(server.Close)
+	service.mu.Lock()
+	service.enabled = true
+	service.listener = server.Listener
+	service.mu.Unlock()
+	return service, strings.TrimPrefix(server.URL, "http://")
+}
+
+// pair has joiner enter the code that host shows.
+func pair(t *testing.T, host, joiner *Service, hostAddr string) {
+	t.Helper()
+	code, err := host.PairCode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := joiner.Pair(hostAddr, strings.ToLower(code)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestPairing(t *testing.T) {
 	t.Parallel()
-	proof := hmacProof("nexus-key", "nonce", "payload")
-	if !accountMatches("nexus-key", "nonce", "payload", proof) {
-		t.Fatal("matching proof was rejected")
+	host, hostAddr := pairedService(t, nil, nil)
+	joiner, _ := pairedService(t, nil, nil)
+
+	code, err := host.PairCode()
+	if err != nil {
+		t.Fatal(err)
 	}
-	if accountMatches("other-key", "nonce", "payload", proof) || accountMatches("", "nonce", "payload", proof) {
-		t.Fatal("mismatched or missing key was accepted")
+	wrong := "AAAA-AAAA"
+	if code == wrong {
+		wrong = "BBBB-BBBB"
 	}
-	if accountMatches("nexus-key", "other-nonce", "payload", proof) || accountMatches("nexus-key", "nonce", "other", proof) {
-		t.Fatal("mismatched message was accepted")
+	for range maxFailures {
+		if err := joiner.Pair(hostAddr, wrong); err == nil {
+			t.Fatal("a wrong code paired")
+		}
+	}
+	if err := joiner.Pair(hostAddr, code); err == nil {
+		t.Fatal("a locked-out computer paired")
+	}
+
+	code, err = host.PairCode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	host.pairing.mu.Lock()
+	host.pairing.locks = nil
+	host.pairing.mu.Unlock()
+	if err := joiner.Pair(hostAddr, code); err != nil {
+		t.Fatal(err)
+	}
+	hostID, _ := host.book.self()
+	joinerID, _ := joiner.book.self()
+	if key := joiner.book.key(hostID); len(key) != 32 || string(key) != string(host.book.key(joinerID)) {
+		t.Fatal("both computers must hold the same key")
+	}
+	if err := joiner.Pair(hostAddr, code); err == nil {
+		t.Fatal("a code paired twice")
+	}
+	info, err := os.Stat(filepath.Join(joiner.book.dir, "peers.json"))
+	if err != nil || info.Mode().Perm() != 0o600 {
+		t.Fatalf("peers.json = %v, %v", info, err)
+	}
+	if err := joiner.Unpair(hostID); err != nil || joiner.book.key(hostID) != nil {
+		t.Fatalf("unpair: %v", err)
 	}
 }
 
@@ -141,11 +201,7 @@ func TestShareRateLimit(t *testing.T) {
 }
 
 func TestLoopbackTransfer(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	senderStore, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
+	senderStore := store.OpenAt(t.TempDir())
 	source := t.TempDir()
 	if err := os.WriteFile(filepath.Join(source, "mod.dll"), []byte("from sender"), 0o600); err != nil {
 		t.Fatal(err)
@@ -164,33 +220,15 @@ func TestLoopbackTransfer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	receiverStore, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
+	receiverStore := store.OpenAt(t.TempDir())
+	arrivals := make(chan Arrival, 2)
+	emit := func(_ string, data any) {
+		if arrival, ok := data.(Arrival); ok {
+			arrivals <- arrival
+		}
 	}
-	arrivals := make(chan Arrival, 1)
-	receiver := NewService(Deps{
-		Store:    receiverStore,
-		NexusKey: func() (string, error) { return "same-account", nil },
-		Emit: func(_ string, data any) {
-			if arrival, ok := data.(Arrival); ok {
-				arrivals <- arrival
-			}
-		},
-	})
-	sender := NewService(Deps{
-		Store:    senderStore,
-		NexusKey: func() (string, error) { return "same-account", nil },
-	})
-	senderServer := httptest.NewServer(sender.handler())
-	defer senderServer.Close()
-	sender.mu.Lock()
-	sender.enabled = true
-	sender.listener = senderServer.Listener
-	sender.mu.Unlock()
-	receiverServer := httptest.NewServer(receiver.handler())
-	defer receiverServer.Close()
+	receiver, receiverAddr := pairedService(t, receiverStore, emit)
+	sender, _ := pairedService(t, senderStore, nil)
 
 	var payload bytes.Buffer
 	if _, err := share.Write(&payload, "stardew", profile.Profile{
@@ -205,17 +243,29 @@ func TestLoopbackTransfer(t *testing.T) {
 	if pv, err := share.ReadBytes(payload.Bytes()); err != nil || pv.Entries[1].Overlay == nil || *pv.Entries[1].Overlay != (share.Overlay{From: "a", To: "b", Off: true}) {
 		t.Fatalf("payload overlay = %+v, %v", pv.Entries, err)
 	}
-	if err := sender.sendPayload(strings.TrimPrefix(receiverServer.URL, "http://"), "stardew", payload.Bytes()); err != nil {
-		t.Fatal(err)
+	send := func() Arrival {
+		t.Helper()
+		if err := sender.sendPayload(receiverAddr, "stardew", payload.Bytes()); err != nil {
+			t.Fatal(err)
+		}
+		select {
+		case arrival := <-arrivals:
+			return arrival
+		case <-time.After(2 * time.Second):
+			t.Fatal("timed out waiting for share")
+			return Arrival{}
+		}
 	}
-	var arrival Arrival
-	select {
-	case arrival = <-arrivals:
-	case <-time.After(2 * time.Second):
-		t.Fatal("timed out waiting for share")
+	if send().Paired {
+		t.Fatal("an unpaired share received a transfer grant")
 	}
-	if !arrival.SameAccount {
-		t.Fatal("same-account share did not receive a transfer grant")
+	pair(t, receiver, sender, receiverAddr)
+	receiver.rateMu.Lock()
+	receiver.lastReceive = map[string]time.Time{}
+	receiver.rateMu.Unlock()
+	arrival := send()
+	if !arrival.Paired {
+		t.Fatal("a paired share did not receive a transfer grant")
 	}
 	if err := receiver.Transfer(arrival.ID); err != nil {
 		t.Fatal(err)

@@ -51,7 +51,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/savessvc"
-	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -123,6 +122,7 @@ func registerEvents() {
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
 	application.RegisterEvent[lan.Arrival](lan.ArrivedEvent)
 	application.RegisterEvent[lan.TransferProgress](lan.TransferProgressEvent)
+	application.RegisterEvent[lan.PairedPeer](lan.PairedEvent)
 	application.RegisterEvent[launchsvc.NoticeClick](launchsvc.NoticeClickEvent)
 	application.RegisterEvent[launchsvc.BackupWarning](launchsvc.BackupWarningEvent)
 	application.RegisterEvent[launchsvc.SettingsRestoreWarning](launchsvc.SettingsRestoreWarningEvent)
@@ -556,8 +556,7 @@ func run() error {
 	})
 	lanSvc = lan.NewService(lan.Deps{
 		Shares: shareSvc, Settings: store, Store: items, Version: version,
-		NexusKey: func() (string, error) { return secret.Get("nexus") },
-		Emit:     emit,
+		Dir: dataDir, Emit: emit,
 	})
 	if err := lanSvc.SetEnabled(store.Get().LanSharing); err != nil {
 		log.Printf("LAN sharing: %v", err)

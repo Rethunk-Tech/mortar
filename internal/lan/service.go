@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"os/user"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -51,7 +52,7 @@ type Arrival struct {
 	Game        string `json:"game"`
 	Payload     string `json:"payload"`
 	ProfileName string `json:"profileName"`
-	SameAccount bool   `json:"sameAccount"`
+	Paired      bool   `json:"paired"`
 }
 
 // Peer is a nearby Mortar installation that can receive a profile share.
@@ -66,8 +67,9 @@ type Deps struct {
 	Settings *settings.Store
 	Store    *store.Store
 	Version  string
-	NexusKey func() (string, error)
-	Emit     func(name string, data any)
+	// Dir is the data folder; paired computers are kept in <Dir>/lan/peers.json. Empty keeps them in memory.
+	Dir  string
+	Emit func(name string, data any)
 }
 
 // Service advertises this Mortar installation, discovers peers, and exchanges profile links.
@@ -83,6 +85,9 @@ type Service struct {
 	peers   map[string]peerRecord
 	inbox   []Arrival
 	nextID  int
+
+	book    peerBook
+	pairing pairHost
 
 	nonces   map[string]nonceRecord
 	grants   map[string]transferGrant
@@ -111,6 +116,7 @@ type shareRequest struct {
 	Game       string `json:"game"`
 	Payload    string `json:"payload"`
 	Version    string `json:"version"`
+	SenderID   string `json:"senderId"`
 	Nonce      string `json:"nonce,omitempty"`
 	Proof      string `json:"proof,omitempty"`
 	SenderPort int    `json:"senderPort"`
@@ -122,7 +128,7 @@ func NewService(deps Deps) *Service {
 	if err != nil {
 		instanceID = fmt.Sprintf("%d", time.Now().UnixNano())
 	}
-	return &Service{
+	service := &Service{
 		deps:        deps,
 		name:        localName(),
 		instanceID:  instanceID,
@@ -133,6 +139,10 @@ func NewService(deps Deps) *Service {
 		incoming:    map[int]incomingTransfer{},
 		active:      map[int]context.CancelFunc{},
 	}
+	if deps.Dir != "" {
+		service.book.dir = filepath.Join(deps.Dir, "lan")
+	}
+	return service
 }
 
 // Busy reports whether an incoming LAN transfer is active.
@@ -371,7 +381,12 @@ func (s *Service) sendPayload(peerID, game string, payload []byte) error {
 	if err != nil {
 		return err
 	}
+	selfID, err := s.book.self()
+	if err != nil {
+		return err
+	}
 	request := shareRequest{
+		SenderID:   selfID,
 		Sender:     s.deviceName(),
 		Game:       game,
 		Payload:    encoded,
@@ -379,7 +394,8 @@ func (s *Service) sendPayload(peerID, game string, payload []byte) error {
 		Nonce:      hello.Nonce,
 		SenderPort: s.port(),
 	}
-	if key := s.nexusKey(); key != "" {
+	key := s.book.key(hello.ID)
+	if key != nil {
 		request.Proof = hmacProof(key, hello.Nonce, encoded)
 	}
 	body, err := json.Marshal(request)
@@ -413,7 +429,7 @@ func (s *Service) sendPayload(peerID, game string, payload []byte) error {
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 64<<10)).Decode(&result); err != nil && !errors.Is(err, io.EOF) {
 		return fmt.Errorf("read profile share response: %w", err)
 	}
-	if result.SameAccount && result.TransferToken != "" {
+	if result.Paired && result.TransferToken != "" && proofMatches(key, hello.Nonce, "response|"+result.TransferToken+"|"+strings.Join(result.EntryKeys, ","), result.Proof) {
 		s.rememberGrant(result.TransferToken, game, result.EntryKeys)
 	}
 	s.rememberAddress(peerID)
@@ -511,6 +527,8 @@ func (s *Service) handler() http.Handler {
 	mux.HandleFunc("/hello", s.handleHello)
 	mux.HandleFunc("/share", s.handleShare)
 	mux.HandleFunc("/store/", s.handleStore)
+	mux.HandleFunc("/pair/begin", s.handlePairBegin)
+	mux.HandleFunc("/pair/finish", s.handlePairFinish)
 	return mux
 }
 
@@ -535,7 +553,12 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	s.nonces[nonce] = nonceRecord{peer: peer, expires: now.Add(nonceTTL)}
 	s.mu.Unlock()
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(helloResponse{Name: s.deviceName(), Version: protocolVersion, Nonce: nonce})
+	id, err := s.book.self()
+	if err != nil {
+		http.Error(w, "could not create handshake", http.StatusInternalServerError)
+		return
+	}
+	_ = json.NewEncoder(w).Encode(helloResponse{ID: id, Name: s.deviceName(), Version: protocolVersion, Nonce: nonce})
 }
 
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
@@ -572,25 +595,29 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	peer := remotePeer(r)
-	sameAccount := request.SenderPort > 0 &&
-		s.consumeProof(peer, request) &&
-		accountMatches(s.nexusKey(), request.Nonce, request.Payload, request.Proof)
-	keys := entryKeys(shared)
-	response := shareResponse{SameAccount: sameAccount}
+	key := s.book.key(request.SenderID)
+	paired := request.SenderPort > 0 && s.consumeProof(peer, request) && proofMatches(key, request.Nonce, request.Payload, request.Proof)
+	items := transferItems(shared)
+	response := shareResponse{Paired: paired}
 	var arrivalTransfer incomingTransfer
-	if sameAccount && request.SenderPort > 0 {
+	if paired {
 		token, tokenErr := randomToken()
 		if tokenErr != nil {
 			http.Error(w, "could not create transfer token", http.StatusInternalServerError)
 			return
 		}
+		keys := make([]string, len(items))
+		for i, item := range items {
+			keys[i] = item.Key
+		}
 		response.TransferToken = token
 		response.EntryKeys = keys
+		response.Proof = responseProof(key, request.Nonce, token, keys)
 		arrivalTransfer = incomingTransfer{
 			Peer:    net.JoinHostPort(peer, strconv.Itoa(request.SenderPort)),
 			Game:    request.Game,
 			Token:   token,
-			Keys:    keys,
+			Items:   items,
 			Expires: time.Now().Add(transferTTL),
 		}
 	}
@@ -599,7 +626,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		Game:        request.Game,
 		Payload:     request.Payload,
 		ProfileName: shared.Name,
-		SameAccount: sameAccount && arrivalTransfer.Token != "",
+		Paired:      paired,
 	}
 	s.mu.Lock()
 	s.nextID++
@@ -697,6 +724,9 @@ func validateRequest(request shareRequest) (share.Shared, error) {
 	pv, err := share.ReadBytes(raw)
 	if err != nil {
 		return share.Shared{}, fmt.Errorf("%w: %w", errInvalidPayload, err)
+	}
+	if pv.Game != request.Game {
+		return share.Shared{}, errors.New("game does not match the profile")
 	}
 	return pv.Shared, nil
 }
@@ -896,4 +926,31 @@ func slicesSortPeers(peers []Peer) {
 			peers[j], peers[j-1] = peers[j-1], peers[j]
 		}
 	}
+}
+
+func postRaw(endpoint string, body []byte) (*http.Response, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), httpTimeout)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+	resp.Body = cancelOnClose{resp.Body, cancel}
+	return resp, nil
+}
+
+type cancelOnClose struct {
+	io.ReadCloser
+	cancel context.CancelFunc
+}
+
+func (c cancelOnClose) Close() error {
+	defer c.cancel()
+	return c.ReadCloser.Close()
 }

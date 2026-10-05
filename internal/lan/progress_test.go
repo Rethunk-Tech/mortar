@@ -33,7 +33,7 @@ func TestFetchEntryThrottlesFileProgress(t *testing.T) {
 	var emitted int
 	svc := NewService(Deps{Store: receiverStore, Emit: func(string, any) { emitted++ }})
 	incoming := incomingTransfer{Peer: strings.TrimPrefix(server.URL, "http://"), Game: "stardew", Token: "t"}
-	if _, err := svc.fetchEntry(t.Context(), incoming, store.NexusKey(1, 1), 1, 1, 1, 0, time.Now()); err != nil {
+	if _, err := svc.fetchEntry(t.Context(), incoming, transferItem{Key: store.NexusKey(1, 1)}, 1, 1, 1, 0, time.Now()); err != nil {
 		t.Fatal(err)
 	}
 	if emitted == 0 || emitted > 2 {
