@@ -52,7 +52,7 @@ func TestNextScansRunningProfilesWithoutTheQueueLock(t *testing.T) {
 func TestASourceBusyAnswerRequeuesTheItemAndPausesTheQueue(t *testing.T) {
 	now := time.Unix(1000, 0).UTC()
 	s := &Service{
-		d:     Deps{Now: func() time.Time { return now }},
+		d:     Deps{Now: func() time.Time { return now }, Dir: t.TempDir()},
 		kick:  make(chan struct{}, 1),
 		items: []*Item{{ID: "a", State: StateDownloading}},
 	}
