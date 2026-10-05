@@ -30,6 +30,7 @@ type fixture struct {
 	s            *Service
 	dir          string
 	premium      atomic.Bool
+	keep         atomic.Bool
 	cdn          http.HandlerFunc
 	limitNow     atomic.Bool
 	clock        atomic.Int64
@@ -121,7 +122,8 @@ func newFixture(t *testing.T) *fixture {
 			f.mu.Unlock()
 			return profile.InstallResult{}, nil
 		},
-		Newest: func(_, _ string, _, _ int) int { return int(f.newest.Load()) },
+		Newest:       func(_, _ string, _, _ int) int { return int(f.newest.Load()) },
+		KeepArchives: f.keep.Load,
 		SamePage: func(game, profileID string, in profile.IncomingFile) (profile.MergeAsk, int, bool) {
 			if f.samePage == nil {
 				return profile.MergeAsk{}, 0, false

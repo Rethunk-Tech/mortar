@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"os"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -75,6 +76,19 @@ func TestNexusUpdateFromTheSamePageInstallsInPlaceOfTheEntry(t *testing.T) {
 		t.Fatalf("current %d installs %d", st.Items[0].Current, len(f.installs))
 	}
 	f.leftovers()
+}
+
+func TestAnInstalledArchiveIsKeptWhenThePlayerKeepsArchives(t *testing.T) {
+	f := newFixture(t)
+	f.keep.Store(true)
+	f.start()
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	st := f.wait("installed", f.item(StateDone))
+	if _, err := os.Stat(f.s.dest(st.Items[0].ID, st.Items[0].FileName)); err != nil {
+		t.Fatalf("the kept archive is gone: %v", err)
+	}
 }
 
 func TestAWantJoiningAFailedItemTakesItsBatch(t *testing.T) {
