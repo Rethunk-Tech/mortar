@@ -1,4 +1,5 @@
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
+import type { BrowseModes } from './browseModes.ts'
 
 type BrowseItem = Item
 
@@ -54,4 +55,18 @@ interface BrowsePageProps {
   addDirect: (source: string, id: string) => void
 }
 
-export type { BrowseFilter, BrowseItem, BrowsePageProps, BrowseSearch }
+interface ResultCardProps {
+  row: boolean
+  item: BrowseItem
+  premium: boolean
+  openUrl: (url: string) => void
+  downloadNexus: (modID: string) => void
+  addGitHub: (repo: string) => void
+  addPackage: (id: string) => void
+  addDirect: (source: string, id: string) => void
+  profileID: string
+  modes: BrowseModes
+  sourceNames: Map<string, string>
+}
+
+export type { BrowseFilter, BrowseItem, BrowsePageProps, BrowseSearch, ResultCardProps }

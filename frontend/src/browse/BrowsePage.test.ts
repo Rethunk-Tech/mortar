@@ -2,15 +2,17 @@ import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const src = readFileSync(join(import.meta.dir, 'BrowsePage.tsx'), 'utf8')
+const read = (name: string) => readFileSync(join(import.meta.dir, name), 'utf8')
+const hints = read('browseConstants.ts')
+const actions = read('CardAction.tsx')
 
 test('Nexus Download is only offered for Nexus results when the account is Premium', () => {
-  expect(src).toContain('source === NEXUS && premium')
-  expect(src).not.toMatch(/else if \(premium\)/)
+  expect(hints).toContain('source === NEXUS && premium')
+  expect(actions).not.toMatch(/else if \(premium\)/)
 })
 
 test('free Nexus accounts get the files page and signed-out users a sign-in, never a dead Download', () => {
-  expect(src).toContain('Open files page')
-  expect(src).toContain('Sign in to download')
-  expect(src).not.toContain('Premium only')
+  expect(actions).toContain('Open files page')
+  expect(actions).toContain('Sign in to download')
+  expect(actions).not.toContain('Premium only')
 })

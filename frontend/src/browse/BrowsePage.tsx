@@ -1,197 +1,20 @@
-import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Card, Chip, Pagination, Skeleton, Typography } from '@mui/material'
-import { CloudOff, Download, ExternalLink, Plus, Search, SearchX } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { Box } from '@mui/material'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { i18n } from '../i18n/index.ts'
-import { useNav } from '../nav/store.ts'
-import { useQueue } from '../queue/store.ts'
-import { useNexus } from '../settings/nexus.ts'
-import { PrefSegmented } from '../settings/PrefControls.tsx'
 import { persist } from '../settings/persist.ts'
-import { useSettings } from '../settings/store.ts'
-import { EmptyState } from '../shell/EmptyState.tsx'
-import { IconAction } from '../shell/IconAction.tsx'
-import { OfflineGate } from '../shell/OfflineGate.tsx'
-import { useOfflineReason } from '../shell/offlineText.ts'
-import { SearchField } from '../shell/SearchField.tsx'
-import { ViewToggle } from '../shell/ViewToggle.tsx'
-import { type InlineError, inlineError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { usePending } from '../toasts/usePending.ts'
+import { BrowseBody } from './BrowseBody.tsx'
 import { BrowseFilters } from './BrowseFilters.tsx'
-import type { BrowseModes } from './browseModes.ts'
-import { formatModes, parseModes } from './browseModes.ts'
-import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
-import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
-import { CardProgress } from './CardProgress.tsx'
-import { cardState } from './cardState.ts'
+import { BrowseToolbar } from './BrowseToolbar.tsx'
+import { ALL, FIRST_PAGE, GITHUB, searchHint } from './browseConstants.ts'
+import { formatModes } from './browseModes.ts'
+import { PAGE_SIZE } from './browseState.ts'
+import type { BrowsePageProps } from './browseTypes.ts'
+import { pagedTotal, useBrowseQuery } from './useBrowseQuery.ts'
 import { useCategoryNames } from './useCategoryNames.ts'
 import { useBrowseView } from './view.ts'
 
 // ALL searches every source the game has; it is the default so where a mod is published never matters to the player.
-const ALL = 'all'
-const NEXUS = 'nexus'
-const GITHUB = 'github'
-const THUNDERSTORE = 'thunderstore'
-const FIRST_PAGE = 1
-const PICTURE_PX = 72
-const ROW_PICTURE_PX = 40
-const CARD_MIN_PX = 340
-const SKELETON_KEYS = ['a', 'b', 'c', 'd', 'e', 'f']
-const ICON_SIZE = 40
-const STALE_OPACITY = 0.6
-const GRAY_OPACITY = 0.5
-
-function searchHint(source: string, premium: boolean): string {
-  if (source === ALL) {
-    return i18n._(
-      msg`Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it.`,
-    )
-  }
-  if (source === GITHUB) {
-    return i18n._(
-      msg`Search GitHub for mods published as releases. Add puts the latest release in this profile.`,
-    )
-  }
-  if (source === NEXUS && premium) {
-    return i18n._(msg`Search Nexus Mods. Download installs the mod into this profile.`)
-  }
-  return i18n._(
-    msg`Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download.`,
-  )
-}
-
-function openPageLabel(source: string): string {
-  if (source === GITHUB) {
-    return i18n._(msg`Open on GitHub`)
-  }
-  if (source === THUNDERSTORE) {
-    return i18n._(msg`Open on Thunderstore`)
-  }
-  return i18n._(msg`Open on Nexus`)
-}
-
-const list = { display: 'flex', flexDirection: 'column', gap: 0.75 } as const
-
-const grid = {
-  display: 'grid',
-  gridTemplateColumns: `repeat(auto-fill, minmax(${CARD_MIN_PX}px, 1fr))`,
-  gap: '6px',
-} as const
-
-type Status = 'idle' | 'loading' | 'done' | 'error'
-
-interface BrowseResult {
-  total: number
-  items: BrowseItem[]
-  pages?: number
-  failed?: string[]
-  hidden?: number
-}
-
-const EMPTY_RESULT: BrowseResult = { total: 0, items: [] }
-const NO_FILTER: BrowseFilter = {
-  include: [],
-  exclude: [],
-  sort: '',
-  installed: '',
-  obsolete: '',
-  broken: '',
-}
-
-// pagedTotal is the result count paging should assume: a search across sources pages by its largest source.
-function pagedTotal(r: BrowseResult): number {
-  return r.pages ? r.pages * PAGE_SIZE : r.total
-}
-
-function useBrowseQuery({
-  game,
-  profileID,
-  search,
-  sources,
-}: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources'>) {
-  const stored = useBrowseView((s) => s.filters[game]) ?? NO_FILTER
-  const saved = useSettings((s) => s.games?.[game]?.browseFilters ?? '')
-  const modes = useMemo(() => parseModes(saved), [saved])
-  const filter = useMemo(() => ({ ...stored, ...modes }), [stored, modes])
-  const [chosen, setSource] = useState(ALL)
-  const merged = sources.length > 1
-  const known = sources.some((s) => s.id === chosen) || (chosen === ALL && merged)
-  const fallback = merged ? ALL : (sources[0]?.id ?? '')
-  const source = known ? chosen : fallback
-  const [draft, setDraft] = useState('')
-  const [text, setText] = useState('')
-  const [page, setPage] = useState(FIRST_PAGE)
-  const [retry, setRetry] = useState(0)
-  const [result, setResult] = useState<BrowseResult>(EMPTY_RESULT)
-  const [status, setStatus] = useState<Status>('idle')
-  const [error, setError] = useState<InlineError | null>(null)
-
-  const pendingQuery = useBrowseView((s) => s.pendingQuery)
-  useEffect(() => {
-    if (pendingQuery !== '') {
-      setSource(ALL)
-      setDraft(pendingQuery)
-      useBrowseView.getState().setPendingQuery('')
-    }
-  }, [pendingQuery])
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setText(draft)
-      setPage(FIRST_PAGE)
-    }, DEBOUNCE_MS)
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [draft])
-
-  useEffect(() => {
-    if (source === '' || retry < 0) {
-      setResult(EMPTY_RESULT)
-      setStatus('idle')
-      return
-    }
-    let cancelled = false
-    setStatus('loading')
-    search({ game, source, text, page, profileID, filter })
-      .then((next) => {
-        if (!cancelled) {
-          setResult(next)
-          setStatus('done')
-          setPage((current) => clampPage({ page: current, total: pagedTotal(next) }))
-        }
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(inlineError(err))
-          setStatus('error')
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [game, source, text, page, profileID, search, retry, filter])
-
-  return {
-    filter,
-    modes,
-    source,
-    setSource,
-    draft,
-    setDraft,
-    text,
-    page,
-    setPage,
-    setRetry,
-    result,
-    status,
-    error,
-  }
-}
-
 function BrowsePage({
   game,
   profileID,
@@ -208,24 +31,10 @@ function BrowsePage({
 }: BrowsePageProps) {
   const { t } = useLingui()
   const push = useToasts((s) => s.push)
-  const sourceNames = new Map(searchable.map((s) => [s.id, s.name]))
   const view = useBrowseView((s) => s.view)
   const setFilter = useBrowseView((s) => s.setFilter)
-  const {
-    filter,
-    modes,
-    source,
-    setSource,
-    draft,
-    setDraft,
-    text,
-    page,
-    setPage,
-    setRetry,
-    result,
-    status,
-    error,
-  } = useBrowseQuery({ game, profileID, search, sources: searchable })
+  const query = useBrowseQuery({ game, profileID, search, sources: searchable })
+  const { filter, modes, source, setSource, draft, setDraft, page, setPage, result } = query
   const categoryNames = useCategoryNames({ categories, game, source, skip: source === GITHUB })
   const pageCount = Math.max(FIRST_PAGE, Math.ceil(pagedTotal(result) / PAGE_SIZE) || FIRST_PAGE)
   const sources = [
@@ -239,89 +48,6 @@ function BrowsePage({
   } else if (source === GITHUB) {
     placeholder = t`Search GitHub releases`
   }
-  const hint = searchHint(source, premium)
-  let body: React.ReactNode
-  if (status === 'idle' || (status === 'done' && result.items.length === 0 && text.trim() === '')) {
-    body = (
-      <EmptyState icon={<Search size={ICON_SIZE} />} title={t`Find mods to add`}>
-        {hint}
-      </EmptyState>
-    )
-  } else if (status === 'error') {
-    body = (
-      <EmptyState
-        icon={<CloudOff size={ICON_SIZE} />}
-        title={t`Search did not work`}
-        action={
-          <Button variant="outlined" onClick={() => setRetry((n) => n + 1)}>
-            {t`Retry`}
-          </Button>
-        }
-      >
-        <span title={error?.details}>
-          {error?.message ?? t`The service may be busy. Try again in a minute.`}
-        </span>
-      </EmptyState>
-    )
-  } else if (status === 'loading' && result.items.length === 0) {
-    body = (
-      <Box sx={grid}>
-        {SKELETON_KEYS.map((key) => (
-          <Skeleton key={key} variant="rounded" height={PICTURE_PX + 24} />
-        ))}
-      </Box>
-    )
-  } else if (result.items.length === 0) {
-    body = (
-      <EmptyState icon={<SearchX size={ICON_SIZE} />} title={t`No mods match "${text}"`}>
-        {t`Try fewer words, or the mod's exact name.`}
-      </EmptyState>
-    )
-  } else {
-    body = (
-      <>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
-          {plural(result.total, { one: '# result', other: '# results' })}
-          {result.hidden ? ` · ${t`${result.hidden} hidden`}` : ''}
-          {result.failed && result.failed.length > 0
-            ? ` · ${t`${result.failed.join(', ')} did not answer`}`
-            : ''}
-        </Typography>
-        <Box
-          sx={{
-            ...(view === 'grid' ? grid : list),
-            opacity: status === 'loading' ? STALE_OPACITY : 1,
-          }}
-        >
-          {result.items.map((item) => (
-            <ResultCard
-              key={`${item.source}:${item.id}`}
-              row={view === 'list'}
-              item={item}
-              premium={premium}
-              openUrl={openUrl}
-              downloadNexus={downloadNexus}
-              addGitHub={addGitHub}
-              addPackage={addPackage}
-              addDirect={addDirect}
-              modes={modes}
-              profileID={profileID}
-              sourceNames={sourceNames}
-            />
-          ))}
-        </Box>
-        {pageCount > FIRST_PAGE ? (
-          <Pagination
-            count={pageCount}
-            page={page}
-            onChange={(_event, next) => setPage(next)}
-            sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
-          />
-        ) : null}
-      </>
-    )
-  }
-
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <BrowseToolbar
@@ -364,333 +90,31 @@ function BrowsePage({
           flexDirection: 'column',
         }}
       >
-        {body}
+        <BrowseBody
+          status={query.status}
+          result={result}
+          text={query.text}
+          hint={searchHint(source, premium)}
+          error={query.error}
+          view={view}
+          page={page}
+          pageCount={pageCount}
+          card={{
+            premium,
+            openUrl,
+            downloadNexus,
+            addGitHub,
+            addPackage,
+            addDirect,
+            modes,
+            profileID,
+            sourceNames: new Map(searchable.map((s) => [s.id, s.name])),
+          }}
+          onRetry={() => query.setRetry((n) => n + 1)}
+          onPage={setPage}
+        />
       </Box>
     </Box>
-  )
-}
-
-function BrowseToolbar({
-  sources,
-  source,
-  onSource,
-  draft,
-  onDraft,
-  placeholder,
-}: {
-  sources: { value: string; label: string }[]
-  source: string
-  onSource: (next: string) => void
-  draft: string
-  onDraft: (next: string) => void
-  placeholder: string
-}) {
-  const { t } = useLingui()
-  const view = useBrowseView((s) => s.view)
-  const setView = useBrowseView((s) => s.setView)
-  const offline = useOfflineReason(source === ALL ? [] : [source])
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.25, pb: 0.75 }}>
-      <ViewToggle value={view} onChange={setView} />
-      <PrefSegmented value={source} label={t`Source`} options={sources} onChange={onSource} />
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <OfflineGate reason={offline}>
-          <SearchField
-            autoFocus={true}
-            value={draft}
-            onChange={onDraft}
-            label={placeholder}
-            fullWidth={true}
-          />
-        </OfflineGate>
-      </Box>
-    </Box>
-  )
-}
-
-// Premium downloads directly; free accounts use the files page's Mod Manager Download button, which Mortar picks up.
-function NexusAction({
-  premium,
-  pending,
-  onDownload,
-  onOpenFiles,
-}: {
-  premium: boolean
-  pending: boolean
-  onDownload: () => void
-  onOpenFiles: () => void
-}) {
-  const { t } = useLingui()
-  const signedIn = useNexus((state) => state.signedIn)
-  if (!signedIn) {
-    return (
-      <Button
-        size="small"
-        variant="outlined"
-        onClick={() => useNav.getState().openSettings('accounts')}
-      >
-        {t`Sign in to download`}
-      </Button>
-    )
-  }
-  if (premium) {
-    return (
-      <Button
-        size="small"
-        variant="contained"
-        startIcon={<Download size={14} />}
-        disabled={pending}
-        onClick={onDownload}
-      >
-        {t`Download`}
-      </Button>
-    )
-  }
-  return (
-    <Button
-      size="small"
-      variant="contained"
-      startIcon={<ExternalLink size={14} />}
-      onClick={onOpenFiles}
-    >
-      {t`Open files page`}
-    </Button>
-  )
-}
-
-// One badge per source the mod is on; the filled one is where Add installs from.
-function SourceBadges({
-  sources,
-  picked,
-  names,
-  onPick,
-}: {
-  sources: string[]
-  picked: string
-  names: Map<string, string>
-  onPick: (source: string) => void
-}) {
-  if (sources.length < 2) {
-    return null
-  }
-  return (
-    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', pt: 0.25 }}>
-      {sources.map((id) => (
-        <Chip
-          key={id}
-          size="small"
-          label={names.get(id) ?? id}
-          variant={id === picked ? 'filled' : 'outlined'}
-          onClick={() => onPick(id)}
-        />
-      ))}
-    </Box>
-  )
-}
-
-function ResultCard({
-  row,
-  item,
-  premium,
-  openUrl,
-  downloadNexus,
-  addGitHub,
-  addPackage,
-  addDirect,
-  profileID,
-  modes,
-  sourceNames,
-}: {
-  row: boolean
-  item: BrowseItem
-  premium: boolean
-  openUrl: (url: string) => void
-  downloadNexus: (modID: string) => void
-  addGitHub: (repo: string) => void
-  addPackage: (id: string) => void
-  addDirect: (source: string, id: string) => void
-  profileID: string
-  modes: BrowseModes
-  sourceNames: Map<string, string>
-}) {
-  const { t } = useLingui()
-  const [pending, run] = usePending()
-  const [openedFiles, setOpenedFiles] = useState(false)
-  const items = useQueue((s) => s.state.items)
-  const { name, summary, author, picture, endorsements, stars, downloads } = item
-  // The same mod found on several sources is one card; its first source is the default and a badge picks another.
-  const primary = { source: item.source, id: item.id, url: item.url, installed: item.installed }
-  const choices = [primary, ...(item.alts ?? [])]
-  const [picked, setPicked] = useState(item.source)
-  const { source, id, url } = choices.find((c) => c.source === picked) ?? primary
-  const installed = choices.some((c) => c.installed)
-  const offline = useOfflineReason([source])
-  const stats =
-    item.source === NEXUS
-      ? t`${plural(endorsements, { one: '# endorsement', other: '# endorsements' })} · ${plural(downloads, { one: '# download', other: '# downloads' })}`
-      : plural(stars, { one: '# star', other: '# stars' })
-  let action: React.ReactNode = null
-  const live = cardState(items, source, id, profileID)
-  // A free account's click on Mod Manager Download is not ours to see; the card waits for its nxm item.
-  const shown = live.kind === 'idle' && openedFiles ? ({ kind: 'waiting-nexus' } as const) : live
-  if (item.loader) {
-    action = <Chip size="small" label={t`Loader`} title={t`Mortar installs the loader for you.`} />
-  } else if (item.bundled) {
-    action = <Chip size="small" label={t`Installed by Mortar`} />
-  } else if (shown.kind !== 'idle') {
-    action = <CardProgress state={shown} />
-  } else if (installed) {
-    action = <Chip size="small" label={t`In this profile`} />
-  } else if (source === GITHUB) {
-    action = (
-      <Button
-        size="small"
-        variant="contained"
-        startIcon={<Plus size={14} />}
-        disabled={pending}
-        onClick={() => run(() => Promise.resolve(addGitHub(id)))}
-      >
-        {t`Add`}
-      </Button>
-    )
-  } else if (source === THUNDERSTORE) {
-    action = (
-      <Button
-        size="small"
-        variant="contained"
-        startIcon={<Plus size={14} />}
-        disabled={pending}
-        onClick={() => run(() => Promise.resolve(addPackage(id)))}
-      >
-        {t`Add`}
-      </Button>
-    )
-  } else if (source === NEXUS) {
-    action = (
-      <NexusAction
-        premium={premium}
-        pending={pending}
-        onDownload={() => run(() => Promise.resolve(downloadNexus(id)))}
-        onOpenFiles={() => {
-          setOpenedFiles(true)
-          openUrl(`${url}?tab=files`)
-        }}
-      />
-    )
-  } else {
-    action = (
-      <Button
-        size="small"
-        variant="contained"
-        startIcon={<Plus size={14} />}
-        disabled={pending}
-        onClick={() => run(() => Promise.resolve(addDirect(source, id)))}
-      >
-        {t`Add`}
-      </Button>
-    )
-  }
-  if (offline !== '' && shown.kind === 'idle' && !installed && !item.loader && !item.bundled) {
-    action = <OfflineGate reason={offline}>{action}</OfflineGate>
-  }
-  const picturePx = row ? ROW_PICTURE_PX : PICTURE_PX
-  // Gray out dims the mod's picture and text; the action and its chip stay readable.
-  const gray =
-    (modes.installed === 'gray' && installed) ||
-    (modes.obsolete === 'gray' && item.obsolete) ||
-    (modes.broken === 'gray' && item.broken)
-  const dim = gray ? GRAY_OPACITY : 1
-  return (
-    <Card
-      sx={{
-        display: 'flex',
-        alignItems: row ? 'center' : 'stretch',
-        gap: 1.25,
-        p: 1,
-        borderRadius: '6px',
-        minWidth: 0,
-      }}
-    >
-      {picture === '' ? (
-        <Box
-          sx={{
-            width: picturePx,
-            height: picturePx,
-            flexShrink: 0,
-            borderRadius: '4px',
-            opacity: dim,
-            bgcolor: 'var(--mortar-raised)',
-          }}
-        />
-      ) : (
-        <Box
-          component="img"
-          src={picture}
-          alt=""
-          loading="lazy"
-          sx={{
-            width: picturePx,
-            height: picturePx,
-            flexShrink: 0,
-            objectFit: 'cover',
-            borderRadius: '4px',
-            opacity: dim,
-          }}
-        />
-      )}
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 0.25,
-          opacity: dim,
-        }}
-      >
-        <Typography noWrap={true} title={name} sx={{ fontSize: 15, fontWeight: 600 }}>
-          {name}
-        </Typography>
-        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
-          {author === '' ? stats : `${author} · ${stats}`}
-        </Typography>
-        <Typography
-          title={summary}
-          sx={{
-            fontSize: 13,
-            color: 'var(--mortar-ink-soft)',
-            display: '-webkit-box',
-            WebkitLineClamp: row ? 1 : 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {summary}
-        </Typography>
-        <SourceBadges
-          sources={choices.map((c) => c.source)}
-          picked={source}
-          names={sourceNames}
-          onPick={setPicked}
-        />
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: row ? 'row' : 'column',
-          alignItems: row ? 'center' : 'flex-end',
-          justifyContent: 'space-between',
-          gap: 0.5,
-        }}
-      >
-        <IconAction
-          label={openPageLabel(source)}
-          icon={<ExternalLink size={15} />}
-          onClick={() => openUrl(url)}
-        />
-        {action}
-      </Box>
-    </Card>
   )
 }
 
