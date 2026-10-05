@@ -138,7 +138,10 @@ export function NotesTab({ profile }: { profile: Profile }) {
               p: 2,
               fontSize: 15,
               lineHeight: 1.6,
-              bgcolor: 'var(--mortar-overlay-35)',
+              bgcolor: (theme) =>
+                theme.palette.mode === 'light'
+                  ? theme.palette.background.paper
+                  : 'var(--mortar-overlay-35)',
               borderRadius: '8px',
             },
           }}

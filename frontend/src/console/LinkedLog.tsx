@@ -103,7 +103,10 @@ export function LinkedLog({
         minHeight: 0,
         mx: 2,
         mb: 1.5,
-        bgcolor: 'var(--mortar-overlay-50)',
+        bgcolor: (theme) =>
+          theme.palette.mode === 'light'
+            ? theme.palette.background.paper
+            : 'var(--mortar-overlay-50)',
         borderRadius: '6px',
         fontFamily: MONO,
         fontSize: 13,

@@ -188,7 +188,11 @@ function CommandLine({ game }: { game: string }) {
         mb: 1.5,
         px: 1.5,
         flexShrink: 0,
-        bgcolor: 'var(--mortar-overlay-50)',
+        // A light-mode tint over the wallpaper reads as grey; an opaque paper well stays legible.
+        bgcolor: (theme) =>
+          theme.palette.mode === 'light'
+            ? theme.palette.background.paper
+            : 'var(--mortar-overlay-50)',
         border: '1px solid var(--mortar-hairline-15)',
         borderRadius: '6px',
         '&:has(:focus-visible)': {

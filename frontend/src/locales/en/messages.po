@@ -20,7 +20,7 @@ msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links 
 msgid "Performance"
 msgstr "Performance"
 
-#: src/console/ConsoleTab.tsx:403
+#: src/console/ConsoleTab.tsx:407
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
@@ -74,7 +74,7 @@ msgstr "Could not reach GitHub. Check your connection and try again."
 msgid "Template"
 msgstr "Template"
 
-#: src/console/LinkedLog.tsx:129
+#: src/console/LinkedLog.tsx:132
 #: src/mods/HiddenInside.tsx:71
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
@@ -479,7 +479,7 @@ msgstr "Assets and packs"
 msgid "Allow through firewall"
 msgstr "Allow through firewall"
 
-#: src/console/ConsoleTab.tsx:339
+#: src/console/ConsoleTab.tsx:343
 msgid "No lines match the filters."
 msgstr "No lines match the filters."
 
@@ -622,7 +622,7 @@ msgstr "Not in the link"
 msgid "When"
 msgstr "When"
 
-#: src/console/ConsoleTab.tsx:208
+#: src/console/ConsoleTab.tsx:212
 msgid "Type a command, for example help"
 msgstr "Type a command, for example help"
 
@@ -1862,7 +1862,7 @@ msgstr "Could not measure disk use"
 msgid "Prerelease"
 msgstr "Prerelease"
 
-#: src/console/ConsoleTab.tsx:369
+#: src/console/ConsoleTab.tsx:373
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
@@ -2342,7 +2342,7 @@ msgstr "{count} checked later"
 msgid "Created “{0}”"
 msgstr "Created “{0}”"
 
-#: src/console/ConsoleTab.tsx:337
+#: src/console/ConsoleTab.tsx:341
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
@@ -4169,7 +4169,7 @@ msgstr "Untrack all…"
 #. placeholder {0}: text.length.toLocaleString(i18n.locale)
 #. placeholder {1}: MAX_NOTES.toLocaleString(i18n.locale)
 #. placeholder {1}: progress.total
-#: src/notes/NotesTab.tsx:150
+#: src/notes/NotesTab.tsx:153
 #: src/settings/sections/DataStoreCheck.tsx:86
 msgid "{0} of {1}"
 msgstr "{0} of {1}"
@@ -4452,7 +4452,7 @@ msgstr "This file comes from the same Nexus page as {0}. Install it together wit
 msgid "SMAPI {0} installed"
 msgstr "SMAPI {0} installed"
 
-#: src/console/ConsoleTab.tsx:344
+#: src/console/ConsoleTab.tsx:348
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
 msgstr "Filter by level or mod, and use Share log to upload this run to smapi.io."
 
@@ -4665,7 +4665,7 @@ msgstr "Launch options"
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
-#: src/console/ConsoleTab.tsx:405
+#: src/console/ConsoleTab.tsx:409
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
@@ -5173,7 +5173,7 @@ msgstr "Start the game to see values"
 msgid "{summary} · {0}"
 msgstr "{summary} · {0}"
 
-#: src/console/ConsoleTab.tsx:207
+#: src/console/ConsoleTab.tsx:211
 msgid "Console command"
 msgstr "Console command"
 
@@ -6591,7 +6591,7 @@ msgstr "New since you last looked"
 msgid "Title"
 msgstr "Title"
 
-#: src/console/ConsoleTab.tsx:285
+#: src/console/ConsoleTab.tsx:289
 msgid "Play this profile and SMAPI's log shows here as it runs. Every run is kept, so you can look back at it later."
 msgstr "Play this profile and SMAPI's log shows here as it runs. Every run is kept, so you can look back at it later."
 
@@ -9143,7 +9143,7 @@ msgstr "This frees {0}. Removed mods download again if a profile needs them late
 msgid "Could not dismiss the setting warning"
 msgstr "Could not dismiss the setting warning"
 
-#: src/console/ConsoleTab.tsx:376
+#: src/console/ConsoleTab.tsx:380
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -9588,7 +9588,7 @@ msgstr "A preset with this name already exists."
 msgid "Add all {0}"
 msgstr "Add all {0}"
 
-#: src/console/ConsoleTab.tsx:259
+#: src/console/ConsoleTab.tsx:263
 #: src/loader/Banner.tsx:56
 msgid "Stop the game to change SMAPI."
 msgstr "Stop the game to change SMAPI."
@@ -9779,7 +9779,7 @@ msgstr "Games"
 msgid "Language"
 msgstr "Language"
 
-#: src/console/ConsoleTab.tsx:283
+#: src/console/ConsoleTab.tsx:287
 msgid "No game output yet"
 msgstr "No game output yet"
 
@@ -10514,7 +10514,7 @@ msgstr "GOG via Minigalaxy"
 msgid "This template will be deleted. Presets already copied into profiles stay."
 msgstr "This template will be deleted. Presets already copied into profiles stay."
 
-#: src/console/ConsoleTab.tsx:363
+#: src/console/ConsoleTab.tsx:367
 msgid "Show times"
 msgstr "Show times"
 
@@ -10690,7 +10690,7 @@ msgstr "Stop"
 msgid "Scheduled backups kept per save"
 msgstr "Scheduled backups kept per save"
 
-#: src/console/ConsoleTab.tsx:270
+#: src/console/ConsoleTab.tsx:274
 #: src/loader/Banner.tsx:30
 #: src/settings/sections/SmapiRow.tsx:88
 msgid "Reinstall"
