@@ -1,10 +1,12 @@
 package runtime
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 var stardewSaves = components.PathTemplate{
@@ -77,5 +79,40 @@ func TestNativeRefusesForeignBuildAndMissingPath(t *testing.T) {
 	inst = Install{Platform: "linux", Home: t.TempDir(), GOOS: "linux"}
 	if _, err := Resolve(inst, components.PathTemplate{Windows: "{appData}/x"}); err == nil {
 		t.Fatal("a missing platform template resolved")
+	}
+}
+
+func TestVersionReadsConfigInfoThenCompatToolMapping(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "steamapps", "common", "Lethal Company")
+	inst := Install{Store: "steam", Dir: dir, AppID: "1966720", Platform: "windows", GOOS: "linux"}
+	write := func(rel, body string) {
+		p := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := fsx.WriteFile(p, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if got := Version(inst); got != "" {
+		t.Fatalf("no Steam data: %q", got)
+	}
+	write("config/config.vdf", "\"Software\"\n{\n\t\"CompatToolMapping\"\n\t{\n\t\t\"0\"\n\t\t{\n\t\t\t\"name\"\t\t\"proton_9\"\n\t\t}\n\t\t\"1966720\"\n\t\t{\n\t\t\t\"name\"\t\t\"GE-Proton9-5\"\n\t\t}\n\t}\n}\n")
+	if got := Version(inst); got != "GE-Proton9-5" {
+		t.Fatalf("mapping: %q", got)
+	}
+	inst.AppID = "42"
+	if got := Version(inst); got != "proton_9" {
+		t.Fatalf("default mapping: %q", got)
+	}
+	inst.AppID = "1966720"
+	write("steamapps/compatdata/1966720/config_info", "9.0-4\nother\n")
+	if got := Version(inst); got != "9.0-4" {
+		t.Fatalf("config_info: %q", got)
+	}
+	inst.Platform = "linux"
+	if got := Version(inst); got != "" {
+		t.Fatalf("native install: %q", got)
 	}
 }

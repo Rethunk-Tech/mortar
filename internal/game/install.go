@@ -41,7 +41,9 @@ type Install struct {
 	Runtime string `json:"runtime"`
 	// Platform is the OS the build is for: windows, linux or darwin.
 	Platform string `json:"platform"`
-	Origin   string `json:"origin"`
+	// RuntimeVersion is the compatibility tool Steam runs a Proton install with; empty for a native one.
+	RuntimeVersion string `json:"runtimeVersion,omitempty"`
+	Origin         string `json:"origin"`
 }
 
 func newInstall(info components.GameInfo, store, dir, origin string) Install {
@@ -49,6 +51,7 @@ func newInstall(info components.GameInfo, store, dir, origin string) Install {
 	in := Install{ID: hex.EncodeToString(sum[:6]), Game: info.ID, Store: store, Dir: dir, Origin: origin}
 	in.Platform = runtime.PlatformOf(info.Marker, goruntime.GOOS)
 	in.Runtime = runtime.IDOf(in.runtime(info, ""))
+	in.RuntimeVersion = runtime.Version(in.runtime(info, ""))
 	return in
 }
 

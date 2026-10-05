@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	goruntime "runtime"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Runtime ids.
@@ -180,6 +182,59 @@ func (proton) ID() string { return Proton }
 func (proton) Detect(inst Install) bool {
 	return inst.host() == "linux" && inst.Platform == "windows" && inst.AppID != "" &&
 		(inst.Store == storeSteam || inst.Store == storeFlatpakSteam)
+}
+
+// steamappsOf is the steamapps folder holding the install at dir.
+func steamappsOf(dir string) (string, bool) {
+	steamapps := dir
+	for filepath.Base(steamapps) != "steamapps" {
+		parent := filepath.Dir(steamapps)
+		if parent == steamapps {
+			return "", false
+		}
+		steamapps = parent
+	}
+	return steamapps, true
+}
+
+// Version names the compatibility tool Steam runs inst with, or "" when it is not a Proton install or Steam has not
+// chosen a tool yet. It is the first line of the prefix's config_info (the tool's version), else the tool Steam's
+// config.vdf maps the game to, falling back to the all-games default.
+func Version(inst Install) string {
+	if !(proton{}).Detect(inst) {
+		return ""
+	}
+	steamapps, ok := steamappsOf(inst.Dir)
+	if !ok {
+		return ""
+	}
+	if b, err := fsx.ReadFile(filepath.Join(steamapps, "compatdata", inst.AppID, "config_info")); err == nil {
+		if line, _, _ := strings.Cut(string(b), "\n"); strings.TrimSpace(line) != "" {
+			return strings.TrimSpace(line)
+		}
+	}
+	b, err := fsx.ReadFile(filepath.Join(filepath.Dir(steamapps), "config", "config.vdf"))
+	if err != nil {
+		return ""
+	}
+	if name := compatToolName(string(b), inst.AppID); name != "" {
+		return name
+	}
+	return compatToolName(string(b), "0")
+}
+
+// compatToolName is the "name" of appID's entry in config.vdf's CompatToolMapping, which is the section's flat
+// list of {name, config, priority} blocks.
+func compatToolName(vdf, appID string) string {
+	_, rest, ok := strings.Cut(vdf, `"CompatToolMapping"`)
+	if !ok {
+		return ""
+	}
+	m := regexp.MustCompile(`(?s)"` + regexp.QuoteMeta(appID) + `"\s*\{[^}]*?"name"\s*"([^"]*)"`).FindStringSubmatch(rest)
+	if m == nil {
+		return ""
+	}
+	return m[1]
 }
 
 // ponytail: the Steam library is found by walking up to its steamapps folder; a Proton prefix that Steam keeps elsewhere needs a setting.
