@@ -85,7 +85,7 @@ func distinctKeys(r io.Reader) (map[string]struct{}, int, bool, error) {
 	}
 }
 
-// uniqueID maps a save key to the UniqueID it belongs to: the longest prefix ending at a '/', '_' or '.' that
+// uniqueID maps a save key to the mod id it belongs to: the longest prefix ending at a '/', '_' or '.' that
 // index knows, ignoring case. SMAPI's own save data lives under smapi/mod-data/<uniqueid>/.
 func uniqueID(key string, index map[string][]meta.Ref) (string, bool) {
 	k := strings.TrimPrefix(strings.ToLower(key), modDataPrefix)

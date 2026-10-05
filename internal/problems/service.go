@@ -16,8 +16,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -143,7 +143,7 @@ func fingerprint(env Environment, mods []Installed, runID string) string {
 	var b strings.Builder
 	b.WriteString(env.GameVersion + "|" + env.APIVersion + "|run:" + runID)
 	for _, m := range mods {
-		b.WriteString("\n" + m.Key + "|" + m.UniqueID + "|" + m.Version + "|" + m.Name + "|ch:" + m.UpdateChannel)
+		b.WriteString("\n" + m.Key + "|" + string(m.ModID()) + "|" + m.Version + "|" + m.Name + "|ch:" + m.UpdateChannel)
 		b.WriteString("|desc:" + m.Description)
 		if m.Enabled {
 			b.WriteString("|on")
@@ -157,10 +157,10 @@ func fingerprint(env Environment, mods []Installed, runID string) string {
 			}
 		}
 		for _, d := range m.Dependencies {
-			b.WriteString("|" + d.UniqueID + ">=" + d.MinimumVersion)
+			b.WriteString("|" + string(d.ModID()) + ">=" + d.MinimumVersion)
 		}
 		for _, id := range m.LoadAfter {
-			b.WriteString("|after:" + id)
+			b.WriteString("|after:" + string(id))
 		}
 	}
 	return b.String()
@@ -392,38 +392,38 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 }
 
 // DismissAbandonedMod hides an author-marked broken row for this profile until the mod is gone.
-func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id, uniqueID string) error {
-	uniqueID = strings.TrimSpace(uniqueID)
+func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id string, uniqueID mod.ID) error {
+	uniqueID = uniqueID
 	if uniqueID == "" {
 		return errors.New("missing mod id")
 	}
-	token := dismissToken("broken", manifest.FoldID(uniqueID))
+	token := dismissToken("broken", uniqueID.Fold())
 	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 
 // DismissListedRequirement hides a Nexus-listed requirement for this profile until it is gone.
-func (s *Service) DismissListedRequirement(_ context.Context, gameID, id, uniqueID string) error {
-	uniqueID = strings.TrimSpace(uniqueID)
+func (s *Service) DismissListedRequirement(_ context.Context, gameID, id string, uniqueID mod.ID) error {
+	uniqueID = uniqueID
 	if uniqueID == "" {
 		return errors.New("missing requirement id")
 	}
-	token := dismissToken("listed", manifest.FoldID(uniqueID))
+	token := dismissToken("listed", uniqueID.Fold())
 	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 
 // DismissSetting hides one compatibility setting for this profile until its patch group is gone.
-func (s *Service) DismissSetting(_ context.Context, gameID, id, uniqueID, field string) error {
-	uniqueID, field = strings.TrimSpace(uniqueID), strings.TrimSpace(field)
+func (s *Service) DismissSetting(_ context.Context, gameID, id string, uniqueID mod.ID, field string) error {
+	uniqueID, field = uniqueID, strings.TrimSpace(field)
 	if uniqueID == "" || field == "" {
 		return errors.New("missing setting")
 	}
-	token := dismissToken("setting", manifest.FoldID(uniqueID)+"\t"+strings.ToLower(field))
+	token := dismissToken("setting", uniqueID.Fold()+"\t"+strings.ToLower(field))
 	return s.appendDismissed(dismissBucket(gameID, id), token)
 }
 
 // RememberSettingChoice keeps a setting hint hidden while its chosen value remains current.
-func (s *Service) RememberSettingChoice(_ context.Context, gameID, id, uniqueID, field, value string) error {
-	uniqueID, field = strings.TrimSpace(uniqueID), strings.TrimSpace(field)
+func (s *Service) RememberSettingChoice(_ context.Context, gameID, id string, uniqueID mod.ID, field, value string) error {
+	uniqueID, field = uniqueID, strings.TrimSpace(field)
 	if uniqueID == "" || field == "" {
 		return errors.New("missing setting")
 	}
@@ -432,17 +432,17 @@ func (s *Service) RememberSettingChoice(_ context.Context, gameID, id, uniqueID,
 }
 
 // ConflictImageCrop returns a PNG data URL of uniqueID's FromFile cropped to x,y,w,h, clamped to the image.
-func (s *Service) ConflictImageCrop(_ context.Context, gameID, id, uniqueID, fromFile string, x, y, w, h int) (string, error) {
+func (s *Service) ConflictImageCrop(_ context.Context, gameID, id string, uniqueID mod.ID, fromFile string, x, y, w, h int) (string, error) {
 	mods, err := s.installed(gameID, id)
 	if err != nil {
 		return "", err
 	}
-	uniqueID, fromFile = strings.TrimSpace(uniqueID), contentReference("", fromFile)
+	uniqueID, fromFile = uniqueID, contentReference("", fromFile)
 	if uniqueID == "" || fromFile == "" {
 		return "", errors.New("missing pack or image")
 	}
 	for _, m := range mods {
-		if !profile.SameID(m.UniqueID, uniqueID) {
+		if !mod.Equal(m.ModID(), uniqueID) {
 			continue
 		}
 		return cropPackImage(m.Folder, fromFile, x, y, w, h)
@@ -532,8 +532,8 @@ func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
 		if h.Reason != HeldCurrent {
 			continue
 		}
-		if err := s.profiles.FixStaleManifest(gameID, id, h.Key, h.UniqueID, h.Version); err != nil {
-			log.Printf("updates: %s: could not fix the manifest of %s: %v", id, h.UniqueID, err)
+		if err := s.profiles.FixStaleManifest(gameID, id, h.Key, h.ID, h.Version); err != nil {
+			log.Printf("updates: %s: could not fix the manifest of %s: %v", id, h.ID, err)
 			continue
 		}
 		fixed++
@@ -617,7 +617,7 @@ func versionChangeWarning(recorded, installed string, broken []Broken) UpdateWar
 }
 
 // Relations says what the mod key/uniqueID needs, which mods need it and where its page is.
-func (s *Service) Relations(gameID, id, key, uniqueID string) (Relations, error) {
+func (s *Service) Relations(gameID, id, key string, uniqueID mod.ID) (Relations, error) {
 	mods, err := s.installed(gameID, id)
 	if err != nil {
 		return Relations{}, err
@@ -629,7 +629,7 @@ func (s *Service) Relations(gameID, id, key, uniqueID string) (Relations, error)
 	return r, nil
 }
 
-// Pages says where each mod's page is, keyed "key/uniqueId"; mods without a known page are left out.
+// Pages says where each mod's page is, keyed "key/id"; mods without a known page are left out.
 func (s *Service) Pages(gameID, id string) (map[string]string, error) {
 	mods, err := s.installed(gameID, id)
 	if err != nil {

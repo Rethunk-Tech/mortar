@@ -57,9 +57,9 @@ func loadMapScans() {
 // changed.
 func flushMapScans(mods []Installed) {
 	prefixes := make([]string, 0, len(mods))
-	for _, mod := range mods {
-		if mod.Folder != "" {
-			prefixes = append(prefixes, filepath.Clean(mod.Folder)+string(filepath.Separator))
+	for _, im := range mods {
+		if im.Folder != "" {
+			prefixes = append(prefixes, filepath.Clean(im.Folder)+string(filepath.Separator))
 		}
 	}
 	mapScans.Lock()

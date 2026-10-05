@@ -9,8 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 type settingGroup struct {
@@ -25,17 +24,17 @@ type settingGroup struct {
 func compatibilitySettings(mods []Installed) []SettingHint {
 	present := map[string]bool{}
 	byID := map[string]Installed{}
-	for _, mod := range mods {
-		if !mod.Enabled {
+	for _, im := range mods {
+		if !im.Enabled {
 			continue
 		}
-		id := manifest.FoldID(mod.UniqueID)
+		id := im.ModID().Fold()
 		if id == "" {
 			continue
 		}
 		present[id] = true
 		if _, exists := byID[id]; !exists {
-			byID[id] = mod
+			byID[id] = im
 		}
 	}
 
@@ -55,13 +54,13 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 			covered[strings.ToLower(hint.Field)] = true
 		}
 		out = append(out, variants...)
-		out = append(out, recolourSettings(packMod, pack, config, enabledRecolours(mods, packMod.UniqueID), covered)...)
+		out = append(out, recolourSettings(packMod, pack, config, enabledRecolours(mods, packMod.ModID()), covered)...)
 		groups := map[string]*settingGroup{}
 		for _, patch := range pack.patches {
 			if !patch.when.holds(present) || !dynamicWhenHolds(patch.when, pack.tokens, present, pack.schema, config) {
 				continue
 			}
-			ids := enabledRequirements(patch.when, present, packMod.UniqueID)
+			ids := enabledRequirements(patch.when, present, packMod.ModID())
 			if len(ids) == 0 {
 				continue
 			}
@@ -91,9 +90,9 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 					}
 					groups[groupKey] = group
 				} else {
-					for _, mod := range required {
-						if !slices.ContainsFunc(group.required, func(m Installed) bool { return profile.SameID(m.UniqueID, mod.UniqueID) }) {
-							group.required = append(group.required, mod)
+					for _, im := range required {
+						if !slices.ContainsFunc(group.required, func(m Installed) bool { return mod.Equal(m.ModID(), im.ModID()) }) {
+							group.required = append(group.required, im)
 						}
 					}
 				}
@@ -111,18 +110,18 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 			}
 			hint := SettingHint{
 				Key:         group.pack.Key,
-				UniqueID:    group.pack.UniqueID,
+				ID:          group.pack.ModID(),
 				Name:        group.pack.Name,
 				Field:       group.schema.key,
 				Current:     group.current,
 				Suggested:   group.suggested,
 				Description: group.schema.description,
 			}
-			for _, mod := range group.required {
-				hint.For = append(hint.For, mod.UniqueID)
-				name := mod.Name
+			for _, im := range group.required {
+				hint.For = append(hint.For, im.ModID())
+				name := im.Name
 				if name == "" {
-					name = mod.UniqueID
+					name = im.ModID().Local()
 				}
 				hint.ForNames = append(hint.ForNames, name)
 			}
@@ -133,7 +132,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 		if c := strings.Compare(strings.ToLower(a.Key), strings.ToLower(b.Key)); c != 0 {
 			return c
 		}
-		if c := strings.Compare(manifest.FoldID(a.UniqueID), manifest.FoldID(b.UniqueID)); c != 0 {
+		if c := strings.Compare(a.ID.Fold(), b.ID.Fold()); c != 0 {
 			return c
 		}
 		return strings.Compare(strings.ToLower(a.Field), strings.ToLower(b.Field))
@@ -141,12 +140,11 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 	return out
 }
 
-func enabledRequirements(when cpWhen, present map[string]bool, own string) []string {
+func enabledRequirements(when cpWhen, present map[string]bool, own mod.ID) []string {
 	ids := map[string]bool{}
 	for _, group := range when.anyOf {
 		for _, id := range group {
-			id = manifest.FoldID(id)
-			if id != "" && !profile.SameID(id, own) && present[id] {
+			if id != "" && id != own.Fold() && present[id] {
 				ids[id] = true
 			}
 		}
@@ -297,8 +295,8 @@ func variantSettings(packMod Installed, pack cachedPack, config map[string]strin
 			ids := make([]string, 0)
 			for _, group := range p.when.anyOf {
 				for _, id := range group {
-					if !profile.SameID(id, packMod.UniqueID) {
-						ids = append(ids, strings.ToLower(id))
+					if id != packMod.ModID().Fold() {
+						ids = append(ids, id)
 					}
 				}
 			}
@@ -351,7 +349,7 @@ func variantSettings(packMod Installed, pack cachedPack, config map[string]strin
 				currentFor = ""
 				break
 			}
-			currentFor = id
+			currentFor = mod.ID(id).Local()
 		}
 		if forValue[strings.ToLower(current)] != nil && currentFor == "" {
 			continue // the current value is for a mod the profile has
@@ -372,12 +370,12 @@ func variantSettings(packMod Installed, pack cachedPack, config map[string]strin
 			continue
 		}
 		hint := SettingHint{
-			Key: packMod.Key, UniqueID: packMod.UniqueID, Name: packMod.Name, Field: schema.key, Current: current,
+			Key: packMod.Key, ID: packMod.ModID(), Name: packMod.Name, Field: schema.key, Current: current,
 			Suggested: suggested, Description: schema.description, Variant: true, CurrentFor: currentFor,
 		}
-		for _, mod := range enabledFor {
-			hint.For = append(hint.For, mod.UniqueID)
-			hint.ForNames = append(hint.ForNames, cmp.Or(mod.Name, mod.UniqueID))
+		for _, im := range enabledFor {
+			hint.For = append(hint.For, im.ModID())
+			hint.ForNames = append(hint.ForNames, cmp.Or(im.Name, im.ModID().Local()))
 		}
 		out = append(out, hint)
 	}

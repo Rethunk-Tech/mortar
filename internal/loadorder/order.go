@@ -2,7 +2,7 @@
 //
 // SMAPI walks required dependencies, optional dependencies, and ContentPackFor as
 // predecessors, so those mods load before anything that names them; remaining ties
-// are alphabetical by display name (then UniqueID). Mortar does not change that order.
+// are alphabetical by display name (then mod id). Mortar does not change that order.
 package loadorder
 
 import (
@@ -62,7 +62,7 @@ func byName(a, b node) int {
 	return cmp.Compare(a.id.Fold(), b.id.Fold())
 }
 
-// Resolve returns enabled mods in SMAPI load order. Duplicate UniqueIDs keep the first.
+// Resolve returns enabled mods in SMAPI load order. Duplicate mod ids keep the first.
 func Resolve(mods []Mod) []Row {
 	nodes := make([]node, 0, len(mods))
 	index := map[string]int{}

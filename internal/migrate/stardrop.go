@@ -20,12 +20,12 @@ type stardropProfile struct {
 	Name          string            `json:"Name"`
 	EnabledModIDs []stardropModRef  `json:"EnabledModIds"`
 	ModData       []stardropModData `json:"ModData"`
-	// PreservedModConfigs holds each mod's config.json for this profile, keyed by lower-case UniqueID, when
+	// PreservedModConfigs holds each mod's config.json for this profile, keyed by lower-case mod id, when
 	// Stardrop keeps configs per profile. The copy in the mod folder is whichever profile ran last.
 	PreservedModConfigs map[string]json.RawMessage `json:"PreservedModConfigs"`
 }
 
-// stardropModRef is an EnabledModIds item: a bare UniqueID, or an object that also names the collection that
+// stardropModRef is an EnabledModIds item: a bare mod id, or an object that also names the collection that
 // installed the mod.
 type stardropModRef string
 

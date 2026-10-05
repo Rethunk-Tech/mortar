@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // recolourFamily is a map recolour that packs offer as a config choice. Packs spell the choice their own way
@@ -44,13 +44,13 @@ func familyOfValue(value string) int {
 }
 
 // enabledRecolours finds, per family, the enabled mod that is that recolour.
-func enabledRecolours(mods []Installed, self string) map[int]Installed {
+func enabledRecolours(mods []Installed, self mod.ID) map[int]Installed {
 	out := map[int]Installed{}
 	for _, m := range mods {
-		if !m.Enabled || profile.SameID(m.UniqueID, self) {
+		if !m.Enabled || mod.Equal(m.ModID(), self) {
 			continue
 		}
-		id := squash(m.UniqueID)
+		id := squash(m.ModID().Local())
 		for i, f := range recolourFamilies {
 			if _, seen := out[i]; !seen && slices.ContainsFunc(f.idParts, func(p string) bool {
 				return strings.Contains(id, p) && (p != "eemie" || strings.Contains(id, "recolo"))
@@ -92,17 +92,18 @@ func recolourSettings(packMod Installed, pack cachedPack, config map[string]stri
 		if _, ok := enabled[currentFamily]; currentFamily >= 0 && ok {
 			continue
 		}
-		var suggested, forIDs, forNames []string
+		var suggested, forNames []string
+		var forIDs []mod.ID
 		for _, v := range schema.allowValues {
 			f, ok := valueFamily[v]
 			if !ok {
 				continue
 			}
-			if mod, on := enabled[f]; on {
+			if im, on := enabled[f]; on {
 				addSettingValue(&suggested, v)
-				if !slices.Contains(forIDs, mod.UniqueID) {
-					forIDs = append(forIDs, mod.UniqueID)
-					forNames = append(forNames, cmp.Or(mod.Name, mod.UniqueID))
+				if !slices.Contains(forIDs, im.ModID()) {
+					forIDs = append(forIDs, im.ModID())
+					forNames = append(forNames, cmp.Or(im.Name, im.ModID().Local()))
 				}
 			}
 		}
@@ -122,7 +123,7 @@ func recolourSettings(packMod Installed, pack cachedPack, config map[string]stri
 			continue
 		}
 		out = append(out, SettingHint{
-			Key: packMod.Key, UniqueID: packMod.UniqueID, Name: packMod.Name, Field: schema.key, Current: current,
+			Key: packMod.Key, ID: packMod.ModID(), Name: packMod.Name, Field: schema.key, Current: current,
 			Suggested: suggested, Description: schema.description, Variant: true, CurrentFor: currentFor,
 			For: forIDs, ForNames: forNames,
 		})
@@ -155,7 +156,7 @@ func recolourAddons(mods []Installed) []Cleanup {
 		if !m.Enabled {
 			continue
 		}
-		id := squash(m.UniqueID)
+		id := squash(m.ModID().Local())
 		for _, word := range strings.FieldsFunc(strings.ToLower(m.Name), func(r rune) bool { return r < 'a' || r > 'z' }) {
 			f, ok := recolourNameWords[word]
 			if !ok {
@@ -164,7 +165,7 @@ func recolourAddons(mods []Installed) []Cleanup {
 			if _, on := enabled[f]; on || slices.ContainsFunc(recolourFamilies[f].idParts, func(p string) bool { return strings.Contains(id, p) }) {
 				break
 			}
-			out = append(out, Cleanup{Key: m.Key, UniqueID: m.UniqueID, Name: m.Name, Reason: "Made for " + recolourFamilies[f].name + ", which is not enabled"})
+			out = append(out, Cleanup{Key: m.Key, ID: m.ModID(), Name: m.Name, Reason: "Made for " + recolourFamilies[f].name + ", which is not enabled"})
 			break
 		}
 	}

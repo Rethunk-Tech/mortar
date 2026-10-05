@@ -1,5 +1,5 @@
 // Package saves reads Stardew Valley saves for the mods they have used. SMAPI writes no mod list into a save, but
-// mods leave keys prefixed with their UniqueID, which are matched against the mod dataset's index.
+// mods leave keys prefixed with their mod id, which are matched against the mod dataset's index.
 package saves
 
 import (

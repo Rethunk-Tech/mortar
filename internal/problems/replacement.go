@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
@@ -46,7 +47,7 @@ func replacementFromSummary(ctx context.Context, m Meta, domain string, dependen
 		return &Ref{Site: "GitHub", GitHub: repo, URL: "https://github.com/" + repo}
 	}
 	for _, id := range uniqueID.FindAllString(summary, -1) {
-		if ref, ok := Locate(ctx, m, domain, id, "", dependentKeys); ok && ref != nil && ref.URL != "" {
+		if ref, ok := Locate(ctx, m, domain, mod.SMAPI(id), "", dependentKeys); ok && ref != nil && ref.URL != "" {
 			return ref
 		}
 	}
@@ -65,8 +66,8 @@ func refForNexusPage(ctx context.Context, m Meta, domain string, pageID int) *Re
 		if !strings.EqualFold(f.Type, "main") {
 			continue
 		}
-		for _, mod := range f.Mods {
-			cand, top := fileIn(page, domain, r, mod.UniqueID, "")
+		for _, im := range f.Mods {
+			cand, top := fileIn(page, domain, r, im.ModID(), "")
 			if cand == nil {
 				continue
 			}

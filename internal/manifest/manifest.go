@@ -278,3 +278,14 @@ func (m Manifest) ContentPackForID() mod.ID {
 
 // ModID is the needed mod as a mod.ID.
 func (d Dependency) ModID() mod.ID { return mod.SMAPI(d.UniqueID) }
+
+// WithModID returns the manifest with the SMAPI unique id of id, for a manifest built from another source's data.
+func (m Manifest) WithModID(id mod.ID) Manifest {
+	m.UniqueID = id.Local()
+	return m
+}
+
+// NewDependency is a Dependency on id.
+func NewDependency(id mod.ID, minimumVersion string, required bool) Dependency {
+	return Dependency{UniqueID: id.Local(), MinimumVersion: minimumVersion, Required: required}
+}

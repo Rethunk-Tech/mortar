@@ -8,13 +8,12 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // AssetTouch is one mod or patch that writes a target (or a data key on that target).
 type AssetTouch struct {
-	ModID     string `json:"modId"`
+	ModID     mod.ID `json:"modId"`
 	ModName   string `json:"modName"`
 	ModKey    string `json:"modKey"`
 	Action    string `json:"action"`
@@ -34,7 +33,7 @@ type AssetTarget struct {
 	Target string       `json:"target"`
 	Key    string       `json:"key,omitempty"`
 	Mods   []AssetTouch `json:"mods"`
-	Winner string       `json:"winner"`
+	Winner mod.ID       `json:"winner"`
 }
 
 // WhoChangesPage is the fuzzy search result for WhoChanges.
@@ -177,53 +176,53 @@ func AssetMapOf(index []AssetTarget, filter string, shared bool, offset int) Ass
 
 func sharedTarget(target AssetTarget) bool {
 	for _, m := range target.Mods {
-		if !profile.SameID(m.ModID, target.Mods[0].ModID) {
+		if !mod.Equal(m.ModID, target.Mods[0].ModID) {
 			return true
 		}
 	}
 	return false
 }
 
-// smapiOrder is each enabled mod's position in SMAPI's load order and the folded UniqueIDs it loads after.
+// smapiOrder is each enabled mod's position in SMAPI's load order and the folded mod ids it loads after.
 func smapiOrder(mods []Installed) (order map[string]int, after map[string][]string) {
 	in := make([]loadorder.Mod, 0, len(mods))
 	after = map[string][]string{}
-	for _, mod := range mods {
-		if !mod.Enabled {
+	for _, im := range mods {
+		if !im.Enabled {
 			continue
 		}
-		m := loadorder.Mod{UniqueID: mod.UniqueID, Name: mod.Name, ContentPackFor: mod.ContentPackFor}
-		id := manifest.FoldID(mod.UniqueID)
-		for _, d := range mod.Dependencies {
+		m := loadorder.Mod{ID: im.ModID(), Name: im.Name, ContentPackFor: im.ContentPackForID()}
+		id := im.ModID().Fold()
+		for _, d := range im.Dependencies {
 			if d.Required {
-				m.Needs = append(m.Needs, d.UniqueID)
+				m.Needs = append(m.Needs, d.ModID())
 			} else {
-				m.Optional = append(m.Optional, d.UniqueID)
+				m.Optional = append(m.Optional, d.ModID())
 			}
-			after[id] = append(after[id], manifest.FoldID(d.UniqueID))
+			after[id] = append(after[id], d.ModID().Fold())
 		}
-		if mod.ContentPackFor != "" {
-			after[id] = append(after[id], manifest.FoldID(mod.ContentPackFor))
+		if im.ContentPackFor != "" {
+			after[id] = append(after[id], im.ContentPackForID().Fold())
 		}
 		in = append(in, m)
 	}
 	order = map[string]int{}
 	for _, row := range loadorder.Resolve(in) {
-		order[manifest.FoldID(row.UniqueID)] = row.Position
+		order[row.ID.Fold()] = row.Position
 	}
 	return order, after
 }
 
 // loadsAfter reports whether mod a already loads after mod b through its dependencies.
-func loadsAfter(after map[string][]string, a, b string) bool {
+func loadsAfter(after map[string][]string, a, b mod.ID) bool {
 	seen := map[string]bool{}
-	stack := []string{manifest.FoldID(a)}
-	b = manifest.FoldID(b)
+	stack := []string{a.Fold()}
+	target := b.Fold()
 	for len(stack) > 0 {
 		id := stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
 		for _, dep := range after[id] {
-			if dep == b {
+			if dep == target {
 				return true
 			}
 			if !seen[dep] {
@@ -239,23 +238,23 @@ func buildAssetIndex(mods []Installed) []AssetTarget {
 	defer flushPackDiskCache(mods)
 	preloadContentPacks(mods)
 	present := map[string]bool{}
-	for _, mod := range mods {
-		if mod.Enabled {
-			present[manifest.FoldID(mod.UniqueID)] = true
+	for _, im := range mods {
+		if im.Enabled {
+			present[im.ModID().Fold()] = true
 		}
 	}
 	order, after := smapiOrder(mods)
 	grouped := map[assetIndexKey][]indexedTouch{}
-	for _, mod := range mods {
-		if !mod.Enabled {
+	for _, im := range mods {
+		if !im.Enabled {
 			continue
 		}
-		loadOrder := order[manifest.FoldID(mod.UniqueID)]
-		if isContentPatcherPack(mod) {
-			indexContentPack(mod, present, loadOrder, grouped)
+		loadOrder := order[im.ModID().Fold()]
+		if isContentPatcherPack(im) {
+			indexContentPack(im, present, loadOrder, grouped)
 			continue
 		}
-		indexReplacedFiles(mod, loadOrder, grouped)
+		indexReplacedFiles(im, loadOrder, grouped)
 	}
 	keys := make([]assetIndexKey, 0, len(grouped))
 	for key := range grouped {
@@ -277,12 +276,12 @@ func buildAssetIndex(mods []Installed) []AssetTarget {
 			if a.touch.LoadOrder != b.touch.LoadOrder {
 				return a.touch.LoadOrder - b.touch.LoadOrder
 			}
-			return strings.Compare(manifest.FoldID(a.touch.ModID), manifest.FoldID(b.touch.ModID))
+			return strings.Compare(a.touch.ModID.Fold(), b.touch.ModID.Fold())
 		})
 		winner := indexWinner(touches)
 		modsOut := make([]AssetTouch, len(touches))
 		for i, t := range touches {
-			t.touch.Winner = winner != "" && profile.SameID(t.touch.ModID, winner)
+			t.touch.Winner = winner != "" && mod.Equal(t.touch.ModID, winner)
 			t.touch.CanWin = canWin(touches, t, winner, after)
 			modsOut[i] = t.touch
 		}
@@ -291,11 +290,11 @@ func buildAssetIndex(mods []Installed) []AssetTarget {
 	return out
 }
 
-func indexContentPack(mod Installed, present map[string]bool, loadOrder int, grouped map[assetIndexKey][]indexedTouch) {
-	pack := readContentPack(mod)
+func indexContentPack(im Installed, present map[string]bool, loadOrder int, grouped map[assetIndexKey][]indexedTouch) {
+	pack := readContentPack(im)
 	config := map[string]string{}
 	if len(pack.schema) > 0 {
-		config = readPackConfig(mod.Folder)
+		config = readPackConfig(im.Folder)
 	}
 	for _, p := range pack.patches {
 		if p.kind == "other" || p.target == "" {
@@ -317,9 +316,9 @@ func indexContentPack(mod Installed, present map[string]bool, loadOrder int, gro
 		}
 		base := indexedTouch{
 			touch: AssetTouch{
-				ModID:     mod.UniqueID,
-				ModName:   mod.Name,
-				ModKey:    mod.Key,
+				ModID:     im.ModID(),
+				ModName:   im.Name,
+				ModKey:    im.Key,
 				Action:    p.action,
 				Priority:  p.priority,
 				LoadOrder: loadOrder,
@@ -344,8 +343,8 @@ func indexContentPack(mod Installed, present map[string]bool, loadOrder int, gro
 	}
 }
 
-func indexReplacedFiles(mod Installed, loadOrder int, grouped map[assetIndexKey][]indexedTouch) {
-	for _, rel := range replacedAssetFiles(mod.Folder) {
+func indexReplacedFiles(im Installed, loadOrder int, grouped map[assetIndexKey][]indexedTouch) {
+	for _, rel := range replacedAssetFiles(im.Folder) {
 		target := normalizeTarget(rel)
 		if target == "" {
 			continue
@@ -353,9 +352,9 @@ func indexReplacedFiles(mod Installed, loadOrder int, grouped map[assetIndexKey]
 		key := assetIndexKey{target: target, kind: "load"}
 		grouped[key] = append(grouped[key], indexedTouch{
 			touch: AssetTouch{
-				ModID:     mod.UniqueID,
-				ModName:   mod.Name,
-				ModKey:    mod.Key,
+				ModID:     im.ModID(),
+				ModName:   im.Name,
+				ModKey:    im.Key,
 				Action:    kindLoad,
 				LoadOrder: loadOrder,
 			},
@@ -427,7 +426,7 @@ func dataKeysOf(p cpPatch) []string {
 // PatchManager.ApplyPatchesToAsset replaces its pick with each later candidate, so the last loaded wins too
 // (the Load docs say "first", but the code only skips a strictly higher priority). Two Exclusive loads
 // apply neither.
-func indexWinner(touches []indexedTouch) string {
+func indexWinner(touches []indexedTouch) mod.ID {
 	if len(touches) == 0 {
 		return ""
 	}
@@ -435,7 +434,7 @@ func indexWinner(touches []indexedTouch) string {
 		return touches[0].touch.ModID
 	}
 	type hit struct {
-		id        string
+		id        mod.ID
 		rank      int
 		exclusive bool
 		order     int
@@ -445,11 +444,11 @@ func indexWinner(touches []indexedTouch) string {
 	var order []string
 	for _, t := range touches {
 		id := t.touch.ModID
-		cur, ok := byMod[strings.ToLower(id)]
+		cur, ok := byMod[id.Fold()]
 		if !ok {
 			cur = &hit{id: id, rank: t.rank, order: t.touch.LoadOrder, kind: t.kind}
-			byMod[strings.ToLower(id)] = cur
-			order = append(order, strings.ToLower(id))
+			byMod[id.Fold()] = cur
+			order = append(order, id.Fold())
 		}
 		if t.rank > cur.rank {
 			cur.rank = t.rank
@@ -489,14 +488,14 @@ func indexWinner(touches []indexedTouch) string {
 // canWin reports whether making t's mod load after every other mod in the group would make it the winner.
 // Order only breaks a priority tie, and a mod that another already loads after cannot be moved past it
 // without a dependency cycle.
-func canWin(touches []indexedTouch, t indexedTouch, winner string, after map[string][]string) bool {
-	if winner == "" || profile.SameID(t.touch.ModID, winner) {
+func canWin(touches []indexedTouch, t indexedTouch, winner mod.ID, after map[string][]string) bool {
+	if winner == "" || mod.Equal(t.touch.ModID, winner) {
 		return false
 	}
 	top, own := t.rank, t.rank
 	for _, o := range touches {
 		top = max(top, o.rank)
-		if profile.SameID(o.touch.ModID, t.touch.ModID) {
+		if mod.Equal(o.touch.ModID, t.touch.ModID) {
 			own = max(own, o.rank)
 		} else if loadsAfter(after, o.touch.ModID, t.touch.ModID) {
 			return false

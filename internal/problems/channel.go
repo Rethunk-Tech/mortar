@@ -44,7 +44,7 @@ func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []
 
 func upsertChannelOffer(r *UpdatesResult, x Installed, version, pageURL string, nexusID int) {
 	for i, u := range r.Updates {
-		if u.Key != x.Key || u.UniqueID != x.UniqueID || u.Unofficial {
+		if u.Key != x.Key || u.ID != x.ModID() || u.Unofficial {
 			continue
 		}
 		c, ok := meta.CompareVersions(version, u.Version)
@@ -58,7 +58,7 @@ func upsertChannelOffer(r *UpdatesResult, x Installed, version, pageURL string, 
 		return
 	}
 	r.Updates = append(r.Updates, Update{
-		Key: x.Key, UniqueID: x.UniqueID, Name: x.Name, Installed: x.Version,
+		Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: x.Version,
 		Version: version, URL: pageURL, NexusID: nexusID, Source: "Nexus",
 	})
 }

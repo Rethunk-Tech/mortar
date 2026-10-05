@@ -10,9 +10,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // markUnreadable records that a map could not be read, so the tilesheets it might use count as possibly used, and
@@ -32,19 +33,19 @@ type mapFileList struct {
 }
 
 // modMapFiles lists the map files in mod's folder; complete is false when part of the folder could not be read.
-func modMapFiles(mod Installed) (paths []string, complete bool) {
-	stamp := mod.Key
-	if info, err := os.Stat(mod.Folder); err == nil {
+func modMapFiles(im Installed) (paths []string, complete bool) {
+	stamp := im.Key
+	if info, err := os.Stat(im.Folder); err == nil {
 		stamp += "|" + strconv.FormatInt(info.ModTime().UnixNano(), 10)
 	}
 	mapFiles.Lock()
-	cached, ok := mapFiles.byFolder[mod.Folder]
+	cached, ok := mapFiles.byFolder[im.Folder]
 	mapFiles.Unlock()
 	if ok && cached.stamp == stamp {
 		return cached.paths, cached.complete
 	}
 	unreadable := false
-	if err := filepath.WalkDir(mod.Folder, func(path string, entry os.DirEntry, err error) error {
+	if err := filepath.WalkDir(im.Folder, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return markUnreadable(&unreadable)
 		}
@@ -58,7 +59,7 @@ func modMapFiles(mod Installed) (paths []string, complete bool) {
 	}
 	complete = !unreadable
 	mapFiles.Lock()
-	mapFiles.byFolder[mod.Folder] = mapFileList{stamp: stamp, paths: paths, complete: complete}
+	mapFiles.byFolder[im.Folder] = mapFileList{stamp: stamp, paths: paths, complete: complete}
 	mapFiles.Unlock()
 	return paths, complete
 }
@@ -75,24 +76,24 @@ func cleanupHints(mods []Installed) []Cleanup {
 	tilesheets := unusedTilesheetPacks(mods)
 	tilesheetIDs := map[string]bool{}
 	for _, tilesheet := range tilesheets {
-		tilesheetIDs[manifest.FoldID(tilesheet.UniqueID)] = true
+		tilesheetIDs[tilesheet.ID.Fold()] = true
 	}
-	for _, mod := range mods {
-		for _, dep := range mod.Dependencies {
-			recordCleanupDependency(mod, dep.UniqueID, enabledNeeds, disabledDependents)
+	for _, im := range mods {
+		for _, dep := range im.Dependencies {
+			recordCleanupDependency(im, dep.ModID(), enabledNeeds, disabledDependents)
 		}
-		if mod.ContentPackFor != "" {
-			recordCleanupDependency(mod, mod.ContentPackFor, enabledNeeds, disabledDependents)
+		if im.ContentPackFor != "" {
+			recordCleanupDependency(im, im.ContentPackForID(), enabledNeeds, disabledDependents)
 		}
 	}
 
 	out := make([]Cleanup, 0)
-	for _, mod := range mods {
-		id := manifest.FoldID(mod.UniqueID)
-		if id == "" || mod.ContentPackFor != "" || tilesheetIDs[id] || enabledNeeds[id] || !disabledDependents[id] {
+	for _, im := range mods {
+		id := im.ModID().Fold()
+		if id == "" || im.ContentPackFor != "" || tilesheetIDs[id] || enabledNeeds[id] || !disabledDependents[id] {
 			continue
 		}
-		out = append(out, Cleanup{Key: mod.Key, UniqueID: mod.UniqueID, Name: mod.Name})
+		out = append(out, Cleanup{Key: im.Key, ID: im.ModID(), Name: im.Name})
 	}
 	out = append(out, tilesheets...)
 	out = append(out, recolourAddons(mods)...)
@@ -100,17 +101,17 @@ func cleanupHints(mods []Installed) []Cleanup {
 		if c := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); c != 0 {
 			return c
 		}
-		return strings.Compare(manifest.FoldID(a.UniqueID), manifest.FoldID(b.UniqueID))
+		return strings.Compare(a.ID.Fold(), b.ID.Fold())
 	})
 	return out
 }
 
-func recordCleanupDependency(mod Installed, uniqueID string, enabledNeeds, disabledDependents map[string]bool) {
-	id := manifest.FoldID(uniqueID)
+func recordCleanupDependency(im Installed, uniqueID mod.ID, enabledNeeds, disabledDependents map[string]bool) {
+	id := uniqueID.Fold()
 	if id == "" {
 		return
 	}
-	if mod.Enabled {
+	if im.Enabled {
 		enabledNeeds[id] = true
 	} else {
 		disabledDependents[id] = true
@@ -124,11 +125,11 @@ type tilesheetUse struct {
 
 func unusedTilesheetPacks(mods []Installed) []Cleanup {
 	var candidates []Installed
-	for _, mod := range mods {
-		if !mod.Enabled || !isContentPatcherPack(mod) {
+	for _, im := range mods {
+		if !im.Enabled || !isContentPatcherPack(im) {
 			continue
 		}
-		pack := readContentPack(mod)
+		pack := readContentPack(im)
 		if len(pack.patches) == 0 {
 			continue
 		}
@@ -154,7 +155,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 			}
 		}
 		if eligible && len(assets) > 0 {
-			candidates = append(candidates, mod)
+			candidates = append(candidates, im)
 		}
 	}
 	if len(candidates) == 0 {
@@ -164,7 +165,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 	uses := make(map[string]*tilesheetUse, len(candidates))
 	assetsByID := make(map[string]map[string]bool, len(candidates))
 	for _, candidate := range candidates {
-		id := manifest.FoldID(candidate.UniqueID)
+		id := candidate.ModID().Fold()
 		uses[id] = &tilesheetUse{}
 		assets := map[string]bool{}
 		for _, patch := range readContentPack(candidate).patches {
@@ -178,25 +179,25 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 	for id, assets := range assetsByID {
 		basenamesByID[id] = assetBasenames(assets)
 	}
-	for _, mod := range mods {
-		if containsMod(candidates, mod) {
+	for _, im := range mods {
+		if containsMod(candidates, im) {
 			continue
 		}
-		mentions := readContentPackForCleanup(mod).mentions
+		mentions := readContentPackForCleanup(im).mentions
 		for _, candidate := range candidates {
-			id := manifest.FoldID(candidate.UniqueID)
-			if manifestUses(mod, candidate.UniqueID) || mentions[id] {
-				recordTilesheetUse(uses[id], mod)
+			id := candidate.ModID().Fold()
+			if manifestUses(im, candidate.ModID()) || mentions[id] {
+				recordTilesheetUse(uses[id], im)
 			}
 		}
 	}
 
 	mapsUnreadable := false
-	for _, mod := range mods {
-		if containsMod(candidates, mod) || mod.Folder == "" {
+	for _, im := range mods {
+		if containsMod(candidates, im) || im.Folder == "" {
 			continue
 		}
-		paths, complete := modMapFiles(mod)
+		paths, complete := modMapFiles(im)
 		if !complete {
 			mapsUnreadable = true
 		}
@@ -213,28 +214,28 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 				continue
 			}
 			for _, candidate := range candidates {
-				id := manifest.FoldID(candidate.UniqueID)
+				id := candidate.ModID().Fold()
 				if ext == ".tbin" {
 					if slices.ContainsFunc(basenamesByID[id], func(name string) bool {
 						return slices.ContainsFunc(scan.Runs, func(run string) bool {
 							return strings.Contains(run, name)
 						})
 					}) {
-						recordTilesheetUse(uses[id], mod)
+						recordTilesheetUse(uses[id], im)
 					}
 					continue
 				}
 				if slices.ContainsFunc(scan.Keys, func(key string) bool {
 					return assetsByID[id][key]
 				}) {
-					recordTilesheetUse(uses[id], mod)
+					recordTilesheetUse(uses[id], im)
 				}
 			}
 		}
 	}
 	out := []Cleanup{}
 	for _, candidate := range candidates {
-		use := uses[manifest.FoldID(candidate.UniqueID)]
+		use := uses[candidate.ModID().Fold()]
 		if mapsUnreadable || use.enabled {
 			continue
 		}
@@ -244,7 +245,7 @@ func unusedTilesheetPacks(mods []Installed) []Cleanup {
 			reason = "Used only by switched-off mods: " + strings.Join(use.names, ", ")
 		}
 		out = append(out, Cleanup{
-			Key: candidate.Key, UniqueID: candidate.UniqueID, Name: candidate.Name, Reason: reason,
+			Key: candidate.Key, ID: candidate.ModID(), Name: candidate.Name, Reason: reason,
 		})
 	}
 	return out
@@ -286,24 +287,24 @@ func assetBasenames(assets map[string]bool) []string {
 	return out
 }
 
-func manifestUses(mod Installed, uniqueID string) bool {
-	return slices.ContainsFunc(mod.Dependencies, func(dep manifest.Dependency) bool {
-		return profile.SameID(dep.UniqueID, uniqueID)
+func manifestUses(im Installed, uniqueID mod.ID) bool {
+	return slices.ContainsFunc(im.Dependencies, func(dep manifest.Dependency) bool {
+		return mod.Equal(dep.ModID(), uniqueID)
 	})
 }
 
-func recordTilesheetUse(use *tilesheetUse, mod Installed) {
-	if mod.Enabled {
+func recordTilesheetUse(use *tilesheetUse, im Installed) {
+	if im.Enabled {
 		use.enabled = true
 		return
 	}
-	if !slices.Contains(use.names, mod.Name) {
-		use.names = append(use.names, mod.Name)
+	if !slices.Contains(use.names, im.Name) {
+		use.names = append(use.names, im.Name)
 	}
 }
 
 func containsMod(mods []Installed, want Installed) bool {
-	return slices.ContainsFunc(mods, func(mod Installed) bool { return mod.Key == want.Key })
+	return slices.ContainsFunc(mods, func(im Installed) bool { return im.Key == want.Key })
 }
 
 // mapScan is what the tilesheet scan needs from one map file, kept across checks until the

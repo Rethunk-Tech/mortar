@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -44,7 +46,7 @@ func hasPrerelease(version string) bool {
 // update key and the suggested update both name a GitHub repository, so the release can be installed directly.
 type Update struct {
 	Key        string `json:"key"`
-	UniqueID   string `json:"uniqueId"`
+	ID         mod.ID `json:"id"`
 	Name       string `json:"name"`
 	Installed  string `json:"installed"`
 	Version    string `json:"version"`
@@ -84,12 +86,12 @@ const (
 
 // Held is one suggested version Mortar holds back. Have is the version of the download installed.
 type Held struct {
-	Key      string `json:"key"`
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Version  string `json:"version"`
-	Have     string `json:"have"`
-	Reason   string `json:"reason"`
+	Key     string `json:"key"`
+	ID      mod.ID `json:"id"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	Have    string `json:"have"`
+	Reason  string `json:"reason"`
 }
 
 // NexusFilesOf lists many Nexus mods' current files in one call (nexus.Client.FilesOf); nil when signed out.
@@ -109,7 +111,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			continue
 		}
 		asked = append(asked, x)
-		req.Mods = append(req.Mods, meta.InstalledMod{ID: x.UniqueID, UpdateKeys: x.UpdateKeys, Version: x.Version})
+		req.Mods = append(req.Mods, meta.InstalledMod{ID: x.ModID().Local(), UpdateKeys: x.UpdateKeys, Version: x.Version})
 	}
 	if len(asked) == 0 {
 		return r
@@ -129,7 +131,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			current(asked[i], res.Suggested.URL, res.Suggested.Version)) {
 			x := asked[i]
 			r.Held = append(r.Held, Held{
-				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name, Version: res.Suggested.Version,
+				Key: x.Key, ID: x.ModID(), Name: x.Name, Version: res.Suggested.Version,
 				Have: cmp.Or(x.SourceVersion, x.Version), Reason: HeldCurrent,
 			})
 			res.Suggested = nil
@@ -145,7 +147,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 		x := asked[i]
 		if res.Suggested != nil {
 			r.Updates = append(r.Updates, Update{
-				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
+				Key: x.Key, ID: x.ModID(), Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
 				NexusID: nexusUpdate(x.UpdateKeys, res.Suggested.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
 				GitHubFallback: cmp.Or(githubFallback(x.UpdateKeys, res.Suggested.URL), metadataFallback(res.GitHubRepo, res.Suggested.URL)),
@@ -154,7 +156,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 		}
 		if res.Unofficial != nil {
 			r.Updates = append(r.Updates, Update{
-				Key: x.Key, UniqueID: x.UniqueID, Name: x.Name,
+				Key: x.Key, ID: x.ModID(), Name: x.Name,
 				Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
 				NexusID: nexusUpdate(x.UpdateKeys, res.Unofficial.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
 				Source:     updateSource(*res.Unofficial, nexusUpdate(x.UpdateKeys, res.Unofficial.URL), githubUpdate(x.UpdateKeys, res.Unofficial.URL)),
@@ -176,7 +178,7 @@ func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool, smapiBu
 	kept := make([]Update, 0, len(r.Updates))
 	held := slices.Clone(r.Held)
 	hold := func(u Update, reason string) {
-		held = append(held, Held{Key: u.Key, UniqueID: u.UniqueID, Name: u.Name, Version: u.Version, Have: u.Installed, Reason: reason})
+		held = append(held, Held{Key: u.Key, ID: u.ID, Name: u.Name, Version: u.Version, Have: u.Installed, Reason: reason})
 	}
 	for _, u := range r.Updates {
 		if smapiBuilds == "never" && u.Unofficial {
@@ -255,9 +257,9 @@ func updateSource(u meta.Update, nexusID int, githubRepo string) string {
 }
 
 // Need is one dependency of a mod and whether the profile meets it. State is "ok", "absent", "disabled" or
-// "outdated"; Name is the installed mod's name, or the UniqueID when there is none.
+// "outdated"; Name is the installed mod's name, or the mod id when there is none.
 type Need struct {
-	UniqueID         string `json:"uniqueId"`
+	ID               mod.ID `json:"id"`
 	Name             string `json:"name"`
 	MinimumVersion   string `json:"minimumVersion"`
 	Required         bool   `json:"required"`
@@ -267,9 +269,9 @@ type Need struct {
 
 // Dependent is a mod of the profile that lists another as a dependency.
 type Dependent struct {
-	Key      string `json:"key"`
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
+	Key  string `json:"key"`
+	ID   mod.ID `json:"id"`
+	Name string `json:"name"`
 }
 
 // Relations is how one mod stands with the others in its profile. PageURL is empty when its update keys name
@@ -281,16 +283,16 @@ type Relations struct {
 }
 
 // Relate reports what the mod key/uniqueID needs and which mods need it. ok is false when the profile lacks it.
-func Relate(mods []Installed, domain, key, uniqueID string) (r Relations, ok bool) {
-	i := slices.IndexFunc(mods, func(x Installed) bool { return x.Key == key && profile.SameID(x.UniqueID, uniqueID) })
+func Relate(mods []Installed, domain, key string, uniqueID mod.ID) (r Relations, ok bool) {
+	i := slices.IndexFunc(mods, func(x Installed) bool { return x.Key == key && mod.Equal(x.ModID(), uniqueID) })
 	if i < 0 {
 		return Relations{}, false
 	}
 	self := mods[i]
 	r = Relations{PageURL: pageURL(domain, self.UpdateKeys), Needs: []Need{}, NeededBy: []Dependent{}}
 	for _, dep := range self.Dependencies {
-		n := Need{UniqueID: dep.UniqueID, Name: dep.UniqueID, MinimumVersion: dep.MinimumVersion, Required: dep.Required, State: "ok"}
-		if j := slices.IndexFunc(mods, func(x Installed) bool { return profile.SameID(x.UniqueID, dep.UniqueID) }); j >= 0 {
+		n := Need{ID: dep.ModID(), Name: dep.ModID().Local(), MinimumVersion: dep.MinimumVersion, Required: dep.Required, State: "ok"}
+		if j := slices.IndexFunc(mods, func(x Installed) bool { return mod.Equal(x.ModID(), dep.ModID()) }); j >= 0 {
 			n.Name = mods[j].Name
 		}
 		if reason, have := depState(mods, dep); reason != "" {
@@ -299,22 +301,22 @@ func Relate(mods []Installed, domain, key, uniqueID string) (r Relations, ok boo
 		r.Needs = append(r.Needs, n)
 	}
 	for _, x := range mods {
-		if x.Key == self.Key && profile.SameID(x.UniqueID, self.UniqueID) {
+		if x.Key == self.Key && mod.Equal(x.ModID(), self.ModID()) {
 			continue
 		}
-		if slices.ContainsFunc(x.Dependencies, func(d manifest.Dependency) bool { return profile.SameID(d.UniqueID, self.UniqueID) }) {
-			r.NeededBy = append(r.NeededBy, Dependent{Key: x.Key, UniqueID: x.UniqueID, Name: x.Name})
+		if slices.ContainsFunc(x.Dependencies, func(d manifest.Dependency) bool { return mod.Equal(d.ModID(), self.ModID()) }) {
+			r.NeededBy = append(r.NeededBy, Dependent{Key: x.Key, ID: x.ModID(), Name: x.Name})
 		}
 	}
 	return r, true
 }
 
-// Pages maps "key/uniqueId" to the page of each mod whose update keys name one.
+// Pages maps "key/id" to the page of each mod whose update keys name one.
 func Pages(mods []Installed, domain string) map[string]string {
 	out := map[string]string{}
 	for _, m := range mods {
 		if u := pageURL(domain, m.UpdateKeys); u != "" {
-			out[m.Key+"/"+m.UniqueID] = u
+			out[m.Key+"/"+string(m.ModID())] = u
 		}
 	}
 	return out
@@ -422,7 +424,7 @@ func nexusFileStem(name string) string {
 // download. Archive names are the fallback; the dataset sometimes stores them as hashed paths.
 func sameNexusFileGroup(a, b meta.File) bool {
 	if len(a.Mods) > 0 && len(b.Mods) > 0 {
-		return slices.ContainsFunc(a.Mods, func(m meta.Mod) bool { return containsPreviewMod(b, m.UniqueID) })
+		return slices.ContainsFunc(a.Mods, func(m meta.Mod) bool { return containsPreviewMod(b, m.ModID()) })
 	}
 	aStem, bStem := nexusFileStem(a.FileName), nexusFileStem(b.FileName)
 	return aStem == "" || bStem == "" || aStem == bStem
@@ -437,8 +439,8 @@ func newerPreviewFile(candidate, current meta.File) bool {
 	return candidate.ID > current.ID
 }
 
-func containsPreviewMod(file meta.File, uniqueID string) bool {
-	return slices.ContainsFunc(file.Mods, func(m meta.Mod) bool { return profile.SameID(m.UniqueID, uniqueID) })
+func containsPreviewMod(file meta.File, uniqueID mod.ID) bool {
+	return slices.ContainsFunc(file.Mods, func(m meta.Mod) bool { return mod.Equal(m.ModID(), uniqueID) })
 }
 
 // nexusFileIsCurrent uses the cached SMAPI file preview to keep a stale manifest from making a file update itself.
@@ -480,7 +482,7 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url, suggested
 		}
 		return !strings.EqualFold(installed.Type, "OLD_VERSION")
 	}
-	return !containsPreviewMod(latest, x.UniqueID)
+	return !containsPreviewMod(latest, x.ModID())
 }
 
 // liveNexusFiles asks Nexus once for the current files of every flagged Nexus mod, so a stale dataset page cannot

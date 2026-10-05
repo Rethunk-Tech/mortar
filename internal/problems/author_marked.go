@@ -19,8 +19,8 @@ var (
 
 func authorMarkedMods(home, domain string, enabled []Installed) []Broken {
 	var out []Broken
-	for _, mod := range enabled {
-		if pageID, fileID, ok := store.NexusFile(mod.Key); ok {
+	for _, im := range enabled {
+		if pageID, fileID, ok := store.NexusFile(im.Key); ok {
 			details, ok := readCachedNexusDetails(home, domain, pageID)
 			if !ok {
 				continue
@@ -32,12 +32,12 @@ func authorMarkedMods(home, domain string, enabled []Installed) []Broken {
 					break
 				}
 			}
-			if marked := markedBroken(mod, domain, details.Page.Name, details.Page.Summary, details.Page.Description, file); marked != nil {
+			if marked := markedBroken(im, domain, details.Page.Name, details.Page.Summary, details.Page.Description, file); marked != nil {
 				out = append(out, *marked)
 				continue
 			}
 		}
-		if marked := markedManifest(mod, domain); marked != nil {
+		if marked := markedManifest(im, domain); marked != nil {
 			out = append(out, *marked)
 		}
 	}
@@ -49,32 +49,32 @@ func readCachedNexusDetails(home, domain string, pageID int) (nexussvc.Details, 
 	return meta.Peek[nexussvc.Details](&meta.Client{CacheDir: filepath.Join(home, "cache")}, nexussvc.DetailsName(domain, pageID))
 }
 
-func markedManifest(mod Installed, domain string) *Broken {
-	if match := statusMatch(mod.Name, true); match != "" {
-		return authorBroken(mod, domain, match, "Its installed manifest name")
+func markedManifest(im Installed, domain string) *Broken {
+	if match := statusMatch(im.Name, true); match != "" {
+		return authorBroken(im, domain, match, "Its installed manifest name")
 	}
-	if match := statusMatch(mod.Description, false); match != "" {
-		return authorBroken(mod, domain, match, "Its installed manifest description")
+	if match := statusMatch(im.Description, false); match != "" {
+		return authorBroken(im, domain, match, "Its installed manifest description")
 	}
 	return nil
 }
 
-func markedBroken(mod Installed, domain, name, summary, description string, file *nexus.File) *Broken {
+func markedBroken(im Installed, domain, name, summary, description string, file *nexus.File) *Broken {
 	if match := statusMatch(name, true); match != "" {
-		return authorBroken(mod, domain, match, "Its Nexus mod name")
+		return authorBroken(im, domain, match, "Its Nexus mod name")
 	}
 	if match := statusMatch(summary, false); match != "" {
-		return authorBrokenText(mod, domain, match, "Its Nexus page summary", summary)
+		return authorBrokenText(im, domain, match, "Its Nexus page summary", summary)
 	}
 	if match := statusMatch(description, false); match != "" {
-		return authorBrokenText(mod, domain, match, "Its Nexus page description", description)
+		return authorBrokenText(im, domain, match, "Its Nexus page description", description)
 	}
 	if file != nil {
 		if match := statusMatch(file.Name, true); match != "" {
-			return authorBroken(mod, domain, match, "Its installed file name")
+			return authorBroken(im, domain, match, "Its installed file name")
 		}
 		if match := statusMatch(file.Description, false); match != "" {
-			return authorBrokenText(mod, domain, match, "Its installed file description", file.Description)
+			return authorBrokenText(im, domain, match, "Its installed file description", file.Description)
 		}
 	}
 	return nil
@@ -120,19 +120,19 @@ func quoteAround(text string, start, end int) string {
 	return sentence
 }
 
-func authorBroken(mod Installed, domain, quote, where string) *Broken {
-	return authorBrokenWithReplacement(mod, domain, quote, where)
+func authorBroken(im Installed, domain, quote, where string) *Broken {
+	return authorBrokenWithReplacement(im, domain, quote, where)
 }
 
-func authorBrokenText(mod Installed, domain, quote, where, text string) *Broken {
-	b := authorBrokenWithReplacement(mod, domain, quote, where)
+func authorBrokenText(im Installed, domain, quote, where, text string) *Broken {
+	b := authorBrokenWithReplacement(im, domain, quote, where)
 	if ids := modPageIDs(nexusModLink, text, domain); len(ids) > 0 {
 		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexus.ModURL(domain, ids[0])}
 	}
 	return b
 }
 
-func authorBrokenWithReplacement(mod Installed, domain, quote, where string) *Broken {
+func authorBrokenWithReplacement(im Installed, domain, quote, where string) *Broken {
 	status := "obsolete"
 	if match := authorStatusWord.FindString(quote); match != "" {
 		status = strings.ToLower(match)
@@ -141,7 +141,7 @@ func authorBrokenWithReplacement(mod Installed, domain, quote, where string) *Br
 		}
 	}
 	b := &Broken{
-		Key: mod.Key, UniqueID: mod.UniqueID, Name: mod.Name, Status: status,
+		Key: im.Key, ID: im.ModID(), Name: im.Name, Status: status,
 		Summary: fmt.Sprintf("%s says it is %s: %q", where, status, quote),
 	}
 	if ids := modPageIDs(nexusModLink, quote, domain); len(ids) > 0 {

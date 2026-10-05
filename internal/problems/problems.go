@@ -14,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -47,8 +49,8 @@ type Installed struct {
 	SkipSources   []string
 	IgnoreUpdates bool
 	UpdateChannel string
-	// LoadAfter is UniqueIDs this pack should load after when the user made it win an edit conflict.
-	LoadAfter []string
+	// LoadAfter is mod ids this pack should load after when the user made it win an edit conflict.
+	LoadAfter []mod.ID
 	// Folder is the mod's directory in the profile, used to read Content Patcher content.json.
 	Folder string
 	manifest.Manifest
@@ -79,9 +81,9 @@ type Ref struct {
 // Missing is a required dependency the profile does not satisfy. Reason is "absent", "disabled" or "outdated".
 // Where is nil when the dataset does not know the mod or could not be reached.
 type Missing struct {
-	DependentID      string `json:"dependentId"`
+	DependentID      mod.ID `json:"dependentId"`
 	DependentName    string `json:"dependentName"`
-	UniqueID         string `json:"uniqueId"`
+	ID               mod.ID `json:"id"`
 	MinimumVersion   string `json:"minimumVersion"`
 	Reason           string `json:"reason"`
 	InstalledVersion string `json:"installedVersion"`
@@ -92,7 +94,7 @@ type Missing struct {
 }
 
 // Copy is one of two or more enabled copies of a mod. Needed and TooOld name the enabled mods that depend on the
-// UniqueID and whose MinimumVersion this copy meets or does not. Newest marks the highest version among the copies.
+// mod id and whose MinimumVersion this copy meets or does not. Newest marks the highest version among the copies.
 type Copy struct {
 	Key     string   `json:"key"`
 	Name    string   `json:"name"`
@@ -104,9 +106,9 @@ type Copy struct {
 	TooOld  []string `json:"tooOld"`
 }
 
-// Duplicate is a UniqueID with several enabled copies.
+// Duplicate is a mod id with several enabled copies.
 type Duplicate struct {
-	UniqueID      string      `json:"uniqueId"`
+	ID            mod.ID      `json:"id"`
 	Name          string      `json:"name"`
 	Copies        []Copy      `json:"copies"`
 	NexusFiles    []NexusFile `json:"nexusFiles,omitempty"`
@@ -123,7 +125,7 @@ type NexusFile struct {
 // Broken is an enabled mod SMAPI's API marks broken, obsolete or abandoned for the game version.
 type Broken struct {
 	Key         string `json:"key"`
-	UniqueID    string `json:"uniqueId"`
+	ID          mod.ID `json:"id"`
 	Name        string `json:"name"`
 	Status      string `json:"status"`
 	BrokeIn     string `json:"brokeIn"`
@@ -134,12 +136,12 @@ type Broken struct {
 // SettingHint is a Content Patcher compatibility setting that is not enabled for the profile.
 type SettingHint struct {
 	Key         string   `json:"key"`
-	UniqueID    string   `json:"uniqueId"`
+	ID          mod.ID   `json:"id"`
 	Name        string   `json:"name"`
 	Field       string   `json:"field"`
 	Current     string   `json:"current"`
 	Suggested   []string `json:"suggested"`
-	For         []string `json:"for"`
+	For         []mod.ID `json:"for"`
 	ForNames    []string `json:"forNames"`
 	Description string   `json:"description"`
 	// Variant marks a picker (a palette, recolour or similar choice) whose values the pack maps to mods.
@@ -150,10 +152,10 @@ type SettingHint struct {
 
 // Cleanup is a framework mod that no enabled mod currently needs.
 type Cleanup struct {
-	Key      string `json:"key"`
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Reason   string `json:"reason,omitempty"`
+	Key    string `json:"key"`
+	ID     mod.ID `json:"id"`
+	Name   string `json:"name"`
+	Reason string `json:"reason,omitempty"`
 }
 
 // Damaged is a mod whose stored files no longer match what was stored: files went missing, changed or appeared.
@@ -358,7 +360,7 @@ func missingDeps(enabled, all []Installed) []Missing {
 			if !dep.Required {
 				continue
 			}
-			miss := Missing{DependentID: d.UniqueID, DependentName: d.Name, UniqueID: dep.UniqueID, MinimumVersion: dep.MinimumVersion}
+			miss := Missing{DependentID: d.ModID(), DependentName: d.Name, ID: dep.ModID(), MinimumVersion: dep.MinimumVersion}
 			reason, installedVersion := depState(all, dep)
 			if reason == "" {
 				continue
@@ -444,16 +446,16 @@ func listedRequirements(ctx context.Context, m Meta, domain string, enabled, all
 			if satisfied && reason == "" {
 				continue
 			}
-			uniqueID := "nexus:" + strconv.Itoa(req.ModID)
+			uniqueID := mod.NewID("nexus", strconv.Itoa(req.ModID))
 			if hasPage {
-				if id := mainUniqueID(page); id != "" {
+				if id := mainID(page); id != "" {
 					uniqueID = id
 				}
 			}
 			miss := Missing{
-				DependentID:   d.UniqueID,
+				DependentID:   d.ModID(),
 				DependentName: d.Name,
-				UniqueID:      uniqueID,
+				ID:            uniqueID,
 				Reason:        reason,
 				Listed:        true,
 				Note:          req.Notes,
@@ -472,7 +474,7 @@ func listedRequirements(ctx context.Context, m Meta, domain string, enabled, all
 				PageName: pageName,
 				URL:      nexus.ModURL(domain, req.ModID),
 			}
-			if uniqueID == "nexus:"+strconv.Itoa(req.ModID) {
+			if uniqueID == mod.NewID("nexus", strconv.Itoa(req.ModID)) {
 				miss.Where = pageRef
 			} else if located, ok := Locate(ctx, m, domain, uniqueID, "", d.UpdateKeys); located != nil {
 				miss.Where = located
@@ -494,8 +496,8 @@ func listedDepState(all []Installed, pageID int, page meta.Page, pageKnown bool)
 		matches := listed && entryPage == pageID
 		if !matches && pageKnown {
 			for _, file := range page.Downloads {
-				for _, mod := range file.Mods {
-					if profile.SameID(x.UniqueID, mod.UniqueID) {
+				for _, im := range file.Mods {
+					if mod.Equal(x.ModID(), im.ModID()) {
 						matches = true
 						break
 					}
@@ -521,7 +523,7 @@ func listedDepState(all []Installed, pageID int, page meta.Page, pageKnown bool)
 
 func manifestHasRequirement(all []Installed, entryKey string, page meta.Page) bool {
 	for _, d := range all {
-		if !d.Enabled || !profile.SameID(d.Key, entryKey) {
+		if !d.Enabled || !strings.EqualFold(d.Key, entryKey) {
 			continue
 		}
 		for _, dep := range d.Dependencies {
@@ -529,8 +531,8 @@ func manifestHasRequirement(all []Installed, entryKey string, page meta.Page) bo
 				continue
 			}
 			for _, file := range page.Downloads {
-				for _, mod := range file.Mods {
-					if profile.SameID(dep.UniqueID, mod.UniqueID) {
+				for _, im := range file.Mods {
+					if mod.Equal(dep.ModID(), im.ModID()) {
 						return true
 					}
 				}
@@ -540,14 +542,14 @@ func manifestHasRequirement(all []Installed, entryKey string, page meta.Page) bo
 	return false
 }
 
-func mainUniqueID(page meta.Page) string {
+func mainID(page meta.Page) mod.ID {
 	for _, file := range page.Downloads {
 		if !strings.EqualFold(file.Type, "main") {
 			continue
 		}
-		for _, mod := range file.Mods {
-			if mod.UniqueID != "" {
-				return mod.UniqueID
+		for _, im := range file.Mods {
+			if im.ModID() != "" {
+				return im.ModID()
 			}
 		}
 	}
@@ -571,7 +573,7 @@ func isWordByte(b byte) bool {
 func depState(all []Installed, dep manifest.Dependency) (reason, installedVersion string) {
 	var installed []Installed
 	for _, x := range all {
-		if profile.SameID(x.UniqueID, dep.UniqueID) {
+		if mod.Equal(x.ModID(), dep.ModID()) {
 			installed = append(installed, x)
 		}
 	}
@@ -602,21 +604,21 @@ func duplicates(enabled []Installed) []Duplicate {
 	out := []Duplicate{}
 	seen := map[string]bool{}
 	for _, first := range enabled {
-		id := manifest.FoldID(first.UniqueID)
+		id := first.ModID().Fold()
 		if seen[id] {
 			continue
 		}
 		seen[id] = true
 		var group []Installed
 		for _, x := range enabled {
-			if profile.SameID(x.UniqueID, first.UniqueID) {
+			if mod.Equal(x.ModID(), first.ModID()) {
 				group = append(group, x)
 			}
 		}
 		if len(group) < 2 {
 			continue
 		}
-		out = append(out, Duplicate{UniqueID: first.UniqueID, Name: first.Name, Copies: copies(group, enabled)})
+		out = append(out, Duplicate{ID: first.ModID(), Name: first.Name, Copies: copies(group, enabled)})
 	}
 	return out
 }
@@ -631,7 +633,7 @@ func copies(group, enabled []Installed) []Copy {
 		}
 		for _, d := range enabled {
 			for _, dep := range d.Dependencies {
-				if !dep.Required || !profile.SameID(dep.UniqueID, g.UniqueID) {
+				if !dep.Required || !mod.Equal(dep.ModID(), g.ModID()) {
 					continue
 				}
 				if meets(g.Version, dep.MinimumVersion) {
@@ -653,7 +655,7 @@ func brokenMods(ctx context.Context, m Meta, env Environment, enabled []Installe
 	}
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform}
 	for _, x := range enabled {
-		req.Mods = append(req.Mods, meta.InstalledMod{ID: x.UniqueID, UpdateKeys: x.UpdateKeys, Version: x.Version})
+		req.Mods = append(req.Mods, meta.InstalledMod{ID: x.ModID().Local(), UpdateKeys: x.UpdateKeys, Version: x.Version})
 	}
 	for i, res := range m.CheckUpdates(ctx, req) {
 		if !res.Known {
@@ -665,7 +667,7 @@ func brokenMods(ctx context.Context, m Meta, env Environment, enabled []Installe
 			continue
 		}
 		x := enabled[i]
-		b := Broken{Key: x.Key, UniqueID: x.UniqueID, Name: x.Name, Status: s, BrokeIn: res.BrokeIn, Summary: res.CompatibilitySummary}
+		b := Broken{Key: x.Key, ID: x.ModID(), Name: x.Name, Status: s, BrokeIn: res.BrokeIn, Summary: res.CompatibilitySummary}
 		b.Replacement = replacementFromSummary(ctx, m, env.Nexus.Domain, x.UpdateKeys, res.CompatibilitySummary)
 		broken = append(broken, b)
 	}
@@ -687,15 +689,15 @@ func fillWhere(ctx context.Context, m Meta, domain string, enabled []Installed, 
 		if x.Where != nil {
 			continue
 		}
-		dependent := slices.IndexFunc(enabled, func(e Installed) bool { return profile.SameID(e.UniqueID, x.DependentID) })
+		dependent := slices.IndexFunc(enabled, func(e Installed) bool { return mod.Equal(e.ModID(), x.DependentID) })
 		var keys []string
 		if dependent >= 0 {
 			keys = enabled[dependent].UpdateKeys
 		}
-		k := manifest.FoldID(x.UniqueID) + "|" + x.MinimumVersion + "|" + strings.Join(keys, ",")
+		k := x.ID.Fold() + "|" + x.MinimumVersion + "|" + strings.Join(keys, ",")
 		f, hit := cache[k]
 		if !hit {
-			f.ref, f.ok = Locate(ctx, m, domain, x.UniqueID, x.MinimumVersion, keys)
+			f.ref, f.ok = Locate(ctx, m, domain, x.ID, x.MinimumVersion, keys)
 			cache[k] = f
 		}
 		x.Where = f.ref
@@ -724,7 +726,7 @@ func pageLink(domain string, r meta.Ref) string {
 	for _, g := range game.Catalog() {
 		if g.NexusDomain() == domain {
 			if gs, listed := g.Source(entry.Source.ID()); listed {
-				return linker.ModPageURL(gs.Key, r.ID)
+				return linker.ModPageURL(gs.Key, strconv.Itoa(r.ID))
 			}
 		}
 	}
@@ -733,8 +735,8 @@ func pageLink(domain string, r meta.Ref) string {
 
 // Locate names the page and file to get uniqueID from. ok is false when the dataset could not be read, as
 // opposed to reading it and finding the mod unlisted (nil, true).
-func Locate(ctx context.Context, m Meta, domain, uniqueID, minimum string, dependentKeys []string) (*Ref, bool) {
-	refs, err := m.Lookup(ctx, uniqueID)
+func Locate(ctx context.Context, m Meta, domain string, uniqueID mod.ID, minimum string, dependentKeys []string) (*Ref, bool) {
+	refs, err := m.Lookup(ctx, uniqueID.Local())
 	if err != nil {
 		return nil, false
 	}
@@ -787,8 +789,8 @@ func Locate(ctx context.Context, m Meta, domain, uniqueID, minimum string, depen
 }
 
 // githubRepo is the repository SMAPI's update API records for uniqueID, or "".
-func githubRepo(ctx context.Context, m Meta, uniqueID string) string {
-	got := m.CheckUpdates(ctx, meta.UpdateRequest{Mods: []meta.InstalledMod{{ID: uniqueID}}})
+func githubRepo(ctx context.Context, m Meta, uniqueID mod.ID) string {
+	got := m.CheckUpdates(ctx, meta.UpdateRequest{Mods: []meta.InstalledMod{{ID: uniqueID.Local()}}})
 	if len(got) != 1 || !got[0].Known {
 		return ""
 	}
@@ -801,24 +803,24 @@ func githubRepo(ctx context.Context, m Meta, uniqueID string) string {
 // fileIn picks the newest MAIN file of the page that holds uniqueID at a version meeting minimum. With none,
 // it still returns the page when some file holds the mod, so its link is worth showing; otherwise nil.
 // top is the highest version of the mod on the page, which ranks pages against each other.
-func fileIn(page meta.Page, domain string, r meta.Ref, uniqueID, minimum string) (ref *Ref, top string) {
+func fileIn(page meta.Page, domain string, r meta.Ref, uniqueID mod.ID, minimum string) (ref *Ref, top string) {
 	pageRef := Ref{Site: "Nexus", PageID: r.ID, PageName: page.Name, URL: cmp.Or(page.PageURL, siteURL(domain, r))}
 	var best *Ref
 	holds := false
 	for _, f := range page.Downloads {
-		for _, mod := range f.Mods {
-			if !profile.SameID(mod.UniqueID, uniqueID) {
+		for _, im := range f.Mods {
+			if !mod.Equal(im.ModID(), uniqueID) {
 				continue
 			}
-			if c, ok := meta.CompareVersions(mod.Version, top); !holds || (ok && c > 0) {
-				top = mod.Version
+			if c, ok := meta.CompareVersions(im.Version, top); !holds || (ok && c > 0) {
+				top = im.Version
 			}
 			holds = true
-			if !strings.EqualFold(f.Type, "main") || !meets(mod.Version, minimum) {
+			if !strings.EqualFold(f.Type, "main") || !meets(im.Version, minimum) {
 				continue
 			}
 			cand := pageRef
-			cand.FileID, cand.FileName, cand.Version = f.ID, f.FileName, mod.Version
+			cand.FileID, cand.FileName, cand.Version = f.ID, f.FileName, im.Version
 			if best == nil || newer(cand, *best) {
 				best = &cand
 			}
@@ -849,7 +851,7 @@ func conflictRows(conflicts []AssetConflict) int {
 		if c.Cosmetic {
 			continue
 		}
-		ids := slices.Clone(c.PackIDs)
+		ids := mod.Strings(c.PackIDs)
 		slices.Sort(ids)
 		fixes, _ := json.Marshal(c.Fixes)
 		rows[c.Kind+"\x00"+strings.Join(ids, "\x00")+"\x00"+c.WinnerName+"\x00"+string(fixes)] = true

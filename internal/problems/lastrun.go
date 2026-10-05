@@ -2,19 +2,19 @@ package problems
 
 import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // RunError is an enabled mod that logged errors in the profile's most recent stored run.
 type RunError struct {
-	Key      string `json:"key"`
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Count    int    `json:"count"`
-	First    string `json:"first"`
-	Severe   bool   `json:"severe"`
-	RunID    string `json:"runId"`
-	Updated  bool   `json:"updated,omitempty"`
+	Key     string `json:"key"`
+	ID      mod.ID `json:"id"`
+	Name    string `json:"name"`
+	Count   int    `json:"count"`
+	First   string `json:"first"`
+	Severe  bool   `json:"severe"`
+	RunID   string `json:"runId"`
+	Updated bool   `json:"updated,omitempty"`
 }
 
 // RunReader loads the newest recorded run's id and SMAPI log summary for a profile.
@@ -26,7 +26,7 @@ type RunReader interface {
 func modRefs(mods []Installed) []launch.ModRef {
 	out := make([]launch.ModRef, 0, len(mods))
 	for _, m := range mods {
-		out = append(out, launch.ModRef{Name: m.Name, UniqueID: m.UniqueID})
+		out = append(out, launch.ModRef{Name: m.Name, ID: m.ModID()})
 	}
 	return out
 }
@@ -36,12 +36,12 @@ func installedByRef(mods []Installed, ref launch.ModRef) (Installed, bool) {
 		if !m.Enabled {
 			continue
 		}
-		if ref.Key != "" && m.Key == ref.Key && (ref.UniqueID == "" || manifest.SameID(m.UniqueID, ref.UniqueID)) &&
+		if ref.Key != "" && m.Key == ref.Key && (ref.ID == "" || mod.Equal(m.ModID(), ref.ID)) &&
 			(ref.Name == "" || m.Name == ref.Name) {
 			return m, true
 		}
-		if (ref.UniqueID != "" && manifest.SameID(m.UniqueID, ref.UniqueID)) ||
-			(ref.UniqueID == "" && ref.Name != "" && m.Name == ref.Name) {
+		if (ref.ID != "" && mod.Equal(m.ModID(), ref.ID)) ||
+			(ref.ID == "" && ref.Name != "" && m.Name == ref.Name) {
 			return m, true
 		}
 	}
@@ -79,7 +79,7 @@ func RunErrorsFromSummary(runID string, summary launch.Summary, mods []Installed
 			continue
 		}
 		out = append(out, RunError{
-			Key: inst.Key, UniqueID: inst.UniqueID, Name: inst.Name,
+			Key: inst.Key, ID: inst.ModID(), Name: inst.Name,
 			Count: me.Count, First: me.First, Severe: severe, RunID: runID,
 			Updated: snapshot && changedSinceRun(inst, ref),
 		})

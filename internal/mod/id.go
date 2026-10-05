@@ -19,6 +19,15 @@ func NewID(format, local string) ID { return ID(format + ":" + local) }
 // SMAPI is shorthand for NewID(FormatSMAPI, uniqueID).
 func SMAPI(uniqueID string) ID { return NewID(FormatSMAPI, uniqueID) }
 
+// Parse reads user-typed text: a full id as is, a bare local id in defaultFormat.
+func Parse(s, defaultFormat string) ID {
+	s = strings.TrimSpace(s)
+	if strings.Contains(s, ":") {
+		return ID(s)
+	}
+	return NewID(defaultFormat, s)
+}
+
 // Format is the part before the first colon; empty when the ID has none.
 func (id ID) Format() string {
 	f, _, ok := strings.Cut(string(id), ":")
@@ -53,6 +62,15 @@ func Strings(ids []ID) []string {
 	out := make([]string, len(ids))
 	for i, id := range ids {
 		out[i] = string(id)
+	}
+	return out
+}
+
+// Locals returns the local part of each id.
+func Locals(ids []ID) []string {
+	out := make([]string, len(ids))
+	for i, id := range ids {
+		out[i] = id.Local()
 	}
 	return out
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // sameJobScore is how much of the larger footprint, by member weight, two mods must share to be flagged. They must
@@ -65,18 +66,18 @@ func withSameJob(r Result, rows []Redundant) Result {
 	return r
 }
 
-// footprints maps each enabled C# mod, by lower-case UniqueID, to the game members it changes: those its assembly
+// footprints maps each enabled C# mod, by folded mod id, to the game members it changes: those its assembly
 // assigns, and the methods the bridge saw it replace through Harmony as "harmony:Type::Method". replaces is keyed by
-// Harmony ID, which mods set to their UniqueID by convention.
+// Harmony ID, which mods set to their SMAPI id by convention.
 func footprints(mods []Installed, replaces map[string][]string) map[string]map[string]bool {
 	byID := map[string][]string{}
 	for owner, methods := range replaces {
-		byID[strings.ToLower(owner)] = methods
+		byID[mod.SMAPI(owner).Fold()] = methods
 	}
 	var ids, dlls []string
 	for _, m := range mods {
 		if m.Enabled && m.Folder != "" && m.EntryDll != "" && filepath.IsLocal(m.EntryDll) {
-			ids = append(ids, manifest.FoldID(m.UniqueID))
+			ids = append(ids, m.ModID().Fold())
 			dlls = append(dlls, filepath.Join(m.Folder, m.EntryDll))
 		}
 	}
@@ -109,9 +110,9 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 			continue
 		}
 		for _, d := range m.Dependencies {
-			builtOn[manifest.FoldID(d.UniqueID)] = true
+			builtOn[d.ModID().Fold()] = true
 		}
-		id := manifest.FoldID(m.UniqueID)
+		id := m.ModID().Fold()
 		if len(fp[id]) > 0 && !seen[id] {
 			seen[id] = true
 			code = append(code, m)
@@ -119,7 +120,7 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 	}
 	df := map[string]int{}
 	for _, m := range code {
-		for member := range fp[manifest.FoldID(m.UniqueID)] {
+		for member := range fp[m.ModID().Fold()] {
 			df[member]++
 		}
 	}
@@ -127,7 +128,7 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 	weight := func(member string) float64 { return math.Log(float64(n) / float64(df[member])) }
 	total := map[string]float64{}
 	for _, m := range code {
-		id := manifest.FoldID(m.UniqueID)
+		id := m.ModID().Fold()
 		for member := range fp[id] {
 			total[id] += weight(member)
 		}
@@ -145,9 +146,9 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 		}
 	}
 	for i, a := range code {
-		ida := manifest.FoldID(a.UniqueID)
+		ida := a.ModID().Fold()
 		for _, b := range code[i+1:] {
-			idb := manifest.FoldID(b.UniqueID)
+			idb := b.ModID().Fold()
 			if !mayShareJob(a, b, builtOn) {
 				continue
 			}
@@ -182,7 +183,7 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 			if total[idb] < total[ida] {
 				small, large = b, a
 			}
-			ids := manifest.FoldID(small.UniqueID)
+			ids := small.ModID().Fold()
 			if n >= sameJobSmall && total[ids] >= sameJobCoveredWeight && common <= sameJobCoveredDF && sum >= sameJobCovered*total[ids] {
 				coveredBy[ids] = append(coveredBy[ids], ModRef{Key: large.Key, Name: large.Name})
 				note(coveredShared, ids, both)
@@ -191,19 +192,19 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 	}
 	var out []Redundant
 	for _, m := range code {
-		id := manifest.FoldID(m.UniqueID)
+		id := m.ModID().Fold()
 		switch {
 		case len(by[id]) > 0:
-			out = append(out, Redundant{Kind: "sameJob", Key: m.Key, UniqueID: m.UniqueID, Name: m.Name, By: by[id], Detail: shortMembers(shared[id], weight)})
+			out = append(out, Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: by[id], Detail: shortMembers(shared[id], weight)})
 		case len(coveredBy[id]) > 0:
-			out = append(out, Redundant{Kind: "sameJob", Key: m.Key, UniqueID: m.UniqueID, Name: m.Name, By: coveredBy[id], Detail: shortMembers(coveredShared[id], weight), Covered: true})
+			out = append(out, Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: coveredBy[id], Detail: shortMembers(coveredShared[id], weight), Covered: true})
 		}
 	}
 	return out
 }
 
 func mayShareJob(a, b Installed, builtOn map[string]bool) bool {
-	ida, idb := manifest.FoldID(a.UniqueID), manifest.FoldID(b.UniqueID)
+	ida, idb := a.ModID().Fold(), b.ModID().Fold()
 	if a.Key == b.Key || builtOn[ida] || builtOn[idb] {
 		return false
 	}
@@ -214,7 +215,7 @@ func mayShareJob(a, b Installed, builtOn map[string]bool) bool {
 }
 
 func dependsOn(m Installed, id string) bool {
-	return slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return manifest.SameID(d.UniqueID, id) })
+	return slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return d.ModID().Fold() == id })
 }
 
 // shortMembers names up to three members, most distinctive first, as "Type.Member" from "Namespace.Type::Member".

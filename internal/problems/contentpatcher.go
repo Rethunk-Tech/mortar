@@ -20,14 +20,14 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-const contentPatcherID = "Pathoschild.ContentPatcher"
+var contentPatcherID = mod.SMAPI("Pathoschild.ContentPatcher")
 
 const (
 	kindLoad      = "Load"
@@ -41,10 +41,10 @@ const (
 type AssetConflict struct {
 	Kind       string   `json:"kind"` // "load" (hard) or "edit" (soft)
 	Target     string   `json:"target"`
-	PackIDs    []string `json:"packIds"`
+	PackIDs    []mod.ID `json:"packIds"`
 	Names      []string `json:"names"`
 	Keys       []string `json:"keys"`
-	WinnerID   string   `json:"winnerId"`
+	WinnerID   mod.ID   `json:"winnerId"`
 	WinnerName string   `json:"winnerName"`
 	Overridden []string `json:"overridden"`
 	// Cosmetic marks an edit conflict whose every overlap is harmless (see harmless): shown, never counted.
@@ -58,7 +58,7 @@ type AssetConflict struct {
 // ConflictEvidence is one clashing patch of a pack in an AssetConflict.
 type ConflictEvidence struct {
 	PackName string `json:"packName"`
-	PackID   string `json:"packId"`
+	PackID   mod.ID `json:"packId"`
 	Source   string `json:"source"`
 	Index    int    `json:"index"`
 	Action   string `json:"action"`
@@ -76,19 +76,19 @@ type ConflictEvidence struct {
 	Keys []string `json:"keys"`
 }
 
-// ConflictFix sets one on/off field of a pack (Key, UniqueID) to Value, which turns off all of that pack's edits
+// ConflictFix sets one on/off field of a pack (Key, id) to Value, which turns off all of that pack's edits
 // in the conflict; Current is the field's value now.
 type ConflictFix struct {
-	Key      string `json:"key"`
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Field    string `json:"field"`
-	Current  string `json:"current"`
-	Value    string `json:"value"`
+	Key     string `json:"key"`
+	ID      mod.ID `json:"id"`
+	Name    string `json:"name"`
+	Field   string `json:"field"`
+	Current string `json:"current"`
+	Value   string `json:"value"`
 }
 
 type packHit struct {
-	id           string
+	id           mod.ID
 	name         string
 	key          string
 	priority     string
@@ -223,7 +223,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 10
+const contentPackParserVersion = 11
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -721,19 +721,19 @@ var packCache sync.Map // folder path -> cachedPack
 // pack read many times in one Check is stat'ed once. Check clears it at both ends, never mid-check.
 var packValidated sync.Map
 
-func readContentPack(mod Installed) cachedPack {
-	return readContentPackWithEnabled(mod, true)
+func readContentPack(im Installed) cachedPack {
+	return readContentPackWithEnabled(im, true)
 }
 
-func readContentPackForCleanup(mod Installed) cachedPack {
-	return readContentPackWithEnabled(mod, false)
+func readContentPackForCleanup(im Installed) cachedPack {
+	return readContentPackWithEnabled(im, false)
 }
 
-func readContentPackWithEnabled(mod Installed, requireEnabled bool) cachedPack {
-	if (requireEnabled && !mod.Enabled) || mod.Folder == "" || !isContentPatcherPack(mod) {
+func readContentPackWithEnabled(im Installed, requireEnabled bool) cachedPack {
+	if (requireEnabled && !im.Enabled) || im.Folder == "" || !isContentPatcherPack(im) {
 		return cachedPack{}
 	}
-	root := filepath.Clean(mod.Folder)
+	root := filepath.Clean(im.Folder)
 	if c, ok := packCache.Load(root); ok {
 		if _, fresh := packValidated.Load(root); fresh {
 			if got, ok := c.(cachedPack); ok {
@@ -926,9 +926,9 @@ func clearDiskPackPayload(root string) {
 
 func flushPackDiskCache(mods []Installed) {
 	present := map[string]bool{}
-	for _, mod := range mods {
-		if mod.Folder != "" {
-			present[filepath.Clean(mod.Folder)] = true
+	for _, im := range mods {
+		if im.Folder != "" {
+			present[filepath.Clean(im.Folder)] = true
 		}
 	}
 	packCache.Range(func(k, _ any) bool {
@@ -1048,8 +1048,8 @@ func readConfigSchema(root string) map[string]cpSchema {
 	return out
 }
 
-func isContentPatcherPack(mod Installed) bool {
-	return profile.SameID(mod.ContentPackFor, contentPatcherID)
+func isContentPatcherPack(im Installed) bool {
+	return mod.Equal(im.ContentPackForID(), contentPatcherID)
 }
 
 func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack *cachedPack) {
@@ -1623,7 +1623,7 @@ func hasModConditionState(arg string, raw json.RawMessage, present map[string]bo
 			return cpConditionUnknown
 		}
 		for _, id := range ids {
-			if present[strings.ToLower(id)] {
+			if present[mod.SMAPI(id).Fold()] {
 				return cpConditionTrue
 			}
 		}
@@ -1638,7 +1638,7 @@ func hasModConditionState(arg string, raw json.RawMessage, present map[string]bo
 	if len(ids) == 0 || !condValues(raw, &values) || len(values) != 1 {
 		return cpConditionUnknown
 	}
-	found := slices.ContainsFunc(ids, func(id string) bool { return present[strings.ToLower(id)] })
+	found := slices.ContainsFunc(ids, func(id string) bool { return present[mod.SMAPI(id).Fold()] })
 	switch strings.ToLower(values[0]) {
 	case "true":
 		if found {
@@ -1765,7 +1765,7 @@ func scalarValue(v json.RawMessage) (string, bool) {
 func note(ids []string, mentions map[string]bool) []string {
 	out := make([]string, len(ids))
 	for i, id := range ids {
-		out[i] = strings.ToLower(id)
+		out[i] = mod.SMAPI(id).Fold()
 		mentions[out[i]] = true
 	}
 	return out
@@ -1839,11 +1839,11 @@ func preloadContentPacks(mods []Installed) {
 	workers := max(1, runtime.GOMAXPROCS(0))
 	sem := make(chan struct{}, workers)
 	var wg sync.WaitGroup
-	for _, mod := range mods {
+	for _, im := range mods {
 		wg.Go(func() {
 			sem <- struct{}{}
 			defer func() { <-sem }()
-			_ = readContentPack(mod)
+			_ = readContentPack(im)
 		})
 	}
 	wg.Wait()
@@ -1919,25 +1919,25 @@ func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redu
 	defer dropCheckScratch()
 	preloadContentPacks(mods)
 	present := map[string]bool{}
-	for _, mod := range mods {
-		if mod.Enabled {
-			present[manifest.FoldID(mod.UniqueID)] = true
+	for _, im := range mods {
+		if im.Enabled {
+			present[im.ModID().Fold()] = true
 		}
 	}
 	at := map[string]map[string][]packHit{"load": {}, "edit": {}}
-	for _, mod := range mods {
-		pack := readContentPack(mod)
+	for _, im := range mods {
+		pack := readContentPack(im)
 		knows := maps.Clone(pack.mentions)
 		dependencies := map[string]bool{}
 		loadAfter := map[string]bool{}
-		for _, id := range mod.LoadAfter {
-			loadAfter[strings.ToLower(id)] = true
+		for _, id := range im.LoadAfter {
+			loadAfter[id.Fold()] = true
 		}
-		for _, d := range mod.Dependencies {
+		for _, d := range im.Dependencies {
 			if knows == nil {
 				knows = map[string]bool{}
 			}
-			id := manifest.FoldID(d.UniqueID)
+			id := d.ModID().Fold()
 			if loadAfter[id] {
 				continue
 			}
@@ -1946,18 +1946,18 @@ func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redu
 		}
 		config := map[string]string{}
 		if len(pack.schema) > 0 {
-			config = readPackConfig(mod.Folder)
+			config = readPackConfig(im.Folder)
 		}
 		for _, p := range pack.patches {
 			if p.kind == "other" || !p.when.holds(present) || !dynamicWhenHolds(p.when, pack.tokens, present, pack.schema, config) {
 				continue
 			}
 			hits := at[p.kind][p.target]
-			i := slices.IndexFunc(hits, func(h packHit) bool { return profile.SameID(h.id, mod.UniqueID) })
+			i := slices.IndexFunc(hits, func(h packHit) bool { return mod.Equal(h.id, im.ModID()) })
 			if i < 0 {
 				hits = append(hits, packHit{
-					id: mod.UniqueID, name: mod.Name, key: mod.Key, priority: p.priority, mentions: knows,
-					root: mod.Folder, tokens: pack.patches, present: present, schema: pack.schema, config: config,
+					id: im.ModID(), name: im.Name, key: im.Key, priority: p.priority, mentions: knows,
+					root: im.Folder, tokens: pack.patches, present: present, schema: pack.schema, config: config,
 					dependencies: dependencies, loadAfter: loadAfter,
 				})
 				i = len(hits) - 1
@@ -2063,7 +2063,7 @@ func clashingLoads(hits []packHit) (out []packHit) {
 // same asset at a higher priority: the author made it the fallback for when the other pack is absent.
 func fallbackLoad(h packHit, load cpPatch, other packHit, otherLoad cpPatch) bool {
 	rank := contentPatcherPriority("load", load.priority)
-	return rank < 0 && rank < contentPatcherPriority("load", otherLoad.priority) && h.mentions[strings.ToLower(other.id)]
+	return rank < 0 && rank < contentPatcherPriority("load", otherLoad.priority) && h.mentions[other.id.Fold()]
 }
 
 // clashing keeps the packs that share an overlapping edit of one target with a pack they were not built
@@ -2095,12 +2095,12 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool) {
 }
 
 func aware(a, b packHit) bool {
-	return (a.key != "" && a.key == b.key) || a.mentions[strings.ToLower(b.id)] || b.mentions[strings.ToLower(a.id)]
+	return (a.key != "" && a.key == b.key) || a.mentions[b.id.Fold()] || b.mentions[a.id.Fold()]
 }
 
 func conflictOf(kind, target string, hits []packHit) AssetConflict {
-	slices.SortFunc(hits, func(a, b packHit) int { return strings.Compare(strings.ToLower(a.id), strings.ToLower(b.id)) })
-	c := AssetConflict{Kind: kind, Target: target, PackIDs: make([]string, len(hits)), Names: make([]string, len(hits)), Keys: make([]string, len(hits))}
+	slices.SortFunc(hits, func(a, b packHit) int { return strings.Compare(a.id.Fold(), b.id.Fold()) })
+	c := AssetConflict{Kind: kind, Target: target, PackIDs: make([]mod.ID, len(hits)), Names: make([]string, len(hits)), Keys: make([]string, len(hits))}
 	for i, h := range hits {
 		c.PackIDs[i], c.Names[i], c.Keys[i] = h.id, h.name, h.key
 	}
@@ -2270,8 +2270,8 @@ func dependencyLoadWinner(hits []packHit, tied []int) (int, bool) {
 		return -1, false
 	}
 	left, right := tied[0], tied[1]
-	leftDepends := hits[left].dependencies[strings.ToLower(hits[right].id)]
-	rightDepends := hits[right].dependencies[strings.ToLower(hits[left].id)]
+	leftDepends := hits[left].dependencies[hits[right].id.Fold()]
+	rightDepends := hits[right].dependencies[hits[left].id.Fold()]
 	if leftDepends == rightDepends {
 		return -1, false
 	}
@@ -2291,7 +2291,7 @@ func harmlessLoads(hits []packHit, conflict AssetConflict) (bool, *SettingHint) 
 	if allLoadFilesIdentical(hits, conflict.Target) {
 		return true, nil
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return profile.SameID(h.id, conflict.WinnerID) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return mod.Equal(h.id, conflict.WinnerID) })
 	if winner < 0 {
 		for _, hit := range hits {
 			for _, load := range hit.loads {
@@ -2330,7 +2330,7 @@ func harmlessLoads(hits []packHit, conflict AssetConflict) (bool, *SettingHint) 
 			if !loadPriorityDecided(hits, conflict) {
 				return false, nil
 			}
-			if hitPriority("load", hit) > -1000 && !hit.mentions[strings.ToLower(hits[winner].id)] {
+			if hitPriority("load", hit) > -1000 && !hit.mentions[hits[winner].id.Fold()] {
 				return false, nil
 			}
 			if candidate := settingForDeadLoad(hit, load, hits[winner], conflict); candidate != nil {
@@ -2358,7 +2358,7 @@ func settingForDeadLoad(hit packHit, load cpPatch, winner packHit, conflict Asse
 			continue
 		}
 		return &SettingHint{
-			Key: hit.key, UniqueID: hit.id, Name: hit.name, Field: schema.key,
+			Key: hit.key, ID: hit.id, Name: hit.name, Field: schema.key,
 			Current: current, Suggested: []string{schema.defaultValue},
 			Description: "This setting has no effect because " + winner.name + " loads " + conflict.Target + " over it.",
 		}
@@ -2408,7 +2408,7 @@ func loadPriorityDecided(hits []packHit, conflict AssetConflict) bool {
 	if conflict.WinnerID == "" {
 		return false
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return profile.SameID(h.id, conflict.WinnerID) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return mod.Equal(h.id, conflict.WinnerID) })
 	if winner < 0 {
 		return false
 	}
@@ -2627,8 +2627,8 @@ func dismissToken(kind, target string) string {
 	return kind + "\t" + target
 }
 
-func settingChoiceToken(uniqueID, field, value string) string {
-	target := manifest.FoldID(uniqueID) + "\t" +
+func settingChoiceToken(uniqueID mod.ID, field, value string) string {
+	target := uniqueID.Fold() + "\t" +
 		strings.ToLower(strings.TrimSpace(field)) + "\t" +
 		strings.ToLower(strings.TrimSpace(value))
 	return dismissToken("setting-choice", target)
@@ -2645,7 +2645,7 @@ func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []Dismisse
 	out := []Broken{}
 	dismissed := []DismissedProblem{}
 	for _, b := range broken {
-		token := dismissToken("broken", manifest.FoldID(b.UniqueID))
+		token := dismissToken("broken", b.ID.Fold())
 		if (b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated") && skip[token] {
 			dismissed = append(dismissed, DismissedProblem{Token: token, Broken: &b})
 			continue
@@ -2666,7 +2666,7 @@ func hideDismissedListed(missing []Missing, tokens []string) ([]Missing, []Dismi
 	out := []Missing{}
 	dismissed := []DismissedProblem{}
 	for _, m := range missing {
-		token := dismissToken("listed", manifest.FoldID(m.UniqueID))
+		token := dismissToken("listed", m.ID.Fold())
 		if m.Listed && skip[token] {
 			dismissed = append(dismissed, DismissedProblem{Token: token, Missing: &m})
 			continue
@@ -2687,13 +2687,13 @@ func hideDismissedSettings(settings []SettingHint, tokens []string) ([]SettingHi
 	out := []SettingHint{}
 	dismissed := []DismissedProblem{}
 	for _, setting := range settings {
-		target := manifest.FoldID(setting.UniqueID) + "\t" + strings.ToLower(setting.Field)
+		target := setting.ID.Fold() + "\t" + strings.ToLower(setting.Field)
 		token := dismissToken("setting", target)
 		if skip[token] {
 			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
 			continue
 		}
-		token = settingChoiceToken(setting.UniqueID, setting.Field, setting.Current)
+		token = settingChoiceToken(setting.ID, setting.Field, setting.Current)
 		if skip[token] {
 			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
 			continue

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // shapedFields are the change fields whose whole effect editShapes and dataShapes describe.
@@ -58,12 +58,12 @@ func changeDoesMore(raw json.RawMessage, ch cpChange) bool {
 // is never shadowed.
 func shadowedPacks(mods []Installed, at map[string]map[string][]packHit) []Redundant {
 	var out []Redundant
-	for _, mod := range mods {
-		pack := readContentPack(mod)
+	for _, im := range mods {
+		pack := readContentPack(im)
 		if len(pack.patches) == 0 || pack.skips > 0 {
 			continue
 		}
-		by, ok := packShadowedBy(mod, pack, at)
+		by, ok := packShadowedBy(im, pack, at)
 		if !ok {
 			continue
 		}
@@ -72,7 +72,7 @@ func shadowedPacks(mods []Installed, at map[string]map[string][]packHit) []Redun
 			refs = append(refs, ModRef{Key: key, Name: by[key]})
 		}
 		slices.SortStableFunc(refs, func(a, b ModRef) int { return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)) })
-		out = append(out, Redundant{Kind: "shadowed", Key: mod.Key, UniqueID: mod.UniqueID, Name: mod.Name, By: refs})
+		out = append(out, Redundant{Kind: "shadowed", Key: im.Key, ID: im.ModID(), Name: im.Name, By: refs})
 	}
 	slices.SortFunc(out, func(a, b Redundant) int { return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)) })
 	return out
@@ -80,7 +80,7 @@ func shadowedPacks(mods []Installed, at map[string]map[string][]packHit) []Redun
 
 // packShadowedBy returns the packs, by key, that overwrite all of mod's active changes, or false when any of
 // them still shows or the pack has none.
-func packShadowedBy(mod Installed, pack cachedPack, at map[string]map[string][]packHit) (map[string]string, bool) {
+func packShadowedBy(im Installed, pack cachedPack, at map[string]map[string][]packHit) (map[string]string, bool) {
 	if slices.ContainsFunc(pack.patches, func(p cpPatch) bool { return p.kind == "other" && p.tokenName == "" }) {
 		return nil, false
 	}
@@ -93,12 +93,12 @@ func packShadowedBy(mod Installed, pack cachedPack, at map[string]map[string][]p
 		}
 		seen[p.kind+"\x00"+p.target] = true
 		hits := at[p.kind][p.target]
-		i := slices.IndexFunc(hits, func(h packHit) bool { return profile.SameID(h.id, mod.UniqueID) })
+		i := slices.IndexFunc(hits, func(h packHit) bool { return mod.Equal(h.id, im.ModID()) })
 		if i < 0 {
 			continue
 		}
 		self := hits[i]
-		if self.key != mod.Key {
+		if self.key != im.Key {
 			return nil, false
 		}
 		for _, l := range self.loads {
@@ -142,7 +142,7 @@ func loadWinner(l cpPatch, self packHit, hits []packHit) (int, bool) {
 			}
 		}
 	}
-	if count != 1 || best.when.conditional || hits[winner].key == self.key || profile.SameID(hits[winner].id, self.id) {
+	if count != 1 || best.when.conditional || hits[winner].key == self.key || mod.Equal(hits[winner].id, self.id) {
 		return -1, false
 	}
 	return winner, top > contentPatcherPriority("load", l.priority)
@@ -171,10 +171,10 @@ func editCoveredBy(e cpPatch, self packHit, hits []packHit) ([]int, bool) {
 	idx := coverIndex{keys: map[string]int{}, tiles: map[tileAt]int{}, rects: map[string][]ownedRect{}}
 	selfRank := contentPatcherPriority("edit", e.priority)
 	for i, h := range hits {
-		if h.key == self.key || profile.SameID(h.id, self.id) {
+		if h.key == self.key || mod.Equal(h.id, self.id) {
 			continue
 		}
-		later := h.loadAfter[strings.ToLower(self.id)] || h.dependencies[strings.ToLower(self.id)]
+		later := h.loadAfter[self.id.Fold()] || h.dependencies[self.id.Fold()]
 		for _, c := range h.edits {
 			rank := contentPatcherPriority("edit", c.priority)
 			if rank < selfRank || (rank == selfRank && !later) {

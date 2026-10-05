@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -12,7 +14,7 @@ import (
 // Compat is one profile mod's SMAPI compatibility-list row. It is informational and is not counted.
 type Compat struct {
 	Key           string `json:"key"`
-	UniqueID      string `json:"uniqueId"`
+	ID            mod.ID `json:"id"`
 	Name          string `json:"name"`
 	Status        string `json:"status"`
 	Summary       string `json:"summary"`
@@ -70,20 +72,20 @@ func matchCompat(idx meta.CompatIndex, mods []Installed, skipOK bool) []Compat {
 	out := []Compat{}
 	seen := map[string]bool{}
 	for _, m := range mods {
-		e, ok := idx.Lookup(m.UniqueID, nexusIDOf(m))
+		e, ok := idx.Lookup(m.ModID().Local(), nexusIDOf(m))
 		if !ok {
 			continue
 		}
 		if skipOK && e.Status == meta.StatusOK {
 			continue
 		}
-		key := strings.ToLower(m.Key) + "\x00" + manifest.FoldID(m.UniqueID)
+		key := strings.ToLower(m.Key) + "\x00" + m.ModID().Fold()
 		if seen[key] {
 			continue
 		}
 		seen[key] = true
 		out = append(out, Compat{
-			Key: m.Key, UniqueID: m.UniqueID, Name: m.Name,
+			Key: m.Key, ID: m.ModID(), Name: m.Name,
 			Status: e.Status, Summary: e.Summary, BrokeIn: e.BrokeIn,
 			UnofficialURL: e.UnofficialURL, Replacement: e.Replacement,
 		})
