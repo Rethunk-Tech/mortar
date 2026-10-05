@@ -217,19 +217,28 @@ func (p Profile) Parse(_ context.Context, in Input) (Draft, error) {
 	if id, ok := p.lookup(d.Game); ok {
 		d.Game = id
 	}
-	cfg := filepath.Join(in.Path, "BepInEx", "config")
+	if d.Configs, err = bepinexConfigs(in.Path); err != nil {
+		return Draft{}, err
+	}
+	return d, nil
+}
+
+// bepinexConfigs reads the files directly in a profile folder's BepInEx/config.
+func bepinexConfigs(profileDir string) ([]File, error) {
+	cfg := filepath.Join(profileDir, "BepInEx", "config")
 	entries, _ := os.ReadDir(cfg)
+	var out []File
 	for _, e := range entries {
 		if !e.Type().IsRegular() {
 			continue
 		}
 		b, err := readCapped(filepath.Join(cfg, e.Name()), maxFile)
 		if err != nil {
-			return Draft{}, err
+			return nil, err
 		}
-		d.Configs = append(d.Configs, File{Path: "config/" + e.Name(), Data: b})
+		out = append(out, File{Path: "config/" + e.Name(), Data: b})
 	}
-	return d, nil
+	return out, nil
 }
 
 // DataDirs lists the r2modman data folders that exist on this machine: r2modmanPlus-local, and the Thunderstore Mod

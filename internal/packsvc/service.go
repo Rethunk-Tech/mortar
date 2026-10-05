@@ -75,35 +75,59 @@ type Result struct {
 
 func (s *Service) read(ctx context.Context, src Source) (pack.Draft, error) {
 	return pack.Read(ctx, pack.Input{Path: src.Path, Text: src.Text},
-		s.Code, pack.Profile{GameByFolder: game.ByR2modmanFolder}, pack.Modpack{})
+		s.Code, pack.Profile{GameByFolder: game.ByR2modmanFolder}, pack.Gale{GameBySlug: gameByThunderstoreKey}, pack.Modpack{})
 }
 
-// LocalProfile is a profile folder of r2modman or the Thunderstore Mod Manager on this computer.
+// gameByThunderstoreKey is the catalog game whose Thunderstore community key is slug, which is what Gale names a game.
+func gameByThunderstoreKey(slug string) (string, bool) {
+	for _, g := range game.Catalog() {
+		if src, ok := g.Source("thunderstore"); ok && src.Key == slug {
+			return g.ID, true
+		}
+	}
+	return "", false
+}
+
+// LocalProfile is a profile folder of r2modman, the Thunderstore Mod Manager or Gale on this computer.
 type LocalProfile struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
 }
 
-// LocalProfiles lists the game's profiles in the r2modman data folders found on this computer: the folders below
-// <data>/<the game's r2modman folder>/profiles that hold a mods.yml. Pass a profile's Path as Source.Path.
+// LocalProfiles lists the game's profiles in the data folders of r2modman and Gale found on this computer: the
+// folders below <data>/<the game's r2modman folder or Thunderstore community key>/profiles that hold a mods.yml or a
+// profile.json. Pass a profile's Path as Source.Path.
 func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
 	info, ok := components.BundledGame(gameID)
-	if !ok || info.R2modmanFolder == "" {
+	if !ok {
 		return []LocalProfile{}, nil
 	}
 	out := []LocalProfile{}
-	for _, data := range pack.DataDirs() {
-		root := filepath.Join(data, info.R2modmanFolder, "profiles")
+	scan := func(data, folder string, isProfile func(string) bool) {
+		if folder == "" {
+			return
+		}
+		root := filepath.Join(data, folder, "profiles")
 		entries, err := os.ReadDir(root)
 		if err != nil {
-			continue
+			return
 		}
 		for _, e := range entries {
 			dir := filepath.Join(root, e.Name())
-			if pack.IsProfileFolder(dir) {
+			if isProfile(dir) {
 				out = append(out, LocalProfile{Name: e.Name(), Path: dir})
 			}
 		}
+	}
+	for _, data := range pack.DataDirs() {
+		scan(data, info.R2modmanFolder, pack.IsProfileFolder)
+	}
+	key := ""
+	if src, ok := info.Source("thunderstore"); ok {
+		key = src.Key
+	}
+	for _, data := range pack.GaleDataDirs() {
+		scan(data, key, pack.IsGaleProfileFolder)
 	}
 	return out, nil
 }
