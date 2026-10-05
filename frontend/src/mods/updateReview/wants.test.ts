@@ -28,3 +28,15 @@ test('an update also asks for newer versions of the optional files laid over it'
     ['nexus-7-2', 3],
   ])
 })
+
+test('a Modrinth update asks that site for the exact version it found', () => {
+  const u = {
+    key: 'k',
+    name: 'Sodium',
+    version: '2.0',
+    package: 'AANobbMI',
+    packageSource: 'modrinth',
+    packageVersion: 'v2id',
+  } as Update
+  expect(updateWant(u)).toMatchObject({ package: 'AANobbMI', source: 'modrinth', version: 'v2id' })
+})

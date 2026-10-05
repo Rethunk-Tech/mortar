@@ -11,12 +11,13 @@ import { sameId } from '../lookup.ts'
 import { isFull, loadDetails, useNexusDetails } from '../nexusDetails.ts'
 import { optionalUpdateWants, useOptionalSkips } from '../optionalFiles.ts'
 
-/** The queue request for an update. A Nexus update of a mod with a GitHub repo tries that repo's release at the same
+/** The queue request for an update. A Modrinth update names its exact version, since a version number can repeat
+ * across loaders. A Nexus update of a mod with a GitHub repo tries that repo's release at the same
  * version first, since a free Nexus account must click for every file. */
 export const updateWant = (u: Update): Want => ({
   kind: 'update',
   ...(u.package
-    ? { package: u.package }
+    ? { package: u.package, ...(u.packageSource ? { source: u.packageSource } : {}) }
     : u.githubRepo
       ? { repo: u.githubRepo }
       : {
@@ -24,7 +25,7 @@ export const updateWant = (u: Update): Want => ({
           ...(u.githubFallback ? { fallbackRepo: u.githubFallback, fallbackId: u.id } : {}),
         }),
   name: u.name,
-  version: u.version,
+  version: u.packageVersion || u.version,
   currentKey: u.key,
 })
 

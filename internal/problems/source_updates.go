@@ -54,6 +54,9 @@ func (s *Service) sourceUpdates(ctx context.Context, gameID string, mods []frame
 // turn: a source that is down or out of quota is not asked again for every mod.
 func (s *Service) searchUpdates(ctx context.Context, gameID string, src components.GameSource, mods []framework.Mod, have []Update) ([]Update, error) {
 	entry, ok := source.Get(src.ID)
+	if checker, canCheck := entry.Source.(source.UpdateChecker); ok && canCheck {
+		return s.checkedUpdates(ctx, src, entry.Source, checker, mods, have)
+	}
 	searcher, canSearch := entry.Source.(source.Searcher)
 	// GitHub and Nexus mods get their updates from SMAPI's API through their update keys (checkUpdates). A search per
 	// installed mod would repeat that answer at one request each: hundreds per check against Nexus's hourly quota, and
@@ -111,6 +114,49 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 		}
 	}
 	s.markDependencyChanges(ctx, src, entry.Source, out, installedRefs)
+	return out, nil
+}
+
+// checkedUpdates is searchUpdates for a source that checks every installed file in one request: the mods installed from
+// it with a known file digest.
+func (s *Service) checkedUpdates(ctx context.Context, src components.GameSource, named source.Source, checker source.UpdateChecker, mods []framework.Mod, have []Update) ([]Update, error) {
+	var asked []framework.Mod
+	var files []source.InstalledFile
+	for _, x := range mods {
+		if x.SourceKind != src.ID || x.SourceDigest == "" || x.IgnoreUpdates {
+			continue
+		}
+		asked = append(asked, x)
+		files = append(files, source.InstalledFile{ID: x.SourceName, Version: cmp.Or(x.SourceVersion, x.Version), Digest: x.SourceDigest})
+	}
+	if len(files) == 0 {
+		return nil, nil
+	}
+	if s.Throttle != nil {
+		release, err := s.Throttle(ctx, src.ID)
+		if err != nil {
+			return nil, err
+		}
+		defer release()
+	}
+	latest, err := checker.Latest(ctx, src, "", files)
+	if err != nil {
+		return nil, err
+	}
+	var out []Update
+	var installedRefs []source.VersionRef
+	for i, x := range asked {
+		l, ok := latest[x.SourceDigest]
+		if !ok || l.Version == files[i].Version || coveredBy(append(slices.Clone(have), out...), x.Key, l.Version) {
+			continue
+		}
+		installedRefs = append(installedRefs, source.VersionRef{ID: l.ProjectID, Version: files[i].Version})
+		out = append(out, Update{
+			Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: files[i].Version, Version: l.Version, URL: l.URL,
+			Source: named.Name(), Package: l.ProjectID, PackageSource: src.ID, PackageVersion: l.VersionID,
+		})
+	}
+	s.markDependencyChanges(ctx, src, named, out, installedRefs)
 	return out, nil
 }
 

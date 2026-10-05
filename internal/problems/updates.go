@@ -59,8 +59,11 @@ type Update struct {
 	GitHubFallback string `json:"githubFallback,omitempty"`
 	Unofficial     bool   `json:"unofficial"`
 	Source         string `json:"source"`
-	// Package is the Thunderstore "Namespace-Name" the update installs.
-	Package string `json:"package,omitempty"`
+	// Package is the Thunderstore "Namespace-Name" or the PackageSource project the update installs, at
+	// PackageVersion when the site names versions apart from their numbers.
+	Package        string `json:"package,omitempty"`
+	PackageSource  string `json:"packageSource,omitempty"`
+	PackageVersion string `json:"packageVersion,omitempty"`
 	// Switch marks an update from a source other than the one the mod was installed from. It is offered, never
 	// applied on its own.
 	Switch bool `json:"switch,omitempty"`

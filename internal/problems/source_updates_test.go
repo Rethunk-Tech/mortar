@@ -2,13 +2,16 @@ package problems
 
 import (
 	"context"
+	"reflect"
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
 	nexussource "github.com/Rethunk-Tech/mortar/internal/source/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
@@ -138,5 +141,67 @@ func TestUpdatesNameTheDependenciesTheNewVersionChanges(t *testing.T) {
 	}
 	if want := []string{"Old-Gone"}; !slices.Equal(got[0].RemovedDeps, want) {
 		t.Errorf("removed = %v, want %v", got[0].RemovedDeps, want)
+	}
+}
+
+type fakeChecker struct {
+	asked   *[][]source.InstalledFile
+	filters *components.GameSource
+	latest  map[string]source.Latest
+	deps    map[source.VersionRef][]string
+}
+
+func (fakeChecker) ID() string              { return profile.KindModrinth }
+func (fakeChecker) Name() string            { return "Modrinth" }
+func (fakeChecker) Modes() []source.Acquire { return nil }
+func (f fakeChecker) Latest(_ context.Context, src components.GameSource, _ string, files []source.InstalledFile) (map[string]source.Latest, error) {
+	*f.asked = append(*f.asked, files)
+	*f.filters = src
+	return f.latest, nil
+}
+
+func (f fakeChecker) Dependencies(context.Context, string, string, []source.VersionRef) (map[source.VersionRef][]string, error) {
+	return f.deps, nil
+}
+
+func TestModrinthUpdatesAreCheckedInOneBatch(t *testing.T) {
+	var asked [][]source.InstalledFile
+	var filters components.GameSource
+	source.Register(fakeChecker{
+		asked: &asked, filters: &filters,
+		latest: map[string]source.Latest{
+			"sha512:aa": {ProjectID: "AANobbMI", Version: "0.6.0", VersionID: "SoD3", URL: "https://modrinth.com/project/AANobbMI/version/SoD3"},
+		},
+		deps: map[source.VersionRef][]string{
+			{ID: "AANobbMI", Version: "0.5.0"}: {"P1", "P8"},
+			{ID: "AANobbMI", Version: "0.6.0"}: {"P1", "P9"},
+		},
+	})
+	t.Cleanup(func() { source.Register(modrinth.Driver{}) })
+	mk := func(key, digest, version string) framework.Mod {
+		m := framework.Mod{Key: key, SourceKind: profile.KindModrinth, SourceName: key, SourceVersion: version, SourceDigest: digest}
+		m.Name, m.Version = key, version
+		return m
+	}
+	turns := 0
+	s := &Service{Throttle: func(context.Context, string) (func(), error) { turns++; return func() {}, nil }}
+	// No shipped game lists Modrinth yet, so the catalog entry is the test's own.
+	src := components.GameSource{ID: profile.KindModrinth, Loaders: []string{"fabric"}, GameVersions: []string{"1.21"}}
+	got, err := s.searchUpdates(context.Background(), "test-game", src, []framework.Mod{
+		mk("sodium", "sha512:aa", "0.5.0"), mk("lithium", "sha512:bb", "1.0"), mk("nodigest", "", "1.0"),
+	}, nil)
+	if err != nil || len(asked) != 1 || len(asked[0]) != 2 || turns != 1 {
+		t.Fatalf("err %v, asked %v, turns %d", err, asked, turns)
+	}
+	if !slices.Equal(filters.Loaders, []string{"fabric"}) || !slices.Equal(filters.GameVersions, []string{"1.21"}) {
+		t.Errorf("filters = %+v", filters)
+	}
+	want := Update{
+		Key: "sodium", ID: mk("sodium", "", "").ModID(), Name: "sodium", Installed: "0.5.0", Version: "0.6.0", URL: "https://modrinth.com/project/AANobbMI/version/SoD3",
+		Source: "Modrinth", Package: "AANobbMI", PackageSource: profile.KindModrinth, PackageVersion: "SoD3",
+		AddedDeps: []string{"P9"}, RemovedDeps: []string{"P8"},
+	}
+	if len(got) != 1 || !reflect.DeepEqual(got[0], want) {
+		t.Fatalf("updates = %+v, want %+v", got, want)
 	}
 }
