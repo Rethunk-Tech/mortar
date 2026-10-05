@@ -117,6 +117,12 @@ start() {
   mkdir -p "$ROOT/bin"
   printf '#!/bin/sh\necho "self-test sandbox: Steam is never started from here" >&2\nexit 1\n' >"$ROOT/bin/steam"
   chmod +x "$ROOT/bin/steam"
+  # Opening a mod page or folder from the sandbox would land in the maintainer's own browser or file manager.
+  local opener
+  for opener in xdg-open x-www-browser www-browser gio; do
+    printf '#!/bin/sh\necho "self-test sandbox: not opening $*" >&2\nexit 0\n' >"$ROOT/bin/$opener"
+    chmod +x "$ROOT/bin/$opener"
+  done
   (cd "$ROOT" && env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" PATH="$ROOT/bin:$PATH" \
     WAILS_SERVER_HOST=127.0.0.1 WAILS_SERVER_PORT="$PORT" nohup ./mortar-server >"$ROOT/server.log" 2>&1 &)
   for _ in $(seq 1 30); do
