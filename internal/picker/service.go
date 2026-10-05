@@ -34,6 +34,17 @@ func (s *Service) PickImage(title string) (string, error) {
 	return d.PromptForSingleSelection()
 }
 
+// PickPackFile asks for an r2modman profile export (.r2z) or a Thunderstore modpack zip and returns its path, or "" when
+// the dialog is cancelled.
+func (s *Service) PickPackFile() (string, error) {
+	d := s.App.Dialog.OpenFile().
+		SetTitle("Open a profile export").
+		AddFilter("r2modman or Gale export (.r2z, .zip)", "*.r2z;*.zip").
+		AddFilter("All files", "*")
+	d.AttachToWindow(s.App.Window.Current())
+	return d.PromptForSingleSelection()
+}
+
 // SaveFile asks where to write contents and writes them. It returns "" when the dialog is cancelled.
 func (s *Service) SaveFile(title, filename, contents string) (string, error) {
 	return SaveFile(s.App, title, filename, "Text files", "*.txt", []byte(contents))

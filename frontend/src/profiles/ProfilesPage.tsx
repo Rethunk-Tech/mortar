@@ -55,7 +55,9 @@ import { ExternalImportMenuItems, ExternalImportProfileDialog } from './External
 import { useExternalImportSources } from './externalImportSources.ts'
 import { findModInProfiles, onFindAllFocus, openModInProfile } from './findMod.ts'
 import { GameModsDialog } from './GameModsDialog.tsx'
+import { PackImportDialog } from './PackImportDialog.tsx'
 import { ProfileRow } from './ProfileRow.tsx'
+import { hasThunderstore } from './packImport.ts'
 import { useProfiles } from './store.ts'
 
 function TrashRow({ item }: { item: TrashItem }) {
@@ -306,6 +308,8 @@ function ProfilesHeader({
   const externalSources = useExternalImportSources(game)
   const [importAnchor, setImportAnchor] = useState<HTMLElement | null>(null)
   const [externalSource, setExternalSource] = useState<SourceInfo | null>(null)
+  const [packImport, setPackImport] = useState(false)
+  const thunderstore = hasThunderstore(useProfiles((s) => s.game))
   const closeImportMenu = () => setImportAnchor(null)
   return (
     <Box
@@ -376,7 +380,17 @@ function ProfilesHeader({
             onRestoreZip()
           }}
         />
-        {externalSources.length > 0 ? <Divider /> : null}
+        {externalSources.length > 0 || thunderstore ? <Divider /> : null}
+        {thunderstore ? (
+          <MenuAction
+            icon={<Download size={16} aria-hidden={true} />}
+            label={t`From r2modman / Thunderstore…`}
+            onClick={() => {
+              closeImportMenu()
+              setPackImport(true)
+            }}
+          />
+        ) : null}
         <ExternalImportMenuItems
           sources={externalSources}
           onPick={(source) => {
@@ -385,6 +399,7 @@ function ProfilesHeader({
           }}
         />
       </Menu>
+      <PackImportDialog open={packImport} game={game} onClose={() => setPackImport(false)} />
       <ExternalImportProfileDialog
         game={game}
         source={externalSource}
