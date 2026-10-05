@@ -16,9 +16,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-// OverwriteDir is the profile's folder for files the game wrote outside the profile: <profile>/overwrite.
-const OverwriteDir = "overwrite"
-
 // placedFile lists, in the profile's root, the files SyncPackages put there, so it can take them away again.
 const placedFile = ".mortar-packages.json"
 
