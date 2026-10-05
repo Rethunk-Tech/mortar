@@ -29,12 +29,6 @@ const (
 // preloader is the file BepInEx takes its root from, relative to the profile root.
 var preloader = filepath.Join("BepInEx", "core", "BepInEx.Preloader.dll")
 
-// Loader is the BepInEx 5 loader.
-type Loader struct{}
-
-// NeedsWinHTTPOverride is true: Doorstop injects through winhttp.dll, which Wine only loads when the prefix overrides it.
-func (Loader) NeedsWinHTTPOverride() bool { return true }
-
 // Installed is what InstallPack found in the pack.
 type Installed struct {
 	// Version is the pack's version (the Thunderstore manifest's version_number, which tracks BepInEx's own).
@@ -224,8 +218,11 @@ func nowFiletime() int64 { return time.Now().Unix() }
 // patchers, monomod and core go in a folder named for the package under BepInEx/, config is flat, and a loose DLL
 // is a plugin. A BepInEx/ prefix on the path is optional.
 func Route(relPath, pkg string) string {
+	if pkg == "" || strings.ContainsAny(pkg, `/\:`) || pkg == "." || pkg == ".." {
+		return ""
+	}
 	p := path.Clean(strings.ReplaceAll(relPath, `\`, "/"))
-	if p == "." || strings.HasPrefix(p, "/") || p == ".." || strings.HasPrefix(p, "../") {
+	if p == "." || strings.HasPrefix(p, "/") || p == ".." || strings.HasPrefix(p, "../") || strings.Contains(p, ":") {
 		return ""
 	}
 	if first, rest, ok := strings.Cut(p, "/"); ok && strings.EqualFold(first, "BepInEx") {

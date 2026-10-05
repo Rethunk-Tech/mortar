@@ -84,6 +84,7 @@ linters:
         - stdlib
         - github.com/Rethunk-Tech/mortar/internal/game.Game
         - github.com/Rethunk-Tech/mortar/internal/host.Host
+        - github.com/Rethunk-Tech/mortar/internal/loader.Loader
     # canon go-golangci-lint-00011
     gomoddirectives:
       replace-local: true

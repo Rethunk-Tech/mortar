@@ -3,6 +3,8 @@ package bepinex5
 import (
 	"regexp"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
 // Kinds of Finding.
@@ -16,17 +18,7 @@ const (
 )
 
 // Finding is one load failure read from a log.
-type Finding struct {
-	Kind string
-	// Plugin is the plugin as the log names it: "Name Version" for BepInEx's own messages, the code's root namespace
-	// for exceptions.
-	Plugin  string
-	Message string
-	// Line is the 1-based line in the log the finding came from.
-	Line int
-	// Source is the log: "LogOutput.log" or "Player.log".
-	Source string
-}
+type Finding = loader.Finding
 
 // BepInEx's messages are written by BaseChainloader and AssemblyPatcher (BepInEx 5.4.x); the dependency messages have
 // a trailing "Install the listed plugin(s)" sentence from 5.4.22 on.
