@@ -259,8 +259,10 @@ func pairKeys(code string, shared, transcript []byte) (authKey, peerKey []byte, 
 	return authKey, peerKey, err
 }
 
-func pairTranscript(a, b []byte, joinerID, hostID string) []byte {
-	return slices.Concat([]byte(pairProtocolInfo), []byte{0}, a, b, []byte(joinerID), []byte{0}, []byte(hostID))
+// pairTranscript binds both public keys, ids and display names, so a relay cannot change the name a computer is
+// stored under without failing the proofs.
+func pairTranscript(a, b []byte, joinerID, joinerName, hostID, hostName string) []byte {
+	return slices.Concat([]byte(pairProtocolInfo), []byte{0}, a, b, []byte(joinerID), []byte{0}, []byte(joinerName), []byte{0}, []byte(hostID), []byte{0}, []byte(hostName))
 }
 
 func pairProof(authKey []byte, role string, transcript, shared []byte) []byte {
@@ -393,7 +395,7 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid pairing request", http.StatusBadRequest)
 		return
 	}
-	transcript := pairTranscript(sess.a, sess.b.PublicKey().Bytes(), sess.peerID, hostID)
+	transcript := pairTranscript(sess.a, sess.b.PublicKey().Bytes(), sess.peerID, sess.name, hostID, cleanName(s.deviceName()))
 	authKey, peerKey, err := pairKeys(code, shared, transcript)
 	if err != nil {
 		http.Error(w, "could not finish pairing", http.StatusInternalServerError)
@@ -469,7 +471,7 @@ func (s *Service) Pair(ctx context.Context, peerID, code string) error {
 	if err != nil {
 		return errors.New("the other computer sent an invalid pairing reply")
 	}
-	transcript := pairTranscript(aPub, bPub, selfID, begin.ID)
+	transcript := pairTranscript(aPub, bPub, selfID, cleanName(s.deviceName()), begin.ID, cleanName(begin.Name))
 	authKey, peerKey, err := pairKeys(code, shared, transcript)
 	if err != nil {
 		return err

@@ -506,3 +506,15 @@ func TestPendingKeepsSharesUntilDismissed(t *testing.T) {
 		t.Fatal("the window's Inbox read still drains")
 	}
 }
+
+func TestPairTranscriptBindsBothNames(t *testing.T) {
+	base := pairTranscript([]byte("a"), []byte("b"), "j", "Joiner", "h", "Host")
+	for _, other := range [][]byte{
+		pairTranscript([]byte("a"), []byte("b"), "j", "Eve", "h", "Host"),
+		pairTranscript([]byte("a"), []byte("b"), "j", "Joiner", "h", "Eve"),
+	} {
+		if bytes.Equal(base, other) {
+			t.Fatal("a device name is outside the transcript")
+		}
+	}
+}
