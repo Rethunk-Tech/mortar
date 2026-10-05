@@ -1509,17 +1509,21 @@ func resetSettings(svc *settings.Service, key, game string) error {
 	return nil
 }
 
+// adviceOnly is the save-gap check's answer when it is advice for the player: it needs the mod dataset from the
+// network, so a failed lookup says nothing instead of refusing to launch.
+func adviceOnly(save savessvc.Fit, gap bool, err error) (savessvc.Fit, bool) {
+	if err != nil {
+		return savessvc.Fit{}, false
+	}
+	return save, gap
+}
+
 func (s *Services) launch(ctx context.Context, gameID, id, installID, preset string, force bool) (launchsvc.Status, error) {
 	update, err := s.Problems.UpdateWarning(ctx, gameID, id)
 	if err != nil {
 		return launchsvc.Status{}, err
 	}
-	// The save check is advice and needs the mod dataset from the network: offline it says nothing instead of refusing
-	// to launch.
-	save, gap, err := s.Saves.LastSaveGap(ctx, gameID, id)
-	if err != nil {
-		save, gap = savessvc.Fit{}, false
-	}
+	save, gap := adviceOnly(s.Saves.LastSaveGap(ctx, gameID, id))
 	if !force && (update.Changed || gap) {
 		return launchsvc.Status{}, launchWarningError{game: gameName(gameID), update: update, save: save, gap: gap}
 	}
