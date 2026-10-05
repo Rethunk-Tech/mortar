@@ -6,16 +6,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-type groupRef struct {
-	ModID  int    `json:"modId,omitempty"`
-	FileID int    `json:"fileId,omitempty"`
-	GitHub string `json:"github,omitempty"`
-}
-
 // FileGroup is a profile group in a .mortar file, named by entry identity rather than store keys.
 type FileGroup struct {
-	Name string     `json:"name"`
-	Refs []groupRef `json:"refs,omitempty"`
+	Name string `json:"name"`
+	Refs []Ref  `json:"refs,omitempty"`
 }
 
 func collectFileGroups(p profile.Profile) []FileGroup {
@@ -38,20 +32,20 @@ func collectFileGroups(p profile.Profile) []FileGroup {
 	return out
 }
 
-func identityOf(e profile.Entry) (groupRef, bool) {
+func identityOf(e profile.Entry) (Ref, bool) {
 	switch e.Source.Kind {
 	case profile.KindNexus:
 		if e.Source.ModID <= 0 || e.Source.FileID <= 0 {
-			return groupRef{}, false
+			return Ref{}, false
 		}
-		return groupRef{ModID: e.Source.ModID, FileID: e.Source.FileID}, true
+		return Ref{ModID: e.Source.ModID, FileID: e.Source.FileID}, true
 	case profile.KindGitHub:
 		if e.Source.Repo == "" || e.Source.Tag == "" || e.Source.Asset == "" {
-			return groupRef{}, false
+			return Ref{}, false
 		}
-		return groupRef{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}, true
+		return Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}, true
 	default:
-		return groupRef{}, false
+		return Ref{}, false
 	}
 }
 
@@ -59,9 +53,8 @@ func identityOf(e profile.Entry) (groupRef, bool) {
 func ResolveGroupKeys(p profile.Profile, g FileGroup) []string {
 	var keys []string
 	for _, id := range g.Refs {
-		r := Ref{ModID: id.ModID, FileID: id.FileID, GitHub: id.GitHub}
 		for _, e := range p.Entries {
-			if r.MatchesEntry(e) && !slices.Contains(keys, e.Key) {
+			if id.MatchesEntry(e) && !slices.Contains(keys, e.Key) {
 				keys = append(keys, e.Key)
 			}
 		}

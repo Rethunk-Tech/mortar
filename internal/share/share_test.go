@@ -411,7 +411,8 @@ func TestGroupsFileRoundTrip(t *testing.T) {
 	p := profile.Profile{Name: "G", Entries: []profile.Entry{
 		nexus("one", 541, 1000),
 		nexus("two", 2, 3),
-	}, Groups: []profile.Group{{Name: "Core", Keys: []string{"one", "two"}}}}
+		{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"}},
+	}, Groups: []profile.Group{{Name: "Core", Keys: []string{"one", "two", "gh"}}}}
 	var buf bytes.Buffer
 	if _, err := Write(&buf, "stardew", p, t.TempDir()); err != nil {
 		t.Fatal(err)
@@ -420,15 +421,16 @@ func TestGroupsFileRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(pv.Groups) != 1 || pv.Groups[0].Name != "Core" || len(pv.Groups[0].Refs) != 2 {
+	if len(pv.Groups) != 1 || pv.Groups[0].Name != "Core" || len(pv.Groups[0].Refs) != 3 || pv.Groups[0].Refs[2].GitHub != "o/r@v1/a.zip" {
 		t.Fatalf("groups = %+v", pv.Groups)
 	}
 	imported := profile.Profile{Entries: []profile.Entry{
 		nexus("alpha", 541, 1000),
 		nexus("beta", 2, 3),
+		{Key: "gamma", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"}},
 	}}
 	keys := ResolveGroupKeys(imported, pv.Groups[0])
-	if !slices.Equal(keys, []string{"alpha", "beta"}) {
+	if !slices.Equal(keys, []string{"alpha", "beta", "gamma"}) {
 		t.Fatalf("resolved = %v", keys)
 	}
 	var omit bytes.Buffer

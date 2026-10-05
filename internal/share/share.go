@@ -159,6 +159,13 @@ func (r Ref) MarshalJSON() ([]byte, error) {
 	return json.Marshal(w)
 }
 
+// UnmarshalJSON reads the wire object, so a ref read back from JSON passes the same checks as one in a link.
+func (r *Ref) UnmarshalJSON(raw []byte) error {
+	v, err := parseRef(raw)
+	*r = v
+	return err
+}
+
 func parseRef(raw json.RawMessage) (Ref, error) {
 	var w wireRef
 	if err := json.Unmarshal(raw, &w); err != nil {
