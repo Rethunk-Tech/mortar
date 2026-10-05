@@ -40,6 +40,13 @@ func vanillaPlan(goos, dir string) *launchplan.Plan {
 	return p
 }
 
+// injectedPlan is the plan an injecting loader (BepInEx) contributes: arguments only, no executable.
+func injectedPlan(args ...string) *launchplan.Plan {
+	p := launchplan.New(launchplan.ModeProfile)
+	p.AddArgs(args...)
+	return p
+}
+
 func TestCommand(t *testing.T) {
 	st := Starter{DataDir: t.TempDir(), FlatpakShow: func() (string, error) { return "", nil }}
 	mods := filepath.FromSlash("/data/profiles/stardew/abc/mods")
@@ -168,9 +175,21 @@ func TestDirectCommandIncludesPrefixAndEnvironment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := []string{"gamemoderun", "mangohud", "--skip-terminal", "--", "--mods-path", filepath.FromSlash("/data/profile/mods")}
-	if !slices.Equal(cmd.Args, want) || !slices.Equal(cmd.Env, []string{"MORTAR_TEST=1"}) {
-		t.Fatalf("args = %q, env = %q", cmd.Args, cmd.Env)
+	want := []string{"mangohud", filepath.Join(dir, "StardewValley"), "--skip-terminal", "--", "--mods-path", filepath.FromSlash("/data/profile/mods")}
+	if cmd.Name != "gamemoderun" || !slices.Equal(cmd.Args, want) || !slices.Equal(cmd.Env, []string{"MORTAR_TEST=1"}) {
+		t.Fatalf("name = %q, args = %q, env = %q", cmd.Name, cmd.Args, cmd.Env)
+	}
+}
+
+func TestDirectCommandStartsTheGameExecutableWhenTheLoaderNamesNone(t *testing.T) {
+	dir := filepath.FromSlash("/games/Lethal Company")
+	plan := injectedPlan("--doorstop-enabled", "true")
+	cmd, err := Starter{}.Command("linux", Install{Game: "lethal-company", Dir: dir}, plan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cmd.Name != filepath.Join(dir, "Lethal Company.exe") || !slices.Equal(cmd.Args, []string{"--doorstop-enabled", "true"}) {
+		t.Fatalf("name = %q, args = %q", cmd.Name, cmd.Args)
 	}
 }
 

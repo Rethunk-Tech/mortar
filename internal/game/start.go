@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"slices"
 	"sort"
+	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -106,6 +107,10 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 		if exe == "" {
 			exe = plan.Entry
 		}
+		// A loader that injects into the game (BepInEx) names no executable of its own: the game's is the start.
+		if info, ok := catalogGame(inst.Game); ok && exe == "" && strings.HasSuffix(strings.ToLower(info.Marker), ".exe") {
+			exe = filepath.Join(inst.Dir, info.Marker)
+		}
 		if exe == "" {
 			return launch.Command{}, errors.New("the game has no executable to start")
 		}
@@ -117,10 +122,11 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 			}
 			return launch.Command{Dir: inst.Dir, Name: argv[0], Args: argv[1:], Env: environ(plan.Env)}, nil
 		}
-		if goos != "windows" {
-			args = append(slices.Clone(plan.Prefix), args...)
+		name := exe
+		if goos != "windows" && len(plan.Prefix) > 0 {
+			name, args = plan.Prefix[0], append(slices.Clone(plan.Prefix[1:]), append([]string{exe}, args...)...)
 		}
-		return launch.Command{Dir: inst.Dir, Name: exe, Args: args, Env: environ(plan.Env)}, nil
+		return launch.Command{Dir: inst.Dir, Name: name, Args: args, Env: environ(plan.Env)}, nil
 	}
 	info, _ := catalogGame(inst.Game)
 	appID := []string{"-applaunch", info.SteamAppID()}
