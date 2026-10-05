@@ -286,7 +286,8 @@ func duplicatesWithNexus(ctx context.Context, m Meta, scheme string, enabled []f
 				if file.ID != int64(fileID) {
 					continue
 				}
-				files[j].FileName, files[j].Version = file.FileName, file.Version
+				files[j].FileName = cmp.Or(file.FileName, out[i].Name+" file "+strconv.Itoa(fileID))
+				files[j].Version = file.Version
 				kind := strings.ToLower(file.Type)
 				optional = optional || kind == "optional" || kind == "miscellaneous"
 				break

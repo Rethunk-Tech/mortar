@@ -667,7 +667,7 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 		}
 		it := &Item{
 			ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
-			Name: r.Name, FileName: archiveName(r.FileName), Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
+			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
 			Package: r.Package, Source: r.Source, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
 		}
 		if it.Repo != "" {
@@ -692,15 +692,6 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 	s.publish(true)
 	s.poke()
 	return out, nil
-}
-
-// archiveName is name when it names a file. The mod dataset gives some Nexus files as their storage path
-// ("4a/35/fc/<uuid>"); dropping it has the queue look the file's real name up on Nexus.
-func archiveName(name string) string {
-	if strings.ContainsAny(name, `/\`) {
-		return ""
-	}
-	return name
 }
 
 // Route gives a link's download key to the waiting item for the same file. It reports whether one took it; when

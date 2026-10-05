@@ -152,6 +152,18 @@ type Requirement struct {
 
 // Page returns Nexus mod page id, from cache while younger than a month.
 func (c *Client) Page(ctx context.Context, id int) (Page, error) {
+	p, err := c.page(ctx, id)
+	// The dataset gives newer files by their storage path ("4a/35/fc/<uuid>"), which names nothing a user or
+	// Nexus would recognise. Cleaning on read also covers pages cached before this rule.
+	for i := range p.Downloads {
+		if strings.ContainsAny(p.Downloads[i].FileName, `/\`) {
+			p.Downloads[i].FileName = ""
+		}
+	}
+	return p, err
+}
+
+func (c *Client) page(ctx context.Context, id int) (Page, error) {
 	return Cached(c, "dataset-nexus-"+strconv.Itoa(id)+".json", datasetTTL, func() (Page, error) {
 		base := c.PageBase
 		if base == "" {

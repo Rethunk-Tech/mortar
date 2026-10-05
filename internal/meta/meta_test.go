@@ -26,10 +26,11 @@ func fixture(t *testing.T, name string) []byte {
 func server(t *testing.T, down *atomic.Bool, hits *atomic.Int32) *Client {
 	t.Helper()
 	files := map[string][]byte{
-		"/index":            fixture(t, "index.json"),
-		"/data/1/1915.json": fixture(t, "nexus-1915.json"),
-		"/updates":          fixture(t, "smapi-mods.json"),
-		"/data/2/2000.json": []byte(`{"Id":"2000","Name":7,"Downloads":[null,{"Id":"x","Version":1.5,"SizeInBytes":"big","Mods":[{"Manifest":{"UniqueID":"A.B","Version":2,"UpdateKeys":"Nexus:2000","Dependencies":[{"UniqueID":"C.D","IsRequired":false},{"UniqueID":"E.F","MinimumVersion":"1.0"}],"ContentPackFor":{"UniqueID":"G.H"}}},{"Manifest":{"Name":"no id"}},{}]}]}`),
+		"/index":              fixture(t, "index.json"),
+		"/data/1/1915.json":   fixture(t, "nexus-1915.json"),
+		"/updates":            fixture(t, "smapi-mods.json"),
+		"/data/22/22743.json": []byte(`{"ID":22743,"Downloads":[{"ID":175656,"Type":"Main","FileName":"4a/35/fc/4a35fc45-ad1a-40a7-aa11-3eeab1cbd426"},{"ID":170000,"Type":"Main","FileName":"Alchemistry-22743-2-0-1.zip"}]}`),
+		"/data/2/2000.json":   []byte(`{"Id":"2000","Name":7,"Downloads":[null,{"Id":"x","Version":1.5,"SizeInBytes":"big","Mods":[{"Manifest":{"UniqueID":"A.B","Version":2,"UpdateKeys":"Nexus:2000","Dependencies":[{"UniqueID":"C.D","IsRequired":false},{"UniqueID":"E.F","MinimumVersion":"1.0"}],"ContentPackFor":{"UniqueID":"G.H"}}},{"Manifest":{"Name":"no id"}},{}]}]}`),
 	}
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits.Add(1)
@@ -138,6 +139,21 @@ func TestPageLenientParse(t *testing.T) {
 	want := []Dependency{{"C.D", "", false}, {"E.F", "1.0", true}, {"G.H", "", true}}
 	if m.Version != "2" || len(m.UpdateKeys) != 0 || len(m.Dependencies) != 3 || m.Dependencies[0] != want[0] || m.Dependencies[1] != want[1] || m.Dependencies[2] != want[2] {
 		t.Fatalf("mod = %+v", m)
+	}
+}
+
+func TestPageDropsStoragePathFileNames(t *testing.T) {
+	var down atomic.Bool
+	var hits atomic.Int32
+	c := server(t, &down, &hits)
+	for range 2 { // fetched, then from the cache
+		p, err := c.Page(context.Background(), 22743)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(p.Downloads) != 2 || p.Downloads[0].FileName != "" || p.Downloads[1].FileName != "Alchemistry-22743-2-0-1.zip" {
+			t.Fatalf("downloads = %+v", p.Downloads)
+		}
 	}
 }
 
