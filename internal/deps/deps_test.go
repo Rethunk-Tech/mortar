@@ -31,7 +31,7 @@ func TestVocabularies(t *testing.T) {
 	if _, err := Thunderstore("nodash"); err == nil {
 		t.Fatal("malformed accepted")
 	}
-	if d := SMAPI("A.B", "1.0", false); d.Target.String() != "smapi:A.B" || d.Relation != Optional {
+	if d := SMAPI("A.B", "1.0", false); d.Target.Mod != "smapi:A.B" || d.Relation != Optional {
 		t.Fatalf("smapi = %+v", d)
 	}
 }
