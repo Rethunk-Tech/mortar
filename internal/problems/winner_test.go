@@ -13,7 +13,7 @@ func TestLoadAfterEditConflictIsShownNotCounted(t *testing.T) {
 	a.Name = "Edit A"
 	a.LoadAfter = []string{b.UniqueID}
 	a.Dependencies = []manifest.Dependency{{UniqueID: b.UniqueID, Required: false}}
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{a, b})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{a, b})
 	if len(got.AssetConflicts) != 1 {
 		t.Fatalf("got %+v", got.AssetConflicts)
 	}

@@ -47,7 +47,7 @@ func TestEndorseAbstainAndTrackedList(t *testing.T) {
 	c = c.WithKey("k")
 	ctx := context.Background()
 
-	got, err := c.Endorse(ctx, 541, "1.55.0")
+	got, err := c.Endorse(ctx, stardew, 541, "1.55.0")
 	if err != nil || got != EndorseEndorsed || last.method != http.MethodPost ||
 		last.path != "/v1/games/stardewvalley/mods/541/endorse.json" {
 		t.Fatalf("endorse = %q, %v, %+v", got, err, last)
@@ -59,7 +59,7 @@ func TestEndorseAbstainAndTrackedList(t *testing.T) {
 		t.Fatalf("endorse body = %s", last.body)
 	}
 
-	got, err = c.Abstain(ctx, 541, "1.55.0")
+	got, err = c.Abstain(ctx, stardew, 541, "1.55.0")
 	if err != nil || got != EndorseAbstained || last.path != "/v1/games/stardewvalley/mods/541/abstain.json" {
 		t.Fatalf("abstain = %q, %v, %+v", got, err, last)
 	}
@@ -77,11 +77,11 @@ func TestEndorseAbstainAndTrackedList(t *testing.T) {
 		t.Fatalf("tracked cache did not expire: hits %d", hits.Load())
 	}
 
-	if err := c.Track(ctx, 541); err != nil {
+	if err := c.Track(ctx, stardew, 541); err != nil {
 		t.Fatal(err)
 	}
 	var track trackBody
-	if err := json.Unmarshal([]byte(last.body), &track); err != nil || track != (trackBody{DomainName: Game, ModID: 541}) ||
+	if err := json.Unmarshal([]byte(last.body), &track); err != nil || track != (trackBody{DomainName: stardew.Domain, ModID: 541}) ||
 		last.method != http.MethodPost {
 		t.Fatalf("track = %+v, %s", last, last.body)
 	}
@@ -89,7 +89,7 @@ func TestEndorseAbstainAndTrackedList(t *testing.T) {
 	if _, err := c.TrackedMods(ctx); err != nil || hits.Load() != n+1 {
 		t.Fatalf("track should drop the cached list: hits %d -> %d", n, hits.Load())
 	}
-	if err := c.Untrack(ctx, 541); err != nil || last.method != http.MethodDelete {
+	if err := c.Untrack(ctx, stardew, 541); err != nil || last.method != http.MethodDelete {
 		t.Fatalf("untrack = %v, %+v", err, last)
 	}
 }
@@ -107,7 +107,7 @@ func TestEndorseWithoutDownloadReturnsNexusMessage(t *testing.T) {
 	c := New("9.9")
 	c.BaseURL, c.CacheDir = srv.URL, t.TempDir()
 	c = c.WithKey("k")
-	_, err := c.Endorse(context.Background(), 541, "1.0.0")
+	_, err := c.Endorse(context.Background(), stardew, 541, "1.0.0")
 	var msg *MessageError
 	if !errors.As(err, &msg) || msg.Message != "You must download this mod before you can endorse it." {
 		t.Fatalf("endorse = %v", err)
@@ -126,7 +126,7 @@ func TestTrackAlreadyTrackedIsOk(t *testing.T) {
 	t.Cleanup(srv.Close)
 	c := New("9.9")
 	c.BaseURL, c.CacheDir = srv.URL, t.TempDir()
-	if err := c.WithKey("k").Track(context.Background(), 541); err != nil {
+	if err := c.WithKey("k").Track(context.Background(), stardew, 541); err != nil {
 		t.Fatal(err)
 	}
 }

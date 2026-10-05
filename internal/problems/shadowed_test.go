@@ -50,7 +50,7 @@ func TestShadowedPacks(t *testing.T) {
 		if len(got) != 1 || !slices.Equal(got[a.Key], []string{b.Key}) {
 			t.Fatalf("got %v", got)
 		}
-		r := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{a, b})
+		r := Check(context.Background(), fakeMeta{}, testEnv, []Installed{a, b})
 		if len(r.Redundant) != 1 || r.Redundant[0].Key != a.Key || r.Redundant[0].By[0].Name != b.Name {
 			t.Fatalf("Check redundant = %+v", r.Redundant)
 		}

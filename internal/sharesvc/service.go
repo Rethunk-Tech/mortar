@@ -80,7 +80,7 @@ type Deps struct {
 	Profiles *profile.Store
 	Meta     problems.Meta
 	// Files lists a Nexus mod's files; it is only called while SignedIn.
-	Files    func(ctx context.Context, modID int) ([]nexus.File, error)
+	Files    func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error)
 	SignedIn func() bool
 	Premium  func() bool
 	// CollectionArchive downloads a collection's curator archive by the API path Nexus reports; nil disables it.

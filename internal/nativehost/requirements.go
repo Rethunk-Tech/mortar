@@ -37,7 +37,7 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 		return nil
 	}
 	defer func() { _ = root.Close() }()
-	reqs, ok := meta.Peek[[]meta.Requirement](&meta.Client{}, meta.RequirementsCacheFile(modID))
+	reqs, ok := meta.Peek[[]meta.Requirement](&meta.Client{}, meta.RequirementsCacheFile(domain, modID))
 	if !ok {
 		return nil
 	}

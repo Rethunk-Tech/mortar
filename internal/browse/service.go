@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -59,12 +58,4 @@ func InstalledOn(prof profile.Profile) InstalledFunc {
 		}
 		return false
 	}
-}
-
-func domainFor(game string) string {
-	g := strings.ToLower(strings.TrimSpace(game))
-	if g == "" || g == "stardew" {
-		return nexus.Game
-	}
-	return g
 }

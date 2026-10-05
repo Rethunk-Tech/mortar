@@ -36,7 +36,7 @@ func (f listedFakeMeta) Page(_ context.Context, id int) (meta.Page, error) {
 	return f.pages[id], nil
 }
 
-func (f listedFakeMeta) PageRequirements(_ context.Context, id int) ([]meta.Requirement, error) {
+func (f listedFakeMeta) PageRequirements(_ context.Context, _ string, id int) ([]meta.Requirement, error) {
 	if err := f.requirementErr[id]; err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func TestListedRequirementSatisfiedByPageKey(t *testing.T) {
 	}
 	mods := []Installed{listedDependent(), {Key: "nexus-11148-200", Enabled: true}}
 
-	result := Check(context.Background(), fake, Environment{}, mods)
+	result := Check(context.Background(), fake, testEnv, mods)
 
 	if len(result.Missing) != 0 {
 		t.Fatalf("Missing = %#v, want none", result.Missing)
@@ -95,7 +95,7 @@ func TestListedRequirementSatisfiedByDatasetUniqueID(t *testing.T) {
 		{Key: "local-content-patcher", Enabled: true, UniqueID: "Pathoschild.ContentPatcher"},
 	}
 
-	result := Check(context.Background(), fake, Environment{}, mods)
+	result := Check(context.Background(), fake, testEnv, mods)
 
 	if len(result.Missing) != 0 {
 		t.Fatalf("Missing = %#v, want none", result.Missing)
@@ -108,7 +108,7 @@ func TestListedRequirementMissing(t *testing.T) {
 		pages:        map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
 	}
 
-	result := Check(context.Background(), fake, Environment{}, []Installed{listedDependent()})
+	result := Check(context.Background(), fake, testEnv, []Installed{listedDependent()})
 
 	if len(result.Missing) != 1 {
 		t.Fatalf("Missing = %#v, want one item", result.Missing)
@@ -125,7 +125,7 @@ func TestListedRequirementOptionalNote(t *testing.T) {
 		pages:        map[int]meta.Page{14426: listedPage(14426, "GenderNeutrality.Tokens")},
 	}
 
-	result := Check(context.Background(), fake, Environment{}, []Installed{listedDependent()})
+	result := Check(context.Background(), fake, testEnv, []Installed{listedDependent()})
 
 	if len(result.Missing) != 1 || !result.Missing[0].Optional || result.Missing[0].Note != "For Gender Neutral Version" {
 		t.Fatalf("Missing = %#v, want optional noted requirement", result.Missing)
@@ -137,7 +137,7 @@ func TestListedRequirementFetchFailureIsUnknown(t *testing.T) {
 		requirementErr: map[int]error{520: errors.New("offline")},
 	}
 
-	result := Check(context.Background(), fake, Environment{}, []Installed{listedDependent()})
+	result := Check(context.Background(), fake, testEnv, []Installed{listedDependent()})
 
 	if !result.Unknown {
 		t.Fatal("Unknown = false, want true")

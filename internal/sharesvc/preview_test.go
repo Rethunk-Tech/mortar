@@ -67,8 +67,8 @@ func testResolver(files map[int][]nexus.File, target []profile.Entry) *resolver 
 		broken: map[string]string{"A.Broken": "broken"},
 	}
 	return &resolver{
-		meta: fm, signedIn: true, premium: false, target: target,
-		files: func(_ context.Context, id int) ([]nexus.File, error) {
+		meta: fm, signedIn: true, premium: false, target: target, env: stardewEnv,
+		files: func(_ context.Context, _ nexus.Title, id int) ([]nexus.File, error) {
 			if f, ok := files[id]; ok {
 				return f, nil
 			}
@@ -182,7 +182,7 @@ func TestResolveSignedOutStaysWithTheLink(t *testing.T) {
 
 func TestResolveFilesFailureIsUnconfirmed(t *testing.T) {
 	r := testResolver(nil, nil)
-	r.files = func(context.Context, int) ([]nexus.File, error) { return nil, errors.New("offline") }
+	r.files = func(context.Context, nexus.Title, int) ([]nexus.File, error) { return nil, errors.New("offline") }
 	mods, probs := r.resolve(t.Context(), []share.Ref{{ModID: 100, FileID: 1}})
 	if mods[0].State != StateDownload || mods[0].FileID != 1 {
 		t.Errorf("mods = %+v", mods)

@@ -52,7 +52,7 @@ func TestCheckUpdatesNamesTheGitHubRepo(t *testing.T) {
 		"me.a": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://github.com/me/a/releases/tag/2.0.0"}},
 		"me.b": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
 	}}
-	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{gh, elsewhere}, false).Updates
+	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{gh, elsewhere}, false).Updates
 	if len(got) != 2 || got[0].GitHubRepo != "me/a" || got[0].NexusID != 5 || got[1].GitHubRepo != "" {
 		t.Fatalf("got %+v", got)
 	}
@@ -65,7 +65,7 @@ func TestCheckUpdatesIncludesUnofficialWithoutReplacingSuggested(t *testing.T) {
 			Unofficial: &meta.Update{Version: "2.1.0-unofficial.1-x", URL: "https://smapi.io/u"},
 		},
 	}}
-	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{mod("k1", "me.a", "1.0.0", true)}, false).Updates
+	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{mod("k1", "me.a", "1.0.0", true)}, false).Updates
 	if len(got) != 2 || got[0].Unofficial || got[0].Version != "2.0.0" || !got[1].Unofficial || got[1].Version != "2.1.0-unofficial.1-x" {
 		t.Fatalf("got %+v", got)
 	}
@@ -123,11 +123,11 @@ func TestUpdateSource(t *testing.T) {
 }
 
 func TestCheckUpdatesUnknownNeverBlocks(t *testing.T) {
-	got := CheckUpdates(context.Background(), fakeMeta{updatesOff: true}, Environment{}, []Installed{mod("k1", "me.a", "1.0.0", true)}, false)
+	got := CheckUpdates(context.Background(), fakeMeta{updatesOff: true}, testEnv, []Installed{mod("k1", "me.a", "1.0.0", true)}, false)
 	if !got.Unknown || len(got.Updates) != 0 {
 		t.Fatalf("got %+v", got)
 	}
-	none := CheckUpdates(context.Background(), fakeMeta{}, Environment{}, nil, false)
+	none := CheckUpdates(context.Background(), fakeMeta{}, testEnv, nil, false)
 	if none.Unknown || none.Updates == nil {
 		t.Fatalf("empty = %+v", none)
 	}
@@ -143,7 +143,7 @@ func TestCheckUpdatesEnabledOnlySkipsDisabled(t *testing.T) {
 		mod("k1", "me.on", "1.0.0", true),
 		mod("k2", "me.off", "1.0.0", false),
 	}
-	got := CheckUpdates(context.Background(), rm, Environment{}, mods, true)
+	got := CheckUpdates(context.Background(), rm, testEnv, mods, true)
 	if len(rm.got.Mods) != 1 || rm.got.Mods[0].ID != "me.on" {
 		t.Fatalf("asked %+v", rm.got)
 	}
@@ -201,7 +201,7 @@ func TestRelate(t *testing.T) {
 	a.UpdateKeys = []string{"Chucklefish:1", "Nexus:42@x"}
 	core := mod("k2", "me.core", "1.0.0", true)
 	user := mod("k3", "me.user", "1.0.0", true, req("me.a", ""))
-	r, ok := Relate([]Installed{a, core, user}, "k1", "me.a")
+	r, ok := Relate([]Installed{a, core, user}, "stardewvalley", "k1", "me.a")
 	if !ok || r.PageURL != "https://www.nexusmods.com/stardewvalley/mods/42" {
 		t.Fatalf("relations = %+v, %v", r, ok)
 	}
@@ -215,7 +215,7 @@ func TestRelate(t *testing.T) {
 	if !reflect.DeepEqual(r.NeededBy, []Dependent{{Key: "k3", UniqueID: "me.user", Name: "me.user"}}) {
 		t.Fatalf("neededBy = %+v", r.NeededBy)
 	}
-	if _, ok := Relate([]Installed{a}, "k9", "me.a"); ok {
+	if _, ok := Relate([]Installed{a}, "stardewvalley", "k9", "me.a"); ok {
 		t.Fatal("unknown key related")
 	}
 }
@@ -223,7 +223,7 @@ func TestRelate(t *testing.T) {
 func TestPageURL(t *testing.T) {
 	cases := map[string]string{"GitHub:me/repo": "https://github.com/me/repo", "GitHub:me": "", "ModDrop:5": ""}
 	for key, want := range cases {
-		if got := pageURL([]string{key}); got != want {
+		if got := pageURL("stardewvalley", []string{key}); got != want {
 			t.Errorf("pageURL(%s) = %q, want %q", key, got, want)
 		}
 	}
@@ -233,7 +233,7 @@ func TestPagesKeysByEntryAndID(t *testing.T) {
 	with, without := Installed{Key: "k1"}, Installed{Key: "k2"}
 	with.UniqueID, with.UpdateKeys = "me.a", []string{"GitHub:me/repo"}
 	without.UniqueID = "me.b"
-	got := Pages([]Installed{with, without})
+	got := Pages([]Installed{with, without}, "stardewvalley")
 	if len(got) != 1 || got["k1/me.a"] != "https://github.com/me/repo" {
 		t.Fatalf("got %v", got)
 	}

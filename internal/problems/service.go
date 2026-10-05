@@ -118,6 +118,7 @@ func platform() string {
 //wails:ignore
 func (s *Service) Environment(id string) Environment {
 	env := Environment{Platform: platform()}
+	env.Nexus, _ = game.NexusTitle(id)
 	g := game.Find(id)
 	if g == nil {
 		return env
@@ -130,6 +131,12 @@ func (s *Service) Environment(id string) Environment {
 	st := g.LoaderStatus(dir, set.Loaders[id])
 	env.GameVersion, env.APIVersion = st.GameVersion, st.Version
 	return env
+}
+
+// nexusDomain is the Nexus domain of a game, empty when Nexus does not host it.
+func nexusDomain(gameID string) string {
+	t, _ := game.NexusTitle(gameID)
+	return t.Domain
 }
 
 func fingerprint(env Environment, mods []Installed, runID string) string {
@@ -245,14 +252,14 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	c, ok := s.cache[key]
 	s.mu.Unlock()
 	if ok && c.fresh(fp, time.Now()) {
-		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, mods, c.sameJob)))
+		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, nexusDomain(gameID), mods, c.sameJob)))
 	}
 
 	checkKey := key + "\x00" + fp
 	s.mu.Lock()
 	if c, ok := s.cache[key]; ok && c.fresh(fp, time.Now()) {
 		s.mu.Unlock()
-		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, mods, c.sameJob)))
+		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, nexusDomain(gameID), mods, c.sameJob)))
 	}
 	s.mu.Unlock()
 
@@ -260,7 +267,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		skipImageOverlap = depth == settings.ConflictScanSkipImages
 		defer func() { skipImageOverlap = false }()
 		r := Check(ctx, s.meta, env, mods)
-		r.Broken = append(r.Broken, authorMarkedMods(s.home, slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool {
+		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool {
 			return !x.Enabled
 		}))...)
 		if s.Runs != nil && runID != "" {
@@ -309,7 +316,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	}
 	s.cache[key] = entry
 	s.mu.Unlock()
-	return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, r, mods, entry.sameJob)))
+	return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, r, nexusDomain(gameID), mods, entry.sameJob)))
 }
 
 // ForgetCached drops every result and scan Mortar holds in memory, after the cache folder is cleared,
@@ -615,7 +622,7 @@ func (s *Service) Relations(gameID, id, key, uniqueID string) (Relations, error)
 	if err != nil {
 		return Relations{}, err
 	}
-	r, ok := Relate(mods, key, uniqueID)
+	r, ok := Relate(mods, nexusDomain(gameID), key, uniqueID)
 	if !ok {
 		return Relations{}, errors.New("no such mod in this profile")
 	}
@@ -628,7 +635,7 @@ func (s *Service) Pages(gameID, id string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return Pages(mods), nil
+	return Pages(mods, nexusDomain(gameID)), nil
 }
 
 // maxDamagedFiles bounds the file names a Damaged row carries.

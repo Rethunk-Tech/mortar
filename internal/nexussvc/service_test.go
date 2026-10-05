@@ -100,7 +100,7 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 func TestModNameNeedsASignedInAccount(t *testing.T) {
 	store := testStore(t)
 	s := NewService(store, nexus.New("1"), &meta.Client{})
-	if _, err := s.ModName(context.Background(), 1); !errors.Is(err, ErrSignedOut) {
+	if _, err := s.ModName(context.Background(), "stardew", 1); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("got %v", err)
 	}
 }
@@ -115,14 +115,14 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 	s := NewService(store, c, m)
 	ctx := context.Background()
 
-	if _, err := s.Details(ctx, 541); !errors.Is(err, ErrSignedOut) {
+	if _, err := s.Details(ctx, "stardew", 541); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("signed out with no cache = %v", err)
 	}
 	if _, err := s.SignIn(ctx, "k"); err != nil {
 		t.Fatal(err)
 	}
 	hits.Store(0)
-	d, err := s.Details(ctx, 541)
+	d, err := s.Details(ctx, "stardew", 541)
 	if err != nil || d.Page.Name != "Lookup Anything" || d.Category != "User Interface" || len(d.Files) != 2 ||
 		len(d.Changelogs) != 4 || d.Changelogs[0].Version != "1.8.2" {
 		t.Fatalf("details = %+v, %v", d, err)
@@ -130,7 +130,7 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 	if hits.Load() != 4 {
 		t.Fatalf("hits = %d, want page, files, changelogs and categories", hits.Load())
 	}
-	if _, err := s.Details(ctx, 541); err != nil || hits.Load() != 4 {
+	if _, err := s.Details(ctx, "stardew", 541); err != nil || hits.Load() != 4 {
 		t.Fatalf("fresh cache refetched: hits = %d, %v", hits.Load(), err)
 	}
 
@@ -138,11 +138,11 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 		t.Fatal(err)
 	}
 	now = now.Add(48 * time.Hour)
-	if got := s.CachedDetails([]int{541, 999}); len(got) != 1 || got[541].Category != "User Interface" ||
+	if got := s.CachedDetails("stardew", []int{541, 999}); len(got) != 1 || got[541].Category != "User Interface" ||
 		hits.Load() != 4 {
 		t.Fatalf("cached details = %+v, hits %d", got, hits.Load())
 	}
-	if d, err := s.Details(ctx, 541); err != nil || d.Page.Name != "Lookup Anything" || hits.Load() != 4 {
+	if d, err := s.Details(ctx, "stardew", 541); err != nil || d.Page.Name != "Lookup Anything" || hits.Load() != 4 {
 		t.Fatalf("stale signed-out details = %+v, %v, hits %d", d.Page, err, hits.Load())
 	}
 }
@@ -178,7 +178,7 @@ func TestDetailsRefetchesUnversionedCache(t *testing.T) {
 		t.Fatal(err)
 	}
 	hits.Store(0)
-	d, err := s.Details(ctx, 541)
+	d, err := s.Details(ctx, "stardew", 541)
 	if err != nil || d.Changelogs[0].Version != "1.8.2" {
 		t.Fatalf("details = %+v, %v", d, err)
 	}

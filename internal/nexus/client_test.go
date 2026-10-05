@@ -79,12 +79,12 @@ func TestReplays(t *testing.T) {
 		t.Fatalf("limits = %+v", l)
 	}
 
-	files, err := c.Files(ctx, 541)
+	files, err := c.Files(ctx, stardew, 541)
 	if err != nil || len(files) != 2 || files[0] != (File{FileID: 3001, FileName: "Content Patcher-541-2-0-0.zip", Name: "Content Patcher", Version: "2.0.0", ModVersion: "2.0.0", Category: "MAIN", SizeKB: 2048, IsPrimary: true, Uploaded: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)}) || files[1].Category != "" || files[1].ReplacedBy != 3001 {
 		t.Fatalf("files = %+v, %v", files, err)
 	}
 
-	links, err := c.DownloadLinks(ctx, 541, 3001, "", 0)
+	links, err := c.DownloadLinks(ctx, stardew, 541, 3001, "", 0)
 	if err != nil || len(links) != 1 || links[0].Name != "Nexus CDN" || links[0].URI == "" {
 		t.Fatalf("links = %+v, %v", links, err)
 	}
@@ -95,7 +95,7 @@ func TestModCachedOnDisk(t *testing.T) {
 	c := serve(t, &status, "1900", &hits)
 	want := Mod{Name: "Lookup Anything", Author: "Pathoschild", PictureURL: "https://staticdelivery.nexusmods.com/mods/1303/images/541-0-1482010183.png", EndorsementCount: 201516, Summary: "See live info about whatever's under your cursor when you press F1. Learn a villager's favourite gifts, when a crop will be ready to harvest, how long a fence will last, why your farm animals are unhappy, and more."}
 	for range 2 {
-		m, err := c.Mod(context.Background(), 541)
+		m, err := c.Mod(context.Background(), stardew, 541)
 		if err != nil || m != want {
 			t.Fatalf("mod = %+v, %v", m, err)
 		}
@@ -110,7 +110,7 @@ func TestPageChangelogsCategories(t *testing.T) {
 	c := serve(t, &status, "1900", &hits)
 	ctx := context.Background()
 
-	p, err := c.Page(ctx, 541)
+	p, err := c.Page(ctx, stardew, 541)
 	if err != nil || p.ModID != 541 || p.Version != "1.55.0" || p.UploadedBy != "Pathoschild" || p.CategoryID != 10 ||
 		p.Downloads != 9915155 || p.UniqueDownloads != 3726255 || p.Adult || !p.Available || p.Status != "published" ||
 		p.Endorsement != "Endorsed" ||
@@ -119,7 +119,7 @@ func TestPageChangelogsCategories(t *testing.T) {
 		t.Fatalf("page = %+v, %v", p, err)
 	}
 
-	logs, err := c.Changelogs(ctx, 541, 3)
+	logs, err := c.Changelogs(ctx, stardew, 541, 3)
 	want := []Changelog{
 		{Version: "1.8.2", Notes: []string{"Fixed race condition when rendering ranges of items like sprinklers"}},
 		{Version: "1.8.0", Notes: []string{"Updated for Stardew Valley 1.4 and SMAPI 3.0", "Updated Portuguese"}},
@@ -132,7 +132,7 @@ func TestPageChangelogsCategories(t *testing.T) {
 		t.Fatalf("empty changelogs = %+v, %v", none, err)
 	}
 
-	cats, err := c.Categories(ctx)
+	cats, err := c.Categories(ctx, stardew)
 	if err != nil || cats[10] != "User Interface" || cats[1] != "Stardew Valley" {
 		t.Fatalf("categories = %v, %v", cats, err)
 	}
@@ -148,11 +148,11 @@ func TestErrors(t *testing.T) {
 		t.Fatalf("401 = %v", err)
 	}
 	status.Store(http.StatusForbidden)
-	if _, err := c.DownloadLinks(ctx, 541, 3001, "", 0); !errors.Is(err, ErrPremiumRequired) {
+	if _, err := c.DownloadLinks(ctx, stardew, 541, 3001, "", 0); !errors.Is(err, ErrPremiumRequired) {
 		t.Fatalf("403 = %v", err)
 	}
 	var se *StatusError
-	if _, err := c.Files(ctx, 541); !errors.As(err, &se) || se.Code != http.StatusForbidden {
+	if _, err := c.Files(ctx, stardew, 541); !errors.As(err, &se) || se.Code != http.StatusForbidden {
 		t.Fatalf("403 on files = %v", err)
 	}
 	status.Store(http.StatusTooManyRequests)
@@ -170,14 +170,14 @@ func TestRefusesAtFloor(t *testing.T) {
 	}
 	before := hits.Load()
 	var re *RateLimitError
-	if _, err := c.Files(context.Background(), 541); !errors.As(err, &re) || !re.Reset.Equal(time.Date(2026, 9, 30, 13, 0, 0, 0, time.UTC)) {
+	if _, err := c.Files(context.Background(), stardew, 541); !errors.As(err, &re) || !re.Reset.Equal(time.Date(2026, 9, 30, 13, 0, 0, 0, time.UTC)) {
 		t.Fatalf("at floor = %v", err)
 	}
 	if hits.Load() != before {
 		t.Fatal("a request was sent at the floor")
 	}
 	c.Now = func() time.Time { return t0.Add(2 * time.Hour) }
-	if _, err := c.Files(context.Background(), 541); err != nil {
+	if _, err := c.Files(context.Background(), stardew, 541); err != nil {
 		t.Fatalf("after reset = %v", err)
 	}
 }

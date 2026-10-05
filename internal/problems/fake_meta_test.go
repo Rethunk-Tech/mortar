@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
-func (fakeMeta) PageRequirements(context.Context, int) ([]meta.Requirement, error) {
+func (fakeMeta) PageRequirements(context.Context, string, int) ([]meta.Requirement, error) {
 	return nil, nil
 }
 
@@ -18,3 +19,5 @@ func (fakeMeta) Collection(context.Context, string, string, int) (meta.Collectio
 func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly bool) UpdatesResult {
 	return checkUpdates(ctx, m, env, mods, enabledOnly, false, nil)
 }
+
+var testEnv = Environment{Nexus: nexus.Title{Domain: "stardewvalley", ID: 1303}}

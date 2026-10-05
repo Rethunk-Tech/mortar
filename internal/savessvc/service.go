@@ -139,7 +139,7 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 			wanted[l.UniqueID] = true
 		}
 	}
-	names := s.describe(ctx, wanted)
+	names := s.describe(ctx, game, wanted)
 	for i := range fits {
 		for j := range fits[i].Missing {
 			if d, ok := names[fits[i].Missing[j].UniqueID]; ok {
@@ -175,9 +175,11 @@ type described struct {
 
 // describe looks up the display name and the page of each UniqueID. A page that cannot be fetched leaves the
 // UniqueID as the name, so an offline machine still gets a usable list.
-func (s *Service) describe(ctx context.Context, ids map[string]bool) map[string]described {
+func (s *Service) describe(ctx context.Context, gameID string, ids map[string]bool) map[string]described {
 	ctx, cancel := context.WithTimeout(ctx, nameTimeout)
 	defer cancel()
+	t, _ := game.NexusTitle(gameID)
+	domain := t.Domain
 	var mu sync.Mutex
 	out := map[string]described{}
 	var wg sync.WaitGroup
@@ -186,7 +188,7 @@ func (s *Service) describe(ctx context.Context, ids map[string]bool) map[string]
 		wg.Go(func() {
 			sem <- struct{}{}
 			defer func() { <-sem }()
-			where, _ := problems.Locate(ctx, s.meta, id, "", nil)
+			where, _ := problems.Locate(ctx, s.meta, domain, id, "", nil)
 			d := described{name: id, where: where}
 			if where != nil && where.Site == "Nexus" {
 				if page, err := s.meta.Page(ctx, where.PageID); err == nil {

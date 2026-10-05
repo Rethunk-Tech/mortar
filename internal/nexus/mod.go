@@ -27,9 +27,9 @@ type Mod struct {
 
 // Mod returns a mod's page data. It is fetched once and kept on disk, since the picture and endorsement count are
 // only wanted at install time; a cache that cannot be read or written only costs a refetch.
-func (c *Client) Mod(ctx context.Context, modID int) (Mod, error) {
+func (c *Client) Mod(ctx context.Context, t Title, modID int) (Mod, error) {
 	dir, dirErr := c.cacheDir()
-	path := filepath.Join(dir, fmt.Sprintf("mod-%s-%d.json", Game, modID))
+	path := filepath.Join(dir, fmt.Sprintf("mod-%s-%d.json", t.Domain, modID))
 	if dirErr == nil {
 		if b, err := fsx.ReadFile(path); err == nil {
 			var m Mod
@@ -38,7 +38,7 @@ func (c *Client) Mod(ctx context.Context, modID int) (Mod, error) {
 			}
 		}
 	}
-	p, err := c.Page(ctx, modID)
+	p, err := c.Page(ctx, t, modID)
 	if err != nil {
 		return Mod{}, err
 	}
@@ -76,7 +76,7 @@ type Page struct {
 }
 
 // Page fetches a mod page, uncached.
-func (c *Client) Page(ctx context.Context, modID int) (Page, error) {
+func (c *Client) Page(ctx context.Context, t Title, modID int) (Page, error) {
 	var raw struct {
 		ModID           int       `json:"mod_id"`
 		Name            string    `json:"name"`
@@ -100,7 +100,7 @@ func (c *Client) Page(ctx context.Context, modID int) (Page, error) {
 			Status string `json:"endorse_status"`
 		} `json:"endorsement"`
 	}
-	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d.json", Game, modID), false, &raw); err != nil {
+	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d.json", t.Domain, modID), false, &raw); err != nil {
 		return Page{}, err
 	}
 	p := Page{
@@ -127,9 +127,9 @@ type Changelog struct {
 
 // Changelogs returns a mod's limit newest changelog versions. The versions are object keys, which a map would
 // lose along with duplicates, so the object is read token by token; a mod with none answers [].
-func (c *Client) Changelogs(ctx context.Context, modID, limit int) ([]Changelog, error) {
+func (c *Client) Changelogs(ctx context.Context, t Title, modID, limit int) ([]Changelog, error) {
 	var raw json.RawMessage
-	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/changelogs.json", Game, modID), false, &raw); err != nil {
+	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/changelogs.json", t.Domain, modID), false, &raw); err != nil {
 		return nil, err
 	}
 	return parseChangelogs(raw, limit)
@@ -177,14 +177,14 @@ func parseChangelogs(raw []byte, limit int) ([]Changelog, error) {
 }
 
 // Categories maps the game's category IDs to their names.
-func (c *Client) Categories(ctx context.Context) (map[int]string, error) {
+func (c *Client) Categories(ctx context.Context, t Title) (map[int]string, error) {
 	var raw struct {
 		Categories []struct {
 			ID   int    `json:"category_id"`
 			Name string `json:"name"`
 		} `json:"categories"`
 	}
-	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s.json", Game), false, &raw); err != nil {
+	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s.json", t.Domain), false, &raw); err != nil {
 		return nil, err
 	}
 	out := make(map[int]string, len(raw.Categories))

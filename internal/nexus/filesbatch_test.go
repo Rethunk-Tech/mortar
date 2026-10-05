@@ -25,7 +25,7 @@ func TestFilesOfAsksForEveryModInOneRequest(t *testing.T) {
 	defer srv.Close()
 	c := New("test").WithKey("k")
 	c.BaseURL = srv.URL
-	got, err := c.FilesOf(context.Background(), []int{41150, 28261})
+	got, err := c.FilesOf(context.Background(), stardew, []int{41150, 28261})
 	if err != nil {
 		t.Fatal(err)
 	}

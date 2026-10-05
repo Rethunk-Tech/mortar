@@ -16,7 +16,7 @@ func TestAuthorMarkedMods(t *testing.T) {
 	home := t.TempDir()
 	c := &meta.Client{CacheDir: filepath.Join(home, "cache")}
 	cache := func(id int, d nexussvc.Details) {
-		if _, err := meta.Cached(c, nexussvc.DetailsName(id), time.Hour, func() (nexussvc.Details, error) { return d, nil }); err != nil {
+		if _, err := meta.Cached(c, nexussvc.DetailsName("stardewvalley", id), time.Hour, func() (nexussvc.Details, error) { return d, nil }); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -39,7 +39,7 @@ func TestAuthorMarkedMods(t *testing.T) {
 		{Key: "local-replaces", Enabled: true, Name: "Replacer", UniqueID: "replacer", Description: "Replaces the obsolete vanilla menu"},
 		{Key: "local-spelling", Enabled: true, Name: "Spelling", UniqueID: "spelling", Description: "This mod was depreciated by its author"},
 	}
-	got := authorMarkedMods(home, mods)
+	got := authorMarkedMods(home, "stardewvalley", mods)
 	if len(got) != 4 {
 		t.Fatalf("got %d marked mods: %+v", len(got), got)
 	}
@@ -64,7 +64,7 @@ func TestAuthorMarkedManifestDescription(t *testing.T) {
 	for name, text := range fields {
 		value.FieldByName(name).SetString(text)
 	}
-	got := authorMarkedMods(t.TempDir(), []Installed{mod})
+	got := authorMarkedMods(t.TempDir(), "stardewvalley", []Installed{mod})
 	if len(got) != 1 || got[0].Status != "deprecated" {
 		t.Fatalf("got %+v", got)
 	}

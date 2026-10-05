@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 // Link is an accepted nxm:// download link.
 type Link struct {
+	// Game is the Mortar game the link's Nexus domain belongs to.
+	Game    string `json:"game"`
 	ModID   int    `json:"modId"`
 	FileID  int    `json:"fileId"`
 	Key     string `json:"key"`
@@ -38,14 +38,19 @@ func reject(reason string) error { return &RejectError{Reason: reason} }
 // IsLink reports whether an argument is an nxm:// link, whatever its content.
 func IsLink(arg string) bool { return strings.HasPrefix(strings.ToLower(arg), "nxm://") }
 
-// Parse accepts nxm://stardewvalley/mods/<mod id>/files/<file id>?key=&expires=&user_id= only: numeric ids, a key,
-// not yet expired at now, and user_id equal to userID, the signed-in account. Anything else is a *RejectError.
-func Parse(raw string, userID int, now time.Time) (Link, error) {
+// GameOf maps an nxm link's Nexus domain to the Mortar game that takes it.
+type GameOf func(domain string) (gameID string, ok bool)
+
+// Parse accepts nxm://<domain>/mods/<mod id>/files/<file id>?key=&expires=&user_id= only for a domain gameOf maps to
+// a game: numeric ids, a key, not yet expired at now, and user_id equal to userID, the signed-in account. Anything
+// else is a *RejectError.
+func Parse(raw string, userID int, now time.Time, gameOf GameOf) (Link, error) {
 	u, err := url.Parse(raw)
 	if err != nil || u.Scheme != "nxm" || u.User != nil || u.Port() != "" || u.Fragment != "" {
 		return Link{}, reject(ReasonForm)
 	}
-	if u.Host != nexus.Game {
+	gameID, ok := gameOf(u.Host)
+	if !ok {
 		return Link{}, reject(ReasonGame)
 	}
 	parts := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
@@ -56,7 +61,7 @@ func Parse(raw string, userID int, now time.Time) (Link, error) {
 	if err != nil || len(q) != 3 {
 		return Link{}, reject(ReasonForm)
 	}
-	var l Link
+	l := Link{Game: gameID}
 	if l.ModID, err = number(parts[1]); err != nil {
 		return Link{}, err
 	}

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"log"
 	"os"
 	"strings"
@@ -346,11 +347,15 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	if err != nil {
 		return err
 	}
-	files, err := c.Files(ctx, it.ModID)
+	t, err := game.NexusTitle(it.Game)
+	if err != nil {
+		return err
+	}
+	files, err := c.Files(ctx, t, it.ModID)
 	if err != nil {
 		return usererr.Wrap(usererr.Network, err)
 	}
-	statuses, _ := c.ScanStatuses(ctx, it.ModID)
+	statuses, _ := c.ScanStatuses(ctx, t, it.ModID)
 	var file nexus.File
 	if it.FileID != 0 && statuses[it.FileID] == "QUARANTINED" {
 		return nexus.ErrQuarantined
@@ -435,12 +440,16 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if err != nil {
 		return err
 	}
+	t, err := game.NexusTitle(it.Game)
+	if err != nil {
+		return err
+	}
 	var mod nexus.Mod
 	// The picture and name are nice to have: a page that cannot be fetched only leaves the letter tile. describe
 	// usually fetched them while the item waited.
 	if it.Picture != "" {
 		mod = nexus.Mod{Name: it.Name, PictureURL: it.Picture, EndorsementCount: it.endorsed}
-	} else if m, merr := c.Mod(ctx, it.ModID); merr == nil {
+	} else if m, merr := c.Mod(ctx, t, it.ModID); merr == nil {
 		mod = m
 		s.mu.Lock()
 		if cur := s.find(it.ID); cur != nil {
@@ -466,7 +475,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		key, expires = cur.key, cur.expires
 	}
 	s.mu.Unlock()
-	links, err := c.DownloadLinks(ctx, it.ModID, it.FileID, key, expires)
+	links, err := c.DownloadLinks(ctx, t, it.ModID, it.FileID, key, expires)
 	if err != nil {
 		return usererr.Wrap(usererr.Network, err)
 	}
@@ -485,7 +494,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 			if ferr == nil || !errors.Is(ferr, github.ErrLinkExpired) || attempt == 1 {
 				break
 			}
-			next, lerr := c.DownloadLinks(ctx, it.ModID, it.FileID, key, expires)
+			next, lerr := c.DownloadLinks(ctx, t, it.ModID, it.FileID, key, expires)
 			if lerr != nil {
 				return usererr.Wrap(usererr.Network, lerr)
 			}

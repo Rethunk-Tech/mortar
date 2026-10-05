@@ -12,39 +12,51 @@ import (
 )
 
 var (
-	nexusModURL = regexp.MustCompile(`(?i)https?://(?:www\.)?nexusmods\.com/stardewvalley/mods/(\d+)`)
+	nexusModURL = regexp.MustCompile(`(?i)https?://(?:www\.)?nexusmods\.com/([a-z0-9]+)/mods/(\d+)`)
 	githubURL   = regexp.MustCompile(`(?i)https?://(?:www\.)?github\.com/([^/\s]+/[^/\s#?]+)`)
 	uniqueID    = regexp.MustCompile(`\b([A-Za-z][A-Za-z0-9_]*\.[A-Za-z][A-Za-z0-9_]*)\b`)
 )
 
+// modPageIDs lists the mod ids of the Nexus page links in text that belong to domain; re captures the game's domain
+// and then the mod id.
+func modPageIDs(re *regexp.Regexp, text, domain string) []int {
+	var ids []int
+	for _, parts := range re.FindAllStringSubmatch(text, -1) {
+		if !strings.EqualFold(parts[1], domain) {
+			continue
+		}
+		if id, err := strconv.Atoi(parts[2]); err == nil {
+			ids = append(ids, id)
+		}
+	}
+	return ids
+}
+
 // replacementFromSummary picks a mod to install when SMAPI's compatibility summary names one.
-func replacementFromSummary(ctx context.Context, m Meta, dependentKeys []string, summary string) *Ref {
+func replacementFromSummary(ctx context.Context, m Meta, domain string, dependentKeys []string, summary string) *Ref {
 	summary = strings.TrimSpace(summary)
 	if summary == "" {
 		return nil
 	}
-	if parts := nexusModURL.FindStringSubmatch(summary); len(parts) == 2 {
-		id, _ := strconv.Atoi(parts[1])
-		if id > 0 {
-			return refForNexusPage(ctx, m, id)
-		}
+	if ids := modPageIDs(nexusModURL, summary, domain); len(ids) > 0 && ids[0] > 0 {
+		return refForNexusPage(ctx, m, domain, ids[0])
 	}
 	if g := githubURL.FindStringSubmatch(summary); len(g) == 2 {
 		repo := strings.TrimSuffix(g[1], ".git")
 		return &Ref{Site: "GitHub", GitHub: repo, URL: "https://github.com/" + repo}
 	}
 	for _, id := range uniqueID.FindAllString(summary, -1) {
-		if ref, ok := Locate(ctx, m, id, "", dependentKeys); ok && ref != nil && ref.URL != "" {
+		if ref, ok := Locate(ctx, m, domain, id, "", dependentKeys); ok && ref != nil && ref.URL != "" {
 			return ref
 		}
 	}
 	return nil
 }
 
-func refForNexusPage(ctx context.Context, m Meta, pageID int) *Ref {
+func refForNexusPage(ctx context.Context, m Meta, domain string, pageID int) *Ref {
 	page, err := m.Page(ctx, pageID)
 	if err != nil {
-		return &Ref{Site: "Nexus", PageID: pageID, URL: nexus.ModURL(nexus.Game, pageID)}
+		return &Ref{Site: "Nexus", PageID: pageID, URL: nexus.ModURL(domain, pageID)}
 	}
 	r := meta.Ref{Site: "Nexus", ID: pageID}
 	var best *Ref
@@ -54,7 +66,7 @@ func refForNexusPage(ctx context.Context, m Meta, pageID int) *Ref {
 			continue
 		}
 		for _, mod := range f.Mods {
-			cand, top := fileIn(page, r, mod.UniqueID, "")
+			cand, top := fileIn(page, domain, r, mod.UniqueID, "")
 			if cand == nil {
 				continue
 			}
@@ -66,5 +78,5 @@ func refForNexusPage(ctx context.Context, m Meta, pageID int) *Ref {
 	if best != nil {
 		return best
 	}
-	return &Ref{Site: "Nexus", PageID: pageID, PageName: page.Name, URL: cmp.Or(page.PageURL, siteURL(r))}
+	return &Ref{Site: "Nexus", PageID: pageID, PageName: page.Name, URL: cmp.Or(page.PageURL, siteURL(domain, r))}
 }

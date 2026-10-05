@@ -52,12 +52,12 @@ func (s *Service) farmOf(folder string) string {
 	return folder
 }
 
-func (s *Service) describeLacks(ctx context.Context, lacks []Lack) []Lack {
+func (s *Service) describeLacks(ctx context.Context, gameID string, lacks []Lack) []Lack {
 	wanted := map[string]bool{}
 	for _, l := range lacks {
 		wanted[l.UniqueID] = true
 	}
-	names := s.describe(ctx, wanted)
+	names := s.describe(ctx, gameID, wanted)
 	for i := range lacks {
 		if d, ok := names[lacks[i].UniqueID]; ok {
 			lacks[i].Name, lacks[i].Where = d.name, d.where
@@ -99,7 +99,7 @@ func (s *Service) Check(ctx context.Context, game, saveFolder, profileID string)
 		return SaveCheck{}, err
 	}
 	present, enabled := haveMaps(mods)
-	out.Missing = s.describeLacks(ctx, MissingFrom(rec.Mods, present, enabled))
+	out.Missing = s.describeLacks(ctx, game, MissingFrom(rec.Mods, present, enabled))
 	out.ContentMissing = contentMissingCount(rec.Mods, out.Missing)
 	return out, nil
 }

@@ -227,17 +227,6 @@ func putGame(s *Settings, gameID string, g GameSettings) {
 	s.Games[gameID] = &cp
 }
 
-func gameSet(s *Settings) *GameSettings {
-	if s.Games == nil {
-		s.Games = map[string]*GameSettings{}
-	}
-	if s.Games[GameStardew] == nil {
-		g := s.GamePrefs(GameStardew)
-		s.Games[GameStardew] = &g
-	}
-	return s.Games[GameStardew]
-}
-
 func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.BackupBeforePlay != "" {
 		dst.BackupBeforePlay = src.BackupBeforePlay

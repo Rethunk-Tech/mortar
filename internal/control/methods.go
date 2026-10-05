@@ -655,7 +655,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if len(p.UniqueIDs) == 0 {
 			return nil, fmt.Errorf("mods files needs a mod")
 		}
-		return s.modExtraFiles(prof, p.UniqueIDs[0])
+		return s.modExtraFiles(p.Game, prof, p.UniqueIDs[0])
 	case "mods.preset":
 		return s.modsPreset(p, id, prof)
 	case "mods.config":

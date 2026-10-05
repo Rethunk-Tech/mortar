@@ -25,7 +25,7 @@ import (
 type Meta interface {
 	Lookup(ctx context.Context, uniqueID string) ([]meta.Ref, error)
 	Page(ctx context.Context, id int) (meta.Page, error)
-	PageRequirements(ctx context.Context, pageID int) ([]meta.Requirement, error)
+	PageRequirements(ctx context.Context, domain string, pageID int) ([]meta.Requirement, error)
 	Collection(ctx context.Context, domain, slug string, revision int) (meta.Collection, error)
 	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []meta.UpdateResult
 }
@@ -53,6 +53,8 @@ type Installed struct {
 
 // Environment says what the profile runs on, for the broken-mod check.
 type Environment struct {
+	// Nexus is how Nexus names the game the check runs for.
+	Nexus       nexus.Title
 	GameVersion string
 	APIVersion  string
 	Platform    string
@@ -256,10 +258,10 @@ func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Resul
 	}
 	reqStart := time.Now()
 	missing := missingDeps(enabled, mods)
-	listed, listedUnknown := listedRequirements(ctx, m, enabled, mods)
+	listed, listedUnknown := listedRequirements(ctx, m, env.Nexus.Domain, enabled, mods)
 	missing = append(missing, listed...)
 	r.Timings = append(r.Timings, CheckTiming{Name: "requirements", Ms: time.Since(reqStart).Milliseconds(), Count: len(missing)})
-	r.Unknown = fillWhere(ctx, m, enabled, missing)
+	r.Unknown = fillWhere(ctx, m, env.Nexus.Domain, enabled, missing)
 	r.Unknown = r.Unknown || listedUnknown
 	r.Missing = missing
 	otherStart := time.Now()
@@ -392,7 +394,7 @@ func fetchAll[T any](ctx context.Context, ids []int, fetch func(context.Context,
 	return got, failed
 }
 
-func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) ([]Missing, bool) {
+func listedRequirements(ctx context.Context, m Meta, domain string, enabled, all []Installed) ([]Missing, bool) {
 	out := []Missing{}
 	var pageIDs []int
 	for _, d := range enabled {
@@ -400,7 +402,9 @@ func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) (
 			pageIDs = append(pageIDs, pageID)
 		}
 	}
-	requirementsByPage, unknown := fetchAll(ctx, pageIDs, m.PageRequirements)
+	requirementsByPage, unknown := fetchAll(ctx, pageIDs, func(ctx context.Context, id int) ([]meta.Requirement, error) {
+		return m.PageRequirements(ctx, domain, id)
+	})
 	var reqIDs []int
 	for _, reqs := range requirementsByPage {
 		for _, req := range reqs {
@@ -463,11 +467,11 @@ func listedRequirements(ctx context.Context, m Meta, enabled, all []Installed) (
 				Site:     "Nexus",
 				PageID:   req.ModID,
 				PageName: pageName,
-				URL:      nexus.ModURL(nexus.Game, req.ModID),
+				URL:      nexus.ModURL(domain, req.ModID),
 			}
 			if uniqueID == "nexus:"+strconv.Itoa(req.ModID) {
 				miss.Where = pageRef
-			} else if located, ok := Locate(ctx, m, uniqueID, "", d.UpdateKeys); located != nil {
+			} else if located, ok := Locate(ctx, m, domain, uniqueID, "", d.UpdateKeys); located != nil {
 				miss.Where = located
 				unknown = unknown || !ok
 			} else {
@@ -659,14 +663,14 @@ func brokenMods(ctx context.Context, m Meta, env Environment, enabled []Installe
 		}
 		x := enabled[i]
 		b := Broken{Key: x.Key, UniqueID: x.UniqueID, Name: x.Name, Status: s, BrokeIn: res.BrokeIn, Summary: res.CompatibilitySummary}
-		b.Replacement = replacementFromSummary(ctx, m, x.UpdateKeys, res.CompatibilitySummary)
+		b.Replacement = replacementFromSummary(ctx, m, env.Nexus.Domain, x.UpdateKeys, res.CompatibilitySummary)
 		broken = append(broken, b)
 	}
 	return broken, unknown
 }
 
 // fillWhere finds where each absent or outdated dependency can be had. It reports whether any lookup failed.
-func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missing) (unknown bool) {
+func fillWhere(ctx context.Context, m Meta, domain string, enabled []Installed, missing []Missing) (unknown bool) {
 	type found struct {
 		ref *Ref
 		ok  bool
@@ -688,7 +692,7 @@ func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missi
 		k := manifest.FoldID(x.UniqueID) + "|" + x.MinimumVersion + "|" + strings.Join(keys, ",")
 		f, hit := cache[k]
 		if !hit {
-			f.ref, f.ok = Locate(ctx, m, x.UniqueID, x.MinimumVersion, keys)
+			f.ref, f.ok = Locate(ctx, m, domain, x.UniqueID, x.MinimumVersion, keys)
 			cache[k] = f
 		}
 		x.Where = f.ref
@@ -697,10 +701,10 @@ func fillWhere(ctx context.Context, m Meta, enabled []Installed, missing []Missi
 	return unknown
 }
 
-func siteURL(r meta.Ref) string {
+func siteURL(domain string, r meta.Ref) string {
 	switch strings.ToLower(r.Site) {
 	case "nexus":
-		return nexus.ModURL(nexus.Game, r.ID)
+		return nexus.ModURL(domain, r.ID)
 	case "curseforge":
 		return "https://www.curseforge.com/projects/" + strconv.Itoa(r.ID)
 	case "moddrop":
@@ -711,7 +715,7 @@ func siteURL(r meta.Ref) string {
 
 // Locate names the page and file to get uniqueID from. ok is false when the dataset could not be read, as
 // opposed to reading it and finding the mod unlisted (nil, true).
-func Locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys []string) (*Ref, bool) {
+func Locate(ctx context.Context, m Meta, domain, uniqueID, minimum string, dependentKeys []string) (*Ref, bool) {
 	refs, err := m.Lookup(ctx, uniqueID)
 	if err != nil {
 		return nil, false
@@ -720,7 +724,7 @@ func Locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys
 	for _, r := range refs {
 		if strings.EqualFold(r.Site, "nexus") {
 			nexus = append(nexus, r)
-		} else if siteURL(r) != "" {
+		} else if siteURL(domain, r) != "" {
 			other = append(other, r)
 		}
 	}
@@ -731,7 +735,7 @@ func Locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys
 		if len(other) == 0 {
 			return nil, true
 		}
-		return &Ref{Site: other[0].Site, PageID: other[0].ID, URL: siteURL(other[0])}, true
+		return &Ref{Site: other[0].Site, PageID: other[0].ID, URL: siteURL(domain, other[0])}, true
 	}
 	for _, k := range dependentKeys {
 		if n, ok := manifest.NexusUpdateKey(k); ok {
@@ -750,7 +754,7 @@ func Locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys
 			ok = false
 			continue
 		}
-		cand, top := fileIn(page, r, uniqueID, minimum)
+		cand, top := fileIn(page, domain, r, uniqueID, minimum)
 		if cand == nil {
 			continue
 		}
@@ -759,7 +763,7 @@ func Locate(ctx context.Context, m Meta, uniqueID, minimum string, dependentKeys
 		}
 	}
 	if best == nil {
-		return &Ref{Site: "Nexus", PageID: nexus[0].ID, URL: siteURL(nexus[0])}, ok
+		return &Ref{Site: "Nexus", PageID: nexus[0].ID, URL: siteURL(domain, nexus[0])}, ok
 	}
 	return best, ok
 }
@@ -779,8 +783,8 @@ func githubRepo(ctx context.Context, m Meta, uniqueID string) string {
 // fileIn picks the newest MAIN file of the page that holds uniqueID at a version meeting minimum. With none,
 // it still returns the page when some file holds the mod, so its link is worth showing; otherwise nil.
 // top is the highest version of the mod on the page, which ranks pages against each other.
-func fileIn(page meta.Page, r meta.Ref, uniqueID, minimum string) (ref *Ref, top string) {
-	pageRef := Ref{Site: "Nexus", PageID: r.ID, PageName: page.Name, URL: cmp.Or(page.PageURL, siteURL(r))}
+func fileIn(page meta.Page, domain string, r meta.Ref, uniqueID, minimum string) (ref *Ref, top string) {
+	pageRef := Ref{Site: "Nexus", PageID: r.ID, PageName: page.Name, URL: cmp.Or(page.PageURL, siteURL(domain, r))}
 	var best *Ref
 	holds := false
 	for _, f := range page.Downloads {

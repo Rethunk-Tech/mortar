@@ -142,16 +142,11 @@ const (
 	categoryOld   = "ARCHIVED"
 )
 
-// nexusPage is a Nexus mod's page for the configured game.
-func nexusPage(modID int) string {
-	return nexus.ModURL(nexus.Game, modID)
-}
-
 // resolver looks one import up. Its answers come from the mod dataset and, when signed in, Nexus's file lists;
 // a lookup that fails leaves the mod as the link named it rather than failing the preview.
 type resolver struct {
 	meta       problems.Meta
-	files      func(ctx context.Context, modID int) ([]nexus.File, error)
+	files      func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error)
 	signedIn   bool
 	premium    bool
 	env        problems.Environment
@@ -201,7 +196,7 @@ func (r *resolver) load(ctx context.Context, modIDs []int) {
 			if !r.signedIn {
 				return
 			}
-			files, err := r.files(ctx, id)
+			files, err := r.files(ctx, r.env.Nexus, id)
 			var status *nexus.StatusError
 			switch {
 			case err == nil:
@@ -255,13 +250,13 @@ func substitute(files []nexus.File, version string) *nexus.File {
 	return nil
 }
 
-func nexusMod(modID, fileID int, state string) Mod {
-	return Mod{Key: store.NexusKey(modID, fileID), Site: SiteNexus, ModID: modID, FileID: fileID, PageURL: nexusPage(modID), State: state, UniqueIDs: []string{}}
+func nexusMod(domain string, modID, fileID int, state string) Mod {
+	return Mod{Key: store.NexusKey(modID, fileID), Site: SiteNexus, ModID: modID, FileID: fileID, PageURL: nexus.ModURL(domain, modID), State: state, UniqueIDs: []string{}}
 }
 
 // nexus resolves one Nexus file.
 func (r *resolver) nexus(modID, fileID int, state string) Mod {
-	m := nexusMod(modID, fileID, state)
+	m := nexusMod(r.env.Nexus.Domain, modID, fileID, state)
 	info := r.infos[modID]
 	if info.page != nil {
 		m.Name, m.Author = info.page.Name, info.page.Author

@@ -178,16 +178,16 @@ func (c *Client) Page(ctx context.Context, id int) (Page, error) {
 }
 
 // RequirementsCacheFile is the cache name for a Nexus page's listed requirements.
-func RequirementsCacheFile(pageID int) string {
-	return "nexus-requirements-" + strconv.Itoa(pageID) + ".json"
+func RequirementsCacheFile(domain string, pageID int) string {
+	return "nexus-requirements-" + domain + "-" + strconv.Itoa(pageID) + ".json"
 }
 
 // PageRequirements returns the requirements listed on a Nexus mod page.
-func (c *Client) PageRequirements(ctx context.Context, pageID int) ([]Requirement, error) {
-	return Cached(c, RequirementsCacheFile(pageID), requirementsTTL, func() ([]Requirement, error) {
+func (c *Client) PageRequirements(ctx context.Context, domain string, pageID int) ([]Requirement, error) {
+	return Cached(c, RequirementsCacheFile(domain, pageID), requirementsTTL, func() ([]Requirement, error) {
 		body, err := json.Marshal(struct {
 			Query string `json:"query"`
-		}{Query: fmt.Sprintf(`{ legacyModsByDomain(ids:[{gameDomain:"stardewvalley",modId:%d}]) { nodes { modId name modRequirements { nexusRequirements { nodes { modId modName notes externalRequirement url } } } } } }`, pageID)})
+		}{Query: fmt.Sprintf(`{ legacyModsByDomain(ids:[{gameDomain:%q,modId:%d}]) { nodes { modId name modRequirements { nexusRequirements { nodes { modId modName notes externalRequirement url } } } } } }`, domain, pageID)})
 		if err != nil {
 			return nil, err
 		}

@@ -573,7 +573,7 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 				installed = v
 			}
 		}
-		pageVer, files := cachedNexusDetails(root, entry.Source.ModID)
+		pageVer, files := cachedNexusDetails(root, info.NexusDomain(), entry.Source.ModID)
 		if !nexusUpdateAvailable(version, entry.Source.FileID, pageVer, files) {
 			continue
 		}
@@ -676,7 +676,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		return openProfile, nil
 	}
 	defer func() { _ = root.Close() }()
-	pageVer, files := cachedNexusDetails(root, modID)
+	pageVer, files := cachedNexusDetails(root, info.NexusDomain(), modID)
 	profiles, err := root.Open(filepath.Join("profiles", info.ID))
 	if err != nil {
 		return openProfile, nil
@@ -751,9 +751,9 @@ type cachedNexusFile struct {
 	ReplacedBy int    `json:"replacedBy"`
 }
 
-func cachedNexusDetails(root *os.Root, modID int) (string, []cachedNexusFile) {
+func cachedNexusDetails(root *os.Root, domain string, modID int) (string, []cachedNexusFile) {
 	c := &meta.Client{CacheDir: filepath.Join(root.Name(), "cache")}
-	d, ok := meta.Peek[nexussvc.Details](c, nexussvc.DetailsName(modID))
+	d, ok := meta.Peek[nexussvc.Details](c, nexussvc.DetailsName(domain, modID))
 	if !ok {
 		return "", nil
 	}

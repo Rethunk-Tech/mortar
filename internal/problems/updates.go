@@ -92,7 +92,7 @@ type Held struct {
 }
 
 // NexusFilesOf lists many Nexus mods' current files in one call (nexus.Client.FilesOf); nil when signed out.
-type NexusFilesOf func(ctx context.Context, modIDs []int) (map[int][]nexus.BatchFile, error)
+type NexusFilesOf func(ctx context.Context, t nexus.Title, modIDs []int) (map[int][]nexus.BatchFile, error)
 
 // checkUpdates asks SMAPI's API about every user mod (the bundled ones update with SMAPI). It never returns an
 // error: a failed lookup leaves Unknown set.
@@ -114,7 +114,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 		return r
 	}
 	results := m.CheckUpdates(ctx, req)
-	live := liveNexusFiles(ctx, filesOf, asked, results)
+	live := liveNexusFiles(ctx, filesOf, env.Nexus, asked, results)
 	current := func(x Installed, url, version string) bool {
 		if files, ok := live[nexusUpdate(x.UpdateKeys, url)]; ok {
 			if is, known := liveFileIsCurrent(files, x, version); known {
@@ -161,7 +161,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 			})
 		}
 	}
-	applyChannelFileOffers(ctx, m, asked, &r)
+	applyChannelFileOffers(ctx, m, env.Nexus.Domain, asked, &r)
 	return r
 }
 
@@ -279,13 +279,13 @@ type Relations struct {
 }
 
 // Relate reports what the mod key/uniqueID needs and which mods need it. ok is false when the profile lacks it.
-func Relate(mods []Installed, key, uniqueID string) (r Relations, ok bool) {
+func Relate(mods []Installed, domain, key, uniqueID string) (r Relations, ok bool) {
 	i := slices.IndexFunc(mods, func(x Installed) bool { return x.Key == key && profile.SameID(x.UniqueID, uniqueID) })
 	if i < 0 {
 		return Relations{}, false
 	}
 	self := mods[i]
-	r = Relations{PageURL: pageURL(self.UpdateKeys), Needs: []Need{}, NeededBy: []Dependent{}}
+	r = Relations{PageURL: pageURL(domain, self.UpdateKeys), Needs: []Need{}, NeededBy: []Dependent{}}
 	for _, dep := range self.Dependencies {
 		n := Need{UniqueID: dep.UniqueID, Name: dep.UniqueID, MinimumVersion: dep.MinimumVersion, Required: dep.Required, State: "ok"}
 		if j := slices.IndexFunc(mods, func(x Installed) bool { return profile.SameID(x.UniqueID, dep.UniqueID) }); j >= 0 {
@@ -308,10 +308,10 @@ func Relate(mods []Installed, key, uniqueID string) (r Relations, ok bool) {
 }
 
 // Pages maps "key/uniqueId" to the page of each mod whose update keys name one.
-func Pages(mods []Installed) map[string]string {
+func Pages(mods []Installed, domain string) map[string]string {
 	out := map[string]string{}
 	for _, m := range mods {
-		if u := pageURL(m.UpdateKeys); u != "" {
+		if u := pageURL(domain, m.UpdateKeys); u != "" {
 			out[m.Key+"/"+m.UniqueID] = u
 		}
 	}
@@ -319,10 +319,10 @@ func Pages(mods []Installed) map[string]string {
 }
 
 // pageURL is the page of the first update key that names one: a Nexus mod or a GitHub repository.
-func pageURL(keys []string) string {
+func pageURL(domain string, keys []string) string {
 	for _, k := range keys {
 		if n, ok := manifest.NexusUpdateKey(k); ok {
-			return siteURL(meta.Ref{Site: "Nexus", ID: n})
+			return siteURL(domain, meta.Ref{Site: "Nexus", ID: n})
 		}
 		if repo, ok := manifest.GitHubUpdateKey(k); ok {
 			return "https://github.com/" + repo
@@ -483,7 +483,7 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url, suggested
 
 // liveNexusFiles asks Nexus once for the current files of every flagged Nexus mod, so a stale dataset page cannot
 // hide a new file or invent one. It returns nothing when signed out or when the call fails.
-func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, asked []Installed, results []meta.UpdateResult) map[int][]nexus.BatchFile {
+func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, asked []Installed, results []meta.UpdateResult) map[int][]nexus.BatchFile {
 	if filesOf == nil {
 		return nil
 	}
@@ -501,7 +501,7 @@ func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, asked []Installed
 	if len(ids) == 0 {
 		return nil
 	}
-	files, err := filesOf(ctx, ids)
+	files, err := filesOf(ctx, t, ids)
 	if err != nil {
 		return nil
 	}

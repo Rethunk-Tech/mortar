@@ -22,7 +22,7 @@ func TestConflictEvidenceEditImageOverlap(t *testing.T) {
 
 	a := imageConflictPack(t, "Pack.ImageA", 0, 0, 16, 16)
 	b := imageConflictPack(t, "Pack.ImageB", 8, 8, 16, 16)
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{a, b})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{a, b})
 	if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Kind != "edit" || got.AssetConflicts[0].Target != "tilesheets/crops" {
 		t.Fatalf("got %+v", got.AssetConflicts)
 	}
@@ -56,7 +56,7 @@ func TestConflictEvidenceEditData(t *testing.T) {
 
 	a := dataConflictPack(t, "Pack.DataA", "alpha")
 	b := dataConflictPack(t, "Pack.DataB", "beta")
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{a, b})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{a, b})
 	if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Kind != "edit" || got.AssetConflicts[0].Target != "data/objects" {
 		t.Fatalf("got %+v", got.AssetConflicts)
 	}
@@ -161,7 +161,7 @@ func TestTokenDataKeysDoNotClashAcrossPacks(t *testing.T) {
 		testfs.WriteFile(t, root, "content.json", content)
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("Mizu.Quail", "a"), pack("Mizu.Turkey", "b")})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{pack("Mizu.Quail", "a"), pack("Mizu.Turkey", "b")})
 	if len(got.AssetConflicts) != 0 {
 		t.Fatalf("{{ModId}} keys are per pack, got %+v", got.AssetConflicts)
 	}
@@ -179,11 +179,11 @@ func TestTargetFieldScopesDataKeys(t *testing.T) {
 		testfs.WriteFile(t, root, "content.json", content)
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.One", "301"), pack("B.Two", "302")})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{pack("A.One", "301"), pack("B.Two", "302")})
 	if len(got.AssetConflicts) != 0 {
 		t.Fatalf("Price on different items is no conflict, got %+v", got.AssetConflicts)
 	}
-	same := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("C.One", "301"), pack("D.Two", "301")})
+	same := Check(context.Background(), fakeMeta{}, testEnv, []Installed{pack("C.One", "301"), pack("D.Two", "301")})
 	if len(same.AssetConflicts) != 1 {
 		t.Fatalf("Price on the same item still clashes, got %+v", same.AssetConflicts)
 	}
@@ -201,7 +201,7 @@ func TestListAppendsDoNotClash(t *testing.T) {
 		testfs.WriteFile(t, root, "content.json", content)
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.Tags"), pack("B.Tags")})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{pack("A.Tags"), pack("B.Tags")})
 	if len(got.AssetConflicts) != 0 {
 		t.Fatalf("list appends never clash, got %+v", got.AssetConflicts)
 	}
@@ -219,11 +219,11 @@ func TestTextOverwritesAreShownNotCounted(t *testing.T) {
 		testfs.WriteFile(t, root, "content.json", content)
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("A.Lines", "Characters/Dialogue/Marnie"), pack("B.Lines", "Characters/Dialogue/Marnie")})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{pack("A.Lines", "Characters/Dialogue/Marnie"), pack("B.Lines", "Characters/Dialogue/Marnie")})
 	if len(got.AssetConflicts) != 1 || !got.AssetConflicts[0].Cosmetic {
 		t.Fatalf("a dialogue overwrite is shown as harmless, got %+v", got.AssetConflicts)
 	}
-	data := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("C.Data", "Data/Events/Mine"), pack("D.Data", "Data/Events/Mine")})
+	data := Check(context.Background(), fakeMeta{}, testEnv, []Installed{pack("C.Data", "Data/Events/Mine"), pack("D.Data", "Data/Events/Mine")})
 	if len(data.AssetConflicts) != 1 || data.AssetConflicts[0].Cosmetic {
 		t.Fatalf("an event script overwrite still counts, got %+v", data.AssetConflicts)
 	}
@@ -250,11 +250,11 @@ func TestConfigTokenValuesCompareResolved(t *testing.T) {
 		}
 		return fromDisk(Installed{Key: id, Enabled: true, Folder: root, Name: id, UniqueID: id})
 	}
-	same := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("Em.Dinos", ""), pack("Em.Animals", "5")})
+	same := Check(context.Background(), fakeMeta{}, testEnv, []Installed{pack("Em.Dinos", ""), pack("Em.Animals", "5")})
 	if len(same.AssetConflicts) != 0 {
 		t.Fatalf("both resolve to 5, got %+v", same.AssetConflicts)
 	}
-	differ := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{pack("Em.Dinos2", ""), pack("Em.Animals2", "9")})
+	differ := Check(context.Background(), fakeMeta{}, testEnv, []Installed{pack("Em.Dinos2", ""), pack("Em.Animals2", "9")})
 	if len(differ.AssetConflicts) != 1 {
 		t.Fatalf("5 against 9 clashes, got %+v", differ.AssetConflicts)
 	}

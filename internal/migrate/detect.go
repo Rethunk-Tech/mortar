@@ -14,8 +14,8 @@ type installation struct {
 	modsPath string
 }
 
-func Detect(home, modsPath string) ([]SourceInfo, error) {
-	installs, err := detect(home, modsPath)
+func Detect(home, modsPath, vortexDomain string) ([]SourceInfo, error) {
+	installs, err := detect(home, modsPath, vortexDomain)
 	if err != nil {
 		return nil, err
 	}
@@ -26,8 +26,8 @@ func Detect(home, modsPath string) ([]SourceInfo, error) {
 	return out, nil
 }
 
-func Preview(home, modsPath, kind, id string) (ProfilePreview, error) {
-	installs, err := detect(home, modsPath)
+func Preview(home, modsPath, vortexDomain, kind, id string) (ProfilePreview, error) {
+	installs, err := detect(home, modsPath, vortexDomain)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -38,7 +38,7 @@ func Preview(home, modsPath, kind, id string) (ProfilePreview, error) {
 			continue
 		}
 		seen = true
-		preview, previewErr := previewInstallation(install, id)
+		preview, previewErr := previewInstallation(install, vortexDomain, id)
 		if previewErr == nil {
 			return preview, nil
 		}
@@ -53,7 +53,7 @@ func Preview(home, modsPath, kind, id string) (ProfilePreview, error) {
 	return ProfilePreview{}, fmt.Errorf("%s is not detected", kind)
 }
 
-func detect(home, modsPath string) ([]installation, error) {
+func detect(home, modsPath, vortexDomain string) ([]installation, error) {
 	base, err := userHome(home)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func detect(home, modsPath string) ([]installation, error) {
 	}
 
 	vortexRoot := filepath.Join(config, "Vortex")
-	if profiles, resolvedModsPath, err := vortexProfiles(vortexRoot, modsPath); err != nil {
+	if profiles, resolvedModsPath, err := vortexProfiles(vortexRoot, modsPath, vortexDomain); err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			return nil, err
 		}
@@ -93,12 +93,12 @@ func detect(home, modsPath string) ([]installation, error) {
 	return out, nil
 }
 
-func previewInstallation(install installation, id string) (ProfilePreview, error) {
+func previewInstallation(install installation, vortexDomain, id string) (ProfilePreview, error) {
 	switch install.info.Kind {
 	case KindStardrop:
 		return stardropPreview(install.root, install.modsPath, id)
 	case KindVortex:
-		return vortexPreview(install.root, install.modsPath, id)
+		return vortexPreview(install.root, install.modsPath, vortexDomain, id)
 	case KindMO2:
 		return mo2Preview(install.root, install.modsPath, id)
 	default:

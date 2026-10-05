@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"io/fs"
 	"log"
 	"net/http"
@@ -270,7 +271,7 @@ type Deps struct {
 	// DownloadDir is an absolute folder for archives; empty or nil uses <data>/downloads.
 	DownloadDir func() string
 	// Track records a Nexus mod as tracked after a successful install; nil means never.
-	Track func(ctx context.Context, modID int)
+	Track func(ctx context.Context, gameID string, modID int)
 	// RetryFetches is extra fetch attempts after a failed download; nil or 0 is off.
 	RetryFetches func() int
 	// PauseWhilePlaying pauses new fetches while GameBusy; installs still wait per profile.
@@ -376,7 +377,7 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wa
 				}
 				for _, it := range items {
 					if it.Name == "" {
-						go s.describe(ctx, it.ID, it.ModID)
+						go s.describe(ctx, it.ID, it.Game, it.ModID)
 					}
 				}
 			}
@@ -402,14 +403,18 @@ func (s *Service) reject(r Request, err error) {
 }
 
 // describe fills a queued Nexus item's name and picture from its mod page, so it shows them while it waits.
-func (s *Service) describe(ctx context.Context, id string, modID int) {
+func (s *Service) describe(ctx context.Context, id, gameID string, modID int) {
 	c, err := s.d.Client()
+	if err != nil {
+		return
+	}
+	t, err := game.NexusTitle(gameID)
 	if err != nil {
 		return
 	}
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	m, err := c.Mod(ctx, modID)
+	m, err := c.Mod(ctx, t, modID)
 	if err != nil {
 		return
 	}
@@ -903,7 +908,9 @@ func (s *Service) OpenPage(id string) error {
 	it := s.find(id)
 	var url string
 	if it != nil && it.FileID != 0 {
-		url = nexus.ModURL(nexus.Game, it.ModID) + fmt.Sprintf("?tab=files&file_id=%d&nmm=1", it.FileID)
+		if t, err := game.NexusTitle(it.Game); err == nil {
+			url = nexus.ModURL(t.Domain, it.ModID) + fmt.Sprintf("?tab=files&file_id=%d&nmm=1", it.FileID)
+		}
 	}
 	s.mu.Unlock()
 	if url == "" {

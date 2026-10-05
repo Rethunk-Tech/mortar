@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"io"
 	"net/http"
 	"strconv"
@@ -41,12 +42,15 @@ func (c *Client) searchNexus(ctx context.Context, game, text string, page int) (
 	if base == "" {
 		base = nexus.BaseURL
 	}
-	domain := domainFor(game)
+	t, err := gamepkg.NexusTitle(game)
+	if err != nil {
+		return Page{}, err
+	}
 	offset := (page - defaultPage) * pageSize
 	escaped := strings.ReplaceAll(text, `"`, `\"`)
 	query := fmt.Sprintf(
 		`{ mods(filter:{gameDomainName:[{value:%q}], name:[{value:%q, op:WILDCARD}]}, sort:[{endorsements:{direction:DESC}}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt } } }`,
-		domain, escaped, pageSize, offset,
+		t.Domain, escaped, pageSize, offset,
 	)
 	raw, err := json.Marshal(nexusSearchBody{Query: query})
 	if err != nil {
@@ -94,7 +98,7 @@ func (c *Client) searchNexus(ctx context.Context, game, text string, page int) (
 			Endorsements: n.Endorsements,
 			Downloads:    n.Downloads,
 			Updated:      n.UpdatedAt,
-			URL:          nexus.ModURL(domain, n.ModID),
+			URL:          nexus.ModURL(t.Domain, n.ModID),
 		})
 	}
 	c.markInstalled(items)

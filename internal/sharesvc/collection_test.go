@@ -64,11 +64,11 @@ func TestPreviewLinkCollection(t *testing.T) {
 	}
 	s := NewService(Deps{
 		Profiles: profiles, Meta: fm,
-		Files: func(_ context.Context, id int) ([]nexus.File, error) {
+		Files: func(_ context.Context, _ nexus.Title, id int) ([]nexus.File, error) {
 			return []nexus.File{nf(id%100, "1.0", "MAIN", true)}, nil
 		},
 		SignedIn: func() bool { return true }, Premium: func() bool { return true },
-		Env: func(string) problems.Environment { return problems.Environment{} }, Queue: &recorder{},
+		Env: func(string) problems.Environment { return stardewEnv }, Queue: &recorder{},
 	})
 	pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
 	if err != nil {
@@ -109,11 +109,11 @@ func cozyCollectionService(t *testing.T, revision int) (*Service, *profile.Store
 	}
 	s := NewService(Deps{
 		Profiles: profiles, Meta: fm,
-		Files: func(_ context.Context, id int) ([]nexus.File, error) {
+		Files: func(_ context.Context, _ nexus.Title, id int) ([]nexus.File, error) {
 			return []nexus.File{nf(id%100, "1.0", "MAIN", true)}, nil
 		},
 		SignedIn: func() bool { return true }, Premium: func() bool { return true },
-		Env: func(string) problems.Environment { return problems.Environment{} }, Queue: &recorder{},
+		Env: func(string) problems.Environment { return stardewEnv }, Queue: &recorder{},
 	})
 	return s, profiles
 }
@@ -253,7 +253,7 @@ func TestCollectionImportAppliesArchiveForPremiumOnly(t *testing.T) {
 					Files:        []meta.CollectionFile{{ModID: 100, FileID: 11}},
 				},
 			},
-			Files: func(context.Context, int) ([]nexus.File, error) {
+			Files: func(context.Context, nexus.Title, int) ([]nexus.File, error) {
 				return []nexus.File{nf(11, "1.0", "MAIN", true)}, nil
 			},
 			SignedIn: func() bool { return true }, Premium: func() bool { return premium },
@@ -261,7 +261,7 @@ func TestCollectionImportAppliesArchiveForPremiumOnly(t *testing.T) {
 				fetched = append(fetched, link)
 				return raw, nil
 			},
-			Env: func(string) problems.Environment { return problems.Environment{} }, Queue: rec,
+			Env: func(string) problems.Environment { return stardewEnv }, Queue: rec,
 		})
 		pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
 		if err != nil {

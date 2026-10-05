@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -17,9 +17,9 @@ func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) 
 	if _, err := s.keyed(); err != nil {
 		return nil, err
 	}
-	info, ok := components.BundledGame(gameID)
-	if !ok || info.NexusDomain() == "" {
-		return nil, fmt.Errorf("game %q has no Nexus domain", gameID)
+	t, err := game.NexusTitle(gameID)
+	if err != nil {
+		return nil, err
 	}
 	if s.Profiles == nil {
 		return nil, errors.New("profiles are unavailable")
@@ -35,7 +35,7 @@ func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) 
 	}
 	var out []nexus.TrackedMod
 	for _, mod := range mods {
-		if !strings.EqualFold(mod.DomainName, info.NexusDomain()) {
+		if !strings.EqualFold(mod.DomainName, t.Domain) {
 			continue
 		}
 		if installed[mod.ModID] {

@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"errors"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -13,7 +14,11 @@ func fileCategory(ctx context.Context, c *nexus.Client, it Item) string {
 	if it.FileID == 0 || c == nil {
 		return ""
 	}
-	files, err := c.Files(ctx, it.ModID)
+	t, err := game.NexusTitle(it.Game)
+	if err != nil {
+		return ""
+	}
+	files, err := c.Files(ctx, t, it.ModID)
 	if err != nil {
 		return ""
 	}
@@ -71,7 +76,7 @@ func (s *Service) installNexusPath(ctx context.Context, it Item, path string, mo
 		res, err = s.d.Install(it.Game, it.Profile, path, src)
 	}
 	if err == nil && src.ModID > 0 && s.d.Track != nil {
-		s.d.Track(ctx, src.ModID)
+		s.d.Track(ctx, it.Game, src.ModID)
 	}
 	var dup *profile.DuplicateError
 	if err == nil || errors.As(err, &dup) {
@@ -91,7 +96,11 @@ func (s *Service) contentPatcherHint(ctx context.Context, it Item, err error) er
 	if clientErr != nil {
 		return err
 	}
-	files, filesErr := c.Files(ctx, it.ModID)
+	t, titleErr := game.NexusTitle(it.Game)
+	if titleErr != nil {
+		return titleErr
+	}
+	files, filesErr := c.Files(ctx, t, it.ModID)
 	if filesErr != nil {
 		return err
 	}

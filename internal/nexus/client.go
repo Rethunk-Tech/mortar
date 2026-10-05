@@ -21,18 +21,13 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
-// Game is the domain name of the only game Mortar takes from Nexus so far, and GameID its numeric id in the v2 API.
-// Configure sets both from the verified component manifest at startup; these are the bundled values.
-var (
-	Game   = "stardewvalley"
-	GameID = 1303
-)
+// scanKey is one mod of one game, as mod ids repeat across games.
+type scanKey struct{ game, mod int }
 
-// Configure sets the Nexus game from the component manifest; an empty domain keeps the current one.
-func Configure(domain string, id int) {
-	if domain != "" && id > 0 {
-		Game, GameID = domain, id
-	}
+// Title names a game to Nexus: its domain in v1 URLs and its numeric id in the v2 API.
+type Title struct {
+	Domain string
+	ID     int
 }
 
 const (
@@ -100,13 +95,13 @@ type Client struct {
 	lim      *limiter
 	track    *trackedCache
 	scanMu   *sync.Mutex
-	scans    map[int]map[int]string
+	scans    map[scanKey]map[int]string
 	onLimits func(Limits)
 }
 
 // New returns a client that identifies itself as Mortar version.
 func New(version string) *Client {
-	return &Client{version: version, lim: &limiter{}, track: &trackedCache{}, scanMu: &sync.Mutex{}, scans: map[int]map[int]string{}}
+	return &Client{version: version, lim: &limiter{}, track: &trackedCache{}, scanMu: &sync.Mutex{}, scans: map[scanKey]map[int]string{}}
 }
 
 // WithKey returns a client that authenticates with key and shares c's rate-limit and tracked-list state.
@@ -308,16 +303,16 @@ type File struct {
 }
 
 // ScanStatuses returns Nexus's v2 virus-scan status for each file. Results are cached for this client.
-func (c *Client) ScanStatuses(ctx context.Context, modID int) (map[int]string, error) {
+func (c *Client) ScanStatuses(ctx context.Context, t Title, modID int) (map[int]string, error) {
 	c.scanMu.Lock()
-	if statuses, ok := c.scans[modID]; ok {
+	if statuses, ok := c.scans[scanKey{t.ID, modID}]; ok {
 		c.scanMu.Unlock()
 		return statuses, nil
 	}
 	c.scanMu.Unlock()
 
 	code, status, body, err := c.roundTrip(ctx, http.MethodPost, "/v2/graphql", map[string]string{
-		"query": fmt.Sprintf("{ modFiles(modId: %d, gameId: %d) { fileId scannedV2 } }", modID, GameID),
+		"query": fmt.Sprintf("{ modFiles(modId: %d, gameId: %d) { fileId scannedV2 } }", modID, t.ID),
 	})
 	if err != nil {
 		return nil, err
@@ -341,13 +336,13 @@ func (c *Client) ScanStatuses(ctx context.Context, modID int) (map[int]string, e
 		statuses[file.FileID] = file.Scanned
 	}
 	c.scanMu.Lock()
-	c.scans[modID] = statuses
+	c.scans[scanKey{t.ID, modID}] = statuses
 	c.scanMu.Unlock()
 	return statuses, nil
 }
 
 // Files lists every file of a mod.
-func (c *Client) Files(ctx context.Context, modID int) ([]File, error) {
+func (c *Client) Files(ctx context.Context, t Title, modID int) ([]File, error) {
 	var raw struct {
 		Files []struct {
 			FileID      int       `json:"file_id"`
@@ -368,7 +363,7 @@ func (c *Client) Files(ctx context.Context, modID int) ([]File, error) {
 			New int `json:"new_file_id"`
 		} `json:"file_updates"`
 	}
-	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/files.json", Game, modID), false, &raw); err != nil {
+	if err := c.get(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/files.json", t.Domain, modID), false, &raw); err != nil {
 		return nil, err
 	}
 	files := make([]File, 0, len(raw.Files))
@@ -402,8 +397,8 @@ type Link struct {
 
 // DownloadLinks asks for a file's download mirrors. Premium accounts pass no key; a free account passes the key
 // and expires of an nxm:// link and otherwise gets ErrPremiumRequired.
-func (c *Client) DownloadLinks(ctx context.Context, modID, fileID int, key string, expires int64) ([]Link, error) {
-	path := fmt.Sprintf("/v1/games/%s/mods/%d/files/%d/download_link.json", Game, modID, fileID)
+func (c *Client) DownloadLinks(ctx context.Context, t Title, modID, fileID int, key string, expires int64) ([]Link, error) {
+	path := fmt.Sprintf("/v1/games/%s/mods/%d/files/%d/download_link.json", t.Domain, modID, fileID)
 	if key != "" {
 		path += "?" + url.Values{"key": {key}, "expires": {strconv.FormatInt(expires, 10)}}.Encode()
 	}

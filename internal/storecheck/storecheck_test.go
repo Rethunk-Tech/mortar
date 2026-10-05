@@ -146,14 +146,14 @@ func TestCheckBaselinesANexusItemFromItsArchiveWhenTheMD5Matches(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "Mod", "a.txt"), []byte("bad"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	s.d.NexusMD5 = func(context.Context, int, int) (string, error) { return "0000", nil }
+	s.d.NexusMD5 = func(context.Context, string, int, int) (string, error) { return "0000", nil }
 	if sum, _ := s.Check(context.Background()); len(sum.Damaged) != 0 {
 		t.Fatalf("a different MD5 must fall back to the current files: %+v", sum)
 	}
 	if err := os.Remove(filepath.Join(dir, "..", "..", ".manifests", "stardew", key+".json")); err != nil {
 		t.Fatal(err)
 	}
-	s.d.NexusMD5 = func(context.Context, int, int) (string, error) { return md5, nil }
+	s.d.NexusMD5 = func(context.Context, string, int, int) (string, error) { return md5, nil }
 	sum, err := s.Check(context.Background())
 	if err != nil || len(sum.Damaged) != 1 || sum.Damaged[0].Changed != 1 {
 		t.Fatalf("baseline from the archive = %+v, %v", sum, err)

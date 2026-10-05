@@ -12,8 +12,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
-const vortexGame = "stardewvalley"
-
 type vortexProfile struct {
 	ID       string                      `json:"id"`
 	GameID   string                      `json:"gameId"`
@@ -31,19 +29,19 @@ type vortexMod struct {
 	Attributes       map[string]json.RawMessage `json:"attributes"`
 }
 
-func vortexProfiles(root, fallbackModsPath string) ([]ProfilePreview, string, error) {
+func vortexProfiles(root, fallbackModsPath, domain string) ([]ProfilePreview, string, error) {
 	state, err := readVortexState(root)
 	if err != nil {
 		return nil, "", err
 	}
-	profiles := vortexProfileList(state)
+	profiles := vortexProfileList(state, domain)
 	if len(profiles) == 0 {
 		return nil, "", nil
 	}
-	modsPath := vortexModsPath(root, fallbackModsPath, state)
+	modsPath := vortexModsPath(root, fallbackModsPath, domain, state)
 	out := make([]ProfilePreview, 0, len(profiles))
 	for _, profile := range profiles {
-		preview, err := vortexPreviewState(modsPath, state, profile.ID)
+		preview, err := vortexPreviewState(modsPath, domain, state, profile.ID)
 		if err != nil {
 			return nil, "", err
 		}
@@ -52,17 +50,17 @@ func vortexProfiles(root, fallbackModsPath string) ([]ProfilePreview, string, er
 	return out, modsPath, nil
 }
 
-func vortexPreview(root, fallbackModsPath, id string) (ProfilePreview, error) {
+func vortexPreview(root, fallbackModsPath, domain, id string) (ProfilePreview, error) {
 	state, err := readVortexState(root)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
-	modsPath := vortexModsPath(root, fallbackModsPath, state)
-	return vortexPreviewState(modsPath, state, id)
+	modsPath := vortexModsPath(root, fallbackModsPath, domain, state)
+	return vortexPreviewState(modsPath, domain, state, id)
 }
 
-func vortexPreviewState(modsPath string, state map[string]json.RawMessage, id string) (ProfilePreview, error) {
-	profiles := vortexProfileList(state)
+func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessage, id string) (ProfilePreview, error) {
+	profiles := vortexProfileList(state, domain)
 	var selected *vortexProfile
 	for i := range profiles {
 		if profiles[i].ID == id {
@@ -73,7 +71,7 @@ func vortexPreviewState(modsPath string, state map[string]json.RawMessage, id st
 	if selected == nil {
 		return ProfilePreview{}, errors.New("Vortex profile " + id + " not found")
 	}
-	mods := vortexModList(state)
+	mods := vortexModList(state, domain)
 	byID := make(map[string]vortexMod, len(mods))
 	for _, mod := range mods {
 		byID[mod.ID] = mod
@@ -187,7 +185,7 @@ func parseVortexJSON(data []byte) (map[string]json.RawMessage, error) {
 	return state, nil
 }
 
-func vortexProfileList(state map[string]json.RawMessage) []vortexProfile {
+func vortexProfileList(state map[string]json.RawMessage, domain string) []vortexProfile {
 	persistent := objectValue(state, "persistent")
 	raw := persistent["profiles"]
 	var direct map[string]json.RawMessage
@@ -204,7 +202,7 @@ func vortexProfileList(state map[string]json.RawMessage) []vortexProfile {
 			profile.ID = key
 		}
 		if profile.GameID != "" {
-			if strings.EqualFold(profile.GameID, vortexGame) {
+			if strings.EqualFold(profile.GameID, domain) {
 				if profile.Name == "" {
 					profile.Name = profile.ID
 				}
@@ -220,7 +218,7 @@ func vortexProfileList(state map[string]json.RawMessage) []vortexProfile {
 			if err := json.Unmarshal(nestedValue, &profile); err != nil {
 				continue
 			}
-			if !strings.EqualFold(profile.GameID, vortexGame) {
+			if !strings.EqualFold(profile.GameID, domain) {
 				continue
 			}
 			if profile.ID == "" {
@@ -235,10 +233,10 @@ func vortexProfileList(state map[string]json.RawMessage) []vortexProfile {
 	return out
 }
 
-func vortexModList(state map[string]json.RawMessage) []vortexMod {
+func vortexModList(state map[string]json.RawMessage, domain string) []vortexMod {
 	persistent := objectValue(state, "persistent")
 	games := objectValue(persistent, "mods")
-	raw := games[vortexGame]
+	raw := games[domain]
 	var values map[string]json.RawMessage
 	if json.Unmarshal(raw, &values) != nil {
 		return nil
@@ -257,17 +255,17 @@ func vortexModList(state map[string]json.RawMessage) []vortexMod {
 	return out
 }
 
-func vortexModsPath(root, fallback string, state map[string]json.RawMessage) string {
+func vortexModsPath(root, fallback, domain string, state map[string]json.RawMessage) string {
 	settings := objectValue(state, "settings")
 	mods := objectValue(settings, "mods")
 	paths := objectValue(mods, "installPath")
-	if path := rawString(paths, vortexGame); path != "" {
+	if path := rawString(paths, domain); path != "" {
 		return cleanVortexPath(root, path)
 	}
 	if fallback != "" {
 		return filepath.Clean(fallback)
 	}
-	return filepath.Join(root, vortexGame, "mods")
+	return filepath.Join(root, domain, "mods")
 }
 
 func vortexModPath(modsPath string, mod vortexMod) string {

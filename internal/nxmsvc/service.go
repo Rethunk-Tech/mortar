@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -99,7 +99,7 @@ func (s *Service) Receive(args []string) bool {
 		found = true
 		if s.duplicate(arg) {
 			log.Printf("nxm: duplicate link ignored")
-			if link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now()); err == nil {
+			if link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain); err == nil {
 				s.mu.Lock()
 				var waiting *Arrival
 				for _, arrival := range s.arrivals {
@@ -116,18 +116,18 @@ func (s *Service) Receive(args []string) bool {
 			}
 			continue
 		}
-		if game, gerr := nxm.LinkGame(arg); gerr == nil && game != nexus.Game {
+		if domain, gerr := nxm.LinkGame(arg); gerr == nil && !isMortarGame(domain) {
 			cur := s.store.Get()
 			if cur.NxmPrevious != "" && cur.RedirectOtherGames() {
 				err := s.handler.ForwardOther(arg, cur.NxmPrevious)
 				if err == nil {
-					log.Printf("nxm: %s link forwarded to the previous handler", game)
+					log.Printf("nxm: %s link forwarded to the previous handler", domain)
 					continue
 				}
-				log.Printf("nxm: forward %s link: %v", game, err)
+				log.Printf("nxm: forward %s link: %v", domain, err)
 			}
 		}
-		link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now())
+		link, err := nxm.Parse(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain)
 		if err == nil && s.Route != nil && s.Route(link) {
 			log.Printf("nxm: mod %d file %d resumed a waiting download", link.ModID, link.FileID)
 			continue
@@ -155,6 +155,11 @@ func (s *Service) Receive(args []string) bool {
 	return found
 }
 
+func isMortarGame(domain string) bool {
+	_, ok := game.ByNexusDomain(domain)
+	return ok
+}
+
 func (s *Service) forget(link string) {
 	s.mu.Lock()
 	delete(s.recent, link)
@@ -165,7 +170,7 @@ func (s *Service) forgetArrival(link nxm.Link) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for raw := range s.recent {
-		if parsed, err := nxm.Parse(raw, s.store.Get().NexusUserID, s.now()); err == nil && parsed == link {
+		if parsed, err := nxm.Parse(raw, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain); err == nil && parsed == link {
 			delete(s.recent, raw)
 		}
 	}

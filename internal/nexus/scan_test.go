@@ -21,11 +21,11 @@ func TestScanStatusesCachesGraphQLResponse(t *testing.T) {
 
 	client := New("test")
 	client.BaseURL = server.URL
-	first, err := client.ScanStatuses(context.Background(), 30597)
+	first, err := client.ScanStatuses(context.Background(), stardew, 30597)
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := client.ScanStatuses(context.Background(), 30597)
+	second, err := client.ScanStatuses(context.Background(), stardew, 30597)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,3 +33,5 @@ func TestScanStatusesCachesGraphQLResponse(t *testing.T) {
 		t.Fatalf("requests=%d first=%v second=%v", requests, first, second)
 	}
 }
+
+var stardew = Title{Domain: "stardewvalley", ID: 1303}

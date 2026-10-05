@@ -3,6 +3,7 @@ package sharesvc
 import (
 	"context"
 	"errors"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"net/url"
 	"strconv"
 	"strings"
@@ -42,14 +43,18 @@ func parseModPageURL(text string) (domain string, modID int, ok bool) {
 }
 
 // previewModPage previews the mod's primary file (else its newest MAIN file) as a one-mod import.
-func (s *Service) previewModPage(ctx context.Context, game, domain string, modID int, profileID string) (Preview, error) {
-	if err := checkDomain(game, domain, "mod"); err != nil {
+func (s *Service) previewModPage(ctx context.Context, gameID, domain string, modID int, profileID string) (Preview, error) {
+	if err := checkDomain(gameID, domain, "mod"); err != nil {
 		return Preview{}, err
 	}
 	if !s.d.Premium() {
 		return Preview{}, errModLinkNeedsPremium
 	}
-	files, err := s.d.Files(ctx, modID)
+	t, err := game.NexusTitle(gameID)
+	if err != nil {
+		return Preview{}, err
+	}
+	files, err := s.d.Files(ctx, t, modID)
 	if err != nil {
 		return Preview{}, err
 	}
@@ -58,7 +63,7 @@ func (s *Service) previewModPage(ctx context.Context, game, domain string, modID
 		return Preview{}, errors.New("that mod has no main file to install")
 	}
 	ref := share.Ref{ModID: modID, FileID: f.FileID}
-	return s.preview(ctx, game, share.Shared{Name: f.Name, Entries: []share.Ref{ref}}, "", nil, profileID, profile.OriginLink)
+	return s.preview(ctx, gameID, share.Shared{Name: f.Name, Entries: []share.Ref{ref}}, "", nil, profileID, profile.OriginLink)
 }
 
 func pickModPageFile(files []nexus.File) *nexus.File {

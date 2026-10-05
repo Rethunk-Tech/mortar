@@ -90,13 +90,13 @@ func (c *Client) endorse(ctx context.Context, path, version string) (EndorseStat
 }
 
 // Endorse records an endorsement of modID at version for the signed-in user.
-func (c *Client) Endorse(ctx context.Context, modID int, version string) (EndorseStatus, error) {
-	return c.endorse(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/endorse.json", Game, modID), version)
+func (c *Client) Endorse(ctx context.Context, t Title, modID int, version string) (EndorseStatus, error) {
+	return c.endorse(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/endorse.json", t.Domain, modID), version)
 }
 
 // Abstain withdraws an endorsement of modID at version for the signed-in user.
-func (c *Client) Abstain(ctx context.Context, modID int, version string) (EndorseStatus, error) {
-	return c.endorse(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/abstain.json", Game, modID), version)
+func (c *Client) Abstain(ctx context.Context, t Title, modID int, version string) (EndorseStatus, error) {
+	return c.endorse(ctx, fmt.Sprintf("/v1/games/%s/mods/%d/abstain.json", t.Domain, modID), version)
 }
 
 func (c *Client) cache() *trackedCache {
@@ -149,8 +149,8 @@ func (c *Client) invalidateTracked() {
 	cache.mu.Unlock()
 }
 
-func (c *Client) setTracked(ctx context.Context, method string, modID int) error {
-	body := trackBody{DomainName: Game, ModID: modID}
+func (c *Client) setTracked(ctx context.Context, t Title, method string, modID int) error {
+	body := trackBody{DomainName: t.Domain, ModID: modID}
 	if err := c.do(ctx, method, "/v1/user/tracked_mods.json", body, nil); err != nil {
 		var msg *MessageError
 		if method == http.MethodPost && errors.As(err, &msg) && msg.Code == http.StatusUnprocessableEntity {
@@ -164,11 +164,11 @@ func (c *Client) setTracked(ctx context.Context, method string, modID int) error
 }
 
 // Track starts tracking modID for the signed-in user.
-func (c *Client) Track(ctx context.Context, modID int) error {
-	return c.setTracked(ctx, http.MethodPost, modID)
+func (c *Client) Track(ctx context.Context, t Title, modID int) error {
+	return c.setTracked(ctx, t, http.MethodPost, modID)
 }
 
 // Untrack stops tracking modID for the signed-in user.
-func (c *Client) Untrack(ctx context.Context, modID int) error {
-	return c.setTracked(ctx, http.MethodDelete, modID)
+func (c *Client) Untrack(ctx context.Context, t Title, modID int) error {
+	return c.setTracked(ctx, t, http.MethodDelete, modID)
 }

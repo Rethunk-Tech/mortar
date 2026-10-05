@@ -35,7 +35,7 @@ func TestCheckUpdatesUsesTheNewestFileInTheInstalledGroup(t *testing.T) {
 	installed := mod("nexus-2364-9545", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:2364"}
 
-	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{installed}, false)
+	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{installed}, false)
 	if len(got.Updates) != 0 {
 		t.Fatalf("updates = %+v, want none", got.Updates)
 	}
@@ -75,7 +75,7 @@ func TestCheckUpdatesChoosesANewerFileFromTheSameStem(t *testing.T) {
 	installed := mod("nexus-2364-9544", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:2364"}
 
-	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{installed}, false)
+	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{installed}, false)
 	if len(got.Updates) != 1 || got.Updates[0].Version != "1.2" {
 		t.Fatalf("updates = %+v, want one same-stem update", got.Updates)
 	}
@@ -100,7 +100,7 @@ func TestCheckUpdatesTrustsSMAPIOverAStaleDatasetPage(t *testing.T) {
 	installed := mod("nexus-28261-179112", id, "2.4.1", true)
 	installed.UpdateKeys = []string{"Nexus:28261"}
 
-	got := CheckUpdates(context.Background(), rm, Environment{}, []Installed{installed}, false)
+	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{installed}, false)
 	if len(got.Updates) != 1 || got.Updates[0].Version != "2.5.0" {
 		t.Fatalf("updates = %+v, want 2.5.0", got.Updates)
 	}
@@ -135,14 +135,14 @@ func TestCheckUpdatesUsesOneLiveCallWhenAvailable(t *testing.T) {
 	installed := mod("nexus-28261-179112", id, "2.4.1", true)
 	installed.UpdateKeys = []string{"Nexus:28261"}
 	calls := 0
-	filesOf := func(_ context.Context, ids []int) (map[int][]nexus.BatchFile, error) {
+	filesOf := func(_ context.Context, _ nexus.Title, ids []int) (map[int][]nexus.BatchFile, error) {
 		calls++
 		return map[int][]nexus.BatchFile{28261: {
 			{FileID: 179112, Name: "Machine Control Panel", Version: "2.4.1", Category: "OLD_VERSION"},
 			{FileID: 185367, Name: "Machine Control Panel", Version: "2.5.0", Category: "MAIN"},
 		}}, nil
 	}
-	got := checkUpdates(context.Background(), rm, Environment{}, []Installed{installed}, false, false, filesOf)
+	got := checkUpdates(context.Background(), rm, testEnv, []Installed{installed}, false, false, filesOf)
 	if calls != 1 || len(got.Updates) != 1 {
 		t.Fatalf("calls %d updates %+v", calls, got.Updates)
 	}

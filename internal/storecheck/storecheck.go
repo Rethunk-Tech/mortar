@@ -43,7 +43,7 @@ type Deps struct {
 	ArchiveDir func() string
 	// NexusMD5 is Nexus's recorded MD5 of a mod file; nil, or an error, leaves an item without hashes to be baselined
 	// from its current files.
-	NexusMD5 func(ctx context.Context, modID, fileID int) (string, error)
+	NexusMD5 func(ctx context.Context, gameID string, modID, fileID int) (string, error)
 	// Busy reports a running game or an active download or install; the background pass waits it out.
 	Busy func() bool
 	Emit func(name string, data any)
@@ -197,7 +197,7 @@ func (s *Service) baseline(ctx context.Context, r store.Ref) {
 	if !ok || s.d.NexusMD5 == nil || s.d.ArchiveDir == nil || s.d.Items.HasBaseline(r.Game, r.Key) {
 		return
 	}
-	want, err := s.d.NexusMD5(ctx, modID, fileID)
+	want, err := s.d.NexusMD5(ctx, r.Game, modID, fileID)
 	if err != nil || want == "" {
 		return
 	}

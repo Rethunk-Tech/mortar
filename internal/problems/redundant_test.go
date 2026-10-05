@@ -15,7 +15,7 @@ func TestSupersededWhenTheNamedReplacementIsEnabled(t *testing.T) {
 			{Key: "old", UniqueID: "A.Old", Name: "Old Clock", Status: "broken", Summary: "see https://www.nexusmods.com/stardewvalley/mods/20794"},
 		},
 	}
-	r = superseded(r, mods)
+	r = superseded(r, "stardewvalley", mods)
 	if len(r.Redundant) != 1 || r.Redundant[0].Key != "old" || r.Redundant[0].By[0].Key != "new" {
 		t.Fatalf("redundant = %+v", r.Redundant)
 	}
@@ -33,7 +33,7 @@ func TestSupersededSkipsAModAlreadyRedundant(t *testing.T) {
 		Redundant: []Redundant{{Kind: "shadowed", Key: "old"}},
 		Broken:    []Broken{{Key: "old", UniqueID: "A.Old", Name: "Old", Status: "obsolete", Summary: "use [New](#) instead."}},
 	}
-	if r = superseded(r, mods); len(r.Redundant) != 1 {
+	if r = superseded(r, "stardewvalley", mods); len(r.Redundant) != 1 {
 		t.Fatalf("redundant = %+v", r.Redundant)
 	}
 }

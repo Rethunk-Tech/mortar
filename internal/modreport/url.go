@@ -25,7 +25,7 @@ func GitHubIssueURL(repo, title, body string) string {
 	return "https://github.com/" + repo + "/issues/new?" + q.Encode()
 }
 
-// NexusBugsURL is the mod's bug tracker tab on Nexus; domain is the v1 site segment (e.g. stardewvalley).
+// NexusBugsURL is the mod's bug tracker tab on Nexus; domain is the v1 site segment.
 func NexusBugsURL(domain string, modID int) string {
 	if domain == "" || modID <= 0 {
 		return ""

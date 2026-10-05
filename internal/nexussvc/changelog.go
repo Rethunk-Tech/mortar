@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -51,16 +51,16 @@ func (s *Service) UpdateChangelog(ctx context.Context, game string, modID int, g
 	return out, nil
 }
 
-func (s *Service) changelogs(ctx context.Context, game string, modID int) ([]nexus.Changelog, error) {
-	domain := nexus.Game
-	if info, ok := components.BundledGame(game); ok && info.NexusDomain() != "" {
-		domain = info.NexusDomain()
+func (s *Service) changelogs(ctx context.Context, gameID string, modID int) ([]nexus.Changelog, error) {
+	t, err := game.NexusTitle(gameID)
+	if err != nil {
+		return nil, err
 	}
-	return meta.Cached(s.meta, fmt.Sprintf("nexus/changelogs-%s-%d.json", domain, modID), changelogTTL, func() ([]nexus.Changelog, error) {
+	return meta.Cached(s.meta, fmt.Sprintf("nexus/changelogs-%s-%d.json", t.Domain, modID), changelogTTL, func() ([]nexus.Changelog, error) {
 		c, err := Authed(s.store, s.client)
 		if err != nil {
 			return nil, err
 		}
-		return c.Changelogs(ctx, modID, math.MaxInt)
+		return c.Changelogs(ctx, t, modID, math.MaxInt)
 	})
 }

@@ -6,11 +6,13 @@ import (
 	"time"
 )
 
+func stardewOnly(domain string) (string, bool) { return "stardew", domain == "stardewvalley" }
+
 func TestParse(t *testing.T) {
 	now := time.Unix(1_000_000, 0)
 	const ok = "nxm://stardewvalley/mods/1915/files/77?key=abc_-x&expires=1000600&user_id=42"
-	got, err := Parse(ok, 42, now)
-	if err != nil || got != (Link{ModID: 1915, FileID: 77, Key: "abc_-x", Expires: 1000600, UserID: 42}) {
+	got, err := Parse(ok, 42, now, stardewOnly)
+	if err != nil || got != (Link{Game: "stardew", ModID: 1915, FileID: 77, Key: "abc_-x", Expires: 1000600, UserID: 42}) {
 		t.Fatalf("valid link: %+v, %v", got, err)
 	}
 	cases := map[string]struct {
@@ -36,7 +38,7 @@ func TestParse(t *testing.T) {
 		"userinfo":     {"nxm://me@stardewvalley/mods/1/files/2?key=k&expires=1000600&user_id=42", 42, ReasonForm},
 	}
 	for name, c := range cases {
-		_, err := Parse(c.raw, c.user, now)
+		_, err := Parse(c.raw, c.user, now, stardewOnly)
 		var re *RejectError
 		if !errors.As(err, &re) || re.Reason != c.reason {
 			t.Errorf("%s: got %v, want reason %s", name, err, c.reason)

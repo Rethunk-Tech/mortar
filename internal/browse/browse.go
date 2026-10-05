@@ -18,7 +18,6 @@ const (
 	defaultPage    = 1
 	sourceNexus    = "nexus"
 	sourceGitHub   = "github"
-	stardewDomain  = "stardewvalley"
 	stardewGHTopic = "stardew-valley-mod"
 	nexusGraphQL   = "/v2/graphql"
 	githubSearch   = "/search/repositories"

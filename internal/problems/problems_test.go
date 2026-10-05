@@ -78,7 +78,7 @@ func TestMissingKinds(t *testing.T) {
 		}, []string{}},
 	}
 	for _, c := range cases {
-		got := Check(context.Background(), fakeMeta{}, Environment{}, c.mods)
+		got := Check(context.Background(), fakeMeta{}, testEnv, c.mods)
 		var reasons []string
 		for _, m := range got.Missing {
 			reasons = append(reasons, m.Reason)
@@ -99,7 +99,7 @@ func TestMissingKinds(t *testing.T) {
 func TestContentPackForIsRequired(t *testing.T) {
 	m := mod("a", "A", "1.0", true)
 	m.Dependencies = []manifest.Dependency{{UniqueID: "Pathoschild.ContentPatcher", MinimumVersion: "2.0", Required: true}}
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{m})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{m})
 	if len(got.Missing) != 1 || got.Missing[0].UniqueID != "Pathoschild.ContentPatcher" {
 		t.Fatalf("missing = %+v", got.Missing)
 	}
@@ -161,7 +161,7 @@ func TestWhere(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		got := Check(context.Background(), c.meta, Environment{}, c.mods)
+		got := Check(context.Background(), c.meta, testEnv, c.mods)
 		if len(got.Missing) != 1 || !reflect.DeepEqual(got.Missing[0].Where, c.want) || got.Unknown != c.unknown {
 			t.Errorf("%s: where = %+v, unknown = %v; want %+v, %v", c.name, got.Missing, got.Unknown, c.want, c.unknown)
 		}
@@ -171,7 +171,7 @@ func TestWhere(t *testing.T) {
 func TestDuplicates(t *testing.T) {
 	nexus := mod("n", "S", "2.0", true)
 	nexus.SourceKind = "nexus"
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{
 		mod("x", "L", "1.0", true, req("S", "2.0")),
 		mod("o", "S", "1.0", true),
 		nexus,
@@ -199,7 +199,7 @@ func TestNexusFilesInDuplicate(t *testing.T) {
 			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
 			{ID: 175477, Type: "MAIN", FileName: "WorldMap-2.0.zip", Version: "2.0"},
 		},
-	}}}, Environment{}, []Installed{a, b})
+	}}}, testEnv, []Installed{a, b})
 	if len(got.Duplicates) != 1 || len(got.Duplicates[0].NexusFiles) != 2 {
 		t.Fatalf("nexus files = %+v", got.Duplicates)
 	}
@@ -218,7 +218,7 @@ func TestOptionalNexusFileDuplicateIsInformational(t *testing.T) {
 			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
 			{ID: 175477, Type: "MISCELLANEOUS", FileName: "WorldMap-addon.zip", Version: "1.0"},
 		},
-	}}}, Environment{}, []Installed{a, b})
+	}}}, testEnv, []Installed{a, b})
 	if len(got.Duplicates) != 1 || !got.Duplicates[0].NexusOptional || got.Count() != 0 {
 		t.Fatalf("optional duplicate = %+v, count = %d", got.Duplicates, got.Count())
 	}
@@ -232,7 +232,7 @@ func TestBroken(t *testing.T) {
 		"D": {Compatibility: "Broken"},
 	}}
 	mods := []Installed{mod("a", "A", "1", true), mod("b", "B", "1", true), mod("c", "C", "1", true), mod("d", "D", "1", false)}
-	got := Check(context.Background(), m, Environment{}, mods)
+	got := Check(context.Background(), m, testEnv, mods)
 	want := []Broken{
 		{Key: "a", UniqueID: "A", Name: "A", Status: "broken", BrokeIn: "Stardew Valley 1.6"},
 		{Key: "c", UniqueID: "C", Name: "C", Status: "obsolete"},
@@ -240,14 +240,14 @@ func TestBroken(t *testing.T) {
 	if !reflect.DeepEqual(got.Broken, want) || got.Unknown {
 		t.Fatalf("broken = %+v, unknown = %v", got.Broken, got.Unknown)
 	}
-	off := Check(context.Background(), fakeMeta{updatesOff: true}, Environment{}, mods)
+	off := Check(context.Background(), fakeMeta{updatesOff: true}, testEnv, mods)
 	if len(off.Broken) != 0 || !off.Unknown {
 		t.Fatalf("offline: %+v", off)
 	}
 }
 
 func TestCheckPopulatesTimings(t *testing.T) {
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{mod("a", "A", "1.0", true)})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{mod("a", "A", "1.0", true)})
 	names := map[string]bool{}
 	for _, tmg := range got.Timings {
 		names[tmg.Name] = true

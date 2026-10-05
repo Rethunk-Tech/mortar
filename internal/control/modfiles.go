@@ -13,14 +13,14 @@ type ModExtraFile struct {
 	Label string `json:"label"`
 }
 
-func (s *Services) modExtraFiles(prof profile.Profile, modID string) ([]ModExtraFile, error) {
+func (s *Services) modExtraFiles(gameID string, prof profile.Profile, modID string) ([]ModExtraFile, error) {
 	e, _, ok := prof.FindMod("", modID)
 	if !ok {
 		return nil, fmt.Errorf("profile %s has no mod %q", prof.Name, modID)
 	}
 	var files []nexus.File
 	if e.Source.Kind == profile.KindNexus && e.Source.ModID > 0 && s.Nexus != nil {
-		if d, ok := s.Nexus.CachedDetails([]int{e.Source.ModID})[e.Source.ModID]; ok {
+		if d, ok := s.Nexus.CachedDetails(gameID, []int{e.Source.ModID})[e.Source.ModID]; ok {
 			files = d.Files
 		}
 	}

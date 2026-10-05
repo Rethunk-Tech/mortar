@@ -241,17 +241,17 @@ func (s *Service) ExportCollection(ctx context.Context, game, profileID string) 
 	if !ok || info.NexusDomain() == "" {
 		return ExportedCollection{}, fmt.Errorf("%s has no Nexus page to make a collection for", game)
 	}
-	domain := info.NexusDomain()
+	t := nexus.Title{Domain: info.NexusDomain(), ID: info.NexusID()}
 	d := s.App.Dialog.SaveFile().SetFilename("collection.zip").AddFilter("Nexus collection draft (zip)", "*.zip")
 	d.AttachToWindow(s.App.Window.Current())
 	dest, err := d.PromptForSingleSelection()
 	if err != nil || dest == "" {
 		return ExportedCollection{Skipped: []string{}}, err
 	}
-	return s.writeCollection(ctx, p, domain, modsDir, dest)
+	return s.writeCollection(ctx, p, t, modsDir, dest)
 }
 
-func (s *Service) writeCollection(ctx context.Context, p profile.Profile, domain, modsDir, dest string) (ExportedCollection, error) {
+func (s *Service) writeCollection(ctx context.Context, p profile.Profile, t nexus.Title, modsDir, dest string) (ExportedCollection, error) {
 	cache := map[int]map[int]nexus.File{}
 	facts := func(modID, fileID int) (nexus.File, bool) {
 		if s.d.Files == nil || !s.d.SignedIn() {
@@ -260,7 +260,7 @@ func (s *Service) writeCollection(ctx context.Context, p profile.Profile, domain
 		byID, ok := cache[modID]
 		if !ok {
 			byID = map[int]nexus.File{}
-			if files, err := s.d.Files(ctx, modID); err == nil {
+			if files, err := s.d.Files(ctx, t, modID); err == nil {
 				for _, f := range files {
 					byID[f.FileID] = f
 				}
@@ -270,7 +270,7 @@ func (s *Service) writeCollection(ctx context.Context, p profile.Profile, domain
 		f, ok := byID[fileID]
 		return f, ok
 	}
-	doc, files, skipped, err := buildCollection(p, domain, modsDir, facts)
+	doc, files, skipped, err := buildCollection(p, t.Domain, modsDir, facts)
 	if err != nil {
 		return ExportedCollection{}, err
 	}

@@ -14,18 +14,20 @@ import (
 
 // GameInfo is one listed game with its install state.
 type GameInfo struct {
-	ID         string         `json:"id"`
-	Name       string         `json:"name"`
-	AppID      string         `json:"appId"`
-	Loader     string         `json:"loader"`
-	LoaderID   string         `json:"loaderId"`
-	Sources    []string       `json:"sources"`
-	Available  bool           `json:"available"`
-	Installed  bool           `json:"installed"`
-	InstallDir string         `json:"installDir"`
-	ArtURL     string         `json:"artUrl"`
-	Store      string         `json:"store"`
-	Installs   []FoundInstall `json:"installs"`
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	AppID    string   `json:"appId"`
+	Loader   string   `json:"loader"`
+	LoaderID string   `json:"loaderId"`
+	Sources  []string `json:"sources"`
+	// SourceKeys maps a source id to the catalog's key for the game on it (Nexus domain, Thunderstore community); sources without a key are left out.
+	SourceKeys map[string]string `json:"sourceKeys"`
+	Available  bool              `json:"available"`
+	Installed  bool              `json:"installed"`
+	InstallDir string            `json:"installDir"`
+	ArtURL     string            `json:"artUrl"`
+	Store      string            `json:"store"`
+	Installs   []FoundInstall    `json:"installs"`
 }
 
 // SteamAccess is whether Flatpak Steam can read Mortar's data folder.
@@ -97,10 +99,13 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 	catalog := Catalog()
 	out := make([]GameInfo, 0, len(catalog))
 	for _, c := range catalog {
-		info := GameInfo{ID: c.ID, Name: c.Name, AppID: c.SteamAppID(), Installs: []FoundInstall{}, Sources: make([]string, len(c.Sources))}
+		info := GameInfo{ID: c.ID, Name: c.Name, AppID: c.SteamAppID(), Installs: []FoundInstall{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
 		for i, src := range c.Sources {
 			info.Sources[i] = src.ID
+			if src.Key != "" {
+				info.SourceKeys[src.ID] = src.Key
+			}
 		}
 		if g := Find(c.ID); g != nil && c.Enabled {
 			info.Available = true

@@ -2,7 +2,6 @@ package problems
 
 import (
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -32,7 +31,7 @@ var markdownLinkText = regexp.MustCompile(`\[([^\]]+)\]\(`)
 // superseded finds enabled mods whose SMAPI compatibility summary sends the player to another mod that is enabled
 // too: by Nexus page, UniqueID or the linked name. Their Broken and Compat rows are dropped, since the advice is
 // already taken.
-func superseded(r Result, mods []Installed) Result {
+func superseded(r Result, domain string, mods []Installed) Result {
 	enabled := make([]Installed, 0, len(mods))
 	for _, m := range mods {
 		if m.Enabled {
@@ -48,7 +47,7 @@ func superseded(r Result, mods []Installed) Result {
 		if gone[key] || listed[key] {
 			return
 		}
-		by := namedIn(summary, enabled, key)
+		by := namedIn(domain, summary, enabled, key)
 		if len(by) == 0 {
 			return
 		}
@@ -83,15 +82,13 @@ func superseded(r Result, mods []Installed) Result {
 }
 
 // namedIn lists the enabled mods, other than self, that summary names.
-func namedIn(summary string, enabled []Installed, self string) []ModRef {
+func namedIn(domain, summary string, enabled []Installed, self string) []ModRef {
 	if strings.TrimSpace(summary) == "" {
 		return nil
 	}
 	pages := map[int]bool{}
-	for _, parts := range nexusModURL.FindAllStringSubmatch(summary, -1) {
-		if id, err := strconv.Atoi(parts[1]); err == nil {
-			pages[id] = true
-		}
+	for _, id := range modPageIDs(nexusModURL, summary, domain) {
+		pages[id] = true
 	}
 	ids := map[string]bool{}
 	for _, id := range uniqueID.FindAllString(summary, -1) {

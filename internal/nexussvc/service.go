@@ -5,10 +5,9 @@ package nexussvc
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -124,13 +123,17 @@ func (s *Service) update(fn func(*settings.Settings)) (Account, error) {
 	return acct, nil
 }
 
-// ModName is the title of a Stardew Valley mod page on Nexus, for showing what a download link is for.
-func (s *Service) ModName(ctx context.Context, modID int) (string, error) {
+// ModName is the title of a game's mod page on Nexus, for showing what a download link is for.
+func (s *Service) ModName(ctx context.Context, gameID string, modID int) (string, error) {
+	t, err := game.NexusTitle(gameID)
+	if err != nil {
+		return "", err
+	}
 	c, err := Authed(s.store, s.client)
 	if err != nil {
 		return "", err
 	}
-	m, err := c.Mod(ctx, modID)
+	m, err := c.Mod(ctx, t, modID)
 	return m.Name, err
 }
 
@@ -139,22 +142,30 @@ func (s *Service) keyed() (*nexus.Client, error) {
 }
 
 // Endorse records the signed-in user's endorsement of modID at version.
-func (s *Service) Endorse(ctx context.Context, modID int, version string) (string, error) {
+func (s *Service) Endorse(ctx context.Context, gameID string, modID int, version string) (string, error) {
+	t, err := game.NexusTitle(gameID)
+	if err != nil {
+		return "", err
+	}
 	c, err := s.keyed()
 	if err != nil {
 		return "", err
 	}
-	status, err := c.Endorse(ctx, modID, version)
+	status, err := c.Endorse(ctx, t, modID, version)
 	return string(status), err
 }
 
 // Abstain withdraws the signed-in user's endorsement of modID at version.
-func (s *Service) Abstain(ctx context.Context, modID int, version string) (string, error) {
+func (s *Service) Abstain(ctx context.Context, gameID string, modID int, version string) (string, error) {
+	t, err := game.NexusTitle(gameID)
+	if err != nil {
+		return "", err
+	}
 	c, err := s.keyed()
 	if err != nil {
 		return "", err
 	}
-	status, err := c.Abstain(ctx, modID, version)
+	status, err := c.Abstain(ctx, t, modID, version)
 	return string(status), err
 }
 
@@ -169,9 +180,9 @@ func (s *Service) TrackedMods(ctx context.Context) ([]nexus.TrackedMod, error) {
 
 // trackedFor returns the signed-in user's tracked Nexus mod ids for a Mortar game.
 func (s *Service) trackedFor(ctx context.Context, gameID string) ([]int, error) {
-	info, ok := components.BundledGame(gameID)
-	if !ok || info.NexusDomain() == "" {
-		return nil, fmt.Errorf("game %q has no Nexus domain", gameID)
+	t, err := game.NexusTitle(gameID)
+	if err != nil {
+		return nil, err
 	}
 	mods, err := s.TrackedMods(ctx)
 	if err != nil {
@@ -179,7 +190,7 @@ func (s *Service) trackedFor(ctx context.Context, gameID string) ([]int, error) 
 	}
 	var ids []int
 	for _, mod := range mods {
-		if strings.EqualFold(mod.DomainName, info.NexusDomain()) {
+		if strings.EqualFold(mod.DomainName, t.Domain) {
 			ids = append(ids, mod.ModID)
 		}
 	}
@@ -218,7 +229,7 @@ func (s *Service) UntrackAll(ctx context.Context, gameID string, onlyNotInProfil
 			result.StoppedForLimit = true
 			break
 		}
-		if err := s.Untrack(ctx, modID); err != nil {
+		if err := s.Untrack(ctx, gameID, modID); err != nil {
 			if _, ok := errors.AsType[*nexus.RateLimitError](err); ok {
 				result.StoppedForLimit = true
 				break
@@ -255,19 +266,27 @@ func (s *Service) profileModIDs(gameID string) (map[int]bool, error) {
 }
 
 // Track starts tracking modID for the signed-in user.
-func (s *Service) Track(ctx context.Context, modID int) error {
+func (s *Service) Track(ctx context.Context, gameID string, modID int) error {
+	t, err := game.NexusTitle(gameID)
+	if err != nil {
+		return err
+	}
 	c, err := s.keyed()
 	if err != nil {
 		return err
 	}
-	return c.Track(ctx, modID)
+	return c.Track(ctx, t, modID)
 }
 
 // Untrack stops tracking modID for the signed-in user.
-func (s *Service) Untrack(ctx context.Context, modID int) error {
+func (s *Service) Untrack(ctx context.Context, gameID string, modID int) error {
+	t, err := game.NexusTitle(gameID)
+	if err != nil {
+		return err
+	}
 	c, err := s.keyed()
 	if err != nil {
 		return err
 	}
-	return c.Untrack(ctx, modID)
+	return c.Untrack(ctx, t, modID)
 }

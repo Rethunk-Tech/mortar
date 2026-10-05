@@ -300,10 +300,6 @@ func (s *Service) ApplyImport(path string, sections []string) error {
 	return err
 }
 
-func (s *Service) SetNxmDefaultProfile(id string) error {
-	return s.set(func(cur *Settings) { gameSet(cur).NxmDefaultProfile = id })
-}
-
 // SetAskEndorseMods sets whether Mortar suggests endorsing mods after clean runs.
 func (s *Service) SetAskEndorseMods(on bool) error {
 	return s.set(func(v *Settings) { v.AskEndorseMods = &on })

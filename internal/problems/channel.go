@@ -9,7 +9,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
-func applyChannelFileOffers(ctx context.Context, m Meta, asked []Installed, r *UpdatesResult) {
+func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []Installed, r *UpdatesResult) {
 	for _, x := range asked {
 		ch := profile.NormalizeChannel(x.UpdateChannel)
 		if ch == profile.ChannelMain {
@@ -38,7 +38,7 @@ func applyChannelFileOffers(ctx context.Context, m Meta, asked []Installed, r *U
 		if !ok || downloaded(x, f.Version) {
 			continue
 		}
-		upsertChannelOffer(r, x, f.Version, siteURL(meta.Ref{Site: "Nexus", ID: modID}), modID)
+		upsertChannelOffer(r, x, f.Version, siteURL(domain, meta.Ref{Site: "Nexus", ID: modID}), modID)
 	}
 }
 

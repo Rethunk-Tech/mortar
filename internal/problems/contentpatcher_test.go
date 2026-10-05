@@ -47,11 +47,11 @@ func TestAssetConflicts(t *testing.T) {
 	includePeer := testdataPack(t, "include_b")
 
 	t.Run("edits by packs that name each other are intended", func(t *testing.T) {
-		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{testdataPack(t, "aware_a"), editB})
+		got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{testdataPack(t, "aware_a"), editB})
 		if len(got.AssetConflicts) != 0 {
 			t.Fatalf("got %+v", got.AssetConflicts)
 		}
-		got = Check(context.Background(), fakeMeta{}, Environment{}, []Installed{testdataPack(t, "aware_a"), editA})
+		got = Check(context.Background(), fakeMeta{}, testEnv, []Installed{testdataPack(t, "aware_a"), editA})
 		if len(got.AssetConflicts) != 1 {
 			t.Fatalf("unaware pair not reported: %+v", got.AssetConflicts)
 		}
@@ -59,40 +59,40 @@ func TestAssetConflicts(t *testing.T) {
 	t.Run("packs from one entry or a declared dependency are intended", func(t *testing.T) {
 		a, b := editA, editB
 		b.Key = a.Key
-		if got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{a, b}); len(got.AssetConflicts) != 0 {
+		if got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{a, b}); len(got.AssetConflicts) != 0 {
 			t.Fatalf("same entry reported: %+v", got.AssetConflicts)
 		}
 		b = editB
 		b.Dependencies = []manifest.Dependency{{UniqueID: a.UniqueID}}
-		if got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{a, b}); len(got.AssetConflicts) != 0 {
+		if got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{a, b}); len(got.AssetConflicts) != 0 {
 			t.Fatalf("dependency reported: %+v", got.AssetConflicts)
 		}
 	})
 	t.Run("HasMod conditions gate patches", func(t *testing.T) {
 		gated := testdataPack(t, "gated_a")
-		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{gated, loadB, editA})
+		got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{gated, loadB, editA})
 		if len(got.AssetConflicts) != 0 {
 			t.Fatalf("gated patches reported: %+v", got.AssetConflicts)
 		}
-		got = Check(context.Background(), fakeMeta{}, Environment{}, []Installed{gated, loadA})
+		got = Check(context.Background(), fakeMeta{}, testEnv, []Installed{gated, loadA})
 		if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Target != "portraits/farmer" {
 			t.Fatalf("HasMod false with the mod absent should apply: %+v", got.AssetConflicts)
 		}
 	})
 	t.Run("Load/Load conflict", func(t *testing.T) {
-		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{loadA, loadB})
+		got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{loadA, loadB})
 		if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Kind != "load" || got.AssetConflicts[0].Target != "portraits/farmer" {
 			t.Fatalf("got %+v", got.AssetConflicts)
 		}
 	})
 	t.Run("EditImage overlap", func(t *testing.T) {
-		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{editA, editB})
+		got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{editA, editB})
 		if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Kind != "edit" || got.AssetConflicts[0].Target != "tilesheets/crops" {
 			t.Fatalf("got %+v", got.AssetConflicts)
 		}
 	})
 	t.Run("EditData not reported", func(t *testing.T) {
-		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{editA, editB})
+		got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{editA, editB})
 		for _, c := range got.AssetConflicts {
 			if c.Target == "data/npcdispositions" {
 				t.Fatalf("EditData reported: %+v", c)
@@ -103,13 +103,13 @@ func TestAssetConflicts(t *testing.T) {
 		if skips := readContentPack(tokenA).skips; skips != 1 {
 			t.Fatalf("skips = %d", skips)
 		}
-		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{tokenA, tokenB})
+		got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{tokenA, tokenB})
 		if len(got.AssetConflicts) != 0 {
 			t.Fatalf("tokenized conflicted: %+v", got.AssetConflicts)
 		}
 	})
 	t.Run("Include followed", func(t *testing.T) {
-		got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{inc, includePeer})
+		got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{inc, includePeer})
 		if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Target != "maps/springobjects" {
 			t.Fatalf("got %+v", got.AssetConflicts)
 		}
@@ -151,7 +151,7 @@ func TestContentPatcherJSONNoise(t *testing.T) {
 	peer := testdataPack(t, "include_b")
 	mod := fromDisk(Installed{Key: "noise", Enabled: true, Folder: folder})
 	mod.Name, mod.UniqueID = "Pack.Noise", "Pack.Noise"
-	got := Check(context.Background(), fakeMeta{}, Environment{}, []Installed{mod, peer})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{mod, peer})
 	if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Target != "maps/springobjects" {
 		t.Fatalf("got %+v", got.AssetConflicts)
 	}

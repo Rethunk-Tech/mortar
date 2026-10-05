@@ -31,7 +31,7 @@ func TestSearchNexusQueryAndPaging(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	c := &Client{NexusURL: srv.URL, Version: "test"}
-	page, err := c.Search(context.Background(), "stardewvalley", "nexus", "space", 2)
+	page, err := c.Search(context.Background(), "stardew", "nexus", "space", 2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +71,7 @@ func TestSearchNexusMarksInstalled(t *testing.T) {
 			return source == sourceNexus && id == "1348"
 		},
 	}
-	page, err := c.Search(context.Background(), "stardewvalley", "nexus", "x", 1)
+	page, err := c.Search(context.Background(), "stardew", "nexus", "x", 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestSearchGitHubQueryPagingAndInstalled(t *testing.T) {
 			return source == sourceGitHub && id == "Pathoschild/SMAPI"
 		},
 	}
-	page, err := c.Search(context.Background(), "stardewvalley", "github", "smapi", 2)
+	page, err := c.Search(context.Background(), "stardew", "github", "smapi", 2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +116,7 @@ func TestSearchGitHubRateLimit(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	c := &Client{GitHubURL: srv.URL}
-	_, err := c.Search(context.Background(), "stardewvalley", "github", "x", 1)
+	_, err := c.Search(context.Background(), "stardew", "github", "x", 1)
 	if !errors.Is(err, ErrBusy) {
 		t.Fatalf("got %v", err)
 	}
@@ -132,10 +132,10 @@ func TestSearchGitHubCaches(t *testing.T) {
 	t.Cleanup(srv.Close)
 	now := time.Unix(1_700_000_000, 0).UTC()
 	c := &Client{GitHubURL: srv.URL, Now: func() time.Time { return now }, Cache: &RepoCache{ttl: githubCacheTTL}}
-	if _, err := c.Search(context.Background(), "stardewvalley", "github", "x", 1); err != nil {
+	if _, err := c.Search(context.Background(), "stardew", "github", "x", 1); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := c.Search(context.Background(), "stardewvalley", "github", "x", 1); err != nil {
+	if _, err := c.Search(context.Background(), "stardew", "github", "x", 1); err != nil {
 		t.Fatal(err)
 	}
 	if hits != 1 {

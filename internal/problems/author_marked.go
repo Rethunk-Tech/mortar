@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -15,14 +14,14 @@ import (
 
 var (
 	authorStatusWord = regexp.MustCompile(`(?i)\b(obsolete|deprecated|depreciated)\b`)
-	nexusModLink     = regexp.MustCompile(`(?i)nexusmods\.com/stardewvalley/mods/([0-9]+)`)
+	nexusModLink     = regexp.MustCompile(`(?i)nexusmods\.com/([a-z0-9]+)/mods/([0-9]+)`)
 )
 
-func authorMarkedMods(home string, enabled []Installed) []Broken {
+func authorMarkedMods(home, domain string, enabled []Installed) []Broken {
 	var out []Broken
 	for _, mod := range enabled {
 		if pageID, fileID, ok := store.NexusFile(mod.Key); ok {
-			details, ok := readCachedNexusDetails(home, pageID)
+			details, ok := readCachedNexusDetails(home, domain, pageID)
 			if !ok {
 				continue
 			}
@@ -33,12 +32,12 @@ func authorMarkedMods(home string, enabled []Installed) []Broken {
 					break
 				}
 			}
-			if marked := markedBroken(mod, details.Page.Name, details.Page.Summary, details.Page.Description, file); marked != nil {
+			if marked := markedBroken(mod, domain, details.Page.Name, details.Page.Summary, details.Page.Description, file); marked != nil {
 				out = append(out, *marked)
 				continue
 			}
 		}
-		if marked := markedManifest(mod); marked != nil {
+		if marked := markedManifest(mod, domain); marked != nil {
 			out = append(out, *marked)
 		}
 	}
@@ -46,36 +45,36 @@ func authorMarkedMods(home string, enabled []Installed) []Broken {
 }
 
 // readCachedNexusDetails reads the details Nexus pages left in the cache, never fetching.
-func readCachedNexusDetails(home string, pageID int) (nexussvc.Details, bool) {
-	return meta.Peek[nexussvc.Details](&meta.Client{CacheDir: filepath.Join(home, "cache")}, nexussvc.DetailsName(pageID))
+func readCachedNexusDetails(home, domain string, pageID int) (nexussvc.Details, bool) {
+	return meta.Peek[nexussvc.Details](&meta.Client{CacheDir: filepath.Join(home, "cache")}, nexussvc.DetailsName(domain, pageID))
 }
 
-func markedManifest(mod Installed) *Broken {
+func markedManifest(mod Installed, domain string) *Broken {
 	if match := statusMatch(mod.Name, true); match != "" {
-		return authorBroken(mod, match, "Its installed manifest name")
+		return authorBroken(mod, domain, match, "Its installed manifest name")
 	}
 	if match := statusMatch(mod.Description, false); match != "" {
-		return authorBroken(mod, match, "Its installed manifest description")
+		return authorBroken(mod, domain, match, "Its installed manifest description")
 	}
 	return nil
 }
 
-func markedBroken(mod Installed, name, summary, description string, file *nexus.File) *Broken {
+func markedBroken(mod Installed, domain, name, summary, description string, file *nexus.File) *Broken {
 	if match := statusMatch(name, true); match != "" {
-		return authorBroken(mod, match, "Its Nexus mod name")
+		return authorBroken(mod, domain, match, "Its Nexus mod name")
 	}
 	if match := statusMatch(summary, false); match != "" {
-		return authorBrokenText(mod, match, "Its Nexus page summary", summary)
+		return authorBrokenText(mod, domain, match, "Its Nexus page summary", summary)
 	}
 	if match := statusMatch(description, false); match != "" {
-		return authorBrokenText(mod, match, "Its Nexus page description", description)
+		return authorBrokenText(mod, domain, match, "Its Nexus page description", description)
 	}
 	if file != nil {
 		if match := statusMatch(file.Name, true); match != "" {
-			return authorBroken(mod, match, "Its installed file name")
+			return authorBroken(mod, domain, match, "Its installed file name")
 		}
 		if match := statusMatch(file.Description, false); match != "" {
-			return authorBrokenText(mod, match, "Its installed file description", file.Description)
+			return authorBrokenText(mod, domain, match, "Its installed file description", file.Description)
 		}
 	}
 	return nil
@@ -121,19 +120,19 @@ func quoteAround(text string, start, end int) string {
 	return sentence
 }
 
-func authorBroken(mod Installed, quote, where string) *Broken {
-	return authorBrokenWithReplacement(mod, quote, where)
+func authorBroken(mod Installed, domain, quote, where string) *Broken {
+	return authorBrokenWithReplacement(mod, domain, quote, where)
 }
 
-func authorBrokenText(mod Installed, quote, where, text string) *Broken {
-	b := authorBrokenWithReplacement(mod, quote, where)
-	if ids := nexusModLink.FindStringSubmatch(text); len(ids) == 2 {
-		b.Replacement = &Ref{Site: "Nexus", PageID: mustInt(ids[1]), URL: nexus.ModURL(nexus.Game, mustInt(ids[1]))}
+func authorBrokenText(mod Installed, domain, quote, where, text string) *Broken {
+	b := authorBrokenWithReplacement(mod, domain, quote, where)
+	if ids := modPageIDs(nexusModLink, text, domain); len(ids) > 0 {
+		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexus.ModURL(domain, ids[0])}
 	}
 	return b
 }
 
-func authorBrokenWithReplacement(mod Installed, quote, where string) *Broken {
+func authorBrokenWithReplacement(mod Installed, domain, quote, where string) *Broken {
 	status := "obsolete"
 	if match := authorStatusWord.FindString(quote); match != "" {
 		status = strings.ToLower(match)
@@ -145,13 +144,8 @@ func authorBrokenWithReplacement(mod Installed, quote, where string) *Broken {
 		Key: mod.Key, UniqueID: mod.UniqueID, Name: mod.Name, Status: status,
 		Summary: fmt.Sprintf("%s says it is %s: %q", where, status, quote),
 	}
-	if ids := nexusModLink.FindStringSubmatch(quote); len(ids) == 2 {
-		b.Replacement = &Ref{Site: "Nexus", PageID: mustInt(ids[1]), URL: nexus.ModURL(nexus.Game, mustInt(ids[1]))}
+	if ids := modPageIDs(nexusModLink, quote, domain); len(ids) > 0 {
+		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexus.ModURL(domain, ids[0])}
 	}
 	return b
-}
-
-func mustInt(value string) int {
-	id, _ := strconv.Atoi(value)
-	return id
 }

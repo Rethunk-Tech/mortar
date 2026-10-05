@@ -307,9 +307,6 @@ func run() error {
 	modMeta := &meta.Client{CacheDir: filepath.Join(dataDir, "cache")}
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)
-	if g, ok := componentClient.Game("stardew"); ok {
-		nexus.Configure(g.NexusDomain(), g.NexusID())
-	}
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
 	loadersvc.Attach(loaders, "stardew")
 	launches.EnsureLoader = func(ctx context.Context, id string, fromStart bool) error {
@@ -369,7 +366,7 @@ func run() error {
 			res, err := profiles.InstallNexus(game, profileID, path, src)
 			if err == nil {
 				// Warm the detail dialog's cache while the account is known to be signed in and online.
-				go func() { _, _ = nexusSvc.Details(context.Background(), src.ModID) }()
+				go func() { _, _ = nexusSvc.Details(context.Background(), game, src.ModID) }()
 				go pictures.Ensure(context.Background(), src.Picture)
 			}
 			return res, err
@@ -411,7 +408,7 @@ func run() error {
 		InstallExtra: func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
 			res, err := profiles.InstallNexusExtra(game, profileID, entryKey, path, src)
 			if err == nil {
-				go func() { _, _ = nexusSvc.Details(context.Background(), src.ModID) }()
+				go func() { _, _ = nexusSvc.Details(context.Background(), game, src.ModID) }()
 				go pictures.Ensure(context.Background(), src.Picture)
 			}
 			return res, err
@@ -444,11 +441,11 @@ func run() error {
 		PauseWhilePlaying: func() bool { return store.Get().PauseDownloadsWhilePlaying },
 		GameBusy:          func() bool { return launches.Busy(settings.GameStardew) },
 		VerifyNexusMD5:    func() bool { return store.Get().VerifyNexusMD5 },
-		Track: func(ctx context.Context, modID int) {
+		Track: func(ctx context.Context, gameID string, modID int) {
 			if !store.Get().AutoTrackNexus || modID <= 0 {
 				return
 			}
-			_ = nexusSvc.Track(ctx, modID)
+			_ = nexusSvc.Track(ctx, gameID, modID)
 		},
 	})
 	if err != nil {
@@ -471,12 +468,12 @@ func run() error {
 	bundlesSvc := bundles.NewService(profiles, dataDir)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	problemsSvc.Runs = launches
-	problemsSvc.NexusFiles = func(ctx context.Context, ids []int) (map[int][]nexus.BatchFile, error) {
+	problemsSvc.NexusFiles = func(ctx context.Context, t nexus.Title, ids []int) (map[int][]nexus.BatchFile, error) {
 		c, err := nexussvc.Authed(store, nexusClient)
 		if err != nil {
 			return nil, err
 		}
-		return c.FilesOf(ctx, ids)
+		return c.FilesOf(ctx, t, ids)
 	}
 	supportSvc := support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)
 	supportSvc.RecentLog = func(gameID, profileID string) string {
@@ -499,12 +496,12 @@ func run() error {
 	shareSvc = sharesvc.NewService(sharesvc.Deps{
 		Profiles: profiles,
 		Meta:     modMeta,
-		Files: func(ctx context.Context, modID int) ([]nexus.File, error) {
+		Files: func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error) {
 			c, err := nexussvc.Authed(store, nexusClient)
 			if err != nil {
 				return nil, err
 			}
-			return c.Files(ctx, modID)
+			return c.Files(ctx, t, modID)
 		},
 		SignedIn: func() bool { return store.Get().NexusUserID != 0 },
 		Premium:  func() bool { return store.Get().NexusPremium },
@@ -586,12 +583,16 @@ func run() error {
 	dataSvc.OnClearCache = problemsSvc.ForgetCached
 	checkSvc := storecheck.New(storecheck.Deps{
 		Items: items, Source: profiles.SourceOf, Add: queueSvc.Add,
-		NexusMD5: func(ctx context.Context, modID, fileID int) (string, error) {
+		NexusMD5: func(ctx context.Context, gameID string, modID, fileID int) (string, error) {
+			t, err := game.NexusTitle(gameID)
+			if err != nil {
+				return "", err
+			}
 			c, err := nexussvc.Authed(store, nexusClient)
 			if err != nil {
 				return "", err
 			}
-			files, err := c.Files(ctx, modID)
+			files, err := c.Files(ctx, t, modID)
 			for _, f := range files {
 				if f.FileID == fileID {
 					return f.MD5, err
@@ -798,9 +799,6 @@ func run() error {
 			return
 		}
 		_ = os.Remove(failurePath)
-		if g, ok := componentClient.Game("stardew"); ok {
-			nexus.Configure(g.NexusDomain(), g.NexusID())
-		}
 		// A fetched manifest can name a newer bridge than the one synced at startup from the bundled copy.
 		loadersvc.SyncBundled(loaders, "stardew")
 	}()

@@ -23,22 +23,22 @@ type BatchFile struct {
 
 // FilesOf lists the files of many mods with one GraphQL request per 50 mods (aliased modFiles queries), instead
 // of one request per mod.
-func (c *Client) FilesOf(ctx context.Context, modIDs []int) (map[int][]BatchFile, error) {
+func (c *Client) FilesOf(ctx context.Context, t Title, modIDs []int) (map[int][]BatchFile, error) {
 	out := make(map[int][]BatchFile, len(modIDs))
 	for start := 0; start < len(modIDs); start += filesBatch {
 		batch := modIDs[start:min(start+filesBatch, len(modIDs))]
-		if err := c.filesOf(ctx, batch, out); err != nil {
+		if err := c.filesOf(ctx, t, batch, out); err != nil {
 			return out, err
 		}
 	}
 	return out, nil
 }
 
-func (c *Client) filesOf(ctx context.Context, modIDs []int, out map[int][]BatchFile) error {
+func (c *Client) filesOf(ctx context.Context, t Title, modIDs []int, out map[int][]BatchFile) error {
 	var q strings.Builder
 	q.WriteString("{")
 	for _, id := range modIDs {
-		fmt.Fprintf(&q, " m%d: modFiles(modId: %d, gameId: %d) { fileId name version category }", id, id, GameID)
+		fmt.Fprintf(&q, " m%d: modFiles(modId: %d, gameId: %d) { fileId name version category }", id, id, t.ID)
 	}
 	q.WriteString(" }")
 	body, err := json.Marshal(map[string]string{"query": q.String()})

@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -118,6 +119,25 @@ func catalogGame(id string) (components.GameInfo, bool) {
 		}
 	}
 	return components.GameInfo{}, false
+}
+
+// ByNexusDomain is the enabled game whose Nexus domain is domain.
+func ByNexusDomain(domain string) (string, bool) {
+	for _, g := range Catalog() {
+		if g.Enabled && g.NexusDomain() != "" && g.NexusDomain() == domain {
+			return g.ID, true
+		}
+	}
+	return "", false
+}
+
+// NexusTitle is how Nexus knows the game with this id, from the catalog's nexus source.
+func NexusTitle(id string) (nexus.Title, error) {
+	g, ok := catalogGame(id)
+	if !ok || g.NexusDomain() == "" {
+		return nexus.Title{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("game %q has no Nexus domain", id))
+	}
+	return nexus.Title{Domain: g.NexusDomain(), ID: g.NexusID()}, nil
 }
 
 // Find returns the implemented game with this id, or nil.

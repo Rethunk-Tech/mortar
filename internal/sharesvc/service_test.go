@@ -44,7 +44,7 @@ func newService(t *testing.T, signedIn bool) (*Service, *recorder) {
 	rec := &recorder{}
 	return NewService(Deps{
 		Profiles: profiles, Meta: r.meta, Files: r.files, SignedIn: func() bool { return signedIn }, Premium: func() bool { return true },
-		Env: func(string) problems.Environment { return problems.Environment{} }, Queue: rec,
+		Env: func(string) problems.Environment { return stardewEnv }, Queue: rec,
 	}), rec
 }
 
@@ -347,12 +347,12 @@ func slowFirst(s *Service) (entered, release chan struct{}) {
 	entered, release = make(chan struct{}), make(chan struct{})
 	files := s.d.Files
 	var first atomic.Bool
-	s.d.Files = func(ctx context.Context, modID int) ([]nexus.File, error) {
+	s.d.Files = func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error) {
 		if first.CompareAndSwap(false, true) {
 			close(entered)
 			<-release
 		}
-		return files(ctx, modID)
+		return files(ctx, t, modID)
 	}
 	return entered, release
 }
