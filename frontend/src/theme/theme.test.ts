@@ -37,4 +37,13 @@ describe('createMortarTheme', () => {
       },
     })
   })
+
+  test('reduced motion zeroes MUI transitions and the global CSS durations', () => {
+    const theme = createMortarTheme('sand', { reduceMotion: true })
+    expect(theme.transitions.duration.standard).toBe(0)
+    expect(theme.transitions.create('opacity')).toBe('none')
+    const css = theme.components?.MuiCssBaseline?.styleOverrides as Record<string, unknown>
+    expect(css['*']).toMatchObject({ animationDuration: '0.01ms !important' })
+    expect(createMortarTheme('sand').transitions.duration.standard).toBeGreaterThan(0)
+  })
 })

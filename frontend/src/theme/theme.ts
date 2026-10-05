@@ -54,6 +54,16 @@ const REDUCE_MOTION_MS = '0.01ms'
 const UNDERLINE_OFFSET_EM = '0.15em'
 const REDUCE_MOTION_ITERATIONS = '1'
 
+const noDuration = {
+  shortest: 0,
+  shorter: 0,
+  short: 0,
+  standard: 0,
+  complex: 0,
+  enteringScreen: 0,
+  leavingScreen: 0,
+}
+
 function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode) {
   const trackAlpha = mode === 'light' ? TRACK_ALPHA_LIGHT : TRACK_ALPHA_DARK
   return {
@@ -135,6 +145,8 @@ export function createMortarTheme(
       warning: pal.warning,
       error: pal.error,
     },
+    // The global rule below stops CSS transitions; MUI's own timers (Collapse, Fade, ripples) read these durations.
+    ...(reduceMotion ? { transitions: { create: () => 'none', duration: noDuration } } : {}),
     typography: {
       fontFamily: FONT,
       htmlFontSize: compactUi ? HTML_FONT_SIZE_COMPACT : HTML_FONT_SIZE,
