@@ -117,6 +117,51 @@ func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][
 // its files go to the profile target when the game launches.
 func (e Entry) hasFolder() bool { return !e.Package }
 
+// namePackage records the Namespace-Name of a Thunderstore package added from disk when its manifest does not carry a
+// namespace: from the download's file name, which Thunderstore makes <Namespace>-<Name>-<version>.zip, else from the
+// one package of that name and version in the game's index. Nothing is recorded when neither names it; packageMods
+// then refuses the package.
+func (s *Store) namePackage(game, key, fileName string) error {
+	arch, _, inst, err := s.pick(game, key)
+	if err != nil || inst.ID() != driverThunderstore || arch.Key != "" {
+		return err
+	}
+	var m struct {
+		Name      string `json:"name"`
+		Version   string `json:"version_number"`
+		Namespace string `json:"namespace"`
+		Author    string `json:"author"`
+	}
+	b, err := fsx.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(b, &m); err != nil {
+		return err
+	}
+	if m.Namespace != "" || m.Author != "" {
+		return nil
+	}
+	ns := ""
+	stem := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+	if head, ok := cutSuffixFold(stem, "-"+m.Name+"-"+m.Version); ok && head != "" && !strings.Contains(head, "-") {
+		ns = head
+	} else if s.Publisher != nil {
+		ns, _ = s.Publisher(game, m.Name, m.Version)
+	}
+	if ns == "" {
+		return nil
+	}
+	return s.items.Describe(game, key, KindThunderstore, ns+"-"+m.Name, m.Version)
+}
+
+func cutSuffixFold(s, suffix string) (string, bool) {
+	if len(s) < len(suffix) || !strings.EqualFold(s[len(s)-len(suffix):], suffix) {
+		return "", false
+	}
+	return s[:len(s)-len(suffix)], true
+}
+
 // packageMods is the one component of a Thunderstore package item; ok is false for any other item.
 func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err error) {
 	arch, _, inst, err := s.pick(game, key)
@@ -143,7 +188,7 @@ func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err er
 		// needs that to match the package against the index, so without it the archive is refused.
 		author = cmp.Or(m.Namespace, m.Author)
 		if author == "" {
-			return nil, false, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s does not say who published it, so Mortar cannot tell which Thunderstore package it is: install it from Thunderstore instead", m.Name))
+			return nil, false, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s does not say who published it, and neither its file name nor the Thunderstore index does, so Mortar cannot tell which package it is: install it from Thunderstore instead", m.Name))
 		}
 		id = author + "-" + m.Name
 	}

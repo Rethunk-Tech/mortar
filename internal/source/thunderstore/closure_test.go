@@ -65,3 +65,17 @@ func TestClosure(t *testing.T) {
 		})
 	}
 }
+
+func TestPublisherNeedsOneMatch(t *testing.T) {
+	f := newFake(t)
+	f.chunk0 = append(f.chunk0, custom("Ns", "Solo", v("1.0.0")), custom("A", "Twin", v("1.0.0")), custom("B", "Twin", v("1.0.0")))
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	for name, c := range map[string]struct {
+		pkg, ver, want string
+	}{"unique": {"Solo", "1.0.0", "Ns"}, "ambiguous": {"Twin", "1.0.0", ""}, "other version": {"Solo", "2.0.0", ""}} {
+		got, ok, err := d.Publisher(t.Context(), "lethal-company", c.pkg, c.ver, "1.2.3")
+		if err != nil || got != c.want || ok != (c.want != "") {
+			t.Errorf("%s: %q %v %v", name, got, ok, err)
+		}
+	}
+}

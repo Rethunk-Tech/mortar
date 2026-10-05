@@ -234,6 +234,9 @@ type Store struct {
 	// Tidied is told about each repair rebuild makes to a profile's mods folder (what was done, the profile's name, the
 	// folder); nil means nothing.
 	Tidied func(what, profileName, folder string)
+	// Publisher is the Thunderstore namespace of the one package in the game's community index with this name and
+	// version; ok is false when none or several match. Nil means no index.
+	Publisher func(game, name, version string) (namespace string, ok bool)
 	// ShortcutRenamed updates an existing launcher after a profile is renamed; nil means nothing.
 	ShortcutRenamed func(game, id, profileName, gameName string) error
 	// ShortcutRemoved removes launchers after a profile is deleted; nil means nothing.

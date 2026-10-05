@@ -73,6 +73,25 @@ func (d Driver) Resolve(ctx context.Context, key, namespace, name, ver, mortarVe
 	return Resolved{}, fmt.Errorf("%s-%s %s is not in the %s index", namespace, name, ver, key)
 }
 
+// Publisher is the namespace of the one package in the community's index with this name and version; ok is false when
+// none or several match.
+func (d Driver) Publisher(ctx context.Context, key, name, ver, mortarVersion string) (namespace string, ok bool, err error) {
+	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	if err != nil {
+		return "", false, err
+	}
+	for _, p := range pk {
+		if !strings.EqualFold(p.Name, name) || !slices.ContainsFunc(p.Versions, func(v version) bool { return v.Number == ver }) {
+			continue
+		}
+		if namespace != "" {
+			return "", false, nil
+		}
+		namespace = p.Owner
+	}
+	return namespace, namespace != "", nil
+}
+
 // Versions lists the package's versions in the community's index, newest first.
 func (d Driver) Versions(ctx context.Context, key, namespace, name, mortarVersion string) ([]string, error) {
 	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")

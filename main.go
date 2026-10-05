@@ -298,6 +298,16 @@ func run() error {
 		return err
 	}
 	profiles.Tidied = func(what, profileName, folder string) { tidied.Add(what, "profile "+profileName, 1, folder) }
+	profiles.Publisher = func(gameID, name, ver string) (string, bool) {
+		key := share.SourceKeys(gameID)["thunderstore"]
+		if key == "" {
+			return "", false
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancel()
+		ns, ok, err := thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.Publisher(ctx, key, name, ver, version)
+		return ns, ok && err == nil
+	}
 	profiles.ShortcutRenamed = shortcut.Renamed
 	profiles.ShortcutRemoved = shortcut.Removed
 	plays.Covers = func(gameID, profileID string) ([]string, error) {

@@ -197,6 +197,18 @@ func TestDiskThunderstoreZipNeedsAPublisher(t *testing.T) {
 	if _, err := e.InstallArchive("lethal-company", p.ID, tsZip(t, "1.0.0")); err == nil || !strings.Contains(err.Error(), "does not say who published") {
 		t.Fatalf("a zip without a publisher: %v", err)
 	}
+	named := func(file, body string) string {
+		return testfs.WriteZip(t, filepath.Join(t.TempDir(), file), map[string]string{"manifest.json": `{"name":"Mod","version_number":"1.0.0"}`, "Mod.dll": body})
+	}
+	e.Publisher = func(_, name, version string) (string, bool) { return "Idx", name == "Mod" && version == "1.0.0" }
+	p1, _ := e.Create("lethal-company", "LC1")
+	if res, err := e.InstallArchive("lethal-company", p1.ID, named("Fn-Mod-1.0.0.zip", "y")); err != nil || res.Profile.Entries[0].Mods[0].ID != "thunderstore:Fn-Mod" {
+		t.Fatalf("file name: %+v, %v", res, err)
+	}
+	p2, _ := e.Create("lethal-company", "LC2")
+	if res, err := e.InstallArchive("lethal-company", p2.ID, named("renamed.zip", "z")); err != nil || res.Profile.Entries[0].Mods[0].ID != "thunderstore:Idx-Mod" {
+		t.Fatalf("index: %+v, %v", res, err)
+	}
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
 		"manifest.json": `{"name":"Mod","version_number":"1.0.0","author":"Ns"}`, "Mod.dll": "x",
 	})

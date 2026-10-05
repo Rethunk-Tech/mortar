@@ -49,6 +49,9 @@ func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
+	if err := s.namePackage(game, key, filepath.Base(path)); err != nil {
+		return InstallResult{}, installError(err)
+	}
 	return s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
 }
 
