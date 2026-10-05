@@ -49,6 +49,20 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.2.1" date="2026-10-05">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Flatpak: start at login and profile shortcuts go through the system's own dialogs instead of writing to your home folder</li>
+          <li>Signed apt, dnf and pacman repository at mortar.rethunk.tech/packages</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Declare direct dependencies and skip debug and strip for the prebuilt binary (namcap clean)</li>
+          <li>Rootless podman needs no chown hand-back; rebuild the package repository from any published release</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.0" date="2026-10-05">
       <description>
         <p>New</p>
