@@ -54,6 +54,8 @@ func Processes(procDir, name string) ([]Process, error) {
 			continue
 		}
 		p := Process{PID: pid, Args: args}
+		// Unreadable for another user's process, and the launcher's Args still name the install then.
+		p.Exe, _ = os.Readlink(filepath.Join(procDir, e.Name(), "exe"))
 		p.Start = startTime(procDir, e.Name())
 		out = append(out, p)
 	}

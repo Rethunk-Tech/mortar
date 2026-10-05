@@ -22,8 +22,23 @@ func Processes(_, name string) ([]Process, error) {
 	for err = windows.Process32First(snap, &entry); err == nil; err = windows.Process32Next(snap, &entry) {
 		exe := strings.TrimSuffix(windows.UTF16ToString(entry.ExeFile[:]), ".exe")
 		if strings.EqualFold(exe, name) {
-			out = append(out, Process{PID: int(entry.ProcessID)})
+			out = append(out, Process{PID: int(entry.ProcessID), Exe: imagePath(entry.ProcessID)})
 		}
 	}
 	return out, nil
+}
+
+// imagePath is the executable path of pid, or "" when the process cannot be opened.
+func imagePath(pid uint32) string {
+	h, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
+	if err != nil {
+		return ""
+	}
+	defer func() { _ = windows.CloseHandle(h) }()
+	buf := make([]uint16, windows.MAX_LONG_PATH)
+	n := uint32(len(buf))
+	if err := windows.QueryFullProcessImageName(h, 0, &buf[0], &n); err != nil {
+		return ""
+	}
+	return windows.UTF16ToString(buf[:n])
 }
