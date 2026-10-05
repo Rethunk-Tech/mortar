@@ -31,10 +31,7 @@ const MaxCacheBytes = 64 << 20
 
 const workers = 4
 
-var allowedHosts = map[string]struct{}{
-	"staticdelivery.nexusmods.com": {},
-	"images.nexusmods.com":         {},
-}
+var allowedHosts = []string{"staticdelivery.nexusmods.com", "images.nexusmods.com"}
 
 var imageTypes = map[string]struct{}{
 	"image/png":  {},
@@ -131,9 +128,12 @@ func parsePicture(raw string) (*url.URL, error) {
 	if u.Scheme != "https" || u.User != nil || u.Hostname() == "" || u.EscapedPath() == "" || strings.Contains(u.Path, "..") {
 		return nil, fmt.Errorf("the picture URL is not a Nexus image")
 	}
-	if _, ok := allowedHosts[strings.ToLower(u.Hostname())]; !ok {
+	// The request goes to the allowlist's own spelling of the host, never to text the caller supplied.
+	i := slices.Index(allowedHosts, strings.ToLower(u.Hostname()))
+	if i < 0 {
 		return nil, fmt.Errorf("the picture host is not a Nexus CDN")
 	}
+	u.Host = allowedHosts[i]
 	return u, nil
 }
 
