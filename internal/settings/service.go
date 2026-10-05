@@ -96,9 +96,13 @@ func (s *Service) ShowCorruptSettings() error {
 	return datadir.Open(filepath.Dir(path))
 }
 
-// SetListColumns stores which Mods list-view columns are shown.
-func (s *Service) SetListColumns(ids []string) error {
-	return s.set(func(v *Settings) { v.ListColumns = ids })
+// SetListColumns stores which Mods list-view columns are shown for the game.
+func (s *Service) SetListColumns(game string, ids []string) error {
+	return s.set(func(v *Settings) {
+		gp := v.GamePrefs(game)
+		gp.ListColumns = ids
+		putGame(v, game, gp)
+	})
 }
 
 // SetListSort stores the Mods list-view sort column and direction.

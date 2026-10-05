@@ -50,6 +50,8 @@ type GameSettings struct {
 	// SourceOrder is the comma-separated source ids the player prefers, first first; sources it omits follow in
 	// catalog order.
 	SourceOrder string `json:"sourceOrder,omitempty"`
+	// ListColumns are this game's Mods list columns; empty follows the global default.
+	ListColumns []string `json:"listColumns,omitempty"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -285,6 +287,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	dst.LaunchPresetTemplates = append([]LaunchPresetTemplate(nil), src.LaunchPresetTemplates...)
 	dst.ExtraModsFolder = src.ExtraModsFolder
 	dst.ShowDotHiddenMods = src.ShowDotHiddenMods
+	dst.ListColumns = slices.Clone(src.ListColumns)
 	if src.OldFilesOnUpdate != "" {
 		dst.OldFilesOnUpdate = src.OldFilesOnUpdate
 	}
@@ -292,6 +295,9 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 
 func normalizeGame(g *GameSettings) {
 	d := defaultGameSettings()
+	if len(g.ListColumns) > 0 {
+		g.ListColumns = sanitizeListColumns(g.ListColumns)
+	}
 	if !slices.Contains(backupBeforePlayValues, g.BackupBeforePlay) {
 		g.BackupBeforePlay = d.BackupBeforePlay
 	}

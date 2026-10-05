@@ -188,3 +188,12 @@ test('keeps saved column order and moves a header', () => {
   ])
   expect(moveListColumn(['on', 'name'], 0, 0)).toEqual(['on', 'name'])
 })
+
+test('a column a loader or source contributes is left out where the profile lacks it', () => {
+  const saved = ['on', 'name', 'order', 'startup']
+  expect(visibleListColumns(saved, false, (id) => id !== 'order')).toEqual([
+    'on',
+    'name',
+    'startup',
+  ])
+})

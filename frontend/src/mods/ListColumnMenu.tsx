@@ -34,6 +34,7 @@ import { useSettings } from '../settings/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { columnLabel } from './columnLabel.ts'
+import { useColumnAvailable } from './contributedColumns.ts'
 import {
   LIST_COLUMN_GROUPS,
   type ListColumnId,
@@ -243,6 +244,7 @@ function ListColumnMenu({
   onClose: () => void
 }) {
   const { t } = useLingui()
+  const available = useColumnAvailable()
   return (
     <Menu
       open={anchor !== null}
@@ -252,7 +254,7 @@ function ListColumnMenu({
     >
       {LIST_COLUMN_GROUPS.flatMap((group, index) => [
         index > 0 ? <Divider key={`divider-${group[0]}`} /> : null,
-        ...group.map((id) => {
+        ...group.filter(available).map((id) => {
           const locked = LOCKED_LIST_COLUMNS.includes(id)
           const shown = visible.includes(id)
           return (

@@ -16,7 +16,7 @@ import {
   sanitizeListGroupBy,
 } from './group.ts'
 import { compareListRows, sanitizeListSort } from './listColumns.ts'
-import { toListRows, useEntrySizes, useStartupCosts } from './listRows.ts'
+import { toListRows, useEntrySizes, usePackageOverrides, useStartupCosts } from './listRows.ts'
 import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
 import { primeDetails, useNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
@@ -38,6 +38,7 @@ export function useModGroups(mods: Mod[], profile: Profile) {
   const customById = useMemo(() => customCategoryById(customCategories), [customCategories])
   const sizes = useEntrySizes()
   const costs = useStartupCosts(gameId, profile.id)
+  const wins = usePackageOverrides(gameId, profile, useProfiles((s) => s.game?.deploy) ?? '')
   const problems = useMods((s) => s.problems)
   const updates = useUpdates((s) => s.updates)
   useEffect(() => {
@@ -51,7 +52,7 @@ export function useModGroups(mods: Mod[], profile: Profile) {
   const groups = useMemo(() => {
     const names = installedNames(mods)
     return groupSorted(
-      toListRows(mods, profile, { byId, customById, sizes, costs }),
+      toListRows(mods, profile, { byId, customById, sizes, costs, wins }),
       groupBy,
       (row) =>
         rowGroupKey(groupBy, row, {
@@ -62,7 +63,7 @@ export function useModGroups(mods: Mod[], profile: Profile) {
         }),
       (a, b) => compareListRows(a, b, sort),
     )
-  }, [mods, profile, byId, groupBy, problems, updates, customById, sort, sizes, costs])
+  }, [mods, profile, byId, groupBy, problems, updates, customById, sort, sizes, costs, wins])
   const orderedIds = useMemo(
     () => groups.flatMap((g) => g.items.map((r) => modId(r.mod))),
     [groups],

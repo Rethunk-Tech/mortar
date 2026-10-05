@@ -13,8 +13,8 @@ const (
 
 var (
 	knownListColumns = []string{
-		"on", "name", "version", "latest", "uniqueId", "author", "source", "category",
-		"endorsements", "downloads", "updated", "installed", "needs", "status", "notes", "lastRun", "size", "startup",
+		"on", "name", "version", "latest", "id", "author", "source", "category",
+		"endorsements", "downloads", "updated", "installed", "needs", "status", "notes", "lastRun", "size", "startup", "order",
 	}
 	defaultListColumns = []string{"on", "name", "version", "author", "source", "category", "status", "size", "startup"}
 	lockedListColumns  = []string{"on", "name"}

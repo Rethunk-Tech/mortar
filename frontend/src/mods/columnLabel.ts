@@ -21,6 +21,7 @@ const COLUMN_LABELS: Record<ListColumnId, MessageDescriptor> = {
   lastRun: msg`Last run`,
   size: msg`Size`,
   startup: msg`Startup`,
+  order: msg`Order`,
 }
 
 function columnLabel(id: ListColumnId): string {

@@ -98,3 +98,22 @@ func TestAddPlaytimeSurvivesRelaunch(t *testing.T) {
 		t.Fatalf("PlaytimeMs = %d", got)
 	}
 }
+
+func TestGameListColumnsStayWithTheirGame(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	s, err := Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc := &Service{store: s}
+	if err := svc.SetListColumns("lethal-company", []string{"name", "order", "nope"}); err != nil {
+		t.Fatal(err)
+	}
+	got := s.Get().GamePrefs("lethal-company").ListColumns
+	if len(got) != 3 || got[0] != "on" || got[1] != "name" || got[2] != "order" {
+		t.Fatalf("lethal-company columns = %v", got)
+	}
+	if len(s.Get().GamePrefs("stardew").ListColumns) != 0 {
+		t.Fatal("another game must keep following the global list")
+	}
+}

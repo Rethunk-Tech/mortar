@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, TableCell, type TableCellProps, TableRow, useMediaQuery } from '@mui/material'
 import { Pin } from 'lucide-react'
@@ -15,6 +16,7 @@ import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { actingMods, toggleActing } from './actingMods.ts'
 import { CompatChip } from './CompatChip.tsx'
+import { useColumnAvailable, useSavedColumns } from './contributedColumns.ts'
 import { useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import { listHeadingFor } from './group.ts'
@@ -81,15 +83,30 @@ function MeasureCell({
   row,
   locale,
 }: {
-  column: 'size' | 'startup'
+  column: 'size' | 'startup' | 'order'
   row: ListRow
   locale: string
 }) {
   if (column === 'size') {
     return <ValueCell text={row.size === undefined ? '—' : formatBytes(row.size)} />
   }
+  if (column === 'order') {
+    return <ValueCell text={row.order ? String(row.order) : '—'} />
+  }
   return (
     <ValueCell text={row.startupMs === undefined ? '—' : formatDuration(row.startupMs, locale)} />
+  )
+}
+
+function OverridesNote({ count }: { count: number }) {
+  const { t } = useLingui()
+  return (
+    <Box
+      component="span"
+      sx={{ ...ellipsis, flexShrink: 0, fontSize: 12, fontWeight: 400, color: 'text.secondary' }}
+    >
+      {t`overrides ${plural(count, { one: '# file', other: '# files' })}`}
+    </Box>
   )
 }
 
@@ -112,6 +129,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
             </Box>
             <ExtraFilesChip mod={m} profile={profile} />
             <OverlayCountChip mod={m} profile={profile} />
+            {row.overrides ? <OverridesNote count={row.overrides} /> : null}
           </Box>
         </Cell>
       )
@@ -209,6 +227,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
       )
     case 'size':
     case 'startup':
+    case 'order':
       return <MeasureCell key={id} column={id} row={row} locale={locale} />
     default:
       return null
@@ -314,9 +333,10 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     profile,
   )
   const narrow = useMediaQuery(compactQuery)
-  const listColumns = useSettings((s) => s.listColumns)
-  const visible = sanitizeListColumns(listColumns)
-  const settled = visibleListColumns(listColumns, narrow)
+  const listColumns = useSavedColumns()
+  const available = useColumnAvailable()
+  const visible = sanitizeListColumns(listColumns).filter(available)
+  const settled = visibleListColumns(listColumns, narrow, available)
   // While a header is dragged the table shows this order, so every row moves with it.
   const [preview, setPreview] = useState<ListColumnId[] | null>(null)
   const cols = preview ?? settled

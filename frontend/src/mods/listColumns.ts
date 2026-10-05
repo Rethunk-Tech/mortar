@@ -1,6 +1,8 @@
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type { GameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { SetListColumns } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { cmpText } from './cmpText.ts'
@@ -11,7 +13,7 @@ import { isNewer } from './nexusFormat.ts'
 const LIST_COLUMN_GROUPS = [
   ['on', 'name', 'author', 'category', 'notes', 'id'],
   ['version', 'latest', 'status', 'needs'],
-  ['installed', 'updated', 'lastRun', 'size', 'startup'],
+  ['installed', 'updated', 'lastRun', 'size', 'startup', 'order'],
   ['source', 'endorsements', 'downloads'],
 ] as const
 
@@ -48,6 +50,7 @@ const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [
   'lastRun',
   'size',
   'startup',
+  'order',
 ]
 
 type ListSortDir = 'asc' | 'desc'
@@ -84,6 +87,7 @@ const LIST_COLUMN_WIDTH: Record<ListColumnId, string> = {
   lastRun: '88px',
   size: '88px',
   startup: '88px',
+  order: '72px',
 }
 
 interface ListRow {
@@ -96,6 +100,10 @@ interface ListRow {
   size?: number
   /** Milliseconds the mod (or content pack) added to the last measured startup. */
   startupMs?: number
+  /** Place in the profile's package order, 1 for the package that loses every file. */
+  order?: number
+  /** Files this package wins over earlier ones in the package order. */
+  overrides?: number
   categoryOverride?: string
   categoryLabel: string
   groupName?: string
@@ -161,9 +169,10 @@ function toggleListColumn(visible: readonly ListColumnId[], id: ListColumnId): L
 function visibleListColumns(
   saved: readonly string[] | null | undefined,
   narrow: boolean,
+  available: (id: ListColumnId) => boolean = () => true,
 ): ListColumnId[] {
   return sanitizeListColumns(saved).filter(
-    (id) => !(narrow && NARROW_HIDE_LIST_COLUMNS.includes(id)),
+    (id) => available(id) && !(narrow && NARROW_HIDE_LIST_COLUMNS.includes(id)),
   )
 }
 
@@ -262,7 +271,10 @@ function compareLastRun(a: ListRow, b: ListRow, dir: ListSortDir): number {
   return primary
 }
 
-function measureOf(column: 'size' | 'startup', row: ListRow): number | undefined {
+function measureOf(column: 'size' | 'startup' | 'order', row: ListRow): number | undefined {
+  if (column === 'order') {
+    return row.order
+  }
   return column === 'size' ? row.size : row.startupMs
 }
 
@@ -355,7 +367,8 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
       primary = compareLastRun(a, b, dir)
       break
     case 'size':
-    case 'startup': {
+    case 'startup':
+    case 'order': {
       const av = measureOf(column, a)
       const bv = measureOf(column, b)
       primary = missingLast(av === undefined, bv === undefined, dir, cmpNum(av ?? 0, bv ?? 0))
@@ -391,9 +404,16 @@ function columnMenuFromEvent(e: {
   return { top: e.clientY, left: e.clientX }
 }
 
+// The choice belongs to the open game; a game without one follows the global default.
 function persistColumns(ids: ListColumnId[]) {
-  useSettings.setState({ listColumns: ids })
-  SetListColumns(ids).catch(reportUnexpected)
+  const game = useProfiles.getState().game?.id
+  if (!game) {
+    return
+  }
+  useSettings.setState((s) => ({
+    games: { ...s.games, [game]: { ...s.games?.[game], listColumns: ids } as GameSettings },
+  }))
+  SetListColumns(game, ids).catch(reportUnexpected)
 }
 
 export type { ListColumnId, ListRow }

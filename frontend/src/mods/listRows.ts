@@ -9,6 +9,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { PackageOverrides } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { modTotal } from '../console/startupView.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey } from './dependents.ts'
@@ -55,6 +56,24 @@ function useStartupCosts(game: string, profileId: string): Readonly<Record<strin
   return costs
 }
 
+/** Files each package wins over earlier ones, by entry key, for a game whose profile is deployed by linking. */
+function usePackageOverrides(
+  game: string,
+  profile: Profile,
+  deploy: string,
+): Readonly<Record<string, number | undefined>> {
+  const [wins, setWins] = useState<Readonly<Record<string, number | undefined>>>({})
+  useEffect(() => {
+    if (deploy !== 'link-into-install' || game === '') {
+      return
+    }
+    PackageOverrides(game, profile.id)
+      .then((r) => setWins(r ?? {}))
+      .catch(reportUnexpected)
+  }, [game, profile, deploy])
+  return wins
+}
+
 // One pass over the profile serves every row: lookups by key, not a scan of the entries per mod.
 function toListRows(
   mods: readonly Mod[],
@@ -64,6 +83,7 @@ function toListRows(
     customById: ReturnType<typeof customCategoryById>
     sizes: Readonly<Record<string, number>>
     costs: Readonly<Record<string, number>>
+    wins: Readonly<Record<string, number | undefined>>
   },
 ): ListRow[] {
   const entries = new Map((profile.entries ?? []).map((e) => [e.key, e]))
@@ -75,14 +95,22 @@ function toListRows(
       }
     }
   }
-  return mods.map((m) => toListRow(m, entries.get(m.key), groupOf.get(m.key) ?? '', data))
+  const place = new Map((profile.entries ?? []).map((e, i) => [e.key, i + 1]))
+  return mods.map((m) =>
+    toListRow(
+      m,
+      entries.get(m.key),
+      { groupName: groupOf.get(m.key) ?? '', order: place.get(m.key) ?? 0 },
+      data,
+    ),
+  )
 }
 
 function toListRow(
   m: Mod,
   entry: Entry | undefined,
-  groupName: string,
-  { byId, customById, sizes, costs }: Parameters<typeof toListRows>[2],
+  { groupName, order }: { groupName: string; order: number },
+  { byId, customById, sizes, costs, wins }: Parameters<typeof toListRows>[2],
 ): ListRow {
   const source = kindLabel(entry?.source.kind ?? '', {
     archive: i18n._(msg`Archive`),
@@ -107,6 +135,11 @@ function toListRow(
     categoryOverride: entry?.categoryOverride ?? '',
     categoryLabel,
     groupName,
+    order,
+  }
+  const won = wins[m.key]
+  if (won) {
+    row.overrides = won
   }
   const n = sizes[m.key]
   if (n !== undefined) {
@@ -122,4 +155,4 @@ function toListRow(
   return row
 }
 
-export { toListRows, useEntrySizes, useStartupCosts }
+export { toListRows, useEntrySizes, usePackageOverrides, useStartupCosts }
