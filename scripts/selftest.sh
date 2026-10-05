@@ -23,6 +23,8 @@ LC_FOLDER="Lethal Company"
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 SANDBOX_HOME=$ROOT/home
 SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+# Games the shipped catalog has not enabled yet are switched on in the sandbox only (comma separated catalog ids).
+export MORTAR_ENABLE_GAMES=${MORTAR_SELFTEST_ENABLE:-lethal-company}
 
 build() {
   echo "building frontend and server-mode binary"
