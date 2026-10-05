@@ -12,6 +12,8 @@ Mortar is a desktop mod manager, built for more than one game. It finds your gam
 
 Version 1 supports Stardew Valley (SMAPI, Nexus Mods) only; Lethal Company (BepInEx, Thunderstore) is deferred to a later release. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
 
+<p align="center"><img src="build/linux/screenshots/mods.png" alt="A profile's mods in Mortar, with a mod from the game's Mods folder offered for import" width="900"></p>
+
 ## Getting started
 
 Download the latest build from [Releases](https://github.com/Rethunk-Tech/mortar/releases/latest): a Windows installer (x64 or ARM64), or for Linux an AppImage, portable program, Flatpak, `.deb`, `.rpm` or Arch package. The AppImage and portable program need Ubuntu 24.04, Debian 13, Fedora 39 or newer (glibc 2.38); on older systems use the Flatpak. Mortar finds Stardew Valley from Steam, GOG, Heroic or Lutris and installs SMAPI itself. The [user guide](docs/user-guide.md) walks through installing, first run, Nexus sign-in, profiles, backups and troubleshooting. The Windows builds are not code-signed, so SmartScreen warns the first time one runs: choose **More info**, then **Run anyway**.
@@ -33,6 +35,13 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 - Downloads from Nexus Mods and GitHub; never re-hosts mod files.
 - A command line for the running app: `mortar games`, `mortar mods stardew "My Farm"`, `mortar conflicts ...`, with `--json` for scripts.
 - Installs the [Mortar SMAPI Bridge](https://github.com/Rethunk-Tech/mortar-smapi-bridge) into each profile: console commands from Mortar, Generic Mod Config Menu settings, and a stream overlay.
+
+## Screenshots
+
+<table>
+<tr><td align="center"><img src="build/linux/screenshots/problems.png" alt="Problems tab listing what the profile is missing, with one-click fixes" width="440"><br><sub>Problems: what a profile is missing, with one-click fixes</sub></td><td align="center"><img src="build/linux/screenshots/saves.png" alt="Saves tab: each save with its backups and whether its mods are present" width="440"><br><sub>Saves: backups per save and its missing mods</sub></td></tr>
+<tr><td align="center" colspan="2"><img src="build/linux/screenshots/settings.png" alt="Settings for play, start-up and the window" width="600"><br><sub>Settings for play, start-up and the window</sub></td></tr>
+</table>
 
 ## Documentation
 
