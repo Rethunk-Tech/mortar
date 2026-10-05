@@ -8,8 +8,6 @@ import (
 )
 
 // runInstaller runs the installer and returns what it printed, which carries its error.
-func runInstaller(ctx context.Context, exe, dir string, args []string) ([]byte, error) {
-	cmd := exec.CommandContext(ctx, exe, args...)
-	cmd.Dir = dir
+func runInstaller(_ context.Context, cmd *exec.Cmd) ([]byte, error) {
 	return cmd.CombinedOutput()
 }

@@ -18,9 +18,9 @@ exit $p.ExitCode`
 
 // runInstaller runs the installer on a hidden console of its own. It clears the screen as it starts, which fails with
 // "the handle is invalid" when its output is a pipe, so its output cannot be captured here.
-func runInstaller(ctx context.Context, exe, dir string, args []string) ([]byte, error) {
-	env := append(os.Environ(), "MORTAR_EXE="+exe, "MORTAR_DIR="+dir)
-	for i, arg := range args {
+func runInstaller(ctx context.Context, cmd *exec.Cmd) ([]byte, error) {
+	env := append(os.Environ(), "MORTAR_EXE="+cmd.Path, "MORTAR_DIR="+cmd.Dir)
+	for i, arg := range cmd.Args[1:] {
 		env = append(env, "MORTAR_ARG"+strconv.Itoa(i)+"="+arg)
 	}
 	ps := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command", start)
