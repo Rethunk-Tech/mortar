@@ -157,6 +157,15 @@ function syncHourlyRecheck() {
 }
 
 useProfiles.subscribe(syncHourlyRecheck)
+// The review is of the open profile's updates, so it closes when another profile opens. The Mods tab cannot do this:
+// it mounts after the chip or toast that opens the review has already asked for it.
+let reviewedProfile = useProfiles.getState().openId
+useProfiles.subscribe((s) => {
+  if (s.openId !== reviewedProfile) {
+    reviewedProfile = s.openId
+    useUpdates.setState({ reviewing: false })
+  }
+})
 useSettings.subscribe(syncHourlyRecheck)
 useNexusDetails.subscribe(syncBadge)
 syncHourlyRecheck()

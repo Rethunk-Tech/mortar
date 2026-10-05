@@ -229,6 +229,7 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
 function AttentionCards() {
   const { t } = useLingui()
   const setReviewing = useUpdates((s) => s.setReviewing)
+  const setTab = useTab((s) => s.setTab)
   const openId = useProfiles((s) => s.openId)
   const updateN = useBadges((s) => s.byProfile[openId]?.updates ?? 0)
   useLoadProblemsOnFocus()
@@ -238,7 +239,10 @@ function AttentionCards() {
       value={String(updateN)}
       tone="primary"
       ariaLabel={t`Review ${plural(updateN, { one: '# update', other: '# updates' })}`}
-      onClick={() => setReviewing(true)}
+      onClick={() => {
+        setTab('mods')
+        setReviewing(true)
+      }}
     />
   ) : null
 }

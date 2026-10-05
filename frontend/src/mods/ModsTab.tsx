@@ -226,7 +226,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
         resolving: null,
         removing: [],
       })
-      useUpdates.setState({ updates: null, reviewing: false })
+      useUpdates.setState({ updates: null })
     }
     if (!pending) {
       useDetail.getState().show(null)
