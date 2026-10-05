@@ -114,7 +114,7 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
       open={signedIn && prompts.length > 0}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
     >
-      <Card sx={{ p: 1.5, maxWidth: 460, bgcolor: 'rgb(38,38,46)' }}>
+      <Card sx={{ p: 1.5, maxWidth: 460, bgcolor: 'var(--mortar-toast)' }}>
         <Typography sx={{ mb: 1, fontSize: 14, fontWeight: 700 }}>
           {t`Enjoying these mods? Endorse them on Nexus`}
         </Typography>

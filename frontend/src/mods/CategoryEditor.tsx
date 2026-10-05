@@ -54,7 +54,8 @@ function CategoryRow({
                 width: 28,
                 height: 28,
                 bgcolor: colorHex(token),
-                outline: row.color === token ? '2px solid #fff' : '2px solid transparent',
+                outline:
+                  row.color === token ? '2px solid var(--mortar-ink)' : '2px solid transparent',
                 outlineOffset: 1,
               }}
             />

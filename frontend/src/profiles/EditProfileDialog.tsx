@@ -202,7 +202,7 @@ function AppearancePickers({
                 width: 32,
                 height: 32,
                 bgcolor: colorHex(token),
-                outline: color === token ? '2px solid #fff' : '2px solid transparent',
+                outline: color === token ? '2px solid var(--mortar-ink)' : '2px solid transparent',
                 outlineOffset: 1,
                 '&:hover': { bgcolor: colorHex(token) },
               }}

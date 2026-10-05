@@ -109,7 +109,7 @@ function ReportTable({
                 align={column === 'name' ? 'left' : 'right'}
                 sx={{
                   bgcolor: 'var(--mortar-console)',
-                  color: 'rgba(230,230,235,0.8)',
+                  color: 'var(--mortar-ink-sec)',
                   fontSize: 11,
                   whiteSpace: 'nowrap',
                 }}

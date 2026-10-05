@@ -39,7 +39,7 @@ const PERCENT = 100
 const PAGE_HOST = 'mortar.rethunk.tech'
 
 const LEVEL_TEXT: Record<MeterLevel, string> = {
-  ok: '#6ff5a8',
+  ok: 'success.main',
   warn: 'warning.main',
   over: 'error.light',
 }
@@ -99,7 +99,7 @@ function PagePreview({ info }: { info: ShownInfo }) {
         flexDirection: 'column',
         gap: 1.5,
         p: 2.5,
-        bgcolor: 'rgba(24,24,30,0.9)',
+        bgcolor: 'var(--mortar-console-90)',
         borderLeft: '1px solid var(--mortar-hairline-muted)',
       }}
     >
