@@ -5,7 +5,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // Identity names the file a ref installs, ignoring the per-entry options (disabled mods, notes, FOMOD picks).
@@ -63,4 +66,47 @@ func withEntries(doc []byte, entries []Ref) ([]byte, error) {
 	}
 	fields["entries"] = enc
 	return json.Marshal(fields)
+}
+
+// SameExceptArrival reports whether have differs from base only by files in missing not having arrived: the profile
+// name, notes, description, every entry's options and order, and every config file that is there must match. Mod ids
+// and config files base holds for a file that has not arrived are not in have and are not a difference.
+func SameExceptArrival(base, have Preview, missing map[string]bool) bool {
+	if base.Name != have.Name || base.Notes != have.Notes || base.Description != have.Description {
+		return false
+	}
+	var want []string
+	for _, r := range base.Entries {
+		if id := r.Identity(); !missing[id] || slices.ContainsFunc(have.Entries, func(h Ref) bool { return h.Identity() == id }) {
+			enc, _ := json.Marshal(r)
+			want = append(want, string(enc))
+		}
+	}
+	var got []string
+	for _, r := range have.Entries {
+		enc, _ := json.Marshal(r)
+		got = append(got, string(enc))
+	}
+	if !slices.Equal(want, got) {
+		return false
+	}
+	for _, id := range have.IDs {
+		if !slices.Contains(base.IDs, id) {
+			return false
+		}
+	}
+	type cfg struct {
+		id   mod.ID
+		path string
+	}
+	held := map[cfg]string{}
+	for _, c := range base.Configs {
+		held[cfg{c.ID, c.Path}] = string(c.Data)
+	}
+	for _, c := range have.Configs {
+		if data, ok := held[cfg{c.ID, c.Path}]; !ok || data != string(c.Data) {
+			return false
+		}
+	}
+	return true
 }

@@ -18,12 +18,14 @@ type modMachine struct {
 	*machine
 	mods map[string][]int
 	fail map[int]bool
+	// note is the note on every entry.
+	note string
 }
 
 func (m *modMachine) Export(_, id string) ([]byte, error) {
 	p := profile.Profile{Name: "Main"}
 	for _, n := range m.mods[id] {
-		p.Entries = append(p.Entries, profile.Entry{Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: n, FileID: n}})
+		p.Entries = append(p.Entries, profile.Entry{Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: n, FileID: n}, Note: m.note})
 	}
 	var buf bytes.Buffer
 	_, err := share.Write(&buf, "stardew", p, "")
@@ -103,5 +105,33 @@ func TestTheirsApplyEchoIsNotPushedAndFailedDownloadsAreKept(t *testing.T) {
 	scan(t, b)
 	if got := payloadMods(t, folder); !slices.Equal(got, []int{2, 3}) {
 		t.Fatalf("pushed mods = %v, want [2 3]", got)
+	}
+}
+
+func TestAnEditWhileDownloadsFinishSyncsAndKeepsTheMissingMod(t *testing.T) {
+	folder := t.TempDir()
+	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	a, ma := newModMachine(t, folder, "Desktop", &clock)
+	b, mb := newModMachine(t, folder, "Laptop", &clock)
+	mb.fail[3] = true
+	ma.edit("main", 1, 2, 3)
+	scan(t, a)
+	offers := scan(t, b)
+	if err := b.Resolve(context.Background(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
+		t.Fatal(err)
+	}
+	mb.note = "my note"
+	mb.edit("local-Main", 1, 2)
+	scan(t, b)
+	if got := payloadMods(t, folder); !slices.Equal(got, []int{1, 2, 3}) {
+		t.Fatalf("pushed mods = %v, want the missing one kept", got)
+	}
+	raw, err := fsx.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	pv, err := share.ReadBytes(raw)
+	if err != nil || pv.Entries[0].Note != "my note" {
+		t.Fatalf("the note edit did not sync: %+v, %v", pv.Entries, err)
 	}
 }

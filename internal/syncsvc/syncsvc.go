@@ -563,24 +563,17 @@ func (s *Service) keepUnfetched(folder string, ref Ref, t *tracked, payload []by
 	if err != nil {
 		return payload, false
 	}
-	held, wanted, missing := identities(have.Entries), identities(want.Entries), map[string]bool{}
+	held, missing := identities(have.Entries), map[string]bool{}
 	for _, id := range t.Missing {
 		missing[id] = true
 	}
 	var keep []share.Ref
-	changed := false
 	for _, r := range want.Entries {
-		if id := r.Identity(); !held[id] {
-			if missing[id] {
-				keep = append(keep, r)
-			} else {
-				changed = true
-			}
+		if id := r.Identity(); !held[id] && missing[id] {
+			keep = append(keep, r)
 		}
 	}
-	for id := range held {
-		changed = changed || !wanted[id]
-	}
+	changed := !share.SameExceptArrival(want, have, missing)
 	if len(keep) == 0 {
 		t.Applied, t.Missing = "", nil
 	}
