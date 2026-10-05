@@ -66,6 +66,7 @@ import (
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/storecheck"
 	"github.com/Rethunk-Tech/mortar/internal/support"
+	"github.com/Rethunk-Tech/mortar/internal/syncsvc"
 	"github.com/Rethunk-Tech/mortar/internal/templates"
 	"github.com/Rethunk-Tech/mortar/internal/tidy"
 	"github.com/Rethunk-Tech/mortar/internal/tools"
@@ -123,6 +124,7 @@ func registerEvents() {
 	application.RegisterEvent[string](folderwatch.ModsFolderEvent)
 	application.RegisterEvent[string](folderwatch.ExtraFolderEvent)
 	application.RegisterEvent[string](folderwatch.DownloadsEvent)
+	application.RegisterEvent[[]syncsvc.Offer](syncsvc.OffersEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
 	application.RegisterEvent[lan.Arrival](lan.ArrivedEvent)
 	application.RegisterEvent[lan.TransferProgress](lan.TransferProgressEvent)
@@ -585,6 +587,14 @@ func run() error {
 		Dir:  dataDir,
 		Emit: emit,
 	})
+	syncSvc, err := syncsvc.New(syncsvc.Deps{
+		Source: syncsvc.NewSource(profiles, shareSvc),
+		Folder: func() string { return store.Get().SyncFolder },
+		Dir:    dataDir, Quiet: 5 * time.Second, Emit: emit,
+	})
+	if err != nil {
+		return err
+	}
 	lanSvc = lan.NewService(lan.Deps{
 		Shares: shareSvc, Settings: store, Store: items, Version: version,
 		Dir: dataDir, Emit: emit,
@@ -671,6 +681,7 @@ func run() error {
 
 	browseSvc := browse.NewService(version, profileSvc)
 	browseSvc.ShowAdult = func() bool { return store.Get().ShowAdultContent }
+	browseSvc.Installed = profiles.Installed
 	browseSvc.Compat = func(game string) func(ctx context.Context) (meta.CompatIndex, error) {
 		info, ok := components.BundledGame(game)
 		if !ok {
@@ -697,7 +708,7 @@ func run() error {
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 		application.NewService(bundlesSvc), application.NewService(templatesSvc), application.NewService(archivesSvc),
 		application.NewService(savesSvc), application.NewService(plays), application.NewService(nexusSvc), application.NewService(&itchsource.Service{Store: store}), application.NewService(nxmSvc), application.NewService(notifier),
-		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc), application.NewService(lanSvc),
+		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc), application.NewService(syncSvc), application.NewService(lanSvc),
 		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
 		application.NewService(dataSvc), application.NewService(toolsSvc),
 		application.NewService(checkSvc), application.NewService(&tidy.Service{Report: tidied}),
@@ -727,7 +738,14 @@ func run() error {
 	queueCtx, stopQueue := context.WithCancel(context.Background())
 	launchsvc.SetLife(launches, queueCtx)
 	go storecheck.Run(queueCtx, checkSvc)
-	watchLibraryFolders(queueCtx, home, dataDir, store, emit)
+	go syncSvc.Run(queueCtx, time.Minute)
+	watchLibraryFolders(queueCtx, home, dataDir, store, func(name string, data any) {
+		if name == syncsvc.FolderEvent {
+			syncSvc.Kick()
+			return
+		}
+		emit(name, data)
+	})
 	waitQueue := queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
 	defer func() {
 		stopQueue()
