@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark" />
+    <title>Mortar browser extension</title>
+    <meta
+      name="description"
+      content="The Mortar browser extension marks Nexus Mods pages with what your Stardew Valley profile already has and hands Mod Manager Download clicks to Mortar. For Firefox, Chrome and Edge."
+    />
+    <link rel="icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="stylesheet" href="../landing.css" />
+    <link rel="stylesheet" href="../download.css" />
+  </head>
+  <body>
+    <nav class="nav" aria-label="Main">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <svg width="28" height="28" aria-hidden="true">
+            <use href="../img/icons.svg#brand" />
+          </svg>
+          Mortar
+        </a>
+        <div class="nav-links">
+          <a class="optional" href="/#features">Features</a>
+          <a class="optional" href="/extension/" aria-current="page"
+            >Extension</a
+          >
+          <a href="/download/">Download</a>
+          <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="wrap dl">
+      <div class="feature">
+        <div class="copy">
+          <p class="kicker">Browser extension</p>
+          <h1 class="ext-title">Nexus Mods, aware of your profile</h1>
+          <p>
+            See which mods your Mortar profile already has while you browse
+            Nexus Mods, and send Mod Manager Download clicks straight to Mortar.
+            For Firefox, Chrome, Edge and other Chromium browsers.
+          </p>
+          <div class="cta ext-cta">
+            <a
+              class="btn"
+              href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.xpi"
+              >Get it for Firefox</a
+            >
+            <a class="btn-ghost" href="#install">Chrome and Edge</a>
+          </div>
+          <p class="cta-note">
+            Free and open source. Needs Mortar on the same computer.
+          </p>
+        </div>
+        <img
+          class="shot ext-shot"
+          src="../img/extension.webp"
+          width="380"
+          height="264"
+          alt="The extension popup connected to Mortar: 660 Nexus mods in the Main profile and the updates available for them"
+        />
+      </div>
+
+      <section class="block" aria-labelledby="what-heading">
+        <h2 id="what-heading">What it does</h2>
+        <div class="grid">
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true">
+                <use href="../img/icons.svg#i1" />
+              </svg>
+            </div>
+            <h3>Mod Manager Download, into Mortar</h3>
+            <p>
+              Click Nexus's own Mod Manager Download button and the file goes to
+              the right Mortar profile. The extension never starts a download by
+              itself.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true">
+                <use href="../img/icons.svg#i8" />
+              </svg>
+            </div>
+            <h3>Marks what you have</h3>
+            <p>
+              Mod pages, file lists and search results show which mods and files
+              the open profile already has, so you don't download twice.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true">
+                <use href="../img/icons.svg#i6" />
+              </svg>
+            </div>
+            <h3>Updates and warnings</h3>
+            <p>
+              The toolbar popup lists updates for the mods in your profile and
+              flags broken or obsolete mods on their pages.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="block" id="install" aria-labelledby="install-heading">
+        <h2 id="install-heading">Install</h2>
+        <div class="files">
+          <a
+            class="file primary"
+            href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.xpi"
+          >
+            <strong>Firefox</strong
+            ><span>Signed by Mozilla; updates itself</span>
+          </a>
+          <a
+            class="file"
+            href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.zip"
+          >
+            <strong>Chrome, Edge and other Chromium browsers</strong
+            ><span>Load unpacked from the zip</span>
+          </a>
+        </div>
+        <ol class="steps">
+          <li>
+            <strong>Firefox:</strong> open the downloaded <code>.xpi</code> in
+            Firefox, or drop it on <code>about:addons</code>, and confirm.
+          </li>
+          <li>
+            <strong>Chrome and Edge:</strong> unzip the download, open
+            <code>chrome://extensions</code> (or
+            <code>edge://extensions</code>), turn on Developer mode, choose
+            <strong>Load unpacked</strong> and pick the unzipped folder. A
+            Chrome Web Store listing is on the way.
+          </li>
+          <li>
+            In Mortar, open Settings › Downloads. It shows the extension as
+            connected once you visit Nexus Mods.
+          </li>
+        </ol>
+      </section>
+
+      <section class="block" id="privacy" aria-labelledby="privacy-heading">
+        <h2 id="privacy-heading">Privacy</h2>
+        <p class="lede ext-lede">
+          The extension talks only to the Mortar app on your own computer,
+          through the browser's native messaging. It has no server, no analytics
+          and no telemetry.
+        </p>
+        <div class="faq">
+          <details open>
+            <summary>Privacy policy</summary>
+            <p>
+              Mortar's browser extension reads Nexus Mods pages in your browser
+              to mark mods and to pass Mod Manager Download links to the Mortar
+              desktop app installed on your own computer, using the browser's
+              native messaging. The only data exchanged is Nexus mod ids, file
+              ids and nxm:// links going to Mortar, and installed-mod and update
+              information coming back. It runs only on
+              https://www.nexusmods.com. The extension makes no network requests
+              of its own, has no server, analytics or telemetry, and sends
+              nothing to the developers or any third party. Your display choice
+              and filter settings are stored in your browser's extension storage
+              and never leave it. Uninstalling the extension removes them.
+            </p>
+          </details>
+          <details>
+            <summary>Permissions it asks for</summary>
+            <p>
+              <code>nativeMessaging</code> to reach Mortar on your computer;
+              access to <code>www.nexusmods.com</code> only, to read and mark
+              its pages; <code>scripting</code> to add its marks to Nexus tabs
+              that were already open when it was installed;
+              <code>storage</code> for your display settings;
+              <code>alarms</code> to refresh the update check.
+            </p>
+          </details>
+          <details>
+            <summary>Source code</summary>
+            <p>
+              Every line is public at
+              <a href="https://github.com/Rethunk-Tech/mortar-browser-extension"
+                >github.com/Rethunk-Tech/mortar-browser-extension</a
+              >, with no build step: the files in the release are the files in
+              the repository.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap">
+        <span
+          >Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not
+          affiliated with ConcernedApe or Nexus Mods.</span
+        >
+        <span>
+          <a href="https://github.com/Rethunk-Tech/mortar-browser-extension"
+            >Source</a
+          >
+          ·
+          <a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

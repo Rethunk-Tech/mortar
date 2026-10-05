@@ -48,7 +48,7 @@ function mortarCopyButtons() {
     wrap.append(pre)
     const button = document.createElement('button')
     button.type = 'button'
-    button.className = 'copy'
+    button.className = 'copy-btn'
     button.textContent = 'Copy'
     button.addEventListener('click', () => {
       navigator.clipboard.writeText(pre.textContent).then(() => {
@@ -90,7 +90,7 @@ function mortarRelease(rel) {
   const hash = location.hash.slice(1)
   const platforms = document.querySelector('.tabs:not(.sub)')
   const distros = document.querySelector('.tabs.sub')
-  const distroIds = ['deb', 'fedora', 'arch', 'flatpak', 'appimage']
+  const distroIds = ['deb', 'fedora', 'arch', 'flatpak', 'appimage', 'brew']
   let distro = 'deb'
   if (distroIds.includes(hash)) {
     distro = hash

@@ -26,6 +26,7 @@
         </a>
         <div class="nav-links">
           <a class="optional" href="/#features">Features</a>
+          <a class="optional" href="/extension/">Extension</a>
           <a class="optional" href="/#faq">FAQ</a>
           <a href="/download/" aria-current="page">Download</a>
           <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a>
@@ -119,6 +120,12 @@
           </li>
           <li>Mortar updates itself from then on.</li>
         </ol>
+        <h3>Scoop</h3>
+        <p class="muted">
+          From Mortar's own bucket, with every download pinned by its SHA-256. Scoop then handles updates.
+        </p>
+        <pre><code>scoop bucket add mortar https://github.com/Rethunk-Tech/scoop-bucket
+scoop install mortar/mortar</code></pre>
       </section>
 
       <section
@@ -163,6 +170,7 @@
           >
             AppImage
           </button>
+          <button type="button" role="tab" id="tab-brew" aria-controls="brew">Homebrew</button>
         </div>
 
         <div
@@ -323,6 +331,15 @@ sudo pacman -Sy mortar</code></pre>
           </p>
         </div>
 
+        <div class="panel sub" id="brew" role="tabpanel" aria-labelledby="tab-brew">
+          <h3>Homebrew on Linux</h3>
+          <p class="muted">
+            From Mortar's own tap, pinned by SHA-256. It installs the AppImage, which needs FUSE 2
+            (<code>libfuse2</code>). Homebrew then handles updates.
+          </p>
+          <pre><code>brew install rethunk-tech/tap/mortar</code></pre>
+        </div>
+
         <p class="fingerprint">
           Packages are signed by “Mortar packages
           &lt;security@rethunk.tech&gt;”, fingerprint
@@ -341,7 +358,7 @@ sudo pacman -Sy mortar</code></pre>
         <p class="muted">
           Optional. It marks Nexus Mods pages with what your profile already has
           and hands Mod Manager Download clicks to Mortar. Mortar's Settings ›
-          Downloads links it too.
+          Downloads links it too. <a href="/extension/">What it does, and privacy</a>.
         </p>
         <div class="files">
           <a

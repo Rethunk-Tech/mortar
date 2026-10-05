@@ -109,7 +109,7 @@ html.js .panel[hidden] {
   font-size: 0.9rem;
   line-height: 1.6;
 }
-.copy {
+.copy-btn {
   position: absolute;
   top: 0.6rem;
   right: 0.6rem;
@@ -122,7 +122,7 @@ html.js .panel[hidden] {
   font-size: 0.82rem;
   cursor: pointer;
 }
-.copy:hover {
+.copy-btn:hover {
   border-color: var(--sand);
 }
 .fingerprint {
@@ -139,4 +139,20 @@ html.js .panel[hidden] {
 code {
   font-family: ui-monospace, "SFMono-Regular", monospace;
   font-size: 0.9em;
+}
+.ext-title {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.ext-cta {
+  justify-content: flex-start;
+}
+.ext-shot {
+  max-width: 380px;
+  justify-self: center;
+}
+.ext-lede {
+  margin: 0 0 1.5rem;
 }
