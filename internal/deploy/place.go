@@ -57,6 +57,12 @@ func mapsKeys[V any](m map[string]V) func(yield func(string) bool) {
 
 func journalPath(dir string) string { return filepath.Join(dir, journalFile) }
 
+// HasJournal reports whether dir holds the record of a deploy not yet undone.
+func HasJournal(dir string) bool {
+	_, err := os.Stat(journalPath(dir))
+	return err == nil
+}
+
 func persist(m Manifest) error {
 	b, err := json.Marshal(m)
 	if err != nil {

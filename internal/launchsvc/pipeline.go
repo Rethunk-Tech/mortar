@@ -256,6 +256,33 @@ func (s *Service) RecoverDeploys(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
+// LeftoverJournals lists the deploy and save swap journals of the game's installs that RecoverDeploys would finish:
+// those of installs whose game is not running.
+//
+//wails:ignore
+func (s *Service) LeftoverJournals(gameID string) []string {
+	g := game.Find(gameID)
+	if g == nil {
+		return nil
+	}
+	var out []string
+	for _, sl := range s.slots(g) {
+		if sl.inst == "" {
+			continue
+		}
+		if procs, err := s.gameProcs(sl); err != nil || len(procs) > 0 {
+			continue
+		}
+		if dir, err := journalDir(sl.inst); err == nil && deploy.HasJournal(dir) {
+			out = append(out, dir)
+		}
+		if dir, err := savesJournal(sl.inst); err == nil && savesiso.HasJournal(dir) {
+			out = append(out, dir)
+		}
+	}
+	return out
+}
+
 // ensureRuntime makes the runtime provide what the plan asks for before the game starts. A Wine prefix that does not
 // exist yet is left to Steam, which creates it on the first run; the doctor reports it until then. These edits are
 // persistent and idempotent, so they are not journaled.

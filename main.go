@@ -667,6 +667,9 @@ func run() error {
 		queueSvc, lanSvc,
 		datasvc.BusyFunc(launches.AnyBusy),
 	)
+	profileSvc.HealthKeep = func() (map[string][]string, error) { return datasvc.KeepSet(profiles, true, keepSources) }
+	profileSvc.HealthJournals = launches.LeftoverJournals
+	profileSvc.HealthRecover = func() error { return launches.RecoverDeploys(context.Background()) }
 	dataSvc.Restart = datasvc.RestartSelf
 	dataSvc.OnClearCache = problemsSvc.ForgetCached
 	checkSvc := storecheck.New(storecheck.Deps{

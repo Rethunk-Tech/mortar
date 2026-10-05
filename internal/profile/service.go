@@ -25,6 +25,11 @@ type Service struct {
 	Version              string
 	QueueProfileDeleted  func(game, id string)
 	QueueProfileRestored func(game, id string)
+	// HealthKeep is the store keep set the cleanup flow uses, so a health check calls unused exactly what it would.
+	HealthKeep func() (map[string][]string, error)
+	// HealthJournals lists the game's launch journals a crash left behind, and HealthRecover finishes them.
+	HealthJournals func(game string) []string
+	HealthRecover  func() error
 }
 
 func NewService(store *Store, home string, settings *settings.Store) *Service {
