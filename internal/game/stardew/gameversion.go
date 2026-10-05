@@ -1,19 +1,6 @@
 package stardew
 
-import (
-	"strings"
-)
-
-// StardewVersionFromLog returns the game version in a SMAPI log header
-// ("SMAPI x with Stardew Valley y").
-func StardewVersionFromLog(log string) string {
-	for line := range strings.SplitSeq(log, "\n") {
-		if m := logHeader.FindStringSubmatch(strings.TrimRight(line, "\r")); m != nil {
-			return m[2]
-		}
-	}
-	return ""
-}
+import "strings"
 
 // GameVersionChanged reports that the installed game version is known and
 // differs from the version recorded at the last successful launch.

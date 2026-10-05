@@ -2,7 +2,7 @@
 package game
 
 import (
-	"context"
+	"cmp"
 	"fmt"
 	"net/http"
 	"path/filepath"
@@ -15,8 +15,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -27,12 +27,11 @@ const artPrefix = "/steam-art/"
 // ArtURL is where the frontend loads Steam's hero art for appID from; ArtMiddleware serves it.
 func ArtURL(appID string) string { return artPrefix + appID }
 
-// Game is everything that differs per game.
+// Game is what a game needs code for: its identity and install folder. How it is modded and started belongs to its
+// loaders and stores.
 type Game interface {
 	Identity
 	Installs
-	Loaders
-	Launcher
 }
 
 // Identity names a game and where its process and mods come from.
@@ -40,12 +39,8 @@ type Identity interface {
 	ID() string
 	Name() string
 	SteamAppID() string
-	LoaderName() string
 	ModSources() []string
-	// ProcessName is the loader's executable, the process a running profile is found by.
-	ProcessName() string
-	// GameProcesses are the executables of the game with or without its loader; any of them running blocks a
-	// loader install, whoever started it.
+	// GameProcesses are the game's own executables; any of them running blocks a loader install, whoever started it.
 	GameProcesses() []string
 }
 
@@ -57,34 +52,66 @@ type Installs interface {
 	Discover(override string, st *steam.Steam) (string, error)
 }
 
-// Loaders manages the game's mod loader.
-type Loaders interface {
-	// LoaderStatus reports the loader's state in the install dir; recorded is the version Mortar installed, or "".
-	LoaderStatus(dir, recorded string) loader.Status
-	// LatestLoader returns the newest stable loader version.
-	LatestLoader(ctx context.Context) (string, error)
-	// CopyBundled copies the loader's own mods that are already in the install dir into dst, for a loader
-	// installed outside Mortar.
-	CopyBundled(dir, dst string) error
-	// InstallLoader installs or updates the loader in dir and returns its version.
-	InstallLoader(ctx context.Context, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error)
+// Loaders are the game's loader drivers in catalog order; a catalog entry without a registered driver is left out.
+func Loaders(id string) []loader.Loader {
+	g, _ := catalogGame(id)
+	return loader.For(g)
 }
 
-// Launcher starts a game.
-type Launcher interface {
-	// Launch starts the profile's mods folder and returns once the game has started, sending the loader's log
-	// lines to onLines in batches until ctx is done. It returns launch.ErrNoSteam when there is no Steam and
-	// req.Direct is false. A vanilla request waits for a game process instead of a loader log.
-	Launch(ctx context.Context, req launch.Request, onLines func([]string)) error
-	// LogFile is the loader's log, which outlives the game.
-	LogFile() (string, error)
-	// SteamLaunchForcesLoader reports whether Steam's launch options start the loader instead of the game.
-	SteamLaunchForcesLoader(options string) bool
-	// SteamLaunchWithLoader returns current launch options changed so Steam starts the loader in dir, keeping the
-	// user's own options.
-	SteamLaunchWithLoader(dir, current string) string
-	// SteamLaunchWithoutLoader returns current launch options with the loader command removed.
-	SteamLaunchWithoutLoader(current string) string
+// PrimaryLoader is the game's first loader driver.
+func PrimaryLoader(id string) (loader.Loader, bool) {
+	all := Loaders(id)
+	if len(all) == 0 {
+		return nil, false
+	}
+	return all[0], true
+}
+
+// LoaderStatus is the game's first loader's state in the install in dir. recorded is the version Mortar installed,
+// which outranks the version the install itself reports.
+func LoaderStatus(id, dir, recorded string) (loader.Status, error) {
+	l, ok := PrimaryLoader(id)
+	if !ok {
+		return loader.Status{}, fmt.Errorf("game %q has no loader", id)
+	}
+	st, err := l.Status(loader.Target{Game: id, InstallDir: dir})
+	if err != nil {
+		return loader.Status{}, err
+	}
+	if st.Installed || st.Broken {
+		st.Version = cmp.Or(recorded, st.Version)
+	}
+	return st, nil
+}
+
+// LogFile is the game's first loader's log, which outlives the game.
+func LogFile(id string) (string, error) {
+	l, _ := PrimaryLoader(id)
+	logs, ok := l.(loader.WithLogs)
+	if !ok {
+		return "", fmt.Errorf("game %q has no loader log", id)
+	}
+	return logs.Path(loader.ProfileView{})
+}
+
+// LoaderName is how the catalog names the game's first loader.
+func LoaderName(id string) string {
+	g, ok := catalogGame(id)
+	if !ok || len(g.Loaders) == 0 {
+		return ""
+	}
+	return g.Loaders[0].Name
+}
+
+// ProcessNames are the executables a running game is found by: its own and its loaders'.
+func ProcessNames(g Game) []string {
+	names := slices.Clone(g.GameProcesses())
+	for _, l := range Loaders(g.ID()) {
+		if p, ok := l.(loader.ProcessNames); ok {
+			names = append(names, p.ProcessNames()...)
+		}
+	}
+	return names
 }
 
 var games = []Game{&stardew.Game{}}
@@ -95,6 +122,7 @@ var configuredComponents atomic.Pointer[components.Client]
 func ConfigureComponents(client *components.Client) {
 	configuredComponents.Store(client)
 	stardew.ConfigureComponents(client)
+	smapi.ConfigureComponents(client)
 }
 
 // Catalog returns every game the component manifest lists, enabled or coming later. It is the bundled manifest's

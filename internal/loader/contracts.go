@@ -17,6 +17,8 @@ type ProfileView struct {
 	Runtime string
 	// Enabled are the folders of the profile's enabled packages.
 	Enabled []string
+	// Companion is the folder of the loader's companion mod in the profile, empty when the profile has none.
+	Companion string
 }
 
 // Target is where a loader installs: the game's install and the profile's folder.
@@ -29,6 +31,8 @@ type Target struct {
 	Runtime  string
 	// Exec runs a program under the install's runtime, for loaders whose installer is one.
 	Exec func(ctx context.Context, req launchplan.RuntimeReq, argv []string) error
+	// Bundled receives the loader's own mods while an install's files still exist; nil when the loader has none.
+	Bundled Bundled
 }
 
 // Package is a loader package already downloaded: its identity and the archive on disk.
@@ -41,7 +45,8 @@ type Loader interface {
 	ID() string
 	// Formats are the component formats the loader loads.
 	Formats() []string
-	Status(ctx context.Context, t Target) (Status, error)
+	// Status reads the loader's state from disk.
+	Status(t Target) (Status, error)
 	// Install puts the loader into the profile and returns its version.
 	Install(ctx context.Context, t Target, pkg Package, progress func(Step)) (string, error)
 	// Contribute adds the loader's profile side to plan; install-side files go in plan.Files for the deployer.
@@ -119,3 +124,33 @@ type Console interface {
 
 // WinHTTPLoader is a loader that injects through winhttp.dll, which Wine only loads when the prefix overrides it.
 type WinHTTPLoader interface{ NeedsWinHTTPOverride() bool }
+
+// Releases is a loader whose releases Mortar looks up and downloads.
+type Releases interface {
+	// Latest is the newest stable version.
+	Latest(ctx context.Context) (string, error)
+	// Versions are the recent releases, newest first.
+	Versions(ctx context.Context) ([]string, error)
+	// Fetch downloads the installer package of version to dst.
+	Fetch(ctx context.Context, version, dst string) error
+}
+
+// BundledCopier is a loader that ships mods of its own, which Mortar can copy from an install the loader was put into
+// outside Mortar.
+type BundledCopier interface {
+	CopyBundled(installDir, dst string) error
+}
+
+// ProcessNames is a loader whose running game is found by these executable names.
+type ProcessNames interface{ ProcessNames() []string }
+
+// SteamExe is a loader that Steam's launch options start in place of the game: the executable they run.
+type SteamExe interface {
+	SteamExe(installDir string) string
+}
+
+// GameVersion is a loader whose log says which game version it ran with.
+type GameVersion interface {
+	// GameVersion is the version a log's text names, "" when it names none.
+	GameVersion(log string) string
+}

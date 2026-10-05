@@ -472,7 +472,7 @@ func pathWithin(path, dir string) bool {
 }
 
 func (s *Service) runText(g game.Game, profileID, modsDir string) string {
-	if path, err := g.LogFile(); err == nil {
+	if path, err := game.LogFile(g.ID()); err == nil {
 		if text, ok := readOwnedLog(path, s.home, modsDir); ok {
 			return text
 		}

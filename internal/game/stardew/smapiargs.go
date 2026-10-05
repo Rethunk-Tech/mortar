@@ -84,10 +84,3 @@ func splitShellWords(s string) ([]string, error) {
 	flush()
 	return words, nil
 }
-
-func appendLaunchArgs(goos string, modsArgs, extra []string) []string {
-	if goos == "windows" {
-		return append(append([]string{}, modsArgs...), extra...)
-	}
-	return append(append([]string{"--skip-terminal", "--"}, modsArgs...), extra...)
-}

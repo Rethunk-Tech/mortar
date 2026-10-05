@@ -1,4 +1,4 @@
-package stardew
+package smapi
 
 import (
 	"context"
@@ -46,9 +46,9 @@ func TestLatestFromRecordedResponseIsCached(t *testing.T) {
 		_, _ = w.Write(recorded(t))
 	}))
 	defer srv.Close()
-	g := Game{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
+	g := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
 	for range 2 {
-		v, err := g.LatestLoader(context.Background())
+		v, err := g.Latest(context.Background())
 		if err != nil || v != "4.5.2" {
 			t.Fatalf("latest = %q, %v", v, err)
 		}
@@ -71,8 +71,8 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 		_, _ = w.Write([]byte(body))
 	}))
 	defer srv.Close()
-	g := Game{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
-	if v, err := g.LatestLoader(context.Background()); err != nil || v != "4.8.0" {
+	g := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
+	if v, err := g.Latest(context.Background()); err != nil || v != "4.8.0" {
 		t.Fatalf("latest = %q, %v", v, err)
 	}
 	fail = true
@@ -83,10 +83,10 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 	if err := writeCache(path, c); err != nil {
 		t.Fatal(err)
 	}
-	if v, err := g.LatestLoader(context.Background()); err != nil || v != "4.8.0" {
+	if v, err := g.Latest(context.Background()); err != nil || v != "4.8.0" {
 		t.Fatalf("stale fallback = %q, %v", v, err)
 	}
-	if _, err := (Game{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}).LatestLoader(context.Background()); err == nil {
+	if _, err := (Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}).Latest(context.Background()); err == nil {
 		t.Fatal("no cache and a failing API must error")
 	}
 }
@@ -98,7 +98,7 @@ func TestRateLimitMessage(t *testing.T) {
 		http.Error(w, `{"message":"API rate limit exceeded"}`, http.StatusForbidden)
 	}))
 	defer srv.Close()
-	_, err := Game{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}.LatestLoader(context.Background())
+	_, err := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}.Latest(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "rate limit") || !strings.Contains(err.Error(), "try again after") {
 		t.Fatalf("err = %v", err)
 	}
@@ -140,11 +140,11 @@ func TestVersionsFromLogAndRecordedWins(t *testing.T) {
 	logs := t.TempDir()
 	write(t, filepath.Join(logs, "SMAPI-latest.txt"),
 		"SMAPI 4.5.2 with Stardew Valley 1.6.15 build 24356 on Unix 6.1\n[00:00:00 TRACE SMAPI] later line\n")
-	g := Game{LogDir: logs}
+	g := Loader{LogDir: logs}
 	if s, gv := g.logVersions(); s != "4.5.2" || gv != "1.6.15" {
 		t.Fatalf("log = %q %q", s, gv)
 	}
-	if s, gv := (Game{LogDir: t.TempDir()}).logVersions(); s != "" || gv != "" {
+	if s, gv := (Loader{LogDir: t.TempDir()}).logVersions(); s != "" || gv != "" {
 		t.Fatalf("missing log = %q %q", s, gv)
 	}
 }
@@ -162,7 +162,7 @@ func TestInstallerPathsAndNewer(t *testing.T) {
 }
 
 // fakeSMAPI serves a release list and an installer zip whose installer script does what the real one does to the game folder.
-func fakeSMAPI(t *testing.T, script string) Game {
+func fakeSMAPI(t *testing.T, script string) Loader {
 	t.Helper()
 	installDat := testfs.ZipBytes(t, map[string]string{
 		"Mods/ConsoleCommands/manifest.json": `{"Name":"Console Commands","UniqueID":"SMAPI.ConsoleCommands","Version":"9.9.9"}`,
@@ -181,7 +181,7 @@ func fakeSMAPI(t *testing.T, script string) Game {
 	})
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
-	return Game{ReleasesURL: srv.URL + "/releases", DownloadBase: srv.URL + "/dl", AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir(), LogDir: t.TempDir()}
+	return Loader{ReleasesURL: srv.URL + "/releases", DownloadBase: srv.URL + "/dl", AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir(), LogDir: t.TempDir()}
 }
 
 const okScript = `#!/bin/sh
@@ -195,12 +195,23 @@ touch "$4/StardewModdingAPI.dll"
 func vanillaInstall(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
-	write(t, filepath.Join(dir, identity().Marker), "")
+	write(t, filepath.Join(dir, gameInfo().Marker), "")
 	write(t, filepath.Join(dir, linuxLauncher), "native stub")
 	return dir
 }
 
-func TestInstallLoaderRunsInstallerAndReportsSteps(t *testing.T) {
+// install fetches the installer and runs it the way the loader service does.
+func install(g Loader, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error) {
+	zip := filepath.Join(os.TempDir(), "smapi-test-installer.zip")
+	defer func() { _ = os.Remove(zip) }()
+	if err := g.Fetch(context.Background(), "9.9.9", zip); err != nil {
+		return "", err
+	}
+	progress(loader.StepDownloaded)
+	return g.Install(context.Background(), loader.Target{InstallDir: dir, Bundled: bundled}, loader.Package{ID: ID, Version: "9.9.9", Archive: zip}, progress)
+}
+
+func TestInstallRunsInstallerAndReportsSteps(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("the fake installer is a shell script")
 	}
@@ -208,7 +219,7 @@ func TestInstallLoaderRunsInstallerAndReportsSteps(t *testing.T) {
 	dir := vanillaInstall(t)
 	var steps []loader.Step
 	var bundledMods []string
-	version, err := g.InstallLoader(context.Background(), dir, func(v, mods string) error {
+	version, err := install(g, dir, func(v, mods string) error {
 		if v != "9.9.9" {
 			t.Errorf("bundled version = %q", v)
 		}
@@ -228,8 +239,8 @@ func TestInstallLoaderRunsInstallerAndReportsSteps(t *testing.T) {
 	if len(bundledMods) != 2 {
 		t.Fatalf("bundled mods = %v", bundledMods)
 	}
-	if st := g.LoaderStatus(dir, "9.9.9"); !st.Installed || st.Broken || st.Version != "9.9.9" {
-		t.Fatalf("status = %+v", st)
+	if st, err := g.Status(loader.Target{InstallDir: dir}); err != nil || !st.Installed || st.Broken {
+		t.Fatalf("status = %+v, %v", st, err)
 	}
 }
 
@@ -241,23 +252,16 @@ func stepStrings(in []loader.Step) []string {
 	return out
 }
 
-func TestInstallLoaderReportsInstallerFailure(t *testing.T) {
+func TestInstallReportsInstallerFailure(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("the fake installer is a shell script")
 	}
 	g := fakeSMAPI(t, "#!/bin/sh\necho 'game path is not valid' >&2\nexit 1\n")
-	_, err := g.InstallLoader(context.Background(), vanillaInstall(t), func(string, string) error {
+	_, err := install(g, vanillaInstall(t), func(string, string) error {
 		t.Error("bundled mods added after a failed install")
 		return nil
 	}, func(loader.Step) {})
 	if err == nil || !strings.Contains(err.Error(), "game path is not valid") {
 		t.Fatalf("err = %v", err)
-	}
-}
-
-func TestInstallLoaderRejectsNonGameFolder(t *testing.T) {
-	g := fakeSMAPI(t, okScript)
-	if _, err := g.InstallLoader(context.Background(), t.TempDir(), nil, func(loader.Step) {}); err == nil {
-		t.Fatal("installed into a folder that is not Stardew Valley")
 	}
 }

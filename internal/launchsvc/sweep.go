@@ -57,7 +57,7 @@ func (s *Service) Sweep(ctx context.Context, gameID string) (SweepReport, error)
 	if g == nil {
 		return SweepReport{}, fmt.Errorf("unknown game %q", gameID)
 	}
-	gameVer, smapiVer, err := s.installedSweepVersions(gameID, g)
+	gameVer, smapiVer, err := s.installedSweepVersions(gameID)
 	if err != nil {
 		return SweepReport{}, err
 	}
@@ -107,7 +107,7 @@ func (r SweepReport) NeedsAttention() bool {
 	return false
 }
 
-func (s *Service) installedSweepVersions(gameID string, g game.Game) (string, string, error) {
+func (s *Service) installedSweepVersions(gameID string) (string, string, error) {
 	if s.SweepVersions != nil {
 		return s.SweepVersions(gameID)
 	}
@@ -116,8 +116,8 @@ func (s *Service) installedSweepVersions(gameID string, g game.Game) (string, st
 	if err != nil {
 		return "", "", err
 	}
-	st := g.LoaderStatus(dir, set.Loaders[gameID])
-	return st.GameVersion, st.Version, nil
+	st, err := game.LoaderStatus(gameID, dir, set.Loaders[gameID])
+	return st.GameVersion, st.Version, err
 }
 
 func (s *Service) sweepVersionsChanged(gameID, gameVer, smapiVer string) bool {

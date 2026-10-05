@@ -77,20 +77,20 @@ func ReadState(dir string) (State, error) {
 }
 
 // Send runs command in the game whose bridge mod lives in dir.
-func Send(dir, command string) error {
+func Send(ctx context.Context, dir, command string) error {
 	st, err := ReadState(dir)
 	if err != nil {
 		return err
 	}
-	return send(st, command)
+	return send(ctx, st, command)
 }
 
-func send(st State, command string) error {
+func send(ctx context.Context, st State, command string) error {
 	if strings.ContainsAny(command, "\r\n") {
 		return &RejectedError{Message: "a command is one line"}
 	}
 	dialer := net.Dialer{Timeout: timeout}
-	conn, err := dialer.DialContext(context.Background(), "tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(st.Port)))
+	conn, err := dialer.DialContext(ctx, "tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(st.Port)))
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrNotReady, err)
 	}

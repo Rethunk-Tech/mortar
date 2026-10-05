@@ -18,6 +18,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -370,17 +371,17 @@ func TestAProfileReadiedForLaunchIsRunning(t *testing.T) {
 
 func TestAProcessWithoutACommandLineLocksEveryProfileUnlessMortarLaunchedIt(t *testing.T) {
 	bare := launch.Process{PID: 1}
-	if !credited(bare, "/a", "a", "", false) || !credited(bare, "/b", "b", "", false) {
+	if !credited(smapi.Loader{}, bare, "/a/mods", "a", "", false) || !credited(smapi.Loader{}, bare, "/b/mods", "b", "", false) {
 		t.Fatal("a game Mortar did not start may run any profile")
 	}
-	if !credited(bare, "/a", "a", "a", false) || credited(bare, "/b", "b", "a", false) {
+	if !credited(smapi.Loader{}, bare, "/a/mods", "a", "a", false) || credited(smapi.Loader{}, bare, "/b/mods", "b", "a", false) {
 		t.Fatal("a game Mortar launched runs its launched profile only")
 	}
-	withArgs := launch.Process{PID: 2, Args: []string{"StardewModdingAPI", "--mods-path", "/a"}}
-	if !credited(withArgs, "/a", "a", "", false) || credited(withArgs, "/b", "b", "", false) {
+	withArgs := launch.Process{PID: 2, Args: []string{"StardewModdingAPI", "--mods-path", "/a/mods"}}
+	if !credited(smapi.Loader{}, withArgs, "/a/mods", "a", "", false) || credited(smapi.Loader{}, withArgs, "/b/mods", "b", "", false) {
 		t.Fatal("a command line names its profile")
 	}
-	if credited(bare, "/a", "a", "", true) || credited(withArgs, "/a", "a", "", true) {
+	if credited(smapi.Loader{}, bare, "/a/mods", "a", "", true) || credited(smapi.Loader{}, withArgs, "/a/mods", "a", "", true) {
 		t.Fatal("a vanilla launch locks no profile")
 	}
 }

@@ -157,20 +157,27 @@ func (s *Service) SteamAccess() (SteamAccess, error) {
 
 // LoaderLaunchLine is the Steam launch-options line that starts the game's loader from installDir.
 func (s *Service) LoaderLaunchLine(gameID, installDir string) (string, error) {
-	g, err := Require(gameID)
+	exe, err := requireSteamExe(gameID, installDir)
 	if err != nil {
 		return "", err
 	}
-	return g.SteamLaunchWithLoader(installDir, ""), nil
+	return launchWith(exe, ""), nil
 }
 
 // LaunchOptionsStartLoader reports whether Steam launch options already start the game's loader.
 func (s *Service) LaunchOptionsStartLoader(gameID, options string) (bool, error) {
-	g, err := Require(gameID)
-	if err != nil {
-		return false, err
+	return StartsLoader(gameID, options)
+}
+
+func requireSteamExe(gameID, dir string) (string, error) {
+	if _, err := Require(gameID); err != nil {
+		return "", err
 	}
-	return g.SteamLaunchForcesLoader(options), nil
+	exe, ok := steamExe(gameID, dir)
+	if !ok {
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("game %q has no loader Steam can start", gameID))
+	}
+	return exe, nil
 }
 
 // GrantSteamAccess runs the Flatpak Steam filesystem override after the user confirms.

@@ -74,11 +74,10 @@ func newService(base, version string, env func(string) problems.Environment) *Se
 
 // Log returns the game's loader log as written on disk, or "" when there is none yet or it is another profile's.
 func (s *Service) Log(gameID, profileID string) (string, error) {
-	g, err := game.Require(gameID)
-	if err != nil {
+	if _, err := game.Require(gameID); err != nil {
 		return "", err
 	}
-	path, err := g.LogFile()
+	path, err := game.LogFile(gameID)
 	if err != nil {
 		return "", err
 	}
@@ -135,7 +134,7 @@ func (s *Service) BugURL(gameID string, r BugReport) string {
 			about += " " + env.GameVersion
 		}
 		if env.APIVersion != "" {
-			about += fmt.Sprintf(" (%s %s)", g.LoaderName(), env.APIVersion)
+			about += fmt.Sprintf(" (%s %s)", game.LoaderName(gameID), env.APIVersion)
 		}
 	}
 	section := func(heading, text string) string {

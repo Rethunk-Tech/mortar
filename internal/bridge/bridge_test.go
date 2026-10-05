@@ -55,7 +55,7 @@ func state(port int) State { return State{Port: port, Token: "tok", PID: os.Getp
 
 func TestSendOK(t *testing.T) {
 	port, got := serve(t, "ok\n", false)
-	if err := send(state(port), `help "a b"`); err != nil {
+	if err := send(t.Context(), state(port), `help "a b"`); err != nil {
 		t.Fatal(err)
 	}
 	if line := <-got; line != "tok\nhelp \"a b\"\n" {
@@ -66,14 +66,14 @@ func TestSendOK(t *testing.T) {
 func TestSendRejected(t *testing.T) {
 	port, _ := serve(t, "error: missing or oversized command\n", false)
 	var re *RejectedError
-	if err := send(state(port), "x"); !errors.As(err, &re) || re.Message != "missing or oversized command" {
+	if err := send(t.Context(), state(port), "x"); !errors.As(err, &re) || re.Message != "missing or oversized command" {
 		t.Fatalf("err = %v", err)
 	}
 }
 
 func TestSendWrongToken(t *testing.T) {
 	port, _ := serve(t, "error: unauthorized\n", false)
-	if err := send(state(port), "x"); !errors.Is(err, ErrUnauthorized) {
+	if err := send(t.Context(), state(port), "x"); !errors.Is(err, ErrUnauthorized) {
 		t.Fatalf("err = %v", err)
 	}
 }
@@ -83,7 +83,7 @@ func TestSendTimeout(t *testing.T) {
 	t.Cleanup(func() { timeout = 3 * time.Second })
 	port, _ := serve(t, "", true)
 	start := time.Now()
-	if err := send(state(port), "x"); err == nil || time.Since(start) > 2*timeout {
+	if err := send(t.Context(), state(port), "x"); err == nil || time.Since(start) > 2*timeout {
 		t.Fatalf("err = %v after %v", err, time.Since(start))
 	}
 }
@@ -91,14 +91,14 @@ func TestSendTimeout(t *testing.T) {
 func TestSendNothingListening(t *testing.T) {
 	ln, port := listen(t)
 	_ = ln.Close()
-	if err := send(state(port), "x"); !errors.Is(err, ErrNotReady) {
+	if err := send(t.Context(), state(port), "x"); !errors.Is(err, ErrNotReady) {
 		t.Fatalf("err = %v", err)
 	}
 }
 
 func TestMultilineCommandRefusedBeforeConnecting(t *testing.T) {
 	var re *RejectedError
-	if err := send(state(1), "a\nb"); !errors.As(err, &re) {
+	if err := send(t.Context(), state(1), "a\nb"); !errors.As(err, &re) {
 		t.Fatalf("err = %v", err)
 	}
 }

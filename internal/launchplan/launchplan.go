@@ -40,8 +40,11 @@ var ErrSecondOverride = errors.New("another loader already replaces the game's l
 
 // Plan is one launch. Loaders only add to it, through the methods below.
 type Plan struct {
-	Mode         Mode
-	Exe          string
+	Mode Mode
+	Exe  string
+	// Entry is the executable a direct start runs when no loader replaces Exe. A store that relays the start lets the
+	// game's own launcher run instead.
+	Entry        string
 	Args         []string
 	Env          map[string]string
 	Prefix       []string
@@ -55,6 +58,9 @@ type Plan struct {
 
 // New is an empty plan for mode.
 func New(mode Mode) *Plan { return &Plan{Mode: mode, Env: map[string]string{}} }
+
+// SetEntry names the executable a direct start of the game runs.
+func (p *Plan) SetEntry(exe string) { p.Entry = exe }
 
 // AddArgs appends game arguments.
 func (p *Plan) AddArgs(args ...string) { p.Args = append(p.Args, args...) }

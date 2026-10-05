@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"os"
+	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -16,11 +19,6 @@ import (
 )
 
 var errUnknownSMAPI = errors.New("unknown SMAPI version")
-
-type loaderAt interface {
-	InstallLoaderAt(ctx context.Context, dir, version string, bundled loader.Bundled, progress func(loader.Step)) (string, error)
-	LoaderVersions(ctx context.Context) ([]string, error)
-}
 
 // InstallVersion installs the given SMAPI version. A copy already in the store is applied without downloading.
 func (s *Service) InstallVersion(ctx context.Context, id, version string) (loader.Status, error) {
@@ -43,7 +41,7 @@ func (s *Service) InstallVersion(ctx context.Context, id, version string) (loade
 		return loader.Status{}, err
 	}
 	if running || s.profiles.AnyRunning(id) {
-		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName()))
+		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), game.LoaderName(id)))
 	}
 	return s.installVersion(ctx, g, dir, id, version, false)
 }
@@ -108,8 +106,9 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, vers
 		}
 		return s.Status(ctx, id)
 	}
-	at, ok := g.(loaderAt)
-	if !ok {
+	l, ok := game.PrimaryLoader(id)
+	rel, canFetch := l.(loader.Releases)
+	if !ok || !canFetch {
 		return loader.Status{}, fmt.Errorf("%s does not install a chosen SMAPI version", g.Name())
 	}
 	bundled := func(got, modsDir string) error {
@@ -119,9 +118,18 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, vers
 		}
 		return s.applyBundled(id, key, fromStart)
 	}
-	got, err := at.InstallLoaderAt(ctx, dir, version, bundled, func(step loader.Step) {
-		s.emit(ProgressEvent, Progress{Game: id, Step: step})
-	})
+	work, err := os.MkdirTemp("", "mortar-loader-")
+	if err != nil {
+		return loader.Status{}, err
+	}
+	defer func() { _ = fsx.RemoveAll(work) }()
+	pkg := loader.Package{ID: l.ID(), Version: version, Archive: filepath.Join(work, "installer.zip")}
+	if err := rel.Fetch(ctx, version, pkg.Archive); err != nil {
+		return loader.Status{}, err
+	}
+	progress := func(step loader.Step) { s.emit(ProgressEvent, Progress{Game: id, Step: step}) }
+	progress(loader.StepDownloaded)
+	got, err := l.Install(ctx, loader.Target{Game: id, InstallDir: dir, Bundled: bundled}, pkg, progress)
 	if err != nil {
 		return loader.Status{}, err
 	}
@@ -145,7 +153,12 @@ func (s *Service) resolveVersion(ctx context.Context, id string, g game.Game, ve
 		}
 		return all[0], nil
 	}
-	return g.LatestLoader(ctx)
+	l, _ := game.PrimaryLoader(id)
+	rel, ok := l.(loader.Releases)
+	if !ok {
+		return "", fmt.Errorf("%s does not list SMAPI versions", g.Name())
+	}
+	return rel.Latest(ctx)
 }
 
 func (s *Service) ensureKnown(ctx context.Context, id, version string) error {
@@ -167,11 +180,12 @@ func (s *Service) remoteVersions(ctx context.Context, id string) ([]string, erro
 	if err != nil {
 		return nil, err
 	}
-	at, ok := g.(loaderAt)
+	l, _ := game.PrimaryLoader(id)
+	rel, ok := l.(loader.Releases)
 	if !ok {
 		return nil, fmt.Errorf("%s does not list SMAPI versions", g.Name())
 	}
-	return at.LoaderVersions(ctx)
+	return rel.Versions(ctx)
 }
 
 func (s *Service) storedVersions(id string) []string {

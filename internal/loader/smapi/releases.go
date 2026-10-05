@@ -1,4 +1,4 @@
-package stardew
+package smapi
 
 import (
 	"context"
@@ -32,19 +32,19 @@ type cachedRelease struct {
 	Version string    `json:"version"`
 }
 
-func (g Game) loaderComponent() (components.Component, bool) {
-	client := g.Components
+func (l Loader) loaderComponent() (components.Component, bool) {
+	client := l.Components
 	if client == nil {
 		client = configuredComponents.Load()
 	}
 	if client == nil {
 		return components.Component{}, false
 	}
-	return client.Component(g.ID(), "smapi")
+	return client.Component(gameID, "smapi")
 }
 
-func (g Game) installerAsset(version string) string {
-	if component, ok := g.loaderComponent(); ok {
+func (l Loader) installerAsset(version string) string {
+	if component, ok := l.loaderComponent(); ok {
 		if component.Version == version {
 			return component.Asset
 		}
@@ -52,15 +52,15 @@ func (g Game) installerAsset(version string) string {
 			return strings.ReplaceAll(component.Asset, component.Version, version)
 		}
 	}
-	pattern := g.AssetPattern
+	pattern := l.AssetPattern
 	if pattern == "" {
 		return ""
 	}
 	return strings.ReplaceAll(pattern, "{version}", version)
 }
 
-func (g Game) cachePath() (string, error) {
-	dir := g.CacheDir
+func (l Loader) cachePath() (string, error) {
+	dir := l.CacheDir
 	if dir == "" {
 		base, err := datadir.Dir()
 		if err != nil {
@@ -90,13 +90,13 @@ func writeCache(path string, c cachedRelease) error {
 	return datadir.WriteJSON(path, c)
 }
 
-// LatestLoader returns the newest stable SMAPI version that ships an installer. A response younger than an hour
+// Latest returns the newest stable SMAPI version that ships an installer. A response younger than an hour
 // is reused, and a stale one stands in when the lookup fails.
-func (g Game) LatestLoader(ctx context.Context) (string, error) {
-	if component, ok := g.loaderComponent(); ok {
+func (l Loader) Latest(ctx context.Context) (string, error) {
+	if component, ok := l.loaderComponent(); ok {
 		return component.Version, nil
 	}
-	path, err := g.cachePath()
+	path, err := l.cachePath()
 	if err != nil {
 		return "", err
 	}
@@ -104,7 +104,7 @@ func (g Game) LatestLoader(ctx context.Context) (string, error) {
 	if ok && time.Since(cached.Fetched) < cacheTTL {
 		return cached.Version, nil
 	}
-	version, err := g.fetchLatest(ctx)
+	version, err := l.fetchLatest(ctx)
 	if err != nil {
 		if ok {
 			return cached.Version, nil
@@ -116,12 +116,12 @@ func (g Game) LatestLoader(ctx context.Context) (string, error) {
 	return version, nil
 }
 
-func (g Game) fetchLatest(ctx context.Context) (string, error) {
-	url := g.ReleasesURL
+func (l Loader) fetchLatest(ctx context.Context) (string, error) {
+	url := l.ReleasesURL
 	if url == "" {
 		return "", errors.New("SMAPI component manifest is not configured")
 	}
-	all, err := github.FetchReleases(ctx, g.Client, url)
+	all, err := github.FetchReleases(ctx, l.Client, url)
 	if err != nil {
 		return "", fmt.Errorf("look up SMAPI releases: %w", err)
 	}
@@ -131,7 +131,7 @@ func (g Game) fetchLatest(ctx context.Context) (string, error) {
 			continue
 		}
 		for _, a := range r.Assets {
-			if a.Name == g.installerAsset(v) {
+			if a.Name == l.installerAsset(v) {
 				return v, nil
 			}
 		}
@@ -141,18 +141,18 @@ func (g Game) fetchLatest(ctx context.Context) (string, error) {
 
 const lastLoaderReleases = 10
 
-// LoaderVersions returns the last GitHub SMAPI releases that look like versions, newest first.
-func (g Game) LoaderVersions(ctx context.Context) ([]string, error) {
-	url := g.ReleasesURL
+// Versions returns the last GitHub SMAPI releases that look like versions, newest first.
+func (l Loader) Versions(ctx context.Context) ([]string, error) {
+	url := l.ReleasesURL
 	if url == "" {
-		if component, ok := g.loaderComponent(); ok && component.Source.Owner != "" && component.Source.Repo != "" {
+		if component, ok := l.loaderComponent(); ok && component.Source.Owner != "" && component.Source.Repo != "" {
 			url = "https://api.github.com/repos/" + component.Source.Owner + "/" + component.Source.Repo + "/releases"
 		}
 	}
 	if url == "" {
 		return nil, errors.New("SMAPI component manifest is not configured")
 	}
-	all, err := github.FetchReleases(ctx, g.Client, url)
+	all, err := github.FetchReleases(ctx, l.Client, url)
 	if err != nil {
 		return nil, fmt.Errorf("look up SMAPI releases: %w", err)
 	}
@@ -170,10 +170,10 @@ func (g Game) LoaderVersions(ctx context.Context) ([]string, error) {
 	return out, nil
 }
 
-// download saves the release installer to dest.
-func (g Game) download(ctx context.Context, version, dest string) error {
-	if component, ok := g.loaderComponent(); ok && component.Version == version {
-		client := g.Components
+// Fetch saves the release installer of version to dest.
+func (l Loader) Fetch(ctx context.Context, version, dest string) error {
+	if component, ok := l.loaderComponent(); ok && component.Version == version {
+		client := l.Components
 		if client == nil {
 			client = configuredComponents.Load()
 		}
@@ -182,21 +182,21 @@ func (g Game) download(ctx context.Context, version, dest string) error {
 		}
 		return nil
 	}
-	base := g.DownloadBase
+	base := l.DownloadBase
 	if base == "" {
-		if component, ok := g.loaderComponent(); ok && component.Source.Owner != "" && component.Source.Repo != "" {
+		if component, ok := l.loaderComponent(); ok && component.Source.Owner != "" && component.Source.Repo != "" {
 			base = "https://github.com/" + component.Source.Owner + "/" + component.Source.Repo + "/releases/download"
 		}
 	}
 	if base == "" {
 		return errors.New("SMAPI component manifest is not configured")
 	}
-	asset := g.installerAsset(version)
+	asset := l.installerAsset(version)
 	if asset == "" {
 		return errors.New("SMAPI component asset pattern is not configured")
 	}
 	url := base + "/" + version + "/" + asset
-	if err := github.Download(ctx, g.Client, url, dest, maxInstaller, nil); err != nil {
+	if err := github.Download(ctx, l.Client, url, dest, maxInstaller, nil); err != nil {
 		return fmt.Errorf("download SMAPI %s: %w", version, err)
 	}
 	return nil

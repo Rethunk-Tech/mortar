@@ -108,8 +108,7 @@ func (s *Store) fomodEval(gameID string, files fomod.FileIndex) fomod.EvalContex
 }
 
 func (s *Store) installedGameVersion(gameID string) string {
-	g := game.Find(gameID)
-	if g == nil {
+	if game.Find(gameID) == nil {
 		return ""
 	}
 	home, err := os.UserHomeDir()
@@ -124,7 +123,11 @@ func (s *Store) installedGameVersion(gameID string) string {
 	if err != nil || dir == "" {
 		return ""
 	}
-	return g.LoaderStatus(dir, sett.Get().Loaders[gameID]).GameVersion
+	st, err := game.LoaderStatus(gameID, dir, sett.Get().Loaders[gameID])
+	if err != nil {
+		return ""
+	}
+	return st.GameVersion
 }
 
 func (s *Store) fomodOf(game, key string) (fomod.Config, bool, error) {

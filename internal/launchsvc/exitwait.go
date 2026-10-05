@@ -8,11 +8,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
-func waitOnChild(req launch.Request) bool {
-	if req.Direct {
-		return true
-	}
-	return req.Vanilla && runtime.GOOS != "windows"
+func waitOnChild(direct, vanilla bool) bool {
+	return direct || (vanilla && runtime.GOOS != "windows")
 }
 
 func (s *Service) armReap(g game.Game) {

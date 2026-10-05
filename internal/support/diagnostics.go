@@ -225,11 +225,10 @@ func (s *Service) smapiTail(gameID, profileID string) string {
 	if gameID == "" || profileID == "" {
 		return ""
 	}
-	g := game.Find(gameID)
-	if g == nil {
+	if game.Find(gameID) == nil {
 		return ""
 	}
-	path, err := g.LogFile()
+	path, err := game.LogFile(gameID)
 	if err != nil {
 		return ""
 	}

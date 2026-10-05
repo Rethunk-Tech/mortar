@@ -1,0 +1,145 @@
+package smapi
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"sync/atomic"
+
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
+)
+
+// ID is the catalog's id for this loader.
+const ID = "smapi"
+
+// gameID is the only game SMAPI loads.
+const gameID = "stardew"
+
+var _ = loader.Register(Loader{})
+
+// Loader is SMAPI. The zero value is the real loader; the fields exist so tests can point network and filesystem
+// operations elsewhere.
+type Loader struct {
+	Client       *http.Client
+	Components   *components.Client
+	ReleasesURL  string
+	DownloadBase string
+	AssetPattern string
+	// CacheDir holds the cached release lookup.
+	CacheDir string
+	// LogDir holds SMAPI-latest.txt.
+	LogDir string
+}
+
+// configuredComponents is set by every service that builds a component client, possibly at the same time.
+var configuredComponents atomic.Pointer[components.Client]
+
+// ConfigureComponents selects the verified component manifest used by SMAPI.
+func ConfigureComponents(client *components.Client) { configuredComponents.Store(client) }
+
+// gameInfo is Stardew Valley's catalog entry, which the bundled manifest always carries.
+func gameInfo() components.GameInfo {
+	if c := configuredComponents.Load(); c != nil {
+		if g, ok := c.Game(gameID); ok {
+			return g
+		}
+	}
+	g, _ := components.BundledGame(gameID)
+	return g
+}
+
+func (Loader) ID() string { return ID }
+
+func (Loader) Formats() []string { return []string{"smapi"} }
+
+// ProcessNames is SMAPI's executable, the process a running profile is found by.
+func (Loader) ProcessNames() []string { return []string{smapiMarker} }
+
+// SteamExe is the executable Steam's launch options start in place of the game.
+func (Loader) SteamExe(installDir string) string {
+	return filepath.Join(installDir, smapiMarker+".exe")
+}
+
+func modsDir(p loader.ProfileView) string { return filepath.Join(p.Dir, "mods") }
+
+// Contribute points SMAPI at the profile's mods folder.
+func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {
+	return contribute(runtime.GOOS, plan, p)
+}
+
+// contribute: Linux SMAPI's launcher reads its own flags before `--` and forwards only what follows it.
+func contribute(goos string, plan *launchplan.Plan, p loader.ProfileView) error {
+	mods := modsDir(p)
+	if !filepath.IsAbs(mods) {
+		return fmt.Errorf("mods folder %q is not an absolute path", mods)
+	}
+	if goos == "windows" {
+		plan.SetEntry(filepath.Join(p.InstallDir, smapiMarker+".exe"))
+	} else {
+		plan.AddArgs("--skip-terminal", "--")
+		plan.SetEntry(filepath.Join(p.InstallDir, linuxLauncher))
+	}
+	plan.AddArgs("--mods-path", mods)
+	plan.AddProcessName(smapiMarker)
+	return nil
+}
+
+// Vanilla starts the unmodded game. SMAPI's unix-launcher.sh always execs StardewModdingAPI, so on Linux the game
+// the installer kept as StardewValley-original is run directly; Windows has a plain executable.
+func (Loader) Vanilla(_ context.Context, plan *launchplan.Plan, t loader.Target) error {
+	return vanilla(runtime.GOOS, plan, t.InstallDir)
+}
+
+func vanilla(goos string, plan *launchplan.Plan, dir string) error {
+	plan.AddProcessName(smapiMarker)
+	if goos == "windows" {
+		plan.SetEntry(filepath.Join(dir, "Stardew Valley.exe"))
+		return nil
+	}
+	return plan.OverrideExe(ID, filepath.Join(dir, linuxOriginal))
+}
+
+// Owns is true for a process started with this profile's mods folder.
+func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
+	return launch.Process{PID: p.PID, Args: p.Args}.UsesModsPath(modsDir(prof))
+}
+
+// Path is SMAPI-latest.txt, which SMAPI rewrites on each start and which outlives the game.
+func (l Loader) Path(loader.ProfileView) (string, error) {
+	dir, err := l.logDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "SMAPI-latest.txt"), nil
+}
+
+// Ready is true for the line SMAPI logs once it has loaded the mods.
+func (Loader) Ready(line string) bool { return strings.Contains(line, " SMAPI] Loaded ") }
+
+// Analyzers is none: SMAPI's log problems are found by internal/launch.
+func (Loader) Analyzers() []loader.Analyzer { return nil }
+
+// Send runs command in the game through the bridge mod in the profile.
+func (Loader) Send(ctx context.Context, _ loader.Target, p loader.ProfileView, command string) (string, error) {
+	if p.Companion == "" {
+		return "", fmt.Errorf("this profile has no console bridge")
+	}
+	return "", bridge.Send(ctx, p.Companion, command)
+}
+
+// GameVersion returns the game version in a SMAPI log header ("SMAPI x with Stardew Valley y").
+func (Loader) GameVersion(log string) string {
+	for line := range strings.SplitSeq(log, "\n") {
+		if m := logHeader.FindStringSubmatch(strings.TrimRight(line, "\r")); m != nil {
+			return m[2]
+		}
+	}
+	return ""
+}

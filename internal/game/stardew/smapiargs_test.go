@@ -37,19 +37,3 @@ func TestParseLaunchOptionsUnclosedQuote(t *testing.T) {
 		t.Fatal("want unclosed quote")
 	}
 }
-
-func TestAppendLaunchArgsOrder(t *testing.T) {
-	t.Parallel()
-	mods := []string{"--mods-path", "/abs/mods"}
-	extra := []string{"--developer-mode", "one two"}
-	linux := appendLaunchArgs("linux", mods, extra)
-	wantLinux := []string{"--skip-terminal", "--", "--mods-path", "/abs/mods", "--developer-mode", "one two"}
-	if !slices.Equal(linux, wantLinux) {
-		t.Fatalf("linux %q, want %q", linux, wantLinux)
-	}
-	win := appendLaunchArgs("windows", mods, extra)
-	wantWin := []string{"--mods-path", "/abs/mods", "--developer-mode", "one two"}
-	if !slices.Equal(win, wantWin) {
-		t.Fatalf("windows %q, want %q", win, wantWin)
-	}
-}

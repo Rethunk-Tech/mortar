@@ -1,4 +1,6 @@
-package stardew
+// Package smapi is the SMAPI mod loader of Stardew Valley: install, status, the launch arguments that point it at a
+// profile, and the console and log it offers.
+package smapi
 
 import (
 	"bufio"
@@ -34,20 +36,20 @@ const (
 // logHeader matches the first line of SMAPI-latest.txt.
 var logHeader = regexp.MustCompile(`^SMAPI (\S+) with Stardew Valley (\S+)`)
 
-func (g Game) logDir() (string, error) {
-	if g.LogDir != "" {
-		return g.LogDir, nil
+func (l Loader) logDir() (string, error) {
+	if l.LogDir != "" {
+		return l.LogDir, nil
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return gamert.Resolve(gamert.Install{Platform: runtime.GOOS, Home: home}, identity().Paths["errorLogs"])
+	return gamert.Resolve(gamert.Install{Platform: runtime.GOOS, Home: home}, gameInfo().Paths["errorLogs"])
 }
 
 // logVersions returns the SMAPI and game versions from the first line of SMAPI-latest.txt, or empty strings.
-func (g Game) logVersions() (smapi, game string) {
-	dir, err := g.logDir()
+func (l Loader) logVersions() (smapi, game string) {
+	dir, err := l.logDir()
 	if err != nil {
 		return "", ""
 	}
@@ -99,17 +101,18 @@ func loaderState(dir, goos string) (installed, broken bool) {
 	return false, true
 }
 
-// LoaderStatus reports SMAPI's state in dir. recorded is the version Mortar installed, preferred over the log's.
-func (g Game) LoaderStatus(dir, recorded string) loader.Status {
-	installed, broken := loaderState(dir, runtime.GOOS)
+// Status reports SMAPI's state in the install. The version is the log's, else the bundled mods'; a version Mortar
+// recorded when it installed SMAPI takes precedence over both and is the caller's to apply.
+func (l Loader) Status(t loader.Target) (loader.Status, error) {
+	installed, broken := loaderState(t.InstallDir, runtime.GOOS)
 	st := loader.Status{Installed: installed, Broken: broken}
 	if !installed && !broken {
-		return st
+		return st, nil
 	}
-	logSMAPI, logGame := g.logVersions()
+	logSMAPI, logGame := l.logVersions()
 	st.GameVersion = logGame
-	st.Version = cmp.Or(recorded, logSMAPI, bundledVersion(dir))
-	return st
+	st.Version = cmp.Or(logSMAPI, bundledVersion(t.InstallDir))
+	return st, nil
 }
 
 // bundledMods are the mods the SMAPI installer places in Mods.
@@ -128,8 +131,8 @@ func bundledVersion(dir string) string {
 	return m.Version
 }
 
-// CopyBundled copies SMAPI's Console Commands and Save Backup from dir/Mods into dst.
-func (Game) CopyBundled(dir, dst string) error {
+// CopyBundled copies SMAPI's Console Commands and Save Backup from dir/Mods into dst, for SMAPI installed outside Mortar.
+func (Loader) CopyBundled(dir, dst string) error {
 	for _, name := range bundledMods {
 		if err := datadir.CopyTree(filepath.Join(dir, "Mods", name), filepath.Join(dst, name)); err != nil {
 			return fmt.Errorf("copy %s: %w", name, err)
@@ -150,24 +153,10 @@ func installer(version, goos string) (dir, exe string, err error) {
 	return "", "", fmt.Errorf("installing SMAPI is not supported on %s", goos)
 }
 
-// InstallLoader installs the newest SMAPI into dir, or updates it: the installer is the same either way.
-// It returns the installed version. bundled is handed SMAPI's own mods before anything is cleaned up.
-func (g Game) InstallLoader(ctx context.Context, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error) {
-	if err := g.ValidInstall(dir); err != nil {
-		return "", err
-	}
-	version, err := g.LatestLoader(ctx)
-	if err != nil {
-		return "", err
-	}
-	return g.InstallLoaderAt(ctx, dir, version, bundled, progress)
-}
-
-// InstallLoaderAt installs the given SMAPI version into dir.
-func (g Game) InstallLoaderAt(ctx context.Context, dir, version string, bundled loader.Bundled, progress func(loader.Step)) (string, error) {
-	if err := g.ValidInstall(dir); err != nil {
-		return "", err
-	}
+// Install runs the installer in pkg's archive, which is the same for a first install and an update, and hands t.Bundled
+// SMAPI's own mods before anything is cleaned up. It returns the installed version.
+func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, progress func(loader.Step)) (string, error) {
+	dir, version := t.InstallDir, pkg.Version
 	instDir, exe, err := installer(version, runtime.GOOS)
 	if err != nil {
 		return "", err
@@ -178,16 +167,11 @@ func (g Game) InstallLoaderAt(ctx context.Context, dir, version string, bundled 
 	}
 	defer func() { _ = fsx.RemoveAll(work) }()
 
-	zipPath := filepath.Join(work, "installer.zip")
-	if err := g.download(ctx, version, zipPath); err != nil {
-		return "", err
-	}
-	progress(loader.StepDownloaded)
 	unpacked := filepath.Join(work, "installer")
 	if err := os.Mkdir(unpacked, 0o700); err != nil {
 		return "", err
 	}
-	if err := archive.Extract(zipPath, unpacked); err != nil {
+	if err := archive.Extract(pkg.Archive, unpacked); err != nil {
 		return "", err
 	}
 
@@ -213,7 +197,7 @@ func (g Game) InstallLoaderAt(ctx context.Context, dir, version string, bundled 
 	if err := archive.Extract(filepath.Join(folder, "install.dat"), mods); err != nil {
 		return "", err
 	}
-	if err := bundled(version, filepath.Join(mods, "Mods")); err != nil {
+	if err := t.Bundled(version, filepath.Join(mods, "Mods")); err != nil {
 		return "", err
 	}
 	progress(loader.StepBundled)

@@ -20,7 +20,7 @@ func TestLoaderContract(t *testing.T) {
 		t.Fatalf("For: %v", got)
 	}
 	tgt := loader.Target{ProfileDir: filepath.Join(t.TempDir(), "profile")}
-	if st, err := l.Status(ctx, tgt); err != nil || st.Installed {
+	if st, err := l.Status(tgt); err != nil || st.Installed {
 		t.Fatalf("fresh status %+v %v", st, err)
 	}
 	var steps []loader.Step
@@ -28,7 +28,7 @@ func TestLoaderContract(t *testing.T) {
 	if err != nil || ver != "5.4.2305" || len(steps) != 1 {
 		t.Fatalf("install %q %v %v", ver, steps, err)
 	}
-	if st, _ := l.Status(ctx, tgt); !st.Installed || st.Version != "5.4.2305" {
+	if st, _ := l.Status(tgt); !st.Installed || st.Version != "5.4.2305" {
 		t.Fatalf("status %+v", st)
 	}
 

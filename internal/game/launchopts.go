@@ -43,7 +43,11 @@ func (s *Service) SetLaunchOption(id string) (string, error) {
 	if running, err := launch.Processes("/proc", "steam"); err == nil && len(running) > 0 {
 		return "", errors.New("close Steam first: it rewrites its settings when it exits")
 	}
-	return st.SetLaunchOptions(g.SteamAppID(), func(current string) string { return g.SteamLaunchWithLoader(dir, current) })
+	exe, err := requireSteamExe(id, dir)
+	if err != nil {
+		return "", err
+	}
+	return st.SetLaunchOptions(g.SteamAppID(), func(current string) string { return launchWith(exe, current) })
 }
 
 // ClearLaunchOption removes the game's loader command from Steam's launch options.
@@ -59,5 +63,9 @@ func (s *Service) ClearLaunchOption(id string) (string, error) {
 	if running, err := launch.Processes("/proc", "steam"); err == nil && len(running) > 0 {
 		return "", errors.New("close Steam first: it rewrites its settings when it exits")
 	}
-	return st.SetLaunchOptions(g.SteamAppID(), g.SteamLaunchWithoutLoader)
+	exe, err := requireSteamExe(id, "")
+	if err != nil {
+		return "", err
+	}
+	return st.SetLaunchOptions(g.SteamAppID(), func(current string) string { return launchWithout(exe, current) })
 }

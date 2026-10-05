@@ -1,15 +1,13 @@
-// Package stardew is the Stardew Valley implementation of game.Game.
+// Package stardew is the Stardew Valley implementation of game.Game: its identity, install folder and launch options.
 package stardew
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
 	"sync/atomic"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
@@ -25,27 +23,8 @@ func identity() components.GameInfo {
 	return g
 }
 
-// Game is Stardew Valley. The configured component client supplies loader releases; the other fields exist so
-// tests can point network and filesystem operations elsewhere.
-type Game struct {
-	Client       *http.Client
-	Components   *components.Client
-	ReleasesURL  string
-	DownloadBase string
-	AssetPattern string
-	// CacheDir holds the cached release lookup.
-	CacheDir string
-	// LogDir holds SMAPI-latest.txt.
-	LogDir string
-	// Runner, LookPath and LaunchTiming default to the real command, exec.LookPath and 60 s.
-	Runner       launch.Runner
-	LookPath     func(string) (string, error)
-	LaunchTiming launch.Timing
-	// DataDir is Mortar's data folder, used to check Flatpak Steam filesystem access; empty means datadir.Dir.
-	DataDir string
-	// FlatpakShow is `flatpak override --user --show` for Steam; nil means the real command.
-	FlatpakShow func() (string, error)
-}
+// Game is Stardew Valley.
+type Game struct{}
 
 // configuredComponents is set by every service that builds a component client, possibly at the same time.
 var configuredComponents atomic.Pointer[components.Client]
@@ -57,8 +36,6 @@ func (Game) ID() string         { return "stardew" }
 func (Game) Name() string       { return identity().Name }
 func (Game) SteamAppID() string { return identity().SteamAppID() }
 
-func (Game) LoaderName() string { return identity().Loaders[0].Name }
-
 func (Game) ModSources() []string {
 	sources := identity().Sources
 	ids := make([]string, len(sources))
@@ -66,6 +43,11 @@ func (Game) ModSources() []string {
 		ids[i] = s.ID
 	}
 	return ids
+}
+
+// GameProcesses are the game's native executables; the launcher names are what SMAPI's install leaves behind.
+func (Game) GameProcesses() []string {
+	return []string{"Stardew Valley", "StardewValley", "StardewValley-original", "StardewValley.bin.x86_64"}
 }
 
 // ValidInstall reports why dir is not a Stardew Valley install folder.

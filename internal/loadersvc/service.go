@@ -196,7 +196,12 @@ func (s *Service) ensureBundled(id string) (string, error) {
 		return "", err
 	}
 	defer func() { _ = fsx.RemoveAll(tmp) }()
-	if err := g.CopyBundled(dir, tmp); err != nil {
+	l, ok := game.PrimaryLoader(id)
+	copier, canCopy := l.(loader.BundledCopier)
+	if !ok || !canCopy {
+		return "", fmt.Errorf("%s ships no mods of its own", g.Name())
+	}
+	if err := copier.CopyBundled(dir, tmp); err != nil {
 		return "", err
 	}
 	if err := s.items.AddDir(id, key, tmp); err != nil {
@@ -230,17 +235,16 @@ func (s *Service) target(id string) (game.Game, string, error) {
 
 // LocalStatus reports the loader's state on disk without any network call.
 func (s *Service) LocalStatus(id string) (loader.Status, error) {
-	g, dir, err := s.target(id)
+	_, dir, err := s.target(id)
 	if err != nil {
 		return loader.Status{}, err
 	}
-	return g.LoaderStatus(dir, s.settings.Get().Loaders[id]), nil
+	return game.LoaderStatus(id, dir, s.settings.Get().Loaders[id])
 }
 
 // Status is LocalStatus plus whether a newer release exists. A failed release lookup only leaves Latest empty.
 func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) {
-	g, _, err := s.target(id)
-	if err != nil {
+	if _, _, err := s.target(id); err != nil {
 		return loader.Status{}, err
 	}
 	st, err := s.LocalStatus(id)
@@ -250,7 +254,12 @@ func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) 
 	if pin := s.settings.Get().GamePrefs(id).SmapiPin; pin != "" {
 		return st, nil
 	}
-	if latest, err := g.LatestLoader(ctx); err == nil {
+	l, _ := game.PrimaryLoader(id)
+	rel, ok := l.(loader.Releases)
+	if !ok {
+		return st, nil
+	}
+	if latest, err := rel.Latest(ctx); err == nil {
 		st.Latest = latest
 		st.UpdateAvailable = st.Installed && st.Version != "" && meta.Newer(latest, st.Version)
 	}
@@ -296,14 +305,14 @@ func (s *Service) install(ctx context.Context, id string, fromStart bool) (st lo
 		return loader.Status{}, err
 	}
 	if running || (!fromStart && s.profiles.AnyRunning(id)) {
-		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), g.LoaderName()))
+		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), game.LoaderName(id)))
 	}
 	return s.installVersion(ctx, g, dir, id, s.settings.Get().GamePrefs(id).SmapiPin, fromStart)
 }
 
 // gameRunning reports whether any process of the game runs, with or without its loader and however it was started.
 func (s *Service) gameRunning(g game.Game) (bool, error) {
-	for _, name := range g.GameProcesses() {
+	for _, name := range game.ProcessNames(g) {
 		procs, err := launch.Processes(s.procDir, name)
 		if err != nil {
 			return false, fmt.Errorf("check for a running %s: %w", g.Name(), err)

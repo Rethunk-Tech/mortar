@@ -119,8 +119,7 @@ func platform() string {
 func (s *Service) Environment(id string) Environment {
 	env := Environment{Platform: platform()}
 	env.Nexus, _ = game.NexusTitle(id)
-	g := game.Find(id)
-	if g == nil {
+	if game.Find(id) == nil {
 		return env
 	}
 	set := s.settings.Get()
@@ -128,7 +127,7 @@ func (s *Service) Environment(id string) Environment {
 	if err != nil || dir == "" {
 		return env
 	}
-	st := g.LoaderStatus(dir, set.Loaders[id])
+	st, _ := game.LoaderStatus(id, dir, set.Loaders[id])
 	env.GameVersion, env.APIVersion = st.GameVersion, st.Version
 	return env
 }

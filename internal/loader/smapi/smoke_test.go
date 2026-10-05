@@ -1,4 +1,4 @@
-package stardew
+package smapi
 
 import (
 	"context"
@@ -34,22 +34,33 @@ func TestSmokeRealInstaller(t *testing.T) {
 	if err := datadir.CopyTree(src, copyDir); err != nil {
 		t.Fatalf("copy install: %v", err)
 	}
-	g := Game{CacheDir: t.TempDir(), LogDir: t.TempDir()}
+	g := Loader{CacheDir: t.TempDir(), LogDir: t.TempDir()}
 	// A source that already has SMAPI exercises the update path, which is the same installer run.
-	t.Logf("copy before install: %+v", g.LoaderStatus(copyDir, ""))
+	ctx := context.Background()
+	before, _ := g.Status(loader.Target{InstallDir: copyDir})
+	t.Logf("copy before install: %+v", before)
+	version, err := g.Latest(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := filepath.Join(t.TempDir(), "installer.zip")
+	if err := g.Fetch(ctx, version, zip); err != nil {
+		t.Fatal(err)
+	}
 	var steps []loader.Step
 	var mods []string
-	version, err := g.InstallLoader(context.Background(), copyDir, func(_, dir string) error {
+	bundled := func(_, dir string) error {
 		ents, err := os.ReadDir(dir)
 		for _, e := range ents {
 			mods = append(mods, e.Name())
 		}
 		return err
-	}, func(s loader.Step) { steps = append(steps, s) })
-	if err != nil {
+	}
+	steps = append(steps, loader.StepDownloaded)
+	if _, err := g.Install(ctx, loader.Target{InstallDir: copyDir, Bundled: bundled}, loader.Package{ID: ID, Version: version, Archive: zip}, func(s loader.Step) { steps = append(steps, s) }); err != nil {
 		t.Fatal(err)
 	}
-	st := g.LoaderStatus(copyDir, version)
+	st, _ := g.Status(loader.Target{InstallDir: copyDir})
 	t.Logf("installed SMAPI %s; steps %v; bundled %v; status %+v", version, steps, mods, st)
 	if !st.Installed || st.Broken || len(steps) != 4 || len(mods) != 2 {
 		t.Fatal("real install did not produce a working SMAPI")

@@ -22,6 +22,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/overlay"
@@ -149,6 +151,8 @@ type Service struct {
 	// OnSavePlayed is called with the save folder SMAPI loaded when a run is recorded.
 	OnSavePlayed func(gameID, profileID, saveFolder string)
 	quit         <-chan struct{}
+	// Starter starts launch plans; tests replace its runner and lookups.
+	Starter game.Starter
 	// WaitPID waits for a game process Mortar did not start (Steam relay). Tests replace it.
 	WaitPID  func(pid int) (launch.Exit, error)
 	stopping map[string]bool
@@ -219,8 +223,17 @@ func launchGameVersion(s *Service, key string) string {
 	if sess.buf == nil {
 		return ""
 	}
+	gameID, _, _ := strings.Cut(key, "/")
+	l, ok := game.PrimaryLoader(gameID)
+	if !ok {
+		return ""
+	}
+	versions, ok := l.(loader.GameVersion)
+	if !ok {
+		return ""
+	}
 	for _, e := range sess.buf.Lines() {
-		if v := stardew.StardewVersionFromLog(e.Message); v != "" {
+		if v := versions.GameVersion(e.Message); v != "" {
 			return v
 		}
 	}
@@ -238,11 +251,19 @@ func (s *Service) current(g game.Game) Status {
 
 // procsFor returns the loader processes of g's install that run modsDir.
 func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Process, error) {
-	procs, err := launch.Processes(s.procDir, g.ProcessName())
-	if err != nil {
-		return nil, err
+	var procs []launch.Process
+	l, _ := game.PrimaryLoader(g.ID())
+	if names, ok := l.(loader.ProcessNames); ok {
+		for _, name := range names.ProcessNames() {
+			ps, err := launch.Processes(s.procDir, name)
+			if err != nil {
+				return nil, err
+			}
+			procs = append(procs, ps...)
+		}
 	}
 	procs = s.ownedBy(g, procs)
+	owner, _ := l.(loader.Owner)
 	s.mu.Lock()
 	cur := s.status[keyOf(g)]
 	sess, ok := s.logs[keyOf(g)]
@@ -255,7 +276,7 @@ func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Pro
 	}
 	var out []launch.Process
 	for _, p := range procs {
-		if credited(p, modsDir, profileID, launched, vanilla) {
+		if credited(owner, p, modsDir, profileID, launched, vanilla) {
 			out = append(out, p)
 		}
 	}
@@ -265,14 +286,14 @@ func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Pro
 // credited reports whether the loader process p runs profileID, whose mods folder is modsDir. launched is the
 // profile of the launch Mortar made and has not seen end, if any. Where the platform gives no command line (Windows),
 // the process is credited to that profile, or to every profile when Mortar did not start it: it may run any of them.
-func credited(p launch.Process, modsDir, profileID, launched string, vanilla bool) bool {
+func credited(owner loader.Owner, p launch.Process, modsDir, profileID, launched string, vanilla bool) bool {
 	if vanilla {
 		return false
 	}
-	if p.Args == nil {
+	if p.Args == nil || owner == nil {
 		return launched == "" || launched == profileID
 	}
-	return p.UsesModsPath(modsDir)
+	return owner.Owns(loader.Process{PID: p.PID, Args: p.Args}, loader.ProfileView{Dir: filepath.Dir(modsDir)})
 }
 
 // Running reports whether the game is launching or running this profile, for locking its mods folder.
@@ -330,7 +351,7 @@ func sinceOr(t time.Time) int64 {
 // poll syncs the stored state with the processes, and reports whether the game is still worth watching.
 func (s *Service) gameProcs(g game.Game) ([]launch.Process, error) {
 	var out []launch.Process
-	for _, name := range g.GameProcesses() {
+	for _, name := range game.ProcessNames(g) {
 		ps, err := launch.Processes(s.procDir, name)
 		if err != nil {
 			return nil, err
@@ -522,7 +543,7 @@ func (s *Service) start(parent context.Context, gameID, profileID, preset string
 		}
 		err := s.EnsureLoader(ctx, gameID, true)
 		if err != nil {
-			err = fmt.Errorf("could not install %s: %w", g.LoaderName(), err)
+			err = fmt.Errorf("could not install %s: %w", game.LoaderName(g.ID()), err)
 		} else {
 			// Reading the profile takes its lock, so a change to its mods already under way finishes first; any
 			// later one sees the profile as running.
@@ -556,7 +577,7 @@ func (s *Service) ForcesSMAPI(gameID string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return g.SteamLaunchForcesLoader(opts), nil
+	return game.StartsLoader(gameID, opts)
 }
 
 // StartVanilla launches the game without a profile mods folder. On Windows that is steam -applaunch
@@ -626,35 +647,18 @@ func (s *Service) PreviewCommand(gameID, profileID, options, prefix, env string)
 	if err != nil {
 		return fail(err)
 	}
-	dir, modsDir, err := s.target(g, profileID)
+	if _, _, err := s.target(g, profileID); err != nil {
+		return fail(err)
+	}
+	inst, err := game.ResolveInstall(s.home, s.settings.Get(), gameID, s.profiles.InstallOf(gameID, profileID))
 	if err != nil {
 		return fail(err)
 	}
-	extra, err := stardew.ParseLaunchOptions(options)
+	plan, err := s.launchPlan(context.Background(), g, inst, profileID, launchplan.ModeProfile, options, prefix, env)
 	if err != nil {
 		return fail(err)
 	}
-	prefixArgs, err := profile.LaunchPrefixArgs(prefix)
-	if err != nil {
-		return fail(err)
-	}
-	envArgs, err := profile.LaunchEnvironment(env)
-	if err != nil {
-		return fail(err)
-	}
-	builder, ok := g.(interface {
-		DirectCommand(string, launch.Request) (launch.Command, error)
-	})
-	if !ok {
-		return fail(fmt.Errorf("%s does not support command previews", g.Name()))
-	}
-	cmd, err := builder.DirectCommand(runtime.GOOS, launch.Request{
-		InstallDir: dir,
-		ModsDir:    modsDir,
-		ExtraArgs:  extra,
-		Prefix:     prefixArgs,
-		Env:        envArgs,
-	})
+	cmd, err := s.Starter.Command(runtime.GOOS, inst, plan)
 	if err != nil {
 		return fail(err)
 	}
@@ -694,16 +698,28 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	}
 	ov := spec.Overrides(launchOverrides(s.profiles, g.ID(), profileID))
 	showConsole := settings.ResolveAt(s.settings.Get(), "showSmapiConsole", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, ov) == "true"
-	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g), HideWindow: !showConsole}
+	mode := launchplan.ModeProfile
+	if vanilla {
+		mode = launchplan.ModeVanilla
+	}
+	env := game.StartEnv{Direct: direct, HideWindow: !showConsole, Ready: s.seen(g)}
 	var measure bool
 	var startupBefore map[string]bool
-	if waitOnChild(req) {
-		req.OnExit = func(x launch.Exit) { s.finishWait(g, x) }
+	if waitOnChild(direct, vanilla) {
+		env.OnExit = func(x launch.Exit) { s.finishWait(g, x) }
 		s.armReap(g)
 	}
+	pin := ""
+	if !vanilla {
+		pin = s.profiles.InstallOf(g.ID(), profileID)
+	}
+	inst, err := game.ResolveInstall(s.home, s.settings.Get(), g.ID(), pin)
+	if err != nil {
+		return err
+	}
+	var plan *launchplan.Plan
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
-		var err error
 		measure, err = prepareStartup(modsDir)
 		if err != nil {
 			return err
@@ -722,40 +738,22 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		if err := overlay.ApplyToMods(modsDir, cfg); err != nil {
 			return err
 		}
-		extra, err := stardew.ParseLaunchOptions(spec.Options)
-		if err != nil {
-			return err
-		}
-		req.ExtraArgs = extra
-		req.Prefix, err = profile.LaunchPrefixArgs(spec.Prefix)
-		if err != nil {
-			return err
-		}
-		req.Env, err = profile.LaunchEnvironment(spec.Env)
-		if err != nil {
-			return err
-		}
 	}
-	cur := s.settings.Get()
-	pin := ""
-	if !vanilla {
-		pin = s.profiles.InstallOf(g.ID(), profileID)
-	}
-	inst, err := game.ResolveInstall(s.home, cur, g.ID(), pin)
-	if err != nil {
+	if plan, err = s.launchPlan(ctx, g, inst, profileID, mode, spec.Options, spec.Prefix, spec.Env); err != nil {
 		return err
 	}
+	env.LogFile, _ = game.LogFile(g.ID())
 	store := inst.Store
 	if store == game.StoreGOG || store == game.StoreGOGHeroic || store == game.StoreMinigalaxy || store == game.StoreLutris {
-		req.Direct = true
+		env.Direct = true
 	}
 	if st, status := steam.Locate(s.home); status == steam.Found {
-		req.Steam = &st
+		env.Steam = &st
 	}
 	if store == game.StoreFlatpakSteam {
 		for _, one := range steam.LocateAll(s.home) {
 			if one.Kind == steam.KindFlatpak {
-				req.Steam = &one
+				env.Steam = &one
 				break
 			}
 		}
@@ -768,7 +766,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		if err != nil {
 			return err
 		}
-		backupErr = s.backupChangedSaves(g.ID(), profileID, g, dir)
+		backupErr = s.backupChangedSaves(g.ID(), profileID, dir)
 	}
 	runCtx, cancel := context.WithCancel(ctx)
 	buf := &launch.Buffer{Cap: s.settings.Get().GamePrefs(g.ID()).ConsoleLogCap}
@@ -803,7 +801,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		s.mu.Unlock()
 		go s.sampleStartup(runCtx, g, profileID, modsDir, startupBefore, sync.OnceFunc(func() { close(stopped) }))
 	}
-	go s.run(runCtx, g, profileID, req, buf)
+	go s.run(runCtx, g, profileID, launchRun{inst: inst, plan: plan, env: env, vanilla: vanilla}, buf)
 	return nil
 }
 
@@ -823,7 +821,7 @@ func (s *Service) waitSampled(g game.Game, limit time.Duration) {
 	}
 }
 
-func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, installDir string) error {
+func (s *Service) backupChangedSaves(gameID, profileID, installDir string) error {
 	events, err := s.profiles.History(gameID, profileID)
 	if err != nil {
 		return err
@@ -841,7 +839,8 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	}
 	set := s.settings.Get()
 	recorded := set.LastPlayed[gameID].GameVersion
-	installed := g.LoaderStatus(installDir, set.Loaders[gameID]).GameVersion
+	installedStatus, _ := game.LoaderStatus(gameID, installDir, set.Loaders[gameID])
+	installed := installedStatus.GameVersion
 	ov := launchOverrides(s.profiles, gameID, profileID)
 	mode := settings.ResolveAt(set, "backupBeforePlay", settings.Scope{Game: gameID, Install: s.profiles.InstallOf(gameID, profileID), Profile: profileID}, ov)
 	if !backupNeeded(mode, events, lastRun, recorded, installed) {
@@ -941,7 +940,7 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 		}
 		return []launch.Entry{}, nil
 	}
-	path, err := g.LogFile()
+	path, err := game.LogFile(g.ID())
 	if err != nil {
 		return nil, err
 	}
@@ -973,8 +972,16 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 	return out.Lines(), nil
 }
 
-func (s *Service) run(ctx context.Context, g game.Game, profileID string, req launch.Request, buf *launch.Buffer) {
-	err := g.Launch(ctx, req, s.collect(g, profileID, buf))
+// launchRun is a launch ready to start: the install it runs, the plan loaders contributed to and how the store starts it.
+type launchRun struct {
+	inst    game.Install
+	plan    *launchplan.Plan
+	env     game.StartEnv
+	vanilla bool
+}
+
+func (s *Service) run(ctx context.Context, g game.Game, profileID string, r launchRun, buf *launch.Buffer) {
+	err := s.Starter.Start(ctx, r.inst, r.plan, r.env, s.collect(g, profileID, buf))
 	if err != nil {
 		s.mu.Lock()
 		sess := s.logs[keyOf(g)]
@@ -990,10 +997,10 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, req la
 	switch {
 	case err == nil:
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Running, Profile: profileID, Since: time.Now().UnixMilli()})
-		if req.Vanilla {
+		if r.vanilla {
 			s.say(g, profileID, "Started without mods")
 		}
-		if !waitOnChild(req) {
+		if !waitOnChild(r.env.Direct, r.vanilla) {
 			s.armReap(g)
 			go s.awaitPID(g, profileID)
 		}
@@ -1003,10 +1010,10 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, req la
 	case errors.As(err, &exited):
 		s.clearReap(g)
 		if len(buf.Lines()) == 0 {
-			s.say(g, profileID, fmt.Sprintf("%s exited with code %d.", g.LoaderName(), exited.Code))
+			s.say(g, profileID, fmt.Sprintf("%s exited with code %d.", game.LoaderName(g.ID()), exited.Code))
 		}
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g, profileID, buf)})
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, r.inst.Dir), Cause: causeFromBuffer(s, g, profileID, buf)})
 	case errors.As(err, &f):
 		s.clearReap(g)
 		s.finishFailed(g, profileID, buf)
@@ -1014,7 +1021,7 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, req la
 	default:
 		s.clearReap(g)
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g, profileID, buf)})
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, r.inst.Dir), Cause: causeFromBuffer(s, g, profileID, buf)})
 	}
 }
 
@@ -1190,11 +1197,23 @@ func (s *Service) Send(gameID, command string) error {
 		return fmt.Errorf("%s is not running", g.Name())
 	}
 	cur := s.current(sl)
-	folder, err := s.bridgeFolder(g, cur.Profile)
+	l, _ := game.PrimaryLoader(gameID)
+	console, ok := l.(loader.Console)
+	if !ok {
+		return fmt.Errorf("%s has no console", g.Name())
+	}
+	inst, err := game.ResolveInstall(s.home, s.currentSettings(), gameID, installOf(sl))
 	if err != nil {
 		return err
 	}
-	if err := bridge.Send(folder, command); err != nil {
+	view, err := s.view(g, inst, cur.Profile)
+	if err != nil {
+		return err
+	}
+	if view.Companion == "" {
+		return fmt.Errorf("%s has no console bridge in this profile", g.Name())
+	}
+	if _, err := console.Send(context.Background(), loader.Target{Game: gameID, InstallDir: inst.Dir}, view, command); err != nil {
 		return err
 	}
 	s.say(sl, cur.Profile, "> "+command)

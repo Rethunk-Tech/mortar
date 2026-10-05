@@ -43,7 +43,7 @@ func (Loader) ID() string { return ID }
 
 func (Loader) Formats() []string { return []string{"bepinplugin"} }
 
-func (Loader) Status(_ context.Context, t loader.Target) (loader.Status, error) {
+func (Loader) Status(t loader.Target) (loader.Status, error) {
 	if _, err := os.Stat(filepath.Join(t.ProfileDir, preloader)); errors.Is(err, fs.ErrNotExist) {
 		return loader.Status{}, nil
 	} else if err != nil {
