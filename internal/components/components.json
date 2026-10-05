@@ -37,6 +37,7 @@
       "name": "Stardew Valley",
       "enabled": true,
       "marker": "Stardew Valley.dll",
+      "metadata": ["smapi-updates", "smapi-compat", "stardew-dataset"],
       "stores": {
         "steam": {
           "appId": "413150"
@@ -73,6 +74,7 @@
       "name": "Lethal Company",
       "enabled": false,
       "marker": "Lethal Company.exe",
+      "metadata": [],
       "stores": {
         "steam": {
           "appId": "1966720"

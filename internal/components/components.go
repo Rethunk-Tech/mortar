@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -79,10 +80,12 @@ type GameInfo struct {
 	// Enabled is false for a game listed as coming later.
 	Enabled bool `json:"enabled"`
 	// Marker is a file every install of the game holds, at its root or one "game" folder down.
-	Marker  string       `json:"marker"`
-	Stores  GameStores   `json:"stores"`
-	Loaders []GameLoader `json:"loaders"`
-	Sources []GameSource `json:"sources"`
+	Marker string `json:"marker"`
+	// Metadata names the SMAPI-derived features that apply to the game: smapi-updates, smapi-compat, stardew-dataset.
+	Metadata []string     `json:"metadata"`
+	Stores   GameStores   `json:"stores"`
+	Loaders  []GameLoader `json:"loaders"`
+	Sources  []GameSource `json:"sources"`
 }
 
 // GameStores names a game to each store that sells it; a store that does not sell it is nil.
@@ -653,3 +656,6 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 		return err
 	})
 }
+
+// HasMetadata reports whether the game uses the named metadata feature.
+func (g GameInfo) HasMetadata(name string) bool { return slices.Contains(g.Metadata, name) }

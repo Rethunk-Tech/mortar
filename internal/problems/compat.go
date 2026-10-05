@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
@@ -28,7 +29,7 @@ type compatLister interface {
 //
 //wails:ignore
 func (s *Service) CompatibilityFor(ctx context.Context, gameID, id string) ([]Compat, error) {
-	if gameID != "" && gameID != "stardew" {
+	if gameID != "" && !game.HasMetadata(gameID, "smapi-compat") {
 		return []Compat{}, nil
 	}
 	mods, err := s.installed(gameID, id)

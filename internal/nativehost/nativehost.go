@@ -419,7 +419,7 @@ func nexusModProblems(domain string, modID int) []modProblem {
 // from the copy Mortar cached for its Problems check.
 func brokenNexusModIDs(domain string) []int {
 	info, ok := components.BundledGameByNexusDomain(domain)
-	if !ok || info.ID != "stardew" {
+	if !ok || !info.HasMetadata("smapi-compat") {
 		return nil
 	}
 	idx, ok := meta.Peek[meta.CompatIndex](&meta.Client{}, meta.CompatCacheFile)

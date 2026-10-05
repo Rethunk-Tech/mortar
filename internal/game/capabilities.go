@@ -32,3 +32,9 @@ func HasSaves(id string) bool {
 	_, ok := Find(id).(SaveFolder)
 	return ok
 }
+
+// HasMetadata reports whether the catalog marks game id with the named metadata feature.
+func HasMetadata(id, name string) bool {
+	g, ok := catalogGame(id)
+	return ok && g.HasMetadata(name)
+}
