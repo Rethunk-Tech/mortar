@@ -60,6 +60,7 @@ func TestMeasureGameTotals(t *testing.T) {
 	write("profiles/alpha/p1/profile.json", 4)
 	write("profiles/alpha/p1/mods/a.bin", 100)
 	write("store/alpha/k/m.bin", 20)
+	write("store/.manifests/alpha/k.json", 2)
 	write("backups/alpha/s.zip", 8)
 	write("cache/alpha/c.bin", 5)
 	write("cache/nexus/alpha/n.json", 3)
@@ -96,6 +97,9 @@ func TestMeasureGameTotals(t *testing.T) {
 	}
 	if _, ok := byGame["nexus"]; ok {
 		t.Fatalf("cache kind counted as a game: %+v", got.Games)
+	}
+	if _, ok := byGame[".manifests"]; ok {
+		t.Fatalf("store index listed as a game: %+v", got.Games)
 	}
 	if _, ok := byGame["one.zip"]; ok {
 		t.Fatalf("loose backup counted as a game: %+v", got.Games)

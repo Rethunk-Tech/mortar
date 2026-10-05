@@ -233,7 +233,8 @@ func nestedGame(slash, prefix string) string {
 		return ""
 	}
 	game, more, found := strings.Cut(rest, "/")
-	if !found || game == "" || more == "" {
+	// Dot-prefixed folders are Mortar's own indexes (store/.manifests), not games.
+	if !found || game == "" || more == "" || strings.HasPrefix(game, ".") {
 		return ""
 	}
 	return game
