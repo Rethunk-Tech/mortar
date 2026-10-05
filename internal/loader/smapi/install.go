@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -206,9 +205,7 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 			return "", fmt.Errorf("SMAPI installer failed: %w", err)
 		}
 	} else {
-		cmd := exec.CommandContext(ctx, filepath.Join(folder, exe), args...)
-		cmd.Dir = folder
-		if out, err := cmd.CombinedOutput(); err != nil {
+		if out, err := runInstaller(ctx, filepath.Join(folder, exe), folder, args); err != nil {
 			return "", fmt.Errorf("SMAPI installer failed (%w): %s", err, tail(out))
 		}
 	}
