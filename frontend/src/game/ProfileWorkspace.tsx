@@ -8,6 +8,7 @@ import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { useNav } from '../nav/store.ts'
 import { SinceLastRun } from '../profiles/SinceLastRun.tsx'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { openShare } from '../share/store.ts'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
@@ -29,10 +30,28 @@ const PerformanceTab = lazy(() =>
   import('../console/PerformanceTab.tsx').then((m) => ({ default: m.PerformanceTab })),
 )
 
+// The open profile's loader, whose capabilities decide which tabs exist.
+function useProfileLoader() {
+  const game = useProfiles((s) => s.game)
+  const loaderId = useProfiles((s) => openProfileOf(s)?.loader) || game?.loaderId
+  return game?.loaders?.find((l) => l.id === loaderId)
+}
+
 function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }) {
   const { t } = useLingui()
+  const loader = useProfileLoader()
   const tab = useTab((s) => s.tab)
   const setTab = useTab((s) => s.setTab)
+  const hidden =
+    (tab === 'load-order' && !loader?.order) ||
+    (tab === 'console' && !loader?.console) ||
+    (tab === 'performance' && !loader?.startup)
+  // A tab saved from another game or loader is not there; fall back to Mods.
+  useEffect(() => {
+    if (loader && hidden) {
+      setTab('mods')
+    }
+  }, [loader, hidden, setTab])
   const actions = useRef<TabsActions>(null)
   const root = useRef<HTMLDivElement>(null)
   // MUI places the underline when the value changes, but a tab can widen afterwards (the Problems count arrives
@@ -87,11 +106,11 @@ function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }
           </Box>
         }
       />
-      <Tab value="load-order" label={t`Load order`} />
+      {loader?.order ? <Tab value="load-order" label={t`Load order`} /> : null}
       <Tab value="saves" label={t`Saves`} />
       <Tab value="notes" label={t`Notes`} />
-      <Tab value="console" label={t`Console`} />
-      <Tab value="performance" label={t`Performance`} />
+      {loader?.console ? <Tab value="console" label={t`Console`} /> : null}
+      {loader?.startup ? <Tab value="performance" label={t`Performance`} /> : null}
     </Tabs>
   )
 }

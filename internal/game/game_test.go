@@ -212,3 +212,21 @@ func TestByR2modmanFolderNamesTheCatalogGame(t *testing.T) {
 		t.Fatal("unknown folder matched")
 	}
 }
+
+func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
+	st := testStore(t)
+	games, err := List(t.TempDir(), st.Get())
+	if err != nil {
+		t.Fatal(err)
+	}
+	caps := map[string]LoaderRef{}
+	for _, g := range games {
+		caps[g.ID] = g.Loaders[0]
+	}
+	if s := caps["stardew"]; !s.Order || !s.Console || !s.Startup {
+		t.Fatalf("SMAPI = %+v", s)
+	}
+	if b := caps["lethal-company"]; b.Order || b.Console || b.Startup {
+		t.Fatalf("BepInEx = %+v", b)
+	}
+}

@@ -125,6 +125,9 @@ type WithOrder interface {
 	Order(p ProfileView) ([]ComponentID, error)
 }
 
+// StartupTimings is a loader whose companion records how long each mod adds to the game's startup.
+type StartupTimings interface{ ReportsStartup() }
+
 // OrderWriter is a loader whose load order lives in a file of the game.
 type OrderWriter interface {
 	WriteOrder(ctx context.Context, t Target, order []ComponentID) error

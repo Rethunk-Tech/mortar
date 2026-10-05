@@ -6,7 +6,9 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -38,6 +40,23 @@ type GameInfo struct {
 type LoaderRef struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	// Order, Console and Startup say which profile tabs the loader supports: a computed load order, a console on a
+	// published companion, and per-mod startup timings.
+	Order   bool `json:"order"`
+	Console bool `json:"console"`
+	Startup bool `json:"startup"`
+}
+
+func loaderRef(gameID string, l components.GameLoader) LoaderRef {
+	ref := LoaderRef{ID: l.ID, Name: l.Name}
+	if d, ok := LoaderOf(gameID, l.ID); ok {
+		_, ref.Order = d.(loader.WithOrder)
+		_, hasConsole := d.(loader.Console)
+		_, hasCompanion := d.(loader.WithCompanion)
+		ref.Console = hasConsole && hasCompanion
+		_, ref.Startup = d.(loader.StartupTimings)
+	}
+	return ref
 }
 
 // SteamAccess is whether Flatpak Steam can read Mortar's data folder.
@@ -112,7 +131,7 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
 		for _, l := range c.Loaders {
-			info.Loaders = append(info.Loaders, LoaderRef{ID: l.ID, Name: l.Name})
+			info.Loaders = append(info.Loaders, loaderRef(c.ID, l))
 		}
 		for i, src := range c.Sources {
 			info.Sources[i] = src.ID

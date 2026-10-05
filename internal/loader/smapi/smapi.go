@@ -12,9 +12,13 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loadorder"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // ID is the catalog's id for this loader.
@@ -147,6 +151,38 @@ func (Loader) Send(ctx context.Context, _ loader.Target, p loader.ProfileView, c
 		return "", fmt.Errorf("this profile has no console bridge")
 	}
 	return "", bridge.Send(ctx, filepath.Join(p.Companion, bridge.SMAPI.StateFile), command)
+}
+
+// ReportsStartup is true: the Mortar SMAPI Bridge times each mod's startup.
+func (Loader) ReportsStartup() {}
+
+// Order is SMAPI's load order of the enabled mods that keep a manifest at their folder's root.
+func (Loader) Order(p loader.ProfileView) ([]loader.ComponentID, error) {
+	var mods []loadorder.Mod
+	for _, dir := range p.Enabled {
+		b, err := fsx.ReadFile(filepath.Join(dir, manifest.FileName))
+		if err != nil {
+			continue
+		}
+		mf, err := manifest.Parse(b)
+		if err != nil {
+			continue
+		}
+		m := loadorder.Mod{ID: mod.ID(mf.UniqueID), Name: mf.Name, ContentPackFor: mod.ID(mf.ContentPackFor)}
+		for _, d := range mf.Dependencies {
+			if d.Required {
+				m.Needs = append(m.Needs, mod.ID(d.UniqueID))
+			} else {
+				m.Optional = append(m.Optional, mod.ID(d.UniqueID))
+			}
+		}
+		mods = append(mods, m)
+	}
+	var out []loader.ComponentID
+	for _, row := range loadorder.Resolve(mods) {
+		out = append(out, loader.ComponentID{Format: ID, ID: string(row.ID)})
+	}
+	return out, nil
 }
 
 // Companion is the Mortar SMAPI Bridge.
