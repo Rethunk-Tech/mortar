@@ -2,6 +2,7 @@ package packsvc
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -30,12 +31,8 @@ func (f *fakeQueue) Add(reqs []queue.Request) ([]queue.Item, error) {
 
 func writeR2z(t *testing.T) string {
 	t.Helper()
-	path := filepath.Join(t.TempDir(), "friends.r2z")
-	f, err := os.Create(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	zw := zip.NewWriter(f)
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
 	w, _ := zw.Create("export.r2x")
 	_, _ = w.Write([]byte(`profileName: Friends
 mods:
@@ -49,7 +46,8 @@ mods:
 	if err := zw.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if err := f.Close(); err != nil {
+	path := filepath.Join(t.TempDir(), "friends.r2z")
+	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return path
