@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { GitHubLoggedIn } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { ItchAccount } from './ItchAccount.tsx'
 import { NexusMods } from './NexusMods.tsx'
 
 function GitHubAccount() {
@@ -39,6 +40,7 @@ export function Accounts() {
     <>
       <NexusMods />
       <GitHubAccount />
+      <ItchAccount />
     </>
   )
 }

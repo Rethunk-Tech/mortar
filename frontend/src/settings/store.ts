@@ -28,6 +28,7 @@ const defaults: Settings = {
   thunderstoreHandleLinks: null,
   nexusUserId: 0,
   nexusName: '',
+  itchName: '',
   nexusPremium: false,
   nxmHandled: false,
   nxmPreviousHandlers: {},

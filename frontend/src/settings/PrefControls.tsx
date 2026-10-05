@@ -51,7 +51,7 @@ export function PrefSegmented({
 }: {
   value: string
   onChange: (v: string) => void
-  options: { value: string; label: string }[]
+  options: { value: string; label: string; unavailable?: string }[]
   label: string
 }) {
   return (
@@ -83,7 +83,14 @@ export function PrefSegmented({
       }}
     >
       {options.map((o) => (
-        <ToggleButton key={o.value} value={o.value}>
+        <ToggleButton
+          key={o.value}
+          value={o.value}
+          disabled={Boolean(o.unavailable)}
+          title={o.unavailable}
+          // A disabled button takes no pointer events, which would hide the reason in its title.
+          sx={{ '&.Mui-disabled': { pointerEvents: 'auto' } }}
+        >
           {o.label}
         </ToggleButton>
       ))}

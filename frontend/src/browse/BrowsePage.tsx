@@ -202,7 +202,7 @@ function BrowsePage({
   const pageCount = Math.max(FIRST_PAGE, Math.ceil(pagedTotal(result) / PAGE_SIZE) || FIRST_PAGE)
   const sources = [
     ...(searchable.length > 1 ? [{ value: ALL, label: t`All sources` }] : []),
-    ...searchable.map((s) => ({ value: s.id, label: s.name })),
+    ...searchable.map((s) => ({ value: s.id, label: s.name, unavailable: s.unavailable })),
   ]
   const sourceName = sources.find((s) => s.value === source)?.label ?? ''
   let placeholder = t`Search ${sourceName}`

@@ -13,6 +13,8 @@ interface BrowsePageResult {
 interface BrowseSource {
   id: string
   name: string
+  // Why the source cannot be searched now, such as a missing API key; empty when it can.
+  unavailable?: string
 }
 
 interface BrowseQuery {
