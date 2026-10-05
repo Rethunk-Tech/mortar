@@ -133,12 +133,15 @@ func SyncBundled(s *Service, id string) {
 // ensureBridge returns the manifest's console bridge entry, adding it to the store first when it is missing.
 // The bridge needs neither the loader nor the game folder, so every profile has it from creation.
 func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
-	if s.components == nil {
-		return profile.Bundle{}, nil
-	}
-	component, ok := s.components.Component(id, "bridge")
-	if !ok || component.Kind != "bridge" {
-		return profile.Bundle{}, nil
+	component, localZip, local := localBridge(id)
+	if !local {
+		if s.components == nil {
+			return profile.Bundle{}, nil
+		}
+		var ok bool
+		if component, ok = s.components.Component(id, "bridge"); !ok || component.Kind != "bridge" {
+			return profile.Bundle{}, nil
+		}
 	}
 	key := store.BridgeKey(component.Version, component.SHA256)
 	b := profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceMortar, Name: "Mortar"}}
@@ -153,7 +156,9 @@ func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
 	}
 	defer func() { _ = fsx.RemoveAll(tmp) }()
 	archivePath := filepath.Join(tmp, "bridge.zip")
-	if err := s.components.Download(context.Background(), component, archivePath); err != nil {
+	if local {
+		archivePath = localZip
+	} else if err := s.components.Download(context.Background(), component, archivePath); err != nil {
 		return profile.Bundle{}, err
 	}
 	unpacked := filepath.Join(tmp, "unpacked")

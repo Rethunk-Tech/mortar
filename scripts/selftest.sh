@@ -488,6 +488,22 @@ regress_lc() {
   ln -sfn "$SANDBOX_STEAM/linux64" "$SANDBOX_HOME/.steam/sdk64"
   ln -sfn "$SANDBOX_STEAM/linux32" "$SANDBOX_HOME/.steam/sdk32"
 
+  # The BepInEx bridge has no published release, so the sandbox runs a local build of it (MORTAR_LOCAL_BRIDGES); a
+  # machine without the bridge repo, or without dotnet, skips the bridge check and says so.
+  local bridge_repo=${MORTAR_REGRESS_BRIDGE_REPO:-$REPO/../mortar-bepinex-bridge} bridge_dir=$cache/bridge bridge=skipped
+  mkdir -p "$bridge_dir"
+  if [ -x "$bridge_repo/scripts/package.sh" ] && command -v dotnet >/dev/null; then
+    local built
+    if built=$(DIST="$ROOT/bridge-dist" "$bridge_repo/scripts/package.sh" 2>"$ROOT/bridge-build.log" | tail -1) && [ -f "$built" ]; then
+      cp "$built" "$bridge_dir/lethal-company.zip"
+    else
+      failures+=("the bridge did not build; see $ROOT/bridge-build.log")
+    fi
+  fi
+  if [ -f "$bridge_dir/lethal-company.zip" ]; then
+    export MORTAR_LOCAL_BRIDGES=$bridge_dir
+    bridge=expected
+  fi
   mkdir -p "$ROOT"
   cat >"$ROOT/run-proton.sh" <<EOF
 #!/bin/bash
@@ -554,6 +570,14 @@ EOF
     if grep -qE "BepInEx\] Loading \[$name " "$log" 2>/dev/null; then loaded=$((loaded + 1)); else failures+=("plugin $name did not load"); fi
   done
 
+  if [ "$bridge" = expected ] && [ ${#failures[@]} -eq 0 ]; then
+    if grep -q 'BepInEx\] Loading \[Mortar BepInEx Bridge ' "$log" && grep -q 'Listening on 127.0.0.1:' "$log"; then
+      bridge=loaded
+    else
+      failures+=("Mortar bridge did not load")
+    fi
+  fi
+
   echo "stopping the game"
   killed=$(reap_prefix "$compat")
   for _ in $(seq 1 60); do
@@ -574,6 +598,7 @@ EOF
   echo "profile        $profile"
   echo "BepInEx        $bepinex"
   echo "plugins loaded $loaded of ${#plugins[@]} (${plugins[*]})"
+  echo "bridge         $bridge"
   echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after purge"
   echo "stopped pids   ${killed:-none}"
   local f
