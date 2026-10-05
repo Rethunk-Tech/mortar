@@ -412,9 +412,10 @@ const fakeGameEnv = "MORTAR_TEST_FAKE_GAME"
 
 func TestMain(m *testing.M) {
 	if os.Getenv(fakeGameEnv) != "" {
-		time.Sleep(3 * time.Second)
+		time.Sleep(time.Second)
 		os.Exit(0)
 	}
+	pollEvery = 50 * time.Millisecond
 	os.Exit(m.Run())
 }
 
@@ -444,7 +445,7 @@ func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 			t.Fatal(err)
 		}
 		if len(runs) > 0 {
-			if runs[0].DurationMs < 2000 {
+			if runs[0].DurationMs < 500 {
 				text, _ := svc.RunLog("stardew", p.ID, runs[0].ID)
 				t.Fatalf("the game was stopped after %d ms: %q", runs[0].DurationMs, text)
 			}

@@ -32,6 +32,9 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
+// pollEvery is how often a running game is checked; tests set it small.
+var pollEvery = 2 * time.Second
+
 const (
 	// StateEvent is emitted with a Status whenever a game's launch state changes.
 	StateEvent = "launch:state"
@@ -43,7 +46,6 @@ const (
 	// SettingsRestoreWarningEvent is emitted when profile game settings could not be restored.
 	SettingsRestoreWarningEvent = "launch:settings-restore-warning"
 
-	pollEvery  = 2 * time.Second
 	stopGrace  = 10 * time.Second
 	procDirRun = "/proc"
 )
