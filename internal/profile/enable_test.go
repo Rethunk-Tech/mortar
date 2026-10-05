@@ -57,7 +57,7 @@ func TestEnableSkipsRequiredWhenSettingIsNever(t *testing.T) {
 	}
 	var applyErr error
 	if _, err := st.Update(func(s *settings.Settings) {
-		applyErr = settings.ApplyKeyGame(s, "enableRequirements", settings.EnableReqNever, settings.GameStardew)
+		applyErr = settings.ApplyKeyGame(s, "enableRequirements", settings.EnableReqNever, "stardew")
 	}); err != nil {
 		t.Fatal(err)
 	}

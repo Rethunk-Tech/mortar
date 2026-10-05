@@ -49,7 +49,7 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 func setGamePref(t *testing.T, st *settings.Store, key, value string) {
 	t.Helper()
 	var applyErr error
-	if _, err := st.Update(func(s *settings.Settings) { applyErr = settings.ApplyKeyGame(s, key, value, settings.GameStardew) }); err != nil {
+	if _, err := st.Update(func(s *settings.Settings) { applyErr = settings.ApplyKeyGame(s, key, value, "stardew") }); err != nil {
 		t.Fatal(err)
 	}
 	if applyErr != nil {

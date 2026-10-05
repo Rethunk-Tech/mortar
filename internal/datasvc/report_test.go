@@ -16,7 +16,7 @@ import (
 func TestRemoveItemsRefusesAReferencedKey(t *testing.T) {
 	testfs.DataHome(t)
 	items, profiles := testenv.Stores(t)
-	p := testenv.Profile(t, profiles, "Farm")
+	p := testenv.Profile(t, profiles, "stardew", "Farm")
 	root, err := datadir.Dir()
 	if err != nil {
 		t.Fatal(err)

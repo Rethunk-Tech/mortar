@@ -5,15 +5,15 @@ import "testing"
 func TestResolveOrder(t *testing.T) {
 	t.Parallel()
 	var empty Settings
-	if got := Resolve(empty, "defaultLaunchMethod", GameStardew, nil); got != LaunchSteam {
+	if got := Resolve(empty, "defaultLaunchMethod", "stardew", nil); got != LaunchSteam {
 		t.Fatalf("default = %q", got)
 	}
 	game := Settings{}
-	putGame(&game, GameStardew, GameSettings{DefaultLaunchMethod: LaunchDirect})
-	if got := Resolve(game, "defaultLaunchMethod", GameStardew, nil); got != LaunchDirect {
+	putGame(&game, "stardew", GameSettings{DefaultLaunchMethod: LaunchDirect})
+	if got := Resolve(game, "defaultLaunchMethod", "stardew", nil); got != LaunchDirect {
 		t.Fatalf("game = %q", got)
 	}
-	if got := Resolve(game, "defaultLaunchMethod", GameStardew, map[string]string{"defaultLaunchMethod": LaunchSteam}); got != LaunchSteam {
+	if got := Resolve(game, "defaultLaunchMethod", "stardew", map[string]string{"defaultLaunchMethod": LaunchSteam}); got != LaunchSteam {
 		t.Fatalf("profile = %q", got)
 	}
 }
@@ -21,15 +21,15 @@ func TestResolveOrder(t *testing.T) {
 func TestResolveSkipPlayCheck(t *testing.T) {
 	t.Parallel()
 	var empty Settings
-	if got := Resolve(empty, "skipPlayCheck", GameStardew, nil); got != "false" {
+	if got := Resolve(empty, "skipPlayCheck", "stardew", nil); got != "false" {
 		t.Fatalf("default skip = %q", got)
 	}
 	game := Settings{}
-	putGame(&game, GameStardew, GameSettings{SkipPlayCheck: true})
-	if got := Resolve(game, "skipPlayCheck", GameStardew, nil); got != "true" {
+	putGame(&game, "stardew", GameSettings{SkipPlayCheck: true})
+	if got := Resolve(game, "skipPlayCheck", "stardew", nil); got != "true" {
 		t.Fatalf("game skip = %q", got)
 	}
-	if got := Resolve(game, "skipPlayCheck", GameStardew, map[string]string{"skipPlayCheck": "false"}); got != "false" {
+	if got := Resolve(game, "skipPlayCheck", "stardew", map[string]string{"skipPlayCheck": "false"}); got != "false" {
 		t.Fatalf("profile skip = %q", got)
 	}
 }

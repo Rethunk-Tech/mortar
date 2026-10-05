@@ -27,7 +27,7 @@ func pendingService(t *testing.T) (*Service, profile.Profile) {
 	t.Helper()
 	s, _ := newService(t, true)
 	s.d.Dir = t.TempDir()
-	return s, testenv.Profile(t, s.d.Profiles, "P")
+	return s, testenv.Profile(t, s.d.Profiles, "stardew", "P")
 }
 
 func TestPendingConfigsSurviveARestart(t *testing.T) {

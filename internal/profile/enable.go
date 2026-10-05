@@ -2,8 +2,6 @@ package profile
 
 import (
 	"strings"
-
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func requiredNeeds(m EntryMod) []string {
@@ -44,11 +42,11 @@ func disabledUID(p *Profile, uniqueID string) bool {
 	return false
 }
 
-func (s *Store) autoEnableRequirements() bool {
+func (s *Store) autoEnableRequirements(game string) bool {
 	if s.settings == nil {
 		return true
 	}
-	return s.settings.Get().GamePrefs(settings.GameStardew).AutoEnableRequirements()
+	return s.settings.Get().GamePrefs(game).AutoEnableRequirements()
 }
 
 // enableRequired turns on required dependencies of uniqueID that are already in the profile but switched off.

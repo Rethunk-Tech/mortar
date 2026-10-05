@@ -17,8 +17,6 @@ const (
 	TypeInt    = "int"
 	TypeEnum   = "enum"
 	TypeString = "string"
-
-	GameStardew = "stardew"
 )
 
 // GameSettings is the per-game preference block (Stardew Valley today).

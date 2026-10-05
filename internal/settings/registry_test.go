@@ -4,7 +4,7 @@ import "testing"
 
 func TestRegistryDefaultsMatchToday(t *testing.T) {
 	s := Defaults()
-	g := s.GamePrefs(GameStardew)
+	g := s.GamePrefs("stardew")
 	if s.OnPlay != OnPlayStay || s.Density != DensityComfortable || s.Theme != ThemeDark || s.Dates != DatesRelative {
 		t.Fatalf("app defaults: onPlay=%q density=%q theme=%q dates=%q", s.OnPlay, s.Density, s.Theme, s.Dates)
 	}
@@ -27,19 +27,19 @@ func TestRegistryValidation(t *testing.T) {
 	if err := ApplyKeyGame(&s, "density", "huge", ""); err == nil {
 		t.Fatal("expected density reject")
 	}
-	if err := ApplyKeyGame(&s, "smapiBuilds", "nope", GameStardew); err == nil {
+	if err := ApplyKeyGame(&s, "smapiBuilds", "nope", "stardew"); err == nil {
 		t.Fatal("expected smapiBuilds reject")
 	}
-	if err := ApplyKeyGame(&s, "runsKept", "0", GameStardew); err == nil {
+	if err := ApplyKeyGame(&s, "runsKept", "0", "stardew"); err == nil {
 		t.Fatal("expected runsKept reject")
 	}
 	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsNever, ""); err == nil {
 		t.Fatal("expected missing --game")
 	}
-	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsNever, GameStardew); err != nil {
+	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsNever, "stardew"); err != nil {
 		t.Fatal(err)
 	}
-	got, err := s.LookupGame("smapiBuilds", GameStardew)
+	got, err := s.LookupGame("smapiBuilds", "stardew")
 	if err != nil || got != SmapiBuildsNever {
 		t.Fatalf("lookup %q %v", got, err)
 	}
@@ -48,7 +48,7 @@ func TestRegistryValidation(t *testing.T) {
 func TestBatchPrefDefaultsAndSet(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	s := Defaults()
-	g := s.GamePrefs(GameStardew)
+	g := s.GamePrefs("stardew")
 	if s.ProfileOrder != ProfileOrderManual || s.AutoRetryDownloads != AutoRetryOff || s.PauseDownloadsWhilePlaying {
 		t.Fatalf("order/retry/pause defaults: %q %q %v", s.ProfileOrder, s.AutoRetryDownloads, s.PauseDownloadsWhilePlaying)
 	}
@@ -93,7 +93,7 @@ func TestBatchPrefDefaultsAndSet(t *testing.T) {
 
 func TestPortableRoundTripGameScope(t *testing.T) {
 	s := Defaults()
-	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsInclude, GameStardew); err != nil {
+	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsInclude, "stardew"); err != nil {
 		t.Fatal(err)
 	}
 	if err := ApplyKeyGame(&s, "density", DensityCompact, ""); err != nil {
@@ -118,7 +118,7 @@ func TestPortableRoundTripGameScope(t *testing.T) {
 	if in.Theme != ThemeLight {
 		t.Fatalf("theme %q", in.Theme)
 	}
-	if in.GamePrefs(GameStardew).SmapiBuilds != SmapiBuildsInclude {
-		t.Fatalf("game smapi %q", in.GamePrefs(GameStardew).SmapiBuilds)
+	if in.GamePrefs("stardew").SmapiBuilds != SmapiBuildsInclude {
+		t.Fatalf("game smapi %q", in.GamePrefs("stardew").SmapiBuilds)
 	}
 }

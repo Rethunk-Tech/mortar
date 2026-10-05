@@ -38,7 +38,7 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 	c := nexus.New("1")
 	c.BaseURL = srv.URL
 	_, profiles := testenv.Stores(t)
-	p := testenv.Profile(t, profiles, "Farm")
+	p := testenv.Profile(t, profiles, "stardew", "Farm")
 	root, err := datadir.Dir()
 	if err != nil {
 		t.Fatal(err)

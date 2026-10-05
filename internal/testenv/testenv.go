@@ -22,10 +22,10 @@ func Stores(t testing.TB) (*store.Store, *profile.Store) {
 	return items, profiles
 }
 
-// Profile creates a Stardew profile or fails the test.
-func Profile(t testing.TB, profiles *profile.Store, name string) profile.Profile {
+// Profile creates a profile for gameID or fails the test.
+func Profile(t testing.TB, profiles *profile.Store, gameID, name string) profile.Profile {
 	t.Helper()
-	p, err := profiles.Create("stardew", name)
+	p, err := profiles.Create(gameID, name)
 	if err != nil {
 		t.Fatal(err)
 	}

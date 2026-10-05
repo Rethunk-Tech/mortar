@@ -26,8 +26,8 @@ import (
 func TestRunningFollowsProcessesAndLocksProfile(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	_, profiles := testenv.Stores(t)
-	a := testenv.Profile(t, profiles, "A")
-	b := testenv.Profile(t, profiles, "B")
+	a := testenv.Profile(t, profiles, "stardew", "A")
+	b := testenv.Profile(t, profiles, "stardew", "B")
 	modsA, _ := profiles.ModsDir("stardew", a.ID)
 
 	svc := NewService(t.TempDir(), nil, profiles)
@@ -61,8 +61,8 @@ func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", filepath.Join(home, "data"))
 	_, profiles := testenv.Stores(t)
-	a := testenv.Profile(t, profiles, "A")
-	b := testenv.Profile(t, profiles, "B")
+	a := testenv.Profile(t, profiles, "stardew", "A")
+	b := testenv.Profile(t, profiles, "stardew", "B")
 	svc := NewService(home, nil, profiles)
 	if got, err := svc.Lines("stardew", a.ID); err != nil || got == nil || len(got) != 0 {
 		t.Fatalf("no log yet: %v, %v", got, err)
@@ -112,7 +112,7 @@ func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 func TestGameClosingEndsTheConsoleWithAMortarLine(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	_, profiles := testenv.Stores(t)
-	a := testenv.Profile(t, profiles, "A")
+	a := testenv.Profile(t, profiles, "stardew", "A")
 	mods, _ := profiles.ModsDir("stardew", a.ID)
 	svc := NewService(t.TempDir(), nil, profiles)
 	svc.procDir = t.TempDir()
@@ -160,7 +160,7 @@ func startEnv(t *testing.T) (*Service, profile.Profile) {
 		t.Fatal(err)
 	}
 	_, profiles := testenv.Stores(t)
-	p := testenv.Profile(t, profiles, "A")
+	p := testenv.Profile(t, profiles, "stardew", "A")
 	return NewService(t.TempDir(), set, profiles), p
 }
 
@@ -220,7 +220,7 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	items, profiles := testenv.Stores(t)
-	p := testenv.Profile(t, profiles, "A")
+	p := testenv.Profile(t, profiles, "stardew", "A")
 	svc := NewService(t.TempDir(), nil, profiles)
 	if err := svc.Send("stardew", "help"); err == nil {
 		t.Fatal("Send while idle must fail")

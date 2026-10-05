@@ -507,7 +507,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 	c, ok := s.updates[key]
 	s.mu.Unlock()
 	if ok && !fresh && c.fingerprint == fp && time.Since(c.at) < updatesTTL {
-		return hideUpdates(c.result, mods, s.settings.Get()), nil
+		return hideUpdates(c.result, mods, s.settings.Get(), gameID), nil
 	}
 	set := s.settings.Get()
 	r := checkUpdates(ctx, s.meta, env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
@@ -517,7 +517,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		s.updates[key] = cachedUpdates{fp, time.Now(), r}
 		s.mu.Unlock()
 	}
-	return hideUpdates(r, mods, set), nil
+	return hideUpdates(r, mods, set, gameID), nil
 }
 
 // fixStaleManifests sets each manifest whose download is already the suggested version to that version, so SMAPI
@@ -543,8 +543,8 @@ func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
 	}
 }
 
-func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings) UpdatesResult {
-	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.GamePrefs(settings.GameStardew).SmapiBuilds)
+func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings, gameID string) UpdatesResult {
+	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.GamePrefs(gameID).SmapiBuilds)
 }
 
 func (s *Service) recordHealth(gameID, id string, env Environment, mods []Installed, r Result) {
@@ -577,7 +577,7 @@ func (s *Service) visibleUpdateCount(gameID, id string, env Environment, mods []
 	if !ok || c.fingerprint != fp {
 		return 0
 	}
-	return len(hideUpdates(c.result, mods, s.settings.Get()).Updates)
+	return len(hideUpdates(c.result, mods, s.settings.Get(), gameID).Updates)
 }
 
 // UpdateWarning is the Play dialog after a game update: the last launched Stardew version versus the installed one.

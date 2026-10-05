@@ -139,7 +139,7 @@ func TestImportCollectionRecordsRefOnNewProfile(t *testing.T) {
 
 func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 	s, profiles := cozyCollectionService(t, 2)
-	p := testenv.Profile(t, profiles, "Mine")
+	p := testenv.Profile(t, profiles, "stardew", "Mine")
 	pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", p.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -176,7 +176,7 @@ func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 
 func TestCollectionStatusNewerSameAndError(t *testing.T) {
 	s, profiles := cozyCollectionService(t, 5)
-	p := testenv.Profile(t, profiles, "Linked")
+	p := testenv.Profile(t, profiles, "stardew", "Linked")
 	st, err := s.CollectionStatus(context.Background(), "stardew", p.ID)
 	if err != nil || st.Linked {
 		t.Fatalf("unlinked: %+v, %v", st, err)
