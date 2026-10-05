@@ -109,7 +109,7 @@ func TestServeHandsEachLinkOverAndReplies(t *testing.T) {
 	in := append(frame(t, request{Link: "nxm://a"}), frame(t, request{Link: "nxm://bad"})...)
 	var got []string
 	var out bytes.Buffer
-	err := Serve(bytes.NewReader(in), &out, func(link string) error {
+	err := ServeFrom(nil, bytes.NewReader(in), &out, func(link string) error {
 		got = append(got, link)
 		if link == "nxm://bad" {
 			return errors.New("refused")
@@ -520,7 +520,7 @@ func TestActiveNexusUpdatesFromCache(t *testing.T) {
 	}
 	in := frame(t, request{Type: "updates", Source: "nexus", SourceGameKey: "stardewvalley"})
 	var out bytes.Buffer
-	if err := Serve(bytes.NewReader(in), &out, func(string) error {
+	if err := ServeFrom(nil, bytes.NewReader(in), &out, func(string) error {
 		t.Fatal("updates request opened a link")
 		return nil
 	}); err != nil {

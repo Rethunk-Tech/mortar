@@ -285,13 +285,8 @@ type handlers struct {
 	installPackage func(key, pkg string) error
 }
 
-// Serve answers messages from r until it closes, handing each message's link to open.
-func Serve(r io.Reader, w io.Writer, open func(link string) error) error {
-	return ServeFrom(nil, r, w, open)
-}
-
-// ServeFrom is Serve for a host the browser started with args (see Invoked); each message records that the
-// browser is in contact.
+// ServeFrom answers messages from r until it closes, handing each message's link to open. args are those the browser
+// started the host with (see Invoked); each message records that the browser is in contact.
 func ServeFrom(args []string, r io.Reader, w io.Writer, open func(link string) error) error {
 	browser := browserName(args)
 	return serveHandlers(r, w, handlers{
