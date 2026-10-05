@@ -72,7 +72,7 @@ func TestRecordStoresOwnedLogAndBoundsHistory(t *testing.T) {
 		t.Fatalf("runs = %v, %v", runs, err)
 	}
 	got := runs[0]
-	if got.Outcome != launch.OutcomeRan || got.SMAPIVersion != "4.5.2" || got.GameVersion != "1.6.15" {
+	if got.Outcome != launch.OutcomeRan || got.LoaderVersion != "4.5.2" || got.GameVersion != "1.6.15" {
 		t.Fatalf("meta = %#v", got)
 	}
 	if got.Errors != 1 || got.Warnings != 0 || got.DurationMs < 1000 {

@@ -29,12 +29,14 @@ var runIDPattern = regexp.MustCompile(`^[0-9A-Za-z.-]+$`)
 
 // Run is one recorded launch of a profile, without the log body.
 type Run struct {
-	ID           string `json:"id"`
-	Started      string `json:"started"`
-	Ended        string `json:"ended"`
-	DurationMs   int64  `json:"durationMs"`
-	SMAPIVersion string `json:"smapiVersion"`
-	GameVersion  string `json:"gameVersion"`
+	ID         string `json:"id"`
+	Started    string `json:"started"`
+	Ended      string `json:"ended"`
+	DurationMs int64  `json:"durationMs"`
+	// Loader is the id of the loader the run used, LoaderVersion the version its log reported.
+	Loader        string `json:"loader"`
+	LoaderVersion string `json:"loaderVersion"`
+	GameVersion   string `json:"gameVersion"`
 	// Preset is the name of the launch preset the run used.
 	Preset   string          `json:"preset,omitempty"`
 	Outcome  launch.Outcome  `json:"outcome"`
@@ -339,7 +341,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	cause := s.cause(g.ID(), profileID, text)
 	run := Run{
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
-		DurationMs: ended.Sub(started).Milliseconds(), SMAPIVersion: stats.SMAPI, GameVersion: stats.Game,
+		DurationMs: ended.Sub(started).Milliseconds(), Loader: loaderID(g.ID()), LoaderVersion: stats.SMAPI, GameVersion: stats.Game,
 		Preset: sess.preset, Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
 	}
 	if len(refs) > 0 {

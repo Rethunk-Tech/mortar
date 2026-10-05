@@ -36,7 +36,7 @@ function toastSweep(report: SweepReport) {
     return
   }
   useSweepUi.getState().present(report)
-  const version = report.gameVersion || report.smapiVersion
+  const version = report.gameVersion || report.loaderVersion
   const name = report.gameName || report.game
   useToasts.getState().push({
     kind: 'warning',

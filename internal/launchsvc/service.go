@@ -591,8 +591,8 @@ func (s *Service) start(parent context.Context, gameID, profileID, installID, pr
 	return nil
 }
 
-// ForcesSMAPI reports whether Steam's launch options will start SMAPI even for a vanilla launch.
-func (s *Service) ForcesSMAPI(gameID string) (bool, error) {
+// ForcesLoader reports whether Steam's launch options will start the loader even for a vanilla launch.
+func (s *Service) ForcesLoader(gameID string) (bool, error) {
 	g, err := game.Require(gameID)
 	if err != nil {
 		return false, err
@@ -775,7 +775,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	}
 	env.LogFile, _ = game.LogFile(g.ID())
 	// The install is locked from the preparing claim until the waiter has unwound: a second launch finds the game busy.
-	dep, err := startDeploy(ctx, inst, plan)
+	dep, err := s.deployProfile(ctx, g.ID(), inst, profileID, plan)
 	if err != nil {
 		return err
 	}

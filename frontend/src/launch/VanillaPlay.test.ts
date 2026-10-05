@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { windowsVanillaAfterForcesCheck } from './playOpen.ts'
 
-test('a failed ForcesSMAPI check does not start vanilla', () => {
+test('a failed ForcesLoader check does not start vanilla', () => {
   expect(windowsVanillaAfterForcesCheck(false, false)).toBe('abort')
   expect(windowsVanillaAfterForcesCheck(false, true)).toBe('abort')
 })

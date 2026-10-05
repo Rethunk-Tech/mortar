@@ -20,6 +20,14 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
+// loaderID is the id of the game's first loader, "" when it has none.
+func loaderID(gameID string) string {
+	if l, ok := game.PrimaryLoader(gameID); ok {
+		return l.ID()
+	}
+	return ""
+}
+
 // view is the profile as loaders see it.
 func (s *Service) view(g game.Game, inst game.Install, profileID string) (loader.ProfileView, error) {
 	dir, err := s.profiles.ProfileDir(g.ID(), profileID)
@@ -92,10 +100,23 @@ func journalDir(installID string) (string, error) {
 	return filepath.Join(base, "journal", installID), nil
 }
 
-// startDeploy places plan's install-side files into inst, journaled before the first file moves. A plan with none
-// returns a deployment that has nothing to take back.
-func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan) (*deployment, error) {
-	if plan.Mode == launchplan.ModeVanilla || len(plan.Files) == 0 {
+// deployProfile is startDeploy for a launch of profileID: a game that deploys into its install also places the
+// profile's packages.
+func (s *Service) deployProfile(ctx context.Context, gameID string, inst game.Install, profileID string, plan *launchplan.Plan) (*deployment, error) {
+	var in profile.DeployInputs
+	if plan.Mode != launchplan.ModeVanilla && profileID != "" && s.profiles != nil {
+		var err error
+		if in, err = s.profiles.DeployInputs(gameID, profileID, inst.Dir); err != nil {
+			return nil, err
+		}
+	}
+	return startDeploy(ctx, inst, plan, in)
+}
+
+// startDeploy places plan's install-side files and the profile's packages into inst, journaled before the first file
+// moves. A launch with neither returns a deployment that has nothing to take back.
+func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, in profile.DeployInputs) (*deployment, error) {
+	if plan.Mode == launchplan.ModeVanilla || (len(plan.Files) == 0 && len(in.Packages) == 0) {
 		return &deployment{}, nil
 	}
 	d, ok := deploy.Get(deployerID)
@@ -106,7 +127,7 @@ func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan) 
 	if err != nil {
 		return nil, err
 	}
-	p, err := d.Plan(deploy.View{JournalDir: dir}, deploy.InstallView{Dir: inst.Dir}, nil, plan.Files)
+	p, err := d.Plan(deploy.View{JournalDir: dir, Overwrite: in.Overwrite}, deploy.InstallView{Dir: inst.Dir, Targets: in.Targets}, in.Packages, plan.Files)
 	if err != nil {
 		return nil, err
 	}

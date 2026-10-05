@@ -60,7 +60,7 @@ type StartupMod struct {
 type StartupReport struct {
 	SampledOtherMs int64         `json:"sampledOtherMs"`
 	ID             string        `json:"id"`
-	Smapi          string        `json:"smapi"`
+	Loader         string        `json:"loader"`
 	Game           string        `json:"game"`
 	ProcessStart   string        `json:"processStart"`
 	Phases         StartupPhases `json:"phases"`

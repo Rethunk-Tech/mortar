@@ -22,7 +22,7 @@ func printSweep(c *cmd, r launchsvc.SweepReport) {
 		return
 	}
 	if !r.NeedsAttention() {
-		fmt.Fprintf(c.out, "%s %s / SMAPI %s: nothing to fix.\n", r.GameName, r.GameVersion, r.SMAPIVersion)
+		fmt.Fprintf(c.out, "%s %s / SMAPI %s: nothing to fix.\n", r.GameName, r.GameVersion, r.LoaderVersion)
 		return
 	}
 	rows := make([][]string, 0)

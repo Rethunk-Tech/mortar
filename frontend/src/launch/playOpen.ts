@@ -1,7 +1,7 @@
 import { System } from '@wailsio/runtime'
 import { create } from 'zustand'
 import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import { ForcesSMAPI } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { ForcesLoader } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useLoader } from '../loader/store.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -75,7 +75,7 @@ export function playVanillaOpen() {
     startVanilla(game, true).catch(() => undefined)
     return
   }
-  ForcesSMAPI(game)
+  ForcesLoader(game)
     .then((forces) => {
       const next = windowsVanillaAfterForcesCheck(true, forces)
       if (next === 'warn') {

@@ -42,12 +42,13 @@ type ProfileSweep struct {
 
 // SweepReport is the patch-day summary for one game.
 type SweepReport struct {
-	Game         string         `json:"game"`
-	GameName     string         `json:"gameName"`
-	GameVersion  string         `json:"gameVersion"`
-	SMAPIVersion string         `json:"smapiVersion"`
-	Triggered    bool           `json:"triggered"`
-	Profiles     []ProfileSweep `json:"profiles"`
+	Game          string         `json:"game"`
+	GameName      string         `json:"gameName"`
+	GameVersion   string         `json:"gameVersion"`
+	Loader        string         `json:"loader"`
+	LoaderVersion string         `json:"loaderVersion"`
+	Triggered     bool           `json:"triggered"`
+	Profiles      []ProfileSweep `json:"profiles"`
 }
 
 // Sweep compares the installed game and SMAPI versions of the install with this id ("" is the selected one) to the
@@ -61,7 +62,7 @@ func (s *Service) Sweep(ctx context.Context, gameID, installID string) (SweepRep
 	if err != nil {
 		return SweepReport{}, err
 	}
-	rep := SweepReport{Game: gameID, GameName: g.Name(), GameVersion: gameVer, SMAPIVersion: smapiVer}
+	rep := SweepReport{Game: gameID, GameName: g.Name(), GameVersion: gameVer, Loader: loaderID(gameID), LoaderVersion: smapiVer}
 	if !s.sweepVersionsChanged(gameID, gameVer, smapiVer) {
 		return rep, nil
 	}
