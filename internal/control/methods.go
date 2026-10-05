@@ -18,10 +18,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/lan"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/loadersvc"
 	"github.com/Rethunk-Tech/mortar/internal/logshare"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
+	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -33,6 +35,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/storecheck"
 	"github.com/Rethunk-Tech/mortar/internal/templates"
 	"github.com/Rethunk-Tech/mortar/internal/tools"
+	"github.com/Rethunk-Tech/mortar/internal/updatesvc"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -76,6 +79,9 @@ type Services struct {
 	// Bisect and StoreCheck are the window's services; nil in tests that do not need them.
 	Bisect     *bisect.Service
 	StoreCheck *storecheck.Service
+	Lan        *lan.Service
+	Updates    *updatesvc.Service
+	Nxm        *nxmsvc.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 	// Quit closes the app as its tray Quit does; nil in tests.
@@ -571,6 +577,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.browseFromParams(ctx, p)
 	}
 	if res, ok, err := s.handleLibrary(method, p); ok {
+		return res, err
+	}
+	if res, ok, err := s.handleMore(ctx, method, p); ok {
 		return res, err
 	}
 	if method == "logs.search" {

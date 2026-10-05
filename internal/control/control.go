@@ -36,6 +36,10 @@ type Params struct {
 	// Version and File pick a release: a package or GitHub tag version, a Nexus file id or a GitHub asset name.
 	Version string `json:"version,omitempty"`
 	File    string `json:"file,omitempty"`
+	// Body is a JSON payload a verb hands back that an earlier call produced (an undo token, a template).
+	Body json.RawMessage `json:"body,omitempty"`
+	// Preview asks a destructive verb to report what it would do instead.
+	Preview bool `json:"preview,omitempty"`
 	// Page is a 1-based result page, Index a 1-based row in a listing.
 	Page   int      `json:"page,omitempty"`
 	Index  int      `json:"index,omitempty"`

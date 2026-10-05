@@ -48,7 +48,7 @@ var verbs = map[string]bool{
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"templates": true, "library": true, "archive": true,
 	"browse":  true,
-	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true, "bisect": true,
+	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true, "bisect": true, "lan": true, "app": true, "links": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
@@ -101,6 +101,7 @@ type cmd struct {
 	restore       bool
 	sourceFlag    string
 	loaderFlag    string
+	previewFlag   bool
 	fileFlag      string
 	versionFlag   string
 	installFlag   string
@@ -327,6 +328,8 @@ func (c *cmd) parse(args []string) error {
 			c.installFlag = args[i]
 		case strings.HasPrefix(a, "--install="):
 			c.installFlag = strings.TrimPrefix(a, "--install=")
+		case a == "--preview":
+			c.previewFlag = true
 		case a == "--file":
 			if i+1 >= len(args) {
 				return usageError{"--file needs a value"}
@@ -433,6 +436,11 @@ func (c *cmd) table(header string, rows [][]string) {
 
 func (c *cmd) dispatch() error {
 	verb := c.args[0]
+	if verbs[verb] {
+		if handled, err := c.more(); handled {
+			return err
+		}
+	}
 	if !verbs[verb] {
 		return usageError{"unknown command " + verb}
 	}
@@ -1765,7 +1773,7 @@ func (c *cmd) runs(p control.Params) error {
 		for _, r := range list {
 			t = append(t, []string{
 				runStartedLabel(r.Started), (time.Duration(r.DurationMs) * time.Millisecond).Round(time.Second).String(),
-				runOutcomeLabel(string(r.Outcome)), runEndedLabel(r.Exit), r.Preset, fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.SMAPIVersion, r.GameVersion,
+				runOutcomeLabel(string(r.Outcome)), runEndedLabel(r.Exit), r.Preset, fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.LoaderVersion, r.GameVersion,
 			})
 		}
 		c.table("STARTED\tDURATION\tOUTCOME\tENDED\tPRESET\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
@@ -2166,6 +2174,9 @@ takes --game <id>, which may be left out when exactly one game is installed.
   profile collection <game> <profile> [--update|--unlink]  collection link, revision, latest
   bundles <game>                         list saved bundles
   bundles apply <game> <bundle> <profile> apply a bundle
+  bundles create <game> <name> <profile> [mod id...]  save a bundle of a profile's mods (all when none named)
+  bundles delete <game> <bundle> | rename <game> <bundle> <name>
+  bundles add <game> <bundle> <profile> <mod id>... | remove <game> <bundle> <mod id>...
   source untrack <game> --source nexus --all|--unused  bulk untrack a source's tracked mods
   source tracked <game> <profile> --source nexus --missing  tracked at the source but not in profile
   profile delete <game> <profile>         moves it to Mortar's trash
@@ -2255,6 +2266,9 @@ takes --game <id>, which may be left out when exactly one game is installed.
   history trim <game> <profile> --keep N  keep a profile's newest N history events
   templates list <game> | delete <game> <name>
   templates save <game> <profile> <name>  capture a profile as a template
+  templates apply <game> <template> <profile> [--preview]  merge it into a profile; --json holds the undo object
+  templates undo <game> <profile> <file>  undo an apply from its saved undo object
+  templates rename <game> <template> <name> | restore <game> <file>  restore takes one entry of list --json
   templates new <game> <template> <profile name>  create a profile from a template
   library extra <game>                    mods in the extra mods folder
   library hidden <game> <profile>         dot-hidden mods inside the profile's mods
@@ -2273,6 +2287,19 @@ takes --game <id>, which may be left out when exactly one game is installed.
   backups restore <name> [save...]        restore a save backup
   tools <game>                            configured external tools
   tools run <game> <profile> <tool>       start an external tool
+  tools add <game> <name> <executable> [arg...] | remove <game> <id>
+  tools update <game> <id> <name> <executable> [arg...]
+  lan peers | inbox                       nearby Mortars; shares waiting for you
+  lan send <game> <profile> <peer>        send a profile to a peer
+  lan accept|decline <id>                 take or refuse a waiting share
+  data move <dir> [--preview]             move the data folder
+  data cleanup [--preview]                remove unused store items and caches
+  app update check|install                Mortar's own updates
+  links register                          claim mortar:// links and .mortar files
+  links enable|disable --source nexus     take over or hand back nxm links
+  game reset-install <game> --yes         delete the game's install folder
+  game steam-status                       whether a usable Steam was found
+  problems check-updates <game> <profile>  look for mod updates now
   launchers [add|remove <id> <folder>]   launchers, the games in each, and your added folders
   doctor                                  versions, folders and link handling
   quit                                    close the running app and wait until it has exited

@@ -1,0 +1,186 @@
+package control
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strconv"
+
+	"github.com/Rethunk-Tech/mortar/internal/templates"
+	"github.com/Rethunk-Tech/mortar/internal/tools"
+)
+
+var errNoLinks = errors.New("link handling is unavailable")
+
+// handleMore answers the bundle, template, tool, LAN, data-folder, update and link methods; ok is false for any
+// other method.
+func (s *Services) handleMore(ctx context.Context, method string, p Params) (res any, ok bool, err error) {
+	switch method {
+	case "bundles.create", "bundles.delete", "bundles.rename", "bundles.add", "bundles.remove":
+		res, err = s.bundlesWrite(method, p)
+	case "templates.apply", "templates.preview", "templates.undo", "templates.rename", "templates.restore":
+		res, err = s.templatesWrite(method, p)
+	case "tools.add", "tools.update", "tools.remove":
+		res, err = s.toolsWrite(method, p)
+	case "lan.peers", "lan.send", "lan.inbox", "lan.accept", "lan.decline":
+		res, err = s.lanMethod(method, p)
+	case "data.move":
+		res, err = s.dataMove(p)
+	case "data.cleanup":
+		res, err = s.dataCleanup(p)
+	case "app.update.check":
+		res, err = s.appUpdate(ctx, false)
+	case "app.update.install":
+		res, err = s.appUpdate(ctx, true)
+	case "links.register":
+		res, err = nil, s.withNxm(func() error { return s.Nxm.RegisterLinks() })
+	case "links.enable":
+		res, err = nil, s.withNxm(func() error { return s.Nxm.Enable() })
+	case "links.disable":
+		res, err = nil, s.withNxm(func() error { return s.Nxm.Disable() })
+	case "problems.checkUpdates":
+		res, err = s.profileCall(p, func(id string) (any, error) { return s.Problems.CheckUpdatesNow(ctx, p.Game, id) })
+	case "game.resetInstall":
+		res, err = nil, s.Games.ResetInstall(p.Game)
+	case "game.steamStatus":
+		res = s.Games.SteamStatus()
+	default:
+		return nil, false, nil
+	}
+	return res, true, err
+}
+
+func (s *Services) bundlesWrite(method string, p Params) (any, error) {
+	if s.Bundles == nil {
+		return nil, errors.New("bundles are unavailable")
+	}
+	if method == "bundles.create" {
+		return s.profileCall(p, func(id string) (any, error) { return s.Bundles.Create(p.Game, p.Name, id, typedIDs(p.IDs)) })
+	}
+	list, err := s.Bundles.List(p.Game)
+	if err != nil {
+		return nil, err
+	}
+	b, err := resolveBundle(list, p.Name)
+	if err != nil {
+		return nil, err
+	}
+	switch method {
+	case "bundles.delete":
+		return nil, s.Bundles.Delete(p.Game, b.ID)
+	case "bundles.rename":
+		return s.Bundles.Rename(p.Game, b.ID, p.Value)
+	case "bundles.add":
+		return s.profileCall(p, func(id string) (any, error) { return s.Bundles.AddMods(p.Game, b.ID, id, typedIDs(p.IDs)) })
+	default:
+		return s.Bundles.RemoveMods(p.Game, b.ID, typedIDs(p.IDs))
+	}
+}
+
+func (s *Services) templatesWrite(method string, p Params) (any, error) {
+	if s.Templates == nil {
+		return nil, errUnavailable
+	}
+	switch method {
+	case "templates.apply":
+		return s.profileCall(p, func(id string) (any, error) {
+			return s.changed(p.Game, func() (any, error) { return s.Templates.ApplyTemplate(p.Game, p.Name, id) })
+		})
+	case "templates.preview":
+		return s.profileCall(p, func(id string) (any, error) { return s.Templates.PreviewApplyTemplate(p.Game, p.Name, id) })
+	case "templates.undo":
+		var u templates.Undo
+		if err := json.Unmarshal(p.Body, &u); err != nil {
+			return nil, fmt.Errorf("undo data: %w", err)
+		}
+		return s.profileCall(p, func(id string) (any, error) {
+			return s.changed(p.Game, func() (any, error) { return s.Templates.UndoApplyTemplate(p.Game, id, u) })
+		})
+	case "templates.rename":
+		return nil, s.Templates.RenameTemplate(p.Game, p.Name, p.Value)
+	default:
+		var t templates.Template
+		if err := json.Unmarshal(p.Body, &t); err != nil {
+			return nil, fmt.Errorf("template data: %w", err)
+		}
+		return nil, s.Templates.RestoreTemplate(p.Game, t)
+	}
+}
+
+// toolsWrite: Key is the tool id, Name its label, Path its executable, IDs its arguments and Value its folder.
+func (s *Services) toolsWrite(method string, p Params) (any, error) {
+	if s.Tools == nil {
+		return nil, errUnavailable
+	}
+	t := tools.Tool{ID: p.Key, Name: p.Name, Executable: p.Path, Arguments: p.IDs, WorkingDir: p.Value}
+	switch method {
+	case "tools.add":
+		return s.Tools.Add(p.Game, t)
+	case "tools.update":
+		return nil, s.Tools.Update(p.Game, t)
+	default:
+		return nil, s.Tools.Remove(p.Game, p.Key)
+	}
+}
+
+func (s *Services) lanMethod(method string, p Params) (any, error) {
+	if s.Lan == nil {
+		return nil, errors.New("LAN sharing is unavailable")
+	}
+	switch method {
+	case "lan.peers":
+		return s.Lan.Peers(), nil
+	case "lan.send":
+		return s.profileCall(p, func(id string) (any, error) { return nil, s.Lan.Send(p.Name, p.Game, id) })
+	case "lan.inbox":
+		return s.Lan.Inbox(), nil
+	}
+	id, err := strconv.Atoi(p.Name)
+	if err != nil {
+		return nil, fmt.Errorf("transfer id %q is not a number", p.Name)
+	}
+	if method == "lan.decline" {
+		s.Lan.CancelTransfer(id)
+		return nil, nil
+	}
+	return nil, s.Lan.Transfer(id)
+}
+
+func (s *Services) dataMove(p Params) (any, error) {
+	if s.Data == nil {
+		return nil, errUnavailable
+	}
+	if p.Preview {
+		return s.Data.MoveDataFolderPreview(p.Path)
+	}
+	return nil, s.Data.MoveDataFolder(p.Path)
+}
+
+func (s *Services) dataCleanup(p Params) (any, error) {
+	if s.Data == nil {
+		return nil, errUnavailable
+	}
+	preview, err := s.Data.CleanupPreview()
+	if err != nil || p.Preview {
+		return preview, err
+	}
+	return preview, s.Data.Cleanup(preview)
+}
+
+func (s *Services) appUpdate(ctx context.Context, install bool) (any, error) {
+	if s.Updates == nil {
+		return nil, errors.New("updates are unavailable")
+	}
+	if install {
+		return nil, s.Updates.Install(ctx)
+	}
+	return s.Updates.Check(ctx)
+}
+
+func (s *Services) withNxm(fn func() error) error {
+	if s.Nxm == nil {
+		return errNoLinks
+	}
+	return fn()
+}

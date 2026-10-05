@@ -47,3 +47,23 @@ func TestAutomationVerbs(t *testing.T) {
 		t.Fatalf("store check: %+v", r)
 	}
 }
+
+func TestMoreVerbsMapOntoControlMethods(t *testing.T) {
+	results := map[string]any{"bundles.create": nil, "templates.preview": map[string]any{"add": []string{"A"}}, "data.move": nil, "links.enable": nil, "lan.send": nil}
+	r := invoke(t, results, "bundles", "create", "stardew", "Core", "Farm", "smapi:A", "smapi:B")
+	if p := r.calls[0].params; r.code != 0 || r.calls[0].method != "bundles.create" || p.Name != "Core" || p.Profile != "Farm" || len(p.IDs) != 2 {
+		t.Fatalf("bundles create: %+v", r)
+	}
+	if r = invoke(t, results, "templates", "apply", "stardew", "T", "Farm", "--preview"); r.calls[0].method != "templates.preview" {
+		t.Fatalf("templates apply --preview: %+v", r)
+	}
+	if r = invoke(t, results, "data", "move", "/tmp/x", "--preview"); r.calls[0].method != "data.move" || !r.calls[0].params.Preview {
+		t.Fatalf("data move: %+v", r)
+	}
+	if r = invoke(t, results, "links", "enable"); r.code != 2 || len(r.calls) != 0 {
+		t.Fatalf("links enable without a source: %+v", r)
+	}
+	if r = invoke(t, results, "lan", "send", "stardew", "Farm", "peer-1"); r.calls[0].params.Name != "peer-1" {
+		t.Fatalf("lan send: %+v", r)
+	}
+}
