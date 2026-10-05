@@ -6,11 +6,13 @@ import (
 	"os"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
@@ -229,6 +231,22 @@ func TestReadCollectionArchive(t *testing.T) {
 	}
 	if _, err := readCollectionArchive([]byte("not an archive")); err == nil {
 		t.Fatal("garbage archive accepted")
+	}
+}
+
+// A crafted collection 7z that panics the 7z reader must fail the import, not reach the panic handler that exits Mortar.
+func TestCrashingCollectionArchiveIsMalformed(t *testing.T) {
+	raw, err := os.ReadFile("../archive/testdata/fuzz/FuzzExtract/d8ee12b539cf77b1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(string(raw), "\n")
+	data, err := strconv.Unquote(strings.TrimSuffix(strings.TrimPrefix(lines[1], "[]byte("), ")"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := readCollectionArchive([]byte(data)); !errors.Is(err, archive.ErrMalformed) {
+		t.Fatalf("err = %v, want ErrMalformed", err)
 	}
 }
 

@@ -13,7 +13,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 
-	"github.com/bodgit/sevenzip"
 	"github.com/nwaples/rardecode/v2"
 )
 
@@ -106,7 +105,7 @@ func (v *previewer) full() bool {
 
 // PreviewArchive lists the zip, RAR or 7z archive at archivePath without extracting it.
 func PreviewArchive(archivePath string) (_ Preview, err error) {
-	defer readerPanic(&err)
+	defer RecoverMalformed(&err)
 	f, err := fsx.Open(archivePath)
 	if err != nil {
 		return Preview{}, err
@@ -155,7 +154,7 @@ func (v *previewer) sevenZip(r io.ReaderAt, size int64) error {
 	if err := checkSevenZipLimits(r, size); err != nil {
 		return wrap("", err)
 	}
-	zr, err := sevenzip.NewReader(r, size)
+	zr, err := OpenSevenZip(r, size)
 	if err != nil {
 		return wrap("", err)
 	}

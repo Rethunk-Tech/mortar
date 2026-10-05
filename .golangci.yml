@@ -17,6 +17,7 @@ linters:
     - exhaustive
     - exptostd
     - fatcontext
+    - forbidigo
     - forcetypeassert
     - gocheckcompilerdirectives
     - gochecknoinits
@@ -62,7 +63,15 @@ linters:
       - path: ^(datadir_recover_other|internal/(launch/launch|loader/smapi/install|datadir/open|datadir/copy_windows_test|backdrop/desktop|nxm/handler_linux|nxm/handler_windows|steam/steam|sandbox/sandbox|nativehost/spawn|datasvc/restart|updatesvc/e2e_test))\.go$
         linters: [gosec]
         text: G204
+      # A crafted 7z panics the reader, and an unrecovered panic exits Mortar; outside the archive package every open
+      # goes through archive.OpenSevenZip, which recovers it into ErrMalformed.
+      - path: ^internal/archive/
+        linters: [forbidigo]
   settings:
+    forbidigo:
+      forbid:
+        - pattern: ^sevenzip\.(NewReader|OpenReader)(WithPassword)?$
+          msg: use archive.OpenSevenZip, which turns a reader panic into ErrMalformed
     # canon go-golangci-lint-00008
     govet:
       enable-all: true

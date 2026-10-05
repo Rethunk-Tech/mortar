@@ -10,6 +10,7 @@ import (
 
 	"github.com/bodgit/sevenzip"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -33,8 +34,9 @@ type collectionDetails struct {
 
 // readCollectionArchive reads the curator's 7z: collection.json for FOMOD choices, and the config files inside
 // bundled/<mod>/. Only a bundled mod's config.json and config/*.json are taken, never its content.
-func readCollectionArchive(raw []byte) (collectionDetails, error) {
-	zr, err := sevenzip.NewReader(bytes.NewReader(raw), int64(len(raw)))
+func readCollectionArchive(raw []byte) (_ collectionDetails, err error) {
+	defer archive.RecoverMalformed(&err)
+	zr, err := archive.OpenSevenZip(bytes.NewReader(raw), int64(len(raw)))
 	if err != nil {
 		return collectionDetails{}, err
 	}
