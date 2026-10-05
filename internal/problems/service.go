@@ -252,21 +252,21 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	c, ok := s.cache[key]
 	s.mu.Unlock()
 	if ok && c.fresh(fp, time.Now()) {
-		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, nexusDomain(gameID), mods, c.sameJob)))
+		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, gameID, mods, c.sameJob)))
 	}
 
 	checkKey := key + "\x00" + fp
 	s.mu.Lock()
 	if c, ok := s.cache[key]; ok && c.fresh(fp, time.Now()) {
 		s.mu.Unlock()
-		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, nexusDomain(gameID), mods, c.sameJob)))
+		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, c.result, gameID, mods, c.sameJob)))
 	}
 	s.mu.Unlock()
 
 	r, err := s.shareCheck(ctx, checkKey, func() Result {
 		skipImageOverlap = depth == settings.ConflictScanSkipImages
 		defer func() { skipImageOverlap = false }()
-		r := Check(ctx, s.meta, env, mods)
+		r := Check(ctx, s.metaFor(gameID), env, mods)
 		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool {
 			return !x.Enabled
 		}))...)
@@ -284,7 +284,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 				enabledOnly = s.settings.Get().CheckOnlyEnabledMods
 			}
 			updateStart := time.Now()
-			ur := checkUpdates(ctx, s.meta, env, mods, enabledOnly, false, s.NexusFiles)
+			ur := checkUpdates(ctx, s.metaFor(gameID), env, mods, enabledOnly, false, s.NexusFiles)
 			asked := 0
 			for _, x := range mods {
 				if (profile.Source{Kind: x.SourceKind}).Bundled() {
@@ -316,7 +316,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	}
 	s.cache[key] = entry
 	s.mu.Unlock()
-	return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, r, nexusDomain(gameID), mods, entry.sameJob)))
+	return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, r, gameID, mods, entry.sameJob)))
 }
 
 // ForgetCached drops every result and scan Mortar holds in memory, after the cache folder is cleared,
@@ -508,7 +508,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		return hideUpdates(c.result, mods, s.settings.Get(), gameID), nil
 	}
 	set := s.settings.Get()
-	r := checkUpdates(ctx, s.meta, env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
+	r := checkUpdates(ctx, s.metaFor(gameID), env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
 	s.fixStaleManifests(gameID, id, r.Held)
 	if !r.Unknown {
 		s.mu.Lock()
@@ -598,7 +598,7 @@ func (s *Service) UpdateWarning(ctx context.Context, gameID, id string) (UpdateW
 	if err != nil {
 		return UpdateWarning{}, err
 	}
-	return versionChangeWarning(recorded, env.GameVersion, Check(ctx, s.meta, env, mods).Broken), nil
+	return versionChangeWarning(recorded, env.GameVersion, Check(ctx, s.metaFor(gameID), env, mods).Broken), nil
 }
 
 func versionChangeWarning(recorded, installed string, broken []Broken) UpdateWarning {
