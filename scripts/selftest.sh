@@ -131,6 +131,8 @@ start() {
     WAILS_SERVER_HOST=127.0.0.1 WAILS_SERVER_PORT="$PORT" nohup ./mortar-server >"$ROOT/server.log" 2>&1 &)
   for _ in $(seq 1 30); do
     if [ -n "$(listener || true)" ]; then
+      # Recorded so a test run that dies can have its server stopped by pid later (frontend/e2e/sandbox.ts).
+      listener >"$ROOT/server.pid"
       echo "self-test server on http://127.0.0.1:$PORT (pid $(listener), log $ROOT/server.log)"
       return
     fi

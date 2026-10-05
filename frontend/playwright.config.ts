@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
-import { sandboxEnv } from './e2e/sandbox.ts'
+import { sandboxPort } from './e2e/sandbox.ts'
 
-const { port } = sandboxEnv()
+const port = sandboxPort()
 
 // Starts and seeds its own self-test sandbox in a folder and on a port of its own (e2e/sandbox.ts), never the real data folder; Chromium only.
 export default defineConfig({
@@ -12,7 +12,6 @@ export default defineConfig({
   expect: { timeout: 5000 },
   workers: 1,
   globalSetup: './e2e/global-setup.ts',
-  globalTeardown: './e2e/global-teardown.ts',
   reporter: 'list',
   use: {
     ...devices['Desktop Chrome'],
