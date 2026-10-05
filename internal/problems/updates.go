@@ -289,7 +289,7 @@ type Relations struct {
 }
 
 // Relate reports what the mod key/uniqueID needs and which mods need it. ok is false when the profile lacks it.
-func Relate(mods []framework.Mod, domain, key string, uniqueID mod.ID) (r Relations, ok bool) {
+func Relate(scheme string, mods []framework.Mod, domain, key string, uniqueID mod.ID) (r Relations, ok bool) {
 	i := slices.IndexFunc(mods, func(x framework.Mod) bool { return x.Key == key && mod.Equal(x.ModID(), uniqueID) })
 	if i < 0 {
 		return Relations{}, false
@@ -301,7 +301,7 @@ func Relate(mods []framework.Mod, domain, key string, uniqueID mod.ID) (r Relati
 		if j := slices.IndexFunc(mods, func(x framework.Mod) bool { return mod.Equal(x.ModID(), dep.ModID()) }); j >= 0 {
 			n.Name = mods[j].Name
 		}
-		if reason, have := depState(mods, dep); reason != "" {
+		if reason, have := depState(scheme, mods, dep); reason != "" {
 			n.State, n.InstalledVersion = reason, have
 		}
 		r.Needs = append(r.Needs, n)

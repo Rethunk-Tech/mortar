@@ -3,6 +3,7 @@ package sharesvc
 import (
 	"context"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
@@ -16,4 +17,4 @@ func (f fakeMeta) Collection(context.Context, string, string, int) (meta.Collect
 	return f.coll, f.collErr
 }
 
-var stardewEnv = problems.Environment{Nexus: nexus.Title{Domain: "stardewvalley", ID: 1303}}
+var stardewEnv = problems.Environment{Nexus: nexus.Title{Domain: "stardewvalley", ID: 1303}, VersionScheme: deps.SemverSMAPI}

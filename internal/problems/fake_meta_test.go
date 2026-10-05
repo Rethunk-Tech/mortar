@@ -3,6 +3,7 @@ package problems
 import (
 	"context"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -21,4 +22,4 @@ func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 	return checkUpdates(ctx, m, env, mods, enabledOnly, false, nil)
 }
 
-var testEnv = Environment{Nexus: nexus.Title{Domain: "stardewvalley", ID: 1303}}
+var testEnv = Environment{Nexus: nexus.Title{Domain: "stardewvalley", ID: 1303}, VersionScheme: deps.SemverSMAPI}

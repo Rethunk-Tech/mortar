@@ -46,32 +46,17 @@ type Dependency struct {
 	Relation   Relation
 }
 
-// Thunderstore reads a "Namespace-Name-Version" dependency string.
+// Thunderstore reads a "Namespace-Name-Version" dependency string; the target keeps the spelling.
 func Thunderstore(s string) (Dependency, error) {
 	parts := strings.Split(s, "-")
 	if len(parts) != 3 || parts[0] == "" || parts[1] == "" {
 		return Dependency{}, fmt.Errorf("malformed dependency %q", s)
 	}
 	return Dependency{
-		Target:     Target{Package: "thunderstore:" + strings.ToLower(parts[0]+"-"+parts[1])},
+		Target:     Target{Package: "thunderstore:" + parts[0] + "-" + parts[1]},
 		Constraint: parts[2],
 		Relation:   Required,
 	}, nil
-}
-
-// NexusRequirement is one entry of a mod page's requirements. A requirement outside Nexus names no page.
-type NexusRequirement struct {
-	ModID    int
-	External bool
-}
-
-// Nexus maps a Nexus requirement; Nexus carries no version, so the constraint is empty. An external requirement is
-// a tool the user installs by hand.
-func Nexus(r NexusRequirement) Dependency {
-	if r.External {
-		return Dependency{Relation: Tool}
-	}
-	return Dependency{Target: Target{Package: fmt.Sprintf("nexus:%d", r.ModID)}, Relation: Required}
 }
 
 // SMAPI maps a manifest Dependencies[] entry; required follows IsRequired.

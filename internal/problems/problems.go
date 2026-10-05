@@ -44,6 +44,9 @@ type Environment struct {
 	GameVersion string
 	APIVersion  string
 	Platform    string
+	// VersionScheme is how the game's loader versions its mods (deps.SemverSMAPI and the like); dependency
+	// constraints are read in it.
+	VersionScheme string
 }
 
 // Ref names a mod on the page that hosts it. FileID is 0 unless a Nexus file satisfying the requirement was found.
@@ -181,8 +184,12 @@ func (r Result) WarningCount() int {
 	return n
 }
 
-// meets reports whether version satisfies minimum under SMAPI's scheme, which is what every mod these checks read
-// is versioned in.
+// satisfied reports whether version meets dep's constraint under scheme.
+func satisfied(scheme string, dep manifest.Dependency, version string) bool {
+	return deps.Satisfies(scheme, version, dep.Dep().Constraint)
+}
+
+// meets is satisfied for a bare minimum in SMAPI's scheme, which is what the dataset's Nexus files are versioned in.
 func meets(version, minimum string) bool {
 	return deps.Satisfies(deps.SemverSMAPI, version, minimum)
 }
@@ -200,7 +207,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod) R
 		Timings:        timings,
 	}
 	reqStart := time.Now()
-	missing := missingDeps(enabled, mods)
+	missing := missingDeps(env.VersionScheme, enabled, mods)
 	listed, listedUnknown := listedRequirements(ctx, m, env.Nexus.Domain, enabled, mods)
 	missing = append(missing, listed...)
 	r.Timings = append(r.Timings, CheckTiming{Name: "requirements", Ms: time.Since(reqStart).Milliseconds(), Count: len(missing)})
@@ -208,7 +215,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod) R
 	r.Unknown = r.Unknown || listedUnknown
 	r.Missing = missing
 	otherStart := time.Now()
-	r.Duplicates = duplicatesWithNexus(ctx, m, enabled)
+	r.Duplicates = duplicatesWithNexus(ctx, m, env.VersionScheme, enabled)
 	r.Settings = found.Settings
 	r.Cleanup = cleanupHints(mods, found.Cleanup)
 	broken, unknown := brokenMods(ctx, m, env, enabled)
@@ -244,8 +251,8 @@ func logCheckTimings(profileID string, timings []CheckTiming) {
 	}
 }
 
-func duplicatesWithNexus(ctx context.Context, m Meta, enabled []framework.Mod) []Duplicate {
-	out := duplicates(enabled)
+func duplicatesWithNexus(ctx context.Context, m Meta, scheme string, enabled []framework.Mod) []Duplicate {
+	out := duplicates(scheme, enabled)
 	for i := range out {
 		var pageID int
 		var files []NexusFile
@@ -311,7 +318,7 @@ func newerNexusFile(a, b NexusFile) bool {
 	return aID > bID
 }
 
-func missingDeps(enabled, all []framework.Mod) []Missing {
+func missingDeps(scheme string, enabled, all []framework.Mod) []Missing {
 	out := []Missing{}
 	for _, d := range enabled {
 		for _, dep := range d.Dependencies {
@@ -319,7 +326,7 @@ func missingDeps(enabled, all []framework.Mod) []Missing {
 				continue
 			}
 			miss := Missing{DependentID: d.ModID(), DependentName: d.Name, ID: dep.ModID(), MinimumVersion: dep.MinimumVersion}
-			reason, installedVersion := depState(all, dep)
+			reason, installedVersion := depState(scheme, all, dep)
 			if reason == "" {
 				continue
 			}
@@ -528,7 +535,7 @@ func isWordByte(b byte) bool {
 
 // depState says why the mods in all do not satisfy dep: "absent", "disabled" or "outdated", with the highest
 // installed version for the last. An empty reason means the dependency is met.
-func depState(all []framework.Mod, dep manifest.Dependency) (reason, installedVersion string) {
+func depState(scheme string, all []framework.Mod, dep manifest.Dependency) (reason, installedVersion string) {
 	var installed []framework.Mod
 	for _, x := range all {
 		if mod.Equal(x.ModID(), dep.ModID()) {
@@ -538,11 +545,11 @@ func depState(all []framework.Mod, dep manifest.Dependency) (reason, installedVe
 	switch {
 	case len(installed) == 0:
 		return "absent", ""
-	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return x.Enabled && meets(x.Version, dep.MinimumVersion) }):
+	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return x.Enabled && satisfied(scheme, dep, x.Version) }):
 		return "", ""
 	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return x.Enabled }):
 		return "outdated", highest(installed)
-	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return meets(x.Version, dep.MinimumVersion) }):
+	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return satisfied(scheme, dep, x.Version) }):
 		return "disabled", ""
 	}
 	return "outdated", highest(installed)
@@ -558,7 +565,7 @@ func highest(mods []framework.Mod) string {
 	return best
 }
 
-func duplicates(enabled []framework.Mod) []Duplicate {
+func duplicates(scheme string, enabled []framework.Mod) []Duplicate {
 	out := []Duplicate{}
 	seen := map[string]bool{}
 	for _, first := range enabled {
@@ -576,12 +583,12 @@ func duplicates(enabled []framework.Mod) []Duplicate {
 		if len(group) < 2 {
 			continue
 		}
-		out = append(out, Duplicate{ID: first.ModID(), Name: first.Name, Copies: copies(group, enabled)})
+		out = append(out, Duplicate{ID: first.ModID(), Name: first.Name, Copies: copies(scheme, group, enabled)})
 	}
 	return out
 }
 
-func copies(group, enabled []framework.Mod) []Copy {
+func copies(scheme string, group, enabled []framework.Mod) []Copy {
 	top := highest(group)
 	out := make([]Copy, len(group))
 	for i, g := range group {
@@ -594,7 +601,7 @@ func copies(group, enabled []framework.Mod) []Copy {
 				if !dep.Required || !mod.Equal(dep.ModID(), g.ModID()) {
 					continue
 				}
-				if meets(g.Version, dep.MinimumVersion) {
+				if satisfied(scheme, dep, g.Version) {
 					c.Needed = append(c.Needed, d.Name)
 				} else {
 					c.TooOld = append(c.TooOld, d.Name)

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -71,11 +72,12 @@ func pick(p pkg, ref Ref) (string, error) {
 }
 
 func parseDependency(s string) (Ref, error) {
-	parts := strings.Split(s, "-")
-	if len(parts) != 3 {
-		return Ref{}, fmt.Errorf("malformed dependency %q", s)
+	d, err := deps.Thunderstore(s)
+	if err != nil {
+		return Ref{}, err
 	}
-	return Ref{Namespace: parts[0], Name: parts[1], Version: parts[2]}, nil
+	namespace, name, _ := strings.Cut(strings.TrimPrefix(d.Target.Package, "thunderstore:"), "-")
+	return Ref{Namespace: namespace, Name: name, Version: d.Constraint}, nil
 }
 
 // Closure resolves roots and everything they depend on from the community's cached index. Each package appears once,

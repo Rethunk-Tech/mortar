@@ -25,14 +25,11 @@ func TestSatisfies(t *testing.T) {
 
 func TestVocabularies(t *testing.T) {
 	d, err := Thunderstore("BepInEx-BepInExPack-5.4.2100")
-	if err != nil || d.Target.Package != "thunderstore:bepinex-bepinexpack" || d.Constraint != "5.4.2100" || d.Relation != Required {
+	if err != nil || d.Target.Package != "thunderstore:BepInEx-BepInExPack" || d.Constraint != "5.4.2100" || d.Relation != Required {
 		t.Fatalf("thunderstore = %+v, %v", d, err)
 	}
 	if _, err := Thunderstore("nodash"); err == nil {
 		t.Fatal("malformed accepted")
-	}
-	if d := Nexus(NexusRequirement{ModID: 7}); d.Target.String() != "nexus:7" {
-		t.Fatalf("nexus = %+v", d)
 	}
 	if d := SMAPI("A.B", "1.0", false); d.Target.String() != "smapi:A.B" || d.Relation != Optional {
 		t.Fatalf("smapi = %+v", d)

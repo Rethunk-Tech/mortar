@@ -53,7 +53,7 @@ func (s *Service) sameJobRows(gameID, id string, mods []framework.Mod) []framewo
 	return sameJob(footprints(mods, launchsvc.LatestReplaces(dir)), mods)
 }
 
-// withSameJob adds the "sameJob" rows, skipping mods another check already lists under framework.Redundant.
+// withSameJob adds the "sameJob" rows, skipping mods another check already lists under Redundant.
 func withSameJob(r Result, rows []framework.Redundant) Result {
 	listed := map[string]bool{}
 	for _, x := range r.Redundant {

@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -119,7 +120,7 @@ func platform() string {
 //
 //wails:ignore
 func (s *Service) Environment(id string) Environment {
-	env := Environment{Platform: platform()}
+	env := Environment{Platform: platform(), VersionScheme: versionScheme(id)}
 	env.Nexus, _ = game.NexusTitle(id)
 	if game.Find(id) == nil {
 		return env
@@ -132,6 +133,16 @@ func (s *Service) Environment(id string) Environment {
 	st, _ := game.LoaderStatus(id, dir, set.Loaders[id])
 	env.GameVersion, env.APIVersion = st.GameVersion, st.Version
 	return env
+}
+
+// versionScheme is the version scheme of the game's loader.
+func versionScheme(gameID string) string {
+	for _, l := range game.Loaders(gameID) {
+		if v, ok := l.(loader.VersionScheme); ok {
+			return v.VersionScheme()
+		}
+	}
+	return deps.Opaque
 }
 
 // nexusDomain is the Nexus domain of a game, empty when Nexus does not host it.
@@ -185,7 +196,7 @@ func (s *Service) installed(gameID, id string) ([]framework.Mod, error) {
 }
 
 // Problems checks the profile's mods and leaves out each conflict's evidence, which is most of the result and
-// only an expanded row shows; framework.ConflictEvidence fetches it.
+// only an expanded row shows; ConflictEvidence fetches it.
 func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, error) {
 	r, err := s.ProblemsWithEvidence(ctx, gameID, id)
 	if err != nil {
@@ -206,7 +217,7 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	return r, nil
 }
 
-// framework.ConflictEvidence returns the per-pack evidence of one asset conflict, shown or dismissed.
+// ConflictEvidence returns the per-pack evidence of one asset conflict, shown or dismissed.
 func (s *Service) ConflictEvidence(ctx context.Context, gameID, id, kind, target string) ([]framework.ConflictEvidence, error) {
 	r, err := s.ProblemsWithEvidence(ctx, gameID, id)
 	if err != nil {
@@ -617,7 +628,7 @@ func (s *Service) Relations(gameID, id, key string, uniqueID mod.ID) (Relations,
 	if err != nil {
 		return Relations{}, err
 	}
-	r, ok := Relate(mods, nexusDomain(gameID), key, uniqueID)
+	r, ok := Relate(versionScheme(gameID), mods, nexusDomain(gameID), key, uniqueID)
 	if !ok {
 		return Relations{}, errors.New("no such mod in this profile")
 	}

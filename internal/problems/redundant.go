@@ -93,7 +93,7 @@ func namedIn(domain, summary string, enabled []framework.Mod, self string) []fra
 }
 
 // redundantCount counts each group of mods doing the same job once, as the Problems tab shows it, and every other
-// framework.Redundant row on its own.
+// Redundant row on its own.
 func redundantCount(rows []framework.Redundant) int {
 	parent := map[string]string{}
 	var find func(string) string
