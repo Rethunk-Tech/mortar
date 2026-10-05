@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gamesettings"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -19,9 +20,13 @@ func newGameSettingsService(t *testing.T) (*Service, profile.Profile, string) {
 	config := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", config)
 
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "stardew", "Settings")
-	return NewService("", nil, profiles), p, config
+	return NewService("", set, profiles), p, config
 }
 
 func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {

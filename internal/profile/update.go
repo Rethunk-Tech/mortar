@@ -482,21 +482,13 @@ func (s *Store) saveBackup(game, profileID string) error {
 	if !gamepkg.HasSaves(game) {
 		return nil
 	}
-	selected := ""
-	var err error
-	if s.settings != nil {
-		_, selected, _, err = gamepkg.Resolve(s.home, s.settings.Get(), game)
-		if err != nil {
-			return err
-		}
-	}
-	savesDir, err := gamepkg.SavesDir(game, selected, s.home)
-	if err != nil {
-		return err
-	}
 	set := settings.Defaults()
 	if s.settings != nil {
 		set = s.settings.Get()
+	}
+	savesDir, err := gamepkg.SavesDir(s.home, set, game, "")
+	if err != nil {
+		return err
 	}
 	var overrides map[string]string
 	if p, err := s.read(game, profileID); err == nil {

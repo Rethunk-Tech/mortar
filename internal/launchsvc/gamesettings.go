@@ -71,11 +71,10 @@ func (s *Service) prepareGameSettings(gameID, id string) (*settingsRestore, bool
 	if err != nil {
 		return nil, false, err
 	}
-	startup, ok := game.Find(gameID).(game.StartupSettings)
-	if !ok || emptySettings(value) {
+	if !game.HasStartupSettings(gameID) || emptySettings(value) {
 		return nil, false, nil
 	}
-	path, err := startup.StartupPreferencesPath(s.home)
+	path, err := game.StartupPreferencesPath(s.home, s.settings.Get(), gameID, "")
 	if err != nil {
 		return nil, false, err
 	}
@@ -192,7 +191,7 @@ func (s *Service) restoreGameSettings(restore *settingsRestore) error {
 func (s *Service) RecoverGameSettings() error {
 	var errs []error
 	for _, id := range game.Implemented() {
-		if _, ok := game.Find(id).(game.StartupSettings); ok {
+		if game.HasStartupSettings(id) {
 			errs = append(errs, s.recoverGameSettings(id))
 		}
 	}

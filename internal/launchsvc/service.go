@@ -790,11 +790,7 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	if !backupNeeded(mode, events, lastRun, recorded, installed) {
 		return nil
 	}
-	_, selected, _, err := game.Resolve(s.home, set, gameID)
-	if err != nil {
-		return err
-	}
-	savesDir, err := game.SavesDir(gameID, selected, s.home)
+	savesDir, err := game.SavesDir(s.home, set, gameID, "")
 	if err != nil {
 		return err
 	}

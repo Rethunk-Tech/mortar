@@ -118,11 +118,7 @@ func (s *Service) savesDir(gameID string) (string, error) {
 	if !game.HasSaves(gameID) {
 		return "", nil
 	}
-	_, selected, _, err := game.Resolve(s.home, s.settings.Get(), gameID)
-	if err != nil {
-		return "", err
-	}
-	dir, err := game.SavesDir(gameID, selected, s.home)
+	dir, err := game.SavesDir(s.home, s.settings.Get(), gameID, "")
 	if err != nil {
 		return "", err
 	}

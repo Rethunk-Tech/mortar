@@ -1,7 +1,14 @@
 package game
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	goruntime "runtime"
+
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/runtime"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -16,10 +23,37 @@ const (
 	StoreLutris       = gamestore.StoreLutris
 )
 
-// FoundInstall is one discovered game folder and the store it came from.
-type FoundInstall struct {
+// Install origins.
+const (
+	OriginDiscovered = "discovered"
+	// OriginFolder is a folder the user chose that no store reported.
+	OriginFolder = "folder"
+)
+
+// Install is one game folder: where it came from and how it runs.
+type Install struct {
+	// ID is stable for a store and folder.
+	ID    string `json:"id"`
+	Game  string `json:"game"`
 	Store string `json:"store"`
 	Dir   string `json:"dir"`
+	// Runtime is the id of the runtime that runs the install: native or proton.
+	Runtime string `json:"runtime"`
+	// Platform is the OS the build is for: windows, linux or darwin.
+	Platform string `json:"platform"`
+	Origin   string `json:"origin"`
+}
+
+func newInstall(info components.GameInfo, store, dir, origin string) Install {
+	sum := sha256.Sum256([]byte(store + "\x00" + dir))
+	in := Install{ID: hex.EncodeToString(sum[:6]), Game: info.ID, Store: store, Dir: dir, Origin: origin}
+	in.Platform = runtime.PlatformOf(info.Marker, goruntime.GOOS)
+	in.Runtime = runtime.IDOf(in.runtime(info, ""))
+	return in
+}
+
+func (in Install) runtime(info components.GameInfo, home string) runtime.Install {
+	return runtime.Install{Store: in.Store, Dir: in.Dir, AppID: info.SteamAppID(), Platform: in.Platform, Home: home}
 }
 
 // Launcher ids, each the source of one or more stores' installs.
@@ -35,19 +69,19 @@ const (
 // roots are the folders the user added for a launcher.
 func roots(s settings.Settings, launcher string) []string { return s.LauncherRoots[launcher] }
 
-func collect(g Game, home string, s settings.Settings) []FoundInstall {
+func collect(g Game, home string, s settings.Settings) []Install {
 	info, ok := catalogGame(g.ID())
 	if !ok {
 		return nil
 	}
-	var all []FoundInstall
+	var all []Install
 	for _, in := range gamestore.Discover(home, s.LauncherRoots, info) {
-		all = append(all, FoundInstall{Store: in.Store, Dir: in.Dir})
+		all = append(all, newInstall(info, in.Store, in.Dir, OriginDiscovered))
 	}
 	return all
 }
 
-func pick(all []FoundInstall, override, preferred string, g Game) (dir, store string) {
+func pick(all []Install, override, preferred string, g Game) (dir, store string) {
 	if override != "" && g.ValidInstall(override) == nil {
 		for _, in := range all {
 			if in.Dir == override {
@@ -76,7 +110,7 @@ func pick(all []FoundInstall, override, preferred string, g Game) (dir, store st
 }
 
 // Resolve finds the selected install for id.
-func Resolve(home string, s settings.Settings, id string) (dir, store string, all []FoundInstall, err error) {
+func Resolve(home string, s settings.Settings, id string) (dir, store string, all []Install, err error) {
 	g := Find(id)
 	if g == nil {
 		return "", "", nil, fmt.Errorf("unknown game %q", id)
@@ -84,4 +118,33 @@ func Resolve(home string, s settings.Settings, id string) (dir, store string, al
 	all = collect(g, home, s)
 	dir, store = pick(all, s.GameFolders[id], s.GameStores[id], g)
 	return dir, store, all, nil
+}
+
+// ResolveInstall returns the install with id pin, or the selected install when pin is empty. A game that is not
+// installed yields an Install with no folder.
+func ResolveInstall(home string, s settings.Settings, id, pin string) (Install, error) {
+	dir, store, all, err := Resolve(home, s, id)
+	if err != nil {
+		return Install{}, err
+	}
+	if pin != "" {
+		for _, in := range all {
+			if in.ID == pin {
+				return in, nil
+			}
+		}
+		return Install{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q of %s is no longer found", pin, id))
+	}
+	for _, in := range all {
+		if in.Dir == dir {
+			return in, nil
+		}
+	}
+	info, _ := catalogGame(id)
+	if dir == "" {
+		in := newInstall(info, "", "", OriginFolder)
+		in.ID = ""
+		return in, nil
+	}
+	return newInstall(info, store, dir, OriginFolder), nil
 }

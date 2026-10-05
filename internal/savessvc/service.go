@@ -95,11 +95,7 @@ func NewService(home string, profiles *profile.Store, store *settings.Store, cli
 		if !game.HasSaves(id) {
 			continue
 		}
-		_, selected, _, err := game.Resolve(home, store.Get(), id)
-		if err != nil {
-			return nil, err
-		}
-		savesDir, err := game.SavesDir(id, selected, home)
+		savesDir, err := game.SavesDir(home, store.Get(), id, "")
 		if err != nil {
 			return nil, err
 		}

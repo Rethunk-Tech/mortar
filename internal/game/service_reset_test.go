@@ -49,7 +49,7 @@ func TestListComesFromTheCatalog(t *testing.T) {
 		t.Fatalf("List = %+v, %v", list, err)
 	}
 	sdv, lc := list[0], list[1]
-	if sdv.ID != "stardew" || !sdv.Available || sdv.LoaderID != "smapi" || strings.Join(sdv.Sources, ",") != "nexus,github" || sdv.AppID != "413150" {
+	if sdv.ID != "stardew" || !sdv.Available || sdv.LoaderID != "smapi" || strings.Join(sdv.Sources, ",") != "nexus,github,moddrop" || sdv.AppID != "413150" {
 		t.Fatalf("stardew row = %+v", sdv)
 	}
 	if lc.ID != "lethal-company" || lc.Available || lc.LoaderID != "bepinex5" || lc.AppID != "1966720" {

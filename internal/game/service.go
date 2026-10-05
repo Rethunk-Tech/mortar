@@ -27,7 +27,7 @@ type GameInfo struct {
 	InstallDir string            `json:"installDir"`
 	ArtURL     string            `json:"artUrl"`
 	Store      string            `json:"store"`
-	Installs   []FoundInstall    `json:"installs"`
+	Installs   []Install         `json:"installs"`
 }
 
 // SteamAccess is whether Flatpak Steam can read Mortar's data folder.
@@ -99,7 +99,7 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 	catalog := Catalog()
 	out := make([]GameInfo, 0, len(catalog))
 	for _, c := range catalog {
-		info := GameInfo{ID: c.ID, Name: c.Name, AppID: c.SteamAppID(), Installs: []FoundInstall{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}}
+		info := GameInfo{ID: c.ID, Name: c.Name, AppID: c.SteamAppID(), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
 		for i, src := range c.Sources {
 			info.Sources[i] = src.ID
