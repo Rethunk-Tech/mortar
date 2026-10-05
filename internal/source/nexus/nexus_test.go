@@ -60,3 +60,25 @@ func TestSearchNeedsTheGameKey(t *testing.T) {
 		t.Fatal("want an error without a Nexus key")
 	}
 }
+
+func TestSearchTextCannotEscapeItsStringLiteral(t *testing.T) {
+	t.Parallel()
+	var gotBody string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, _ := io.ReadAll(r.Body)
+		gotBody = string(raw)
+		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":0,"nodes":[]}}}`))
+	}))
+	t.Cleanup(srv.Close)
+	_, err := Driver{URL: srv.URL}.Search(context.Background(), source.Query{Key: "stardewvalley", Text: "a\" }) { x } #\\\x01", Page: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var body searchBody
+	if err := json.Unmarshal([]byte(gotBody), &body); err != nil {
+		t.Fatal(err)
+	}
+	if want := `op:WILDCARD`; !strings.Contains(body.Query, `{value:"a\" }) { x } #\\\u0001", `+want) {
+		t.Fatalf("text not carried as one escaped literal: %s", body.Query)
+	}
+}

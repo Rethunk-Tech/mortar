@@ -84,10 +84,18 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		client = http.DefaultClient
 	}
 	offset := (q.Page - source.FirstPage) * source.PageSize
-	escaped := strings.ReplaceAll(q.Text, `"`, `\"`)
+	// A JSON string is a valid GraphQL string, so no input can end the literal or inject a field.
+	key, err := json.Marshal(q.Key)
+	if err != nil {
+		return source.Page{}, err
+	}
+	text, err := json.Marshal(q.Text)
+	if err != nil {
+		return source.Page{}, err
+	}
 	query := fmt.Sprintf(
-		`{ mods(filter:{gameDomainName:[{value:%q}], name:[{value:%q, op:WILDCARD}]}, sort:[{endorsements:{direction:DESC}}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent } } }`,
-		q.Key, escaped, source.PageSize, offset,
+		`{ mods(filter:{gameDomainName:[{value:%s}], name:[{value:%s, op:WILDCARD}]}, sort:[{endorsements:{direction:DESC}}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent } } }`,
+		key, text, source.PageSize, offset,
 	)
 	raw, err := json.Marshal(searchBody{Query: query})
 	if err != nil {
