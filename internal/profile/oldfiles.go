@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
@@ -27,8 +29,8 @@ type heldFile struct{ uniqueID, rel, abs string }
 
 // OldFile is one file an update set aside, by its mod and its path in that mod's folder.
 type OldFile struct {
-	UniqueID string `json:"uniqueId"`
-	Path     string `json:"path"`
+	ID   mod.ID `json:"id"`
+	Path string `json:"path"`
 }
 
 // OldFiles is what one entry's last update set aside, waiting for Keep or Delete.
@@ -82,12 +84,12 @@ func (s *Store) PendingOldFiles(game, id string) ([]OldFiles, error) {
 				return nil, err
 			}
 			for rel := range files {
-				set.Files = append(set.Files, OldFile{UniqueID: m.Name(), Path: filepath.ToSlash(rel)})
+				set.Files = append(set.Files, OldFile{ID: mod.SMAPI(m.Name()), Path: filepath.ToSlash(rel)})
 			}
 		}
 		slices.SortFunc(set.Files, func(a, b OldFile) int {
-			if a.UniqueID != b.UniqueID {
-				return cmp.Compare(a.UniqueID, b.UniqueID)
+			if a.ID != b.ID {
+				return cmp.Compare(a.ID, b.ID)
 			}
 			return cmp.Compare(a.Path, b.Path)
 		})
@@ -120,7 +122,7 @@ func (s *Store) ResolveOldFiles(game, id, key string, keep bool) error {
 			return err
 		}
 		for _, m := range mods {
-			dest, err := s.modFolderLocked(game, id, key, m.Name())
+			dest, err := s.modFolderLocked(game, id, key, mod.SMAPI(m.Name()))
 			if err != nil {
 				return err
 			}

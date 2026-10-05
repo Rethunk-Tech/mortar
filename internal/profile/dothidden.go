@@ -10,6 +10,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -21,11 +23,11 @@ import (
 type HiddenMod struct {
 	Key string `json:"key"`
 	// Folder is the mod's folder relative to the entry folder, with its dots, slash-separated.
-	Folder   string `json:"folder"`
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Author   string `json:"author"`
-	Version  string `json:"version"`
+	Folder  string `json:"folder"`
+	ID      mod.ID `json:"id"`
+	Name    string `json:"name"`
+	Author  string `json:"author"`
+	Version string `json:"version"`
 }
 
 // DotHiddenMods lists the dot-hidden mods in the profile's user entries, or only in the entry with the given key
@@ -149,7 +151,7 @@ func (s *Store) UnhideMod(game, id, key, folder string) (Profile, error) {
 			return err
 		}
 		for _, other := range p.Entries {
-			if slices.ContainsFunc(other.Mods, func(m EntryMod) bool { return SameID(m.UniqueID, h.UniqueID) }) {
+			if slices.ContainsFunc(other.Mods, func(m Component) bool { return mod.Equal(m.ID, h.ID) }) {
 				return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is already loaded from another folder", h.Name))
 			}
 		}
@@ -206,7 +208,7 @@ func hiddenUnder(root string, ours map[string]bool) ([]HiddenMod, error) {
 		b, err := fsx.ReadFile(filepath.Join(dir, manifest.FileName))
 		if err == nil {
 			if m, perr := manifest.Parse(b); perr == nil && hidden {
-				out = append(out, HiddenMod{Folder: rel, UniqueID: m.UniqueID, Name: m.Name, Author: m.Author, Version: m.Version})
+				out = append(out, HiddenMod{Folder: rel, ID: m.ModID(), Name: m.Name, Author: m.Author, Version: m.Version})
 			}
 			return nil
 		}

@@ -14,7 +14,7 @@ func (s *Service) LoadOrder(game, id string) ([]loadorder.Row, error) {
 			continue
 		}
 		in = append(in, loadorder.Mod{
-			UniqueID:       m.UniqueID,
+			ID:             m.ID,
 			Name:           m.Name,
 			Needs:          m.Needs,
 			Optional:       m.Optional,

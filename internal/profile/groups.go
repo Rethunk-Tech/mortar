@@ -171,7 +171,7 @@ func (s *Store) SetGroupEnabled(game, id, name string, on bool) (Profile, error)
 				continue
 			}
 			for _, m := range e.Mods {
-				if err := applyEnabled(p, dir, key, m.UniqueID, on); err != nil {
+				if err := applyEnabled(p, dir, key, m.ID, on); err != nil {
 					return err
 				}
 			}

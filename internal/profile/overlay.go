@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -183,7 +184,7 @@ func (s *Store) overlaySource(game string, o Entry) (string, []string, error) {
 // mapOverlay works out which folder of an optional file (files, by slash path) goes where inside its base (the base
 // entry's laid-out files, and the folders of its mods). It reports false when no layout fits well enough to choose
 // without asking.
-func mapOverlay(files, base []string, mods []EntryMod) (from, to string, ok bool) {
+func mapOverlay(files, base []string, mods []Component) (from, to string, ok bool) {
 	if len(files) == 0 {
 		return "", "", false
 	}
@@ -467,7 +468,7 @@ func (s *Store) placeOverlayLocked(game, id, key string, source Source) (Profile
 			return s.relayBase(game, p, dir, base.Key, was)
 		}
 		p.Entries = append(p.Entries, Entry{
-			Key: key, Source: place, Mods: []EntryMod{}, Disabled: []string{}, Added: time.Now().UTC(),
+			Key: key, Source: place, Mods: []Component{}, Disabled: []mod.ID{}, Added: time.Now().UTC(),
 			OverlayOf: base.Key, OverlayFrom: from, OverlayTo: to, OverlayOff: off,
 		})
 		if !off {

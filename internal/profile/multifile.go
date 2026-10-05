@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -159,16 +160,16 @@ func extraSource(e Entry, extraKey string) Source {
 	return src
 }
 
-func extraDisabled(e Entry, extraKey string) []string {
+func extraDisabled(e Entry, extraKey string) []mod.ID {
 	prefix := filepath.ToSlash(extraKey) + "/"
-	var ids []string
+	var ids []mod.ID
 	for _, m := range e.Mods {
 		folder := filepath.ToSlash(m.Folder)
 		if folder != extraKey && !strings.HasPrefix(folder, prefix) {
 			continue
 		}
-		if !e.Enabled(m.UniqueID) {
-			ids = append(ids, m.UniqueID)
+		if !e.Enabled(m.ID) {
+			ids = append(ids, m.ID)
 		}
 	}
 	return ids
@@ -240,7 +241,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 		if !strings.HasPrefix(oldFolder, oldPrefix) {
 			continue
 		}
-		if !slices.ContainsFunc(found, func(m manifest.Mod) bool { return SameID(m.UniqueID, om.UniqueID) }) {
+		if !slices.ContainsFunc(found, func(m manifest.Mod) bool { return mod.Equal(m.ModID(), om.ID) }) {
 			continue
 		}
 		rel := strings.TrimPrefix(oldFolder, oldPrefix)
@@ -248,7 +249,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 		if !exists(cur) {
 			continue
 		}
-		configOnly := deleteOldVersion(found, om.UniqueID)
+		configOnly := deleteOldVersion(found, om.ID)
 		err = carryOverWalk(cur, filepath.Join(extraSrc, filepath.FromSlash(rel)), filepath.Join(scratch, filepath.FromSlash(rel)), configOnly, nil)
 		if err != nil {
 			return err
@@ -320,7 +321,7 @@ func (s *Store) refreshEntryMods(e *Entry, entryDir string) error {
 	e.Mods = entryMods(found)
 	kept := e.Disabled[:0]
 	for _, id := range e.Disabled {
-		if slices.ContainsFunc(e.Mods, func(m EntryMod) bool { return SameID(m.UniqueID, id) }) {
+		if slices.ContainsFunc(e.Mods, func(m Component) bool { return mod.Equal(m.ID, id) }) {
 			kept = append(kept, id)
 		}
 	}
@@ -331,11 +332,11 @@ func (s *Store) refreshEntryMods(e *Entry, entryDir string) error {
 	}
 	if !startEnabled {
 		for _, m := range e.Mods {
-			if slices.ContainsFunc(prev, func(old EntryMod) bool { return SameID(old.UniqueID, m.UniqueID) }) {
+			if slices.ContainsFunc(prev, func(old Component) bool { return mod.Equal(old.ID, m.ID) }) {
 				continue
 			}
-			if e.Enabled(m.UniqueID) {
-				e.Disabled = append(e.Disabled, m.UniqueID)
+			if e.Enabled(m.ID) {
+				e.Disabled = append(e.Disabled, m.ID)
 			}
 		}
 	}

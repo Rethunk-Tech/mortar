@@ -5,6 +5,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // Installed is one mod of a profile with its manifest as it stands in mods/.
@@ -18,7 +19,7 @@ type Installed struct {
 	SkipSources   []string
 	IgnoreUpdates bool
 	UpdateChannel string
-	LoadAfter     []string
+	LoadAfter     []mod.ID
 	manifest.Manifest
 }
 
@@ -38,7 +39,7 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 			if err != nil {
 				return nil, err
 			}
-			enabled := e.Enabled(m.UniqueID)
+			enabled := e.Enabled(m.ID)
 			folder := plain
 			if !enabled {
 				folder = dotted

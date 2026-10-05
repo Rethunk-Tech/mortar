@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -114,7 +115,7 @@ func (s *Service) Revert(game, id, eventID string) (Profile, error) {
 }
 
 // ProfilesWithMod lists the profiles of game whose profile.json names uniqueID.
-func (s *Service) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error) {
+func (s *Service) ProfilesWithMod(game string, uniqueID mod.ID) ([]ModInProfile, error) {
 	return s.store.ProfilesWithMod(game, uniqueID)
 }
 
@@ -236,7 +237,7 @@ func (s *Service) RestoreEntries(game, id string, entries []Entry) (Profile, err
 }
 
 // SetModEnabled switches a mod of the entry key on or off.
-func (s *Service) SetModEnabled(game, id, key, uniqueID string, enabled bool) (EnableResult, error) {
+func (s *Service) SetModEnabled(game, id, key string, uniqueID mod.ID, enabled bool) (EnableResult, error) {
 	p, also, err := s.store.enableMod(game, id, key, uniqueID, enabled)
 	return EnableResult{Profile: p, AlsoEnabled: also}, err
 }
@@ -260,7 +261,7 @@ func (s *Service) Covers(game, id string) ([]string, error) { return s.store.Cov
 func (s *Service) Duplicate(game, id string) (Profile, error) { return s.store.Duplicate(game, id) }
 
 // CopyMods copies selected mods from one profile into another from the store, with no download.
-func (s *Service) CopyMods(game, fromID, toID string, uniqueIDs []string) (Profile, error) {
+func (s *Service) CopyMods(game, fromID, toID string, uniqueIDs []mod.ID) (Profile, error) {
 	return s.store.CopyMods(game, fromID, toID, uniqueIDs)
 }
 
@@ -312,7 +313,7 @@ func (s *Service) Mods(game, id string) ([]Mod, error) {
 }
 
 // ShowFiles opens the folder of the mod in entry key in the system file manager.
-func (s *Service) ShowFiles(game, id, key, uniqueID string) error {
+func (s *Service) ShowFiles(game, id, key string, uniqueID mod.ID) error {
 	dir, err := s.store.ModFolder(game, id, key, uniqueID)
 	if err != nil {
 		return err
@@ -321,7 +322,7 @@ func (s *Service) ShowFiles(game, id, key, uniqueID string) error {
 }
 
 // OpenConfig opens the mod's config.json with the default app.
-func (s *Service) OpenConfig(game, id, key, uniqueID string) error {
+func (s *Service) OpenConfig(game, id, key string, uniqueID mod.ID) error {
 	path, err := s.store.ConfigPath(game, id, key, uniqueID)
 	if err != nil {
 		return err
@@ -330,22 +331,22 @@ func (s *Service) OpenConfig(game, id, key, uniqueID string) error {
 }
 
 // ModState reads the mod's rollback target and the state of its config.json.
-func (s *Service) ModState(game, id, key, uniqueID string) (ModState, error) {
+func (s *Service) ModState(game, id, key string, uniqueID mod.ID) (ModState, error) {
 	return s.store.ModState(game, id, key, uniqueID)
 }
 
 // ResetConfig deletes the mod's config.json so the mod regenerates it.
-func (s *Service) ResetConfig(game, id, key, uniqueID string) error {
+func (s *Service) ResetConfig(game, id, key string, uniqueID mod.ID) error {
 	return s.store.ResetConfig(game, id, key, uniqueID)
 }
 
 // ReadConfig returns the mod's config.json text.
-func (s *Service) ReadConfig(game, id, key, uniqueID string) (string, error) {
+func (s *Service) ReadConfig(game, id, key string, uniqueID mod.ID) (string, error) {
 	return s.store.ReadConfig(game, id, key, uniqueID)
 }
 
 // WriteConfig replaces the mod's config.json atomically.
-func (s *Service) WriteConfig(game, id, key, uniqueID, contents string) error {
+func (s *Service) WriteConfig(game, id, key string, uniqueID mod.ID, contents string) error {
 	return s.store.WriteConfig(game, id, key, uniqueID, contents)
 }
 

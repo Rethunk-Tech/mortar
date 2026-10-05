@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -78,7 +79,7 @@ func (s *Store) InstallNexus(game, id, path string, source Source) (InstallResul
 
 // StageGitHub unpacks the archive at path into the store under the key of its GitHub asset and returns the key with
 // the UniqueIDs of the mods it holds, so the source can be checked before anything lands in a profile.
-func (s *Store) StageGitHub(game string, source Source, path string) (key string, uniqueIDs []string, err error) {
+func (s *Store) StageGitHub(game string, source Source, path string) (key string, uniqueIDs []mod.ID, err error) {
 	owner, repo, _ := strings.Cut(source.Repo, "/")
 	key = github.Key(owner, repo, source.Tag, source.Asset)
 	if err := s.items.AddArchiveKey(game, key, path); err != nil {
@@ -93,7 +94,7 @@ func (s *Store) StageGitHub(game string, source Source, path string) (key string
 		return "", nil, installError(err)
 	}
 	for _, m := range found {
-		uniqueIDs = append(uniqueIDs, m.UniqueID)
+		uniqueIDs = append(uniqueIDs, m.ModID())
 	}
 	return key, uniqueIDs, nil
 }
@@ -202,7 +203,7 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 		if err != nil {
 			return Profile{}, true, false, err
 		}
-		var neu []EntryMod
+		var neu []Component
 		for _, e := range p.Entries {
 			if e.Key == key {
 				neu = e.Mods
@@ -218,16 +219,16 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	return Profile{}, false, false, &SpansEntriesError{Labels: labels}
 }
 
-func modsVersionChanged(old, neu []EntryMod) bool {
+func modsVersionChanged(old, neu []Component) bool {
 	prev := make(map[string]string, len(old))
 	for _, m := range old {
-		prev[strings.ToLower(m.UniqueID)] = m.Version
+		prev[m.ID.Fold()] = m.Version
 	}
 	for _, m := range neu {
-		if prev[strings.ToLower(m.UniqueID)] != m.Version {
+		if prev[m.ID.Fold()] != m.Version {
 			return true
 		}
-		delete(prev, strings.ToLower(m.UniqueID))
+		delete(prev, m.ID.Fold())
 	}
 	return len(prev) > 0
 }
@@ -249,8 +250,8 @@ func (s *Store) holding(game, id, key string, choices map[string]map[string][]st
 		if e.Key == key {
 			return nil, &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
-		if slices.ContainsFunc(e.Mods, func(m EntryMod) bool {
-			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return SameID(f.UniqueID, m.UniqueID) })
+		if slices.ContainsFunc(e.Mods, func(m Component) bool {
+			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
 		}) {
 			held = append(held, e)
 		}

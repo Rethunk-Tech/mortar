@@ -79,7 +79,7 @@ func pickHistoryItem(items []HistoryItem, want string) (HistoryItem, error) {
 
 func entriesFor(before []Entry, hit HistoryItem) []Entry {
 	for _, e := range before {
-		if entryIdentity(e) == hit.Mod || e.Key == hit.Key {
+		if entryIdentity(e) == hit.Mod.Fold() || e.Key == hit.Key {
 			return append([]Entry{e}, overlaysOf(before, e.Key)...)
 		}
 	}

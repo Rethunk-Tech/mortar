@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -26,7 +28,7 @@ const configFileName = "config.json"
 
 // GameModPreview is one row PreviewGameMods shows: a mod to copy, or a skipped or failed folder.
 type GameModPreview struct {
-	UniqueID   string `json:"uniqueID,omitempty"`
+	ID         mod.ID `json:"id,omitempty"`
 	Name       string `json:"name"`
 	Version    string `json:"version,omitempty"`
 	Source     string `json:"source,omitempty"`
@@ -62,7 +64,7 @@ type GameModsResult struct {
 // ExternalMod is one folder selected from an external mod manager's profile.
 type ExternalMod struct {
 	SourcePath string `json:"sourcePath"`
-	UniqueID   string `json:"uniqueID"`
+	ID         mod.ID `json:"id"`
 	Enabled    bool   `json:"enabled"`
 }
 
@@ -166,7 +168,7 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 	}
 	allBundled := true
 	for _, mod := range mods {
-		if !manifest.LoaderManaged(mod.UniqueID) {
+		if !manifest.LoaderManaged(mod.ModID()) {
 			allBundled = false
 			break
 		}
@@ -183,16 +185,16 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 	}, true
 }
 
-func modVersion(f gameModFolder, id string) string {
+func modVersion(f gameModFolder, id mod.ID) string {
 	for _, m := range f.mods {
-		if SameID(m.UniqueID, id) {
+		if mod.Equal(m.ModID(), id) {
 			return m.Version
 		}
 	}
 	return ""
 }
 
-func preferFolder(a, b gameModFolder, id string) bool {
+func preferFolder(a, b gameModFolder, id mod.ID) bool {
 	if a.disabled != b.disabled {
 		return !a.disabled
 	}
@@ -210,9 +212,9 @@ func resolveDuplicates(slots []gameModSlot) {
 			continue
 		}
 		for _, m := range s.folder.mods {
-			id := strings.ToLower(m.UniqueID)
+			id := m.ModID().Fold()
 			j, ok := winner[id]
-			if !ok || preferFolder(s.folder, slots[j].folder, m.UniqueID) {
+			if !ok || preferFolder(s.folder, slots[j].folder, m.ModID()) {
 				winner[id] = i
 			}
 		}
@@ -228,7 +230,7 @@ func resolveDuplicates(slots []gameModSlot) {
 			continue
 		}
 		for _, m := range s.folder.mods {
-			id := strings.ToLower(m.UniqueID)
+			id := m.ModID().Fold()
 			w := winner[id]
 			if w == i || seen[i] {
 				continue
@@ -275,10 +277,10 @@ func scanGameMods(modsDir string) ([]gameModSlot, error) {
 func previewMod(f gameModFolder, m manifest.Mod) GameModPreview {
 	name := m.Name
 	if name == "" {
-		name = m.UniqueID
+		name = m.ModID().Local()
 	}
 	return GameModPreview{
-		UniqueID: m.UniqueID, Name: name, Version: m.Version, Source: sourceLabel(f.source),
+		ID: m.ModID(), Name: name, Version: m.Version, Source: sourceLabel(f.source),
 		NexusModID: f.source.ModID, Status: outcomeImported, Disabled: f.disabled, Folder: f.dir,
 	}
 }
@@ -350,13 +352,13 @@ func (s *Store) importFolder(game, id string, f gameModFolder) (string, error) {
 	}
 	if f.disabled {
 		for _, m := range f.mods {
-			if _, err := s.SetModEnabled(game, id, key, m.UniqueID, false); err != nil {
+			if _, err := s.SetModEnabled(game, id, key, m.ModID(), false); err != nil {
 				return "", err
 			}
 		}
 	}
 	for _, m := range f.mods {
-		dest, err := s.ModFolder(game, id, key, m.UniqueID)
+		dest, err := s.ModFolder(game, id, key, m.ModID())
 		if err != nil {
 			return "", err
 		}
@@ -445,7 +447,7 @@ func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) error {
 			continue
 		}
 		paths[filepath.Clean(mod.SourcePath)] = true
-		enabled[strings.ToLower(mod.UniqueID)] = mod.Enabled
+		enabled[mod.ID.Fold()] = mod.Enabled
 	}
 	var slots []gameModSlot
 	for path := range paths {
@@ -465,8 +467,8 @@ func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) error {
 			return err
 		}
 		for _, mod := range slot.folder.mods {
-			if want, ok := enabled[strings.ToLower(mod.UniqueID)]; ok {
-				if _, err := s.SetModEnabled(game, id, key, mod.UniqueID, want); err != nil {
+			if want, ok := enabled[mod.ModID().Fold()]; ok {
+				if _, err := s.SetModEnabled(game, id, key, mod.ModID(), want); err != nil {
 					return err
 				}
 			}

@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -25,26 +27,26 @@ const tempPrefix = ".tmp_"
 // Mod is one mod as the UI lists it, flattened across entries.
 type Mod struct {
 	Key      string   `json:"key"`
-	UniqueID string   `json:"uniqueId"`
+	ID       mod.ID   `json:"id"`
 	Name     string   `json:"name"`
 	Author   string   `json:"author"`
 	Version  string   `json:"version"`
 	Enabled  bool     `json:"enabled"`
-	Siblings []string `json:"siblings"`
+	Siblings []mod.ID `json:"siblings"`
 	// Picture and Endorsements come from the mod's Nexus page and are empty for other sources.
 	Picture        string   `json:"picture"`
 	Endorsements   int      `json:"endorsements"`
-	Needs          []string `json:"needs,omitempty"`
-	Optional       []string `json:"optional,omitempty"`
-	ContentPackFor string   `json:"contentPackFor,omitempty"`
+	Needs          []mod.ID `json:"needs,omitempty"`
+	Optional       []mod.ID `json:"optional,omitempty"`
+	ContentPackFor mod.ID   `json:"contentPackFor,omitempty"`
 	// UpdateCautionMessage comes from the installed manifest.json (Stardrop update hint).
 	UpdateCautionMessage string `json:"updateCautionMessage,omitempty"`
 }
 
-// EnableRef names one mod to switch, matching SetModEnabled's key and UniqueID.
+// EnableRef names one mod to switch, matching SetModEnabled's key and mod id.
 type EnableRef struct {
-	Key      string `json:"key"`
-	UniqueID string `json:"uniqueId"`
+	Key string `json:"key"`
+	ID  mod.ID `json:"id"`
 }
 
 // EnableResult is a profile after switching mods, plus required dependencies turned on with them.
@@ -58,11 +60,8 @@ func exists(p string) bool {
 	return err == nil
 }
 
-// SameID reports whether two mod unique IDs are the same; IDs compare case-insensitively and ignore stray spaces.
-func SameID(a, b string) bool { return manifest.SameID(a, b) }
-
-func hasID(ids []string, id string) bool {
-	return slices.ContainsFunc(ids, func(x string) bool { return SameID(x, id) })
+func hasID(ids []mod.ID, id mod.ID) bool {
+	return slices.ContainsFunc(ids, func(x mod.ID) bool { return mod.Equal(x, id) })
 }
 
 func writeProfile(dir string, p Profile) error {
@@ -110,7 +109,7 @@ func flip(plain, dotted string, enabled bool) error {
 
 // Enabled reports whether the entry's mod with this unique ID is switched on. A mod without an ID cannot be
 // switched off on its own, so it always counts as on.
-func (e Entry) Enabled(uniqueID string) bool {
+func (e Entry) Enabled(uniqueID mod.ID) bool {
 	return uniqueID == "" || !hasID(e.Disabled, uniqueID)
 }
 
@@ -122,7 +121,7 @@ func materialize(tmp string, e Entry) (string, error) {
 	}
 	final := e.Key
 	for _, m := range e.Mods {
-		if e.Enabled(m.UniqueID) {
+		if e.Enabled(m.ID) {
 			continue
 		}
 		if m.Folder == "." {
@@ -169,22 +168,22 @@ func (s *Store) place(game, modsDir string, e Entry) error {
 	return nil
 }
 
-func entryMods(found []manifest.Mod) []EntryMod {
-	out := make([]EntryMod, len(found))
+func entryMods(found []manifest.Mod) []Component {
+	out := make([]Component, len(found))
 	for i, m := range found {
-		needs := make([]string, 0, len(m.Dependencies))
-		optional := make([]string, 0)
+		needs := make([]mod.ID, 0, len(m.Dependencies))
+		optional := make([]mod.ID, 0)
 		for _, d := range m.Dependencies {
-			if d.UniqueID != "" {
-				needs = append(needs, d.UniqueID)
+			if d.ModID() != "" {
+				needs = append(needs, d.ModID())
 				if !d.Required {
-					optional = append(optional, d.UniqueID)
+					optional = append(optional, d.ModID())
 				}
 			}
 		}
-		out[i] = EntryMod{
-			UniqueID: m.UniqueID, Version: m.Version, Name: m.Name, Author: m.Author, Folder: m.Folder,
-			Needs: needs, Optional: optional, ContentPackFor: m.ContentPackFor,
+		out[i] = Component{
+			ID: m.ModID(), Version: m.Version, Name: m.Name, Author: m.Author, Folder: m.Folder,
+			Needs: needs, Optional: optional, ContentPackFor: m.ContentPackForID(),
 		}
 	}
 	return out
@@ -227,7 +226,7 @@ func (s Source) Bundled() bool { return s.Kind == SourceSMAPI || s.Kind == Sourc
 
 // addTo copies the store item key into the profile's mods/ and records its entry, switching off the
 // mods in disabled that it holds. placed is the new folder, for the caller to remove if a later step fails.
-func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, disabled []string) (placed string, err error) {
+func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, disabled []mod.ID) (placed string, err error) {
 	for _, e := range p.Entries {
 		if e.Key == key {
 			return "", &DuplicateError{Key: key, Label: entryLabel(e)}
@@ -247,7 +246,7 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 	if len(found) == 0 {
 		return "", &NoModError{Key: key}
 	}
-	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []string{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap())}
+	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []mod.ID{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap())}
 	if source.disabled != nil {
 		disabled = append(disabled, source.disabled.ids...)
 	}
@@ -256,8 +255,8 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 		startEnabled = s.NewModsEnabled()
 	}
 	for _, m := range e.Mods {
-		if hasID(disabled, m.UniqueID) || !startEnabled {
-			e.Disabled = append(e.Disabled, m.UniqueID)
+		if hasID(disabled, m.ID) || !startEnabled {
+			e.Disabled = append(e.Disabled, m.ID)
 		}
 	}
 	modsDir := filepath.Join(dir, "mods")
@@ -335,7 +334,7 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 		}
 		s.historyQuietIDs[prof.ID]++
 		_, err := s.updateLocked(game, prof.ID, func(p *Profile, dir string) (err error) {
-			var disabled []string
+			var disabled []mod.ID
 			for _, e := range slices.Backward(slices.Clone(p.Entries)) {
 				if e.Source.Kind != b.Source.Kind || e.Key == b.Key {
 					continue
@@ -510,7 +509,7 @@ func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error
 					continue
 				}
 				for _, mod := range m.Mods {
-					if err := applyEnabled(p, dir, want.Key, mod.UniqueID, !hasID(want.Disabled, mod.UniqueID)); err != nil {
+					if err := applyEnabled(p, dir, want.Key, mod.ID, !hasID(want.Disabled, mod.ID)); err != nil {
 						return err
 					}
 				}
@@ -540,13 +539,13 @@ func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
 	return p, nil
 }
 
-func applyEnabled(p *Profile, dir, key, uniqueID string, enabled bool) error {
+func applyEnabled(p *Profile, dir, key string, uniqueID mod.ID, enabled bool) error {
 	for ei := range p.Entries {
 		e := &p.Entries[ei]
 		if key != "" && e.Key != key {
 			continue
 		}
-		mi := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return SameID(m.UniqueID, uniqueID) })
+		mi := slices.IndexFunc(e.Mods, func(m Component) bool { return mod.Equal(m.ID, uniqueID) })
 		if mi < 0 {
 			continue
 		}
@@ -557,9 +556,9 @@ func applyEnabled(p *Profile, dir, key, uniqueID string, enabled bool) error {
 		if err := flip(plain, dotted, enabled); err != nil {
 			return err
 		}
-		e.Disabled = slices.DeleteFunc(e.Disabled, func(x string) bool { return SameID(x, uniqueID) })
+		e.Disabled = slices.DeleteFunc(e.Disabled, func(x mod.ID) bool { return mod.Equal(x, uniqueID) })
 		if !enabled {
-			e.Disabled = append(e.Disabled, e.Mods[mi].UniqueID)
+			e.Disabled = append(e.Disabled, e.Mods[mi].ID)
 		}
 		return nil
 	}
@@ -568,12 +567,12 @@ func applyEnabled(p *Profile, dir, key, uniqueID string, enabled bool) error {
 
 // SetModEnabled switches a mod on or off by renaming its folder with or without a leading dot. key names the
 // entry holding it, which tells apart two copies of one UniqueID; an empty key means the first entry that has it.
-func (s *Store) SetModEnabled(game, id, key, uniqueID string, enabled bool) (Profile, error) {
+func (s *Store) SetModEnabled(game, id, key string, uniqueID mod.ID, enabled bool) (Profile, error) {
 	p, _, err := s.enableMod(game, id, key, uniqueID, enabled)
 	return p, err
 }
 
-func (s *Store) enableMod(game, id, key, uniqueID string, enabled bool) (Profile, []string, error) {
+func (s *Store) enableMod(game, id, key string, uniqueID mod.ID, enabled bool) (Profile, []string, error) {
 	var also []string
 	overlay := false
 	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
@@ -612,11 +611,11 @@ func (s *Store) enableMods(game, id string, mods []EnableRef, enabled bool) (Pro
 				}
 				continue
 			}
-			if err := applyEnabled(p, dir, m.Key, m.UniqueID, enabled); err != nil {
+			if err := applyEnabled(p, dir, m.Key, m.ID, enabled); err != nil {
 				return err
 			}
 			if enabled && s.autoEnableRequirements(game) {
-				also = append(also, enableRequired(p, dir, m.UniqueID)...)
+				also = append(also, enableRequired(p, dir, m.ID)...)
 			}
 		}
 		return nil
@@ -777,16 +776,16 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			continue
 		}
 		for _, m := range e.Mods {
-			sib := []string{}
+			sib := []mod.ID{}
 			for _, o := range e.Mods {
-				if o.UniqueID != m.UniqueID {
-					sib = append(sib, o.UniqueID)
+				if o.ID != m.ID {
+					sib = append(sib, o.ID)
 				}
 			}
 			caution := ""
 			if plain, dotted, err := ModPaths(modsDir, e.Key, m.Folder); err == nil {
 				folder := plain
-				if !e.Enabled(m.UniqueID) {
+				if !e.Enabled(m.ID) {
 					folder = dotted
 				}
 				if b, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName)); err == nil {
@@ -796,8 +795,8 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 				}
 			}
 			out = append(out, Mod{
-				Key: e.Key, UniqueID: m.UniqueID, Name: m.Name, Author: m.Author, Version: m.Version,
-				Enabled: e.Enabled(m.UniqueID), Siblings: sib,
+				Key: e.Key, ID: m.ID, Name: m.Name, Author: m.Author, Version: m.Version,
+				Enabled: e.Enabled(m.ID), Siblings: sib,
 				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount,
 				Needs: m.Needs, Optional: m.Optional, ContentPackFor: m.ContentPackFor,
 				UpdateCautionMessage: caution,
@@ -876,13 +875,13 @@ func (s *Store) tidied(what, profileName, folder string) {
 
 // ModFolder returns the mod's folder inside the profile, under whichever name (plain or dot-prefixed) it has now.
 // key names the entry holding it, which tells apart two copies of one UniqueID; an empty key means the first entry that has it.
-func (s *Store) ModFolder(game, id, key, uniqueID string) (string, error) {
+func (s *Store) ModFolder(game, id, key string, uniqueID mod.ID) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.modFolderLocked(game, id, key, uniqueID)
 }
 
-func (s *Store) modFolderLocked(game, id, key, uniqueID string) (string, error) {
+func (s *Store) modFolderLocked(game, id, key string, uniqueID mod.ID) (string, error) {
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return "", err
@@ -892,7 +891,7 @@ func (s *Store) modFolderLocked(game, id, key, uniqueID string) (string, error) 
 			continue
 		}
 		for _, m := range e.Mods {
-			if !SameID(m.UniqueID, uniqueID) {
+			if !mod.Equal(m.ID, uniqueID) {
 				continue
 			}
 			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, m.Folder)

@@ -1,18 +1,20 @@
 package profile
 
+import "github.com/Rethunk-Tech/mortar/internal/mod"
+
 // ModInProfile is one profile that holds a UniqueID, as read from profile.json.
 type ModInProfile struct {
 	ProfileID   string `json:"profileId"`
 	ProfileName string `json:"profileName"`
 	Key         string `json:"key"`
-	UniqueID    string `json:"uniqueId"`
+	ID          mod.ID `json:"id"`
 	Name        string `json:"name"`
 	Version     string `json:"version"`
 	Enabled     bool   `json:"enabled"`
 }
 
 // ProfilesWithMod lists the profiles of game whose profile.json names uniqueID, without reading the store.
-func (s *Store) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error) {
+func (s *Store) ProfilesWithMod(game string, uniqueID mod.ID) ([]ModInProfile, error) {
 	if uniqueID == "" {
 		return []ModInProfile{}, nil
 	}
@@ -29,7 +31,7 @@ func (s *Store) ProfilesWithMod(game, uniqueID string) ([]ModInProfile, error) {
 	return out, nil
 }
 
-func modIn(p Profile, uniqueID string) (ModInProfile, bool) {
+func modIn(p Profile, uniqueID mod.ID) (ModInProfile, bool) {
 	e, m, ok := p.FindMod("", uniqueID)
 	if !ok {
 		return ModInProfile{}, false
@@ -38,9 +40,9 @@ func modIn(p Profile, uniqueID string) (ModInProfile, bool) {
 		ProfileID:   p.ID,
 		ProfileName: p.Name,
 		Key:         e.Key,
-		UniqueID:    m.UniqueID,
+		ID:          m.ID,
 		Name:        m.Name,
 		Version:     m.Version,
-		Enabled:     e.Enabled(m.UniqueID),
+		Enabled:     e.Enabled(m.ID),
 	}, true
 }

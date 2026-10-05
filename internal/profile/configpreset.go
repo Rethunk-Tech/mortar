@@ -2,13 +2,14 @@ package profile
 
 import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
 const historyConfigPreset = "config"
 
 // ListConfigPresets names saved configs for a mod.
-func (s *Service) ListConfigPresets(game, uniqueID string) ([]string, error) {
+func (s *Service) ListConfigPresets(game string, uniqueID mod.ID) ([]string, error) {
 	root, err := datadir.Dir()
 	if err != nil {
 		return nil, err
@@ -17,7 +18,7 @@ func (s *Service) ListConfigPresets(game, uniqueID string) ([]string, error) {
 }
 
 // SaveConfigPreset stores the given config.json text as a named preset.
-func (s *Service) SaveConfigPreset(game, uniqueID, name, contents string) error {
+func (s *Service) SaveConfigPreset(game string, uniqueID mod.ID, name, contents string) error {
 	root, err := datadir.Dir()
 	if err != nil {
 		return err
@@ -26,7 +27,7 @@ func (s *Service) SaveConfigPreset(game, uniqueID, name, contents string) error 
 }
 
 // DeleteConfigPreset removes a named preset.
-func (s *Service) DeleteConfigPreset(game, uniqueID, name string) error {
+func (s *Service) DeleteConfigPreset(game string, uniqueID mod.ID, name string) error {
 	root, err := datadir.Dir()
 	if err != nil {
 		return err
@@ -35,7 +36,7 @@ func (s *Service) DeleteConfigPreset(game, uniqueID, name string) error {
 }
 
 // ApplyConfigPreset writes a saved preset onto the profile's config.json and records one history event.
-func (s *Service) ApplyConfigPreset(game, id, key, uniqueID, name string) error {
+func (s *Service) ApplyConfigPreset(game, id, key string, uniqueID mod.ID, name string) error {
 	root, err := datadir.Dir()
 	if err != nil {
 		return err

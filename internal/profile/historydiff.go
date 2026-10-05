@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 const (
@@ -30,7 +32,7 @@ type HistoryDiff struct {
 
 // DiffMod is a mod present on only one side of a snapshot pair.
 type DiffMod struct {
-	ID      string `json:"id"`
+	ID      mod.ID `json:"id"`
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	Key     string `json:"key"`
@@ -38,7 +40,7 @@ type DiffMod struct {
 
 // DiffVersion is one mod's store key or version change.
 type DiffVersion struct {
-	ID     string `json:"id"`
+	ID     mod.ID `json:"id"`
 	Name   string `json:"name"`
 	Old    string `json:"old"`
 	New    string `json:"new"`
@@ -48,7 +50,7 @@ type DiffVersion struct {
 
 // DiffEnabled is one mod's enabled-state change.
 type DiffEnabled struct {
-	ID   string `json:"id"`
+	ID   mod.ID `json:"id"`
 	Name string `json:"name"`
 	Key  string `json:"key"`
 	Old  bool   `json:"old"`
@@ -57,7 +59,7 @@ type DiffEnabled struct {
 
 // DiffConfig lists config files that differ for one mod.
 type DiffConfig struct {
-	ID    string   `json:"id"`
+	ID    mod.ID   `json:"id"`
 	Name  string   `json:"name"`
 	Key   string   `json:"key"`
 	Files []string `json:"files"`
@@ -66,7 +68,7 @@ type DiffConfig struct {
 // HistoryItem is one revertible row in a snapshot pair.
 type HistoryItem struct {
 	Kind   string `json:"kind"`
-	Mod    string `json:"mod"`
+	Mod    mod.ID `json:"mod"`
 	Name   string `json:"name"`
 	Key    string `json:"key"`
 	OldKey string `json:"oldKey,omitempty"`
@@ -141,7 +143,7 @@ func DiffSnapshots(a, b string, before, after []Entry, cfgA, cfgB map[string]map
 	return out
 }
 
-func appendEntryPair(out *HistoryDiff, id string, be, ae Entry, oldCfg, newCfg map[string][]byte) {
+func appendEntryPair(out *HistoryDiff, id mod.ID, be, ae Entry, oldCfg, newCfg map[string][]byte) {
 	if be.Key != ae.Key || entryVersion(be) != entryVersion(ae) {
 		out.Versions = append(out.Versions, DiffVersion{
 			ID: id, Name: entryName(ae), Old: entryVersion(be), New: entryVersion(ae),
@@ -155,11 +157,11 @@ func appendEntryPair(out *HistoryDiff, id string, be, ae Entry, oldCfg, newCfg m
 	}
 }
 
-func uniqueIDOf(e Entry, fallback string) string {
-	if len(e.Mods) > 0 && e.Mods[0].UniqueID != "" {
-		return e.Mods[0].UniqueID
+func uniqueIDOf(e Entry, fallback string) mod.ID {
+	if len(e.Mods) > 0 && e.Mods[0].ID != "" {
+		return e.Mods[0].ID
 	}
-	return fallback
+	return mod.ID(fallback)
 }
 
 func diffMod(e Entry) DiffMod {
@@ -171,7 +173,7 @@ func enabledChanges(before, after Entry) []DiffEnabled {
 		if before.OverlayOff == after.OverlayOff {
 			return nil
 		}
-		return []DiffEnabled{{ID: after.Key, Name: entryName(after), Key: after.Key, Old: !before.OverlayOff, New: !after.OverlayOff}}
+		return []DiffEnabled{{ID: mod.ID(after.Key), Name: entryName(after), Key: after.Key, Old: !before.OverlayOff, New: !after.OverlayOff}}
 	}
 	ids := uniqueIDs(before)
 	for _, id := range uniqueIDs(after) {
@@ -191,29 +193,29 @@ func enabledChanges(before, after Entry) []DiffEnabled {
 	return out
 }
 
-func uniqueIDs(e Entry) []string {
+func uniqueIDs(e Entry) []mod.ID {
 	if len(e.Mods) == 0 {
 		return nil
 	}
-	out := make([]string, 0, len(e.Mods))
+	out := make([]mod.ID, 0, len(e.Mods))
 	for _, m := range e.Mods {
-		out = append(out, m.UniqueID)
+		out = append(out, m.ID)
 	}
 	return out
 }
 
-func modName(after, before Entry, uniqueID string) string {
+func modName(after, before Entry, uniqueID mod.ID) string {
 	for _, e := range []Entry{after, before} {
 		for _, m := range e.Mods {
-			if m.UniqueID == uniqueID {
+			if m.ID == uniqueID {
 				if m.Name != "" {
 					return m.Name
 				}
-				return uniqueID
+				return uniqueID.Local()
 			}
 		}
 	}
-	return uniqueID
+	return uniqueID.Local()
 }
 
 func configFileDiff(oldCfg, newCfg map[string][]byte) []string {
@@ -276,13 +278,13 @@ func enabledWord(on bool) string {
 	return "disabled"
 }
 
-func cmpDiffMod(a, b DiffMod) int { return strings.Compare(a.ID, b.ID) }
+func cmpDiffMod(a, b DiffMod) int { return strings.Compare(string(a.ID), string(b.ID)) }
 
-func cmpDiffVersion(a, b DiffVersion) int { return strings.Compare(a.ID, b.ID) }
+func cmpDiffVersion(a, b DiffVersion) int { return strings.Compare(string(a.ID), string(b.ID)) }
 
-func cmpDiffEnabled(a, b DiffEnabled) int { return strings.Compare(a.ID, b.ID) }
+func cmpDiffEnabled(a, b DiffEnabled) int { return strings.Compare(string(a.ID), string(b.ID)) }
 
-func cmpDiffConfig(a, b DiffConfig) int { return strings.Compare(a.ID, b.ID) }
+func cmpDiffConfig(a, b DiffConfig) int { return strings.Compare(string(a.ID), string(b.ID)) }
 
 func emptyConfigs() map[string]map[string][]byte {
 	return map[string]map[string][]byte{}

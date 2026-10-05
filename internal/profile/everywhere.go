@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -47,14 +48,14 @@ type EverywhereResult struct {
 	Skipped []EverywhereSkip `json:"skipped"`
 }
 
-// PreviewEverywhere reports which profiles hold modKeyOrUniqueID (entry key, UniqueID, or the same Nexus mod)
+// PreviewEverywhere reports which profiles hold modKeyOrID (entry key, mod id, or the same Nexus mod)
 // and which are excluded because they are pinned, skip-version, or locked (game running).
-func (s *Store) PreviewEverywhere(game, modKeyOrUniqueID string) (EverywherePreview, error) {
+func (s *Store) PreviewEverywhere(game, modKeyOrID string) (EverywherePreview, error) {
 	all, err := s.listOK(game)
 	if err != nil {
 		return EverywherePreview{}, err
 	}
-	id := identityOf(all, modKeyOrUniqueID)
+	id := identityOf(all, modKeyOrID)
 	var out EverywherePreview
 	for _, p := range all {
 		ei := id.match(p)
@@ -126,15 +127,15 @@ func (id everywhereID) note(e Entry) {
 		id.modIDs[e.Source.ModID] = struct{}{}
 	}
 	for _, m := range e.Mods {
-		if m.UniqueID != "" {
-			id.ids[strings.ToLower(m.UniqueID)] = struct{}{}
+		if m.ID != "" {
+			id.ids[m.ID.Fold()] = struct{}{}
 		}
 	}
 }
 
 func (id everywhereID) hasMod(e Entry) bool {
 	for _, m := range e.Mods {
-		if SameID(m.UniqueID, id.query) {
+		if mod.Equal(m.ID, mod.ID(id.query)) {
 			return true
 		}
 	}
@@ -155,7 +156,7 @@ func (id everywhereID) match(p Profile) int {
 			}
 		}
 		for _, m := range e.Mods {
-			if _, ok := id.ids[strings.ToLower(m.UniqueID)]; ok {
+			if _, ok := id.ids[m.ID.Fold()]; ok {
 				return i
 			}
 		}
@@ -166,8 +167,8 @@ func (id everywhereID) match(p Profile) int {
 // UpdateEverywhere replaces the matching entry in every eligible profile with newStoreKey
 // (empty or "latest" means the newest store item that shares UniqueID / Nexus identity).
 // The store item is used once; each profile records its own history (and so its own Undo).
-func (s *Store) UpdateEverywhere(game, modKeyOrUniqueID, newStoreKey string) (EverywhereResult, error) {
-	preview, err := s.PreviewEverywhere(game, modKeyOrUniqueID)
+func (s *Store) UpdateEverywhere(game, modKeyOrID, newStoreKey string) (EverywhereResult, error) {
+	preview, err := s.PreviewEverywhere(game, modKeyOrID)
 	if err != nil {
 		return EverywhereResult{}, err
 	}
@@ -177,7 +178,7 @@ func (s *Store) UpdateEverywhere(game, modKeyOrUniqueID, newStoreKey string) (Ev
 	}
 	target := strings.TrimSpace(newStoreKey)
 	if target == "" || strings.EqualFold(target, latestStoreKey) {
-		target, err = s.latestStoreKey(game, preview.Affected[0].OldKey, modKeyOrUniqueID)
+		target, err = s.latestStoreKey(game, preview.Affected[0].OldKey, modKeyOrID)
 		if err != nil {
 			return EverywhereResult{}, err
 		}
@@ -200,7 +201,7 @@ func (s *Store) UpdateEverywhere(game, modKeyOrUniqueID, newStoreKey string) (Ev
 		if err != nil {
 			return out, err
 		}
-		ei := identityOf(all, modKeyOrUniqueID).match(p)
+		ei := identityOf(all, modKeyOrID).match(p)
 		if ei < 0 {
 			continue
 		}
@@ -227,7 +228,7 @@ func (s *Store) UpdateEverywhere(game, modKeyOrUniqueID, newStoreKey string) (Ev
 	return out, nil
 }
 
-func (s *Store) latestStoreKey(game, oldKey, modKeyOrUniqueID string) (string, error) {
+func (s *Store) latestStoreKey(game, oldKey, modKeyOrID string) (string, error) {
 	root, err := s.items.Path(game, oldKey)
 	if err != nil {
 		return "", err
@@ -236,7 +237,7 @@ func (s *Store) latestStoreKey(game, oldKey, modKeyOrUniqueID string) (string, e
 	if err != nil {
 		return "", err
 	}
-	wantID := strings.TrimSpace(modKeyOrUniqueID)
+	wantID := mod.ID(strings.TrimSpace(modKeyOrID))
 	best, bestFile := oldKey, -1
 	if modID, fileID, ok := store.NexusFile(oldKey); ok {
 		bestFile = fileID
@@ -277,18 +278,18 @@ func (s *Store) latestStoreKey(game, oldKey, modKeyOrUniqueID string) (string, e
 	return best, nil
 }
 
-func latestMatch(found []manifest.Mod, wantID, oldKey, key string) bool {
+func latestMatch(found []manifest.Mod, wantID mod.ID, oldKey, key string) bool {
 	if key == oldKey {
 		return true
 	}
-	if wantID == "" || key == wantID {
+	if wantID == "" || key == string(wantID) {
 		return true
 	}
-	if SameID(wantID, key) {
+	if mod.Equal(wantID, mod.ID(key)) {
 		return true
 	}
 	for _, m := range found {
-		if SameID(m.UniqueID, wantID) {
+		if mod.Equal(m.ModID(), wantID) {
 			return true
 		}
 	}

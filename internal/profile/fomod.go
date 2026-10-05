@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -236,8 +237,8 @@ func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 	}
 	var held []Entry
 	for _, e := range p.Entries {
-		if slices.ContainsFunc(e.Mods, func(m EntryMod) bool {
-			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return SameID(f.UniqueID, m.UniqueID) })
+		if slices.ContainsFunc(e.Mods, func(m Component) bool {
+			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
 		}) {
 			held = append(held, e)
 		}
@@ -391,10 +392,10 @@ func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][
 		e.Fomod = cloneFomod(choices)
 		e.Mods = entryMods(found)
 		disabled := e.Disabled
-		e.Disabled = []string{}
+		e.Disabled = []mod.ID{}
 		for _, m := range e.Mods {
-			if hasID(disabled, m.UniqueID) {
-				e.Disabled = append(e.Disabled, m.UniqueID)
+			if hasID(disabled, m.ID) {
+				e.Disabled = append(e.Disabled, m.ID)
 			}
 		}
 		modsDir := filepath.Join(dir, "mods")

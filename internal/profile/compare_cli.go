@@ -33,7 +33,7 @@ func CompareProfilesCLI(a, b Profile) CLICompare {
 		if name == "" {
 			name = other.Name
 		}
-		pair := DiffPair{UniqueID: side.UniqueID, Name: name, A: side, B: other}
+		pair := DiffPair{ID: side.ID, Name: name, A: side, B: other}
 		versionDiff := side.Version != other.Version
 		enabledDiff := side.Enabled != other.Enabled
 		if versionDiff {
@@ -55,7 +55,7 @@ func CompareProfilesCLI(a, b Profile) CLICompare {
 	sortSides(out.OnlyB)
 	sortPairs := func(pairs []DiffPair) {
 		slices.SortFunc(pairs, func(a, b DiffPair) int {
-			return compareNameThenID(a.Name, a.UniqueID, b.Name, b.UniqueID)
+			return compareNameThenID(a.Name, a.ID, b.Name, b.ID)
 		})
 	}
 	sortPairs(out.DifferentVersion)

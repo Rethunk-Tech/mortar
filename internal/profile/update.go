@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -222,12 +223,12 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 		ne.PreviousExtraStoreKeys = slices.Clone(e.ExtraStoreKeys)
 		ne.ExtraStoreKeys = slices.Clone(e.ExtraStoreKeys)
 	}
-	ne.Mods, ne.Disabled, ne.SkipVersion = entryMods(found), []string{}, ""
+	ne.Mods, ne.Disabled, ne.SkipVersion = entryMods(found), []mod.ID{}, ""
 	ne.Tags = slices.Clone(e.Tags)
 	ne.Fomod = cloneFomod(choices)
 	for _, m := range ne.Mods {
-		if !e.Enabled(m.UniqueID) {
-			ne.Disabled = append(ne.Disabled, m.UniqueID)
+		if !e.Enabled(m.ID) {
+			ne.Disabled = append(ne.Disabled, m.ID)
 		}
 	}
 	if err := s.saveBackup(game, id); err != nil {
@@ -255,7 +256,7 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 	mode := s.oldFilesMode(game)
 	var held []heldFile
 	for _, nm := range ne.Mods {
-		i := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return SameID(m.UniqueID, nm.UniqueID) })
+		i := slices.IndexFunc(e.Mods, func(m Component) bool { return mod.Equal(m.ID, nm.ID) })
 		if i < 0 {
 			continue
 		}
@@ -270,16 +271,16 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 		if !exists(cur) {
 			continue
 		}
-		configOnly := deleteOldVersion(newManifests, nm.UniqueID)
+		configOnly := deleteOldVersion(newManifests, nm.ID)
 		target := filepath.Join(tmp, filepath.FromSlash(nm.Folder))
 		var gone func(rel, p string) error
 		switch mode {
 		case settings.OldFilesKeep:
 			gone = func(rel, p string) error { return copyOver(p, filepath.Join(target, rel)) }
 		case settings.OldFilesAsk:
-			if _, err := safeFolder(nm.UniqueID); err == nil && filepath.Base(nm.UniqueID) == nm.UniqueID {
+			if _, err := safeFolder(nm.ID.Local()); err == nil && filepath.Base(nm.ID.Local()) == nm.ID.Local() {
 				gone = func(rel, p string) error {
-					held = append(held, heldFile{uniqueID: nm.UniqueID, rel: rel, abs: p})
+					held = append(held, heldFile{uniqueID: nm.ID.Local(), rel: rel, abs: p})
 					return nil
 				}
 			}
@@ -298,8 +299,8 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 		}
 		ne.Disabled = ne.Disabled[:0]
 		for _, m := range ne.Mods {
-			if !e.Enabled(m.UniqueID) {
-				ne.Disabled = append(ne.Disabled, m.UniqueID)
+			if !e.Enabled(m.ID) {
+				ne.Disabled = append(ne.Disabled, m.ID)
 			}
 		}
 	}
@@ -468,9 +469,9 @@ func copyOver(src, dst string) error {
 	return fsx.WriteFile(dst, b, 0o600)
 }
 
-func deleteOldVersion(found []manifest.Mod, uniqueID string) bool {
+func deleteOldVersion(found []manifest.Mod, uniqueID mod.ID) bool {
 	for _, m := range found {
-		if SameID(m.UniqueID, uniqueID) {
+		if mod.Equal(m.ModID(), uniqueID) {
 			return m.DeleteOldVersion
 		}
 	}

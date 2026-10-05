@@ -3,7 +3,6 @@ package profile
 import (
 	"log"
 	"slices"
-	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
@@ -41,13 +40,13 @@ func (s *Store) refreshDependencies(game, id string) error {
 		if err != nil {
 			continue
 		}
-		fresh := map[string]EntryMod{}
+		fresh := map[string]Component{}
 		for _, m := range entryMods(found) {
-			fresh[strings.ToLower(m.UniqueID)] = m
+			fresh[m.ID.Fold()] = m
 		}
 		for mi := range e.Mods {
 			m := &e.Mods[mi]
-			f, ok := fresh[strings.ToLower(m.UniqueID)]
+			f, ok := fresh[m.ID.Fold()]
 			if !ok || (slices.Equal(m.Needs, f.Needs) && slices.Equal(m.Optional, f.Optional)) {
 				continue
 			}

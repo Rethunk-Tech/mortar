@@ -22,6 +22,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -71,7 +72,7 @@ type fomodChoices struct {
 }
 
 type disabledMods struct {
-	ids []string
+	ids []mod.ID
 }
 
 // WithFomod returns a copy that carries FOMOD plugin choices into InstallStaged.
@@ -81,8 +82,8 @@ func (s Source) WithFomod(choices map[string]map[string][]string) Source {
 }
 
 // WithDisabled returns a copy that switches the named mods off when installed.
-func (s Source) WithDisabled(uniqueIDs []string) Source {
-	s.disabled = &disabledMods{ids: slices.Clone(uniqueIDs)}
+func (s Source) WithDisabled(ids []mod.ID) Source {
+	s.disabled = &disabledMods{ids: slices.Clone(ids)}
 	return s
 }
 
@@ -93,33 +94,34 @@ func (s Source) fomodMap() map[string]map[string][]string {
 	return s.fomod.m
 }
 
-// EntryMod is one mod inside an entry. Folder holds its manifest.json, relative to mods/<key>/, in its
-// enabled (not dot-prefixed) form; "." is the entry's own folder.
-type EntryMod struct {
-	UniqueID string   `json:"uniqueId"`
-	Version  string   `json:"version"`
-	Name     string   `json:"name"`
-	Author   string   `json:"author"`
-	Folder   string   `json:"folder"`
-	Needs    []string `json:"needs,omitempty"`
-	// Optional is the UniqueIDs in Needs whose manifest listed IsRequired as false.
-	Optional []string `json:"optional,omitempty"`
-	// ContentPackFor is the manifest ContentPackFor UniqueID when the mod is a content pack.
-	ContentPackFor string `json:"contentPackFor,omitempty"`
+// Component is one mod inside a package. Folder holds its manifest.json, relative to mods/<key>/, in its
+// enabled (not dot-prefixed) form; "." is the package's own folder.
+type Component struct {
+	ID      mod.ID   `json:"id"`
+	Version string   `json:"version"`
+	Name    string   `json:"name"`
+	Author  string   `json:"author"`
+	Folder  string   `json:"folder"`
+	Needs   []mod.ID `json:"needs,omitempty"`
+	// Optional is the ids in Needs whose manifest listed IsRequired as false.
+	Optional []mod.ID `json:"optional,omitempty"`
+	// ContentPackFor is the id of the framework when the mod is a content pack.
+	ContentPackFor mod.ID `json:"contentPackFor,omitempty"`
 }
 
-// Entry is one mod archive in a profile. Disabled lists the UniqueIDs switched off.
+// Entry is one package in a profile: a download unit with its source, holding one or more components. Disabled
+// lists the component ids switched off.
 type Entry struct {
 	IgnoreUpdates bool   `json:"ignoreUpdates,omitempty"`
 	Key           string `json:"key"`
 	PreviousKey   string `json:"previousKey"`
 	Source        Source `json:"source"`
 	// PreviousSource is where the PreviousKey version came from, so a roll back restores it with the files.
-	PreviousSource *Source    `json:"previousSource,omitempty"`
-	Mods           []EntryMod `json:"mods"`
-	Disabled       []string   `json:"disabled"`
-	// LoadAfter is UniqueIDs this entry should load after, recorded when the user makes it win an edit conflict.
-	LoadAfter []string `json:"loadAfter,omitempty"`
+	PreviousSource *Source     `json:"previousSource,omitempty"`
+	Mods           []Component `json:"mods"`
+	Disabled       []mod.ID    `json:"disabled"`
+	// LoadAfter is ids this entry should load after, recorded when the user makes it win an edit conflict.
+	LoadAfter []mod.ID `json:"loadAfter,omitempty"`
 	// Added is when this entry was put in the profile; zero for entries written before the field existed.
 	Added time.Time `json:"added,omitzero"`
 	// Pinned keeps this entry on its current version; Mortar offers no update while it is true.
@@ -478,10 +480,10 @@ func readAt(dir, id string) (Profile, error) {
 	}
 	for i := range p.Entries {
 		if p.Entries[i].Mods == nil {
-			p.Entries[i].Mods = []EntryMod{}
+			p.Entries[i].Mods = []Component{}
 		}
 		if p.Entries[i].Disabled == nil {
-			p.Entries[i].Disabled = []string{}
+			p.Entries[i].Disabled = []mod.ID{}
 		}
 	}
 	sanitizeAppearance(&p)

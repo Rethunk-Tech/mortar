@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -131,7 +132,7 @@ func hasRawXNB(root string) (bool, error) {
 func variants(found []manifest.Mod) []RemapVariant {
 	byID := map[string][]manifest.Mod{}
 	for _, m := range found {
-		id := strings.ToLower(m.UniqueID)
+		id := m.ModID().Fold()
 		byID[id] = append(byID[id], m)
 	}
 	under := func(dir, folder string) bool { return folder == dir || strings.HasPrefix(folder, dir+"/") }
@@ -151,7 +152,7 @@ func variants(found []manifest.Mod) []RemapVariant {
 	}
 	var out []RemapVariant
 	for _, m := range found {
-		if len(byID[strings.ToLower(m.UniqueID)]) < 2 {
+		if len(byID[m.ModID().Fold()]) < 2 {
 			continue
 		}
 		dir := m.Folder
@@ -173,8 +174,8 @@ func (s *Store) priorVariant(game, id string, found []manifest.Mod, vars []Remap
 		return ""
 	}
 	for _, e := range p.Entries {
-		if !slices.ContainsFunc(e.Mods, func(m EntryMod) bool {
-			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return SameID(f.UniqueID, m.UniqueID) })
+		if !slices.ContainsFunc(e.Mods, func(m Component) bool {
+			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
 		}) {
 			continue
 		}

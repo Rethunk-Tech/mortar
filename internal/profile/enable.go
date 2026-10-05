@@ -1,17 +1,17 @@
 package profile
 
 import (
-	"strings"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-func requiredNeeds(m EntryMod) []string {
+func requiredNeeds(m Component) []mod.ID {
 	opt := make(map[string]struct{}, len(m.Optional))
 	for _, id := range m.Optional {
-		opt[strings.ToLower(id)] = struct{}{}
+		opt[id.Fold()] = struct{}{}
 	}
-	var out []string
+	var out []mod.ID
 	for _, id := range m.Needs {
-		if _, skip := opt[strings.ToLower(id)]; skip {
+		if _, skip := opt[id.Fold()]; skip {
 			continue
 		}
 		out = append(out, id)
@@ -19,21 +19,21 @@ func requiredNeeds(m EntryMod) []string {
 	return out
 }
 
-func modByID(p *Profile, uniqueID string) (key string, m EntryMod, ok bool) {
+func modByID(p *Profile, uniqueID mod.ID) (key string, m Component, ok bool) {
 	for _, e := range p.Entries {
 		if e.Source.Bundled() {
 			continue
 		}
 		for _, em := range e.Mods {
-			if SameID(em.UniqueID, uniqueID) {
+			if mod.Equal(em.ID, uniqueID) {
 				return e.Key, em, true
 			}
 		}
 	}
-	return "", EntryMod{}, false
+	return "", Component{}, false
 }
 
-func disabledUID(p *Profile, uniqueID string) bool {
+func disabledUID(p *Profile, uniqueID mod.ID) bool {
 	for _, e := range p.Entries {
 		if hasID(e.Disabled, uniqueID) {
 			return true
@@ -51,32 +51,32 @@ func (s *Store) autoEnableRequirements(game string) bool {
 
 // enableRequired turns on required dependencies of uniqueID that are already in the profile but switched off.
 // Optional dependencies are left as they are. Returns the names that were switched on.
-func enableRequired(p *Profile, dir, uniqueID string) []string {
+func enableRequired(p *Profile, dir string, uniqueID mod.ID) []string {
 	_, self, ok := modByID(p, uniqueID)
 	if !ok {
 		return nil
 	}
-	seen := map[string]struct{}{strings.ToLower(uniqueID): {}}
+	seen := map[string]struct{}{uniqueID.Fold(): {}}
 	var also []string
 	queue := requiredNeeds(self)
 	for len(queue) > 0 {
 		id := queue[0]
 		queue = queue[1:]
-		low := strings.ToLower(id)
+		low := id.Fold()
 		if _, done := seen[low]; done {
 			continue
 		}
 		seen[low] = struct{}{}
 		key, dep, found := modByID(p, id)
-		if !found || !disabledUID(p, dep.UniqueID) {
+		if !found || !disabledUID(p, dep.ID) {
 			continue
 		}
-		if err := applyEnabled(p, dir, key, dep.UniqueID, true); err != nil {
+		if err := applyEnabled(p, dir, key, dep.ID, true); err != nil {
 			continue
 		}
 		name := dep.Name
 		if name == "" {
-			name = dep.UniqueID
+			name = dep.ID.Local()
 		}
 		also = append(also, name)
 		queue = append(queue, requiredNeeds(dep)...)

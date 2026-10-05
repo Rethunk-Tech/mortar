@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func (s *Store) ProfileDir(game, id string) (string, error) {
@@ -14,7 +15,7 @@ func (s *Store) ProfileDir(game, id string) (string, error) {
 	return filepath.Dir(mods), nil
 }
 
-func (s *Service) GmcmMenu(game, profile, uniqueID string) (gmcm.Capture, error) {
+func (s *Service) GmcmMenu(game, profile string, uniqueID mod.ID) (gmcm.Capture, error) {
 	d, err := s.store.ProfileDir(game, profile)
 	if err != nil {
 		return gmcm.Capture{}, err
@@ -22,7 +23,7 @@ func (s *Service) GmcmMenu(game, profile, uniqueID string) (gmcm.Capture, error)
 	return gmcm.ReadCapture(d, uniqueID)
 }
 
-func (s *Service) PendingGmcm(game, profile, uniqueID string) (gmcm.Pending, error) {
+func (s *Service) PendingGmcm(game, profile string, uniqueID mod.ID) (gmcm.Pending, error) {
 	d, err := s.store.ProfileDir(game, profile)
 	if err != nil {
 		return gmcm.Pending{}, err
@@ -30,7 +31,7 @@ func (s *Service) PendingGmcm(game, profile, uniqueID string) (gmcm.Pending, err
 	return gmcm.ReadPending(d, uniqueID)
 }
 
-func (s *Service) SetGmcmEdits(game, profile, uniqueID string, edits []gmcm.Edit) error {
+func (s *Service) SetGmcmEdits(game, profile string, uniqueID mod.ID, edits []gmcm.Edit) error {
 	d, err := s.store.ProfileDir(game, profile)
 	if err != nil {
 		return err
@@ -38,7 +39,7 @@ func (s *Service) SetGmcmEdits(game, profile, uniqueID string, edits []gmcm.Edit
 	return gmcm.WritePending(d, uniqueID, edits)
 }
 
-func (s *Service) GmcmResult(game, profile, uniqueID string) (gmcm.Result, error) {
+func (s *Service) GmcmResult(game, profile string, uniqueID mod.ID) (gmcm.Result, error) {
 	d, err := s.store.ProfileDir(game, profile)
 	if err != nil {
 		return gmcm.Result{}, err

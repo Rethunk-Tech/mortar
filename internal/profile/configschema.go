@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
@@ -29,7 +30,7 @@ type ConfigField struct {
 }
 
 // ReadContentSchema returns the Content Patcher ConfigSchema object, or {}.
-func (s *Service) ReadContentSchema(game, id, key, uniqueID string) (string, error) {
+func (s *Service) ReadContentSchema(game, id, key string, uniqueID mod.ID) (string, error) {
 	schema, err := s.contentSchema(game, id, key, uniqueID)
 	if err != nil {
 		return "", err
@@ -70,7 +71,7 @@ func (s *Service) ReadContentSchema(game, id, key, uniqueID string) (string, err
 // ListConfigFields lists config.json values and Content Patcher allowed values.
 //
 //wails:ignore
-func (s *Service) ListConfigFields(game, id, key, uniqueID string) ([]ConfigField, error) {
+func (s *Service) ListConfigFields(game, id, key string, uniqueID mod.ID) ([]ConfigField, error) {
 	schema, err := s.contentSchema(game, id, key, uniqueID)
 	if err != nil {
 		return nil, err
@@ -107,7 +108,7 @@ func (s *Service) ListConfigFields(game, id, key, uniqueID string) ([]ConfigFiel
 }
 
 // SetConfigValue changes one setting while retaining the config's other raw JSON values.
-func (s *Service) SetConfigValue(game, id, key, uniqueID, field, value string) error {
+func (s *Service) SetConfigValue(game, id, key string, uniqueID mod.ID, field, value string) error {
 	field = strings.TrimSpace(field)
 	if field == "" {
 		return errors.New("missing config field")
@@ -138,7 +139,7 @@ func (s *Service) SetConfigValue(game, id, key, uniqueID, field, value string) e
 	return s.store.WriteConfig(game, id, key, uniqueID, string(next))
 }
 
-func (s *Service) contentSchema(game, id, key, uniqueID string) (modconfig.Schema, error) {
+func (s *Service) contentSchema(game, id, key string, uniqueID mod.ID) (modconfig.Schema, error) {
 	folder, err := s.store.ModFolder(game, id, key, uniqueID)
 	if err != nil {
 		return nil, err

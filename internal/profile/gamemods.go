@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -51,7 +52,7 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 	held := func(f gameModFolder) string {
 		for _, e := range p.Entries {
 			for _, m := range e.Mods {
-				if slices.ContainsFunc(f.mods, func(x manifest.Mod) bool { return SameID(x.UniqueID, m.UniqueID) }) {
+				if slices.ContainsFunc(f.mods, func(x manifest.Mod) bool { return mod.Equal(x.ModID(), m.ID) }) {
 					return m.Name
 				}
 			}

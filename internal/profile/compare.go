@@ -5,24 +5,26 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // DiffSide is one profile's copy of a user mod in a comparison.
 type DiffSide struct {
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Version  string `json:"version"`
-	Enabled  bool   `json:"enabled"`
-	Key      string `json:"key"`
-	Source   Source `json:"source"`
+	ID      mod.ID `json:"id"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	Enabled bool   `json:"enabled"`
+	Key     string `json:"key"`
+	Source  Source `json:"source"`
 }
 
 // DiffPair is the same UniqueID in both profiles with a different version or enabled state.
 type DiffPair struct {
-	UniqueID string   `json:"uniqueId"`
-	Name     string   `json:"name"`
-	A        DiffSide `json:"a"`
-	B        DiffSide `json:"b"`
+	ID   mod.ID   `json:"id"`
+	Name string   `json:"name"`
+	A    DiffSide `json:"a"`
+	B    DiffSide `json:"b"`
 }
 
 // Diff is the user-mod comparison of two profiles of the same game, matched by UniqueID.
@@ -39,12 +41,12 @@ func indexUserMods(p Profile) map[string]DiffSide {
 			continue
 		}
 		for _, m := range e.Mods {
-			k := strings.ToLower(m.UniqueID)
+			k := m.ID.Fold()
 			if _, ok := out[k]; ok {
 				continue
 			}
 			out[k] = DiffSide{
-				UniqueID: m.UniqueID, Name: m.Name, Version: m.Version, Enabled: e.Enabled(m.UniqueID),
+				ID: m.ID, Name: m.Name, Version: m.Version, Enabled: e.Enabled(m.ID),
 				Key: e.Key, Source: e.Source,
 			}
 		}
@@ -53,16 +55,16 @@ func indexUserMods(p Profile) map[string]DiffSide {
 }
 
 // compareNameThenID orders mods by name, then UniqueID, ignoring case.
-func compareNameThenID(aName, aID, bName, bID string) int {
+func compareNameThenID(aName string, aID mod.ID, bName string, bID mod.ID) int {
 	return cmp.Or(
 		strings.Compare(strings.ToLower(aName), strings.ToLower(bName)),
-		strings.Compare(strings.ToLower(aID), strings.ToLower(bID)),
+		strings.Compare(aID.Fold(), bID.Fold()),
 	)
 }
 
 func sortSides(sides []DiffSide) {
 	slices.SortFunc(sides, func(a, b DiffSide) int {
-		return compareNameThenID(a.Name, a.UniqueID, b.Name, b.UniqueID)
+		return compareNameThenID(a.Name, a.ID, b.Name, b.ID)
 	})
 }
 
@@ -81,7 +83,7 @@ func DiffProfiles(a, b Profile) Diff {
 			if name == "" {
 				name = other.Name
 			}
-			d.Changed = append(d.Changed, DiffPair{UniqueID: side.UniqueID, Name: name, A: side, B: other})
+			d.Changed = append(d.Changed, DiffPair{ID: side.ID, Name: name, A: side, B: other})
 		}
 	}
 	for k, side := range right {
@@ -92,7 +94,7 @@ func DiffProfiles(a, b Profile) Diff {
 	sortSides(d.OnlyA)
 	sortSides(d.OnlyB)
 	slices.SortFunc(d.Changed, func(a, b DiffPair) int {
-		return compareNameThenID(a.Name, a.UniqueID, b.Name, b.UniqueID)
+		return compareNameThenID(a.Name, a.ID, b.Name, b.ID)
 	})
 	if d.OnlyA == nil {
 		d.OnlyA = []DiffSide{}
@@ -118,7 +120,7 @@ func destHasKey(p Profile, key string) bool {
 
 // CopyMods copies the named user mods from one profile into another by their store keys, with no download.
 // A running game locks the destination the same way AddEntry does.
-func (s *Store) CopyMods(game, fromID, toID string, uniqueIDs []string) (Profile, error) {
+func (s *Store) CopyMods(game, fromID, toID string, uniqueIDs []mod.ID) (Profile, error) {
 	if fromID == toID {
 		return Profile{}, fmt.Errorf("pick a different profile to copy into")
 	}
@@ -129,7 +131,7 @@ func (s *Store) CopyMods(game, fromID, toID string, uniqueIDs []string) (Profile
 	src := indexUserMods(from)
 	var last Profile
 	for _, id := range uniqueIDs {
-		side, ok := src[strings.ToLower(id)]
+		side, ok := src[id.Fold()]
 		if !ok {
 			return Profile{}, fmt.Errorf("no mod %q in this profile", id)
 		}
@@ -138,7 +140,7 @@ func (s *Store) CopyMods(game, fromID, toID string, uniqueIDs []string) (Profile
 			return Profile{}, err
 		}
 		if destHasKey(to, side.Key) {
-			last, err = s.SetModEnabled(game, toID, side.Key, side.UniqueID, side.Enabled)
+			last, err = s.SetModEnabled(game, toID, side.Key, side.ID, side.Enabled)
 			if err != nil {
 				return Profile{}, err
 			}
@@ -149,7 +151,7 @@ func (s *Store) CopyMods(game, fromID, toID string, uniqueIDs []string) (Profile
 			return Profile{}, err
 		}
 		if !side.Enabled {
-			last, err = s.SetModEnabled(game, toID, side.Key, side.UniqueID, false)
+			last, err = s.SetModEnabled(game, toID, side.Key, side.ID, false)
 			if err != nil {
 				return Profile{}, err
 			}

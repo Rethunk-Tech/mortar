@@ -221,10 +221,10 @@ func itemMatches(it HistoryItem, want string) bool {
 	if want == "" {
 		return false
 	}
-	if strings.EqualFold(it.Mod, want) || strings.EqualFold(it.Name, want) || strings.EqualFold(it.Key, want) {
+	if strings.EqualFold(string(it.Mod), want) || strings.EqualFold(it.Mod.Local(), want) || strings.EqualFold(it.Name, want) || strings.EqualFold(it.Key, want) {
 		return true
 	}
-	if it.File != "" && (strings.EqualFold(it.Mod+"/"+it.File, want) || strings.EqualFold(it.File, want)) {
+	if it.File != "" && (strings.EqualFold(it.Mod.Local()+"/"+it.File, want) || strings.EqualFold(it.File, want)) {
 		return true
 	}
 	return false

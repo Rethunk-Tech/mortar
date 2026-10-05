@@ -145,7 +145,7 @@ func (s *Store) recentHistory(game string, limit int) ([]RecentEvent, error) {
 			}
 			return 1
 		}
-		return strings.Compare(b.ID, a.ID)
+		return strings.Compare(string(b.ID), string(a.ID))
 	})
 	if limit > 0 && len(out) > limit {
 		out = out[:limit]
@@ -1058,7 +1058,7 @@ func entryIdentity(e Entry) string {
 	if len(e.Mods) == 0 {
 		return e.Key
 	}
-	return strings.ToLower(e.Mods[0].UniqueID)
+	return e.Mods[0].ID.Fold()
 }
 
 func entryName(e Entry) string {
@@ -1066,7 +1066,7 @@ func entryName(e Entry) string {
 		return e.Mods[0].Name
 	}
 	if len(e.Mods) > 0 {
-		return e.Mods[0].UniqueID
+		return e.Mods[0].ID.Local()
 	}
 	if e.Source.Name != "" {
 		return e.Source.Name

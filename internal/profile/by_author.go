@@ -3,11 +3,13 @@ package profile
 import (
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // AuthorMod is one mod installed under an author name somewhere in the game.
 type AuthorMod struct {
-	UniqueID string         `json:"uniqueId"`
+	ID       mod.ID         `json:"id"`
 	Name     string         `json:"name"`
 	Profiles []ModInProfile `json:"profiles"`
 }
@@ -32,15 +34,15 @@ func (s *Store) ModsByAuthor(game, author string) ([]AuthorMod, error) {
 					ProfileID:   prof.ID,
 					ProfileName: prof.Name,
 					Key:         e.Key,
-					UniqueID:    m.UniqueID,
+					ID:          m.ID,
 					Name:        m.Name,
 					Version:     m.Version,
-					Enabled:     e.Enabled(m.UniqueID),
+					Enabled:     e.Enabled(m.ID),
 				}
-				existing := byID[strings.ToLower(m.UniqueID)]
+				existing := byID[m.ID.Fold()]
 				if existing == nil {
-					byID[strings.ToLower(m.UniqueID)] = &AuthorMod{
-						UniqueID: m.UniqueID,
+					byID[m.ID.Fold()] = &AuthorMod{
+						ID:       m.ID,
 						Name:     m.Name,
 						Profiles: []ModInProfile{row},
 					}
@@ -59,12 +61,12 @@ func (s *Store) ModsByAuthor(game, author string) ([]AuthorMod, error) {
 			if n := strings.Compare(strings.ToLower(a.ProfileName), strings.ToLower(b.ProfileName)); n != 0 {
 				return n
 			}
-			return strings.Compare(strings.ToLower(a.UniqueID), strings.ToLower(b.UniqueID))
+			return strings.Compare(a.ID.Fold(), b.ID.Fold())
 		})
 		out = append(out, *mod)
 	}
 	slices.SortFunc(out, func(a, b AuthorMod) int {
-		return compareNameThenID(a.Name, a.UniqueID, b.Name, b.UniqueID)
+		return compareNameThenID(a.Name, a.ID, b.Name, b.ID)
 	})
 	return out, nil
 }

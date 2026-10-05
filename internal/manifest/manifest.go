@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // FileName is the manifest file SMAPI looks for.
@@ -238,9 +239,9 @@ func Scan(root string) ([]Mod, error) {
 
 // LoaderManaged reports whether a mod is installed and kept current by SMAPI or Mortar itself, so a profile never
 // lists, imports or downloads it as one of its own mods.
-func LoaderManaged(uniqueID string) bool {
-	switch strings.ToLower(uniqueID) {
-	case "smapi.consolecommands", "smapi.savebackup", "rethunk.mortarsmapibridge":
+func LoaderManaged(id mod.ID) bool {
+	switch id.Fold() {
+	case "smapi:smapi.consolecommands", "smapi:smapi.savebackup", "smapi:rethunk.mortarsmapibridge":
 		return true
 	}
 	return false
@@ -264,8 +265,16 @@ func GitHubUpdateKey(key string) (string, bool) {
 	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && strings.Count(rest, "/") == 1
 }
 
-// FoldID is the key a mod unique ID is compared and mapped by: IDs are case-insensitive and may carry stray spaces.
-func FoldID(id string) string { return strings.ToLower(strings.TrimSpace(id)) }
+// ModID is the manifest's mod as a mod.ID.
+func (m Manifest) ModID() mod.ID { return mod.SMAPI(m.UniqueID) }
 
-// SameID reports whether two mod unique IDs are the same under FoldID.
-func SameID(a, b string) bool { return FoldID(a) == FoldID(b) }
+// ContentPackForID is the ContentPackFor framework as a mod.ID, empty when the manifest declares none.
+func (m Manifest) ContentPackForID() mod.ID {
+	if m.ContentPackFor == "" {
+		return ""
+	}
+	return mod.SMAPI(m.ContentPackFor)
+}
+
+// ModID is the needed mod as a mod.ID.
+func (d Dependency) ModID() mod.ID { return mod.SMAPI(d.UniqueID) }

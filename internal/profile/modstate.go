@@ -13,13 +13,14 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 const configFile = "config.json"
 
 // ConfigPath is the mod's config.json, only if that file sits in the profile's mod folder.
-func (s *Store) ConfigPath(game, id, key, uniqueID string) (string, error) {
+func (s *Store) ConfigPath(game, id, key string, uniqueID mod.ID) (string, error) {
 	dir, err := s.ModFolder(game, id, key, uniqueID)
 	if err != nil {
 		return "", err
@@ -53,20 +54,20 @@ type ModState struct {
 }
 
 // FindMod is the entry and mod holding uniqueID; an empty key searches every entry.
-func (p Profile) FindMod(key, uniqueID string) (Entry, EntryMod, bool) {
+func (p Profile) FindMod(key string, uniqueID mod.ID) (Entry, Component, bool) {
 	for _, e := range p.Entries {
 		if key != "" && e.Key != key {
 			continue
 		}
-		if i := slices.IndexFunc(e.Mods, func(m EntryMod) bool { return SameID(m.UniqueID, uniqueID) }); i >= 0 {
+		if i := slices.IndexFunc(e.Mods, func(m Component) bool { return mod.Equal(m.ID, uniqueID) }); i >= 0 {
 			return e, e.Mods[i], true
 		}
 	}
-	return Entry{}, EntryMod{}, false
+	return Entry{}, Component{}, false
 }
 
 // ModState reads the mod's rollback target and the state of its config.json.
-func (s *Store) ModState(game, id, key, uniqueID string) (ModState, error) {
+func (s *Store) ModState(game, id, key string, uniqueID mod.ID) (ModState, error) {
 	p, err := s.read(game, id)
 	if err != nil {
 		return ModState{}, err
@@ -75,8 +76,8 @@ func (s *Store) ModState(game, id, key, uniqueID string) (ModState, error) {
 	if !ok {
 		return ModState{}, errors.New("no such mod in this profile")
 	}
-	st := ModState{PreviousVersion: s.previousVersion(game, e, m.UniqueID), Config: ConfigNone}
-	folder, err := s.ModFolder(game, id, e.Key, m.UniqueID)
+	st := ModState{PreviousVersion: s.previousVersion(game, e, m.ID), Config: ConfigNone}
+	folder, err := s.ModFolder(game, id, e.Key, m.ID)
 	if err != nil {
 		return ModState{}, err
 	}
@@ -109,7 +110,7 @@ func (s *Store) ModState(game, id, key, uniqueID string) (ModState, error) {
 	return st, nil
 }
 
-func (s *Store) previousVersion(game string, e Entry, uniqueID string) string {
+func (s *Store) previousVersion(game string, e Entry, uniqueID mod.ID) string {
 	if e.PreviousKey == "" {
 		return ""
 	}
@@ -122,7 +123,7 @@ func (s *Store) previousVersion(game string, e Entry, uniqueID string) string {
 		return ""
 	}
 	for _, f := range found {
-		if SameID(f.UniqueID, uniqueID) {
+		if mod.Equal(f.ModID(), uniqueID) {
 			return f.Version
 		}
 	}
@@ -130,7 +131,7 @@ func (s *Store) previousVersion(game string, e Entry, uniqueID string) string {
 }
 
 // ResetConfig deletes the mod's config.json so the mod writes a fresh one the next time it runs.
-func (s *Store) ResetConfig(game, id, key, uniqueID string) error {
+func (s *Store) ResetConfig(game, id, key string, uniqueID mod.ID) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
@@ -165,7 +166,7 @@ func configInMod(modDir, rel string) (string, error) {
 }
 
 // ReadConfig returns the mod's config.json text.
-func (s *Store) ReadConfig(game, id, key, uniqueID string) (string, error) {
+func (s *Store) ReadConfig(game, id, key string, uniqueID mod.ID) (string, error) {
 	path, err := s.ConfigPath(game, id, key, uniqueID)
 	if err != nil {
 		return "", err
@@ -182,7 +183,7 @@ func (s *Store) ReadConfig(game, id, key, uniqueID string) (string, error) {
 }
 
 // WriteConfig replaces the mod's config.json atomically after checking JSON and the path.
-func (s *Store) WriteConfig(game, id, key, uniqueID, contents string) error {
+func (s *Store) WriteConfig(game, id, key string, uniqueID mod.ID, contents string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {

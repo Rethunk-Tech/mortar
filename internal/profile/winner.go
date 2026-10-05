@@ -5,23 +5,23 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
-	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // SetWinner records or clears a LoadAfter on winnerKey for loserUniqueID and rewrites the winner's
 // installed manifest so SMAPI loads the winner later.
-func (s *Store) SetWinner(game, profileID, winnerKey, loserUniqueID string, on bool) (Profile, error) {
-	loserUniqueID = strings.TrimSpace(loserUniqueID)
+func (s *Store) SetWinner(game, profileID, winnerKey string, loserUniqueID mod.ID, on bool) (Profile, error) {
+	loserUniqueID = loserUniqueID
 	if loserUniqueID == "" {
 		return Profile{}, fmt.Errorf("loser unique ID is empty")
 	}
-	var drop []string
+	var drop []mod.ID
 	if !on {
-		drop = []string{loserUniqueID}
+		drop = []mod.ID{loserUniqueID}
 	}
 	return s.updateMods(game, profileID, func(p *Profile, dir string) error {
 		i := entryIndex(p.Entries, winnerKey)
@@ -36,7 +36,7 @@ func (s *Store) SetWinner(game, profileID, winnerKey, loserUniqueID string, on b
 }
 
 // SetWinner records or clears a LoadAfter on winnerKey for loserUniqueID.
-func (s *Service) SetWinner(game, profileID, winnerKey, loserUniqueID string, on bool) (Profile, error) {
+func (s *Service) SetWinner(game, profileID, winnerKey string, loserUniqueID mod.ID, on bool) (Profile, error) {
 	return s.store.SetWinner(game, profileID, winnerKey, loserUniqueID, on)
 }
 
@@ -52,10 +52,10 @@ func requireEntry(entries []Entry, key string) (int, error) {
 	return i, nil
 }
 
-func setLoadAfter(ids []string, loser string, on bool) []string {
-	out := make([]string, 0, len(ids)+1)
+func setLoadAfter(ids []mod.ID, loser mod.ID, on bool) []mod.ID {
+	out := make([]mod.ID, 0, len(ids)+1)
 	for _, id := range ids {
-		if !SameID(id, loser) {
+		if !mod.Equal(id, loser) {
 			out = append(out, id)
 		}
 	}
@@ -68,7 +68,7 @@ func setLoadAfter(ids []string, loser string, on bool) []string {
 	return out
 }
 
-func applyLoadAfter(root string, e Entry, drop []string) error {
+func applyLoadAfter(root string, e Entry, drop []mod.ID) error {
 	if len(e.LoadAfter) == 0 && len(drop) == 0 {
 		return nil
 	}
@@ -93,7 +93,7 @@ func applyLoadAfter(root string, e Entry, drop []string) error {
 	return nil
 }
 
-func rewriteManifestDeps(raw []byte, want, drop []string) ([]byte, error) {
+func rewriteManifestDeps(raw []byte, want, drop []mod.ID) ([]byte, error) {
 	if _, err := manifest.Parse(raw); err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func rewriteManifestDeps(raw []byte, want, drop []string) ([]byte, error) {
 	kept := make([]dep, 0, len(deps)+len(want))
 	seen := map[string]bool{}
 	for _, d := range deps {
-		low := strings.ToLower(d.UniqueID)
+		low := mod.SMAPI(d.UniqueID).Fold()
 		required := d.IsRequired == nil || *d.IsRequired
 		if !required && dropSet[low] && !wantSet[low] {
 			continue
@@ -124,11 +124,11 @@ func rewriteManifestDeps(raw []byte, want, drop []string) ([]byte, error) {
 	}
 	off := false
 	for _, id := range want {
-		if seen[strings.ToLower(id)] {
+		if seen[id.Fold()] {
 			continue
 		}
-		kept = append(kept, dep{UniqueID: id, IsRequired: &off})
-		seen[strings.ToLower(id)] = true
+		kept = append(kept, dep{UniqueID: id.Local(), IsRequired: &off})
+		seen[id.Fold()] = true
 	}
 	if len(kept) == 0 {
 		delete(doc, "Dependencies")
@@ -146,10 +146,10 @@ func rewriteManifestDeps(raw []byte, want, drop []string) ([]byte, error) {
 	return append(out, '\n'), nil
 }
 
-func idSet(ids []string) map[string]bool {
+func idSet(ids []mod.ID) map[string]bool {
 	out := map[string]bool{}
 	for _, id := range ids {
-		out[strings.ToLower(id)] = true
+		out[id.Fold()] = true
 	}
 	return out
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // manifestVersion matches a manifest's own "Version" value; dependency entries use MinimumVersion, so the first
@@ -22,7 +23,7 @@ var manifestVersion = regexp.MustCompile(`(?i)("version"\s*:\s*")([^"]*)(")`)
 // in the profile's copy, when the download is confirmed to be that version but its author did not bump the
 // manifest. Only the value changes, so comments and formatting survive. A manifest that came from another file of
 // the entry, or a FOMOD layout, is left alone: the download's version says nothing about it.
-func (s *Store) FixStaleManifest(game, id, key, uniqueID, version string) error {
+func (s *Store) FixStaleManifest(game, id, key string, uniqueID mod.ID, version string) error {
 	modsDir, err := s.ModsDir(game, id)
 	if err != nil {
 		return err
@@ -41,7 +42,7 @@ func (s *Store) FixStaleManifest(game, id, key, uniqueID, version string) error 
 		}
 		mi := -1
 		for i, m := range e.Mods {
-			if SameID(m.UniqueID, uniqueID) {
+			if mod.Equal(m.ID, uniqueID) {
 				mi = i
 			}
 		}
@@ -77,7 +78,7 @@ var errNotFixable = errors.New("manifest not in the entry's own download")
 
 // setManifestVersion rewrites the file only when it is uniqueID's manifest; a missing file means the folder came
 // from another file of the entry.
-func setManifestVersion(path, uniqueID, version string) error {
+func setManifestVersion(path string, uniqueID mod.ID, version string) error {
 	b, err := fsx.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return errNotFixable
@@ -86,7 +87,7 @@ func setManifestVersion(path, uniqueID, version string) error {
 		return err
 	}
 	m, err := manifest.Parse(b)
-	if err != nil || !SameID(m.UniqueID, uniqueID) {
+	if err != nil || !mod.Equal(m.ModID(), uniqueID) {
 		return errNotFixable
 	}
 	if m.Version == version {
