@@ -3,7 +3,7 @@ import { Box, Button, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 import { Browser, System } from '@wailsio/runtime'
 import { FolderOpen, Undo2 } from 'lucide-react'
 import { useState } from 'react'
-import type { FoundInstall } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
+import type { Install } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import {
   ClearLaunchOption,
   LaunchOptions,
@@ -99,7 +99,7 @@ function ExtraInstalls({
   override,
   onPick,
 }: {
-  installs: FoundInstall[]
+  installs: Install[]
   store: string
   override: string
   onPick: (store: string) => void
@@ -152,7 +152,7 @@ function GameFolder({
   folder: string
   versionNote: string
   store: string
-  installs: FoundInstall[]
+  installs: Install[]
   onRefresh: () => void
 }) {
   const { t } = useLingui()

@@ -9,7 +9,7 @@ import {
   SquareTerminal,
 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
-import type { FoundInstall } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
+import type { Install } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { loadGameStatus } from '../games/status.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
@@ -29,7 +29,7 @@ type GamePage = 'install' | 'smapi' | 'play' | 'mods' | 'backups' | 'console' | 
 function useGameInstall(game: string) {
   const [folder, setFolder] = useState('')
   const [store, setStore] = useState('')
-  const [installs, setInstalls] = useState<FoundInstall[]>([])
+  const [installs, setInstalls] = useState<Install[]>([])
   const [version, setVersion] = useState('')
   const load = useCallback(() => {
     loadGameStatus()
