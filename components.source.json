@@ -64,7 +64,12 @@
           "gameId": 1303
         },
         {
-          "id": "github"
+          "id": "github",
+          "key": "stardew-valley-mod"
+        },
+        {
+          "id": "moddrop",
+          "key": "stardew-valley"
         }
       ]
     },
