@@ -152,7 +152,7 @@ seed_lc() {
   rm -rf "$fx"
   for name in SeedAlpha SeedBeta; do
     mkdir -p "$fx/$name/plugins" "$fx/$name/config" "$fx/zips"
-    printf '{"name":"%s","version_number":"1.0.0","website_url":"","description":"Fixture package","dependencies":[]}\n' "$name" >"$fx/$name/manifest.json"
+    printf '{"name":"%s","version_number":"1.0.0","author":"Self-test","website_url":"","description":"Fixture package","dependencies":[]}\n' "$name" >"$fx/$name/manifest.json"
     printf 'placeholder %s\n' "$name" >"$fx/$name/plugins/$name.dll"
     printf '[General]\nEnabled = true\n' >"$fx/$name/config/Self-test.$name.cfg"
     (cd "$fx/$name" && python3 -m zipfile -c "$fx/zips/$name.zip" ./*)
