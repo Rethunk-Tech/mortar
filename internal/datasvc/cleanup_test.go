@@ -33,18 +33,8 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if err := os.MkdirAll(filepath.Join(root, "store", "stardew", "keep", "x"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(root, "store", "stardew", "keep", "x", "a.bin"), []byte("keep"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.MkdirAll(filepath.Join(root, "store", "stardew", "gone"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(root, "store", "stardew", "gone", "b.bin"), []byte("gone!"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	addItem(t, items, "keep", map[string]string{"x/a.bin": "keep"})
+	addItem(t, items, "gone", map[string]string{"b.bin": "gone!"})
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 	old, _ := json.Marshal(fetchedFile{Fetched: now.Add(-48 * time.Hour)})
 	fresh, _ := json.Marshal(fetchedFile{Fetched: now.Add(-time.Hour)})
@@ -79,11 +69,11 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 	if err := Apply(root, items, preview, map[string][]string{"stardew": {"keep"}}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(filepath.Join(root, "store", "stardew", "keep", "x", "a.bin")); err != nil {
+	if _, err := items.Dir("stardew", "keep"); err != nil {
 		t.Fatal("referenced item was removed")
 	}
-	if _, err := os.Stat(filepath.Join(root, "store", "stardew", "gone")); !os.IsNotExist(err) {
-		t.Fatalf("unused store item remains: %v", err)
+	if _, err := items.Dir("stardew", "gone"); err == nil {
+		t.Fatal("unused store item remains")
 	}
 	if _, err := os.Stat(filepath.Join(root, "cache", "nexus", "details-v3-stardewvalley-1.json")); !os.IsNotExist(err) {
 		t.Fatal("expired cache remains")
@@ -112,11 +102,7 @@ func TestApplySkipsAStoreKeyThatBecameReferenced(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	gone := filepath.Join(root, "store", "stardew", "gone")
-	if err := os.MkdirAll(gone, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	testfs.WriteFile(t, gone, "b.bin", "gone!")
+	addItem(t, items, "gone", map[string]string{"b.bin": "gone!"})
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 	preview, err := Select(root, items, map[string][]string{}, now, nil)
 	if err != nil {
@@ -125,7 +111,7 @@ func TestApplySkipsAStoreKeyThatBecameReferenced(t *testing.T) {
 	if err := Apply(root, items, preview, map[string][]string{"stardew": {"gone"}}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(filepath.Join(gone, "b.bin")); err != nil {
+	if _, err := items.Dir("stardew", "gone"); err != nil {
 		t.Fatal("store item referenced after preview was removed")
 	}
 }

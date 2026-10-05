@@ -49,7 +49,10 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 	}
 	for _, r := range refs {
 		rel := filepath.ToSlash(filepath.Join("store", r.Game, r.Key))
-		n := dirSize(filepath.Join(root, filepath.FromSlash(rel)))
+		var n int64
+		if dir, err := items.Dir(r.Game, r.Key); err == nil {
+			n = dirSize(dir)
+		}
 		label := r.Game + "/" + r.Key
 		if nameOf != nil {
 			if named := nameOf(r.Game, r.Key); named != "" {

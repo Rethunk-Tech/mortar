@@ -1,6 +1,7 @@
 package datasvc
 
 import (
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"os"
 	"path/filepath"
 	"testing"
@@ -146,8 +147,16 @@ func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	write("store/stardew/nexus-1-1/m.bin", 100)
-	write("store/stardew/local-aa/m.bin", 40)
+	items := store.OpenAt(filepath.Join(root, "store"))
+	for key, n := range map[string]int{"nexus-1-1": 100, "local-aa": 40} {
+		src := t.TempDir()
+		if err := os.WriteFile(filepath.Join(src, "m.bin"), make([]byte, n), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := items.AddDir("stardew", key, src); err != nil {
+			t.Fatal(err)
+		}
+	}
 	write("profiles/stardew/aaa/profile.json", 1)
 	write("profiles/stardew/aaa/mods/nexus-1-1/copy.bin", 80)
 	write("profiles/stardew/bbb/profile.json", 1)
@@ -159,11 +168,6 @@ func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
 	}
 	if err := os.WriteFile(filepath.Join(root, "profiles", "stardew", "bbb", "profile.json"), []byte(
 		`{"id":"bbb","name":"B","entries":[{"key":"nexus-1-1","source":{"name":"Alpha","version":"1.0"}}]}`,
-	), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(root, "store", "index.json"), []byte(
-		`{"stardew":{"nexus-1-1":"2026-01-02T03:04:05Z"}}`,
 	), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -179,7 +183,7 @@ func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
 		byKey[it.Key] = it
 	}
 	a := byKey["nexus-1-1"]
-	if a.Size != 100 || a.Profiles != 2 || a.ProfileSize != 170 || a.Name != "Alpha 1.0" || a.LastUsed != "2026-01-02T03:04:05Z" {
+	if a.Size != 100 || a.Profiles != 2 || a.ProfileSize != 170 || a.Name != "Alpha 1.0" || a.LastUsed == "" {
 		t.Fatalf("nexus-1-1 = %+v", a)
 	}
 	b := byKey["local-aa"]

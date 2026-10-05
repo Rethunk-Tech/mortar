@@ -3,6 +3,7 @@ package datasvc
 import (
 	"encoding/json"
 	"errors"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -312,56 +313,29 @@ type profileEntries struct {
 // MeasureMods reports each store folder's size, live-profile use, and copy sizes under profiles/.
 func MeasureMods(root string) (ModUsage, error) {
 	out := ModUsage{Items: []ModUse{}}
-	last := readStoreIndex(filepath.Join(root, "store", "index.json"))
 	names, uses, copies := profileUse(root)
-	storeRoot := filepath.Join(root, "store")
-	games, err := os.ReadDir(filepath.Clean(storeRoot))
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	entries, err := store.OpenAt(filepath.Join(root, "store")).Entries()
+	if err != nil {
 		return ModUsage{}, err
 	}
-	for _, g := range games {
-		if !g.IsDir() || g.Type()&fs.ModeSymlink != 0 {
-			continue
+	for _, e := range entries {
+		id := e.Game + "/" + e.Key
+		n := dirSize(e.Dir)
+		name := names[id]
+		if name == "" {
+			name = e.Key
 		}
-		items, err := os.ReadDir(filepath.Clean(filepath.Join(storeRoot, g.Name())))
-		if err != nil {
-			continue
+		lastUsed := ""
+		if !e.LastUsed.IsZero() {
+			lastUsed = e.LastUsed.UTC().Format(time.RFC3339)
 		}
-		for _, it := range items {
-			if !it.IsDir() || it.Type()&fs.ModeSymlink != 0 || strings.HasPrefix(it.Name(), ".") {
-				continue
-			}
-			id := g.Name() + "/" + it.Name()
-			n := dirSize(filepath.Join(storeRoot, g.Name(), it.Name()))
-			name := names[id]
-			if name == "" {
-				name = it.Name()
-			}
-			used := last[g.Name()][it.Name()]
-			lastUsed := ""
-			if !used.IsZero() {
-				lastUsed = used.UTC().Format(time.RFC3339)
-			}
-			out.Items = append(out.Items, ModUse{
-				Game: g.Name(), Key: it.Name(), Name: name, Size: n,
-				Profiles: uses[id], ProfileSize: copies[id], LastUsed: lastUsed,
-			})
-			out.Total += n
-		}
+		out.Items = append(out.Items, ModUse{
+			Game: e.Game, Key: e.Key, Name: name, Size: n,
+			Profiles: uses[id], ProfileSize: copies[id], LastUsed: lastUsed,
+		})
+		out.Total += n
 	}
 	return out, nil
-}
-
-func readStoreIndex(path string) map[string]map[string]time.Time {
-	b, err := fsx.ReadFile(path)
-	if err != nil {
-		return nil
-	}
-	var idx map[string]map[string]time.Time
-	if json.Unmarshal(b, &idx) != nil {
-		return nil
-	}
-	return idx
 }
 
 func profileUse(root string) (names map[string]string, uses map[string]int, copies map[string]int64) {

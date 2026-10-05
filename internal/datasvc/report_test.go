@@ -2,7 +2,6 @@ package datasvc
 
 import (
 	"errors"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -21,11 +20,7 @@ func TestRemoveItemsRefusesAReferencedKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	itemDir := filepath.Join(root, "store", "stardew", "nexus-1-1")
-	if err := os.MkdirAll(itemDir, 0o750); err != nil {
-		t.Fatal(err)
-	}
-	testfs.WriteFile(t, itemDir, "m.bin", "mod")
+	addItem(t, items, "nexus-1-1", map[string]string{"m.bin": "mod"})
 	profPath := filepath.Join(root, "profiles", "stardew", p.ID, "profile.json")
 	setEntry(t, profPath, "nexus-1-1")
 	svc := NewService(items, profiles, nil)

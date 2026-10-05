@@ -9,7 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -41,17 +41,9 @@ func TestKeepSetSourcesProtectItemsFromCleanupAndCollect(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
 	items, profiles := testenv.Stores(t)
-	root, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
 	// A bundle-only and a template-only local item: no profile names either.
 	for _, key := range []string{"local-bundle", "local-template"} {
-		dir := filepath.Join(root, "store", "stardew", key)
-		if err := os.MkdirAll(dir, 0o700); err != nil {
-			t.Fatal(err)
-		}
-		testfs.WriteFile(t, dir, "m.bin", "mod")
+		addItem(t, items, key, map[string]string{"m.bin": "mod"})
 	}
 	sources := []KeySource{
 		func() (map[string][]string, error) { return map[string][]string{"stardew": {"local-bundle"}}, nil },
@@ -78,8 +70,20 @@ func TestKeepSetSourcesProtectItemsFromCleanupAndCollect(t *testing.T) {
 		}
 	}
 	for _, key := range []string{"local-bundle", "local-template"} {
-		if _, err := os.Stat(filepath.Join(root, "store", "stardew", key, "m.bin")); err != nil {
+		if _, err := items.Dir("stardew", key); err != nil {
 			t.Fatalf("collect removed %s: %v", key, err)
 		}
+	}
+}
+
+// addItem stores a folder of the given files under key.
+func addItem(t *testing.T, items *store.Store, key string, files map[string]string) {
+	t.Helper()
+	src := t.TempDir()
+	for rel, body := range files {
+		testfs.WriteFile(t, src, rel, body)
+	}
+	if err := items.AddDir("stardew", key, src); err != nil {
+		t.Fatal(err)
 	}
 }
