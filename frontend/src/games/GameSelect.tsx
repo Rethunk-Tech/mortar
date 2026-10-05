@@ -115,7 +115,78 @@ function SourceBadges({ sources }: { sources: string[] }) {
   )
 }
 
-export function Row({
+function useLoaderLine({
+  game,
+  loader,
+  lastPlayedName,
+  lastPlayedAt,
+  playtimeMs,
+}: {
+  game: Game
+  loader: string
+  lastPlayedName: string
+  lastPlayedAt: string
+  playtimeMs: number
+}) {
+  const { t, i18n } = useLingui()
+  useNow()
+  const ago = formatWhen(lastPlayedAt)
+  let lastLine = ''
+  if (lastPlayedName && ago) {
+    lastLine = t`Last played with ${{ profile: lastPlayedName }} · ${{ when: ago }}`
+  } else if (lastPlayedName) {
+    lastLine = t`Last played with ${{ profile: lastPlayedName }}`
+  }
+  const playtime = formatPlaytime(playtimeMs, i18n.locale)
+  if (playtime) {
+    const total = t`${playtime} played`
+    lastLine = lastLine ? `${lastLine} · ${total}` : total
+  }
+  const named = game.store ? storeName(game.store) : null
+  const store = named ? t(named) : ''
+  if (store && lastLine) {
+    return t`${loader} | ${store} · ${lastLine}`
+  }
+  if (store) {
+    return t`${loader} | ${store}`
+  }
+  return lastLine ? t`${loader} · ${lastLine}` : loader
+}
+
+function useOpenGame(game: Game) {
+  const { t } = useLingui()
+  return () => {
+    if (!isGameId(game.id)) {
+      return
+    }
+    const { id } = game
+    SetLastGame(id).catch((err: unknown) => fail(t`Could not save the last game`, err))
+    gameSetupNeeded(game)
+      .then((needed) =>
+        needed ? useNav.getState().openGameSetup(id) : useNav.getState().openGame(id),
+      )
+      .catch((err: unknown) => fail(t`Could not read your games`, err))
+  }
+}
+
+function usePlayLast(game: Game, lastPlayedId: string) {
+  const { t } = useLingui()
+  const start = useLaunch((s) => s.start)
+  return (ev: MouseEvent) => {
+    ev.stopPropagation()
+    if (!lastPlayedId) {
+      return
+    }
+    SetLastGame(game.id).catch((err: unknown) => fail(t`Could not save the last game`, err))
+    SetLastProfile(game.id, lastPlayedId).catch((err: unknown) =>
+      fail(t`Could not save the open profile`, err),
+    )
+    useNav.getState().openGame(game.id)
+    start(game.id, lastPlayedId, playDirect()).then(() => undefined)
+  }
+}
+
+function Row({
   game,
   openable,
   note,
@@ -143,54 +214,9 @@ export function Row({
   compact?: boolean
 }) {
   const { t, i18n } = useLingui()
-  const start = useLaunch((s) => s.start)
-  useNow()
-  const ago = formatWhen(lastPlayedAt)
-  let lastLine = ''
-  if (lastPlayedName && ago) {
-    lastLine = t`Last played with ${{ profile: lastPlayedName }} · ${{ when: ago }}`
-  } else if (lastPlayedName) {
-    lastLine = t`Last played with ${{ profile: lastPlayedName }}`
-  }
-  const playtime = formatPlaytime(playtimeMs, i18n.locale)
-  if (playtime) {
-    const total = t`${playtime} played`
-    lastLine = lastLine ? `${lastLine} · ${total}` : total
-  }
-  const open = () => {
-    if (!isGameId(game.id)) {
-      return
-    }
-    const { id } = game
-    SetLastGame(id).catch((err: unknown) => fail(t`Could not save the last game`, err))
-    gameSetupNeeded(game)
-      .then((needed) =>
-        needed ? useNav.getState().openGameSetup(id) : useNav.getState().openGame(id),
-      )
-      .catch((err: unknown) => fail(t`Could not read your games`, err))
-  }
-  const playLast = (ev: MouseEvent) => {
-    ev.stopPropagation()
-    if (!lastPlayedId) {
-      return
-    }
-    SetLastGame(game.id).catch((err: unknown) => fail(t`Could not save the last game`, err))
-    SetLastProfile(game.id, lastPlayedId).catch((err: unknown) =>
-      fail(t`Could not save the open profile`, err),
-    )
-    useNav.getState().openGame(game.id)
-    start(game.id, lastPlayedId, playDirect()).then(() => undefined)
-  }
-  const named = game.store ? storeName(game.store) : null
-  const store = named ? t(named) : ''
-  let loaderLine = loader
-  if (store && lastLine) {
-    loaderLine = t`${loader} | ${store} · ${lastLine}`
-  } else if (store) {
-    loaderLine = t`${loader} | ${store}`
-  } else if (lastLine) {
-    loaderLine = t`${loader} · ${lastLine}`
-  }
+  const loaderLine = useLoaderLine({ game, loader, lastPlayedName, lastPlayedAt, playtimeMs })
+  const open = useOpenGame(game)
+  const playLast = usePlayLast(game, lastPlayedId)
   const content = (
     <>
       {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
@@ -307,7 +333,7 @@ const hoverFocus = {
   },
 } as const
 
-export function GameSelect() {
+function GameSelect() {
   const { t } = useLingui()
   const { status, loadError, refresh, tileProps } = useGameTiles()
   if (loadError) {
@@ -349,3 +375,5 @@ export function GameSelect() {
     </Box>
   )
 }
+
+export { GameSelect, Row }

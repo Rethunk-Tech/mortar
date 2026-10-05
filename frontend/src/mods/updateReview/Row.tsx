@@ -22,41 +22,13 @@ import { UpdateActions } from './UpdateActions.tsx'
 import { Version } from './Version.tsx'
 import { pendingUpdate } from './wants.ts'
 
-export function Row({
-  update,
-  profileId,
-  caution,
-  acked,
-  included,
-  onAck,
-  onInclude,
-  picture,
-}: {
-  update: Update
-  profileId: string
-  caution: string
-  acked: boolean
-  included: boolean
-  onAck: (on: boolean) => void
-  onInclude: (on: boolean) => void
-  picture?: string
-}) {
+function useRowNotes(update: Update, profileId: string) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const mod = mods.find((m) => m.key === update.key && sameId(m.id, update.id))
   const entries = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.entries)
   const entry = entries?.find((e) => e.key === update.key)
   const optional = entries?.filter((e) => e.overlayOf === update.key).length ?? 0
-  const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
-  const riskyChangelog =
-    update.nexusId > 0 && details
-      ? changelogsHaveRiskyNotes(
-          changelogsBetween(details.changelogs ?? [], update.installed, update.version),
-        )
-      : false
-  const { sizeKb, changelog } = rowDetails(update, details)
-  const { added, removed } = dependencyChanges(update)
-  const queued = useQueue((s) => pendingUpdate(s.state.items, profileId, update))
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
     ...(mod && !mod.enabled ? [t`Disabled in this profile`] : []),
@@ -76,6 +48,108 @@ export function Row({
       ? [t`From GitHub (${update.githubFallback}) when its release matches, else Nexus`]
       : []),
   ]
+  return { mod, entry, notes }
+}
+
+function VersionLine({ update }: { update: Update }) {
+  const { t } = useLingui()
+  const { added, removed } = dependencyChanges(update)
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+      <Version>{update.installed}</Version>
+      <ArrowRight size={14} aria-hidden={true} />
+      <Version isNew={true}>{update.version}</Version>
+      {update.source ? <Chip size="small" variant="outlined" label={update.source} /> : null}
+      {added.length + removed.length > 0 ? (
+        <Tooltip
+          title={
+            <>
+              {added.length > 0 ? <div>{t`Now needs ${listNames(added)}`}</div> : null}
+              {removed.length > 0 ? <div>{t`No longer needs ${listNames(removed)}`}</div> : null}
+            </>
+          }
+        >
+          <Chip size="small" variant="outlined" label={t`Changes dependencies`} />
+        </Tooltip>
+      ) : null}
+    </Box>
+  )
+}
+
+function ChangeSummary({
+  update,
+  sizeKb,
+  changelog,
+}: {
+  update: Update
+  sizeKb: number
+  changelog: string
+}) {
+  const { t } = useLingui()
+  return sizeKb > 0 || changelog ? (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, fontSize: 12 }}>
+      {sizeKb > 0 ? (
+        <Box component="span" sx={{ color: 'text.secondary', flexShrink: 0 }}>
+          {formatKb(sizeKb)}
+        </Box>
+      ) : null}
+      {changelog ? (
+        <>
+          <Tooltip title={changelog}>
+            <Box
+              component="span"
+              sx={{
+                color: 'text.secondary',
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {changelog}
+            </Box>
+          </Tooltip>
+          {update.url ? (
+            <Button size="small" sx={{ flexShrink: 0 }} onClick={() => openPage(update.url)}>
+              {t`Changelog`}
+            </Button>
+          ) : null}
+        </>
+      ) : null}
+    </Box>
+  ) : null
+}
+
+function Row({
+  update,
+  profileId,
+  caution,
+  acked,
+  included,
+  onAck,
+  onInclude,
+  picture,
+}: {
+  update: Update
+  profileId: string
+  caution: string
+  acked: boolean
+  included: boolean
+  onAck: (on: boolean) => void
+  onInclude: (on: boolean) => void
+  picture?: string
+}) {
+  const { t } = useLingui()
+  const { mod, entry, notes } = useRowNotes(update, profileId)
+  const details = useNexusDetails((s) => s.byId[update.nexusId]?.details)
+  const riskyChangelog =
+    update.nexusId > 0 && details
+      ? changelogsHaveRiskyNotes(
+          changelogsBetween(details.changelogs ?? [], update.installed, update.version),
+        )
+      : false
+  const { sizeKb, changelog } = rowDetails(update, details)
+  const queued = useQueue((s) => pendingUpdate(s.state.items, profileId, update))
   const reportedElsewhere =
     entry?.source.kind === 'nexus' && update.source !== '' && update.source !== 'Nexus'
   return (
@@ -105,58 +179,8 @@ export function Row({
           reportedElsewhere={reportedElsewhere}
           riskyChangelog={riskyChangelog}
         />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-          <Version>{update.installed}</Version>
-          <ArrowRight size={14} aria-hidden={true} />
-          <Version isNew={true}>{update.version}</Version>
-          {update.source ? <Chip size="small" variant="outlined" label={update.source} /> : null}
-          {added.length + removed.length > 0 ? (
-            <Tooltip
-              title={
-                <>
-                  {added.length > 0 ? <div>{t`Now needs ${listNames(added)}`}</div> : null}
-                  {removed.length > 0 ? (
-                    <div>{t`No longer needs ${listNames(removed)}`}</div>
-                  ) : null}
-                </>
-              }
-            >
-              <Chip size="small" variant="outlined" label={t`Changes dependencies`} />
-            </Tooltip>
-          ) : null}
-        </Box>
-        {sizeKb > 0 || changelog ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, fontSize: 12 }}>
-            {sizeKb > 0 ? (
-              <Box component="span" sx={{ color: 'text.secondary', flexShrink: 0 }}>
-                {formatKb(sizeKb)}
-              </Box>
-            ) : null}
-            {changelog ? (
-              <>
-                <Tooltip title={changelog}>
-                  <Box
-                    component="span"
-                    sx={{
-                      color: 'text.secondary',
-                      minWidth: 0,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {changelog}
-                  </Box>
-                </Tooltip>
-                {update.url ? (
-                  <Button size="small" sx={{ flexShrink: 0 }} onClick={() => openPage(update.url)}>
-                    {t`Changelog`}
-                  </Button>
-                ) : null}
-              </>
-            ) : null}
-          </Box>
-        ) : null}
+        <VersionLine update={update} />
+        <ChangeSummary update={update} sizeKb={sizeKb} changelog={changelog} />
         <OptionalUpdates update={update} profileId={profileId} />
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -189,3 +213,5 @@ export function Row({
     </Box>
   )
 }
+
+export { Row }
