@@ -133,7 +133,7 @@ msgstr "Priority Default"
 msgid "Show failed"
 msgstr "Show failed"
 
-#: src/settings/GameSettingsPage.tsx:62
+#: src/settings/GameSettingsPage.tsx:68
 msgid "Streaming"
 msgstr "Streaming"
 
@@ -152,11 +152,6 @@ msgstr "Unofficial build"
 #: src/settings/sections/Updates.tsx:194
 msgid "Mod updates show on each profile's mod list."
 msgstr "Mod updates show on each profile's mod list."
-
-#. placeholder {0}: status.version
-#: src/settings/sections/SmapiRow.tsx:96
-msgid "SMAPI {0}"
-msgstr "SMAPI {0}"
 
 #: src/templates/TemplateDialogs.tsx:157
 msgid "Choose Save as template… from a profile's menu."
@@ -1560,10 +1555,6 @@ msgstr "Page"
 msgid "{0, plural, one {Moved # mod} other {Moved # mods}}"
 msgstr "{0, plural, one {Moved # mod} other {Moved # mods}}"
 
-#: src/settings/sections/SmapiRow.tsx:74
-msgid "Stop the game to install SMAPI."
-msgstr "Stop the game to install SMAPI."
-
 #: src/bundles/dialogs.tsx:58
 #: src/firstrun/ProfileStep.tsx:120
 #: src/mods/CategoryEditor.tsx:40
@@ -1716,8 +1707,8 @@ msgstr "Fullscreen resolution width"
 msgid "Host:port"
 msgstr "Host:port"
 
-#: src/settings/sections/GameSettings.tsx:317
-#: src/settings/sections/GameSettings.tsx:323
+#: src/settings/sections/GameSettings.tsx:325
+#: src/settings/sections/GameSettings.tsx:331
 msgid "Tell me when a new SMAPI is out"
 msgstr "Tell me when a new SMAPI is out"
 
@@ -2599,7 +2590,7 @@ msgstr "Search all runs…"
 
 #: src/firstrun/FindStep.tsx:202
 #: src/install/NeedsRootCallout.tsx:22
-#: src/settings/sections/GameSettings.tsx:361
+#: src/settings/sections/GameSettings.tsx:371
 #: src/tools/ToolEditorDialog.tsx:112
 msgid "Choose folder…"
 msgstr "Choose folder…"
@@ -2977,8 +2968,8 @@ msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
 #: src/game/ProfileWorkspace.tsx:112
-#: src/settings/GameSettingsPage.tsx:61
-#: src/settings/GameSettingsPage.tsx:116
+#: src/settings/GameSettingsPage.tsx:66
+#: src/settings/GameSettingsPage.tsx:128
 msgid "Console"
 msgstr "Console"
 
@@ -3548,7 +3539,7 @@ msgstr "Downloads paused"
 msgid "{0, plural, one {# error} other {# errors}}"
 msgstr "{0, plural, one {# error} other {# errors}}"
 
-#: src/settings/GameSettingsPage.tsx:136
+#: src/settings/GameSettingsPage.tsx:148
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
@@ -3709,7 +3700,7 @@ msgid "Offer new downloads"
 msgstr "Offer new downloads"
 
 #: src/settings/prefCopy.ts:232
-#: src/settings/sections/GameSettings.tsx:339
+#: src/settings/sections/GameSettings.tsx:349
 msgid "Extra mods folder"
 msgstr "Extra mods folder"
 
@@ -3852,7 +3843,7 @@ msgstr "Review {updateN, plural, one {# update} other {# updates}}"
 #: src/mods/Sidebar.tsx:222
 #: src/mods/updateReview/EverywhereDialog.tsx:137
 #: src/mods/updateReview/UpdateActions.tsx:79
-#: src/settings/sections/SmapiRow.tsx:88
+#: src/settings/sections/LoaderRow.tsx:94
 #: src/settings/smapiToast.ts:35
 msgid "Update"
 msgstr "Update"
@@ -3950,14 +3941,14 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/Downloads.tsx:229
 #: src/settings/sections/Downloads.tsx:261
 #: src/settings/sections/Downloads.tsx:282
-#: src/settings/sections/GameSettings.tsx:321
-#: src/settings/sections/GameSettings.tsx:345
-#: src/settings/sections/GameSettings.tsx:348
-#: src/settings/sections/GameSettings.tsx:383
+#: src/settings/sections/GameSettings.tsx:329
+#: src/settings/sections/GameSettings.tsx:355
+#: src/settings/sections/GameSettings.tsx:358
+#: src/settings/sections/GameSettings.tsx:393
 #: src/settings/sections/General.tsx:36
+#: src/settings/sections/LoaderRow.tsx:52
 #: src/settings/sections/ModsProfiles.tsx:20
 #: src/settings/sections/Notifications.tsx:35
-#: src/settings/sections/SmapiRow.tsx:46
 #: src/settings/sections/SourceOrder.tsx:45
 #: src/settings/sections/StreamOverlay.tsx:408
 #: src/settings/sections/Updates.tsx:161
@@ -4065,7 +4056,7 @@ msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
 #. placeholder {0}: g.version
-#: src/settings/GameSettingsPage.tsx:73
+#: src/settings/GameSettingsPage.tsx:79
 msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
@@ -4338,7 +4329,6 @@ msgid "Could not read this Mortar build's version: {failed}"
 msgstr "Could not read this Mortar build's version: {failed}"
 
 #: src/loader/Banner.tsx:26
-#: src/settings/sections/SmapiRow.tsx:91
 msgid "SMAPI is not installed"
 msgstr "SMAPI is not installed"
 
@@ -4421,11 +4411,6 @@ msgstr "Mods measured"
 msgid "Restarting…"
 msgstr "Restarting…"
 
-#. placeholder {0}: action.version
-#: src/settings/sections/SmapiRow.tsx:141
-msgid "Every profile of this game runs the SMAPI in the game folder, so they all switch to {0}."
-msgstr "Every profile of this game runs the SMAPI in the game folder, so they all switch to {0}."
-
 #: src/commandPalette/paletteLabels.ts:10
 msgid "Add from the downloads folder…"
 msgstr "Add from the downloads folder…"
@@ -4445,7 +4430,7 @@ msgstr "Needs"
 msgid "Files set aside"
 msgstr "Files set aside"
 
-#: src/settings/GameSettingsPage.tsx:107
+#: src/settings/GameSettingsPage.tsx:119
 msgid "{name} profile history"
 msgstr "{name} profile history"
 
@@ -4905,7 +4890,7 @@ msgstr "Remove the focused mod"
 msgid "Allow it in your antivirus, then Retry."
 msgstr "Allow it in your antivirus, then Retry."
 
-#: src/settings/sections/GameSettings.tsx:377
+#: src/settings/sections/GameSettings.tsx:387
 msgid "Backup location"
 msgstr "Backup location"
 
@@ -4946,6 +4931,11 @@ msgstr "{0, plural, one {+# file} other {+# files}}"
 #: src/settings/sections/StreamOverlay.tsx:88
 msgid "Farming skill"
 msgstr "Farming skill"
+
+#. placeholder {0}: loader.name
+#: src/settings/sections/LoaderRow.tsx:80
+msgid "Stop the game to install {0}."
+msgstr "Stop the game to install {0}."
 
 #: src/toasts/HistoryButton.tsx:126
 msgid "No notifications yet"
@@ -5153,7 +5143,7 @@ msgstr "Imported"
 msgid "In Mortar"
 msgstr "In Mortar"
 
-#: src/settings/GameSettingsPage.tsx:135
+#: src/settings/GameSettingsPage.tsx:147
 msgid "{name} settings"
 msgstr "{name} settings"
 
@@ -5789,8 +5779,8 @@ msgstr "Send"
 #: src/game/Hero.tsx:325
 #: src/game/ProfileWorkspace.tsx:92
 #: src/mods/ModListVirtual.tsx:275
-#: src/settings/GameSettingsPage.tsx:59
-#: src/settings/GameSettingsPage.tsx:90
+#: src/settings/GameSettingsPage.tsx:63
+#: src/settings/GameSettingsPage.tsx:102
 #: src/settings/sections/Updates.tsx:175
 msgid "Mods"
 msgstr "Mods"
@@ -6011,7 +6001,7 @@ msgstr "Copy {0}"
 msgid "Download them"
 msgstr "Download them"
 
-#: src/settings/sections/SmapiRow.tsx:99
+#: src/settings/sections/LoaderRow.tsx:105
 msgid "Installed and up to date"
 msgstr "Installed and up to date"
 
@@ -6221,9 +6211,12 @@ msgstr "Not found"
 msgid "Use default"
 msgstr "Use default"
 
+#. placeholder {0}: loader.name
+#: src/settings/sections/LoaderRow.tsx:128
+msgid "{0} version"
+msgstr "{0} version"
+
 #: src/profiles/OverrideRows.tsx:90
-#: src/settings/GameSettingsPage.tsx:57
-#: src/settings/sections/GameSettings.tsx:315
 msgid "SMAPI"
 msgstr "SMAPI"
 
@@ -6516,7 +6509,7 @@ msgstr "Removed from Nexus"
 msgid "A download fails"
 msgstr "A download fails"
 
-#: src/settings/sections/GameSettings.tsx:392
+#: src/settings/sections/GameSettings.tsx:402
 msgid "Turn on scheduled save backups first."
 msgstr "Turn on scheduled save backups first."
 
@@ -6819,6 +6812,11 @@ msgstr "Command copied"
 msgid "Mods list"
 msgstr "Mods list"
 
+#. placeholder {0}: loader.name
+#: src/settings/sections/LoaderRow.tsx:100
+msgid "A game update replaced {0}'s launcher"
+msgstr "A game update replaced {0}'s launcher"
+
 #: src/mods/GroupMenu.tsx:53
 msgid "Switch all on"
 msgstr "Switch all on"
@@ -6939,6 +6937,12 @@ msgstr "Could not offer the folder again"
 #: src/settings/prefCopy.ts:418
 msgid "Problems and updates"
 msgstr "Problems and updates"
+
+#. placeholder {0}: loader.name
+#. placeholder {1}: action.version
+#: src/settings/sections/LoaderRow.tsx:147
+msgid "Every profile of this game runs the {0} installed for it, so they all switch to {1}."
+msgstr "Every profile of this game runs the {0} installed for it, so they all switch to {1}."
 
 #: src/profiles/HistoryDiffView.tsx:39
 msgid "Restore {aLabel}"
@@ -7206,7 +7210,7 @@ msgstr "{who}: {reason}"
 msgid "{plugin} failed to load ({name})."
 msgstr "{plugin} failed to load ({name})."
 
-#: src/settings/sections/SmapiRow.tsx:75
+#: src/settings/sections/LoaderRow.tsx:81
 msgid "An install is already running."
 msgstr "An install is already running."
 
@@ -7652,11 +7656,6 @@ msgstr "Create your first profile"
 msgid "Moss"
 msgstr "Moss"
 
-#. placeholder {0}: action.version
-#: src/settings/sections/SmapiRow.tsx:140
-msgid "Install SMAPI {0}?"
-msgstr "Install SMAPI {0}?"
-
 #: src/mods/updateReview/ReviewTitle.tsx:36
 msgid "{count, plural, one {# update} other {# updates}} for {profileName}"
 msgstr "{count, plural, one {# update} other {# updates}} for {profileName}"
@@ -7813,7 +7812,7 @@ msgid "Launch the game with this profile's mods. Mortar applies your list before
 msgstr "Launch the game with this profile's mods. Mortar applies your list before SMAPI starts."
 
 #. placeholder {0}: action.version
-#: src/settings/sections/SmapiRow.tsx:87
+#: src/settings/sections/LoaderRow.tsx:93
 msgid "Install {0}…"
 msgstr "Install {0}…"
 
@@ -7862,6 +7861,12 @@ msgstr "Skipped updates for selected mods"
 #: src/settings/shortcutLabels.ts:27
 msgid "Switch to Performance"
 msgstr "Switch to Performance"
+
+#. placeholder {0}: loader.name
+#. placeholder {1}: status.latest
+#: src/settings/sections/LoaderRow.tsx:104
+msgid "{0} {1} is available"
+msgstr "{0} {1} is available"
 
 #: src/share/IncludeOptions.tsx:29
 msgid "Include config files"
@@ -8643,7 +8648,7 @@ msgstr "Up next: {0} and {more} more"
 msgid "{source}, version {0}"
 msgstr "{source}, version {0}"
 
-#: src/settings/sections/SmapiRow.tsx:26
+#: src/settings/sections/LoaderRow.tsx:26
 msgid "Latest (recommended)"
 msgstr "Latest (recommended)"
 
@@ -8959,9 +8964,9 @@ msgid "Show file"
 msgstr "Show file"
 
 #: src/saves/BackupsDialog.tsx:128
-#: src/settings/GameSettingsPage.tsx:60
+#: src/settings/GameSettingsPage.tsx:64
 #: src/settings/sections/DataUsage.tsx:207
-#: src/settings/sections/GameSettings.tsx:386
+#: src/settings/sections/GameSettings.tsx:396
 msgid "Save backups"
 msgstr "Save backups"
 
@@ -9046,8 +9051,8 @@ msgstr "Find the crash cause"
 #: src/firstrunTour/TourPopover.tsx:64
 #: src/games/GameSelect.tsx:238
 #: src/launch/PlayControl.tsx:162
-#: src/settings/GameSettingsPage.tsx:58
-#: src/settings/GameSettingsPage.tsx:80
+#: src/settings/GameSettingsPage.tsx:62
+#: src/settings/GameSettingsPage.tsx:88
 msgid "Play"
 msgstr "Play"
 
@@ -9077,6 +9082,12 @@ msgstr "Mod"
 #: src/launch/PrePlayDialog.tsx:38
 msgid "Pending updates ({0})"
 msgstr "Pending updates ({0})"
+
+#. placeholder {0}: loader.name
+#. placeholder {1}: action.version
+#: src/settings/sections/LoaderRow.tsx:146
+msgid "Install {0} {1}?"
+msgstr "Install {0} {1}?"
 
 #. placeholder {0}: done.length
 #. placeholder {1}: names(done)
@@ -9186,9 +9197,9 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 #: src/console/RunProblems.tsx:116
 #: src/fomod/Dialog.tsx:264
 #: src/loader/Banner.tsx:27
-#: src/settings/GameSettingsPage.tsx:56
-#: src/settings/sections/SmapiRow.tsx:87
-#: src/settings/sections/SmapiRow.tsx:142
+#: src/settings/GameSettingsPage.tsx:58
+#: src/settings/sections/LoaderRow.tsx:93
+#: src/settings/sections/LoaderRow.tsx:148
 msgid "Install"
 msgstr "Install"
 
@@ -9300,6 +9311,11 @@ msgstr "Steam"
 #: src/firstrun/NexusStep.tsx:22
 msgid "Mod Manager Download buttons on Nexus Mods only work in Mortar when you are signed in."
 msgstr "Mod Manager Download buttons on Nexus Mods only work in Mortar when you are signed in."
+
+#. placeholder {0}: loader.name
+#: src/settings/sections/LoaderRow.tsx:97
+msgid "{0} is not installed"
+msgstr "{0} is not installed"
 
 #: src/mods/LoadOrderTab.tsx:369
 msgid "Reading load order…"
@@ -9839,7 +9855,7 @@ msgstr "Profile"
 #: src/firstrun/FindStep.tsx:181
 #: src/settings/sections/Downloads.tsx:310
 #: src/settings/sections/GameSettings.tsx:193
-#: src/settings/sections/GameSettings.tsx:399
+#: src/settings/sections/GameSettings.tsx:409
 msgid "Change folder…"
 msgstr "Change folder…"
 
@@ -9894,7 +9910,6 @@ msgid "Mortar version"
 msgstr "Mortar version"
 
 #: src/settings/prefCopy.ts:360
-#: src/settings/sections/SmapiRow.tsx:122
 msgid "SMAPI version"
 msgstr "SMAPI version"
 
@@ -10535,7 +10550,7 @@ msgstr "{hours}h played"
 #: src/console/LogActions.tsx:159
 #: src/profiles/OverwriteRow.tsx:45
 #: src/profiles/OverwriteRow.tsx:52
-#: src/settings/sections/GameSettings.tsx:357
+#: src/settings/sections/GameSettings.tsx:367
 #: src/toasts/HistoryButton.tsx:120
 msgid "Clear"
 msgstr "Clear"
@@ -10624,7 +10639,6 @@ msgstr "this version skipped"
 
 #. placeholder {0}: status.latest
 #: src/loader/Banner.tsx:32
-#: src/settings/sections/SmapiRow.tsx:98
 msgid "SMAPI {0} is available"
 msgstr "SMAPI {0} is available"
 
@@ -10849,8 +10863,11 @@ msgid "Support"
 msgstr "Support"
 
 #. placeholder {0}: e.action
+#. placeholder {0}: loader.name
 #. placeholder {1}: e.target
+#. placeholder {1}: status.version
 #: src/mods/ConflictWhy.tsx:104
+#: src/settings/sections/LoaderRow.tsx:102
 msgid "{0} {1}"
 msgstr "{0} {1}"
 
@@ -10991,7 +11008,7 @@ msgstr "Scheduled backups kept per save"
 
 #: src/console/ConsoleTab.tsx:274
 #: src/loader/Banner.tsx:30
-#: src/settings/sections/SmapiRow.tsx:89
+#: src/settings/sections/LoaderRow.tsx:95
 msgid "Reinstall"
 msgstr "Reinstall"
 
@@ -11385,7 +11402,6 @@ msgid "Search all mod sites"
 msgstr "Search all mod sites"
 
 #: src/loader/Banner.tsx:29
-#: src/settings/sections/SmapiRow.tsx:94
 msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 

@@ -40,12 +40,18 @@ function pinValue(raw: string | undefined): string {
   return raw
 }
 
-function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
+function LoaderRow({
+  loader,
+  onVersion,
+}: {
+  loader: { id: string; name: string }
+  onVersion: (v: string) => void
+}) {
   const { t, i18n } = useLingui()
   const push = useToasts((s) => s.push)
   const fail = t`Could not save that setting`
   const game = useCurrentGame()
-  const pin = useSettings((s) => s.loaderPrefs?.smapi?.pin ?? '')
+  const pin = useSettings((s) => s.loaderPrefs?.[loader.id]?.pin ?? '')
   const status = useLoader((s) => s.status)
   const check = useLoader((s) => s.check)
   const install = useLoader((s) => s.install)
@@ -61,17 +67,17 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
   useEffect(() => {
     check(game)
     refreshLaunch(game)
-    ListVersions(game, '')
+    ListVersions(game, loader.id)
       .then((rows) => setVersions(rows ?? []))
       .catch(() => setVersions([]))
-  }, [check, refreshLaunch, game])
+  }, [check, refreshLaunch, game, loader.id])
   const gameVersion = status?.gameVersion ?? ''
   useEffect(() => {
     onVersion(gameVersion)
   }, [gameVersion, onVersion])
   const locked = playing || pending || installing
   const lockReason = playing
-    ? t`Stop the game to install SMAPI.`
+    ? t`Stop the game to install ${loader.name}.`
     : t`An install is already running.`
   const action = smapiAction(
     {
@@ -88,14 +94,14 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
     update: t`Update`,
     reinstall: t`Reinstall`,
   }
-  let title = t`SMAPI is not installed`
+  let title = t`${loader.name} is not installed`
   let detail = ''
   if (status?.broken) {
-    title = t`A game update replaced SMAPI's launcher`
+    title = t`A game update replaced ${loader.name}'s launcher`
   } else if (status?.installed) {
-    title = t`SMAPI ${status.version}`
+    title = t`${loader.name} ${status.version}`
     detail = status.updateAvailable
-      ? t`SMAPI ${status.latest} is available`
+      ? t`${loader.name} ${status.latest} is available`
       : t`Installed and up to date`
   }
   const run = () => {
@@ -106,7 +112,7 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
     })
   }
   const savePin = (value: string) => {
-    persist(() => SetByKey('smapiPin', value === LATEST ? '' : value, game), push, fail)
+    persist(() => SetByKey(`${loader.id}Pin`, value === LATEST ? '' : value, game), push, fail)
   }
   return (
     <>
@@ -119,7 +125,7 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
               value={selected}
               onChange={savePin}
               options={versionChoices(i18n, pin ? [pin, ...versions] : versions)}
-              label={t`SMAPI version`}
+              label={t`${loader.name} version`}
             />
             <DisabledReason title={lockReason} disabled={locked}>
               <Button
@@ -137,8 +143,8 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
       </SettingRow>
       <ConfirmDialog
         open={confirm}
-        title={t`Install SMAPI ${action.version}?`}
-        body={t`Every profile of this game runs the SMAPI in the game folder, so they all switch to ${action.version}.`}
+        title={t`Install ${loader.name} ${action.version}?`}
+        body={t`Every profile of this game runs the ${loader.name} installed for it, so they all switch to ${action.version}.`}
         confirmLabel={t`Install`}
         busy={busy}
         onCancel={() => setConfirm(false)}
@@ -148,4 +154,4 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
   )
 }
 
-export { SmapiRow }
+export { LoaderRow }

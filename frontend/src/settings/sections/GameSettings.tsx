@@ -31,8 +31,8 @@ import { persist } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { BackupsUsageRow } from './DataBackups.tsx'
+import { LoaderRow } from './LoaderRow.tsx'
 import { ScheduledStatus } from './ScheduledStatus.tsx'
-import { SmapiRow } from './SmapiRow.tsx'
 
 const noShrink = { flexShrink: 0 }
 
@@ -306,24 +306,34 @@ function GameFolder({
   )
 }
 
-function SmapiPage({ onVersion }: { onVersion: (v: string) => void }) {
+function LoaderPage({
+  loader,
+  onVersion,
+}: {
+  loader: { id: string; name: string }
+  onVersion: (v: string) => void
+}) {
   const { t } = useLingui()
   const game = useCurrentGame()
   const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut) !== false
   const push = useToasts((s) => s.push)
   return (
-    <SettingsSection title={t`SMAPI`}>
-      <SmapiRow onVersion={onVersion} />
-      <SettingRow label={t`Tell me when a new SMAPI is out`}>
-        <PrefSwitch
-          checked={tellWhenSmapiOut}
-          onChange={(on) =>
-            persist(() => SetTellWhenSmapiOut(on), push, t`Could not save that setting`)
-          }
-          label={t`Tell me when a new SMAPI is out`}
-        />
-      </SettingRow>
-      <PrefByKey prefKey="smapiBuilds" game={game} />
+    <SettingsSection title={loader.name}>
+      <LoaderRow loader={loader} onVersion={onVersion} />
+      {loader.id === 'smapi' ? (
+        <>
+          <SettingRow label={t`Tell me when a new SMAPI is out`}>
+            <PrefSwitch
+              checked={tellWhenSmapiOut}
+              onChange={(on) =>
+                persist(() => SetTellWhenSmapiOut(on), push, t`Could not save that setting`)
+              }
+              label={t`Tell me when a new SMAPI is out`}
+            />
+          </SettingRow>
+          <PrefByKey prefKey="smapiBuilds" game={game} />
+        </>
+      ) : null}
     </SettingsSection>
   )
 }
@@ -405,4 +415,4 @@ function BackupsPage() {
   )
 }
 
-export { BackupsPage, ExtraModsFolder, GameFolder, SmapiPage }
+export { BackupsPage, ExtraModsFolder, GameFolder, LoaderPage }

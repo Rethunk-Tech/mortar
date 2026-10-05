@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type { Install } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
-import { loadGameStatus } from '../games/status.ts'
+import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -20,12 +20,12 @@ import { SettingsSection } from './SettingsSection.tsx'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
 import { HistoryUsageRows } from './sections/DataHistory.tsx'
 import { DismissedFolders } from './sections/DismissedFolders.tsx'
-import { BackupsPage, ExtraModsFolder, GameFolder, SmapiPage } from './sections/GameSettings.tsx'
+import { BackupsPage, ExtraModsFolder, GameFolder, LoaderPage } from './sections/GameSettings.tsx'
 import { SourceOrder } from './sections/SourceOrder.tsx'
 import { StreamOverlay } from './sections/StreamOverlay.tsx'
 import { useSettings } from './store.ts'
 
-type GamePage = 'install' | 'smapi' | 'play' | 'mods' | 'backups' | 'console' | 'streaming'
+type GamePage = 'install' | 'loader' | 'play' | 'mods' | 'backups' | 'console' | 'streaming'
 
 function useGameInstall(game: string) {
   const [folder, setFolder] = useState('')
@@ -33,9 +33,10 @@ function useGameInstall(game: string) {
   const [installs, setInstalls] = useState<Install[]>([])
   const [version, setVersion] = useState('')
   const load = useCallback(() => {
-    loadGameStatus()
-      .then((s) => {
-        const g = s.games.find((x) => x.id === game)
+    // The install list alone; Steam's status is not needed here and its failure must not blank the folder.
+    List()
+      .then((games) => {
+        const g = (games ?? []).find((x) => x.id === game)
         setFolder(g?.installDir ?? '')
         setStore(g?.store ?? '')
         setInstalls(g?.installs ?? [])
@@ -52,13 +53,18 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
   const close = useNav((s) => s.closeGameSettings)
   const game = useCurrentGame()
   const g = useGameInstall(game)
+  const loader = useProfiles((s) => s.game?.loaders?.[0])
   const pages: ShellPage<GamePage>[] = [
     { id: 'install', label: t`Install`, icon: FolderOpen },
-    { id: 'smapi', label: t`SMAPI`, icon: Puzzle, groupEnd: true },
+    ...(loader
+      ? [{ id: 'loader' as const, label: loader.name, icon: Puzzle, groupEnd: true }]
+      : []),
     { id: 'play', label: t`Play`, icon: Play },
     { id: 'mods', label: t`Mods`, icon: Package },
     { id: 'backups', label: t`Save backups`, icon: Archive },
-    { id: 'console', label: t`Console`, icon: SquareTerminal },
+    ...(loader?.console
+      ? [{ id: 'console' as const, label: t`Console`, icon: SquareTerminal }]
+      : []),
     { id: 'streaming', label: t`Streaming`, icon: RadioIcon },
   ]
   const render = (id: GamePage): ReactNode => {
@@ -73,13 +79,19 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
             versionNote={g.version ? t` · ${name} ${g.version}` : ''}
           />
         )
-      case 'smapi':
-        return <SmapiPage key={g.folder} onVersion={g.setVersion} />
+      case 'loader':
+        return loader ? (
+          <LoaderPage key={g.folder} loader={loader} onVersion={g.setVersion} />
+        ) : null
       case 'play':
         return (
           <SettingsSection title={t`Play`}>
             <PrefKeys
-              keys={['defaultLaunchMethod', 'showSmapiConsole', 'updateModsBeforePlayDefault']}
+              keys={[
+                'defaultLaunchMethod',
+                ...(loader?.id === 'smapi' ? ['showSmapiConsole'] : []),
+                'updateModsBeforePlayDefault',
+              ]}
               game={game}
             />
           </SettingsSection>
