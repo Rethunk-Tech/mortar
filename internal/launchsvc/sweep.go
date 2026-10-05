@@ -50,14 +50,14 @@ type SweepReport struct {
 	Profiles     []ProfileSweep `json:"profiles"`
 }
 
-// Sweep compares the installed game and SMAPI versions to the last sweep. When they differ it
-// records the new versions and lists broken or obsolete mods, update-fixable ones, and missing deps.
-func (s *Service) Sweep(ctx context.Context, gameID string) (SweepReport, error) {
+// Sweep compares the installed game and SMAPI versions of the install with this id ("" is the selected one) to the
+// last sweep. When they differ it records the new versions and lists broken or obsolete mods, update-fixable ones, and missing deps.
+func (s *Service) Sweep(ctx context.Context, gameID, installID string) (SweepReport, error) {
 	g := game.Find(gameID)
 	if g == nil {
 		return SweepReport{}, fmt.Errorf("unknown game %q", gameID)
 	}
-	gameVer, smapiVer, err := s.installedSweepVersions(gameID)
+	gameVer, smapiVer, err := s.installedSweepVersions(gameID, installID)
 	if err != nil {
 		return SweepReport{}, err
 	}
@@ -86,7 +86,7 @@ func (s *Service) Sweep(ctx context.Context, gameID string) (SweepReport, error)
 //
 //wails:ignore
 func (s *Service) MaybeSweep(ctx context.Context, gameID string) {
-	rep, err := s.Sweep(ctx, gameID)
+	rep, err := s.Sweep(ctx, gameID, "")
 	if err != nil || !rep.Triggered || !rep.NeedsAttention() {
 		return
 	}
@@ -107,16 +107,16 @@ func (r SweepReport) NeedsAttention() bool {
 	return false
 }
 
-func (s *Service) installedSweepVersions(gameID string) (string, string, error) {
+func (s *Service) installedSweepVersions(gameID, installID string) (string, string, error) {
 	if s.SweepVersions != nil {
 		return s.SweepVersions(gameID)
 	}
 	set := s.settings.Get()
-	dir, err := game.InstallDir(s.home, set, gameID)
+	inst, err := game.ResolveInstall(s.home, set, gameID, installID)
 	if err != nil {
 		return "", "", err
 	}
-	st, err := game.LoaderStatus(gameID, dir, set.Loaders[gameID])
+	st, err := game.LoaderStatus(gameID, inst.Dir, set.Loaders[gameID])
 	return st.GameVersion, st.Version, err
 }
 

@@ -109,7 +109,7 @@ async function startProfile(opts: {
     })
   }
   try {
-    await StartPreset(opts.game, opts.profile, pendingPreset, opts.direct)
+    await StartPreset(opts.game, opts.profile, '', pendingPreset, opts.direct)
   } catch (error) {
     pendingPreset = ''
     opts.set({ starting: false, startingProfile: '', updateRollback: null })

@@ -464,6 +464,24 @@ func (s *Service) statusOf(sl slot) Status {
 	return s.current(sl)
 }
 
+// StatusInstall is the launch state of the install with this id.
+func (s *Service) StatusInstall(gameID, installID string) (Status, error) {
+	sl, err := s.installSlot(gameID, installID)
+	if err != nil {
+		return Status{}, err
+	}
+	return s.statusOf(sl), nil
+}
+
+// installSlot is the slot of the install with this id, which must belong to the game.
+func (s *Service) installSlot(gameID, installID string) (slot, error) {
+	sl, ok := s.findInstall(installID)
+	if !ok || sl.ID() != gameID {
+		return slot{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q of %s is no longer found", installID, gameID))
+	}
+	return sl, nil
+}
+
 // Status returns the launch state of the game's install that is launching or running, else of the selected install.
 func (s *Service) Status(gameID string) (Status, error) {
 	g, err := game.Require(gameID)
@@ -485,22 +503,35 @@ func (s *Service) Status(gameID string) (Status, error) {
 // Start launches the profile. Its outcome arrives as StateEvents: Launching, then Running or Failed, or NoSteam
 // when the user must first agree to launch without Steam (direct). A missing or broken loader is installed first.
 func (s *Service) Start(ctx context.Context, gameID, profileID string, direct bool) error {
-	return s.StartPreset(ctx, gameID, profileID, "", direct)
+	return s.StartPreset(ctx, gameID, profileID, "", "", direct)
 }
 
 // StartPreset is Start with the named launch preset of the profile for this launch only; an empty name is the
-// profile's default preset.
-func (s *Service) StartPreset(ctx context.Context, gameID, profileID, preset string, direct bool) error {
+// profile's default preset. A non-empty installID launches on that install instead of the profile's pinned one.
+func (s *Service) StartPreset(ctx context.Context, gameID, profileID, installID, preset string, direct bool) error {
 	// The game outlives the call that started it, so the caller's cancellation does not reach the launch.
-	return s.start(context.WithoutCancel(ctx), gameID, profileID, preset, direct)
+	return s.start(context.WithoutCancel(ctx), gameID, profileID, installID, preset, direct)
 }
 
-func (s *Service) start(parent context.Context, gameID, profileID, preset string, direct bool) error {
+// pinOf is the install a launch of the profile runs on: the one asked for, else the profile's pinned one.
+func (s *Service) pinOf(gameID, profileID, installID string) string {
+	if installID != "" {
+		return installID
+	}
+	return s.profiles.InstallOf(gameID, profileID)
+}
+
+func (s *Service) start(parent context.Context, gameID, profileID, installID, preset string, direct bool) error {
 	g, err := game.Require(gameID)
 	if err != nil {
 		return err
 	}
 	sl := s.profileSlot(g, profileID)
+	if installID != "" {
+		if sl, err = s.installSlot(gameID, installID); err != nil {
+			return err
+		}
+	}
 	key := keyOf(sl)
 	// preparing is claimed under the same lock as the check, so two Starts of one install cannot both pass it.
 	s.mu.Lock()
@@ -514,7 +545,7 @@ func (s *Service) start(parent context.Context, gameID, profileID, preset string
 	if busy {
 		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
 	}
-	dir, modsDir, err := s.target(g, profileID)
+	dir, modsDir, err := s.target(g, profileID, installID)
 	if err == nil {
 		_, err = s.profiles.LaunchSpec(gameID, profileID, preset)
 	}
@@ -550,7 +581,7 @@ func (s *Service) start(parent context.Context, gameID, profileID, preset string
 			if _, err = s.profiles.Mods(gameID, profileID); err == nil {
 				// The run gets parent, not ctx: ctx is cancelled as soon as this goroutine returns, which would
 				// end the game Mortar just started.
-				err = s.begin(parent, sl, launchTarget{profileID: profileID, preset: preset, dir: dir, modsDir: modsDir}, direct, false)
+				err = s.begin(parent, sl, launchTarget{profileID: profileID, install: installID, preset: preset, dir: dir, modsDir: modsDir}, direct, false)
 			}
 		}
 		if err != nil {
@@ -620,8 +651,8 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 }
 
 // target returns the game's install folder and the profile's mods folder.
-func (s *Service) target(g game.Game, profileID string) (dir, modsDir string, err error) {
-	inst, err := game.ResolveInstall(s.home, s.settings.Get(), g.ID(), s.profiles.InstallOf(g.ID(), profileID))
+func (s *Service) target(g game.Game, profileID, installID string) (dir, modsDir string, err error) {
+	inst, err := game.ResolveInstall(s.home, s.settings.Get(), g.ID(), s.pinOf(g.ID(), profileID, installID))
 	if err != nil {
 		return "", "", err
 	}
@@ -647,7 +678,7 @@ func (s *Service) PreviewCommand(gameID, profileID, options, prefix, env string)
 	if err != nil {
 		return fail(err)
 	}
-	if _, _, err := s.target(g, profileID); err != nil {
+	if _, _, err := s.target(g, profileID, ""); err != nil {
 		return fail(err)
 	}
 	inst, err := game.ResolveInstall(s.home, s.settings.Get(), gameID, s.profiles.InstallOf(gameID, profileID))
@@ -679,7 +710,7 @@ func (s *Service) donePreparing(g game.Game) {
 
 // launchTarget is what a launch runs: the profile and preset, and the game and mods folders.
 type launchTarget struct {
-	profileID, preset, dir, modsDir string
+	profileID, install, preset, dir, modsDir string
 }
 
 // begin starts the launch once the loader is in place.
@@ -711,7 +742,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	}
 	pin := ""
 	if !vanilla {
-		pin = s.profiles.InstallOf(g.ID(), profileID)
+		pin = s.pinOf(g.ID(), profileID, t.install)
 	}
 	inst, err := game.ResolveInstall(s.home, s.settings.Get(), g.ID(), pin)
 	if err != nil {
@@ -767,12 +798,12 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	var settingsMissing bool
 	var backupErr error
 	if !vanilla && profileID != "" {
-		restore, settingsMissing, err = s.prepareGameSettings(g.ID(), profileID)
+		restore, settingsMissing, err = s.prepareGameSettings(g.ID(), profileID, t.install)
 		if err != nil {
 			dep.unwind(ctx)
 			return err
 		}
-		backupErr = s.backupChangedSaves(g.ID(), profileID, dir)
+		backupErr = s.backupChangedSaves(g.ID(), profileID, t.install, dir)
 	}
 	if err := s.ensureRuntime(inst, plan.RuntimeReqs); err != nil {
 		dep.unwind(ctx)
@@ -835,7 +866,7 @@ func (s *Service) waitSampled(g game.Game, limit time.Duration) {
 	}
 }
 
-func (s *Service) backupChangedSaves(gameID, profileID, installDir string) error {
+func (s *Service) backupChangedSaves(gameID, profileID, installID, installDir string) error {
 	events, err := s.profiles.History(gameID, profileID)
 	if err != nil {
 		return err
@@ -856,11 +887,11 @@ func (s *Service) backupChangedSaves(gameID, profileID, installDir string) error
 	installedStatus, _ := game.LoaderStatus(gameID, installDir, set.Loaders[gameID])
 	installed := installedStatus.GameVersion
 	ov := launchOverrides(s.profiles, gameID, profileID)
-	mode := settings.ResolveAt(set, "backupBeforePlay", settings.Scope{Game: gameID, Install: s.profiles.InstallOf(gameID, profileID), Profile: profileID}, ov)
+	mode := settings.ResolveAt(set, "backupBeforePlay", settings.Scope{Game: gameID, Install: s.pinOf(gameID, profileID, installID), Profile: profileID}, ov)
 	if !backupNeeded(mode, events, lastRun, recorded, installed) {
 		return nil
 	}
-	savesDir, err := game.SavesDir(s.home, set, gameID, s.profiles.InstallOf(gameID, profileID))
+	savesDir, err := game.SavesDir(s.home, set, gameID, s.pinOf(gameID, profileID, installID))
 	if err != nil {
 		return err
 	}

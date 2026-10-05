@@ -12,9 +12,10 @@ type TestLaunchResult struct {
 	Cause        string `json:"cause,omitempty"`
 }
 
-// TestLaunch saves nothing; it runs the profile the way Play would and reports title-screen or crash.
-func (s *Service) TestLaunch(ctx context.Context, gameID, profileID string) (TestLaunchResult, error) {
-	healthy, summary, err := s.RunForBisect(ctx, gameID, profileID)
+// TestLaunch saves nothing; it runs the profile the way Play would, on the install with this id when given, and
+// reports title-screen or crash.
+func (s *Service) TestLaunch(ctx context.Context, gameID, profileID, installID string) (TestLaunchResult, error) {
+	healthy, summary, err := s.runForInstall(ctx, gameID, profileID, installID)
 	if err != nil {
 		return TestLaunchResult{}, err
 	}

@@ -52,7 +52,7 @@ function TestLaunchRow({
               return
             }
             try {
-              const outcome = await TestLaunch(gameId, profileId)
+              const outcome = await TestLaunch(gameId, profileId, '')
               if (outcome.reachedTitle) {
                 setResult(t`Reached the title screen`)
                 return

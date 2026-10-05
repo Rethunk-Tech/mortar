@@ -52,7 +52,7 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	restore, missing, err := svc.prepareGameSettings("stardew", p.ID)
+	restore, missing, err := svc.prepareGameSettings("stardew", p.ID, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +109,7 @@ func TestGameSettingsLeftoverRestoreRunsAtStartup(t *testing.T) {
 	if err := svc.SetGameSettings("stardew", p.ID, gamesettings.Settings{WindowMode: &mode}); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := svc.prepareGameSettings("stardew", p.ID); err != nil {
+	if _, _, err := svc.prepareGameSettings("stardew", p.ID, ""); err != nil {
 		t.Fatal(err)
 	}
 	svc2 := NewService("", nil, svc.profiles)
@@ -142,7 +142,7 @@ func TestGameSettingsMissingStartupPreferencesIsSkipped(t *testing.T) {
 	if err := svc.SetGameSettings("stardew", p.ID, gamesettings.Settings{WindowMode: &mode}); err != nil {
 		t.Fatal(err)
 	}
-	restore, missing, err := svc.prepareGameSettings("stardew", p.ID)
+	restore, missing, err := svc.prepareGameSettings("stardew", p.ID, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -156,7 +156,7 @@ func TestGameSettingsMissingStartupPreferencesIsSkipped(t *testing.T) {
 
 func TestGameSettingsWithoutOverridesDoesNotTouchStartupPreferences(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
-	restore, missing, err := svc.prepareGameSettings("stardew", p.ID)
+	restore, missing, err := svc.prepareGameSettings("stardew", p.ID, "")
 	if err != nil {
 		t.Fatal(err)
 	}

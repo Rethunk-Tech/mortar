@@ -459,7 +459,7 @@ func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 
 func TestStartPresetRefusesAnUnknownPreset(t *testing.T) {
 	svc, p := startEnv(t)
-	if err := svc.StartPreset(context.Background(), "stardew", p.ID, "nope", false); err == nil {
+	if err := svc.StartPreset(context.Background(), "stardew", p.ID, "", "nope", false); err == nil {
 		t.Fatal("unknown preset accepted")
 	}
 	svc.mu.Lock()
@@ -467,5 +467,15 @@ func TestStartPresetRefusesAnUnknownPreset(t *testing.T) {
 	svc.mu.Unlock()
 	if busy {
 		t.Fatal("a refused launch left the game marked busy")
+	}
+}
+
+func TestInstallTargetedCallsRefuseAnUnknownInstall(t *testing.T) {
+	svc, p := startEnv(t)
+	if _, err := svc.StatusInstall("stardew", "nope"); err == nil {
+		t.Fatal("status of an unknown install")
+	}
+	if err := svc.StartPreset(context.Background(), "stardew", p.ID, "nope", "", false); err == nil {
+		t.Fatal("start on an unknown install")
 	}
 }

@@ -545,15 +545,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "history.all":
 		return s.Profiles.RecentHistory(p.Game)
 	case "status":
-		if err := needNoInstall(p, "status"); err != nil {
-			return nil, err
+		if p.Install != "" {
+			return s.Launches.StatusInstall(p.Game, p.Install)
 		}
 		return s.Launches.Status(p.Game)
 	case "sweep":
-		if err := needNoInstall(p, "sweep"); err != nil {
-			return nil, err
-		}
-		return s.Launches.Sweep(ctx, p.Game)
+		return s.Launches.Sweep(ctx, p.Game, p.Install)
 	case "stop":
 		if _, err := s.Launches.Status(p.Game); err != nil {
 			return nil, err
@@ -938,15 +935,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "play.check":
 		return s.playCheck(ctx, p.Game, id, prof)
 	case "play.test":
-		if err := needNoInstall(p, "play test"); err != nil {
-			return nil, err
-		}
-		return s.playTest(ctx, p.Game, id)
+		return s.playTest(ctx, p.Game, id, p.Install)
 	case "launch":
-		if err := needNoInstall(p, "launch"); err != nil {
-			return nil, err
-		}
-		return s.launch(ctx, p.Game, id, p.Preset, p.Force)
+		return s.launch(ctx, p.Game, id, p.Install, p.Preset, p.Force)
 	}
 	return nil, fmt.Errorf("unknown method %q", method)
 }
@@ -1496,7 +1487,7 @@ func resetSettings(svc *settings.Service, key, game string) error {
 	return nil
 }
 
-func (s *Services) launch(ctx context.Context, gameID, id, preset string, force bool) (launchsvc.Status, error) {
+func (s *Services) launch(ctx context.Context, gameID, id, installID, preset string, force bool) (launchsvc.Status, error) {
 	update, err := s.Problems.UpdateWarning(ctx, gameID, id)
 	if err != nil {
 		return launchsvc.Status{}, err
@@ -1508,12 +1499,15 @@ func (s *Services) launch(ctx context.Context, gameID, id, preset string, force 
 	if !force && (update.Changed || gap) {
 		return launchsvc.Status{}, launchWarningError{game: gameName(gameID), update: update, save: save, gap: gap}
 	}
-	if err := s.Launches.StartPreset(ctx, gameID, id, preset, false); err != nil {
+	if err := s.Launches.StartPreset(ctx, gameID, id, installID, preset, false); err != nil {
 		return launchsvc.Status{}, err
 	}
 	deadline := time.Now().Add(launchWait)
 	for {
 		st, err := s.Launches.Status(gameID)
+		if installID != "" {
+			st, err = s.Launches.StatusInstall(gameID, installID)
+		}
 		if err != nil {
 			return st, err
 		}

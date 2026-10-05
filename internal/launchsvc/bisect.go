@@ -28,6 +28,11 @@ var bisectStartupGrace = 20 * time.Second
 //
 //wails:ignore
 func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (bool, launch.Summary, error) {
+	return s.runForInstall(ctx, gameID, profileID, "")
+}
+
+// runForInstall is RunForBisect on the install with this id ("" is the profile's own).
+func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installID string) (bool, launch.Summary, error) {
 	runCtx, cancel := context.WithTimeout(ctx, bisectRunTimeout)
 	defer cancel()
 	g, err := game.Require(gameID)
@@ -35,12 +40,17 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 		return false, launch.Summary{}, err
 	}
 	sl := s.profileSlot(g, profileID)
+	if installID != "" {
+		if sl, err = s.installSlot(gameID, installID); err != nil {
+			return false, launch.Summary{}, err
+		}
+	}
 	beforeRunID, _, err := s.LastRunSummary(gameID, profileID)
 	if err != nil {
 		return false, launch.Summary{}, err
 	}
 	launched := time.Now()
-	if err := s.start(runCtx, gameID, profileID, "", s.launchesDirect(gameID, profileID)); err != nil {
+	if err := s.start(runCtx, gameID, profileID, installID, "", s.launchesDirect(gameID, profileID)); err != nil {
 		return false, launch.Summary{}, err
 	}
 

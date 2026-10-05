@@ -66,7 +66,7 @@ func (s *Service) profileSettingsPath(game, id string) (string, error) {
 	return filepath.Join(filepath.Dir(modsDir), gameSettingsFile), nil
 }
 
-func (s *Service) prepareGameSettings(gameID, id string) (*settingsRestore, bool, error) {
+func (s *Service) prepareGameSettings(gameID, id, installID string) (*settingsRestore, bool, error) {
 	value, err := s.GameSettings(gameID, id)
 	if err != nil {
 		return nil, false, err
@@ -74,7 +74,7 @@ func (s *Service) prepareGameSettings(gameID, id string) (*settingsRestore, bool
 	if !game.HasStartupSettings(gameID) || emptySettings(value) {
 		return nil, false, nil
 	}
-	path, err := game.StartupPreferencesPath(s.home, s.settings.Get(), gameID, s.profiles.InstallOf(gameID, id))
+	path, err := game.StartupPreferencesPath(s.home, s.settings.Get(), gameID, s.pinOf(gameID, id, installID))
 	if err != nil {
 		return nil, false, err
 	}

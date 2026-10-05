@@ -10,13 +10,10 @@ func profileSource(kind string, modID int, repo string) profile.Source {
 	return profile.Source{Kind: kind, ModID: modID, Repo: repo}
 }
 
-func TestSourceAndInstallParamsAreChecked(t *testing.T) {
+func TestSourceParamsAreChecked(t *testing.T) {
 	t.Parallel()
 	if trackingSource("nexus") != nil || trackingSource("github") == nil || trackingSource("") == nil {
 		t.Fatal("only nexus keeps tracked mods")
-	}
-	if needNoInstall(Params{}, "status") != nil || needNoInstall(Params{Install: "x"}, "status") == nil {
-		t.Fatal("an install-targeted status must be refused until launchsvc has one")
 	}
 	if _, err := (&Services{}).updateChangelog(t.Context(), Params{Source: "curseforge"}); err == nil {
 		t.Fatal("a source without changelogs must be refused")
