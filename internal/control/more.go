@@ -41,6 +41,8 @@ func (s *Services) handleMore(ctx context.Context, method string, p Params) (res
 		res, err = nil, s.withNxm(func() error { return s.Nxm.Disable() })
 	case "problems.checkUpdates":
 		res, err = s.profileCall(p, func(id string) (any, error) { return s.Problems.CheckUpdatesNow(ctx, p.Game, id) })
+	case "support.diagnostics":
+		res, err = s.supportDiagnostics(p)
 	case "game.resetInstall":
 		res, err = nil, s.Games.ResetInstall(p.Game)
 	case "game.steamStatus":
@@ -187,4 +189,21 @@ func (s *Services) withNxm(fn func() error) error {
 		return errNoLinks
 	}
 	return fn()
+}
+
+// supportDiagnostics writes the diagnostics zip to Path; Profile, when named, adds that profile's latest log.
+func (s *Services) supportDiagnostics(p Params) (any, error) {
+	if s.Support == nil {
+		return nil, errors.New("diagnostics are unavailable")
+	}
+	profileID := ""
+	if p.Profile != "" {
+		prof, err := s.resolve(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		profileID = prof.ID
+	}
+	path, err := s.Support.WriteDiagnostics(p.Game, profileID, p.Path)
+	return map[string]string{"path": path}, err
 }

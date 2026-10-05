@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
 
@@ -124,6 +125,21 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	}
 	if path == "" || saved == nil {
 		t.Fatal("expected a zip to be written")
+	}
+
+	target := filepath.Join(t.TempDir(), "out.zip")
+	if got, err := s.WriteDiagnostics("stardew", "a", target); err != nil || got != target {
+		t.Fatalf("WriteDiagnostics = %q, %v", got, err)
+	}
+	written, err := fsx.ReadFile(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := zipNames(t, written)["settings.json"]; !ok {
+		t.Fatal("the path-based zip lacks settings.json")
+	}
+	if _, err := s.WriteDiagnostics("stardew", "a", filepath.Join(t.TempDir(), "out.txt")); err == nil {
+		t.Fatal("a non-zip path was accepted")
 	}
 
 	files := zipNames(t, saved)

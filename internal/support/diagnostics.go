@@ -54,12 +54,36 @@ func (s *Service) dataDir() (string, error) {
 // SaveDiagnostics writes a zip of redacted app state through the native save dialog.
 // gameID and profileID select whose SMAPI log to include; either may be empty.
 func (s *Service) SaveDiagnostics(gameID, profileID string) (string, error) {
-	data, err := s.bundle(gameID, profileID)
+	name, data, err := s.diagnosticsZip(gameID, profileID)
 	if err != nil {
 		return "", err
 	}
-	name := "mortar-diagnostics-" + time.Now().Format("2006-01-02") + ".zip"
 	return s.saveZip(name, data)
+}
+
+// WriteDiagnostics writes the same zip to path, with no dialog, and returns the path.
+//
+//wails:ignore
+func (s *Service) WriteDiagnostics(gameID, profileID, path string) (string, error) {
+	if !strings.EqualFold(filepath.Ext(path), ".zip") {
+		return "", errors.New("the diagnostics file must end in .zip")
+	}
+	_, data, err := s.diagnosticsZip(gameID, profileID)
+	if err != nil {
+		return "", err
+	}
+	if err := fsx.WriteFile(path, data, 0o600); err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
+func (s *Service) diagnosticsZip(gameID, profileID string) (string, []byte, error) {
+	data, err := s.bundle(gameID, profileID)
+	if err != nil {
+		return "", nil, err
+	}
+	return "mortar-diagnostics-" + time.Now().Format("2006-01-02") + ".zip", data, nil
 }
 
 // ShowDiagnostics opens the folder holding a diagnostics zip Mortar saved.

@@ -101,6 +101,12 @@ var moreVerbs = map[string]moreVerb{
 		method: "tools.remove", args: []string{"a game", "a tool id"}, msg: "Removed the tool.",
 		params: func(a []string, _ *cmd) (control.Params, error) { return control.Params{Game: a[0], Key: a[1]}, nil },
 	},
+	"support diagnostics save": {
+		method: "support.diagnostics", args: []string{"a .zip path"}, timeout: installTimeout,
+		params: func(a []string, c *cmd) (control.Params, error) {
+			return control.Params{Game: c.game, Profile: c.profileFlag, Path: absPath(a[0])}, nil
+		},
+	},
 	"lan peers": {method: "lan.peers"},
 	"lan send": {
 		method: "lan.send", args: []string{"a game", "a profile", "a peer id"}, msg: "Sent the profile.", timeout: installTimeout,

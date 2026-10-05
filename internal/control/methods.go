@@ -33,6 +33,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
 	"github.com/Rethunk-Tech/mortar/internal/storecheck"
+	"github.com/Rethunk-Tech/mortar/internal/support"
 	"github.com/Rethunk-Tech/mortar/internal/templates"
 	"github.com/Rethunk-Tech/mortar/internal/tools"
 	"github.com/Rethunk-Tech/mortar/internal/updatesvc"
@@ -82,6 +83,7 @@ type Services struct {
 	Lan        *lan.Service
 	Updates    *updatesvc.Service
 	Nxm        *nxmsvc.Service
+	Support    *support.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 	// Quit closes the app as its tray Quit does; nil in tests.

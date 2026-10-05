@@ -362,7 +362,8 @@ func TestAddPeerDropsOurInstance(t *testing.T) {
 func TestPendingKeepsSharesUntilDismissed(t *testing.T) {
 	t.Parallel()
 	s := &Service{inbox: []Arrival{{ID: 1}, {ID: 2}}, incoming: map[int]incomingTransfer{2: {}}, active: map[int]context.CancelFunc{}}
-	if len(s.Pending()) != 2 || len(s.Pending()) != 2 {
+	first := s.Pending()
+	if len(first) != 2 || len(s.Pending()) != 2 {
 		t.Fatal("listing the pending shares must not drain them")
 	}
 	s.Dismiss(1)

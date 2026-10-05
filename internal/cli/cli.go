@@ -48,7 +48,7 @@ var verbs = map[string]bool{
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"templates": true, "library": true, "archive": true,
 	"browse":  true,
-	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true, "bisect": true, "lan": true, "app": true, "links": true,
+	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true, "bisect": true, "lan": true, "app": true, "support": true, "links": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
@@ -2294,6 +2294,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   lan accept|decline <id>                 take or refuse a waiting share
   data move <dir> [--preview]             move the data folder
   data cleanup [--preview]                remove unused store items and caches
+  support diagnostics save <path.zip> [--game id] [--profile name]  write a redacted diagnostics zip
   app update check|install                Mortar's own updates
   links register                          claim mortar:// links and .mortar files
   links enable|disable --source nexus     take over or hand back nxm links

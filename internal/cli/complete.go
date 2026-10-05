@@ -48,6 +48,7 @@ var subverbs = map[string][]string{
 	"bundles":    {"apply", "create", "delete", "rename", "add", "remove"},
 	"lan":        {"peers", "send", "inbox", "accept", "decline"},
 	"app":        {"update"},
+	"support":    {"diagnostics"},
 	"links":      {"register", "enable", "disable"},
 	"source":     {"untrack", "tracked"},
 	"trash":      {"list", "restore", "delete", "empty"},
