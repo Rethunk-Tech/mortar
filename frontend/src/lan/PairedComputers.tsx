@@ -67,11 +67,13 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
   const { t } = useLingui()
   const [peers, setPeers] = useState<Peer[]>([])
   const [target, setTarget] = useState('')
+  const [manual, setManual] = useState('')
   const [code, setCode] = useState('')
   const [pairing, setPairing] = useState(false)
   useEffect(() => {
     if (!open) {
       setTarget('')
+      setManual('')
       setCode('')
       return
     }
@@ -79,9 +81,10 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
       .then((next) => setPeers(next ?? []))
       .catch(reportUnexpected)
   }, [open])
+  const address = manual.trim() === '' ? target : manual.trim()
   const submit = () => {
     setPairing(true)
-    Pair(target, code)
+    Pair(address, code)
       .then(() => {
         useToasts.getState().push({ kind: 'success', title: t`Computer paired` })
         onClose()
@@ -110,6 +113,16 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
             </ListItem>
           ))}
         </List>
+        {peers.length === 0 ? (
+          <TextField
+            fullWidth={true}
+            size="small"
+            label={t`Host:port`}
+            value={manual}
+            onChange={(event) => setManual(event.target.value)}
+            sx={{ mt: 1 }}
+          />
+        ) : null}
         <TextField
           fullWidth={true}
           size="small"
@@ -123,7 +136,7 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
         <Button onClick={onClose}>{t`Cancel`}</Button>
         <Button
           variant="contained"
-          disabled={pairing || target === '' || code.trim() === ''}
+          disabled={pairing || address === '' || code.trim() === ''}
           onClick={submit}
         >
           {t`Pair`}
