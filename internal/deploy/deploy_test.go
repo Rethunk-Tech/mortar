@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io/fs"
 	"os"
@@ -271,5 +272,47 @@ func TestPurgeLeavesAFileThatIsNoLongerOurs(t *testing.T) {
 	}
 	if got := read(ini); got != "the player's edit" {
 		t.Fatalf("doorstop_config.ini = %q", got)
+	}
+}
+
+func TestRecoverKeepsAJournalItCannotRead(t *testing.T) {
+	r := newRig(t)
+	r.apply()
+	write(t, filepath.Join(r.view.JournalDir, journalFile), "{not json")
+	d, _ := Get(copyID)
+	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err == nil {
+		t.Fatal("a damaged journal was taken as recovered")
+	}
+	if left, _ := os.ReadDir(filepath.Join(r.view.JournalDir, "displaced")); len(left) != 1 {
+		t.Fatalf("the player's set-aside file is gone: %v", left)
+	}
+}
+
+func TestACanceledPurgeLeavesTheJournalToFinishLater(t *testing.T) {
+	r := newRig(t)
+	before := snapshot(t, r.install)
+	m := r.apply()
+	d, _ := Get(copyID)
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	if err := d.Purge(ctx, m); err == nil {
+		t.Fatal("a canceled purge reported success")
+	}
+	// A journal that names no folder of its own is finished from the folder it was read from.
+	m.View.JournalDir = ""
+	b, err := json.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(r.view.JournalDir, journalFile), string(b))
+	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
+		t.Fatal(err)
+	}
+	after := snapshot(t, r.install)
+	if len(after) != len(before) || after["winhttp.dll"] != "the player's own" {
+		t.Fatalf("tree differs\nbefore %v\n after %v", before, after)
+	}
+	if _, err := os.Stat(r.view.JournalDir); !os.IsNotExist(err) {
+		t.Fatal("journal kept after recover")
 	}
 }
