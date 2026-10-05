@@ -12,7 +12,7 @@ const STOP_WAIT_MS = 10_000
 const STOP_POLL_MS = 100
 
 /** This run's port, chosen once in the main process; Playwright's workers inherit it. */
-export function sandboxPort(): string {
+function sandboxPort(): string {
   process.env.MORTAR_E2E_PORT ??= execFileSync(process.execPath, ['-e', FREE_PORT], {
     encoding: 'utf8',
   }).trim()
@@ -80,7 +80,7 @@ function reapStale() {
 }
 
 /** Seeds this run's own sandbox, since specs mutate it, and returns the teardown that removes exactly that one. */
-export function freshSandbox(): () => void {
+function freshSandbox(): () => void {
   reapStale()
   const dir = sandboxDir(process.pid)
   const teardown = () => {
@@ -97,3 +97,5 @@ export function freshSandbox(): () => void {
   }
   return teardown
 }
+
+export { freshSandbox, sandboxPort }

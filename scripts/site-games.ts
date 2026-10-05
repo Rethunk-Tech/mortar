@@ -22,7 +22,7 @@ function listed(names: string[]): string {
   return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
 }
 
-const games = (JSON.parse(readFileSync(CATALOG, 'utf8')) as { games: Game[] }).games
+const { games } = JSON.parse(readFileSync(CATALOG, 'utf8')) as { games: Game[] }
 const text = escapeHTML(listed(games.filter((g) => g.enabled).map((g) => g.name)))
 const check = process.argv.includes('--check')
 let stale = false

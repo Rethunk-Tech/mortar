@@ -8,7 +8,7 @@ import { type Finding, type PhaseId, phaseSegments } from './startupView.ts'
 
 const PCT = 100
 
-export function Section({
+function Section({
   title,
   anchor,
   children,
@@ -76,13 +76,7 @@ function FindingLine({ finding, onAct }: { finding: Finding; onAct: (finding: Fi
   )
 }
 
-export function Findings({
-  findings,
-  onAct,
-}: {
-  findings: Finding[]
-  onAct: (finding: Finding) => void
-}) {
+function Findings({ findings, onAct }: { findings: Finding[]; onAct: (finding: Finding) => void }) {
   const { t } = useLingui()
   return (
     <Section title={t`What to do`}>
@@ -98,7 +92,7 @@ export function Findings({
 }
 
 // One row per phase: its name, time and a thin bar sized against the whole start, in the primary colour.
-export function Phases({ report }: { report: StartupReport }) {
+function Phases({ report }: { report: StartupReport }) {
   const { t } = useLingui()
   const duration = useDuration()
   const labels: Record<PhaseId, string> = {
@@ -151,3 +145,5 @@ export function Phases({ report }: { report: StartupReport }) {
     </Section>
   )
 }
+
+export { Findings, Phases, Section }

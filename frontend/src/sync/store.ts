@@ -13,7 +13,7 @@ import { i18n } from '../i18n/index.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
-export const useSync = create<{
+const useSync = create<{
   offers: Offer[]
   stalled: Stall[]
   open: boolean
@@ -57,7 +57,7 @@ function presentStalled(stalled: Stall[]) {
   }
 }
 
-export function initSync() {
+function initSync() {
   Events.On('sync:stalled', (event) => presentStalled((event.data as Stall[] | null) ?? []))
   Stalled()
     .then((stalled) => presentStalled(stalled ?? []))
@@ -67,3 +67,5 @@ export function initSync() {
     .then((offers) => present(offers ?? []))
     .catch(reportUnexpected)
 }
+
+export { initSync, useSync }

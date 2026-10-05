@@ -7,7 +7,7 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/ser
   Details: async () => ({}),
   // Nexus returns nothing for 9999: hidden, removed, or a wrong id from an update key.
   PrimeDetails: async () => {
-    primeCalls++
+    primeCalls += 1
     return {}
   },
   Seen: async () => ({}),
@@ -19,7 +19,7 @@ test('priming a mod Nexus does not know settles: one request, no store churn', a
   useNexus.setState({ signedIn: true } as never)
   let wakes = 0
   const unsub = useNexusDetails.subscribe(() => {
-    wakes++
+    wakes += 1
     if (wakes < 50) {
       primeDetails([9999])
     }

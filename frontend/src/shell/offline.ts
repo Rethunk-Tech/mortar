@@ -9,7 +9,8 @@ import {
 // Local, in-process reads of what the last real requests showed; the only network cost is the Recheck below.
 const STATE_POLL_MS = 15_000
 const MINUTE_MS = 60_000
-const RECHECK_MS = 5 * MINUTE_MS
+const RECHECK_MINUTES = 5
+const RECHECK_MS = RECHECK_MINUTES * MINUTE_MS
 // Go's zero time.
 const NEVER_YEAR = 2000
 
@@ -22,7 +23,7 @@ function unreachable(states: State[], ids?: string[]): State[] {
   return states.filter((s) => s.unreachable && (!ids || ids.includes(s.id)))
 }
 
-export function savedAt(s: State, locale: string): string {
+function savedAt(s: State, locale: string): string {
   const at = new Date(s.lastOK)
   return at.getFullYear() < NEVER_YEAR ? '' : at.toLocaleTimeString(locale, { timeStyle: 'short' })
 }
@@ -39,4 +40,4 @@ function recheck(): Promise<void> {
   return Recheck().then(useOffline.getState().set)
 }
 
-export { RECHECK_MS, recheck, refresh, retry, STATE_POLL_MS, unreachable, useOffline }
+export { RECHECK_MS, recheck, refresh, retry, STATE_POLL_MS, savedAt, unreachable, useOffline }

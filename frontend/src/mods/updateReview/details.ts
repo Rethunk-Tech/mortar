@@ -5,9 +5,9 @@ import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/in
 /** Size in KB of the file that carries the new version, and the first line of its changelog; both only from details already loaded. */
 export function rowDetails(update: Update, details: Details | undefined) {
   const files: File[] = details?.files ?? []
-  const file = files
+  const [file] = files
     .filter((f) => f.modVersion === update.version || f.version === update.version)
-    .sort((a, b) => b.uploaded.localeCompare(a.uploaded))[0]
+    .sort((a, b) => b.uploaded.localeCompare(a.uploaded))
   const log = (details?.changelogs ?? []).find((c) => c.version === update.version)
   const first = [log?.body ?? '', ...(log?.notes ?? [])]
     .flatMap((s) => s.split('\n'))

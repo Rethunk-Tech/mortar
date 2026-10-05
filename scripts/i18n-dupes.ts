@@ -42,10 +42,7 @@ function msgids(po: string): string[] {
   const ids: string[] = []
   for (const block of po.split('\n\n')) {
     const match = /^msgid ((?:".*"\n?)+)/m.exec(block)
-    if (!match?.[1]) {
-      continue
-    }
-    const id = [...match[1].matchAll(/"(.*)"/g)].map((m) => m[1]).join('')
+    const id = match?.[1] ? [...match[1].matchAll(/"(.*)"/g)].map((m) => m[1]).join('') : ''
     if (id !== '') {
       ids.push(id.replaceAll('\\"', '"'))
     }
@@ -53,13 +50,15 @@ function msgids(po: string): string[] {
   return ids
 }
 
+const MIN_LETTERS = 4
+
 function normalise(id: string): string | null {
   const flat = id
     .replace(/\{[\w.]+(?=, (?:plural|select|selectordinal),)/g, '{')
     .replace(/\{[\w.]+\}/g, '{}')
     .toLowerCase()
   // "{0} · {1}" and "{0} of {1}" are layout, not wording: nothing to say twice.
-  if (flat.replace(/\{\}/g, '').replace(/[^\p{L}]/gu, '').length < 4) {
+  if (flat.replace(/\{\}/g, '').replace(/[^\p{L}]/gu, '').length < MIN_LETTERS) {
     return null
   }
   return flat
@@ -72,10 +71,9 @@ function duplicates(ids: string[]): string[][] {
   const groups = new Map<string, string[]>()
   for (const id of ids) {
     const key = normalise(id)
-    if (key === null) {
-      continue
+    if (key !== null) {
+      groups.set(key, [...(groups.get(key) ?? []), id])
     }
-    groups.set(key, [...(groups.get(key) ?? []), id])
   }
   return [...groups.values()].filter((g) => g.length > 1)
 }

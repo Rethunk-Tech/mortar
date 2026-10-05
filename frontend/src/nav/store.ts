@@ -1,12 +1,12 @@
 import { create } from 'zustand'
 
-export type GameId = string
+type GameId = string
 
 const SLUG = /^[a-z0-9-]+$/
 
-export const isGameId = (game: string): game is GameId => SLUG.test(game)
+const isGameId = (game: string): game is GameId => SLUG.test(game)
 
-export type SettingsSection =
+type SettingsSection =
   | 'general'
   | 'appearance'
   | 'mods'
@@ -19,7 +19,7 @@ export type SettingsSection =
   | 'shortcuts'
   | 'about'
 
-export type Route =
+type Route =
   | { name: 'game-select' }
   | { name: 'setup' }
   | { name: 'game-setup'; game: GameId }
@@ -29,7 +29,7 @@ export type Route =
   | { name: 'settings'; section: SettingsSection; back: Route }
 
 // The game a route belongs to, looking through Settings to the page it was opened from.
-export const routeGame = (route: Route): GameId | null => {
+const routeGame = (route: Route): GameId | null => {
   if (route.name === 'settings') {
     return routeGame(route.back)
   }
@@ -38,7 +38,7 @@ export const routeGame = (route: Route): GameId | null => {
     : null
 }
 
-export const useNav = create<{
+const useNav = create<{
   route: Route
   openGame: (game: GameId) => void
   openGameSelect: () => void
@@ -83,4 +83,6 @@ export const useNav = create<{
   closeSettings: () => set(({ route }) => (route.name === 'settings' ? { route: route.back } : {})),
 }))
 
-export const openSettings = (section?: SettingsSection) => useNav.getState().openSettings(section)
+const openSettings = (section?: SettingsSection) => useNav.getState().openSettings(section)
+
+export { type GameId, isGameId, openSettings, type Route, routeGame, type SettingsSection, useNav }

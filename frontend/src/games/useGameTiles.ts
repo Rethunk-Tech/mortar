@@ -17,7 +17,7 @@ import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 type Game = GameInfo
 
 // Installed games first, then supported ones not found, then those coming later; catalog order within each.
-export function ordered(games: Game[]): Game[] {
+function ordered(games: Game[]): Game[] {
   const rank = (g: Game) => {
     if (g.available && g.installed) {
       return 0
@@ -40,7 +40,7 @@ interface GameState {
 }
 
 // The games, their profiles and last-played state: what a game tile shows, shared by Game Select and the switcher.
-export function useGameTiles() {
+function useGameTiles() {
   const { t } = useLingui()
   const [status, setStatus] = useState<GameStatus | null>(null)
   const [states, setStates] = useState<Record<string, GameState>>({})
@@ -127,3 +127,5 @@ export function useGameTiles() {
   }
   return { status, loadError, refresh, tileProps }
 }
+
+export { ordered, useGameTiles }

@@ -75,14 +75,14 @@ interface Run {
   href?: string
 }
 
-export interface Block {
+interface Block {
   id: number
   kind: 'paragraph' | 'heading' | 'item'
   runs: Run[]
 }
 
 // Only web links are kept; anything else (javascript:, data:, file:) leaves its text unlinked.
-export const safeUrl = (raw: string): string | undefined => {
+const safeUrl = (raw: string): string | undefined => {
   const url = raw.trim()
   return WEB_URL.test(url) ? url : undefined
 }
@@ -96,7 +96,7 @@ const stripTags = (raw: string): string => {
   return text
 }
 
-export function parseBBCode(source: string): Block[] {
+function parseBBCode(source: string): Block[] {
   const text = decode(stripTags(source.replace(NEWLINE, '').replace(BREAK, '\n')))
   const blocks: Block[] = []
   let block: Block = { id: 0, kind: 'paragraph', runs: [] }
@@ -192,3 +192,5 @@ export function parseBBCode(source: string): Block[] {
   end()
   return blocks
 }
+
+export { type Block, parseBBCode, safeUrl }

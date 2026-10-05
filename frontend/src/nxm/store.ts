@@ -75,13 +75,13 @@ async function install(arrival: Arrival, profile: Profile) {
 
 // A ror2mm link names no game, so a package arrival takes the open game when it has a Thunderstore community, else
 // the first game that does.
-export const arrivalGame = (a: Arrival, open?: string): string =>
+const arrivalGame = (a: Arrival, open?: string): string =>
   a.link.game || (open && a.games?.includes(open) ? open : (a.games?.[0] ?? ''))
 
-export const arrivalName = (a: Arrival): Promise<string> =>
+const arrivalName = (a: Arrival): Promise<string> =>
   a.package ? Promise.resolve(a.package) : modName(a.link.game, a.link.modId)
 
-export const fallbackName = (modId: number) => i18n._(msg`Nexus mod ${{ id: modId }}`)
+const fallbackName = (modId: number) => i18n._(msg`Nexus mod ${{ id: modId }}`)
 
 // The mod's Nexus page title, fetched once per mod; the fallback stands in when signed out or offline.
 function modName(game: string, modId: number): Promise<string> {
@@ -99,7 +99,7 @@ function modName(game: string, modId: number): Promise<string> {
   return name
 }
 
-export const useNxm = create<{
+const useNxm = create<{
   arrivals: Arrival[]
   add: (arrival: Arrival) => void
   // Rejects when Mortar refuses the download; the arrival stays for the prompt to show why.
@@ -121,7 +121,7 @@ export const useNxm = create<{
     Ignore(id).catch(reportUnexpected)
   },
 }))
-export async function initNxm(): Promise<void> {
+async function initNxm(): Promise<void> {
   const seen = new Set<number>()
   const reject = (r: Rejection) => {
     if (!seen.has(r.id)) {
@@ -168,3 +168,5 @@ export async function initNxm(): Promise<void> {
     arrive(a)
   }
 }
+
+export { arrivalGame, arrivalName, fallbackName, initNxm, useNxm }

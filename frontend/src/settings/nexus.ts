@@ -70,7 +70,7 @@ export const initNexus = () => {
   let warned = ''
   return follow('nexus:changed', fetchAccount, (next) => {
     useNexus.setState(applyNexusAccount(next, useNexus.getState().limits))
-    const limits = useNexus.getState().limits
+    const { limits } = useNexus.getState()
     const low = lowQuota(limits)
     if (!low || low.key === warned) {
       return
