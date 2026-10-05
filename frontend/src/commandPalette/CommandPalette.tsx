@@ -142,7 +142,7 @@ function paletteSections(i18n: I18n) {
     { id: 'appearance' as const, label: i18n._(msg`Appearance`) },
     { id: 'mods' as const, label: i18n._(msg`Mods and profiles`) },
     { id: 'downloads' as const, label: i18n._(msg`Downloads`) },
-    { id: 'nexus' as const, label: i18n._(msg`Nexus account`) },
+    { id: 'accounts' as const, label: i18n._(msg`Accounts`) },
     { id: 'updates' as const, label: i18n._(msg`Updates`) },
     { id: 'notifications' as const, label: i18n._(msg`Notifications`) },
     { id: 'storage' as const, label: i18n._(msg`Storage`) },

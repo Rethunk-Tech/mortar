@@ -53,7 +53,7 @@ export function NexusAccount({ onNavigate }: { onNavigate: () => void }) {
           startIcon={<LogIn size={16} />}
           onClick={() => {
             onNavigate()
-            openSettings('nexus')
+            openSettings('accounts')
           }}
         >
           {t`Sign in`}

@@ -107,5 +107,5 @@ export const openImport = (options: ImportOptions = {}) => useImportDialog.getSt
 // Opens Settings on Nexus Mods; once the account signs in, Import opens again on the same link or file and previews it afresh.
 export function importAfterSignIn(options: ImportOptions) {
   waiting = options
-  openSettings('nexus')
+  openSettings('accounts')
 }

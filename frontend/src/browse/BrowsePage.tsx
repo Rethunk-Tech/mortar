@@ -363,7 +363,7 @@ function NexusAction({
       <Button
         size="small"
         variant="outlined"
-        onClick={() => useNav.getState().openSettings('nexus')}
+        onClick={() => useNav.getState().openSettings('accounts')}
       >
         {t`Sign in to download`}
       </Button>

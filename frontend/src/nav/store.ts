@@ -11,7 +11,7 @@ export type SettingsSection =
   | 'appearance'
   | 'mods'
   | 'downloads'
-  | 'nexus'
+  | 'accounts'
   | 'updates'
   | 'notifications'
   | 'storage'

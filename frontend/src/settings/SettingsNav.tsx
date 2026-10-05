@@ -56,7 +56,13 @@ export function SettingsNav<Id extends string>({
         </ButtonBase>
         <Typography
           component="h1"
-          sx={{ fontSize: 20, fontWeight: 700, minWidth: 0, lineHeight: 1.2, overflowWrap: 'anywhere' }}
+          sx={{
+            fontSize: 20,
+            fontWeight: 700,
+            minWidth: 0,
+            lineHeight: 1.2,
+            overflowWrap: 'anywhere',
+          }}
         >
           {title}
         </Typography>

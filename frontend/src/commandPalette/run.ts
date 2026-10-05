@@ -21,7 +21,7 @@ const sections = new Set<SettingsSection>([
   'appearance',
   'mods',
   'downloads',
-  'nexus',
+  'accounts',
   'updates',
   'notifications',
   'storage',

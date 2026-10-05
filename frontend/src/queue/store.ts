@@ -110,7 +110,7 @@ function failureToast(item: Item) {
   if (item.errorKind === 'auth') {
     return {
       title: i18n._(msg`Nexus rejected your API key`),
-      action: { label: i18n._(msg`Open Nexus settings`), run: () => openSettings('nexus') },
+      action: { label: i18n._(msg`Open Nexus settings`), run: () => openSettings('accounts') },
     }
   }
   if (item.errorKind === 'nobase') {

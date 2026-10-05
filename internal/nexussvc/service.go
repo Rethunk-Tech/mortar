@@ -83,6 +83,12 @@ func (s *Service) Account() Account {
 	return Account{SignedIn: cur.NexusUserID != 0, Name: cur.NexusName, Premium: cur.NexusPremium, Limits: s.client.Limits()}
 }
 
+// GitHubLoggedIn reports whether the user's `gh` login is in use for GitHub requests. It is read-only: Mortar has no
+// GitHub sign-in of its own.
+func (s *Service) GitHubLoggedIn(ctx context.Context) bool {
+	return github.DefaultAuth.LoggedIn(ctx)
+}
+
 // SignIn checks the key against Nexus, then keeps it in the keyring. A rejected key stores nothing.
 func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 	key = strings.TrimSpace(key)

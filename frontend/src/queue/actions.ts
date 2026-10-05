@@ -40,7 +40,7 @@ export async function download(reqs: Want[], showQueue = false): Promise<boolean
       body: i18n._(
         msg`Downloads come from Nexus with your account, so Mortar needs your API key first.`,
       ),
-      action: { label: i18n._(msg`Open settings`), run: () => openSettings('nexus') },
+      action: { label: i18n._(msg`Open settings`), run: () => openSettings('accounts') },
     })
     return false
   }
