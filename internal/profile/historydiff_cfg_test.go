@@ -9,6 +9,7 @@ import (
 )
 
 func TestCaptureHistoryConfigsStoresOnlyConfigJSON(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	im := filepath.Join(dir, "mods", "k")
 	if err := os.MkdirAll(filepath.Join(im, "data"), 0o700); err != nil {
@@ -43,6 +44,7 @@ func TestCaptureHistoryConfigsStoresOnlyConfigJSON(t *testing.T) {
 }
 
 func TestCaptureHistoryConfigsDedupesBlobs(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	im := filepath.Join(dir, "mods", "k")
 	if err := os.MkdirAll(im, 0o700); err != nil {
@@ -64,6 +66,7 @@ func TestCaptureHistoryConfigsDedupesBlobs(t *testing.T) {
 }
 
 func TestWriteHistoryPrunesDroppedSnapshotFiles(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	body := []byte("keep")
 	sum := sha256.Sum256(body)

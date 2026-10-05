@@ -7,6 +7,7 @@ import (
 )
 
 func TestExtraFileLabelUsesNexusFileTitle(t *testing.T) {
+	t.Parallel()
 	e := Entry{
 		Mods: []Component{{Name: "Main", ID: "smapi:A.Main", Folder: "."}},
 	}
@@ -18,6 +19,7 @@ func TestExtraFileLabelUsesNexusFileTitle(t *testing.T) {
 }
 
 func TestExtraFileLabelUsesModFolders(t *testing.T) {
+	t.Parallel()
 	e := Entry{
 		Mods: []Component{
 			{Name: "Part B", Version: "2.0", Folder: "extra-folder/PartB"},

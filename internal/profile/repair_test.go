@@ -47,6 +47,7 @@ func TestRepairRebuildsFromSnapshotAndKeepsMods(t *testing.T) {
 }
 
 func TestRepairNoSnapshot(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	id := "0123456789abcdef"
 	dir := filepath.Join(s.root, "stardew", id)
@@ -91,6 +92,7 @@ func TestRepairKeepsDamagedFileAsideAndUndoRestoresIt(t *testing.T) {
 }
 
 func TestListDamagedSetsRepairErrorWithoutSnapshot(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	id := "0123456789abcdef"
 	dir := filepath.Join(s.root, "stardew", id)

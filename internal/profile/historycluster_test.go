@@ -56,6 +56,7 @@ func TestHistoryDiffAddedRemovedVersionEnabled(t *testing.T) {
 }
 
 func TestHistoryDiffConfigFiles(t *testing.T) {
+	t.Parallel()
 	before := []Entry{{Key: "a", Mods: []Component{{ID: "smapi:Me.A", Name: "Alpha", Version: "1"}}}}
 	after := []Entry{{Key: "a", Mods: []Component{{ID: "smapi:Me.A", Name: "Alpha", Version: "1"}}}}
 	cfgA := map[string]map[string][]byte{"smapi:me.a": {"config.json": []byte(`{"x":1}`)}}
@@ -125,7 +126,8 @@ func TestChangesSinceLastRun(t *testing.T) {
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
 	p := addFarmMod(t, e)
 	mid := time.Now().UTC()
-	time.Sleep(time.Second)
+	// Event times are whole seconds, so the next event must land in a later second than mid.
+	time.Sleep(time.Until(mid.Truncate(time.Second).Add(time.Second)))
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}

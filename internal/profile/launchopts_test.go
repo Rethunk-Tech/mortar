@@ -6,6 +6,7 @@ import (
 )
 
 func TestSetLaunchOptions(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	got, err := s.SetLaunchOptions("stardew", p.ID, `--developer-mode "one two"`)
@@ -19,6 +20,7 @@ func TestSetLaunchOptions(t *testing.T) {
 }
 
 func TestSetLaunchOptionsDeniesMortarFlags(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	if _, err := s.SetLaunchOptions("stardew", p.ID, "--mods-path /tmp"); err == nil || !strings.Contains(err.Error(), "is set by Mortar") {

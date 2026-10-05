@@ -7,6 +7,7 @@ import (
 )
 
 func TestCleanEntryNoteTags(t *testing.T) {
+	t.Parallel()
 	note, tags, err := CleanEntryNoteTags("  hello  ", []string{" Farm ", "farm", "", "Crops"})
 	if err != nil {
 		t.Fatal(err)
@@ -39,6 +40,7 @@ func TestCleanEntryNoteTags(t *testing.T) {
 }
 
 func TestSetEntryNoteTags(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := pinTestProfile(t, s)
 	p, err := s.SetEntryNoteTags("stardew", p.ID, "nexus-1-1", "  keep  ", []string{"QoL", " qol "})

@@ -8,6 +8,7 @@ import (
 )
 
 func TestDiffProfilesSplitsByUniqueID(t *testing.T) {
+	t.Parallel()
 	a := Profile{Entries: []Entry{
 		{Key: "smapi-1", Source: Source{Kind: SourceSMAPI}, Mods: []Component{{ID: "smapi:SMAPI.ConsoleCommands", Name: "Console", Version: "1"}}},
 		{Key: "only-a", Source: Source{Kind: KindLocal, Name: "a.zip"}, Mods: []Component{{ID: "smapi:Me.A", Name: "Alpha", Version: "1.0.0"}}},

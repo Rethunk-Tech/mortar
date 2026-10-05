@@ -21,6 +21,7 @@ func nexusEntry(key string, endorsements int, picture string) Entry {
 }
 
 func TestCoversOrder(t *testing.T) {
+	t.Parallel()
 	p := Profile{ID: "0123456789abcdef", Entries: []Entry{
 		nexusEntry("a", 10, "https://img/a.png"),
 		nexusEntry("b", 900, "https://img/b.png"),
@@ -44,6 +45,7 @@ func TestCoversOrder(t *testing.T) {
 }
 
 func TestSetCoverValidatesAndCopies(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	src := t.TempDir()
@@ -145,6 +147,7 @@ func TestSetCoverKeepsTheOldFileWhenTheProfileCannotBeSaved(t *testing.T) {
 }
 
 func TestCoverMiddlewarePathSafety(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	bare := mustCreate(t, s, "Bare")

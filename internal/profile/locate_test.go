@@ -7,6 +7,7 @@ import (
 )
 
 func TestProfilesWithModReadsProfileJSON(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	farm := mustCreate(t, s, "Farm")
 	coop := mustCreate(t, s, "Co-op")

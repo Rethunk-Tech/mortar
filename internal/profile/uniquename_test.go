@@ -6,6 +6,7 @@ import (
 )
 
 func TestUniqueName(t *testing.T) {
+	t.Parallel()
 	long := strings.Repeat("x", maxName)
 	cases := []struct {
 		taken []string

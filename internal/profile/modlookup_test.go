@@ -10,6 +10,7 @@ import (
 )
 
 func TestEntryEnabledAndFindMod(t *testing.T) {
+	t.Parallel()
 	p := Profile{Entries: []Entry{
 		{Key: "a", Mods: []Component{{ID: "smapi:Au.One"}, {ID: ""}}, Disabled: []mod.ID{"smapi: au.one "}},
 		{Key: "b", Mods: []Component{{ID: "smapi:Au.Two"}}},
@@ -33,8 +34,11 @@ func TestEntryEnabledAndFindMod(t *testing.T) {
 }
 
 func TestEntryJSONKeepsComponentIDs(t *testing.T) {
-	in := Entry{Key: "a", Mods: []Component{{ID: "smapi:Au.One", Needs: []mod.ID{"smapi:Au.Two"}, ContentPackFor: "smapi:Au.Fw"}},
-		Disabled: []mod.ID{"smapi:Au.One"}, LoadAfter: []mod.ID{"smapi:Au.Two"}}
+	t.Parallel()
+	in := Entry{
+		Key: "a", Mods: []Component{{ID: "smapi:Au.One", Needs: []mod.ID{"smapi:Au.Two"}, ContentPackFor: "smapi:Au.Fw"}},
+		Disabled: []mod.ID{"smapi:Au.One"}, LoadAfter: []mod.ID{"smapi:Au.Two"},
+	}
 	raw, err := json.Marshal(in)
 	if err != nil {
 		t.Fatal(err)

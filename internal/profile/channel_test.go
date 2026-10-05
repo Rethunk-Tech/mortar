@@ -7,6 +7,7 @@ import (
 )
 
 func TestNewestChannelFile(t *testing.T) {
+	t.Parallel()
 	files := []nexus.File{
 		{FileID: 1, Category: "MAIN", Version: "1.0.0", Name: "Mod"},
 		{FileID: 2, Category: "MAIN", Version: "1.1.0", Name: "Mod"},
@@ -33,6 +34,7 @@ func TestNewestChannelFile(t *testing.T) {
 }
 
 func TestSetUpdateChannelOneHistoryEvent(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := pinTestProfile(t, s)
 	before, err := s.History("stardew", p.ID)

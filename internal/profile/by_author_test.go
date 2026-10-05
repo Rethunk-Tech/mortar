@@ -3,6 +3,7 @@ package profile
 import "testing"
 
 func TestModsByAuthorGroupsAcrossProfiles(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	game := "stardew"
 	farm, err := s.Create(game, "Farm")

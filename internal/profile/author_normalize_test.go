@@ -3,6 +3,7 @@ package profile
 import "testing"
 
 func TestNormalizeAuthorName(t *testing.T) {
+	t.Parallel()
 	if NormalizeAuthorName("  Pathoschild  ") != "pathoschild" {
 		t.Fatal("trim and lower")
 	}
@@ -12,6 +13,7 @@ func TestNormalizeAuthorName(t *testing.T) {
 }
 
 func TestSplitManifestAuthors(t *testing.T) {
+	t.Parallel()
 	got := SplitManifestAuthors("A, B & C")
 	if len(got) != 3 || got[0] != "A" || got[1] != "B" || got[2] != "C" {
 		t.Fatalf("split: %#v", got)
@@ -22,6 +24,7 @@ func TestSplitManifestAuthors(t *testing.T) {
 }
 
 func TestAuthorFieldIncludes(t *testing.T) {
+	t.Parallel()
 	if !AuthorFieldIncludes("Pathoschild, SpaceChase0", "spacechase0") {
 		t.Fatal("should match second author")
 	}

@@ -26,6 +26,7 @@ func pinTestProfile(t *testing.T, s *Store) Profile {
 }
 
 func TestOffersUpdate(t *testing.T) {
+	t.Parallel()
 	e := Entry{Key: "k"}
 	if e.OffersUpdate("") {
 		t.Fatal("empty newer is not an update")
@@ -48,6 +49,7 @@ func TestOffersUpdate(t *testing.T) {
 }
 
 func TestSetPinnedAndSkipVersion(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := pinTestProfile(t, s)
 	p, err := s.SetSkipVersion("stardew", p.ID, "nexus-1-1", "2.0.0")

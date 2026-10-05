@@ -10,6 +10,7 @@ import (
 )
 
 func TestSetAppearance(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	got, err := s.SetAppearance("stardew", p.ID, " teal ", "sprout", "  co-op Fridays  ")
@@ -34,6 +35,7 @@ func TestSetAppearance(t *testing.T) {
 }
 
 func TestSetAppearanceRejects(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	if _, err := s.SetAppearance("stardew", p.ID, "neon", "", ""); err == nil {
@@ -52,6 +54,7 @@ func TestSetAppearanceRejects(t *testing.T) {
 }
 
 func TestLoadSanitizesAppearance(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	path := filepath.Join(s.root, "stardew", p.ID, fileName)

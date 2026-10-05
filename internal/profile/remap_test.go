@@ -10,6 +10,7 @@ import (
 )
 
 func TestHasRawXNBReportsWalkErrors(t *testing.T) {
+	t.Parallel()
 	_, err := hasRawXNB(filepath.Join(t.TempDir(), "missing"))
 	if err == nil {
 		t.Fatal("hasRawXNB returned nil error for a missing root")
@@ -160,6 +161,7 @@ func TestRemapVariantsAskThenUpdateReuses(t *testing.T) {
 }
 
 func TestRemapVariantsWidenToBundle(t *testing.T) {
+	t.Parallel()
 	m := func(id, folder string) manifest.Mod {
 		return manifest.Mod{UniqueID: id, Folder: folder}
 	}

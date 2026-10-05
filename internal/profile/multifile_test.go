@@ -12,12 +12,14 @@ import (
 )
 
 func TestDefaultMerge(t *testing.T) {
+	t.Parallel()
 	if !DefaultMerge("OPTIONAL") || !DefaultMerge("miscellaneous") || DefaultMerge("MAIN") || DefaultMerge("") {
 		t.Fatal("optional and miscellaneous add by default; MAIN does not")
 	}
 }
 
 func TestSamePageAsk(t *testing.T) {
+	t.Parallel()
 	p := Profile{Entries: []Entry{{
 		Key: "nexus-7-1", Source: Source{Kind: KindNexus, ModID: 7, FileID: 1}, Mods: []Component{{Name: "A", ID: "smapi:A"}},
 	}}}

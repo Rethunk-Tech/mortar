@@ -6,6 +6,7 @@ import (
 )
 
 func TestLaunchSettingsParsing(t *testing.T) {
+	t.Parallel()
 	args, err := LaunchPrefixArgs(`gamemoderun "mango hud" 'with space'`)
 	if err != nil {
 		t.Fatal(err)

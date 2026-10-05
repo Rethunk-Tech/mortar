@@ -5,6 +5,7 @@ import (
 )
 
 func TestSkipPlayCheckDefaultsFalseAndPersists(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	if p.Overrides["skipPlayCheck"] != "" {

@@ -17,6 +17,7 @@ func samePath(a, b string) bool {
 }
 
 func TestConsoleRevealDirAllowsModsAndGameRoots(t *testing.T) {
+	t.Parallel()
 	mods := t.TempDir()
 	gameDir := t.TempDir()
 	file := filepath.Join(mods, "FTM", "manifest.json")
@@ -47,6 +48,7 @@ func TestConsoleRevealDirAllowsModsAndGameRoots(t *testing.T) {
 }
 
 func TestConsoleRevealDirRejectsEscapes(t *testing.T) {
+	t.Parallel()
 	mods := t.TempDir()
 	gameDir := t.TempDir()
 	outside := t.TempDir()
@@ -64,6 +66,7 @@ func TestConsoleRevealDirRejectsEscapes(t *testing.T) {
 }
 
 func TestConsoleRevealDirRejectsSymlinkOut(t *testing.T) {
+	t.Parallel()
 	mods := t.TempDir()
 	outside := t.TempDir()
 	target := filepath.Join(outside, "other")

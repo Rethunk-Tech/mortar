@@ -14,6 +14,7 @@ func newStore(t *testing.T) *Store {
 }
 
 func TestCreateListRename(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	if got, err := s.List("stardew"); err != nil || len(got) != 0 {
 		t.Fatalf("empty list = %v, %v", got, err)
@@ -41,6 +42,7 @@ func TestCreateListRename(t *testing.T) {
 }
 
 func TestListReturnsDamagedProfiles(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	good := mustCreate(t, s, "Good")
 	badID := "0123456789abcdef"
@@ -72,6 +74,7 @@ func TestListReturnsDamagedProfiles(t *testing.T) {
 }
 
 func TestStoreKeysSkipsDamagedAndListDamaged(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	s.trash = filepath.Join(t.TempDir(), "trash")
 	good := mustCreate(t, s, "Good")
@@ -105,6 +108,7 @@ func TestStoreKeysSkipsDamagedAndListDamaged(t *testing.T) {
 }
 
 func TestRejects(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "ok")
 	for _, name := range []string{"", "   ", strings.Repeat("x", 61)} {
@@ -132,6 +136,7 @@ func TestRejects(t *testing.T) {
 }
 
 func TestModFolderRejectsUnknown(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "x")
 	if _, err := s.ModFolder("stardew", p.ID, "", "smapi:nope.Mod"); err == nil {
@@ -140,6 +145,7 @@ func TestModFolderRejectsUnknown(t *testing.T) {
 }
 
 func TestSetNotes(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	got, err := s.SetNotes("stardew", p.ID, "co-op friday")
@@ -162,6 +168,7 @@ func TestSetNotes(t *testing.T) {
 }
 
 func TestInModsHoldsTheStoreLock(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	err := s.InMods("stardew", p.ID, func(got Profile, modsDir string) error {

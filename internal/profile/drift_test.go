@@ -25,6 +25,7 @@ func writeTimed(t *testing.T, path, body string, when time.Time) {
 }
 
 func TestScanDriftUnknownDeletedChanged(t *testing.T) {
+	t.Parallel()
 	mods := t.TempDir()
 	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
 	writeTimed(t, filepath.Join(mods, "keep-me", "manifest.json"), "a", when)
@@ -77,6 +78,7 @@ func TestScanDriftUnknownDeletedChanged(t *testing.T) {
 }
 
 func TestScanDriftIgnoresConfigJSON(t *testing.T) {
+	t.Parallel()
 	mods := t.TempDir()
 	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
 	writeTimed(t, filepath.Join(mods, "mod", "manifest.json"), "a", when)
@@ -103,6 +105,7 @@ func TestScanDriftIgnoresConfigJSON(t *testing.T) {
 }
 
 func TestScanDriftIgnoresModDataWrites(t *testing.T) {
+	t.Parallel()
 	mods := t.TempDir()
 	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
 	writeTimed(t, filepath.Join(mods, "mod", "manifest.json"), "a", when)
@@ -121,6 +124,7 @@ func TestScanDriftIgnoresModDataWrites(t *testing.T) {
 }
 
 func TestScanDriftLinkedShippedFileUnchanged(t *testing.T) {
+	t.Parallel()
 	mods := t.TempDir()
 	store := t.TempDir()
 	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
@@ -153,6 +157,7 @@ func TestScanDriftLinkedShippedFileUnchanged(t *testing.T) {
 }
 
 func TestScanModsDriftOnProfile(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	dir, err := s.profileDir("stardew", p.ID)

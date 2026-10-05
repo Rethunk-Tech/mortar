@@ -5,6 +5,7 @@ import (
 )
 
 func TestClearCollectionRecordsHistory(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	ref := CollectionRef{Domain: "stardewvalley", Slug: "cozy", Name: "Cozy", Revision: 2}

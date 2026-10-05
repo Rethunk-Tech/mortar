@@ -262,6 +262,7 @@ func TestDuplicateIsIndependent(t *testing.T) {
 }
 
 func TestDuplicateUsesUniqueProfileName(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	source := mustCreate(t, s, "A")
 	if _, err := s.Create("stardew", "A copy"); err != nil {
@@ -678,6 +679,7 @@ func TestUnreadableTrashedProfileBlocksOnlyItself(t *testing.T) {
 
 // A running check made before the lock lets a launch start between the check and the change.
 func TestRunningIsCheckedUnderTheLock(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "A")
 	s.Running = func(string, string) bool {

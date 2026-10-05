@@ -103,6 +103,7 @@ func TestOverlayWithoutMainFileIsRefused(t *testing.T) {
 }
 
 func TestMapOverlay(t *testing.T) {
+	t.Parallel()
 	base := []string{"Mod/manifest.json", "Mod/content.json", "Mod/assets/a.png", "Mod/i18n/default.json"}
 	mods := []Component{{ID: "smapi:x", Folder: "Mod"}}
 	cases := []struct {

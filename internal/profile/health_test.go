@@ -9,6 +9,7 @@ import (
 )
 
 func TestAppendHealthDedupesWithinWindow(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	at := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
 	if err := AppendHealth(dir, HealthPoint{At: at, Problems: 2, Warnings: 1, Updates: 3}); err != nil {
@@ -28,6 +29,7 @@ func TestAppendHealthDedupesWithinWindow(t *testing.T) {
 }
 
 func TestAppendHealthAllowsAfterWindow(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	at := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
 	if err := AppendHealth(dir, HealthPoint{At: at, Problems: 1, Warnings: 0, Updates: 0}); err != nil {
@@ -47,8 +49,16 @@ func TestAppendHealthAllowsAfterWindow(t *testing.T) {
 }
 
 func TestAppendHealthCapsHistory(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
-	for i := range maxHealthPoints + 5 {
+	seed := make([]HealthPoint, maxHealthPoints)
+	for i := range seed {
+		seed[i] = HealthPoint{At: time.Date(2026, 1, 1, 0, 0, i, 0, time.UTC), Problems: i}
+	}
+	if err := datadir.WriteJSON(filepath.Join(dir, healthFile), healthFileData{Points: seed}); err != nil {
+		t.Fatal(err)
+	}
+	for i := maxHealthPoints; i < maxHealthPoints+5; i++ {
 		if err := AppendHealth(dir, HealthPoint{
 			At:       time.Date(2026, 1, 1, 0, 0, i, 0, time.UTC),
 			Problems: i,
@@ -72,6 +82,7 @@ func TestAppendHealthCapsHistory(t *testing.T) {
 }
 
 func TestAppendHealthAppendsWhenCountsChange(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	at := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
 	if err := AppendHealth(dir, HealthPoint{At: at, Problems: 0, Warnings: 0, Updates: 0}); err != nil {
@@ -90,6 +101,7 @@ func TestAppendHealthAppendsWhenCountsChange(t *testing.T) {
 }
 
 func TestReadHealthMissingFile(t *testing.T) {
+	t.Parallel()
 	got, err := ReadHealth(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -100,6 +112,7 @@ func TestReadHealthMissingFile(t *testing.T) {
 }
 
 func TestReadHealthCorruptFile(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	if err := datadir.WriteJSON(filepath.Join(dir, healthFile), "not-json"); err != nil {
 		t.Fatal(err)

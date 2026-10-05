@@ -167,9 +167,20 @@ func TestHistoryRevertMissingStoreKeys(t *testing.T) {
 }
 
 func TestHistoryBounded(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
-	for i := range maxHistory + 20 {
+	// Fill the log to its cap directly: reaching it one profile write at a time costs a full save per event.
+	data, err := s.loadHistory("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	seed := HistoryEvent{ID: "seed", SnapshotID: "seed"}
+	data.Events = slices.Repeat([]HistoryEvent{seed}, maxHistory)
+	if err := writeHistory(data.dir, data, 0); err != nil {
+		t.Fatal(err)
+	}
+	for i := range 20 {
 		if _, err := s.update("stardew", p.ID, func(p *Profile, _ string) error {
 			p.Entries = []Entry{{Key: "k", Mods: []Component{{ID: "smapi:x", Name: "X", Version: "1", Folder: "."}}}}
 			p.Entries[0].Mods[0].Version = "1"
@@ -193,6 +204,7 @@ func TestHistoryBounded(t *testing.T) {
 }
 
 func TestHistoryDeduplicatesSnapshots(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	entries := []Entry{{Key: "k", Mods: []Component{{ID: "smapi:x", Name: "X", Version: "1", Folder: "."}}}}
@@ -231,6 +243,7 @@ func TestHistoryDeduplicatesSnapshots(t *testing.T) {
 }
 
 func TestCorruptHistoryIsQuarantined(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	dir, err := s.profileDir("stardew", p.ID)
@@ -328,6 +341,7 @@ func TestHistoryRevertRefusedWhileRunning(t *testing.T) {
 }
 
 func TestModDiffCounts(t *testing.T) {
+	t.Parallel()
 	a1 := Entry{Key: "a", Mods: []Component{{ID: "smapi:A.Mod", Name: "Alpha", Version: "1.0"}}}
 	a2 := Entry{Key: "a2", Mods: []Component{{ID: "smapi:A.Mod", Name: "Alpha", Version: "2.0"}}}
 	b := Entry{Key: "b", Mods: []Component{{ID: "smapi:B.Mod", Name: "Beta", Version: "1.0"}}}
@@ -362,6 +376,7 @@ func TestHistoryIncludesModDiffCounts(t *testing.T) {
 }
 
 func TestClassifyHistoryNamesTheEntryThatChanged(t *testing.T) {
+	t.Parallel()
 	a := Entry{Key: "gmcm", Mods: []Component{{ID: "smapi:spacechase0.GenericModConfigMenu", Name: "Generic Mod Config Menu"}}}
 	b := Entry{Key: "npc", Mods: []Component{{ID: "smapi:Bouhm.NPCMapLocations", Name: "NPC Map Locations"}}}
 	before := []Entry{a, b}
@@ -638,6 +653,7 @@ func TestChangesSinceCachedUntilProfileUpdated(t *testing.T) {
 }
 
 func TestAppendedEventsCarryTheirCounts(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	one := []Entry{{Key: "a", Mods: []Component{{ID: "smapi:A.Mod", Version: "1.0"}}}}
 	two := append(cloneEntries(one), Entry{Key: "b", Mods: []Component{{ID: "smapi:B.Mod", Version: "1.0"}}})
@@ -659,6 +675,7 @@ func TestAppendedEventsCarryTheirCounts(t *testing.T) {
 }
 
 func TestPlainSnapshotIsReadAndGzipped(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(dir, snapshotsDir), 0o700); err != nil {
 		t.Fatal(err)

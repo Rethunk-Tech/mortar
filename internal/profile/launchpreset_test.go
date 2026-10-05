@@ -3,6 +3,7 @@ package profile
 import "testing"
 
 func TestResolvePreset(t *testing.T) {
+	t.Parallel()
 	p := Profile{
 		Name: "Farm", LaunchOptions: "--a", LaunchPrefix: "gamemoderun", LaunchEnv: "X=1",
 		LaunchPresets: []LaunchPreset{
@@ -37,6 +38,7 @@ func TestResolvePreset(t *testing.T) {
 }
 
 func TestLaunchSpecOverrides(t *testing.T) {
+	t.Parallel()
 	if got := (LaunchSpec{}).Overrides(nil); got != nil {
 		t.Fatalf("no console choice = %v", got)
 	}

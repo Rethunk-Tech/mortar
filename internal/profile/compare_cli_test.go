@@ -7,6 +7,7 @@ import (
 )
 
 func TestCompareProfilesCLI(t *testing.T) {
+	t.Parallel()
 	a := Profile{Entries: []Entry{
 		{Key: "a", Mods: []Component{{ID: "smapi:Alpha.Mod", Name: "Alpha", Version: "1"}}},
 		{Key: "b", Mods: []Component{{ID: "smapi:Beta.Mod", Name: "Beta", Version: "1"}}},

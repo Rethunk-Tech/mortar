@@ -55,6 +55,7 @@ func TestSaveCustomCategoriesAndDeleteClearsOverrides(t *testing.T) {
 }
 
 func TestSetEntryCategoryNexusName(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "farm")
 	var err error
