@@ -15,8 +15,8 @@ import type {
   Mod,
   Problem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
-import { modsLabel } from '../i18n/counts.ts'
 import { openPage } from '../mods/menu.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { isModState, MOD_STATES, type ModState, type ShownPreview, type Summary } from './logic.ts'
 
@@ -245,7 +245,7 @@ function Pill({
 function CountLabel({ state, count }: { state: ModState; count: number }) {
   const { t } = useLingui()
   return {
-    installed: t`${{ what: count }} installed`,
+    installed: plural(count, { one: '# mod installed', other: '# mods installed' }),
     download: t`${count} to download`,
     dependency: plural(count, { one: '# dependency', other: '# dependencies' }),
     later: t`${count} checked later`,
@@ -319,7 +319,6 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
   const dot = DOT(th)
   const total = preview.mods.length
   const ready = summary.toImport > 0
-  const mods = modsLabel(total)
   const size = formatKb(summary.sizeKb)
   const settings = plural(preview.settings, {
     one: 'with # settings file, written once its mod is installed',
@@ -328,7 +327,12 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
   const skippedSettings = preview.skippedSettings ?? []
   const counts = MOD_STATES.filter((s) => summary.counts[s] > 0)
   const detail = [
-    ready ? t`${mods} · about ${size} to download` : mods,
+    ready
+      ? plural(total, {
+          one: `# mod · about ${size} to download`,
+          other: `# mods · about ${size} to download`,
+        })
+      : modsLabel(total),
     preview.settings > 0 ? settings : '',
   ]
     .filter(Boolean)

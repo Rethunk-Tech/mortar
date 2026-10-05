@@ -15,8 +15,12 @@ const batches = new Map<string, ImportBatch>()
 const settled = new Set(['done', 'failed', 'skipped', 'cancelled'])
 
 function importCountsLine(counts: SettledImportCounts) {
+  const count = counts.installed
   return [
-    counts.installed > 0 && i18n._(msg`${{ what: counts.installed }} installed`),
+    counts.installed > 0 &&
+      i18n._(
+        msg`${plural(count, { one: '# mod installed', other: '# mods installed' })}`,
+      ),
     counts.failed > 0 && i18n._(msg`${counts.failed} failed`),
     counts.skipped > 0 && i18n._(msg`${counts.skipped} skipped`),
   ]

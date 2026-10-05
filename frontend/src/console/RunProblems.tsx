@@ -1,5 +1,5 @@
 import type { I18n } from '@lingui/core'
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -161,8 +161,11 @@ function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: 
         title={t`Remove duplicate?`}
         body={
           copies.keep
-            ? t`Keep ${copies.keep.name} and remove ${copies.remove.map((m) => m.name).join(', ')}.`
-            : t`Remove ${{ name: copies.remove.map((m) => m.name).join(', ') }}`
+            ? plural(copies.remove.length, {
+                one: `Keep ${copies.keep.name} and remove ${copies.remove[0]?.name ?? ''}.`,
+                other: `Keep ${copies.keep.name} and remove # other copies.`,
+              })
+            : t`Remove ${{ name: copies.remove[0]?.name ?? '' }}`
         }
         confirmLabel={t`Remove`}
         onCancel={() => setConfirmDup(false)}
