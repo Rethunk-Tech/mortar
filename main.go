@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/bundles"
 	"github.com/Rethunk-Tech/mortar/internal/cli"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/configsvc"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
@@ -476,6 +477,7 @@ func run() error {
 			return ""
 		},
 		InstallPackage: profiles.InstallSource,
+		Direct:         queue.ResolveDirect,
 		GitHub:         &github.Client{},
 		OpenURL:        func(url string) error { return app.Browser.OpenURL(url) },
 		Running:        launches.Running,
@@ -671,7 +673,15 @@ func run() error {
 	browseSvc.SourceOrder = func(game string) []string {
 		return strings.FieldsFunc(store.Get().GamePrefs(game).SourceOrder, func(r rune) bool { return r == ',' })
 	}
+	configSvc := &configsvc.Service{
+		Profiles: profiles,
+		SetJSON: func(game, profileID string, uniqueID mod.ID, field, value string) error {
+			return profileSvc.SetConfigValue(game, profileID, "", uniqueID, field, value)
+		},
+		Running: profiles.Running,
+	}
 	for _, s := range []application.Service{
+		application.NewService(configSvc),
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 		application.NewService(bundlesSvc), application.NewService(templatesSvc), application.NewService(archivesSvc),
