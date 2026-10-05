@@ -14,6 +14,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source"
+	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -86,14 +88,14 @@ func (s *Service) emit(name string, data any) {
 	}
 }
 
-// Receive reads every nxm:// link among args: an accepted one waits for a profile, a refused one is reported. It
+// Receive reads every link among args in a scheme a source claims (nxm://): an accepted one waits for a profile, a refused one is reported. It
 // reports whether there was any link.
 //
 //wails:ignore
 func (s *Service) Receive(args []string) bool {
 	found := false
 	for _, arg := range args {
-		if !nxm.IsLink(arg) {
+		if !source.IsLink(arg) {
 			continue
 		}
 		found = true
