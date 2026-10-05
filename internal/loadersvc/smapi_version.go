@@ -277,24 +277,10 @@ func (s *Service) installInProfiles(ctx context.Context, id, dir string, l loade
 	key := store.LoaderKey(l.ID(), version)
 	held, err := s.items.Path(id, key)
 	if errors.Is(err, store.ErrNotFound) {
-		if err := s.ensureKnown(ctx, id, version); err != nil {
+		if held, err = s.fetchIntoStore(ctx, id, rel, key, version); err != nil {
 			return loader.Status{}, err
 		}
-		work, err := os.MkdirTemp("", "mortar-loader-")
-		if err != nil {
-			return loader.Status{}, err
-		}
-		defer func() { _ = fsx.RemoveAll(work) }()
-		if err := rel.Fetch(ctx, catalogGame(id), version, filepath.Join(work, installerFile)); err != nil {
-			return loader.Status{}, err
-		}
-		s.emit(ProgressEvent, Progress{Game: id, Step: loader.StepDownloaded})
-		if err := s.items.AddDir(id, key, work); err != nil {
-			return loader.Status{}, err
-		}
-		held, err = s.items.Path(id, key)
-	}
-	if err != nil {
+	} else if err != nil {
 		return loader.Status{}, err
 	}
 	all, err := s.profiles.List(id)
@@ -323,3 +309,23 @@ func (s *Service) installInProfiles(ctx context.Context, id, dir string, l loade
 
 // installerFile names the downloaded installer inside a per-profile loader's store entry.
 const installerFile = "installer.zip"
+
+// fetchIntoStore downloads the loader's installer into the store under key and returns its folder.
+func (s *Service) fetchIntoStore(ctx context.Context, id string, rel loader.Releases, key, version string) (string, error) {
+	if err := s.ensureKnown(ctx, id, version); err != nil {
+		return "", err
+	}
+	work, err := os.MkdirTemp("", "mortar-loader-")
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = fsx.RemoveAll(work) }()
+	if err := rel.Fetch(ctx, catalogGame(id), version, filepath.Join(work, installerFile)); err != nil {
+		return "", err
+	}
+	s.emit(ProgressEvent, Progress{Game: id, Step: loader.StepDownloaded})
+	if err := s.items.AddDir(id, key, work); err != nil {
+		return "", err
+	}
+	return s.items.Path(id, key)
+}
