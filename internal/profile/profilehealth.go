@@ -102,7 +102,8 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 	if err != nil {
 		return Profile{}, err
 	}
-	var restore, revert, names, drop []string
+	var restore, revert, drop []string
+	nameOf := map[string]string{}
 	recoverJournals := false
 	for _, f := range found {
 		if !slices.Contains(findingIDs, f.ID) {
@@ -110,11 +111,13 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 		}
 		switch f.Repair {
 		case RepairRestore:
-			restore = append(restore, f.ID[len(HealthDrift)+1:])
-			names = append(names, f.Items...)
+			key := f.ID[len(HealthDrift)+1:]
+			restore = append(restore, key)
+			nameOf[key] = firstItem(f)
 		case RepairRevert:
-			revert = append(revert, f.ID[len(HealthDrift)+1:])
-			names = append(names, f.Items...)
+			key := f.ID[len(HealthDrift)+1:]
+			revert = append(revert, key)
+			nameOf[key] = firstItem(f)
 		case RepairDropSnapshot:
 			drop = append(drop, f.ID[len(HealthSnapshot)+1:])
 		case RepairRecover:
@@ -125,13 +128,13 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 	if recoverJournals && s.HealthRecover != nil {
 		errs = append(errs, s.HealthRecover(game))
 	}
-	restored := 0
+	var restored []string
 	for _, key := range restore {
 		if _, err := s.RestoreDriftEntry(game, id, key); err != nil {
 			errs = append(errs, err)
 			continue
 		}
-		restored++
+		restored = append(restored, nameOf[key])
 	}
 	// A changed mod is reverted, which keeps the config and data files its folder gained; only a deleted one is
 	// restored whole.
@@ -140,14 +143,14 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 			errs = append(errs, err)
 			continue
 		}
-		restored++
+		restored = append(restored, nameOf[key])
 	}
-	if restored > 0 {
-		label := "Restored " + names[0] + " from the store"
-		if restored > 1 {
-			label = fmt.Sprintf("Restored %d mods from the store", restored)
+	if len(restored) > 0 {
+		label := "Restored " + restored[0] + " from the store"
+		if len(restored) > 1 {
+			label = fmt.Sprintf("Restored %d mods from the store", len(restored))
 		}
-		errs = append(errs, s.store.recordSnapshot(game, id, historyRestored, label, restored))
+		errs = append(errs, s.store.recordSnapshot(game, id, historyRestored, label, len(restored)))
 	}
 	for _, ev := range drop {
 		errs = append(errs, s.store.dropHistoryEvent(game, id, ev))
@@ -156,6 +159,13 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 	s.FlagHealth(game)
 	p, err := s.store.read(game, id)
 	return p, errors.Join(append(errs, err)...)
+}
+
+func firstItem(f HealthFinding) string {
+	if len(f.Items) == 0 {
+		return ""
+	}
+	return f.Items[0]
 }
 
 func (s *Store) missingFindings(game string, p Profile) ([]HealthFinding, error) {

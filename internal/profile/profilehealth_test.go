@@ -3,6 +3,7 @@ package profile
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -192,5 +193,44 @@ func TestHealthRevertKeepsConfigAndData(t *testing.T) {
 	b, err := fsx.ReadFile(filepath.Join(dir, "assets", "x.json"))
 	if err != nil || string(b) != "{}" {
 		t.Fatalf("not reverted: %s %v", b, err)
+	}
+}
+
+func TestRestoreLabelNamesWhatWasRestored(t *testing.T) {
+	t.Parallel()
+	e, svc, p := healthEnv(t)
+	zip := buildZip(t, "b.zip", map[string]string{"B/manifest.json": manifestJSON("X.B")})
+	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	p, err := e.read("stardew", p.ID)
+	if err != nil || len(p.Entries) != 2 {
+		t.Fatalf("entries = %v, %v", p.Entries, err)
+	}
+	for _, en := range p.Entries {
+		if err := os.RemoveAll(filepath.Join(e.mods(p.ID), en.Key)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// The first mod's store copy is gone too, so its restore fails and only the second is restored.
+	path, err := e.items.Path("stardew", p.Entries[0].Key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.RemoveAll(path); err != nil {
+		t.Fatal(err)
+	}
+	var ids []string
+	for _, f := range findingsOf(t, svc, p.ID, HealthDrift) {
+		ids = append(ids, f.ID)
+	}
+	_, _ = svc.RepairProfile("stardew", p.ID, ids)
+	hist, _ := e.History("stardew", p.ID)
+	if len(hist) == 0 || hist[0].Kind != historyRestored || !strings.Contains(hist[0].Label, entryLabel(p.Entries[1])) ||
+		strings.Contains(hist[0].Label, entryLabel(p.Entries[0])) {
+		t.Fatalf("history = %#v", hist)
 	}
 }
