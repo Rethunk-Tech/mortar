@@ -19,7 +19,8 @@
       queued and every dependency checked.
     </p>
     <p>
-      Version 1 supports Stardew Valley (SMAPI, Nexus Mods) only.
+      The games Mortar supports come from its catalog: Stardew Valley today, with
+      mods from Nexus Mods, GitHub and Thunderstore.
     </p>
   </description>
   <launchable type="desktop-id">tech.rethunk.Mortar.desktop</launchable>

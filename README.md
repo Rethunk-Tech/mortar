@@ -10,7 +10,7 @@
 
 Mortar is a desktop mod manager, built for more than one game. It finds your game, installs its mod loader, keeps each set of mods in its own profile, and launches the game with the profile you pick. A profile is shared as a link: whoever opens it gets the same mods, with anything missing installed or queued and every dependency checked.
 
-Version 1 supports Stardew Valley (SMAPI, Nexus Mods) only; Lethal Company (BepInEx, Thunderstore) is deferred to a later release. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
+The games Mortar supports come from its catalog: Stardew Valley today, with mods from Nexus Mods, GitHub and Thunderstore. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
 
 <p align="center"><img src="build/linux/screenshots/mods.png" alt="Mortar showing a Stardew Valley profile of 817 mods with cover art" width="900"></p>
 
@@ -61,3 +61,5 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 ## Licence
 
 Licensed under the [GNU Affero General Public License v3.0](LICENSE).
+
+Not affiliated with any game developer or mod site.
