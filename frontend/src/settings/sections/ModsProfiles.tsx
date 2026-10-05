@@ -6,6 +6,7 @@ import { PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
+import { SyncFolder } from './SyncFolder.tsx'
 
 export function ModsProfiles() {
   const { t } = useLingui()
@@ -31,6 +32,7 @@ export function ModsProfiles() {
           'showAdultContent',
         ]}
       />
+      <SyncFolder />
     </SettingsSection>
   )
 }

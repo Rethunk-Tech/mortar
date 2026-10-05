@@ -33,6 +33,7 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { controlsCutout } from '../shell/controlsCutout.ts'
 import { FlatpakGrant } from '../shell/FlatpakGrant.tsx'
+import { SyncOffers } from '../sync/SyncOffers.tsx'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -339,6 +340,7 @@ export function LaunchLayer({ game }: { game: string }) {
       <SaveWarnDialog />
       <PrePlayDialog />
       <KnownGoodOffer />
+      <SyncOffers />
       <VanillaPlayDialogs />
     </>
   )

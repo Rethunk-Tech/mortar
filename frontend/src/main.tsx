@@ -23,6 +23,7 @@ import { initScheduledBackups } from './saves/scheduledBackups.ts'
 import { initNexus } from './settings/nexus.ts'
 import { initSettings } from './settings/store.ts'
 import { initShare } from './share/arrivals.ts'
+import { initSync } from './sync/store.ts'
 import { Themed } from './Themed.tsx'
 import { initTidyReport } from './tidy/report.ts'
 import { reportUnexpected } from './toasts/report.ts'
@@ -50,6 +51,7 @@ initNewDownloads()
 initNexus().catch(reportUnexpected)
 initNexusSeen().catch(reportUnexpected)
 initLaunch()
+initSync()
 initTrayNoticeClick()
 initLoader()
 initNxm().catch(reportUnexpected)
