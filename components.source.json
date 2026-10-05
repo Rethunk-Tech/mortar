@@ -35,6 +35,7 @@
       "metadata": ["smapi-updates", "smapi-compat", "stardew-dataset"],
       "paths": {
         "saves": { "windows": "{appData}/StardewValley/Saves", "linux": "{xdgConfig}/StardewValley/Saves", "darwin": "{xdgConfig}/StardewValley/Saves" },
+        "errorLogs": { "windows": "{appData}/StardewValley/ErrorLogs", "linux": "{xdgConfig}/StardewValley/ErrorLogs", "darwin": "{xdgConfig}/StardewValley/ErrorLogs" },
         "startupPreferences": { "windows": "{appData}/StardewValley/startup_preferences", "linux": "{xdgConfig}/StardewValley/startup_preferences", "darwin": "{xdgConfig}/StardewValley/startup_preferences" }
       },
       "stores": {

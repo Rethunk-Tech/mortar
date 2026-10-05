@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	gamert "github.com/Rethunk-Tech/mortar/internal/runtime"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -37,11 +38,11 @@ func (g Game) logDir() (string, error) {
 	if g.LogDir != "" {
 		return g.LogDir, nil
 	}
-	base, err := os.UserConfigDir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(base, "StardewValley", "ErrorLogs"), nil
+	return gamert.Resolve(gamert.Install{Platform: runtime.GOOS, Home: home}, identity().Paths["errorLogs"])
 }
 
 // logVersions returns the SMAPI and game versions from the first line of SMAPI-latest.txt, or empty strings.
