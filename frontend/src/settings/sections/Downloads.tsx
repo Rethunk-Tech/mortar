@@ -283,7 +283,7 @@ export function Downloads() {
     )
   return (
     <>
-      <SettingsSection title={t`Nexus links`}>
+      <SettingsSection title={t`Links`}>
         <NxmLinks />
         <NxmDefaultProfiles />
       </SettingsSection>

@@ -18,12 +18,12 @@ import {
   Ban,
   Check,
   Download,
-  ExternalLink,
   Filter,
   FolderTree,
   Layers,
   Library,
   Plus,
+  Search,
   Settings2,
   Tag,
   ToggleRight,
@@ -32,10 +32,9 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
+import { useTab } from '../game/tab.ts'
 import { useInstall } from '../install/store.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
-import { openSettings } from '../nav/store.ts'
-import { useNexus } from '../settings/nexus.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -48,9 +47,6 @@ import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { ExtraFolderMenu } from './ExtraFolderMenu.tsx'
 import { onFilterFocus } from './filterFocus.ts'
 import { type GroupBy, sanitizeListGroupBy } from './group.ts'
-import { openPage } from './menu.ts'
-import { nexusDomain } from './nexusDomain.ts'
-import { nexusModsUrl } from './nexusUrl.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -235,34 +231,24 @@ function GroupByControl() {
   )
 }
 
-function BrowseNexus({
+function BrowseMods({
   variant,
   toolbar = false,
   size,
-  signInFirst = false,
 }: {
   variant: 'contained' | 'outlined'
   toolbar?: boolean
   size?: 'large'
-  signInFirst?: boolean
 }) {
   const { t } = useLingui()
-  const signedIn = useNexus((s) => s.signedIn)
-  const signIn = signInFirst && !signedIn
-  const label = signIn ? t`Sign in to Nexus Mods` : t`Open Nexus Mods`
+  const label = t`Browse mods`
   return (
     <Button
       variant={variant}
       size={size}
       aria-label={label}
-      startIcon={<ExternalLink size={14} />}
-      onClick={() => {
-        if (signIn) {
-          openSettings('nexus')
-          return
-        }
-        openPage(nexusModsUrl(nexusDomain())).catch(reportUnexpected)
-      }}
+      startIcon={<Search size={14} />}
+      onClick={() => useTab.getState().setTab('browse')}
       sx={toolbar ? iconWhenCompact : undefined}
     >
       <span className="label">{label}</span>
@@ -412,7 +398,7 @@ export function Toolbar({
           )}
         </Button>
       ) : null}
-      <BrowseNexus variant="outlined" toolbar={true} />
+      <BrowseMods variant="outlined" toolbar={true} />
       <AddArchive variant="outlined" toolbar={true} />
     </Box>
   )
@@ -427,7 +413,7 @@ export function EmptyMods({ profileId }: { profileId: string }) {
       action={
         <>
           <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <BrowseNexus variant="contained" size="large" signInFirst={true} />
+            <BrowseMods variant="contained" size="large" />
             <AddArchive variant="outlined" size="large" />
           </Box>
           <Button

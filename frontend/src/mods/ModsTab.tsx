@@ -284,7 +284,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
       sx={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
     >
       <TipBanner tip="mods">
-        {t`Drop archives anywhere on the window, or Open Nexus Mods to find mods.`}
+        {t`Drop archives anywhere on the window, or use Browse to find mods.`}
       </TipBanner>
       <AttentionBars />
       <OldFilesCallouts profile={profile} />
