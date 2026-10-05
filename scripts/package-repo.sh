@@ -3,11 +3,11 @@
 # Usage: MORTAR_REPO_KEY=<armored private key file> scripts/package-repo.sh ASSET_DIR OUT_DIR
 #   ASSET_DIR holds a release's .deb, .rpm and .pkg.tar.zst files; OUT_DIR is created empty.
 #   MORTAR_REPO_URL overrides the base URL written into the client snippets (a local test server).
-# The metadata tools run in throwaway containers (podman, else docker); signing runs on the host with gpg in a temporary
-# GNUPGHOME. The key must be the one in build/linux/repo/mortar-archive-keyring.asc, so a wrong secret cannot publish a
-# repo that installed clients reject.
-# RPMs are served unsigned, byte-identical to the release assets: dnf verifies the signed repomd.xml (repo_gpgcheck=1),
-# which pins every package's sha256, so gpgcheck=0 loses nothing.
+# The metadata tools run in throwaway containers (podman, else docker); signing uses gpg with a temporary GNUPGHOME, on
+# the host except for rpmsign, which runs in a throwaway Fedora container given that GNUPGHOME. The key must be the one
+# in build/linux/repo/mortar-archive-keyring.asc, so a wrong secret cannot publish a repo that installed clients reject.
+# dnf checks both the signed repomd.xml (repo_gpgcheck=1) and each package's own signature (gpgcheck=1), so the repo's
+# RPMs are signed copies of the release assets.
 set -euo pipefail
 ASSETS=$(cd "${1:?usage: package-repo.sh ASSET_DIR OUT_DIR}" && pwd)
 OUT=${2:?usage: package-repo.sh ASSET_DIR OUT_DIR}
@@ -45,10 +45,12 @@ if [ "$("$CT" info --format '{{.Host.Security.Rootless}}' 2>/dev/null)" = true ]
   handback=true
 fi
 run() {
+  local image=$1
+  shift
   {
     cat
     echo "$handback"
-  } | $CT run --rm -i -v "$OUT":/out -w /out "$1" sh -es
+  } | $CT run --rm -i -v "$OUT":/out -w /out "$@" "$image" sh -es
 }
 
 shopt -s nullglob
@@ -83,8 +85,11 @@ for f in "${rpms[@]}"; do
   a=${a##*.}
   mkdir -p "$OUT/rpm/$a" && cp "$f" "$OUT/rpm/$a/"
 done
-run fedora:latest <<'EOF'
-dnf install -y -q createrepo_c >/dev/null
+run fedora:latest -v "$GNUPGHOME":/gnupg -e GNUPGHOME=/gnupg -e FPR="$FPR" -e HANDBACK_GNUPG="${handback/\/out/\/gnupg}" <<'EOF'
+dnf install -y -q createrepo_c rpm-sign gnupg2 >/dev/null
+rpmsign --define "_gpg_name $FPR" --addsign rpm/*/*.rpm >/dev/null
+gpgconf --kill all
+sh -c "$HANDBACK_GNUPG"
 for d in rpm/*/; do createrepo_c -q "$d"; done
 EOF
 for d in "$OUT"/rpm/*/repodata; do sign --armor --detach-sign -o "$d/repomd.xml.asc" "$d/repomd.xml"; done
@@ -117,7 +122,7 @@ cat >"$OUT/mortar.repo" <<EOF
 name=Mortar
 baseurl=$URL/rpm/\$basearch
 enabled=1
-gpgcheck=0
+gpgcheck=1
 repo_gpgcheck=1
 gpgkey=$URL/mortar-archive-keyring.asc
 EOF
