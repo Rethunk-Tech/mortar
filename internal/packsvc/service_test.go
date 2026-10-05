@@ -42,6 +42,14 @@ func (f *fakeProfiles) List(string) ([]profile.Profile, error) { return f.list, 
 
 func (f *fakeProfiles) ProfileDir(string, string) (string, error) { return f.dir, nil }
 
+func (*fakeProfiles) Backup(string, string) (profile.Profile, map[string][]byte, error) {
+	return profile.Profile{}, nil, errors.New("not in this fake")
+}
+
+func (*fakeProfiles) RestoreBackup(string, profile.Profile, map[string][]byte) (profile.Profile, []profile.Entry, error) {
+	return profile.Profile{}, nil, errors.New("not in this fake")
+}
+
 type fakeQueue struct{ got []queue.Request }
 
 func (f *fakeQueue) Add(_ context.Context, reqs []queue.Request) ([]queue.Item, error) {

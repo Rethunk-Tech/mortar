@@ -28,6 +28,8 @@ type profiles interface {
 	List(game string) ([]profile.Profile, error)
 	WriteFiles(game, id string, files map[string][]byte) error
 	ProfileDir(game, id string) (string, error)
+	Backup(game, id string) (profile.Profile, map[string][]byte, error)
+	RestoreBackup(game string, p profile.Profile, files map[string][]byte) (profile.Profile, []profile.Entry, error)
 }
 
 // downloads is the part of queue.Service the service uses.

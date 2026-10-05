@@ -12333,3 +12333,38 @@ msgstr ".mortar file with settings"
 #: src/firstrun/FirstRun.tsx:94
 msgid "{found} of {0, plural, one {# launcher} other {# launchers}} found."
 msgstr "{found} of {0, plural, one {# launcher} other {# launchers}} found."
+
+#: src/game/BackupMenuItems.tsx:48
+msgid "Back up to a file…"
+msgstr "Back up to a file…"
+
+#. placeholder {0}: r.queued
+#: src/game/BackupMenuItems.tsx:41
+msgid "{0} mods are downloading."
+msgstr "{0} mods are downloading."
+
+#. placeholder {0}: listNames(missing)
+#: src/game/BackupMenuItems.tsx:40
+msgid "Install these again by hand: {0}"
+msgstr "Install these again by hand: {0}"
+
+#. placeholder {0}: r.name
+#: src/game/BackupMenuItems.tsx:37
+msgid "Restored as {0}"
+msgstr "Restored as {0}"
+
+#: src/game/BackupMenuItems.tsx:25
+msgid "Profile backed up"
+msgstr "Profile backed up"
+
+#: src/game/BackupMenuItems.tsx:51
+msgid "Could not back up the profile"
+msgstr "Could not back up the profile"
+
+#: src/game/BackupMenuItems.tsx:57
+msgid "Restore from a file…"
+msgstr "Restore from a file…"
+
+#: src/game/BackupMenuItems.tsx:60
+msgid "Could not restore the backup"
+msgstr "Could not restore the backup"

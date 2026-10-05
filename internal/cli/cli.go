@@ -569,6 +569,10 @@ func (c *cmd) dispatch() error {
 				return c.profileImport()
 			case "export":
 				return c.profileExport()
+			case "backup":
+				return c.profileBackup()
+			case "restore":
+				return c.profileRestore()
 			}
 		}
 		return c.profile()
@@ -1142,7 +1146,7 @@ func (c *cmd) source() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, from-save, rename, copy, compare, match, collection, history, health, revert, load-order, repair, list, shortcut, steam, delete, changes, good, import or export"}
+		return usageError{"profile needs create, from-save, rename, copy, compare, match, collection, history, health, revert, load-order, repair, list, shortcut, steam, delete, changes, good, import, export, backup or restore"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -2274,6 +2278,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
                                           import an r2modman code, .r2z or modpack and queue its downloads
   profile export <game> <profile> <file.zip> --format modpack [--no-configs]
                                           write a Thunderstore modpack of the profile's Thunderstore packages
+  profile backup <game> <profile> <file.zip>  everything but the mod files: settings, history, configs
+  profile restore <file.zip> [--game <id>]    new profile from a backup; downloads its mods again
   profile load-order <game> <profile>    enabled mods in SMAPI load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
   profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|loader|

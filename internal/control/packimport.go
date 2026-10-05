@@ -51,3 +51,30 @@ func (s *Services) packExportModpack(p Params) (any, error) {
 	}
 	return s.Packs.ExportModpack(p.Game, prof.ID, p.Path, p.All)
 }
+
+// profileBackup writes the profile to the backup file at Path.
+func (s *Services) profileBackup(p Params) (any, error) {
+	if s.Packs == nil {
+		return nil, errors.New("profile backup is unavailable")
+	}
+	if strings.TrimSpace(p.Path) == "" {
+		return nil, errors.New("name the backup file to write")
+	}
+	prof, err := s.resolve(p.Game, p.Profile)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]string{"path": p.Path}, s.Packs.Backup(p.Game, prof.ID, p.Path)
+}
+
+// profileRestore makes a new profile from the backup file at Path; Game, when given, must be the backup's game.
+func (s *Services) profileRestore(ctx context.Context, p Params) (any, error) {
+	if s.Packs == nil {
+		return nil, errors.New("profile restore is unavailable")
+	}
+	res, err := s.Packs.Restore(ctx, p.Path, p.Game)
+	if res.Profile != "" && s.Emit != nil {
+		s.Emit(ChangedEvent, res.Game)
+	}
+	return res, err
+}

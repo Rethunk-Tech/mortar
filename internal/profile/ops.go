@@ -886,6 +886,9 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 		if err := s.layOverlays(game, p.ID, e, liveEntryDir(modsDir, e.Key), nil, overlaysOn(p.Entries, e.Key)); err != nil {
 			return fmt.Errorf("rebuild %s: %w", e.Key, err)
 		}
+		if err := applyRestored(dir, modsDir, e.Key); err != nil {
+			return fmt.Errorf("rebuild %s: %w", e.Key, err)
+		}
 		s.tidied("Rebuilt a mod folder from the store", p.Name, e.Key)
 	}
 	return nil

@@ -76,3 +76,40 @@ func (c *cmd) profileExport() error {
 		}
 	})
 }
+
+// profileBackup writes everything of the profile but its mod files to one file.
+func (c *cmd) profileBackup() error {
+	a, err := c.need(2, "a game", "a profile", "the backup file to write")
+	if err != nil {
+		return err
+	}
+	dest, err := filepath.Abs(a[2])
+	if err != nil {
+		return err
+	}
+	return show(c, "profile.backup", control.Params{Game: a[0], Profile: a[1], Path: dest}, func(r map[string]string) {
+		fmt.Fprintf(c.out, "Backed up to %s.\n", r["path"])
+	})
+}
+
+// profileRestore makes a new profile from a backup file and queues its mods' downloads.
+func (c *cmd) profileRestore() error {
+	a, err := c.need(2, "a backup file")
+	if err != nil {
+		return err
+	}
+	path, err := filepath.Abs(a[0])
+	if err != nil {
+		return err
+	}
+	var res packsvc.RestoreResult
+	if err := c.call("profile.restore", control.Params{Game: c.game, Path: path}, &res, installTimeout); err != nil {
+		return err
+	}
+	return c.emit(res, func() {
+		fmt.Fprintf(c.out, "%s\t%s\tqueued %d downloads\n", res.Profile, res.Name, res.Queued)
+		if len(res.Unavailable) > 0 {
+			fmt.Fprintf(c.out, "Cannot download again (install them by hand): %s\n", strings.Join(res.Unavailable, ", "))
+		}
+	})
+}

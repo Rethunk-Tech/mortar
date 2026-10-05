@@ -39,6 +39,7 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { BackupMenuItems } from './BackupMenuItems.tsx'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
 import { ExportCodeMenuItem, ExportModpackMenuItem } from './ExportCodeMenuItem.tsx'
 import { ExportCollectionMenuItem } from './ExportCollectionMenuItem.tsx'
@@ -316,13 +317,14 @@ function ProfileDialogs({
   )
 }
 
-// The ways to hand the profile to someone else, as one menu group.
+// Sharing, exporting and backing up the profile, as one menu group.
 function ShareMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
   return [
     <SendProfileMenuItem key="send" profile={profile} close={close} />,
     <ExportCollectionMenuItem key="export-collection" profile={profile} close={close} />,
     <ExportCodeMenuItem key="export-code" profile={profile} close={close} />,
     <ExportModpackMenuItem key="export-modpack" profile={profile} close={close} />,
+    <BackupMenuItems key="backup" profile={profile} close={close} />,
   ]
 }
 
