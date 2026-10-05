@@ -18,7 +18,7 @@ step() {
   pids[$name]=$!
 }
 
-step biome bunx biome check --error-on-warnings .
+step biome scripts/biome-strict.sh
 step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z '*.sh' | xargs -0 -r shellcheck -x"
 step knip bunx knip
 step golangci-linux golangci-lint run --allow-parallel-runners
