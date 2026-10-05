@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
@@ -265,5 +266,40 @@ func TestInstallReportsInstallerFailure(t *testing.T) {
 	}, func(loader.Step) {})
 	if err == nil || !strings.Contains(err.Error(), "game path is not valid") {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestInstallWindowsBuildRunsInstallerThroughExec(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("a Windows build on a non-Windows host is Linux's case")
+	}
+	installDat := testfs.ZipBytes(t, map[string]string{
+		"Mods/ConsoleCommands/manifest.json": `{"Name":"Console Commands","UniqueID":"SMAPI.ConsoleCommands","Version":"9.9.9"}`,
+	})
+	archive := filepath.Join(t.TempDir(), "installer.zip")
+	write(t, archive, string(testfs.ZipBytes(t, map[string]string{
+		"SMAPI 9.9.9 installer/internal/windows/SMAPI.Installer.exe": "MZ",
+		"SMAPI 9.9.9 installer/internal/windows/install.dat":         string(installDat),
+	})))
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "Stardew Valley.exe"), "")
+	pkg := loader.Package{ID: ID, Version: "9.9.9", Archive: archive}
+	progress := func(loader.Step) {}
+
+	if _, err := (Loader{}).Install(context.Background(), loader.Target{InstallDir: dir}, pkg, progress); err == nil {
+		t.Fatal("a Windows build with no runtime must not be installed into")
+	}
+	var argv []string
+	exec := func(_ context.Context, _ launchplan.RuntimeReq, a []string) error {
+		argv = a
+		write(t, filepath.Join(dir, "StardewModdingAPI.exe"), "")
+		return nil
+	}
+	target := loader.Target{InstallDir: dir, Exec: exec, Bundled: func(string, string) error { return nil }}
+	if v, err := (Loader{}).Install(context.Background(), target, pkg, progress); err != nil || v != "9.9.9" {
+		t.Fatalf("install = %q, %v", v, err)
+	}
+	if filepath.Base(argv[0]) != "SMAPI.Installer.exe" || strings.Join(argv[1:], " ") != "--install --no-prompt --game-path "+dir {
+		t.Fatalf("argv = %q", argv)
 	}
 }

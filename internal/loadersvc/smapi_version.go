@@ -143,7 +143,7 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, load
 	}
 	progress := func(step loader.Step) { s.emit(ProgressEvent, Progress{Game: id, Step: step}) }
 	progress(loader.StepDownloaded)
-	got, err := l.Install(ctx, loader.Target{Game: id, InstallDir: dir, Bundled: bundled}, pkg, progress)
+	got, err := l.Install(ctx, loader.Target{Game: id, InstallDir: dir, Exec: s.runtimeExec(id), Bundled: bundled}, pkg, progress)
 	if err != nil {
 		return loader.Status{}, err
 	}
@@ -295,7 +295,7 @@ func (s *Service) installInProfiles(ctx context.Context, id, loaderID, dir strin
 			return loader.Status{}, err
 		}
 		pkg := loader.Package{ID: l.ID(), Version: version, Archive: filepath.Join(held, installerFile)}
-		if _, err := l.Install(ctx, loader.Target{Game: id, InstallDir: dir, ProfileDir: pdir}, pkg, progress); err != nil {
+		if _, err := l.Install(ctx, loader.Target{Game: id, InstallDir: dir, ProfileDir: pdir, Exec: s.runtimeExec(id)}, pkg, progress); err != nil {
 			return loader.Status{}, fmt.Errorf("install into %s: %w", p.Name, err)
 		}
 	}

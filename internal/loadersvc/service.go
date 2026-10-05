@@ -17,9 +17,11 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -387,4 +389,16 @@ func (s *Service) loaderID(gameID, loaderID string) string {
 		return l.ID()
 	}
 	return ""
+}
+
+// runtimeExec runs a program through the selected install's runtime, for an installer the host cannot run itself (a
+// Windows one in a Bottles bottle); nil when the install runs natively.
+func (s *Service) runtimeExec(id string) func(context.Context, launchplan.RuntimeReq, []string) error {
+	inst, err := game.ResolveInstall(s.home, s.settings.Get(), id, "")
+	if err != nil || !inst.RunsInBottle() {
+		return nil
+	}
+	return func(ctx context.Context, _ launchplan.RuntimeReq, argv []string) error {
+		return inst.RunInBottle(ctx, runtime.ExecRunner, argv[0], argv[1:]...)
+	}
 }

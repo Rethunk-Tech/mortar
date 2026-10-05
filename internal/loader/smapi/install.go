@@ -22,6 +22,7 @@ import (
 	gamert "github.com/Rethunk-Tech/mortar/internal/runtime"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
@@ -84,6 +85,15 @@ func isFile(path string) bool {
 	return err == nil && st.Mode().IsRegular()
 }
 
+// buildOS is the OS of the game build in dir: a Windows build on a Linux host (one in a Bottles bottle) is
+// recognised by its executable and is run and installed into the Windows way.
+func buildOS(dir string) string {
+	if runtime.GOOS == "linux" && isFile(filepath.Join(dir, "Stardew Valley.exe")) {
+		return "windows"
+	}
+	return runtime.GOOS
+}
+
 // loaderState reports what is installed in dir for goos. On Linux SMAPI renames the game's launcher to
 // StardewValley-original and installs its own in its place, which a game update overwrites.
 func loaderState(dir, goos string) (installed, broken bool) {
@@ -104,7 +114,7 @@ func loaderState(dir, goos string) (installed, broken bool) {
 // Status reports SMAPI's state in the install. The version is the log's, else the bundled mods'; a version Mortar
 // recorded when it installed SMAPI takes precedence over both and is the caller's to apply.
 func (l Loader) Status(t loader.Target) (loader.Status, error) {
-	installed, broken := loaderState(t.InstallDir, runtime.GOOS)
+	installed, broken := loaderState(t.InstallDir, buildOS(t.InstallDir))
 	st := loader.Status{Installed: installed, Broken: broken}
 	if !installed && !broken {
 		return st, nil
@@ -160,7 +170,8 @@ func installer(version, goos string) (dir, exe string, err error) {
 // SMAPI's own mods before anything is cleaned up. It returns the installed version.
 func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, progress func(loader.Step)) (string, error) {
 	dir, version := t.InstallDir, pkg.Version
-	instDir, exe, err := installer(version, runtime.GOOS)
+	goos := buildOS(dir)
+	instDir, exe, err := installer(version, goos)
 	if err != nil {
 		return "", err
 	}
@@ -182,12 +193,23 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 	if err := fsx.Chmod(filepath.Join(folder, exe), 0o700); err != nil {
 		return "", fmt.Errorf("SMAPI %s installer is missing %s: %w", version, exe, err)
 	}
-	cmd := exec.CommandContext(ctx, filepath.Join(folder, exe), "--install", "--no-prompt", "--game-path", dir)
-	cmd.Dir = folder
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return "", fmt.Errorf("SMAPI installer failed (%w): %s", err, tail(out))
+	args := []string{"--install", "--no-prompt", "--game-path", dir}
+	if goos != runtime.GOOS {
+		// The Windows installer runs inside the install's own runtime, which the host can only reach through Exec.
+		if t.Exec == nil {
+			return "", fmt.Errorf("a %s build of the game needs a runtime to run the SMAPI installer", goos)
+		}
+		if err := t.Exec(ctx, launchplan.RuntimeReq{}, append([]string{filepath.Join(folder, exe)}, args...)); err != nil {
+			return "", fmt.Errorf("SMAPI installer failed: %w", err)
+		}
+	} else {
+		cmd := exec.CommandContext(ctx, filepath.Join(folder, exe), args...)
+		cmd.Dir = folder
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return "", fmt.Errorf("SMAPI installer failed (%w): %s", err, tail(out))
+		}
 	}
-	if installed, _ := loaderState(dir, runtime.GOOS); !installed {
+	if installed, _ := loaderState(dir, goos); !installed {
 		return "", errors.New("the SMAPI installer finished but SMAPI is not in the game folder")
 	}
 	progress(loader.StepFiles)
