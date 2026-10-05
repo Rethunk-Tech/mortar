@@ -195,7 +195,7 @@ The registry (`internal/settings/registry.go`) lists each key with its scope, ty
 - `reuseFomodChoices` (true): skip the FOMOD wizard when saved choices still match. `driftChecks` (true): scan for mods changed outside Mortar.
 - `autoInstallMortarUpdates` (true): stage a found Mortar update without asking. Mortar's own channel stays `includeBetaReleases`.
 - `autoTrackNexus` (false): track a Nexus mod after install.
-- `lanName` (empty): advertised LAN device name; empty uses the host name. `lanAutoAcceptSameAccount` (false): auto-accept LAN shares from the same Nexus account.
+- `lanName` (empty): advertised LAN device name; empty uses the host name. `lanAutoAcceptSameAccount` (false): auto-accept LAN shares from paired computers.
 - `downloadFolder` (empty): archive landing folder; empty is `<datadir>/downloads`.
 - `profileOrder` (`manual`): `manual`, `name`, or `lastPlayed` for the sidebar profile list. `lastPlayed` puts this game's last launched profile first (`lastPlayed` in settings).
 - `autoRetryDownloads` (`off`): `off`, `1`, or `3` extra fetch attempts with backoff after a failed download.
@@ -745,11 +745,12 @@ Sources: the API acceptable-use policy (help.nexusmods.com article 114), the SSO
 - **LAN sharing** (`internal/lan`): with Settings › General **Share profiles on the local network** on, Mortar advertises `_mortar._tcp` (hashicorp/mdns) and serves HTTP on `lanPort` (default 47630).
   - Sends are refused while sharing is off.
   - A send is the same share-link payload as Import; a profile too large for that link cannot go over LAN.
-  - The sender `GET`s `/hello` (a one-minute nonce bound to that peer) then `POST`s `/share` with the payload, its listen port, and, when a Nexus API key is in the keyring, an HMAC-SHA256 proof of that key over the nonce concatenated with SHA-256 of the payload (hex); the key is never sent.
-  - The receiver compares with `hmac.Equal`.
-  - Matching proof plus a sender port marks **same account**: the response carries a 5-minute Bearer token scoped to that share's Nexus store keys (GitHub entries are omitted).
-  - The receiver then `GET`s `/store/<game>/<key>` with that token; the sender streams a tar of each granted store folder (10,000 entries and 2 GiB caps, same extraction rules as other archives) and the receiver installs through `Store.AddDirVerified`.
-  - Other receivers still download each mod from its source.
+  - **Pairing** makes two of the user's own computers trust each other, independent of any store account. Settings › General › Sharing: **Pair a computer** shows a single-use code (8 characters, two groups of four, valid 5 minutes); **Enter code** on the other computer picks the nearby computer and types it. Both then hold a 32-byte key for the other in `<data>/lan/peers.json` (mode 0600, with this computer's stable id); **Unpair** deletes it.
+  - The exchange is `POST /pair/begin` and `/pair/finish`: X25519 (`crypto/ecdh`) from both sides, then HMAC proofs over the transcript and the X25519 secret keyed by a PBKDF2 stretch of the code (200,000 rounds), so a passive observer cannot test code guesses. The long-term key is HKDF of the X25519 secret, never of the code. A host locks a peer for 10 minutes after 5 wrong codes and burns the code after 15 wrong attempts in all. The threat model is the comment at the top of `internal/lan/pairing.go`.
+  - The sender `GET`s `/hello` (the receiver's id and a one-minute nonce bound to that peer) then `POST`s `/share` with the payload, its listen port, its id and, when the receiver is paired, an HMAC-SHA256 proof under the pairing key over the nonce concatenated with SHA-256 of the payload (hex); the key is never sent.
+  - The receiver compares with `hmac.Equal`. A proof from a paired peer plus a sender port marks the share **paired**: the response carries a 5-minute Bearer token scoped to the store keys of every entry (Nexus, GitHub, and Thunderstore packages that name a version), with a proof under the same key so the sender never grants a token an unpaired computer made up.
+  - The receiver then `GET`s `/store/<game>/<key>` with that token; the sender streams a tar of each granted store folder (10,000 entries and 2 GiB caps, same extraction rules as other archives) and the receiver installs through `Store.AddDirVerified` and records a GitHub or Thunderstore entry's source with `Store.Describe`. Sending between one's own machines is copying, so a paired receiver gets the files whatever the source or its licence.
+  - Unpaired receivers still download each mod from its source.
   - Optional files travel as their own store items like any entry; a link or `.mortar` file carries each one's placement (`overlay`: `from`, `to`, `off`, added to its ref without a format bump, so older Mortars ignore it), and the receiver's queue (`Request.Overlay`) installs it from the store after its main file and lays it there with the same switch, without asking. A ref with no `overlay` is placed the way a download is.
   - Incoming shares are rate-limited per peer (10 s).
   - UI: [gui-design.md](gui-design.md#profile-management).
