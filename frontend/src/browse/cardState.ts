@@ -57,5 +57,34 @@ function cardState(items: Item[], source: string, id: string, profileID: string)
   return last ? stateOf(last) : IDLE
 }
 
+const ACTIVE = new Set<CardState['kind']>([
+  'waiting-nexus',
+  'queued',
+  'downloading',
+  'installing',
+  'attention',
+])
+
+// What the card shows once the profile's own word is weighed against the queue's: an active item outranks the
+// profile (the mod is on its way), the profile outranks finished items (a removed mod is not "Installed" and a mod
+// installed another way is not "Failed"), and a done item counts only when this card watched it finish, since the
+// search result that says "installed" is older than that install.
+function shownState(live: CardState, installed: boolean, watched: boolean): CardState {
+  if (ACTIVE.has(live.kind)) {
+    return live
+  }
+  if (installed) {
+    return IDLE
+  }
+  if (live.kind === 'failed' || (live.kind === 'done' && watched)) {
+    return live
+  }
+  return IDLE
+}
+
+function isActive(state: CardState): boolean {
+  return ACTIVE.has(state.kind)
+}
+
 export type { CardState }
-export { cardState }
+export { cardState, isActive, shownState }

@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Card, Chip, Typography } from '@mui/material'
 import { ExternalLink } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQueue } from '../queue/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { usePending } from '../toasts/usePending.ts'
@@ -18,7 +18,7 @@ import {
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
 import { CardAction } from './CardAction.tsx'
-import { cardState } from './cardState.ts'
+import { cardState, isActive, shownState } from './cardState.ts'
 
 // One badge per source the mod is on; the filled one is where Add installs from.
 function SourceBadges({
@@ -92,7 +92,15 @@ function ResultCard(props: ResultCardProps) {
   const stats = useStats(item)
   const live = cardState(items, source, id, profileID)
   // A free account's click on Mod Manager Download is not ours to see; the card waits for its nxm item.
-  const shown = live.kind === 'idle' && openedFiles ? ({ kind: 'waiting-nexus' } as const) : live
+  const queueState =
+    live.kind === 'idle' && openedFiles ? ({ kind: 'waiting-nexus' } as const) : live
+  const [watched, setWatched] = useState(false)
+  useEffect(() => {
+    if (isActive(queueState)) {
+      setWatched(true)
+    }
+  }, [queueState])
+  const shown = shownState(queueState, installed, watched)
   const add = () => {
     if (source === GITHUB) {
       return props.addGitHub(id)

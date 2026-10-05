@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
-import { cardState } from './cardState.ts'
+import { cardState, shownState } from './cardState.ts'
 
 const item = (over: Partial<Item>): Item =>
   ({
@@ -36,4 +36,16 @@ test('final and failed states', () => {
   expect(at('failed')).toEqual({ kind: 'failed', itemId: 'x' })
   expect(at('skipped')).toEqual({ kind: 'idle' })
   expect(at('needs-choice')).toEqual({ kind: 'attention' })
+})
+
+test('the profile outranks finished items, and only active items outrank the profile', () => {
+  const done = { kind: 'done' } as const
+  const failed = { kind: 'failed', itemId: 'x' } as const
+  const queued = { kind: 'queued' } as const
+  expect(shownState(queued, true, true)).toEqual(queued)
+  expect(shownState(failed, true, false)).toEqual({ kind: 'idle' })
+  expect(shownState(done, true, true)).toEqual({ kind: 'idle' })
+  expect(shownState(done, false, false)).toEqual({ kind: 'idle' })
+  expect(shownState(done, false, true)).toEqual(done)
+  expect(shownState(failed, false, false)).toEqual(failed)
 })
