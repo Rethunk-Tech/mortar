@@ -14,9 +14,16 @@ func FuzzFOMODLayout(f *testing.F) {
 		src, dest string
 		folder    bool
 	}{
-		{"alpha", "alpha", true}, {"alpha/manifest.json", "", false}, {"..", "x", true}, {"alpha", "..", true},
-		{"alpha", "../other-mod", true}, {`alpha\manifest.json`, `..\..\x`, false}, {".", "/abs", true},
-		{"alpha", "a/./../../b", true}, {"beta/x.dll", "x.dll:stream", false}, {"alpha", "CON", true},
+		{"alpha", "alpha", true},
+		{"alpha/manifest.json", "", false},
+		{"..", "x", true},
+		{"alpha", "..", true},
+		{"alpha", "../other-mod", true},
+		{`alpha\manifest.json`, `..\..\x`, false},
+		{".", "/abs", true},
+		{"alpha", "a/./../../b", true},
+		{"beta/x.dll", "x.dll:stream", false},
+		{"alpha", "CON", true},
 	} {
 		f.Add(s.src, s.dest, s.folder)
 	}

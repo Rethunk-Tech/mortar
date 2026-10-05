@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
@@ -96,7 +98,7 @@ func extractFuzzed(t *testing.T, archive []byte) {
 func FuzzExtract(f *testing.F) {
 	seeds, _ := filepath.Glob("testdata/*")
 	for _, p := range seeds {
-		if b, err := os.ReadFile(p); err == nil {
+		if b, err := fsx.ReadFile(p); err == nil {
 			f.Add(b)
 		}
 	}
@@ -112,9 +114,16 @@ func FuzzExtractZipEntries(f *testing.F) {
 		a, b string
 		mode uint32
 	}{
-		{"a/b.txt", "A/B.txt", 0}, {"..\\x", "y", 0}, {"/abs", "z", 0}, {"dir/", "dir/f", uint32(fs.ModeDir)},
-		{"link", "link/x", uint32(fs.ModeSymlink)}, {"evil.txt:stream", "CON", 0}, {"x.", "x", 0},
-		{"a/../../b", "c", 0}, {"pipe", "p", uint32(fs.ModeNamedPipe)}, {"ｆｕｌｌ／ｗｉｄｔｈ", "‮exe.txt", 0},
+		{"a/b.txt", "A/B.txt", 0},
+		{"..\\x", "y", 0},
+		{"/abs", "z", 0},
+		{"dir/", "dir/f", uint32(fs.ModeDir)},
+		{"link", "link/x", uint32(fs.ModeSymlink)},
+		{"evil.txt:stream", "CON", 0},
+		{"x.", "x", 0},
+		{"a/../../b", "c", 0},
+		{"pipe", "p", uint32(fs.ModeNamedPipe)},
+		{"ｆｕｌｌ／ｗｉｄｔｈ", "\u202eexe.txt", 0},
 	} {
 		f.Add(s.a, s.b, s.mode, []byte("data"))
 	}
