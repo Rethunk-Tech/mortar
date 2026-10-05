@@ -10,6 +10,10 @@ import {
   TextField,
 } from '@mui/material'
 import { type SyntheticEvent, useEffect, useState } from 'react'
+import {
+  Duplicate,
+  Rename,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
 import { NewProfileFromTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { bundleWants } from '../bundles/missingWants.ts'
@@ -21,15 +25,20 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 
 const EMPTY = ''
+// A template name cannot start with a control character, so this never collides with one.
+const COPY = '\u0001copy'
 const MAX_NAME = 60
 
 function StartFromSelect({
+  copyOf,
   names,
   value,
   disabled,
   onChange,
   onManage,
 }: {
+  /** Name of the open profile, or '' when none is open. */
+  copyOf: string
   names: string[]
   value: string
   disabled: boolean
@@ -50,6 +59,7 @@ function StartFromSelect({
         sx={{ mt: 2 }}
       >
         <MenuItem value={EMPTY}>{t`Empty profile`}</MenuItem>
+        {copyOf === '' ? null : <MenuItem value={COPY}>{t`Copy of ${copyOf}`}</MenuItem>}
         {names.map((name) => (
           <MenuItem key={name} value={name}>
             {name}
@@ -67,9 +77,17 @@ function useCreate(game: string, onClose: () => void) {
   const { t } = useLingui()
   const create = useProfiles((s) => s.create)
   const [busy, run] = usePending()
-  const submit = (name: string, template: Template | undefined) => {
+  const submit = (name: string, template: Template | undefined, copyOf: string) => {
     run(
       async () => {
+        if (copyOf !== '') {
+          const copy = await Duplicate(game, copyOf)
+          await Rename(game, copy.id, name)
+          await useProfiles.getState().refresh()
+          useProfiles.getState().open(copy.id)
+          onClose()
+          return
+        }
         if (!template) {
           await create(name)
           onClose()
@@ -114,12 +132,14 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
       setFrom(EMPTY)
     }
   }, [open])
+  const openProfile = useProfiles((s) => s.profiles.find((p) => p.id === s.openId))
   const template = templates.find((candidate) => candidate.name === from)
+  const copying = from === COPY && openProfile !== undefined
   const trimmed = name.trim()
   const onSubmit = (e: SyntheticEvent) => {
     e.preventDefault()
     if (!(busy || trimmed === '')) {
-      submit(trimmed, template)
+      submit(trimmed, template, copying ? (openProfile?.id ?? '') : '')
     }
   }
   return (
@@ -137,10 +157,11 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
               slotProps={{ htmlInput: { maxLength: MAX_NAME } }}
               disabled={busy}
             />
-            {templates.length > 0 ? (
+            {templates.length > 0 || openProfile !== undefined ? (
               <StartFromSelect
+                copyOf={openProfile?.name ?? ''}
                 names={templates.map((candidate) => candidate.name)}
-                value={template ? from : EMPTY}
+                value={template || copying ? from : EMPTY}
                 disabled={busy}
                 onChange={setFrom}
                 onManage={() => setManaging(true)}
