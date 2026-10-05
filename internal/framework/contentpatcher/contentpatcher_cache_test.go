@@ -482,3 +482,19 @@ func TestPackFileChangedDuringReadInvalidatesFingerprint(t *testing.T) {
 		t.Fatal("a file changed after its first stamp still validates")
 	}
 }
+
+func TestPackCacheNoticesAConfigThatAppearsLater(t *testing.T) {
+	root := t.TempDir()
+	var pack cachedPack
+	pack.recordPackFile(root, filepath.Join(root, "config.json"))
+	pack.fingerprint = packFilesFingerprint(pack.files)
+	if !packFingerprintValid(root, pack.files, pack.fingerprint) {
+		t.Fatal("a pack without a config.json must stay valid while it has none")
+	}
+	if err := os.WriteFile(filepath.Join(root, "config.json"), []byte(`{}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if packFingerprintValid(root, pack.files, pack.fingerprint) {
+		t.Fatal("the config.json that appeared was not noticed")
+	}
+}

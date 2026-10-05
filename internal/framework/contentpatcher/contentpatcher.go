@@ -8,8 +8,10 @@ import (
 	"encoding/gob"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"maps"
 	"os"
@@ -174,7 +176,10 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 12
+const contentPackParserVersion = 13
+
+// absentSize stamps a file that was not there, so the cache is dropped when it appears.
+const absentSize = -1
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -744,10 +749,6 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPac
 }
 
 func (p *cachedPack) recordPackFile(root, abs string) {
-	info, err := os.Stat(abs)
-	if err != nil {
-		return
-	}
 	if !datadir.UnderRoot(root, abs) {
 		return
 	}
@@ -755,10 +756,13 @@ func (p *cachedPack) recordPackFile(root, abs string) {
 	if err != nil {
 		return
 	}
-	stamp := packFileStamp{
-		Path:    filepath.ToSlash(relative),
-		Size:    info.Size(),
-		ModTime: info.ModTime().UnixNano(),
+	stamp := packFileStamp{Path: filepath.ToSlash(relative), Size: absentSize}
+	info, err := os.Stat(abs)
+	switch {
+	case err == nil:
+		stamp.Size, stamp.ModTime = info.Size(), info.ModTime().UnixNano()
+	case !errors.Is(err, fs.ErrNotExist):
+		return
 	}
 	// The first stamp is the one taken before the file was read.
 	if slices.ContainsFunc(p.files, func(f packFileStamp) bool { return f.Path == stamp.Path }) {
@@ -784,7 +788,11 @@ func packFingerprintValid(root string, files []packFileStamp, fingerprint string
 			return false
 		}
 		info, err := os.Stat(abs)
-		if err != nil || info.Size() != expected.Size || info.ModTime().UnixNano() != expected.ModTime {
+		if expected.Size == absentSize {
+			if !errors.Is(err, fs.ErrNotExist) {
+				return false
+			}
+		} else if err != nil || info.Size() != expected.Size || info.ModTime().UnixNano() != expected.ModTime {
 			return false
 		}
 		current[i] = expected
