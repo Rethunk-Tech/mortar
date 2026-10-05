@@ -615,6 +615,8 @@ func run() error {
 	})
 	problemsSvc.Damage = items.Damaged
 
+	browseSvc := browse.NewService(version, profileSvc)
+	browseSvc.ShowAdult = func() bool { return store.Get().ShowAdultContent }
 	for _, s := range []application.Service{
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
@@ -625,7 +627,7 @@ func run() error {
 		application.NewService(dataSvc), application.NewService(toolsSvc),
 		application.NewService(checkSvc), application.NewService(&tidy.Service{Report: tidied}),
 		application.NewService(quitSvc),
-		application.NewService(browse.NewService(version, profileSvc)),
+		application.NewService(browseSvc),
 	} {
 		app.RegisterService(s)
 	}

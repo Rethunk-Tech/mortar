@@ -34,6 +34,8 @@ type InstalledFunc func(source, id string) bool
 type Client struct {
 	Version   string
 	Installed InstalledFunc
+	// ShowAdult keeps hits their source flags as adult content; by default they are dropped.
+	ShowAdult bool
 }
 
 // Search returns one page of mods for game from the source matching text.
@@ -117,6 +119,11 @@ func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID,
 	result, err := searcher.Search(ctx, source.Query{Game: info.ID, Key: gs.Key, Text: text, Page: max(page, source.FirstPage), Version: c.Version})
 	if err != nil {
 		return Page{}, err
+	}
+	if !c.ShowAdult {
+		before := len(result.Items)
+		result.Items = slices.DeleteFunc(result.Items, func(i Item) bool { return i.Adult })
+		result.Total = max(result.Total-(before-len(result.Items)), 0)
 	}
 	c.markInstalled(result.Items)
 	return result, nil

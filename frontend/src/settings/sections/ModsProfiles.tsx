@@ -23,7 +23,13 @@ export function ModsProfiles() {
         />
       </SettingRow>
       <PrefKeys
-        keys={['reuseFomodChoices', 'confirmRemovals', 'driftChecks', 'backgroundBadgeChecks']}
+        keys={[
+          'reuseFomodChoices',
+          'confirmRemovals',
+          'driftChecks',
+          'backgroundBadgeChecks',
+          'showAdultContent',
+        ]}
       />
     </SettingsSection>
   )

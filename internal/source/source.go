@@ -58,6 +58,8 @@ type Item struct {
 	Updated      string `json:"updated"`
 	URL          string `json:"url"`
 	Installed    bool   `json:"installed"`
+	// Adult marks a mod its site flags as adult content; browse hides it unless the player opted in.
+	Adult bool `json:"adult"`
 }
 
 // Page is one slice of search hits. A merged search across sources also sets Pages, the page count of its largest

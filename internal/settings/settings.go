@@ -181,10 +181,12 @@ type Settings struct {
 	ShareIncludeNotes          *bool  `json:"shareIncludeNotes"`
 	ShareIncludeConfigFiles    *bool  `json:"shareIncludeConfigFiles"`
 	VerifyNexusMD5             bool   `json:"verifyNexusMD5"`
-	LaunchAtLogin              bool   `json:"launchAtLogin"`
-	StartMinimised             bool   `json:"startMinimised"`
-	RememberWindow             bool   `json:"rememberWindow"`
-	ExtensionConnection        string `json:"extensionConnection"`
+	// ShowAdultContent lets browse list mods their sites flag as adult.
+	ShowAdultContent    bool   `json:"showAdultContent"`
+	LaunchAtLogin       bool   `json:"launchAtLogin"`
+	StartMinimised      bool   `json:"startMinimised"`
+	RememberWindow      bool   `json:"rememberWindow"`
+	ExtensionConnection string `json:"extensionConnection"`
 	// Games holds per-game prefs.
 	Games map[string]*GameSettings `json:"games"`
 }

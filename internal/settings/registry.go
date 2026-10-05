@@ -125,6 +125,7 @@ var registry = []pref{
 		s.LaunchAtLogin = on
 		_ = applyAutostart(on)
 	}),
+	boolPref("showAdultContent", ScopeApp, func(s Settings, _ string) bool { return s.ShowAdultContent }, func(s *Settings, _ string, on bool) { s.ShowAdultContent = on }),
 	boolPref("startMinimised", ScopeApp, func(s Settings, _ string) bool { return s.StartMinimised }, func(s *Settings, _ string, on bool) { s.StartMinimised = on }),
 	boolPref("rememberWindow", ScopeApp, func(s Settings, _ string) bool { return s.RememberWindow }, func(s *Settings, _ string, on bool) { s.RememberWindow = on }),
 	enumPref("extensionConnection", ScopeApp, ExtensionAllow, extensionConnectionValues, func(s Settings, _ string) string { return s.ExtensionConnection }, func(s *Settings, _, v string) { s.ExtensionConnection = v }),

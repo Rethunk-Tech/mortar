@@ -40,8 +40,9 @@ type pkg struct {
 	Updated   string `json:"updated"`
 	Rating    int    `json:"rating"`
 	Downloads int    `json:"downloads"`
-	// Hidden is a deprecated or adult package: not searchable, but still resolvable as a dependency.
+	// Hidden is a deprecated package: not searchable, but still resolvable as a dependency.
 	Hidden   bool      `json:"hidden,omitempty"`
+	Adult    bool      `json:"adult,omitempty"`
 	Versions []version `json:"versions"`
 }
 
@@ -210,7 +211,7 @@ func (d Driver) build(ctx context.Context, chunks []string, path, ua string) err
 			}
 			p := pkg{
 				Owner: w.Owner, Name: w.Name, URL: w.PackageURL, Updated: w.DateUpdated, Rating: w.RatingScore,
-				Hidden: w.IsDeprecated || w.HasNSFWContent, Summary: w.Versions[0].Description, Icon: w.Versions[0].Icon,
+				Hidden: w.IsDeprecated, Adult: w.HasNSFWContent, Summary: w.Versions[0].Description, Icon: w.Versions[0].Icon,
 			}
 			for _, v := range w.Versions {
 				p.Downloads += v.Downloads

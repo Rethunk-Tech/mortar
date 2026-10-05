@@ -64,6 +64,7 @@ type searchResp struct {
 				Downloads    int    `json:"downloads"`
 				PictureURL   string `json:"pictureUrl"`
 				UpdatedAt    string `json:"updatedAt"`
+				AdultContent bool   `json:"adultContent"`
 			} `json:"nodes"`
 		} `json:"mods"`
 	} `json:"data"`
@@ -85,7 +86,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	offset := (q.Page - source.FirstPage) * source.PageSize
 	escaped := strings.ReplaceAll(q.Text, `"`, `\"`)
 	query := fmt.Sprintf(
-		`{ mods(filter:{gameDomainName:[{value:%q}], name:[{value:%q, op:WILDCARD}]}, sort:[{endorsements:{direction:DESC}}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt } } }`,
+		`{ mods(filter:{gameDomainName:[{value:%q}], name:[{value:%q, op:WILDCARD}]}, sort:[{endorsements:{direction:DESC}}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent } } }`,
 		q.Key, escaped, source.PageSize, offset,
 	)
 	raw, err := json.Marshal(searchBody{Query: query})
@@ -133,6 +134,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			Endorsements: n.Endorsements,
 			Downloads:    n.Downloads,
 			Updated:      n.UpdatedAt,
+			Adult:        n.AdultContent,
 			URL:          nexus.ModURL(q.Key, n.ModID),
 		})
 	}

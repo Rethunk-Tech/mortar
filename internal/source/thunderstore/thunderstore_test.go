@@ -105,7 +105,7 @@ func TestSearchRanksAndExcludes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// MoreCompany matches by name, Cheaty and Library by summary (Cheaty has more downloads); OldMod and Spicy are hidden.
+	// MoreCompany matches by name, Cheaty and Library by summary (Cheaty has more downloads); OldMod is deprecated and hidden, and Spicy matches nothing here.
 	if got := names(p); len(got) != 3 || got[0] != "MoreCompany" || got[1] != "Cheaty" || got[2] != "Library" || p.Total != 3 {
 		t.Fatalf("got %v total %d", got, p.Total)
 	}
@@ -113,11 +113,11 @@ func TestSearchRanksAndExcludes(t *testing.T) {
 		t.Fatalf("item %+v", p.Items[0])
 	}
 	q.Text, q.Page = "", 1
-	if p, _ = d.Search(t.Context(), q); p.Total != 3 || p.Items[0].Name != "Cheaty" {
+	if p, _ = d.Search(t.Context(), q); p.Total != 4 || p.Items[0].Name != "Spicy" || !p.Items[0].Adult {
 		t.Fatalf("browse %v", names(p))
 	}
 	q.Page = 2
-	if p, _ = d.Search(t.Context(), q); len(p.Items) != 0 || p.Total != 3 {
+	if p, _ = d.Search(t.Context(), q); len(p.Items) != 0 || p.Total != 4 {
 		t.Fatalf("page 2 %v", names(p))
 	}
 }

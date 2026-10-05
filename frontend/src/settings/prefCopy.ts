@@ -442,6 +442,12 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`Share config files`),
       description: i18n._(msg`Default for Share and Export. You can change it per share.`),
     },
+    showAdultContent: {
+      label: i18n._(msg`Show adult mods in browse`),
+      description: i18n._(
+        msg`Mods their site marks as adult stay hidden from browse unless this is on. Installed mods are never hidden.`,
+      ),
+    },
     verifyNexusMD5: {
       label: i18n._(msg`Verify downloads with Nexus MD5`),
       description: i18n._(msg`Check the file hash when Nexus provides one`),

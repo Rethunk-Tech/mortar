@@ -113,3 +113,27 @@ func TestSearchAllInterleavesAndNamesFailedSources(t *testing.T) {
 		t.Fatal("all sources failing must be an error")
 	}
 }
+
+type adultSource struct{}
+
+func (adultSource) ID() string              { return "adultsrc" }
+func (adultSource) Name() string            { return "Adult" }
+func (adultSource) Modes() []source.Acquire { return nil }
+func (adultSource) Search(context.Context, source.Query) (source.Page, error) {
+	return source.Page{Total: 30, Items: []source.Item{{ID: "1"}, {ID: "2", Adult: true}, {ID: "3"}}}, nil
+}
+
+var _ = source.Register(adultSource{})
+
+func TestAdultHitsAreDroppedUnlessOptedIn(t *testing.T) {
+	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "adultsrc"}}}
+	for _, tc := range []struct {
+		show       bool
+		items, tot int
+	}{{false, 2, 29}, {true, 3, 30}} {
+		page, err := (&Client{ShowAdult: tc.show}).search(context.Background(), g, "adultsrc", "", 1)
+		if err != nil || len(page.Items) != tc.items || page.Total != tc.tot {
+			t.Fatalf("show=%v: %+v %v", tc.show, page, err)
+		}
+	}
+}

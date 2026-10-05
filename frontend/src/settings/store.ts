@@ -112,6 +112,7 @@ const defaults: Settings = {
   shareIncludeNotes: true,
   shareIncludeConfigFiles: true,
   verifyNexusMD5: false,
+  showAdultContent: false,
   launchAtLogin: false,
   startMinimised: false,
   rememberWindow: false,

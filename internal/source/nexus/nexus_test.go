@@ -24,14 +24,14 @@ func TestSearchQueryAndPaging(t *testing.T) {
 			t.Fatal(err)
 		}
 		gotBody = string(raw)
-		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":27,"nodes":[{"modId":1348,"name":"SpaceCore","summary":"s","author":"a","version":"1","endorsements":233359,"downloads":1,"pictureUrl":"p","updatedAt":"t"}]}}}`))
+		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":27,"nodes":[{"modId":1348,"name":"SpaceCore","summary":"s","author":"a","version":"1","endorsements":233359,"downloads":1,"pictureUrl":"p","updatedAt":"t","adultContent":true}]}}}`))
 	}))
 	t.Cleanup(srv.Close)
 	page, err := Driver{URL: srv.URL}.Search(context.Background(), source.Query{Game: "stardew", Key: "stardewvalley", Text: "space", Page: 2, Version: "test"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if page.Total != 27 || len(page.Items) != 1 || page.Items[0].ID != "1348" || page.Items[0].Source != "nexus" {
+	if page.Total != 27 || len(page.Items) != 1 || page.Items[0].ID != "1348" || page.Items[0].Source != "nexus" || !page.Items[0].Adult {
 		t.Fatalf("page %+v", page)
 	}
 	if page.Items[0].URL != "https://www.nexusmods.com/stardewvalley/mods/1348" {
@@ -46,6 +46,7 @@ func TestSearchQueryAndPaging(t *testing.T) {
 		`name:[{value:"space", op:WILDCARD}]`,
 		"sort:[{endorsements:{direction:DESC}}]",
 		"count: 20, offset: 20",
+		"adultContent",
 	} {
 		if !strings.Contains(body.Query, want) {
 			t.Fatalf("%q missing: %s", want, body.Query)

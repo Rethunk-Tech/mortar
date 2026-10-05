@@ -26,7 +26,7 @@ var portableFields = []string{
 	"lanName", "lanAutoAcceptSameAccount", "downloadFolder",
 	"profileOrder", "autoRetryDownloads", "pauseDownloadsWhilePlaying", "sidebarBadges",
 	"shareIncludeDisabledMods", "shareIncludeFomodChoices", "shareIncludeNotes", "shareIncludeConfigFiles",
-	"updateDigest", "verifyNexusMD5", "launchAtLogin", "startMinimised", "rememberWindow", "extensionConnection",
+	"updateDigest", "verifyNexusMD5", "showAdultContent", "launchAtLogin", "startMinimised", "rememberWindow", "extensionConnection",
 	"games",
 }
 
