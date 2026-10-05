@@ -125,14 +125,12 @@ function removeCleanup(
   removeMany(mods).catch(reportUnexpected)
 }
 
-// title defaults to Cleanup; Remove all is offered only where every row is a sure removal.
+// Remove all is offered only where every row is a sure removal.
 export function CleanupSection({
   cleanup,
-  title,
   removeAll = true,
 }: {
   cleanup: CleanupItem[]
-  title?: string
   removeAll?: boolean
 }) {
   const { t } = useLingui()
@@ -143,16 +141,11 @@ export function CleanupSection({
   }
   return (
     <Box>
-      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-          {title ?? t`Cleanup`}
-        </Typography>
-        {removeAll && cleanup.length > 1 ? (
-          <Button size="small" sx={{ ml: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
-            {t`Remove all`}
-          </Button>
-        ) : null}
-      </Box>
+      {removeAll && cleanup.length > 1 ? (
+        <Button size="small" sx={{ mb: 1, height: 26 }} onClick={() => setConfirmCleanup(true)}>
+          {t`Remove all`}
+        </Button>
+      ) : null}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {cleanup.map((item) => (
           <CleanupRow key={item.key} cleanup={item} />

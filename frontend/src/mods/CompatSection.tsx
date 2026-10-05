@@ -48,15 +48,11 @@ function CompatInfoRow({ row }: { row: Compat }) {
 }
 
 export function CompatSection({ rows }: { rows: Compat[] }) {
-  const { t } = useLingui()
   if (rows.length === 0) {
     return null
   }
   return (
     <Box>
-      <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-        {t`Compatibility`}
-      </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {rows.map((row) => (
           <CompatInfoRow key={`${row.key}/${row.id}`} row={row} />

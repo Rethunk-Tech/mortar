@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
+import { Box, ButtonBase, Link, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import {
   ChevronDown,
@@ -11,7 +11,8 @@ import {
   ShieldCheck,
   TriangleAlert,
 } from 'lucide-react'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
+import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
@@ -24,7 +25,6 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { useStoredState } from '../shell/useStoredState.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -47,12 +47,22 @@ import {
   type Row,
 } from './problemGroups.ts'
 import { formatProblemReport, whyKeysOf } from './problemReport.ts'
+import { chosenSection, type SectionTab, useProblemSection } from './problemSection.ts'
 import { useRedundantRows } from './redundantReason.ts'
+import { type SectionAction, SectionSwitcher } from './SectionSwitcher.tsx'
 import { CheckTimings, SlowStartupSection } from './SlowStartupSection.tsx'
+import { useSlowStartups } from './slowStartups.ts'
 import { useMods } from './store.ts'
 import { useLoadProblemsOnFocus } from './useLoadProblemsOnFocus.ts'
 
-const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean'
+// What is broken, as against advice such as harmless overlaps or cleanup.
+const ERROR_SECTIONS = new Set<string>([
+  'missing',
+  'broken',
+  'damaged',
+  'runErrors',
+  'loadFailures',
+])
 
 const isDismissedRow = (row: Row | DismissedRow): row is DismissedRow => 'row' in row
 
@@ -255,95 +265,19 @@ function useOpenProblems() {
   return useMods((s) => (s.problemsFor === openId ? s.problems : null))
 }
 
-// ProblemSection lists one kind of problem; harmless overlaps start collapsed so real problems lead.
-function ProblemSection({
-  title,
-  rows,
-  collapsible,
-  action,
-}: {
-  title: string
-  rows: (Row | DismissedRow)[]
-  collapsible: boolean
-  action?: { label: string; onClick: () => void; disabled?: boolean }
-}) {
-  const { t } = useLingui()
-  const [open, setOpen] = useStoredState(`mortar.problemSection.${title}`, !collapsible, isBoolean)
-  const count = rows.length
-  const label = collapsible ? t`${title} · ${count}` : title
-  const heading = (
-    <Typography component="span" sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-      {label}
-    </Typography>
-  )
-  const actionButton = action ? (
-    <Button
-      size="small"
-      disabled={action.disabled}
-      onClick={action.onClick}
-      sx={{ ml: 1, height: 26 }}
-    >
-      {action.label}
-    </Button>
-  ) : null
+// ProblemRows lists the cards of the chosen section.
+function ProblemRows({ rows }: { rows: (Row | DismissedRow)[] }) {
   return (
-    <Box>
-      {collapsible ? (
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <ButtonBase
-            onClick={() => setOpen(!open)}
-            aria-expanded={open}
-            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px' }}
-          >
-            {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            {heading}
-          </ButtonBase>
-          {actionButton}
-        </Box>
-      ) : (
-        <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-          {heading}
-          {actionButton}
-        </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      {rows.map((row) =>
+        isDismissedRow(row) ? (
+          <ProblemRow key={row.token} row={row.row} dismissed={row} />
+        ) : (
+          <ProblemRow key={JSON.stringify(row)} row={row} />
+        ),
       )}
-      {open ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {rows.map((row) =>
-            isDismissedRow(row) ? (
-              <ProblemRow key={row.token} row={row.row} dismissed={row} />
-            ) : (
-              <ProblemRow key={JSON.stringify(row)} row={row} />
-            ),
-          )}
-        </Box>
-      ) : null}
     </Box>
   )
-}
-
-function renderProblemSections(
-  sections: ReturnType<typeof problemSections>,
-  cosmeticConflicts: string,
-  sectionTitle: (id: ProblemSectionId) => string,
-  extras: (section: ReturnType<typeof problemSections>[number]) => {
-    action?: { label: string; onClick: () => void; disabled?: boolean }
-  },
-) {
-  return sections.map((section) => {
-    if (section.id === 'cosmetic' && cosmeticConflicts === 'hidden') {
-      return null
-    }
-    const cosmeticOpen = cosmeticConflicts === 'expanded'
-    return (
-      <ProblemSection
-        key={section.id}
-        title={sectionTitle(section.id)}
-        rows={section.rows}
-        collapsible={(section.id === 'cosmetic' && !cosmeticOpen) || section.id === 'dismissed'}
-        {...extras(section)}
-      />
-    )
-  })
 }
 
 function dismissCosmetic(
@@ -366,6 +300,193 @@ function OfflineChecksNote() {
     <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
       {t`Some checks could not run without a connection, so more problems may show up later.`}
     </Typography>
+  )
+}
+
+type ProblemTab = SectionTab & { body: ReactNode; action?: SectionAction }
+
+// The tabs of the section switcher: a segment for each section that has anything in it.
+function useProblemTabs({
+  sections,
+  compat,
+  redundant,
+  cleanup,
+  cosmeticConflicts,
+  sectionExtras,
+}: {
+  sections: ReturnType<typeof problemSections>
+  compat: Compat[]
+  redundant: ReturnType<ReturnType<typeof useRedundantRows>>
+  cleanup: Parameters<typeof CleanupSection>[0]['cleanup']
+  cosmeticConflicts: string
+  sectionExtras: (section: ReturnType<typeof problemSections>[number]) => { action?: SectionAction }
+}): ProblemTab[] {
+  const { t } = useLingui()
+  const sectionTitle = useSectionTitle()
+  const slowCount = useSlowStartups().length
+  return [
+    ...sections
+      .filter((s) => !(s.id === 'cosmetic' && cosmeticConflicts === 'hidden'))
+      .map((s) => ({
+        id: s.id,
+        label: sectionTitle(s.id),
+        count: s.rows.length,
+        errors: ERROR_SECTIONS.has(s.id),
+        body: <ProblemRows rows={s.rows} />,
+        ...sectionExtras(s),
+      })),
+    {
+      id: 'compat',
+      label: t`Compatibility`,
+      count: compat.length,
+      errors: false,
+      body: <CompatSection rows={compat} />,
+    },
+    {
+      id: 'slow',
+      label: t`Slow startup`,
+      count: slowCount,
+      errors: false,
+      body: <SlowStartupSection />,
+    },
+    {
+      id: 'redundant',
+      label: t`Redundant`,
+      count: redundant.length,
+      errors: false,
+      body: (
+        <CleanupSection
+          cleanup={redundant}
+          removeAll={redundant.every((item) => item.choices === undefined)}
+        />
+      ),
+    },
+    {
+      id: 'cleanup',
+      label: t`Cleanup`,
+      count: cleanup.length,
+      errors: false,
+      body: <CleanupSection cleanup={cleanup} />,
+    },
+  ].filter((tab) => tab.count > 0)
+}
+
+function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof useOpenProblems>> }) {
+  const { t } = useLingui()
+  const dismissAsset = useMods((s) => s.dismissAsset)
+  const [confirmDismissCosmetic, setConfirmDismissCosmetic] = useState(false)
+  const [addingAll, runAddAll] = usePending()
+  const cosmeticConflicts = useSettings((s) => gamePrefs(s).cosmeticConflicts)
+  const redundantRows = useRedundantRows()
+
+  const sections = problemSections(result)
+  const cleanup = result.cleanup ?? []
+  const compat = result.compat ?? []
+  const redundant = redundantRows(result.redundant ?? [])
+  const installable =
+    sections
+      .find((section) => section.id === 'missing')
+      ?.rows.filter(
+        (row): row is Extract<Row, { kind: 'missing' }> =>
+          !isDismissedRow(row) &&
+          row.kind === 'missing' &&
+          row.missing.listed &&
+          row.missing.where !== null,
+      ) ?? []
+  const empty =
+    sections.filter((s) => s.id !== 'dismissed').length === 0 &&
+    cleanup.length + redundant.length + compat.length === 0 &&
+    !result.unknown
+
+  const sectionExtras = (section: (typeof sections)[number]): { action?: SectionAction } => {
+    if (section.id === 'missing' && installable.length > 0) {
+      return {
+        action: {
+          label: t`Add all ${installable.length}`,
+          disabled: addingAll,
+          onClick: () => {
+            const wants = installable.flatMap(({ missing }) => {
+              const want = missing.where ? refWant(missing.where, 'dependency') : null
+              return want ? [want] : []
+            })
+            runAddAll(() => download(wants))
+          },
+        },
+      }
+    }
+    if (section.id === 'cosmetic') {
+      return {
+        action: {
+          label: t`Dismiss all`,
+          onClick: () => {
+            setConfirmDismissCosmetic(true)
+          },
+        },
+      }
+    }
+    return {}
+  }
+
+  const openId = useProfiles((s) => s.openId)
+  const remembered = useProblemSection((s) => s.byProfile[openId])
+  const choose = useProblemSection((s) => s.choose)
+  const tabs = useProblemTabs({
+    sections,
+    compat,
+    redundant,
+    cleanup,
+    cosmeticConflicts,
+    sectionExtras,
+  })
+  const current = chosenSection(tabs, remembered)
+  const shown = tabs.find((tab) => tab.id === current)
+
+  return (
+    <Box
+      sx={{
+        flexShrink: 0,
+        px: 2,
+        pt: 1,
+        pb: 1.5,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.5,
+      }}
+    >
+      <Box sx={{ mx: -2, mb: -1 }}>
+        <LockedNote />
+      </Box>
+      {empty ? (
+        <EmptyState
+          icon={<ShieldCheck size={40} aria-hidden={true} />}
+          title={t`No problems found`}
+        >
+          {t`Every mod has what it needs and nothing clashes.`}
+        </EmptyState>
+      ) : null}
+      {tabs.length > 0 ? (
+        <SectionSwitcher
+          tabs={tabs}
+          current={current}
+          onChoose={(id) => choose(openId, id)}
+          action={shown?.action}
+        />
+      ) : null}
+      {shown?.body}
+      <ConfirmDialog
+        open={confirmDismissCosmetic}
+        title={t`Dismiss all harmless overlaps?`}
+        body={t`They move to Dismissed. Restore them from that section.`}
+        confirmLabel={t`Dismiss all`}
+        onCancel={() => setConfirmDismissCosmetic(false)}
+        onConfirm={() => {
+          setConfirmDismissCosmetic(false)
+          dismissCosmetic(sections, dismissAsset)
+        }}
+      />
+      {result.unknown ? <OfflineChecksNote /> : null}
+      <CheckTimings timings={result.timings ?? []} />
+    </Box>
   )
 }
 
@@ -476,110 +597,9 @@ export function ProblemActions() {
 export function ProblemsTab() {
   const { t } = useLingui()
   const result = useOpenProblems()
-  const sectionTitle = useSectionTitle()
   useLoadProblemsOnFocus()
-  const dismissAsset = useMods((s) => s.dismissAsset)
-  const [confirmDismissCosmetic, setConfirmDismissCosmetic] = useState(false)
-  const [addingAll, runAddAll] = usePending()
-  const cosmeticConflicts = useSettings((s) => gamePrefs(s).cosmeticConflicts)
-  const redundantRows = useRedundantRows()
-
   if (result === null) {
     return <LoadingRow>{t`Checking the mods for problems…`}</LoadingRow>
   }
-  const sections = problemSections(result)
-  const cleanup = result.cleanup ?? []
-  const compat = result.compat ?? []
-  const redundant = redundantRows(result.redundant ?? [])
-  const installable =
-    sections
-      .find((section) => section.id === 'missing')
-      ?.rows.filter(
-        (row): row is Extract<Row, { kind: 'missing' }> =>
-          !isDismissedRow(row) &&
-          row.kind === 'missing' &&
-          row.missing.listed &&
-          row.missing.where !== null,
-      ) ?? []
-  const empty =
-    sections.filter((s) => s.id !== 'dismissed').length === 0 &&
-    cleanup.length + redundant.length + compat.length === 0 &&
-    !result.unknown
-
-  const sectionExtras = (section: (typeof sections)[number]) => {
-    if (section.id === 'missing' && installable.length > 0) {
-      return {
-        action: {
-          label: t`Add all ${installable.length}`,
-          disabled: addingAll,
-          onClick: () => {
-            const wants = installable.flatMap(({ missing }) => {
-              const want = missing.where ? refWant(missing.where, 'dependency') : null
-              return want ? [want] : []
-            })
-            runAddAll(() => download(wants))
-          },
-        },
-      }
-    }
-    if (section.id === 'cosmetic') {
-      return {
-        action: {
-          label: t`Dismiss all`,
-          onClick: () => {
-            setConfirmDismissCosmetic(true)
-          },
-        },
-      }
-    }
-    return {}
-  }
-
-  return (
-    <Box
-      sx={{
-        flexShrink: 0,
-        px: 2,
-        pt: 2,
-        pb: 1.5,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-      }}
-    >
-      <Box sx={{ mx: -2, mb: -1 }}>
-        <LockedNote />
-      </Box>
-      {empty ? (
-        <EmptyState
-          icon={<ShieldCheck size={40} aria-hidden={true} />}
-          title={t`No problems found`}
-        >
-          {t`Every mod has what it needs and nothing clashes.`}
-        </EmptyState>
-      ) : null}
-      {renderProblemSections(sections, cosmeticConflicts, sectionTitle, sectionExtras)}
-      <CompatSection rows={compat} />
-      <SlowStartupSection />
-      <CleanupSection
-        cleanup={redundant}
-        title={t`Redundant`}
-        removeAll={redundant.every((item) => item.choices === undefined)}
-      />
-      <CleanupSection cleanup={cleanup} />
-      <ConfirmDialog
-        open={confirmDismissCosmetic}
-        title={t`Dismiss all harmless overlaps?`}
-        body={t`They move to Dismissed. Restore them from that section.`}
-        confirmLabel={t`Dismiss all`}
-        onCancel={() => setConfirmDismissCosmetic(false)}
-        onConfirm={() => {
-          setConfirmDismissCosmetic(false)
-          dismissCosmetic(sections, dismissAsset)
-        }}
-      />
-      {result.unknown ? <OfflineChecksNote /> : null}
-      <CheckTimings timings={result.timings ?? []} />
-    </Box>
-  )
+  return <ProblemsContent result={result} />
 }
