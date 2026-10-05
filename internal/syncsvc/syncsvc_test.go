@@ -90,7 +90,7 @@ func TestTwoMachinesOfferApplyAndConflict(t *testing.T) {
 	if len(offers) != 1 || !offers[0].New || offers[0].Machine != "Desktop" {
 		t.Fatalf("new profile offer = %+v", offers)
 	}
-	if err := b.Resolve(ctx, "stardew", "main", Theirs); err != nil {
+	if err := b.Resolve(ctx, "stardew", "main", offers[0].Revision, Theirs); err != nil {
 		t.Fatal(err)
 	}
 	if mb.profiles["local-Main"] != "v1" || len(scan(t, b)) != 0 {
@@ -106,7 +106,7 @@ func TestTwoMachinesOfferApplyAndConflict(t *testing.T) {
 	if d, err := b.Diff(ctx, "stardew", "main"); err != nil || d.Add[0] != "v2" || d.Remove[0] != "v1" {
 		t.Fatalf("diff = %+v, %v", d, err)
 	}
-	if err := b.Resolve(ctx, "stardew", "main", Theirs); err != nil || mb.profiles["local-Main"] != "v2" {
+	if err := b.Resolve(ctx, "stardew", "main", offers[0].Revision, Theirs); err != nil || mb.profiles["local-Main"] != "v2" {
 		t.Fatalf("apply v2: %v %v", mb.profiles, err)
 	}
 
@@ -120,7 +120,7 @@ func TestTwoMachinesOfferApplyAndConflict(t *testing.T) {
 	if mb.profiles["local-Main"] != "v3b" || shared1(t, folder) != "v3" {
 		t.Fatal("a conflict must not merge or overwrite")
 	}
-	if err := b.Resolve(ctx, "stardew", "main", Mine); err != nil {
+	if err := b.Resolve(ctx, "stardew", "main", offers[0].Revision, Mine); err != nil {
 		t.Fatal(err)
 	}
 	if shared1(t, folder) != "v3b" {
@@ -138,5 +138,27 @@ func TestSyncIsOffWithoutAFolder(t *testing.T) {
 	m.set("main", "v1")
 	if offers := scan(t, s); len(offers) != 0 {
 		t.Fatalf("offers = %v", offers)
+	}
+}
+
+func TestResolveRefusesARevisionOtherThanTheOneShown(t *testing.T) {
+	ctx := context.Background()
+	folder := t.TempDir()
+	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	a, ma := newMachine(t, folder, "Desktop", &clock)
+	b, mb := newMachine(t, folder, "Laptop", &clock)
+	ma.set("main", "v1")
+	scan(t, a)
+	shown := scan(t, b)[0].Revision
+	ma.set("main", "v2")
+	scan(t, a)
+	if err := b.Resolve(ctx, "stardew", "main", shown, Theirs); err == nil {
+		t.Fatal("a stale revision must not apply")
+	}
+	if len(mb.profiles) != 0 {
+		t.Fatalf("nothing may be applied: %v", mb.profiles)
+	}
+	if err := b.Resolve(ctx, "stardew", "main", scan(t, b)[0].Revision, Theirs); err != nil {
+		t.Fatal(err)
 	}
 }

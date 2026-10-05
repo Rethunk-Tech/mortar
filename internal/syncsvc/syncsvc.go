@@ -124,7 +124,8 @@ type Offer struct {
 	Machine  string `json:"machine"`
 	New      bool   `json:"new"`
 	Conflict bool   `json:"conflict"`
-	vector   string
+	// Revision names the other machine's version this offer was made from; Resolve refuses an answer to another.
+	Revision string `json:"revision"`
 }
 
 // Service keeps profiles in step with the sync folder.
@@ -269,7 +270,7 @@ func (s *Service) scanOne(folder string, ref Ref, t tracked) (Offer, bool, error
 	if found && remote.Vector.newer(t.Synced) {
 		return Offer{
 			Game: ref.Game, Profile: ref.ID, Remote: t.Remote, Name: remote.Name, Machine: remote.MachineName,
-			Conflict: dirty && !t.Seen.IsZero(), vector: fmt.Sprint(remote.Vector),
+			Conflict: dirty && !t.Seen.IsZero(), Revision: fmt.Sprint(remote.Vector),
 		}, true, nil
 	}
 	if !dirty || time.Since(ref.Updated) < s.d.Quiet {
@@ -289,7 +290,7 @@ func (s *Service) newOffers(folder, game string, known map[string]bool) []Offer 
 			continue
 		}
 		if sh, ok := s.readShared(folder, game, remote); ok {
-			out = append(out, Offer{Game: game, Remote: remote, Name: sh.Name, Machine: sh.MachineName, New: true, vector: fmt.Sprint(sh.Vector)})
+			out = append(out, Offer{Game: game, Remote: remote, Name: sh.Name, Machine: sh.MachineName, New: true, Revision: fmt.Sprint(sh.Vector)})
 		}
 	}
 	return out
@@ -333,7 +334,7 @@ func (s *Service) announce() {
 	var b strings.Builder
 	fmt.Fprint(&b, len(s.offers))
 	for _, o := range s.offers {
-		fmt.Fprint(&b, "|", o.Game, o.Remote, o.vector, o.Conflict)
+		fmt.Fprint(&b, "|", o.Game, o.Remote, o.Revision, o.Conflict)
 	}
 	if sig := b.String(); sig == s.announced {
 		return
@@ -361,9 +362,9 @@ func (s *Service) find(game, remote string) (Offer, bool) {
 	return Offer{}, false
 }
 
-// Resolve answers the offer for the profile whose sync id is remote: Theirs applies the other revision, Mine keeps
+// Resolve answers the offer for the profile whose sync id is remote, as shown at revision: Theirs applies the other revision, Mine keeps
 // the local profile and writes it over it. Neither merges anything.
-func (s *Service) Resolve(ctx context.Context, game, remote, choice string) error {
+func (s *Service) Resolve(ctx context.Context, game, remote, revision, choice string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	folder := s.d.Folder()
@@ -374,6 +375,9 @@ func (s *Service) Resolve(ctx context.Context, game, remote, choice string) erro
 	sh, ok := s.readShared(folder, game, remote)
 	if !ok {
 		return errors.New("the synced profile is gone from the sync folder")
+	}
+	if fmt.Sprint(sh.Vector) != revision {
+		return errors.New("that change was updated since you looked; review it again")
 	}
 	local := o.Profile
 	switch choice {
