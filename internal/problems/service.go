@@ -38,6 +38,9 @@ type Service struct {
 	Damage func(game string) map[string]store.Damage
 	// NexusFiles, when set, confirms flagged updates against Nexus's live file lists in one call.
 	NexusFiles NexusFilesOf
+	// Throttle waits for a source's turn to be asked (the download queue's per-source limit) and returns the func that
+	// ends it; nil asks without waiting.
+	Throttle func(ctx context.Context, source string) (release func(), err error)
 
 	mu      sync.Mutex
 	drift   map[string]driftScan
@@ -541,7 +544,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 	set := s.settings.Get()
 	r := checkUpdates(ctx, s.metaFor(gameID), env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
 	s.fixStaleManifests(gameID, id, r.Held)
-	r.Updates = append(r.Updates, s.thunderstoreUpdates(ctx, gameID, mods, r.Updates)...)
+	r.Updates = append(r.Updates, s.sourceUpdates(ctx, gameID, mods, r.Updates)...)
 	if !r.Unknown {
 		s.mu.Lock()
 		s.updates[key] = cachedUpdates{fp, time.Now(), r}

@@ -80,6 +80,11 @@ func (s *Service) limitFor(ctx context.Context, source string) *sourceLimit {
 	return l
 }
 
+// SourceSlot waits for a turn on the source's limit; the returned func ends it.
+func (s *Service) SourceSlot(ctx context.Context, source string) (func(), error) {
+	return s.limitFor(ctx, source).acquire(ctx, s.d.Now)
+}
+
 // sourceSlot holds a fetch to its source's limit; the returned func frees it.
 func (s *Service) sourceSlot(ctx context.Context, it Item) (func(), error) {
 	var source string
@@ -91,5 +96,5 @@ func (s *Service) sourceSlot(ctx context.Context, it Item) (func(), error) {
 	default:
 		return func() {}, nil
 	}
-	return s.limitFor(ctx, source).acquire(ctx, s.d.Now)
+	return s.SourceSlot(ctx, source)
 }
