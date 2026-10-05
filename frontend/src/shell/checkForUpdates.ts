@@ -6,6 +6,7 @@ import { useMortarUpdate } from '../settings/updates.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, toastError } from '../toasts/report.ts'
 import { type ToastInput, useToasts } from '../toasts/store.ts'
+import { updatesOfflineReason } from './offlineText.ts'
 
 function failReason(
   mods: PromiseSettledResult<unknown>,
@@ -38,6 +39,11 @@ function resultKind(
 // reported in one toast.
 export async function checkForUpdates() {
   const toasts = useToasts.getState()
+  const offline = updatesOfflineReason()
+  if (offline !== '') {
+    toasts.push({ kind: 'warning', title: i18n._(msg`Update check skipped`), body: offline })
+    return
+  }
   const checking = toasts.push({ kind: 'info', title: i18n._(msg`Checking for updates…`) })
   const [mods, mortar] = await Promise.allSettled([
     useUpdates.getState().checkNow(),

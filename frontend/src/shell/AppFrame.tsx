@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { DropOverlay } from '../install/DropOverlay.tsx'
 import { SweepDialog } from '../launch/SweepDialog.tsx'
 import { useSettings } from '../settings/store.ts'
+import { OfflineBanner } from './OfflineBanner.tsx'
 import { TitleBar } from './TitleBar.tsx'
 import { win } from './win.ts'
 
@@ -65,6 +66,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
         </>
       ) : null}
       <TitleBar maximised={maximised} />
+      <OfflineBanner />
       <Box component="main" sx={{ flexGrow: 1, minHeight: 0 }}>
         {children}
       </Box>

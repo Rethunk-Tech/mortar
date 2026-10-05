@@ -33,6 +33,8 @@ import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { showWhatsNew } from '../updates/whatsNew.ts'
 import { checkForUpdates } from './checkForUpdates.ts'
 import { NexusAccount } from './NexusAccount.tsx'
+import { OfflineGate } from './OfflineGate.tsx'
+import { useUpdatesOfflineReason } from './offlineText.ts'
 import { reportBug } from './reportBug.ts'
 
 const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
@@ -41,6 +43,7 @@ export function AppMenu() {
   const { t } = useLingui()
   const drawerId = useId()
   const [open, setOpen] = useState(false)
+  const updatesOffline = useUpdatesOfflineReason()
   const game = useNav((s) => routeGame(s.route) ?? '')
   const version = useMortarUpdate((s) => s.info?.version)
   useEffect(() => {
@@ -109,17 +112,19 @@ export function AppMenu() {
             </ListItemIcon>
             <ListItemText primary={t`Settings`} />
           </ListItemButton>
-          <ListItemButton
-            onClick={() => {
-              close()
-              checkForUpdates().catch(reportUnexpected)
-            }}
-          >
-            <ListItemIcon>
-              <RefreshCw size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`Check for updates`} />
-          </ListItemButton>
+          <OfflineGate reason={updatesOffline}>
+            <ListItemButton
+              onClick={() => {
+                close()
+                checkForUpdates().catch(reportUnexpected)
+              }}
+            >
+              <ListItemIcon>
+                <RefreshCw size={18} />
+              </ListItemIcon>
+              <ListItemText primary={t`Check for updates`} />
+            </ListItemButton>
+          </OfflineGate>
           {version ? (
             <ListItemButton
               onClick={() => {

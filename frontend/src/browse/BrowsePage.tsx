@@ -13,6 +13,8 @@ import { persist } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
+import { OfflineGate } from '../shell/OfflineGate.tsx'
+import { useOfflineReason } from '../shell/offlineText.ts'
 import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { type InlineError, inlineError } from '../toasts/report.ts'
@@ -386,17 +388,22 @@ function BrowseToolbar({
   const { t } = useLingui()
   const view = useBrowseView((s) => s.view)
   const setView = useBrowseView((s) => s.setView)
+  const offline = useOfflineReason(source === ALL ? [] : [source])
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.25, pb: 0.75 }}>
       <ViewToggle value={view} onChange={setView} />
       <PrefSegmented value={source} label={t`Source`} options={sources} onChange={onSource} />
-      <SearchField
-        autoFocus={true}
-        value={draft}
-        onChange={onDraft}
-        label={placeholder}
-        sx={{ flex: 1, minWidth: 0 }}
-      />
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <OfflineGate reason={offline}>
+          <SearchField
+            autoFocus={true}
+            value={draft}
+            onChange={onDraft}
+            label={placeholder}
+            fullWidth={true}
+          />
+        </OfflineGate>
+      </Box>
     </Box>
   )
 }
@@ -517,6 +524,7 @@ function ResultCard({
   const [picked, setPicked] = useState(item.source)
   const { source, id, url } = choices.find((c) => c.source === picked) ?? primary
   const installed = choices.some((c) => c.installed)
+  const offline = useOfflineReason([source])
   const stats =
     item.source === NEXUS
       ? t`${plural(endorsements, { one: '# endorsement', other: '# endorsements' })} · ${plural(downloads, { one: '# download', other: '# downloads' })}`
@@ -581,6 +589,9 @@ function ResultCard({
         {t`Add`}
       </Button>
     )
+  }
+  if (offline !== '' && shown.kind === 'idle' && !installed && !item.loader && !item.bundled) {
+    action = <OfflineGate reason={offline}>{action}</OfflineGate>
   }
   const picturePx = row ? ROW_PICTURE_PX : PICTURE_PX
   // Gray out dims the mod's picture and text; the action and its chip stay readable.
