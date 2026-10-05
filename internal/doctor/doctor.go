@@ -64,6 +64,7 @@ func FromLive(in Live) Report {
 	}
 	for _, g := range in.Games {
 		checks = append(checks, gameCheck(g, env[g.ID], anyInstalled))
+		checks = append(checks, protonChecks(g)...)
 	}
 	handler := "off"
 	nxmStatus := Warn

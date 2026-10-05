@@ -197,6 +197,18 @@ func steamappsOf(dir string) (string, bool) {
 	return steamapps, true
 }
 
+// CompatDataDir is the Steam compatdata folder (the Proton prefix's parent) of a Proton install.
+func CompatDataDir(inst Install) (string, bool) {
+	if !(proton{}).Detect(inst) {
+		return "", false
+	}
+	steamapps, ok := steamappsOf(inst.Dir)
+	if !ok {
+		return "", false
+	}
+	return filepath.Join(steamapps, "compatdata", inst.AppID), true
+}
+
 // Version names the compatibility tool Steam runs inst with, or "" when it is not a Proton install or Steam has not
 // chosen a tool yet. It is the first line of the prefix's config_info (the tool's version), else the tool Steam's
 // config.vdf maps the game to, falling back to the all-games default.
