@@ -1,5 +1,6 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Menu, MenuItem } from '@mui/material'
+import { Box, Button, ListItemText, Menu, MenuItem } from '@mui/material'
 import { ChevronDown, History } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Run } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
@@ -100,7 +101,14 @@ export function RunsPicker({ game }: { game: string }) {
               setAnchor(null)
             }}
           >
-            {label(r)}
+            <ListItemText
+              primary={label(r)}
+              secondary={
+                r.unclassified
+                  ? t`${plural(r.unclassified, { one: '# log line Mortar could not classify', other: '# log lines Mortar could not classify' })}`
+                  : undefined
+              }
+            />
           </MenuItem>
         ))}
       </Menu>

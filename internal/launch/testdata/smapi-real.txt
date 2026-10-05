@@ -1,0 +1,28 @@
+[09:26:10 ERROR SMAPI]    Skipped mods
+[09:26:10 ERROR SMAPI]    --------------------------------------------------
+[09:26:10 ERROR SMAPI]       These mods could not be added to your game.
+[06:21:52 ERROR SMAPI]       - Seed Alpha 1.0.0 because it requires mods which aren't installed (Content Patcher: https://www.nexusmods.com/stardewvalley/mods/1915).
+[09:23:09 ERROR SMAPI]       - Adventurer's Guild Expanded Music 1.0.0 because it requires mods which aren't installed (ZeroMeters.SAAT.Mod).
+[09:18:40 ERROR SMAPI]       - SAAT.API 1.1.2 because it's no longer compatible. Please check for a new version at https://smapi.io/mods
+[09:18:40 ERROR SMAPI]       - SAAT.Mod 1.1.2 because it needs the 'SAAT.API' mod, which couldn't be loaded.
+[16:29:35 ERROR SMAPI]       - More Giant Crops 1.2.0 because it's no longer compatible. Please check for a newer version at https://www.nexusmods.com/stardewvalley/mods/5263 or https://smapi.io/mods
+[16:29:35 ERROR SMAPI]       - Help Wanted 0.9.3 because its DLL couldn't be loaded: Could not load '/home/user/.local/share/mortar/profiles/stardew/0123456789abcdef/mods/nexus-14640-173025/HelpWanted/HelpWanted.dll' because it was already loaded. Do you have two copies of this mod?
+[09:26:10 WARN  SMAPI]    Changed save serializer
+[09:26:10 WARN  SMAPI]    --------------------------------------------------
+[09:26:10 WARN  SMAPI]       These mods change the save serializer. They may corrupt your save files, or make them unusable if
+[09:26:10 WARN  SMAPI]       you uninstall these mods.
+[09:26:10 WARN  SMAPI]       - SpaceCore
+[19:53:00 ERROR Wedding Tweaks] Mod crashed on entry and might not work correctly. Technical details:
+System.NullReferenceException: Object reference not set to an instance of an object.
+[19:52:58 ERROR DynamicShader] Failed to apply patches: Object reference not set to an instance of an object.
+[19:58:25 ERROR Love of Cooking] Love of Cooking failed to load completely. Mod may not be usable.
+[16:35:09 WARN  Content Patcher] Ignored Sharogg's Tilesheets > 'rcti-light' token: its When field is invalid: Mod or pack not found..
+[23:34:46 WARN  Content Patcher] Can't apply data patch "Vegas' Item Compatibility Patch > Item Compatibility Patch #1 > Data/MachineOutputRules.json > EditData Data/Machines #42" to Data/Machines: the field '(BC)nachonline.mps_PrismaticPreservesJar' > 'OutputRules' > 'slimerrain.grainsoverhullcp_Cornucopia_Overnight_Oats' doesn't match an existing target
+[23:34:46 WARN  Content Patcher] Can't apply data patch "Vegas' Item Compatibility Patch > Item Compatibility Patch #1 > Data/MachineOutputRules.json > EditData Data/Machines #41" to Data/Machines: the field '(BC)nachonline.mps_RadioactivePreservesJar' > 'OutputRules' doesn't match an existing target
+[16:34:55 WARN  Fashion Sense] Unable to add hairstyle for ESH.LongPonytailNavy from Ellianas Soft Hairstyles: No associated hair.png given
+[23:34:20 WARN  Fashion Sense] Content pack Cow Ears Accessory is missing a accessory.json under Cow Ears
+[19:58:23 ERROR Global God Rays] This mod failed in the GameLoop.UpdateTicked event. Technical details: 
+[09:26:20 ALERT SMAPI] You can update 4 mods:
+[09:26:20 ALERT SMAPI]    Aspen 0.0.53: https://www.nexusmods.com/stardewvalley/mods/6754 (you have 0.0.52)
+[08:50:25 ERROR game] The game failed to launch: Microsoft.Xna.Framework.Content.ContentLoadException: Failed loading asset 'Data\BigCraftables'.
+[23:34:15 WARN  Pet Against Crows] Possible conflicts with this mod detected.

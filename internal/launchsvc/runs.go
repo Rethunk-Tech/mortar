@@ -40,13 +40,15 @@ type Run struct {
 	LoaderVersion string `json:"loaderVersion"`
 	GameVersion   string `json:"gameVersion"`
 	// Preset is the name of the launch preset the run used.
-	Preset   string          `json:"preset,omitempty"`
-	Outcome  launch.Outcome  `json:"outcome"`
-	Errors   int             `json:"errors"`
-	Warnings int             `json:"warnings"`
-	Mods     []launch.ModRef `json:"mods,omitempty"`
-	Cause    *Cause          `json:"cause,omitempty"`
-	Exit     *launch.Exit    `json:"exit,omitempty"`
+	Preset   string         `json:"preset,omitempty"`
+	Outcome  launch.Outcome `json:"outcome"`
+	Errors   int            `json:"errors"`
+	Warnings int            `json:"warnings"`
+	// Unclassified counts the log's warnings and errors no Mortar rule recognises.
+	Unclassified int             `json:"unclassified,omitempty"`
+	Mods         []launch.ModRef `json:"mods,omitempty"`
+	Cause        *Cause          `json:"cause,omitempty"`
+	Exit         *launch.Exit    `json:"exit,omitempty"`
 }
 
 type Cause struct {
@@ -316,6 +318,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		s.OnSavePlayed(g.ID(), profileID, folder)
 	}
 	stats := launch.Summarize(text)
+	unclassified := launch.Unclassified(text)
 	s.mu.Lock()
 	sess := s.logs[keyOf(g)]
 	s.mu.Unlock()
@@ -356,6 +359,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
 		DurationMs: ended.Sub(started).Milliseconds(), Loader: cmp.Or(s.profileLoader(g.ID(), profileID), loaderID(g.ID())), LoaderVersion: stats.SMAPI, GameVersion: stats.Game,
 		Preset: sess.preset, Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
+		Unclassified: unclassified,
 	}
 	if len(refs) > 0 {
 		run.Mods = append([]launch.ModRef{}, refs[0]...)

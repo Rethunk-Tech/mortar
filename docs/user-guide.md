@@ -75,7 +75,7 @@ To make that button work, enable **Handle "Mod Manager Download" links** in **Se
 
 ## Browser extension
 
-The extension marks Nexus Mods pages with what your profile already has and sends Mod Manager Download clicks to Mortar. It is optional. It has its own releases at https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest; **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` there. Unzip it for Chrome and Edge. When Mortar and the extension are too far apart in version to talk, the extension says which one to update, and Settings › Downloads says **The browser extension is too old for this Mortar** (or too new).
+The extension marks Nexus Mods pages with what your profile already has and sends Mod Manager Download clicks to Mortar. It is optional. It has its own releases at <https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest>; **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` there. Unzip it for Chrome and Edge. When Mortar and the extension are too far apart in version to talk, the extension says which one to update, and Settings › Downloads says **The browser extension is too old for this Mortar** (or too new).
 
 - **Chrome, Edge or another Chromium browser:** open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the unzipped folder.
 - **Firefox:** download `mortar-browser-extension.xpi` from the extension's [latest release](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest) (**Settings › Downloads** links it too) and open it in Firefox, or drop it on `about:addons`. It is signed by Mozilla, so it stays installed. A release without the `.xpi` needs the zip instead: open `about:debugging`, choose **This Firefox**, then **Load Temporary Add-on** and pick `manifest.json` in the unzipped folder; Firefox removes a temporary add-on when it restarts.
@@ -228,6 +228,16 @@ Two mods change the same file or asset. Only one change wins, so the other mod m
 #### Errors in the last run
 
 A mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs. Open the log to read what it said.
+
+The Console's **Problems in this run** strip reads SMAPI's log for the cause and offers one fix per mod:
+
+- **Install** a requirement that is not installed.
+- **Update** a mod SMAPI calls no longer compatible, one whose requirement is too old or was skipped itself, or one whose Harmony patches failed.
+- **Update SMAPI** for a mod that needs a newer SMAPI.
+- **Disable** a mod that crashed on entry, has a broken manifest or DLL, is obsolete, needs a newer game, or a content pack whose patches failed.
+- **Remove duplicate** for a mod installed twice, and **Remove** for a mod SMAPI flags as malicious.
+
+Each recorded run in the Console's run list also says how many of its log's warnings and errors Mortar could not classify.
 
 #### Failed to load
 

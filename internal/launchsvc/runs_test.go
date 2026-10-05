@@ -66,7 +66,8 @@ func TestRecordStoresOwnedLogAndBoundsHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := game.Find("stardew")
-	writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Content Patcher] boom\n")
+	writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Content Patcher] boom\n"+
+		"[19:43:51 WARN  Pet Against Crows] Possible conflicts with this mod detected.\n")
 	started := time.Now().Add(-2 * time.Second)
 	svc.record(g, p.ID, started, false)
 	runs, err := svc.Runs("stardew", p.ID)
@@ -77,7 +78,7 @@ func TestRecordStoresOwnedLogAndBoundsHistory(t *testing.T) {
 	if got.Outcome != launch.OutcomeRan || got.LoaderVersion != "4.5.2" || got.GameVersion != "1.6.15" {
 		t.Fatalf("meta = %#v", got)
 	}
-	if got.Errors != 1 || got.Warnings != 0 || got.DurationMs < 1000 {
+	if got.Errors != 1 || got.Warnings != 1 || got.Unclassified != 1 || got.DurationMs < 1000 {
 		t.Fatalf("counts = %#v", got)
 	}
 	text, err := svc.RunLog("stardew", p.ID, got.ID)

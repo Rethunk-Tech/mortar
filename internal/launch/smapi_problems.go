@@ -1,6 +1,7 @@
 package launch
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -15,6 +16,14 @@ const (
 	SMAPIProblemContentPack       SMAPIProblemKind = "contentPack"
 	SMAPIProblemDuplicate         SMAPIProblemKind = "duplicate"
 	SMAPIProblemFailedToLoad      SMAPIProblemKind = "failedToLoad"
+	// SMAPIProblemDependencyFailed is a mod skipped because a mod it needs is installed but was itself skipped.
+	SMAPIProblemDependencyFailed SMAPIProblemKind = "dependencyFailed"
+	SMAPIProblemDependencyTooOld SMAPIProblemKind = "dependencyTooOld"
+	SMAPIProblemSMAPITooOld      SMAPIProblemKind = "smapiTooOld"
+	SMAPIProblemGameTooOld       SMAPIProblemKind = "gameTooOld"
+	SMAPIProblemObsolete         SMAPIProblemKind = "obsolete"
+	SMAPIProblemHarmonyPatch     SMAPIProblemKind = "harmonyPatch"
+	SMAPIProblemMalicious        SMAPIProblemKind = "malicious"
 )
 
 // SMAPIFixKind is the one-click action offered for a finding.
@@ -25,6 +34,8 @@ const (
 	SMAPIFixUpdate            SMAPIFixKind = "update"
 	SMAPIFixDisable           SMAPIFixKind = "disable"
 	SMAPIFixRemoveDuplicate   SMAPIFixKind = "removeDuplicate"
+	SMAPIFixUpdateLoader      SMAPIFixKind = "updateLoader"
+	SMAPIFixRemove            SMAPIFixKind = "remove"
 )
 
 // SMAPI problem phrases copied from SMAPI's own log lines (ModResolver / load errors / Content Patcher).
@@ -56,11 +67,12 @@ func ParseSMAPIProblems(log string) []SMAPIProblem {
 	var out []SMAPIProblem
 	seen := map[string]struct{}{}
 	for _, e := range ParseLog(log) {
-		p, ok := matchSMAPIProblem(e.Message)
+		p, ok := matchSMAPIProblem(e)
 		if !ok {
 			continue
 		}
-		key := string(p.Kind) + "\x00" + p.ModID + "\x00" + p.Dependency + "\x00" + p.Detail
+		// One row per mod and kind: a content pack can fail dozens of patches, and the fix is the same for all.
+		key := string(p.Kind) + "\x00" + p.ModID + "\x00" + p.Dependency
 		if _, dup := seen[key]; dup {
 			continue
 		}
@@ -105,10 +117,21 @@ func matchModRef(id, name string, mods []ModRef) (ModRef, bool) {
 	return ModRef{}, false
 }
 
-func matchSMAPIProblem(message string) (SMAPIProblem, bool) {
-	line := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(message), "-"))
+func matchSMAPIProblem(e Entry) (SMAPIProblem, bool) {
+	trimmed := strings.TrimSpace(e.Message)
+	line := strings.TrimSpace(strings.TrimPrefix(trimmed, "-"))
 	if line == "" {
 		return SMAPIProblem{}, false
+	}
+	var skipped SMAPIProblem
+	if e.Mod == "SMAPI" && strings.HasPrefix(trimmed, "- ") {
+		var known bool
+		if skipped, known = matchSkipped(line); known {
+			return skipped, true
+		}
+	}
+	if p, ok := matchModMessage(e.Mod, line); ok {
+		return p, true
 	}
 	if p, ok := matchDuplicate(line); ok {
 		return p, true
@@ -124,6 +147,86 @@ func matchSMAPIProblem(message string) (SMAPIProblem, bool) {
 	}
 	if p, ok := matchFailedToLoad(line); ok {
 		return p, true
+	}
+	return skipped, skipped.Kind != ""
+}
+
+// matchSkipped reads one entry of SMAPI's "Skipped mods" list, "<name> <version> because <reason>" (LogManager), where
+// the reason is one of ModResolver's failure phrases. known is false for a reason it does not name; p is then the
+// failed-to-load fallback, since every skipped mod failed to load, for the older wordings to try first.
+func matchSkipped(line string) (p SMAPIProblem, known bool) {
+	name, reason, ok := strings.Cut(line, " because ")
+	if !ok || name == "" {
+		return SMAPIProblem{}, false
+	}
+	p = SMAPIProblem{Kind: SMAPIProblemFailedToLoad, ModID: name, ModName: name, Detail: line, Fix: SMAPIFixDisable}
+	set := func(kind SMAPIProblemKind, fix SMAPIFixKind, dep string) (SMAPIProblem, bool) {
+		p.Kind, p.Fix, p.Dependency = kind, fix, dep
+		return p, true
+	}
+	switch {
+	case strings.HasPrefix(reason, "it requires mods which aren't installed ("):
+		return set(SMAPIProblemMissingDependency, SMAPIFixInstallDependency, firstListed(reason, "("))
+	case strings.HasPrefix(reason, "it needs the '"):
+		dep, _, _ := cutBetween(reason, "it needs the '", "' mod")
+		return set(SMAPIProblemDependencyFailed, SMAPIFixUpdate, dep)
+	case strings.HasPrefix(reason, "it needs newer versions of some mods: "):
+		dep, _, _ := strings.Cut(firstListed(reason, ": "), " (needs")
+		return set(SMAPIProblemDependencyTooOld, SMAPIFixUpdate, dep)
+	case strings.HasPrefix(reason, "it needs SMAPI "):
+		return set(SMAPIProblemSMAPITooOld, SMAPIFixUpdateLoader, "")
+	case strings.HasPrefix(reason, "it needs Stardew Valley "):
+		return set(SMAPIProblemGameTooOld, SMAPIFixDisable, "")
+	case strings.HasPrefix(reason, "it's obsolete"):
+		return set(SMAPIProblemObsolete, SMAPIFixDisable, "")
+	case strings.Contains(reason, ". Please check for a "):
+		return set(SMAPIProblemTooOld, SMAPIFixUpdate, "")
+	case strings.HasPrefix(reason, "you have multiple copies"),
+		strings.HasPrefix(reason, "its DLL couldn't be loaded") && strings.Contains(reason, "because it was already loaded"):
+		return set(SMAPIProblemDuplicate, SMAPIFixRemoveDuplicate, "")
+	case strings.HasPrefix(reason, "its "), strings.HasPrefix(reason, "it doesn't have"):
+		return p, true
+	}
+	return p, false
+}
+
+// firstListed is the first entry of the comma-separated list after open, without the ": <url>" SMAPI adds to a name it
+// knows a page for.
+func firstListed(s, open string) string {
+	_, list, _ := strings.Cut(s, open)
+	list = strings.TrimSuffix(strings.TrimSuffix(list, "."), ")")
+	first, _, _ := strings.Cut(list, ", ")
+	name, _, _ := strings.Cut(first, ": ")
+	return strings.TrimSpace(name)
+}
+
+var (
+	// Content Patcher names a patch "<pack> > <patch path>".
+	cpPatchRe   = regexp.MustCompile(`^(?:Can't apply (?:\w+ )?patch "|Ignored )(.+?) > `)
+	fsPackRe    = regexp.MustCompile(`^Unable to add \w+ for .+ from (.+?): |^Content pack (.+?) is missing `)
+	maliciousRe = regexp.MustCompile(`^The '(.+)' mod has been flagged as a malicious mod\.`)
+	harmonyRe   = regexp.MustCompile(`(?i)HarmonyException|Patching exception|failed to apply (?:harmony )?patch`)
+)
+
+// matchModMessage reads the errors a mod logs under its own name, and the per-mod lines SMAPI writes outside the
+// skipped list.
+func matchModMessage(mod, line string) (SMAPIProblem, bool) {
+	named := func(kind SMAPIProblemKind, fix SMAPIFixKind, name string) (SMAPIProblem, bool) {
+		return SMAPIProblem{Kind: kind, ModID: name, ModName: name, Detail: line, Fix: fix}, true
+	}
+	ownName := mod != "" && mod != "SMAPI" && mod != "game"
+	switch {
+	case mod == "SMAPI" && maliciousRe.MatchString(line):
+		return named(SMAPIProblemMalicious, SMAPIFixRemove, maliciousRe.FindStringSubmatch(line)[1])
+	case ownName && strings.HasPrefix(line, "Mod crashed on entry"):
+		return named(SMAPIProblemFailedToLoad, SMAPIFixDisable, mod)
+	case ownName && harmonyRe.MatchString(line):
+		return named(SMAPIProblemHarmonyPatch, SMAPIFixUpdate, mod)
+	case mod == "Content Patcher" && cpPatchRe.MatchString(line):
+		return named(SMAPIProblemContentPack, SMAPIFixDisable, cpPatchRe.FindStringSubmatch(line)[1])
+	case mod == "Fashion Sense" && fsPackRe.MatchString(line):
+		m := fsPackRe.FindStringSubmatch(line)
+		return named(SMAPIProblemContentPack, SMAPIFixDisable, m[1]+m[2])
 	}
 	return SMAPIProblem{}, false
 }
@@ -301,4 +404,63 @@ func contentPackName(line string) string {
 		return name
 	}
 	return leadingModName(line)
+}
+
+// smapiNotices are SMAPI's own section headings and advisories: they introduce lines the rules read, or say
+// something Mortar shows elsewhere (mod and SMAPI updates), so none of them is a gap.
+var smapiNotices = []string{
+	"Skipped mods",
+	"These mods could not be added to your game.",
+	"Changed save serializer",
+	"These mods change the save serializer.",
+	"you uninstall these mods.",
+	"Patched game code without Harmony fix",
+	"You can update ",
+	"A new version of SMAPI was detected",
+	"You disabled update checks",
+	"You disabled mod blacklist updates",
+	"this version of SMAPI is only compatible up to Stardew Valley",
+	"but the oldest supported version is",
+}
+
+var updateNoticeRe = regexp.MustCompile(`: https?://\S+ \(you have \S+\)$`)
+
+// Classified reports whether a Mortar rule accounts for a WARN, ERROR or ALERT entry: a run problem, a crash, an
+// error a mod logged under its own name (which the run's error rows count), or a SMAPI notice.
+func Classified(e Entry) bool {
+	if _, ok := matchSMAPIProblem(e); ok || IsCrash(e) {
+		return true
+	}
+	if e.Mod != "SMAPI" && e.Mod != "game" && e.Level != Warn {
+		return true
+	}
+	if e.Mod != "SMAPI" {
+		return false
+	}
+	msg := strings.TrimSpace(e.Message)
+	if strings.Trim(msg, "-") == "" || updateNoticeRe.MatchString(msg) {
+		return true
+	}
+	// A bare "- <mod>" lists a mod under the notice heading above it.
+	if item, ok := strings.CutPrefix(msg, "- "); ok && !strings.Contains(item, " because ") {
+		return true
+	}
+	for _, n := range smapiNotices {
+		if strings.HasPrefix(msg, n) || strings.Contains(msg, n) && strings.HasPrefix(msg, "Oops!") {
+			return true
+		}
+	}
+	return false
+}
+
+// Unclassified counts the WARN, ERROR and ALERT messages in a SMAPI log that no rule classifies, so a run record shows
+// how much of its log Mortar could not explain.
+func Unclassified(log string) int {
+	n := 0
+	for _, e := range ParseLog(log) {
+		if !e.Cont && (e.Level == Warn || e.Level == Error || e.Level == Alert) && !Classified(e) {
+			n++
+		}
+	}
+	return n
 }

@@ -8,6 +8,7 @@ import { RunProblems as FetchRunProblems } from '../../bindings/github.com/Rethu
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useBrowseView } from '../browse/view.ts'
 import { useTab } from '../game/tab.ts'
+import { useLoader } from '../loader/store.ts'
 import { localId } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
@@ -59,8 +60,18 @@ async function installDependency(i18n: I18n, id: string) {
   await download([want])
 }
 
-async function applyFix(i18n: I18n, problem: SMAPIProblem) {
+async function applyFix(i18n: I18n, problem: SMAPIProblem, game: string) {
   switch (problem.fix) {
+    case 'updateLoader':
+      await useLoader.getState().install(game)
+      return
+    case 'remove': {
+      const mod = findMod(problem)
+      if (mod) {
+        await useMods.getState().remove(mod)
+      }
+      return
+    }
     case 'installDependency':
       await installDependency(i18n, problem.dependency ?? '')
       return
@@ -106,7 +117,15 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem) {
   }
 }
 
-function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: boolean }) {
+function ProblemRow({
+  problem,
+  contained,
+  game,
+}: {
+  problem: SMAPIProblem
+  contained: boolean
+  game: string
+}) {
   const { t, i18n } = useLingui()
   const locked = useLocked()
   const lockHint = t`Stop the game to change mods.`
@@ -120,6 +139,10 @@ function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: 
     label = t`Disable`
   } else if (problem.fix === 'removeDuplicate') {
     label = t`Remove duplicate`
+  } else if (problem.fix === 'updateLoader') {
+    label = t`Update SMAPI`
+  } else if (problem.fix === 'remove') {
+    label = t`Remove`
   }
   const copies = duplicateCopies(
     useMods((s) => s.mods).filter(
@@ -133,7 +156,7 @@ function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: 
       setConfirmDup(true)
       return
     }
-    applyFix(i18n, problem).catch(reportUnexpected)
+    applyFix(i18n, problem, game).catch(reportUnexpected)
   }
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, fontSize: 14 }}>
@@ -171,7 +194,7 @@ function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: 
         onCancel={() => setConfirmDup(false)}
         onConfirm={() => {
           setConfirmDup(false)
-          applyFix(i18n, problem).catch(reportUnexpected)
+          applyFix(i18n, problem, game).catch(reportUnexpected)
         }}
       />
     </Box>
@@ -229,7 +252,9 @@ export function RunProblemsStrip({
             variant="contained"
             color="warning"
             onClick={() =>
-              Promise.all(bulk.map((problem) => applyFix(i18n, problem))).catch(reportUnexpected)
+              Promise.all(bulk.map((problem) => applyFix(i18n, problem, game))).catch(
+                reportUnexpected,
+              )
             }
           >
             {t`Fix all`}
@@ -241,6 +266,7 @@ export function RunProblemsStrip({
           key={`${problem.kind}-${problem.modId}-${problem.detail}`}
           problem={problem}
           contained={false}
+          game={game}
         />
       ))}
     </Box>

@@ -218,7 +218,7 @@ msgstr "Make {name} win"
 msgid "Imported {0}: {1} to install"
 msgstr "Imported {0}: {1} to install"
 
-#: src/console/RunProblems.tsx:112
+#: src/console/RunProblems.tsx:131
 #: src/install/DropOverlay.tsx:102
 #: src/install/store.ts:334
 #: src/mods/DuplicateDialog.tsx:82
@@ -613,6 +613,11 @@ msgstr "Add tool…"
 #: src/install/ArchivePreview.tsx:108
 msgid "Showing the first 2,000 files"
 msgstr "Showing the first 2,000 files"
+
+#. placeholder {0}: r.unclassified
+#: src/console/RunsPicker.tsx:108
+msgid "{0, plural, one {# log line Mortar could not classify} other {# log lines Mortar could not classify}}"
+msgstr "{0, plural, one {# log line Mortar could not classify} other {# log lines Mortar could not classify}}"
 
 #: src/profiles/LoaderPicker.tsx:29
 msgid "Mod loader"
@@ -1335,6 +1340,10 @@ msgstr "Skip this version"
 msgid "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 msgstr "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 
+#: src/console/RunProblems.tsx:143
+msgid "Update SMAPI"
+msgstr "Update SMAPI"
+
 #: src/settings/sections/Appearance.tsx:153
 msgid "Solid"
 msgstr "Solid"
@@ -1849,7 +1858,7 @@ msgstr "Could not quit Mortar"
 msgid "Trim history of {0}"
 msgstr "Trim history of {0}"
 
-#: src/console/RunsPicker.tsx:63
+#: src/console/RunsPicker.tsx:64
 msgid "Runs: {button}"
 msgstr "Runs: {button}"
 
@@ -2310,7 +2319,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 
 #: src/console/BisectDialog.tsx:120
 #: src/console/CrashDialog.tsx:59
-#: src/console/RunProblems.tsx:82
+#: src/console/RunProblems.tsx:93
 #: src/install/store.ts:174
 #: src/install/store.ts:237
 #: src/mods/MoveFoldersDialog.tsx:63
@@ -2441,7 +2450,7 @@ msgstr "The program to start {name} was not found. Check that the game is still 
 msgid "Could not restore the warning"
 msgstr "Could not restore the warning"
 
-#: src/console/RunProblems.tsx:235
+#: src/console/RunProblems.tsx:260
 msgid "Fix all"
 msgstr "Fix all"
 
@@ -2725,7 +2734,7 @@ msgstr "Not found in the Mods folder"
 msgid "Data folder"
 msgstr "Data folder"
 
-#: src/console/RunsPicker.tsx:89
+#: src/console/RunsPicker.tsx:90
 msgid "No recorded runs yet"
 msgstr "No recorded runs yet"
 
@@ -2968,7 +2977,7 @@ msgstr "Download and stage a found update without asking"
 msgid "Search GitHub releases"
 msgstr "Search GitHub releases"
 
-#: src/console/RunProblems.tsx:48
+#: src/console/RunProblems.tsx:49
 msgid "Mortar doesn't know where to get {id}"
 msgstr "Mortar doesn't know where to get {id}"
 
@@ -3200,7 +3209,7 @@ msgstr "Show packs"
 msgid "Open notification history"
 msgstr "Open notification history"
 
-#: src/console/RunsPicker.tsx:54
+#: src/console/RunsPicker.tsx:55
 msgid "Past run"
 msgstr "Past run"
 
@@ -3355,7 +3364,7 @@ msgstr "Not checked yet."
 
 #: src/console/BisectDialog.tsx:181
 #: src/console/CrashDialog.tsx:68
-#: src/console/RunProblems.tsx:120
+#: src/console/RunProblems.tsx:139
 #: src/mods/AssetMapDialog.tsx:87
 #: src/mods/ModMenu.tsx:125
 #: src/mods/problemFix/AssetFix.tsx:67
@@ -4094,7 +4103,7 @@ msgstr "Could not read recently deleted profiles"
 msgid "Delete group {name}?"
 msgstr "Delete group {name}?"
 
-#: src/console/RunProblems.tsx:118
+#: src/console/RunProblems.tsx:137
 #: src/loader/Banner.tsx:33
 #: src/mods/runErrorFixButtons.tsx:51
 #: src/mods/Sidebar.tsx:239
@@ -4846,7 +4855,7 @@ msgstr "Browse hides mods their site marks as adult unless this is on. Installed
 msgid "{gameName} closed with errors"
 msgstr "{gameName} closed with errors"
 
-#: src/console/RunProblems.tsx:122
+#: src/console/RunProblems.tsx:141
 msgid "Remove duplicate"
 msgstr "Remove duplicate"
 
@@ -5393,7 +5402,7 @@ msgstr "Endorsements"
 msgid "Two mods change the same file. Only one change wins, so the other mod may look or behave wrongly."
 msgstr "Two mods change the same file. Only one change wins, so the other mod may look or behave wrongly."
 
-#: src/console/RunProblems.tsx:168
+#: src/console/RunProblems.tsx:191
 #: src/launchers/LauncherList.tsx:61
 #: src/mods/OverlayRow.tsx:81
 #: src/mods/OverlayRow.tsx:86
@@ -7421,7 +7430,7 @@ msgstr "Download"
 msgid "These come from outside Nexus, so Mortar does not download them."
 msgstr "These come from outside Nexus, so Mortar does not download them."
 
-#: src/console/RunProblems.tsx:225
+#: src/console/RunProblems.tsx:248
 msgid "Problems in this run"
 msgstr "Problems in this run"
 
@@ -7526,8 +7535,8 @@ msgstr "Retention"
 msgid "Could not remove from the group"
 msgstr "Could not remove from the group"
 
-#: src/console/RunsPicker.tsx:52
-#: src/console/RunsPicker.tsx:87
+#: src/console/RunsPicker.tsx:53
+#: src/console/RunsPicker.tsx:88
 msgid "This session"
 msgstr "This session"
 
@@ -8582,7 +8591,7 @@ msgstr "Changes to keep"
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
 
-#: src/console/RunProblems.tsx:50
+#: src/console/RunProblems.tsx:51
 msgid "Search Nexus"
 msgstr "Search Nexus"
 
@@ -8667,7 +8676,7 @@ msgstr "Sharing"
 msgid "Copy part {0} of {1}"
 msgstr "Copy part {0} of {1}"
 
-#: src/console/RunProblems.tsx:161
+#: src/console/RunProblems.tsx:184
 msgid "Remove duplicate?"
 msgstr "Remove duplicate?"
 
@@ -9300,7 +9309,7 @@ msgstr "Searching…"
 
 #: src/console/BisectDialog.tsx:118
 #: src/console/CrashDialog.tsx:57
-#: src/console/RunProblems.tsx:80
+#: src/console/RunProblems.tsx:91
 msgid "Disabled {names}"
 msgstr "Disabled {names}"
 
@@ -9577,7 +9586,8 @@ msgstr "Search every mod site at once or pick one; with nothing typed you see th
 msgid "Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then."
 msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then."
 
-#: src/console/RunProblems.tsx:170
+#: src/console/RunProblems.tsx:145
+#: src/console/RunProblems.tsx:193
 #: src/mods/CleanupSection.tsx:36
 #: src/mods/CleanupSection.tsx:110
 #: src/mods/ModMenu.tsx:175
@@ -9766,7 +9776,7 @@ msgstr "Could not verify its source"
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
-#: src/console/RunProblems.tsx:116
+#: src/console/RunProblems.tsx:135
 #: src/fomod/Dialog.tsx:264
 #: src/loader/Banner.tsx:27
 #: src/settings/GameSettingsPage.tsx:58
@@ -10165,7 +10175,7 @@ msgstr "Details"
 #. placeholder {1}: copies.keep.name
 #. placeholder {2}: copies.remove[0]?.name ?? ''
 #. placeholder {3}: copies.keep.name
-#: src/console/RunProblems.tsx:164
+#: src/console/RunProblems.tsx:187
 msgid "{0, plural, one {Keep {1} and remove {2}.} other {Keep {3} and remove # other copies.}}"
 msgstr "{0, plural, one {Keep {1} and remove {2}.} other {Keep {3} and remove # other copies.}}"
 
