@@ -1,0 +1,77 @@
+package host
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+)
+
+func TestFor(t *testing.T) {
+	cases := map[string]string{
+		"https://github.com/o/r/releases/download/v1/a.zip": "github",
+		"https://github.com/o/r":                            "direct",
+		"https://example.com/a.zip":                         "direct",
+		"http://example.com/a.zip":                          "",
+		"ftp://x/a.zip":                                     "",
+	}
+	for u, want := range cases {
+		got := ""
+		if h := For(u); h != nil {
+			got = h.ID()
+		}
+		if got != want {
+			t.Errorf("For(%q) = %q, want %q", u, got, want)
+		}
+	}
+}
+
+func TestDirectFetch(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/bad") {
+			http.Error(w, "no", http.StatusInternalServerError)
+			return
+		}
+		_, _ = w.Write([]byte("0123456789"))
+	}))
+	defer srv.Close()
+	dir := t.TempDir()
+	d := &Direct{HTTP: srv.Client(), MaxBytes: 10}
+
+	p, err := d.Fetch(t.Context(), srv.URL+"/files/Mod.zip", dir)
+	if err != nil || filepath.Base(p) != "Mod.zip" {
+		t.Fatalf("fetch: %q %v", p, err)
+	}
+	if b, _ := fsx.ReadFile(p); string(b) != "0123456789" {
+		t.Fatalf("body %q", b)
+	}
+
+	small := &Direct{HTTP: srv.Client(), MaxBytes: 9}
+	if _, err := small.Fetch(t.Context(), srv.URL+"/files/Big.zip", dir); err == nil {
+		t.Fatal("cap not enforced")
+	}
+	if _, err := d.Fetch(t.Context(), srv.URL+"/bad/Err.zip", dir); err == nil {
+		t.Fatal("error status accepted")
+	}
+	entries, _ := os.ReadDir(dir)
+	if len(entries) != 1 {
+		t.Fatalf("failed fetches left files behind: %v", entries)
+	}
+}
+
+func TestGitHubFetchGoesThroughGitHubDownload(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("zip")) }))
+	defer srv.Close()
+	g := &GitHub{HTTP: srv.Client()}
+	p, err := g.Fetch(t.Context(), srv.URL+"/o/r/releases/download/v1/a.zip", t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := fsx.ReadFile(p); string(b) != "zip" {
+		t.Fatalf("body %q", b)
+	}
+}

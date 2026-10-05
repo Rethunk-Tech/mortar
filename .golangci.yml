@@ -83,6 +83,7 @@ linters:
         - generic
         - stdlib
         - github.com/Rethunk-Tech/mortar/internal/game.Game
+        - github.com/Rethunk-Tech/mortar/internal/host.Host
     # canon go-golangci-lint-00011
     gomoddirectives:
       replace-local: true
