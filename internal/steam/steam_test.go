@@ -170,3 +170,16 @@ func TestBuildIDReadsTheLibrariesAppManifest(t *testing.T) {
 		t.Fatalf("BuildID = %q", got)
 	}
 }
+
+func TestAppIDsThatLeaveTheLibraryAreRefused(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "outside.jpg"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := (Steam{Root: root}).HeroArt("../../outside.jpg"); got != "" {
+		t.Fatalf("HeroArt followed a traversing app id to %q", got)
+	}
+	if got := BuildID(root, "../x"); got != "" {
+		t.Fatalf("BuildID = %q", got)
+	}
+}

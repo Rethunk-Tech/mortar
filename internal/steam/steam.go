@@ -187,6 +187,9 @@ func (s Steam) InstallDir(appID string) (string, error) {
 // BuildID is the Steam build of appID installed in dir (a folder of its library's steamapps/common), the version Steam
 // itself tracks; "" when dir is not in a Steam library or the app has no manifest.
 func BuildID(dir, appID string) string {
+	if !filepath.IsLocal(appID) {
+		return ""
+	}
 	apps := filepath.Dir(filepath.Dir(dir))
 	m, err := parseVDF(filepath.Join(apps, "appmanifest_"+appID+".acf"))
 	if err != nil {
@@ -218,6 +221,9 @@ func (s Steam) CurrentAccount() (Account, error) {
 
 // HeroArt returns the path of appID's library_hero.jpg, or "" when Steam has not cached it.
 func (s Steam) HeroArt(appID string) string {
+	if !filepath.IsLocal(appID) {
+		return ""
+	}
 	cache := filepath.Join(s.Root, "appcache", "librarycache")
 	for _, p := range []string{
 		filepath.Join(cache, appID, "library_hero.jpg"),
