@@ -14,7 +14,7 @@ const KIND_INSTALL = 'install'
 
 function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
   const premium = useNexus((state) => state.premium)
-  const [sources, setSources] = useState<string[]>([])
+  const [sources, setSources] = useState<{ id: string; name: string }[]>([])
   useEffect(() => {
     SearchableSources(game)
       .then((ids) => setSources(ids ?? []))

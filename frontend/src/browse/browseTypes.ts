@@ -7,6 +7,11 @@ interface BrowsePageResult {
   items: Item[]
 }
 
+interface BrowseSource {
+  id: string
+  name: string
+}
+
 interface BrowseQuery {
   game: string
   source: string
@@ -21,11 +26,11 @@ interface BrowsePageProps {
   game: string
   profileID: string
   premium: boolean
-  sources: string[]
+  sources: BrowseSource[]
   search: BrowseSearch
   openUrl: (url: string) => void
   downloadNexus: (modID: string) => void
   addGitHub: (repo: string) => void
 }
 
-export type { BrowseItem, BrowsePageProps, BrowseSearch }
+export type { BrowseItem, BrowsePageProps, BrowseSearch, BrowseSource }

@@ -3,7 +3,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Card, Chip, Pagination, Skeleton, Typography } from '@mui/material'
 import { CloudOff, Download, ExternalLink, Plus, Search, SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -66,7 +65,7 @@ function useBrowseQuery({
   sources,
 }: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources'>) {
   const [chosen, setSource] = useState(NEXUS)
-  const source = sources.includes(chosen) ? chosen : (sources[0] ?? '')
+  const source = sources.some((s) => s.id === chosen) ? chosen : (sources[0]?.id ?? '')
   const [draft, setDraft] = useState('')
   const [text, setText] = useState('')
   const [page, setPage] = useState(FIRST_PAGE)
@@ -162,9 +161,9 @@ function BrowsePage({
     error,
   } = useBrowseQuery({ game, profileID, search, sources: searchable })
   const pageCount = Math.max(FIRST_PAGE, Math.ceil(result.total / PAGE_SIZE) || FIRST_PAGE)
-  const sources = searchable.map((id) => ({ value: id, label: sourceLabel(id) }))
-  const placeholder =
-    source === GITHUB ? t`Search GitHub releases` : t`Search ${sourceLabel(source)}`
+  const sources = searchable.map((s) => ({ value: s.id, label: s.name }))
+  const sourceName = sources.find((s) => s.value === source)?.label ?? ''
+  const placeholder = source === GITHUB ? t`Search GitHub releases` : t`Search ${sourceName}`
   const hint = searchHint(source, premium)
   let body: React.ReactNode
   if (status === 'idle') {

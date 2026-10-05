@@ -133,15 +133,12 @@ func ForGame(g components.GameInfo) []Source {
 	return out
 }
 
-// Searchable lists the ids of the game's sources that can search, in catalog order.
-func Searchable(g components.GameInfo) []string {
-	var out []string
-	for _, s := range ForGame(g) {
-		if _, ok := s.(Searcher); ok {
-			out = append(out, s.ID())
-		}
-	}
-	return out
+// Searchable lists the game's sources that can search, in catalog order.
+func Searchable(g components.GameInfo) []Source {
+	return slices.DeleteFunc(ForGame(g), func(s Source) bool {
+		_, ok := s.(Searcher)
+		return !ok
+	})
 }
 
 // Schemes lists every URL scheme a registered source claims.

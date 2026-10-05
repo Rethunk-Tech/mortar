@@ -26,13 +26,21 @@ func (s *Service) Search(ctx context.Context, game, sourceID, text string, page 
 	return c.Search(ctx, game, sourceID, text, page)
 }
 
-// SearchableSources lists the ids of the game's sources that can be searched, in catalog order.
-func (s *Service) SearchableSources(game string) []string {
-	info, ok := catalogGame(game)
-	if !ok {
-		return []string{}
+// SourceInfo names a source for the window's source chips.
+type SourceInfo struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// SearchableSources lists the game's sources that can be searched, in catalog order.
+func (s *Service) SearchableSources(game string) []SourceInfo {
+	out := []SourceInfo{}
+	if info, ok := catalogGame(game); ok {
+		for _, src := range source.Searchable(info) {
+			out = append(out, SourceInfo{ID: src.ID(), Name: src.Name()})
+		}
 	}
-	return append([]string{}, source.Searchable(info)...)
+	return out
 }
 
 func (s *Service) installed(game, profileID string) InstalledFunc {

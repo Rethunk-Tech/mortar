@@ -19,8 +19,12 @@ func TestForGameFollowsCatalogOrderAndSkipsUnregistered(t *testing.T) {
 	if want := []string{"moddrop", "nexus", "github"}; !slices.Equal(got, want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
-	if got := source.Searchable(g); !slices.Equal(got, []string{"nexus", "github"}) {
-		t.Fatalf("searchable %v", got)
+	var searchable []string
+	for _, s := range source.Searchable(g) {
+		searchable = append(searchable, s.ID())
+	}
+	if !slices.Equal(searchable, []string{"nexus", "github"}) {
+		t.Fatalf("searchable %v", searchable)
 	}
 }
 
