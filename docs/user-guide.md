@@ -220,9 +220,9 @@ A sync folder shares each profile's mod list, sources, settings and mod config f
 
 1. On each computer open **Settings › Mods and profiles**, find **Sync folder** and choose **Choose…**. Pick the folder your sync tool keeps in step.
 2. Work as usual. A few seconds after a profile stops changing, Mortar writes it into the folder.
-3. On another computer, **Changes from your other machines** opens when a profile there changed. Each row says which computer changed it. **Show diff** lists the mods it adds and removes, **Apply** makes your profile match, **Keep mine** keeps yours and writes it over the other revision, and **Later** closes the list.
+3. On another computer, a toast says **\<profile\> was changed on \<computer\>**. Choose **Review** to open **Changes from your other machines**. **Show diff** lists the mods the change adds and removes, **Apply** makes your profile match, **Keep mine** keeps yours and writes it over the other revision, and **Later** closes the list.
 4. A profile that exists only on the other computer arrives as a new profile when you choose **Apply**.
-5. When both computers changed the same profile, Mortar says so and never merges: pick **Use theirs** or **Keep mine**.
+5. When both computers changed the same profile, the toast and the list say so and Mortar never merges them: pick **Use theirs** or **Keep mine**.
 
 **Turn off** beside the folder stops syncing and leaves the folder's files alone.
 
