@@ -87,7 +87,9 @@ func TestLayoutGoldens(t *testing.T) {
 			"profile:BepInEx/config/ns.cfg.cfg<-config/ns.cfg.cfg",
 		},
 		{
-			"config of a game with a config target", Game{Loaders: bep.Loaders, Targets: append(slices.Clone(bep.Targets), Target{ID: TargetConfig})}, "Ns-Cfg",
+			"config of a game with a config target",
+			Game{Loaders: bep.Loaders, Targets: append(slices.Clone(bep.Targets), Target{ID: TargetConfig})},
+			"Ns-Cfg",
 			map[string]string{
 				"manifest.json": `{"name":"Cfg","version_number":"1.0.0"}`, "config/ns.cfg.cfg": "c", "plugins/C.dll": "d",
 			},
