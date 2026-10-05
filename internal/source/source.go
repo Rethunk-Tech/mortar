@@ -148,6 +148,20 @@ type DependencyLister interface {
 	Dependencies(ctx context.Context, key, mortarVersion string, refs []VersionRef) (map[VersionRef][]string, error)
 }
 
+// InstalledFile is a download installed from a source: its project id, version, and the file's "sha512:<hex>" digest.
+type InstalledFile struct{ ID, Version, Digest string }
+
+// Latest is the newest version a source offers in place of an installed file. VersionID names that exact version,
+// which a version number alone may not when a project publishes one per loader.
+type Latest struct{ ProjectID, Version, VersionID, URL string }
+
+// UpdateChecker is a source that finds the newest version of many installed files in one request, narrowed to the
+// game source's loaders and game versions. The answer is keyed by digest; a file already the newest, or one the site
+// does not know, is absent.
+type UpdateChecker interface {
+	Latest(ctx context.Context, src components.GameSource, mortarVersion string, files []InstalledFile) (map[string]Latest, error)
+}
+
 // Categorizer is a source whose mods carry categories that Query.Categories filters on.
 type Categorizer interface {
 	Categories(ctx context.Context, key string) ([]string, error)

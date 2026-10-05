@@ -2,11 +2,14 @@ package modrinth
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -77,5 +80,72 @@ func TestCategoriesAndLinks(t *testing.T) {
 	}
 	if facet("project_type:mod") != "project_type:mod" || (Driver{}).ModPageURL("", "") != "" {
 		t.Fatal("facet or link")
+	}
+}
+
+// One request finds the newest version of every file for the game's loaders and versions, and a second reads the
+// installed versions of the files with a newer one, so both sides' dependencies are known.
+func TestLatestChecksEveryFileInOneBatch(t *testing.T) {
+	var asked []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		asked = append(asked, r.Method+" "+r.URL.Path)
+		var body struct {
+			Hashes       []string `json:"hashes"`
+			Algorithm    string   `json:"algorithm"`
+			Loaders      []string `json:"loaders"`
+			GameVersions []string `json:"game_versions"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Algorithm != "sha512" {
+			t.Errorf("body %+v %v", body, err)
+		}
+		switch r.URL.Path {
+		case "/version_files/update":
+			if strings.Join(body.Hashes, ",") != "aa11,bb22" || strings.Join(body.Loaders, ",") != "fabric" || strings.Join(body.GameVersions, ",") != "1.21" {
+				t.Errorf("update body %+v", body)
+			}
+			http.ServeFile(w, r, "testdata/version_files_update.json")
+		case "/version_files":
+			if strings.Join(body.Hashes, ",") != "aa11" {
+				t.Errorf("installed body %+v", body)
+			}
+			http.ServeFile(w, r, "testdata/version_files.json")
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	t.Cleanup(srv.Close)
+	d := Driver{URL: srv.URL}
+	src := components.GameSource{ID: "modrinth", Loaders: []string{"fabric"}, GameVersions: []string{"1.21"}}
+	got, err := d.Latest(context.Background(), src, "", []source.InstalledFile{
+		{ID: "sodium", Version: "0.5.0", Digest: "sha512:aa11"},
+		{ID: "lithium", Version: "1.0", Digest: "sha512:BB22"},
+		{ID: "local", Version: "1", Digest: ""},
+	})
+	if err != nil || len(got) != 1 {
+		t.Fatalf("latest = %+v %v", got, err)
+	}
+	if want := (source.Latest{ProjectID: "AANobbMI", Version: "0.6.0", VersionID: "SoD3", URL: "https://modrinth.com/project/AANobbMI/version/SoD3"}); got["sha512:aa11"] != want {
+		t.Errorf("sodium = %+v, want %+v", got["sha512:aa11"], want)
+	}
+	if strings.Join(asked, ";") != "POST /version_files/update;POST /version_files" {
+		t.Errorf("requests = %v", asked)
+	}
+	before, after := source.VersionRef{ID: "AANobbMI", Version: "0.5.0"}, source.VersionRef{ID: "AANobbMI", Version: "0.6.0"}
+	deps, _ := d.Dependencies(context.Background(), "", "", []source.VersionRef{before, after, {ID: "x", Version: "1"}})
+	if strings.Join(deps[before], ",") != "P1,P8" || strings.Join(deps[after], ",") != "P1,P9" || len(deps) != 2 {
+		t.Errorf("dependencies = %v", deps)
+	}
+}
+
+func TestLatestSaysBusyWhenRateLimited(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Retry-After", "5")
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	t.Cleanup(srv.Close)
+	_, err := Driver{URL: srv.URL}.Latest(context.Background(), components.GameSource{}, "", []source.InstalledFile{{Digest: "sha512:aa"}})
+	if !errors.Is(err, source.ErrBusy) {
+		t.Fatalf("err = %v, want ErrBusy", err)
 	}
 }

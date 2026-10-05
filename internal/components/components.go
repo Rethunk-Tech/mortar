@@ -190,6 +190,10 @@ type GameSource struct {
 	ID     string `json:"id"`
 	Key    string `json:"key,omitempty"`
 	GameID int    `json:"gameId,omitempty"`
+	// Loaders and GameVersions narrow an update check to the files for the game's mod loaders and game versions, on a
+	// site whose files carry them (Modrinth).
+	Loaders      []string `json:"loaders,omitempty"`
+	GameVersions []string `json:"gameVersions,omitempty"`
 }
 
 // Source returns the game's source with the given id.

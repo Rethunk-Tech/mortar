@@ -1,0 +1,6 @@
+{
+  "aa11": {"id": "SoD2", "project_id": "AANobbMI", "version_number": "0.5.0", "loaders": ["fabric"], "game_versions": ["1.21"],
+    "dependencies": [{"project_id": "P1", "version_id": null, "file_name": null, "dependency_type": "required"},
+                     {"project_id": "P8", "version_id": null, "file_name": null, "dependency_type": "required"}],
+    "files": [{"hashes": {"sha512": "aa11"}, "url": "https://cdn/s2.jar", "filename": "s2.jar", "primary": true, "size": 8}]}
+}

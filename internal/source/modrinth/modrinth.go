@@ -4,15 +4,19 @@
 package modrinth
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
+	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -58,6 +62,14 @@ func userAgent(version string) string {
 }
 
 func (d Driver) get(ctx context.Context, path string, params url.Values, version string, out any) error {
+	return d.do(ctx, http.MethodGet, path, params, nil, version, out)
+}
+
+func (d Driver) post(ctx context.Context, path string, body any, version string, out any) error {
+	return d.do(ctx, http.MethodPost, path, nil, body, version, out)
+}
+
+func (d Driver) do(ctx context.Context, method, path string, params url.Values, body any, version string, out any) error {
 	base := d.URL
 	if base == "" {
 		base = BaseURL
@@ -72,12 +84,23 @@ func (d Driver) get(ctx context.Context, path string, params url.Values, version
 	if len(params) > 0 {
 		u += "?" + params.Encode()
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	var payload io.Reader
+	if body != nil {
+		raw, err := json.Marshal(body)
+		if err != nil {
+			return err
+		}
+		payload = bytes.NewReader(raw)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, u, payload)
 	if err != nil {
 		return err
 	}
 	req.Header.Set("User-Agent", userAgent(version))
 	req.Header.Set("Accept", "application/json")
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -89,11 +112,11 @@ func (d Driver) get(ctx context.Context, path string, params url.Values, version
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("modrinth answered %s", resp.Status)
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody))
+	raw, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody))
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(body, out)
+	return json.Unmarshal(raw, out)
 }
 
 // facet turns the catalog key into one facet group; a key without a colon is a category.
@@ -277,4 +300,111 @@ func (d Driver) Versions(ctx context.Context, project, mortarVersion string) ([]
 		out[i] = v.VersionNumber
 	}
 	return out, nil
+}
+
+// listed holds the required dependencies of every version an update check read, keyed by project id and version
+// number, so Dependencies answers without another request.
+var listed sync.Map
+
+func remember(v versionResp) {
+	var ids []string
+	for _, dep := range v.Dependencies {
+		if dep.DependencyType == "required" && dep.ProjectID != "" {
+			ids = append(ids, dep.ProjectID)
+		}
+	}
+	listed.Store(source.VersionRef{ID: v.ProjectID, Version: v.VersionNumber}, ids)
+}
+
+func (v versionResp) hasFile(sha512 string) bool {
+	for _, f := range v.Files {
+		if strings.EqualFold(f.Hashes["sha512"], sha512) {
+			return true
+		}
+	}
+	return false
+}
+
+// Latest asks for the newest version of every file at once through POST /version_files/update, which takes the files'
+// hashes and the loaders and game versions to keep to (https://docs.modrinth.com/api/operations/getlatestversionsfromhashes/).
+// The installed versions of the files that have a newer one are then read through POST /version_files
+// (https://docs.modrinth.com/api/operations/versionsfromhashes/), so Dependencies knows both sides.
+func (d Driver) Latest(ctx context.Context, src components.GameSource, mortarVersion string, files []source.InstalledFile) (map[string]source.Latest, error) {
+	byHash := map[string]string{}
+	for _, f := range files {
+		if h, ok := strings.CutPrefix(f.Digest, "sha512:"); ok && h != "" {
+			byHash[strings.ToLower(h)] = f.Digest
+		}
+	}
+	out := map[string]source.Latest{}
+	if len(byHash) == 0 {
+		return out, nil
+	}
+	hashes := make([]string, 0, len(byHash))
+	for h := range byHash {
+		hashes = append(hashes, h)
+	}
+	slices.Sort(hashes)
+	var newest map[string]versionResp
+	if err := d.post(ctx, "/version_files/update", struct {
+		Hashes       []string `json:"hashes"`
+		Algorithm    string   `json:"algorithm"`
+		Loaders      []string `json:"loaders"`
+		GameVersions []string `json:"game_versions"`
+	}{hashes, "sha512", nonNil(src.Loaders), nonNil(src.GameVersions)}, mortarVersion, &newest); err != nil {
+		return nil, err
+	}
+	var older []string
+	for h, v := range newest {
+		h = strings.ToLower(h)
+		digest, ok := byHash[h]
+		if !ok || v.ID == "" || v.hasFile(h) {
+			continue
+		}
+		remember(v)
+		out[digest] = source.Latest{
+			ProjectID: v.ProjectID, Version: v.VersionNumber, VersionID: v.ID,
+			URL: siteURL + "/project/" + url.PathEscape(v.ProjectID) + "/version/" + url.PathEscape(v.ID),
+		}
+		older = append(older, h)
+	}
+	if len(older) > 0 {
+		// The installed versions only add their dependencies to the answer; without them those stay unknown.
+		_ = d.rememberInstalled(ctx, older, mortarVersion)
+	}
+	return out, nil
+}
+
+func (d Driver) rememberInstalled(ctx context.Context, hashes []string, mortarVersion string) error {
+	slices.Sort(hashes)
+	var installed map[string]versionResp
+	if err := d.post(ctx, "/version_files", struct {
+		Hashes    []string `json:"hashes"`
+		Algorithm string   `json:"algorithm"`
+	}{hashes, "sha512"}, mortarVersion, &installed); err != nil {
+		return err
+	}
+	for _, v := range installed {
+		remember(v)
+	}
+	return nil
+}
+
+// Dependencies answers from the versions update checks read: each known version's required projects, by id.
+func (Driver) Dependencies(_ context.Context, _, _ string, refs []source.VersionRef) (map[source.VersionRef][]string, error) {
+	out := map[source.VersionRef][]string{}
+	for _, r := range refs {
+		if ids, ok := listed.Load(r); ok {
+			out[r], _ = ids.([]string)
+		}
+	}
+	return out, nil
+}
+
+// nonNil keeps an absent filter an empty JSON list, which the API reads as no filter, rather than null.
+func nonNil(list []string) []string {
+	if list == nil {
+		return []string{}
+	}
+	return list
 }
