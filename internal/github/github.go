@@ -20,9 +20,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/host"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -552,17 +552,19 @@ func Select(all []Release, version string) (Release, []Asset, error) {
 	return Release{}, nil, ErrNoRelease
 }
 
-// Download saves asset to a temp file and returns its path; the caller removes it. The size cap is the archive
-// extraction cap.
+// Download saves asset through the GitHub host into a new temp folder and returns the file's path; the caller
+// removes the folder (filepath.Dir of the path). The size cap is the archive extraction cap.
 func (c *Client) Download(ctx context.Context, asset Asset, progress Progress) (string, error) {
-	f, err := os.CreateTemp("", "mortar-github-*"+filepath.Ext(asset.Name))
+	dir, err := os.MkdirTemp("", "mortar-github-")
 	if err != nil {
 		return "", err
 	}
-	path := f.Name()
-	_ = f.Close()
-	if err := Download(ctx, c.HTTP, asset.URL, path, archive.DefaultMaxTotalBytes, progress); err != nil {
-		_ = os.Remove(path)
+	h := &host.GitHub{HTTP: c.HTTP, Progress: progress, Download: func(ctx context.Context, hc *http.Client, url, dest string, limit int64, p func(done, total int64)) error {
+		return Download(ctx, hc, url, dest, limit, p)
+	}}
+	path, err := h.Fetch(ctx, asset.URL, dir)
+	if err != nil {
+		_ = os.RemoveAll(dir)
 		return "", fmt.Errorf("download %s: %w", asset.Name, err)
 	}
 	return path, nil

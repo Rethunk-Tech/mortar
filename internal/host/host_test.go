@@ -1,6 +1,7 @@
 package host
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -21,7 +22,7 @@ func TestFor(t *testing.T) {
 	}
 	for u, want := range cases {
 		got := ""
-		if h := For(u); h != nil {
+		if h := For(u, nil); h != nil {
 			got = h.ID()
 		}
 		if got != want {
@@ -66,12 +67,16 @@ func TestDirectFetch(t *testing.T) {
 func TestGitHubFetchGoesThroughGitHubDownload(t *testing.T) {
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("zip")) }))
 	defer srv.Close()
-	g := &GitHub{HTTP: srv.Client()}
+	var asked string
+	g := &GitHub{HTTP: srv.Client(), Download: func(_ context.Context, _ *http.Client, url, dest string, _ int64, _ func(int64, int64)) error {
+		asked = url
+		return os.WriteFile(dest, []byte("zip"), 0o600)
+	}}
 	p, err := g.Fetch(t.Context(), srv.URL+"/o/r/releases/download/v1/a.zip", t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := fsx.ReadFile(p); string(b) != "zip" {
+	if b, _ := fsx.ReadFile(p); string(b) != "zip" || !strings.HasSuffix(asked, "/a.zip") {
 		t.Fatalf("body %q", b)
 	}
 }

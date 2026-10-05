@@ -16,7 +16,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
 // Host fetches the files behind the URLs it matches.
@@ -27,9 +26,13 @@ type Host interface {
 	Fetch(ctx context.Context, rawURL, dstDir string) (string, error)
 }
 
+// DownloadFunc is a resumable download of url into dest, capped at limit bytes, that reports progress.
+type DownloadFunc func(ctx context.Context, hc *http.Client, url, dest string, limit int64, progress func(done, total int64)) error
+
 // For returns the host for rawURL: GitHub for its own URLs, else the direct host. It is nil for a URL no host takes.
-func For(rawURL string) Host {
-	for _, h := range []Host{&GitHub{}, &Direct{}} {
+// download is how GitHub assets are fetched; the github package supplies it, which keeps this package free of it.
+func For(rawURL string, download DownloadFunc) Host {
+	for _, h := range []Host{&GitHub{Download: download}, &Direct{}} {
 		if h.Match(rawURL) {
 			return h
 		}
@@ -134,8 +137,13 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 	return dst, nil
 }
 
-// GitHub fetches release assets with resume, using the gh login's token when there is one.
-type GitHub struct{ HTTP *http.Client }
+// GitHub fetches release assets with resume through Download, which uses the gh login's token when there is one.
+type GitHub struct {
+	HTTP     *http.Client
+	Download DownloadFunc
+	// Progress, when set, hears the transfer's figures.
+	Progress func(done, total int64)
+}
 
 func (*GitHub) ID() string { return "github" }
 
@@ -150,7 +158,7 @@ func (g *GitHub) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 		return "", fmt.Errorf("not an https address")
 	}
 	dst := filepath.Join(dstDir, fileName(u))
-	if err := github.Download(ctx, g.HTTP, rawURL, dst, archive.DefaultMaxTotalBytes, nil); err != nil {
+	if err := g.Download(ctx, g.HTTP, rawURL, dst, archive.DefaultMaxTotalBytes, g.Progress); err != nil {
 		return "", err
 	}
 	return dst, nil
