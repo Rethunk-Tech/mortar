@@ -23,7 +23,7 @@ func TestScheduledBackupsFollowTheIntervalAndWaitForTheGame(t *testing.T) {
 	}
 	if _, err := store.Update(func(v *settings.Settings) {
 		for k, val := range map[string]string{"saveBackupHours": "6", "saveBackupKeep": "2"} {
-			if err := settings.ApplyKeyGame(v, k, val, settings.GameStardew); err != nil {
+			if err := settings.ApplyKeyGame(v, k, val, "stardew"); err != nil {
 				t.Fatal(err)
 			}
 		}
@@ -31,7 +31,7 @@ func TestScheduledBackupsFollowTheIntervalAndWaitForTheGame(t *testing.T) {
 		t.Fatal(err)
 	}
 	busy := false
-	s := &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}, busy: func() bool { return busy }}
+	s := &Service{settings: store, scanners: map[string]*saves.Scanner{"stardew": {Dir: savesDir}}, busy: func() bool { return busy }}
 	t0 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	save := func(at time.Time) {
 		writeFarm(t, savesDir, "Farm_1", "Sunny", at.String())
@@ -43,7 +43,7 @@ func TestScheduledBackupsFollowTheIntervalAndWaitForTheGame(t *testing.T) {
 		}
 	}
 	scheduled := func() int {
-		_, dir, err := s.backupDirs()
+		_, dir, err := s.backupDirs("stardew")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -93,7 +93,7 @@ func TestScheduledBackupsFollowTheIntervalAndWaitForTheGame(t *testing.T) {
 		t.Fatalf("the pass after the game closed made %d in all", n)
 	}
 
-	restarted := &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}, busy: func() bool { return false }}
+	restarted := &Service{settings: store, scanners: map[string]*saves.Scanner{"stardew": {Dir: savesDir}}, busy: func() bool { return false }}
 	save(t0.Add(8 * time.Hour))
 	restarted.scheduledTick(t0.Add(9 * time.Hour))
 	if n := scheduled(); n != 2 {
@@ -118,7 +118,7 @@ func TestScheduledBackupRetriesHalfHourAfterAFailedPass(t *testing.T) {
 		t.Fatal(err)
 	}
 	if _, err := store.Update(func(v *settings.Settings) {
-		if err := settings.ApplyKeyGame(v, "saveBackupHours", "6", settings.GameStardew); err != nil {
+		if err := settings.ApplyKeyGame(v, "saveBackupHours", "6", "stardew"); err != nil {
 			t.Fatal(err)
 		}
 	}); err != nil {
@@ -131,7 +131,7 @@ func TestScheduledBackupRetriesHalfHourAfterAFailedPass(t *testing.T) {
 		t.Fatal(err)
 	}
 	var runs []ScheduledRun
-	s := &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}, busy: func() bool { return false }}
+	s := &Service{settings: store, scanners: map[string]*saves.Scanner{"stardew": {Dir: savesDir}}, busy: func() bool { return false }}
 	s.Emit = func(_ string, data any) {
 		if run, ok := data.(ScheduledRun); ok {
 			runs = append(runs, run)

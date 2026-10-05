@@ -477,9 +477,9 @@ func deleteOldVersion(found []manifest.Mod, uniqueID string) bool {
 	return false
 }
 
-// saveBackup zips the game's Saves folder into <datadir>/backups. Games without a Saves folder need none.
+// saveBackup zips the game's saves folder into <datadir>/backups. Games without a save folder need none.
 func (s *Store) saveBackup(game, profileID string) error {
-	if game != "stardew" {
+	if !gamepkg.HasSaves(game) {
 		return nil
 	}
 	selected := ""
@@ -490,7 +490,7 @@ func (s *Store) saveBackup(game, profileID string) error {
 			return err
 		}
 	}
-	savesDir, err := gamepkg.SavesDir(selected, s.home)
+	savesDir, err := gamepkg.SavesDir(game, selected, s.home)
 	if err != nil {
 		return err
 	}

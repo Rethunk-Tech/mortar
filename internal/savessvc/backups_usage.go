@@ -26,7 +26,7 @@ type TrimResult struct {
 	FreedBytes int64 `json:"freedBytes"`
 }
 
-// BackupsUsage sums backup sizes in total and per save. Backups exist for Stardew Valley only, so game is not read.
+// BackupsUsage sums backup sizes in total and per save of the one game that has saves; game is not read.
 func (s *Service) BackupsUsage(_ string) (BackupsUsage, error) {
 	list, err := s.ListBackups()
 	if err != nil {
@@ -57,10 +57,14 @@ func (s *Service) TrimBackups(_ string, keepPerSave int) (TrimResult, error) {
 	if keepPerSave < 1 {
 		return TrimResult{}, fmt.Errorf("keep at least 1 backup per save, got %d", keepPerSave)
 	}
-	if s.gameBusy() {
+	id, err := s.onlyGame()
+	if err != nil {
+		return TrimResult{}, err
+	}
+	if s.gameBusy(id) {
 		return TrimResult{}, ErrBusy
 	}
-	reads, err := s.backupReads()
+	reads, err := s.backupReads(id)
 	if err != nil {
 		return TrimResult{}, err
 	}

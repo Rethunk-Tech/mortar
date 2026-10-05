@@ -39,7 +39,7 @@ func TestServiceRefusesRestoreWhileBusy(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
-	s := &Service{scanner: &saves.Scanner{Dir: t.TempDir()}, busy: func() bool { return true }}
+	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: t.TempDir()}}, busy: func() bool { return true }}
 	if err := s.RestoreBackup("2026-01-01T00-00-00.000.zip", nil); !errors.Is(err, ErrBusy) {
 		t.Fatalf("err = %v", err)
 	}
@@ -102,7 +102,7 @@ func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) 
 	}
 	custom := filepath.Join(t.TempDir(), "backups")
 	if _, err := s.settings.Update(func(cur *settings.Settings) {
-		_ = settings.ApplyKeyGame(cur, "backupLocation", custom, settings.GameStardew)
+		_ = settings.ApplyKeyGame(cur, "backupLocation", custom, "stardew")
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +145,7 @@ func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) 
 }
 
 func TestOpenSaveFolderRefusesPathsOutsideSaves(t *testing.T) {
-	s := &Service{scanner: &saves.Scanner{Dir: t.TempDir()}}
+	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: t.TempDir()}}}
 	for _, folder := range []string{"", ".", "..", "../etc", "a/b", "Missing_123"} {
 		if err := s.OpenSaveFolder(folder); err == nil {
 			t.Errorf("OpenSaveFolder(%q) = nil, want an error", folder)
@@ -168,7 +168,7 @@ func TestSaveBackupsFiltersAndDeleteRefusesPinned(t *testing.T) {
 	if _, err := backup.Folder(savesDir, dir, "Farm_2", backup.DefaultKeep, t0.Add(time.Hour), backup.Cause{Kind: backup.KindManual, Pinned: true}); err != nil {
 		t.Fatal(err)
 	}
-	s := &Service{scanner: &saves.Scanner{Dir: savesDir}}
+	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: savesDir}}}
 	one, err := s.SaveBackups("Farm_1")
 	if err != nil || len(one) != 1 || one[0].Kind != backup.KindLaunch {
 		t.Fatalf("Farm_1 = %+v, %v", one, err)

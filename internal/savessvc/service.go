@@ -68,7 +68,8 @@ type Service struct {
 	profiles *profile.Store
 	settings *settings.Store
 	meta     *meta.Client
-	scanner  *saves.Scanner
+	// scanners holds one saves scanner per implemented game that has a save folder.
+	scanners map[string]*saves.Scanner
 	// Launches, when set, refuses restore while the game is launching or running.
 	Launches *launchsvc.Service
 	last     *Store
@@ -76,35 +77,42 @@ type Service struct {
 	// schedMu guards lastScheduled, when the last scheduled backup pass ran, which the status read shares with the
 	// RunScheduledBackups goroutine.
 	schedMu       sync.Mutex
-	lastScheduled time.Time
+	lastScheduled map[string]time.Time
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 	// Enqueue queues downloads when FromSave cannot reuse a store item.
 	Enqueue func([]queue.Request) ([]queue.Item, error)
 }
 
-// NewService reads saves from the Stardew Valley Saves folder and caches scans in <datadir>/cache.
+// NewService reads saves from the save folder of every implemented game that has one and caches scans in <datadir>/cache.
 func NewService(home string, profiles *profile.Store, store *settings.Store, client *meta.Client) (*Service, error) {
-	_, selected, _, err := game.Resolve(home, store.Get(), "stardew")
-	if err != nil {
-		return nil, err
-	}
-	savesDir, err := game.SavesDir(selected, home)
-	if err != nil {
-		return nil, err
-	}
 	base, err := datadir.Dir()
 	if err != nil {
 		return nil, err
 	}
-	scanner := &saves.Scanner{Dir: savesDir, CacheDir: filepath.Join(base, "cache")}
-	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanner: scanner, last: NewStore(base)}, nil
+	scanners := map[string]*saves.Scanner{}
+	for _, id := range game.Implemented() {
+		if !game.HasSaves(id) {
+			continue
+		}
+		_, selected, _, err := game.Resolve(home, store.Get(), id)
+		if err != nil {
+			return nil, err
+		}
+		savesDir, err := game.SavesDir(id, selected, home)
+		if err != nil {
+			return nil, err
+		}
+		scanners[id] = &saves.Scanner{Dir: savesDir, CacheDir: filepath.Join(base, "cache", id)}
+	}
+	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanners: scanners, last: NewStore(base)}, nil
 }
 
 // Saves scans the game's saves and compares each with the profile. Wails runs it off the UI thread; a first scan
 // of large saves takes well under a second, and later calls read the cache.
 func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, error) {
-	if game != "stardew" {
+	scanner := s.scanners[game]
+	if scanner == nil {
 		return []Fit{}, nil
 	}
 	index, err := s.meta.Index(ctx)
@@ -116,7 +124,7 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 		return nil, err
 	}
 	present, enabled := haveMaps(mods)
-	infos, err := s.scanner.Scan(index)
+	infos, err := scanner.Scan(index)
 	if err != nil {
 		log.Printf("save scan: %v", err)
 	}
@@ -214,7 +222,8 @@ func (s *Service) describe(ctx context.Context, gameID string, ids map[string]bo
 // LastSaveGap is the most recently written save when it uses mods the profile lacks or has switched off, the save
 // the game most likely loads next; ok is false when that save has everything or there are no saves.
 func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit Fit, ok bool, err error) {
-	if game != "stardew" {
+	scanner := s.scanners[game]
+	if scanner == nil {
 		return Fit{}, false, nil
 	}
 	index, err := s.meta.Index(ctx)
@@ -226,7 +235,7 @@ func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit 
 		return Fit{}, false, err
 	}
 	present, enabled := haveMaps(mods)
-	info, err := s.scanner.Newest(index)
+	info, err := scanner.Newest(index)
 	if err != nil {
 		return Fit{}, false, err
 	}

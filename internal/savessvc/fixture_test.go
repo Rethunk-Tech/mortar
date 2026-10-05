@@ -24,5 +24,5 @@ func backupService(t *testing.T) (*Service, string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &Service{settings: store, scanner: &saves.Scanner{Dir: savesDir}}, savesDir
+	return &Service{settings: store, scanners: map[string]*saves.Scanner{"stardew": {Dir: savesDir}}}, savesDir
 }
