@@ -687,11 +687,15 @@ msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
 msgid "Only in {bName}"
 msgstr "Only in {bName}"
 
+#: src/settings/sections/ItchAccount.tsx:53
+msgid "Your API key is kept in your system keyring."
+msgstr "Your API key is kept in your system keyring."
+
 #: src/settings/sections/Updates.tsx:203
 msgid "Mod loader updates"
 msgstr "Mod loader updates"
 
-#: src/profiles/EditProfileDialog.tsx:154
+#: src/profiles/EditProfileDialog.tsx:155
 msgid "Pink"
 msgstr "Pink"
 
@@ -783,7 +787,7 @@ msgstr "This preset will be deleted."
 msgid "Configure {name}…"
 msgstr "Configure {name}…"
 
-#: src/settings/sections/Accounts.tsx:18
+#: src/settings/sections/Accounts.tsx:19
 msgid "GitHub CLI login"
 msgstr "GitHub CLI login"
 
@@ -809,7 +813,7 @@ msgstr "{0} · {1}"
 msgid "{list} do the same job: all change {detail}"
 msgstr "{list} do the same job: all change {detail}"
 
-#: src/profiles/EditProfileDialog.tsx:174
+#: src/profiles/EditProfileDialog.tsx:175
 msgid "Star"
 msgstr "Star"
 
@@ -964,6 +968,10 @@ msgstr "Exclude categories"
 msgid "Filter by outcome"
 msgstr "Filter by outcome"
 
+#: src/profiles/SeparateSavesRow.tsx:50
+msgid "Keep this profile's saves separate?"
+msgstr "Keep this profile's saves separate?"
+
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
@@ -1111,7 +1119,7 @@ msgstr "Could not add the update downloads"
 msgid "Could not publish the code"
 msgstr "Could not publish the code"
 
-#: src/settings/sections/Accounts.tsx:29
+#: src/settings/sections/Accounts.tsx:30
 msgid "In use"
 msgstr "In use"
 
@@ -1150,7 +1158,7 @@ msgstr "Reinstall {gameName} from your game launcher."
 msgid "Grant access…"
 msgstr "Grant access…"
 
-#: src/profiles/EditProfileDialog.tsx:142
+#: src/profiles/EditProfileDialog.tsx:143
 msgid "Orange"
 msgstr "Orange"
 
@@ -1214,7 +1222,7 @@ msgstr "Switch on {0}"
 msgid "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 msgstr "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 
-#: src/settings/store.ts:134
+#: src/settings/store.ts:135
 msgid "Your settings could not be read"
 msgstr "Your settings could not be read"
 
@@ -1347,7 +1355,7 @@ msgstr "Template name"
 msgid "Its main file is no longer in this profile."
 msgstr "Its main file is no longer in this profile."
 
-#: src/profiles/EditProfileDialog.tsx:162
+#: src/profiles/EditProfileDialog.tsx:163
 msgid "Sprout"
 msgstr "Sprout"
 
@@ -1683,7 +1691,7 @@ msgstr "Folder to watch for archives"
 msgid "Launch presets"
 msgstr "Launch presets"
 
-#: src/profiles/EditProfileDialog.tsx:99
+#: src/profiles/EditProfileDialog.tsx:100
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
@@ -1997,7 +2005,7 @@ msgstr "Dependency cycle"
 
 #: src/commandPalette/paletteLabels.ts:17
 #: src/firstrun/ProfileStep.tsx:136
-#: src/game/NewProfileDialog.tsx:129
+#: src/game/NewProfileDialog.tsx:149
 #: src/game/Sidebar.tsx:378
 #: src/game/Sidebar.tsx:396
 #: src/nxm/ArrivalDialog.tsx:158
@@ -2013,7 +2021,7 @@ msgstr "Repaired {name}"
 msgid "Copy load order"
 msgstr "Copy load order"
 
-#: src/settings/sections/Accounts.tsx:29
+#: src/settings/sections/Accounts.tsx:30
 #: src/shell/NexusAccount.tsx:30
 msgid "Not signed in"
 msgstr "Not signed in"
@@ -2050,7 +2058,7 @@ msgstr "Upload log"
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
-#: src/profiles/EditProfileDialog.tsx:146
+#: src/profiles/EditProfileDialog.tsx:147
 msgid "Lime"
 msgstr "Lime"
 
@@ -2107,7 +2115,7 @@ msgid "Skipped"
 msgstr "Skipped"
 
 #: src/game/ProfileContextMenu.tsx:47
-#: src/profiles/EditProfileDialog.tsx:424
+#: src/profiles/EditProfileDialog.tsx:430
 #: src/profiles/ProfileRow.tsx:78
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -2283,6 +2291,10 @@ msgstr "Mods and profiles"
 #: src/share/useImportFlow.ts:145
 msgid "Imported {name}"
 msgstr "Imported {name}"
+
+#: src/settings/sections/ItchAccount.tsx:52
+msgid "Account"
+msgstr "Account"
 
 #: src/firstrun/LoaderStep.tsx:391
 msgid "Installing {loader} {latest}"
@@ -2655,7 +2667,7 @@ msgstr "{0} has multiple Nexus files installed: {files}."
 msgid "Place the optional file"
 msgstr "Place the optional file"
 
-#: src/profiles/EditProfileDialog.tsx:150
+#: src/profiles/EditProfileDialog.tsx:151
 #: src/settings/sections/Appearance.tsx:71
 msgid "Sky"
 msgstr "Sky"
@@ -3357,7 +3369,7 @@ msgstr "Review mod updates"
 msgid "Download the extension"
 msgstr "Download the extension"
 
-#: src/profiles/EditProfileDialog.tsx:180
+#: src/profiles/EditProfileDialog.tsx:181
 msgid "Sun"
 msgstr "Sun"
 
@@ -3396,7 +3408,7 @@ msgstr "Could not trim history"
 msgid "Performance report"
 msgstr "Performance report"
 
-#: src/profiles/EditProfileDialog.tsx:91
+#: src/profiles/EditProfileDialog.tsx:92
 msgid "Cover image"
 msgstr "Cover image"
 
@@ -3414,7 +3426,7 @@ msgstr "Share as r2modman code?"
 #: src/console/HelpDialog.tsx:234
 #: src/console/StartupPanel.tsx:55
 #: src/fomod/Dialog.tsx:254
-#: src/game/NewProfileDialog.tsx:152
+#: src/game/NewProfileDialog.tsx:173
 #: src/install/DownloadsDialog.tsx:251
 #: src/install/OverlayPlaceDialog.tsx:118
 #: src/install/RemapDialog.tsx:205
@@ -3435,7 +3447,7 @@ msgstr "Share as r2modman code?"
 #: src/mods/SelectionBarDialogs.tsx:86
 #: src/mods/SelectionBarDialogs.tsx:136
 #: src/profiles/CompareDialog.tsx:61
-#: src/profiles/EditProfileDialog.tsx:450
+#: src/profiles/EditProfileDialog.tsx:456
 #: src/profiles/ExternalImportMenu.tsx:72
 #: src/profiles/GameModsDialog.tsx:164
 #: src/profiles/LaunchPresetDialog.tsx:87
@@ -3490,8 +3502,8 @@ msgstr "Parallel downloads"
 msgid "{name} is abandoned: {summary}"
 msgstr "{name} is abandoned: {summary}"
 
-#: src/profiles/EditProfileDialog.tsx:105
-#: src/profiles/EditProfileDialog.tsx:113
+#: src/profiles/EditProfileDialog.tsx:106
+#: src/profiles/EditProfileDialog.tsx:114
 #: src/settings/sections/Appearance.tsx:173
 msgid "Choose image…"
 msgstr "Choose image…"
@@ -3552,7 +3564,7 @@ msgstr "Automatic"
 msgid "Compare {0} with…"
 msgstr "Compare {0} with…"
 
-#: src/game/NewProfileDialog.tsx:89
+#: src/game/NewProfileDialog.tsx:107
 msgid "Created {name}; downloading {mods}"
 msgstr "Created {name}; downloading {mods}"
 
@@ -3713,7 +3725,7 @@ msgstr "Archive…"
 msgid "Mortar"
 msgstr "Mortar"
 
-#: src/game/NewProfileDialog.tsx:90
+#: src/game/NewProfileDialog.tsx:108
 msgid "Created {name}; {mods} still to download"
 msgstr "Created {name}; {mods} still to download"
 
@@ -3721,7 +3733,7 @@ msgstr "Created {name}; {mods} still to download"
 msgid "Focus the next mod"
 msgstr "Focus the next mod"
 
-#: src/settings/sections/Accounts.tsx:21
+#: src/settings/sections/Accounts.tsx:22
 msgid "Mortar uses your gh login for GitHub requests, which raises the rate limit."
 msgstr "Mortar uses your gh login for GitHub requests, which raises the rate limit."
 
@@ -3821,7 +3833,7 @@ msgstr "Version"
 msgid "Browser extension"
 msgstr "Browser extension"
 
-#: src/profiles/EditProfileDialog.tsx:152
+#: src/profiles/EditProfileDialog.tsx:153
 msgid "Violet"
 msgstr "Violet"
 
@@ -3852,7 +3864,7 @@ msgstr "Apply a template…"
 msgid "Switch off {0}"
 msgstr "Switch off {0}"
 
-#: src/profiles/EditProfileDialog.tsx:166
+#: src/profiles/EditProfileDialog.tsx:167
 msgid "Wheat"
 msgstr "Wheat"
 
@@ -3989,8 +4001,8 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 
 #: src/firstrunTour/TourAgainButton.tsx:16
 #: src/firstrunTour/useFirstRunTour.ts:43
-#: src/settings/PrefControls.tsx:182
-#: src/settings/PrefControls.tsx:233
+#: src/settings/PrefControls.tsx:189
+#: src/settings/PrefControls.tsx:240
 #: src/settings/PrefRow.tsx:38
 #: src/settings/sections/Appearance.tsx:43
 #: src/settings/sections/Appearance.tsx:66
@@ -4188,7 +4200,7 @@ msgstr "Mortar starts the unmodded game directly so SMAPI's Linux launcher is no
 msgid "Cached GitHub release lists"
 msgstr "Cached GitHub release lists"
 
-#: src/game/NewProfileDialog.tsx:45
+#: src/game/NewProfileDialog.tsx:54
 msgid "Start from"
 msgstr "Start from"
 
@@ -4255,7 +4267,7 @@ msgstr "Clear selection"
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
 
-#: src/profiles/EditProfileDialog.tsx:176
+#: src/profiles/EditProfileDialog.tsx:177
 msgid "Heart"
 msgstr "Heart"
 
@@ -4401,7 +4413,7 @@ msgstr "Could not unpair"
 msgid "Show more"
 msgstr "Show more"
 
-#: src/profiles/EditProfileDialog.tsx:170
+#: src/profiles/EditProfileDialog.tsx:171
 msgid "Hammer"
 msgstr "Hammer"
 
@@ -4504,7 +4516,7 @@ msgstr "Error in {0}"
 msgid "The game log has errors."
 msgstr "The game log has errors."
 
-#: src/profiles/EditProfileDialog.tsx:144
+#: src/profiles/EditProfileDialog.tsx:145
 msgid "Gold"
 msgstr "Gold"
 
@@ -4703,7 +4715,7 @@ msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
 #: src/game/Hero.tsx:167
-#: src/game/NewProfileDialog.tsx:134
+#: src/game/NewProfileDialog.tsx:154
 #: src/profiles/ProfileRow.tsx:185
 msgid "Profile name"
 msgstr "Profile name"
@@ -4722,7 +4734,7 @@ msgstr "Could not add the archive"
 msgid "{0} ({gameName})"
 msgstr "{0} ({gameName})"
 
-#: src/profiles/EditProfileDialog.tsx:140
+#: src/profiles/EditProfileDialog.tsx:141
 #: src/settings/sections/Appearance.tsx:72
 msgid "Rose"
 msgstr "Rose"
@@ -4734,6 +4746,10 @@ msgstr "Sort: recently updated"
 #: src/settings/prefCopy.ts:117
 msgid "Skip the installer wizard when saved choices still fit"
 msgstr "Skip the installer wizard when saved choices still fit"
+
+#: src/profiles/SeparateSavesRow.tsx:43
+msgid "Keep this profile's saves separate"
+msgstr "Keep this profile's saves separate"
 
 #: src/mods/Toolbar.tsx:149
 msgid "All mods"
@@ -4827,7 +4843,7 @@ msgstr "Remove filter {mod}"
 msgid "Title intro"
 msgstr "Title intro"
 
-#: src/profiles/EditProfileDialog.tsx:98
+#: src/profiles/EditProfileDialog.tsx:99
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
@@ -5274,7 +5290,7 @@ msgstr "Next"
 msgid "Add archive…"
 msgstr "Add archive…"
 
-#: src/game/NewProfileDialog.tsx:155
+#: src/game/NewProfileDialog.tsx:176
 msgid "Create"
 msgstr "Create"
 
@@ -5471,7 +5487,7 @@ msgstr "Request counts appear after Mortar talks to Nexus."
 msgid "There is not enough free space at the destination."
 msgstr "There is not enough free space at the destination."
 
-#: src/settings/store.ts:136
+#: src/settings/store.ts:137
 msgid "Mortar started with default settings. The damaged file was kept at {path}."
 msgstr "Mortar started with default settings. The damaged file was kept at {path}."
 
@@ -5548,6 +5564,10 @@ msgstr "slow {0} {ms}"
 msgid "Move…"
 msgstr "Move…"
 
+#: src/profiles/SeparateSavesRow.tsx:52
+msgid "Turn on"
+msgstr "Turn on"
+
 #: src/game/ProfileMenuItems.tsx:187
 msgid "Turn on sharing nearby in Settings › General."
 msgstr "Turn on sharing nearby in Settings › General."
@@ -5593,10 +5613,11 @@ msgstr "Harmless conflicts"
 msgid "Open recently deleted"
 msgstr "Open recently deleted"
 
-#: src/profiles/EditProfileDialog.tsx:182
+#: src/profiles/EditProfileDialog.tsx:183
 msgid "Moon"
 msgstr "Moon"
 
+#: src/settings/sections/ItchAccount.tsx:67
 #: src/settings/sections/NexusMods.tsx:256
 msgid "API key"
 msgstr "API key"
@@ -5773,7 +5794,7 @@ msgstr "Start the game with this profile, then measure here while you play."
 msgid "No backups to remove"
 msgstr "No backups to remove"
 
-#: src/settings/sections/Accounts.tsx:22
+#: src/settings/sections/Accounts.tsx:23
 msgid "Mortar sends GitHub requests without a login. Run gh auth login to raise the rate limit."
 msgstr "Mortar sends GitHub requests without a login. Run gh auth login to raise the rate limit."
 
@@ -6234,7 +6255,7 @@ msgstr "Backups to keep per save"
 msgid "Default mods view"
 msgstr "Default mods view"
 
-#: src/profiles/EditProfileDialog.tsx:191
+#: src/profiles/EditProfileDialog.tsx:192
 msgid "Colour"
 msgstr "Colour"
 
@@ -6274,7 +6295,7 @@ msgstr "{0} · {1} unique"
 msgid "Not found"
 msgstr "Not found"
 
-#: src/profiles/EditProfileDialog.tsx:117
+#: src/profiles/EditProfileDialog.tsx:118
 #: src/profiles/GameSettings.tsx:182
 #: src/profiles/OverrideRows.tsx:75
 #: src/settings/sections/Appearance.tsx:183
@@ -6480,7 +6501,7 @@ msgstr "Choose cover image"
 msgid "Install separately"
 msgstr "Install separately"
 
-#: src/profiles/EditProfileDialog.tsx:178
+#: src/profiles/EditProfileDialog.tsx:179
 msgid "Mountain"
 msgstr "Mountain"
 
@@ -6655,7 +6676,7 @@ msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
-#: src/game/NewProfileDialog.tsx:86
+#: src/game/NewProfileDialog.tsx:104
 msgid "Created {name}"
 msgstr "Created {name}"
 
@@ -7234,6 +7255,10 @@ msgstr "Copy code"
 msgid "Click a mod to show it in Mods"
 msgstr "Click a mod to show it in Mods"
 
+#: src/settings/sections/ItchAccount.tsx:86
+msgid "Test"
+msgstr "Test"
+
 #: src/saves/lackChipActions.tsx:80
 msgid "Open {name} on Nexus"
 msgstr "Open {name} on Nexus"
@@ -7315,7 +7340,7 @@ msgid "That request was not valid."
 msgstr "That request was not valid."
 
 #: src/mods/NexusDetails.tsx:246
-#: src/profiles/EditProfileDialog.tsx:300
+#: src/profiles/EditProfileDialog.tsx:301
 msgid "Description"
 msgstr "Description"
 
@@ -7391,6 +7416,10 @@ msgstr "{gameName}'s Steam launch options run SMAPI in place of the game. Steam 
 #: src/saves/SaveDetails.tsx:54
 msgid "Winter"
 msgstr "Winter"
+
+#: src/profiles/SeparateSavesRow.tsx:46
+msgid "This profile plays on its own saves. Your shared saves are untouched."
+msgstr "This profile plays on its own saves. Your shared saves are untouched."
 
 #: src/console/LogActions.tsx:109
 msgid "Jump to next error"
@@ -8002,6 +8031,10 @@ msgstr "Restore the last window bounds on startup"
 msgid "Trim save backups"
 msgstr "Trim save backups"
 
+#: src/profiles/SeparateSavesRow.tsx:51
+msgid "While this profile runs, Mortar sets your shared saves folder aside and shows the game this profile's own folder instead. When the game closes, your shared saves come back exactly as they were. Nothing is deleted."
+msgstr "While this profile runs, Mortar sets your shared saves folder aside and shows the game this profile's own folder instead. When the game closes, your shared saves come back exactly as they were. Nothing is deleted."
+
 #: src/settings/sections/About.tsx:70
 msgid "AGPL-3.0 · Rethunk-Tech/mortar"
 msgstr "AGPL-3.0 · Rethunk-Tech/mortar"
@@ -8587,7 +8620,7 @@ msgstr "Report it so it can be fixed."
 
 #: src/mods/listRows.ts:118
 #: src/mods/Sidebar.tsx:442
-#: src/settings/sections/Accounts.tsx:16
+#: src/settings/sections/Accounts.tsx:17
 msgid "GitHub"
 msgstr "GitHub"
 
@@ -8686,7 +8719,7 @@ msgstr "Recent changes"
 msgid "Delete the template {0}?"
 msgstr "Delete the template {0}?"
 
-#: src/settings/PrefControls.tsx:223
+#: src/settings/PrefControls.tsx:230
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
 
@@ -8766,7 +8799,7 @@ msgstr "In the same download"
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 
-#: src/profiles/EditProfileDialog.tsx:172
+#: src/profiles/EditProfileDialog.tsx:173
 msgid "Pickaxe"
 msgstr "Pickaxe"
 
@@ -8799,7 +8832,7 @@ msgstr "Maximise"
 msgid "Handle \"Mod Manager Download\" links"
 msgstr "Handle \"Mod Manager Download\" links"
 
-#: src/profiles/EditProfileDialog.tsx:451
+#: src/profiles/EditProfileDialog.tsx:457
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
@@ -8826,6 +8859,10 @@ msgstr "the mod"
 #: src/console/SearchRunsDialog.tsx:111
 msgid "Searching…"
 msgstr "Searching…"
+
+#: src/settings/sections/ItchAccount.tsx:49
+msgid "itch.io"
+msgstr "itch.io"
 
 #. placeholder {0}: users.length
 #: src/mods/LoadOrderTab.tsx:133
@@ -8991,7 +9028,7 @@ msgstr "Add to bundle"
 msgid "When a mod is on several sites, its card installs from the first one here."
 msgstr "When a mod is on several sites, its card installs from the first one here."
 
-#: src/profiles/EditProfileDialog.tsx:184
+#: src/profiles/EditProfileDialog.tsx:185
 msgid "Sparkles"
 msgstr "Sparkles"
 
@@ -9038,7 +9075,7 @@ msgid "Lets nearby Mortar users find this installation and exchange profile link
 msgstr "Lets nearby Mortar users find this installation and exchange profile links."
 
 #: src/game/ExportCollectionMenuItem.tsx:34
-#: src/settings/store.ts:139
+#: src/settings/store.ts:140
 #: src/shell/saveDiagnostics.ts:27
 msgid "Show file"
 msgstr "Show file"
@@ -9140,6 +9177,10 @@ msgstr "Play"
 msgid "{clean} clean"
 msgstr "{clean} clean"
 
+#: src/settings/sections/ItchAccount.tsx:77
+msgid "Kept in your system keyring. Create one on itch.io under Settings, API keys."
+msgstr "Kept in your system keyring. Create one on itch.io under Settings, API keys."
+
 #. placeholder {0}: item.name
 #: src/profiles/ProfilesPage.tsx:106
 msgid "Delete {0} permanently?"
@@ -9197,7 +9238,7 @@ msgstr "Beach farm"
 #: src/mods/ConfigEditor.tsx:239
 #: src/mods/ConfigPresets.tsx:134
 #: src/mods/SelectionBar.tsx:80
-#: src/profiles/EditProfileDialog.tsx:453
+#: src/profiles/EditProfileDialog.tsx:459
 #: src/profiles/LaunchPresetDialog.tsx:92
 #: src/templates/TemplateDialogs.tsx:70
 #: src/tools/ToolEditorDialog.tsx:140
@@ -9529,6 +9570,10 @@ msgstr "{name} was updated since this run and logged {errors}. First: {first}"
 #: src/mods/configMenuUi.tsx:61
 msgid "Pending"
 msgstr "Pending"
+
+#: src/settings/sections/ItchAccount.tsx:37
+msgid "itch.io rejected your API key"
+msgstr "itch.io rejected your API key"
 
 #. placeholder {0}: summary.failed
 #: src/settings/sections/DataStoreCheck.tsx:39
@@ -9905,7 +9950,7 @@ msgid "Move data folder"
 msgstr "Move data folder"
 
 #: src/game/ProfileMenuItems.tsx:223
-#: src/profiles/EditProfileDialog.tsx:414
+#: src/profiles/EditProfileDialog.tsx:420
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -9985,7 +10030,7 @@ msgstr "Could not abstain"
 msgid "Include {0}"
 msgstr "Include {0}"
 
-#: src/game/NewProfileDialog.tsx:60
+#: src/game/NewProfileDialog.tsx:70
 #: src/game/TemplateMenuItems.tsx:77
 msgid "Manage templates…"
 msgstr "Manage templates…"
@@ -10176,7 +10221,7 @@ msgstr "No game output yet"
 msgid "{0} left out"
 msgstr "{0} left out"
 
-#: src/game/NewProfileDialog.tsx:97
+#: src/game/NewProfileDialog.tsx:115
 msgid "Could not create the profile"
 msgstr "Could not create the profile"
 
@@ -10234,7 +10279,7 @@ msgstr "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 msgid "Could not repair the profile"
 msgstr "Could not repair the profile"
 
-#: src/game/NewProfileDialog.tsx:52
+#: src/game/NewProfileDialog.tsx:61
 msgid "Empty profile"
 msgstr "Empty profile"
 
@@ -10282,7 +10327,7 @@ msgstr "General"
 msgid "Report to author"
 msgstr "Report to author"
 
-#: src/profiles/EditProfileDialog.tsx:148
+#: src/profiles/EditProfileDialog.tsx:149
 #: src/settings/sections/Appearance.tsx:74
 msgid "Teal"
 msgstr "Teal"
@@ -10377,7 +10422,7 @@ msgstr "API requests"
 #: src/bundles/BundleRow.tsx:34
 #: src/bundles/dialogs.tsx:136
 #: src/game/Hero.tsx:261
-#: src/game/NewProfileDialog.tsx:85
+#: src/game/NewProfileDialog.tsx:103
 #: src/share/ShareDialog.tsx:91
 #: src/share/ShareDialog.tsx:194
 #: src/share/useImportFlow.ts:110
@@ -10512,7 +10557,7 @@ msgstr "Restored {0} to before that change"
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
-#: src/profiles/EditProfileDialog.tsx:211
+#: src/profiles/EditProfileDialog.tsx:212
 msgid "Icon"
 msgstr "Icon"
 
@@ -10577,6 +10622,10 @@ msgstr "Delete preset"
 #: src/settings/sections/General.tsx:213
 msgid "Tips"
 msgstr "Tips"
+
+#: src/game/NewProfileDialog.tsx:62
+msgid "Copy of {copyOf}"
+msgstr "Copy of {copyOf}"
 
 #: src/profiles/ProfilesPage.tsx:387
 msgid "From r2modman / Thunderstore…"
@@ -10824,7 +10873,7 @@ msgstr "Import from the game's Mods folder"
 msgid "{0} was blocked by your antivirus"
 msgstr "{0} was blocked by your antivirus"
 
-#: src/profiles/EditProfileDialog.tsx:164
+#: src/profiles/EditProfileDialog.tsx:165
 msgid "Leaf"
 msgstr "Leaf"
 
@@ -11289,7 +11338,7 @@ msgstr "Known good"
 msgid "Could not change how {0} links open"
 msgstr "Could not change how {0} links open"
 
-#: src/profiles/EditProfileDialog.tsx:168
+#: src/profiles/EditProfileDialog.tsx:169
 msgid "Fish"
 msgstr "Fish"
 
@@ -11528,9 +11577,17 @@ msgstr "Show SMAPI's own window on a direct launch"
 msgid "{0} · kept for rollback"
 msgstr "{0} · kept for rollback"
 
+#: src/settings/sections/ItchAccount.tsx:57
+msgid "Remove key"
+msgstr "Remove key"
+
 #: src/mods/DuplicateDialog.tsx:111
 msgid "Decide later"
 msgstr "Decide later"
+
+#: src/profiles/SeparateSavesRow.tsx:61
+msgid "Start with a copy of my current saves"
+msgstr "Start with a copy of my current saves"
 
 #: src/commandPalette/CommandPalette.tsx:221
 #: src/firstrunTour/TourPopover.tsx:73
