@@ -2,7 +2,6 @@ package smapi
 
 import (
 	"context"
-	"github.com/Rethunk-Tech/mortar/internal/components"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,6 +11,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/components"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 

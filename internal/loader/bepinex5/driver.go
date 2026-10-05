@@ -123,5 +123,8 @@ func (analyzer) ID() string { return ID }
 
 func (analyzer) Analyze(logs loader.Logs) []loader.Finding { return Analyze(logs.Loader, logs.Player) }
 
+// PlayerLogRole is the catalog path of Unity's Player.log, where exceptions thrown by plugins land.
+func (Loader) PlayerLogRole() string { return "unityLog" }
+
 // ConfigDirs is where BepInEx plugins keep their .cfg files.
 func (Loader) ConfigDirs() []string { return []string{"BepInEx/config"} }

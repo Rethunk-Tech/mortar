@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
 	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
 func TestReleasesComeFromTheGamesThunderstoreCommunity(t *testing.T) {
-	pack, err := os.ReadFile(buildPack(t, "4.3.0.0"))
+	pack, err := fsx.ReadFile(buildPack(t, "4.3.0.0"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func TestReleasesComeFromTheGamesThunderstoreCommunity(t *testing.T) {
 	if err := l.Fetch(ctx, g, "5.4.2304", dst); err != nil {
 		t.Fatal(err)
 	}
-	if got, _ := os.ReadFile(dst); string(got) != string(pack) {
+	if got, _ := fsx.ReadFile(dst); string(got) != string(pack) {
 		t.Fatal("downloaded file differs")
 	}
 	if _, err := l.Versions(ctx, components.GameInfo{Name: "No Community"}); err == nil {

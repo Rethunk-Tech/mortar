@@ -22,7 +22,7 @@ const (
 	lastReleases = 10
 )
 
-// InProfile: BepInEx's files sit in each profile's folder, not in the game's install.
+// InProfile marks that BepInEx's files sit in each profile's folder, not in the game's install.
 func (Loader) InProfile() {}
 
 // thunderstoreDriver is the registered Thunderstore source, so the pack is read from the index the rest of Mortar

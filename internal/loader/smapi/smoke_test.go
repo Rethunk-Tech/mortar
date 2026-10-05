@@ -2,10 +2,11 @@ package smapi
 
 import (
 	"context"
-	"github.com/Rethunk-Tech/mortar/internal/components"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/components"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 

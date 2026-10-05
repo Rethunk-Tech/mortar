@@ -2,7 +2,6 @@ package store
 
 import (
 	"errors"
-	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -10,6 +9,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 

@@ -102,6 +102,10 @@ type WithLogs interface {
 	Analyzers() []Analyzer
 }
 
+// WithPlayerLog is a loader whose analyzers also read the game's Unity player log, which the catalog places under
+// this path role.
+type WithPlayerLog interface{ PlayerLogRole() string }
+
 // WithConfig is a loader whose mods keep settings files in the profile that Mortar may edit.
 type WithConfig interface {
 	// ConfigDirs are the writable folders, relative to the profile's folder.
