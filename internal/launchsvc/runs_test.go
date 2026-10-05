@@ -256,7 +256,8 @@ func TestRecordStoresTheBepInExLogOfTheProfile(t *testing.T) {
 	if err := os.MkdirAll(logDir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	const body = "[Info   :   BepInEx] BepInEx 5.4.22 - Lethal Company\n[Error  :   BepInEx] Error loading [Foo]: boom\n"
+	const body = "[Info   :   BepInEx] BepInEx 5.4.22 - Lethal Company\n[Error  :   BepInEx] Error loading [Foo]: boom\n" +
+		"[Warning:   BepInEx] Something new\n"
 	if err := os.WriteFile(filepath.Join(logDir, "LogOutput.log"), []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -268,6 +269,9 @@ func TestRecordStoresTheBepInExLogOfTheProfile(t *testing.T) {
 	}
 	if got, err := svc.RunLog("lethal-company", p.ID, runs[0].ID); err != nil || got != body {
 		t.Fatalf("stored log = %q, %v", got, err)
+	}
+	if runs[0].Unclassified != 1 {
+		t.Fatalf("unclassified = %d, want 1", runs[0].Unclassified)
 	}
 }
 

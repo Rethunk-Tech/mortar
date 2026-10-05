@@ -1,0 +1,10 @@
+[Debug  :Mask Fixes] Transpiler (Mimic AI): Cache elevator script
+[Error  :Mask Fixes] Mimic kill transpiler failed
+[Info   :Mask Fixes] Mask Fixes v1.5.2 loaded
+[Info   :   BepInEx] Loading [Host Fixes 1.0.28]
+[Warning:  HarmonyX] AccessTools.DeclaredMethod: Could not find method for type GameNetcodeStuff.PlayerControllerB and name __rpc_handler_2013428264 and parameters 
+[Error  : Unity Log] ArgumentException: Undefined target method for patch method static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> HostFixes.Plugin+ServerRPCMessageHandlers+UpdatePlayerPositionServerRpc_Transpile::UseServerRpcParams(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instructions)
+Stack trace:
+HarmonyLib.PatchClassProcessor.PatchWithAttributes (System.Reflection.MethodBase& lastOriginal) (at <474744d65d8e460fa08cd5fd82b5d65f>:0)
+HarmonyLib.PatchClassProcessor.Patch () (at <474744d65d8e460fa08cd5fd82b5d65f>:0)
+Rethrow as HarmonyException: Patching exception in method null

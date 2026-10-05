@@ -24,6 +24,7 @@ import { BrokenFix } from './problemFix/BrokenFix.tsx'
 import { DamagedFix } from './problemFix/DamagedFix.tsx'
 import { DeprecatedFix } from './problemFix/DeprecatedFix.tsx'
 import { DuplicateFix } from './problemFix/DuplicateFix.tsx'
+import { LoadFailureFix } from './problemFix/LoadFailureFix.tsx'
 import { MissingFix } from './problemFix/MissingFix.tsx'
 import { PluginClashFix } from './problemFix/PluginClashFix.tsx'
 import { SettingFix } from './problemFix/SettingFix.tsx'
@@ -83,10 +84,12 @@ function PluginClashKind({ problem, button }: KindProps<'pluginClash'>) {
   return <PluginClashFix problem={problem} button={button} />
 }
 
-const NoFix = () => null
+function LoadFailureKind({ problem, button }: KindProps<'loadFailure'>) {
+  return <LoadFailureFix problem={problem} button={button} />
+}
 
 const problemFixes = {
-  loadFailure: NoFix,
+  loadFailure: LoadFailureKind,
   runError: RunErrorKind,
   duplicate: DuplicateKind,
   broken: BrokenKind,

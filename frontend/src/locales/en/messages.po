@@ -430,6 +430,10 @@ msgstr "Keep newer"
 msgid "Untrack mods"
 msgstr "Untrack mods"
 
+#: src/mods/problemFix/LoadFailureFix.tsx:52
+msgid "Reinstall loader"
+msgstr "Reinstall loader"
+
 #: src/mods/LoadOrderTab.tsx:100
 msgid "Required: {label}"
 msgstr "Required: {label}"
@@ -1955,7 +1959,7 @@ msgstr "Files added"
 msgid "Loading bundles…"
 msgstr "Loading bundles…"
 
-#: src/mods/problemFixButtons.tsx:222
+#: src/mods/problemFixButtons.tsx:225
 msgid "Forget"
 msgstr "Forget"
 
@@ -2328,7 +2332,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/overlayActions.ts:36
 #: src/mods/overlayActions.ts:100
 #: src/mods/problemFix/WinFix.tsx:51
-#: src/mods/problemFixButtons.tsx:112
+#: src/mods/problemFixButtons.tsx:115
 #: src/mods/SplitCombineItems.tsx:39
 #: src/mods/storeEntries.ts:60
 #: src/mods/storeEntries.ts:99
@@ -2884,7 +2888,7 @@ msgstr "Both set: {0}"
 msgid " · {0} more required"
 msgstr " · {0} more required"
 
-#: src/mods/problemFixButtons.tsx:236
+#: src/mods/problemFixButtons.tsx:239
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
@@ -3086,6 +3090,10 @@ msgstr "{count, plural, one {# error} other {# errors}}"
 msgid "Downloaded mods no profile uses"
 msgstr "Downloaded mods no profile uses"
 
+#: src/mods/problemText.ts:99
+msgid "Needs a newer loader"
+msgstr "Needs a newer loader"
+
 #. placeholder {0}: folded.count
 #: src/console/StartupTable.tsx:328
 msgid "{0, plural, one {# other mod} other {# other mods}}"
@@ -3172,7 +3180,7 @@ msgstr "{n, plural, one {# missing requirement} other {# missing requirements}}"
 msgid "Add to profile"
 msgstr "Add to profile"
 
-#: src/mods/problemFixButtons.tsx:250
+#: src/mods/problemFixButtons.tsx:253
 #: src/profiles/HealthDialog.tsx:137
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
@@ -3342,8 +3350,8 @@ msgstr "Custom categories"
 #: src/game/ProfileMenuItems.tsx:416
 #: src/mods/CategoryEditor.tsx:169
 #: src/mods/OldFilesCallouts.tsx:103
-#: src/mods/problemFixButtons.tsx:196
-#: src/mods/problemFixButtons.tsx:201
+#: src/mods/problemFixButtons.tsx:199
+#: src/mods/problemFixButtons.tsx:204
 #: src/profiles/HealthDialog.tsx:268
 #: src/profiles/LaunchPresetsBlock.tsx:53
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:63
@@ -3369,6 +3377,7 @@ msgstr "Not checked yet."
 #: src/mods/ModMenu.tsx:125
 #: src/mods/problemFix/AssetFix.tsx:67
 #: src/mods/problemFix/BrokenFix.tsx:86
+#: src/mods/problemFix/LoadFailureFix.tsx:60
 #: src/mods/runErrorFixButtons.tsx:48
 #: src/mods/SelectionBarActions.tsx:143
 #: src/mods/SlowStartupSection.tsx:56
@@ -3562,6 +3571,10 @@ msgstr "Local"
 msgid "Review mod updates"
 msgstr "Review mod updates"
 
+#: src/mods/problemText.ts:101
+msgid "Loader failed to start"
+msgstr "Loader failed to start"
+
 #: src/settings/sections/Downloads.tsx:133
 msgid "Download the extension"
 msgstr "Download the extension"
@@ -3569,6 +3582,10 @@ msgstr "Download the extension"
 #: src/profiles/EditProfileDialog.tsx:182
 msgid "Sun"
 msgstr "Sun"
+
+#: src/mods/problemFix/LoadFailureFix.tsx:29
+msgid "Find {dependency}"
+msgstr "Find {dependency}"
 
 #: src/settings/sections/GameSettings.tsx:62
 msgid "Reset game install?"
@@ -4105,6 +4122,7 @@ msgstr "Delete group {name}?"
 
 #: src/console/RunProblems.tsx:137
 #: src/loader/Banner.tsx:33
+#: src/mods/problemFix/LoadFailureFix.tsx:37
 #: src/mods/runErrorFixButtons.tsx:51
 #: src/mods/Sidebar.tsx:239
 #: src/mods/updateReview/EverywhereDialog.tsx:141
@@ -4199,7 +4217,7 @@ msgstr "Installed"
 msgid "Move mods into {0}"
 msgstr "Move mods into {0}"
 
-#: src/mods/problemFixButtons.tsx:200
+#: src/mods/problemFixButtons.tsx:203
 msgid "Mortar did not install this folder. It moves to Mortar's trash."
 msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 
@@ -5442,6 +5460,10 @@ msgstr "Skip for now"
 msgid "Config files"
 msgstr "Config files"
 
+#: src/mods/problemText.ts:95
+msgid "Older copy skipped"
+msgstr "Older copy skipped"
+
 #: src/settings/sections/GameSettings.tsx:64
 msgid "Reset install"
 msgstr "Reset install"
@@ -5689,7 +5711,7 @@ msgstr "Archives"
 msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr "{0, plural, one {# skipped} other {# skipped}}"
 
-#: src/mods/problemFixButtons.tsx:110
+#: src/mods/problemFixButtons.tsx:113
 msgid "Moved {folder} to Mortar's trash"
 msgstr "Moved {folder} to Mortar's trash"
 
@@ -6115,8 +6137,8 @@ msgstr "Pair a computer"
 msgid "Unity exception"
 msgstr "Unity exception"
 
-#: src/mods/problemFixButtons.tsx:246
-#: src/mods/problemFixButtons.tsx:251
+#: src/mods/problemFixButtons.tsx:249
+#: src/mods/problemFixButtons.tsx:254
 #: src/profiles/HealthDialog.tsx:268
 msgid "Revert"
 msgstr "Revert"
@@ -6157,6 +6179,10 @@ msgstr "Mods"
 #: src/settings/sections/DataStoreReport.tsx:300
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr "{0, plural, one {# file} other {# files}}"
+
+#: src/mods/problemText.ts:97
+msgid "Incompatible with another plugin"
+msgstr "Incompatible with another plugin"
 
 #: src/settings/prefCopy.ts:400
 msgid "Auto-retry failed downloads"
@@ -9687,7 +9713,7 @@ msgstr "Done ({0}): {1}"
 #: src/game/ProfileMenuItems.tsx:81
 #: src/mods/CategoryEditor.tsx:167
 #: src/mods/ConfigPresets.tsx:155
-#: src/mods/problemFixButtons.tsx:199
+#: src/mods/problemFixButtons.tsx:202
 #: src/profiles/LaunchPresetsBlock.tsx:195
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:73
 msgid "Delete {0}?"
@@ -10565,7 +10591,7 @@ msgid "Nothing new"
 msgstr "Nothing new"
 
 #. placeholder {0}: drift.key
-#: src/mods/problemFixButtons.tsx:249
+#: src/mods/problemFixButtons.tsx:252
 msgid "Revert {0}?"
 msgstr "Revert {0}?"
 
@@ -11024,6 +11050,10 @@ msgstr "Also in these profiles"
 msgid "Icon"
 msgstr "Icon"
 
+#: src/mods/problemText.ts:93
+msgid "A plugin it needs failed"
+msgstr "A plugin it needs failed"
+
 #. placeholder {0}: update.name
 #. placeholder {1}: update.version
 #. placeholder {2}: update.source
@@ -11406,6 +11436,10 @@ msgstr "Set up {0}"
 msgid "GOG via Minigalaxy"
 msgstr "GOG via Minigalaxy"
 
+#: src/mods/problemText.ts:103
+msgid "Plugin reported an error"
+msgstr "Plugin reported an error"
+
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:74
 msgid "This template will be deleted. Presets already copied into profiles stay."
 msgstr "This template will be deleted. Presets already copied into profiles stay."
@@ -11648,7 +11682,7 @@ msgid "Installers ask as usual; Premium accounts also get the curator's choices 
 msgstr "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 
 #: src/mods/problemFix/RestoreButton.tsx:17
-#: src/mods/problemFixButtons.tsx:213
+#: src/mods/problemFixButtons.tsx:216
 #: src/saves/BackupsDialog.tsx:224
 #: src/saves/SaveBackupsSection.tsx:63
 #: src/saves/SaveBackupsSection.tsx:140
@@ -12158,7 +12192,7 @@ msgstr "Sound volume ({value}%)"
 msgid "Reuse FOMOD choices"
 msgstr "Reuse FOMOD choices"
 
-#: src/mods/problemFixButtons.tsx:186
+#: src/mods/problemFixButtons.tsx:189
 msgid "Adopt"
 msgstr "Adopt"
 

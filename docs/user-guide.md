@@ -241,7 +241,12 @@ Each recorded run in the Console's run list also says how many of its log's warn
 
 #### Failed to load
 
-The loader's log shows that a plugin did not start. Its features will be missing in the game. The row quotes the log line; the usual causes are a wrong game version or a missing requirement.
+The loader's log shows that a plugin did not start. Its features will be missing in the game. The row quotes the log line; the usual causes are a wrong game version or a missing requirement. The button follows the cause:
+
+- **Find** searches for a plugin it needs that is not installed.
+- **Update** opens mod updates for a plugin built for other versions, one that failed to load, or one whose Harmony patches failed.
+- **Reinstall loader** for a plugin that needs a newer BepInEx, or when the loader itself failed to start.
+- **Disable** for an older copy skipped in favour of a newer one, a plugin incompatible with another installed one, one whose requirement failed, or one that keeps reporting errors.
 
 #### Setting suggestion
 

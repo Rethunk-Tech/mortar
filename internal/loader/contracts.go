@@ -79,6 +79,8 @@ type Finding struct {
 	// Plugin is the plugin as the log names it.
 	Plugin  string
 	Message string
+	// Dependency is the first plugin the failing one needs and lacks, when the log names one.
+	Dependency string
 	// Line is the 1-based line in the log the finding came from.
 	Line int
 	// Source is the log: LogOutput.log or Player.log.

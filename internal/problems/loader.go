@@ -23,7 +23,9 @@ type LoadFailure struct {
 	Plugin  string `json:"plugin"`
 	Kind    string `json:"kind"`
 	Message string `json:"message"`
-	Line    int    `json:"line"`
+	// Dependency is the plugin the failing one lacks, when the log names it.
+	Dependency string `json:"dependency,omitempty"`
+	Line       int    `json:"line"`
 }
 
 // loaderFailures runs the loader's log analyzers over its log in the profile and the Unity player log text, and attributes each finding to an enabled
@@ -51,7 +53,7 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 	byName := owners()
 	out := make([]LoadFailure, 0, len(found))
 	for _, f := range found {
-		lf := LoadFailure{Plugin: f.Plugin, Kind: f.Kind, Message: f.Message, Line: f.Line}
+		lf := LoadFailure{Plugin: f.Plugin, Kind: f.Kind, Message: f.Message, Dependency: f.Dependency, Line: f.Line}
 		if owner, ok := byName[strings.ToLower(f.Plugin)]; ok {
 			lf.Key, lf.ID, lf.Name = owner.Key, owner.ModID(), owner.Name
 		}

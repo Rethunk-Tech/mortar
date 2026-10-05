@@ -89,6 +89,18 @@ function loadKindText(kind: string): string {
       return i18n._(msg`Game version not supported`)
     case 'unity-exception':
       return i18n._(msg`Unity exception`)
+    case 'dependency-not-loaded':
+      return i18n._(msg`A plugin it needs failed`)
+    case 'duplicate-guid':
+      return i18n._(msg`Older copy skipped`)
+    case 'incompatible-plugin':
+      return i18n._(msg`Incompatible with another plugin`)
+    case 'loader-version':
+      return i18n._(msg`Needs a newer loader`)
+    case 'chainloader':
+      return i18n._(msg`Loader failed to start`)
+    case 'plugin-error':
+      return i18n._(msg`Plugin reported an error`)
     default:
       return kind
   }

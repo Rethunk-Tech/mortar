@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -318,7 +319,11 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		s.OnSavePlayed(g.ID(), profileID, folder)
 	}
 	stats := launch.Summarize(text)
+	ldr := cmp.Or(s.profileLoader(g.ID(), profileID), loaderID(g.ID()))
 	unclassified := launch.Unclassified(text)
+	if ldr == bepinex5.ID {
+		unclassified = bepinex5.Unclassified(text)
+	}
 	s.mu.Lock()
 	sess := s.logs[keyOf(g)]
 	s.mu.Unlock()
@@ -357,7 +362,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	}
 	run := Run{
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
-		DurationMs: ended.Sub(started).Milliseconds(), Loader: cmp.Or(s.profileLoader(g.ID(), profileID), loaderID(g.ID())), LoaderVersion: stats.SMAPI, GameVersion: stats.Game,
+		DurationMs: ended.Sub(started).Milliseconds(), Loader: ldr, LoaderVersion: stats.SMAPI, GameVersion: stats.Game,
 		Preset: sess.preset, Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
 		Unclassified: unclassified,
 	}

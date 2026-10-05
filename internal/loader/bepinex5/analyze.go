@@ -2,6 +2,7 @@ package bepinex5
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -15,25 +16,51 @@ const (
 	KindPatchException    = "patch-exception"
 	KindPreloader         = "preloader-patch"
 	KindUnityException    = "unity-exception"
+	// KindDependencyNotLoaded is a plugin skipped because a plugin it needs failed earlier in the same log.
+	KindDependencyNotLoaded = "dependency-not-loaded"
+	// KindDuplicateGUID is an older copy of a plugin skipped because a newer one with the same GUID loaded.
+	KindDuplicateGUID = "duplicate-guid"
+	// KindIncompatiblePlugin is a plugin that declares itself incompatible with another installed one.
+	KindIncompatiblePlugin = "incompatible-plugin"
+	// KindLoaderVersion is a plugin built for a newer BepInEx than the profile has.
+	KindLoaderVersion = "loader-version"
+	// KindChainloader is the chainloader itself failing, so no plugin loads.
+	KindChainloader = "chainloader"
+	// KindPluginError is an error a plugin logged under its own name.
+	KindPluginError = "plugin-error"
 )
 
 // Finding is one load failure read from a log.
 type Finding = loader.Finding
 
-// BepInEx's messages are written by BaseChainloader and AssemblyPatcher (BepInEx 5.4.x); the dependency messages have
-// a trailing "Install the listed plugin(s)" sentence from 5.4.22 on.
+// The chainloader and preloader messages are BepInEx 5.4.x's Chainloader and AssemblyPatcher format strings; the
+// dependency messages gained a trailing "Install the listed plugin(s)" sentence in some 5.4 builds.
 var (
-	errorLine       = regexp.MustCompile(`^\[(?:Error|Fatal)\s*:\s*([^\]]*)\] (.*)$`)
-	missingDeps     = regexp.MustCompile(`^Could not load \[([^\]]+)\] because it has missing dependencies: (.*?)(?:\. Install the listed.*)?$`)
-	incompatibleDep = regexp.MustCompile(`^Could not load \[([^\]]+)\] because (?:it has incompatible dependencies|the following dependencies are installed with an incompatible version): (.*?)(?:\. Update the listed.*)?$`)
-	requiresBepInEx = regexp.MustCompile(`^(?:Skipping|Could not load) \[([^\]]+)\].*requires BepInEx( version)?.*$`)
-	loadError       = regexp.MustCompile(`^Error loading \[([^\]]+)\]: (.*)$`)
-	preloaderFail   = regexp.MustCompile(`^(Failed to load patcher \[[^\]]+\]|Failed to run \[[^\]]+\] when patching \[[^\]]+\]|Failed to run (?:Initializer|Finalizer) of \S+|Could not run preloader!)(.*)$`)
-	harmonyError    = regexp.MustCompile(`^Error while running (?:static )?\S+ ([\w.]+)::\S+?\(.*\)\. Error: (.*)$`)
+	logLine          = regexp.MustCompile(`^\[(Error|Fatal|Warning)\s*:\s*([^\]]*)\] (.*)$`)
+	missingDeps      = regexp.MustCompile(`^Could not load \[([^\]]+)\] because it has missing dependencies: (.*?)(?:\. Install the listed.*)?$`)
+	incompatibleDep  = regexp.MustCompile(`^Could not load \[([^\]]+)\] because (?:it has incompatible dependencies|the following dependencies are installed with an incompatible version): (.*?)(?:\. Update the listed.*)?$`)
+	incompatibleWith = regexp.MustCompile(`^Could not load \[([^\]]+)\] because it is incompatible with: (.*)$`)
+	wrongBepInEx     = regexp.MustCompile(`^Plugin \[([^\]]+)\] targets a wrong version of BepInEx \(([^)]*)\)`)
+	requiresBepInEx  = regexp.MustCompile(`^(?:Skipping|Could not load) \[([^\]]+)\].*requires BepInEx( version)?.*$`)
+	newerExists      = regexp.MustCompile(`^Skipping \[([^\]]+)\] because a newer version exists \(([^)]*)\)$`)
+	depNotLoaded     = regexp.MustCompile(`^Skipping \[([^\]]+)\] because it has a dependency that was not loaded\.`)
+	loadError        = regexp.MustCompile(`^Error loading \[([^\]]+)\] ?: (.*)$`)
+	preloaderFail    = regexp.MustCompile(`^(Failed to load patcher \[[^\]]+\]|Failed to run \[[^\]]+\] when patching \[[^\]]+\]|Failed to run (?:Initializer|Finalizer) of \S+|Could not run preloader!)(.*)$`)
+	harmonyError     = regexp.MustCompile(`^Error while running (?:static )?\S+ ([\w.]+)::\S+?\(.*\)\. Error: (.*)$`)
+	// Harmony rejecting a patch while a plugin loads reaches the log through Unity's logger, naming the patch method.
+	patchTarget = regexp.MustCompile(`^\w+Exception: .*for patch method (?:static )?(?:\S+ )?([\w.+]+)::`)
+	patchWords  = regexp.MustCompile(`(?i)transpiler|prefix|postfix|harmony|patch`)
 
 	unityException = regexp.MustCompile(`^((?:[\w]+\.)*\w*Exception): (.*)$`)
 	stackFrame     = regexp.MustCompile(`^\s+at (?:\(wrapper [^)]*\) )?([\w.]+?)\.[^.\s(]+(?:<[^>]*>)? ?\(`)
 )
+
+// loaderSources are the log sources that are BepInEx, Harmony or Unity rather than a plugin speaking for itself.
+var loaderSources = []string{"BepInEx", "Preloader", "HarmonyX", "Unity Log"}
+
+// notices are loader warnings that need nothing from the player: a plugin limited to another game's process, a type
+// a plugin DLL holds that is not a plugin, and Harmony's lookup miss that precedes the patch failure it causes.
+var notices = regexp.MustCompile(`^Skipping \[[^\]]+\] because of process filters|^Skipping (?:over )?type \[|^AccessTools\.\w+: Could not find`)
 
 // frameworkNamespaces are code that is not a mod, so a stack naming only them blames no plugin.
 var frameworkNamespaces = []string{"System", "UnityEngine", "Unity", "GameNetcodeStuff", "Dissonance", "HarmonyLib", "MonoMod", "BepInEx", "Mono", "TMPro", "UnityEditor", "DMD", "Steamworks", "Netcode"}
@@ -44,39 +71,20 @@ func Analyze(logOutput, playerLog string) []Finding {
 	var out []Finding
 	seen := map[string]bool{}
 	add := func(f Finding) {
-		if key := f.Source + "|" + f.Kind + "|" + f.Plugin + "|" + f.Message; !seen[key] {
+		key := f.Source + "|" + f.Kind + "|" + f.Plugin + "|" + f.Message
+		if f.Kind == KindPluginError {
+			key = f.Source + "|" + f.Kind + "|" + f.Plugin
+		}
+		if !seen[key] {
 			seen[key] = true
 			out = append(out, f)
 		}
 	}
 	for i, line := range strings.Split(logOutput, "\n") {
-		m := errorLine.FindStringSubmatch(strings.TrimRight(line, "\r"))
-		if m == nil {
-			continue
+		if f, ok := classify(strings.TrimRight(line, "\r")); ok && f.Kind != "" {
+			f.Line, f.Source = i+1, "LogOutput.log"
+			add(f)
 		}
-		f := Finding{Line: i + 1, Source: "LogOutput.log"}
-		switch msg := m[2]; {
-		case missingDeps.MatchString(msg):
-			g := missingDeps.FindStringSubmatch(msg)
-			f.Kind, f.Plugin, f.Message = KindMissingDependency, g[1], "missing dependencies: "+g[2]
-		case incompatibleDep.MatchString(msg):
-			g := incompatibleDep.FindStringSubmatch(msg)
-			f.Kind, f.Plugin, f.Message = KindIncompatible, g[1], "incompatible dependencies: "+g[2]
-		case requiresBepInEx.MatchString(msg):
-			g := requiresBepInEx.FindStringSubmatch(msg)
-			f.Kind, f.Plugin, f.Message = KindIncompatible, g[1], msg
-		case loadError.MatchString(msg):
-			g := loadError.FindStringSubmatch(msg)
-			f.Kind, f.Plugin, f.Message = KindLoadException, g[1], g[2]
-		case preloaderFail.MatchString(msg):
-			f.Kind, f.Plugin, f.Message = KindPreloader, "", msg
-		case harmonyError.MatchString(msg):
-			g := harmonyError.FindStringSubmatch(msg)
-			f.Kind, f.Plugin, f.Message = KindPatchException, rootNamespace(g[1]), g[2]
-		default:
-			continue
-		}
-		add(f)
 	}
 	lines := strings.Split(playerLog, "\n")
 	for i, line := range lines {
@@ -89,6 +97,73 @@ func Analyze(logOutput, playerLog string) []Finding {
 		}
 	}
 	return out
+}
+
+// classify reads one LogOutput.log line. ok is false for a warning or error no rule recognises; a recognised line
+// that needs nothing from the player has an empty Kind.
+func classify(line string) (f Finding, ok bool) {
+	m := logLine.FindStringSubmatch(line)
+	if m == nil {
+		return Finding{}, true
+	}
+	level, source, msg := m[1], strings.TrimSpace(m[2]), m[3]
+	g := func(re *regexp.Regexp) []string { return re.FindStringSubmatch(msg) }
+	switch {
+	case g(missingDeps) != nil:
+		g := g(missingDeps)
+		dep, _, _ := strings.Cut(g[2], ",")
+		dep, _, _ = strings.Cut(strings.TrimSpace(dep), " ")
+		return Finding{Kind: KindMissingDependency, Plugin: g[1], Message: "missing dependencies: " + g[2], Dependency: dep}, true
+	case g(incompatibleDep) != nil:
+		g := g(incompatibleDep)
+		return Finding{Kind: KindIncompatible, Plugin: g[1], Message: "incompatible dependencies: " + g[2]}, true
+	case g(incompatibleWith) != nil:
+		g := g(incompatibleWith)
+		return Finding{Kind: KindIncompatiblePlugin, Plugin: g[1], Message: "incompatible with: " + g[2]}, true
+	case g(wrongBepInEx) != nil:
+		g := g(wrongBepInEx)
+		return Finding{Kind: KindLoaderVersion, Plugin: g[1], Message: msg}, true
+	case g(requiresBepInEx) != nil:
+		return Finding{Kind: KindIncompatible, Plugin: g(requiresBepInEx)[1], Message: msg}, true
+	case g(newerExists) != nil:
+		g := g(newerExists)
+		return Finding{Kind: KindDuplicateGUID, Plugin: g[1], Message: "a newer copy loaded instead: " + g[2]}, true
+	case g(depNotLoaded) != nil:
+		return Finding{Kind: KindDependencyNotLoaded, Plugin: g(depNotLoaded)[1], Message: msg}, true
+	case g(loadError) != nil:
+		g := g(loadError)
+		return Finding{Kind: KindLoadException, Plugin: g[1], Message: g[2]}, true
+	case g(preloaderFail) != nil:
+		return Finding{Kind: KindPreloader, Message: msg}, true
+	case g(harmonyError) != nil:
+		g := g(harmonyError)
+		return Finding{Kind: KindPatchException, Plugin: rootNamespace(g[1]), Message: g[2]}, true
+	case g(patchTarget) != nil:
+		return Finding{Kind: KindPatchException, Plugin: rootNamespace(g(patchTarget)[1]), Message: msg}, true
+	case level == "Fatal" && source == "BepInEx" && msg == "Error occurred starting the game":
+		return Finding{Kind: KindChainloader, Message: msg}, true
+	case notices.MatchString(msg):
+		return Finding{}, true
+	case level == "Error" && !slices.Contains(loaderSources, source):
+		kind := KindPluginError
+		if patchWords.MatchString(msg) {
+			kind = KindPatchException
+		}
+		return Finding{Kind: kind, Plugin: source, Message: msg}, true
+	}
+	return Finding{}, false
+}
+
+// Unclassified counts the warnings and errors in a LogOutput.log that no rule recognises, so a run record shows how
+// much of its log Mortar could not explain.
+func Unclassified(logOutput string) int {
+	n := 0
+	for line := range strings.Lines(logOutput) {
+		if _, ok := classify(strings.TrimRight(line, "\r\n")); !ok {
+			n++
+		}
+	}
+	return n
 }
 
 // blamedPlugin is the root namespace of the first stack frame that is not game, Unity or loader code.

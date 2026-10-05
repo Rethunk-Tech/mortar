@@ -13,6 +13,11 @@ func TestAnalyze(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Lines of a sandbox regress run of Lethal Company with Mask Fixes and Host Fixes.
+	regress, err := fsx.ReadFile("testdata/logoutput-regress.log")
+	if err != nil {
+		t.Fatal(err)
+	}
 	player := "NullReferenceException: Object reference not set to an instance of an object\n" +
 		"  at UnityEngine.Object.Instantiate (UnityEngine.Object original) [0x00000] in <aa>:0 \n" +
 		"  at LateCompany.Patches.ConnectionApproval_Patch.Postfix (Unity.Netcode.NetworkManager request) [0x00019] in <9c56>:0 \n" +
@@ -25,11 +30,11 @@ func TestAnalyze(t *testing.T) {
 		want              []Finding
 	}{
 		{"real log", string(sample), "", []Finding{
-			fnd(KindMissingDependency, "Youtube Boombox 1.5.0", "missing dependencies: LC_API", 4, "LogOutput.log"),
+			dep(fnd(KindMissingDependency, "Youtube Boombox 1.5.0", "missing dependencies: LC_API", 4, "LogOutput.log"), "LC_API"),
 			fnd(KindPatchException, "LateCompany", "System.NullReferenceException: Object reference not set to an instance of an object", 5, "LogOutput.log"),
 		}},
 		{"newer message wording", "[Error  :   BepInEx] Could not load [A 1.0.0] because it has missing dependencies: B (>=2.0.0). Install the listed plugin(s) and restart the game.\n", "", []Finding{
-			fnd(KindMissingDependency, "A 1.0.0", "missing dependencies: B (>=2.0.0)", 1, "LogOutput.log"),
+			dep(fnd(KindMissingDependency, "A 1.0.0", "missing dependencies: B (>=2.0.0)", 1, "LogOutput.log"), "B"),
 		}},
 		{"incompatible", "[Error  :   BepInEx] Could not load [A 1.0.0] because it has incompatible dependencies: B (found 1.0.0, requires 2.0.0)\n" +
 			"[Error  :   BepInEx] Could not load [C 1.0.0] because the following dependencies are installed with an incompatible version: BepInEx (found 5.4.21, requires >=5.4.22). Update the listed plugin(s) to a version that satisfies the requirement.\n", "", []Finding{
@@ -46,6 +51,26 @@ func TestAnalyze(t *testing.T) {
 		{"player log blames the first mod frame once", "", player, []Finding{
 			fnd(KindUnityException, "LateCompany", "NullReferenceException: Object reference not set to an instance of an object", 1, "Player.log"),
 		}},
+		{"regress run", string(regress), "", []Finding{
+			fnd(KindPatchException, "Mask Fixes", "Mimic kill transpiler failed", 2, "LogOutput.log"),
+			fnd(KindPatchException, "HostFixes", "ArgumentException: Undefined target method for patch method static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> HostFixes.Plugin+ServerRPCMessageHandlers+UpdatePlayerPositionServerRpc_Transpile::UseServerRpcParams(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instructions)", 6, "LogOutput.log"),
+		}},
+		{"chainloader messages", "[Warning:   BepInEx] Skipping [LateCompany 1.0.10] because a newer version exists (LateCompany 1.0.12)\n" +
+			"[Error  :   BepInEx] Could not load [MoreCompany 1.9.1] because it is incompatible with: me.swipez.melonloader.morecompany.lite\n" +
+			"[Warning:   BepInEx] Plugin [LethalLib 0.16.0] targets a wrong version of BepInEx (5.4.22.0) and might not work until you update\n" +
+			"[Warning:   BepInEx] Skipping [Youtube Boombox 1.5.0] because it has a dependency that was not loaded. See previous errors for details.\n" +
+			"[Error  :   BepInEx] Error loading [A 1.0.0] : Could not load type 'X' from assembly 'Y'.\n" +
+			"[Fatal  :   BepInEx] Error occurred starting the game\n" +
+			"[Error  :Brutal Company] Event table is empty\n[Error  :Brutal Company] Event table is still empty\n" +
+			"[Warning:   BepInEx] Skipping [Desktop Only 1.0.0] because of process filters (Lethal Company Server)\n", "", []Finding{
+			fnd(KindDuplicateGUID, "LateCompany 1.0.10", "a newer copy loaded instead: LateCompany 1.0.12", 1, "LogOutput.log"),
+			fnd(KindIncompatiblePlugin, "MoreCompany 1.9.1", "incompatible with: me.swipez.melonloader.morecompany.lite", 2, "LogOutput.log"),
+			fnd(KindLoaderVersion, "LethalLib 0.16.0", "Plugin [LethalLib 0.16.0] targets a wrong version of BepInEx (5.4.22.0) and might not work until you update", 3, "LogOutput.log"),
+			fnd(KindDependencyNotLoaded, "Youtube Boombox 1.5.0", "Skipping [Youtube Boombox 1.5.0] because it has a dependency that was not loaded. See previous errors for details.", 4, "LogOutput.log"),
+			fnd(KindLoadException, "A 1.0.0", "Could not load type 'X' from assembly 'Y'.", 5, "LogOutput.log"),
+			fnd(KindChainloader, "", "Error occurred starting the game", 6, "LogOutput.log"),
+			fnd(KindPluginError, "Brutal Company", "Event table is empty", 7, "LogOutput.log"),
+		}},
 		{"nothing wrong", "[Info   :   BepInEx] Chainloader started\n", "Loading player data\n", nil},
 	}
 	for _, c := range cases {
@@ -60,6 +85,21 @@ func TestAnalyze(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func dep(f Finding, dependency string) Finding {
+	f.Dependency = dependency
+	return f
+}
+
+func TestUnclassified(t *testing.T) {
+	log := "[Warning:  HarmonyX] AccessTools.DeclaredMethod: Could not find method for type X and name y and parameters \n" +
+		"[Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object\n" +
+		"[Warning:   BepInEx] Something BepInEx has not said before\n" +
+		"[Error  :   BepInEx] Could not load [A 1.0.0] because it has missing dependencies: B\n"
+	if n := Unclassified(log); n != 2 {
+		t.Fatalf("Unclassified = %d, want 2", n)
 	}
 }
 
