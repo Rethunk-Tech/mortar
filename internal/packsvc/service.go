@@ -92,6 +92,10 @@ func gameByThunderstoreKey(slug string) (string, bool) {
 type LocalProfile struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
+	// Source is the manager that keeps the profile: "r2modman" or "Gale".
+	Source string `json:"source"`
+	// Mods counts its packages; 0 when the profile could not be read.
+	Mods int `json:"mods"`
 }
 
 // LocalProfiles lists the game's profiles in the data folders of r2modman (the folders below
@@ -115,7 +119,7 @@ func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
 		for _, e := range entries {
 			dir := filepath.Join(root, e.Name())
 			if isProfile(dir) {
-				out = append(out, LocalProfile{Name: e.Name(), Path: dir})
+				out = append(out, s.local(e.Name(), dir, "r2modman"))
 			}
 		}
 	}
@@ -130,12 +134,17 @@ func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
 			}
 			for _, p := range all {
 				if p.Slug == src.Key {
-					out = append(out, LocalProfile{Name: p.Name, Path: p.Path})
+					out = append(out, s.local(p.Name, p.Path, "Gale"))
 				}
 			}
 		}
 	}
 	return out, nil
+}
+
+func (s *Service) local(name, path, from string) LocalProfile {
+	d, _ := s.read(context.Background(), Source{Path: path})
+	return LocalProfile{Name: name, Path: path, Source: from, Mods: len(d.Packages)}
 }
 
 // Preview reads the pack without importing it.

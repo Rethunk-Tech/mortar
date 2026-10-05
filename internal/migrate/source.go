@@ -17,4 +17,6 @@ type SourceInfo struct {
 type ProfileInfo struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	// Mods counts the mods the profile would import.
+	Mods int `json:"mods"`
 }

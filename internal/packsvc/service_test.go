@@ -119,7 +119,7 @@ func TestLocalProfilesListsTheGamesR2modmanProfiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	got, err := (&Service{}).LocalProfiles("lethal-company")
-	if err != nil || len(got) != 1 || got[0].Name != "Friends" || got[0].Path != filepath.Join(profiles, "Friends") {
+	if err != nil || len(got) != 1 || got[0].Name != "Friends" || got[0].Path != filepath.Join(profiles, "Friends") || got[0].Source != "r2modman" || got[0].Mods != 1 {
 		t.Fatalf("LocalProfiles = %+v, %v", got, err)
 	}
 	if got, _ := (&Service{}).LocalProfiles("stardew"); len(got) != 0 {

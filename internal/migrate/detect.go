@@ -122,7 +122,7 @@ func previewInstallation(install installation, id string) (ProfilePreview, error
 func profileInfos(previews []ProfilePreview) []ProfileInfo {
 	out := make([]ProfileInfo, 0, len(previews))
 	for _, preview := range previews {
-		out = append(out, ProfileInfo{ID: preview.ID, Name: preview.Name})
+		out = append(out, ProfileInfo{ID: preview.ID, Name: preview.Name, Mods: len(preview.Mods)})
 	}
 	return out
 }
