@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -17,6 +18,13 @@ type Service struct {
 	ShowAdult func() bool
 	// SourceOrder is the game's preferred source ids, first first; nil means catalog order.
 	SourceOrder func(game string) []string
+	// Compat returns the game's compatibility list lookup, or nil when the game has none.
+	Compat func(game string) func(ctx context.Context) (meta.CompatIndex, error)
+}
+
+// HasCompat reports whether the game has a compatibility list, so its mods can be marked broken.
+func (s *Service) HasCompat(game string) bool {
+	return s.Compat != nil && s.Compat(game) != nil
 }
 
 // NewService returns a Service that marks hits already on the named profile.
@@ -29,6 +37,9 @@ func (s *Service) Search(ctx context.Context, game, sourceID, text string, page 
 	c := &Client{Version: s.Version, Installed: s.installed(game, profileID), ShowAdult: s.ShowAdult != nil && s.ShowAdult()}
 	if s.SourceOrder != nil {
 		c.Prefer = s.SourceOrder(game)
+	}
+	if s.Compat != nil {
+		c.Compat = s.Compat(game)
 	}
 	return c.Search(ctx, game, sourceID, text, page, filter)
 }

@@ -39,6 +39,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/loadersvc"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
@@ -670,6 +671,16 @@ func run() error {
 
 	browseSvc := browse.NewService(version, profileSvc)
 	browseSvc.ShowAdult = func() bool { return store.Get().ShowAdultContent }
+	browseSvc.Compat = func(game string) func(ctx context.Context) (meta.CompatIndex, error) {
+		info, ok := components.BundledGame(game)
+		if !ok {
+			return nil
+		}
+		if st := metadata.For(modMeta, info.Metadata).Status; st != nil {
+			return st.CompatList
+		}
+		return nil
+	}
 	browseSvc.SourceOrder = func(game string) []string {
 		return strings.FieldsFunc(store.Get().GamePrefs(game).SourceOrder, func(r rune) bool { return r == ',' })
 	}

@@ -8,6 +8,7 @@ interface BrowsePageResult {
   // A search across every source sets pages (its largest source's page count) and names sources that did not answer.
   pages?: number
   failed?: string[]
+  hidden?: number
 }
 
 interface BrowseSource {
@@ -30,6 +31,9 @@ interface BrowseFilter {
   include: string[]
   exclude: string[]
   sort: string
+  installed: string
+  obsolete: string
+  broken: string
 }
 
 type BrowseSearch = (query: BrowseQuery) => Promise<BrowsePageResult>
@@ -38,6 +42,8 @@ interface BrowsePageProps {
   game: string
   profileID: string
   premium: boolean
+  // Whether the game has a compatibility list, which the Broken row needs.
+  hasCompat: boolean
   sources: BrowseSource[]
   search: BrowseSearch
   categories: (game: string, source: string) => Promise<string[]>

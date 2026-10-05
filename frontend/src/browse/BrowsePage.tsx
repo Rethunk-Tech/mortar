@@ -2,19 +2,25 @@ import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Card, Chip, Pagination, Skeleton, Typography } from '@mui/material'
 import { CloudOff, Download, ExternalLink, Plus, Search, SearchX } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { PrefSegmented } from '../settings/PrefControls.tsx'
+import { persist } from '../settings/persist.ts'
+import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { type InlineError, inlineError } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { BrowseFilters } from './BrowseFilters.tsx'
+import type { BrowseModes } from './browseModes.ts'
+import { formatModes, parseModes } from './browseModes.ts'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
 import { CardProgress } from './CardProgress.tsx'
@@ -34,6 +40,7 @@ const CARD_MIN_PX = 340
 const SKELETON_KEYS = ['a', 'b', 'c', 'd', 'e', 'f']
 const ICON_SIZE = 40
 const STALE_OPACITY = 0.6
+const GRAY_OPACITY = 0.5
 
 function searchHint(source: string, premium: boolean): string {
   if (source === ALL) {
@@ -79,10 +86,18 @@ interface BrowseResult {
   items: BrowseItem[]
   pages?: number
   failed?: string[]
+  hidden?: number
 }
 
 const EMPTY_RESULT: BrowseResult = { total: 0, items: [] }
-const NO_FILTER: BrowseFilter = { include: [], exclude: [], sort: '' }
+const NO_FILTER: BrowseFilter = {
+  include: [],
+  exclude: [],
+  sort: '',
+  installed: '',
+  obsolete: '',
+  broken: '',
+}
 
 // pagedTotal is the result count paging should assume: a search across sources pages by its largest source.
 function pagedTotal(r: BrowseResult): number {
@@ -95,7 +110,10 @@ function useBrowseQuery({
   search,
   sources,
 }: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources'>) {
-  const filter = useBrowseView((s) => s.filters[game]) ?? NO_FILTER
+  const stored = useBrowseView((s) => s.filters[game]) ?? NO_FILTER
+  const saved = useSettings((s) => s.games?.[game]?.browseFilters ?? '')
+  const modes = useMemo(() => parseModes(saved), [saved])
+  const filter = useMemo(() => ({ ...stored, ...modes }), [stored, modes])
   const [chosen, setSource] = useState(ALL)
   const merged = sources.length > 1
   const known = sources.some((s) => s.id === chosen) || (chosen === ALL && merged)
@@ -157,6 +175,7 @@ function useBrowseQuery({
 
   return {
     filter,
+    modes,
     source,
     setSource,
     draft,
@@ -183,13 +202,16 @@ function BrowsePage({
   addGitHub,
   addPackage,
   addDirect,
+  hasCompat,
 }: BrowsePageProps) {
   const { t } = useLingui()
+  const push = useToasts((s) => s.push)
   const sourceNames = new Map(searchable.map((s) => [s.id, s.name]))
   const view = useBrowseView((s) => s.view)
   const setFilter = useBrowseView((s) => s.setFilter)
   const {
     filter,
+    modes,
     source,
     setSource,
     draft,
@@ -258,6 +280,7 @@ function BrowsePage({
       <>
         <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
           {plural(result.total, { one: '# result', other: '# results' })}
+          {result.hidden ? ` · ${t`${result.hidden} hidden`}` : ''}
           {result.failed && result.failed.length > 0
             ? ` · ${t`${result.failed.join(', ')} did not answer`}`
             : ''}
@@ -279,6 +302,7 @@ function BrowsePage({
               addGitHub={addGitHub}
               addPackage={addPackage}
               addDirect={addDirect}
+              modes={modes}
               profileID={profileID}
               sourceNames={sourceNames}
             />
@@ -314,6 +338,16 @@ function BrowsePage({
         filter={filter}
         onFilter={(next) => {
           setFilter(game, next)
+          setPage(FIRST_PAGE)
+        }}
+        modes={modes}
+        hasCompat={hasCompat}
+        onModes={(next) => {
+          persist(
+            () => SetByKey('browseFilters', formatModes(next), game),
+            push,
+            t`Could not save that setting`,
+          )
           setPage(FIRST_PAGE)
         }}
       />
@@ -457,6 +491,7 @@ function ResultCard({
   addPackage,
   addDirect,
   profileID,
+  modes,
   sourceNames,
 }: {
   row: boolean
@@ -468,6 +503,7 @@ function ResultCard({
   addPackage: (id: string) => void
   addDirect: (source: string, id: string) => void
   profileID: string
+  modes: BrowseModes
   sourceNames: Map<string, string>
 }) {
   const { t } = useLingui()
@@ -489,7 +525,9 @@ function ResultCard({
   const live = cardState(items, source, id, profileID)
   // A free account's click on Mod Manager Download is not ours to see; the card waits for its nxm item.
   const shown = live.kind === 'idle' && openedFiles ? ({ kind: 'waiting-nexus' } as const) : live
-  if (shown.kind !== 'idle') {
+  if (item.loader) {
+    action = <Chip size="small" label={t`Loader`} title={t`Mortar installs the loader for you.`} />
+  } else if (shown.kind !== 'idle') {
     action = <CardProgress state={shown} />
   } else if (installed) {
     action = <Chip size="small" label={t`In this profile`} />
@@ -543,6 +581,12 @@ function ResultCard({
     )
   }
   const picturePx = row ? ROW_PICTURE_PX : PICTURE_PX
+  // Gray out dims the mod's picture and text; the action and its chip stay readable.
+  const gray =
+    (modes.installed === 'gray' && installed) ||
+    (modes.obsolete === 'gray' && item.obsolete) ||
+    (modes.broken === 'gray' && item.broken)
+  const dim = gray ? GRAY_OPACITY : 1
   return (
     <Card
       sx={{
@@ -561,6 +605,7 @@ function ResultCard({
             height: picturePx,
             flexShrink: 0,
             borderRadius: '4px',
+            opacity: dim,
             bgcolor: 'var(--mortar-raised)',
           }}
         />
@@ -576,10 +621,20 @@ function ResultCard({
             flexShrink: 0,
             objectFit: 'cover',
             borderRadius: '4px',
+            opacity: dim,
           }}
         />
       )}
-      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0.25,
+          opacity: dim,
+        }}
+      >
         <Typography noWrap={true} title={name} sx={{ fontSize: 15, fontWeight: 600 }}>
           {name}
         </Typography>

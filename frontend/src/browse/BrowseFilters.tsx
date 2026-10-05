@@ -1,6 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Autocomplete, Box, TextField } from '@mui/material'
 import { PrefSelect } from '../settings/PrefControls.tsx'
+import { BrowseShow } from './BrowseShow.tsx'
+import type { BrowseModes } from './browseModes.ts'
 import type { BrowseFilter } from './browseTypes.ts'
 
 const MIN_PICKER_PX = 180
@@ -55,10 +57,16 @@ function BrowseFilters({
   categories,
   filter,
   onFilter,
+  modes,
+  onModes,
+  hasCompat,
 }: {
   categories: string[]
   filter: BrowseFilter
   onFilter: (next: BrowseFilter) => void
+  modes: BrowseModes
+  onModes: (next: BrowseModes) => void
+  hasCompat: boolean
 }) {
   const { t } = useLingui()
   const none = categories.length === 0
@@ -81,6 +89,7 @@ function BrowseFilters({
         disabled={none}
         title={title}
       />
+      <BrowseShow modes={modes} onModes={onModes} hasCompat={hasCompat} />
       <PrefSelect
         label={t`Sort`}
         value={filter.sort}

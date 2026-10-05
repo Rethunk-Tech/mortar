@@ -79,6 +79,11 @@ type Item struct {
 	Alts []Alt `json:"alts,omitempty"`
 	// Adult marks a mod its site flags as adult content; browse hides it unless the player opted in.
 	Adult bool `json:"adult"`
+	// Obsolete marks a mod its author or site calls obsolete or deprecated, and Broken one the game's compatibility
+	// list calls broken; Loader marks the game's mod loader itself, which Mortar installs apart from profiles.
+	Obsolete bool `json:"obsolete"`
+	Broken   bool `json:"broken"`
+	Loader   bool `json:"loader"`
 }
 
 // Alt is the same mod on another source: where to open it and install it from.
@@ -92,8 +97,10 @@ type Alt struct {
 // Page is one slice of search hits. A merged search across sources also sets Pages, the page count of its largest
 // source, and Failed, the names of sources that did not answer.
 type Page struct {
-	Total  int      `json:"total"`
-	Pages  int      `json:"pages,omitempty"`
+	Total int `json:"total"`
+	Pages int `json:"pages,omitempty"`
+	// Hidden counts hits on this page the player's browse filters left out; Total still counts them.
+	Hidden int      `json:"hidden,omitempty"`
 	Items  []Item   `json:"items"`
 	Failed []string `json:"failed,omitempty"`
 }

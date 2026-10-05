@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 )
@@ -37,7 +38,19 @@ type Filter struct {
 	Include []string `json:"include"`
 	Exclude []string `json:"exclude"`
 	Sort    string   `json:"sort"`
+	// Installed, Obsolete and Broken say what to do with mods in the open profile, marked obsolete, or marked broken:
+	// ModeOff (or empty) keeps them unmarked, ModeGray keeps them for the window to dim, ModeHide leaves them out.
+	Installed string `json:"installed"`
+	Obsolete  string `json:"obsolete"`
+	Broken    string `json:"broken"`
 }
+
+// What a Filter does with a kind of mod.
+const (
+	ModeOff  = "off"
+	ModeGray = "gray"
+	ModeHide = "hide"
+)
 
 // Client searches a game's sources. Version names Mortar to the sites.
 type Client struct {
@@ -47,6 +60,8 @@ type Client struct {
 	ShowAdult bool
 	// Prefer lists source ids that rank ahead of the rest of the game's sources, which keep catalog order.
 	Prefer []string
+	// Compat is the game's compatibility list; nil when the game has none, so nothing is marked broken.
+	Compat func(ctx context.Context) (meta.CompatIndex, error)
 }
 
 // Search returns one page of mods for game from the source matching text.
@@ -92,6 +107,7 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 		}
 		answered = append(answered, pages[i])
 		merged.Total += pages[i].Total
+		merged.Hidden += pages[i].Hidden
 		merged.Pages = max(merged.Pages, (pages[i].Total+source.PageSize-1)/source.PageSize)
 	}
 	if len(answered) == 0 {
@@ -204,6 +220,8 @@ func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID,
 		result.Total = max(result.Total-(before-len(result.Items)), 0)
 	}
 	c.markInstalled(result.Items)
+	c.mark(ctx, info, result.Items)
+	c.applyModes(&result, f)
 	return result, nil
 }
 

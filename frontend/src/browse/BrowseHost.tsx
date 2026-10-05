@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   Categories,
+  HasCompat,
   Search,
   SearchableSources,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
@@ -20,6 +21,10 @@ async function categoryNames(game: string, source: string): Promise<string[]> {
 function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
   const premium = useNexus((state) => state.premium)
   const [sources, setSources] = useState<{ id: string; name: string }[]>([])
+  const [hasCompat, setHasCompat] = useState(false)
+  useEffect(() => {
+    HasCompat(game).then(setHasCompat).catch(reportUnexpected)
+  }, [game])
   useEffect(() => {
     SearchableSources(game)
       .then((ids) => setSources(ids ?? []))
@@ -38,6 +43,7 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       total: result.total,
       items: result.items ?? [],
       pages: result.pages ?? 0,
+      hidden: result.hidden ?? 0,
       failed: result.failed ?? [],
     }
   }
@@ -46,6 +52,7 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       game={game}
       profileID={profileID}
       premium={premium}
+      hasCompat={hasCompat}
       sources={sources}
       search={search}
       categories={categoryNames}
