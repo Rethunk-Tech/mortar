@@ -6,7 +6,7 @@ import { useToasts } from '../toasts/store.ts'
 
 interface ImportBatch {
   name: string
-  total: number
+  watch: BatchWatch
   pendingSettings: number
   showFailed: (batchId: string) => void
 }
@@ -24,38 +24,61 @@ function importCountsLine(counts: SettledImportCounts) {
     .join(', ')
 }
 
-export interface SettledImportCounts {
+interface SettledImportCounts {
   installed: number
   failed: number
   skipped: number
 }
 
-export function settledImportCounts(
-  items: readonly Pick<Item, 'batchId' | 'state'>[],
-  batchId: string,
-  total: number,
-): SettledImportCounts | undefined {
-  const rows = items.filter((item) => item.batchId === batchId)
-  if (rows.length < total || rows.some((item) => !settled.has(item.state))) {
-    return
+type Row = Pick<Item, 'id' | 'state'>
+
+/** Reads a batch's queue snapshots and returns its counts once every item has settled. */
+type BatchWatch = (items: readonly Row[]) => SettledImportCounts | undefined
+
+/**
+ * Follows a batch by the ids of the queue items Add returned. The queue drops its oldest finished items, so an
+ * item that was listed and then is gone counts as the last state seen, or as skipped when it went unfinished.
+ */
+export function watchBatch(ids: readonly string[]): BatchWatch {
+  const want = new Set(ids)
+  const last = new Map<string, string>()
+  return (items) => {
+    const listed = new Set<string>()
+    for (const item of items) {
+      if (want.has(item.id)) {
+        last.set(item.id, item.state)
+        listed.add(item.id)
+      }
+    }
+    const states: string[] = []
+    for (const id of want) {
+      const state = last.get(id)
+      if (state === undefined) {
+        return
+      }
+      states.push(listed.has(id) || settled.has(state) ? state : 'skipped')
+    }
+    if (states.some((state) => !settled.has(state))) {
+      return
+    }
+    const installed = states.filter((state) => state === 'done').length
+    const failed = states.filter((state) => state === 'failed').length
+    return { installed, failed, skipped: states.length - installed - failed }
   }
-  const installed = rows.filter((item) => item.state === 'done').length
-  const failed = rows.filter((item) => item.state === 'failed').length
-  return { installed, failed, skipped: rows.length - installed - failed }
 }
 
 export function trackImport(
   result: Result,
   showFailed: (batchId: string) => void,
   pendingSettings: number,
-  current?: readonly Pick<Item, 'batchId' | 'state'>[],
+  current?: readonly Row[],
 ) {
-  if (!result.batchId || result.queued <= 0) {
+  if (!(result.batchId && result.items?.length)) {
     return
   }
   batches.set(result.batchId, {
     name: result.profile.name,
-    total: result.queued,
+    watch: watchBatch(result.items),
     pendingSettings,
     showFailed,
   })
@@ -68,9 +91,9 @@ export function isTrackedImportBatch(batchId: string): boolean {
   return batchId !== '' && batches.has(batchId)
 }
 
-export function observeImportState(items: readonly Pick<Item, 'batchId' | 'state'>[]) {
+export function observeImportState(items: readonly Row[]) {
   for (const [batchId, batch] of batches) {
-    const counts = settledImportCounts(items, batchId, batch.total)
+    const counts = batch.watch(items)
     if (counts) {
       useToasts.getState().push({
         kind: counts.failed > 0 ? 'warning' : 'success',

@@ -656,6 +656,10 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 			if r.Overlay != nil {
 				it.Overlay = r.Overlay
 			}
+			// The newest batch to want the file waits on it, and its install joins that batch's history.
+			if r.BatchID != "" {
+				it.BatchID = r.BatchID
+			}
 			log.Printf("queue: mod %d file %d %s joined existing item %s (%s)", r.ModID, r.FileID, r.Repo, it.ID, it.State)
 			out = append(out, *it)
 			continue

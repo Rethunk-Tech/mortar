@@ -57,3 +57,22 @@ func TestNexusSecondMainFileCanStayASeparateEntry(t *testing.T) {
 	}
 	f.leftovers()
 }
+
+func TestAWantJoiningAFailedItemTakesItsBatch(t *testing.T) {
+	f := newFixture(t)
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	f.s.mu.Lock()
+	f.s.items[0].State = StateFailed
+	f.s.mu.Unlock()
+	again := req(10)
+	again.BatchID = "update-all"
+	items, err := f.s.Add(t.Context(), []Request{again})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if items[0].BatchID != "update-all" || items[0].State != StateQueued {
+		t.Fatalf("joined item = batch %q, state %s", items[0].BatchID, items[0].State)
+	}
+}

@@ -595,6 +595,8 @@ type Result struct {
 	Profile profile.Profile `json:"profile"`
 	Queued  int             `json:"queued"`
 	BatchID string          `json:"batchId,omitempty"`
+	// Items are the ids of the queue items the import waits on, dependencies included.
+	Items []string `json:"items"`
 	// Collection is set when a collection import used the curator's archive.
 	Collection *CollectionApplied `json:"collection,omitempty"`
 }
@@ -857,13 +859,18 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	for i := range reqs {
 		reqs[i].Profile, reqs[i].BatchID = profileID, batchID
 	}
+	res.Items = []string{}
 	if len(reqs) > 0 {
-		if _, err := s.d.Queue.Add(ctx, reqs); err != nil {
+		items, err := s.d.Queue.Add(ctx, reqs)
+		if err != nil {
 			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
 			if created {
 				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
 			}
 			return Result{}, err
+		}
+		for _, it := range items {
+			res.Items = append(res.Items, it.ID)
 		}
 	} else if batchID != "" {
 		_ = s.d.Profiles.CloseHistoryBatch(game, profileID)

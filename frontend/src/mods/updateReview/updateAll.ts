@@ -3,9 +3,9 @@ import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/in
 import { Baseline } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { RetryFailed } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../../i18n/index.ts'
-import { download, type Want } from '../../queue/actions.ts'
+import { queueWants, type Want } from '../../queue/actions.ts'
 import { useQueue } from '../../queue/store.ts'
-import { settledImportCounts } from '../../share/importCompletion.ts'
+import { watchBatch } from '../../share/importCompletion.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { installableUpdate } from '../lookup.ts'
 import { undoAll } from './undoAll.ts'
@@ -63,16 +63,16 @@ async function updateAll(
 ): Promise<boolean> {
   const beforeId = await Baseline(game, profileId)
   const batchId = crypto.randomUUID()
-  if (
-    !(await download(
-      wants.map((w) => ({ ...w, batchId })),
-      true,
-    ))
-  ) {
+  const items = await queueWants(
+    wants.map((w) => ({ ...w, batchId })),
+    true,
+  )
+  if (!items) {
     return false
   }
+  const watch = watchBatch(items.map((item) => item.id))
   const stop = useQueue.subscribe((s) => {
-    const counts = settledImportCounts(s.state.items, batchId, wants.length)
+    const counts = watch(s.state.items)
     if (counts) {
       stop()
       summarize({ game, profileId, beforeId }, counts, needChoice)
