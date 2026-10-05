@@ -86,7 +86,7 @@ func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessag
 	for _, vm := range staged {
 		byPath[filepath.Clean(vm.Path)] = append(byPath[filepath.Clean(vm.Path)], vm)
 	}
-	modIDs := make(map[string]bool, len(mods)+len(selected.ModState))
+	modIDs := make(map[string]bool)
 	for _, vm := range mods {
 		modIDs[vm.ID] = true
 	}
