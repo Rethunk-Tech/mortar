@@ -20,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -100,6 +101,25 @@ type GameInfo struct {
 	Stores  GameStores   `json:"stores"`
 	Loaders []GameLoader `json:"loaders"`
 	Sources []GameSource `json:"sources"`
+	// Templates are starter profiles offered when creating one: a named list of packages, each queued through the
+	// normal download path.
+	Templates []StarterTemplate `json:"templates,omitempty"`
+}
+
+// StarterTemplate is a built-in starting set of mods for a game.
+type StarterTemplate struct {
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Packages    []TemplatePackage `json:"packages"`
+}
+
+// TemplatePackage names one mod by the source that serves it: a Nexus mod id, a GitHub "owner/repo", or a
+// Thunderstore "Namespace-Name". Name is the label shown before it is downloaded.
+type TemplatePackage struct {
+	Source string `json:"source"`
+	Ref    string `json:"ref"`
+	Name   string `json:"name"`
 }
 
 // ImportIDs name a game to the managers whose profiles Mortar imports: Vortex's game id (its game extension's
@@ -286,6 +306,30 @@ func (g GameInfo) Validate() error {
 			return fmt.Errorf("game %q lists source %q more than once", g.ID, s.ID)
 		}
 		sources[s.ID] = struct{}{}
+	}
+	return g.validateTemplates(sources)
+}
+
+func (g GameInfo) validateTemplates(sources map[string]struct{}) error {
+	seen := map[string]struct{}{}
+	for _, t := range g.Templates {
+		if t.ID == "" || t.Name == "" || len(t.Packages) == 0 {
+			return fmt.Errorf("game %q has a template without an id, a name or packages", g.ID)
+		}
+		if _, ok := seen[t.ID]; ok {
+			return fmt.Errorf("game %q lists template %q more than once", g.ID, t.ID)
+		}
+		seen[t.ID] = struct{}{}
+		for _, p := range t.Packages {
+			if _, ok := sources[p.Source]; !ok || p.Ref == "" || p.Name == "" {
+				return fmt.Errorf("game %q template %q has a package with no known source, ref or name", g.ID, t.ID)
+			}
+			if p.Source == "nexus" {
+				if n, err := strconv.Atoi(p.Ref); err != nil || n < 1 {
+					return fmt.Errorf("game %q template %q has Nexus ref %q that is not a mod id", g.ID, t.ID, p.Ref)
+				}
+			}
+		}
 	}
 	return nil
 }

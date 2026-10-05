@@ -14,6 +14,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/bundles"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
@@ -130,6 +131,16 @@ func cleanName(name string) (string, error) {
 
 func indexOf(list []Template, name string) int {
 	return slices.IndexFunc(list, func(t Template) bool { return strings.EqualFold(t.Name, name) })
+}
+
+// StarterTemplates lists the built-in starter templates the catalog gives game.
+func (s *Service) StarterTemplates(game string) []components.StarterTemplate {
+	for _, g := range gamepkg.Catalog() {
+		if g.ID == game {
+			return g.Templates
+		}
+	}
+	return []components.StarterTemplate{}
 }
 
 // Templates lists the game's templates.

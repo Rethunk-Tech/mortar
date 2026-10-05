@@ -2152,7 +2152,7 @@ msgstr "Dependency cycle"
 
 #: src/commandPalette/paletteLabels.ts:17
 #: src/firstrun/ProfileStep.tsx:136
-#: src/game/NewProfileDialog.tsx:154
+#: src/game/NewProfileDialog.tsx:207
 #: src/game/Sidebar.tsx:376
 #: src/game/Sidebar.tsx:394
 #: src/nxm/ArrivalDialog.tsx:164
@@ -3610,7 +3610,7 @@ msgstr "Share as r2modman code?"
 #: src/console/HelpDialog.tsx:234
 #: src/console/StartupPanel.tsx:56
 #: src/fomod/Dialog.tsx:254
-#: src/game/NewProfileDialog.tsx:178
+#: src/game/NewProfileDialog.tsx:232
 #: src/install/DownloadsDialog.tsx:252
 #: src/install/OverlayPlaceDialog.tsx:118
 #: src/install/RemapDialog.tsx:205
@@ -4393,7 +4393,7 @@ msgstr "You chose not to endorse this mod."
 msgid "These apply only to this profile."
 msgstr "These apply only to this profile."
 
-#: src/game/NewProfileDialog.tsx:62
+#: src/game/NewProfileDialog.tsx:73
 msgid "Copy of {name}"
 msgstr "Copy of {name}"
 
@@ -4409,7 +4409,7 @@ msgstr "Choose a file"
 msgid "Cached GitHub release lists"
 msgstr "Cached GitHub release lists"
 
-#: src/game/NewProfileDialog.tsx:54
+#: src/game/NewProfileDialog.tsx:65
 msgid "Start from"
 msgstr "Start from"
 
@@ -4976,7 +4976,7 @@ msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
 #: src/game/Hero.tsx:168
-#: src/game/NewProfileDialog.tsx:159
+#: src/game/NewProfileDialog.tsx:212
 #: src/profiles/ProfileRow.tsx:219
 msgid "Profile name"
 msgstr "Profile name"
@@ -5207,6 +5207,10 @@ msgstr "Zoom ({value}%)"
 #: src/saves/SaveBackupsSection.tsx:70
 msgid "Allow cleanup before deleting."
 msgstr "Allow cleanup before deleting."
+
+#: src/game/NewProfileDialog.tsx:79
+msgid "Starter templates"
+msgstr "Starter templates"
 
 #: src/mods/updateReview/UpdateBar.tsx:19
 msgid "Updates are unknown: SMAPI's update service could not be reached."
@@ -5565,7 +5569,7 @@ msgstr "Next"
 msgid "Add archive…"
 msgstr "Add archive…"
 
-#: src/game/NewProfileDialog.tsx:181
+#: src/game/NewProfileDialog.tsx:235
 msgid "Create"
 msgstr "Create"
 
@@ -5794,6 +5798,12 @@ msgstr "Profiles already made from it are not changed."
 #: src/mods/LoadOrderTab.tsx:197
 msgid "Load order copied"
 msgstr "Load order copied"
+
+#. placeholder {0}: chosen.description
+#. placeholder {1}: listNames((chosen.packages ?? []).map((p) => p.name))
+#: src/game/NewProfileDialog.tsx:88
+msgid "{0} Adds {1}."
+msgstr "{0} Adds {1}."
 
 #: src/queue/store.ts:74
 msgid "That download is no longer waiting to retry."
@@ -6977,7 +6987,7 @@ msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
 #: src/bundles/dialogs.tsx:176
-#: src/game/NewProfileDialog.tsx:103
+#: src/game/NewProfileDialog.tsx:154
 #: src/mods/SelectionBar.tsx:46
 #: src/profiles/GameModsDialog.tsx:100
 #: src/profiles/store.ts:58
@@ -7661,7 +7671,9 @@ msgid "Delete {0}'s old files"
 msgstr "Delete {0}'s old files"
 
 #. placeholder {0}: missing.length
+#. placeholder {0}: mods.length
 #: src/game/NewProfileDialog.tsx:106
+#: src/game/NewProfileDialog.tsx:157
 msgid "{0, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
 msgstr "{0, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
 
@@ -10461,7 +10473,7 @@ msgstr "Stop the game to change SMAPI."
 msgid "No problems found"
 msgstr "No problems found"
 
-#: src/game/NewProfileDialog.tsx:70
+#: src/game/NewProfileDialog.tsx:92
 #: src/game/TemplateMenuItems.tsx:77
 msgid "Manage templates…"
 msgstr "Manage templates…"
@@ -10649,7 +10661,7 @@ msgstr "No game output yet"
 msgid "{0} left out"
 msgstr "{0} left out"
 
-#: src/game/NewProfileDialog.tsx:120
+#: src/game/NewProfileDialog.tsx:171
 msgid "Could not create the profile"
 msgstr "Could not create the profile"
 
@@ -10701,7 +10713,7 @@ msgstr "Could not repair the profile"
 msgid "{0, plural, one {Updated # mod} other {Updated # mods}}"
 msgstr "{0, plural, one {Updated # mod} other {Updated # mods}}"
 
-#: src/game/NewProfileDialog.tsx:61
+#: src/game/NewProfileDialog.tsx:72
 msgid "Empty profile"
 msgstr "Empty profile"
 
@@ -10732,7 +10744,9 @@ msgid "Group name"
 msgstr "Group name"
 
 #. placeholder {0}: missing.length
+#. placeholder {0}: mods.length
 #: src/game/NewProfileDialog.tsx:110
+#: src/game/NewProfileDialog.tsx:161
 msgid "{0, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
 msgstr "{0, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
 

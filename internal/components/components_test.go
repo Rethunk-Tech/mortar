@@ -333,3 +333,45 @@ func TestSandboxCanEnableAGameThatHasNotShipped(t *testing.T) {
 		}
 	}
 }
+
+func TestBundledStardewShipsTheQualityOfLifeTemplate(t *testing.T) {
+	m, err := BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, g := range m.Games {
+		if err := g.Validate(); err != nil {
+			t.Fatalf("%s: %v", g.ID, err)
+		}
+		if g.ID != "stardew" {
+			continue
+		}
+		if len(g.Templates) != 1 || g.Templates[0].Name != "Vanilla+ quality of life" {
+			t.Fatalf("templates = %+v", g.Templates)
+		}
+		if n := len(g.Templates[0].Packages); n < 4 || n > 6 {
+			t.Fatalf("%d packages, want 4 to 6", n)
+		}
+		return
+	}
+	t.Fatal("no stardew in the bundled catalog")
+}
+
+func TestValidateRejectsABadTemplatePackage(t *testing.T) {
+	g := GameInfo{
+		ID: "g", Name: "G", Marker: "g.dll", Deploy: DeployRedirect, Enabled: false,
+		Loaders: []GameLoader{{ID: "smapi"}},
+		Sources: []GameSource{{ID: "nexus"}},
+	}
+	bad := []TemplatePackage{{Source: "nexus", Ref: "abc", Name: "x"}, {Source: "github", Ref: "o/r", Name: "x"}, {Source: "nexus", Ref: "0", Name: "x"}}
+	for _, p := range bad {
+		g.Templates = []StarterTemplate{{ID: "t", Name: "T", Packages: []TemplatePackage{p}}}
+		if g.Validate() == nil {
+			t.Fatalf("package %+v passed", p)
+		}
+	}
+	g.Templates = []StarterTemplate{{ID: "t", Name: "T", Packages: []TemplatePackage{{Source: "nexus", Ref: "541", Name: "x"}}}}
+	if err := g.Validate(); err != nil {
+		t.Fatal(err)
+	}
+}

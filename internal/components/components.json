@@ -92,6 +92,20 @@
           "id": "github",
           "key": "stardew-valley-mod"
         }
+      ],
+      "templates": [
+        {
+          "id": "vanilla-plus-qol",
+          "name": "Vanilla+ quality of life",
+          "description": "Small helpers that make the base game easier to read and manage, without changing how it plays.",
+          "packages": [
+            { "source": "nexus", "ref": "5098", "name": "Generic Mod Config Menu" },
+            { "source": "nexus", "ref": "541", "name": "Lookup Anything" },
+            { "source": "nexus", "ref": "518", "name": "Chests Anywhere" },
+            { "source": "nexus", "ref": "7098", "name": "UI Info Suite 2" },
+            { "source": "nexus", "ref": "239", "name": "NPC Map Locations" }
+          ]
+        }
       ]
     },
     {
