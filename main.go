@@ -55,6 +55,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/storecheck"
 	"github.com/Rethunk-Tech/mortar/internal/support"
@@ -258,6 +259,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	applyLinkChoices(store.Get())
 	svc := settings.NewService(store)
 	svc.ValidateGameFolder = game.ValidateFolder
 	svc.ValidateLauncherRoot = game.ValidateLauncherRoot
@@ -307,6 +309,7 @@ func run() error {
 	profiles.GameRunning = launches.Busy
 	bisectSvc := bisect.NewService(profiles, launches)
 	modMeta := &meta.Client{CacheDir: filepath.Join(dataDir, "cache")}
+	source.Register(thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")})
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
@@ -917,6 +920,7 @@ func run() error {
 	syncTray()
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
 		application.InvokeSync(syncTray)
+		applyLinkChoices(store.Get())
 		if err := lanSvc.SetEnabled(store.Get().LanSharing); err != nil {
 			log.Printf("LAN sharing: %v", err)
 		}
@@ -961,4 +965,13 @@ func serveNativeHost() error {
 		}
 		return nativehost.Start(exe, link)
 	})
+}
+
+// applyLinkChoices tells the source registry which link schemes the user chose to claim from the system.
+func applyLinkChoices(s settings.Settings) {
+	choice := map[string]bool{}
+	if s.ThunderstoreHandleLinks != nil {
+		choice["thunderstore"] = *s.ThunderstoreHandleLinks
+	}
+	source.SetHandleLinks(choice)
 }
