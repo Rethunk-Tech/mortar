@@ -555,3 +555,38 @@ func contentPackManifest(folder string) (manifest.Manifest, bool) {
 	man, err := manifest.Parse(raw)
 	return man, err == nil
 }
+
+// A check reads switched-off packs for tilesheet cleanup, and a check of another profile's mods must not empty the
+// cached packs of this one: either would leave a pack to be parsed again, or read back as empty, on the next start.
+func TestPackDiskCacheKeepsEveryPackItRead(t *testing.T) {
+	dataHome := testfs.DataHome(t)
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+	cachePath := filepath.Join(dataHome, "mortar", "cache", "problems-content-packs.json")
+	on, _, _ := diskCachePack(t)
+	off, _, _ := diskCachePack(t)
+	off.Enabled = false
+	// Only a pack that loads new tilesheets makes the cleanup pass read the others.
+	sheets := t.TempDir()
+	testfs.WriteFile(t, sheets, "manifest.json", `{"UniqueID":"Test.Sheets","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	testfs.WriteFile(t, sheets, "content.json", `{"Changes":[{"Action":"Load","Target":"Tilesheets/Test","FromFile":"sheet.png"}]}`)
+	candidate := packs.FromDisk(framework.Mod{Enabled: true, Folder: sheets, UniqueID: "Test.Sheets", Name: "Sheets", Key: "Test.Sheets"})
+	Driver{}.Analyze(framework.Input{Enabled: []framework.Mod{on, candidate}, All: []framework.Mod{on, candidate, off}})
+	if entry := readDiskPackCache(t, cachePath).Packs[filepath.Clean(off.Folder)]; len(entry.Pack.Patches) != 2 {
+		t.Fatalf("switched-off pack on disk = %#v", entry.Pack)
+	}
+
+	resetContentPackCaches()
+	_ = readContentPack(on)
+	other, _, _ := diskCachePack(t)
+	_ = readContentPack(other)
+	flushPackDiskCache([]framework.Mod{other})
+	_ = readContentPack(other)
+	touchFile(t, filepath.Join(other.Folder, "content.json"))
+	_ = readContentPack(other)
+	flushPackDiskCache([]framework.Mod{other})
+	resetContentPackCaches()
+	if got := readContentPack(on); len(got.patches) != 2 {
+		t.Fatalf("pack of the earlier check after two writes for other mods: %d patches, want 2", len(got.patches))
+	}
+}

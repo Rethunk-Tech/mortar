@@ -190,6 +190,8 @@ type diskPackEntry struct {
 	Fingerprint string          `json:"fingerprint"`
 	Files       []packFileStamp `json:"files"`
 	Pack        diskCachedPack  `json:"pack"`
+	// dropped is set when Pack was emptied to save memory while the pack itself is held in packCache.
+	dropped bool
 }
 
 type diskCachedPack struct {
@@ -859,7 +861,7 @@ func storeDiskPackEntry(root string, entry diskPackEntry) {
 	if packDiskState.entries == nil {
 		packDiskState.entries = map[string]diskPackEntry{}
 	}
-	entry.Pack = diskCachedPack{}
+	entry.Pack, entry.dropped = diskCachedPack{}, true
 	packDiskState.entries[root] = entry
 	packDiskState.dirty = true
 }
@@ -869,7 +871,7 @@ func clearDiskPackPayload(root string) {
 	defer packDiskState.Unlock()
 	entry, ok := packDiskState.entries[root]
 	if ok {
-		entry.Pack = diskCachedPack{}
+		entry.Pack, entry.dropped = diskCachedPack{}, true
 		packDiskState.entries[root] = entry
 	}
 }
@@ -881,13 +883,7 @@ func flushPackDiskCache(mods []framework.Mod) {
 			present[filepath.Clean(im.Folder)] = true
 		}
 	}
-	packCache.Range(func(k, _ any) bool {
-		root, ok := k.(string)
-		if !ok || !present[root] {
-			packCache.Delete(k)
-		}
-		return true
-	})
+	defer prunePackCache(present)
 	path := loadPackDiskCache()
 	if path == "" {
 		return
@@ -909,6 +905,10 @@ func flushPackDiskCache(mods []framework.Mod) {
 			if pack, ok := cached.(cachedPack); ok {
 				entry.Pack = diskPackOf(pack)
 			}
+		} else if entry.dropped {
+			// Its fingerprint would still match, so writing it without its payload would read back as an empty pack.
+			delete(packDiskState.entries, root)
+			continue
 		}
 		entries[root] = entry
 	}
@@ -937,16 +937,27 @@ func flushPackDiskCache(mods []framework.Mod) {
 		packDiskState.Lock()
 		packDiskState.dirty = true
 		packDiskState.Unlock()
-		return
 	}
-	packDiskState.Lock()
-	for root, entry := range packDiskState.entries {
-		if _, ok := packCache.Load(root); ok {
-			entry.Pack = diskCachedPack{}
+}
+
+// prunePackCache bounds the memoised packs to the folders of the mods just checked. A dropped pack whose disk entry
+// no longer holds its payload gets it back, so a later write keeps it for the next check of those mods.
+func prunePackCache(present map[string]bool) {
+	packCache.Range(func(k, v any) bool {
+		root, ok := k.(string)
+		if ok && present[root] {
+			return true
+		}
+		packCache.Delete(k)
+		pack, isPack := v.(cachedPack)
+		packDiskState.Lock()
+		if entry, ok := packDiskState.entries[root]; ok && entry.dropped && isPack {
+			entry.Pack, entry.dropped = diskPackOf(pack), false
 			packDiskState.entries[root] = entry
 		}
-	}
-	packDiskState.Unlock()
+		packDiskState.Unlock()
+		return true
+	})
 }
 
 type cpSchema struct {
@@ -1865,7 +1876,6 @@ func dropCheckScratch() {
 
 // assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).
 func assetConflictScan(mods []framework.Mod) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
-	defer flushPackDiskCache(mods)
 	defer dropCheckScratch()
 	preloadContentPacks(mods)
 	present := map[string]bool{}
