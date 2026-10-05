@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -314,5 +315,90 @@ func TestACanceledPurgeLeavesTheJournalToFinishLater(t *testing.T) {
 	}
 	if _, err := os.Stat(r.view.JournalDir); !os.IsNotExist(err) {
 		t.Fatal("journal kept after recover")
+	}
+}
+
+func TestApplyMarksEveryPlacedFileDone(t *testing.T) {
+	r := newRig(t)
+	for _, op := range r.apply().Ops {
+		if !op.Done {
+			t.Fatalf("%s was placed but is not marked done", op.Dst)
+		}
+	}
+}
+
+func TestPurgeRemovesTheFoldersApplyMade(t *testing.T) {
+	r := newRig(t)
+	write(t, filepath.Join(r.store, "deep.ini"), "deep")
+	// The parent folder is made for the first file and the child for the second, so Created lists the parent first.
+	r.files = append(r.files,
+		launchplan.PlanFile{Src: filepath.Join(r.store, "deep.ini"), Dst: "sub/a.ini"},
+		launchplan.PlanFile{Src: filepath.Join(r.store, "deep.ini"), Dst: "sub/deep/deep.ini"})
+	before := snapshot(t, r.install)
+	m := r.apply()
+	if want := []string{filepath.Join(r.install, "sub"), filepath.Join(r.install, "sub", "deep")}; !slices.Equal(m.Created, want) {
+		t.Fatalf("created = %v, want only the folders apply made: %v", m.Created, want)
+	}
+	if read(filepath.Join(r.install, "sub", "deep", "deep.ini")) != "deep" {
+		t.Fatal("the file is not in its new folder")
+	}
+	d, _ := Get(copyID)
+	if err := d.Purge(t.Context(), m); err != nil {
+		t.Fatal(err)
+	}
+	if after := snapshot(t, r.install); len(after) != len(before) {
+		t.Fatalf("folders left behind\nbefore %v\n after %v", before, after)
+	}
+}
+
+func TestApplyFailsWhenAFolderCannotBeMade(t *testing.T) {
+	r := newRig(t)
+	write(t, filepath.Join(r.install, "blocker"), "a file where a folder is needed")
+	write(t, filepath.Join(r.store, "x.ini"), "x")
+	r.files = []launchplan.PlanFile{{Src: filepath.Join(r.store, "x.ini"), Dst: "blocker/x.ini"}}
+	d, _ := Get(copyID)
+	if _, err := d.Apply(t.Context(), r.plan()); err == nil {
+		t.Fatal("apply reported success without placing the file")
+	}
+}
+
+func TestHasJournalFollowsTheRecord(t *testing.T) {
+	r := newRig(t)
+	if HasJournal(r.view.JournalDir) {
+		t.Fatal("a journal before any apply")
+	}
+	r.apply()
+	if !HasJournal(r.view.JournalDir) {
+		t.Fatal("no journal after apply")
+	}
+}
+
+func TestAFailedPurgeRecordsWhatItAlreadyUndid(t *testing.T) {
+	r := newRig(t)
+	m := r.apply()
+	// Ops undo last to first. The first op's destination is now a folder with content, which cannot be removed.
+	blocked := m.Ops[0].Dst
+	if err := os.Remove(blocked); err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(blocked, "keep"), "x")
+	write(t, filepath.Join(r.view.JournalDir, "displaced", "kept"), "the player's own")
+	m.Ops[0].Displaced = filepath.Join(r.view.JournalDir, "displaced", "kept")
+	d, _ := Get(copyID)
+	if err := d.Purge(t.Context(), m); err == nil {
+		t.Fatal("purge reported success past a destination it could not clear")
+	}
+	var saved Manifest
+	if err := json.Unmarshal([]byte(read(filepath.Join(r.view.JournalDir, journalFile))), &saved); err != nil {
+		t.Fatal(err)
+	}
+	undone := 0
+	for _, op := range saved.Ops {
+		if op.Undone {
+			undone++
+		}
+	}
+	if undone != 1 {
+		t.Fatalf("the journal must name the one op already undone: %+v", saved.Ops)
 	}
 }
