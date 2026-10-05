@@ -21,6 +21,7 @@ export type Want = Pick<Request, 'kind'> &
       | 'version'
       | 'currentKey'
       | 'repo'
+      | 'package'
       | 'tag'
       | 'asset'
       | 'latest'

@@ -650,7 +650,7 @@ msgstr "List"
 msgid "Reorder {0}"
 msgstr "Reorder {0}"
 
-#: src/browse/BrowsePage.tsx:203
+#: src/browse/BrowsePage.tsx:209
 msgid "Find mods to add"
 msgstr "Find mods to add"
 
@@ -1165,7 +1165,7 @@ msgstr "Switch on {0}"
 msgid "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 msgstr "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 
-#: src/settings/store.ts:131
+#: src/settings/store.ts:134
 msgid "Your settings could not be read"
 msgstr "Your settings could not be read"
 
@@ -1401,7 +1401,7 @@ msgstr "Download again"
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
-#: src/browse/BrowsePage.tsx:214
+#: src/browse/BrowsePage.tsx:220
 #: src/firstrun/SmapiStep.tsx:198
 #: src/firstrun/SmapiStep.tsx:266
 #: src/game/detailStates.tsx:27
@@ -1495,7 +1495,7 @@ msgstr "Peak ms"
 msgid "conflicts"
 msgstr "conflicts"
 
-#: src/queue/actions.ts:71
+#: src/queue/actions.ts:72
 msgid "Could not add the download"
 msgstr "Could not add the download"
 
@@ -1813,7 +1813,7 @@ msgstr "Filter mods"
 msgid "Apply {name}"
 msgstr "Apply {name}"
 
-#: src/browse/BrowsePage.tsx:421
+#: src/browse/BrowsePage.tsx:457
 msgid "{endorsements, plural, one {# endorsement} other {# endorsements}} · {downloads, plural, one {# download} other {# downloads}}"
 msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}} · {downloads, plural, one {# download} other {# downloads}}"
 
@@ -1897,7 +1897,7 @@ msgstr "Show the first-run tips again"
 #: src/mods/Toolbar.tsx:148
 #: src/nxm/store.ts:53
 #: src/profiles/LaunchPresetDialog.tsx:82
-#: src/queue/actions.ts:83
+#: src/queue/actions.ts:84
 #: src/queue/store.ts:225
 #: src/queue/store.ts:341
 #: src/saves/SaveGapLine.tsx:56
@@ -2554,7 +2554,7 @@ msgid "Different version"
 msgstr "Different version"
 
 #. placeholder {0}: result.failed.join(', ')
-#: src/browse/BrowsePage.tsx:243
+#: src/browse/BrowsePage.tsx:249
 msgid "{0} did not answer"
 msgstr "{0} did not answer"
 
@@ -2639,7 +2639,7 @@ msgstr "Set it in Steam for me"
 msgid "Save as template"
 msgstr "Save as template"
 
-#: src/browse/BrowsePage.tsx:40
+#: src/browse/BrowsePage.tsx:41
 msgid "Search GitHub for mods published as releases. Add puts the latest release in this profile."
 msgstr "Search GitHub for mods published as releases. Add puts the latest release in this profile."
 
@@ -2647,6 +2647,10 @@ msgstr "Search GitHub for mods published as releases. Add puts the latest releas
 #: src/mods/NexusDetails.tsx:169
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
+
+#: src/browse/BrowsePage.tsx:57
+msgid "Open on Thunderstore"
+msgstr "Open on Thunderstore"
 
 #. placeholder {0}: active.label(i18n)
 #: src/mods/Toolbar.tsx:130
@@ -2666,7 +2670,7 @@ msgstr "Could not open the profile folder"
 msgid "Download and stage a found update without asking"
 msgstr "Download and stage a found update without asking"
 
-#: src/browse/BrowsePage.tsx:197
+#: src/browse/BrowsePage.tsx:203
 msgid "Search GitHub releases"
 msgstr "Search GitHub releases"
 
@@ -2726,7 +2730,7 @@ msgstr "{name} is marked abandoned and may no longer be maintained."
 msgid "Send nearby…"
 msgstr "Send nearby…"
 
-#: src/browse/BrowsePage.tsx:384
+#: src/browse/BrowsePage.tsx:392
 #: src/mods/OptionalFileRows.tsx:176
 #: src/queue/store.ts:121
 msgid "Open files page"
@@ -2806,7 +2810,7 @@ msgid "None of {0} are in Saves yet; they will be added. A backup of the current
 msgstr "None of {0} are in Saves yet; they will be added. A backup of the current Saves folder is made first."
 
 #. placeholder {0}: reqs.length
-#: src/queue/actions.ts:80
+#: src/queue/actions.ts:81
 msgid "{0, plural, one {# download added} other {# downloads added}}"
 msgstr "{0, plural, one {# download added} other {# downloads added}}"
 
@@ -2921,7 +2925,7 @@ msgstr "Console"
 msgid "Try a different search or filter."
 msgstr "Try a different search or filter."
 
-#: src/browse/BrowsePage.tsx:211
+#: src/browse/BrowsePage.tsx:217
 msgid "Search did not work"
 msgstr "Search did not work"
 
@@ -4143,7 +4147,7 @@ msgstr "Rename…"
 msgid "Checking profiles…"
 msgstr "Checking profiles…"
 
-#: src/browse/BrowsePage.tsx:47
+#: src/browse/BrowsePage.tsx:48
 msgid "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 msgstr "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 
@@ -4168,7 +4172,7 @@ msgstr "Settings backups"
 msgid "Untrack all…"
 msgstr "Untrack all…"
 
-#: src/browse/BrowsePage.tsx:193
+#: src/browse/BrowsePage.tsx:199
 msgid "Search {sourceName}"
 msgstr "Search {sourceName}"
 
@@ -4565,7 +4569,7 @@ msgstr "Pinned at this version"
 msgid "Open mod"
 msgstr "Open mod"
 
-#: src/browse/BrowsePage.tsx:53
+#: src/browse/BrowsePage.tsx:54
 #: src/mods/ModMenu.tsx:132
 #: src/shell/BugReportDialog.tsx:104
 msgid "Open on GitHub"
@@ -5319,7 +5323,7 @@ msgstr "Request counts appear after Mortar talks to Nexus."
 msgid "There is not enough free space at the destination."
 msgstr "There is not enough free space at the destination."
 
-#: src/settings/store.ts:133
+#: src/settings/store.ts:136
 msgid "Mortar started with default settings. The damaged file was kept at {path}."
 msgstr "Mortar started with default settings. The damaged file was kept at {path}."
 
@@ -5404,7 +5408,7 @@ msgstr "Another preset already has this name."
 msgid "Unknown author"
 msgstr "Unknown author"
 
-#: src/browse/BrowsePage.tsx:425
+#: src/browse/BrowsePage.tsx:461
 msgid "In this profile"
 msgstr "In this profile"
 
@@ -5722,7 +5726,7 @@ msgstr "imported from the game's Mods folder"
 msgid "View"
 msgstr "View"
 
-#: src/browse/BrowsePage.tsx:219
+#: src/browse/BrowsePage.tsx:225
 msgid "The service may be busy. Try again in a minute."
 msgstr "The service may be busy. Try again in a minute."
 
@@ -5770,7 +5774,7 @@ msgstr "Could not export the profile"
 msgid "Console log cap"
 msgstr "Console log cap"
 
-#: src/browse/BrowsePage.tsx:233
+#: src/browse/BrowsePage.tsx:239
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
@@ -6246,7 +6250,7 @@ msgstr "Group"
 msgid "Remove {0} from other profiles"
 msgstr "Remove {0} from other profiles"
 
-#: src/browse/BrowsePage.tsx:189
+#: src/browse/BrowsePage.tsx:195
 msgid "All sources"
 msgstr "All sources"
 
@@ -6501,7 +6505,8 @@ msgstr "Could not run diagnostics"
 msgid "·"
 msgstr "·"
 
-#: src/browse/BrowsePage.tsx:435
+#: src/browse/BrowsePage.tsx:471
+#: src/browse/BrowsePage.tsx:483
 #: src/downloads/newDownloads.ts:30
 #: src/mods/AddToGroupDialog.tsx:99
 #: src/mods/configFormUi.tsx:290
@@ -6799,7 +6804,7 @@ msgstr "Restore {aLabel}"
 msgid "Store"
 msgstr "Store"
 
-#: src/browse/BrowsePage.tsx:373
+#: src/browse/BrowsePage.tsx:381
 #: src/share/ImportPreview.tsx:55
 msgid "Download"
 msgstr "Download"
@@ -7020,7 +7025,7 @@ msgstr "Nexus link not used"
 msgid "Nexus mod {modId}"
 msgstr "Nexus mod {modId}"
 
-#: src/browse/BrowsePage.tsx:422
+#: src/browse/BrowsePage.tsx:458
 msgid "{stars, plural, one {# star} other {# stars}}"
 msgstr "{stars, plural, one {# star} other {# stars}}"
 
@@ -7100,7 +7105,7 @@ msgstr "Regenerate token?"
 msgid "Unpin"
 msgstr "Unpin"
 
-#: src/queue/actions.ts:87
+#: src/queue/actions.ts:88
 msgid "The download queue is empty."
 msgstr "The download queue is empty."
 
@@ -7213,7 +7218,7 @@ msgstr "Could not move the mods"
 msgid "Find the mod causing this"
 msgstr "Find the mod causing this"
 
-#: src/queue/actions.ts:40
+#: src/queue/actions.ts:41
 msgid "Downloads come from Nexus with your account, so Mortar needs your API key first."
 msgstr "Downloads come from Nexus with your account, so Mortar needs your API key first."
 
@@ -7842,7 +7847,7 @@ msgstr "{0} will be overwritten. A backup of the current Saves folder is made fi
 msgid "Remove from {0}"
 msgstr "Remove from {0}"
 
-#: src/browse/BrowsePage.tsx:55
+#: src/browse/BrowsePage.tsx:59
 #: src/console/CrashDialog.tsx:132
 #: src/launch/LaunchLayer.tsx:285
 #: src/mods/ModMenu.tsx:132
@@ -8419,7 +8424,7 @@ msgstr "Open focused mod details"
 msgid "Open the folder of {label}"
 msgstr "Open the folder of {label}"
 
-#: src/queue/actions.ts:38
+#: src/queue/actions.ts:39
 msgid "Sign in to Nexus Mods to download"
 msgstr "Sign in to Nexus Mods to download"
 
@@ -8475,7 +8480,7 @@ msgstr "Could not unpin {0}"
 msgid "In the same download"
 msgstr "In the same download"
 
-#: src/browse/BrowsePage.tsx:35
+#: src/browse/BrowsePage.tsx:36
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 
@@ -8735,7 +8740,7 @@ msgid "Lets nearby Mortar users find this installation and exchange profile link
 msgstr "Lets nearby Mortar users find this installation and exchange profile links."
 
 #: src/game/ExportCollectionMenuItem.tsx:34
-#: src/settings/store.ts:136
+#: src/settings/store.ts:139
 #: src/shell/saveDiagnostics.ts:27
 msgid "Show file"
 msgstr "Show file"
@@ -9030,7 +9035,7 @@ msgid "Found in {foundIn}"
 msgstr "Found in {foundIn}"
 
 #. placeholder {0}: result.total
-#: src/browse/BrowsePage.tsx:241
+#: src/browse/BrowsePage.tsx:247
 msgid "{0, plural, one {# result} other {# results}}"
 msgstr "{0, plural, one {# result} other {# results}}"
 
@@ -9907,7 +9912,7 @@ msgstr "Group name"
 msgid "Framework"
 msgstr "Framework"
 
-#: src/browse/BrowsePage.tsx:327
+#: src/browse/BrowsePage.tsx:335
 #: src/mods/columnLabel.ts:12
 #: src/mods/Toolbar.tsx:200
 #: src/settings/prefCopy.ts:123
@@ -10162,7 +10167,7 @@ msgstr "{name} logged {errors} in the last run. First: {first}"
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
 
-#: src/browse/BrowsePage.tsx:44
+#: src/browse/BrowsePage.tsx:45
 msgid "Search Nexus Mods. Download installs the mod into this profile."
 msgstr "Search Nexus Mods. Download installs the mod into this profile."
 
@@ -10222,7 +10227,7 @@ msgstr "Also update other profiles that hold the same files"
 msgid "Quiet grey-blue"
 msgstr "Quiet grey-blue"
 
-#: src/browse/BrowsePage.tsx:360
+#: src/browse/BrowsePage.tsx:368
 msgid "Sign in to download"
 msgstr "Sign in to download"
 
@@ -10504,7 +10509,7 @@ msgstr "Fall"
 msgid "Into {0}"
 msgstr "Into {0}"
 
-#: src/browse/BrowsePage.tsx:234
+#: src/browse/BrowsePage.tsx:240
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
@@ -10769,7 +10774,7 @@ msgstr "Last played with {lastName}"
 msgid "Leave empty to use the game folder. Same placeholders as arguments."
 msgstr "Leave empty to use the game folder. Same placeholders as arguments."
 
-#: src/queue/actions.ts:42
+#: src/queue/actions.ts:43
 msgid "Open settings"
 msgstr "Open settings"
 
@@ -11079,7 +11084,7 @@ msgstr "Launch"
 msgid "Reading backups…"
 msgstr "Reading backups…"
 
-#: src/browse/BrowsePage.tsx:195
+#: src/browse/BrowsePage.tsx:201
 msgid "Search all mod sites"
 msgstr "Search all mod sites"
 

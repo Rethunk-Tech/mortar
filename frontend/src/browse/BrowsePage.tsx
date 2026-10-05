@@ -21,6 +21,7 @@ import { useBrowseView } from './view.ts'
 const ALL = 'all'
 const NEXUS = 'nexus'
 const GITHUB = 'github'
+const THUNDERSTORE = 'thunderstore'
 const FIRST_PAGE = 1
 const PICTURE_PX = 72
 const ROW_PICTURE_PX = 40
@@ -51,6 +52,9 @@ function searchHint(source: string, premium: boolean): string {
 function openPageLabel(source: string): string {
   if (source === GITHUB) {
     return i18n._(msg`Open on GitHub`)
+  }
+  if (source === THUNDERSTORE) {
+    return i18n._(msg`Open on Thunderstore`)
   }
   return i18n._(msg`Open on Nexus`)
 }
@@ -168,8 +172,10 @@ function BrowsePage({
   openUrl,
   downloadNexus,
   addGitHub,
+  addPackage,
 }: BrowsePageProps) {
   const { t } = useLingui()
+  const sourceNames = new Map(searchable.map((s) => [s.id, s.name]))
   const view = useBrowseView((s) => s.view)
   const {
     source,
@@ -258,6 +264,8 @@ function BrowsePage({
               openUrl={openUrl}
               downloadNexus={downloadNexus}
               addGitHub={addGitHub}
+              addPackage={addPackage}
+              sourceNames={sourceNames}
             />
           ))}
         </Box>
@@ -386,6 +394,36 @@ function NexusAction({
   )
 }
 
+// One badge per source the mod is on; the filled one is where Add installs from.
+function SourceBadges({
+  sources,
+  picked,
+  names,
+  onPick,
+}: {
+  sources: string[]
+  picked: string
+  names: Map<string, string>
+  onPick: (source: string) => void
+}) {
+  if (sources.length < 2) {
+    return null
+  }
+  return (
+    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', pt: 0.25 }}>
+      {sources.map((id) => (
+        <Chip
+          key={id}
+          size="small"
+          label={names.get(id) ?? id}
+          variant={id === picked ? 'filled' : 'outlined'}
+          onClick={() => onPick(id)}
+        />
+      ))}
+    </Box>
+  )
+}
+
 function ResultCard({
   row,
   item,
@@ -393,6 +431,8 @@ function ResultCard({
   openUrl,
   downloadNexus,
   addGitHub,
+  addPackage,
+  sourceNames,
 }: {
   row: boolean
   item: BrowseItem
@@ -400,24 +440,20 @@ function ResultCard({
   openUrl: (url: string) => void
   downloadNexus: (modID: string) => void
   addGitHub: (repo: string) => void
+  addPackage: (id: string) => void
+  sourceNames: Map<string, string>
 }) {
   const { t } = useLingui()
   const [pending, run] = usePending()
-  const {
-    source,
-    id,
-    name,
-    summary,
-    author,
-    picture,
-    endorsements,
-    stars,
-    downloads,
-    url,
-    installed,
-  } = item
+  const { name, summary, author, picture, endorsements, stars, downloads } = item
+  // The same mod found on several sources is one card; its first source is the default and a badge picks another.
+  const primary = { source: item.source, id: item.id, url: item.url, installed: item.installed }
+  const choices = [primary, ...(item.alts ?? [])]
+  const [picked, setPicked] = useState(item.source)
+  const { source, id, url } = choices.find((c) => c.source === picked) ?? primary
+  const installed = choices.some((c) => c.installed)
   const stats =
-    source === NEXUS
+    item.source === NEXUS
       ? t`${plural(endorsements, { one: '# endorsement', other: '# endorsements' })} · ${plural(downloads, { one: '# download', other: '# downloads' })}`
       : plural(stars, { one: '# star', other: '# stars' })
   let action: React.ReactNode = null
@@ -431,6 +467,18 @@ function ResultCard({
         startIcon={<Plus size={14} />}
         disabled={pending}
         onClick={() => run(() => Promise.resolve(addGitHub(id)))}
+      >
+        {t`Add`}
+      </Button>
+    )
+  } else if (source === THUNDERSTORE) {
+    action = (
+      <Button
+        size="small"
+        variant="contained"
+        startIcon={<Plus size={14} />}
+        disabled={pending}
+        onClick={() => run(() => Promise.resolve(addPackage(id)))}
       >
         {t`Add`}
       </Button>
@@ -502,6 +550,12 @@ function ResultCard({
         >
           {summary}
         </Typography>
+        <SourceBadges
+          sources={choices.map((c) => c.source)}
+          picked={source}
+          names={sourceNames}
+          onPick={setPicked}
+        />
       </Box>
       <Box
         sx={{

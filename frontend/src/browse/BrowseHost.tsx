@@ -53,6 +53,9 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       addGitHub={(repo) => {
         download([{ kind: KIND_INSTALL, repo }]).catch(reportUnexpected)
       }}
+      addPackage={(pkg) => {
+        download([{ kind: KIND_INSTALL, package: pkg }]).catch(reportUnexpected)
+      }}
     />
   )
 }

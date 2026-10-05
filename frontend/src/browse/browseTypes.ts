@@ -34,6 +34,7 @@ interface BrowsePageProps {
   openUrl: (url: string) => void
   downloadNexus: (modID: string) => void
   addGitHub: (repo: string) => void
+  addPackage: (id: string) => void
 }
 
 export type { BrowseItem, BrowsePageProps, BrowseSearch }
