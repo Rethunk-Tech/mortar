@@ -125,6 +125,11 @@
     "url": "https://github.com/go-ole/go-ole"
   },
   {
+    "name": "github.com/godbus/dbus/v5",
+    "licence": "BSD-2-Clause",
+    "url": "https://github.com/godbus/dbus"
+  },
+  {
     "name": "github.com/hashicorp/mdns",
     "licence": "MIT",
     "url": "https://github.com/hashicorp/mdns"
