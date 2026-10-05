@@ -14,7 +14,7 @@ func pinTestProfile(t *testing.T, s *Store) Profile {
 	}
 	p := mustCreate(t, s, "Pin test")
 	var err error
-	entry := Entry{Key: "nexus-1-1", Mods: []EntryMod{{UniqueID: "A.B", Version: "1.0.0"}}, Added: time.Now().UTC().Truncate(time.Second)}
+	entry := Entry{Key: "nexus-1-1", Mods: []Component{{ID: "smapi:A.B", Version: "1.0.0"}}, Added: time.Now().UTC().Truncate(time.Second)}
 	p, err = s.update("stardew", p.ID, func(cur *Profile, _ string) error {
 		cur.Entries = append(cur.Entries, entry)
 		return nil

@@ -281,7 +281,7 @@ func TestDecodeMapCacheUsesFileStamp(t *testing.T) {
 
 func TestHasModWithEmptyInput(t *testing.T) {
 	w := parseWhen(map[string]json.RawMessage{"HasMod: |contains=Other.Mod": json.RawMessage(`false`)}, map[string]bool{}, nil)
-	if len(w.noneOf) != 1 || w.noneOf[0] != "other.mod" {
+	if len(w.noneOf) != 1 || w.noneOf[0] != "smapi:other.mod" {
 		t.Fatalf("when %+v", w)
 	}
 }

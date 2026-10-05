@@ -2,22 +2,25 @@ package mod
 
 import "testing"
 
-func TestIDParts(t *testing.T) {
-	id := NewID(FormatSMAPI, "Pathoschild.ContentPatcher")
-	if id != "smapi:Pathoschild.ContentPatcher" || id.Format() != "smapi" || id.Local() != "Pathoschild.ContentPatcher" {
-		t.Fatalf("got %q %q %q", id, id.Format(), id.Local())
-	}
-	tc := NewID(FormatThunderstore, "BepInEx-BepInExPack:5.4")
-	if tc.Format() != "thunderstore" || tc.Local() != "BepInEx-BepInExPack:5.4" {
-		t.Errorf("only the first colon splits: %q %q", tc.Format(), tc.Local())
-	}
-	if bare := ID("plain"); bare.Format() != "" || bare.Local() != "plain" {
-		t.Errorf("no colon: %q %q", bare.Format(), bare.Local())
-	}
-}
+const bare = "plain"
 
-func TestEqualRules(t *testing.T) {
-	cases := []struct {
+func TestIDTextFormAndEquality(t *testing.T) {
+	if id := NewID(FormatSMAPI, "Pathoschild.ContentPatcher"); id != "smapi:Pathoschild.ContentPatcher" {
+		t.Errorf("NewID = %q", id)
+	}
+	for _, c := range []struct {
+		id            ID
+		format, local string
+	}{
+		{"smapi:Pathoschild.ContentPatcher", "smapi", "Pathoschild.ContentPatcher"},
+		{"thunderstore:BepInEx-BepInExPack:5.4", "thunderstore", "BepInEx-BepInExPack:5.4"},
+		{ID(bare), "", "plain"},
+	} {
+		if c.id.Format() != c.format || c.id.Local() != c.local {
+			t.Errorf("%q splits to %q, %q", c.id, c.id.Format(), c.id.Local())
+		}
+	}
+	for _, c := range []struct {
 		a, b ID
 		want bool
 	}{
@@ -27,10 +30,12 @@ func TestEqualRules(t *testing.T) {
 		{"smapi:au.one", "bepinex:au.one", false},
 		{"bepinex:Au.One", "bepinex:au.one", false},
 		{"", "", true},
-	}
-	for _, c := range cases {
+	} {
 		if got := Equal(c.a, c.b); got != c.want {
 			t.Errorf("Equal(%q, %q) = %v, want %v", c.a, c.b, got, c.want)
 		}
+	}
+	if Parse("Au.One", FormatSMAPI) != "smapi:Au.One" || Parse("bepinex:Au.One", FormatSMAPI) != "bepinex:Au.One" {
+		t.Error("Parse must default only bare ids")
 	}
 }

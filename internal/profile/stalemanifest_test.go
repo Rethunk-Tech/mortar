@@ -22,7 +22,7 @@ func TestFixStaleManifestSetsOnlyTheVersionInStoreAndProfile(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "nexus-1-2", Source{Kind: KindNexus}); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.FixStaleManifest("stardew", p.ID, "nexus-1-2", "x.a", "1.2.0"); err != nil {
+	if err := e.FixStaleManifest("stardew", p.ID, "nexus-1-2", "smapi:x.a", "1.2.0"); err != nil {
 		t.Fatal(err)
 	}
 	storeDir, _ := e.items.Path("stardew", "nexus-1-2")
@@ -57,7 +57,7 @@ func TestFixStaleManifestLeavesAManifestFromAnotherFile(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "nexus-1-2", Source{Kind: KindNexus}); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.FixStaleManifest("stardew", p.ID, "nexus-1-2", "X.Missing", "9.9.9"); err != nil {
+	if err := e.FixStaleManifest("stardew", p.ID, "nexus-1-2", "smapi:X.Missing", "9.9.9"); err != nil {
 		t.Fatalf("a mod the download does not hold is skipped, not an error: %v", err)
 	}
 	b, _ := fsx.ReadFile(filepath.Join(e.mods(p.ID), "nexus-1-2", "Pack/A/manifest.json"))
@@ -77,12 +77,12 @@ func TestFixStaleManifestLeavesAModFromAnExtraFile(t *testing.T) {
 	writeFile(t, extra, "manifest.json", manifestJSON("X.Optional"))
 	if _, err := e.update("stardew", p.ID, func(pr *Profile, _ string) error {
 		pr.Entries[0].ExtraStoreKeys = []string{"nexus-1-3"}
-		pr.Entries[0].Mods = append(pr.Entries[0].Mods, EntryMod{UniqueID: "X.Optional", Version: "1.0.0", Folder: "nexus-1-3/Optional"})
+		pr.Entries[0].Mods = append(pr.Entries[0].Mods, Component{ID: "smapi:X.Optional", Version: "1.0.0", Folder: "nexus-1-3/Optional"})
 		return nil
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.FixStaleManifest("stardew", p.ID, "nexus-1-2", "X.Optional", "2.5.0"); err != nil {
+	if err := e.FixStaleManifest("stardew", p.ID, "nexus-1-2", "smapi:X.Optional", "2.5.0"); err != nil {
 		t.Fatal(err)
 	}
 	b, _ := fsx.ReadFile(filepath.Join(extra, "manifest.json"))

@@ -20,7 +20,7 @@ func TestSaveCustomCategoriesAndDeleteClearsOverrides(t *testing.T) {
 	p := mustCreate(t, s, "farm")
 	var err error
 	p, err = s.update("stardew", p.ID, func(prof *Profile, _ string) error {
-		prof.Entries = []Entry{{Key: "k", Source: Source{Kind: KindLocal, Name: "a.zip"}, Mods: []EntryMod{{UniqueID: "A.Mod", Name: "A", Folder: "."}}}}
+		prof.Entries = []Entry{{Key: "k", Source: Source{Kind: KindLocal, Name: "a.zip"}, Mods: []Component{{ID: "smapi:A.Mod", Name: "A", Folder: "."}}}}
 		return nil
 	})
 	if err != nil {
@@ -59,7 +59,7 @@ func TestSetEntryCategoryNexusName(t *testing.T) {
 	p := mustCreate(t, s, "farm")
 	var err error
 	p, err = s.update("stardew", p.ID, func(prof *Profile, _ string) error {
-		prof.Entries = []Entry{{Key: "k", Source: Source{Kind: KindLocal, Name: "a.zip"}, Mods: []EntryMod{{UniqueID: "A.Mod", Name: "A", Folder: "."}}}}
+		prof.Entries = []Entry{{Key: "k", Source: Source{Kind: KindLocal, Name: "a.zip"}, Mods: []Component{{ID: "smapi:A.Mod", Name: "A", Folder: "."}}}}
 		return nil
 	})
 	if err != nil {

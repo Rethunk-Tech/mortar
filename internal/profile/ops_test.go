@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -83,7 +85,7 @@ func TestAddEntryScansAndRejectsDuplicates(t *testing.T) {
 		t.Fatal(err)
 	}
 	en := got.Entries[0]
-	if en.Source.Name != "a.zip" || len(en.Mods) != 2 || en.Mods[0].Folder != "Pack/A" || en.Mods[1].UniqueID != "X.B" {
+	if en.Source.Name != "a.zip" || len(en.Mods) != 2 || en.Mods[0].Folder != "Pack/A" || en.Mods[1].ID != "smapi:X.B" {
 		t.Fatalf("entry = %+v", en)
 	}
 	if en.Added.IsZero() || time.Since(en.Added) > time.Minute {
@@ -129,28 +131,28 @@ func TestToggleNestedAndRoot(t *testing.T) {
 	}
 	mods := e.mods(p.ID)
 
-	got, err := e.SetModEnabled("stardew", p.ID, "", "x.a", false)
+	got, err := e.SetModEnabled("stardew", p.ID, "", "smapi:x.a", false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(got.Entries[0].Disabled, []string{"X.A"}) {
+	if !slices.Equal(got.Entries[0].Disabled, []mod.ID{"smapi:X.A"}) {
 		t.Fatalf("disabled = %v", got.Entries[0].Disabled)
 	}
 	if !slices.Equal(names(t, filepath.Join(mods, "local-n", "W")), []string{".A", "B"}) {
 		t.Fatalf("W = %v", names(t, filepath.Join(mods, "local-n", "W")))
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.A", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:X.A", false); err != nil {
 		t.Fatalf("not idempotent: %v", err)
 	}
 
-	got, err = e.SetModEnabled("stardew", p.ID, "", "X.R", false)
-	if err != nil || !slices.Equal(got.Entries[1].Disabled, []string{"X.R"}) {
+	got, err = e.SetModEnabled("stardew", p.ID, "", "smapi:X.R", false)
+	if err != nil || !slices.Equal(got.Entries[1].Disabled, []mod.ID{"smapi:X.R"}) {
 		t.Fatalf("root disable = %+v, %v", got, err)
 	}
 	if !slices.Equal(names(t, mods), []string{".local-r", "local-n"}) {
 		t.Fatalf("mods = %v", names(t, mods))
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.R", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:X.R", false); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.RemoveEntry("stardew", p.ID, "local-r"); err != nil {
@@ -160,13 +162,13 @@ func TestToggleNestedAndRoot(t *testing.T) {
 		t.Fatalf("after remove = %v", names(t, mods))
 	}
 
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.A", true); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:X.A", true); err != nil {
 		t.Fatal(err)
 	}
 	if got, _ := e.read("stardew", p.ID); len(got.Entries[0].Disabled) != 0 || !slices.Equal(names(t, filepath.Join(mods, "local-n", "W")), []string{"A", "B"}) {
 		t.Fatalf("re-enable = %+v", got.Entries[0])
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.Nope", true); err == nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:X.Nope", true); err == nil {
 		t.Fatal("unknown mod accepted")
 	}
 	if _, err := e.RemoveEntry("stardew", p.ID, "local-r"); err == nil {
@@ -185,13 +187,13 @@ func TestSetModsEnabledAndRemoveEntriesOneWrite(t *testing.T) {
 		}
 	}
 	got, err := e.SetModsEnabled("stardew", p.ID, []EnableRef{
-		{Key: "local-a", UniqueID: "Me.A"},
-		{Key: "local-b", UniqueID: "Me.B"},
+		{Key: "local-a", ID: "smapi:Me.A"},
+		{Key: "local-b", ID: "smapi:Me.B"},
 	}, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(got.Entries[0].Disabled, []string{"Me.A"}) || !slices.Equal(got.Entries[1].Disabled, []string{"Me.B"}) {
+	if !slices.Equal(got.Entries[0].Disabled, []mod.ID{"smapi:Me.A"}) || !slices.Equal(got.Entries[1].Disabled, []mod.ID{"smapi:Me.B"}) {
 		t.Fatalf("disabled = %+v", got.Entries)
 	}
 	if !slices.Equal(names(t, e.mods(p.ID)), []string{".local-a", ".local-b"}) {
@@ -217,7 +219,7 @@ func TestRootToggleRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, on := range []bool{false, true, false, true} {
-		if _, err := e.SetModEnabled("stardew", p.ID, "", "X.R", on); err != nil {
+		if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:X.R", on); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -393,7 +395,7 @@ func TestRebuildAfterModsDeleted(t *testing.T) {
 		}
 	}
 	for _, id := range []string{"X.A", "X.R"} {
-		if _, err := e.SetModEnabled("stardew", p.ID, "", id, false); err != nil {
+		if _, err := e.SetModEnabled("stardew", p.ID, "", mod.SMAPI(id), false); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -411,7 +413,7 @@ func TestRebuildAfterModsDeleted(t *testing.T) {
 	if !slices.Equal(names(t, filepath.Join(e.mods(p.ID), "local-n", "W")), []string{".A", "B"}) {
 		t.Fatal("disabled nested mod not dotted after rebuild")
 	}
-	if len(mods) != 3 || mods[0].Enabled || !mods[1].Enabled || !slices.Equal(mods[0].Siblings, []string{"X.B"}) || len(mods[2].Siblings) != 0 {
+	if len(mods) != 3 || mods[0].Enabled || !mods[1].Enabled || !slices.Equal(mods[0].Siblings, []mod.ID{"smapi:X.B"}) || len(mods[2].Siblings) != 0 {
 		t.Fatalf("mods = %+v", mods)
 	}
 
@@ -506,7 +508,7 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 	if _, err := e.AddEntry("stardew", a.ID, "local-x", Source{Kind: KindLocal, Name: "x.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", a.ID, "", "SMAPI.Backup", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", a.ID, "", "smapi:SMAPI.Backup", false); err != nil {
 		t.Fatal(err)
 	}
 	if err := e.ApplyBundled("stardew", smapiBundle("smapi-2.0.0")); err != nil {
@@ -627,8 +629,8 @@ func TestRunningProfileIsLocked(t *testing.T) {
 	_, checks["AddEntry"] = e.AddEntry("stardew", p.ID, "a-1.0", Source{})
 	_, checks["RemoveEntry"] = e.RemoveEntry("stardew", p.ID, "a-1.0")
 	_, checks["RemoveEntries"] = e.RemoveEntries("stardew", p.ID, []string{"a-1.0"})
-	_, checks["SetModEnabled"] = e.SetModEnabled("stardew", p.ID, "", "me.a", false)
-	_, checks["SetModsEnabled"] = e.SetModsEnabled("stardew", p.ID, []EnableRef{{Key: "a-1.0", UniqueID: "me.a"}}, false)
+	_, checks["SetModEnabled"] = e.SetModEnabled("stardew", p.ID, "", "smapi:me.a", false)
+	_, checks["SetModsEnabled"] = e.SetModsEnabled("stardew", p.ID, []EnableRef{{Key: "a-1.0", ID: "smapi:me.a"}}, false)
 	checks["Delete"] = e.Delete("stardew", p.ID)
 	_, checks["InstallArchive"] = e.InstallArchive("stardew", p.ID, "/nonexistent.zip")
 	for name, err := range checks {
@@ -641,7 +643,7 @@ func TestRunningProfileIsLocked(t *testing.T) {
 	}
 
 	running = false
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "me.a", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:me.a", false); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := e.ModsDir("stardew", p.ID)
@@ -690,9 +692,9 @@ func TestRunningIsCheckedUnderTheLock(t *testing.T) {
 		"UpdateEntry":   func() error { _, err := s.UpdateEntry("stardew", p.ID, "a", "b"); return err },
 		"RemoveEntry":   func() error { _, err := s.RemoveEntry("stardew", p.ID, "k"); return err },
 		"RemoveEntries": func() error { _, err := s.RemoveEntries("stardew", p.ID, []string{"k"}); return err },
-		"SetModEnabled": func() error { _, err := s.SetModEnabled("stardew", p.ID, "", "x", false); return err },
+		"SetModEnabled": func() error { _, err := s.SetModEnabled("stardew", p.ID, "", "smapi:x", false); return err },
 		"SetModsEnabled": func() error {
-			_, err := s.SetModsEnabled("stardew", p.ID, []EnableRef{{UniqueID: "x"}}, false)
+			_, err := s.SetModsEnabled("stardew", p.ID, []EnableRef{{ID: "smapi:x"}}, false)
 			return err
 		},
 		"Delete": func() error { return s.Delete("stardew", p.ID) },

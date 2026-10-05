@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 var index = map[string][]meta.Ref{
@@ -78,7 +79,7 @@ func TestScanReadsSaveAndCachesByMtime(t *testing.T) {
 	want := []Info{{
 		Folder: "Farm_1", Farm: "Sunny", Farmer: "Ann", Season: 2, Day: 5, Year: 3, Played: got[0].Played,
 		WhichFarm: 1, MillisecondsPlayed: 151200000, Money: 125300,
-		Used: []string{"author.mod_with_under", "sonozuki.moregrass", "spacechase0.jsonassets"},
+		Used: []mod.ID{"smapi:author.mod_with_under", "smapi:sonozuki.moregrass", "smapi:spacechase0.jsonassets"},
 	}}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("scan = %+v, want %+v", got, want)
@@ -99,7 +100,7 @@ func TestScanReadsSaveAndCachesByMtime(t *testing.T) {
 		t.Fatal(err)
 	}
 	got, err = s.Scan(index)
-	if err != nil || !reflect.DeepEqual(got[0].Used, []string{"author.mod"}) {
+	if err != nil || !reflect.DeepEqual(got[0].Used, []mod.ID{"smapi:author.mod"}) {
 		t.Fatalf("rescan = %+v, %v", got, err)
 	}
 }
@@ -118,7 +119,7 @@ func TestNewestReadsOnlyTheNewestSave(t *testing.T) {
 		t.Fatal(err)
 	}
 	got, err := (&Scanner{Dir: dir}).Newest(index)
-	if err != nil || got.Folder != "New_1" || !reflect.DeepEqual(got.Used, []string{"author.mod"}) {
+	if err != nil || got.Folder != "New_1" || !reflect.DeepEqual(got.Used, []mod.ID{"smapi:author.mod"}) {
 		t.Fatalf("newest = %+v, %v", got, err)
 	}
 }
@@ -131,7 +132,7 @@ func TestKeysSpanChunks(t *testing.T) {
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "Big_2", "Big_2"), string(pad)+item("Author.Mod/x")+string(pad)+item("Sonozuki.MoreGrass/y"))
 	got, err := (&Scanner{Dir: dir}).Scan(index)
-	if err != nil || !reflect.DeepEqual(got[0].Used, []string{"author.mod", "sonozuki.moregrass"}) {
+	if err != nil || !reflect.DeepEqual(got[0].Used, []mod.ID{"smapi:author.mod", "smapi:sonozuki.moregrass"}) {
 		t.Fatalf("scan = %+v, %v", got, err)
 	}
 }
@@ -181,9 +182,9 @@ func TestWhichFarmSpansChunks(t *testing.T) {
 }
 
 func TestLacking(t *testing.T) {
-	have := map[string]bool{"a.on": true, "b.off": false}
-	got := Lacking([]string{"a.on", "b.off", "c.gone", "d.dismissed"}, have, []string{"D.Dismissed"})
-	want := []Lack{{UniqueID: "b.off", Disabled: true}, {UniqueID: "c.gone"}}
+	have := map[string]bool{"smapi:a.on": true, "smapi:b.off": false}
+	got := Lacking([]mod.ID{"smapi:a.on", "smapi:b.off", "smapi:c.gone", "smapi:d.dismissed"}, have, []mod.ID{"smapi:D.Dismissed"})
+	want := []Lack{{ID: "smapi:b.off", Disabled: true}, {ID: "smapi:c.gone"}}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Lacking = %+v", got)
 	}

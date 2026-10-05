@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -26,7 +28,7 @@ func sweepEnv(t *testing.T) (*Service, *profile.Store) {
 	svc.SweepCompat = func(context.Context) (meta.CompatIndex, error) {
 		return meta.CompatIndex{ByID: map[string]meta.CompatEntry{}}, nil
 	}
-	svc.SweepHasUpdate = func(string, int) bool { return false }
+	svc.SweepHasUpdate = func(mod.ID, int) bool { return false }
 	return svc, profiles
 }
 
@@ -42,7 +44,7 @@ func addSweepMod(t *testing.T, profiles *profile.Store, profileID, uniqueID, nam
 		t.Fatal(err)
 	}
 	err := profiles.ImportExternalMods("stardew", profileID, []profile.ExternalMod{
-		{SourcePath: dir, UniqueID: uniqueID, Enabled: true},
+		{SourcePath: dir, ID: mod.SMAPI(uniqueID), Enabled: true},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -78,8 +80,8 @@ func TestSweepBrokenWithAndWithoutFix(t *testing.T) {
 			"a.stuck":   {Status: meta.StatusBroken, Summary: "Broken in 1.6.16"},
 		}}, nil
 	}
-	svc.SweepHasUpdate = func(uniqueID string, _ int) bool {
-		return uniqueID == "A.Fixable"
+	svc.SweepHasUpdate = func(uniqueID mod.ID, _ int) bool {
+		return uniqueID == "smapi:A.Fixable"
 	}
 	rep, err := svc.Sweep(context.Background(), "stardew")
 	if err != nil {
@@ -93,7 +95,7 @@ func TestSweepBrokenWithAndWithoutFix(t *testing.T) {
 	}
 	byID := map[string]SweepMod{}
 	for _, m := range rep.Profiles[0].Broken {
-		byID[m.UniqueID] = m
+		byID[m.ID.Local()] = m
 	}
 	if byID["A.Fixable"].Fix != fixUpdate {
 		t.Fatalf("fixable = %#v", byID["A.Fixable"])

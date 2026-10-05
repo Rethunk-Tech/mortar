@@ -22,16 +22,16 @@ func TestEnableTurnsOnRequiredDisabledDependencies(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "user", Source{Kind: KindLocal, Name: "user.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "Me.Core", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:Me.Core", false); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "Me.Opt", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:Me.Opt", false); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "Me.User", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:Me.User", false); err != nil {
 		t.Fatal(err)
 	}
-	got, also, err := e.enableMod("stardew", p.ID, "", "Me.User", true)
+	got, also, err := e.enableMod("stardew", p.ID, "", "smapi:Me.User", true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestEnableTurnsOnRequiredDisabledDependencies(t *testing.T) {
 	on := map[string]bool{}
 	for _, en := range got.Entries {
 		for _, m := range en.Mods {
-			on[m.UniqueID] = !hasID(en.Disabled, m.UniqueID)
+			on[m.ID.Local()] = !hasID(en.Disabled, m.ID)
 		}
 	}
 	if !on["Me.User"] || !on["Me.Core"] || on["Me.Opt"] {
@@ -74,13 +74,13 @@ func TestEnableSkipsRequiredWhenSettingIsNever(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "user", Source{Kind: KindLocal, Name: "user.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "Me.Core", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:Me.Core", false); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "Me.User", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:Me.User", false); err != nil {
 		t.Fatal(err)
 	}
-	got, also, err := e.enableMod("stardew", p.ID, "", "Me.User", true)
+	got, also, err := e.enableMod("stardew", p.ID, "", "smapi:Me.User", true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +90,7 @@ func TestEnableSkipsRequiredWhenSettingIsNever(t *testing.T) {
 	on := map[string]bool{}
 	for _, en := range got.Entries {
 		for _, m := range en.Mods {
-			on[m.UniqueID] = !hasID(en.Disabled, m.UniqueID)
+			on[m.ID.Local()] = !hasID(en.Disabled, m.ID)
 		}
 	}
 	if !on["Me.User"] || on["Me.Core"] {

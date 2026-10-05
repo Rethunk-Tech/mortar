@@ -12,17 +12,17 @@ func TestAttributeLogMapsFixtureByNameAndUniqueID(t *testing.T) {
 		t.Fatal(err)
 	}
 	mods := []ModRef{
-		{Name: "Content Patcher", UniqueID: "Pathoschild.ContentPatcher"},
-		{Name: "Lookup Anything", UniqueID: "Pathoschild.LookupAnything"},
+		{Name: "Content Patcher", ID: "smapi:Pathoschild.ContentPatcher"},
+		{Name: "Lookup Anything", ID: "smapi:Pathoschild.LookupAnything"},
 	}
 	got := AttributeLog(string(body), mods)
 	if len(got) != 2 {
 		t.Fatalf("got %#v", got)
 	}
-	if got[0].UniqueID != "Pathoschild.ContentPatcher" || got[0].Errors != 2 || got[0].Warnings != 0 {
+	if got[0].ID != "smapi:Pathoschild.ContentPatcher" || got[0].Errors != 2 || got[0].Warnings != 0 {
 		t.Fatalf("Content Patcher = %#v", got[0])
 	}
-	if got[1].UniqueID != "Pathoschild.LookupAnything" || got[1].Errors != 1 || got[1].Warnings != 0 {
+	if got[1].ID != "smapi:Pathoschild.LookupAnything" || got[1].Errors != 1 || got[1].Warnings != 0 {
 		t.Fatalf("Lookup Anything = %#v", got[1])
 	}
 }
@@ -32,7 +32,7 @@ func TestAttributeLogMatchesUniqueIDColumn(t *testing.T) {
 		"[19:43:51 WARN  Pathoschild.ContentPatcher] maybe\n" +
 		"[19:43:52 INFO  Pathoschild.ContentPatcher] fine\n"
 	got := AttributeLog(log, []ModRef{
-		{Name: "Content Patcher", UniqueID: "Pathoschild.ContentPatcher"},
+		{Name: "Content Patcher", ID: "smapi:Pathoschild.ContentPatcher"},
 	})
 	if len(got) != 1 || got[0].Errors != 1 || got[0].Warnings != 1 {
 		t.Fatalf("got %#v", got)
@@ -45,7 +45,7 @@ func TestAttributeLogIgnoresUnmappedModsAndContinuations(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := AttributeLog(string(body), []ModRef{
-		{Name: "Content Patcher", UniqueID: "Pathoschild.ContentPatcher"},
+		{Name: "Content Patcher", ID: "smapi:Pathoschild.ContentPatcher"},
 	})
 	if len(got) != 1 || got[0].Errors != 2 {
 		t.Fatalf("unmapped SMAPI and Lookup Anything must not land; got %#v", got)
@@ -55,7 +55,7 @@ func TestAttributeLogIgnoresUnmappedModsAndContinuations(t *testing.T) {
 func TestAttributeLogEmptyWhenNewerRunIsClean(t *testing.T) {
 	log := "[19:43:50 INFO  Content Patcher] loaded\n"
 	got := AttributeLog(log, []ModRef{
-		{Name: "Content Patcher", UniqueID: "Pathoschild.ContentPatcher"},
+		{Name: "Content Patcher", ID: "smapi:Pathoschild.ContentPatcher"},
 	})
 	if len(got) != 0 {
 		t.Fatalf("clean run must clear badges; got %#v", got)
@@ -64,14 +64,14 @@ func TestAttributeLogEmptyWhenNewerRunIsClean(t *testing.T) {
 
 func TestMatchModColumnIsExact(t *testing.T) {
 	mods := []ModRef{
-		{Name: "SpaceCore", UniqueID: "spacechase0.SpaceCore"},
-		{Name: "SpaceCore Extra", UniqueID: "Me.SpaceCoreExtra"},
+		{Name: "SpaceCore", ID: "smapi:spacechase0.SpaceCore"},
+		{Name: "SpaceCore Extra", ID: "smapi:Me.SpaceCoreExtra"},
 	}
 	if _, ok := MatchModColumn("Space", mods); ok {
 		t.Fatal("substring must not match")
 	}
 	got, ok := MatchModColumn("SpaceCore", mods)
-	if !ok || got.UniqueID != "spacechase0.SpaceCore" {
+	if !ok || got.ID != "smapi:spacechase0.SpaceCore" {
 		t.Fatalf("got %#v, %v", got, ok)
 	}
 	got, ok = MatchModColumn("spacechase0.SpaceCore", mods)

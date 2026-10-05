@@ -47,7 +47,7 @@ func TestPreviewEverywhereExcludesPinnedSkippedLocked(t *testing.T) {
 	}
 	e.Running = func(game, id string) bool { return game == "stardew" && id == c.ID }
 
-	got, err := e.PreviewEverywhere("stardew", "me.a")
+	got, err := e.PreviewEverywhere("stardew", "smapi:me.a")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func TestPreviewEverywhereExcludesPinnedSkippedLocked(t *testing.T) {
 
 func TestUpdateEverywhereTwoProfilesOneStoreItem(t *testing.T) {
 	e, a, b := everywhereEnv(t)
-	got, err := e.UpdateEverywhere("stardew", "me.a", "a-2")
+	got, err := e.UpdateEverywhere("stardew", "smapi:me.a", "a-2")
 	if err != nil {
 		t.Fatal(err)
 	}

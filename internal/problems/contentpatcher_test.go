@@ -118,9 +118,9 @@ func TestAssetConflicts(t *testing.T) {
 
 func TestItemConflictInfo(t *testing.T) {
 	hits := []packHit{
-		{id: "A", edits: []cpPatch{{shapes: []cpShape{{kind: 'r', x: 208, y: 192, w: 16, h: 16}}}}},
-		{id: "B", edits: []cpPatch{{shapes: []cpShape{{kind: 'r', x: 208, y: 192, w: 16, h: 16}}}}},
-		{id: "C", edits: []cpPatch{{shapes: []cpShape{{kind: 'r', x: 208, y: 192, w: 16, h: 16}}}}},
+		{id: "smapi:A", edits: []cpPatch{{shapes: []cpShape{{kind: 'r', x: 208, y: 192, w: 16, h: 16}}}}},
+		{id: "smapi:B", edits: []cpPatch{{shapes: []cpShape{{kind: 'r', x: 208, y: 192, w: 16, h: 16}}}}},
+		{id: "smapi:C", edits: []cpPatch{{shapes: []cpShape{{kind: 'r', x: 208, y: 192, w: 16, h: 16}}}}},
 	}
 	got := conflictOf("edit", "Maps/springobjects", hits)
 	if got.Info != "cell (208, 192)" {
@@ -149,9 +149,9 @@ func TestContentPatcherJSONNoise(t *testing.T) {
 		t.Fatal(err)
 	}
 	peer := testdataPack(t, "include_b")
-	mod := fromDisk(Installed{Key: "noise", Enabled: true, Folder: folder})
-	mod.Name, mod.UniqueID = "Pack.Noise", "Pack.Noise"
-	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{mod, peer})
+	im := fromDisk(Installed{Key: "noise", Enabled: true, Folder: folder})
+	im.Name, im.UniqueID = "Pack.Noise", "Pack.Noise"
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{im, peer})
 	if len(got.AssetConflicts) != 1 || got.AssetConflicts[0].Target != "maps/springobjects" {
 		t.Fatalf("got %+v", got.AssetConflicts)
 	}

@@ -29,7 +29,7 @@ func runEnv(t *testing.T) (*Service, profile.Profile, string, string) {
 func TestMissingFileCauseNamesKyuyaPack(t *testing.T) {
 	modsDir := filepath.Join(t.TempDir(), "mods")
 	path := filepath.Join(modsDir, "nexus-11780-74182", "[FS]Kyuya??s hats Pack", "assets", "hat.png")
-	got, ok := missingFileCause([]profile.Mod{{Key: "nexus-11780-74182", Name: "[FS]Kyuya's hats Pack", UniqueID: "Kyuya.Hats"}}, modsDir,
+	got, ok := missingFileCause([]profile.Mod{{Key: "nexus-11780-74182", Name: "[FS]Kyuya's hats Pack", ID: "smapi:Kyuya.Hats"}}, modsDir,
 		[]string{fmt.Sprintf("ContentLoadException: Could not find a part of the path '%s'", path)})
 	if !ok {
 		t.Fatal("missing-file cause was not classified")
@@ -131,7 +131,7 @@ func TestLastRunSummaryIncludesModSnapshot(t *testing.T) {
 	}
 	writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Alpha] old error\n")
 	g := game.Find("stardew")
-	ref := launch.ModRef{Name: "Alpha", UniqueID: "me.mod", Key: "old-key", Version: "1.0", SourceVersion: "1.0"}
+	ref := launch.ModRef{Name: "Alpha", ID: "smapi:me.mod", Key: "old-key", Version: "1.0", SourceVersion: "1.0"}
 	svc.record(g, p.ID, time.Now(), false, []launch.ModRef{ref})
 	_, summary, err := svc.LastRunSummary("stardew", p.ID)
 	if err != nil || len(summary.ModRefs) != 1 || summary.ModRefs[0] != ref {

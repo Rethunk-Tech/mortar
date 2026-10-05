@@ -16,16 +16,18 @@ import (
 	"testing"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/andybalholm/brotli"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-func nexus(key string, mod, file int, disabled ...string) profile.Entry {
+func nexus(key string, im, file int, disabled ...mod.ID) profile.Entry {
 	return profile.Entry{
 		Key:      key,
-		Source:   profile.Source{Kind: profile.KindNexus, ModID: mod, FileID: file},
-		Mods:     []profile.EntryMod{{UniqueID: "A." + key, Folder: "."}},
+		Source:   profile.Source{Kind: profile.KindNexus, ModID: im, FileID: file},
+		Mods:     []profile.Component{{ID: mod.SMAPI("A." + key), Folder: "."}},
 		Disabled: disabled,
 	}
 }
@@ -36,7 +38,7 @@ func sample() profile.Profile {
 		{Key: "smapi-4.1", Source: profile.Source{Kind: profile.SourceSMAPI}},
 		{Key: "bridge-1", Source: profile.Source{Kind: profile.SourceMortar}},
 		nexus("one", 541, 1000),
-		nexus("off", 7, 8, "A.off"),
+		nexus("off", 7, 8, "smapi:A.off"),
 		{Key: "loc.zip", Source: profile.Source{Kind: profile.KindLocal, Name: "loc.zip"}},
 		gh,
 		nexus("two", 2, 3),
@@ -74,7 +76,7 @@ func TestDetailsRoundTrip(t *testing.T) {
 	choices := map[string]map[string][]string{"Options": {"Pack": {"Optional"}}}
 	p := profile.Profile{Name: "Choices", Entries: []profile.Entry{{
 		Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 4, FileID: 5},
-		Mods: []profile.EntryMod{{UniqueID: "A.On", Folder: "."}, {UniqueID: "A.Off", Folder: "."}}, Disabled: []string{"A.Off"}, Fomod: choices,
+		Mods: []profile.Component{{ID: "smapi:A.On", Folder: "."}, {ID: "smapi:A.Off", Folder: "."}}, Disabled: []mod.ID{"smapi:A.Off"}, Fomod: choices,
 	}}}
 	res, err := Encode("stardew", p)
 	if err != nil {
@@ -84,7 +86,7 @@ func TestDetailsRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got.Entries) != 1 || !slices.Equal(got.Entries[0].Disabled, []string{"A.Off"}) ||
+	if len(got.Entries) != 1 || !slices.Equal(got.Entries[0].Disabled, []mod.ID{"smapi:A.Off"}) ||
 		fmt.Sprint(got.Entries[0].Fomod) != fmt.Sprint(choices) {
 		t.Fatalf("link details = %+v", got.Entries)
 	}
@@ -105,7 +107,7 @@ func TestDetailsRoundTrip(t *testing.T) {
 	if pv.Game != "stardew" || pv.SourceKeys["nexus"] != "stardewvalley" {
 		t.Fatalf("file origin = %q %v", pv.Game, pv.SourceKeys)
 	}
-	if len(pv.Entries) != 1 || !slices.Equal(pv.Entries[0].Disabled, []string{"A.Off"}) ||
+	if len(pv.Entries) != 1 || !slices.Equal(pv.Entries[0].Disabled, []mod.ID{"smapi:A.Off"}) ||
 		fmt.Sprint(pv.Entries[0].Fomod) != fmt.Sprint(choices) {
 		t.Fatalf("file details = %+v", pv.Entries)
 	}
@@ -143,7 +145,7 @@ func TestLinkDropsDetailsBeforeRefs(t *testing.T) {
 		sum := sha256.Sum256(fmt.Appendf(nil, "choice-%d", i))
 		p.Entries = append(p.Entries, profile.Entry{
 			Key: fmt.Sprint(i), Source: profile.Source{Kind: profile.KindNexus, ModID: i + 1, FileID: i + 2},
-			Mods:  []profile.EntryMod{{UniqueID: fmt.Sprintf("A.%d", i)}},
+			Mods:  []profile.Component{{ID: mod.SMAPI(fmt.Sprintf("A.%d", i))}},
 			Fomod: map[string]map[string][]string{"Step": {fmt.Sprintf("Group-%d", i): {fmt.Sprintf("%x", sum)}}},
 		})
 	}
@@ -291,7 +293,7 @@ func TestBundledNeverListed(t *testing.T) {
 	p := profile.Profile{Name: "x", Entries: []profile.Entry{
 		{Key: "smapi", Source: profile.Source{Kind: profile.SourceSMAPI}},
 		{Key: "bridge", Source: profile.Source{Kind: profile.SourceMortar}},
-		nexus("gone", 1, 2, "A.gone"),
+		nexus("gone", 1, 2, "smapi:A.gone"),
 	}}
 	res, err := Encode("stardew", p)
 	if err != nil || len(res.LeftOut) != 0 || len(res.Shared.Entries) != 0 {
@@ -342,7 +344,7 @@ func TestMortarFileRoundTrip(t *testing.T) {
 		"gh/config.json":           `{"g":1}`,
 		"one/inner/huge.json":      strings.Repeat(" ", MaxConfigBytes+1),
 	})
-	p.Entries[5].Mods = []profile.EntryMod{{UniqueID: "A.gh", Folder: "."}}
+	p.Entries[5].Mods = []profile.Component{{ID: "smapi:A.gh", Folder: "."}}
 	var buf bytes.Buffer
 	skipped, err := Write(&buf, "stardew", p, dir)
 	if err != nil {
@@ -364,7 +366,7 @@ func TestMortarFileRoundTrip(t *testing.T) {
 	}
 	got := map[string]string{}
 	for _, c := range pv.Configs {
-		got[c.UniqueID+"/"+c.Path] = string(c.Data)
+		got[c.ID.Local()+"/"+c.Path] = string(c.Data)
 	}
 	want := map[string]string{"A.one/config.json": `{"a":1}`, "A.one/data/deep.JSON": `{"b":2}`, "A.two/config.json": `{"c":3}`, "A.gh/config.json": `{"g":1}`}
 	if fmt.Sprint(got) != fmt.Sprint(want) {
@@ -377,7 +379,7 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 		nexus("one", 541, 1000),
 		{
 			Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "owner/repo", Tag: "v1", Asset: "a.zip"},
-			Mods: []profile.EntryMod{{UniqueID: "G", Folder: "."}}, Note: "gh note", Tags: []string{"git"},
+			Mods: []profile.Component{{ID: "smapi:G", Folder: "."}}, Note: "gh note", Tags: []string{"git"},
 		},
 	}}
 	p.Entries[0].Note = "farm tweak\n\tsecond line"
@@ -450,7 +452,7 @@ func TestCollectOmitsEntryNotesWhenDisabled(t *testing.T) {
 	p := profile.Profile{Name: "x", Entries: []profile.Entry{
 		{
 			Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 2},
-			Mods: []profile.EntryMod{{UniqueID: "A", Folder: "."}}, Note: "secret", Tags: []string{"t"},
+			Mods: []profile.Component{{ID: "smapi:A", Folder: "."}}, Note: "secret", Tags: []string{"t"},
 		},
 	}}
 	s, _, _ := Collect(p, Include{Notes: false, FomodChoices: true})
@@ -516,37 +518,37 @@ func zipOf(t *testing.T, files ...[2]string) string {
 }
 
 func TestReadRejects(t *testing.T) {
-	head := [2]string{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","notes":"","entries":[{"s":"nexus","mod":1,"file":2}],"uniqueIds":["A.one"]}`}
+	head := [2]string{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","notes":"","entries":[{"s":"nexus","mod":1,"file":2}],"ids":["smapi:A.one"]}`}
 	for name, files := range map[string][][2]string{
-		"no profile":         {{"configs/A.one/c.json", "{}"}},
-		"traversal":          {head, {"configs/A.one/../../x.json", "{}"}},
-		"traversal mid":      {head, {"configs/A.one/a/../../x.json", "{}"}},
-		"absolute":           {head, {"configs/A.one//etc/x.json", "{}"}},
-		"backslash":          {head, {"configs/A.one/a\\b.json", "{}"}},
-		"drive":              {head, {"configs/A.one/C:x.json", "{}"}},
-		"non-json":           {head, {"configs/A.one/run.exe", "MZ"}},
-		"json in name only":  {head, {"configs/A.one/x.json.dll", "MZ"}},
-		"dotfile segment":    {head, {"configs/A.one/.hidden/x.json", "{}"}},
-		"reserved":           {head, {"configs/A.one/NUL.json", "{}"}},
-		"unknown uniqueid":   {head, {"configs/Evil.Mod/c.json", "{}"}},
+		"no profile":         {{"configs/smapi/A.one/c.json", "{}"}},
+		"traversal":          {head, {"configs/smapi/A.one/../../x.json", "{}"}},
+		"traversal mid":      {head, {"configs/smapi/A.one/a/../../x.json", "{}"}},
+		"absolute":           {head, {"configs/smapi/A.one//etc/x.json", "{}"}},
+		"backslash":          {head, {"configs/smapi/A.one/a\\b.json", "{}"}},
+		"drive":              {head, {"configs/smapi/A.one/C:x.json", "{}"}},
+		"non-json":           {head, {"configs/smapi/A.one/run.exe", "MZ"}},
+		"json in name only":  {head, {"configs/smapi/A.one/x.json.dll", "MZ"}},
+		"dotfile segment":    {head, {"configs/smapi/A.one/.hidden/x.json", "{}"}},
+		"reserved":           {head, {"configs/smapi/A.one/NUL.json", "{}"}},
+		"unknown uniqueid":   {head, {"configs/smapi/Evil.Mod/c.json", "{}"}},
 		"traversal uniqueid": {head, {"configs/../c.json", "{}"}},
 		"outside layout":     {head, {"mods/x.json", "{}"}},
-		"duplicate":          {head, {"configs/A.one/c.json", "{}"}, {"configs/a.ONE/C.json", "{}"}},
+		"duplicate":          {head, {"configs/smapi/A.one/c.json", "{}"}, {"configs/smapi/a.ONE/C.json", "{}"}},
 		"no uniqueid folder": {head, {"configs/c.json", "{}"}},
-		"bad id in list":     {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","entries":[],"uniqueIds":["../x"]}`}},
+		"bad id in list":     {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","entries":[],"ids":["smapi:../x"]}`}},
 		"newer version":      {{"profile.json", `{"version":4,"name":"x","entries":[]}`}},
 		"bad entry":          {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","entries":[{"s":"nexus","mod":0,"file":1}]}`}},
 		"version 2":          {{"profile.json", `{"version":2,"name":"x","entries":[]}`}},
 		"bad name":           {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"","entries":[]}`}},
 		"not json":           {{"profile.json", `nope`}},
-		"oversized config":   {head, {"configs/A.one/c.json", strings.Repeat(" ", MaxConfigBytes+1)}},
+		"oversized config":   {head, {"configs/smapi/A.one/c.json", strings.Repeat(" ", MaxConfigBytes+1)}},
 		"oversized profile":  {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","notes":"` + strings.Repeat("a", maxProfileBytes) + `","entries":[]}`}},
 	} {
 		if _, err := Read(zipOf(t, files...)); err == nil {
 			t.Errorf("%s: accepted", name)
 		}
 	}
-	if _, err := Read(zipOf(t, head, [2]string{"configs/A.one/ok.json", "{}"})); err != nil {
+	if _, err := Read(zipOf(t, head, [2]string{"configs/smapi/A.one/ok.json", "{}"})); err != nil {
 		t.Errorf("valid file refused: %v", err)
 	}
 	if _, err := Read(filepath.Join(t.TempDir(), "missing.mortar")); err == nil {
@@ -562,9 +564,9 @@ func TestReadRejects(t *testing.T) {
 }
 
 func TestReadEntryCap(t *testing.T) {
-	files := [][2]string{{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","entries":[],"uniqueIds":["A.one"]}`}}
+	files := [][2]string{{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","entries":[],"ids":["smapi:A.one"]}`}}
 	for i := range MaxConfigFiles + 1 {
-		files = append(files, [2]string{fmt.Sprintf("configs/A.one/%d.json", i), "{}"})
+		files = append(files, [2]string{fmt.Sprintf("configs/smapi/A.one/%d.json", i), "{}"})
 	}
 	if _, err := Read(zipOf(t, files...)); err == nil {
 		t.Error("too many entries accepted")

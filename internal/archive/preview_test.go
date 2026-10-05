@@ -18,7 +18,7 @@ func TestPreviewArchiveZipFindsManifestsAndFomod(t *testing.T) {
 	if len(p.Entries) != 4 || !p.Entries[0].IsDir || p.Entries[0].Path != "Mod" {
 		t.Fatalf("entries = %+v", p.Entries)
 	}
-	if len(p.Manifests) != 1 || p.Manifests[0] != (PreviewManifest{Folder: "Mod", UniqueID: "A.Mod", Name: "Mod", Version: "1.2.0"}) {
+	if len(p.Manifests) != 1 || p.Manifests[0] != (PreviewManifest{Folder: "Mod", ID: "smapi:A.Mod", Name: "Mod", Version: "1.2.0"}) {
 		t.Fatalf("manifests = %+v", p.Manifests)
 	}
 	if !p.Fomod || p.Truncated || p.TotalSize == 0 {

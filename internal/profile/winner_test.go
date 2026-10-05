@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
@@ -19,7 +21,7 @@ func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "lose", Source{Kind: KindLocal, Name: "lose.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	got, err := e.SetWinner("stardew", p.ID, "win", "Me.Lose", true)
+	got, err := e.SetWinner("stardew", p.ID, "win", "smapi:Me.Lose", true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +29,7 @@ func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {
 		t.Fatalf("LoadAfter = %+v", got.Entries)
 	}
 	assertOptionalDep(t, winnerManifest(t, e, p.ID, "win"), "Me.Lose", true)
-	again, err := e.SetWinner("stardew", p.ID, "win", "Me.Lose", true)
+	again, err := e.SetWinner("stardew", p.ID, "win", "smapi:Me.Lose", true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +37,7 @@ func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {
 		t.Fatalf("second add lost LoadAfter: %+v", again.Entries)
 	}
 	assertOptionalDep(t, winnerManifest(t, e, p.ID, "win"), "Me.Lose", true)
-	cleared, err := e.SetWinner("stardew", p.ID, "win", "Me.Lose", false)
+	cleared, err := e.SetWinner("stardew", p.ID, "win", "smapi:Me.Lose", false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +45,7 @@ func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {
 		t.Fatalf("undo left LoadAfter: %+v", cleared.Entries)
 	}
 	assertOptionalDep(t, winnerManifest(t, e, p.ID, "win"), "Me.Lose", false)
-	onceMore, err := e.SetWinner("stardew", p.ID, "win", "Me.Lose", false)
+	onceMore, err := e.SetWinner("stardew", p.ID, "win", "smapi:Me.Lose", false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +67,7 @@ func TestLoadAfterReappliedAfterUpdate(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "b-1", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetWinner("stardew", p.ID, "a-1", "me.b", true); err != nil {
+	if _, err := e.SetWinner("stardew", p.ID, "a-1", "smapi:me.b", true); err != nil {
 		t.Fatal(err)
 	}
 	got, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2")
@@ -84,7 +86,7 @@ func hasLoadAfter(p Profile, key, loser string) bool {
 			continue
 		}
 		for _, id := range e.LoadAfter {
-			if SameID(id, loser) {
+			if mod.Equal(id, mod.SMAPI(loser)) {
 				return true
 			}
 		}
@@ -105,7 +107,7 @@ func assertOptionalDep(t *testing.T, raw, uniqueID string, want bool) {
 	}
 	got := false
 	for _, d := range m.Dependencies {
-		if SameID(d.UniqueID, uniqueID) && !d.Required {
+		if d.ModID() == mod.SMAPI(uniqueID) && !d.Required {
 			got = true
 			break
 		}
@@ -117,7 +119,7 @@ func assertOptionalDep(t *testing.T, raw, uniqueID string, want bool) {
 
 func TestRewriteManifestDepsJSONC(t *testing.T) {
 	raw := []byte("\xef\xbb\xbf{\n  // comment\n  \"Name\": \"Win\",\n  \"UniqueID\": \"Me.Win\",\n}\n")
-	out, err := rewriteManifestDeps(raw, []string{"Me.Lose"}, nil)
+	out, err := rewriteManifestDeps(raw, []mod.ID{"smapi:Me.Lose"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -27,7 +27,7 @@ func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "pack", Source{Kind: KindLocal, Name: "pack.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "pack", "me.off", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "pack", "smapi:me.off", false); err != nil {
 		t.Fatal(err)
 	}
 	if got, err := svc.DotHiddenMods("stardew", p.ID, ""); err != nil || len(got) != 0 {
@@ -43,7 +43,7 @@ func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
 		t.Fatalf("hidden = %+v", got)
 	}
 	for _, h := range got {
-		if h.Key != "pack" || want[h.UniqueID] != h.Folder {
+		if h.Key != "pack" || want[h.ID.Local()] != h.Folder {
 			t.Errorf("unexpected %+v", h)
 		}
 	}

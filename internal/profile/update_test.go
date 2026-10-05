@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -103,7 +105,7 @@ func TestUpdateKeepsDisabledFolderAndRollsBack(t *testing.T) {
 	e, p := updEnv(t,
 		map[string]string{"Pack/A/manifest.json": m, "Pack/A/cfg.json": "v1"},
 		map[string]string{"Pack/Moved/A/manifest.json": m, "Pack/Moved/A/cfg.json": "v2"})
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "me.a", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:me.a", false); err != nil {
 		t.Fatal(err)
 	}
 	writeFile(t, e.mods(p.ID), "a-1/Pack/.A/data.json", "save")
@@ -112,7 +114,7 @@ func TestUpdateKeepsDisabledFolderAndRollsBack(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(got.Entries[0].Disabled, []string{"me.a"}) || got.Entries[0].Mods[0].Folder != "Pack/Moved/A" {
+	if !slices.Equal(got.Entries[0].Disabled, []mod.ID{"smapi:me.a"}) || got.Entries[0].Mods[0].Folder != "Pack/Moved/A" {
 		t.Fatalf("entry = %+v", got.Entries[0])
 	}
 	if b := read(t, filepath.Join(e.mods(p.ID), "a-2", "Pack", "Moved", ".A", "cfg.json")); b != "v2" {
@@ -123,7 +125,7 @@ func TestUpdateKeepsDisabledFolderAndRollsBack(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if en := back.Entries[0]; en.Key != "a-1" || en.PreviousKey != "a-2" || !slices.Equal(en.Disabled, []string{"me.a"}) {
+	if en := back.Entries[0]; en.Key != "a-1" || en.PreviousKey != "a-2" || !slices.Equal(en.Disabled, []mod.ID{"smapi:me.a"}) {
 		t.Fatalf("rolled back = %+v", en)
 	}
 	if b := read(t, filepath.Join(e.mods(p.ID), "a-1", "Pack", ".A", "cfg.json")); b != "v1" {

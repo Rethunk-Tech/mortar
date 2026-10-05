@@ -134,7 +134,7 @@ func TestRejects(t *testing.T) {
 func TestModFolderRejectsUnknown(t *testing.T) {
 	s := newStore(t)
 	p := mustCreate(t, s, "x")
-	if _, err := s.ModFolder("stardew", p.ID, "", "nope.Mod"); err == nil {
+	if _, err := s.ModFolder("stardew", p.ID, "", "smapi:nope.Mod"); err == nil {
 		t.Fatal("unknown mod accepted")
 	}
 }

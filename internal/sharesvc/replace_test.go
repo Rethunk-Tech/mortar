@@ -5,6 +5,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
@@ -12,14 +14,14 @@ import (
 func TestPlanReplaceKeepsLocalAndListsRemovals(t *testing.T) {
 	t.Parallel()
 	p := profile.Profile{Entries: []profile.Entry{
-		{Key: "smapi-1", Source: profile.Source{Kind: profile.SourceSMAPI}, Mods: []profile.EntryMod{{Name: "SMAPI"}}},
-		{Key: "n-100-1", Source: profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}, Mods: []profile.EntryMod{{Name: "Keep", UniqueID: "A.Keep"}}},
-		{Key: "n-200-2", Source: profile.Source{Kind: profile.KindNexus, ModID: 200, FileID: 2}, Mods: []profile.EntryMod{{Name: "Drop", UniqueID: "A.Drop"}}},
-		{Key: "n-100-9", Source: profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 9}, Mods: []profile.EntryMod{{Name: "Old file", UniqueID: "A.Keep"}}},
-		{Key: "local-x", Source: profile.Source{Kind: profile.KindLocal, Name: "mine.zip"}, Mods: []profile.EntryMod{{Name: "Mine", UniqueID: "A.Mine"}}},
+		{Key: "smapi-1", Source: profile.Source{Kind: profile.SourceSMAPI}, Mods: []profile.Component{{Name: "SMAPI"}}},
+		{Key: "n-100-1", Source: profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}, Mods: []profile.Component{{Name: "Keep", ID: "smapi:A.Keep"}}},
+		{Key: "n-200-2", Source: profile.Source{Kind: profile.KindNexus, ModID: 200, FileID: 2}, Mods: []profile.Component{{Name: "Drop", ID: "smapi:A.Drop"}}},
+		{Key: "n-100-9", Source: profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 9}, Mods: []profile.Component{{Name: "Old file", ID: "smapi:A.Keep"}}},
+		{Key: "local-x", Source: profile.Source{Kind: profile.KindLocal, Name: "mine.zip"}, Mods: []profile.Component{{Name: "Mine", ID: "smapi:A.Mine"}}},
 	}}
 	mods := []Mod{
-		{Key: "a", Site: SiteNexus, ModID: 100, FileID: 1, UniqueIDs: []string{"A.Keep"}},
+		{Key: "a", Site: SiteNexus, ModID: 100, FileID: 1, IDs: []mod.ID{"smapi:A.Keep"}},
 	}
 	got := PlanReplace(p, mods)
 	if !slices.Equal(got.KeepLocal, []string{"Mine"}) {

@@ -32,7 +32,7 @@ func TestConflictEvidenceEditImageOverlap(t *testing.T) {
 	}
 	byID := map[string]ConflictEvidence{}
 	for _, e := range ev {
-		byID[e.PackID] = e
+		byID[e.PackID.Local()] = e
 		if e.Action != kindEditImage || e.Source != "content.json" || e.Index != 0 || e.Target != "tilesheets/crops" {
 			t.Fatalf("evidence %+v", e)
 		}

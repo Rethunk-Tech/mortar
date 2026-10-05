@@ -15,7 +15,7 @@ func TestModsFilesListsExtras(t *testing.T) {
 		},
 	}
 	r := invoke(t, results, "mods", "files", "stardew", "Farm", "A.Mod")
-	if r.code != 0 || r.calls[0].method != "mods.files" || r.calls[0].params.UniqueIDs[0] != "A.Mod" {
+	if r.code != 0 || r.calls[0].method != "mods.files" || r.calls[0].params.IDs[0] != "A.Mod" {
 		t.Fatalf("call: %+v", r)
 	}
 	if !strings.Contains(r.out, "nexus-1-2") || !strings.Contains(r.out, "Optional (1.0)") {

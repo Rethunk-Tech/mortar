@@ -98,7 +98,7 @@ func TestResolveGroupsAndSubstitutes(t *testing.T) {
 		900:  {nf(9, "1.2", "MAIN", true)},
 		1000: {nf(10, "1.0", "MAIN", true)},
 	}
-	target := []profile.Entry{{Key: "nexus-600-6", Source: profile.Source{Kind: profile.KindNexus, ModID: 600, FileID: 6}, Mods: []profile.EntryMod{{UniqueID: "A.Have", Name: "Have"}}}}
+	target := []profile.Entry{{Key: "nexus-600-6", Source: profile.Source{Kind: profile.KindNexus, ModID: 600, FileID: 6}, Mods: []profile.Component{{ID: "smapi:A.Have", Name: "Have"}}}}
 	r := testResolver(files, target)
 	refs := []share.Ref{
 		{ModID: 100, FileID: 1},
@@ -116,7 +116,7 @@ func TestResolveGroupsAndSubstitutes(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		mod      Mod
+		im       Mod
 		state    string
 		file     int
 		differ   bool
@@ -134,14 +134,14 @@ func TestResolveGroupsAndSubstitutes(t *testing.T) {
 		{"github", Mod{Repo: "o/r"}, StateDownload, 0, false, "", true},
 	}
 	for _, tt := range tests {
-		got := byKey(mods, tt.mod)
+		got := byKey(mods, tt.im)
 		if got.State != tt.state || got.FileID != tt.file || got.Different != tt.differ || got.Reason != tt.reason || got.Unverified != tt.unverify {
 			t.Errorf("%s: got %+v", tt.name, got)
 		}
 	}
 
 	dep := byKey(mods, Mod{ModID: 900})
-	if dep.State != StateDependency || dep.FileID != 9 || !slices.Contains(dep.UniqueIDs, "B.Dep") {
+	if dep.State != StateDependency || dep.FileID != 9 || !slices.Contains(dep.IDs, "smapi:B.Dep") {
 		t.Errorf("dependency = %+v", dep)
 	}
 	kinds := map[string]Problem{}

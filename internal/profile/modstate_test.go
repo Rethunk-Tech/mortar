@@ -15,7 +15,7 @@ func TestModFolderByKeyPicksTheCopy(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, key := range []string{"a-1", "a-2"} {
-		got, err := e.ModFolder("stardew", p.ID, key, "me.a")
+		got, err := e.ModFolder("stardew", p.ID, key, "smapi:me.a")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -23,7 +23,7 @@ func TestModFolderByKeyPicksTheCopy(t *testing.T) {
 			t.Errorf("ModFolder(%s) = %s, want %s", key, got, want)
 		}
 	}
-	if _, err := e.ModFolder("stardew", p.ID, "a-3", "me.a"); err == nil {
+	if _, err := e.ModFolder("stardew", p.ID, "a-3", "smapi:me.a"); err == nil {
 		t.Error("unknown key accepted")
 	}
 }
@@ -39,13 +39,13 @@ func TestInstalledReturnsModFolders(t *testing.T) {
 	if len(installed) != 1 {
 		t.Fatalf("Installed returned %d mods, want 1", len(installed))
 	}
-	for _, mod := range installed {
-		want, err := e.ModFolder("stardew", p.ID, mod.Key, mod.UniqueID)
+	for _, im := range installed {
+		want, err := e.ModFolder("stardew", p.ID, im.Key, im.ModID())
 		if err != nil {
 			t.Fatal(err)
 		}
-		if mod.Folder != want {
-			t.Errorf("Installed(%s).Folder = %s, want %s", mod.Key, mod.Folder, want)
+		if im.Folder != want {
+			t.Errorf("Installed(%s).Folder = %s, want %s", im.Key, im.Folder, want)
 		}
 	}
 }
@@ -58,7 +58,7 @@ func TestModStateAndResetConfig(t *testing.T) {
 	svc := NewService(e.Store, t.TempDir(), nil)
 	state := func() ModState {
 		t.Helper()
-		st, err := svc.ModState("stardew", p.ID, "a-1", "me.a")
+		st, err := svc.ModState("stardew", p.ID, "a-1", "smapi:me.a")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -72,7 +72,7 @@ func TestModStateAndResetConfig(t *testing.T) {
 	if st := state(); st.Config != ConfigChanged {
 		t.Fatalf("edited = %+v", st)
 	}
-	if err := svc.ResetConfig("stardew", p.ID, "a-1", "me.a"); err != nil {
+	if err := svc.ResetConfig("stardew", p.ID, "a-1", "smapi:me.a"); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(cfg); !os.IsNotExist(err) {
@@ -81,7 +81,7 @@ func TestModStateAndResetConfig(t *testing.T) {
 	if st := state(); st.Config != ConfigNone {
 		t.Fatalf("after reset = %+v", st)
 	}
-	if err := svc.ResetConfig("stardew", p.ID, "a-1", "me.a"); err != nil {
+	if err := svc.ResetConfig("stardew", p.ID, "a-1", "smapi:me.a"); err != nil {
 		t.Fatalf("second reset: %v", err)
 	}
 }
@@ -89,11 +89,11 @@ func TestModStateAndResetConfig(t *testing.T) {
 func TestConfigPathStaysInTheModFolder(t *testing.T) {
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m + " "})
-	if _, err := e.ConfigPath("stardew", p.ID, "a-1", "me.a"); err == nil {
+	if _, err := e.ConfigPath("stardew", p.ID, "a-1", "smapi:me.a"); err == nil {
 		t.Fatal("missing config.json opened")
 	}
 	writeFile(t, e.mods(p.ID), "a-1/A/config.json", "mine")
-	got, err := e.ConfigPath("stardew", p.ID, "a-1", "me.a")
+	got, err := e.ConfigPath("stardew", p.ID, "a-1", "smapi:me.a")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +105,7 @@ func TestConfigPathStaysInTheModFolder(t *testing.T) {
 		t.Fatalf("escaped the mod folder: %s", got)
 	}
 	svc := NewService(e.Store, t.TempDir(), nil)
-	if err := svc.OpenConfig("stardew", p.ID, "a-1", "nope.Mod"); err == nil {
+	if err := svc.OpenConfig("stardew", p.ID, "a-1", "smapi:nope.Mod"); err == nil {
 		t.Fatal("unknown mod opened")
 	}
 }
@@ -114,17 +114,17 @@ func TestReadWriteConfigRoundTripAndLock(t *testing.T) {
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/config.json": `{"z":1,"n":1.5}`}, map[string]string{"A/manifest.json": m + " "})
 	svc := NewService(e.Store, t.TempDir(), nil)
-	got, err := svc.ReadConfig("stardew", p.ID, "a-1", "me.a")
+	got, err := svc.ReadConfig("stardew", p.ID, "a-1", "smapi:me.a")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got != "{\n  \"z\": 1,\n  \"n\": 1.5\n}\n" {
 		t.Fatalf("read = %s", got)
 	}
-	if err := svc.WriteConfig("stardew", p.ID, "a-1", "me.a", `{"z":1,"n":1.5,"s":"ok"}`); err != nil {
+	if err := svc.WriteConfig("stardew", p.ID, "a-1", "smapi:me.a", `{"z":1,"n":1.5,"s":"ok"}`); err != nil {
 		t.Fatal(err)
 	}
-	got, err = svc.ReadConfig("stardew", p.ID, "a-1", "me.a")
+	got, err = svc.ReadConfig("stardew", p.ID, "a-1", "smapi:me.a")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,15 +138,15 @@ func TestReadWriteConfigRoundTripAndLock(t *testing.T) {
 		t.Fatalf("wrote:\n%s", got)
 	}
 	e.Running = func(_, id string) bool { return id == p.ID }
-	if err := svc.WriteConfig("stardew", p.ID, "a-1", "me.a", `{"z":2}`); err == nil {
+	if err := svc.WriteConfig("stardew", p.ID, "a-1", "smapi:me.a", `{"z":2}`); err == nil {
 		t.Fatal("write while running")
 	} else if _, ok := errors.AsType[*RunningError](err); !ok {
 		t.Fatalf("err = %v, want RunningError", err)
 	}
-	if _, err := svc.ReadConfig("stardew", p.ID, "a-1", "nope.Mod"); err == nil {
+	if _, err := svc.ReadConfig("stardew", p.ID, "a-1", "smapi:nope.Mod"); err == nil {
 		t.Fatal("unknown mod read")
 	}
-	if err := svc.WriteConfig("stardew", p.ID, "a-1", "nope.Mod", `{}`); err == nil {
+	if err := svc.WriteConfig("stardew", p.ID, "a-1", "smapi:nope.Mod", `{}`); err == nil {
 		t.Fatal("unknown mod write")
 	}
 }
@@ -155,7 +155,7 @@ func TestReadConfigKeepsLargeNumbersAndComments(t *testing.T) {
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/config.json": "{\n// accepted\n\"large\": 9007199254740993,\n\"tail\": [1,],\n}"}, nil)
 	svc := NewService(e.Store, t.TempDir(), nil)
-	got, err := svc.ReadConfig("stardew", p.ID, "a-1", "me.a")
+	got, err := svc.ReadConfig("stardew", p.ID, "a-1", "smapi:me.a")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestRollBackThroughService(t *testing.T) {
 	if _, err := svc.UpdateEntry("stardew", p.ID, "a-1", "a-2"); err != nil {
 		t.Fatal(err)
 	}
-	st, err := svc.ModState("stardew", p.ID, "a-2", "me.a")
+	st, err := svc.ModState("stardew", p.ID, "a-2", "smapi:me.a")
 	if err != nil || st.PreviousVersion != "1.0.0" {
 		t.Fatalf("state = %+v, %v", st, err)
 	}

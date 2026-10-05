@@ -30,7 +30,7 @@ func TestRunErrorsFromSummary(t *testing.T) {
 		t.Fatalf("got %d problems, want 1: %#v", len(got), got)
 	}
 	row := got[0]
-	if row.Key != "a" || row.UniqueID != "author.alpha" || row.Count != 2 || row.First != "first error" {
+	if row.Key != "a" || row.ID != "smapi:author.alpha" || row.Count != 2 || row.First != "first error" {
 		t.Fatalf("row = %#v", row)
 	}
 	if !row.Severe || row.RunID != "run-1" {
@@ -69,15 +69,15 @@ func TestRunErrorsFromSummary_matchByUniqueID(t *testing.T) {
 }
 
 func TestRunErrorsFromSummaryMarksModsUpdatedSinceRun(t *testing.T) {
-	mod := installedMod("new-key", "Alpha", "me.mod", true)
-	mod.Version, mod.SourceVersion = "2.0", "2.0"
+	im := installedMod("new-key", "Alpha", "me.mod", true)
+	im.Version, im.SourceVersion = "2.0", "2.0"
 	summary := launch.Summary{
 		ModRefs: []launch.ModRef{{
-			Key: "old-key", Name: "Alpha", UniqueID: "me.mod", Version: "1.0", SourceVersion: "1.0",
+			Key: "old-key", Name: "Alpha", ID: "smapi:me.mod", Version: "1.0", SourceVersion: "1.0",
 		}},
 		Mods: []launch.ModError{{Mod: "Alpha", Count: 1, First: "old error"}},
 	}
-	got := RunErrorsFromSummary("run", summary, []Installed{mod})
+	got := RunErrorsFromSummary("run", summary, []Installed{im})
 	if len(got) != 1 || got[0].Key != "new-key" || !got[0].Updated {
 		t.Fatalf("updated row = %#v", got)
 	}

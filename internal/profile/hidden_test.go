@@ -14,7 +14,7 @@ func TestBundledModsAreHiddenAndKept(t *testing.T) {
 		t.Fatal(err)
 	}
 	user, err := e.UserMods("stardew", p.ID)
-	if err != nil || len(user) != 1 || user[0].UniqueID != "Other" {
+	if err != nil || len(user) != 1 || user[0].ID != "smapi:Other" {
 		t.Fatalf("user mods = %+v, %v", user, err)
 	}
 	all, err := e.Mods("stardew", p.ID)

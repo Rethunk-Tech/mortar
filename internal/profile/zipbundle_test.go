@@ -39,7 +39,7 @@ func TestExportRestoreRoundTrip(t *testing.T) {
 	if err := fsx.WriteFile(cfg, []byte(`{"ok":true}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", src.ID, "local-a", "X.A", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", src.ID, "local-a", "smapi:X.A", false); err != nil {
 		t.Fatal(err)
 	}
 	img := filepath.Join(t.TempDir(), "c.png")
@@ -81,7 +81,7 @@ func TestExportRestoreRoundTrip(t *testing.T) {
 			break
 		}
 	}
-	cfgText, err := e.ReadConfig("stardew", got.ID, key, "X.A")
+	cfgText, err := e.ReadConfig("stardew", got.ID, key, "smapi:X.A")
 	if err != nil || cfgText != "{\n  \"ok\": true\n}\n" {
 		t.Fatalf("config = %q %v", cfgText, err)
 	}
@@ -145,10 +145,10 @@ func assertSameUserMods(t *testing.T, a, b Profile) {
 			}
 			off := map[string]bool{}
 			for _, id := range e.Disabled {
-				off[strings.ToLower(id)] = true
+				off[strings.ToLower(string(id))] = true
 			}
 			for _, m := range e.Mods {
-				out = append(out, row{strings.ToLower(m.UniqueID), m.Version, off[strings.ToLower(m.UniqueID)]})
+				out = append(out, row{m.ID.Fold(), m.Version, off[m.ID.Fold()]})
 			}
 		}
 		return out

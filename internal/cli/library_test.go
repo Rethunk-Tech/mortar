@@ -27,7 +27,7 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 		"library.strays.move":       profile.GameModsResult{Imported: 1},
 		"queue.retry-failed":        queue.RetryAllResult{Requeued: 2},
 		"data.location":             datasvc.DataLocation{Dir: "/d", Portable: true},
-		"archive.preview":           archive.Preview{Manifests: []archive.PreviewManifest{{UniqueID: "A.B", Name: "Ab"}}},
+		"archive.preview":           archive.Preview{Manifests: []archive.PreviewManifest{{ID: "smapi:A.B", Name: "Ab"}}},
 	}
 	cases := []struct {
 		args   []string
@@ -44,7 +44,7 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 		{[]string{"library", "old-files", "stardew", "Farm"}, "library.old-files", func(p control.Params) bool { return p.Profile == "Farm" }, "Mod"},
 		{[]string{"library", "old-files", "stardew", "Farm", "--delete", "k"}, "library.old-files.resolve", func(p control.Params) bool { return p.Key == "k" && !p.Set }, "Deleted"},
 		{[]string{"library", "strays", "stardew"}, "library.strays", func(p control.Params) bool { return p.Game == "stardew" }, "Stray"},
-		{[]string{"library", "strays", "stardew", "Farm", "--move", "A", "--move", "B"}, "library.strays.move", func(p control.Params) bool { return len(p.UniqueIDs) == 2 && p.Profile == "Farm" }, "Moved 1"},
+		{[]string{"library", "strays", "stardew", "Farm", "--move", "A", "--move", "B"}, "library.strays.move", func(p control.Params) bool { return len(p.IDs) == 2 && p.Profile == "Farm" }, "Moved 1"},
 		{[]string{"queue", "retry-failed"}, "queue.retry-failed", func(p control.Params) bool { return true }, "Requeued 2"},
 		{[]string{"data", "location"}, "data.location", func(p control.Params) bool { return true }, "Portable"},
 		{[]string{"archive", "preview", "/tmp/a.zip"}, "archive.preview", func(p control.Params) bool { return p.Path == "/tmp/a.zip" }, "A.B"},

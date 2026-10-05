@@ -60,7 +60,7 @@ func TestResolveSMAPIProblemModsFillsUniqueID(t *testing.T) {
 	problems := []SMAPIProblem{{
 		Kind: SMAPIProblemTooOld, ModID: "Automate", ModName: "Automate", Fix: SMAPIFixUpdate, Detail: "x",
 	}}
-	got := ResolveSMAPIProblemMods(problems, []ModRef{{Name: "Automate", UniqueID: "Pathoschild.Automate"}})
+	got := ResolveSMAPIProblemMods(problems, []ModRef{{Name: "Automate", ID: "smapi:Pathoschild.Automate"}})
 	if got[0].ModID != "Pathoschild.Automate" {
 		t.Fatalf("got %#v", got)
 	}

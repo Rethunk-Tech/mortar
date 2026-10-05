@@ -11,6 +11,8 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -155,7 +157,7 @@ func TestImportFromMortarFileRecordsOrigin(t *testing.T) {
 		Entries: []profile.Entry{
 			{
 				Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"},
-				Mods: []profile.EntryMod{{UniqueID: "G.Mod", Name: "Gee", Folder: "."}},
+				Mods: []profile.Component{{ID: "smapi:G.Mod", Name: "Gee", Folder: "."}},
 			},
 		},
 	}
@@ -253,17 +255,17 @@ func TestReceiveRoutesLinksAndFiles(t *testing.T) {
 }
 
 func TestDescribeGroupsAndLeftOut(t *testing.T) {
-	nx := func(key string, mod int, name string, disabled ...string) profile.Entry {
+	nx := func(key string, im int, name string, disabled ...mod.ID) profile.Entry {
 		return profile.Entry{
-			Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: mod, FileID: 1},
-			Mods: []profile.EntryMod{{UniqueID: "U." + key, Name: name}}, Disabled: disabled,
+			Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: im, FileID: 1},
+			Mods: []profile.Component{{ID: mod.SMAPI("U." + key), Name: name}}, Disabled: disabled,
 		}
 	}
 	p := profile.Profile{Name: "Farm", Entries: []profile.Entry{
 		{Key: "smapi-4", Source: profile.Source{Kind: profile.SourceSMAPI}},
-		nx("a", 1, "Alpha"), nx("b", 2, "Beta", "U.b"),
+		nx("a", 1, "Alpha"), nx("b", 2, "Beta", "smapi:U.b"),
 		{Key: "loc", Source: profile.Source{Kind: profile.KindLocal, Name: "mine.zip"}},
-		{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"}, Mods: []profile.EntryMod{{UniqueID: "G", Name: "Gee"}}},
+		{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"}, Mods: []profile.Component{{ID: "smapi:G", Name: "Gee"}}},
 	}}
 	info, err := describe("stardew", p)
 	if err != nil || info.TooLarge || info.Count != 2 || info.Length != len(info.Web) || info.Limit != DiscordLimit {
@@ -332,12 +334,12 @@ func TestImportLeavesTheConfigOfModsTheProfileHas(t *testing.T) {
 	s.current = &session{
 		id: "s", game: "stardew", target: prof.ID,
 		preview: Preview{Mods: []Mod{{Key: "a", ModID: 100, FileID: 2}, {Key: "b", ModID: 600, FileID: 6}}},
-		configs: []share.Config{{UniqueID: "a.mod", Path: "config.json"}, {UniqueID: "B.Mod", Path: "config.json"}},
+		configs: []share.Config{{ID: "smapi:a.mod", Path: "config.json"}, {ID: "smapi:B.Mod", Path: "config.json"}},
 	}
 	if _, err := s.Import(context.Background(), "stardew", "s", prof.ID, nil); err != nil {
 		t.Fatal(err)
 	}
-	if len(s.pending) != 1 || len(s.pending[0].Configs) != 1 || s.pending[0].Configs[0].UniqueID != "B.Mod" {
+	if len(s.pending) != 1 || len(s.pending[0].Configs) != 1 || s.pending[0].Configs[0].ID != "smapi:B.Mod" {
 		t.Fatalf("pending = %+v", s.pending)
 	}
 }

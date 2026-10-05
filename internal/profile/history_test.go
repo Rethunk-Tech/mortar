@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -34,10 +36,10 @@ func TestHistoryRecordsEachOperation(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "Me.A", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "Me.A", true); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", true); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.SetPinned("stardew", p.ID, "local-a", true, ""); err != nil {
@@ -53,8 +55,8 @@ func TestHistoryRecordsEachOperation(t *testing.T) {
 		t.Fatal(err)
 	}
 	if _, err := e.SetModsEnabled("stardew", p.ID, []EnableRef{
-		{Key: "local-a2", UniqueID: "Me.A"},
-		{Key: "local-b", UniqueID: "Me.B"},
+		{Key: "local-a2", ID: "smapi:Me.A"},
+		{Key: "local-b", ID: "smapi:Me.B"},
 	}, false); err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +134,7 @@ func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
 		t.Fatalf("history after add: %v %v", afterAdd, err)
 	}
 	writeFile(t, e.mods(p.ID), "local-a/config.json", "mine")
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "Me.A", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.Revert("stardew", p.ID, afterAdd[0].ID); err != nil {
@@ -169,7 +171,7 @@ func TestHistoryBounded(t *testing.T) {
 	p := mustCreate(t, s, "Farm")
 	for i := range maxHistory + 20 {
 		if _, err := s.update("stardew", p.ID, func(p *Profile, _ string) error {
-			p.Entries = []Entry{{Key: "k", Mods: []EntryMod{{UniqueID: "x", Name: "X", Version: "1", Folder: "."}}}}
+			p.Entries = []Entry{{Key: "k", Mods: []Component{{ID: "smapi:x", Name: "X", Version: "1", Folder: "."}}}}
 			p.Entries[0].Mods[0].Version = "1"
 			if i%2 == 0 {
 				p.Entries[0].Pinned = true
@@ -193,7 +195,7 @@ func TestHistoryBounded(t *testing.T) {
 func TestHistoryDeduplicatesSnapshots(t *testing.T) {
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
-	entries := []Entry{{Key: "k", Mods: []EntryMod{{UniqueID: "x", Name: "X", Version: "1", Folder: "."}}}}
+	entries := []Entry{{Key: "k", Mods: []Component{{ID: "smapi:x", Name: "X", Version: "1", Folder: "."}}}}
 	for _, version := range []string{"1", "2", "1"} {
 		next := cloneEntries(entries)
 		next[0].Mods[0].Version = version
@@ -326,10 +328,10 @@ func TestHistoryRevertRefusedWhileRunning(t *testing.T) {
 }
 
 func TestModDiffCounts(t *testing.T) {
-	a1 := Entry{Key: "a", Mods: []EntryMod{{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0"}}}
-	a2 := Entry{Key: "a2", Mods: []EntryMod{{UniqueID: "A.Mod", Name: "Alpha", Version: "2.0"}}}
-	b := Entry{Key: "b", Mods: []EntryMod{{UniqueID: "B.Mod", Name: "Beta", Version: "1.0"}}}
-	c := Entry{Key: "c", Mods: []EntryMod{{UniqueID: "C.Mod", Name: "Gamma", Version: "1.0"}}}
+	a1 := Entry{Key: "a", Mods: []Component{{ID: "smapi:A.Mod", Name: "Alpha", Version: "1.0"}}}
+	a2 := Entry{Key: "a2", Mods: []Component{{ID: "smapi:A.Mod", Name: "Alpha", Version: "2.0"}}}
+	b := Entry{Key: "b", Mods: []Component{{ID: "smapi:B.Mod", Name: "Beta", Version: "1.0"}}}
+	c := Entry{Key: "c", Mods: []Component{{ID: "smapi:C.Mod", Name: "Gamma", Version: "1.0"}}}
 	before := []Entry{a1, b}
 	after := []Entry{a2, c}
 	added, removed, updated := ModDiffCounts(before, after)
@@ -360,11 +362,11 @@ func TestHistoryIncludesModDiffCounts(t *testing.T) {
 }
 
 func TestClassifyHistoryNamesTheEntryThatChanged(t *testing.T) {
-	a := Entry{Key: "gmcm", Mods: []EntryMod{{UniqueID: "spacechase0.GenericModConfigMenu", Name: "Generic Mod Config Menu"}}}
-	b := Entry{Key: "npc", Mods: []EntryMod{{UniqueID: "Bouhm.NPCMapLocations", Name: "NPC Map Locations"}}}
+	a := Entry{Key: "gmcm", Mods: []Component{{ID: "smapi:spacechase0.GenericModConfigMenu", Name: "Generic Mod Config Menu"}}}
+	b := Entry{Key: "npc", Mods: []Component{{ID: "smapi:Bouhm.NPCMapLocations", Name: "NPC Map Locations"}}}
 	before := []Entry{a, b}
 	after := []Entry{a, b}
-	after[0].Disabled = []string{"spacechase0.GenericModConfigMenu"}
+	after[0].Disabled = []mod.ID{"smapi:spacechase0.GenericModConfigMenu"}
 	got := classifyHistory(before, after)
 	if got.Kind != historyDisabled || got.Label != "Disabled Generic Mod Config Menu" {
 		t.Fatalf("got %+v", got)
@@ -460,7 +462,7 @@ func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := e.applyEntrySnapshot("stardew", &cur, dir, []Entry{{Key: "missing-key", Mods: []EntryMod{{UniqueID: "x"}}}}); err == nil {
+	if err := e.applyEntrySnapshot("stardew", &cur, dir, []Entry{{Key: "missing-key", Mods: []Component{{ID: "smapi:x"}}}}); err == nil {
 		t.Fatal("expected place to fail")
 	}
 	if _, err := os.Stat(mods); err != nil {
@@ -596,7 +598,7 @@ func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
 func TestChangesSinceCachedUntilProfileUpdated(t *testing.T) {
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
-	entry := Entry{Key: "k", Mods: []EntryMod{{UniqueID: "x", Name: "X", Version: "1", Folder: "."}}}
+	entry := Entry{Key: "k", Mods: []Component{{ID: "smapi:x", Name: "X", Version: "1", Folder: "."}}}
 	if _, err := s.update("stardew", p.ID, func(p *Profile, _ string) error {
 		p.Entries = []Entry{entry}
 		return nil
@@ -637,8 +639,8 @@ func TestChangesSinceCachedUntilProfileUpdated(t *testing.T) {
 
 func TestAppendedEventsCarryTheirCounts(t *testing.T) {
 	dir := t.TempDir()
-	one := []Entry{{Key: "a", Mods: []EntryMod{{UniqueID: "A.Mod", Version: "1.0"}}}}
-	two := append(cloneEntries(one), Entry{Key: "b", Mods: []EntryMod{{UniqueID: "B.Mod", Version: "1.0"}}})
+	one := []Entry{{Key: "a", Mods: []Component{{ID: "smapi:A.Mod", Version: "1.0"}}}}
+	two := append(cloneEntries(one), Entry{Key: "b", Mods: []Component{{ID: "smapi:B.Mod", Version: "1.0"}}})
 	for _, after := range [][]Entry{one, two} {
 		if _, err := appendHistory(dir, HistoryEvent{Kind: historyPinned, Label: "change"}, after, 0); err != nil {
 			t.Fatal(err)

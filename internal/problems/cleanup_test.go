@@ -146,8 +146,8 @@ func TestRetextureOfVanillaSheetIsNotUnusedTilesheets(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(root, "content.json"), []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	mod := fromDisk(Installed{Key: "tools", Enabled: true, Folder: root, Name: "Elegant Tools", UniqueID: "Colling.ElegantTools"})
-	if got := unusedTilesheetPacks([]Installed{mod}); len(got) != 0 {
+	im := fromDisk(Installed{Key: "tools", Enabled: true, Folder: root, Name: "Elegant Tools", UniqueID: "Colling.ElegantTools"})
+	if got := unusedTilesheetPacks([]Installed{im}); len(got) != 0 {
 		t.Fatalf("a retexture is never an unused tilesheet pack, got %+v", got)
 	}
 }

@@ -130,8 +130,12 @@ func TestParseReadsStringIsRequired(t *testing.T) {
 	}
 }
 
-func TestSameIDFoldsCaseAndSpace(t *testing.T) {
-	if !SameID(" Au.One ", "au.one") || SameID("au.one", "au.two") {
-		t.Error("SameID must compare by FoldID")
+func TestModIDIsSMAPIScoped(t *testing.T) {
+	m := Manifest{UniqueID: "Au.One", ContentPackFor: "Au.Two"}
+	if m.ModID() != "smapi:Au.One" || m.ContentPackForID() != "smapi:Au.Two" || (Manifest{}).ContentPackForID() != "" {
+		t.Errorf("ids = %q, %q", m.ModID(), m.ContentPackForID())
+	}
+	if !LoaderManaged("smapi:SMAPI.ConsoleCommands") || LoaderManaged("smapi:Au.One") {
+		t.Error("LoaderManaged must match SMAPI's bundled mods by folded id")
 	}
 }

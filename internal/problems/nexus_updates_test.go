@@ -32,7 +32,7 @@ func TestCheckUpdatesUsesTheNewestFileInTheInstalledGroup(t *testing.T) {
 			},
 		}},
 	}
-	installed := mod("nexus-2364-9545", id, "1.0.0", true)
+	installed := inst("nexus-2364-9545", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:2364"}
 
 	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{installed}, false)
@@ -72,7 +72,7 @@ func TestCheckUpdatesChoosesANewerFileFromTheSameStem(t *testing.T) {
 			},
 		}},
 	}
-	installed := mod("nexus-2364-9544", id, "1.0.0", true)
+	installed := inst("nexus-2364-9544", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:2364"}
 
 	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{installed}, false)
@@ -97,7 +97,7 @@ func TestCheckUpdatesTrustsSMAPIOverAStaleDatasetPage(t *testing.T) {
 			}},
 		}},
 	}
-	installed := mod("nexus-28261-179112", id, "2.4.1", true)
+	installed := inst("nexus-28261-179112", id, "2.4.1", true)
 	installed.UpdateKeys = []string{"Nexus:28261"}
 
 	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{installed}, false)
@@ -111,7 +111,7 @@ func TestLiveFileIsCurrentSeesANewerFileInTheGroup(t *testing.T) {
 		{FileID: 179112, Name: "Machine Control Panel", Version: "2.4.1", Category: "OLD_VERSION"},
 		{FileID: 185367, Name: "Machine Control Panel", Version: "2.5.0", Category: "MAIN"},
 	}
-	installed := mod("nexus-28261-179112", "x", "2.4.1", true)
+	installed := inst("nexus-28261-179112", "x", "2.4.1", true)
 	if cur, known := liveFileIsCurrent(files, installed, "2.5.0"); cur || !known {
 		t.Fatalf("current %v known %v, want an update", cur, known)
 	}
@@ -119,7 +119,7 @@ func TestLiveFileIsCurrentSeesANewerFileInTheGroup(t *testing.T) {
 
 func TestLiveFileIsCurrentAcceptsAnUnbumpedManifest(t *testing.T) {
 	files := []nexus.BatchFile{{FileID: 82663, Name: "Aspen", Version: "0.0.53", Category: "MAIN"}}
-	installed := mod("nexus-6754-82663", "invatorzen.AspenCP", "0.0.52", true)
+	installed := inst("nexus-6754-82663", "invatorzen.AspenCP", "0.0.52", true)
 	if cur, known := liveFileIsCurrent(files, installed, "0.0.53"); !cur || !known {
 		t.Fatalf("current %v known %v, want current", cur, known)
 	}
@@ -132,7 +132,7 @@ func TestCheckUpdatesUsesOneLiveCallWhenAvailable(t *testing.T) {
 			id: {Known: true, Suggested: &meta.Update{Version: "2.5.0", URL: "https://www.nexusmods.com/stardewvalley/mods/28261"}},
 		},
 	}
-	installed := mod("nexus-28261-179112", id, "2.4.1", true)
+	installed := inst("nexus-28261-179112", id, "2.4.1", true)
 	installed.UpdateKeys = []string{"Nexus:28261"}
 	calls := 0
 	filesOf := func(_ context.Context, _ nexus.Title, ids []int) (map[int][]nexus.BatchFile, error) {

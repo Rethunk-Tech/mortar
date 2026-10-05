@@ -144,7 +144,7 @@ func TestTemplateCarriesDisabledLaunchStateAndSkipsLoaderMods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mod := func(key, id string) {
+	im := func(key, id string) {
 		t.Helper()
 		src := t.TempDir()
 		manifest := `{"Name":"` + id + `","UniqueID":"` + id + `","Version":"1.0.0"}`
@@ -155,9 +155,9 @@ func TestTemplateCarriesDisabledLaunchStateAndSkipsLoaderMods(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	mod("local-a", "A.One")
-	mod("local-b", "A.Two")
-	mod("smapi-1", "SMAPI.Console")
+	im("local-a", "A.One")
+	im("local-b", "A.Two")
+	im("smapi-1", "SMAPI.Console")
 	from, err := profiles.Create("stardew", "Source")
 	if err != nil {
 		t.Fatal(err)
@@ -170,7 +170,7 @@ func TestTemplateCarriesDisabledLaunchStateAndSkipsLoaderMods(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if _, err := profiles.SetModEnabled("stardew", from.ID, "local-b", "A.Two", false); err != nil {
+	if _, err := profiles.SetModEnabled("stardew", from.ID, "local-b", "smapi:A.Two", false); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := profiles.SetLaunchSettings("stardew", from.ID, "gamemoderun", "A=1"); err != nil {
@@ -201,7 +201,7 @@ func TestTemplateCarriesDisabledLaunchStateAndSkipsLoaderMods(t *testing.T) {
 		t.Fatalf("launch state = %+v", got)
 	}
 	for _, e := range got.Entries {
-		if e.Key == "local-b" && (len(e.Disabled) != 1 || e.Disabled[0] != "A.Two") {
+		if e.Key == "local-b" && (len(e.Disabled) != 1 || e.Disabled[0] != "smapi:A.Two") {
 			t.Fatalf("local-b disabled = %v", e.Disabled)
 		}
 		if e.Key == "local-a" && len(e.Disabled) != 0 {

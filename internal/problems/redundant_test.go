@@ -9,10 +9,10 @@ func TestSupersededWhenTheNamedReplacementIsEnabled(t *testing.T) {
 		{Key: "lone", UniqueID: "C.Lone", Name: "Lone", Enabled: true},
 	}
 	r := Result{
-		Broken: []Broken{{Key: "old", UniqueID: "A.Old", Name: "Old Clock", Status: "obsolete", Summary: "use [24h Clock](#) instead."}},
+		Broken: []Broken{{Key: "old", ID: "smapi:A.Old", Name: "Old Clock", Status: "obsolete", Summary: "use [24h Clock](#) instead."}},
 		Compat: []Compat{
-			{Key: "lone", UniqueID: "C.Lone", Name: "Lone", Status: "broken", Summary: "use [Missing Mod](#) instead."},
-			{Key: "old", UniqueID: "A.Old", Name: "Old Clock", Status: "broken", Summary: "see https://www.nexusmods.com/stardewvalley/mods/20794"},
+			{Key: "lone", ID: "smapi:C.Lone", Name: "Lone", Status: "broken", Summary: "use [Missing Mod](#) instead."},
+			{Key: "old", ID: "smapi:A.Old", Name: "Old Clock", Status: "broken", Summary: "see https://www.nexusmods.com/stardewvalley/mods/20794"},
 		},
 	}
 	r = superseded(r, "stardewvalley", mods)
@@ -31,7 +31,7 @@ func TestSupersededSkipsAModAlreadyRedundant(t *testing.T) {
 	}
 	r := Result{
 		Redundant: []Redundant{{Kind: "shadowed", Key: "old"}},
-		Broken:    []Broken{{Key: "old", UniqueID: "A.Old", Name: "Old", Status: "obsolete", Summary: "use [New](#) instead."}},
+		Broken:    []Broken{{Key: "old", ID: "smapi:A.Old", Name: "Old", Status: "obsolete", Summary: "use [New](#) instead."}},
 	}
 	if r = superseded(r, "stardewvalley", mods); len(r.Redundant) != 1 {
 		t.Fatalf("redundant = %+v", r.Redundant)

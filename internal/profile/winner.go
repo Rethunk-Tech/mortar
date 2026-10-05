@@ -101,7 +101,7 @@ func rewriteManifestDeps(raw []byte, want, drop []mod.ID) ([]byte, error) {
 		return nil, err
 	}
 	type dep struct {
-		ID             string `json:"mod id"`
+		ID             string `json:"UniqueID"`
 		IsRequired     *bool  `json:"IsRequired,omitempty"`
 		MinimumVersion string `json:"MinimumVersion,omitempty"`
 	}

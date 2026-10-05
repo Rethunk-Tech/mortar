@@ -16,11 +16,11 @@ func TestModsByAuthorGroupsAcrossProfiles(t *testing.T) {
 	if _, err := s.update(game, farm.ID, func(p *Profile, _ string) error {
 		p.Entries = []Entry{{
 			Key: "k1",
-			Mods: []EntryMod{{
-				UniqueID: "Author.One",
-				Name:     "One",
-				Version:  "1.0",
-				Author:   "Pathoschild, Helper",
+			Mods: []Component{{
+				ID:      "smapi:Author.One",
+				Name:    "One",
+				Version: "1.0",
+				Author:  "Pathoschild, Helper",
 			}},
 		}}
 		return nil
@@ -30,11 +30,11 @@ func TestModsByAuthorGroupsAcrossProfiles(t *testing.T) {
 	if _, err := s.update(game, coop.ID, func(p *Profile, _ string) error {
 		p.Entries = []Entry{{
 			Key: "k2",
-			Mods: []EntryMod{{
-				UniqueID: "Author.Two",
-				Name:     "Two",
-				Version:  "2.0",
-				Author:   "pathoschild",
+			Mods: []Component{{
+				ID:      "smapi:Author.Two",
+				Name:    "Two",
+				Version: "2.0",
+				Author:  "pathoschild",
 			}},
 		}}
 		return nil

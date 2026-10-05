@@ -33,7 +33,7 @@ func TestUpdateOldFilesFollowTheSetting(t *testing.T) {
 		}
 		if tc.answer != nil {
 			if len(pending) != 1 || pending[0].Key != "a-2" || len(pending[0].Files) != 2 ||
-				pending[0].Files[0] != (OldFile{UniqueID: "me.a", Path: "gone.json"}) {
+				pending[0].Files[0] != (OldFile{ID: "smapi:me.a", Path: "gone.json"}) {
 				t.Fatalf("%s: pending = %+v", tc.mode, pending)
 			}
 			if exists(filepath.Join(dir, "gone.json")) {

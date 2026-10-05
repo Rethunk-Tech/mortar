@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
@@ -61,7 +63,7 @@ func TestBundleStoreSnapshotsAndPersistsMods(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	b, err := svc.Create("stardew", " SVE core ", source.ID, []string{"B.Two", "A.One"})
+	b, err := svc.Create("stardew", " SVE core ", source.ID, []mod.ID{"smapi:B.Two", "smapi:A.One"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +77,7 @@ func TestBundleStoreSnapshotsAndPersistsMods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(list) != 1 || !slices.Equal([]string{list[0].Mods[0].UniqueID, list[0].Mods[1].UniqueID}, []string{"B.Two", "A.One"}) {
+	if len(list) != 1 || !slices.Equal([]string{list[0].Mods[0].ID.Local(), list[0].Mods[1].ID.Local()}, []string{"B.Two", "A.One"}) {
 		t.Fatalf("listed bundles = %+v", list)
 	}
 	b, err = svc.Rename("stardew", b.ID, "SVE essentials")
@@ -85,10 +87,10 @@ func TestBundleStoreSnapshotsAndPersistsMods(t *testing.T) {
 	if b.Name != "SVE essentials" {
 		t.Fatalf("renamed bundle = %+v", b)
 	}
-	if b, err = svc.RemoveMods("stardew", b.ID, []string{"b.two"}); err != nil || len(b.Mods) != 1 || b.Mods[0].UniqueID != "A.One" {
+	if b, err = svc.RemoveMods("stardew", b.ID, []mod.ID{"smapi:b.two"}); err != nil || len(b.Mods) != 1 || b.Mods[0].ID != "smapi:A.One" {
 		t.Fatalf("after remove = %+v, %v", b, err)
 	}
-	if _, err := svc.RemoveMods("stardew", b.ID, []string{"A.One"}); err == nil {
+	if _, err := svc.RemoveMods("stardew", b.ID, []mod.ID{"smapi:A.One"}); err == nil {
 		t.Fatal("removing the last mod must fail")
 	}
 	if err := svc.Delete("stardew", b.ID); err != nil {
@@ -128,7 +130,7 @@ func TestReferencedKeysKeepProfileExtrasAndBundlesDuringCollect(t *testing.T) {
 	if _, err := profiles.AddEntry("stardew", bundleSource.ID, "bundle-only", profile.Source{}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := svc.Create("stardew", "Saved bundle", bundleSource.ID, []string{"Bundle.Only"}); err != nil {
+	if _, err := svc.Create("stardew", "Saved bundle", bundleSource.ID, []mod.ID{"smapi:Bundle.Only"}); err != nil {
 		t.Fatal(err)
 	}
 	if err := profiles.Delete("stardew", bundleSource.ID); err != nil {
@@ -181,7 +183,7 @@ func TestApplyAddsStoreEntriesAndReportsMissingMods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := svc.Create("stardew", "Bundle", source.ID, []string{"A.One", "B.Two"})
+	b, err := svc.Create("stardew", "Bundle", source.ID, []mod.ID{"smapi:A.One", "smapi:B.Two"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,7 +198,7 @@ func TestApplyAddsStoreEntriesAndReportsMissingMods(t *testing.T) {
 	if result.Added != 1 || !slices.Equal(result.Missing, []string{"B Two"}) {
 		t.Fatalf("apply result = %+v", result)
 	}
-	if len(result.MissingMods) != 1 || result.MissingMods[0].UniqueID != "B.Two" {
+	if len(result.MissingMods) != 1 || result.MissingMods[0].ID != "smapi:B.Two" {
 		t.Fatalf("missing mods = %+v", result.MissingMods)
 	}
 	if len(result.Profile.Entries) != 1 || result.Profile.Entries[0].Key != "local-a" {

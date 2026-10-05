@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
@@ -47,7 +49,7 @@ func TestBundleCarriesOptionalFiles(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	b, err := svc.Create("stardew", "Set", from.ID, []string{"M.One"})
+	b, err := svc.Create("stardew", "Set", from.ID, []mod.ID{"smapi:M.One"})
 	if err != nil || len(b.Mods) != 2 || b.Mods[1].OverlayOf != main || b.Mods[1].OverlayTo != "Mod" {
 		t.Fatalf("bundle = %+v, %v", b.Mods, err)
 	}

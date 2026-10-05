@@ -58,7 +58,7 @@ func TestDownloadsArchivesMissingDirAndPreview(t *testing.T) {
 		t.Fatalf("got %+v, %v", got, err)
 	}
 	p, err := s.ArchivePreview(writeZip(t, t.TempDir(), "a.zip", `{"UniqueID":"A.One","Name":"One","Version":"1.0"}`))
-	if err != nil || len(p.Manifests) != 1 || p.Manifests[0].UniqueID != "A.One" {
+	if err != nil || len(p.Manifests) != 1 || p.Manifests[0].ID != "smapi:A.One" {
 		t.Fatalf("preview %+v, %v", p, err)
 	}
 }

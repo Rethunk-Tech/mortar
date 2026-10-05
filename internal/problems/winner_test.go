@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
@@ -11,7 +13,7 @@ func TestLoadAfterEditConflictIsShownNotCounted(t *testing.T) {
 	a := testdataPack(t, "edit_a")
 	b := testdataPack(t, "edit_b")
 	a.Name = "Edit A"
-	a.LoadAfter = []string{b.UniqueID}
+	a.LoadAfter = []mod.ID{b.ModID()}
 	a.Dependencies = []manifest.Dependency{{UniqueID: b.UniqueID, Required: false}}
 	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{a, b})
 	if len(got.AssetConflicts) != 1 {

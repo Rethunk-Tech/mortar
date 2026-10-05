@@ -28,15 +28,15 @@ func TestContentPackDiskCache(t *testing.T) {
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
-	mod, extra, pngPath := diskCachePack(t)
-	first := readContentPack(mod)
+	im, extra, pngPath := diskCachePack(t)
+	first := readContentPack(im)
 	if len(first.patches) != 2 || first.patches[0].kind != "load" || first.patches[1].kind != "edit" {
 		t.Fatalf("initial pack = %#v", first.patches)
 	}
-	flushPackDiskCache([]Installed{mod})
+	flushPackDiskCache([]Installed{im})
 	cachePath := filepath.Join(dataHome, "mortar", "cache", "problems-content-packs.json")
 	cache := readDiskPackCache(t, cachePath)
-	entry, ok := cache.Packs[filepath.Clean(mod.Folder)]
+	entry, ok := cache.Packs[filepath.Clean(im.Folder)]
 	if !ok || cache.Version != contentPackParserVersion {
 		t.Fatalf("disk cache = %#v", cache)
 	}
@@ -51,7 +51,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	}
 
 	resetContentPackCaches()
-	hit := readContentPack(mod)
+	hit := readContentPack(im)
 	if len(hit.patches) != len(first.patches) || hit.patches[1].shapes[0].cells != first.patches[1].shapes[0].cells {
 		t.Fatalf("disk cache hit = %#v, want %#v", hit.patches, first.patches)
 	}
@@ -64,27 +64,27 @@ func TestContentPackDiskCache(t *testing.T) {
 	}
 	touchFile(t, extra)
 	resetContentPackCaches()
-	invalidatedJSON := readContentPack(mod)
+	invalidatedJSON := readContentPack(im)
 	if len(invalidatedJSON.patches) != 1 || invalidatedJSON.patches[0].kind != "edit" {
 		t.Fatalf("included JSON invalidation = %#v", invalidatedJSON.patches)
 	}
-	flushPackDiskCache([]Installed{mod})
+	flushPackDiskCache([]Installed{im})
 
 	img := image.NewNRGBA(image.Rect(0, 0, 32, 16))
 	img.SetNRGBA(16, 0, color.NRGBA{A: 255})
 	writePNG(t, pngPath, img)
 	touchFile(t, pngPath)
 	resetContentPackCaches()
-	invalidatedPNG := readContentPack(mod)
+	invalidatedPNG := readContentPack(im)
 	if got := invalidatedPNG.patches[0].shapes[0].cells; got != ";1,0" {
 		t.Fatalf("PNG invalidation cells = %q, want %q", got, ";1,0")
 	}
-	flushPackDiskCache([]Installed{mod})
+	flushPackDiskCache([]Installed{im})
 
 	cache = readDiskPackCache(t, cachePath)
-	entry = cache.Packs[filepath.Clean(mod.Folder)]
+	entry = cache.Packs[filepath.Clean(im.Folder)]
 	entry.Pack = diskCachedPack{}
-	cache.Packs[filepath.Clean(mod.Folder)] = entry
+	cache.Packs[filepath.Clean(im.Folder)] = entry
 	cache.Version = contentPackParserVersion - 1
 	raw, err := json.Marshal(cache)
 	if err != nil {
@@ -94,17 +94,17 @@ func TestContentPackDiskCache(t *testing.T) {
 		t.Fatal(err)
 	}
 	resetContentPackCaches()
-	versionReset := readContentPack(mod)
+	versionReset := readContentPack(im)
 	if len(versionReset.patches) != 1 || versionReset.patches[0].kind != "edit" {
 		t.Fatalf("parser version did not invalidate cache: %#v", versionReset.patches)
 	}
 
 	flushPackDiskCache(nil)
 	cache = readDiskPackCache(t, cachePath)
-	if _, ok := cache.Packs[filepath.Clean(mod.Folder)]; !ok {
+	if _, ok := cache.Packs[filepath.Clean(im.Folder)]; !ok {
 		t.Fatal("disk cache dropped a pack folder that still exists")
 	}
-	if err := os.RemoveAll(mod.Folder); err != nil {
+	if err := os.RemoveAll(im.Folder); err != nil {
 		t.Fatal(err)
 	}
 	flushPackDiskCache(nil)
@@ -142,17 +142,17 @@ func TestReadContentPackConcurrent(t *testing.T) {
 	t.Cleanup(resetContentPackCaches)
 	mods := make([]Installed, 8)
 	for i := range mods {
-		mod, _, _ := diskCachePack(t)
-		mod.UniqueID = "Disk.Cache." + strconv.Itoa(i)
-		mod.Key = mod.UniqueID
-		mods[i] = mod
+		im, _, _ := diskCachePack(t)
+		im.UniqueID = "Disk.Cache." + strconv.Itoa(i)
+		im.Key = im.UniqueID
+		mods[i] = im
 	}
 	preloadContentPacks(mods)
 	var wg sync.WaitGroup
 	got := make([]cachedPack, len(mods))
-	for i, mod := range mods {
+	for i, im := range mods {
 		wg.Go(func() {
-			got[i] = readContentPack(mod)
+			got[i] = readContentPack(im)
 		})
 	}
 	wg.Wait()
@@ -252,14 +252,14 @@ func TestPNGAlphaMemoIsBitMaskAndDroppedAfterPack(t *testing.T) {
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
-	mod, _, pngPath := diskCachePack(t)
+	im, _, pngPath := diskCachePack(t)
 	info, err := os.Stat(pngPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fileKey := pngPath + "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" +
 		strconv.FormatInt(info.ModTime().UnixNano(), 10)
-	pix, ok := loadPNGAlpha(mod.Folder, "patch.png", fileKey)
+	pix, ok := loadPNGAlpha(im.Folder, "patch.png", fileKey)
 	if !ok {
 		t.Fatal("loadPNGAlpha")
 	}
@@ -268,7 +268,7 @@ func TestPNGAlphaMemoIsBitMaskAndDroppedAfterPack(t *testing.T) {
 		t.Fatalf("mask bytes = %d, want %d (byte-per-pixel would be %d)", len(pix.a), want, 32*16)
 	}
 
-	readContentPack(mod)
+	readContentPack(im)
 	n := 0
 	pngAlphaCache.Range(func(_, _ any) bool {
 		n++
@@ -286,14 +286,14 @@ func TestPackMemoryCacheDropsFoldersNotInCurrentMods(t *testing.T) {
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
-	mod, _, _ := diskCachePack(t)
-	_ = readContentPack(mod)
-	if _, ok := packCache.Load(filepath.Clean(mod.Folder)); !ok {
+	im, _, _ := diskCachePack(t)
+	_ = readContentPack(im)
+	if _, ok := packCache.Load(filepath.Clean(im.Folder)); !ok {
 		t.Fatal("pack was not memoized")
 	}
 	other := t.TempDir()
 	flushPackDiskCache([]Installed{{Folder: other}})
-	if _, ok := packCache.Load(filepath.Clean(mod.Folder)); ok {
+	if _, ok := packCache.Load(filepath.Clean(im.Folder)); ok {
 		t.Fatal("packCache kept a folder that is not in the current mods list")
 	}
 }
@@ -542,8 +542,8 @@ func vmHWM() int64 {
 }
 
 func contentPackManifest(folder string) (manifest.Manifest, bool) {
-	mod := fromDisk(Installed{Folder: folder})
-	if !isContentPatcherPack(mod) {
+	im := fromDisk(Installed{Folder: folder})
+	if !isContentPatcherPack(im) {
 		return manifest.Manifest{}, false
 	}
 	raw, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName))

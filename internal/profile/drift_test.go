@@ -248,7 +248,7 @@ func TestSwitchingAModOffIsNotDrift(t *testing.T) {
 	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "", "X.A", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:X.A", false); err != nil {
 		t.Fatal(err)
 	}
 	got, err := e.ScanModsDrift("stardew", p.ID)
@@ -282,7 +282,7 @@ func TestRefreshDependenciesReadsOptionalFromStoreManifest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if opt := got.Entries[0].Mods[0].Optional; len(opt) != 1 || opt[0] != "X.Opt" {
+	if opt := got.Entries[0].Mods[0].Optional; len(opt) != 1 || opt[0] != "smapi:X.Opt" {
 		t.Fatalf("Optional = %v, want [X.Opt]", opt)
 	}
 }
@@ -291,27 +291,27 @@ func TestRestoreModsFolderUndoesTrash(t *testing.T) {
 	e := newEnv(t)
 	p := mustCreate(t, e, "Farm")
 	dir, _ := e.profileDir("stardew", p.ID)
-	mod := filepath.Join(dir, "mods", "Loose")
-	if err := os.MkdirAll(mod, 0o700); err != nil {
+	im := filepath.Join(dir, "mods", "Loose")
+	if err := os.MkdirAll(im, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(mod, "a.txt"), []byte("x"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(im, "a.txt"), []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	token, err := e.trashModsFolder("stardew", p.ID, "Loose")
 	if err != nil || token == "" {
 		t.Fatalf("trash = %q, %v", token, err)
 	}
-	if _, err := os.Stat(mod); err == nil {
+	if _, err := os.Stat(im); err == nil {
 		t.Fatal("folder still in mods")
 	}
-	if err := os.MkdirAll(mod, 0o700); err != nil {
+	if err := os.MkdirAll(im, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if err := e.RestoreModsFolder("stardew", p.ID, token); err == nil {
 		t.Fatal("restore over a taken name accepted")
 	}
-	if err := os.RemoveAll(mod); err != nil {
+	if err := os.RemoveAll(im); err != nil {
 		t.Fatal(err)
 	}
 	e.Running = func(string, string) bool { return true }
@@ -325,7 +325,7 @@ func TestRestoreModsFolderUndoesTrash(t *testing.T) {
 	if err := e.RestoreModsFolder("stardew", p.ID, token); err != nil {
 		t.Fatal(err)
 	}
-	if b, err := fsx.ReadFile(filepath.Join(mod, "a.txt")); err != nil || string(b) != "x" {
+	if b, err := fsx.ReadFile(filepath.Join(im, "a.txt")); err != nil || string(b) != "x" {
 		t.Fatalf("restored file = %q, %v", b, err)
 	}
 }

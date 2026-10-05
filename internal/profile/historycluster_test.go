@@ -33,7 +33,7 @@ func TestHistoryDiffAddedRemovedVersionEnabled(t *testing.T) {
 	if _, err := e.UpdateEntry("stardew", p.ID, "local-a", "local-a2"); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a2", "Me.A", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "local-a2", "smapi:Me.A", false); err != nil {
 		t.Fatal(err)
 	}
 	all, err := e.History("stardew", p.ID)
@@ -56,10 +56,10 @@ func TestHistoryDiffAddedRemovedVersionEnabled(t *testing.T) {
 }
 
 func TestHistoryDiffConfigFiles(t *testing.T) {
-	before := []Entry{{Key: "a", Mods: []EntryMod{{UniqueID: "Me.A", Name: "Alpha", Version: "1"}}}}
-	after := []Entry{{Key: "a", Mods: []EntryMod{{UniqueID: "Me.A", Name: "Alpha", Version: "1"}}}}
-	cfgA := map[string]map[string][]byte{"me.a": {"config.json": []byte(`{"x":1}`)}}
-	cfgB := map[string]map[string][]byte{"me.a": {"config.json": []byte(`{"x":2}`)}}
+	before := []Entry{{Key: "a", Mods: []Component{{ID: "smapi:Me.A", Name: "Alpha", Version: "1"}}}}
+	after := []Entry{{Key: "a", Mods: []Component{{ID: "smapi:Me.A", Name: "Alpha", Version: "1"}}}}
+	cfgA := map[string]map[string][]byte{"smapi:me.a": {"config.json": []byte(`{"x":1}`)}}
+	cfgB := map[string]map[string][]byte{"smapi:me.a": {"config.json": []byte(`{"x":2}`)}}
 	got := DiffSnapshots("a", "b", before, after, cfgA, cfgB)
 	if len(got.Configs) != 1 || !reflect.DeepEqual(got.Configs[0].Files, []string{"config.json"}) {
 		t.Fatalf("configs = %+v", got.Configs)
@@ -89,7 +89,7 @@ func TestRevertHistoryItemKinds(t *testing.T) {
 	if err != nil || len(cur.Entries) != 1 {
 		t.Fatalf("after revert add: %+v %v", cur.Entries, err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "Me.A", false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false); err != nil {
 		t.Fatal(err)
 	}
 	evs, err := e.History("stardew", p.ID)
@@ -100,7 +100,7 @@ func TestRevertHistoryItemKinds(t *testing.T) {
 		t.Fatal(err)
 	}
 	cur, err = e.read("stardew", p.ID)
-	if err != nil || len(cur.Entries) != 1 || hasID(cur.Entries[0].Disabled, "Me.A") {
+	if err != nil || len(cur.Entries) != 1 || hasID(cur.Entries[0].Disabled, "smapi:Me.A") {
 		t.Fatalf("toggle revert: %+v %v", cur.Entries, err)
 	}
 	if _, err := e.UpdateEntry("stardew", p.ID, "local-a", "local-a2"); err != nil {

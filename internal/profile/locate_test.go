@@ -1,6 +1,10 @@
 package profile
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+)
 
 func TestProfilesWithModReadsProfileJSON(t *testing.T) {
 	s := newStore(t)
@@ -12,10 +16,10 @@ func TestProfilesWithModReadsProfileJSON(t *testing.T) {
 	if _, err := s.update("stardew", farm.ID, func(p *Profile, _ string) error {
 		p.Entries = []Entry{{
 			Key: "nexus-1-1",
-			Mods: []EntryMod{
-				{UniqueID: "Pathoschild.ContentPatcher", Name: "Content Patcher", Version: "2.1.0"},
+			Mods: []Component{
+				{ID: "smapi:Pathoschild.ContentPatcher", Name: "Content Patcher", Version: "2.1.0"},
 			},
-			Disabled: []string{"Pathoschild.ContentPatcher"},
+			Disabled: []mod.ID{"smapi:Pathoschild.ContentPatcher"},
 		}}
 		return nil
 	}); err != nil {
@@ -24,8 +28,8 @@ func TestProfilesWithModReadsProfileJSON(t *testing.T) {
 	if _, err := s.update("stardew", coop.ID, func(p *Profile, _ string) error {
 		p.Entries = []Entry{{
 			Key: "nexus-1-2",
-			Mods: []EntryMod{
-				{UniqueID: "pathoschild.contentpatcher", Name: "Content Patcher", Version: "2.0.0"},
+			Mods: []Component{
+				{ID: "smapi:pathoschild.contentpatcher", Name: "Content Patcher", Version: "2.0.0"},
 			},
 		}}
 		return nil
@@ -33,7 +37,7 @@ func TestProfilesWithModReadsProfileJSON(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := s.ProfilesWithMod("stardew", "Pathoschild.ContentPatcher")
+	got, err := s.ProfilesWithMod("stardew", "smapi:Pathoschild.ContentPatcher")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +51,7 @@ func TestProfilesWithModReadsProfileJSON(t *testing.T) {
 		t.Fatalf("coop = %+v", got[1])
 	}
 
-	none, err := s.ProfilesWithMod("stardew", "Nope.Mod")
+	none, err := s.ProfilesWithMod("stardew", "smapi:Nope.Mod")
 	if err != nil || len(none) != 0 {
 		t.Fatalf("missing = %+v, %v", none, err)
 	}

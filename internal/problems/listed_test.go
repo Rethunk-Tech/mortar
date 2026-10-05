@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 type listedFakeMeta struct {
@@ -19,8 +19,8 @@ type listedFakeMeta struct {
 func (f listedFakeMeta) Lookup(_ context.Context, uniqueID string) ([]meta.Ref, error) {
 	for _, ref := range f.pages {
 		for _, file := range ref.Downloads {
-			for _, mod := range file.Mods {
-				if profile.SameID(mod.UniqueID, uniqueID) {
+			for _, im := range file.Mods {
+				if mod.Equal(im.ModID(), mod.SMAPI(uniqueID)) {
 					return []meta.Ref{{Site: "Nexus", ID: ref.ID}}, nil
 				}
 			}
@@ -114,7 +114,7 @@ func TestListedRequirementMissing(t *testing.T) {
 		t.Fatalf("Missing = %#v, want one item", result.Missing)
 	}
 	missing := result.Missing[0]
-	if missing.UniqueID != "Pathoschild.ContentPatcher" || missing.Reason != "absent" || !missing.Listed {
+	if missing.ID != "smapi:Pathoschild.ContentPatcher" || missing.Reason != "absent" || !missing.Listed {
 		t.Fatalf("Missing = %#v, want listed absent requirement", missing)
 	}
 }

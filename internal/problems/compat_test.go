@@ -30,7 +30,7 @@ func TestMatchCompatByUniqueIDAndNexus(t *testing.T) {
 	if len(info) != 2 {
 		t.Fatalf("non-ok: %+v", info)
 	}
-	if info[0].Status != meta.StatusBroken || info[0].UniqueID != "Author.Broken" {
+	if info[0].Status != meta.StatusBroken || info[0].ID != "smapi:Author.Broken" {
 		t.Fatalf("id map: %+v", info[0])
 	}
 	if info[1].Status != meta.StatusUnofficial || info[1].UnofficialURL != "https://example.com/u" {

@@ -9,6 +9,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -102,7 +104,7 @@ func TestOverlayWithoutMainFileIsRefused(t *testing.T) {
 
 func TestMapOverlay(t *testing.T) {
 	base := []string{"Mod/manifest.json", "Mod/content.json", "Mod/assets/a.png", "Mod/i18n/default.json"}
-	mods := []EntryMod{{UniqueID: "x", Folder: "Mod"}}
+	mods := []Component{{ID: "smapi:x", Folder: "Mod"}}
 	cases := []struct {
 		name     string
 		files    []string
@@ -180,7 +182,7 @@ func TestOverlayAlternativesSwitchEachOtherOff(t *testing.T) {
 		readLive(t, e, p.ID, baseKey, added) != "N-opt" {
 		t.Fatalf("switching one on = %+v, %v", got.Entries, err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, optKey, optKey, false); err != nil {
+	if _, err := e.SetModEnabled("stardew", p.ID, optKey, mod.ID(optKey), false); err != nil {
 		t.Fatal(err)
 	}
 	if got := readLive(t, e, p.ID, baseKey, art); got != "A-main" {

@@ -184,7 +184,7 @@ func TestServeOffAnswersNothingAndModCarriesProblemsAndRequirements(t *testing.T
 	h := handlers{
 		open:      func(string) error { return nil },
 		installed: func(string) []int { t.Fatal("off read installed"); return nil },
-		mod: func(string, int) (modInProfile, []modInProfile) {
+		im: func(string, int) (modInProfile, []modInProfile) {
 			return modInProfile{Profile: "Farm", PageVersion: "2.0"}, nil
 		},
 		problems:     func(string, int) []modProblem { return []modProblem{{Kind: "x", Text: "bad"}} },
@@ -200,16 +200,16 @@ func TestServeOffAnswersNothingAndModCarriesProblemsAndRequirements(t *testing.T
 		if err := serveHandlers(bytes.NewReader(in), &out, h); err != nil {
 			t.Fatal(err)
 		}
-		installed, mod := readReply(t, &out), readReply(t, &out)
+		installed, im := readReply(t, &out), readReply(t, &out)
 		if installed.State != st || installed.Connected != (st == stateReady) {
 			t.Fatalf("%s installed reply = %+v", st, installed)
 		}
 		wantMod := st == stateReady
-		if (mod.Open != nil) != (st != stateOff) || (len(mod.Problems) == 1) != wantMod || (len(mod.Requirements) == 1) != wantMod {
-			t.Fatalf("%s mod reply = %+v", st, mod)
+		if (im.Open != nil) != (st != stateOff) || (len(im.Problems) == 1) != wantMod || (len(im.Requirements) == 1) != wantMod {
+			t.Fatalf("%s mod reply = %+v", st, im)
 		}
-		if st == stateReady && mod.Open.PageVersion != "2.0" {
-			t.Fatalf("page version = %+v", mod.Open)
+		if st == stateReady && im.Open.PageVersion != "2.0" {
+			t.Fatalf("page version = %+v", im.Open)
 		}
 	}
 }
@@ -334,18 +334,18 @@ func TestNexusModProfilesReportsRequiredByPinAndSkip(t *testing.T) {
 				"skipVersion": "3.0.0",
 				"skipSources": []string{"github"},
 				"source":      map[string]any{"kind": "nexus", "modId": 1915, "fileId": 111},
-				"mods":        []map[string]any{{"uniqueId": "Core.Lib", "name": "Core", "version": "2.0.0"}},
+				"mods":        []map[string]any{{"id": "smapi:Core.Lib", "name": "Core", "version": "2.0.0"}},
 			},
 			{
 				"source": map[string]any{"kind": "nexus", "modId": 99, "fileId": 2},
 				"mods": []map[string]any{{
-					"uniqueId": "Farm.Pack", "name": "Farm pack", "needs": []string{"Core.Lib"},
+					"id": "smapi:Farm.Pack", "name": "Farm pack", "needs": []string{"smapi:Core.Lib"},
 				}},
 			},
 			{
-				"disabled": []string{"Off.Pack"},
+				"disabled": []string{"smapi:Off.Pack"},
 				"source":   map[string]any{"kind": "local"},
-				"mods":     []map[string]any{{"uniqueId": "Off.Pack", "name": "Off", "needs": []string{"Core.Lib"}}},
+				"mods":     []map[string]any{{"id": "smapi:Off.Pack", "name": "Off", "needs": []string{"smapi:Core.Lib"}}},
 			},
 		},
 	})
@@ -602,7 +602,7 @@ func TestRepliesNameTheGamesBySource(t *testing.T) {
 	var out bytes.Buffer
 	err := serveHandlers(bytes.NewReader(frame(t, request{Protocol: new(Protocol), Type: "installed", Source: "nexus", SourceGameKey: "stardewvalley"})), &out, handlers{
 		installed: func(key string) []int { return []int{len(key)} },
-		mod:       func(string, int) (modInProfile, []modInProfile) { return modInProfile{}, nil },
+		im:        func(string, int) (modInProfile, []modInProfile) { return modInProfile{}, nil },
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -617,8 +617,8 @@ func TestRepliesNameTheGamesBySource(t *testing.T) {
 	}
 }
 
-func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, mod func(game string, modID int) (modInProfile, []modInProfile), problem ...func(game string, modID int) []modProblem) error {
-	h := handlers{open: open, installed: installed, mod: mod}
+func serve(r io.Reader, w io.Writer, open func(link string) error, installed func(game string) []int, im func(game string, modID int) (modInProfile, []modInProfile), problem ...func(game string, modID int) []modProblem) error {
+	h := handlers{open: open, installed: installed, im: im}
 	if len(problem) > 0 {
 		h.problems = problem[0]
 	}

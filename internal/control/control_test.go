@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -36,15 +38,15 @@ func waitFile(t *testing.T, path string, present bool) {
 
 func TestModProblemsFiltersByNexusModAndOmitsCosmeticConflicts(t *testing.T) {
 	p := profile.Profile{Entries: []profile.Entry{
-		{Source: profile.Source{Kind: profile.KindNexus, ModID: 42}, Mods: []profile.EntryMod{{UniqueID: "Pack.Target", Name: "Target"}}},
-		{Source: profile.Source{Kind: profile.KindNexus, ModID: 99}, Mods: []profile.EntryMod{{UniqueID: "Pack.Other", Name: "Other"}}},
+		{Source: profile.Source{Kind: profile.KindNexus, ModID: 42}, Mods: []profile.Component{{ID: "smapi:Pack.Target", Name: "Target"}}},
+		{Source: profile.Source{Kind: profile.KindNexus, ModID: 99}, Mods: []profile.Component{{ID: "smapi:Pack.Other", Name: "Other"}}},
 	}}
 	result := problems.Result{
-		Missing: []problems.Missing{{DependentID: "pack.target", DependentName: "Target", UniqueID: "Core.Required", Reason: "absent"}},
-		Broken:  []problems.Broken{{UniqueID: "Pack.Target", Name: "Target"}},
+		Missing: []problems.Missing{{DependentID: "smapi:pack.target", DependentName: "Target", ID: "smapi:Core.Required", Reason: "absent"}},
+		Broken:  []problems.Broken{{ID: "smapi:Pack.Target", Name: "Target"}},
 		AssetConflicts: []problems.AssetConflict{
-			{PackIDs: []string{"Pack.Target", "Pack.Other"}, Names: []string{"Target", "Other"}},
-			{PackIDs: []string{"Pack.Target", "Pack.Other"}, Names: []string{"Target", "Other"}, Cosmetic: true},
+			{PackIDs: []mod.ID{"smapi:Pack.Target", "smapi:Pack.Other"}, Names: []string{"Target", "Other"}},
+			{PackIDs: []mod.ID{"smapi:Pack.Target", "smapi:Pack.Other"}, Names: []string{"Target", "Other"}, Cosmetic: true},
 		},
 	}
 	got := modProblems(p, result, 42)
@@ -223,7 +225,7 @@ func TestHandleProfilesByNameAndID(t *testing.T) {
 	if got, ok := res.([]problems.AssetConflict); !ok || len(got) != 0 {
 		t.Fatalf("empty profile has conflicts %v", got)
 	}
-	if _, err := s.Handle(ctx, "mods.disable", Params{Game: "stardew", Profile: p.ID, UniqueIDs: []string{"Some.Mod"}}); err == nil {
+	if _, err := s.Handle(ctx, "mods.disable", Params{Game: "stardew", Profile: p.ID, IDs: []string{"Some.Mod"}}); err == nil {
 		t.Error("disabling a mod the profile lacks must be an error")
 	}
 	if _, err := s.Handle(ctx, "nope", Params{Game: "stardew", Profile: p.ID}); err == nil {

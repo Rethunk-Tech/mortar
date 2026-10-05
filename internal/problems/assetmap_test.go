@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -24,15 +25,15 @@ func TestAssetIndexFromFixturePacks(t *testing.T) {
 		t.Fatalf("targets %+v", page.Targets)
 	}
 	abigail := findTarget(page.Targets, "characters/abigail", "")
-	if abigail.Winner != "Pack.High" {
+	if abigail.Winner != "smapi:Pack.High" {
 		t.Fatalf("winner %q mods %+v", abigail.Winner, abigail.Mods)
 	}
 	var sawHigh bool
 	for _, m := range abigail.Mods {
-		if m.ModID == "Pack.High" {
+		if m.ModID == "smapi:Pack.High" {
 			sawHigh = m.Winner && m.Action == kindLoad && m.LoadOrder == 2
 		}
-		if m.ModID == "Pack.Low" && m.Winner {
+		if m.ModID == "smapi:Pack.Low" && m.Winner {
 			t.Fatalf("low marked winner %+v", m)
 		}
 	}
@@ -40,7 +41,7 @@ func TestAssetIndexFromFixturePacks(t *testing.T) {
 		t.Fatalf("high winner missing %+v", abigail.Mods)
 	}
 	objects := findTarget(page.Targets, "data/objects", "123")
-	if objects.Winner != "Pack.Data" || len(objects.Mods) != 1 || objects.Mods[0].Action != kindEditData {
+	if objects.Winner != "smapi:Pack.Data" || len(objects.Mods) != 1 || objects.Mods[0].Action != kindEditData {
 		t.Fatalf("objects %+v", objects)
 	}
 }
@@ -143,7 +144,7 @@ func editPack(t *testing.T, id, priority string) Installed {
 func touchOf(t *testing.T, target AssetTarget, id string) AssetTouch {
 	t.Helper()
 	for _, m := range target.Mods {
-		if m.ModID == id {
+		if m.ModID == mod.SMAPI(id) {
 			return m
 		}
 	}
@@ -160,19 +161,19 @@ func TestFilesWinnerFollowsSMAPILoadOrder(t *testing.T) {
 	late := editPack(t, "Pack.Z", "Default")
 	// The profile lists Z first, but SMAPI loads A first by name, so Z's tied edit applies last.
 	objects := findTarget(buildAssetIndex([]Installed{late, early}), "data/objects", "123")
-	if objects.Winner != "Pack.Z" || !touchOf(t, objects, "Pack.A").CanWin || touchOf(t, objects, "Pack.Z").CanWin {
+	if objects.Winner != "smapi:Pack.Z" || !touchOf(t, objects, "Pack.A").CanWin || touchOf(t, objects, "Pack.Z").CanWin {
 		t.Fatalf("tie %+v", objects)
 	}
 
 	early.Dependencies = []manifest.Dependency{{UniqueID: "Pack.Z"}}
 	objects = findTarget(buildAssetIndex([]Installed{late, early}), "data/objects", "123")
-	if objects.Winner != "Pack.A" || touchOf(t, objects, "Pack.Z").CanWin {
+	if objects.Winner != "smapi:Pack.A" || touchOf(t, objects, "Pack.Z").CanWin {
 		t.Fatalf("A loads after Z through its dependency, so Z cannot be moved past it: %+v", objects)
 	}
 
 	late = editPack(t, "Pack.Z", "Early")
 	objects = findTarget(buildAssetIndex([]Installed{late, editPack(t, "Pack.A", "Default")}), "data/objects", "123")
-	if objects.Winner != "Pack.A" || touchOf(t, objects, "Pack.Z").CanWin {
+	if objects.Winner != "smapi:Pack.A" || touchOf(t, objects, "Pack.Z").CanWin {
 		t.Fatalf("a lower priority cannot win by load order: %+v", objects)
 	}
 }

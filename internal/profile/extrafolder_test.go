@@ -28,7 +28,7 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 	}
 	folder := ""
 	for _, m := range got.Mods {
-		if m.UniqueID == "me.b" {
+		if m.ID == "smapi:me.b" {
 			folder = m.Folder
 		}
 	}

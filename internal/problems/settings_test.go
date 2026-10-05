@@ -138,7 +138,7 @@ func TestConflictOffersTheSettingThatRemovesOnePack(t *testing.T) {
 	if len(got) != 1 || len(got[0].Fixes) != 1 {
 		t.Fatalf("conflicts %+v", got)
 	}
-	if f := got[0].Fixes[0]; f.UniqueID != "Pack.Compat" || f.Field != "DesertMinecart" || f.Value != "false" || f.Current != "true" {
+	if f := got[0].Fixes[0]; f.ID != "smapi:Pack.Compat" || f.Field != "DesertMinecart" || f.Value != "false" || f.Current != "true" {
 		t.Fatalf("fix %+v", f)
 	}
 }

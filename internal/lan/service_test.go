@@ -15,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -277,7 +279,7 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 		entries[i] = profile.Entry{
 			Key:    fmt.Sprintf("mod-%03d", i),
 			Source: source,
-			Mods:   []profile.EntryMod{{UniqueID: fmt.Sprintf("mod.%03d", i), Folder: "."}},
+			Mods:   []profile.Component{{ID: mod.SMAPI(fmt.Sprintf("mod.%03d", i)), Folder: "."}},
 		}
 	}
 	original := profile.Profile{

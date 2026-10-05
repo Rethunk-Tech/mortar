@@ -30,12 +30,12 @@ func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
 	if got := names(t, game); len(got) != 1 || got[0] != "Held" {
 		t.Fatalf("game Mods left = %v", got)
 	}
-	cfg, err := e.ModFolder("stardew", p.ID, "", "me.new")
+	cfg, err := e.ModFolder("stardew", p.ID, "", "smapi:me.new")
 	if err != nil || read(t, filepath.Join(cfg, "config.json")) != `{"x":1}` {
 		t.Fatalf("config not carried: %v", err)
 	}
 	for _, en := range res.Profile.Entries {
-		if en.Mods[0].UniqueID == "me.off" && len(en.Disabled) != 1 {
+		if en.Mods[0].ID == "smapi:me.off" && len(en.Disabled) != 1 {
 			t.Errorf("dotted folder arrived switched on: %+v", en)
 		}
 	}

@@ -68,7 +68,7 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 		"notes": "do-not-include-notes",
 		"entries": [{
 			"source": {"kind": "nexus", "name": "Content Patcher", "modId": 1915},
-			"mods": [{"name": "Content Patcher", "uniqueId": "Pathoschild.ContentPatcher", "version": "2.1.0"}]
+			"mods": [{"name": "Content Patcher", "id": "smapi:Pathoschild.ContentPatcher", "version": "2.1.0"}]
 		}]
 	}`), 0o600); err != nil {
 		t.Fatal(err)

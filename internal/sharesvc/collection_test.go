@@ -218,8 +218,8 @@ func TestReadCollectionArchive(t *testing.T) {
 	}
 	var paths []string
 	for _, c := range d.Configs {
-		if c.UniqueID != "Pat.Tweaks" {
-			t.Errorf("config for %q", c.UniqueID)
+		if c.ID != "smapi:Pat.Tweaks" {
+			t.Errorf("config for %q", c.ID)
 		}
 		paths = append(paths, c.Path)
 	}

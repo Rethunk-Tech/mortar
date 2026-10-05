@@ -57,8 +57,8 @@ func assertMO2Plan(t *testing.T, preview ProfilePreview, name string, enabled ma
 		t.Fatalf("preview identity: %+v", preview)
 	}
 	got := map[string]ModPreview{}
-	for _, mod := range preview.Mods {
-		got[mod.UniqueID] = mod
+	for _, mp := range preview.Mods {
+		got[mp.ID.Local()] = mp
 	}
 	if len(got) != len(enabled) {
 		t.Fatalf("%s mods: got %#v want %d entries", name, preview.Mods, len(enabled))

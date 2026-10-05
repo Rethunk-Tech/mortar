@@ -15,7 +15,7 @@ import (
 
 func TestExternalLocalModsKeepProfileStateForImport(t *testing.T) {
 	mods := externalLocalMods([]migrate.ModPreview{
-		{UniqueID: "Example.Mod", Name: "Example Mod", Version: "1.2.3", Enabled: false, SourcePath: "/mods/example"},
+		{ID: "smapi:Example.Mod", Name: "Example Mod", Version: "1.2.3", Enabled: false, SourcePath: "/mods/example"},
 	})
 	if len(mods) != 1 {
 		t.Fatalf("mods = %#v", mods)
@@ -23,8 +23,8 @@ func TestExternalLocalModsKeepProfileStateForImport(t *testing.T) {
 	if mods[0].Site != SiteLocal || mods[0].State != StateDownload || mods[0].Key != "external:0" || mods[0].Enabled {
 		t.Fatalf("mod = %#v", mods[0])
 	}
-	if len(mods[0].UniqueIDs) != 1 || mods[0].UniqueIDs[0] != "Example.Mod" {
-		t.Fatalf("unique IDs = %#v", mods[0].UniqueIDs)
+	if len(mods[0].IDs) != 1 || mods[0].IDs[0] != "smapi:Example.Mod" {
+		t.Fatalf("unique IDs = %#v", mods[0].IDs)
 	}
 }
 
@@ -46,8 +46,8 @@ func TestExternalImportWritesEachModsOwnConfigWithinTheCap(t *testing.T) {
 	}
 	big := []byte(`"` + strings.Repeat("x", share.MaxConfigBytes) + `"`)
 	external := migrate.ProfilePreview{Name: "Ext", Mods: []migrate.ModPreview{
-		{UniqueID: "Me.A", SourcePath: filepath.Join(src, "A"), Enabled: true, Config: []byte(`"profile"`)},
-		{UniqueID: "Me.B", SourcePath: filepath.Join(src, "B"), Enabled: true, Config: big},
+		{ID: "smapi:Me.A", SourcePath: filepath.Join(src, "A"), Enabled: true, Config: []byte(`"profile"`)},
+		{ID: "smapi:Me.B", SourcePath: filepath.Join(src, "B"), Enabled: true, Config: big},
 	}}
 	pv, err := s.PreviewExternal(context.Background(), "stardew", external, "")
 	if err != nil {
@@ -68,10 +68,10 @@ func TestExternalImportWritesEachModsOwnConfigWithinTheCap(t *testing.T) {
 	for _, e := range res.Profile.Entries {
 		for _, m := range e.Mods {
 			got, err := fsx.ReadFile(filepath.Join(dir, e.Key, filepath.FromSlash(m.Folder), "config.json"))
-			if err != nil || string(got) != want[m.UniqueID] {
-				t.Fatalf("%s config = %q, %v", m.UniqueID, got, err)
+			if err != nil || string(got) != want[m.ID.Local()] {
+				t.Fatalf("%s config = %q, %v", m.ID, got, err)
 			}
-			delete(want, m.UniqueID)
+			delete(want, m.ID.Local())
 		}
 	}
 	if len(want) != 0 {

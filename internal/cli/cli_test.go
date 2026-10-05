@@ -71,8 +71,8 @@ func TestCommandsSendTheirArguments(t *testing.T) {
 		"profile.create": profile.Profile{ID: "abc", Name: "My Farm"},
 		"mods.disable":   profile.EnableResult{},
 		"mods": []control.ModRow{
-			{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0", Enabled: true, Source: "nexus:1/2"},
-			{UniqueID: "B.Mod", Name: "Beta", Version: "2.0", Pinned: true, Source: "local"},
+			{ID: "smapi:A.Mod", Name: "Alpha", Version: "1.0", Enabled: true, Source: "nexus:1/2"},
+			{ID: "smapi:B.Mod", Name: "Beta", Version: "2.0", Pinned: true, Source: "local"},
 		},
 	}
 	r := invoke(t, results, "profile", "create", "stardew", "My", "Farm")
@@ -80,7 +80,7 @@ func TestCommandsSendTheirArguments(t *testing.T) {
 		t.Fatalf("create: %+v", r)
 	}
 	r = invoke(t, results, "mods", "disable", "stardew", "My Farm", "A.Mod", "B.Mod")
-	if c := r.calls[0]; c.method != "mods.disable" || c.params.Profile != "My Farm" || len(c.params.UniqueIDs) != 2 || !strings.HasPrefix(r.out, "Disabled ") {
+	if c := r.calls[0]; c.method != "mods.disable" || c.params.Profile != "My Farm" || len(c.params.IDs) != 2 || !strings.HasPrefix(r.out, "Disabled ") {
 		t.Fatalf("disable: %+v", r)
 	}
 	r = invoke(t, results, "mods", "stardew", "abc")
@@ -140,7 +140,7 @@ func TestSettingsGetSet(t *testing.T) {
 func TestProfileCompareHistoryAndRevert(t *testing.T) {
 	results := map[string]any{
 		"profile.compare": profile.CLICompare{
-			OnlyA: []profile.DiffSide{{UniqueID: "A.Mod", Name: "Alpha", Version: "1", Enabled: true}},
+			OnlyA: []profile.DiffSide{{ID: "smapi:A.Mod", Name: "Alpha", Version: "1", Enabled: true}},
 		},
 		"profile.history": []control.HistoryRow{{ID: "event-1", Kind: "added", Summary: "Added Alpha"}},
 		"profile.revert":  profile.Profile{ID: "profile-1", Name: "Farm"},
@@ -365,12 +365,12 @@ func TestTrashListRestoreAndYes(t *testing.T) {
 func TestProblemsDismissRestoreAndDismissed(t *testing.T) {
 	problemsResult := problems.Result{
 		Missing: []problems.Missing{
-			{DependentName: "Pack", UniqueID: "Need.Mod", Listed: true},
-			{DependentName: "Other", UniqueID: "Core", Reason: "absent"},
+			{DependentName: "Pack", ID: "smapi:Need.Mod", Listed: true},
+			{DependentName: "Other", ID: "smapi:Core", Reason: "absent"},
 		},
-		Settings: []problems.SettingHint{{UniqueID: "A.Mod", Name: "Alpha", Field: "Enabled", Current: "false", ForNames: []string{"Beta"}}},
+		Settings: []problems.SettingHint{{ID: "smapi:A.Mod", Name: "Alpha", Field: "Enabled", Current: "false", ForNames: []string{"Beta"}}},
 		Dismissed: []problems.DismissedProblem{
-			{Token: strings.Join([]string{"listed", "need.mod"}, "\t"), Missing: &problems.Missing{DependentName: "Pack", UniqueID: "Need.Mod", Listed: true}},
+			{Token: strings.Join([]string{"listed", "need.mod"}, "\t"), Missing: &problems.Missing{DependentName: "Pack", ID: "smapi:Need.Mod", Listed: true}},
 		},
 	}
 	results := map[string]any{
@@ -511,11 +511,11 @@ func TestPlayCheck(t *testing.T) {
 func TestProfileListAndProblemsText(t *testing.T) {
 	results := map[string]any{
 		"mods": []control.ModRow{
-			{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0", Enabled: true, Source: "nexus:1915/2"},
-			{UniqueID: "B.Mod", Name: "Beta", Version: "2.0", Enabled: false, Source: "local"},
+			{ID: "smapi:A.Mod", Name: "Alpha", Version: "1.0", Enabled: true, Source: "nexus:1915/2"},
+			{ID: "smapi:B.Mod", Name: "Beta", Version: "2.0", Enabled: false, Source: "local"},
 		},
 		"problems": problems.Result{
-			Missing:        []problems.Missing{{UniqueID: "Need.Mod", Optional: false}, {UniqueID: "Opt", Optional: true}},
+			Missing:        []problems.Missing{{ID: "smapi:Need.Mod", Optional: false}, {ID: "smapi:Opt", Optional: true}},
 			AssetConflicts: []problems.AssetConflict{{Kind: "load", Target: "x", Names: []string{"A"}}, {Kind: "edit", Target: "y", Cosmetic: true}},
 		},
 	}
@@ -564,7 +564,7 @@ func TestSettingsExportImportReset(t *testing.T) {
 }
 
 func TestModsTagCategoryNoteSkipVersion(t *testing.T) {
-	rows := []control.ModRow{{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0", Enabled: true}}
+	rows := []control.ModRow{{ID: "smapi:A.Mod", Name: "Alpha", Version: "1.0", Enabled: true}}
 	results := map[string]any{
 		"mods.tag":          rows,
 		"mods.untag":        rows,
@@ -573,7 +573,7 @@ func TestModsTagCategoryNoteSkipVersion(t *testing.T) {
 		"mods.skip-version": rows,
 	}
 	r := invoke(t, results, "mods", "tag", "stardew", "Farm", "A.Mod", "qol")
-	if r.code != 0 || r.calls[0].method != "mods.tag" || r.calls[0].params.Value != "qol" || len(r.calls[0].params.UniqueIDs) != 1 {
+	if r.code != 0 || r.calls[0].method != "mods.tag" || r.calls[0].params.Value != "qol" || len(r.calls[0].params.IDs) != 1 {
 		t.Fatalf("tag: %+v", r)
 	}
 	r = invoke(t, results, "mods", "untag", "stardew", "Farm", "A.Mod", "qol")
@@ -593,7 +593,7 @@ func TestModsTagCategoryNoteSkipVersion(t *testing.T) {
 		t.Fatalf("skip-version: %+v", r)
 	}
 	r = invoke(t, results, "mods", "skip-version", "stardew", "Farm", "A.Mod")
-	if r.code != 0 || r.calls[0].params.Value != "" || len(r.calls[0].params.UniqueIDs) != 1 {
+	if r.code != 0 || r.calls[0].params.Value != "" || len(r.calls[0].params.IDs) != 1 {
 		t.Fatalf("skip-version clear: %+v", r)
 	}
 }
@@ -637,8 +637,8 @@ func TestGamesProfilesRunsSavesAndEnableHuman(t *testing.T) {
 		},
 		"mods.enable": profile.EnableResult{AlsoEnabled: []string{"Pathoschild.ContentPatcher"}},
 		"mods": []control.ModRow{
-			{UniqueID: "Pathoschild.ContentPatcher", Name: "Content Patcher", Enabled: true},
-			{UniqueID: "A.Mod", Name: "Alpha", Enabled: true},
+			{ID: "smapi:Pathoschild.ContentPatcher", Name: "Content Patcher", Enabled: true},
+			{ID: "smapi:A.Mod", Name: "Alpha", Enabled: true},
 		},
 		"runs": []launchsvc.Run{{
 			ID: "run-9", Started: started, DurationMs: 1000, Outcome: "crashed", Errors: 1,

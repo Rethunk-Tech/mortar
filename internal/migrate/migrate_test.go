@@ -25,7 +25,7 @@ func TestDetectsStardropProfileAndReadsGameMods(t *testing.T) {
 		t.Fatalf("mods = %#v", preview.Mods)
 	}
 	mod := preview.Mods[0]
-	if mod.UniqueID != "Example.Mod" || mod.Name != "Example Mod" || mod.Version != "1.2.3" || !mod.Enabled || mod.NexusModID != 123 {
+	if mod.ID != "smapi:Example.Mod" || mod.Name != "Example Mod" || mod.Version != "1.2.3" || !mod.Enabled || mod.NexusModID != 123 {
 		t.Fatalf("mod = %#v", mod)
 	}
 	if mod.SourcePath == "" {
@@ -55,7 +55,7 @@ func TestDetectsVortexProfileAndReadsStagingMods(t *testing.T) {
 		t.Fatalf("mods = %#v", preview.Mods)
 	}
 	mod := preview.Mods[0]
-	if mod.UniqueID != "Example.Mod" || mod.Name != "Example Mod" || mod.Version != "1.2.3" || !mod.Enabled || mod.NexusModID != 123 {
+	if mod.ID != "smapi:Example.Mod" || mod.Name != "Example Mod" || mod.Version != "1.2.3" || !mod.Enabled || mod.NexusModID != 123 {
 		t.Fatalf("mod = %#v", mod)
 	}
 	if mod.SourcePath == "" {

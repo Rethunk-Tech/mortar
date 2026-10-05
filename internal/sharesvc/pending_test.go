@@ -35,7 +35,7 @@ func TestPendingConfigsSurviveARestart(t *testing.T) {
 	first.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
-		Configs: []share.Config{{UniqueID: "A.Mod", Path: "config.json", Data: []byte(`{"a":1}`)}},
+		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte(`{"a":1}`)}},
 	}}
 	first.savePending()
 
@@ -74,8 +74,8 @@ func TestPendingAppliesWhenTheDoneSetChangesAndSavesOnlyOnChange(t *testing.T) {
 		Game: "stardew", Profile: prof.ID,
 		Wanted: []wantedFile{{ModID: 100, FileID: 1}, {ModID: 200, FileID: 2}, {ModID: 300, FileID: 3}},
 		Configs: []share.Config{
-			{UniqueID: "A.Mod", Path: "config.json", Data: []byte("a")},
-			{UniqueID: "B.Mod", Path: "config.json", Data: []byte("b")},
+			{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")},
+			{ID: "smapi:B.Mod", Path: "config.json", Data: []byte("b")},
 		},
 	}}
 	s.savePending()
@@ -117,7 +117,7 @@ func TestPendingWaitsWhileTheGameRunsTheProfile(t *testing.T) {
 	s.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
-		Configs: []share.Config{{UniqueID: "A.Mod", Path: "config.json", Data: []byte("a")}},
+		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")}},
 	}}
 	res, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1})
 	if err != nil {
@@ -155,7 +155,7 @@ func TestPendingRetriesAfterInModsWriteError(t *testing.T) {
 	s.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
-		Configs: []share.Config{{UniqueID: "A.Mod", Path: "config.json", Data: []byte("a")}},
+		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")}},
 	}}
 	res, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1})
 	if err != nil {
@@ -189,7 +189,7 @@ func TestPendingKeepsUnappliedConfigsAfterTheQueueDrains(t *testing.T) {
 	s.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
-		Configs: []share.Config{{UniqueID: "Ghost.Mod", Path: "config.json", Data: []byte("g")}},
+		Configs: []share.Config{{ID: "smapi:Ghost.Mod", Path: "config.json", Data: []byte("g")}},
 	}}
 	if _, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
 		t.Fatal(err)
@@ -197,7 +197,7 @@ func TestPendingKeepsUnappliedConfigsAfterTheQueueDrains(t *testing.T) {
 	s.QueueChanged(queue.State{Items: []queue.Item{
 		{ID: "a", Game: "stardew", Profile: prof.ID, ModID: 100, FileID: 1, State: queue.StateDone},
 	}})
-	if len(s.pending) != 1 || len(s.pending[0].Configs) != 1 || s.pending[0].Configs[0].UniqueID != "Ghost.Mod" {
+	if len(s.pending) != 1 || len(s.pending[0].Configs) != 1 || s.pending[0].Configs[0].ID != "smapi:Ghost.Mod" {
 		t.Fatalf("pending dropped: %+v", s.pending)
 	}
 }
@@ -207,7 +207,7 @@ func TestPendingAppliesAfterFinishedQueueRowsAreGone(t *testing.T) {
 	s.pending = []*pending{{
 		Game: "stardew", Profile: prof.ID,
 		Wanted:  []wantedFile{{ModID: 100, FileID: 1}},
-		Configs: []share.Config{{UniqueID: "A.Mod", Path: "config.json", Data: []byte("a")}},
+		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")}},
 	}}
 	res, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1})
 	if err != nil {

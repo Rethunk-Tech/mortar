@@ -4,13 +4,13 @@ import "testing"
 
 func TestRememberedSettingChoiceHidesHintUntilValueChanges(t *testing.T) {
 	setting := SettingHint{
-		UniqueID: "Cornucopia.MoreCrops",
-		Field:    "Enable Extended Trees Pack",
-		Current:  "false",
+		ID:      "smapi:Cornucopia.MoreCrops",
+		Field:   "Enable Extended Trees Pack",
+		Current: "false",
 	}
 	tokens := []string{dismissToken(
 		"setting-choice",
-		"cornucopia.morecrops\tenable extended trees pack\tfalse",
+		"smapi:cornucopia.morecrops\tenable extended trees pack\tfalse",
 	)}
 
 	if got, dismissed := hideDismissedSettings([]SettingHint{setting}, tokens); len(got) != 0 || len(dismissed) != 1 {

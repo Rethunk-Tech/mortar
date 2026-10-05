@@ -5,14 +5,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
 )
 
 func TestProfileLoadOrder(t *testing.T) {
 	results := map[string]any{
 		"profile.loadOrder": []loadorder.Row{
-			{Position: 1, UniqueID: "Z.Lib", Name: "Lib", Dependents: []string{"Z.Addon"}},
-			{Position: 2, UniqueID: "Z.Addon", Name: "Addon", Required: []string{"Z.Lib", "Missing.Mod"}, MissingRequired: []string{"Missing.Mod"}, Cycle: true},
+			{Position: 1, ID: "smapi:Z.Lib", Name: "Lib", Dependents: []mod.ID{"smapi:Z.Addon"}},
+			{Position: 2, ID: "smapi:Z.Addon", Name: "Addon", Required: []mod.ID{"smapi:Z.Lib", "smapi:Missing.Mod"}, MissingRequired: []mod.ID{"smapi:Missing.Mod"}, Cycle: true},
 		},
 	}
 	r := invoke(t, results, "profile", "load-order", "stardew", "Farm")

@@ -10,20 +10,20 @@ import (
 
 func TestCaptureHistoryConfigsStoresOnlyConfigJSON(t *testing.T) {
 	dir := t.TempDir()
-	mod := filepath.Join(dir, "mods", "k")
-	if err := os.MkdirAll(filepath.Join(mod, "data"), 0o700); err != nil {
+	im := filepath.Join(dir, "mods", "k")
+	if err := os.MkdirAll(filepath.Join(im, "data"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Join(mod, "saves"), 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Join(im, "saves"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(mod, "config.json"), []byte(`{"a":1}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(im, "config.json"), []byte(`{"a":1}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(mod, "data", "big.bin"), []byte("huge"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(im, "data", "big.bin"), []byte("huge"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(mod, "saves", "slot"), []byte("save"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(im, "saves", "slot"), []byte("save"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	entries := []Entry{{Key: "k"}}
@@ -44,11 +44,11 @@ func TestCaptureHistoryConfigsStoresOnlyConfigJSON(t *testing.T) {
 
 func TestCaptureHistoryConfigsDedupesBlobs(t *testing.T) {
 	dir := t.TempDir()
-	mod := filepath.Join(dir, "mods", "k")
-	if err := os.MkdirAll(mod, 0o700); err != nil {
+	im := filepath.Join(dir, "mods", "k")
+	if err := os.MkdirAll(im, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(mod, "config.json"), []byte("same"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(im, "config.json"), []byte("same"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	entries := []Entry{{Key: "k"}}

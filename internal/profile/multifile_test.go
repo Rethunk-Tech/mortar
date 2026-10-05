@@ -6,6 +6,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -17,7 +19,7 @@ func TestDefaultMerge(t *testing.T) {
 
 func TestSamePageAsk(t *testing.T) {
 	p := Profile{Entries: []Entry{{
-		Key: "nexus-7-1", Source: Source{Kind: KindNexus, ModID: 7, FileID: 1}, Mods: []EntryMod{{Name: "A", UniqueID: "A"}},
+		Key: "nexus-7-1", Source: Source{Kind: KindNexus, ModID: 7, FileID: 1}, Mods: []Component{{Name: "A", ID: "smapi:A"}},
 	}}}
 	ask, ok := SamePageAsk(p, 7, 2, "OPTIONAL")
 	if !ok || ask.EntryKey != "nexus-7-1" || !ask.DefaultAdd || ask.Label == "" {
@@ -53,7 +55,7 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 	if len(got.Entries) != 1 || !slices.Equal(got.Entries[0].ExtraStoreKeys, []string{"extra-new"}) {
 		t.Fatalf("add extras: %+v", got.Entries)
 	}
-	if !hasMod(got.Entries[0], "X.A") || !hasMod(got.Entries[0], "X.C") {
+	if !hasMod(got.Entries[0], "smapi:X.A") || !hasMod(got.Entries[0], "smapi:X.C") {
 		t.Fatalf("add mods: %+v", got.Entries[0].Mods)
 	}
 	if _, err := os.Stat(filepath.Join(e.mods(p.ID), entryKey, "extra-new", "C", "manifest.json")); err != nil {
@@ -72,7 +74,7 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 	if got.Entries[0].Key != store.NexusKey(7, 3) || !slices.Equal(got.Entries[0].ExtraStoreKeys, []string{"extra-new"}) {
 		t.Fatalf("update primary: %+v", got.Entries[0])
 	}
-	if !hasMod(got.Entries[0], "X.A") || !hasMod(got.Entries[0], "X.C") {
+	if !hasMod(got.Entries[0], "smapi:X.A") || !hasMod(got.Entries[0], "smapi:X.C") {
 		t.Fatalf("update primary mods: %+v", got.Entries[0].Mods)
 	}
 	if _, err := os.Stat(filepath.Join(e.mods(p.ID), store.NexusKey(7, 3), "extra-new", "C", "manifest.json")); err != nil {
@@ -87,7 +89,7 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 	if got.Entries[0].Key != entryKey || !slices.Equal(got.Entries[0].ExtraStoreKeys, []string{"extra-new"}) {
 		t.Fatalf("rollback entry: %+v", got.Entries[0])
 	}
-	if !hasMod(got.Entries[0], "X.A") || !hasMod(got.Entries[0], "X.C") {
+	if !hasMod(got.Entries[0], "smapi:X.A") || !hasMod(got.Entries[0], "smapi:X.C") {
 		t.Fatalf("rollback mods: %+v", got.Entries[0].Mods)
 	}
 	if b := read(t, filepath.Join(e.mods(p.ID), entryKey, "extra-new", "C", "config.json")); b != "extra-save" {
@@ -147,7 +149,7 @@ func TestSplitAndCombineEntries(t *testing.T) {
 	if !okParent || !okExtra {
 		t.Fatalf("split entries: %+v", got.Entries)
 	}
-	if len(parent.ExtraStoreKeys) != 0 || hasMod(parent, "X.B") || !hasMod(parent, "X.A") || !hasMod(extra, "X.B") {
+	if len(parent.ExtraStoreKeys) != 0 || hasMod(parent, "smapi:X.B") || !hasMod(parent, "smapi:X.A") || !hasMod(extra, "smapi:X.B") {
 		t.Fatalf("split mods: parent=%+v extra=%+v", parent, extra)
 	}
 	if extra.Source.Kind != KindNexus || extra.Source.ModID != 7 || extra.Source.FileID != 2 {
@@ -228,6 +230,6 @@ func TestSplitAndCombineEntries(t *testing.T) {
 	_ = got
 }
 
-func hasMod(e Entry, id string) bool {
-	return slices.ContainsFunc(e.Mods, func(m EntryMod) bool { return m.UniqueID == id })
+func hasMod(e Entry, id mod.ID) bool {
+	return slices.ContainsFunc(e.Mods, func(m Component) bool { return m.ID == id })
 }

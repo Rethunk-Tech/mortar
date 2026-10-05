@@ -96,7 +96,7 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 	}
 	byID := map[string]Mod{}
 	for _, m := range modsList {
-		byID[m.UniqueID] = m
+		byID[m.ID.Local()] = m
 	}
 	if len(byID) != 4 || byID["Me.Quiet"].Enabled || !byID["Me.Loud"].Enabled || !byID["Me.Alpha"].Enabled {
 		t.Fatalf("mods = %+v", modsList)
@@ -104,7 +104,7 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 	var pack Source
 	for _, ent := range res.Profile.Entries {
 		for _, m := range ent.Mods {
-			if m.UniqueID == "Me.Alpha" {
+			if m.ID == "smapi:Me.Alpha" {
 				pack = ent.Source
 			}
 		}
@@ -112,14 +112,14 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 	if pack.Kind != KindNexus || pack.ModID != 42 {
 		t.Fatalf("pack source = %+v", pack)
 	}
-	loudCfg, err := e.ConfigPath("stardew", res.Profile.ID, byID["Me.Loud"].Key, "Me.Loud")
+	loudCfg, err := e.ConfigPath("stardew", res.Profile.ID, byID["Me.Loud"].Key, "smapi:Me.Loud")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if body, err := fsx.ReadFile(loudCfg); err != nil || string(body) != `{"on":true}` {
 		t.Fatalf("loud config = %q %v", body, err)
 	}
-	quietCfg, err := e.ConfigPath("stardew", res.Profile.ID, byID["Me.Quiet"].Key, "Me.Quiet")
+	quietCfg, err := e.ConfigPath("stardew", res.Profile.ID, byID["Me.Quiet"].Key, "smapi:Me.Quiet")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -190,7 +190,7 @@ func TestImportGameModsPrefersEnabledDuplicateAndOmitsBundled(t *testing.T) {
 	}
 	byID := map[string]Mod{}
 	for _, m := range modsList {
-		byID[m.UniqueID] = m
+		byID[m.ID.Local()] = m
 	}
 	if len(byID) != 2 || !byID["Bouhm.NPCMapLocations"].Enabled || !byID["spacechase0.GenericModConfigMenu"].Enabled {
 		t.Fatalf("mods = %+v", modsList)

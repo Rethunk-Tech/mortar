@@ -36,7 +36,7 @@ func TestCollectionExportRoundTrip(t *testing.T) {
 	p := profile.Profile{Name: "Cozy Farm", Notes: "Read me first", Description: "desc", Entries: []profile.Entry{
 		{
 			Key: "k1", Source: profile.Source{Kind: profile.KindNexus, Name: "cozy.zip", ModID: 100, FileID: 7, Version: "1.0"},
-			Mods: []profile.EntryMod{{UniqueID: "A.Cozy", Name: "Cozy", Folder: "Cozy"}}, Fomod: fomod, Note: "needs SMAPI",
+			Mods: []profile.Component{{ID: "smapi:A.Cozy", Name: "Cozy", Folder: "Cozy"}}, Fomod: fomod, Note: "needs SMAPI",
 		},
 		{Key: "k2", Source: profile.Source{Kind: profile.KindNexus, ModID: 200, FileID: 9, Name: "opt.zip"}},
 		{Key: "k3", Source: profile.Source{Kind: profile.KindLocal, Name: "mine.zip"}},
@@ -115,7 +115,7 @@ func TestCollectionExportRoundTrip(t *testing.T) {
 	var cfgs []string
 	for _, b := range bundles {
 		for _, c := range b.configs() {
-			cfgs = append(cfgs, c.UniqueID+"/"+c.Path+"="+string(c.Data))
+			cfgs = append(cfgs, c.ID.Local()+"/"+c.Path+"="+string(c.Data))
 		}
 	}
 	slices.Sort(cfgs)

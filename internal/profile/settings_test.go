@@ -17,10 +17,10 @@ func TestSetConfigValuePreservesFieldsAndWritesBoolean(t *testing.T) {
 		map[string]string{"A/manifest.json": manifest + " "},
 	)
 	svc := NewService(e.Store, t.TempDir(), nil)
-	if err := svc.SetConfigValue("stardew", p.ID, "a-1", "me.a", "enabled", "true"); err != nil {
+	if err := svc.SetConfigValue("stardew", p.ID, "a-1", "smapi:me.a", "enabled", "true"); err != nil {
 		t.Fatal(err)
 	}
-	raw, err := svc.ReadConfig("stardew", p.ID, "a-1", "me.a")
+	raw, err := svc.ReadConfig("stardew", p.ID, "a-1", "smapi:me.a")
 	if err != nil {
 		t.Fatal(err)
 	}

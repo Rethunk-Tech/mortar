@@ -14,7 +14,7 @@ func TestModsConfigListsAndSets(t *testing.T) {
 		},
 	}
 	r := invoke(t, results, "mods", "config", "stardew", "Farm", "A.Pack")
-	if r.code != 0 || r.calls[0].method != "mods.config" || len(r.calls[0].params.UniqueIDs) != 1 {
+	if r.code != 0 || r.calls[0].method != "mods.config" || len(r.calls[0].params.IDs) != 1 {
 		t.Fatalf("list: %+v", r)
 	}
 	if !strings.Contains(r.out, "Season = Spring") || !strings.Contains(r.out, "Spring, Summer, Fall") {

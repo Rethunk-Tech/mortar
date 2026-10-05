@@ -11,9 +11,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
-
-	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestLoadConflictWithBlankLoserIsCosmetic(t *testing.T) {
@@ -155,7 +154,7 @@ func TestDynamicTokenWhenMergesDefinitionConditions(t *testing.T) {
 	if load.when.spouse != "abigail" || !slices.Contains(load.when.places["farmtype"], "a_tk.farmprojectforaging") {
 		t.Fatalf("dynamic token conditions were not merged: %#v", load)
 	}
-	if !slices.Contains(load.when.anyOf[0], "author.required") {
+	if !slices.Contains(load.when.anyOf[0], "smapi:author.required") {
 		t.Fatalf("dynamic token HasMod condition was not merged: %#v", load.when)
 	}
 	if !exclusive(load, cpPatch{places: map[string][]string{"farmtype": {"waff"}}}) {
@@ -196,32 +195,32 @@ func TestConflictWinnerUsesClashingPatchPriority(t *testing.T) {
 		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":1,"Y":1,"Width":1,"Height":1},"Priority":"Medium"}
 	]}`)
 	conflicts := assetConflicts([]Installed{first, second})
-	if len(conflicts) != 1 || conflicts[0].WinnerID != second.UniqueID {
+	if len(conflicts) != 1 || conflicts[0].WinnerID != second.ModID() {
 		t.Fatalf("winner must be selected from clashing patches: %#v", conflicts)
 	}
 
 	base := packHit{
-		id: "base", name: "Base", loads: []cpPatch{{priority: "Medium"}},
+		id: "smapi:base", name: "Base", loads: []cpPatch{{priority: "Medium"}},
 		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{},
 	}
 	addon := packHit{
-		id: "addon", name: "Addon", loads: []cpPatch{{priority: "Medium"}},
-		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{"base": true},
+		id: "smapi:addon", name: "Addon", loads: []cpPatch{{priority: "Medium"}},
+		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{"smapi:base": true},
 	}
 	loadOrder := conflictOf("load", "Maps/Test", []packHit{base, addon})
-	if loadOrder.WinnerID != "addon" || loadOrder.WinnerName != "by load order" {
+	if loadOrder.WinnerID != "smapi:addon" || loadOrder.WinnerName != "by load order" {
 		t.Fatalf("dependency order should decide equal-priority loads: %#v", loadOrder)
 	}
 	unclear := conflictOf("load", "Maps/Test", []packHit{base, {
-		id: "other", name: "Other", loads: []cpPatch{{priority: "Medium"}},
+		id: "smapi:other", name: "Other", loads: []cpPatch{{priority: "Medium"}},
 		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{},
 	}})
 	if unclear.WinnerName != "unclear" {
 		t.Fatalf("unrelated equal-priority loads should be unclear: %#v", unclear)
 	}
 	exclusive := conflictOf("load", "Maps/Test", []packHit{
-		{id: "one", name: "One", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
-		{id: "two", name: "Two", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
+		{id: "smapi:one", name: "One", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
+		{id: "smapi:two", name: "Two", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
 	})
 	if exclusive.WinnerName != "CP applies neither" {
 		t.Fatalf("exclusive loads should leave the asset unchanged: %#v", exclusive)
@@ -250,7 +249,7 @@ func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
 		t.Fatalf("expected one conflict, got %#v", conflicts)
 	}
 	for _, fix := range conflicts[0].Fixes {
-		if profile.SameID(fix.UniqueID, first.UniqueID) {
+		if mod.Equal(fix.ID, first.ModID()) {
 			if fix.Field != "Variant" || fix.Value != "Green" {
 				t.Fatalf("expected the only safe allowed value, got %#v", fix)
 			}
@@ -266,9 +265,9 @@ func TestIncludedBlankLoadsUsePackRootPath(t *testing.T) {
 	writeProblemFile(t, root, "nested/content.json", `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"blank.json","Priority":"low"}]}`)
 	writeProblemFile(t, root, "blank.json", "{\r\n// empty\r\n}")
 	writeProblemFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	mod := fromDisk(Installed{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"})
+	im := fromDisk(Installed{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"})
 
-	conflicts := assetConflicts([]Installed{mod, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json"}]}`, map[string]string{
+	conflicts := assetConflicts([]Installed{im, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json"}]}`, map[string]string{
 		"other.json": `{"value":1}`,
 	})})
 	if len(conflicts) != 1 || !conflicts[0].Cosmetic {
@@ -628,7 +627,7 @@ func TestSwitchOffOffersTheNarrowestField(t *testing.T) {
 		for _, c := range conflicts {
 			got := ""
 			for _, fix := range c.Fixes {
-				if fix.UniqueID == breakfast.UniqueID {
+				if fix.ID == breakfast.ModID() {
 					got = fix.Field + "=" + fix.Value
 				}
 			}
@@ -653,7 +652,7 @@ func TestSwitchOffOffersTheNarrowestField(t *testing.T) {
 	alchemistry := syntheticLoadPack(t, `{"Changes": [{"Action": "EditData", "Target": "Data/CraftingRecipes", "Entries": {"Copper Bar": "378 5/Field/334/false/null/"}}]}`, nil)
 	conflicts := assetConflicts([]Installed{dwarven, alchemistry})
 	if len(conflicts) != 1 || !slices.ContainsFunc(conflicts[0].Fixes, func(f ConflictFix) bool {
-		return f.UniqueID == dwarven.UniqueID && f.Field == "EnableBaseTransmutationRecipes"
+		return f.ID == dwarven.ModID() && f.Field == "EnableBaseTransmutationRecipes"
 	}) {
 		t.Fatalf("expected the recipe switch rather than all of Dwarf Magic: %#v", conflicts)
 	}

@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -58,14 +60,14 @@ func newGitHubFixture(t *testing.T) *ghFixture {
 
 	g.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("signed out") }
 	g.s.d.GitHub = &github.Client{HTTP: srv.Client(), CacheDir: t.TempDir(), APIBase: srv.URL, Now: g.now}
-	g.s.d.Stage = func(_ string, src profile.Source, path string) (string, []string, error) {
+	g.s.d.Stage = func(_ string, src profile.Source, path string) (string, []mod.ID, error) {
 		if b, err := fsx.ReadFile(path); err != nil || string(b) != payload {
 			return "", nil, fmt.Errorf("stage read %q: %w", b, err)
 		}
 		g.mu.Lock()
 		g.staged = append(g.staged, src)
 		g.mu.Unlock()
-		return "github-key", []string{"me.mod"}, nil
+		return "github-key", []mod.ID{"smapi:me.mod"}, nil
 	}
 	g.s.d.InstallStaged = func(_, _, key string, src profile.Source) (profile.InstallResult, error) {
 		if key != "github-key" {
@@ -76,8 +78,8 @@ func newGitHubFixture(t *testing.T) *ghFixture {
 		g.mu.Unlock()
 		return profile.InstallResult{}, nil
 	}
-	g.s.d.Verify = func(_ context.Context, id, owner, repo string) (bool, error) {
-		if id != "me.mod" || owner != "me" || repo != "mod" {
+	g.s.d.Verify = func(_ context.Context, id mod.ID, owner, repo string) (bool, error) {
+		if id != "smapi:me.mod" || owner != "me" || repo != "mod" {
 			return false, fmt.Errorf("verified %s %s/%s", id, owner, repo)
 		}
 		if err, _ := g.verdict.Load().(error); err != nil {
@@ -368,7 +370,7 @@ func TestAGitHubFallbackWithoutTheModGoesBackToNexus(t *testing.T) {
 		it := &Item{
 			ID: id, Kind: KindUpdate, ModID: 6304, Version: "2.0.0", State: StateDownloading,
 			Repo: "me/mod", Tag: "v2.0.0", Asset: "mod-2.0.0.zip", FileName: "mod-2.0.0.zip",
-			FallbackRepo: "me/mod", FallbackID: fallbackID, nexusFileName: "Mod-6304-2-0-0.zip", fallbackTried: true,
+			FallbackRepo: "me/mod", FallbackID: mod.SMAPI(fallbackID), nexusFileName: "Mod-6304-2-0-0.zip", fallbackTried: true,
 		}
 		g.s.mu.Lock()
 		g.s.items = append(g.s.items, it)

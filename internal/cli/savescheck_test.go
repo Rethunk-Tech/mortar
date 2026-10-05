@@ -12,7 +12,7 @@ func TestSavesCheckAndProfileFromSave(t *testing.T) {
 	results := map[string]any{
 		"saves.check": savessvc.SaveCheck{
 			Folder: "Farm_1", Farm: "Sunny", LastProfileID: "p1", LastProfileExists: true,
-			Missing: []savessvc.Lack{{UniqueID: "A.Mod", Name: "Alpha"}, {UniqueID: "B.Mod", Name: "Beta"}},
+			Missing: []savessvc.Lack{{ID: "smapi:A.Mod", Name: "Alpha"}, {ID: "smapi:B.Mod", Name: "Beta"}},
 		},
 		"profile.fromSave": savessvc.FromSaveResult{
 			Profile: profile.Profile{ID: "new1", Name: "Sunny"},

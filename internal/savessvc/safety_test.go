@@ -17,7 +17,7 @@ import (
 func TestRecordRunStoresEnabledMods(t *testing.T) {
 	s := NewStore(t.TempDir())
 	at := time.Date(2026, 3, 4, 5, 6, 7, 0, time.UTC)
-	mods := []PlayedMod{{UniqueID: "A.Mod", Name: "Alpha", Version: "1.2", Key: "nexus-1-2", SourceKind: "nexus", ModID: 1, FileID: 2}}
+	mods := []PlayedMod{{ID: "smapi:A.Mod", Name: "Alpha", Version: "1.2", Key: "nexus-1-2", SourceKind: "nexus", ModID: 1, FileID: 2}}
 	if err := s.RecordRun("stardew", "Farm_1", "p1", at, mods); err != nil {
 		t.Fatal(err)
 	}
@@ -40,22 +40,22 @@ func TestNotePlayedRecordsProfileMods(t *testing.T) {
 	svc := &Service{last: NewStore(t.TempDir()), profiles: e.profiles}
 	svc.NotePlayed("stardew", p.ID, "Farm_1")
 	rec, ok, err := svc.last.Get("stardew", "Farm_1")
-	if err != nil || !ok || rec.ProfileID != p.ID || len(rec.Mods) != 1 || rec.Mods[0].UniqueID != "A.Mod" {
+	if err != nil || !ok || rec.ProfileID != p.ID || len(rec.Mods) != 1 || rec.Mods[0].ID != "smapi:A.Mod" {
 		t.Fatalf("rec %#v %v %v", rec, ok, err)
 	}
 }
 
 func TestMissingFromSortsContentPacksFirstAndFlagsDisabled(t *testing.T) {
 	recorded := []PlayedMod{
-		{UniqueID: "Code.Mod", Name: "Code", Version: "1"},
-		{UniqueID: "Pack.B", Name: "Pack B", Version: "1", ContentPackFor: "Code.Mod"},
-		{UniqueID: "Pack.A", Name: "Pack A", Version: "1", ContentPackFor: "Code.Mod"},
-		{UniqueID: "Have.On", Name: "On", Version: "1"},
+		{ID: "smapi:Code.Mod", Name: "Code", Version: "1"},
+		{ID: "smapi:Pack.B", Name: "Pack B", Version: "1", ContentPackFor: "smapi:Code.Mod"},
+		{ID: "smapi:Pack.A", Name: "Pack A", Version: "1", ContentPackFor: "smapi:Code.Mod"},
+		{ID: "smapi:Have.On", Name: "On", Version: "1"},
 	}
-	present := map[string]bool{"code.mod": true, "have.on": true}
-	enabled := map[string]bool{"have.on": true}
+	present := map[string]bool{"smapi:code.mod": true, "smapi:have.on": true}
+	enabled := map[string]bool{"smapi:have.on": true}
 	got := MissingFrom(recorded, present, enabled)
-	if len(got) != 3 || got[0].UniqueID != "Pack.A" || got[1].UniqueID != "Pack.B" || got[2].UniqueID != "Code.Mod" {
+	if len(got) != 3 || got[0].ID != "smapi:Pack.A" || got[1].ID != "smapi:Pack.B" || got[2].ID != "smapi:Code.Mod" {
 		t.Fatalf("order %#v", got)
 	}
 	if !got[2].Disabled || got[0].Disabled {
@@ -66,7 +66,7 @@ func TestMissingFromSortsContentPacksFirstAndFlagsDisabled(t *testing.T) {
 func TestCheckUsesRecordedList(t *testing.T) {
 	last := NewStore(t.TempDir())
 	if err := last.RecordRun("stardew", "Farm_1", "gone", time.Now(), []PlayedMod{
-		{UniqueID: "A.Mod", Name: "Alpha", ContentPackFor: "SMAPI"},
+		{ID: "smapi:A.Mod", Name: "Alpha", ContentPackFor: "smapi:SMAPI"},
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -117,8 +117,8 @@ func TestFromSaveReusesStoreAndQueuesTheRest(t *testing.T) {
 	e.alphaItem(t)
 	last := NewStore(t.TempDir())
 	if err := last.RecordRun("stardew", "Sunny_1", "old", time.Now(), []PlayedMod{
-		{UniqueID: "A.Mod", Name: "Alpha", Version: "1.0.0", Key: "local-a", SourceKind: profile.KindLocal},
-		{UniqueID: "B.Mod", Name: "Beta", Version: "2.0.0", Key: "nexus-9-8", SourceKind: profile.KindNexus, ModID: 9, FileID: 8},
+		{ID: "smapi:A.Mod", Name: "Alpha", Version: "1.0.0", Key: "local-a", SourceKind: profile.KindLocal},
+		{ID: "smapi:B.Mod", Name: "Beta", Version: "2.0.0", Key: "nexus-9-8", SourceKind: profile.KindNexus, ModID: 9, FileID: 8},
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +152,7 @@ func TestFromSaveReusesStoreAndQueuesTheRest(t *testing.T) {
 	}
 	found := false
 	for _, m := range mods {
-		if m.UniqueID == "A.Mod" {
+		if m.ID == "smapi:A.Mod" {
 			found = true
 		}
 	}

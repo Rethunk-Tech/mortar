@@ -22,7 +22,7 @@ func TestUpdatesApplyEverywhere(t *testing.T) {
 		t.Fatalf("calls %+v", r.calls)
 	}
 	c := r.calls[0]
-	if c.params.Game != "stardew" || len(c.params.UniqueIDs) != 1 || c.params.UniqueIDs[0] != "me.a" {
+	if c.params.Game != "stardew" || len(c.params.IDs) != 1 || c.params.IDs[0] != "me.a" {
 		t.Fatalf("params %+v", c.params)
 	}
 	for _, want := range []string{"A", "updated", "B", "pinned"} {

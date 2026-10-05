@@ -55,16 +55,16 @@ func TestAuthorMarkedMods(t *testing.T) {
 }
 
 func TestAuthorMarkedManifestDescription(t *testing.T) {
-	var mod Installed
+	var im Installed
 	var fields map[string]string
 	if err := json.Unmarshal([]byte(`{"Name":"Foo","UniqueID":"foo","Description":"This file is deprecated - use the 1.6 version"}`), &fields); err != nil {
 		t.Fatal(err)
 	}
-	value := reflect.ValueOf(&mod).Elem().FieldByName("Manifest")
+	value := reflect.ValueOf(&im).Elem().FieldByName("Manifest")
 	for name, text := range fields {
 		value.FieldByName(name).SetString(text)
 	}
-	got := authorMarkedMods(t.TempDir(), "stardewvalley", []Installed{mod})
+	got := authorMarkedMods(t.TempDir(), "stardewvalley", []Installed{im})
 	if len(got) != 1 || got[0].Status != "deprecated" {
 		t.Fatalf("got %+v", got)
 	}

@@ -31,7 +31,7 @@ func TestShadowedPacks(t *testing.T) {
 	pack := func(content string, loadAfter ...Installed) Installed {
 		m := syntheticLoadPack(t, content, nil)
 		for _, other := range loadAfter {
-			m.LoadAfter = append(m.LoadAfter, other.UniqueID)
+			m.LoadAfter = append(m.LoadAfter, other.ModID())
 		}
 		return m
 	}

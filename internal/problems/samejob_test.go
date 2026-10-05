@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func TestFootprintsJoinAssemblyWritesAndHarmonyReplaces(t *testing.T) {
@@ -40,10 +41,10 @@ func TestFootprintsJoinAssemblyWritesAndHarmonyReplaces(t *testing.T) {
 
 	fp := footprints(mods, launchsvc.LatestReplaces(profile))
 
-	if len(fp) != 2 || !fp["a.tools"]["harmony:StardewValley.Farmer::updateCommon"] || fp["b.tools"]["harmony:StardewValley.Farmer::updateCommon"] {
+	if len(fp) != 2 || !fp["smapi:a.tools"]["harmony:StardewValley.Farmer::updateCommon"] || fp["smapi:b.tools"]["harmony:StardewValley.Farmer::updateCommon"] {
 		t.Fatalf("footprints = %v", fp)
 	}
-	if !fp["a.tools"]["StardewValley.Farmer::CurrentToolIndex"] || !fp["b.tools"]["StardewValley.Farmer::CurrentToolIndex"] {
+	if !fp["smapi:a.tools"]["StardewValley.Farmer::CurrentToolIndex"] || !fp["smapi:b.tools"]["StardewValley.Farmer::CurrentToolIndex"] {
 		t.Fatalf("footprints = %v", fp)
 	}
 }
@@ -56,7 +57,7 @@ func TestSameJobWeighsMembersByHowFewModsWriteThem(t *testing.T) {
 		for _, m := range members {
 			set[m] = true
 		}
-		fp[id] = set
+		fp[mod.SMAPI(id).Fold()] = set
 		m := Installed{Key: "k-" + id, Enabled: true, UniqueID: id, Name: id, Author: author}
 		for _, d := range deps {
 			m.Dependencies = append(m.Dependencies, manifest.Dependency{UniqueID: d})
@@ -82,7 +83,7 @@ func TestSameJobWeighsMembersByHowFewModsWriteThem(t *testing.T) {
 		}
 	}
 	mods = append(mods, Installed{Key: "off", UniqueID: "off"})
-	fp["off"] = map[string]bool{"T::tool": true}
+	fp["smapi:off"] = map[string]bool{"T::tool": true}
 
 	got := sameJob(fp, mods)
 
@@ -96,10 +97,10 @@ func TestSameJobWeighsMembersByHowFewModsWriteThem(t *testing.T) {
 
 func TestSameJobOnSmallProfilesNeedsOneFootprintInsideTheOther(t *testing.T) {
 	fp := map[string]map[string]bool{
-		"a": {"T::t": true},
-		"b": {"T::t": true, "U::u": true},
-		"c": {"V::v": true, "W::w": true},
-		"d": {"V::v": true, "X::x": true},
+		"smapi:a": {"T::t": true},
+		"smapi:b": {"T::t": true, "U::u": true},
+		"smapi:c": {"V::v": true, "W::w": true},
+		"smapi:d": {"V::v": true, "X::x": true},
 	}
 	var mods []Installed
 	for _, id := range []string{"a", "b", "c", "d"} {
@@ -125,9 +126,10 @@ func TestSameJobListsASmallerModALargerOneCovers(t *testing.T) {
 	fp := map[string]map[string]bool{}
 	var mods []Installed
 	add := func(id string, members ...string) {
-		fp[id] = map[string]bool{}
+		key := mod.SMAPI(id).Fold()
+		fp[key] = map[string]bool{}
 		for _, m := range members {
-			fp[id][m] = true
+			fp[key][m] = true
 		}
 		mods = append(mods, Installed{Key: "k-" + id, Enabled: true, UniqueID: id, Name: id, Author: id})
 	}

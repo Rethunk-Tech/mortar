@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -23,23 +24,23 @@ func TestApplyWritesOnlyValidConfigsInsideModFolders(t *testing.T) {
 	must(os.MkdirAll(filepath.Join(mods, ".nexus-3-4"), 0o750))
 	entries := []profile.Entry{{
 		Key:  "nexus-1-2",
-		Mods: []profile.EntryMod{{UniqueID: "A.Mod", Folder: "Inner"}, {UniqueID: "A.Gone", Folder: "Missing"}, {UniqueID: "A.Esc", Folder: "../x"}, {UniqueID: "A.Off", Folder: "Pack/Off"}},
-	}, {Key: "nexus-3-4", Mods: []profile.EntryMod{{UniqueID: "A.Root", Folder: "."}}}}
+		Mods: []profile.Component{{ID: "smapi:A.Mod", Folder: "Inner"}, {ID: "smapi:A.Gone", Folder: "Missing"}, {ID: "smapi:A.Esc", Folder: "../x"}, {ID: "smapi:A.Off", Folder: "Pack/Off"}},
+	}, {Key: "nexus-3-4", Mods: []profile.Component{{ID: "smapi:A.Root", Folder: "."}}}}
 	configs := []Config{
-		{UniqueID: "a.mod", Path: "config.json", Data: []byte(`{"a":1}`)},
-		{UniqueID: "A.Mod", Path: "data/deep.json", Data: []byte(`{"b":2}`)},
-		{UniqueID: "A.Mod", Path: "../escape.json", Data: []byte("x")},
-		{UniqueID: "A.Mod", Path: "/abs.json", Data: []byte("x")},
-		{UniqueID: "A.Mod", Path: "run.sh", Data: []byte("x")},
-		{UniqueID: "A.Mod", Path: "manifest.json", Data: []byte("x")},
-		{UniqueID: "A.Gone", Path: "config.json", Data: []byte("x")},
-		{UniqueID: "A.Esc", Path: "config.json", Data: []byte("x")},
-		{UniqueID: "Other.Mod", Path: "config.json", Data: []byte("x")},
-		{UniqueID: "A.Off", Path: "config.json", Data: []byte("off")},
-		{UniqueID: "A.Root", Path: "config.json", Data: []byte("root")},
+		{ID: "smapi:a.mod", Path: "config.json", Data: []byte(`{"a":1}`)},
+		{ID: "smapi:A.Mod", Path: "data/deep.json", Data: []byte(`{"b":2}`)},
+		{ID: "smapi:A.Mod", Path: "../escape.json", Data: []byte("x")},
+		{ID: "smapi:A.Mod", Path: "/abs.json", Data: []byte("x")},
+		{ID: "smapi:A.Mod", Path: "run.sh", Data: []byte("x")},
+		{ID: "smapi:A.Mod", Path: "manifest.json", Data: []byte("x")},
+		{ID: "smapi:A.Gone", Path: "config.json", Data: []byte("x")},
+		{ID: "smapi:A.Esc", Path: "config.json", Data: []byte("x")},
+		{ID: "smapi:Other.Mod", Path: "config.json", Data: []byte("x")},
+		{ID: "smapi:A.Off", Path: "config.json", Data: []byte("off")},
+		{ID: "smapi:A.Root", Path: "config.json", Data: []byte("root")},
 	}
 	written, err := Apply(mods, entries, configs)
-	if err != nil || strings.Join(written, ",") != "A.Mod,A.Off,A.Root" {
+	if err != nil || strings.Join(mod.Locals(written), ",") != "A.Mod,A.Off,A.Root" {
 		t.Fatalf("written = %v, %v", written, err)
 	}
 	for path, want := range map[string]string{

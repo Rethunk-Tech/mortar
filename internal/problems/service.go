@@ -393,7 +393,6 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 
 // DismissAbandonedMod hides an author-marked broken row for this profile until the mod is gone.
 func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id string, uniqueID mod.ID) error {
-	uniqueID = uniqueID
 	if uniqueID == "" {
 		return errors.New("missing mod id")
 	}
@@ -403,7 +402,6 @@ func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id string, uniq
 
 // DismissListedRequirement hides a Nexus-listed requirement for this profile until it is gone.
 func (s *Service) DismissListedRequirement(_ context.Context, gameID, id string, uniqueID mod.ID) error {
-	uniqueID = uniqueID
 	if uniqueID == "" {
 		return errors.New("missing requirement id")
 	}
@@ -413,7 +411,7 @@ func (s *Service) DismissListedRequirement(_ context.Context, gameID, id string,
 
 // DismissSetting hides one compatibility setting for this profile until its patch group is gone.
 func (s *Service) DismissSetting(_ context.Context, gameID, id string, uniqueID mod.ID, field string) error {
-	uniqueID, field = uniqueID, strings.TrimSpace(field)
+	field = strings.TrimSpace(field)
 	if uniqueID == "" || field == "" {
 		return errors.New("missing setting")
 	}
@@ -423,7 +421,7 @@ func (s *Service) DismissSetting(_ context.Context, gameID, id string, uniqueID 
 
 // RememberSettingChoice keeps a setting hint hidden while its chosen value remains current.
 func (s *Service) RememberSettingChoice(_ context.Context, gameID, id string, uniqueID mod.ID, field, value string) error {
-	uniqueID, field = uniqueID, strings.TrimSpace(field)
+	field = strings.TrimSpace(field)
 	if uniqueID == "" || field == "" {
 		return errors.New("missing setting")
 	}
@@ -437,7 +435,7 @@ func (s *Service) ConflictImageCrop(_ context.Context, gameID, id string, unique
 	if err != nil {
 		return "", err
 	}
-	uniqueID, fromFile = uniqueID, contentReference("", fromFile)
+	fromFile = contentReference("", fromFile)
 	if uniqueID == "" || fromFile == "" {
 		return "", errors.New("missing pack or image")
 	}
