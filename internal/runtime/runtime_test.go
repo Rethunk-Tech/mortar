@@ -1,8 +1,10 @@
 package runtime
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -117,5 +119,46 @@ func TestVersionReadsConfigInfoThenCompatToolMapping(t *testing.T) {
 	inst.Platform = "linux"
 	if got := Version(inst); got != "" {
 		t.Fatalf("native install: %q", got)
+	}
+}
+
+func TestWinePrefixBottle(t *testing.T) {
+	root := t.TempDir()
+	bottle := filepath.Join(root, ".var", "app", "com.usebottles.bottles", "data", "bottles", "bottles", "Games")
+	user := filepath.Join(bottle, "drive_c", "users", "alice")
+	if err := os.MkdirAll(user, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(bottle, "drive_c", "users", "Public"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(bottle, "bottle.yml"), []byte("Name: My Games\nPath: Games\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	inst := Install{Store: "bottles", Dir: filepath.Join(bottle, "drive_c", "Game"), Prefix: bottle, Platform: "windows", GOOS: "linux"}
+	if IDOf(inst) != WinePrefix {
+		t.Fatalf("runtime = %s", IDOf(inst))
+	}
+	got, err := Resolve(inst, stardewSaves)
+	if want := filepath.Join(user, "AppData", "Roaming", "StardewValley", "Saves"); err != nil || got != want {
+		t.Fatalf("saves = %q, %v; want %q", got, err, want)
+	}
+
+	var ran []string
+	run := func(_ context.Context, argv []string) error { ran = argv; return nil }
+	if err := Run(context.Background(), run, inst, "/x/SMAPI.exe", "--mods-path", "/m"); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles", "run", "-b", "My Games", "-e", "/x/SMAPI.exe", "--", "--mods-path", "/m"}
+	if !slices.Equal(ran, want) {
+		t.Fatalf("flatpak argv = %q", ran)
+	}
+	inst.Prefix = filepath.Join(root, "native")
+	if argv, _ := Command(inst, "a.exe"); !slices.Equal(argv, []string{"bottles-cli", "run", "-b", "native", "-e", "a.exe"}) {
+		t.Fatalf("native argv = %q", argv)
+	}
+	inst.Platform = "linux"
+	if err := Run(context.Background(), run, inst, "a"); err == nil {
+		t.Fatal("a non-bottle install must not be wrapped")
 	}
 }

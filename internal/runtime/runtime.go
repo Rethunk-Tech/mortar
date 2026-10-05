@@ -1,5 +1,5 @@
 // Package runtime resolves a game's catalog path templates for the way an install runs: natively on the host or
-// as a Windows build inside a Proton prefix.
+// as a Windows build inside a Proton or Bottles prefix.
 package runtime
 
 import (
@@ -20,6 +20,8 @@ import (
 const (
 	Native = "native"
 	Proton = "proton"
+	// WinePrefix runs a Windows build inside a Bottles bottle.
+	WinePrefix = "wine-prefix"
 )
 
 // Steam store ids, the stores whose Windows builds run under Proton.
@@ -31,6 +33,8 @@ const (
 // Install is the part of a game install a runtime needs.
 type Install struct {
 	Store, Dir, AppID string
+	// Prefix is the Bottles bottle folder a Windows build runs in.
+	Prefix string
 	// Platform is the OS the install's build is for: "windows", "linux" or "darwin".
 	Platform string
 	// Home is the user's home folder.
@@ -65,7 +69,7 @@ type Runtime interface {
 }
 
 // drivers are tried in order; native runs whatever no other runtime claims.
-var drivers = []Runtime{proton{}, native{}}
+var drivers = []Runtime{proton{}, winePrefix{}, native{}}
 
 // IDOf is the id of the runtime that runs inst.
 func IDOf(inst Install) string {
