@@ -23,6 +23,8 @@ type Archive struct {
 	FS  fs.FS
 	// Key is the package's identity: the folder name of a plain install and the Namespace-Name of a Thunderstore package.
 	Key string
+	// Eval is what a FOMOD's conditions read: the files already installed and the game's version.
+	Eval fomod.EvalContext
 }
 
 // Open makes an Archive of an extracted folder.
@@ -129,11 +131,12 @@ func validate(l Layout, g Game) error {
 	return nil
 }
 
-// skip is the archive junk a store item never keeps and the entries a mods folder ignores: Mac resource folders, git
-// data, Thumbs.db and dot files.
+// skip is the archive junk a store item never keeps: Mac resource folders and .DS_Store, git data, Thumbs.db and the
+// store's own completion marker. Other dot names stay, because a dot-named mod folder is a switched-off mod.
 func skip(rel string) bool {
 	for seg := range strings.SplitSeq(rel, "/") {
-		if strings.EqualFold(seg, "__MACOSX") || strings.HasPrefix(seg, ".") || strings.EqualFold(seg, "Thumbs.db") {
+		switch {
+		case strings.EqualFold(seg, "__MACOSX"), strings.EqualFold(seg, "Thumbs.db"), seg == ".git", seg == ".DS_Store", seg == ".complete":
 			return true
 		}
 	}

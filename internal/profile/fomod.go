@@ -270,34 +270,6 @@ func (s *Store) scanItem(game, id, key string, choices map[string]map[string][]s
 	return src, found, done, nil
 }
 
-func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string) (src, tmp string, err error) {
-	root, err := s.items.Path(game, key)
-	if err != nil {
-		return "", "", err
-	}
-	cfg, _, ok, err := fomod.Open(root)
-	if err != nil || !ok {
-		return root, "", err
-	}
-	modsDir, err := s.ModsDir(game, id)
-	if err != nil {
-		return "", "", err
-	}
-	eval := s.fomodEval(game, s.fileIndex(modsDir))
-	if !fomod.Match(cfg, choices, eval) {
-		return "", "", &NeedChoicesError{Ask: askFrom(cfg, key, Source{}, "", choices, eval)}
-	}
-	tmp, err = os.MkdirTemp("", "mortar-fomod-")
-	if err != nil {
-		return "", "", err
-	}
-	if err := fomod.Apply(root, tmp, fomod.Resolve(cfg, choices, eval)); err != nil {
-		_ = fsx.RemoveAll(tmp)
-		return "", "", err
-	}
-	return tmp, tmp, nil
-}
-
 func cloneFomod(in map[string]map[string][]string) map[string]map[string][]string {
 	if in == nil {
 		return nil

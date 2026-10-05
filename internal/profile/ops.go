@@ -140,12 +140,9 @@ func materialize(tmp string, e Entry) (string, error) {
 	return final, nil
 }
 
-// place copies the store item for e into mods/ through a temp sibling and renames it into position.
+// place lays the store item for e out as mods/<key> through a temp sibling and renames it into position.
 func (s *Store) place(game, modsDir string, e Entry) error {
-	src, tmp, err := s.layoutItem(game, filepath.Base(filepath.Dir(modsDir)), e.Key, e.Fomod)
-	if tmp != "" {
-		defer func() { _ = fsx.RemoveAll(tmp) }()
-	}
+	arch, l, _, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.Key, e.Fomod)
 	if err != nil {
 		return err
 	}
@@ -154,7 +151,7 @@ func (s *Store) place(game, modsDir string, e Entry) error {
 		return err
 	}
 	final, err := func() (string, error) {
-		if err := datadir.MaterializeTree(src, scratch); err != nil {
+		if err := writeLayout(arch, l, scratch); err != nil {
 			return "", err
 		}
 		return materialize(scratch, e)

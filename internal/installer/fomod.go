@@ -40,7 +40,7 @@ func (fomodInstaller) Layout(_ context.Context, a Archive, g Game, choices Choic
 		at[f.Rel] = len(l.Files)
 		l.Files = append(l.Files, f)
 	}
-	for _, op := range fomod.Resolve(cfg, choices, fomod.EvalContext{}) {
+	for _, op := range fomod.Resolve(cfg, choices, a.Eval) {
 		src := slash(op.Source)
 		if !fs.ValidPath(src) {
 			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, op.Source)
