@@ -308,7 +308,7 @@ func TestBundledGamesCarryTargetsAndCompanions(t *testing.T) {
 		t.Fatalf("smapi companion = %q", s.Loaders[0].Companion)
 	}
 	lc, _ := BundledGame("lethal-company")
-	if tgt, ok := lc.Target("profile"); !ok || tgt.Root != "{profile}" || !tgt.Writable {
+	if tgt, ok := lc.Target("profile"); !ok || tgt.Root != "{profile}" || tgt.Writable {
 		t.Fatalf("lethal-company profile target = %+v", tgt)
 	}
 	if s.Deploy != DeployRedirect || lc.Deploy != DeployLink {
