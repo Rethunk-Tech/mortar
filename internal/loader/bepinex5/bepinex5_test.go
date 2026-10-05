@@ -165,3 +165,38 @@ func TestRoute(t *testing.T) {
 		}
 	}
 }
+
+func TestLaunchSettingsEditOnlyTheirLines(t *testing.T) {
+	dir := t.TempDir()
+	l := Loader{}
+	got, err := l.LaunchSettings(dir)
+	if err != nil || got[0].Value != "true" || got[1].Value != "default" {
+		t.Fatalf("defaults = %+v, %v", got, err)
+	}
+	cfg := configFile(dir)
+	orig := "## kept\r\n[Logging.Console]\r\n\r\nEnabled = true\r\nLogLevels = Fatal, Error, Warning, Message, Info\r\n\r\n[Other]\r\nX = 1\r\n"
+	if err := os.MkdirAll(filepath.Dir(cfg), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(cfg, []byte(orig), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.SetLaunchSetting(dir, "console", "false"); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.SetLaunchSetting(dir, "logLevel", "debug"); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(cfg)
+	want := "## kept\r\n[Logging.Console]\r\n\r\nEnabled = false\r\nLogLevels = Fatal, Error, Warning, Message, Info, Debug\r\n\r\n[Other]\r\nX = 1\r\n\r\n[Logging.Disk]\r\n\r\nLogLevels = Fatal, Error, Warning, Message, Info, Debug\r\n"
+	if string(b) != want {
+		t.Fatalf("cfg = %q\nwant %q", b, want)
+	}
+	got, _ = l.LaunchSettings(dir)
+	if got[0].Value != "false" || got[1].Value != "debug" {
+		t.Fatalf("read back = %+v", got)
+	}
+	if l.SetLaunchSetting(dir, "logLevel", "loud") == nil || l.SetLaunchSetting(dir, "nope", "x") == nil {
+		t.Fatal("unknown values must be refused")
+	}
+}

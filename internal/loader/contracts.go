@@ -117,6 +117,20 @@ type WithConfig interface {
 	ConfigDirs() []string
 }
 
+// LaunchSetting is one launch option a loader keeps in the profile, shown beside the profile's launch settings. A
+// setting with no Choices is a toggle holding "true" or "false".
+type LaunchSetting struct {
+	ID      string   `json:"id"`
+	Choices []string `json:"choices,omitempty"`
+	Value   string   `json:"value"`
+}
+
+// WithLaunchSettings is a loader with launch options of its own that live in the profile's files.
+type WithLaunchSettings interface {
+	LaunchSettings(profileDir string) ([]LaunchSetting, error)
+	SetLaunchSetting(profileDir, id, value string) error
+}
+
 // ComponentID names one loaded component.
 type ComponentID struct{ Format, ID string }
 
