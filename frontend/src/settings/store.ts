@@ -105,7 +105,7 @@ const defaults: Settings = {
   autoInstallMortarUpdates: true,
   autoTrackNexus: false,
   lanName: '',
-  lanAutoAcceptSameAccount: false,
+  lanAutoAcceptPaired: false,
   downloadFolder: '',
   profileOrder: 'manual',
   autoRetryDownloads: 'off',

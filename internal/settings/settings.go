@@ -176,7 +176,7 @@ type Settings struct {
 	AutoInstallMortarUpdates *bool  `json:"autoInstallMortarUpdates"`
 	AutoTrackNexus           bool   `json:"autoTrackNexus"`
 	LanName                  string `json:"lanName"`
-	LanAutoAcceptSameAccount bool   `json:"lanAutoAcceptSameAccount"`
+	LanAutoAcceptPaired      bool   `json:"lanAutoAcceptPaired"`
 	DownloadFolder           string `json:"downloadFolder"`
 	// WatchFolders are extra folders, joined by the OS path-list separator, that new archives are offered from.
 	WatchFolders               string `json:"watchFolders,omitempty"`

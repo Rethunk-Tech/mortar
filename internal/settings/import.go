@@ -40,7 +40,7 @@ var sectionFields = map[string][]string{
 	SectionStorage: {"keepDownloadArchives", "storeRetentionDays", "trashRetentionDays", "historyEventsKept", "downloadFolder", "watchFolders"},
 	SectionSharing: {
 		"shareIncludeDisabledMods", "shareIncludeFomodChoices", "shareIncludeNotes", "shareIncludeConfigFiles",
-		"lanName", "lanAutoAcceptSameAccount",
+		"lanName", "lanAutoAcceptPaired",
 	},
 	SectionGames: {"games", "smapiBuilds", "smapiPin", "showSmapiConsole"},
 }

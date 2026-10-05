@@ -154,7 +154,7 @@ func defaultPrefs() Settings {
 		AutoInstallMortarUpdates:   on(),
 		AutoTrackNexus:             false,
 		LanName:                    "",
-		LanAutoAcceptSameAccount:   false,
+		LanAutoAcceptPaired:        false,
 		DownloadFolder:             "",
 		ProfileOrder:               ProfileOrderManual,
 		AutoRetryDownloads:         AutoRetryOff,

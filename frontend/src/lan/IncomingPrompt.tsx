@@ -46,7 +46,7 @@ export function IncomingPrompt() {
   const [choosing, setChoosing] = useState(false)
   const [transferring, setTransferring] = useState(false)
   const [transferError, setTransferError] = useState<InlineError | null>(null)
-  const autoAccept = useSettings((s) => s.lanAutoAcceptSameAccount)
+  const autoAccept = useSettings((s) => s.lanAutoAcceptPaired)
   const incomingId = incoming?.id ?? ''
   const paired = incoming?.paired === true
 

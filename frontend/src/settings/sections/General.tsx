@@ -137,7 +137,7 @@ function Sharing() {
       <PrefKeys
         keys={[
           'lanName',
-          'lanAutoAcceptSameAccount',
+          'lanAutoAcceptPaired',
           'shareIncludeDisabledMods',
           'shareIncludeFomodChoices',
           'shareIncludeNotes',

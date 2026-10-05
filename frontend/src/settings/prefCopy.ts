@@ -66,7 +66,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
       description: i18n._(msg`How this Mortar appears to nearby installations`),
       placeholder: i18n._(msg`This computer`),
     },
-    lanAutoAcceptSameAccount: {
+    lanAutoAcceptPaired: {
       label: i18n._(msg`Auto-accept from paired computers`),
       description: i18n._(
         msg`Accept profiles sent from computers you paired, and copy their mod files`,

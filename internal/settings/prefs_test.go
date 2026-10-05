@@ -61,7 +61,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if d.GamePrefs("stardew").ConsoleLevel != ConsoleLevelWarn || ToggleOn(d.GamePrefs("stardew").ConsoleTimestamps) || !ToggleOn(d.GamePrefs("stardew").ConsoleFollow) {
 		t.Fatal("console defaults")
 	}
-	if d.LanName != "" || d.LanAutoAcceptSameAccount || d.DownloadFolder != "" {
+	if d.LanName != "" || d.LanAutoAcceptPaired || d.DownloadFolder != "" {
 		t.Fatal("lan / download-folder defaults")
 	}
 }
@@ -111,7 +111,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"smapiBuilds": "include", "smapiPin": "4.0.0", "autoInstallMortarUpdates": "false", "autoTrackNexus": "true",
 		"defaultLaunchMethod": "direct", "showSmapiConsole": "false", "skipPlayCheck": "true", "consoleLevel": "debug",
 		"consoleTimestamps": "false", "consoleFollow": "false", "lanName": "Workshop",
-		"lanAutoAcceptSameAccount": "true", "downloadFolder": "/var/tmp/mortar-dl",
+		"lanAutoAcceptPaired": "true", "downloadFolder": "/var/tmp/mortar-dl",
 		"profileOrder": "name", "autoRetryDownloads": "3", "pauseDownloadsWhilePlaying": "true",
 		"sidebarBadges": "problems", "backupLocation": "/var/tmp/mortar-bak", "conflictScanDepth": "skipImages",
 		"shareIncludeDisabledMods": "true", "shareIncludeFomodChoices": "false", "shareIncludeNotes": "false",
