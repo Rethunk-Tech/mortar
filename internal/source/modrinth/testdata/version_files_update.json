@@ -1,10 +1,40 @@
 {
-  "aa11": {"id": "SoD3", "project_id": "AANobbMI", "version_number": "0.6.0", "loaders": ["fabric"], "game_versions": ["1.21"],
-    "dependencies": [{"project_id": "P1", "version_id": null, "file_name": null, "dependency_type": "required"},
-                     {"project_id": "P9", "version_id": null, "file_name": null, "dependency_type": "required"},
-                     {"project_id": "P2", "version_id": null, "file_name": null, "dependency_type": "optional"}],
-    "files": [{"hashes": {"sha512": "ff99", "sha1": "x"}, "url": "https://cdn/s3.jar", "filename": "s3.jar", "primary": true, "size": 9}]},
-  "bb22": {"id": "Lith1", "project_id": "gvQqBUqZ", "version_number": "1.0", "loaders": ["fabric"], "game_versions": ["1.21"],
+  "aa11": {
+    "id": "SoD3",
+    "project_id": "AANobbMI",
+    "version_number": "0.6.0",
+    "loaders": ["fabric"],
+    "game_versions": ["1.21"],
+    "dependencies": [
+      { "project_id": "P1", "version_id": null, "file_name": null, "dependency_type": "required" },
+      { "project_id": "P9", "version_id": null, "file_name": null, "dependency_type": "required" },
+      { "project_id": "P2", "version_id": null, "file_name": null, "dependency_type": "optional" }
+    ],
+    "files": [
+      {
+        "hashes": { "sha512": "ff99", "sha1": "x" },
+        "url": "https://cdn/s3.jar",
+        "filename": "s3.jar",
+        "primary": true,
+        "size": 9
+      }
+    ]
+  },
+  "bb22": {
+    "id": "Lith1",
+    "project_id": "gvQqBUqZ",
+    "version_number": "1.0",
+    "loaders": ["fabric"],
+    "game_versions": ["1.21"],
     "dependencies": [],
-    "files": [{"hashes": {"sha512": "BB22"}, "url": "https://cdn/l1.jar", "filename": "l1.jar", "primary": true, "size": 4}]}
+    "files": [
+      {
+        "hashes": { "sha512": "BB22" },
+        "url": "https://cdn/l1.jar",
+        "filename": "l1.jar",
+        "primary": true,
+        "size": 4
+      }
+    ]
+  }
 }
