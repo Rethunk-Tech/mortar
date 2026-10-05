@@ -42,6 +42,8 @@ func (s *Service) Categories(ctx context.Context, game, sourceID string) ([]stri
 type SourceInfo struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	// Unavailable says why the source cannot be searched now (for example a missing API key); empty when it can.
+	Unavailable string `json:"unavailable"`
 }
 
 // SearchableSources lists the game's sources that can be searched, in catalog order.
@@ -49,7 +51,7 @@ func (s *Service) SearchableSources(game string) []SourceInfo {
 	out := []SourceInfo{}
 	if info, ok := catalogGame(game); ok {
 		for _, src := range source.Searchable(info) {
-			out = append(out, SourceInfo{ID: src.ID(), Name: src.Name()})
+			out = append(out, SourceInfo{ID: src.ID(), Name: src.Name(), Unavailable: source.Unavailable(src)})
 		}
 	}
 	return out

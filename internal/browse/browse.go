@@ -65,7 +65,7 @@ func (c *Client) Search(ctx context.Context, game, sourceID, text string, page i
 // its own ranking and none crowds out the rest. Sources that fail are named in Failed; only when all fail is it an
 // error.
 func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text string, page int, f Filter) (Page, error) {
-	sources := source.Searchable(info)
+	sources := slices.DeleteFunc(source.Searchable(info), func(s source.Source) bool { return source.Unavailable(s) != "" })
 	if len(f.Include) > 0 {
 		// A source with no categories cannot match an include list.
 		sources = slices.DeleteFunc(sources, func(s source.Source) bool {

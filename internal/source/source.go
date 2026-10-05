@@ -108,6 +108,20 @@ type Categorizer interface {
 	Categories(ctx context.Context, key string) ([]string, error)
 }
 
+// Gated is a source that cannot be used until the user sets something up; Unavailable says what, or is empty when
+// the source is ready.
+type Gated interface {
+	Unavailable() string
+}
+
+// Unavailable is why src cannot be used now, or "" when it can.
+func Unavailable(src Source) string {
+	if g, ok := src.(Gated); ok {
+		return g.Unavailable()
+	}
+	return ""
+}
+
 // Schemer is a source whose links open Mortar through a URL scheme.
 type Schemer interface {
 	Schemes() []string

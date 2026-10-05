@@ -58,6 +58,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
+	itchsource "github.com/Rethunk-Tech/mortar/internal/source/itch"
 	nexussource "github.com/Rethunk-Tech/mortar/internal/source/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
@@ -674,7 +675,7 @@ func run() error {
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
 		application.NewService(bundlesSvc), application.NewService(templatesSvc), application.NewService(archivesSvc),
-		application.NewService(savesSvc), application.NewService(plays), application.NewService(nexusSvc), application.NewService(nxmSvc), application.NewService(notifier),
+		application.NewService(savesSvc), application.NewService(plays), application.NewService(nexusSvc), application.NewService(&itchsource.Service{Store: store}), application.NewService(nxmSvc), application.NewService(notifier),
 		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc), application.NewService(lanSvc),
 		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
 		application.NewService(dataSvc), application.NewService(toolsSvc),

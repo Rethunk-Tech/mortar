@@ -69,6 +69,8 @@ type Settings struct {
 	NexusUserID  int    `json:"nexusUserId"`
 	NexusName    string `json:"nexusName"`
 	NexusPremium bool   `json:"nexusPremium"`
+	// ItchName is the signed-in itch.io account, for display only; the API key lives in the keyring. Empty means signed out.
+	ItchName string `json:"itchName"`
 	// NxmHandled is whether Mortar is registered for the source link schemes, and NxmPreviousHandlers maps each scheme
 	// to the owner Mortar took it from (absent when there was none), which turning the setting off restores. NxmAsked is
 	// whether the user has been offered it.
