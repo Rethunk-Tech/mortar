@@ -160,7 +160,7 @@ export function Appearance() {
               <Box
                 component="img"
                 alt={t`Background preview`}
-                src={`/backdrop?v=${encodeURIComponent(backgroundImage)}`}
+                src={`/backdrop?mode=image&v=${encodeURIComponent(backgroundImage)}`}
                 sx={{ width: 160, height: 90, objectFit: 'cover', borderRadius: '6px' }}
               />
               <Button
