@@ -44,7 +44,8 @@ func ParseLink(raw string) (Ref, error) {
 
 // Resolved is what an install needs of one package version.
 type Resolved struct {
-	Version string
+	Namespace, Name string
+	Version         string
 	// URL is the download address.
 	URL  string
 	Size int64
@@ -64,16 +65,20 @@ func (d Driver) Resolve(ctx context.Context, key, namespace, name, ver, mortarVe
 		}
 		for _, v := range p.Versions {
 			if ver == "" || v.Number == ver {
-				base := d.URL
-				if base == "" {
-					base = BaseURL
-				}
-				return Resolved{
-					Version: v.Number, Size: v.Size, Dependencies: v.Deps,
-					URL: base + "/package/download/" + p.Owner + "/" + p.Name + "/" + v.Number + "/",
-				}, nil
+				return d.resolved(p, v), nil
 			}
 		}
 	}
 	return Resolved{}, fmt.Errorf("%s-%s %s is not in the %s index", namespace, name, ver, key)
+}
+
+func (d Driver) resolved(p pkg, v version) Resolved {
+	base := d.URL
+	if base == "" {
+		base = BaseURL
+	}
+	return Resolved{
+		Namespace: p.Owner, Name: p.Name, Version: v.Number, Size: v.Size, Dependencies: v.Deps,
+		URL: base + "/package/download/" + p.Owner + "/" + p.Name + "/" + v.Number + "/",
+	}
 }
