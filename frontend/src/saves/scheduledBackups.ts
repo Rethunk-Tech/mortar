@@ -6,6 +6,7 @@ import {
   OpenBackupsFolder,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { currentGame } from '../nav/currentGame.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 
 const EVENT = 'saves:scheduled'
@@ -27,7 +28,7 @@ export function initScheduledBackups() {
       toastError(i18n._(msg`A scheduled save backup failed`), new Error(run.error), {
         action: {
           label: i18n._(msg`Open backups folder`),
-          run: () => OpenBackupsFolder().catch(reportUnexpected),
+          run: () => OpenBackupsFolder(currentGame()).catch(reportUnexpected),
         },
       })
     }

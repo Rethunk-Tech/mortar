@@ -8,6 +8,7 @@ import {
   RestoreBackup,
   SetBackupPinned,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import { currentGame } from '../nav/currentGame.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useSaves } from './store.ts'
 
@@ -32,7 +33,7 @@ export const useSaveBackups = create<{
       const id = latest
       set({ status: 'loading', error: '' })
       try {
-        const items = (await ListBackups()) ?? []
+        const items = (await ListBackups(currentGame())) ?? []
         if (id === latest) {
           set({ items, status: 'ready' })
         }
@@ -43,16 +44,16 @@ export const useSaveBackups = create<{
       }
     },
     restore: async (name, folders) => {
-      await RestoreBackup(name, folders)
+      await RestoreBackup(currentGame(), name, folders)
       await Promise.all([get().load(), useSaves.getState().reload()])
     },
     setPinned: async (name, pinned) => {
-      await SetBackupPinned(name, pinned)
+      await SetBackupPinned(currentGame(), name, pinned)
       await get().load()
     },
     openFolder: async () => {
       try {
-        await OpenBackupsFolder()
+        await OpenBackupsFolder(currentGame())
       } catch (e) {
         reportUnexpected(e)
       }

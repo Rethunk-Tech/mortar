@@ -110,7 +110,7 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
         onClick={() => {
           runBackup(
             async () => {
-              await CreateBackup(fit.folder)
+              await CreateBackup(game, fit.folder)
               await useSaveBackups.getState().load()
               useToasts.getState().push({ kind: 'success', title: t`Backed up ${label}` })
             },
@@ -123,7 +123,7 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
       <TipIconButton
         label={t`Open the folder of ${label}`}
         onClick={() => {
-          OpenSaveFolder(fit.folder).catch(reportUnexpected)
+          OpenSaveFolder(game, fit.folder).catch(reportUnexpected)
         }}
       >
         <FolderOpen size={16} />

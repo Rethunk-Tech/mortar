@@ -13,6 +13,7 @@ import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { When } from '../i18n/When.tsx'
 import { useGameBusy } from '../launch/store.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -83,12 +84,13 @@ export function SaveBackupsSection({ folder, label }: { folder: string; label: s
   const [ask, setAsk] = useState<Ask | null>(null)
   const [pending, run] = usePending()
   const busyGame = useGameBusy()
+  const game = useCurrentGame()
   const load = useCallback(
     () =>
-      SaveBackups(folder)
+      SaveBackups(game, folder)
         .then((rows) => setItems(rows ?? []))
         .catch(reportUnexpected),
-    [folder],
+    [game, folder],
   )
   useEffect(() => {
     if (open) {
@@ -127,7 +129,7 @@ export function SaveBackupsSection({ folder, label }: { folder: string; label: s
               pending={pending}
               onAsk={setAsk}
               onPin={(x) => {
-                SetBackupPinned(x.name, !x.pinned).then(refresh).catch(reportUnexpected)
+                SetBackupPinned(game, x.name, !x.pinned).then(refresh).catch(reportUnexpected)
               }}
             />
           ))
@@ -151,8 +153,8 @@ export function SaveBackupsSection({ folder, label }: { folder: string; label: s
           const { kind, backup } = ask
           run(async () => {
             await (kind === 'delete'
-              ? DeleteBackup(backup.name)
-              : RestoreBackup(backup.name, [folder]))
+              ? DeleteBackup(game, backup.name)
+              : RestoreBackup(game, backup.name, [folder]))
             setAsk(null)
             await refresh()
             if (kind === 'restore') {
