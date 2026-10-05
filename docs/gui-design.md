@@ -52,6 +52,20 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 - Open Sans (300, 400, 500, 600, 700) from `@fontsource/open-sans`, `htmlFontSize` 18 with MUI's responsive font sizes, as Concrete.
 - Every string goes through Lingui.
 
+## Copy
+
+How every string reads. One wording per message: `bun run --cwd frontend i18n:dupes` fails when two msgids differ only in case, punctuation or placeholder names.
+
+- **Enable / Disable** a mod, plugin or option. Never "Switch on/off", "Turn on/off" or "Activate".
+- **Remove** takes something out of a profile, group or list and leaves the thing itself; **Delete** destroys it on disk (a profile, bundle, template, preset, backup, downloaded file). The button, its confirmation and its toast use the same verb.
+- Sentence case everywhere: "Open settings", not "Open Settings". A fragment that must be lowercase is lowercased in code, so one msgid serves both.
+- Labels, buttons, headings and toast titles take no full stop; a sentence or a line of body text does.
+- One placeholder name per concept: `{name}`, `{count}`, `{profile}`, `{game}`, `{version}`, `{path}`, `{when}`, `{min}`, `{max}`. No positional `{0}` and no per-site names (`{aName}`, `{targetName}`); plurals use `{count}`.
+- A trailing "…" only on a control that opens further input (a dialog, a picker); the dialog's own title has none. A control that acts at once has none, and "…" is never a loading marker inside a sentence.
+- No em dashes; use a colon, a full stop or a comma. Straight quotes and apostrophes only, and a name goes in a placeholder without quotes.
+- Errors read "Could not <verb> <thing>", never "Couldn't", "Failed to" or "Unable to"; no "Please".
+- Shortest wording that keeps every fact: what it does, and when it matters.
+
 ## Game Select
 
 Mortar opens on the last game used; Game Select shows at start only until a game has been opened, and otherwise from the title bar's Game Select tab.
