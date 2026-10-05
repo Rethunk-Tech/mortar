@@ -1,6 +1,6 @@
 # Mortar architecture
 
-How Mortar works: storage, profile semantics, trust boundaries, and the Stardew and Nexus facts that settle questions so they are not re-litigated. Decided work not yet built is in [design.md](design.md), screens in [gui-design.md](gui-design.md), standing rules in [AGENTS.md](../AGENTS.md).
+How Mortar works: storage, profile semantics, the game catalog and its registries, trust boundaries, and the Stardew, Nexus and wire-format facts that settle questions so they are not re-litigated. Decided work not yet built is in [design.md](design.md), screens in [gui-design.md](gui-design.md), standing rules in [AGENTS.md](../AGENTS.md).
 
 ## Product
 
@@ -227,9 +227,13 @@ The registry (`internal/settings/registry.go`) lists each key with its scope, ty
 
 ### Store integrity
 
-Installing an item records the SHA-256 and size of every file in it, beside the store (`.manifests/<game>/<key>.json`) so the hashes are never copied into a profile. `store.Verify` hashes the item again and reports files missing, changed or extra; an item stored before hashes were recorded is baselined by its first verification, which cannot see earlier damage. For a Nexus item the check first looks in the downloads folder for an archive of that mod whose MD5 is the one Nexus lists for the file; a match is extracted the way an install extracts it and its hashes become the baseline, so damage done after the install is found. This needs a Nexus sign-in and the original archive: without either, the item is baselined from its current files as before. A matching MD5 proves the archive is what Nexus served; it cannot show damage to an item that was already damaged when it was first verified, nor anything for a GitHub or local item (a local item's key is already its archive's SHA-256, which Repair uses). `store/verify.json` keeps each item's last verification time and verdict (`Damaged` feeds the Problems check). Removing an item drops its records.
+Installing an item records the SHA-256 and size of every file in it, beside the store (`.manifests/<game>/<key>.json`) so the hashes are never copied into a profile. `store.Verify` hashes the item again and reports files missing, changed or extra; an item stored before hashes were recorded is baselined by its first verification, which cannot see earlier damage. For a Nexus item the check first looks in the downloads folder for an archive of that mod whose MD5 is the one Nexus lists for the file; a match is extracted the way an install extracts it and its hashes become the baseline, so damage done after the install is found.
 
-A background pass (`storecheck.Run`) starts three minutes after launch and verifies items not checked in the last 7 days, oldest first, one at a time. It waits while a game runs or a download or install is active, sleeps four times each item's check time (at least one second) between items so it uses about a fifth of one core, and pauses during a check from Settings. Settings › Storage › **Check store files** verifies every item now with progress and a summary. A damaged item shows on the Problems tab of each profile that holds it ("<mod> has damaged files") with **Repair**: the item is set aside, then a Nexus or GitHub item is queued for download again from the recorded source (the queue swaps it in; the damaged copy is put back if the queue refuses the request), and a local item is extracted again from its archive when that is still in the downloads folder, else Repair says so. Loader items (`smapi-*`, `bridge-*`) are repaired by reinstalling the loader.
+This needs a Nexus sign-in and the original archive: without either, the item is baselined from its current files as before. A matching MD5 proves the archive is what Nexus served; it cannot show damage to an item that was already damaged when it was first verified, nor anything for a GitHub or local item (a local item's key is already its archive's SHA-256, which Repair uses). `store/verify.json` keeps each item's last verification time and verdict (`Damaged` feeds the Problems check). Removing an item drops its records.
+
+A background pass (`storecheck.Run`) starts three minutes after launch and verifies items not checked in the last 7 days, oldest first, one at a time. It waits while a game runs or a download or install is active, sleeps four times each item's check time (at least one second) between items so it uses about a fifth of one core, and pauses during a check from Settings. Settings › Storage › **Check store files** verifies every item now with progress and a summary.
+
+A damaged item shows on the Problems tab of each profile that holds it ("<mod> has damaged files") with **Repair**: the item is set aside, then a Nexus or GitHub item is queued for download again from the recorded source (the queue swaps it in; the damaged copy is put back if the queue refuses the request), and a local item is extracted again from its archive when that is still in the downloads folder, else Repair says so. Loader items (`smapi-*`, `bridge-*`) are repaired by reinstalling the loader.
 
 ## Profile operations
 
@@ -584,10 +588,10 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
   - Two packs setting a map property to the same value agree and never conflict.
   - Overlapping image edits with the same source digest and `FromArea` agree and never conflict.
 - **Measured and fixed** (main profile, CPU time, a copy of the data folder):
-  - A check rebuilt each patch's shape index for every pack pair and re-derived a pack's reachable dynamic tokens for every patch; both are now kept for the running check. Conflicts, settings, redundant and cleanup (identical output, same sha256): 0.92 s to 0.56 s per check.
+  - A check builds each patch's shape index and a pack's reachable dynamic tokens once and keeps both for the running check, rather than rebuilding them per pack pair and per patch. Conflicts, settings, redundant and cleanup: 0.56 s per check, against 0.92 s without the reuse, with identical output (same sha256).
   - The tilesheet map-file scan is saved in `cache/problems-map-scans.json` (gzip; path, size and modification time per map; entries of uninstalled folders pruned after each check): the first cleanup scan after launch takes 0.65 s instead of 0.82 s with a warm page cache, loading the 2,927 saved scans takes 29 ms, and the file is 330 KB.
   - Problems reads the newest run's id from the run index instead of its 0.65 to 1 MB log (5.1 ms to 4.2 ms per call, and no log read on every window focus).
-  - The one-time zip-name repair no longer walks the store and profiles (0.16 s CPU, 105k files) on every launch: `names-repaired` in the data folder marks a clean pass.
+  - The one-time zip-name repair walks the store and profiles (0.16 s CPU, 105k files) once: `names-repaired` in the data folder marks a clean pass, and later launches skip the walk.
 - **Measured, not worth optimising** (main profile: 819 installed mods, 48,484 files under `mods/`):
   - The production frontend bundle is one 1.46 MB minified script, so code-splitting screens saves too little startup parse to pay for the lazy-loading seams.
   - A full walk of the store takes 82 ms (180 ms with a stat per file) over 53,758 files; a profile walk takes 72 ms (168 ms with stats) over 48,484 files.
