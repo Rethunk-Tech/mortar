@@ -65,6 +65,7 @@ msgstr "Start muted"
 msgid "Interface tour"
 msgstr "Interface tour"
 
+#: src/mods/updateReview/SourceGroups.tsx:11
 #: src/settings/sections/DataUsage.tsx:209
 msgid "Other"
 msgstr "Other"
@@ -2988,7 +2989,7 @@ msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
 
 #: src/launch/SaveWarnDialog.tsx:58
-#: src/mods/updateReview/Row.tsx:57
+#: src/mods/updateReview/Row.tsx:60
 #: src/share/SharedMods.tsx:28
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
@@ -3329,6 +3330,7 @@ msgid "Already has {0}"
 msgstr "Already has {0}"
 
 #: src/mods/Sidebar.tsx:391
+#: src/mods/updateReview/Row.tsx:137
 msgid "Changelog"
 msgstr "Changelog"
 
@@ -4301,7 +4303,7 @@ msgid "Finding the mod causing the crash"
 msgstr "Finding the mod causing the crash"
 
 #. placeholder {0}: o.name
-#: src/mods/updateReview/Row.tsx:56
+#: src/mods/updateReview/Row.tsx:59
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
@@ -5499,7 +5501,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:220
-#: src/mods/updateReview/Row.tsx:118
+#: src/mods/updateReview/Row.tsx:153
 msgid "Open page"
 msgstr "Open page"
 
@@ -5546,7 +5548,7 @@ msgstr "Load {0} after the other mods here, so its edit applies last"
 msgid "Reached the title screen"
 msgstr "Reached the title screen"
 
-#: src/mods/updateReview/Row.tsx:61
+#: src/mods/updateReview/Row.tsx:64
 msgid "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 msgstr "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 
@@ -6396,7 +6398,7 @@ msgid "Show diff"
 msgstr "Show diff"
 
 #. placeholder {0}: update.githubFallback
-#: src/mods/updateReview/Row.tsx:71
+#: src/mods/updateReview/Row.tsx:74
 msgid "From GitHub ({0}) when its release matches, else Nexus"
 msgstr "From GitHub ({0}) when its release matches, else Nexus"
 
@@ -6482,7 +6484,7 @@ msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was adde
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
 #: src/mods/CompatChip.tsx:23
-#: src/mods/updateReview/Row.tsx:64
+#: src/mods/updateReview/Row.tsx:67
 msgid "Unofficial"
 msgstr "Unofficial"
 
@@ -8430,6 +8432,11 @@ msgstr "{0} was not found in your launchers"
 msgid "Free account: one click on Nexus per download"
 msgstr "Free account: one click on Nexus per download"
 
+#. placeholder {0}: g.list.length
+#: src/mods/updateReview/SourceGroups.tsx:15
+msgid "{name} ({0})"
+msgstr "{name} ({0})"
+
 #: src/settings/sections/Updates.tsx:50
 msgid "Updated by your package manager"
 msgstr "Updated by your package manager"
@@ -8571,7 +8578,7 @@ msgid "Handle Nexus download links?"
 msgstr "Handle Nexus download links?"
 
 #. placeholder {0}: update.source
-#: src/mods/updateReview/Row.tsx:67
+#: src/mods/updateReview/Row.tsx:70
 msgid "From {0}, not the site you installed it from. Updating switches its source."
 msgstr "From {0}, not the site you installed it from. Updating switches its source."
 
@@ -9580,7 +9587,7 @@ msgstr "View licences…"
 #. placeholder {0}: entry.pinReason
 #: src/mods/ModDetail.tsx:108
 #: src/mods/parts.tsx:198
-#: src/mods/updateReview/Row.tsx:58
+#: src/mods/updateReview/Row.tsx:61
 msgid "Pinned: {0}"
 msgstr "Pinned: {0}"
 

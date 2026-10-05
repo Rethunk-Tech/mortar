@@ -19,8 +19,8 @@ import { loadAllDetails } from './updateReview/loadAll.ts'
 import { NeedsChoice } from './updateReview/NeedsChoice.tsx'
 import { PropagateUpdate } from './updateReview/PropagateUpdate.tsx'
 import { ReviewFooter } from './updateReview/ReviewFooter.tsx'
-import { ReviewList } from './updateReview/ReviewList.tsx'
 import { ReviewTitle } from './updateReview/ReviewTitle.tsx'
+import { SourceGroups } from './updateReview/SourceGroups.tsx'
 import { UndoAllConfirm } from './updateReview/UndoAllConfirm.tsx'
 import { UpdateBar as ReviewBar } from './updateReview/UpdateBar.tsx'
 import { needChoiceUpdates, sameSourceUpdates, updateAll } from './updateReview/updateAll.ts'
@@ -96,7 +96,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
         onClose={close}
       />
       <DialogContent sx={{ p: 0, borderTop: '1px solid var(--mortar-hairline-muted)' }}>
-        <ReviewList
+        <SourceGroups
           list={sameSource}
           profile={profile}
           mods={mods}
