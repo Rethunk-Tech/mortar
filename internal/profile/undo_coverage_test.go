@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // undoFixture is a profile with two mods (Me.A carries a config.json), a group, launch settings and a preset.
@@ -312,4 +313,130 @@ func TestRevertToAnEventWithoutStateKeepsCurrentSettings(t *testing.T) {
 	if !sameState(got, current) {
 		t.Fatalf("settings after revert = %+v, want the current %+v", stateOf(got), stateOf(current))
 	}
+}
+
+// undoesExactly runs act on a profile, requires an event and an actual change, then reverts to the baseline taken
+// before it and requires the entries and settings to be as they were.
+func undoesExactly(t *testing.T, s *Store, game string, p Profile, act func() error) {
+	t.Helper()
+	before, err := s.read(game, p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	baseline, err := s.Baseline(game, p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	eventsBefore, err := s.History(game, p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := act(); err != nil {
+		t.Fatal(err)
+	}
+	eventsAfter, err := s.History(game, p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(eventsAfter) <= len(eventsBefore) {
+		t.Fatal("the change recorded no history event")
+	}
+	after, err := s.read(game, p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reflect.DeepEqual(after.Entries, before.Entries) && sameState(after, before) {
+		t.Fatal("the change altered nothing")
+	}
+	got, err := s.Revert(game, p.ID, baseline)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(got.Entries, before.Entries) {
+		t.Errorf("entries after undo = %+v, want %+v", got.Entries, before.Entries)
+	}
+	if !sameState(got, before) {
+		t.Errorf("settings after undo = %+v, want %+v", stateOf(got), stateOf(before))
+	}
+}
+
+// splitFixture installs a Nexus main file with one extra file combined into it.
+func splitFixture(t *testing.T) (env, Profile, string, string) {
+	t.Helper()
+	e := newEnv(t)
+	p := mustCreate(t, e, "P")
+	main := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
+	res, err := e.InstallSource("stardew", p.ID, main, Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	entryKey, extraKey := res.Profile.Entries[0].Key, store.NexusKey(7, 2)
+	e.item(t, extraKey, map[string]string{"B/manifest.json": manifestJSON("X.B")})
+	if _, err := e.AddExtra("stardew", p.ID, entryKey, extraKey, Source{Kind: KindNexus, ModID: 7, FileID: 2}); err != nil {
+		t.Fatal(err)
+	}
+	return e, p, entryKey, extraKey
+}
+
+func TestPackageBackedChangesUndoExactly(t *testing.T) {
+	t.Parallel()
+	t.Run("SplitExtra", func(t *testing.T) {
+		t.Parallel()
+		e, p, entryKey, extraKey := splitFixture(t)
+		undoesExactly(t, e.Store, "stardew", p, func() error { _, err := e.SplitExtra("stardew", p.ID, entryKey, extraKey); return err })
+	})
+	t.Run("CombineEntries", func(t *testing.T) {
+		t.Parallel()
+		e, p, entryKey, extraKey := splitFixture(t)
+		if _, err := e.SplitExtra("stardew", p.ID, entryKey, extraKey); err != nil {
+			t.Fatal(err)
+		}
+		undoesExactly(t, e.Store, "stardew", p, func() error { _, err := e.CombineEntries("stardew", p.ID, entryKey, extraKey); return err })
+	})
+	t.Run("SetOverlayEnabled", func(t *testing.T) {
+		t.Parallel()
+		e, p, _, optKey := installOverlayPair(t)
+		off := overlayEntry(p, optKey).OverlayOff
+		undoesExactly(t, e.Store, "stardew", p, func() error { _, err := e.SetOverlayEnabled("stardew", p.ID, optKey, off); return err })
+	})
+	t.Run("SetUpdateChannel", func(t *testing.T) {
+		t.Parallel()
+		e := newEnv(t)
+		key := store.NexusKey(1, 1)
+		e.item(t, key, map[string]string{"manifest.json": manifestJSON("Me.A")})
+		p := mustCreate(t, e, "P")
+		if _, err := e.AddEntry("stardew", p.ID, key, Source{Kind: KindNexus, Name: "a.zip", ModID: 1, FileID: 1, Version: "1.0.0"}); err != nil {
+			t.Fatal(err)
+		}
+		undoesExactly(t, e.Store, "stardew", p, func() error { _, err := e.SetUpdateChannel("stardew", p.ID, key, "optional"); return err })
+	})
+	t.Run("MovePackage", func(t *testing.T) {
+		t.Parallel()
+		dir := t.TempDir()
+		s := OpenIn(dir, store.OpenAt(filepath.Join(dir, "store")))
+		const lc = "lethal-company"
+		p := mustCreateIn(t, s, lc, "Friends")
+		var keys []string
+		for _, name := range []string{"A", "B"} {
+			zip := buildZip(t, name+".zip", map[string]string{
+				"manifest.json":     `{"name":"` + name + `","version_number":"1.0.0"}`,
+				"config/Shared.cfg": name,
+			})
+			res, err := s.InstallSource(lc, p.ID, zip, Source{Kind: KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			keys = append(keys, res.Profile.Entries[len(res.Profile.Entries)-1].Key)
+		}
+		undoesExactly(t, s, lc, p, func() error { _, err := s.MovePackage(lc, p.ID, keys[1], -1); return err })
+	})
+}
+
+func mustCreateIn(t *testing.T, s *Store, gameID, name string) Profile {
+	t.Helper()
+	p, err := s.Create(gameID, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return p
 }
