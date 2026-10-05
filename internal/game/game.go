@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
+	"github.com/Rethunk-Tech/mortar/internal/game/lethal"
 	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -126,7 +127,7 @@ func ProcessNames(g Game) []string {
 	return names
 }
 
-var games = []Game{&stardew.Game{}}
+var games = []Game{&stardew.Game{}, &lethal.Game{}}
 
 var configuredComponents atomic.Pointer[components.Client]
 
