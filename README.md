@@ -12,7 +12,7 @@ Mortar is a desktop mod manager, built for more than one game. It finds your gam
 
 Version 1 supports Stardew Valley (SMAPI, Nexus Mods) only; Lethal Company (BepInEx, Thunderstore) is deferred to a later release. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
 
-<p align="center"><img src="build/linux/screenshots/mods.png" alt="A profile's mods in Mortar, with a mod from the game's Mods folder offered for import" width="900"></p>
+<p align="center"><img src="build/linux/screenshots/mods.png" alt="Mortar showing a Stardew Valley profile of 817 mods with cover art" width="900"></p>
 
 ## Getting started
 
@@ -39,8 +39,8 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 ## Screenshots
 
 <table>
-<tr><td align="center"><img src="build/linux/screenshots/problems.png" alt="Problems tab listing what the profile is missing, with one-click fixes" width="440"><br><sub>Problems: what a profile is missing, with one-click fixes</sub></td><td align="center"><img src="build/linux/screenshots/saves.png" alt="Saves tab: each save with its backups and whether its mods are present" width="440"><br><sub>Saves: backups per save and its missing mods</sub></td></tr>
-<tr><td align="center" colspan="2"><img src="build/linux/screenshots/settings.png" alt="Settings for play, start-up and the window" width="600"><br><sub>Settings for play, start-up and the window</sub></td></tr>
+<tr><td align="center"><img src="build/linux/screenshots/problems.png" alt="Problems tab explaining which mod wins each content conflict, with Switch off and Make a pack win buttons" width="440"><br><sub>Problems: content conflicts explained, with one-click fixes</sub></td><td align="center"><img src="build/linux/screenshots/performance.png" alt="Performance tab: time to the title screen and each mod's startup cost" width="440"><br><sub>Performance: what each mod costs at startup</sub></td></tr>
+<tr><td align="center" colspan="2"><img src="build/linux/screenshots/settings.png" alt="Appearance settings: theme, accent colours and background" width="600"><br><sub>Themes, accent colours and the window background</sub></td></tr>
 </table>
 
 ## Documentation

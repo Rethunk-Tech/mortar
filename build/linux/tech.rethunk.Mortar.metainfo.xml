@@ -25,19 +25,19 @@
   <launchable type="desktop-id">tech.rethunk.Mortar.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <caption>A profile's mods, with a game folder's untracked mod offered for import</caption>
+      <caption>A profile of 817 mods, with cover art, updates and problems at a glance</caption>
       <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/mods.png</image>
     </screenshot>
     <screenshot>
-      <caption>Problems lists what a profile is missing, with one-click fixes</caption>
+      <caption>Problems explains content conflicts and offers one-click fixes</caption>
       <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/problems.png</image>
     </screenshot>
     <screenshot>
-      <caption>Each save with its backups and whether its mods are present</caption>
-      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/saves.png</image>
+      <caption>Startup timings for every mod, so slow loaders stand out</caption>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/performance.png</image>
     </screenshot>
     <screenshot>
-      <caption>Settings for play, start-up and the window</caption>
+      <caption>Themes, accent colours and the window background</caption>
       <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/settings.png</image>
     </screenshot>
   </screenshots>
