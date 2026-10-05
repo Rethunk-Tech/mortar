@@ -84,7 +84,7 @@ export const arrivalName = (a: Arrival): Promise<string> =>
 export const fallbackName = (modId: number) => i18n._(msg`Nexus mod ${modId}`)
 
 // The mod's Nexus page title, fetched once per mod; the fallback stands in when signed out or offline.
-export function modName(game: string, modId: number): Promise<string> {
+function modName(game: string, modId: number): Promise<string> {
   const key = `${game}:${modId}`
   let name = names.get(key)
   if (!name) {
