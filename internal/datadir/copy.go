@@ -201,7 +201,12 @@ func CopyFile(src, dst string) (err error) {
 		return err
 	}
 	defer func() { _ = in.Close() }()
-	out, err := fsx.CreateExcl(dst, 0o600)
+	info, err := in.Stat()
+	if err != nil {
+		return err
+	}
+	// The copy keeps the source's exec and read bits but never grants write to group or others.
+	out, err := fsx.CreateExcl(dst, info.Mode().Perm()&0o755)
 	if err != nil {
 		return err
 	}
