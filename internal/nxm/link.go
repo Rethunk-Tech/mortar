@@ -35,9 +35,6 @@ func (e *RejectError) Error() string { return "nxm link refused: " + e.Reason }
 
 func reject(reason string) error { return &RejectError{Reason: reason} }
 
-// IsLink reports whether an argument is an nxm:// link, whatever its content.
-func IsLink(arg string) bool { return strings.HasPrefix(strings.ToLower(arg), "nxm://") }
-
 // GameOf maps an nxm link's Nexus domain to the Mortar game that takes it.
 type GameOf func(domain string) (gameID string, ok bool)
 

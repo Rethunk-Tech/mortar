@@ -4,7 +4,7 @@ package nxm
 
 import "errors"
 
-// System is the system's registration of the nxm scheme.
+// System is the system's registration of the source link schemes.
 type System struct{}
 
 // New returns the handler for this system, which has none.

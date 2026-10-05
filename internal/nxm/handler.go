@@ -1,5 +1,7 @@
 package nxm
 
+import _ "github.com/Rethunk-Tech/mortar/internal/source/all"
+
 // Owner is the app the system currently opens nxm:// links with. ID is what Restore takes back (a desktop file id
 // on Linux, the open command on Windows); Name is for the user. An empty ID means no app owns the scheme.
 type Owner struct {

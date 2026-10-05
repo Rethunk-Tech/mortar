@@ -35,7 +35,7 @@ func (r *recorder) run(name string, args ...string) (string, error) {
 			r.byMime = map[string]string{}
 		}
 		r.byMime[args[2]] = args[1]
-		if args[2] == nxmMime {
+		if args[2] == schemeMime("nxm") {
 			r.current = args[1]
 		}
 	}
@@ -45,7 +45,7 @@ func (r *recorder) run(name string, args ...string) (string, error) {
 func newLinux(t *testing.T, current string) (*System, *recorder) {
 	t.Helper()
 	dir := t.TempDir()
-	r := &recorder{current: current, byMime: map[string]string{nxmMime: current}}
+	r := &recorder{current: current, byMime: map[string]string{schemeMime("nxm"): current}}
 	return &System{exe: "/opt/mortar/mortar", home: filepath.Join(dir, "home"), dataHome: filepath.Join(dir, "data"), configHome: filepath.Join(dir, "config"), run: r.run}, r
 }
 
@@ -86,7 +86,7 @@ func TestRegisterThenRestorePreviousHandler(t *testing.T) {
 		t.Errorf("default is %q after Restore", r.current)
 	}
 	b, _ = fsx.ReadFile(l.desktopPath())
-	if strings.Contains(string(b), nxmMime) {
+	if strings.Contains(string(b), schemeMime("nxm")) {
 		t.Errorf("desktop file still lists nxm after Restore: %s", b)
 	}
 }
@@ -118,7 +118,7 @@ func TestRestoreWithoutPreviousDropsOurDefault(t *testing.T) {
 		t.Errorf("mimeapps.list: %q", b)
 	}
 	for _, c := range r.calls {
-		if strings.HasPrefix(c, xdgMime+" default") && !strings.HasSuffix(c, desktopID+" "+nxmMime) {
+		if strings.HasPrefix(c, xdgMime+" default") && !strings.HasSuffix(c, desktopID+" "+schemeMime("nxm")) {
 			t.Errorf("Restore set a default: %s", c)
 		}
 	}
@@ -142,7 +142,7 @@ func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
 		t.Fatalf("mime xml: %s, %v", xml, err)
 	}
 	desktop, _ := fsx.ReadFile(l.desktopPath())
-	if strings.Contains(string(desktop), nxmMime) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
+	if strings.Contains(string(desktop), schemeMime("nxm")) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
 		t.Fatalf("desktop file: %s", desktop)
 	}
 	if r.current != "vortex.desktop" {
@@ -170,7 +170,7 @@ func TestRegisterLinksIsIdempotentAndKeepsNxm(t *testing.T) {
 	if err := l.RegisterLinks(); err != nil {
 		t.Fatal(err)
 	}
-	if desktop, _ = fsx.ReadFile(l.desktopPath()); !strings.Contains(string(desktop), nxmMime) {
+	if desktop, _ = fsx.ReadFile(l.desktopPath()); !strings.Contains(string(desktop), schemeMime("nxm")) {
 		t.Errorf("RegisterLinks dropped nxm: %s", desktop)
 	}
 }
@@ -210,7 +210,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	if desktop, err := fsx.ReadFile(l.desktopPath()); err != nil || strings.Contains(string(desktop), nxmMime) {
+	if desktop, err := fsx.ReadFile(l.desktopPath()); err != nil || strings.Contains(string(desktop), schemeMime("nxm")) {
 		t.Fatalf("links entry before Register: %s, %v", desktop, err)
 	}
 	if err := l.Register(); err != nil {
@@ -235,7 +235,7 @@ func TestAnAppImageRegistersItselfAndMovesItsEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 	desktop, _ := fsx.ReadFile(l.desktopPath())
-	if !strings.Contains(string(desktop), `Exec="`+l.exe+`" %u`) || !strings.Contains(string(desktop), nxmMime) {
+	if !strings.Contains(string(desktop), `Exec="`+l.exe+`" %u`) || !strings.Contains(string(desktop), schemeMime("nxm")) {
 		t.Errorf("moved entry: %s", desktop)
 	}
 }
@@ -250,7 +250,7 @@ func TestRefreshRegistersLinksWhenMissing(t *testing.T) {
 		t.Fatalf("mime xml: %s, %v", xml, err)
 	}
 	desktop, err := fsx.ReadFile(l.desktopPath())
-	if err != nil || strings.Contains(string(desktop), nxmMime) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
+	if err != nil || strings.Contains(string(desktop), schemeMime("nxm")) || !strings.Contains(string(desktop), "MimeType=x-scheme-handler/mortar;application/x-mortar;") {
 		t.Fatalf("desktop file: %s, %v", desktop, err)
 	}
 	if r.current != "vortex.desktop" {
@@ -464,7 +464,7 @@ func TestAnIntegratorsEntryHidesOurs(t *testing.T) {
 		t.Fatal(err)
 	}
 	desktop, _ := fsx.ReadFile(l.desktopPath())
-	if !strings.Contains(string(desktop), "\nNoDisplay=true\n") || !strings.Contains(string(desktop), nxmMime) {
+	if !strings.Contains(string(desktop), "\nNoDisplay=true\n") || !strings.Contains(string(desktop), schemeMime("nxm")) {
 		t.Fatalf("integrated entry: %s", desktop)
 	}
 

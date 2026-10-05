@@ -16,12 +16,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 const (
 	desktopID   = "tech.rethunk.Mortar.desktop"
 	linuxAppID  = "tech.rethunk.Mortar"
-	nxmMime     = "x-scheme-handler/nxm"
 	mortarMime  = "x-scheme-handler/mortar"
 	fileMime    = "application/x-mortar"
 	updateMIME  = "update-mime-database"
@@ -45,6 +45,27 @@ func skipXdgMime() bool {
 	return err == nil
 }
 
+func schemeMime(scheme string) string { return "x-scheme-handler/" + scheme }
+
+// schemeMimes is the MIME type of every URL scheme a source claims.
+func schemeMimes() []string {
+	var out []string
+	for _, scheme := range source.Schemes() {
+		out = append(out, schemeMime(scheme))
+	}
+	return out
+}
+
+// setDefaults makes Mortar the default app for every source scheme.
+func (l *System) setDefaults() error {
+	for _, mime := range schemeMimes() {
+		if err := l.setDefault(mime); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (l *System) setDefault(mime string) error {
 	if skipXdgMime() {
 		return nil
@@ -55,7 +76,7 @@ func (l *System) setDefault(mime string) error {
 	return nil
 }
 
-// System is the system's registration of the nxm scheme.
+// System is the system's registration of the source link schemes.
 type System struct {
 	exe  string
 	home string
@@ -101,7 +122,11 @@ func (l *System) Owner() (Owner, error) {
 	if skipXdgMime() {
 		return Owner{}, nil
 	}
-	out, err := l.run(xdgMime, "query", "default", nxmMime)
+	mimes := schemeMimes()
+	if len(mimes) == 0 {
+		return Owner{}, nil
+	}
+	out, err := l.run(xdgMime, "query", "default", mimes[0])
 	if err != nil {
 		return Owner{}, fmt.Errorf("xdg-mime query: %w", err)
 	}
@@ -152,12 +177,14 @@ func (l *System) desktopEntryField(id string, read func(string) string) (string,
 	return "", fmt.Errorf("desktop entry %q not found", id)
 }
 
-// desktopFile is the user-level entry. It lists the nxm scheme only while Mortar handles it, so a system that
+// desktopFile is the user-level entry. It lists the source schemes only while Mortar handles it, so a system that
 // picks a default from advertised types never picks Mortar once the user has switched it off.
-func (l *System) desktopFile(withNxm bool) string {
+func (l *System) desktopFile(withSchemes bool) string {
 	mime := mortarMime + ";" + fileMime + ";"
-	if withNxm {
-		mime = nxmMime + ";" + mime
+	if withSchemes {
+		for _, m := range slices.Backward(schemeMimes()) {
+			mime = m + ";" + mime
+		}
 	}
 	return fmt.Sprintf(`[Desktop Entry]
 Type=Application
@@ -267,12 +294,12 @@ func (l *System) installIcons() error {
 	return nil
 }
 
-func (l *System) writeDesktop(withNxm bool) error {
+func (l *System) writeDesktop(withSchemes bool) error {
 	path := l.desktopPath()
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
 	}
-	if err := fsx.WriteFile(path, []byte(l.desktopFile(withNxm)), desktopPerm); err != nil {
+	if err := fsx.WriteFile(path, []byte(l.desktopFile(withSchemes)), desktopPerm); err != nil {
 		return err
 	}
 	if err := l.installIcons(); err != nil {
@@ -288,12 +315,12 @@ func (l *System) Register() error {
 		return err
 	}
 	if skipUserDesktop() {
-		return l.setDefault(nxmMime)
+		return l.setDefaults()
 	}
 	if err := l.writeDesktop(true); err != nil {
 		return err
 	}
-	return l.setDefault(nxmMime)
+	return l.setDefaults()
 }
 
 func (l *System) Restore(previous string) error {
@@ -309,12 +336,14 @@ func (l *System) Restore(previous string) error {
 		if skipXdgMime() {
 			return nil
 		}
-		if _, err := l.run(xdgMime, "default", previous, nxmMime); err != nil {
-			return fmt.Errorf("xdg-mime default: %w", err)
+		for _, mime := range schemeMimes() {
+			if _, err := l.run(xdgMime, "default", previous, mime); err != nil {
+				return fmt.Errorf("xdg-mime default: %w", err)
+			}
 		}
 		return nil
 	}
-	return l.dropDefault(nxmMime)
+	return l.dropDefault(schemeMimes()...)
 }
 
 // ForwardOther runs the previous handler's desktop entry on link.
@@ -453,11 +482,12 @@ func execTarget(entry []byte) string {
 	return ""
 }
 
-// rewrite writes the desktop entry unless current already is it, keeping the nxm scheme as current has it.
+// rewrite writes the desktop entry unless current already is it, keeping the source schemes as current has them.
 func (l *System) rewrite(current []byte) error {
-	withNxm := strings.Contains(string(current), nxmMime)
-	if string(current) == l.desktopFile(withNxm) {
+	mimes := schemeMimes()
+	withSchemes := len(mimes) > 0 && strings.Contains(string(current), mimes[0])
+	if string(current) == l.desktopFile(withSchemes) {
 		return l.installIcons()
 	}
-	return l.writeDesktop(withNxm)
+	return l.writeDesktop(withSchemes)
 }

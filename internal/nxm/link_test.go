@@ -45,9 +45,3 @@ func TestParse(t *testing.T) {
 		}
 	}
 }
-
-func TestIsLink(t *testing.T) {
-	if !IsLink("NXM://a") || IsLink("mortar://a") || IsLink("--flag") {
-		t.Error("IsLink")
-	}
-}

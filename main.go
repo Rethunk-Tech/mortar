@@ -53,6 +53,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
+	"github.com/Rethunk-Tech/mortar/internal/source"
+	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/storecheck"
 	"github.com/Rethunk-Tech/mortar/internal/support"
@@ -954,7 +956,7 @@ func serveNativeHost() error {
 		exe = img
 	}
 	return nativehost.ServeFrom(os.Args[1:], os.Stdin, os.Stdout, func(link string) error {
-		if !nxm.IsLink(link) && !sharesvc.IsCollectionURL(link) {
+		if !source.IsLink(link) && !sharesvc.IsCollectionURL(link) {
 			return fmt.Errorf("not an nxm or collection link: %q", link)
 		}
 		return nativehost.Start(exe, link)

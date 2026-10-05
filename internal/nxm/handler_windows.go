@@ -7,17 +7,24 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"golang.org/x/sys/windows/registry"
 )
 
-const (
-	classKey   = `Software\Classes\nxm`
-	commandKey = classKey + `\shell\open\command`
-)
+func classKey(scheme string) string   { return `Software\Classes\` + scheme }
+func commandKey(scheme string) string { return classKey(scheme) + `\shell\open\command` }
+
+// primary is the scheme whose previous owner Mortar records: the first one a source claims.
+func primary() string {
+	if s := source.Schemes(); len(s) > 0 {
+		return s[0]
+	}
+	return ""
+}
 
 func defaultIcon(exe string) string { return exe + ",0" }
 
-// System is the system's registration of the nxm scheme. software is the HKCU key the browsers' native messaging
+// System is the system's registration of the source link schemes. software is the HKCU key the browsers' native messaging
 // keys live under.
 type System struct{ exe, software string }
 
@@ -27,7 +34,11 @@ func New(exe string) (*System, error) { return &System{exe: exe, software: "Soft
 func (w *System) command() string { return `"` + w.exe + `" "%1"` }
 
 func (w *System) Owner() (Owner, error) {
-	k, err := registry.OpenKey(registry.CURRENT_USER, commandKey, registry.QUERY_VALUE)
+	scheme := primary()
+	if scheme == "" {
+		return Owner{}, nil
+	}
+	k, err := registry.OpenKey(registry.CURRENT_USER, commandKey(scheme), registry.QUERY_VALUE)
 	if errors.Is(err, registry.ErrNotExist) {
 		return Owner{}, nil
 	}
@@ -42,7 +53,7 @@ func (w *System) Owner() (Owner, error) {
 	if cmd == "" {
 		return Owner{}, nil
 	}
-	return Owner{ID: previousID(cmd, readIcon(), readName()), Name: exeOf(cmd), Mine: cmd == w.command()}, nil
+	return Owner{ID: previousID(cmd, readIcon(scheme), readName(scheme)), Name: exeOf(cmd), Mine: cmd == w.command()}, nil
 }
 
 // exeOf is the program of an open command, for showing to the user.
@@ -59,18 +70,27 @@ func (w *System) Register() error {
 	if err := w.WriteNativeHosts(); err != nil {
 		return err
 	}
-	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey, registry.SET_VALUE)
+	for _, scheme := range source.Schemes() {
+		if err := w.registerScheme(scheme); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *System) registerScheme(scheme string) error {
+	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey(scheme), registry.SET_VALUE)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = k.Close() }()
-	if err := k.SetStringValue("", "URL:NXM Protocol"); err != nil {
+	if err := k.SetStringValue("", "URL:"+strings.ToUpper(scheme)+" Protocol"); err != nil {
 		return err
 	}
 	if err := k.SetStringValue("URL Protocol", ""); err != nil {
 		return err
 	}
-	icon, _, err := registry.CreateKey(registry.CURRENT_USER, classKey+`\DefaultIcon`, registry.SET_VALUE)
+	icon, _, err := registry.CreateKey(registry.CURRENT_USER, classKey(scheme)+`\DefaultIcon`, registry.SET_VALUE)
 	if err != nil {
 		return err
 	}
@@ -78,11 +98,11 @@ func (w *System) Register() error {
 	if err := icon.SetStringValue("", defaultIcon(w.exe)); err != nil {
 		return err
 	}
-	return setCommand(w.command())
+	return setCommand(scheme, w.command())
 }
 
-func setCommand(cmd string) error {
-	k, _, err := registry.CreateKey(registry.CURRENT_USER, commandKey, registry.SET_VALUE)
+func setCommand(scheme, cmd string) error {
+	k, _, err := registry.CreateKey(registry.CURRENT_USER, commandKey(scheme), registry.SET_VALUE)
 	if err != nil {
 		return err
 	}
@@ -90,8 +110,8 @@ func setCommand(cmd string) error {
 	return k.SetStringValue("", cmd)
 }
 
-func readIcon() string {
-	k, err := registry.OpenKey(registry.CURRENT_USER, classKey+`\DefaultIcon`, registry.QUERY_VALUE)
+func readIcon(scheme string) string {
+	k, err := registry.OpenKey(registry.CURRENT_USER, classKey(scheme)+`\DefaultIcon`, registry.QUERY_VALUE)
 	if err != nil {
 		return ""
 	}
@@ -103,8 +123,8 @@ func readIcon() string {
 	return v
 }
 
-func setIcon(icon string) error {
-	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey+`\DefaultIcon`, registry.SET_VALUE)
+func setIcon(scheme, icon string) error {
+	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey(scheme)+`\DefaultIcon`, registry.SET_VALUE)
 	if err != nil {
 		return err
 	}
@@ -112,24 +132,29 @@ func setIcon(icon string) error {
 	return k.SetStringValue("", icon)
 }
 
+// Restore hands the primary scheme back to previous; with no previous owner every scheme's keys are deleted.
 func (w *System) Restore(previous string) error {
 	if err := w.removeNativeHosts(); err != nil {
 		return err
 	}
 	if previous == "" {
-		for _, key := range []string{classKey + `\DefaultIcon`, commandKey, classKey + `\shell\open`, classKey + `\shell`, classKey} {
-			if err := registry.DeleteKey(registry.CURRENT_USER, key); err != nil && !errors.Is(err, registry.ErrNotExist) {
-				return fmt.Errorf("delete %s: %w", key, err)
+		for _, scheme := range source.Schemes() {
+			class := classKey(scheme)
+			for _, key := range []string{class + `\DefaultIcon`, commandKey(scheme), class + `\shell\open`, class + `\shell`, class} {
+				if err := registry.DeleteKey(registry.CURRENT_USER, key); err != nil && !errors.Is(err, registry.ErrNotExist) {
+					return fmt.Errorf("delete %s: %w", key, err)
+				}
 			}
 		}
 		return nil
 	}
+	scheme := primary()
 	p := splitPrevious(previous)
-	if err := setCommand(p.cmd); err != nil {
+	if err := setCommand(scheme, p.cmd); err != nil {
 		return err
 	}
 	if p.hasName {
-		if err := setName(p.name); err != nil {
+		if err := setName(scheme, p.name); err != nil {
 			return err
 		}
 	}
@@ -137,17 +162,17 @@ func (w *System) Restore(previous string) error {
 		return nil
 	}
 	if p.icon == "" {
-		if err := registry.DeleteKey(registry.CURRENT_USER, classKey+`\DefaultIcon`); err != nil && !errors.Is(err, registry.ErrNotExist) {
+		if err := registry.DeleteKey(registry.CURRENT_USER, classKey(scheme)+`\DefaultIcon`); err != nil && !errors.Is(err, registry.ErrNotExist) {
 			return err
 		}
 		return nil
 	}
-	return setIcon(p.icon)
+	return setIcon(scheme, p.icon)
 }
 
-// readName returns the nxm key's own default value, the protocol's display name.
-func readName() string {
-	k, err := registry.OpenKey(registry.CURRENT_USER, classKey, registry.QUERY_VALUE)
+// readName returns the scheme key's own default value, the protocol's display name.
+func readName(scheme string) string {
+	k, err := registry.OpenKey(registry.CURRENT_USER, classKey(scheme), registry.QUERY_VALUE)
 	if err != nil {
 		return ""
 	}
@@ -159,8 +184,8 @@ func readName() string {
 	return v
 }
 
-func setName(name string) error {
-	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey, registry.SET_VALUE)
+func setName(scheme, name string) error {
+	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey(scheme), registry.SET_VALUE)
 	if err != nil {
 		return err
 	}
