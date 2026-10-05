@@ -15,8 +15,8 @@ import type {
   Mod,
   Problem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
-import { openPage } from '../mods/menu.ts'
 import { modsLabel } from '../i18n/counts.ts'
+import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { isModState, MOD_STATES, type ModState, type ShownPreview, type Summary } from './logic.ts'
 
