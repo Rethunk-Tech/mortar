@@ -24,6 +24,7 @@ func (Driver) Matches(m framework.Mod) bool {
 
 // Analyze reads every enabled pack once; tilesheet cleanup also covers disabled packs.
 func (Driver) Analyze(in framework.Input) framework.Findings {
+	defer holdPacks()()
 	clearPackValidated()
 	defer clearPackValidated()
 	defer flushMapScans(in.All)

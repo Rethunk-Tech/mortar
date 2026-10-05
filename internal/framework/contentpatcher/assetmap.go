@@ -187,6 +187,7 @@ func loadsAfter(after map[string][]string, a, b mod.ID) bool {
 }
 
 func BuildAssetIndex(mods []framework.Mod) []AssetTarget {
+	defer holdPacks()()
 	defer flushPackDiskCache(mods)
 	preloadContentPacks(mods)
 	present := map[string]bool{}
