@@ -41,9 +41,12 @@ const (
 	maxRequestBytes = maxPayloadBytes*4/3 + 4096
 	rateLimit       = 10 * time.Second
 	peerTTL         = 6 * time.Second
-	httpTimeout     = 5 * time.Second
-	nonceTTL        = time.Minute
-	transferTTL     = 5 * time.Minute
+	// browseInterest is how long after a Peers call discovery keeps running; nobody looking means no mDNS traffic.
+	browseInterest = 30 * time.Second
+	queryTimeout   = 2 * time.Second
+	httpTimeout    = 5 * time.Second
+	nonceTTL       = time.Minute
+	transferTTL    = 5 * time.Minute
 )
 
 // Arrival is a profile share received from another Mortar installation.
@@ -84,8 +87,11 @@ type Service struct {
 	closed  bool
 	enabled bool
 	peers   map[string]peerRecord
-	inbox   []Arrival
-	nextID  int
+	// wantUntil is when discovery stops unless Peers is asked again; wake starts it.
+	wantUntil time.Time
+	wake      chan struct{}
+	inbox     []Arrival
+	nextID    int
 
 	book    peerBook
 	pairing pairHost
@@ -136,6 +142,7 @@ func NewService(deps Deps) *Service {
 		name:        localName(),
 		instanceID:  instanceID,
 		peers:       map[string]peerRecord{},
+		wake:        make(chan struct{}, 1),
 		lastReceive: map[string]time.Time{},
 		nonces:      map[string]nonceRecord{},
 		grants:      map[string]transferGrant{},
@@ -339,8 +346,25 @@ func stopResources(server *http.Server, listener net.Listener, advertiser *mdns.
 	}
 }
 
-// Peers returns the Mortar installations found during the latest discovery rounds.
+// Peers returns the Mortar installations found during the latest discovery rounds. Discovery runs only while
+// someone asks: a call after a quiet spell looks for peers before answering, and keeps discovery going for a while.
 func (s *Service) Peers() []Peer {
+	s.mu.Lock()
+	cold := !time.Now().Before(s.wantUntil)
+	s.wantUntil = time.Now().Add(browseInterest)
+	running := s.enabled && s.listener != nil
+	s.mu.Unlock()
+	if running {
+		if cold {
+			ctx, cancel := context.WithTimeout(context.Background(), queryTimeout+time.Second)
+			s.query(ctx)
+			cancel()
+		}
+		select {
+		case s.wake <- struct{}{}:
+		default:
+		}
+	}
 	now := time.Now()
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -786,39 +810,65 @@ func remotePeer(r *http.Request) string {
 	return r.RemoteAddr
 }
 
+// browse rediscovers peers every second while Peers was asked recently, and otherwise waits to be woken.
 func (s *Service) browse(ctx context.Context) {
 	for {
-		entries := make(chan *mdns.ServiceEntry, 64)
-		queryCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
-		done := make(chan error, 1)
-		go func() {
-			done <- mdns.QueryContext(queryCtx, &mdns.QueryParam{
-				Service: serviceType,
-				Domain:  "local",
-				Timeout: 2 * time.Second,
-				Entries: entries,
-			})
-		}()
-		queryDone := false
-		for !queryDone {
+		s.mu.RLock()
+		wanted := time.Now().Before(s.wantUntil)
+		s.mu.RUnlock()
+		if !wanted {
 			select {
-			case entry := <-entries:
-				if entry != nil {
-					s.addPeer(entry)
-				}
-			case <-done:
-				queryDone = true
 			case <-ctx.Done():
-				cancel()
-				<-done
 				return
+			case <-s.wake:
 			}
+			continue
 		}
-		cancel()
+		s.query(ctx)
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(time.Second):
+		}
+	}
+}
+
+// query runs one mDNS discovery round, adding the peers that answer. The mdns client keeps filling in an entry after
+// handing it over, so entries are read only once the round has ended.
+func (s *Service) query(ctx context.Context) {
+	entries := make(chan *mdns.ServiceEntry, 64)
+	queryCtx, cancel := context.WithTimeout(ctx, queryTimeout)
+	defer cancel()
+	done := make(chan error, 1)
+	go func() {
+		done <- mdns.QueryContext(queryCtx, &mdns.QueryParam{
+			Service: serviceType,
+			Domain:  "local",
+			Timeout: queryTimeout,
+			Entries: entries,
+		})
+	}()
+	var found []*mdns.ServiceEntry
+	for {
+		select {
+		case entry := <-entries:
+			if entry != nil {
+				found = append(found, entry)
+			}
+		case <-done:
+			for len(entries) > 0 {
+				if entry := <-entries; entry != nil {
+					found = append(found, entry)
+				}
+			}
+			for _, entry := range found {
+				s.addPeer(entry)
+			}
+			return
+		case <-ctx.Done():
+			cancel()
+			<-done
+			return
 		}
 	}
 }
