@@ -327,7 +327,7 @@ export function GameSelect() {
           // Room for the hovered tile's growth, so it is not cut at the grid's edge.
           p: '8px 16px',
           display: 'grid',
-          gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${TILE_MIN_WIDTH_PX}px), 1fr))`,
+          gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${TILE_MIN_WIDTH_PX}px), 1fr))`,
           gridAutoRows: `minmax(${TILE_MIN_PX}px, 1fr)`,
           ...hoverFocus,
         }}
