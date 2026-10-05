@@ -392,9 +392,15 @@ func (s *Service) seen(g game.Game) func() bool {
 }
 
 func (s *Service) poll(g game.Game) bool {
-	profileID, began := s.find(g)
 	procs, _ := s.gameProcs(g)
 	alive := len(procs) > 0
+	var profileID string
+	var began time.Time
+	// A loader's processes are among the game's, so with none running no profile is running either, and the
+	// per-profile search can be skipped.
+	if alive {
+		profileID, began = s.find(g)
+	}
 	cur := s.current(g)
 	switch {
 	case cur.State == Launching:
