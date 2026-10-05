@@ -103,7 +103,11 @@
       "r2modmanFolder": "LethalCompany",
       "metadata": [],
       "paths": {
-        "saves": { "windows": "{localLow}/ZeekerssRBLX/Lethal Company" }
+        "saves": { "windows": "{localLow}/ZeekerssRBLX/Lethal Company" },
+        "unityLog": {
+          "windows": "{localLow}/ZeekerssRBLX/Lethal Company/Player.log",
+          "linux": "{xdgConfig}/unity3d/ZeekerssRBLX/Lethal Company/Player.log"
+        }
       },
       "deploy": "link-into-install",
       "targets": [

@@ -19,10 +19,11 @@ func TestLoaderFailuresAttributeLogFindingsToPackages(t *testing.T) {
 	dir := t.TempDir()
 	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", string(log))
 	boombox := inst("boombox", "YoutubeBoombox", "1.0", true)
+	player := "NullReferenceException: boom\n  at Boombox.Plugin.Update () [0x00000] in <abc>:0\n"
 	known := map[string]framework.Mod{"youtube boombox 1.5.0": boombox}
 	for name, owners := range map[string]map[string]framework.Mod{"known": known, "unknown": {}} {
-		got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, func() map[string]framework.Mod { return owners })
-		if len(got) != 2 || got[0].Plugin != "Youtube Boombox 1.5.0" || got[0].Kind != bepinex5.KindMissingDependency {
+		got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, player, func() map[string]framework.Mod { return owners })
+		if len(got) != 3 || got[0].Plugin != "Youtube Boombox 1.5.0" || got[0].Kind != bepinex5.KindMissingDependency {
 			t.Fatalf("%s: failures = %+v", name, got)
 		}
 		wantKey := ""

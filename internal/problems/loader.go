@@ -24,9 +24,9 @@ type LoadFailure struct {
 	Line    int    `json:"line"`
 }
 
-// loaderFailures runs the loader's log analyzers over its log in the profile and attributes each finding to an enabled
+// loaderFailures runs the loader's log analyzers over its log in the profile and the Unity player log text, and attributes each finding to an enabled
 // package. A loader without a log, a missing log or a log without findings yields none.
-func loaderFailures(l loader.Loader, p loader.ProfileView, owners func() map[string]framework.Mod) []LoadFailure {
+func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners func() map[string]framework.Mod) []LoadFailure {
 	logs, ok := l.(loader.WithLogs)
 	if !ok {
 		return nil
@@ -41,7 +41,7 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, owners func() map[str
 	}
 	var found []loader.Finding
 	for _, a := range logs.Analyzers() {
-		found = append(found, a.Analyze(loader.Logs{Loader: string(raw)})...)
+		found = append(found, a.Analyze(loader.Logs{Loader: string(raw), Player: player})...)
 	}
 	if len(found) == 0 {
 		return nil

@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -133,6 +134,21 @@ func (s *Service) Environment(id string) Environment {
 	st, _ := game.LoaderStatus(id, dir, set.Loaders[id])
 	env.GameVersion, env.APIVersion = st.GameVersion, st.Version
 	return env
+}
+
+// playerLog is the text of the Unity player log a loader's analyzers read, empty when the loader reads none or the log
+// is not there.
+func (s *Service) playerLog(gameID string, l loader.Loader) string {
+	w, ok := l.(loader.WithPlayerLog)
+	if !ok {
+		return ""
+	}
+	path, err := game.PathFor(s.home, s.settings.Get(), gameID, "", w.PlayerLogRole())
+	if err != nil {
+		return ""
+	}
+	b, _ := fsx.ReadFile(path)
+	return string(b)
 }
 
 // versionScheme is the version scheme of the game's loader.
@@ -284,7 +300,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		}))...)
 		if l, ok := game.PrimaryLoader(gameID); ok {
 			if dir, err := s.profiles.ProfileDir(gameID, id); err == nil {
-				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, func() map[string]framework.Mod { return pluginOwners(mods) })
+				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, l), func() map[string]framework.Mod { return pluginOwners(mods) })
 			}
 		}
 		if s.Runs != nil && runID != "" {

@@ -14,7 +14,7 @@ import (
 
 var (
 	knownLoaders = []string{"smapi", "bepinex5"}
-	knownRoles   = []string{"saves", "errorLogs", "startupPreferences"}
+	knownRoles   = []string{"saves", "errorLogs", "startupPreferences", "unityLog"}
 	knownTokens  = []string{"appData", "localAppData", "localLow", "documents", "xdgConfig", "xdgData", "home", "install"}
 	tokenRE      = regexp.MustCompile(`\{([^{}]*)\}`)
 )
