@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"maps"
 	"net/url"
 	"os"
@@ -684,10 +685,11 @@ func (s *Service) applySharedEntryNotes(game, profileID string, refs []share.Ref
 // A preview resolved against another profile than profileID is resolved again, so a new profile made from a preview
 // of the open one still gets the mods the open one has.
 func (s *Service) Import(ctx context.Context, game, session, profileID string, exclude []string) (Result, error) {
-	return s.importWithBatch(ctx, game, session, profileID, exclude, "")
+	return s.importWithBatch(ctx, game, session, profileID, exclude, "", false)
 }
 
-func (s *Service) importWithBatch(ctx context.Context, game, session, profileID string, exclude []string, batchID string) (res Result, err error) {
+// replace makes the share's order the profile's: its mods keep the order they were shared in, wherever they land.
+func (s *Service) importWithBatch(ctx context.Context, game, session, profileID string, exclude []string, batchID string, replace bool) (res Result, err error) {
 	s.mu.Lock()
 	cur := s.current
 	switch {
@@ -889,13 +891,18 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		return Result{}, err
 	}
+	if replace {
+		if err := s.d.Profiles.FollowOrder(game, profileID, refRank(cur.refs)); err != nil {
+			return Result{}, err
+		}
+	}
 	if len(reqs) > 0 {
 		// savePending marshals every pending import, which queueChanged edits under applyMu.
 		s.applyMu.Lock()
 		s.mu.Lock()
 		s.pending = append(s.pending, &pending{
 			Game: game, Profile: profileID, BatchID: batchID, Wanted: wanted, Configs: configs,
-			Refs: slices.Clone(cur.refs), Groups: slices.Clone(cur.groups),
+			Refs: slices.Clone(cur.refs), Groups: slices.Clone(cur.groups), Follow: replace || created,
 		})
 		s.mu.Unlock()
 		s.savePending()
@@ -935,7 +942,7 @@ func (s *Service) Replace(ctx context.Context, game, session, profileID string, 
 			return Result{}, err
 		}
 	}
-	return s.importWithBatch(ctx, game, session, profileID, exclude, batchID)
+	return s.importWithBatch(ctx, game, session, profileID, exclude, batchID, true)
 }
 
 // --- Config files ---
@@ -986,8 +993,20 @@ type pending struct {
 	Configs []share.Config    `json:"configs"`
 	Refs    []share.Ref       `json:"refs,omitempty"`
 	Groups  []share.FileGroup `json:"groups,omitempty"`
+	// Follow puts each mod that lands at its place in Refs instead of the end.
+	Follow bool `json:"follow,omitempty"`
+	// ordered is the set of finished downloads the order was last fixed for; it starts over with the process.
+	ordered string
 	// seen is the set of finished downloads the configs were last applied for; it starts over with the process.
 	seen string
+}
+
+// refRank ranks an entry by the first of refs it matches.
+func refRank(refs []share.Ref) func(profile.Entry) (int, bool) {
+	return func(e profile.Entry) (int, bool) {
+		i := slices.IndexFunc(refs, func(r share.Ref) bool { return r.MatchesEntry(e) })
+		return i, i >= 0
+	}
 }
 
 func (p *pending) wants(e profile.Entry) bool {
@@ -1054,6 +1073,13 @@ func (s *Service) queueChanged(st queue.State) {
 			before := len(p.Configs)
 			s.apply(p)
 			changed = changed || len(p.Configs) != before
+		}
+		if p.Follow && len(p.Refs) > 0 && seen != p.ordered && (len(done) > 0 || settled >= len(p.Wanted) || seen == "on-profile") {
+			if err := s.d.Profiles.FollowOrder(p.Game, p.Profile, refRank(p.Refs)); err != nil {
+				log.Printf("share: order %s/%s as shared: %v", p.Game, p.Profile, err)
+			} else {
+				p.ordered = seen
+			}
 		}
 		if len(p.Refs) > 0 && (seen == "on-profile" || settled >= len(p.Wanted)) {
 			if err := s.applySharedEntryNotes(p.Game, p.Profile, p.Refs); err == nil {

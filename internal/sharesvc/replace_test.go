@@ -8,6 +8,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
@@ -72,5 +73,52 @@ func TestReplaceNeedsAProfile(t *testing.T) {
 	_, err := s.Replace(context.Background(), "stardew", "nope", "", nil)
 	if err == nil {
 		t.Fatal("expected error")
+	}
+}
+
+func TestReplaceKeepsTheSharedOrderAsModsArrive(t *testing.T) {
+	s, _ := newService(t, true)
+	prof, err := s.d.Profiles.Create("stardew", "Mine")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range []struct {
+		name   string
+		id, fl int
+	}{{"A.One", 100, 1}, {"A.Two", 200, 2}} {
+		if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, m.name), profile.Source{Kind: profile.KindNexus, ModID: m.id, FileID: m.fl}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	text := link(t, "Cozy", share.Ref{ModID: 200, FileID: 2}, share.Ref{ModID: 900, FileID: 9}, share.Ref{ModID: 100, FileID: 1})
+	pv, err := s.PreviewLink(context.Background(), "stardew", text, prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Replace(context.Background(), "stardew", pv.Session, prof.ID, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	order := func() []int {
+		got, err := s.find("stardew", prof.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var ids []int
+		for _, e := range got.Entries {
+			ids = append(ids, e.Source.ModID)
+		}
+		return ids
+	}
+	if got := order(); !slices.Equal(got, []int{200, 100}) {
+		t.Fatalf("after the replace: %v, want the shared order [200 100]", got)
+	}
+	// The download lands at the end, as every install does, and takes its shared place once the queue says so.
+	if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, "A.Three"), profile.Source{Kind: profile.KindNexus, ModID: 900, FileID: 9}); err != nil {
+		t.Fatal(err)
+	}
+	s.queueChanged(queue.State{Items: []queue.Item{{ID: "q", Game: "stardew", Profile: prof.ID, BatchID: res.BatchID, ModID: 900, FileID: 9, State: queue.StateDone}}})
+	if got := order(); !slices.Equal(got, []int{200, 900, 100}) {
+		t.Fatalf("after the download: %v, want [200 900 100]", got)
 	}
 }

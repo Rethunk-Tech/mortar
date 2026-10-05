@@ -135,3 +135,29 @@ func TestAnEditWhileDownloadsFinishSyncsAndKeepsTheMissingMod(t *testing.T) {
 		t.Fatalf("the note edit did not sync: %+v, %v", pv.Entries, err)
 	}
 }
+
+func TestAModStillMissingKeepsItsPlaceInThePushedOrder(t *testing.T) {
+	folder := t.TempDir()
+	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	a, ma := newModMachine(t, folder, "Desktop", &clock)
+	b, mb := newModMachine(t, folder, "Laptop", &clock)
+	mb.fail[3] = true
+	ma.edit("main", 1, 3, 2)
+	scan(t, a)
+	offers := scan(t, b)
+	if err := b.Resolve(context.Background(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
+		t.Fatal(err)
+	}
+	mb.note = "my note"
+	mb.edit("local-Main", 1, 2)
+	scan(t, b)
+	if got := payloadMods(t, folder); !slices.Equal(got, []int{1, 3, 2}) {
+		t.Fatalf("pushed order = %v, want [1 3 2]", got)
+	}
+	// The download lands at its shared place (sharesvc orders it), which is the apply finishing, not an edit.
+	mb.edit("local-Main", 1, 3, 2)
+	scan(t, b)
+	if offers := scan(t, a); len(offers) != 1 {
+		t.Fatalf("offers to the desktop = %+v, want the note edit only", offers)
+	}
+}

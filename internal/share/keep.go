@@ -23,8 +23,9 @@ func (r Ref) Identity() string {
 	}
 }
 
-// WithRefs returns the .mortar payload raw with add appended to its entries; everything else in it is kept.
-func WithRefs(raw []byte, add []Ref) ([]byte, error) {
+// WithRefs returns the .mortar payload raw with add put back among its entries where base, the order add comes from,
+// has them: each after the nearest entry before it in base that raw holds. Everything else in raw is kept.
+func WithRefs(raw []byte, base, add []Ref) ([]byte, error) {
 	pv, err := ReadBytes(raw)
 	if err != nil {
 		return nil, err
@@ -41,7 +42,7 @@ func WithRefs(raw []byte, add []Ref) ([]byte, error) {
 			return nil, err
 		}
 		if f.Name == profileFile {
-			if data, err = withEntries(data, append(pv.Entries, add...)); err != nil {
+			if data, err = withEntries(data, placeRefs(pv.Entries, base, add)); err != nil {
 				return nil, err
 			}
 		}
@@ -53,6 +54,28 @@ func WithRefs(raw []byte, add []Ref) ([]byte, error) {
 		return nil, err
 	}
 	return out.Bytes(), nil
+}
+
+func placeRefs(have, base, add []Ref) []Ref {
+	adding := map[string]bool{}
+	for _, r := range add {
+		adding[r.Identity()] = true
+	}
+	out := slices.Clone(have)
+	for i, r := range base {
+		if !adding[r.Identity()] {
+			continue
+		}
+		at := 0
+		for j := i - 1; j >= 0; j-- {
+			if k := slices.IndexFunc(out, func(h Ref) bool { return h.Identity() == base[j].Identity() }); k >= 0 {
+				at = k + 1
+				break
+			}
+		}
+		out = slices.Insert(out, at, r)
+	}
+	return out
 }
 
 func withEntries(doc []byte, entries []Ref) ([]byte, error) {

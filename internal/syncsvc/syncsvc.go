@@ -583,7 +583,7 @@ func (s *Service) keepUnfetched(folder string, ref Ref, t *tracked, payload []by
 	if len(keep) == 0 {
 		return payload, false
 	}
-	kept, err := share.WithRefs(payload, keep)
+	kept, err := share.WithRefs(payload, want.Entries, keep)
 	if err != nil {
 		return payload, false
 	}
