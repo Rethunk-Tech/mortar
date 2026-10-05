@@ -7,6 +7,7 @@ import { Check, Clock, Copy, Ellipsis, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   LaunchOptions,
+  LaunchOptionsStartLoader,
   SetLaunchOption,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { useGameName } from '../games/info.ts'
@@ -17,8 +18,8 @@ import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { MONO } from '../theme/theme.ts'
 import { type InlineError, inlineError, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { launchLine, launchOptionsSet } from './logic.ts'
 import { Panel } from './Panel.tsx'
+import { useLaunchLine } from './useLaunchLine.ts'
 
 const PERCENT = 100
 const ORDER = ['downloaded', 'files', 'launcher', 'bundled'] as const
@@ -71,21 +72,20 @@ function InstallLog({ steps, installing }: { steps: string[]; installing: boolea
 function LaunchLine({
   game,
   gameDir,
-  options,
+  set,
   recheck,
   onContinue,
 }: {
   game: GameId
   gameDir: string
-  options: string
+  set: boolean
   recheck: () => void
   onContinue: () => void
 }) {
   const { t } = useLingui()
   const theme = useTheme()
   const gameName = useGameName(game)
-  const line = launchLine(gameDir)
-  const set = launchOptionsSet(options)
+  const line = useLaunchLine(game, gameDir)
   const copy = () => {
     navigator.clipboard
       .writeText(line)
@@ -291,7 +291,7 @@ export function SmapiStep({
   const errorDetail = useLoader((s) => s.errorDetail)
   const install = useLoader((s) => s.install)
   const pending = useLoader((s) => s.pending)
-  const [options, setOptions] = useState('')
+  const [launchSet, setLaunchSet] = useState(false)
   const [checked, setChecked] = useState(false)
   const [checkError, setCheckError] = useState<InlineError | null>(null)
   const entered = useRef(false)
@@ -301,7 +301,11 @@ export function SmapiStep({
   const readOptions = useCallback(
     // Steam's config is unreadable until the user has run Steam once, which reads as "not set yet".
     () =>
-      windows ? LaunchOptions(game).then(setOptions, () => setOptions('')) : Promise.resolve(),
+      windows
+        ? LaunchOptions(game)
+            .then((options) => LaunchOptionsStartLoader(game, options))
+            .then(setLaunchSet, () => setLaunchSet(false))
+        : Promise.resolve(),
     [windows, game],
   )
   const runCheck = useCallback(() => {
@@ -327,7 +331,7 @@ export function SmapiStep({
   useEffect(runCheck, [runCheck])
 
   const smapiReady = status?.installed === true && !status.broken
-  const launchReady = !windows || launchOptionsSet(options)
+  const launchReady = !windows || launchSet
   useEffect(() => {
     if (checked && !entered.current) {
       entered.current = true
@@ -360,7 +364,7 @@ export function SmapiStep({
           <LaunchLine
             game={game}
             gameDir={gameDir}
-            options={options}
+            set={launchSet}
             recheck={() => readOptions().catch(reportUnexpected)}
             onContinue={onDone}
           />

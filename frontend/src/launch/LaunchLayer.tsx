@@ -20,7 +20,7 @@ import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/la
 import { CrashDialog, SwitchOffButton } from '../console/CrashDialog.tsx'
 import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
-import { launchLine } from '../firstrun/logic.ts'
+import { useLaunchLine } from '../firstrun/useLaunchLine.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameName } from '../games/info.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
@@ -232,6 +232,7 @@ function Failure({ game }: { game: string }) {
   const cause = failure?.cause
   const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
   const profile = useProfiles(openProfileOf)
+  const line = useLaunchLine(game, info?.installDir ?? '')
   // The dialog unmounts with `failure`, so nothing fades out with stale text.
   if (!failure) {
     return null
@@ -263,7 +264,7 @@ function Failure({ game }: { game: string }) {
             {cause.detail}
           </DialogContentText>
         ) : null}
-        {showLine ? <LaunchLine line={launchLine(info.installDir)} /> : null}
+        {showLine ? <LaunchLine line={line} /> : null}
         {showFlatpak ? <FlatpakGrant /> : null}
       </DialogContent>
       <DialogActions>

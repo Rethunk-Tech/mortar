@@ -7,6 +7,7 @@ import type { FoundInstall } from '../../../bindings/github.com/Rethunk-Tech/mor
 import {
   ClearLaunchOption,
   LaunchOptions,
+  LaunchOptionsStartLoader,
   ResetInstall,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
@@ -17,7 +18,6 @@ import {
   SetGameStore,
   SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { launchOptionsSet } from '../../firstrun/logic.ts'
 import { gameInfo, useGameName } from '../../games/info.ts'
 import { storeName } from '../../games/storeName.ts'
 import { currentGame, useCurrentGame } from '../../nav/currentGame.ts'
@@ -78,7 +78,7 @@ async function offerLaunchOptionRemoval(
 ) {
   try {
     const options = await LaunchOptions(currentGame())
-    if (launchOptionsSet(options)) {
+    if (await LaunchOptionsStartLoader(currentGame(), options)) {
       push({
         kind: 'success',
         title,
