@@ -105,7 +105,9 @@ func (s *Service) bundles(id string) []profile.Bundle {
 	if key, err := s.ensureBundled(id); err != nil {
 		log.Printf("bundled mods for %s: %v", id, err)
 	} else if key != "" {
-		out = append(out, profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceSMAPI, Name: "SMAPI"}})
+		if b, ok := s.bundleOf(id, key); ok {
+			out = append(out, b)
+		}
 	}
 	if b, err := s.ensureBridge(id); err != nil {
 		log.Printf("bridge for %s: %v", id, err)
@@ -181,7 +183,11 @@ func (s *Service) ensureBundled(id string) (string, error) {
 	if !st.Installed || st.Broken || st.Version == "" {
 		return "", nil
 	}
-	key := store.SMAPIKey(st.Version)
+	l, ok := game.PrimaryLoader(id)
+	if !ok {
+		return "", nil
+	}
+	key := store.LoaderKey(l.ID(), st.Version)
 	if _, err := s.items.Path(id, key); err == nil {
 		return key, nil
 	} else if !errors.Is(err, store.ErrNotFound) {
@@ -196,9 +202,8 @@ func (s *Service) ensureBundled(id string) (string, error) {
 		return "", err
 	}
 	defer func() { _ = fsx.RemoveAll(tmp) }()
-	l, ok := game.PrimaryLoader(id)
 	copier, canCopy := l.(loader.BundledCopier)
-	if !ok || !canCopy {
+	if !canCopy {
 		return "", fmt.Errorf("%s ships no mods of its own", g.Name())
 	}
 	if err := copier.CopyBundled(dir, tmp); err != nil {
@@ -216,6 +221,16 @@ func (s *Service) ensureBundled(id string) (string, error) {
 		}
 	}
 	return key, nil
+}
+
+// catalogGame is the game's catalog entry; the zero value when the catalog lacks it.
+func catalogGame(id string) components.GameInfo {
+	for _, g := range game.Catalog() {
+		if g.ID == id {
+			return g
+		}
+	}
+	return components.GameInfo{}
 }
 
 func (s *Service) target(id string) (game.Game, string, error) {
@@ -259,7 +274,7 @@ func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) 
 	if !ok {
 		return st, nil
 	}
-	if latest, err := rel.Latest(ctx); err == nil {
+	if latest, err := rel.Latest(ctx, catalogGame(id)); err == nil {
 		st.Latest = latest
 		st.UpdateAvailable = st.Installed && st.Version != "" && meta.Newer(latest, st.Version)
 	}

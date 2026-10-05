@@ -18,7 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-var errUnknownSMAPI = errors.New("unknown SMAPI version")
+var errUnknownVersion = errors.New("unknown loader version")
 
 // InstallVersion installs the given SMAPI version. A copy already in the store is applied without downloading.
 func (s *Service) InstallVersion(ctx context.Context, id, version string) (loader.Status, error) {
@@ -30,8 +30,12 @@ func (s *Service) InstallVersion(ctx context.Context, id, version string) (loade
 	if err != nil {
 		return loader.Status{}, err
 	}
+	l, ok := game.PrimaryLoader(id)
+	if !ok {
+		return loader.Status{}, fmt.Errorf("%s has no loader", g.Name())
+	}
 	// A version that does not exist is refused before asking the user to close the game.
-	if _, err := s.items.Path(id, store.SMAPIKey(version)); version != "" && errors.Is(err, store.ErrNotFound) {
+	if _, err := s.items.Path(id, store.LoaderKey(l.ID(), version)); version != "" && errors.Is(err, store.ErrNotFound) {
 		if err := s.ensureKnown(ctx, id, version); err != nil {
 			return loader.Status{}, err
 		}
@@ -86,7 +90,11 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, vers
 	if err != nil {
 		return loader.Status{}, err
 	}
-	if _, err := s.items.Path(id, store.SMAPIKey(version)); err == nil {
+	l, ok := game.PrimaryLoader(id)
+	if !ok {
+		return loader.Status{}, fmt.Errorf("%s has no loader", g.Name())
+	}
+	if _, err := s.items.Path(id, store.LoaderKey(l.ID(), version)); err == nil {
 		if err := s.recordLoader(id, version, fromStart); err != nil {
 			return loader.Status{}, err
 		}
@@ -106,13 +114,12 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, vers
 		}
 		return s.Status(ctx, id)
 	}
-	l, ok := game.PrimaryLoader(id)
 	rel, canFetch := l.(loader.Releases)
-	if !ok || !canFetch {
-		return loader.Status{}, fmt.Errorf("%s does not install a chosen SMAPI version", g.Name())
+	if !canFetch {
+		return loader.Status{}, fmt.Errorf("%s does not install a chosen loader version", g.Name())
 	}
 	bundled := func(got, modsDir string) error {
-		key := store.SMAPIKey(got)
+		key := store.LoaderKey(l.ID(), got)
 		if err := s.items.AddDir(id, key, modsDir); err != nil {
 			return err
 		}
@@ -124,7 +131,7 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, vers
 	}
 	defer func() { _ = fsx.RemoveAll(work) }()
 	pkg := loader.Package{ID: l.ID(), Version: version, Archive: filepath.Join(work, "installer.zip")}
-	if err := rel.Fetch(ctx, version, pkg.Archive); err != nil {
+	if err := rel.Fetch(ctx, catalogGame(id), version, pkg.Archive); err != nil {
 		return loader.Status{}, err
 	}
 	progress := func(step loader.Step) { s.emit(ProgressEvent, Progress{Game: id, Step: step}) }
@@ -149,16 +156,16 @@ func (s *Service) resolveVersion(ctx context.Context, id string, g game.Game, ve
 			return "", err
 		}
 		if len(all) == 0 {
-			return "", errUnknownSMAPI
+			return "", errUnknownVersion
 		}
 		return all[0], nil
 	}
 	l, _ := game.PrimaryLoader(id)
 	rel, ok := l.(loader.Releases)
 	if !ok {
-		return "", fmt.Errorf("%s does not list SMAPI versions", g.Name())
+		return "", fmt.Errorf("%s does not list loader versions", g.Name())
 	}
-	return rel.Latest(ctx)
+	return rel.Latest(ctx, catalogGame(id))
 }
 
 func (s *Service) ensureKnown(ctx context.Context, id, version string) error {
@@ -169,7 +176,7 @@ func (s *Service) ensureKnown(ctx context.Context, id, version string) error {
 	if slices.Contains(all, version) {
 		return nil
 	}
-	return fmt.Errorf("%w: %s", errUnknownSMAPI, version)
+	return fmt.Errorf("%w: %s", errUnknownVersion, version)
 }
 
 func (s *Service) remoteVersions(ctx context.Context, id string) ([]string, error) {
@@ -183,19 +190,24 @@ func (s *Service) remoteVersions(ctx context.Context, id string) ([]string, erro
 	l, _ := game.PrimaryLoader(id)
 	rel, ok := l.(loader.Releases)
 	if !ok {
-		return nil, fmt.Errorf("%s does not list SMAPI versions", g.Name())
+		return nil, fmt.Errorf("%s does not list loader versions", g.Name())
 	}
-	return rel.Versions(ctx)
+	return rel.Versions(ctx, catalogGame(id))
 }
 
 func (s *Service) storedVersions(id string) []string {
+	l, ok := game.PrimaryLoader(id)
+	if !ok {
+		return nil
+	}
+	want := l.ID()
 	keys, err := s.items.Keys(id)
 	if err != nil {
 		return nil
 	}
 	var out []string
 	for _, key := range keys {
-		if v, ok := store.SMAPIVersion(key); ok {
+		if lid, v, ok := store.LoaderOf(key); ok && lid == want {
 			out = append(out, v)
 		}
 	}
@@ -203,16 +215,32 @@ func (s *Service) storedVersions(id string) []string {
 }
 
 func (s *Service) applyBundled(id, key string, fromStart bool) error {
+	b, ok := s.bundleOf(id, key)
+	if !ok {
+		return nil
+	}
 	apply := s.profiles.ApplyBundled
 	if fromStart {
 		apply = s.profiles.ApplyBundledForStart
 	}
-	return apply(id, profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceSMAPI, Name: "SMAPI"}})
+	return apply(id, b)
+}
+
+// bundleOf is the profile entry for the loader's bundled mods under key; ok is false for a loader that ships none.
+func (s *Service) bundleOf(id, key string) (profile.Bundle, bool) {
+	l, _ := game.PrimaryLoader(id)
+	c, ok := l.(loader.BundledCopier)
+	if !ok {
+		return profile.Bundle{}, false
+	}
+	kind, name := c.BundleSource()
+	return profile.Bundle{Key: key, Source: profile.Source{Kind: kind, Name: name}}, true
 }
 
 func (s *Service) recordLoader(id, version string, fromStart bool) error {
-	if _, err := s.items.Path(id, store.SMAPIKey(version)); err == nil {
-		if err := s.applyBundled(id, store.SMAPIKey(version), fromStart); err != nil {
+	l, _ := game.PrimaryLoader(id)
+	if _, err := s.items.Path(id, store.LoaderKey(l.ID(), version)); err == nil {
+		if err := s.applyBundled(id, store.LoaderKey(l.ID(), version), fromStart); err != nil {
 			return err
 		}
 	} else if !errors.Is(err, store.ErrNotFound) {

@@ -2,6 +2,7 @@ package smapi
 
 import (
 	"context"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -48,7 +49,7 @@ func TestLatestFromRecordedResponseIsCached(t *testing.T) {
 	defer srv.Close()
 	g := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
 	for range 2 {
-		v, err := g.Latest(context.Background())
+		v, err := g.Latest(context.Background(), components.GameInfo{})
 		if err != nil || v != "4.5.2" {
 			t.Fatalf("latest = %q, %v", v, err)
 		}
@@ -72,7 +73,7 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 	}))
 	defer srv.Close()
 	g := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
-	if v, err := g.Latest(context.Background()); err != nil || v != "4.8.0" {
+	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.8.0" {
 		t.Fatalf("latest = %q, %v", v, err)
 	}
 	fail = true
@@ -83,10 +84,10 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 	if err := writeCache(path, c); err != nil {
 		t.Fatal(err)
 	}
-	if v, err := g.Latest(context.Background()); err != nil || v != "4.8.0" {
+	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.8.0" {
 		t.Fatalf("stale fallback = %q, %v", v, err)
 	}
-	if _, err := (Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}).Latest(context.Background()); err == nil {
+	if _, err := (Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}).Latest(context.Background(), components.GameInfo{}); err == nil {
 		t.Fatal("no cache and a failing API must error")
 	}
 }
@@ -98,7 +99,7 @@ func TestRateLimitMessage(t *testing.T) {
 		http.Error(w, `{"message":"API rate limit exceeded"}`, http.StatusForbidden)
 	}))
 	defer srv.Close()
-	_, err := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}.Latest(context.Background())
+	_, err := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}.Latest(context.Background(), components.GameInfo{})
 	if err == nil || !strings.Contains(err.Error(), "rate limit") || !strings.Contains(err.Error(), "try again after") {
 		t.Fatalf("err = %v", err)
 	}
@@ -204,7 +205,7 @@ func vanillaInstall(t *testing.T) string {
 func install(g Loader, dir string, bundled loader.Bundled, progress func(loader.Step)) (string, error) {
 	zip := filepath.Join(os.TempDir(), "smapi-test-installer.zip")
 	defer func() { _ = os.Remove(zip) }()
-	if err := g.Fetch(context.Background(), "9.9.9", zip); err != nil {
+	if err := g.Fetch(context.Background(), components.GameInfo{}, "9.9.9", zip); err != nil {
 		return "", err
 	}
 	progress(loader.StepDownloaded)

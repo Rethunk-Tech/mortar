@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
 // ID is the catalog's id for this loader.
@@ -23,8 +25,13 @@ var _ = loader.Register(Loader{})
 // markerFile records what Mortar installed, since BepInEx's own files do not say which pack they came from.
 const markerFile = ".mortar-bepinex.json"
 
-// Loader is the BepInEx 5 loader.
-type Loader struct{}
+// Loader is the BepInEx 5 loader. The zero value is the real loader; the fields let tests point the network elsewhere.
+type Loader struct {
+	// Index is the Thunderstore driver the pack is looked up in; nil means the registered one.
+	Index *thunderstore.Driver
+	// HTTP downloads the pack.
+	HTTP *http.Client
+}
 
 type marker struct {
 	Version  string `json:"version"`

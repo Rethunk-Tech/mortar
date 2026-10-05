@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
@@ -138,20 +139,26 @@ type Console interface {
 // WinHTTPLoader is a loader that injects through winhttp.dll, which Wine only loads when the prefix overrides it.
 type WinHTTPLoader interface{ NeedsWinHTTPOverride() bool }
 
-// Releases is a loader whose releases Mortar looks up and downloads.
+// Releases is a loader whose releases Mortar looks up and downloads. g is the game's catalog entry, for a loader
+// that finds its releases through the game's sources.
 type Releases interface {
 	// Latest is the newest stable version.
-	Latest(ctx context.Context) (string, error)
+	Latest(ctx context.Context, g components.GameInfo) (string, error)
 	// Versions are the recent releases, newest first.
-	Versions(ctx context.Context) ([]string, error)
+	Versions(ctx context.Context, g components.GameInfo) ([]string, error)
 	// Fetch downloads the installer package of version to dst.
-	Fetch(ctx context.Context, version, dst string) error
+	Fetch(ctx context.Context, g components.GameInfo, version, dst string) error
 }
+
+// InProfile is a loader whose files live in each profile's folder, so an install runs once per profile.
+type InProfile interface{ InProfile() }
 
 // BundledCopier is a loader that ships mods of its own, which Mortar can copy from an install the loader was put into
 // outside Mortar.
 type BundledCopier interface {
 	CopyBundled(installDir, dst string) error
+	// BundleSource is the kind and display name a profile gives the loader's bundled mods.
+	BundleSource() (kind, name string)
 }
 
 // VersionScheme is a loader whose components are versioned in one scheme (deps.SemverSMAPI, deps.SemverStrict,

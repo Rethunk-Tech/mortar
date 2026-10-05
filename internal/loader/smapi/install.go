@@ -131,6 +131,9 @@ func bundledVersion(dir string) string {
 	return m.Version
 }
 
+// BundleSource is how a profile lists SMAPI's bundled mods.
+func (Loader) BundleSource() (kind, name string) { return "smapi", "SMAPI" }
+
 // CopyBundled copies SMAPI's Console Commands and Save Backup from dir/Mods into dst, for SMAPI installed outside Mortar.
 func (Loader) CopyBundled(dir, dst string) error {
 	for _, name := range bundledMods {

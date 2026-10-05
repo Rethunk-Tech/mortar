@@ -92,7 +92,7 @@ func writeCache(path string, c cachedRelease) error {
 
 // Latest returns the newest stable SMAPI version that ships an installer. A response younger than an hour
 // is reused, and a stale one stands in when the lookup fails.
-func (l Loader) Latest(ctx context.Context) (string, error) {
+func (l Loader) Latest(ctx context.Context, _ components.GameInfo) (string, error) {
 	if component, ok := l.loaderComponent(); ok {
 		return component.Version, nil
 	}
@@ -142,7 +142,7 @@ func (l Loader) fetchLatest(ctx context.Context) (string, error) {
 const lastLoaderReleases = 10
 
 // Versions returns the last GitHub SMAPI releases that look like versions, newest first.
-func (l Loader) Versions(ctx context.Context) ([]string, error) {
+func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, error) {
 	url := l.ReleasesURL
 	if url == "" {
 		if component, ok := l.loaderComponent(); ok && component.Source.Owner != "" && component.Source.Repo != "" {
@@ -171,7 +171,7 @@ func (l Loader) Versions(ctx context.Context) ([]string, error) {
 }
 
 // Fetch saves the release installer of version to dest.
-func (l Loader) Fetch(ctx context.Context, version, dest string) error {
+func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dest string) error {
 	if component, ok := l.loaderComponent(); ok && component.Version == version {
 		client := l.Components
 		if client == nil {

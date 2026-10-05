@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -155,7 +156,7 @@ func TestAddDir(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(src, "ConsoleCommands", "manifest.json"), []byte("{}"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.AddDir("stardew", SMAPIKey("4.1.0"), src); err != nil {
+	if err := s.AddDir("stardew", LoaderKey("smapi", "4.1.0"), src); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := s.Path("stardew", "smapi-4.1.0")
@@ -469,12 +470,12 @@ func TestCollectLeavesFoldersThatAreNotStoreItems(t *testing.T) {
 	}
 }
 
-func TestSMAPIVersion(t *testing.T) {
-	if v, ok := SMAPIVersion(SMAPIKey("4.1.0")); !ok || v != "4.1.0" {
-		t.Fatalf("round trip = %q, %v", v, ok)
+func TestLoaderOf(t *testing.T) {
+	if id, v, ok := LoaderOf(LoaderKey("bepinex5", "5.4.2304")); !ok || id != "bepinex5" || v != "5.4.2304" {
+		t.Fatalf("round trip = %q %q, %v", id, v, ok)
 	}
 	for _, key := range []string{"smapi-", "nexus-1-2", ""} {
-		if _, ok := SMAPIVersion(key); ok {
+		if _, _, ok := LoaderOf(key); ok {
 			t.Fatalf("%q parsed", key)
 		}
 	}

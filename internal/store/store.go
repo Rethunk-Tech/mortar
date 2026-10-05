@@ -28,6 +28,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -100,18 +101,17 @@ func OpenAt(dir string) *Store { return &Store{root: dir} }
 // LocalKey is the key of a local archive with the given SHA-256.
 func LocalKey(sha256Hex string) string { return "local-" + sha256Hex }
 
-// SMAPIKey is the key of SMAPI's bundled-mods entry for a SMAPI version; its folder is loaders/smapi/<version>.
-func SMAPIKey(version string) string { return smapiPrefix + version }
+// LoaderKey is the key of a loader's entry for one of its versions; its folder is loaders/<loader>/<version>.
+func LoaderKey(loaderID, version string) string { return loaderID + "-" + version }
 
-const (
-	smapiPrefix = "smapi-"
-	smapiLoader = "smapi"
-)
-
-// SMAPIVersion parses a SMAPIKey; ok is false for any other key.
-func SMAPIVersion(key string) (version string, ok bool) {
-	version, ok = strings.CutPrefix(key, smapiPrefix)
-	return version, ok && version != ""
+// LoaderOf parses a LoaderKey of a registered loader; ok is false for any other key.
+func LoaderOf(key string) (loaderID, version string, ok bool) {
+	for _, l := range loader.All() {
+		if v, found := strings.CutPrefix(key, l.ID()+"-"); found && v != "" {
+			return l.ID(), v, true
+		}
+	}
+	return "", "", false
 }
 
 // PackageKey is the key of a package from a source whose names are not valid keys (a Thunderstore Namespace-Name
@@ -183,11 +183,11 @@ func checkKey(id, key string) error {
 
 // destOf is the folder an item's files live in: a loader's bundle by loader and version, any other item by blob.
 func (s *Store) destOf(key, blob string) (string, error) {
-	if v, ok := SMAPIVersion(key); ok {
+	if id, v, ok := LoaderOf(key); ok {
 		if !keyPattern.MatchString(v) {
 			return "", fmt.Errorf("invalid store key %q", key)
 		}
-		return filepath.Join(s.root, loadersDir, smapiLoader, v), nil
+		return filepath.Join(s.root, loadersDir, id, v), nil
 	}
 	if !blobPattern.MatchString(blob) {
 		return "", fmt.Errorf("invalid store blob %q", blob)
@@ -328,7 +328,7 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.admit(game, key, func() (string, error) {
-		if _, ok := SMAPIVersion(key); ok {
+		if _, _, ok := LoaderOf(key); ok {
 			return "", nil
 		}
 		h, err := hashDir(srcDir)
@@ -580,8 +580,8 @@ func describe(key string) (source, pkg, version string) {
 	if mod, file, ok := NexusFile(key); ok {
 		return "nexus", strconv.Itoa(mod), strconv.Itoa(file)
 	}
-	if v, ok := SMAPIVersion(key); ok {
-		return "loader", smapiLoader, v
+	if id, v, ok := LoaderOf(key); ok {
+		return "loader", id, v
 	}
 	if rest, ok := strings.CutPrefix(key, "bridge-"); ok {
 		v, _, _ := strings.Cut(rest, "-")
@@ -777,7 +777,7 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 // drop deletes the folder a loader key names; a blob is left for collectBlobs, which knows who else names it.
 func (s *Store) drop(game, key string, r record) error {
 	s.forget(game, key)
-	if _, ok := SMAPIVersion(key); !ok {
+	if _, _, ok := LoaderOf(key); !ok {
 		return nil
 	}
 	dir, err := s.destOf(key, r.Blob)

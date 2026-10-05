@@ -2,6 +2,7 @@ package smapi
 
 import (
 	"context"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"os"
 	"path/filepath"
 	"testing"
@@ -39,12 +40,12 @@ func TestSmokeRealInstaller(t *testing.T) {
 	ctx := context.Background()
 	before, _ := g.Status(loader.Target{InstallDir: copyDir})
 	t.Logf("copy before install: %+v", before)
-	version, err := g.Latest(ctx)
+	version, err := g.Latest(ctx, components.GameInfo{})
 	if err != nil {
 		t.Fatal(err)
 	}
 	zip := filepath.Join(t.TempDir(), "installer.zip")
-	if err := g.Fetch(ctx, version, zip); err != nil {
+	if err := g.Fetch(ctx, components.GameInfo{}, version, zip); err != nil {
 		t.Fatal(err)
 	}
 	var steps []loader.Step

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -70,6 +71,33 @@ func (d Driver) Resolve(ctx context.Context, key, namespace, name, ver, mortarVe
 		}
 	}
 	return Resolved{}, fmt.Errorf("%s-%s %s is not in the %s index", namespace, name, ver, key)
+}
+
+// Versions lists the package's versions in the community's index, newest first.
+func (d Driver) Versions(ctx context.Context, key, namespace, name, mortarVersion string) ([]string, error) {
+	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range pk {
+		if strings.EqualFold(p.Owner, namespace) && strings.EqualFold(p.Name, name) {
+			out := make([]string, len(p.Versions))
+			for i, v := range p.Versions {
+				out[i] = v.Number
+			}
+			slices.SortStableFunc(out, func(a, b string) int {
+				switch {
+				case newer(a, b):
+					return -1
+				case newer(b, a):
+					return 1
+				}
+				return 0
+			})
+			return out, nil
+		}
+	}
+	return nil, fmt.Errorf("%s-%s is not in the %s index", namespace, name, key)
 }
 
 func (d Driver) resolved(p pkg, v version) Resolved {
