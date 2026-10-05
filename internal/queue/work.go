@@ -55,6 +55,12 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 		case it.overlay && s.waitsForSameMod(it):
 		case running[it.Game+"\n"+it.Profile]:
 			held = true
+		case it.Package != "":
+			if pauseFetch {
+				held = true
+				continue
+			}
+			return it, fetch, held
 		case it.Repo != "":
 			act := s.forAsset(it)
 			if act == fetch && pauseFetch {
@@ -394,7 +400,7 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 }
 
 func (s *Service) fetchSlot(ctx context.Context, it Item) (func(), error) {
-	if it.Repo == "" && (s.d.Premium == nil || !s.d.Premium()) {
+	if it.Repo == "" && it.Package == "" && (s.d.Premium == nil || !s.d.Premium()) {
 		select {
 		case s.freeFetch <- struct{}{}:
 			return func() { <-s.freeFetch }, nil
@@ -434,6 +440,9 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		return err
 	}
 	defer release()
+	if it.Package != "" {
+		return s.downloadPackage(ctx, it)
+	}
 	if it.Repo != "" {
 		return s.downloadGitHub(ctx, it)
 	}

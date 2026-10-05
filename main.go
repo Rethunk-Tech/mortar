@@ -52,6 +52,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -426,12 +427,20 @@ func run() error {
 		Verify: func(ctx context.Context, id mod.ID, owner, repo string) (bool, error) {
 			return github.Verify(ctx, modMeta, id.Local(), owner, repo)
 		},
-		GitHub:  &github.Client{},
-		OpenURL: func(url string) error { return app.Browser.OpenURL(url) },
-		Running: launches.Running,
-		Emit:    emit,
-		Dir:     dataDir,
-		Changed: func(st queue.State) { shareSvc.QueueChanged(st) },
+		Closure: func(ctx context.Context, gameID string, roots []thunderstore.Ref) ([]thunderstore.Resolved, error) {
+			key := share.SourceKeys(gameID)["thunderstore"]
+			if key == "" {
+				return nil, fmt.Errorf("%s has no Thunderstore community", gameID)
+			}
+			return thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.Closure(ctx, key, roots, version)
+		},
+		InstallPackage: profiles.InstallNexus,
+		GitHub:         &github.Client{},
+		OpenURL:        func(url string) error { return app.Browser.OpenURL(url) },
+		Running:        launches.Running,
+		Emit:           emit,
+		Dir:            dataDir,
+		Changed:        func(st queue.State) { shareSvc.QueueChanged(st) },
 		HistoryBatch: func(game, profileID, batchID string) error {
 			return profiles.RecordHistoryBatch(game, profileID, batchID)
 		},

@@ -25,6 +25,7 @@ type HistoryEntry struct {
 	ModID    int    `json:"modId"`
 	FileID   int    `json:"fileId"`
 	Kind     string `json:"kind"`
+	Package  string `json:"package,omitempty"`
 	Repo     string `json:"repo,omitempty"`
 	Tag      string `json:"tag,omitempty"`
 	Asset    string `json:"asset,omitempty"`
@@ -69,13 +70,16 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 		name = it.FileName
 	}
 	src := profile.KindNexus
-	if it.Repo != "" {
+	switch {
+	case it.Package != "":
+		src = sourceThunderstore
+	case it.Repo != "":
 		src = profile.KindGitHub
 	}
 	size := it.SizeKB << 10
 	entry := HistoryEntry{
 		Name: name, Version: it.Version, Source: src, Profile: it.Profile, BatchID: it.BatchID,
-		Game: it.Game, ModID: it.ModID, FileID: it.FileID, Kind: it.Kind, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
+		Game: it.Game, ModID: it.ModID, FileID: it.FileID, Kind: it.Kind, Package: it.Package, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
 		Latest: it.Latest, Size: size, Started: started, Finished: now, Outcome: outcome, Error: it.Error,
 	}
 	s.pub.Lock()
@@ -108,7 +112,7 @@ func (s *Service) ClearHistory() {
 func (e HistoryEntry) request() Request {
 	return Request{
 		Kind: e.Kind, Game: e.Game, Profile: e.Profile, ModID: e.ModID, FileID: e.FileID,
-		Name: e.Name, Version: e.Version, Repo: e.Repo, Tag: e.Tag, Asset: e.Asset, Latest: e.Latest,
+		Name: e.Name, Version: e.Version, Package: e.Package, Repo: e.Repo, Tag: e.Tag, Asset: e.Asset, Latest: e.Latest,
 	}
 }
 
@@ -135,7 +139,7 @@ func (s *Service) RetryAllFailed() (RetryAllResult, error) {
 	s.mu.Lock()
 	for _, e := range slices.Backward(entries) {
 		r := e.request()
-		id := fmt.Sprint(r.Game, "|", r.Profile, "|", r.ModID, "|", r.FileID, "|", r.Repo, "|", r.Tag, "|", r.Asset)
+		id := fmt.Sprint(r.Game, "|", r.Profile, "|", r.ModID, "|", r.FileID, "|", r.Package, "|", r.Repo, "|", r.Tag, "|", r.Asset)
 		if seen[id] {
 			if e.Outcome == StateFailed {
 				res.Skipped["superseded"]++
@@ -145,7 +149,7 @@ func (s *Service) RetryAllFailed() (RetryAllResult, error) {
 		seen[id] = true
 		switch {
 		case e.Outcome != StateFailed:
-		case r.Game == "" || r.Profile == "" || (r.ModID <= 0 && !validRepo(r.Repo)):
+		case !r.valid():
 			res.Skipped["incomplete"]++
 		case slices.ContainsFunc(s.items, func(it *Item) bool { return sameDownload(it, r) }):
 			res.Skipped["queued"]++

@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 type fakeHandler struct {
@@ -240,5 +241,24 @@ func TestReceiveTakesALinkOnceUntilItExpires(t *testing.T) {
 	s.Receive([]string{link})
 	if in := s.Inbox(); len(in.Rejections) != 1 || in.Rejections[0].Reason != nxm.ReasonExpired {
 		t.Fatalf("an expired link sent again was not refused as expired: %+v", in)
+	}
+}
+
+func TestReceiveQueuesAThunderstoreLink(t *testing.T) {
+	source.SetHandleLinks(map[string]bool{"thunderstore": true})
+	t.Cleanup(func() { source.SetHandleLinks(nil) })
+	s := newService(t, &fakeHandler{})
+	if !s.Receive([]string{"ror2mm://v1/install/thunderstore.io/Me/Mod/1.2.3/"}) {
+		t.Fatal("the ror2mm link was not taken")
+	}
+	in := s.Inbox()
+	if len(in.Arrivals) != 1 || in.Arrivals[0].Package != "Me-Mod" || in.Arrivals[0].Version != "1.2.3" || len(in.Rejections) != 0 {
+		t.Fatalf("inbox %+v", in)
+	}
+	if err := s.Assign(in.Arrivals[0].ID, "riskofrain2", "p1"); err != nil {
+		t.Fatal(err)
+	}
+	if got := <-s.Assigned; got.Package != "Me-Mod" || got.Version != "1.2.3" || got.Game != "riskofrain2" {
+		t.Fatalf("assigned %+v", got)
 	}
 }

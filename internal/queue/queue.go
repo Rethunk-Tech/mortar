@@ -32,6 +32,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -85,6 +86,16 @@ func validRepo(repo string) bool {
 	return repoPattern.MatchString(repo) && strings.Trim(owner, ".") != "" && strings.Trim(name, ".") != ""
 }
 
+// packagePattern is a Thunderstore "Namespace-Name"; neither part holds a dash.
+var packagePattern = regexp.MustCompile(`^[A-Za-z0-9_]+-[A-Za-z0-9_]+$`)
+
+// sourceThunderstore is the Source.Kind of an entry installed from a Thunderstore package.
+const sourceThunderstore = "thunderstore"
+
+func (r Request) valid() bool {
+	return r.Game != "" && r.Profile != "" && (r.ModID > 0 || validRepo(r.Repo) || packagePattern.MatchString(r.Package))
+}
+
 const (
 	fileName       = "queue.json"
 	downloadsDir   = "downloads"
@@ -127,6 +138,9 @@ type Item struct {
 	// ErrorKind classes a failed item's Error: network, blocked, auth, disk or other.
 	ErrorKind string `json:"errorKind,omitempty"`
 
+	// Package is "Namespace-Name" of a Thunderstore package, downloaded from URL at Version; ModID and Repo stay empty.
+	Package      string            `json:"package,omitempty"`
+	URL          string            `json:"url,omitempty"`
 	Repo         string            `json:"repo"`
 	Tag          string            `json:"tag"`
 	Asset        string            `json:"asset"`
@@ -201,6 +215,8 @@ type Request struct {
 	Repo       string `json:"repo"`
 	Tag        string `json:"tag"`
 	Asset      string `json:"asset"`
+	// Package is a Thunderstore "Namespace-Name"; Add queues it with everything it depends on, at Version or the newest.
+	Package string `json:"package,omitempty"`
 	// FallbackRepo is the mod's GitHub repo (owner/name) for a Nexus update: when the account would have to click
 	// Mod Manager Download, the same version's GitHub release is used instead, if there is exactly one archive.
 	FallbackRepo string `json:"fallbackRepo,omitempty"`
@@ -216,6 +232,9 @@ type Request struct {
 
 	key     string
 	expires int64
+	// url and sizeKB are a resolved package's download, set by the closure expansion.
+	url    string
+	sizeKB int64
 }
 
 // OverlayPlace is the placement of an optional file inside its main file's folder: the folder of the file laid
@@ -252,8 +271,12 @@ type Deps struct {
 	// InstallExtra adds a downloaded Nexus file to an existing same-page entry.
 	InstallExtra func(game, profileID, entryKey, path string, source profile.Source) (profile.InstallResult, error)
 	Verify       func(ctx context.Context, id mod.ID, owner, repo string) (bool, error)
-	GitHub       *github.Client
-	OpenURL      func(url string) error
+	// Closure resolves Thunderstore packages and their dependencies for a game, dependencies first; nil refuses packages.
+	Closure func(ctx context.Context, gameID string, roots []thunderstore.Ref) ([]thunderstore.Resolved, error)
+	// InstallPackage adds a downloaded Thunderstore package archive to the profile; nil refuses packages.
+	InstallPackage func(game, profileID, path string, source profile.Source) (profile.InstallResult, error)
+	GitHub         *github.Client
+	OpenURL        func(url string) error
 	// Running reports whether the game runs the profile; its items wait until it stops. Nil means never.
 	Running func(game, profileID string) bool
 	// Emit is nil in tests that do not watch events.
@@ -371,7 +394,7 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wa
 			case a := <-assigned:
 				r := Request{
 					Kind: KindInstall, Game: a.Game, Profile: a.Profile, ModID: a.Link.ModID, FileID: a.Link.FileID,
-					key: a.Link.Key, expires: a.Link.Expires,
+					key: a.Link.Key, expires: a.Link.Expires, Package: a.Package, Version: a.Version,
 				}
 				items, err := s.add([]Request{r})
 				if err != nil {
@@ -394,7 +417,7 @@ func (s *Service) reject(r Request, err error) {
 	log.Printf("queue: mod %d file %d could not be queued: %v", r.ModID, r.FileID, err)
 	it := &Item{
 		ID: ids.New(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
-		State: StateFailed, Error: err.Error(), key: r.key, expires: r.expires,
+		Package: r.Package, Version: r.Version, State: StateFailed, Error: err.Error(), key: r.key, expires: r.expires,
 	}
 	s.mu.Lock()
 	s.items = append(s.items, it)
@@ -483,6 +506,9 @@ func sameDownload(it *Item, r Request) bool {
 	if finished(it.State) || it.Game != r.Game || it.Profile != r.Profile {
 		return false
 	}
+	if it.Package != "" || r.Package != "" {
+		return strings.EqualFold(it.Package, r.Package) && it.Version == r.Version
+	}
 	if it.Repo != "" || r.Repo != "" {
 		return it.Repo == r.Repo && it.Tag == r.Tag && it.Asset == r.Asset
 	}
@@ -568,14 +594,18 @@ func (s *Service) Add(reqs []Request) ([]Item, error) {
 }
 
 func (s *Service) add(reqs []Request) ([]Item, error) {
-	if slices.ContainsFunc(reqs, func(r Request) bool { return r.Repo == "" }) {
-		if _, err := s.d.Client(); err != nil {
-			return nil, err
+	for _, r := range reqs {
+		if !r.valid() {
+			return nil, errors.New("choose a mod and a profile for the download")
 		}
 	}
-	for _, r := range reqs {
-		if r.Game == "" || r.Profile == "" || (r.ModID <= 0 && !validRepo(r.Repo)) {
-			return nil, errors.New("choose a mod and a profile for the download")
+	reqs, err := s.expandPackages(reqs)
+	if err != nil {
+		return nil, err
+	}
+	if slices.ContainsFunc(reqs, func(r Request) bool { return r.Repo == "" && r.Package == "" }) {
+		if _, err := s.d.Client(); err != nil {
+			return nil, err
 		}
 	}
 	// A file already in the store takes its name, version and picture from the profile that installed it, so it
@@ -615,10 +645,13 @@ func (s *Service) add(reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
+			Package: r.Package, URL: r.url, SizeKB: r.sizeKB, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
 		}
 		if it.Repo != "" {
 			it.Name = cmp.Or(it.Name, it.Repo)
+		}
+		if it.Package != "" {
+			it.Name = cmp.Or(it.Name, it.Package)
 		}
 		if src := known[i]; src.Name != "" {
 			it.FileName, it.Version = cmp.Or(it.FileName, src.Name), cmp.Or(it.Version, src.Version)

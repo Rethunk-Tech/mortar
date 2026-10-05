@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -31,6 +32,9 @@ const (
 type Arrival struct {
 	ID   int      `json:"id"`
 	Link nxm.Link `json:"link"`
+	// Package and Version name the Thunderstore package of a ror2mm link, whose Link is empty.
+	Package string `json:"package,omitempty"`
+	Version string `json:"version,omitempty"`
 }
 
 // Rejection is a refused link; Reason is one of nxm.Reason*.
@@ -48,6 +52,8 @@ type Inbox struct {
 // Assignment is a link the user matched to a profile. The download queue takes these from Service.Assigned.
 type Assignment struct {
 	Link    nxm.Link `json:"link"`
+	Package string   `json:"package,omitempty"`
+	Version string   `json:"version,omitempty"`
 	Game    string   `json:"game"`
 	Profile string   `json:"profile"`
 }
@@ -118,6 +124,16 @@ func (s *Service) Receive(args []string) bool {
 					s.emit(ArrivedEvent, *waiting)
 				}
 			}
+			continue
+		}
+		if ref, err := thunderstore.ParseLink(arg); err == nil {
+			s.mu.Lock()
+			s.nextID++
+			a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version}
+			log.Printf("nxm: link %d arrived: package %s", a.ID, a.Package)
+			s.arrivals = append(s.arrivals, a)
+			s.mu.Unlock()
+			s.emit(ArrivedEvent, a)
 			continue
 		}
 		if domain, gerr := nxm.LinkGame(arg); gerr == nil && !isMortarGame(domain) {
@@ -228,7 +244,7 @@ func (s *Service) Assign(id int, game, profile string) error {
 		return fmt.Errorf("link %d is no longer waiting", id)
 	}
 	select {
-	case s.Assigned <- Assignment{Link: s.arrivals[i].Link, Game: game, Profile: profile}:
+	case s.Assigned <- Assignment{Link: s.arrivals[i].Link, Package: s.arrivals[i].Package, Version: s.arrivals[i].Version, Game: game, Profile: profile}:
 		log.Printf("nxm: link %d assigned to profile %s", id, profile)
 		s.arrivals = slices.Delete(s.arrivals, i, i+1)
 		return nil
