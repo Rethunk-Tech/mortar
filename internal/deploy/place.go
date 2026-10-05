@@ -157,27 +157,37 @@ func move(src, dst string) error {
 }
 
 func (place) Purge(ctx context.Context, m Manifest) error {
-	for _, o := range slices.Backward(m.Ops) {
+	for i := len(m.Ops) - 1; i >= 0; i-- {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
+		o := m.Ops[i]
+		if o.Undone {
+			continue
+		}
 		_, backupErr := os.Lstat(o.Displaced)
-		hasBackup := o.Displaced != "" && backupErr == nil
 		switch {
-		case hasBackup:
+		case o.Displaced != "" && backupErr == nil:
+			// With the player's file set aside, whatever is at Dst is ours, even if the game wrote to it.
 			if err := os.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return err
 			}
 			if err := move(o.Displaced, o.Dst); err != nil {
 				return err
 			}
-		default:
-			// With no backup a file is ours when it was placed, or when nothing was there to displace and it is our
-			// content (placed, then a crash before the record). Otherwise Dst is still the player's own file.
-			if h, err := fsx.SHA256(o.Dst); err == nil && (o.Done || (o.Displaced == "" && h == o.Hash)) {
+		case o.Displaced == "":
+			// Nothing was displaced, so Dst is ours only while it still holds our content.
+			if h, err := fsx.SHA256(o.Dst); err == nil && h == o.Hash {
 				if err := os.Remove(o.Dst); err != nil {
 					return err
 				}
+			}
+		}
+		// A displaced file with no backup left was never moved or is already back: Dst is the player's own.
+		m.Ops[i].Undone = true
+		if m.View.JournalDir != "" {
+			if err := persist(m); err != nil {
+				return err
 			}
 		}
 	}

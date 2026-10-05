@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -227,5 +228,48 @@ func TestAPlacedFileIsACopyOfTheSource(t *testing.T) {
 	}
 	if got := read(filepath.Join(r.store, "winhttp.dll")); got != "proxy" {
 		t.Fatalf("the source is now %q", got)
+	}
+}
+
+func TestPurgeRunAgainKeepsWhatItRestored(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("a read-only folder does not stop a delete on Windows")
+	}
+	r := newRig(t)
+	r.files[1].Dst = filepath.Join("sub", "doorstop_config.ini")
+	m := r.apply()
+	sub := filepath.Join(r.install, "sub")
+	if err := fsx.Chmod(sub, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	d, _ := Get(copyID)
+	if err := d.Purge(t.Context(), m); err == nil {
+		t.Fatal("the purge removed a file from a read-only folder")
+	}
+	if err := fsx.Chmod(sub, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(filepath.Join(r.install, "winhttp.dll")); got != "the player's own" {
+		t.Fatalf("player's winhttp.dll after the second purge = %q", got)
+	}
+	if _, err := os.Lstat(filepath.Join(sub, "doorstop_config.ini")); !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("the placed file is still there: %v", err)
+	}
+}
+
+func TestPurgeLeavesAFileThatIsNoLongerOurs(t *testing.T) {
+	r := newRig(t)
+	m := r.apply()
+	ini := filepath.Join(r.install, "doorstop_config.ini")
+	write(t, ini, "the player's edit")
+	d, _ := Get(copyID)
+	if err := d.Purge(t.Context(), m); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(ini); got != "the player's edit" {
+		t.Fatalf("doorstop_config.ini = %q", got)
 	}
 }

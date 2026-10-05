@@ -39,6 +39,8 @@ type Placed struct {
 	Displaced string `json:"displaced,omitempty"`
 	// Done is set once the file is in place.
 	Done bool `json:"done,omitempty"`
+	// Undone is set once Purge has taken the file back, so a Purge run again after a failure leaves it alone.
+	Undone bool `json:"undone,omitempty"`
 }
 
 // Manifest is the persisted record of a deploy.
