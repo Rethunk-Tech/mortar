@@ -33,6 +33,8 @@ const LONG_NAME = 8
 // Tiles share the window in a grid that grows with the catalog: two games sit side by side, more wrap into rows.
 const TILE_MIN_PX = 240
 const TILE_MIN_WIDTH_PX = 560
+// A compact tile: 96 px of badges between 24 px paddings.
+const TILE_COMPACT_PX = 144
 const SMALL_FONT = 13
 const NORMAL_FONT = 15
 const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
@@ -119,6 +121,7 @@ export function Row({
   playtimeMs,
   cards,
   selected = false,
+  compact = false,
 }: {
   game: Game
   openable: boolean
@@ -131,6 +134,8 @@ export function Row({
   cards: { gameId: GameId; profiles: Profile[]; lastPlayed: Played | undefined } | undefined
   // The game already open, marked in the switcher.
   selected?: boolean
+  // The switcher's card: the name, loader line, Play and sources, without the profile cards or count.
+  compact?: boolean
 }) {
   const { t, i18n } = useLingui()
   const start = useLaunch((s) => s.start)
@@ -209,8 +214,10 @@ export function Row({
         >
           {loaderLine}
         </Typography>
-        <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
-        {cards ? (
+        {compact ? null : (
+          <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
+        )}
+        {cards && !compact ? (
           <ProfileCards
             gameId={cards.gameId}
             gameName={game.name}
@@ -248,7 +255,7 @@ export function Row({
   )
   const sx = {
     position: 'relative',
-    minHeight: TILE_MIN_PX,
+    minHeight: compact ? TILE_COMPACT_PX : TILE_MIN_PX,
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'center',

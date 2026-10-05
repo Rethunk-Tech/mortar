@@ -5,10 +5,8 @@ import { useSettings } from '../settings/store.ts'
 import { Row } from './GameSelect.tsx'
 import { useGameTiles } from './useGameTiles.ts'
 
-// Game Select's tiles, shrunk to one row: 240 px is the tile's own minimum height, enough for its name, profile
-// cards and 96 px source badges without wrapping.
-const CARD_WIDTH_PX = 560
-const CARD_HEIGHT_PX = 240
+// Compact tiles grow to share the drawer's width and wrap below this width, so a few games fill it edge to edge.
+const CARD_MIN_WIDTH_PX = 560
 const NEWEST = '￿'
 
 // moveFocus steps to the neighbouring card's button, so Left and Right walk the row and Enter opens the game.
@@ -65,17 +63,10 @@ export function GameSwitcher({
         },
       }}
     >
-      <Box
-        ref={row}
-        onKeyDown={moveFocus}
-        sx={{ display: 'flex', overflowX: 'auto', overflowY: 'hidden' }}
-      >
+      <Box ref={row} onKeyDown={moveFocus} sx={{ display: 'flex', flexWrap: 'wrap' }}>
         {games.map((g) => (
-          <Box
-            key={g.id}
-            sx={{ width: CARD_WIDTH_PX, height: CARD_HEIGHT_PX, flexShrink: 0, display: 'grid' }}
-          >
-            <Row {...tileProps(g)} selected={g.id === current} />
+          <Box key={g.id} sx={{ flex: `1 1 ${CARD_MIN_WIDTH_PX}px`, minWidth: 0, display: 'grid' }}>
+            <Row {...tileProps(g)} selected={g.id === current} compact={true} />
           </Box>
         ))}
       </Box>
