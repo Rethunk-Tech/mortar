@@ -84,6 +84,78 @@ function startupRegressions(
   return out.sort((a, b) => b.addedMs - a.addedMs)
 }
 
+/** SMAPI's own mod loading is worth a finding past this time and share of the start; the one measured run (225 mods)
+ * spent 10.8 s, 15%, so both sit well below it while staying clear of run-to-run noise. */
+const SMAPI_FINDING_MS = 5000
+const SMAPI_FINDING_SHARE = 0.1
+const MAJORITY = 0.5
+const MAX_FINDINGS = 3
+
+type Finding =
+  | { kind: 'heavy'; mod: StartupMod; ms: number; titleMs: number; packs: number }
+  | { kind: 'slower'; ms: number }
+  | { kind: 'smapi'; ms: number }
+
+/** Content packs, slowest first, that together make up most of a framework's pack time. */
+function packsBehind(mod: StartupMod): number {
+  const packs = [...(mod.packs ?? [])].sort((a, b) => b.ms - a.ms)
+  const sum = packs.reduce((n, p) => n + p.ms, 0)
+  let running = 0
+  let count = 0
+  for (const p of packs) {
+    if (running >= sum * MAJORITY) {
+      break
+    }
+    running += p.ms
+    count += 1
+  }
+  return count
+}
+
+/** What the selected start says to do, from the data the page already has: the mod that dominates it, a slowdown
+ * since the launch before, and SMAPI's own loading when it is large. */
+function startupFindings(report: StartupReport, previous: StartupReport | undefined): Finding[] {
+  const out: Finding[] = []
+  const titleMs = report.phases.titleScreen
+  const [heaviest] = [...(report.mods ?? [])].sort((a, b) => modTotal(b) - modTotal(a))
+  if (heaviest && modTotal(heaviest) >= SLOW_MOD_MS) {
+    out.push({
+      kind: 'heavy',
+      mod: heaviest,
+      ms: modTotal(heaviest),
+      titleMs,
+      packs: packsBehind(heaviest),
+    })
+  }
+  const before = previous?.phases.titleScreen ?? 0
+  if (titleMs > 0 && before > 0 && titleMs - before >= REGRESSION_MIN_MS) {
+    out.push({ kind: 'slower', ms: titleMs - before })
+  }
+  const smapi = phaseSegments(report.phases).find((s) => s.id === 'smapi')?.ms ?? 0
+  if (smapi >= SMAPI_FINDING_MS && smapi >= titleMs * SMAPI_FINDING_SHARE) {
+    out.push({ kind: 'smapi', ms: smapi })
+  }
+  return out.slice(0, MAX_FINDINGS)
+}
+
+type WhyKind = 'event' | 'assets' | 'entry' | 'sampled'
+
+/** The one thing that costs a mod the most, from its own timings: its slowest event, assets and packs, Entry, or the
+ * sampled time inside its patches. */
+function whyOf(mod: StartupMod): { kind: WhyKind; ms: number; event?: string } | null {
+  const event = slowestEvent(mod)
+  const candidates: { kind: WhyKind; ms: number; event?: string }[] = [
+    { kind: 'event', ms: event?.[1] ?? 0, ...(event ? { event: event[0] } : {}) },
+    { kind: 'assets', ms: mod.assetMs + mod.loadMs },
+    { kind: 'entry', ms: mod.entryMs },
+    { kind: 'sampled', ms: mod.sampleMs },
+  ]
+  const best = candidates.reduce((a, b) => (b.ms > a.ms ? b : a))
+  return best.ms > 0 ? best : null
+}
+
+const rowAnchor = (id: string) => `startup-mod-${id}`
+
 function modTotal(mod: StartupMod): number {
   const events = Object.values(mod.eventMs ?? {}).reduce((n: number, ms) => n + (ms ?? 0), 0)
   return mod.entryMs + mod.assetMs + mod.loadMs + events
@@ -142,14 +214,18 @@ function foldMods(mods: StartupMod[] | null): {
 }
 
 export {
+  type Finding,
   foldMods,
   formatDuration,
   modTotal,
   type PhaseId,
   phaseSegments,
+  rowAnchor,
   type SlowStartup,
   type StartupRegression,
   slowestEvent,
   slowStartups,
+  startupFindings,
   startupRegressions,
+  whyOf,
 }

@@ -292,14 +292,13 @@ A full-height text field fills the tab. Its placeholder explains that notes trav
 
 ## Performance tab
 
-A tab of its own, with a **Startup** / **In game** switch at the top; Startup is shown first.
+One scrolling page with no inner switch, so nothing sits under a second toolbar. Its only toolbar is the header row: the title **Startup** on the left, the run picker (the last 10 launches) and **Measure next launch** on the right; once requested, an info banner above it, **The next launch will be measured**, says what happens, with **Play now** (off while the game runs) and **Cancel**. Below it, in order:
 
-Startup:
-
-- Heading **Title screen after N s** for the chosen launch (a picker lists the last 10 when there is more than one), and **Measure next launch**, which also times every mod's Entry and samples the game on that launch. Once requested, the button gives way to an info banner above the heading, **The next launch will be measured**, saying what happens and where the results appear, with **Play now** (off while the game runs) and **Cancel**.
-- A phase bar with a legend: SMAPI loads mods, Mods start, Game content, First updates, Title intro; hovering a legend entry explains that phase.
-- A sortable table of mods (Mod, Total, Entry, Slowest event, Assets and packs), longest Total first by default. Each header explains itself on hover; clicking a column sorts it descending (Mod sorts A–Z) and a second click flips it. Clicking a mod's name shows it in Mods, and Mortar's bridge row carries a **Mortar** label; a framework's row expands into its content packs by time (25 shown, then a count). After a measured launch a **Sampled** column (also sortable) adds each mod's sampled time, which includes its patches on game code. Mods under 50 ms in both fold into one **N other mods** row, and **Game and SMAPI** holds the unattributed rest.
+- **What to do:** up to three one-line findings computed from the selected run, each with one button: the mod that dominates the start (3 s or more) with **Show packs** or **Show mod**, which expands its row; a slowdown of 1 s or more against the launch before with **Compare**, which scrolls to the table and sorts it by change (a Change column appears); and SMAPI's own mod loading when it takes 5 s and a tenth of the start, with **Show slowest mods**. With none, it says nothing stands out.
+- **Where the time goes:** one row per phase (SMAPI loads mods, Mods start, Game content, First updates, Title intro) with its name, time and a thin primary-colour bar sized against the whole start. Hovering a row explains the phase.
+- **Slowest mods:** a sortable table of Mod, Total and Why, longest Total first by default. Why is one short phrase from the mod's own timings, such as "slow UpdateTicked 19.2 s" or "assets and packs 16.9 s". Each row expands to Entry, Slowest event, Assets and packs, and (after a measured launch) Sampled, plus a framework's content packs by time (25 shown, then a count). Clicking a mod's name shows it in Mods, and Mortar's bridge row carries a **Mortar** label. Mods under 50 ms in both fold into one **N other mods** row, and **Game and SMAPI** holds the unattributed rest.
 - Empty: a timer icon, **No startup measured yet**, and copy that says to play the profile.
+- **In game:** a collapsible section, closed until the profile has saved reports.
 
 In game: performance reports are saved per profile and can be compared from the tab. The comparison shows before/now average milliseconds, signed change and percentage, with new and gone mods called out.
 

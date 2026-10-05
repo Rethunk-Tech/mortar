@@ -9,7 +9,9 @@ import {
   phaseSegments,
   slowestEvent,
   slowStartups,
+  startupFindings,
   startupRegressions,
+  whyOf,
 } from './startupView.ts'
 
 const mod = (
@@ -104,4 +106,39 @@ test('slow startup names plain mods and slow packs, never the framework that loa
     ['mod', 'fs'],
     ['pack', 'rsv'],
   ])
+})
+
+const report = (titleScreen: number, mods: StartupMod[], bridgeEntry = 0): StartupReport =>
+  ({
+    phases: { bridgeEntry, entryDone: 0, gameLaunched: 0, titleMenu: 0, titleScreen },
+    mods,
+  }) as StartupReport
+
+test('findings name the dominant mod, a slowdown and heavy SMAPI loading, in that order', () => {
+  const cp = mod(
+    'cp',
+    { UpdateTicked: 20_000 },
+    {
+      packs: [
+        { id: 'a', name: 'a', ms: 6000 },
+        { id: 'b', name: 'b', ms: 1000 },
+      ] as StartupMod['packs'],
+    },
+  )
+  const found = startupFindings(report(70_000, [cp], 10_000), report(55_000, []))
+  expect(found.map((f) => f.kind)).toEqual(['heavy', 'slower', 'smapi'])
+  expect(found[0]).toMatchObject({ ms: 20_000, packs: 1 })
+  expect(startupFindings(report(30_000, [mod('x', { A: 100 })], 1000), report(29_800, []))).toEqual(
+    [],
+  )
+})
+
+test("why is the biggest of a mod's own costs", () => {
+  expect(whyOf(mod('a', { UpdateTicked: 19_200 }, { assetMs: 16_900 }))).toEqual({
+    kind: 'event',
+    ms: 19_200,
+    event: 'UpdateTicked',
+  })
+  expect(whyOf(mod('b', {}, { loadMs: 40, assetMs: 60 }))?.kind).toBe('assets')
+  expect(whyOf(mod('c', {}))).toBeNull()
 })

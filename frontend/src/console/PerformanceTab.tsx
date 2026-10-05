@@ -1,29 +1,44 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box } from '@mui/material'
+import { Box, ButtonBase, Collapse, Typography } from '@mui/material'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
-import { TabPills } from '../share/TabPills.tsx'
+import { useProfiles } from '../profiles/store.ts'
 import { PerformancePanel } from './PerformancePanel.tsx'
 import { StartupPanel } from './StartupPanel.tsx'
+import { useSavedReports } from './usePerformancePanel.ts'
 
-type View = 'startup' | 'inGame'
+// The in-game reports are saved per profile, so a profile with none starts with the section closed.
+function InGame({ game }: { game: string }) {
+  const { t } = useLingui()
+  const openId = useProfiles((s) => s.openId)
+  const [saved] = useSavedReports(game, openId)
+  const [choice, setChoice] = useState<boolean | null>(null)
+  const open = choice ?? saved.length > 0
+  return (
+    <Box component="section">
+      <ButtonBase
+        aria-expanded={open}
+        onClick={() => setChoice(!open)}
+        sx={{ gap: 0.75, borderRadius: '4px', justifyContent: 'flex-start' }}
+      >
+        {open ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+        <Typography component="h3" sx={{ fontSize: 18, fontWeight: 600 }}>
+          {t`In game`}
+        </Typography>
+      </ButtonBase>
+      <Collapse in={open} unmountOnExit={true}>
+        <PerformancePanel game={game} />
+      </Collapse>
+    </Box>
+  )
+}
 
 export function PerformanceTab({ game }: { game: string }) {
-  const { t } = useLingui()
-  const [view, setView] = useState<View>('startup')
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ px: 2, pt: 1.5, display: 'flex' }}>
-        <TabPills
-          value={view}
-          onChange={setView}
-          label={t`Performance view`}
-          options={[
-            { value: 'startup', label: t`Startup` },
-            { value: 'inGame', label: t`In game` },
-          ]}
-        />
-      </Box>
-      {view === 'startup' ? <StartupPanel game={game} /> : <PerformancePanel game={game} />}
+    <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+      <StartupPanel game={game}>
+        <InGame game={game} />
+      </StartupPanel>
     </Box>
   )
 }
