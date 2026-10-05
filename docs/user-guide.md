@@ -1,6 +1,6 @@
 # Mortar user guide
 
-Mortar manages mods for Stardew Valley. It finds the game, installs SMAPI (the mod loader every Stardew mod needs), keeps each set of mods in its own profile and starts the game with the profile you pick. This guide is for players. For how Mortar works inside, see [architecture.md](architecture.md).
+Mortar manages mods for PC games; Stardew Valley is the game it supports today. It finds the game, installs its mod loader (SMAPI for Stardew Valley), keeps each set of mods in its own profile and starts the game with the profile you pick. This guide is for players. For how Mortar works inside, see [architecture.md](architecture.md).
 
 ## Install
 
