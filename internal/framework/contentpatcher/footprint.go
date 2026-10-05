@@ -170,6 +170,41 @@ func shapeIndex(shapes []cpShape) *shapeSet {
 	return set
 }
 
+// shapeSummary is what a pack's edits touch, so a pair that touches nothing in common skips the edit-by-edit check.
+type shapeSummary struct {
+	props map[string]struct{}
+	rest  bool
+}
+
+func summarize(index []*shapeSet) shapeSummary {
+	s := shapeSummary{props: map[string]struct{}{}}
+	for _, set := range index {
+		for k := range set.props {
+			s.props[k] = struct{}{}
+		}
+		s.rest = s.rest || len(set.rest) > 0
+	}
+	return s
+}
+
+// mayOverlap is false only when no shape of one pack can overlap a shape of the other: property shapes overlap only
+// on the same key, and every other shape only another non-property shape.
+func (s shapeSummary) mayOverlap(o shapeSummary) bool {
+	if s.rest && o.rest {
+		return true
+	}
+	small, large := s.props, o.props
+	if len(small) > len(large) {
+		small, large = large, small
+	}
+	for k := range small {
+		if _, ok := large[k]; ok {
+			return true
+		}
+	}
+	return false
+}
+
 func (set *shapeSet) overlaps(shapes []cpShape) bool {
 	for _, x := range shapes {
 		others := set.rest
@@ -1494,9 +1529,23 @@ func exclusive(a, b cpPatch) bool {
 // editsClash reports whether any active edit of one pack can overwrite one of the other's, and whether every
 // such overlap is harmless (see harmless).
 func editsClash(a, b []cpPatch) (clash, minor bool) {
+	return editsClashIndexed(a, b, indexesOf(b))
+}
+
+// indexesOf is the shape index of each patch, looked up once so a pair loop does not repeat it per comparison.
+func indexesOf(patches []cpPatch) []*shapeSet {
+	out := make([]*shapeSet, len(patches))
+	for i, p := range patches {
+		out[i] = shapeIndex(p.shapes)
+	}
+	return out
+}
+
+// editsClashIndexed is editsClash with bIndex[i] the shape index of b[i].
+func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet) (clash, minor bool) {
 	minor = true
 	for _, x := range a {
-		for _, y := range b {
+		for j, y := range b {
 			if mapOverlayHasUnknownLayer(x, y) {
 				continue
 			}
@@ -1509,7 +1558,7 @@ func editsClash(a, b []cpPatch) (clash, minor bool) {
 			if exclusive(x, y) {
 				continue
 			}
-			if shapeIndex(y.shapes).overlaps(x.shapes) {
+			if bIndex[j].overlaps(x.shapes) {
 				clash = true
 				// One overlap that matters settles it: nothing later can make the pair minor again.
 				if !harmless(x, y) {

@@ -2022,12 +2022,18 @@ func fallbackLoad(h packHit, load cpPatch, other packHit, otherLoad cpPatch) boo
 func clashing(hits []packHit) (out []packHit, cosmetic bool) {
 	in := make([]bool, len(hits))
 	cosmetic = true
+	indexes := make([][]*shapeSet, len(hits))
+	summaries := make([]shapeSummary, len(hits))
+	for i := range hits {
+		indexes[i] = indexesOf(hits[i].edits)
+		summaries[i] = summarize(indexes[i])
+	}
 	for i := range hits {
 		for j := i + 1; j < len(hits); j++ {
-			if aware(hits[i], hits[j]) {
+			if aware(hits[i], hits[j]) || !summaries[i].mayOverlap(summaries[j]) {
 				continue
 			}
-			clash, minor := editsClash(hits[i].edits, hits[j].edits)
+			clash, minor := editsClashIndexed(hits[i].edits, hits[j].edits, indexes[j])
 			if !clash {
 				continue
 			}
