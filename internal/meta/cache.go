@@ -147,3 +147,20 @@ type StatusError struct {
 }
 
 func (e *StatusError) Error() string { return fmt.Sprintf("server answered %s", e.Status) }
+
+// Fresh reports whether the entry at name exists and is younger than ttl.
+func Fresh[T any](c *Client, name string, ttl time.Duration) bool {
+	path, err := c.cachePath(name)
+	if err != nil {
+		return false
+	}
+	e, ok := readEntry[T](path)
+	return ok && c.now().Sub(e.Fetched) < ttl
+}
+
+// Put stores value at name as if it had just been fetched.
+func Put[T any](c *Client, name string, value T) {
+	if path, err := c.cachePath(name); err == nil {
+		writeEntry(path, entry[T]{Fetched: c.now(), Value: value})
+	}
+}

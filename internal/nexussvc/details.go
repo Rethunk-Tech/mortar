@@ -23,6 +23,8 @@ type Details struct {
 	Category   string            `json:"category"`
 	Files      []nexus.File      `json:"files"`
 	Changelogs []nexus.Changelog `json:"changelogs"`
+	// Partial marks details from the batched lookup: the page's headline data only, with no files or changelogs.
+	Partial bool `json:"partial,omitempty"`
 }
 
 // Details returns a mod page's details from the cache under <datadir>/cache/nexus

@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -260,5 +261,53 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	s.sso = nexussso.Legacy{}
 	if s.SSOAvailable() {
 		t.Fatal("SSO available with neither flag")
+	}
+}
+
+func TestPrimeDetailsAsksOncePerHundredMods(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/users/validate.json" {
+			_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":false}`))
+			return
+		}
+		requests.Add(1)
+		var in struct {
+			Variables struct {
+				IDs []struct {
+					ModID int `json:"modId"`
+				} `json:"ids"`
+			} `json:"variables"`
+		}
+		_ = json.NewDecoder(r.Body).Decode(&in)
+		var nodes []string
+		for _, id := range in.Variables.IDs {
+			nodes = append(nodes, `{"modId":`+strconv.Itoa(id.ModID)+`,"name":"Mod","version":"2.0","status":"published","category":"Misc","endorsements":3}`)
+		}
+		_, _ = w.Write([]byte(`{"data":{"legacyModsByDomain":{"nodes":[` + strings.Join(nodes, ",") + `]}}}`))
+	}))
+	t.Cleanup(srv.Close)
+	store := testStore(t)
+	c := nexus.New("1")
+	c.BaseURL = srv.URL
+	s := NewService(store, c, &meta.Client{CacheDir: t.TempDir()})
+	ctx := context.Background()
+	if _, err := s.SignIn(ctx, "k"); err != nil {
+		t.Fatal(err)
+	}
+	ids := make([]int, 800)
+	for i := range ids {
+		ids[i] = i + 1
+	}
+	got, err := s.PrimeDetails(ctx, "lethal-company", ids)
+	if err != nil || len(got) != 800 || !got[5].Partial || got[5].Page.Version != "2.0" || got[5].Category != "Misc" {
+		t.Fatalf("got %d, %v, %+v", len(got), err, got[5])
+	}
+	if requests.Load() > 8 {
+		t.Fatalf("800 mods cost %d requests", requests.Load())
+	}
+	before := requests.Load()
+	if _, err := s.PrimeDetails(ctx, "lethal-company", ids); err != nil || requests.Load() != before {
+		t.Fatalf("a fresh cache must not be asked again: %d requests, %v", requests.Load()-before, err)
 	}
 }
