@@ -103,3 +103,26 @@ func TestPackFilesLandUnderBepInEx(t *testing.T) {
 		t.Fatalf("files = %v", got)
 	}
 }
+
+func TestLocalProfilesListsTheGamesR2modmanProfiles(t *testing.T) {
+	cfg := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", cfg)
+	t.Setenv("APPDATA", cfg)
+	profiles := filepath.Join(cfg, "r2modmanPlus-local", "LethalCompany", "profiles")
+	if err := os.MkdirAll(filepath.Join(profiles, "Friends"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(profiles, "Friends", "mods.yml"), []byte("- name: Ns-Mod\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(profiles, "Empty"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	got, err := (&Service{}).LocalProfiles("lethal-company")
+	if err != nil || len(got) != 1 || got[0].Name != "Friends" || got[0].Path != filepath.Join(profiles, "Friends") {
+		t.Fatalf("LocalProfiles = %+v, %v", got, err)
+	}
+	if got, _ := (&Service{}).LocalProfiles("stardew"); len(got) != 0 {
+		t.Fatalf("a game r2modman does not know: %+v", got)
+	}
+}

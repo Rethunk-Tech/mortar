@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -74,6 +76,36 @@ type Result struct {
 func (s *Service) read(ctx context.Context, src Source) (pack.Draft, error) {
 	return pack.Read(ctx, pack.Input{Path: src.Path, Text: src.Text},
 		s.Code, pack.Profile{GameByFolder: game.ByR2modmanFolder}, pack.Modpack{})
+}
+
+// LocalProfile is a profile folder of r2modman or the Thunderstore Mod Manager on this computer.
+type LocalProfile struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
+}
+
+// LocalProfiles lists the game's profiles in the r2modman data folders found on this computer: the folders below
+// <data>/<the game's r2modman folder>/profiles that hold a mods.yml. Pass a profile's Path as Source.Path.
+func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
+	info, ok := components.BundledGame(gameID)
+	if !ok || info.R2modmanFolder == "" {
+		return []LocalProfile{}, nil
+	}
+	out := []LocalProfile{}
+	for _, data := range pack.DataDirs() {
+		root := filepath.Join(data, info.R2modmanFolder, "profiles")
+		entries, err := os.ReadDir(root)
+		if err != nil {
+			continue
+		}
+		for _, e := range entries {
+			dir := filepath.Join(root, e.Name())
+			if pack.IsProfileFolder(dir) {
+				out = append(out, LocalProfile{Name: e.Name(), Path: dir})
+			}
+		}
+	}
+	return out, nil
 }
 
 // Preview reads the pack without importing it.
