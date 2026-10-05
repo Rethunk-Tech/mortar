@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -237,11 +238,12 @@ func updateSource(u meta.Update, nexusID int, githubRepo string) string {
 	}
 	if parsed, err := url.Parse(u.URL); err == nil {
 		host := strings.TrimPrefix(strings.ToLower(parsed.Hostname()), "www.")
+		if name, ok := source.NameOfHost(host); ok {
+			return name
+		}
 		switch host {
 		case "curseforge.com", "minecraft.curseforge.com":
 			return "CurseForge"
-		case "moddrop.com":
-			return "ModDrop"
 		case "chucklefish.com":
 			return "Chucklefish"
 		}

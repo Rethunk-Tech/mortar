@@ -14,10 +14,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source"
+	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -707,8 +710,23 @@ func siteURL(domain string, r meta.Ref) string {
 		return nexus.ModURL(domain, r.ID)
 	case "curseforge":
 		return "https://www.curseforge.com/projects/" + strconv.Itoa(r.ID)
-	case "moddrop":
-		return "https://www.moddrop.com/stardew-valley/mods/" + strconv.Itoa(r.ID)
+	}
+	return pageLink(domain, r)
+}
+
+// pageLink asks the ref's registered source for the mod page under the game's key for that source.
+func pageLink(domain string, r meta.Ref) string {
+	entry, ok := source.Get(r.Site)
+	linker, canLink := entry.Source.(source.PageLinker)
+	if !ok || !canLink {
+		return ""
+	}
+	for _, g := range game.Catalog() {
+		if g.NexusDomain() == domain {
+			if gs, listed := g.Source(entry.Source.ID()); listed {
+				return linker.ModPageURL(gs.Key, r.ID)
+			}
+		}
 	}
 	return ""
 }

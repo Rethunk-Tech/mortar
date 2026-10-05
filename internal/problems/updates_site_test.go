@@ -43,3 +43,12 @@ func TestUnbumpedManifestInsideNewerDownloadIsNotAnUpdate(t *testing.T) {
 		t.Fatalf("got %+v", got)
 	}
 }
+
+func TestSiteURLBuildsModDropLinkFromCatalogKey(t *testing.T) {
+	if got := siteURL("stardewvalley", meta.Ref{Site: "ModDrop", ID: 5}); got != "https://www.moddrop.com/stardew-valley/mods/5" {
+		t.Fatalf("got %q", got)
+	}
+	if got := siteURL("unlistedgame", meta.Ref{Site: "ModDrop", ID: 5}); got != "" {
+		t.Fatalf("a game without a ModDrop key should give no link, got %q", got)
+	}
+}
