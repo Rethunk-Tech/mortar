@@ -1,4 +1,10 @@
-import { alpha, createTheme, responsiveFontSizes, type Theme } from '@mui/material/styles'
+import {
+  alpha,
+  type Components,
+  createTheme,
+  responsiveFontSizes,
+  type Theme,
+} from '@mui/material/styles'
 import { compact } from '../game/compact.ts'
 import { type AccentName, accents } from './accents.ts'
 import { mortarPalette, surfaceCssVars, surfaces, type ThemeMode } from './palette.ts'
@@ -79,6 +85,24 @@ function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode) {
     ':focus-visible': {
       outline: `${FOCUS_OUTLINE_PX}px solid ${main}`,
       outlineOffset: FOCUS_OUTLINE_PX,
+    },
+  }
+}
+
+// A checked mark is a glyph, so it reads as ink; the switch track is a fill, so it shows the full accent.
+function lightControls(ink: string): Components<Theme> {
+  return {
+    MuiIconButton: { styleOverrides: { colorPrimary: { color: ink } } },
+    MuiRadio: { styleOverrides: { colorPrimary: { '&.Mui-checked': { color: ink } } } },
+    MuiCheckbox: {
+      styleOverrides: { colorPrimary: { '&.Mui-checked': { color: ink } } },
+    },
+    MuiSwitch: {
+      styleOverrides: {
+        switchBase: { '&.Mui-checked': { color: '#ffffff' } },
+        track: { '.Mui-checked.Mui-checked + &': { opacity: 1 } },
+        thumb: { boxShadow: '0 1px 2px rgba(0,0,0,0.3)' },
+      },
     },
   }
 }
@@ -195,23 +219,7 @@ export function createMortarTheme(
             : []),
         ],
       },
-      ...(mode === 'light'
-        ? {
-            MuiIconButton: { styleOverrides: { colorPrimary: { color: s.ink } } },
-            // A checked mark is a glyph, so it reads as ink; the switch track is a fill, so it shows the full accent.
-            MuiRadio: { styleOverrides: { colorPrimary: { '&.Mui-checked': { color: s.ink } } } },
-            MuiCheckbox: {
-              styleOverrides: { colorPrimary: { '&.Mui-checked': { color: s.ink } } },
-            },
-            MuiSwitch: {
-              styleOverrides: {
-                switchBase: { '&.Mui-checked': { color: '#ffffff' } },
-                track: { '.Mui-checked.Mui-checked + &': { opacity: 1 } },
-                thumb: { boxShadow: '0 1px 2px rgba(0,0,0,0.3)' },
-              },
-            },
-          }
-        : {}),
+      ...(mode === 'light' ? lightControls(s.ink) : {}),
       MuiChip: { styleOverrides: { label: { whiteSpace: 'nowrap' } } },
       MuiLink: {
         styleOverrides: {
