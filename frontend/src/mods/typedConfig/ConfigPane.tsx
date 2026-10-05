@@ -1,0 +1,195 @@
+import { useLingui } from '@lingui/react/macro'
+import {
+  Alert,
+  Box,
+  Button,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemText,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import { CircleHelp, RotateCcw, X } from 'lucide-react'
+import { useState } from 'react'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { SearchField } from '../../shell/SearchField.tsx'
+import { filterFile, isModified, modifiedCount } from './entries.ts'
+import { useTypedConfig } from './store.ts'
+import type { ConfigEntry } from './types.ts'
+import { EntryWidget } from './Widgets.tsx'
+
+const FILES_WIDTH_PX = 220
+
+function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
+  const { t } = useLingui()
+  const set = useTypedConfig((s) => s.set)
+  const reset = useTypedConfig((s) => s.reset)
+  const error = useTypedConfig((s) => s.errors[`${s.current}/${section}/${entry.key}`] ?? '')
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr) auto 28px',
+        alignItems: 'center',
+        columnGap: 1.5,
+        minHeight: 48,
+        px: 1.5,
+        py: 0.5,
+        borderRadius: '6px',
+        bgcolor: 'var(--mortar-overlay-30)',
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+        <Typography sx={{ overflowWrap: 'anywhere' }}>{entry.label || entry.key}</Typography>
+        {entry.description ? (
+          <Tooltip title={entry.description}>
+            <Box
+              component="span"
+              aria-label={t`About ${entry.key}`}
+              sx={{ display: 'flex', color: 'text.secondary' }}
+            >
+              <CircleHelp size={14} />
+            </Box>
+          </Tooltip>
+        ) : null}
+      </Box>
+      <EntryWidget
+        entry={entry}
+        label={entry.label || entry.key}
+        onChange={(v) => set(section, entry.key, v)}
+      />
+      {isModified(entry) ? (
+        <Tooltip title={t`Reset to default`}>
+          <IconButton
+            size="small"
+            aria-label={t`Reset ${entry.key} to its default`}
+            onClick={() => reset(section, entry.key)}
+          >
+            <RotateCcw size={14} />
+          </IconButton>
+        </Tooltip>
+      ) : (
+        <span />
+      )}
+      {error ? (
+        <Typography role="alert" sx={{ gridColumn: '1 / -1', fontSize: 12, color: 'error.main' }}>
+          {t`Could not save: ${error}`}
+        </Typography>
+      ) : null}
+    </Box>
+  )
+}
+
+// The full-pane editor of one mod's config files, over the Mods tab.
+export function ConfigPane() {
+  const { t } = useLingui()
+  const { mod, files, current, loadError } = useTypedConfig()
+  const close = useTypedConfig((s) => s.close)
+  const select = useTypedConfig((s) => s.select)
+  const resetAll = useTypedConfig((s) => s.resetAll)
+  const [query, setQuery] = useState('')
+  const [confirming, setConfirming] = useState(false)
+  if (!mod) {
+    return null
+  }
+  const file = files.find((f) => f.name === current)
+  const shown = file ? filterFile(file, query) : null
+  return (
+    <Box
+      aria-label={t`Config of ${mod.name}`}
+      role="region"
+      sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1 }}>
+        <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, flex: 1 }}>
+          {t`Config of ${mod.name}`}
+        </Typography>
+        <SearchField
+          label={t`Search entries`}
+          value={query}
+          onChange={setQuery}
+          sx={{ width: 260 }}
+        />
+        <Button
+          variant="outlined"
+          size="small"
+          disabled={!file || modifiedCount(file) === 0}
+          onClick={() => setConfirming(true)}
+        >
+          {t`Reset all`}
+        </Button>
+        <IconButton aria-label={t`Close config editor`} onClick={close}>
+          <X size={18} />
+        </IconButton>
+      </Box>
+      {loadError ? (
+        <Alert severity="error" sx={{ mx: 2 }}>
+          {loadError}
+        </Alert>
+      ) : null}
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        <List
+          aria-label={t`Config files`}
+          sx={{
+            width: FILES_WIDTH_PX,
+            flexShrink: 0,
+            overflowY: 'auto',
+            borderRight: '1px solid var(--mortar-hairline)',
+          }}
+        >
+          {files.map((f) => (
+            <ListItemButton
+              key={f.name}
+              selected={f.name === current}
+              onClick={() => select(f.name)}
+            >
+              <ListItemText primary={f.label || f.name} slotProps={{ primary: { noWrap: true } }} />
+            </ListItemButton>
+          ))}
+        </List>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            overflowY: 'auto',
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+          }}
+        >
+          {shown?.sections.map((section) => (
+            <Box
+              key={section.name}
+              component="section"
+              sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+            >
+              <Typography component="h3" sx={{ fontSize: 16, fontWeight: 600, mt: 1 }}>
+                {section.name}
+              </Typography>
+              {section.entries.map((entry) => (
+                <EntryRow key={entry.key} section={section.name} entry={entry} />
+              ))}
+            </Box>
+          ))}
+          {shown && shown.sections.length === 0 ? (
+            <Typography sx={{ color: 'text.secondary' }}>{t`No entries match.`}</Typography>
+          ) : null}
+        </Box>
+      </Box>
+      <ConfirmDialog
+        open={confirming}
+        title={t`Reset all entries?`}
+        body={t`Every entry in ${current} goes back to its default.`}
+        confirmLabel={t`Reset all`}
+        color="warning"
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => {
+          setConfirming(false)
+          resetAll().catch(() => undefined)
+        }}
+      />
+    </Box>
+  )
+}

@@ -28,7 +28,6 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
-import { EditConfigButton } from './ConfigEditor.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
@@ -62,6 +61,7 @@ import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { ResizableAside } from './ResizableAside.tsx'
 import { useMods } from './store.ts'
+import { useTypedConfig } from './typedConfig/store.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { useUpdates } from './updates.ts'
 
@@ -376,7 +376,21 @@ function ActionRows({ mod, nexus }: { mod: Mod; nexus: boolean }) {
       {hasConfig ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography sx={{ flex: 1, fontSize: 13 }}>{t`Config`}</Typography>
-          <EditConfigButton mod={mod} />
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => {
+              const { game, openId } = useProfiles.getState()
+              if (game && openId) {
+                useTypedConfig
+                  .getState()
+                  .open(mod, { game: game.id, profile: openId, key: mod.key, id: mod.id })
+                  .catch(reportUnexpected)
+              }
+            }}
+          >
+            {t`Edit config`}
+          </Button>
         </Box>
       ) : null}
       {nexus ? (
