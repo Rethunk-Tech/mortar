@@ -542,7 +542,7 @@ func run() error {
 	problemsSvc.Runs = launches
 	problemsSvc.Throttle = queueSvc.SourceSlot
 	problemsSvc.NexusPages = func(ctx context.Context, gameID string, ids []int) (map[int]nexus.Page, error) {
-		details, err := nexusSvc.PrimeDetails(ctx, gameID, ids)
+		details, err := nexusSvc.Prime(ctx, gameID, ids)
 		pages := make(map[int]nexus.Page, len(details))
 		for id, d := range details {
 			pages[id] = d.Page

@@ -21,12 +21,34 @@ func absentName(domain string, modID int) string {
 
 type absent struct{}
 
+// Primed is what PrimeDetails holds for the mods it was asked about. Error says why the rest could not be fetched
+// (offline, rate limited, signed out), "" when nothing failed; the details found are kept either way.
+type Primed struct {
+	Details map[int]Details `json:"details"`
+	Error   string          `json:"error,omitempty"`
+}
+
+// PrimeDetails is Prime for the window, which keeps what arrived when the rest could not be fetched.
+func (s *Service) PrimeDetails(ctx context.Context, gameID string, modIDs []int) (Primed, error) {
+	if _, err := game.NexusTitle(gameID); err != nil {
+		return Primed{}, err
+	}
+	d, err := s.Prime(ctx, gameID, modIDs)
+	out := Primed{Details: d}
+	if err != nil {
+		out.Error = err.Error()
+	}
+	return out, nil
+}
+
 // PrimeDetails fills the page data of many mods at once: whatever is cached and fresh is kept, and the rest comes
 // from one GraphQL request per 100 mods, so a list of hundreds costs a handful of requests instead of several each.
 // It returns the best details held for each mod, which are partial (the page's headline data, no files or
 // changelogs) unless the full details were cached; Details fills in the rest when a mod is opened. A rate limit or
 // a signed-out account ends the lookup and returns what the cache has with the error.
-func (s *Service) PrimeDetails(ctx context.Context, gameID string, modIDs []int) (map[int]Details, error) {
+//
+//wails:ignore
+func (s *Service) Prime(ctx context.Context, gameID string, modIDs []int) (map[int]Details, error) {
 	t, err := game.NexusTitle(gameID)
 	if err != nil {
 		return nil, err

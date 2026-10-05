@@ -49,7 +49,9 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/ser
   },
   PrimeDetails: async (_game: string, ids: number[]) => {
     primes.push(ids)
-    return Object.fromEntries(ids.map((id) => [`${id}`, { ...page(id), partial: true }]))
+    return {
+      details: Object.fromEntries(ids.map((id) => [`${id}`, { ...page(id), partial: true }])),
+    }
   },
   Seen: async () => ({}),
   MarkSeen: async () => undefined,

@@ -1,5 +1,7 @@
+import { Events } from '@wailsio/runtime'
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
+import { States } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import {
   CachedDetails,
@@ -127,15 +129,37 @@ const primeDetails = async (ids: number[]) => {
   for (const id of unknown) {
     primeInFlight.add(id)
   }
-  // Only an answer settles an id: a request that failed (offline, rate limited) leaves it to be asked again.
+  watchNexusReachable()
+  // Only an answer settles an id: one the request could not fetch (offline, rate limited) is asked again, here or
+  // when Nexus is reachable again. What did arrive is kept either way.
   const got = await PrimeDetails(currentGame(), unknown).catch(() => null)
+  const found = got?.details ?? {}
   for (const id of unknown) {
     primeInFlight.delete(id)
-    if (got) {
+    if (got && (!got.error || found[`${id}`])) {
       primeAsked.add(id)
     }
   }
-  addDetails(unknown, got ?? {})
+  addDetails(unknown, found)
+}
+
+let watching = false
+
+// The mods a failed prime left out are asked for again the moment Nexus answers again.
+function watchNexusReachable() {
+  if (!watching) {
+    watching = true
+    Events.On('netstate:changed', () => {
+      nexusChanged().catch(reportUnexpected)
+    })
+  }
+}
+
+async function nexusChanged() {
+  const states = await States()
+  if (states?.some((st) => st.id === 'nexus' && !st.unreachable)) {
+    await primeDetails(primed)
+  }
 }
 
 // Whether the entry holds a mod's whole details, not just the batched page data.
@@ -269,6 +293,7 @@ export {
   isFull,
   isNewSinceLooked,
   loadDetails,
+  nexusChanged,
   primeDetails,
   useLookedSnapshot,
   useNexusDetails,

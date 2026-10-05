@@ -266,9 +266,14 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 
 func TestPrimeDetailsAsksOncePerHundredMods(t *testing.T) {
 	var requests atomic.Int32
+	var down atomic.Bool
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/v1/users/validate.json" {
 			_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":false}`))
+			return
+		}
+		if down.Load() {
+			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
 		requests.Add(1)
@@ -299,7 +304,7 @@ func TestPrimeDetailsAsksOncePerHundredMods(t *testing.T) {
 	for i := range ids {
 		ids[i] = i + 1
 	}
-	got, err := s.PrimeDetails(ctx, "lethal-company", ids)
+	got, err := s.Prime(ctx, "lethal-company", ids)
 	if err != nil || len(got) != 800 || !got[5].Partial || got[5].Page.Version != "2.0" || got[5].Category != "Misc" {
 		t.Fatalf("got %d, %v, %+v", len(got), err, got[5])
 	}
@@ -307,8 +312,14 @@ func TestPrimeDetailsAsksOncePerHundredMods(t *testing.T) {
 		t.Fatalf("800 mods cost %d requests", requests.Load())
 	}
 	before := requests.Load()
-	if _, err := s.PrimeDetails(ctx, "lethal-company", ids); err != nil || requests.Load() != before {
+	if _, err := s.Prime(ctx, "lethal-company", ids); err != nil || requests.Load() != before {
 		t.Fatalf("a fresh cache must not be asked again: %d requests, %v", requests.Load()-before, err)
+	}
+	// Nexus fails for the one new mod: the window still gets the 800 it has, with the reason for the rest.
+	down.Store(true)
+	primed, err := s.PrimeDetails(ctx, "lethal-company", append(ids, 801))
+	if err != nil || len(primed.Details) != 800 || primed.Error == "" {
+		t.Fatalf("a failed fetch: %d details, error %q, %v", len(primed.Details), primed.Error, err)
 	}
 }
 
@@ -331,7 +342,7 @@ func TestPrimeDetailsDoesNotAskAgainForAModNexusDoesNotReturn(t *testing.T) {
 		t.Fatal(err)
 	}
 	for range 3 {
-		if got, err := s.PrimeDetails(ctx, "lethal-company", []int{9999}); err != nil || len(got) != 0 {
+		if got, err := s.Prime(ctx, "lethal-company", []int{9999}); err != nil || len(got) != 0 {
 			t.Fatalf("got %v, %v", got, err)
 		}
 	}
