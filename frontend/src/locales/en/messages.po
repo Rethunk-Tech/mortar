@@ -3867,8 +3867,8 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 
 #: src/firstrunTour/TourAgainButton.tsx:16
 #: src/firstrunTour/useFirstRunTour.ts:43
-#: src/settings/PrefControls.tsx:181
-#: src/settings/PrefControls.tsx:232
+#: src/settings/PrefControls.tsx:182
+#: src/settings/PrefControls.tsx:233
 #: src/settings/PrefRow.tsx:38
 #: src/settings/sections/Appearance.tsx:43
 #: src/settings/sections/Appearance.tsx:66
@@ -8371,7 +8371,7 @@ msgstr "Recent changes"
 msgid "Delete the template {0}?"
 msgstr "Delete the template {0}?"
 
-#: src/settings/PrefControls.tsx:222
+#: src/settings/PrefControls.tsx:223
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
 
