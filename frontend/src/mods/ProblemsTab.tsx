@@ -1,21 +1,10 @@
-import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Link, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
-import {
-  ChevronDown,
-  ChevronRight,
-  Copy,
-  Info,
-  Map as MapIcon,
-  ShieldCheck,
-  TriangleAlert,
-} from 'lucide-react'
+import { Copy, Map as MapIcon, ShieldCheck } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
-import { useTab } from '../game/tab.ts'
-import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
@@ -26,263 +15,29 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { type SectionAction, SectionStrip } from '../shell/SectionStrip.tsx'
-import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { AssetMapDialog } from './AssetMapDialog.tsx'
 import { CleanupSection } from './CleanupSection.tsx'
 import { CompatSection } from './CompatSection.tsx'
-import { ConflictWhy } from './ConflictWhy.tsx'
 import { compatReportChunks } from './compatChip.ts'
-import { useDescribe, useDescribeDrift } from './describe.ts'
 import { LockedNote } from './LockedNote.tsx'
-import { LinkedText } from './ModLinks.tsx'
-import { modLinksOf } from './modLinks.ts'
-import { DriftButtons, FixButton } from './problemFixButtons.tsx'
-import {
-  type DismissedRow,
-  isInfoRow,
-  type ProblemSectionId,
-  problemSections,
-  type Row,
-} from './problemGroups.ts'
+import { ProblemRows } from './ProblemRows.tsx'
+import { problemSections, type Row } from './problemGroups.ts'
 import { formatProblemReport, whyKeysOf } from './problemReport.ts'
 import { chosenSection, type SectionTab, useProblemSection } from './problemSection.ts'
+import { ERROR_SECTIONS, isDismissedRow, useRowText, useSectionTitle } from './problemText.ts'
 import { useRedundantRows } from './redundantReason.ts'
 import { CheckTimings, SlowStartupSection } from './SlowStartupSection.tsx'
 import { useSlowStartups } from './slowStartups.ts'
 import { useMods } from './store.ts'
 import { useLoadProblemsOnFocus } from './useLoadProblemsOnFocus.ts'
 
-// What is broken, as against advice such as harmless overlaps or cleanup.
-const ERROR_SECTIONS = new Set<string>([
-  'missing',
-  'broken',
-  'damaged',
-  'runErrors',
-  'loadFailures',
-  'pluginClashes',
-])
-
-const isDismissedRow = (row: Row | DismissedRow): row is DismissedRow => 'row' in row
-
-function useSectionTitle() {
-  const { t } = useLingui()
-  return (id: ProblemSectionId) => {
-    switch (id) {
-      case 'missing':
-        return t`Missing requirements`
-      case 'conflicts':
-        return t`Conflicts`
-      case 'broken':
-        return t`Broken or outdated mods`
-      case 'damaged':
-        return t`Damaged files`
-      case 'runErrors':
-        return t`Errors in the last run`
-      case 'loadFailures':
-        return t`Failed to load`
-      case 'pluginClashes':
-        return t`Plugins shipped twice`
-      case 'drift':
-        return t`Changed outside Mortar`
-      case 'duplicates':
-        return t`Duplicates`
-      case 'deprecated':
-        return t`Deprecated packages`
-      case 'settings':
-        return t`Settings`
-      case 'cosmetic':
-        return t`Cosmetic or harmless`
-      case 'dismissed':
-        return t`Dismissed`
-      default:
-        return ''
-    }
-  }
-}
-
-// useRowText is a row's sentence and the author's note shown under it, shared by the list and Copy all.
-function useRowText() {
-  const describe = useDescribe()
-  const describeDrift = useDescribeDrift()
-  return (row: Row) => {
-    let note = ''
-    if (row.kind === 'missing' && row.missing.listed) {
-      note = row.missing.note.trim()
-    } else if (row.kind === 'setting') {
-      note = row.setting.description.trim()
-    } else if (row.kind === 'loadFailure') {
-      note = loadKindText(row.loadFailure.kind)
-    }
-    let text = row.kind === 'drift' ? describeDrift(row.drift) : describe(row)
-    if (note !== '' && text.endsWith(`: ${note}`)) {
-      text = text.slice(0, -(note.length + 2))
-    }
-    return { text, note }
-  }
-}
-
-function loadKindText(kind: string): string {
-  switch (kind) {
-    case 'missing-dependency':
-      return i18n._(msg`Missing dependency`)
-    case 'incompatible-version':
-      return i18n._(msg`Incompatible version`)
-    case 'load-exception':
-      return i18n._(msg`Error while loading`)
-    case 'patch-exception':
-      return i18n._(msg`Error in a patch`)
-    case 'preloader-patch':
-      return i18n._(msg`Error in a preloader patch`)
-    case 'game-version':
-      return i18n._(msg`Game version not supported`)
-    case 'unity-exception':
-      return i18n._(msg`Unity exception`)
-    default:
-      return kind
-  }
-}
-
-function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) {
-  const { t } = useLingui()
-  const info = isInfoRow(row)
-  const { text, note: authorNote } = useRowText()(row)
-  const [why, setWhy] = useState(false)
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 1.25,
-        flexShrink: 0,
-        pl: 1.5,
-        pr: 0.75,
-        py: 1,
-        fontSize: 14,
-        // Light mode keeps cards on opaque paper (a tint over the wallpaper reads as grey); the warning border and icon
-        // still set conflicts apart.
-        bgcolor: (theme) => {
-          if (theme.palette.mode === 'light') {
-            return theme.palette.background.paper
-          }
-          return info ? 'var(--mortar-overlay-45)' : calloutFill('warning')(theme)
-        },
-        border: '1px solid',
-        borderColor: info ? 'transparent' : calloutLine('warning'),
-        borderRadius: '6px',
-        ...(dismissed ? { opacity: 0.75 } : {}),
-      }}
-    >
-      <Box
-        component="span"
-        sx={{
-          display: 'flex',
-          flexShrink: 0,
-          mt: 0.25,
-          color: info ? 'text.secondary' : 'warning.main',
-        }}
-      >
-        {info ? (
-          <Info size={16} aria-hidden={true} />
-        ) : (
-          <TriangleAlert size={16} aria-hidden={true} />
-        )}
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        {row.kind === 'missing' ? (
-          <Link
-            component="button"
-            color="inherit"
-            onClick={() =>
-              useTab.getState().revealLoadOrder(row.missing.id, row.missing.dependentId)
-            }
-            sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word', textAlign: 'left' }}
-          >
-            {text}
-          </Link>
-        ) : (
-          <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
-            <LinkedText text={text} links={modLinksOf(row)} />
-          </Typography>
-        )}
-        {authorNote === '' ? null : (
-          <Typography sx={{ mt: 0.5, fontSize: 13, color: 'text.secondary', whiteSpace: 'normal' }}>
-            {authorNote}
-          </Typography>
-        )}
-        {row.kind === 'asset' ? (
-          <Box sx={{ mt: 0.75 }}>
-            <ButtonBase
-              onClick={() => setWhy(!why)}
-              aria-expanded={why}
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px' }}
-            >
-              {why ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              <Typography
-                component="span"
-                sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}
-              >
-                {t`Why?`}
-              </Typography>
-            </ButtonBase>
-            {why ? <ConflictWhy asset={row.asset} /> : null}
-          </Box>
-        ) : null}
-        {row.kind === 'loadFailure' ? (
-          <Box sx={{ mt: 0.75 }}>
-            <ButtonBase
-              onClick={() => setWhy(!why)}
-              aria-expanded={why}
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px' }}
-            >
-              {why ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              <Typography
-                component="span"
-                sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}
-              >
-                {t`Log line`}
-              </Typography>
-            </ButtonBase>
-            {why ? (
-              <Typography sx={{ mt: 0.5, fontSize: 13, color: 'text.secondary' }}>
-                {`${row.loadFailure.line}: ${row.loadFailure.message}`}
-              </Typography>
-            ) : null}
-          </Box>
-        ) : null}
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'flex-end' }}>
-        {row.kind === 'drift' ? (
-          <DriftButtons drift={row.drift} />
-        ) : (
-          <FixButton problem={row} dismissedToken={dismissed?.token} />
-        )}
-      </Box>
-    </Box>
-  )
-}
-
 // useOpenProblems is the open profile's problems, or null while they load, never the profile shown before.
 function useOpenProblems() {
   const openId = useProfiles((s) => s.openId)
   return useMods((s) => (s.problemsFor === openId ? s.problems : null))
-}
-
-// ProblemRows lists the cards of the chosen section.
-function ProblemRows({ rows }: { rows: (Row | DismissedRow)[] }) {
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {rows.map((row) =>
-        isDismissedRow(row) ? (
-          <ProblemRow key={row.token} row={row.row} dismissed={row} />
-        ) : (
-          <ProblemRow key={JSON.stringify(row)} row={row} />
-        ),
-      )}
-    </Box>
-  )
 }
 
 function dismissCosmetic(

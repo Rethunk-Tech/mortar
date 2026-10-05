@@ -124,7 +124,71 @@ function lightControls(ink: string): Components<Theme> {
   }
 }
 
-export function createMortarTheme(
+function buttonOverrides(
+  s: ReturnType<typeof surfaces>,
+  mode: ThemeMode,
+  compactUi: boolean,
+): Components<Theme>['MuiButton'] {
+  return {
+    defaultProps: { disableElevation: true },
+    styleOverrides: {
+      root: {
+        whiteSpace: 'nowrap',
+        textTransform: 'none',
+        borderRadius: BUTTON_RADIUS_PX,
+        fontSize: BUTTON_FONT_PX,
+        fontWeight: BUTTON_FONT_WEIGHT,
+        lineHeight: BUTTON_LINE_HEIGHT,
+        height: compactUi ? BUTTON_HEIGHT_COMPACT : BUTTON_HEIGHT,
+        padding: compactUi ? BUTTON_PAD_COMPACT : BUTTON_PAD,
+      },
+      sizeSmall: { height: BUTTON_SMALL_HEIGHT, padding: BUTTON_SMALL_PAD },
+      sizeLarge: {
+        height: BUTTON_LARGE_HEIGHT,
+        padding: BUTTON_LARGE_PAD,
+        fontSize: BUTTON_LARGE_FONT_PX,
+        fontWeight: BUTTON_LARGE_FONT_WEIGHT,
+      },
+      startIcon: { marginLeft: 0, marginRight: ICON_GAP_PX },
+      contained: { fontWeight: BUTTON_CONTAINED_WEIGHT },
+    },
+    variants: [
+      {
+        props: { variant: 'outlined', color: 'primary' },
+        style: {
+          color: s.ink,
+          borderColor: s.hairline22,
+          '&:hover': {
+            borderColor: s.hairline40,
+            backgroundColor: s.hairlineFaint,
+          },
+        },
+      },
+      // Light mode darkens status colours for text; a filled button keeps the colour as picked, with black or white text.
+      ...(mode === 'light'
+        ? (Object.keys(statusColors) as (keyof typeof statusColors)[]).map((color) => ({
+            props: { variant: 'contained' as const, color },
+            style: {
+              backgroundColor: statusColors[color],
+              color: contrastText(statusColors[color]),
+              '&:hover': { backgroundColor: statusColors[color], filter: 'brightness(0.94)' },
+            },
+          }))
+        : []),
+      // Pastel accents are fills, not ink: on a light surface a text button in the accent colour is unreadable.
+      ...(mode === 'light'
+        ? [
+            {
+              props: { variant: 'text' as const, color: 'primary' as const },
+              style: { color: s.ink },
+            },
+          ]
+        : []),
+    ],
+  }
+}
+
+function createMortarTheme(
   accent: AccentName,
   opts: { compact?: boolean; reduceMotion?: boolean; mode?: ThemeMode } = {},
 ): Theme {
@@ -192,63 +256,7 @@ export function createMortarTheme(
       MuiToggleButton: {
         styleOverrides: { root: { textTransform: 'none', whiteSpace: 'nowrap' } },
       },
-      MuiButton: {
-        defaultProps: { disableElevation: true },
-        styleOverrides: {
-          root: {
-            whiteSpace: 'nowrap',
-            textTransform: 'none',
-            borderRadius: BUTTON_RADIUS_PX,
-            fontSize: BUTTON_FONT_PX,
-            fontWeight: BUTTON_FONT_WEIGHT,
-            lineHeight: BUTTON_LINE_HEIGHT,
-            height: compactUi ? BUTTON_HEIGHT_COMPACT : BUTTON_HEIGHT,
-            padding: compactUi ? BUTTON_PAD_COMPACT : BUTTON_PAD,
-          },
-          sizeSmall: { height: BUTTON_SMALL_HEIGHT, padding: BUTTON_SMALL_PAD },
-          sizeLarge: {
-            height: BUTTON_LARGE_HEIGHT,
-            padding: BUTTON_LARGE_PAD,
-            fontSize: BUTTON_LARGE_FONT_PX,
-            fontWeight: BUTTON_LARGE_FONT_WEIGHT,
-          },
-          startIcon: { marginLeft: 0, marginRight: ICON_GAP_PX },
-          contained: { fontWeight: BUTTON_CONTAINED_WEIGHT },
-        },
-        variants: [
-          {
-            props: { variant: 'outlined', color: 'primary' },
-            style: {
-              color: s.ink,
-              borderColor: s.hairline22,
-              '&:hover': {
-                borderColor: s.hairline40,
-                backgroundColor: s.hairlineFaint,
-              },
-            },
-          },
-          // Light mode darkens status colours for text; a filled button keeps the colour as picked, with black or white text.
-          ...(mode === 'light'
-            ? (Object.keys(statusColors) as (keyof typeof statusColors)[]).map((color) => ({
-                props: { variant: 'contained' as const, color },
-                style: {
-                  backgroundColor: statusColors[color],
-                  color: contrastText(statusColors[color]),
-                  '&:hover': { backgroundColor: statusColors[color], filter: 'brightness(0.94)' },
-                },
-              }))
-            : []),
-          // Pastel accents are fills, not ink: on a light surface a text button in the accent colour is unreadable.
-          ...(mode === 'light'
-            ? [
-                {
-                  props: { variant: 'text' as const, color: 'primary' as const },
-                  style: { color: s.ink },
-                },
-              ]
-            : []),
-        ],
-      },
+      MuiButton: buttonOverrides(s, mode, compactUi),
       ...(mode === 'light' ? lightControls(s.ink) : {}),
       MuiChip: { styleOverrides: { label: { whiteSpace: 'nowrap' } } },
       MuiLink: {
@@ -279,4 +287,4 @@ export function createMortarTheme(
   return responsiveFontSizes(theme)
 }
 
-export { MONO }
+export { createMortarTheme, MONO }

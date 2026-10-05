@@ -29,11 +29,32 @@ import { installedCaution, pendingUpdate, withOptional } from './updateReview/wa
 import { useEmptyReviewNotice, withheldUpdates } from './updateReview/withheld.ts'
 import { checkedWithSmapi, useUpdates } from './updates.ts'
 
-export function UpdateBar() {
+function UpdateBar() {
   return <ReviewBar />
 }
 
-export function UpdateReview({ profile }: { profile: Profile }) {
+function useMergeCachedDetails(open: boolean) {
+  const updates = useUpdates((s) => s.updates)
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    mergeCachedDetails(
+      (updates?.updates ?? []).filter((u) => u.nexusId > 0).map((u) => u.nexusId),
+    ).catch(reportUnexpected)
+  }, [open, updates])
+}
+
+function uncachedNexusIds(
+  list: Update[],
+  byId: ReturnType<typeof useNexusDetails.getState>['byId'],
+) {
+  return [
+    ...new Set(list.filter((u) => u.nexusId > 0 && !isFull(byId[u.nexusId])).map((u) => u.nexusId)),
+  ]
+}
+
+function UpdateReview({ profile }: { profile: Profile }) {
   const signedIn = useNexus((s) => s.signedIn)
   const gameId = useProfiles((s) => s.game?.id ?? '')
   const open = useUpdates((s) => s.reviewing)
@@ -55,17 +76,9 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const [everywhereAll, setEverywhereAll] = useState(false)
   const [loadingAll, setLoadingAll] = useState(false)
   const skipped = useOptionalSkips((s) => s.skipped)
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    mergeCachedDetails(
-      (updates?.updates ?? []).filter((u) => u.nexusId > 0).map((u) => u.nexusId),
-    ).catch(reportUnexpected)
-  }, [open, updates])
+  useMergeCachedDetails(open)
   useEmptyReviewNotice(open && updates !== null && list.length === 0 && withheld.length === 0)
   const needChoice = needChoiceUpdates(list)
-  const sameSource = list.filter((u) => !u.switch)
   const chosen = sameSourceUpdates(list).filter(
     (u) =>
       include[modId(u)] !== false &&
@@ -77,9 +90,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   )
   const onAck = (id: string, on: boolean) => setAcked((prev) => ({ ...prev, [id]: on }))
   const onInclude = (id: string, on: boolean) => setInclude((prev) => ({ ...prev, [id]: on }))
-  const uncachedIds = [
-    ...new Set(list.filter((u) => u.nexusId > 0 && !isFull(byId[u.nexusId])).map((u) => u.nexusId)),
-  ]
+  const uncachedIds = uncachedNexusIds(list, byId)
   return (
     <Dialog
       open={open && (list.length > 0 || withheld.length > 0)}
@@ -97,7 +108,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       />
       <DialogContent sx={{ p: 0, borderTop: '1px solid var(--mortar-hairline-muted)' }}>
         <SourceGroups
-          list={sameSource}
+          list={list.filter((u) => !u.switch)}
           profile={profile}
           mods={mods}
           acked={acked}
@@ -162,3 +173,5 @@ export function UpdateReview({ profile }: { profile: Profile }) {
     </Dialog>
   )
 }
+
+export { UpdateBar, UpdateReview }

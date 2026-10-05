@@ -19,7 +19,37 @@ import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
 
-export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
+function SaveSelectionDialog({
+  open,
+  onClose,
+  profileId,
+  selected,
+}: {
+  open: boolean
+  onClose: () => void
+  profileId: string
+  selected: Mod[]
+}) {
+  const { t } = useLingui()
+  return (
+    <BundleNameDialog
+      open={open}
+      title={t`Save selection as bundle`}
+      submitLabel={t`Save`}
+      errorTitle={t`Could not create the bundle`}
+      onClose={onClose}
+      onSubmit={async (name) => {
+        const game = useProfiles.getState().game?.id ?? ''
+        const created = await Create(game, name, profileId, [
+          ...new Set(selected.map((mod) => mod.id)),
+        ])
+        useToasts.getState().push({ kind: 'success', title: t`Created ${{ name: created.name }}` })
+      }}
+    />
+  )
+}
+
+function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
   const { t } = useLingui()
   const ids = useSelection((s) => s.ids)
   const clear = useSelection((s) => s.clear)
@@ -74,21 +104,11 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
           clear={clear}
         />
       ) : null}
-      <BundleNameDialog
+      <SaveSelectionDialog
         open={saveOpen}
-        title={t`Save selection as bundle`}
-        submitLabel={t`Save`}
-        errorTitle={t`Could not create the bundle`}
         onClose={() => setSaveOpen(false)}
-        onSubmit={async (name) => {
-          const game = useProfiles.getState().game?.id ?? ''
-          const created = await Create(game, name, profileId, [
-            ...new Set(selected.map((mod) => mod.id)),
-          ])
-          useToasts
-            .getState()
-            .push({ kind: 'success', title: t`Created ${{ name: created.name }}` })
-        }}
+        profileId={profileId}
+        selected={selected}
       />
       <TagSelectionDialog
         open={tagOpen}
@@ -132,3 +152,5 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
     </>
   )
 }
+
+export { SelectionBar }

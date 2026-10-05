@@ -11,7 +11,7 @@ msgstr ""
 msgid "No saves match"
 msgstr "No saves match"
 
-#: src/console/StartupSections.tsx:88
+#: src/console/StartupSections.tsx:82
 msgid "What to do"
 msgstr "What to do"
 
@@ -1192,7 +1192,7 @@ msgstr "All outcomes"
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
 
-#: src/console/StartupSections.tsx:106
+#: src/console/StartupSections.tsx:100
 msgid "Mods start"
 msgstr "Mods start"
 
@@ -1435,7 +1435,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:342
+#: src/games/GameSelect.tsx:368
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -1930,7 +1930,7 @@ msgstr "{0} (optional file)"
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
-#: src/mods/updateReview/Row.tsx:124
+#: src/mods/updateReview/Row.tsx:72
 msgid "Changes dependencies"
 msgstr "Changes dependencies"
 
@@ -2560,7 +2560,7 @@ msgstr "Bisect from here"
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
-#: src/games/GameSelect.tsx:153
+#: src/games/GameSelect.tsx:138
 #: src/saves/SaveRow.tsx:145
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
@@ -2986,7 +2986,7 @@ msgstr "History events kept"
 msgid "Could not stop ignoring {source} updates"
 msgstr "Could not stop ignoring {source} updates"
 
-#: src/console/StartupSections.tsx:108
+#: src/console/StartupSections.tsx:102
 msgid "First updates"
 msgstr "First updates"
 
@@ -3040,7 +3040,7 @@ msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
 
 #: src/launch/SaveWarnDialog.tsx:59
-#: src/mods/updateReview/Row.tsx:62
+#: src/mods/updateReview/Row.tsx:34
 #: src/share/SharedMods.tsx:28
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
@@ -3376,7 +3376,7 @@ msgid "Already has {0}"
 msgstr "Already has {0}"
 
 #: src/mods/Sidebar.tsx:391
-#: src/mods/updateReview/Row.tsx:153
+#: src/mods/updateReview/Row.tsx:114
 msgid "Changelog"
 msgstr "Changelog"
 
@@ -3513,7 +3513,7 @@ msgstr "Apply"
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
-#: src/games/GameSelect.tsx:345
+#: src/games/GameSelect.tsx:371
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
@@ -4336,7 +4336,7 @@ msgid "Finding the mod causing the crash"
 msgstr "Finding the mod causing the crash"
 
 #. placeholder {0}: o.name
-#: src/mods/updateReview/Row.tsx:61
+#: src/mods/updateReview/Row.tsx:33
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
@@ -4952,7 +4952,7 @@ msgstr "Libraries, icons and artwork built into Mortar, with their licences."
 msgid "Could not dismiss those folders"
 msgstr "Could not dismiss those folders"
 
-#: src/console/StartupSections.tsx:116
+#: src/console/StartupSections.tsx:110
 msgid "The title screen's intro animation (Mortar skips it on measured launches)"
 msgstr "The title screen's intro animation (Mortar skips it on measured launches)"
 
@@ -4975,7 +4975,7 @@ msgid "A profile with only {loader}. Add mods from Nexus or from archives."
 msgstr "A profile with only {loader}. Add mods from Nexus or from archives."
 
 #. placeholder {0}: listNames(removed)
-#: src/mods/updateReview/Row.tsx:119
+#: src/mods/updateReview/Row.tsx:68
 msgid "No longer needs {0}"
 msgstr "No longer needs {0}"
 
@@ -4993,7 +4993,7 @@ msgstr "Up next: {0}"
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
-#: src/console/StartupSections.tsx:109
+#: src/console/StartupSections.tsx:103
 msgid "Title intro"
 msgstr "Title intro"
 
@@ -5138,7 +5138,7 @@ msgstr "Backup location"
 msgid "{first} installed into {0}"
 msgstr "{first} installed into {0}"
 
-#: src/console/StartupSections.tsx:112
+#: src/console/StartupSections.tsx:106
 msgid "From launch until SMAPI has loaded every mod's code"
 msgstr "From launch until SMAPI has loaded every mod's code"
 
@@ -5412,7 +5412,7 @@ msgstr "No profiles found."
 
 #. placeholder {0}: game.name
 #. placeholder {0}: profile.name
-#: src/games/GameSelect.tsx:202
+#: src/games/GameSelect.tsx:228
 #: src/games/ProfileCards.tsx:134
 msgid "Open {0}"
 msgstr "Open {0}"
@@ -5437,7 +5437,7 @@ msgstr "Could not move the old files to trash"
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
-#: src/games/GameSelect.tsx:179
+#: src/games/GameSelect.tsx:182
 #: src/games/ProfileCards.tsx:52
 #: src/profiles/store.ts:335
 msgid "Could not save the open profile"
@@ -5550,7 +5550,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:220
-#: src/mods/updateReview/Row.tsx:169
+#: src/mods/updateReview/Row.tsx:193
 msgid "Open page"
 msgstr "Open page"
 
@@ -5597,7 +5597,7 @@ msgstr "Load {0} after the other mods here, so its edit applies last"
 msgid "Reached the title screen"
 msgstr "Reached the title screen"
 
-#: src/mods/updateReview/Row.tsx:66
+#: src/mods/updateReview/Row.tsx:38
 msgid "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 msgstr "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 
@@ -6340,7 +6340,7 @@ msgstr "Add a tag"
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
 
-#: src/console/StartupSections.tsx:113
+#: src/console/StartupSections.tsx:107
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
@@ -6439,7 +6439,7 @@ msgid "Show diff"
 msgstr "Show diff"
 
 #. placeholder {0}: update.githubFallback
-#: src/mods/updateReview/Row.tsx:76
+#: src/mods/updateReview/Row.tsx:48
 msgid "From GitHub ({0}) when its release matches, else Nexus"
 msgstr "From GitHub ({0}) when its release matches, else Nexus"
 
@@ -6525,7 +6525,7 @@ msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was adde
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
 #: src/mods/CompatChip.tsx:23
-#: src/mods/updateReview/Row.tsx:69
+#: src/mods/updateReview/Row.tsx:41
 msgid "Unofficial"
 msgstr "Unofficial"
 
@@ -6600,7 +6600,7 @@ msgstr "All sources"
 msgid "Notification history"
 msgstr "Notification history"
 
-#: src/console/StartupSections.tsx:121
+#: src/console/StartupSections.tsx:115
 msgid "Where the time goes"
 msgstr "Where the time goes"
 
@@ -6889,7 +6889,7 @@ msgstr "Game"
 msgid "Minutes between background update checks"
 msgstr "Minutes between background update checks"
 
-#: src/games/GameSelect.tsx:157
+#: src/games/GameSelect.tsx:142
 msgid "{playtime} played"
 msgstr "{playtime} played"
 
@@ -7650,7 +7650,7 @@ msgstr "{name} takes {own} of your {total} start."
 msgid "{0} was changed on {1} and on this machine"
 msgstr "{0} was changed on {1} and on this machine"
 
-#: src/console/StartupSections.tsx:105
+#: src/console/StartupSections.tsx:99
 msgid "SMAPI loads mods"
 msgstr "SMAPI loads mods"
 
@@ -8119,7 +8119,7 @@ msgid "Default for Share and Export. You can change it per share."
 msgstr "Default for Share and Export. You can change it per share."
 
 #: src/App.tsx:71
-#: src/games/GameSelect.tsx:170
+#: src/games/GameSelect.tsx:168
 #: src/games/useGameTiles.ts:89
 msgid "Could not read your games"
 msgstr "Could not read your games"
@@ -8252,7 +8252,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:43
 #: src/firstrun/GameSetup.tsx:122
 #: src/firstrun/LoaderStep.tsx:220
-#: src/games/GameSelect.tsx:317
+#: src/games/GameSelect.tsx:343
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -8667,7 +8667,7 @@ msgid "Handle Nexus download links?"
 msgstr "Handle Nexus download links?"
 
 #. placeholder {0}: update.source
-#: src/mods/updateReview/Row.tsx:72
+#: src/mods/updateReview/Row.tsx:44
 msgid "From {0}, not the site you installed it from. Updating switches its source."
 msgstr "From {0}, not the site you installed it from. Updating switches its source."
 
@@ -9177,7 +9177,7 @@ msgstr "Overrides"
 msgid "Import…"
 msgstr "Import…"
 
-#: src/games/GameSelect.tsx:190
+#: src/games/GameSelect.tsx:151
 msgid "{loader} | {store}"
 msgstr "{loader} | {store}"
 
@@ -9263,7 +9263,7 @@ msgstr "Sparkles"
 msgid "Quit"
 msgstr "Quit"
 
-#: src/games/GameSelect.tsx:192
+#: src/games/GameSelect.tsx:153
 msgid "{loader} · {lastLine}"
 msgstr "{loader} · {lastLine}"
 
@@ -9319,7 +9319,7 @@ msgstr "Show file"
 msgid "Save backups"
 msgstr "Save backups"
 
-#: src/console/StartupSections.tsx:115
+#: src/console/StartupSections.tsx:109
 msgid "The game's first frames; mods doing setup work in update events show up here"
 msgstr "The game's first frames; mods doing setup work in update events show up here"
 
@@ -9399,7 +9399,7 @@ msgid "Find the crash cause"
 msgstr "Find the crash cause"
 
 #: src/firstrunTour/TourPopover.tsx:46
-#: src/games/GameSelect.tsx:254
+#: src/games/GameSelect.tsx:280
 #: src/launch/PlayControl.tsx:162
 #: src/settings/GameSettingsPage.tsx:62
 #: src/settings/GameSettingsPage.tsx:88
@@ -9691,7 +9691,7 @@ msgstr "View licences…"
 #. placeholder {0}: entry.pinReason
 #: src/mods/ModDetail.tsx:108
 #: src/mods/parts.tsx:199
-#: src/mods/updateReview/Row.tsx:63
+#: src/mods/updateReview/Row.tsx:35
 msgid "Pinned: {0}"
 msgstr "Pinned: {0}"
 
@@ -9858,11 +9858,11 @@ msgstr "Stop the game to restore saves."
 msgid "Open replacement"
 msgstr "Open replacement"
 
-#: src/console/StartupSections.tsx:92
+#: src/console/StartupSections.tsx:86
 msgid "Nothing stands out in this start."
 msgstr "Nothing stands out in this start."
 
-#: src/console/StartupSections.tsx:114
+#: src/console/StartupSections.tsx:108
 msgid "The game loads its own content"
 msgstr "The game loads its own content"
 
@@ -10385,7 +10385,7 @@ msgstr "Your last save needs other mods"
 msgid "Delete category"
 msgstr "Delete category"
 
-#: src/games/GameSelect.tsx:240
+#: src/games/GameSelect.tsx:266
 msgid "Play {lastPlayedName}"
 msgstr "Play {lastPlayedName}"
 
@@ -10464,7 +10464,7 @@ msgid "Jump to first error"
 msgstr "Jump to first error"
 
 #. placeholder {0}: listNames(added)
-#: src/mods/updateReview/Row.tsx:117
+#: src/mods/updateReview/Row.tsx:67
 msgid "Now needs {0}"
 msgstr "Now needs {0}"
 
@@ -10683,7 +10683,7 @@ msgstr "Everything"
 msgid "Open Problems"
 msgstr "Open Problems"
 
-#: src/games/GameSelect.tsx:188
+#: src/games/GameSelect.tsx:148
 msgid "{loader} | {store} · {lastLine}"
 msgstr "{loader} | {store} · {lastLine}"
 
@@ -10716,7 +10716,7 @@ msgstr "Last run"
 msgid "Share config files"
 msgstr "Share config files"
 
-#: src/console/StartupSections.tsx:107
+#: src/console/StartupSections.tsx:101
 msgid "Game content"
 msgstr "Game content"
 
@@ -10970,7 +10970,7 @@ msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 msgid "Skip this update"
 msgstr "Skip this update"
 
-#: src/games/GameSelect.tsx:151
+#: src/games/GameSelect.tsx:136
 msgid "Last played with {profile} · {when}"
 msgstr "Last played with {profile} · {when}"
 
@@ -10982,8 +10982,8 @@ msgstr "Command-line control"
 msgid "Could not repair this profile"
 msgstr "Could not repair this profile"
 
-#: src/games/GameSelect.tsx:165
-#: src/games/GameSelect.tsx:177
+#: src/games/GameSelect.tsx:163
+#: src/games/GameSelect.tsx:180
 #: src/games/ProfileCards.tsx:50
 #: src/games/ProfileCards.tsx:64
 msgid "Could not save the last game"
