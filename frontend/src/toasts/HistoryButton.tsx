@@ -99,7 +99,7 @@ function HistoryPopover({
 }) {
   const { t } = useLingui()
   const profileId = useProfiles((st) => st.openId)
-  const panel = useHistoryPanel(profileId, open)
+  const panel = useHistoryPanel(profileId, open, true)
   // A change to the profile is listed once: while unread under New, then in the history under Earlier.
   const fresh = history.slice(0, freshCount)
   const readNotes = history.slice(freshCount).filter((item) => item.action?.profileId === undefined)

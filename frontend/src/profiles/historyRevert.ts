@@ -30,21 +30,43 @@ interface RevertOutcome {
   missingEvent: string
   missingNames: string[]
   missingWants: RevertWant[]
+  // Missing mods with no source to download them from again.
+  missingUnfetchable: string[]
+  // The revert failed on missing mods, but the change's record could not be read to name them.
+  missingUnread: boolean
 }
 
 const emptyMissing = {
   missingEvent: '',
   missingNames: [] as string[],
   missingWants: [] as RevertWant[],
+  missingUnfetchable: [] as string[],
+  missingUnread: false,
 }
 
-function pushMissingToast(names: string[], wants: RevertWant[], unfetchable: string[]) {
-  const list = names.join(', ')
+/** Says in a toast which mods a failed revert lacks, for a caller with no missing-mods UI of its own. */
+function pushMissingToast(outcome: RevertOutcome) {
+  if (outcome.missingUnread) {
+    useToasts.getState().push({
+      kind: 'error',
+      title: i18n._(
+        msg`Could not undo: some mods are missing, and the change's record could not be read.`,
+      ),
+    })
+    return
+  }
+  if (outcome.missingNames.length === 0) {
+    return
+  }
+  const list = outcome.missingNames.join(', ')
+  const wants = outcome.missingWants
   useToasts.getState().push({
     kind: 'error',
     title: i18n._(msg`Could not undo. Missing from the store: ${list}`),
-    ...(unfetchable.length > 0
-      ? { body: i18n._(msg`Mortar cannot download ${unfetchable.join(', ')} again.`) }
+    ...(outcome.missingUnfetchable.length > 0
+      ? {
+          body: i18n._(msg`Mortar cannot download ${outcome.missingUnfetchable.join(', ')} again.`),
+        }
       : {}),
     ...(wants.length > 0
       ? { action: { label: i18n._(msg`Download missing`), run: () => download(wants) } }
@@ -57,7 +79,7 @@ async function missingFromError(
   profileId: string,
   eventId: string,
   message: string,
-): Promise<Pick<RevertOutcome, 'error' | 'missingEvent' | 'missingNames' | 'missingWants'>> {
+): Promise<Omit<RevertOutcome, 'events'>> {
   const listed = parseMissingStoreList(message)
   if (listed.length === 0) {
     return { error: message, ...emptyMissing }
@@ -66,20 +88,16 @@ async function missingFromError(
     const snap = ((await Snapshot(game, profileId, eventId)) ?? []) as UndoEntry[]
     const hit = entriesMatchingMissing(snap, listed)
     const names = missingModNames(hit)
-    pushMissingToast(
-      names.length > 0 ? names : listed,
-      downloadWantsForEntries(hit),
-      unfetchableNames(hit),
-    )
     return {
       error: message,
       missingEvent: eventId,
       missingNames: names.length > 0 ? names : listed,
       missingWants: downloadWantsForEntries(hit),
+      missingUnfetchable: unfetchableNames(hit),
+      missingUnread: false,
     }
   } catch {
-    pushMissingToast(listed, [], listed)
-    return { error: message, missingEvent: eventId, missingNames: listed, missingWants: [] }
+    return { error: message, ...emptyMissing, missingEvent: eventId, missingUnread: true }
   }
 }
 
@@ -130,3 +148,5 @@ export async function revertHistoryEvent(
     }
   }
 }
+
+export { pushMissingToast }

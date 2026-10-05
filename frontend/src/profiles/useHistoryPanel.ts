@@ -13,10 +13,11 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { selectedPair } from './historyDiff.ts'
-import { revertHistoryEvent } from './historyRevert.ts'
+import { pushMissingToast, revertHistoryEvent } from './historyRevert.ts'
 import { useProfiles } from './store.ts'
 
-export function useHistoryPanel(profileId: string, open: boolean) {
+/** toastMissing is for a caller without the panel's own missing-mods UI: a revert that lacks mods says so in a toast. */
+export function useHistoryPanel(profileId: string, open: boolean, toastMissing = false) {
   const game = useProfiles((s) => s.game)
   const [events, setEvents] = useState<HistoryEvent[]>([])
   const [items, setItems] = useState<Record<string, HistoryDiff['items']>>({})
@@ -93,6 +94,9 @@ export function useHistoryPanel(profileId: string, open: boolean) {
       setMissingNames(result.missingNames)
       setMissingWants(result.missingWants)
       setBusy('')
+      if (toastMissing) {
+        pushMissingToast(result)
+      }
     },
     revertItem: async (eventId: string, mod: string) => {
       if (!game) {
