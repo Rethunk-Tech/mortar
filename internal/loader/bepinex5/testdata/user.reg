@@ -1,0 +1,18 @@
+WINE REGISTRY Version 2
+;; All keys relative to \\User\\S-1-5-21-0-0-0-1000
+
+#arch=win64
+
+[Control Panel\\Desktop] 1696000000
+#time=1d9f9a8b7c6d5e4
+"FontSmoothing"="2"
+
+[Software\\Wine\\DllOverrides] 1696000001
+#time=1d9f9a8b7c6d5e5
+"*d3d9"="native"
+"dxgi"="native,builtin"
+
+[Software\\Wine\\Drivers] 1696000002
+#time=1d9f9a8b7c6d5e6
+"Audio"="pulse"
+
