@@ -49,7 +49,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `profile history <game> <profile>`, `profile revert <game> <profile> <eventId>` | restore points; revert to one |
 | `history <game> --all` | recent changes across that game's profiles |
 | `profile load-order <game> <profile>` | enabled mods in SMAPI load order |
-| `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <mod id>...`, `mod ... <mod id>` | list, change and inspect mods (mod id is the SMAPI UniqueID) |
+| `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <mod id>...`, `mod ... <mod id>` | list, change and inspect mods (a mod id is `<format>:<local id>`; a bare id means the game's own format, SMAPI's UniqueID for Stardew) |
 | `install <game> <profile> <archive>` | install a local archive |
 | `conflicts`, `problems [--format text]`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
 | `problems dismissed`, `problems dismiss <index>`, `problems restore <token\|index>` (`--profile`, `--game stardew`) | dismiss and restore Problems-tab warnings like the GUI |
@@ -59,7 +59,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `tools <game>`, `tools run <game> <profile> <tool>` | configured external tools; start one |
 | `bundles <game>`, `bundles apply <game> <bundle> <profile>` | list saved bundles; copy one into a profile |
 | `nexus untrack <game> --all\|--unused` | untrack that game's Nexus mods (`--yes` skips the prompt) |
-| `update game profile UniqueID...\|--all` | queue selected or all available mod updates |
+| `update game profile <mod id>...\|--all` | queue selected or all available mod updates |
 | `queue retry\|skip [id]`, `queue pause\|resume\|clear` | control queued downloads |
 | `backups list`, `backups create <save>`, `backups restore <name> [save...]` | list, pin a Manual backup of one save, or restore |
 | `backups usage`, `backups trim --keep N` | save backup sizes; keep the newest N per save (pinned ones stay) |
@@ -74,7 +74,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 
 ```sh
 mortar conflicts stardew "Profile 2"
-mortar mods stardew bf8012eb5944d3ad --json | jq -r '.[] | select(.enabled | not) | .uniqueId'
+mortar mods stardew bf8012eb5944d3ad --json | jq -r '.[] | select(.enabled | not) | .id'
 source <(mortar completion bash)
 ```
 
