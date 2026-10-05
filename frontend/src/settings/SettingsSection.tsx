@@ -65,7 +65,14 @@ export function SettingsSection({
           gap: 1,
           containerType: 'inline-size',
           // Every setting is its own tile; a section is the heading above a stack of tiles.
-          '& > *': { bgcolor: 'var(--mortar-overlay-45)', borderRadius: '6px' },
+          // Light mode uses opaque paper: a dark tint over the wallpaper reads as grey.
+          '& > *': (theme) => ({
+            bgcolor:
+              theme.palette.mode === 'light'
+                ? theme.palette.background.paper
+                : 'var(--mortar-overlay-45)',
+            borderRadius: '6px',
+          }),
         }}
       >
         {children}
