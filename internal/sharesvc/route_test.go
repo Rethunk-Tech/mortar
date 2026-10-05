@@ -11,6 +11,7 @@ func TestParseModRoute(t *testing.T) {
 	}{
 		{value: "mortar://stardew/mod/123", game: "stardew", modID: 123, ok: true},
 		{value: "mortar://stardew/mod/1", game: "stardew", modID: 1, ok: true},
+		{value: "mortar://stardewvalley/mod/123", game: "stardew", modID: 123, ok: true},
 		{value: "mortar://unknown/mod/123"},
 		{value: "mortar://stardew/mod/0"},
 		{value: "mortar://stardew/mod/01"},

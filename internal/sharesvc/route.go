@@ -18,8 +18,12 @@ func parseModRoute(value string) (modRoute, bool) {
 	if err != nil || u.Scheme != "mortar" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.Opaque != "" || u.RawPath != "" {
 		return modRoute{}, false
 	}
-	if !game.Valid(u.Host) {
-		return modRoute{}, false
+	id := u.Host
+	if !game.Valid(id) {
+		var ok bool
+		if id, ok = game.ByNexusDomain(id); !ok {
+			return modRoute{}, false
+		}
 	}
 	parts := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
 	if len(parts) != 2 || parts[0] != "mod" || parts[1] == "" || parts[1][0] < '1' || parts[1][0] > '9' {
@@ -34,5 +38,5 @@ func parseModRoute(value string) (modRoute, bool) {
 	if err != nil || strconv.Itoa(modID) != parts[1] {
 		return modRoute{}, false
 	}
-	return modRoute{game: u.Host, modID: modID}, true
+	return modRoute{game: id, modID: modID}, true
 }

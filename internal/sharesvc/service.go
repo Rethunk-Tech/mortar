@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/migrate"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
@@ -247,17 +248,17 @@ func (s *Service) Share(game, profileID string, keys []string, include share.Inc
 	if err != nil {
 		return Info{}, err
 	}
-	return describe(withEntryKeys(p, keys), include)
+	return describe(game, withEntryKeys(p, keys), include)
 }
 
-func describe(p profile.Profile, include ...share.Include) (Info, error) {
+func describe(game string, p profile.Profile, include ...share.Include) (Info, error) {
 	inc := share.DefaultInclude()
 	if len(include) > 0 {
 		inc = include[0]
 	}
 	_, left, off := share.Collect(p, inc)
 	info := Info{Name: p.Name, Limit: DiscordLimit, Groups: []Group{}, LeftOut: []Omitted{}}
-	res, err := share.Encode(p, inc)
+	res, err := share.Encode(game, p, inc)
 	switch {
 	case err == nil:
 		info.Web, info.App, info.Length = res.Web, res.App, len(res.Web)
@@ -400,6 +401,14 @@ func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string)
 	shared, err := share.Parse(text)
 	if err != nil {
 		return Preview{}, err
+	}
+	if shared.Game != "" {
+		if _, err := gamepkg.Require(shared.Game); err != nil {
+			return Preview{}, err
+		}
+		if shared.Game != game {
+			return Preview{}, usererr.New(usererr.Invalid, "this link is for "+shared.Game+", not "+game)
+		}
 	}
 	return s.preview(ctx, game, shared, "", nil, profileID, profile.OriginLink)
 }

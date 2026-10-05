@@ -43,7 +43,7 @@ func sample() profile.Profile {
 }
 
 func TestRoundTripAndLinks(t *testing.T) {
-	res, err := Encode(sample())
+	res, err := Encode("stardew", sample())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,6 +57,15 @@ func TestRoundTripAndLinks(t *testing.T) {
 			t.Fatalf("Parse(%.40q) = %+v, %v", in, got, err)
 		}
 	}
+	lc, err := Encode("lethal-company", sample())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, in := range []string{lc.Web, lc.App} {
+		if got, err := Parse(in); err != nil || got.Game != "lethal-company" {
+			t.Fatalf("Parse(%.40q) game = %q, %v", in, got.Game, err)
+		}
+	}
 }
 
 func TestDetailsRoundTrip(t *testing.T) {
@@ -65,7 +74,7 @@ func TestDetailsRoundTrip(t *testing.T) {
 		Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 4, FileID: 5},
 		Mods: []profile.EntryMod{{UniqueID: "A.On", Folder: "."}, {UniqueID: "A.Off", Folder: "."}}, Disabled: []string{"A.Off"}, Fomod: choices,
 	}}}
-	res, err := Encode(p)
+	res, err := Encode("stardew", p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +127,7 @@ func TestLinkDropsDetailsBeforeRefs(t *testing.T) {
 			Fomod: map[string]map[string][]string{"Step": {fmt.Sprintf("Group-%d", i): {fmt.Sprintf("%x", sum)}}},
 		})
 	}
-	res, err := Encode(p)
+	res, err := Encode("stardew", p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,14 +142,14 @@ func TestLinkDropsDetailsBeforeRefs(t *testing.T) {
 }
 
 func TestWrongForms(t *testing.T) {
-	p, err := Encode(sample())
+	p, err := Encode("stardew", sample())
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, in := range []string{
-		"", "https://evil.example/stardew/p#" + p.Payload, "https://mortar.rethunk.tech/lethal/p#" + p.Payload,
+		"", "https://evil.example/stardew/p#" + p.Payload, "https://mortar.rethunk.tech/Lethal/p#" + p.Payload,
 		"https://mortar.rethunk.tech/stardew/x#" + p.Payload, "http://mortar.rethunk.tech/stardew/p#" + p.Payload,
-		"mortar://lethal/p/" + p.Payload, "mortar://stardew/q/" + p.Payload, "javascript:alert(1)",
+		"mortar://lethal company/p/" + p.Payload, "mortar://stardew/q/" + p.Payload, "javascript:alert(1)",
 		"https://mortar.rethunk.tech/stardew/p#", p.Payload + "=", "not base64 !!",
 	} {
 		if _, err := Parse(in); !errors.Is(err, ErrNotLink) {
@@ -224,10 +233,10 @@ func TestEncodeRefusesTooLarge(t *testing.T) {
 	for i := range 1000 {
 		p.Entries = append(p.Entries, nexus(fmt.Sprint(i), pseudo(1, i, 0, 2_000_000_000), pseudo(1, i, 1, 2_000_000_000)))
 	}
-	if _, err := Encode(p); !errors.Is(err, ErrTooLarge) {
+	if _, err := Encode("stardew", p); !errors.Is(err, ErrTooLarge) {
 		t.Errorf("err = %v", err)
 	}
-	if _, err := Encode(profile.Profile{Name: strings.Repeat("a", 61)}); !errors.Is(err, ErrMalformed) {
+	if _, err := Encode("stardew", profile.Profile{Name: strings.Repeat("a", 61)}); !errors.Is(err, ErrMalformed) {
 		t.Errorf("long name: %v", err)
 	}
 }
@@ -246,7 +255,7 @@ func TestLinkSizes(t *testing.T) {
 		for i := range tc.mods {
 			p.Entries = append(p.Entries, nexus(fmt.Sprint(i), pseudo(tc.mods, i, 0, 42000), pseudo(tc.mods, i, 1, 180000)))
 		}
-		res, err := Encode(p)
+		res, err := Encode("stardew", p)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -263,7 +272,7 @@ func TestBundledNeverListed(t *testing.T) {
 		{Key: "bridge", Source: profile.Source{Kind: profile.SourceMortar}},
 		nexus("gone", 1, 2, "A.gone"),
 	}}
-	res, err := Encode(p)
+	res, err := Encode("stardew", p)
 	if err != nil || len(res.LeftOut) != 0 || len(res.Shared.Entries) != 0 {
 		t.Fatalf("%+v, %v", res, err)
 	}
@@ -275,7 +284,7 @@ func TestLeftOutReasons(t *testing.T) {
 		{Key: "b", Source: profile.Source{Kind: profile.KindGitHub, Repo: "bad name"}},
 		{Key: "c", Source: profile.Source{Kind: "weird"}},
 	}}
-	res, err := Encode(p)
+	res, err := Encode("stardew", p)
 	if err != nil || len(res.LeftOut) != 3 {
 		t.Fatalf("%+v, %v", res.LeftOut, err)
 	}
@@ -352,7 +361,7 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 	}}
 	p.Entries[0].Note = "farm tweak\n\tsecond line"
 	p.Entries[0].Tags = []string{"QoL", "UI"}
-	res, err := Encode(p)
+	res, err := Encode("stardew", p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -447,11 +456,11 @@ func TestEncodeOmitsDescription(t *testing.T) {
 	with := sample()
 	without := sample()
 	without.Description = ""
-	a, err := Encode(with)
+	a, err := Encode("stardew", with)
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := Encode(without)
+	b, err := Encode("stardew", without)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -544,7 +553,7 @@ func TestOverlayPlacementTravels(t *testing.T) {
 		{Key: "opt", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}, OverlayOf: "main", OverlayFrom: "[CP] X", OverlayTo: "[CP] X/assets"},
 		{Key: "alt", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 3}, OverlayOf: "main", OverlayOff: true},
 	}}
-	res, err := Encode(p)
+	res, err := Encode("stardew", p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -558,7 +567,7 @@ func TestOverlayPlacementTravels(t *testing.T) {
 	if o := got.Entries[1].Overlay; o == nil || *o != (Overlay{From: "[CP] X", To: "[CP] X/assets"}) {
 		t.Fatalf("overlay = %+v", got.Entries[1].Overlay)
 	}
-	res, err = Encode(p, Include{DisabledMods: true})
+	res, err = Encode("stardew", p, Include{DisabledMods: true})
 	if err != nil {
 		t.Fatal(err)
 	}

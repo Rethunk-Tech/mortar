@@ -61,7 +61,7 @@ func link(t *testing.T, name string, refs ...share.Ref) string {
 		}
 		p.Entries = append(p.Entries, e)
 	}
-	res, err := share.Encode(p)
+	res, err := share.Encode("stardew", p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -265,7 +265,7 @@ func TestDescribeGroupsAndLeftOut(t *testing.T) {
 		{Key: "loc", Source: profile.Source{Kind: profile.KindLocal, Name: "mine.zip"}},
 		{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"}, Mods: []profile.EntryMod{{UniqueID: "G", Name: "Gee"}}},
 	}}
-	info, err := describe(p)
+	info, err := describe("stardew", p)
 	if err != nil || info.TooLarge || info.Count != 2 || info.Length != len(info.Web) || info.Limit != DiscordLimit {
 		t.Fatalf("info = %+v, %v", info, err)
 	}
@@ -277,7 +277,7 @@ func TestDescribeGroupsAndLeftOut(t *testing.T) {
 	if !slices.Equal(info.LeftOut, wantLeft) {
 		t.Errorf("left out = %+v", info.LeftOut)
 	}
-	subset, err := describe(withEntryKeys(p, []string{"a"}))
+	subset, err := describe("stardew", withEntryKeys(p, []string{"a"}))
 	if err != nil || subset.Count != 1 {
 		t.Fatalf("subset = %+v, %v", subset, err)
 	}

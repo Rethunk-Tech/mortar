@@ -29,9 +29,7 @@ const (
 	MaxEntries    = 1000
 	MaxNameLength = 60
 
-	maxID     = 1<<31 - 1
-	webPrefix = "https://mortar.rethunk.tech/stardew/p#"
-	appPrefix = "mortar://stardew/p/"
+	maxID = 1<<31 - 1
 )
 
 var (
@@ -67,6 +65,8 @@ type Overlay struct {
 
 // Shared is what a link carries.
 type Shared struct {
+	// Game is the game id a parsed link names; empty for a bare payload or a file.
+	Game    string
 	Name    string
 	Entries []Ref
 }
@@ -472,8 +472,11 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 	return s, left, off
 }
 
-// Encode turns a profile into its share links.
-func Encode(p profile.Profile, include ...Include) (Result, error) {
+// linkPrefix matches a web or app link up to its payload; the game id is group 1 or 2.
+var linkPrefix = regexp.MustCompile(`^(?:https://mortar\.rethunk\.tech/([a-z0-9-]+)/p#|mortar://([a-z0-9-]+)/p/)`)
+
+// Encode turns a profile of the game into its share links.
+func Encode(game string, p profile.Profile, include ...Include) (Result, error) {
 	s, left, _ := Collect(p, include...)
 	payload, err := s.payload()
 	if errors.Is(err, ErrTooLarge) {
@@ -486,23 +489,25 @@ func Encode(p profile.Profile, include ...Include) (Result, error) {
 	if err != nil {
 		return Result{}, err
 	}
-	return Result{Shared: s, Payload: payload, Web: webPrefix + payload, App: appPrefix + payload, LeftOut: left}, nil
+	return Result{Shared: s, Payload: payload, Web: "https://mortar.rethunk.tech/" + game + "/p#" + payload, App: "mortar://" + game + "/p/" + payload, LeftOut: left}, nil
 }
 
-// Parse accepts the web link, the mortar:// link, or a bare payload, and returns what it names.
+// Parse accepts the web link, the mortar:// link, or a bare payload, and returns what it names. A link's game id
+// is returned in Shared.Game unchecked: the caller decides which games it knows.
 func Parse(text string) (Shared, error) {
 	text = strings.TrimSpace(text)
-	payload := text
+	payload, game := text, ""
 	if strings.Contains(text, ":") {
-		if p, ok := strings.CutPrefix(text, webPrefix); ok {
-			payload = p
-		} else if p, ok := strings.CutPrefix(text, appPrefix); ok {
-			payload = strings.TrimSuffix(p, "/")
-		} else {
+		m := linkPrefix.FindStringSubmatch(text)
+		if m == nil {
 			return Shared{}, ErrNotLink
 		}
+		game = m[1] + m[2]
+		payload = strings.TrimSuffix(text[len(m[0]):], "/")
 	}
-	return decode(payload)
+	s, err := decode(payload)
+	s.Game = game
+	return s, err
 }
 
 func decode(payload string) (Shared, error) {
