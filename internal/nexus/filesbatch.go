@@ -1,11 +1,9 @@
 package nexus
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 )
@@ -41,40 +39,23 @@ func (c *Client) filesOf(ctx context.Context, t Title, modIDs []int, out map[int
 		fmt.Fprintf(&q, " m%d: modFiles(modId: %d, gameId: %d) { fileId name version category }", id, id, t.ID)
 	}
 	q.WriteString(" }")
-	body, err := json.Marshal(map[string]string{"query": q.String()})
+	code, status, body, err := c.roundTrip(ctx, http.MethodPost, "/v2/graphql", map[string]string{"query": q.String()})
 	if err != nil {
 		return err
 	}
-	base := c.BaseURL
-	if base == "" {
-		base = BaseURL
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/v2/graphql", bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Apikey", c.key)
-	req.Header.Set("Application-Name", "Mortar")
-	req.Header.Set("Application-Version", c.version)
-	req.Header.Set("User-Agent", "Mortar/"+c.version)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	hc := c.HTTP
-	if hc == nil {
-		hc = http.DefaultClient
-	}
-	resp, err := hc.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return &StatusError{Code: resp.StatusCode, Status: resp.Status}
+	switch code {
+	case http.StatusOK:
+	case http.StatusUnauthorized:
+		return ErrUnauthorized
+	case http.StatusTooManyRequests:
+		return c.rateLimited()
+	default:
+		return &StatusError{Code: code, Status: status}
 	}
 	var raw struct {
 		Data map[string][]BatchFile `json:"data"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, maxBody)).Decode(&raw); err != nil {
+	if err := json.Unmarshal(body, &raw); err != nil {
 		return err
 	}
 	for _, id := range modIDs {

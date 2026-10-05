@@ -3,6 +3,7 @@ package nexus
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -31,5 +32,24 @@ func TestFilesOfAsksForEveryModInOneRequest(t *testing.T) {
 	}
 	if calls != 1 || len(got[41150]) != 1 || got[41150][0].FileID != 185334 {
 		t.Fatalf("calls %d files %+v", calls, got)
+	}
+}
+
+func TestFilesOfStopsAtARateLimitWithoutRetrying(t *testing.T) {
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		calls++
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer srv.Close()
+	c := New("test").WithKey("k")
+	c.BaseURL = srv.URL
+	ids := make([]int, 120)
+	for i := range ids {
+		ids[i] = i + 1
+	}
+	var limit *RateLimitError
+	if _, err := c.FilesOf(context.Background(), stardew, ids); !errors.As(err, &limit) || calls != 1 {
+		t.Fatalf("calls %d, err %v", calls, err)
 	}
 }
