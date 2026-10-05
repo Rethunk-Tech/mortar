@@ -148,9 +148,9 @@ export function Row({
   const ago = formatWhen(lastPlayedAt)
   let lastLine = ''
   if (lastPlayedName && ago) {
-    lastLine = t`last played ${lastPlayedName} · ${ago}`
+    lastLine = t`Last played ${{ profile: lastPlayedName }} · ${{ when: ago }}`
   } else if (lastPlayedName) {
-    lastLine = t`Last played ${{ when: lastPlayedName }}`
+    lastLine = t`Last played ${{ profile: lastPlayedName }}`
   }
   const playtime = formatPlaytime(playtimeMs, i18n.locale)
   if (playtime) {
