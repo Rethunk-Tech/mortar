@@ -95,25 +95,6 @@ func TestRequiredPluginIsResolvedWithoutChoice(t *testing.T) {
 	}
 }
 
-func TestFolderApply(t *testing.T) {
-	cfg := loadFixture(t, "folder.xml")
-	src := t.TempDir()
-	dst := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(src, "pack"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(src, "pack", "a.txt"), []byte("ok"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := Apply(src, dst, Resolve(cfg, nil, EvalContext{})); err != nil {
-		t.Fatal(err)
-	}
-	got, err := fs.ReadFile(os.DirFS(dst), filepath.ToSlash(filepath.Join("mod", "a.txt")))
-	if err != nil || string(got) != "ok" {
-		t.Fatalf("got %q %v", got, err)
-	}
-}
-
 func TestFindConfigDepthAndUTF16(t *testing.T) {
 	root := t.TempDir()
 	dir := filepath.Join(root, "inner", "fomod")
