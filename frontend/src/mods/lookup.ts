@@ -6,6 +6,7 @@ import type {
   Broken,
   Copy,
   Damaged,
+  DeprecatedPackage,
   Duplicate,
   LoadFailure,
   Missing,
@@ -79,6 +80,7 @@ export type Problem =
   | { kind: 'setting'; setting: SettingHint }
   | { kind: 'damaged'; damaged: Damaged }
   | { kind: 'pluginClash'; pluginClash: PluginClash }
+  | { kind: 'deprecated'; deprecated: DeprecatedPackage }
 
 export const problemsOf = (result: Result | null): Problem[] =>
   result
@@ -98,6 +100,9 @@ export const problemsOf = (result: Result | null): Problem[] =>
         ),
         ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
         ...(result.damaged ?? []).map((damaged): Problem => ({ kind: 'damaged', damaged })),
+        ...(result.deprecated ?? []).map(
+          (deprecated): Problem => ({ kind: 'deprecated', deprecated }),
+        ),
         ...(result.pluginClashes ?? []).map(
           (pluginClash): Problem => ({ kind: 'pluginClash', pluginClash }),
         ),
@@ -136,6 +141,9 @@ export function concerns(p: Problem, mod: Mod): boolean {
   }
   if (p.kind === 'damaged') {
     return p.damaged.key === mod.key
+  }
+  if (p.kind === 'deprecated') {
+    return p.deprecated.key === mod.key
   }
   if (p.kind === 'pluginClash') {
     return (p.pluginClash.copies ?? []).some((c) => c.key === mod.key)

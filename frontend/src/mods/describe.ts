@@ -138,6 +138,12 @@ export function useDescribe(): Describe {
       }
       case 'damaged':
         return t`${p.damaged.name} has damaged files.`
+      case 'deprecated': {
+        const { name, replacement } = p.deprecated
+        return replacement
+          ? t`${name} is deprecated on Thunderstore; its page points to ${replacement}.`
+          : t`${name} is deprecated on Thunderstore.`
+      }
       case 'pluginClash': {
         const names = (p.pluginClash.copies ?? []).map((c) => c.name).join(', ')
         return t`${names} all ship the plugin ${p.pluginClash.guid}, and BepInEx loads only one.`

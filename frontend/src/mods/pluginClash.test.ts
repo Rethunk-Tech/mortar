@@ -21,3 +21,13 @@ test('a plugin shipped by two packages is a counted problem in its own section',
   expect(problemCount(result)).toBe(1)
   expect(problemSections(result).map((s) => s.id)).toEqual(['pluginClashes'])
 })
+
+test('a deprecated package is advice with its own section, not a counted error', () => {
+  const dep = {
+    deprecated: [
+      { key: 'k', id: 'thunderstore:Fay-Legacy', name: 'Fay-Legacy', replacement: 'Alice-New' },
+    ],
+  } as Result
+  expect(problemsOf(dep).map((p) => p.kind)).toEqual(['deprecated'])
+  expect(problemSections(dep).map((s) => s.id)).toEqual(['deprecated'])
+})

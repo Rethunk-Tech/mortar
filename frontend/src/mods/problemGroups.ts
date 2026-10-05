@@ -18,6 +18,7 @@ export const isInfoRow = (p: Row): boolean =>
   (p.kind === 'broken' && p.broken.status === 'abandoned') ||
   (p.kind === 'missing' && p.missing.listed) ||
   p.kind === 'setting' ||
+  p.kind === 'deprecated' ||
   (p.kind === 'runError' && !p.runError.severe)
 
 export type ProblemSectionId =
@@ -28,6 +29,7 @@ export type ProblemSectionId =
   | 'runErrors'
   | 'loadFailures'
   | 'pluginClashes'
+  | 'deprecated'
   | 'drift'
   | 'duplicates'
   | 'settings'
@@ -104,6 +106,12 @@ export function problemSections(result: Result): ProblemSection[] {
     {
       id: 'duplicates',
       rows: (result.duplicates ?? []).map((duplicate): Row => ({ kind: 'duplicate', duplicate })),
+    },
+    {
+      id: 'deprecated',
+      rows: (result.deprecated ?? []).map(
+        (deprecated): Row => ({ kind: 'deprecated', deprecated }),
+      ),
     },
     {
       id: 'settings',

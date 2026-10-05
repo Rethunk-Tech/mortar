@@ -89,6 +89,8 @@ function useSectionTitle() {
         return t`Changed outside Mortar`
       case 'duplicates':
         return t`Duplicates`
+      case 'deprecated':
+        return t`Deprecated packages`
       case 'settings':
         return t`Settings`
       case 'cosmetic':
