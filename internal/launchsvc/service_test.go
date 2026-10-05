@@ -423,7 +423,18 @@ func TestMain(m *testing.M) {
 		os.Exit(0)
 	}
 	pollEvery = 50 * time.Millisecond
-	os.Exit(m.Run())
+	root, err := os.MkdirTemp("", "launchsvc")
+	if err != nil {
+		panic(err)
+	}
+	// Every t.TempDir lives under root, which is how a test's own stand-in games are told from another process's.
+	if err := os.Setenv("TMPDIR", root); err != nil {
+		panic(err)
+	}
+	procVisible = func(p launch.Process) bool { return p.RunsFrom(root) }
+	code := m.Run()
+	_ = os.RemoveAll(root)
+	os.Exit(code)
 }
 
 func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {

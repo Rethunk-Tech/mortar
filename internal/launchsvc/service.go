@@ -36,6 +36,10 @@ import (
 // pollEvery is how often a running game is checked; tests set it small.
 var pollEvery = 2 * time.Second
 
+// procVisible, when set, limits which of the live processes count as a game; tests use it so a game running outside the test, such
+// as another test binary's stand-in, is never mistaken for their own.
+var procVisible func(launch.Process) bool
+
 const (
 	// StateEvent is emitted with a Status whenever a game's launch state changes.
 	StateEvent = "launch:state"
@@ -373,7 +377,11 @@ func (s *Service) gameProcs(g game.Game) ([]launch.Process, error) {
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, ps...)
+		for _, p := range ps {
+			if procVisible == nil || s.procDir != procDirRun || procVisible(p) {
+				out = append(out, p)
+			}
+		}
 	}
 	return s.ownedBy(g, out), nil
 }
