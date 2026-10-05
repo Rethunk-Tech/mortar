@@ -261,6 +261,11 @@ func Open() (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
+	return OpenIn(dir)
+}
+
+// OpenIn is Open for the data folder dir.
+func OpenIn(dir string) (*Store, error) {
 	s := &Store{path: filepath.Join(dir, FileName), cur: Defaults()}
 	if b, err := fsx.ReadFile(s.path); err == nil {
 		loaded, err := decodeFile(b)

@@ -28,7 +28,8 @@ func addFarmMod(t *testing.T, e env) Profile {
 }
 
 func TestHistoryRecordsEachOperation(t *testing.T) {
-	e := newEnvWithData(t)
+	t.Parallel()
+	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
 	e.item(t, "local-a2", map[string]string{"manifest.json": `{"Name":"Me.A","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`})

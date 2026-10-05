@@ -105,6 +105,7 @@ func TestSetCoverValidatesAndCopies(t *testing.T) {
 }
 
 func TestSetCoverKeepsTheOldFileWhenTheProfileCannotBeSaved(t *testing.T) {
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "Farm")
 	src := t.TempDir()
@@ -124,12 +125,11 @@ func TestSetCoverKeepsTheOldFileWhenTheProfileCannotBeSaved(t *testing.T) {
 	if err := os.WriteFile(jpeg, []byte("\xff\xd8\xff\xe0\x00\x10JFIF\x00"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	coverAfterWrite = func(d string) {
+	s.coverAfterWrite = func(d string) {
 		p := filepath.Join(d, fileName)
 		_ = os.Remove(p)
 		_ = os.Mkdir(p, 0o700)
 	}
-	t.Cleanup(func() { coverAfterWrite = nil })
 	if _, err := s.SetCover("stardew", p.ID, jpeg); err == nil {
 		t.Fatal("set succeeded after the profile could not be saved")
 	}

@@ -56,8 +56,8 @@ func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {
 }
 
 func TestLoadAfterReappliedAfterUpdate(t *testing.T) {
-	e := newEnvWithData(t)
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Parallel()
+	e := newEnv(t)
 	p := mustCreate(t, e, "P")
 	e.item(t, "a-1", map[string]string{"A/manifest.json": manifestJSON("me.a")})
 	e.item(t, "a-2", map[string]string{"A/manifest.json": manifestJSON("me.a")})

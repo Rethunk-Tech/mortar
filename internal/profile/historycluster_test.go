@@ -7,7 +7,8 @@ import (
 )
 
 func TestHistoryDiffAddedRemovedVersionEnabled(t *testing.T) {
-	e := newEnvWithData(t)
+	t.Parallel()
+	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
 	e.item(t, "local-a2", map[string]string{"A/manifest.json": `{"Name":"Alpha","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`})
@@ -71,7 +72,8 @@ func TestHistoryDiffConfigFiles(t *testing.T) {
 }
 
 func TestRevertHistoryItemKinds(t *testing.T) {
-	e := newEnvWithData(t)
+	t.Parallel()
+	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A"), "A/config.json": `{"x":1}`})
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
 	e.item(t, "local-a2", map[string]string{"A/manifest.json": `{"Name":"Alpha","Author":"me","Version":"2.0.0","UniqueID":"Me.A"}`, "A/config.json": `{"x":1}`})

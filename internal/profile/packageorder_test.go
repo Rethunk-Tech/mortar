@@ -10,15 +10,9 @@ import (
 )
 
 func TestMovePackageChangesWhoWins(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ps, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Parallel()
+	dir := t.TempDir()
+	ps := profile.OpenIn(dir, store.OpenAt(filepath.Join(dir, "store")))
 	const lc = "lethal-company"
 	p, err := ps.Create(lc, "Friends")
 	if err != nil {

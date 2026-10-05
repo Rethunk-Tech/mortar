@@ -71,8 +71,6 @@ func removeCover(dir, name string) error {
 	return nil
 }
 
-var coverAfterWrite func(dir string)
-
 // SetCover copies the image at path into the profile folder as its cover; the original is never referenced again.
 func (s *Store) SetCover(game, id, path string) (Profile, error) {
 	b, name, err := readCover(path)
@@ -88,8 +86,8 @@ func (s *Store) SetCover(game, id, path string) (Profile, error) {
 	if err := datadir.WriteFile(filepath.Join(dir, name), b, 0o600); err != nil {
 		return Profile{}, err
 	}
-	if coverAfterWrite != nil {
-		coverAfterWrite(dir)
+	if s.coverAfterWrite != nil {
+		s.coverAfterWrite(dir)
 	}
 	old := p.Cover
 	p.Cover = name

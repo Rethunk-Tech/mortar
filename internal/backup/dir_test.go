@@ -6,9 +6,9 @@ import (
 )
 
 func TestLocationsReadsDefaultAfterCustomWriteDir(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	data := t.TempDir()
 	custom := filepath.Join(t.TempDir(), "elsewhere")
-	write, reads, err := Locations(custom)
+	write, reads, err := Locations(data, custom)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func TestLocationsReadsDefaultAfterCustomWriteDir(t *testing.T) {
 	if len(reads) != 2 || reads[0] != custom {
 		t.Fatalf("reads = %q", reads)
 	}
-	def, _, err := Locations("")
+	def, _, err := Locations(data, "")
 	if err != nil {
 		t.Fatal(err)
 	}

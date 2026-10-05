@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -927,7 +928,11 @@ func (s *Service) backupChangedSaves(gameID, profileID, installID, installDir st
 	if err != nil {
 		return err
 	}
-	target, err := backup.TargetFor(set, gameID, ov)
+	dataDir, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	target, err := backup.TargetFor(dataDir, set, gameID, ov)
 	if err != nil {
 		return err
 	}

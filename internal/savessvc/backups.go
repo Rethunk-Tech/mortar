@@ -194,7 +194,11 @@ func (s *Service) target(gameID string) (backup.Target, error) {
 	if s.settings != nil {
 		set = s.settings.Get()
 	}
-	return backup.TargetFor(set, gameID, nil)
+	dir, err := datadir.Dir()
+	if err != nil {
+		return backup.Target{}, err
+	}
+	return backup.TargetFor(dir, set, gameID, nil)
 }
 
 func (s *Service) backupDirs(gameID string) (savesDir, backupsDir string, err error) {

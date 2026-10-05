@@ -76,7 +76,8 @@ func TestInstallArchiveRawXNBExplainsContentPatcherAlternative(t *testing.T) {
 }
 
 func TestInstallArchiveSameModVersionIsAReplace(t *testing.T) {
-	e := newEnvWithData(t)
+	t.Parallel()
+	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	res, err := e.InstallArchive("stardew", p.ID, v1)
@@ -91,7 +92,8 @@ func TestInstallArchiveSameModVersionIsAReplace(t *testing.T) {
 }
 
 func TestInstallArchiveNewModVersionIsAnUpdate(t *testing.T) {
-	e := newEnvWithData(t)
+	t.Parallel()
+	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	if _, err := e.InstallArchive("stardew", p.ID, v1); err != nil {
@@ -105,7 +107,8 @@ func TestInstallArchiveNewModVersionIsAnUpdate(t *testing.T) {
 }
 
 func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
-	e := newEnvWithData(t)
+	t.Parallel()
+	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindNexus, Name: "a-1.zip", ModID: 7, FileID: 1, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 3}
@@ -154,7 +157,8 @@ func TestStageThenInstallGitHubKeepsTheTypedSource(t *testing.T) {
 }
 
 func TestConcurrentInstallsOfOneModKeepOneEntry(t *testing.T) {
-	e := newEnvWithData(t)
+	t.Parallel()
+	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	a := buildZip(t, "A.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/one.txt": "1"})
 	b := buildZip(t, "B.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/two.txt": "2"})

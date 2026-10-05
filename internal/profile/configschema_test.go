@@ -7,6 +7,7 @@ import (
 )
 
 func TestSetConfigValueDottedPathPreservesOrder(t *testing.T) {
+	t.Parallel()
 	manifest := `{"Name":"P","UniqueID":"me.cp","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`
 	content := `{"ConfigSchema":{"Season":{"AllowValues":"Spring, Summer, Fall","Default":"Spring"},"Enabled":{"Default":false}}}`
 	e, p := updEnv(t,

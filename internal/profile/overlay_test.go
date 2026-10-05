@@ -45,7 +45,7 @@ func readLive(t *testing.T, e env, profileID, key, rel string) string {
 
 func installOverlayPair(t *testing.T) (env, Profile, string, string) {
 	t.Helper()
-	e := newEnvWithData(t)
+	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	if _, err := e.InstallSource("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
 		t.Fatal(err)
@@ -62,6 +62,7 @@ func installOverlayPair(t *testing.T) (env, Profile, string, string) {
 }
 
 func TestOverlayInstallsOverItsMainFile(t *testing.T) {
+	t.Parallel()
 	e, p, baseKey, optKey := installOverlayPair(t)
 	if len(p.Entries) != 2 || p.Entries[1].OverlayOf != baseKey || p.Entries[1].OverlayFrom != overlayDir || p.Entries[1].OverlayTo != overlayDir || len(p.Entries[1].Mods) != 0 {
 		t.Fatalf("entries = %+v", p.Entries)
@@ -158,6 +159,7 @@ func overlayEntry(p Profile, key string) Entry {
 }
 
 func TestOverlayAlternativesSwitchEachOtherOff(t *testing.T) {
+	t.Parallel()
 	e, p, baseKey, optKey := installOverlayPair(t)
 	second := buildZip(t, "opt2.zip", map[string]string{overlayDir + "/assets/a.png": "A-two"})
 	res, err := e.InstallSource("stardew", p.ID, second, overlaySource(3, "opt2.zip"))
@@ -215,6 +217,7 @@ func TestOverlayAlternativesSwitchEachOtherOff(t *testing.T) {
 }
 
 func TestOverlayNewVersionTakesItsPlace(t *testing.T) {
+	t.Parallel()
 	e, p, baseKey, optKey := installOverlayPair(t)
 	if _, err := e.SetOverlayEnabled("stardew", p.ID, optKey, false); err != nil {
 		t.Fatal(err)
@@ -243,6 +246,7 @@ func TestOverlayNewVersionTakesItsPlace(t *testing.T) {
 }
 
 func TestOverlayFollowsMainFileUpdate(t *testing.T) {
+	t.Parallel()
 	e, p, _, optKey := installOverlayPair(t)
 	res, err := e.InstallSource("stardew", p.ID, mainZip(t, "1.1.0", "A-main2"), overlaySource(4, "main-1.1.zip"))
 	if err != nil || !res.Updated {
@@ -281,6 +285,7 @@ func TestOverlayFollowsMainFileUpdate(t *testing.T) {
 }
 
 func TestOverlayRevertAndRebuild(t *testing.T) {
+	t.Parallel()
 	e, p, baseKey, _ := installOverlayPair(t)
 	art := overlayDir + "/assets/a.png"
 	events, err := e.History("stardew", p.ID)
@@ -306,6 +311,7 @@ func TestOverlayRevertAndRebuild(t *testing.T) {
 }
 
 func TestOverlayExportRestoreRoundTrip(t *testing.T) {
+	t.Parallel()
 	e, p, baseKey, optKey := installOverlayPair(t)
 	second := buildZip(t, "opt2.zip", map[string]string{overlayDir + "/assets/a.png": "A-two"})
 	if _, err := e.InstallSource("stardew", p.ID, second, overlaySource(3, "opt2.zip")); err != nil {

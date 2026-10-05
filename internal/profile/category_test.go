@@ -7,15 +7,8 @@ import (
 	"testing"
 )
 
-func testDataHome(t *testing.T) string {
-	t.Helper()
-	dir := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", dir)
-	return dir
-}
-
 func TestSaveCustomCategoriesAndDeleteClearsOverrides(t *testing.T) {
-	home := testDataHome(t)
+	t.Parallel()
 	s := newStore(t)
 	p := mustCreate(t, s, "farm")
 	var err error
@@ -31,7 +24,7 @@ func TestSaveCustomCategoriesAndDeleteClearsOverrides(t *testing.T) {
 		t.Fatalf("save = %+v, %v", saved, err)
 	}
 	id := saved[0].ID
-	path := filepath.Join(home, "mortar", categoriesDir, "stardew.json")
+	path := filepath.Join(s.dataDir, categoriesDir, "stardew.json")
 	if _, err := os.Stat(path); err != nil {
 		t.Fatalf("file: %v", err)
 	}

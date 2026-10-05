@@ -40,13 +40,14 @@ func TestChangedSinceLastRun(t *testing.T) {
 }
 
 func TestLaunchBackupLocationFollowsGameSetting(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	data := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", data)
 	custom := filepath.Join(t.TempDir(), "launch-backups")
 	var set settings.Settings
 	if err := settings.ApplyKeyGame(&set, "backupLocation", custom, "stardew"); err != nil {
 		t.Fatal(err)
 	}
-	write, _, err := backup.Locations(settings.ResolveAt(set, "backupLocation", settings.Scope{Game: "stardew"}, nil))
+	write, _, err := backup.Locations(data, settings.ResolveAt(set, "backupLocation", settings.Scope{Game: "stardew"}, nil))
 	if err != nil {
 		t.Fatal(err)
 	}

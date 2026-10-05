@@ -4,19 +4,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
 func TestApplyConfigPresetWritesAndRecordsHistory(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/config.json": `{"z":1}`}, map[string]string{"A/manifest.json": m + " "})
 	svc := NewService(e.Store, t.TempDir(), nil)
-	root, err := datadir.Dir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := modconfig.SavePreset(root, "stardew", "smapi:me.a", "farm", []byte(`{"z":9}`)); err != nil {
+	if err := modconfig.SavePreset(e.dataDir, "stardew", "smapi:me.a", "farm", []byte(`{"z":9}`)); err != nil {
 		t.Fatal(err)
 	}
 	if err := svc.ApplyConfigPreset("stardew", p.ID, "a-1", "smapi:me.a", "farm"); err != nil {

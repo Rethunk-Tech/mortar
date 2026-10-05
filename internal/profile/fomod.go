@@ -13,7 +13,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -115,10 +114,10 @@ func (s *Store) installedGameVersion(gameID string) string {
 	if err != nil {
 		return ""
 	}
-	sett, err := settings.Open()
-	if err != nil {
+	if s.settings == nil {
 		return ""
 	}
+	sett := s.settings
 	dir, err := game.InstallDir(home, sett.Get(), gameID)
 	if err != nil || dir == "" {
 		return ""

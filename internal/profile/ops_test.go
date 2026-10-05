@@ -28,18 +28,7 @@ func newEnv(t *testing.T) env {
 	t.Helper()
 	base := t.TempDir()
 	items := store.OpenAt(filepath.Join(base, "mortar", "store"))
-	return env{&Store{root: filepath.Join(base, "profiles"), trash: filepath.Join(base, "trash"), items: items}, items, base}
-}
-
-// newEnvWithData is newEnv for a test that also reaches the data and config folders through the environment
-// (settings, the installed game); it cannot run in parallel.
-func newEnvWithData(t *testing.T) env {
-	t.Helper()
-	e := newEnv(t)
-	t.Setenv("XDG_DATA_HOME", e.base)
-	t.Setenv("XDG_CONFIG_HOME", e.base)
-	t.Setenv("LOCALAPPDATA", e.base)
-	return e
+	return env{&Store{root: filepath.Join(base, "profiles"), trash: filepath.Join(base, "trash"), dataDir: base, items: items}, items, base}
 }
 
 func writeFile(t *testing.T, root, rel, body string) {
@@ -343,8 +332,9 @@ func TestTrashRestorePurge(t *testing.T) {
 }
 
 func TestPurgeTrashUsesSettingsRetention(t *testing.T) {
-	e := newEnvWithData(t)
-	st, err := settings.Open()
+	t.Parallel()
+	e := newEnv(t)
+	st, err := settings.OpenIn(e.dataDir)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -10,7 +10,7 @@ import (
 func newStore(t *testing.T) *Store {
 	t.Helper()
 	root := t.TempDir()
-	return &Store{root: filepath.Join(root, "profiles"), trash: filepath.Join(root, "trash")}
+	return &Store{root: filepath.Join(root, "profiles"), trash: filepath.Join(root, "trash"), dataDir: root}
 }
 
 func TestCreateListRename(t *testing.T) {

@@ -50,6 +50,7 @@ func TestLaunchSpecOverrides(t *testing.T) {
 }
 
 func TestSetLaunchPresets(t *testing.T) {
+	t.Parallel()
 	s := overrideStore(t)
 	p, err := s.Create("stardew", "Farm")
 	if err != nil {
@@ -88,6 +89,7 @@ func TestSetLaunchPresets(t *testing.T) {
 }
 
 func TestAddLaunchPresetUniquifiesName(t *testing.T) {
+	t.Parallel()
 	s := overrideStore(t)
 	p, err := s.Create("stardew", "Farm")
 	if err != nil {

@@ -118,7 +118,8 @@ func TestRemapStoredRootReused(t *testing.T) {
 }
 
 func TestRemapVariantsAskThenUpdateReuses(t *testing.T) {
-	e := newEnvWithData(t)
+	t.Parallel()
+	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	variantZip := func(name, a, b string) string {
 		return buildZip(t, name, map[string]string{

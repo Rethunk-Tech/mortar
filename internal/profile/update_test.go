@@ -28,8 +28,7 @@ func read(t *testing.T, path string) string {
 // updEnv is an env with a profile holding entry "a-1" of mod me.a, and store items a-1 and a-2.
 func updEnv(t *testing.T, v1, v2 map[string]string) (env, Profile) {
 	t.Helper()
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	e := newEnvWithData(t)
+	e := newEnv(t)
 	p, err := e.Create("stardew", "P")
 	if err != nil {
 		t.Fatal(err)
@@ -43,6 +42,7 @@ func updEnv(t *testing.T, v1, v2 map[string]string) (env, Profile) {
 }
 
 func TestUpdateDeleteOldVersionCarriesConfigOnly(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	mNew := strings.TrimSuffix(m, `, /* c */}`) + `,"DeleteOldVersion":true}`
 	e, p := updEnv(t,
@@ -70,6 +70,7 @@ func TestUpdateDeleteOldVersionCarriesConfigOnly(t *testing.T) {
 }
 
 func TestCarryOverMatrix(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t,
 		map[string]string{"A/manifest.json": m, "A/tweaked.json": "v1", "A/both.json": "v1", "A/same.json": "v1", "A/target.json": "v1"},
@@ -101,6 +102,7 @@ func TestCarryOverMatrix(t *testing.T) {
 }
 
 func TestUpdateKeepsDisabledFolderAndRollsBack(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t,
 		map[string]string{"Pack/A/manifest.json": m, "Pack/A/cfg.json": "v1"},
@@ -147,8 +149,8 @@ func TestUpdateKeepsDisabledFolderAndRollsBack(t *testing.T) {
 }
 
 func TestInstallArchiveUpdatesHeldEntry(t *testing.T) {
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	e := newEnvWithData(t)
+	t.Parallel()
+	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "A1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/cfg.json": "v1"})
 	v2 := buildZip(t, "A2.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/cfg.json": "v2"})
@@ -174,7 +176,7 @@ func TestInstallArchiveUpdatesHeldEntry(t *testing.T) {
 }
 
 func TestInstallArchiveSpanningEntriesFails(t *testing.T) {
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	for _, id := range []string{"X.A", "X.B"} {
@@ -191,13 +193,16 @@ func TestInstallArchiveSpanningEntriesFails(t *testing.T) {
 	}
 }
 
+// The game's save folder comes from the process's config folder, so this test points it somewhere private and
+// cannot run in parallel.
 func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
 	cfg, _ := os.UserConfigDir()
 	writeFile(t, filepath.Join(cfg, "StardewValley", "Saves"), "Farm_1/Farm_1", "save")
 
-	backups, _, err := backup.Locations("")
+	backups, _, err := backup.Locations(e.dataDir, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -230,6 +235,7 @@ func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
 }
 
 func TestUpdateThatCannotRecordRestoresTheOldFolder(t *testing.T) {
+	t.Parallel()
 	if runtime.GOOS == "windows" {
 		t.Skip("a read-only folder is made with chmod, which Windows ignores for directories")
 	}
@@ -256,6 +262,7 @@ func TestUpdateThatCannotRecordRestoresTheOldFolder(t *testing.T) {
 }
 
 func TestRebuildUndoesAnInterruptedUpdate(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
 	writeFile(t, e.mods(p.ID), "a-1/A/config.json", "mine")
@@ -277,6 +284,7 @@ func TestRebuildUndoesAnInterruptedUpdate(t *testing.T) {
 }
 
 func TestUpdateKeepsEntrySettingsAndRollBackRestoresSource(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
 	p, err := e.SetEntryNoteTags("stardew", p.ID, "a-1", "keep me", []string{"ui"})
@@ -304,6 +312,7 @@ func TestUpdateKeepsEntrySettingsAndRollBackRestoresSource(t *testing.T) {
 }
 
 func TestUpdateEntriesIsOneChangeAndAtomic(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m})
 	e.item(t, "b-1", map[string]string{"B/manifest.json": manifestJSON("me.b")})

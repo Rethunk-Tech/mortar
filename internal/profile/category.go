@@ -31,19 +31,15 @@ type categoriesFile struct {
 	Categories []CustomCategory `json:"categories"`
 }
 
-func categoriesPath(gameID string) (string, error) {
+func categoriesPath(root, gameID string) (string, error) {
 	if !game.Valid(gameID) {
 		return "", fmt.Errorf("unknown game %q", gameID)
-	}
-	root, err := datadir.Dir()
-	if err != nil {
-		return "", err
 	}
 	return filepath.Join(root, categoriesDir, gameID+".json"), nil
 }
 
-func readCategories(game string) ([]CustomCategory, error) {
-	path, err := categoriesPath(game)
+func readCategories(root, game string) ([]CustomCategory, error) {
+	path, err := categoriesPath(root, game)
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +56,8 @@ func readCategories(game string) ([]CustomCategory, error) {
 	return out, nil
 }
 
-func writeCategories(game string, cats []CustomCategory) error {
-	path, err := categoriesPath(game)
+func writeCategories(root, game string, cats []CustomCategory) error {
+	path, err := categoriesPath(root, game)
 	if err != nil {
 		return err
 	}
@@ -103,14 +99,14 @@ func cleanCategoryName(name string) error {
 
 // ListCustomCategories returns the game's custom mod categories.
 func (s *Store) ListCustomCategories(game string) ([]CustomCategory, error) {
-	return readCategories(game)
+	return readCategories(s.dataDir, game)
 }
 
 // SaveCustomCategories replaces the game's custom categories. Removed ids clear that override on every profile entry.
 func (s *Store) SaveCustomCategories(game string, next []CustomCategory) ([]CustomCategory, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	prev, err := readCategories(game)
+	prev, err := readCategories(s.dataDir, game)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +115,7 @@ func (s *Store) SaveCustomCategories(game string, next []CustomCategory) ([]Cust
 		return nil, err
 	}
 	removed := removedCategoryIDs(prev, cleaned)
-	if err := writeCategories(game, cleaned); err != nil {
+	if err := writeCategories(s.dataDir, game, cleaned); err != nil {
 		return nil, err
 	}
 	if len(removed) > 0 {
@@ -218,7 +214,7 @@ func (s *Store) SetEntryCategory(game, id, key, override string) (Profile, error
 	override = strings.TrimSpace(override)
 	if override != "" {
 		if idPattern.MatchString(override) {
-			cats, err := readCategories(game)
+			cats, err := readCategories(s.dataDir, game)
 			if err != nil {
 				return Profile{}, err
 			}

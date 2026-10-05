@@ -7,8 +7,7 @@ import (
 
 func everywhereEnv(t *testing.T) (env, Profile, Profile) {
 	t.Helper()
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	e := newEnvWithData(t)
+	e := newEnv(t)
 	a := mustCreate(t, e, "A")
 	b := mustCreate(t, e, "B")
 	var err error
@@ -34,6 +33,7 @@ func everywhereEnv(t *testing.T) (env, Profile, Profile) {
 }
 
 func TestPreviewEverywhereExcludesPinnedSkippedLocked(t *testing.T) {
+	t.Parallel()
 	e, a, b := everywhereEnv(t)
 	c := mustCreate(t, e, "C")
 	if _, err := e.AddEntry("stardew", c.ID, "a-1", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
@@ -64,6 +64,7 @@ func TestPreviewEverywhereExcludesPinnedSkippedLocked(t *testing.T) {
 }
 
 func TestUpdateEverywhereTwoProfilesOneStoreItem(t *testing.T) {
+	t.Parallel()
 	e, a, b := everywhereEnv(t)
 	got, err := e.UpdateEverywhere("stardew", "smapi:me.a", "a-2")
 	if err != nil {

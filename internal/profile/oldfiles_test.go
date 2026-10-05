@@ -8,6 +8,7 @@ import (
 )
 
 func TestUpdateOldFilesFollowTheSetting(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	v1 := map[string]string{"A/manifest.json": m, "A/gone.json": "g", "A/sub/old.dll": "d"}
 	v2 := map[string]string{"A/manifest.json": m, "A/new.json": "n"}
@@ -60,6 +61,7 @@ func TestUpdateOldFilesFollowTheSetting(t *testing.T) {
 }
 
 func TestPendingOldFilesDropsSetsOfReplacedVersions(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/gone.json": "g"}, map[string]string{"A/manifest.json": m})
 	if _, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2"); err != nil {
@@ -78,6 +80,7 @@ func TestPendingOldFilesDropsSetsOfReplacedVersions(t *testing.T) {
 }
 
 func TestTrashedOldFilesComeBack(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/gone.json": "g"}, map[string]string{"A/manifest.json": m})
 	e.OldFilesMode = func(string) string { return settings.OldFilesAsk }

@@ -495,7 +495,7 @@ func (s *Store) saveBackup(game, profileID string) error {
 	if p, err := s.read(game, profileID); err == nil {
 		overrides = p.PrefOverrides()
 	}
-	target, err := backup.TargetFor(set, game, overrides)
+	target, err := backup.TargetFor(s.dataDir, set, game, overrides)
 	if err != nil {
 		return err
 	}

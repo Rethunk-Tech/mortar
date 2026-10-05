@@ -61,7 +61,7 @@ func (s *Store) SetEntryCategoryMany(game, id string, keys []string, override st
 	override = strings.TrimSpace(override)
 	if override != "" {
 		if idPattern.MatchString(override) {
-			cats, err := readCategories(game)
+			cats, err := readCategories(s.dataDir, game)
 			if err != nil {
 				return Profile{}, err
 			}

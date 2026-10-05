@@ -6,6 +6,7 @@ import (
 )
 
 func TestSetConfigValuePreservesFieldsAndWritesBoolean(t *testing.T) {
+	t.Parallel()
 	manifest := manifestJSON("me.a")
 	content := `{"ConfigSchema":{"Enabled":{"Default":false}}}`
 	e, p := updEnv(t,

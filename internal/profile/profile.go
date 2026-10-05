@@ -225,12 +225,16 @@ type Profile struct {
 
 // Store reads and writes profiles under one root folder.
 type Store struct {
-	root     string
-	trash    string
-	items    *store.Store
-	home     string
-	settings *settings.Store
-	mu       sync.Mutex
+	root  string
+	trash string
+	// dataDir is Mortar's data folder: custom categories, config presets and the default save backups live in it.
+	dataDir string
+	// coverAfterWrite runs after SetCover wrote the image, before the profile is saved; tests use it to break the save.
+	coverAfterWrite func(dir string)
+	items           *store.Store
+	home            string
+	settings        *settings.Store
+	mu              sync.Mutex
 	// Bundled returns the store items every profile of a game holds: the loader's own mods and the console
 	// bridge, whichever are installed.
 	Bundled func(game string) []Bundle
@@ -335,10 +339,15 @@ func Open(items *store.Store) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
+	return OpenIn(dir, items), nil
+}
+
+// OpenIn is Open for the data folder dir.
+func OpenIn(dir string, items *store.Store) *Store {
 	return &Store{
-		root: filepath.Join(dir, "profiles"), trash: filepath.Join(dir, "trash"), items: items,
+		root: filepath.Join(dir, "profiles"), trash: filepath.Join(dir, "trash"), dataDir: dir, items: items,
 		historyQuietIDs: map[string]int{}, historyBatches: map[string]historyBatch{},
-	}, nil
+	}
 }
 
 func cleanName(name string) (string, error) {

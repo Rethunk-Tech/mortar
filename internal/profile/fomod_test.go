@@ -82,6 +82,7 @@ func TestFomodReplayMismatchAsksAgain(t *testing.T) {
 }
 
 func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
+	t.Parallel()
 	raw, err := fsx.ReadFile(filepath.Join("..", "fomod", "testdata", "choose-one.xml"))
 	if err != nil {
 		t.Fatal(err)
@@ -99,7 +100,8 @@ func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
 		{"plugin gone", strings.Replace(base, `name="Alpha"`, `name="Alpha2"`, 1), map[string]map[string][]string{}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			e := newEnvWithData(t)
+			t.Parallel()
+			e := newEnv(t)
 			p, err := e.Create("stardew", "A")
 			if err != nil {
 				t.Fatal(err)

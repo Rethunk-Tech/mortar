@@ -9,6 +9,7 @@ import (
 )
 
 func TestModFolderByKeyPicksTheCopy(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m + " "})
 	if _, err := e.AddEntry("stardew", p.ID, "a-2", Source{Kind: KindLocal}); err != nil {
@@ -29,6 +30,7 @@ func TestModFolderByKeyPicksTheCopy(t *testing.T) {
 }
 
 func TestInstalledReturnsModFolders(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m + " "})
 
@@ -51,6 +53,7 @@ func TestInstalledReturnsModFolders(t *testing.T) {
 }
 
 func TestModStateAndResetConfig(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t,
 		map[string]string{"A/manifest.json": m, "A/config.json": "shipped"},
@@ -87,6 +90,7 @@ func TestModStateAndResetConfig(t *testing.T) {
 }
 
 func TestConfigPathStaysInTheModFolder(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m + " "})
 	if _, err := e.ConfigPath("stardew", p.ID, "a-1", "smapi:me.a"); err == nil {
@@ -111,6 +115,7 @@ func TestConfigPathStaysInTheModFolder(t *testing.T) {
 }
 
 func TestReadWriteConfigRoundTripAndLock(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/config.json": `{"z":1,"n":1.5}`}, map[string]string{"A/manifest.json": m + " "})
 	svc := NewService(e.Store, t.TempDir(), nil)
@@ -152,6 +157,7 @@ func TestReadWriteConfigRoundTripAndLock(t *testing.T) {
 }
 
 func TestReadConfigKeepsLargeNumbersAndComments(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/config.json": "{\n// accepted\n\"large\": 9007199254740993,\n\"tail\": [1,],\n}"}, nil)
 	svc := NewService(e.Store, t.TempDir(), nil)
@@ -168,6 +174,7 @@ func TestReadConfigKeepsLargeNumbersAndComments(t *testing.T) {
 }
 
 func TestRollBackThroughService(t *testing.T) {
+	t.Parallel()
 	m := manifestJSON("me.a")
 	v2 := `{"Name":"me.a","Author":"me","Version":"2.0.0","UniqueID":"me.a"}`
 	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": v2})

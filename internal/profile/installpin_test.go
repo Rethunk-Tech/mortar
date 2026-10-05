@@ -3,7 +3,7 @@ package profile
 import "testing"
 
 func TestProfileInstallPinRoundTrips(t *testing.T) {
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Parallel()
 	e := newEnv(t)
 	p, err := e.Create("stardew", "P")
 	if err != nil {
@@ -21,7 +21,7 @@ func TestProfileInstallPinRoundTrips(t *testing.T) {
 }
 
 func TestSeparateSavesFlagRoundTrips(t *testing.T) {
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Parallel()
 	e := newEnv(t)
 	p, err := e.Create("stardew", "P")
 	if err != nil {
