@@ -20,6 +20,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
 // Events.
@@ -111,6 +112,12 @@ type tracked struct {
 	Synced Vector `json:"synced"`
 	// Seen is the profile's updated time at that moment; a later one means local changes.
 	Seen time.Time `json:"seen"`
+	// Applied is the hash of the payload this machine last applied while some of its mods were still to download.
+	// Until the profile settles, the downloads finishing are not local changes to push back.
+	Applied string `json:"applied,omitempty"`
+	// Missing names the files of that payload (share.Ref.Identity) that were not installed when it was applied. A push
+	// keeps them as entries so a download that failed is not announced as a removal.
+	Missing []string `json:"missing,omitempty"`
 }
 
 type state struct {
@@ -201,8 +208,12 @@ func (s *Service) payload(folder, game, remote string, sh shared) ([]byte, bool)
 	if err != nil {
 		return nil, false
 	}
+	return b, hashOf(b) == sh.Payload
+}
+
+func hashOf(b []byte) string {
 	sum := sha256.Sum256(b)
-	return b, hex.EncodeToString(sum[:]) == sh.Payload
+	return hex.EncodeToString(sum[:])
 }
 
 // Kick asks Run for a scan soon; a folder change calls it.
@@ -330,6 +341,12 @@ func (s *Service) push(folder string, ref Ref, t tracked, base Vector) error {
 	if err != nil {
 		return fmt.Errorf("export %s: %w", ref.Name, err)
 	}
+	payload, echo := s.keepUnfetched(folder, ref, &t, payload)
+	if echo {
+		t.Seen = ref.Updated
+		s.st.Profiles[key(ref.Game, ref.ID)] = t
+		return s.saveState()
+	}
 	vec := base.merged(nil)
 	vec[s.st.Machine]++
 	if err := os.MkdirAll(filepath.Join(folder, ref.Game), 0o750); err != nil {
@@ -339,8 +356,7 @@ func (s *Service) push(folder string, ref Ref, t tracked, base Vector) error {
 	if err := datadir.WriteFile(s.payloadPath(folder, ref.Game, t.Remote), payload, 0o600); err != nil {
 		return err
 	}
-	sum := sha256.Sum256(payload)
-	meta, err := json.Marshal(shared{Name: ref.Name, Machine: s.st.Machine, MachineName: s.d.Machine, Vector: vec, Payload: hex.EncodeToString(sum[:])})
+	meta, err := json.Marshal(shared{Name: ref.Name, Machine: s.st.Machine, MachineName: s.d.Machine, Vector: vec, Payload: hashOf(payload)})
 	if err != nil {
 		return err
 	}
@@ -427,7 +443,9 @@ func (s *Service) Resolve(ctx context.Context, game, remote, revision, choice st
 		if err != nil {
 			return err
 		}
-		s.st.Profiles[key(game, local)] = tracked{Remote: remote, Synced: sh.Vector, Seen: ref.Updated}
+		nt := tracked{Remote: remote, Synced: sh.Vector, Seen: ref.Updated}
+		nt.Applied, nt.Missing = s.unfetched(game, local, payload)
+		s.st.Profiles[key(game, local)] = nt
 	case Mine:
 		ref, err := s.ref(game, local)
 		if err != nil {
@@ -490,4 +508,95 @@ func (s *Service) Diff(ctx context.Context, game, remote string) (Diff, error) {
 		return Diff{}, errNotArrived
 	}
 	return s.d.Source.Preview(ctx, game, o.Profile, payload)
+}
+
+func identities(refs []share.Ref) map[string]bool {
+	out := make(map[string]bool, len(refs))
+	for _, r := range refs {
+		out[r.Identity()] = true
+	}
+	return out
+}
+
+// unfetched is what a Theirs apply of payload leaves to download: the payload's hash and the files of it the profile
+// does not hold yet. A payload that is not a .mortar file has neither.
+func (s *Service) unfetched(game, id string, payload []byte) (string, []string) {
+	want, err := share.ReadBytes(payload)
+	if err != nil {
+		return "", nil
+	}
+	now, err := s.d.Source.Export(game, id)
+	if err != nil {
+		return "", nil
+	}
+	have, err := share.ReadBytes(now)
+	if err != nil {
+		return "", nil
+	}
+	held := identities(have.Entries)
+	var missing []string
+	for _, r := range want.Entries {
+		if !held[r.Identity()] {
+			missing = append(missing, r.Identity())
+		}
+	}
+	return hashOf(payload), missing
+}
+
+// keepUnfetched settles a push after a Theirs apply. When the profile differs from the applied payload only by files
+// still to download, it is the apply finishing, not a change: echo is true and nothing is pushed. Otherwise the
+// files that never arrived stay in the pushed payload, so only a removal the user made reaches the other machines.
+func (s *Service) keepUnfetched(folder string, ref Ref, t *tracked, payload []byte) ([]byte, bool) {
+	if t.Applied == "" {
+		return payload, false
+	}
+	base, err := fsx.ReadFile(s.payloadPath(folder, ref.Game, t.Remote))
+	if err != nil || hashOf(base) != t.Applied {
+		t.Applied, t.Missing = "", nil
+		return payload, false
+	}
+	want, err := share.ReadBytes(base)
+	if err != nil {
+		return payload, false
+	}
+	have, err := share.ReadBytes(payload)
+	if err != nil {
+		return payload, false
+	}
+	held, wanted, missing := identities(have.Entries), identities(want.Entries), map[string]bool{}
+	for _, id := range t.Missing {
+		missing[id] = true
+	}
+	var keep []share.Ref
+	changed := false
+	for _, r := range want.Entries {
+		if id := r.Identity(); !held[id] {
+			if missing[id] {
+				keep = append(keep, r)
+			} else {
+				changed = true
+			}
+		}
+	}
+	for id := range held {
+		changed = changed || !wanted[id]
+	}
+	if len(keep) == 0 {
+		t.Applied, t.Missing = "", nil
+	}
+	if !changed {
+		return payload, true
+	}
+	if len(keep) == 0 {
+		return payload, false
+	}
+	kept, err := share.WithRefs(payload, keep)
+	if err != nil {
+		return payload, false
+	}
+	t.Applied, t.Missing = hashOf(kept), t.Missing[:0:0]
+	for _, r := range keep {
+		t.Missing = append(t.Missing, r.Identity())
+	}
+	return kept, false
 }
