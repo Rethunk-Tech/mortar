@@ -8,7 +8,7 @@ import (
 )
 
 // Scope names where a setting is read: the most specific part that is set wins, then the broader ones, then the
-// key's default. Install and Loader are part of the tuple for keys that will live there; no key does yet.
+// key's default. Install is part of the tuple for keys that will live there; no key does yet.
 type Scope struct {
 	Source, Game, Install, Loader, Profile string
 }
@@ -16,6 +16,7 @@ type Scope struct {
 // The scope a registry key lives at; a profile may override a key marked ProfileOverridable.
 const (
 	ScopeSource  = "source"
+	ScopeLoader  = "loader"
 	ScopeInstall = "install"
 )
 
@@ -24,11 +25,23 @@ const (
 var sourceFields = map[string][]string{
 	"thunderstore": {"thunderstoreHandleLinks=handleLinks"},
 	"nexus": {
-		"nexusUserId", "nexusName", "nexusPremium", "nexusPreferredDownloadServer", "nexusSeenDownloadServers",
+		"nexusUserId=userId", "nexusName=name", "nexusPremium=premium",
+		"nexusPreferredDownloadServer=preferredDownloadServer", "nexusSeenDownloadServers=seenDownloadServers",
 		"nxmHandled", "nxmPreviousHandlers", "nxmAsked", "nxmPreviousName", "nxmRedirectOtherGames",
-		"autoTrackNexus", "verifyNexusMD5",
+		"autoTrackNexus=autoTrack", "verifyNexusMD5=verifyMD5",
 	},
 }
+
+// loaderFields is sourceFields for mod loaders: the keys that belong to one loader, whichever game uses it.
+var loaderFields = map[string][]string{
+	"smapi": {"smapiBuilds=builds", "smapiPin=pin", "showSmapiConsole=showConsole", "tellWhenSmapiOut=tellWhenOut", "smapiToastAt=toastAt"},
+}
+
+// scopeTables names each keyed scope's block in settings.json and its field table.
+var scopeTables = []struct {
+	block  string
+	fields map[string][]string
+}{{"sources", sourceFields}, {"loaders", loaderFields}}
 
 func fieldNames(entry string) (flat, local string) {
 	flat, local, found := strings.Cut(entry, "=")
@@ -45,29 +58,43 @@ const gamesField = "games"
 type scoped struct {
 	Global  map[string]json.RawMessage            `json:"global"`
 	Sources map[string]map[string]json.RawMessage `json:"sources"`
+	Loaders map[string]map[string]json.RawMessage `json:"loaders"`
 	Games   json.RawMessage                       `json:"games,omitempty"`
+}
+
+// blocks is the keyed scopes of sc by block name.
+func (sc scoped) blocks() map[string]map[string]map[string]json.RawMessage {
+	return map[string]map[string]map[string]json.RawMessage{"sources": sc.Sources, "loaders": sc.Loaders}
 }
 
 // split sorts a flat settings object into its scopes.
 func split(flat map[string]json.RawMessage) scoped {
-	out := scoped{Global: map[string]json.RawMessage{}, Sources: map[string]map[string]json.RawMessage{}}
-	type home struct{ src, local string }
+	out := scoped{
+		Global:  map[string]json.RawMessage{},
+		Sources: map[string]map[string]json.RawMessage{},
+		Loaders: map[string]map[string]json.RawMessage{},
+	}
+	type home struct{ block, id, local string }
 	owner := map[string]home{}
-	for src, names := range sourceFields {
-		for _, n := range names {
-			flatName, local := fieldNames(n)
-			owner[flatName] = home{src, local}
+	for _, tbl := range scopeTables {
+		for id, names := range tbl.fields {
+			for _, n := range names {
+				flatName, local := fieldNames(n)
+				owner[flatName] = home{tbl.block, id, local}
+			}
 		}
 	}
+	blocks := out.blocks()
 	for k, v := range flat {
 		switch h, ok := owner[k]; {
 		case k == gamesField:
 			out.Games = v
 		case ok:
-			if out.Sources[h.src] == nil {
-				out.Sources[h.src] = map[string]json.RawMessage{}
+			block := blocks[h.block]
+			if block[h.id] == nil {
+				block[h.id] = map[string]json.RawMessage{}
 			}
-			out.Sources[h.src][h.local] = v
+			block[h.id][h.local] = v
 		default:
 			out.Global[k] = v
 		}
@@ -79,14 +106,14 @@ func split(flat map[string]json.RawMessage) scoped {
 func (sc scoped) flatten() map[string]json.RawMessage {
 	out := make(map[string]json.RawMessage, len(sc.Global))
 	maps.Copy(out, sc.Global)
-	for src, fields := range sc.Sources {
-		if _, known := sourceFields[src]; !known {
-			continue
-		}
-		for _, n := range sourceFields[src] {
-			flatName, local := fieldNames(n)
-			if v, ok := fields[local]; ok {
-				out[flatName] = v
+	blocks := sc.blocks()
+	for _, tbl := range scopeTables {
+		for id, fields := range blocks[tbl.block] {
+			for _, n := range tbl.fields[id] {
+				flatName, local := fieldNames(n)
+				if v, ok := fields[local]; ok {
+					out[flatName] = v
+				}
 			}
 		}
 	}

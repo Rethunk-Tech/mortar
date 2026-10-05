@@ -1362,7 +1362,7 @@ func (s *Services) playCheck(ctx context.Context, gameID, id string, prof profil
 	}
 	smapiNever := false
 	if s.Settings != nil {
-		smapiNever = s.Settings.Get().GamePrefs(gameID).SmapiBuilds == settings.SmapiBuildsNever
+		smapiNever = s.Settings.Get().SmapiBuilds == settings.SmapiBuildsNever
 	}
 	groups := playIssueGroups(prof, res, upd, smapiNever)
 	if ch := s.changesPlayGroup(ctx, gameID, id); ch.Kind != "" {

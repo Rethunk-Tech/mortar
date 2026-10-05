@@ -271,6 +271,12 @@ func normalizePrefs(s *Settings) {
 	if !slices.Contains(extensionConnectionValues, s.ExtensionConnection) {
 		s.ExtensionConnection = ExtensionAllow
 	}
+	if !slices.Contains(smapiBuildsValues, s.SmapiBuilds) {
+		s.SmapiBuilds = SmapiBuildsShow
+	}
+	if s.ShowSmapiConsole == nil {
+		s.ShowSmapiConsole = on()
+	}
 	if s.Games == nil {
 		s.Games = map[string]*GameSettings{}
 	}
@@ -338,6 +344,9 @@ func validatePrefs(s Settings) error {
 	}
 	if !slices.Contains(extensionConnectionValues, s.ExtensionConnection) {
 		return fmt.Errorf("extension connection must be allow or off, got %q", s.ExtensionConnection)
+	}
+	if !slices.Contains(smapiBuildsValues, s.SmapiBuilds) {
+		return fmt.Errorf("smapi builds must be never, show or include, got %q", s.SmapiBuilds)
 	}
 	for _, g := range s.Games {
 		if g == nil {

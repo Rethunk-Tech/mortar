@@ -94,6 +94,12 @@ type Settings struct {
 	// CheckModUpdatesOnStart is whether Mortar checks the last-opened profile of each game at startup.
 	// Nil or omitted means on.
 	CheckModUpdatesOnStart *bool `json:"checkModUpdatesOnStart"`
+	// SmapiBuilds is whether SMAPI prerelease builds are never offered, shown, or included in updates.
+	SmapiBuilds string `json:"smapiBuilds"`
+	// SmapiPin is the SMAPI version to stay on; empty follows the latest release.
+	SmapiPin string `json:"smapiPin"`
+	// ShowSmapiConsole is whether launches show SMAPI's console. Nil or omitted means on.
+	ShowSmapiConsole *bool `json:"showSmapiConsole"`
 	// TellWhenSmapiOut is whether Mortar toasts when a newer SMAPI exists. Nil or omitted means on.
 	TellWhenSmapiOut *bool `json:"tellWhenSmapiOut"`
 	// KeepInTray keeps Mortar in the system tray when the window is closed.
@@ -220,6 +226,8 @@ func Defaults() Settings {
 	s.ListGroupBy = defaultListGroupBy
 	s.CheckModUpdatesOnStart = on()
 	s.TellWhenSmapiOut = on()
+	s.SmapiBuilds = SmapiBuildsShow
+	s.ShowSmapiConsole = on()
 	s.EnableModsWhenInstalled = on()
 	s.AskEndorseMods = on()
 	s.LanSharing = false

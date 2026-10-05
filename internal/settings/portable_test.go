@@ -41,7 +41,7 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 		t.Fatalf("language = %v", global["language"])
 	}
 	for _, k := range []string{
-		"nexusName", "nexusUserId", "nexusPremium", "gameFolders", "gameStores", "loaders",
+		"nexusName", "nexusUserId", "nexusPremium", "gameFolders", "gameStores",
 		"lastProfile", "lastPlayed", "backgroundImage", "dismissed",
 		"nxmHandled", "nxmPreviousHandlers", "nxmAsked",
 		"overlayToken", "overlayEnabled", "overlayPort",
@@ -49,6 +49,9 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 		if strings.Contains(string(b), `"`+k+`"`) {
 			t.Fatalf("exported %s: %s", k, b)
 		}
+	}
+	if _, ok := global["loaders"]; ok {
+		t.Fatalf("installed loader versions exported: %s", b)
 	}
 	raw := string(b)
 	for _, secret := range []string{"Farmer", "/games/Stardew", "abc", "/home/u/wall", "overlay-secret-token"} {
@@ -71,7 +74,7 @@ func TestLanguagePortableRoundTrip(t *testing.T) {
 }
 
 func TestImportIgnoresUnknownAndSanitizesLikeLoad(t *testing.T) {
-	raw := []byte(`{"version":1,"global":{"accent":"neon","mystery":true,"gameFolders":{"stardew":"/nope"},"storeRetentionDays":30},"sources":{"nexus":{"nexusName":"x"}}}`)
+	raw := []byte(`{"version":1,"global":{"accent":"neon","mystery":true,"gameFolders":{"stardew":"/nope"},"storeRetentionDays":30},"sources":{"nexus":{"name":"x"}}}`)
 	p, present, err := ParseExport(raw)
 	if err != nil {
 		t.Fatal(err)
@@ -113,7 +116,7 @@ func TestImportRejectsMissingOrUnknownVersion(t *testing.T) {
 }
 
 func TestImportPreviewGroupsBySectionAndNotesUnknown(t *testing.T) {
-	raw := []byte(`{"version":1,"global":{"accent":"sky","storeRetentionDays":60,"parallelDownloads":2,"mystery":1},"sources":{"nexus":{"nexusName":"x"}}}`)
+	raw := []byte(`{"version":1,"global":{"accent":"sky","storeRetentionDays":60,"parallelDownloads":2,"mystery":1},"sources":{"nexus":{"name":"x"}}}`)
 	got, err := PreviewImport(Defaults(), raw)
 	if err != nil {
 		t.Fatal(err)

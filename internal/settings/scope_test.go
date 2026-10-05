@@ -28,18 +28,22 @@ func TestFileIsSplitByScope(t *testing.T) {
 	var doc struct {
 		Global  map[string]any            `json:"global"`
 		Sources map[string]map[string]any `json:"sources"`
+		Loaders map[string]map[string]any `json:"loaders"`
 		Games   map[string]map[string]any `json:"games"`
 	}
 	if err := json.Unmarshal(b, &doc); err != nil {
 		t.Fatal(err)
 	}
 	nexus := doc.Sources["nexus"]
-	if doc.Global["accent"] != "moss" || nexus["nexusName"] != "Farmer" || nexus["autoTrackNexus"] != true ||
+	if doc.Global["accent"] != "moss" || nexus["name"] != "Farmer" || nexus["autoTrack"] != true ||
 		doc.Games["stardew"]["runsKept"] != float64(7) {
 		t.Fatalf("scopes: %s", b)
 	}
 	if _, ok := doc.Global["nexusName"]; ok {
 		t.Fatalf("a source key sits in global: %s", b)
+	}
+	if doc.Loaders["smapi"]["builds"] != "show" || doc.Loaders["smapi"]["tellWhenOut"] != true || doc.Games["stardew"]["smapiBuilds"] != nil {
+		t.Fatalf("loader scope: %s", b)
 	}
 	s2, err := Open()
 	if err != nil {

@@ -1,8 +1,8 @@
 package settings
 
 // ResolveAt returns the value of key at sc, most specific first: the profile's override (profile holds the
-// overrides of sc.Profile), then the key's own scope (the game's block, the source's, or the app's), then the
-// registry default. Install and Loader are walked once a key lives there.
+// overrides of sc.Profile), then the key's own scope (the game's block, the source's, the loader's or the app's), then the
+// registry default. Install is walked once a key lives there.
 func ResolveAt(s Settings, key string, sc Scope, profile map[string]string) string {
 	p, ok := lookupPref(key)
 	if !ok {
@@ -16,7 +16,7 @@ func ResolveAt(s Settings, key string, sc Scope, profile map[string]string) stri
 		if sc.Game != "" {
 			return p.get(s, sc.Game)
 		}
-	case ScopeSource:
+	case ScopeSource, ScopeLoader:
 		return p.get(s, "")
 	case ScopeInstall:
 		// No key is stored per install yet; its value is the broader scopes'.
@@ -40,5 +40,11 @@ func overridable(p pref) pref {
 // sourcePref binds a key to the mod source it belongs to.
 func sourcePref(source string, p pref) pref {
 	p.spec.Source = source
+	return p
+}
+
+// loaderPref binds a key to the mod loader it belongs to.
+func loaderPref(loader string, p pref) pref {
+	p.spec.Loader = loader
 	return p
 }

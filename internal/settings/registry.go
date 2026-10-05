@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Pref scopes: app (global), source (ScopeSource), game (under Settings.Games[gameID]) and profile overrides.
+// Pref scopes: app (global), source (ScopeSource), loader (ScopeLoader), game (under Settings.Games[gameID]) and profile overrides.
 const (
 	ScopeApp     = "app"
 	ScopeGame    = "game"
@@ -32,10 +32,7 @@ type GameSettings struct {
 	CosmeticConflicts           string `json:"cosmeticConflicts"`
 	EnableRequirements          string `json:"enableRequirements"`
 	MissingRequirements         string `json:"missingRequirements"`
-	SmapiBuilds                 string `json:"smapiBuilds"`
-	SmapiPin                    string `json:"smapiPin"`
 	DefaultLaunchMethod         string `json:"defaultLaunchMethod"`
-	ShowSmapiConsole            *bool  `json:"showSmapiConsole"`
 	SkipPlayCheck               bool   `json:"skipPlayCheck"`
 	ConsoleLevel                string `json:"consoleLevel"`
 	ConsoleTimestamps           *bool  `json:"consoleTimestamps"`
@@ -51,6 +48,12 @@ type GameSettings struct {
 	ExtraModsFolder       string                 `json:"extraModsFolder,omitempty"`
 	ShowDotHiddenMods     bool                   `json:"showDotHiddenMods,omitempty"`
 	OldFilesOnUpdate      string                 `json:"oldFilesOnUpdate,omitempty"`
+
+	// SmapiBuilds, SmapiPin and ShowSmapiConsole are the Settings' loader-scoped values, filled in by GamePrefs for
+	// callers that still read them per game.
+	SmapiBuilds      string `json:"-"`
+	SmapiPin         string `json:"-"`
+	ShowSmapiConsole *bool  `json:"-"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -63,8 +66,9 @@ type PrefSpec struct {
 	Max                int      `json:"max,omitempty"`
 	Values             []string `json:"values,omitempty"`
 	ProfileOverridable bool     `json:"profileOverridable,omitempty"`
-	// Source is the mod source id a ScopeSource key belongs to.
+	// Source is the mod source id a ScopeSource key belongs to, Loader the loader id a ScopeLoader key belongs to.
 	Source string `json:"source,omitempty"`
+	Loader string `json:"loader,omitempty"`
 }
 
 type pref struct {
@@ -145,14 +149,10 @@ var registry = []pref{
 	enumPref("cosmeticConflicts", ScopeGame, CosmeticCollapsed, cosmeticValues, func(s Settings, g string) string { return s.GamePrefs(g).CosmeticConflicts }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.CosmeticConflicts = v; putGame(s, g, gp) }),
 	enumPref("enableRequirements", ScopeGame, EnableReqAlways, enableReqValues, func(s Settings, g string) string { return s.GamePrefs(g).EnableRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.EnableRequirements = v; putGame(s, g, gp) }),
 	enumPref("missingRequirements", ScopeGame, MissingReqAsk, missingReqValues, func(s Settings, g string) string { return s.GamePrefs(g).MissingRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.MissingRequirements = v; putGame(s, g, gp) }),
-	enumPref("smapiBuilds", ScopeGame, SmapiBuildsShow, smapiBuildsValues, func(s Settings, g string) string { return s.GamePrefs(g).SmapiBuilds }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SmapiBuilds = v; putGame(s, g, gp) }),
-	strPref("smapiPin", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SmapiPin }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SmapiPin = v; putGame(s, g, gp) }),
+	loaderPref("smapi", enumPref("smapiBuilds", ScopeLoader, SmapiBuildsShow, smapiBuildsValues, func(s Settings, _ string) string { return s.SmapiBuilds }, func(s *Settings, _, v string) { s.SmapiBuilds = v })),
+	loaderPref("smapi", strPref("smapiPin", ScopeLoader, func(s Settings, _ string) string { return s.SmapiPin }, func(s *Settings, _, v string) { s.SmapiPin = v })),
 	overridable(enumPref("defaultLaunchMethod", ScopeGame, LaunchSteam, launchMethodValues, func(s Settings, g string) string { return s.GamePrefs(g).DefaultLaunchMethod }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DefaultLaunchMethod = v; putGame(s, g, gp) })),
-	overridable(ptrPref("showSmapiConsole", ScopeGame, true, func(s Settings, g string) *bool { return s.GamePrefs(g).ShowSmapiConsole }, func(s *Settings, g string, on bool) {
-		gp := s.GamePrefs(g)
-		gp.ShowSmapiConsole = &on
-		putGame(s, g, gp)
-	})),
+	overridable(loaderPref("smapi", ptrPref("showSmapiConsole", ScopeLoader, true, func(s Settings, _ string) *bool { return s.ShowSmapiConsole }, func(s *Settings, _ string, on bool) { s.ShowSmapiConsole = &on }))),
 	overridable(boolPref("skipPlayCheck", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).SkipPlayCheck }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
 		gp.SkipPlayCheck = on
@@ -193,9 +193,7 @@ func defaultGameSettings() GameSettings {
 		CosmeticConflicts:           CosmeticCollapsed,
 		EnableRequirements:          EnableReqAlways,
 		MissingRequirements:         MissingReqAsk,
-		SmapiBuilds:                 SmapiBuildsShow,
 		DefaultLaunchMethod:         LaunchSteam,
-		ShowSmapiConsole:            on(),
 		ConsoleLevel:                ConsoleLevelWarn,
 		ConsoleTimestamps:           off(),
 		ConsoleFollow:               on(),
@@ -209,6 +207,7 @@ func defaultGameSettings() GameSettings {
 // GamePrefs returns stored game prefs merged with defaults.
 func (s Settings) GamePrefs(gameID string) GameSettings {
 	out := defaultGameSettings()
+	out.SmapiBuilds, out.SmapiPin, out.ShowSmapiConsole = s.SmapiBuilds, s.SmapiPin, s.ShowSmapiConsole
 	if gameID == "" || s.Games == nil {
 		return out
 	}
@@ -257,15 +256,8 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.MissingRequirements != "" {
 		dst.MissingRequirements = src.MissingRequirements
 	}
-	if src.SmapiBuilds != "" {
-		dst.SmapiBuilds = src.SmapiBuilds
-	}
-	dst.SmapiPin = src.SmapiPin
 	if src.DefaultLaunchMethod != "" {
 		dst.DefaultLaunchMethod = src.DefaultLaunchMethod
-	}
-	if src.ShowSmapiConsole != nil {
-		dst.ShowSmapiConsole = src.ShowSmapiConsole
 	}
 	if src.ConsoleLevel != "" {
 		dst.ConsoleLevel = src.ConsoleLevel
@@ -329,14 +321,8 @@ func normalizeGame(g *GameSettings) {
 	if !slices.Contains(missingReqValues, g.MissingRequirements) {
 		g.MissingRequirements = d.MissingRequirements
 	}
-	if !slices.Contains(smapiBuildsValues, g.SmapiBuilds) {
-		g.SmapiBuilds = d.SmapiBuilds
-	}
 	if !slices.Contains(launchMethodValues, g.DefaultLaunchMethod) {
 		g.DefaultLaunchMethod = d.DefaultLaunchMethod
-	}
-	if g.ShowSmapiConsole == nil {
-		g.ShowSmapiConsole = d.ShowSmapiConsole
 	}
 	if !slices.Contains(consoleLevelValues, g.ConsoleLevel) {
 		g.ConsoleLevel = d.ConsoleLevel
@@ -385,9 +371,6 @@ func validateGame(g GameSettings) error {
 	}
 	if !slices.Contains(missingReqValues, g.MissingRequirements) {
 		return fmt.Errorf("missing requirements must be ask, autodownload or never, got %q", g.MissingRequirements)
-	}
-	if !slices.Contains(smapiBuildsValues, g.SmapiBuilds) {
-		return fmt.Errorf("smapi builds must be never, show or include, got %q", g.SmapiBuilds)
 	}
 	if !slices.Contains(launchMethodValues, g.DefaultLaunchMethod) {
 		return fmt.Errorf("default launch method must be steam or direct, got %q", g.DefaultLaunchMethod)

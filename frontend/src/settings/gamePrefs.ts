@@ -50,8 +50,13 @@ export interface GamePrefBlock {
 
 export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
   const got = s.games?.[game]
+  // SMAPI's builds and console choices are the loader's, stored beside the game blocks.
+  const loader = {
+    smapiBuilds: s.smapiBuilds || defaultGamePrefs.smapiBuilds,
+    showSmapiConsole: on(s.showSmapiConsole, true),
+  }
   if (!got) {
-    return defaultGamePrefs
+    return { ...defaultGamePrefs, ...loader }
   }
   return {
     backupBeforePlay: got.backupBeforePlay || defaultGamePrefs.backupBeforePlay,
@@ -65,11 +70,10 @@ export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
     cosmeticConflicts: got.cosmeticConflicts || defaultGamePrefs.cosmeticConflicts,
     enableRequirements: got.enableRequirements || defaultGamePrefs.enableRequirements,
     missingRequirements: got.missingRequirements || defaultGamePrefs.missingRequirements,
-    smapiBuilds: got.smapiBuilds || defaultGamePrefs.smapiBuilds,
     defaultLaunchMethod: got.defaultLaunchMethod || defaultGamePrefs.defaultLaunchMethod,
-    showSmapiConsole: on(got.showSmapiConsole, true),
     consoleLevel: got.consoleLevel || defaultGamePrefs.consoleLevel,
     consoleTimestamps: on(got.consoleTimestamps, true),
     consoleFollow: on(got.consoleFollow, true),
+    ...loader,
   }
 }

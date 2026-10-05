@@ -33,13 +33,13 @@ func TestRegistryValidation(t *testing.T) {
 	if err := ApplyKeyGame(&s, "runsKept", "0", "stardew"); err == nil {
 		t.Fatal("expected runsKept reject")
 	}
-	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsNever, ""); err == nil {
+	if err := ApplyKeyGame(&s, "runsKept", "5", ""); err == nil {
 		t.Fatal("expected missing --game")
 	}
-	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsNever, "stardew"); err != nil {
+	if err := ApplyKeyGame(&s, "smapiBuilds", SmapiBuildsNever, ""); err != nil {
 		t.Fatal(err)
 	}
-	got, err := s.LookupGame("smapiBuilds", "stardew")
+	got, err := s.LookupGame("smapiBuilds", "")
 	if err != nil || got != SmapiBuildsNever {
 		t.Fatalf("lookup %q %v", got, err)
 	}
