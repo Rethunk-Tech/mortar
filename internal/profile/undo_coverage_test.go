@@ -270,12 +270,16 @@ func TestRevertToAnEventWithoutStateKeepsCurrentSettings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var doc map[string]any
+	var doc struct {
+		FormatVersion int                          `json:"formatVersion"`
+		Counted       bool                         `json:"counted"`
+		Events        []map[string]json.RawMessage `json:"events"`
+	}
 	if err := json.Unmarshal(raw, &doc); err != nil {
 		t.Fatal(err)
 	}
-	for _, ev := range doc["events"].([]any) {
-		delete(ev.(map[string]any), "state")
+	for _, ev := range doc.Events {
+		delete(ev, "state")
 	}
 	raw, err = json.Marshal(doc)
 	if err != nil {
