@@ -11,34 +11,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-// Host fetches the files behind the URLs it matches.
-type Host interface {
-	ID() string
-	Match(rawURL string) bool
-	// Fetch saves the file into dstDir and returns its path.
-	Fetch(ctx context.Context, rawURL, dstDir string) (string, error)
-}
-
 // DownloadFunc is a resumable download of url into dest, capped at limit bytes, that reports progress.
 type DownloadFunc func(ctx context.Context, hc *http.Client, url, dest string, limit int64, progress func(done, total int64)) error
-
-// For returns the host for rawURL: GitHub for its own URLs, else the direct host. It is nil for a URL no host takes.
-// download is how GitHub assets are fetched; the github package supplies it, which keeps this package free of it.
-func For(rawURL string, download DownloadFunc) Host {
-	for _, h := range []Host{&GitHub{Download: download}, &Direct{}} {
-		if h.Match(rawURL) {
-			return h
-		}
-	}
-	return nil
-}
 
 // httpsOnly refuses a redirect off https, so a server cannot steer a download to a plain-HTTP or local address.
 func httpsOnly(req *http.Request, via []*http.Request) error {
@@ -72,10 +52,6 @@ type Direct struct {
 	// MaxBytes caps the body; zero means the archive extraction cap.
 	MaxBytes int64
 }
-
-func (*Direct) ID() string { return "direct" }
-
-func (*Direct) Match(rawURL string) bool { _, ok := parseHTTPS(rawURL); return ok }
 
 // Fetch writes to a temp file beside the target and renames it into place, so a failed or oversize download leaves
 // nothing behind.
@@ -143,13 +119,6 @@ type GitHub struct {
 	Download DownloadFunc
 	// Progress, when set, hears the transfer's figures.
 	Progress func(done, total int64)
-}
-
-func (*GitHub) ID() string { return "github" }
-
-func (*GitHub) Match(rawURL string) bool {
-	u, ok := parseHTTPS(rawURL)
-	return ok && u.Hostname() == "github.com" && strings.Contains(u.Path, "/releases/download/")
 }
 
 func (g *GitHub) Fetch(ctx context.Context, rawURL, dstDir string) (string, error) {

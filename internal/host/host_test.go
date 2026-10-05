@@ -12,25 +12,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-func TestFor(t *testing.T) {
-	cases := map[string]string{
-		"https://github.com/o/r/releases/download/v1/a.zip": "github",
-		"https://github.com/o/r":                            "direct",
-		"https://example.com/a.zip":                         "direct",
-		"http://example.com/a.zip":                          "",
-		"ftp://x/a.zip":                                     "",
-	}
-	for u, want := range cases {
-		got := ""
-		if h := For(u, nil); h != nil {
-			got = h.ID()
-		}
-		if got != want {
-			t.Errorf("For(%q) = %q, want %q", u, got, want)
-		}
-	}
-}
-
 func TestDirectFetch(t *testing.T) {
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/bad") {
