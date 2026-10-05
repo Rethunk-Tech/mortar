@@ -17,7 +17,7 @@ const closureTimeout = 2 * time.Minute
 
 // expandPackages replaces each Thunderstore request with the package and everything it depends on, dependencies
 // first, each with its download address; the other requests pass through.
-func (s *Service) expandPackages(reqs []Request) ([]Request, error) {
+func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request, error) {
 	var out []Request
 	for _, r := range reqs {
 		if r.Package == "" {
@@ -25,10 +25,10 @@ func (s *Service) expandPackages(reqs []Request) ([]Request, error) {
 			continue
 		}
 		if s.d.Closure == nil {
-			return nil, errors.New("Thunderstore packages cannot be installed here")
+			return nil, errors.New("cannot install Thunderstore packages here")
 		}
 		ns, name, _ := strings.Cut(r.Package, "-")
-		ctx, cancel := context.WithTimeout(context.Background(), closureTimeout)
+		ctx, cancel := context.WithTimeout(ctx, closureTimeout)
 		list, err := s.d.Closure(ctx, r.Game, []thunderstore.Ref{{Namespace: ns, Name: name, Version: r.Version}})
 		cancel()
 		if err != nil {
@@ -55,7 +55,7 @@ func packageSource(it Item) profile.Source {
 // downloadPackage fetches a package archive and installs it into the item's profile.
 func (s *Service) downloadPackage(ctx context.Context, it Item) error {
 	if s.d.InstallPackage == nil {
-		return errors.New("Thunderstore packages cannot be installed here")
+		return errors.New("cannot install Thunderstore packages here")
 	}
 	if it.URL == "" {
 		return errors.New("the package has no download address: add it again")

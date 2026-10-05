@@ -393,7 +393,7 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wa
 					Kind: KindInstall, Game: a.Game, Profile: a.Profile, ModID: a.Link.ModID, FileID: a.Link.FileID,
 					key: a.Link.Key, expires: a.Link.Expires, Package: a.Package, Version: a.Version,
 				}
-				items, err := s.add([]Request{r})
+				items, err := s.add(ctx, []Request{r})
 				if err != nil {
 					s.reject(r, err)
 				}
@@ -587,16 +587,16 @@ func (s *Service) Add(reqs []Request) ([]Item, error) {
 	for i := range reqs {
 		reqs[i].key, reqs[i].expires = "", 0
 	}
-	return s.add(reqs)
+	return s.add(context.Background(), reqs)
 }
 
-func (s *Service) add(reqs []Request) ([]Item, error) {
+func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 	for _, r := range reqs {
 		if !r.valid() {
 			return nil, errors.New("choose a mod and a profile for the download")
 		}
 	}
-	reqs, err := s.expandPackages(reqs)
+	reqs, err := s.expandPackages(ctx, reqs)
 	if err != nil {
 		return nil, err
 	}
