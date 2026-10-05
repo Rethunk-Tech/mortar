@@ -1,7 +1,6 @@
 import { expect, test } from 'bun:test'
 import { sourceLabel } from './sourceLabel.ts'
 
-test('ModDrop has a label and unknown sources show their id', () => {
-  expect(sourceLabel('moddrop')).toBe('ModDrop')
+test('Unknown sources show their id', () => {
   expect(sourceLabel('curseforge')).toBe('curseforge')
 })

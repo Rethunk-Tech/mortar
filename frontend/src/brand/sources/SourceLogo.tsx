@@ -4,8 +4,6 @@ import nexusmods from '../vendor/nexusmods.svg'
 // GitHub's brand mark is black, so it uses the ink colour (its own dark-mode treatment); the others keep their colour.
 const ICONS: Record<string, { path: string; fill: string }> = {
   github: { path: siGithub.path, fill: 'var(--mortar-ink)' },
-  // ModDrop publishes no redistributable mark, so it gets the Material "download" glyph (Apache-2.0).
-  moddrop: { path: 'M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z', fill: 'var(--mortar-ink)' },
   thunderstore: { path: siThunderstore.path, fill: `#${siThunderstore.hex}` },
 }
 

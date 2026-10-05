@@ -11,12 +11,12 @@ import (
 
 func TestForGameFollowsCatalogOrderAndSkipsUnregistered(t *testing.T) {
 	t.Parallel()
-	g := components.GameInfo{Sources: []components.GameSource{{ID: "moddrop"}, {ID: "curseforge"}, {ID: "nexus"}, {ID: "github"}}}
+	g := components.GameInfo{Sources: []components.GameSource{{ID: "curseforge"}, {ID: "nexus"}, {ID: "github"}}}
 	var got []string
 	for _, s := range source.ForGame(g) {
 		got = append(got, s.ID())
 	}
-	if want := []string{"moddrop", "nexus", "github"}; !slices.Equal(got, want) {
+	if want := []string{"nexus", "github"}; !slices.Equal(got, want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 	var searchable []string
@@ -33,20 +33,8 @@ func TestSchemesAndHosts(t *testing.T) {
 	if !source.IsLink("NXM://stardewvalley/mods/1/files/2") || source.IsLink("https://x") {
 		t.Fatal("nxm should be the only claimed scheme")
 	}
-	if name, ok := source.NameOfHost("www.ModDrop.com"); !ok || name != "ModDrop" {
+	if name, ok := source.NameOfHost("www.Itch.io"); !ok || name != "itch.io" {
 		t.Fatalf("host lookup %q %v", name, ok)
-	}
-}
-
-func TestModDropLinkUsesCatalogKey(t *testing.T) {
-	t.Parallel()
-	e, _ := source.Get("moddrop")
-	linker, ok := e.Source.(source.PageLinker)
-	if !ok {
-		t.Fatal("moddrop should link pages")
-	}
-	if got := linker.ModPageURL("stardew-valley", "42"); got != "https://www.moddrop.com/stardew-valley/mods/42" {
-		t.Fatalf("got %s", got)
 	}
 }
 

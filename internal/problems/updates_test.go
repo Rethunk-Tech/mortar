@@ -115,7 +115,7 @@ func TestUpdateSource(t *testing.T) {
 		{meta.Update{Source: "CurseForge:123"}, 0, "", "CurseForge"},
 		{meta.Update{}, 0, "owner/repo", "GitHub"},
 		{meta.Update{}, 42, "", "Nexus"},
-		{meta.Update{URL: "https://www.moddrop.com/stardew/a"}, 0, "", "ModDrop"},
+		{meta.Update{URL: "https://www.moddrop.com/stardew/a"}, 0, "", "moddrop.com"},
 	}
 	for _, test := range tests {
 		if got := updateSource(test.update, test.nexus, test.github); got != test.want {

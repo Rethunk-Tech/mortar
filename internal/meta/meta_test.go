@@ -52,7 +52,7 @@ func TestLookupIgnoresCaseAndCaches(t *testing.T) {
 	var hits atomic.Int32
 	c := server(t, &down, &hits)
 	refs, err := c.Lookup(context.Background(), "PATHOSCHILD.contentpatcher")
-	if err != nil || len(refs) != 7 || refs[4] != (Ref{Site: "Nexus", ID: 1915}) {
+	if err != nil || len(refs) != 4 || refs[1] != (Ref{Site: "Nexus", ID: 1915}) {
 		t.Fatalf("refs = %v, err = %v", refs, err)
 	}
 	if refs, _ := c.Lookup(context.Background(), "nobody.nothing"); refs != nil {

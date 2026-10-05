@@ -24,7 +24,7 @@ const (
 	maxPage         = 8 << 20
 )
 
-// Ref names a mod page: Site is "Nexus", "CurseForge" or "ModDrop".
+// Ref names a mod page: Site is "Nexus" or "CurseForge", as the dataset names it.
 type Ref struct {
 	Site string `json:"site"`
 	ID   int    `json:"id"`

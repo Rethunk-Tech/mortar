@@ -1,7 +1,6 @@
 const LABELS: Record<string, string> = {
   nexus: 'Nexus',
   github: 'GitHub',
-  moddrop: 'ModDrop',
   thunderstore: 'Thunderstore',
 }
 

@@ -10,7 +10,6 @@
       "name": "Content Patcher",
       "nexusID": 1915,
       "curseForgeID": 309243,
-      "modDropID": 470174,
       "gitHubRepo": "Pathoschild/StardewMods",
       "main": {
         "version": "2.9.1",

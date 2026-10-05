@@ -1,5 +1,5 @@
 // Package source is the registry of places Mortar finds mods. A driver implements Source and whichever optional
-// capabilities (Searcher, Schemer, PageLinker, Hoster) it supports; callers find a capability by type assertion.
+// capabilities (Searcher, Schemer, Hoster) it supports; callers find a capability by type assertion.
 package source
 
 import (
@@ -146,11 +146,6 @@ func Unavailable(src Source) string {
 // Schemer is a source whose links open Mortar through a URL scheme.
 type Schemer interface {
 	Schemes() []string
-}
-
-// PageLinker is a source that can name a mod's web page from its native id (Item.ID).
-type PageLinker interface {
-	ModPageURL(gameKey, id string) string
 }
 
 // LinkOptIn is a schemer that does not claim its scheme from the system unless the user opts in. A source that does

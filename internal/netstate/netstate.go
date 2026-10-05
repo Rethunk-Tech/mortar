@@ -19,7 +19,6 @@ var probeURL = map[string]string{
 	"thunderstore": "https://thunderstore.io",
 	"modrinth":     "https://api.modrinth.com",
 	"itch":         "https://itch.io",
-	"moddrop":      "https://www.moddrop.com",
 }
 
 const probeTimeout = 10 * time.Second

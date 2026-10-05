@@ -152,6 +152,7 @@ func TestWhere(t *testing.T) {
 			&Ref{Site: "GitHub", GitHub: "me/b", URL: "https://github.com/me/b"}, false,
 		},
 		{"not in dataset", fakeMeta{}, dependent(), nil, false},
+		{"only on a site with no driver", fakeMeta{refs: map[string][]meta.Ref{"B": {{Site: "ModDrop", ID: 7}}}}, dependent(), nil, false},
 		{"dataset unreachable", fakeMeta{lookupErr: errors.New("offline")}, dependent(), nil, true},
 		{
 			"page fetch fails, link only",
