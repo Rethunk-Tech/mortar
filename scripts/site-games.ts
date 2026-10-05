@@ -11,6 +11,10 @@ interface Game {
   enabled: boolean
 }
 
+function escapeHTML(raw: string): string {
+  return raw.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
+}
+
 function listed(names: string[]): string {
   if (names.length <= 1) {
     return names.join('')
@@ -19,12 +23,13 @@ function listed(names: string[]): string {
 }
 
 const games = (JSON.parse(readFileSync(CATALOG, 'utf8')) as { games: Game[] }).games
-const text = listed(games.filter((g) => g.enabled).map((g) => g.name))
+const text = escapeHTML(listed(games.filter((g) => g.enabled).map((g) => g.name)))
 const check = process.argv.includes('--check')
 let stale = false
 for (const page of PAGES) {
   const before = readFileSync(page, 'utf8')
-  const after = before.replace(BLOCK, `$1${text}$2`)
+  // A function replacement, so `$&` in a game name is not read as a replacement pattern.
+  const after = before.replace(BLOCK, (_, open: string, close: string) => open + text + close)
   if (after === before) {
     continue
   }
