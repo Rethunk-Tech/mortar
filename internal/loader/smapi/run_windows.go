@@ -13,7 +13,9 @@ import (
 // start hands the installer's own arguments to PowerShell through the environment, so no quoting rules of ours meet
 // PowerShell's. Start-Process gives the child a hidden console of its own; Go would give it NUL handles instead.
 const start = `$a = @(); $i = 0; while (Test-Path "env:MORTAR_ARG$i") { $v = (Get-Item "env:MORTAR_ARG$i").Value; if ($v -match '[\s"]') { $v = '"' + $v + '"' }; $a += $v; $i++ }
-$p = Start-Process -FilePath $env:MORTAR_EXE -ArgumentList $a -WorkingDirectory $env:MORTAR_DIR -WindowStyle Hidden -Wait -PassThru
+$o = @{ FilePath = $env:MORTAR_EXE; ArgumentList = $a; WindowStyle = 'Hidden'; Wait = $true; PassThru = $true }
+if ($env:MORTAR_DIR) { $o.WorkingDirectory = $env:MORTAR_DIR }
+$p = Start-Process @o
 exit $p.ExitCode`
 
 // runInstaller runs the installer on a hidden console of its own. It clears the screen as it starts, which fails with
