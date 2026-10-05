@@ -124,6 +124,8 @@ type session struct {
 	settingsMissing bool
 	exit            launch.Exit
 	haveExit        bool
+	// stoppedAt is when the player asked Mortar to stop the game; zero for any other end.
+	stoppedAt time.Time
 }
 
 // Service exposes launch, status and stop to the frontend.
@@ -1177,6 +1179,10 @@ func (s *Service) stopSlot(g slot) error {
 	}
 	s.mu.Lock()
 	s.stopping[keyOf(g)] = true
+	if sess, ok := s.logs[keyOf(g)]; ok {
+		sess.stoppedAt = time.Now()
+		s.logs[keyOf(g)] = sess
+	}
 	s.mu.Unlock()
 	var errs []error
 	for _, p := range procs {

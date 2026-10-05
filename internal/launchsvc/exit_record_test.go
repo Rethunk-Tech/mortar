@@ -37,23 +37,38 @@ func TestRecordUserStopNotCrashed(t *testing.T) {
 	}
 }
 
-func TestRecordUserStopIsNeverACrashWhateverTheLogSays(t *testing.T) {
-	svc, p, cfg, home := runEnv(t)
-	mods, err := svc.profiles.ModsDir("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// Stardew's runtime often segfaults while it is being stopped, and a frozen game the player stops may have
-	// logged a fatal error first.
-	writeOwnedLog(t, cfg, home, mods, "[19:43:51 ALERT SMAPI] The game crashed: boom\n")
-	g := game.Find("stardew")
-	svc.mu.Lock()
-	svc.logs[keyOf(g)] = session{haveExit: true, exit: launch.Exit{Code: 139, Signal: "SIGSEGV", Stopped: true}}
-	svc.mu.Unlock()
-	svc.record(g, p.ID, time.Now(), false)
-	runs, err := svc.Runs("stardew", p.ID)
-	if err != nil || len(runs) != 1 || runs[0].Outcome != launch.OutcomeRan || runs[0].Cause != nil {
-		t.Fatalf("stop = %#v, %v", runs, err)
+func TestRecordUserStopIsACrashOnlyWhenTheLogCrashedFirst(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		stopAt  string
+		outcome launch.Outcome
+	}{
+		// A frozen game the player stops after it logged a crash.
+		{"crash then stop", "19:44:00", launch.OutcomeCrashed},
+		// Stardew's runtime often logs or segfaults while it is being stopped.
+		{"stop then crash", "19:43:00", launch.OutcomeRan},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			svc, p, cfg, home := runEnv(t)
+			mods, err := svc.profiles.ModsDir("stardew", p.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			writeOwnedLog(t, cfg, home, mods, "[19:43:51 ALERT SMAPI] The game crashed: boom\n")
+			stopAt, err := time.ParseInLocation("15:04:05", tc.stopAt, time.Local)
+			if err != nil {
+				t.Fatal(err)
+			}
+			g := game.Find("stardew")
+			svc.mu.Lock()
+			svc.logs[keyOf(g)] = session{haveExit: true, exit: launch.Exit{Code: 139, Signal: "SIGSEGV", Stopped: true}, stoppedAt: stopAt}
+			svc.mu.Unlock()
+			svc.record(g, p.ID, time.Now(), false)
+			runs, err := svc.Runs("stardew", p.ID)
+			if err != nil || len(runs) != 1 || runs[0].Outcome != tc.outcome {
+				t.Fatalf("stop = %#v, %v", runs, err)
+			}
+		})
 	}
 }
 

@@ -322,10 +322,11 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if sess.haveExit {
 		launch.ApplyExit(&stats, sess.exit)
 	}
-	// A run the player stopped from Mortar ended because they asked: never a crash, whatever its log says.
+	// A run the player stopped from Mortar is a crash only when the game logged one before the stop: stopping a
+	// frozen game is how a player gets out of a crash, but the stop itself is never one.
 	stopped := sess.haveExit && sess.exit.Stopped
 	if stopped {
-		stats.Crashed = false
+		stats.Crashed = crashedBefore(text, sess.stoppedAt)
 	} else if !stats.Crashed && s.playerCrashed(g.ID(), profileID, started) {
 		stats.Crashed = true
 	}
@@ -348,7 +349,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		idx = runIndex{}
 	}
 	var cause Cause
-	if !stopped {
+	if !stopped || stats.Crashed {
 		cause = s.cause(g.ID(), profileID, text)
 	}
 	run := Run{
@@ -387,7 +388,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if !failed && s.settings != nil {
 		_, _ = s.settings.AddPlaytime(g.ID(), ended.Sub(started))
 	}
-	if !failed && !stopped && (stats.Errors > 0 || stats.Crashed) {
+	if !failed && (stats.Crashed || (!stopped && stats.Errors > 0)) {
 		var crashCause *Cause
 		if run.Cause != nil {
 			crashCause = run.Cause
@@ -558,4 +559,16 @@ func readOwnedLog(path string, own bool, home, modsDir string) (string, bool) {
 		return "", false
 	}
 	return text, true
+}
+
+// crashedBefore reports a crash line in text logged no later than at, or any crash line when at is unknown.
+// ponytail: log lines carry only a time of day, so a run stopped across midnight compares wrongly; dated lines would fix it.
+func crashedBefore(text string, at time.Time) bool {
+	stop := at.Local().Format("15:04:05")
+	for _, e := range launch.ParseLog(text) {
+		if !e.Cont && launch.IsCrash(e) && (at.IsZero() || e.Time <= stop) {
+			return true
+		}
+	}
+	return false
 }

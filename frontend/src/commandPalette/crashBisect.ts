@@ -9,7 +9,10 @@ export async function startCrashBisectFromPalette(): Promise<string | null> {
     return 'Open a profile first.'
   }
   const runs = await Runs(game.id, openId)
-  const crashed = (runs ?? []).find((run) => run.errors > 0 && !run.exit?.stopped)
+  // A run the player stopped counts only when it crashed before the stop.
+  const crashed = (runs ?? []).find(
+    (run) => run.outcome === 'crashed' || (run.errors > 0 && !run.exit?.stopped),
+  )
   if (!crashed) {
     return 'No crashed run found for this profile.'
   }
