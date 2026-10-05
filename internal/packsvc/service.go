@@ -94,9 +94,9 @@ type LocalProfile struct {
 	Path string `json:"path"`
 }
 
-// LocalProfiles lists the game's profiles in the data folders of r2modman and Gale found on this computer: the
-// folders below <data>/<the game's r2modman folder or Thunderstore community key>/profiles that hold a mods.yml or a
-// profile.json. Pass a profile's Path as Source.Path.
+// LocalProfiles lists the game's profiles in the data folders of r2modman (the folders below
+// <data>/<the game's r2modman folder>/profiles that hold a mods.yml) and in Gale's database, found on this computer.
+// Pass a profile's Path as Source.Path.
 func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
 	info, ok := components.BundledGame(gameID)
 	if !ok {
@@ -122,12 +122,18 @@ func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
 	for _, data := range pack.DataDirs() {
 		scan(data, info.R2modmanFolder, pack.IsProfileFolder)
 	}
-	key := ""
-	if src, ok := info.Source("thunderstore"); ok {
-		key = src.Key
-	}
-	for _, data := range pack.GaleDataDirs() {
-		scan(data, key, pack.IsGaleProfileFolder)
+	if src, ok := info.Source("thunderstore"); ok && src.Key != "" {
+		if dirs := pack.GaleDataDirs(); len(dirs) > 0 {
+			all, err := pack.GaleProfiles(context.Background(), filepath.Join(dirs[0], "data.sqlite3"))
+			if err != nil {
+				return out, err
+			}
+			for _, p := range all {
+				if p.Slug == src.Key {
+					out = append(out, LocalProfile{Name: p.Name, Path: p.Path})
+				}
+			}
+		}
 	}
 	return out, nil
 }
