@@ -88,7 +88,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
         flexShrink: 0,
         display: 'flex',
         alignItems: 'stretch',
-        bgcolor: 'rgba(15,15,18,0.55)',
+        bgcolor: 'var(--mortar-title-bar)',
       }}
     >
       <AppMenu />

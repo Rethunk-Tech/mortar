@@ -33,6 +33,8 @@ interface Surfaces {
   overlay20: string
   // Dims the whole window behind a drop target or the tour spotlight; the overlay ramp is for recessed fills.
   scrim: string
+  // The window's title bar over the wallpaper.
+  titleBar: string
   overlay24: string
   overlay25: string
   overlay28: string
@@ -90,6 +92,7 @@ const darkSurfaces: Surfaces = {
   inkDim92: 'rgba(210,210,215,0.92)',
   inkDim60: 'rgba(210,210,215,0.6)',
   scrim: 'rgba(0,0,0,0.3)',
+  titleBar: 'rgba(15,15,18,0.55)',
   overlay20: 'rgba(0,0,0,0.2)',
   overlay24: 'rgba(0,0,0,0.24)',
   overlay25: 'rgba(0,0,0,0.25)',
@@ -148,6 +151,7 @@ const lightSurfaces: Surfaces = {
   inkDim92: 'rgba(50,50,58,0.78)',
   inkDim60: 'rgba(50,50,58,0.55)',
   scrim: 'rgba(0,0,0,0.28)',
+  titleBar: 'rgba(244,244,247,0.88)',
   // Recessed fills (inputs, toggles, chips, panels) over a light surface want a faint tint, not the dark ramp's veil.
   overlay20: 'rgba(0,0,0,0.04)',
   overlay24: 'rgba(0,0,0,0.045)',
