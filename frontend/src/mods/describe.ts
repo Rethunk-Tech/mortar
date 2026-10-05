@@ -138,6 +138,10 @@ export function useDescribe(): Describe {
       }
       case 'damaged':
         return t`${p.damaged.name} has damaged files.`
+      case 'pluginClash': {
+        const names = (p.pluginClash.copies ?? []).map((c) => c.name).join(', ')
+        return t`${names} all ship the plugin ${p.pluginClash.guid}, and BepInEx loads only one.`
+      }
       case 'setting': {
         const s = p.setting
         const installed = (s.forNames ?? []).join(', ')

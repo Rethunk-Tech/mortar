@@ -62,6 +62,7 @@ const ERROR_SECTIONS = new Set<string>([
   'damaged',
   'runErrors',
   'loadFailures',
+  'pluginClashes',
 ])
 
 const isDismissedRow = (row: Row | DismissedRow): row is DismissedRow => 'row' in row
@@ -82,6 +83,8 @@ function useSectionTitle() {
         return t`Errors in the last run`
       case 'loadFailures':
         return t`Failed to load`
+      case 'pluginClashes':
+        return t`Plugins shipped twice`
       case 'drift':
         return t`Changed outside Mortar`
       case 'duplicates':

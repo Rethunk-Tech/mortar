@@ -24,6 +24,7 @@ import { BrokenFix } from './problemFix/BrokenFix.tsx'
 import { DamagedFix } from './problemFix/DamagedFix.tsx'
 import { DuplicateFix } from './problemFix/DuplicateFix.tsx'
 import { MissingFix } from './problemFix/MissingFix.tsx'
+import { PluginClashFix } from './problemFix/PluginClashFix.tsx'
 import { SettingFix } from './problemFix/SettingFix.tsx'
 import { WinFix } from './problemFix/WinFix.tsx'
 import type { WarningButton } from './problemFix/warningButton.tsx'
@@ -73,6 +74,10 @@ function MissingKind({ problem, dismissedToken, button }: KindProps<'missing'>) 
   return <MissingFix problem={problem} dismissedToken={dismissedToken} button={button} />
 }
 
+function PluginClashKind({ problem, button }: KindProps<'pluginClash'>) {
+  return <PluginClashFix problem={problem} button={button} />
+}
+
 const NoFix = () => null
 
 const problemFixes = {
@@ -84,6 +89,7 @@ const problemFixes = {
   asset: AssetKind,
   missing: MissingKind,
   damaged: DamagedKind,
+  pluginClash: PluginClashKind,
 } satisfies { [K in Problem['kind']]: ComponentType<KindProps<K>> }
 
 // Moves a folder Mortar did not install to its trash, with an Undo that puts it back.

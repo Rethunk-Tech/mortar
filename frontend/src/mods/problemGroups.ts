@@ -27,6 +27,7 @@ export type ProblemSectionId =
   | 'damaged'
   | 'runErrors'
   | 'loadFailures'
+  | 'pluginClashes'
   | 'drift'
   | 'duplicates'
   | 'settings'
@@ -88,6 +89,12 @@ export function problemSections(result: Result): ProblemSection[] {
       id: 'loadFailures',
       rows: (result.loadFailures ?? []).map(
         (loadFailure): Row => ({ kind: 'loadFailure', loadFailure }),
+      ),
+    },
+    {
+      id: 'pluginClashes',
+      rows: (result.pluginClashes ?? []).map(
+        (pluginClash): Row => ({ kind: 'pluginClash', pluginClash }),
       ),
     },
     {

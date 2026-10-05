@@ -9,6 +9,7 @@ import type {
   Duplicate,
   LoadFailure,
   Missing,
+  PluginClash,
   Result,
   RunError,
   Update,
@@ -77,6 +78,7 @@ export type Problem =
   | { kind: 'loadFailure'; loadFailure: LoadFailure }
   | { kind: 'setting'; setting: SettingHint }
   | { kind: 'damaged'; damaged: Damaged }
+  | { kind: 'pluginClash'; pluginClash: PluginClash }
 
 export const problemsOf = (result: Result | null): Problem[] =>
   result
@@ -96,6 +98,9 @@ export const problemsOf = (result: Result | null): Problem[] =>
         ),
         ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
         ...(result.damaged ?? []).map((damaged): Problem => ({ kind: 'damaged', damaged })),
+        ...(result.pluginClashes ?? []).map(
+          (pluginClash): Problem => ({ kind: 'pluginClash', pluginClash }),
+        ),
       ]
     : []
 
@@ -131,6 +136,9 @@ export function concerns(p: Problem, mod: Mod): boolean {
   }
   if (p.kind === 'damaged') {
     return p.damaged.key === mod.key
+  }
+  if (p.kind === 'pluginClash') {
+    return (p.pluginClash.copies ?? []).some((c) => c.key === mod.key)
   }
   return sameId(p.missing.dependentId, mod.id)
 }
@@ -199,7 +207,7 @@ export const updatesForReview = (
 
 export const installableUpdate = (u: Update): boolean =>
   (!u.unofficial || gamePrefs(useSettings.getState()).smapiBuilds === 'include') &&
-  (u.githubRepo !== '' || u.nexusId > 0 || !!u.package)
+  (u.githubRepo !== '' || u.nexusId > 0 || Boolean(u.package))
 
 export const updateCount = (
   result: UpdatesResult | null,

@@ -31,6 +31,8 @@ export function modLinksOf(row: Row): ModLink[] {
         return key === undefined || id === undefined ? [] : [{ name, key, id }]
       })
     }
+    case 'pluginClash':
+      return (row.pluginClash.copies ?? []).map((c) => ({ name: c.name, key: c.key, id: c.id }))
     default:
       return []
   }
