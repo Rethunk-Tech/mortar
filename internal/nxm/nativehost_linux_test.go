@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -29,7 +30,7 @@ func TestRegisterWritesHostManifestsForInstalledBrowsersAndRestoreRemovesThem(t 
 		AllowedExtensions []string `json:"allowed_extensions"`
 	}
 	b, err := fsx.ReadFile(chromium)
-	if err != nil || json.Unmarshal(b, &m) != nil || m.Path != l.exe || len(m.AllowedOrigins) != 1 || m.AllowedOrigins[0] != nativehost.ChromeOrigin {
+	if err != nil || json.Unmarshal(b, &m) != nil || m.Path != l.exe || !slices.Equal(m.AllowedOrigins, nativehost.ChromeOrigins()) {
 		t.Fatalf("chromium manifest %s, %v", b, err)
 	}
 	m.AllowedOrigins = nil

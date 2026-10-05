@@ -66,9 +66,11 @@ func protocolMismatch(sent *int) string {
 	return ""
 }
 
-// storeChromeIDs are the ids Chrome Web Store and Edge Add-ons assign the published extension, which differ from the
-// unpacked id; they are added here when the listings are published, and each is allowed to reach the host.
-var storeChromeIDs = []string{}
+// storeChromeIDs are the ids the Chrome Web Store and Edge Add-ons assign the extension, which differ from the unpacked
+// id; each is allowed to reach the host.
+var storeChromeIDs = []string{
+	"hboeppdoecbglcmfojappgehkbecdfbi", // Chrome Web Store
+}
 
 // ChromeOrigins lists every extension origin the host manifest allows: the unpacked build plus the store builds.
 func ChromeOrigins() []string {
