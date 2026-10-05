@@ -277,13 +277,11 @@ func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Pro
 	var procs []launch.Process
 	l, _ := s.loaderOf(g.ID(), profileID)
 	if names, ok := l.(loader.ProcessNames); ok {
-		for _, name := range names.ProcessNames() {
-			ps, err := launch.Processes(s.procDir, name)
-			if err != nil {
-				return nil, err
-			}
-			procs = append(procs, ps...)
+		ps, err := launch.Processes(s.procDir, names.ProcessNames()...)
+		if err != nil {
+			return nil, err
 		}
+		procs = ps
 	}
 	procs = s.ownedBy(g, procs)
 	owner, _ := l.(loader.Owner)
@@ -373,16 +371,14 @@ func sinceOr(t time.Time) int64 {
 
 // poll syncs the stored state with the processes, and reports whether the game is still worth watching.
 func (s *Service) gameProcs(g game.Game) ([]launch.Process, error) {
+	ps, err := launch.Processes(s.procDir, game.ProcessNames(g)...)
+	if err != nil {
+		return nil, err
+	}
 	var out []launch.Process
-	for _, name := range game.ProcessNames(g) {
-		ps, err := launch.Processes(s.procDir, name)
-		if err != nil {
-			return nil, err
-		}
-		for _, p := range ps {
-			if procVisible == nil || s.procDir != procDirRun || procVisible(p) {
-				out = append(out, p)
-			}
+	for _, p := range ps {
+		if procVisible == nil || s.procDir != procDirRun || procVisible(p) {
+			out = append(out, p)
 		}
 	}
 	return s.ownedBy(g, out), nil

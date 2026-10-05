@@ -52,6 +52,10 @@ func TestProcesses(t *testing.T) {
 	if procs[0].UsesModsPath("/p/other/mods") {
 		t.Fatal("matched an unrelated mods path")
 	}
+	add("106", "/g/StardewValley\x00")
+	if both, err := Processes(proc, "StardewValley", "StardewModdingAPI"); err != nil || len(both) != 5 {
+		t.Fatalf("one pass for two names = %+v, %v", both, err)
+	}
 }
 
 func TestProcessStartTime(t *testing.T) {

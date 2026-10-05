@@ -3,15 +3,16 @@
 package launch
 
 import (
+	"slices"
 	"strings"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
 )
 
-// Processes lists processes by executable name through Toolhelp. Their command lines are not read
+// Processes lists processes whose executable is one of names through Toolhelp. Their command lines are not read
 // (that needs the process's PEB), so Args stays nil and callers treat the profile as unknown.
-func Processes(_, name string) ([]Process, error) {
+func Processes(_ string, names ...string) ([]Process, error) {
 	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPPROCESS, 0)
 	if err != nil {
 		return nil, err
@@ -21,7 +22,7 @@ func Processes(_, name string) ([]Process, error) {
 	var out []Process
 	for err = windows.Process32First(snap, &entry); err == nil; err = windows.Process32Next(snap, &entry) {
 		exe := strings.TrimSuffix(windows.UTF16ToString(entry.ExeFile[:]), ".exe")
-		if strings.EqualFold(exe, name) {
+		if slices.ContainsFunc(names, func(name string) bool { return strings.EqualFold(exe, name) }) {
 			out = append(out, Process{PID: int(entry.ProcessID), Exe: imagePath(entry.ProcessID)})
 		}
 	}

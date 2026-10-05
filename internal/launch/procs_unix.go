@@ -31,10 +31,21 @@ func runs(args []string, name string) bool {
 	return (host == "dotnet" || host == "mono") && len(args) > 1 && is(args[1])
 }
 
-// Processes lists running processes whose executable is name, from procDir (/proc) on Linux.
-func Processes(procDir, name string) ([]Process, error) {
+// runsAny reports whether args start any of names.
+func runsAny(args, names []string) bool {
+	for _, name := range names {
+		if runs(args, name) {
+			return true
+		}
+	}
+	return false
+}
+
+// Processes lists running processes whose executable is one of names, from procDir (/proc) on Linux, in one pass
+// over the process table.
+func Processes(procDir string, names ...string) ([]Process, error) {
 	if procDir == "/proc" && sandbox.InFlatpak() {
-		return hostProcesses(name)
+		return hostProcesses(names)
 	}
 	entries, err := os.ReadDir(procDir)
 	if err != nil {
@@ -51,7 +62,7 @@ func Processes(procDir, name string) ([]Process, error) {
 			continue
 		}
 		args := strings.Split(string(bytes.TrimRight(raw, "\x00")), "\x00")
-		if !runs(args, name) {
+		if !runsAny(args, names) {
 			continue
 		}
 		p := Process{PID: pid, Args: args}
@@ -102,15 +113,15 @@ func startTime(procDir, pid string) time.Time {
 // shows only Mortar's own. The proc entry's mtime is the process start for a process that has not changed owner.
 const hostScript = `for d in /proc/[0-9]*; do [ -r "$d/cmdline" ] || continue; printf '%s\t%s\t' "${d#/proc/}" "$(stat -c %Y "$d")"; tr '\0' '\037' <"$d/cmdline"; echo; done`
 
-func hostProcesses(name string) ([]Process, error) {
+func hostProcesses(names []string) ([]Process, error) {
 	out, err := sandbox.HostOutput("sh", "-c", hostScript)
 	if err != nil {
 		return nil, err
 	}
-	return parseHostProcesses(string(out), name), nil
+	return parseHostProcesses(string(out), names...), nil
 }
 
-func parseHostProcesses(out, name string) []Process {
+func parseHostProcesses(out string, names ...string) []Process {
 	var procs []Process
 	for line := range strings.SplitSeq(out, "\n") {
 		f := strings.SplitN(line, "\t", 3)
@@ -122,7 +133,7 @@ func parseHostProcesses(out, name string) []Process {
 			continue
 		}
 		args := strings.Split(strings.TrimRight(f[2], "\x1f"), "\x1f")
-		if !runs(args, name) {
+		if !runsAny(args, names) {
 			continue
 		}
 		p := Process{PID: pid, Args: args}

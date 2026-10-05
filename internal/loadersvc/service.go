@@ -365,16 +365,11 @@ func (s *Service) install(ctx context.Context, id, loaderID string, fromStart bo
 
 // gameRunning reports whether any process of the game runs, with or without its loader and however it was started.
 func (s *Service) gameRunning(g game.Game) (bool, error) {
-	for _, name := range game.ProcessNames(g) {
-		procs, err := launch.Processes(s.procDir, name)
-		if err != nil {
-			return false, fmt.Errorf("check for a running %s: %w", g.Name(), err)
-		}
-		if len(procs) > 0 {
-			return true, nil
-		}
+	procs, err := launch.Processes(s.procDir, game.ProcessNames(g)...)
+	if err != nil {
+		return false, fmt.Errorf("check for a running %s: %w", g.Name(), err)
 	}
-	return false, nil
+	return len(procs) > 0, nil
 }
 
 func (s *Service) emit(name string, data any) {
