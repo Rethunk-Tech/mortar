@@ -71,7 +71,7 @@ func accountMatches(key, nonce, payload, proof string) bool {
 func entryKeys(shared share.Shared) []string {
 	keys := make([]string, 0, len(shared.Entries))
 	for _, ref := range shared.Entries {
-		if ref.GitHub != "" {
+		if ref.GitHub != "" || ref.Package != "" {
 			continue
 		}
 		key := store.NexusKey(ref.ModID, ref.FileID)

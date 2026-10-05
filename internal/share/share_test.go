@@ -636,3 +636,33 @@ func TestOverlayPlacementIsChecked(t *testing.T) {
 		}
 	}
 }
+
+func TestThunderstoreEntriesTravelInLinks(t *testing.T) {
+	t.Parallel()
+	p := profile.Profile{Name: "Friends", Entries: []profile.Entry{
+		{Key: "a", Source: profile.Source{Kind: profile.KindThunderstore, Name: "Alice-MoreCompany", Version: "1.2.3"}},
+	}}
+	res, err := Encode("lethal-company", p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Parse(res.App)
+	if err != nil || got.SourceKeys["thunderstore"] != "lethal-company" || len(got.Entries) != 1 ||
+		got.Entries[0].Package != "Alice-MoreCompany" || got.Entries[0].Version != "1.2.3" {
+		t.Fatalf("round trip = %+v, %v", got, err)
+	}
+	if !got.Entries[0].MatchesEntry(p.Entries[0]) {
+		t.Error("the ref does not match its entry")
+	}
+	out, err := json.Marshal(got.Entries)
+	if err != nil || string(out) != `[{"s":"thunderstore","ns":"Alice","name":"MoreCompany","version":"1.2.3"}]` {
+		t.Errorf("wire = %s, %v", out, err)
+	}
+	// stardew has no Thunderstore community, so a package cannot name its game's source.
+	if _, err := Encode("stardew", p); err == nil {
+		t.Error("a Thunderstore entry was encoded for a game without a community")
+	}
+	if _, err := Parse(pack(t, `[3,"x","lethal-company",{"thunderstore":"lethal-company"},[{"s":"thunderstore","ns":"A","name":"B","version":"bad"}]]`)); err == nil {
+		t.Error("a malformed version was accepted")
+	}
+}

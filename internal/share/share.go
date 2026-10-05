@@ -45,12 +45,16 @@ var (
 	ErrMalformed = errors.New("share payload is malformed")
 )
 
-// Ref names one file to install: a Nexus mod file, or a GitHub release asset as "<owner>/<repo>@<tag>/<asset>".
+// Ref names one file to install: a Nexus mod file, a GitHub release asset as "<owner>/<repo>@<tag>/<asset>", or a
+// Thunderstore package.
 // On the wire each ref is an object whose "s" names its source.
 type Ref struct {
-	ModID    int                            `json:"modId,omitempty"`
-	FileID   int                            `json:"fileId,omitempty"`
-	GitHub   string                         `json:"github,omitempty"`
+	ModID  int    `json:"modId,omitempty"`
+	FileID int    `json:"fileId,omitempty"`
+	GitHub string `json:"github,omitempty"`
+	// Package is a Thunderstore "Namespace-Name" at Version (the newest when Version is empty).
+	Package  string                         `json:"package,omitempty"`
+	Version  string                         `json:"version,omitempty"`
 	Disabled []mod.ID                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Note     string                         `json:"note,omitempty"`
@@ -120,7 +124,16 @@ func validName(name string) bool {
 		!strings.ContainsFunc(name, unicode.IsControl)
 }
 
+var (
+	packageRef = regexp.MustCompile(`^[A-Za-z0-9_]+-[A-Za-z0-9_]+$`)
+	versionRef = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
+)
+
 func (r Ref) valid() bool {
+	if r.Package != "" {
+		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && packageRef.MatchString(r.Package) &&
+			(r.Version == "" || versionRef.MatchString(r.Version))
+	}
 	if r.GitHub != "" {
 		if r.ModID != 0 || r.FileID != 0 || !githubRef.MatchString(r.GitHub) {
 			return false
@@ -141,6 +154,9 @@ type wireRef struct {
 	Repo     string                         `json:"repo,omitempty"`
 	Tag      string                         `json:"tag,omitempty"`
 	Asset    string                         `json:"asset,omitempty"`
+	NS       string                         `json:"ns,omitempty"`
+	Name     string                         `json:"name,omitempty"`
+	Version  string                         `json:"version,omitempty"`
 	Disabled []mod.ID                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Note     string                         `json:"note,omitempty"`
@@ -151,10 +167,14 @@ type wireRef struct {
 // MarshalJSON writes the ref as its wire object.
 func (r Ref) MarshalJSON() ([]byte, error) {
 	w := wireRef{Disabled: r.Disabled, Fomod: r.Fomod, Note: r.Note, Tags: r.Tags, Overlay: r.Overlay}
-	if r.GitHub != "" {
+	switch {
+	case r.Package != "":
+		w.Source, w.Version = "thunderstore", r.Version
+		w.NS, w.Name, _ = strings.Cut(r.Package, "-")
+	case r.GitHub != "":
 		w.Source = "github"
 		w.Repo, w.Tag, w.Asset = r.GitHubParts()
-	} else {
+	default:
 		w.Source, w.Mod, w.File = "nexus", r.ModID, r.FileID
 	}
 	return json.Marshal(w)
@@ -174,6 +194,8 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 	}
 	r := Ref{Disabled: w.Disabled, Fomod: w.Fomod, Note: w.Note, Tags: w.Tags, Overlay: w.Overlay}
 	switch {
+	case w.Source == "thunderstore" && w.Mod == 0 && w.File == 0 && w.Repo == "" && w.NS != "" && w.Name != "":
+		r.Package, r.Version = w.NS+"-"+w.Name, w.Version
 	case w.Source == "nexus" && w.Repo == "" && w.Tag == "" && w.Asset == "":
 		r.ModID, r.FileID = w.Mod, w.File
 	case w.Source == "github" && w.Mod == 0 && w.File == 0 && w.Repo != "" && w.Tag != "" && w.Asset != "":
@@ -214,7 +236,8 @@ func checkShared(s Shared) error {
 		return fmt.Errorf("%w: more than %d entries", ErrMalformed, MaxEntries)
 	}
 	for _, r := range s.Entries {
-		if !r.valid() || !validDetails(r) || (r.GitHub == "" && s.SourceKeys["nexus"] == "") {
+		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && s.SourceKeys["nexus"] == "") ||
+			(r.Package != "" && s.SourceKeys["thunderstore"] == "") {
 			return fmt.Errorf("%w: bad entry", ErrMalformed)
 		}
 	}
@@ -228,7 +251,7 @@ func validDetails(r Ref) bool {
 	if !validEntryNote(r.Note) || !validEntryTags(r.Tags) {
 		return false
 	}
-	if r.Overlay != nil && (r.GitHub != "" || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
+	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
 		return false
 	}
 	for _, disabled := range r.Disabled {
@@ -343,6 +366,10 @@ func importEntryNoteTags(note string, tags []string) (string, []string) {
 
 // MatchesEntry reports whether the ref names the same mod file as the profile entry.
 func (r Ref) MatchesEntry(e profile.Entry) bool {
+	if r.Package != "" {
+		return e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, r.Package) &&
+			(r.Version == "" || e.Source.Version == r.Version)
+	}
 	if r.GitHub != "" {
 		repo, tag, asset := r.GitHubParts()
 		return e.Source.Kind == profile.KindGitHub && strings.EqualFold(e.Source.Repo, repo) &&
@@ -449,7 +476,7 @@ func (s Shared) payload() (string, error) {
 func withoutDetails(s Shared) Shared {
 	out := Shared{Game: s.Game, SourceKeys: s.SourceKeys, Name: s.Name, Entries: make([]Ref, len(s.Entries))}
 	for i, r := range s.Entries {
-		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub}
+		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Package: r.Package, Version: r.Version}
 	}
 	return out
 }
@@ -465,6 +492,9 @@ func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 	case profile.KindGitHub:
 		r = Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}
 		missing = "no GitHub release asset recorded"
+	case profile.KindThunderstore:
+		r = Ref{Package: e.Source.Name, Version: e.Source.Version}
+		missing = "no Thunderstore package recorded"
 	case profile.KindLocal:
 		return Ref{}, "local archive"
 	default:

@@ -44,6 +44,11 @@ func identityOf(e profile.Entry) (Ref, bool) {
 			return Ref{}, false
 		}
 		return Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}, true
+	case profile.KindThunderstore:
+		if e.Source.Name == "" {
+			return Ref{}, false
+		}
+		return Ref{Package: e.Source.Name, Version: e.Source.Version}, true
 	default:
 		return Ref{}, false
 	}

@@ -14,7 +14,10 @@ type ReplacePlan struct {
 	KeepLocal  []string `json:"keepLocal"`
 }
 
-func sourceToken(kind string, modID, fileID int, repo, tag, asset string) string {
+func sourceToken(kind string, modID, fileID int, repo, tag, asset, pkg string) string {
+	if pkg != "" {
+		return "t:" + strings.ToLower(pkg)
+	}
 	if repo != "" {
 		return strings.ToLower(fmt.Sprintf("g:%s@%s/%s", repo, tag, asset))
 	}
@@ -28,11 +31,18 @@ func sourceToken(kind string, modID, fileID int, repo, tag, asset string) string
 }
 
 func entryToken(e profile.Entry) string {
-	return sourceToken(e.Source.Kind, e.Source.ModID, e.Source.FileID, e.Source.Repo, e.Source.Tag, e.Source.Asset)
+	return sourceToken(e.Source.Kind, e.Source.ModID, e.Source.FileID, e.Source.Repo, e.Source.Tag, e.Source.Asset, thunderstoreName(e))
+}
+
+func thunderstoreName(e profile.Entry) string {
+	if e.Source.Kind == profile.KindThunderstore {
+		return e.Source.Name
+	}
+	return ""
 }
 
 func modToken(m Mod) string {
-	return sourceToken(m.Site, m.ModID, m.FileID, m.Repo, m.Tag, m.Asset)
+	return sourceToken(m.Site, m.ModID, m.FileID, m.Repo, m.Tag, m.Asset, m.Package)
 }
 
 func shareIndex(mods []Mod) (files, ids map[string]struct{}) {

@@ -606,6 +606,10 @@ func requestFor(game, profileID string, m Mod) queue.Request {
 	}
 	r := queue.Request{Kind: kind, Game: game, Profile: profileID, Name: m.Name, Version: m.Version}
 	r.Disabled, r.Fomod = m.Disabled, m.Fomod
+	if m.Site == SiteThunderstore {
+		r.Package = m.Package
+		return r
+	}
 	if m.Site == SiteGitHub {
 		r.Repo, r.Tag, r.Asset = m.Repo, m.Tag, m.Asset
 		return r
@@ -738,7 +742,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		reqs = append(reqs, requestFor(game, "", m))
 		wanted = append(wanted, wantedOf(m))
 	}
-	if slices.ContainsFunc(reqs, func(r queue.Request) bool { return r.Repo == "" }) && !s.d.SignedIn() {
+	if slices.ContainsFunc(reqs, func(r queue.Request) bool { return r.Repo == "" && r.Package == "" }) && !s.d.SignedIn() {
 		return Result{}, ErrSignedOut
 	}
 	configs := cur.configs
@@ -936,13 +940,18 @@ type wantedFile struct {
 	Repo   string `json:"repo"`
 	Tag    string `json:"tag"`
 	Asset  string `json:"asset"`
+	// Package is a Thunderstore "Namespace-Name".
+	Package string `json:"package,omitempty"`
 }
 
 func wantedOf(m Mod) wantedFile {
-	return wantedFile{ModID: m.ModID, FileID: m.FileID, Repo: m.Repo, Tag: m.Tag, Asset: m.Asset}
+	return wantedFile{ModID: m.ModID, FileID: m.FileID, Repo: m.Repo, Tag: m.Tag, Asset: m.Asset, Package: m.Package}
 }
 
 func (w wantedFile) entry(e profile.Entry) bool {
+	if w.Package != "" {
+		return e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, w.Package)
+	}
 	if w.Repo != "" {
 		return e.Source.Kind == profile.KindGitHub && strings.EqualFold(e.Source.Repo, w.Repo) && (w.Tag == "" || e.Source.Tag == w.Tag) &&
 			(w.Asset == "" || e.Source.Asset == w.Asset)
@@ -951,6 +960,9 @@ func (w wantedFile) entry(e profile.Entry) bool {
 }
 
 func (w wantedFile) item(it queue.Item) bool {
+	if w.Package != "" {
+		return strings.EqualFold(it.Package, w.Package)
+	}
 	if w.Repo != "" {
 		return strings.EqualFold(it.Repo, w.Repo) && (w.Tag == "" || it.Tag == w.Tag) &&
 			(w.Asset == "" || it.Asset == w.Asset)

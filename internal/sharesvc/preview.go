@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -50,19 +51,21 @@ const (
 // Mod is one file the import would bring. Key names it for Import's exclusions. A GitHub mod is Unverified: its
 // trust check can only run after the download. Different marks a Nexus file replaced by another one of the mod.
 type Mod struct {
-	Key        string                         `json:"key"`
-	Site       string                         `json:"site"`
-	Name       string                         `json:"name"`
-	Author     string                         `json:"author"`
-	Version    string                         `json:"version"`
-	State      string                         `json:"state"`
-	Enabled    bool                           `json:"enabled"`
-	Reason     string                         `json:"reason"`
-	ModID      int                            `json:"modId"`
-	FileID     int                            `json:"fileId"`
-	Repo       string                         `json:"repo"`
-	Tag        string                         `json:"tag"`
-	Asset      string                         `json:"asset"`
+	Key     string `json:"key"`
+	Site    string `json:"site"`
+	Name    string `json:"name"`
+	Author  string `json:"author"`
+	Version string `json:"version"`
+	State   string `json:"state"`
+	Enabled bool   `json:"enabled"`
+	Reason  string `json:"reason"`
+	ModID   int    `json:"modId"`
+	FileID  int    `json:"fileId"`
+	Repo    string `json:"repo"`
+	Tag     string `json:"tag"`
+	Asset   string `json:"asset"`
+	// Package is a Thunderstore "Namespace-Name"; Version then names the version, or the newest when empty.
+	Package    string                         `json:"package,omitempty"`
 	PageURL    string                         `json:"pageUrl"`
 	SizeKB     int64                          `json:"sizeKb"`
 	Different  bool                           `json:"different"`
@@ -134,7 +137,9 @@ type ExternalResource struct {
 const (
 	SiteNexus  = "nexus"
 	SiteGitHub = "github"
-	SiteLocal  = "local"
+	// SiteThunderstore is a Thunderstore package.
+	SiteThunderstore = "thunderstore"
+	SiteLocal        = "local"
 )
 
 const (
@@ -351,6 +356,25 @@ func (r *resolver) github(ref share.Ref) Mod {
 	return m
 }
 
+func (r *resolver) hasPackage(pkg, version string) bool {
+	return slices.ContainsFunc(r.target, func(e profile.Entry) bool {
+		return e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) && (version == "" || e.Source.Version == version)
+	})
+}
+
+func (r *resolver) thunderstore(ref share.Ref) Mod {
+	ns, name, _ := strings.Cut(ref.Package, "-")
+	m := Mod{
+		Key: "thunderstore:" + ref.Package + "@" + ref.Version, Site: SiteThunderstore, Name: name, Author: ns, Version: ref.Version,
+		Package: ref.Package, PageURL: thunderstore.Driver{}.ModPageURL(share.SourceKeys(r.game)["thunderstore"], ref.Package),
+		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
+	}
+	if r.hasPackage(ref.Package, ref.Version) {
+		m.State = StateInstalled
+	}
+	return m
+}
+
 func (r *resolver) storedKey(key string) bool {
 	if r.stored == nil || !r.stored(r.game, key) {
 		return false
@@ -362,7 +386,7 @@ func (r *resolver) storedKey(key string) bool {
 func nexusIDs(refs []share.Ref) []int {
 	var ids []int
 	for _, ref := range refs {
-		if ref.GitHub == "" && !slices.Contains(ids, ref.ModID) {
+		if ref.GitHub == "" && ref.Package == "" && !slices.Contains(ids, ref.ModID) {
 			ids = append(ids, ref.ModID)
 		}
 	}
@@ -374,6 +398,10 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 	r.load(ctx, nexusIDs(refs))
 	mods := make([]Mod, 0, len(refs))
 	for _, ref := range refs {
+		if ref.Package != "" {
+			mods = append(mods, r.thunderstore(ref))
+			continue
+		}
 		if ref.GitHub != "" {
 			mods = append(mods, r.github(ref))
 			continue
