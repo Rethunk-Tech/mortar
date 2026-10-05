@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
@@ -130,6 +131,43 @@ func catalogGame(id string) (components.GameInfo, bool) {
 	return catalog[i], true
 }
 
+// topTTL is how long an empty-text (top mods) answer is reused, so opening Browse costs each source one request.
+const topTTL = 10 * time.Minute
+
+type topEntry struct {
+	page  Page
+	until time.Time
+}
+
+var (
+	topMu    sync.Mutex
+	topCache = map[string]topEntry{}
+)
+
+// searchCached runs the source's search, reusing an empty-text answer for topTTL. It returns a copy callers may edit.
+func searchCached(ctx context.Context, s source.Searcher, q source.Query) (Page, error) {
+	if strings.TrimSpace(q.Text) != "" {
+		return s.Search(ctx, q)
+	}
+	key := fmt.Sprintf("%T|%s|%s|%d", s, q.Game, q.Key, q.Page)
+	topMu.Lock()
+	e, ok := topCache[key]
+	topMu.Unlock()
+	if !ok || !time.Now().Before(e.until) {
+		page, err := s.Search(ctx, q)
+		if err != nil {
+			return Page{}, err
+		}
+		e = topEntry{page: page, until: time.Now().Add(topTTL)}
+		topMu.Lock()
+		topCache[key] = e
+		topMu.Unlock()
+	}
+	out := e.page
+	out.Items = slices.Clone(out.Items)
+	return out, nil
+}
+
 func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID, text string, page int) (Page, error) {
 	id := strings.ToLower(strings.TrimSpace(sourceID))
 	gs, listed := info.Source(id)
@@ -138,7 +176,7 @@ func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID,
 	if !listed || !registered || !canSearch {
 		return Page{}, fmt.Errorf("%w: %s", ErrUnknownSource, sourceID)
 	}
-	result, err := searcher.Search(ctx, source.Query{Game: info.ID, Key: gs.Key, Text: text, Page: max(page, source.FirstPage), Version: c.Version})
+	result, err := searchCached(ctx, searcher, source.Query{Game: info.ID, Key: gs.Key, Text: text, Page: max(page, source.FirstPage), Version: c.Version})
 	if err != nil {
 		return Page{}, err
 	}

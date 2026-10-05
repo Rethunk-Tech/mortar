@@ -10,13 +10,17 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-type fakeSource struct{ got source.Query }
+type fakeSource struct {
+	got   source.Query
+	calls int
+}
 
 func (*fakeSource) ID() string              { return "fake" }
 func (*fakeSource) Name() string            { return "Fake" }
 func (*fakeSource) Modes() []source.Acquire { return nil }
 func (f *fakeSource) Search(_ context.Context, q source.Query) (source.Page, error) {
 	f.got = q
+	f.calls++
 	return source.Page{Total: 2, Items: []source.Item{{Source: "fake", ID: "1"}, {Source: "fake", ID: "2"}}}, nil
 }
 
@@ -135,5 +139,22 @@ func TestAdultHitsAreDroppedUnlessOptedIn(t *testing.T) {
 		if err != nil || len(page.Items) != tc.items || page.Total != tc.tot {
 			t.Fatalf("show=%v: %+v %v", tc.show, page, err)
 		}
+	}
+}
+
+func TestEmptySearchListsTopModsAndIsCached(t *testing.T) {
+	c := &Client{}
+	fake.calls = 0
+	topCache = map[string]topEntry{}
+	for range 3 {
+		if _, err := c.search(context.Background(), catalog, "fake", "", 1); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if fake.calls != 1 {
+		t.Fatalf("empty search hit the source %d times, want 1", fake.calls)
+	}
+	if _, err := c.search(context.Background(), catalog, "fake", "x", 1); err != nil || fake.calls != 2 {
+		t.Fatalf("a text search must not be cached: calls %d err %v", fake.calls, err)
 	}
 }

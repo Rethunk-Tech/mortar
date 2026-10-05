@@ -82,3 +82,20 @@ func TestSearchTextCannotEscapeItsStringLiteral(t *testing.T) {
 		t.Fatalf("text not carried as one escaped literal: %s", body.Query)
 	}
 }
+
+func TestEmptySearchListsMostEndorsedWithoutNameFilter(t *testing.T) {
+	t.Parallel()
+	var gotBody string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, _ := io.ReadAll(r.Body)
+		gotBody = string(raw)
+		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":0,"nodes":[]}}}`))
+	}))
+	t.Cleanup(srv.Close)
+	if _, err := (Driver{URL: srv.URL}).Search(context.Background(), source.Query{Game: "g", Key: "gk", Page: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(gotBody, "name:") || !strings.Contains(gotBody, "endorsements") {
+		t.Fatalf("query %s", gotBody)
+	}
+}

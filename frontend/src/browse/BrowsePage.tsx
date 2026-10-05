@@ -122,7 +122,7 @@ function useBrowseQuery({
   }, [draft])
 
   useEffect(() => {
-    if (text.trim() === '' || source === '' || retry < 0) {
+    if (source === '' || retry < 0) {
       setResult(EMPTY_RESULT)
       setStatus('idle')
       return
@@ -204,7 +204,7 @@ function BrowsePage({
   }
   const hint = searchHint(source, premium)
   let body: React.ReactNode
-  if (status === 'idle') {
+  if (status === 'idle' || (status === 'done' && result.items.length === 0 && text.trim() === '')) {
     body = (
       <EmptyState icon={<Search size={ICON_SIZE} />} title={t`Find mods to add`}>
         {hint}

@@ -93,9 +93,14 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if err != nil {
 		return source.Page{}, err
 	}
+	// An empty text lists the game's most endorsed mods, so no name filter.
+	filter := fmt.Sprintf(`gameDomainName:[{value:%s}]`, key)
+	if strings.TrimSpace(q.Text) != "" {
+		filter += fmt.Sprintf(`, name:[{value:%s, op:WILDCARD}]`, text)
+	}
 	query := fmt.Sprintf(
-		`{ mods(filter:{gameDomainName:[{value:%s}], name:[{value:%s, op:WILDCARD}]}, sort:[{endorsements:{direction:DESC}}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent } } }`,
-		key, text, source.PageSize, offset,
+		`{ mods(filter:{%s}, sort:[{endorsements:{direction:DESC}}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent } } }`,
+		filter, source.PageSize, offset,
 	)
 	raw, err := json.Marshal(searchBody{Query: query})
 	if err != nil {
