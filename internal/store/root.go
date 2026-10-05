@@ -37,7 +37,11 @@ func resolveRoot(dir, rel string) (string, bool) {
 	if rel == "" {
 		return "", false
 	}
-	sub := filepath.Join(dir, filepath.FromSlash(rel))
+	local := filepath.FromSlash(rel)
+	if !filepath.IsLocal(local) {
+		return "", false
+	}
+	sub := filepath.Join(dir, local)
 	if !datadir.UnderRoot(dir, sub) {
 		return "", false
 	}

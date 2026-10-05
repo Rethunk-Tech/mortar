@@ -175,7 +175,7 @@ func checkKey(id, key string) error {
 	if err := checkGame(id); err != nil {
 		return err
 	}
-	if !keyPattern.MatchString(key) {
+	if !keyPattern.MatchString(key) || !filepath.IsLocal(key) {
 		return fmt.Errorf("invalid store key %q", key)
 	}
 	return nil
@@ -184,12 +184,12 @@ func checkKey(id, key string) error {
 // destOf is the folder an item's files live in: a loader's bundle by loader and version, any other item by blob.
 func (s *Store) destOf(key, blob string) (string, error) {
 	if id, v, ok := LoaderOf(key); ok {
-		if !keyPattern.MatchString(v) {
+		if !keyPattern.MatchString(v) || !filepath.IsLocal(id) || !filepath.IsLocal(v) {
 			return "", fmt.Errorf("invalid store key %q", key)
 		}
 		return filepath.Join(s.root, loadersDir, id, v), nil
 	}
-	if !blobPattern.MatchString(blob) {
+	if !blobPattern.MatchString(blob) || !filepath.IsLocal(blob) {
 		return "", fmt.Errorf("invalid store blob %q", blob)
 	}
 	return filepath.Join(s.root, blobsDir, blob), nil
