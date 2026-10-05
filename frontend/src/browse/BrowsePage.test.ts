@@ -16,3 +16,9 @@ test('free Nexus accounts get the files page and signed-out users a sign-in, nev
   expect(actions).toContain('Sign in to download')
   expect(actions).not.toContain('Premium only')
 })
+
+test('the search function is one module-level value, so a parent re-render does not search again', () => {
+  const host = read('BrowseHost.tsx')
+  expect(host).toMatch(/^const search: BrowseSearch = /m)
+  expect(host).not.toMatch(/^\s+const search\b/m)
+})

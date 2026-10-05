@@ -18,6 +18,25 @@ async function categoryNames(game: string, source: string): Promise<string[]> {
   return (await Categories(game, source)) ?? []
 }
 
+// Defined once: BrowsePage re-runs its query when this identity changes, and each run costs a request to every source.
+const search: BrowseSearch = async ({
+  game: nextGame,
+  source,
+  text,
+  page,
+  profileID: nextProfile,
+  filter,
+}) => {
+  const result = await Search(nextGame, source, text, page, nextProfile, filter)
+  return {
+    total: result.total,
+    items: result.items ?? [],
+    pages: result.pages ?? 0,
+    hidden: result.hidden ?? 0,
+    failed: result.failed ?? [],
+  }
+}
+
 function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
   const premium = useNexus((state) => state.premium)
   const [sources, setSources] = useState<{ id: string; name: string }[]>([])
@@ -30,23 +49,6 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       .then((ids) => setSources(ids ?? []))
       .catch(reportUnexpected)
   }, [game])
-  const search: BrowseSearch = async ({
-    game: nextGame,
-    source,
-    text,
-    page,
-    profileID: nextProfile,
-    filter,
-  }) => {
-    const result = await Search(nextGame, source, text, page, nextProfile, filter)
-    return {
-      total: result.total,
-      items: result.items ?? [],
-      pages: result.pages ?? 0,
-      hidden: result.hidden ?? 0,
-      failed: result.failed ?? [],
-    }
-  }
   return (
     <BrowsePage
       game={game}
