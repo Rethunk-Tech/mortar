@@ -29,7 +29,7 @@ const defaults: Settings = {
   nexusName: '',
   nexusPremium: false,
   nxmHandled: false,
-  nxmPrevious: '',
+  nxmPreviousHandlers: {},
   nxmPreviousName: '',
   nxmAsked: false,
   nxmRedirectOtherGames: null,

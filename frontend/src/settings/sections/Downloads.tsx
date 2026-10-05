@@ -160,7 +160,7 @@ function NxmLinks() {
   const { t } = useLingui()
   const push = useToasts((s) => s.push)
   const nxm = useNxmHandler()
-  const nxmPrevious = useSettings((s) => s.nxmPrevious)
+  const nxmPrevious = useSettings((s) => s.nxmPreviousHandlers?.nxm ?? '')
   const nxmPreviousName = useSettings((s) => s.nxmPreviousName)
   const redirectOther = useSettings((s) => s.nxmRedirectOtherGames ?? nxmPrevious !== '')
   const owner = nxm.handled ? 'Mortar' : nxm.owner
