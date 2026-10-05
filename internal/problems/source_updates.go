@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -32,7 +33,7 @@ func fold(s string) string {
 // it. An update from a source other than the installed one is marked Switch. have holds the updates already found, so
 // a version they cover is not offered twice.
 func (s *Service) sourceUpdates(ctx context.Context, gameID string, mods []framework.Mod, have []Update) []Update {
-	var out []Update
+	out := s.nexusPageUpdates(ctx, gameID, mods, have)
 	for _, g := range game.Catalog() {
 		if g.ID != gameID {
 			continue
@@ -146,4 +147,50 @@ func coveredBy(have []Update, key, version string) bool {
 		}
 	}
 	return false
+}
+
+// NexusPagesOf looks up the page of many Nexus mods of the game in one batched call.
+type NexusPagesOf func(ctx context.Context, gameID string, modIDs []int) (map[int]nexus.Page, error)
+
+// nexusPageUpdates offers the version a Nexus mod's page lists for the mods installed from Nexus that carry no update
+// key, so SMAPI's API cannot answer for them (every mod of a game with another loader): one batched lookup for all of
+// them, at a handful of requests per hundred mods.
+func (s *Service) nexusPageUpdates(ctx context.Context, gameID string, mods []framework.Mod, have []Update) []Update {
+	title, err := game.NexusTitle(gameID)
+	if s.NexusPages == nil || err != nil {
+		return nil
+	}
+	var ids []int
+	byID := map[int][]framework.Mod{}
+	for _, x := range mods {
+		if x.SourceKind != profile.KindNexus || x.SourceModID <= 0 || len(x.UpdateKeys) > 0 || x.IgnoreUpdates || (profile.Source{Kind: x.SourceKind}).Bundled() {
+			continue
+		}
+		if len(byID[x.SourceModID]) == 0 {
+			ids = append(ids, x.SourceModID)
+		}
+		byID[x.SourceModID] = append(byID[x.SourceModID], x)
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	pages, _ := s.NexusPages(ctx, gameID, ids)
+	var out []Update
+	for _, id := range ids {
+		page, ok := pages[id]
+		if !ok || !page.Available || page.Version == "" {
+			continue
+		}
+		for _, x := range byID[id] {
+			installed := cmp.Or(x.SourceVersion, x.Version)
+			if c, ok := meta.CompareVersions(page.Version, installed); !ok || c <= 0 || coveredBy(append(slices.Clone(have), out...), x.Key, page.Version) {
+				continue
+			}
+			out = append(out, Update{
+				Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: installed, Version: page.Version,
+				URL: "https://www.nexusmods.com/" + title.Domain + "/mods/" + strconv.Itoa(id), NexusID: id, Source: "Nexus",
+			})
+		}
+	}
+	return out
 }

@@ -38,6 +38,8 @@ type Service struct {
 	Damage func(game string) map[string]store.Damage
 	// NexusFiles, when set, confirms flagged updates against Nexus's live file lists in one call.
 	NexusFiles NexusFilesOf
+	// NexusPages gives the page data of many Nexus mods in a few batched requests; nil when signed out or unwired.
+	NexusPages NexusPagesOf
 	// Throttle waits for a source's turn to be asked (the download queue's per-source limit) and returns the func that
 	// ends it; nil asks without waiting.
 	Throttle func(ctx context.Context, source string) (release func(), err error)
@@ -205,7 +207,7 @@ func (s *Service) installed(gameID, id string) ([]framework.Mod, error) {
 	mods := make([]framework.Mod, len(installed))
 	for i, m := range installed {
 		mods[i] = framework.Mod{
-			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, SourceName: m.Source.Name, SourceRepo: m.Source.Repo, Enabled: m.Enabled, Folder: m.Folder,
+			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, SourceModID: m.Source.ModID, SourceName: m.Source.Name, SourceRepo: m.Source.Repo, Enabled: m.Enabled, Folder: m.Folder,
 			Pinned: m.Pinned, SkipVersion: m.SkipVersion, SkipSources: m.SkipSources, IgnoreUpdates: m.IgnoreUpdates,
 			UpdateChannel: m.UpdateChannel,
 			LoadAfter:     m.LoadAfter, Manifest: m.Manifest,

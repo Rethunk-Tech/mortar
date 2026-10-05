@@ -15,6 +15,8 @@ type Mod struct {
 	// SourceVersion is the version of the download the entry came from (a Nexus file's version). Authors
 	// often leave some manifests of a multi-part download unbumped, so it can be newer than Version.
 	SourceVersion string
+	// SourceModID is the entry's Nexus mod id, 0 for another source.
+	SourceModID int
 	// SourceName and SourceRepo are the entry's source name (a Thunderstore "Namespace-Name") and GitHub repo.
 	SourceName    string
 	SourceRepo    string

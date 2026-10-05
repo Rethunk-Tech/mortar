@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	nexussource "github.com/Rethunk-Tech/mortar/internal/source/nexus"
@@ -70,5 +71,32 @@ func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T
 	covered := s.sourceUpdates(context.Background(), "lethal-company", []framework.Mod{viaRepo}, []Update{{Key: "b", Version: "2.0.0"}})
 	if len(covered) != 0 {
 		t.Errorf("an update already offered was offered again: %+v", covered)
+	}
+}
+
+func TestNexusModsWithoutUpdateKeysAreAskedInOneBatch(t *testing.T) {
+	asks := 0
+	s := &Service{NexusPages: func(_ context.Context, game string, ids []int) (map[int]nexus.Page, error) {
+		asks++
+		if game != "lethal-company" || len(ids) != 2 {
+			t.Errorf("asked %s %v", game, ids)
+		}
+		return map[int]nexus.Page{
+			10: {Version: "1.2.0", Available: true},
+			11: {Version: "9.0.0", Available: false},
+		}, nil
+	}}
+	mk := func(key string, id int, version string) framework.Mod {
+		m := framework.Mod{Key: key, SourceKind: profile.KindNexus, SourceModID: id, SourceVersion: version}
+		m.Name, m.Version = key, version
+		return m
+	}
+	keyed := mk("keyed", 12, "1.0.0")
+	keyed.UpdateKeys = []string{"Nexus:12"}
+	got := s.nexusPageUpdates(context.Background(), "lethal-company", []framework.Mod{
+		mk("old", 10, "1.0.0"), mk("gone", 11, "1.0.0"), mk("same", 10, "1.2.0"), keyed,
+	}, nil)
+	if asks != 1 || len(got) != 1 || got[0].Key != "old" || got[0].Version != "1.2.0" || got[0].NexusID != 10 || got[0].Source != "Nexus" {
+		t.Fatalf("asks = %d, updates = %+v", asks, got)
 	}
 }
