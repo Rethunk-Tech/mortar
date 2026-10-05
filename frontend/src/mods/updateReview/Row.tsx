@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button } from '@mui/material'
+import { Box, Button, Chip } from '@mui/material'
 import { ArrowRight, ExternalLink } from 'lucide-react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { useProfiles } from '../../profiles/store.ts'
@@ -104,6 +104,7 @@ export function Row({
           <Version>{update.installed}</Version>
           <ArrowRight size={14} aria-hidden={true} />
           <Version isNew={true}>{update.version}</Version>
+          {update.source ? <Chip size="small" variant="outlined" label={update.source} /> : null}
         </Box>
         <OptionalUpdates update={update} profileId={profileId} />
       </Box>
