@@ -106,3 +106,17 @@ func joinKeys(keys []string) string {
 	}
 	return out
 }
+
+func TestReportMarksInUseDuplicates(t *testing.T) {
+	s := &Store{root: t.TempDir()}
+	addTestItem(t, s, "stardew", testItem{key: "nexus-1-1", uniqueID: "C.Mod", version: "2.0.0", name: "Copy"})
+	addTestItem(t, s, "stardew", testItem{key: "nexus-1-2", uniqueID: "C.Mod", version: "2.0.0", name: "Copy"})
+	rep, err := s.Report(map[string][]string{"stardew": {"nexus-1-1"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := rep["stardew"].Duplicates[0]
+	if !g[0].InUse || g[1].InUse {
+		t.Fatalf("inUse flags: %+v", g)
+	}
+}

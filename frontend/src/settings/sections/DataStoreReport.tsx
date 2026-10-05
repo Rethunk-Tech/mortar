@@ -56,7 +56,7 @@ function newestOf(group: Item[]): Item {
   )
 }
 
-// Removable store items: everything no profile uses, plus every copy of a duplicate except the newest.
+// Removable store items: everything no profile uses, plus every copy of a duplicate except those a profile uses (the newest when none is).
 function removable(rep: StoreReport): { unused: Sel[]; older: Sel[] } {
   const unused: Sel[] = []
   const older: Sel[] = []
@@ -67,8 +67,9 @@ function removable(rep: StoreReport): { unused: Sel[]; older: Sel[] } {
     for (const items of (g?.duplicates ?? []).filter(
       (d): d is Item[] => d !== null && d.length > 1,
     )) {
-      const keep = newestOf(items)
-      for (const item of items.filter((i) => i !== keep)) {
+      const used = items.filter((i) => i.inUse)
+      const keep = used.length > 0 ? used : [newestOf(items)]
+      for (const item of items.filter((i) => !keep.includes(i))) {
         older.push({ id: `${game}${SELECT_SEP}${item.key}`, game, item })
       }
     }

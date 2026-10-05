@@ -18,6 +18,8 @@ type Item struct {
 	Version  string    `json:"version"`
 	LastUsed time.Time `json:"lastUsed"`
 	Size     int64     `json:"size"`
+	// InUse is true when a profile, history entry or snapshot names the key; Remove refuses it.
+	InUse bool `json:"inUse"`
 }
 
 // GameReport is unused items and duplicate groups for one game.
@@ -63,7 +65,7 @@ func (s *Store) gameReport(keys map[string]record, keep map[string]bool) GameRep
 		}
 		name, id, version := readManifest(dir)
 		size, _ := datadir.Size(dir)
-		entry := Item{Key: key, Name: name, Version: version, LastUsed: r.Used, Size: size}
+		entry := Item{Key: key, Name: name, Version: version, LastUsed: r.Used, Size: size, InUse: keep[key]}
 		if !keep[key] {
 			unused = append(unused, entry)
 		}
