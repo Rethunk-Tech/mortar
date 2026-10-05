@@ -89,6 +89,7 @@ const loadDetails = (id: number) => {
 
 let primed: number[] = []
 const primeAsked = new Set<number>()
+const primeInFlight = new Set<number>()
 
 // Stores the details that are new; when there are none the state object stays as it was, so subscribers do not wake.
 const addDetails = (ids: number[], found: Record<string, Details | undefined>) =>
@@ -114,16 +115,27 @@ const primeDetails = async (ids: number[]) => {
   }
   // A mod Nexus does not return (hidden, removed, a wrong id) stays unknown, so it is asked for once per session.
   const unknown = ids.filter(
-    (id) => id > 0 && !useNexusDetails.getState().byId[id]?.details && !primeAsked.has(id),
+    (id) =>
+      id > 0 &&
+      !useNexusDetails.getState().byId[id]?.details &&
+      !primeAsked.has(id) &&
+      !primeInFlight.has(id),
   )
   if (unknown.length === 0) {
     return
   }
   for (const id of unknown) {
-    primeAsked.add(id)
+    primeInFlight.add(id)
   }
-  const got = (await PrimeDetails(currentGame(), unknown).catch(() => null)) ?? {}
-  addDetails(unknown, got)
+  // Only an answer settles an id: a request that failed (offline, rate limited) leaves it to be asked again.
+  const got = await PrimeDetails(currentGame(), unknown).catch(() => null)
+  for (const id of unknown) {
+    primeInFlight.delete(id)
+    if (got) {
+      primeAsked.add(id)
+    }
+  }
+  addDetails(unknown, got ?? {})
 }
 
 // Whether the entry holds a mod's whole details, not just the batched page data.
