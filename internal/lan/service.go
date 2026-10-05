@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"os/user"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -634,6 +635,23 @@ func (s *Service) Inbox() []Arrival {
 	out := append([]Arrival(nil), s.inbox...)
 	s.inbox = nil
 	return out
+}
+
+// Pending lists the shares waiting for an answer without taking them off the list; Inbox is the window's one-shot
+// read.
+func (s *Service) Pending() []Arrival {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]Arrival(nil), s.inbox...)
+}
+
+// Dismiss drops a waiting share and stops its transfer, if one is running.
+func (s *Service) Dismiss(id int) {
+	s.CancelTransfer(id)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.inbox = slices.DeleteFunc(s.inbox, func(a Arrival) bool { return a.ID == id })
+	delete(s.incoming, id)
 }
 
 func decodeRequest(body []byte) (shareRequest, error) {

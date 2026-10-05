@@ -358,3 +358,18 @@ func TestAddPeerDropsOurInstance(t *testing.T) {
 		t.Fatalf("Peers() = %#v, want no peers", peers)
 	}
 }
+
+func TestPendingKeepsSharesUntilDismissed(t *testing.T) {
+	t.Parallel()
+	s := &Service{inbox: []Arrival{{ID: 1}, {ID: 2}}, incoming: map[int]incomingTransfer{2: {}}, active: map[int]context.CancelFunc{}}
+	if len(s.Pending()) != 2 || len(s.Pending()) != 2 {
+		t.Fatal("listing the pending shares must not drain them")
+	}
+	s.Dismiss(1)
+	if got := s.Pending(); len(got) != 1 || got[0].ID != 2 {
+		t.Fatalf("after dismissing 1: %+v", got)
+	}
+	if len(s.Inbox()) != 1 || len(s.Pending()) != 0 {
+		t.Fatal("the window's Inbox read still drains")
+	}
+}

@@ -134,17 +134,21 @@ func (s *Services) lanMethod(method string, p Params) (any, error) {
 	case "lan.send":
 		return s.profileCall(p, func(id string) (any, error) { return nil, s.Lan.Send(p.Name, p.Game, id) })
 	case "lan.inbox":
-		return s.Lan.Inbox(), nil
+		return s.Lan.Pending(), nil
 	}
 	id, err := strconv.Atoi(p.Name)
 	if err != nil {
 		return nil, fmt.Errorf("transfer id %q is not a number", p.Name)
 	}
 	if method == "lan.decline" {
-		s.Lan.CancelTransfer(id)
+		s.Lan.Dismiss(id)
 		return struct{}{}, nil
 	}
-	return nil, s.Lan.Transfer(id)
+	if err := s.Lan.Transfer(id); err != nil {
+		return nil, err
+	}
+	s.Lan.Dismiss(id)
+	return struct{}{}, nil
 }
 
 func (s *Services) dataMove(p Params) (any, error) {
