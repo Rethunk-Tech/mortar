@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -125,5 +126,39 @@ func TestFormats(t *testing.T) {
 	}
 	if _, err := Read(t.Context(), Input{Text: "hello"}, Code{}, Profile{}, Modpack{}); !errors.Is(err, ErrUnknown) {
 		t.Fatalf("unknown input: %v", err)
+	}
+}
+
+func TestExportCodeRoundTripsThroughAFakeServer(t *testing.T) {
+	var posted string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		posted = string(b)
+		if r.Method != http.MethodPost || r.URL.Path != "/api/experimental/legacyprofile/create/" ||
+			r.Header.Get("Content-Type") != "application/octet-stream" {
+			t.Errorf("request %s %s %s", r.Method, r.URL.Path, r.Header.Get("Content-Type"))
+		}
+		_, _ = w.Write([]byte(`{"key":"0123abcd-0123-0123-0123-0123456789ab"}`))
+	}))
+	t.Cleanup(srv.Close)
+	d := Draft{
+		Name: "Friends",
+		Packages: []Ref{
+			{Source: thunderstore, Native: "Alice-MoreCompany", Version: "1.2.3", Disabled: true},
+		},
+		Configs: []File{{Path: "config/a.cfg", Data: []byte("x=1")}},
+	}
+	key, err := Code{URL: srv.URL}.ExportCode(t.Context(), d)
+	if err != nil || key != "0123abcd-0123-0123-0123-0123456789ab" {
+		t.Fatalf("%q %v", key, err)
+	}
+	got, err := Code{}.Parse(t.Context(), Input{Text: posted})
+	if err != nil || got.Name != "Friends" || len(got.Packages) != 1 || got.Packages[0] != d.Packages[0] ||
+		len(got.Configs) != 1 {
+		t.Fatalf("round trip: %+v %v", got, err)
+	}
+	d.Packages = append(d.Packages, Ref{Source: "nexus", Native: "1", Version: "1.0.0"})
+	if _, err := (Code{URL: srv.URL}).ExportCode(t.Context(), d); err == nil {
+		t.Fatal("a Nexus package went into an r2modman code")
 	}
 }
