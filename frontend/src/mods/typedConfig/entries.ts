@@ -57,4 +57,4 @@ const isHexColor = (s: string): boolean => HEX_COLOR.test(s)
 const modifiedCount = (file: ConfigFile): number =>
   file.sections.reduce((n, s) => n + s.entries.filter(isModified).length, 0)
 
-export { filterFile, isHexColor, isModified, modifiedCount, parseNumber, sameValue, wantsSlider }
+export { filterFile, isHexColor, isModified, modifiedCount, parseNumber, wantsSlider }
