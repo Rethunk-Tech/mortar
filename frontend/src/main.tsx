@@ -5,6 +5,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Get } from '../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { App } from './App.tsx'
+import { logRenderError } from './diag/renderErrors.ts'
 import { initNewDownloads } from './downloads/newDownloads.ts'
 import { activateLanguage, i18n } from './i18n/index.ts'
 import { initInstallAsks } from './install/store.ts'
@@ -64,7 +65,11 @@ initQuit()
 initScheduledBackups()
 initTidyReport()
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
+  onUncaughtError: logRenderError,
+  onCaughtError: logRenderError,
+  onRecoverableError: logRenderError,
+}).render(
   <React.StrictMode>
     <I18nProvider i18n={i18n}>
       <Themed>
