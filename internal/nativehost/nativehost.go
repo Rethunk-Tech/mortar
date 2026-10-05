@@ -439,7 +439,7 @@ func nexusModProblems(domain string, modID int) []modProblem {
 	}
 	var rows []modProblem
 	if err := controlwire.CallDir(dataDir, "modProblems", map[string]any{
-		"game": info.ID, "profile": profileID, "modId": modID,
+		"game": info.ID, "profile": profileID, "source": "nexus", "id": strconv.Itoa(modID),
 	}, &rows, time.Second); err != nil {
 		return []modProblem{}
 	}
