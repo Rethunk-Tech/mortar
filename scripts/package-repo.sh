@@ -26,10 +26,10 @@ trap 'gpgconf --kill all >/dev/null 2>&1 || true; rm -rf "$GNUPGHOME"' EXIT
 gpg --batch --quiet --import "$MORTAR_REPO_KEY" 2>/dev/null
 FPR=$(gpg --with-colons --list-secret-keys | awk -F: '/^fpr/{print $10; exit}')
 WANT=$(gpg --with-colons --show-keys "$PUBKEY" | awk -F: '/^fpr/{print $10; exit}')
-[ -n "$FPR" ] && [ "$FPR" = "$WANT" ] || {
+if [ -z "$FPR" ] || [ "$FPR" != "$WANT" ]; then
   echo "signing key ${FPR:-none} is not $WANT from $PUBKEY" >&2
   exit 1
-}
+fi
 sign() { gpg --batch --yes --local-user "$FPR" "$@"; }
 
 [ ! -e "$OUT" ] || [ -z "$(ls -A "$OUT")" ] || {
@@ -48,10 +48,10 @@ run() {
 
 shopt -s nullglob
 debs=("$ASSETS"/*.deb) rpms=("$ASSETS"/*.rpm) pkgs=("$ASSETS"/*.pkg.tar.zst)
-[ ${#debs[@]} -gt 0 ] && [ ${#rpms[@]} -gt 0 ] && [ ${#pkgs[@]} -gt 0 ] || {
+if [ ${#debs[@]} -eq 0 ] || [ ${#rpms[@]} -eq 0 ] || [ ${#pkgs[@]} -eq 0 ]; then
   echo "$ASSETS lacks .deb, .rpm or .pkg.tar.zst files" >&2
   exit 1
-}
+fi
 
 # apt: one suite, one component, both architectures.
 mkdir -p "$OUT/deb/pool/main/m/mortar"
