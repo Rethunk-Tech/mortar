@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // driverThunderstore is the installer driver for Thunderstore packages, whose files go to the profile target and are
@@ -122,8 +124,10 @@ func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err er
 		return nil, false, err
 	}
 	var m struct {
-		Name    string `json:"name"`
-		Version string `json:"version_number"`
+		Name      string `json:"name"`
+		Version   string `json:"version_number"`
+		Namespace string `json:"namespace"`
+		Author    string `json:"author"`
 	}
 	b, err := fsx.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
 	if err != nil {
@@ -135,7 +139,13 @@ func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err er
 	author, _, _ := strings.Cut(arch.Key, "-")
 	id := arch.Key
 	if id == "" {
-		id = m.Name
+		// A package added from disk has no index entry, so its Namespace-Name comes from its manifest; Thunderstore
+		// needs that to match the package against the index, so without it the archive is refused.
+		author = cmp.Or(m.Namespace, m.Author)
+		if author == "" {
+			return nil, false, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s does not say who published it, so Mortar cannot tell which Thunderstore package it is: install it from Thunderstore instead", m.Name))
+		}
+		id = author + "-" + m.Name
 	}
 	return []Component{{ID: mod.NewID(mod.FormatThunderstore, id), Version: m.Version, Name: m.Name, Author: author, Folder: "."}}, true, nil
 }

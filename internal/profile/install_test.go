@@ -187,6 +187,25 @@ func tsZip(t *testing.T, version string) string {
 	})
 }
 
+func TestDiskThunderstoreZipNeedsAPublisher(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.InstallArchive("lethal-company", p.ID, tsZip(t, "1.0.0")); err == nil || !strings.Contains(err.Error(), "does not say who published") {
+		t.Fatalf("a zip without a publisher: %v", err)
+	}
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
+		"manifest.json": `{"name":"Mod","version_number":"1.0.0","author":"Ns"}`, "Mod.dll": "x",
+	})
+	res, err := e.InstallArchive("lethal-company", p.ID, zip)
+	if err != nil || len(res.Profile.Entries) != 1 || res.Profile.Entries[0].Mods[0].ID != "thunderstore:Ns-Mod" {
+		t.Fatalf("install = %+v, %v", res, err)
+	}
+}
+
 func TestInstallThunderstorePackageRecordsAnEntryWithoutAFolder(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
