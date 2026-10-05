@@ -126,6 +126,7 @@ func registerEvents() {
 	application.RegisterEvent[string](folderwatch.ExtraFolderEvent)
 	application.RegisterEvent[string](folderwatch.DownloadsEvent)
 	application.RegisterEvent[[]syncsvc.Offer](syncsvc.OffersEvent)
+	application.RegisterEvent[[]syncsvc.Stall](syncsvc.StalledEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
 	application.RegisterEvent[lan.Arrival](lan.ArrivedEvent)
 	application.RegisterEvent[lan.TransferProgress](lan.TransferProgressEvent)
@@ -154,6 +155,10 @@ func registerDoctorLoaders() {
 		}
 	}
 }
+
+// syncScan is how often the sync folder is scanned, and how long a payload may lag its version file before the
+// profile shows as waiting on it.
+const syncScan = time.Minute
 
 func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
@@ -600,7 +605,7 @@ func run() error {
 	syncSvc, err := syncsvc.New(syncsvc.Deps{
 		Source: syncsvc.NewSource(profiles, shareSvc),
 		Folder: func() string { return store.Get().SyncFolder },
-		Dir:    dataDir, Quiet: 5 * time.Second, Emit: emit,
+		Dir:    dataDir, Quiet: 5 * time.Second, Stall: syncScan, Emit: emit,
 	})
 	if err != nil {
 		return err
@@ -749,7 +754,7 @@ func run() error {
 	queueCtx, stopQueue := context.WithCancel(context.Background())
 	launchsvc.SetLife(launches, queueCtx)
 	go storecheck.Run(queueCtx, checkSvc)
-	go syncSvc.Run(queueCtx, time.Minute)
+	go syncSvc.Run(queueCtx, syncScan)
 	watchLibraryFolders(queueCtx, home, dataDir, store, func(name string, data any) {
 		if name == syncsvc.FolderEvent {
 			syncSvc.Kick()

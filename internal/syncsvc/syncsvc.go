@@ -27,6 +27,8 @@ import (
 const (
 	// OffersEvent is emitted with the []Offer waiting for an answer, when that list changes.
 	OffersEvent = "sync:offers"
+	// StalledEvent is emitted with the []Stall that wait on a file still syncing, when that list changes.
+	StalledEvent = "sync:stalled"
 	// FolderEvent names the folder watcher's event for the sync folder's game folders.
 	FolderEvent = "sync:folder"
 )
@@ -67,6 +69,9 @@ type Deps struct {
 	Machine string
 	// Quiet is how long a profile must stay unchanged before it is written out.
 	Quiet time.Duration
+	// Stall is how long another machine's version file may name a payload that has not arrived before the profile
+	// shows as waiting on it.
+	Stall time.Duration
 	Emit  func(name string, data any)
 }
 
@@ -140,6 +145,17 @@ type Offer struct {
 	Revision string `json:"revision"`
 }
 
+// Stall is a profile whose newer version on another machine names a payload that has not finished syncing here.
+// Nothing is offered or written for it until it arrives.
+type Stall struct {
+	Game string `json:"game"`
+	// Profile is the local profile's id; empty when the profile does not exist here yet.
+	Profile string `json:"profile"`
+	Remote  string `json:"remote"`
+	Name    string `json:"name"`
+	Machine string `json:"machine"`
+}
+
 // Service keeps profiles in step with the sync folder.
 type Service struct {
 	d  Deps
@@ -148,7 +164,12 @@ type Service struct {
 	// announced is the last offer list emitted, so an unchanged one is not announced again.
 	announced string
 	offers    []Offer
-	kick      chan struct{}
+	// lagging is when each version file (game, remote and revision) was first seen ahead of its payload.
+	lagging map[string]time.Time
+	stalled []Stall
+	// stallSig is the last stall list emitted.
+	stallSig string
+	kick     chan struct{}
 }
 
 // New loads the machine's sync state.
@@ -256,12 +277,15 @@ func (s *Service) Scan(ctx context.Context) ([]Offer, error) {
 	defer s.mu.Unlock()
 	folder := s.d.Folder()
 	if folder == "" {
-		s.offers = nil
+		s.offers, s.stalled, s.lagging = nil, nil, nil
+		s.announceStalled()
 		return []Offer{}, nil
 	}
 	var offers []Offer
 	var errs []error
 	known := map[string]bool{}
+	lagSeen := map[string]bool{}
+	s.stalled = nil
 	for _, game := range s.d.Source.Games() {
 		refs, err := s.d.Source.Profiles(game)
 		if err != nil {
@@ -274,7 +298,7 @@ func (s *Service) Scan(ctx context.Context) ([]Offer, error) {
 				t.Remote = ref.ID
 			}
 			known[key(game, t.Remote)] = true
-			offer, waiting, err := s.scanOne(folder, ref, t)
+			offer, waiting, err := s.scanOne(folder, ref, t, lagSeen)
 			if err != nil {
 				errs = append(errs, err)
 			}
@@ -282,19 +306,27 @@ func (s *Service) Scan(ctx context.Context) ([]Offer, error) {
 				offers = append(offers, offer)
 			}
 		}
-		offers = append(offers, s.newOffers(folder, game, known)...)
+		offers = append(offers, s.newOffers(folder, game, known, lagSeen)...)
+	}
+	for k := range s.lagging {
+		if !lagSeen[k] {
+			delete(s.lagging, k)
+		}
 	}
 	s.offers = offers
 	s.announce()
+	s.announceStalled()
 	return append([]Offer{}, offers...), errors.Join(errs...)
 }
 
 // scanOne writes ref out when it changed here and nothing newer is waiting, or returns the offer for what is.
-func (s *Service) scanOne(folder string, ref Ref, t tracked) (Offer, bool, error) {
+func (s *Service) scanOne(folder string, ref Ref, t tracked, lagSeen map[string]bool) (Offer, bool, error) {
 	remote, found := s.readShared(folder, ref.Game, t.Remote)
 	dirty := t.Seen.IsZero() || !ref.Updated.Equal(t.Seen)
 	if found && remote.Vector.newer(t.Synced) {
 		if _, ok := s.payload(folder, ref.Game, t.Remote, remote); !ok {
+			// Writing ours now would overwrite a revision this machine has not seen; it waits, and says so.
+			s.lag(lagSeen, remote, Stall{Game: ref.Game, Profile: ref.ID, Remote: t.Remote, Name: remote.Name, Machine: remote.MachineName})
 			return Offer{}, false, nil
 		}
 		return Offer{
@@ -310,7 +342,7 @@ func (s *Service) scanOne(folder string, ref Ref, t tracked) (Offer, bool, error
 }
 
 // newOffers are the profiles in the sync folder that no local profile is linked to.
-func (s *Service) newOffers(folder, game string, known map[string]bool) []Offer {
+func (s *Service) newOffers(folder, game string, known, lagSeen map[string]bool) []Offer {
 	entries, _ := os.ReadDir(filepath.Join(folder, game))
 	var out []Offer
 	for _, e := range entries {
@@ -320,12 +352,37 @@ func (s *Service) newOffers(folder, game string, known map[string]bool) []Offer 
 		}
 		if sh, ok := s.readShared(folder, game, remote); ok {
 			if _, ok := s.payload(folder, game, remote, sh); !ok {
+				s.lag(lagSeen, sh, Stall{Game: game, Remote: remote, Name: sh.Name, Machine: sh.MachineName})
 				continue
 			}
 			out = append(out, Offer{Game: game, Remote: remote, Name: sh.Name, Machine: sh.MachineName, New: true, Revision: fmt.Sprint(sh.Vector)})
 		}
 	}
 	return out
+}
+
+// lag notes a version file ahead of its payload, and lists it as stalled once that has lasted Stall.
+func (s *Service) lag(seen map[string]bool, sh shared, st Stall) {
+	k := key(st.Game, st.Remote) + "\n" + fmt.Sprint(sh.Vector)
+	seen[k] = true
+	if s.lagging == nil {
+		s.lagging = map[string]time.Time{}
+	}
+	since, ok := s.lagging[k]
+	if !ok {
+		since = time.Now()
+		s.lagging[k] = since
+	}
+	if time.Since(since) >= s.d.Stall {
+		s.stalled = append(s.stalled, st)
+	}
+}
+
+// Stalled are the profiles waiting on another machine's file to finish syncing, as of the last scan.
+func (s *Service) Stalled() []Stall {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]Stall{}, s.stalled...)
 }
 
 func trimSuffix(name, suffix string) (string, bool) {
@@ -380,6 +437,20 @@ func (s *Service) announce() {
 	s.announced = b.String()
 	if s.d.Emit != nil {
 		s.d.Emit(OffersEvent, append([]Offer{}, s.offers...))
+	}
+}
+
+func (s *Service) announceStalled() {
+	var b strings.Builder
+	for _, st := range s.stalled {
+		fmt.Fprint(&b, "|", st.Game, "/", st.Remote)
+	}
+	if b.String() == s.stallSig {
+		return
+	}
+	s.stallSig = b.String()
+	if s.d.Emit != nil {
+		s.d.Emit(StalledEvent, append([]Stall{}, s.stalled...))
 	}
 }
 

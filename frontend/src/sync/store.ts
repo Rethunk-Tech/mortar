@@ -1,23 +1,31 @@
 import { msg } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
-import type { Offer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/models.ts'
-import { Offers } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/service.ts'
+import type {
+  Offer,
+  Stall,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/models.ts'
+import {
+  Offers,
+  Stalled,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 export const useSync = create<{
   offers: Offer[]
+  stalled: Stall[]
   open: boolean
   setOpen: (open: boolean) => void
 }>((set) => ({
   offers: [],
+  stalled: [],
   open: false,
   setOpen: (open) => set({ open }),
 }))
 
-const offerKey = (o: Offer) => `${o.game}/${o.remote}`
+const offerKey = (o: Pick<Offer, 'game' | 'remote'>) => `${o.game}/${o.remote}`
 
 // Each change is announced once, by a notification that opens the dialog where it is answered.
 function present(offers: Offer[]) {
@@ -35,7 +43,25 @@ function present(offers: Offer[]) {
   }
 }
 
+// A profile waiting on another machine's file is announced once, so a sync that stopped is never silent.
+function presentStalled(stalled: Stall[]) {
+  const before = new Set(useSync.getState().stalled.map(offerKey))
+  useSync.setState({ stalled })
+  for (const st of stalled.filter((x) => !before.has(offerKey(x)))) {
+    useToasts.getState().push({
+      kind: 'info',
+      title: i18n._(msg`${st.name} is not syncing yet`),
+      body: i18n._(msg`Waiting for ${st.machine}'s profile file to finish syncing`),
+      action: { label: i18n._(msg`Review`), run: () => useSync.getState().setOpen(true) },
+    })
+  }
+}
+
 export function initSync() {
+  Events.On('sync:stalled', (event) => presentStalled((event.data as Stall[] | null) ?? []))
+  Stalled()
+    .then((stalled) => presentStalled(stalled ?? []))
+    .catch(reportUnexpected)
   Events.On('sync:offers', (event) => present((event.data as Offer[] | null) ?? []))
   Offers()
     .then((offers) => present(offers ?? []))

@@ -96,14 +96,30 @@ function OfferRow({ offer }: { offer: Offer }) {
 export function SyncOffers() {
   const { t } = useLingui()
   const offers = useSync((s) => s.offers)
+  const stalled = useSync((s) => s.stalled)
   const open = useSync((s) => s.open)
   const setOpen = useSync((s) => s.setOpen)
   return (
-    <Dialog open={open && offers.length > 0} onClose={() => setOpen(false)} fullWidth={true}>
+    <Dialog
+      open={open && offers.length + stalled.length > 0}
+      onClose={() => setOpen(false)}
+      fullWidth={true}
+    >
       <DialogTitle>{t`Changes from your other machines`}</DialogTitle>
       <DialogContent>
         {offers.map((o) => (
           <OfferRow key={`${o.game}/${o.remote}`} offer={o} />
+        ))}
+        {stalled.map((st) => (
+          <Box
+            key={`stalled-${st.game}/${st.remote}`}
+            sx={{ py: 1.25, borderBottom: '1px solid var(--mortar-hairline)' }}
+          >
+            <Typography sx={{ fontWeight: 600 }}>{t`${st.name} is not syncing yet`}</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+              {t`Waiting for ${st.machine}'s profile file to finish syncing. Changes made here are written out once it arrives.`}
+            </Typography>
+          </Box>
         ))}
       </DialogContent>
       <DialogActions>

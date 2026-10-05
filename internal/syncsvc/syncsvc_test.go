@@ -232,3 +232,52 @@ func TestFailedApplyOfANewProfileLeavesNothingBehind(t *testing.T) {
 		t.Fatalf("sync folder holds %d files, want only main's two", len(entries))
 	}
 }
+
+// Both machines wrote at once and the sync tool kept the desktop's version file with the laptop's payload: the
+// laptop waits, and says what for, instead of going quiet.
+func TestAVersionFileAheadOfItsPayloadShowsAsStalled(t *testing.T) {
+	fa, fb := t.TempDir(), t.TempDir()
+	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	a, ma := newMachine(t, fa, "Desktop", &clock)
+	b, mb := newMachine(t, fb, "Laptop", &clock)
+	copyFile := func(from, to, name string) {
+		t.Helper()
+		raw, err := os.ReadFile(filepath.Join(from, "stardew", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(filepath.Join(to, "stardew"), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(to, "stardew", name), raw, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ma.set("main", "v1")
+	scan(t, a)
+	copyFile(fa, fb, "main.mortar")
+	copyFile(fa, fb, "main.sync.json")
+	offers := scan(t, b)
+	if err := b.Resolve(context.Background(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
+		t.Fatal(err)
+	}
+	ma.set("main", "a2")
+	mb.set("local-Main", "b2")
+	scan(t, a)
+	scan(t, b)
+	copyFile(fa, fb, "main.sync.json")
+	mb.set("local-Main", "b-later")
+	if offers := scan(t, b); len(offers) != 0 {
+		t.Fatalf("offered a revision whose payload has not arrived: %+v", offers)
+	}
+	if got := shared1(t, fb); got != "b2" {
+		t.Fatalf("the laptop wrote over a revision it has not seen: %q", got)
+	}
+	if st := b.Stalled(); len(st) != 1 || st[0].Machine != "Desktop" || st[0].Profile != "local-Main" {
+		t.Fatalf("stalled = %+v, want the profile waiting on the desktop", st)
+	}
+	copyFile(fa, fb, "main.mortar")
+	if offers := scan(t, b); len(offers) != 1 || len(b.Stalled()) != 0 {
+		t.Fatalf("once the payload arrives: offers %+v, stalled %+v", offers, b.Stalled())
+	}
+}
