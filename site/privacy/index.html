@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark" />
+    <title>Mortar privacy policy</title>
+    <meta
+      name="description"
+      content="What the Mortar app and its browser extension send over the network, to whom, and when."
+    />
+    <link rel="icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="stylesheet" href="../landing.css" />
+    <link rel="stylesheet" href="../download.css" />
+  </head>
+  <body>
+    <nav class="nav" aria-label="Main">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <svg width="28" height="28" aria-hidden="true">
+            <use href="../img/icons.svg#brand" />
+          </svg>
+          Mortar
+        </a>
+        <div class="nav-links">
+          <a class="optional" href="/#features">Features</a>
+          <a class="optional" href="/extension/">Extension</a>
+          <a href="/download/">Download</a>
+          <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="wrap dl prose">
+      <h1 class="ext-title">Privacy policy</h1>
+      <p class="lede">
+        Mortar has no account system, no analytics, no telemetry and no server
+        that collects anything about you. It talks only to the services below,
+        and only for the reason given.
+      </p>
+
+      <h2>What Mortar sends, and to whom</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>When</th>
+              <th>What it receives</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Nexus Mods (nexusmods.com)</td>
+              <td>
+                When you sign in, browse, download or check for mod updates
+              </td>
+              <td>
+                Your Nexus API key or sign-in token, and the ids of the mods and
+                files involved. Nexus's own
+                <a href="https://help.nexusmods.com/article/18-privacy-policy"
+                  >privacy policy</a
+                >
+                applies.
+              </td>
+            </tr>
+            <tr>
+              <td>GitHub (github.com, api.github.com)</td>
+              <td>
+                When Mortar checks for its own updates, and for mods hosted on
+                GitHub
+              </td>
+              <td>
+                A request for the latest release of Mortar or of that mod. No
+                account, no mod list.
+              </td>
+            </tr>
+            <tr>
+              <td>SMAPI (smapi.io)</td>
+              <td>
+                When Mortar checks the mods in a profile for updates and
+                compatibility
+              </td>
+              <td>
+                The ids and versions of the installed mods, the same request
+                SMAPI itself makes when the game starts.
+              </td>
+            </tr>
+            <tr>
+              <td>SMAPI log parser (smapi.io/log)</td>
+              <td>Only when you choose to share a game log and confirm</td>
+              <td>That SMAPI log, which lists your mods and may include folder paths with your user name. smapi.io gives back a link you can share.</td>
+            </tr>
+            <tr>
+              <td>Stardew mod dataset (raw.githubusercontent.com)</td>
+              <td>When Mortar looks up mod metadata</td>
+              <td>A request for public data files; nothing about you.</td>
+            </tr>
+            <tr>
+              <td>Steam CDN (cdn.cloudflare.steamstatic.com)</td>
+              <td>When Mortar shows a game's cover art</td>
+              <td>A request for that game's public image.</td>
+            </tr>
+            <tr>
+              <td>Your own network</td>
+              <td>Only when you send a profile to another computer</td>
+              <td>
+                The profile, and its mod files when both computers use the same
+                Nexus account.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        A share link carries your profile in the part after <code>#</code>,
+        which browsers never send to a server, so opening one on
+        mortar.rethunk.tech does not reveal the profile to this site.
+      </p>
+
+      <h2>What stays on your computer</h2>
+      <p>
+        Profiles, settings, logs, crash reports and save backups stay in
+        Mortar's data folder. Your Nexus key is kept in your system keyring.
+        Report a Mortar bug collects diagnostics into a file and opens a GitHub
+        issue form; nothing is sent until you submit that issue yourself.
+      </p>
+
+      <h2>Browser extension</h2>
+      <p>
+        The extension talks only to Mortar on your own computer. Its policy is
+        on the
+        <a href="/extension/#privacy">extension page</a>.
+      </p>
+
+      <h2>This website</h2>
+      <p>
+        mortar.rethunk.tech is a static site with no cookies and no analytics.
+        The downloads page asks GitHub's public API for the latest release so it
+        can show file sizes. The hosting provider keeps standard access logs.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about privacy or security:
+        <a href="mailto:security@rethunk.tech">security@rethunk.tech</a>.
+      </p>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap">
+        <span
+          >Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not
+          affiliated with ConcernedApe or Nexus Mods.</span
+        >
+        <span
+          ><a href="/privacy/">Privacy</a> ·
+          <a href="/code-signing/">Code signing</a> ·
+          <a href="https://github.com/Rethunk-Tech/mortar">Source</a></span
+        >
+      </div>
+    </footer>
+  </body>
+</html>

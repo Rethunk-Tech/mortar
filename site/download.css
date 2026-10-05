@@ -156,3 +156,41 @@ code {
 .ext-lede {
   margin: 0 0 1.5rem;
 }
+.prose h2 {
+  margin: 2.5rem 0 0.75rem;
+  font-size: 1.5rem;
+}
+.prose p {
+  max-width: 48rem;
+  color: var(--muted);
+}
+.table-wrap {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+.table-wrap th,
+.table-wrap td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.table-wrap th {
+  color: var(--text);
+  font-weight: 700;
+}
+.table-wrap td {
+  color: var(--muted);
+}
+.table-wrap td:first-child {
+  color: var(--text);
+  font-weight: 500;
+}
+.prose .lede {
+  margin: 0 0 1.5rem;
+}

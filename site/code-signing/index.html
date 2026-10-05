@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark" />
+    <title>Mortar code signing policy</title>
+    <meta
+      name="description"
+      content="How Mortar releases are built, signed and approved, and how to verify them."
+    />
+    <link rel="icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="stylesheet" href="../landing.css" />
+    <link rel="stylesheet" href="../download.css" />
+  </head>
+  <body>
+    <nav class="nav" aria-label="Main">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <svg width="28" height="28" aria-hidden="true">
+            <use href="../img/icons.svg#brand" />
+          </svg>
+          Mortar
+        </a>
+        <div class="nav-links">
+          <a class="optional" href="/#features">Features</a>
+          <a class="optional" href="/extension/">Extension</a>
+          <a href="/download/">Download</a>
+          <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="wrap dl prose">
+      <h1 class="ext-title">Code signing policy</h1>
+      <p class="lede">
+        Every Mortar release is built from this project's public source by GitHub Actions, and every file it
+        ships can be checked against a signature or a published checksum.
+      </p>
+
+      <h2>What is signed</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Artifact</th><th>Signature</th><th>Checked by</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Every release file</td><td><code>SHA256SUMS</code>, signed with the Mortar packages OpenPGP key, and a GitHub build provenance attestation</td><td>You: <code>gpg --verify</code>, <code>sha256sum --check</code>, <code>gh attestation verify</code></td></tr>
+            <tr><td>In-app updates</td><td>ed25519 signature for each file in the release's <code>manifest.json</code></td><td>Mortar, before it installs an update</td></tr>
+            <tr><td>apt, dnf and pacman repositories</td><td>Repository metadata and each <code>.rpm</code> and Arch package, signed with the Mortar packages key</td><td>apt, dnf and pacman</td></tr>
+            <tr><td>Scoop and Homebrew</td><td>SHA-256 of each download pinned in the manifest, taken from the signed <code>SHA256SUMS</code></td><td>Scoop and Homebrew</td></tr>
+            <tr><td>Firefox extension</td><td>Signed by Mozilla</td><td>Firefox</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The Mortar packages key is <code>3283 6046 06CA E229 5D47 6F98 83BC 8751 EE6F 773D</code>, published at
+        <a href="/packages/mortar-archive-keyring.asc">mortar.rethunk.tech/packages</a>, in the
+        <a href="https://github.com/Rethunk-Tech/mortar/blob/main/build/linux/repo/mortar-archive-keyring.asc">repository</a>
+        and on keyserver.ubuntu.com. The private keys live only in the repository's GitHub Actions secrets.
+      </p>
+
+      <h2>Who builds and approves releases</h2>
+      <ul class="steps">
+        <li>
+          <strong>Authors</strong> (commit without further review): members of the
+          <a href="https://github.com/orgs/Rethunk-Tech/people">Rethunk-Tech</a> organization with write access to the
+          repository.
+        </li>
+        <li><strong>Reviewers</strong> (review every change from anyone else): <a href="https://github.com/Albinogeek">Damon Blais (@Albinogeek)</a>.</li>
+        <li><strong>Approvers</strong> (approve each release before it is signed and published): <a href="https://github.com/Albinogeek">Damon Blais (@Albinogeek)</a>.</li>
+      </ul>
+      <p>
+        Releases are built only from tags in <a href="https://github.com/Rethunk-Tech/mortar">Rethunk-Tech/mortar</a>
+        by its release workflow, published as a draft, verified, and only then made public. Published releases are
+        immutable. Accounts with write access use multi-factor authentication.
+      </p>
+
+      <h2>Privacy</h2>
+      <p>
+        What Mortar sends over the network, and when, is in the <a href="/privacy/">privacy policy</a>. Mortar
+        collects no telemetry.
+      </p>
+
+      <h2>Report a problem</h2>
+      <p>
+        A signature that does not verify, or a file you suspect was tampered with:
+        <a href="mailto:security@rethunk.tech">security@rethunk.tech</a>, or GitHub's private vulnerability
+        reporting on the repository.
+      </p>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap">
+        <span
+          >Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not
+          affiliated with ConcernedApe or Nexus Mods.</span
+        >
+        <span
+          ><a href="/privacy/">Privacy</a> ·
+          <a href="/code-signing/">Code signing</a> ·
+          <a href="https://github.com/Rethunk-Tech/mortar">Source</a></span
+        >
+      </div>
+    </footer>
+  </body>
+</html>
