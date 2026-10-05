@@ -16,6 +16,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
@@ -75,7 +76,7 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 		return errors.New("control: listener has no TCP address")
 	}
 	path := filepath.Join(dir, controlwire.FileName)
-	b, err := json.Marshal(controlwire.Discovery{Port: tcp.Port, Token: token, PID: os.Getpid(), Version: version})
+	b, err := json.Marshal(controlwire.Discovery{Port: tcp.Port, Token: token, PID: os.Getpid(), Version: version, Protocol: controlwire.Protocol})
 	if err != nil {
 		_ = ln.Close()
 		return err
@@ -97,11 +98,11 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 			}
 			return err
 		}
-		go serveConn(ctx, conn, token, h)
+		go serveConn(ctx, conn, token, version, h)
 	}
 }
 
-func serveConn(ctx context.Context, conn net.Conn, token string, h Handler) {
+func serveConn(ctx context.Context, conn net.Conn, token, version string, h Handler) {
 	defer func() { _ = conn.Close() }()
 	r := bufio.NewReaderSize(conn, 64<<10)
 	var req request
@@ -113,7 +114,13 @@ func serveConn(ctx context.Context, conn net.Conn, token string, h Handler) {
 		return
 	}
 	log.Printf("control: %s %s %s", req.Method, req.Params.Game, req.Params.Profile)
-	res, err := h(ctx, req.Method, req.Params)
+	var res any
+	var err error
+	if req.Method == "hello" {
+		res = controlwire.Hello{Version: version, Protocol: controlwire.Protocol}
+	} else {
+		res, err = h(ctx, req.Method, req.Params)
+	}
 	if err != nil {
 		writeReply(conn, controlwire.Reply{Error: err.Error()})
 		return
@@ -134,12 +141,21 @@ func writeReply(w io.Writer, rep controlwire.Reply) {
 	_, _ = w.Write(append(b, '\n'))
 }
 
+// protocolChecked is set once the app has answered hello with a protocol this build speaks.
+var protocolChecked atomic.Bool
+
 // Call sends one request to the running app and decodes its result into out (nil to discard it). timeout bounds
 // the whole call; methods that wait on the game take longer than reads.
 func Call(method string, p Params, out any, timeout time.Duration) error {
 	dir, err := datadir.Dir()
 	if err != nil {
 		return err
+	}
+	if !protocolChecked.Load() {
+		if err := controlwire.CheckProtocol(dir, timeout); err != nil {
+			return err
+		}
+		protocolChecked.Store(true)
 	}
 	return controlwire.CallDir(dir, method, p, out, timeout)
 }

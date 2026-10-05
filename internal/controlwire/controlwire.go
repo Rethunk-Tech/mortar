@@ -17,6 +17,10 @@ import (
 // FileName is the discovery file the app writes in its data folder while it runs.
 const FileName = "control.json"
 
+// Protocol is the control protocol this build speaks: the shape of requests, replies and control.json. The app
+// states its own in control.json and in the hello reply, and a client refuses an app that speaks another.
+const Protocol = 1
+
 // MaxLine bounds a request or reply line.
 const MaxLine = 16 << 20
 
@@ -29,6 +33,14 @@ type Discovery struct {
 	Token   string `json:"token"`
 	PID     int    `json:"pid"`
 	Version string `json:"version"`
+	// Protocol is the app's control protocol.
+	Protocol int `json:"protocol"`
+}
+
+// Hello is the reply to the hello method.
+type Hello struct {
+	Version  string `json:"version"`
+	Protocol int    `json:"protocol"`
 }
 
 // Reply is one reply line.
@@ -104,4 +116,17 @@ func CallDir(dir, method string, params, out any, timeout time.Duration) error {
 		return nil
 	}
 	return json.Unmarshal(rep.Result, out)
+}
+
+// CheckProtocol asks the app whose data folder is dir for its control protocol and refuses one this build does not
+// speak.
+func CheckProtocol(dir string, timeout time.Duration) error {
+	var h Hello
+	if err := CallDir(dir, "hello", nil, &h, timeout); err != nil {
+		return err
+	}
+	if h.Protocol != Protocol {
+		return fmt.Errorf("this mortar CLI speaks control protocol %d, the app speaks %d", Protocol, h.Protocol)
+	}
+	return nil
 }

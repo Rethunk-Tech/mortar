@@ -1,10 +1,12 @@
 package control
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -83,6 +85,14 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 		t.Fatalf("handler error not passed back: %v", err)
 	}
 
+	var hello controlwire.Hello
+	if err := controlwire.CallDir(dir, "hello", nil, &hello, time.Second); err != nil || hello != (controlwire.Hello{Version: "1.2.3", Protocol: controlwire.Protocol}) {
+		t.Fatalf("hello = %+v, %v", hello, err)
+	}
+	if err := controlwire.CheckProtocol(dir, time.Second); err != nil {
+		t.Fatal(err)
+	}
+
 	root, err := os.OpenRoot(dir)
 	if err != nil {
 		t.Fatal(err)
@@ -113,6 +123,36 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 	waitFile(t, path, false)
 	if err := controlwire.CallDir(dir, "echo", Params{}, nil, time.Second); !errors.Is(err, controlwire.ErrNotRunning) {
 		t.Fatalf("after shutdown: %v", err)
+	}
+}
+
+func TestCheckProtocolRefusesAnotherProtocol(t *testing.T) {
+	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = ln.Close() }()
+	go func() {
+		conn, err := ln.Accept()
+		if err != nil {
+			return
+		}
+		defer func() { _ = conn.Close() }()
+		_, _ = bufio.NewReader(conn).ReadBytes('\n')
+		_, _ = fmt.Fprintf(conn, `{"result":{"version":"9.9.9","protocol":%d}}`+"\n", controlwire.Protocol+1)
+	}()
+	dir := t.TempDir()
+	tcp, ok := ln.Addr().(*net.TCPAddr)
+	if !ok {
+		t.Fatal("no TCP address")
+	}
+	d, _ := json.Marshal(controlwire.Discovery{Port: tcp.Port, Token: "t", Protocol: controlwire.Protocol + 1})
+	if err := os.WriteFile(filepath.Join(dir, controlwire.FileName), d, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	want := fmt.Sprintf("this mortar CLI speaks control protocol %d, the app speaks %d", controlwire.Protocol, controlwire.Protocol+1)
+	if err := controlwire.CheckProtocol(dir, time.Second); err == nil || err.Error() != want {
+		t.Fatalf("err = %v, want %q", err, want)
 	}
 }
 
