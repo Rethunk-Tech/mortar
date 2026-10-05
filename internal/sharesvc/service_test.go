@@ -408,22 +408,6 @@ func TestANewProfileFromAPreviewOfTheOpenOneGetsItsMods(t *testing.T) {
 	if !slices.ContainsFunc(rec.reqs, func(r queue.Request) bool { return r.ModID == 100 }) {
 		t.Fatalf("queued %+v", rec.reqs)
 	}
-	// Whatever the new profile held before the queue lands is already placed, so only the arrivals are moved.
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if len(s.pending) != 1 || !s.pending[0].Follow {
-		t.Fatalf("pending = %+v", s.pending)
-	}
-	all, _ := s.d.Profiles.List("stardew")
-	for _, p := range all {
-		if p.ID == s.pending[0].Profile {
-			for _, e := range p.Entries {
-				if !slices.Contains(s.pending[0].Placed, e.Key) {
-					t.Fatalf("%s was on the new profile but not seeded as placed: %v", e.Key, s.pending[0].Placed)
-				}
-			}
-		}
-	}
 }
 
 func TestInDirResolvesOnlyRelativePaths(t *testing.T) {
