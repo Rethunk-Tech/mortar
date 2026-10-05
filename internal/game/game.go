@@ -11,9 +11,6 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/Rethunk-Tech/mortar/internal/gog"
-	"github.com/Rethunk-Tech/mortar/internal/lutris"
-
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
@@ -49,9 +46,6 @@ type Identity interface {
 	// GameProcesses are the executables of the game with or without its loader; any of them running blocks a
 	// loader install, whoever started it.
 	GameProcesses() []string
-	// GOG and Lutris describe the game to those launchers' locators; a game a store does not sell returns the zero value.
-	GOG() gog.Game
-	Lutris() lutris.Game
 }
 
 // Installs finds and validates a game's install folder.
@@ -115,6 +109,15 @@ func Catalog() []components.GameInfo {
 		return nil
 	}
 	return m.Games
+}
+
+func catalogGame(id string) (components.GameInfo, bool) {
+	for _, g := range Catalog() {
+		if g.ID == id {
+			return g, true
+		}
+	}
+	return components.GameInfo{}, false
 }
 
 // Find returns the implemented game with this id, or nil.

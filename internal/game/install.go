@@ -3,19 +3,17 @@ package game
 import (
 	"fmt"
 
-	"github.com/Rethunk-Tech/mortar/internal/gog"
-	"github.com/Rethunk-Tech/mortar/internal/lutris"
+	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 const (
-	StoreSteam        = "steam"
-	StoreFlatpakSteam = "flatpak-steam"
-	StoreGOG          = gog.StoreGOG
-	StoreGOGHeroic    = gog.StoreHeroic
-	StoreMinigalaxy   = gog.StoreMinigalaxy
-	StoreLutris       = lutris.StoreLutris
+	StoreSteam        = gamestore.StoreSteam
+	StoreFlatpakSteam = gamestore.StoreFlatpakSteam
+	StoreGOG          = gamestore.StoreGOG
+	StoreGOGHeroic    = gamestore.StoreGOGHeroic
+	StoreMinigalaxy   = gamestore.StoreMinigalaxy
+	StoreLutris       = gamestore.StoreLutris
 )
 
 // FoundInstall is one discovered game folder and the store it came from.
@@ -24,50 +22,27 @@ type FoundInstall struct {
 	Dir   string `json:"dir"`
 }
 
-var storeOrder = []string{StoreSteam, StoreFlatpakSteam, StoreGOG, StoreGOGHeroic, StoreMinigalaxy, StoreLutris}
-
 // Launcher ids, each the source of one or more stores' installs.
 const (
-	LauncherSteam        = "steam"
-	LauncherFlatpakSteam = "flatpak-steam"
-	LauncherHeroic       = "heroic"
-	LauncherLutris       = "lutris"
-	LauncherGOG          = "gog"
-	LauncherMinigalaxy   = "minigalaxy"
+	LauncherSteam        = gamestore.LauncherSteam
+	LauncherFlatpakSteam = gamestore.LauncherFlatpakSteam
+	LauncherHeroic       = gamestore.LauncherHeroic
+	LauncherLutris       = gamestore.LauncherLutris
+	LauncherGOG          = gamestore.LauncherGOG
+	LauncherMinigalaxy   = gamestore.LauncherMinigalaxy
 )
 
 // roots are the folders the user added for a launcher.
 func roots(s settings.Settings, launcher string) []string { return s.LauncherRoots[launcher] }
 
 func collect(g Game, home string, s settings.Settings) []FoundInstall {
+	info, ok := catalogGame(g.ID())
+	if !ok {
+		return nil
+	}
 	var all []FoundInstall
-	seen := map[string]struct{}{}
-	add := func(store, dir string) {
-		if dir == "" {
-			return
-		}
-		if _, ok := seen[dir]; ok {
-			return
-		}
-		seen[dir] = struct{}{}
-		all = append(all, FoundInstall{Store: store, Dir: dir})
-	}
-	for _, st := range steam.LocateAll(home, roots(s, LauncherSteam)...) {
-		dir, err := st.InstallDir(g.SteamAppID())
-		if err != nil || dir == "" {
-			continue
-		}
-		store := StoreSteam
-		if st.Kind == steam.KindFlatpak {
-			store = StoreFlatpakSteam
-		}
-		add(store, dir)
-	}
-	for _, in := range gog.Locate(home, g.GOG(), gog.Roots{Heroic: roots(s, LauncherHeroic), Games: roots(s, LauncherGOG), Minigalaxy: roots(s, LauncherMinigalaxy)}) {
-		add(in.Store, in.Dir)
-	}
-	for _, in := range lutris.Locate(home, g.Lutris(), roots(s, LauncherLutris)...) {
-		add(StoreLutris, in.Dir)
+	for _, in := range gamestore.Discover(home, s.LauncherRoots, info) {
+		all = append(all, FoundInstall{Store: in.Store, Dir: in.Dir})
 	}
 	return all
 }
@@ -92,12 +67,8 @@ func pick(all []FoundInstall, override, preferred string, g Game) (dir, store st
 		return "", ""
 	}
 	best := all[0]
-	rank := map[string]int{}
-	for i, s := range storeOrder {
-		rank[s] = i
-	}
 	for _, in := range all[1:] {
-		if rank[in.Store] < rank[best.Store] {
+		if gamestore.Rank(in.Store) < gamestore.Rank(best.Store) {
 			best = in
 		}
 	}

@@ -7,6 +7,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -73,8 +74,8 @@ func TestValidateLauncherRoot(t *testing.T) {
 func TestLauncherSetPerOS(t *testing.T) {
 	ids := func(goos string) []string {
 		var out []string
-		for _, s := range launcherSpecs(goos) {
-			out = append(out, s.id)
+		for _, s := range gamestore.Launchers(goos) {
+			out = append(out, s.ID)
 		}
 		return out
 	}

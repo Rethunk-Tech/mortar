@@ -8,9 +8,6 @@ import (
 	"path/filepath"
 	"sync/atomic"
 
-	"github.com/Rethunk-Tech/mortar/internal/gog"
-	"github.com/Rethunk-Tech/mortar/internal/lutris"
-
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
@@ -59,24 +56,6 @@ func ConfigureComponents(client *components.Client) { configuredComponents.Store
 func (Game) ID() string         { return "stardew" }
 func (Game) Name() string       { return identity().Name }
 func (Game) SteamAppID() string { return identity().SteamAppID() }
-
-// GOG names Stardew Valley to the GOG locators.
-func (Game) GOG() gog.Game {
-	g := identity()
-	if g.Stores.GOG == nil {
-		return gog.Game{}
-	}
-	return gog.Game{ProductID: g.Stores.GOG.ProductID, Folder: g.Stores.GOG.Folder, Marker: g.Marker}
-}
-
-// Lutris names Stardew Valley to the Lutris locator.
-func (Game) Lutris() lutris.Game {
-	g := identity()
-	if g.Stores.Lutris == nil {
-		return lutris.Game{}
-	}
-	return lutris.Game{Slug: g.Stores.Lutris.Slug, Keyword: g.Stores.Lutris.Keyword, Marker: g.Marker}
-}
 
 func (Game) LoaderName() string { return identity().Loaders[0].Name }
 
