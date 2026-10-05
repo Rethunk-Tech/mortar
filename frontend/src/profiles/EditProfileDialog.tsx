@@ -26,6 +26,7 @@ import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 import { LaunchPresetsBlock } from './LaunchPresetsBlock.tsx'
 import { OverridesSection } from './OverrideRows.tsx'
+import { OverwriteRow } from './OverwriteRow.tsx'
 import { foldedOverrides } from './overrideValue.ts'
 import { ProfileMark } from './ProfileMark.tsx'
 import { saveProfile } from './saveProfile.ts'
@@ -444,6 +445,7 @@ export function EditProfileDialog({
           overrides={overrides}
           onOverrides={edited(setOverrides)}
         />
+        <OverwriteRow game={gameId} profileId={profile.id} open={open} />
         <DialogActions>
           <Button onClick={guard.request}>{t`Cancel`}</Button>
           <DisabledReason title={t`Loading game settings…`} disabled={!gameSettingsLoaded}>

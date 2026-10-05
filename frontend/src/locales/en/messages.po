@@ -688,7 +688,7 @@ msgstr "Only in {bName}"
 msgid "Mod loader updates"
 msgstr "Mod loader updates"
 
-#: src/profiles/EditProfileDialog.tsx:153
+#: src/profiles/EditProfileDialog.tsx:154
 msgid "Pink"
 msgstr "Pink"
 
@@ -802,7 +802,7 @@ msgstr "{0} · {1}"
 msgid "{list} do the same job: all change {detail}"
 msgstr "{list} do the same job: all change {detail}"
 
-#: src/profiles/EditProfileDialog.tsx:173
+#: src/profiles/EditProfileDialog.tsx:174
 msgid "Star"
 msgstr "Star"
 
@@ -1127,7 +1127,7 @@ msgstr "Reinstall {gameName} from your game launcher."
 msgid "Grant access…"
 msgstr "Grant access…"
 
-#: src/profiles/EditProfileDialog.tsx:141
+#: src/profiles/EditProfileDialog.tsx:142
 msgid "Orange"
 msgstr "Orange"
 
@@ -1321,7 +1321,7 @@ msgstr "Template name"
 msgid "Its main file is no longer in this profile."
 msgstr "Its main file is no longer in this profile."
 
-#: src/profiles/EditProfileDialog.tsx:161
+#: src/profiles/EditProfileDialog.tsx:162
 msgid "Sprout"
 msgstr "Sprout"
 
@@ -1657,7 +1657,7 @@ msgstr "Folder to watch for archives"
 msgid "Launch presets"
 msgstr "Launch presets"
 
-#: src/profiles/EditProfileDialog.tsx:98
+#: src/profiles/EditProfileDialog.tsx:99
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
@@ -1894,6 +1894,10 @@ msgstr "Could not measure disk use"
 msgid "Prerelease"
 msgstr "Prerelease"
 
+#: src/profiles/OverwriteRow.tsx:59
+msgid "Could not clear the overwrite folder"
+msgstr "Could not clear the overwrite folder"
+
 #: src/console/ConsoleTab.tsx:373
 msgid "Follow new lines"
 msgstr "Follow new lines"
@@ -2025,7 +2029,7 @@ msgstr "Upload log"
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
-#: src/profiles/EditProfileDialog.tsx:145
+#: src/profiles/EditProfileDialog.tsx:146
 msgid "Lime"
 msgstr "Lime"
 
@@ -2082,7 +2086,7 @@ msgid "Skipped"
 msgstr "Skipped"
 
 #: src/game/ProfileContextMenu.tsx:47
-#: src/profiles/EditProfileDialog.tsx:422
+#: src/profiles/EditProfileDialog.tsx:423
 #: src/profiles/ProfileRow.tsx:78
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -2260,6 +2264,10 @@ msgstr "Every key returns to its default."
 #: src/settings/prefCopy.ts:87
 msgid "Medium"
 msgstr "Medium"
+
+#: src/profiles/OverwriteRow.tsx:51
+msgid "This deletes the {files} files the game wrote for this profile outside its settings folders."
+msgstr "This deletes the {files} files the game wrote for this profile outside its settings folders."
 
 #: src/mods/configFormUi.tsx:81
 msgid "Default: {fallback}"
@@ -2619,7 +2627,7 @@ msgstr "{0} has multiple Nexus files installed: {files}."
 msgid "Place the optional file"
 msgstr "Place the optional file"
 
-#: src/profiles/EditProfileDialog.tsx:149
+#: src/profiles/EditProfileDialog.tsx:150
 #: src/settings/sections/Appearance.tsx:71
 msgid "Sky"
 msgstr "Sky"
@@ -3316,7 +3324,7 @@ msgstr "Review mod updates"
 msgid "Download the extension"
 msgstr "Download the extension"
 
-#: src/profiles/EditProfileDialog.tsx:179
+#: src/profiles/EditProfileDialog.tsx:180
 msgid "Sun"
 msgstr "Sun"
 
@@ -3355,7 +3363,7 @@ msgstr "Could not trim history"
 msgid "Performance report"
 msgstr "Performance report"
 
-#: src/profiles/EditProfileDialog.tsx:90
+#: src/profiles/EditProfileDialog.tsx:91
 msgid "Cover image"
 msgstr "Cover image"
 
@@ -3394,7 +3402,7 @@ msgstr "Share as r2modman code?"
 #: src/mods/SelectionBarDialogs.tsx:86
 #: src/mods/SelectionBarDialogs.tsx:136
 #: src/profiles/CompareDialog.tsx:61
-#: src/profiles/EditProfileDialog.tsx:448
+#: src/profiles/EditProfileDialog.tsx:450
 #: src/profiles/ExternalImportMenu.tsx:72
 #: src/profiles/GameModsDialog.tsx:164
 #: src/profiles/LaunchPresetDialog.tsx:87
@@ -3453,8 +3461,8 @@ msgstr "Parallel downloads"
 msgid "{name} is abandoned: {summary}"
 msgstr "{name} is abandoned: {summary}"
 
-#: src/profiles/EditProfileDialog.tsx:104
-#: src/profiles/EditProfileDialog.tsx:112
+#: src/profiles/EditProfileDialog.tsx:105
+#: src/profiles/EditProfileDialog.tsx:113
 #: src/settings/sections/Appearance.tsx:173
 msgid "Choose image…"
 msgstr "Choose image…"
@@ -3772,7 +3780,7 @@ msgstr "Version"
 msgid "Browser extension"
 msgstr "Browser extension"
 
-#: src/profiles/EditProfileDialog.tsx:151
+#: src/profiles/EditProfileDialog.tsx:152
 msgid "Violet"
 msgstr "Violet"
 
@@ -3799,7 +3807,7 @@ msgstr "Apply a template…"
 msgid "Switch off {0}"
 msgstr "Switch off {0}"
 
-#: src/profiles/EditProfileDialog.tsx:165
+#: src/profiles/EditProfileDialog.tsx:166
 msgid "Wheat"
 msgstr "Wheat"
 
@@ -4194,7 +4202,7 @@ msgstr "Clear selection"
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
 
-#: src/profiles/EditProfileDialog.tsx:175
+#: src/profiles/EditProfileDialog.tsx:176
 msgid "Heart"
 msgstr "Heart"
 
@@ -4345,7 +4353,7 @@ msgstr "Could not unpair"
 msgid "Show more"
 msgstr "Show more"
 
-#: src/profiles/EditProfileDialog.tsx:169
+#: src/profiles/EditProfileDialog.tsx:170
 msgid "Hammer"
 msgstr "Hammer"
 
@@ -4457,7 +4465,7 @@ msgstr "Error in {0}"
 msgid "The game log has errors."
 msgstr "The game log has errors."
 
-#: src/profiles/EditProfileDialog.tsx:143
+#: src/profiles/EditProfileDialog.tsx:144
 msgid "Gold"
 msgstr "Gold"
 
@@ -4679,10 +4687,14 @@ msgstr "Could not add the archive"
 msgid "{0} ({gameName})"
 msgstr "{0} ({gameName})"
 
-#: src/profiles/EditProfileDialog.tsx:139
+#: src/profiles/EditProfileDialog.tsx:140
 #: src/settings/sections/Appearance.tsx:72
 msgid "Rose"
 msgstr "Rose"
+
+#: src/profiles/OverwriteRow.tsx:50
+msgid "Clear the overwrite folder?"
+msgstr "Clear the overwrite folder?"
 
 #: src/settings/prefCopy.ts:117
 msgid "Skip the installer wizard when saved choices still fit"
@@ -4776,7 +4788,7 @@ msgstr "Remove filter {mod}"
 msgid "Title intro"
 msgstr "Title intro"
 
-#: src/profiles/EditProfileDialog.tsx:97
+#: src/profiles/EditProfileDialog.tsx:98
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
@@ -5532,7 +5544,7 @@ msgstr "Harmless conflicts"
 msgid "Open recently deleted"
 msgstr "Open recently deleted"
 
-#: src/profiles/EditProfileDialog.tsx:181
+#: src/profiles/EditProfileDialog.tsx:182
 msgid "Moon"
 msgstr "Moon"
 
@@ -6165,7 +6177,7 @@ msgstr "Backups to keep per save"
 msgid "Default mods view"
 msgstr "Default mods view"
 
-#: src/profiles/EditProfileDialog.tsx:190
+#: src/profiles/EditProfileDialog.tsx:191
 msgid "Colour"
 msgstr "Colour"
 
@@ -6205,7 +6217,7 @@ msgstr "{0} · {1} unique"
 msgid "Not found"
 msgstr "Not found"
 
-#: src/profiles/EditProfileDialog.tsx:116
+#: src/profiles/EditProfileDialog.tsx:117
 #: src/profiles/GameSettings.tsx:182
 #: src/profiles/OverrideRows.tsx:75
 #: src/settings/sections/Appearance.tsx:183
@@ -6408,7 +6420,7 @@ msgstr "Choose cover image"
 msgid "Install separately"
 msgstr "Install separately"
 
-#: src/profiles/EditProfileDialog.tsx:177
+#: src/profiles/EditProfileDialog.tsx:178
 msgid "Mountain"
 msgstr "Mountain"
 
@@ -7220,7 +7232,7 @@ msgid "That request was not valid."
 msgstr "That request was not valid."
 
 #: src/mods/NexusDetails.tsx:246
-#: src/profiles/EditProfileDialog.tsx:299
+#: src/profiles/EditProfileDialog.tsx:300
 msgid "Description"
 msgstr "Description"
 
@@ -7679,6 +7691,10 @@ msgstr "Combat skill"
 msgid "Could not add the optional file"
 msgstr "Could not add the optional file"
 
+#: src/profiles/OverwriteRow.tsx:40
+msgid "Overwrite ({files} files)"
+msgstr "Overwrite ({files} files)"
+
 #: src/mods/redundantReason.ts:101
 msgid "Every edit it makes is overwritten by {by}"
 msgstr "Every edit it makes is overwritten by {by}"
@@ -7940,6 +7956,7 @@ msgid "Dark"
 msgstr "Dark"
 
 #: src/mods/HiddenInside.tsx:75
+#: src/profiles/OverwriteRow.tsx:42
 #: src/profiles/ProfilesPage.tsx:163
 #: src/settings/sections/DataUsage.tsx:272
 msgid "Open folder"
@@ -8664,7 +8681,7 @@ msgstr "In the same download"
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 
-#: src/profiles/EditProfileDialog.tsx:171
+#: src/profiles/EditProfileDialog.tsx:172
 msgid "Pickaxe"
 msgstr "Pickaxe"
 
@@ -8697,7 +8714,7 @@ msgstr "Maximise"
 msgid "Handle \"Mod Manager Download\" links"
 msgstr "Handle \"Mod Manager Download\" links"
 
-#: src/profiles/EditProfileDialog.tsx:449
+#: src/profiles/EditProfileDialog.tsx:451
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
@@ -8885,7 +8902,7 @@ msgstr "Add to bundle"
 msgid "When a mod is on several sites, its card installs from the first one here."
 msgstr "When a mod is on several sites, its card installs from the first one here."
 
-#: src/profiles/EditProfileDialog.tsx:183
+#: src/profiles/EditProfileDialog.tsx:184
 msgid "Sparkles"
 msgstr "Sparkles"
 
@@ -9081,7 +9098,7 @@ msgstr "Beach farm"
 #: src/mods/ConfigEditor.tsx:239
 #: src/mods/ConfigPresets.tsx:134
 #: src/mods/SelectionBar.tsx:80
-#: src/profiles/EditProfileDialog.tsx:451
+#: src/profiles/EditProfileDialog.tsx:453
 #: src/profiles/LaunchPresetDialog.tsx:92
 #: src/templates/TemplateDialogs.tsx:70
 #: src/tools/ToolEditorDialog.tsx:140
@@ -9768,7 +9785,7 @@ msgid "Move data folder"
 msgstr "Move data folder"
 
 #: src/game/ProfileMenuItems.tsx:223
-#: src/profiles/EditProfileDialog.tsx:412
+#: src/profiles/EditProfileDialog.tsx:413
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -10140,7 +10157,7 @@ msgstr "General"
 msgid "Report to author"
 msgstr "Report to author"
 
-#: src/profiles/EditProfileDialog.tsx:147
+#: src/profiles/EditProfileDialog.tsx:148
 #: src/settings/sections/Appearance.tsx:74
 msgid "Teal"
 msgstr "Teal"
@@ -10366,7 +10383,7 @@ msgstr "Restored {0} to before that change"
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
-#: src/profiles/EditProfileDialog.tsx:210
+#: src/profiles/EditProfileDialog.tsx:211
 msgid "Icon"
 msgstr "Icon"
 
@@ -10492,6 +10509,8 @@ msgid "{hours}h played"
 msgstr "{hours}h played"
 
 #: src/console/LogActions.tsx:159
+#: src/profiles/OverwriteRow.tsx:45
+#: src/profiles/OverwriteRow.tsx:52
 #: src/settings/sections/GameSettings.tsx:357
 #: src/toasts/HistoryButton.tsx:120
 msgid "Clear"
@@ -10679,7 +10698,7 @@ msgstr "Import from the game's Mods folder"
 msgid "{0} was blocked by your antivirus"
 msgstr "{0} was blocked by your antivirus"
 
-#: src/profiles/EditProfileDialog.tsx:163
+#: src/profiles/EditProfileDialog.tsx:164
 msgid "Leaf"
 msgstr "Leaf"
 
@@ -11125,7 +11144,7 @@ msgstr "Known good"
 msgid "Could not change how {0} links open"
 msgstr "Could not change how {0} links open"
 
-#: src/profiles/EditProfileDialog.tsx:167
+#: src/profiles/EditProfileDialog.tsx:168
 msgid "Fish"
 msgstr "Fish"
 
