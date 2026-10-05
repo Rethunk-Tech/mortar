@@ -91,8 +91,11 @@ func Open() (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Store{root: filepath.Join(dir, "store")}, nil
+	return OpenAt(filepath.Join(dir, "store")), nil
 }
+
+// OpenAt returns a store rooted at dir.
+func OpenAt(dir string) *Store { return &Store{root: dir} }
 
 // LocalKey is the key of a local archive with the given SHA-256.
 func LocalKey(sha256Hex string) string { return "local-" + sha256Hex }
