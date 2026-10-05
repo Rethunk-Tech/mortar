@@ -74,10 +74,23 @@ func SamePageAsk(p Profile, in IncomingFile) (ask MergeAsk, updates int, ok bool
 	return MergeAsk{EntryKey: target.Key, Label: entryLabel(target), DefaultAdd: DefaultMerge(in.Category)}, 0, true
 }
 
-// updatedEntry finds the entry in is a newer version of. The mods inside in decide when they are known: exactly an
-// entry's mods is its update, anything else is another file. Unknown (a FOMOD or a listing cut short), the author's
-// file_updates chain decides, or else a retired main file when it is the page's only main file the profile holds.
+// updatedEntry finds the entry in is a newer version of. The author's file_updates chain from an entry's file to in
+// decides first, even when the mod was renamed inside, unless the page carries several main files: those are separate
+// mods, and only the mods inside in tell which one it updates. Otherwise the mods inside in decide when they are
+// known: exactly an entry's mods is its update, anything else is another file. Unknown (a FOMOD or a listing cut
+// short), a retired main file is updated when it is the page's only main file the profile holds.
 func updatedEntry(page []Entry, in IncomingFile) (Entry, bool) {
+	pageMains := 0
+	for _, f := range in.Files {
+		if strings.EqualFold(f.Category, "MAIN") {
+			pageMains++
+		}
+	}
+	if len(in.ModIDs) == 0 || pageMains <= 1 {
+		if i := slices.IndexFunc(page, func(e Entry) bool { return chainedTo(e.Source.FileID, in) }); i >= 0 {
+			return page[i], true
+		}
+	}
 	if len(in.ModIDs) > 0 {
 		i := slices.IndexFunc(page, func(e Entry) bool {
 			return len(e.Mods) == len(in.ModIDs) && !slices.ContainsFunc(e.Mods, func(m Component) bool {
@@ -87,9 +100,6 @@ func updatedEntry(page []Entry, in IncomingFile) (Entry, bool) {
 		if i < 0 {
 			return Entry{}, false
 		}
-		return page[i], true
-	}
-	if i := slices.IndexFunc(page, func(e Entry) bool { return chainedTo(e.Source.FileID, in) }); i >= 0 {
 		return page[i], true
 	}
 	if !strings.EqualFold(in.Category, "MAIN") {

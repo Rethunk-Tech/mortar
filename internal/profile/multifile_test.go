@@ -329,3 +329,15 @@ func TestSplitAndCombineEntries(t *testing.T) {
 func hasMod(e Entry, id mod.ID) bool {
 	return slices.ContainsFunc(e.Mods, func(m Component) bool { return m.ID == id })
 }
+
+// An author's file_updates chain from the installed file is an update even when the mod inside was renamed.
+func TestRenamedModOnFileUpdatesChainIsAnUpdate(t *testing.T) {
+	t.Parallel()
+	e := Entry{Key: "nexus-7-1", Source: Source{Kind: KindNexus, ModID: 7, FileID: 1, Category: "MAIN"}, Mods: []Component{{Name: "A", ID: "smapi:X.A"}}}
+	in := IncomingFile{ModID: 7, FileID: 2, Category: "MAIN", ModIDs: []mod.ID{"smapi:X.B"}, Files: []nexus.File{
+		{FileID: 1, Category: "OLD_VERSION", ReplacedBy: 2}, {FileID: 2, Category: "MAIN"},
+	}}
+	if ask, up, ok := SamePageAsk(Profile{Entries: []Entry{e}}, in); up != 1 {
+		t.Fatalf("file 1 chained to file 2, yet: ask %+v ok %v updates %d", ask, ok, up)
+	}
+}
