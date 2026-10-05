@@ -15,7 +15,7 @@ import {
 } from '@dnd-kit/sortable'
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Divider, Menu, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Menu, Typography } from '@mui/material'
 import {
   ArrowLeft,
   Download,
@@ -28,7 +28,6 @@ import {
   Wrench,
 } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
-import type { SourceInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import type {
   Profile,
   TrashItem,
@@ -51,10 +50,9 @@ import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { ExternalImportMenuItems, ExternalImportProfileDialog } from './ExternalImportMenu.tsx'
-import { useExternalImportSources } from './externalImportSources.ts'
 import { findModInProfiles, onFindAllFocus, openModInProfile } from './findMod.ts'
 import { GameModsDialog } from './GameModsDialog.tsx'
+import { ImportWizard } from './ImportWizard.tsx'
 import { PackImportDialog } from './PackImportDialog.tsx'
 import { ProfileRow } from './ProfileRow.tsx'
 import { hasThunderstore } from './packImport.ts'
@@ -305,10 +303,10 @@ function ProfilesHeader({
 }) {
   const { t } = useLingui()
   const importMenuId = useId()
-  const externalSources = useExternalImportSources(game)
   const [importAnchor, setImportAnchor] = useState<HTMLElement | null>(null)
-  const [externalSource, setExternalSource] = useState<SourceInfo | null>(null)
+  const [wizard, setWizard] = useState(false)
   const [packImport, setPackImport] = useState(false)
+  const [packPath, setPackPath] = useState('')
   const thunderstore = hasThunderstore(useProfiles((s) => s.game))
   const closeImportMenu = () => setImportAnchor(null)
   return (
@@ -380,30 +378,37 @@ function ProfilesHeader({
             onRestoreZip()
           }}
         />
-        {externalSources.length > 0 || thunderstore ? <Divider /> : null}
-        {thunderstore ? (
-          <MenuAction
-            icon={<Download size={16} aria-hidden={true} />}
-            label={t`From r2modman / Thunderstore…`}
-            onClick={() => {
-              closeImportMenu()
-              setPackImport(true)
-            }}
-          />
-        ) : null}
-        <ExternalImportMenuItems
-          sources={externalSources}
-          onPick={(source) => {
+        <MenuAction
+          icon={<Download size={16} aria-hidden={true} />}
+          label={t`Import…`}
+          onClick={() => {
             closeImportMenu()
-            setExternalSource(source)
+            setWizard(true)
           }}
         />
       </Menu>
-      <PackImportDialog open={packImport} game={game} onClose={() => setPackImport(false)} />
-      <ExternalImportProfileDialog
+      <ImportWizard
+        open={wizard}
         game={game}
-        source={externalSource}
-        onClose={() => setExternalSource(null)}
+        onClose={() => setWizard(false)}
+        onPickPack={(path) => {
+          setPackPath(path)
+          setPackImport(true)
+        }}
+        onOwnCode={
+          thunderstore
+            ? () => {
+                setPackPath('')
+                setPackImport(true)
+              }
+            : null
+        }
+      />
+      <PackImportDialog
+        open={packImport}
+        game={game}
+        initialPath={packPath}
+        onClose={() => setPackImport(false)}
       />
       <Button
         variant="contained"

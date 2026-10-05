@@ -28,12 +28,7 @@ msgstr "Performance"
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
-#. placeholder {0}: item.name
-#: src/profiles/ExternalImportMenu.tsx:23
-msgid "From {0}…"
-msgstr "From {0}…"
-
-#: src/profiles/PackImportDialog.tsx:108
+#: src/profiles/PackImportDialog.tsx:119
 msgid "From r2modman on this computer"
 msgstr "From r2modman on this computer"
 
@@ -95,10 +90,6 @@ msgstr "Could not open the folder"
 msgid "Author · {author}"
 msgstr "Author · {author}"
 
-#: src/profiles/ExternalImportMenu.tsx:46
-msgid "No profiles to import."
-msgstr "No profiles to import."
-
 #. placeholder {0}: items.length
 #: src/queue/QueueBody.tsx:232
 msgid "Failed ({0})"
@@ -125,7 +116,7 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
-#: src/profiles/PackImportDialog.tsx:136
+#: src/profiles/PackImportDialog.tsx:147
 msgid "Could not open the file"
 msgstr "Could not open the file"
 
@@ -206,7 +197,7 @@ msgstr "Make {name} win"
 
 #. placeholder {0}: preview?.name ?? ''
 #. placeholder {1}: result.queued
-#: src/profiles/PackImportDialog.tsx:74
+#: src/profiles/PackImportDialog.tsx:85
 msgid "Imported {0}: {1} to install"
 msgstr "Imported {0}: {1} to install"
 
@@ -566,7 +557,7 @@ msgid "Show a report first."
 msgstr "Show a report first."
 
 #: src/mods/problemFix/DamagedFix.tsx:40
-#: src/profiles/ProfilesPage.tsx:170
+#: src/profiles/ProfilesPage.tsx:168
 #: src/settings/sections/AboutDiagnostics.tsx:212
 msgid "Repair"
 msgstr "Repair"
@@ -922,7 +913,7 @@ msgstr "What's new"
 msgid "Mod updates are found"
 msgstr "Mod updates are found"
 
-#: src/profiles/ProfilesPage.tsx:259
+#: src/profiles/ProfilesPage.tsx:257
 #: src/settings/shortcutLabels.ts:31
 msgid "Find a mod in all profiles"
 msgstr "Find a mod in all profiles"
@@ -2213,7 +2204,7 @@ msgstr "Only in {targetName}"
 msgid "Required by ({0})"
 msgstr "Required by ({0})"
 
-#: src/profiles/ProfilesPage.tsx:264
+#: src/profiles/ProfilesPage.tsx:262
 msgid "No mod matches"
 msgstr "No mod matches"
 
@@ -2347,7 +2338,7 @@ msgstr "Every key returns to its default."
 msgid "Medium"
 msgstr "Medium"
 
-#: src/profiles/ProfilesPage.tsx:108
+#: src/profiles/ProfilesPage.tsx:106
 msgid "Delete permanently"
 msgstr "Delete permanently"
 
@@ -2380,7 +2371,6 @@ msgstr "{label} is replaced by the copy in this backup. The current {label} is b
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
-#: src/mods/CleanupSection.tsx:148
 #: src/mods/ProblemsTab.tsx:439
 msgid "Cleanup"
 msgstr "Cleanup"
@@ -2513,8 +2503,8 @@ msgstr "New profile from link"
 #: src/mods/Toolbar.tsx:57
 #: src/profiles/CompareBulkBody.tsx:118
 #: src/profiles/overrideValue.ts:86
-#: src/profiles/ProfilesPage.tsx:273
-#: src/profiles/ProfilesPage.tsx:282
+#: src/profiles/ProfilesPage.tsx:271
+#: src/profiles/ProfilesPage.tsx:280
 #: src/settings/prefCopy.ts:338
 #: src/settings/prefCopy.ts:405
 #: src/settings/prefCopy.ts:420
@@ -2616,7 +2606,7 @@ msgstr "A profile holds one set of mods for this game."
 msgid "Copy token"
 msgstr "Copy token"
 
-#: src/profiles/PackImportDialog.tsx:94
+#: src/profiles/PackImportDialog.tsx:105
 msgid "off"
 msgstr "off"
 
@@ -3177,7 +3167,7 @@ msgstr "Custom categories"
 #: src/mods/OldFilesCallouts.tsx:103
 #: src/profiles/LaunchPresetsBlock.tsx:53
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:63
-#: src/profiles/ProfilesPage.tsx:177
+#: src/profiles/ProfilesPage.tsx:175
 #: src/saves/SaveBackupsSection.tsx:70
 #: src/saves/SaveBackupsSection.tsx:140
 #: src/settings/prefCopy.ts:254
@@ -3476,10 +3466,10 @@ msgstr "Share as r2modman code?"
 #: src/mods/SelectionBarDialogs.tsx:136
 #: src/profiles/CompareDialog.tsx:61
 #: src/profiles/EditProfileDialog.tsx:463
-#: src/profiles/ExternalImportMenu.tsx:72
 #: src/profiles/GameModsDialog.tsx:164
+#: src/profiles/ImportWizard.tsx:136
 #: src/profiles/LaunchPresetDialog.tsx:87
-#: src/profiles/PackImportDialog.tsx:145
+#: src/profiles/PackImportDialog.tsx:156
 #: src/settings/sections/NexusSSO.tsx:67
 #: src/settings/sections/nxmHandler.tsx:77
 #: src/shell/BugReportDialog.tsx:102
@@ -3671,7 +3661,7 @@ msgid " · {cause} · {size}"
 msgstr " · {cause} · {size}"
 
 #. placeholder {0}: cleanup.length
-#: src/mods/CleanupSection.tsx:163
+#: src/mods/CleanupSection.tsx:160
 msgid "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
 msgstr "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
 
@@ -4426,7 +4416,7 @@ msgstr "This bundle will be removed from Mortar."
 msgid "Beta / prerelease"
 msgstr "Beta / prerelease"
 
-#: src/profiles/ProfilesPage.tsx:233
+#: src/profiles/ProfilesPage.tsx:231
 msgid "Empty trash?"
 msgstr "Empty trash?"
 
@@ -4467,7 +4457,7 @@ msgstr "Select mods on the Mods tab, then Add to bundle."
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
-#: src/profiles/PackImportDialog.tsx:139
+#: src/profiles/PackImportDialog.tsx:150
 #: src/share/ImportInput.tsx:29
 msgid "Choose a file…"
 msgstr "Choose a file…"
@@ -4694,8 +4684,8 @@ msgstr "Redundant"
 msgid "Play with {0}"
 msgstr "Play with {0}"
 
-#: src/profiles/ProfilesPage.tsx:414
-#: src/profiles/ProfilesPage.tsx:500
+#: src/profiles/ProfilesPage.tsx:419
+#: src/profiles/ProfilesPage.tsx:505
 msgid "New profile…"
 msgstr "New profile…"
 
@@ -5265,6 +5255,10 @@ msgstr "{0, plural, one {Removed # mod} other {Removed # mods}}"
 msgid "{found, plural, one {# mod update} other {# mod updates}}"
 msgstr "{found, plural, one {# mod update} other {# mod updates}}"
 
+#: src/profiles/ImportWizard.tsx:100
+msgid "No profiles found."
+msgstr "No profiles found."
+
 #. placeholder {0}: game.name
 #. placeholder {0}: profile.name
 #: src/games/GameSelect.tsx:197
@@ -5403,10 +5397,6 @@ msgstr "Restoring…"
 msgid "Load order"
 msgstr "Load order"
 
-#: src/mods/SlowStartupSection.tsx:113
-msgid "Slow startup"
-msgstr "Slow startup"
-
 #: src/profiles/RecentChangesButton.tsx:68
 msgid "Reverted"
 msgstr "Reverted"
@@ -5526,7 +5516,7 @@ msgstr "{0, plural, one {Stopped asking about # folder} other {Stopped asking ab
 
 #: src/firstrunTour/TourPopover.tsx:157
 #: src/fomod/Dialog.tsx:256
-#: src/profiles/ProfilesPage.tsx:327
+#: src/profiles/ProfilesPage.tsx:325
 #: src/settings/SettingsPage.tsx:62
 msgid "Back"
 msgstr "Back"
@@ -5760,7 +5750,7 @@ msgstr "The update for {0} did not finish"
 msgid "Dismissed"
 msgstr "Dismissed"
 
-#: src/profiles/PackImportDialog.tsx:128
+#: src/profiles/PackImportDialog.tsx:139
 msgid "Profile code"
 msgstr "Profile code"
 
@@ -5850,7 +5840,7 @@ msgstr "Add to group…"
 
 #. placeholder {0}: item.name
 #. placeholder {0}: snap.farm || snap.folder
-#: src/profiles/ProfilesPage.tsx:90
+#: src/profiles/ProfilesPage.tsx:88
 #: src/saves/BackupsDialog.tsx:210
 msgid "Restore {0}"
 msgstr "Restore {0}"
@@ -6002,7 +5992,7 @@ msgid "Shortcut removed"
 msgstr "Shortcut removed"
 
 #. placeholder {0}: item.name
-#: src/profiles/ProfilesPage.tsx:97
+#: src/profiles/ProfilesPage.tsx:95
 msgid "Delete {0} permanently"
 msgstr "Delete {0} permanently"
 
@@ -6301,6 +6291,10 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
+#: src/profiles/ImportWizard.tsx:133
+msgid "Use a code or file…"
+msgstr "Use a code or file…"
+
 #. placeholder {0}: mod.name
 #. placeholder {0}: row.name
 #. placeholder {1}: fixLabel(i18n, mod.fix)
@@ -6454,8 +6448,8 @@ msgstr "Copy {0} to {1}"
 
 #: src/commandPalette/paletteLabels.ts:11
 #: src/profiles/GameModsDialog.tsx:172
-#: src/profiles/PackImportDialog.tsx:148
-#: src/profiles/ProfilesPage.tsx:351
+#: src/profiles/PackImportDialog.tsx:159
+#: src/profiles/ProfilesPage.tsx:349
 msgid "Import"
 msgstr "Import"
 
@@ -6677,12 +6671,13 @@ msgstr "Could not read the SMAPI log"
 msgid "Default launch"
 msgstr "Default launch"
 
-#: src/profiles/PackImportDialog.tsx:64
+#: src/profiles/PackImportDialog.tsx:60
+#: src/profiles/PackImportDialog.tsx:75
 msgid "Could not read that code or file"
 msgstr "Could not read that code or file"
 
-#: src/profiles/ProfilesPage.tsx:199
-#: src/profiles/ProfilesPage.tsx:213
+#: src/profiles/ProfilesPage.tsx:197
+#: src/profiles/ProfilesPage.tsx:211
 #: src/settings/sections/DataUsage.tsx:208
 msgid "Recently deleted"
 msgstr "Recently deleted"
@@ -6699,7 +6694,7 @@ msgstr "Copy to {bName}"
 msgid "Choose a folder"
 msgstr "Choose a folder"
 
-#: src/profiles/PackImportDialog.tsx:81
+#: src/profiles/PackImportDialog.tsx:92
 msgid "Could not import"
 msgstr "Could not import"
 
@@ -7173,7 +7168,6 @@ msgid "Main only"
 msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
-#: src/mods/CompatSection.tsx:58
 #: src/mods/ProblemsTab.tsx:459
 msgid "Compatibility"
 msgstr "Compatibility"
@@ -7368,7 +7362,7 @@ msgstr "An install is already running."
 msgid "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit."
 msgstr "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit."
 
-#: src/mods/CleanupSection.tsx:164
+#: src/mods/CleanupSection.tsx:161
 msgid "This change can be undone from History."
 msgstr "This change can be undone from History."
 
@@ -7549,8 +7543,8 @@ msgstr "Untrack every {gameName} mod on Nexus"
 msgid "Clicking these links on Nexus starts the download in Mortar."
 msgstr "Clicking these links on Nexus starts the download in Mortar."
 
-#: src/profiles/ProfilesPage.tsx:107
-#: src/profiles/ProfilesPage.tsx:234
+#: src/profiles/ProfilesPage.tsx:105
+#: src/profiles/ProfilesPage.tsx:232
 msgid "This cannot be undone."
 msgstr "This cannot be undone."
 
@@ -7622,7 +7616,7 @@ msgstr "Set default preset…"
 msgid "Keep the newest backups of each save and delete the rest. Pinned backups are never removed."
 msgstr "Keep the newest backups of each save and delete the rest. Pinned backups are never removed."
 
-#: src/profiles/ProfilesPage.tsx:494
+#: src/profiles/ProfilesPage.tsx:499
 msgid "No profiles yet."
 msgstr "No profiles yet."
 
@@ -7970,7 +7964,7 @@ msgstr "Could not keep the old files"
 msgid "The port Mortar uses for local sharing"
 msgstr "The port Mortar uses for local sharing"
 
-#: src/profiles/ProfilesPage.tsx:361
+#: src/profiles/ProfilesPage.tsx:359
 msgid "From the game's Mods folder…"
 msgstr "From the game's Mods folder…"
 
@@ -8059,8 +8053,8 @@ msgstr "Report copied"
 msgid "Problems only"
 msgstr "Problems only"
 
-#: src/profiles/ProfilesPage.tsx:133
-#: src/profiles/ProfilesPage.tsx:136
+#: src/profiles/ProfilesPage.tsx:131
+#: src/profiles/ProfilesPage.tsx:134
 msgid "Damaged"
 msgstr "Damaged"
 
@@ -8111,7 +8105,7 @@ msgid "Dark"
 msgstr "Dark"
 
 #: src/mods/HiddenInside.tsx:75
-#: src/profiles/ProfilesPage.tsx:163
+#: src/profiles/ProfilesPage.tsx:161
 #: src/settings/sections/DataUsage.tsx:272
 msgid "Open folder"
 msgstr "Open folder"
@@ -8138,7 +8132,7 @@ msgstr "Window mode"
 msgid "This profile ignores updates for this mod."
 msgstr "This profile ignores updates for this mod."
 
-#: src/profiles/ProfilesPage.tsx:503
+#: src/profiles/ProfilesPage.tsx:508
 msgid "Create a profile to manage a set of mods."
 msgstr "Create a profile to manage a set of mods."
 
@@ -8582,7 +8576,7 @@ msgstr "Setup"
 msgid "{0} of {1} · {2}/s"
 msgstr "{0} of {1} · {2}/s"
 
-#: src/profiles/PackImportDialog.tsx:156
+#: src/profiles/PackImportDialog.tsx:167
 #: src/share/ImportInput.tsx:73
 msgid "Preview"
 msgstr "Preview"
@@ -8819,8 +8813,8 @@ msgstr "Auto-enable requirements"
 #: src/mods/Sidebar.tsx:317
 #: src/mods/Sidebar.tsx:330
 #: src/profiles/CompareBulkBody.tsx:117
-#: src/profiles/ProfilesPage.tsx:273
-#: src/profiles/ProfilesPage.tsx:282
+#: src/profiles/ProfilesPage.tsx:271
+#: src/profiles/ProfilesPage.tsx:280
 #: src/share/ShareDialog.tsx:296
 msgid "Enabled"
 msgstr "Enabled"
@@ -8998,6 +8992,7 @@ msgstr "{0} adds {time} to startup (through {1})"
 msgid "Overrides"
 msgstr "Overrides"
 
+#: src/profiles/ProfilesPage.tsx:383
 #: src/settings/sections/General.tsx:268
 msgid "Import…"
 msgstr "Import…"
@@ -9033,8 +9028,8 @@ msgstr "Could not download {0}"
 msgid "Error"
 msgstr "Error"
 
-#: src/profiles/ProfilesPage.tsx:216
-#: src/profiles/ProfilesPage.tsx:235
+#: src/profiles/ProfilesPage.tsx:214
+#: src/profiles/ProfilesPage.tsx:233
 msgid "Empty trash"
 msgstr "Empty trash"
 
@@ -9095,7 +9090,7 @@ msgstr "Quit"
 msgid "{loader} · {lastLine}"
 msgstr "{loader} · {lastLine}"
 
-#: src/profiles/ProfilesPage.tsx:377
+#: src/profiles/ProfilesPage.tsx:375
 msgid "From a backup…"
 msgstr "From a backup…"
 
@@ -9240,7 +9235,7 @@ msgid "Kept in your system keyring. Create one on itch.io under Settings, API ke
 msgstr "Kept in your system keyring. Create one on itch.io under Settings, API keys."
 
 #. placeholder {0}: item.name
-#: src/profiles/ProfilesPage.tsx:106
+#: src/profiles/ProfilesPage.tsx:104
 msgid "Delete {0} permanently?"
 msgstr "Delete {0} permanently?"
 
@@ -9662,6 +9657,10 @@ msgstr "Checked in {0}: {parts}"
 msgid "Saved to {0}"
 msgstr "Saved to {0}"
 
+#: src/profiles/ImportWizard.tsx:101
+msgid "Mortar looked for r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop profiles for this game on this computer."
+msgstr "Mortar looked for r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop profiles for this game on this computer."
+
 #: src/bundles/ApplyBundleToProfile.tsx:50
 #: src/bundles/dialogs.tsx:276
 msgid "Could not add the bundle"
@@ -9999,6 +9998,10 @@ msgstr "Unknown mod"
 msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
+#: src/profiles/ImportWizard.tsx:97
+msgid "Import a profile"
+msgstr "Import a profile"
+
 #: src/settings/sections/DataMove.tsx:67
 msgid "Move data folder"
 msgstr "Move data folder"
@@ -10110,8 +10113,8 @@ msgstr "Entry"
 msgid "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 msgstr "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 
-#: src/mods/CleanupSection.tsx:152
-#: src/mods/CleanupSection.tsx:165
+#: src/mods/CleanupSection.tsx:149
+#: src/mods/CleanupSection.tsx:162
 msgid "Remove all"
 msgstr "Remove all"
 
@@ -10170,7 +10173,7 @@ msgid "This launch preset will be deleted."
 msgstr "This launch preset will be deleted."
 
 #. placeholder {0}: preview.configs
-#: src/profiles/PackImportDialog.tsx:99
+#: src/profiles/PackImportDialog.tsx:110
 msgid "{0} config files come with it."
 msgstr "{0} config files come with it."
 
@@ -10196,7 +10199,7 @@ msgstr "Player"
 
 #: src/firstrunTour/TourPopover.tsx:58
 #: src/game/Sidebar.tsx:336
-#: src/profiles/ProfilesPage.tsx:339
+#: src/profiles/ProfilesPage.tsx:337
 #: src/settings/sections/AboutDiagnostics.tsx:96
 #: src/settings/sections/DataUsage.tsx:204
 #: src/settings/sections/Shortcuts.tsx:168
@@ -10274,10 +10277,6 @@ msgstr "{0} left out"
 #: src/game/NewProfileDialog.tsx:115
 msgid "Could not create the profile"
 msgstr "Could not create the profile"
-
-#: src/profiles/ExternalImportMenu.tsx:43
-msgid "Choose a profile to import"
-msgstr "Choose a profile to import"
 
 #: src/lan/SendDialog.tsx:122
 msgid "Looking for Mortar users…"
@@ -10382,7 +10381,7 @@ msgstr "Report to author"
 msgid "Teal"
 msgstr "Teal"
 
-#: src/profiles/ProfilesPage.tsx:159
+#: src/profiles/ProfilesPage.tsx:157
 msgid "Could not read this profile"
 msgstr "Could not read this profile"
 
@@ -10468,11 +10467,12 @@ msgstr "API requests"
 
 #. placeholder {0}: applied.fomodMods
 #. placeholder {0}: bundle.mods?.length ?? 0
-#. placeholder {0}: info.count
+#. placeholder {0}: f.mods
 #: src/bundles/BundleRow.tsx:34
 #: src/bundles/dialogs.tsx:136
 #: src/game/Hero.tsx:261
 #: src/game/NewProfileDialog.tsx:103
+#: src/profiles/ImportWizard.tsx:119
 #: src/share/ShareDialog.tsx:91
 #: src/share/ShareDialog.tsx:194
 #: src/share/useImportFlow.ts:110
@@ -10686,10 +10686,6 @@ msgstr "Tips"
 msgid "Copy of {copyOf}"
 msgstr "Copy of {copyOf}"
 
-#: src/profiles/ProfilesPage.tsx:387
-msgid "From r2modman / Thunderstore…"
-msgstr "From r2modman / Thunderstore…"
-
 #: src/browse/CardProgress.tsx:24
 msgid "Failed, retry"
 msgstr "Failed, retry"
@@ -10901,10 +10897,6 @@ msgstr "Display number"
 #: src/profiles/GameSettings.tsx:299
 msgid "Windowed resolution height"
 msgstr "Windowed resolution height"
-
-#: src/profiles/ExternalImportMenu.tsx:47
-msgid "This source has no profiles Mortar can import."
-msgstr "This source has no profiles Mortar can import."
 
 #: src/share/ImportDialog.tsx:185
 msgid "Import profile from…"
@@ -11300,7 +11292,7 @@ msgid "Take over"
 msgstr "Take over"
 
 #. placeholder {0}: item.daysLeft
-#: src/profiles/ProfilesPage.tsx:69
+#: src/profiles/ProfilesPage.tsx:67
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
@@ -11308,7 +11300,7 @@ msgstr "{0, plural, one {# day left} other {# days left}}"
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
 
-#: src/profiles/ProfilesPage.tsx:226
+#: src/profiles/ProfilesPage.tsx:224
 msgid "Deleted profiles stay here, mods and settings included."
 msgstr "Deleted profiles stay here, mods and settings included."
 
@@ -11327,7 +11319,7 @@ msgstr "Save current as…"
 msgid "Step {0} of {TOUR_STEP_COUNT}"
 msgstr "Step {0} of {TOUR_STEP_COUNT}"
 
-#: src/profiles/ProfilesPage.tsx:369
+#: src/profiles/ProfilesPage.tsx:367
 msgid "From a link or file…"
 msgstr "From a link or file…"
 
@@ -11373,7 +11365,7 @@ msgid "Different source"
 msgstr "Different source"
 
 #. placeholder {0}: unsupported.join(', ')
-#: src/profiles/PackImportDialog.tsx:76
+#: src/profiles/PackImportDialog.tsx:87
 msgid "Not from Thunderstore: {0}"
 msgstr "Not from Thunderstore: {0}"
 
@@ -11468,7 +11460,7 @@ msgstr "ToArea {0}"
 msgid "Update and play"
 msgstr "Update and play"
 
-#: src/profiles/PackImportDialog.tsx:87
+#: src/profiles/PackImportDialog.tsx:98
 msgid "Import from r2modman / Thunderstore"
 msgstr "Import from r2modman / Thunderstore"
 

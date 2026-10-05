@@ -30,10 +30,13 @@ import { packageLine } from './packImport.ts'
 export function PackImportDialog({
   open,
   game,
+  initialPath,
   onClose,
 }: {
   open: boolean
   game: string
+  // A profile folder to read at once, as the import wizard picked it.
+  initialPath: string
   onClose: () => void
 }) {
   const { t } = useLingui()
@@ -49,7 +52,15 @@ export function PackImportDialog({
     LocalProfiles(game)
       .then((found) => setLocal(found ?? []))
       .catch(reportUnexpected)
-  }, [open, game])
+    if (initialPath) {
+      setPath(initialPath)
+      setBusy(true)
+      PreviewPack({ path: initialPath, text: '' })
+        .then(setPreview)
+        .catch((error: unknown) => toastError(t`Could not read that code or file`, error))
+        .finally(() => setBusy(false))
+    }
+  }, [open, game, initialPath, t])
   const source = (): Source => ({ path, text: text.trim() })
   const close = () => {
     setText('')
