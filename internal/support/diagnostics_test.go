@@ -22,6 +22,7 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 
 	apiKey := strings.Repeat("k", 24)
 	nxmKey := strings.Repeat("n", 20)
+	ghToken := "ghp_" + strings.Repeat("g", 36)
 	const (
 		notes   = "do-not-include-notes"
 		modName = "Content Patcher"
@@ -44,6 +45,12 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 		"nexusRefreshToken": "refresh-secret",
 		"keyringItem":       "keyring-secret-item",
 		"nested":            map[string]any{"clientSecret": "nested-secret"},
+		"sources": map[string]any{
+			"nexus":  map[string]any{"name": "PlantedNexusName", "userId": 11223344, "premium": true, "verifyMD5": true},
+			"itch":   map[string]any{"name": "planted-itch-user", "apiKey": "planted-itch-key"},
+			"github": map[string]any{"token": ghToken, "email": "planted@example.com"},
+		},
+		"launchArgs": "--mods-path " + filepath.Join(home, "mods"),
 	}
 	rawSettings, err := json.Marshal(settingsIn)
 	if err != nil {
@@ -75,6 +82,12 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if err := os.MkdirAll(filepath.Join(data, "lan"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(data, "lan", "peers.json"), []byte(`{"id":"me","peers":[{"id":"desk","key":"planted-pairing-key"}]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	for name, body := range map[string]string{
 		"mortar.log":      "line one " + home + "/x\n",
 		"mortar.prev.log": "prev-line " + home + "/y\n",
@@ -143,12 +156,14 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	}
 
 	files := zipNames(t, saved)
-	blob := files["settings.json"] + files["profiles.json"] + files["queue.json"] + files["manifest.txt"] + files["build.json"] + files["smapi-latest.txt"] + files["mortar.log"]
+	blob := ""
+	for _, body := range files {
+		blob += body
+	}
 	for _, name := range []string{"mortar.log", "mortar.prev.log", "crash.log", "doctor.txt", "runs.json", "manifest.txt"} {
 		if _, ok := files[name]; !ok {
 			t.Errorf("zip lacks %s", name)
 		}
-		blob += files[name]
 	}
 	if strings.Contains(files["runs.json"], `"r1"`) || !strings.Contains(files["runs.json"], `"r4"`) {
 		t.Errorf("runs.json should hold the 3 newest runs: %s", files["runs.json"])
@@ -156,7 +171,10 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	if strings.Contains(blob, home) {
 		t.Error("zip still contains the home folder")
 	}
-	for _, secret := range []string{"refresh-secret", "keyring-secret-item", "nested-secret", apiKey, nxmKey, notes, "FixtureUser", "overlay-secret-token"} {
+	for _, secret := range []string{
+		"refresh-secret", "keyring-secret-item", "nested-secret", apiKey, nxmKey, notes, "FixtureUser", "overlay-secret-token",
+		"PlantedNexusName", "11223344", "planted-itch-user", "planted-itch-key", ghToken, "planted@example.com", "planted-pairing-key",
+	} {
 		if strings.Contains(blob, secret) {
 			t.Errorf("zip still contains %q", secret)
 		}
@@ -176,7 +194,7 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	if !strings.Contains(files["manifest.txt"], "Removed") || !strings.Contains(files["manifest.txt"], "Included") {
 		t.Error("manifest.txt missing included/removed lists")
 	}
-	if !strings.Contains(files["build.json"], `"mortar": "1.2.3"`) {
+	if !strings.Contains(files["build.json"], `"mortar": "1.2.3"`) || !strings.Contains(files["build.json"], `"catalog": "`) {
 		t.Errorf("build.json: %s", files["build.json"])
 	}
 
@@ -184,14 +202,13 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	if err := json.Unmarshal([]byte(files["settings.json"]), &settings); err != nil {
 		t.Fatal(err)
 	}
-	if settings["nexusName"] != "" {
-		t.Errorf("nexusName %v", settings["nexusName"])
+	for _, field := range []string{"nexusName", "nexusUserId", "nexusPremium"} {
+		if _, ok := settings[field]; ok {
+			t.Errorf("%s should be removed", field)
+		}
 	}
-	if settings["nexusUserId"] != float64(0) {
-		t.Errorf("nexusUserId %v", settings["nexusUserId"])
-	}
-	if _, ok := settings["nexusPremium"]; ok {
-		t.Error("nexusPremium should be removed")
+	if nexus, _ := settings["sources"].(map[string]any)["nexus"].(map[string]any); nexus["verifyMD5"] != true {
+		t.Errorf("sources.nexus lost its preferences: %v", nexus)
 	}
 	if _, ok := settings["nexusKey"]; ok {
 		t.Error("nexusKey key should be removed")
@@ -277,5 +294,19 @@ func TestDiagnosticsIncludeTheLoaderLogOfAnyGame(t *testing.T) {
 	}
 	if name, body := s.loaderTail("lethal-company", "other"); body != "" {
 		t.Fatalf("another profile's log: %q %q", name, body)
+	}
+}
+
+func TestBundleWithoutProfileUsesTheLastPlayedOne(t *testing.T) {
+	runs := []map[string]any{
+		{"game": "lethal-company", "profile": "lobby"},
+		{"game": "stardew", "profile": "farm"},
+		{"game": "stardew", "profile": "older"},
+	}
+	if got := lastRunProfile(runs, "stardew"); got != "farm" {
+		t.Fatalf("lastRunProfile = %q", got)
+	}
+	if got := lastRunProfile(runs, "other"); got != "" {
+		t.Fatalf("a game without runs: %q", got)
 	}
 }

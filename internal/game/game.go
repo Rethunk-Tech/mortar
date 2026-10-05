@@ -171,6 +171,17 @@ func Catalog() []components.GameInfo {
 	return m.Games
 }
 
+// CatalogSerial is the serial of the component manifest in use: the verified one once selected, else the bundled one.
+func CatalogSerial() uint64 {
+	if c := configuredComponents.Load(); c != nil {
+		if m := c.Manifest(); m.Serial > 0 {
+			return m.Serial
+		}
+	}
+	m, _ := components.BundledManifest()
+	return m.Serial
+}
+
 func catalogGame(id string) (components.GameInfo, bool) {
 	for _, g := range Catalog() {
 		if g.ID == id {

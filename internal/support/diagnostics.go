@@ -123,16 +123,17 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 		return nil, err
 	}
 	included := []string{
-		"build.json: Mortar version, OS, architecture, Go, and Wails/WebKit when known",
-		"settings.json: settings with Nexus account fields cleared, API keys removed, and home-directory paths written as ~",
+		"build.json: Mortar version, component catalog serial, OS, architecture, Go, and Wails/WebKit when known",
+		"settings.json: settings with account names, ids and e-mail removed, API keys removed, and home-directory paths written as ~",
 		"profiles.json: profile ids, names, entry counts, mod names, versions and sources",
 		"doctor.txt: the checks `mortar doctor` runs, with home-directory paths written as ~",
-		"runs.json: the last " + fmt.Sprint(diagnosticsRuns) + " launch runs (outcome, versions, error counts; no log text)",
+		"runs.json: the last " + fmt.Sprint(diagnosticsRuns) + " launch runs (outcome, loader and game versions, error, warning and unclassified line counts; no log text)",
 		"queue.json: download queue without nxm keys",
 	}
 	removed := []string{
 		"Nexus API key (not read from the keyring; stripped if present in settings.json)",
-		"nexusName, nexusUserId, and nexusPremium",
+		"account names, user ids, premium status and e-mail addresses of every download site",
+		"paired computers and their keys (lan/peers.json is never read)",
 		"overlayToken",
 		"absolute paths under the home directory (written as ~)",
 		"nxm download keys and expiry on queue items",
@@ -150,7 +151,8 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 	if report, err := s.Doctor(); err == nil {
 		files["doctor.txt"] = []byte(hideHomeIn(doctor.PlainText(report), s.home))
 	}
-	if runs := recentRuns(filepath.Join(dir, "profiles"), diagnosticsRuns); len(runs) > 0 {
+	runs := recentRuns(filepath.Join(dir, "profiles"), diagnosticsRuns)
+	if len(runs) > 0 {
 		files["runs.json"] = []byte(hideHomeIn(string(jsonIndent(runs)), s.home))
 	}
 	logName, logBody := mortarLog(dir, s.recentLines(gameID, profileID))
@@ -163,6 +165,9 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 			files[name] = []byte(hideHomeIn(lastLines(string(b), diagnosticsLogLines), s.home))
 			included = append(included, name+": last "+fmt.Sprint(diagnosticsLogLines)+" lines, home folder written as ~")
 		}
+	}
+	if profileID == "" {
+		profileID = lastRunProfile(runs, gameID)
 	}
 	if name, body := s.loaderTail(gameID, profileID); body != "" {
 		files[name] = []byte(hideHomeIn(body, s.home))
@@ -200,6 +205,7 @@ func diagnosticsManifest(included, removed []string) string {
 func buildInfo(version string) map[string]string {
 	info := map[string]string{
 		"mortar":   version,
+		"catalog":  strconv.FormatUint(game.CatalogSerial(), 10),
 		"go":       runtime.Version(),
 		"os":       runtime.GOOS,
 		"arch":     runtime.GOARCH,
@@ -316,9 +322,14 @@ func redactSettings(raw []byte, home string) []byte {
 	if m == nil {
 		m = map[string]any{}
 	}
-	m["nexusName"] = ""
-	m["nexusUserId"] = 0
-	delete(m, "nexusPremium")
+	// A download site's entry under sources names the signed-in account; its other fields are preferences.
+	if sources, ok := m["sources"].(map[string]any); ok {
+		for _, site := range sources {
+			if fields, ok := site.(map[string]any); ok {
+				delete(fields, "name")
+			}
+		}
+	}
 	dropSecretFields(m)
 	redactHomePaths(m, home)
 	return jsonIndent(m)
@@ -345,7 +356,7 @@ func dropSecretFields(v any) {
 
 func secretName(k string) bool {
 	k = strings.ToLower(k)
-	for _, w := range []string{"token", "secret", "apikey", "nexuskey", "password", "keyring"} {
+	for _, w := range []string{"token", "secret", "apikey", "nexuskey", "password", "keyring", "email", "userid", "username", "nexusname", "premium"} {
 		if strings.Contains(k, w) {
 			return true
 		}
@@ -358,7 +369,7 @@ func redactHomePaths(v any, home string) {
 	case map[string]any:
 		for k, child := range x {
 			if s, ok := child.(string); ok {
-				x[k] = hideHome(s, home)
+				x[k] = hideHomeIn(s, home)
 				continue
 			}
 			redactHomePaths(child, home)
@@ -366,7 +377,7 @@ func redactHomePaths(v any, home string) {
 	case []any:
 		for i, child := range x {
 			if s, ok := child.(string); ok {
-				x[i] = hideHome(s, home)
+				x[i] = hideHomeIn(s, home)
 				continue
 			}
 			redactHomePaths(child, home)
@@ -474,6 +485,18 @@ func zipFiles(files map[string][]byte) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+// lastRunProfile is the profile of the newest run of gameID, so a bundle made without an open profile still carries
+// the loader log of the one last played.
+func lastRunProfile(runs []map[string]any, gameID string) string {
+	for _, r := range runs {
+		if r["game"] == gameID {
+			id, _ := r["profile"].(string)
+			return id
+		}
+	}
+	return ""
 }
 
 // recentRuns reads each profile's runs/index.json and returns the n newest runs across all of them. Run records
