@@ -1,0 +1,7 @@
+[Message:   BepInEx] BepInEx 5.4.22.0 - Lethal Company (11/20/2023 9:29:24 PM)
+[Info   :   BepInEx] Running under Unity v2022.3.9.15351836
+[Info   :   BepInEx] CLR runtime version: 4.0.30319.42000
+[Error  :   BepInEx] Could not load [Youtube Boombox 1.5.0] because it has missing dependencies: LC_API
+[Error  :  HarmonyX] Error while running static void LateCompany.Patches.ConnectionApproval_Patch::Postfix(Unity.Netcode.NetworkManager+ConnectionApprovalRequest request, Unity.Netcode.NetworkManager+ConnectionApprovalResponse response). Error: System.NullReferenceException: Object reference not set to an instance of an object
+  at LateCompany.Patches.ConnectionApproval_Patch.Postfix (Unity.Netcode.NetworkManager+ConnectionApprovalRequest request, Unity.Netcode.NetworkManager+ConnectionApprovalResponse response) [0x00019] in <9c566bf45bac432c9916029866e24a81>:0 
+  at (wrapper dynamic-method) GameNetworkManager.DMD<GameNetworkManager::ConnectionApproval>(GameNetworkManager,Unity.Netcode.NetworkManager/ConnectionApprovalRequest,Unity.Netcode.NetworkManager/ConnectionApprovalResponse)
