@@ -59,6 +59,15 @@ func (in Install) runtime(info components.GameInfo, home string) runtime.Install
 	return runtime.Install{Store: in.Store, Dir: in.Dir, AppID: info.SteamAppID(), Platform: in.Platform, Home: home}
 }
 
+// CompatData is the Steam compatdata folder of a Proton install, the parent of its Wine prefix.
+func (in Install) CompatData(home string) (string, bool) {
+	info, ok := catalogGame(in.Game)
+	if !ok {
+		return "", false
+	}
+	return runtime.CompatDataDir(in.runtime(info, home))
+}
+
 // Launcher ids, each the source of one or more stores' installs.
 const (
 	LauncherSteam        = gamestore.LauncherSteam

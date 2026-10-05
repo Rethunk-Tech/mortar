@@ -117,6 +117,7 @@ type session struct {
 	started         time.Time
 	mods            []launch.ModRef
 	restore         *settingsRestore
+	deployed        *deployment
 	settingsMissing bool
 	exit            launch.Exit
 	haveExit        bool
@@ -743,6 +744,11 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		return err
 	}
 	env.LogFile, _ = game.LogFile(g.ID())
+	// The install is locked from the preparing claim until the waiter has unwound: a second launch finds the game busy.
+	dep, err := startDeploy(ctx, inst, plan)
+	if err != nil {
+		return err
+	}
 	store := inst.Store
 	if store == game.StoreGOG || store == game.StoreGOGHeroic || store == game.StoreMinigalaxy || store == game.StoreLutris {
 		env.Direct = true
@@ -764,9 +770,17 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	if !vanilla && profileID != "" {
 		restore, settingsMissing, err = s.prepareGameSettings(g.ID(), profileID)
 		if err != nil {
+			dep.unwind(ctx)
 			return err
 		}
 		backupErr = s.backupChangedSaves(g.ID(), profileID, dir)
+	}
+	if err := s.ensureRuntime(inst, plan.RuntimeReqs); err != nil {
+		dep.unwind(ctx)
+		if restoreErr := s.restoreGameSettings(restore); restoreErr != nil {
+			s.reportSettingsRestore(g, profileID, restoreErr)
+		}
+		return err
 	}
 	runCtx, cancel := context.WithCancel(ctx)
 	buf := &launch.Buffer{Cap: s.settings.Get().GamePrefs(g.ID()).ConsoleLogCap}
@@ -781,6 +795,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		started:         started,
 		mods:            mods,
 		restore:         restore,
+		deployed:        dep,
 		settingsMissing: settingsMissing,
 	}, cancel
 	s.mu.Unlock()
@@ -987,6 +1002,7 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 		sess := s.logs[keyOf(g)]
 		s.mu.Unlock()
 		if sess.buf == buf && sess.profile == profileID {
+			sess.deployed.unwind(context.WithoutCancel(ctx))
 			if restoreErr := s.restoreGameSettings(sess.restore); restoreErr != nil {
 				s.reportSettingsRestore(g, profileID, restoreErr)
 			}
@@ -1132,6 +1148,7 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()
 	if ok && !sess.vanilla && cur.Profile != "" {
+		sess.deployed.unwind(context.Background())
 		if restoreErr := s.restoreGameSettings(sess.restore); restoreErr != nil {
 			s.reportSettingsRestore(g, cur.Profile, restoreErr)
 		}

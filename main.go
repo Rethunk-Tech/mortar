@@ -29,6 +29,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
+	"github.com/Rethunk-Tech/mortar/internal/doctor"
 	"github.com/Rethunk-Tech/mortar/internal/folderwatch"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -136,10 +137,22 @@ func main() {
 	}
 }
 
+// registerDoctorLoaders lets each game's loader contribute its checks to the Proton install checks.
+func registerDoctorLoaders() {
+	for _, g := range game.Catalog() {
+		for _, l := range game.Loaders(g.ID) {
+			if w, ok := l.(doctor.WinHTTPLoader); ok {
+				doctor.RegisterLoader(g.ID, w)
+			}
+		}
+	}
+}
+
 func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
 		return releaseLinks()
 	}
+	registerDoctorLoaders()
 	if cli.Is(os.Args[1:]) {
 		os.Exit(cli.Run(version, os.Args[1:], os.Stdout, os.Stderr))
 	}
@@ -694,6 +707,9 @@ func run() error {
 	if err := launches.RecoverGameSettings(); err != nil {
 		log.Printf("game settings restore: %v", err)
 		app.Event.Emit(launchsvc.SettingsRestoreWarningEvent, launchsvc.SettingsRestoreWarning{Error: err.Error()})
+	}
+	if err := launches.RecoverDeploys(queueCtx); err != nil {
+		log.Printf("deploy recovery: %v", err)
 	}
 	for _, id := range implemented {
 		loadersvc.EnsureExisting(loaders, id)
