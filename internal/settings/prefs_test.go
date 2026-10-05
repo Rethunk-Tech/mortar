@@ -50,10 +50,10 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if d.GamePrefs("stardew").EnableRequirements != EnableReqAlways || d.GamePrefs("stardew").MissingRequirements != MissingReqAsk {
 		t.Fatal("requirement defaults")
 	}
-	if !ToggleOn(d.ReuseFomodChoices) || !d.DriftChecksOn() || d.GamePrefs("stardew").SmapiBuilds != SmapiBuildsShow {
+	if !ToggleOn(d.ReuseFomodChoices) || !d.DriftChecksOn() || d.SmapiBuilds != SmapiBuildsShow {
 		t.Fatal("fomod / drift / smapi-build defaults")
 	}
-	if !d.AutoInstallMortar() || d.AutoTrackNexus || d.GamePrefs("stardew").DefaultLaunchMethod != LaunchSteam || !ToggleOn(d.GamePrefs("stardew").ShowSmapiConsole) {
+	if !d.AutoInstallMortar() || d.AutoTrackNexus || d.GamePrefs("stardew").DefaultLaunchMethod != LaunchSteam || !ToggleOn(d.ShowSmapiConsole) {
 		t.Fatal("update / launch defaults")
 	}
 	if d.GamePrefs("stardew").ConsoleLevel != ConsoleLevelWarn || ToggleOn(d.GamePrefs("stardew").ConsoleTimestamps) || !ToggleOn(d.GamePrefs("stardew").ConsoleFollow) {

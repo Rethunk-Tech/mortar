@@ -48,12 +48,6 @@ type GameSettings struct {
 	ExtraModsFolder       string                 `json:"extraModsFolder,omitempty"`
 	ShowDotHiddenMods     bool                   `json:"showDotHiddenMods,omitempty"`
 	OldFilesOnUpdate      string                 `json:"oldFilesOnUpdate,omitempty"`
-
-	// SmapiBuilds, SmapiPin and ShowSmapiConsole are the Settings' loader-scoped values, filled in by GamePrefs for
-	// callers that still read them per game.
-	SmapiBuilds      string `json:"-"`
-	SmapiPin         string `json:"-"`
-	ShowSmapiConsole *bool  `json:"-"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -207,7 +201,6 @@ func defaultGameSettings() GameSettings {
 // GamePrefs returns stored game prefs merged with defaults.
 func (s Settings) GamePrefs(gameID string) GameSettings {
 	out := defaultGameSettings()
-	out.SmapiBuilds, out.SmapiPin, out.ShowSmapiConsole = s.SmapiBuilds, s.SmapiPin, s.ShowSmapiConsole
 	if gameID == "" || s.Games == nil {
 		return out
 	}

@@ -541,7 +541,7 @@ func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
 }
 
 func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings, gameID string) UpdatesResult {
-	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.GamePrefs(gameID).SmapiBuilds)
+	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.SmapiBuilds)
 }
 
 func (s *Service) recordHealth(gameID, id string, env Environment, mods []Installed, r Result) {
