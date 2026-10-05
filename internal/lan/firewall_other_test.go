@@ -5,6 +5,7 @@ package lan
 import "testing"
 
 func TestFirewallBlockedIsFalseOnNonWindows(t *testing.T) {
+	t.Parallel()
 	service := NewService(Deps{})
 	if service.FirewallBlocked() {
 		t.Fatal("FirewallBlocked() = true on non-Windows")

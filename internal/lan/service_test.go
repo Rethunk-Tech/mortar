@@ -35,6 +35,7 @@ func testPayload(t *testing.T) string {
 }
 
 func TestValidateRequest(t *testing.T) {
+	t.Parallel()
 	payload := testPayload(t)
 	shared, err := validateRequest(shareRequest{Sender: "Alex", Game: "stardew", Payload: payload, Version: protocolVersion})
 	if err != nil {
@@ -57,6 +58,7 @@ func TestValidateRequest(t *testing.T) {
 }
 
 func TestValidateRequestCapsPayload(t *testing.T) {
+	t.Parallel()
 	_, err := validateRequest(shareRequest{
 		Sender:  "Alex",
 		Game:    "stardew",
@@ -69,6 +71,7 @@ func TestValidateRequestCapsPayload(t *testing.T) {
 }
 
 func TestAccountProof(t *testing.T) {
+	t.Parallel()
 	proof := hmacProof("nexus-key", "nonce", "payload")
 	if !accountMatches("nexus-key", "nonce", "payload", proof) {
 		t.Fatal("matching proof was rejected")
@@ -82,6 +85,7 @@ func TestAccountProof(t *testing.T) {
 }
 
 func TestTransferTokenScope(t *testing.T) {
+	t.Parallel()
 	service := NewService(Deps{})
 	service.rememberGrant("token", "stardew", []string{"nexus-1-2"})
 
@@ -103,6 +107,7 @@ func TestTransferTokenScope(t *testing.T) {
 }
 
 func TestShareRateLimit(t *testing.T) {
+	t.Parallel()
 	payload := testPayload(t)
 	var arrivals []Arrival
 	service := NewService(Deps{Emit: func(_ string, data any) {
@@ -236,6 +241,7 @@ func TestLoopbackTransfer(t *testing.T) {
 }
 
 func TestLoopbackSendReceive(t *testing.T) {
+	t.Parallel()
 	payload, err := base64.RawStdEncoding.DecodeString(testPayload(t))
 	if err != nil {
 		t.Fatal(err)
@@ -266,6 +272,7 @@ func TestLoopbackSendReceive(t *testing.T) {
 }
 
 func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
+	t.Parallel()
 	modsDir := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(modsDir, "mod-000"), 0o700); err != nil {
 		t.Fatal(err)
@@ -324,18 +331,21 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 }
 
 func TestPeerNameUnescapesDNSInstanceName(t *testing.T) {
+	t.Parallel()
 	if got := peerName(`Pat\ Farmer._mortar._tcp.local.`); got != "Pat Farmer" {
 		t.Fatalf("peerName() = %q, want %q", got, "Pat Farmer")
 	}
 }
 
 func TestPeerNameRejectsOtherServiceTypes(t *testing.T) {
+	t.Parallel()
 	if got := peerName("OpenThread._meshcop._udp.local."); got != "" {
 		t.Fatalf("peerName() = %q, want empty", got)
 	}
 }
 
 func TestAddPeerDropsOurInstance(t *testing.T) {
+	t.Parallel()
 	service := NewService(Deps{})
 	service.enabled = true
 	service.addPeer(&mdns.ServiceEntry{
