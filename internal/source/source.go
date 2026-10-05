@@ -5,6 +5,7 @@ package source
 import (
 	"context"
 	"errors"
+	"maps"
 	"slices"
 	"strings"
 	"sync"
@@ -83,6 +84,12 @@ type PageLinker interface {
 	ModPageURL(gameKey string, modID int) string
 }
 
+// LinkOptIn is a schemer that does not claim its scheme from the system unless the user opts in. A source that does
+// not implement it is always claimed.
+type LinkOptIn interface {
+	HandleLinksDefault() bool
+}
+
 // Hoster is a source that owns web hosts, so a bare URL can be traced back to it.
 type Hoster interface {
 	Hosts() []string
@@ -91,7 +98,25 @@ type Hoster interface {
 var (
 	mu       sync.RWMutex
 	registry = map[string]Source{}
+	// handleLinks is the user's per-source choice to claim the source's link scheme, over its default.
+	handleLinks = map[string]bool{}
 )
+
+// SetHandleLinks records which sources the user chose to claim link schemes for (true) or not (false); a source
+// absent from the map keeps its default.
+func SetHandleLinks(choice map[string]bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	handleLinks = maps.Clone(choice)
+}
+
+func claims(s Source) bool {
+	if on, ok := handleLinks[s.ID()]; ok {
+		return on
+	}
+	opt, ok := s.(LinkOptIn)
+	return !ok || opt.HandleLinksDefault()
+}
 
 // Register adds a driver and reports true; a driver package calls it in a blank package variable, so importing the
 // package registers it.
@@ -144,11 +169,14 @@ func Searchable(g components.GameInfo) []Source {
 	})
 }
 
-// Schemes lists every URL scheme a registered source claims.
+// Schemes lists every URL scheme a registered source claims from the system.
 func Schemes() []string {
 	var out []string
 	for _, s := range All() {
-		if sc, ok := s.(Schemer); ok {
+		mu.RLock()
+		on := claims(s)
+		mu.RUnlock()
+		if sc, ok := s.(Schemer); ok && on {
 			out = append(out, sc.Schemes()...)
 		}
 	}
