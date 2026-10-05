@@ -17,31 +17,38 @@ function el(tag, attrs, text) {
   return n
 }
 
+const SOURCES = {
+  nexus: {
+    label: 'Nexus Mods',
+    link: (e, keys) => ({
+      href: `https://www.nexusmods.com/${encodeURIComponent(keys.nexus)}/mods/${e.mod}`,
+      text: `Nexus mod ${e.mod}`,
+    }),
+  },
+  github: {
+    label: 'GitHub',
+    link: (e) => ({
+      href: `https://github.com/${e.repo}/releases/tag/${encodeURIComponent(e.tag)}`,
+      text: `${e.repo} ${e.tag}`,
+    }),
+  },
+  thunderstore: {
+    label: 'Thunderstore',
+    link: (e, keys) => ({
+      href: `https://thunderstore.io/c/${encodeURIComponent(keys.thunderstore)}/p/${e.ns}/${e.name}/`,
+      text: `${e.ns}/${e.name}`,
+    }),
+  },
+}
+
 function row(e, sourceKeys) {
+  const source = SOURCES[e.kind]
+  const { href, text } = source.link(e, sourceKeys)
   const li = el('li')
-  if (e.kind === 'nexus') {
-    li.append(
-      el(
-        'a',
-        {
-          href: `https://www.nexusmods.com/${encodeURIComponent(sourceKeys.nexus)}/mods/${e.mod}`,
-          rel: 'noopener noreferrer',
-        },
-        `Nexus mod ${e.mod}`,
-      ),
-    )
-  } else {
-    li.append(
-      el(
-        'a',
-        {
-          href: `https://github.com/${e.repo}/releases/tag/${encodeURIComponent(e.tag)}`,
-          rel: 'noopener noreferrer',
-        },
-        `${e.repo} ${e.tag}`,
-      ),
-    )
-  }
+  li.append(
+    el('span', { className: 'source' }, source.label),
+    el('a', { href, rel: 'noopener noreferrer' }, text),
+  )
   return li
 }
 

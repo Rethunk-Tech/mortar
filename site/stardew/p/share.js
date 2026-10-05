@@ -3,6 +3,7 @@ import init, { DecompressStream } from '../../vendor/brotli-dec-wasm/brotli_dec_
 const MAX_ENCODED = 8192
 const MAX_DECODED = 65_536
 const VERSION = 3
+const PART = /^\w+$/
 const REPO = /^[\w.-]+\/[\w.-]+$/
 const HASH = /^#/
 const B64URL = /^[\w-]+$/
@@ -24,7 +25,8 @@ function inflate(bytes, wasm) {
   })
 }
 
-// An entry is an object naming its source: {s: 'nexus', mod, file} or {s: 'github', repo, tag, asset}.
+// An entry is an object naming its source: {s: 'nexus', mod, file}, {s: 'github', repo, tag, asset} or
+// {s: 'thunderstore', ns, name, version}.
 function entry(e) {
   if (e && typeof e === 'object' && !Array.isArray(e)) {
     if (e.s === 'nexus' && Number.isInteger(e.mod) && e.mod > 0) {
@@ -36,6 +38,9 @@ function entry(e) {
       REPO.test(e.repo)
     ) {
       return { kind: 'github', repo: e.repo, tag: e.tag, asset: e.asset }
+    }
+    if (e.s === 'thunderstore' && PART.test(e.ns) && PART.test(e.name)) {
+      return { kind: 'thunderstore', ns: e.ns, name: e.name }
     }
   }
   throw new ShareError('bad')
@@ -78,8 +83,10 @@ export async function decodeShare(hash, wasm) {
     throw new ShareError('bad')
   }
   const out = entries.map(entry)
-  if (out.some((e) => e.kind === 'nexus') && typeof sourceKeys.nexus !== 'string') {
-    throw new ShareError('bad')
+  for (const kind of ['nexus', 'thunderstore']) {
+    if (out.some((e) => e.kind === kind) && typeof sourceKeys[kind] !== 'string') {
+      throw new ShareError('bad')
+    }
   }
   return { name, game, sourceKeys, entries: out }
 }

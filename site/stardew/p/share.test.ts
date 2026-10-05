@@ -11,7 +11,7 @@ const encode = (v: unknown) =>
     params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
   }).toString('base64url')
 
-const keys = { nexus: 'stardewvalley' }
+const keys = { nexus: 'stardewvalley', thunderstore: 'lethal-company' }
 
 test('decodes a version 3 profile', async () => {
   const p = encode([
@@ -22,6 +22,7 @@ test('decodes a version 3 profile', async () => {
     [
       { s: 'nexus', mod: 2400, file: 99, disabled: ['a.b'] },
       { s: 'github', repo: 'owner/repo', tag: 'v1.2', asset: 'mod.zip', note: 'x' },
+      { s: 'thunderstore', ns: 'Alice', name: 'MoreCompany', version: '1.2.3' },
     ],
   ])
   expect(await decodeShare(`#${p}`, wasm)).toEqual({
@@ -31,6 +32,7 @@ test('decodes a version 3 profile', async () => {
     entries: [
       { kind: 'nexus', mod: 2400 },
       { kind: 'github', repo: 'owner/repo', tag: 'v1.2', asset: 'mod.zip' },
+      { kind: 'thunderstore', ns: 'Alice', name: 'MoreCompany' },
     ],
   })
 })
@@ -47,6 +49,14 @@ test('rejects bad input', async () => {
   )
   expect(await kind(`#${encode([3, 'x', 'stardew', keys, [{ note: 'x' }]])}`)).toBe('bad')
   expect(await kind(`#${encode([3, 'x', 'stardew', keys, [[1, 2]]])}`)).toBe('bad')
+  expect(
+    await kind(`#${encode([3, 'x', 'stardew', {}, [{ s: 'thunderstore', ns: 'A', name: 'B' }]])}`),
+  ).toBe('bad')
+  expect(
+    await kind(
+      `#${encode([3, 'x', 'stardew', keys, [{ s: 'thunderstore', ns: 'A/..', name: 'B' }]])}`,
+    ),
+  ).toBe('bad')
   expect(await kind(`#${'A'.repeat(8193)}`)).toBe('bad')
   expect(await kind(`#${encode({ a: 1 })}`)).toBe('bad')
   expect(await kind(`#${encode([3, 'x', 'stardew', keys, ['nope']])}`)).toBe('bad')
