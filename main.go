@@ -37,6 +37,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/loadersvc"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -422,8 +423,8 @@ func run() error {
 			}
 			return res, err
 		},
-		Verify: func(ctx context.Context, uniqueID, owner, repo string) (bool, error) {
-			return github.Verify(ctx, modMeta, uniqueID, owner, repo)
+		Verify: func(ctx context.Context, id mod.ID, owner, repo string) (bool, error) {
+			return github.Verify(ctx, modMeta, id.Local(), owner, repo)
 		},
 		GitHub:  &github.Client{},
 		OpenURL: func(url string) error { return app.Browser.OpenURL(url) },

@@ -52,9 +52,9 @@ func (s *Service) installedModRefs(gameID, profileID string) []launch.ModRef {
 		return nil
 	}
 	refs := make([]launch.ModRef, 0, len(installed))
-	for _, mod := range installed {
+	for _, im := range installed {
 		refs = append(refs, launch.ModRef{
-			Name: mod.Name, UniqueID: mod.UniqueID, Key: mod.Key, Version: mod.Version, SourceVersion: mod.Source.Version,
+			Name: im.Name, ID: im.ModID(), Key: im.Key, Version: im.Version, SourceVersion: im.Source.Version,
 		})
 	}
 	return refs

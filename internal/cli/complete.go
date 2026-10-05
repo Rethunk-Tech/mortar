@@ -230,7 +230,7 @@ func (c *cmd) complete(words []string) error {
 			var rows []control.ModRow
 			if c.call("mods", control.Params{Game: words[gameAt], Profile: words[profileAt]}, &rows, readTimeout) == nil {
 				for _, m := range rows {
-					cands = append(cands, m.UniqueID)
+					cands = append(cands, m.ID.Local())
 				}
 			}
 		case 4:

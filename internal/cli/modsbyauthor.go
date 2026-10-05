@@ -19,9 +19,9 @@ func (c *cmd) modsByAuthor() error {
 			fmt.Fprintln(c.out, "No mods for that author.")
 			return
 		}
-		for _, mod := range rows {
-			fmt.Fprintf(c.out, "%s (%s)\n", mod.Name, mod.UniqueID)
-			for _, prof := range mod.Profiles {
+		for _, im := range rows {
+			fmt.Fprintf(c.out, "%s (%s)\n", im.Name, im.ID)
+			for _, prof := range im.Profiles {
 				state := enabledLabel(prof.Enabled)
 				fmt.Fprintf(c.out, "  %s · %s · %s\n", prof.ProfileName, prof.Version, state)
 			}

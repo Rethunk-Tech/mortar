@@ -2,7 +2,8 @@ package savessvc
 
 import (
 	"cmp"
-	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -11,10 +12,10 @@ import (
 // GapMod is a mod a save was last played with. Version is the recorded one; Have is the profile's version of an
 // enabled mod that is older, and empty otherwise.
 type GapMod struct {
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Version  string `json:"version"`
-	Have     string `json:"have"`
+	ID      mod.ID `json:"id"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	Have    string `json:"have"`
 }
 
 // Gap is what the profile lacks of the mods a save was last played with: absent, switched off, or enabled at an
@@ -43,10 +44,10 @@ func (s *Service) SaveGap(game, profileID, save string) (Gap, error) {
 	present, enabled := haveMaps(mods)
 	recorded := map[string]PlayedMod{}
 	for _, m := range rec.Mods {
-		recorded[strings.ToLower(m.UniqueID)] = m
+		recorded[m.ID.Fold()] = m
 	}
 	for _, l := range MissingFrom(rec.Mods, present, enabled) {
-		m := GapMod{UniqueID: l.UniqueID, Name: l.Name, Version: recorded[strings.ToLower(l.UniqueID)].Version}
+		m := GapMod{ID: l.ID, Name: l.Name, Version: recorded[l.ID.Fold()].Version}
 		if l.Disabled {
 			gap.Disabled = append(gap.Disabled, m)
 		} else {
@@ -61,13 +62,13 @@ func olderThanRecorded(recorded []PlayedMod, mods []profile.Mod) []GapMod {
 	have := map[string]string{}
 	for _, m := range mods {
 		if m.Enabled {
-			have[strings.ToLower(m.UniqueID)] = m.Version
+			have[m.ID.Fold()] = m.Version
 		}
 	}
 	out := []GapMod{}
 	for _, r := range recorded {
-		if v, ok := have[strings.ToLower(r.UniqueID)]; ok && meta.Newer(r.Version, v) {
-			out = append(out, GapMod{UniqueID: r.UniqueID, Name: cmp.Or(r.Name, r.UniqueID), Version: r.Version, Have: v})
+		if v, ok := have[r.ID.Fold()]; ok && meta.Newer(r.Version, v) {
+			out = append(out, GapMod{ID: r.ID, Name: cmp.Or(r.Name, r.ID.Local()), Version: r.Version, Have: v})
 		}
 	}
 	return out

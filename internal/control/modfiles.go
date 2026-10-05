@@ -3,6 +3,7 @@ package control
 import (
 	"fmt"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -13,7 +14,7 @@ type ModExtraFile struct {
 	Label string `json:"label"`
 }
 
-func (s *Services) modExtraFiles(gameID string, prof profile.Profile, modID string) ([]ModExtraFile, error) {
+func (s *Services) modExtraFiles(gameID string, prof profile.Profile, modID mod.ID) ([]ModExtraFile, error) {
 	e, _, ok := prof.FindMod("", modID)
 	if !ok {
 		return nil, fmt.Errorf("profile %s has no mod %q", prof.Name, modID)

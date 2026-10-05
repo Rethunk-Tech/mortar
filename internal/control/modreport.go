@@ -10,17 +10,17 @@ import (
 )
 
 func (s *Services) modReport(gameID, profileID string, prof profile.Profile, p Params) (modreport.Result, error) {
-	if len(p.UniqueIDs) == 0 {
+	if len(p.IDs) == 0 {
 		return modreport.Result{}, errors.New("mods report needs a mod")
 	}
-	refs, err := refsFor(prof, p.UniqueIDs[:1])
+	refs, err := refsFor(prof, p.IDs[:1])
 	if err != nil {
 		return modreport.Result{}, err
 	}
 	ref := refs[0]
-	_, inst, ok := prof.FindMod(ref.Key, ref.UniqueID)
+	_, inst, ok := prof.FindMod(ref.Key, ref.ID)
 	if !ok {
-		return modreport.Result{}, fmt.Errorf("profile has no mod %q", p.UniqueIDs[0])
+		return modreport.Result{}, fmt.Errorf("profile has no mod %q", p.IDs[0])
 	}
 	logText, err := s.runLog(gameID, profileID, p.Run)
 	if err != nil {

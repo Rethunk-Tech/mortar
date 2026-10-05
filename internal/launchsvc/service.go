@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/overlay"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -155,7 +156,7 @@ type Service struct {
 	// SweepVersions, SweepCompat, SweepHasUpdate and SweepMissingDeps are replaced in tests.
 	SweepVersions    func(gameID string) (gameVer, smapiVer string, err error)
 	SweepCompat      func(ctx context.Context) (meta.CompatIndex, error)
-	SweepHasUpdate   func(uniqueID string, nexusID int) bool
+	SweepHasUpdate   func(uniqueID mod.ID, nexusID int) bool
 	SweepMissingDeps func(gameID, profileID string) int
 }
 

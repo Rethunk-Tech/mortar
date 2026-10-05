@@ -7,6 +7,8 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -20,9 +22,9 @@ const (
 )
 
 type ModResult struct {
-	Key      string `json:"key"`
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
+	Key  string `json:"key"`
+	ID   mod.ID `json:"id"`
+	Name string `json:"name"`
 }
 
 type Result struct {
@@ -89,12 +91,12 @@ func (s *Service) Start(gameID, profileID string) (string, error) {
 	}
 	var candidates []profile.Mod
 	var refs []profile.EnableRef
-	for _, mod := range mods {
-		if !mod.Enabled {
+	for _, pm := range mods {
+		if !pm.Enabled {
 			continue
 		}
-		candidates = append(candidates, mod)
-		refs = append(refs, profile.EnableRef{Key: mod.Key, UniqueID: mod.UniqueID})
+		candidates = append(candidates, pm)
+		refs = append(refs, profile.EnableRef{Key: pm.Key, ID: pm.ID})
 	}
 	if len(candidates) == 0 {
 		_ = s.profiles.Delete(gameID, temp.ID)
@@ -128,14 +130,14 @@ func (s *Service) run(ctx context.Context, j *job) {
 
 	mods := make([]Mod, 0, len(j.mods))
 	byID := make(map[string]profile.Mod, len(j.mods))
-	for _, mod := range j.mods {
-		id := modID(mod)
+	for _, pm := range j.mods {
+		id := modID(pm)
 		mods = append(mods, Mod{
 			ID:           id,
-			Dependencies: append([]string(nil), mod.Needs...),
-			Group:        mod.Key,
+			Dependencies: mod.Strings(pm.Needs),
+			Group:        pm.Key,
 		})
-		byID[id] = mod
+		byID[id] = pm
 	}
 	found, err := find(ctx, mods, func(ctx context.Context, disabled []string) (bool, error) {
 		if _, err := s.profiles.SetModsEnabled(j.game, j.tempID, j.refs, true); err != nil {
@@ -146,9 +148,9 @@ func (s *Service) run(ctx context.Context, j *job) {
 			closure[id] = true
 		}
 		refs := make([]profile.EnableRef, 0, len(disabled))
-		for _, mod := range j.mods {
-			if closure[modID(mod)] {
-				refs = append(refs, profile.EnableRef{Key: mod.Key, UniqueID: mod.UniqueID})
+		for _, pm := range j.mods {
+			if closure[modID(pm)] {
+				refs = append(refs, profile.EnableRef{Key: pm.Key, ID: pm.ID})
 			}
 		}
 		if _, err := s.profiles.SetModsEnabled(j.game, j.tempID, refs, false); err != nil {
@@ -176,12 +178,12 @@ func (s *Service) run(ctx context.Context, j *job) {
 		return
 	}
 	result := &Result{}
-	for _, mod := range found {
-		original, ok := byID[mod.ID]
+	for _, pm := range found {
+		original, ok := byID[pm.ID]
 		if !ok {
 			continue
 		}
-		result.Mods = append(result.Mods, ModResult{Key: original.Key, UniqueID: original.UniqueID, Name: original.Name})
+		result.Mods = append(result.Mods, ModResult{Key: original.Key, ID: original.ID, Name: original.Name})
 	}
 	s.setStatus(Status{
 		ID:       j.id,
@@ -246,18 +248,18 @@ func (s *Service) Stop(id string) error {
 	return nil
 }
 
-// SwitchOff disables the identified mod in the user's real profile.
-func (s *Service) SwitchOff(gameID, profileID, key, uniqueID string) error {
+// SwitchOff disables the identified pm in the user's real profile.
+func (s *Service) SwitchOff(gameID, profileID, key string, uniqueID mod.ID) error {
 	if key == "" && uniqueID == "" {
-		return errors.New("mod identity is required")
+		return errors.New("pm identity is required")
 	}
 	_, err := s.profiles.SetModEnabled(gameID, profileID, key, uniqueID, false)
 	return err
 }
 
-func modID(mod profile.Mod) string {
-	if mod.UniqueID != "" {
-		return mod.UniqueID
+func modID(pm profile.Mod) string {
+	if pm.ID != "" {
+		return string(pm.ID)
 	}
-	return mod.Key
+	return pm.Key
 }

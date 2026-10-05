@@ -10,7 +10,7 @@ func (s *Services) modsChannel(p Params, prof profile.Profile, id string) (any, 
 	if p.Value == "" {
 		return nil, fmt.Errorf("mods channel needs main, optional, or beta")
 	}
-	keys, err := keysFor(prof, p.UniqueIDs)
+	keys, err := keysFor(prof, p.IDs)
 	if err != nil {
 		return nil, err
 	}

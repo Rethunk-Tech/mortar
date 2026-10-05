@@ -17,11 +17,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -168,11 +169,11 @@ type modInProfile struct {
 
 type diskMod struct {
 	Name           string   `json:"name"`
-	UniqueID       string   `json:"uniqueId"`
+	ID             mod.ID   `json:"id"`
 	Version        string   `json:"version"`
-	Needs          []string `json:"needs"`
-	Optional       []string `json:"optional"`
-	ContentPackFor string   `json:"contentPackFor"`
+	Needs          []mod.ID `json:"needs"`
+	Optional       []mod.ID `json:"optional"`
+	ContentPackFor mod.ID   `json:"contentPackFor"`
 }
 
 type diskEntry struct {
@@ -180,7 +181,7 @@ type diskEntry struct {
 	PinReason   string   `json:"pinReason,omitempty"`
 	SkipVersion string   `json:"skipVersion"`
 	SkipSources []string `json:"skipSources"`
-	Disabled    []string `json:"disabled"`
+	Disabled    []mod.ID `json:"disabled"`
 	Source      struct {
 		Kind   string `json:"kind"`
 		ModID  int    `json:"modId"`
@@ -189,16 +190,16 @@ type diskEntry struct {
 	Mods []diskMod `json:"mods"`
 }
 
-func requiresID(m diskMod, target string) bool {
-	if strings.EqualFold(strings.TrimSpace(m.ContentPackFor), target) {
+func requiresID(m diskMod, target mod.ID) bool {
+	if mod.Equal(m.ContentPackFor, target) {
 		return true
 	}
 	opt := map[string]bool{}
 	for _, id := range m.Optional {
-		opt[manifest.FoldID(id)] = true
+		opt[id.Fold()] = true
 	}
 	for _, id := range m.Needs {
-		if manifest.SameID(id, target) && !opt[manifest.FoldID(id)] {
+		if mod.Equal(id, target) && !opt[id.Fold()] {
 			return true
 		}
 	}
@@ -206,16 +207,16 @@ func requiresID(m diskMod, target string) bool {
 }
 
 type requiredByRef struct {
-	id   string
+	id   mod.ID
 	name string
 }
 
-func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) {
+func requiredByMods(entries []diskEntry, targets []mod.ID) ([]string, []string) {
 	seen := map[string]bool{}
-	offOf := func(disabled []string) map[string]bool {
+	offOf := func(disabled []mod.ID) map[string]bool {
 		m := map[string]bool{}
 		for _, id := range disabled {
-			m[manifest.FoldID(id)] = true
+			m[id.Fold()] = true
 		}
 		return m
 	}
@@ -223,11 +224,11 @@ func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) 
 	for _, e := range entries {
 		off := offOf(e.Disabled)
 		for _, m := range e.Mods {
-			id := manifest.FoldID(m.UniqueID)
+			id := m.ID.Fold()
 			if id == "" || off[id] || seen[id] {
 				continue
 			}
-			if slices.ContainsFunc(targets, func(t string) bool { return manifest.SameID(t, m.UniqueID) }) {
+			if slices.ContainsFunc(targets, func(t mod.ID) bool { return mod.Equal(t, m.ID) }) {
 				continue
 			}
 			for _, t := range targets {
@@ -235,9 +236,9 @@ func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) 
 					seen[id] = true
 					name := m.Name
 					if name == "" {
-						name = m.UniqueID
+						name = m.ID.Local()
 					}
-					refs = append(refs, requiredByRef{id: m.UniqueID, name: name})
+					refs = append(refs, requiredByRef{id: m.ID, name: name})
 					break
 				}
 			}
@@ -249,7 +250,7 @@ func requiredByMods(entries []diskEntry, targets []string) ([]string, []string) 
 	ids := make([]string, len(refs))
 	names := make([]string, len(refs))
 	for i, ref := range refs {
-		ids[i] = ref.id
+		ids[i] = ref.id.Local()
 		names[i] = ref.name
 	}
 	return ids, names
@@ -268,7 +269,7 @@ type handlers struct {
 	contact      func(mismatch string)
 	open         func(link string) error
 	installed    func(game string) []int
-	mod          func(game string, modID int) (modInProfile, []modInProfile)
+	im           func(game string, modID int) (modInProfile, []modInProfile)
 	state        func(game string) (state, profile string)
 	updates      func(game string) (string, []modUpdate)
 	broken       func(game string) []int
@@ -287,7 +288,7 @@ func ServeFrom(args []string, r io.Reader, w io.Writer, open func(link string) e
 	browser := browserName(args)
 	return serveHandlers(r, w, handlers{
 		contact: func(mismatch string) { recordContact(browser, mismatch, time.Now()) },
-		open:    open, installed: activeNexusModIDs, mod: nexusModProfiles, state: activeNexusState,
+		open:    open, installed: activeNexusModIDs, im: nexusModProfiles, state: activeNexusState,
 		updates: activeNexusUpdates, broken: brokenNexusModIDs, problems: nexusModProblems,
 		requirements: nexusPageRequirements,
 	})
@@ -324,7 +325,7 @@ func (h handlers) answer(req request) reply {
 		if st == stateOff {
 			break
 		}
-		openProfile, others := h.mod(req.gameKey(), req.ModID)
+		openProfile, others := h.im(req.gameKey(), req.ModID)
 		rep.Open, rep.Others = &openProfile, others
 		if st == stateReady {
 			if h.problems != nil {
@@ -584,7 +585,7 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 		if len(entry.Mods) > 0 {
 			name = entry.Mods[0].Name
 			if name == "" {
-				name = entry.Mods[0].UniqueID
+				name = entry.Mods[0].ID.Local()
 			}
 			if entry.Mods[0].Version != "" {
 				v := entry.Mods[0].Version
@@ -726,7 +727,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		}
 		var version *string
 		var fileID int
-		var targets []string
+		var targets []mod.ID
 		var pinned bool
 		var pinReason string
 		var skipVersion string
@@ -745,8 +746,8 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 			skipVersion = entry.SkipVersion
 			skipSources = append([]string{}, entry.SkipSources...)
 			for _, m := range entry.Mods {
-				if m.UniqueID != "" {
-					targets = append(targets, m.UniqueID)
+				if m.ID != "" {
+					targets = append(targets, m.ID)
 				}
 			}
 			break

@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -12,8 +11,8 @@ func (s *Services) applyEverywhere(ctx context.Context, p Params) (profile.Every
 	if key == "" {
 		key = "latest"
 	}
-	if len(p.UniqueIDs) > 0 {
-		return s.Profiles.UpdateEverywhere(p.Game, p.UniqueIDs[0], key)
+	if len(p.IDs) > 0 {
+		return s.Profiles.UpdateEverywhere(p.Game, p.IDs[0], key)
 	}
 	profiles, err := s.Profiles.List(p.Game)
 	if err != nil {
@@ -27,12 +26,12 @@ func (s *Services) applyEverywhere(ctx context.Context, p Params) (profile.Every
 			return profile.EverywhereResult{}, err
 		}
 		for _, u := range r.Updates {
-			id := strings.ToLower(u.UniqueID)
+			id := u.ID.Fold()
 			if _, ok := seen[id]; ok {
 				continue
 			}
 			seen[id] = struct{}{}
-			part, err := s.Profiles.UpdateEverywhere(p.Game, u.UniqueID, key)
+			part, err := s.Profiles.UpdateEverywhere(p.Game, string(u.ID), key)
 			if err != nil {
 				return out, err
 			}

@@ -28,5 +28,5 @@ func (s *Services) storeRemove(p Params) (any, error) {
 	if s.Data == nil {
 		return nil, errors.New("data is unavailable")
 	}
-	return nil, s.Data.RemoveItems(p.Game, p.UniqueIDs)
+	return nil, s.Data.RemoveItems(p.Game, p.IDs)
 }

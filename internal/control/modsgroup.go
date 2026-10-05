@@ -18,10 +18,10 @@ func (s *Services) modsGroup(p Params, prof profile.Profile, id string) (any, er
 	case "delete":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.DeleteGroup(p.Game, id, p.Name) })
 	case "add", "remove":
-		if len(p.UniqueIDs) == 0 {
+		if len(p.IDs) == 0 {
 			return nil, fmt.Errorf("mods group %s needs a mod id", p.Sub)
 		}
-		keys, err := keysFor(prof, p.UniqueIDs)
+		keys, err := keysFor(prof, p.IDs)
 		if err != nil {
 			return nil, err
 		}

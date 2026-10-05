@@ -15,11 +15,11 @@ func enabledPlayed(p profile.Profile) []PlayedMod {
 			continue
 		}
 		for _, m := range e.Mods {
-			if !e.Enabled(m.UniqueID) {
+			if !e.Enabled(m.ID) {
 				continue
 			}
 			out = append(out, PlayedMod{
-				UniqueID: m.UniqueID, Name: m.Name, Version: m.Version, Key: e.Key,
+				ID: m.ID, Name: m.Name, Version: m.Version, Key: e.Key,
 				SourceKind: e.Source.Kind, ModID: e.Source.ModID, FileID: e.Source.FileID,
 				Repo: e.Source.Repo, Tag: e.Source.Tag, Asset: e.Source.Asset,
 				ContentPackFor: m.ContentPackFor,
@@ -64,16 +64,16 @@ func MissingFrom(recorded []PlayedMod, present, enabled map[string]bool) []Lack 
 	out := []Lack{}
 	seen := map[string]bool{}
 	for _, m := range sortRecorded(recorded) {
-		id := strings.ToLower(m.UniqueID)
+		id := m.ID.Fold()
 		if id == "" || seen[id] || enabled[id] {
 			continue
 		}
 		seen[id] = true
 		name := m.Name
 		if name == "" {
-			name = m.UniqueID
+			name = m.ID.Local()
 		}
-		out = append(out, Lack{UniqueID: m.UniqueID, Name: name, Disabled: present[id]})
+		out = append(out, Lack{ID: m.ID, Name: name, Disabled: present[id]})
 	}
 	return out
 }
@@ -81,7 +81,7 @@ func MissingFrom(recorded []PlayedMod, present, enabled map[string]bool) []Lack 
 func haveMaps(mods []profile.Mod) (present, enabled map[string]bool) {
 	present, enabled = map[string]bool{}, map[string]bool{}
 	for _, m := range mods {
-		id := strings.ToLower(m.UniqueID)
+		id := m.ID.Fold()
 		present[id] = true
 		enabled[id] = enabled[id] || m.Enabled
 	}

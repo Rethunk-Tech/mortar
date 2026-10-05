@@ -8,6 +8,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 
@@ -31,10 +33,10 @@ type PreviewEntry struct {
 
 // PreviewManifest is a SMAPI manifest found in an archive.
 type PreviewManifest struct {
-	Folder   string `json:"folder"`
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
-	Version  string `json:"version"`
+	Folder  string `json:"folder"`
+	ID      mod.ID `json:"id"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
 }
 
 // Preview is what an archive holds, read from its listing without extracting anything.
@@ -90,7 +92,7 @@ func (v *previewer) add(name string, size int64, isDir bool, open func() (io.Rea
 	if folder == "." {
 		folder = ""
 	}
-	v.p.Manifests = append(v.p.Manifests, PreviewManifest{Folder: folder, UniqueID: m.UniqueID, Name: m.Name, Version: m.Version})
+	v.p.Manifests = append(v.p.Manifests, PreviewManifest{Folder: folder, ID: m.ModID(), Name: m.Name, Version: m.Version})
 }
 
 // full reports whether the archive is past the entry cap Extract would refuse.

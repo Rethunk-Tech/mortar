@@ -9,12 +9,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // PlayedMod is one enabled mod from the profile at the end of a run.
 type PlayedMod struct {
-	UniqueID       string `json:"uniqueId"`
+	ID             mod.ID `json:"id"`
 	Name           string `json:"name"`
 	Version        string `json:"version"`
 	Key            string `json:"key"`
@@ -24,7 +26,7 @@ type PlayedMod struct {
 	Repo           string `json:"repo,omitempty"`
 	Tag            string `json:"tag,omitempty"`
 	Asset          string `json:"asset,omitempty"`
-	ContentPackFor string `json:"contentPackFor,omitempty"`
+	ContentPackFor mod.ID `json:"contentPackFor,omitempty"`
 }
 
 // LastPlayed maps a save folder name to the profile it was last launched with.

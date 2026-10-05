@@ -22,13 +22,13 @@ func (s *Services) dismissProblem(ctx context.Context, gameID, profileID string,
 	row := rows[index-1]
 	switch row.Kind {
 	case "listed":
-		return s.Problems.DismissListedRequirement(ctx, gameID, profileID, row.UniqueID)
+		return s.Problems.DismissListedRequirement(ctx, gameID, profileID, row.ID)
 	case "abandoned":
-		return s.Problems.DismissAbandonedMod(ctx, gameID, profileID, row.UniqueID)
+		return s.Problems.DismissAbandonedMod(ctx, gameID, profileID, row.ID)
 	case "conflict":
 		return s.Problems.DismissAssetConflict(ctx, gameID, profileID, row.ConflictKind, row.Target)
 	case "setting":
-		return s.Problems.DismissSetting(ctx, gameID, profileID, row.UniqueID, row.Field)
+		return s.Problems.DismissSetting(ctx, gameID, profileID, row.ID, row.Field)
 	default:
 		return fmt.Errorf("cannot dismiss problem at index %d", index)
 	}

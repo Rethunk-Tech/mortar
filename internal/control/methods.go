@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
 	"github.com/Rethunk-Tech/mortar/internal/bundles"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -84,7 +86,7 @@ type GameRow struct {
 
 // ModRow is one mod of a profile.
 type ModRow struct {
-	UniqueID  string `json:"uniqueId"`
+	ID        mod.ID `json:"id"`
 	Name      string `json:"name"`
 	Version   string `json:"version"`
 	Author    string `json:"author"`
@@ -98,9 +100,9 @@ type ModRow struct {
 // ModInfo is one mod with what relates to it.
 type ModInfo struct {
 	ModRow
-	Needs      []string                 `json:"needs"`
-	Optional   []string                 `json:"optional"`
-	Dependents []string                 `json:"dependents"`
+	Needs      []mod.ID                 `json:"needs"`
+	Optional   []mod.ID                 `json:"optional"`
+	Dependents []mod.ID                 `json:"dependents"`
 	Missing    []problems.Missing       `json:"missing"`
 	Conflicts  []problems.AssetConflict `json:"conflicts"`
 	Settings   []problems.SettingHint   `json:"settings"`
@@ -178,23 +180,23 @@ type ProfileMatch struct {
 }
 
 func modProblems(p profile.Profile, result problems.Result, nexusID int) []ModProblem {
-	var ids []string
+	var ids []mod.ID
 	for _, entry := range p.Entries {
 		if entry.Source.Kind == profile.KindNexus && entry.Source.ModID == nexusID {
-			for _, mod := range entry.Mods {
-				ids = append(ids, mod.UniqueID)
+			for _, im := range entry.Mods {
+				ids = append(ids, im.ID)
 			}
 		}
 	}
-	involves := func(id string) bool {
-		return slices.ContainsFunc(ids, func(want string) bool { return profile.SameID(want, id) })
+	involves := func(id mod.ID) bool {
+		return slices.ContainsFunc(ids, func(want mod.ID) bool { return mod.Equal(want, id) })
 	}
 	out := []ModProblem{}
 	for _, missing := range result.Missing {
 		if !involves(missing.DependentID) {
 			continue
 		}
-		need := missing.UniqueID
+		need := missing.ID.Local()
 		if missing.Where != nil && missing.Where.PageName != "" {
 			need = missing.Where.PageName
 		}
@@ -205,12 +207,12 @@ func modProblems(p profile.Profile, result problems.Result, nexusID int) []ModPr
 		out = append(out, ModProblem{Kind: kind, Text: fmt.Sprintf("%s %s %s", missing.DependentName, verb, need)})
 	}
 	for _, duplicate := range result.Duplicates {
-		if involves(duplicate.UniqueID) {
+		if involves(duplicate.ID) {
 			out = append(out, ModProblem{Kind: "duplicate", Text: fmt.Sprintf("%s has duplicate copies", duplicate.Name)})
 		}
 	}
 	for _, broken := range result.Broken {
-		if involves(broken.UniqueID) {
+		if involves(broken.ID) {
 			out = append(out, ModProblem{Kind: "broken", Text: fmt.Sprintf("%s is broken for this game version", broken.Name)})
 		}
 	}
@@ -230,7 +232,7 @@ func modProblems(p profile.Profile, result problems.Result, nexusID int) []ModPr
 		out = append(out, ModProblem{Kind: "conflict", Text: fmt.Sprintf("conflicts with %s", strings.Join(names, ", "))})
 	}
 	for _, run := range result.RunErrors {
-		if involves(run.UniqueID) {
+		if involves(run.ID) {
 			out = append(out, ModProblem{Kind: "error", Text: fmt.Sprintf("%s reported errors in the last run", run.Name)})
 		}
 	}
@@ -399,7 +401,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		return nil, s.Saves.RestoreBackup(p.Game, p.Name, p.UniqueIDs)
+		return nil, s.Saves.RestoreBackup(p.Game, p.Name, p.IDs)
 	case "backups.keep":
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
@@ -429,19 +431,19 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		out := make([]BundleRow, 0, len(list))
 		for _, b := range list {
-			ids := make(map[string]bool)
+			ids := make(map[mod.ID]bool)
 			for _, m := range b.Mods {
-				ids[m.UniqueID] = true
+				ids[m.ID] = true
 			}
 			var names []string
 			for _, prof := range profiles {
 				if prof.Error != "" {
 					continue
 				}
-				have := make(map[string]bool)
+				have := make(map[mod.ID]bool)
 				for _, entry := range prof.Entries {
-					for _, mod := range entry.Mods {
-						have[mod.UniqueID] = true
+					for _, im := range entry.Mods {
+						have[im.ID] = true
 					}
 				}
 				ok := true
@@ -581,13 +583,13 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, err
 		}
 		out := ProfileMatch{OnlyYours: preview.Replace.Remove}
-		for _, mod := range preview.Mods {
+		for _, im := range preview.Mods {
 			switch {
-			case mod.Different:
-				out.Different = append(out.Different, mod.Name)
-			case mod.State == sharesvc.StateDownload || mod.State == sharesvc.StateDependency:
-				out.Missing = append(out.Missing, mod.Name)
-			case mod.State == sharesvc.StateInstalled:
+			case im.Different:
+				out.Different = append(out.Different, im.Name)
+			case im.State == sharesvc.StateDownload || im.State == sharesvc.StateDependency:
+				out.Missing = append(out.Missing, im.Name)
+			case im.State == sharesvc.StateInstalled:
 				out.Already++
 			}
 		}
@@ -652,38 +654,38 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "mods.channel":
 		return s.modsChannel(p, prof, id)
 	case "mods.files":
-		if len(p.UniqueIDs) == 0 {
+		if len(p.IDs) == 0 {
 			return nil, fmt.Errorf("mods files needs a mod")
 		}
-		return s.modExtraFiles(p.Game, prof, p.UniqueIDs[0])
+		return s.modExtraFiles(p.Game, prof, typedID(p.IDs[0]))
 	case "mods.preset":
 		return s.modsPreset(p, id, prof)
 	case "mods.config":
-		if len(p.UniqueIDs) == 0 {
+		if len(p.IDs) == 0 {
 			return nil, fmt.Errorf("mods config needs a mod")
 		}
-		refs, err := refsFor(prof, p.UniqueIDs[:1])
+		refs, err := refsFor(prof, p.IDs[:1])
 		if err != nil {
 			return nil, err
 		}
 		ref := refs[0]
 		if p.Key != "" {
 			return s.changed(p.Game, func() (any, error) {
-				if err := s.Profiles.SetConfigValue(p.Game, id, ref.Key, ref.UniqueID, p.Key, p.Value); err != nil {
+				if err := s.Profiles.SetConfigValue(p.Game, id, ref.Key, ref.ID, p.Key, p.Value); err != nil {
 					return nil, err
 				}
-				return s.Profiles.ListConfigFields(p.Game, id, ref.Key, ref.UniqueID)
+				return s.Profiles.ListConfigFields(p.Game, id, ref.Key, ref.ID)
 			})
 		}
-		return s.Profiles.ListConfigFields(p.Game, id, ref.Key, ref.UniqueID)
+		return s.Profiles.ListConfigFields(p.Game, id, ref.Key, ref.ID)
 	case "mods.menu":
 		return s.modsMenu(p)
 	case "mods.report":
 		return s.modReport(p.Game, id, prof, p)
 	case "mod":
-		return s.modInfo(ctx, p.Game, prof, p.UniqueIDs)
+		return s.modInfo(ctx, p.Game, prof, p.IDs)
 	case "mods.enable", "mods.disable":
-		refs, err := refsFor(prof, p.UniqueIDs)
+		refs, err := refsFor(prof, p.IDs)
 		if err != nil {
 			return nil, err
 		}
@@ -691,7 +693,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return s.Profiles.SetModsEnabled(p.Game, id, refs, method == "mods.enable")
 		})
 	case "mods.pin", "mods.unpin":
-		keys, err := keysFor(prof, p.UniqueIDs)
+		keys, err := keysFor(prof, p.IDs)
 		if err != nil {
 			return nil, err
 		}
@@ -700,13 +702,13 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return err
 		})
 	case "mods.remove":
-		keys, err := keysFor(prof, p.UniqueIDs)
+		keys, err := keysFor(prof, p.IDs)
 		if err != nil {
 			return nil, err
 		}
 		return s.changed(p.Game, func() (any, error) { return s.remove(p.Game, id, prof, keys) })
 	case "mods.tag", "mods.untag":
-		keys, err := keysFor(prof, p.UniqueIDs)
+		keys, err := keysFor(prof, p.IDs)
 		if err != nil {
 			return nil, err
 		}
@@ -720,7 +722,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return modRows(s.reload(p.Game, id, prof)), nil
 		})
 	case "mods.category":
-		keys, err := keysFor(prof, p.UniqueIDs)
+		keys, err := keysFor(prof, p.IDs)
 		if err != nil {
 			return nil, err
 		}
@@ -731,7 +733,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return modRows(s.reload(p.Game, id, prof)), nil
 		})
 	case "mods.note":
-		keys, err := keysFor(prof, p.UniqueIDs)
+		keys, err := keysFor(prof, p.IDs)
 		if err != nil {
 			return nil, err
 		}
@@ -746,7 +748,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return modRows(s.reload(p.Game, id, prof)), nil
 		})
 	case "mods.skip-version":
-		keys, err := keysFor(prof, p.UniqueIDs)
+		keys, err := keysFor(prof, p.IDs)
 		if err != nil {
 			return nil, err
 		}
@@ -755,10 +757,10 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return err
 		})
 	case "mods.split":
-		if len(p.UniqueIDs) != 2 {
+		if len(p.IDs) != 2 {
 			return nil, fmt.Errorf("mods split needs a mod and a file")
 		}
-		keys, err := keysFor(prof, p.UniqueIDs[:1])
+		keys, err := keysFor(prof, p.IDs[:1])
 		if err != nil {
 			return nil, err
 		}
@@ -766,7 +768,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if !ok {
 			return nil, fmt.Errorf("%q is not in this profile", keys[0])
 		}
-		extra, err := extraKeyOf(entry, p.UniqueIDs[1])
+		extra, err := extraKeyOf(entry, p.IDs[1])
 		if err != nil {
 			return nil, err
 		}
@@ -777,10 +779,10 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return modRows(s.reload(p.Game, id, prof)), nil
 		})
 	case "mods.combine":
-		if len(p.UniqueIDs) != 2 {
+		if len(p.IDs) != 2 {
 			return nil, fmt.Errorf("mods combine needs a mod and the entry to combine it into")
 		}
-		keys, err := keysFor(prof, p.UniqueIDs)
+		keys, err := keysFor(prof, p.IDs)
 		if err != nil {
 			return nil, err
 		}
@@ -854,21 +856,21 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		var reqs []queue.Request
 		for _, u := range r.Updates {
-			if u.Unofficial || (!p.All && len(p.UniqueIDs) > 0 && !slices.ContainsFunc(p.UniqueIDs, func(want string) bool {
-				return profile.SameID(want, u.UniqueID)
+			if u.Unofficial || (!p.All && len(p.IDs) > 0 && !slices.ContainsFunc(typedIDs(p.IDs), func(want mod.ID) bool {
+				return mod.Equal(want, u.ID)
 			})) {
 				continue
 			}
 			reqs = append(reqs, queue.Request{
 				Kind: queue.KindUpdate, Game: p.Game, Profile: id, Name: u.Name, Version: u.Version,
-				CurrentKey: u.Key, ModID: u.NexusID, Repo: u.GitHubRepo, FallbackRepo: u.GitHubFallback, FallbackID: u.UniqueID, Latest: true,
+				CurrentKey: u.Key, ModID: u.NexusID, Repo: u.GitHubRepo, FallbackRepo: u.GitHubFallback, FallbackID: u.ID, Latest: true,
 			})
 		}
 		if len(reqs) == 0 {
-			if p.All || len(p.UniqueIDs) == 0 {
+			if p.All || len(p.IDs) == 0 {
 				return nil, usererr.New(usererr.NotFound, "no updates available")
 			}
-			return nil, usererr.New(usererr.NotFound, "no update available for "+strings.Join(p.UniqueIDs, ", "))
+			return nil, usererr.New(usererr.NotFound, "no update available for "+strings.Join(p.IDs, ", "))
 		}
 		if _, err := s.Queue.Add(reqs); err != nil {
 			return nil, err
@@ -1040,8 +1042,8 @@ func modRows(p profile.Profile) []ModRow {
 	for _, e := range p.Entries {
 		for _, m := range e.Mods {
 			out = append(out, ModRow{
-				UniqueID: m.UniqueID, Name: m.Name, Version: m.Version, Author: m.Author, Key: e.Key,
-				Enabled: e.Enabled(m.UniqueID),
+				ID: m.ID, Name: m.Name, Version: m.Version, Author: m.Author, Key: e.Key,
+				Enabled: e.Enabled(m.ID),
 				Pinned:  e.Pinned, PinReason: e.PinReason, Source: source(e.Source),
 			})
 		}
@@ -1061,7 +1063,7 @@ func extraKeyOf(e profile.Entry, id string) (string, error) {
 			if folder != extra && !strings.HasPrefix(folder, prefix) {
 				continue
 			}
-			if profile.SameID(m.UniqueID, id) || strings.EqualFold(m.Name, id) {
+			if mod.Equal(m.ID, typedID(id)) || strings.EqualFold(m.Name, id) {
 				return extra, nil
 			}
 		}
@@ -1071,15 +1073,15 @@ func extraKeyOf(e profile.Entry, id string) (string, error) {
 
 func refsFor(p profile.Profile, ids []string) ([]profile.EnableRef, error) {
 	if len(ids) == 0 {
-		return nil, errors.New("name at least one mod by UniqueID")
+		return nil, errors.New("name at least one mod by id")
 	}
 	refs := make([]profile.EnableRef, 0, len(ids))
 	for _, id := range ids {
-		e, _, ok := p.FindMod("", id)
+		e, _, ok := p.FindMod("", typedID(id))
 		if !ok {
 			return nil, fmt.Errorf("profile %s has no mod %q", p.Name, id)
 		}
-		refs = append(refs, profile.EnableRef{Key: e.Key, UniqueID: id})
+		refs = append(refs, profile.EnableRef{Key: e.Key, ID: typedID(id)})
 	}
 	return refs, nil
 }
@@ -1146,24 +1148,24 @@ func (s *Services) install(gameID, id, path string) (InstallOutcome, error) {
 
 func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile, ids []string) (ModInfo, error) {
 	if len(ids) != 1 {
-		return ModInfo{}, errors.New("name one mod by UniqueID")
+		return ModInfo{}, errors.New("name one mod by id")
 	}
-	uid := ids[0]
+	uid := typedID(ids[0])
 	e, _, ok := p.FindMod("", uid)
 	if !ok {
 		return ModInfo{}, fmt.Errorf("profile %s has no mod %q", p.Name, uid)
 	}
-	info := ModInfo{Needs: []string{}, Optional: []string{}, Dependents: []string{}, Missing: []problems.Missing{}, Conflicts: []problems.AssetConflict{}, Settings: []problems.SettingHint{}}
+	info := ModInfo{Needs: []mod.ID{}, Optional: []mod.ID{}, Dependents: []mod.ID{}, Missing: []problems.Missing{}, Conflicts: []problems.AssetConflict{}, Settings: []problems.SettingHint{}}
 	for _, r := range modRows(p) {
-		if profile.SameID(r.UniqueID, uid) {
+		if mod.Equal(r.ID, uid) {
 			info.ModRow = r
 		}
 	}
 	for _, m := range e.Mods {
-		if profile.SameID(m.UniqueID, uid) {
+		if mod.Equal(m.ID, uid) {
 			info.Optional = append(info.Optional, m.Optional...)
 			for _, n := range m.Needs {
-				if !slices.ContainsFunc(m.Optional, func(o string) bool { return strings.EqualFold(o, n) }) {
+				if !slices.ContainsFunc(m.Optional, func(o mod.ID) bool { return mod.Equal(o, n) }) {
 					info.Needs = append(info.Needs, n)
 				}
 			}
@@ -1171,8 +1173,8 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 	}
 	for _, other := range p.Entries {
 		for _, m := range other.Mods {
-			if slices.ContainsFunc(m.Needs, func(n string) bool { return profile.SameID(n, uid) }) {
-				info.Dependents = append(info.Dependents, m.UniqueID)
+			if slices.ContainsFunc(m.Needs, func(n mod.ID) bool { return mod.Equal(n, uid) }) {
+				info.Dependents = append(info.Dependents, m.ID)
 			}
 		}
 	}
@@ -1181,17 +1183,17 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 		return info, err
 	}
 	for _, m := range res.Missing {
-		if profile.SameID(m.DependentID, uid) {
+		if mod.Equal(m.DependentID, uid) {
 			info.Missing = append(info.Missing, m)
 		}
 	}
 	for _, c := range res.AssetConflicts {
-		if slices.ContainsFunc(c.PackIDs, func(id string) bool { return profile.SameID(id, uid) }) {
+		if slices.ContainsFunc(c.PackIDs, func(id mod.ID) bool { return mod.Equal(id, uid) }) {
 			info.Conflicts = append(info.Conflicts, c)
 		}
 	}
 	for _, h := range res.Settings {
-		if profile.SameID(h.UniqueID, uid) {
+		if mod.Equal(h.ID, uid) {
 			info.Settings = append(info.Settings, h)
 		}
 	}
@@ -1298,8 +1300,8 @@ func (e launchWarningError) Error() string {
 			warning += " None of this profile's mods are marked broken for the new version."
 		} else {
 			names := make([]string, 0, len(e.update.Broken))
-			for _, mod := range e.update.Broken {
-				names = append(names, mod.Name)
+			for _, im := range e.update.Broken {
+				names = append(names, im.Name)
 			}
 			warning += " Mods marked broken: " + strings.Join(names, ", ") + "."
 		}
@@ -1350,7 +1352,7 @@ func playIssueGroups(prof profile.Profile, res problems.Result, upd problems.Upd
 		if m.Optional {
 			continue
 		}
-		name := m.UniqueID
+		name := m.ID.Local()
 		if m.Where != nil && m.Where.PageName != "" {
 			name = m.Where.PageName
 		}
@@ -1509,4 +1511,15 @@ func (s *Services) doctor() (Doctor, error) {
 	}
 	st := s.Settings.Get()
 	return Doctor{Version: s.Version, DataDir: dir, Games: gs, Environment: env, NxmHandled: st.NxmHandled, NxmPrevious: st.NxmPreviousName}, nil
+}
+
+// typedID reads an id a user typed: bare ids are SMAPI's for now, since Stardew is the only game with mods.
+func typedID(s string) mod.ID { return mod.Parse(s, mod.FormatSMAPI) }
+
+func typedIDs(ids []string) []mod.ID {
+	out := make([]mod.ID, len(ids))
+	for i, id := range ids {
+		out[i] = typedID(id)
+	}
+	return out
 }

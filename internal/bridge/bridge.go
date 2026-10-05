@@ -23,8 +23,8 @@ import (
 const (
 	// ModFolder is the bridge mod's folder inside its store entry.
 	ModFolder = "MortarSmapiBridge"
-	// UniqueID is the bridge mod's manifest UniqueID.
-	UniqueID = "Rethunk.MortarSmapiBridge"
+	// SMAPIID is the bridge mod's id as SMAPI's config files spell it.
+	SMAPIID = "Rethunk.MortarSmapiBridge"
 	// StateFile is written by the mod on start and removed on exit.
 	StateFile = "mortar-smapi-bridge.json"
 

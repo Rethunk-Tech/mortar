@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -85,9 +87,9 @@ type bundleEntry struct {
 }
 
 type bundleMod struct {
-	Name     string `json:"name"`
-	UniqueID string `json:"uniqueId"`
-	Version  string `json:"version"`
+	Name    string `json:"name"`
+	ID      mod.ID `json:"id"`
+	Version string `json:"version"`
 }
 
 func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
@@ -399,8 +401,8 @@ func collectProfiles(root string) []bundleProfile {
 		bp := bundleProfile{Game: d.Game, ID: p.ID, Name: p.Name, EntryCount: len(p.Entries)}
 		for _, ent := range p.Entries {
 			be := bundleEntry{Source: ent.Source}
-			for _, mod := range ent.Mods {
-				be.Mods = append(be.Mods, bundleMod{Name: mod.Name, UniqueID: mod.UniqueID, Version: mod.Version})
+			for _, im := range ent.Mods {
+				be.Mods = append(be.Mods, bundleMod{Name: im.Name, ID: im.ID, Version: im.Version})
 			}
 			bp.Entries = append(bp.Entries, be)
 		}

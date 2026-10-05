@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/sampler"
 )
 
@@ -203,14 +204,14 @@ func assembliesToMods(modsDir string) (map[string]string, error) {
 		}
 		// SMAPI skips a mod whose manifest it cannot read, so such a mod has no frames to charge.
 		if parsed, parseErr := manifest.Parse(data); parseErr == nil {
-			return mapModAssemblies(assemblyToMod, filepath.Dir(path), parsed.UniqueID)
+			return mapModAssemblies(assemblyToMod, filepath.Dir(path), parsed.ModID())
 		}
 		return nil
 	})
 	return assemblyToMod, err
 }
 
-func mapModAssemblies(assemblyToMod map[string]string, dir, uniqueID string) error {
+func mapModAssemblies(assemblyToMod map[string]string, dir string, uniqueID mod.ID) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return err
@@ -219,7 +220,7 @@ func mapModAssemblies(assemblyToMod map[string]string, dir, uniqueID string) err
 		if one.IsDir() || !strings.EqualFold(filepath.Ext(one.Name()), ".dll") {
 			continue
 		}
-		assemblyToMod[strings.TrimSuffix(one.Name(), filepath.Ext(one.Name()))] = uniqueID
+		assemblyToMod[strings.TrimSuffix(one.Name(), filepath.Ext(one.Name()))] = string(uniqueID)
 	}
 	return nil
 }

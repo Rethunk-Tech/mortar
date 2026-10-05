@@ -12,7 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 const (
@@ -99,10 +99,10 @@ func loadBridgeEarly(path string) error {
 	if list, ok := cfg[loadEarlyKey].([]any); ok {
 		early = list
 	}
-	if found && slices.ContainsFunc(early, func(v any) bool { s, _ := v.(string); return manifest.SameID(s, bridge.UniqueID) }) {
+	if found && slices.ContainsFunc(early, func(v any) bool { s, _ := v.(string); return mod.Equal(mod.SMAPI(s), mod.SMAPI(bridge.SMAPIID)) }) {
 		return nil
 	}
-	cfg[loadEarlyKey] = append([]any{bridge.UniqueID}, early...)
+	cfg[loadEarlyKey] = append([]any{bridge.SMAPIID}, early...)
 	return datadir.WriteJSON(path, cfg)
 }
 
@@ -213,6 +213,6 @@ func mergeStartupSamples(reportPath string, report *StartupReport) {
 	}
 	report.SampledOtherMs = samples.OtherMs
 	for index := range report.Mods {
-		report.Mods[index].SampleMs = samples.Mods[report.Mods[index].ID]
+		report.Mods[index].SampleMs = samples.Mods[string(report.Mods[index].ID)]
 	}
 }

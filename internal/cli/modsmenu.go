@@ -12,7 +12,7 @@ func (c *cmd) modsMenu() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:3]}
+	p := control.Params{Game: a[0], Profile: a[1], IDs: a[2:3]}
 	if c.setFlag {
 		if len(a) < 4 {
 			return usageError{"mods menu --set needs page/index=value"}

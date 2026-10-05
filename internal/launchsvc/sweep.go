@@ -6,6 +6,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -23,11 +25,11 @@ const (
 
 // SweepMod is one profile mod that needs attention after a game or SMAPI change.
 type SweepMod struct {
-	Key      string `json:"key"`
-	Name     string `json:"name"`
-	UniqueID string `json:"uniqueId"`
-	Status   string `json:"status"`
-	Fix      string `json:"fix"`
+	Key    string `json:"key"`
+	Name   string `json:"name"`
+	ID     mod.ID `json:"id"`
+	Status string `json:"status"`
+	Fix    string `json:"fix"`
 }
 
 // ProfileSweep is one profile's patch-day findings.
@@ -141,11 +143,11 @@ func (s *Service) scanSweepProfiles(gameID string, profiles []profile.Profile, i
 		if err != nil {
 			continue
 		}
-		has := func(uniqueID string, _ int) bool {
+		has := func(uniqueID mod.ID, _ int) bool {
 			if s.SweepHasUpdate != nil {
 				return s.SweepHasUpdate(uniqueID, 0)
 			}
-			return updates[strings.ToLower(uniqueID)]
+			return updates[uniqueID.Fold()]
 		}
 		row := ProfileSweep{Profile: p.ID, Name: p.Name, Broken: sweepBroken(mods, idx, has)}
 		row.MissingDeps = s.sweepMissingDeps(gameID, p.ID, mods)
@@ -160,8 +162,8 @@ func (s *Service) sweepMissingDeps(gameID, profileID string, mods []profile.Mod)
 	}
 	have := map[string]bool{}
 	for _, m := range mods {
-		if m.Enabled && m.UniqueID != "" {
-			have[strings.ToLower(m.UniqueID)] = true
+		if m.Enabled && m.ID != "" {
+			have[m.ID.Fold()] = true
 		}
 	}
 	n := 0
@@ -170,7 +172,7 @@ func (s *Service) sweepMissingDeps(gameID, profileID string, mods []profile.Mod)
 			continue
 		}
 		for _, need := range m.Needs {
-			if !have[strings.ToLower(need)] {
+			if !have[need.Fold()] {
 				n++
 			}
 		}
@@ -192,8 +194,8 @@ func (s *Service) sweepUpdateSet(ctx context.Context, gameID, gameVer, smapiVer 
 			continue
 		}
 		for _, m := range list {
-			if m.UniqueID != "" {
-				installed = append(installed, meta.InstalledMod{ID: m.UniqueID, Version: m.Version})
+			if m.ID != "" {
+				installed = append(installed, meta.InstalledMod{ID: m.ID.Local(), Version: m.Version})
 			}
 		}
 	}
@@ -203,31 +205,31 @@ func (s *Service) sweepUpdateSet(ctx context.Context, gameID, gameVer, smapiVer 
 		APIVersion: smapiVer, GameVersion: gameVer, Platform: sweepPlatform(), Mods: installed,
 	}) {
 		if r.Suggested != nil {
-			out[strings.ToLower(r.ID)] = true
+			out[mod.SMAPI(r.ID).Fold()] = true
 		}
 	}
 	return out
 }
 
-func sweepBroken(mods []profile.Mod, idx meta.CompatIndex, hasUpdate func(string, int) bool) []SweepMod {
+func sweepBroken(mods []profile.Mod, idx meta.CompatIndex, hasUpdate func(mod.ID, int) bool) []SweepMod {
 	var out []SweepMod
 	for _, m := range mods {
-		e, ok := idx.Lookup(m.UniqueID, 0)
+		e, ok := idx.Lookup(m.ID.Local(), 0)
 		if !ok || (e.Status != meta.StatusBroken && e.Status != meta.StatusObsolete) {
 			continue
 		}
 		out = append(out, SweepMod{
-			Key: m.Key, Name: sweepModName(m), UniqueID: m.UniqueID, Status: e.Status, Fix: sweepFix(e, m, hasUpdate),
+			Key: m.Key, Name: sweepModName(m), ID: m.ID, Status: e.Status, Fix: sweepFix(e, m, hasUpdate),
 		})
 	}
 	return out
 }
 
-func sweepFix(e meta.CompatEntry, m profile.Mod, hasUpdate func(string, int) bool) string {
+func sweepFix(e meta.CompatEntry, m profile.Mod, hasUpdate func(mod.ID, int) bool) string {
 	if e.Status == meta.StatusObsolete {
 		return fixOff
 	}
-	if useLatest(e) && hasUpdate != nil && hasUpdate(m.UniqueID, 0) {
+	if useLatest(e) && hasUpdate != nil && hasUpdate(m.ID, 0) {
 		return fixUpdate
 	}
 	return fixNone
@@ -242,8 +244,8 @@ func sweepModName(m profile.Mod) string {
 	if m.Name != "" {
 		return m.Name
 	}
-	if m.UniqueID != "" {
-		return m.UniqueID
+	if m.ID != "" {
+		return m.ID.Local()
 	}
 	return m.Key
 }

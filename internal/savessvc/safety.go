@@ -3,7 +3,8 @@ package savessvc
 import (
 	"context"
 	"errors"
-	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // SaveCheck is how a save's last-played mod list compares to a profile.
@@ -21,12 +22,12 @@ func contentMissingCount(recorded []PlayedMod, missing []Lack) int {
 	ids := map[string]bool{}
 	for _, m := range recorded {
 		if m.ContentPackFor != "" {
-			ids[strings.ToLower(m.UniqueID)] = true
+			ids[m.ID.Fold()] = true
 		}
 	}
 	n := 0
 	for _, l := range missing {
-		if ids[strings.ToLower(l.UniqueID)] {
+		if ids[l.ID.Fold()] {
 			n++
 		}
 	}
@@ -54,13 +55,13 @@ func (s *Service) farmOf(gameID, folder string) string {
 }
 
 func (s *Service) describeLacks(ctx context.Context, gameID string, lacks []Lack) []Lack {
-	wanted := map[string]bool{}
+	wanted := map[mod.ID]bool{}
 	for _, l := range lacks {
-		wanted[l.UniqueID] = true
+		wanted[l.ID] = true
 	}
 	names := s.describe(ctx, gameID, wanted)
 	for i := range lacks {
-		if d, ok := names[lacks[i].UniqueID]; ok {
+		if d, ok := names[lacks[i].ID]; ok {
 			lacks[i].Name, lacks[i].Where = d.name, d.where
 		}
 	}

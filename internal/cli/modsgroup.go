@@ -40,9 +40,9 @@ func (c *cmd) modsGroup() error {
 			return usageError{"mods group " + a[2] + " needs a group name and a mod id"}
 		}
 		p.Name = a[3]
-		p.UniqueIDs = a[4:5]
+		p.IDs = a[4:5]
 		return show(c, "mods.group", p, func(got profile.Profile) {
-			fmt.Fprintf(c.out, "%s %s %s.\n", strings.ToUpper(a[2][:1])+a[2][1:], p.UniqueIDs[0], p.Name)
+			fmt.Fprintf(c.out, "%s %s %s.\n", strings.ToUpper(a[2][:1])+a[2][1:], p.IDs[0], p.Name)
 		})
 	default:
 		return usageError{"mods group needs list, create, delete, add, remove, on, or off"}

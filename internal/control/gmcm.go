@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func (s *Services) modsMenu(p Params) (any, error) {
@@ -11,10 +12,10 @@ func (s *Services) modsMenu(p Params) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(p.UniqueIDs) == 0 {
+	if len(p.IDs) == 0 {
 		return nil, fmt.Errorf("mods menu needs a mod")
 	}
-	uid := p.UniqueIDs[0]
+	uid := typedID(p.IDs[0])
 	if p.Value != "" {
 		return s.setGmcm(p.Game, prof.ID, uid, p.Value)
 	}
@@ -25,7 +26,7 @@ func (s *Services) modsMenu(p Params) (any, error) {
 	return formatMenu(menu), nil
 }
 
-func (s *Services) setGmcm(game, profile, uid, spec string) (any, error) {
+func (s *Services) setGmcm(game, profile string, uid mod.ID, spec string) (any, error) {
 	page, index, raw, err := gmcm.ParseSetFlag(spec)
 	if err != nil {
 		return nil, err

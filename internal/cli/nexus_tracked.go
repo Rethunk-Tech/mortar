@@ -16,8 +16,8 @@ func (c *cmd) nexusTracked() error {
 		return err
 	}
 	return show(c, "nexus.trackedMissing", control.Params{Game: a[0], Profile: a[1]}, func(mods []nexus.TrackedMod) {
-		for _, mod := range mods {
-			fmt.Fprintf(c.out, "%d\t%s\n", mod.ModID, mod.DomainName)
+		for _, im := range mods {
+			fmt.Fprintf(c.out, "%d\t%s\n", im.ModID, im.DomainName)
 		}
 	})
 }

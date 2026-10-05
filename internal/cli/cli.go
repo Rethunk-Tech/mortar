@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -566,9 +567,9 @@ func (c *cmd) dispatch() error {
 		return c.mods(p)
 	case "mod":
 		if len(a) < 3 {
-			return usageError{"mod needs a mod id (SMAPI UniqueID)"}
+			return usageError{"mod needs a mod id (SMAPI id)"}
 		}
-		p.UniqueIDs = a[2:3]
+		p.IDs = a[2:3]
 		return c.mod(p)
 	case "install":
 		if len(a) < 3 {
@@ -629,9 +630,9 @@ func open(target string) error {
 
 // missingName names a missing requirement by its page when known, with the minimum version it needs.
 func missingName(m problems.Missing) string {
-	name := m.UniqueID
+	name := m.ID.Local()
 	if m.Where != nil && m.Where.PageName != "" {
-		name = m.Where.PageName + " (" + m.UniqueID + ")"
+		name = m.Where.PageName + " (" + m.ID.Local() + ")"
 	}
 	if m.MinimumVersion != "" {
 		name += " " + m.MinimumVersion + "+"
@@ -683,8 +684,8 @@ func historySummary(kind string, count int, label string) string {
 func modNamesForIDs(ids []string, mods []control.ModRow) []string {
 	names := make(map[string]string, len(mods))
 	for _, m := range mods {
-		if m.UniqueID != "" && m.Name != "" {
-			names[m.UniqueID] = m.Name
+		if m.ID != "" && m.Name != "" {
+			names[m.ID.Local()] = m.Name
 		}
 	}
 	out := make([]string, 0, len(ids))
@@ -1303,7 +1304,7 @@ func (c *cmd) modTable(rows []control.ModRow) {
 			state += ", pinned"
 		}
 		if c.verbose {
-			t = append(t, []string{m.UniqueID, m.Name, m.Version, state, m.Source})
+			t = append(t, []string{m.ID.Local(), m.Name, m.Version, state, m.Source})
 			continue
 		}
 		t = append(t, []string{m.Name, m.Version, state, m.Source})
@@ -1320,7 +1321,7 @@ func (c *cmd) modsChange(sub string) error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:]}
+	p := control.Params{Game: a[0], Profile: a[1], IDs: a[2:]}
 	switch sub {
 	case "split", "combine":
 		need := "a file"
@@ -1330,7 +1331,7 @@ func (c *cmd) modsChange(sub string) error {
 		if len(a) < 4 {
 			return usageError{"mods " + sub + " needs a mod and " + need}
 		}
-		p.UniqueIDs = a[2:4]
+		p.IDs = a[2:4]
 		var rows []control.ModRow
 		if err := c.call("mods."+sub, p, &rows, readTimeout); err != nil {
 			return err
@@ -1347,13 +1348,13 @@ func (c *cmd) modsChange(sub string) error {
 			return usageError{"mods " + sub + " needs a value"}
 		}
 		if len(a) >= 4 {
-			p.UniqueIDs = a[2 : len(a)-1]
+			p.IDs = a[2 : len(a)-1]
 			p.Value = a[len(a)-1]
-			if len(p.UniqueIDs) == 0 {
-				return usageError{"mods " + sub + " needs a mod id (SMAPI UniqueID)"}
+			if len(p.IDs) == 0 {
+				return usageError{"mods " + sub + " needs a mod id (SMAPI id)"}
 			}
 		} else {
-			p.UniqueIDs = a[2:]
+			p.IDs = a[2:]
 		}
 		var rows []control.ModRow
 		if err := c.call("mods."+sub, p, &rows, readTimeout); err != nil {
@@ -1366,7 +1367,7 @@ func (c *cmd) modsChange(sub string) error {
 			return err
 		}
 		return c.emit(res, func() {
-			fmt.Fprintf(c.out, "%sd %s.\n", strings.ToUpper(sub[:1])+sub[1:], strings.Join(p.UniqueIDs, ", "))
+			fmt.Fprintf(c.out, "%sd %s.\n", strings.ToUpper(sub[:1])+sub[1:], strings.Join(p.IDs, ", "))
 			if len(res.AlsoEnabled) > 0 {
 				var mods []control.ModRow
 				_ = c.call("mods", control.Params{Game: p.Game, Profile: p.Profile}, &mods, readTimeout)
@@ -1392,16 +1393,16 @@ func (c *cmd) mod(p control.Params) error {
 		state := enabledLabel(m.Enabled)
 		fmt.Fprintf(c.out, "%s %s by %s, %s, from %s\n", m.Name, m.Version, m.Author, state, m.Source)
 		if c.verbose {
-			fmt.Fprintf(c.out, "Mod id: %s\n", m.UniqueID)
+			fmt.Fprintf(c.out, "Mod id: %s\n", m.ID)
 		}
 		list := func(label string, xs []string) {
 			if len(xs) > 0 {
 				fmt.Fprintf(c.out, "%s: %s\n", label, strings.Join(xs, ", "))
 			}
 		}
-		list("Needs", m.Needs)
-		list("Optional", m.Optional)
-		list("Needed by", m.Dependents)
+		list("Needs", mod.Locals(m.Needs))
+		list("Optional", mod.Locals(m.Optional))
+		list("Needed by", mod.Locals(m.Dependents))
 		for _, x := range m.Missing {
 			fmt.Fprintf(c.out, "Missing: %s\n", missingName(x))
 		}
@@ -1529,7 +1530,7 @@ func (c *cmd) printProblems(r problems.Result) {
 		}
 	}
 	for _, x := range r.Duplicates {
-		fmt.Fprintf(c.out, "duplicate  %s (%s)\n", x.Name, x.UniqueID)
+		fmt.Fprintf(c.out, "duplicate  %s (%s)\n", x.Name, x.ID)
 	}
 	for _, x := range r.Broken {
 		if x.Status == "abandoned" {
@@ -1551,7 +1552,7 @@ func (c *cmd) printProblems(r problems.Result) {
 		fmt.Fprintf(c.out, "%s  setting    %s %s=%s for %s\n", next(), x.Name, x.Field, x.Current, strings.Join(x.ForNames, ", "))
 	}
 	for _, x := range r.RunErrors {
-		fmt.Fprintf(c.out, "run error  %s (%s)\n", x.Name, x.UniqueID)
+		fmt.Fprintf(c.out, "run error  %s (%s)\n", x.Name, x.ID)
 	}
 	for _, x := range r.Drift {
 		fmt.Fprintf(c.out, "edited     %s %s\n", x.Kind, x.Folder)
@@ -1955,7 +1956,7 @@ func (c *cmd) update() error {
 		return usageError{"update needs one or more mod ids, or --all"}
 	}
 	var st queue.State
-	if err := c.call("updates.queue", control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:], All: c.all}, &st, installTimeout); err != nil {
+	if err := c.call("updates.queue", control.Params{Game: a[0], Profile: a[1], IDs: a[2:], All: c.all}, &st, installTimeout); err != nil {
 		return err
 	}
 	return c.emit(st, func() { fmt.Fprintf(c.out, "Queued updates.\n") })
@@ -1973,7 +1974,7 @@ func (c *cmd) backups() error {
 			if err != nil {
 				return err
 			}
-			if err := c.call("backups.restore", control.Params{Game: game, Name: a[0], UniqueIDs: a[1:]}, nil, installTimeout); err != nil {
+			if err := c.call("backups.restore", control.Params{Game: game, Name: a[0], IDs: a[1:]}, nil, installTimeout); err != nil {
 				return err
 			}
 			return c.emit(map[string]any{"restored": a[0], "saves": a[1:]}, func() {
@@ -2156,7 +2157,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods report <game> <profile> <mod> [--run ID]  report text and author URL for a mod's log errors
   mods by-author <game> <author>            mods installed in any profile for this author
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
-                                          (mod id is the SMAPI UniqueID)
+                                          (mod id is the SMAPI id)
   install <game> <profile> <archive>      install a local archive
   conflicts <game> <profile> [--all]      asset conflicts (--all includes cosmetic ones)
   conflicts map <game> <profile> [--filter x]

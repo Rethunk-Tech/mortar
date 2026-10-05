@@ -13,7 +13,7 @@ func (c *cmd) modsConfig() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:3]}
+	p := control.Params{Game: a[0], Profile: a[1], IDs: a[2:3]}
 	switch {
 	case len(a) >= 5:
 		p.Key, p.Value = a[3], a[4]

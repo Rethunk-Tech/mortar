@@ -31,7 +31,7 @@ func (c *cmd) storeRemove() error {
 	if err != nil {
 		return err
 	}
-	if err := c.call("store.remove", control.Params{Game: a[0], UniqueIDs: a[1:]}, nil, readTimeout); err != nil {
+	if err := c.call("store.remove", control.Params{Game: a[0], IDs: a[1:]}, nil, readTimeout); err != nil {
 		return err
 	}
 	return c.emit(map[string]any{"removed": a[1:]}, func() {

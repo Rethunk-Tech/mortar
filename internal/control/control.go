@@ -25,28 +25,28 @@ import (
 
 // Params is every argument a method takes; each method reads the fields it needs.
 type Params struct {
-	Game      string   `json:"game,omitempty"`
-	Profile   string   `json:"profile,omitempty"`
-	ModID     int      `json:"modId,omitempty"`
-	Name      string   `json:"name,omitempty"`
-	UniqueIDs []string `json:"uniqueIds,omitempty"`
-	Path      string   `json:"path,omitempty"`
-	Run       string   `json:"run,omitempty"`
-	Query     string   `json:"query,omitempty"`
-	All       bool     `json:"all,omitempty"`
-	Unused    bool     `json:"unused,omitempty"`
-	Yes       bool     `json:"yes,omitempty"`
-	Sub       string   `json:"sub,omitempty"`
-	Force     bool     `json:"force,omitempty"`
-	Key       string   `json:"key,omitempty"`
-	Value     string   `json:"value,omitempty"`
-	Remove    bool     `json:"remove,omitempty"`
-	Set       bool     `json:"set,omitempty"`
-	Clear     bool     `json:"clear,omitempty"`
-	Unlink    bool     `json:"unlink,omitempty"`
-	Keep      int      `json:"keep,omitempty"`
-	Preset    string   `json:"preset,omitempty"`
-	Repo      string   `json:"repo,omitempty"`
+	Game    string   `json:"game,omitempty"`
+	Profile string   `json:"profile,omitempty"`
+	ModID   int      `json:"modId,omitempty"`
+	Name    string   `json:"name,omitempty"`
+	IDs     []string `json:"ids,omitempty"`
+	Path    string   `json:"path,omitempty"`
+	Run     string   `json:"run,omitempty"`
+	Query   string   `json:"query,omitempty"`
+	All     bool     `json:"all,omitempty"`
+	Unused  bool     `json:"unused,omitempty"`
+	Yes     bool     `json:"yes,omitempty"`
+	Sub     string   `json:"sub,omitempty"`
+	Force   bool     `json:"force,omitempty"`
+	Key     string   `json:"key,omitempty"`
+	Value   string   `json:"value,omitempty"`
+	Remove  bool     `json:"remove,omitempty"`
+	Set     bool     `json:"set,omitempty"`
+	Clear   bool     `json:"clear,omitempty"`
+	Unlink  bool     `json:"unlink,omitempty"`
+	Keep    int      `json:"keep,omitempty"`
+	Preset  string   `json:"preset,omitempty"`
+	Repo    string   `json:"repo,omitempty"`
 }
 
 type request struct {

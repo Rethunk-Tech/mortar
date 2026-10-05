@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -44,12 +46,12 @@ type Run struct {
 }
 
 type Cause struct {
-	ModKey   string `json:"modKey"`
-	ModName  string `json:"modName"`
-	UniqueID string `json:"uniqueId"`
-	Reason   string `json:"reason"`
-	Detail   string `json:"detail"`
-	Path     string `json:"path"`
+	ModKey  string `json:"modKey"`
+	ModName string `json:"modName"`
+	ID      mod.ID `json:"id"`
+	Reason  string `json:"reason"`
+	Detail  string `json:"detail"`
+	Path    string `json:"path"`
 }
 
 type RunHit struct {
@@ -243,7 +245,7 @@ func (s *Service) LastRunIssues(gameID, profileID string) (RunIssues, error) {
 	}
 	refs := make([]launch.ModRef, len(installed))
 	for i, m := range installed {
-		refs[i] = launch.ModRef{Name: m.Name, UniqueID: m.UniqueID}
+		refs[i] = launch.ModRef{Name: m.Name, ID: m.ID}
 	}
 	return RunIssues{RunID: run.ID, Mods: launch.AttributeLog(text, refs)}, nil
 }
@@ -286,12 +288,12 @@ func (s *Service) profileModRefs(gameID, profileID string) []launch.ModRef {
 		return nil
 	}
 	refs := make([]launch.ModRef, 0, len(installed))
-	for _, mod := range installed {
-		if !mod.Enabled {
+	for _, im := range installed {
+		if !im.Enabled {
 			continue
 		}
 		refs = append(refs, launch.ModRef{
-			Name: mod.Name, UniqueID: mod.UniqueID, Key: mod.Key, Version: mod.Version, SourceVersion: mod.Source.Version,
+			Name: im.Name, ID: im.ModID(), Key: im.Key, Version: im.Version, SourceVersion: im.Source.Version,
 		})
 	}
 	return refs
@@ -399,23 +401,23 @@ func (s *Service) cause(gameID, profileID, text string) Cause {
 	}
 	if asset != "" {
 		for _, line := range lines {
-			for _, mod := range mods {
-				if strings.Contains(line, "["+mod.Name+"]") && strings.Contains(line, asset) {
+			for _, im := range mods {
+				if strings.Contains(line, "["+im.Name+"]") && strings.Contains(line, asset) {
 					return Cause{
-						ModKey: mod.Key, ModName: mod.Name, UniqueID: mod.UniqueID, Reason: "asset-load",
-						Detail: fmt.Sprintf("%s: it could not load an asset. Reinstall it.", mod.Name),
+						ModKey: im.Key, ModName: im.Name, ID: im.ID, Reason: "asset-load",
+						Detail: fmt.Sprintf("%s: it could not load an asset. Reinstall it.", im.Name),
 					}
 				}
 			}
 		}
 	}
 	for _, line := range lines {
-		for _, mod := range mods {
-			if strings.Contains(line, "["+mod.Name+"]") && (strings.Contains(strings.ToLower(line), "exception") ||
+		for _, im := range mods {
+			if strings.Contains(line, "["+im.Name+"]") && (strings.Contains(strings.ToLower(line), "exception") ||
 				strings.Contains(strings.ToLower(line), " failed ")) {
 				return Cause{
-					ModKey: mod.Key, ModName: mod.Name, UniqueID: mod.UniqueID, Reason: "mod-exception",
-					Detail: fmt.Sprintf("%s: it encountered an error. Reinstall it.", mod.Name),
+					ModKey: im.Key, ModName: im.Name, ID: im.ID, Reason: "mod-exception",
+					Detail: fmt.Sprintf("%s: it encountered an error. Reinstall it.", im.Name),
 				}
 			}
 		}
@@ -436,11 +438,11 @@ func missingFileCause(mods []profile.Mod, modsDir string, lines []string) (Cause
 		}
 		rel, _ := filepath.Rel(modsDir, path)
 		key, _, _ := strings.Cut(rel, string(filepath.Separator))
-		for _, mod := range mods {
-			if mod.Key == key {
+		for _, im := range mods {
+			if im.Key == key {
 				return Cause{
-					ModKey: mod.Key, ModName: mod.Name, UniqueID: mod.UniqueID, Reason: "missing-file",
-					Detail: fmt.Sprintf("%s: a file it needs could not be opened. Reinstall it.", mod.Name), Path: path,
+					ModKey: im.Key, ModName: im.Name, ID: im.ID, Reason: "missing-file",
+					Detail: fmt.Sprintf("%s: a file it needs could not be opened. Reinstall it.", im.Name), Path: path,
 				}, true
 			}
 		}

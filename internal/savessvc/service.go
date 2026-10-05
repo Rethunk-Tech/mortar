@@ -9,9 +9,10 @@ import (
 	"maps"
 	"path/filepath"
 	"slices"
-	"strings"
 	"sync"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -29,12 +30,12 @@ const (
 	nameWorkers = 8
 )
 
-// Lack is a mod the save has used that the profile does not run. Name falls back to the UniqueID. Where is the page
+// Lack is a mod the save has used that the profile does not run. Name falls back to the mod id. Where is the page
 // to get it from, found the way a missing dependency's is, and nil when the mod is unknown or the dataset could not
 // be reached; a Nexus page or a GitHub repository in it can be queued into the profile.
 type Lack struct {
-	UniqueID string `json:"uniqueId"`
-	Name     string `json:"name"`
+	ID   mod.ID `json:"id"`
+	Name string `json:"name"`
 	// Disabled means the profile has the mod switched off; otherwise it is absent.
 	Disabled bool          `json:"disabled"`
 	Where    *problems.Ref `json:"where"`
@@ -156,32 +157,32 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 	}
 	dismissed := s.settings.Get().Dismissed
 	fits := make([]Fit, len(infos))
-	wanted := map[string]bool{}
+	wanted := map[mod.ID]bool{}
 	for i, in := range infos {
-		lacks := saves.Lacking(in.Used, enabled, dismissed[in.Folder])
+		lacks := saves.Lacking(in.Used, enabled, asIDs(dismissed[in.Folder]))
 		fits[i] = Fit{
 			Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
 			Played: in.Played, WhichFarm: in.WhichFarm, MillisecondsPlayed: in.MillisecondsPlayed, Money: in.Money,
 			Missing: make([]Lack, len(lacks)),
 		}
 		for j, l := range lacks {
-			fits[i].Missing[j] = Lack{UniqueID: l.UniqueID, Name: l.UniqueID, Disabled: l.Disabled}
-			wanted[l.UniqueID] = true
+			fits[i].Missing[j] = Lack{ID: l.ID, Name: l.ID.Local(), Disabled: l.Disabled}
+			wanted[l.ID] = true
 		}
 		s.fillLast(game, &fits[i], present, enabled)
 		for _, l := range fits[i].LastMissing {
-			wanted[l.UniqueID] = true
+			wanted[l.ID] = true
 		}
 	}
 	names := s.describe(ctx, game, wanted)
 	for i := range fits {
 		for j := range fits[i].Missing {
-			if d, ok := names[fits[i].Missing[j].UniqueID]; ok {
+			if d, ok := names[fits[i].Missing[j].ID]; ok {
 				fits[i].Missing[j].Name, fits[i].Missing[j].Where = d.name, d.where
 			}
 		}
 		for j := range fits[i].LastMissing {
-			if d, ok := names[fits[i].LastMissing[j].UniqueID]; ok {
+			if d, ok := names[fits[i].LastMissing[j].ID]; ok {
 				fits[i].LastMissing[j].Name, fits[i].LastMissing[j].Where = d.name, d.where
 			}
 		}
@@ -189,7 +190,7 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 	return fits, nil
 }
 
-func fitFor(in saves.Info, have map[string]bool, dismissed []string) (Fit, bool) {
+func fitFor(in saves.Info, have map[string]bool, dismissed []mod.ID) (Fit, bool) {
 	lacks := saves.Lacking(in.Used, have, dismissed)
 	fit := Fit{
 		Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
@@ -197,7 +198,7 @@ func fitFor(in saves.Info, have map[string]bool, dismissed []string) (Fit, bool)
 		Missing: make([]Lack, len(lacks)),
 	}
 	for i, l := range lacks {
-		fit.Missing[i] = Lack{UniqueID: l.UniqueID, Name: l.UniqueID, Disabled: l.Disabled}
+		fit.Missing[i] = Lack{ID: l.ID, Name: l.ID.Local(), Disabled: l.Disabled}
 	}
 	return fit, len(lacks) > 0
 }
@@ -207,15 +208,15 @@ type described struct {
 	where *problems.Ref
 }
 
-// describe looks up the display name and the page of each UniqueID. A page that cannot be fetched leaves the
-// UniqueID as the name, so an offline machine still gets a usable list.
-func (s *Service) describe(ctx context.Context, gameID string, ids map[string]bool) map[string]described {
+// describe looks up the display name and the page of each mod id. A page that cannot be fetched leaves the
+// id as the name, so an offline machine still gets a usable list.
+func (s *Service) describe(ctx context.Context, gameID string, ids map[mod.ID]bool) map[mod.ID]described {
 	ctx, cancel := context.WithTimeout(ctx, nameTimeout)
 	defer cancel()
 	t, _ := game.NexusTitle(gameID)
 	domain := t.Domain
 	var mu sync.Mutex
-	out := map[string]described{}
+	out := map[mod.ID]described{}
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, nameWorkers)
 	for id := range ids {
@@ -223,13 +224,13 @@ func (s *Service) describe(ctx context.Context, gameID string, ids map[string]bo
 			sem <- struct{}{}
 			defer func() { <-sem }()
 			where, _ := problems.Locate(ctx, s.meta, domain, id, "", nil)
-			d := described{name: id, where: where}
+			d := described{name: id.Local(), where: where}
 			if where != nil && where.Site == "Nexus" {
 				if page, err := s.meta.Page(ctx, where.PageID); err == nil {
-					d.name = cmp.Or(page.Name, id)
+					d.name = cmp.Or(page.Name, id.Local())
 					for _, f := range page.Downloads {
 						for _, m := range f.Mods {
-							if profile.SameID(m.UniqueID, id) && m.Name != "" {
+							if mod.Equal(m.ModID(), id) && m.Name != "" {
 								d.name = m.Name
 							}
 						}
@@ -271,7 +272,7 @@ func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit 
 	if info.Folder == "" {
 		return Fit{}, false, nil
 	}
-	fit, ok = fitFor(info, enabled, s.settings.Get().Dismissed[info.Folder])
+	fit, ok = fitFor(info, enabled, asIDs(s.settings.Get().Dismissed[info.Folder]))
 	s.fillLast(game, &fit, present, enabled)
 	if len(fit.LastMissing) > 0 {
 		ok = true
@@ -280,19 +281,19 @@ func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit 
 }
 
 // Dismiss stops warning about uniqueID for the save folder.
-func (s *Service) Dismiss(saveFolder, uniqueID string) error {
+func (s *Service) Dismiss(saveFolder string, uniqueID mod.ID) error {
 	if saveFolder == "" || uniqueID == "" {
 		return errors.New("save folder and mod are required")
 	}
-	return s.settings.AppendDismissed(saveFolder, strings.ToLower(uniqueID))
+	return s.settings.AppendDismissed(saveFolder, uniqueID.Fold())
 }
 
 // RestoreDismissed shows uniqueID's missing-mod warning for the save folder again.
-func (s *Service) RestoreDismissed(saveFolder, uniqueID string) error {
+func (s *Service) RestoreDismissed(saveFolder string, uniqueID mod.ID) error {
 	if saveFolder == "" || uniqueID == "" {
 		return errors.New("save folder and mod are required")
 	}
-	id := strings.ToLower(uniqueID)
+	id := uniqueID.Fold()
 	_, err := s.settings.Update(func(v *settings.Settings) {
 		current := v.Dismissed[saveFolder]
 		kept := slices.DeleteFunc(slices.Clone(current), func(x string) bool { return x == id })
@@ -308,4 +309,13 @@ func (s *Service) RestoreDismissed(saveFolder, uniqueID string) error {
 		v.Dismissed = next
 	})
 	return err
+}
+
+// asIDs reads settings tokens that hold folded mod ids.
+func asIDs(tokens []string) []mod.ID {
+	out := make([]mod.ID, len(tokens))
+	for i, t := range tokens {
+		out[i] = mod.ID(t)
+	}
+	return out
 }

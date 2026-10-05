@@ -156,7 +156,7 @@ func (c *cmd) archiveCmd() error {
 		return show(c, "archive.preview", control.Params{Path: a[0]}, func(pv archive.Preview) {
 			rows := make([][]string, 0, len(pv.Manifests))
 			for _, m := range pv.Manifests {
-				rows = append(rows, []string{m.UniqueID, m.Name, m.Version, m.Folder})
+				rows = append(rows, []string{m.ID.Local(), m.Name, m.Version, m.Folder})
 			}
 			c.table("UNIQUEID\tNAME\tVERSION\tFOLDER", rows)
 			fmt.Fprintf(c.out, "%d entries, %s", len(pv.Entries), humanBytes(pv.TotalSize))
@@ -201,7 +201,7 @@ func (c *cmd) libraryCmd() error {
 		return show(c, "library.hidden", control.Params{Game: a[0], Profile: a[1]}, func(mods []profile.HiddenMod) {
 			rows := make([][]string, 0, len(mods))
 			for _, m := range mods {
-				rows = append(rows, []string{m.Key, m.Folder, m.UniqueID, m.Name, m.Version})
+				rows = append(rows, []string{m.Key, m.Folder, m.ID.Local(), m.Name, m.Version})
 			}
 			c.table("KEY\tFOLDER\tUNIQUEID\tNAME\tVERSION", rows)
 		})
@@ -259,7 +259,7 @@ func (c *cmd) libraryStrays() error {
 			return usageError{"library strays --move needs a profile"}
 		}
 		var res profile.GameModsResult
-		if err := c.call("library.strays.move", control.Params{Game: a[0], Profile: a[1], UniqueIDs: c.moveFlag}, &res, installTimeout); err != nil {
+		if err := c.call("library.strays.move", control.Params{Game: a[0], Profile: a[1], IDs: c.moveFlag}, &res, installTimeout); err != nil {
 			return err
 		}
 		return c.emit(res, func() {
@@ -272,7 +272,7 @@ func (c *cmd) libraryStrays() error {
 func (c *cmd) printGameMods(pv profile.GameModsPreview) {
 	rows := make([][]string, 0, len(pv.Mods))
 	for _, m := range pv.Mods {
-		rows = append(rows, []string{m.Folder, m.UniqueID, m.Name, m.Version, m.Status})
+		rows = append(rows, []string{m.Folder, m.ID.Local(), m.Name, m.Version, m.Status})
 	}
 	c.table("FOLDER\tUNIQUEID\tNAME\tVERSION\tSTATUS", rows)
 }

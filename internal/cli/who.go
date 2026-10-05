@@ -38,11 +38,11 @@ func printAssetTargets(c *cmd, targets []problems.AssetTarget) {
 			label += " " + target.Key
 		}
 		mods := []string{}
-		winner := target.Winner
+		winner := target.Winner.Local()
 		for _, m := range target.Mods {
 			name := m.ModName
 			if name == "" {
-				name = m.ModID
+				name = m.ModID.Local()
 			}
 			if m.Winner {
 				name += "*"

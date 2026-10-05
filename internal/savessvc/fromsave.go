@@ -73,13 +73,13 @@ func (s *Service) addRecorded(game, id string, mods []PlayedMod) (added, queued,
 		if usererr.KindOf(addErr) == usererr.NotFound {
 			if req, ok := queueReq(game, id, m); ok {
 				reqs = append(reqs, req)
-				queued = append(queued, m.UniqueID)
+				queued = append(queued, m.ID.Local())
 				continue
 			}
 		}
 		label := m.Name
 		if label == "" {
-			label = m.UniqueID
+			label = m.ID.Local()
 		}
 		missing = append(missing, label)
 	}

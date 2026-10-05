@@ -15,7 +15,7 @@ func (c *cmd) modsWin() error {
 	if len(a) < 4 {
 		return usageError{"mods win needs a winner and a loser"}
 	}
-	p := control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:4], Remove: c.undoFlag}
+	p := control.Params{Game: a[0], Profile: a[1], IDs: a[2:4], Remove: c.undoFlag}
 	return show(c, "mods.win", p, func(got profile.Profile) {
 		if p.Remove {
 			fmt.Fprintf(c.out, "Undid %s winning over %s.\n", a[2], a[3])

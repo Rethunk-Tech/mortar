@@ -11,7 +11,7 @@ func (c *cmd) modsChannel() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], UniqueIDs: a[2:3], Value: a[3]}
+	p := control.Params{Game: a[0], Profile: a[1], IDs: a[2:3], Value: a[3]}
 	return show(c, "mods.channel", p, func(rows []control.ModRow) {
 		fmt.Fprintf(c.out, "Update channel for %s is %s.\n", a[2], a[3])
 	})
