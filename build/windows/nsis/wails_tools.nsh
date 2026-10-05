@@ -14,7 +14,7 @@
     !define INFO_PRODUCTNAME "Mortar"
 !endif
 !ifndef INFO_PRODUCTVERSION
-    !define INFO_PRODUCTVERSION "0.0.1"
+    !define INFO_PRODUCTVERSION "0.2.1"
 !endif
 !ifndef INFO_COPYRIGHT
     !define INFO_COPYRIGHT "(c) 2026, Rethunk.Tech"

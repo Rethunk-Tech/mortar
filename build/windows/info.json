@@ -5,6 +5,7 @@
   "info": {
     "0000": {
       "ProductVersion": "0.2.1",
+      "FileVersion": "0.2.1",
       "CompanyName": "Rethunk.Tech",
       "FileDescription": "Multi-game desktop mod manager",
       "LegalCopyright": "(c) 2026, Rethunk.Tech",

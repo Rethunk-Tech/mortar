@@ -1,5 +1,5 @@
 // Command version copies the app version from build/config.yml into the files that cannot read it themselves
-// (the Windows resource manifest and info, the Linux metainfo, the AUR PKGBUILD). With -check it
+// (the Windows resource manifest, info and NSIS installer defines, the Linux metainfo, the AUR PKGBUILD). With -check it
 // changes nothing and fails when any copy differs, so the gate catches a version set in only one place. With
 // -print it only prints the version, for scripts and workflows.
 package main
@@ -23,9 +23,10 @@ type copyOf struct {
 
 var copies = []copyOf{
 	{"build/windows/wails.exe.manifest", regexp.MustCompile(`name="tech\.rethunk\.mortar" version="([^"]*)"`)},
-	{"build/windows/info.json", regexp.MustCompile(`"(?:file_version|ProductVersion)": "([^"]*)"`)},
+	{"build/windows/info.json", regexp.MustCompile(`"(?:file_version|FileVersion|ProductVersion)": "([^"]*)"`)},
 	{"build/linux/tech.rethunk.Mortar.metainfo.xml", regexp.MustCompile(`<release version="([^"]*)" date="[^"]*"`)},
 	{"build/linux/aur/PKGBUILD", regexp.MustCompile(`(?m)^pkgver=(.*)$`)},
+	{"build/windows/nsis/wails_tools.nsh", regexp.MustCompile(`!define INFO_PRODUCTVERSION "([^"]*)"`)},
 }
 
 func main() {
