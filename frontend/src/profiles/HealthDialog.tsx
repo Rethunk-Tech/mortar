@@ -1,3 +1,4 @@
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -19,6 +20,8 @@ import {
   ProfileHealth,
   RepairProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { i18n } from '../i18n/index.ts'
+import { absoluteWhen } from '../i18n/when.ts'
 import { openSettings } from '../nav/store.ts'
 import { download } from '../queue/actions.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -37,6 +40,36 @@ function useKindTitles(): Record<string, string> {
     snapshot: t`History that cannot be read`,
     journal: t`Unfinished launch`,
     unused: t`Not used by any profile`,
+  }
+}
+
+// findingText is the one-line sentence for a finding, built here so every kind reads through Lingui.
+function findingText(f: HealthFinding): string {
+  const name = f.items?.[0] ?? ''
+  switch (f.kind) {
+    case 'missing':
+      return f.repair === ''
+        ? i18n._(msg`${name} is missing from the store, and Mortar cannot download it again`)
+        : i18n._(msg`${name} is missing from the store`)
+    case 'drift':
+      return f.cause === 'deleted'
+        ? i18n._(msg`The folder of ${name} was deleted outside Mortar`)
+        : i18n._(msg`Files of ${name} changed outside Mortar`)
+    case 'snapshot': {
+      const when = absoluteWhen(f.at ?? '', i18n.locale)
+      return f.cause === 'configs'
+        ? i18n._(msg`The saved change ${name} from ${when} is missing its config files`)
+        : i18n._(msg`Could not read the saved change ${name} from ${when}`)
+    }
+    case 'journal':
+      return i18n._(msg`A launch ended without Mortar putting the game folder back as it was`)
+    default: {
+      const count = f.items?.length ?? 0
+      return plural(count, {
+        one: '# stored mod is not used by any profile',
+        other: '# stored mods are not used by any profile',
+      })
+    }
   }
 }
 
@@ -78,7 +111,7 @@ function FindingGroups({
             }
           >
             <ListItemText
-              primary={f.description}
+              primary={findingText(f)}
               secondary={kind === 'unused' || kind === 'journal' ? f.items?.join(', ') : null}
               slotProps={{ secondary: { noWrap: true, title: f.items?.join(', ') } }}
             />

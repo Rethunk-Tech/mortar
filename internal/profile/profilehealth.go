@@ -33,10 +33,14 @@ const (
 // HealthFinding is one problem ProfileHealth found.
 type HealthFinding struct {
 	// ID is stable across checks, so a repair names what the user saw.
-	ID          string   `json:"id"`
-	Kind        string   `json:"kind"`
-	Items       []string `json:"items"`
-	Description string   `json:"description"`
+	ID   string `json:"id"`
+	Kind string `json:"kind"`
+	// Cause narrows the kind: deleted or changed for drift, unreadable or configs for a history snapshot.
+	Cause string `json:"cause,omitempty"`
+	// Items name what the finding is about: mods, store items, journal folders, or the history event's label.
+	Items []string `json:"items"`
+	// At is the history event's time for a snapshot finding.
+	At time.Time `json:"at,omitzero"`
 	// Repair is the action id that fixes it, "" when Mortar cannot.
 	Repair string `json:"repair"`
 	// Entries are the profile entries a download repair fetches again.
@@ -80,7 +84,6 @@ func (s *Service) ProfileHealth(game, id string) ([]HealthFinding, error) {
 		if dirs := s.HealthJournals(game); len(dirs) > 0 {
 			out = append(out, HealthFinding{
 				ID: HealthJournal + ":" + game, Kind: HealthJournal, Items: dirs, Repair: RepairRecover,
-				Description: "A launch ended without Mortar putting the game folder back as it was",
 			})
 		}
 	}
@@ -151,12 +154,10 @@ func (s *Store) missingFindings(game string, p Profile) ([]HealthFinding, error)
 		}
 		f := HealthFinding{
 			ID: HealthMissing + ":" + e.Key, Kind: HealthMissing, Items: []string{entryLabel(e)},
-			Entries: []Entry{e}, Description: entryLabel(e) + " is missing from the store",
+			Entries: []Entry{e},
 		}
 		if fetchable(e.Source) {
 			f.Repair = RepairDownload
-		} else {
-			f.Description += ", and Mortar cannot download it again"
 		}
 		out = append(out, f)
 	}
@@ -178,14 +179,9 @@ func driftFindings(p Profile, drift []Drift) []HealthFinding {
 		if i < 0 {
 			continue
 		}
-		name := entryLabel(p.Entries[i])
-		desc := name + "'s files changed outside Mortar"
-		if d.Kind == DriftDeleted {
-			desc = name + "'s folder was deleted outside Mortar"
-		}
 		out = append(out, HealthFinding{
-			ID: HealthDrift + ":" + d.Key, Kind: HealthDrift, Items: []string{name}, Description: desc,
-			Repair: RepairRestore,
+			ID: HealthDrift + ":" + d.Key, Kind: HealthDrift, Cause: string(d.Kind),
+			Items: []string{entryLabel(p.Entries[i])}, Repair: RepairRestore,
 		})
 	}
 	return out
@@ -205,11 +201,7 @@ func unusedFinding(game string, unused []store.Item) (HealthFinding, bool) {
 			}
 		}
 	}
-	desc := "1 stored mod is not used by any profile"
-	if len(unused) > 1 {
-		desc = fmt.Sprintf("%d stored mods are not used by any profile", len(unused))
-	}
-	return HealthFinding{ID: HealthUnused + ":" + game, Kind: HealthUnused, Items: items, Description: desc, Repair: RepairCleanup}, true
+	return HealthFinding{ID: HealthUnused + ":" + game, Kind: HealthUnused, Items: items, Repair: RepairCleanup}, true
 }
 
 // snapshotFindings lists history events whose saved mods cannot be read, or whose saved config files are gone.
@@ -222,17 +214,16 @@ func (s *Store) snapshotFindings(game, id string) ([]HealthFinding, error) {
 	}
 	var out []HealthFinding
 	for _, ev := range data.Events {
-		item := ev.Label + " (" + ev.At.Local().Format(time.DateTime) + ")"
-		desc := ""
+		cause := ""
 		if _, ok := snapshotEntries(&data, ev.SnapshotID); !ok {
-			desc = "Could not read the saved change " + item
+			cause = "unreadable"
 		} else if missingConfigCapture(data.dir, ev.SnapshotID) {
-			desc = "The saved change " + item + " is missing its config files"
+			cause = "configs"
 		}
-		if desc != "" {
+		if cause != "" {
 			out = append(out, HealthFinding{
-				ID: HealthSnapshot + ":" + ev.ID, Kind: HealthSnapshot, Items: []string{item}, Description: desc,
-				Repair: RepairDropSnapshot,
+				ID: HealthSnapshot + ":" + ev.ID, Kind: HealthSnapshot, Cause: cause, Items: []string{ev.Label},
+				At: ev.At, Repair: RepairDropSnapshot,
 			})
 		}
 	}

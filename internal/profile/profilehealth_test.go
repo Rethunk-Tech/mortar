@@ -67,7 +67,7 @@ func TestHealthDriftRestoresFromStore(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := findingsOf(t, svc, p.ID, HealthDrift)
-	if len(got) != 1 || got[0].Repair != RepairRestore {
+	if len(got) != 1 || got[0].Repair != RepairRestore || got[0].Cause != string(DriftDeleted) {
 		t.Fatalf("drift = %#v", got)
 	}
 	before, _ := e.History("stardew", p.ID)
@@ -117,7 +117,7 @@ func TestHealthUnreadableSnapshotIsDropped(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := findingsOf(t, svc, p.ID, HealthSnapshot)
-	if len(got) != 1 || got[0].ID != HealthSnapshot+":"+broken.ID {
+	if len(got) != 1 || got[0].ID != HealthSnapshot+":"+broken.ID || got[0].Cause != "unreadable" || !got[0].At.Equal(broken.At) {
 		t.Fatalf("snapshot = %#v", got)
 	}
 	repaired, err := svc.RepairProfile("stardew", p.ID, []string{got[0].ID})
