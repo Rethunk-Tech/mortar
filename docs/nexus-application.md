@@ -1,6 +1,6 @@
 # Nexus Mods application: registering Mortar
 
-Everything needed to submit Mortar to Nexus Mods for registration. Status: draft, not yet submitted.
+What Mortar sent Nexus Mods to register (emailed to support@nexusmods.com) and the facts behind it.
 
 ## How Nexus handles this (researched 2026-10-04)
 
