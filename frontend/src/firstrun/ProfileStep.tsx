@@ -11,6 +11,7 @@ import {
   SetLastGame,
   SetLastProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { useGameName } from '../games/info.ts'
 import { type GameId, useNav } from '../nav/store.ts'
 import { GameModsDialog } from '../profiles/GameModsDialog.tsx'
 import { openImport } from '../share/store.ts'
@@ -29,6 +30,7 @@ const cardSx = (borderColor: string) => ({
 
 export function ProfileStep({ game }: { game: GameId }) {
   const { t } = useLingui()
+  const gameName = useGameName(game)
   const [name, setName] = useState(t`Main`)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -85,7 +87,7 @@ export function ProfileStep({ game }: { game: GameId }) {
               {t`Import from the game's Mods folder`}
             </Typography>
             <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-              {t`Copy the mods already in Stardew Valley's Mods folder into a new profile. Nothing in the game folder is moved or changed.`}
+              {t`Copy the mods already in ${gameName}'s Mods folder into a new profile. Nothing in the game folder is moved or changed.`}
             </Typography>
             <Box sx={{ flex: 1 }} />
             <Button variant="contained" onClick={() => setImportOpen(true)} size="large">

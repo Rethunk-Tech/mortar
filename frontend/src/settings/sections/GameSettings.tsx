@@ -18,6 +18,7 @@ import {
   SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { launchOptionsSet } from '../../firstrun/logic.ts'
+import { gameInfo, useGameName } from '../../games/info.ts'
 import { storeName } from '../../games/storeName.ts'
 import { currentGame, useCurrentGame } from '../../nav/currentGame.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
@@ -156,6 +157,7 @@ function GameFolder({
 }) {
   const { t } = useLingui()
   const game = useCurrentGame()
+  const gameName = useGameName(game)
   const override = useSettings((s) => s.gameFolders?.[game] ?? '')
   const [error, setError] = useState<InlineError | null>(null)
   const [resetting, setResetting] = useState(false)
@@ -166,7 +168,7 @@ function GameFolder({
   }
   const known = storeName(store)
   const foundIn = known ? t(known) : t`Steam`
-  let source = t`Stardew Valley was not found. Browse to its folder.`
+  let source = t`${gameName} was not found. Browse to its folder.`
   if (override) {
     source = t`Chosen by you`
   } else if (folder) {
@@ -232,7 +234,7 @@ function GameFolder({
       <SettingsSection title={t`Reset`}>
         <SettingRow
           label={t`Reset game install`}
-          description={t`Delete the game folder, then reinstall Stardew Valley from your launcher.`}
+          description={t`Delete the game folder, then reinstall ${gameName} from your launcher.`}
         >
           <Button
             variant="outlined"
@@ -268,12 +270,12 @@ function GameFolder({
               )
             }
             if (store === 'steam' || store === 'flatpak-steam') {
-              await Browser.OpenURL('steam://validate/413150')
+              await Browser.OpenURL(`steam://validate/${gameInfo(game)?.appId ?? ''}`)
             } else {
               useToasts.getState().push({
                 kind: 'info',
                 title: t`Game install deleted`,
-                body: t`Reinstall Stardew Valley from your game launcher.`,
+                body: t`Reinstall ${gameName} from your game launcher.`,
               })
             }
             onRefresh()

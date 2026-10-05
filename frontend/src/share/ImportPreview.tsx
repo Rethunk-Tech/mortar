@@ -38,7 +38,7 @@ const DOT = (th: Theme): Record<ModState, string> => ({
   unavailable: th.palette.warning.main,
 })
 
-// Share-card preview chrome: matches the public Stardew share card, not the app theme.
+// Share-card preview chrome: matches the public share card, not the app theme.
 const SHARE_CARD = {
   bar: '#0e1116',
   accent: '#a3d3f7',

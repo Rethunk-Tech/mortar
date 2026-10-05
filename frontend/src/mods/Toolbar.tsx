@@ -33,6 +33,7 @@ import { useEffect, useRef, useState } from 'react'
 import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useInstall } from '../install/store.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { openSettings } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { useSettings } from '../settings/store.ts'
@@ -283,7 +284,8 @@ function AddArchive({
   const pick = useInstall((s) => s.pick)
   const locked = useLocked()
   const blocked = installing || locked
-  const extraFolder = useSettings((s) => s.games?.stardew?.extraModsFolder ?? '')
+  const game = useCurrentGame()
+  const extraFolder = useSettings((s) => s.games?.[game]?.extraModsFolder ?? '')
   const reason = locked ? t`Stop the game to change mods.` : t`Adding…`
   const add = (
     <DisabledReason title={reason} disabled={blocked}>

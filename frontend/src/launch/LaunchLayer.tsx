@@ -22,6 +22,7 @@ import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
 import { launchLine } from '../firstrun/logic.ts'
 import { useTab } from '../game/tab.ts'
+import { useGameName } from '../games/info.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
@@ -299,6 +300,7 @@ function Failure({ game }: { game: string }) {
 
 function DirectDialog() {
   const { t } = useLingui()
+  const gameName = useGameName()
   const ask = useLaunch((s) => s.askDirect)
   const answer = useLaunch((s) => s.answerDirect)
   return (
@@ -307,7 +309,7 @@ function DirectDialog() {
       title={t`Steam was not found`}
       body={
         ask?.profile === ''
-          ? t`Mortar can start Stardew Valley directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
+          ? t`Mortar can start ${gameName} directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
           : t`Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
       }
       confirmLabel={t`Launch without Steam`}

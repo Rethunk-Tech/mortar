@@ -57,6 +57,7 @@ test('report text lists versions and errors', () => {
   const text = buildModReportText(i18n, {
     modName: 'Content Patcher',
     modVersion: '2.0.0',
+    gameName: 'Stardew Valley',
     gameVersion: '1.6.15',
     smapiVersion: '4.1.10',
     mortarVersion: '0.1.0',
@@ -77,6 +78,7 @@ test('buildModReport prefers GitHub prefill', () => {
   const res = buildModReport(i18n, {
     modName: 'CP',
     modVersion: '1',
+    gameName: 'Stardew Valley',
     gameVersion: '',
     smapiVersion: '',
     mortarVersion: '',

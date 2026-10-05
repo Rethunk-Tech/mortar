@@ -3,7 +3,7 @@ import { i18n } from '@lingui/core'
 const minute = 60_000
 const hour = 60 * minute
 
-// Stardew Game1.whichFarm / Farm layout ids (1.6).
+// Game1.whichFarm / Farm layout ids (1.6).
 const farmTypes = [
   'Standard',
   'Riverland',

@@ -14,6 +14,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
+import { gameName } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -53,17 +54,18 @@ function resetConsole(status: Status, prev: Status | null) {
   return true
 }
 function failureBody(status: Status): string {
+  const name = gameName(status.game)
   if (status.hint === Hint.HintSteam) {
     return i18n._(msg`Steam may not be running or signed in. Start Steam, sign in and try again.`)
   }
   if (status.hint === Hint.HintFlatpakFS) {
     return i18n._(
-      msg`Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › Stardew Valley) or SMAPI will not see this profile.`,
+      msg`Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › ${name}) or SMAPI will not see this profile.`,
     )
   }
   if (status.hint === Hint.HintLaunchOptions) {
     return i18n._(
-      msg`Steam's launch options for Stardew Valley lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options.`,
+      msg`Steam's launch options for ${name} lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options.`,
     )
   }
   return status.error

@@ -1,14 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { ClipboardPaste, FolderOpen } from 'lucide-react'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { ImportFlow } from './useImportFlow.ts'
-
-const PLACEHOLDER = 'https://mortar.rethunk.tech/stardew/p#…'
 
 // Before a preview exists: a link to type or paste, or a file to choose. Parse errors show here.
 export function ImportInput({ flow }: { flow: ImportFlow }) {
   const { t } = useLingui()
+  const game = useCurrentGame()
   const canPreview = !flow.busy && flow.text.trim() !== ''
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: '20px 18px' }}>
@@ -49,7 +49,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               size="small"
               fullWidth={true}
               autoFocus={true}
-              placeholder={PLACEHOLDER}
+              placeholder={`https://mortar.rethunk.tech/${game}/p#…`}
               value={flow.text}
               onChange={(e) => flow.setText(e.target.value)}
               slotProps={{

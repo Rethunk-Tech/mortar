@@ -135,7 +135,7 @@ async function startWithWarning(opts: {
       resolveOverride(
         'skipPlayCheck',
         String(
-          (useSettings.getState().games?.stardew as { skipPlayCheck?: boolean } | undefined)
+          (useSettings.getState().games?.[opts.game] as { skipPlayCheck?: boolean } | undefined)
             ?.skipPlayCheck ?? false,
         ),
         listed ? foldedOverrides(listed) : undefined,

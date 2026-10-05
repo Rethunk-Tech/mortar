@@ -28,6 +28,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { anonymize } from '../console/anonymize.ts'
 import { shareLogConfirm } from '../console/shareLog.ts'
+import { gameName } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
@@ -39,6 +40,7 @@ import { buildModReport, type ModReportFields, modErrorLines } from './reportToA
 const buttonSx = { whiteSpace: 'nowrap' } as const
 
 interface ReportFieldsInput {
+  game: string
   profile: Profile
   mod: Mod
   modLogName: string
@@ -50,12 +52,22 @@ interface ReportFieldsInput {
 }
 
 function reportFields(input: ReportFieldsInput): ModReportFields {
-  const { profile, mod, modLogName, issueTitle, entries, loader, mortarVersion, logShareURL } =
-    input
+  const {
+    game,
+    profile,
+    mod,
+    modLogName,
+    issueTitle,
+    entries,
+    loader,
+    mortarVersion,
+    logShareURL,
+  } = input
   const source = entryOf(profile, mod.key)?.source
   return {
     modName: mod.name,
     modVersion: mod.version,
+    gameName: gameName(game),
     gameVersion: loader?.gameVersion ?? '',
     smapiVersion: loader?.version ?? '',
     mortarVersion,
@@ -139,6 +151,7 @@ export function ReportToAuthorButton({
     try {
       const entries = runId ? await RunLines(game, profile.id, runId) : null
       const fields = reportFields({
+        game,
         profile,
         mod,
         modLogName,

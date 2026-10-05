@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { useGameName } from '../games/info.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { useLaunch } from './store.ts'
 
@@ -12,6 +13,7 @@ export function StopDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
+  const gameName = useGameName(game)
   const stop = useLaunch((s) => s.stop)
   return (
     <ConfirmDialog
@@ -19,7 +21,7 @@ export function StopDialog({
       maxWidth={420}
       color="error"
       title={t`Stop the game?`}
-      body={t`Stardew Valley will close now, and any progress since your last save is lost.`}
+      body={t`${gameName} will close now, and any progress since your last save is lost.`}
       confirmLabel={t`Stop game`}
       onCancel={onClose}
       onConfirm={() => {

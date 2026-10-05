@@ -24,8 +24,8 @@ import { useLocked } from './useLocked.ts'
 // Mods SMAPI skips because a folder on their path starts with a dot, listed under the entry that holds them.
 export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
-  const on = useSettings((s) => s.games?.stardew?.showDotHiddenMods === true)
   const game = useProfiles((s) => s.game?.id ?? '')
+  const on = useSettings((s) => s.games?.[game]?.showDotHiddenMods === true)
   const [hidden, setHidden] = useState<HiddenMod[]>([])
   const [unhiding, setUnhiding] = useState<HiddenMod | null>(null)
   const [busy, run] = usePending()

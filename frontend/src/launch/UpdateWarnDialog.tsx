@@ -10,11 +10,13 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material'
+import { useGameName } from '../games/info.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useLaunch } from './store.ts'
 
 export function UpdateWarnDialog() {
   const { t } = useLingui()
+  const gameName = useGameName()
   const warn = useLaunch((s) => s.updateWarn)
   const cancel = useLaunch((s) => s.dismissUpdateWarn)
   const playAnyway = useLaunch((s) => s.playAnyway)
@@ -24,7 +26,7 @@ export function UpdateWarnDialog() {
       <DialogTitle>{t`The game was updated`}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {t`Stardew Valley is now ${warn?.installed ?? ''}. This profile last launched on ${warn?.recorded ?? ''}.`}
+          {t`${gameName} is now ${warn?.installed ?? ''}. This profile last launched on ${warn?.recorded ?? ''}.`}
         </DialogContentText>
         {(warn?.broken.length ?? 0) > 0 ? (
           <List dense={true} sx={{ mt: 1 }}>

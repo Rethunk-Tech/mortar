@@ -9,6 +9,7 @@ import {
   LaunchOptions,
   SetLaunchOption,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import { useGameName } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -82,6 +83,7 @@ function LaunchLine({
 }) {
   const { t } = useLingui()
   const theme = useTheme()
+  const gameName = useGameName(game)
   const line = launchLine(gameDir)
   const set = launchOptionsSet(options)
   const copy = () => {
@@ -105,7 +107,7 @@ function LaunchLine({
     <>
       <Typography sx={{ fontSize: 22, fontWeight: 700 }}>{t`One step in Steam`}</Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
-        {t`On Windows, Steam starts the game without SMAPI unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click Stardew Valley, choose Properties, and paste this line into Launch Options:`}
+        {t`On Windows, Steam starts the game without SMAPI unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click ${gameName}, choose Properties, and paste this line into Launch Options:`}
       </Typography>
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Box
@@ -279,6 +281,7 @@ export function SmapiStep({
 }) {
   const { t } = useLingui()
   const ok = useTheme().palette.success.main
+  const gameName = useGameName(game)
   const windows = System.IsWindows()
   const status = useLoader((s) => s.status)
   const installing = useLoader((s) => s.installing)
@@ -380,8 +383,8 @@ export function SmapiStep({
       </Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
         {windows
-          ? t`SMAPI is the loader every Stardew mod needs. It goes into the game folder.`
-          : t`SMAPI is the loader every Stardew mod needs. It goes into the game folder, and Steam keeps launching the game as usual.`}
+          ? t`SMAPI is the loader every ${gameName} mod needs. It goes into the game folder.`
+          : t`SMAPI is the loader every ${gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual.`}
       </Typography>
       {installing ? (
         <>

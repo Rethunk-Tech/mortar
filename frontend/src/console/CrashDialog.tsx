@@ -16,6 +16,7 @@ import { useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useTab } from '../game/tab.ts'
+import { useGameName } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useDetail } from '../mods/detail.ts'
@@ -208,6 +209,7 @@ function CrashPrimary({
 export function CrashDialog() {
   const { t } = useLingui()
   const crash = useLaunch((s) => s.crash)
+  const gameName = useGameName(crash?.game)
   const dismiss = useLaunch((s) => s.dismissCrash)
   const [bisectJob, setBisectJob] = useState<{ id: string; game: string; profile: string } | null>(
     null,
@@ -246,7 +248,7 @@ export function CrashDialog() {
         slotProps={{ paper: { sx: { width: 520, maxWidth: 'calc(100% - 32px)' } } }}
       >
         <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
-          {crash.crashed ? t`Stardew Valley crashed` : t`Stardew Valley closed with errors`}
+          {crash.crashed ? t`${gameName} crashed` : t`${gameName} closed with errors`}
         </DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {crash.cause ? (

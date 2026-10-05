@@ -69,7 +69,7 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
             store={g.store}
             installs={g.installs}
             onRefresh={g.load}
-            versionNote={g.version ? t` · Stardew Valley ${g.version}` : ''}
+            versionNote={g.version ? t` · ${name} ${g.version}` : ''}
           />
         )
       case 'smapi':

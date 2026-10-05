@@ -13,6 +13,7 @@ const MAX_GITHUB_BODY = 6000
 interface ModReportFields {
   modName: string
   modVersion: string
+  gameName: string
   gameVersion: string
   smapiVersion: string
   mortarVersion: string
@@ -89,7 +90,7 @@ function nexusBugsURL(domain: string, modId: number): string {
 function buildModReportText(_i18n: I18n, fields: ModReportFields): string {
   const lines: string[] = [`Mod: ${fields.modName} ${fields.modVersion.trim()}`.trimEnd()]
   if (fields.gameVersion !== '') {
-    lines.push(`Game: Stardew Valley ${fields.gameVersion}`)
+    lines.push(`Game: ${fields.gameName} ${fields.gameVersion}`)
   }
   if (fields.smapiVersion !== '') {
     lines.push(`SMAPI: ${fields.smapiVersion}`)
