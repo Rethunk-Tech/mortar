@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, CircularProgress, Typography } from '@mui/material'
+import { Box, ButtonBase, Skeleton, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { useTab } from '../game/tab.ts'
 import { problemsLabel } from '../i18n/counts.ts'
@@ -22,26 +22,13 @@ export function ProblemBar() {
   useLoadProblemsOnFocus()
   if (result === null) {
     return (
-      <Box
+      <Skeleton
+        variant="rounded"
         role="status"
-        sx={{
-          mx: 2,
-          mt: 1.25,
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.25,
-          height: 38,
-          px: 1.5,
-          color: 'text.secondary',
-          bgcolor: 'var(--mortar-hairline-faint)',
-          border: '1px solid var(--mortar-hairline-16)',
-          borderRadius: '6px',
-        }}
-      >
-        <CircularProgress size={16} color="inherit" />
-        <Typography sx={{ fontSize: 14 }}>{t`Checking the mods for problems…`}</Typography>
-      </Box>
+        aria-label={t`Checking the mods for problems…`}
+        height={38}
+        sx={{ mx: 2, mt: 1.25, flexShrink: 0 }}
+      />
     )
   }
   if (problems.length === 0 && !result.unknown) {

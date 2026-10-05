@@ -13,8 +13,8 @@ import { useSettings } from '../settings/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { type SectionAction, SectionStrip } from '../shell/SectionStrip.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -33,6 +33,9 @@ import { CheckTimings, SlowStartupSection } from './SlowStartupSection.tsx'
 import { useSlowStartups } from './slowStartups.ts'
 import { useMods } from './store.ts'
 import { useLoadProblemsOnFocus } from './useLoadProblemsOnFocus.ts'
+
+const PROBLEM_SKELETON_ROWS = 5
+const PROBLEM_SKELETON_HEIGHT = 56
 
 // useOpenProblems is the open profile's problems, or null while they load, never the profile shown before.
 function useOpenProblems() {
@@ -362,7 +365,14 @@ export function ProblemsTab() {
   const result = useOpenProblems()
   useLoadProblemsOnFocus()
   if (result === null) {
-    return <LoadingRow>{t`Checking the mods for problems…`}</LoadingRow>
+    return (
+      <SkeletonRows
+        label={t`Checking the mods for problems…`}
+        count={PROBLEM_SKELETON_ROWS}
+        height={PROBLEM_SKELETON_HEIGHT}
+        sx={{ px: 2, py: 1.5 }}
+      />
+    )
   }
   return <ProblemsContent result={result} />
 }

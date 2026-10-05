@@ -8,6 +8,7 @@ import { playOpenProfile } from '../launch/playOpen.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { Findings, Phases, Section } from './StartupSections.tsx'
 import { ModTable } from './StartupTable.tsx'
 import { type Finding, rowAnchor, startupFindings } from './startupView.ts'
@@ -78,7 +79,12 @@ export function StartupPanel({ game, children }: { game: string; children: React
   )
   const banner: ReactNode = pending ? <MeasureBanner onCancel={cancelMeasure} /> : null
   if (reports === null) {
-    return null
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
+        <SkeletonRows label={t`Reading startup reports…`} count={1} height={72} />
+        <SkeletonRows label={t`Reading startup reports…`} count={6} height={36} />
+      </Box>
+    )
   }
   const report = reports.find((r) => r.id === selected) ?? reports[0]
   const previous = report ? reports[reports.indexOf(report) + 1] : undefined

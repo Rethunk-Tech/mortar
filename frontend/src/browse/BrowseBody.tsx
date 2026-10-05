@@ -1,9 +1,10 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Pagination, Skeleton, Typography } from '@mui/material'
+import { Box, Button, Pagination, Typography } from '@mui/material'
 import { CloudOff, Search, SearchX } from 'lucide-react'
 import { listNames } from '../i18n/list.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import type { InlineError } from '../toasts/report.ts'
 import {
   FIRST_PAGE,
@@ -11,12 +12,16 @@ import {
   ICON_SIZE,
   list,
   PICTURE_PX,
+  ROW_PICTURE_PX,
   SKELETON_KEYS,
   STALE_OPACITY,
 } from './browseConstants.ts'
 import type { ResultCardProps } from './browseTypes.ts'
 import { ResultCard } from './ResultCard.tsx'
 import type { BrowseResult, Status } from './useBrowseQuery.ts'
+
+// A result card is its picture plus the card's vertical padding.
+const CARD_PAD_PX = 24
 
 type CardShared = Omit<ResultCardProps, 'row' | 'item'>
 
@@ -97,11 +102,12 @@ function BrowseBody(props: BrowseBodyProps) {
   }
   if (result.items.length === 0) {
     return status === 'loading' ? (
-      <Box sx={grid}>
-        {SKELETON_KEYS.map((key) => (
-          <Skeleton key={key} variant="rounded" height={PICTURE_PX + 24} />
-        ))}
-      </Box>
+      <SkeletonRows
+        label={t`Searching…`}
+        count={SKELETON_KEYS.length}
+        height={(props.view === 'grid' ? PICTURE_PX : ROW_PICTURE_PX) + CARD_PAD_PX}
+        sx={props.view === 'grid' ? grid : list}
+      />
     ) : (
       <EmptyState
         icon={<SearchX size={ICON_SIZE} />}

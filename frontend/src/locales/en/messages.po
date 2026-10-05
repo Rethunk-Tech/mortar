@@ -735,7 +735,7 @@ msgstr "Reorder {0}"
 msgid "{0, plural, one {Move # mod} other {Move # mods}}"
 msgstr "{0, plural, one {Move # mod} other {Move # mods}}"
 
-#: src/browse/BrowseBody.tsx:76
+#: src/browse/BrowseBody.tsx:81
 msgid "Find mods to add"
 msgstr "Find mods to add"
 
@@ -784,7 +784,7 @@ msgstr "Untrack"
 msgid "More"
 msgstr "More"
 
-#: src/console/StartupPanel.tsx:126
+#: src/console/StartupPanel.tsx:132
 msgid "Mods' Entry is timed only on a measured launch."
 msgstr "Mods' Entry is timed only on a measured launch."
 
@@ -981,7 +981,7 @@ msgstr "That item could not be found."
 msgid "Switch to Problems"
 msgstr "Switch to Problems"
 
-#: src/console/StartupPanel.tsx:76
+#: src/console/StartupPanel.tsx:77
 msgid "Measure next launch"
 msgstr "Measure next launch"
 
@@ -1547,7 +1547,7 @@ msgstr "Download again"
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
-#: src/browse/BrowseBody.tsx:88
+#: src/browse/BrowseBody.tsx:93
 #: src/firstrun/LoaderStep.tsx:200
 #: src/firstrun/LoaderStep.tsx:268
 #: src/game/detailStates.tsx:27
@@ -1627,7 +1627,7 @@ msgstr "Mortar does not have permission to do that."
 msgid "Could not ignore updates from {source}"
 msgstr "Could not ignore updates from {source}"
 
-#: src/console/StartupPanel.tsx:112
+#: src/console/StartupPanel.tsx:118
 #: src/mods/columnLabel.ts:23
 msgid "Startup"
 msgstr "Startup"
@@ -2796,7 +2796,7 @@ msgid "Different version"
 msgstr "Different version"
 
 #. placeholder {0}: listNames(result.failed)
-#: src/browse/BrowseBody.tsx:53
+#: src/browse/BrowseBody.tsx:58
 msgid "{0} did not answer"
 msgstr "{0} did not answer"
 
@@ -3180,7 +3180,7 @@ msgstr "Console"
 msgid "Try a different search or filter."
 msgstr "Try a different search or filter."
 
-#: src/browse/BrowseBody.tsx:85
+#: src/browse/BrowseBody.tsx:90
 msgid "Search did not work"
 msgstr "Search did not work"
 
@@ -3562,7 +3562,7 @@ msgstr "Share as r2modman code?"
 #: src/bundles/dialogs.tsx:223
 #: src/bundles/dialogs.tsx:285
 #: src/console/HelpDialog.tsx:234
-#: src/console/StartupPanel.tsx:55
+#: src/console/StartupPanel.tsx:56
 #: src/fomod/Dialog.tsx:254
 #: src/game/NewProfileDialog.tsx:178
 #: src/install/DownloadsDialog.tsx:252
@@ -5846,7 +5846,7 @@ msgid "Chosen by you"
 msgstr "Chosen by you"
 
 #. placeholder {0}: result.hidden
-#: src/browse/BrowseBody.tsx:51
+#: src/browse/BrowseBody.tsx:56
 msgid "{0} hidden"
 msgstr "{0} hidden"
 
@@ -6082,7 +6082,7 @@ msgstr "imported from the game's Mods folder"
 msgid "View"
 msgstr "View"
 
-#: src/browse/BrowseBody.tsx:93
+#: src/browse/BrowseBody.tsx:98
 msgid "The service may be busy. Try again in a minute."
 msgstr "The service may be busy. Try again in a minute."
 
@@ -6090,7 +6090,7 @@ msgstr "The service may be busy. Try again in a minute."
 msgid "Reason (optional)"
 msgstr "Reason (optional)"
 
-#: src/console/StartupPanel.tsx:123
+#: src/console/StartupPanel.tsx:129
 msgid "Slowest mods"
 msgstr "Slowest mods"
 
@@ -6126,7 +6126,7 @@ msgstr "Could not export the profile"
 msgid "Console log cap"
 msgstr "Console log cap"
 
-#: src/browse/BrowseBody.tsx:108
+#: src/browse/BrowseBody.tsx:114
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
@@ -7588,7 +7588,7 @@ msgstr "No mods have logged yet"
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
-#: src/mods/ProblemBar.tsx:54
+#: src/mods/ProblemBar.tsx:41
 #: src/mods/ProblemsTab.tsx:61
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
@@ -8348,7 +8348,7 @@ msgstr "{0}: {1} missing, {2} changed, {3} extra"
 msgid "Settings file"
 msgstr "Settings file"
 
-#: src/console/StartupPanel.tsx:52
+#: src/console/StartupPanel.tsx:53
 msgid "Play now"
 msgstr "Play now"
 
@@ -8428,7 +8428,7 @@ msgstr "Music volume ({value}%)"
 msgid "Search Nexus"
 msgstr "Search Nexus"
 
-#: src/console/StartupPanel.tsx:61
+#: src/console/StartupPanel.tsx:62
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 msgstr "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 
@@ -8771,7 +8771,7 @@ msgstr "{0} in total"
 msgid "Follow live log"
 msgstr "Follow live log"
 
-#: src/console/StartupPanel.tsx:60
+#: src/console/StartupPanel.tsx:61
 msgid "The next launch will be measured"
 msgstr "The next launch will be measured"
 
@@ -9114,7 +9114,7 @@ msgstr "Could not inspect the destination folder"
 msgid "GOG via Heroic"
 msgstr "GOG via Heroic"
 
-#: src/console/StartupPanel.tsx:142
+#: src/console/StartupPanel.tsx:148
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
@@ -9122,6 +9122,7 @@ msgstr "Play this profile. The SMAPI Bridge records how long each mod adds befor
 msgid "the mod"
 msgstr "the mod"
 
+#: src/browse/BrowseBody.tsx:106
 #: src/console/SearchRunsDialog.tsx:111
 msgid "Searching…"
 msgstr "Searching…"
@@ -9531,6 +9532,11 @@ msgstr "No mods in {folder}"
 msgid "From Nexus"
 msgstr "From Nexus"
 
+#: src/console/StartupPanel.tsx:84
+#: src/console/StartupPanel.tsx:85
+msgid "Reading startup reports…"
+msgstr "Reading startup reports…"
+
 #: src/install/OverlayPlaceDialog.tsx:125
 msgid "Place here"
 msgstr "Place here"
@@ -9625,8 +9631,8 @@ msgstr "Redo update"
 msgid "Token"
 msgstr "Token"
 
-#: src/mods/ProblemBar.tsx:43
-#: src/mods/ProblemsTab.tsx:365
+#: src/mods/ProblemBar.tsx:28
+#: src/mods/ProblemsTab.tsx:370
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -9639,7 +9645,7 @@ msgid "Keep mine"
 msgstr "Keep mine"
 
 #. placeholder {0}: result.total
-#: src/browse/BrowseBody.tsx:50
+#: src/browse/BrowseBody.tsx:55
 msgid "{0, plural, one {# result} other {# results}}"
 msgstr "{0, plural, one {# result} other {# results}}"
 
@@ -9662,7 +9668,7 @@ msgstr "Switch {0} to {1}?"
 msgid "{0} · in use"
 msgstr "{0} · in use"
 
-#: src/console/StartupPanel.tsx:141
+#: src/console/StartupPanel.tsx:147
 msgid "No startup measured yet"
 msgstr "No startup measured yet"
 
@@ -10167,7 +10173,7 @@ msgstr "This uploads the profile to Thunderstore and gives a public code."
 msgid "Move down (wins files)"
 msgstr "Move down (wins files)"
 
-#: src/browse/BrowseBody.tsx:111
+#: src/browse/BrowseBody.tsx:117
 msgid "Clear search"
 msgstr "Clear search"
 
@@ -10732,7 +10738,7 @@ msgstr "Everything"
 
 #: src/launch/PrePlayDialog.tsx:137
 #: src/launch/UpdateWarnDialog.tsx:50
-#: src/mods/ProblemBar.tsx:98
+#: src/mods/ProblemBar.tsx:85
 msgid "Open Problems"
 msgstr "Open Problems"
 
@@ -11188,7 +11194,7 @@ msgstr "Walk through profiles, Play, mods, and the command palette"
 msgid "Fall"
 msgstr "Fall"
 
-#: src/browse/BrowseBody.tsx:115
+#: src/browse/BrowseBody.tsx:121
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
@@ -11808,7 +11814,7 @@ msgstr "1 time"
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
-#: src/console/StartupPanel.tsx:31
+#: src/console/StartupPanel.tsx:32
 msgid "Launch"
 msgstr "Launch"
 
