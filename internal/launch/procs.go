@@ -31,6 +31,21 @@ func (p Process) RunsFrom(dir string) bool {
 	return false
 }
 
+// ExeIs reports whether p's executable is one of the programs names, so its path is where the game itself runs
+// from; it is false for an unreadable executable and for a host (Wine, Proton, dotnet) that runs the game.
+func (p Process) ExeIs(names ...string) bool {
+	if p.Exe == "" {
+		return false
+	}
+	base := strings.TrimSuffix(strings.TrimSuffix(filepath.Base(p.Exe), " (deleted)"), ".exe")
+	for _, name := range names {
+		if strings.EqualFold(base, name) {
+			return true
+		}
+	}
+	return false
+}
+
 // wineHostPath maps a Wine Z: drive path to the Unix path it names, and returns anything else unchanged.
 func wineHostPath(a string) string {
 	if len(a) > 2 && (a[0] == 'Z' || a[0] == 'z') && a[1] == ':' {

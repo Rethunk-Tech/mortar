@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -131,5 +132,67 @@ func TestProtonProcessIsAttributedThroughItsZDrivePath(t *testing.T) {
 	}
 	if svc.BusyInstall(folderID) {
 		t.Fatal("the other install is not busy")
+	}
+}
+
+// fakeProc writes a /proc entry for pid under svc.procDir; an empty exe leaves /proc/<pid>/exe unreadable.
+func fakeProc(t *testing.T, svc *Service, pid, exe string, args ...string) {
+	t.Helper()
+	dir := filepath.Join(svc.procDir, pid)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	cmdline := ""
+	for _, a := range args {
+		cmdline += a + "\x00"
+	}
+	if err := os.WriteFile(filepath.Join(dir, "cmdline"), []byte(cmdline), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if exe != "" {
+		if err := os.Symlink(exe, filepath.Join(dir, "exe")); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// owners lists how many of the game's processes the folder install and the GOG install each see.
+func owners(t *testing.T, pair installPair) (folder, gog int) {
+	t.Helper()
+	g := game.Find("stardew")
+	f, err := pair.svc.gameProcs(slot{g, pair.folderID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	o, err := pair.svc.gameProcs(slot{g, pair.gogID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return len(f), len(o)
+}
+
+func TestProcessOwnership(t *testing.T) {
+	const wine = "/proton/files/bin/wine64-preloader"
+	// {gog} is the GOG install's folder and {away} a game folder no install knows.
+	cases := []struct {
+		name, exe, arg string
+		folder, gog    int
+	}{
+		{"copy outside every install is ignored", "{away}/StardewValley", "{away}/StardewValley", 0, 0},
+		{"copy inside an install is that install's", "{gog}/StardewValley", "{gog}/StardewValley", 0, 1},
+		{"unreadable exe is the selected install's", "", "{away}/StardewValley", 1, 0},
+		{"Proton process is the install its Z: path names", wine, `Z:{gog}\Stardew Valley.exe`, 0, 1},
+		{"Proton process outside every install is the selected install's", wine, `Z:{away}\Stardew Valley.exe`, 1, 0},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			pair := twoInstalls(t)
+			pair.svc.procDir = t.TempDir()
+			fill := strings.NewReplacer("{gog}", pair.gogDir, "{away}", filepath.Join(t.TempDir(), "Stardew Valley"))
+			fakeProc(t, pair.svc, "7", fill.Replace(c.exe), fill.Replace(c.arg))
+			if folder, gog := owners(t, pair); folder != c.folder || gog != c.gog {
+				t.Fatalf("folder install sees %d, GOG install %d; want %d, %d", folder, gog, c.folder, c.gog)
+			}
+		})
 	}
 }

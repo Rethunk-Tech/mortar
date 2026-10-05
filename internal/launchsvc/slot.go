@@ -82,22 +82,31 @@ func (s *Service) activeSlot(g game.Game) (slot, bool) {
 	return slot{}, false
 }
 
-// owner is the id of the install the process runs from; a process that names none of them is the selected install's.
-func (s *Service) owner(g game.Game, p launch.Process) string {
+// owner is the id of the install the process runs from. A process that names none of them is the selected
+// install's when its executable cannot tell (unreadable, or a Wine, Proton or dotnet host), so the running lock holds;
+// one whose executable is the game itself in a folder outside every install is a copy Mortar does not manage, and
+// ok is false.
+func (s *Service) owner(g game.Game, p launch.Process) (id string, ok bool) {
 	all, selected := s.installs(g)
 	for _, in := range all {
 		if p.RunsFrom(in.Dir) {
-			return in.ID
+			return in.ID, true
 		}
 	}
-	return selected.ID
+	if selected.Dir != "" && p.RunsFrom(selected.Dir) {
+		return selected.ID, true
+	}
+	if p.ExeIs(game.ProcessNames(g)...) {
+		return "", false
+	}
+	return selected.ID, true
 }
 
 // ownedBy keeps the processes that belong to g's install.
 func (s *Service) ownedBy(g game.Game, procs []launch.Process) []launch.Process {
 	var out []launch.Process
 	for _, p := range procs {
-		if s.owner(g, p) == installOf(g) {
+		if id, ok := s.owner(g, p); ok && id == installOf(g) {
 			out = append(out, p)
 		}
 	}
