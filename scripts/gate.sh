@@ -19,7 +19,7 @@ step() {
 }
 
 step biome bunx biome check --error-on-warnings .
-step shellcheck bash -c "git ls-files -z '*.sh' | xargs -0 -r shellcheck -x"
+step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z '*.sh' | xargs -0 -r shellcheck -x"
 step knip bunx knip
 step golangci-linux golangci-lint run --allow-parallel-runners
 step golangci-windows env GOOS=windows golangci-lint run --allow-parallel-runners
