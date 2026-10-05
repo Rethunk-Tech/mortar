@@ -1392,10 +1392,13 @@ func (s *Services) playCheck(ctx context.Context, gameID, id string, prof profil
 
 func playIssueGroups(prof profile.Profile, res problems.Result, upd problems.UpdatesResult, smapiNever bool) []PlayIssueGroup {
 	var missing []string
+	seen := map[string]bool{}
 	for _, m := range res.Missing {
-		if m.Optional {
+		// Missing has a row per dependent mod; the summary counts each absent mod once.
+		if m.Optional || seen[m.ID.Fold()] {
 			continue
 		}
+		seen[m.ID.Fold()] = true
 		name := m.ID.Local()
 		if m.Where != nil && m.Where.PageName != "" {
 			name = m.Where.PageName
