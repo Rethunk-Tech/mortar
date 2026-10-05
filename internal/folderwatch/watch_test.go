@@ -50,6 +50,7 @@ func start(t *testing.T, targets func() []Target) *got {
 }
 
 func TestBurstFiresOnce(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	g := start(t, func() []Target { return []Target{{DownloadsEvent, "stardew", dir}} })
 	for i := range 5 {
@@ -62,6 +63,7 @@ func TestBurstFiresOnce(t *testing.T) {
 }
 
 func TestMissingFolderFiresWhenItAppears(t *testing.T) {
+	t.Parallel()
 	dir := filepath.Join(t.TempDir(), "Mods")
 	g := start(t, func() []Target { return []Target{{ModsFolderEvent, "stardew", dir}} })
 	if err := os.Mkdir(dir, 0o700); err != nil {
@@ -73,6 +75,7 @@ func TestMissingFolderFiresWhenItAppears(t *testing.T) {
 }
 
 func TestRetargetStopsOldFolder(t *testing.T) {
+	t.Parallel()
 	a, b := t.TempDir(), t.TempDir()
 	var mu sync.Mutex
 	cur := a
@@ -95,6 +98,7 @@ func TestRetargetStopsOldFolder(t *testing.T) {
 }
 
 func TestSlowDirectWriterWaitsForStableSize(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	g := start(t, func() []Target { return []Target{{DownloadsEvent, "stardew", dir}} })
 	f, err := os.Create(filepath.Clean(filepath.Join(dir, "big.zip")))
@@ -118,6 +122,7 @@ func TestSlowDirectWriterWaitsForStableSize(t *testing.T) {
 }
 
 func TestRenamedInFileIsAnnouncedAtOnce(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	g := start(t, func() []Target { return []Target{{DownloadsEvent, "stardew", dir}} })
 	part := filepath.Join(t.TempDir(), "x.part")
