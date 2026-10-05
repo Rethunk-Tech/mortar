@@ -127,6 +127,11 @@ func undoOnError(m Manifest, cause error) error {
 // Purge undoes the swap: a working copy is written back to the profile, the link or copy is removed, and the shared
 // folder returns. Every step checks what is on disk, so it can run again after a crash.
 func Purge(m Manifest) error {
+	// The record on disk is the authority: with it gone the swap was already undone, and replaying a stale manifest
+	// would remove the profile's saves or move the held folder over what the game has written since.
+	if !HasJournal(m.Journal) {
+		return nil
+	}
 	switch {
 	case m.Copied && m.Live && exists(m.Saves) && !isLink(m.Saves):
 		if !m.WrittenBack {

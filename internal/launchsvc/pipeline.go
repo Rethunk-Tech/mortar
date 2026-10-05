@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"sync"
 
@@ -224,41 +223,63 @@ func (dep *deployment) unwind(ctx context.Context) {
 //
 //wails:ignore
 func (s *Service) RecoverDeploys(ctx context.Context) ([]string, error) {
-	d, ok := deploy.Get(deployerID)
-	if !ok {
-		return nil, nil
-	}
 	var errs []error
 	var found []string
 	for _, id := range game.Implemented() {
-		g := game.Find(id)
-		for _, sl := range s.slots(g) {
-			if sl.inst == "" {
-				continue
-			}
-			dir, err := journalDir(sl.inst)
-			if err != nil {
-				errs = append(errs, err)
-				continue
-			}
-			alive := func() bool {
-				procs, err := s.gameProcs(sl)
-				return err != nil || len(procs) > 0
-			}
-			if sj, err := savesJournal(sl.inst); deploy.HasJournal(dir) || (err == nil && savesiso.HasJournal(sj)) {
-				found = append(found, id)
-			}
-			if err := d.Recover(ctx, dir, alive); err != nil {
-				errs = append(errs, fmt.Errorf("%s: %w", id, err))
-			}
-			if sj, err := savesJournal(sl.inst); err != nil {
-				errs = append(errs, err)
-			} else if err := savesiso.Recover(sj, alive); err != nil {
-				errs = append(errs, fmt.Errorf("%s saves: %w", id, err))
-			}
+		ok, err := s.RecoverGameDeploys(ctx, id)
+		if ok {
+			found = append(found, id)
+		}
+		errs = append(errs, err)
+	}
+	return found, errors.Join(errs...)
+}
+
+// RecoverGameDeploys is RecoverDeploys for one game; found reports whether it had a journal.
+//
+//wails:ignore
+func (s *Service) RecoverGameDeploys(ctx context.Context, id string) (found bool, err error) {
+	d, ok := deploy.Get(deployerID)
+	g := game.Find(id)
+	if !ok || g == nil {
+		return false, nil
+	}
+	var errs []error
+	for _, sl := range s.slots(g) {
+		if sl.inst == "" {
+			continue
+		}
+		dir, err := journalDir(sl.inst)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		alive := func() bool { return s.slotInUse(sl) }
+		if sj, err := savesJournal(sl.inst); deploy.HasJournal(dir) || (err == nil && savesiso.HasJournal(sj)) {
+			found = true
+		}
+		if err := d.Recover(ctx, dir, alive); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", id, err))
+		}
+		if sj, err := savesJournal(sl.inst); err != nil {
+			errs = append(errs, err)
+		} else if err := savesiso.Recover(sj, alive); err != nil {
+			errs = append(errs, fmt.Errorf("%s saves: %w", id, err))
 		}
 	}
-	return slices.Compact(found), errors.Join(errs...)
+	return found, errors.Join(errs...)
+}
+
+// slotInUse reports whether the install's game may be using its deploy and saves: a process runs, or a launch is
+// still being prepared or started, whose journal is its own and not a crash's. A failed process check counts as in use.
+func (s *Service) slotInUse(sl slot) bool {
+	if procs, err := s.gameProcs(sl); err != nil || len(procs) > 0 {
+		return true
+	}
+	s.mu.Lock()
+	_, preparing := s.preparing[keyOf(sl)]
+	s.mu.Unlock()
+	return preparing || s.statusOf(sl).State.Active()
 }
 
 // LeftoverJournals lists the deploy and save swap journals of the game's installs that RecoverDeploys would finish:
@@ -275,7 +296,7 @@ func (s *Service) LeftoverJournals(gameID string) []string {
 		if sl.inst == "" {
 			continue
 		}
-		if procs, err := s.gameProcs(sl); err != nil || len(procs) > 0 {
+		if s.slotInUse(sl) {
 			continue
 		}
 		if dir, err := journalDir(sl.inst); err == nil && deploy.HasJournal(dir) {

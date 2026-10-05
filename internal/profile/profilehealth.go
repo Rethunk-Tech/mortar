@@ -123,7 +123,7 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 	}
 	var errs []error
 	if recoverJournals && s.HealthRecover != nil {
-		errs = append(errs, s.HealthRecover())
+		errs = append(errs, s.HealthRecover(game))
 	}
 	restored := 0
 	for _, key := range restore {

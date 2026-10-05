@@ -669,8 +669,8 @@ func run() error {
 	)
 	profileSvc.HealthKeep = func() (map[string][]string, error) { return datasvc.KeepSet(profiles, true, keepSources) }
 	profileSvc.HealthJournals = launches.LeftoverJournals
-	profileSvc.HealthRecover = func() error {
-		_, err := launches.RecoverDeploys(context.Background())
+	profileSvc.HealthRecover = func(game string) error {
+		_, err := launches.RecoverGameDeploys(context.Background(), game)
 		return err
 	}
 	dataSvc.Restart = datasvc.RestartSelf

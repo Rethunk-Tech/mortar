@@ -141,7 +141,7 @@ func TestHealthLeftoverJournalRecovers(t *testing.T) {
 	_, svc, p := healthEnv(t)
 	journals := []string{"/journal/install-1"}
 	svc.HealthJournals = func(string) []string { return journals }
-	svc.HealthRecover = func() error { journals = nil; return nil }
+	svc.HealthRecover = func(string) error { journals = nil; return nil }
 	got := findingsOf(t, svc, p.ID, HealthJournal)
 	if len(got) != 1 || got[0].Repair != RepairRecover {
 		t.Fatalf("journal = %#v", got)

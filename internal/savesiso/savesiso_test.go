@@ -198,3 +198,23 @@ func TestRecoverWaitsForTheGameAndRefusesADamagedJournal(t *testing.T) {
 		t.Fatal("apply ran over an unrecovered journal")
 	}
 }
+
+func TestPurgeWithAStaleManifestDoesNothing(t *testing.T) {
+	root := t.TempDir()
+	saves, prof, journal := filepath.Join(root, "g", "Saves"), filepath.Join(root, "p", "saves"), filepath.Join(root, "j")
+	write(t, filepath.Join(saves, "Shared_1"), "shared")
+	write(t, filepath.Join(prof, "Prof_1"), "mine")
+	m, err := Apply(journal, saves, prof, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Recover(journal, func() bool { return false }); err != nil {
+		t.Fatal(err)
+	}
+	if err := Purge(m); err != nil {
+		t.Fatal(err)
+	}
+	if read(t, filepath.Join(saves, "Shared_1")) != "shared" || read(t, filepath.Join(prof, "Prof_1")) != "mine" {
+		t.Fatal("a manifest whose journal is gone replayed over the finished swap")
+	}
+}

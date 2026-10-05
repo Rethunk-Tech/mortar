@@ -30,7 +30,7 @@ type Service struct {
 	HealthKeep func() (map[string][]string, error)
 	// HealthJournals lists the game's launch journals a crash left behind, and HealthRecover finishes them.
 	HealthJournals func(game string) []string
-	HealthRecover  func() error
+	HealthRecover  func(game string) error
 	// HealthEmit sends HealthEvent after each check.
 	HealthEmit func(name string, data any)
 	healthMu   sync.Mutex

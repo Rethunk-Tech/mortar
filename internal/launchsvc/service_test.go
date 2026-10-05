@@ -21,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/savesiso"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
@@ -521,5 +522,40 @@ func TestLaunchesDirectFollowsTheGameAndProfileLaunchMethod(t *testing.T) {
 	}
 	if svc.LaunchesDirect("stardew", p.ID) {
 		t.Fatal("the profile's own method wins")
+	}
+}
+
+func TestRecoverSkipsAJournalOfALaunchStillPreparing(t *testing.T) {
+	svc, _ := startEnv(t)
+	svc.procDir = t.TempDir()
+	sl := svc.selectedSlot(game.Find("stardew"))
+	journal, err := savesJournal(sl.inst)
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := t.TempDir()
+	saves, prof := filepath.Join(root, "Saves"), filepath.Join(root, "prof")
+	if err := os.MkdirAll(saves, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := savesiso.Apply(journal, saves, prof, true); err != nil {
+		t.Fatal(err)
+	}
+	svc.preparing[keyOf(sl)] = "p"
+	if _, err := svc.RecoverGameDeploys(context.Background(), "stardew"); err != nil {
+		t.Fatal(err)
+	}
+	if !savesiso.HasJournal(journal) {
+		t.Fatal("the journal of a launch that is still starting was recovered")
+	}
+	if left := svc.LeftoverJournals("stardew"); len(left) != 0 {
+		t.Fatalf("a preparing launch's journal is reported as leftover: %v", left)
+	}
+	delete(svc.preparing, keyOf(sl))
+	if _, err := svc.RecoverGameDeploys(context.Background(), "stardew"); err != nil {
+		t.Fatal(err)
+	}
+	if savesiso.HasJournal(journal) {
+		t.Fatal("a crash's journal was not recovered")
 	}
 }
