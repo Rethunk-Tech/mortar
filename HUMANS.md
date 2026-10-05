@@ -81,10 +81,18 @@ source <(mortar completion bash)
 ## Gate
 
 ```sh
-bun run gate    # runs the steps in package.json's gate script; stops at the first failure
+bun run gate    # scripts/gate.sh: bindings first, then every other check in parallel; prints each failing step's log
 ```
 
 `main.go` embeds `frontend/dist`, so a fresh clone needs `bun run bindings && bun run --cwd frontend build` once before the gate, as CI's setup does. The lefthook pre-push hook runs `gate` ([rethunk-gate-cli](https://github.com/Rethunk-Tech/rethunk-gate-cli)), which runs these steps plus actionlint. Where CI runs it: [AGENTS.md](AGENTS.md#verify).
+
+### Stardew regression run (opt-in, not in the gate)
+
+```sh
+scripts/selftest.sh regress     # about 40 s warm, needs the real Stardew install and a display
+```
+
+One command in a throwaway `/var/tmp/mortar-regress-XXXXXX` sandbox on a free port: builds under the shared flock, copies the real data, sets the launch method to direct, hashes the game folder (type, mode, path, link target or sha256, sorted), launches the first profile through the CLI (`MORTAR_REGRESS_PROFILE` picks another) and waits for SMAPI's "Loaded N mods" and "Loaded M content packs" (`MORTAR_REGRESS_TIMEOUT`, default 180 s). It requires N + M plus the mods SMAPI names as skipped to equal the profile's enabled count, stops the game by its exe-verified pid, waits for Mortar to go idle, re-hashes and requires an empty diff. It exits non-zero on any failure and prints a short summary; a pass deletes only its own directory, a failure keeps it (`game-before.txt`, `game-after.txt`, `server.log`).
 
 ## Release
 

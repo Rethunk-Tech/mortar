@@ -8,9 +8,15 @@
 #   scripts/selftest.sh restart               rebuild from the working tree and restart
 #   scripts/selftest.sh stop                  stop the server
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
+#   scripts/selftest.sh regress               one-shot Stardew regression run in its own throwaway sandbox (see below)
 #
 # --copy-data copies the real Mortar profiles and settings into the sandbox once (downloads, cache, trash and
 # backups are left out). The sandbox is never deleted by this script; remove $ROOT by hand to start over.
+#
+# regress is the exception: it makes /var/tmp/mortar-regress-XXXXXX on a free port, copies the real data, launches the
+# first Stardew profile directly, waits for SMAPI to load every enabled mod, then stops the game and requires the game
+# folder to hash exactly as before. It deletes only its own directory, after a pass; a failure keeps it for the logs.
+# MORTAR_REGRESS_PROFILE picks another profile and MORTAR_REGRESS_TIMEOUT (seconds, default 180) bounds the load wait.
 set -euo pipefail
 
 ROOT=${MORTAR_SELFTEST_DIR:-/var/tmp/mortar-selftest}
@@ -245,7 +251,142 @@ PY
   exit 1
 }
 
-mkdir -p "$ROOT"
+# tree_hash prints one line per entry of DIR, sorted by path: type, mode, path, and the sha256 of a file or the target of a link.
+tree_hash() {
+  python3 - "$1" <<'PY'
+import hashlib, os, stat, sys
+root = sys.argv[1]
+rows = []
+for dirpath, dirnames, filenames in os.walk(root):
+    for name in dirnames + filenames:
+        path = os.path.join(dirpath, name)
+        st = os.lstat(path)
+        rel = "./" + os.path.relpath(path, root)
+        mode = format(stat.S_IMODE(st.st_mode), "o")
+        if stat.S_ISLNK(st.st_mode):
+            rows.append(("l", mode, rel, os.readlink(path)))
+        elif stat.S_ISDIR(st.st_mode):
+            rows.append(("d", mode, rel, ""))
+        else:
+            h = hashlib.sha256()
+            with open(path, "rb") as f:
+                for chunk in iter(lambda: f.read(1 << 20), b""):
+                    h.update(chunk)
+            rows.append(("f", mode, rel, h.hexdigest()))
+for row in sorted(rows, key=lambda r: r[2]):
+    print(" ".join(row))
+PY
+}
+
+# game_pids prints the pids whose executable lives in the sandbox's game folder, verified through /proc/PID/exe.
+game_pids() {
+  local dir=$1 p exe
+  for p in /proc/[0-9]*; do
+    exe=$(readlink "$p/exe" 2>/dev/null || true)
+    case "$exe" in "$dir"/*) echo "${p#/proc/}" ;; esac
+  done
+}
+
+regress() {
+  ROOT=$(mktemp -d /var/tmp/mortar-regress-XXXXXX)
+  case "$ROOT" in /var/tmp/mortar-regress-??????) ;; *) echo "unexpected sandbox dir $ROOT" >&2; exit 1 ;; esac
+  PORT=$((9600 + RANDOM % 300))
+  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
+  SANDBOX_HOME=$ROOT/home
+  SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  # game, gpids and verdict are read by the EXIT trap, after this function's locals are gone.
+  game="$SANDBOX_STEAM/steamapps/common/$GAME_FOLDER"
+  gpids=""
+  verdict=FAIL
+  local timeout=${MORTAR_REGRESS_TIMEOUT:-180}
+  local log="$SANDBOX_HOME/.config/StardewValley/ErrorLogs/SMAPI-latest.txt" t0=$SECONDS
+  local failures=() mods_n="" packs_n="" skips=0 enabled="" profile="" diff_lines=0
+
+  finish() {
+    local pid
+    for pid in $gpids; do
+      if [ "$(readlink "/proc/$pid/exe" 2>/dev/null)" ] && case "$(readlink "/proc/$pid/exe")" in "$game"/*) true ;; *) false ;; esac; then
+        kill "$pid" 2>/dev/null || true
+      fi
+    done
+    stop >/dev/null 2>&1 || true
+    if [ "$verdict" = PASS ]; then
+      rm -rf "$ROOT"
+    else
+      echo "sandbox kept for inspection: $ROOT" >&2
+    fi
+  }
+  trap finish EXIT
+
+  setup
+  copy_data
+  build
+  start
+  cli settings set --game stardew defaultLaunchMethod direct >/dev/null
+  profile=${MORTAR_REGRESS_PROFILE:-$(cli profiles stardew --json | python3 -c 'import json,sys; print(json.load(sys.stdin)[0]["id"])')}
+  enabled=$(cli mods stardew "$profile" --json | python3 -c 'import json,sys; print(sum(1 for m in json.load(sys.stdin) if m["enabled"]))')
+  tree_hash "$game" >"$ROOT/game-before.txt"
+
+  echo "launching profile $profile ($enabled enabled)"
+  cli launch stardew "$profile" >"$ROOT/launch.txt" 2>&1 || failures+=("launch failed: $(head -c 300 "$ROOT/launch.txt")")
+  local deadline=$((SECONDS + timeout))
+  while [ ${#failures[@]} -eq 0 ] && [ "$SECONDS" -lt "$deadline" ]; do
+    if [ -f "$log" ]; then
+      mods_n=$(sed -n 's/.*SMAPI\] *Loaded \([0-9]*\) mods:.*/\1/p' "$log" | head -1)
+      packs_n=$(sed -n 's/.*SMAPI\] *Loaded \([0-9]*\) content packs:.*/\1/p' "$log" | head -1)
+      [ -n "$mods_n" ] && [ -n "$packs_n" ] && break
+    fi
+    sleep 2
+  done
+  gpids=$(game_pids "$game" | tr '\n' ' ')
+  if [ -z "$mods_n" ] || [ -z "$packs_n" ]; then
+    failures+=("SMAPI did not log its mod and content pack counts within ${timeout}s")
+  else
+    # A mod SMAPI names as skipped ("- Name because reason") never loads, so it is not owed to the count.
+    skips=$(grep -cE 'SMAPI\] +- .+ because ' "$log" || true)
+    if [ $((mods_n + packs_n + skips)) -ne "$enabled" ]; then
+      failures+=("loaded $mods_n mods + $packs_n content packs + $skips skipped != $enabled enabled")
+    fi
+  fi
+  [ -n "$gpids" ] && echo "$gpids" >"$ROOT/game.pid"
+
+  echo "stopping the game (pids: ${gpids:-none})"
+  local pid
+  for pid in $gpids; do
+    case "$(readlink "/proc/$pid/exe" 2>/dev/null)" in "$game"/*) kill "$pid" 2>/dev/null || true ;; esac
+  done
+  for _ in $(seq 1 60); do
+    [ "$(cli status stardew --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')" = idle ] && break
+    sleep 1
+  done
+  for pid in $gpids; do
+    case "$(readlink "/proc/$pid/exe" 2>/dev/null)" in "$game"/*) kill -KILL "$pid" 2>/dev/null || true ;; esac
+  done
+  [ "$(cli status stardew --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')" = idle ] || failures+=("Mortar never went idle after the game stopped")
+  sleep 3
+  tree_hash "$game" >"$ROOT/game-after.txt"
+  diff_lines=$(diff "$ROOT/game-before.txt" "$ROOT/game-after.txt" | grep -c '^[<>]' || true)
+  if [ "$diff_lines" -ne 0 ]; then
+    failures+=("game folder differs after purge ($diff_lines lines); see $ROOT/game-before.txt vs game-after.txt")
+  fi
+
+  [ ${#failures[@]} -eq 0 ] && verdict=PASS
+  echo "---- regress: $verdict ($((SECONDS - t0))s)"
+  echo "profile        $profile"
+  echo "enabled        $enabled"
+  echo "SMAPI loaded   ${mods_n:-?} mods + ${packs_n:-?} content packs (+ $skips skipped)"
+  echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after purge"
+  local f
+  for f in "${failures[@]}"; do echo "FAIL: $f"; done
+  [ "$verdict" = PASS ]
+}
+
+case "${1:-}" in
+  regress)
+    regress
+    ;;
+  *) mkdir -p "$ROOT" ;;
+esac
 case "${1:-}" in
   start)
     setup
@@ -263,8 +404,9 @@ case "${1:-}" in
   setup) setup ;;
   seed) seed ;;
   stop) stop ;;
+  regress) ;;
   *)
-    sed -n '2,13p' "$0"
+    sed -n '2,14p' "$0"
     exit 2
     ;;
 esac
