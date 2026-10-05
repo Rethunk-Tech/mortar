@@ -48,14 +48,21 @@ func TestMarkSeenEvictsOldestWhenOverCap(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for i := range MaxSeenMods + 1 {
-		id := strconv.Itoa(i)
-		if err := s.MarkSeen(id, int64(i), id); err != nil {
-			t.Fatal(err)
-		}
+	for i := range MaxSeenMods {
+		s.data.Mods[strconv.Itoa(i)] = SeenEntry{LastLookedUnix: int64(i + 1)}
 	}
-	if n := len(s.Snapshot()); n != MaxSeenMods {
-		t.Fatalf("len=%d want %d", n, MaxSeenMods)
+	if err := s.MarkSeen("new", 1, "1"); err != nil {
+		t.Fatal(err)
+	}
+	snap := s.Snapshot()
+	if len(snap) != MaxSeenMods {
+		t.Fatalf("len=%d want %d", len(snap), MaxSeenMods)
+	}
+	if _, ok := snap["0"]; ok {
+		t.Fatal("oldest entry not evicted")
+	}
+	if _, ok := snap["new"]; !ok {
+		t.Fatal("newest entry evicted")
 	}
 }
 
