@@ -49,6 +49,24 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.2.2" date="2026-10-05">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Signed SHA256SUMS and GitHub build provenance for every release file</li>
+          <li>Signed Flatpak repository: flatpak update now follows new releases</li>
+          <li>RPM packages are signed, and dnf checks each package's signature</li>
+          <li>Scoop bucket and Homebrew tap; Mortar leaves updates to them when they installed it</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Windows installer records the real version instead of 0.0.1</li>
+          <li>Light theme: readable accent text, title bar, switches, choice cards, Notes and console</li>
+          <li>Storage no longer lists the store's index folder as a game</li>
+          <li>Share dialog tip no longer covers the close button</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.1" date="2026-10-05">
       <description>
         <p>New</p>
