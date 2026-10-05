@@ -1,4 +1,4 @@
-import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/models.ts'
+import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
 
 type BrowseItem = Item
 
@@ -21,7 +21,7 @@ interface BrowsePageProps {
   game: string
   profileID: string
   premium: boolean
-  hasCurseForgeKey: boolean
+  sources: string[]
   search: BrowseSearch
   openUrl: (url: string) => void
   downloadNexus: (modID: string) => void

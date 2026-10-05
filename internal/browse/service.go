@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // Service is the window's browse API.
@@ -19,10 +20,19 @@ func NewService(version string, profiles *profile.Service) *Service {
 	return &Service{Version: version, Profiles: profiles}
 }
 
-// Search returns one page of mods for game from source matching text.
-func (s *Service) Search(ctx context.Context, game, source, text string, page int, profileID string) (Page, error) {
+// Search returns one page of mods for game from sourceID matching text.
+func (s *Service) Search(ctx context.Context, game, sourceID, text string, page int, profileID string) (Page, error) {
 	c := &Client{Version: s.Version, Installed: s.installed(game, profileID)}
-	return c.Search(ctx, game, source, text, page)
+	return c.Search(ctx, game, sourceID, text, page)
+}
+
+// SearchableSources lists the ids of the game's sources that can be searched, in catalog order.
+func (s *Service) SearchableSources(game string) []string {
+	info, ok := catalogGame(game)
+	if !ok {
+		return []string{}
+	}
+	return append([]string{}, source.Searchable(info)...)
 }
 
 func (s *Service) installed(game, profileID string) InstalledFunc {

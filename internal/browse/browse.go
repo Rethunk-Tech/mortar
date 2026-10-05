@@ -34,12 +34,20 @@ type Client struct {
 
 // Search returns one page of mods for game from the source matching text.
 func (c *Client) Search(ctx context.Context, game, sourceID, text string, page int) (Page, error) {
-	catalog := gamepkg.Catalog()
-	i := slices.IndexFunc(catalog, func(g components.GameInfo) bool { return g.ID == game })
-	if i < 0 {
+	info, ok := catalogGame(game)
+	if !ok {
 		return Page{}, fmt.Errorf("%w: game %q", ErrUnknownSource, game)
 	}
-	return c.search(ctx, catalog[i], sourceID, text, page)
+	return c.search(ctx, info, sourceID, text, page)
+}
+
+func catalogGame(id string) (components.GameInfo, bool) {
+	catalog := gamepkg.Catalog()
+	i := slices.IndexFunc(catalog, func(g components.GameInfo) bool { return g.ID == id })
+	if i < 0 {
+		return components.GameInfo{}, false
+	}
+	return catalog[i], true
 }
 
 func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID, text string, page int) (Page, error) {

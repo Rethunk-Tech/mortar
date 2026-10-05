@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Card, Chip, Pagination, Skeleton, Typography } from '@mui/material'
 import { CloudOff, Download, ExternalLink, Plus, Search, SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -19,7 +20,6 @@ import { useBrowseView } from './view.ts'
 
 const NEXUS = 'nexus'
 const GITHUB = 'github'
-const CURSEFORGE = 'curseforge'
 const FIRST_PAGE = 1
 const PICTURE_PX = 72
 const ROW_PICTURE_PX = 40
@@ -34,9 +34,6 @@ function searchHint(source: string, premium: boolean): string {
       msg`Search GitHub for mods published as releases. Add puts the latest release in this profile.`,
     )
   }
-  if (source === CURSEFORGE) {
-    return i18n._(msg`Search CurseForge. Open the mod's page to download it.`)
-  }
   if (source === NEXUS && premium) {
     return i18n._(msg`Search Nexus Mods. Download installs the mod into this profile.`)
   }
@@ -48,9 +45,6 @@ function searchHint(source: string, premium: boolean): string {
 function openPageLabel(source: string): string {
   if (source === GITHUB) {
     return i18n._(msg`Open on GitHub`)
-  }
-  if (source === CURSEFORGE) {
-    return i18n._(msg`Open on CurseForge`)
   }
   return i18n._(msg`Open on Nexus`)
 }
@@ -69,8 +63,10 @@ function useBrowseQuery({
   game,
   profileID,
   search,
-}: Pick<BrowsePageProps, 'game' | 'profileID' | 'search'>) {
-  const [source, setSource] = useState(NEXUS)
+  sources,
+}: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources'>) {
+  const [chosen, setSource] = useState(NEXUS)
+  const source = sources.includes(chosen) ? chosen : (sources[0] ?? '')
   const [draft, setDraft] = useState('')
   const [text, setText] = useState('')
   const [page, setPage] = useState(FIRST_PAGE)
@@ -99,7 +95,7 @@ function useBrowseQuery({
   }, [draft])
 
   useEffect(() => {
-    if (text.trim() === '' || retry < 0) {
+    if (text.trim() === '' || source === '' || retry < 0) {
       setResult({ total: 0, items: [] })
       setStatus('idle')
       return
@@ -144,7 +140,7 @@ function BrowsePage({
   game,
   profileID,
   premium,
-  hasCurseForgeKey,
+  sources: searchable,
   search,
   openUrl,
   downloadNexus,
@@ -164,14 +160,11 @@ function BrowsePage({
     result,
     status,
     error,
-  } = useBrowseQuery({ game, profileID, search })
+  } = useBrowseQuery({ game, profileID, search, sources: searchable })
   const pageCount = Math.max(FIRST_PAGE, Math.ceil(result.total / PAGE_SIZE) || FIRST_PAGE)
-  const sources = [
-    { value: NEXUS, label: t`Nexus Mods` },
-    { value: GITHUB, label: t`GitHub` },
-    ...(hasCurseForgeKey ? [{ value: CURSEFORGE, label: t`CurseForge` }] : []),
-  ]
-  const placeholder = source === GITHUB ? t`Search GitHub releases` : t`Search Nexus Mods`
+  const sources = searchable.map((id) => ({ value: id, label: sourceLabel(id) }))
+  const placeholder =
+    source === GITHUB ? t`Search GitHub releases` : t`Search ${sourceLabel(source)}`
   const hint = searchHint(source, premium)
   let body: React.ReactNode
   if (status === 'idle') {

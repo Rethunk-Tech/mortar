@@ -1,4 +1,8 @@
-import { Search } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
+import { useEffect, useState } from 'react'
+import {
+  Search,
+  SearchableSources,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -10,6 +14,12 @@ const KIND_INSTALL = 'install'
 
 function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
   const premium = useNexus((state) => state.premium)
+  const [sources, setSources] = useState<string[]>([])
+  useEffect(() => {
+    SearchableSources(game)
+      .then((ids) => setSources(ids ?? []))
+      .catch(reportUnexpected)
+  }, [game])
   const search: BrowseSearch = async ({
     game: nextGame,
     source,
@@ -25,7 +35,7 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       game={game}
       profileID={profileID}
       premium={premium}
-      hasCurseForgeKey={false}
+      sources={sources}
       search={search}
       openUrl={(url) => {
         openPage(url).catch(reportUnexpected)

@@ -54,3 +54,13 @@ func TestSearchRefusesSourcesTheGameLacksOrCannotSearch(t *testing.T) {
 		}
 	}
 }
+
+func TestSearchableSourcesFollowCatalogOrder(t *testing.T) {
+	got := (&Service{}).SearchableSources("stardew")
+	if len(got) != 2 || got[0] != "nexus" || got[1] != "github" {
+		t.Fatalf("got %v", got)
+	}
+	if got := (&Service{}).SearchableSources("nope"); got == nil || len(got) != 0 {
+		t.Fatalf("unknown game: %v", got)
+	}
+}
