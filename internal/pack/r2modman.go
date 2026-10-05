@@ -42,7 +42,10 @@ type r2Mod struct {
 	Enabled       *bool     `yaml:"enabled"`
 }
 
-func (m r2Mod) ref() Ref {
+func (m r2Mod) ref() (Ref, error) {
+	if !nativeID.MatchString(m.Name) {
+		return Ref{}, fmt.Errorf("%q is not a Namespace-Name package", m.Name)
+	}
 	v := m.Version
 	if v == (r2Version{}) {
 		v = m.VersionNumber
@@ -50,15 +53,19 @@ func (m r2Mod) ref() Ref {
 	return Ref{
 		Source: thunderstore, Native: m.Name, Version: fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch),
 		Disabled: m.Enabled != nil && !*m.Enabled,
-	}
+	}, nil
 }
 
-func refs(mods []r2Mod) []Ref {
+func refs(mods []r2Mod) ([]Ref, error) {
 	out := make([]Ref, 0, len(mods))
 	for _, m := range mods {
-		out = append(out, m.ref())
+		ref, err := m.ref()
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, ref)
 	}
-	return out
+	return out, nil
 }
 
 // Code reads r2modman and Gale share codes: "#r2modman\n" and the base64 of a zip holding export.r2x and the
@@ -85,7 +92,7 @@ func (c Code) Parse(ctx context.Context, in Input) (Draft, error) {
 	text := strings.TrimSpace(in.Text)
 	switch {
 	case in.Path != "" && text == "":
-		b, err := fsx.ReadFile(in.Path)
+		b, err := readCapped(in.Path, maxInput)
 		if err != nil {
 			return Draft{}, err
 		}
@@ -97,6 +104,9 @@ func (c Code) Parse(ctx context.Context, in Input) (Draft, error) {
 				return Draft{}, err
 			}
 			text = fetched
+		}
+		if len(text) > maxInput {
+			return Draft{}, errors.New("profile code is too large")
 		}
 		body, ok := strings.CutPrefix(text, codePrefix)
 		if !ok {
@@ -156,7 +166,11 @@ func parseR2Zip(data []byte) (Draft, error) {
 	if err := yaml.Unmarshal(raw, &doc); err != nil {
 		return Draft{}, fmt.Errorf("reading %s: %w", exportFile, err)
 	}
-	d := Draft{Name: doc.Name, Game: doc.Community, Packages: refs(doc.Mods), Configs: filesUnder(files, "config/")}
+	packages, err := refs(doc.Mods)
+	if err != nil {
+		return Draft{}, err
+	}
+	d := Draft{Name: doc.Name, Game: doc.Community, Packages: packages, Configs: filesUnder(files, "config/")}
 	delete(files, exportFile)
 	for _, f := range d.Configs {
 		delete(files, f.Path)
@@ -184,7 +198,7 @@ func (Profile) Detect(in Input) bool {
 // Parse reads mods.yml and the profile's BepInEx/config files. Game is the catalog id when GameByFolder knows
 // r2modman's folder name for the game (for example "LethalCompany"), else that folder name.
 func (p Profile) Parse(_ context.Context, in Input) (Draft, error) {
-	raw, err := fsx.ReadFile(filepath.Join(in.Path, "mods.yml"))
+	raw, err := readCapped(filepath.Join(in.Path, "mods.yml"), maxFile)
 	if err != nil {
 		return Draft{}, err
 	}
@@ -192,17 +206,21 @@ func (p Profile) Parse(_ context.Context, in Input) (Draft, error) {
 	if err := yaml.Unmarshal(raw, &mods); err != nil {
 		return Draft{}, fmt.Errorf("reading mods.yml: %w", err)
 	}
-	d := Draft{Name: filepath.Base(in.Path), Game: filepath.Base(filepath.Dir(filepath.Dir(in.Path))), Packages: refs(mods)}
+	packages, err := refs(mods)
+	if err != nil {
+		return Draft{}, err
+	}
+	d := Draft{Name: filepath.Base(in.Path), Game: filepath.Base(filepath.Dir(filepath.Dir(in.Path))), Packages: packages}
 	if id, ok := p.lookup(d.Game); ok {
 		d.Game = id
 	}
 	cfg := filepath.Join(in.Path, "BepInEx", "config")
 	entries, _ := os.ReadDir(cfg)
 	for _, e := range entries {
-		if e.IsDir() {
+		if !e.Type().IsRegular() {
 			continue
 		}
-		b, err := fsx.ReadFile(filepath.Join(cfg, e.Name()))
+		b, err := readCapped(filepath.Join(cfg, e.Name()), maxFile)
 		if err != nil {
 			return Draft{}, err
 		}
@@ -235,4 +253,16 @@ func (p Profile) lookup(folder string) (string, bool) {
 		return "", false
 	}
 	return p.GameByFolder(folder)
+}
+
+// readCapped reads a file of at most limit bytes.
+func readCapped(file string, limit int64) ([]byte, error) {
+	st, err := fsx.Stat(file)
+	if err != nil {
+		return nil, err
+	}
+	if st.Size() > limit {
+		return nil, fmt.Errorf("%s is larger than %d MiB", filepath.Base(file), limit>>20)
+	}
+	return fsx.ReadFile(file)
 }

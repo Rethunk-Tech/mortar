@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"path"
+	"regexp"
 	"slices"
 	"strings"
 )
@@ -72,7 +73,17 @@ func Read(ctx context.Context, in Input, formats ...Format) (Draft, error) {
 const (
 	maxFile    = 16 << 20
 	maxEntries = 5000
+	// maxTotal bounds a whole pack's unpacked size, so many small-looking entries cannot add up to a zip bomb.
+	maxTotal = 256 << 20
+	// maxInput bounds a pack read from disk or pasted.
+	maxInput = 128 << 20
 )
+
+// nativeID is a Thunderstore package name, Namespace-Name, whose parts are the site's own word characters.
+var nativeID = regexp.MustCompile(`^\w+-\w+$`)
+
+// versionNumber is a major.minor.patch version.
+var versionNumber = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
 
 // readZip returns the zip's files by cleaned slash path; a path that leaves the archive is refused.
 func readZip(data []byte) (map[string][]byte, error) {
@@ -84,12 +95,13 @@ func readZip(data []byte) (map[string][]byte, error) {
 		return nil, fmt.Errorf("archive holds %d entries", len(zr.File))
 	}
 	out := map[string][]byte{}
+	total := 0
 	for _, f := range zr.File {
 		if f.FileInfo().IsDir() {
 			continue
 		}
 		name := path.Clean(strings.ReplaceAll(f.Name, `\`, "/"))
-		if name == "." || path.IsAbs(name) || name == ".." || strings.HasPrefix(name, "../") {
+		if name == "." || path.IsAbs(name) || name == ".." || strings.HasPrefix(name, "../") || strings.Contains(name, ":") {
 			return nil, fmt.Errorf("archive path %q leaves the archive", f.Name)
 		}
 		rc, err := f.Open()
@@ -103,6 +115,9 @@ func readZip(data []byte) (map[string][]byte, error) {
 		}
 		if len(b) > maxFile {
 			return nil, fmt.Errorf("archive file %q is too large", f.Name)
+		}
+		if total += len(b); total > maxTotal {
+			return nil, errors.New("archive unpacks to too much data")
 		}
 		out[name] = b
 	}

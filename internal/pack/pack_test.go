@@ -162,3 +162,33 @@ func TestExportCodeRoundTripsThroughAFakeServer(t *testing.T) {
 		t.Fatal("a Nexus package went into an r2modman code")
 	}
 }
+
+func TestHostilePacksAreRefused(t *testing.T) {
+	bad := func(mod string) string {
+		return "profileName: X\nmods:\n  - name: " + mod + "\n    version: {major: 1, minor: 0, patch: 0}\n    enabled: true\n"
+	}
+	dir := t.TempDir()
+	write := func(name string, files map[string]string) string {
+		p := filepath.Join(dir, name)
+		if err := os.WriteFile(p, makeZip(t, files), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return p
+	}
+	cases := []struct {
+		name   string
+		format Format
+		in     Input
+	}{
+		{"mod name that climbs out of its folder", Code{}, Input{Path: write("a.r2z", map[string]string{exportFile: bad("../../etc-passwd")})}},
+		{"mod name with a separator", Code{}, Input{Path: write("b.r2z", map[string]string{exportFile: bad(`A-B/../C`)})}},
+		{"drive-letter entry", Code{}, Input{Path: write("c.r2z", map[string]string{exportFile: export, `C:/x`: "x"})}},
+		{"modpack dependency with a traversal", Modpack{}, Input{Path: write("d.zip", map[string]string{"manifest.json": `{"name":"P","dependencies":["../x-y-1.0.0"]}`})}},
+		{"modpack dependency with a bad version", Modpack{}, Input{Path: write("e.zip", map[string]string{"manifest.json": `{"name":"P","dependencies":["A-B-1.0/../x"]}`})}},
+	}
+	for _, tc := range cases {
+		if _, err := tc.format.Parse(t.Context(), tc.in); err == nil {
+			t.Errorf("%s: accepted", tc.name)
+		}
+	}
+}

@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"strings"
-
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Modpack reads a Thunderstore modpack package: a package zip whose manifest dependencies are the mod list and
@@ -24,7 +23,7 @@ type manifest struct {
 }
 
 func readModpack(path string) (manifest, map[string][]byte, bool) {
-	data, err := fsx.ReadFile(path)
+	data, err := readCapped(path, maxInput)
 	if err != nil {
 		return manifest{}, nil, false
 	}
@@ -62,8 +61,8 @@ func (Modpack) Parse(_ context.Context, in Input) (Draft, error) {
 	d := Draft{Name: m.Name, Configs: filesUnder(files, "config/")}
 	for _, dep := range m.Dependencies {
 		i := strings.LastIndex(dep, "-")
-		if i < 1 {
-			return Draft{}, errors.New("malformed dependency " + dep)
+		if i < 1 || !nativeID.MatchString(dep[:i]) || !versionNumber.MatchString(dep[i+1:]) {
+			return Draft{}, fmt.Errorf("malformed dependency %q", dep)
 		}
 		d.Packages = append(d.Packages, Ref{Source: thunderstore, Native: dep[:i], Version: dep[i+1:]})
 	}
