@@ -131,5 +131,8 @@ func restoreConfigsTo(dir string, entries []Entry, targetID, headID string) []st
 			changed = append(changed, e.Key)
 		}
 	}
+	if restoreGmcmPending(dir, targetID, headID) {
+		changed = append(changed, gmcmPendingKey)
+	}
 	return changed
 }

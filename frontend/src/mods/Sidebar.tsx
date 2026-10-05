@@ -386,7 +386,7 @@ function ActionRows({
   const mine = extras?.id === modId(mod) ? extras : null
   const pageUrl = mine?.relations.pageUrl ?? ''
   const neededBy = mine?.relations.neededBy ?? []
-  const hasConfig = mine !== null && mine.state.config !== ''
+  const hasConfig = mine !== null && (mine.state.config !== '' || mine.state.gmcm)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
       {hasConfig ? (

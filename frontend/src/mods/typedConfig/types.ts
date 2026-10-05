@@ -13,6 +13,14 @@ interface ConfigEntry {
   min?: number
   max?: number
   options?: string[]
+  // How the mod names each option, when that differs from the value written.
+  optionLabels?: string[]
+  // The value waits for the game's next start; the default is the value the game has now.
+  pending?: boolean
+  // Only the game can change it.
+  readOnly?: boolean
+  // What the game reported when it could not apply the last change.
+  note?: string
 }
 
 interface ConfigSection {
@@ -23,6 +31,8 @@ interface ConfigSection {
 interface ConfigFile {
   name: string
   label: string
+  // 'gmcm' is the mod's in-game menu, whose edits wait for the next start.
+  format: string
   // Read when the file is first shown.
   sections: ConfigSection[]
 }

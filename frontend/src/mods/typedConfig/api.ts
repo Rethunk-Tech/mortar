@@ -14,6 +14,7 @@ const configApi = {
     ((await Files(t.game, t.profile, t.id)) ?? []).map((f) => ({
       name: f.name,
       label: f.label || f.name,
+      format: f.format,
       sections: [],
     })),
   schema: async (t: Target, file: string): Promise<ConfigSection[]> =>

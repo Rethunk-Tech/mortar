@@ -30,6 +30,7 @@ test('search matches keys and descriptions and a section name keeps its entries'
   const file: ConfigFile = {
     name: 'a.cfg',
     label: 'a',
+    format: 'bepinex',
     sections: [
       {
         name: 'General',

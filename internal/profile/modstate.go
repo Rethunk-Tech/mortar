@@ -52,6 +52,8 @@ const (
 type ModState struct {
 	PreviousVersion string `json:"previousVersion"`
 	Config          string `json:"config"`
+	// Gmcm is true when the bridge captured the mod's in-game settings menu, which Mortar can then edit.
+	Gmcm bool `json:"gmcm"`
 }
 
 // FindMod is the entry and mod holding uniqueID; an empty key searches every entry.
@@ -78,6 +80,9 @@ func (s *Store) ModState(game, id, key string, uniqueID mod.ID) (ModState, error
 		return ModState{}, errors.New("no such mod in this profile")
 	}
 	st := ModState{PreviousVersion: s.previousVersion(game, e, m.ID), Config: ConfigNone}
+	if dir, err := s.ProfileDir(game, id); err == nil {
+		st.Gmcm = hasGmcmCapture(dir, m.ID)
+	}
 	folder, err := s.ModFolder(game, id, e.Key, m.ID)
 	if err != nil {
 		return ModState{}, err

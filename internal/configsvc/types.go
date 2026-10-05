@@ -6,6 +6,8 @@ package configsvc
 const (
 	FormatBepInEx = "bepinex"
 	FormatSMAPI   = "smapi"
+	// FormatGMCM is a mod's in-game settings menu as the bridge captured it; edits wait for the next start.
+	FormatGMCM = "gmcm"
 )
 
 // Entry types.
@@ -45,6 +47,14 @@ type Entry struct {
 	Values []string `json:"values,omitempty"`
 	// Flags marks an enum whose values may be combined with commas.
 	Flags bool `json:"flags,omitempty"`
+	// Labels are how the mod names each of Values, when it names them differently.
+	Labels []string `json:"labels,omitempty"`
+	// Pending marks a value that waits for the game's next start to take effect.
+	Pending bool `json:"pending,omitempty"`
+	// ReadOnly marks a setting only the game can change.
+	ReadOnly bool `json:"readOnly,omitempty"`
+	// Note is a problem the game reported with the last change to this setting.
+	Note string `json:"note,omitempty"`
 }
 
 // Section groups entries; Name is "" for a SMAPI file's top-level settings. A SMAPI object nests as a section named

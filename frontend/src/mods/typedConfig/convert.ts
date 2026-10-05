@@ -14,6 +14,10 @@ interface WireEntry {
   max?: number
   values?: string[]
   flags?: boolean
+  labels?: string[]
+  pending?: boolean
+  readOnly?: boolean
+  note?: string
 }
 
 interface WireSection {
@@ -64,6 +68,10 @@ function toEntry(w: WireEntry): ConfigEntry {
     ...(w.min === undefined ? {} : { min: w.min }),
     ...(w.max === undefined ? {} : { max: w.max }),
     ...(w.values ? { options: w.values } : {}),
+    ...(w.labels ? { optionLabels: w.labels } : {}),
+    ...(w.pending ? { pending: true } : {}),
+    ...(w.readOnly ? { readOnly: true } : {}),
+    ...(w.note ? { note: w.note } : {}),
   }
 }
 

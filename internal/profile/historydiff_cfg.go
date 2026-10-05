@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 )
 
 const (
@@ -39,7 +41,69 @@ func historyConfigIndex(dir string, entries []Entry) (map[string]map[string]stri
 		}
 		idx[e.Key] = paths
 	}
+	if files := gmcmPendingFiles(dir); len(files) > 0 {
+		paths := make(map[string]string, len(files))
+		for name, body := range files {
+			sum := sha256.Sum256(body)
+			hash := hex.EncodeToString(sum[:])
+			bodies[hash] = body
+			paths[name] = hash
+		}
+		idx[gmcmPendingKey] = paths
+	}
 	return idx, bodies
+}
+
+// gmcmPendingKey files the profile's pending in-game menu edits in a config capture beside the entries; an entry key
+// never starts with a colon.
+const gmcmPendingKey = ":gmcm-pending"
+
+// gmcmPendingFiles are the pending edit files of the profile's in-game menus, by file name; the bridge's result files
+// are its own record and stay out.
+func gmcmPendingFiles(dir string) map[string][]byte {
+	files := map[string][]byte{}
+	matches, _ := filepath.Glob(filepath.Join(gmcm.PendingFolder(dir), "*.json"))
+	for _, path := range matches {
+		name := filepath.Base(path)
+		if strings.HasSuffix(name, ".result.json") {
+			continue
+		}
+		if body, err := fsx.ReadFile(path); err == nil {
+			files[name] = body
+		}
+	}
+	return files
+}
+
+// restoreGmcmPending puts the pending in-game menu edits back as targetID captured them, when they still are what
+// headID captured; it reports whether it changed any.
+func restoreGmcmPending(dir, targetID, headID string) bool {
+	head, errHead := readSnapshotIndex(dir, headID)
+	target, errTarget := readSnapshotIndex(dir, targetID)
+	if errHead != nil || errTarget != nil {
+		return false
+	}
+	live, _ := historyConfigIndex(dir, nil)
+	if !maps.Equal(live[gmcmPendingKey], head[gmcmPendingKey]) || maps.Equal(live[gmcmPendingKey], target[gmcmPendingKey]) {
+		return false
+	}
+	pendingDir := gmcm.PendingFolder(dir)
+	for name := range live[gmcmPendingKey] {
+		if _, keep := target[gmcmPendingKey][name]; !keep {
+			_ = os.Remove(filepath.Join(pendingDir, name))
+		}
+	}
+	for name, hash := range target[gmcmPendingKey] {
+		body, err := fsx.ReadFile(filepath.Join(dir, historyFilesDir, historyBlobsDir, hash))
+		if err != nil {
+			continue
+		}
+		if err := os.MkdirAll(pendingDir, 0o700); err != nil {
+			return false
+		}
+		_ = datadir.WriteFile(filepath.Join(pendingDir, name), body, 0o600)
+	}
+	return true
 }
 
 func storeHistoryConfigs(dir, snapshotID string, idx map[string]map[string]string, bodies map[string][]byte) {

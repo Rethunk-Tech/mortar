@@ -31,40 +31,11 @@ func (s *Services) setGmcm(game, profile string, uid mod.ID, spec string) (any, 
 	if err != nil {
 		return nil, err
 	}
-	menu, err := s.Profiles.GmcmMenu(game, profile, uid)
+	pending, err := s.Profiles.SetGmcmOption(game, profile, uid, page, index, raw)
 	if err != nil {
 		return nil, err
 	}
-	edit, err := gmcm.EditFromCapture(menu, page, index, raw)
-	if err != nil {
-		return nil, err
-	}
-	pending, err := s.Profiles.PendingGmcm(game, profile, uid)
-	if err != nil {
-		return nil, err
-	}
-	edits := replaceEdit(pending.Edits, edit)
-	if err := s.Profiles.SetGmcmEdits(game, profile, uid, edits); err != nil {
-		return nil, err
-	}
-	return edits, nil
-}
-
-func replaceEdit(cur []gmcm.Edit, next gmcm.Edit) []gmcm.Edit {
-	out := make([]gmcm.Edit, 0, len(cur)+1)
-	replaced := false
-	for _, e := range cur {
-		if e.Page == next.Page && e.Index == next.Index {
-			out = append(out, next)
-			replaced = true
-			continue
-		}
-		out = append(out, e)
-	}
-	if !replaced {
-		out = append(out, next)
-	}
-	return out
+	return pending.Edits, nil
 }
 
 func formatMenu(menu gmcm.Capture) []string {

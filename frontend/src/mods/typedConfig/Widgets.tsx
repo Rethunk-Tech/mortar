@@ -185,9 +185,9 @@ function EntryWidget(props: WidgetProps) {
           inputProps={{ 'aria-label': label }}
           sx={{ minWidth: NUMBER_WIDTH_PX }}
         >
-          {(entry.options ?? []).map((o) => (
+          {(entry.options ?? []).map((o, i) => (
             <MenuItem key={o} value={o}>
-              {o}
+              {entry.optionLabels?.[i] || o}
             </MenuItem>
           ))}
         </Select>

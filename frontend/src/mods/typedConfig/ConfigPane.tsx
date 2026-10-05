@@ -57,16 +57,26 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
           </Tooltip>
         ) : null}
       </Box>
-      <EntryWidget
-        entry={entry}
-        label={entry.label || entry.key}
-        onChange={(v) => set(section, entry.key, v)}
-      />
+      {entry.readOnly ? (
+        <Typography
+          sx={{ fontSize: 13, color: 'text.secondary' }}
+        >{t`Change it in the game`}</Typography>
+      ) : (
+        <EntryWidget
+          entry={entry}
+          label={entry.label || entry.key}
+          onChange={(v) => set(section, entry.key, v)}
+        />
+      )}
       {isModified(entry) ? (
-        <Tooltip title={t`Reset to default`}>
+        <Tooltip title={entry.pending ? t`Keep the game's current value` : t`Reset to default`}>
           <IconButton
             size="small"
-            aria-label={t`Reset ${entry.key} to its default`}
+            aria-label={
+              entry.pending
+                ? t`Discard the change to ${{ name: entry.label || entry.key }}`
+                : t`Reset ${entry.key} to its default`
+            }
             onClick={() => reset(section, entry.key)}
           >
             <RotateCcw size={14} />
@@ -75,6 +85,16 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
       ) : (
         <span />
       )}
+      {entry.pending ? (
+        <Typography sx={{ gridColumn: '1 / -1', fontSize: 12, color: 'text.secondary' }}>
+          {t`Applied when the game next starts`}
+        </Typography>
+      ) : null}
+      {entry.note ? (
+        <Typography sx={{ gridColumn: '1 / -1', fontSize: 12, color: 'warning.main' }}>
+          {t`The game could not apply the last change: ${{ reason: entry.note }}`}
+        </Typography>
+      ) : null}
       {error ? (
         <Typography role="alert" sx={{ gridColumn: '1 / -1', fontSize: 12, color: 'error.main' }}>
           {t`Could not save: ${error}`}
@@ -128,7 +148,7 @@ export function ConfigPane() {
           onChange={setQuery}
           sx={{ width: 260 }}
         />
-        <PresetsButton mod={mod} />
+        {file?.format === 'gmcm' ? null : <PresetsButton mod={mod} />}
         <Button
           variant="outlined"
           size="small"
@@ -170,7 +190,10 @@ export function ConfigPane() {
               selected={f.name === current}
               onClick={() => select(f.name)}
             >
-              <ListItemText primary={f.label || f.name} slotProps={{ primary: { noWrap: true } }} />
+              <ListItemText
+                primary={f.format === 'gmcm' ? t`In-game menu` : f.label || f.name}
+                slotProps={{ primary: { noWrap: true } }}
+              />
             </ListItemButton>
           ))}
         </List>
@@ -207,7 +230,11 @@ export function ConfigPane() {
       <ConfirmDialog
         open={confirming}
         title={t`Reset all entries?`}
-        body={t`Every entry in ${current} goes back to its default.`}
+        body={
+          file?.format === 'gmcm'
+            ? t`Every change waiting for the next start is discarded.`
+            : t`Every entry in ${current} goes back to its default.`
+        }
         confirmLabel={t`Reset all`}
         color="warning"
         onCancel={() => setConfirming(false)}

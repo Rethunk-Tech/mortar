@@ -127,6 +127,8 @@ Mortar edits a mod's config file as a form, so you never open a text file.
 
 Mortar does not save a change while the game runs the profile.
 
+A mod that has a Generic Mod Config Menu also lists **In-game menu**, with the settings that menu shows. A change there says **Applied when the game next starts**: Mortar keeps it and the game applies it when it next starts. Undo in the change history takes such a change back, like any other settings edit.
+
 ## Lethal Company and Thunderstore
 
 When the catalog enables Lethal Company, its mods are Thunderstore packages that run on BepInEx. Mortar installs BepInEx, searches Thunderstore, and keeps each package in the profile, the way it does for Stardew Valley's mods.

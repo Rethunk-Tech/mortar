@@ -140,15 +140,19 @@ function Settings({
     changed: t`config.json, changed from the mod's own`,
     generated: t`config.json, made by the mod`,
   }
-  const label = labels[state?.config ?? ''] ?? t`No config.json yet`
-  const hasConfig = label !== t`No config.json yet`
+  const file = labels[state?.config ?? '']
+  const gmcm = state?.gmcm === true
+  let label = file ?? t`No config.json yet`
+  if (!file && gmcm) {
+    label = t`Settings from the mod's in-game menu`
+  }
   return (
     <Section title={t`Settings`}>
       <Box sx={row}>
         <Typography sx={{ flex: 1, ...text }}>{label}</Typography>
-        {hasConfig ? (
+        {file || gmcm ? <EditConfigButton mod={mod} /> : null}
+        {file ? (
           <>
-            <EditConfigButton mod={mod} />
             <Button
               size="small"
               variant="outlined"

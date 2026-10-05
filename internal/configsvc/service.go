@@ -35,6 +35,8 @@ type Service struct {
 	// SetJSON writes one config.json value through the profile, which keeps its key order and checks the game is
 	// not running.
 	SetJSON func(game, profile string, uniqueID mod.ID, field, value string) error
+	// SetGmcm sets one option of a mod's in-game menu for the game's next start.
+	SetGmcm func(game, profile string, uniqueID mod.ID, page string, index int, value string) error
 	// Running reports whether the profile's game is running; writes to its files are refused then.
 	Running func(game, profile string) bool
 }
@@ -66,6 +68,11 @@ func (s *Service) Files(game, profileID, modID string) ([]ConfigFile, error) {
 		if folder, err := s.Profiles.ModFolder(game, profileID, "", mod.ID(modID)); err == nil {
 			if _, err := os.Stat(filepath.Join(folder, jsonName)); err == nil {
 				out = append(out, ConfigFile{Name: jsonName, Format: FormatSMAPI, Label: jsonName})
+			}
+		}
+		if dir, err := s.Profiles.ProfileDir(game, profileID); err == nil {
+			if _, err := os.Stat(gmcm.CapturePath(dir, mod.ID(modID))); err == nil {
+				out = append(out, ConfigFile{Name: gmcmFileName, Format: FormatGMCM, Label: gmcmFileName})
 			}
 		}
 	}
@@ -117,6 +124,9 @@ func (s *Service) Schema(game, profileID, modID, file string) (Schema, error) {
 	f, err := s.fileOf(game, profileID, modID, file)
 	if err != nil {
 		return Schema{}, err
+	}
+	if f.Format == FormatGMCM {
+		return s.gmcmSchema(game, profileID, mod.ID(modID), f)
 	}
 	if f.Format == FormatBepInEx {
 		path, err := s.cfgPath(game, profileID, f.Name)
@@ -210,6 +220,9 @@ func (s *Service) reset(game, profileID, modID, file string, pick func(section, 
 type edit struct{ section, key, value string }
 
 func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edit) error {
+	if f.Format == FormatGMCM {
+		return s.writeGmcm(game, profileID, mod.ID(modID), edits)
+	}
 	if f.Format == FormatSMAPI {
 		if s.SetJSON == nil {
 			return errors.New("config.json edits are not wired")

@@ -724,6 +724,10 @@ func run() error {
 		SetJSON: func(game, profileID string, uniqueID mod.ID, field, value string) error {
 			return profileSvc.SetConfigValue(game, profileID, "", uniqueID, field, value)
 		},
+		SetGmcm: func(game, profileID string, uniqueID mod.ID, page string, index int, value string) error {
+			_, err := profileSvc.SetGmcmOption(game, profileID, uniqueID, page, index, value)
+			return err
+		},
 		Running: profiles.Running,
 	}
 	gate := &startGate{}

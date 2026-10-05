@@ -54,6 +54,20 @@ const useTypedConfig = create<{
           : f,
       ),
     }))
+  const save = async (slot: string, run: () => Promise<void>) => {
+    try {
+      await run()
+    } catch (e) {
+      set((s) => ({ errors: { ...s.errors, [slot]: errorMessage(e) } }))
+      return
+    }
+    set((s) => ({ errors: { ...s.errors, [slot]: '' } }))
+    // An in-game menu edit turns pending, or stops being, only as the profile records it.
+    const { files, current } = get()
+    if (files.find((f) => f.name === current)?.format === 'gmcm') {
+      await get().select(current)
+    }
+  }
   const write = (section: string, key: string, run: () => Promise<void>) => {
     const slot = `${get().current}/${section}/${key}`
     clearTimeout(timers.get(slot))
@@ -61,10 +75,7 @@ const useTypedConfig = create<{
       slot,
       setTimeout(() => {
         timers.delete(slot)
-        run().then(
-          () => set((s) => ({ errors: { ...s.errors, [slot]: '' } })),
-          (e: unknown) => set((s) => ({ errors: { ...s.errors, [slot]: errorMessage(e) } })),
-        )
+        save(slot, run).catch(reportUnexpected)
       }, SAVE_DELAY_MS),
     )
   }
