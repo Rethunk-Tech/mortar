@@ -52,6 +52,8 @@ type HistoryEvent struct {
 	From       string    `json:"from,omitempty"`
 	To         string    `json:"to,omitempty"`
 	SnapshotID string    `json:"snapshotId"`
+	// Configs are the entries whose config.json a revert put back, which makes it Mortar's own config edit.
+	Configs []string `json:"configs,omitempty"`
 	// State is the profile's settings after this event; nil on an event recorded before settings were history.
 	State *ProfileState `json:"state,omitempty"`
 }
@@ -226,11 +228,12 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 	label := "Reverted to " + target.At.UTC().Format(time.RFC3339)
 	snap = cloneEntries(snap)
 	headID := data.Events[len(data.Events)-1].SnapshotID
-	// Config files are rolled back only to undo Mortar's own config edits; a revert across other changes leaves the
-	// configs as they are, since people and the game edit them between events.
+	// Config files are rolled back only to undo Mortar's own config edits, a revert that put configs back among them;
+	// a revert across other changes leaves the configs as they are, since people and the game edit them between events.
 	configsToo := true
 	for i := len(data.Events) - 1; i >= 0 && data.Events[i].ID != eventID; i-- {
-		configsToo = configsToo && data.Events[i].Kind == historyConfigEdit
+		ev := data.Events[i]
+		configsToo = configsToo && (ev.Kind == historyConfigEdit || len(ev.Configs) > 0)
 	}
 	state := target.State
 	return s.updateLockedAs(game, id, historyReverted, label, func(p *Profile, profDir string) error {
@@ -241,7 +244,7 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 			state.applyTo(p)
 		}
 		if configsToo {
-			restoreConfigsTo(profDir, p.Entries, target.SnapshotID, headID)
+			s.historyConfigs = restoreConfigsTo(profDir, p.Entries, target.SnapshotID, headID)
 		}
 		return nil
 	})
@@ -911,7 +914,7 @@ func entriesEqual(a, b []Entry) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func recordHistory(dir string, before, after []Entry, stateLabel, kind, label string, keep int) error {
+func recordHistory(dir string, before, after []Entry, stateLabel, kind, label string, configs []string, keep int) error {
 	if entriesEqual(before, after) {
 		if kind == "" && stateLabel == "" {
 			return nil
@@ -919,7 +922,7 @@ func recordHistory(dir string, before, after []Entry, stateLabel, kind, label st
 		if kind == "" {
 			kind, label = historySettings, stateLabel
 		}
-		ev := HistoryEvent{Kind: kind, Label: label, Count: 1}
+		ev := HistoryEvent{Kind: kind, Label: label, Count: 1, Configs: configs}
 		_, err := appendHistory(dir, ev, after, keep)
 		return err
 	}
@@ -930,6 +933,7 @@ func recordHistory(dir string, before, after []Entry, stateLabel, kind, label st
 	if label != "" {
 		ev.Label = label
 	}
+	ev.Configs = configs
 	_, err := appendHistory(dir, ev, after, keep)
 	return err
 }

@@ -453,3 +453,34 @@ func mustCreateIn(t *testing.T, s *Store, gameID, name string) Profile {
 	}
 	return p
 }
+
+// The Undo on a revert's toast reverts to the event before it; the configs that revert put back come back too.
+func TestUndoOfRevertRestoresConfig(t *testing.T) {
+	e, p := undoFixture(t)
+	baseline, err := e.Baseline("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	orig := liveConfig(e, p)
+	if err := e.WriteConfig("stardew", p.ID, "local-a", "smapi:Me.A", `{"v":2}`); err != nil {
+		t.Fatal(err)
+	}
+	edited := liveConfig(e, p)
+	evs, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	head := evs[0].ID
+	if _, err := e.Revert("stardew", p.ID, baseline); err != nil {
+		t.Fatal(err)
+	}
+	if got := liveConfig(e, p); got != orig {
+		t.Fatalf("revert left config %q, want %q", got, orig)
+	}
+	if _, err := e.Revert("stardew", p.ID, head); err != nil {
+		t.Fatal(err)
+	}
+	if got := liveConfig(e, p); got != edited {
+		t.Fatalf("undo of the revert left config %q, want the edit %q", got, edited)
+	}
+}

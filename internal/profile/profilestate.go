@@ -108,17 +108,28 @@ func liveConfigHash(dir, key string) string {
 }
 
 // restoreConfigsTo puts back the config.json history captured at targetID for each entry, but only where the live file
-// still is what the newest event captured: a file edited since (by the game, say) is not Mortar's to roll back.
-func restoreConfigsTo(dir string, entries []Entry, targetID, headID string) {
+// still is what the newest event captured: a file edited since (by the game, say) is not Mortar's to roll back. It
+// returns the keys of the entries whose config it changed.
+func restoreConfigsTo(dir string, entries []Entry, targetID, headID string) []string {
+	var changed []string
 	for _, e := range entries {
-		if e.IsOverlay() || liveConfigHash(dir, e.Key) != capturedConfig(dir, headID, e.Key) {
+		live := liveConfigHash(dir, e.Key)
+		if e.IsOverlay() || live != capturedConfig(dir, headID, e.Key) {
 			continue
 		}
 		want := capturedConfig(dir, targetID, e.Key)
-		if want == "" {
-			_ = os.Remove(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), e.Key), configFile))
+		if want == live {
 			continue
 		}
-		_ = restoreHistoryConfig(dir, targetID, e.Key, configFile)
+		if want == "" {
+			if os.Remove(filepath.Join(liveEntryDir(filepath.Join(dir, "mods"), e.Key), configFile)) == nil {
+				changed = append(changed, e.Key)
+			}
+			continue
+		}
+		if restoreHistoryConfig(dir, targetID, e.Key, configFile) == nil {
+			changed = append(changed, e.Key)
+		}
 	}
+	return changed
 }

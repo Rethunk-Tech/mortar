@@ -257,9 +257,11 @@ type Store struct {
 	// NewModsEnabled reports whether newly installed entries start enabled; nil means enabled.
 	NewModsEnabled func() bool
 	// OldFilesMode returns the game's oldFilesOnUpdate setting; nil means ask.
-	OldFilesMode    func(game string) string
-	historyKind     string
-	historyLabel    string
+	OldFilesMode func(game string) string
+	historyKind  string
+	historyLabel string
+	// historyConfigs are the entries whose config.json the pending event's change rewrote.
+	historyConfigs  []string
 	historyQuietIDs map[string]int
 	historyBatches  map[string]historyBatch
 	changesCache    map[string]changesSinceCache
@@ -632,18 +634,18 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 	before := cloneEntries(p.Entries)
 	stateBefore := stateOf(p)
 	if err := fn(&p, dir); err != nil {
-		s.historyKind, s.historyLabel = "", ""
+		s.historyKind, s.historyLabel, s.historyConfigs = "", "", nil
 		return Profile{}, err
 	}
 	p.Updated = time.Now().UTC().Truncate(time.Second)
 	if err := writeProfile(dir, p); err != nil {
-		s.historyKind, s.historyLabel = "", ""
+		s.historyKind, s.historyLabel, s.historyConfigs = "", "", nil
 		restoreModsOld(dir)
 		return Profile{}, err
 	}
 	_ = fsx.RemoveAll(filepath.Join(dir, "mods") + ".old")
-	kind, label := s.historyKind, s.historyLabel
-	s.historyKind, s.historyLabel = "", ""
+	kind, label, configs := s.historyKind, s.historyLabel, s.historyConfigs
+	s.historyKind, s.historyLabel, s.historyConfigs = "", "", nil
 	if s.historyQuietIDs[id] == 0 {
 		key := historyBatchKey(game, id)
 		if batch, ok := s.historyBatches[key]; ok {
@@ -651,7 +653,7 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 				log.Printf("profile %s/%s: record history: %v", game, id, err)
 			}
 			s.historyBatches[key] = batch
-		} else if err := recordHistory(dir, before, p.Entries, stateChange(stateBefore, stateOf(p)), kind, label, s.historyKeep()); err != nil {
+		} else if err := recordHistory(dir, before, p.Entries, stateChange(stateBefore, stateOf(p)), kind, label, configs, s.historyKeep()); err != nil {
 			log.Printf("profile %s/%s: record history: %v", game, id, err)
 		}
 	}
