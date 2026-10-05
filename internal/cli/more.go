@@ -130,8 +130,8 @@ var moreVerbs = map[string]moreVerb{
 	"app update check":   {method: "app.update.check", timeout: installTimeout},
 	"app update install": {method: "app.update.install", msg: "Installed the update; restart Mortar to use it.", timeout: installTimeout},
 	"links register":     {method: "links.register", msg: "Registered Mortar for its own links."},
-	"links enable":       {method: "links.enable", msg: "Mortar now handles nxm links.", params: linkParams},
-	"links disable":      {method: "links.disable", msg: "nxm links went back to their previous handler.", params: linkParams},
+	"links enable":       {method: "links.enable", msg: "Mortar now handles that source's links.", params: linkParams},
+	"links disable":      {method: "links.disable", msg: "That source's links went back to their previous handler.", params: linkParams},
 	"game reset-install": {
 		method: "game.resetInstall", args: []string{"a game"}, msg: "Reset the install.", timeout: installTimeout,
 		params: func(a []string, c *cmd) (control.Params, error) {
@@ -152,10 +152,10 @@ var moreVerbs = map[string]moreVerb{
 
 func nameParam(a []string, _ *cmd) (control.Params, error) { return control.Params{Name: a[0]}, nil }
 
-// linkParams: only nxm links are toggled per source today.
+// linkParams: links are toggled per source that has a link scheme.
 func linkParams(_ []string, c *cmd) (control.Params, error) {
-	if c.sourceFlag != "nexus" {
-		return control.Params{}, usageError{"links " + c.args[1] + " needs --source nexus; no other source's links can be toggled yet"}
+	if c.sourceFlag != "nexus" && c.sourceFlag != "thunderstore" {
+		return control.Params{}, usageError{"links " + c.args[1] + " needs --source nexus or thunderstore"}
 	}
 	return control.Params{Source: c.sourceFlag}, nil
 }

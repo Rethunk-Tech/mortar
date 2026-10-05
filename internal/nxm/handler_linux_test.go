@@ -478,3 +478,16 @@ func TestAnIntegratorsEntryHidesOurs(t *testing.T) {
 		t.Errorf("still hidden after the integrator's entry went: %s", desktop)
 	}
 }
+
+func TestReleaseHandsBackOnlyTheGivenScheme(t *testing.T) {
+	l, r := newLinux(t, "vortex.desktop")
+	if err := l.Release([]string{"ror2mm"}, map[string]string{"ror2mm": "r2modman.desktop"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := r.byMime[schemeMime("ror2mm")]; got != "r2modman.desktop" {
+		t.Fatalf("ror2mm owner %q", got)
+	}
+	if r.byMime[schemeMime("nxm")] != "vortex.desktop" {
+		t.Fatalf("the nxm default changed: %v", r.byMime)
+	}
+}

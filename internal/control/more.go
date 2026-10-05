@@ -36,9 +36,9 @@ func (s *Services) handleMore(ctx context.Context, method string, p Params) (res
 	case "links.register":
 		res, err = nil, s.withNxm(func() error { return s.Nxm.RegisterLinks() })
 	case "links.enable":
-		res, err = nil, s.withNxm(func() error { return s.Nxm.Enable() })
+		res, err = nil, s.withNxm(func() error { return s.Nxm.EnableSource(p.Source) })
 	case "links.disable":
-		res, err = nil, s.withNxm(func() error { return s.Nxm.Disable() })
+		res, err = nil, s.withNxm(func() error { return s.Nxm.DisableSource(p.Source) })
 	case "problems.checkUpdates":
 		res, err = s.profileCall(p, func(id string) (any, error) { return s.Problems.CheckUpdatesNow(ctx, p.Game, id) })
 	case "support.diagnostics":

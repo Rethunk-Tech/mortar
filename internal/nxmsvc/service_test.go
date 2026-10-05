@@ -3,6 +3,7 @@ package nxmsvc
 import (
 	"errors"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -38,6 +39,11 @@ func (f *fakeHandler) RegisterLinks() error {
 func (f *fakeHandler) Restore(previous map[string]string) error {
 	f.owner = nxm.Owner{ID: previous["nxm"], Name: previous["nxm"], Mine: false}
 	f.registry = append(f.registry, "restore:"+previous["nxm"])
+	return nil
+}
+
+func (f *fakeHandler) Release(schemes []string, _ map[string]string) error {
+	f.registry = append(f.registry, "release:"+strings.Join(schemes, ","))
 	return nil
 }
 
@@ -261,5 +267,31 @@ func TestReceiveQueuesAThunderstoreLink(t *testing.T) {
 	}
 	if got := <-s.Assigned; got.Package != "Me-Mod" || got.Version != "1.2.3" || got.Game != "riskofrain2" {
 		t.Fatalf("assigned %+v", got)
+	}
+}
+
+func TestOptInSourceLinksAreEnabledAndReleasedPerSource(t *testing.T) {
+	h := &fakeHandler{owner: nxm.Owner{ID: "other.desktop", Name: "Other"}}
+	s := newService(t, h)
+	t.Cleanup(func() { source.SetHandleLink("thunderstore", false) })
+	if err := s.EnableSource("thunderstore"); err != nil {
+		t.Fatal(err)
+	}
+	got := s.store.Get()
+	if got.ThunderstoreHandleLinks == nil || !*got.ThunderstoreHandleLinks || got.NxmPreviousHandlers["ror2mm"] != "other.desktop" {
+		t.Fatalf("after EnableSource: %+v", got)
+	}
+	if !slices.Contains(source.Schemes(), "ror2mm") {
+		t.Fatal("ror2mm is not claimed after enabling it")
+	}
+	if err := s.DisableSource("thunderstore"); err != nil {
+		t.Fatal(err)
+	}
+	got = s.store.Get()
+	if *got.ThunderstoreHandleLinks || got.NxmPreviousHandlers["ror2mm"] != "" || got.NxmPreviousHandlers["nxm"] != "other.desktop" {
+		t.Fatalf("after DisableSource: %+v", got)
+	}
+	if last := h.registry[len(h.registry)-1]; last != "release:ror2mm" || slices.Contains(source.Schemes(), "ror2mm") {
+		t.Fatalf("registry %q, schemes %v", h.registry, source.Schemes())
 	}
 }

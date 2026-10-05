@@ -125,6 +125,38 @@ func SetHandleLinks(choice map[string]bool) {
 	handleLinks = maps.Clone(choice)
 }
 
+// SetHandleLink records one source's choice to claim its link scheme.
+func SetHandleLink(id string, on bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	if handleLinks == nil {
+		handleLinks = map[string]bool{}
+	}
+	handleLinks[id] = on
+}
+
+// SchemesOf lists the link schemes the source id has, whether or not it claims them now.
+func SchemesOf(id string) []string {
+	e, ok := Get(id)
+	if !ok {
+		return nil
+	}
+	if sc, ok := e.Source.(Schemer); ok {
+		return sc.Schemes()
+	}
+	return nil
+}
+
+// OptsIn reports whether the source claims its scheme only when the user chooses it.
+func OptsIn(id string) bool {
+	e, ok := Get(id)
+	if !ok {
+		return false
+	}
+	opt, ok := e.Source.(LinkOptIn)
+	return ok && !opt.HandleLinksDefault()
+}
+
 func claims(s Source) bool {
 	if on, ok := handleLinks[s.ID()]; ok {
 		return on

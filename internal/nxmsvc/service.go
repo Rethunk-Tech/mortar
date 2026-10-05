@@ -90,6 +90,9 @@ type Service struct {
 }
 
 func NewService(store *settings.Store, handler nxm.Handler) *Service {
+	if on := store.Get().ThunderstoreHandleLinks; on != nil {
+		source.SetHandleLink("thunderstore", *on)
+	}
 	return &Service{store: store, handler: handler, now: time.Now, Assigned: make(chan Assignment, assignedBuffer)}
 }
 
@@ -332,6 +335,58 @@ func (s *Service) Enable() error {
 	return s.record(func(v *settings.Settings) {
 		v.NxmHandled, v.NxmPreviousHandlers, v.NxmPreviousName, v.NxmAsked = true, previous, prevName, true
 	})
+}
+
+// EnableSource makes Mortar handle the links of one source. An opt-in source (Thunderstore's ror2mm) is claimed and
+// recorded in its own setting; Nexus is the nxm path of Enable.
+func (s *Service) EnableSource(id string) error {
+	if !source.OptsIn(id) {
+		return s.Enable()
+	}
+	if _, ok := optInField(id); !ok {
+		return fmt.Errorf("source %q has no link scheme to handle", id)
+	}
+	source.SetHandleLink(id, true)
+	if err := s.Enable(); err != nil {
+		source.SetHandleLink(id, false)
+		return err
+	}
+	return s.record(func(v *settings.Settings) { setHandleLinks(v, id, true) })
+}
+
+// DisableSource gives one source's links back to their recorded owners and leaves the other sources registered.
+func (s *Service) DisableSource(id string) error {
+	if !source.OptsIn(id) {
+		return s.Disable()
+	}
+	if _, ok := optInField(id); !ok {
+		return fmt.Errorf("source %q has no link scheme to handle", id)
+	}
+	schemes := source.SchemesOf(id)
+	previous := maps.Clone(s.store.Get().NxmPreviousHandlers)
+	source.SetHandleLink(id, false)
+	if err := s.handler.Release(schemes, previous); err != nil {
+		source.SetHandleLink(id, true)
+		return err
+	}
+	for _, scheme := range schemes {
+		delete(previous, scheme)
+	}
+	return s.record(func(v *settings.Settings) {
+		v.NxmPreviousHandlers = previous
+		setHandleLinks(v, id, false)
+	})
+}
+
+// optInField says whether the source's choice is stored; only Thunderstore's is.
+func optInField(id string) (string, bool) {
+	return "thunderstoreHandleLinks", id == "thunderstore"
+}
+
+func setHandleLinks(v *settings.Settings, id string, on bool) {
+	if id == "thunderstore" {
+		v.ThunderstoreHandleLinks = &on
+	}
 }
 
 // Disable gives nxm links back to the recorded owner.

@@ -133,6 +133,16 @@ func (w *System) Restore(previous map[string]string) error {
 	return nil
 }
 
+// Release hands the given schemes back to their previous owners.
+func (w *System) Release(schemes []string, previous map[string]string) error {
+	for _, scheme := range schemes {
+		if err := restoreScheme(scheme, previous[scheme]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func restoreScheme(scheme, previous string) error {
 	if previous == "" {
 		class := classKey(scheme)

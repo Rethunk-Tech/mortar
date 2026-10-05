@@ -2297,7 +2297,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   support diagnostics save <path.zip> [--game id] [--profile name]  write a redacted diagnostics zip
   app update check|install                Mortar's own updates
   links register                          claim mortar:// links and .mortar files
-  links enable|disable --source nexus     take over or hand back nxm links
+  links enable|disable --source nexus|thunderstore  take over or hand back a source's links
   game reset-install <game> --yes         delete the game's install folder
   game steam-status                       whether a usable Steam was found
   problems check-updates <game> <profile>  look for mod updates now

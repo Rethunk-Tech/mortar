@@ -24,6 +24,8 @@ type Handler interface {
 	Register() error
 	// Restore hands each scheme back to its previous owner's ID in previous, or leaves it unowned when it has none.
 	Restore(previous map[string]string) error
+	// Release hands back only the given schemes to their previous owners in previous, and leaves the rest registered.
+	Release(schemes []string, previous map[string]string) error
 	// ForwardOther runs the handler recorded in previous on a link for a game Mortar does not take.
 	ForwardOther(link, previous string) error
 	// RegisterLinks makes Mortar the app for mortar:// links and .mortar files where the installer did not, and

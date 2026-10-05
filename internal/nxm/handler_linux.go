@@ -328,8 +328,22 @@ func (l *System) Restore(previous map[string]string) error {
 			return err
 		}
 	}
+	return l.handBack(source.Schemes(), previous)
+}
+
+// Release hands the given schemes back and rewrites Mortar's entry to list only the schemes still claimed.
+func (l *System) Release(schemes []string, previous map[string]string) error {
+	if !skipUserDesktop() {
+		if err := l.writeDesktop(true); err != nil {
+			return err
+		}
+	}
+	return l.handBack(schemes, previous)
+}
+
+func (l *System) handBack(schemes []string, previous map[string]string) error {
 	var unowned []string
-	for _, scheme := range source.Schemes() {
+	for _, scheme := range schemes {
 		if previous[scheme] == "" {
 			unowned = append(unowned, schemeMime(scheme))
 			continue
