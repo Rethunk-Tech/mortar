@@ -111,7 +111,8 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
     try {
       await Promise.all(mods.map((mod) => SwitchOff(game, profile, mod.key, mod.id)))
       useProfiles.getState().open(profile)
-      const names = listNames(mods.map((mod) => mod.name))
+      const named = mods.map((mod) => mod.name)
+      const names = listNames(named, named.length)
       useToasts.getState().push({
         kind: 'success',
         title: t`Disabled ${names}`,
@@ -135,7 +136,8 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   const done = status?.state === 'done'
   const stopped = status?.state === 'stopped'
   const failed = status?.state === 'failed'
-  const names = listNames(status?.result?.mods.map((mod) => mod.name) ?? [])
+  const named = status?.result?.mods.map((mod) => mod.name) ?? []
+  const names = listNames(named, named.length)
   let content: ReactNode
   if (status === null || status.state === 'starting') {
     content = <Typography>{t`Preparing a temporary copy of this profile…`}</Typography>

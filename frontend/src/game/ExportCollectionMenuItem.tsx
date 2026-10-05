@@ -30,7 +30,10 @@ export function ExportCollectionMenuItem({
     useToasts.getState().push({
       kind: skipped.length > 0 ? 'warning' : 'success',
       title: t`Collection draft saved`,
-      body: skipped.length > 0 ? `${next}\n${t`Left out: ${listNames(skipped)}`}` : next,
+      body:
+        skipped.length > 0
+          ? `${next}\n${t`Left out: ${listNames(skipped, skipped.length)}`}`
+          : next,
       action: {
         label: t`Show file`,
         run: () => ShowExportedCollection().catch(reportUnexpected),

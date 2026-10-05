@@ -40,7 +40,7 @@ export function MissingDepsDialog() {
       {wants.length === 0 ? (
         <DialogContent>
           <DialogContentText>
-            {t`No download source is known for ${listNames(names)}.`}
+            {t`No download source is known for ${listNames(names, names.length)}.`}
           </DialogContentText>
         </DialogContent>
       ) : null}
