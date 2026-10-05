@@ -620,6 +620,11 @@ func run() error {
 		app.RegisterService(s)
 	}
 
+	if packaged == "" {
+		if exe, err := os.Executable(); err == nil {
+			packaged = updatesvc.PackagedBy(exe)
+		}
+	}
 	if err := updatesvc.Configure(updates, app.Updater, version, updateKey, packaged, func() bool {
 		return store.Get().IncludeBetaReleases
 	}, dataDir); err != nil {
