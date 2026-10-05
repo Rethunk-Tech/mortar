@@ -25,6 +25,7 @@ import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 import { LaunchPresetsBlock } from './LaunchPresetsBlock.tsx'
+import { LoaderLaunchSettings } from './LoaderLaunchSettings.tsx'
 import { LoaderPicker } from './LoaderPicker.tsx'
 import { OverridesSection } from './OverrideRows.tsx'
 import { foldedOverrides } from './overrideValue.ts'
@@ -324,6 +325,12 @@ function ProfileFields({
         onLaunchEnv={onLaunchEnv}
         launchError={launchError}
         onLaunchError={onLaunchError}
+      />
+      <LoaderLaunchSettings
+        key={profile.loader ?? ''}
+        gameId={gameId}
+        profileId={profile.id}
+        loader={profile.loader ?? ''}
       />
       <LaunchPresetsBlock
         gameId={gameId}
