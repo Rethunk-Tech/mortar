@@ -60,3 +60,13 @@ func TestGaleProfileDatabase(t *testing.T) {
 		t.Fatalf("profiles = %v, %v", all, err)
 	}
 }
+
+func TestReadOnlyURIKeepsTheDriveOutOfTheAuthority(t *testing.T) {
+	got := readOnlyURI("C:/Users/me/data.sqlite3")
+	if got != "file:///C:/Users/me/data.sqlite3?mode=ro&immutable=1" {
+		t.Fatalf("uri = %s", got)
+	}
+	if got := readOnlyURI("/home/me/data.sqlite3"); got != "file:///home/me/data.sqlite3?mode=ro&immutable=1" {
+		t.Fatalf("uri = %s", got)
+	}
+}

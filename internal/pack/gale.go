@@ -67,7 +67,7 @@ func GaleProfiles(ctx context.Context, db string) ([]GaleProfile, error) {
 	if _, err := fsx.Stat(db); err != nil {
 		return nil, nil
 	}
-	conn, err := sql.Open("sqlite", (&url.URL{Scheme: "file", Path: filepath.ToSlash(db), RawQuery: "mode=ro&immutable=1"}).String())
+	conn, err := sql.Open("sqlite", readOnlyURI(db))
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +86,16 @@ func GaleProfiles(ctx context.Context, db string) ([]GaleProfile, error) {
 		out = append(out, p)
 	}
 	return out, rows.Err()
+}
+
+// readOnlyURI is SQLite's read-only URI for a database path. A Windows path ("C:/...") needs the leading slash too,
+// or SQLite takes the drive for the URI's authority and refuses it.
+func readOnlyURI(db string) string {
+	p := filepath.ToSlash(db)
+	if len(p) > 1 && p[1] == ':' {
+		p = "/" + p
+	}
+	return (&url.URL{Scheme: "file", Path: p, RawQuery: "mode=ro&immutable=1"}).String()
 }
 
 func (g Gale) find(ctx context.Context, path string) (GaleProfile, bool) {
