@@ -78,3 +78,15 @@ func isFile(p string) bool {
 	st, err := os.Stat(p)
 	return err == nil && st.Mode().IsRegular()
 }
+
+// BottleOf is the bottle that holds dir, found by walking up to a folder with bottle.yml; "" when dir is in none.
+func BottleOf(dir string) string {
+	for d := filepath.Clean(dir); ; d = filepath.Dir(d) {
+		if isFile(filepath.Join(d, "bottle.yml")) {
+			return d
+		}
+		if filepath.Dir(d) == d {
+			return ""
+		}
+	}
+}

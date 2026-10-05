@@ -81,3 +81,20 @@ func TestBottlesFindsGamesInEveryBottleLocation(t *testing.T) {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
 }
+
+func TestBottleOfWalksUpToBottleYml(t *testing.T) {
+	bottle := filepath.Join(t.TempDir(), "Games")
+	game := filepath.Join(bottle, "drive_c", "Stardew Valley")
+	if err := os.MkdirAll(game, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if BottleOf(game) != "" {
+		t.Fatal("no bottle.yml yet")
+	}
+	if err := os.WriteFile(filepath.Join(bottle, "bottle.yml"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := BottleOf(game); got != bottle {
+		t.Fatalf("BottleOf = %q, want %q", got, bottle)
+	}
+}
