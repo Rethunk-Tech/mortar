@@ -2,6 +2,9 @@ import { Box } from '@mui/material'
 import { siFlatpak, siGogdotcom, siHeroicgameslauncher, siLutris, siSteam } from 'simple-icons'
 import minigalaxy from '../vendor/minigalaxy.png'
 
+// simple-icons has no Bottles mark, so the tile carries a plain bottle.
+const BOTTLE_PATH = 'M10 2h4v3l1.5 2.5V20a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2V7.5L10 5z'
+
 // Each launcher sits on a tile of its brand colour so every logo is the same size and reads in colour on dark and
 // light surfaces. Steam's brand mark is black, so it takes the Steam client's blue instead.
 const TILES: Record<string, { path: string; bg: string }> = {
@@ -9,6 +12,7 @@ const TILES: Record<string, { path: string; bg: string }> = {
   'flatpak-steam': { path: siSteam.path, bg: '#1A9FFF' },
   heroic: { path: siHeroicgameslauncher.path, bg: `#${siHeroicgameslauncher.hex}` },
   lutris: { path: siLutris.path, bg: `#${siLutris.hex}` },
+  bottles: { path: BOTTLE_PATH, bg: '#C0392B' },
   gog: { path: siGogdotcom.path, bg: `#${siGogdotcom.hex}` },
 }
 

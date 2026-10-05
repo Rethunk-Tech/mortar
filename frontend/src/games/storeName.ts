@@ -8,6 +8,7 @@ const NAMES: Record<string, MessageDescriptor> = {
   'gog-heroic': msg`GOG via Heroic`,
   'gog-minigalaxy': msg`GOG via Minigalaxy`,
   lutris: msg`Lutris`,
+  bottles: msg`Bottles`,
 }
 
 // The store an install came from, as the window names it; "" for a folder the user chose.
