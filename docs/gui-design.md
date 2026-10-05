@@ -386,7 +386,7 @@ Update review offers **Update** per mod and **Update all**, with **Open page** k
 
 Mortar's own setup finds launchers, not games, and opens until it is finished once (`launchersConfirmed`); there is no skip.
 
-- "Welcome to Mortar" lists each launcher Mortar reads on this OS (Linux: Steam, Steam (Flatpak), Heroic, Lutris, Minigalaxy, GOG; Windows: Steam, Heroic, GOG Galaxy; a folder belongs to one launcher, so Minigalaxy's install folder is not also GOG's) as accordions in a two-column grid on a wide window, one column when narrow, centred vertically when they fit.
+- "Welcome to Mortar" lists each launcher Mortar reads on this OS (Linux: Steam, Steam (Flatpak), Heroic, Lutris, Minigalaxy, Bottles, GOG; Windows: Steam, Heroic, GOG Galaxy; a folder belongs to one launcher, so Minigalaxy's install folder is not also GOG's) as accordions in a two-column grid on a wide window, one column when narrow, centred vertically when they fit.
 - Each row's summary shows the launcher's logo (from `simple-icons`, or Minigalaxy's own icon as a white silhouette; Flatpak launchers carry a small Flatpak badge; the size of the status icon) on the left, its name, the supported games found in it ("Not found", or "Found, with no supported games yet"), and a large status icon left of the chevron: a green check when found, a grey cross when not.
 - Expanded, a row lists every folder it was found in, or where Mortar looked when it was not, the folders the user added (each with a remove button), **Add folder…** (filled when not found, outlined when found; the folder is checked to be that launcher's) and **Rescan**.
 - When none of the launchers is found, the first row starts open.

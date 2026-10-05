@@ -34,7 +34,6 @@ Not in the first release; re-weigh only when asked:
 - A hosted share service with short codes and share versioning (running costs).
 - ModDrop as a source (no documented download API); the Xbox app version (WindowsApps folders are locked down).
 - Windows code signing: SignPath Foundation declined while Mortar has little public history; re-apply once it has more.
-- Bottles as a launcher (Linux): games there are Windows builds in a Wine prefix, so it needs SMAPI's Windows installer run inside the bottle (`bottles-cli run -b <bottle> -e <installer>`) and launches through `bottles-cli run` with `--mods-path`; the Linux SMAPI install would break such a copy. Detection is simple: bottles under `~/.local/share/bottles/bottles` and `~/.var/app/com.usebottles.bottles/data/bottles/bottles`, each searched for `drive_c/Program Files (x86)/Steam` and GOG folders.
 - A profile sync folder (Syncthing, Dropbox, a NAS) holding each profile's `.mortar` state, so another machine is offered the changes, with conflict detection when both sides edited; mod files still come from their sources.
 - Needs Nexus's approval through app registration first (below), since it starts downloads outside Nexus's own Mod Manager Download button: an "Add to Mortar" button on Nexus listing tiles.
 - Per-profile save isolation.
