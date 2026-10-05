@@ -334,7 +334,7 @@ func (s *Service) SaveFile(game, profileID string, keys []string, include share.
 		dest += ".mortar"
 	}
 	var buf bytes.Buffer
-	skipped, err := share.Write(&buf, p, modsDir, include)
+	skipped, err := share.Write(&buf, game, p, modsDir, include)
 	if err != nil {
 		return Saved{}, err
 	}
@@ -358,7 +358,7 @@ func (s *Service) ExportBytes(game, profileID string, keys []string) ([]byte, []
 		return nil, nil, err
 	}
 	var buf bytes.Buffer
-	skipped, err := share.Write(&buf, p, modsDir)
+	skipped, err := share.Write(&buf, game, p, modsDir)
 	if err != nil {
 		return nil, nil, err
 	}

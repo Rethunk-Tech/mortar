@@ -25,7 +25,7 @@ import (
 func testPayload(t *testing.T) string {
 	t.Helper()
 	var buf bytes.Buffer
-	_, err := share.Write(&buf, profile.Profile{Name: "Farm friends"}, t.TempDir())
+	_, err := share.Write(&buf, "stardew", profile.Profile{Name: "Farm friends"}, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -186,7 +186,7 @@ func TestLoopbackTransfer(t *testing.T) {
 	defer receiverServer.Close()
 
 	var payload bytes.Buffer
-	if _, err := share.Write(&payload, profile.Profile{
+	if _, err := share.Write(&payload, "stardew", profile.Profile{
 		Name: "Farm friends",
 		Entries: []profile.Entry{
 			{Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}},
@@ -287,7 +287,7 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 		Entries:     entries,
 	}
 	var archive bytes.Buffer
-	if _, err := share.Write(&archive, original, modsDir); err != nil {
+	if _, err := share.Write(&archive, "stardew", original, modsDir); err != nil {
 		t.Fatal(err)
 	}
 	arrivals := make(chan Arrival, 1)

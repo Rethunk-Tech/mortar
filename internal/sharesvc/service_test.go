@@ -164,7 +164,7 @@ func TestImportFromMortarFileRecordsOrigin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := share.Write(f, src, t.TempDir()); err != nil {
+	if _, err := share.Write(f, "stardew", src, t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	if err := f.Close(); err != nil {

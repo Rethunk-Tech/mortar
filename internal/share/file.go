@@ -62,13 +62,15 @@ type Preview struct {
 }
 
 type fileDoc struct {
-	Version     int             `json:"version"`
-	Name        string          `json:"name"`
-	Notes       string          `json:"notes"`
-	Description string          `json:"description,omitempty"`
-	Entries     json.RawMessage `json:"entries"`
-	UniqueIDs   []string        `json:"uniqueIds"`
-	Groups      []FileGroup     `json:"groups,omitempty"`
+	Version     int               `json:"version"`
+	Name        string            `json:"name"`
+	Game        string            `json:"game"`
+	SourceKeys  map[string]string `json:"sourceKeys"`
+	Notes       string            `json:"notes"`
+	Description string            `json:"description,omitempty"`
+	Entries     json.RawMessage   `json:"entries"`
+	UniqueIDs   []string          `json:"uniqueIds"`
+	Groups      []FileGroup       `json:"groups,omitempty"`
 }
 
 func validSegment(s string) bool {
@@ -102,12 +104,13 @@ func validUniqueID(id string) bool {
 // Write writes the profile as a .mortar zip: profile.json with the link's entries plus name, notes and
 // description, and the .json files of each enabled mod's folder under configs/<UniqueID>/. modsDir is the
 // profile's mods/ folder. Config files that are over the caps or have unusual names are skipped and returned as paths.
-func Write(w io.Writer, p profile.Profile, modsDir string, include ...Include) (skipped []string, err error) {
+func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, include ...Include) (skipped []string, err error) {
 	inc := DefaultInclude()
 	if len(include) > 0 {
 		inc = include[0]
 	}
 	s, _, _ := Collect(p, inc)
+	s.Game, s.SourceKeys = gameID, SourceKeys(gameID)
 	zw := zip.NewWriter(w)
 	entries, err := json.Marshal(s.Entries)
 	if err != nil {
@@ -118,7 +121,7 @@ func Write(w io.Writer, p profile.Profile, modsDir string, include ...Include) (
 		notes = ""
 	}
 	doc := fileDoc{
-		Version: FormatVersion, Name: s.Name, Notes: notes, Description: p.Description,
+		Version: FormatVersion, Name: s.Name, Game: s.Game, SourceKeys: s.SourceKeys, Notes: notes, Description: p.Description,
 		Entries: entries, UniqueIDs: []string{},
 	}
 	if inc.Notes {
@@ -374,11 +377,14 @@ func parseFileDoc(raw []byte) (Preview, error) {
 	if d.Version > FormatVersion {
 		return Preview{}, ErrNewerVersion
 	}
+	if d.Version != FormatVersion {
+		return Preview{}, fmt.Errorf("%w: unsupported version %d", ErrBadFile, d.Version)
+	}
 	entries, err := parseEntries(d.Entries)
 	if err != nil {
 		return Preview{}, err
 	}
-	pv := Preview{Name: d.Name, Entries: entries, Notes: d.Notes, Description: d.Description, UniqueIDs: d.UniqueIDs, Groups: d.Groups}
+	pv := Preview{Name: d.Name, Game: d.Game, SourceKeys: d.SourceKeys, Entries: entries, Notes: d.Notes, Description: d.Description, UniqueIDs: d.UniqueIDs, Groups: d.Groups}
 	if err := checkShared(pv.Shared); err != nil {
 		return Preview{}, err
 	}

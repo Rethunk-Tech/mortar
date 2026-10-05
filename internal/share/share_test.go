@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -53,7 +54,8 @@ func TestRoundTripAndLinks(t *testing.T) {
 	}
 	for _, in := range []string{res.Web, res.App, res.App + "/", "  " + res.Payload + "\n"} {
 		got, err := Parse(in)
-		if err != nil || got.Name != "Farm 🌾" || fmt.Sprint(got.Entries) != fmt.Sprint(want) {
+		if err != nil || got.Name != "Farm 🌾" || fmt.Sprint(got.Entries) != fmt.Sprint(want) ||
+			got.Game != "stardew" || got.SourceKeys["nexus"] != "stardewvalley" {
 			t.Fatalf("Parse(%.40q) = %+v, %v", in, got, err)
 		}
 	}
@@ -89,7 +91,7 @@ func TestDetailsRoundTrip(t *testing.T) {
 
 	dir := modsDirWith(t, map[string]string{"n/config.json": "{}"})
 	var buf bytes.Buffer
-	if _, err := Write(&buf, p, dir); err != nil {
+	if _, err := Write(&buf, "stardew", p, dir); err != nil {
 		t.Fatal(err)
 	}
 	file := filepath.Join(t.TempDir(), "details.mortar")
@@ -100,20 +102,38 @@ func TestDetailsRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if pv.Game != "stardew" || pv.SourceKeys["nexus"] != "stardewvalley" {
+		t.Fatalf("file origin = %q %v", pv.Game, pv.SourceKeys)
+	}
 	if len(pv.Entries) != 1 || !slices.Equal(pv.Entries[0].Disabled, []string{"A.Off"}) ||
 		fmt.Sprint(pv.Entries[0].Fomod) != fmt.Sprint(choices) {
 		t.Fatalf("file details = %+v", pv.Entries)
 	}
 }
 
-func TestOldLinksRemainWithoutDetails(t *testing.T) {
-	got, err := Parse(pack(t, `[1,"old",[[4,5],"owner/repo@v1/a.zip"]]`))
+func TestV3WireShape(t *testing.T) {
+	doc := `[3,"mixed","stardew",{"nexus":"stardewvalley"},[` +
+		`{"s":"nexus","mod":4,"file":5,"disabled":["A.Off"],"note":"n","tags":["t"]},` +
+		`{"s":"github","repo":"owner/repo","tag":"v1","asset":"a.zip","note":"g"}]]`
+	got, err := Parse(pack(t, doc))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.Name != "old" || len(got.Entries) != 2 || got.Entries[0].Disabled != nil || got.Entries[0].Fomod != nil ||
-		got.Entries[1].Disabled != nil || got.Entries[1].Fomod != nil {
-		t.Fatalf("old link = %+v", got)
+	if got.Game != "stardew" || got.SourceKeys["nexus"] != "stardewvalley" || len(got.Entries) != 2 ||
+		got.Entries[0].ModID != 4 || got.Entries[0].FileID != 5 || got.Entries[0].Note != "n" ||
+		got.Entries[1].GitHub != "owner/repo@v1/a.zip" || got.Entries[1].Note != "g" {
+		t.Fatalf("v3 = %+v", got)
+	}
+	out, err := json.Marshal(got.Entries)
+	if err != nil || !strings.Contains(string(out), `{"s":"github","repo":"owner/repo","tag":"v1","asset":"a.zip","note":"g"}`) ||
+		!strings.Contains(string(out), `{"s":"nexus","mod":4,"file":5,`) {
+		t.Fatalf("wire = %s, %v", out, err)
+	}
+	if _, err := Parse(pack(t, `[3,"x","stardew",{"nexus":"stardewvalley"},[]]`)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Parse("mortar://lethal-company/p/" + pack(t, doc)); !errors.Is(err, ErrMalformed) {
+		t.Fatalf("link naming another game: %v", err)
 	}
 }
 
@@ -172,7 +192,7 @@ func pack(t *testing.T, doc string) string {
 }
 
 func TestNewerVersionRefused(t *testing.T) {
-	for _, doc := range []string{`[3,"x",[[1,2]]]`, `[9,{"weird":true}]`} {
+	for _, doc := range []string{`[4,"x","stardew",{},[]]`, `[9,{"weird":true}]`} {
 		if _, err := Parse(pack(t, doc)); !errors.Is(err, ErrNewerVersion) {
 			t.Errorf("%s: err = %v", doc, err)
 		}
@@ -183,12 +203,12 @@ func TestHostileShapes(t *testing.T) {
 	long := strings.Repeat("a", 61)
 	many := "[" + strings.Repeat("[1,2],", MaxEntries) + "[1,2]]"
 	for _, doc := range []string{
-		``, `{}`, `[]`, `[1]`, `[1,"x"]`, `[1,"x",[],4]`, `[0,"x",[]]`, `[-1,"x",[]]`, `["1","x",[]]`, `[1.5,"x",[]]`,
-		`[1,5,[]]`, `[1,"",[]]`, `[1," x",[]]`, `[1,"` + long + `",[]]`, "[1,\"a\\u0000b\",[]]",
-		`[1,"x",{}]`, `[1,"x",[[1]]]`, `[1,"x",[[1,2,3]]]`, `[1,"x",[[0,2]]]`, `[1,"x",[[1,-2]]]`, `[1,"x",[[1,2147483648]]]`,
-		`[1,"x",[["1","2"]]]`, `[1,"x",[[1.5,2]]]`, `[1,"x",[null]]`, `[1,"x",[7]]`, `[1,"x",[""]]`,
-		`[1,"x",["../etc/passwd"]]`, `[1,"x",["o/r@t/a b"]]`, `[1,"x",["o/r@t/../a"]]`, `[1,"x",["o/r@t/a/b"]]`,
-		`[1,"x",["o/r@/a"]]`, `[1,"x",["o/..@t/a"]]`, `[1,"x",["o/.@t/a"]]`, `[1,"x",["o/r@..` + `/a"]]`, `[1,"x",["o/r@t/.."]]`, `[1,"x",["/r@t/a"]]`, `[1,"x",[[1,2]]] trailing`, `[1,"x",` + many + `]`,
+		``, `{}`, `[]`, `[1]`, `[3,"x"]`, `[3,"x","stardew",{"nexus":"k"},[],4]`, `[0,"x",[]]`, `[-1,"x",[]]`, `["1","x",[]]`, `[1.5,"x",[]]`,
+		`[1,5,[]]`, `[2,"x",[]]`, `[2,"x","stardew",{},[]]`, `[3,"x","stardew",{},[[1,2]]]`, `[3,"x","stardew",{},["o/r@t/a"]]`, `[3,"x","stardew",{},[{"s":"nexus","mod":1,"file":2}]]`, `[3,"x","Bad Game",{"nexus":"k"},[]]`, `[3,"x","stardew",{"nexus":"a b"},[]]`, `[3,"x","stardew",{"nexus":"k"},[{"s":"other","mod":1,"file":2}]]`, `[3,"x","stardew",{"nexus":"k"},[{"s":"github","repo":"o/r","tag":"t"}]]`, `[3,"x","stardew",{"nexus":"k"},[{"s":"nexus","mod":1,"file":2,"repo":"o/r"}]]`, `[3,"",[]]`, `[3," x",[]]`, `[3,"` + long + `",[]]`, "[1,\"a\\u0000b\",[]]",
+		`[3,"x","stardew",{"nexus":"k"},{}]`, `[3,"x","stardew",{"nexus":"k"},[[1]]]`, `[3,"x","stardew",{"nexus":"k"},[[1,2,3]]]`, `[3,"x","stardew",{"nexus":"k"},[[0,2]]]`, `[3,"x","stardew",{"nexus":"k"},[[1,-2]]]`, `[3,"x","stardew",{"nexus":"k"},[[1,2147483648]]]`,
+		`[3,"x","stardew",{"nexus":"k"},[["1","2"]]]`, `[3,"x","stardew",{"nexus":"k"},[[1.5,2]]]`, `[3,"x","stardew",{"nexus":"k"},[null]]`, `[3,"x","stardew",{"nexus":"k"},[7]]`, `[3,"x","stardew",{"nexus":"k"},[""]]`,
+		`[3,"x","stardew",{"nexus":"k"},["../etc/passwd"]]`, `[3,"x","stardew",{"nexus":"k"},["o/r@t/a b"]]`, `[3,"x","stardew",{"nexus":"k"},["o/r@t/../a"]]`, `[3,"x","stardew",{"nexus":"k"},["o/r@t/a/b"]]`,
+		`[3,"x","stardew",{"nexus":"k"},["o/r@/a"]]`, `[3,"x","stardew",{"nexus":"k"},["o/..@t/a"]]`, `[3,"x","stardew",{"nexus":"k"},["o/.@t/a"]]`, `[3,"x","stardew",{"nexus":"k"},["o/r@..` + `/a"]]`, `[3,"x","stardew",{"nexus":"k"},["o/r@t/.."]]`, `[3,"x","stardew",{"nexus":"k"},["/r@t/a"]]`, `[3,"x","stardew",{"nexus":"k"},[[1,2]]] trailing`, `[3,"x","stardew",{"nexus":"k"},` + many + `]`,
 	} {
 		_, err := Parse(pack(t, doc))
 		if !errors.Is(err, ErrMalformed) {
@@ -205,7 +225,7 @@ func TestCaps(t *testing.T) {
 		t.Errorf("oversized link: %v", err)
 	}
 	// A bomb: tiny once compressed, enormous inflated. The decompressed cap must trip without inflating it all.
-	bomb := pack(t, `[1,"x",[`+strings.Repeat(" ", 4<<20)+`]]`)
+	bomb := pack(t, `[3,"x","stardew",{},[`+strings.Repeat(" ", 4<<20)+`]]`)
 	if len(bomb) > MaxEncoded {
 		t.Fatalf("bomb is %d chars, want it under the encoded cap", len(bomb))
 	}
@@ -213,7 +233,8 @@ func TestCaps(t *testing.T) {
 		t.Errorf("bomb: %v", err)
 	}
 	// Exactly at the decompressed cap parses on to the shape check instead of tripping it.
-	edge := `[1,"x",[` + strings.Repeat(" ", MaxDecoded-len(`[1,"x",[]]`)) + `]]`
+	const head = `[3,"x","stardew",{},[`
+	edge := head + strings.Repeat(" ", MaxDecoded-len(head+`]]`)) + `]]`
 	if len(edge) != MaxDecoded {
 		t.Fatalf("edge is %d bytes", len(edge))
 	}
@@ -241,8 +262,8 @@ func TestEncodeRefusesTooLarge(t *testing.T) {
 	}
 }
 
-// design.md § Sharing measured 498, 879 and 1,630 characters for 50, 100 and 200 real mods. Deterministic ids
-// in the same ranges must stay in that neighbourhood, so a codec regression shows up here.
+// Deterministic ids in the ranges of real mods must keep the link sizes in this neighbourhood, so a codec
+// regression shows up here.
 // pseudo returns a deterministic id in 1..limit, spread like real ones.
 func pseudo(seed, i, field, limit int) int {
 	sum := sha256.Sum256(fmt.Appendf(nil, "%d/%d/%d", seed, i, field))
@@ -250,7 +271,7 @@ func pseudo(seed, i, field, limit int) int {
 }
 
 func TestLinkSizes(t *testing.T) {
-	for _, tc := range []struct{ mods, min, max int }{{50, 450, 550}, {100, 790, 970}, {200, 1470, 1800}} {
+	for _, tc := range []struct{ mods, min, max int }{{50, 540, 660}, {100, 900, 1100}, {200, 1600, 1950}} {
 		p := profile.Profile{Name: "Sample profile"}
 		for i := range tc.mods {
 			p.Entries = append(p.Entries, nexus(fmt.Sprint(i), pseudo(tc.mods, i, 0, 42000), pseudo(tc.mods, i, 1, 180000)))
@@ -323,7 +344,7 @@ func TestMortarFileRoundTrip(t *testing.T) {
 	})
 	p.Entries[5].Mods = []profile.EntryMod{{UniqueID: "A.gh", Folder: "."}}
 	var buf bytes.Buffer
-	skipped, err := Write(&buf, p, dir)
+	skipped, err := Write(&buf, "stardew", p, dir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -374,7 +395,7 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 		t.Fatalf("link notes = %+v", got.Entries)
 	}
 	var buf bytes.Buffer
-	if _, err := Write(&buf, p, t.TempDir()); err != nil {
+	if _, err := Write(&buf, "stardew", p, t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	pv, err := ReadBytes(buf.Bytes())
@@ -392,7 +413,7 @@ func TestGroupsFileRoundTrip(t *testing.T) {
 		nexus("two", 2, 3),
 	}, Groups: []profile.Group{{Name: "Core", Keys: []string{"one", "two"}}}}
 	var buf bytes.Buffer
-	if _, err := Write(&buf, p, t.TempDir()); err != nil {
+	if _, err := Write(&buf, "stardew", p, t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	pv, err := ReadBytes(buf.Bytes())
@@ -411,7 +432,7 @@ func TestGroupsFileRoundTrip(t *testing.T) {
 		t.Fatalf("resolved = %v", keys)
 	}
 	var omit bytes.Buffer
-	if _, err := Write(&omit, p, t.TempDir(), Include{Notes: false, FomodChoices: true}); err != nil {
+	if _, err := Write(&omit, "stardew", p, t.TempDir(), Include{Notes: false, FomodChoices: true}); err != nil {
 		t.Fatal(err)
 	}
 	off, err := ReadBytes(omit.Bytes())
@@ -493,7 +514,7 @@ func zipOf(t *testing.T, files ...[2]string) string {
 }
 
 func TestReadRejects(t *testing.T) {
-	head := [2]string{"profile.json", `{"version":1,"name":"x","notes":"","entries":[[1,2]],"uniqueIds":["A.one"]}`}
+	head := [2]string{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","notes":"","entries":[{"s":"nexus","mod":1,"file":2}],"uniqueIds":["A.one"]}`}
 	for name, files := range map[string][][2]string{
 		"no profile":         {{"configs/A.one/c.json", "{}"}},
 		"traversal":          {head, {"configs/A.one/../../x.json", "{}"}},
@@ -510,13 +531,14 @@ func TestReadRejects(t *testing.T) {
 		"outside layout":     {head, {"mods/x.json", "{}"}},
 		"duplicate":          {head, {"configs/A.one/c.json", "{}"}, {"configs/a.ONE/C.json", "{}"}},
 		"no uniqueid folder": {head, {"configs/c.json", "{}"}},
-		"bad id in list":     {{"profile.json", `{"version":1,"name":"x","entries":[],"uniqueIds":["../x"]}`}},
-		"newer version":      {{"profile.json", `{"version":3,"name":"x","entries":[]}`}},
-		"bad entry":          {{"profile.json", `{"version":1,"name":"x","entries":[[0,1]]}`}},
-		"bad name":           {{"profile.json", `{"version":1,"name":"","entries":[]}`}},
+		"bad id in list":     {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","entries":[],"uniqueIds":["../x"]}`}},
+		"newer version":      {{"profile.json", `{"version":4,"name":"x","entries":[]}`}},
+		"bad entry":          {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","entries":[{"s":"nexus","mod":0,"file":1}]}`}},
+		"version 2":          {{"profile.json", `{"version":2,"name":"x","entries":[]}`}},
+		"bad name":           {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"","entries":[]}`}},
 		"not json":           {{"profile.json", `nope`}},
 		"oversized config":   {head, {"configs/A.one/c.json", strings.Repeat(" ", MaxConfigBytes+1)}},
-		"oversized profile":  {{"profile.json", `{"version":1,"name":"x","notes":"` + strings.Repeat("a", maxProfileBytes) + `","entries":[]}`}},
+		"oversized profile":  {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","notes":"` + strings.Repeat("a", maxProfileBytes) + `","entries":[]}`}},
 	} {
 		if _, err := Read(zipOf(t, files...)); err == nil {
 			t.Errorf("%s: accepted", name)
@@ -538,7 +560,7 @@ func TestReadRejects(t *testing.T) {
 }
 
 func TestReadEntryCap(t *testing.T) {
-	files := [][2]string{{"profile.json", `{"version":1,"name":"x","entries":[],"uniqueIds":["A.one"]}`}}
+	files := [][2]string{{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","entries":[],"uniqueIds":["A.one"]}`}}
 	for i := range MaxConfigFiles + 1 {
 		files = append(files, [2]string{fmt.Sprintf("configs/A.one/%d.json", i), "{}"})
 	}

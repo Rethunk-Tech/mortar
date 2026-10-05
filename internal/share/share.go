@@ -17,12 +17,13 @@ import (
 
 	"github.com/andybalholm/brotli"
 
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 const (
-	// FormatVersion is the payload's leading number.
-	FormatVersion = 2
+	// FormatVersion is the payload's leading number; no other version is read.
+	FormatVersion = 3
 
 	MaxEncoded    = 8 << 10
 	MaxDecoded    = 64 << 10
@@ -44,6 +45,7 @@ var (
 )
 
 // Ref names one file to install: a Nexus mod file, or a GitHub release asset as "<owner>/<repo>@<tag>/<asset>".
+// On the wire each ref is an object whose "s" names its source.
 type Ref struct {
 	ModID    int                            `json:"modId,omitempty"`
 	FileID   int                            `json:"fileId,omitempty"`
@@ -65,10 +67,12 @@ type Overlay struct {
 
 // Shared is what a link carries.
 type Shared struct {
-	// Game is the game id a parsed link names; empty for a bare payload or a file.
-	Game    string
-	Name    string
-	Entries []Ref
+	// Game is the Mortar game id the share is for.
+	Game string
+	// SourceKeys maps a source id to that source's name for the game, e.g. {"nexus": "stardewvalley"}.
+	SourceKeys map[string]string
+	Name       string
+	Entries    []Ref
 }
 
 // LeftOut is an enabled entry that cannot travel in a link.
@@ -128,52 +132,85 @@ func (r Ref) valid() bool {
 	return r.ModID > 0 && r.ModID <= maxID && r.FileID > 0 && r.FileID <= maxID
 }
 
-// MarshalJSON writes a GitHub ref as its string and a Nexus ref as [mod id, file id].
-func (r Ref) MarshalJSON() ([]byte, error) {
-	if !r.hasDetails() && r.GitHub != "" {
-		return json.Marshal(r.GitHub)
-	}
-	if !r.hasDetails() {
-		return json.Marshal([2]int{r.ModID, r.FileID})
-	}
-	return json.Marshal(refDocument(r))
+// wireRef is a ref as it travels: the source id, that source's coordinates, then the extras.
+type wireRef struct {
+	Source   string                         `json:"s"`
+	Mod      int                            `json:"mod,omitempty"`
+	File     int                            `json:"file,omitempty"`
+	Repo     string                         `json:"repo,omitempty"`
+	Tag      string                         `json:"tag,omitempty"`
+	Asset    string                         `json:"asset,omitempty"`
+	Disabled []string                       `json:"disabled,omitempty"`
+	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
+	Note     string                         `json:"note,omitempty"`
+	Tags     []string                       `json:"tags,omitempty"`
+	Overlay  *Overlay                       `json:"overlay,omitempty"`
 }
 
-type refDocument Ref
+// MarshalJSON writes the ref as its wire object.
+func (r Ref) MarshalJSON() ([]byte, error) {
+	w := wireRef{Disabled: r.Disabled, Fomod: r.Fomod, Note: r.Note, Tags: r.Tags, Overlay: r.Overlay}
+	if r.GitHub != "" {
+		w.Source = "github"
+		w.Repo, w.Tag, w.Asset = r.GitHubParts()
+	} else {
+		w.Source, w.Mod, w.File = "nexus", r.ModID, r.FileID
+	}
+	return json.Marshal(w)
+}
 
 func parseRef(raw json.RawMessage) (Ref, error) {
-	var s string
-	if json.Unmarshal(raw, &s) == nil {
-		return Ref{GitHub: s}, nil
+	var w wireRef
+	if err := json.Unmarshal(raw, &w); err != nil {
+		return Ref{}, fmt.Errorf("%w: bad entry", ErrMalformed)
 	}
-	var ids []int
-	if err := json.Unmarshal(raw, &ids); err != nil || len(ids) != 2 {
-		var doc refDocument
-		if err := json.Unmarshal(raw, &doc); err != nil {
-			return Ref{}, fmt.Errorf("%w: bad entry", ErrMalformed)
+	r := Ref{Disabled: w.Disabled, Fomod: w.Fomod, Note: w.Note, Tags: w.Tags, Overlay: w.Overlay}
+	switch {
+	case w.Source == "nexus" && w.Repo == "" && w.Tag == "" && w.Asset == "":
+		r.ModID, r.FileID = w.Mod, w.File
+	case w.Source == "github" && w.Mod == 0 && w.File == 0 && w.Repo != "" && w.Tag != "" && w.Asset != "":
+		r.GitHub = w.Repo + "@" + w.Tag + "/" + w.Asset
+	default:
+		return Ref{}, fmt.Errorf("%w: bad entry", ErrMalformed)
+	}
+	return r, nil
+}
+
+var (
+	gameIDPattern = regexp.MustCompile(`^[a-z0-9-]{1,40}$`)
+	sourceKey     = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
+)
+
+const maxSourceKeys = 16
+
+func validOrigin(s Shared) bool {
+	if !gameIDPattern.MatchString(s.Game) || len(s.SourceKeys) > maxSourceKeys {
+		return false
+	}
+	for id, key := range s.SourceKeys {
+		if !gameIDPattern.MatchString(id) || !sourceKey.MatchString(key) {
+			return false
 		}
-		return Ref(doc), nil
 	}
-	return Ref{ModID: ids[0], FileID: ids[1]}, nil
+	return true
 }
 
 func checkShared(s Shared) error {
 	if !validName(s.Name) {
 		return fmt.Errorf("%w: bad profile name", ErrMalformed)
 	}
+	if !validOrigin(s) {
+		return fmt.Errorf("%w: bad game or source keys", ErrMalformed)
+	}
 	if len(s.Entries) > MaxEntries {
 		return fmt.Errorf("%w: more than %d entries", ErrMalformed, MaxEntries)
 	}
 	for _, r := range s.Entries {
-		if !r.valid() || !validDetails(r) {
+		if !r.valid() || !validDetails(r) || (r.GitHub == "" && s.SourceKeys["nexus"] == "") {
 			return fmt.Errorf("%w: bad entry", ErrMalformed)
 		}
 	}
 	return nil
-}
-
-func (r Ref) hasDetails() bool {
-	return len(r.Disabled) > 0 || len(r.Fomod) > 0 || r.Note != "" || len(r.Tags) > 0 || r.Overlay != nil
 }
 
 func validDetails(r Ref) bool {
@@ -333,6 +370,9 @@ func versioned(raw []byte, parts int) ([]json.RawMessage, error) {
 	if v > FormatVersion {
 		return nil, ErrNewerVersion
 	}
+	if v != FormatVersion {
+		return nil, fmt.Errorf("%w: unsupported version %d", ErrMalformed, v)
+	}
 	if len(doc) != parts {
 		return nil, fmt.Errorf("%w: wrong shape", ErrMalformed)
 	}
@@ -370,7 +410,18 @@ func (s Shared) payload() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	raw := fmt.Appendf(nil, "[%d,%s,%s]", FormatVersion, name, entries)
+	game, err := json.Marshal(s.Game)
+	if err != nil {
+		return "", err
+	}
+	if s.SourceKeys == nil {
+		s.SourceKeys = map[string]string{}
+	}
+	keys, err := json.Marshal(s.SourceKeys)
+	if err != nil {
+		return "", err
+	}
+	raw := fmt.Appendf(nil, "[%d,%s,%s,%s,%s]", FormatVersion, name, game, keys, entries)
 	var buf bytes.Buffer
 	w := brotli.NewWriterLevel(&buf, brotli.BestCompression)
 	if _, err := w.Write(raw); err != nil {
@@ -387,7 +438,7 @@ func (s Shared) payload() (string, error) {
 }
 
 func withoutDetails(s Shared) Shared {
-	out := Shared{Name: s.Name, Entries: make([]Ref, len(s.Entries))}
+	out := Shared{Game: s.Game, SourceKeys: s.SourceKeys, Name: s.Name, Entries: make([]Ref, len(s.Entries))}
 	for i, r := range s.Entries {
 		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub}
 	}
@@ -472,12 +523,29 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 	return s, left, off
 }
 
+// SourceKeys is each of the game's catalog sources that names the game, keyed by source id.
+func SourceKeys(gameID string) map[string]string {
+	out := map[string]string{}
+	for _, g := range game.Catalog() {
+		if g.ID != gameID {
+			continue
+		}
+		for _, src := range g.Sources {
+			if src.Key != "" {
+				out[src.ID] = src.Key
+			}
+		}
+	}
+	return out
+}
+
 // linkPrefix matches a web or app link up to its payload; the game id is group 1 or 2.
 var linkPrefix = regexp.MustCompile(`^(?:https://mortar\.rethunk\.tech/([a-z0-9-]+)/p#|mortar://([a-z0-9-]+)/p/)`)
 
 // Encode turns a profile of the game into its share links.
-func Encode(game string, p profile.Profile, include ...Include) (Result, error) {
+func Encode(gameID string, p profile.Profile, include ...Include) (Result, error) {
 	s, left, _ := Collect(p, include...)
+	s.Game, s.SourceKeys = gameID, SourceKeys(gameID)
 	payload, err := s.payload()
 	if errors.Is(err, ErrTooLarge) {
 		fallback := withoutDetails(s)
@@ -489,24 +557,26 @@ func Encode(game string, p profile.Profile, include ...Include) (Result, error) 
 	if err != nil {
 		return Result{}, err
 	}
-	return Result{Shared: s, Payload: payload, Web: "https://mortar.rethunk.tech/" + game + "/p#" + payload, App: "mortar://" + game + "/p/" + payload, LeftOut: left}, nil
+	return Result{Shared: s, Payload: payload, Web: "https://mortar.rethunk.tech/" + gameID + "/p#" + payload, App: "mortar://" + gameID + "/p/" + payload, LeftOut: left}, nil
 }
 
-// Parse accepts the web link, the mortar:// link, or a bare payload, and returns what it names. A link's game id
-// is returned in Shared.Game unchecked: the caller decides which games it knows.
+// Parse accepts the web link, the mortar:// link, or a bare payload, and returns what it names. The game id is
+// returned unchecked: the caller decides which games it knows.
 func Parse(text string) (Shared, error) {
 	text = strings.TrimSpace(text)
-	payload, game := text, ""
+	payload, linkGame := text, ""
 	if strings.Contains(text, ":") {
 		m := linkPrefix.FindStringSubmatch(text)
 		if m == nil {
 			return Shared{}, ErrNotLink
 		}
-		game = m[1] + m[2]
+		linkGame = m[1] + m[2]
 		payload = strings.TrimSuffix(text[len(m[0]):], "/")
 	}
 	s, err := decode(payload)
-	s.Game = game
+	if err == nil && linkGame != "" && linkGame != s.Game {
+		return Shared{}, fmt.Errorf("%w: link and payload name different games", ErrMalformed)
+	}
 	return s, err
 }
 
@@ -528,7 +598,7 @@ func decode(payload string) (Shared, error) {
 	if len(raw) > MaxDecoded {
 		return Shared{}, ErrTooLarge
 	}
-	doc, err := versioned(raw, 3)
+	doc, err := versioned(raw, 5)
 	if err != nil {
 		return Shared{}, err
 	}
@@ -536,7 +606,10 @@ func decode(payload string) (Shared, error) {
 	if err := json.Unmarshal(doc[1], &s.Name); err != nil {
 		return Shared{}, fmt.Errorf("%w: bad profile name", ErrMalformed)
 	}
-	if s.Entries, err = parseEntries(doc[2]); err != nil {
+	if json.Unmarshal(doc[2], &s.Game) != nil || json.Unmarshal(doc[3], &s.SourceKeys) != nil {
+		return Shared{}, fmt.Errorf("%w: bad game or source keys", ErrMalformed)
+	}
+	if s.Entries, err = parseEntries(doc[4]); err != nil {
 		return Shared{}, err
 	}
 	if err := checkShared(s); err != nil {

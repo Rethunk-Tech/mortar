@@ -17,14 +17,14 @@ function el(tag, attrs, text) {
   return n
 }
 
-function row(e) {
+function row(e, sourceKeys) {
   const li = el('li')
   if (e.kind === 'nexus') {
     li.append(
       el(
         'a',
         {
-          href: `https://www.nexusmods.com/stardewvalley/mods/${e.mod}`,
+          href: `https://www.nexusmods.com/${encodeURIComponent(sourceKeys.nexus)}/mods/${e.mod}`,
           rel: 'noopener noreferrer',
         },
         `Nexus mod ${e.mod}`,
@@ -64,9 +64,9 @@ async function main() {
   }
   $('name').textContent = share.name
   $('count').textContent = `${share.entries.length} ${share.entries.length === 1 ? 'mod' : 'mods'}`
-  $('list').append(...share.entries.map(row))
+  $('list').append(...share.entries.map((e) => row(e, share.sourceKeys)))
   $('profile').hidden = false
-  $('open').href = `mortar://stardew/p/${payload}`
+  $('open').href = `mortar://${share.game}/p/${payload}`
   $('open').hidden = false
   $('download').hidden = false
   $('download').addEventListener('click', () => {

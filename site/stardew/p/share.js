@@ -2,7 +2,7 @@ import init, { DecompressStream } from '../../vendor/brotli-dec-wasm/brotli_dec_
 
 const MAX_ENCODED = 8192
 const MAX_DECODED = 65_536
-const VERSION = 2
+const VERSION = 3
 const REPO = /^[\w.-]+\/[\w.-]+$/
 const HASH = /^#/
 const B64URL = /^[\w-]+$/
@@ -24,33 +24,24 @@ function inflate(bytes, wasm) {
   })
 }
 
-function github(text) {
-  if (typeof text !== 'string') {
-    return
-  }
-  const at = text.indexOf('@')
-  const slash = text.lastIndexOf('/')
-  const repo = text.slice(0, at)
-  if (at > 0 && slash > at + 1 && REPO.test(repo)) {
-    return { kind: 'github', repo, tag: text.slice(at + 1, slash), asset: text.slice(slash + 1) }
-  }
-}
-
-// An entry is a GitHub asset string, a [mod, file] pair, or (version 2) an object carrying either plus extras.
+// An entry is an object naming its source: {s: 'nexus', mod, file} or {s: 'github', repo, tag, asset}.
 function entry(e) {
-  const doc = e && typeof e === 'object' && !Array.isArray(e) ? e : undefined
-  const mod = Array.isArray(e) ? e[0] : doc?.modId
-  if (Number.isInteger(mod) && mod > 0) {
-    return { kind: 'nexus', mod }
-  }
-  const g = github(doc ? doc.github : e)
-  if (g) {
-    return g
+  if (e && typeof e === 'object' && !Array.isArray(e)) {
+    if (e.s === 'nexus' && Number.isInteger(e.mod) && e.mod > 0) {
+      return { kind: 'nexus', mod: e.mod }
+    }
+    if (
+      e.s === 'github' &&
+      [e.repo, e.tag, e.asset].every((v) => typeof v === 'string' && v) &&
+      REPO.test(e.repo)
+    ) {
+      return { kind: 'github', repo: e.repo, tag: e.tag, asset: e.asset }
+    }
   }
   throw new ShareError('bad')
 }
 
-// Payload is the text after "#": base64url(brotli(JSON [version, name, entries])), version 1 through VERSION.
+// Payload is the text after "#": base64url(brotli(JSON [3, name, game, sourceKeys, entries])); only VERSION is read.
 export async function decodeShare(hash, wasm) {
   const payload = hash.replace(HASH, '')
   if (!payload) {
@@ -70,14 +61,27 @@ export async function decodeShare(hash, wasm) {
   if (!Array.isArray(json) || json.length === 0) {
     throw new ShareError('bad')
   }
-  if (!Number.isInteger(json[0]) || json[0] < 1 || json[0] > VERSION) {
-    throw new ShareError(Number.isInteger(json[0]) ? 'version' : 'bad')
+  if (Number.isInteger(json[0]) && json[0] > VERSION) {
+    throw new ShareError('version')
   }
-  const [, name, entries] = json
-  if (typeof name !== 'string' || !Array.isArray(entries)) {
+  const [version, name, game, sourceKeys, entries] = json
+  if (
+    version !== VERSION ||
+    typeof name !== 'string' ||
+    typeof game !== 'string' ||
+    !game ||
+    !sourceKeys ||
+    typeof sourceKeys !== 'object' ||
+    Array.isArray(sourceKeys) ||
+    !Array.isArray(entries)
+  ) {
     throw new ShareError('bad')
   }
-  return { name, entries: entries.map(entry) }
+  const out = entries.map(entry)
+  if (out.some((e) => e.kind === 'nexus') && typeof sourceKeys.nexus !== 'string') {
+    throw new ShareError('bad')
+  }
+  return { name, game, sourceKeys, entries: out }
 }
 
 export class ShareError extends Error {

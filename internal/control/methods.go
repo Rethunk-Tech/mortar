@@ -1215,7 +1215,7 @@ func (s *Services) export(gameID string, p profile.Profile, path string) (Export
 	if err != nil {
 		return Exported{}, err
 	}
-	skipped, err := share.Write(f, p, modsDir)
+	skipped, err := share.Write(f, gameID, p, modsDir)
 	if cerr := f.Close(); err == nil {
 		err = cerr
 	}
