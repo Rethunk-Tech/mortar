@@ -1,37 +1,31 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
 import { Play } from 'lucide-react'
-import { type MouseEvent, useCallback, useEffect, useState } from 'react'
+import type { MouseEvent } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
-  Get,
   SetLastGame,
   SetLastProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { gameSetupNeeded } from '../firstrun/needed.ts'
-import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNow } from '../i18n/useNow.ts'
 import { absoluteWhen } from '../i18n/when.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
-import { useLoader } from '../loader/store.ts'
 import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
-import { useSettings } from '../settings/store.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
-import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
+import { reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
 import { ProfileCards } from './ProfileCards.tsx'
 import { formatPlaytime } from './playtime.ts'
-import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 import { storeName } from './storeName.ts'
+import { ordered, useGameTiles } from './useGameTiles.ts'
 
 type Game = GameInfo
 
@@ -114,7 +108,7 @@ function SourceBadges({ sources }: { sources: string[] }) {
   )
 }
 
-function Row({
+export function Row({
   game,
   openable,
   note,
@@ -124,6 +118,7 @@ function Row({
   lastPlayedId,
   playtimeMs,
   cards,
+  selected = false,
 }: {
   game: Game
   openable: boolean
@@ -134,6 +129,8 @@ function Row({
   lastPlayedId: string
   playtimeMs: number
   cards: { gameId: GameId; profiles: Profile[]; lastPlayed: Played | undefined } | undefined
+  // The game already open, marked in the switcher.
+  selected?: boolean
 }) {
   const { t, i18n } = useLingui()
   const start = useLaunch((s) => s.start)
@@ -187,7 +184,14 @@ function Row({
   const content = (
     <>
       {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
-      {openable ? <CoverButton onClick={open} aria-label={t`Open ${game.name}`} /> : null}
+      {openable ? (
+        <CoverButton
+          data-game-cover=""
+          aria-current={selected ? 'true' : undefined}
+          onClick={open}
+          aria-label={t`Open ${game.name}`}
+        />
+      ) : null}
       <Box
         sx={{
           ...aboveOpen,
@@ -259,103 +263,21 @@ function Row({
     borderColor: openable ? 'primary.main' : 'transparent',
     borderTop: '1px solid rgba(0,0,0,0.8)',
     fontFamily: 'inherit',
+    ...(selected
+      ? { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: '-2px' }
+      : {}),
   } as const
   return <Box sx={sx}>{content}</Box>
 }
 
-// Installed games first, then supported ones not found, then those coming later; catalog order within each.
-function ordered(games: Game[]): Game[] {
-  const rank = (g: Game) => {
-    if (g.available && g.installed) {
-      return 0
-    }
-    return g.available ? 1 : 2
-  }
-  return games
-    .map((g, i) => ({ g, i }))
-    .sort((a, b) => rank(a.g) - rank(b.g) || a.i - b.i)
-    .map(({ g }) => g)
-}
-
-interface GameState {
-  profiles: Profile[]
-  lastPlayedId: string
-  lastPlayedAt: string
-  lastPlayed: Played | undefined
-  playtimeMs: number
-  setupNeeded: boolean
-}
-
 export function GameSelect() {
   const { t } = useLingui()
-  const [status, setStatus] = useState<GameStatus | null>(null)
-  const [states, setStates] = useState<Record<string, GameState>>({})
-  const [loadError, setLoadError] = useState<InlineError | null>(null)
-  const loaderStatus = useLoader((s) => s.status)
-  const checkLoader = useLoader((s) => s.check)
-  const lastGame = useSettings((s) => s.lastGame)
-  const availableGames = status?.games.filter((g) => g.available) ?? []
-  const loaderGame = (availableGames.find((g) => g.id === lastGame) ?? availableGames[0])?.id
-  useEffect(() => {
-    if (loaderGame) {
-      checkLoader(loaderGame)
-    }
-  }, [checkLoader, loaderGame])
-  const refresh = useCallback(() => {
-    setLoadError(null)
-    Promise.all([loadGameStatus(), Get()])
-      .then(async ([s, settings]) => {
-        const entries = await Promise.all(
-          s.games
-            .filter((g) => g.available)
-            .map(async (g): Promise<[string, GameState]> => {
-              const [listed, setupNeeded] = await Promise.all([List(g.id), gameSetupNeeded(g)])
-              const profiles = listed ?? []
-              const played = settings.lastPlayed?.[g.id]
-              const still = Boolean(
-                played?.profile && profiles.some((p) => p.id === played.profile),
-              )
-              return [
-                g.id,
-                {
-                  profiles,
-                  setupNeeded,
-                  lastPlayedId: still && played ? played.profile : '',
-                  lastPlayedAt: still && played ? played.at : '',
-                  lastPlayed: still && played ? played : undefined,
-                  playtimeMs: played?.playtimeMs ?? 0,
-                },
-              ]
-            }),
-        )
-        setStatus(s)
-        setStates(Object.fromEntries(entries))
-      })
-      .catch((err: unknown) => {
-        fail(t`Could not read your games`, err)
-        setLoadError(inlineError(err))
-      })
-  }, [t])
-  useEffect(refresh, [refresh])
-  useRefreshOnFocus(refresh)
+  const { status, loadError, refresh, tileProps } = useGameTiles()
   if (loadError) {
     return <LoadErrorRow error={loadError} onRetry={refresh} />
   }
   if (!status) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
-  }
-  const noteFor = (g: Game) => {
-    const st = states[g.id]
-    if (!g.available) {
-      return t`Coming in a later Mortar version`
-    }
-    if (!st || st.setupNeeded) {
-      return t`Not set up · Open it to set it up`
-    }
-    return plural(st.profiles.length, {
-      one: 'Installed · # profile',
-      other: 'Installed · # profiles',
-    })
   }
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -369,34 +291,9 @@ export function GameSelect() {
           gridAutoRows: `minmax(${TILE_MIN_PX}px, 1fr)`,
         }}
       >
-        {ordered(status.games).map((g) => {
-          const st = states[g.id]
-          const lastId = st?.lastPlayedId ?? ''
-          const showCards =
-            g.available &&
-            g.installed &&
-            st &&
-            !st.setupNeeded &&
-            st.profiles.some((p) => !p.hidden)
-          return (
-            <Row
-              key={g.id}
-              game={g}
-              openable={g.available}
-              note={noteFor(g)}
-              loader={loaderCaption(g.loader, g.id === loaderGame ? loaderStatus : null)}
-              lastPlayedName={st?.profiles.find((p) => p.id === lastId)?.name ?? ''}
-              lastPlayedAt={st?.lastPlayedAt ?? ''}
-              lastPlayedId={st?.setupNeeded ? '' : lastId}
-              playtimeMs={st?.playtimeMs ?? 0}
-              cards={
-                showCards && isGameId(g.id)
-                  ? { gameId: g.id, profiles: st.profiles, lastPlayed: st.lastPlayed }
-                  : undefined
-              }
-            />
-          )
-        })}
+        {ordered(status.games).map((g) => (
+          <Row key={g.id} {...tileProps(g)} />
+        ))}
       </Box>
       {!status.games.some((g) => g.available && g.installed) && (
         <Box sx={{ px: 2, py: 0.75, display: 'flex', alignItems: 'center', gap: 1 }}>

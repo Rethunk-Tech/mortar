@@ -3,7 +3,6 @@ import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/int
 import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { currentGame, useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { useSettings } from '../settings/store.ts'
 
 const useGameList = create<{ games: GameInfo[] }>(() => ({ games: [] }))
 let requested = false
@@ -51,15 +50,4 @@ export function useGameLoader(id?: string): string {
 
 export function useGameName(id?: string): string {
   return useGameInfo(id)?.name || FALLBACK_NAME
-}
-
-// useOtherGames lists the playable games other than current, most recently played first, for quick switching.
-export function useOtherGames(current: string): GameInfo[] {
-  ensureLoaded()
-  const games = useGameList((s) => s.games)
-  const played = useSettings((s) => s.lastPlayed)
-  const at = (id: string) => played?.[id]?.at ?? ''
-  return games
-    .filter((g) => g.available && g.id !== current)
-    .sort((a, b) => at(b.id).localeCompare(at(a.id)))
 }

@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Menu, MenuItem } from '@mui/material'
-import { ChevronDown, Copy, Minus, Square, X } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { Box, ButtonBase } from '@mui/material'
+import { Copy, Minus, Square, X } from 'lucide-react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { compact } from '../game/compact.ts'
-import { useOtherGames } from '../games/info.ts'
+import { GameSwitcher } from '../games/GameSwitcher.tsx'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -42,42 +42,6 @@ function Tab({
   )
 }
 
-// GameSwitch drops down the other playable games, most recently played first; it is absent with only one game.
-function GameSwitch({ current }: { current: string }) {
-  const { t } = useLingui()
-  const others = useOtherGames(current)
-  const openGame = useNav((s) => s.openGame)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  if (others.length === 0) {
-    return null
-  }
-  return (
-    <>
-      <ButtonBase
-        aria-label={t`Switch game`}
-        aria-haspopup="menu"
-        onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ ...noDrag, px: '6px', color: 'var(--mortar-ink-dim-92)' }}
-      >
-        <ChevronDown size={14} />
-      </ButtonBase>
-      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
-        {others.map((g) => (
-          <MenuItem
-            key={g.id}
-            onClick={() => {
-              setAnchor(null)
-              openGame(g.id)
-            }}
-          >
-            {g.name}
-          </MenuItem>
-        ))}
-      </Menu>
-    </>
-  )
-}
-
 function WindowButton({
   label,
   onClick,
@@ -108,9 +72,11 @@ function WindowButton({
 export function TitleBar({ maximised }: { maximised: boolean }) {
   const { t } = useLingui()
   const route = useNav((s) => s.route)
-  const openGame = useNav((s) => s.openGame)
   const openGameSelect = useNav((s) => s.openGameSelect)
   const gameName = useProfiles((s) => s.game?.name)
+  const [switching, setSwitching] = useState(false)
+  // Any navigation, including choosing a game in the switcher, closes it.
+  useEffect(() => useNav.subscribe(() => setSwitching(false)), [])
   return (
     <Box
       component="header"
@@ -140,10 +106,10 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       )}
       {(route.name === 'game' || route.name === 'profiles' || route.name === 'game-settings') && (
         <>
-          <Tab active={true} onClick={() => openGame(route.game)}>
+          <Tab active={true} onClick={() => setSwitching((on) => !on)}>
             {gameName ?? t`Game`}
           </Tab>
-          <GameSwitch current={route.game} />
+          <GameSwitcher current={route.game} open={switching} onClose={() => setSwitching(false)} />
         </>
       )}
       {route.name === 'settings' && (
