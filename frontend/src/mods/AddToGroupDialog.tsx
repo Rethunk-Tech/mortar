@@ -8,9 +8,10 @@ import {
   MenuItem,
   TextField,
 } from '@mui/material'
-import { FolderTree } from 'lucide-react'
+import { FolderPlus, FolderTree } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
@@ -62,6 +63,11 @@ function AddToGroupDialog({
       <DialogTitle>{t`Add to group…`}</DialogTitle>
       <LockedReason locked={locked}>
         <DialogContent>
+          {groups.length === 0 ? (
+            <EmptyState compact={true} icon={<FolderPlus size={28} />} title={t`No groups yet`}>
+              {t`Name a group below to create it and add this mod.`}
+            </EmptyState>
+          ) : null}
           {groups.map((g) => (
             <MenuItem
               key={g.name}

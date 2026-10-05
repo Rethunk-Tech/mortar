@@ -7,7 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/saves/SavesTab.tsx:51
+#: src/saves/SavesTab.tsx:53
 msgid "No saves match"
 msgstr "No saves match"
 
@@ -236,7 +236,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/saves/SaveRow.tsx:95
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
-#: src/toasts/HistoryButton.tsx:28
+#: src/toasts/HistoryButton.tsx:29
 #: src/toasts/ToastHost.tsx:105
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
@@ -360,8 +360,8 @@ msgstr "Kept at this version ({0})"
 
 #: src/game/ProfileMenuItems.tsx:341
 #: src/profiles/HistoryPanel.tsx:45
-#: src/queue/QueueSheet.tsx:71
-#: src/queue/QueueSheet.tsx:78
+#: src/queue/QueueSheet.tsx:72
+#: src/queue/QueueSheet.tsx:79
 msgid "History"
 msgstr "History"
 
@@ -678,7 +678,7 @@ msgstr "Save selection as bundle"
 msgid "{name} updated to {version}: {n, plural, one {# profile needs attention} other {# profiles need attention}}"
 msgstr "{name} updated to {version}: {n, plural, one {# profile needs attention} other {# profiles need attention}}"
 
-#: src/mods/CategoryEditor.tsx:121
+#: src/mods/CategoryEditor.tsx:122
 msgid "Group mods by these names, or assign one as a mod's primary category."
 msgstr "Group mods by these names, or assign one as a mod's primary category."
 
@@ -735,7 +735,7 @@ msgstr "Reorder {0}"
 msgid "{0, plural, one {Move # mod} other {Move # mods}}"
 msgstr "{0, plural, one {Move # mod} other {Move # mods}}"
 
-#: src/browse/BrowseBody.tsx:74
+#: src/browse/BrowseBody.tsx:76
 msgid "Find mods to add"
 msgstr "Find mods to add"
 
@@ -997,7 +997,7 @@ msgstr "Already in Steam"
 msgid "Nexus download links"
 msgstr "Nexus download links"
 
-#: src/queue/QueueSheet.tsx:62
+#: src/queue/QueueSheet.tsx:63
 msgid "{parallel} · {counts}"
 msgstr "{parallel} · {counts}"
 
@@ -1046,7 +1046,7 @@ msgid "Replaces some files of the mod above"
 msgstr "Replaces some files of the mod above"
 
 #. placeholder {0}: sum.done
-#: src/queue/QueueSheet.tsx:51
+#: src/queue/QueueSheet.tsx:52
 msgid "{0} done"
 msgstr "{0} done"
 
@@ -1407,7 +1407,7 @@ msgstr "Changelog unavailable"
 msgid "List view"
 msgstr "List view"
 
-#: src/toasts/HistoryButton.tsx:153
+#: src/toasts/HistoryButton.tsx:160
 msgid "Earlier"
 msgstr "Earlier"
 
@@ -1547,7 +1547,7 @@ msgstr "Download again"
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
-#: src/browse/BrowseBody.tsx:86
+#: src/browse/BrowseBody.tsx:88
 #: src/firstrun/LoaderStep.tsx:200
 #: src/firstrun/LoaderStep.tsx:268
 #: src/game/detailStates.tsx:27
@@ -1602,7 +1602,7 @@ msgid "Show less"
 msgstr "Show less"
 
 #. placeholder {0}: sum.left
-#: src/queue/QueueSheet.tsx:54
+#: src/queue/QueueSheet.tsx:55
 msgid "{0} left"
 msgstr "{0} left"
 
@@ -1700,7 +1700,7 @@ msgstr "Running for {time}"
 
 #: src/bundles/dialogs.tsx:58
 #: src/firstrun/ProfileStep.tsx:120
-#: src/mods/CategoryEditor.tsx:40
+#: src/mods/CategoryEditor.tsx:41
 #: src/mods/columnLabel.ts:7
 #: src/profiles/LaunchPresetDialog.tsx:58
 #: src/settings/prefCopy.ts:391
@@ -1899,7 +1899,7 @@ msgstr "Enter a name for the profile."
 msgid "Already has it"
 msgstr "Already has it"
 
-#: src/saves/SavesTab.tsx:67
+#: src/saves/SavesTab.tsx:73
 msgid "Filter saves"
 msgstr "Filter saves"
 
@@ -2096,7 +2096,7 @@ msgid "Queued"
 msgstr "Queued"
 
 #. placeholder {0}: i.name
-#: src/queue/QueueBody.tsx:395
+#: src/queue/QueueBody.tsx:403
 msgid "Skip {0}"
 msgstr "Skip {0}"
 
@@ -2139,6 +2139,10 @@ msgstr "Repaired {name}"
 #: src/mods/LoadOrderTab.tsx:202
 msgid "Copy load order"
 msgstr "Copy load order"
+
+#: src/saves/SavesTab.tsx:60
+msgid "Try a different search."
+msgstr "Try a different search."
 
 #: src/settings/sections/Accounts.tsx:30
 #: src/shell/NexusAccount.tsx:30
@@ -2212,6 +2216,10 @@ msgstr "Downloading"
 msgid "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 msgstr "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 
+#: src/mods/AddToGroupDialog.tsx:67
+msgid "No groups yet"
+msgstr "No groups yet"
+
 #: src/settings/sections/ScheduledStatus.tsx:14
 msgid "No scheduled backup has run yet."
 msgstr "No scheduled backup has run yet."
@@ -2234,7 +2242,7 @@ msgid "Track a Nexus mod when Mortar installs it"
 msgstr "Track a Nexus mod when Mortar installs it"
 
 #: src/mods/updateReview/EverywhereDialog.tsx:50
-#: src/queue/QueueBody.tsx:437
+#: src/queue/QueueBody.tsx:445
 #: src/queue/QueueHistory.tsx:67
 msgid "Skipped"
 msgstr "Skipped"
@@ -2662,7 +2670,7 @@ msgstr "Import {count} changes"
 msgid "This frees {0}. Deleted mods download again if a profile needs them later."
 msgstr "This frees {0}. Deleted mods download again if a profile needs them later."
 
-#: src/queue/QueueSheet.tsx:78
+#: src/queue/QueueSheet.tsx:79
 msgid "Queue"
 msgstr "Queue"
 
@@ -2696,6 +2704,10 @@ msgstr "Launch prefix"
 #: src/shell/BugReportDialog.tsx:69
 msgid "What happened"
 msgstr "What happened"
+
+#: src/mods/CategoryEditor.tsx:128
+msgid "No custom categories yet"
+msgstr "No custom categories yet"
 
 #: src/settings/shortcutLabels.ts:37
 msgid "Open the next profile"
@@ -2784,7 +2796,7 @@ msgid "Different version"
 msgstr "Different version"
 
 #. placeholder {0}: listNames(result.failed)
-#: src/browse/BrowseBody.tsx:52
+#: src/browse/BrowseBody.tsx:53
 msgid "{0} did not answer"
 msgstr "{0} did not answer"
 
@@ -3168,7 +3180,7 @@ msgstr "Console"
 msgid "Try a different search or filter."
 msgstr "Try a different search or filter."
 
-#: src/browse/BrowseBody.tsx:83
+#: src/browse/BrowseBody.tsx:85
 msgid "Search did not work"
 msgstr "Search did not work"
 
@@ -3261,14 +3273,14 @@ msgstr "Computer paired"
 msgid "Default launch preset"
 msgstr "Default launch preset"
 
-#: src/mods/CategoryEditor.tsx:118
+#: src/mods/CategoryEditor.tsx:119
 msgid "Custom categories"
 msgstr "Custom categories"
 
 #: src/bundles/BundlesSection.tsx:148
 #: src/game/ProfileMenuItems.tsx:83
 #: src/game/ProfileMenuItems.tsx:416
-#: src/mods/CategoryEditor.tsx:159
+#: src/mods/CategoryEditor.tsx:169
 #: src/mods/OldFilesCallouts.tsx:103
 #: src/mods/problemFixButtons.tsx:196
 #: src/mods/problemFixButtons.tsx:201
@@ -3565,9 +3577,9 @@ msgstr "Share as r2modman code?"
 #: src/launch/SaveWarnDialog.tsx:67
 #: src/launch/UpdateWarnDialog.tsx:49
 #: src/launch/VanillaPlay.tsx:238
-#: src/mods/AddToGroupDialog.tsx:93
-#: src/mods/CategoryEditor.tsx:144
-#: src/mods/CategoryEditor.tsx:224
+#: src/mods/AddToGroupDialog.tsx:99
+#: src/mods/CategoryEditor.tsx:154
+#: src/mods/CategoryEditor.tsx:234
 #: src/mods/parts.tsx:378
 #: src/mods/ReportToAuthorButton.tsx:235
 #: src/mods/SelectionBarDialogs.tsx:86
@@ -3735,7 +3747,7 @@ msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
 #. placeholder {0}: active.length
-#: src/queue/QueueBody.tsx:375
+#: src/queue/QueueBody.tsx:383
 msgid "In progress ({0})"
 msgstr "In progress ({0})"
 
@@ -4158,6 +4170,7 @@ msgid "Could not save that setting"
 msgstr "Could not save that setting"
 
 #: src/mods/Toolbar.tsx:244
+#: src/queue/QueueBody.tsx:359
 msgid "Browse mods"
 msgstr "Browse mods"
 
@@ -4166,7 +4179,7 @@ msgstr "Browse mods"
 msgid "Freed {0}"
 msgstr "Freed {0}"
 
-#: src/mods/CategoryEditor.tsx:210
+#: src/mods/CategoryEditor.tsx:220
 msgid "Set category"
 msgstr "Set category"
 
@@ -4530,8 +4543,8 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/mods/Sidebar.tsx:160
 #: src/queue/QueueButton.tsx:14
 #: src/queue/QueueButton.tsx:17
-#: src/queue/QueueSheet.tsx:71
-#: src/queue/QueueSheet.tsx:182
+#: src/queue/QueueSheet.tsx:72
+#: src/queue/QueueSheet.tsx:183
 #: src/settings/SettingsPage.tsx:37
 msgid "Downloads"
 msgstr "Downloads"
@@ -4701,7 +4714,7 @@ msgstr "Has problems"
 msgid "LAN port"
 msgstr "LAN port"
 
-#: src/queue/QueueSheet.tsx:85
+#: src/queue/QueueSheet.tsx:86
 msgid "Clear finished"
 msgstr "Clear finished"
 
@@ -4712,7 +4725,7 @@ msgstr "Clear finished"
 msgid "Enable {0}"
 msgstr "Enable {0}"
 
-#: src/saves/SavesTab.tsx:74
+#: src/saves/SavesTab.tsx:80
 msgid "Save backups…"
 msgstr "Save backups…"
 
@@ -4998,7 +5011,7 @@ msgid "Launch options"
 msgstr "Launch options"
 
 #. placeholder {0}: names(next)
-#: src/queue/QueueBody.tsx:382
+#: src/queue/QueueBody.tsx:390
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
@@ -5197,6 +5210,10 @@ msgstr "Farming skill"
 #: src/settings/sections/LoaderRow.tsx:80
 msgid "Stop the game to install {0}."
 msgstr "Stop the game to install {0}."
+
+#: src/toasts/HistoryButton.tsx:147
+msgid "No notifications yet"
+msgstr "No notifications yet"
 
 #: src/mods/ModUpdateControls.tsx:17
 #: src/mods/OptionalFiles.tsx:80
@@ -5523,7 +5540,7 @@ msgid "Token regenerated"
 msgstr "Token regenerated"
 
 #. placeholder {0}: sum.active
-#: src/queue/QueueSheet.tsx:52
+#: src/queue/QueueSheet.tsx:53
 msgid "{0} in progress"
 msgstr "{0} in progress"
 
@@ -5536,7 +5553,7 @@ msgid "Start the game to see values"
 msgstr "Start the game to see values"
 
 #. placeholder {0}: formatKb(sum.sizeKb)
-#: src/queue/QueueSheet.tsx:63
+#: src/queue/QueueSheet.tsx:64
 msgid "{summary} · {0}"
 msgstr "{summary} · {0}"
 
@@ -5600,8 +5617,8 @@ msgstr "Could not remove the selected mods"
 #: src/commandPalette/CommandPalette.tsx:147
 #: src/settings/sections/DataImport.tsx:19
 #: src/settings/SettingsPage.tsx:40
-#: src/toasts/HistoryButton.tsx:139
-#: src/toasts/HistoryButton.tsx:202
+#: src/toasts/HistoryButton.tsx:140
+#: src/toasts/HistoryButton.tsx:211
 #: src/toasts/ToastHost.tsx:229
 msgid "Notifications"
 msgstr "Notifications"
@@ -5800,7 +5817,7 @@ msgstr "Untrack every mod you track on Nexus"
 
 #: src/console/PerformanceComparison.tsx:66
 #: src/mods/NewSince.tsx:14
-#: src/toasts/HistoryButton.tsx:145
+#: src/toasts/HistoryButton.tsx:152
 msgid "New"
 msgstr "New"
 
@@ -5829,7 +5846,7 @@ msgid "Chosen by you"
 msgstr "Chosen by you"
 
 #. placeholder {0}: result.hidden
-#: src/browse/BrowseBody.tsx:50
+#: src/browse/BrowseBody.tsx:51
 msgid "{0} hidden"
 msgstr "{0} hidden"
 
@@ -5969,8 +5986,8 @@ msgstr "{owner} opens these links now."
 msgid "{0, plural, one {# mod selected} other {# mods selected}}"
 msgstr "{0, plural, one {# mod selected} other {# mods selected}}"
 
-#: src/mods/AddToGroupDialog.tsx:29
-#: src/mods/AddToGroupDialog.tsx:62
+#: src/mods/AddToGroupDialog.tsx:30
+#: src/mods/AddToGroupDialog.tsx:63
 msgid "Add to group…"
 msgstr "Add to group…"
 
@@ -6065,7 +6082,7 @@ msgstr "imported from the game's Mods folder"
 msgid "View"
 msgstr "View"
 
-#: src/browse/BrowseBody.tsx:91
+#: src/browse/BrowseBody.tsx:93
 msgid "The service may be busy. Try again in a minute."
 msgstr "The service may be busy. Try again in a minute."
 
@@ -6109,7 +6126,7 @@ msgstr "Could not export the profile"
 msgid "Console log cap"
 msgstr "Console log cap"
 
-#: src/browse/BrowseBody.tsx:104
+#: src/browse/BrowseBody.tsx:108
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
@@ -6177,7 +6194,7 @@ msgstr "Saving…"
 msgid "Delete group"
 msgstr "Delete group"
 
-#: src/mods/AddToGroupDialog.tsx:79
+#: src/mods/AddToGroupDialog.tsx:85
 msgid "New group"
 msgstr "New group"
 
@@ -6615,7 +6632,7 @@ msgstr "Remove {0} from other profiles"
 msgid "All sources"
 msgstr "All sources"
 
-#: src/toasts/HistoryButton.tsx:118
+#: src/toasts/HistoryButton.tsx:119
 msgid "Notification history"
 msgstr "Notification history"
 
@@ -6922,7 +6939,7 @@ msgstr "·"
 
 #: src/browse/CardAction.tsx:73
 #: src/downloads/newDownloads.ts:35
-#: src/mods/AddToGroupDialog.tsx:99
+#: src/mods/AddToGroupDialog.tsx:105
 #: src/mods/ModDependencyTree.tsx:72
 #: src/mods/ModMenu.tsx:374
 #: src/mods/problemFix/ListedFix.tsx:18
@@ -6938,7 +6955,7 @@ msgid "Add"
 msgstr "Add"
 
 #. placeholder {0}: fits.length
-#: src/saves/SavesTab.tsx:68
+#: src/saves/SavesTab.tsx:74
 msgid "{0, plural, one {Filter # save} other {Filter # saves}}"
 msgstr "{0, plural, one {Filter # save} other {Filter # saves}}"
 
@@ -6972,6 +6989,10 @@ msgstr "No entries match."
 #: src/game/ProfileMenuItems.tsx:250
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
+
+#: src/toasts/HistoryButton.tsx:148
+msgid "Results of installs, updates and launches appear here."
+msgstr "Results of installs, updates and launches appear here."
 
 #: src/console/BisectDialog.tsx:152
 msgid "Crash finding was stopped."
@@ -7354,7 +7375,7 @@ msgstr "Compatibility"
 msgid "After"
 msgstr "After"
 
-#: src/toasts/HistoryButton.tsx:161
+#: src/toasts/HistoryButton.tsx:170
 msgid "All changes…"
 msgstr "All changes…"
 
@@ -7809,7 +7830,7 @@ msgstr "Remove {0}?"
 msgid "Could not read the window state"
 msgstr "Could not read the window state"
 
-#: src/mods/CategoryEditor.tsx:201
+#: src/mods/CategoryEditor.tsx:211
 #: src/mods/ModCards.tsx:441
 #: src/mods/ModList.tsx:361
 #: src/mods/SelectionBarDialogs.tsx:125
@@ -7926,7 +7947,7 @@ msgstr "{0, plural, one {with # settings file, written once its mod is installed
 #. placeholder {0}: sum.failed
 #: src/mods/MoveFoldersDialog.tsx:74
 #: src/mods/updateReview/updateAll.ts:31
-#: src/queue/QueueSheet.tsx:53
+#: src/queue/QueueSheet.tsx:54
 #: src/share/importCompletion.ts:22
 msgid "{0} failed"
 msgstr "{0} failed"
@@ -8372,7 +8393,7 @@ msgstr "Steps to reproduce"
 msgid "Their folders are removed from this profile. You can undo this."
 msgstr "Their folders are removed from this profile. You can undo this."
 
-#: src/saves/SavesTab.tsx:53
+#: src/saves/SavesTab.tsx:56
 msgid "Clear filter"
 msgstr "Clear filter"
 
@@ -8469,7 +8490,7 @@ msgstr "Slate"
 msgid "Updates"
 msgstr "Updates"
 
-#: src/queue/QueueBody.tsx:354
+#: src/queue/QueueBody.tsx:356
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
 
@@ -8802,7 +8823,7 @@ msgstr "You skipped this version"
 msgid "Whole file"
 msgstr "Whole file"
 
-#: src/queue/QueueBody.tsx:355
+#: src/queue/QueueBody.tsx:363
 msgid "Updates, missing dependencies and links from Nexus land here."
 msgstr "Updates, missing dependencies and links from Nexus land here."
 
@@ -8887,7 +8908,7 @@ msgstr "Include notes"
 msgid "Could not pin the selected mods"
 msgstr "Could not pin the selected mods"
 
-#: src/queue/QueueSheet.tsx:95
+#: src/queue/QueueSheet.tsx:96
 msgid "Pause all"
 msgstr "Pause all"
 
@@ -8962,7 +8983,7 @@ msgstr "Delete the template {0}?"
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
 
-#: src/queue/QueueSheet.tsx:101
+#: src/queue/QueueSheet.tsx:102
 msgid "Close downloads"
 msgstr "Close downloads"
 
@@ -8983,7 +9004,7 @@ msgid "Sign in to Nexus Mods to download"
 msgstr "Sign in to Nexus Mods to download"
 
 #. placeholder {0}: names(next)
-#: src/queue/QueueBody.tsx:382
+#: src/queue/QueueBody.tsx:390
 msgid "Up next: {0} and {more} more"
 msgstr "Up next: {0} and {more} more"
 
@@ -9410,6 +9431,10 @@ msgstr "Could not read the saved change {name} from {when}"
 msgid "It encountered an error."
 msgstr "It encountered an error."
 
+#: src/mods/CategoryEditor.tsx:130
+msgid "Add one to group your mods your own way."
+msgstr "Add one to group your mods your own way."
+
 #: src/profiles/CompareDialog.tsx:131
 msgid "Compare {aName} and {bName}"
 msgstr "Compare {aName} and {bName}"
@@ -9465,7 +9490,7 @@ msgstr "Install {0} {1}?"
 
 #. placeholder {0}: done.length
 #. placeholder {1}: names(done)
-#: src/queue/QueueBody.tsx:409
+#: src/queue/QueueBody.tsx:417
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
@@ -9474,7 +9499,7 @@ msgstr "Done ({0}): {1}"
 #. placeholder {0}: pendingDelete ?? ''
 #: src/bundles/BundlesSection.tsx:146
 #: src/game/ProfileMenuItems.tsx:81
-#: src/mods/CategoryEditor.tsx:157
+#: src/mods/CategoryEditor.tsx:167
 #: src/mods/ConfigPresets.tsx:155
 #: src/mods/problemFixButtons.tsx:199
 #: src/profiles/LaunchPresetsBlock.tsx:195
@@ -9487,7 +9512,7 @@ msgid "Beach farm"
 msgstr "Beach farm"
 
 #: src/bundles/BundlesSection.tsx:130
-#: src/mods/CategoryEditor.tsx:151
+#: src/mods/CategoryEditor.tsx:161
 #: src/mods/ConfigPresets.tsx:134
 #: src/mods/SelectionBar.tsx:38
 #: src/profiles/EditProfileDialog.tsx:466
@@ -9552,7 +9577,7 @@ msgstr "Could not disable the other copy of {0}"
 msgid "The backup from {when} is deleted for good, with every save in it."
 msgstr "The backup from {when} is deleted for good, with every save in it."
 
-#: src/queue/QueueBody.tsx:419
+#: src/queue/QueueBody.tsx:427
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
@@ -9614,7 +9639,7 @@ msgid "Keep mine"
 msgstr "Keep mine"
 
 #. placeholder {0}: result.total
-#: src/browse/BrowseBody.tsx:49
+#: src/browse/BrowseBody.tsx:50
 msgid "{0, plural, one {# result} other {# results}}"
 msgstr "{0, plural, one {# result} other {# results}}"
 
@@ -9918,7 +9943,7 @@ msgstr "Tag"
 msgid "Diagnostics"
 msgstr "Diagnostics"
 
-#: src/mods/CategoryEditor.tsx:139
+#: src/mods/CategoryEditor.tsx:149
 msgid "Add category"
 msgstr "Add category"
 
@@ -10021,11 +10046,11 @@ msgid "Launch preset templates"
 msgstr "Launch preset templates"
 
 #. placeholder {0}: formatWhen(limitedUntil * UNIX_MS_PER_SECOND)
-#: src/queue/QueueSheet.tsx:129
+#: src/queue/QueueSheet.tsx:130
 msgid "Downloads resume {0}."
 msgstr "Downloads resume {0}."
 
-#: src/mods/CategoryEditor.tsx:158
+#: src/mods/CategoryEditor.tsx:168
 msgid "Mods in this category will move to Uncategorised."
 msgstr "Mods in this category will move to Uncategorised."
 
@@ -10104,7 +10129,7 @@ msgstr "Acknowledge caution to include"
 msgid "Mod details"
 msgstr "Mod details"
 
-#: src/queue/QueueSheet.tsx:95
+#: src/queue/QueueSheet.tsx:96
 msgid "Resume"
 msgstr "Resume"
 
@@ -10141,6 +10166,10 @@ msgstr "This uploads the profile to Thunderstore and gives a public code."
 #: src/mods/ModMenu.tsx:246
 msgid "Move down (wins files)"
 msgstr "Move down (wins files)"
+
+#: src/browse/BrowseBody.tsx:111
+msgid "Clear search"
+msgstr "Clear search"
 
 #: src/mods/describe.ts:53
 msgid "{name} is obsolete: {summary}"
@@ -10336,7 +10365,7 @@ msgstr "Hide"
 msgid "Hide details"
 msgstr "Hide details"
 
-#: src/toasts/HistoryButton.tsx:148
+#: src/toasts/HistoryButton.tsx:155
 msgid "Nothing new"
 msgstr "Nothing new"
 
@@ -10405,7 +10434,7 @@ msgstr "Profiles"
 msgid "Your last save needs other mods"
 msgstr "Your last save needs other mods"
 
-#: src/mods/CategoryEditor.tsx:65
+#: src/mods/CategoryEditor.tsx:66
 msgid "Delete category"
 msgstr "Delete category"
 
@@ -10436,7 +10465,7 @@ msgstr "Update digest notification"
 msgid "Downloaded"
 msgstr "Downloaded"
 
-#: src/queue/QueueBody.tsx:437
+#: src/queue/QueueBody.tsx:445
 #: src/queue/QueueHistory.tsx:69
 msgid "Cancelled"
 msgstr "Cancelled"
@@ -10600,7 +10629,7 @@ msgstr "Share selection"
 msgid "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 msgstr "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 
-#: src/queue/QueueSheet.tsx:107
+#: src/queue/QueueSheet.tsx:108
 msgid "Download progress"
 msgstr "Download progress"
 
@@ -10883,6 +10912,10 @@ msgstr "Also update other profiles that hold the same files"
 msgid "Quiet grey-blue"
 msgstr "Quiet grey-blue"
 
+#: src/mods/AddToGroupDialog.tsx:68
+msgid "Name a group below to create it and add this mod."
+msgstr "Name a group below to create it and add this mod."
+
 #: src/browse/CardAction.tsx:34
 msgid "Sign in to download"
 msgstr "Sign in to download"
@@ -10923,7 +10956,7 @@ msgstr "Enable them too"
 
 #: src/console/LogActions.tsx:159
 #: src/settings/sections/GameSettings.tsx:367
-#: src/toasts/HistoryButton.tsx:141
+#: src/toasts/HistoryButton.tsx:142
 msgid "Clear"
 msgstr "Clear"
 
@@ -11155,7 +11188,7 @@ msgstr "Walk through profiles, Play, mods, and the command palette"
 msgid "Fall"
 msgstr "Fall"
 
-#: src/browse/BrowseBody.tsx:105
+#: src/browse/BrowseBody.tsx:115
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
@@ -11305,7 +11338,7 @@ msgstr "Matched {0} versions in {1}"
 msgid "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
 msgstr "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
 
-#: src/queue/QueueSheet.tsx:182
+#: src/queue/QueueSheet.tsx:183
 msgid "Download history"
 msgstr "Download history"
 
@@ -11763,7 +11796,7 @@ msgstr "Could not update Steam's launch options"
 msgid "Alert"
 msgstr "Alert"
 
-#: src/queue/QueueSheet.tsx:60
+#: src/queue/QueueSheet.tsx:61
 msgid "{downloading, plural, one {# downloading} other {# downloading}} · {waiting, plural, one {# waiting} other {# waiting}}"
 msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {waiting, plural, one {# waiting} other {# waiting}}"
 
@@ -11898,7 +11931,7 @@ msgstr "Disk space"
 
 #. placeholder {0}: dropped.length
 #. placeholder {1}: names(dropped)
-#: src/queue/QueueBody.tsx:429
+#: src/queue/QueueBody.tsx:437
 msgid "Skipped ({0}): {1}"
 msgstr "Skipped ({0}): {1}"
 

@@ -323,7 +323,7 @@ function NextActions({ item }: { item: Item }) {
   )
 }
 
-export function Body({ items }: { items: Item[] }) {
+export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void }) {
   const { t } = useLingui()
   const theme = useTheme()
   const doneBg = alpha(theme.palette.success.main, DONE_FILL)
@@ -351,7 +351,15 @@ export function Body({ items }: { items: Item[] }) {
     0
   ) {
     return (
-      <EmptyState icon={<Download />} title={t`Nothing downloading`}>
+      <EmptyState
+        icon={<Download />}
+        title={t`Nothing downloading`}
+        action={
+          <Button variant="outlined" onClick={onBrowse}>
+            {t`Browse mods`}
+          </Button>
+        }
+      >
         {t`Updates, missing dependencies and links from Nexus land here.`}
       </EmptyState>
     )

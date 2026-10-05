@@ -33,6 +33,7 @@ interface BrowseBodyProps {
   pageCount: number
   card: CardShared
   onRetry: () => void
+  onClear: () => void
   onPage: (page: number) => void
 }
 
@@ -68,7 +69,8 @@ function ResultList({
 
 function BrowseBody(props: BrowseBodyProps) {
   const { t } = useLingui()
-  const { status, result, text, hint, error, offline, page, pageCount, onRetry, onPage } = props
+  const { status, result, text, hint, error, offline, page, pageCount, onRetry, onClear, onPage } =
+    props
   if (status === 'idle' || (status === 'done' && result.items.length === 0 && text.trim() === '')) {
     return (
       <EmptyState icon={<Search size={ICON_SIZE} />} title={t`Find mods to add`}>
@@ -101,7 +103,15 @@ function BrowseBody(props: BrowseBodyProps) {
         ))}
       </Box>
     ) : (
-      <EmptyState icon={<SearchX size={ICON_SIZE} />} title={t`No mods match "${text}"`}>
+      <EmptyState
+        icon={<SearchX size={ICON_SIZE} />}
+        title={t`No mods match "${text}"`}
+        action={
+          <Button variant="outlined" onClick={onClear}>
+            {t`Clear search`}
+          </Button>
+        }
+      >
         {t`Try fewer words, or the mod's exact name.`}
       </EmptyState>
     )

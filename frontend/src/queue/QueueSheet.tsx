@@ -15,6 +15,7 @@ import {
   Pause,
   Resume,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
+import { useTab } from '../game/tab.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -215,7 +216,13 @@ export function QueueSheet() {
             }}
           />
         ) : (
-          <Body items={items} />
+          <Body
+            items={items}
+            onBrowse={() => {
+              close()
+              useTab.getState().setTab('browse')
+            }}
+          />
         )}
       </Box>
     </Drawer>

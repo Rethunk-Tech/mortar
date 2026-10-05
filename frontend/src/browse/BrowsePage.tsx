@@ -114,6 +114,7 @@ function BrowsePage({
             sourceNames: new Map(searchable.map((s) => [s.id, s.name])),
           }}
           onRetry={() => query.setRetry((n) => n + 1)}
+          onClear={() => setDraft('')}
           onPage={setPage}
         />
       </Box>

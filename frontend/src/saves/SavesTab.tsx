@@ -48,10 +48,16 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
     )
   } else if (shown.length === 0 && query.trim() !== '') {
     body = (
-      <EmptyState icon={<Search size={40} aria-hidden={true} />} title={t`No saves match`}>
-        <Button size="small" onClick={() => setQuery('')}>
-          {t`Clear filter`}
-        </Button>
+      <EmptyState
+        icon={<Search size={40} aria-hidden={true} />}
+        title={t`No saves match`}
+        action={
+          <Button variant="outlined" onClick={() => setQuery('')}>
+            {t`Clear filter`}
+          </Button>
+        }
+      >
+        {t`Try a different search.`}
       </EmptyState>
     )
   } else {

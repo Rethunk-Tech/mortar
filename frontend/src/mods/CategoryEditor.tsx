@@ -11,12 +11,13 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Tags, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { CustomCategory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { colorHex, PROFILE_COLORS } from '../profiles/appearance.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -120,6 +121,15 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
           <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 2 }}>
             {t`Group mods by these names, or assign one as a mod's primary category.`}
           </Typography>
+          {draft.length === 0 ? (
+            <EmptyState
+              compact={true}
+              icon={<Tags size={28} />}
+              title={t`No custom categories yet`}
+            >
+              {t`Add one to group your mods your own way.`}
+            </EmptyState>
+          ) : null}
           {draft.map((row) => (
             <CategoryRow
               key={row.id || row.name}

@@ -8,6 +8,7 @@ import { useProfileLocked } from '../mods/useLocked.ts'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { EarlierChanges } from './EarlierChanges.tsx'
 import { historyActionState } from './history.ts'
 import { reportUnexpected } from './report.ts'
@@ -142,19 +143,27 @@ function HistoryPopover({
         </Button>
       </Box>
       <Box sx={{ overflowY: 'auto', maxHeight: 380, [compact]: { maxHeight: 280 } }}>
-        <SectionLabel>{t`New`}</SectionLabel>
-        {fresh.length === 0 ? (
-          <Typography sx={{ px: 1.5, pb: 1, fontSize: 13, color: 'text.secondary' }}>
-            {t`Nothing new`}
-          </Typography>
+        {history.length === 0 && panel.events.length === 0 ? (
+          <EmptyState compact={true} icon={<Bell size={28} />} title={t`No notifications yet`}>
+            {t`Results of installs, updates and launches appear here.`}
+          </EmptyState>
         ) : (
-          fresh.map((item) => <HistoryRow key={item.id} item={item} />)
+          <>
+            <SectionLabel>{t`New`}</SectionLabel>
+            {fresh.length === 0 ? (
+              <Typography sx={{ px: 1.5, pb: 1, fontSize: 13, color: 'text.secondary' }}>
+                {t`Nothing new`}
+              </Typography>
+            ) : (
+              fresh.map((item) => <HistoryRow key={item.id} item={item} />)
+            )}
+            <SectionLabel>{t`Earlier`}</SectionLabel>
+            {readNotes.map((item) => (
+              <HistoryRow key={item.id} item={item} />
+            ))}
+            <EarlierChanges panel={panel} />
+          </>
         )}
-        <SectionLabel>{t`Earlier`}</SectionLabel>
-        {readNotes.map((item) => (
-          <HistoryRow key={item.id} item={item} />
-        ))}
-        <EarlierChanges panel={panel} />
       </Box>
       <Box sx={{ borderTop: '1px solid var(--mortar-hairline-muted)', px: 1.5, py: 0.5 }}>
         <Button size="small" disabled={!panel.game || profileId === ''} onClick={onAll}>
