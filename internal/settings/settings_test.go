@@ -166,6 +166,9 @@ func TestSetGameFolderValidates(t *testing.T) {
 	if err := svc.SetGameFolder("stardew", "/good"); err != nil || s.Get().GameFolders["stardew"] != "/good" {
 		t.Fatalf("set: %v %v", err, s.Get().GameFolders)
 	}
+	if err := svc.SetGameFolder("stardew", filepath.Join("good", "Stardew Valley")+string(filepath.Separator)); err != nil || s.Get().GameFolders["stardew"] != filepath.Join("good", "Stardew Valley") {
+		t.Fatalf("a trailing separator was stored: %v %q", err, s.Get().GameFolders["stardew"])
+	}
 	if err := svc.SetGameFolder("stardew", ""); err != nil || len(s.Get().GameFolders) != 0 {
 		t.Fatalf("clear: %v %v", err, s.Get().GameFolders)
 	}

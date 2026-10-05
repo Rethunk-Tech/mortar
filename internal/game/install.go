@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"path/filepath"
 	goruntime "runtime"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -119,6 +120,10 @@ func collect(g Game, home string, s settings.Settings) []Install {
 }
 
 func pick(all []Install, override, preferred string, g Game) (dir, store string) {
+	if override != "" {
+		// A hand-edited settings file can hold a folder with a trailing separator.
+		override = filepath.Clean(override)
+	}
 	if override != "" && g.ValidInstall(override) == nil {
 		for _, in := range all {
 			if in.Dir == override {

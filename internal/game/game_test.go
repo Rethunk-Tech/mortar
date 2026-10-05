@@ -230,3 +230,14 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 		t.Fatalf("BepInEx = %+v", b)
 	}
 }
+
+type anyFolder struct{ Game }
+
+func (anyFolder) ValidInstall(string) error { return nil }
+
+func TestPickCleansTheOverride(t *testing.T) {
+	dir, store := pick([]Install{{Dir: filepath.Join("g", "Stardew Valley"), Store: "steam"}}, filepath.Join("g", "Stardew Valley")+string(filepath.Separator), "", anyFolder{})
+	if dir != filepath.Join("g", "Stardew Valley") || store != "steam" {
+		t.Fatalf("pick = %q, %q", dir, store)
+	}
+}

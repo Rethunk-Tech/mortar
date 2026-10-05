@@ -163,8 +163,12 @@ func (s *Service) SetLastProfile(game, id string) error {
 	})
 }
 
-// SetGameFolder stores dir as the game's install folder, or clears the override when dir is empty.
+// SetGameFolder stores dir as the game's install folder, or clears the override when dir is empty. The folder is kept
+// cleaned: a trailing separator would reach installers' command lines as part of the path.
 func (s *Service) SetGameFolder(game, dir string) error {
+	if dir != "" {
+		dir = filepath.Clean(dir)
+	}
 	if s.ValidateGameFolder != nil {
 		if err := s.ValidateGameFolder(game, dir); err != nil {
 			return err
