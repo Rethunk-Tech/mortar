@@ -80,6 +80,18 @@ The extension marks Nexus Mods pages with what your profile already has and send
 - **Chrome, Edge or another Chromium browser:** open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the unzipped folder.
 - **Firefox:** download `mortar-browser-extension.xpi` from the extension's [latest release](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest) (**Settings › Downloads** links it too) and open it in Firefox, or drop it on `about:addons`. It is signed by Mozilla, so it stays installed. A release without the `.xpi` needs the zip instead: open `about:debugging`, choose **This Firefox**, then **Load Temporary Add-on** and pick `manifest.json` in the unzipped folder; Firefox removes a temporary add-on when it restarts.
 
+## Find and add mods
+
+The **Browse** tab searches every site the game's mods come from at once: for Stardew Valley, Nexus Mods and GitHub. **All sources** is the default, so where an author published a mod does not matter; results from each site are interleaved, each site keeping its own ranking. The chips next to it narrow the search to one site. If a site does not answer, the result count says which one and the rest still show.
+
+- **Nexus Mods:** Premium accounts download straight into the profile. Free accounts open the mod's files page and use **Mod Manager Download**, which the browser extension or the nxm link hands to Mortar.
+- **GitHub:** **Add** puts the latest release in the profile. Mortar uses your GitHub CLI login (`gh auth login`) when it is present, which raises GitHub's rate limits; without it, it works anonymously.
+- Mods already in the profile show **In this profile**.
+
+## Game installs
+
+When a game is installed more than once (Steam and GOG, a Steam beta branch, a copy in another folder), each is a separate install. A profile uses the selected install unless you pin it to one in the game's settings, and two profiles pinned to different installs can run at the same time. The install row shows its store and, on Linux, whether it runs natively or through Proton.
+
 ## Profiles
 
 A profile is one set of mods. Switching profiles never touches the game folder's own `Mods` folder.
