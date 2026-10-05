@@ -391,7 +391,21 @@ func Decode(data []byte) (Manifest, error) {
 	if err := m.Validate(); err != nil {
 		return Manifest{}, err
 	}
+	enableForSandbox(m.Games)
 	return m, nil
+}
+
+// enableGamesEnv lists catalog games, comma separated, to switch on whatever the manifest says. A self-test sandbox
+// sets it to try a game that has not shipped; the shipped catalog is never edited for that.
+const enableGamesEnv = "MORTAR_ENABLE_GAMES"
+
+func enableForSandbox(games []GameInfo) {
+	ids := strings.Split(os.Getenv(enableGamesEnv), ",")
+	for i := range games {
+		if slices.Contains(ids, games[i].ID) {
+			games[i].Enabled = true
+		}
+	}
 }
 
 // Verify checks a detached Ed25519 signature without parsing the manifest.

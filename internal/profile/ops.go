@@ -250,7 +250,7 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 		}
 		mods = entryMods(found)
 	}
-	e := Entry{Key: key, Source: source, Mods: mods, Disabled: []mod.ID{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap())}
+	e := Entry{Key: key, Source: source, Mods: mods, Disabled: []mod.ID{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap()), Package: isPackage}
 	if source.disabled != nil {
 		disabled = append(disabled, source.disabled.ids...)
 	}

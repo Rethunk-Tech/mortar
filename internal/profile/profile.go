@@ -118,6 +118,9 @@ type Entry struct {
 	Key           string `json:"key"`
 	PreviousKey   string `json:"previousKey"`
 	Source        Source `json:"source"`
+	// Package marks an entry that has no folder in the profile's mods folder: its files are laid out and deployed
+	// into the game when it launches (a Thunderstore package).
+	Package bool `json:"package,omitempty"`
 	// PreviousSource is where the PreviousKey version came from, so a roll back restores it with the files.
 	PreviousSource *Source     `json:"previousSource,omitempty"`
 	Mods           []Component `json:"mods"`

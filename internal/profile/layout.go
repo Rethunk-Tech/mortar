@@ -43,8 +43,12 @@ func (s *Store) pick(game, key string) (installer.Archive, installer.Game, insta
 	g := installerGame(game)
 	inst, _ := installer.Pick(arch, g)
 	if inst.ID() == driverThunderstore {
-		// The driver names files by package, Namespace-Name, which is not the store key.
+		// The driver names files by package, Namespace-Name, which is not the store key. An archive from disk has only
+		// the manifest's name, which the driver reads itself.
 		_, arch.Key, _, _ = s.items.Meta(game, key)
+		if _, _, isTS := strings.Cut(arch.Key, "-"); !isTS {
+			arch.Key = ""
+		}
 	}
 	return arch, g, inst, nil
 }
@@ -109,7 +113,7 @@ func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][
 
 // hasFolder reports an entry that has its own folder in the profile's mods folder. A Thunderstore package has none:
 // its files go to the profile target when the game launches.
-func (e Entry) hasFolder() bool { return e.Source.Kind != KindThunderstore }
+func (e Entry) hasFolder() bool { return !e.Package }
 
 // packageMods is the one component of a Thunderstore package item; ok is false for any other item.
 func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err error) {
@@ -129,7 +133,11 @@ func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err er
 		return nil, false, err
 	}
 	author, _, _ := strings.Cut(arch.Key, "-")
-	return []Component{{ID: mod.NewID(mod.FormatThunderstore, arch.Key), Version: m.Version, Name: m.Name, Author: author, Folder: "."}}, true, nil
+	id := arch.Key
+	if id == "" {
+		id = m.Name
+	}
+	return []Component{{ID: mod.NewID(mod.FormatThunderstore, id), Version: m.Version, Name: m.Name, Author: author, Folder: "."}}, true, nil
 }
 
 // placePackageLocked adds a Thunderstore package to the profile, or swaps it in for another version of the same
@@ -141,7 +149,7 @@ func (s *Store) placePackageLocked(game, id, key string, source Source, mods []C
 			return &DuplicateError{Key: key, Label: entryLabel(p.Entries[i])}
 		}
 		i := slices.IndexFunc(p.Entries, func(e Entry) bool {
-			return e.Source.Kind == KindThunderstore && strings.EqualFold(e.Source.Name, source.Name)
+			return e.Package && len(e.Mods) == 1 && mod.Equal(e.Mods[0].ID, mods[0].ID)
 		})
 		if i < 0 {
 			_, err := s.addTo(game, p, dir, key, source, nil)

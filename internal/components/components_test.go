@@ -327,3 +327,16 @@ func TestBundledGamesCarryTargetsAndCompanions(t *testing.T) {
 		t.Fatal("an install root on a redirected game validated")
 	}
 }
+
+func TestSandboxCanEnableAGameThatHasNotShipped(t *testing.T) {
+	t.Setenv(enableGamesEnv, "lethal-company")
+	m, err := BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, g := range m.Games {
+		if g.Enabled != (g.ID == "lethal-company" || g.ID == "stardew") {
+			t.Errorf("%s enabled = %v", g.ID, g.Enabled)
+		}
+	}
+}
