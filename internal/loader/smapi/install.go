@@ -209,7 +209,7 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 		cmd := exec.CommandContext(ctx, filepath.Join(folder, exe), args...)
 		cmd.Dir = folder
 		if out, err := runInstaller(ctx, cmd); err != nil {
-			return "", fmt.Errorf("SMAPI installer failed (%w): %s", err, tail(out))
+			return "", installerError(err, out)
 		}
 	}
 	if installed, _ := loaderState(dir, goos); !installed {
@@ -230,6 +230,15 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 	}
 	progress(loader.StepBundled)
 	return version, nil
+}
+
+// installerError names the failure with the installer's output, or, when it printed nothing (Windows cannot capture
+// it), says what to check.
+func installerError(err error, out []byte) error {
+	if msg := tail(out); msg != "" {
+		return fmt.Errorf("SMAPI installer failed (%w): %s", err, msg)
+	}
+	return fmt.Errorf("SMAPI installer failed (%w). Check that the game folder is complete, then retry", err)
 }
 
 // tail keeps the end of installer output, where its error is.

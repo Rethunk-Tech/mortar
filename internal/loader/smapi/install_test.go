@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"errors"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -301,5 +302,15 @@ func TestInstallWindowsBuildRunsInstallerThroughExec(t *testing.T) {
 	}
 	if filepath.Base(argv[0]) != "SMAPI.Installer.exe" || strings.Join(argv[1:], " ") != "--install --no-prompt --game-path "+dir {
 		t.Fatalf("argv = %q", argv)
+	}
+}
+
+func TestInstallerErrorHasNoDanglingColon(t *testing.T) {
+	err := errors.New("exit status 1")
+	if got := installerError(err, []byte("boom\n")).Error(); got != "SMAPI installer failed (exit status 1): boom" {
+		t.Fatalf("with output = %q", got)
+	}
+	if got := installerError(err, nil).Error(); strings.Contains(got, "):") || !strings.Contains(got, "retry") {
+		t.Fatalf("without output = %q", got)
 	}
 }
