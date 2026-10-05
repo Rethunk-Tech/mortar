@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Runs Mortar in server mode against a sandboxed home, for self-testing in a browser at http://127.0.0.1:$PORT.
-# The sandbox has its own HOME with a minimal Steam library holding a copy of the game, so nothing Mortar does
+# The sandbox has its own HOME with a minimal Steam library holding copies of the games (Stardew Valley and, when installed, Lethal Company), so nothing Mortar does
 # reaches the real game folder, the real data folder or the real Steam config.
 #
 #   scripts/selftest.sh start [--copy-data]   build, set up the sandbox if missing, start the server
+#   scripts/selftest.sh setup                 only create or top up the sandbox's Steam library; no build, no server
 #   scripts/selftest.sh restart               rebuild from the working tree and restart
 #   scripts/selftest.sh stop                  stop the server
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
@@ -17,6 +18,8 @@ PORT=${MORTAR_SELFTEST_PORT:-9455}
 STEAM=${MORTAR_SELFTEST_STEAM:-$HOME/.local/share/Steam}
 APP_ID=413150
 GAME_FOLDER="Stardew Valley"
+LC_APP_ID=1966720
+LC_FOLDER="Lethal Company"
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 SANDBOX_HOME=$ROOT/home
 SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
@@ -28,33 +31,42 @@ build() {
   mv "$ROOT/mortar-server.new" "$ROOT/mortar-server"
 }
 
-setup() {
-  if [ -d "$SANDBOX_STEAM/steamapps/common/$GAME_FOLDER" ]; then
-    return
-  fi
-  local game="$STEAM/steamapps/common/$GAME_FOLDER"
+# Each game is copied once; a sandbox that already holds one is topped up with the other.
+copy_game() {
+  local app=$1 folder=$2 game="$STEAM/steamapps/common/$2"
+  [ -d "$SANDBOX_STEAM/steamapps/common/$folder" ] && return
   [ -d "$game" ] || {
     echo "no game at $game (set MORTAR_SELFTEST_STEAM)" >&2
-    exit 1
+    return 1
   }
-  echo "copying the game into the sandbox (a copy, never a link)"
-  mkdir -p "$SANDBOX_STEAM/steamapps/common" "$SANDBOX_STEAM/config"
+  echo "copying $folder into the sandbox (a copy, never a link)"
+  mkdir -p "$SANDBOX_STEAM/steamapps/common"
   cp -a "$game" "$SANDBOX_STEAM/steamapps/common/"
-  cp "$STEAM/steamapps/appmanifest_$APP_ID.acf" "$SANDBOX_STEAM/steamapps/"
-  cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
-  cat >"$SANDBOX_STEAM/steamapps/libraryfolders.vdf" <<EOF
-"libraryfolders"
-{
-	"0"
-	{
-		"path"		"$SANDBOX_STEAM"
-		"apps"
-		{
-			"$APP_ID"		"1"
-		}
-	}
+  cp "$STEAM/steamapps/appmanifest_$app.acf" "$SANDBOX_STEAM/steamapps/"
 }
-EOF
+
+# Lists every copied game as installed, so Steam discovery finds exactly what the sandbox holds.
+write_library() {
+  local apps="" app
+  for app in "$APP_ID" "$LC_APP_ID"; do
+    if [ -f "$SANDBOX_STEAM/steamapps/appmanifest_$app.acf" ]; then
+      apps+=$'\t\t\t"'$app$'"\t\t"1"\n'
+    fi
+  done
+  printf '"libraryfolders"\n{\n\t"0"\n\t{\n\t\t"path"\t\t"%s"\n\t\t"apps"\n\t\t{\n%s\t\t}\n\t}\n}\n' "$SANDBOX_STEAM" "$apps" >"$SANDBOX_STEAM/steamapps/libraryfolders.vdf"
+}
+
+setup() {
+  mkdir -p "$SANDBOX_STEAM/config"
+  copy_game "$APP_ID" "$GAME_FOLDER" || exit 1
+  [ -f "$SANDBOX_STEAM/config/loginusers.vdf" ] || cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
+  # Lethal Company is optional: a machine without it still gets the Stardew sandbox.
+  copy_game "$LC_APP_ID" "$LC_FOLDER" || true
+  # An empty prefix is enough for runtime path resolution; the real one is never copied.
+  if [ -d "$SANDBOX_STEAM/steamapps/common/$LC_FOLDER" ]; then
+    mkdir -p "$SANDBOX_STEAM/steamapps/compatdata/$LC_APP_ID/pfx/drive_c/users/steamuser/AppData/LocalLow"
+  fi
+  write_library
 }
 
 copy_data() {
@@ -205,10 +217,11 @@ case "${1:-}" in
     sleep 1
     start
     ;;
+  setup) setup ;;
   seed) seed ;;
   stop) stop ;;
   *)
-    sed -n '2,12p' "$0"
+    sed -n '2,13p' "$0"
     exit 2
     ;;
 esac
