@@ -860,6 +860,10 @@ msgstr "This preset will be deleted."
 msgid "Configure {name}…"
 msgstr "Configure {name}…"
 
+#: src/mods/problemWhy.ts:26
+msgid "SMAPI's list marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update."
+msgstr "SMAPI's list marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update."
+
 #: src/settings/sections/Accounts.tsx:19
 msgid "GitHub CLI login"
 msgstr "GitHub CLI login"
@@ -988,6 +992,10 @@ msgstr "Switch to Problems"
 #: src/console/StartupPanel.tsx:77
 msgid "Measure next launch"
 msgstr "Measure next launch"
+
+#: src/mods/problemWhy.ts:87
+msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
+msgstr "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 
 #: src/share/ShareDialog.tsx:323
 msgid "Mod list copied"
@@ -1845,6 +1853,10 @@ msgstr "Trim history of {0}"
 msgid "Runs: {button}"
 msgstr "Runs: {button}"
 
+#: src/mods/problemWhy.ts:66
+msgid "Files of this stored mod went missing, changed or appeared after Mortar stored it. An antivirus, a disk fault or a manual edit can cause that, and the mod may misbehave."
+msgstr "Files of this stored mod went missing, changed or appeared after Mortar stored it. An antivirus, a disk fault or a manual edit can cause that, and the mod may misbehave."
+
 #: src/mods/HiddenInside.tsx:114
 msgid "Could not unhide the mod"
 msgstr "Could not unhide the mod"
@@ -2052,6 +2064,10 @@ msgstr "Skip tour"
 msgid "Could not measure disk use"
 msgstr "Could not measure disk use"
 
+#: src/mods/problemWhy.ts:60
+msgid "A mod works better, or only works, with a setting changed. Nothing is wrong yet."
+msgstr "A mod works better, or only works, with a setting changed. Nothing is wrong yet."
+
 #: src/console/UpdateNoteTag.tsx:24
 msgid "Prerelease"
 msgstr "Prerelease"
@@ -2184,7 +2200,7 @@ msgid "Installing SMAPI…"
 msgstr "Installing SMAPI…"
 
 #: src/console/StartupTable.tsx:277
-#: src/mods/ProblemRows.tsx:94
+#: src/mods/ProblemRows.tsx:118
 msgid "Why?"
 msgstr "Why?"
 
@@ -2282,6 +2298,10 @@ msgstr "Compact"
 #: src/mods/SelectionBarActions.tsx:91
 msgid "Ignore update source"
 msgstr "Ignore update source"
+
+#: src/mods/problemWhy.ts:19
+msgid "A mod you enabled needs another mod that is not in this profile, or is disabled. The first mod may fail to load or leave out features until the other one is added."
+msgstr "A mod you enabled needs another mod that is not in this profile, or is disabled. The first mod may fail to load or leave out features until the other one is added."
 
 #: src/console/BisectDialog.tsx:120
 #: src/console/CrashDialog.tsx:59
@@ -4019,6 +4039,10 @@ msgstr "Review revision {review}"
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 
+#: src/mods/ProblemRows.tsx:28
+msgid "Read more in the guide"
+msgstr "Read more in the guide"
+
 #: src/console/UpdateNoteTag.tsx:20
 msgid "This mod is pinned in this profile, so Mortar does not offer updates for it."
 msgstr "This mod is pinned in this profile, so Mortar does not offer updates for it."
@@ -5360,6 +5384,10 @@ msgstr "Enter 1 or more"
 msgid "Endorsements"
 msgstr "Endorsements"
 
+#: src/mods/problemWhy.ts:40
+msgid "Two mods change the same file. Only one change wins, so the other mod may look or behave wrongly."
+msgstr "Two mods change the same file. Only one change wins, so the other mod may look or behave wrongly."
+
 #: src/console/RunProblems.tsx:168
 #: src/launchers/LauncherList.tsx:61
 #: src/mods/OverlayRow.tsx:81
@@ -5917,6 +5945,10 @@ msgstr "SMAPI log"
 #: src/settings/updates.ts:67
 msgid "Could not update: {0}"
 msgstr "Could not update: {0}"
+
+#: src/mods/problemWhy.ts:54
+msgid "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
+msgstr "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 
 #: src/mods/ModDetail.tsx:103
 msgid "Versions"
@@ -6765,6 +6797,10 @@ msgstr "More details"
 #: src/mods/LoadOrderTab.tsx:384
 msgid "Enable mods in the Mods tab to see the order SMAPI loads them."
 msgstr "Enable mods in the Mods tab to see the order SMAPI loads them."
+
+#: src/mods/problemWhy.ts:47
+msgid "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
+msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 
 #. placeholder {0}: (preview.replace?.remove ?? []).length
 #: src/share/ImportFooter.tsx:150
@@ -8343,6 +8379,10 @@ msgstr "AGPL-3.0 · Rethunk-Tech/mortar"
 msgid "From collection {0}, revision {1}"
 msgstr "From collection {0}, revision {1}"
 
+#: src/mods/problemWhy.ts:73
+msgid "Two enabled packages carry the same plugin. The loader starts only one of them, so you may be running the older copy."
+msgstr "Two enabled packages carry the same plugin. The loader starts only one of them, so you may be running the older copy."
+
 #: src/console/PerformancePanelParts.tsx:187
 msgid "Measuring"
 msgstr "Measuring"
@@ -8703,6 +8743,10 @@ msgstr "Review collection update"
 #: src/mods/describe.ts:196
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
+
+#: src/mods/problemWhy.ts:80
+msgid "The author marked this package as deprecated. It will not get fixes and may break with the next game update."
+msgstr "The author marked this package as deprecated. It will not get fixes and may break with the next game update."
 
 #: src/settings/sections/ScheduledStatus.tsx:28
 msgid "Scheduled backup status"
@@ -11087,6 +11131,10 @@ msgstr "Season"
 msgid "Tools"
 msgstr "Tools"
 
+#: src/mods/problemWhy.ts:33
+msgid "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
+msgstr "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
+
 #: src/settings/sections/Appearance.tsx:72
 msgid "Soft and warm"
 msgstr "Soft and warm"
@@ -12018,10 +12066,6 @@ msgstr "Forest farm"
 #: src/console/PerformancePanelParts.tsx:288
 msgid "Measure while you play, then report the mods that take the most time per frame."
 msgstr "Measure while you play, then report the mods that take the most time per frame."
-
-#: src/mods/ProblemRows.tsx:112
-msgid "Log line"
-msgstr "Log line"
 
 #: src/mods/ModMenu.tsx:207
 #: src/mods/SelectionBarActions.tsx:74

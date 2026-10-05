@@ -205,6 +205,54 @@ The **Problems** tab checks the open profile for missing requirements, conflicts
 - Segments include **Failed to load** (a plugin the loader's log shows failed), **Plugins shipped twice** (two enabled packages carrying the same plugin, with **Keep newer**) and **Deprecated packages** (Thunderstore marks them, with **Replace with** where it names a replacement).
 - A mod's name in a row filters the **Mods** tab to that mod.
 
+### What each problem means
+
+Each row has a **Why?** that explains it, with a link to its section here.
+
+#### Missing requirement
+
+A mod you enabled needs another mod that is not in the profile, or is disabled. The first mod may fail to load or leave out features. **Add** installs the one it needs when Mortar can find it.
+
+#### Broken mod
+
+SMAPI's list marks the mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update. Update it, or replace it with the mod the row names.
+
+#### Duplicate mod
+
+Two enabled copies of the same mod are in the profile. The game loads only one, and which one is not something you control. Remove the copy you do not want.
+
+#### Conflicting files
+
+Two mods change the same file or asset. Only one change wins, so the other mod may look or behave wrongly. The row says which mod wins; disable the one you prefer to lose, or dismiss the row when the overlap is harmless.
+
+#### Errors in the last run
+
+A mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs. Open the log to read what it said.
+
+#### Failed to load
+
+The loader's log shows that a plugin did not start. Its features will be missing in the game. The row quotes the log line; the usual causes are a wrong game version or a missing requirement.
+
+#### Setting suggestion
+
+A mod works better, or only works, with a setting changed. Nothing is wrong yet. The row says which setting, and the button changes it.
+
+#### Damaged files
+
+Files of a stored mod went missing, changed or appeared since Mortar stored it, often from an antivirus, a disk fault or a manual edit. The mod may misbehave. Reinstall it to restore the stored files.
+
+#### Plugins shipped twice
+
+Two enabled packages carry the same plugin. The loader starts only one of them, so you may be running the older one. **Keep newer** leaves the newest enabled.
+
+#### Deprecated packages
+
+The author marked the package as deprecated on Thunderstore. It will not get fixes and may break with the next game update. Replace it with the package the row names, when it names one.
+
+#### Changed outside Mortar
+
+Something changed a profile's mods folder without Mortar: a file added, removed or edited by hand or by another tool. Mortar flags it so the profile matches what you expect. Keep the change or put the file back.
+
 ## Notifications and change history
 
 The bell at the foot of the sidebar opens **Notifications** (Ctrl+Shift+N does the same). It holds two lists:
