@@ -13,9 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
-var (
-	authorStatusWord = regexp.MustCompile(`(?i)\b(obsolete|deprecated|depreciated)\b`)
-)
+var authorStatusWord = regexp.MustCompile(`(?i)\b(obsolete|deprecated|depreciated)\b`)
 
 func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
 	var out []Broken
