@@ -316,6 +316,16 @@ function ProfileDialogs({
   )
 }
 
+// The ways to hand the profile to someone else, as one menu group.
+function ShareMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
+  return [
+    <SendProfileMenuItem key="send" profile={profile} close={close} />,
+    <ExportCollectionMenuItem key="export-collection" profile={profile} close={close} />,
+    <ExportCodeMenuItem key="export-code" profile={profile} close={close} />,
+    <ExportModpackMenuItem key="export-modpack" profile={profile} close={close} />,
+  ]
+}
+
 function MoreMenuItems({
   profile,
   close,
@@ -392,10 +402,7 @@ function MoreMenuItems({
         setCompareFrom(profile)
       }}
     />,
-    <SendProfileMenuItem key="send" profile={profile} close={close} />,
-    <ExportCollectionMenuItem key="export-collection" profile={profile} close={close} />,
-    <ExportCodeMenuItem key="export-code" profile={profile} close={close} />,
-    <ExportModpackMenuItem key="export-modpack" profile={profile} close={close} />,
+    <ShareMenuItems key="share" profile={profile} close={close} />,
     <Divider key="bundle-divider" />,
     <ProfileMenuItem
       key="bundle"
