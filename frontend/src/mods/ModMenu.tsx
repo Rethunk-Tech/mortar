@@ -2,6 +2,8 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
 import {
+  ArrowDown,
+  ArrowUp,
   Ban,
   Ellipsis,
   ExternalLink,
@@ -23,12 +25,14 @@ import type {
 import {
   CopyMods,
   FomodPreview,
+  MovePackage,
   RemoveEntry,
   SetModEnabled,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { AddToBundleDialog } from '../bundles/dialogs.tsx'
 import { useFomod } from '../fomod/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -207,6 +211,39 @@ function ModMenuItems({
   ]
 }
 
+// A later package wins a file two mods both provide, so moving one down makes it win more.
+function PackageMoveItems({ mod, close }: { mod: Mod; close: () => void }) {
+  const { t } = useLingui()
+  const locked = useLocked()
+  const game = useProfiles((s) => s.game)
+  const profile = useProfiles(openProfileOf)
+  if (game?.deploy !== 'link-into-install' || !profile) {
+    return null
+  }
+  const move = (delta: -1 | 1) => {
+    close()
+    MovePackage(game.id, profile.id, mod.key, delta)
+      .then((p) => useProfiles.getState().replace(p))
+      .catch(reportUnexpected)
+  }
+  return [
+    <MenuAction
+      key="package-up"
+      disabled={locked}
+      icon={<ArrowUp size={ICON_SIZE} />}
+      label={t`Move up (loses files)`}
+      onClick={() => move(-1)}
+    />,
+    <MenuAction
+      key="package-down"
+      disabled={locked}
+      icon={<ArrowDown size={ICON_SIZE} />}
+      label={t`Move down (wins files)`}
+      onClick={() => move(1)}
+    />,
+  ]
+}
+
 function ModActionMenu({
   mod,
   anchor,
@@ -248,6 +285,7 @@ function ModActionMenu({
           onAddBundle={() => setBundleOpen(true)}
           onRemoveOther={() => setRemoveOtherOpen(true)}
         />
+        <PackageMoveItems mod={mod} close={onClose} />
         <ModGroupItems
           profile={profile}
           entryKey={mod.key}

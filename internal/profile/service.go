@@ -301,6 +301,16 @@ func (s *Service) SetHidden(game, id string, hidden bool) (Profile, error) {
 
 func (s *Service) Reorder(game string, ids []string) error { return s.store.Reorder(game, ids) }
 
+// MovePackage moves a mod one place in the profile's package order, where a later package wins a file both provide.
+func (s *Service) MovePackage(game, id, key string, delta int) (Profile, error) {
+	return s.store.MovePackage(game, id, key, delta)
+}
+
+// PackageOverrides maps a mod's key to the number of files it wins over earlier mods.
+func (s *Service) PackageOverrides(game, id string) (map[string]int, error) {
+	return s.store.PackageOverrides(game, id)
+}
+
 // Mods lists the profile's mods. Missing entry folders stay missing so drift can offer Restore.
 func (s *Service) Mods(game, id string) ([]Mod, error) {
 	missing, err := s.store.missingEntryFolders(game, id)

@@ -14,8 +14,10 @@ import (
 
 // GameInfo is one listed game with its install state.
 type GameInfo struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	// Deploy is how the profile reaches the game: "redirect" or "link-into-install", whose profiles have a package order.
+	Deploy   string `json:"deploy"`
 	AppID    string `json:"appId"`
 	Loader   string `json:"loader"`
 	LoaderID string `json:"loaderId"`
@@ -107,7 +109,7 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 	catalog := Catalog()
 	out := make([]GameInfo, 0, len(catalog))
 	for _, c := range catalog {
-		info := GameInfo{ID: c.ID, Name: c.Name, AppID: c.SteamAppID(), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}}
+		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
 		for _, l := range c.Loaders {
 			info.Loaders = append(info.Loaders, LoaderRef{ID: l.ID, Name: l.Name})
