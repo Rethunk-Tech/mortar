@@ -301,6 +301,77 @@ func TestLoopbackTransfer(t *testing.T) {
 	}
 }
 
+func TestLethalCompanyProfileOverLAN(t *testing.T) {
+	senderStore, modsDir := store.OpenAt(t.TempDir()), t.TempDir()
+	packages := []struct{ name, version string }{{"Alice-MoreCompany", "1.2.3"}, {"Bob-LateCompany", "2.0.0"}}
+	var entries []profile.Entry
+	for _, p := range packages {
+		key := store.PackageKey(p.name, p.version)
+		files := t.TempDir()
+		if err := os.WriteFile(filepath.Join(files, p.name+".dll"), []byte(p.name), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := senderStore.AddDir("lethal-company", key, files); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(filepath.Join(modsDir, key), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		entries = append(entries, profile.Entry{
+			Key:    key,
+			Source: profile.Source{Kind: profile.KindThunderstore, Name: p.name, Version: p.version},
+			Mods:   []profile.Component{{ID: mod.NewID(mod.FormatThunderstore, p.name), Folder: "."}},
+		})
+	}
+	config := filepath.Join(modsDir, entries[0].Key, "config.json")
+	if err := os.WriteFile(config, []byte(`{"more":true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var payload bytes.Buffer
+	if _, err := share.Write(&payload, "lethal-company", profile.Profile{Name: "Lobby", Entries: entries}, modsDir); err != nil {
+		t.Fatal(err)
+	}
+
+	receiverStore := store.OpenAt(t.TempDir())
+	arrivals := make(chan Arrival, 1)
+	receiver, receiverAddr := pairedService(t, receiverStore, func(_ string, data any) {
+		if arrival, ok := data.(Arrival); ok {
+			arrivals <- arrival
+		}
+	})
+	sender, _ := pairedService(t, senderStore, nil)
+	pair(t, receiver, sender, receiverAddr)
+	if err := sender.sendPayload(receiverAddr, "lethal-company", payload.Bytes()); err != nil {
+		t.Fatal(err)
+	}
+	arrival := <-arrivals
+	if !arrival.Paired {
+		t.Fatal("a paired share did not receive a transfer grant")
+	}
+	if err := receiver.Transfer(arrival.ID); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range packages {
+		dir, err := receiverStore.Path("lethal-company", store.PackageKey(p.name, p.version))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, err := fsx.ReadFile(filepath.Join(dir, p.name+".dll")); err != nil || string(got) != p.name {
+			t.Fatalf("%s files = %q, %v", p.name, got, err)
+		}
+		if src, pkg, version, _ := receiverStore.Meta("lethal-company", store.PackageKey(p.name, p.version)); src != profile.KindThunderstore || pkg != p.name || version != p.version {
+			t.Fatalf("%s meta = %q %q %q", p.name, src, pkg, version)
+		}
+	}
+	raw, err := base64.RawStdEncoding.DecodeString(arrival.Payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pv, err := share.ReadBytes(raw); err != nil || len(pv.Configs) != 1 || string(pv.Configs[0].Data) != `{"more":true}` {
+		t.Fatalf("config did not travel: %+v, %v", pv.Configs, err)
+	}
+}
+
 func TestLoopbackSendReceive(t *testing.T) {
 	t.Parallel()
 	payload, err := base64.RawStdEncoding.DecodeString(testPayload(t))
