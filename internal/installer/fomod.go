@@ -1,7 +1,6 @@
 package installer
 
 import (
-	"context"
 	"fmt"
 	"io/fs"
 	"path"
@@ -24,7 +23,7 @@ func (fomodInstaller) Detect(a Archive, _ Game) bool {
 
 func slash(p string) string { return path.Clean(strings.ReplaceAll(p, `\`, "/")) }
 
-func (fomodInstaller) Layout(_ context.Context, a Archive, g Game, choices Choices) (Layout, error) {
+func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error) {
 	cfg, _, ok, err := fomod.Open(a.Dir)
 	if err != nil || !ok {
 		return Layout{}, fmt.Errorf("read the FOMOD config: %w", err)

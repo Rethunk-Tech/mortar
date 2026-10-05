@@ -3,7 +3,6 @@
 package installer
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -66,7 +65,7 @@ type Installer interface {
 	ID() string
 	// Detect reports whether the archive is this shape for game g.
 	Detect(a Archive, g Game) bool
-	Layout(ctx context.Context, a Archive, g Game, choices Choices) (Layout, error)
+	Layout(a Archive, g Game, choices Choices) (Layout, error)
 }
 
 // detectionOrder is the order drivers are asked: the most specific shape first, plain last because it takes anything.

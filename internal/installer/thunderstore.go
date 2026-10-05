@@ -1,7 +1,6 @@
 package installer
 
 import (
-	"context"
 	"encoding/json"
 	"io/fs"
 	"slices"
@@ -36,7 +35,7 @@ func (thunderstoreRules) Detect(a Archive, g Game) bool {
 	return ok && slices.Contains(g.Loaders, bepinex5.ID)
 }
 
-func (thunderstoreRules) Layout(_ context.Context, a Archive, g Game, _ Choices) (Layout, error) {
+func (thunderstoreRules) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 	pkg := a.Key
 	if pkg == "" {
 		pkg, _ = manifestOf(a)

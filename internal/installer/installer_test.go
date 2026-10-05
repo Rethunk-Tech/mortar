@@ -100,7 +100,7 @@ func TestLayoutGoldens(t *testing.T) {
 			if !ok || inst.ID() != c.driver {
 				t.Fatalf("picked %v, want %s", inst, c.driver)
 			}
-			l, err := inst.Layout(t.Context(), a, c.game, c.choices)
+			l, err := inst.Layout(a, c.game, c.choices)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -119,7 +119,7 @@ func TestLayoutRefusals(t *testing.T) {
 	}
 	for name, files := range cases {
 		a := extracted(t, "k", files)
-		if _, err := (plain{}).Layout(t.Context(), a, shallow, nil); err == nil {
+		if _, err := (plain{}).Layout(a, shallow, nil); err == nil {
 			t.Errorf("%s: accepted", name)
 		}
 	}

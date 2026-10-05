@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -72,7 +71,7 @@ func (s *Store) layoutOf(game, id, key string, choices map[string]map[string][]s
 			return arch, installer.Layout{}, "", &NeedChoicesError{Ask: askFrom(cfg, key, Source{}, "", choices, arch.Eval)}
 		}
 	}
-	l, err := inst.Layout(context.Background(), arch, g, choices)
+	l, err := inst.Layout(arch, g, choices)
 	return arch, l, inst.ID(), err
 }
 

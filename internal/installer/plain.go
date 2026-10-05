@@ -1,7 +1,6 @@
 package installer
 
 import (
-	"context"
 	"path"
 )
 
@@ -15,7 +14,7 @@ func (plain) ID() string { return "plain" }
 
 func (plain) Detect(Archive, Game) bool { return true }
 
-func (plain) Layout(_ context.Context, a Archive, g Game, _ Choices) (Layout, error) {
+func (plain) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 	all, err := files(a, ".")
 	if err != nil {
 		return Layout{}, err
