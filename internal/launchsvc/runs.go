@@ -322,7 +322,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if sess.haveExit {
 		launch.ApplyExit(&stats, sess.exit)
 	}
-	if !stats.Crashed && !(sess.haveExit && sess.exit.Stopped) && s.playerCrashed(g.ID(), profileID, started) {
+	if !stats.Crashed && (!sess.haveExit || !sess.exit.Stopped) && s.playerCrashed(g.ID(), profileID, started) {
 		stats.Crashed = true
 	}
 	text = launch.CapLog(text, launch.MaxLogBytes)
