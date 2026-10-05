@@ -1,5 +1,11 @@
 import { expect, test } from 'bun:test'
-import { changeStillLatest, HISTORY_CAP, historyActionState, prependHistory } from './history.ts'
+import {
+  changeStillLatest,
+  HISTORY_CAP,
+  historyActionState,
+  laterEvents,
+  prependHistory,
+} from './history.ts'
 
 test('prependHistory keeps newest first and drops past the cap', () => {
   const olderFirstNewest = Array.from({ length: HISTORY_CAP }, (_, i) => HISTORY_CAP - 1 - i)
@@ -31,4 +37,11 @@ test('historyActionState prefers the lock reason over live()', () => {
     disabled: true,
     reason: 'stale',
   })
+})
+
+test('laterEvents lists the changes newer than the one undone', () => {
+  const events = [{ id: 'c' }, { id: 'b' }, { id: 'a' }]
+  expect(laterEvents(events, 'a').map((e) => e.id)).toEqual(['c', 'b'])
+  expect(laterEvents(events, 'c')).toEqual([])
+  expect(laterEvents(events, 'zz')).toEqual([])
 })

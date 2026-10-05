@@ -37,3 +37,9 @@ export function historyActionState(
   }
   return live?.() ?? { disabled: false }
 }
+
+/** Events newer than `id`, which reverting to before `id` undoes too. History lists newest first. */
+export function laterEvents<T extends { id: string }>(events: readonly T[], id: string): T[] {
+  const at = events.findIndex((e) => e.id === id)
+  return at < 0 ? [] : events.slice(0, at)
+}

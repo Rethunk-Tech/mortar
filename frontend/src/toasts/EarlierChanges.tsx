@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Collapse, Typography } from '@mui/material'
 import { useState } from 'react'
@@ -5,10 +6,20 @@ import type { HistoryEvent } from '../../bindings/github.com/Rethunk-Tech/mortar
 import { When } from '../i18n/When.tsx'
 import { historyChangeSummary } from '../profiles/historyCounts.ts'
 import type { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
+import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { laterEvents } from './history.ts'
 
 type Panel = ReturnType<typeof useHistoryPanel>
 
-function EarlierRow({ ev, panel }: { ev: HistoryEvent; panel: Panel }) {
+function EarlierRow({
+  ev,
+  panel,
+  onUndo,
+}: {
+  ev: HistoryEvent
+  panel: Panel
+  onUndo: (ev: HistoryEvent) => void
+}) {
   const { t } = useLingui()
   const [diff, setDiff] = useState(false)
   const label = ev.kind === 'good' ? t`Known good` : ev.label
@@ -31,11 +42,7 @@ function EarlierRow({ ev, panel }: { ev: HistoryEvent; panel: Panel }) {
           </Button>
         ) : null}
         {trimmed ? null : (
-          <Button
-            size="small"
-            disabled={panel.busy !== ''}
-            onClick={() => panel.revertTo(ev.id).catch(() => undefined)}
-          >
+          <Button size="small" disabled={panel.busy !== ''} onClick={() => onUndo(ev)}>
             {t`Undo`}
           </Button>
         )}
@@ -54,6 +61,15 @@ function EarlierRow({ ev, panel }: { ev: HistoryEvent; panel: Panel }) {
 /** The open profile's durable change history, newest first. */
 export function EarlierChanges({ panel }: { panel: Panel }) {
   const { t } = useLingui()
+  const [target, setTarget] = useState<HistoryEvent | null>(null)
+  const later = target ? laterEvents(panel.events, target.id) : []
+  const undo = (ev: HistoryEvent) => {
+    if (laterEvents(panel.events, ev.id).length === 0) {
+      panel.revertTo(ev.id).catch(() => undefined)
+    } else {
+      setTarget(ev)
+    }
+  }
   if (panel.events.length === 0) {
     return (
       <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
@@ -64,8 +80,33 @@ export function EarlierChanges({ panel }: { panel: Panel }) {
   return (
     <>
       {panel.events.map((ev) => (
-        <EarlierRow key={ev.id} ev={ev} panel={panel} />
+        <EarlierRow key={ev.id} ev={ev} panel={panel} onUndo={undo} />
       ))}
+      <ConfirmDialog
+        open={target !== null}
+        title={plural(later.length, {
+          one: 'Undo this and # later change?',
+          other: 'Undo this and # later changes?',
+        })}
+        confirmLabel={t`Undo`}
+        color="warning"
+        onCancel={() => setTarget(null)}
+        onConfirm={() => {
+          if (target) {
+            panel.revertTo(target.id).catch(() => undefined)
+          }
+          setTarget(null)
+        }}
+      >
+        <Typography
+          sx={{ fontSize: 13, mb: 1 }}
+        >{t`These changes will be reverted too:`}</Typography>
+        {later.map((e) => (
+          <Typography key={e.id} sx={{ fontSize: 13 }} color="text.secondary">
+            {e.kind === 'good' ? t`Known good` : e.label}
+          </Typography>
+        ))}
+      </ConfirmDialog>
       {panel.error === '' ? null : (
         <Typography sx={{ px: 1.5, py: 1, fontSize: 13, color: 'error.main' }}>
           {panel.error}
