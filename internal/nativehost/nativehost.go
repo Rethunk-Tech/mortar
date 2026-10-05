@@ -99,12 +99,14 @@ type request struct {
 	Source        string `json:"source"`
 	SourceGameKey string `json:"sourceGameKey"`
 	ModID         int    `json:"modId"`
+	// Package is a Thunderstore "Namespace-Name" for installPackage.
+	Package string `json:"package"`
 }
 
-// gameKey is the page's Nexus domain, the key the handlers resolve to a Mortar game; empty for a source Mortar does
-// not read pages of.
+// gameKey is the page's game key for the source: a Nexus domain or a Thunderstore community, which the handlers
+// resolve to a Mortar game; empty for a source Mortar does not read pages of.
 func (r request) gameKey() string {
-	if r.Source != "nexus" {
+	if r.Source != "nexus" && r.Source != "thunderstore" {
 		return ""
 	}
 	return r.SourceGameKey
@@ -133,6 +135,8 @@ type reply struct {
 	Profile       string            `json:"profile,omitempty"`
 	State         string            `json:"state,omitempty"`
 	UpdateIDs     []int             `json:"updateIds,omitempty"`
+	// Packages are the Thunderstore "Namespace-Name" packages the open profile holds.
+	Packages *[]string `json:"packages,omitempty"`
 	// Games are the games Mortar manages, so the extension draws its UI only on those and maps a page's source key
 	// to the Mortar game id.
 	Games []hostGame `json:"games,omitempty"`
@@ -184,6 +188,7 @@ type diskEntry struct {
 	Disabled    []mod.ID `json:"disabled"`
 	Source      struct {
 		Kind   string `json:"kind"`
+		Name   string `json:"name"`
 		ModID  int    `json:"modId"`
 		FileID int    `json:"fileId"`
 	} `json:"source"`
@@ -275,6 +280,9 @@ type handlers struct {
 	broken       func(game string) []int
 	problems     func(game string, modID int) []modProblem
 	requirements func(game string, modID int) []requirementItem
+	// packages and installPackage answer the Thunderstore requests; key is the community.
+	packages       func(key string) (state, profile string, packages []string)
+	installPackage func(key, pkg string) error
 }
 
 // Serve answers messages from r until it closes, handing each message's link to open.
@@ -290,12 +298,15 @@ func ServeFrom(args []string, r io.Reader, w io.Writer, open func(link string) e
 		contact: func(mismatch string) { recordContact(browser, mismatch, time.Now()) },
 		open:    open, installed: activeNexusModIDs, im: nexusModProfiles, state: activeNexusState,
 		updates: activeNexusUpdates, broken: brokenNexusModIDs, problems: nexusModProblems,
-		requirements: nexusPageRequirements,
+		requirements: nexusPageRequirements, packages: activePackages, installPackage: queuePackage,
 	})
 }
 
 // answer is the reply to one data request; a link is handled by the caller.
 func (h handlers) answer(req request) reply {
+	if req.Type == "installedPackages" || req.Type == "installPackage" {
+		return h.answerPackages(req)
+	}
 	st, name := stateReady, ""
 	if h.state != nil {
 		st, name = h.state(req.gameKey())
@@ -639,6 +650,11 @@ func activeNexusState(domain string) (string, string) {
 	if !ok {
 		return stateNoProfile, ""
 	}
+	return stateOf(info)
+}
+
+// stateOf is activeNexusState for a game already resolved.
+func stateOf(info components.GameInfo) (string, string) {
 	dataDir, err := datadir.Dir()
 	if err != nil {
 		return stateNotRunning, ""

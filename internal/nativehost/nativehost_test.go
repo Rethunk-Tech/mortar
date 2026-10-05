@@ -647,3 +647,32 @@ func TestManifestAllowsStoreOrigins(t *testing.T) {
 		t.Fatal("store origin must start the host")
 	}
 }
+
+func TestServeAnswersThunderstorePackages(t *testing.T) {
+	var queued []string
+	h := handlers{
+		packages: func(key string) (string, string, []string) {
+			if key != "riskofrain2" {
+				t.Fatalf("community = %q", key)
+			}
+			return stateReady, "Run", []string{"Me-Mod"}
+		},
+		installPackage: func(key, pkg string) error {
+			queued = append(queued, key+"/"+pkg)
+			return nil
+		},
+	}
+	in := append(frame(t, request{Type: "installedPackages", Source: "thunderstore", SourceGameKey: "riskofrain2"}),
+		frame(t, request{Type: "installPackage", Source: "thunderstore", SourceGameKey: "riskofrain2", Package: "Me-Other"})...)
+	var out bytes.Buffer
+	if err := serveHandlers(bytes.NewReader(in), &out, h); err != nil {
+		t.Fatal(err)
+	}
+	installed, install := readReply(t, &out), readReply(t, &out)
+	if installed.Packages == nil || !slices.Equal(*installed.Packages, []string{"Me-Mod"}) || !installed.Connected {
+		t.Errorf("installedPackages reply = %+v", installed)
+	}
+	if !install.OK || !slices.Equal(queued, []string{"riskofrain2/Me-Other"}) {
+		t.Errorf("installPackage reply = %+v, queued %v", install, queued)
+	}
+}
