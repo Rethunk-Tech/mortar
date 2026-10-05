@@ -17,7 +17,6 @@ import { useState } from 'react'
 import type { Saved } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { Logo } from '../brand/Logo.tsx'
-import { modsLabel } from '../i18n/counts.ts'
 import { SendDialog } from '../lan/SendDialog.tsx'
 import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -89,7 +88,7 @@ function PagePreview({ info }: { info: ShownInfo }) {
   const { t } = useLingui()
   const art = useProfiles((s) => s.game?.artUrl)
   const gameName = useProfiles((s) => s.game?.name ?? '')
-  const mods = modsLabel(info.count)
+  const { count } = info
   return (
     <Box
       component="aside"
@@ -136,7 +135,12 @@ function PagePreview({ info }: { info: ShownInfo }) {
         >
           {info.name}
         </Typography>
-        <Typography sx={{ fontSize: 13, color: 'inherit' }}>{t`${gameName} · ${mods}`}</Typography>
+        <Typography sx={{ fontSize: 13, color: 'inherit' }}>
+          {plural(count, {
+            one: `${{ name: gameName }} · # mod`,
+            other: `${{ name: gameName }} · # mods`,
+          })}
+        </Typography>
         <Box
           sx={{
             display: 'grid',
@@ -192,8 +196,11 @@ function LinkTab({
       reportUnexpected,
     )
   }
-  const mods = modsLabel(info.count)
-  const message = t`Try my Mortar profile "${info.name}" for ${gameName} (${mods}): ${info.web}`
+  const { count } = info
+  const message = plural(count, {
+    one: `Try my Mortar profile "${info.name}" for ${gameName} (# mod): ${info.web}`,
+    other: `Try my Mortar profile "${info.name}" for ${gameName} (# mods): ${info.web}`,
+  })
   const large = suggestFile(info.count, info.tooLarge)
   return (
     <>

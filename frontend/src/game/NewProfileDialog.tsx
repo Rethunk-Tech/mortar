@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
@@ -16,7 +17,6 @@ import {
 import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
 import { NewProfileFromTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { bundleWants } from '../bundles/missingWants.ts'
-import { modsLabel } from '../i18n/counts.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
@@ -100,12 +100,17 @@ function useCreate(game: string, onClose: () => void) {
         const missing = result.missing ?? []
         const wants = bundleWants(result.missingMods)
         const queued = wants.length > 0 && (await download(wants))
-        const mods = modsLabel(missing.length)
         let title = t`Created ${name}`
         if (missing.length > 0) {
           title = queued
-            ? t`Created ${name}; downloading ${mods}`
-            : t`Created ${name}; ${mods} still to download`
+            ? plural(missing.length, {
+                one: `Created ${name}; downloading # mod`,
+                other: `Created ${name}; downloading # mods`,
+              })
+            : plural(missing.length, {
+                one: `Created ${name}; # mod still to download`,
+                other: `Created ${name}; # mods still to download`,
+              })
         }
         useToasts.getState().push({
           kind: missing.length > 0 && !queued ? 'warning' : 'success',

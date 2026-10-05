@@ -18,7 +18,6 @@ import {
   ReadClipboard,
   Replace,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
-import { modsLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -108,11 +107,14 @@ function announceCollection(applied: Result['collection']) {
   if (!applied) {
     return
   }
-  const mods = modsLabel(applied.fomodMods)
-  const configs = plural(applied.configs, { one: '# config file', other: '# config files' })
   useToasts.getState().push({
     kind: applied.error ? 'warning' : 'success',
-    title: i18n._(msg`Applied the curator's choices for ${mods} and ${configs}`),
+    title: i18n._(
+      msg`${plural(applied.fomodMods, {
+        one: `Applied the curator's choices for # mod and ${plural(applied.configs, { one: '# config file', other: '# config files' })}`,
+        other: `Applied the curator's choices for # mods and ${plural(applied.configs, { one: '# config file', other: '# config files' })}`,
+      })}`,
+    ),
     ...(applied.error ? { body: applied.error } : {}),
   })
 }

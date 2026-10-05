@@ -1,6 +1,6 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { errorsLabel } from '../i18n/counts.ts'
 import { localId } from './dependents.ts'
 import { type Problem, sameId } from './lookup.ts'
 import { useMods } from './store.ts'
@@ -37,15 +37,26 @@ export function useDescribe(): Describe {
     runError: Extract<Problem, { kind: 'runError' }>['runError'],
   ): string => {
     const { name, first, count, updated } = runError
-    const errors = errorsLabel(count)
     if (updated) {
       return first === ''
-        ? t`${name} was updated since this run and logged ${errors}.`
-        : t`${name} was updated since this run and logged ${errors}. First: ${first}`
+        ? plural(count, {
+            one: `${name} was updated since this run and logged # error.`,
+            other: `${name} was updated since this run and logged # errors.`,
+          })
+        : plural(count, {
+            one: `${name} was updated since this run and logged # error. First: ${first}`,
+            other: `${name} was updated since this run and logged # errors. First: ${first}`,
+          })
     }
     return first === ''
-      ? t`${name} logged ${errors} in the last run.`
-      : t`${name} logged ${errors} in the last run. First: ${first}`
+      ? plural(count, {
+          one: `${name} logged # error in the last run.`,
+          other: `${name} logged # errors in the last run.`,
+        })
+      : plural(count, {
+          one: `${name} logged # error in the last run. First: ${first}`,
+          other: `${name} logged # errors in the last run. First: ${first}`,
+        })
   }
 
   const describeBroken = (p: Extract<Problem, { kind: 'broken' }>): string => {

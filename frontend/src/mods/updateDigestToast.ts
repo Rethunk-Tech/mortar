@@ -2,7 +2,6 @@ import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import type { ModUpdateDigestNotice } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/models.ts'
 import { useTab } from '../game/tab.ts'
-import { updatesLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -12,7 +11,10 @@ import { useUpdates } from './updates.ts'
 
 function digestTitle(notice: ModUpdateDigestNotice): string {
   return i18n._(
-    msg`${updatesLabel(notice.totalUpdates)} for ${plural(notice.profilesWith, { one: '# profile', other: '# profiles' })}`,
+    msg`${plural(notice.totalUpdates, {
+      one: `# update for ${plural(notice.profilesWith, { one: '# profile', other: '# profiles' })}`,
+      other: `# updates for ${plural(notice.profilesWith, { one: '# profile', other: '# profiles' })}`,
+    })}`,
   )
 }
 

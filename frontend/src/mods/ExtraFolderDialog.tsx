@@ -1,9 +1,9 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import { FolderOpen } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { ExtraFolderMods } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { modsLabel } from '../i18n/counts.ts'
 import { useInstall } from '../install/store.ts'
 import { useNav } from '../nav/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -44,7 +44,7 @@ export function ExtraFolderDialog({
     <ConfirmDialog
       open={open}
       title={t`Add from the extra mods folder`}
-      confirmLabel={t`Add ${modsLabel(chosen.length)}`}
+      confirmLabel={plural(chosen.length, { one: 'Add # mod', other: 'Add # mods' })}
       confirmDisabled={loading || chosen.length === 0}
       maxWidth={520}
       onCancel={onClose}

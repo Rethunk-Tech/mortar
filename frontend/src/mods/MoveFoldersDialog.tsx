@@ -11,7 +11,6 @@ import {
   MoveGameModsFolders,
   UndismissGameModsFolders,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { modsLabel } from '../i18n/counts.ts'
 import { formatOutcomeDetail } from '../profiles/gameModsFormat.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -91,7 +90,7 @@ export function MoveFoldersDialog({
       open={open}
       title={t`Move mods into ${profile.name}`}
       body={t`The folders are moved out of the game's Mods folder and into this profile.`}
-      confirmLabel={t`Move ${modsLabel(chosen.length)}`}
+      confirmLabel={plural(chosen.length, { one: 'Move # mod', other: 'Move # mods' })}
       confirmDisabled={chosen.length === 0 || locked}
       busy={busy}
       maxWidth={560}

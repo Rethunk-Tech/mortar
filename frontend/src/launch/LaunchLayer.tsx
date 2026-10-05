@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -22,7 +23,6 @@ import { useConsole } from '../console/store.ts'
 import { useLaunchLine } from '../firstrun/useLaunchLine.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameName } from '../games/info.ts'
-import { modsLabel } from '../i18n/counts.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
@@ -108,7 +108,7 @@ function Overlay({ game }: { game: string }) {
     return null
   }
   const profileName = profile?.name ?? ''
-  const mods = profile ? userModCount(profile) : 0
+  const count = profile ? userModCount(profile) : 0
   const shown = entries.slice(-VISIBLE_LINES)
   return (
     <Box
@@ -131,7 +131,12 @@ function Overlay({ game }: { game: string }) {
       />
       <Spinner />
       <Typography sx={{ fontSize: 30, fontWeight: 700 }}>{t`Launching ${name}`}</Typography>
-      <Typography sx={{ fontSize: 16 }}>{t`${profileName} · ${modsLabel(mods)}`}</Typography>
+      <Typography sx={{ fontSize: 16 }}>
+        {plural(count, {
+          one: `${{ name: profileName }} · # mod`,
+          other: `${{ name: profileName }} · # mods`,
+        })}
+      </Typography>
       <Box
         role="log"
         sx={{

@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
@@ -20,7 +21,6 @@ import {
   UndoApplyTemplate,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { bundleWants } from '../bundles/missingWants.ts'
-import { modsLabel } from '../i18n/counts.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { reportError } from '../toasts/report.ts'
@@ -69,13 +69,21 @@ function useApply(game: string, profileId: string, onClose: () => void) {
         const missing = result.missing ?? []
         const wants = bundleWants(result.missingMods)
         const queued = wants.length > 0 && (await download(wants))
-        const added = modsLabel(result.added)
-        const downloading = modsLabel(missing.length)
-        let title = t`Added ${added} from ${name}`
-        if (missing.length > 0) {
+        const left = missing.length
+        let title = plural(result.added, {
+          one: `Added # mod from ${name}`,
+          other: `Added # mods from ${name}`,
+        })
+        if (left > 0) {
           title = queued
-            ? t`Added ${added} from ${name}; downloading ${downloading}`
-            : t`Added ${added} from ${name}; ${downloading} still to download`
+            ? plural(result.added, {
+                one: `Added # mod from ${name}; downloading ${plural(left, { one: '# mod', other: '# mods' })}`,
+                other: `Added # mods from ${name}; downloading ${plural(left, { one: '# mod', other: '# mods' })}`,
+              })
+            : plural(result.added, {
+                one: `Added # mod from ${name}; ${plural(left, { one: '# mod', other: '# mods' })} still to download`,
+                other: `Added # mods from ${name}; ${plural(left, { one: '# mod', other: '# mods' })} still to download`,
+              })
         }
         useToasts.getState().push({
           kind: missing.length > 0 && !queued ? 'warning' : 'success',

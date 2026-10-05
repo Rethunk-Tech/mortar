@@ -1,7 +1,7 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, DialogTitle, IconButton, Typography } from '@mui/material'
 import { ArrowUp, X } from 'lucide-react'
-import { updatesLabel } from '../../i18n/counts.ts'
 import { ICON_FILL, ICON_TILE } from './constants.ts'
 
 export function ReviewTitle({
@@ -33,7 +33,10 @@ export function ReviewTitle({
       </Box>
       <Box sx={{ flexGrow: 1 }}>
         <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700 }}>
-          {t`${updatesLabel(count)} for ${profileName}`}
+          {plural(count, {
+            one: `# update for ${profileName}`,
+            other: `# updates for ${profileName}`,
+          })}
         </Typography>
         <Typography sx={{ fontSize: 13 }}>{checkedLabel}</Typography>
       </Box>

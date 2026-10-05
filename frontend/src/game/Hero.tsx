@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
@@ -238,7 +239,7 @@ function AttentionCards() {
       label={t`Updates`}
       value={String(updateN)}
       tone="primary"
-      ariaLabel={t`Review ${updatesLabel(updateN)}`}
+      ariaLabel={plural(updateN, { one: 'Review # update', other: 'Review # updates' })}
       onClick={() => {
         setTab('mods')
         setReviewing(true)
