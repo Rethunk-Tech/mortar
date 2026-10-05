@@ -384,6 +384,21 @@ sudo pacman -Sy mortar</code></pre>
           </li>
         </ol>
       </section>
+      <section class="panel" id="verify">
+        <h2>Verify your download</h2>
+        <p class="muted">
+          Every release carries <code>SHA256SUMS</code>, signed with the Mortar packages key, and a GitHub build
+          provenance attestation for each file. With the downloaded file in the current folder:
+        </p>
+        <pre><code>curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/latest/download/SHA256SUMS
+curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/latest/download/SHA256SUMS.asc
+curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS
+gh attestation verify &lt;file&gt; --repo Rethunk-Tech/mortar</code></pre>
+        <p class="muted">The key's fingerprint is <code>3283 6046 06CA E229 5D47 6F98 83BC 8751 EE6F 773D</code>. More in the <a href="/code-signing/">code signing policy</a>.</p>
+      </section>
+
 
       <p class="muted all">
         Checksums, release notes and every build:
