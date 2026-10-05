@@ -8,7 +8,7 @@ import type { Item } from '../../../bindings/github.com/Rethunk-Tech/mortar/inte
 import type { Want } from '../../queue/actions.ts'
 import { pendingFor } from '../../queue/totals.ts'
 import { sameId } from '../lookup.ts'
-import { loadDetails, useNexusDetails } from '../nexusDetails.ts'
+import { isFull, loadDetails, useNexusDetails } from '../nexusDetails.ts'
 import { optionalUpdateWants, useOptionalSkips } from '../optionalFiles.ts'
 
 /** The queue request for an update. A Nexus update of a mod with a GitHub repo tries that repo's release at the same
@@ -51,7 +51,7 @@ export async function withOptionalLoaded(
   if (!hasOptional || skipped || u.githubRepo) {
     return [updateWant(u)]
   }
-  if (!useNexusDetails.getState().byId[u.nexusId]?.details) {
+  if (!isFull(useNexusDetails.getState().byId[u.nexusId])) {
     await loadDetails(u.nexusId)
   }
   const files = useNexusDetails.getState().byId[u.nexusId]?.details?.files ?? []

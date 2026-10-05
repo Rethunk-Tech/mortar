@@ -4,6 +4,7 @@ import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import {
   CachedDetails,
   MarkSeen,
+  PrimeDetails,
   Details as readDetails,
   Seen,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
@@ -56,6 +57,7 @@ const useNexusDetails = create<{ byId: Record<number, Entry | undefined> }>(() =
 
 useNexus.subscribe((s, prev) => {
   if (s.signedIn && !prev.signedIn) {
+    primeDetails(primed).catch(reportUnexpected)
     const ids = [...waiting]
     waiting.clear()
     for (const id of ids) {
@@ -85,25 +87,51 @@ const loadDetails = (id: number) => {
   return read
 }
 
-// Shows what is cached for every mod at once, then reads the missing ones one at a time.
+let primed: number[] = []
+
+// Shows what is cached for every mod at once, then fills the rest with the page data of all of them in a few batched
+// requests. A mod's files and changelogs are read when it is opened, not for the whole list.
 const primeDetails = async (ids: number[]) => {
+  primed = ids
   await mergeCachedDetails(ids)
-  for (const id of new Set(ids)) {
-    if (id > 0 && !useNexusDetails.getState().byId[id]?.details) {
-      enqueue(id)
-    }
+  if (!useNexus.getState().signedIn) {
+    return
   }
+  const unknown = ids.filter((id) => id > 0 && !useNexusDetails.getState().byId[id]?.details)
+  if (unknown.length === 0) {
+    return
+  }
+  const got = (await PrimeDetails(currentGame(), unknown).catch(() => null)) ?? {}
+  useNexusDetails.setState((s) => {
+    const next = { ...s.byId }
+    for (const id of unknown) {
+      const details = got[`${id}`]
+      if (details && !next[id]?.details) {
+        next[id] = { details }
+      }
+    }
+    return { byId: next }
+  })
 }
 
-// The entry for one mod, read on first use; undefined while the first read is on its way.
+// Whether the entry holds a mod's whole details, not just the batched page data.
+const isFull = (entry: Entry | undefined) => Boolean(entry?.details && !entry.details.partial)
+
+// The entry for one mod, read on first use; undefined while the first read is on its way. Page data from the batch is
+// not enough for a caller that asks for one mod, so it reads as missing until the whole details arrive.
 const useNexusEntry = (id: number) => {
   useEffect(() => {
     if (id) {
       enqueue(id)
     }
   }, [id])
-  return useNexusDetails((s) => s.byId[id])
+  const entry = useNexusDetails((s) => s.byId[id])
+  return isFull(entry) ? entry : { ...entry, details: undefined }
 }
+
+// A mod's page data (status, version, endorsements) for a list row: whatever the batch or a full read gave, and no
+// request of its own.
+const useNexusPage = (id: number) => useNexusDetails((s) => s.byId[id]?.details?.page)
 
 interface SeenWatermark {
   newestFileUnix: number
@@ -194,7 +222,7 @@ const markLooked = (modId: number, details: Details) => {
 const useLookedSnapshot = (modId: number, details: Details | undefined) => {
   const [looked] = useState(() => useNexusSeen.getState().byId[modId])
   useEffect(() => {
-    if (details && modId) {
+    if (details && !details.partial && modId) {
       markLooked(modId, details)
     }
   }, [modId, details])
@@ -214,6 +242,7 @@ export {
   changelogIsNewSinceLooked,
   fileIsNewSinceLooked,
   initNexusSeen,
+  isFull,
   isNewSinceLooked,
   loadDetails,
   primeDetails,
@@ -221,6 +250,7 @@ export {
   useNexusDetails,
   useNexusEntry,
   useNexusFresh,
+  useNexusPage,
   useNexusSeen,
   watermarkOf,
 }

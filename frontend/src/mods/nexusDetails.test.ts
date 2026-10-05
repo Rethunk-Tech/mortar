@@ -11,6 +11,7 @@ import {
 } from './nexusDetails.ts'
 
 const loads: number[] = []
+const primes: number[][] = []
 let cached: Record<string, Details> = {}
 
 const page = (id: number): Details => ({
@@ -46,25 +47,31 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/ser
     loads.push(id)
     return page(id)
   },
+  PrimeDetails: async (_game: string, ids: number[]) => {
+    primes.push(ids)
+    return Object.fromEntries(ids.map((id) => [`${id}`, { ...page(id), partial: true }]))
+  },
   Seen: async () => ({}),
   MarkSeen: async () => undefined,
 }))
 
 beforeEach(() => {
   loads.length = 0
+  primes.length = 0
   cached = {}
   useNexus.setState(useNexus.getInitialState(), true)
   useNexusDetails.setState(useNexusDetails.getInitialState(), true)
   useNexusSeen.setState(useNexusSeen.getInitialState(), true)
 })
 
-test('sign-in starts details reads that were skipped while signed out', async () => {
-  await primeDetails([2400])
-  expect(loads).toEqual([])
+test('sign-in primes the page data skipped while signed out in one batch', async () => {
+  await primeDetails([2400, 2401])
+  expect(primes).toEqual([])
   useNexus.setState({ signedIn: true, name: 'pat', premium: false })
-  await Promise.resolve()
-  await Promise.resolve()
-  expect(loads).toEqual([2400])
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(primes).toEqual([[2400, 2401]])
+  expect(loads).toEqual([])
+  expect(useNexusDetails.getState().byId[2400]?.details?.partial).toBe(true)
 })
 
 test('primeDetails applies cache over an error-only entry', async () => {
@@ -74,16 +81,6 @@ test('primeDetails applies cache over an error-only entry', async () => {
   await primeDetails([2400])
   expect(useNexusDetails.getState().byId[2400]).toEqual({ details })
   expect(loads).toEqual([])
-})
-
-test('primeDetails enqueues an error-only entry when cache has nothing', async () => {
-  useNexusDetails.setState({ byId: { 2400: { error: 'offline' } } })
-  await primeDetails([2400])
-  expect(loads).toEqual([])
-  useNexus.setState({ signedIn: true, name: 'pat', premium: false })
-  await Promise.resolve()
-  await Promise.resolve()
-  expect(loads).toEqual([2400])
 })
 
 const file = (category: string, uploaded: string): File => ({

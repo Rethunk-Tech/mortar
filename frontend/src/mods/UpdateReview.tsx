@@ -9,7 +9,7 @@ import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { installableUpdate, modId, updatesForReview } from './lookup.ts'
-import { mergeCachedDetails, useNexusDetails } from './nexusDetails.ts'
+import { isFull, mergeCachedDetails, useNexusDetails } from './nexusDetails.ts'
 import { useOptionalSkips } from './optionalFiles.ts'
 import { useMods } from './store.ts'
 import { DIALOG_WIDTH } from './updateReview/constants.ts'
@@ -73,9 +73,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
     withOptional(u, profile, byId[u.nexusId]?.details?.files ?? [], skipped[u.key] === true),
   )
   const uncachedIds = [
-    ...new Set(
-      list.filter((u) => u.nexusId > 0 && !byId[u.nexusId]?.details).map((u) => u.nexusId),
-    ),
+    ...new Set(list.filter((u) => u.nexusId > 0 && !isFull(byId[u.nexusId])).map((u) => u.nexusId)),
   ]
   return (
     <Dialog

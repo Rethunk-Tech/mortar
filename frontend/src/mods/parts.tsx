@@ -27,7 +27,7 @@ import { LockedReason } from './LockedReason.tsx'
 import { lastRunSummary, useLastRun } from './lastRun.ts'
 import { concerns, entryOf, modId, nexusIdOf, problemsOf, siblingsOf, updateFor } from './lookup.ts'
 import { NewDot } from './NewSince.tsx'
-import { useNexusEntry } from './nexusDetails.ts'
+import { useNexusPage } from './nexusDetails.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
@@ -121,7 +121,7 @@ export function NexusGoneBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const profile = useProfiles(openProfileOf)
   const nexusId = profile ? nexusIdOf(profile, mod) : 0
-  const page = useNexusEntry(nexusId)?.details?.page
+  const page = useNexusPage(nexusId)
   const mark = nexusPageMark(page?.status, page?.available, page?.updated, page?.created)
   if (mark.kind === '') {
     return null
@@ -210,7 +210,7 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
   const profile = useProfiles(openProfileOf)
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
   const nexusId = profile ? nexusIdOf(profile, mod) : 0
-  const page = useNexusEntry(nexusId)?.details?.page
+  const page = useNexusPage(nexusId)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   if (!update) {
