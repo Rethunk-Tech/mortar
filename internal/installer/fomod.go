@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"cmp"
 	"fmt"
 	"io/fs"
 	"path"
@@ -48,12 +49,21 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 		if dest == "" {
 			dest = path.Base(src)
 		}
-		dest = slash(dest)
+		// A leading slash means the package's folder, as no slash does.
+		dest = slash(cmp.Or(strings.TrimLeft(slash(dest), "/"), "."))
+		// A destination is inside the package's own folder: ".." would reach another mod's files.
+		if dest == ".." || strings.HasPrefix(dest, "../") {
+			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, op.Destination)
+		}
 		info, err := fs.Stat(a.FS, src)
 		if err != nil {
 			return Layout{}, err
 		}
 		if !info.IsDir() && !op.Folder {
+			if dest == "." {
+				// A file sent to the package's folder itself keeps its own name there.
+				dest = path.Base(src)
+			}
 			put(File{Src: src, Target: TargetMods, Rel: path.Join(a.Key, dest)})
 			continue
 		}

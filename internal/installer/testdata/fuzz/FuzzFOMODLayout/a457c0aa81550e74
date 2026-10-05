@@ -1,0 +1,4 @@
+go test fuzz v1
+string("alpha/manifest.json")
+string("/")
+bool(false)
