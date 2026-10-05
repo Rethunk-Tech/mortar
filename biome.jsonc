@@ -232,6 +232,22 @@
       }
     },
     {
+      // A page is mostly markup; its length tracks content, not complexity.
+      "includes": ["**/*.html"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": {
+              "level": "on",
+              "options": {
+                "maxLines": 3000
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/*.d.ts"],
       "linter": {
         "rules": {
