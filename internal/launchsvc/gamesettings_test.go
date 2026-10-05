@@ -26,7 +26,7 @@ func newGameSettingsService(t *testing.T) (*Service, profile.Profile, string) {
 
 func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
-	startup := filepath.Join(config, "StardewValley", startupPreferencesFile)
+	startup := filepath.Join(config, "StardewValley", "startup_preferences")
 	if err := os.MkdirAll(filepath.Dir(startup), 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -93,7 +93,7 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 
 func TestGameSettingsLeftoverRestoreRunsAtStartup(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
-	startup := filepath.Join(config, "StardewValley", startupPreferencesFile)
+	startup := filepath.Join(config, "StardewValley", "startup_preferences")
 	if err := os.MkdirAll(filepath.Dir(startup), 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -144,7 +144,7 @@ func TestGameSettingsMissingStartupPreferencesIsSkipped(t *testing.T) {
 	if restore != nil || !missing {
 		t.Fatalf("prepare returned restore %v, missing %v", restore, missing)
 	}
-	if _, err := os.Stat(filepath.Join(config, "StardewValley", startupPreferencesFile)); !errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(filepath.Join(config, "StardewValley", "startup_preferences")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("missing startup preferences was created: %v", err)
 	}
 }
@@ -158,7 +158,7 @@ func TestGameSettingsWithoutOverridesDoesNotTouchStartupPreferences(t *testing.T
 	if restore != nil || missing {
 		t.Fatalf("prepare returned restore %v, missing %v", restore, missing)
 	}
-	if _, err := os.Stat(filepath.Join(config, "StardewValley", startupPreferencesFile)); !errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(filepath.Join(config, "StardewValley", "startup_preferences")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("profile without overrides touched startup preferences: %v", err)
 	}
 }

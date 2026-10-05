@@ -15,13 +15,13 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/gamesettings"
 )
 
 const (
-	gameSettingsFile       = "game-settings.json"
-	settingsRestoreFile    = "game-settings.restore.json"
-	startupPreferencesFile = "startup_preferences"
+	gameSettingsFile    = "game-settings.json"
+	settingsRestoreFile = "game-settings.restore.json"
 )
 
 type settingsRestore struct {
@@ -66,23 +66,16 @@ func (s *Service) profileSettingsPath(game, id string) (string, error) {
 	return filepath.Join(filepath.Dir(modsDir), gameSettingsFile), nil
 }
 
-func startupPreferencesPath() (string, error) {
-	config, err := os.UserConfigDir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(config, "StardewValley", startupPreferencesFile), nil
-}
-
-func (s *Service) prepareGameSettings(game, id string) (*settingsRestore, bool, error) {
-	value, err := s.GameSettings(game, id)
+func (s *Service) prepareGameSettings(gameID, id string) (*settingsRestore, bool, error) {
+	value, err := s.GameSettings(gameID, id)
 	if err != nil {
 		return nil, false, err
 	}
-	if emptySettings(value) {
+	startup, ok := game.Find(gameID).(game.StartupSettings)
+	if !ok || emptySettings(value) {
 		return nil, false, nil
 	}
-	path, err := startupPreferencesPath()
+	path, err := startup.StartupPreferencesPath(s.home)
 	if err != nil {
 		return nil, false, err
 	}
@@ -108,7 +101,7 @@ func (s *Service) prepareGameSettings(game, id string) (*settingsRestore, bool, 
 	if bytes.Equal(data, patched) {
 		return nil, false, nil
 	}
-	settingsPath, err := s.profileSettingsPath(game, id)
+	settingsPath, err := s.profileSettingsPath(gameID, id)
 	if err != nil {
 		return nil, false, err
 	}
@@ -197,7 +190,17 @@ func (s *Service) restoreGameSettings(restore *settingsRestore) error {
 //
 //wails:ignore
 func (s *Service) RecoverGameSettings() error {
-	profiles, err := s.profiles.List("stardew")
+	var errs []error
+	for _, id := range game.Implemented() {
+		if _, ok := game.Find(id).(game.StartupSettings); ok {
+			errs = append(errs, s.recoverGameSettings(id))
+		}
+	}
+	return errors.Join(errs...)
+}
+
+func (s *Service) recoverGameSettings(gameID string) error {
+	profiles, err := s.profiles.List(gameID)
 	if err != nil {
 		return err
 	}
@@ -206,7 +209,7 @@ func (s *Service) RecoverGameSettings() error {
 		if p.Error != "" {
 			continue
 		}
-		settingsPath, err := s.profileSettingsPath("stardew", p.ID)
+		settingsPath, err := s.profileSettingsPath(gameID, p.ID)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", p.Name, err))
 			continue

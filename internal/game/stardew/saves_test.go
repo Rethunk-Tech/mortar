@@ -1,8 +1,10 @@
-package game
+package stardew
 
 import (
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 )
 
 func TestSavesDirUsesStoreSpecificConfigRoots(t *testing.T) {
@@ -11,7 +13,7 @@ func TestSavesDirUsesStoreSpecificConfigRoots(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", config)
 	t.Setenv("FLATPAK_ID", "")
 
-	got, err := SavesDir(StoreSteam, home)
+	got, err := Game{}.SavesDir(gamestore.StoreSteam, home)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,7 +22,7 @@ func TestSavesDirUsesStoreSpecificConfigRoots(t *testing.T) {
 		t.Fatalf("native Steam saves = %q, want %q", got, want)
 	}
 
-	got, err = SavesDir(StoreGOG, home)
+	got, err = Game{}.SavesDir(gamestore.StoreGOG, home)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +30,7 @@ func TestSavesDirUsesStoreSpecificConfigRoots(t *testing.T) {
 		t.Fatalf("native GOG saves = %q, want %q", got, want)
 	}
 
-	got, err = SavesDir(StoreFlatpakSteam, home)
+	got, err = Game{}.SavesDir(gamestore.StoreFlatpakSteam, home)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +45,7 @@ func TestSavesDirUsesHostHomeWhenMortarRunsInFlatpak(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(t.TempDir(), "sandbox-config"))
 	t.Setenv("FLATPAK_ID", "tech.rethunk.Mortar")
 
-	got, err := SavesDir(StoreSteam, home)
+	got, err := Game{}.SavesDir(gamestore.StoreSteam, home)
 	if err != nil {
 		t.Fatal(err)
 	}
