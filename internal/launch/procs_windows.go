@@ -35,8 +35,8 @@ func imagePath(pid uint32) string {
 		return ""
 	}
 	defer func() { _ = windows.CloseHandle(h) }()
-	buf := make([]uint16, windows.MAX_LONG_PATH)
-	n := uint32(len(buf))
+	var buf [windows.MAX_LONG_PATH]uint16
+	n := uint32(windows.MAX_LONG_PATH)
 	if err := windows.QueryFullProcessImageName(h, 0, &buf[0], &n); err != nil {
 		return ""
 	}
