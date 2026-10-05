@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"cmp"
 	"context"
 	"sync"
 	"time"
@@ -99,7 +100,7 @@ func (s *Service) sourceSlot(ctx context.Context, it Item) (func(), error) {
 	var source string
 	switch {
 	case it.Package != "":
-		source = "thunderstore"
+		source = cmp.Or(it.Source, "thunderstore")
 	case it.Repo != "":
 		source = "github"
 	default:

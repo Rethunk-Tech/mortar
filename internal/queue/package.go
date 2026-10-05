@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -31,6 +32,14 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 			out = append(out, r)
 			continue
 		}
+		if r.Source != "" {
+			direct, err := s.expandDirect(ctx, r)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, direct...)
+			continue
+		}
 		if done[i] {
 			continue
 		}
@@ -41,7 +50,7 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 		byID := map[string]Request{}
 		for j := i; j < len(reqs); j++ {
 			q := reqs[j]
-			if q.Package == "" || q.Game != r.Game || q.Profile != r.Profile {
+			if q.Package == "" || q.Source != "" || q.Game != r.Game || q.Profile != r.Profile {
 				continue
 			}
 			done[j] = true
@@ -87,7 +96,7 @@ func (s *Service) holds(r Request, id, version string) bool {
 }
 
 func packageSource(it Item) profile.Source {
-	src := profile.Source{Kind: profile.KindThunderstore, Name: it.Package, Version: it.Version}
+	src := profile.Source{Kind: cmp.Or(it.Source, profile.KindThunderstore), Name: it.Package, Version: it.Version}
 	if len(it.Disabled) > 0 {
 		src = src.WithDisabled(it.Disabled)
 	}
@@ -112,7 +121,7 @@ func (s *Service) downloadPackage(ctx context.Context, it Item) error {
 		}
 		return fmt.Errorf("%s: %w", it.Package, err)
 	}
-	if err := s.checkPackageHash(it, path); err != nil {
+	if err := s.checkPackage(it, path); err != nil {
 		dropDownload(path)
 		return err
 	}

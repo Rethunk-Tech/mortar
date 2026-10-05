@@ -42,6 +42,9 @@ const (
 	KindGitHub = "github"
 	// KindThunderstore is a Thunderstore package: Name is "Namespace-Name" and Version the package version.
 	KindThunderstore = "thunderstore"
+	// KindModrinth and KindItch are projects from those sites: Name is the project or game id.
+	KindModrinth = "modrinth"
+	KindItch     = "itch"
 )
 
 // Source says where an entry came from. Kind is KindLocal for an archive the user picked, Name its file name;

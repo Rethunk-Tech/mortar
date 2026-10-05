@@ -1,7 +1,10 @@
 package queue
 
 import (
+	"crypto/sha512"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"path/filepath"
 	"strings"
 
@@ -12,13 +15,43 @@ import (
 
 const packageHashFile = "package-hashes.json"
 
-// verifyDigest checks path against a "sha256:<hex>" digest; an empty digest (GitHub did not publish one) passes.
+// verifyDigest checks path against a "sha256:<hex>" or "sha512:<hex>" digest; an empty digest (GitHub did not
+// publish one) passes.
 func verifyDigest(path, digest string) error {
-	want, ok := strings.CutPrefix(strings.ToLower(strings.TrimSpace(digest)), "sha256:")
+	digest = strings.ToLower(strings.TrimSpace(digest))
+	if want, ok := strings.CutPrefix(digest, "sha512:"); ok {
+		return compareSHA512(path, want)
+	}
+	want, ok := strings.CutPrefix(digest, "sha256:")
 	if !ok {
 		return nil
 	}
 	return compareSHA256(path, want)
+}
+
+func compareSHA512(path, want string) error {
+	f, err := fsx.Open(path)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = f.Close() }()
+	h := sha512.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return err
+	}
+	if got := hex.EncodeToString(h.Sum(nil)); got != want {
+		return usererr.New(usererr.Damaged, "download is damaged or changed: SHA-512 does not match the one the site published")
+	}
+	return nil
+}
+
+// checkPackage verifies a downloaded package: Modrinth publishes a digest to check, Thunderstore does not and is
+// held to its first download.
+func (s *Service) checkPackage(it Item, path string) error {
+	if it.Source != "" {
+		return verifyDigest(path, it.Digest)
+	}
+	return s.checkPackageHash(it, path)
 }
 
 func compareSHA256(path, want string) error {

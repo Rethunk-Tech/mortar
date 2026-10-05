@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"path/filepath"
@@ -73,7 +74,7 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	src := profile.KindNexus
 	switch {
 	case it.Package != "":
-		src = profile.KindThunderstore
+		src = cmp.Or(it.Source, profile.KindThunderstore)
 	case it.Repo != "":
 		src = profile.KindGitHub
 	}
@@ -110,10 +111,18 @@ func (s *Service) ClearHistory() {
 	s.writeHistory(nil)
 }
 
+// directSource is the site of a retried package that is not on Thunderstore.
+func directSource(e HistoryEntry) string {
+	if e.Package != "" && e.Source != profile.KindThunderstore {
+		return e.Source
+	}
+	return ""
+}
+
 func (e HistoryEntry) request() Request {
 	return Request{
 		Kind: e.Kind, Game: e.Game, Profile: e.Profile, ModID: e.ModID, FileID: e.FileID,
-		Name: e.Name, Version: e.Version, Package: e.Package, Repo: e.Repo, Tag: e.Tag, Asset: e.Asset, Latest: e.Latest,
+		Name: e.Name, Version: e.Version, Package: e.Package, Source: directSource(e), Repo: e.Repo, Tag: e.Tag, Asset: e.Asset, Latest: e.Latest,
 	}
 }
 
