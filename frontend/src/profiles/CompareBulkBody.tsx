@@ -77,13 +77,15 @@ function filteredCompare(diff: ProfileCompare, needle: string) {
   const onlyB = diff.onlyB.filter(matchesSide)
   const differentVersion = diff.differentVersion.filter(matchesPair)
   const differentEnabled = diff.differentEnabled.filter(matchesPair)
+  const differentSource = diff.differentSource.filter(matchesPair)
   const identical = diff.identical.filter(matchesPair)
   const hasDiff =
     onlyA.length > 0 ||
     onlyB.length > 0 ||
     differentVersion.length > 0 ||
-    differentEnabled.length > 0
-  return { onlyA, onlyB, differentVersion, differentEnabled, identical, hasDiff }
+    differentEnabled.length > 0 ||
+    differentSource.length > 0
+  return { onlyA, onlyB, differentVersion, differentEnabled, differentSource, identical, hasDiff }
 }
 
 export function CompareBulkBody({
@@ -110,10 +112,8 @@ export function CompareBulkBody({
   const { t } = useLingui()
   const [filter, setFilter] = useState('')
   const needle = filter.trim().toLowerCase()
-  const { onlyA, onlyB, differentVersion, differentEnabled, identical, hasDiff } = filteredCompare(
-    diff,
-    needle,
-  )
+  const { onlyA, onlyB, differentVersion, differentEnabled, differentSource, identical, hasDiff } =
+    filteredCompare(diff, needle)
   const enabled = t`Enabled`
   const disabled = t`Off`
   const shared: SectionShared = { enabled, disabled, pending, lockedReason }
@@ -171,6 +171,15 @@ export function CompareBulkBody({
               copyToB={() => onCopy(profileA, profileB, [row.id])}
               copyToA={() => onCopy(profileB, profileA, [row.id])}
             />
+          ))}
+        </CompareSection>
+      ) : null}
+      {differentSource.length > 0 ? (
+        <CompareSection title={t`Different source`}>
+          {differentSource.map((row) => (
+            <Typography key={row.id} noWrap={true} sx={{ fontSize: 14, py: 0.5, minHeight: 36 }}>
+              {t`${row.name}: ${row.a.version} from ${row.a.source.kind} → ${row.b.version} from ${row.b.source.kind}`}
+            </Typography>
           ))}
         </CompareSection>
       ) : null}

@@ -29,6 +29,7 @@ interface ProfileCompare {
   onlyB: CompareSide[]
   differentVersion: ComparePair[]
   differentEnabled: ComparePair[]
+  differentSource: ComparePair[]
   identical: ComparePair[]
 }
 
@@ -86,6 +87,7 @@ function classifyPair(
   buckets: {
     differentVersion: ComparePair[]
     differentEnabled: ComparePair[]
+    differentSource: ComparePair[]
     identical: ComparePair[]
   },
 ) {
@@ -99,7 +101,11 @@ function classifyPair(
   if (enabledDiff) {
     buckets.differentEnabled.push(pair)
   }
-  if (!(versionDiff || enabledDiff)) {
+  const sourceDiff = side.source.kind !== other.source.kind
+  if (sourceDiff) {
+    buckets.differentSource.push(pair)
+  }
+  if (!(versionDiff || enabledDiff || sourceDiff)) {
     buckets.identical.push(pair)
   }
 }
@@ -112,12 +118,13 @@ function compareProfiles(a: Profile, b: Profile): ProfileCompare {
   const onlyB: CompareSide[] = []
   const differentVersion: ComparePair[] = []
   const differentEnabled: ComparePair[] = []
+  const differentSource: ComparePair[] = []
   const identical: ComparePair[] = []
 
   for (const [k, side] of left) {
     const other = right.get(k)
     if (other) {
-      classifyPair(side, other, { differentVersion, differentEnabled, identical })
+      classifyPair(side, other, { differentVersion, differentEnabled, differentSource, identical })
     } else {
       onlyA.push(side)
     }
@@ -133,13 +140,14 @@ function compareProfiles(a: Profile, b: Profile): ProfileCompare {
     onlyB: sortSides(onlyB),
     differentVersion: sortPairs(differentVersion),
     differentEnabled: sortPairs(differentEnabled),
+    differentSource: sortPairs(differentSource),
     identical: sortPairs(identical),
   }
 }
 
 function sideLabel(side: CompareSide, enabled: string, disabled: string): string {
   const state = side.enabled ? enabled : disabled
-  return `${side.name} · ${side.version} · ${state}`
+  return `${side.name} · ${side.version} · ${side.source.kind} · ${state}`
 }
 
 interface SectionShared {

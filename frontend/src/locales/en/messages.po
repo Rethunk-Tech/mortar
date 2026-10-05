@@ -381,7 +381,7 @@ msgstr "{0} has damaged files."
 msgid "Deleted a profile"
 msgstr "Deleted a profile"
 
-#: src/profiles/CompareBulkBody.tsx:185
+#: src/profiles/CompareBulkBody.tsx:194
 msgid "No user mods in either profile."
 msgstr "No user mods in either profile."
 
@@ -1589,7 +1589,7 @@ msgstr "Got it"
 msgid "New launch preset"
 msgstr "New launch preset"
 
-#: src/lan/PairedComputers.tsx:161
+#: src/lan/PairedComputers.tsx:174
 msgid "Paired computers"
 msgstr "Paired computers"
 
@@ -1693,6 +1693,7 @@ msgstr "{optional, plural, one {Also removes # optional file that goes on top of
 msgid "Fullscreen resolution width"
 msgstr "Fullscreen resolution width"
 
+#: src/lan/PairedComputers.tsx:120
 #: src/lan/SendDialog.tsx:159
 msgid "Host:port"
 msgstr "Host:port"
@@ -2383,7 +2384,7 @@ msgstr "game running"
 msgid "Drag {path} into the GitHub issue to attach it."
 msgstr "Drag {path} into the GitHub issue to attach it."
 
-#: src/lan/PairedComputers.tsx:129
+#: src/lan/PairedComputers.tsx:142
 msgid "Pair"
 msgstr "Pair"
 
@@ -2489,7 +2490,7 @@ msgstr "Open the next profile"
 msgid "Desktop"
 msgstr "Desktop"
 
-#: src/lan/PairedComputers.tsx:89
+#: src/lan/PairedComputers.tsx:92
 msgid "Could not pair"
 msgstr "Could not pair"
 
@@ -3051,7 +3052,7 @@ msgstr "Quit Mortar?"
 msgid "Could not back up saves before Play"
 msgstr "Could not back up saves before Play"
 
-#: src/lan/PairedComputers.tsx:86
+#: src/lan/PairedComputers.tsx:89
 msgid "Computer paired"
 msgstr "Computer paired"
 
@@ -3345,7 +3346,7 @@ msgstr "Where save backups are kept. Empty uses the default."
 #: src/lan/IncomingPrompt.tsx:167
 #: src/lan/IncomingPrompt.tsx:185
 #: src/lan/PairedComputers.tsx:60
-#: src/lan/PairedComputers.tsx:123
+#: src/lan/PairedComputers.tsx:136
 #: src/lan/SendDialog.tsx:174
 #: src/launch/PrePlayDialog.tsx:136
 #: src/launch/SaveWarnDialog.tsx:66
@@ -3985,7 +3986,7 @@ msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile 
 msgid "Main mod's folder"
 msgstr "Main mod's folder"
 
-#: src/lan/PairedComputers.tsx:116
+#: src/lan/PairedComputers.tsx:129
 msgid "Code"
 msgstr "Code"
 
@@ -4297,7 +4298,7 @@ msgstr "SMAPI is not installed"
 msgid "Performance view"
 msgstr "Performance view"
 
-#: src/lan/PairedComputers.tsx:176
+#: src/lan/PairedComputers.tsx:189
 msgid "Could not unpair"
 msgstr "Could not unpair"
 
@@ -4483,7 +4484,7 @@ msgstr "{gameName} closed with errors"
 msgid "Remove duplicate"
 msgstr "Remove duplicate"
 
-#: src/profiles/CompareBulkBody.tsx:187
+#: src/profiles/CompareBulkBody.tsx:196
 msgid "These profiles have no user mods to compare."
 msgstr "These profiles have no user mods to compare."
 
@@ -5680,7 +5681,7 @@ msgid "No changes to remove"
 msgstr "No changes to remove"
 
 #: src/lan/PairedComputers.tsx:50
-#: src/lan/PairedComputers.tsx:165
+#: src/lan/PairedComputers.tsx:178
 msgid "Pair a computer"
 msgstr "Pair a computer"
 
@@ -5999,7 +6000,7 @@ msgstr "Could not sign in with Nexus Mods"
 msgid "Showing the first 500 matches."
 msgstr "Showing the first 500 matches."
 
-#: src/lan/PairedComputers.tsx:162
+#: src/lan/PairedComputers.tsx:175
 msgid "Profiles you send between paired computers carry their mod files, whatever the source."
 msgstr "Profiles you send between paired computers carry their mod files, whatever the source."
 
@@ -6458,8 +6459,8 @@ msgstr "Download and install"
 msgid "Check interval"
 msgstr "Check interval"
 
-#: src/lan/PairedComputers.tsx:94
-#: src/lan/PairedComputers.tsx:166
+#: src/lan/PairedComputers.tsx:97
+#: src/lan/PairedComputers.tsx:179
 msgid "Enter code"
 msgstr "Enter code"
 
@@ -7430,7 +7431,7 @@ msgstr "From the downloads folder…"
 msgid "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
-#: src/lan/PairedComputers.tsx:102
+#: src/lan/PairedComputers.tsx:105
 msgid "No Mortar computers found nearby."
 msgstr "No Mortar computers found nearby."
 
@@ -7755,6 +7756,15 @@ msgstr "Include config files"
 #: src/mods/MoveFoldersDialog.tsx:62
 msgid "Stopped asking about {folder}"
 msgstr "Stopped asking about {folder}"
+
+#. placeholder {0}: row.name
+#. placeholder {1}: row.a.version
+#. placeholder {2}: row.a.source.kind
+#. placeholder {3}: row.b.version
+#. placeholder {4}: row.b.source.kind
+#: src/profiles/CompareBulkBody.tsx:181
+msgid "{0}: {1} from {2} → {3} from {4}"
+msgstr "{0}: {1} from {2} → {3} from {4}"
 
 #: src/launchers/LauncherList.tsx:61
 msgid "Remove {dir}"
@@ -8430,7 +8440,7 @@ msgstr "Optional: {label}"
 msgid "Combine with…"
 msgstr "Combine with…"
 
-#: src/profiles/CompareBulkBody.tsx:179
+#: src/profiles/CompareBulkBody.tsx:188
 msgid "No matching mods"
 msgstr "No matching mods"
 
@@ -9519,7 +9529,7 @@ msgstr "Navigation"
 msgid "Set {0} to {1}"
 msgstr "Set {0} to {1}"
 
-#: src/lan/PairedComputers.tsx:97
+#: src/lan/PairedComputers.tsx:100
 msgid "Pick the computer showing the code, then type it."
 msgstr "Pick the computer showing the code, then type it."
 
@@ -9819,7 +9829,7 @@ msgstr "Switch to Notes"
 msgid "Update in all profiles ({n})"
 msgstr "Update in all profiles ({n})"
 
-#: src/lan/PairedComputers.tsx:179
+#: src/lan/PairedComputers.tsx:192
 msgid "Unpair"
 msgstr "Unpair"
 
@@ -10951,6 +10961,10 @@ msgstr "Back up saves only if the profile's mods changed since the last run."
 #: src/mods/AssetMapDialog.tsx:73
 msgid "Make win"
 msgstr "Make win"
+
+#: src/profiles/CompareBulkBody.tsx:178
+msgid "Different source"
+msgstr "Different source"
 
 #: src/mods/redundantReason.ts:105
 msgid "Everything it changes, {by} also changes: {detail}"

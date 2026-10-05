@@ -66,3 +66,18 @@ test('a mod with both version and enabled differences appears in both diff group
   expect(d.differentEnabled.map((p) => p.id)).toEqual(['Me.Both'])
   expect(d.identical).toEqual([])
 })
+
+test('the same mod from two sources is one mod with different sources', () => {
+  const a = testProfile({
+    id: 'a',
+    name: 'A',
+    entries: [entry('x', [mod('Me.More', 'More', '1.0')])],
+  })
+  const fromThunderstore = {
+    ...entry('y', [mod('Me.More', 'More', '1.0')]),
+    source: { kind: 'thunderstore', name: 'Me-More', version: '1.0' },
+  }
+  const d = compareProfiles(a, testProfile({ id: 'b', name: 'B', entries: [fromThunderstore] }))
+  expect(d.differentSource.map((p) => p.id)).toEqual(['Me.More'])
+  expect([d.onlyA, d.onlyB, d.identical]).toEqual([[], [], []])
+})
