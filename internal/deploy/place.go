@@ -103,8 +103,11 @@ func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 		if err := put(&m, &m.Ops[i]); err != nil {
 			return m, err
 		}
+		if err := persist(m); err != nil {
+			return m, err
+		}
 	}
-	return m, persist(m)
+	return m, nil
 }
 
 func put(m *Manifest, pl *Placed) error {
@@ -169,7 +172,9 @@ func (place) Purge(ctx context.Context, m Manifest) error {
 				return err
 			}
 		default:
-			if h, err := fsx.SHA256(o.Dst); err == nil && (h == o.Hash || o.Done) {
+			// With no backup a file is ours when it was placed, or when nothing was there to displace and it is our
+			// content (placed, then a crash before the record). Otherwise Dst is still the player's own file.
+			if h, err := fsx.SHA256(o.Dst); err == nil && (o.Done || (o.Displaced == "" && h == o.Hash)) {
 				if err := os.Remove(o.Dst); err != nil {
 					return err
 				}

@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"context"
 	"errors"
 	"io/fs"
 	"os"
@@ -180,5 +181,32 @@ func TestApplyRefusesAnUnrecoveredJournal(t *testing.T) {
 	m := r.apply()
 	if err := d.Purge(t.Context(), m); err != nil || read(filepath.Join(r.install, "winhttp.dll")) != "the player's own" {
 		t.Fatalf("purge after the retry: %v", err)
+	}
+}
+
+func TestPurgeKeepsTheFileOfAnOpThatNeverRan(t *testing.T) {
+	r := newRig(t)
+	dst := filepath.Join(r.install, "winhttp.dll")
+	// The player's file happens to equal ours, and the cancelled launch never got to displace or replace it.
+	write(t, dst, "proxy")
+	hash, _ := fsx.SHA256(dst)
+	m := Manifest{Dir: r.install, View: r.view, Ops: []Placed{{Dst: dst, Src: filepath.Join(r.store, "winhttp.dll"), Hash: hash, Displaced: filepath.Join(r.view.JournalDir, "displaced", "0")}}}
+	d, _ := Get(copyID)
+	if err := d.Purge(t.Context(), m); err != nil || read(dst) != "proxy" {
+		t.Fatalf("purge removed a file it never placed: %q, %v", read(dst), err)
+	}
+}
+
+func TestACanceledApplyRecordsWhatItPlaced(t *testing.T) {
+	r := newRig(t)
+	d, _ := Get(copyID)
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	m, err := d.Apply(ctx, r.plan())
+	if err == nil || len(m.Ops) != 2 || m.Ops[0].Done {
+		t.Fatalf("apply: %v, ops %+v", err, m.Ops)
+	}
+	if err := d.Purge(t.Context(), m); err != nil || read(filepath.Join(r.install, "winhttp.dll")) != "the player's own" {
+		t.Fatalf("purge after a canceled apply: %v", err)
 	}
 }
