@@ -19,3 +19,21 @@ func TestProfileInstallPinRoundTrips(t *testing.T) {
 		t.Fatalf("pin = %q", got)
 	}
 }
+
+func TestSeparateSavesFlagRoundTrips(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	e := newEnv(t)
+	p, err := e.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if e.SeparateSaves("stardew", p.ID) {
+		t.Fatal("a new profile shares the game's saves")
+	}
+	if _, err := e.SetSeparateSaves("stardew", p.ID, true, false); err != nil {
+		t.Fatal(err)
+	}
+	if !e.SeparateSaves("stardew", p.ID) {
+		t.Fatal("the flag must persist")
+	}
+}

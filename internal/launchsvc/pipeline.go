@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/savesiso"
 )
 
 // loaderID is the id of the game's first loader, "" when it has none.
@@ -102,6 +103,44 @@ type deployment struct {
 	// finish unwinds under a context that outlives the launch call, for the waiter, which has none of its own.
 	finish func()
 	once   sync.Once
+	// saves is the swap that gives the profile its own saves folder, undone with the placed files.
+	saves *savesiso.Manifest
+}
+
+// savesJournal is the swap's journal folder, a sibling of the deploy journal so neither takes the other's record.
+func savesJournal(installID string) (string, error) { return journalDir(installID + "-saves") }
+
+// swapSaves points the game's save folder at the profile's own for this launch when the profile keeps its saves
+// separate; the swap is undone with dep.
+func (s *Service) swapSaves(ctx context.Context, gameID string, inst game.Install, profileID, installID string, dep *deployment) error {
+	if !game.HasSaves(gameID) || !s.profiles.SeparateSaves(gameID, profileID) {
+		return nil
+	}
+	own, err := s.profiles.SavesFolder(gameID, profileID)
+	if err != nil {
+		return err
+	}
+	shared, err := game.SavesDir(s.home, s.settings.Get(), gameID, s.pinOf(gameID, profileID, installID))
+	if err != nil {
+		return err
+	}
+	dir, err := savesJournal(inst.ID)
+	if err != nil {
+		return err
+	}
+	if err := savesiso.Recover(dir, nil); err != nil {
+		return err
+	}
+	m, err := savesiso.Apply(dir, shared, own, false)
+	if err != nil {
+		return err
+	}
+	dep.saves = &m
+	if dep.finish == nil {
+		detached := context.WithoutCancel(ctx)
+		dep.finish = func() { dep.unwind(detached) }
+	}
+	return nil
 }
 
 // journalDir is where an install's deploy journal lives: beside Mortar's data, never inside the install, so a game
@@ -162,12 +201,19 @@ func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan) 
 
 // unwind removes the placed files. It is safe to call again, on nil and on a deployment that placed nothing.
 func (dep *deployment) unwind(ctx context.Context) {
-	if dep == nil || dep.d == nil {
+	if dep == nil {
 		return
 	}
 	dep.once.Do(func() {
-		if err := dep.d.Purge(ctx, dep.m); err != nil {
-			log.Printf("launch: purge: %v", err)
+		if dep.d != nil {
+			if err := dep.d.Purge(ctx, dep.m); err != nil {
+				log.Printf("launch: purge: %v", err)
+			}
+		}
+		if dep.saves != nil {
+			if err := savesiso.Purge(*dep.saves); err != nil {
+				log.Printf("launch: restore saves: %v", err)
+			}
 		}
 	})
 }
@@ -199,6 +245,11 @@ func (s *Service) RecoverDeploys(ctx context.Context) error {
 			}
 			if err := d.Recover(ctx, dir, alive); err != nil {
 				errs = append(errs, fmt.Errorf("%s: %w", id, err))
+			}
+			if sj, err := savesJournal(sl.inst); err != nil {
+				errs = append(errs, err)
+			} else if err := savesiso.Recover(sj, alive); err != nil {
+				errs = append(errs, fmt.Errorf("%s saves: %w", id, err))
 			}
 		}
 	}

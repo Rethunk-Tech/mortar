@@ -29,6 +29,7 @@ import { LoaderPicker } from './LoaderPicker.tsx'
 import { OverridesSection } from './OverrideRows.tsx'
 import { foldedOverrides } from './overrideValue.ts'
 import { ProfileMark } from './ProfileMark.tsx'
+import { SeparateSavesRow } from './SeparateSavesRow.tsx'
 import { saveProfile } from './saveProfile.ts'
 import { useProfiles } from './store.ts'
 
@@ -307,6 +308,11 @@ function ProfileFields({
         }}
       />
       <LoaderPicker gameId={gameId} profileId={profile.id} loader={profile.loader ?? ''} />
+      <SeparateSavesRow
+        gameId={gameId}
+        profileId={profile.id}
+        on={profile.separateSaves ?? false}
+      />
       <LaunchOptionsBlock
         gameId={gameId}
         profileId={profile.id}

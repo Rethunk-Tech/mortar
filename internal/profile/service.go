@@ -161,6 +161,12 @@ func (s *Service) SetInstall(game, id, install string) (Profile, error) {
 	return s.store.SetInstall(game, id, install)
 }
 
+// SetSeparateSaves makes the profile keep its own saves (copying the shared ones in when copyCurrent) or go back to
+// the game's shared saves.
+func (s *Service) SetSeparateSaves(game, id string, on, copyCurrent bool) (Profile, error) {
+	return s.store.SetSeparateSaves(game, id, on, copyCurrent)
+}
+
 // SetLoader makes the profile run the game's loader with this id; "" is the primary loader.
 func (s *Service) SetLoader(game, id, loaderID string) (Profile, error) {
 	return s.store.SetLoader(game, id, loaderID)

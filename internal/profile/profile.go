@@ -208,6 +208,8 @@ type Profile struct {
 	// Install is the id of the game install this profile launches and reads saves from; empty means the game's
 	// selected install.
 	Install string `json:"install,omitempty"`
+	// SeparateSaves gives the profile its own saves folder, which replaces the game's shared one while it runs.
+	SeparateSaves bool `json:"separateSaves,omitempty"`
 	// Loader is the id of the game loader this profile runs; empty means the game's primary loader.
 	Loader string `json:"loader,omitempty"`
 	// Overrides are profile values for settings.ProfileOverridable keys.
