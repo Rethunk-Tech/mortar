@@ -46,6 +46,7 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 		return "", err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
+	DefaultAuth.Apply(req)
 	hc := c.HTTP
 	if hc == nil {
 		hc = http.DefaultClient

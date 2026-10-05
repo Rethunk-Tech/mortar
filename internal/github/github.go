@@ -92,6 +92,7 @@ func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release,
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
+	DefaultAuth.Apply(req)
 	if hc == nil {
 		hc = http.DefaultClient
 	}
@@ -194,6 +195,7 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 	if offset > 0 {
 		req.Header.Set("Range", fmt.Sprintf("bytes=%d-", offset))
 	}
+	DefaultAuth.Apply(req)
 	resp, err := hc.Do(req)
 	if err != nil {
 		return err, false
