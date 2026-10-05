@@ -128,10 +128,11 @@ export function PrefCards({
             py: 1.25,
             borderRadius: '6px',
             bgcolor: 'var(--mortar-raised)',
-            '&:hover': { bgcolor: 'var(--mortar-hairline-12)' },
+            // The tint sits over the card's opaque fill; a translucent bgcolor would let the panel behind show through.
+            '&:hover': { boxShadow: 'inset 0 0 0 999px var(--mortar-hairline)' },
             '&:has(input:checked)': {
-              bgcolor: 'var(--mortar-hairline-12)',
-              outline: '1px solid',
+              outline: '2px solid',
+              outlineOffset: '-2px',
               outlineColor: 'primary.main',
             },
           }}
