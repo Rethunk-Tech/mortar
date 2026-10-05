@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase } from '@mui/material'
-import { Copy, Minus, Square, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { Box, ButtonBase, Menu, MenuItem } from '@mui/material'
+import { ChevronDown, Copy, Minus, Square, X } from 'lucide-react'
+import { type ReactNode, useState } from 'react'
 import { compact } from '../game/compact.ts'
+import { useOtherGames } from '../games/info.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -38,6 +39,42 @@ function Tab({
     >
       {children}
     </ButtonBase>
+  )
+}
+
+// GameSwitch drops down the other playable games, most recently played first; it is absent with only one game.
+function GameSwitch({ current }: { current: string }) {
+  const { t } = useLingui()
+  const others = useOtherGames(current)
+  const openGame = useNav((s) => s.openGame)
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  if (others.length === 0) {
+    return null
+  }
+  return (
+    <>
+      <ButtonBase
+        aria-label={t`Switch game`}
+        aria-haspopup="menu"
+        onClick={(e) => setAnchor(e.currentTarget)}
+        sx={{ ...noDrag, px: '6px', color: 'var(--mortar-ink-dim-92)' }}
+      >
+        <ChevronDown size={14} />
+      </ButtonBase>
+      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
+        {others.map((g) => (
+          <MenuItem
+            key={g.id}
+            onClick={() => {
+              setAnchor(null)
+              openGame(g.id)
+            }}
+          >
+            {g.name}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
   )
 }
 
@@ -102,9 +139,12 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
         </Tab>
       )}
       {(route.name === 'game' || route.name === 'profiles' || route.name === 'game-settings') && (
-        <Tab active={true} onClick={() => openGame(route.game)}>
-          {gameName ?? t`Game`}
-        </Tab>
+        <>
+          <Tab active={true} onClick={() => openGame(route.game)}>
+            {gameName ?? t`Game`}
+          </Tab>
+          <GameSwitch current={route.game} />
+        </>
       )}
       {route.name === 'settings' && (
         <Tab active={true} onClick={() => undefined}>
