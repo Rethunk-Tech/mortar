@@ -25,6 +25,9 @@ type Service struct {
 	sizes    []EntrySize
 	sizesFP  string
 	usage    Usage
+	budgets  []ProfileBudget
+	budgetFP string
+	budgetAt time.Time
 	usageAt  time.Time
 	busy     []BusySource
 	// OnClearCache runs after ClearCache empties the cache folder, to drop copies held in memory.
@@ -194,6 +197,7 @@ func (s *Service) forgetModUsage() {
 	s.mu.Lock()
 	s.modFP = ""
 	s.sizesFP = ""
+	s.budgetFP = ""
 	s.usageAt = time.Time{}
 	s.mu.Unlock()
 }

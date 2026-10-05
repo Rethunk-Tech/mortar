@@ -57,6 +57,7 @@ import { PackImportDialog } from './PackImportDialog.tsx'
 import { ProfileRow } from './ProfileRow.tsx'
 import { hasThunderstore } from './packImport.ts'
 import { useProfiles } from './store.ts'
+import { useBudgets } from './useBudgets.ts'
 
 function TrashRow({ item }: { item: TrashItem }) {
   const { t } = useLingui()
@@ -428,6 +429,10 @@ export function ProfilesPage() {
   const game = useCurrentGame()
   const profiles = useProfiles((s) => s.profiles)
   useProfilePageBadges(game)
+  const budgets = useBudgets(
+    game,
+    profiles.map((p) => `${p.id}:${p.entries?.length ?? 0}`).join(','),
+  )
   const damaged = useProfiles((s) => s.damaged)
   const reorder = useProfiles((s) => s.reorder)
   const restoreZip = useProfiles((s) => s.restoreZip)
@@ -514,7 +519,7 @@ export function ProfilesPage() {
                 strategy={verticalListSortingStrategy}
               >
                 {profiles.map((p) => (
-                  <ProfileRow key={p.id} profile={p} />
+                  <ProfileRow key={p.id} profile={p} budget={budgets.get(p.id)} />
                 ))}
               </SortableContext>
             </DndContext>

@@ -4,10 +4,12 @@ import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, Button, Divider, IconButton, Menu, Tooltip, Typography } from '@mui/material'
 import { GripVertical, MoreHorizontal, Palette, Pencil, Share2 } from 'lucide-react'
 import { useRef, useState } from 'react'
+import type { ProfileBudget } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { NameField } from '../game/NameField.tsx'
 import { CoverMenuItems, MoreMenuItems, ProfileMenuItem } from '../game/ProfileMenuItems.tsx'
 import { useRestoreFocus } from '../game/useRestoreFocus.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
@@ -116,7 +118,37 @@ function useRowSummary(profile: Profile): string {
   ])
 }
 
-export function ProfileRow({ profile }: { profile: Profile }) {
+// Where the profile's disk goes: the store items it uses (and how much of that other profiles use too), its
+// deployed mods folder, and its own saves when it keeps them.
+function BudgetLine({ budget }: { budget: ProfileBudget | undefined }) {
+  const { t } = useLingui()
+  if (budget === undefined) {
+    return null
+  }
+  const store = formatBytes(budget.store)
+  const shared = formatBytes(budget.shared)
+  const deployed = formatBytes(budget.deployed)
+  const line = joinSummary([
+    budget.shared > 0
+      ? t`${store} in the store (${shared} shared with other profiles)`
+      : t`${store} in the store`,
+    t`${deployed} deployed`,
+    budget.saves > 0 ? t`${formatBytes(budget.saves)} of saves` : undefined,
+  ])
+  return (
+    <Typography noWrap={true} title={line} sx={{ fontSize: 13, color: 'text.secondary' }}>
+      {line}
+    </Typography>
+  )
+}
+
+export function ProfileRow({
+  profile,
+  budget,
+}: {
+  profile: Profile
+  budget?: ProfileBudget | undefined
+}) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
   const rename = useProfiles((s) => s.rename)
@@ -220,6 +252,7 @@ export function ProfileRow({ profile }: { profile: Profile }) {
         <Typography noWrap={true} title={summary} sx={{ fontSize: 13, color: 'text.secondary' }}>
           {summary}
         </Typography>
+        <BudgetLine budget={budget} />
       </Box>
       <Button
         variant="outlined"
