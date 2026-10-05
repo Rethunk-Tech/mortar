@@ -21,6 +21,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { considerMissing } from '../install/store.ts'
 import { idKey } from '../mods/dependents.ts'
+import { useNexusDetails } from '../mods/nexusDetails.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
@@ -32,11 +33,18 @@ import { isTrackedImportBatch, observeImportState } from '../share/importComplet
 import { follow } from '../shell/follow.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
 import { useToasts } from '../toasts/store.ts'
+import { displayName } from './totals.ts'
 
 // The binding types a Go slice as nullable; the store keeps it a list.
 type Snapshot = Omit<State, 'items'> & { items: Item[] }
 
-const snapshot = (s: State): Snapshot => ({ ...s, items: s.items ?? [] })
+const snapshot = (s: State): Snapshot => ({
+  ...s,
+  items: (s.items ?? []).map((i) => ({
+    ...i,
+    name: displayName(i, useNexusDetails.getState().byId[i.modId]?.details?.page.name),
+  })),
+})
 
 const empty: Snapshot = { items: [], paused: false, limitedUntil: 0 }
 

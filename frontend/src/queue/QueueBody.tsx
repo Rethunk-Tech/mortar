@@ -32,7 +32,7 @@ import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { Callout, Title } from './Callout.tsx'
 import { Fold } from './QueueFold.tsx'
-import { downloadedKb, isActive, tile } from './totals.ts'
+import { displayName, downloadedKb, isActive, tile } from './totals.ts'
 
 const ROW = {
   display: 'flex',
@@ -48,7 +48,7 @@ const NAME_MAX = 3
 const names = (items: Item[]) =>
   items
     .slice(0, NAME_MAX)
-    .map((i) => i.name || i.fileName)
+    .map((i) => displayName(i))
     .join(', ')
 
 function SectionTitle({
@@ -304,21 +304,21 @@ function Active({ item }: { item: Item }) {
 function NextActions({ item }: { item: Item }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-        {t`Skip every waiting download`}
-      </Typography>
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        <Button size="small" onClick={() => SkipAll().catch(reportUnexpected)}>
-          {t`Skip all`}
-        </Button>
-        <Button
-          size="small"
-          onClick={() => SkipProfile(item.game, item.profileId).catch(reportUnexpected)}
-        >
-          {t`Skip this profile`}
-        </Button>
-      </Box>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Button
+        size="small"
+        title={t`Skip every waiting download`}
+        onClick={() => SkipAll().catch(reportUnexpected)}
+      >
+        {t`Skip all`}
+      </Button>
+      <Button
+        size="small"
+        title={t`Skip the waiting downloads of this profile`}
+        onClick={() => SkipProfile(item.game, item.profileId).catch(reportUnexpected)}
+      >
+        {t`Skip this profile`}
+      </Button>
     </Box>
   )
 }

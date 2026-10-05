@@ -672,6 +672,7 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 			it.Name = cmp.Or(it.Name, it.Package)
 		}
 		if src := known[i]; src.Name != "" {
+			it.Name = cmp.Or(it.Name, src.ModName)
 			it.FileName, it.Version = cmp.Or(it.FileName, src.Name), cmp.Or(it.Version, src.Version)
 			it.Picture, it.endorsed = src.Picture, src.EndorsementCount
 		}

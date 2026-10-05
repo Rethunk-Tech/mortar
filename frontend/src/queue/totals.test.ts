@@ -1,6 +1,13 @@
 import { expect, test } from 'bun:test'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
-import { isClearableFinished, parallelDownloads, pendingFor, profileOf, totals } from './totals.ts'
+import {
+  displayName,
+  isClearableFinished,
+  parallelDownloads,
+  pendingFor,
+  profileOf,
+  totals,
+} from './totals.ts'
 
 const item = (state: string, sizeKb = 0, modId = 1): Item => ({
   id: state + modId,
@@ -81,4 +88,13 @@ test('profileOf names the profile, marks a deleted one and stays silent for anot
   expect(profileOf(item('queued'), 'stardew', profiles)).toBe('Main')
   expect(profileOf({ game: 'stardew', profileId: 'gone' }, 'stardew', profiles)).toBe('')
   expect(profileOf(item('queued'), 'lethal-company', profiles)).toBeNull()
+})
+
+test('a queue item always has a display name', () => {
+  const bare = (over: Partial<Item>) =>
+    ({ name: '', fileName: '', repo: '', package: '', modId: 0, ...over }) as Item
+  expect(displayName(bare({ name: 'A', modId: 5 }))).toBe('A')
+  expect(displayName(bare({ fileName: 'a.zip', modId: 5 }))).toBe('a.zip')
+  expect(displayName(bare({ modId: 25_328 }), 'ExtraAnimalConfig')).toBe('ExtraAnimalConfig')
+  expect(displayName(bare({ modId: 25_328 }))).toBe('Nexus mod 25328')
 })

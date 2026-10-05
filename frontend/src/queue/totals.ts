@@ -92,3 +92,8 @@ export const tile = (i: Item) => ({
   name: i.name || i.repo || String(i.modId),
   picture: i.picture ?? '',
 })
+
+// A queue item is never shown nameless: its own name, the file or repo it fetches, the source page's name, then the
+// mod's number.
+export const displayName = (i: Item, pageName = ''): string =>
+  i.name || i.fileName || i.repo || i.package || pageName || (i.modId ? `Nexus mod ${i.modId}` : '')
