@@ -112,7 +112,12 @@
       "deploy": "link-into-install",
       "targets": [
         { "id": "profile", "root": "{profile}", "install": "{install}" },
-        { "id": "config", "root": "{profile}/BepInEx/config", "install": "{install}/BepInEx/config", "writable": true }
+        {
+          "id": "config",
+          "root": "{profile}/BepInEx/config",
+          "install": "{install}/BepInEx/config",
+          "writable": true
+        }
       ],
       "stores": {
         "steam": {
