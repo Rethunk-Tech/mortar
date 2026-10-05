@@ -3,11 +3,11 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // moreVerb is one verb that maps straight onto a control method: positional arguments in, the method's JSON out.
@@ -28,13 +28,7 @@ func rest(a []string, from int) []string {
 	return a[from:]
 }
 
-func readBody(path string) ([]byte, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
-}
+func readBody(path string) ([]byte, error) { return fsx.ReadFile(path) }
 
 var moreVerbs = map[string]moreVerb{
 	"bundles create": {

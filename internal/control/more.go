@@ -142,7 +142,7 @@ func (s *Services) lanMethod(method string, p Params) (any, error) {
 	}
 	if method == "lan.decline" {
 		s.Lan.CancelTransfer(id)
-		return nil, nil
+		return struct{}{}, nil
 	}
 	return nil, s.Lan.Transfer(id)
 }
