@@ -131,6 +131,10 @@ CI only attaches a single-file `.flatpak` for people who sideload, built by `bui
 3. Flathub builds from source only ([requirements](https://docs.flathub.org/docs/for-app-authors/requirements): no network during the build, every dependency a manifest source with a public URL), which is what the rendered manifest does.
 4. finish-args grant network, Wayland/X11 with ipc, DRI, native and Flatpak Steam libraries, read-only Heroic (`xdg-config/heroic`) and Lutris game configs (`xdg-data/lutris`), read-write Flatpak Lutris and Heroic app data, default `~/GOG Games` and `~/Games/Heroic` install trees, `xdg-download`, removable media (`/run/media`, `/mnt`) for second-drive Steam libraries, the Secret Service (`org.freedesktop.secrets`, Nexus sign-in) and `org.freedesktop.Flatpak` (`flatpak-spawn --host`, which starts Steam and the game outside the sandbox). Launch at login and profile shortcuts go through the Background and DynamicLauncher portals; the game-library paths and `flatpak-spawn` are the linter exceptions `SUBMISSION.md` requests.
 
+### winget
+
+`build/windows/winget/` holds the last submitted manifests for `RethunkTech.Mortar`. After a release publishes, `build/windows/winget/bump.sh 1.2.3 <winget-pkgs checkout>` verifies the release's `SHA256SUMS` signature against the repo key, writes `manifests/r/RethunkTech/Mortar/1.2.3/` with both installers' hashes, and the update goes to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) as a PR (`winget validate` first). Copy the new manifests back over `build/windows/winget/` once it merges. Scoop and the Homebrew tap update themselves from the release ([scoop-bucket](https://github.com/Rethunk-Tech/scoop-bucket), [homebrew-tap](https://github.com/Rethunk-Tech/homebrew-tap)).
+
 ### AUR mortar-bin
 
 `build/linux/aur/PKGBUILD` installs `mortar-aur-linux-amd64` or `mortar-aur-linux-arm64` (the packaged build, updater off) from the GitHub release, plus the tagged desktop entry and icon. Publishing:

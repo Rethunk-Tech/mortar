@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
+
+PackageIdentifier: RethunkTech.Mortar
+PackageVersion: 0.2.2
+InstallerType: nullsoft
+Scope: user
+InstallModes:
+- interactive
+- silent
+UpgradeBehavior: install
+ProductCode: Rethunk.TechMortar
+ReleaseDate: 2026-10-05
+Protocols:
+- mortar
+- nxm
+FileExtensions:
+- mortar
+Installers:
+- Architecture: x64
+  InstallerUrl: https://github.com/Rethunk-Tech/mortar/releases/download/v0.2.2/mortar-amd64-installer.exe
+  InstallerSha256: 080F14F0434B8811D7DCCEC3785F667DC86D317E7075ED182242BFA1BA99DD4C
+- Architecture: arm64
+  InstallerUrl: https://github.com/Rethunk-Tech/mortar/releases/download/v0.2.2/mortar-arm64-installer.exe
+  InstallerSha256: 78ABB343B16D7C7F8AB42B5EE8736E676E3C3767ED47D80F15DC5BEAC1CD941E
+ManifestType: installer
+ManifestVersion: 1.12.0

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json
+
+PackageIdentifier: RethunkTech.Mortar
+PackageVersion: 0.2.2
+PackageLocale: en-US
+Publisher: Rethunk.Tech
+PublisherUrl: https://we.rethunk.tech/
+PublisherSupportUrl: https://github.com/Rethunk-Tech/mortar/issues
+Author: Rethunk.Tech
+PackageName: Mortar
+PackageUrl: https://mortar.rethunk.tech/
+License: AGPL-3.0-only
+LicenseUrl: https://github.com/Rethunk-Tech/mortar/blob/main/LICENSE
+Copyright: (c) 2026, Rethunk.Tech
+ShortDescription: Desktop mod manager for Stardew Valley.
+Description: Mortar finds Stardew Valley on Steam, GOG, Heroic or Lutris, installs SMAPI, keeps each set of mods in its own profile, explains mod conflicts, downloads from Nexus Mods and GitHub, and shares a profile as a link.
+Moniker: mortar
+Tags:
+- mod-manager
+- modding
+- nexus-mods
+- smapi
+- stardew-valley
+ReleaseNotesUrl: https://github.com/Rethunk-Tech/mortar/releases/tag/v0.2.2
+ManifestType: defaultLocale
+ManifestVersion: 1.12.0
