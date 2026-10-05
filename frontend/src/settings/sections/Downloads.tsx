@@ -1,60 +1,76 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link } from '@mui/material'
 import { useEffect, useState } from 'react'
+import type { GameInfo } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { List as ListGames } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { List as ListProfiles } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
   SetByKey,
   SetNexusPreferredDownloadServer,
-  SetNxmDefaultProfile,
   SetNxmRedirectOtherGames,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ExtensionContact } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
-import { useProfiles } from '../../profiles/store.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { prefCopy } from '../prefCopy.ts'
-import { GAME_STARDEW } from '../prefValue.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useNxmHandler } from './nxmHandler.tsx'
 
-// Nexus links carry no profile, so the target profile is per game; Stardew is the only game today.
-function NxmDefaultProfile() {
+// Nexus links carry no profile, so the target profile is per game: one row for each game Nexus serves.
+function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string }) {
   const { t, i18n } = useLingui()
   const push = useToasts((s) => s.push)
-  const profiles = useProfiles((s) => s.profiles)
-  const value = useSettings((s) => s.games?.[GAME_STARDEW]?.nxmDefaultProfile ?? '')
-  const [gameName, setGameName] = useState('')
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const value = useSettings((s) => s.games?.[game]?.nxmDefaultProfile ?? '')
   useEffect(() => {
-    ListGames()
-      .then((gs) => setGameName((gs ?? []).find((g) => g.id === GAME_STARDEW)?.name ?? ''))
-      .catch(() => setGameName(''))
-  }, [])
+    ListProfiles(game)
+      .then((ps) => setProfiles(ps ?? []))
+      .catch(() => setProfiles([]))
+  }, [game])
   const copy = prefCopy(i18n, 'nxmDefaultProfile')
   const options = [
     { value: '', label: t`Last opened profile` },
-    ...(profiles ?? []).filter((p) => !p.hidden).map((p) => ({ value: p.id, label: p.name })),
+    ...profiles.filter((p) => !p.hidden).map((p) => ({ value: p.id, label: p.name })),
   ]
   return (
-    <SettingRow
-      label={gameName ? t`${copy.label} (${gameName})` : copy.label}
-      description={copy.description}
-    >
+    <SettingRow label={t`${copy.label} (${gameName})`} description={copy.description}>
       <PrefSelect
         value={options.some((o) => o.value === value) ? value : ''}
         onChange={(v) =>
-          persist(() => SetNxmDefaultProfile(v), push, t`Could not save that setting`)
+          persist(
+            () => SetByKey('nxmDefaultProfile', v, game),
+            push,
+            t`Could not save that setting`,
+          )
         }
         options={options}
         label={copy.label}
       />
     </SettingRow>
+  )
+}
+
+function NxmDefaultProfiles() {
+  const [games, setGames] = useState<GameInfo[]>([])
+  useEffect(() => {
+    ListGames()
+      .then((gs) => setGames((gs ?? []).filter((g) => g.sources?.includes('nexus'))))
+      .catch(() => setGames([]))
+  }, [])
+  return (
+    <>
+      {games.map((g) => (
+        <NxmDefaultProfile key={g.id} game={g.id} gameName={g.name} />
+      ))}
+    </>
   )
 }
 
@@ -229,7 +245,7 @@ export function Downloads() {
     <>
       <SettingsSection title={t`Nexus links`}>
         <NxmLinks />
-        <NxmDefaultProfile />
+        <NxmDefaultProfiles />
       </SettingsSection>
       <SettingsSection title={t`Browser extension`}>
         <ExtensionInstall />
