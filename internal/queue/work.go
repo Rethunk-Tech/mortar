@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -295,6 +296,7 @@ func (s *Service) settle(id string, err error) {
 	}
 	var limit *nexus.RateLimitError
 	var ghLimit *github.RateLimitError
+	var busy *source.BusyError
 	var full *store.DiskFullError
 	switch {
 	case errors.Is(err, context.Canceled):
@@ -308,6 +310,12 @@ func (s *Service) settle(id string, err error) {
 	case errors.As(err, &ghLimit):
 		it.State, it.Progress, it.Speed = StateQueued, 0, 0
 		s.until = ghLimit.Reset
+		if !s.until.After(s.d.Now()) {
+			s.until = s.d.Now().Add(defaultBackoff)
+		}
+	case errors.As(err, &busy):
+		it.State, it.Progress, it.Speed = StateQueued, 0, 0
+		s.until = busy.Reset
 		if !s.until.After(s.d.Now()) {
 			s.until = s.d.Now().Add(defaultBackoff)
 		}

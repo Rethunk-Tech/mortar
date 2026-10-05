@@ -116,7 +116,7 @@ func (d Driver) call(ctx context.Context, key, path string, params url.Values, o
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return source.ErrBusy
+		return &source.BusyError{Source: "itch.io"}
 	}
 	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusUnauthorized {
 		return ErrBadKey

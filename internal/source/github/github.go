@@ -135,7 +135,7 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return source.Page{}, source.ErrBusy
+		return source.Page{}, &source.BusyError{Source: "GitHub"}
 	}
 	if resp.StatusCode != http.StatusOK {
 		return source.Page{}, fmt.Errorf("github answered %s", resp.Status)

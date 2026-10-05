@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
@@ -23,8 +24,19 @@ const (
 	Handoff Acquire = "handoff"
 )
 
-// ErrBusy means GitHub refused the search (403/429); the caller should wait a minute.
-var ErrBusy = errors.New("GitHub is busy, try again in a minute")
+// ErrBusy matches every *BusyError, whichever source refused.
+var ErrBusy = errors.New("source is busy")
+
+// BusyError is a source refusing calls for now (403/429). Reset is when it works again, zero when it did not say; the
+// queue waits until then instead of failing the item.
+type BusyError struct {
+	Source string
+	Reset  time.Time
+}
+
+func (e *BusyError) Error() string { return e.Source + " is busy, try again in a minute" }
+
+func (e *BusyError) Is(target error) bool { return target == ErrBusy }
 
 // Source is one mod site.
 type Source interface {

@@ -2,8 +2,11 @@ package queue
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 func TestNextScansRunningProfilesWithoutTheQueueLock(t *testing.T) {
@@ -43,5 +46,18 @@ func TestNextScansRunningProfilesWithoutTheQueueLock(t *testing.T) {
 	case <-done:
 	case <-time.After(2 * time.Second):
 		t.Fatal("step did not finish")
+	}
+}
+
+func TestASourceBusyAnswerRequeuesTheItemAndPausesTheQueue(t *testing.T) {
+	now := time.Unix(1000, 0).UTC()
+	s := &Service{
+		d:     Deps{Now: func() time.Time { return now }},
+		kick:  make(chan struct{}, 1),
+		items: []*Item{{ID: "a", State: StateDownloading}},
+	}
+	s.settle("a", fmt.Errorf("modrinth: %w", &source.BusyError{Source: "Modrinth"}))
+	if it := s.find("a"); it.State != StateQueued || !s.until.Equal(now.Add(defaultBackoff)) {
+		t.Fatalf("item %+v until %v", it, s.until)
 	}
 }
