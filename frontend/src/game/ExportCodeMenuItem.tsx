@@ -20,12 +20,19 @@ export function ExportCodeMenuItem({ profile, close }: { profile: Profile; close
   if (!(game && hasThunderstore(game))) {
     return null
   }
+  const copy = async (code: string) => {
+    try {
+      await Clipboard.SetText(code)
+    } catch (error) {
+      reportUnexpected(error)
+    }
+  }
   const announce = (code: string) =>
     useToasts.getState().push({
       kind: 'success',
       title: t`Code published`,
       body: code,
-      action: { label: t`Copy code`, run: () => Clipboard.SetText(code).catch(reportUnexpected) },
+      action: { label: t`Copy code`, run: () => copy(code) },
     })
   const publish = () => {
     setAsking(false)
