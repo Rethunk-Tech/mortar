@@ -8,7 +8,8 @@ import {
 
 // Local, in-process reads of what the last real requests showed; the only network cost is the Recheck below.
 const STATE_POLL_MS = 15_000
-const RECHECK_MS = 5 * 60_000
+const MINUTE_MS = 60_000
+const RECHECK_MS = 5 * MINUTE_MS
 // Go's zero time.
 const NEVER_YEAR = 2000
 
