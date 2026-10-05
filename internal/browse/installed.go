@@ -12,26 +12,28 @@ import (
 // Holdings is what a profile already has, as Browse cards and the "In this profile" filter see it: an entry's own
 // source, an installed mod's manifest update keys, and the loader companion Mortar bundles.
 type Holdings struct {
-	nexus   map[int]bool
-	github  map[string]bool
-	pkg     map[string]bool
+	nexus  map[int]bool
+	github map[string]bool
+	// named holds the entries of sources identified by Name (Thunderstore, Modrinth, itch.io, ...), by kind.
+	named   map[string]map[string]bool
 	bridges map[string]bool
 }
 
 // Hold reads prof's entries and the manifests of its installed mods (nil when unknown) for the catalog game info.
 func Hold(info components.GameInfo, prof profile.Profile, installed []profile.Installed) Holdings {
-	h := Holdings{nexus: map[int]bool{}, github: map[string]bool{}, pkg: map[string]bool{}, bridges: map[string]bool{}}
+	h := Holdings{nexus: map[int]bool{}, github: map[string]bool{}, named: map[string]map[string]bool{}, bridges: map[string]bool{}}
 	bundled := false
 	for _, e := range prof.Entries {
 		switch e.Source.Kind {
 		case profile.KindNexus:
 			h.nexus[e.Source.ModID] = true
-		case profile.KindThunderstore:
-			h.pkg[strings.ToLower(e.Source.Name)] = true
 		case profile.KindGitHub:
 			h.github[strings.ToLower(e.Source.Repo)] = true
 		case profile.SourceMortar:
 			bundled = true
+		case profile.KindLocal:
+		default:
+			h.hold(e.Source.Kind, e.Source.Name)
 		}
 	}
 	for _, m := range installed {
@@ -48,6 +50,13 @@ func Hold(info components.GameInfo, prof profile.Profile, installed []profile.In
 		h.addBridges(info)
 	}
 	return h
+}
+
+func (h Holdings) hold(kind, name string) {
+	if h.named[kind] == nil {
+		h.named[kind] = map[string]bool{}
+	}
+	h.named[kind][strings.ToLower(name)] = true
 }
 
 // addBridges notes the repositories of the game's loader companions, which Mortar installs itself.
@@ -71,12 +80,10 @@ func (h Holdings) Has(source, id string) bool {
 	case "nexus":
 		n, err := strconv.Atoi(id)
 		return err == nil && h.nexus[n]
-	case "thunderstore":
-		return h.pkg[strings.ToLower(id)]
 	case "github":
 		return h.github[strings.ToLower(id)] || h.bridges[strings.ToLower(id)]
 	}
-	return false
+	return h.named[source][strings.ToLower(id)]
 }
 
 // Bundled reports whether the mod is a loader companion Mortar installed itself.
