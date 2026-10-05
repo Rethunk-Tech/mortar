@@ -1,12 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { SetModEnabled } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { SetModsEnabled } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { openTarget } from '../storeView.ts'
+import { losingRefs } from './pluginClashRefs.ts'
 import type { WarningButton } from './warningButton.tsx'
 
-// Keeps the copy with the newest plugin version and switches the other packages off.
+// Keeps the copy with the newest plugin version and disables every component of the other packages.
 export function PluginClashFix({
   problem,
   button,
@@ -21,10 +22,11 @@ export function PluginClashFix({
     if (!open) {
       return
     }
-    Promise.all(
-      (copies ?? [])
-        .filter((copy) => copy.key !== keep)
-        .map((copy) => SetModEnabled(open.game, open.id, copy.key, copy.id, false)),
+    SetModsEnabled(
+      open.game,
+      open.id,
+      losingRefs(copies ?? [], keep, useMods.getState().mods),
+      false,
     )
       .then(() => useMods.getState().load())
       .catch(reportUnexpected)
