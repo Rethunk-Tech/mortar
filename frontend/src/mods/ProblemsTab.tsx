@@ -25,6 +25,7 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { type SectionAction, SectionStrip } from '../shell/SectionStrip.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -49,7 +50,6 @@ import {
 import { formatProblemReport, whyKeysOf } from './problemReport.ts'
 import { chosenSection, type SectionTab, useProblemSection } from './problemSection.ts'
 import { useRedundantRows } from './redundantReason.ts'
-import { type SectionAction, SectionSwitcher } from './SectionSwitcher.tsx'
 import { CheckTimings, SlowStartupSection } from './SlowStartupSection.tsx'
 import { useSlowStartups } from './slowStartups.ts'
 import { useMods } from './store.ts'
@@ -447,51 +447,54 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   const shown = tabs.find((tab) => tab.id === current)
 
   return (
-    <Box
-      sx={{
-        flexShrink: 0,
-        px: 2,
-        pt: 1,
-        pb: 1.5,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1.5,
-      }}
-    >
-      <Box sx={{ mx: -2, mb: -1 }}>
-        <LockedNote />
-      </Box>
-      {empty ? (
-        <EmptyState
-          icon={<ShieldCheck size={40} aria-hidden={true} />}
-          title={t`No problems found`}
-        >
-          {t`Every mod has what it needs and nothing clashes.`}
-        </EmptyState>
-      ) : null}
+    <>
       {tabs.length > 0 ? (
-        <SectionSwitcher
+        <SectionStrip
+          label={t`Problem sections`}
           tabs={tabs}
           current={current}
           onChoose={(id) => choose(openId, id)}
           action={shown?.action}
         />
       ) : null}
-      {shown?.body}
-      <ConfirmDialog
-        open={confirmDismissCosmetic}
-        title={t`Dismiss all harmless overlaps?`}
-        body={t`They move to Dismissed. Restore them from that section.`}
-        confirmLabel={t`Dismiss all`}
-        onCancel={() => setConfirmDismissCosmetic(false)}
-        onConfirm={() => {
-          setConfirmDismissCosmetic(false)
-          dismissCosmetic(sections, dismissAsset)
+      <Box
+        sx={{
+          flexShrink: 0,
+          px: 2,
+          pt: 1.5,
+          pb: 1.5,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5,
         }}
-      />
-      {result.unknown ? <OfflineChecksNote /> : null}
-      <CheckTimings timings={result.timings ?? []} />
-    </Box>
+      >
+        <Box sx={{ mx: -2, mb: -1 }}>
+          <LockedNote />
+        </Box>
+        {empty ? (
+          <EmptyState
+            icon={<ShieldCheck size={40} aria-hidden={true} />}
+            title={t`No problems found`}
+          >
+            {t`Every mod has what it needs and nothing clashes.`}
+          </EmptyState>
+        ) : null}
+        {shown?.body}
+        <ConfirmDialog
+          open={confirmDismissCosmetic}
+          title={t`Dismiss all harmless overlaps?`}
+          body={t`They move to Dismissed. Restore them from that section.`}
+          confirmLabel={t`Dismiss all`}
+          onCancel={() => setConfirmDismissCosmetic(false)}
+          onConfirm={() => {
+            setConfirmDismissCosmetic(false)
+            dismissCosmetic(sections, dismissAsset)
+          }}
+        />
+        {result.unknown ? <OfflineChecksNote /> : null}
+        <CheckTimings timings={result.timings ?? []} />
+      </Box>
+    </>
   )
 }
 
