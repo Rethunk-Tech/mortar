@@ -2,12 +2,12 @@ package smapi
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"runtime"
-	"errors"
 	"strings"
 	"sync/atomic"
 	"testing"
