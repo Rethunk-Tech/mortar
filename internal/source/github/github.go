@@ -99,7 +99,7 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	if q.Key == "" {
 		return source.Page{}, nil
 	}
-	key := q.Key + "\n" + q.Text + "\n" + strconv.Itoa(q.Page)
+	key := q.Key + "\n" + q.Text + "\n" + q.Sort + "\n" + strconv.Itoa(q.Page)
 	if hit, ok := d.cached(key); ok {
 		return hit, nil
 	}
@@ -114,7 +114,11 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	terms := strings.TrimSpace(q.Text + " topic:" + q.Key)
 	params := url.Values{}
 	params.Set("q", terms)
+	// GitHub has no download count or name sort, so those keep the star order.
 	params.Set("sort", "stars")
+	if q.Sort == source.SortUpdated {
+		params.Set("sort", "updated")
+	}
 	params.Set("per_page", strconv.Itoa(source.PageSize))
 	params.Set("page", strconv.Itoa(q.Page))
 	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)

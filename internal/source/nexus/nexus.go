@@ -93,14 +93,51 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if err != nil {
 		return source.Page{}, err
 	}
-	// An empty text lists the game's most endorsed mods, so no name filter.
-	filter := fmt.Sprintf(`gameDomainName:[{value:%s}]`, key)
+	// An empty text lists the game's top mods, so no name filter. A filter's category list is an AND, and branches
+	// joined by OR give "any included category": one branch per included category, each also excluding the others.
+	scope := fmt.Sprintf(`gameDomainName:[{value:%s}]`, key)
 	if strings.TrimSpace(q.Text) != "" {
-		filter += fmt.Sprintf(`, name:[{value:%s, op:WILDCARD}]`, text)
+		scope += fmt.Sprintf(`, name:[{value:%s, op:WILDCARD}]`, text)
+	}
+	cats := func(include string) (string, error) {
+		var vals []string
+		if include != "" {
+			name, err := json.Marshal(include)
+			if err != nil {
+				return "", err
+			}
+			vals = append(vals, fmt.Sprintf(`{value:%s}`, name))
+		}
+		for _, c := range q.ExcludeCategories {
+			name, err := json.Marshal(c)
+			if err != nil {
+				return "", err
+			}
+			vals = append(vals, fmt.Sprintf(`{value:%s, op:NOT_EQUALS}`, name))
+		}
+		if len(vals) == 0 {
+			return scope, nil
+		}
+		return scope + ", categoryName:[" + strings.Join(vals, ", ") + "]", nil
+	}
+	filter, err := cats("")
+	if err != nil {
+		return source.Page{}, err
+	}
+	if len(q.Categories) > 0 {
+		branches := make([]string, 0, len(q.Categories))
+		for _, c := range q.Categories {
+			br, err := cats(c)
+			if err != nil {
+				return source.Page{}, err
+			}
+			branches = append(branches, "{"+br+"}")
+		}
+		filter = "op:OR, filter:[" + strings.Join(branches, ", ") + "]"
 	}
 	query := fmt.Sprintf(
-		`{ mods(filter:{%s}, sort:[{endorsements:{direction:DESC}}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent } } }`,
-		filter, source.PageSize, offset,
+		`{ mods(filter:{%s}, sort:[{%s}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent } } }`,
+		filter, sortClause(q.Sort), source.PageSize, offset,
 	)
 	raw, err := json.Marshal(searchBody{Query: query})
 	if err != nil {
@@ -152,4 +189,29 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		})
 	}
 	return source.Page{Total: parsed.Data.Mods.TotalCount, Items: items}, nil
+}
+
+func sortClause(sort string) string {
+	switch sort {
+	case source.SortDownloads:
+		return "downloads:{direction:DESC}"
+	case source.SortUpdated:
+		return "updatedAt:{direction:DESC}"
+	case source.SortName:
+		return "name:{direction:ASC}"
+	}
+	return "endorsements:{direction:DESC}"
+}
+
+// CategoryNames lists a game's mod category names. Nexus serves them only to a signed-in account, so Mortar's
+// account service sets this; without it the driver offers no category choices.
+var CategoryNames func(ctx context.Context, domain string) ([]string, error)
+
+// Categories lists the game's category names, or none while no account lookup is wired.
+func (Driver) Categories(ctx context.Context, key string) ([]string, error) {
+	if CategoryNames == nil {
+		return []string{}, nil
+	}
+	names, err := CategoryNames(ctx, key)
+	return source.UniqueNames(names), err
 }

@@ -99,3 +99,23 @@ func TestEmptySearchListsMostEndorsedWithoutNameFilter(t *testing.T) {
 		t.Fatalf("query %s", gotBody)
 	}
 }
+
+func TestCategoryFiltersAndSortBuildTheQuery(t *testing.T) {
+	t.Parallel()
+	var gotBody string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, _ := io.ReadAll(r.Body)
+		gotBody = string(raw)
+		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":0,"nodes":[]}}}`))
+	}))
+	t.Cleanup(srv.Close)
+	q := source.Query{Game: "g", Key: "gk", Page: 1, Categories: []string{"Maps", "Audio"}, ExcludeCategories: []string{"Misc"}, Sort: source.SortDownloads}
+	if _, err := (Driver{URL: srv.URL}).Search(context.Background(), q); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`op:OR, filter:[`, `{value:\"Maps\"}, {value:\"Misc\", op:NOT_EQUALS}`, `{value:\"Audio\"}`, "downloads:{direction:DESC}"} {
+		if !strings.Contains(gotBody, want) {
+			t.Fatalf("%q missing: %s", want, gotBody)
+		}
+	}
+}

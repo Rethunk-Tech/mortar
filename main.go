@@ -58,6 +58,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
+	nexussource "github.com/Rethunk-Tech/mortar/internal/source/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/storecheck"
@@ -365,6 +366,7 @@ func run() error {
 	nexusSvc := nexussvc.NewService(store, nexusClient, modMeta)
 	nexusSvc.Profiles = profiles
 	nexusSvc.GitHub = &github.Client{}
+	nexussource.CategoryNames = nexusSvc.CategoryNames
 
 	exe, err := os.Executable()
 	if err != nil {

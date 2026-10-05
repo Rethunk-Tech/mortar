@@ -41,7 +41,21 @@ type Query struct {
 	Text    string
 	Page    int
 	Version string
+	// Categories keeps hits in any of these categories; ExcludeCategories drops hits in any of those. Names match
+	// case-insensitively. Sources without categories ignore them.
+	Categories        []string
+	ExcludeCategories []string
+	// Sort is one of the Sort constants; empty keeps the source's own order.
+	Sort string
 }
+
+// Sort orders a search; each source maps it to what it can.
+const (
+	SortDownloads    = "downloads"
+	SortUpdated      = "updated"
+	SortEndorsements = "endorsements"
+	SortName         = "name"
+)
 
 // Item is one search hit.
 type Item struct {
@@ -87,6 +101,11 @@ type Page struct {
 // Searcher is a source that can list mods matching text.
 type Searcher interface {
 	Search(ctx context.Context, q Query) (Page, error)
+}
+
+// Categorizer is a source whose mods carry categories that Query.Categories filters on.
+type Categorizer interface {
+	Categories(ctx context.Context, key string) ([]string, error)
 }
 
 // Schemer is a source whose links open Mortar through a URL scheme.
@@ -253,4 +272,30 @@ func NameOfHost(host string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// CategoryMatch reports whether a mod with the given categories passes the include and exclude lists.
+func CategoryMatch(have, include, exclude []string) bool {
+	has := func(want string) bool {
+		return slices.ContainsFunc(have, func(h string) bool { return strings.EqualFold(h, want) })
+	}
+	if slices.ContainsFunc(exclude, has) {
+		return false
+	}
+	return len(include) == 0 || slices.ContainsFunc(include, has)
+}
+
+// UniqueNames returns names without empties or case-insensitive repeats, sorted case-insensitively.
+func UniqueNames(names []string) []string {
+	seen := map[string]bool{}
+	out := []string{}
+	for _, n := range names {
+		n = strings.TrimSpace(n)
+		if k := strings.ToLower(n); n != "" && !seen[k] {
+			seen[k] = true
+			out = append(out, n)
+		}
+	}
+	slices.SortFunc(out, func(a, b string) int { return strings.Compare(strings.ToLower(a), strings.ToLower(b)) })
+	return out
 }

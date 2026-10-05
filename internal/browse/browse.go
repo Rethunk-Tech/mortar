@@ -31,6 +31,14 @@ type Page = source.Page
 // InstalledFunc reports whether the open profile already has this mod (a Nexus mod id or a GitHub repo).
 type InstalledFunc func(source, id string) bool
 
+// Filter narrows and orders a search. Include keeps mods in any of the named categories, Exclude drops mods in any of
+// them, and Sort is one of the source package's Sort values; zero means no narrowing and each source's own order.
+type Filter struct {
+	Include []string `json:"include"`
+	Exclude []string `json:"exclude"`
+	Sort    string   `json:"sort"`
+}
+
 // Client searches a game's sources. Version names Mortar to the sites.
 type Client struct {
 	Version   string
@@ -42,22 +50,29 @@ type Client struct {
 }
 
 // Search returns one page of mods for game from the source matching text.
-func (c *Client) Search(ctx context.Context, game, sourceID, text string, page int) (Page, error) {
+func (c *Client) Search(ctx context.Context, game, sourceID, text string, page int, f Filter) (Page, error) {
 	info, ok := catalogGame(game)
 	if !ok {
 		return Page{}, fmt.Errorf("%w: game %q", ErrUnknownSource, game)
 	}
 	if strings.EqualFold(strings.TrimSpace(sourceID), AllSources) {
-		return c.searchAll(ctx, info, text, page)
+		return c.searchAll(ctx, info, text, page, f)
 	}
-	return c.search(ctx, info, sourceID, text, page)
+	return c.search(ctx, info, sourceID, text, page, f)
 }
 
 // searchAll asks every searchable source for the same page at once and interleaves the answers, so each source keeps
 // its own ranking and none crowds out the rest. Sources that fail are named in Failed; only when all fail is it an
 // error.
-func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text string, page int) (Page, error) {
+func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text string, page int, f Filter) (Page, error) {
 	sources := source.Searchable(info)
+	if len(f.Include) > 0 {
+		// A source with no categories cannot match an include list.
+		sources = slices.DeleteFunc(sources, func(s source.Source) bool {
+			_, ok := s.(source.Categorizer)
+			return !ok
+		})
+	}
 	if len(sources) == 0 {
 		return Page{}, fmt.Errorf("%w: %s has no searchable source", ErrUnknownSource, info.ID)
 	}
@@ -65,7 +80,7 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 	errs := make([]error, len(sources))
 	var wg sync.WaitGroup
 	for i, s := range sources {
-		wg.Go(func() { pages[i], errs[i] = c.search(ctx, info, s.ID(), text, page) })
+		wg.Go(func() { pages[i], errs[i] = c.search(ctx, info, s.ID(), text, page, f) })
 	}
 	wg.Wait()
 	merged := Page{Items: []Item{}}
@@ -149,7 +164,7 @@ func searchCached(ctx context.Context, s source.Searcher, q source.Query) (Page,
 	if strings.TrimSpace(q.Text) != "" {
 		return s.Search(ctx, q)
 	}
-	key := fmt.Sprintf("%T|%s|%s|%d", s, q.Game, q.Key, q.Page)
+	key := fmt.Sprintf("%T|%s|%s|%d|%s|%q|%q", s, q.Game, q.Key, q.Page, q.Sort, q.Categories, q.ExcludeCategories)
 	topMu.Lock()
 	e, ok := topCache[key]
 	topMu.Unlock()
@@ -168,7 +183,7 @@ func searchCached(ctx context.Context, s source.Searcher, q source.Query) (Page,
 	return out, nil
 }
 
-func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID, text string, page int) (Page, error) {
+func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID, text string, page int, f Filter) (Page, error) {
 	id := strings.ToLower(strings.TrimSpace(sourceID))
 	gs, listed := info.Source(id)
 	entry, registered := source.Get(id)
@@ -176,7 +191,10 @@ func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID,
 	if !listed || !registered || !canSearch {
 		return Page{}, fmt.Errorf("%w: %s", ErrUnknownSource, sourceID)
 	}
-	result, err := searchCached(ctx, searcher, source.Query{Game: info.ID, Key: gs.Key, Text: text, Page: max(page, source.FirstPage), Version: c.Version})
+	result, err := searchCached(ctx, searcher, source.Query{
+		Game: info.ID, Key: gs.Key, Text: text, Page: max(page, source.FirstPage), Version: c.Version,
+		Categories: f.Include, ExcludeCategories: f.Exclude, Sort: f.Sort,
+	})
 	if err != nil {
 		return Page{}, err
 	}
@@ -196,4 +214,52 @@ func (c *Client) markInstalled(items []Item) {
 	for i := range items {
 		items[i].Installed = c.Installed(items[i].Source, items[i].ID)
 	}
+}
+
+// categoryTTL is how long a source's category list is reused.
+const categoryTTL = 24 * time.Hour
+
+var (
+	catMu    sync.Mutex
+	catCache = map[string]struct {
+		names []string
+		until time.Time
+	}{}
+)
+
+// Categories lists the category names of one source, or of every source that has categories when sourceID is
+// AllSources. Answers are cached for a day; a source that fails is skipped.
+func (c *Client) Categories(ctx context.Context, game, sourceID string) ([]string, error) {
+	info, ok := catalogGame(game)
+	if !ok {
+		return nil, fmt.Errorf("%w: game %q", ErrUnknownSource, game)
+	}
+	sources := source.Searchable(info)
+	if id := strings.ToLower(strings.TrimSpace(sourceID)); id != AllSources {
+		sources = slices.DeleteFunc(sources, func(s source.Source) bool { return s.ID() != id })
+	}
+	var all []string
+	for _, s := range sources {
+		cat, ok := s.(source.Categorizer)
+		if !ok {
+			continue
+		}
+		key := info.ID + "|" + s.ID()
+		gs, _ := info.Source(s.ID())
+		catMu.Lock()
+		e, hit := catCache[key]
+		catMu.Unlock()
+		if !hit || !time.Now().Before(e.until) {
+			names, err := cat.Categories(ctx, gs.Key)
+			if err != nil {
+				continue
+			}
+			e.names, e.until = names, time.Now().Add(categoryTTL)
+			catMu.Lock()
+			catCache[key] = e
+			catMu.Unlock()
+		}
+		all = append(all, e.names...)
+	}
+	return source.UniqueNames(all), nil
 }

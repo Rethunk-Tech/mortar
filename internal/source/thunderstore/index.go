@@ -50,17 +50,20 @@ type pkg struct {
 	Hidden   bool      `json:"hidden,omitempty"`
 	Adult    bool      `json:"adult,omitempty"`
 	Versions []version `json:"versions"`
+	// Categories are the package's site categories.
+	Categories []string `json:"categories,omitempty"`
 }
 
 // wirePackage is a v1 package listing as the site serves it.
 type wirePackage struct {
-	Name           string `json:"name"`
-	Owner          string `json:"owner"`
-	PackageURL     string `json:"package_url"`
-	DateUpdated    string `json:"date_updated"`
-	RatingScore    int    `json:"rating_score"`
-	IsDeprecated   bool   `json:"is_deprecated"`
-	HasNSFWContent bool   `json:"has_nsfw_content"`
+	Name           string   `json:"name"`
+	Owner          string   `json:"owner"`
+	PackageURL     string   `json:"package_url"`
+	DateUpdated    string   `json:"date_updated"`
+	RatingScore    int      `json:"rating_score"`
+	IsDeprecated   bool     `json:"is_deprecated"`
+	HasNSFWContent bool     `json:"has_nsfw_content"`
+	Categories     []string `json:"categories"`
 	Versions       []struct {
 		Description   string   `json:"description"`
 		Icon          string   `json:"icon"`
@@ -215,7 +218,8 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	if b, err := fsx.ReadFile(metaPath); err == nil {
 		_ = json.Unmarshal(b, &meta)
 	}
-	pkgPath := func(hash string) string { return filepath.Join(dir, key+"-"+hash+".json") }
+	// The schema tag keeps a listing built before categories were kept from being reused.
+	pkgPath := func(hash string) string { return filepath.Join(dir, key+"-c1-"+hash+".json") }
 	if meta.Hash != "" && d.now().Sub(meta.Fetched) < refreshAfter {
 		if pk, err := loadPackages(key, pkgPath(meta.Hash)); err == nil {
 			return pk, nil
@@ -242,15 +246,13 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 			return nil, fmt.Errorf("index names a chunk outside Thunderstore: %s", c)
 		}
 	}
-	if hash != meta.Hash {
-		if _, err := os.Stat(pkgPath(hash)); err != nil {
-			if err := d.build(ctx, chunks, pkgPath(hash), ua); err != nil {
-				return nil, err
-			}
+	if _, err := os.Stat(pkgPath(hash)); err != nil {
+		if err := d.build(ctx, chunks, pkgPath(hash), ua); err != nil {
+			return nil, err
 		}
-		if meta.Hash != "" {
-			_ = os.Remove(pkgPath(meta.Hash))
-		}
+	}
+	if meta.Hash != "" && hash != meta.Hash {
+		_ = os.Remove(pkgPath(meta.Hash))
 	}
 	nm, err := json.Marshal(cacheMeta{Hash: hash, Fetched: d.now()})
 	if err != nil {
@@ -276,7 +278,7 @@ func (d Driver) build(ctx context.Context, chunks []string, path, ua string) err
 			}
 			p := pkg{
 				Owner: w.Owner, Name: w.Name, URL: w.PackageURL, Updated: w.DateUpdated, Rating: w.RatingScore,
-				Hidden: w.IsDeprecated, Adult: w.HasNSFWContent, Summary: w.Versions[0].Description, Icon: w.Versions[0].Icon,
+				Hidden: w.IsDeprecated, Categories: w.Categories, Adult: w.HasNSFWContent, Summary: w.Versions[0].Description, Icon: w.Versions[0].Icon,
 				Repo: source.GitHubRepo(w.Versions[0].WebsiteURL),
 			}
 			for _, v := range w.Versions {

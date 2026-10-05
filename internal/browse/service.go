@@ -25,12 +25,17 @@ func NewService(version string, profiles *profile.Service) *Service {
 }
 
 // Search returns one page of mods for game from sourceID matching text.
-func (s *Service) Search(ctx context.Context, game, sourceID, text string, page int, profileID string) (Page, error) {
+func (s *Service) Search(ctx context.Context, game, sourceID, text string, page int, profileID string, filter Filter) (Page, error) {
 	c := &Client{Version: s.Version, Installed: s.installed(game, profileID), ShowAdult: s.ShowAdult != nil && s.ShowAdult()}
 	if s.SourceOrder != nil {
 		c.Prefer = s.SourceOrder(game)
 	}
-	return c.Search(ctx, game, sourceID, text, page)
+	return c.Search(ctx, game, sourceID, text, page, filter)
+}
+
+// Categories lists the category names of sourceID (or of every source) for the filter pickers.
+func (s *Service) Categories(ctx context.Context, game, sourceID string) ([]string, error) {
+	return (&Client{}).Categories(ctx, game, sourceID)
 }
 
 // SourceInfo names a source for the window's source chips.

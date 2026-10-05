@@ -66,6 +66,9 @@ func newFake(t *testing.T) *fake {
 			listing("Dave", "Library", "company library", 100, false, false),
 		},
 	}
+	f.chunk0[0]["categories"] = []string{"Items"}
+	f.chunk0[1]["categories"] = []string{"Items", "Cheats"}
+	f.chunk1[1]["categories"] = []string{"Libraries"}
 	mux := http.NewServeMux()
 	f.srv = httptest.NewServer(mux)
 	t.Cleanup(f.srv.Close)
@@ -169,5 +172,23 @@ func TestIndexCannotSendMortarElsewhere(t *testing.T) {
 	q.Key = "../../etc"
 	if _, err := d.Search(t.Context(), q); err == nil {
 		t.Fatal("accepted a community key that is a path")
+	}
+}
+
+func TestCategoryFilterSortAndList(t *testing.T) {
+	f := newFake(t)
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	q := source.Query{Game: "lethal-company", Key: "lethal-company", Page: 1, Version: "1.2.3", Categories: []string{"items"}, Sort: source.SortDownloads}
+	p, err := d.Search(t.Context(), q)
+	if err != nil || len(p.Items) != 2 || p.Items[0].Name != "Cheaty" {
+		t.Fatalf("include items by downloads: %v %v", names(p), err)
+	}
+	q = source.Query{Game: "lethal-company", Key: "lethal-company", Page: 1, Version: "1.2.3", ExcludeCategories: []string{"Cheats"}, Sort: source.SortName}
+	if p, err = d.Search(t.Context(), q); err != nil || len(p.Items) != 3 || p.Items[0].Name != "Library" {
+		t.Fatalf("exclude cheats by name: %v %v", names(p), err)
+	}
+	got, err := d.Categories(t.Context(), "lethal-company")
+	if err != nil || len(got) != 3 || got[0] != "Cheats" {
+		t.Fatalf("categories %v %v", got, err)
 	}
 }

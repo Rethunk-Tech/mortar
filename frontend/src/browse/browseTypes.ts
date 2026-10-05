@@ -21,6 +21,13 @@ interface BrowseQuery {
   text: string
   page: number
   profileID: string
+  filter: BrowseFilter
+}
+
+interface BrowseFilter {
+  include: string[]
+  exclude: string[]
+  sort: string
 }
 
 type BrowseSearch = (query: BrowseQuery) => Promise<BrowsePageResult>
@@ -31,10 +38,11 @@ interface BrowsePageProps {
   premium: boolean
   sources: BrowseSource[]
   search: BrowseSearch
+  categories: (game: string, source: string) => Promise<string[]>
   openUrl: (url: string) => void
   downloadNexus: (modID: string) => void
   addGitHub: (repo: string) => void
   addPackage: (id: string) => void
 }
 
-export type { BrowseItem, BrowsePageProps, BrowseSearch }
+export type { BrowseFilter, BrowseItem, BrowsePageProps, BrowseSearch }

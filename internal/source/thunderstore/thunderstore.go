@@ -89,7 +89,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	var hits []hit
 	for _, p := range pk {
-		if p.Hidden {
+		if p.Hidden || !source.CategoryMatch(p.Categories, q.Categories, q.ExcludeCategories) {
 			continue
 		}
 		if s := score(p, tokens); s > 0 || len(tokens) == 0 {
@@ -97,6 +97,16 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		}
 	}
 	slices.SortStableFunc(hits, func(a, b hit) int {
+		switch q.Sort {
+		case source.SortDownloads:
+			return b.p.Downloads - a.p.Downloads
+		case source.SortEndorsements:
+			return b.p.Rating - a.p.Rating
+		case source.SortUpdated:
+			return strings.Compare(b.p.Updated, a.p.Updated)
+		case source.SortName:
+			return strings.Compare(strings.ToLower(a.p.Name), strings.ToLower(b.p.Name))
+		}
 		if a.score != b.score {
 			return b.score - a.score
 		}
@@ -114,4 +124,17 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		})
 	}
 	return source.Page{Total: len(hits), Items: items}, nil
+}
+
+// Categories lists the community's package categories, sorted.
+func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
+	pk, err := d.packages(ctx, key, source.UserAgent("")+" (+https://mortar.rethunk.tech)")
+	if err != nil {
+		return nil, err
+	}
+	var all []string
+	for _, p := range pk {
+		all = append(all, p.Categories...)
+	}
+	return source.UniqueNames(all), nil
 }

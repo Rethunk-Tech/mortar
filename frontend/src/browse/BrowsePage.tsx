@@ -13,8 +13,10 @@ import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { BrowseFilters } from './BrowseFilters.tsx'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
-import type { BrowseItem, BrowsePageProps } from './browseTypes.ts'
+import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
+import { useCategoryNames } from './useCategoryNames.ts'
 import { useBrowseView } from './view.ts'
 
 // ALL searches every source the game has; it is the default so where a mod is published never matters to the player.
@@ -77,6 +79,7 @@ interface BrowseResult {
 }
 
 const EMPTY_RESULT: BrowseResult = { total: 0, items: [] }
+const NO_FILTER: BrowseFilter = { include: [], exclude: [], sort: '' }
 
 // pagedTotal is the result count paging should assume: a search across sources pages by its largest source.
 function pagedTotal(r: BrowseResult): number {
@@ -89,6 +92,7 @@ function useBrowseQuery({
   search,
   sources,
 }: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources'>) {
+  const filter = useBrowseView((s) => s.filters[game]) ?? NO_FILTER
   const [chosen, setSource] = useState(ALL)
   const merged = sources.length > 1
   const known = sources.some((s) => s.id === chosen) || (chosen === ALL && merged)
@@ -129,7 +133,7 @@ function useBrowseQuery({
     }
     let cancelled = false
     setStatus('loading')
-    search({ game, source, text, page, profileID })
+    search({ game, source, text, page, profileID, filter })
       .then((next) => {
         if (!cancelled) {
           setResult(next)
@@ -146,9 +150,10 @@ function useBrowseQuery({
     return () => {
       cancelled = true
     }
-  }, [game, source, text, page, profileID, search, retry])
+  }, [game, source, text, page, profileID, search, retry, filter])
 
   return {
+    filter,
     source,
     setSource,
     draft,
@@ -169,6 +174,7 @@ function BrowsePage({
   premium,
   sources: searchable,
   search,
+  categories,
   openUrl,
   downloadNexus,
   addGitHub,
@@ -177,7 +183,9 @@ function BrowsePage({
   const { t } = useLingui()
   const sourceNames = new Map(searchable.map((s) => [s.id, s.name]))
   const view = useBrowseView((s) => s.view)
+  const setFilter = useBrowseView((s) => s.setFilter)
   const {
+    filter,
     source,
     setSource,
     draft,
@@ -190,6 +198,7 @@ function BrowsePage({
     status,
     error,
   } = useBrowseQuery({ game, profileID, search, sources: searchable })
+  const categoryNames = useCategoryNames({ categories, game, source, skip: source === GITHUB })
   const pageCount = Math.max(FIRST_PAGE, Math.ceil(pagedTotal(result) / PAGE_SIZE) || FIRST_PAGE)
   const sources = [
     ...(searchable.length > 1 ? [{ value: ALL, label: t`All sources` }] : []),
@@ -293,6 +302,14 @@ function BrowsePage({
         draft={draft}
         onDraft={setDraft}
         placeholder={placeholder}
+      />
+      <BrowseFilters
+        categories={categoryNames}
+        filter={filter}
+        onFilter={(next) => {
+          setFilter(game, next)
+          setPage(FIRST_PAGE)
+        }}
       />
       <Box
         sx={{

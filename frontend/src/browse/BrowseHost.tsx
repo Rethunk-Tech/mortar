@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  Categories,
   Search,
   SearchableSources,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
@@ -11,6 +12,10 @@ import { BrowsePage } from './BrowsePage.tsx'
 import type { BrowseSearch } from './browseTypes.ts'
 
 const KIND_INSTALL = 'install'
+
+async function categoryNames(game: string, source: string): Promise<string[]> {
+  return (await Categories(game, source)) ?? []
+}
 
 function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
   const premium = useNexus((state) => state.premium)
@@ -26,8 +31,9 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
     text,
     page,
     profileID: nextProfile,
+    filter,
   }) => {
-    const result = await Search(nextGame, source, text, page, nextProfile)
+    const result = await Search(nextGame, source, text, page, nextProfile, filter)
     return {
       total: result.total,
       items: result.items ?? [],
@@ -42,6 +48,7 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       premium={premium}
       sources={sources}
       search={search}
+      categories={categoryNames}
       openUrl={(url) => {
         openPage(url).catch(reportUnexpected)
       }}

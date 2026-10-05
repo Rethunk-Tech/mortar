@@ -15,7 +15,7 @@ func (s *Services) Browse(ctx context.Context, game, source, text string, page i
 			c.Installed = browse.InstalledOn(prof)
 		}
 	}
-	return c.Search(ctx, game, source, text, page)
+	return c.Search(ctx, game, source, text, page, browse.Filter{})
 }
 
 func (s *Services) browseFromParams(ctx context.Context, p Params) (browse.Page, error) {
