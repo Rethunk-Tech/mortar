@@ -88,6 +88,20 @@ func TestCorruptFile(t *testing.T) {
 	_ = s
 }
 
+func TestFileWithAByteOrderMarkLoads(t *testing.T) {
+	_, dir := open(t)
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte("\xef\xbb\xbf{\"global\":{\"accent\":\"sand\",\"gameFolders\":{\"stardew\":\"/g\"}}}"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s, err := Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.CorruptPath() != "" || s.Get().GameFolders["stardew"] != "/g" {
+		t.Fatalf("a file with a byte order mark was not read: %+v", s.Get())
+	}
+}
+
 func TestBackground(t *testing.T) {
 	s, dir := open(t)
 	if s.Get().Background != BackgroundImage || s.Get().BackgroundImage != "" {

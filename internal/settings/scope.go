@@ -1,6 +1,7 @@
 package settings
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"maps"
@@ -178,7 +179,8 @@ func encodeFile(s Settings) (diskFile, error) {
 // decodeFile reads a settings.json document.
 func decodeFile(b []byte) (Settings, error) {
 	var d diskFile
-	if err := json.Unmarshal(b, &d); err != nil {
+	// Windows editors and PowerShell's utf8 encoding write a byte order mark that JSON does not allow.
+	if err := json.Unmarshal(bytes.TrimPrefix(b, []byte("\xef\xbb\xbf")), &d); err != nil {
 		return Settings{}, err
 	}
 	flat := d.flatten()
