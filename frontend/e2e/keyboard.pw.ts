@@ -15,10 +15,26 @@ async function expectFocusRing(page: Page) {
   expect(ring?.width).toBeGreaterThan(0)
 }
 
+/** Tab order follows the DOM, so a region's controls must sit left to right (title bar) or top to bottom (sidebar). */
+async function expectTabOrderMatchesLayout(page: Page, region: string, axis: 'x' | 'y') {
+  const positions = await page.evaluate(
+    ([selector, key]) =>
+      [...document.querySelectorAll(`${selector} :is(button, a[href], input, [tabindex="0"])`)]
+        // The resize handle spans the sidebar's whole height, so it has no position in the order.
+        .filter((el) => el.getClientRects().length > 0 && el.getAttribute('role') !== 'separator')
+        .map((el) => el.getBoundingClientRect()[key === 'x' ? 'left' : 'top']),
+    [region, axis] as const,
+  )
+  expect(positions.length).toBeGreaterThan(1)
+  expect(positions, `${region} tab order`).toEqual([...positions].sort((a, b) => a - b))
+}
+
 test('the main flows work with the keyboard alone and focus stays visible and returns', async ({
   page,
 }) => {
   await openSeedFarm(page)
+  await expectTabOrderMatchesLayout(page, 'header', 'x')
+  await expectTabOrderMatchesLayout(page, 'main nav', 'y')
   // Start from the page body so no earlier click leaves focus on a control.
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
 
