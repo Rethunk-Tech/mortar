@@ -18,8 +18,10 @@ type Mod struct {
 	// SourceModID is the entry's Nexus mod id, 0 for another source.
 	SourceModID int
 	// SourceName and SourceRepo are the entry's source name (a Thunderstore "Namespace-Name") and GitHub repo.
-	SourceName    string
-	SourceRepo    string
+	SourceName string
+	SourceRepo string
+	// SourceDigest is the downloaded file's "sha512:<hex>" where its site published one.
+	SourceDigest  string
 	Enabled       bool
 	Pinned        bool
 	SkipVersion   string

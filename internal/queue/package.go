@@ -96,7 +96,7 @@ func (s *Service) holds(r Request, id, version string) bool {
 }
 
 func packageSource(it Item) profile.Source {
-	src := profile.Source{Kind: cmp.Or(it.Source, profile.KindThunderstore), Name: it.Package, Version: it.Version}
+	src := profile.Source{Kind: cmp.Or(it.Source, profile.KindThunderstore), Name: it.Package, Version: it.Version, Digest: it.Digest}
 	if len(it.Disabled) > 0 {
 		src = src.WithDisabled(it.Disabled)
 	}

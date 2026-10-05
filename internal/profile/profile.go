@@ -65,6 +65,9 @@ type Source struct {
 	// ModName is the Nexus mod page's name, and Category the file's category on that page (MAIN, OPTIONAL, ...).
 	ModName  string `json:"modName,omitempty"`
 	Category string `json:"category,omitempty"`
+	// Digest is the downloaded file's "sha512:<hex>" where the site published one (Modrinth), which its update
+	// check is keyed by.
+	Digest   string `json:"digest,omitempty"`
 	fomod    *fomodChoices
 	disabled *disabledMods
 	overlay  *overlayPlace
