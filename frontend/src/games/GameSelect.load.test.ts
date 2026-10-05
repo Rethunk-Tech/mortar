@@ -5,6 +5,8 @@ import { join } from 'node:path'
 test('game select shows LoadingRow while waiting and Retry after a load failure', () => {
   const src = readFileSync(join(import.meta.dir, 'GameSelect.tsx'), 'utf8')
   expect(src).toContain('<LoadingRow>{t`Loading…`}</LoadingRow>')
-  expect(src).toContain('setLoadError(inlineError(err))')
+  expect(readFileSync(join(import.meta.dir, 'useGameTiles.ts'), 'utf8')).toContain(
+    'setLoadError(inlineError(err))',
+  )
   expect(src).toContain('<LoadErrorRow')
 })
