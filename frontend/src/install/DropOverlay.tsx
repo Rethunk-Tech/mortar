@@ -66,7 +66,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
             bottom: 0,
             zIndex: theme.zIndex.modal,
             pointerEvents: 'none',
-            bgcolor: 'var(--mortar-overlay-30)',
+            bgcolor: 'var(--mortar-scrim)',
           })}
         >
           <Box

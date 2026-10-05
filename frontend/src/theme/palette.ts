@@ -31,6 +31,8 @@ interface Surfaces {
   inkDim92: string
   inkDim60: string
   overlay20: string
+  // Dims the whole window behind a drop target or the tour spotlight; the overlay ramp is for recessed fills.
+  scrim: string
   overlay24: string
   overlay25: string
   overlay28: string
@@ -87,6 +89,7 @@ const darkSurfaces: Surfaces = {
   inkDim: 'rgba(210,210,215,0.85)',
   inkDim92: 'rgba(210,210,215,0.92)',
   inkDim60: 'rgba(210,210,215,0.6)',
+  scrim: 'rgba(0,0,0,0.3)',
   overlay20: 'rgba(0,0,0,0.2)',
   overlay24: 'rgba(0,0,0,0.24)',
   overlay25: 'rgba(0,0,0,0.25)',
@@ -144,16 +147,18 @@ const lightSurfaces: Surfaces = {
   inkDim: 'rgba(50,50,58,0.7)',
   inkDim92: 'rgba(50,50,58,0.78)',
   inkDim60: 'rgba(50,50,58,0.55)',
-  overlay20: 'rgba(0,0,0,0.12)',
-  overlay24: 'rgba(0,0,0,0.16)',
-  overlay25: 'rgba(0,0,0,0.16)',
-  overlay28: 'rgba(0,0,0,0.18)',
-  overlay30: 'rgba(0,0,0,0.28)',
-  overlay35: 'rgba(0,0,0,0.22)',
-  overlay40: 'rgba(0,0,0,0.28)',
-  overlay45: 'rgba(0,0,0,0.32)',
-  overlay50: 'rgba(0,0,0,0.36)',
-  overlay55: 'rgba(0,0,0,0.4)',
+  scrim: 'rgba(0,0,0,0.28)',
+  // Recessed fills (inputs, toggles, chips, panels) over a light surface want a faint tint, not the dark ramp's veil.
+  overlay20: 'rgba(0,0,0,0.04)',
+  overlay24: 'rgba(0,0,0,0.045)',
+  overlay25: 'rgba(0,0,0,0.05)',
+  overlay28: 'rgba(0,0,0,0.055)',
+  overlay30: 'rgba(0,0,0,0.06)',
+  overlay35: 'rgba(0,0,0,0.07)',
+  overlay40: 'rgba(0,0,0,0.08)',
+  overlay45: 'rgba(0,0,0,0.09)',
+  overlay50: 'rgba(0,0,0,0.1)',
+  overlay55: 'rgba(0,0,0,0.12)',
   overlay80: 'rgba(0,0,0,0.55)',
   overlay85: 'rgba(0,0,0,0.5)',
   overlay90: 'rgba(0,0,0,0.45)',
@@ -331,7 +336,8 @@ function mortarPalette(
   const textPrimary = dark ? 'rgba(255,255,255,0.90)' : 'rgba(22,22,26,0.92)'
   const textSecondary = dark ? 'rgba(225,225,230,0.95)' : 'rgba(40,40,48,0.78)'
   const paperSolid = paperForContrast(paper, mode)
-  const primaryMain = dark ? accentHex : ensureContrast(accentHex, paperSolid)
+  // The accent stays the colour the user picked in both themes; contrastText keeps text on it readable.
+  const primaryMain = accentHex
   return {
     mode,
     primaryMain,

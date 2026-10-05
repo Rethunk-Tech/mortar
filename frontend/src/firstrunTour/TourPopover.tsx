@@ -100,7 +100,7 @@ function TourPopover({
             outline: '2px solid',
             outlineColor: 'primary.main',
             // The shadow dims everything outside the anchor, leaving the anchor itself lit.
-            boxShadow: '0 0 0 100vmax var(--mortar-overlay-30)',
+            boxShadow: '0 0 0 100vmax var(--mortar-scrim)',
             transition: 'top 200ms, left 200ms, width 200ms, height 200ms',
           }}
         />

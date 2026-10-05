@@ -25,9 +25,9 @@ describe('mortarPalette contrast', () => {
     const solid = paperForContrast(paper, mode)
     const textOnPaper = text.includes('rgba') ? composite(text, solid) : text
     expect(contrastRatio(textOnPaper, solid)).toBeGreaterThanOrEqual(4.5)
-    expect(contrastRatio(primary, solid)).toBeGreaterThanOrEqual(4.5)
+    expect(primary).toBe(accents[accent])
     const theme = createMortarTheme(accent, { mode })
     expect(theme.palette.primary.main).toBe(primary)
-    expect(contrastRatio(theme.palette.primary.main, solid)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(theme.palette.primary.contrastText, primary)).toBeGreaterThanOrEqual(4.5)
   })
 })
