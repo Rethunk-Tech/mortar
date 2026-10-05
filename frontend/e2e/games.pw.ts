@@ -33,6 +33,8 @@ test('hovering a Game Select tile grows it and dims the others without changing 
   await expect(tiles.last()).toHaveCSS('filter', 'brightness(0.6)')
   await expect(tiles.first()).toHaveCSS('transform', 'matrix(1.04, 0, 0, 1.04, 0, 0)')
   expect(await layout()).toEqual(before)
+  const grid = tiles.first().locator('..')
+  expect(await grid.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true)
 })
 
 test('Browse defaults to All sources and a search shows results from more than one source', async ({
