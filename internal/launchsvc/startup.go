@@ -36,7 +36,7 @@ type StartupPhases struct {
 
 // StartupPack is one content pack's share of its framework's startup time.
 type StartupPack struct {
-	ID      string `json:"id"`
+	ID      mod.ID `json:"id"`
 	Name    string `json:"name"`
 	AssetMs int64  `json:"assetMs"`
 	LoadMs  int64  `json:"loadMs"`
@@ -46,7 +46,7 @@ type StartupPack struct {
 // StartupMod is one mod's exclusive startup time by where it was spent.
 type StartupMod struct {
 	SampleMs int64            `json:"sampleMs"`
-	ID       string           `json:"id"`
+	ID       mod.ID           `json:"id"`
 	Name     string           `json:"name"`
 	Version  string           `json:"version"`
 	EntryMs  int64            `json:"entryMs"`
@@ -198,6 +198,7 @@ func readStartupReports(dir string) ([]StartupReport, error) {
 		if r.Mods == nil {
 			r.Mods = []StartupMod{}
 		}
+		scopeStartupIDs(&r)
 		mergeStartupSamples(name, &r)
 		out = append(out, r)
 	}
@@ -213,6 +214,17 @@ func mergeStartupSamples(reportPath string, report *StartupReport) {
 	}
 	report.SampledOtherMs = samples.OtherMs
 	for index := range report.Mods {
-		report.Mods[index].SampleMs = samples.Mods[string(report.Mods[index].ID)]
+		report.Mods[index].SampleMs = samples.Mods[report.Mods[index].ID.Local()]
+	}
+}
+
+// scopeStartupIDs gives the bridge's bare SMAPI unique ids the SMAPI format, the way the rest of Mortar names mods.
+func scopeStartupIDs(r *StartupReport) {
+	for i := range r.Mods {
+		m := &r.Mods[i]
+		m.ID = mod.Parse(string(m.ID), mod.FormatSMAPI)
+		for j := range m.Packs {
+			m.Packs[j].ID = mod.Parse(string(m.Packs[j].ID), mod.FormatSMAPI)
+		}
 	}
 }

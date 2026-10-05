@@ -145,7 +145,7 @@ func (s *Store) recentHistory(game string, limit int) ([]RecentEvent, error) {
 			}
 			return 1
 		}
-		return strings.Compare(string(b.ID), string(a.ID))
+		return strings.Compare(b.ID, a.ID)
 	})
 	if limit > 0 && len(out) > limit {
 		out = out[:limit]

@@ -110,7 +110,7 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 	}
 	configs := make(map[string]json.RawMessage, len(source.PreservedModConfigs))
 	for ref, config := range source.PreservedModConfigs {
-		configs[mod.SMAPI(string(ref)).Fold()] = config
+		configs[mod.SMAPI(ref).Fold()] = config
 	}
 	for i := range mods {
 		if config := configs[mods[i].ID.Fold()]; len(config) > 0 && string(config) != "null" {

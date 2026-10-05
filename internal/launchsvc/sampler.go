@@ -220,7 +220,7 @@ func mapModAssemblies(assemblyToMod map[string]string, dir string, uniqueID mod.
 		if one.IsDir() || !strings.EqualFold(filepath.Ext(one.Name()), ".dll") {
 			continue
 		}
-		assemblyToMod[strings.TrimSuffix(one.Name(), filepath.Ext(one.Name()))] = string(uniqueID)
+		assemblyToMod[strings.TrimSuffix(one.Name(), filepath.Ext(one.Name()))] = uniqueID.Local()
 	}
 	return nil
 }
