@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -75,9 +76,8 @@ func launcherHasSMAPI(dir string) bool {
 		return false
 	}
 	defer func() { _ = f.Close() }()
-	b := make([]byte, maxLauncher)
-	n, _ := f.Read(b)
-	return bytes.Contains(b[:n], []byte(smapiMarker))
+	b, _ := io.ReadAll(io.LimitReader(f, maxLauncher))
+	return bytes.Contains(b, []byte(smapiMarker))
 }
 
 func isFile(path string) bool {

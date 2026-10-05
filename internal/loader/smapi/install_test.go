@@ -314,3 +314,20 @@ func TestInstallerErrorHasNoDanglingColon(t *testing.T) {
 		t.Fatalf("without output = %q", got)
 	}
 }
+
+// Status reads the launcher many times per start, so a read must cost the launcher's size, not the 16 MB bound.
+func TestLauncherReadIsSizedToTheFile(t *testing.T) {
+	dir := t.TempDir()
+	testfs.WriteFile(t, dir, linuxLauncher, "#!/bin/sh\nexec ./"+smapiMarker+" \"$@\"\n")
+	var before, after runtime.MemStats
+	runtime.ReadMemStats(&before)
+	for range 10 {
+		if !launcherHasSMAPI(dir) {
+			t.Fatal("SMAPI launcher not recognised")
+		}
+	}
+	runtime.ReadMemStats(&after)
+	if n := after.TotalAlloc - before.TotalAlloc; n > 1<<20 {
+		t.Fatalf("10 launcher reads allocated %d bytes", n)
+	}
+}
