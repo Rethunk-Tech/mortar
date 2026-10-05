@@ -15,7 +15,7 @@ let listImpl: () => Promise<typeof listed> = async () => listed
 
 mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts', () => ({
   ListBackups: () => listImpl(),
-  RestoreBackup: async (name: string, folders: string[] | null) => {
+  RestoreBackup: async (_game: string, name: string, folders: string[] | null) => {
     restored = { name, folders }
   },
   SetBackupPinned: async () => undefined,
