@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNexus } from './nexus.ts'
 
 const remainingFloor = 5
@@ -21,6 +22,11 @@ export function NexusMeter() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 14 }}>
       <Box>{t`${daily} requests left today · ${hourly} this hour`}</Box>
+      {limits.hourly.reset && limits.daily.reset ? (
+        <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
+          {t`Hourly count resets ${formatWhen(limits.hourly.reset)} · daily count resets ${formatWhen(limits.daily.reset)}`}
+        </Box>
+      ) : null}
       {throttled ? (
         <Box sx={{ color: 'var(--mortar-ink-sec)' }}>
           {t`Nexus is throttling requests until the window resets.`}
