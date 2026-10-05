@@ -47,6 +47,8 @@ type Params struct {
 	Keep    int      `json:"keep,omitempty"`
 	Preset  string   `json:"preset,omitempty"`
 	Repo    string   `json:"repo,omitempty"`
+	// Loader names one of the game's loaders; empty means the catalog's first.
+	Loader string `json:"loader,omitempty"`
 }
 
 type request struct {

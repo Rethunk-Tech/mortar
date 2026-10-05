@@ -49,7 +49,7 @@ var verbs = map[string]bool{
 	"templates": true, "library": true, "archive": true,
 	"browse":  true,
 	"bundles": true, "nexus": true, "trash": true, "cache": true, "data": true, "store": true,
-	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "smapi": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -100,6 +100,7 @@ type cmd struct {
 	mark          bool
 	restore       bool
 	sourceFlag    string
+	loaderFlag    string
 	pageFlag      int
 	keepFlag      string
 	deleteFlag    string
@@ -307,6 +308,14 @@ func (c *cmd) parse(args []string) error {
 			c.game = args[i]
 		case strings.HasPrefix(a, "--game="):
 			c.game = strings.TrimPrefix(a, "--game=")
+		case a == "--loader":
+			if i+1 >= len(args) {
+				return usageError{"--loader needs a loader id"}
+			}
+			i++
+			c.loaderFlag = args[i]
+		case strings.HasPrefix(a, "--loader="):
+			c.loaderFlag = strings.TrimPrefix(a, "--loader=")
 		case a == "--source":
 			if i+1 >= len(args) {
 				return usageError{"--source needs nexus or github"}
@@ -448,8 +457,8 @@ func (c *cmd) dispatch() error {
 		return c.update()
 	case "backups":
 		return c.backups()
-	case "smapi":
-		return c.smapi()
+	case "loader":
+		return c.loader()
 	case "settings":
 		return c.settings()
 	case "bundles":
@@ -2104,9 +2113,9 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   settings export <file>                  write portable settings JSON
   settings import <file>                  apply a portable settings JSON
   settings reset [key] [--game id]        restore defaults
-  smapi versions <game>                   SMAPI versions in the store and on GitHub
-  smapi install <game> <version>          install that SMAPI version
-  smapi pin <game> <version|latest>       pin SMAPI, or follow latest
+  loader versions <game> [--loader id]    loader versions in the store and upstream
+  loader install <game> <version> [--loader id]  install that loader version
+  loader pin <game> <version|latest> [--loader id]  pin the loader, or follow latest
   games                                   supported games, whether each is configured
   profiles <game>                         profiles of a game
   profile list <game> <profile> --format md|text  enabled mods (name, version, Nexus link)

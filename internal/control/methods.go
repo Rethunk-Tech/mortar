@@ -258,12 +258,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		// After the reply, so the caller hears back before the app goes away.
 		go s.Quit()
 		return true, nil
-	case "smapi.versions":
-		return s.smapiVersions(ctx, p.Game)
-	case "smapi.install":
-		return s.smapiInstall(ctx, p.Game, p.Name)
-	case "smapi.pin":
-		return nil, s.smapiPin(p.Game, p.Value)
+	case "loader.versions":
+		return s.loaderVersions(ctx, p)
+	case "loader.install":
+		return s.loaderInstall(ctx, p)
+	case "loader.pin":
+		return nil, s.loaderPin(p)
 	case "games":
 		return s.games()
 	case "game.steamLaunchOption":
