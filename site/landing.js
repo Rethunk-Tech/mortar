@@ -14,9 +14,10 @@ const androidRe = /Android/i
     note.textContent = 'Windows 10 and 11, x64. Other builds below.'
   } else if (linuxRe.test(ua) && !androidRe.test(ua)) {
     document.documentElement.classList.add('os-linux')
-    button.href = `${base}mortar-linux-x86_64.AppImage`
+    button.href = '/download/#linux'
     label.textContent = 'Download for Linux'
-    note.textContent = 'AppImage for x86_64. Flatpak, .deb, .rpm and Arch below.'
+    note.textContent =
+      'Packages for Ubuntu, Debian, Fedora and Arch that update with your system, plus Flatpak and AppImage.'
   }
   fetch('https://api.github.com/repos/Rethunk-Tech/mortar/releases/latest')
     .then((r) => (r.ok ? r.json() : null))

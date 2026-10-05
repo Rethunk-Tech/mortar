@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark" />
+    <title>Download Mortar</title>
+    <meta
+      name="description"
+      content="Download Mortar for Windows or Linux: installer, AppImage, Flatpak, and signed apt, dnf and pacman repositories that keep it up to date."
+    />
+    <link rel="icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="stylesheet" href="../landing.css" />
+    <link rel="stylesheet" href="../download.css" />
+  </head>
+  <body>
+    <nav class="nav" aria-label="Main">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <svg width="28" height="28" aria-hidden="true">
+            <use href="../img/icons.svg#brand" />
+          </svg>
+          Mortar
+        </a>
+        <div class="nav-links">
+          <a class="optional" href="/#features">Features</a>
+          <a class="optional" href="/#faq">FAQ</a>
+          <a href="/download/" aria-current="page">Download</a>
+          <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="wrap dl">
+      <div class="dl-head">
+        <h1>Download Mortar</h1>
+        <p class="lede">
+          Free and open source. <span id="version">The latest release</span> for
+          Windows and Linux, on x64 and ARM64.
+        </p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Platform">
+        <button
+          type="button"
+          role="tab"
+          id="tab-windows"
+          aria-controls="windows"
+        >
+          Windows
+        </button>
+        <button type="button" role="tab" id="tab-linux" aria-controls="linux">
+          Linux
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="tab-extension"
+          aria-controls="extension"
+        >
+          Browser extension
+        </button>
+      </div>
+
+      <section
+        class="panel"
+        id="windows"
+        role="tabpanel"
+        aria-labelledby="tab-windows"
+      >
+        <h2>Windows</h2>
+        <p class="muted">
+          Windows 10 and 11. Mortar installs for your user, so it needs no
+          administrator rights.
+        </p>
+        <div class="files">
+          <a
+            class="file primary"
+            data-asset="mortar-amd64-installer.exe"
+            href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-amd64-installer.exe"
+          >
+            <strong>Installer, x64</strong><span>Most PCs</span>
+          </a>
+          <a
+            class="file"
+            data-asset="mortar-arm64-installer.exe"
+            href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-arm64-installer.exe"
+          >
+            <strong>Installer, ARM64</strong
+            ><span>Snapdragon and other ARM PCs</span>
+          </a>
+          <a
+            class="file"
+            data-asset="mortar-windows-amd64.exe"
+            href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-windows-amd64.exe"
+          >
+            <strong>Portable, x64</strong><span>Runs from any folder</span>
+          </a>
+          <a
+            class="file"
+            data-asset="mortar-windows-arm64.exe"
+            href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-windows-arm64.exe"
+          >
+            <strong>Portable, ARM64</strong><span>Runs from any folder</span>
+          </a>
+        </div>
+        <ol class="steps">
+          <li>
+            Run the installer. It puts Mortar in
+            <code>%LOCALAPPDATA%\Programs\Mortar</code> and adds Start Menu and
+            Desktop shortcuts.
+          </li>
+          <li>
+            The builds are not code-signed yet, so SmartScreen says “Windows
+            protected your PC” the first time. Choose
+            <strong>More info</strong>, then <strong>Run anyway</strong>.
+          </li>
+          <li>Mortar updates itself from then on.</li>
+        </ol>
+      </section>
+
+      <section
+        class="panel"
+        id="linux"
+        role="tabpanel"
+        aria-labelledby="tab-linux"
+      >
+        <h2>Linux</h2>
+        <p class="muted">
+          Install from the package repository and Mortar updates with the rest
+          of your system. Pick your distribution:
+        </p>
+        <div class="tabs sub" role="tablist" aria-label="Distribution">
+          <button type="button" role="tab" id="tab-deb" aria-controls="deb">
+            Ubuntu and Debian
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-fedora"
+            aria-controls="fedora"
+          >
+            Fedora
+          </button>
+          <button type="button" role="tab" id="tab-arch" aria-controls="arch">
+            Arch
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-flatpak"
+            aria-controls="flatpak"
+          >
+            Flatpak
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-appimage"
+            aria-controls="appimage"
+          >
+            AppImage
+          </button>
+        </div>
+
+        <div
+          class="panel sub"
+          id="deb"
+          role="tabpanel"
+          aria-labelledby="tab-deb"
+        >
+          <h3>Ubuntu and Debian</h3>
+          <p class="muted">
+            Ubuntu 24.04, Debian 13 or newer, on amd64 and arm64.
+          </p>
+          <pre><code>sudo curl -fsSLo /usr/share/keyrings/mortar-archive-keyring.gpg https://mortar.rethunk.tech/packages/mortar-archive-keyring.gpg
+sudo curl -fsSLo /etc/apt/sources.list.d/mortar.list https://mortar.rethunk.tech/packages/mortar.list
+sudo apt update &amp;&amp; sudo apt install mortar</code></pre>
+          <p class="muted">
+            Or install a single
+            <a
+              data-asset="mortar_VERSION_amd64.deb"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest"
+              >.deb</a
+            >
+            without updates: <code>sudo apt install ./mortar_*_amd64.deb</code>
+          </p>
+        </div>
+
+        <div
+          class="panel sub"
+          id="fedora"
+          role="tabpanel"
+          aria-labelledby="tab-fedora"
+        >
+          <h3>Fedora</h3>
+          <p class="muted">
+            Fedora 39 or newer, on x86_64 and aarch64. dnf asks once to import
+            the key; check its fingerprint against the one below.
+          </p>
+          <pre><code>sudo curl -fsSLo /etc/yum.repos.d/mortar.repo https://mortar.rethunk.tech/packages/mortar.repo
+sudo dnf install mortar</code></pre>
+          <p class="muted">
+            Or install a single
+            <a
+              data-asset="mortar-VERSION-1.x86_64.rpm"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest"
+              >.rpm</a
+            >
+            without updates: <code>sudo dnf install ./mortar-*.rpm</code>
+          </p>
+        </div>
+
+        <div
+          class="panel sub"
+          id="arch"
+          role="tabpanel"
+          aria-labelledby="tab-arch"
+        >
+          <h3>Arch Linux</h3>
+          <p class="muted">
+            x86_64 and aarch64. These commands trust the Mortar key, add the
+            repository to <code>/etc/pacman.conf</code> and install.
+          </p>
+          <pre><code>curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
+sudo pacman-key --lsign-key 3283604606CAE2295D476F9883BC8751EE6F773D
+curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
+sudo pacman -Sy mortar</code></pre>
+          <p class="muted">
+            Or install a single
+            <a
+              data-asset="mortar-VERSION-1-x86_64.pkg.tar.zst"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest"
+              >package</a
+            >
+            without updates: <code>sudo pacman -U mortar-*.pkg.tar.zst</code>
+          </p>
+        </div>
+
+        <div
+          class="panel sub"
+          id="flatpak"
+          role="tabpanel"
+          aria-labelledby="tab-flatpak"
+        >
+          <h3>Flatpak</h3>
+          <p class="muted">
+            Any distribution with Flatpak, x86_64 only. It brings its own
+            libraries, so it also runs on older systems.
+          </p>
+          <div class="files">
+            <a
+              class="file primary"
+              data-asset="mortar-linux-x86_64.flatpak"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.flatpak"
+            >
+              <strong>Flatpak bundle</strong><span>x86_64</span>
+            </a>
+          </div>
+          <pre><code>flatpak install --user mortar-linux-x86_64.flatpak</code></pre>
+          <p class="muted">
+            The sandbox only sees the usual game folders. For a game installed
+            elsewhere, run
+            <code
+              >flatpak override --user --filesystem=&lt;folder&gt;
+              tech.rethunk.Mortar</code
+            >. Install the bundle again to update.
+          </p>
+        </div>
+
+        <div
+          class="panel sub"
+          id="appimage"
+          role="tabpanel"
+          aria-labelledby="tab-appimage"
+        >
+          <h3>AppImage and portable program</h3>
+          <p class="muted">
+            Ubuntu 24.04, Debian 13, Fedora 39 or a newer Linux (glibc 2.38).
+            Both update themselves in place.
+          </p>
+          <div class="files">
+            <a
+              class="file primary"
+              data-asset="mortar-linux-x86_64.AppImage"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.AppImage"
+            >
+              <strong>AppImage, x86_64</strong
+              ><span>Nothing else to install</span>
+            </a>
+            <a
+              class="file"
+              data-asset="mortar-linux-aarch64.AppImage"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-aarch64.AppImage"
+            >
+              <strong>AppImage, ARM64</strong
+              ><span>Nothing else to install</span>
+            </a>
+            <a
+              class="file"
+              data-asset="mortar-linux-amd64"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-amd64"
+            >
+              <strong>Portable, x86_64</strong
+              ><span>Uses the system's GTK 4 and WebKitGTK 6</span>
+            </a>
+            <a
+              class="file"
+              data-asset="mortar-linux-arm64"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-arm64"
+            >
+              <strong>Portable, ARM64</strong
+              ><span>Uses the system's GTK 4 and WebKitGTK 6</span>
+            </a>
+          </div>
+          <pre><code>chmod +x mortar-linux-x86_64.AppImage
+./mortar-linux-x86_64.AppImage</code></pre>
+          <p class="muted">
+            The first run adds Mortar to your applications menu and takes
+            <code>nxm://</code> links and <code>.mortar</code> files.
+          </p>
+        </div>
+
+        <p class="fingerprint">
+          Packages are signed by “Mortar packages
+          &lt;security@rethunk.tech&gt;”, fingerprint
+          <code>3283 6046 06CA E229 5D47 6F98 83BC 8751 EE6F 773D</code>.
+          <a href="/packages/">Repository details</a>
+        </p>
+      </section>
+
+      <section
+        class="panel"
+        id="extension"
+        role="tabpanel"
+        aria-labelledby="tab-extension"
+      >
+        <h2>Browser extension</h2>
+        <p class="muted">
+          Optional. It marks Nexus Mods pages with what your profile already has
+          and hands Mod Manager Download clicks to Mortar. Mortar's Settings ›
+          Downloads links it too.
+        </p>
+        <div class="files">
+          <a
+            class="file primary"
+            href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.xpi"
+          >
+            <strong>Firefox</strong
+            ><span>Signed by Mozilla; open the file in Firefox</span>
+          </a>
+          <a
+            class="file"
+            href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.zip"
+          >
+            <strong>Chrome, Edge and other Chromium browsers</strong
+            ><span>Load unpacked from the zip</span>
+          </a>
+        </div>
+        <ol class="steps">
+          <li>
+            Chromium browsers: unzip the download, open
+            <code>chrome://extensions</code>, turn on Developer mode, choose
+            <strong>Load unpacked</strong> and pick the unzipped folder.
+          </li>
+          <li>
+            Firefox: open the <code>.xpi</code> in Firefox, or drop it on
+            <code>about:addons</code>. It stays installed and updates itself.
+          </li>
+        </ol>
+      </section>
+
+      <p class="muted all">
+        Checksums, release notes and every build:
+        <a href="https://github.com/Rethunk-Tech/mortar/releases/latest"
+          >latest release on GitHub</a
+        >.
+      </p>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap">
+        <span
+          >Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not
+          affiliated with ConcernedApe or Nexus Mods.</span
+        >
+        <span>
+          <a href="https://github.com/Rethunk-Tech/mortar">Source</a> ·
+          <a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a>
+        </span>
+      </div>
+    </footer>
+    <script defer src="../download.js"></script>
+  </body>
+</html>
