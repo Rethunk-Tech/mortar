@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { List as ListGames } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import {
   CancelTransfer,
   Transfer,
@@ -32,12 +33,13 @@ export function IncomingPrompt() {
   const removeFirst = useIncomingShares((state) => state.removeFirst)
   const profiles = useProfiles((state) => state.profiles)
   const incomingGame = incoming?.game ?? ''
-  const gameName = useProfiles((state) => {
-    if (state.game?.id === incomingGame && state.game.name) {
-      return state.game.name
-    }
-    return incomingGame === 'stardew' ? 'Stardew Valley' : incomingGame
-  })
+  const [listedName, setListedName] = useState('')
+  useEffect(() => {
+    ListGames()
+      .then((games) => setListedName((games ?? []).find((g) => g.id === incomingGame)?.name ?? ''))
+      .catch(reportUnexpected)
+  }, [incomingGame])
+  const gameName = listedName || incomingGame
   const progress = useIncomingShares((state) =>
     incoming ? state.progress[incoming.id] : undefined,
   )

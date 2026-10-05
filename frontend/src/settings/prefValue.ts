@@ -2,10 +2,9 @@ import type {
   PrefSpec,
   Settings,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
+import { currentGame } from '../nav/currentGame.ts'
 
-export const GAME_STARDEW = 'stardew'
-
-export function prefRaw(settings: Settings, spec: PrefSpec, game = GAME_STARDEW): unknown {
+export function prefRaw(settings: Settings, spec: PrefSpec, game = currentGame()): unknown {
   if (spec.scope === 'game') {
     const block = settings.games?.[game]
     return block ? (block as unknown as Record<string, unknown>)[spec.key] : undefined
@@ -36,6 +35,6 @@ export function prefAsNumber(raw: unknown, spec: PrefSpec): number {
   return Number.isFinite(n) ? n : Number(spec.default)
 }
 
-export function specGameArg(spec: PrefSpec, game = GAME_STARDEW): string {
+export function specGameArg(spec: PrefSpec, game = currentGame()): string {
   return spec.scope === 'game' ? game : ''
 }

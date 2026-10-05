@@ -11,6 +11,7 @@ import {
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type { FoundInstall } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { loadGameStatus } from '../games/status.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -23,11 +24,9 @@ import { BackupsPage, ExtraModsFolder, GameFolder, SmapiPage } from './sections/
 import { StreamOverlay } from './sections/StreamOverlay.tsx'
 import { useSettings } from './store.ts'
 
-const GAME = 'stardew'
-
 type GamePage = 'install' | 'smapi' | 'play' | 'mods' | 'backups' | 'console' | 'streaming'
 
-function useGameInstall() {
+function useGameInstall(game: string) {
   const [folder, setFolder] = useState('')
   const [store, setStore] = useState('')
   const [installs, setInstalls] = useState<FoundInstall[]>([])
@@ -35,13 +34,13 @@ function useGameInstall() {
   const load = useCallback(() => {
     loadGameStatus()
       .then((s) => {
-        const g = s.games.find((x) => x.id === GAME)
+        const g = s.games.find((x) => x.id === game)
         setFolder(g?.installDir ?? '')
         setStore(g?.store ?? '')
         setInstalls(g?.installs ?? [])
       })
       .catch(reportUnexpected)
-  }, [])
+  }, [game])
   useEffect(load, [load])
   return { folder, store, installs, version, setVersion, load }
 }
@@ -50,7 +49,8 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
   const { t } = useLingui()
   const name = useProfiles((s) => s.game?.name ?? '')
   const close = useNav((s) => s.closeGameSettings)
-  const g = useGameInstall()
+  const game = useCurrentGame()
+  const g = useGameInstall(game)
   const pages: ShellPage<GamePage>[] = [
     { id: 'install', label: t`Install`, icon: FolderOpen },
     { id: 'smapi', label: t`SMAPI`, icon: Puzzle, groupEnd: true },
@@ -79,7 +79,7 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
           <SettingsSection title={t`Play`}>
             <PrefKeys
               keys={['defaultLaunchMethod', 'showSmapiConsole', 'updateModsBeforePlayDefault']}
-              game={GAME}
+              game={game}
             />
           </SettingsSection>
         )
@@ -97,7 +97,7 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
                   'oldFilesOnUpdate',
                   'showDotHiddenMods',
                 ]}
-                game={GAME}
+                game={game}
               />
               <ExtraModsFolder />
             </SettingsSection>
@@ -120,7 +120,7 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
                 'consoleTimestamps',
                 'consoleFollow',
               ]}
-              game={GAME}
+              game={game}
             />
           </SettingsSection>
         )
@@ -143,8 +143,9 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
 
 // A new folder or store choice re-reads the install from scratch.
 export function GameSettingsPage() {
-  const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
-  const chosen = useSettings((s) => s.gameStores?.[GAME] ?? '')
+  const game = useCurrentGame()
+  const override = useSettings((s) => s.gameFolders?.[game] ?? '')
+  const chosen = useSettings((s) => s.gameStores?.[game] ?? '')
   const [page, setPage] = useState<GamePage>('install')
   return <GamePages key={`${override}:${chosen}`} page={page} setPage={setPage} />
 }

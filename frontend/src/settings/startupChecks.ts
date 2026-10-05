@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { useEffect } from 'react'
 import { Get } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LastRunCrashed } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
+import { loadGameStatus } from '../games/status.ts'
 import { useLoader } from '../loader/store.ts'
 import { loadUpdates } from '../mods/updates.ts'
 import { reportBug } from '../shell/reportBug.ts'
@@ -44,9 +45,11 @@ export function useStartupChecks() {
         )
       }
       if (shouldRunStartupCheck(s.tellWhenSmapiOut)) {
-        const game = s.lastGame || 'stardew'
-        await useLoader.getState().check(game)
-        maybeToastSmapi(game)
+        const game = s.lastGame || (await loadGameStatus()).games.find((g) => g.available)?.id
+        if (game) {
+          await useLoader.getState().check(game)
+          maybeToastSmapi(game)
+        }
       }
     }
     run().catch(ignore)

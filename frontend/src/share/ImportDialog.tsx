@@ -3,6 +3,7 @@ import { Box, Dialog, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/ma
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { PreviewData } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
@@ -136,7 +137,7 @@ function useSeedPreview(
 function Body({ request }: { request: ImportRequest }) {
   const { t } = useLingui()
   const close = useImportDialog((s) => s.close)
-  const game = useProfiles((s) => s.game?.id ?? 'stardew')
+  const game = useCurrentGame()
   const targetName = useProfiles((s) => s.profiles.find((p) => p.id === request.profileId)?.name)
   const signedIn = useNexus((s) => s.signedIn)
   const flow = useImportFlow(game, request.profileId, close, request.external)

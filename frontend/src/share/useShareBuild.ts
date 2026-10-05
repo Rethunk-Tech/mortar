@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { useEffect, useRef, useState } from 'react'
 import { Share } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { useSettings } from '../settings/store.ts'
 import { toastError } from '../toasts/report.ts'
 import { type ShownInfo, shownInfo, suggestFile } from './logic.ts'
@@ -15,7 +15,7 @@ export function useShareBuild() {
   const profileId = useShareDialog((s) => s.profileId)
   const keys = useShareDialog((s) => s.keys)
   const close = useShareDialog((s) => s.close)
-  const game = useProfiles((s) => s.game?.id ?? 'stardew')
+  const game = useCurrentGame()
   const [tab, setTab] = useState<Tab>('link')
   const [info, setInfo] = useState<ShownInfo | null>(null)
   const [include, setInclude] = useState(() => shareIncludeDefaults(useSettings.getState()))

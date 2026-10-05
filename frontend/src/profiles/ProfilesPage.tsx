@@ -37,6 +37,7 @@ import { BundlesSection } from '../bundles/BundlesSection.tsx'
 import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useProfilePageBadges } from '../game/useSidebarProfiles.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
 import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
 import { shouldLeavePageOnEscape } from '../settings/shouldLeavePageOnEscape.ts'
@@ -403,7 +404,7 @@ function ProfilesHeader({
 export function ProfilesPage() {
   const { t } = useLingui()
   const closeProfiles = useNav((s) => s.closeProfiles)
-  const game = useNav((s) => (s.route.name === 'profiles' ? s.route.game : 'stardew'))
+  const game = useCurrentGame()
   const profiles = useProfiles((s) => s.profiles)
   useProfilePageBadges(game)
   const damaged = useProfiles((s) => s.damaged)

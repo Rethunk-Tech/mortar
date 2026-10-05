@@ -98,7 +98,7 @@ async function showImported(game: string, intoOpen: boolean, id: string) {
     await useProfiles.getState().load(game)
     useProfiles.getState().open(id)
     await SetLastGame(game)
-    useNav.getState().openGame('stardew')
+    useNav.getState().openGame(game)
     RegisterLinks().catch(reportUnexpected)
   }
 }

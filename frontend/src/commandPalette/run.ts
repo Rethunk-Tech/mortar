@@ -3,7 +3,7 @@ import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
-import { type GameId, type SettingsSection, useNav } from '../nav/store.ts'
+import { type GameId, isGameId, type SettingsSection, useNav } from '../nav/store.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useRecentChanges } from '../profiles/recentChanges.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -40,7 +40,7 @@ function leaveShellPages(): void {
 
 function gameId(): GameId | null {
   const id = useProfiles.getState().game?.id
-  return id === 'stardew' ? id : null
+  return id && isGameId(id) ? id : null
 }
 
 function openProfile(id: string): void {

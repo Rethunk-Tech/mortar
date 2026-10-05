@@ -1,4 +1,5 @@
 import type { Settings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
+import { currentGame } from '../nav/currentGame.ts'
 
 function on(v: boolean | null | undefined, fallback: boolean): boolean {
   if (v === null || v === undefined) {
@@ -6,8 +7,6 @@ function on(v: boolean | null | undefined, fallback: boolean): boolean {
   }
   return v
 }
-
-const STARDEW = 'stardew'
 
 const defaultGamePrefs: GamePrefBlock = {
   backupBeforePlay: 'changed',
@@ -49,8 +48,8 @@ export interface GamePrefBlock {
   consoleFollow: boolean
 }
 
-export function gamePrefs(s: Settings): GamePrefBlock {
-  const got = s.games?.[STARDEW]
+export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
+  const got = s.games?.[game]
   if (!got) {
     return defaultGamePrefs
   }

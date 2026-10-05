@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 
-export type GameId = 'stardew'
+export type GameId = string
 
-export const isGameId = (game: string): game is GameId => game === 'stardew'
+export const isGameId = (game: string): game is GameId => /^[a-z0-9-]+$/.test(game)
 
 export type SettingsSection =
   | 'general'

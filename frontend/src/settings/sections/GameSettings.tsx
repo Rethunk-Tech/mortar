@@ -19,6 +19,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { launchOptionsSet } from '../../firstrun/logic.ts'
 import { storeName } from '../../games/storeName.ts'
+import { currentGame, useCurrentGame } from '../../nav/currentGame.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { FlatpakGrant } from '../../shell/FlatpakGrant.tsx'
 import { type InlineError, inlineError, reportError, toastError } from '../../toasts/report.ts'
@@ -31,8 +32,6 @@ import { useSettings } from '../store.ts'
 import { BackupsUsageRow } from './DataBackups.tsx'
 import { ScheduledStatus } from './ScheduledStatus.tsx'
 import { SmapiRow } from './SmapiRow.tsx'
-
-const GAME = 'stardew'
 
 const noShrink = { flexShrink: 0 }
 
@@ -77,14 +76,14 @@ async function offerLaunchOptionRemoval(
   errorTitle: string,
 ) {
   try {
-    const options = await LaunchOptions(GAME)
+    const options = await LaunchOptions(currentGame())
     if (launchOptionsSet(options)) {
       push({
         kind: 'success',
         title,
         action: {
           label,
-          run: () => ClearLaunchOption(GAME).then(undefined, reportError(errorTitle)),
+          run: () => ClearLaunchOption(currentGame()).then(undefined, reportError(errorTitle)),
         },
       })
     }
@@ -156,7 +155,8 @@ function GameFolder({
   onRefresh: () => void
 }) {
   const { t } = useLingui()
-  const override = useSettings((s) => s.gameFolders?.[GAME] ?? '')
+  const game = useCurrentGame()
+  const override = useSettings((s) => s.gameFolders?.[game] ?? '')
   const [error, setError] = useState<InlineError | null>(null)
   const [resetting, setResetting] = useState(false)
   const [restoreBusy, setRestoreBusy] = useState(false)
@@ -183,7 +183,7 @@ function GameFolder({
             <Button
               variant="outlined"
               startIcon={<FolderOpen size={16} />}
-              onClick={() => change(ChooseGameFolder(GAME))}
+              onClick={() => change(ChooseGameFolder(game))}
               sx={noShrink}
             >
               {t`Change folder…`}
@@ -192,7 +192,7 @@ function GameFolder({
               <Button
                 variant="outlined"
                 startIcon={<Undo2 size={16} />}
-                onClick={() => change(SetGameFolder(GAME, ''))}
+                onClick={() => change(SetGameFolder(game, ''))}
                 sx={noShrink}
               >
                 {t`Use default`}
@@ -219,7 +219,7 @@ function GameFolder({
                 store={store}
                 override={override}
                 onPick={(next) =>
-                  change(SetGameFolder(GAME, '').then(() => SetGameStore(GAME, next)))
+                  change(SetGameFolder(game, '').then(() => SetGameStore(game, next)))
                 }
               />
             </Box>
@@ -258,7 +258,7 @@ function GameFolder({
           setError(null)
           setRestoreBusy(true)
           try {
-            await ResetInstall(GAME)
+            await ResetInstall(game)
             if (System.IsWindows()) {
               await offerLaunchOptionRemoval(
                 useToasts.getState().push,
@@ -291,6 +291,7 @@ function GameFolder({
 
 function SmapiPage({ onVersion }: { onVersion: (v: string) => void }) {
   const { t } = useLingui()
+  const game = useCurrentGame()
   const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut) !== false
   const push = useToasts((s) => s.push)
   return (
@@ -305,32 +306,33 @@ function SmapiPage({ onVersion }: { onVersion: (v: string) => void }) {
           label={t`Tell me when a new SMAPI is out`}
         />
       </SettingRow>
-      <PrefByKey prefKey="smapiBuilds" game={GAME} />
+      <PrefByKey prefKey="smapiBuilds" game={game} />
     </SettingsSection>
   )
 }
 
 function ExtraModsFolder() {
   const { t } = useLingui()
+  const game = useCurrentGame()
   const push = useToasts((s) => s.push)
-  const folder = useSettings((s) => s.games?.[GAME]?.extraModsFolder ?? '')
+  const folder = useSettings((s) => s.games?.[game]?.extraModsFolder ?? '')
   const choose = () =>
     persist(
       async () => {
         const dir = await PickFolder(t`Extra mods folder`)
         if (dir) {
-          await SetByKey('extraModsFolder', dir, GAME)
+          await SetByKey('extraModsFolder', dir, game)
         }
       },
       push,
       t`Could not save that setting`,
     )
   const clear = () =>
-    persist(() => SetByKey('extraModsFolder', '', GAME), push, t`Could not save that setting`)
+    persist(() => SetByKey('extraModsFolder', '', game), push, t`Could not save that setting`)
   return (
     <PrefByKey
       prefKey="extraModsFolder"
-      game={GAME}
+      game={game}
       extra={
         <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
           {folder ? (
@@ -349,14 +351,15 @@ function ExtraModsFolder() {
 
 function BackupsPage() {
   const { t } = useLingui()
-  const scheduleOff = useSettings((s) => (s.games?.[GAME]?.saveBackupHours ?? 0) === 0)
+  const game = useCurrentGame()
+  const scheduleOff = useSettings((s) => (s.games?.[game]?.saveBackupHours ?? 0) === 0)
   const push = useToasts((s) => s.push)
   const chooseBackupLocation = () =>
     persist(
       async () => {
         const dir = await PickFolder(t`Backup location`)
         if (dir) {
-          await SetByKey('backupLocation', dir, GAME)
+          await SetByKey('backupLocation', dir, game)
         }
       },
       push,
@@ -364,16 +367,16 @@ function BackupsPage() {
     )
   return (
     <SettingsSection title={t`Save backups`}>
-      <PrefKeys keys={['backupBeforePlay', 'saveBackupsKept', 'saveBackupHours']} game={GAME} />
+      <PrefKeys keys={['backupBeforePlay', 'saveBackupsKept', 'saveBackupHours']} game={game} />
       <ScheduledStatus />
       <PrefByKey
         prefKey="saveBackupKeep"
-        game={GAME}
+        game={game}
         disabledReason={scheduleOff ? t`Turn on scheduled save backups first.` : ''}
       />
       <PrefByKey
         prefKey="backupLocation"
-        game={GAME}
+        game={game}
         extra={
           <Button variant="outlined" onClick={chooseBackupLocation} sx={noShrink}>
             {t`Change folder…`}

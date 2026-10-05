@@ -304,8 +304,8 @@ function openProblems(get: LaunchGet, set: LaunchSet) {
   if (!warn) {
     return
   }
-  if (warn.game === 'stardew') {
-    useNav.getState().openGame('stardew')
+  if (isGameId(warn.game)) {
+    useNav.getState().openGame(warn.game)
   }
   useProfiles.getState().open(warn.profile)
   useTab.getState().setTab('problems')

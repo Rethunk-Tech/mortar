@@ -9,12 +9,12 @@ import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { useGameBusy, useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
 import { useLoader } from '../../loader/store.ts'
+import { useCurrentGame } from '../../nav/currentGame.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
-import { GAME_STARDEW } from '../prefValue.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { type SmapiAction, smapiAction } from './smapiAction.ts'
@@ -44,7 +44,8 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
   const { t, i18n } = useLingui()
   const push = useToasts((s) => s.push)
   const fail = t`Could not save that setting`
-  const pin = useSettings((s) => s.games?.stardew?.smapiPin)
+  const game = useCurrentGame()
+  const pin = useSettings((s) => s.games?.[game]?.smapiPin)
   const status = useLoader((s) => s.status)
   const check = useLoader((s) => s.check)
   const install = useLoader((s) => s.install)
@@ -52,18 +53,18 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
   const installing = useLoader((s) => s.installing)
   const steps = useLoader((s) => s.steps)
   const refreshLaunch = useLaunch((s) => s.refresh)
-  const playing = useGameBusy(GAME_STARDEW)
+  const playing = useGameBusy(game)
   const [versions, setVersions] = useState<string[]>([])
   const [confirm, setConfirm] = useState(false)
   const [busy, setBusy] = useState(false)
   const selected = pinValue(pin)
   useEffect(() => {
-    check(GAME_STARDEW)
-    refreshLaunch(GAME_STARDEW)
-    ListVersions(GAME_STARDEW)
+    check(game)
+    refreshLaunch(game)
+    ListVersions(game)
       .then((rows) => setVersions(rows ?? []))
       .catch(() => setVersions([]))
-  }, [check, refreshLaunch])
+  }, [check, refreshLaunch, game])
   const gameVersion = status?.gameVersion ?? ''
   useEffect(() => {
     onVersion(gameVersion)
@@ -99,13 +100,13 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
   }
   const run = () => {
     setBusy(true)
-    install(GAME_STARDEW, action.version || undefined).finally(() => {
+    install(game, action.version || undefined).finally(() => {
       setBusy(false)
       setConfirm(false)
     })
   }
   const savePin = (value: string) => {
-    persist(() => SetByKey('smapiPin', value === LATEST ? '' : value, GAME_STARDEW), push, fail)
+    persist(() => SetByKey('smapiPin', value === LATEST ? '' : value, game), push, fail)
   }
   return (
     <>
