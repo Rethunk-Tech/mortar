@@ -2,15 +2,17 @@ package launchplan
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
 
 // ParseArgs splits a profile's extra launch arguments as shell-like words (spaces separate; single or double quotes
-// keep spaces; backslash escapes the next rune) and refuses a flag in denied, which the loader sets itself.
+// keep spaces; backslash escapes the next rune) and refuses a flag in denied, which the loader sets itself. On Windows
+// a backslash is a path separator and only double quotes quote, as on its command line: `\"` is a literal quote.
 func ParseArgs(s string, denied []string) ([]string, error) {
-	words, err := splitShellWords(s)
+	words, err := splitShellWords(s, runtime.GOOS == "windows")
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +27,7 @@ func ParseArgs(s string, denied []string) ([]string, error) {
 	return words, nil
 }
 
-func splitShellWords(s string) ([]string, error) {
+func splitShellWords(s string, windows bool) ([]string, error) {
 	var words []string
 	var b strings.Builder
 	quote := rune(0)
@@ -47,6 +49,16 @@ func splitShellWords(s string) ([]string, error) {
 			escape = false
 			continue
 		}
+		if r == '\\' && windows {
+			if strings.HasPrefix(s[i:], `"`) {
+				b.WriteByte('"')
+				i++
+			} else {
+				b.WriteRune(r)
+			}
+			started = true
+			continue
+		}
 		if r == '\\' && quote != '\'' {
 			escape = true
 			started = true
@@ -60,7 +72,7 @@ func splitShellWords(s string) ([]string, error) {
 			b.WriteRune(r)
 			continue
 		}
-		if r == '\'' || r == '"' {
+		if r == '"' || (r == '\'' && !windows) {
 			quote = r
 			started = true
 			continue

@@ -316,6 +316,50 @@ func TestSteamLaunchWithLoaderKeepsTheUsersOptions(t *testing.T) {
 	}
 }
 
+func TestWindowsCommandKeepsArgumentsWholeAndInOrder(t *testing.T) {
+	dir := `C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley`
+	mods := `C:\Users\O'Brien\AppData\Local\Mortar\profiles\stardew\a b\mods`
+	extra := []string{"--log", `C:\Mortar Logs\say "hi".txt`, "--developer-mode"}
+	plan := smapiPlan("windows", dir, mods, extra...)
+	inst := Install{Game: "stardew", Dir: dir}
+	direct, err := Starter{}.command("windows", inst, plan, StartEnv{Direct: true}, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := append([]string{filepath.Join(dir, "StardewModdingAPI.exe"), "--mods-path", mods}, extra...)
+	if got := append([]string{direct.Name}, direct.Args...); !slices.Equal(got, want) || direct.Dir != dir {
+		t.Fatalf("direct = %q in %q, want %q", got, direct.Dir, want)
+	}
+	sm := &steam.Steam{Root: `C:\Program Files (x86)\Steam`}
+	relay, err := Starter{}.command("windows", inst, plan, StartEnv{Steam: sm}, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Steam puts these after %command%, so the loader's own launch options stay ahead of the profile's.
+	want = append([]string{filepath.Join(sm.Root, "steam.exe"), "-applaunch", "413150", "--mods-path", mods}, extra...)
+	if got := append([]string{relay.Name}, relay.Args...); !slices.Equal(got, want) {
+		t.Fatalf("relay = %q, want %q", got, want)
+	}
+}
+
+func TestSteamLaunchOptionsKeepEnvironmentAheadOfTheLoader(t *testing.T) {
+	exe := `C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley\StardewModdingAPI.exe`
+	quoted := `"` + exe + `"`
+	env := `WINEDLLOVERRIDES="winhttp=n,b"`
+	for _, tc := range []struct{ current, with string }{
+		{env + " %command%", env + " " + quoted + " %command%"},
+		{env + ` %command% --log "C:\a b\x.txt"`, env + " " + quoted + ` %command% --log "C:\a b\x.txt"`},
+	} {
+		got := launchWith(exe, tc.current)
+		if got != tc.with {
+			t.Errorf("with %q = %q, want %q", tc.current, got, tc.with)
+		}
+		if back := launchWithout(exe, got); back != tc.current {
+			t.Errorf("without %q = %q, want %q", got, back, tc.current)
+		}
+	}
+}
+
 func TestSteamLaunchWithoutLoaderKeepsTheUsersOptions(t *testing.T) {
 	exe := "StardewModdingAPI.exe"
 	quoted := `"` + filepath.Join("games", "Stardew Valley", exe) + `"`
