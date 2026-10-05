@@ -18,6 +18,8 @@ type GameInfo struct {
 	Name       string         `json:"name"`
 	AppID      string         `json:"appId"`
 	Loader     string         `json:"loader"`
+	LoaderID   string         `json:"loaderId"`
+	Sources    []string       `json:"sources"`
 	Available  bool           `json:"available"`
 	Installed  bool           `json:"installed"`
 	InstallDir string         `json:"installDir"`
@@ -88,25 +90,30 @@ func artFor(home, appID string) string {
 }
 
 // List returns every listed game with its install state and art URL.
-func (s *Service) List() ([]GameInfo, error) {
-	cur := s.store.Get()
-	out := make([]GameInfo, 0, len(games)+len(comingLater))
-	for _, g := range games {
-		info := GameInfo{ID: g.ID(), Name: g.Name(), AppID: g.SteamAppID(), Loader: g.LoaderName(), Available: true, Installs: []FoundInstall{}}
-		dir, store, all, err := Resolve(s.home, cur, g.ID())
-		if err != nil {
-			return nil, err
+func (s *Service) List() ([]GameInfo, error) { return List(s.home, s.store.Get()) }
+
+// List returns every listed game with its install state under settings cur.
+func List(home string, cur settings.Settings) ([]GameInfo, error) {
+	catalog := Catalog()
+	out := make([]GameInfo, 0, len(catalog))
+	for _, c := range catalog {
+		info := GameInfo{ID: c.ID, Name: c.Name, AppID: c.SteamAppID(), Installs: []FoundInstall{}, Sources: make([]string, len(c.Sources))}
+		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
+		for i, src := range c.Sources {
+			info.Sources[i] = src.ID
 		}
-		info.Installed, info.InstallDir, info.Store = dir != "", dir, store
-		if all != nil {
-			info.Installs = all
+		if g := Find(c.ID); g != nil && c.Enabled {
+			info.Available = true
+			dir, store, all, err := Resolve(home, cur, g.ID())
+			if err != nil {
+				return nil, err
+			}
+			info.Installed, info.InstallDir, info.Store = dir != "", dir, store
+			if all != nil {
+				info.Installs = all
+			}
 		}
-		info.ArtURL = artFor(s.home, info.AppID)
-		out = append(out, info)
-	}
-	for _, c := range comingLater {
-		info := GameInfo{ID: c.id, Name: c.name, AppID: c.appID, Loader: c.loader, Installs: []FoundInstall{}}
-		info.ArtURL = artFor(s.home, c.appID)
+		info.ArtURL = artFor(home, info.AppID)
 		out = append(out, info)
 	}
 	return out, nil

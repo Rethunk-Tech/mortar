@@ -204,7 +204,7 @@ func checkDomain(game, domain, what string) error {
 	info, ok := components.BundledGame(game)
 	name, want := game, ""
 	if ok {
-		name, want = info.Name, info.Nexus.Domain
+		name, want = info.Name, info.NexusDomain()
 	}
 	if want == "" || !strings.EqualFold(want, domain) {
 		return fmt.Errorf("that %s is not for %s", what, name)

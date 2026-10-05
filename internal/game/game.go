@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"github.com/Rethunk-Tech/mortar/internal/gog"
 	"github.com/Rethunk-Tech/mortar/internal/lutris"
@@ -93,16 +94,27 @@ type Launcher interface {
 
 var games = []Game{&stardew.Game{}}
 
-// ConfigureComponents gives implemented games the verified component manifest used for loader installs.
+var configuredComponents atomic.Pointer[components.Client]
+
+// ConfigureComponents gives the registry and implemented games the verified component manifest.
 func ConfigureComponents(client *components.Client) {
+	configuredComponents.Store(client)
 	stardew.ConfigureComponents(client)
 }
 
-// comingLater lists games Game Select shows before they have an implementation.
-type listing struct{ id, name, appID, loader string }
-
-var comingLater = []listing{
-	{"lethal", "Lethal Company", "1966720", "BepInEx 5"},
+// Catalog returns every game the component manifest lists, enabled or coming later. It is the bundled manifest's
+// until a verified one that lists games is selected.
+func Catalog() []components.GameInfo {
+	if c := configuredComponents.Load(); c != nil {
+		if g := c.Manifest().Games; len(g) > 0 {
+			return g
+		}
+	}
+	m, err := components.BundledManifest()
+	if err != nil {
+		return nil
+	}
+	return m.Games
 }
 
 // Find returns the implemented game with this id, or nil.
@@ -126,7 +138,7 @@ func Require(id string) (Game, error) {
 
 // Valid reports whether id names a listed game.
 func Valid(id string) bool {
-	return Find(id) != nil || slices.ContainsFunc(comingLater, func(c listing) bool { return c.id == id })
+	return slices.ContainsFunc(Catalog(), func(g components.GameInfo) bool { return g.ID == id })
 }
 
 // File is the path of a game's JSON file below root, for stores that keep one file per game.
@@ -142,14 +154,9 @@ func listedApp(appID string) (string, bool) {
 	if _, err := strconv.ParseUint(appID, 10, 32); err != nil {
 		return "", false
 	}
-	for _, g := range games {
-		if g.SteamAppID() == appID {
-			return g.SteamAppID(), true
-		}
-	}
-	for _, c := range comingLater {
-		if c.appID == appID {
-			return c.appID, true
+	for _, g := range Catalog() {
+		if id := g.SteamAppID(); id == appID {
+			return id, true
 		}
 	}
 	return "", false

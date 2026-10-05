@@ -80,7 +80,7 @@ func Build(in Input) Result {
 	domain := in.NexusDomain
 	if domain == "" {
 		if info, ok := components.BundledGame("stardew"); ok {
-			domain = info.Nexus.Domain
+			domain = info.NexusDomain()
 		}
 	}
 	if repo != "" {

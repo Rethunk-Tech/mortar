@@ -18,7 +18,7 @@ func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) 
 		return nil, err
 	}
 	info, ok := components.BundledGame(gameID)
-	if !ok || info.Nexus.Domain == "" {
+	if !ok || info.NexusDomain() == "" {
 		return nil, fmt.Errorf("game %q has no Nexus domain", gameID)
 	}
 	if s.Profiles == nil {
@@ -35,7 +35,7 @@ func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) 
 	}
 	var out []nexus.TrackedMod
 	for _, mod := range mods {
-		if !strings.EqualFold(mod.DomainName, info.Nexus.Domain) {
+		if !strings.EqualFold(mod.DomainName, info.NexusDomain()) {
 			continue
 		}
 		if installed[mod.ModID] {

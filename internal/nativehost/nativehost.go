@@ -492,7 +492,7 @@ func activeNexusModIDs(domain string) []int {
 		case "nexus":
 			add(entry.Source.ModID)
 		case "smapi":
-			add(info.Nexus.LoaderModID)
+			add(info.LoaderNexusModID())
 		case "local":
 			add(nexusArchiveModID(entry.Source.Name))
 		}
@@ -599,8 +599,8 @@ func supportedNexusDomains() []string {
 	}
 	var domains []string
 	for _, g := range m.Games {
-		if g.Nexus.Domain != "" {
-			domains = append(domains, g.Nexus.Domain)
+		if g.NexusDomain() != "" {
+			domains = append(domains, g.NexusDomain())
 		}
 	}
 	return domains

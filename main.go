@@ -308,7 +308,7 @@ func run() error {
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)
 	if g, ok := componentClient.Game("stardew"); ok {
-		nexus.Configure(g.Nexus.Domain, g.Nexus.ID)
+		nexus.Configure(g.NexusDomain(), g.NexusID())
 	}
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
 	loadersvc.Attach(loaders, "stardew")
@@ -799,7 +799,7 @@ func run() error {
 		}
 		_ = os.Remove(failurePath)
 		if g, ok := componentClient.Game("stardew"); ok {
-			nexus.Configure(g.Nexus.Domain, g.Nexus.ID)
+			nexus.Configure(g.NexusDomain(), g.NexusID())
 		}
 		// A fetched manifest can name a newer bridge than the one synced at startup from the bundled copy.
 		loadersvc.SyncBundled(loaders, "stardew")

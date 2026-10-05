@@ -1209,14 +1209,14 @@ func nexusPage(game, source string) string {
 		return ""
 	}
 	g, ok := components.BundledGame(cmp.Or(game, "stardew"))
-	if !ok || g.Nexus.Domain == "" {
+	if !ok || g.NexusDomain() == "" {
 		return ""
 	}
 	id, err := strconv.Atoi(modID)
 	if err != nil {
 		return ""
 	}
-	return nexus.ModURL(g.Nexus.Domain, id)
+	return nexus.ModURL(g.NexusDomain(), id)
 }
 
 func (c *cmd) printEnabledMods(rows []control.ModRow, game string) {

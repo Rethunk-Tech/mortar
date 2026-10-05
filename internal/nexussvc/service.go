@@ -170,7 +170,7 @@ func (s *Service) TrackedMods(ctx context.Context) ([]nexus.TrackedMod, error) {
 // trackedFor returns the signed-in user's tracked Nexus mod ids for a Mortar game.
 func (s *Service) trackedFor(ctx context.Context, gameID string) ([]int, error) {
 	info, ok := components.BundledGame(gameID)
-	if !ok || info.Nexus.Domain == "" {
+	if !ok || info.NexusDomain() == "" {
 		return nil, fmt.Errorf("game %q has no Nexus domain", gameID)
 	}
 	mods, err := s.TrackedMods(ctx)
@@ -179,7 +179,7 @@ func (s *Service) trackedFor(ctx context.Context, gameID string) ([]int, error) 
 	}
 	var ids []int
 	for _, mod := range mods {
-		if strings.EqualFold(mod.DomainName, info.Nexus.Domain) {
+		if strings.EqualFold(mod.DomainName, info.NexusDomain()) {
 			ids = append(ids, mod.ModID)
 		}
 	}

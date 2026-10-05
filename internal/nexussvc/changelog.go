@@ -53,8 +53,8 @@ func (s *Service) UpdateChangelog(ctx context.Context, game string, modID int, g
 
 func (s *Service) changelogs(ctx context.Context, game string, modID int) ([]nexus.Changelog, error) {
 	domain := nexus.Game
-	if info, ok := components.BundledGame(game); ok && info.Nexus.Domain != "" {
-		domain = info.Nexus.Domain
+	if info, ok := components.BundledGame(game); ok && info.NexusDomain() != "" {
+		domain = info.NexusDomain()
 	}
 	return meta.Cached(s.meta, fmt.Sprintf("nexus/changelogs-%s-%d.json", domain, modID), changelogTTL, func() ([]nexus.Changelog, error) {
 		c, err := Authed(s.store, s.client)

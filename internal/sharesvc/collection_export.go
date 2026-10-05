@@ -238,10 +238,10 @@ func (s *Service) ExportCollection(ctx context.Context, game, profileID string) 
 		return ExportedCollection{}, err
 	}
 	info, ok := components.BundledGame(game)
-	if !ok || info.Nexus.Domain == "" {
+	if !ok || info.NexusDomain() == "" {
 		return ExportedCollection{}, fmt.Errorf("%s has no Nexus page to make a collection for", game)
 	}
-	domain := info.Nexus.Domain
+	domain := info.NexusDomain()
 	d := s.App.Dialog.SaveFile().SetFilename("collection.zip").AddFilter("Nexus collection draft (zip)", "*.zip")
 	d.AttachToWindow(s.App.Window.Current())
 	dest, err := d.PromptForSingleSelection()

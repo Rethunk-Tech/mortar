@@ -21,7 +21,7 @@ func (s *Service) Doctor() (doctor.Report, error) {
 	if b, readErr := fsx.ReadFile(filepath.Join(dir, settings.FileName)); readErr == nil {
 		_ = json.Unmarshal(b, &cur)
 	}
-	games, err := listedGames(s.home, cur)
+	games, err := game.List(s.home, cur)
 	if err != nil {
 		return doctor.Report{}, err
 	}
@@ -42,22 +42,4 @@ func (s *Service) Doctor() (doctor.Report, error) {
 	})
 	disk := doctor.Scan(dir)
 	return doctor.Report{Checks: append(live.Checks, disk.Checks...)}, nil
-}
-
-func listedGames(home string, cur settings.Settings) ([]game.GameInfo, error) {
-	var out []game.GameInfo
-	if g := game.Find("stardew"); g != nil {
-		info := game.GameInfo{ID: g.ID(), Name: g.Name(), AppID: g.SteamAppID(), Loader: g.LoaderName(), Available: true}
-		dir, store, all, err := game.Resolve(home, cur, g.ID())
-		if err != nil {
-			return nil, err
-		}
-		info.Installed, info.InstallDir, info.Store = dir != "", dir, store
-		if all != nil {
-			info.Installs = all
-		}
-		out = append(out, info)
-	}
-	out = append(out, game.GameInfo{ID: "lethal", Name: "Lethal Company", AppID: "1966720", Loader: "BepInEx 5"})
-	return out, nil
 }

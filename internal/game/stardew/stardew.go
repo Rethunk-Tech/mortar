@@ -58,21 +58,36 @@ func ConfigureComponents(client *components.Client) { configuredComponents.Store
 
 func (Game) ID() string         { return "stardew" }
 func (Game) Name() string       { return identity().Name }
-func (Game) SteamAppID() string { return identity().SteamAppID }
+func (Game) SteamAppID() string { return identity().SteamAppID() }
 
 // GOG names Stardew Valley to the GOG locators.
 func (Game) GOG() gog.Game {
 	g := identity()
-	return gog.Game{ProductID: g.GOG.ProductID, Folder: g.GOG.Folder, Marker: g.Marker}
+	if g.Stores.GOG == nil {
+		return gog.Game{}
+	}
+	return gog.Game{ProductID: g.Stores.GOG.ProductID, Folder: g.Stores.GOG.Folder, Marker: g.Marker}
 }
 
 // Lutris names Stardew Valley to the Lutris locator.
 func (Game) Lutris() lutris.Game {
 	g := identity()
-	return lutris.Game{Slug: g.Lutris.Slug, Keyword: g.Lutris.Keyword, Marker: g.Marker}
+	if g.Stores.Lutris == nil {
+		return lutris.Game{}
+	}
+	return lutris.Game{Slug: g.Stores.Lutris.Slug, Keyword: g.Stores.Lutris.Keyword, Marker: g.Marker}
 }
-func (Game) LoaderName() string   { return identity().Loader }
-func (Game) ModSources() []string { return []string{"nexus", "github"} }
+
+func (Game) LoaderName() string { return identity().Loaders[0].Name }
+
+func (Game) ModSources() []string {
+	sources := identity().Sources
+	ids := make([]string, len(sources))
+	for i, s := range sources {
+		ids[i] = s.ID
+	}
+	return ids
+}
 
 // ValidInstall reports why dir is not a Stardew Valley install folder.
 func (Game) ValidInstall(dir string) error {

@@ -2,6 +2,7 @@ package game
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -39,5 +40,19 @@ func TestResetInstallRemovesGameFolder(t *testing.T) {
 	}
 	if _, err := os.Stat(dir); !os.IsNotExist(err) {
 		t.Fatalf("game folder still exists, stat error: %v", err)
+	}
+}
+
+func TestListComesFromTheCatalog(t *testing.T) {
+	list, err := NewService(t.TempDir(), testStore(t)).List()
+	if err != nil || len(list) != 2 {
+		t.Fatalf("List = %+v, %v", list, err)
+	}
+	sdv, lc := list[0], list[1]
+	if sdv.ID != "stardew" || !sdv.Available || sdv.LoaderID != "smapi" || strings.Join(sdv.Sources, ",") != "nexus,github" || sdv.AppID != "413150" {
+		t.Fatalf("stardew row = %+v", sdv)
+	}
+	if lc.ID != "lethal-company" || lc.Available || lc.LoaderID != "bepinex5" || lc.AppID != "1966720" {
+		t.Fatalf("lethal-company row = %+v", lc)
 	}
 }

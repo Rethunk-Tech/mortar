@@ -136,6 +136,26 @@ func (g GameInfo) Source(id string) (GameSource, bool) {
 	return GameSource{}, false
 }
 
+// NexusDomain is the game's Nexus v1 URL segment, empty when Nexus does not host it.
+func (g GameInfo) NexusDomain() string {
+	s, _ := g.Source("nexus")
+	return s.Key
+}
+
+// NexusID is the game's numeric Nexus id in the v2 API, 0 when Nexus does not host it.
+func (g GameInfo) NexusID() int {
+	s, _ := g.Source("nexus")
+	return s.GameID
+}
+
+// LoaderNexusModID is the Nexus mod page of the game's first loader, 0 when it has none.
+func (g GameInfo) LoaderNexusModID() int {
+	if len(g.Loaders) == 0 {
+		return 0
+	}
+	return g.Loaders[0].NexusModID
+}
+
 // SteamAppID is the game's Steam app id, empty when Steam does not sell it.
 func (g GameInfo) SteamAppID() string {
 	if g.Stores.Steam == nil {
@@ -457,7 +477,7 @@ func BundledGameByNexusDomain(domain string) (GameInfo, bool) {
 		return GameInfo{}, false
 	}
 	for _, g := range m.Games {
-		if s, ok := g.Source("nexus"); ok && s.Key != "" && strings.EqualFold(s.Key, domain) {
+		if key := g.NexusDomain(); key != "" && strings.EqualFold(key, domain) {
 			return g, true
 		}
 	}
