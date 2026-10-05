@@ -21,6 +21,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
@@ -573,7 +574,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	sameAccount := request.SenderPort > 0 &&
 		s.consumeProof(peer, request) &&
 		accountMatches(s.nexusKey(), request.Nonce, request.Payload, request.Proof)
-	keys := entryKeys(request.Game, shared)
+	keys := entryKeys(shared)
 	response := shareResponse{SameAccount: sameAccount}
 	var arrivalTransfer incomingTransfer
 	if sameAccount && request.SenderPort > 0 {
@@ -659,7 +660,7 @@ func validateRequest(request shareRequest) (share.Shared, error) {
 		strings.ContainsFunc(request.Sender, unicode.IsControl) {
 		return share.Shared{}, errors.New("sender is invalid")
 	}
-	if request.Game != "stardew" {
+	if game.Find(request.Game) == nil {
 		return share.Shared{}, errors.New("game is invalid")
 	}
 	if request.Version != protocolVersion {

@@ -68,10 +68,7 @@ func accountMatches(key, nonce, payload, proof string) bool {
 	return hmac.Equal([]byte(expected), []byte(proof))
 }
 
-func entryKeys(game string, shared share.Shared) []string {
-	if game != "stardew" {
-		return nil
-	}
+func entryKeys(shared share.Shared) []string {
 	keys := make([]string, 0, len(shared.Entries))
 	for _, ref := range shared.Entries {
 		if ref.GitHub != "" {
