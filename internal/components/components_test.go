@@ -311,9 +311,19 @@ func TestBundledGamesCarryTargetsAndCompanions(t *testing.T) {
 	if tgt, ok := lc.Target("profile"); !ok || tgt.Root != "{profile}" || !tgt.Writable {
 		t.Fatalf("lethal-company profile target = %+v", tgt)
 	}
+	if s.Deploy != DeployRedirect || lc.Deploy != DeployLink {
+		t.Fatalf("deploy = %q, %q", s.Deploy, lc.Deploy)
+	}
+	if c, _ := lc.Target("config"); !c.Writable || c.Install != "{install}/BepInEx/config" || c.Root != "{profile}/BepInEx/config" {
+		t.Fatalf("lethal-company config target = %+v", c)
+	}
 	bad := s
 	bad.Targets = []TargetDef{{ID: "mods", Root: "mods"}}
 	if bad.Validate() == nil {
 		t.Fatal("a target root without a token validated")
+	}
+	bad.Targets = []TargetDef{{ID: "mods", Root: "{profileMods}", Install: "{install}"}}
+	if bad.Validate() == nil {
+		t.Fatal("an install root on a redirected game validated")
 	}
 }

@@ -55,6 +55,7 @@
           "darwin": "{xdgConfig}/StardewValley/startup_preferences"
         }
       },
+      "deploy": "redirect",
       "targets": [{ "id": "mods", "root": "{profileMods}" }],
       "stores": {
         "steam": {
@@ -103,7 +104,11 @@
       "paths": {
         "saves": { "windows": "{localLow}/ZeekerssRBLX/Lethal Company" }
       },
-      "targets": [{ "id": "profile", "root": "{profile}", "writable": true }],
+      "deploy": "link-into-install",
+      "targets": [
+        { "id": "profile", "root": "{profile}", "install": "{install}" },
+        { "id": "config", "root": "{profile}/BepInEx/config", "install": "{install}/BepInEx/config", "writable": true }
+      ],
       "stores": {
         "steam": {
           "appId": "1966720"
