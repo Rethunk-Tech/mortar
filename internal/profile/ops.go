@@ -326,6 +326,11 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 	}
 	var errs []error
 	for _, prof := range all {
+		// A profile already on this bundle is left unwritten: a rewrite would mark it updated at every start.
+		if !slices.ContainsFunc(prof.Entries, func(e Entry) bool { return e.Source.Kind == b.Source.Kind && e.Key != b.Key }) &&
+			slices.ContainsFunc(prof.Entries, func(e Entry) bool { return e.Key == b.Key }) {
+			continue
+		}
 		if !duringStart {
 			if err := s.unlocked(game, prof.ID); err != nil {
 				errs = append(errs, err)

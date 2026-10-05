@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -555,6 +556,32 @@ func TestApplyBundledReplacesAndKeepsDisabled(t *testing.T) {
 	}
 	if err := e.ApplyBundled("stardew", smapiBundle("smapi-2.0.0")); err != nil {
 		t.Fatalf("reapplying the same key: %v", err)
+	}
+}
+
+func TestApplyBundledLeavesAProfileAlreadyOnTheBundleUnwritten(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "smapi-1.0.0", bundle())
+	a := mustCreate(t, e, "a")
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(filepath.Dir(e.mods(a.ID)), "profile.json")
+	b, err := fsx.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// An old updated time, so a rewrite shows even within the same second.
+	before := regexp.MustCompile(`"updated": *"[^"]*"`).ReplaceAll(b, []byte(`"updated": "2000-01-01T00:00:00Z"`))
+	if err := fsx.WriteFile(path, before, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
+		t.Fatal(err)
+	}
+	if after, _ := fsx.ReadFile(path); string(after) != string(before) {
+		t.Fatalf("profile rewritten by a bundle it already holds:\n%s\n%s", before, after)
 	}
 }
 
