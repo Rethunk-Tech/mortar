@@ -20,6 +20,21 @@ test('Game Select lists Stardew Valley before Lethal Company, which the sandbox 
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
 })
 
+test('hovering a Game Select tile grows it and dims the others without changing layout', async ({
+  page,
+}) => {
+  await openSeedFarm(page)
+  await page.getByRole('button', { name: 'Game select' }).click()
+  const tiles = page.locator('[data-tile]')
+  await expect(tiles).toHaveCount(2)
+  const layout = () => tiles.evaluateAll((els) => els.map((e) => [e.clientWidth, e.clientHeight]))
+  const before = await layout()
+  await tiles.first().hover()
+  await expect(tiles.last()).toHaveCSS('filter', 'brightness(0.6)')
+  await expect(tiles.first()).toHaveCSS('transform', 'matrix(1.04, 0, 0, 1.04, 0, 0)')
+  expect(await layout()).toEqual(before)
+})
+
 test('Browse defaults to All sources and a search shows results from more than one source', async ({
   page,
 }) => {

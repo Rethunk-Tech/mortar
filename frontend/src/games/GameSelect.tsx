@@ -37,6 +37,8 @@ const TILE_MIN_WIDTH_PX = 560
 const TILE_COMPACT_PX = 144
 const SMALL_FONT = 13
 const NORMAL_FONT = 15
+const HOVER_MS = 200
+const HOVER_EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
 const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
 
 function fail(title: string, err: unknown) {
@@ -56,9 +58,12 @@ function Art({ src, openable }: { src: string; openable: boolean }) {
     <>
       <Box
         component="img"
+        data-art=""
         src={src}
         alt=""
         sx={{
+          // Slightly oversized so the parallax shift on hover never shows an edge.
+          transform: 'scale(1.06)',
           position: 'absolute',
           inset: 0,
           width: '100%',
@@ -274,8 +279,33 @@ export function Row({
       ? { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: '-2px' }
       : {}),
   } as const
-  return <Box sx={sx}>{content}</Box>
+  return (
+    <Box data-tile="" sx={sx}>
+      {content}
+    </Box>
+  )
 }
+
+// Hover focus on the grid: the hovered tile grows, the rest shrink and dim, and the art drifts opposite ways. Only
+// transform and filter change, so the grid never reflows (animating flex-grow or width jumped in WebKitGTK).
+const hoverFocus = {
+  '@media (hover: hover) and (prefers-reduced-motion: no-preference)': {
+    '& [data-tile]': {
+      willChange: 'transform, filter',
+      transition: `transform ${HOVER_MS}ms ${HOVER_EASE}, filter ${HOVER_MS}ms ${HOVER_EASE}`,
+    },
+    '& [data-art]': { transition: `transform ${HOVER_MS}ms ${HOVER_EASE}` },
+    '& [data-tile]:hover': { transform: 'scale(1.04)', zIndex: 1 },
+    '&:has([data-tile]:hover) [data-tile]:not(:hover)': {
+      transform: 'scale(0.96)',
+      filter: 'brightness(0.6)',
+    },
+    '& [data-tile]:hover [data-art]': { transform: 'scale(1.12) translateX(-2%)' },
+    '&:has([data-tile]:hover) [data-tile]:not(:hover) [data-art]': {
+      transform: 'scale(1.12) translateX(2%)',
+    },
+  },
+} as const
 
 export function GameSelect() {
   const { t } = useLingui()
@@ -296,6 +326,7 @@ export function GameSelect() {
           display: 'grid',
           gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${TILE_MIN_WIDTH_PX}px), 1fr))`,
           gridAutoRows: `minmax(${TILE_MIN_PX}px, 1fr)`,
+          ...hoverFocus,
         }}
       >
         {ordered(status.games).map((g) => (
