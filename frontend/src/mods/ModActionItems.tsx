@@ -101,6 +101,7 @@ export function ModActionItems({
   onRemoveOther,
   labels,
   splitCombine,
+  trailing,
 }: {
   actions: ModAction[]
   items: Record<ModAction | 'reinstall', { label: string; icon: ReactNode; run: () => void }>
@@ -115,6 +116,7 @@ export function ModActionItems({
   onRemoveOther: () => void
   labels: { manifest: string; category: string; alsoAdd: string; addBundle: string }
   splitCombine: ReactNode
+  trailing: ReactNode[]
 }) {
   const { t } = useLingui()
   const lockedTip = t`Stop the game to change mods.`
@@ -217,6 +219,7 @@ export function ModActionItems({
   if (splitCombine) {
     result.push(splitCombine)
   }
+  result.push(...trailing)
   if (has('remove')) {
     result.push(<Divider key="remove-divider" />)
     result.push(

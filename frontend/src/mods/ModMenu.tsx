@@ -87,6 +87,7 @@ function ModMenuItems({
   onAlsoAdd,
   onAddBundle,
   onRemoveOther,
+  trailing,
 }: {
   mod: Mod
   close: () => void
@@ -94,6 +95,7 @@ function ModMenuItems({
   onAlsoAdd: () => void
   onAddBundle: () => void
   onRemoveOther: () => void
+  trailing: ReactNode[]
 }) {
   const { t } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
@@ -207,6 +209,7 @@ function ModMenuItems({
         addBundle: t`Add to bundle…`,
       },
       splitCombine,
+      trailing,
     }),
   ]
 }
@@ -286,15 +289,20 @@ function ModActionMenu({
           onAlsoAdd={() => setAlsoOpen(true)}
           onAddBundle={() => setBundleOpen(true)}
           onRemoveOther={() => setRemoveOtherOpen(true)}
+          trailing={[
+            <PackageMoveItems key="package-move" mod={mod} close={onClose} />,
+            <ModGroupItems
+              key="groups"
+              profile={profile}
+              entryKey={mod.key}
+              close={onClose}
+              onAdd={() => setGroupOpen(true)}
+            />,
+            update ? (
+              <EverywhereMenuItem key="everywhere" game={game} id={mod.id} close={onClose} />
+            ) : null,
+          ]}
         />
-        <PackageMoveItems mod={mod} close={onClose} />
-        <ModGroupItems
-          profile={profile}
-          entryKey={mod.key}
-          close={onClose}
-          onAdd={() => setGroupOpen(true)}
-        />
-        {update ? <EverywhereMenuItem game={game} id={mod.id} close={onClose} /> : null}
       </Menu>
       <SetCategoryDialog
         open={categoryOpen}

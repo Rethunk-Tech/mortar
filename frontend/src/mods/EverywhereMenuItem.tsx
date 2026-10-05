@@ -1,8 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { MenuItem } from '@mui/material'
+import { RefreshCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { EverywherePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { PreviewEverywhere } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
+import { ICON_SIZE } from './menu.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 
 export function EverywhereMenuItem({
@@ -28,14 +30,14 @@ export function EverywhereMenuItem({
   const n = preview?.affected?.length ?? 0
   return (
     <>
-      <MenuItem
+      <MenuAction
+        icon={<RefreshCcw size={ICON_SIZE} />}
+        label={t`Update in all profiles (${n})`}
         onClick={() => {
           close()
           setOpen(true)
         }}
-      >
-        {t`Update in all profiles (${n})`}
-      </MenuItem>
+      />
       <EverywhereDialog
         open={open}
         game={game}
