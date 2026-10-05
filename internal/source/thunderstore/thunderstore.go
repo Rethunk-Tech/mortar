@@ -1,0 +1,113 @@
+// Package thunderstore is the Thunderstore source driver: search over a community's chunked package index, ror2mm
+// links, and package resolution for installs.
+package thunderstore
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"slices"
+	"strings"
+	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/source"
+)
+
+// BaseURL is the real site.
+const BaseURL = "https://thunderstore.io"
+
+// Driver searches Thunderstore. The zero value talks to the real site and caches under the user cache directory.
+type Driver struct {
+	HTTP *http.Client
+	URL  string
+	// CacheDir is Mortar's cache directory; the index lives in its thunderstore folder.
+	CacheDir string
+	// Now is the clock the hourly refresh reads; nil means time.Now.
+	Now func() time.Time
+}
+
+var _ = source.Register(Driver{})
+
+// ID is the catalog id.
+func (Driver) ID() string { return "thunderstore" }
+
+// Name is the site's name.
+func (Driver) Name() string { return "Thunderstore" }
+
+// Modes lists both ways: Mortar downloads packages itself, and ror2mm links hand one over.
+func (Driver) Modes() []source.Acquire { return []source.Acquire{source.Download, source.Handoff} }
+
+// PageURL is the package's page.
+func (d Driver) PageURL(key, owner, name string) string {
+	base := d.URL
+	if base == "" {
+		base = BaseURL
+	}
+	return base + "/c/" + key + "/p/" + owner + "/" + name + "/"
+}
+
+// score ranks a package against the query tokens: name over owner over summary; zero when a token matches nowhere.
+func score(p pkg, tokens []string) int {
+	name, owner, summary := strings.ToLower(p.Name), strings.ToLower(p.Owner), strings.ToLower(p.Summary)
+	total := 0
+	for _, t := range tokens {
+		switch {
+		case name == t:
+			total += 100
+		case strings.HasPrefix(name, t):
+			total += 60
+		case strings.Contains(name, t):
+			total += 40
+		case strings.Contains(owner, t):
+			total += 20
+		case strings.Contains(summary, t):
+			total += 5
+		default:
+			return 0
+		}
+	}
+	return total
+}
+
+// Search lists the community's packages matching the text, best match first and most downloaded among equals.
+func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
+	if q.Key == "" {
+		return source.Page{}, fmt.Errorf("game %q has no Thunderstore community", q.Game)
+	}
+	pk, err := d.packages(ctx, q.Key, source.UserAgent(q.Version)+" (+https://mortar.rethunk.tech)")
+	if err != nil {
+		return source.Page{}, err
+	}
+	tokens := strings.Fields(strings.ToLower(q.Text))
+	type hit struct {
+		p     pkg
+		score int
+	}
+	var hits []hit
+	for _, p := range pk {
+		if p.Hidden {
+			continue
+		}
+		if s := score(p, tokens); s > 0 || len(tokens) == 0 {
+			hits = append(hits, hit{p, s})
+		}
+	}
+	slices.SortStableFunc(hits, func(a, b hit) int {
+		if a.score != b.score {
+			return b.score - a.score
+		}
+		return b.p.Downloads - a.p.Downloads
+	})
+	start := max(q.Page-source.FirstPage, 0) * source.PageSize
+	end := min(start+source.PageSize, len(hits))
+	items := make([]source.Item, 0, max(end-start, 0))
+	for i := start; i < end; i++ {
+		p := hits[i].p
+		items = append(items, source.Item{
+			Source: d.ID(), ID: p.Owner + "-" + p.Name, Name: p.Name, Summary: p.Summary, Author: p.Owner,
+			Version: p.Versions[0].Number, Picture: p.Icon, Endorsements: p.Rating, Downloads: p.Downloads,
+			Updated: p.Updated, URL: p.URL,
+		})
+	}
+	return source.Page{Total: len(hits), Items: items}, nil
+}
