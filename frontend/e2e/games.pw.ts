@@ -34,9 +34,17 @@ test('Browse defaults to All sources and a search shows results from more than o
   await expect(page.getByLabel('Open on GitHub').first()).toBeVisible({ timeout: SEARCH_WAIT_MS })
 })
 
-test('the game switch is present while two games are playable', async ({ page }) => {
+test('the game title opens a switcher listing both playable games', async ({ page }) => {
   await openSeedFarm(page)
-  await expect(page.getByRole('button', { name: 'Switch game' })).toHaveCount(1)
+  await page.getByRole('button', { name: 'Stardew Valley' }).first().click()
+  const switcher = page.getByRole('dialog', { name: 'Switch game' })
+  await expect(switcher.getByRole('button', { name: 'Open Lethal Company' })).toBeVisible()
+  await expect(switcher.getByRole('button', { name: 'Open Stardew Valley' })).toHaveAttribute(
+    'aria-current',
+    'true',
+  )
+  await page.keyboard.press('Escape')
+  await expect(switcher).toBeHidden()
 })
 
 test('Settings › Mods and profiles has the adult-mods switch, off by default', async ({ page }) => {
