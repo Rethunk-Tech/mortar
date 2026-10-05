@@ -38,11 +38,16 @@ sign() { gpg --batch --yes --local-user "$FPR" "$@"; }
 }
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
-# Containers write as root; hand the tree back to the caller afterwards.
+# Rootful containers write as root, so the tree is handed back to the caller afterwards. Under rootless podman the
+# container's root already is the caller, and a chown to the caller's id would map to a subordinate id instead.
+handback="chown -R $(id -u):$(id -g) /out"
+if [ "$("$CT" info --format '{{.Host.Security.Rootless}}' 2>/dev/null)" = true ]; then
+  handback=true
+fi
 run() {
   {
     cat
-    echo "chown -R $(id -u):$(id -g) /out"
+    echo "$handback"
   } | $CT run --rm -i -v "$OUT":/out -w /out "$1" sh -es
 }
 

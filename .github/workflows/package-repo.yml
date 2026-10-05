@@ -1,0 +1,50 @@
+name: Package repository
+
+# Rebuilds the signed apt, dnf and pacman repository from a published release's packages, for a release whose own
+# package-repo job failed or whose repository must be rebuilt for a deploy. release.yml builds it for each new tag.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published release tag, for example v0.2.0
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.tag }}
+  cancel-in-progress: true
+
+jobs:
+  package-repo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -D bin -p '*.deb' -p '*.rpm' -p '*.pkg.tar.zst'
+
+      - name: Build the package repository
+        env:
+          REPO_KEY: ${{ secrets.MORTAR_REPO_GPG_KEY }}
+        run: |
+          set -euo pipefail
+          key="$RUNNER_TEMP/repo.key"
+          trap 'rm -f "$key"' EXIT
+          (umask 077 && printf '%s\n' "$REPO_KEY" >"$key")
+          MORTAR_REPO_KEY="$key" scripts/package-repo.sh bin "$RUNNER_TEMP/packages"
+
+      - name: Upload the package repository
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: package-repo-${{ inputs.tag }}
+          path: ${{ runner.temp }}/packages
+          if-no-files-found: error
