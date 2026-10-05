@@ -1,6 +1,7 @@
 package gmcm
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -24,46 +25,98 @@ func ParseSetFlag(spec string) (page string, index int, value string, err error)
 	return page, index, value, nil
 }
 
-func EditFromCapture(menu Capture, page string, index int, value string) (Edit, error) {
+// EditFromCapture builds the pending edit that sets one captured option to raw, refusing an option the bridge cannot
+// set, a value of the wrong type, one outside the option's range, and one the option does not offer.
+func EditFromCapture(menu Capture, page string, index int, raw string) (Edit, error) {
+	opt, err := Find(menu, page, index)
+	if err != nil {
+		return Edit{}, err
+	}
+	if !opt.Editable {
+		return Edit{}, fmt.Errorf("gmcm: %q can only be changed in the game", opt.Name)
+	}
+	value, err := coerceValue(opt, raw)
+	if err != nil {
+		return Edit{}, fmt.Errorf("gmcm: %q: %w", opt.Name, err)
+	}
+	fieldID := ""
+	if opt.FieldID != nil {
+		fieldID = *opt.FieldID
+	}
+	return Edit{Page: page, Index: opt.Index, Kind: opt.Kind, FieldID: fieldID, Name: opt.Name, Value: value}, nil
+}
+
+// Find is the option at index on page.
+func Find(menu Capture, page string, index int) (Option, error) {
 	for _, p := range menu.Pages {
 		if p.ID != page {
 			continue
 		}
 		for _, opt := range p.Options {
-			if opt.Index != index {
-				continue
+			if opt.Index == index {
+				return opt, nil
 			}
-			fieldID := ""
-			if opt.FieldID != nil {
-				fieldID = *opt.FieldID
-			}
-			parsed, err := coerceValue(opt.Kind, value)
-			if err != nil {
-				return Edit{}, err
-			}
-			return Edit{
-				Page:    p.ID,
-				Index:   opt.Index,
-				Kind:    opt.Kind,
-				FieldID: fieldID,
-				Name:    opt.Name,
-				Value:   parsed,
-			}, nil
 		}
-		return Edit{}, fmt.Errorf("gmcm: no option %s/%d", page, index)
+		return Option{}, fmt.Errorf("gmcm: no option %s/%d", page, index)
 	}
-	return Edit{}, fmt.Errorf("gmcm: no page %s", page)
+	return Option{}, fmt.Errorf("gmcm: no page %q", page)
 }
 
-func coerceValue(kind, raw string) (any, error) {
-	switch kind {
+// Text is a captured or pending value as the option's text: true/false, a number, or the string itself.
+func Text(v any) string {
+	switch x := v.(type) {
+	case nil:
+		return ""
+	case string:
+		return x
+	case float64:
+		return strconv.FormatFloat(x, 'f', -1, 64)
+	default:
+		return fmt.Sprint(x)
+	}
+}
+
+func coerceValue(opt Option, raw string) (any, error) {
+	switch opt.Kind {
 	case "bool":
 		return strconv.ParseBool(raw)
-	case "int":
-		return strconv.Atoi(raw)
-	case "float":
-		return strconv.ParseFloat(raw, 64)
+	case "int", "float":
+		var n float64
+		if opt.Kind == "int" {
+			i, err := strconv.Atoi(raw)
+			if err != nil {
+				return nil, errors.New("not a whole number")
+			}
+			n = float64(i)
+		} else {
+			f, err := strconv.ParseFloat(raw, 64)
+			if err != nil {
+				return nil, errors.New("not a number")
+			}
+			n = f
+		}
+		if opt.Min != nil && n < *opt.Min || opt.Max != nil && n > *opt.Max {
+			return nil, fmt.Errorf("%s is outside %s to %s", raw, Text(deref(opt.Min)), Text(deref(opt.Max)))
+		}
+		if opt.Kind == "int" {
+			return int(n), nil
+		}
+		return n, nil
+	case "choice":
+		for _, c := range opt.Choices {
+			if Text(c.Value) == raw {
+				return c.Value, nil
+			}
+		}
+		return nil, fmt.Errorf("%q is not one of its choices", raw)
 	default:
 		return raw, nil
 	}
+}
+
+func deref(p *float64) any {
+	if p == nil {
+		return nil
+	}
+	return *p
 }

@@ -8,25 +8,35 @@ type ModInfo struct {
 	Version string `json:"version"`
 }
 
+// The capture, pending and result files are the bridge's (mortar-smapi-bridge Gmcm/GmcmModels.cs); testdata holds
+// copies of the fixtures its tests write, so the two sides cannot drift apart unnoticed.
+
+// Choice is one value a choice option offers. Value is a string for a choice, a number for an image picker.
 type Choice struct {
-	Value string `json:"value"`
+	Value any    `json:"value"`
+	Label string `json:"label"`
+}
+
+// FormatSample is how the mod displays one value of a numeric option.
+type FormatSample struct {
+	Value any    `json:"value"`
 	Label string `json:"label"`
 }
 
 type Option struct {
-	Index           int      `json:"index"`
-	Kind            string   `json:"kind"`
-	FieldID         *string  `json:"fieldId"`
-	Name            string   `json:"name"`
-	Tooltip         string   `json:"tooltip"`
-	Value           any      `json:"value"`
-	Min             *float64 `json:"min"`
-	Max             *float64 `json:"max"`
-	Interval        *float64 `json:"interval"`
-	Choices         []Choice `json:"choices"`
-	FormatSamples   []string `json:"formatSamples"`
-	Editable        bool     `json:"editable"`
-	TitleScreenOnly bool     `json:"titleScreenOnly"`
+	Index           int            `json:"index"`
+	Kind            string         `json:"kind"`
+	FieldID         *string        `json:"fieldId"`
+	Name            string         `json:"name"`
+	Tooltip         string         `json:"tooltip"`
+	Value           any            `json:"value"`
+	Min             *float64       `json:"min"`
+	Max             *float64       `json:"max"`
+	Interval        *float64       `json:"interval"`
+	Choices         []Choice       `json:"choices"`
+	FormatSamples   []FormatSample `json:"formatSamples"`
+	Editable        bool           `json:"editable"`
+	TitleScreenOnly bool           `json:"titleScreenOnly"`
 }
 
 type Page struct {
@@ -65,6 +75,6 @@ type Skipped struct {
 
 type Result struct {
 	Schema  int       `json:"schema"`
-	Applied int       `json:"applied"`
+	Applied []Edit    `json:"applied"`
 	Skipped []Skipped `json:"skipped"`
 }

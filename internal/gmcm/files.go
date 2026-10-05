@@ -26,6 +26,9 @@ func CapturePath(profileDir string, id mod.ID) string {
 	return filepath.Join(profileDir, captureDir, fileName(id)+".json")
 }
 
+// PendingFolder holds the profile's pending edit files and the bridge's result files.
+func PendingFolder(profileDir string) string { return filepath.Join(profileDir, pendingDir) }
+
 func PendingPath(profileDir string, id mod.ID) string {
 	return filepath.Join(profileDir, pendingDir, fileName(id)+".json")
 }

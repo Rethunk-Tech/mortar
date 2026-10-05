@@ -160,7 +160,7 @@ func applyOption(e *Entry, o gmcm.Option) {
 	if len(o.Choices) > 0 {
 		e.Type = TypeEnum
 		for _, c := range o.Choices {
-			e.Values = append(e.Values, c.Value)
+			e.Values = append(e.Values, gmcm.Text(c.Value))
 		}
 	}
 }

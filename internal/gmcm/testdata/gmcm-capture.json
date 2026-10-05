@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "mod": {
+    "id": "demo.Mod",
+    "name": "Demo",
+    "version": "1.0.0"
+  },
+  "gmcmVersion": "1.12.0",
+  "capturedAt": "2026-01-02T03:04:05.0000000\u002B00:00",
+  "titleScreenOnlyDefault": true,
+  "pages": [
+    {
+      "id": "",
+      "options": [
+        {
+          "index": 0,
+          "kind": "bool",
+          "fieldId": "enableFeature",
+          "name": "Enable feature",
+          "tooltip": "on/off",
+          "value": true,
+          "editable": true,
+          "titleScreenOnly": false
+        },
+        {
+          "index": 1,
+          "kind": "string",
+          "name": "Player name",
+          "tooltip": "",
+          "value": "Alex",
+          "editable": true,
+          "titleScreenOnly": false
+        },
+        {
+          "index": 2,
+          "kind": "int",
+          "fieldId": "count",
+          "name": "Count",
+          "tooltip": "",
+          "value": 3,
+          "min": 1,
+          "max": 5,
+          "interval": 2,
+          "formatSamples": [
+            {
+              "value": 1,
+              "label": "n=1"
+            },
+            {
+              "value": 3,
+              "label": "n=3"
+            },
+            {
+              "value": 5,
+              "label": "n=5"
+            }
+          ],
+          "editable": true,
+          "titleScreenOnly": false
+        },
+        {
+          "index": 3,
+          "kind": "choice",
+          "fieldId": "pick",
+          "name": "Pick",
+          "tooltip": "",
+          "value": "b",
+          "choices": [
+            {
+              "value": "a",
+              "label": "Aye"
+            },
+            {
+              "value": "b",
+              "label": "Bee"
+            }
+          ],
+          "editable": true,
+          "titleScreenOnly": false
+        },
+        {
+          "index": 4,
+          "kind": "sectionTitle",
+          "name": "Section",
+          "tooltip": "",
+          "editable": false,
+          "titleScreenOnly": false
+        },
+        {
+          "index": 5,
+          "kind": "pageLink",
+          "name": "More",
+          "tooltip": "",
+          "value": "extra",
+          "editable": false,
+          "titleScreenOnly": false
+        },
+        {
+          "index": 6,
+          "kind": "complex",
+          "name": "Opaque",
+          "tooltip": "",
+          "editable": false,
+          "titleScreenOnly": false
+        },
+        {
+          "index": 7,
+          "kind": "color",
+          "name": "Tint",
+          "tooltip": "",
+          "value": {
+            "r": 10,
+            "g": 20,
+            "b": 30,
+            "a": 40,
+            "showAlpha": true,
+            "style": 2
+          },
+          "editable": true,
+          "titleScreenOnly": false
+        },
+        {
+          "index": 8,
+          "kind": "image",
+          "name": "Portrait",
+          "tooltip": "",
+          "value": 1,
+          "max": 2,
+          "choices": [
+            {
+              "value": 0,
+              "label": "one"
+            },
+            {
+              "value": 1,
+              "label": "two"
+            },
+            {
+              "value": 2,
+              "label": "three"
+            }
+          ],
+          "editable": true,
+          "titleScreenOnly": false
+        }
+      ]
+    },
+    {
+      "id": "extra",
+      "title": "Extras",
+      "options": [
+        {
+          "index": 0,
+          "kind": "paragraph",
+          "name": "Hello",
+          "tooltip": "",
+          "editable": false,
+          "titleScreenOnly": false
+        }
+      ]
+    }
+  ]
+}
