@@ -151,6 +151,8 @@ CI only attaches a single-file `.flatpak` for people who sideload, built by `bui
 wails3 task components:refresh
 ```
 
+The source's `games` array is the game catalog and is copied into the manifest as is: each game's `stores`, `loaders`, `sources`, `metadata`, `paths` and `r2modmanFolder` come from there, and a key the `GameInfo` type does not know is dropped, so add a new field to `internal/components` before using it in the source. Without `MORTAR_UPDATE_KEY` the generator writes an unsigned manifest, so a dry run needs no key: `go run ./cmd/components -output "$T/components.json" -bundled "$T/bundled.json" -signature "$T/sig"` into a temp dir `$T` (it still reads the components' GitHub releases) leaves the repo untouched, and `bundled.json` should equal `internal/components/components.json` except for `serial`. The generator resolves `github.com` components only and the kinds `loader` and `bridge`.
+
 The repository secret `MORTAR_UPDATE_KEY` contains the PEM contents, as for releases. Run the Components workflow manually from Actions, or dispatch it from a component release:
 
 ```sh
