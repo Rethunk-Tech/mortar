@@ -4,6 +4,7 @@ import type {
   Source,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { sameId } from '../mods/lookup.ts'
+import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 
 const DISCORD_LIMIT = 2000
@@ -27,7 +28,7 @@ const defaultLabels: GroupLabels = { enabled: 'On', disabled: 'Switched off' }
 
 function pageUrl(source: Source): string {
   if (source.kind === 'nexus' && source.modId) {
-    return nexusModUrl(source.modId)
+    return nexusModUrl(source.modId, nexusDomain())
   }
   if (source.kind === 'github' && source.repo) {
     return `https://github.com/${source.repo}`

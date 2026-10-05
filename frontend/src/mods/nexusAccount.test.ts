@@ -15,7 +15,7 @@ test('tracked list matches this game by mod id', () => {
     { modId: 541, domainName: 'stardewvalley' },
     { modId: 1, domainName: 'skyrim' },
   ]
-  expect(isTracked(mods, 541)).toBe(true)
-  expect(isTracked(mods, 1)).toBe(false)
-  expect(isTracked(undefined, 541)).toBe(false)
+  expect(isTracked(mods, 541, 'stardewvalley')).toBe(true)
+  expect(isTracked(mods, 1, 'stardewvalley')).toBe(false)
+  expect(isTracked(undefined, 541, 'stardewvalley')).toBe(false)
 })

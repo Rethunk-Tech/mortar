@@ -9,11 +9,12 @@ import {
   TrackedMods,
   Untrack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { isAbstained, isEndorsed, isTracked, type TrackedMod } from './nexusAccount.ts'
-import { NEXUS_DOMAIN } from './nexusUrl.ts'
+import { nexusDomain } from './nexusDomain.ts'
 
 export function NexusAccountActions({
   modId,
@@ -61,7 +62,7 @@ export function NexusAccountActions({
     return null
   }
 
-  const tracked = isTracked(mods, modId)
+  const tracked = isTracked(mods, modId, nexusDomain())
   const endorsed = isEndorsed(status)
   const abstained = isAbstained(status)
   return (
@@ -74,7 +75,7 @@ export function NexusAccountActions({
         onClick={() =>
           run(
             async () => {
-              setStatus(await Endorse(modId, version))
+              setStatus(await Endorse(currentGame(), modId, version))
             },
             { errorTitle: t`Could not endorse` },
           )
@@ -90,7 +91,7 @@ export function NexusAccountActions({
         onClick={() =>
           run(
             async () => {
-              setStatus(await Abstain(modId, version))
+              setStatus(await Abstain(currentGame(), modId, version))
             },
             { errorTitle: t`Could not abstain` },
           )
@@ -107,7 +108,7 @@ export function NexusAccountActions({
           onClick={() =>
             run(
               async () => {
-                await Untrack(modId)
+                await Untrack(currentGame(), modId)
                 setMods((cur) => (cur ?? []).filter((m) => m.modId !== modId))
               },
               { errorTitle: t`Could not untrack` },
@@ -125,10 +126,10 @@ export function NexusAccountActions({
           onClick={() =>
             run(
               async () => {
-                await Track(modId)
+                await Track(currentGame(), modId)
                 setMods((cur) => [
                   ...(cur ?? []).filter((m) => m.modId !== modId),
-                  { modId, domainName: NEXUS_DOMAIN },
+                  { modId, domainName: nexusDomain() },
                 ])
               },
               { errorTitle: t`Could not track` },

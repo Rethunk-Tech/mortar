@@ -48,6 +48,7 @@ import { ExtraFolderMenu } from './ExtraFolderMenu.tsx'
 import { onFilterFocus } from './filterFocus.ts'
 import { type GroupBy, sanitizeListGroupBy } from './group.ts'
 import { openPage } from './menu.ts'
+import { nexusDomain } from './nexusDomain.ts'
 import { nexusModsUrl } from './nexusUrl.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
@@ -259,7 +260,7 @@ function BrowseNexus({
           openSettings('nexus')
           return
         }
-        openPage(nexusModsUrl()).catch(reportUnexpected)
+        openPage(nexusModsUrl(nexusDomain())).catch(reportUnexpected)
       }}
       sx={toolbar ? iconWhenCompact : undefined}
     >

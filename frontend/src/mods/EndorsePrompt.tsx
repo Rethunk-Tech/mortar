@@ -13,6 +13,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useLaunch } from '../launch/store.ts'
+import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey } from './dependents.ts'
@@ -129,7 +130,7 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
                 disabled={busy.includes(prompt.modId)}
                 onClick={() =>
                   run(prompt.modId, async () => {
-                    await Endorse(prompt.modId, prompt.version)
+                    await Endorse(currentGame(), prompt.modId, prompt.version)
                     await EndorsePromptNever(prompt.modId)
                   })
                 }

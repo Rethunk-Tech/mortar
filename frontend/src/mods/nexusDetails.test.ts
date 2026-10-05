@@ -42,7 +42,7 @@ const page = (id: number): Details => ({
 
 mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts', () => ({
   CachedDetails: async () => cached,
-  Details: async (id: number) => {
+  Details: async (_game: string, id: number) => {
     loads.push(id)
     return page(id)
   },

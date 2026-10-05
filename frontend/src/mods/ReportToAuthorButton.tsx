@@ -33,7 +33,7 @@ import { useMortarUpdate } from '../settings/updates.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { entryOf, nexusIdOf } from './lookup.ts'
-import { NEXUS_DOMAIN } from './nexusUrl.ts'
+import { nexusDomain } from './nexusDomain.ts'
 import { buildModReport, type ModReportFields, modErrorLines } from './reportToAuthor.ts'
 
 const buttonSx = { whiteSpace: 'nowrap' } as const
@@ -62,7 +62,7 @@ function reportFields(input: ReportFieldsInput): ModReportFields {
     errorLines: entries ? modErrorLines(entries, modLogName) : [],
     logShareURL,
     source,
-    nexusDomain: NEXUS_DOMAIN,
+    nexusDomain: nexusDomain(),
     githubRepo: source?.kind === 'github' ? (source.repo ?? '') : '',
     nexusModId: nexusIdOf(profile, mod),
     issueTitle,

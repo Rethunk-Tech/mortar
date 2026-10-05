@@ -23,12 +23,12 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { nxmShowCategory, nxmShowWithIcon } from './minimisedNotice.ts'
-import { directProfile, NXM_GAME } from './route.ts'
+import { directProfile } from './route.ts'
 
 const rejectionText = (reason: string): string => {
   switch (reason) {
     case 'game':
-      return i18n._(msg`Mortar takes Stardew Valley links only.`)
+      return i18n._(msg`Mortar does not manage mods for that game.`)
     case 'expired':
       return i18n._(msg`The link has expired. Click Mod Manager Download on Nexus again.`)
     case 'user':
@@ -43,7 +43,7 @@ const rejectionText = (reason: string): string => {
 // A desktop notification stands in for the on-screen prompt while the window is minimised, or, for a link that
 // waits for a profile, while it is behind another window: an nxm link never raises Mortar. Clicking it or Show
 // raises the window (main.go OnNotificationResponse).
-const names = new Map<number, Promise<string>>()
+const names = new Map<string, Promise<string>>()
 
 async function notify(arrival: Arrival, title: string, body: string, evenUnfocused = false) {
   const unseen = (await Window.IsMinimised()) || (evenUnfocused && !(await Window.IsFocused()))
@@ -57,14 +57,14 @@ async function notify(arrival: Arrival, title: string, body: string, evenUnfocus
 
 async function install(arrival: Arrival, profile: Profile) {
   try {
-    await Assign(arrival.id, NXM_GAME, profile.id)
+    await Assign(arrival.id, arrival.link.game, profile.id)
   } catch (e) {
     // Nothing downloads, so the prompt keeps the link for another profile to take.
     toastError(i18n._(msg`Could not start the Nexus download`), e)
     useNxm.getState().add(arrival)
     return
   }
-  const name = await modName(arrival.link.modId)
+  const name = await modName(arrival.link.game, arrival.link.modId)
   const profileName = profile.name
   const title = i18n._(msg`Downloading ${name} into ${profileName}`)
   useToasts.getState().push({ kind: 'info', title })
@@ -74,16 +74,17 @@ async function install(arrival: Arrival, profile: Profile) {
 export const fallbackName = (modId: number) => i18n._(msg`Nexus mod ${modId}`)
 
 // The mod's Nexus page title, fetched once per mod; the fallback stands in when signed out or offline.
-export function modName(modId: number): Promise<string> {
-  let name = names.get(modId)
+export function modName(game: string, modId: number): Promise<string> {
+  const key = `${game}:${modId}`
+  let name = names.get(key)
   if (!name) {
-    name = ModName(modId)
+    name = ModName(game, modId)
       .then((n) => n || fallbackName(modId))
       .catch(() => {
-        names.delete(modId)
+        names.delete(key)
         return fallbackName(modId)
       })
-    names.set(modId, name)
+    names.set(key, name)
   }
   return name
 }
@@ -94,14 +95,15 @@ export const useNxm = create<{
   // Rejects when Mortar refuses the download; the arrival stays for the prompt to show why.
   choose: (id: number, profile: string) => Promise<void>
   dismiss: (id: number) => void
-}>((set) => ({
+}>((set, get) => ({
   arrivals: [],
   add: (arrival) =>
     set((s) =>
       s.arrivals.some((a) => a.id === arrival.id) ? s : { arrivals: [...s.arrivals, arrival] },
     ),
   choose: async (id, profile) => {
-    await Assign(id, NXM_GAME, profile)
+    const game = get().arrivals.find((a) => a.id === id)?.link.game ?? ''
+    await Assign(id, game, profile)
     set((s) => ({ arrivals: s.arrivals.filter((a) => a.id !== id) }))
   },
   dismiss: (id) => {
@@ -123,13 +125,13 @@ export async function initNxm(): Promise<void> {
   }
   const arrive = (a: Arrival) => {
     const { game, openId, profiles } = useProfiles.getState()
-    const direct = directProfile(useNav.getState().route, game?.id, openId, profiles)
+    const direct = directProfile(useNav.getState().route, a.link.game, game?.id, openId, profiles)
     if (direct) {
       install(a, direct).catch(reportUnexpected)
       return
     }
     useNxm.getState().add(a)
-    modName(a.link.modId)
+    modName(a.link.game, a.link.modId)
       .then((name) =>
         notify(
           a,

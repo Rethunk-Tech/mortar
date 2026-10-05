@@ -8,6 +8,7 @@ import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { useDetail } from '../mods/detail.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
+import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { isGameId, useNav } from '../nav/store.ts'
@@ -50,7 +51,7 @@ async function openMod(a: Arrival): Promise<void> {
     }
     const modsState = useMods.getState()
     if (!selected && current && modsState.loaded && modsState.modsFor === current.id) {
-      const name = await ModName(modID).catch(() => '')
+      const name = await ModName(game, modID).catch(() => '')
       const label = name || i18n._(msg`Nexus mod ${modID}`)
       useToasts.getState().push({
         kind: 'warning',
@@ -60,7 +61,7 @@ async function openMod(a: Arrival): Promise<void> {
           run: () =>
             openImport({
               profileId: current.id,
-              link: nexusModUrl(modID),
+              link: nexusModUrl(modID, nexusDomain()),
             }),
         },
       })

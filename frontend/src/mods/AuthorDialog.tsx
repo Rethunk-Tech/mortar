@@ -21,6 +21,7 @@ import { openPage } from './menu.ts'
 import { modsByAuthor } from './modsByAuthor.ts'
 import { nexusAuthorPageUrl } from './nexusAuthorPage.ts'
 import { useNexusEntry } from './nexusDetails.ts'
+import { nexusDomain } from './nexusDomain.ts'
 import { nexusModUrl } from './nexusUrl.ts'
 
 const text = { fontSize: 13 } as const
@@ -31,7 +32,7 @@ function modPageUrl(profile: Profile, mod: Mod): string {
   if (source?.kind !== 'nexus' || !source.modId) {
     return ''
   }
-  return nexusModUrl(source.modId)
+  return nexusModUrl(source.modId, nexusDomain())
 }
 
 function ModRow({

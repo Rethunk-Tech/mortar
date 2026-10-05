@@ -10,6 +10,7 @@ import { Fold } from '../shell/Fold.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { openPage } from './menu.ts'
+import { nexusDomain } from './nexusDomain.ts'
 import { nexusModUrl } from './nexusUrl.ts'
 import { plainDescription } from './optionalFiles.ts'
 import { useLocked } from './useLocked.ts'
@@ -170,7 +171,7 @@ export function NexusOptional({
         <Button
           size="small"
           variant="outlined"
-          onClick={() => openPage(nexusModUrl(modId, undefined, 'files'))}
+          onClick={() => openPage(nexusModUrl(modId, nexusDomain(), 'files'))}
         >
           {t`Open files page`}
         </Button>

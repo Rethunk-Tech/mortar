@@ -21,6 +21,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useDetail } from '../mods/detail.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
+import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
@@ -130,7 +131,7 @@ function MoreActions({
             label={t`Open on Nexus`}
             onClick={() => {
               close()
-              openPage(nexusModUrl(nexusID)).catch(reportUnexpected)
+              openPage(nexusModUrl(nexusID, nexusDomain())).catch(reportUnexpected)
             }}
           />
         ) : null}

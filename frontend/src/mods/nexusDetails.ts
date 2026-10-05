@@ -7,6 +7,7 @@ import {
   Details as readDetails,
   Seen,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { currentFiles, isNewer } from './nexusFormat.ts'
@@ -72,7 +73,7 @@ useNexus.subscribe((s, prev) => {
 const loadDetails = (id: number) => {
   let read = reads.get(id)
   if (!read) {
-    read = readDetails(id).then(
+    read = readDetails(currentGame(), id).then(
       (details) => put(id, { details }),
       (e: unknown) => {
         reads.delete(id)
@@ -232,7 +233,7 @@ export async function mergeCachedDetails(ids: number[]): Promise<void> {
   if (unknown.length === 0) {
     return
   }
-  const cached = (await CachedDetails(unknown)) ?? {}
+  const cached = (await CachedDetails(currentGame(), unknown)) ?? {}
   useNexusDetails.setState((s) => {
     const next = { ...s.byId }
     for (const id of unknown) {

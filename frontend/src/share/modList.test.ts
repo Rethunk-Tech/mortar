@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { testProfile } from '../profiles/testProfile.ts'
 import {
   DISCORD_LIMIT,
@@ -32,6 +33,23 @@ const entry = (partial: Partial<Entry> & Pick<Entry, 'key' | 'source'>): Entry =
 const profile = (entries: Entry[]) => testProfile({ id: 'p1', name: 'Farm', entries })
 
 test('listItems drops bundled SMAPI and the bridge and keeps disabled mods', () => {
+  useProfiles.setState({
+    game: {
+      id: 'stardew',
+      name: 'Stardew Valley',
+      appId: '',
+      loader: '',
+      loaderId: '',
+      sources: [],
+      sourceKeys: { nexus: 'stardewvalley' },
+      available: true,
+      installed: true,
+      installDir: '',
+      artUrl: '',
+      store: 'steam',
+      installs: [],
+    },
+  })
   const items = listItems(
     profile([
       entry({

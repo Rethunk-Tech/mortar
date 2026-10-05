@@ -5,7 +5,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import type { Source } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { format } from '../console/filter.ts'
-import { NEXUS_DOMAIN, nexusModUrl } from './nexusUrl.ts'
+import { nexusModUrl } from './nexusUrl.ts'
 
 const MAX_ERROR_LINES = 20
 const MAX_GITHUB_BODY = 6000
@@ -120,7 +120,6 @@ function buildAuthorReportUrl(text: string, fields: ModReportFields): ModReportR
   if (modId <= 0 && source?.kind === 'nexus') {
     modId = source.modId ?? 0
   }
-  const domain = nexusDomain === '' ? NEXUS_DOMAIN : nexusDomain
   if (repo.trim() !== '') {
     return {
       text,
@@ -129,10 +128,10 @@ function buildAuthorReportUrl(text: string, fields: ModReportFields): ModReportR
       github: true,
     }
   }
-  if (modId > 0 && domain !== '') {
+  if (modId > 0 && nexusDomain !== '') {
     return {
       text,
-      url: nexusBugsURL(domain, modId),
+      url: nexusBugsURL(nexusDomain, modId),
       nexus: true,
       github: false,
     }

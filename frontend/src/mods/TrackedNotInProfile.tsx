@@ -15,6 +15,7 @@ import {
   TrackedMissing,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { currentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { openImport } from '../share/store.ts'
@@ -22,6 +23,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { openPage } from './menu.ts'
 import type { TrackedMod } from './nexusAccount.ts'
+import { nexusDomain } from './nexusDomain.ts'
 import { nexusModUrl } from './nexusUrl.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -43,7 +45,7 @@ function TrackedRow({
   useEffect(() => {
     let live = true
     setName(`${FALLBACK_PREFIX}${mod.modId}`)
-    ModName(mod.modId)
+    ModName(currentGame(), mod.modId)
       .then((n) => {
         if (live && n) {
           setName(n)
@@ -57,7 +59,7 @@ function TrackedRow({
       live = false
     }
   }, [mod.modId])
-  const url = nexusModUrl(mod.modId, mod.domainName)
+  const url = nexusModUrl(mod.modId, mod.domainName || nexusDomain())
   return (
     <Box
       sx={{

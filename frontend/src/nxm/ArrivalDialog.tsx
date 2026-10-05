@@ -25,37 +25,37 @@ import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
-import { NXM_GAME } from './route.ts'
 import { fallbackName, modName, useNxm } from './store.ts'
 
-function useModName(modId: number): string {
+function useModName(game: string, modId: number): string {
   const [name, setName] = useState(() => fallbackName(modId))
   useEffect(() => {
     let live = true
     setName(fallbackName(modId))
-    modName(modId)
+    modName(game, modId)
       .then((n) => live && setName(n))
       .catch(reportUnexpected)
     return () => {
       live = false
     }
-  }, [modId])
+  }, [game, modId])
   return name
 }
 
 function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const { t } = useLingui()
+  const game = arrival.link.game
   const choose = useNxm((s) => s.choose)
   const arrivals = useNxm((s) => s.arrivals)
   const dismiss = useNxm((s) => s.dismiss)
-  const lastId = useSettings((s) => gamePrefs(s).nxmDefaultProfile || s.lastProfile?.[NXM_GAME])
-  const name = useModName(arrival.link.modId)
+  const lastId = useSettings((s) => gamePrefs(s, game).nxmDefaultProfile || s.lastProfile?.[game])
+  const name = useModName(game, arrival.link.modId)
   const file = useNexusDetails((s) =>
     s.byId[arrival.link.modId]?.details?.files?.find((f) => f.fileId === arrival.link.fileId),
   )
   // New profile creates in the game the profiles store has open, so it is offered only when that is this game.
-  const canCreate = useProfiles((s) => s.game?.id === NXM_GAME)
-  const gameName = useProfiles((s) => s.game?.name ?? '')
+  const canCreate = useProfiles((s) => s.game?.id === game)
+  const gameName = useProfiles((s) => (s.game?.id === game ? s.game.name : game))
   const [profiles, setProfiles] = useState<Profile[] | null>(null)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [creating, setCreating] = useState(false)
@@ -63,13 +63,13 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const [error, setError] = useState<InlineError | null>(null)
   const [applyAll, setApplyAll] = useState(false)
   const load = useCallback(() => {
-    List(NXM_GAME)
+    List(game)
       .then((list) => setProfiles((list ?? []).filter((p) => !p.hidden)))
       .catch((e: unknown) => {
         setProfiles([])
         reportUnexpected(e)
       })
-  }, [])
+  }, [game])
   useEffect(load, [load])
   const open = profiles?.find((p) => p.id === lastId) ?? profiles?.[0]
   const others = profiles?.filter((p) => p.id !== open?.id) ?? []

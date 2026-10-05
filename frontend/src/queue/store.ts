@@ -21,6 +21,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { considerMissing } from '../install/store.ts'
 import { idKey } from '../mods/dependents.ts'
+import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { profileLocked } from '../mods/useLocked.ts'
@@ -118,7 +119,7 @@ function failureToast(item: Item) {
       body: item.error,
       action: {
         label: i18n._(msg`Open files page`),
-        run: () => Browser.OpenURL(nexusModUrl(item.modId, undefined, 'files')),
+        run: () => Browser.OpenURL(nexusModUrl(item.modId, nexusDomain(), 'files')),
       },
     }
   }
