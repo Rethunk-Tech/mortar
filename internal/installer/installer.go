@@ -52,6 +52,8 @@ const (
 	TargetMods = "mods"
 	// TargetProfile is the profile's root folder, where BepInEx keeps its plugins and config.
 	TargetProfile = "profile"
+	// TargetConfig is BepInEx's config folder, a target of its own because the game writes to it.
+	TargetConfig = "config"
 )
 
 // File is one file of a layout: Src is its slash path in the archive, Rel where it goes below the target's root.

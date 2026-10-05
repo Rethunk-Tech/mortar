@@ -204,6 +204,9 @@ func (link) Harvest(ctx context.Context, m Manifest) ([]Change, error) {
 			if err := ctx.Err(); err != nil {
 				return err
 			}
+			if deeper(m.Targets, t, path) {
+				return nil
+			}
 			rel, _ := filepath.Rel(t.Root, path)
 			if o, ok := known[path]; ok {
 				h, err := fsx.SHA256(path)
@@ -235,6 +238,13 @@ func (link) Harvest(ctx context.Context, m Manifest) ([]Change, error) {
 		}
 	}
 	return changes, nil
+}
+
+// deeper reports a file that sits in another target nested inside t, which then owns it.
+func deeper(targets []Target, t Target, path string) bool {
+	return slices.ContainsFunc(targets, func(u Target) bool {
+		return len(u.Root) > len(t.Root) && strings.HasPrefix(path, u.Root+string(filepath.Separator))
+	})
 }
 
 // take sends a file the game wrote to its home: a writable target's own folder, else the overwrite folder. A new
@@ -289,7 +299,8 @@ func (link) Purge(ctx context.Context, m Manifest) error {
 			}
 		}
 	}
-	for _, d := range slices.Backward(m.Created) {
+	// Deepest first: a folder made for one file may hold a sibling's folder made later.
+	for _, d := range slices.SortedFunc(slices.Values(m.Created), func(a, b string) int { return len(b) - len(a) }) {
 		_ = os.Remove(d)
 	}
 	return os.RemoveAll(m.View.JournalDir)

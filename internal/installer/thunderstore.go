@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"slices"
+	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 )
@@ -46,9 +47,19 @@ func (thunderstoreRules) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 	}
 	var l Layout
 	for _, f := range all {
-		if dest := bepinex5.Route(f, pkg); dest != "" {
-			l.Files = append(l.Files, File{Src: f, Target: TargetProfile, Rel: dest})
+		dest := bepinex5.Route(f, pkg)
+		if dest == "" {
+			continue
 		}
+		if rel, ok := strings.CutPrefix(dest, "BepInEx/config/"); ok && hasTarget(g, TargetConfig) {
+			l.Files = append(l.Files, File{Src: f, Target: TargetConfig, Rel: rel})
+			continue
+		}
+		l.Files = append(l.Files, File{Src: f, Target: TargetProfile, Rel: dest})
 	}
 	return l, validate(l, g)
+}
+
+func hasTarget(g Game, id string) bool {
+	return slices.ContainsFunc(g.Targets, func(t Target) bool { return t.ID == id })
 }
