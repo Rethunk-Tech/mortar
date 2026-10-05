@@ -56,11 +56,11 @@ func thunderstoreKey(gameID string) string {
 	return ""
 }
 
-func thunderstoreSource() (deprecationSource, bool) {
+func thunderstoreSource() (thunderstore.Driver, bool) {
 	e, ok := source.Get("thunderstore")
 	if !ok {
-		return nil, false
+		return thunderstore.Driver{}, false
 	}
-	d, ok := e.Source.(deprecationSource)
+	d, ok := e.Source.(thunderstore.Driver)
 	return d, ok
 }
