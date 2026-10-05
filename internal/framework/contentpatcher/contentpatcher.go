@@ -714,15 +714,22 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPac
 			return pack
 		}
 	}
-	pack := cachedPack{mentions: map[string]bool{}, schema: readConfigSchema(root)}
-	pack.values = packConfigValues(pack.schema, root)
+	// Every file is stamped before it is read, and a file changed since its stamp leaves the pack uncached, so a cache
+	// entry never pairs a fresh stamp with what was read before the change.
+	pack := cachedPack{mentions: map[string]bool{}}
 	pack.recordPackFile(root, filepath.Join(root, "content.json"))
 	pack.recordPackFile(root, filepath.Join(root, "config.json"))
+	pack.schema = readConfigSchema(root)
+	pack.values = packConfigValues(pack.schema, root)
 	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
 	slices.SortFunc(pack.files, func(a, b packFileStamp) int {
 		return strings.Compare(a.Path, b.Path)
 	})
 	pack.fingerprint = packFilesFingerprint(pack.files)
+	if !packFingerprintValid(root, pack.files, pack.fingerprint) {
+		dropPNGAlphaUnder(root)
+		return pack
+	}
 	packCache.Store(root, pack)
 	packValidated.Store(root, true)
 	if cachePath != "" {
@@ -753,11 +760,9 @@ func (p *cachedPack) recordPackFile(root, abs string) {
 		Size:    info.Size(),
 		ModTime: info.ModTime().UnixNano(),
 	}
-	for i, existing := range p.files {
-		if existing.Path == stamp.Path {
-			p.files[i] = stamp
-			return
-		}
+	// The first stamp is the one taken before the file was read.
+	if slices.ContainsFunc(p.files, func(f packFileStamp) bool { return f.Path == stamp.Path }) {
+		return
 	}
 	p.files = append(p.files, stamp)
 }
@@ -1032,11 +1037,11 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	if !ok {
 		return
 	}
+	pack.recordPackFile(root, abs)
 	raw, err := fsx.ReadFile(abs)
 	if err != nil {
 		return
 	}
-	pack.recordPackFile(root, abs)
 	var doc struct {
 		Changes       []json.RawMessage `json:"Changes"`
 		DynamicTokens []struct {

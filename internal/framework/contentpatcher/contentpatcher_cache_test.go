@@ -468,3 +468,17 @@ func TestPackDiskCacheKeepsEveryPackItRead(t *testing.T) {
 		t.Fatalf("pack of the earlier check after two writes for other mods: %d patches, want 2", len(got.patches))
 	}
 }
+
+// A pack file written while the pack is read keeps its stamp from before the read, so the fingerprint no longer
+// matches and the stale read is not cached.
+func TestPackFileChangedDuringReadInvalidatesFingerprint(t *testing.T) {
+	root := t.TempDir()
+	abs := testfs.WriteFile(t, root, "content.json", `{"Changes":[]}`)
+	var pack cachedPack
+	pack.recordPackFile(root, abs)
+	testfs.WriteFile(t, root, "content.json", `{"Changes":[{"Action":"Load"}]}`)
+	pack.recordPackFile(root, abs)
+	if packFingerprintValid(root, pack.files, packFilesFingerprint(pack.files)) {
+		t.Fatal("a file changed after its first stamp still validates")
+	}
+}
