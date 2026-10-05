@@ -158,5 +158,10 @@
     "name": "golang.org/x/text",
     "licence": "BSD-3-Clause",
     "url": "https://pkg.go.dev/golang.org/x/text"
+  },
+  {
+    "name": "gopkg.in/yaml.v3",
+    "licence": "Apache-2.0",
+    "url": "https://pkg.go.dev/gopkg.in/yaml.v3"
   }
 ]
