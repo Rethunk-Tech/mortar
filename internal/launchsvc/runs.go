@@ -322,7 +322,11 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if sess.haveExit {
 		launch.ApplyExit(&stats, sess.exit)
 	}
-	if !stats.Crashed && (!sess.haveExit || !sess.exit.Stopped) && s.playerCrashed(g.ID(), profileID, started) {
+	// A run the player stopped from Mortar ended because they asked: never a crash, whatever its log says.
+	stopped := sess.haveExit && sess.exit.Stopped
+	if stopped {
+		stats.Crashed = false
+	} else if !stats.Crashed && s.playerCrashed(g.ID(), profileID, started) {
 		stats.Crashed = true
 	}
 	text = launch.CapLog(text, launch.MaxLogBytes)
@@ -343,7 +347,10 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if err != nil {
 		idx = runIndex{}
 	}
-	cause := s.cause(g.ID(), profileID, text)
+	var cause Cause
+	if !stopped {
+		cause = s.cause(g.ID(), profileID, text)
+	}
 	run := Run{
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
 		DurationMs: ended.Sub(started).Milliseconds(), Loader: cmp.Or(s.profileLoader(g.ID(), profileID), loaderID(g.ID())), LoaderVersion: stats.SMAPI, GameVersion: stats.Game,
@@ -380,7 +387,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if !failed && s.settings != nil {
 		_, _ = s.settings.AddPlaytime(g.ID(), ended.Sub(started))
 	}
-	if !failed && (stats.Errors > 0 || stats.Crashed) {
+	if !failed && !stopped && (stats.Errors > 0 || stats.Crashed) {
 		var crashCause *Cause
 		if run.Cause != nil {
 			crashCause = run.Cause

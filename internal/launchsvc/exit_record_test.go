@@ -37,6 +37,26 @@ func TestRecordUserStopNotCrashed(t *testing.T) {
 	}
 }
 
+func TestRecordUserStopIsNeverACrashWhateverTheLogSays(t *testing.T) {
+	svc, p, cfg, home := runEnv(t)
+	mods, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Stardew's runtime often segfaults while it is being stopped, and a frozen game the player stops may have
+	// logged a fatal error first.
+	writeOwnedLog(t, cfg, home, mods, "[19:43:51 ALERT SMAPI] The game crashed: boom\n")
+	g := game.Find("stardew")
+	svc.mu.Lock()
+	svc.logs[keyOf(g)] = session{haveExit: true, exit: launch.Exit{Code: 139, Signal: "SIGSEGV", Stopped: true}}
+	svc.mu.Unlock()
+	svc.record(g, p.ID, time.Now(), false)
+	runs, err := svc.Runs("stardew", p.ID)
+	if err != nil || len(runs) != 1 || runs[0].Outcome != launch.OutcomeRan || runs[0].Cause != nil {
+		t.Fatalf("stop = %#v, %v", runs, err)
+	}
+}
+
 func TestRunEndNotificationTextExit(t *testing.T) {
 	title, body := RunEndNotificationText("Stardew Valley", launch.Summary{
 		Crashed: true,
