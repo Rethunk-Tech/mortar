@@ -9,11 +9,20 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 )
 
-type fakeProfiles struct{ created []string }
+type fakeProfiles struct {
+	created []string
+	written map[string][]byte
+}
+
+func (f *fakeProfiles) WriteFiles(_, _ string, files map[string][]byte) error {
+	f.written = files
+	return nil
+}
 
 func (f *fakeProfiles) Create(_, name string) (profile.Profile, error) {
 	f.created = append(f.created, name)
@@ -71,6 +80,9 @@ func TestImportQueuesThePacksPackagesIntoANewProfile(t *testing.T) {
 	if res.Queued != 2 || res.Profile != "p1" || !slices.Equal(res.Disabled, []string{"Alice-MoreCompany"}) || !slices.Equal(ps.created, []string{"Friends"}) {
 		t.Errorf("result %+v, created %v", res, ps.created)
 	}
+	if q.got[1].Disabled == nil || q.got[0].Disabled != nil {
+		t.Errorf("disabled flags %+v", q.got)
+	}
 	if len(q.got) != 2 || q.got[1].Package != "Alice-MoreCompany" || q.got[1].Version != "1.2.3" || q.got[1].Profile != "p1" || q.got[1].Game != "stardew" {
 		t.Errorf("queued %+v", q.got)
 	}
@@ -79,5 +91,15 @@ func TestImportQueuesThePacksPackagesIntoANewProfile(t *testing.T) {
 func TestExportNeedsTheConfirmation(t *testing.T) {
 	if _, err := (&Service{}).ExportCode(context.Background(), "stardew", "p1", false); err == nil {
 		t.Error("an unconfirmed export ran")
+	}
+}
+
+func TestPackFilesLandUnderBepInEx(t *testing.T) {
+	got := packFiles(pack.Draft{
+		Loose:   []pack.File{{Path: "plugins/a.dll", Data: []byte("a")}},
+		Configs: []pack.File{{Path: "config/x.cfg", Data: []byte("x")}},
+	})
+	if string(got["BepInEx/config/x.cfg"]) != "x" || string(got["BepInEx/plugins/a.dll"]) != "a" || len(got) != 2 {
+		t.Fatalf("files = %v", got)
 	}
 }

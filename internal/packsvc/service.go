@@ -22,6 +22,7 @@ import (
 type profiles interface {
 	Create(game, name string) (profile.Profile, error)
 	List(game string) ([]profile.Profile, error)
+	WriteFiles(game, id string, files map[string][]byte) error
 }
 
 // downloads is the part of queue.Service the service uses.
@@ -61,7 +62,7 @@ type Preview struct {
 }
 
 // Result is what Import queued. Unsupported names packages from a source Mortar cannot install a pack's package
-// from; Disabled names packages the pack switched off, which install switched on.
+// from; Disabled names packages the pack switched off, which install in the profile switched off too.
 type Result struct {
 	Game        string   `json:"game"`
 	Profile     string   `json:"profile"`
@@ -109,10 +110,12 @@ func (s *Service) Import(ctx context.Context, src Source, gameID, profileID stri
 			res.Unsupported = append(res.Unsupported, r.Native)
 			continue
 		}
+		req := queue.Request{Kind: queue.KindInstall, Game: gameID, Package: r.Native, Version: r.Version}
 		if r.Disabled {
 			res.Disabled = append(res.Disabled, r.Native)
+			req.Disabled = []mod.ID{mod.NewID(mod.FormatThunderstore, r.Native)}
 		}
-		reqs = append(reqs, queue.Request{Kind: queue.KindInstall, Game: gameID, Package: r.Native, Version: r.Version})
+		reqs = append(reqs, req)
 	}
 	if len(reqs) == 0 {
 		return res, errors.New("the pack holds no Thunderstore packages to install")
@@ -125,12 +128,25 @@ func (s *Service) Import(ctx context.Context, src Source, gameID, profileID stri
 		profileID = p.ID
 	}
 	res.Profile = profileID
+	if err := s.Profiles.WriteFiles(gameID, profileID, packFiles(d)); err != nil {
+		return res, err
+	}
 	for i := range reqs {
 		reqs[i].Profile = profileID
 	}
 	items, err := s.Queue.Add(reqs)
 	res.Queued = len(items)
 	return res, err
+}
+
+// packFiles is the pack's config files and loose files as the profile holds them: below BepInEx/, where a pack's paths
+// start (config/, plugins/, ...). A file the pack lists twice keeps its config.
+func packFiles(d pack.Draft) map[string][]byte {
+	out := map[string][]byte{}
+	for _, f := range slices.Concat(d.Loose, d.Configs) {
+		out["BepInEx/"+f.Path] = f.Data
+	}
+	return out
 }
 
 func cmpName(n string) string { return cmp.Or(strings.TrimSpace(n), "Imported pack") }

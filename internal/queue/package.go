@@ -40,7 +40,7 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 			dep.Package, dep.Name, dep.Version, dep.url, dep.sizeKB = id, p.Name, p.Version, p.URL, p.Size>>10
 			dep.FileName = id + "-" + p.Version + ".zip"
 			if !strings.EqualFold(id, r.Package) {
-				dep.Kind = KindDependency
+				dep.Kind, dep.Disabled = KindDependency, nil
 			}
 			out = append(out, dep)
 		}
@@ -49,7 +49,11 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 }
 
 func packageSource(it Item) profile.Source {
-	return profile.Source{Kind: profile.KindThunderstore, Name: it.Package, Version: it.Version}
+	src := profile.Source{Kind: profile.KindThunderstore, Name: it.Package, Version: it.Version}
+	if len(it.Disabled) > 0 {
+		src = src.WithDisabled(it.Disabled)
+	}
+	return src
 }
 
 // downloadPackage fetches a package archive and installs it into the item's profile.
