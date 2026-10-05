@@ -78,9 +78,15 @@ type cacheMeta struct {
 	Fetched time.Time `json:"fetched"`
 }
 
+type memoEntry struct {
+	path string
+	pk   []pkg
+}
+
 var (
 	memoMu sync.Mutex
-	memo   = map[string][]pkg{}
+	// memo holds one listing per community key, the one built from the blob at path.
+	memo = map[string]memoEntry{}
 )
 
 // noDowngrade refuses a redirect from https to another scheme.
@@ -211,7 +217,7 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	}
 	pkgPath := func(hash string) string { return filepath.Join(dir, key+"-"+hash+".json") }
 	if meta.Hash != "" && d.now().Sub(meta.Fetched) < refreshAfter {
-		if pk, err := loadPackages(pkgPath(meta.Hash)); err == nil {
+		if pk, err := loadPackages(key, pkgPath(meta.Hash)); err == nil {
 			return pk, nil
 		}
 	}
@@ -222,7 +228,7 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	hash, err := d.getJSON(ctx, d.indexURL(key), ua, &chunks)
 	if err != nil {
 		if meta.Hash != "" {
-			if pk, lerr := loadPackages(pkgPath(meta.Hash)); lerr == nil {
+			if pk, lerr := loadPackages(key, pkgPath(meta.Hash)); lerr == nil {
 				return pk, nil
 			}
 		}
@@ -253,7 +259,7 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	if err := datadir.WriteFile(metaPath, nm, 0o644); err != nil {
 		return nil, err
 	}
-	return loadPackages(pkgPath(hash))
+	return loadPackages(key, pkgPath(hash))
 }
 
 // build downloads every chunk and writes the slimmed listing to path.
@@ -287,11 +293,11 @@ func (d Driver) build(ctx context.Context, chunks []string, path, ua string) err
 	return datadir.WriteFile(path, b, 0o644)
 }
 
-func loadPackages(path string) ([]pkg, error) {
+func loadPackages(key, path string) ([]pkg, error) {
 	memoMu.Lock()
 	defer memoMu.Unlock()
-	if pk, ok := memo[path]; ok {
-		return pk, nil
+	if m, ok := memo[key]; ok && m.path == path {
+		return m.pk, nil
 	}
 	b, err := fsx.ReadFile(path)
 	if err != nil {
@@ -301,6 +307,6 @@ func loadPackages(path string) ([]pkg, error) {
 	if err := json.Unmarshal(b, &pk); err != nil {
 		return nil, err
 	}
-	memo[path] = pk
+	memo[key] = memoEntry{path, pk}
 	return pk, nil
 }
