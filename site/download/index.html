@@ -255,26 +255,16 @@ sudo pacman -Sy mortar</code></pre>
         >
           <h3>Flatpak</h3>
           <p class="muted">
-            Any distribution with Flatpak, x86_64 only. It brings its own
-            libraries, so it also runs on older systems.
+            Any distribution with Flatpak, x86_64 only. It brings its own libraries, so it also runs on older
+            systems. This adds Mortar's signed Flatpak repository, so <code>flatpak update</code> keeps it
+            current; the GNOME runtime comes from Flathub.
           </p>
-          <div class="files">
-            <a
-              class="file primary"
-              data-asset="mortar-linux-x86_64.flatpak"
-              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.flatpak"
-            >
-              <strong>Flatpak bundle</strong><span>x86_64</span>
-            </a>
-          </div>
-          <pre><code>flatpak install --user mortar-linux-x86_64.flatpak</code></pre>
+          <pre><code>flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref</code></pre>
           <p class="muted">
-            The sandbox only sees the usual game folders. For a game installed
-            elsewhere, run
-            <code
-              >flatpak override --user --filesystem=&lt;folder&gt;
-              tech.rethunk.Mortar</code
-            >. Install the bundle again to update.
+            The sandbox only sees the usual game folders. For a game installed elsewhere, run
+            <code>flatpak override --user --filesystem=&lt;folder&gt; tech.rethunk.Mortar</code>. A single
+            <a data-asset="mortar-linux-x86_64.flatpak" href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.flatpak">bundle file</a>
+            is also on each release, without updates.
           </p>
         </div>
 

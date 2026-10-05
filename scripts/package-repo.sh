@@ -54,7 +54,7 @@ run() {
 }
 
 shopt -s nullglob
-debs=("$ASSETS"/*.deb) rpms=("$ASSETS"/*.rpm) pkgs=("$ASSETS"/*.pkg.tar.zst)
+debs=("$ASSETS"/*.deb) rpms=("$ASSETS"/*.rpm) pkgs=("$ASSETS"/*.pkg.tar.zst) flatpaks=("$ASSETS"/*.flatpak)
 if [ ${#debs[@]} -eq 0 ] || [ ${#rpms[@]} -eq 0 ] || [ ${#pkgs[@]} -eq 0 ]; then
   echo "$ASSETS lacks .deb, .rpm or .pkg.tar.zst files" >&2
   exit 1
@@ -113,6 +113,41 @@ for d in "$OUT"/arch/*; do
     cp "$d/$f.tar.gz.sig" "$d/$f.sig"
   done
 done
+
+# Flatpak: the release bundle imported into a GPG-signed OSTree repo, so `flatpak update` follows new releases. The
+# GNOME runtime comes from Flathub, named in the .flatpakref.
+if [ ${#flatpaks[@]} -gt 0 ]; then
+  mkdir -p "$OUT/flatpak" && cp "${flatpaks[@]}" "$OUT/flatpak/"
+  run fedora:latest -v "$GNUPGHOME":/gnupg -e FPR="$FPR" -e HANDBACK_GNUPG="${handback/\/out/\/gnupg}" <<'EOF'
+dnf install -y -q --setopt=install_weak_deps=False flatpak ostree gnupg2 >/dev/null
+cd flatpak
+ostree init --repo=repo --mode=archive-z2
+for b in ./*.flatpak; do flatpak build-import-bundle --gpg-sign="$FPR" --gpg-homedir=/gnupg repo "$b" >/dev/null; done
+flatpak build-update-repo --gpg-sign="$FPR" --gpg-homedir=/gnupg --title=Mortar repo >/dev/null
+rm -f ./*.flatpak
+gpgconf --homedir /gnupg --kill all
+sh -c "$HANDBACK_GNUPG"
+EOF
+  key=$(gpg --export "$FPR" | base64 -w0)
+  cat >"$OUT/flatpak/tech.rethunk.Mortar.flatpakref" <<EOF
+[Flatpak Ref]
+Name=tech.rethunk.Mortar
+Branch=master
+Title=Mortar
+Url=$URL/flatpak/repo
+SuggestRemoteName=mortar
+RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
+IsRuntime=false
+GPGKey=$key
+EOF
+  cat >"$OUT/flatpak/mortar.flatpakrepo" <<EOF
+[Flatpak Repo]
+Title=Mortar
+Url=$URL/flatpak/repo
+Homepage=https://mortar.rethunk.tech/
+GPGKey=$key
+EOF
+fi
 
 cp "$PUBKEY" "$OUT/mortar-archive-keyring.asc"
 gpg --dearmor <"$PUBKEY" >"$OUT/mortar-archive-keyring.gpg"

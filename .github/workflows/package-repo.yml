@@ -41,7 +41,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag }}
-        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -D bin -p '*.deb' -p '*.rpm' -p '*.pkg.tar.zst'
+        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -D bin -p '*.deb' -p '*.rpm' -p '*.pkg.tar.zst' -p '*.flatpak'
 
       - name: Build the package repository
         env:
