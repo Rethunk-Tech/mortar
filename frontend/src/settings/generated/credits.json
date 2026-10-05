@@ -163,5 +163,10 @@
     "name": "gopkg.in/yaml.v3",
     "licence": "Apache-2.0",
     "url": "https://pkg.go.dev/gopkg.in/yaml.v3"
+  },
+  {
+    "name": "modernc.org/sqlite",
+    "licence": "BSD-3-Clause",
+    "url": "https://pkg.go.dev/modernc.org/sqlite"
   }
 ]
