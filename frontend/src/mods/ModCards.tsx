@@ -113,6 +113,11 @@ function ModCard({
         borderRadius: CARD_RADIUS_PX,
         outline: marked ? '1px solid' : 'none',
         outlineColor: 'primary.main',
+        // The title button's ::after covers the card, so it is the card's one click target; everything else that
+        // is interactive sits above it.
+        position: 'relative',
+        '& > :not(.card-main)': { position: 'relative', zIndex: 1 },
+        '&:has(.card-title:focus-visible)': { outline: '2px solid', outlineColor: 'primary.main' },
         [compact]: {
           height: CARD_HEIGHT_SMALL,
           '& .tile': {
@@ -123,50 +128,15 @@ function ModCard({
         },
       }}
     >
-      <ButtonBase
-        component="div"
-        data-mod-id={id}
-        aria-label={t`Details of ${m.name}`}
-        // One card is the grid's Tab stop: the open mod's, or the first when none is open.
-        tabIndex={(orderedIds.includes(selectedId) ? selectedId : orderedIds[0]) === id ? 0 : -1}
-        onKeyDown={(e) => {
-          const run: Partial<Record<string, () => void>> = {
-            left: () => onMove(id, -1),
-            right: () => onMove(id, 1),
-            'mod-up': () => onMove(id, -columns),
-            'mod-down': () => onMove(id, columns),
-            'mod-toggle': () => toggleActing(m).catch(reportUnexpected),
-            'mod-details': () => openDetail(m),
-            'mod-remove': () => askRemove(actingMods(m)),
-          }
-          const action =
-            run[boundShortcut(e, useSettings.getState().shortcuts) ?? ARROWS[e.key] ?? '']
-          if (action && e.target === e.currentTarget) {
-            e.preventDefault()
-            action()
-          }
-        }}
-        onMouseDown={(e) => {
-          if (e.shiftKey) {
-            e.preventDefault()
-          }
-        }}
-        onClick={(e) => {
-          useSelection.getState().click(orderedIds, id, e)
-          openDetail(m)
-        }}
+      <Box
+        className="card-main"
         sx={{
-          '&.Mui-focusVisible': { outlineOffset: '-2px' },
           flex: 1,
           minWidth: 0,
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           gap: CARD_GAP_PX,
-          justifyContent: 'flex-start',
-          textAlign: 'left',
-          fontFamily: 'inherit',
-          color: 'inherit',
         }}
       >
         <LetterTile mod={m} fresh={fresh} />
@@ -179,13 +149,60 @@ function ModCard({
             opacity: m.enabled ? 1 : OFF_OPACITY,
           }}
         >
-          <Typography
-            noWrap={true}
-            title={m.name}
-            sx={{ fontSize: NAME_FONT_PX, fontWeight: NAME_WEIGHT }}
+          <ButtonBase
+            className="card-title"
+            data-mod-id={id}
+            aria-label={t`Details of ${m.name}`}
+            // One card is the grid's Tab stop: the open mod's, or the first when none is open.
+            tabIndex={
+              (orderedIds.includes(selectedId) ? selectedId : orderedIds[0]) === id ? 0 : -1
+            }
+            onKeyDown={(e) => {
+              const run: Partial<Record<string, () => void>> = {
+                left: () => onMove(id, -1),
+                right: () => onMove(id, 1),
+                'mod-up': () => onMove(id, -columns),
+                'mod-down': () => onMove(id, columns),
+                'mod-toggle': () => toggleActing(m).catch(reportUnexpected),
+                'mod-details': () => openDetail(m),
+                'mod-remove': () => askRemove(actingMods(m)),
+              }
+              const action =
+                run[boundShortcut(e, useSettings.getState().shortcuts) ?? ARROWS[e.key] ?? '']
+              if (action && e.target === e.currentTarget) {
+                e.preventDefault()
+                action()
+              }
+            }}
+            onMouseDown={(e) => {
+              if (e.shiftKey) {
+                e.preventDefault()
+              }
+            }}
+            onClick={(e) => {
+              useSelection.getState().click(orderedIds, id, e)
+              openDetail(m)
+            }}
+            sx={{
+              position: 'static',
+              display: 'block',
+              width: '100%',
+              minWidth: 0,
+              textAlign: 'left',
+              fontFamily: 'inherit',
+              color: 'inherit',
+              '&:focus-visible': { outline: 'none' },
+              '&::after': { content: '""', position: 'absolute', inset: 0 },
+            }}
           >
-            {m.name}
-          </Typography>
+            <Typography
+              noWrap={true}
+              title={m.name}
+              sx={{ fontSize: NAME_FONT_PX, fontWeight: NAME_WEIGHT }}
+            >
+              {m.name}
+            </Typography>
+          </ButtonBase>
           <Typography
             noWrap={true}
             title={showAuthor ? `${m.author} · ${m.version}` : m.version}
@@ -193,7 +210,9 @@ function ModCard({
           >
             {showAuthor ? (
               <>
-                <AuthorLink authorField={m.author} mod={m} profile={profile} />
+                <Box component="span" sx={{ position: 'relative', zIndex: 1 }}>
+                  <AuthorLink authorField={m.author} mod={m} profile={profile} />
+                </Box>
                 {` · ${m.version}`}
               </>
             ) : (
@@ -201,7 +220,7 @@ function ModCard({
             )}
           </Typography>
         </Box>
-      </ButtonBase>
+      </Box>
       <ExtraFilesChip mod={m} profile={profile} />
       <OverlayCountChip mod={m} profile={profile} />
       <PinBadge mod={m} />

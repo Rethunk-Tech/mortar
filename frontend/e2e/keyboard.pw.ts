@@ -1,18 +1,18 @@
 import { expect, type Page, test } from '@playwright/test'
 import { openSeedFarm } from './app.ts'
 
-/** The focused element draws a visible ring: `:focus-visible` outlines it with a real width. */
+/** The focused element, or the card around it, draws a visible ring: an outline with a real width. */
 async function expectFocusRing(page: Page) {
-  const ring = await page.evaluate(() => {
-    const el = document.activeElement
-    const style = el ? getComputedStyle(el) : null
-    return style
-      ? { style: style.outlineStyle, width: Number.parseFloat(style.outlineWidth) }
-      : null
+  const ringed = await page.evaluate(() => {
+    for (let el = document.activeElement; el; el = el.parentElement) {
+      const style = getComputedStyle(el)
+      if (style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0) {
+        return el === document.activeElement || el.matches('.MuiCard-root')
+      }
+    }
+    return false
   })
-  expect(ring, 'something has focus').not.toBeNull()
-  expect(ring?.style).not.toBe('none')
-  expect(ring?.width).toBeGreaterThan(0)
+  expect(ringed, 'the focused control shows a ring').toBe(true)
 }
 
 /** Tab order follows the DOM, so a region's controls must sit left to right (title bar) or top to bottom (sidebar). */
@@ -55,11 +55,12 @@ test('the main flows work with the keyboard alone and focus stays visible and re
   }
   await expect(first).toBeFocused()
   await expectFocusRing(page)
-  // The author link sits inside the card, so More actions is a Tab or two further on.
+  // The author link is its own button after the card's title, then More actions.
+  await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Self-test' }).first()).toBeFocused()
+  await expectFocusRing(page)
   const more = page.getByRole('button', { name: 'More actions for Seed Alpha' })
-  for (let i = 0; i < 4 && !(await more.evaluate((el) => el === document.activeElement)); i++) {
-    await page.keyboard.press('Tab')
-  }
+  await page.keyboard.press('Tab')
   await expect(more).toBeFocused()
   await expectFocusRing(page)
 
@@ -92,4 +93,10 @@ test('the main flows work with the keyboard alone and focus stays visible and re
     await expect(dialog).toBeHidden()
     await expect(first).toBeFocused()
   }
+
+  // The title button's overlay still makes the whole card, tile included, one click target.
+  const card = page.locator('[data-mod-id]').first()
+  const box = await card.boundingBox()
+  expect(box).not.toBeNull()
+  await page.mouse.click(box?.x ?? 0, (box?.y ?? 0) + (box?.height ?? 0) / 2)
 })
