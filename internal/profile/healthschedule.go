@@ -127,7 +127,7 @@ func (s *Service) RunHealthChecks(ctx context.Context, settled <-chan struct{}) 
 // every game that is running alone; a flag stays until its game's profiles have all been checked.
 func (s *Service) healthPass(ctx context.Context, now time.Time) {
 	for _, g := range game.Implemented() {
-		if s.store.AnyRunning(g) {
+		if s.store.AnyRunning(g) || (s.store.GameRunning != nil && s.store.GameRunning(g)) {
 			continue
 		}
 		s.healthMu.Lock()

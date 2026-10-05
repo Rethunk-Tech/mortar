@@ -55,6 +55,12 @@ func TestHealthPassRunsWeeklyFlaggedAndNotWhileRunning(t *testing.T) {
 		t.Fatal("checked while the game runs")
 	}
 	e.Running = nil
+	e.GameRunning = func(string) bool { return true }
+	svc.healthPass(context.Background(), now.Add(8*24*time.Hour))
+	if seen.len() != 2 {
+		t.Fatal("checked while the game runs, however it was started")
+	}
+	e.GameRunning = nil
 	svc.healthPass(context.Background(), now.Add(8*24*time.Hour))
 	if seen.len() != 3 || seen.notices[2].Profile != p.ID {
 		t.Fatalf("a week later = %#v", seen.notices)
