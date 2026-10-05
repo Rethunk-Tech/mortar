@@ -86,13 +86,20 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, vers
 		}
 		s.emit(StateEvent, state)
 	}()
+	l, ok := game.PrimaryLoader(id)
+	if !ok {
+		return loader.Status{}, fmt.Errorf("%s has no loader", g.Name())
+	}
+	_, perProfile := l.(loader.InProfile)
+	if version == "" && perProfile {
+		version = s.settings.Get().Loaders[id]
+	}
 	version, err = s.resolveVersion(ctx, id, g, version)
 	if err != nil {
 		return loader.Status{}, err
 	}
-	l, ok := game.PrimaryLoader(id)
-	if !ok {
-		return loader.Status{}, fmt.Errorf("%s has no loader", g.Name())
+	if perProfile {
+		return s.installInProfiles(ctx, id, dir, l, version, fromStart)
 	}
 	if _, err := s.items.Path(id, store.LoaderKey(l.ID(), version)); err == nil {
 		if err := s.recordLoader(id, version, fromStart); err != nil {
@@ -259,3 +266,60 @@ func (s *Service) recordLoader(id, version string, fromStart bool) error {
 	}
 	return nil
 }
+
+// installInProfiles keeps the loader's installer in the store, so a later profile needs no download, and lays it into
+// every profile of the game.
+func (s *Service) installInProfiles(ctx context.Context, id, dir string, l loader.Loader, version string, fromStart bool) (loader.Status, error) {
+	rel, ok := l.(loader.Releases)
+	if !ok {
+		return loader.Status{}, fmt.Errorf("%s does not install a chosen loader version", l.ID())
+	}
+	key := store.LoaderKey(l.ID(), version)
+	held, err := s.items.Path(id, key)
+	if errors.Is(err, store.ErrNotFound) {
+		if err := s.ensureKnown(ctx, id, version); err != nil {
+			return loader.Status{}, err
+		}
+		work, err := os.MkdirTemp("", "mortar-loader-")
+		if err != nil {
+			return loader.Status{}, err
+		}
+		defer func() { _ = fsx.RemoveAll(work) }()
+		if err := rel.Fetch(ctx, catalogGame(id), version, filepath.Join(work, installerFile)); err != nil {
+			return loader.Status{}, err
+		}
+		s.emit(ProgressEvent, Progress{Game: id, Step: loader.StepDownloaded})
+		if err := s.items.AddDir(id, key, work); err != nil {
+			return loader.Status{}, err
+		}
+		held, err = s.items.Path(id, key)
+	}
+	if err != nil {
+		return loader.Status{}, err
+	}
+	all, err := s.profiles.List(id)
+	if err != nil {
+		return loader.Status{}, err
+	}
+	progress := func(step loader.Step) { s.emit(ProgressEvent, Progress{Game: id, Step: step}) }
+	for _, p := range all {
+		if p.Error != "" {
+			continue
+		}
+		pdir, err := s.profiles.ProfileDir(id, p.ID)
+		if err != nil {
+			return loader.Status{}, err
+		}
+		pkg := loader.Package{ID: l.ID(), Version: version, Archive: filepath.Join(held, installerFile)}
+		if _, err := l.Install(ctx, loader.Target{Game: id, InstallDir: dir, ProfileDir: pdir}, pkg, progress); err != nil {
+			return loader.Status{}, fmt.Errorf("install into %s: %w", p.Name, err)
+		}
+	}
+	if err := s.recordLoader(id, version, fromStart); err != nil {
+		return loader.Status{}, err
+	}
+	return s.Status(ctx, id)
+}
+
+// installerFile names the downloaded installer inside a per-profile loader's store entry.
+const installerFile = "installer.zip"

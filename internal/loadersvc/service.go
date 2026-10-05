@@ -184,7 +184,7 @@ func (s *Service) ensureBundled(id string) (string, error) {
 		return "", nil
 	}
 	l, ok := game.PrimaryLoader(id)
-	if !ok {
+	if _, ships := l.(loader.BundledCopier); !ok || !ships {
 		return "", nil
 	}
 	key := store.LoaderKey(l.ID(), st.Version)
@@ -254,7 +254,40 @@ func (s *Service) LocalStatus(id string) (loader.Status, error) {
 	if err != nil {
 		return loader.Status{}, err
 	}
-	return game.LoaderStatus(id, dir, s.settings.Get().Loaders[id])
+	recorded := s.settings.Get().Loaders[id]
+	if l, ok := game.PrimaryLoader(id); ok {
+		if _, perProfile := l.(loader.InProfile); perProfile {
+			return s.profileStatus(id, l, dir, recorded)
+		}
+	}
+	return game.LoaderStatus(id, dir, recorded)
+}
+
+// profileStatus is the state of a loader that lives in each profile: installed when a version is recorded and every
+// profile holds it.
+func (s *Service) profileStatus(id string, l loader.Loader, dir, recorded string) (loader.Status, error) {
+	all, err := s.profiles.List(id)
+	if err != nil {
+		return loader.Status{}, err
+	}
+	st := loader.Status{Installed: recorded != "", Version: recorded}
+	for _, p := range all {
+		if p.Error != "" {
+			continue
+		}
+		pdir, err := s.profiles.ProfileDir(id, p.ID)
+		if err != nil {
+			return loader.Status{}, err
+		}
+		got, err := l.Status(loader.Target{Game: id, InstallDir: dir, ProfileDir: pdir})
+		if err != nil {
+			return loader.Status{}, err
+		}
+		if !got.Installed || got.Version != recorded {
+			st.Installed = false
+		}
+	}
+	return st, nil
 }
 
 // Status is LocalStatus plus whether a newer release exists. A failed release lookup only leaves Latest empty.
