@@ -25,6 +25,7 @@ const (
 const (
 	RepairDownload     = "download"
 	RepairRestore      = "restore"
+	RepairRevert       = "revert"
 	RepairCleanup      = "cleanup"
 	RepairDropSnapshot = "drop-snapshot"
 	RepairRecover      = "recover"
@@ -101,7 +102,7 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 	if err != nil {
 		return Profile{}, err
 	}
-	var restore, names, drop []string
+	var restore, revert, names, drop []string
 	recoverJournals := false
 	for _, f := range found {
 		if !slices.Contains(findingIDs, f.ID) {
@@ -110,6 +111,9 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 		switch f.Repair {
 		case RepairRestore:
 			restore = append(restore, f.ID[len(HealthDrift)+1:])
+			names = append(names, f.Items...)
+		case RepairRevert:
+			revert = append(revert, f.ID[len(HealthDrift)+1:])
 			names = append(names, f.Items...)
 		case RepairDropSnapshot:
 			drop = append(drop, f.ID[len(HealthSnapshot)+1:])
@@ -124,6 +128,15 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 	restored := 0
 	for _, key := range restore {
 		if _, err := s.RestoreDriftEntry(game, id, key); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		restored++
+	}
+	// A changed mod is reverted, which keeps the config and data files its folder gained; only a deleted one is
+	// restored whole.
+	for _, key := range revert {
+		if _, err := s.RevertDriftEntry(game, id, key); err != nil {
 			errs = append(errs, err)
 			continue
 		}
@@ -180,9 +193,13 @@ func driftFindings(p Profile, drift []Drift) []HealthFinding {
 		if i < 0 {
 			continue
 		}
+		repair := RepairRestore
+		if d.Kind == DriftChanged {
+			repair = RepairRevert
+		}
 		out = append(out, HealthFinding{
 			ID: HealthDrift + ":" + d.Key, Kind: HealthDrift, Cause: string(d.Kind),
-			Items: []string{entryLabel(p.Entries[i])}, Repair: RepairRestore,
+			Items: []string{entryLabel(p.Entries[i])}, Repair: repair,
 		})
 	}
 	return out

@@ -4,6 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // healthEnv is a profile with one installed mod, its drift baseline recorded.
@@ -148,5 +151,46 @@ func TestHealthLeftoverJournalRecovers(t *testing.T) {
 	}
 	if left := findingsOf(t, svc, p.ID, HealthJournal); len(left) != 0 {
 		t.Fatalf("after recover: %#v", left)
+	}
+}
+
+func TestHealthRevertKeepsConfigAndData(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "Farm")
+	zip := buildZip(t, "mod.zip", map[string]string{
+		"A/manifest.json": manifestJSON("X.A"),
+		"A/assets/x.json": "{}",
+	})
+	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
+		t.Fatal(err)
+	}
+	p, err := e.read("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(e.mods(p.ID), p.Entries[0].Key, "A")
+	writeTimed(t, filepath.Join(dir, "config.json"), `{"mine":true}`, time.Time{})
+	writeTimed(t, filepath.Join(dir, "data", "farm-1.json"), `{"gold":1}`, time.Time{})
+	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	writeTimed(t, filepath.Join(dir, "assets", "x.json"), `{"edited":true}`, time.Now().Add(time.Hour))
+	svc := &Service{store: e.Store}
+	got := findingsOf(t, svc, p.ID, HealthDrift)
+	if len(got) != 1 || got[0].Cause != string(DriftChanged) || got[0].Repair != RepairRevert {
+		t.Fatalf("drift = %#v", got)
+	}
+	if _, err := svc.RepairProfile("stardew", p.ID, []string{got[0].ID}); err != nil {
+		t.Fatal(err)
+	}
+	for _, rel := range []string{"config.json", "data/farm-1.json"} {
+		if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(rel))); err != nil {
+			t.Fatalf("%s lost: %v", rel, err)
+		}
+	}
+	b, err := fsx.ReadFile(filepath.Join(dir, "assets", "x.json"))
+	if err != nil || string(b) != "{}" {
+		t.Fatalf("not reverted: %s %v", b, err)
 	}
 }

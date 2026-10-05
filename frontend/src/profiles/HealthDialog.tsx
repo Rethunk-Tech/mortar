@@ -121,6 +121,29 @@ function FindingGroups({
   ))
 }
 
+// Reverting replaces edited files, so it is asked about even inside Repair all; the unreadable history goes with it.
+function confirmTitle(chosen: HealthFinding[]): string {
+  const reverts = chosen.filter((f) => f.repair === 'revert')
+  if (reverts.length === 0) {
+    return i18n._(msg`Delete the unreadable changes from history?`)
+  }
+  const name = reverts[0]?.items?.[0] ?? ''
+  return reverts.length === 1
+    ? i18n._(msg`Revert ${name} to the installed copy?`)
+    : i18n._(msg`Revert ${reverts.length} mods?`)
+}
+
+function confirmBody(chosen: HealthFinding[]): string {
+  const revert = i18n._(msg`Your edits to its files are replaced with the installed copy.`)
+  const drop = i18n._(msg`The profile itself stays as it is.`)
+  const reverts = chosen.some((f) => f.repair === 'revert')
+  const drops = chosen.some((f) => f.repair === 'drop-snapshot')
+  if (reverts && drops) {
+    return `${revert} ${i18n._(msg`The unreadable changes are also deleted from history.`)}`
+  }
+  return reverts ? revert : drop
+}
+
 export function HealthDialog({
   profileId,
   open,
@@ -161,7 +184,9 @@ export function HealthDialog({
           setQueued((cur) => new Set([...cur, ...fetch.map((f) => f.id)]))
         }
       }
-      const here = chosen.filter((f) => ['restore', 'drop-snapshot', 'recover'].includes(f.repair))
+      const here = chosen.filter((f) =>
+        ['restore', 'revert', 'drop-snapshot', 'recover'].includes(f.repair),
+      )
       if (here.length > 0) {
         useProfiles.getState().replace(
           await RepairProfile(
@@ -184,7 +209,7 @@ export function HealthDialog({
     }
   }
   const ask = (chosen: HealthFinding[]) => {
-    if (chosen.some((f) => f.repair === 'drop-snapshot')) {
+    if (chosen.some((f) => f.repair === 'drop-snapshot' || f.repair === 'revert')) {
       setConfirm(chosen)
     } else {
       repair(chosen).catch(reportUnexpected)
@@ -238,9 +263,9 @@ export function HealthDialog({
       </DialogActions>
       <ConfirmDialog
         open={confirm !== null}
-        title={t`Delete the unreadable changes from history?`}
-        body={t`The profile itself stays as it is.`}
-        confirmLabel={t`Delete`}
+        title={confirmTitle(confirm ?? [])}
+        body={confirmBody(confirm ?? [])}
+        confirmLabel={confirm?.some((f) => f.repair === 'revert') ? t`Revert` : t`Delete`}
         color="error"
         busy={busy}
         onCancel={() => setConfirm(null)}
