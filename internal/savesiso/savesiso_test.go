@@ -120,3 +120,81 @@ func TestPurgeRunAgainKeepsTheWrittenBackSaves(t *testing.T) {
 		t.Fatal("the second purge lost saves or left the working copy")
 	}
 }
+
+func TestApplyNeverOverwritesSavesAlreadySetAside(t *testing.T) {
+	root := t.TempDir()
+	saves, prof, journal := filepath.Join(root, "g", "Saves"), filepath.Join(root, "p", "saves"), filepath.Join(root, "j")
+	write(t, filepath.Join(saves, "shared.sav"), "shared")
+	write(t, filepath.Join(saves+heldSuffix, "older.sav"), "older")
+	if _, err := Apply(journal, saves, prof, false); err == nil {
+		t.Fatal("a second set of shared saves was set aside over the first")
+	}
+	if read(t, filepath.Join(saves, "shared.sav")) != "shared" || read(t, filepath.Join(saves+heldSuffix, "older.sav")) != "older" || exists(journal) {
+		t.Fatal("a refused apply changed something")
+	}
+}
+
+func TestPurgeStopsWhenSomethingIsWhereTheSharedSavesGoBack(t *testing.T) {
+	root := t.TempDir()
+	saves, prof, journal := filepath.Join(root, "g", "Saves"), filepath.Join(root, "p", "saves"), filepath.Join(root, "j")
+	write(t, filepath.Join(saves, "shared.sav"), "shared")
+	m, err := Apply(journal, saves, prof, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !isLink(saves) {
+		t.Skip("this system made a copy, not a link")
+	}
+	// The link went and the game, or the player, made a real folder in its place.
+	if err := os.Remove(saves); err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(saves, "stray.sav"), "stray")
+	if err := Purge(m); err == nil {
+		t.Fatal("purge reported success with the shared saves still set aside")
+	}
+	if read(t, filepath.Join(m.Held, "shared.sav")) != "shared" || read(t, filepath.Join(saves, "stray.sav")) != "stray" || !exists(journalPath(journal)) {
+		t.Fatal("purge lost the shared saves, the stray folder or its journal")
+	}
+}
+
+func TestPurgeOfAHalfCopiedSwapLeavesTheProfileAlone(t *testing.T) {
+	root := t.TempDir()
+	saves, prof, journal := filepath.Join(root, "g", "Saves"), filepath.Join(root, "p", "saves"), filepath.Join(root, "j")
+	write(t, filepath.Join(saves, "shared.sav"), "shared")
+	write(t, filepath.Join(prof, "mine.sav"), "mine")
+	m, err := Apply(journal, saves, prof, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The crash came before the copy was complete: what is at saves is partial, never to be written back.
+	m.Live = false
+	if err := os.Remove(filepath.Join(saves, "mine.sav")); err != nil {
+		t.Fatal(err)
+	}
+	if err := Purge(m); err != nil {
+		t.Fatal(err)
+	}
+	if read(t, filepath.Join(prof, "mine.sav")) != "mine" || read(t, filepath.Join(saves, "shared.sav")) != "shared" {
+		t.Fatal("a partial copy replaced the profile's saves")
+	}
+}
+
+func TestRecoverWaitsForTheGameAndRefusesADamagedJournal(t *testing.T) {
+	root := t.TempDir()
+	saves, prof, journal := filepath.Join(root, "g", "Saves"), filepath.Join(root, "p", "saves"), filepath.Join(root, "j")
+	write(t, filepath.Join(saves, "shared.sav"), "shared")
+	if _, err := Apply(journal, saves, prof, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := Recover(journal, func() bool { return true }); err != nil || !exists(saves+heldSuffix) || !exists(journalPath(journal)) {
+		t.Fatalf("recover undid a running game's swap: %v", err)
+	}
+	write(t, journalPath(journal), "{not json")
+	if err := Recover(journal, nil); err == nil || !exists(saves+heldSuffix) {
+		t.Fatalf("a damaged journal was purged blind: %v", err)
+	}
+	if _, err := Apply(journal, saves, prof, false); err == nil {
+		t.Fatal("apply ran over an unrecovered journal")
+	}
+}
