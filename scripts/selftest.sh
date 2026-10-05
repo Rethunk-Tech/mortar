@@ -173,7 +173,7 @@ seed() {
   cli mods enable stardew "Seed Farm" Seed.Beta
   cli templates save stardew "Seed Farm" "Seed Template"
   cli templates new stardew "Seed Template" "Seed From Template"
-  cli backups create Seed_123456
+  cli backups create --game stardew Seed_123456
 
   # A failed download has no command that makes one, so it is written where the queue keeps its history.
   local pid data=$SANDBOX_HOME/.local/share/mortar
@@ -194,7 +194,7 @@ PY
   sleep 1
   start
   for _ in $(seq 1 30); do
-    if cli backups list --json | grep -q scheduled; then
+    if cli backups list --game stardew --json | grep -q scheduled; then
       echo "sandbox seeded"
       return
     fi
