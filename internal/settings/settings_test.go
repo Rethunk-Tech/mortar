@@ -224,3 +224,17 @@ func TestListColumns(t *testing.T) {
 		t.Fatalf("file without list columns = %v", got.ListColumns)
 	}
 }
+
+func TestConfirmedLaunchersSurviveARestart(t *testing.T) {
+	s, _ := open(t)
+	if err := NewService(s).ConfirmLaunchers(); err != nil {
+		t.Fatal(err)
+	}
+	reopened, err := Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reopened.Get().LaunchersConfirmed {
+		t.Fatal("the welcome screen would come back: LaunchersConfirmed was not saved")
+	}
+}
