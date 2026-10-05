@@ -1,6 +1,10 @@
 # Flathub submission for Mortar @VERSION@
 
-The owner opens this PR; nothing here is automated. The release workflow renders the submission with
+The owner opens this PR; nothing here is automated. Flathub's Generative AI policy forbids AI agents opening, writing or
+replying to submission PRs and forbids AI-assisted content in the manifest, so the owner writes the manifest that is
+submitted, records the required video of the Flatpak running, and completes the template checklist, including the
+disclosure of AI-generated code in Mortar. Flathub also expects a meaningful public development history, so this
+submission waits until the public repository has one. The release workflow renders the submission with
 `build/linux/flathub/render.sh` and attaches its files with a `flathub-` prefix: `tech.rethunk.Mortar.yml`
 (builds the v@VERSION@ tag from source), `go-sources.json` and `node-sources.json` (every Go module and npm
 package the build reads, with sha256 or sha512) and `yarn.lock`.
