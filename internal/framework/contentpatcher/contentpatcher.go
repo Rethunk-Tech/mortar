@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/gob"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -173,7 +174,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 11
+const contentPackParserVersion = 12
 
 type packFileStamp struct {
 	Path    string `json:"path"`
@@ -837,15 +838,27 @@ func loadPackDiskCache() string {
 	if err != nil {
 		return path
 	}
-	payload, ok := unzipPackCache(raw)
-	if !ok {
-		return path
-	}
-	var cache diskPackCache
-	if json.Unmarshal(payload, &cache) == nil && cache.Version == contentPackParserVersion && cache.Packs != nil {
+	if cache, ok := decodePackCache(raw); ok {
 		packDiskState.entries = cache.Packs
 	}
 	return path
+}
+
+// The pack cache is gob, not JSON: it holds every pack's cell sets, tens of MB that a start decodes in full, and gob
+// reads them several times faster. It is left uncompressed for the same reason.
+func encodePackCache(cache diskPackCache) ([]byte, error) {
+	var buf bytes.Buffer
+	err := gob.NewEncoder(&buf).Encode(cache)
+	return buf.Bytes(), err
+}
+
+// decodePackCache reads a cache this parser version wrote; anything else reads as no cache.
+func decodePackCache(raw []byte) (diskPackCache, bool) {
+	var cache diskPackCache
+	if gob.NewDecoder(bytes.NewReader(raw)).Decode(&cache) != nil || cache.Version != contentPackParserVersion || cache.Packs == nil {
+		return diskPackCache{}, false
+	}
+	return cache, true
 }
 
 func diskPackEntryFor(root string) (diskPackEntry, bool) {
@@ -912,15 +925,10 @@ func flushPackDiskCache(mods []framework.Mod) {
 		}
 		entries[root] = entry
 	}
-	raw, err := json.Marshal(diskPackCache{
+	packed, err := encodePackCache(diskPackCache{
 		Version: contentPackParserVersion,
 		Packs:   entries,
 	})
-	if err != nil {
-		packDiskState.Unlock()
-		return
-	}
-	packed, err := zipPackCache(raw)
 	if err != nil {
 		packDiskState.Unlock()
 		return

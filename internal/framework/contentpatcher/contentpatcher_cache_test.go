@@ -1,12 +1,11 @@
 package contentpatcher
 
 import (
-	"bytes"
-	"encoding/json"
 	"image"
 	"image/color"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -88,7 +87,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	entry.Pack = diskCachedPack{}
 	cache.Packs[filepath.Clean(im.Folder)] = entry
 	cache.Version = contentPackParserVersion - 1
-	raw, err := json.Marshal(cache)
+	raw, err := encodePackCache(cache)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,19 +170,9 @@ func readDiskPackCache(t *testing.T, path string) diskPackCache {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(raw) < 2 || raw[0] != 0x1f || raw[1] != 0x8b {
-		t.Fatalf("cache file is not gzip")
-	}
-	payload, ok := unzipPackCache(raw)
+	cache, ok := decodePackCache(raw)
 	if !ok {
-		t.Fatal("unzip pack cache")
-	}
-	if bytes.Contains(payload, []byte("imageSource")) {
-		t.Fatalf("cache still stores imageSource")
-	}
-	var cache diskPackCache
-	if err := json.Unmarshal(payload, &cache); err != nil {
-		t.Fatal(err)
+		t.Fatal("decode pack cache")
 	}
 	return cache
 }
@@ -203,48 +192,25 @@ func TestEncodeCellSet(t *testing.T) {
 }
 
 func TestPackDiskCacheSizeAndLoad(t *testing.T) {
-	oldJSON, compactJSON, packed := generatedPackCacheBytes(t)
-	if len(packed) >= 20<<20 {
-		t.Fatalf("gzip cache %d bytes, want under 20MB", len(packed))
+	cache, packed := generatedPackCache(t)
+	if len(packed) >= 2<<20 {
+		t.Fatalf("cache %d bytes for %d packs, want under 2MB", len(packed), len(cache.Packs))
 	}
-	if len(packed) >= len(oldJSON)/4 {
-		t.Fatalf("gzip cache %d bytes vs old JSON %d", len(packed), len(oldJSON))
+	got, ok := decodePackCache(packed)
+	if !ok || !reflect.DeepEqual(got, cache) {
+		t.Fatal("cache does not round-trip")
 	}
-	var cache diskPackCache
-	payload, ok := unzipPackCache(packed)
-	if !ok || json.Unmarshal(payload, &cache) != nil || cache.Version != contentPackParserVersion {
-		t.Fatalf("compact load failed")
-	}
-	if len(payload) != len(compactJSON) {
-		t.Fatalf("unzip size %d, compact JSON %d", len(payload), len(compactJSON))
-	}
-	t.Logf("fixture packs=%d oldJSON=%d compactJSON=%d gzip=%d", len(cache.Packs), len(oldJSON), len(compactJSON), len(packed))
 }
 
+// BenchmarkPackDiskCacheLoad decodes a cache of 40 packs with 30 image patches each.
 func BenchmarkPackDiskCacheLoad(b *testing.B) {
-	oldJSON, _, packed := generatedPackCacheBytes(b)
-	b.Run("oldJSON", func(b *testing.B) {
-		b.SetBytes(int64(len(oldJSON)))
-		for b.Loop() {
-			var cache oldDiskPackCache
-			if json.Unmarshal(oldJSON, &cache) != nil {
-				b.Fatal("unmarshal old")
-			}
+	_, packed := generatedPackCache(b)
+	b.SetBytes(int64(len(packed)))
+	for b.Loop() {
+		if _, ok := decodePackCache(packed); !ok {
+			b.Fatal("decode")
 		}
-	})
-	b.Run("compactGzip", func(b *testing.B) {
-		b.SetBytes(int64(len(packed)))
-		for b.Loop() {
-			payload, ok := unzipPackCache(packed)
-			if !ok {
-				b.Fatal("unzip")
-			}
-			var cache diskPackCache
-			if json.Unmarshal(payload, &cache) != nil {
-				b.Fatal("unmarshal compact")
-			}
-		}
-	})
+	}
 }
 
 func TestPNGAlphaMemoIsBitMaskAndDroppedAfterPack(t *testing.T) {
@@ -322,60 +288,7 @@ func touchFile(t *testing.T, path string) {
 	}
 }
 
-type oldDiskPackCache struct {
-	Version int                         `json:"version"`
-	Packs   map[string]oldDiskPackEntry `json:"packs"`
-}
-
-type oldDiskPackEntry struct {
-	Fingerprint string            `json:"fingerprint"`
-	Files       []packFileStamp   `json:"files"`
-	Pack        oldDiskCachedPack `json:"pack"`
-}
-
-type oldDiskCachedPack struct {
-	Patches  []oldDiskPatch        `json:"patches"`
-	Tokens   []diskTokenDefinition `json:"tokens"`
-	Mentions map[string]bool       `json:"mentions"`
-	Schema   map[string]diskSchema `json:"schema"`
-	Skips    int                   `json:"skips"`
-}
-
-type oldDiskPatch struct {
-	Kind          string              `json:"kind"`
-	Target        string              `json:"target"`
-	FromFile      string              `json:"fromFile"`
-	Priority      string              `json:"priority"`
-	PatchMode     string              `json:"patchMode"`
-	When          diskWhen            `json:"when"`
-	Shapes        []oldDiskShape      `json:"shapes"`
-	Spouse        string              `json:"spouse"`
-	Places        map[string][]string `json:"places"`
-	Image         bool                `json:"image"`
-	ImageSource   []byte              `json:"imageSource"`
-	ImageFromArea string              `json:"imageFromArea"`
-	Source        string              `json:"source"`
-	Index         int                 `json:"index"`
-	Action        string              `json:"action"`
-	ToArea        string              `json:"toArea"`
-	TokenName     string              `json:"tokenName"`
-	TokenValue    string              `json:"tokenValue"`
-}
-
-type oldDiskShape struct {
-	Kind  byte   `json:"kind"`
-	X     int    `json:"x"`
-	Y     int    `json:"y"`
-	W     int    `json:"w"`
-	H     int    `json:"h"`
-	Cells string `json:"cells"`
-	Layer string `json:"layer"`
-	Key   string `json:"key"`
-	Value string `json:"value"`
-	Tiny  bool   `json:"tiny"`
-}
-
-func generatedPackCacheBytes(t testing.TB) (oldJSON, compactJSON, packed []byte) {
+func generatedPackCache(t testing.TB) (diskPackCache, []byte) {
 	t.Helper()
 	const packs = 40
 	const patches = 30
@@ -389,64 +302,29 @@ func generatedPackCacheBytes(t testing.TB) (oldJSON, compactJSON, packed []byte)
 		}
 	}
 	cellStr := cells.String()
-	png := bytes.Repeat([]byte{0x89, 0x50, 0x4e, 0x47}, 2048)
-	old := oldDiskPackCache{Version: 6, Packs: map[string]oldDiskPackEntry{}}
-	compact := diskPackCache{Version: contentPackParserVersion, Packs: map[string]diskPackEntry{}}
+	cache := diskPackCache{Version: contentPackParserVersion, Packs: map[string]diskPackEntry{}}
 	for i := range packs {
-		root := "/tmp/pack-" + strconv.Itoa(i)
-		oldPatches := make([]oldDiskPatch, patches)
-		newPatches := make([]diskPatch, patches)
+		diskPatches := make([]diskPatch, patches)
 		for p := range patches {
 			when := diskWhen{Spouse: "abigail", Places: map[string][]string{"season": {"spring"}}}
-			oldPatches[p] = oldDiskPatch{
-				Kind: "edit", Target: "maps/town", FromFile: "patch.png", PatchMode: "Overlay",
-				When: when, Spouse: "abigail", Places: when.Places, Image: true, ImageSource: png,
-				ImageFromArea: `{"X":0,"Y":0}`, Source: "content.json", Index: p, Action: kindEditImage,
-				Shapes: []oldDiskShape{{Kind: 'r', Cells: cellStr}},
-			}
-			cp := cpPatch{
+			diskPatches[p] = diskPatchOf(cpPatch{
 				kind: "edit", target: "maps/town", fromFile: "patch.png", patchMode: "Overlay",
 				when: cpWhenOfDisk(when), image: true, imageFromArea: `{"X":0,"Y":0}`,
 				source: "content.json", index: p, action: kindEditImage,
 				shapes: []cpShape{{kind: 'r', cells: cellStr}},
-			}
-			newPatches[p] = diskPatchOf(cp)
+			})
 		}
-		old.Packs[root] = oldDiskPackEntry{
+		cache.Packs["/tmp/pack-"+strconv.Itoa(i)] = diskPackEntry{
 			Fingerprint: "f" + strconv.Itoa(i),
 			Files:       []packFileStamp{{Path: "content.json", Size: 100, ModTime: 1}},
-			Pack:        oldDiskCachedPack{Patches: oldPatches, Mentions: map[string]bool{"other.mod": true}, Skips: 1},
-		}
-		compact.Packs[root] = diskPackEntry{
-			Fingerprint: "f" + strconv.Itoa(i),
-			Files:       []packFileStamp{{Path: "content.json", Size: 100, ModTime: 1}},
-			Pack:        diskCachedPack{Patches: newPatches, Mentions: map[string]bool{"other.mod": true}, Skips: 1},
+			Pack:        diskCachedPack{Patches: diskPatches, Mentions: map[string]bool{"other.mod": true}, Skips: 1},
 		}
 	}
-	var err error
-	oldJSON, err = json.Marshal(old)
+	packed, err := encodePackCache(cache)
 	if err != nil {
 		t.Fatal(err)
 	}
-	compactJSON, err = json.Marshal(compact)
-	if err != nil {
-		t.Fatal(err)
-	}
-	packed, err = zipPackCache(compactJSON)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if tb, ok := t.(*testing.T); ok {
-		var sample oldDiskCachedPack
-		for _, entry := range old.Packs {
-			sample = entry.Pack
-			break
-		}
-		sizeOf := func(v any) int { raw, _ := json.Marshal(v); return len(raw) }
-		tb.Logf("per-pack old JSON: patches=%d tokens=%d mentions=%d schema=%d (imageSource+cells dominate patches)",
-			sizeOf(sample.Patches), sizeOf(sample.Tokens), sizeOf(sample.Mentions), sizeOf(sample.Schema))
-	}
-	return oldJSON, compactJSON, packed
+	return cache, packed
 }
 
 func TestScanBenchConflictRSS(t *testing.T) {
