@@ -53,9 +53,3 @@ func SavesDir(home string, s settings.Settings, id, pin string) (string, error) 
 func StartupPreferencesPath(home string, s settings.Settings, id, pin string) (string, error) {
 	return PathFor(home, s, id, pin, PathStartupPreferences)
 }
-
-// HasMetadata reports whether the catalog marks game id with the named metadata feature.
-func HasMetadata(id, name string) bool {
-	g, ok := catalogGame(id)
-	return ok && g.HasMetadata(name)
-}
