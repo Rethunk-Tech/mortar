@@ -1,8 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { GameInfo } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { List as ListGames } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import type { LinkSource } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/models.ts'
+import {
+  DisableSource,
+  EnableSource,
+  LinkSources,
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { List as ListProfiles } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
@@ -14,7 +20,7 @@ import {
 import { ExtensionContact } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
+import { reportUnexpected, toastError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
@@ -157,6 +163,38 @@ function ExtensionSteps() {
   )
 }
 
+// One row for each source with a link scheme that Mortar handles only on request (Thunderstore's ror2mm).
+function SourceLinks() {
+  const { t } = useLingui()
+  const [sources, setSources] = useState<LinkSource[]>([])
+  const load = useCallback(() => {
+    LinkSources()
+      .then((list) => setSources(list ?? []))
+      .catch(reportUnexpected)
+  }, [])
+  useEffect(load, [load])
+  return sources.map((source) => (
+    <SettingRow
+      key={source.id}
+      label={t`Handle ${source.name} links`}
+      description={t`Opening a ${source.scheme}:// link, such as Install with Mod Manager, installs the package in Mortar.`}
+    >
+      <PrefSwitch
+        checked={source.handled}
+        onChange={(on) => {
+          const done = on ? EnableSource(source.id) : DisableSource(source.id)
+          done
+            .catch((error: unknown) =>
+              toastError(t`Could not change how ${source.name} links open`, error),
+            )
+            .finally(load)
+        }}
+        label={t`Handle ${source.name} links`}
+      />
+    </SettingRow>
+  ))
+}
+
 function NxmLinks() {
   const { t } = useLingui()
   const push = useToasts((s) => s.push)
@@ -194,6 +232,7 @@ function NxmLinks() {
           />
         </SettingRow>
       ) : null}
+      <SourceLinks />
       {nxm.dialog}
     </>
   )

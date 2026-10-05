@@ -157,6 +157,14 @@ func OptsIn(id string) bool {
 	return ok && !opt.HandleLinksDefault()
 }
 
+// Claims reports whether the source's link scheme is claimed from the system now: the user's choice, else its default.
+func Claims(id string) bool {
+	mu.RLock()
+	defer mu.RUnlock()
+	s, ok := registry[strings.ToLower(strings.TrimSpace(id))]
+	return ok && claims(s)
+}
+
 func claims(s Source) bool {
 	if on, ok := handleLinks[s.ID()]; ok {
 		return on

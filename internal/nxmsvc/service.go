@@ -337,13 +337,35 @@ func (s *Service) Enable() error {
 	})
 }
 
+// LinkSource is a source whose links Mortar handles only when the user chooses, with its scheme.
+type LinkSource struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Scheme  string `json:"scheme"`
+	Handled bool   `json:"handled"`
+}
+
+// LinkSources lists the opt-in sources that have a link scheme (Thunderstore's ror2mm), with whether Mortar handles
+// each now; Nexus's nxm has its own switch.
+func (s *Service) LinkSources() []LinkSource {
+	out := []LinkSource{}
+	for _, src := range source.All() {
+		schemes := source.SchemesOf(src.ID())
+		if !hasOptInSetting(src.ID()) || !source.OptsIn(src.ID()) || len(schemes) == 0 {
+			continue
+		}
+		out = append(out, LinkSource{ID: src.ID(), Name: src.Name(), Scheme: schemes[0], Handled: source.Claims(src.ID())})
+	}
+	return out
+}
+
 // EnableSource makes Mortar handle the links of one source. An opt-in source (Thunderstore's ror2mm) is claimed and
 // recorded in its own setting; Nexus is the nxm path of Enable.
 func (s *Service) EnableSource(id string) error {
 	if !source.OptsIn(id) {
 		return s.Enable()
 	}
-	if _, ok := optInField(id); !ok {
+	if !hasOptInSetting(id) {
 		return fmt.Errorf("source %q has no link scheme to handle", id)
 	}
 	source.SetHandleLink(id, true)
@@ -359,7 +381,7 @@ func (s *Service) DisableSource(id string) error {
 	if !source.OptsIn(id) {
 		return s.Disable()
 	}
-	if _, ok := optInField(id); !ok {
+	if !hasOptInSetting(id) {
 		return fmt.Errorf("source %q has no link scheme to handle", id)
 	}
 	schemes := source.SchemesOf(id)
@@ -378,10 +400,8 @@ func (s *Service) DisableSource(id string) error {
 	})
 }
 
-// optInField says whether the source's choice is stored; only Thunderstore's is.
-func optInField(id string) (string, bool) {
-	return "thunderstoreHandleLinks", id == "thunderstore"
-}
+// hasOptInSetting says whether the source's choice is stored; only Thunderstore's is.
+func hasOptInSetting(id string) bool { return id == "thunderstore" }
 
 func setHandleLinks(v *settings.Settings, id string, on bool) {
 	if id == "thunderstore" {

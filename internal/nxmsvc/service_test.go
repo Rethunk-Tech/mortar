@@ -274,8 +274,14 @@ func TestOptInSourceLinksAreEnabledAndReleasedPerSource(t *testing.T) {
 	h := &fakeHandler{owner: nxm.Owner{ID: "other.desktop", Name: "Other"}}
 	s := newService(t, h)
 	t.Cleanup(func() { source.SetHandleLink("thunderstore", false) })
+	if got := s.LinkSources(); len(got) != 1 || got[0].ID != "thunderstore" || got[0].Scheme != "ror2mm" || got[0].Handled {
+		t.Fatalf("link sources before enabling: %+v", got)
+	}
 	if err := s.EnableSource("thunderstore"); err != nil {
 		t.Fatal(err)
+	}
+	if got := s.LinkSources(); !got[0].Handled {
+		t.Fatalf("link sources after enabling: %+v", got)
 	}
 	got := s.store.Get()
 	if got.ThunderstoreHandleLinks == nil || !*got.ThunderstoreHandleLinks || got.NxmPreviousHandlers["ror2mm"] != "other.desktop" {
