@@ -14,7 +14,8 @@ import (
 
 // DeclaredSize sums the uncompressed sizes the archive's headers declare. It
 // is informational (an untrusted archive can lie); Extract's caps count bytes.
-func DeclaredSize(archivePath string) (int64, error) {
+func DeclaredSize(archivePath string) (_ int64, err error) {
+	defer readerPanic(&err)
 	f, err := fsx.Open(archivePath)
 	if err != nil {
 		return 0, err

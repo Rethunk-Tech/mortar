@@ -105,7 +105,8 @@ func (v *previewer) full() bool {
 }
 
 // PreviewArchive lists the zip, RAR or 7z archive at archivePath without extracting it.
-func PreviewArchive(archivePath string) (Preview, error) {
+func PreviewArchive(archivePath string) (_ Preview, err error) {
+	defer readerPanic(&err)
 	f, err := fsx.Open(archivePath)
 	if err != nil {
 		return Preview{}, err

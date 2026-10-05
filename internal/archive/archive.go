@@ -52,6 +52,7 @@ var (
 	ErrArchiveTooLarge   = errors.New("archive exceeds the extracted size cap")
 	ErrTooManyEntries    = errors.New("archive exceeds the entry cap")
 	ErrChecksum          = errors.New("checksum mismatch")
+	ErrMalformed         = errors.New("archive is malformed")
 )
 
 // Error names the entry that failed and why. Entry is empty for a failure of
@@ -78,8 +79,17 @@ func Extract(archivePath, dest string) error {
 	return extractWith(archivePath, dest, options{})
 }
 
+// readerPanic turns a panic in a format reader, which a crafted archive can cause, into ErrMalformed for *err, so an
+// untrusted download fails its item instead of ending the process.
+func readerPanic(err *error) {
+	if r := recover(); r != nil {
+		*err = &Error{Reason: fmt.Errorf("%w: %v", ErrMalformed, r)}
+	}
+}
+
 // extractWith is Extract with lowered or raised caps, which the tests use.
-func extractWith(archivePath, dest string, opts options) error {
+func extractWith(archivePath, dest string, opts options) (err error) {
+	defer readerPanic(&err)
 	f, err := fsx.Open(archivePath)
 	if err != nil {
 		return err
