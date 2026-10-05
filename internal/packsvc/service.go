@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // profiles is the part of profile.Store the service uses.
@@ -226,6 +227,10 @@ var blockedExtensions = []string{
 func packFiles(d pack.Draft, roots []string) map[string][]byte {
 	out := map[string][]byte{}
 	keep := func(p string, data []byte) {
+		p, ok := winPath(p)
+		if !ok {
+			return
+		}
 		first, rest, ok := strings.Cut(p, "/")
 		if !ok {
 			return
@@ -243,6 +248,19 @@ func packFiles(d pack.Draft, roots []string) map[string][]byte {
 		keep("BepInEx/"+f.Path, f.Data)
 	}
 	return out
+}
+
+// winPath is p with each segment's trailing dots and spaces removed, as Windows stores it, so "evil.dll." is judged as
+// the evil.dll it becomes there. A segment with nothing else, or a name Windows cannot hold, refuses the path.
+func winPath(p string) (string, bool) {
+	segs := strings.Split(p, "/")
+	for i, seg := range segs {
+		segs[i] = strings.TrimRight(seg, ". ")
+		if !winname.Valid(segs[i]) {
+			return "", false
+		}
+	}
+	return strings.Join(segs, "/"), true
 }
 
 // importRoots are the folders the game's loaders let an imported pack write loose files into.
