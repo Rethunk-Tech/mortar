@@ -749,6 +749,10 @@ msgstr "Game version not supported"
 msgid "Where it came in one download with other mods, it is switched off instead."
 msgstr "Where it came in one download with other mods, it is switched off instead."
 
+#: src/browse/BrowsePage.tsx:531
+msgid "Installed by Mortar"
+msgstr "Installed by Mortar"
+
 #. placeholder {0}: group.save
 #. placeholder {1}: group.profileName
 #: src/launch/PrePlayDialog.tsx:42
@@ -5624,7 +5628,7 @@ msgstr "Another preset already has this name."
 msgid "Unknown author"
 msgstr "Unknown author"
 
-#: src/browse/BrowsePage.tsx:533
+#: src/browse/BrowsePage.tsx:535
 msgid "In this profile"
 msgstr "In this profile"
 
@@ -6812,9 +6816,9 @@ msgstr "Could not run diagnostics"
 msgid "·"
 msgstr "·"
 
-#: src/browse/BrowsePage.tsx:543
-#: src/browse/BrowsePage.tsx:555
-#: src/browse/BrowsePage.tsx:579
+#: src/browse/BrowsePage.tsx:545
+#: src/browse/BrowsePage.tsx:557
+#: src/browse/BrowsePage.tsx:581
 #: src/downloads/newDownloads.ts:30
 #: src/mods/AddToGroupDialog.tsx:99
 #: src/mods/ModDependencyTree.tsx:72

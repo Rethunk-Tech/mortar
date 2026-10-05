@@ -56,6 +56,8 @@ const (
 type Client struct {
 	Version   string
 	Installed InstalledFunc
+	// Bundled reports a hit Mortar installs itself, such as a loader companion; those are Installed too.
+	Bundled InstalledFunc
 	// ShowAdult keeps hits their source flags as adult content; by default they are dropped.
 	ShowAdult bool
 	// Prefer lists source ids that rank ahead of the rest of the game's sources, which keep catalog order.
@@ -230,7 +232,8 @@ func (c *Client) markInstalled(items []Item) {
 		return
 	}
 	for i := range items {
-		items[i].Installed = c.Installed(items[i].Source, items[i].ID)
+		items[i].Bundled = c.Bundled != nil && c.Bundled(items[i].Source, items[i].ID)
+		items[i].Installed = items[i].Bundled || c.Installed(items[i].Source, items[i].ID)
 	}
 }
 

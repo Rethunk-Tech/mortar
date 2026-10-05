@@ -527,6 +527,8 @@ function ResultCard({
   const shown = live.kind === 'idle' && openedFiles ? ({ kind: 'waiting-nexus' } as const) : live
   if (item.loader) {
     action = <Chip size="small" label={t`Loader`} title={t`Mortar installs the loader for you.`} />
+  } else if (item.bundled) {
+    action = <Chip size="small" label={t`Installed by Mortar`} />
   } else if (shown.kind !== 'idle') {
     action = <CardProgress state={shown} />
   } else if (installed) {

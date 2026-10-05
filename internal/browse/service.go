@@ -2,9 +2,9 @@ package browse
 
 import (
 	"context"
-	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -18,6 +18,8 @@ type Service struct {
 	ShowAdult func() bool
 	// SourceOrder is the game's preferred source ids, first first; nil means catalog order.
 	SourceOrder func(game string) []string
+	// Installed reads the manifests of a profile's mods, whose update keys name the pages they came from; nil skips them.
+	Installed func(game, profileID string) ([]profile.Installed, error)
 	// Compat returns the game's compatibility list lookup, or nil when the game has none.
 	Compat func(game string) func(ctx context.Context) (meta.CompatIndex, error)
 }
@@ -34,12 +36,15 @@ func NewService(version string, profiles *profile.Service) *Service {
 
 // Search returns one page of mods for game from sourceID matching text.
 func (s *Service) Search(ctx context.Context, game, sourceID, text string, page int, profileID string, filter Filter) (Page, error) {
-	c := &Client{Version: s.Version, Installed: s.installed(game, profileID), ShowAdult: s.ShowAdult != nil && s.ShowAdult()}
+	c := &Client{Version: s.Version, ShowAdult: s.ShowAdult != nil && s.ShowAdult()}
 	if s.SourceOrder != nil {
 		c.Prefer = s.SourceOrder(game)
 	}
 	if s.Compat != nil {
 		c.Compat = s.Compat(game)
+	}
+	if h := s.holdings(game, profileID); h != nil {
+		c.Installed, c.Bundled = h.Has, h.Bundled
 	}
 	return c.Search(ctx, game, sourceID, text, page, filter)
 }
@@ -68,7 +73,7 @@ func (s *Service) SearchableSources(game string) []SourceInfo {
 	return out
 }
 
-func (s *Service) installed(game, profileID string) InstalledFunc {
+func (s *Service) holdings(game, profileID string) *Holdings {
 	if s == nil || s.Profiles == nil || strings.TrimSpace(profileID) == "" {
 		return nil
 	}
@@ -76,33 +81,21 @@ func (s *Service) installed(game, profileID string) InstalledFunc {
 	if err != nil {
 		return nil
 	}
+	info, _ := catalogGame(game)
 	for _, prof := range list {
 		if prof.ID == profileID || strings.EqualFold(prof.Name, profileID) {
-			return InstalledOn(prof)
+			var installed []profile.Installed
+			if s.Installed != nil {
+				installed, _ = s.Installed(game, prof.ID)
+			}
+			h := Hold(info, prof, installed)
+			return &h
 		}
 	}
 	return nil
 }
 
-// InstalledOn reports Nexus mod ids and GitHub repos already on prof, by the entry's source kind.
+// InstalledOn reports what prof has by its entries' sources alone.
 func InstalledOn(prof profile.Profile) InstalledFunc {
-	return func(source, id string) bool {
-		for _, entry := range prof.Entries {
-			switch entry.Source.Kind {
-			case profile.KindNexus:
-				if source == "nexus" && strconv.Itoa(entry.Source.ModID) == id {
-					return true
-				}
-			case profile.KindThunderstore:
-				if source == "thunderstore" && strings.EqualFold(entry.Source.Name, id) {
-					return true
-				}
-			case profile.KindGitHub:
-				if source == "github" && entry.Source.Repo == id {
-					return true
-				}
-			}
-		}
-		return false
-	}
+	return Hold(components.GameInfo{}, prof, nil).Has
 }

@@ -84,6 +84,8 @@ type Item struct {
 	Obsolete bool `json:"obsolete"`
 	Broken   bool `json:"broken"`
 	Loader   bool `json:"loader"`
+	// Bundled marks a mod Mortar installs itself with the loader (its companion), so Add does not apply.
+	Bundled bool `json:"bundled"`
 }
 
 // Alt is the same mod on another source: where to open it and install it from.
