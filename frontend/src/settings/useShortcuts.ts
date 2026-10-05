@@ -38,6 +38,19 @@ function stepProfile(dir: -1 | 1) {
   }
 }
 
+// Keys the mods list and its rows handle where they are focused. A window-level handler that claimed them would
+// cancel Enter, Space and the arrows on every button, tab and menu in the app.
+const scopedToMods: ReadonlySet<ShortcutId> = new Set([
+  'select-all-mods',
+  'mod-up',
+  'mod-down',
+  'mod-toggle',
+  'mod-details',
+  'mod-remove',
+])
+
+export const isWindowShortcut = (id: ShortcutId) => id !== 'dismiss' && !scopedToMods.has(id)
+
 export function runShortcut(id: ShortcutId) {
   const profiles = useProfiles.getState()
   switch (id) {
@@ -127,7 +140,7 @@ export function useAppShortcuts() {
       if (!(id && shortcutAllowed(id, typing, dialogOpen()))) {
         return
       }
-      if (id === 'dismiss') {
+      if (!isWindowShortcut(id)) {
         return
       }
       e.preventDefault()

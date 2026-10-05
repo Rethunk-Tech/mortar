@@ -4,7 +4,7 @@ import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { useToasts } from '../toasts/store.ts'
-import { runShortcut } from './useShortcuts.ts'
+import { isWindowShortcut, runShortcut } from './useShortcuts.ts'
 
 describe('runShortcut', () => {
   test('opens Downloads, notifications, cycles profiles, and toggles the sidebar', () => {
@@ -37,4 +37,18 @@ describe('runShortcut', () => {
     runShortcut('collapse-sidebar')
     expect(useSidebarCollapsed.getState().collapsed).toBe(!start)
   })
+})
+
+test('Enter, Space and the arrows stay with the focused control unless the mods list claims them', () => {
+  for (const id of [
+    'mod-details',
+    'mod-toggle',
+    'mod-up',
+    'mod-down',
+    'mod-remove',
+    'dismiss',
+  ] as const) {
+    expect(isWindowShortcut(id)).toBe(false)
+  }
+  expect(isWindowShortcut('command-palette')).toBe(true)
 })
