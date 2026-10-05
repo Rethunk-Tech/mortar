@@ -717,7 +717,9 @@ func run() error {
 		},
 		Running: profiles.Running,
 	}
+	gate := &startGate{}
 	for _, s := range []application.Service{
+		application.NewService(gate),
 		application.NewService(configSvc),
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
@@ -1027,14 +1029,14 @@ func run() error {
 			// Menus are GTK objects: rebuilding one off the main thread, or twice at once from a burst of
 			// events, leaves items without their native handle and panics.
 			app.Event.On(launchsvc.StateEvent, func(*application.CustomEvent) {
-				application.InvokeSync(refreshTrayMenu)
+				gate.run(refreshTrayMenu)
 			})
 		}
 		refreshTrayMenu()
 	}
 	syncTray()
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
-		application.InvokeSync(syncTray)
+		gate.run(syncTray)
 		applyLinkChoices(store.Get())
 		if err := lanSvc.SetEnabled(store.Get().LanSharing); err != nil {
 			log.Printf("LAN sharing: %v", err)
