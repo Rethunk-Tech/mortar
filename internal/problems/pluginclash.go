@@ -9,12 +9,14 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // PluginCopy is one enabled package that ships a plugin with a GUID another enabled package also ships.
 type PluginCopy struct {
 	Key     string `json:"key"`
+	ID      mod.ID `json:"id"`
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	// PluginVersion is the version the plugin's [BepInPlugin] declares.
@@ -93,7 +95,7 @@ func pluginClashes(pkgs []profile.PackageRef) []PluginClash {
 		c := PluginClash{GUID: display[g]}
 		newest := 0
 		for i, o := range owners {
-			c.Copies = append(c.Copies, PluginCopy{Key: o.pkg.Key, Name: o.pkg.Name, Version: o.pkg.Version, PluginVersion: o.plugin})
+			c.Copies = append(c.Copies, PluginCopy{Key: o.pkg.Key, ID: o.pkg.ID, Name: o.pkg.Name, Version: o.pkg.Version, PluginVersion: o.plugin})
 			if cmp, ok := meta.CompareVersions(o.plugin, owners[newest].plugin); ok && cmp > 0 {
 				newest = i
 			}

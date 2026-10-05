@@ -1,10 +1,16 @@
 package profile
 
-import "slices"
+import (
+	"slices"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+)
 
 // PackageRef is one enabled Thunderstore package of a profile and the store folder holding its files.
 type PackageRef struct {
-	Key     string
+	Key string
+	// ID is the id of the package component, which enabling or disabling the package takes.
+	ID      mod.ID
 	Name    string
 	Version string
 	Dir     string
@@ -29,7 +35,11 @@ func (s *Store) EnabledPackages(game, id string) ([]PackageRef, error) {
 		if err != nil {
 			continue
 		}
-		out = append(out, PackageRef{Key: e.Key, Name: e.Source.Name, Version: e.Source.Version, Dir: dir})
+		var id mod.ID
+		if len(e.Mods) > 0 {
+			id = e.Mods[0].ID
+		}
+		out = append(out, PackageRef{Key: e.Key, ID: id, Name: e.Source.Name, Version: e.Source.Version, Dir: dir})
 	}
 	return out, nil
 }
