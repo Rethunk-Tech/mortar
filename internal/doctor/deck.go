@@ -50,7 +50,7 @@ func deckChecks() []Check {
 }
 
 func osReleaseID(b []byte) string {
-	for _, line := range strings.SplitSeq(string(b), "\n") {
+	for line := range strings.SplitSeq(string(b), "\n") {
 		if v, ok := strings.CutPrefix(line, "ID="); ok {
 			return strings.Trim(strings.TrimSpace(v), `"'`)
 		}
