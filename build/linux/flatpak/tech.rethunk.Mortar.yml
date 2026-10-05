@@ -17,6 +17,8 @@ finish-args:
   - --filesystem=xdg-data/lutris:ro
   - --filesystem=~/.var/app/net.lutris.Lutris
   - --filesystem=~/.var/app/com.heroicgameslauncher.hgl
+  - --filesystem=xdg-data/bottles
+  - --filesystem=~/.var/app/com.usebottles.bottles/data/bottles
   - --filesystem=~/GOG Games
   - --filesystem=~/Games/Heroic
   - --filesystem=xdg-download
