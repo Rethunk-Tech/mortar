@@ -3,6 +3,7 @@ package browse
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -62,5 +63,53 @@ func TestSearchableSourcesFollowCatalogOrder(t *testing.T) {
 	}
 	if got := (&Service{}).SearchableSources("nope"); got == nil || len(got) != 0 {
 		t.Fatalf("unknown game: %v", got)
+	}
+}
+
+type listSource struct {
+	id    string
+	total int
+	items []string
+	err   error
+}
+
+func (l listSource) ID() string            { return l.id }
+func (l listSource) Name() string          { return l.id + " site" }
+func (listSource) Modes() []source.Acquire { return nil }
+func (l listSource) Search(context.Context, source.Query) (source.Page, error) {
+	if l.err != nil {
+		return source.Page{}, l.err
+	}
+	p := source.Page{Total: l.total}
+	for _, id := range l.items {
+		p.Items = append(p.Items, source.Item{Source: l.id, ID: id})
+	}
+	return p, nil
+}
+
+var (
+	_ = source.Register(listSource{id: "alpha", total: 45, items: []string{"a1", "a2", "a3"}})
+	_ = source.Register(listSource{id: "beta", total: 3, items: []string{"b1"}})
+	_ = source.Register(listSource{id: "broken", err: errors.New("busy")})
+)
+
+func TestSearchAllInterleavesAndNamesFailedSources(t *testing.T) {
+	game := components.GameInfo{ID: "m", Sources: []components.GameSource{{ID: "alpha"}, {ID: "beta"}, {ID: "broken"}}}
+	page, err := (&Client{}).searchAll(context.Background(), game, "x", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ids []string
+	for _, it := range page.Items {
+		ids = append(ids, it.ID)
+	}
+	if got := fmt.Sprint(ids); got != "[a1 b1 a2 a3]" {
+		t.Fatalf("order %s", got)
+	}
+	if page.Total != 48 || page.Pages != 3 || fmt.Sprint(page.Failed) != "[broken site]" {
+		t.Fatalf("page %+v", page)
+	}
+	if _, err := (&Client{}).searchAll(context.Background(), components.GameInfo{ID: "z", Sources: []components.GameSource{{ID: "broken"}}}, "x", 1); err == nil {
+		t.Fatal("all sources failing must be an error")
 	}
 }

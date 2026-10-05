@@ -7,12 +7,16 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 )
+
+// AllSources is the source id that searches every searchable source of the game at once.
+const AllSources = "all"
 
 // ErrUnknownSource means the game has no searchable source with that id.
 var ErrUnknownSource = errors.New("unknown browse source")
@@ -38,7 +42,59 @@ func (c *Client) Search(ctx context.Context, game, sourceID, text string, page i
 	if !ok {
 		return Page{}, fmt.Errorf("%w: game %q", ErrUnknownSource, game)
 	}
+	if strings.EqualFold(strings.TrimSpace(sourceID), AllSources) {
+		return c.searchAll(ctx, info, text, page)
+	}
 	return c.search(ctx, info, sourceID, text, page)
+}
+
+// searchAll asks every searchable source for the same page at once and interleaves the answers, so each source keeps
+// its own ranking and none crowds out the rest. Sources that fail are named in Failed; only when all fail is it an
+// error.
+func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text string, page int) (Page, error) {
+	sources := source.Searchable(info)
+	if len(sources) == 0 {
+		return Page{}, fmt.Errorf("%w: %s has no searchable source", ErrUnknownSource, info.ID)
+	}
+	pages := make([]Page, len(sources))
+	errs := make([]error, len(sources))
+	var wg sync.WaitGroup
+	for i, s := range sources {
+		wg.Go(func() { pages[i], errs[i] = c.search(ctx, info, s.ID(), text, page) })
+	}
+	wg.Wait()
+	merged := Page{Items: []Item{}}
+	var answered []Page
+	for i, err := range errs {
+		if err != nil {
+			merged.Failed = append(merged.Failed, sources[i].Name())
+			continue
+		}
+		answered = append(answered, pages[i])
+		merged.Total += pages[i].Total
+		merged.Pages = max(merged.Pages, (pages[i].Total+source.PageSize-1)/source.PageSize)
+	}
+	if len(answered) == 0 {
+		return Page{}, errors.Join(errs...)
+	}
+	merged.Items = interleave(answered)
+	return merged, nil
+}
+
+func interleave(pages []Page) []Item {
+	var out []Item
+	for i := 0; ; i++ {
+		added := false
+		for _, p := range pages {
+			if i < len(p.Items) {
+				out = append(out, p.Items[i])
+				added = true
+			}
+		}
+		if !added {
+			return out
+		}
+	}
 }
 
 func catalogGame(id string) (components.GameInfo, bool) {

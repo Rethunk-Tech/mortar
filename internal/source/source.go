@@ -59,10 +59,13 @@ type Item struct {
 	Installed    bool   `json:"installed"`
 }
 
-// Page is one slice of search hits.
+// Page is one slice of search hits. A merged search across sources also sets Pages, the page count of its largest
+// source, and Failed, the names of sources that did not answer.
 type Page struct {
-	Total int    `json:"total"`
-	Items []Item `json:"items"`
+	Total  int      `json:"total"`
+	Pages  int      `json:"pages,omitempty"`
+	Items  []Item   `json:"items"`
+	Failed []string `json:"failed,omitempty"`
 }
 
 // Searcher is a source that can list mods matching text.
