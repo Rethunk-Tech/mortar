@@ -52,7 +52,7 @@ async function openMod(a: Arrival): Promise<void> {
     const modsState = useMods.getState()
     if (!selected && current && modsState.loaded && modsState.modsFor === current.id) {
       const name = await ModName(game, modID).catch(() => '')
-      const label = name || i18n._(msg`Nexus mod ${modID}`)
+      const label = name || i18n._(msg`Nexus mod ${{ id: modID }}`)
       useToasts.getState().push({
         kind: 'warning',
         title: i18n._(msg`${label} is not in ${current.name}`),

@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -23,6 +22,7 @@ import { useConsole } from '../console/store.ts'
 import { useLaunchLine } from '../firstrun/useLaunchLine.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameName } from '../games/info.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
@@ -131,9 +131,7 @@ function Overlay({ game }: { game: string }) {
       />
       <Spinner />
       <Typography sx={{ fontSize: 30, fontWeight: 700 }}>{t`Launching ${name}`}</Typography>
-      <Typography sx={{ fontSize: 16 }}>
-        {t`${profileName} · ${plural(mods, { one: '# mod', other: '# mods' })}`}
-      </Typography>
+      <Typography sx={{ fontSize: 16 }}>{t`${profileName} · ${modsLabel(mods)}`}</Typography>
       <Box
         role="log"
         sx={{
@@ -311,8 +309,8 @@ function DirectDialog() {
       title={t`Steam was not found`}
       body={
         ask?.profile === ''
-          ? t`Mortar can start ${gameName} directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
-          : t`Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
+          ? t`Mortar can start ${{ name: gameName }} directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
+          : t`Mortar can start ${{ name: 'SMAPI' }} directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
       }
       confirmLabel={t`Launch without Steam`}
       onCancel={() => answer(false)}

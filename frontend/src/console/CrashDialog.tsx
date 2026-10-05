@@ -1,4 +1,4 @@
-import { msg, plural } from '@lingui/core/macro'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -17,6 +17,7 @@ import { Start as StartBisect } from '../../bindings/github.com/Rethunk-Tech/mor
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameName } from '../games/info.ts'
+import { errorsLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useDetail } from '../mods/detail.ts'
@@ -272,7 +273,7 @@ export function CrashDialog() {
                   <Link component="button" type="button" onClick={() => showMod(row.mod, dismiss)}>
                     {row.mod}
                   </Link>
-                  {t` · ${plural(row.count, { one: '# error', other: '# errors' })}`}
+                  {t` · ${errorsLabel(row.count)}`}
                 </Box>
                 <Box sx={{ color: 'text.secondary', mt: 0.25 }}>{row.first}</Box>
               </Box>

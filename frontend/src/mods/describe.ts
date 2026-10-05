@@ -1,6 +1,6 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { errorsLabel } from '../i18n/counts.ts'
 import { localId } from './dependents.ts'
 import { type Problem, sameId } from './lookup.ts'
 import { useMods } from './store.ts'
@@ -37,7 +37,7 @@ export function useDescribe(): Describe {
     runError: Extract<Problem, { kind: 'runError' }>['runError'],
   ): string => {
     const { name, first, count, updated } = runError
-    const errors = plural(count, { one: '# error', other: '# errors' })
+    const errors = errorsLabel(count)
     if (updated) {
       return first === ''
         ? t`${name} was updated since this run and logged ${errors}.`

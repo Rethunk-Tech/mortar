@@ -58,7 +58,7 @@ function FolderRow({
         {note}
       </Typography>
       {onRemove ? (
-        <TipIconButton label={t`Remove ${dir}`} onClick={onRemove}>
+        <TipIconButton label={t`Remove ${{ name: dir }}`} onClick={onRemove}>
           <X size={14} />
         </TipIconButton>
       ) : null}

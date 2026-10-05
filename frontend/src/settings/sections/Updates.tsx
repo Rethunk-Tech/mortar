@@ -62,11 +62,11 @@ function MortarUpdate() {
   const states: Record<typeof phase, string> = {
     idle: t`Not checked yet.`,
     checking: t`Checking for updates…`,
-    current: t`Mortar is up to date.`,
+    current: t`Mortar is up to date`,
     none: t`No release is published yet.`,
     available: t`Mortar ${release?.version ?? ''} is available.`,
     installing: t`Downloading and verifying Mortar ${release?.version ?? ''}…`,
-    ready: t`Update ready — applies when you close Mortar.`,
+    ready: t`Update ready: applies when you close Mortar.`,
     restarting: t`Restarting…`,
     error,
   }
@@ -127,7 +127,7 @@ function MortarUpdate() {
       >
         {action}
       </SettingRow>
-      <SettingRow label={t`What's new in ${info.version}`}>
+      <SettingRow label={t`What's new in ${{ version: info.version }}`}>
         <Button variant="outlined" onClick={() => showWhatsNew(info.version)} sx={button}>
           {t`Show`}
         </Button>

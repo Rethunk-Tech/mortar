@@ -50,7 +50,7 @@ export function CompareDiffRow({
           onClick={copyToB}
           sx={{ flexShrink: 0 }}
         >
-          {t`Copy to ${bName}`}
+          {t`Copy to ${{ name: bName }}`}
         </Button>
       ) : null}
       {copyToA ? (
@@ -61,7 +61,7 @@ export function CompareDiffRow({
           onClick={copyToA}
           sx={{ flexShrink: 0 }}
         >
-          {t`Copy to ${aName}`}
+          {t`Copy to ${{ name: aName }}`}
         </Button>
       ) : null}
     </Box>

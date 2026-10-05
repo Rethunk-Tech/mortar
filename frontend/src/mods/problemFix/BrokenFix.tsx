@@ -44,7 +44,7 @@ export function BrokenFix({
           {t`Open replacement`}
         </Button>
       ) : (
-        <WhereButtons where={where} addLabel={t`Replace with ${replaceName}`} />
+        <WhereButtons where={where} addLabel={t`Replace with ${{ name: replaceName }}`} />
       )
   } else if (where?.url) {
     replace = (

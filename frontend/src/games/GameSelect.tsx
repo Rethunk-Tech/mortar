@@ -150,7 +150,7 @@ export function Row({
   if (lastPlayedName && ago) {
     lastLine = t`last played ${lastPlayedName} · ${ago}`
   } else if (lastPlayedName) {
-    lastLine = t`last played ${lastPlayedName}`
+    lastLine = t`Last played ${{ when: lastPlayedName }}`
   }
   const playtime = formatPlaytime(playtimeMs, i18n.locale)
   if (playtime) {

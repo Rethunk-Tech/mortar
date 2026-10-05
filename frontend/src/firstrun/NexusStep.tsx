@@ -23,7 +23,7 @@ export function NexusStep({ onDone }: { onDone: () => void }) {
       </Typography>
       <NexusSignIn />
       <Box role="status">
-        {signedIn ? <Typography>{t`Signed in as ${name}.`}</Typography> : null}
+        {signedIn ? <Typography>{t`Signed in as ${name}`}</Typography> : null}
       </Box>
       <Button
         ref={continueRef}

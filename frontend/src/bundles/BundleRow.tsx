@@ -1,10 +1,10 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Collapse, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, PackagePlus, Pencil, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import type { Bundle } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/models.ts'
 import { RemoveMods } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportError } from '../toasts/report.ts'
 
@@ -31,7 +31,7 @@ export function BundleRow({
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
   const mods = bundle.mods ?? []
-  const modCount = plural(mods.length, { one: '# mod', other: '# mods' })
+  const modCount = modsLabel(mods.length)
   return (
     <Box sx={{ p: 1.25, bgcolor: 'var(--mortar-raised)', borderRadius: '6px' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -55,7 +55,7 @@ export function BundleRow({
         <TipIconButton label={t`Rename ${bundle.name}`} onClick={onRename}>
           <Pencil size={ICON_SIZE} />
         </TipIconButton>
-        <TipIconButton label={t`Delete ${bundle.name}`} color="error" onClick={onDelete}>
+        <TipIconButton label={t`Delete ${{ name: bundle.name }}`} color="error" onClick={onDelete}>
           <Trash2 size={ICON_SIZE} />
         </TipIconButton>
       </Box>

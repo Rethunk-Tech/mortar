@@ -23,7 +23,7 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
     case 'invalid':
       return i18n._(msg`That request was not valid.`)
     default:
-      return i18n._(msg`Something went wrong.`)
+      return i18n._(msg`Something went wrong`)
   }
 }
 

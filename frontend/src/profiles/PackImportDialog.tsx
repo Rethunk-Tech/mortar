@@ -102,7 +102,7 @@ export function PackImportDialog({
             <Typography sx={{ fontWeight: 700 }}>{preview.name}</Typography>
             {packages.map((p) => (
               <Typography key={p.native} sx={{ fontSize: 14 }}>
-                {packageLine(p, t`off`)}
+                {packageLine(p, t`Off`.toLowerCase())}
               </Typography>
             ))}
             {preview.configs > 0 ? (

@@ -134,7 +134,7 @@ export function CompareBulkBody({
       <CompareModFilter value={filter} onChange={setFilter} />
       {onlyA.length > 0 ? (
         <OnlyInSection
-          title={t`Only in ${aName}`}
+          title={t`Only in ${{ name: aName }}`}
           rows={onlyA}
           to={profileB}
           shared={shared}
@@ -143,7 +143,7 @@ export function CompareBulkBody({
       ) : null}
       {onlyB.length > 0 ? (
         <OnlyInSection
-          title={t`Only in ${bName}`}
+          title={t`Only in ${{ name: bName }}`}
           rows={onlyB}
           to={profileA}
           shared={shared}

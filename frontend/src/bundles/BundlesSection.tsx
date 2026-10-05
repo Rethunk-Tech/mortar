@@ -107,7 +107,7 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
             key={bundle.id}
             game={game}
             bundle={bundle}
-            holderNames={holderNamesOf(profiles, bundle) || t`none`}
+            holderNames={holderNamesOf(profiles, bundle) || t`None`.toLowerCase()}
             onApply={() => setApplying(bundle)}
             onRename={() => setRenaming(bundle)}
             onDelete={() => setDeleting(bundle)}

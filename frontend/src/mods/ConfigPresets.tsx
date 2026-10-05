@@ -144,7 +144,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
       />
       <ConfirmDialog
         open={replacing !== null}
-        title={t`Replace ${replacing ?? ''}?`}
+        title={t`Replace ${{ name: replacing ?? '' }}?`}
         body={t`A preset with this name already exists.`}
         confirmLabel={t`Save as preset`}
         onCancel={() => setReplacing(null)}

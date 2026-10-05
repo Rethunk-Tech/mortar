@@ -85,7 +85,9 @@ export function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod
           const created = await Create(game, name, profileId, [
             ...new Set(selected.map((mod) => mod.id)),
           ])
-          useToasts.getState().push({ kind: 'success', title: t`Created ${created.name}` })
+          useToasts
+            .getState()
+            .push({ kind: 'success', title: t`Created ${{ name: created.name }}` })
         }}
       />
       <TagSelectionDialog

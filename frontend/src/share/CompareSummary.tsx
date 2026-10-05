@@ -20,7 +20,7 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
   const rows: { label: string; items: string[]; tone: string }[] = [
     { label: t`Missing in ${targetName}`, items: names(missing), tone: 'warning.main' },
     { label: t`Different version`, items: names(different), tone: 'warning.main' },
-    { label: t`Only in ${targetName}`, items: onlyYours, tone: 'text.secondary' },
+    { label: t`Only in ${{ name: targetName }}`, items: onlyYours, tone: 'text.secondary' },
   ]
   return (
     <Box sx={{ px: 1, pt: 0.5, pb: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>

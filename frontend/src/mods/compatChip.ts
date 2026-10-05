@@ -20,7 +20,7 @@ export function compatReportChunks(
     return []
   }
   const lines = rows.map((item) => {
-    const extra = item.summary === '' ? '' : ` — ${item.summary}`
+    const extra = item.summary === '' ? '' : ` · ${item.summary}`
     return `${item.name}: ${item.status}${extra}`
   })
   return [{ title, count: rows.length, lines }]

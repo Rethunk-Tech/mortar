@@ -20,7 +20,7 @@ export function Launchers() {
   useRefreshOnFocus(refresh)
   return (
     <Searchable
-      terms={`${t`Launchers`} Steam GOG Flatpak ${t`game folder`} ${launchers.map((l) => l.name).join(' ')}`}
+      terms={`${t`Launchers`} Steam GOG Flatpak ${t`Game folder`} ${launchers.map((l) => l.name).join(' ')}`}
       loose={true}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

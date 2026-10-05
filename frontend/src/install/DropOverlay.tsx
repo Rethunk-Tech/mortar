@@ -99,7 +99,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
               </>
             ) : (
               <Typography sx={{ fontSize: 38, fontWeight: 700 }}>
-                {locked ? t`Stop the game to change mods` : t`Open a profile to install mods`}
+                {locked ? t`Stop the game to change mods.` : t`Open a profile to install mods`}
               </Typography>
             )}
           </Box>

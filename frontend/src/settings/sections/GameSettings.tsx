@@ -174,7 +174,7 @@ function GameFolder({
   if (override) {
     source = t`Chosen by you`
   } else if (folder) {
-    source = t`Found in ${foundIn}`
+    source = t`Found in ${{ path: foundIn }}`
   }
   return (
     <>

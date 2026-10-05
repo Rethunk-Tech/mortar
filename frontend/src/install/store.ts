@@ -84,7 +84,7 @@ function installTitle(
   versionChanged: boolean,
 ) {
   if (!updated) {
-    return i18n._(msg`Added ${mods} to ${profileName}`)
+    return i18n._(msg`Added ${mods} to ${{ profile: profileName }}`)
   }
   return versionChanged
     ? i18n._(msg`Updated ${mods} in ${profileName}`)

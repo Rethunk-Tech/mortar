@@ -61,7 +61,7 @@ export function ToolsManageDialog({
                       <Pencil size={16} />
                     </TipIconButton>
                     <TipIconButton
-                      label={t`Delete ${tool.name}`}
+                      label={t`Delete ${{ name: tool.name }}`}
                       edge="end"
                       onClick={() => setDeleting(tool)}
                     >

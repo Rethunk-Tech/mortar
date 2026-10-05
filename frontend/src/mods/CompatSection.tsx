@@ -6,7 +6,7 @@ import { openPage } from './menu.ts'
 
 function CompatInfoRow({ row }: { row: Compat }) {
   const { t } = useLingui()
-  const summary = row.summary === '' ? '' : ` — ${row.summary}`
+  const summary = row.summary === '' ? '' : ` · ${row.summary}`
   const unofficial =
     row.unofficialUrl === '' ? null : (
       <Link

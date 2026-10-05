@@ -106,7 +106,7 @@ export function OverlayPlaceDialog() {
             onSelect={setFrom}
           />
           <FolderPick
-            label={t`Into ${overlay.baseLabel}`}
+            label={t`Into ${{ profile: overlay.baseLabel }}`}
             root={t`Main mod's folder`}
             nodes={overlay.targets ?? []}
             selected={to}

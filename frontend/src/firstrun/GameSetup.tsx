@@ -122,7 +122,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
   }
   if (loadError || !game) {
-    const alert = loadError ?? inlineError(null, t`Something went wrong.`)
+    const alert = loadError ?? inlineError(null, t`Something went wrong`)
     return <LoadErrorRow error={alert} onRetry={refresh} />
   }
   const stateOf = (n: Step) => {
@@ -153,7 +153,9 @@ export function GameSetup({ game: id }: { game: GameId }) {
         {hasLoader ? (
           <StepChip
             n={LOADER}
-            label={step > LOADER ? t`${game.loader} installed` : t`Install ${game.loader}`}
+            label={
+              step > LOADER ? t`${{ name: game.loader }} installed` : t`Install ${game.loader}`
+            }
             state={stateOf(LOADER)}
           />
         ) : null}

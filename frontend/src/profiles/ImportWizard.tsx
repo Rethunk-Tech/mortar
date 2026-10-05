@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -13,6 +12,7 @@ import { Inbox } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { LocalProfiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { ExternalPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { openImport } from '../share/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -116,7 +116,7 @@ export function ImportWizard({
                 </Typography>
               </Box>
               <Typography color="text.secondary" sx={{ fontSize: 13, flexShrink: 0 }}>
-                {plural(f.mods, { one: '# mod', other: '# mods' })}
+                {modsLabel(f.mods)}
               </Typography>
             </Button>
           ))

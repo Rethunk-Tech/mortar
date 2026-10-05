@@ -53,7 +53,7 @@ export function NexusSSO() {
         onClick={start}
         sx={{ whiteSpace: 'nowrap' }}
       >
-        {t`Sign in with Nexus Mods`}
+        {t`Sign in to Nexus Mods`}
       </Button>
       {stage === 'connected' ? <Box sx={{ fontSize: 14 }}>{t`Connecting…`}</Box> : null}
       {stage === 'waiting-browser' ? (

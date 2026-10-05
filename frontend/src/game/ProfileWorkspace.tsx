@@ -143,7 +143,7 @@ function WorkspaceActions({
         onClick={() => openShare(profile.id)}
       />
       <IconAction
-        label={t`${gameName} settings`}
+        label={t`${{ name: gameName }} settings`}
         icon={<Settings2 size={16} />}
         onClick={openGameSettings}
       />

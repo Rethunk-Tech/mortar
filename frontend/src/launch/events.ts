@@ -41,7 +41,7 @@ function toastSweep(report: SweepReport) {
   useToasts.getState().push({
     kind: 'warning',
     title: i18n._(
-      msg`${name} updated to ${version} — ${plural(n, { one: '# profile needs attention', other: '# profiles need attention' })}`,
+      msg`${name} updated to ${version}: ${plural(n, { one: '# profile needs attention', other: '# profiles need attention' })}`,
     ),
     action: {
       label: i18n._(msg`Review`),

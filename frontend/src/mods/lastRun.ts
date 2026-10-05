@@ -6,6 +6,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { DEFAULT_FILTERS } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
+import { errorsLabel } from '../i18n/counts.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey } from './dependents.ts'
 
@@ -56,7 +57,7 @@ export function showLastRunInConsole(game: string, profileId: string, mod: Mod) 
 }
 
 export function lastRunSummary(hit: ModRunIssues): string {
-  const errors = hit.errors ? plural(hit.errors, { one: '# error', other: '# errors' }) : ''
+  const errors = hit.errors ? errorsLabel(hit.errors) : ''
   const warnings = hit.warnings
     ? plural(hit.warnings, { one: '# warning', other: '# warnings' })
     : ''

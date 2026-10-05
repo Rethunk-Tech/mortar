@@ -108,7 +108,7 @@ function Sharing() {
     setPortText(String(lanPort))
     setPortError(false)
   }, [lanPort])
-  const portRange = t`Enter a number from 1 to ${maxLanPort}`
+  const portRange = t`Enter a number from ${{ min: 1 }} to ${{ max: maxLanPort }}`
   const savePort = () => {
     if (portText.trim() === '') {
       setPortError(true)

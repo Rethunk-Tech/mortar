@@ -279,7 +279,7 @@ export function ImportDialog() {
         open={request !== null}
         onClose={busy ? undefined : dismiss}
         maxWidth={false}
-        slotProps={{ paper: { sx: dialogSx, 'aria-label': t`Import profile` } }}
+        slotProps={{ paper: { sx: dialogSx, 'aria-label': t`Import a profile` } }}
       >
         {request ? <Body key={request.run} request={request} /> : null}
       </Dialog>

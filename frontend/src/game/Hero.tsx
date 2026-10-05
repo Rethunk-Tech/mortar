@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { modsLabel, updatesLabel } from '../i18n/counts.ts'
 import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { openPage } from '../mods/menu.ts'
@@ -137,7 +138,7 @@ function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
           color="warning"
           onClick={() => openImport({ profileId: profile.id, collectionUpdate: true })}
         >
-          {t`Revision ${review} is out — Review`}
+          {t`Review revision ${review}`}
         </Button>
       )}
       <Button size="small" onClick={() => unlinkCollection(game, profile)}>
@@ -238,7 +239,7 @@ function AttentionCards() {
       label={t`Updates`}
       value={String(updateN)}
       tone="primary"
-      ariaLabel={t`Review ${plural(updateN, { one: '# update', other: '# updates' })}`}
+      ariaLabel={t`Review ${updatesLabel(updateN)}`}
       onClick={() => {
         setTab('mods')
         setReviewing(true)
@@ -258,10 +259,10 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
   const hero = useSettings((s) => s.profileHero) || 'full'
   const meta = compactMeta(mods, updates, problems).map((part) => {
     if (part.kind === 'mods') {
-      return t`${plural(part.n, { one: '# mod', other: '# mods' })}`
+      return modsLabel(part.n)
     }
     if (part.kind === 'updates') {
-      return t`${plural(part.n, { one: '# update', other: '# updates' })}`
+      return updatesLabel(part.n)
     }
     return t`${plural(part.n, { one: '# problem', other: '# problems' })}`
   })

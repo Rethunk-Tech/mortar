@@ -75,7 +75,7 @@ function Group({ group }: { group: PlayIssueGroup }) {
           ))}
           {extra > 0 ? (
             <ListItem disableGutters={true}>
-              <ListItemText primary={t`and ${extra} more`} />
+              <ListItemText primary={t`and ${{ count: extra }} more`} />
             </ListItem>
           ) : null}
         </List>

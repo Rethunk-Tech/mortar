@@ -68,9 +68,9 @@ export function CheckTimings({ timings }: { timings: CheckTiming[] }) {
   }
   const labels: Record<string, string> = {
     contentPatcher: t`Content Patcher packs`,
-    conflicts: t`conflicts`,
+    conflicts: t`Conflicts`.toLowerCase(),
     requirements: t`requirements`,
-    updates: t`updates`,
+    updates: t`Updates`.toLowerCase(),
     others: t`other checks`,
   }
   const total = timings.reduce((n, x) => n + x.ms, 0)

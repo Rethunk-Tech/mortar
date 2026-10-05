@@ -90,7 +90,7 @@ function BackupRow({
         </Typography>
       </Box>
       <TipIconButton
-        label={busyGame ? t`Stop the game to restore saves.` : t`Restore ${when}`}
+        label={busyGame ? t`Stop the game to restore saves.` : t`Restore ${{ label: when }}`}
         disabled={busyGame || pending}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
@@ -207,7 +207,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
           <MenuAction
             key={snap.folder}
             icon={<RotateCcw size={16} />}
-            label={t`Restore ${snap.farm || snap.folder}`}
+            label={t`Restore ${{ label: snap.farm || snap.folder }}`}
             onClick={() => {
               if (menu) {
                 setConfirm({ backup: menu.backup, snaps: [snap] })

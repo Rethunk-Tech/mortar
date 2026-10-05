@@ -22,7 +22,7 @@ function PreviewLists({ preview }: { preview: EverywherePreview }) {
   const skipped = preview.skipped ?? []
   const reasonText = (reason: string) => {
     if (reason === 'pinned') {
-      return t`pinned`
+      return t`Pinned`.toLowerCase()
     }
     if (reason === 'skip-version') {
       return t`this version skipped`

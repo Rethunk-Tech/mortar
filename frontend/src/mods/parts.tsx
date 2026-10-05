@@ -19,6 +19,7 @@ import {
 import { ArrowUp, Ban, Pin, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { errorsLabel } from '../i18n/counts.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { dependentsOf, localId } from './dependents.ts'
@@ -151,7 +152,7 @@ export function LastRunBadge({ mod }: { mod: Mod }) {
   if (!hit || (hit.errors === 0 && hit.warnings === 0)) {
     return null
   }
-  const errors = hit.errors ? t`${plural(hit.errors, { one: '# error', other: '# errors' })}` : ''
+  const errors = hit.errors ? errorsLabel(hit.errors) : ''
   const warnings = hit.warnings
     ? t`${plural(hit.warnings, { one: '# warning', other: '# warnings' })}`
     : ''
@@ -169,7 +170,10 @@ export function LastRunBadge({ mod }: { mod: Mod }) {
     flexShrink: 0,
   } as const
   return (
-    <Box sx={{ display: 'flex', flexShrink: 0, gap: 0.4 }} aria-label={t`Last run: ${text}`}>
+    <Box
+      sx={{ display: 'flex', flexShrink: 0, gap: 0.4 }}
+      aria-label={t`Last run: ${{ summary: text }}`}
+    >
       {hit.errors > 0 ? (
         <Box role="img" aria-label={errors} sx={{ ...chipSx, bgcolor: 'error.main' }}>
           {hit.errors}

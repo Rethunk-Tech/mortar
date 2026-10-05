@@ -17,6 +17,7 @@ import { useState } from 'react'
 import type { Saved } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { Logo } from '../brand/Logo.tsx'
+import { modsLabel } from '../i18n/counts.ts'
 import { SendDialog } from '../lan/SendDialog.tsx'
 import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -88,7 +89,7 @@ function PagePreview({ info }: { info: ShownInfo }) {
   const { t } = useLingui()
   const art = useProfiles((s) => s.game?.artUrl)
   const gameName = useProfiles((s) => s.game?.name ?? '')
-  const mods = plural(info.count, { one: '# mod', other: '# mods' })
+  const mods = modsLabel(info.count)
   return (
     <Box
       component="aside"
@@ -191,7 +192,7 @@ function LinkTab({
       reportUnexpected,
     )
   }
-  const mods = plural(info.count, { one: '# mod', other: '# mods' })
+  const mods = modsLabel(info.count)
   const message = t`Try my Mortar profile "${info.name}" for ${gameName} (${mods}): ${info.web}`
   const large = suggestFile(info.count, info.tooLarge)
   return (

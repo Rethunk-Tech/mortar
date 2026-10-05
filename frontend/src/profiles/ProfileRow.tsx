@@ -9,6 +9,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { NameField } from '../game/NameField.tsx'
 import { CoverMenuItems, MoreMenuItems, ProfileMenuItem } from '../game/ProfileMenuItems.tsx'
 import { useRestoreFocus } from '../game/useRestoreFocus.ts'
+import { modsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
 import { userModCount } from './count.ts'
@@ -98,19 +99,19 @@ function RowMenu({
 function useRowSummary(profile: Profile): string {
   const { t } = useLingui()
   const mods = userModCount(profile)
-  const modsLabel = plural(mods, { one: '# mod', other: '# mods' })
+  const modsText = modsLabel(mods)
   const badge = useBadges((s) => s.byProfile[profile.id])
-  const updatesLabel = plural(badge?.updates ?? 0, { one: '# update', other: '# updates' })
+  const updatesText = updatesLabel(badge?.updates ?? 0)
   const problemsLabel = plural(badge?.problems ?? 0, { one: '# problem', other: '# problems' })
   return joinSummary([
-    modsLabel,
-    knownCount(badge?.updates, updatesLabel),
+    modsText,
+    knownCount(badge?.updates, updatesText),
     knownCount(badge?.problems, problemsLabel),
     originLine(profile.origin, profile.copyOf, {
       link: t`imported from a link`,
       mortar: t`imported from a .mortar file`,
       gameMods: t`imported from the game's Mods folder`,
-      copy: (name) => t`copy of ${name}`,
+      copy: (name) => t`Copy of ${{ name }}`,
     }),
   ])
 }

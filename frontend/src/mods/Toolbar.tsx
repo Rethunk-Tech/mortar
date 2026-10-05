@@ -1,5 +1,5 @@
 import type { I18n } from '@lingui/core'
-import { msg, plural } from '@lingui/core/macro'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -33,6 +33,7 @@ import { useEffect, useRef, useState } from 'react'
 import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useTab } from '../game/tab.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { useInstall } from '../install/store.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useSettings } from '../settings/store.ts'
@@ -330,9 +331,7 @@ export function Toolbar({
   const fieldOpen = searchFieldOpen(narrow, expanded, query)
   const inputRef = useRef<HTMLInputElement>(null)
   const loaded = useMods((s) => s.loaded)
-  const placeholder = loaded
-    ? t`Filter ${plural(total, { one: '# mod', other: '# mods' })}`
-    : t`Filter mods`
+  const placeholder = loaded ? t`Filter ${modsLabel(total)}` : t`Filter mods`
   const collapseIfEmpty = () => {
     if (query === '') {
       setExpanded(false)

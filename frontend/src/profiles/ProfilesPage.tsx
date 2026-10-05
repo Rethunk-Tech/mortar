@@ -85,7 +85,7 @@ function TrashRow({ item }: { item: TrashItem }) {
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{days}</Typography>
       </Box>
       <TipIconButton
-        label={t`Restore ${item.name}`}
+        label={t`Restore ${{ label: item.name }}`}
         disabled={pending}
         onClick={() => run(() => restore(item.id))}
       >
@@ -496,7 +496,7 @@ export function ProfilesPage() {
             <EmptyState
               compact={true}
               icon={<Plus />}
-              title={t`No profiles yet.`}
+              title={t`No profiles yet`}
               action={
                 <Button
                   variant="contained"

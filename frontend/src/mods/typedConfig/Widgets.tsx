@@ -133,7 +133,7 @@ function ListWidget({ entry, label, onChange }: WidgetProps) {
           />
           <IconButton
             size="small"
-            aria-label={t`Remove ${item}`}
+            aria-label={t`Remove ${{ name: item }}`}
             onClick={() => onChange(items.filter((_v, j) => j !== i))}
           >
             <X size={14} />

@@ -57,9 +57,9 @@ function ProfileChoice({
       label={
         <span>
           {profile.name}
-          {has && mode !== 'remove' && !isPinned ? ` — ${t`Already has it`}` : ''}
-          {isPinned ? ` — ${t`pinned in ${profile.name}`}` : ''}
-          {isLockedProfile ? ` — ${t`Stop the game to change mods.`}` : ''}
+          {has && mode !== 'remove' && !isPinned ? ` · ${t`Already has it`}` : ''}
+          {isPinned ? ` · ${t`pinned in ${profile.name}`}` : ''}
+          {isLockedProfile ? ` · ${t`Stop the game to change mods.`}` : ''}
         </span>
       }
     />

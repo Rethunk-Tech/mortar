@@ -80,7 +80,7 @@ export function Appearance() {
         <PrefKeys keys={['theme']} />
       </SettingsSection>
       <SettingsSection title={t`Accent colour`}>
-        <Searchable terms={`${t`Accent colour`} ${t`colour`} ${t`color`} ${t`theme`}`}>
+        <Searchable terms={`${t`Accent colour`} ${t`Colour`} ${t`color`} ${t`Theme`}`}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', p: 2 }}>
             <RadioGroup
               aria-label={t`Accent colour`}

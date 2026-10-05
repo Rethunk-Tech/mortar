@@ -78,12 +78,12 @@ export function OverlayListRow({ overlay }: { overlay: OverlayRow }) {
       </Tooltip>
       <Box role="cell" sx={{ ml: 'auto', display: 'flex' }}>
         <LockedReason locked={locked}>
-          <Tooltip title={t`Remove ${overlay.label}`}>
+          <Tooltip title={t`Remove ${{ name: overlay.label }}`}>
             <span>
               <IconButton
                 size="small"
                 disabled={locked}
-                aria-label={t`Remove ${overlay.label}`}
+                aria-label={t`Remove ${{ name: overlay.label }}`}
                 onClick={() => {
                   removeOverlay(overlay).catch(reportUnexpected)
                 }}

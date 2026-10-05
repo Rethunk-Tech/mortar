@@ -274,7 +274,7 @@ export function ModTable({
       : []),
     {
       id: 'why',
-      label: t`Why`,
+      label: t`Why?`,
       help: t`What costs this mod the most; open the row for every timing`,
     },
   ]

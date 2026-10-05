@@ -97,7 +97,7 @@ export function GameModsDialog({
       const detail = formatOutcomeDetail(res.outcomes ?? [])
       const toast = {
         kind: 'success' as const,
-        title: t`Created “${res.profile.name}”`,
+        title: t`Created ${{ name: res.profile.name }}`,
         body: [
           plural(res.imported, { one: '# imported', other: '# imported' }),
           plural(res.skipped, { one: '# skipped', other: '# skipped' }),

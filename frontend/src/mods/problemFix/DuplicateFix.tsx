@@ -35,7 +35,7 @@ export function DuplicateFix({
                 onClick={() => remove(mod).catch(reportUnexpected)}
                 sx={{ flexShrink: 0 }}
               >
-                {t`Remove ${file.fileName || file.key}`}
+                {t`Remove ${{ name: file.fileName || file.key }}`}
               </Button>
             </LockedReason>
           ) : null

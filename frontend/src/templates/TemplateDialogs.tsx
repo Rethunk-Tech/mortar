@@ -1,4 +1,4 @@
-import { msg, plural } from '@lingui/core/macro'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
@@ -21,6 +21,7 @@ import {
   RestoreTemplate,
   SaveTemplateFromProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -80,7 +81,7 @@ function SaveTemplateDialog({
       />
       <ConfirmDialog
         open={open && replacing !== null}
-        title={t`Replace ${replacing ?? ''}?`}
+        title={t`Replace ${{ name: replacing ?? '' }}?`}
         body={t`A template with this name already exists.`}
         confirmLabel={t`Save as template`}
         busy={busy}
@@ -101,7 +102,7 @@ function TemplateRow({
   onDelete: () => void
 }) {
   const { t } = useLingui()
-  const mods = plural(template.bundle?.length ?? 0, { one: '# mod', other: '# mods' })
+  const mods = modsLabel(template.bundle?.length ?? 0)
   return (
     <ListItem
       disableGutters={true}
@@ -113,7 +114,11 @@ function TemplateRow({
             </IconButton>
           </Tooltip>
           <Tooltip title={t`Delete`}>
-            <IconButton size="small" aria-label={t`Delete ${template.name}`} onClick={onDelete}>
+            <IconButton
+              size="small"
+              aria-label={t`Delete ${{ name: template.name }}`}
+              onClick={onDelete}
+            >
               <Trash2 size={16} />
             </IconButton>
           </Tooltip>

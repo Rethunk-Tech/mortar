@@ -225,7 +225,7 @@ export function UsageRows({
     <>
       <SettingsSection title={t`Usage`}>
         <Searchable
-          terms={`${t`Usage`} ${t`Storage`} ${t`disk space`} ${Object.values(labels).join(' ')} ${t`Clean up…`} ${t`Clear cache…`} ${t`Open recently deleted`}`}
+          terms={`${t`Usage`} ${t`Storage`} ${t`Disk space`} ${Object.values(labels).join(' ')} ${t`Clean up…`} ${t`Clear cache…`} ${t`Open recently deleted`}`}
         >
           <StorageBar usage={usage} labels={labels} bytes={bytes} actions={actions} />
         </Searchable>

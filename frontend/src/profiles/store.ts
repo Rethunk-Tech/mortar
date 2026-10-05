@@ -55,7 +55,7 @@ async function restoreProfileZip(gameId: string, apply: (p: Profile) => Promise<
       return
     }
     await apply(p)
-    useToasts.getState().push({ kind: 'success', title: i18n._(msg`Created “${p.name}”`) })
+    useToasts.getState().push({ kind: 'success', title: i18n._(msg`Created ${{ name: p.name }}`) })
   } catch (e) {
     fail(i18n._(msg`Could not restore the profile`))(e)
   }
@@ -185,7 +185,7 @@ async function deleteProfile(
   get().ensureOpen()
   useToasts.getState().push({
     kind: 'success',
-    title: gone ? i18n._(msg`Deleted “${gone.name}”`) : i18n._(msg`Deleted a profile`),
+    title: gone ? i18n._(msg`Deleted ${{ name: gone.name }}`) : i18n._(msg`Deleted a profile`),
     action: {
       label: i18n._(msg`Undo`),
       profileId: id,
@@ -228,7 +228,7 @@ async function repairProfile(
   await get().refresh()
   useToasts.getState().push({
     kind: 'success',
-    title: i18n._(msg`Repaired “${repaired.name || id}”`),
+    title: i18n._(msg`Repaired ${{ name: repaired.name || id }}`),
     action: {
       label: i18n._(msg`Undo`),
       profileId: id,

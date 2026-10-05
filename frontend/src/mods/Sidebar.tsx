@@ -393,7 +393,7 @@ function ActionRows({ mod, nexus }: { mod: Mod; nexus: boolean }) {
       ) : null}
       {pageUrl ? (
         <Link component="button" onClick={() => openPage(pageUrl)} sx={rowLink}>
-          {isGitHub(pageUrl) ? t`Open on GitHub` : t`Open on Nexus Mods`}
+          {isGitHub(pageUrl) ? t`Open on GitHub` : t`Open on Nexus`}
         </Link>
       ) : null}
       {neededBy.length > 0 ? (

@@ -62,7 +62,9 @@ export function CompareTable({ before, now }: { before: PerformanceRow[]; now: P
           <TableRow key={row.name} hover={true}>
             <TableCell>{row.name}</TableCell>
             <TableCell align="right">
-              {row.beforeMs === null ? t`new` : formatTiming(row.beforeMs, i18n.locale)}
+              {row.beforeMs === null
+                ? t`New`.toLowerCase()
+                : formatTiming(row.beforeMs, i18n.locale)}
             </TableCell>
             <TableCell align="right">
               {row.nowMs === null ? t`gone` : formatTiming(row.nowMs, i18n.locale)}

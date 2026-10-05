@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
@@ -21,6 +20,7 @@ import {
   UndoApplyTemplate,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
 import { bundleWants } from '../bundles/missingWants.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { reportError } from '../toasts/report.ts'
@@ -69,8 +69,8 @@ function useApply(game: string, profileId: string, onClose: () => void) {
         const missing = result.missing ?? []
         const wants = bundleWants(result.missingMods)
         const queued = wants.length > 0 && (await download(wants))
-        const added = plural(result.added, { one: '# mod', other: '# mods' })
-        const downloading = plural(missing.length, { one: '# mod', other: '# mods' })
+        const added = modsLabel(result.added)
+        const downloading = modsLabel(missing.length)
         let title = t`Added ${added} from ${name}`
         if (missing.length > 0) {
           title = queued

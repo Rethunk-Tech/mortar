@@ -136,7 +136,7 @@ export function ImportFooter({
       <ConfirmDialog
         open={askReplace}
         color="error"
-        title={t`Replace ${targetName}?`}
+        title={t`Replace ${{ name: targetName }}?`}
         confirmLabel={t`Replace ${targetName}`}
         onCancel={() => setAskReplace(false)}
         onConfirm={() => {

@@ -17,7 +17,7 @@ export function DeprecatedFix({
   if (replacement === '') {
     return null
   }
-  return button(t`Replace with ${replacement}`, () => {
+  return button(t`Replace with ${{ name: replacement }}`, () => {
     download([{ kind: 'install', package: replacement }]).catch(reportUnexpected)
   })
 }

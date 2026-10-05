@@ -79,7 +79,7 @@ export function SaveDetails({
           noWrap={true}
           title={fit.played ? absoluteWhen(fit.played, i18n.locale) || undefined : undefined}
         >
-          {t`Last played ${formatWhen(fit.played)}`}
+          {t`Last played ${{ when: formatWhen(fit.played) }}`}
         </Typography>
         {fit.lastProfileId ? (
           <Typography

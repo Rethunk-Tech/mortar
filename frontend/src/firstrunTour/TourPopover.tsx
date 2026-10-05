@@ -64,7 +64,7 @@ function useTourCopy(step: number, paletteKeys: string) {
       break
     case 'command':
       title = t`Command palette`
-      body = t`Press ${paletteKeys} to jump anywhere — profiles, settings, downloads, and more.`
+      body = t`Press ${paletteKeys} to jump anywhere: profiles, settings, downloads and more.`
       break
     default:
       break

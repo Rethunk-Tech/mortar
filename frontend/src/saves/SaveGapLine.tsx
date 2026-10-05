@@ -23,7 +23,7 @@ function stateText(kind: 'missing' | 'disabled' | 'older', m: GapMod): string {
   if (kind === 'older') {
     return i18n._(msg`older, profile has ${m.have}`)
   }
-  return i18n._(msg`missing`)
+  return i18n._(msg`Missing`).toLowerCase()
 }
 
 export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile; game: string }) {

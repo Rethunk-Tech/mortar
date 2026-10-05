@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -23,6 +22,7 @@ import {
   Create,
   List as ListBundles,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
@@ -133,7 +133,7 @@ function BundlePickList({
         >
           <span>{bundle.name}</span>
           <Typography component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>
-            {plural(bundle.mods?.length ?? 0, { one: '# mod', other: '# mods' })}
+            {modsLabel(bundle.mods?.length ?? 0)}
           </Typography>
         </Button>
       ))}
@@ -171,7 +171,9 @@ function AddToBundleDialog({ open, game, profileId, ids, onClose }: AddToBundleD
           run(
             () =>
               Create(game, name, profileId, ids).then((created) => {
-                useToasts.getState().push({ kind: 'success', title: t`Created ${created.name}` })
+                useToasts
+                  .getState()
+                  .push({ kind: 'success', title: t`Created ${{ name: created.name }}` })
                 onClose()
               }),
             { errorTitle: t`Could not create the bundle` },

@@ -268,7 +268,7 @@ function OverlayConnection({
     setDraft(String(port))
     setPortError(false)
   }, [port])
-  const portRange = t`Enter a number from ${MIN_PORT} to ${MAX_PORT}`
+  const portRange = t`Enter a number from ${{ min: MIN_PORT }} to ${{ max: MAX_PORT }}`
   const commitPort = () => {
     const n = Number(draft)
     if (!Number.isInteger(n) || n < MIN_PORT || n > MAX_PORT) {

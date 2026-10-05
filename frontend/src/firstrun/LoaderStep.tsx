@@ -362,7 +362,7 @@ export function LoaderStep({
       <Panel width={720}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, fontSize: 15 }}>
           <Check size={18} color={ok} />
-          {t`${loader} ${status.version} installed`}
+          {t`${loader} ${{ version: status.version }} installed`}
         </Box>
         {showLaunch ? (
           <LaunchLine

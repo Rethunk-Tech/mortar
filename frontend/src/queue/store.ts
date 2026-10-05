@@ -275,7 +275,7 @@ function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
       kind: 'success',
       title: profile
         ? i18n._(msg`${first} installed into ${profile.name}`)
-        : i18n._(msg`${first} installed`),
+        : i18n._(msg`${{ name: first }} installed`),
       ...(unblocked ? { body: i18n._(msg`${unblocked} can load now.`) } : {}),
       ...(extra
         ? {

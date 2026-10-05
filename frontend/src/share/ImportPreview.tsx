@@ -15,6 +15,7 @@ import type {
   Mod,
   Problem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
 import { isModState, MOD_STATES, type ModState, type ShownPreview, type Summary } from './logic.ts'
@@ -93,7 +94,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
           checked={checked && !fixed}
           disabled={fixed}
           onChange={onToggle}
-          slotProps={{ input: { 'aria-label': t`Include ${mod.name}` } }}
+          slotProps={{ input: { 'aria-label': t`Include ${{ name: mod.name }}` } }}
           sx={{
             position: 'absolute',
             top: 3,
@@ -318,7 +319,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
   const dot = DOT(th)
   const total = preview.mods.length
   const ready = summary.toImport > 0
-  const mods = plural(total, { one: '# mod', other: '# mods' })
+  const mods = modsLabel(total)
   const size = formatKb(summary.sizeKb)
   const settings = plural(preview.settings, {
     one: 'with # settings file, written once its mod is installed',

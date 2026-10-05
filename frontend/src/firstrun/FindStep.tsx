@@ -72,7 +72,7 @@ function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) 
     <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: '6px' }}>
       {launchers.map((l) => {
         const has = (l.games ?? []).some((g) => g.id === game.id)
-        let line = t`not found`
+        let line = t`Not found`.toLowerCase()
         if (l.found && !has) {
           line = t`found, without ${game.name}`
         } else if (has) {
@@ -117,7 +117,7 @@ export function FindStep({
   const [error, setError] = useState<InlineError | null>(null)
   const dir = game.installDir
   const named = storeName(game.store)
-  const caption = named ? t`Found in ${t(named)}` : t`Folder chosen by you`
+  const caption = named ? t`Found in ${{ path: t(named) }}` : t`Folder chosen by you`
   useRefreshOnFocus(refresh, !found)
   useEffect(() => {
     if (dir) {
@@ -142,7 +142,7 @@ export function FindStep({
   const details = [
     smapi?.gameVersion ? `${game.name} ${smapi.gameVersion}` : '',
     smapi?.installed
-      ? t`${game.loader} ${smapi.version} installed`
+      ? t`${{ loader: game.loader }} ${{ version: smapi.version }} installed`
       : t`${game.loader} not installed yet`,
   ]
     .filter(Boolean)
