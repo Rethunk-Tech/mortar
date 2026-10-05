@@ -85,7 +85,7 @@ type Service struct {
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 	// Enqueue queues downloads when FromSave cannot reuse a store item.
-	Enqueue func([]queue.Request) ([]queue.Item, error)
+	Enqueue func(context.Context, []queue.Request) ([]queue.Item, error)
 }
 
 // NewService reads saves from the save folder of every implemented game that has one and caches scans in <datadir>/cache.

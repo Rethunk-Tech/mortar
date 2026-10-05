@@ -361,7 +361,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Saves == nil {
 			return nil, errors.New("saves are unavailable")
 		}
-		return s.changed(p.Game, func() (any, error) { return s.Saves.FromSave(p.Game, p.Name) })
+		return s.changed(p.Game, func() (any, error) { return s.Saves.FromSave(ctx, p.Game, p.Name) })
 	case "saves.check":
 		if s.Saves == nil {
 			return nil, errors.New("saves are unavailable")
@@ -689,7 +689,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "profile.set":
 		return s.changed(p.Game, func() (any, error) { return s.profileSet(p, prof, id) })
 	case "store.repair":
-		return s.storeRepair(p, id)
+		return s.storeRepair(ctx, p, id)
 	case "profile.repair":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Repair(p.Game, id) })
 	case "profile.shortcut":

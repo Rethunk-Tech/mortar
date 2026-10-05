@@ -119,14 +119,14 @@ func (s *Services) storeCheck(ctx context.Context, game string) (any, error) {
 	return sum, nil
 }
 
-func (s *Services) storeRepair(p Params, profileID string) (any, error) {
+func (s *Services) storeRepair(ctx context.Context, p Params, profileID string) (any, error) {
 	if s.StoreCheck == nil {
 		return nil, errors.New("the store check is unavailable")
 	}
 	if p.Key == "" {
 		return nil, errors.New("store repair needs a store key")
 	}
-	return s.StoreCheck.Repair(p.Game, profileID, p.Key)
+	return s.StoreCheck.Repair(ctx, p.Game, profileID, p.Key)
 }
 
 func (s *Services) bisectStart(ctx context.Context, p Params) (any, error) {

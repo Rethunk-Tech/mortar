@@ -126,12 +126,12 @@ func TestFromSaveReusesStoreAndQueuesTheRest(t *testing.T) {
 	svc := &Service{
 		profiles: e.profiles,
 		last:     last,
-		Enqueue: func(reqs []queue.Request) ([]queue.Item, error) {
+		Enqueue: func(_ context.Context, reqs []queue.Request) ([]queue.Item, error) {
 			queued = append(queued, reqs...)
 			return nil, nil
 		},
 	}
-	got, err := svc.FromSave("stardew", "Sunny_1")
+	got, err := svc.FromSave(t.Context(), "stardew", "Sunny_1")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -74,7 +74,7 @@ type Arrival struct {
 
 // Queue is the download queue's part in an import.
 type Queue interface {
-	Add(reqs []queue.Request) ([]queue.Item, error)
+	Add(ctx context.Context, reqs []queue.Request) ([]queue.Item, error)
 }
 
 // Deps is what the service needs from the rest of the app.
@@ -858,7 +858,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		reqs[i].Profile, reqs[i].BatchID = profileID, batchID
 	}
 	if len(reqs) > 0 {
-		if _, err := s.d.Queue.Add(reqs); err != nil {
+		if _, err := s.d.Queue.Add(ctx, reqs); err != nil {
 			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
 			if created {
 				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))

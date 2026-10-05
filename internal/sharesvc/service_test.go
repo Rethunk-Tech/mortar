@@ -29,7 +29,7 @@ type recorder struct {
 	err  error
 }
 
-func (r *recorder) Add(reqs []queue.Request) ([]queue.Item, error) {
+func (r *recorder) Add(_ context.Context, reqs []queue.Request) ([]queue.Item, error) {
 	r.reqs = append(r.reqs, reqs...)
 	return nil, r.err
 }

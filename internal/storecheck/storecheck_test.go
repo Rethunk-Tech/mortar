@@ -43,9 +43,12 @@ func newService(t *testing.T) (*Service, string, *[]queue.Request) {
 	downloads := t.TempDir()
 	var added []queue.Request
 	return New(Deps{
-		Items:      items,
-		Source:     func(string, string) profile.Source { return profile.Source{Name: "Pack.zip"} },
-		Add:        func(r []queue.Request) ([]queue.Item, error) { added = append(added, r...); return nil, nil },
+		Items:  items,
+		Source: func(string, string) profile.Source { return profile.Source{Name: "Pack.zip"} },
+		Add: func(_ context.Context, r []queue.Request) ([]queue.Item, error) {
+			added = append(added, r...)
+			return nil, nil
+		},
 		ArchiveDir: func() string { return downloads },
 	}), downloads, &added
 }
@@ -68,7 +71,7 @@ func TestCheckFindsDamageAndRepairReextractsFromTheArchive(t *testing.T) {
 	if err != nil || len(sum.Damaged) != 1 || sum.Damaged[0].Missing != 1 || sum.Damaged[0].Name != "Pack.zip" {
 		t.Fatalf("damaged check = %+v, %v", sum, err)
 	}
-	if got, err := s.Repair("stardew", "p1", key); err != nil || got.Status != "restored" {
+	if got, err := s.Repair(t.Context(), "stardew", "p1", key); err != nil || got.Status != "restored" {
 		t.Fatalf("repair = %+v, %v", got, err)
 	}
 	if sum, _ := s.Check(context.Background()); len(sum.Damaged) != 0 {
@@ -83,7 +86,7 @@ func TestRepairSaysWhenTheArchiveIsGoneAndKeepsTheItem(t *testing.T) {
 	if err := os.Remove(archive); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Repair("stardew", "p1", key); err == nil {
+	if _, err := s.Repair(t.Context(), "stardew", "p1", key); err == nil {
 		t.Fatal("repair without an archive succeeded")
 	}
 	if _, err := s.d.Items.Path("stardew", key); err != nil {
@@ -97,18 +100,18 @@ func TestRepairQueuesANexusFileAndRestoresOnQueueFailure(t *testing.T) {
 	if err := s.d.Items.AddArchiveKey("stardew", key, zipFile(t, downloads, "n.zip", map[string]string{"Mod/a.txt": "a"})); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := s.Repair("stardew", "p1", key); err != nil || got.Status != "queued" {
+	if got, err := s.Repair(t.Context(), "stardew", "p1", key); err != nil || got.Status != "queued" {
 		t.Fatalf("repair = %+v, %v", got, err)
 	}
 	if len(*added) != 1 || (*added)[0].ModID != 12 || (*added)[0].FileID != 34 || (*added)[0].Profile != "p1" {
 		t.Fatalf("queued = %+v", *added)
 	}
 	s2, d2, _ := newService(t)
-	s2.d.Add = func([]queue.Request) ([]queue.Item, error) { return nil, errors.New("signed out") }
+	s2.d.Add = func(context.Context, []queue.Request) ([]queue.Item, error) { return nil, errors.New("signed out") }
 	if err := s2.d.Items.AddArchiveKey("stardew", key, zipFile(t, d2, "n.zip", map[string]string{"Mod/a.txt": "a"})); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s2.Repair("stardew", "p1", key); err == nil {
+	if _, err := s2.Repair(t.Context(), "stardew", "p1", key); err == nil {
 		t.Fatal("queue failure not reported")
 	}
 	if _, err := s2.d.Items.Path("stardew", key); err != nil {

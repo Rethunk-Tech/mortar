@@ -29,7 +29,7 @@ type profiles interface {
 
 // downloads is the part of queue.Service the service uses.
 type downloads interface {
-	Add(reqs []queue.Request) ([]queue.Item, error)
+	Add(ctx context.Context, reqs []queue.Request) ([]queue.Item, error)
 }
 
 // Service reads packs and puts their packages in the download queue.
@@ -166,7 +166,7 @@ func (s *Service) Import(ctx context.Context, src Source, gameID, profileID stri
 	for i := range reqs {
 		reqs[i].Profile = profileID
 	}
-	items, err := s.Queue.Add(reqs)
+	items, err := s.Queue.Add(ctx, reqs)
 	res.Queued = len(items)
 	return res, err
 }

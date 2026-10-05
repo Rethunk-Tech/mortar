@@ -33,7 +33,7 @@ func (*fakeProfiles) List(string) ([]profile.Profile, error) { return nil, nil }
 
 type fakeQueue struct{ got []queue.Request }
 
-func (f *fakeQueue) Add(reqs []queue.Request) ([]queue.Item, error) {
+func (f *fakeQueue) Add(_ context.Context, reqs []queue.Request) ([]queue.Item, error) {
 	f.got = append(f.got, reqs...)
 	return make([]queue.Item, len(reqs)), nil
 }

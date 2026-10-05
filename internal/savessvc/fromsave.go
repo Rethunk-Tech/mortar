@@ -1,6 +1,7 @@
 package savessvc
 
 import (
+	"context"
 	"errors"
 	"strings"
 
@@ -46,18 +47,18 @@ func takenNames(all []profile.Profile) []string {
 	return out
 }
 
-func (s *Service) enqueue(reqs []queue.Request) error {
+func (s *Service) enqueue(ctx context.Context, reqs []queue.Request) error {
 	if len(reqs) == 0 {
 		return nil
 	}
 	if s.Enqueue != nil {
-		_, err := s.Enqueue(reqs)
+		_, err := s.Enqueue(ctx, reqs)
 		return err
 	}
 	return nil
 }
 
-func (s *Service) addRecorded(game, id string, mods []PlayedMod) (added, queued, missing []string, err error) {
+func (s *Service) addRecorded(ctx context.Context, game, id string, mods []PlayedMod) (added, queued, missing []string, err error) {
 	seen := map[string]bool{}
 	var reqs []queue.Request
 	for _, m := range mods {
@@ -83,11 +84,11 @@ func (s *Service) addRecorded(game, id string, mods []PlayedMod) (added, queued,
 		}
 		missing = append(missing, label)
 	}
-	return added, queued, missing, s.enqueue(reqs)
+	return added, queued, missing, s.enqueue(ctx, reqs)
 }
 
 // FromSave creates a profile named after the farm with the save's last-played mods.
-func (s *Service) FromSave(game, saveFolder string) (FromSaveResult, error) {
+func (s *Service) FromSave(ctx context.Context, game, saveFolder string) (FromSaveResult, error) {
 	if s.profiles == nil || s.last == nil {
 		return FromSaveResult{}, errors.New("saves are unavailable")
 	}
@@ -109,7 +110,7 @@ func (s *Service) FromSave(game, saveFolder string) (FromSaveResult, error) {
 	if err != nil {
 		return FromSaveResult{}, err
 	}
-	added, queued, missing, err := s.addRecorded(game, created.ID, rec.Mods)
+	added, queued, missing, err := s.addRecorded(ctx, game, created.ID, rec.Mods)
 	if err != nil {
 		return FromSaveResult{Profile: created, Added: added, Queued: queued, Missing: missing}, err
 	}

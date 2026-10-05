@@ -38,7 +38,7 @@ type Deps struct {
 	// Source is the source a profile recorded for a store key; zero when none did.
 	Source func(game, key string) profile.Source
 	// Add queues downloads; Repair uses it to fetch a damaged Nexus or GitHub item again.
-	Add func([]queue.Request) ([]queue.Item, error)
+	Add func(context.Context, []queue.Request) ([]queue.Item, error)
 	// ArchiveDir is the downloads folder, where a local item's archive may still be.
 	ArchiveDir func() string
 	// NexusMD5 is Nexus's recorded MD5 of a mod file; nil, or an error, leaves an item without hashes to be baselined
@@ -257,16 +257,16 @@ type RepairResult struct {
 // Repair replaces a damaged item with a fresh copy from its recorded source. A Nexus or GitHub item goes through
 // the download queue for profileID; a local item is extracted again from its archive if that is still in the
 // downloads folder. The damaged copy is set aside meanwhile and put back if the repair cannot start.
-func (s *Service) Repair(gameID, profileID, key string) (RepairResult, error) {
+func (s *Service) Repair(ctx context.Context, gameID, profileID, key string) (RepairResult, error) {
 	switch {
 	case isNexus(key):
-		return s.refetch(gameID, key, nexusRequest(gameID, profileID, key, s.d.Source(gameID, key)))
+		return s.refetch(ctx, gameID, key, nexusRequest(gameID, profileID, key, s.d.Source(gameID, key)))
 	case strings.HasPrefix(key, "github-"):
 		src := s.d.Source(gameID, key)
 		if src.Repo == "" {
 			return RepairResult{}, usererr.New(usererr.NotFound, "Mortar no longer knows which GitHub release this came from, so it cannot download it again.")
 		}
-		return s.refetch(gameID, key, queue.Request{
+		return s.refetch(ctx, gameID, key, queue.Request{
 			Kind: queue.KindInstall, Game: gameID, Profile: profileID, Repo: src.Repo, Tag: src.Tag, Asset: src.Asset,
 			Name: src.Repo, FileName: src.Asset, Version: src.Version,
 		})
@@ -289,12 +289,12 @@ func nexusRequest(gameID, profileID, key string, src profile.Source) queue.Reque
 	}
 }
 
-func (s *Service) refetch(gameID, key string, req queue.Request) (RepairResult, error) {
+func (s *Service) refetch(ctx context.Context, gameID, key string, req queue.Request) (RepairResult, error) {
 	restore, err := s.d.Items.Quarantine(gameID, key)
 	if err != nil {
 		return RepairResult{}, err
 	}
-	if _, err := s.d.Add([]queue.Request{req}); err != nil {
+	if _, err := s.d.Add(ctx, []queue.Request{req}); err != nil {
 		return RepairResult{}, joinRestore(err, restore)
 	}
 	return RepairResult{Status: "queued"}, nil
