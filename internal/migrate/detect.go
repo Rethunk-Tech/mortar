@@ -85,7 +85,7 @@ func detect(home, modsPath, vortexDomain string) ([]installation, error) {
 		})
 	}
 
-	mo2, err := mo2Installations(base, modsPath)
+	mo2, err := mo2Installations(base, modsPath, vortexDomain)
 	if err != nil {
 		return nil, err
 	}

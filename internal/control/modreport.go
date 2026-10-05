@@ -32,6 +32,7 @@ func (s *Services) modReport(gameID, profileID string, prof profile.Profile, p P
 	}
 	src := entrySource(prof, ref.Key)
 	in := modreport.Input{
+		Game:          gameID,
 		ModName:       inst.Name,
 		ModVersion:    inst.Version,
 		MortarVersion: s.Version,

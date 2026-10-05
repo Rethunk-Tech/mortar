@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 const (
-	mo2GameName   = "Stardew Valley"
 	mo2MetaModID  = "modid"
 	mo2MetaVer    = "version"
 	mo2MetaURL    = "url"
@@ -30,7 +30,10 @@ type mo2Meta struct {
 	version string
 }
 
-func mo2Installations(home, modsPath string) ([]installation, error) {
+// mo2Installations finds the MO2 instances managing the game whose Nexus domain is domain.
+func mo2Installations(home, modsPath, domain string) ([]installation, error) {
+	info, _ := components.BundledGameByNexusDomain(domain)
+	gameName := info.Name
 	var out []installation
 	root := filepath.Join(mo2LocalAppData(home), "ModOrganizer")
 	entries, err := os.ReadDir(root)
@@ -41,7 +44,7 @@ func mo2Installations(home, modsPath string) ([]installation, error) {
 		if !entry.IsDir() {
 			continue
 		}
-		inst, ok, instErr := mo2Installation(filepath.Join(root, entry.Name()), modsPath)
+		inst, ok, instErr := mo2Installation(filepath.Join(root, entry.Name()), modsPath, gameName)
 		if instErr != nil {
 			return nil, instErr
 		}
@@ -50,7 +53,7 @@ func mo2Installations(home, modsPath string) ([]installation, error) {
 		}
 		out = append(out, inst)
 	}
-	portable, ok, err := mo2Installation(home, modsPath)
+	portable, ok, err := mo2Installation(home, modsPath, gameName)
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +79,8 @@ func mo2LocalAppData(home string) string {
 	return filepath.Join(home, "AppData", "Local")
 }
 
-func mo2Installation(root, fallbackModsPath string) (installation, bool, error) {
-	profiles, modsPath, err := mo2Profiles(root, fallbackModsPath)
+func mo2Installation(root, fallbackModsPath, gameName string) (installation, bool, error) {
+	profiles, modsPath, err := mo2Profiles(root, fallbackModsPath, gameName)
 	if err != nil {
 		return installation{}, false, err
 	}
@@ -95,8 +98,8 @@ func mo2Installation(root, fallbackModsPath string) (installation, bool, error) 
 	}, true, nil
 }
 
-func mo2Profiles(root, fallbackModsPath string) ([]ProfilePreview, string, error) {
-	if !mo2IsStardewInstance(root) {
+func mo2Profiles(root, fallbackModsPath, gameName string) ([]ProfilePreview, string, error) {
+	if !mo2IsGameInstance(root, gameName) {
 		return nil, "", nil
 	}
 	modsPath := filepath.Join(root, "mods")
@@ -126,12 +129,12 @@ func mo2Profiles(root, fallbackModsPath string) ([]ProfilePreview, string, error
 	return out, modsPath, nil
 }
 
-func mo2IsStardewInstance(root string) bool {
+func mo2IsGameInstance(root, gameName string) bool {
 	data, err := fsx.ReadFile(filepath.Join(root, "ModOrganizer.ini"))
 	if err != nil {
 		return false
 	}
-	return strings.EqualFold(iniGeneral(data)[mo2INIGameKey], mo2GameName)
+	return gameName != "" && strings.EqualFold(iniGeneral(data)[mo2INIGameKey], gameName)
 }
 
 func mo2Preview(root, modsPath, id string) (ProfilePreview, error) {

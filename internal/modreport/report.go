@@ -11,8 +11,10 @@ import (
 
 // Input is everything needed to build a mod problem report and author URL.
 type Input struct {
-	ModName       string
-	ModVersion    string
+	ModName    string
+	ModVersion string
+	// Game is the profile's game id; it names the game in the report and picks the Nexus domain.
+	Game          string
 	GameVersion   string
 	SMAPIVersion  string
 	MortarVersion string
@@ -39,10 +41,12 @@ func Build(in Input) Result {
 	if lines == nil {
 		lines = []string{}
 	}
+	gameInfo, _ := components.BundledGame(in.Game)
+	gameName := gameInfo.Name
 	var b strings.Builder
 	fmt.Fprintf(&b, "Mod: %s %s\n", in.ModName, strings.TrimSpace(in.ModVersion))
 	if in.GameVersion != "" {
-		fmt.Fprintf(&b, "Game: Stardew Valley %s\n", in.GameVersion)
+		fmt.Fprintf(&b, "Game: %s\n", strings.TrimSpace(gameName+" "+in.GameVersion))
 	}
 	if in.SMAPIVersion != "" {
 		fmt.Fprintf(&b, "SMAPI: %s\n", in.SMAPIVersion)
@@ -79,9 +83,7 @@ func Build(in Input) Result {
 	}
 	domain := in.NexusDomain
 	if domain == "" {
-		if info, ok := components.BundledGame("stardew"); ok {
-			domain = info.NexusDomain()
-		}
+		domain = gameInfo.NexusDomain()
 	}
 	if repo != "" {
 		return Result{Text: text, URL: GitHubIssueURL(repo, title, text), GitHub: true}
