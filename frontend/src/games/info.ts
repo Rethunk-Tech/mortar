@@ -26,7 +26,6 @@ function find(games: GameInfo[], loaded: GameInfo | null, id: string): GameInfo 
 
 // Used when the catalog has not answered yet, so sentences still read.
 const FALLBACK_NAME = 'the game'
-const FALLBACK_LOADER = 'the mod loader'
 
 export function gameInfo(id = currentGame()): GameInfo | undefined {
   ensureLoaded()
@@ -37,7 +36,7 @@ export function gameName(id?: string): string {
   return gameInfo(id)?.name || FALLBACK_NAME
 }
 
-export function useGameInfo(id?: string): GameInfo | undefined {
+function useGameInfo(id?: string): GameInfo | undefined {
   ensureLoaded()
   const current = useCurrentGame()
   const games = useGameList((s) => s.games)
@@ -47,8 +46,4 @@ export function useGameInfo(id?: string): GameInfo | undefined {
 
 export function useGameName(id?: string): string {
   return useGameInfo(id)?.name || FALLBACK_NAME
-}
-
-export function useGameLoader(id?: string): string {
-  return useGameInfo(id)?.loader || FALLBACK_LOADER
 }
