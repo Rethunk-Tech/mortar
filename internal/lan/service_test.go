@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -220,6 +221,12 @@ func TestLoopbackTransfer(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Files from a source other than Nexus travel too.
+	ghKey := github.Key("o", "r", "v1", "m.zip")
+	if err := senderStore.AddDir("stardew", ghKey, source); err != nil {
+		t.Fatal(err)
+	}
+
 	receiverStore := store.OpenAt(t.TempDir())
 	arrivals := make(chan Arrival, 2)
 	emit := func(_ string, data any) {
@@ -236,6 +243,7 @@ func TestLoopbackTransfer(t *testing.T) {
 		Entries: []profile.Entry{
 			{Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}},
 			{Key: optKey, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 3}, OverlayOf: key, OverlayFrom: "a", OverlayTo: "b", OverlayOff: true},
+			{Key: ghKey, Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "m.zip"}},
 		},
 	}, t.TempDir(), share.Include{DisabledMods: true}); err != nil {
 		t.Fatal(err)
@@ -280,6 +288,9 @@ func TestLoopbackTransfer(t *testing.T) {
 	}
 	if string(got) != "from sender" {
 		t.Fatalf("installed contents = %q", got)
+	}
+	if src, pkg, version, ok := receiverStore.Meta("stardew", ghKey); !ok || src != profile.KindGitHub || pkg != "o/r" || version != "v1" {
+		t.Fatalf("github entry meta = %q %q %q %v", src, pkg, version, ok)
 	}
 	dir, err := receiverStore.Path("stardew", optKey)
 	if err != nil {
