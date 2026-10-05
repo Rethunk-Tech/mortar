@@ -278,6 +278,12 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		depth = settings.ResolveAt(s.settings.Get(), "conflictScanDepth", settings.Scope{Game: gameID}, nil)
 	}
 	fp += "|scan:" + depth
+	pkgs, _ := s.profiles.EnabledPackages(gameID, id)
+	pkgKeys := make([]string, len(pkgs))
+	for i, p := range pkgs {
+		pkgKeys[i] = p.Key
+	}
+	fp += "|pkgs:" + strings.Join(pkgKeys, ",")
 	key := gameID + "/" + id
 	s.mu.Lock()
 	c, ok := s.cache[key]
@@ -309,6 +315,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 				r.LoadFailures = append(r.LoadFailures, f)
 			}
 		}
+		r.PluginClashes = pluginClashes(pkgs)
 		if s.Runs != nil && runID != "" {
 			_, summary, err := s.Runs.LastRunSummary(gameID, id)
 			if err == nil {

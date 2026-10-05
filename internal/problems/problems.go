@@ -148,6 +148,7 @@ type Result struct {
 	Redundant      []framework.Redundant     `json:"redundant,omitempty"`
 	RunErrors      []RunError                `json:"runErrors"`
 	LoadFailures   []LoadFailure             `json:"loadFailures,omitempty"`
+	PluginClashes  []PluginClash             `json:"pluginClashes,omitempty"`
 	Drift          []profile.Drift           `json:"drift,omitempty"`
 	Damaged        []Damaged                 `json:"damaged,omitempty"`
 	Dismissed      []DismissedProblem        `json:"dismissed"`
@@ -171,7 +172,7 @@ func (r Result) Count() int {
 			duplicates++
 		}
 	}
-	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.LoadFailures) + len(r.Drift) + len(r.Damaged)
+	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.LoadFailures) + len(r.PluginClashes) + len(r.Drift) + len(r.Damaged)
 }
 
 // WarningCount is cosmetic asset conflicts plus compat, cleanup and redundancy hints.
