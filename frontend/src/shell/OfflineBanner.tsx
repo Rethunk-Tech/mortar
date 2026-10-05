@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
+import { Events } from '@wailsio/runtime'
 import { CloudOff } from 'lucide-react'
 import { useEffect } from 'react'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -29,10 +30,13 @@ function useOfflineSync() {
     const probe = globalThis.setInterval(() => run(recheck), RECHECK_MS)
     const onFocus = () => run(refresh)
     globalThis.addEventListener('focus', onFocus)
+    // Go says the moment a source flips, so the banner does not wait for the poll.
+    const off = Events.On('netstate:changed', () => run(refresh))
     return () => {
       globalThis.clearInterval(poll)
       globalThis.clearInterval(probe)
       globalThis.removeEventListener('focus', onFocus)
+      off()
     }
   }, [])
 }

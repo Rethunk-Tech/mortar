@@ -25,6 +25,8 @@ interface BrowseBodyProps {
   text: string
   hint: string
   error: InlineError | null
+  // The banner's sentence when the searched sources cannot be reached; it replaces the generic failure text.
+  offline: string
   view: string
   page: number
   pageCount: number
@@ -65,7 +67,7 @@ function ResultList({
 
 function BrowseBody(props: BrowseBodyProps) {
   const { t } = useLingui()
-  const { status, result, text, hint, error, page, pageCount, onRetry, onPage } = props
+  const { status, result, text, hint, error, offline, page, pageCount, onRetry, onPage } = props
   if (status === 'idle' || (status === 'done' && result.items.length === 0 && text.trim() === '')) {
     return (
       <EmptyState icon={<Search size={ICON_SIZE} />} title={t`Find mods to add`}>
@@ -85,7 +87,7 @@ function BrowseBody(props: BrowseBodyProps) {
         }
       >
         <span title={error?.details}>
-          {error?.message ?? t`The service may be busy. Try again in a minute.`}
+          {offline || (error?.message ?? t`The service may be busy. Try again in a minute.`)}
         </span>
       </EmptyState>
     )
