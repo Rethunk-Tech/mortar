@@ -259,3 +259,23 @@ func zipNames(t *testing.T, data []byte) map[string]string {
 	}
 	return out
 }
+
+func TestDiagnosticsIncludeTheLoaderLogOfAnyGame(t *testing.T) {
+	home := t.TempDir()
+	profile := filepath.Join(home, "p", "lobby")
+	if err := os.MkdirAll(filepath.Join(profile, "BepInEx"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(profile, "BepInEx", "LogOutput.log"), []byte("bepinex-fixture-line\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := NewService("1.2.3", func(string) problems.Environment { return problems.Environment{} }, home,
+		func(_, id string) (string, error) { return filepath.Join(home, "p", id, "mods"), nil })
+	name, body := s.loaderTail("lethal-company", "lobby")
+	if name != "logoutput.log" || !strings.Contains(body, "bepinex-fixture-line") {
+		t.Fatalf("loaderTail = %q, %q", name, body)
+	}
+	if name, body := s.loaderTail("lethal-company", "other"); body != "" {
+		t.Fatalf("another profile's log: %q %q", name, body)
+	}
+}

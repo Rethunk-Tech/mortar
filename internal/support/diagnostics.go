@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -52,7 +53,7 @@ func (s *Service) dataDir() (string, error) {
 }
 
 // SaveDiagnostics writes a zip of redacted app state through the native save dialog.
-// gameID and profileID select whose SMAPI log to include; either may be empty.
+// gameID and profileID select whose loader log to include; either may be empty.
 func (s *Service) SaveDiagnostics(gameID, profileID string) (string, error) {
 	name, data, err := s.diagnosticsZip(gameID, profileID)
 	if err != nil {
@@ -163,9 +164,9 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 			included = append(included, name+": last "+fmt.Sprint(diagnosticsLogLines)+" lines, home folder written as ~")
 		}
 	}
-	if smapi := s.smapiTail(gameID, profileID); smapi != "" {
-		files["smapi-latest.txt"] = []byte(hideHomeIn(smapi, s.home))
-		included = append(included, "smapi-latest.txt: last "+fmt.Sprint(diagnosticsLogLines)+" lines of the open profile's SMAPI log")
+	if name, body := s.loaderTail(gameID, profileID); body != "" {
+		files[name] = []byte(hideHomeIn(body, s.home))
+		included = append(included, name+": last "+fmt.Sprint(diagnosticsLogLines)+" lines of the open profile's "+game.LoaderName(gameID)+" log")
 	}
 
 	files["manifest.txt"] = []byte(diagnosticsManifest(included, removed))
@@ -245,30 +246,40 @@ func mortarLog(dir, recent string) (string, string) {
 	return "console.txt", lastLines(recent, diagnosticsLogLines)
 }
 
-func (s *Service) smapiTail(gameID, profileID string) string {
+// loaderTail returns the file name and last lines of the game's loader log that belongs to the profile. A log inside
+// the profile's folder is the profile's; a shared one (SMAPI's) must name the profile's mods folder.
+func (s *Service) loaderTail(gameID, profileID string) (name, body string) {
 	if gameID == "" || profileID == "" {
-		return ""
+		return "", ""
 	}
-	if game.Find(gameID) == nil {
-		return ""
+	l, ok := game.PrimaryLoader(gameID)
+	if !ok {
+		return "", ""
 	}
-	path, err := game.LogFile(gameID)
-	if err != nil {
-		return ""
-	}
-	data, err := fsx.ReadFile(path)
-	if err != nil {
-		return ""
+	logs, ok := l.(loader.WithLogs)
+	if !ok {
+		return "", ""
 	}
 	modsDir, err := s.modsDir(gameID, profileID)
 	if err != nil {
-		return ""
+		return "", ""
+	}
+	profileDir := filepath.Dir(modsDir)
+	path, err := logs.Path(loader.ProfileView{Game: gameID, Dir: profileDir})
+	if err != nil {
+		return "", ""
+	}
+	data, err := fsx.ReadFile(path)
+	if err != nil {
+		return "", ""
 	}
 	text := strings.ToValidUTF8(string(data), "")
-	if !launch.LogOwnedBy(text, s.home, modsDir) {
-		return ""
+	if rel, err := filepath.Rel(profileDir, path); err != nil || !filepath.IsLocal(rel) {
+		if !launch.LogOwnedBy(text, s.home, modsDir) {
+			return "", ""
+		}
 	}
-	return lastLines(text, diagnosticsLogLines)
+	return strings.ToLower(filepath.Base(path)), lastLines(text, diagnosticsLogLines)
 }
 
 func lastLines(text string, n int) string {
