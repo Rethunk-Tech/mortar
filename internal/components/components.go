@@ -144,9 +144,15 @@ func (g GameInfo) Target(id string) (TargetDef, bool) {
 
 // GameStores names a game to each store that sells it; a store that does not sell it is nil.
 type GameStores struct {
-	Steam  *SteamStore  `json:"steam,omitempty"`
-	GOG    *GOGStore    `json:"gog,omitempty"`
-	Lutris *LutrisStore `json:"lutris,omitempty"`
+	Steam   *SteamStore   `json:"steam,omitempty"`
+	GOG     *GOGStore     `json:"gog,omitempty"`
+	Lutris  *LutrisStore  `json:"lutris,omitempty"`
+	Bottles *BottlesStore `json:"bottles,omitempty"`
+}
+
+// BottlesStore names a game to Bottles: the folder its Steam and GOG installs have inside a bottle.
+type BottlesStore struct {
+	Folder string `json:"folder"`
 }
 
 // SteamStore names a game to Steam.

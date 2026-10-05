@@ -23,6 +23,7 @@ const (
 	StoreGOGHeroic    = gamestore.StoreGOGHeroic
 	StoreMinigalaxy   = gamestore.StoreMinigalaxy
 	StoreLutris       = gamestore.StoreLutris
+	StoreBottles      = gamestore.StoreBottles
 )
 
 // Install origins.
@@ -39,7 +40,9 @@ type Install struct {
 	Game  string `json:"game"`
 	Store string `json:"store"`
 	Dir   string `json:"dir"`
-	// Runtime is the id of the runtime that runs the install: native or proton.
+	// Prefix is the Wine prefix (a Bottles bottle) a Windows build runs in; empty for other installs.
+	Prefix string `json:"prefix,omitempty"`
+	// Runtime is the id of the runtime that runs the install: native, proton or wine-prefix.
 	Runtime string `json:"runtime"`
 	// Platform is the OS the build is for: windows, linux or darwin.
 	Platform string `json:"platform"`
@@ -51,9 +54,9 @@ type Install struct {
 	Version string `json:"version,omitempty"`
 }
 
-func newInstall(info components.GameInfo, store, dir, origin string) Install {
+func newInstall(info components.GameInfo, store, dir, prefix, origin string) Install {
 	sum := sha256.Sum256([]byte(store + "\x00" + dir))
-	in := Install{ID: hex.EncodeToString(sum[:6]), Game: info.ID, Store: store, Dir: dir, Origin: origin}
+	in := Install{ID: hex.EncodeToString(sum[:6]), Game: info.ID, Store: store, Dir: dir, Prefix: prefix, Origin: origin}
 	in.Platform = runtime.PlatformOf(info.Marker, goruntime.GOOS)
 	in.Runtime = runtime.IDOf(in.runtime(info, ""))
 	in.RuntimeVersion = runtime.Version(in.runtime(info, ""))
@@ -61,7 +64,7 @@ func newInstall(info components.GameInfo, store, dir, origin string) Install {
 }
 
 func (in Install) runtime(info components.GameInfo, home string) runtime.Install {
-	return runtime.Install{Store: in.Store, Dir: in.Dir, AppID: info.SteamAppID(), Platform: in.Platform, Home: home}
+	return runtime.Install{Store: in.Store, Dir: in.Dir, AppID: info.SteamAppID(), Platform: in.Platform, Prefix: in.Prefix, Home: home}
 }
 
 // readVersion is the game's version in the install, "" when nothing names one.
@@ -96,6 +99,7 @@ const (
 	LauncherLutris       = gamestore.LauncherLutris
 	LauncherGOG          = gamestore.LauncherGOG
 	LauncherMinigalaxy   = gamestore.LauncherMinigalaxy
+	LauncherBottles      = gamestore.LauncherBottles
 )
 
 // roots are the folders the user added for a launcher.
@@ -108,7 +112,7 @@ func collect(g Game, home string, s settings.Settings) []Install {
 	}
 	var all []Install
 	for _, in := range gamestore.Discover(home, s.LauncherRoots, info) {
-		all = append(all, newInstall(info, in.Store, in.Dir, OriginDiscovered))
+		all = append(all, newInstall(info, in.Store, in.Dir, in.Prefix, OriginDiscovered))
 	}
 	return all
 }
@@ -174,9 +178,9 @@ func ResolveInstall(home string, s settings.Settings, id, pin string) (Install, 
 	}
 	info, _ := catalogGame(id)
 	if dir == "" {
-		in := newInstall(info, "", "", OriginFolder)
+		in := newInstall(info, "", "", "", OriginFolder)
 		in.ID = ""
 		return in, nil
 	}
-	return newInstall(info, store, dir, OriginFolder), nil
+	return newInstall(info, store, dir, "", OriginFolder), nil
 }

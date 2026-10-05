@@ -17,6 +17,7 @@ const (
 	StoreGOGHeroic    = gog.StoreHeroic
 	StoreMinigalaxy   = gog.StoreMinigalaxy
 	StoreLutris       = lutris.StoreLutris
+	StoreBottles      = "bottles"
 )
 
 // Launcher ids, each the source of one or more stores' installs and the key of the user's added folders.
@@ -27,11 +28,14 @@ const (
 	LauncherLutris       = "lutris"
 	LauncherGOG          = "gog"
 	LauncherMinigalaxy   = "minigalaxy"
+	LauncherBottles      = "bottles"
 )
 
 // Install is one discovered game folder and the store it came from.
 type Install struct {
 	Store, Dir string
+	// Prefix is the Wine prefix a Windows build runs in; empty unless the store keeps one (Bottles).
+	Prefix string
 }
 
 // LauncherSpec describes one launcher (a store app) a driver reads.
@@ -54,7 +58,7 @@ type Store interface {
 }
 
 // All returns the drivers in discovery order.
-func All() []Store { return []Store{steamStore{}, gogStore{}, lutrisStore{}} }
+func All() []Store { return []Store{steamStore{}, gogStore{}, lutrisStore{}, bottlesStore{}} }
 
 // Has reports whether g's catalog entry names the store key.
 func Has(g components.GameInfo, key string) bool {
@@ -65,6 +69,8 @@ func Has(g components.GameInfo, key string) bool {
 		return g.Stores.GOG != nil
 	case lutrisKey:
 		return g.Stores.Lutris != nil
+	case bottlesKey:
+		return g.Stores.Bottles != nil
 	}
 	return false
 }
@@ -88,13 +94,13 @@ func Discover(home string, roots map[string][]string, g components.GameInfo) []I
 	return all
 }
 
-var storeOrder = []string{StoreSteam, StoreFlatpakSteam, StoreGOG, StoreGOGHeroic, StoreMinigalaxy, StoreLutris}
+var storeOrder = []string{StoreSteam, StoreFlatpakSteam, StoreGOG, StoreGOGHeroic, StoreMinigalaxy, StoreLutris, StoreBottles}
 
 // Rank orders stores for choosing a default install, lowest first; an unknown store ties with Steam.
 func Rank(store string) int { return max(slices.Index(storeOrder, store), 0) }
 
 // launcherOrder is the order the setup screen lists launchers in.
-var launcherOrder = []string{LauncherSteam, LauncherFlatpakSteam, LauncherHeroic, LauncherLutris, LauncherMinigalaxy, LauncherGOG}
+var launcherOrder = []string{LauncherSteam, LauncherFlatpakSteam, LauncherHeroic, LauncherLutris, LauncherMinigalaxy, LauncherBottles, LauncherGOG}
 
 // Launchers returns every driver's launchers on goos in the setup screen's order.
 func Launchers(goos string) []LauncherSpec {

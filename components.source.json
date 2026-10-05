@@ -64,6 +64,9 @@
         "lutris": {
           "slug": "stardew-valley",
           "keyword": "stardew"
+        },
+        "bottles": {
+          "folder": "Stardew Valley"
         }
       },
       "loaders": [
