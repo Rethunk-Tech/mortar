@@ -99,10 +99,10 @@ func loadBridgeEarly(path string) error {
 	if list, ok := cfg[loadEarlyKey].([]any); ok {
 		early = list
 	}
-	if found && slices.ContainsFunc(early, func(v any) bool { s, _ := v.(string); return mod.Equal(mod.SMAPI(s), mod.SMAPI(bridge.SMAPIID)) }) {
+	if found && slices.ContainsFunc(early, func(v any) bool { s, _ := v.(string); return mod.Equal(mod.SMAPI(s), mod.SMAPI(bridge.SMAPI.ID)) }) {
 		return nil
 	}
-	cfg[loadEarlyKey] = append([]any{bridge.SMAPIID}, early...)
+	cfg[loadEarlyKey] = append([]any{bridge.SMAPI.ID}, early...)
 	return datadir.WriteJSON(path, cfg)
 }
 

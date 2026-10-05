@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
-	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
@@ -1237,9 +1236,14 @@ func (s *Service) Send(gameID, command string) error {
 	return nil
 }
 
-// bridgeFolder is the bridge mod's folder in the profile the game runs, under the key that profile holds: a
-// Mortar update can bundle a newer bridge than the one the running game loaded.
+// bridgeFolder is the loader's companion mod's folder in the profile the game runs, under the key that profile holds:
+// a Mortar update can bundle a newer companion than the one the running game loaded.
 func (s *Service) bridgeFolder(g game.Game, profileID string) (string, error) {
+	l, _ := game.PrimaryLoader(g.ID())
+	companion, ok := l.(loader.WithCompanion)
+	if !ok {
+		return "", fmt.Errorf("%s has no console bridge", g.Name())
+	}
 	all, err := s.profiles.List(g.ID())
 	if err != nil {
 		return "", err
@@ -1254,7 +1258,7 @@ func (s *Service) bridgeFolder(g game.Game, profileID string) (string, error) {
 				if err != nil {
 					return "", err
 				}
-				return filepath.Join(modsDir, e.Key, bridge.ModFolder), nil
+				return filepath.Join(modsDir, e.Key, companion.Companion().ModFolder), nil
 			}
 		}
 	}

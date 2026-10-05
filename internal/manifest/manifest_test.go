@@ -135,6 +135,9 @@ func TestModIDIsSMAPIScoped(t *testing.T) {
 	if m.ModID() != "smapi:Au.One" || m.ContentPackForID() != "smapi:Au.Two" || (Manifest{}).ContentPackForID() != "" {
 		t.Errorf("ids = %q, %q", m.ModID(), m.ContentPackForID())
 	}
+	if !LoaderManaged("bepinex:Rethunk.MortarBepInExBridge") || LoaderManaged("bepinex:Au.One") {
+		t.Error("LoaderManaged must hide the BepInEx bridge")
+	}
 	if !LoaderManaged("smapi:SMAPI.ConsoleCommands") || LoaderManaged("smapi:Au.One") {
 		t.Error("LoaderManaged must match SMAPI's bundled mods by folded id")
 	}

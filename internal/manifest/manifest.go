@@ -237,11 +237,11 @@ func Scan(root string) ([]Mod, error) {
 	return mods, walk(root, ".")
 }
 
-// LoaderManaged reports whether a mod is installed and kept current by SMAPI or Mortar itself, so a profile never
+// LoaderManaged reports whether a mod is installed and kept current by a loader or Mortar itself, so a profile never
 // lists, imports or downloads it as one of its own mods.
 func LoaderManaged(id mod.ID) bool {
 	switch id.Fold() {
-	case "smapi:smapi.consolecommands", "smapi:smapi.savebackup", "smapi:rethunk.mortarsmapibridge":
+	case "smapi:smapi.consolecommands", "smapi:smapi.savebackup", "smapi:rethunk.mortarsmapibridge", "bepinex:Rethunk.MortarBepInExBridge":
 		return true
 	}
 	return false

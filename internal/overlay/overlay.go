@@ -63,7 +63,7 @@ func WriteBridgeConfig(modDir string, cfg BridgeConfig) error {
 
 // ApplyToMods writes config.json into every MortarSmapiBridge folder under modsDir.
 func ApplyToMods(modsDir string, cfg BridgeConfig) error {
-	matches, err := filepath.Glob(filepath.Join(modsDir, "*", bridge.ModFolder))
+	matches, err := filepath.Glob(filepath.Join(modsDir, "*", bridge.SMAPI.ModFolder))
 	if err != nil {
 		return err
 	}

@@ -131,8 +131,11 @@ func (Loader) Send(ctx context.Context, _ loader.Target, p loader.ProfileView, c
 	if p.Companion == "" {
 		return "", fmt.Errorf("this profile has no console bridge")
 	}
-	return "", bridge.Send(ctx, p.Companion, command)
+	return "", bridge.Send(ctx, filepath.Join(p.Companion, bridge.SMAPI.StateFile), command)
 }
+
+// Companion is the Mortar SMAPI Bridge.
+func (Loader) Companion() bridge.Companion { return bridge.SMAPI }
 
 // GameVersion returns the game version in a SMAPI log header ("SMAPI x with Stardew Valley y").
 func (Loader) GameVersion(log string) string {

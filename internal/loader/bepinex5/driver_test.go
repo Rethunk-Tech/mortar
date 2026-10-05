@@ -1,10 +1,12 @@
 package bepinex5
 
 import (
+	"errors"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -72,5 +74,18 @@ func TestLoaderContract(t *testing.T) {
 	cfg, isCfg := l.(loader.WithConfig)
 	if _, ok := l.(loader.WinHTTPLoader); !ok || !isCfg || cfg.ConfigDirs()[0] != "BepInEx/config" {
 		t.Fatal("capabilities")
+	}
+}
+
+func TestQueryReadsTheProfilesStateFile(t *testing.T) {
+	l := Loader{}
+	var _ loader.Querier = l
+	var _ loader.WithCompanion = l
+	p := loader.ProfileView{Dir: t.TempDir()}
+	if _, err := l.Query(t.Context(), loader.Target{}, p, "status"); !errors.Is(err, bridge.ErrNotReady) {
+		t.Fatalf("a profile whose game has not started: err = %v", err)
+	}
+	if l.Companion().ID != "Rethunk.MortarBepInExBridge" {
+		t.Fatalf("companion = %+v", l.Companion())
 	}
 }

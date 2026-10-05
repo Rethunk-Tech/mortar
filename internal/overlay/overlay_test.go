@@ -13,7 +13,7 @@ import (
 
 func TestWriteBridgeConfigUsesPascalCaseAndMode(t *testing.T) {
 	dir := t.TempDir()
-	mod := filepath.Join(dir, bridge.ModFolder)
+	mod := filepath.Join(dir, bridge.SMAPI.ModFolder)
 	if err := WriteBridgeConfig(mod, BridgeConfig{OverlayEnabled: true, OverlayPort: 8123, OverlayToken: "secret-token"}); err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +45,7 @@ func TestWriteBridgeConfigUsesPascalCaseAndMode(t *testing.T) {
 
 func TestWriteBridgeConfigOffClearsEnabled(t *testing.T) {
 	dir := t.TempDir()
-	mod := filepath.Join(dir, bridge.ModFolder)
+	mod := filepath.Join(dir, bridge.SMAPI.ModFolder)
 	if err := WriteBridgeConfig(mod, BridgeConfig{OverlayEnabled: true, OverlayPort: 9000, OverlayToken: "keep"}); err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +67,7 @@ func TestWriteBridgeConfigOffClearsEnabled(t *testing.T) {
 
 func TestApplyToModsWritesEachBridgeFolder(t *testing.T) {
 	mods := t.TempDir()
-	a := filepath.Join(mods, "bridge-1.0.1", bridge.ModFolder)
+	a := filepath.Join(mods, "bridge-1.0.1", bridge.SMAPI.ModFolder)
 	b := filepath.Join(mods, "other", "NotBridge")
 	if err := os.MkdirAll(a, 0o700); err != nil {
 		t.Fatal(err)

@@ -2,7 +2,9 @@ package loader
 
 import (
 	"context"
+	"encoding/json"
 
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
@@ -17,7 +19,8 @@ type ProfileView struct {
 	Runtime string
 	// Enabled are the folders of the profile's enabled packages.
 	Enabled []string
-	// Companion is the folder of the loader's companion mod in the profile, empty when the profile has none.
+	// Companion is the folder of the loader's companion mod in the profile (a loader whose companion is not a mod folder
+	// of its own leaves it empty).
 	Companion string
 }
 
@@ -115,6 +118,16 @@ type WithOrder interface {
 // OrderWriter is a loader whose load order lives in a file of the game.
 type OrderWriter interface {
 	WriteOrder(ctx context.Context, t Target, order []ComponentID) error
+}
+
+// WithCompanion is a loader with a companion mod that lets Mortar talk to the running game.
+type WithCompanion interface {
+	Companion() bridge.Companion
+}
+
+// Querier is a loader whose running game answers questions (status, plugins) through its companion.
+type Querier interface {
+	Query(ctx context.Context, t Target, p ProfileView, what string) (json.RawMessage, error)
 }
 
 // Console is a loader whose running game takes commands.

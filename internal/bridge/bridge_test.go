@@ -55,7 +55,7 @@ func state(port int) State { return State{Port: port, Token: "tok", PID: os.Getp
 
 func TestSendOK(t *testing.T) {
 	port, got := serve(t, "ok\n", false)
-	if err := send(t.Context(), state(port), `help "a b"`); err != nil {
+	if _, err := send(t.Context(), state(port), `help "a b"`); err != nil {
 		t.Fatal(err)
 	}
 	if line := <-got; line != "tok\nhelp \"a b\"\n" {
@@ -66,14 +66,14 @@ func TestSendOK(t *testing.T) {
 func TestSendRejected(t *testing.T) {
 	port, _ := serve(t, "error: missing or oversized command\n", false)
 	var re *RejectedError
-	if err := send(t.Context(), state(port), "x"); !errors.As(err, &re) || re.Message != "missing or oversized command" {
+	if _, err := send(t.Context(), state(port), "x"); !errors.As(err, &re) || re.Message != "missing or oversized command" {
 		t.Fatalf("err = %v", err)
 	}
 }
 
 func TestSendWrongToken(t *testing.T) {
 	port, _ := serve(t, "error: unauthorized\n", false)
-	if err := send(t.Context(), state(port), "x"); !errors.Is(err, ErrUnauthorized) {
+	if _, err := send(t.Context(), state(port), "x"); !errors.Is(err, ErrUnauthorized) {
 		t.Fatalf("err = %v", err)
 	}
 }
@@ -83,7 +83,7 @@ func TestSendTimeout(t *testing.T) {
 	t.Cleanup(func() { timeout = 3 * time.Second })
 	port, _ := serve(t, "", true)
 	start := time.Now()
-	if err := send(t.Context(), state(port), "x"); err == nil || time.Since(start) > 2*timeout {
+	if _, err := send(t.Context(), state(port), "x"); err == nil || time.Since(start) > 2*timeout {
 		t.Fatalf("err = %v after %v", err, time.Since(start))
 	}
 }
@@ -91,21 +91,21 @@ func TestSendTimeout(t *testing.T) {
 func TestSendNothingListening(t *testing.T) {
 	ln, port := listen(t)
 	_ = ln.Close()
-	if err := send(t.Context(), state(port), "x"); !errors.Is(err, ErrNotReady) {
+	if _, err := send(t.Context(), state(port), "x"); !errors.Is(err, ErrNotReady) {
 		t.Fatalf("err = %v", err)
 	}
 }
 
 func TestMultilineCommandRefusedBeforeConnecting(t *testing.T) {
 	var re *RejectedError
-	if err := send(t.Context(), state(1), "a\nb"); !errors.As(err, &re) {
+	if _, err := send(t.Context(), state(1), "a\nb"); !errors.As(err, &re) {
 		t.Fatalf("err = %v", err)
 	}
 }
 
 func TestReadState(t *testing.T) {
 	write := func(dir, body string) {
-		if err := os.WriteFile(filepath.Join(dir, StateFile), []byte(body), 0o600); err != nil {
+		if err := os.WriteFile(filepath.Join(dir, SMAPI.StateFile), []byte(body), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -125,12 +125,34 @@ func TestReadState(t *testing.T) {
 		if c.body != "" {
 			write(dir, c.body)
 		}
-		st, err := ReadState(dir)
+		st, err := ReadState(filepath.Join(dir, SMAPI.StateFile))
 		if !errors.Is(err, c.want) {
 			t.Fatalf("%s: err = %v, want %v", c.name, err, c.want)
 		}
 		if c.want == nil && (st.Port != 51234 || st.Token != "abc") {
 			t.Fatalf("%s: state = %+v", c.name, st)
 		}
+	}
+}
+
+func TestQueryReturnsTheRepliesJSON(t *testing.T) {
+	port, got := serve(t, "ok {\"gameVersion\":\"v62\",\"plugins\":[]}\n", false)
+	file := filepath.Join(t.TempDir(), BepInEx.StateFile)
+	if err := os.MkdirAll(filepath.Dir(file), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	body := fmt.Sprintf(`{"port":%d,"token":"tok","pid":%d}`, port, os.Getpid())
+	if err := os.WriteFile(file, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	out, err := Query(t.Context(), file, "status")
+	if err != nil || string(out) != `{"gameVersion":"v62","plugins":[]}` {
+		t.Fatalf("query = %s, %v", out, err)
+	}
+	if line := <-got; line != "tok\nstatus\n" {
+		t.Fatalf("server saw %q", line)
+	}
+	if _, err := Query(t.Context(), file, "quit"); err == nil {
+		t.Fatal("a question the companion does not answer must be refused")
 	}
 }

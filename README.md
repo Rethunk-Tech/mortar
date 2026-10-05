@@ -34,7 +34,7 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 - Keeps each set of mods in its own profile, with install, update, rollback and share as a link or `.mortar` file.
 - Downloads from Nexus Mods and GitHub; never re-hosts mod files.
 - A command line for the running app: `mortar games`, `mortar mods stardew "My Farm"`, `mortar conflicts ...`, with `--json` for scripts.
-- Installs the [Mortar SMAPI Bridge](https://github.com/Rethunk-Tech/mortar-smapi-bridge) into each profile: console commands from Mortar, Generic Mod Config Menu settings, and a stream overlay.
+- Installs the [Mortar SMAPI Bridge](https://github.com/Rethunk-Tech/mortar-smapi-bridge) into each profile: console commands from Mortar, Generic Mod Config Menu settings, and a stream overlay. Games on BepInEx get the [Mortar BepInEx Bridge](https://github.com/Rethunk-Tech/mortar-bepinex-bridge) instead, which lets Mortar ask the running game which plugins it has loaded.
 
 ## Screenshots
 

@@ -1,5 +1,6 @@
-// Package bridge sends console commands to a running game through the Mortar SMAPI Bridge mod, which listens
-// on loopback and publishes its port and token in a state file in its own folder.
+// Package bridge talks to a loader's companion mod: a small mod inside the running game that listens on loopback and
+// publishes its port and token in a state file. Mortar sends it console commands or asks it questions; the one-line
+// reply is `ok`, `ok <json>` or `error: <message>`.
 package bridge
 
 import (
@@ -11,7 +12,6 @@ import (
 	"io"
 	"net"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -20,17 +20,20 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
-const (
-	// ModFolder is the bridge mod's folder inside its store entry.
-	ModFolder = "MortarSmapiBridge"
-	// SMAPIID is the bridge mod's id as SMAPI's config files spell it.
-	SMAPIID = "Rethunk.MortarSmapiBridge"
-	// StateFile is written by the mod on start and removed on exit.
-	StateFile = "mortar-smapi-bridge.json"
+// Companion is a loader's companion mod: its folder and id as the loader spells them, and the state file it writes.
+// StateFile is relative to the mod's folder for SMAPI and to the profile for BepInEx, which keeps one config folder.
+type Companion struct {
+	ModFolder, ID, StateFile string
+}
 
-	// maxReply bounds the reply read: the mod answers with one short line.
-	maxReply = 4096
-)
+// SMAPI is the Mortar SMAPI Bridge.
+var SMAPI = Companion{ModFolder: "MortarSmapiBridge", ID: "Rethunk.MortarSmapiBridge", StateFile: "mortar-smapi-bridge.json"}
+
+// BepInEx is the Mortar BepInEx Bridge, whose state file sits in BepInEx's config folder.
+var BepInEx = Companion{ModFolder: "MortarBepInExBridge", ID: "Rethunk.MortarBepInExBridge", StateFile: "BepInEx/config/mortar-bepinex-bridge.json"}
+
+// maxReply bounds the reply read: a status answer is one line of JSON.
+const maxReply = 1 << 20
 
 // timeout bounds connecting and each read or write; a variable so tests can shorten it.
 var timeout = 3 * time.Second
@@ -39,7 +42,7 @@ var (
 	// ErrNotRunning means the game process the state file names is gone.
 	ErrNotRunning = errors.New("the game is not running")
 	// ErrNotReady means the game is up but the bridge has not started yet, or the mod is missing.
-	ErrNotReady = errors.New("the bridge is not ready yet: wait until SMAPI has finished loading")
+	ErrNotReady = errors.New("the bridge is not ready yet: wait until the loader has finished loading")
 	// ErrUnauthorized means the bridge did not accept the token.
 	ErrUnauthorized = errors.New("the bridge refused the token")
 )
@@ -56,10 +59,10 @@ type State struct {
 	PID   int    `json:"pid"`
 }
 
-// ReadState reads the state file in the bridge mod's folder dir. A missing or unreadable file is ErrNotReady,
-// a file whose process has exited ErrNotRunning.
-func ReadState(dir string) (State, error) {
-	b, err := fsx.ReadFile(filepath.Join(dir, StateFile))
+// ReadState reads the companion's state file. A missing or unreadable file is ErrNotReady, a file whose process has
+// exited ErrNotRunning.
+func ReadState(stateFile string) (State, error) {
+	b, err := fsx.ReadFile(stateFile)
 	if errors.Is(err, os.ErrNotExist) {
 		return State{}, ErrNotReady
 	}
@@ -76,42 +79,66 @@ func ReadState(dir string) (State, error) {
 	return st, nil
 }
 
-// Send runs command in the game whose bridge mod lives in dir.
-func Send(ctx context.Context, dir, command string) error {
-	st, err := ReadState(dir)
+// Send runs command in the game whose companion wrote stateFile.
+func Send(ctx context.Context, stateFile, command string) error {
+	st, err := ReadState(stateFile)
 	if err != nil {
 		return err
 	}
-	return send(ctx, st, command)
+	_, err = send(ctx, st, command)
+	return err
 }
 
-func send(ctx context.Context, st State, command string) error {
+// Query asks the game a question and returns the JSON the companion answers with. what is status or plugins.
+func Query(ctx context.Context, stateFile, what string) (json.RawMessage, error) {
+	if what != "status" && what != "plugins" {
+		return nil, fmt.Errorf("unknown query %q", what)
+	}
+	st, err := ReadState(stateFile)
+	if err != nil {
+		return nil, err
+	}
+	payload, err := send(ctx, st, what)
+	if err != nil {
+		return nil, err
+	}
+	if !json.Valid([]byte(payload)) {
+		return nil, fmt.Errorf("unexpected reply from the bridge: %q", payload)
+	}
+	return json.RawMessage(payload), nil
+}
+
+// send returns the JSON after `ok`, "" for a bare `ok`.
+func send(ctx context.Context, st State, command string) (string, error) {
 	if strings.ContainsAny(command, "\r\n") {
-		return &RejectedError{Message: "a command is one line"}
+		return "", &RejectedError{Message: "a command is one line"}
 	}
 	dialer := net.Dialer{Timeout: timeout}
 	conn, err := dialer.DialContext(ctx, "tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(st.Port)))
 	if err != nil {
-		return fmt.Errorf("%w: %w", ErrNotReady, err)
+		return "", fmt.Errorf("%w: %w", ErrNotReady, err)
 	}
 	defer func() { _ = conn.Close() }()
 	if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
-		return err
+		return "", err
 	}
 	if _, err := io.WriteString(conn, st.Token+"\n"+command+"\n"); err != nil {
-		return err
+		return "", err
 	}
 	reply, err := bufio.NewReader(io.LimitReader(conn, maxReply)).ReadString('\n')
 	if err != nil {
-		return fmt.Errorf("no reply from the bridge: %w", err)
+		return "", fmt.Errorf("no reply from the bridge: %w", err)
 	}
-	switch reply = strings.TrimSpace(reply); {
+	reply = strings.TrimSpace(reply)
+	switch {
 	case reply == "ok":
-		return nil
+		return "", nil
+	case strings.HasPrefix(reply, "ok "):
+		return strings.TrimPrefix(reply, "ok "), nil
 	case reply == "error: unauthorized":
-		return ErrUnauthorized
+		return "", ErrUnauthorized
 	case strings.HasPrefix(reply, "error: "):
-		return &RejectedError{Message: strings.TrimPrefix(reply, "error: ")}
+		return "", &RejectedError{Message: strings.TrimPrefix(reply, "error: ")}
 	}
-	return fmt.Errorf("unexpected reply from the bridge: %q", reply)
+	return "", fmt.Errorf("unexpected reply from the bridge: %q", reply)
 }
