@@ -124,3 +124,40 @@ func TestRunHealthChecksWaitsForStartupToSettle(t *testing.T) {
 		t.Fatalf("checks after settling = %d", seen.len())
 	}
 }
+
+func TestGameWideFindingsBadgeOneProfile(t *testing.T) {
+	t.Parallel()
+	e, svc, p := healthEnv(t)
+	other := mustCreate(t, e, "Other")
+	e.item(t, "orphan", map[string]string{"O/manifest.json": manifestJSON("X.O")})
+	svc.HealthKeep = func() (map[string][]string, error) { return e.StoreKeys(true) }
+	for _, id := range []string{p.ID, other.ID} {
+		if _, err := svc.ProfileHealth("stardew", id); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := svc.HealthBadges("stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	total := 0
+	for _, n := range got {
+		total += n
+	}
+	if total != 1 {
+		t.Fatalf("an unused store item is badged %d times: %v", total, got)
+	}
+}
+
+func TestRepairFlagsTheGameForARecheck(t *testing.T) {
+	t.Parallel()
+	_, svc, p := healthEnv(t)
+	if _, err := svc.RepairProfile("stardew", p.ID, nil); err != nil {
+		t.Fatal(err)
+	}
+	svc.healthMu.Lock()
+	defer svc.healthMu.Unlock()
+	if !svc.healthDue["stardew"] {
+		t.Fatal("a repair left the health badge to go stale for a week")
+	}
+}

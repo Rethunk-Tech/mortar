@@ -685,6 +685,9 @@ func (s *Service) finish(id string, err error, unverified bool) error {
 	if rec != nil {
 		s.recordHistory(rec, StateDone)
 		notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, true)
+		if s.Landed != nil && rec.Profile != "" {
+			s.Landed(rec.Game)
+		}
 		if s.d.HistoryBatch != nil {
 			if batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, rec.BatchID); batchErr != nil {
 				log.Printf("queue: record profile history batch %s: %v", rec.BatchID, batchErr)

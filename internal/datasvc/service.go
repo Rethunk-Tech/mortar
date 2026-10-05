@@ -29,6 +29,8 @@ type Service struct {
 	busy     []BusySource
 	// OnClearCache runs after ClearCache empties the cache folder, to drop copies held in memory.
 	OnClearCache func()
+	// OnCleanup runs after Cleanup removed stored mods, so checks that counted them run again.
+	OnCleanup func()
 	// Restart starts Mortar again after a successful move; nil skips that in tests.
 	Restart func() error
 }
@@ -231,6 +233,9 @@ func (s *Service) Cleanup(preview Preview) error {
 	err = s.applyPreview(dir, preview)
 	if err == nil {
 		s.forgetModUsage()
+		if s.OnCleanup != nil {
+			s.OnCleanup()
+		}
 	}
 	return err
 }

@@ -674,6 +674,8 @@ func run() error {
 		return err
 	}
 	dataSvc.Restart = datasvc.RestartSelf
+	dataSvc.OnCleanup = func() { profileSvc.FlagHealth(game.Implemented()...) }
+	queueSvc.Landed = func(gameID string) { profileSvc.FlagHealth(gameID) }
 	dataSvc.OnClearCache = problemsSvc.ForgetCached
 	checkSvc := storecheck.New(storecheck.Deps{
 		Items: items, Source: profiles.SourceOf, Add: queueSvc.Add,

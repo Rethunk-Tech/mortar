@@ -51,17 +51,48 @@ func readHealthCheck(dir string) (healthCheck, bool) {
 	return c, true
 }
 
-func (s *Service) recordHealth(game, id string, findings int, now time.Time) {
+// gameWide reports whether a finding is about the game's store or launch journals, not one profile.
+func gameWide(f HealthFinding) bool { return f.Kind == HealthUnused || f.Kind == HealthJournal }
+
+// recordHealth stores a check's findings: the profile's own in its folder, the game-wide ones once in the game's.
+// The game-wide count shows on one profile (the first), so a stale store item is not a badge on every profile.
+func (s *Service) recordHealth(game, id string, findings []HealthFinding, now time.Time) {
+	own, wide := 0, 0
+	for _, f := range findings {
+		if gameWide(f) {
+			wide++
+		} else {
+			own++
+		}
+	}
 	dir, err := s.store.ProfileDir(game, id)
 	if err != nil {
 		return
 	}
-	if err := datadir.WriteJSON(healthCheckPath(dir), healthCheck{At: now, Findings: findings}); err != nil {
+	if err := datadir.WriteJSON(healthCheckPath(dir), healthCheck{At: now, Findings: own}); err != nil {
 		log.Printf("health check: %v", err)
 	}
-	if s.HealthEmit != nil {
-		s.HealthEmit(HealthEvent, HealthNotice{Game: game, Profile: id, Findings: findings})
+	if gdir, err := s.store.gameDir(game); err == nil {
+		if err := datadir.WriteJSON(healthCheckPath(gdir), healthCheck{At: now, Findings: wide}); err != nil {
+			log.Printf("health check: %v", err)
+		}
 	}
+	if s.HealthEmit != nil {
+		shown := own
+		if s.badgeCarrier(game) == id {
+			shown += wide
+		}
+		s.HealthEmit(HealthEvent, HealthNotice{Game: game, Profile: id, Findings: shown})
+	}
+}
+
+// badgeCarrier is the profile whose badge includes the game-wide findings.
+func (s *Service) badgeCarrier(game string) string {
+	list, err := s.store.listOK(game)
+	if err != nil || len(list) == 0 {
+		return ""
+	}
+	return list[0].ID
 }
 
 // HealthBadges maps each of the game's profiles whose latest health check found something to how many findings.
@@ -78,6 +109,11 @@ func (s *Service) HealthBadges(game string) (map[string]int, error) {
 		}
 		if c, ok := readHealthCheck(dir); ok && c.Findings > 0 {
 			out[p.ID] = c.Findings
+		}
+	}
+	if gdir, err := s.store.gameDir(game); err == nil && len(list) > 0 {
+		if c, ok := readHealthCheck(gdir); ok && c.Findings > 0 {
+			out[list[0].ID] += c.Findings
 		}
 	}
 	return out, nil

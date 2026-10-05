@@ -328,8 +328,10 @@ type Deps struct {
 
 // Service is the download queue.
 type Service struct {
-	d    Deps
-	kick chan struct{}
+	d Deps
+	// Landed is told which game a profile-tied item finished installing for; set once at startup, nil means nothing.
+	Landed func(game string)
+	kick   chan struct{}
 	// pub orders publishes, so queue.json and the window always end on the latest state.
 	pub   sync.Mutex
 	mu    sync.Mutex

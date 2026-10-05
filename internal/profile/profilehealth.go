@@ -91,7 +91,7 @@ func (s *Service) ProfileHealth(game, id string) ([]HealthFinding, error) {
 	if out == nil {
 		out = []HealthFinding{}
 	}
-	s.recordHealth(game, id, len(out), time.Now())
+	s.recordHealth(game, id, out, time.Now())
 	return out, nil
 }
 
@@ -152,6 +152,8 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 	for _, ev := range drop {
 		errs = append(errs, s.store.dropHistoryEvent(game, id, ev))
 	}
+	// What was repaired changes what the next check finds, so the badge is refreshed by the scheduler.
+	s.FlagHealth(game)
 	p, err := s.store.read(game, id)
 	return p, errors.Join(append(errs, err)...)
 }
