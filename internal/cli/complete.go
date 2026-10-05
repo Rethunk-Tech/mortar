@@ -185,14 +185,15 @@ func (c *cmd) complete(words []string) error {
 	} else if words[0] == "problems" && pos == 1 {
 		cands = append(cands, subverbs["problems"]...)
 	} else if words[0] == "trash" && pos == 2 && len(words) > 1 && (words[1] == "restore" || words[1] == "delete") {
-		game := "stardew"
+		game := c.game
 		for i := 0; i+1 < len(words); i++ {
 			if words[i] == "--game" {
 				game = words[i+1]
 			}
 		}
+		c.game = game
 		var items []profile.TrashItem
-		if c.call("trash.list", control.Params{Game: game}, &items, readTimeout) == nil {
+		if game, err := c.gameOrDefault(); err == nil && c.call("trash.list", control.Params{Game: game}, &items, readTimeout) == nil {
 			for _, item := range items {
 				cands = append(cands, item.Name)
 			}

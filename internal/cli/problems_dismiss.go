@@ -36,13 +36,6 @@ func parseProblemIndex(s string) (int, error) {
 	return n, nil
 }
 
-func (c *cmd) problemsGame() string {
-	if c.game != "" {
-		return c.game
-	}
-	return "stardew"
-}
-
 func (c *cmd) problemsProfile() (string, error) {
 	if c.profileFlag == "" {
 		return "", usageError{"problems needs --profile <name>"}

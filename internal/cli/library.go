@@ -108,8 +108,8 @@ func (c *cmd) historyTrim() error {
 	return show(c, "history.trim", control.Params{Game: a[0], Profile: a[1], Keep: keep}, func(u profile.HistoryUsage) { fmt.Fprintf(c.out, "%s keeps %d events.\n", u.ProfileName, u.Events) })
 }
 
-func (c *cmd) backupsUsage() error {
-	return show(c, "backups.usage", control.Params{}, func(u savessvc.BackupsUsage) {
+func (c *cmd) backupsUsage(game string) error {
+	return show(c, "backups.usage", control.Params{Game: game}, func(u savessvc.BackupsUsage) {
 		rows := make([][]string, 0, len(u.PerSave))
 		for _, s := range u.PerSave {
 			rows = append(rows, []string{s.Save, strconv.Itoa(s.Count), humanBytes(s.Bytes)})
@@ -119,12 +119,12 @@ func (c *cmd) backupsUsage() error {
 	})
 }
 
-func (c *cmd) backupsTrim() error {
+func (c *cmd) backupsTrim(game string) error {
 	keep, err := c.keepCount()
 	if err != nil {
 		return err
 	}
-	return show(c, "backups.trim", control.Params{Keep: keep}, func(r savessvc.TrimResult) {
+	return show(c, "backups.trim", control.Params{Game: game, Keep: keep}, func(r savessvc.TrimResult) {
 		fmt.Fprintf(c.out, "Deleted %d backups, freed %s.\n", r.Removed, humanBytes(r.FreedBytes))
 	})
 }

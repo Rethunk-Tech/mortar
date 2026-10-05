@@ -24,6 +24,10 @@ type call struct {
 // fake answers each method with a canned JSON result and records what was asked.
 func fake(results map[string]any, calls *[]call) caller {
 	return func(method string, p control.Params, out any, _ time.Duration) error {
+		if _, ok := results[method]; !ok && method == "games" {
+			// The default-game lookup, answered with the one installed game.
+			return json.Unmarshal([]byte(`[{"id":"stardew","installed":true}]`), out)
+		}
 		*calls = append(*calls, call{method, p})
 		b, err := json.Marshal(results[method])
 		if err != nil {

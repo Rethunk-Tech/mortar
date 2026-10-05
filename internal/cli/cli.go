@@ -3,7 +3,6 @@
 package cli
 
 import (
-	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -865,11 +864,25 @@ func (c *cmd) bundles() error {
 	})
 }
 
-func (c *cmd) trashGame() string {
+// gameOrDefault is --game, else the only installed game Mortar implements; with none or several it asks for --game.
+func (c *cmd) gameOrDefault() (string, error) {
 	if c.game != "" {
-		return c.game
+		return c.game, nil
 	}
-	return "stardew"
+	var games []game.GameInfo
+	if err := c.call("games", control.Params{}, &games, readTimeout); err != nil {
+		return "", err
+	}
+	var ids []string
+	for _, g := range games {
+		if g.Installed && game.Find(g.ID) != nil {
+			ids = append(ids, g.ID)
+		}
+	}
+	if len(ids) != 1 {
+		return "", usageError{"more than one game, or none, is installed: pass --game <id>"}
+	}
+	return ids[0], nil
 }
 
 func relativeDeleted(when time.Time) string {
@@ -961,7 +974,10 @@ func (c *cmd) trash() error {
 	if len(c.args) < 2 {
 		return usageError{"trash needs list, restore, delete or empty"}
 	}
-	game := c.trashGame()
+	game, err := c.gameOrDefault()
+	if err != nil {
+		return err
+	}
 	sub := c.args[1]
 	switch sub {
 	case "list":
@@ -1208,7 +1224,7 @@ func nexusPage(game, source string) string {
 	if modID == "" || modID == "0" {
 		return ""
 	}
-	g, ok := components.BundledGame(cmp.Or(game, "stardew"))
+	g, ok := components.BundledGame(game)
 	if !ok || g.NexusDomain() == "" {
 		return ""
 	}
@@ -1547,7 +1563,10 @@ func (c *cmd) problemsDismissed() error {
 	if err != nil {
 		return err
 	}
-	game := c.problemsGame()
+	game, err := c.gameOrDefault()
+	if err != nil {
+		return err
+	}
 	return show(c, "problems.dismissed", control.Params{Game: game, Profile: profile}, func(list []problems.DismissedProblem) {
 		for i, d := range list {
 			kind, text := dismissedKindText(d)
@@ -1569,7 +1588,10 @@ func (c *cmd) problemsDismiss() error {
 	if err != nil {
 		return err
 	}
-	game := c.problemsGame()
+	game, err := c.gameOrDefault()
+	if err != nil {
+		return err
+	}
 	var r problems.Result
 	if err := c.call("problems", control.Params{Game: game, Profile: profile}, &r, readTimeout); err != nil {
 		return err
@@ -1593,7 +1615,10 @@ func (c *cmd) problemsRestore() error {
 	if err != nil {
 		return err
 	}
-	game := c.problemsGame()
+	game, err := c.gameOrDefault()
+	if err != nil {
+		return err
+	}
 	arg := a[0]
 	p := control.Params{Game: game, Profile: profile}
 	if idx, err := strconv.Atoi(strings.TrimSpace(arg)); err == nil && idx > 0 {
@@ -1741,7 +1766,11 @@ func (c *cmd) shareLog() error {
 }
 
 func (c *cmd) searchLogs(query string) error {
-	return show(c, "logs.search", control.Params{Game: "stardew", Profile: c.profileFlag, Query: query}, func(result launchsvc.RunSearch) {
+	game, err := c.gameOrDefault()
+	if err != nil {
+		return err
+	}
+	return show(c, "logs.search", control.Params{Game: game, Profile: c.profileFlag, Query: query}, func(result launchsvc.RunSearch) {
 		if len(result.Hits) == 0 {
 			fmt.Fprintln(c.out, "No matches.")
 			return
@@ -1933,6 +1962,10 @@ func (c *cmd) update() error {
 }
 
 func (c *cmd) backups() error {
+	game, err := c.gameOrDefault()
+	if err != nil {
+		return err
+	}
 	if len(c.args) > 1 {
 		switch c.args[1] {
 		case "restore":
@@ -1940,7 +1973,7 @@ func (c *cmd) backups() error {
 			if err != nil {
 				return err
 			}
-			if err := c.call("backups.restore", control.Params{Name: a[0], UniqueIDs: a[1:]}, nil, installTimeout); err != nil {
+			if err := c.call("backups.restore", control.Params{Game: game, Name: a[0], UniqueIDs: a[1:]}, nil, installTimeout); err != nil {
 				return err
 			}
 			return c.emit(map[string]any{"restored": a[0], "saves": a[1:]}, func() {
@@ -1952,7 +1985,7 @@ func (c *cmd) backups() error {
 				return err
 			}
 			method := "backups." + c.args[1]
-			if err := c.call(method, control.Params{Name: a[0]}, nil, readTimeout); err != nil {
+			if err := c.call(method, control.Params{Game: game, Name: a[0]}, nil, readTimeout); err != nil {
 				return err
 			}
 			pinned := c.args[1] == "keep"
@@ -1968,23 +2001,23 @@ func (c *cmd) backups() error {
 			if err != nil {
 				return err
 			}
-			if err := c.call("backups.create", control.Params{Name: a[0]}, nil, readTimeout); err != nil {
+			if err := c.call("backups.create", control.Params{Game: game, Name: a[0]}, nil, readTimeout); err != nil {
 				return err
 			}
 			return c.emit(map[string]any{"save": a[0]}, func() {
 				fmt.Fprintf(c.out, "Backed up %s.\n", a[0])
 			})
 		case "usage":
-			return c.backupsUsage()
+			return c.backupsUsage(game)
 		case "trim":
-			return c.backupsTrim()
+			return c.backupsTrim(game)
 		case "list":
 			break
 		default:
 			return usageError{"unknown backups command " + c.args[1]}
 		}
 	}
-	return show(c, "backups", control.Params{}, func(list any) { fmt.Fprintln(c.out, list) })
+	return show(c, "backups", control.Params{Game: game}, func(list any) { fmt.Fprintln(c.out, list) })
 }
 
 func (c *cmd) launchers() error {
