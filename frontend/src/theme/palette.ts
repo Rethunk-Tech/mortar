@@ -320,6 +320,14 @@ function ensureContrast(fg: string, bg: string, min = MIN_CONTRAST): string {
   return cur
 }
 
+// Status hues as picked; light mode darkens them only where they are text or icons, not where they are fills.
+const statusColors = {
+  info: '#2B8BDA',
+  success: '#0CDF64',
+  warning: '#F3B416',
+  error: '#C70A0A',
+} as const
+
 function contrastText(bg: string): string {
   return contrastRatio('#ffffff', bg) >= MIN_CONTRAST ? '#ffffff' : '#1b1a17'
 }
@@ -348,10 +356,14 @@ function mortarPalette(
     background: { default: backgroundDefault, paper },
     text: { primary: textPrimary, secondary: textSecondary },
     primary: { main: primaryMain, contrastText: contrastText(primaryMain) },
-    info: { main: dark ? '#2B8BDA' : ensureContrast('#2B8BDA', paperSolid) },
-    success: { main: dark ? '#0CDF64' : ensureContrast('#0CDF64', paperSolid) },
-    warning: { main: dark ? '#F3B416' : ensureContrast('#F3B416', paperSolid) },
-    error: { main: dark ? '#C70A0A' : ensureContrast('#C70A0A', paperSolid) },
+    info: { main: dark ? statusColors.info : ensureContrast(statusColors.info, paperSolid) },
+    success: {
+      main: dark ? statusColors.success : ensureContrast(statusColors.success, paperSolid),
+    },
+    warning: {
+      main: dark ? statusColors.warning : ensureContrast(statusColors.warning, paperSolid),
+    },
+    error: { main: dark ? statusColors.error : ensureContrast(statusColors.error, paperSolid) },
   }
 }
 
@@ -369,9 +381,11 @@ export type { ThemeMode }
 export {
   composite,
   contrastRatio,
+  contrastText,
   honourTheme,
   mortarPalette,
   paperForContrast,
+  statusColors,
   surfaceCssVars,
   surfaces,
 }

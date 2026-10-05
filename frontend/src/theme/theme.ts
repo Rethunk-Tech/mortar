@@ -7,7 +7,14 @@ import {
 } from '@mui/material/styles'
 import { compact } from '../game/compact.ts'
 import { type AccentName, accents } from './accents.ts'
-import { mortarPalette, surfaceCssVars, surfaces, type ThemeMode } from './palette.ts'
+import {
+  contrastText,
+  mortarPalette,
+  statusColors,
+  surfaceCssVars,
+  surfaces,
+  type ThemeMode,
+} from './palette.ts'
 
 const THUMB_ALPHA = 0.45
 const THUMB_HOVER_ALPHA = 0.7
@@ -208,6 +215,17 @@ export function createMortarTheme(
               },
             },
           },
+          // Light mode darkens status colours for text; a filled button keeps the colour as picked, with black or white text.
+          ...(mode === 'light'
+            ? (Object.keys(statusColors) as (keyof typeof statusColors)[]).map((color) => ({
+                props: { variant: 'contained' as const, color },
+                style: {
+                  backgroundColor: statusColors[color],
+                  color: contrastText(statusColors[color]),
+                  '&:hover': { backgroundColor: statusColors[color], filter: 'brightness(0.94)' },
+                },
+              }))
+            : []),
           // Pastel accents are fills, not ink: on a light surface a text button in the accent colour is unreadable.
           ...(mode === 'light'
             ? [
