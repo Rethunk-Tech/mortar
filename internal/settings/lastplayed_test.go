@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 )
 
 func TestOpenDropsInvalidLastPlayed(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	dir, err := datadir.Dir()
 	if err != nil {
 		t.Fatal(err)
@@ -51,7 +52,7 @@ func TestOpenDropsInvalidLastPlayed(t *testing.T) {
 }
 
 func TestRecordLastPlayed(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	s, err := Open()
 	if err != nil {
 		t.Fatal(err)
@@ -73,7 +74,7 @@ func TestRecordLastPlayed(t *testing.T) {
 }
 
 func TestAddPlaytimeSurvivesRelaunch(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	s, err := Open()
 	if err != nil {
 		t.Fatal(err)
@@ -100,7 +101,7 @@ func TestAddPlaytimeSurvivesRelaunch(t *testing.T) {
 }
 
 func TestGameListColumnsStayWithTheirGame(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	s, err := Open()
 	if err != nil {
 		t.Fatal(err)

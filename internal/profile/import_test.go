@@ -263,7 +263,7 @@ func TestPreviewGameModsSkipsASymlinkDirectory(t *testing.T) {
 	outside := t.TempDir()
 	writeFile(t, outside, "manifest.json", `{"Name":"Docs","Version":"1.0.0","UniqueID":"Me.Docs"}`)
 	if err := os.Symlink(outside, filepath.Join(mods, "Innocent")); err != nil {
-		t.Fatal(err)
+		t.Skipf("cannot create a symlink (Windows needs the symlink privilege): %v", err)
 	}
 	preview, err := e.PreviewGameMods(mods)
 	if err != nil {

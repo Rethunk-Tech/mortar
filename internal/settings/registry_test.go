@@ -1,6 +1,10 @@
 package settings
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
+)
 
 func TestRegistryDefaultsMatchToday(t *testing.T) {
 	s := Defaults()
@@ -46,7 +50,7 @@ func TestRegistryValidation(t *testing.T) {
 }
 
 func TestBatchPrefDefaultsAndSet(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	s := Defaults()
 	g := s.GamePrefs("stardew")
 	if s.ProfileOrder != ProfileOrderManual || s.AutoRetryDownloads != AutoRetryOff || s.PauseDownloadsWhilePlaying {

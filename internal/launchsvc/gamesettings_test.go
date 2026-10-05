@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gamesettings"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -16,9 +17,10 @@ import (
 
 func newGameSettingsService(t *testing.T) (*Service, profile.Profile, string) {
 	t.Helper()
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	config := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", config)
+	t.Setenv("APPDATA", config)
 
 	set, err := settings.Open()
 	if err != nil {

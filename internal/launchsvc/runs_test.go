@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -19,8 +20,9 @@ func runEnv(t *testing.T) (*Service, profile.Profile, string, string) {
 	t.Helper()
 	cfg := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", cfg)
+	t.Setenv("APPDATA", cfg)
 	home := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", filepath.Join(home, "data"))
+	datadirtest.Use(t, filepath.Join(home, "data"))
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "stardew", "A")
 	return NewService(home, nil, profiles), p, cfg, home
@@ -242,7 +244,7 @@ func TestRecordKeepsThePresetName(t *testing.T) {
 }
 
 func TestRecordStoresTheBepInExLogOfTheProfile(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", filepath.Join(t.TempDir(), "data"))
+	datadirtest.Use(t, filepath.Join(t.TempDir(), "data"))
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "lethal-company", "A")
 	dir, err := profiles.ProfileDir("lethal-company", p.ID)

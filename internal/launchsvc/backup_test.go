@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -41,7 +42,7 @@ func TestChangedSinceLastRun(t *testing.T) {
 
 func TestLaunchBackupLocationFollowsGameSetting(t *testing.T) {
 	data := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", data)
+	datadirtest.Use(t, data)
 	custom := filepath.Join(t.TempDir(), "launch-backups")
 	var set settings.Settings
 	if err := settings.ApplyKeyGame(&set, "backupLocation", custom, "stardew"); err != nil {

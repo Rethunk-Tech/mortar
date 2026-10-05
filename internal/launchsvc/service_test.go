@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
@@ -25,7 +26,7 @@ import (
 )
 
 func TestRunningFollowsProcessesAndLocksProfile(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	_, profiles := testenv.Stores(t)
 	a := testenv.Profile(t, profiles, "stardew", "A")
 	b := testenv.Profile(t, profiles, "stardew", "B")
@@ -59,8 +60,9 @@ func TestRunningFollowsProcessesAndLocksProfile(t *testing.T) {
 func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 	cfg := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", cfg)
+	t.Setenv("APPDATA", cfg)
 	home := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", filepath.Join(home, "data"))
+	datadirtest.Use(t, filepath.Join(home, "data"))
 	_, profiles := testenv.Stores(t)
 	a := testenv.Profile(t, profiles, "stardew", "A")
 	b := testenv.Profile(t, profiles, "stardew", "B")
@@ -111,7 +113,7 @@ func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 }
 
 func TestGameClosingEndsTheConsoleWithAMortarLine(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	_, profiles := testenv.Stores(t)
 	a := testenv.Profile(t, profiles, "stardew", "A")
 	mods, _ := profiles.ModsDir("stardew", a.ID)
@@ -147,7 +149,7 @@ func TestGameClosingEndsTheConsoleWithAMortarLine(t *testing.T) {
 func startEnv(t *testing.T) (*Service, profile.Profile) {
 	t.Helper()
 	data := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", data)
+	datadirtest.Use(t, data)
 	t.Setenv("LOCALAPPDATA", data)
 	folder := t.TempDir()
 	if err := os.WriteFile(filepath.Join(folder, "Stardew Valley.dll"), []byte("x"), 0o600); err != nil {
@@ -219,7 +221,7 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 }
 
 func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	items, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "stardew", "A")
 	svc := NewService(t.TempDir(), nil, profiles)
@@ -426,6 +428,7 @@ func TestMain(m *testing.M) {
 
 func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("APPDATA", t.TempDir())
 	svc, p := startEnv(t)
 	folder := svc.settings.Get().GameFolders["stardew"]
 	self, err := os.Executable()

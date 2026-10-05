@@ -4,12 +4,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestRecentLaunchesOrdersByNewestRun(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	set, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)
@@ -47,7 +48,7 @@ func TestRecentLaunchesOrdersByNewestRun(t *testing.T) {
 }
 
 func TestRecentLaunchesIncludesLastPlayedBeforeRuns(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	set, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)

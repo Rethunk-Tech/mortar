@@ -3,11 +3,12 @@ package launchsvc
 import (
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestLastPlayedRecordsOnRunningOnly(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	set, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)

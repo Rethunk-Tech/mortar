@@ -8,13 +8,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
 func TestDeployPlacesLoaderFilesAndTakesThemBack(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	install, profileDir := t.TempDir(), t.TempDir()
 	src := filepath.Join(profileDir, "winhttp.dll")
 	if err := os.WriteFile(src, []byte("proxy"), 0o600); err != nil {
@@ -69,7 +70,7 @@ func TestEnsureRuntimeEditsAnExistingProtonPrefix(t *testing.T) {
 }
 
 func TestDeployRecoversALaunchNothingTookBack(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	install := t.TempDir()
 	src := filepath.Join(t.TempDir(), "winhttp.dll")
 	for path, body := range map[string]string{src: "proxy", filepath.Join(install, "winhttp.dll"): "the player's own"} {

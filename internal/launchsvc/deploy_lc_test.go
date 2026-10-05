@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -39,7 +40,7 @@ func tsPackage(t *testing.T, name string, files map[string]string) string {
 }
 
 func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	items, err := store.Open()
 	if err != nil {
 		t.Fatal(err)

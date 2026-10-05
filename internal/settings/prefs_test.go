@@ -2,10 +2,13 @@ package settings
 
 import (
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 )
 
 func TestPrefDefaultsMatchToday(t *testing.T) {
@@ -86,7 +89,7 @@ func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 
 func TestPrefsExportImportRoundTrip(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	datadirtest.Use(t, t.TempDir())
 	src := Defaults()
 	src.Language = "en"
 	src.Accent = "moss"
@@ -248,8 +251,10 @@ func writeRaw(t *testing.T, s *Store, raw string) error {
 }
 
 func TestWatchedFoldersKeepsAbsoluteUniquePaths(t *testing.T) {
-	s := Settings{WatchFolders: strings.Join([]string{"/a", "rel", "/a", " /b "}, string(os.PathListSeparator))}
-	if got := s.WatchedFolders(); !slices.Equal(got, []string{"/a", "/b"}) {
+	root := t.TempDir()
+	a, b := filepath.Join(root, "a"), filepath.Join(root, "b")
+	s := Settings{WatchFolders: strings.Join([]string{a, "rel", a, " " + b + " "}, string(os.PathListSeparator))}
+	if got := s.WatchedFolders(); !slices.Equal(got, []string{a, b}) {
 		t.Errorf("WatchedFolders = %v", got)
 	}
 }
