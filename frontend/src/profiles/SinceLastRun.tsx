@@ -105,7 +105,10 @@ export function SinceLastRun({ game, profileId }: { game: string; profileId: str
           pl: 1.5,
           pr: 1,
           textAlign: 'left',
-          bgcolor: 'var(--mortar-hairline-faint)',
+          bgcolor: (theme) =>
+            theme.palette.mode === 'light'
+              ? theme.palette.background.paper
+              : 'var(--mortar-hairline-faint)',
           border: '1px solid var(--mortar-hairline-16)',
           borderRadius: '6px',
         }}

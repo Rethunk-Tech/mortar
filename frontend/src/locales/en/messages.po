@@ -1977,7 +1977,7 @@ msgstr "Hill-top farm"
 msgid "Installing SMAPI…"
 msgstr "Installing SMAPI…"
 
-#: src/mods/ProblemsTab.tsx:178
+#: src/mods/ProblemsTab.tsx:185
 msgid "Why?"
 msgstr "Why?"
 
@@ -2128,7 +2128,7 @@ msgstr "{gameName} save backups"
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
-#: src/mods/ProblemsTab.tsx:346
+#: src/mods/ProblemsTab.tsx:353
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -2265,7 +2265,7 @@ msgid "No enabled mods"
 msgstr "No enabled mods"
 
 #: src/mods/CleanupSection.tsx:148
-#: src/mods/ProblemsTab.tsx:383
+#: src/mods/ProblemsTab.tsx:390
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -3214,7 +3214,7 @@ msgid "Part of the OBS address; regenerate it if it leaks"
 msgstr "Part of the OBS address; regenerate it if it leaks"
 
 #. placeholder {0}: lines.length
-#: src/profiles/SinceLastRun.tsx:117
+#: src/profiles/SinceLastRun.tsx:120
 msgid "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 msgstr "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 
@@ -3489,7 +3489,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:66
-#: src/mods/ProblemsTab.tsx:387
+#: src/mods/ProblemsTab.tsx:394
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -3571,7 +3571,7 @@ msgstr "Skip every waiting download"
 msgid "{names} seems to cause the crash"
 msgstr "{names} seems to cause the crash"
 
-#: src/mods/ProblemsTab.tsx:516
+#: src/mods/ProblemsTab.tsx:523
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
 
@@ -3924,7 +3924,7 @@ msgstr "Take Nexus links from {0}?"
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
-#: src/mods/ProblemsTab.tsx:517
+#: src/mods/ProblemsTab.tsx:524
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
@@ -3987,7 +3987,7 @@ msgstr "Changed outside Mortar"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:405
+#: src/mods/ProblemsTab.tsx:412
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -4498,8 +4498,8 @@ msgstr "About Mortar"
 msgid "Lavender"
 msgstr "Lavender"
 
-#: src/mods/ProblemsTab.tsx:396
-#: src/mods/ProblemsTab.tsx:510
+#: src/mods/ProblemsTab.tsx:403
+#: src/mods/ProblemsTab.tsx:517
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -4980,8 +4980,8 @@ msgstr "Honour OS"
 msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
-#: src/mods/ProblemsTab.tsx:472
-#: src/mods/ProblemsTab.tsx:518
+#: src/mods/ProblemsTab.tsx:479
+#: src/mods/ProblemsTab.tsx:525
 msgid "Dismiss all"
 msgstr "Dismiss all"
 
@@ -5670,7 +5670,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:218
-#: src/mods/ProblemsTab.tsx:337
+#: src/mods/ProblemsTab.tsx:344
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -6846,7 +6846,7 @@ msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
 #: src/mods/CompatSection.tsx:58
-#: src/mods/ProblemsTab.tsx:403
+#: src/mods/ProblemsTab.tsx:410
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -7051,7 +7051,7 @@ msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the nex
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
 #: src/mods/ProblemBar.tsx:54
-#: src/mods/ProblemsTab.tsx:311
+#: src/mods/ProblemsTab.tsx:318
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -7683,7 +7683,7 @@ msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:82
-#: src/mods/ProblemsTab.tsx:411
+#: src/mods/ProblemsTab.tsx:418
 #: src/mods/ReportToAuthorButton.tsx:153
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
@@ -7847,7 +7847,7 @@ msgid "faster"
 msgstr "faster"
 
 #: src/console/PerformancePanelParts.tsx:213
-#: src/mods/ProblemsTab.tsx:343
+#: src/mods/ProblemsTab.tsx:350
 #: src/settings/sections/AboutDiagnostics.tsx:221
 msgid "Copy report"
 msgstr "Copy report"
@@ -8379,7 +8379,7 @@ msgstr "Enter a number from {min} to {max}"
 msgid "Close downloads"
 msgstr "Close downloads"
 
-#: src/mods/ProblemsTab.tsx:217
+#: src/mods/ProblemsTab.tsx:224
 msgid "{title} · {count}"
 msgstr "{title} · {count}"
 
@@ -8985,7 +8985,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:43
-#: src/mods/ProblemsTab.tsx:432
+#: src/mods/ProblemsTab.tsx:439
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -9521,7 +9521,7 @@ msgstr "Import settings"
 #: src/mods/EnableRequirementsDialog.tsx:54
 #: src/mods/LoadOrderTab.tsx:59
 #: src/mods/LoadOrderTab.tsx:98
-#: src/mods/ProblemsTab.tsx:386
+#: src/mods/ProblemsTab.tsx:393
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -9583,7 +9583,7 @@ msgstr "A preset with this name already exists."
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
-#: src/mods/ProblemsTab.tsx:457
+#: src/mods/ProblemsTab.tsx:464
 #: src/saves/lackChips.tsx:112
 msgid "Add all {0}"
 msgstr "Add all {0}"
@@ -9593,7 +9593,7 @@ msgstr "Add all {0}"
 msgid "Stop the game to change SMAPI."
 msgstr "Stop the game to change SMAPI."
 
-#: src/mods/ProblemsTab.tsx:500
+#: src/mods/ProblemsTab.tsx:507
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -10734,7 +10734,7 @@ msgstr "rate limit"
 msgid "Restore"
 msgstr "Restore"
 
-#: src/profiles/SinceLastRun.tsx:144
+#: src/profiles/SinceLastRun.tsx:147
 msgid "Changes since last run"
 msgstr "Changes since last run"
 
@@ -11047,7 +11047,7 @@ msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {wai
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:502
+#: src/mods/ProblemsTab.tsx:509
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 

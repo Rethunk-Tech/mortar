@@ -119,7 +119,14 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
         pr: 0.75,
         py: 1,
         fontSize: 14,
-        bgcolor: info ? 'var(--mortar-overlay-45)' : calloutFill('warning'),
+        // Light mode keeps cards on opaque paper (a tint over the wallpaper reads as grey); the warning border and icon
+        // still set conflicts apart.
+        bgcolor: (theme) => {
+          if (theme.palette.mode === 'light') {
+            return theme.palette.background.paper
+          }
+          return info ? 'var(--mortar-overlay-45)' : calloutFill('warning')(theme)
+        },
         border: '1px solid',
         borderColor: info ? 'transparent' : calloutLine('warning'),
         borderRadius: '6px',
