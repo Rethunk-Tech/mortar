@@ -71,12 +71,14 @@ function InstallLog({ steps, installing }: { steps: string[]; installing: boolea
 
 function LaunchLine({
   game,
+  loader,
   gameDir,
   set,
   recheck,
   onContinue,
 }: {
   game: GameId
+  loader: string
   gameDir: string
   set: boolean
   recheck: () => void
@@ -107,7 +109,7 @@ function LaunchLine({
     <>
       <Typography sx={{ fontSize: 22, fontWeight: 700 }}>{t`One step in Steam`}</Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
-        {t`On Windows, Steam starts the game without SMAPI unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click ${gameName}, choose Properties, and paste this line into Launch Options:`}
+        {t`On Windows, Steam starts the game without ${loader} unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click ${gameName}, choose Properties, and paste this line into Launch Options:`}
       </Typography>
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Box
@@ -270,12 +272,14 @@ function InstallFailed({
   )
 }
 
-export function SmapiStep({
+export function LoaderStep({
   game,
+  loader,
   gameDir,
   onDone,
 }: {
   game: GameId
+  loader: string
   gameDir: string
   onDone: () => void
 }) {
@@ -330,39 +334,40 @@ export function SmapiStep({
   }, [check, readOptions, game])
   useEffect(runCheck, [runCheck])
 
-  const smapiReady = status?.installed === true && !status.broken
+  const loaderReady = status?.installed === true && !status.broken
   const launchReady = !windows || launchSet
   useEffect(() => {
     if (checked && !entered.current) {
       entered.current = true
-      if (smapiReady && launchReady) {
+      if (loaderReady && launchReady) {
         onDone()
       }
     }
-  }, [checked, smapiReady, launchReady, onDone])
+  }, [checked, loaderReady, launchReady, onDone])
 
   // The install starts by itself; a failure waits for Retry instead of looping.
   useEffect(() => {
-    if (checked && !smapiReady && !installing && !started.current) {
+    if (checked && !loaderReady && !installing && !started.current) {
       started.current = true
       install(game)
     }
-  }, [checked, smapiReady, installing, install, game])
+  }, [checked, loaderReady, installing, install, game])
 
   if (checkError || !checked) {
     return <CheckGate error={checkError} ready={checked} onRetry={runCheck} />
   }
-  if (smapiReady && !installing) {
+  if (loaderReady && !installing) {
     const showLaunch = windows && !launchReady
     return (
       <Panel width={720}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, fontSize: 15 }}>
           <Check size={18} color={ok} />
-          {t`SMAPI ${status.version} installed`}
+          {t`${loader} ${status.version} installed`}
         </Box>
         {showLaunch ? (
           <LaunchLine
             game={game}
+            loader={loader}
             gameDir={gameDir}
             set={launchSet}
             recheck={() => readOptions().catch(reportUnexpected)}
@@ -383,12 +388,12 @@ export function SmapiStep({
   return (
     <Panel width={680}>
       <Typography sx={{ fontSize: 22, fontWeight: 700 }}>
-        {latest ? t`Installing SMAPI ${latest}` : t`Installing SMAPI`}
+        {latest ? t`Installing ${loader} ${latest}` : t`Installing ${loader}`}
       </Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
         {windows
-          ? t`SMAPI is the loader every ${gameName} mod needs. It goes into the game folder.`
-          : t`SMAPI is the loader every ${gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual.`}
+          ? t`${loader} is the loader every ${gameName} mod needs. It goes into the game folder.`
+          : t`${loader} is the loader every ${gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual.`}
       </Typography>
       {installing ? (
         <>

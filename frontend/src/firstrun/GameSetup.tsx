@@ -5,7 +5,7 @@ import { Check } from 'lucide-react'
 
 const DONE_FILL = 0.18
 
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   GameInfo,
   StoreApp,
@@ -19,22 +19,15 @@ import { useNexus } from '../settings/nexus.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { FindStep } from './FindStep.tsx'
+import { LoaderStep } from './LoaderStep.tsx'
 import { NexusStep } from './NexusStep.tsx'
 import { ProfileStep } from './ProfileStep.tsx'
-import { SmapiStep } from './SmapiStep.tsx'
 
 const FIND = 1
 const NEXUS = 2
 const LOADER = 3
 const PROFILE = 4
 type Step = typeof FIND | typeof NEXUS | typeof LOADER | typeof PROFILE
-
-type LoaderStep = (p: { game: GameId; gameDir: string; onDone: () => void }) => ReactNode
-
-// Each loader's own setup between finding the game's folder and its first profile; a loader without one has none.
-const loaderSteps: Record<string, LoaderStep> = {
-  smapi: SmapiStep,
-}
 
 function StepChip({
   n,
@@ -114,9 +107,9 @@ export function GameSetup({ game: id }: { game: GameId }) {
   }, [id])
   useEffect(refresh, [refresh])
   const goToProfile = useCallback(() => setStep(PROFILE), [])
-  const Loader = loaderSteps[game?.loaderId ?? '']
+  const hasLoader = Boolean(game?.loaderId)
   const signedIn = useNexus((s) => s.signedIn)
-  const afterNexus = Loader ? LOADER : PROFILE
+  const afterNexus = hasLoader ? LOADER : PROFILE
   const firstStep = useRef(step)
   // The step's content remounts on each change, dropping focus to the page; a remounted wrapper takes it back.
   const focusStep = (el: HTMLDivElement | null) => {
@@ -157,14 +150,18 @@ export function GameSetup({ game: id }: { game: GameId }) {
       <Box component="ol" sx={{ display: 'flex', gap: '10px', m: 0, p: 0, listStyle: 'none' }}>
         <StepChip n={FIND} label={t`Game folder`} state={stateOf(FIND)} />
         <StepChip n={NEXUS} label={t`Nexus Mods`} state={stateOf(NEXUS)} />
-        {Loader ? (
+        {hasLoader ? (
           <StepChip
             n={LOADER}
             label={step > LOADER ? t`${game.loader} installed` : t`Install ${game.loader}`}
             state={stateOf(LOADER)}
           />
         ) : null}
-        <StepChip n={Loader ? PROFILE : LOADER} label={t`First profile`} state={stateOf(PROFILE)} />
+        <StepChip
+          n={hasLoader ? PROFILE : LOADER}
+          label={t`First profile`}
+          state={stateOf(PROFILE)}
+        />
       </Box>
       <Box
         key={step}
@@ -188,8 +185,13 @@ export function GameSetup({ game: id }: { game: GameId }) {
           />
         ) : null}
         {step === NEXUS ? <NexusStep onDone={() => setStep(afterNexus)} /> : null}
-        {step === LOADER && Loader ? (
-          <Loader game={id} gameDir={game.installDir} onDone={goToProfile} />
+        {step === LOADER && hasLoader ? (
+          <LoaderStep
+            game={id}
+            loader={game.loader}
+            gameDir={game.installDir}
+            onDone={goToProfile}
+          />
         ) : null}
         {step === PROFILE ? <ProfileStep game={id} /> : null}
       </Box>

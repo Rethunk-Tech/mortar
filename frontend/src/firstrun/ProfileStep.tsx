@@ -11,7 +11,7 @@ import {
   SetLastGame,
   SetLastProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { useGameName } from '../games/info.ts'
+import { useGameLoader, useGameName } from '../games/info.ts'
 import { type GameId, useNav } from '../nav/store.ts'
 import { GameModsDialog } from '../profiles/GameModsDialog.tsx'
 import { openImport } from '../share/store.ts'
@@ -31,6 +31,7 @@ const cardSx = (borderColor: string) => ({
 export function ProfileStep({ game }: { game: GameId }) {
   const { t } = useLingui()
   const gameName = useGameName(game)
+  const loader = useGameLoader(game)
   const [name, setName] = useState(t`Main`)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -108,7 +109,9 @@ export function ProfileStep({ game }: { game: GameId }) {
           </Box>
           <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`Start empty`}</Typography>
           <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-            {t`A profile with only SMAPI. Add mods from Nexus or from archives.`}
+            {loader
+              ? t`A profile with only ${loader}. Add mods from Nexus or from archives.`
+              : t`An empty profile. Add mods from Nexus or from archives.`}
           </Typography>
           <TextField
             autoFocus={true}

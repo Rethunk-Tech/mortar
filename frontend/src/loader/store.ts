@@ -7,6 +7,7 @@ import {
   InstallVersion,
   Status as LoaderStatus,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadersvc/service.ts'
+import { gameInfo } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, toastError } from '../toasts/report.ts'
@@ -35,7 +36,7 @@ export const useLoader = create<{
   check: async (game) => {
     set({ status: null })
     try {
-      set({ status: await LoaderStatus(game) })
+      set({ status: await LoaderStatus(game, '') })
     } catch {
       // The game may not be installed; there is nothing to offer then.
     }
@@ -47,14 +48,15 @@ export const useLoader = create<{
     }
     set({ pending: true })
     try {
-      const status = version ? await InstallVersion(game, version) : await Install(game)
+      const status = version ? await InstallVersion(game, '', version) : await Install(game, '')
       set({ status })
+      const name = gameInfo(game)?.loader ?? ''
       useToasts
         .getState()
-        .push({ kind: 'success', title: i18n._(msg`SMAPI ${status.version} is installed`) })
+        .push({ kind: 'success', title: i18n._(msg`${name} ${status.version} is installed`) })
     } catch (e) {
       set({ error: errorMessage(e), errorDetail: errorDetails(e) })
-      toastError(i18n._(msg`Could not install SMAPI`), e)
+      toastError(i18n._(msg`Could not install ${gameInfo(game)?.loader ?? ''}`), e)
     } finally {
       set({ pending: false })
     }

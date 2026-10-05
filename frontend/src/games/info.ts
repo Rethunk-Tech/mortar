@@ -37,12 +37,16 @@ export function gameName(id?: string): string {
   return gameInfo(id)?.name || FALLBACK_NAME
 }
 
-function useGameInfo(id?: string): GameInfo | undefined {
+export function useGameInfo(id?: string): GameInfo | undefined {
   ensureLoaded()
   const current = useCurrentGame()
   const games = useGameList((s) => s.games)
   const loaded = useProfiles((s) => s.game)
   return find(games, loaded, id ?? current)
+}
+
+export function useGameLoader(id?: string): string {
+  return useGameInfo(id)?.loader ?? ''
 }
 
 export function useGameName(id?: string): string {

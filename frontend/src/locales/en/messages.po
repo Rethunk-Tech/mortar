@@ -145,10 +145,6 @@ msgstr "Could not back up {label}"
 msgid "Free Nexus accounts must click each download on Nexus; those updates will not block Play."
 msgstr "Free Nexus accounts must click each download on Nexus; those updates will not block Play."
 
-#: src/firstrun/SmapiStep.tsx:386
-msgid "Installing SMAPI {latest}"
-msgstr "Installing SMAPI {latest}"
-
 #: src/console/UpdateNoteTag.tsx:25
 msgid "Unofficial build"
 msgstr "Unofficial build"
@@ -576,6 +572,10 @@ msgstr "Add tool…"
 msgid "Showing the first 2,000 files"
 msgstr "Showing the first 2,000 files"
 
+#: src/profiles/LoaderPicker.tsx:29
+msgid "Mod loader"
+msgstr "Mod loader"
+
 #: src/mods/columnLabel.ts:16
 msgid "Updated on Nexus"
 msgstr "Updated on Nexus"
@@ -619,10 +619,6 @@ msgstr "The backup from {when} is removed for good, with every save in it."
 #: src/mods/CategoryEditor.tsx:120
 msgid "Group mods by these names, or assign one as a mod's primary category."
 msgstr "Group mods by these names, or assign one as a mod's primary category."
-
-#: src/firstrun/SmapiStep.tsx:386
-msgid "Installing SMAPI"
-msgstr "Installing SMAPI"
 
 #: src/share/ShareDialog.tsx:274
 msgid "Not in the link"
@@ -688,7 +684,7 @@ msgstr "Only in {bName}"
 msgid "Mod loader updates"
 msgstr "Mod loader updates"
 
-#: src/profiles/EditProfileDialog.tsx:154
+#: src/profiles/EditProfileDialog.tsx:155
 msgid "Pink"
 msgstr "Pink"
 
@@ -743,7 +739,7 @@ msgstr "Time editing and loading game assets, including content packs it loads"
 msgid "Uploaded by"
 msgstr "Uploaded by"
 
-#: src/firstrun/ProfileStep.tsx:72
+#: src/firstrun/ProfileStep.tsx:73
 msgid "Make your first profile"
 msgstr "Make your first profile"
 
@@ -760,7 +756,7 @@ msgstr "Free"
 msgid "Missing in {targetName}"
 msgstr "Missing in {targetName}"
 
-#: src/firstrun/SmapiStep.tsx:169
+#: src/firstrun/LoaderStep.tsx:171
 msgid "Mortar found it in Steam's settings."
 msgstr "Mortar found it in Steam's settings."
 
@@ -802,7 +798,7 @@ msgstr "{0} · {1}"
 msgid "{list} do the same job: all change {detail}"
 msgstr "{list} do the same job: all change {detail}"
 
-#: src/profiles/EditProfileDialog.tsx:174
+#: src/profiles/EditProfileDialog.tsx:175
 msgid "Star"
 msgstr "Star"
 
@@ -856,7 +852,7 @@ msgstr "Tabs"
 msgid "Broken"
 msgstr "Broken"
 
-#: src/firstrun/SmapiStep.tsx:33
+#: src/firstrun/LoaderStep.tsx:33
 #: src/loader/InstallSteps.tsx:11
 msgid "Bundled mods added"
 msgstr "Bundled mods added"
@@ -901,7 +897,7 @@ msgstr "Mortar does not manage mods for that game."
 msgid "Move down"
 msgstr "Move down"
 
-#: src/firstrun/ProfileStep.tsx:109
+#: src/firstrun/ProfileStep.tsx:110
 msgid "Start empty"
 msgstr "Start empty"
 
@@ -1127,7 +1123,7 @@ msgstr "Reinstall {gameName} from your game launcher."
 msgid "Grant access…"
 msgstr "Grant access…"
 
-#: src/profiles/EditProfileDialog.tsx:142
+#: src/profiles/EditProfileDialog.tsx:143
 msgid "Orange"
 msgstr "Orange"
 
@@ -1157,7 +1153,7 @@ msgstr "Save diagnostics…"
 msgid "Small"
 msgstr "Small"
 
-#: src/firstrun/ProfileStep.tsx:147
+#: src/firstrun/ProfileStep.tsx:150
 msgid "From a shared link"
 msgstr "From a shared link"
 
@@ -1282,7 +1278,7 @@ msgstr "Share log…"
 msgid "Review"
 msgstr "Review"
 
-#: src/firstrun/SmapiStep.tsx:100
+#: src/firstrun/LoaderStep.tsx:102
 msgid "Launch options set in Steam"
 msgstr "Launch options set in Steam"
 
@@ -1321,7 +1317,7 @@ msgstr "Template name"
 msgid "Its main file is no longer in this profile."
 msgstr "Its main file is no longer in this profile."
 
-#: src/profiles/EditProfileDialog.tsx:162
+#: src/profiles/EditProfileDialog.tsx:163
 msgid "Sprout"
 msgstr "Sprout"
 
@@ -1344,6 +1340,10 @@ msgstr "No supported game was found in your launchers."
 #: src/settings/SettingsShell.tsx:138
 msgid "Search results"
 msgstr "Search results"
+
+#: src/firstrun/LoaderStep.tsx:112
+msgid "On Windows, Steam starts the game without {loader} unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click {gameName}, choose Properties, and paste this line into Launch Options:"
+msgstr "On Windows, Steam starts the game without {loader} unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click {gameName}, choose Properties, and paste this line into Launch Options:"
 
 #. placeholder {0}: SOURCE_NAMES[flow.external.source] ?? flow.external.source
 #: src/share/ImportDialog.tsx:184
@@ -1425,8 +1425,8 @@ msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
 #: src/browse/BrowsePage.tsx:220
-#: src/firstrun/SmapiStep.tsx:198
-#: src/firstrun/SmapiStep.tsx:266
+#: src/firstrun/LoaderStep.tsx:200
+#: src/firstrun/LoaderStep.tsx:268
 #: src/game/detailStates.tsx:27
 #: src/launch/LaunchLayer.tsx:295
 #: src/mods/LoadOrderTab.tsx:376
@@ -1480,10 +1480,6 @@ msgstr "Show less"
 #: src/queue/QueueSheet.tsx:55
 msgid "{0} left"
 msgstr "{0} left"
-
-#: src/firstrun/SmapiStep.tsx:391
-msgid "SMAPI is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
-msgstr "SMAPI is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 
 #: src/launch/playStart.ts:83
 msgid "Could not update mods before Play"
@@ -1569,7 +1565,7 @@ msgid "Stop the game to install SMAPI."
 msgstr "Stop the game to install SMAPI."
 
 #: src/bundles/dialogs.tsx:58
-#: src/firstrun/ProfileStep.tsx:117
+#: src/firstrun/ProfileStep.tsx:120
 #: src/mods/CategoryEditor.tsx:40
 #: src/mods/columnLabel.ts:7
 #: src/profiles/LaunchPresetDialog.tsx:58
@@ -1657,7 +1653,7 @@ msgstr "Folder to watch for archives"
 msgid "Launch presets"
 msgstr "Launch presets"
 
-#: src/profiles/EditProfileDialog.tsx:99
+#: src/profiles/EditProfileDialog.tsx:100
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
@@ -1747,7 +1743,7 @@ msgstr "Update mods before Play"
 msgid "No installed mods for this author."
 msgstr "No installed mods for this author."
 
-#: src/firstrun/ProfileStep.tsx:48
+#: src/firstrun/ProfileStep.tsx:49
 msgid "Enter a name for the profile."
 msgstr "Enter a name for the profile."
 
@@ -1767,7 +1763,7 @@ msgstr "Uses the saved options"
 msgid "Already retrying failed downloads"
 msgstr "Already retrying failed downloads"
 
-#: src/firstrun/SmapiStep.tsx:31
+#: src/firstrun/LoaderStep.tsx:31
 #: src/loader/InstallSteps.tsx:9
 msgid "Files added"
 msgstr "Files added"
@@ -1976,7 +1972,7 @@ msgid "Dependency cycle"
 msgstr "Dependency cycle"
 
 #: src/commandPalette/paletteLabels.ts:17
-#: src/firstrun/ProfileStep.tsx:133
+#: src/firstrun/ProfileStep.tsx:136
 #: src/game/NewProfileDialog.tsx:129
 #: src/game/Sidebar.tsx:378
 #: src/game/Sidebar.tsx:396
@@ -1998,7 +1994,7 @@ msgid "Not signed in"
 msgstr "Not signed in"
 
 #: src/firstrun/FindStep.tsx:163
-#: src/firstrun/GameSetup.tsx:158
+#: src/firstrun/GameSetup.tsx:151
 #: src/settings/sections/GameSettings.tsx:181
 #: src/settings/sections/GameSettings.tsx:183
 #: src/settings/sections/GameSettings.tsx:231
@@ -2029,7 +2025,7 @@ msgstr "Upload log"
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
-#: src/profiles/EditProfileDialog.tsx:146
+#: src/profiles/EditProfileDialog.tsx:147
 msgid "Lime"
 msgstr "Lime"
 
@@ -2071,7 +2067,7 @@ msgstr "No scheduled backup has run yet."
 msgid "{0, plural, one {# tracked mod on Nexus is not in this profile} other {# tracked mods on Nexus are not in this profile}}"
 msgstr "{0, plural, one {# tracked mod on Nexus is not in this profile} other {# tracked mods on Nexus are not in this profile}}"
 
-#: src/firstrun/SmapiStep.tsx:108
+#: src/firstrun/LoaderStep.tsx:110
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
@@ -2086,7 +2082,7 @@ msgid "Skipped"
 msgstr "Skipped"
 
 #: src/game/ProfileContextMenu.tsx:47
-#: src/profiles/EditProfileDialog.tsx:423
+#: src/profiles/EditProfileDialog.tsx:425
 #: src/profiles/ProfileRow.tsx:78
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -2209,6 +2205,11 @@ msgstr "{length} of {limit} characters · fits one Discord message"
 msgid "Install together"
 msgstr "Install together"
 
+#. placeholder {0}: status.version
+#: src/loader/store.ts:56
+msgid "{name} {0} is installed"
+msgstr "{name} {0} is installed"
+
 #. placeholder {0}: damaged.length
 #: src/settings/sections/DataStoreCheck.tsx:44
 msgid "{0, plural, one {# has damaged files} other {# have damaged files}}"
@@ -2252,6 +2253,10 @@ msgstr "Mods and profiles"
 #: src/share/useImportFlow.ts:145
 msgid "Imported {name}"
 msgstr "Imported {name}"
+
+#: src/firstrun/LoaderStep.tsx:391
+msgid "Installing {loader} {latest}"
+msgstr "Installing {loader} {latest}"
 
 #: src/settings/prefCopy.ts:361
 msgid "Empty follows the latest release"
@@ -2627,7 +2632,7 @@ msgstr "{0} has multiple Nexus files installed: {files}."
 msgid "Place the optional file"
 msgstr "Place the optional file"
 
-#: src/profiles/EditProfileDialog.tsx:150
+#: src/profiles/EditProfileDialog.tsx:151
 #: src/settings/sections/Appearance.tsx:71
 msgid "Sky"
 msgstr "Sky"
@@ -2672,7 +2677,7 @@ msgstr "Show the tour again"
 msgid "Measuring… {0}"
 msgstr "Measuring… {0}"
 
-#: src/firstrun/SmapiStep.tsx:180
+#: src/firstrun/LoaderStep.tsx:182
 msgid "Check again"
 msgstr "Check again"
 
@@ -2684,7 +2689,7 @@ msgstr "different file"
 msgid "Mortar is up to date."
 msgstr "Mortar is up to date."
 
-#: src/firstrun/SmapiStep.tsx:145
+#: src/firstrun/LoaderStep.tsx:147
 msgid "Set it in Steam for me"
 msgstr "Set it in Steam for me"
 
@@ -2874,7 +2879,7 @@ msgstr "None of {0} are in Saves yet; they will be added. A backup of the curren
 msgid "{0, plural, one {# download added} other {# downloads added}}"
 msgstr "{0, plural, one {# download added} other {# downloads added}}"
 
-#: src/firstrun/SmapiStep.tsx:92
+#: src/firstrun/LoaderStep.tsx:94
 #: src/launch/LaunchLayer.tsx:213
 msgid "Launch options copied"
 msgstr "Launch options copied"
@@ -3279,7 +3284,7 @@ msgstr "Mortar · Install {name}?"
 msgid "Replace {targetName}"
 msgstr "Replace {targetName}"
 
-#: src/firstrun/ProfileStep.tsx:34
+#: src/firstrun/ProfileStep.tsx:35
 msgid "Main"
 msgstr "Main"
 
@@ -3324,7 +3329,7 @@ msgstr "Review mod updates"
 msgid "Download the extension"
 msgstr "Download the extension"
 
-#: src/profiles/EditProfileDialog.tsx:180
+#: src/profiles/EditProfileDialog.tsx:181
 msgid "Sun"
 msgstr "Sun"
 
@@ -3363,7 +3368,7 @@ msgstr "Could not trim history"
 msgid "Performance report"
 msgstr "Performance report"
 
-#: src/profiles/EditProfileDialog.tsx:91
+#: src/profiles/EditProfileDialog.tsx:92
 msgid "Cover image"
 msgstr "Cover image"
 
@@ -3402,7 +3407,7 @@ msgstr "Share as r2modman code?"
 #: src/mods/SelectionBarDialogs.tsx:86
 #: src/mods/SelectionBarDialogs.tsx:136
 #: src/profiles/CompareDialog.tsx:61
-#: src/profiles/EditProfileDialog.tsx:450
+#: src/profiles/EditProfileDialog.tsx:452
 #: src/profiles/ExternalImportMenu.tsx:72
 #: src/profiles/GameModsDialog.tsx:164
 #: src/profiles/LaunchPresetDialog.tsx:87
@@ -3461,8 +3466,8 @@ msgstr "Parallel downloads"
 msgid "{name} is abandoned: {summary}"
 msgstr "{name} is abandoned: {summary}"
 
-#: src/profiles/EditProfileDialog.tsx:105
-#: src/profiles/EditProfileDialog.tsx:113
+#: src/profiles/EditProfileDialog.tsx:106
+#: src/profiles/EditProfileDialog.tsx:114
 #: src/settings/sections/Appearance.tsx:173
 msgid "Choose image…"
 msgstr "Choose image…"
@@ -3527,7 +3532,7 @@ msgstr "Could not preview the template"
 msgid "From the extra mods folder…"
 msgstr "From the extra mods folder…"
 
-#: src/firstrun/GameSetup.tsx:78
+#: src/firstrun/GameSetup.tsx:71
 #: src/firstrunTour/TourPopover.tsx:171
 #: src/queue/QueueHistory.tsx:63
 msgid "Done"
@@ -3612,10 +3617,6 @@ msgstr "A mod with several tags appears under its first tag."
 msgid "Summary"
 msgstr "Summary"
 
-#: src/firstrun/ProfileStep.tsx:111
-msgid "A profile with only SMAPI. Add mods from Nexus or from archives."
-msgstr "A profile with only SMAPI. Add mods from Nexus or from archives."
-
 #. placeholder {0}: extra.join(', ')
 #: src/mods/parts.tsx:341
 msgid "Mods from the same download are removed together: {0}. You can undo this."
@@ -3655,6 +3656,10 @@ msgstr "{names} seems to cause the crash"
 #: src/mods/ProblemsTab.tsx:572
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
+
+#: src/firstrun/ProfileStep.tsx:114
+msgid "An empty profile. Add mods from Nexus or from archives."
+msgstr "An empty profile. Add mods from Nexus or from archives."
 
 #: src/settings/sections/StreamOverlay.tsx:419
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
@@ -3710,10 +3715,6 @@ msgstr "Last run: {summary}"
 #: src/settings/prefCopy.ts:378
 msgid "Offer new downloads"
 msgstr "Offer new downloads"
-
-#: src/loader/store.ts:57
-msgid "Could not install SMAPI"
-msgstr "Could not install SMAPI"
 
 #: src/settings/prefCopy.ts:232
 #: src/settings/sections/GameSettings.tsx:339
@@ -3780,13 +3781,17 @@ msgstr "Version"
 msgid "Browser extension"
 msgstr "Browser extension"
 
-#: src/profiles/EditProfileDialog.tsx:152
+#: src/profiles/EditProfileDialog.tsx:153
 msgid "Violet"
 msgstr "Violet"
 
 #: src/saves/backups.ts:80
 msgid "Unknown"
 msgstr "Unknown"
+
+#: src/firstrun/LoaderStep.tsx:396
+msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
+msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 
 #: src/console/UpdateNoteTag.tsx:20
 msgid "This mod is pinned in this profile, so Mortar does not offer updates for it."
@@ -3807,7 +3812,7 @@ msgstr "Apply a template…"
 msgid "Switch off {0}"
 msgstr "Switch off {0}"
 
-#: src/profiles/EditProfileDialog.tsx:166
+#: src/profiles/EditProfileDialog.tsx:167
 msgid "Wheat"
 msgstr "Wheat"
 
@@ -4202,7 +4207,7 @@ msgstr "Clear selection"
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
 
-#: src/profiles/EditProfileDialog.tsx:176
+#: src/profiles/EditProfileDialog.tsx:177
 msgid "Heart"
 msgstr "Heart"
 
@@ -4268,7 +4273,7 @@ msgid "{0} of {1}"
 msgstr "{0} of {1}"
 
 #. placeholder {0}: game.loader
-#: src/firstrun/GameSetup.tsx:163
+#: src/firstrun/GameSetup.tsx:156
 msgid "Install {0}"
 msgstr "Install {0}"
 
@@ -4353,7 +4358,7 @@ msgstr "Could not unpair"
 msgid "Show more"
 msgstr "Show more"
 
-#: src/profiles/EditProfileDialog.tsx:170
+#: src/profiles/EditProfileDialog.tsx:171
 msgid "Hammer"
 msgstr "Hammer"
 
@@ -4465,7 +4470,7 @@ msgstr "Error in {0}"
 msgid "The game log has errors."
 msgstr "The game log has errors."
 
-#: src/profiles/EditProfileDialog.tsx:144
+#: src/profiles/EditProfileDialog.tsx:145
 msgid "Gold"
 msgstr "Gold"
 
@@ -4553,11 +4558,6 @@ msgstr "How this Mortar appears to nearby installations"
 #: src/install/MergeCallout.tsx:42
 msgid "This file comes from the same Nexus page as {0}. Install it together with that mod so they update as one, or as a separate mod."
 msgstr "This file comes from the same Nexus page as {0}. Install it together with that mod so they update as one, or as a separate mod."
-
-#. placeholder {0}: status.version
-#: src/firstrun/SmapiStep.tsx:361
-msgid "SMAPI {0} installed"
-msgstr "SMAPI {0} installed"
 
 #: src/console/ConsoleTab.tsx:348
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
@@ -4687,7 +4687,7 @@ msgstr "Could not add the archive"
 msgid "{0} ({gameName})"
 msgstr "{0} ({gameName})"
 
-#: src/profiles/EditProfileDialog.tsx:140
+#: src/profiles/EditProfileDialog.tsx:141
 #: src/settings/sections/Appearance.tsx:72
 msgid "Rose"
 msgstr "Rose"
@@ -4770,6 +4770,10 @@ msgstr "{0} is installed twice, and SMAPI loads only one."
 msgid "{0, plural, one {Tag # mod} other {Tag # mods}}"
 msgstr "{0, plural, one {Tag # mod} other {Tag # mods}}"
 
+#: src/firstrun/ProfileStep.tsx:113
+msgid "A profile with only {loader}. Add mods from Nexus or from archives."
+msgstr "A profile with only {loader}. Add mods from Nexus or from archives."
+
 #: src/profiles/LaunchOptionsBlock.tsx:109
 #: src/profiles/LaunchPresetDialog.tsx:63
 msgid "Launch options"
@@ -4788,7 +4792,7 @@ msgstr "Remove filter {mod}"
 msgid "Title intro"
 msgstr "Title intro"
 
-#: src/profiles/EditProfileDialog.tsx:98
+#: src/profiles/EditProfileDialog.tsx:99
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
@@ -4991,7 +4995,7 @@ msgid "Different enabled state"
 msgstr "Different enabled state"
 
 #: src/console/HelpDialog.tsx:51
-#: src/firstrun/SmapiStep.tsx:140
+#: src/firstrun/LoaderStep.tsx:142
 #: src/launch/LaunchLayer.tsx:219
 #: src/saves/lackChipActions.tsx:74
 #: src/shell/FlatpakGrant.tsx:70
@@ -5059,10 +5063,6 @@ msgstr "Endorsements"
 msgid "Hidden inside this mod"
 msgstr "Hidden inside this mod"
 
-#: src/firstrun/SmapiStep.tsx:110
-msgid "On Windows, Steam starts the game without SMAPI unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click {gameName}, choose Properties, and paste this line into Launch Options:"
-msgstr "On Windows, Steam starts the game without SMAPI unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click {gameName}, choose Properties, and paste this line into Launch Options:"
-
 #: src/saves/BackupsDialog.tsx:187
 #: src/saves/SaveBackupsSection.tsx:57
 msgid "Keep forever"
@@ -5072,8 +5072,8 @@ msgstr "Keep forever"
 msgid "{daily} requests left today · {hourly} this hour"
 msgstr "{daily} requests left today · {hourly} this hour"
 
+#: src/firstrun/LoaderStep.tsx:259
 #: src/firstrun/NexusStep.tsx:34
-#: src/firstrun/SmapiStep.tsx:257
 msgid "Skip for now"
 msgstr "Skip for now"
 
@@ -5544,7 +5544,7 @@ msgstr "Harmless conflicts"
 msgid "Open recently deleted"
 msgstr "Open recently deleted"
 
-#: src/profiles/EditProfileDialog.tsx:182
+#: src/profiles/EditProfileDialog.tsx:183
 msgid "Moon"
 msgstr "Moon"
 
@@ -6097,7 +6097,7 @@ msgstr "Skip all"
 msgid "Could not list backups: {error}"
 msgstr "Could not list backups: {error}"
 
-#: src/firstrun/GameSetup.tsx:132
+#: src/firstrun/GameSetup.tsx:125
 #: src/toasts/report.ts:26
 msgid "Something went wrong."
 msgstr "Something went wrong."
@@ -6177,7 +6177,7 @@ msgstr "Backups to keep per save"
 msgid "Default mods view"
 msgstr "Default mods view"
 
-#: src/profiles/EditProfileDialog.tsx:191
+#: src/profiles/EditProfileDialog.tsx:192
 msgid "Colour"
 msgstr "Colour"
 
@@ -6217,7 +6217,7 @@ msgstr "{0} · {1} unique"
 msgid "Not found"
 msgstr "Not found"
 
-#: src/profiles/EditProfileDialog.tsx:117
+#: src/profiles/EditProfileDialog.tsx:118
 #: src/profiles/GameSettings.tsx:182
 #: src/profiles/OverrideRows.tsx:75
 #: src/settings/sections/Appearance.tsx:183
@@ -6358,10 +6358,6 @@ msgstr "Completed downloads will appear here."
 msgid "Create another profile to use this mod there."
 msgstr "Create another profile to use this mod there."
 
-#: src/firstrun/SmapiStep.tsx:390
-msgid "SMAPI is the loader every {gameName} mod needs. It goes into the game folder."
-msgstr "SMAPI is the loader every {gameName} mod needs. It goes into the game folder."
-
 #: src/mods/ListColumnMenu.tsx:279
 msgid "Reset to default columns"
 msgstr "Reset to default columns"
@@ -6420,9 +6416,13 @@ msgstr "Choose cover image"
 msgid "Install separately"
 msgstr "Install separately"
 
-#: src/profiles/EditProfileDialog.tsx:178
+#: src/profiles/EditProfileDialog.tsx:179
 msgid "Mountain"
 msgstr "Mountain"
+
+#: src/firstrun/LoaderStep.tsx:391
+msgid "Installing {loader}"
+msgstr "Installing {loader}"
 
 #: src/mods/ModMenu.tsx:124
 #: src/mods/Sidebar.tsx:435
@@ -7198,7 +7198,7 @@ msgstr "Could not skip updates for the selected mods"
 msgid "Delete {0}'s old files"
 msgstr "Delete {0}'s old files"
 
-#: src/firstrun/ProfileStep.tsx:90
+#: src/firstrun/ProfileStep.tsx:91
 msgid "Copy the mods already in {gameName}'s Mods folder into a new profile. Nothing in the game folder is moved or changed."
 msgstr "Copy the mods already in {gameName}'s Mods folder into a new profile. Nothing in the game folder is moved or changed."
 
@@ -7236,7 +7236,7 @@ msgid "That request was not valid."
 msgstr "That request was not valid."
 
 #: src/mods/NexusDetails.tsx:246
-#: src/profiles/EditProfileDialog.tsx:300
+#: src/profiles/EditProfileDialog.tsx:301
 msgid "Description"
 msgstr "Description"
 
@@ -7603,7 +7603,7 @@ msgstr "Show the game log"
 
 #. placeholder {0}: counts.installed
 #. placeholder {0}: game.loader
-#: src/firstrun/GameSetup.tsx:163
+#: src/firstrun/GameSetup.tsx:156
 #: src/share/importCompletion.ts:19
 msgid "{0} installed"
 msgstr "{0} installed"
@@ -7971,8 +7971,8 @@ msgid "Reset every shortcut?"
 msgstr "Reset every shortcut?"
 
 #: src/firstrun/FirstRun.tsx:43
-#: src/firstrun/GameSetup.tsx:129
-#: src/firstrun/SmapiStep.tsx:218
+#: src/firstrun/GameSetup.tsx:122
+#: src/firstrun/LoaderStep.tsx:220
 #: src/games/GameSelect.tsx:345
 #: src/profiles/GameSettings.tsx:99
 #: src/profiles/RecentChangesButton.tsx:128
@@ -8180,7 +8180,7 @@ msgstr ".mortar file"
 msgid "Unhide"
 msgstr "Unhide"
 
-#: src/firstrun/ProfileStep.tsx:161
+#: src/firstrun/ProfileStep.tsx:164
 msgid "Preview link…"
 msgstr "Preview link…"
 
@@ -8685,7 +8685,7 @@ msgstr "In the same download"
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 
-#: src/profiles/EditProfileDialog.tsx:172
+#: src/profiles/EditProfileDialog.tsx:173
 msgid "Pickaxe"
 msgstr "Pickaxe"
 
@@ -8718,7 +8718,7 @@ msgstr "Maximise"
 msgid "Handle \"Mod Manager Download\" links"
 msgstr "Handle \"Mod Manager Download\" links"
 
-#: src/profiles/EditProfileDialog.tsx:451
+#: src/profiles/EditProfileDialog.tsx:453
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
@@ -8785,7 +8785,7 @@ msgstr "{name} did not start"
 msgid "Undo this change"
 msgstr "Undo this change"
 
-#: src/firstrun/SmapiStep.tsx:170
+#: src/firstrun/LoaderStep.tsx:172
 msgid "Mortar checks Steam's settings for it: not found yet."
 msgstr "Mortar checks Steam's settings for it: not found yet."
 
@@ -8906,7 +8906,7 @@ msgstr "Add to bundle"
 msgid "When a mod is on several sites, its card installs from the first one here."
 msgstr "When a mod is on several sites, its card installs from the first one here."
 
-#: src/profiles/EditProfileDialog.tsx:184
+#: src/profiles/EditProfileDialog.tsx:185
 msgid "Sparkles"
 msgstr "Sparkles"
 
@@ -9031,7 +9031,7 @@ msgstr "It encountered an error."
 msgid "Compare {aName} and {bName}"
 msgstr "Compare {aName} and {bName}"
 
-#: src/firstrun/ProfileStep.tsx:94
+#: src/firstrun/ProfileStep.tsx:95
 msgid "Preview Mods folder import…"
 msgstr "Preview Mods folder import…"
 
@@ -9102,7 +9102,7 @@ msgstr "Beach farm"
 #: src/mods/ConfigEditor.tsx:239
 #: src/mods/ConfigPresets.tsx:134
 #: src/mods/SelectionBar.tsx:80
-#: src/profiles/EditProfileDialog.tsx:453
+#: src/profiles/EditProfileDialog.tsx:455
 #: src/profiles/LaunchPresetDialog.tsx:92
 #: src/templates/TemplateDialogs.tsx:70
 #: src/tools/ToolEditorDialog.tsx:140
@@ -9253,7 +9253,7 @@ msgstr "Riverland farm"
 msgid "Toggle {name}"
 msgstr "Toggle {name}"
 
-#: src/firstrun/ProfileStep.tsx:149
+#: src/firstrun/ProfileStep.tsx:152
 msgid "Someone sent you a Mortar link? You see what it holds first. Mods from Nexus need your Nexus sign-in, which Mortar asks for then."
 msgstr "Someone sent you a Mortar link? You see what it holds first. Mods from Nexus need your Nexus sign-in, which Mortar asks for then."
 
@@ -9398,11 +9398,6 @@ msgstr "Clear filters"
 msgid "Could not minimise the window"
 msgstr "Could not minimise the window"
 
-#. placeholder {0}: status.version
-#: src/loader/store.ts:54
-msgid "SMAPI {0} is installed"
-msgstr "SMAPI {0} is installed"
-
 #: src/saves/store.ts:63
 msgid "Dismissed for this save"
 msgstr "Dismissed for this save"
@@ -9453,7 +9448,7 @@ msgstr "Send other games' links to {redirectName}"
 msgid "When mods changed"
 msgstr "When mods changed"
 
-#: src/firstrun/GameSetup.tsx:167
+#: src/firstrun/GameSetup.tsx:162
 msgid "First profile"
 msgstr "First profile"
 
@@ -9489,7 +9484,7 @@ msgstr "Diagnostics saved"
 msgid "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 msgstr "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 
-#: src/firstrun/ProfileStep.tsx:154
+#: src/firstrun/ProfileStep.tsx:157
 #: src/share/ImportInput.tsx:56
 msgid "Share link"
 msgstr "Share link"
@@ -9546,6 +9541,10 @@ msgstr "Diagnostics"
 #: src/mods/CategoryEditor.tsx:138
 msgid "Add category"
 msgstr "Add category"
+
+#: src/firstrun/LoaderStep.tsx:395
+msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
+msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 
 #: src/settings/sections/General.tsx:150
 #: src/settings/sections/General.tsx:156
@@ -9789,7 +9788,7 @@ msgid "Move data folder"
 msgstr "Move data folder"
 
 #: src/game/ProfileMenuItems.tsx:223
-#: src/profiles/EditProfileDialog.tsx:413
+#: src/profiles/EditProfileDialog.tsx:415
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -10026,7 +10025,7 @@ msgstr "Update digest notification"
 msgid "Found in {0}"
 msgstr "Found in {0}"
 
-#: src/firstrun/SmapiStep.tsx:30
+#: src/firstrun/LoaderStep.tsx:30
 #: src/loader/InstallSteps.tsx:8
 msgid "Downloaded"
 msgstr "Downloaded"
@@ -10126,6 +10125,11 @@ msgstr "Empty profile"
 msgid "Could not remove the mod from the bundle"
 msgstr "Could not remove the mod from the bundle"
 
+#. placeholder {0}: gameInfo(game)?.loader ?? ''
+#: src/loader/store.ts:59
+msgid "Could not install {0}"
+msgstr "Could not install {0}"
+
 #: src/settings/sections/StreamOverlay.tsx:207
 msgid "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
@@ -10161,7 +10165,7 @@ msgstr "General"
 msgid "Report to author"
 msgstr "Report to author"
 
-#: src/profiles/EditProfileDialog.tsx:148
+#: src/profiles/EditProfileDialog.tsx:149
 #: src/settings/sections/Appearance.tsx:74
 msgid "Teal"
 msgstr "Teal"
@@ -10262,7 +10266,7 @@ msgstr "API requests"
 msgid "{0, plural, one {# mod} other {# mods}}"
 msgstr "{0, plural, one {# mod} other {# mods}}"
 
-#: src/firstrun/SmapiStep.tsx:32
+#: src/firstrun/LoaderStep.tsx:32
 #: src/loader/InstallSteps.tsx:10
 msgid "Launcher replaced"
 msgstr "Launcher replaced"
@@ -10387,7 +10391,7 @@ msgstr "Restored {0} to before that change"
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
-#: src/profiles/EditProfileDialog.tsx:211
+#: src/profiles/EditProfileDialog.tsx:212
 msgid "Icon"
 msgstr "Icon"
 
@@ -10399,7 +10403,7 @@ msgstr "Include switched off mods"
 msgid "{name} logged {errors} in the last run. First: {first}"
 msgstr "{name} logged {errors} in the last run. First: {first}"
 
-#: src/firstrun/GameSetup.tsx:159
+#: src/firstrun/GameSetup.tsx:152
 #: src/mods/listRows.ts:89
 #: src/mods/Sidebar.tsx:341
 #: src/shell/NexusAccount.tsx:27
@@ -10564,9 +10568,9 @@ msgstr "Remove {0}."
 
 #: src/firstrun/FindStep.tsx:222
 #: src/firstrun/FirstRun.tsx:98
+#: src/firstrun/LoaderStep.tsx:185
+#: src/firstrun/LoaderStep.tsx:380
 #: src/firstrun/NexusStep.tsx:34
-#: src/firstrun/SmapiStep.tsx:183
-#: src/firstrun/SmapiStep.tsx:375
 msgid "Continue"
 msgstr "Continue"
 
@@ -10692,7 +10696,7 @@ msgstr "Share log and continue"
 msgid "{n} GitHub"
 msgstr "{n} GitHub"
 
-#: src/firstrun/ProfileStep.tsx:87
+#: src/firstrun/ProfileStep.tsx:88
 #: src/profiles/GameModsDialog.tsx:127
 msgid "Import from the game's Mods folder"
 msgstr "Import from the game's Mods folder"
@@ -10702,7 +10706,7 @@ msgstr "Import from the game's Mods folder"
 msgid "{0} was blocked by your antivirus"
 msgstr "{0} was blocked by your antivirus"
 
-#: src/profiles/EditProfileDialog.tsx:164
+#: src/profiles/EditProfileDialog.tsx:165
 msgid "Leaf"
 msgstr "Leaf"
 
@@ -10775,7 +10779,7 @@ msgid "See which mods slow the game"
 msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
-#: src/firstrun/GameSetup.tsx:155
+#: src/firstrun/GameSetup.tsx:148
 msgid "Set up {0}"
 msgstr "Set up {0}"
 
@@ -11148,7 +11152,7 @@ msgstr "Known good"
 msgid "Could not change how {0} links open"
 msgstr "Could not change how {0} links open"
 
-#: src/profiles/EditProfileDialog.tsx:168
+#: src/profiles/EditProfileDialog.tsx:169
 msgid "Fish"
 msgstr "Fish"
 
@@ -11453,7 +11457,7 @@ msgstr "Choose an archive first."
 msgid "Share profiles on the local network"
 msgstr "Share profiles on the local network"
 
-#: src/firstrun/SmapiStep.tsx:103
+#: src/firstrun/LoaderStep.tsx:105
 msgid "Could not set it in Steam"
 msgstr "Could not set it in Steam"
 
@@ -11474,6 +11478,11 @@ msgstr "Install anyway"
 #: src/profiles/GameSettings.tsx:202
 msgid "Sound volume ({value}%)"
 msgstr "Sound volume ({value}%)"
+
+#. placeholder {0}: status.version
+#: src/firstrun/LoaderStep.tsx:365
+msgid "{loader} {0} installed"
+msgstr "{loader} {0} installed"
 
 #: src/settings/prefCopy.ts:116
 msgid "Reuse FOMOD choices"
