@@ -220,6 +220,8 @@ function PackageMoveItems({ mod, close }: { mod: Mod; close: () => void }) {
   if (game?.deploy !== 'link-into-install' || !profile) {
     return null
   }
+  const packages = (profile.entries ?? []).filter((e) => !e.overlayOf)
+  const place = packages.findIndex((e) => e.key === mod.key)
   const move = (delta: -1 | 1) => {
     close()
     MovePackage(game.id, profile.id, mod.key, delta)
@@ -229,14 +231,14 @@ function PackageMoveItems({ mod, close }: { mod: Mod; close: () => void }) {
   return [
     <MenuAction
       key="package-up"
-      disabled={locked}
+      disabled={locked || place <= 0}
       icon={<ArrowUp size={ICON_SIZE} />}
       label={t`Move up (loses files)`}
       onClick={() => move(-1)}
     />,
     <MenuAction
       key="package-down"
-      disabled={locked}
+      disabled={locked || place < 0 || place === packages.length - 1}
       icon={<ArrowDown size={ICON_SIZE} />}
       label={t`Move down (wins files)`}
       onClick={() => move(1)}
