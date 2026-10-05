@@ -96,10 +96,10 @@ func TestExportNeedsTheConfirmation(t *testing.T) {
 
 func TestPackFilesLandUnderBepInEx(t *testing.T) {
 	got := packFiles(pack.Draft{
-		Loose:   []pack.File{{Path: "plugins/a.dll", Data: []byte("a")}},
+		Loose:   []pack.File{{Path: "BepInEx/plugins/a.txt", Data: []byte("a")}, {Path: "BepInEx/plugins/b.dll", Data: []byte("b")}},
 		Configs: []pack.File{{Path: "config/x.cfg", Data: []byte("x")}},
 	})
-	if string(got["BepInEx/config/x.cfg"]) != "x" || string(got["BepInEx/plugins/a.dll"]) != "a" || len(got) != 2 {
+	if string(got["BepInEx/config/x.cfg"]) != "x" || string(got["BepInEx/plugins/a.txt"]) != "a" || len(got) != 2 {
 		t.Fatalf("files = %v", got)
 	}
 }

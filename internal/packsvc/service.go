@@ -201,12 +201,28 @@ func (s *Service) Import(ctx context.Context, src Source, gameID, profileID stri
 	return res, err
 }
 
-// packFiles is the pack's config files and loose files as the profile holds them: below BepInEx/, where a pack's paths
-// start (config/, plugins/, ...). A file the pack lists twice keeps its config.
+// blockedExtensions are the executable types r2modman refuses to extract from an imported profile
+// (ProfileUtils.ts:44-50).
+var blockedExtensions = []string{
+	".dll", ".exe", ".scr", ".com", ".pif", ".bat", ".cmd", ".ps1", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh",
+	".hta", ".msi", ".msix", ".sys", ".drv", ".cpl", ".ocx", ".lnk", ".reg", ".inf",
+}
+
+// packFiles is the pack's config files and loose files as the profile holds them, by r2modman's import rule
+// (ProfileUtils.ts:56-67): a config/ entry goes below BepInEx/, any other path is relative to the profile as it
+// stands, and executable types are skipped. A file the pack lists twice keeps its config.
 func packFiles(d pack.Draft) map[string][]byte {
 	out := map[string][]byte{}
-	for _, f := range slices.Concat(d.Loose, d.Configs) {
+	for _, f := range d.Loose {
+		out[f.Path] = f.Data
+	}
+	for _, f := range d.Configs {
 		out["BepInEx/"+f.Path] = f.Data
+	}
+	for p := range out {
+		if slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(strings.ToLower(p), e) }) {
+			delete(out, p)
+		}
 	}
 	return out
 }
