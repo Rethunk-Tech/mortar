@@ -11,15 +11,24 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/nxm"
+	"github.com/Rethunk-Tech/mortar/internal/portal"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
-// create writes a desktop entry under the user's applications folder, where launchers and app menus find it.
+// launcherID is the desktop file id of a profile's shortcut; it starts with the app id, as the launcher portal requires.
+func launcherID(arg string) string {
+	return sandbox.AppID + ".play-" + strings.ReplaceAll(strings.TrimPrefix(arg, playFlag), "/", "-") + ".desktop"
+}
+
+// create writes a desktop entry under the user's applications folder, where launchers and app menus find it. Inside
+// a Flatpak the launcher portal installs it instead, after the user confirms in a system dialog.
 func create(exe, arg, name string) (string, error) {
-	execLine := `"` + strings.ReplaceAll(exe, `"`, `\"`) + `"`
 	if sandbox.InFlatpak() {
-		execLine = sandbox.HostExec
+		id := launcherID(arg)
+		return id, portal.InstallLauncher(id, name, "mortar "+arg, nxm.IconPNG())
 	}
+	execLine := `"` + strings.ReplaceAll(exe, `"`, `\"`) + `"`
 	base, err := dataHome()
 	if err != nil {
 		return "", err
@@ -28,8 +37,7 @@ func create(exe, arg, name string) (string, error) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return "", err
 	}
-	id := strings.ReplaceAll(strings.TrimPrefix(arg, playFlag), "/", "-")
-	path := filepath.Join(dir, "tech.rethunk.Mortar.play-"+id+".desktop")
+	path := filepath.Join(dir, launcherID(arg))
 	entry := fmt.Sprintf(`[Desktop Entry]
 Type=Application
 Name=%s
@@ -53,11 +61,22 @@ func desktopPath(game, profile string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(base, "applications", "tech.rethunk.Mortar.play-"+game+"-"+profile+".desktop"), nil
+	return filepath.Join(base, "applications", launcherID(Arg(game, profile))), nil
 }
 
-// Renamed updates the desktop entry for a profile whose name changed.
+// Renamed updates the desktop entry for a profile whose name changed. Inside a Flatpak an existing launcher is
+// installed again under the new name, which the launcher portal confirms with the user.
 func Renamed(game, profile, profileName, gameName string) error {
+	if sandbox.InFlatpak() {
+		if !validID(game) || !validID(profile) {
+			return fmt.Errorf("a shortcut needs a game and a profile")
+		}
+		arg := Arg(game, profile)
+		if ok, err := portal.LauncherExists(launcherID(arg)); err != nil || !ok {
+			return err
+		}
+		return portal.InstallLauncher(launcherID(arg), profileName+" ("+gameName+")", "mortar "+arg, nxm.IconPNG())
+	}
 	path, err := desktopPath(game, profile)
 	if err != nil {
 		return err
@@ -90,6 +109,12 @@ func Renamed(game, profile, profileName, gameName string) error {
 
 // Removed removes the desktop entry for a deleted profile.
 func Removed(game, profile string) error {
+	if sandbox.InFlatpak() {
+		if !validID(game) || !validID(profile) {
+			return fmt.Errorf("a shortcut needs a game and a profile")
+		}
+		return portal.UninstallLauncher(launcherID(Arg(game, profile)))
+	}
 	path, err := desktopPath(game, profile)
 	if err != nil {
 		return err
@@ -102,6 +127,12 @@ func Removed(game, profile string) error {
 }
 
 func exists(game, profile string) (bool, error) {
+	if sandbox.InFlatpak() {
+		if !validID(game) || !validID(profile) {
+			return false, fmt.Errorf("a shortcut needs a game and a profile")
+		}
+		return portal.LauncherExists(launcherID(Arg(game, profile)))
+	}
 	path, err := desktopPath(game, profile)
 	if err != nil {
 		return false, err
@@ -119,10 +150,6 @@ func desktopValue(s string) string {
 }
 
 func dataHome() (string, error) {
-	if sandbox.InFlatpak() {
-		// The host's menus read ~/.local/share/applications; XDG_DATA_HOME is Mortar's private sandbox folder.
-		return sandbox.HostDataHome()
-	}
 	if v := os.Getenv("XDG_DATA_HOME"); v != "" {
 		return v, nil
 	}
@@ -155,7 +182,7 @@ func RemoveStartMenu() error {
 // belongs to that copy of Mortar and is left alone.
 func Repoint(exe string) error {
 	if sandbox.InFlatpak() {
-		return nil // Flatpak shortcuts run flatpak-spawn, not a path.
+		return nil // The launcher portal writes Flatpak launchers with a flatpak run line, not a path.
 	}
 	base, err := dataHome()
 	if err != nil {

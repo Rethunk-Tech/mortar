@@ -7,6 +7,7 @@ finish-args:
   - --share=network
   - --socket=wayland
   - --socket=fallback-x11
+  - --share=ipc
   - --device=dri
   - --filesystem=xdg-config/StardewValley
   - --filesystem=xdg-data/Steam
@@ -18,15 +19,11 @@ finish-args:
   - --filesystem=~/.var/app/com.heroicgameslauncher.hgl
   - --filesystem=~/GOG Games
   - --filesystem=~/Games/Heroic
-  - --filesystem=xdg-data/mortar
   - --filesystem=xdg-download
   - --filesystem=/run/media
   - --filesystem=/mnt
-  - --filesystem=xdg-config/autostart:create
-  - --filesystem=xdg-data/applications:create
   - --talk-name=org.freedesktop.secrets
   - --talk-name=org.freedesktop.Flatpak
-  - --own-name=tech.rethunk.mortar.SingleInstance
 modules:
   - name: mortar
     buildsystem: simple

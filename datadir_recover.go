@@ -74,9 +74,10 @@ func logStartupFailure(err error) {
 }
 
 // singleInstanceID is one id for the default data folder, so nxm and share handoffs reach the installed app, and one
-// per data folder for a portable copy, so it can run beside the installed one.
+// per data folder for a portable copy, so it can run beside the installed one. It is the app id because Wails owns
+// the D-Bus name <id>.SingleInstance, and a Flatpak may own names under its own app id without any permission.
 func singleInstanceID(dataDir string) string {
-	const id = "tech.rethunk.mortar"
+	const id = "tech.rethunk.Mortar"
 	if !datadir.Portable() {
 		return id
 	}

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/portal"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
@@ -17,14 +18,12 @@ import (
 func RemoveAutostart() error { return applyAutostart(false) }
 
 func applyAutostart(enable bool) error {
-	cfg := os.Getenv("XDG_CONFIG_HOME")
 	if sandbox.InFlatpak() {
-		// The host session reads ~/.config/autostart; XDG_CONFIG_HOME is Mortar's private sandbox folder.
-		var err error
-		if cfg, err = sandbox.HostConfigHome(); err != nil {
-			return err
-		}
-	} else if cfg == "" {
+		// The sandbox cannot write the host's autostart folder; the Background portal writes the entry for it.
+		return portal.SetAutostart(enable, []string{"mortar"})
+	}
+	cfg := os.Getenv("XDG_CONFIG_HOME")
+	if cfg == "" {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return err

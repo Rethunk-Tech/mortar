@@ -5,7 +5,6 @@ package sandbox
 import (
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 )
 
@@ -48,22 +47,3 @@ func HostLookPath(name string) (string, error) {
 	}
 	return strings.TrimSpace(string(out)), nil
 }
-
-// HostHome is the user's real home folder; HOME is not remapped inside a Flatpak.
-func HostHome() (string, error) { return os.UserHomeDir() }
-
-// HostConfigHome is the host's ~/.config, where its session reads autostart entries. XDG_CONFIG_HOME inside the
-// sandbox points at Mortar's private app folder instead.
-func HostConfigHome() (string, error) {
-	home, err := HostHome()
-	return filepath.Join(home, ".config"), err
-}
-
-// HostDataHome is the host's ~/.local/share, where its menus read desktop entries.
-func HostDataHome() (string, error) {
-	home, err := HostHome()
-	return filepath.Join(home, ".local", "share"), err
-}
-
-// HostExec is the Exec= prefix that starts Mortar from a host desktop entry.
-const HostExec = "flatpak run " + AppID
