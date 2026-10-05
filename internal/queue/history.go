@@ -72,7 +72,7 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	src := profile.KindNexus
 	switch {
 	case it.Package != "":
-		src = sourceThunderstore
+		src = profile.KindThunderstore
 	case it.Repo != "":
 		src = profile.KindGitHub
 	}

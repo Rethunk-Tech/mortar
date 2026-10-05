@@ -89,9 +89,6 @@ func validRepo(repo string) bool {
 // packagePattern is a Thunderstore "Namespace-Name"; neither part holds a dash.
 var packagePattern = regexp.MustCompile(`^[A-Za-z0-9_]+-[A-Za-z0-9_]+$`)
 
-// sourceThunderstore is the Source.Kind of an entry installed from a Thunderstore package.
-const sourceThunderstore = "thunderstore"
-
 func (r Request) valid() bool {
 	return r.Game != "" && r.Profile != "" && (r.ModID > 0 || validRepo(r.Repo) || packagePattern.MatchString(r.Package))
 }

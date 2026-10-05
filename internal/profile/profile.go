@@ -40,6 +40,8 @@ const (
 	KindLocal  = "local"
 	KindNexus  = "nexus"
 	KindGitHub = "github"
+	// KindThunderstore is a Thunderstore package: Name is "Namespace-Name" and Version the package version.
+	KindThunderstore = "thunderstore"
 )
 
 // Source says where an entry came from. Kind is KindLocal for an archive the user picked, Name its file name;

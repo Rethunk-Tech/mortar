@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
@@ -31,7 +32,7 @@ func TestPackageInstallsWithItsDependencies(t *testing.T) {
 	if st.Items[0].Kind != KindDependency || st.Items[1].Kind != KindInstall {
 		t.Errorf("kinds %s %s", st.Items[0].Kind, st.Items[1].Kind)
 	}
-	if len(f.installs) != 2 || f.installs[0].Kind != sourceThunderstore {
+	if len(f.installs) != 2 || f.installs[0].Kind != profile.KindThunderstore {
 		t.Errorf("installed %+v", f.installs)
 	}
 	if _, err := f.s.Add([]Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "not a package"}}); err == nil {

@@ -49,7 +49,7 @@ func (s *Service) expandPackages(reqs []Request) ([]Request, error) {
 }
 
 func packageSource(it Item) profile.Source {
-	return profile.Source{Kind: sourceThunderstore, Name: it.Package, Version: it.Version}
+	return profile.Source{Kind: profile.KindThunderstore, Name: it.Package, Version: it.Version}
 }
 
 // downloadPackage fetches a package archive and installs it into the item's profile.
