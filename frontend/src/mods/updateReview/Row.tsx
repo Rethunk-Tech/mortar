@@ -4,6 +4,7 @@ import { Box, Button, Chip, Tooltip } from '@mui/material'
 import { ArrowRight, ExternalLink } from 'lucide-react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { formatKb } from '../../i18n/bytes.ts'
+import { listNames } from '../../i18n/list.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useQueue } from '../../queue/store.ts'
 import { changelogsBetween, changelogsHaveRiskyNotes } from '../changelogRange.ts'
@@ -13,7 +14,7 @@ import { useNexusDetails } from '../nexusDetails.ts'
 import { LetterTile } from '../parts.tsx'
 import { useMods } from '../store.ts'
 import { ROW_TILE } from './constants.ts'
-import { rowDetails } from './details.ts'
+import { dependencyChanges, rowDetails } from './details.ts'
 import { OptionalUpdates } from './OptionalUpdates.tsx'
 import { RowCopy } from './RowCopy.tsx'
 import { RowInclude } from './RowInclude.tsx'
@@ -54,6 +55,7 @@ export function Row({
         )
       : false
   const { sizeKb, changelog } = rowDetails(update, details)
+  const { added, removed } = dependencyChanges(update)
   const queued = useQueue((s) => pendingUpdate(s.state.items, profileId, update))
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
@@ -108,6 +110,20 @@ export function Row({
           <ArrowRight size={14} aria-hidden={true} />
           <Version isNew={true}>{update.version}</Version>
           {update.source ? <Chip size="small" variant="outlined" label={update.source} /> : null}
+          {added.length + removed.length > 0 ? (
+            <Tooltip
+              title={
+                <>
+                  {added.length > 0 ? <div>{t`Now needs ${listNames(added)}`}</div> : null}
+                  {removed.length > 0 ? (
+                    <div>{t`No longer needs ${listNames(removed)}`}</div>
+                  ) : null}
+                </>
+              }
+            >
+              <Chip size="small" variant="outlined" label={t`Changes dependencies`} />
+            </Tooltip>
+          ) : null}
         </Box>
         {sizeKb > 0 || changelog ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, fontSize: 12 }}>

@@ -62,6 +62,7 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 		return nil, nil
 	}
 	var out []Update
+	var installedRefs []source.VersionRef
 	for _, x := range mods {
 		if (profile.Source{Kind: x.SourceKind}).Bundled() || x.IgnoreUpdates || !asksSource(src.ID, x) {
 			continue
@@ -90,6 +91,11 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 			if coveredBy(append(slices.Clone(have), out...), x.Key, it.Version) {
 				break
 			}
+			ref := source.VersionRef{}
+			if x.SourceKind == src.ID {
+				ref = source.VersionRef{ID: x.SourceName, Version: installed}
+			}
+			installedRefs = append(installedRefs, ref)
 			u := Update{
 				Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: installed, Version: it.Version, URL: it.URL,
 				Source: entry.Source.Name(), Switch: x.SourceKind != src.ID,
@@ -104,7 +110,55 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 			break
 		}
 	}
+	s.markDependencyChanges(ctx, src, entry.Source, out, installedRefs)
 	return out, nil
+}
+
+// markDependencyChanges sets each update's added and removed dependencies from the source's listing, in one lookup for
+// all of them. A source without dependency data, or an update from another source than the installed one, gets none.
+func (s *Service) markDependencyChanges(ctx context.Context, src components.GameSource, entry source.Source, updates []Update, installed []source.VersionRef) {
+	lister, ok := entry.(source.DependencyLister)
+	if !ok || len(updates) == 0 {
+		return
+	}
+	refs := make([]source.VersionRef, 0, 2*len(updates))
+	for i, u := range updates {
+		if installed[i] != (source.VersionRef{}) {
+			refs = append(refs, installed[i], source.VersionRef{ID: u.Package, Version: u.Version})
+		}
+	}
+	listed, err := lister.Dependencies(ctx, src.Key, "", refs)
+	if err != nil {
+		return
+	}
+	for i := range updates {
+		u := &updates[i]
+		before, hadBefore := listed[installed[i]]
+		after, hadAfter := listed[source.VersionRef{ID: u.Package, Version: u.Version}]
+		if installed[i] != (source.VersionRef{}) && hadBefore && hadAfter {
+			u.AddedDeps, u.RemovedDeps = depDiff(before, after)
+		}
+	}
+}
+
+// depDiff is the packages in after but not before, and in before but not after, each sorted and compared by id alone.
+func depDiff(before, after []string) (added, removed []string) {
+	has := func(list []string, id string) bool {
+		return slices.ContainsFunc(list, func(o string) bool { return strings.EqualFold(o, id) })
+	}
+	for _, id := range after {
+		if !has(before, id) {
+			added = append(added, id)
+		}
+	}
+	for _, id := range before {
+		if !has(after, id) {
+			removed = append(removed, id)
+		}
+	}
+	slices.Sort(added)
+	slices.Sort(removed)
+	return added, removed
 }
 
 // throttledSearch waits for the source's slot before asking it.

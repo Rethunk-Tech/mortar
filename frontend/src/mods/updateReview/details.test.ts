@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import type { Details } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
-import { rowDetails } from './details.ts'
+import { dependencyChanges, rowDetails } from './details.ts'
 
 test('picks the new version file size and the first changelog line', () => {
   const d = {
@@ -13,4 +13,12 @@ test('picks the new version file size and the first changelog line', () => {
   } as unknown as Details
   expect(rowDetails({ version: '2.0' } as Update, d)).toEqual({ sizeKb: 9, changelog: 'Fixed it' })
   expect(rowDetails({ version: '3.0' } as Update, undefined)).toEqual({ sizeKb: 0, changelog: '' })
+})
+
+test('dependency changes are empty without data and carry both lists otherwise', () => {
+  expect(dependencyChanges({} as Update)).toEqual({ added: [], removed: [] })
+  expect(dependencyChanges({ addedDeps: ['A-B'], removedDeps: ['C-D'] } as Update)).toEqual({
+    added: ['A-B'],
+    removed: ['C-D'],
+  })
 })

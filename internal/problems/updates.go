@@ -64,6 +64,10 @@ type Update struct {
 	// Switch marks an update from a source other than the one the mod was installed from. It is offered, never
 	// applied on its own.
 	Switch bool `json:"switch,omitempty"`
+	// AddedDeps and RemovedDeps are the packages the new version depends on and the installed one no longer does,
+	// when the source's listing carries both versions' dependencies.
+	AddedDeps   []string `json:"addedDeps,omitempty"`
+	RemovedDeps []string `json:"removedDeps,omitempty"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,

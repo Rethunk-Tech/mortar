@@ -15,3 +15,8 @@ export function rowDetails(update: Update, details: Details | undefined) {
     .find((s) => s !== '')
   return { sizeKb: file?.sizeKb ?? 0, changelog: first ?? '' }
 }
+
+/** The dependency names the update adds and drops; both empty when the source gave no dependency data. */
+export function dependencyChanges(update: Update) {
+  return { added: update.addedDeps ?? [], removed: update.removedDeps ?? [] }
+}

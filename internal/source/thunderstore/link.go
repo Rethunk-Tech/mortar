@@ -119,6 +119,38 @@ func (d Driver) Versions(ctx context.Context, key, namespace, name, mortarVersio
 	return nil, fmt.Errorf("%s-%s is not in the %s index", namespace, name, key)
 }
 
+// Dependencies reads the dependencies of the listed package versions from the community's index, one package per
+// "Namespace-Name" id, with no request beyond the index's own refresh.
+func (d Driver) Dependencies(ctx context.Context, key, mortarVersion string, refs []source.VersionRef) (map[source.VersionRef][]string, error) {
+	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	if err != nil {
+		return nil, err
+	}
+	want := map[string]source.VersionRef{}
+	for _, r := range refs {
+		want[strings.ToLower(r.ID)+"@"+r.Version] = r
+	}
+	out := map[source.VersionRef][]string{}
+	for _, p := range pk {
+		id := p.Owner + "-" + p.Name
+		for _, v := range p.Versions {
+			r, ok := want[strings.ToLower(id)+"@"+v.Number]
+			if !ok {
+				continue
+			}
+			names := make([]string, 0, len(v.Deps))
+			for _, dep := range v.Deps {
+				if i := strings.LastIndex(dep, "-"); i > 0 {
+					dep = dep[:i]
+				}
+				names = append(names, dep)
+			}
+			out[r] = names
+		}
+	}
+	return out, nil
+}
+
 func (d Driver) resolved(p pkg, v version) Resolved {
 	base := d.URL
 	if base == "" {

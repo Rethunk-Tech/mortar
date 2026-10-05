@@ -138,6 +138,16 @@ type Searcher interface {
 	Search(ctx context.Context, q Query) (Page, error)
 }
 
+// VersionRef names one version of a package or project.
+type VersionRef struct{ ID, Version string }
+
+// DependencyLister is a source whose cached listing carries the dependencies of its package versions, so a check can
+// read them without asking the site per mod. The answer maps each ref the listing knows to the ids of the packages
+// that version depends on, ignoring the versions they name; a ref the listing lacks is absent.
+type DependencyLister interface {
+	Dependencies(ctx context.Context, key, mortarVersion string, refs []VersionRef) (map[VersionRef][]string, error)
+}
+
 // Categorizer is a source whose mods carry categories that Query.Categories filters on.
 type Categorizer interface {
 	Categories(ctx context.Context, key string) ([]string, error)

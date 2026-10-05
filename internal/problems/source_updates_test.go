@@ -2,6 +2,7 @@ package problems
 
 import (
 	"context"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -99,5 +100,43 @@ func TestNexusModsWithoutUpdateKeysAreAskedInOneBatch(t *testing.T) {
 	}, nil)
 	if asks != 1 || len(got) != 1 || got[0].Key != "old" || got[0].Version != "1.2.0" || got[0].NexusID != 10 || got[0].Source != "Nexus" {
 		t.Fatalf("asks = %d, updates = %+v", asks, got)
+	}
+}
+
+type fakeListed struct {
+	fakeThunderstore
+	deps map[source.VersionRef][]string
+}
+
+func (f fakeListed) Dependencies(context.Context, string, string, []source.VersionRef) (map[source.VersionRef][]string, error) {
+	return f.deps, nil
+}
+
+func TestUpdatesNameTheDependenciesTheNewVersionChanges(t *testing.T) {
+	old, next := source.VersionRef{ID: "Alice-Cool", Version: "1.0.0"}, source.VersionRef{ID: "Alice-Cool", Version: "2.0.0"}
+	source.Register(fakeThunderstore{id: "nexus"})
+	base := fakeThunderstore{id: "thunderstore", items: []source.Item{{ID: "Alice-Cool", Name: "Cool", Author: "Alice", Version: "2.0.0"}}}
+	source.Register(fakeListed{
+		base,
+		map[source.VersionRef][]string{
+			old:  {"BepInEx-BepInExPack", "Bob-Lib", "Old-Gone"},
+			next: {"bepinex-bepinexpack", "Bob-Lib", "New-Dep", "Another-Dep"},
+		},
+	})
+	t.Cleanup(func() {
+		source.Register(thunderstore.Driver{})
+		source.Register(nexussource.Driver{})
+	})
+	m := framework.Mod{Key: "a", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "1.0.0"}
+	m.Name, m.Version = "Cool", "1.0.0"
+	got := (&Service{}).sourceUpdates(context.Background(), "lethal-company", []framework.Mod{m}, nil)
+	if len(got) != 1 {
+		t.Fatalf("updates = %+v", got)
+	}
+	if want := []string{"Another-Dep", "New-Dep"}; !slices.Equal(got[0].AddedDeps, want) {
+		t.Errorf("added = %v, want %v", got[0].AddedDeps, want)
+	}
+	if want := []string{"Old-Gone"}; !slices.Equal(got[0].RemovedDeps, want) {
+		t.Errorf("removed = %v, want %v", got[0].RemovedDeps, want)
 	}
 }
