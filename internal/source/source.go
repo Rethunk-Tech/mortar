@@ -22,8 +22,8 @@ const (
 	Handoff Acquire = "handoff"
 )
 
-// ErrBusy means the site refused a search for now; the caller should wait a minute.
-var ErrBusy = errors.New("the mod site is busy, try again in a minute")
+// ErrBusy means GitHub refused the search (403/429); the caller should wait a minute.
+var ErrBusy = errors.New("GitHub is busy, try again in a minute")
 
 // Source is one mod site.
 type Source interface {

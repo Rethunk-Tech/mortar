@@ -41,17 +41,17 @@ func (s *Service) installed(game, profileID string) InstalledFunc {
 	return nil
 }
 
-// InstalledOn reports Nexus mod ids and GitHub repos already on prof.
+// InstalledOn reports Nexus mod ids and GitHub repos already on prof, by the entry's source kind.
 func InstalledOn(prof profile.Profile) InstalledFunc {
 	return func(source, id string) bool {
 		for _, entry := range prof.Entries {
-			switch source {
-			case sourceNexus:
-				if entry.Source.Kind == profile.KindNexus && strconv.Itoa(entry.Source.ModID) == id {
+			switch entry.Source.Kind {
+			case profile.KindNexus:
+				if source == "nexus" && strconv.Itoa(entry.Source.ModID) == id {
 					return true
 				}
-			case sourceGitHub:
-				if entry.Source.Kind == profile.KindGitHub && entry.Source.Repo == id {
+			case profile.KindGitHub:
+				if source == "github" && entry.Source.Repo == id {
 					return true
 				}
 			}

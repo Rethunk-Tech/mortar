@@ -1,105 +1,61 @@
-// Package browse searches Nexus Mods and GitHub for mods of one game.
+// Package browse searches a game's mod sources.
 package browse
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
+	"slices"
 	"strings"
-	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/source"
+	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 )
 
-const (
-	pageSize       = 20
-	requestTimeout = 20 * time.Second
-	maxBody        = 16 << 20
-	githubCacheTTL = 10 * time.Minute
-	defaultPage    = 1
-	sourceNexus    = "nexus"
-	sourceGitHub   = "github"
-	stardewGHTopic = "stardew-valley-mod"
-	nexusGraphQL   = "/v2/graphql"
-	githubSearch   = "/search/repositories"
-)
-
-// ErrBusy means GitHub refused the search (403/429); the caller should wait a minute.
-var ErrBusy = errors.New("GitHub is busy, try again in a minute")
-
-// ErrUnknownSource means source is not nexus or github.
+// ErrUnknownSource means the game has no searchable source with that id.
 var ErrUnknownSource = errors.New("unknown browse source")
 
 // Item is one search hit.
-type Item struct {
-	Source       string `json:"source"`
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	Summary      string `json:"summary"`
-	Author       string `json:"author"`
-	Version      string `json:"version"`
-	Picture      string `json:"picture"`
-	Endorsements int    `json:"endorsements"`
-	Stars        int    `json:"stars"`
-	Downloads    int    `json:"downloads"`
-	Updated      string `json:"updated"`
-	URL          string `json:"url"`
-	Installed    bool   `json:"installed"`
-}
+type Item = source.Item
 
 // Page is one slice of search hits.
-type Page struct {
-	Total int    `json:"total"`
-	Items []Item `json:"items"`
-}
+type Page = source.Page
 
-// InstalledFunc reports whether the open profile already has this Nexus mod id or GitHub repo.
+// InstalledFunc reports whether the open profile already has this mod (a Nexus mod id or a GitHub repo).
 type InstalledFunc func(source, id string) bool
 
-// Client searches remote catalogues. Tests set NexusURL, GitHubURL, HTTP, and Cache.
+// Client searches a game's sources. Version names Mortar to the sites.
 type Client struct {
-	HTTP      *http.Client
-	NexusURL  string
-	GitHubURL string
 	Version   string
-	Now       func() time.Time
 	Installed InstalledFunc
-	Cache     *RepoCache
 }
 
-// Search returns one page of mods for game from source matching text.
-func (c *Client) Search(ctx context.Context, game, source, text string, page int) (Page, error) {
-	if page < defaultPage {
-		page = defaultPage
+// Search returns one page of mods for game from the source matching text.
+func (c *Client) Search(ctx context.Context, game, sourceID, text string, page int) (Page, error) {
+	catalog := gamepkg.Catalog()
+	i := slices.IndexFunc(catalog, func(g components.GameInfo) bool { return g.ID == game })
+	if i < 0 {
+		return Page{}, fmt.Errorf("%w: game %q", ErrUnknownSource, game)
 	}
-	switch strings.ToLower(strings.TrimSpace(source)) {
-	case sourceNexus:
-		return c.searchNexus(ctx, game, text, page)
-	case sourceGitHub:
-		return c.searchGitHub(ctx, text, page)
-	default:
-		return Page{}, fmt.Errorf("%w: %s", ErrUnknownSource, source)
-	}
+	return c.search(ctx, catalog[i], sourceID, text, page)
 }
 
-func (c *Client) httpClient() *http.Client {
-	if c.HTTP != nil {
-		return c.HTTP
+func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID, text string, page int) (Page, error) {
+	id := strings.ToLower(strings.TrimSpace(sourceID))
+	gs, listed := info.Source(id)
+	entry, registered := source.Get(id)
+	searcher, canSearch := entry.Source.(source.Searcher)
+	if !listed || !registered || !canSearch {
+		return Page{}, fmt.Errorf("%w: %s", ErrUnknownSource, sourceID)
 	}
-	return http.DefaultClient
-}
-
-func (c *Client) now() time.Time {
-	if c.Now != nil {
-		return c.Now()
+	result, err := searcher.Search(ctx, source.Query{Game: info.ID, Key: gs.Key, Text: text, Page: max(page, source.FirstPage), Version: c.Version})
+	if err != nil {
+		return Page{}, err
 	}
-	return time.Now().UTC()
-}
-
-func (c *Client) userAgent() string {
-	if c.Version == "" {
-		return "Mortar"
-	}
-	return "Mortar/" + c.Version
+	c.markInstalled(result.Items)
+	return result, nil
 }
 
 func (c *Client) markInstalled(items []Item) {

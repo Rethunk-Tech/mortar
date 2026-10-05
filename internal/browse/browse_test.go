@@ -2,143 +2,55 @@ package browse
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
-	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-func TestSearchNexusQueryAndPaging(t *testing.T) {
-	t.Parallel()
-	var gotBody string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost || r.URL.Path != nexusGraphQL {
-			t.Errorf("got %s %s", r.Method, r.URL.Path)
-		}
-		if r.Header.Get("Content-Type") != "application/json" {
-			t.Errorf("content-type %q", r.Header.Get("Content-Type"))
-		}
-		raw, err := io.ReadAll(r.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
-		gotBody = string(raw)
-		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":27,"nodes":[{"modId":1348,"name":"SpaceCore","summary":"s","author":"a","version":"1","endorsements":233359,"downloads":1,"pictureUrl":"p","updatedAt":"t"}]}}}`))
-	}))
-	t.Cleanup(srv.Close)
-	c := &Client{NexusURL: srv.URL, Version: "test"}
-	page, err := c.Search(context.Background(), "stardew", "nexus", "space", 2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if page.Total != 27 || len(page.Items) != 1 || page.Items[0].ID != "1348" || page.Items[0].Name != "SpaceCore" {
-		t.Fatalf("page %+v", page)
-	}
-	if page.Items[0].URL != "https://www.nexusmods.com/stardewvalley/mods/1348" {
-		t.Fatalf("url %s", page.Items[0].URL)
-	}
-	var body nexusSearchBody
-	if err := json.Unmarshal([]byte(gotBody), &body); err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(body.Query, `gameDomainName:[{value:"stardewvalley"}]`) {
-		t.Fatalf("domain missing: %s", body.Query)
-	}
-	if !strings.Contains(body.Query, `name:[{value:"space", op:WILDCARD}]`) {
-		t.Fatalf("wildcard missing: %s", body.Query)
-	}
-	if !strings.Contains(body.Query, "sort:[{endorsements:{direction:DESC}}]") {
-		t.Fatalf("sort missing: %s", body.Query)
-	}
-	if !strings.Contains(body.Query, "count: 20, offset: 20") {
-		t.Fatalf("paging missing: %s", body.Query)
-	}
+type fakeSource struct{ got source.Query }
+
+func (*fakeSource) ID() string              { return "fake" }
+func (*fakeSource) Name() string            { return "Fake" }
+func (*fakeSource) Modes() []source.Acquire { return nil }
+func (f *fakeSource) Search(_ context.Context, q source.Query) (source.Page, error) {
+	f.got = q
+	return source.Page{Total: 2, Items: []source.Item{{Source: "fake", ID: "1"}, {Source: "fake", ID: "2"}}}, nil
 }
 
-func TestSearchNexusMarksInstalled(t *testing.T) {
-	t.Parallel()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":1,"nodes":[{"modId":1348,"name":"SpaceCore"},{"modId":99,"name":"Other"}]}}}`))
-	}))
-	t.Cleanup(srv.Close)
-	c := &Client{
-		NexusURL: srv.URL,
-		Installed: func(source, id string) bool {
-			return source == sourceNexus && id == "1348"
-		},
-	}
-	page, err := c.Search(context.Background(), "stardew", "nexus", "x", 1)
+type pageOnly struct{}
+
+func (pageOnly) ID() string              { return "pageonly" }
+func (pageOnly) Name() string            { return "Page only" }
+func (pageOnly) Modes() []source.Acquire { return nil }
+
+var (
+	fake    = &fakeSource{}
+	_       = source.Register(fake)
+	_       = source.Register(pageOnly{})
+	catalog = components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "fake", Key: "gkey"}, {ID: "pageonly"}}}
+)
+
+func TestSearchDispatchesBySourceWithCatalogKey(t *testing.T) {
+	c := &Client{Version: "v", Installed: func(src, id string) bool { return src == "fake" && id == "2" }}
+	page, err := c.search(context.Background(), catalog, " FAKE ", "text", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(page.Items) != 2 || !page.Items[0].Installed || page.Items[1].Installed {
+	if want := (source.Query{Game: "g", Key: "gkey", Text: "text", Page: 1, Version: "v"}); fake.got != want {
+		t.Fatalf("query %+v, want %+v", fake.got, want)
+	}
+	if page.Items[0].Installed || !page.Items[1].Installed {
 		t.Fatalf("installed marking: %+v", page.Items)
 	}
 }
 
-func TestSearchGitHubQueryPagingAndInstalled(t *testing.T) {
-	t.Parallel()
-	var gotURL string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotURL = r.URL.String()
-		_, _ = w.Write([]byte(`{"total_count":3,"items":[{"full_name":"Pathoschild/SMAPI","description":"d","html_url":"https://github.com/Pathoschild/SMAPI","stargazers_count":9,"updated_at":"u","owner":{"login":"Pathoschild","avatar_url":"a"}}]}`))
-	}))
-	t.Cleanup(srv.Close)
-	c := &Client{
-		GitHubURL: srv.URL,
-		Installed: func(source, id string) bool {
-			return source == sourceGitHub && id == "Pathoschild/SMAPI"
-		},
-	}
-	page, err := c.Search(context.Background(), "stardew", "github", "smapi", 2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if page.Total != 3 || len(page.Items) != 1 || page.Items[0].Stars != 9 || !page.Items[0].Installed {
-		t.Fatalf("page %+v", page)
-	}
-	if !strings.Contains(gotURL, "q=smapi+topic%3Astardew-valley-mod") && !strings.Contains(gotURL, "topic:stardew-valley-mod") {
-		t.Fatalf("query %s", gotURL)
-	}
-	if !strings.Contains(gotURL, "sort=stars") || !strings.Contains(gotURL, "per_page=20") || !strings.Contains(gotURL, "page=2") {
-		t.Fatalf("paging %s", gotURL)
-	}
-}
-
-func TestSearchGitHubRateLimit(t *testing.T) {
-	t.Parallel()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusForbidden)
-	}))
-	t.Cleanup(srv.Close)
-	c := &Client{GitHubURL: srv.URL}
-	_, err := c.Search(context.Background(), "stardew", "github", "x", 1)
-	if !errors.Is(err, ErrBusy) {
-		t.Fatalf("got %v", err)
-	}
-}
-
-func TestSearchGitHubCaches(t *testing.T) {
-	t.Parallel()
-	hits := 0
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		hits++
-		_, _ = w.Write([]byte(`{"total_count":0,"items":[]}`))
-	}))
-	t.Cleanup(srv.Close)
-	now := time.Unix(1_700_000_000, 0).UTC()
-	c := &Client{GitHubURL: srv.URL, Now: func() time.Time { return now }, Cache: &RepoCache{ttl: githubCacheTTL}}
-	if _, err := c.Search(context.Background(), "stardew", "github", "x", 1); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := c.Search(context.Background(), "stardew", "github", "x", 1); err != nil {
-		t.Fatal(err)
-	}
-	if hits != 1 {
-		t.Fatalf("hits %d", hits)
+func TestSearchRefusesSourcesTheGameLacksOrCannotSearch(t *testing.T) {
+	c := &Client{}
+	for _, id := range []string{"nexus", "pageonly", "nope"} {
+		if _, err := c.search(context.Background(), catalog, id, "x", 1); !errors.Is(err, ErrUnknownSource) {
+			t.Fatalf("%s: got %v", id, err)
+		}
 	}
 }
