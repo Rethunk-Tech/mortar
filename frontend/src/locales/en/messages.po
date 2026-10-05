@@ -29,6 +29,10 @@ msgstr "Mod: {mod}"
 msgid "From {0}…"
 msgstr "From {0}…"
 
+#: src/profiles/PackImportDialog.tsx:108
+msgid "From r2modman on this computer"
+msgstr "From r2modman on this computer"
+
 #: src/shell/BugReportDialog.tsx:98
 msgid "This opens a new issue on GitHub with these filled in; you can review everything before posting."
 msgstr "This opens a new issue on GitHub with these filled in; you can review everything before posting."
@@ -113,7 +117,7 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
-#: src/profiles/PackImportDialog.tsx:105
+#: src/profiles/PackImportDialog.tsx:136
 msgid "Could not open the file"
 msgstr "Could not open the file"
 
@@ -199,7 +203,7 @@ msgstr "Make {name} win"
 
 #. placeholder {0}: preview?.name ?? ''
 #. placeholder {1}: result.queued
-#: src/profiles/PackImportDialog.tsx:63
+#: src/profiles/PackImportDialog.tsx:74
 msgid "Imported {0}: {1} to install"
 msgstr "Imported {0}: {1} to install"
 
@@ -2537,7 +2541,7 @@ msgstr "A profile holds one set of mods for this game."
 msgid "Copy token"
 msgstr "Copy token"
 
-#: src/profiles/PackImportDialog.tsx:83
+#: src/profiles/PackImportDialog.tsx:94
 msgid "off"
 msgstr "off"
 
@@ -3394,7 +3398,7 @@ msgstr "Share as r2modman code?"
 #: src/profiles/ExternalImportMenu.tsx:72
 #: src/profiles/GameModsDialog.tsx:164
 #: src/profiles/LaunchPresetDialog.tsx:87
-#: src/profiles/PackImportDialog.tsx:114
+#: src/profiles/PackImportDialog.tsx:145
 #: src/settings/sections/NexusSSO.tsx:67
 #: src/settings/sections/nxmHandler.tsx:77
 #: src/shell/BugReportDialog.tsx:102
@@ -4362,7 +4366,7 @@ msgstr "Select mods on the Mods tab, then Add to bundle."
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
-#: src/profiles/PackImportDialog.tsx:108
+#: src/profiles/PackImportDialog.tsx:139
 #: src/share/ImportInput.tsx:29
 msgid "Choose a file…"
 msgstr "Choose a file…"
@@ -5650,7 +5654,7 @@ msgstr "The update for {0} did not finish"
 msgid "Dismissed"
 msgstr "Dismissed"
 
-#: src/profiles/PackImportDialog.tsx:97
+#: src/profiles/PackImportDialog.tsx:128
 msgid "Profile code"
 msgstr "Profile code"
 
@@ -6325,7 +6329,7 @@ msgstr "Copy {0} to {1}"
 
 #: src/commandPalette/paletteLabels.ts:11
 #: src/profiles/GameModsDialog.tsx:172
-#: src/profiles/PackImportDialog.tsx:117
+#: src/profiles/PackImportDialog.tsx:148
 #: src/profiles/ProfilesPage.tsx:351
 msgid "Import"
 msgstr "Import"
@@ -6540,7 +6544,7 @@ msgstr "Could not read the SMAPI log"
 msgid "Default launch"
 msgstr "Default launch"
 
-#: src/profiles/PackImportDialog.tsx:53
+#: src/profiles/PackImportDialog.tsx:64
 msgid "Could not read that code or file"
 msgstr "Could not read that code or file"
 
@@ -6562,7 +6566,7 @@ msgstr "Copy to {bName}"
 msgid "Choose a folder"
 msgstr "Choose a folder"
 
-#: src/profiles/PackImportDialog.tsx:70
+#: src/profiles/PackImportDialog.tsx:81
 msgid "Could not import"
 msgstr "Could not import"
 
@@ -8406,7 +8410,7 @@ msgstr "Setup"
 msgid "{0} of {1} · {2}/s"
 msgstr "{0} of {1} · {2}/s"
 
-#: src/profiles/PackImportDialog.tsx:125
+#: src/profiles/PackImportDialog.tsx:156
 #: src/share/ImportInput.tsx:73
 msgid "Preview"
 msgstr "Preview"
@@ -9926,7 +9930,7 @@ msgid "This launch preset will be deleted."
 msgstr "This launch preset will be deleted."
 
 #. placeholder {0}: preview.configs
-#: src/profiles/PackImportDialog.tsx:88
+#: src/profiles/PackImportDialog.tsx:99
 msgid "{0} config files come with it."
 msgstr "{0} config files come with it."
 
@@ -11093,7 +11097,7 @@ msgid "Different source"
 msgstr "Different source"
 
 #. placeholder {0}: unsupported.join(', ')
-#: src/profiles/PackImportDialog.tsx:65
+#: src/profiles/PackImportDialog.tsx:76
 msgid "Not from Thunderstore: {0}"
 msgstr "Not from Thunderstore: {0}"
 
@@ -11189,7 +11193,7 @@ msgstr "ToArea {0}"
 msgid "Update and play"
 msgstr "Update and play"
 
-#: src/profiles/PackImportDialog.tsx:76
+#: src/profiles/PackImportDialog.tsx:87
 msgid "Import from r2modman / Thunderstore"
 msgstr "Import from r2modman / Thunderstore"
 

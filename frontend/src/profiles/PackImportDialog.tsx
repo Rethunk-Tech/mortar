@@ -9,17 +9,19 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type {
+  LocalProfile,
   Preview,
   Source,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/models.ts'
 import {
   Import,
+  LocalProfiles,
   Preview as PreviewPack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { PickPackFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
-import { toastError } from '../toasts/report.ts'
+import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { packageLine } from './packImport.ts'
 
@@ -39,6 +41,15 @@ export function PackImportDialog({
   const [path, setPath] = useState('')
   const [preview, setPreview] = useState<Preview | null>(null)
   const [busy, setBusy] = useState(false)
+  const [local, setLocal] = useState<LocalProfile[]>([])
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    LocalProfiles(game)
+      .then((found) => setLocal(found ?? []))
+      .catch(reportUnexpected)
+  }, [open, game])
   const source = (): Source => ({ path, text: text.trim() })
   const close = () => {
     setText('')
@@ -46,9 +57,9 @@ export function PackImportDialog({
     setPreview(null)
     onClose()
   }
-  const read = () => {
+  const read = (from: Source = source()) => {
     setBusy(true)
-    PreviewPack(source())
+    PreviewPack(from)
       .then(setPreview)
       .catch((error: unknown) => toastError(t`Could not read that code or file`, error))
       .finally(() => setBusy(false))
@@ -91,6 +102,26 @@ export function PackImportDialog({
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {local.length > 0 ? (
+              <>
+                <Typography color="text.secondary" sx={{ fontSize: 14 }}>
+                  {t`From r2modman on this computer`}
+                </Typography>
+                {local.map((profile) => (
+                  <Button
+                    key={profile.path}
+                    disabled={busy}
+                    sx={{ justifyContent: 'flex-start' }}
+                    onClick={() => {
+                      setPath(profile.path)
+                      read({ path: profile.path, text: '' })
+                    }}
+                  >
+                    {profile.name}
+                  </Button>
+                ))}
+              </>
+            ) : null}
             <TextField
               fullWidth={true}
               size="small"
@@ -120,7 +151,7 @@ export function PackImportDialog({
           <Button
             variant="contained"
             disabled={busy || (text.trim() === '' && path === '')}
-            onClick={read}
+            onClick={() => read()}
           >
             {t`Preview`}
           </Button>
