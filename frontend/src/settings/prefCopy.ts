@@ -67,8 +67,10 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
       placeholder: i18n._(msg`This computer`),
     },
     lanAutoAcceptSameAccount: {
-      label: i18n._(msg`Auto-accept from this Nexus account`),
-      description: i18n._(msg`Accept profiles sent from your own computers (same Nexus account)`),
+      label: i18n._(msg`Auto-accept from paired computers`),
+      description: i18n._(
+        msg`Accept profiles sent from computers you paired, and copy their mod files`,
+      ),
     },
     defaultModsView: {
       label: i18n._(msg`Default mods view`),

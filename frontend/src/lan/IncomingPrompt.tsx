@@ -48,7 +48,7 @@ export function IncomingPrompt() {
   const [transferError, setTransferError] = useState<InlineError | null>(null)
   const autoAccept = useSettings((s) => s.lanAutoAcceptSameAccount)
   const incomingId = incoming?.id ?? ''
-  const sameAccount = incoming?.sameAccount === true
+  const paired = incoming?.paired === true
 
   const accept = async (profileId = '') => {
     if (!incoming) {
@@ -56,7 +56,7 @@ export function IncomingPrompt() {
     }
     setChoosing(false)
     setTransferError(null)
-    if (incoming.sameAccount) {
+    if (incoming.paired) {
       setTransferring(true)
       try {
         await Transfer(incoming.id)
@@ -72,7 +72,7 @@ export function IncomingPrompt() {
   }
 
   useEffect(() => {
-    if (!(sameAccount && autoAccept && incomingId)) {
+    if (!(paired && autoAccept && incomingId)) {
       return
     }
     const [item] = useIncomingShares.getState().items
@@ -102,7 +102,7 @@ export function IncomingPrompt() {
     return () => {
       cancelled = true
     }
-  }, [autoAccept, incomingId, removeFirst, sameAccount])
+  }, [autoAccept, incomingId, removeFirst, paired])
 
   if (!incoming) {
     return null
@@ -122,7 +122,7 @@ export function IncomingPrompt() {
         </DialogTitle>
         <DialogContent>
           <Typography color="text.secondary">
-            {incoming.sameAccount
+            {incoming.paired
               ? t`The mod files can be copied directly from this Mortar.`
               : t`The files will download from each mod's source.`}
           </Typography>

@@ -11,7 +11,7 @@ msgstr ""
 msgid "No saves match"
 msgstr "No saves match"
 
-#: src/settings/prefCopy.ts:470
+#: src/settings/prefCopy.ts:472
 msgid "Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive"
 msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive"
 
@@ -58,7 +58,7 @@ msgstr "{0, plural, one {# mod included} other {# mods included}}"
 msgid "Start muted"
 msgstr "Start muted"
 
-#: src/settings/sections/General.tsx:222
+#: src/settings/sections/General.tsx:224
 msgid "Interface tour"
 msgstr "Interface tour"
 
@@ -96,11 +96,11 @@ msgstr "Failed ({0})"
 msgid "{n} Nexus"
 msgstr "{n} Nexus"
 
-#: src/settings/prefCopy.ts:362
+#: src/settings/prefCopy.ts:364
 msgid "Auto-track installed mods"
 msgstr "Auto-track installed mods"
 
-#: src/settings/prefCopy.ts:413
+#: src/settings/prefCopy.ts:415
 msgid "Sidebar badge counts"
 msgstr "Sidebar badge counts"
 
@@ -185,7 +185,7 @@ msgstr "Manage tools…"
 msgid "Updated"
 msgstr "Updated"
 
-#: src/settings/prefCopy.ts:238
+#: src/settings/prefCopy.ts:240
 msgid "List mods inside a folder whose name starts with a dot, which SMAPI skips"
 msgstr "List mods inside a folder whose name starts with a dot, which SMAPI skips"
 
@@ -286,7 +286,7 @@ msgstr "Switch game"
 msgid "Sand"
 msgstr "Sand"
 
-#: src/settings/prefCopy.ts:367
+#: src/settings/prefCopy.ts:369
 msgid "Premium and GitHub downloads at once"
 msgstr "Premium and GitHub downloads at once"
 
@@ -349,8 +349,8 @@ msgstr "{0} adds {time} to startup"
 msgid "Mortar leaves the taskbar and waits in the tray until the game exits."
 msgstr "Mortar leaves the taskbar and waits in the tray until the game exits."
 
-#: src/settings/prefCopy.ts:99
-#: src/settings/prefCopy.ts:186
+#: src/settings/prefCopy.ts:101
+#: src/settings/prefCopy.ts:188
 msgid "Always"
 msgstr "Always"
 
@@ -404,7 +404,7 @@ msgstr "Rename {0}"
 msgid "Mortar finds your games through the launchers that installed them. You set up each game when you first open it."
 msgstr "Mortar finds your games through the launchers that installed them. You set up each game when you first open it."
 
-#: src/settings/prefCopy.ts:165
+#: src/settings/prefCopy.ts:167
 msgid "Density"
 msgstr "Density"
 
@@ -427,7 +427,7 @@ msgstr "Older copies of the same mod"
 msgid "Compare with a profile…"
 msgstr "Compare with a profile…"
 
-#: src/settings/prefCopy.ts:401
+#: src/settings/prefCopy.ts:403
 msgid "How many times to retry a failed download"
 msgstr "How many times to retry a failed download"
 
@@ -448,7 +448,7 @@ msgstr "Could not add the chosen folder"
 msgid "Could not change mods"
 msgstr "Could not change mods"
 
-#: src/settings/prefCopy.ts:214
+#: src/settings/prefCopy.ts:216
 msgid "Back up saves every time the game starts."
 msgstr "Back up saves every time the game starts."
 
@@ -467,7 +467,7 @@ msgstr "Startup: {0} {1} added {2}"
 msgid "Assets and packs"
 msgstr "Assets and packs"
 
-#: src/settings/sections/General.tsx:197
+#: src/settings/sections/General.tsx:199
 msgid "Allow through firewall"
 msgstr "Allow through firewall"
 
@@ -487,7 +487,7 @@ msgstr "Search settings"
 msgid "Notes"
 msgstr "Notes"
 
-#: src/settings/sections/General.tsx:42
+#: src/settings/sections/General.tsx:43
 msgid "Startup and window"
 msgstr "Startup and window"
 
@@ -549,7 +549,7 @@ msgstr "This computer"
 msgid "{0, plural, one {# update} other {# updates}}"
 msgstr "{0, plural, one {# update} other {# updates}}"
 
-#: src/settings/prefCopy.ts:177
+#: src/settings/prefCopy.ts:179
 msgid "Light"
 msgstr "Light"
 
@@ -632,7 +632,7 @@ msgstr "Try my Mortar profile \"{0}\" for {gameName} ({mods}): {1}"
 msgid "Add a bundle…"
 msgstr "Add a bundle…"
 
-#: src/settings/prefCopy.ts:158
+#: src/settings/prefCopy.ts:160
 msgid "How timestamps are shown"
 msgstr "How timestamps are shown"
 
@@ -640,7 +640,7 @@ msgstr "How timestamps are shown"
 msgid "Remove the shortcut"
 msgstr "Remove the shortcut"
 
-#: src/settings/prefCopy.ts:78
+#: src/settings/prefCopy.ts:80
 msgid "List"
 msgstr "List"
 
@@ -654,7 +654,7 @@ msgstr "Reorder {0}"
 msgid "Find mods to add"
 msgstr "Find mods to add"
 
-#: src/settings/sections/General.tsx:69
+#: src/settings/sections/General.tsx:70
 msgid "More languages are coming."
 msgstr "More languages are coming."
 
@@ -713,7 +713,7 @@ msgstr "Identical ({0})"
 msgid "{n, plural, one {Also update # optional file} other {Also update # optional files}}"
 msgstr "{n, plural, one {Also update # optional file} other {Also update # optional files}}"
 
-#: src/settings/prefCopy.ts:219
+#: src/settings/prefCopy.ts:221
 msgid "Start the game without a backup."
 msgstr "Start the game without a backup."
 
@@ -982,7 +982,7 @@ msgstr "Add {0, plural, one {# mod} other {# mods}}"
 msgid "Could not export the collection draft"
 msgstr "Could not export the collection draft"
 
-#: src/settings/prefCopy.ts:183
+#: src/settings/prefCopy.ts:185
 msgid "Shorter animations. Honour the OS unless you override it."
 msgstr "Shorter animations. Honour the OS unless you override it."
 
@@ -1034,7 +1034,7 @@ msgstr "Back to {backTo}. Saves untouched."
 msgid "Show all mods"
 msgstr "Show all mods"
 
-#: src/settings/prefCopy.ts:423
+#: src/settings/prefCopy.ts:425
 msgid "How thoroughly Mortar analyses overlapping files"
 msgstr "How thoroughly Mortar analyses overlapping files"
 
@@ -1131,7 +1131,7 @@ msgstr "Import profile"
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
 
-#: src/settings/prefCopy.ts:84
+#: src/settings/prefCopy.ts:86
 msgid "Small"
 msgstr "Small"
 
@@ -1151,7 +1151,7 @@ msgstr "Add a bundle to {profileName}"
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
-#: src/settings/prefCopy.ts:331
+#: src/settings/prefCopy.ts:333
 msgid "Notify when updates are found"
 msgstr "Notify when updates are found"
 
@@ -1175,7 +1175,7 @@ msgstr "Your settings could not be read"
 msgid "Update channel"
 msgstr "Update channel"
 
-#: src/settings/prefCopy.ts:338
+#: src/settings/prefCopy.ts:340
 msgid "At most once a day"
 msgstr "At most once a day"
 
@@ -1210,7 +1210,7 @@ msgstr "Before updating {0}"
 msgid "Solid"
 msgstr "Solid"
 
-#: src/settings/prefCopy.ts:174
+#: src/settings/prefCopy.ts:176
 msgid "Mortar's colours. Follow system matches your computer."
 msgstr "Mortar's colours. Follow system matches your computer."
 
@@ -1224,7 +1224,7 @@ msgstr "Play this profile to measure."
 msgid "The mod files can be copied directly from this Mortar."
 msgstr "The mod files can be copied directly from this Mortar."
 
-#: src/settings/prefCopy.ts:275
+#: src/settings/prefCopy.ts:277
 msgid "Newest lines kept in the Console"
 msgstr "Newest lines kept in the Console"
 
@@ -1345,8 +1345,8 @@ msgstr "Confirm update for {name}"
 msgid "Missing requirements"
 msgstr "Missing requirements"
 
-#: src/settings/prefCopy.ts:135
-#: src/settings/prefCopy.ts:136
+#: src/settings/prefCopy.ts:137
+#: src/settings/prefCopy.ts:138
 #: src/settings/sections/Appearance.tsx:38
 #: src/settings/sections/Appearance.tsx:46
 msgid "Default sort"
@@ -1368,7 +1368,7 @@ msgstr "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 msgid "Roll back"
 msgstr "Roll back"
 
-#: src/settings/sections/General.tsx:182
+#: src/settings/sections/General.tsx:184
 msgid "Windows Firewall blocks incoming sends to Mortar"
 msgstr "Windows Firewall blocks incoming sends to Mortar"
 
@@ -1551,7 +1551,7 @@ msgstr "Stop the game to install SMAPI."
 #: src/mods/CategoryEditor.tsx:40
 #: src/mods/columnLabel.ts:7
 #: src/profiles/LaunchPresetDialog.tsx:58
-#: src/settings/prefCopy.ts:391
+#: src/settings/prefCopy.ts:393
 #: src/tools/ToolEditorDialog.tsx:95
 msgid "Name"
 msgstr "Name"
@@ -1589,6 +1589,10 @@ msgstr "Got it"
 msgid "New launch preset"
 msgstr "New launch preset"
 
+#: src/lan/PairedComputers.tsx:161
+msgid "Paired computers"
+msgstr "Paired computers"
+
 #: src/console/outcome.ts:12
 #: src/queue/QueueHistory.tsx:65
 msgid "Failed"
@@ -1602,7 +1606,7 @@ msgstr "Failed"
 msgid "{0} of {1} mods · {2} · {3}/s"
 msgstr "{0} of {1} mods · {2} · {3}/s"
 
-#: src/settings/prefCopy.ts:410
+#: src/settings/prefCopy.ts:412
 msgid "Hold the download queue until the game exits"
 msgstr "Hold the download queue until the game exits"
 
@@ -1614,7 +1618,7 @@ msgstr "{name} is marked broken for this game version."
 msgid "Could not resize the window"
 msgstr "Could not resize the window"
 
-#: src/settings/prefCopy.ts:347
+#: src/settings/prefCopy.ts:349
 msgid "SMAPI unofficial builds"
 msgstr "SMAPI unofficial builds"
 
@@ -1647,7 +1651,7 @@ msgstr "Add to bundle…"
 msgid "Start screen"
 msgstr "Start screen"
 
-#: src/settings/prefCopy.ts:349
+#: src/settings/prefCopy.ts:351
 msgid "Pre-releases and unofficial SMAPI updates. Show lists them; Include lets Update all install them."
 msgstr "Pre-releases and unofficial SMAPI updates. Show lists them; Include lets Update all install them."
 
@@ -1763,7 +1767,7 @@ msgstr "{0} (optional file)"
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
-#: src/settings/prefCopy.ts:456
+#: src/settings/prefCopy.ts:458
 msgid "Launch Mortar at login"
 msgstr "Launch Mortar at login"
 
@@ -1822,7 +1826,7 @@ msgstr "Apply {name}"
 msgid "{endorsements, plural, one {# endorsement} other {# endorsements}} · {downloads, plural, one {# download} other {# downloads}}"
 msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}} · {downloads, plural, one {# download} other {# downloads}}"
 
-#: src/settings/prefCopy.ts:464
+#: src/settings/prefCopy.ts:466
 msgid "Remember window size and position"
 msgstr "Remember window size and position"
 
@@ -1830,7 +1834,7 @@ msgstr "Remember window size and position"
 msgid "Rename template"
 msgstr "Rename template"
 
-#: src/settings/prefCopy.ts:293
+#: src/settings/prefCopy.ts:295
 msgid "Console timestamps"
 msgstr "Console timestamps"
 
@@ -1871,7 +1875,7 @@ msgstr "Prerelease"
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
-#: src/settings/prefCopy.ts:378
+#: src/settings/prefCopy.ts:380
 msgid "Show a notice when a new mod archive lands in your Downloads folder or Mortar's download folder, with a button to add it"
 msgstr "Show a notice when a new mod archive lands in your Downloads folder or Mortar's download folder, with a button to add it"
 
@@ -1894,7 +1898,7 @@ msgstr "Enjoying {0}? Endorse it on Nexus"
 msgid "Sent to {0}"
 msgstr "Sent to {0}"
 
-#: src/settings/sections/General.tsx:211
+#: src/settings/sections/General.tsx:213
 msgid "Show the first-run tips again"
 msgstr "Show the first-run tips again"
 
@@ -1906,7 +1910,7 @@ msgstr "Show the first-run tips again"
 #: src/queue/store.ts:225
 #: src/queue/store.ts:341
 #: src/saves/SaveGapLine.tsx:56
-#: src/settings/prefCopy.ts:353
+#: src/settings/prefCopy.ts:355
 #: src/settings/sections/Updates.tsx:132
 msgid "Show"
 msgstr "Show"
@@ -2040,7 +2044,7 @@ msgstr "{0, plural, one {# tracked mod on Nexus is not in this profile} other {#
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
-#: src/settings/prefCopy.ts:363
+#: src/settings/prefCopy.ts:365
 msgid "Track a Nexus mod when Mortar installs it"
 msgstr "Track a Nexus mod when Mortar installs it"
 
@@ -2064,8 +2068,8 @@ msgstr "Calls"
 msgid "Could not prepare the data folder move"
 msgstr "Could not prepare the data folder move"
 
-#: src/settings/prefCopy.ts:169
-#: src/settings/prefCopy.ts:195
+#: src/settings/prefCopy.ts:171
+#: src/settings/prefCopy.ts:197
 msgid "Compact"
 msgstr "Compact"
 
@@ -2154,7 +2158,7 @@ msgstr "{0, plural, one {Replaces # file · adds {added}} other {Replaces # file
 msgid "Could not start the Nexus download"
 msgstr "Could not start the Nexus download"
 
-#: src/settings/prefCopy.ts:307
+#: src/settings/prefCopy.ts:309
 msgid "Scan the mods folder for changes Mortar did not make"
 msgstr "Scan the mods folder for changes Mortar did not make"
 
@@ -2218,7 +2222,7 @@ msgstr "Mods and profiles"
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
-#: src/settings/prefCopy.ts:359
+#: src/settings/prefCopy.ts:361
 msgid "Empty follows the latest release"
 msgstr "Empty follows the latest release"
 
@@ -2226,7 +2230,7 @@ msgstr "Empty follows the latest release"
 msgid "Every key returns to its default."
 msgstr "Every key returns to its default."
 
-#: src/settings/prefCopy.ts:85
+#: src/settings/prefCopy.ts:87
 msgid "Medium"
 msgstr "Medium"
 
@@ -2242,7 +2246,7 @@ msgstr "Delete permanently"
 msgid "Create another profile to compare it with this one."
 msgstr "Create another profile to compare it with this one."
 
-#: src/settings/prefCopy.ts:457
+#: src/settings/prefCopy.ts:459
 msgid "Start Mortar when you sign in to this computer"
 msgstr "Start Mortar when you sign in to this computer"
 
@@ -2293,7 +2297,7 @@ msgstr "Step {0} of {1}: {2}"
 msgid "Keep the Nexus copy"
 msgstr "Keep the Nexus copy"
 
-#: src/settings/prefCopy.ts:284
+#: src/settings/prefCopy.ts:286
 msgid "Live log starts at this level and above"
 msgstr "Live log starts at this level and above"
 
@@ -2379,6 +2383,10 @@ msgstr "game running"
 msgid "Drag {path} into the GitHub issue to attach it."
 msgstr "Drag {path} into the GitHub issue to attach it."
 
+#: src/lan/PairedComputers.tsx:129
+msgid "Pair"
+msgstr "Pair"
+
 #: src/share/ImportFooter.tsx:32
 msgid "New profile from link"
 msgstr "New profile from link"
@@ -2401,10 +2409,10 @@ msgstr "Title screen"
 #: src/profiles/overrideValue.ts:86
 #: src/profiles/ProfilesPage.tsx:271
 #: src/profiles/ProfilesPage.tsx:280
-#: src/settings/prefCopy.ts:336
-#: src/settings/prefCopy.ts:403
-#: src/settings/prefCopy.ts:418
-#: src/settings/prefCopy.ts:474
+#: src/settings/prefCopy.ts:338
+#: src/settings/prefCopy.ts:405
+#: src/settings/prefCopy.ts:420
+#: src/settings/prefCopy.ts:476
 #: src/share/ShareDialog.tsx:296
 msgid "Off"
 msgstr "Off"
@@ -2417,7 +2425,7 @@ msgstr "Last run: {text}"
 msgid "SMAPI skips folders whose names start with a dot."
 msgstr "SMAPI skips folders whose names start with a dot."
 
-#: src/settings/prefCopy.ts:118
+#: src/settings/prefCopy.ts:120
 msgid "Default grouping"
 msgstr "Default grouping"
 
@@ -2481,6 +2489,10 @@ msgstr "Open the next profile"
 msgid "Desktop"
 msgstr "Desktop"
 
+#: src/lan/PairedComputers.tsx:89
+msgid "Could not pair"
+msgstr "Could not pair"
+
 #. placeholder {0}: result.added
 #: src/bundles/applied.ts:19
 msgid "{0, plural, one {# mod added} other {# mods added}}"
@@ -2511,7 +2523,7 @@ msgstr "Applies next time the game starts"
 msgid "Could not delete {0}"
 msgstr "Could not delete {0}"
 
-#: src/settings/prefCopy.ts:168
+#: src/settings/prefCopy.ts:170
 msgid "Comfortable"
 msgstr "Comfortable"
 
@@ -2671,7 +2683,7 @@ msgstr "Priority {0}"
 msgid "Could not open the profile folder"
 msgstr "Could not open the profile folder"
 
-#: src/settings/prefCopy.ts:325
+#: src/settings/prefCopy.ts:327
 msgid "Download and stage a found update without asking"
 msgstr "Download and stage a found update without asking"
 
@@ -2711,7 +2723,11 @@ msgstr "Licence"
 msgid "Updated tags"
 msgstr "Updated tags"
 
-#: src/settings/prefCopy.ts:342
+#: src/lan/PairedComputers.tsx:44
+msgid "Could not start pairing"
+msgstr "Could not start pairing"
+
+#: src/settings/prefCopy.ts:344
 msgid "Update mods before Play on new profiles"
 msgstr "Update mods before Play on new profiles"
 
@@ -2742,7 +2758,7 @@ msgid "Open files page"
 msgstr "Open files page"
 
 #: src/saves/backups.ts:78
-#: src/settings/prefCopy.ts:390
+#: src/settings/prefCopy.ts:392
 msgid "Manual"
 msgstr "Manual"
 
@@ -2750,7 +2766,7 @@ msgstr "Manual"
 msgid "Report a Mortar bug"
 msgstr "Report a Mortar bug"
 
-#: src/settings/prefCopy.ts:320
+#: src/settings/prefCopy.ts:322
 msgid "History events kept"
 msgstr "History events kept"
 
@@ -2778,7 +2794,7 @@ msgstr "Discard"
 msgid "{count, plural, one {# error} other {# errors}}"
 msgstr "{count, plural, one {# error} other {# errors}}"
 
-#: src/settings/prefCopy.ts:310
+#: src/settings/prefCopy.ts:312
 msgid "Downloaded mods no profile uses"
 msgstr "Downloaded mods no profile uses"
 
@@ -2796,7 +2812,7 @@ msgstr "{gameName} · {mods}"
 msgid "{0, plural, one {# mod checked} other {# mods checked}}"
 msgstr "{0, plural, one {# mod checked} other {# mods checked}}"
 
-#: src/settings/sections/General.tsx:210
+#: src/settings/sections/General.tsx:212
 msgid "Help"
 msgstr "Help"
 
@@ -2834,7 +2850,7 @@ msgstr "{0}'s farm ({1}) was last played with mods this profile does not have on
 msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
 
-#: src/settings/prefCopy.ts:75
+#: src/settings/prefCopy.ts:77
 msgid "Grid or list for new sessions"
 msgstr "Grid or list for new sessions"
 
@@ -2891,7 +2907,7 @@ msgid "Include FOMOD choices"
 msgstr "Include FOMOD choices"
 
 #: src/console/LevelToggles.tsx:28
-#: src/settings/prefCopy.ts:288
+#: src/settings/prefCopy.ts:290
 msgid "Info"
 msgstr "Info"
 
@@ -2911,7 +2927,7 @@ msgstr "The browser extension is too old for this Mortar"
 msgid "This option cannot be used."
 msgstr "This option cannot be used."
 
-#: src/settings/prefCopy.ts:82
+#: src/settings/prefCopy.ts:84
 msgid "Grid card size"
 msgstr "Grid card size"
 
@@ -2948,7 +2964,7 @@ msgstr "{0} · {1} · {farms}"
 msgid "Data folder moved"
 msgstr "Data folder moved"
 
-#: src/settings/prefCopy.ts:296
+#: src/settings/prefCopy.ts:298
 msgid "Keep downloaded archives"
 msgstr "Keep downloaded archives"
 
@@ -2964,7 +2980,7 @@ msgstr "This version is only on a site Mortar cannot download from yet; open the
 msgid "Hide content packs"
 msgstr "Hide content packs"
 
-#: src/settings/prefCopy.ts:145
+#: src/settings/prefCopy.ts:147
 msgid "Collapsed"
 msgstr "Collapsed"
 
@@ -3035,6 +3051,10 @@ msgstr "Quit Mortar?"
 msgid "Could not back up saves before Play"
 msgstr "Could not back up saves before Play"
 
+#: src/lan/PairedComputers.tsx:86
+msgid "Computer paired"
+msgstr "Computer paired"
+
 #: src/settings/sections/Launchers.tsx:23
 msgid "game folder"
 msgstr "game folder"
@@ -3057,7 +3077,7 @@ msgstr "Custom categories"
 #: src/profiles/ProfilesPage.tsx:175
 #: src/saves/SaveBackupsSection.tsx:70
 #: src/saves/SaveBackupsSection.tsx:140
-#: src/settings/prefCopy.ts:252
+#: src/settings/prefCopy.ts:254
 #: src/templates/TemplateDialogs.tsx:115
 #: src/templates/TemplateDialogs.tsx:202
 #: src/tools/ToolsManageDialog.tsx:89
@@ -3068,7 +3088,7 @@ msgstr "Delete"
 msgid "Not checked yet."
 msgstr "Not checked yet."
 
-#: src/settings/prefCopy.ts:226
+#: src/settings/prefCopy.ts:228
 msgid "How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never removed."
 msgstr "How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never removed."
 
@@ -3161,7 +3181,7 @@ msgstr "Already has {0}"
 msgid "Reading {0}"
 msgstr "Reading {0}"
 
-#: src/settings/prefCopy.ts:77
+#: src/settings/prefCopy.ts:79
 msgid "Grid"
 msgstr "Grid"
 
@@ -3206,8 +3226,8 @@ msgid "The game started without errors"
 msgstr "The game started without errors"
 
 #: src/profiles/ProfileRow.tsx:205
-#: src/settings/prefCopy.ts:147
-#: src/settings/prefCopy.ts:196
+#: src/settings/prefCopy.ts:149
+#: src/settings/prefCopy.ts:198
 msgid "Hidden"
 msgstr "Hidden"
 
@@ -3278,7 +3298,7 @@ msgstr "Reset game install?"
 msgid "Play the open profile"
 msgstr "Play the open profile"
 
-#: src/settings/prefCopy.ts:317
+#: src/settings/prefCopy.ts:319
 msgid "Days a deleted profile stays restorable"
 msgstr "Days a deleted profile stays restorable"
 
@@ -3308,7 +3328,7 @@ msgstr "Performance report"
 msgid "Cover image"
 msgstr "Cover image"
 
-#: src/settings/prefCopy.ts:397
+#: src/settings/prefCopy.ts:399
 msgid "Where save backups are kept. Empty uses the default."
 msgstr "Where save backups are kept. Empty uses the default."
 
@@ -3324,6 +3344,8 @@ msgstr "Where save backups are kept. Empty uses the default."
 #: src/install/RemapDialog.tsx:205
 #: src/lan/IncomingPrompt.tsx:167
 #: src/lan/IncomingPrompt.tsx:185
+#: src/lan/PairedComputers.tsx:60
+#: src/lan/PairedComputers.tsx:123
 #: src/lan/SendDialog.tsx:174
 #: src/launch/PrePlayDialog.tsx:136
 #: src/launch/SaveWarnDialog.tsx:66
@@ -3387,7 +3409,7 @@ msgstr "Standard farm"
 msgid "Cache cleared"
 msgstr "Cache cleared"
 
-#: src/settings/prefCopy.ts:366
+#: src/settings/prefCopy.ts:368
 msgid "Parallel downloads"
 msgstr "Parallel downloads"
 
@@ -3641,7 +3663,7 @@ msgstr "Add or remove the tag"
 msgid "Last run: {summary}"
 msgstr "Last run: {summary}"
 
-#: src/settings/prefCopy.ts:376
+#: src/settings/prefCopy.ts:378
 msgid "Offer new downloads"
 msgstr "Offer new downloads"
 
@@ -3649,7 +3671,7 @@ msgstr "Offer new downloads"
 msgid "Could not install SMAPI"
 msgstr "Could not install SMAPI"
 
-#: src/settings/prefCopy.ts:230
+#: src/settings/prefCopy.ts:232
 #: src/settings/sections/GameSettings.tsx:333
 msgid "Extra mods folder"
 msgstr "Extra mods folder"
@@ -3689,7 +3711,7 @@ msgstr "Get the extension"
 #: src/game/Hero.tsx:328
 #: src/mods/ModDependencyTree.tsx:159
 #: src/mods/Toolbar.tsx:197
-#: src/settings/prefCopy.ts:120
+#: src/settings/prefCopy.ts:122
 msgid "None"
 msgstr "None"
 
@@ -3891,7 +3913,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/GameSettings.tsx:339
 #: src/settings/sections/GameSettings.tsx:342
 #: src/settings/sections/GameSettings.tsx:377
-#: src/settings/sections/General.tsx:35
+#: src/settings/sections/General.tsx:36
 #: src/settings/sections/ModsProfiles.tsx:20
 #: src/settings/sections/Notifications.tsx:35
 #: src/settings/sections/SmapiRow.tsx:46
@@ -3921,7 +3943,7 @@ msgstr "File saved"
 msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or SMAPI will not see this profile."
 msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or SMAPI will not see this profile."
 
-#: src/settings/prefCopy.ts:452
+#: src/settings/prefCopy.ts:454
 msgid "Verify downloads with Nexus MD5"
 msgstr "Verify downloads with Nexus MD5"
 
@@ -3963,11 +3985,15 @@ msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile 
 msgid "Main mod's folder"
 msgstr "Main mod's folder"
 
+#: src/lan/PairedComputers.tsx:116
+msgid "Code"
+msgstr "Code"
+
 #: src/settings/sections/DataUsage.tsx:276
 msgid "A portable copy keeps its data beside the program."
 msgstr "A portable copy keeps its data beside the program."
 
-#: src/settings/sections/General.tsx:239
+#: src/settings/sections/General.tsx:241
 msgid "Save these settings to a file, or load them on another computer."
 msgstr "Save these settings to a file, or load them on another computer."
 
@@ -4019,9 +4045,9 @@ msgstr "Loading changes…"
 msgid "Launch environment"
 msgstr "Launch environment"
 
-#: src/settings/prefCopy.ts:100
-#: src/settings/prefCopy.ts:108
-#: src/settings/prefCopy.ts:247
+#: src/settings/prefCopy.ts:102
+#: src/settings/prefCopy.ts:110
+#: src/settings/prefCopy.ts:249
 msgid "Ask"
 msgstr "Ask"
 
@@ -4029,7 +4055,7 @@ msgstr "Ask"
 msgid "and open it in Firefox. If that release has none, unzip the download, open about:debugging, choose This Firefox, then Load Temporary Add-on and pick manifest.json; Firefox removes it when it restarts."
 msgstr "and open it in Firefox. If that release has none, unzip the download, open about:debugging, choose This Firefox, then Load Temporary Add-on and pick manifest.json; Firefox removes it when it restarts."
 
-#: src/settings/prefCopy.ts:321
+#: src/settings/prefCopy.ts:323
 msgid "Per profile"
 msgstr "Per profile"
 
@@ -4053,7 +4079,7 @@ msgstr "These apply only to this profile."
 msgid "Open Settings"
 msgstr "Open Settings"
 
-#: src/settings/sections/General.tsx:247
+#: src/settings/sections/General.tsx:249
 msgid "Export…"
 msgstr "Export…"
 
@@ -4120,7 +4146,7 @@ msgstr "{0, plural, one {# settings file was left out (too large or an unusual n
 msgid "Add mods"
 msgstr "Add mods"
 
-#: src/settings/prefCopy.ts:192
+#: src/settings/prefCopy.ts:194
 msgid "The banner at the top of a profile"
 msgstr "The banner at the top of a profile"
 
@@ -4163,12 +4189,12 @@ msgstr "Search Nexus Mods. Free accounts download from the mod's page with Mod M
 msgid "Mortar's own SMAPI mod; it records these timings"
 msgstr "Mortar's own SMAPI mod; it records these timings"
 
-#: src/settings/prefCopy.ts:173
+#: src/settings/prefCopy.ts:175
 #: src/settings/sections/Appearance.tsx:79
 msgid "Theme"
 msgstr "Theme"
 
-#: src/settings/prefCopy.ts:204
+#: src/settings/prefCopy.ts:206
 msgid "When Mortar makes a save backup before launching"
 msgstr "When Mortar makes a save backup before launching"
 
@@ -4206,7 +4232,7 @@ msgstr "Filter by profile"
 msgid "That data could not be read."
 msgstr "That data could not be read."
 
-#: src/settings/prefCopy.ts:409
+#: src/settings/prefCopy.ts:411
 msgid "Pause downloads while the game runs"
 msgstr "Pause downloads while the game runs"
 
@@ -4271,6 +4297,10 @@ msgstr "SMAPI is not installed"
 msgid "Performance view"
 msgstr "Performance view"
 
+#: src/lan/PairedComputers.tsx:176
+msgid "Could not unpair"
+msgstr "Could not unpair"
+
 #: src/mods/AssetMapDialog.tsx:258
 msgid "Show more"
 msgstr "Show more"
@@ -4312,10 +4342,6 @@ msgstr "Could not read other profiles"
 msgid "pinned"
 msgstr "pinned"
 
-#: src/settings/prefCopy.ts:70
-msgid "Auto-accept from this Nexus account"
-msgstr "Auto-accept from this Nexus account"
-
 #: src/profiles/LaunchPreview.tsx:81
 msgid "Copy the command"
 msgstr "Copy the command"
@@ -4350,7 +4376,7 @@ msgid "Add from the downloads folder…"
 msgstr "Add from the downloads folder…"
 
 #: src/console/LevelToggles.tsx:29
-#: src/settings/prefCopy.ts:289
+#: src/settings/prefCopy.ts:291
 msgid "Warn"
 msgstr "Warn"
 
@@ -4401,8 +4427,8 @@ msgstr "No downloads in history."
 msgid "Has problems"
 msgstr "Has problems"
 
-#: src/settings/sections/General.tsx:159
-#: src/settings/sections/General.tsx:167
+#: src/settings/sections/General.tsx:161
+#: src/settings/sections/General.tsx:169
 msgid "LAN port"
 msgstr "LAN port"
 
@@ -4426,7 +4452,7 @@ msgstr "Earthy green"
 msgid "No Mortar users found nearby."
 msgstr "No Mortar users found nearby."
 
-#: src/settings/prefCopy.ts:236
+#: src/settings/prefCopy.ts:238
 msgid "Show hidden mods"
 msgstr "Show hidden mods"
 
@@ -4435,8 +4461,8 @@ msgstr "Show hidden mods"
 msgid "New errors after updating {0}"
 msgstr "New errors after updating {0}"
 
-#: src/settings/prefCopy.ts:194
-#: src/settings/prefCopy.ts:425
+#: src/settings/prefCopy.ts:196
+#: src/settings/prefCopy.ts:427
 msgid "Full"
 msgstr "Full"
 
@@ -4492,7 +4518,7 @@ msgstr "Unknown source"
 msgid "Needs {need, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
 msgstr "Needs {need, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
 
-#: src/settings/prefCopy.ts:143
+#: src/settings/prefCopy.ts:145
 msgid "Cosmetic overlaps on the Problems tab"
 msgstr "Cosmetic overlaps on the Problems tab"
 
@@ -4544,7 +4570,7 @@ msgstr "New profile…"
 msgid "The files will download from each mod's source."
 msgstr "The files will download from each mod's source."
 
-#: src/settings/prefCopy.ts:232
+#: src/settings/prefCopy.ts:234
 msgid "A folder of unpacked mods you can add to a profile from the Add menu"
 msgstr "A folder of unpacked mods you can add to a profile from the Add menu"
 
@@ -4556,7 +4582,7 @@ msgstr "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}
 msgid "Profiles: {holderNames}"
 msgstr "Profiles: {holderNames}"
 
-#: src/settings/prefCopy.ts:460
+#: src/settings/prefCopy.ts:462
 msgid "Start minimised to tray"
 msgstr "Start minimised to tray"
 
@@ -4608,7 +4634,7 @@ msgstr "{0} ({gameName})"
 msgid "Rose"
 msgstr "Rose"
 
-#: src/settings/prefCopy.ts:115
+#: src/settings/prefCopy.ts:117
 msgid "Skip the installer wizard when saved choices still fit"
 msgstr "Skip the installer wizard when saved choices still fit"
 
@@ -4722,7 +4748,7 @@ msgstr "Replaced by {by}, which is also enabled"
 msgid "Ready to import"
 msgstr "Ready to import"
 
-#: src/settings/prefCopy.ts:300
+#: src/settings/prefCopy.ts:302
 #: src/settings/sections/Downloads.tsx:237
 msgid "Download folder"
 msgstr "Download folder"
@@ -4834,7 +4860,7 @@ msgstr "From launch until SMAPI has loaded every mod's code"
 msgid "Day"
 msgstr "Day"
 
-#: src/settings/prefCopy.ts:473
+#: src/settings/prefCopy.ts:475
 msgid "Allow"
 msgstr "Allow"
 
@@ -4842,11 +4868,11 @@ msgstr "Allow"
 msgid "Could not unlink the collection"
 msgstr "Could not unlink the collection"
 
-#: src/settings/prefCopy.ts:263
+#: src/settings/prefCopy.ts:265
 msgid "Scheduled save backups"
 msgstr "Scheduled save backups"
 
-#: src/settings/sections/General.tsx:219
+#: src/settings/sections/General.tsx:221
 msgid "Show again"
 msgstr "Show again"
 
@@ -4872,7 +4898,7 @@ msgstr "Optional files"
 msgid "download the signed add-on"
 msgstr "download the signed add-on"
 
-#: src/settings/prefCopy.ts:422
+#: src/settings/prefCopy.ts:424
 msgid "Conflict scan depth"
 msgstr "Conflict scan depth"
 
@@ -4910,7 +4936,7 @@ msgstr "Different enabled state"
 msgid "Copy"
 msgstr "Copy"
 
-#: src/settings/prefCopy.ts:243
+#: src/settings/prefCopy.ts:245
 msgid "What happens to files the new version of a mod leaves out"
 msgstr "What happens to files the new version of a mod leaves out"
 
@@ -4936,7 +4962,7 @@ msgid "Problem: {text}"
 msgstr "Problem: {text}"
 
 #: src/console/LevelToggles.tsx:26
-#: src/settings/prefCopy.ts:286
+#: src/settings/prefCopy.ts:288
 msgid "Trace"
 msgstr "Trace"
 
@@ -4948,7 +4974,7 @@ msgstr "Revision {review} is out — Review"
 msgid "Not set up · Open it to set it up"
 msgstr "Not set up · Open it to set it up"
 
-#: src/settings/prefCopy.ts:161
+#: src/settings/prefCopy.ts:163
 msgid "Absolute"
 msgstr "Absolute"
 
@@ -5006,7 +5032,7 @@ msgstr "Could not enable required mods"
 msgid "This save needs other mods"
 msgstr "This save needs other mods"
 
-#: src/settings/prefCopy.ts:185
+#: src/settings/prefCopy.ts:187
 msgid "Honour OS"
 msgstr "Honour OS"
 
@@ -5033,7 +5059,7 @@ msgstr " · {0, plural, one {# error} other {# errors}}"
 msgid "This profile has no mods to download"
 msgstr "This profile has no mods to download"
 
-#: src/settings/prefCopy.ts:160
+#: src/settings/prefCopy.ts:162
 msgid "Relative"
 msgstr "Relative"
 
@@ -5142,7 +5168,7 @@ msgstr "Add archive…"
 msgid "Create"
 msgstr "Create"
 
-#: src/settings/prefCopy.ts:283
+#: src/settings/prefCopy.ts:285
 msgid "Console level"
 msgstr "Console level"
 
@@ -5173,7 +5199,7 @@ msgstr "Could not open config.json of {0}"
 msgid "Mortar {0} is available."
 msgstr "Mortar {0} is available."
 
-#: src/settings/prefCopy.ts:426
+#: src/settings/prefCopy.ts:428
 msgid "Skip image overlap analysis"
 msgstr "Skip image overlap analysis"
 
@@ -5356,7 +5382,7 @@ msgstr "Back"
 msgid "Save as template…"
 msgstr "Save as template…"
 
-#: src/settings/prefCopy.ts:306
+#: src/settings/prefCopy.ts:308
 msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
@@ -5439,7 +5465,7 @@ msgstr "Part {0} copied"
 msgid "{length} of {limit} characters · too long for one Discord message"
 msgstr "{length} of {limit} characters · too long for one Discord message"
 
-#: src/settings/prefCopy.ts:142
+#: src/settings/prefCopy.ts:144
 msgid "Harmless conflicts"
 msgstr "Harmless conflicts"
 
@@ -5460,7 +5486,7 @@ msgstr "API key"
 msgid "Could not rename the template"
 msgstr "Could not rename the template"
 
-#: src/settings/prefCopy.ts:434
+#: src/settings/prefCopy.ts:436
 msgid "Share FOMOD choices"
 msgstr "Share FOMOD choices"
 
@@ -5488,7 +5514,7 @@ msgstr "Switch mods on and off, and update them for the open profile."
 msgid "Create a profile first."
 msgstr "Create a profile first."
 
-#: src/settings/prefCopy.ts:448
+#: src/settings/prefCopy.ts:450
 msgid "Mods their site marks as adult stay hidden from browse unless this is on. Installed mods are never hidden."
 msgstr "Mods their site marks as adult stay hidden from browse unless this is on. Installed mods are never hidden."
 
@@ -5600,7 +5626,7 @@ msgstr "Nothing to import"
 msgid "More actions"
 msgstr "More actions"
 
-#: src/settings/prefCopy.ts:253
+#: src/settings/prefCopy.ts:255
 msgid "Remove them; rolling back still restores the old version."
 msgstr "Remove them; rolling back still restores the old version."
 
@@ -5653,6 +5679,11 @@ msgstr "Restore {0}"
 msgid "No changes to remove"
 msgstr "No changes to remove"
 
+#: src/lan/PairedComputers.tsx:50
+#: src/lan/PairedComputers.tsx:165
+msgid "Pair a computer"
+msgstr "Pair a computer"
+
 #: src/mods/problemFixButtons.tsx:231
 #: src/mods/problemFixButtons.tsx:236
 msgid "Revert"
@@ -5691,7 +5722,7 @@ msgstr "Mods"
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr "{0, plural, one {# file} other {# files}}"
 
-#: src/settings/prefCopy.ts:400
+#: src/settings/prefCopy.ts:402
 msgid "Auto-retry failed downloads"
 msgstr "Auto-retry failed downloads"
 
@@ -5709,7 +5740,7 @@ msgstr "Asset map"
 msgid "Could not change how Nexus links open"
 msgstr "Could not change how Nexus links open"
 
-#: src/settings/prefCopy.ts:96
+#: src/settings/prefCopy.ts:98
 msgid "When you switch a mod on, also enable its required mods already in the profile"
 msgstr "When you switch a mod on, also enable its required mods already in the profile"
 
@@ -5778,7 +5809,7 @@ msgstr "Search Nexus here, press Mod Manager Download on a Nexus page, or drop a
 msgid "Could not export the profile"
 msgstr "Could not export the profile"
 
-#: src/settings/prefCopy.ts:274
+#: src/settings/prefCopy.ts:276
 msgid "Console log cap"
 msgstr "Console log cap"
 
@@ -5827,7 +5858,11 @@ msgstr "Other cached data"
 msgid "Update in all profiles that have it"
 msgstr "Update in all profiles that have it"
 
-#: src/settings/prefCopy.ts:343
+#: src/settings/prefCopy.ts:70
+msgid "Auto-accept from paired computers"
+msgstr "Auto-accept from paired computers"
+
+#: src/settings/prefCopy.ts:345
 msgid "Default for a profile you just created"
 msgstr "Default for a profile you just created"
 
@@ -5894,7 +5929,7 @@ msgid "Copy {0}"
 msgstr "Copy {0}"
 
 #: src/bundles/applied.ts:31
-#: src/settings/prefCopy.ts:109
+#: src/settings/prefCopy.ts:111
 msgid "Download them"
 msgstr "Download them"
 
@@ -5918,7 +5953,7 @@ msgstr "New profile from file"
 msgid "Shortcut added"
 msgstr "Shortcut added"
 
-#: src/settings/prefCopy.ts:86
+#: src/settings/prefCopy.ts:88
 msgid "Large"
 msgstr "Large"
 
@@ -5927,11 +5962,11 @@ msgstr "Large"
 #: src/mods/SelectionBarDialogs.tsx:121
 #: src/mods/Sidebar.tsx:143
 #: src/mods/Toolbar.tsx:199
-#: src/settings/prefCopy.ts:122
+#: src/settings/prefCopy.ts:124
 msgid "Category"
 msgstr "Category"
 
-#: src/settings/prefCopy.ts:334
+#: src/settings/prefCopy.ts:336
 msgid "Toast when background checks find new mod updates"
 msgstr "Toast when background checks find new mod updates"
 
@@ -5947,7 +5982,7 @@ msgstr "Warm and bold"
 msgid "Added {added} from {name}"
 msgstr "Added {added} from {name}"
 
-#: src/settings/prefCopy.ts:151
+#: src/settings/prefCopy.ts:153
 msgid "Badge checks for other profiles"
 msgstr "Badge checks for other profiles"
 
@@ -5963,6 +5998,10 @@ msgstr "Could not sign in with Nexus Mods"
 #: src/console/SearchRunsDialog.tsx:164
 msgid "Showing the first 500 matches."
 msgstr "Showing the first 500 matches."
+
+#: src/lan/PairedComputers.tsx:162
+msgid "Profiles you send between paired computers carry their mod files, whatever the source."
+msgstr "Profiles you send between paired computers carry their mod files, whatever the source."
 
 #: src/bundles/dialogs.tsx:213
 msgid "New bundle name"
@@ -6052,7 +6091,7 @@ msgstr "Could not roll back updates"
 msgid "Backups to keep per save"
 msgstr "Backups to keep per save"
 
-#: src/settings/prefCopy.ts:74
+#: src/settings/prefCopy.ts:76
 msgid "Default mods view"
 msgstr "Default mods view"
 
@@ -6136,7 +6175,7 @@ msgstr "Imported, but could not show the profile"
 msgid "No templates"
 msgstr "No templates"
 
-#: src/settings/prefCopy.ts:345
+#: src/settings/prefCopy.ts:347
 msgid "Check for mod updates when Mortar starts"
 msgstr "Check for mod updates when Mortar starts"
 
@@ -6175,7 +6214,7 @@ msgstr "Preparing transfer…"
 msgid "Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 msgstr "Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details."
 
-#: src/settings/prefCopy.ts:312
+#: src/settings/prefCopy.ts:314
 msgid "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
 msgstr "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
 
@@ -6249,7 +6288,7 @@ msgid "Edit tool"
 msgstr "Edit tool"
 
 #: src/mods/Toolbar.tsx:204
-#: src/settings/prefCopy.ts:127
+#: src/settings/prefCopy.ts:129
 msgid "Group"
 msgstr "Group"
 
@@ -6312,7 +6351,7 @@ msgstr "More details"
 msgid "These will be removed ({0})"
 msgstr "These will be removed ({0})"
 
-#: src/settings/prefCopy.ts:270
+#: src/settings/prefCopy.ts:272
 msgid "Run logs kept"
 msgstr "Run logs kept"
 
@@ -6415,9 +6454,14 @@ msgstr "Open in Mortar"
 msgid "Download and install"
 msgstr "Download and install"
 
-#: src/settings/prefCopy.ts:328
+#: src/settings/prefCopy.ts:330
 msgid "Check interval"
 msgstr "Check interval"
+
+#: src/lan/PairedComputers.tsx:94
+#: src/lan/PairedComputers.tsx:166
+msgid "Enter code"
+msgstr "Enter code"
 
 #: src/console/HelpDialog.tsx:160
 #: src/console/store.ts:143
@@ -6502,7 +6546,7 @@ msgstr "Wilderness farm"
 msgid "Game"
 msgstr "Game"
 
-#: src/settings/prefCopy.ts:329
+#: src/settings/prefCopy.ts:331
 msgid "Minutes between background update checks"
 msgstr "Minutes between background update checks"
 
@@ -6572,7 +6616,7 @@ msgstr "Approve Mortar in your browser…"
 msgid "{length} of {limit} characters · close to the Discord message limit"
 msgstr "{length} of {limit} characters · close to the Discord message limit"
 
-#: src/settings/prefCopy.ts:166
+#: src/settings/prefCopy.ts:168
 msgid "Spacing of buttons and lists"
 msgstr "Spacing of buttons and lists"
 
@@ -6801,7 +6845,7 @@ msgstr "The browser extension is too new for this Mortar"
 msgid "Could not offer the folder again"
 msgstr "Could not offer the folder again"
 
-#: src/settings/prefCopy.ts:416
+#: src/settings/prefCopy.ts:418
 msgid "Problems and updates"
 msgstr "Problems and updates"
 
@@ -6871,7 +6915,7 @@ msgstr "Edit {0}"
 msgid "Could not show the skipped update for {0}"
 msgstr "Could not show the skipped update for {0}"
 
-#: src/settings/prefCopy.ts:430
+#: src/settings/prefCopy.ts:432
 msgid "Share switched-off mods"
 msgstr "Share switched-off mods"
 
@@ -6983,15 +7027,15 @@ msgstr "Executable"
 msgid "Play anyway"
 msgstr "Play anyway"
 
-#: src/settings/sections/General.tsx:149
+#: src/settings/sections/General.tsx:151
 msgid "Let the operating system choose a free port"
 msgstr "Let the operating system choose a free port"
 
-#: src/settings/prefCopy.ts:182
+#: src/settings/prefCopy.ts:184
 msgid "Reduce motion"
 msgstr "Reduce motion"
 
-#: src/settings/prefCopy.ts:91
+#: src/settings/prefCopy.ts:93
 msgid "Show the author line on grid cards"
 msgstr "Show the author line on grid cards"
 
@@ -7337,7 +7381,7 @@ msgstr "Installed separately"
 msgid "Mortar could not tell which mod caused this. Find the mod causing this tries halves of your mods until the crash stops; your profile is not changed."
 msgstr "Mortar could not tell which mod caused this. Find the mod causing this tries halves of your mods until the crash stops; your profile is not changed."
 
-#: src/settings/prefCopy.ts:370
+#: src/settings/prefCopy.ts:372
 msgid "Default profile for Nexus links"
 msgstr "Default profile for Nexus links"
 
@@ -7386,6 +7430,10 @@ msgstr "From the downloads folder…"
 msgid "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way."
 
+#: src/lan/PairedComputers.tsx:102
+msgid "No Mortar computers found nearby."
+msgstr "No Mortar computers found nearby."
+
 #: src/mods/EndorsePrompt.tsx:138
 #: src/mods/NexusAccountActions.tsx:84
 msgid "Endorse"
@@ -7429,7 +7477,7 @@ msgid "A game's mod loader version and its update notice are in that game's sett
 msgstr "A game's mod loader version and its update notice are in that game's settings."
 
 #: src/console/LevelToggles.tsx:27
-#: src/settings/prefCopy.ts:287
+#: src/settings/prefCopy.ts:289
 msgid "Debug"
 msgstr "Debug"
 
@@ -7543,7 +7591,7 @@ msgstr "Every edit it makes is overwritten by {by}"
 msgid "pinned in {0}"
 msgstr "pinned in {0}"
 
-#: src/settings/sections/General.tsx:216
+#: src/settings/sections/General.tsx:218
 msgid "Tips will show again"
 msgstr "Tips will show again"
 
@@ -7564,11 +7612,11 @@ msgstr "Edit…"
 msgid "Press Play when the downloads finish."
 msgstr "Press Play when the downloads finish."
 
-#: src/settings/prefCopy.ts:324
+#: src/settings/prefCopy.ts:326
 msgid "Install Mortar updates automatically"
 msgstr "Install Mortar updates automatically"
 
-#: src/settings/prefCopy.ts:438
+#: src/settings/prefCopy.ts:440
 msgid "Share notes"
 msgstr "Share notes"
 
@@ -7586,7 +7634,7 @@ msgstr "Details copied"
 msgid "Switched on {0}"
 msgstr "Switched on {0}"
 
-#: src/settings/prefCopy.ts:153
+#: src/settings/prefCopy.ts:155
 msgid "Check updates and problems in the background for profiles you are not looking at"
 msgstr "Check updates and problems in the background for profiles you are not looking at"
 
@@ -7658,7 +7706,7 @@ msgstr "Install {0}…"
 msgid "Could not keep the old files"
 msgstr "Could not keep the old files"
 
-#: src/settings/sections/General.tsx:159
+#: src/settings/sections/General.tsx:161
 msgid "The port Mortar uses for local sharing"
 msgstr "The port Mortar uses for local sharing"
 
@@ -7666,10 +7714,10 @@ msgstr "The port Mortar uses for local sharing"
 msgid "From the game's Mods folder…"
 msgstr "From the game's Mods folder…"
 
-#: src/settings/prefCopy.ts:431
-#: src/settings/prefCopy.ts:435
-#: src/settings/prefCopy.ts:439
-#: src/settings/prefCopy.ts:443
+#: src/settings/prefCopy.ts:433
+#: src/settings/prefCopy.ts:437
+#: src/settings/prefCopy.ts:441
+#: src/settings/prefCopy.ts:445
 msgid "Default for Share and Export. You can change it per share."
 msgstr "Default for Share and Export. You can change it per share."
 
@@ -7732,7 +7780,7 @@ msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgid "Report copied"
 msgstr "Report copied"
 
-#: src/settings/prefCopy.ts:417
+#: src/settings/prefCopy.ts:419
 msgid "Problems only"
 msgstr "Problems only"
 
@@ -7741,7 +7789,7 @@ msgstr "Problems only"
 msgid "Damaged"
 msgstr "Damaged"
 
-#: src/settings/prefCopy.ts:465
+#: src/settings/prefCopy.ts:467
 msgid "Restore the last window bounds on startup"
 msgstr "Restore the last window bounds on startup"
 
@@ -7775,11 +7823,11 @@ msgstr "{total, plural, one {# mod} other {# mods}}"
 msgid "From an archive"
 msgstr "From an archive"
 
-#: src/settings/prefCopy.ts:146
+#: src/settings/prefCopy.ts:148
 msgid "Expanded"
 msgstr "Expanded"
 
-#: src/settings/prefCopy.ts:176
+#: src/settings/prefCopy.ts:178
 msgid "Dark"
 msgstr "Dark"
 
@@ -7819,12 +7867,12 @@ msgstr "Create a profile to manage a set of mods."
 msgid "not found"
 msgstr "not found"
 
-#: src/settings/sections/General.tsx:183
+#: src/settings/sections/General.tsx:185
 msgid "Allow Mortar through the firewall so nearby users can send profiles."
 msgstr "Allow Mortar through the firewall so nearby users can send profiles."
 
 #: src/mods/OldFilesCallouts.tsx:92
-#: src/settings/prefCopy.ts:257
+#: src/settings/prefCopy.ts:259
 msgid "Keep"
 msgstr "Keep"
 
@@ -7837,8 +7885,8 @@ msgid "{0}: {1} missing, {2} changed, {3} extra"
 msgstr "{0}: {1} missing, {2} changed, {3} extra"
 
 #: src/settings/sections/AboutDiagnostics.tsx:91
-#: src/settings/sections/General.tsx:236
 #: src/settings/sections/General.tsx:238
+#: src/settings/sections/General.tsx:240
 msgid "Settings file"
 msgstr "Settings file"
 
@@ -7959,12 +8007,12 @@ msgstr "Updates"
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
 
-#: src/settings/prefCopy.ts:414
+#: src/settings/prefCopy.ts:416
 msgid "What the sidebar shows on profile badges"
 msgstr "What the sidebar shows on profile badges"
 
 #: src/settings/sections/DataImport.tsx:24
-#: src/settings/sections/General.tsx:125
+#: src/settings/sections/General.tsx:126
 msgid "Sharing"
 msgstr "Sharing"
 
@@ -7978,11 +8026,11 @@ msgstr "Copy part {0} of {1}"
 msgid "Remove duplicate?"
 msgstr "Remove duplicate?"
 
-#: src/settings/prefCopy.ts:178
+#: src/settings/prefCopy.ts:180
 msgid "Follow system"
 msgstr "Follow system"
 
-#: src/settings/prefCopy.ts:213
+#: src/settings/prefCopy.ts:215
 msgid "Every Play"
 msgstr "Every Play"
 
@@ -7990,7 +8038,7 @@ msgstr "Every Play"
 msgid "Reset game install"
 msgstr "Reset game install"
 
-#: src/settings/prefCopy.ts:396
+#: src/settings/prefCopy.ts:398
 msgid "Save backup folder"
 msgstr "Save backup folder"
 
@@ -8013,7 +8061,7 @@ msgstr "Preview link…"
 msgid "Trimmed {0}'s history, freed {1}"
 msgstr "Trimmed {0}'s history, freed {1}"
 
-#: src/settings/prefCopy.ts:372
+#: src/settings/prefCopy.ts:374
 msgid "Where Mod Manager Download links install. Empty uses the last opened profile."
 msgstr "Where Mod Manager Download links install. Empty uses the last opened profile."
 
@@ -8035,11 +8083,11 @@ msgstr "Free account: one click on Nexus per download"
 msgid "Updated by your package manager"
 msgstr "Updated by your package manager"
 
-#: src/settings/prefCopy.ts:101
-#: src/settings/prefCopy.ts:110
-#: src/settings/prefCopy.ts:187
-#: src/settings/prefCopy.ts:218
-#: src/settings/prefCopy.ts:352
+#: src/settings/prefCopy.ts:103
+#: src/settings/prefCopy.ts:112
+#: src/settings/prefCopy.ts:189
+#: src/settings/prefCopy.ts:220
+#: src/settings/prefCopy.ts:354
 msgid "Never"
 msgstr "Never"
 
@@ -8193,7 +8241,7 @@ msgstr "Add the missing mods"
 msgid "A download finishes"
 msgstr "A download finishes"
 
-#: src/settings/prefCopy.ts:200
+#: src/settings/prefCopy.ts:202
 msgid "Download failed"
 msgstr "Download failed"
 
@@ -8226,7 +8274,7 @@ msgstr "Could not read the templates"
 msgid "{0} in total"
 msgstr "{0} in total"
 
-#: src/settings/prefCopy.ts:294
+#: src/settings/prefCopy.ts:296
 msgid "Follow live log"
 msgstr "Follow live log"
 
@@ -8295,7 +8343,7 @@ msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
 #: src/profiles/OverrideRows.tsx:24
-#: src/settings/prefCopy.ts:224
+#: src/settings/prefCopy.ts:226
 msgid "Save backups kept"
 msgstr "Save backups kept"
 
@@ -8315,7 +8363,7 @@ msgstr "Could not set the update channel for {0}"
 msgid "Running"
 msgstr "Running"
 
-#: src/settings/prefCopy.ts:297
+#: src/settings/prefCopy.ts:299
 msgid "Keep the zip after installing"
 msgstr "Keep the zip after installing"
 
@@ -8457,7 +8505,7 @@ msgstr "{source}, version {0}"
 msgid "Latest (recommended)"
 msgstr "Latest (recommended)"
 
-#: src/settings/prefCopy.ts:94
+#: src/settings/prefCopy.ts:96
 msgid "Auto-enable requirements"
 msgstr "Auto-enable requirements"
 
@@ -8632,7 +8680,7 @@ msgstr "{0} adds {time} to startup (through {1})"
 msgid "Overrides"
 msgstr "Overrides"
 
-#: src/settings/sections/General.tsx:266
+#: src/settings/sections/General.tsx:268
 msgid "Import…"
 msgstr "Import…"
 
@@ -8663,7 +8711,7 @@ msgid "Could not download {0}"
 msgstr "Could not download {0}"
 
 #: src/console/LevelToggles.tsx:30
-#: src/settings/prefCopy.ts:290
+#: src/settings/prefCopy.ts:292
 msgid "Error"
 msgstr "Error"
 
@@ -8692,7 +8740,7 @@ msgstr "No changes yet"
 msgid "Switched off {0}"
 msgstr "Switched off {0}"
 
-#: src/settings/prefCopy.ts:405
+#: src/settings/prefCopy.ts:407
 msgid "3 times"
 msgstr "3 times"
 
@@ -8704,7 +8752,7 @@ msgstr "Could not repair {name}"
 msgid "Paste a link…"
 msgstr "Paste a link…"
 
-#: src/settings/prefCopy.ts:90
+#: src/settings/prefCopy.ts:92
 msgid "Author on cards"
 msgstr "Author on cards"
 
@@ -8738,7 +8786,7 @@ msgstr "From a backup…"
 msgid "Details of {0}"
 msgstr "Details of {0}"
 
-#: src/settings/prefCopy.ts:258
+#: src/settings/prefCopy.ts:260
 msgid "Carry them into the new version's folder."
 msgstr "Carry them into the new version's folder."
 
@@ -8746,7 +8794,7 @@ msgstr "Carry them into the new version's folder."
 msgid "Delete this backup?"
 msgstr "Delete this backup?"
 
-#: src/settings/prefCopy.ts:139
+#: src/settings/prefCopy.ts:141
 msgid "Ask before removing mods from a profile"
 msgstr "Ask before removing mods from a profile"
 
@@ -8754,7 +8802,7 @@ msgstr "Ask before removing mods from a profile"
 msgid "Filter {total, plural, one {# mod} other {# mods}}"
 msgstr "Filter {total, plural, one {# mod} other {# mods}}"
 
-#: src/settings/sections/General.tsx:128
+#: src/settings/sections/General.tsx:129
 msgid "Lets nearby Mortar users find this installation and exchange profile links."
 msgstr "Lets nearby Mortar users find this installation and exchange profile links."
 
@@ -8781,7 +8829,7 @@ msgstr "The game's first frames; mods doing setup work in update events show up 
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
-#: src/settings/sections/General.tsx:110
+#: src/settings/sections/General.tsx:111
 msgid "Enter a number from 1 to {maxLanPort}"
 msgstr "Enter a number from 1 to {maxLanPort}"
 
@@ -8799,7 +8847,7 @@ msgstr "Running {time}"
 msgid "{0} is in use by the running game. Close the game to change its mods."
 msgstr "{0} is in use by the running game. Close the game to change its mods."
 
-#: src/settings/prefCopy.ts:248
+#: src/settings/prefCopy.ts:250
 msgid "Set them aside and ask whether to keep or delete them."
 msgstr "Set them aside and ask whether to keep or delete them."
 
@@ -8865,10 +8913,6 @@ msgstr "{clean} clean"
 #: src/profiles/ProfilesPage.tsx:104
 msgid "Delete {0} permanently?"
 msgstr "Delete {0} permanently?"
-
-#: src/settings/prefCopy.ts:71
-msgid "Accept profiles sent from your own computers (same Nexus account)"
-msgstr "Accept profiles sent from your own computers (same Nexus account)"
 
 #: src/settings/sections/StreamOverlay.tsx:98
 msgid "Luck skill"
@@ -8960,8 +9004,8 @@ msgstr "{importable, plural, one {# mod will be copied into a new profile. The g
 msgid "Don't check before Play"
 msgstr "Don't check before Play"
 
-#: src/settings/sections/General.tsx:47
-#: src/settings/sections/General.tsx:53
+#: src/settings/sections/General.tsx:48
+#: src/settings/sections/General.tsx:54
 msgid "Keep Mortar in the tray"
 msgstr "Keep Mortar in the tray"
 
@@ -9115,7 +9159,7 @@ msgstr "Mod Manager Download buttons on Nexus Mods only work in Mortar when you 
 msgid "Reading load order…"
 msgstr "Reading load order…"
 
-#: src/settings/prefCopy.ts:354
+#: src/settings/prefCopy.ts:356
 msgid "Include"
 msgstr "Include"
 
@@ -9168,7 +9212,7 @@ msgstr "Tracking"
 msgid "Preferred source"
 msgstr "Preferred source"
 
-#: src/settings/prefCopy.ts:453
+#: src/settings/prefCopy.ts:455
 msgid "Check the file hash when Nexus provides one"
 msgstr "Check the file hash when Nexus provides one"
 
@@ -9232,7 +9276,7 @@ msgstr "Include pre-release mod versions"
 
 #: src/mods/columnLabel.ts:19
 #: src/mods/Toolbar.tsx:198
-#: src/settings/prefCopy.ts:121
+#: src/settings/prefCopy.ts:123
 msgid "Status"
 msgstr "Status"
 
@@ -9254,7 +9298,7 @@ msgstr "{checked}. {0, plural, one {# could not be read.} other {# could not be 
 msgid "SMAPI mods"
 msgstr "SMAPI mods"
 
-#: src/settings/prefCopy.ts:157
+#: src/settings/prefCopy.ts:159
 msgid "Dates"
 msgstr "Dates"
 
@@ -9263,7 +9307,7 @@ msgstr "Dates"
 msgid "Send other games' links to {redirectName}"
 msgstr "Send other games' links to {redirectName}"
 
-#: src/settings/prefCopy.ts:208
+#: src/settings/prefCopy.ts:210
 msgid "When mods changed"
 msgstr "When mods changed"
 
@@ -9332,6 +9376,10 @@ msgstr "The game loads its own content"
 msgid "{0, plural, one {Updated in # profile} other {Updated in # profiles}}"
 msgstr "{0, plural, one {Updated in # profile} other {Updated in # profiles}}"
 
+#: src/settings/prefCopy.ts:72
+msgid "Accept profiles sent from computers you paired, and copy their mod files"
+msgstr "Accept profiles sent from computers you paired, and copy their mod files"
+
 #. placeholder {0}: tooOld.join(', ')
 #: src/mods/DuplicateDialog.tsx:40
 msgid "{0} needs a newer version than this."
@@ -9343,7 +9391,7 @@ msgstr "No launchers found. You can still continue and choose each game's folder
 
 #: src/mods/SelectionBarDialogs.tsx:64
 #: src/mods/Toolbar.tsx:201
-#: src/settings/prefCopy.ts:124
+#: src/settings/prefCopy.ts:126
 msgid "Tag"
 msgstr "Tag"
 
@@ -9357,8 +9405,8 @@ msgstr "Diagnostics"
 msgid "Add category"
 msgstr "Add category"
 
-#: src/settings/sections/General.tsx:148
-#: src/settings/sections/General.tsx:154
+#: src/settings/sections/General.tsx:150
+#: src/settings/sections/General.tsx:156
 msgid "Automatic port"
 msgstr "Automatic port"
 
@@ -9471,6 +9519,10 @@ msgstr "Navigation"
 msgid "Set {0} to {1}"
 msgstr "Set {0} to {1}"
 
+#: src/lan/PairedComputers.tsx:97
+msgid "Pick the computer showing the code, then type it."
+msgstr "Pick the computer showing the code, then type it."
+
 #: src/settings/shortcutLabels.ts:41
 msgid "Play the open profile without SMAPI"
 msgstr "Play the open profile without SMAPI"
@@ -9559,7 +9611,7 @@ msgstr "Enjoying these mods? Endorse them on Nexus"
 
 #: src/mods/columnLabel.ts:11
 #: src/mods/Toolbar.tsx:203
-#: src/settings/prefCopy.ts:126
+#: src/settings/prefCopy.ts:128
 msgid "Author"
 msgstr "Author"
 
@@ -9680,7 +9732,7 @@ msgstr "{name} was removed from this profile's mods folder."
 msgid "Mortar version"
 msgstr "Mortar version"
 
-#: src/settings/prefCopy.ts:358
+#: src/settings/prefCopy.ts:360
 #: src/settings/sections/SmapiRow.tsx:122
 msgid "SMAPI version"
 msgstr "SMAPI version"
@@ -9767,6 +9819,10 @@ msgstr "Switch to Notes"
 msgid "Update in all profiles ({n})"
 msgstr "Update in all profiles ({n})"
 
+#: src/lan/PairedComputers.tsx:179
+msgid "Unpair"
+msgstr "Unpair"
+
 #: src/settings/sections/StreamOverlay.tsx:68
 #: src/settings/sections/StreamOverlay.tsx:140
 msgid "Player"
@@ -9810,7 +9866,7 @@ msgstr "Rename group"
 msgid "Missing"
 msgstr "Missing"
 
-#: src/settings/prefCopy.ts:333
+#: src/settings/prefCopy.ts:335
 msgid "Update digest notification"
 msgstr "Update digest notification"
 
@@ -9834,9 +9890,9 @@ msgstr "Cancelled"
 msgid "Games"
 msgstr "Games"
 
-#: src/settings/sections/General.tsx:66
-#: src/settings/sections/General.tsx:68
-#: src/settings/sections/General.tsx:76
+#: src/settings/sections/General.tsx:67
+#: src/settings/sections/General.tsx:69
+#: src/settings/sections/General.tsx:77
 msgid "Language"
 msgstr "Language"
 
@@ -9899,7 +9955,7 @@ msgstr "New profile from this save"
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
-#: src/settings/prefCopy.ts:388
+#: src/settings/prefCopy.ts:390
 msgid "How profiles are ordered in the sidebar"
 msgstr "How profiles are ordered in the sidebar"
 
@@ -9932,14 +9988,14 @@ msgid "Group name"
 msgstr "Group name"
 
 #: src/mods/Toolbar.tsx:202
-#: src/settings/prefCopy.ts:125
+#: src/settings/prefCopy.ts:127
 msgid "Framework"
 msgstr "Framework"
 
 #: src/browse/BrowsePage.tsx:335
 #: src/mods/columnLabel.ts:12
 #: src/mods/Toolbar.tsx:200
-#: src/settings/prefCopy.ts:123
+#: src/settings/prefCopy.ts:125
 msgid "Source"
 msgstr "Source"
 
@@ -9983,7 +10039,7 @@ msgstr "{incomplete, plural, one {# incomplete entry} other {# incomplete entrie
 msgid "Download progress"
 msgstr "Download progress"
 
-#: src/settings/sections/General.tsx:48
+#: src/settings/sections/General.tsx:49
 msgid "Closing the window hides Mortar instead of quitting."
 msgstr "Closing the window hides Mortar instead of quitting."
 
@@ -10060,7 +10116,7 @@ msgstr "{0, plural, one {# mod} other {# mods}}"
 msgid "Launcher replaced"
 msgstr "Launcher replaced"
 
-#: src/settings/sections/General.tsx:82
+#: src/settings/sections/General.tsx:83
 msgid "System default"
 msgstr "System default"
 
@@ -10119,7 +10175,7 @@ msgstr "Also watch these folders"
 msgid "Last run"
 msgstr "Last run"
 
-#: src/settings/prefCopy.ts:442
+#: src/settings/prefCopy.ts:444
 msgid "Share config files"
 msgstr "Share config files"
 
@@ -10137,7 +10193,7 @@ msgid "Installing"
 msgstr "Installing"
 
 #: src/profiles/OverrideRows.tsx:22
-#: src/settings/prefCopy.ts:203
+#: src/settings/prefCopy.ts:205
 msgid "Back up saves before Play"
 msgstr "Back up saves before Play"
 
@@ -10150,7 +10206,7 @@ msgstr "What's new in Mortar {0}"
 msgid "Switched off"
 msgstr "Switched off"
 
-#: src/settings/prefCopy.ts:201
+#: src/settings/prefCopy.ts:203
 msgid "Run crashed"
 msgstr "Run crashed"
 
@@ -10166,6 +10222,10 @@ msgstr "Could not add to the group"
 #: src/launch/PrePlayDialog.tsx:147
 msgid "Switch to {switchName}"
 msgstr "Switch to {switchName}"
+
+#: src/lan/PairedComputers.tsx:53
+msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
+msgstr "On the other computer, choose Enter code and type this. It works once, for five minutes."
 
 #. placeholder {0}: next.name
 #: src/profiles/historyRevert.ts:67
@@ -10238,7 +10298,7 @@ msgstr "Downloading and verifying Mortar {0}…"
 msgid "Delete preset"
 msgstr "Delete preset"
 
-#: src/settings/sections/General.tsx:211
+#: src/settings/sections/General.tsx:213
 msgid "Tips"
 msgstr "Tips"
 
@@ -10421,7 +10481,7 @@ msgstr "Mortar tidied up {0, plural, one {# thing} other {# things}}"
 msgid "Profile exported"
 msgstr "Profile exported"
 
-#: src/settings/prefCopy.ts:446
+#: src/settings/prefCopy.ts:448
 msgid "Show adult mods in browse"
 msgstr "Show adult mods in browse"
 
@@ -10429,7 +10489,7 @@ msgstr "Show adult mods in browse"
 msgid "Loading profiles…"
 msgstr "Loading profiles…"
 
-#: src/settings/prefCopy.ts:105
+#: src/settings/prefCopy.ts:107
 msgid "Missing requirements on install"
 msgstr "Missing requirements on install"
 
@@ -10439,7 +10499,7 @@ msgstr "Missing requirements on install"
 msgid "Measuring…"
 msgstr "Measuring…"
 
-#: src/settings/prefCopy.ts:265
+#: src/settings/prefCopy.ts:267
 msgid "Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is Off). Waits until the game closes."
 msgstr "Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is Off). Waits until the game closes."
 
@@ -10459,7 +10519,7 @@ msgstr "This source has no profiles Mortar can import."
 msgid "Import profile from…"
 msgstr "Import profile from…"
 
-#: src/settings/prefCopy.ts:106
+#: src/settings/prefCopy.ts:108
 msgid "What to do when an installed mod still needs other mods"
 msgstr "What to do when an installed mod still needs other mods"
 
@@ -10493,7 +10553,7 @@ msgstr "Leaf"
 msgid "Could not endorse"
 msgstr "Could not endorse"
 
-#: src/settings/prefCopy.ts:337
+#: src/settings/prefCopy.ts:339
 msgid "After each check"
 msgstr "After each check"
 
@@ -10528,7 +10588,7 @@ msgstr "Check this download"
 msgid "Save…"
 msgstr "Save…"
 
-#: src/settings/sections/General.tsx:223
+#: src/settings/sections/General.tsx:225
 msgid "Walk through profiles, Play, mods, and the command palette"
 msgstr "Walk through profiles, Play, mods, and the command palette"
 
@@ -10662,7 +10722,7 @@ msgstr "Settings sections"
 msgid "Delete {0}"
 msgstr "Delete {0}"
 
-#: src/settings/prefCopy.ts:271
+#: src/settings/prefCopy.ts:273
 msgid "Stored SMAPI logs per profile"
 msgstr "Stored SMAPI logs per profile"
 
@@ -10697,7 +10757,7 @@ msgstr "Download history"
 msgid "Steam will still start SMAPI"
 msgstr "Steam will still start SMAPI"
 
-#: src/settings/prefCopy.ts:242
+#: src/settings/prefCopy.ts:244
 msgid "Files an update no longer includes"
 msgstr "Files an update no longer includes"
 
@@ -10738,7 +10798,7 @@ msgstr "No archives match"
 msgid "Stop"
 msgstr "Stop"
 
-#: src/settings/prefCopy.ts:268
+#: src/settings/prefCopy.ts:270
 msgid "Scheduled backups kept per save"
 msgstr "Scheduled backups kept per save"
 
@@ -10855,7 +10915,7 @@ msgstr "Step {0} of {TOUR_STEP_COUNT}"
 msgid "From a link or file…"
 msgstr "From a link or file…"
 
-#: src/settings/prefCopy.ts:302
+#: src/settings/prefCopy.ts:304
 msgid "Archives land here instead of Mortar's downloads folder. Empty uses the default."
 msgstr "Archives land here instead of Mortar's downloads folder. Empty uses the default."
 
@@ -10884,7 +10944,7 @@ msgstr "Could not start {0}"
 msgid "The game crashes"
 msgstr "The game crashes"
 
-#: src/settings/prefCopy.ts:209
+#: src/settings/prefCopy.ts:211
 msgid "Back up saves only if the profile's mods changed since the last run."
 msgstr "Back up saves only if the profile's mods changed since the last run."
 
@@ -10920,11 +10980,11 @@ msgstr "Fish"
 msgid "Version {0}"
 msgstr "Version {0}"
 
-#: src/settings/prefCopy.ts:468
+#: src/settings/prefCopy.ts:470
 msgid "Browser extension connection"
 msgstr "Browser extension connection"
 
-#: src/settings/prefCopy.ts:199
+#: src/settings/prefCopy.ts:201
 msgid "Downloads finished"
 msgstr "Downloads finished"
 
@@ -11026,7 +11086,7 @@ msgstr "On"
 msgid "Sign in to Nexus Mods"
 msgstr "Sign in to Nexus Mods"
 
-#: src/settings/prefCopy.ts:461
+#: src/settings/prefCopy.ts:463
 msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
@@ -11083,7 +11143,7 @@ msgstr "The game was updated"
 msgid "Before ms"
 msgstr "Before ms"
 
-#: src/settings/prefCopy.ts:191
+#: src/settings/prefCopy.ts:193
 msgid "Profile hero"
 msgstr "Profile hero"
 
@@ -11099,7 +11159,7 @@ msgstr "Alert"
 msgid "{downloading, plural, one {# downloading} other {# downloading}} · {waiting, plural, one {# waiting} other {# waiting}}"
 msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {waiting, plural, one {# waiting} other {# waiting}}"
 
-#: src/settings/prefCopy.ts:404
+#: src/settings/prefCopy.ts:406
 msgid "1 time"
 msgstr "1 time"
 
@@ -11178,11 +11238,11 @@ msgstr "Add them"
 msgid "Choose a game and profile each time."
 msgstr "Choose a game and profile each time."
 
-#: src/settings/prefCopy.ts:138
+#: src/settings/prefCopy.ts:140
 msgid "Confirm removals"
 msgstr "Confirm removals"
 
-#: src/settings/prefCopy.ts:316
+#: src/settings/prefCopy.ts:318
 msgid "Recently deleted retention"
 msgstr "Recently deleted retention"
 
@@ -11203,8 +11263,8 @@ msgstr "Set category…"
 msgid "Choose an archive first."
 msgstr "Choose an archive first."
 
-#: src/settings/sections/General.tsx:127
-#: src/settings/sections/General.tsx:133
+#: src/settings/sections/General.tsx:128
+#: src/settings/sections/General.tsx:134
 msgid "Share profiles on the local network"
 msgstr "Share profiles on the local network"
 
@@ -11230,7 +11290,7 @@ msgstr "Install anyway"
 msgid "Sound volume ({value}%)"
 msgstr "Sound volume ({value}%)"
 
-#: src/settings/prefCopy.ts:114
+#: src/settings/prefCopy.ts:116
 msgid "Reuse FOMOD choices"
 msgstr "Reuse FOMOD choices"
 
@@ -11272,7 +11332,7 @@ msgstr "No mods match"
 msgid "Menu"
 msgstr "Menu"
 
-#: src/settings/prefCopy.ts:392
+#: src/settings/prefCopy.ts:394
 msgid "Last played"
 msgstr "Last played"
 
@@ -11293,7 +11353,7 @@ msgstr "Untrack mods?"
 msgid "This tool will be removed from Mortar."
 msgstr "This tool will be removed from Mortar."
 
-#: src/settings/prefCopy.ts:387
+#: src/settings/prefCopy.ts:389
 msgid "Sidebar profile order"
 msgstr "Sidebar profile order"
 

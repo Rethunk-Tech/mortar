@@ -19,6 +19,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { availableLocales } from '../../i18n/locales.ts'
+import { PairedComputers } from '../../lan/PairedComputers.tsx'
 import { reportError, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
@@ -143,6 +144,7 @@ function Sharing() {
           'shareIncludeConfigFiles',
         ]}
       />
+      {lanSharing ? <PairedComputers /> : null}
       {lanSharing ? (
         <SettingRow
           label={t`Automatic port`}
