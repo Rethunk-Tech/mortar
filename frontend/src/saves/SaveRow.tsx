@@ -142,7 +142,7 @@ export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; ga
   const lastProfile = useProfiles.getState().profiles.find((p) => p.id === fit.lastProfileId)
   const lastGone = Boolean(fit.lastProfileId) && lastProfile === undefined
   const lastName = lastProfile?.name ?? (lastGone ? t`a deleted profile` : '')
-  const lastLine = lastName === '' ? '' : t`Last played with ${lastName}`
+  const lastLine = lastName === '' ? '' : t`Last played with ${{ profile: lastName }}`
   return (
     <Box
       sx={{
