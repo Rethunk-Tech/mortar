@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { localId } from './dependents.ts'
 import { type Problem, sameId } from './lookup.ts'
 import { useMods } from './store.ts'
 
@@ -31,7 +32,7 @@ export function useDescribeDrift(): (d: Drift) => string {
 export function useDescribe(): Describe {
   const { t, i18n } = useLingui()
   const mods = useMods((s) => s.mods)
-  const nameOf = (id: string) => mods.find((m) => sameId(m.id, id))?.name ?? id
+  const nameOf = (id: string) => mods.find((m) => sameId(m.id, id))?.name ?? localId(id)
   const describeRunError = (
     runError: Extract<Problem, { kind: 'runError' }>['runError'],
   ): string => {

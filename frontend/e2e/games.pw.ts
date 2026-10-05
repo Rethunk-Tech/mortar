@@ -5,7 +5,7 @@ import { openSeedFarm } from './app.ts'
 // fixture, so that spec needs a connection.
 const SEARCH_WAIT_MS = 20_000
 
-test('Game Select lists installed games first and marks Lethal Company as coming later', async ({
+test('Game Select lists Stardew Valley before Lethal Company, which the sandbox enables', async ({
   page,
 }) => {
   await openSeedFarm(page)
@@ -13,10 +13,10 @@ test('Game Select lists installed games first and marks Lethal Company as coming
   const stardew = page.getByRole('button', { name: 'Open Stardew Valley' })
   const lethal = page.getByText('Lethal Company', { exact: true })
   await expect(lethal).toBeVisible()
-  await expect(page.getByText('Coming in a later Mortar version')).toBeVisible()
   const [s, l] = await Promise.all([stardew.boundingBox(), lethal.boundingBox()])
   expect(s && l && (s.y < l.y || (s.y === l.y && s.x < l.x))).toBe(true)
-  await stardew.click()
+  // The centre of the tile is its profile cards, which open their own profile.
+  await stardew.click({ position: { x: 8, y: 8 } })
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
 })
 
@@ -34,9 +34,9 @@ test('Browse defaults to All sources and a search shows results from more than o
   await expect(page.getByLabel('Open on GitHub').first()).toBeVisible({ timeout: SEARCH_WAIT_MS })
 })
 
-test('the game switch is absent while only one game is playable', async ({ page }) => {
+test('the game switch is present while two games are playable', async ({ page }) => {
   await openSeedFarm(page)
-  await expect(page.getByRole('button', { name: 'Switch game' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Switch game' })).toHaveCount(1)
 })
 
 test('Settings › Mods and profiles has the adult-mods switch, off by default', async ({ page }) => {
