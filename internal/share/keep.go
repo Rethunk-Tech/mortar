@@ -92,17 +92,20 @@ func withEntries(doc []byte, entries []Ref) ([]byte, error) {
 }
 
 // SameExceptArrival reports whether have differs from base only by files in missing not having arrived: the profile
-// name, notes, description, every entry's options and order, and every config file that is there must match. Mod ids
+// name, notes, description, every entry's options and order, and every config file must match both ways. Mod ids
 // and config files base holds for a file that has not arrived are not in have and are not a difference.
 func SameExceptArrival(base, have Preview, missing map[string]bool) bool {
 	if base.Name != have.Name || base.Notes != have.Notes || base.Description != have.Description {
 		return false
 	}
 	var want []string
+	unarrived := false
 	for _, r := range base.Entries {
 		if id := r.Identity(); !missing[id] || slices.ContainsFunc(have.Entries, func(h Ref) bool { return h.Identity() == id }) {
 			enc, _ := json.Marshal(r)
 			want = append(want, string(enc))
+		} else {
+			unarrived = true
 		}
 	}
 	var got []string
@@ -123,13 +126,22 @@ func SameExceptArrival(base, have Preview, missing map[string]bool) bool {
 		path string
 	}
 	held := map[cfg]string{}
-	for _, c := range base.Configs {
+	for _, c := range have.Configs {
 		held[cfg{c.ID, c.Path}] = string(c.Data)
 	}
-	for _, c := range have.Configs {
-		if data, ok := held[cfg{c.ID, c.Path}]; !ok || data != string(c.Data) {
+	for _, c := range base.Configs {
+		data, ok := held[cfg{c.ID, c.Path}]
+		if ok {
+			if data != string(c.Data) {
+				return false
+			}
+			delete(held, cfg{c.ID, c.Path})
+			continue
+		}
+		// A mod base lists that the profile does not is one of the files still to arrive, since the entries match.
+		if !unarrived || !slices.Contains(base.IDs, c.ID) || slices.Contains(have.IDs, c.ID) {
 			return false
 		}
 	}
-	return true
+	return len(held) == 0
 }
