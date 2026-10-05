@@ -55,7 +55,12 @@ func (id ID) Fold() string {
 }
 
 // Equal reports whether two ids name the same mod: formats compare exactly, locals by the format's rule.
-func Equal(a, b ID) bool { return a.Fold() == b.Fold() }
+func Equal(a, b ID) bool {
+	if a.Format() == FormatSMAPI && b.Format() == FormatSMAPI {
+		return strings.EqualFold(strings.TrimSpace(a.Local()), strings.TrimSpace(b.Local()))
+	}
+	return a == b
+}
 
 // Strings returns the ids as plain strings.
 func Strings(ids []ID) []string {
