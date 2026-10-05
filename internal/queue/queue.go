@@ -278,8 +278,9 @@ type Deps struct {
 	// Newest is the highest Nexus file id the profile holds from modID's page, or current when that is an optional
 	// file it holds; 0 when none; nil means never.
 	Newest func(game, profileID string, modID, current int) int
-	// SamePage reports an existing profile entry from this Nexus mod page when the incoming file is another file on it.
-	SamePage func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool)
+	// SamePage reports an existing profile entry from this Nexus mod page when the incoming file is another file on
+	// it, or the installed file id it updates (profile.SamePageAsk).
+	SamePage func(game, profileID string, in profile.IncomingFile) (ask profile.MergeAsk, updates int, ok bool)
 	// InstallExtra adds a downloaded Nexus file to an existing same-page entry.
 	InstallExtra func(game, profileID, entryKey, path string, source profile.Source) (profile.InstallResult, error)
 	Verify       func(ctx context.Context, id mod.ID, owner, repo string) (bool, error)

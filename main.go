@@ -437,17 +437,17 @@ func run() error {
 			}
 			return 0
 		},
-		SamePage: func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool) {
+		SamePage: func(game, profileID string, in profile.IncomingFile) (profile.MergeAsk, int, bool) {
 			all, err := profiles.List(game)
 			if err != nil {
-				return profile.MergeAsk{}, false
+				return profile.MergeAsk{}, 0, false
 			}
 			for _, p := range all {
 				if p.Error == "" && p.ID == profileID {
-					return profile.SamePageAsk(p, modID, fileID, category)
+					return profile.SamePageAsk(p, in)
 				}
 			}
-			return profile.MergeAsk{}, false
+			return profile.MergeAsk{}, 0, false
 		},
 		InstallExtra: func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
 			res, err := profiles.InstallNexusExtra(game, profileID, entryKey, path, src)

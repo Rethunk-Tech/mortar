@@ -19,8 +19,8 @@ type OverlayFileSet struct {
 	Alternatives []string `json:"alternatives"`
 }
 
-// WithReplacing returns a copy that, installed as an optional file, takes the place of the optional file of the same
-// mod at Nexus file fileID: a newer version of it keeps its slot, placement and switch.
+// WithReplacing returns a copy that takes the place of the file of the same mod at Nexus file fileID: a newer
+// optional file keeps its slot, placement and switch, and a newer main file updates that entry.
 func (s Source) WithReplacing(fileID int) Source {
 	s.replacing = fileID
 	return s

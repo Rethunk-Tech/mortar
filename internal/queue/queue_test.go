@@ -37,7 +37,7 @@ type fixture struct {
 	opened       []string
 	installs     []profile.Source
 	keys         []string
-	samePage     func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool)
+	samePage     func(game, profileID string, in profile.IncomingFile) (profile.MergeAsk, int, bool)
 	installExtra func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error)
 	stored       map[string]profile.Source
 	newest       atomic.Int32
@@ -122,11 +122,11 @@ func newFixture(t *testing.T) *fixture {
 			return profile.InstallResult{}, nil
 		},
 		Newest: func(_, _ string, _, _ int) int { return int(f.newest.Load()) },
-		SamePage: func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool) {
+		SamePage: func(game, profileID string, in profile.IncomingFile) (profile.MergeAsk, int, bool) {
 			if f.samePage == nil {
-				return profile.MergeAsk{}, false
+				return profile.MergeAsk{}, 0, false
 			}
-			return f.samePage(game, profileID, modID, fileID, category)
+			return f.samePage(game, profileID, in)
 		},
 		InstallExtra: func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
 			if f.installExtra == nil {

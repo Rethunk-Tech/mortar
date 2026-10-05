@@ -488,7 +488,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		if s.parkOverlay(it.ID, it.overlay, false) {
 			return nil
 		}
-		if done, err := s.installStored(it, im); done {
+		if done, err := s.installStored(ctx, c, it, im); done {
 			return err
 		}
 	}
@@ -564,23 +564,37 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if s.parkOverlay(it.ID, optional, true) {
 		return nil
 	}
+	var files []nexus.File
+	category := it.Category
+	if category == "" {
+		files = pageFiles(ctx, c, it)
+		category = fileCategoryOf(files, it.FileID)
+	}
+	var ask profile.MergeAsk
+	updates, merge := 0, false
+	if it.Kind != KindUpdate && s.d.SamePage != nil && !optional {
+		ids := archiveModIDs(path)
+		ask, updates, merge = s.d.SamePage(it.Game, it.Profile, it.incoming(category, files, ids))
+		if merge && files == nil {
+			// Only a file from a page the profile already holds needs the page's file list to tell an update.
+			ask, updates, merge = s.d.SamePage(it.Game, it.Profile, it.incoming(category, pageFiles(ctx, c, it), ids))
+		}
+	}
 	s.mu.Lock()
 	cur := s.find(it.ID)
 	if cur == nil || cur.State != StateDownloading {
 		s.mu.Unlock()
 		return context.Canceled
 	}
-	cur.State, cur.Progress, cur.Speed, cur.readyZip = StateInstalling, 100, 0, true
-	if cur.Category == "" {
-		cur.Category = fileCategory(ctx, c, it)
+	cur.State, cur.Progress, cur.Speed, cur.readyZip, cur.Category = StateInstalling, 100, 0, true, category
+	if merge {
+		cur.State, cur.Merge, cur.MergeAdd = StateNeedsMerge, &ask, false
+		s.mu.Unlock()
+		s.publish(true)
+		return nil
 	}
-	if it.Kind != KindUpdate && s.d.SamePage != nil && !optional {
-		if ask, ok := s.d.SamePage(it.Game, it.Profile, it.ModID, it.FileID, cur.Category); ok {
-			cur.State, cur.Merge, cur.MergeAdd = StateNeedsMerge, &ask, false
-			s.mu.Unlock()
-			s.publish(true)
-			return nil
-		}
+	if updates > 0 {
+		cur.Current, it.Current = updates, updates
 	}
 	s.mu.Unlock()
 	s.publish(true)
@@ -711,9 +725,22 @@ func (p *progress) set(n int64) {
 
 // installStored adds a Nexus file the store already holds to the item's profile. It reports false, so the file is
 // downloaded as usual, when the profile has an entry from the same mod page: that choice installs from the archive.
-func (s *Service) installStored(it Item, im nexus.Mod) (bool, error) {
+func (s *Service) installStored(ctx context.Context, c *nexus.Client, it Item, im nexus.Mod) (bool, error) {
 	if it.Kind != KindUpdate && !it.overlay && s.d.SamePage != nil {
-		if _, ok := s.d.SamePage(it.Game, it.Profile, it.ModID, it.FileID, it.Category); ok {
+		_, updates, ok := s.d.SamePage(it.Game, it.Profile, it.incoming(it.Category, nil, nil))
+		if ok {
+			// Only a file from a page the profile already holds needs the page's file list to tell an update.
+			_, updates, ok = s.d.SamePage(it.Game, it.Profile, it.incoming(it.Category, pageFiles(ctx, c, it), nil))
+		}
+		if updates > 0 {
+			s.mu.Lock()
+			if cur := s.find(it.ID); cur != nil {
+				cur.Current = updates
+			}
+			s.mu.Unlock()
+			it.Current = updates
+		}
+		if ok {
 			s.mu.Lock()
 			defer s.mu.Unlock()
 			cur := s.find(it.ID)

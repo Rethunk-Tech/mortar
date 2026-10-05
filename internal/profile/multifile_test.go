@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -23,19 +24,81 @@ func TestSamePageAsk(t *testing.T) {
 	p := Profile{Entries: []Entry{{
 		Key: "nexus-7-1", Source: Source{Kind: KindNexus, ModID: 7, FileID: 1}, Mods: []Component{{Name: "A", ID: "smapi:A"}},
 	}}}
-	ask, ok := SamePageAsk(p, 7, 2, "OPTIONAL")
+	in := func(fileID int) IncomingFile { return IncomingFile{ModID: 7, FileID: fileID, Category: "OPTIONAL"} }
+	ask, _, ok := SamePageAsk(p, in(2))
 	if !ok || ask.EntryKey != "nexus-7-1" || !ask.DefaultAdd || ask.Label == "" {
 		t.Fatalf("optional extra: %+v %v", ask, ok)
 	}
-	if _, ok := SamePageAsk(p, 7, 1, "OPTIONAL"); ok {
+	if _, _, ok := SamePageAsk(p, in(1)); ok {
 		t.Fatal("the same file is not a merge")
 	}
+	other := in(2)
+	other.ModIDs = []mod.ID{"smapi:B"}
+	if _, up, ok := SamePageAsk(p, other); !ok || up != 0 {
+		t.Fatal("a file holding other mods is another file")
+	}
 	p.Entries[0].ExtraStoreKeys = []string{store.NexusKey(7, 2)}
-	if _, ok := SamePageAsk(p, 7, 2, "OPTIONAL"); ok {
+	if _, _, ok := SamePageAsk(p, in(2)); ok {
 		t.Fatal("an extra already on the entry is not a merge")
 	}
-	if _, ok := SamePageAsk(p, 8, 2, "OPTIONAL"); ok {
+	if _, _, ok := SamePageAsk(Profile{Entries: p.Entries}, IncomingFile{ModID: 8, FileID: 2}); ok {
 		t.Fatal("a different page is not a merge")
+	}
+}
+
+// The installed entries and new files are those of two real updates clicked from Nexus's Mod Manager Download.
+func TestSamePageAskTakesANewerFileAsAnUpdate(t *testing.T) {
+	t.Parallel()
+	radiance := Entry{
+		Key:    "nexus-49397-185426",
+		Source: Source{Kind: KindNexus, Name: "SDV-Radiance 2.2.5 49397 2.2.5 2026-10-04T04-47Z KAEi8aby1.zip", ModID: 49397, FileID: 185426, Version: "2.2.5"},
+		Mods:   []Component{{ID: "smapi:phuicmt.SDVRadiance", Name: "SDV-Radiance", Version: "2.2.5", Folder: "SDV-Radiance"}},
+	}
+	eac := Entry{
+		Key:    "nexus-25328-177076",
+		Source: Source{Kind: KindNexus, Name: "ExtraAnimalConfig 25328 1.9.14 2026-08-01T22-45Z p52oAOgbJ.zip", ModID: 25328, FileID: 177076, Version: "1.9.14"},
+		Mods:   []Component{{ID: "smapi:selph.ExtraAnimalConfig", Name: "ExtraAnimalConfig", Version: "1.9.14", Folder: "ExtraAnimalConfig"}},
+	}
+	p := Profile{Entries: []Entry{radiance, eac}}
+	for _, tc := range []struct {
+		name string
+		in   IncomingFile
+		want int
+	}{
+		{"same mods inside", IncomingFile{ModID: 49397, FileID: 185494, Category: "MAIN", ModIDs: []mod.ID{"smapi:phuicmt.SDVRadiance"}}, 185426},
+		{"same mods, other case", IncomingFile{ModID: 25328, FileID: 185524, Category: "MAIN", ModIDs: []mod.ID{"smapi:selph.extraanimalconfig"}}, 177076},
+		{"file_updates chain", IncomingFile{ModID: 25328, FileID: 185524, Category: "MAIN", Files: []nexus.File{
+			{FileID: 177076, Category: "OLD_VERSION", ReplacedBy: 180001}, {FileID: 180001, Category: "OLD_VERSION", ReplacedBy: 185524}, {FileID: 185524, Category: "MAIN"},
+		}}, 177076},
+		{"retired main file", IncomingFile{ModID: 49397, FileID: 185494, Category: "MAIN", Files: []nexus.File{
+			{FileID: 185426, Category: "ARCHIVED"}, {FileID: 185494, Category: "MAIN"},
+		}}, 185426},
+	} {
+		ask, up, ok := SamePageAsk(p, tc.in)
+		if ok || up != tc.want {
+			t.Errorf("%s: ask %+v %v, updates %d, want %d", tc.name, ask, ok, up, tc.want)
+		}
+	}
+	if _, up, ok := SamePageAsk(p, IncomingFile{ModID: 49397, FileID: 185494, Category: "OPTIONAL", Files: []nexus.File{{FileID: 185426, Category: "MAIN"}}}); !ok || up != 0 {
+		t.Error("an optional file beside a current main file is another file")
+	}
+}
+
+func TestANewerMainFileReplacesItsEntryWhenItsModsWereRenamed(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "P")
+	old := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
+	if _, err := e.InstallSource("stardew", p.ID, old, Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1}); err != nil {
+		t.Fatal(err)
+	}
+	next := buildZip(t, "b.zip", map[string]string{"B/manifest.json": manifestJSON("X.B")})
+	got, err := e.InstallSource("stardew", p.ID, next, Source{Kind: KindNexus, Name: "b.zip", ModID: 7, FileID: 2}.WithReplacing(1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Profile.Entries) != 1 || got.Profile.Entries[0].Key != store.NexusKey(7, 2) || !got.Updated || !hasMod(got.Profile.Entries[0], "smapi:X.B") {
+		t.Fatalf("entries %+v updated %v", got.Profile.Entries, got.Updated)
 	}
 }
 

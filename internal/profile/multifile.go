@@ -13,6 +13,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -33,22 +34,71 @@ func DefaultMerge(category string) bool {
 	}
 }
 
-// SamePageAsk reports an existing Nexus entry from modID when fileID is a different file on that page.
-func SamePageAsk(p Profile, modID, fileID int, category string) (MergeAsk, bool) {
-	if modID <= 0 || fileID <= 0 {
-		return MergeAsk{}, false
+// IncomingFile is a Nexus file arriving for a profile, with what the queue could learn about it.
+type IncomingFile struct {
+	ModID, FileID int
+	Category      string
+	// Files is the mod page's file list, nil when it could not be fetched.
+	Files []nexus.File
+	// ModIDs are the mods the file's archive holds, nil when it could not be read.
+	ModIDs []mod.ID
+}
+
+// SamePageAsk reports an existing Nexus entry from in's page when in is a different file on that page. A file that
+// updates an entry instead returns that entry's file id as updates, and no ask: the install replaces it.
+func SamePageAsk(p Profile, in IncomingFile) (ask MergeAsk, updates int, ok bool) {
+	if in.ModID <= 0 || in.FileID <= 0 {
+		return MergeAsk{}, 0, false
 	}
-	incoming := store.NexusKey(modID, fileID)
+	incoming := store.NexusKey(in.ModID, in.FileID)
+	var page []Entry
 	for _, e := range p.Entries {
-		if e.Source.Kind != KindNexus || e.Source.ModID != modID || e.IsOverlay() {
+		if e.Source.Kind != KindNexus || e.Source.ModID != in.ModID || e.IsOverlay() {
 			continue
 		}
-		if e.Source.FileID == fileID || e.Key == incoming || slices.Contains(e.ExtraStoreKeys, incoming) {
-			return MergeAsk{}, false
+		if e.Source.FileID == in.FileID || e.Key == incoming || slices.Contains(e.ExtraStoreKeys, incoming) {
+			return MergeAsk{}, 0, false
 		}
-		return MergeAsk{EntryKey: e.Key, Label: entryLabel(e), DefaultAdd: DefaultMerge(category)}, true
+		page = append(page, e)
 	}
-	return MergeAsk{}, false
+	for _, e := range page {
+		if updatesEntry(e, in) {
+			return MergeAsk{}, e.Source.FileID, false
+		}
+	}
+	if len(page) == 0 {
+		return MergeAsk{}, 0, false
+	}
+	return MergeAsk{EntryKey: page[0].Key, Label: entryLabel(page[0]), DefaultAdd: DefaultMerge(in.Category)}, 0, true
+}
+
+// updatesEntry reports whether in is a newer version of e's file: the author's file_updates chain leads from e's
+// file to in, e's main file has since been retired in favour of a main file, or in holds exactly e's mods.
+func updatesEntry(e Entry, in IncomingFile) bool {
+	seen := map[int]bool{}
+	for id := e.Source.FileID; id != 0 && !seen[id]; {
+		seen[id] = true
+		next := 0
+		for _, f := range in.Files {
+			if f.FileID == id {
+				next = f.ReplacedBy
+			}
+		}
+		if next == in.FileID {
+			return true
+		}
+		id = next
+	}
+	if strings.EqualFold(in.Category, "MAIN") && (e.Source.Category == "" || strings.EqualFold(e.Source.Category, "MAIN")) {
+		for _, f := range in.Files {
+			if f.FileID == e.Source.FileID && (strings.EqualFold(f.Category, "OLD_VERSION") || strings.EqualFold(f.Category, "ARCHIVED")) {
+				return true
+			}
+		}
+	}
+	return len(in.ModIDs) > 0 && len(in.ModIDs) == len(e.Mods) && !slices.ContainsFunc(e.Mods, func(m Component) bool {
+		return !slices.ContainsFunc(in.ModIDs, func(id mod.ID) bool { return mod.Equal(id, m.ID) })
+	})
 }
 
 // NewestFromPage is the highest Nexus file id the profile holds from modID's page, 0 when it holds none. When

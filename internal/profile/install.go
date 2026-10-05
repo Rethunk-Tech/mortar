@@ -220,6 +220,18 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	if err != nil {
 		return Profile{}, false, false, err
 	}
+	if len(held) == 0 && source.replacing > 0 {
+		// A newer file of an installed main file replaces it even when its author renamed the mods inside.
+		p, err := s.read(game, id)
+		if err != nil {
+			return Profile{}, false, false, err
+		}
+		if i := slices.IndexFunc(p.Entries, func(e Entry) bool {
+			return !e.IsOverlay() && e.Source.Kind == KindNexus && e.Source.ModID == source.ModID && e.Source.FileID == source.replacing
+		}); i >= 0 {
+			held = p.Entries[i : i+1]
+		}
+	}
 	switch len(held) {
 	case 0:
 		p, err := s.addEntryLocked(game, id, key, source)

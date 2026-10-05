@@ -9,11 +9,11 @@ import (
 
 func TestNexusOptionalFileOffersMergeIntoTheSamePageEntry(t *testing.T) {
 	f := newFixture(t)
-	f.samePage = func(_, _ string, modID, fileID int, category string) (profile.MergeAsk, bool) {
-		if modID != 1 || fileID != 10 || category != "MAIN" {
-			t.Errorf("same page args %d %d %q", modID, fileID, category)
+	f.samePage = func(_, _ string, in profile.IncomingFile) (profile.MergeAsk, int, bool) {
+		if in.ModID != 1 || in.FileID != 10 || in.Category != "MAIN" {
+			t.Errorf("same page args %+v", in)
 		}
-		return profile.MergeAsk{EntryKey: "nexus-1-9", Label: "Alpha", DefaultAdd: true}, true
+		return profile.MergeAsk{EntryKey: "nexus-1-9", Label: "Alpha", DefaultAdd: true}, 0, true
 	}
 	var extras []string
 	f.installExtra = func(_, _, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
@@ -42,8 +42,8 @@ func TestNexusOptionalFileOffersMergeIntoTheSamePageEntry(t *testing.T) {
 
 func TestNexusSecondMainFileCanStayASeparateEntry(t *testing.T) {
 	f := newFixture(t)
-	f.samePage = func(_, _ string, _, _ int, _ string) (profile.MergeAsk, bool) {
-		return profile.MergeAsk{EntryKey: "nexus-1-9", Label: "Alpha", DefaultAdd: false}, true
+	f.samePage = func(_, _ string, _ profile.IncomingFile) (profile.MergeAsk, int, bool) {
+		return profile.MergeAsk{EntryKey: "nexus-1-9", Label: "Alpha", DefaultAdd: false}, 0, true
 	}
 	f.start()
 	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
@@ -54,6 +54,25 @@ func TestNexusSecondMainFileCanStayASeparateEntry(t *testing.T) {
 	f.wait("separate", f.item(StateDone))
 	if len(f.installs) != 1 {
 		t.Fatalf("installs %d", len(f.installs))
+	}
+	f.leftovers()
+}
+
+func TestNexusUpdateFromTheSamePageInstallsInPlaceOfTheEntry(t *testing.T) {
+	f := newFixture(t)
+	f.samePage = func(_, _ string, in profile.IncomingFile) (profile.MergeAsk, int, bool) {
+		if len(in.Files) == 0 {
+			return profile.MergeAsk{EntryKey: "nexus-1-9", Label: "Alpha"}, 0, true
+		}
+		return profile.MergeAsk{}, 9, false
+	}
+	f.start()
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
+		t.Fatal(err)
+	}
+	st := f.wait("updated", f.item(StateDone))
+	if st.Items[0].Current != 9 || len(f.installs) != 1 {
+		t.Fatalf("current %d installs %d", st.Items[0].Current, len(f.installs))
 	}
 	f.leftovers()
 }

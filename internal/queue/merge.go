@@ -5,30 +5,54 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-func fileCategory(ctx context.Context, c *nexus.Client, it Item) string {
+// pageFiles lists the item's mod page files, nil when they cannot be fetched.
+func pageFiles(ctx context.Context, c *nexus.Client, it Item) []nexus.File {
 	if it.FileID == 0 || c == nil {
-		return ""
+		return nil
 	}
 	t, err := game.NexusTitle(it.Game)
 	if err != nil {
-		return ""
+		return nil
 	}
 	files, err := c.Files(ctx, t, it.ModID)
 	if err != nil {
-		return ""
+		return nil
 	}
+	return files
+}
+
+func fileCategoryOf(files []nexus.File, fileID int) string {
 	for _, f := range files {
-		if f.FileID == it.FileID {
+		if f.FileID == fileID {
 			return f.Category
 		}
 	}
 	return ""
+}
+
+// archiveModIDs lists the mods an archive holds, nil when its listing cannot say: a FOMOD installs only some of them.
+func archiveModIDs(path string) []mod.ID {
+	p, err := archive.PreviewArchive(path)
+	if err != nil || p.Truncated || p.Fomod {
+		return nil
+	}
+	var ids []mod.ID
+	for _, m := range p.Manifests {
+		ids = append(ids, m.ID)
+	}
+	return ids
+}
+
+func (it Item) incoming(category string, files []nexus.File, ids []mod.ID) profile.IncomingFile {
+	return profile.IncomingFile{ModID: it.ModID, FileID: it.FileID, Category: category, Files: files, ModIDs: ids}
 }
 
 func nexusSource(it Item, im nexus.Mod) profile.Source {
