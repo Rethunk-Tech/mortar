@@ -179,10 +179,10 @@ type ProfileMatch struct {
 	OnlyYours []string `json:"onlyYours"`
 }
 
-func modProblems(p profile.Profile, result problems.Result, nexusID int) []ModProblem {
+func modProblems(p profile.Profile, result problems.Result, source, id string) []ModProblem {
 	var ids []mod.ID
 	for _, entry := range p.Entries {
-		if entry.Source.Kind == profile.KindNexus && entry.Source.ModID == nexusID {
+		if sourceID(entry.Source, source) == id {
 			for _, im := range entry.Mods {
 				ids = append(ids, im.ID)
 			}
@@ -481,7 +481,10 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, err
 		}
 		return BundleApply{Added: result.Added, Missing: result.Missing}, nil
-	case "nexus.untrack":
+	case "source.untrack":
+		if err := trackingSource(p.Source); err != nil {
+			return nil, err
+		}
 		if s.Nexus == nil {
 			return nil, errors.New("nexus is unavailable")
 		}
@@ -490,18 +493,21 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, err
 		}
 		return NexusUntrack{UntrackAllResult: result, Count: result.Untracked + result.Remaining}, nil
-	case "nexus.tracked":
+	case "source.tracked":
+		if err := trackingSource(p.Source); err != nil {
+			return nil, err
+		}
 		if s.Nexus == nil {
 			return nil, errors.New("nexus is unavailable")
 		}
 		return s.Nexus.TrackedCount(ctx, p.Game)
-	case "nexus.trackedMissing":
-		return s.nexusTrackedMissing(ctx, p)
+	case "source.trackedMissing":
+		return s.trackedMissing(ctx, p)
 	case "changelog":
 		if s.Nexus == nil {
 			return nil, errors.New("nexus is unavailable")
 		}
-		return s.updateChangelog(ctx, p.Game, p.ModID, p.Repo, p.Name, p.Value)
+		return s.updateChangelog(ctx, p)
 	case "cache.size":
 		if s.Data == nil {
 			return nil, errors.New("data is unavailable")
@@ -524,14 +530,24 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "history.all":
 		return s.Profiles.RecentHistory(p.Game)
 	case "status":
+		if err := needNoInstall(p, "status"); err != nil {
+			return nil, err
+		}
 		return s.Launches.Status(p.Game)
 	case "sweep":
+		if err := needNoInstall(p, "sweep"); err != nil {
+			return nil, err
+		}
 		return s.Launches.Sweep(ctx, p.Game)
 	case "stop":
 		if _, err := s.Launches.Status(p.Game); err != nil {
 			return nil, err
 		}
-		if err := s.Launches.Stop(p.Game); err != nil {
+		stop := func() error { return s.Launches.Stop(p.Game) }
+		if p.Install != "" {
+			stop = func() error { return s.Launches.StopInstall(p.Install) }
+		}
+		if err := stop(); err != nil {
 			return nil, err
 		}
 		return s.Launches.Status(p.Game)
@@ -828,30 +844,28 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return res.Dismissed, nil
 	case "problems.dismiss":
-		if p.ModID < 1 {
+		if p.Index < 1 {
 			return nil, fmt.Errorf("missing problem index")
 		}
 		return s.changed(p.Game, func() (any, error) {
-			return nil, s.dismissProblem(ctx, p.Game, id, p.ModID)
+			return nil, s.dismissProblem(ctx, p.Game, id, p.Index)
 		})
 	case "problems.restore":
 		return s.changed(p.Game, func() (any, error) {
-			return nil, s.restoreDismissedProblem(ctx, p.Game, id, p.Name, p.ModID)
+			return nil, s.restoreDismissedProblem(ctx, p.Game, id, p.Name, p.Index)
 		})
 	case "modProblems":
-		if p.ModID < 1 {
+		if p.Source == "" || p.ID == "" {
 			return []ModProblem{}, nil
 		}
 		result, err := s.Problems.Problems(ctx, p.Game, id)
 		if err != nil {
 			return nil, err
 		}
-		return modProblems(prof, result, p.ModID), nil
+		return modProblems(prof, result, p.Source, p.ID), nil
 	case "installPackage":
-		if _, err := s.Queue.Add([]queue.Request{{Kind: queue.KindInstall, Game: p.Game, Profile: id, Package: p.Name}}); err != nil {
-			return nil, err
-		}
-		return nil, nil
+		_, err := s.Queue.Add([]queue.Request{{Kind: queue.KindInstall, Game: p.Game, Profile: id, Package: p.Name}})
+		return nil, err
 	case "updates":
 		return s.Problems.Updates(ctx, p.Game, id)
 	case "updates.queue":
@@ -907,8 +921,14 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "play.check":
 		return s.playCheck(ctx, p.Game, id, prof)
 	case "play.test":
+		if err := needNoInstall(p, "play test"); err != nil {
+			return nil, err
+		}
 		return s.playTest(ctx, p.Game, id)
 	case "launch":
+		if err := needNoInstall(p, "launch"); err != nil {
+			return nil, err
+		}
 		return s.launch(ctx, p.Game, id, p.Preset, p.Force)
 	}
 	return nil, fmt.Errorf("unknown method %q", method)

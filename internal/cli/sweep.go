@@ -13,7 +13,7 @@ func (c *cmd) sweep() error {
 	if err != nil {
 		return err
 	}
-	return show(c, "sweep", control.Params{Game: a[0]}, func(r launchsvc.SweepReport) { printSweep(c, r) })
+	return show(c, "sweep", control.Params{Game: a[0], Install: c.installFlag}, func(r launchsvc.SweepReport) { printSweep(c, r) })
 }
 
 func printSweep(c *cmd, r launchsvc.SweepReport) {

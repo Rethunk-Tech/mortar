@@ -16,7 +16,7 @@ func (c *cmd) playTest() error {
 		return err
 	}
 	var res launchsvc.TestLaunchResult
-	if err := c.call("play.test", control.Params{Game: a[0], Profile: a[1]}, &res, playTestTimeout); err != nil {
+	if err := c.call("play.test", control.Params{Game: a[0], Profile: a[1], Install: c.installFlag}, &res, playTestTimeout); err != nil {
 		return err
 	}
 	return c.emit(res, func() {

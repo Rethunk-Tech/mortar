@@ -29,10 +29,10 @@ func TestUpdatesChangelogPrintsEntriesUnderEachMod(t *testing.T) {
 	if len(r.calls) != 3 || r.calls[0].method != "updates" || r.calls[1].method != "changelog" {
 		t.Fatalf("calls %+v", r.calls)
 	}
-	if c := r.calls[1]; c.params.Game != "stardew" || c.params.ModID != 1915 || c.params.Name != "1.0.0" || c.params.Value != "2.0.0" {
+	if c := r.calls[1]; c.params.Game != "stardew" || c.params.Source != "nexus" || c.params.ID != "1915" || c.params.Name != "1.0.0" || c.params.Value != "2.0.0" {
 		t.Fatalf("changelog params %+v", r.calls[1].params)
 	}
-	if c := r.calls[2]; c.params.Repo != "me/gh" || c.params.ModID != 0 {
+	if c := r.calls[2]; c.params.Source != "github" || c.params.ID != "me/gh" {
 		t.Fatalf("github changelog params %+v", c.params)
 	}
 	if !strings.Contains(r.out, "Gh Mod") || !strings.Contains(r.out, "release body line") {

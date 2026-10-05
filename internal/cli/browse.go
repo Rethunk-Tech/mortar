@@ -17,12 +17,12 @@ func (c *cmd) browse() error {
 	text := strings.Join(c.args[2:], " ")
 	source := c.sourceFlag
 	if source == "" {
-		source = "nexus"
+		source = browse.AllSources
 	}
 	page := max(c.pageFlag, 1)
 	var result browse.Page
 	if err := c.call("browse", control.Params{
-		Game: game, Query: text, Value: source, ModID: page, Profile: c.profileFlag,
+		Game: game, Query: text, Source: source, Page: page, Profile: c.profileFlag,
 	}, &result, readTimeout); err != nil {
 		return err
 	}

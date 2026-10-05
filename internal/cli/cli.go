@@ -48,7 +48,7 @@ var verbs = map[string]bool{
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"templates": true, "library": true, "archive": true,
 	"browse":  true,
-	"bundles": true, "nexus": true, "trash": true, "cache": true, "data": true, "store": true,
+	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
@@ -101,6 +101,7 @@ type cmd struct {
 	restore       bool
 	sourceFlag    string
 	loaderFlag    string
+	installFlag   string
 	pageFlag      int
 	keepFlag      string
 	deleteFlag    string
@@ -316,9 +317,17 @@ func (c *cmd) parse(args []string) error {
 			c.loaderFlag = args[i]
 		case strings.HasPrefix(a, "--loader="):
 			c.loaderFlag = strings.TrimPrefix(a, "--loader=")
+		case a == "--install":
+			if i+1 >= len(args) {
+				return usageError{"--install needs an install id"}
+			}
+			i++
+			c.installFlag = args[i]
+		case strings.HasPrefix(a, "--install="):
+			c.installFlag = strings.TrimPrefix(a, "--install=")
 		case a == "--source":
 			if i+1 >= len(args) {
-				return usageError{"--source needs nexus or github"}
+				return usageError{"--source needs a source id"}
 			}
 			i++
 			c.sourceFlag = args[i]
@@ -463,8 +472,8 @@ func (c *cmd) dispatch() error {
 		return c.settings()
 	case "bundles":
 		return c.bundles()
-	case "nexus":
-		return c.nexus()
+	case "source":
+		return c.source()
 	case "trash":
 		return c.trash()
 	case "cache":
@@ -570,7 +579,7 @@ func (c *cmd) dispatch() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force, Preset: c.presetFlag}
+	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force, Preset: c.presetFlag, Install: c.installFlag}
 	switch verb {
 	case "mods":
 		return c.mods(p)
@@ -1036,17 +1045,20 @@ func (c *cmd) trash() error {
 	}
 }
 
-func (c *cmd) nexus() error {
+func (c *cmd) source() error {
 	if len(c.args) < 2 {
-		return usageError{"unknown nexus command"}
+		return usageError{"source needs untrack or tracked"}
+	}
+	if c.sourceFlag == "" {
+		return usageError{"source " + c.args[1] + " needs --source <id>"}
 	}
 	switch c.args[1] {
 	case "untrack":
-		return c.nexusUntrack()
+		return c.sourceUntrack()
 	case "tracked":
-		return c.nexusTracked()
+		return c.sourceTracked()
 	default:
-		return usageError{"unknown nexus command"}
+		return usageError{"unknown source command " + c.args[1]}
 	}
 }
 
@@ -1610,7 +1622,7 @@ func (c *cmd) problemsDismiss() error {
 	if index > len(rows) {
 		return refusedError{fmt.Sprintf("problem index %d is not dismissable (%d dismissable rows; run mortar problems %s %s)", index, len(rows), game, profile)}
 	}
-	if err := c.call("problems.dismiss", control.Params{Game: game, Profile: profile, ModID: index}, nil, readTimeout); err != nil {
+	if err := c.call("problems.dismiss", control.Params{Game: game, Profile: profile, Index: index}, nil, readTimeout); err != nil {
 		return err
 	}
 	return c.emit(map[string]bool{"dismissed": true}, func() { fmt.Fprintln(c.out, "Dismissed.") })
@@ -1632,7 +1644,7 @@ func (c *cmd) problemsRestore() error {
 	arg := a[0]
 	p := control.Params{Game: game, Profile: profile}
 	if idx, err := strconv.Atoi(strings.TrimSpace(arg)); err == nil && idx > 0 {
-		p.ModID = idx
+		p.Index = idx
 	} else {
 		p.Name = arg
 	}
@@ -1650,11 +1662,15 @@ func (c *cmd) updates(p control.Params) error {
 	changelogs := map[int][]nexus.Changelog{}
 	if c.changelogFlag {
 		for i, u := range r.Updates {
-			if u.NexusID < 1 && u.GitHubRepo == "" {
+			src, id := "nexus", strconv.Itoa(u.NexusID)
+			switch {
+			case u.GitHubRepo != "":
+				src, id = "github", u.GitHubRepo
+			case u.NexusID < 1:
 				continue
 			}
 			var logs []nexus.Changelog
-			if err := c.call("changelog", control.Params{Game: p.Game, ModID: u.NexusID, Repo: u.GitHubRepo, Name: u.Installed, Value: u.Version}, &logs, readTimeout); err != nil {
+			if err := c.call("changelog", control.Params{Game: p.Game, Source: src, ID: id, Name: u.Installed, Value: u.Version}, &logs, readTimeout); err != nil {
 				return err
 			}
 			changelogs[i] = logs
@@ -1839,7 +1855,7 @@ func (c *cmd) launch(p control.Params) error {
 	}
 	for st.State.Active() {
 		time.Sleep(2 * time.Second)
-		if err := c.call("status", control.Params{Game: p.Game}, &st, readTimeout); err != nil {
+		if err := c.call("status", control.Params{Game: p.Game, Install: p.Install}, &st, readTimeout); err != nil {
 			return err
 		}
 	}
@@ -1848,7 +1864,7 @@ func (c *cmd) launch(p control.Params) error {
 
 func (c *cmd) status(verb, gameID string) error {
 	var st launchsvc.Status
-	if err := c.call(verb, control.Params{Game: gameID}, &st, launchTimeout); err != nil {
+	if err := c.call(verb, control.Params{Game: gameID, Install: c.installFlag}, &st, launchTimeout); err != nil {
 		return err
 	}
 	return c.emit(st, func() {
@@ -2106,10 +2122,11 @@ func offlineDoctor() error {
 
 const usage = `Usage: mortar <command> [arguments] [--json]
 
-Mortar must be running; these commands ask the open app. <profile> is an id or a name.
+Mortar must be running; these commands ask the open app. <profile> is an id or a name. A verb without <game>
+takes --game <id>, which may be left out when exactly one game is installed.
 
-  settings get [--game stardew] [key]     list settings, or one key
-  settings set [--game stardew] <key> <value>  change a setting
+  settings get [--game <id>] [key]     list settings, or one key
+  settings set [--game <id>] <key> <value>  change a setting
   settings export <file>                  write portable settings JSON
   settings import <file>                  apply a portable settings JSON
   settings reset [key] [--game id]        restore defaults
@@ -2127,14 +2144,14 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   profile collection <game> <profile> [--update|--unlink]  collection link, revision, latest
   bundles <game>                         list saved bundles
   bundles apply <game> <bundle> <profile> apply a bundle
-  nexus untrack <game> --all|--unused    bulk untrack Nexus mods
-  nexus tracked <game> <profile> --missing   tracked on Nexus but not in profile
+  source untrack <game> --source nexus --all|--unused  bulk untrack a source's tracked mods
+  source tracked <game> <profile> --source nexus --missing  tracked at the source but not in profile
   profile delete <game> <profile>         moves it to Mortar's trash
   profile repair <game> <profile>         rebuild damaged profile.json from history
-  trash list [--game stardew]             recently deleted profiles
-  trash restore <name|id> [--game stardew]
+  trash list [--game <id>]             recently deleted profiles
+  trash restore <name|id> [--game <id>]
   trash delete <name|id> --yes            permanently delete one
-  trash empty --yes [--game stardew]      purge all deleted profiles
+  trash empty --yes [--game <id>]      purge all deleted profiles
   profile compare <game> <profileA> <profileB>
   profile history <game> <profile>       restore points
   profile health <game> <profile>        problem-check history
@@ -2161,7 +2178,7 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   mods config <game> <profile> <mod> [<field> <value>]  print or set one config field
   mods preset <game> <profile> <mod> list|save|apply|delete [name]  config.json presets
   mods menu <game> <profile> <mod> [--set <page>/<index>=<value>]  captured GMCM menu
-  sweep <game> [--json]                   patch-day check after a game or SMAPI change
+  sweep <game> [--install <id>] [--json]                   patch-day check after a game or SMAPI change
   mods compat <game> <profile>            non-ok SMAPI compatibility-list rows
   mods report <game> <profile> <mod> [--run ID]  report text and author URL for a mod's log errors
   mods by-author <game> <author>            mods installed in any profile for this author
@@ -2173,9 +2190,9 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
                                           every touched asset, with who writes it
   who <game> <profile> <query>            which mods change an asset
   problems <game> <profile> [--format text]  everything the Problems tab lists
-  problems dismissed [--profile <name>]   dismissed problems (index, kind, text, token)
-  problems dismiss <index> [--profile <name>]
-  problems restore <token|index> [--profile <name>]
+  problems dismissed [--game <id>] [--profile <name>]  dismissed problems (index, kind, text, token)
+  problems dismiss <index> [--game <id>] [--profile <name>]
+  problems restore <token|index> [--game <id>] [--profile <name>]
   updates <game> <profile> [--changelog]  mods with a newer version
   updates apply --everywhere <game> [mod]  same update in every eligible profile
   saves <game> <profile>                  saves and the mods each one lacks
@@ -2185,22 +2202,22 @@ Mortar must be running; these commands ask the open app. <profile> is an id or a
   open <link|file>                        hand a share link or .mortar file to Mortar
   play <game> <profile> --check           pre-Play summary; exits 3 when anything is wrong
   play <game> <profile> --test            launch, wait for the title screen, and stop
-  launch <game> <profile> [--preset NAME] [--wait] [--force]
+  launch <game> <profile> [--install <id>] [--preset NAME] [--wait] [--force]
                                        play (default launch preset unless --preset); --force skips Play warnings
-  status <game> | stop <game>
+  status <game> | stop <game> [--install <id>]
   runs <game> <profile>                   recent launches
 	logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
   logs share <game> <profile> [run] [--yes]  upload that run's log to smapi.io (prompts unless --yes)
-  logs search <query> [--profile <name>]  search all stored run logs
+  logs search <query> [--game <id>] [--profile <name>]  search all stored run logs
   logs fixes <game> <profile> [run]       recognised SMAPI errors in that run and their fixes
   queue                                   the download queue
   queue retry|skip [<id>]                 retry or skip queued downloads
   queue retry-failed                      requeue every retryable failed download in the history
   queue pause|resume|clear                control the download queue
-  browse <game> <text> [--source nexus|github] [--page N]  search Nexus or GitHub
+  browse <game> <text> [--source <id>|all] [--page N]  search a source, or all of them (default)
   update <game> <profile> <mod id>...|--all
                                           queue available mod updates
-  backups list                            list save backups
+  backups list [--game <id>]              list save backups
   backups create <save>                   pin a Manual backup of one save
   backups usage                           disk used by save backups, per save
   backups trim --keep N                   delete all but the newest N backups of each save (kept ones stay)

@@ -281,8 +281,8 @@ func TestProfilesMarksDamaged(t *testing.T) {
 	}
 }
 
-func TestNexusUntrackRequiresScope(t *testing.T) {
-	r := invoke(t, nil, "nexus", "untrack", "stardew", "--yes")
+func TestSourceUntrackRequiresScope(t *testing.T) {
+	r := invoke(t, nil, "source", "untrack", "stardew", "--source", "nexus", "--yes")
 	if r.code != 2 || len(r.calls) != 0 {
 		t.Fatalf("untrack scope: %+v", r)
 	}
@@ -398,7 +398,7 @@ func TestProblemsDismissRestoreAndDismissed(t *testing.T) {
 		t.Fatalf("dismissed json: %q", r.out)
 	}
 	r = invoke(t, results, "problems", "dismiss", "1", "--profile", "Farm")
-	if r.code != 0 || r.calls[len(r.calls)-1].method != "problems.dismiss" || r.calls[len(r.calls)-1].params.ModID != 1 {
+	if r.code != 0 || r.calls[len(r.calls)-1].method != "problems.dismiss" || r.calls[len(r.calls)-1].params.Index != 1 {
 		t.Fatalf("dismiss: %+v", r)
 	}
 	r = invoke(t, results, "problems", "dismiss", "9", "--profile", "Farm")
@@ -406,7 +406,7 @@ func TestProblemsDismissRestoreAndDismissed(t *testing.T) {
 		t.Fatalf("dismiss out of range: %+v", r)
 	}
 	r = invoke(t, results, "problems", "restore", "1", "--profile", "Farm")
-	if r.code != 0 || r.calls[len(r.calls)-1].method != "problems.restore" || r.calls[len(r.calls)-1].params.ModID != 1 {
+	if r.code != 0 || r.calls[len(r.calls)-1].method != "problems.restore" || r.calls[len(r.calls)-1].params.Index != 1 {
 		t.Fatalf("restore index: %+v", r)
 	}
 	r = invoke(t, results, "problems", "restore", "listed\tneed.mod", "--profile", "Farm")

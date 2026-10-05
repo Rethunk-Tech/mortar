@@ -7,7 +7,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/browse"
 )
 
-// Browse searches Nexus or GitHub for mods of game and marks hits already on profileID.
+// Browse searches a game's mod sources (or all of them) for mods of game and marks hits already on profileID.
 func (s *Services) Browse(ctx context.Context, game, source, text string, page int, profileID string) (browse.Page, error) {
 	c := &browse.Client{Version: s.Version}
 	if profileID != "" && s.Profiles != nil {
@@ -23,13 +23,13 @@ func (s *Services) browseFromParams(ctx context.Context, p Params) (browse.Page,
 	if text == "" {
 		text = strings.TrimSpace(p.Name)
 	}
-	source := strings.TrimSpace(p.Value)
+	source := strings.TrimSpace(p.Source)
 	if source == "" {
-		source = "nexus"
+		source = browse.AllSources
 	}
 	page := defaultPage
-	if p.ModID > 0 {
-		page = p.ModID
+	if p.Page > 0 {
+		page = p.Page
 	}
 	return s.Browse(ctx, p.Game, source, text, page, p.Profile)
 }

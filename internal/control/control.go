@@ -25,28 +25,35 @@ import (
 
 // Params is every argument a method takes; each method reads the fields it needs.
 type Params struct {
-	Game    string   `json:"game,omitempty"`
-	Profile string   `json:"profile,omitempty"`
-	ModID   int      `json:"modId,omitempty"`
-	Name    string   `json:"name,omitempty"`
-	IDs     []string `json:"ids,omitempty"`
-	Path    string   `json:"path,omitempty"`
-	Run     string   `json:"run,omitempty"`
-	Query   string   `json:"query,omitempty"`
-	All     bool     `json:"all,omitempty"`
-	Unused  bool     `json:"unused,omitempty"`
-	Yes     bool     `json:"yes,omitempty"`
-	Sub     string   `json:"sub,omitempty"`
-	Force   bool     `json:"force,omitempty"`
-	Key     string   `json:"key,omitempty"`
-	Value   string   `json:"value,omitempty"`
-	Remove  bool     `json:"remove,omitempty"`
-	Set     bool     `json:"set,omitempty"`
-	Clear   bool     `json:"clear,omitempty"`
-	Unlink  bool     `json:"unlink,omitempty"`
-	Keep    int      `json:"keep,omitempty"`
-	Preset  string   `json:"preset,omitempty"`
-	Repo    string   `json:"repo,omitempty"`
+	Game    string `json:"game,omitempty"`
+	Profile string `json:"profile,omitempty"`
+	// Source is a mod source id (nexus, github, thunderstore); ID is a mod's id in that source (Nexus mod id, GitHub
+	// owner/repo).
+	Source string `json:"source,omitempty"`
+	ID     string `json:"id,omitempty"`
+	// Install is a game install id; empty means the game's only or default install.
+	Install string `json:"install,omitempty"`
+	// Page is a 1-based result page, Index a 1-based row in a listing.
+	Page   int      `json:"page,omitempty"`
+	Index  int      `json:"index,omitempty"`
+	Name   string   `json:"name,omitempty"`
+	IDs    []string `json:"ids,omitempty"`
+	Path   string   `json:"path,omitempty"`
+	Run    string   `json:"run,omitempty"`
+	Query  string   `json:"query,omitempty"`
+	All    bool     `json:"all,omitempty"`
+	Unused bool     `json:"unused,omitempty"`
+	Yes    bool     `json:"yes,omitempty"`
+	Sub    string   `json:"sub,omitempty"`
+	Force  bool     `json:"force,omitempty"`
+	Key    string   `json:"key,omitempty"`
+	Value  string   `json:"value,omitempty"`
+	Remove bool     `json:"remove,omitempty"`
+	Set    bool     `json:"set,omitempty"`
+	Clear  bool     `json:"clear,omitempty"`
+	Unlink bool     `json:"unlink,omitempty"`
+	Keep   int      `json:"keep,omitempty"`
+	Preset string   `json:"preset,omitempty"`
 	// Loader names one of the game's loaders; empty means the catalog's first.
 	Loader string `json:"loader,omitempty"`
 }

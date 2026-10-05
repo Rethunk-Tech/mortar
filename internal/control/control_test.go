@@ -49,7 +49,7 @@ func TestModProblemsFiltersByNexusModAndOmitsCosmeticConflicts(t *testing.T) {
 			{PackIDs: []mod.ID{"smapi:Pack.Target", "smapi:Pack.Other"}, Names: []string{"Target", "Other"}, Cosmetic: true},
 		},
 	}
-	got := modProblems(p, result, 42)
+	got := modProblems(p, result, "nexus", "42")
 	if len(got) != 3 || got[0].Kind != "missing" || got[1].Kind != "broken" || got[2].Kind != "conflict" {
 		t.Fatalf("modProblems = %+v", got)
 	}
