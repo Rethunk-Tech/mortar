@@ -448,6 +448,20 @@ func run() error {
 			}
 			return thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.Closure(ctx, key, roots, version)
 		},
+		Held: func(game, profileID, pkg string) string {
+			all, _ := profiles.List(game)
+			for _, p := range all {
+				if p.ID != profileID {
+					continue
+				}
+				for _, e := range p.Entries {
+					if e.Package && e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) {
+						return e.Source.Version
+					}
+				}
+			}
+			return ""
+		},
 		InstallPackage: profiles.InstallSource,
 		GitHub:         &github.Client{},
 		OpenURL:        func(url string) error { return app.Browser.OpenURL(url) },
