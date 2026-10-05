@@ -50,6 +50,9 @@ type GameSettings struct {
 	// SourceOrder is the comma-separated source ids the player prefers, first first; sources it omits follow in
 	// catalog order.
 	SourceOrder string `json:"sourceOrder,omitempty"`
+	// BrowseFilters is Browse's "Show" choice for this game: space-separated row=mode pairs (installed, obsolete,
+	// broken; off, gray or hide).
+	BrowseFilters string `json:"browseFilters,omitempty"`
 	// ListColumns are this game's Mods list columns; empty follows the global default.
 	ListColumns []string `json:"listColumns,omitempty"`
 }
@@ -114,6 +117,7 @@ var registry = []pref{
 	strPref("lanName", ScopeApp, func(s Settings, _ string) string { return s.LanName }, func(s *Settings, _, v string) { s.LanName = v }),
 	boolPref("lanAutoAcceptPaired", ScopeApp, func(s Settings, _ string) bool { return s.LanAutoAcceptPaired }, func(s *Settings, _ string, on bool) { s.LanAutoAcceptPaired = on }),
 	strPref("downloadFolder", ScopeApp, func(s Settings, _ string) string { return s.DownloadFolder }, func(s *Settings, _, v string) { s.DownloadFolder = v }),
+	strPref("syncFolder", ScopeApp, func(s Settings, _ string) string { return s.SyncFolder }, func(s *Settings, _, v string) { s.SyncFolder = v }),
 	strPref("watchFolders", ScopeApp, func(s Settings, _ string) string { return s.WatchFolders }, func(s *Settings, _, v string) { s.WatchFolders = v }),
 	enumPref("profileOrder", ScopeApp, ProfileOrderManual, profileOrderValues, func(s Settings, _ string) string { return s.ProfileOrder }, func(s *Settings, _, v string) { s.ProfileOrder = v }),
 	enumPref("autoRetryDownloads", ScopeApp, AutoRetryOff, autoRetryValues, func(s Settings, _ string) string { return s.AutoRetryDownloads }, func(s *Settings, _, v string) { s.AutoRetryDownloads = v }),
@@ -178,6 +182,7 @@ var registry = []pref{
 		gp.ShowDotHiddenMods = on
 		putGame(s, g, gp)
 	}),
+	strPref("browseFilters", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BrowseFilters }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BrowseFilters = v; putGame(s, g, gp) }),
 	strPref("sourceOrder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SourceOrder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SourceOrder = v; putGame(s, g, gp) }),
 	enumPref("oldFilesOnUpdate", ScopeGame, OldFilesAsk, oldFilesValues, func(s Settings, g string) string { return s.GamePrefs(g).OldFilesOnUpdate }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.OldFilesOnUpdate = v; putGame(s, g, gp) }),
 }
@@ -230,6 +235,9 @@ func putGame(s *Settings, gameID string, g GameSettings) {
 func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.SourceOrder != "" {
 		dst.SourceOrder = src.SourceOrder
+	}
+	if src.BrowseFilters != "" {
+		dst.BrowseFilters = src.BrowseFilters
 	}
 	if src.BackupBeforePlay != "" {
 		dst.BackupBeforePlay = src.BackupBeforePlay

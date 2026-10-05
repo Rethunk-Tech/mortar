@@ -184,7 +184,9 @@ type Settings struct {
 	LanAutoAcceptPaired      bool   `json:"lanAutoAcceptPaired"`
 	DownloadFolder           string `json:"downloadFolder"`
 	// WatchFolders are extra folders, joined by the OS path-list separator, that new archives are offered from.
-	WatchFolders               string `json:"watchFolders,omitempty"`
+	WatchFolders string `json:"watchFolders,omitempty"`
+	// SyncFolder is the folder profile state is shared through between this machine and others; empty is off.
+	SyncFolder                 string `json:"syncFolder,omitempty"`
 	ProfileOrder               string `json:"profileOrder"`
 	AutoRetryDownloads         string `json:"autoRetryDownloads"`
 	PauseDownloadsWhilePlaying bool   `json:"pauseDownloadsWhilePlaying"`
