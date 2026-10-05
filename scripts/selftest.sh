@@ -136,12 +136,35 @@ make_mod() {
   printf '{"Name":"%s","Author":"Self-test","Version":"1.0.0","Description":"Fixture mod","UniqueID":"%s","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}\n' "$3" "$2" >"$1/manifest.json"
 }
 
+# seed_lc fills a Lethal Company profile with two Thunderstore-shaped packages (manifest.json, a placeholder plugin
+# dll and a BepInEx config file) when the sandbox holds the game; it is skipped when the profile exists.
+seed_lc() {
+  cli games --json | grep -q '"id": "lethal-company"' || return 0
+  if cli profiles lethal-company --json | grep -q '"Seed Lobby"'; then
+    return
+  fi
+  local fx=$ROOT/seed-lc name
+  rm -rf "$fx"
+  for name in SeedAlpha SeedBeta; do
+    mkdir -p "$fx/$name/plugins" "$fx/$name/config" "$fx/zips"
+    printf '{"name":"%s","version_number":"1.0.0","website_url":"","description":"Fixture package","dependencies":[]}\n' "$name" >"$fx/$name/manifest.json"
+    printf 'placeholder %s\n' "$name" >"$fx/$name/plugins/$name.dll"
+    printf '[General]\nEnabled = true\n' >"$fx/$name/config/Self-test.$name.cfg"
+    (cd "$fx/$name" && python3 -m zipfile -c "$fx/zips/$name.zip" ./*)
+  done
+  cli profile create lethal-company "Seed Lobby"
+  for name in SeedAlpha SeedBeta; do
+    cli install lethal-company "Seed Lobby" "$fx/zips/$name.zip"
+  done
+}
+
 seed() {
   [ -n "$(listener || true)" ] || {
     echo "start the server first" >&2
     exit 1
   }
   if cli profiles stardew --json | grep -q '"Seed Farm"'; then
+    seed_lc
     echo "sandbox already seeded; leaving it"
     return
   fi
@@ -195,6 +218,7 @@ PY
   start
   for _ in $(seq 1 30); do
     if cli backups list --game stardew --json | grep -q scheduled; then
+      seed_lc
       echo "sandbox seeded"
       return
     fi
