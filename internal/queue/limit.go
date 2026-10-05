@@ -61,16 +61,21 @@ func (l *sourceLimit) acquire(ctx context.Context, now func() time.Time) (func()
 // anonymous address, so its limit is sized by the login seen then.
 func (s *Service) limitFor(ctx context.Context, source string) *sourceLimit {
 	s.mu.Lock()
+	l := s.limits[source]
+	s.mu.Unlock()
+	if l != nil {
+		return l
+	}
+	loggedIn := source == "github" && github.DefaultAuth.LoggedIn(ctx)
+	s.mu.Lock()
 	defer s.mu.Unlock()
 	if l := s.limits[source]; l != nil {
 		return l
 	}
 	now := s.d.Now()
-	var l *sourceLimit
-	switch {
-	case source == "github" && github.DefaultAuth.LoggedIn(ctx):
+	if loggedIn {
 		l = newSourceLimit(6, 10, 5, now)
-	default:
+	} else {
 		l = newSourceLimit(2, 2, 1, now)
 	}
 	if s.limits == nil {
