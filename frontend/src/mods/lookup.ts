@@ -7,6 +7,7 @@ import type {
   Copy,
   Damaged,
   Duplicate,
+  LoadFailure,
   Missing,
   Result,
   RunError,
@@ -73,6 +74,7 @@ export type Problem =
   // siblings are conflicts between the same mods on other assets, shown and dismissed with this one.
   | { kind: 'asset'; asset: AssetConflict; siblings?: AssetConflict[] }
   | { kind: 'runError'; runError: RunError }
+  | { kind: 'loadFailure'; loadFailure: LoadFailure }
   | { kind: 'setting'; setting: SettingHint }
   | { kind: 'damaged'; damaged: Damaged }
 
@@ -89,6 +91,9 @@ export const problemsOf = (result: Result | null): Problem[] =>
           (row): row is Extract<Problem, { kind: 'asset' }> => row.kind === 'asset',
         ),
         ...(result.runErrors ?? []).map((runError): Problem => ({ kind: 'runError', runError })),
+        ...(result.loadFailures ?? []).map(
+          (loadFailure): Problem => ({ kind: 'loadFailure', loadFailure }),
+        ),
         ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
         ...(result.damaged ?? []).map((damaged): Problem => ({ kind: 'damaged', damaged })),
       ]
@@ -117,6 +122,9 @@ export function concerns(p: Problem, mod: Mod): boolean {
   }
   if (p.kind === 'runError') {
     return p.runError.key === mod.key && sameId(p.runError.id, mod.id)
+  }
+  if (p.kind === 'loadFailure') {
+    return p.loadFailure.key !== '' && p.loadFailure.key === mod.key
   }
   if (p.kind === 'setting') {
     return p.setting.key === mod.key && sameId(p.setting.id, mod.id)

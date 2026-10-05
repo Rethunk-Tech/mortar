@@ -73,7 +73,10 @@ function MissingKind({ problem, dismissedToken, button }: KindProps<'missing'>) 
   return <MissingFix problem={problem} dismissedToken={dismissedToken} button={button} />
 }
 
+const NoFix = () => null
+
 const problemFixes = {
+  loadFailure: NoFix,
   runError: RunErrorKind,
   duplicate: DuplicateKind,
   broken: BrokenKind,

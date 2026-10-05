@@ -129,6 +129,12 @@ export function useDescribe(): Describe {
       case 'runError': {
         return describeRunError(p.runError)
       }
+      case 'loadFailure': {
+        const { plugin, name } = p.loadFailure
+        return name !== '' && name !== plugin
+          ? t`${plugin} failed to load (${name}).`
+          : t`${plugin} failed to load.`
+      }
       case 'damaged':
         return t`${p.damaged.name} has damaged files.`
       case 'setting': {

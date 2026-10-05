@@ -13,6 +13,10 @@ export function modLinksOf(row: Row): ModLink[] {
       return [{ name: row.broken.name, key: row.broken.key, id: row.broken.id }]
     case 'runError':
       return [{ name: row.runError.name, key: row.runError.key, id: row.runError.id }]
+    case 'loadFailure':
+      return row.loadFailure.key === ''
+        ? []
+        : [{ name: row.loadFailure.name, key: row.loadFailure.key, id: row.loadFailure.id }]
     case 'setting':
       return [{ name: row.setting.name, key: row.setting.key, id: row.setting.id }]
     case 'duplicate': {

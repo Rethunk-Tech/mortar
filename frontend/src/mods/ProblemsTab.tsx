@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
@@ -13,6 +14,7 @@ import {
 import { useState } from 'react'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useTab } from '../game/tab.ts'
+import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
@@ -68,6 +70,8 @@ function useSectionTitle() {
         return t`Damaged files`
       case 'runErrors':
         return t`Errors in the last run`
+      case 'loadFailures':
+        return t`Failed to load`
       case 'drift':
         return t`Changed outside Mortar`
       case 'duplicates':
@@ -94,12 +98,33 @@ function useRowText() {
       note = row.missing.note.trim()
     } else if (row.kind === 'setting') {
       note = row.setting.description.trim()
+    } else if (row.kind === 'loadFailure') {
+      note = loadKindText(row.loadFailure.kind)
     }
     let text = row.kind === 'drift' ? describeDrift(row.drift) : describe(row)
     if (note !== '' && text.endsWith(`: ${note}`)) {
       text = text.slice(0, -(note.length + 2))
     }
     return { text, note }
+  }
+}
+
+function loadKindText(kind: string): string {
+  switch (kind) {
+    case 'missing-dependency':
+      return i18n._(msg`Missing dependency`)
+    case 'incompatible-version':
+      return i18n._(msg`Incompatible version`)
+    case 'load-exception':
+      return i18n._(msg`Error while loading`)
+    case 'patch-exception':
+      return i18n._(msg`Error in a patch`)
+    case 'preloader-patch':
+      return i18n._(msg`Error in a preloader patch`)
+    case 'unity-exception':
+      return i18n._(msg`Unity exception`)
+    default:
+      return kind
   }
 }
 
@@ -186,6 +211,28 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
               </Typography>
             </ButtonBase>
             {why ? <ConflictWhy asset={row.asset} /> : null}
+          </Box>
+        ) : null}
+        {row.kind === 'loadFailure' ? (
+          <Box sx={{ mt: 0.75 }}>
+            <ButtonBase
+              onClick={() => setWhy(!why)}
+              aria-expanded={why}
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px' }}
+            >
+              {why ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              <Typography
+                component="span"
+                sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}
+              >
+                {t`Log line`}
+              </Typography>
+            </ButtonBase>
+            {why ? (
+              <Typography sx={{ mt: 0.5, fontSize: 13, color: 'text.secondary' }}>
+                {`${row.loadFailure.line}: ${row.loadFailure.message}`}
+              </Typography>
+            ) : null}
           </Box>
         ) : null}
       </Box>

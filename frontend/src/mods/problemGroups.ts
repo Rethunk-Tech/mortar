@@ -26,6 +26,7 @@ export type ProblemSectionId =
   | 'broken'
   | 'damaged'
   | 'runErrors'
+  | 'loadFailures'
   | 'drift'
   | 'duplicates'
   | 'settings'
@@ -82,6 +83,12 @@ export function problemSections(result: Result): ProblemSection[] {
     {
       id: 'runErrors',
       rows: (result.runErrors ?? []).map((runError): Row => ({ kind: 'runError', runError })),
+    },
+    {
+      id: 'loadFailures',
+      rows: (result.loadFailures ?? []).map(
+        (loadFailure): Row => ({ kind: 'loadFailure', loadFailure }),
+      ),
     },
     {
       id: 'drift',

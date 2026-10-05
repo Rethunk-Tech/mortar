@@ -9,12 +9,14 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // LoadFailure is a plugin the loader's log says failed to load or ran into errors. Key and Name are the installed
-// package the plugin belongs to; both are empty, and Plugin is shown as the log wrote it, when no package declares it.
+// package the plugin belongs to (ID is its mod id); both are empty, and Plugin is shown as the log wrote it, when no package declares it.
 type LoadFailure struct {
 	Key     string `json:"key"`
+	ID      mod.ID `json:"id"`
 	Name    string `json:"name"`
 	Plugin  string `json:"plugin"`
 	Kind    string `json:"kind"`
@@ -49,7 +51,7 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, owners func() map[str
 	for _, f := range found {
 		lf := LoadFailure{Plugin: f.Plugin, Kind: f.Kind, Message: f.Message, Line: f.Line}
 		if owner, ok := byName[strings.ToLower(f.Plugin)]; ok {
-			lf.Key, lf.Name = owner.Key, owner.Name
+			lf.Key, lf.ID, lf.Name = owner.Key, owner.ModID(), owner.Name
 		}
 		out = append(out, lf)
 	}
