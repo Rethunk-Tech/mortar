@@ -60,7 +60,8 @@ type Settings struct {
 	LauncherRoots map[string][]string `json:"launcherRoots"`
 	// LaunchersConfirmed is whether first run's launcher screen was finished; until then the app opens on it.
 	LaunchersConfirmed bool `json:"launchersConfirmed"`
-	// Loaders maps a game id to the loader version Mortar installed.
+	// Loaders maps a loader id (smapi, bepinex5) to the version Mortar installed. Each loader belongs to one game, so
+	// the loader id is a sufficient key.
 	Loaders map[string]string `json:"loaders"`
 	// Dismissed maps a save folder name to the mod ids whose missing-mod warning the user dismissed for it.
 	Dismissed map[string][]string `json:"dismissed"`
