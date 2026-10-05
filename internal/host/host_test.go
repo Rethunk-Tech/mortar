@@ -75,3 +75,26 @@ func TestGitHubFetchGoesThroughGitHubDownload(t *testing.T) {
 		t.Fatalf("body %q", b)
 	}
 }
+
+func TestDirectRefusesPlainHTTPRedirectsAndDotNames(t *testing.T) {
+	var plainHit bool
+	plain := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { plainHit = true }))
+	defer plain.Close()
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/redirect") {
+			http.Redirect(w, r, plain.URL+"/secret", http.StatusFound)
+			return
+		}
+		_, _ = w.Write([]byte("x"))
+	}))
+	defer srv.Close()
+	dir := t.TempDir()
+	d := &Direct{HTTP: srv.Client()}
+	if _, err := d.Fetch(t.Context(), srv.URL+"/redirect", dir); err == nil || plainHit {
+		t.Fatalf("followed a redirect to plain http: err %v, hit %v", err, plainHit)
+	}
+	p, err := d.Fetch(t.Context(), srv.URL+"/a/..", dir)
+	if err != nil || filepath.Base(p) != "download" || filepath.Dir(p) != dir {
+		t.Fatalf("a .. path must not name the file: %q %v", p, err)
+	}
+}

@@ -37,9 +37,22 @@ func For(rawURL string) Host {
 	return nil
 }
 
+// httpsOnly refuses a redirect off https, so a server cannot steer a download to a plain-HTTP or local address.
+func httpsOnly(req *http.Request, via []*http.Request) error {
+	if len(via) >= maxRedirects {
+		return fmt.Errorf("stopped after %d redirects", maxRedirects)
+	}
+	if req.URL.Scheme != "https" {
+		return fmt.Errorf("refusing a redirect to %s://", req.URL.Scheme)
+	}
+	return nil
+}
+
+const maxRedirects = 10
+
 func fileName(u *url.URL) string {
 	n := path.Base(u.Path)
-	if n == "." || n == "/" || n == "" {
+	if n == "." || n == ".." || n == "/" || n == "" {
 		return "download"
 	}
 	return filepath.Base(n)
@@ -75,6 +88,11 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 	hc := d.HTTP
 	if hc == nil {
 		hc = &http.Client{Timeout: 30 * time.Minute}
+	}
+	if hc.CheckRedirect == nil {
+		secured := *hc
+		secured.CheckRedirect = httpsOnly
+		hc = &secured
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
