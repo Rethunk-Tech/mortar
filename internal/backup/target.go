@@ -17,11 +17,11 @@ type Target struct {
 // TargetFor resolves the game's backupLocation and saveBackupsKept, honouring a profile's overrides. Every kind of
 // save backup (update, restore, manual, launch) uses it, so they share one folder and one count.
 func TargetFor(set settings.Settings, game string, overrides map[string]string) (Target, error) {
-	dir, reads, err := Locations(settings.Resolve(set, "backupLocation", game, overrides))
+	dir, reads, err := Locations(settings.ResolveAt(set, "backupLocation", settings.Scope{Game: game}, overrides))
 	if err != nil {
 		return Target{}, err
 	}
-	keep, err := strconv.Atoi(settings.Resolve(set, "saveBackupsKept", game, overrides))
+	keep, err := strconv.Atoi(settings.ResolveAt(set, "saveBackupsKept", settings.Scope{Game: game}, overrides))
 	if err != nil {
 		keep = set.GamePrefs(game).SaveBackupsKept
 	}

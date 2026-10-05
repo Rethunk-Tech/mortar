@@ -690,7 +690,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
 	}
 	ov := spec.Overrides(launchOverrides(s.profiles, g.ID(), profileID))
-	showConsole := settings.Resolve(s.settings.Get(), "showSmapiConsole", g.ID(), ov) == "true"
+	showConsole := settings.ResolveAt(s.settings.Get(), "showSmapiConsole", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, ov) == "true"
 	req := launch.Request{InstallDir: dir, ModsDir: modsDir, Direct: direct, Vanilla: vanilla, Seen: s.seen(g), HideWindow: !showConsole}
 	var measure bool
 	var startupBefore map[string]bool
@@ -840,7 +840,7 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	recorded := set.LastPlayed[gameID].GameVersion
 	installed := g.LoaderStatus(installDir, set.Loaders[gameID]).GameVersion
 	ov := launchOverrides(s.profiles, gameID, profileID)
-	mode := settings.Resolve(set, "backupBeforePlay", gameID, ov)
+	mode := settings.ResolveAt(set, "backupBeforePlay", settings.Scope{Game: gameID, Install: s.profiles.InstallOf(gameID, profileID), Profile: profileID}, ov)
 	if !backupNeeded(mode, events, lastRun, recorded, installed) {
 		return nil
 	}

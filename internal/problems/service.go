@@ -244,7 +244,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	fp := fingerprint(env, mods, runID)
 	depth := settings.ConflictScanFull
 	if s.settings != nil {
-		depth = settings.Resolve(s.settings.Get(), "conflictScanDepth", gameID, nil)
+		depth = settings.ResolveAt(s.settings.Get(), "conflictScanDepth", settings.Scope{Game: gameID}, nil)
 	}
 	fp += "|scan:" + depth
 	key := gameID + "/" + id

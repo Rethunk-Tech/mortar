@@ -166,7 +166,7 @@ func summaryHealthy(summary launch.Summary) bool {
 }
 
 func (s *Service) launchesDirect(gameID, profileID string) bool {
-	method := settings.Resolve(s.settings.Get(), "defaultLaunchMethod", gameID, launchOverrides(s.profiles, gameID, profileID))
+	method := settings.ResolveAt(s.settings.Get(), "defaultLaunchMethod", settings.Scope{Game: gameID, Install: s.profiles.InstallOf(gameID, profileID), Profile: profileID}, launchOverrides(s.profiles, gameID, profileID))
 	return method == settings.LaunchDirect
 }
 

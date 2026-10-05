@@ -1,10 +1,5 @@
 package settings
 
-// Resolve is ResolveAt for a game-level read.
-func Resolve(s Settings, key, game string, profile map[string]string) string {
-	return ResolveAt(s, key, Scope{Game: game}, profile)
-}
-
 // ResolveAt returns the value of key at sc, most specific first: the profile's override (profile holds the
 // overrides of sc.Profile), then the key's own scope (the game's block, the source's, or the app's), then the
 // registry default. Install and Loader are walked once a key lives there.

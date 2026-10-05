@@ -47,7 +47,7 @@ func (s *Service) scheduledTick(now time.Time) {
 
 func (s *Service) scheduledTickFor(gameID string, now time.Time) {
 	set := s.settings.Get()
-	hours, err := strconv.Atoi(settings.Resolve(set, "saveBackupHours", gameID, nil))
+	hours, err := strconv.Atoi(settings.ResolveAt(set, "saveBackupHours", settings.Scope{Game: gameID}, nil))
 	if err != nil || hours <= 0 {
 		return
 	}
@@ -67,7 +67,7 @@ func (s *Service) scheduledTickFor(gameID string, now time.Time) {
 	if s.gameBusy(gameID) {
 		return
 	}
-	keep, err := strconv.Atoi(settings.Resolve(set, "saveBackupKeep", gameID, nil))
+	keep, err := strconv.Atoi(settings.ResolveAt(set, "saveBackupKeep", settings.Scope{Game: gameID}, nil))
 	if err != nil || keep < 1 {
 		keep = backup.DefaultKeep
 	}

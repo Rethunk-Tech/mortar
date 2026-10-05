@@ -46,7 +46,7 @@ func TestLaunchBackupLocationFollowsGameSetting(t *testing.T) {
 	if err := settings.ApplyKeyGame(&set, "backupLocation", custom, "stardew"); err != nil {
 		t.Fatal(err)
 	}
-	write, _, err := backup.Locations(settings.Resolve(set, "backupLocation", "stardew", nil))
+	write, _, err := backup.Locations(settings.ResolveAt(set, "backupLocation", settings.Scope{Game: "stardew"}, nil))
 	if err != nil {
 		t.Fatal(err)
 	}
