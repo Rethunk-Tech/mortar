@@ -74,7 +74,7 @@ func (s *Service) prepareGameSettings(gameID, id string) (*settingsRestore, bool
 	if !game.HasStartupSettings(gameID) || emptySettings(value) {
 		return nil, false, nil
 	}
-	path, err := game.StartupPreferencesPath(s.home, s.settings.Get(), gameID, "")
+	path, err := game.StartupPreferencesPath(s.home, s.settings.Get(), gameID, s.profiles.InstallOf(gameID, id))
 	if err != nil {
 		return nil, false, err
 	}

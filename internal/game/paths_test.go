@@ -1,6 +1,7 @@
 package game
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -48,5 +49,31 @@ func TestSavesDirNeedsACatalogPath(t *testing.T) {
 	}
 	if !HasSaves("lethal-company") {
 		t.Fatal("lethal company's saves template is not found")
+	}
+}
+
+func TestResolveInstallPinsADiscoveredInstall(t *testing.T) {
+	home := t.TempDir()
+	root := filepath.Join(home, "GOG Games")
+	dir := filepath.Join(root, "Stardew Valley")
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := settings.Defaults()
+	s.LauncherRoots = map[string][]string{LauncherGOG: {root}}
+
+	selected, err := ResolveInstall(home, s, "stardew", "")
+	if err != nil || selected.Dir != dir || selected.ID == "" || selected.Origin != OriginDiscovered || selected.Runtime != runtime.Native {
+		t.Fatalf("selected = %+v, %v", selected, err)
+	}
+	pinned, err := ResolveInstall(home, s, "stardew", selected.ID)
+	if err != nil || pinned != selected {
+		t.Fatalf("pinned = %+v, %v", pinned, err)
+	}
+	if _, err := ResolveInstall(home, s, "stardew", "gone"); err == nil {
+		t.Fatal("a pin that names no install resolved")
 	}
 }

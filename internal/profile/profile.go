@@ -198,6 +198,9 @@ type Profile struct {
 	LaunchPresets []LaunchPreset `json:"launchPresets,omitempty"`
 	// DefaultLaunchPreset is the id of the preset Play uses; empty means the profile's own settings.
 	DefaultLaunchPreset string `json:"defaultLaunchPreset,omitempty"`
+	// Install is the id of the game install this profile launches and reads saves from; empty means the game's
+	// selected install.
+	Install string `json:"install,omitempty"`
 	// Overrides are profile values for settings.ProfileOverridable keys.
 	Overrides map[string]string `json:"overrides,omitempty"`
 	// Error is set on a list item whose profile.json could not be read.

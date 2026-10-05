@@ -155,6 +155,11 @@ func (s *Service) SetAppearance(game, id, color, icon, description string) (Prof
 	return s.store.SetAppearance(game, id, color, icon, description)
 }
 
+// SetInstall pins a profile to one of the game's installs; an empty id unpins it.
+func (s *Service) SetInstall(game, id, install string) (Profile, error) {
+	return s.store.SetInstall(game, id, install)
+}
+
 // SetLaunchOptions replaces a profile's extra SMAPI arguments.
 func (s *Service) SetLaunchOptions(game, id, options string) (Profile, error) {
 	return s.store.SetLaunchOptions(game, id, options)

@@ -549,13 +549,14 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 
 // target returns the game's install folder and the profile's mods folder.
 func (s *Service) target(g game.Game, profileID string) (dir, modsDir string, err error) {
-	dir, err = game.InstallDir(s.home, s.settings.Get(), g.ID())
+	inst, err := game.ResolveInstall(s.home, s.settings.Get(), g.ID(), s.profiles.InstallOf(g.ID(), profileID))
 	if err != nil {
 		return "", "", err
 	}
-	if dir == "" {
+	if inst.Dir == "" {
 		return "", "", fmt.Errorf("%s is not installed", g.Name())
 	}
+	dir = inst.Dir
 	if _, err := s.profiles.Mods(g.ID(), profileID); err != nil {
 		return "", "", err
 	}
@@ -685,10 +686,15 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		}
 	}
 	cur := s.settings.Get()
-	_, store, _, err := game.Resolve(s.home, cur, g.ID())
+	pin := ""
+	if !vanilla {
+		pin = s.profiles.InstallOf(g.ID(), profileID)
+	}
+	inst, err := game.ResolveInstall(s.home, cur, g.ID(), pin)
 	if err != nil {
 		return err
 	}
+	store := inst.Store
 	if store == game.StoreGOG || store == game.StoreGOGHeroic || store == game.StoreMinigalaxy || store == game.StoreLutris {
 		req.Direct = true
 	}
@@ -790,7 +796,7 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	if !backupNeeded(mode, events, lastRun, recorded, installed) {
 		return nil
 	}
-	savesDir, err := game.SavesDir(s.home, set, gameID, "")
+	savesDir, err := game.SavesDir(s.home, set, gameID, s.profiles.InstallOf(gameID, profileID))
 	if err != nil {
 		return err
 	}

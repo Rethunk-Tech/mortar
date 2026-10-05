@@ -88,21 +88,22 @@ func (s *Service) Launch(game, profileID, id string) error {
 }
 
 func (s *Service) context(gameID, profileID string) (Context, error) {
-	install, err := game.InstallDir(s.home, s.settings.Get(), gameID)
+	pin := s.profiles.InstallOf(gameID, profileID)
+	inst, err := game.ResolveInstall(s.home, s.settings.Get(), gameID, pin)
 	if err != nil {
 		return Context{}, err
 	}
-	if install == "" {
+	if inst.Dir == "" {
 		return Context{}, fmt.Errorf("%s is not installed", gameID)
 	}
-	install = absDir(install)
+	install := absDir(inst.Dir)
 	mods, err := s.profiles.ModsDir(gameID, profileID)
 	if err != nil {
 		return Context{}, err
 	}
 	mods = absDir(mods)
 	profileDir := absDir(filepath.Dir(mods))
-	saves, err := s.savesDir(gameID)
+	saves, err := s.savesDir(gameID, pin)
 	if err != nil {
 		return Context{}, err
 	}
@@ -114,11 +115,11 @@ func (s *Service) context(gameID, profileID string) (Context, error) {
 	}, nil
 }
 
-func (s *Service) savesDir(gameID string) (string, error) {
+func (s *Service) savesDir(gameID, pin string) (string, error) {
 	if !game.HasSaves(gameID) {
 		return "", nil
 	}
-	dir, err := game.SavesDir(s.home, s.settings.Get(), gameID, "")
+	dir, err := game.SavesDir(s.home, s.settings.Get(), gameID, pin)
 	if err != nil {
 		return "", err
 	}

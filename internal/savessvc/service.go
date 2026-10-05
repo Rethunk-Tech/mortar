@@ -70,6 +70,9 @@ type Service struct {
 	meta     *meta.Client
 	// scanners holds one saves scanner per implemented game that has a save folder.
 	scanners map[string]*saves.Scanner
+	// pinned holds scanners for profiles pinned to an install, by saves folder.
+	pinnedMu sync.Mutex
+	pinned   map[string]*saves.Scanner
 	// Launches, when set, refuses restore while the game is launching or running.
 	Launches *launchsvc.Service
 	last     *Store
@@ -104,10 +107,37 @@ func NewService(home string, profiles *profile.Store, store *settings.Store, cli
 	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanners: scanners, last: NewStore(base)}, nil
 }
 
+// scannerFor is the scanner of the saves folder profileID reads: its pinned install's, else the game's selected one.
+func (s *Service) scannerFor(gameID, profileID string) (*saves.Scanner, error) {
+	selected := s.scanners[gameID]
+	pin := s.profiles.InstallOf(gameID, profileID)
+	if selected == nil || pin == "" {
+		return selected, nil
+	}
+	dir, err := game.SavesDir(s.home, s.settings.Get(), gameID, pin)
+	if err != nil {
+		return nil, err
+	}
+	s.pinnedMu.Lock()
+	defer s.pinnedMu.Unlock()
+	if sc, ok := s.pinned[dir]; ok {
+		return sc, nil
+	}
+	if s.pinned == nil {
+		s.pinned = map[string]*saves.Scanner{}
+	}
+	sc := &saves.Scanner{Dir: dir, CacheDir: filepath.Join(selected.CacheDir, "install-"+pin)}
+	s.pinned[dir] = sc
+	return sc, nil
+}
+
 // Saves scans the game's saves and compares each with the profile. Wails runs it off the UI thread; a first scan
 // of large saves takes well under a second, and later calls read the cache.
 func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, error) {
-	scanner := s.scanners[game]
+	scanner, err := s.scannerFor(game, profileID)
+	if err != nil {
+		return nil, err
+	}
 	if scanner == nil {
 		return []Fit{}, nil
 	}
@@ -218,7 +248,10 @@ func (s *Service) describe(ctx context.Context, gameID string, ids map[string]bo
 // LastSaveGap is the most recently written save when it uses mods the profile lacks or has switched off, the save
 // the game most likely loads next; ok is false when that save has everything or there are no saves.
 func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit Fit, ok bool, err error) {
-	scanner := s.scanners[game]
+	scanner, err := s.scannerFor(game, profileID)
+	if err != nil {
+		return Fit{}, false, err
+	}
 	if scanner == nil {
 		return Fit{}, false, nil
 	}

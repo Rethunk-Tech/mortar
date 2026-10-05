@@ -486,7 +486,7 @@ func (s *Store) saveBackup(game, profileID string) error {
 	if s.settings != nil {
 		set = s.settings.Get()
 	}
-	savesDir, err := gamepkg.SavesDir(s.home, set, game, "")
+	savesDir, err := gamepkg.SavesDir(s.home, set, game, s.InstallOf(game, profileID))
 	if err != nil {
 		return err
 	}
