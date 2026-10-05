@@ -42,6 +42,12 @@ runs:
         if [ "$LINT_TOOLS" = true ]; then
           go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0
           go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+          # The runner's apt shellcheck lags (0.9.0 on Ubuntu 24.04) and disagrees with current releases, so the gate
+          # pins the release developers run.
+          curl -fsSL -o "$RUNNER_TEMP/shellcheck.tar.xz" https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz
+          echo "8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198  $RUNNER_TEMP/shellcheck.tar.xz" | sha256sum -c -
+          tar -xJf "$RUNNER_TEMP/shellcheck.tar.xz" -C "$RUNNER_TEMP"
+          install -m 0755 "$RUNNER_TEMP/shellcheck-v0.11.0/shellcheck" "$(go env GOPATH)/bin/shellcheck"
         fi
         if [ "$NFPM" = true ]; then
           go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.47.0
