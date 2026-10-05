@@ -149,10 +149,19 @@ func TestRoute(t *testing.T) {
 		"manifest.json":                   "",
 		"README.md":                       "",
 		"../evil.dll":                     "",
+		"config/../../evil.cfg":           "",
+		`plugins\..\..\evil.dll`:          "",
+		"C:/Windows/evil.dll":             "",
+		"plugins/Mod.dll:stream":          "",
 	}
 	for in, want := range cases {
 		if got := Route(in, pkg); got != want {
 			t.Errorf("Route(%q) = %q, want %q", in, got, want)
+		}
+	}
+	for _, bad := range []string{"", "..", "../x", `a\b`, "C:x"} {
+		if got := Route("Mod.dll", bad); got != "" {
+			t.Errorf("Route with package %q = %q, want none", bad, got)
 		}
 	}
 }
