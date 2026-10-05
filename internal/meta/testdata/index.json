@@ -1,10 +1,5 @@
 {
-  "Pathoschild.ContentPatcher": [
-    "CurseForge:309243",
-    "Nexus:1915",
-    "Nexus:12968",
-    "Nexus:50179"
-  ],
+  "Pathoschild.ContentPatcher": ["CurseForge:309243", "Nexus:1915", "Nexus:12968", "Nexus:50179"],
   "0000cola.FarmCaveMushies": ["Nexus:7276"],
   "001": ["Nexus:17083", "Nexus:17102"]
 }

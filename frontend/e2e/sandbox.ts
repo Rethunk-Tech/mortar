@@ -17,7 +17,7 @@ export function sandboxEnv(): { dir: string; port: string } {
   return { dir: process.env.MORTAR_E2E_DIR, port: process.env.MORTAR_E2E_PORT }
 }
 
-export function selftest(...args: string[]) {
+function selftest(...args: string[]) {
   const { dir, port } = sandboxEnv()
   execFileSync(SCRIPT, args, {
     env: { ...process.env, MORTAR_SELFTEST_DIR: dir, MORTAR_SELFTEST_PORT: port },

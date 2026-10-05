@@ -30,12 +30,11 @@ for (const page of PAGES) {
   const before = readFileSync(page, 'utf8')
   // A function replacement, so `$&` in a game name is not read as a replacement pattern.
   const after = before.replace(BLOCK, (_, open: string, close: string) => open + text + close)
-  if (after === before) {
-    continue
-  }
-  stale = true
-  if (!check) {
-    writeFileSync(page, after)
+  if (after !== before) {
+    stale = true
+    if (!check) {
+      writeFileSync(page, after)
+    }
   }
 }
 if (check && stale) {
