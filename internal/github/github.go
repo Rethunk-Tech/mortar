@@ -53,6 +53,8 @@ type Asset struct {
 	ContentType string `json:"content_type"`
 	Size        int64  `json:"size"`
 	URL         string `json:"browser_download_url"`
+	// Digest is "sha256:<hex>" when GitHub computed one for the asset.
+	Digest string `json:"digest,omitempty"`
 }
 
 // RateLimitError is GitHub's unauthenticated limit; Reset is when calls work again (zero when GitHub did not say).

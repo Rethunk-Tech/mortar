@@ -70,6 +70,10 @@ func (s *Service) downloadPackage(ctx context.Context, it Item) error {
 		}
 		return fmt.Errorf("%s: %w", it.Package, err)
 	}
+	if err := s.checkPackageHash(it, path); err != nil {
+		dropDownload(path)
+		return err
+	}
 	s.mu.Lock()
 	cur := s.find(it.ID)
 	if cur == nil || cur.State != StateDownloading {

@@ -137,6 +137,10 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 		}
 		return err
 	}
+	if err := verifyDigest(path, assets[i].Digest); err != nil {
+		dropDownload(path)
+		return fmt.Errorf("%s: %w", it.Asset, err)
+	}
 	s.mu.Lock()
 	cur := s.find(it.ID)
 	if cur == nil || cur.State != StateDownloading {

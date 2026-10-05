@@ -317,6 +317,7 @@ type Service struct {
 	until        time.Time
 	cancels      map[string]context.CancelFunc
 	installMu    sync.Mutex
+	hashMu       sync.Mutex
 	premiumFetch chan struct{}
 	freeFetch    chan struct{}
 	premiumInUse int
