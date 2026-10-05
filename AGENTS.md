@@ -4,9 +4,11 @@ Mortar is a desktop mod manager for several games, with Stardew Valley enabled t
 
 ## Testing
 
-Agents self-test everything they can: in the Wails dev server's browser view, and with the real game when a test needs it, always against a copied game folder (never a symlink) and stopped by its recorded PID. Browser self-tests run against `scripts/selftest.sh` (`wails3 task selftest -- start [--copy-data]`, then `restart` after changes): a server-mode build at http://127.0.0.1:9455 with a sandboxed home, a minimal Steam library and a copied game, so the real data, game and Steam config are never touched.
+Agents self-test everything they can: in the Wails dev server's browser view, and with the real game when a test needs it, always against a copied game folder (never symlinks into a real install: the SMAPI installer writes through them) and stopped by its recorded PID. Browser self-tests run against `scripts/selftest.sh` (`wails3 task selftest -- start [--copy-data]`, then `restart` after changes): a server-mode build at http://127.0.0.1:9455 with a sandboxed home, a minimal Steam library and a copied game, so the real data, game and Steam config are never touched.
 
 `wails3 task selftest -- seed` fills the running sandbox once, through the sandbox's own CLI, with two profiles (one from a template), mods from generated zips, history events, a manual and a scheduled backup, a stray game-Mods folder, a dot-hidden mod, an extra-mods folder and a failed download. The maintainer gets only the tests that need a human: a store login, owned games, hardware or a real desktop session.
+
+Windows bugs: the Windows 11 KVM VM in `/var/tmp/win11-vm/` (`README.txt`; `start.sh`, `vm.py`, a `clean-install` snapshot) is for quick repros and one-fix smokes only; long soaks are a human's.
 
 ## Decided
 
@@ -16,6 +18,8 @@ Agents self-test everything they can: in the Wails dev server's browser view, an
 - Greenfield: no migration, compatibility or transition code. The maintainers' own data is migrated by hand.
 - The merged all-sources browse is the primary way to get mods. Lethal Company, with Thunderstore, Nexus and GitHub sources, is the next game ([docs/lethal-company.md](docs/lethal-company.md)).
 - Anything tied to a game's loader, launcher, saves or content format (SMAPI options, launch method, backup/update-before-Play, run logs, Content Patcher display, default nxm profile, pre-Play check) is a per-game setting with per-profile override; Mortar-wide settings are app chrome only (theme, density, dates, notifications, data folder, LAN, Mortar's own updates).
+- Stardrop and Vortex are never suggested, compared against, or contributed to (reading their source for file formats is fine).
+- AUR packages are prepared and checked locally (PKGBUILD, `.SRCINFO`, makepkg/namcap in an Arch container); pushing to aur.archlinux.org needs the AUR account holder's permission for each publish, relayed by the maintainer.
 - The CLI exists for agents and automation; end users are GUI-only, so GUI work ranks above CLI parity.
 - Share links name their game. Form: [docs/architecture.md](docs/architecture.md#sharing).
 - Mortar never re-hosts mod files; downloads come from each mod's own source. One exception: a profile sent between the user's own computers over the local network carries its mod files, from every source, when the two Mortars are paired with a code (copying between one's own machines is not distribution; pairing is Mortar's own and needs no store account); any other receiver gets the profile and downloads each mod from its source.
