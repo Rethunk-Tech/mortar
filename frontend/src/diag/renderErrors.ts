@@ -11,7 +11,12 @@ interface Info {
 
 // One line in mortar.log per distinct component stack, at most one a second and twenty a session: a render loop
 // repeats the same stack thousands of times.
-export function logRenderError(error: unknown, info: Info, now = Date.now()): boolean {
+export function logRenderError(
+  error: unknown,
+  info: Info,
+  now = Date.now(),
+  send: (message: string, stack: string) => Promise<void> = LogRenderError,
+): boolean {
   const stack = info.componentStack ?? ''
   const message = error instanceof Error ? error.message : String(error)
   const key = `${message}\n${stack}`
@@ -20,6 +25,6 @@ export function logRenderError(error: unknown, info: Info, now = Date.now()): bo
   }
   seen.add(key)
   last = now
-  LogRenderError(message, stack).catch(() => undefined)
+  send(message, stack).catch(() => undefined)
   return true
 }
