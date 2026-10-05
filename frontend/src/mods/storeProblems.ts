@@ -1,9 +1,9 @@
 import { msg } from '@lingui/core/macro'
 import type {
   AssetConflict,
-  Duplicate,
   SettingHint,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
+import type { Duplicate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   DismissAbandonedMod,
   DismissAssetConflict,

@@ -1,7 +1,5 @@
-import type {
-  AssetConflict,
-  Result,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
+import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Problem } from './lookup.ts'
 

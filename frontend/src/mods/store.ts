@@ -1,9 +1,11 @@
 import { create } from 'zustand'
 import type {
   AssetConflict,
+  SettingHint,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
+import type {
   Duplicate,
   Result,
-  SettingHint,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'

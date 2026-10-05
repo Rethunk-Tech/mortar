@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
+import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
 import type {
-  AssetConflict,
   Broken,
   Missing,
   Update,

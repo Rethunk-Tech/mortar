@@ -1,5 +1,8 @@
 import type {
   AssetConflict,
+  SettingHint,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
+import type {
   Broken,
   Copy,
   Damaged,
@@ -7,7 +10,6 @@ import type {
   Missing,
   Result,
   RunError,
-  SettingHint,
   Update,
   UpdatesResult,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
