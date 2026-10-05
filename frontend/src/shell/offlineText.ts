@@ -47,4 +47,18 @@ function useUpdatesOfflineReason(): string {
   )
 }
 
-export { offlineMessage, updatesOfflineReason, useOfflineReason, useUpdatesOfflineReason }
+// The sources an update downloads from: its own, or Nexus when it names only a Nexus mod.
+function updateSources(update: { source: string; nexusId: number }): string[] {
+  if (update.source !== '') {
+    return [update.source]
+  }
+  return update.nexusId > 0 ? ['nexus'] : []
+}
+
+export {
+  offlineMessage,
+  updateSources,
+  updatesOfflineReason,
+  useOfflineReason,
+  useUpdatesOfflineReason,
+}

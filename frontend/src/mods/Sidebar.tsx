@@ -26,6 +26,8 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
+import { OfflineGate } from '../shell/OfflineGate.tsx'
+import { updateSources, useOfflineReason } from '../shell/offlineText.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { useCustomCategories } from './customCategories.ts'
@@ -180,6 +182,7 @@ function UpdateBanner({ mod }: { mod: Mod }) {
     (update?.nexusId ?? 0) > 0 &&
     !offersNexusDownload(details?.page.status, details?.page.available)
   const official = blocked ? undefined : update
+  const offline = useOfflineReason(update ? updateSources(update) : [])
   if (!(official || unofficial)) {
     return null
   }
@@ -230,12 +233,16 @@ function UpdateBanner({ mod }: { mod: Mod }) {
           {t`Skip this update`}
         </Button>
       ) : null}
-      <Button size="small" variant="contained" onClick={() => setReviewing(true)}>
-        {t`Update`}
-      </Button>
-      <Button size="small" variant="outlined" onClick={() => setEverywhere(true)}>
-        {t`Update in all profiles that have it`}
-      </Button>
+      <OfflineGate reason={offline}>
+        <Button size="small" variant="contained" onClick={() => setReviewing(true)}>
+          {t`Update`}
+        </Button>
+      </OfflineGate>
+      <OfflineGate reason={offline}>
+        <Button size="small" variant="outlined" onClick={() => setEverywhere(true)}>
+          {t`Update in all profiles that have it`}
+        </Button>
+      </OfflineGate>
       <EverywhereDialog
         open={everywhere}
         game={game}

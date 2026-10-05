@@ -13,6 +13,8 @@ import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
+import { OfflineGate } from '../../shell/OfflineGate.tsx'
+import { updateSources, useOfflineReason } from '../../shell/offlineText.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { installableUpdate } from '../lookup.ts'
 import { useNexusDetails } from '../nexusDetails.ts'
@@ -55,8 +57,12 @@ export function UpdateActions({
   }, [game, update.id])
   const n = preview?.affected?.length ?? 0
   const previewReady = preview !== null
-  const everywhereBlocked = !previewReady || n === 0
-  const everywhereWhy = previewReady ? t`No eligible profiles.` : t`Checking profiles…`
+  const offline = useOfflineReason(updateSources(update))
+  const everywhereBlocked = !previewReady || n === 0 || offline !== ''
+  let everywhereWhy = previewReady ? t`No eligible profiles.` : t`Checking profiles…`
+  if (offline !== '') {
+    everywhereWhy = offline
+  }
   const missingWhy = t`This mod is not in the profile.`
   const blocked = queued || (caution !== '' && !acked)
   const act = (fn: () => Promise<unknown>) => () => {
@@ -74,13 +80,15 @@ export function UpdateActions({
   return (
     <>
       {installableUpdate(update) ? (
-        <Button
-          variant="contained"
-          disabled={blocked}
-          onClick={update.switch ? () => setConfirmSwitch(true) : install}
-        >
-          {queued ? t`Queued` : t`Update`}
-        </Button>
+        <OfflineGate reason={offline}>
+          <Button
+            variant="contained"
+            disabled={blocked}
+            onClick={update.switch ? () => setConfirmSwitch(true) : install}
+          >
+            {queued ? t`Queued` : t`Update`}
+          </Button>
+        </OfflineGate>
       ) : null}
       <IconButton
         aria-label={t`More actions for ${update.name}`}
