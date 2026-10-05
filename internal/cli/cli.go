@@ -88,6 +88,7 @@ type cmd struct {
 	game          string
 	profileFlag   string
 	nameFlag      string
+	noConfigs     bool
 	updateFlag    bool
 	unlinkFlag    bool
 	reasonFlag    string
@@ -311,6 +312,8 @@ func (c *cmd) parse(args []string) error {
 			c.profileFlag = args[i]
 		case strings.HasPrefix(a, "--profile="):
 			c.profileFlag = strings.TrimPrefix(a, "--profile=")
+		case a == "--no-configs":
+			c.noConfigs = true
 		case a == "--name":
 			if i+1 >= len(args) {
 				return usageError{"--name needs a name"}
@@ -564,6 +567,8 @@ func (c *cmd) dispatch() error {
 				return c.profileGood()
 			case "import":
 				return c.profileImport()
+			case "export":
+				return c.profileExport()
 			}
 		}
 		return c.profile()
@@ -1137,7 +1142,7 @@ func (c *cmd) source() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, from-save, rename, copy, compare, match, collection, history, health, revert, load-order, repair, list, shortcut, steam, delete, changes, good or import"}
+		return usageError{"profile needs create, from-save, rename, copy, compare, match, collection, history, health, revert, load-order, repair, list, shortcut, steam, delete, changes, good, import or export"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -2267,6 +2272,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   profile revert <game> <profile> <eventId>
   profile import <code|key|file> [--game <id>] [--name N | --profile P] [--preview]
                                           import an r2modman code, .r2z or modpack and queue its downloads
+  profile export <game> <profile> <file.zip> --format modpack [--no-configs]
+                                          write a Thunderstore modpack of the profile's Thunderstore packages
   profile load-order <game> <profile>    enabled mods in SMAPI load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
   profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|loader|

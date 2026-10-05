@@ -36,3 +36,18 @@ func (s *Services) packImport(ctx context.Context, p Params) (any, error) {
 	}
 	return res, err
 }
+
+// packExportModpack writes the profile as a Thunderstore modpack zip at Path; All adds its config folder.
+func (s *Services) packExportModpack(p Params) (any, error) {
+	if s.Packs == nil {
+		return nil, errors.New("pack export is unavailable")
+	}
+	if strings.TrimSpace(p.Path) == "" {
+		return nil, errors.New("name the modpack zip to write")
+	}
+	prof, err := s.resolve(p.Game, p.Profile)
+	if err != nil {
+		return nil, err
+	}
+	return s.Packs.ExportModpack(p.Game, prof.ID, p.Path, p.All)
+}

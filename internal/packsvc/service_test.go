@@ -24,6 +24,8 @@ type fakeProfiles struct {
 	created  []string
 	written  map[string][]byte
 	writeErr error
+	list     []profile.Profile
+	dir      string
 }
 
 func (f *fakeProfiles) WriteFiles(_, _ string, files map[string][]byte) error {
@@ -36,7 +38,9 @@ func (f *fakeProfiles) Create(_, name string) (profile.Profile, error) {
 	return profile.Profile{ID: "p1", Name: name}, nil
 }
 
-func (*fakeProfiles) List(string) ([]profile.Profile, error) { return nil, nil }
+func (f *fakeProfiles) List(string) ([]profile.Profile, error) { return f.list, nil }
+
+func (f *fakeProfiles) ProfileDir(string, string) (string, error) { return f.dir, nil }
 
 type fakeQueue struct{ got []queue.Request }
 

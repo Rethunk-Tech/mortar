@@ -40,7 +40,7 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
-import { ExportCodeMenuItem } from './ExportCodeMenuItem.tsx'
+import { ExportCodeMenuItem, ExportModpackMenuItem } from './ExportCodeMenuItem.tsx'
 import { ExportCollectionMenuItem } from './ExportCollectionMenuItem.tsx'
 import { TemplateMenuItems } from './TemplateMenuItems.tsx'
 
@@ -395,6 +395,7 @@ function MoreMenuItems({
     <SendProfileMenuItem key="send" profile={profile} close={close} />,
     <ExportCollectionMenuItem key="export-collection" profile={profile} close={close} />,
     <ExportCodeMenuItem key="export-code" profile={profile} close={close} />,
+    <ExportModpackMenuItem key="export-modpack" profile={profile} close={close} />,
     <Divider key="bundle-divider" />,
     <ProfileMenuItem
       key="bundle"

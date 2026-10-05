@@ -587,6 +587,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.browseFromParams(ctx, p)
 	case "pack.import":
 		return s.packImport(ctx, p)
+	case "pack.exportModpack":
+		return s.packExportModpack(p)
 	}
 	if res, ok, err := s.handleLibrary(ctx, method, p); ok {
 		return res, err

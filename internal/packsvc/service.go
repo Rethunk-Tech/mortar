@@ -6,7 +6,6 @@ import (
 	"cmp"
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -20,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // profiles is the part of profile.Store the service uses.
@@ -27,6 +27,7 @@ type profiles interface {
 	Create(game, name string) (profile.Profile, error)
 	List(game string) ([]profile.Profile, error)
 	WriteFiles(game, id string, files map[string][]byte) error
+	ProfileDir(game, id string) (string, error)
 }
 
 // downloads is the part of queue.Service the service uses.
@@ -40,6 +41,8 @@ type Service struct {
 	Queue    downloads
 	// Code reads r2modman codes; the zero value talks to the real Thunderstore.
 	Code pack.Code
+	// App asks where to save an exported modpack; nil outside the window.
+	App *application.App
 }
 
 // Source is what the player handed over: a file or folder path, or pasted text (a code or a bare key).
@@ -286,26 +289,20 @@ func (s *Service) ExportCode(ctx context.Context, gameID, profileID string, conf
 	if !confirmed {
 		return "", errors.New("exporting a code publishes this profile's mod list to Thunderstore: confirm first")
 	}
-	all, err := s.Profiles.List(gameID)
+	p, err := s.find(gameID, profileID)
 	if err != nil {
 		return "", err
 	}
-	for _, p := range all {
-		if p.ID != profileID {
-			continue
+	d := pack.Draft{Name: p.Name}
+	for _, e := range p.Entries {
+		if e.Source.Kind == profile.KindThunderstore {
+			d.Packages = append(d.Packages, pack.Ref{Source: "thunderstore", Native: e.Source.Name, Version: e.Source.Version, Disabled: allOff(e)})
 		}
-		d := pack.Draft{Name: p.Name}
-		for _, e := range p.Entries {
-			if e.Source.Kind == "thunderstore" {
-				d.Packages = append(d.Packages, pack.Ref{Source: "thunderstore", Native: e.Source.Name, Version: e.Source.Version, Disabled: allOff(e)})
-			}
-		}
-		if len(d.Packages) == 0 {
-			return "", errors.New("the profile holds no Thunderstore packages")
-		}
-		return s.Code.ExportCode(ctx, d)
 	}
-	return "", fmt.Errorf("no profile %q", profileID)
+	if len(d.Packages) == 0 {
+		return "", errors.New("the profile holds no Thunderstore packages")
+	}
+	return s.Code.ExportCode(ctx, d)
 }
 
 // allOff reports whether the entry has mods and every one is switched off.

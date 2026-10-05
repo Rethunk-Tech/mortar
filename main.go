@@ -821,6 +821,7 @@ func run() error {
 	nexusSvc.App = app
 	nxmSvc.App = app
 	shareSvc.App = app
+	packs.App = app
 	supportSvc.App = app
 	notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
 		showWindow()
