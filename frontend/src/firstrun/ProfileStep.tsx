@@ -28,7 +28,7 @@ const cardSx = (borderColor: string) => ({
   borderRadius: '8px',
 })
 
-export function ProfileStep({ game }: { game: GameId }) {
+export function ProfileStep({ game, site }: { game: GameId; site: string }) {
   const { t } = useLingui()
   const gameName = useGameName(game)
   const loader = useGameLoader(game)
@@ -110,8 +110,8 @@ export function ProfileStep({ game }: { game: GameId }) {
           <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`Start empty`}</Typography>
           <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
             {loader
-              ? t`A profile with only ${loader}. Add mods from Nexus or from archives.`
-              : t`An empty profile. Add mods from Nexus or from archives.`}
+              ? t`A profile with only ${loader}. Add mods from ${site} or from archives.`
+              : t`An empty profile. Add mods from ${site} or from archives.`}
           </Typography>
           <TextField
             autoFocus={true}

@@ -14,6 +14,7 @@ import {
   Launchers,
   List,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import type { GameId } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
@@ -110,6 +111,12 @@ export function GameSetup({ game: id }: { game: GameId }) {
   const hasLoader = Boolean(game?.loaderId)
   const signedIn = useNexus((s) => s.signedIn)
   const afterNexus = hasLoader ? LOADER : PROFILE
+  // Nexus's Mod Manager Download button only matters to a game whose mods come from Nexus first; a Thunderstore
+  // game gets its mods in Mortar's own Browse, and Settings has the sign-in for later.
+  const nexusFirst = (game?.sources ?? [])[0] === 'nexus'
+  // The number a step shows: the Nexus step is absent for some games, so later steps count up from the last shown.
+  const shown = (n: number) => (nexusFirst || n < NEXUS ? n : n - 1)
+  const afterFind = signedIn || !nexusFirst ? afterNexus : NEXUS
   const firstStep = useRef(step)
   // The step's content remounts on each change, dropping focus to the page; a remounted wrapper takes it back.
   const focusStep = (el: HTMLDivElement | null) => {
@@ -149,10 +156,10 @@ export function GameSetup({ game: id }: { game: GameId }) {
       </Typography>
       <Box component="ol" sx={{ display: 'flex', gap: '10px', m: 0, p: 0, listStyle: 'none' }}>
         <StepChip n={FIND} label={t`Game folder`} state={stateOf(FIND)} />
-        <StepChip n={NEXUS} label={t`Nexus Mods`} state={stateOf(NEXUS)} />
+        {nexusFirst ? <StepChip n={NEXUS} label={t`Nexus Mods`} state={stateOf(NEXUS)} /> : null}
         {hasLoader ? (
           <StepChip
-            n={LOADER}
+            n={shown(LOADER)}
             label={
               step > LOADER ? t`${{ name: game.loader }} installed` : t`Install ${game.loader}`
             }
@@ -160,7 +167,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
           />
         ) : null}
         <StepChip
-          n={hasLoader ? PROFILE : LOADER}
+          n={shown(hasLoader ? PROFILE : LOADER)}
           label={t`First profile`}
           state={stateOf(PROFILE)}
         />
@@ -183,7 +190,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
             game={game}
             launchers={launchers}
             refresh={refresh}
-            onContinue={() => setStep(signedIn ? afterNexus : NEXUS)}
+            onContinue={() => setStep(afterFind)}
           />
         ) : null}
         {step === NEXUS ? <NexusStep onDone={() => setStep(afterNexus)} /> : null}
@@ -195,7 +202,9 @@ export function GameSetup({ game: id }: { game: GameId }) {
             onDone={goToProfile}
           />
         ) : null}
-        {step === PROFILE ? <ProfileStep game={id} /> : null}
+        {step === PROFILE ? (
+          <ProfileStep game={id} site={sourceLabel(game.sources?.[0] ?? 'nexus')} />
+        ) : null}
       </Box>
     </Box>
   )

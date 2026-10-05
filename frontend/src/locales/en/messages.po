@@ -2184,7 +2184,7 @@ msgid "Not signed in"
 msgstr "Not signed in"
 
 #: src/firstrun/FindStep.tsx:163
-#: src/firstrun/GameSetup.tsx:151
+#: src/firstrun/GameSetup.tsx:158
 #: src/settings/sections/GameSettings.tsx:181
 #: src/settings/sections/GameSettings.tsx:183
 #: src/settings/sections/GameSettings.tsx:231
@@ -3651,6 +3651,10 @@ msgstr "Share as r2modman code?"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: src/firstrun/ProfileStep.tsx:113
+msgid "A profile with only {loader}. Add mods from {site} or from archives."
+msgstr "A profile with only {loader}. Add mods from {site} or from archives."
+
 #: src/mods/MoveFoldersDialog.tsx:92
 msgid "The folders are moved out of the game's Mods folder and into this profile."
 msgstr "The folders are moved out of the game's Mods folder and into this profile."
@@ -3752,7 +3756,7 @@ msgstr "Could not preview the template"
 msgid "From the extra mods folder…"
 msgstr "From the extra mods folder…"
 
-#: src/firstrun/GameSetup.tsx:71
+#: src/firstrun/GameSetup.tsx:72
 #: src/firstrunTour/TourPopover.tsx:200
 #: src/queue/QueueHistory.tsx:63
 msgid "Done"
@@ -3893,10 +3897,6 @@ msgstr "Include disabled mods"
 #: src/console/startupHooks.ts:25
 msgid "slow Entry {ms}"
 msgstr "slow Entry {ms}"
-
-#: src/firstrun/ProfileStep.tsx:114
-msgid "An empty profile. Add mods from Nexus or from archives."
-msgstr "An empty profile. Add mods from Nexus or from archives."
 
 #: src/settings/sections/StreamOverlay.tsx:419
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
@@ -4554,7 +4554,7 @@ msgid "{0} of {1}"
 msgstr "{0} of {1}"
 
 #. placeholder {0}: game.loader
-#: src/firstrun/GameSetup.tsx:157
+#: src/firstrun/GameSetup.tsx:164
 msgid "Install {0}"
 msgstr "Install {0}"
 
@@ -5069,10 +5069,6 @@ msgstr "{0} is installed twice, and SMAPI loads only one."
 #: src/mods/SelectionBarDialogs.tsx:57
 msgid "{0, plural, one {Tag # mod} other {Tag # mods}}"
 msgstr "{0, plural, one {Tag # mod} other {Tag # mods}}"
-
-#: src/firstrun/ProfileStep.tsx:113
-msgid "A profile with only {loader}. Add mods from Nexus or from archives."
-msgstr "A profile with only {loader}. Add mods from Nexus or from archives."
 
 #. placeholder {0}: listNames(removed)
 #: src/mods/updateReview/Row.tsx:68
@@ -7477,7 +7473,7 @@ msgstr "{0, plural, one {# optional file} other {# optional files}}"
 msgid "Close details"
 msgstr "Close details"
 
-#: src/firstrun/GameSetup.tsx:157
+#: src/firstrun/GameSetup.tsx:164
 #: src/queue/store.ts:278
 msgid "{name} installed"
 msgstr "{name} installed"
@@ -7762,7 +7758,7 @@ msgstr "The download queue is empty."
 msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
-#: src/firstrun/GameSetup.tsx:125
+#: src/firstrun/GameSetup.tsx:132
 #: src/toasts/report.ts:28
 #: src/toasts/report.ts:100
 #: src/toasts/usePending.ts:31
@@ -8449,7 +8445,7 @@ msgid "Reset every shortcut?"
 msgstr "Reset every shortcut?"
 
 #: src/firstrun/FirstRun.tsx:43
-#: src/firstrun/GameSetup.tsx:122
+#: src/firstrun/GameSetup.tsx:129
 #: src/firstrun/LoaderStep.tsx:220
 #: src/games/GameSelect.tsx:343
 #: src/profiles/GameSettings.tsx:99
@@ -9347,6 +9343,10 @@ msgstr "Files"
 msgid "{name} did not start"
 msgstr "{name} did not start"
 
+#: src/firstrun/ProfileStep.tsx:114
+msgid "An empty profile. Add mods from {site} or from archives."
+msgstr "An empty profile. Add mods from {site} or from archives."
+
 #: src/firstrun/LoaderStep.tsx:172
 msgid "Mortar checks Steam's settings for it: not found yet."
 msgstr "Mortar checks Steam's settings for it: not found yet."
@@ -10034,7 +10034,7 @@ msgstr "Send other games' links to {redirectName}"
 msgid "When mods changed"
 msgstr "When mods changed"
 
-#: src/firstrun/GameSetup.tsx:164
+#: src/firstrun/GameSetup.tsx:171
 msgid "First profile"
 msgstr "First profile"
 
@@ -11021,7 +11021,7 @@ msgstr "Icon"
 msgid "{0} was installed from another site. Updating installs {1} from {2} instead and keeps your settings."
 msgstr "{0} was installed from another site. Updating installs {1} from {2} instead and keeps your settings."
 
-#: src/firstrun/GameSetup.tsx:152
+#: src/firstrun/GameSetup.tsx:159
 #: src/mods/listRows.ts:117
 #: src/mods/Sidebar.tsx:467
 #: src/shell/NexusAccount.tsx:27
@@ -11388,7 +11388,7 @@ msgid "See which mods slow the game"
 msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
-#: src/firstrun/GameSetup.tsx:148
+#: src/firstrun/GameSetup.tsx:155
 msgid "Set up {0}"
 msgstr "Set up {0}"
 
