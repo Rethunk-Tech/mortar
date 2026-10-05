@@ -4,13 +4,6 @@ This file holds only work that is decided but not built. Each item is written to
 
 Items marked **Measure** need a throwaway test first; those tests run outside this repo and only their results land here.
 
-## Sharing: the static page deploy
-
-Remaining: deploying `site/stardew/p/` and `site/download/` at `https://mortar.rethunk.tech/stardew/p` and `https://mortar.rethunk.tech/download/`, held back until the first release is ready. How sharing works: [architecture.md](architecture.md#sharing).
-
-- **Deploy:** `site/stardew/p/index.html` and `site/download/index.html` in this repo, as a DigitalOcean App Platform static site (free tier: three static apps); `rethunk.tech` is on DigitalOcean's nameservers, and `maitre.rethunk.tech` is already a CNAME to an App Platform app, so the subdomain is set up the same way. The share page shows two buttons, since it cannot tell whether a scheme handler exists: open in Mortar (`mortar://stardew/p/<payload>`) and Get Mortar (`/download/`), which also copies the link so the importer can take it after installing.
-- **Done when** the link opens the page on the live domain, its button opens Mortar's Import with the link filled in, and no request the page makes carries the fragment.
-
 ## Release
 
 Remaining ([architecture.md](architecture.md#release)):
