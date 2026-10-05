@@ -22,7 +22,7 @@ export function Title({ item, size }: { item: Item; size: number }) {
       </Typography>
       {profile === null ? null : (
         <Typography noWrap={true} title={profile} sx={{ fontSize: 12, color: 'text.secondary' }}>
-          {profile ? t`Into ${{ profile }}` : t`into a deleted profile`}
+          {profile ? t`Into ${{ profile }}` : t`Into a deleted profile`}
         </Typography>
       )}
     </Box>

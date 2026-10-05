@@ -110,7 +110,7 @@ function useRowSummary(profile: Profile): string {
       link: t`imported from a link`,
       mortar: t`imported from a .mortar file`,
       gameMods: t`imported from the game's Mods folder`,
-      copy: (name) => t`Copy of ${{ name }}`,
+      copy: (name) => t`a copy of ${{ name }}`,
     }),
   ])
 }
