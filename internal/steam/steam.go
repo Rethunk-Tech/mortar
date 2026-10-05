@@ -184,6 +184,19 @@ func (s Steam) InstallDir(appID string) (string, error) {
 	return "", nil
 }
 
+// BuildID is the Steam build of appID installed in dir (a folder of its library's steamapps/common), the version Steam
+// itself tracks; "" when dir is not in a Steam library or the app has no manifest.
+func BuildID(dir, appID string) string {
+	apps := filepath.Dir(filepath.Dir(dir))
+	m, err := parseVDF(filepath.Join(apps, "appmanifest_"+appID+".acf"))
+	if err != nil {
+		return ""
+	}
+	state, _ := m["AppState"].(map[string]any)
+	id, _ := state["buildid"].(string)
+	return id
+}
+
 // CurrentAccount returns the login marked MostRecent in config/loginusers.vdf.
 func (s Steam) CurrentAccount() (Account, error) {
 	m, err := parseVDF(filepath.Join(s.Root, "config", "loginusers.vdf"))

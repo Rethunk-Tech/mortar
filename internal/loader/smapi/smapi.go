@@ -58,6 +58,12 @@ func gameInfo() components.GameInfo {
 
 func (Loader) ID() string { return ID }
 
+// InstalledVersion is the game version SMAPI's last log recorded for the install.
+func (l Loader) InstalledVersion(installDir string) string {
+	st, _ := l.Status(loader.Target{InstallDir: installDir})
+	return st.GameVersion
+}
+
 // VersionScheme is SMAPI's lenient semver.
 func (Loader) VersionScheme() string { return deps.SemverSMAPI }
 

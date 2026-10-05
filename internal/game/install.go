@@ -7,7 +7,9 @@ import (
 	goruntime "runtime"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/mortar/internal/gamestore"
@@ -44,6 +46,9 @@ type Install struct {
 	// RuntimeVersion is the compatibility tool Steam runs a Proton install with; empty for a native one.
 	RuntimeVersion string `json:"runtimeVersion,omitempty"`
 	Origin         string `json:"origin"`
+	// Version is the game's version: the loader's reading where it has one, else Steam's build id, an opaque version.
+	// It is filled in by List only.
+	Version string `json:"version,omitempty"`
 }
 
 func newInstall(info components.GameInfo, store, dir, origin string) Install {
@@ -57,6 +62,21 @@ func newInstall(info components.GameInfo, store, dir, origin string) Install {
 
 func (in Install) runtime(info components.GameInfo, home string) runtime.Install {
 	return runtime.Install{Store: in.Store, Dir: in.Dir, AppID: info.SteamAppID(), Platform: in.Platform, Home: home}
+}
+
+// readVersion is the game's version in the install, "" when nothing names one.
+func (in Install) readVersion(info components.GameInfo) string {
+	if l, ok := PrimaryLoader(in.Game); ok {
+		if r, ok := l.(loader.InstalledVersion); ok {
+			if v := r.InstalledVersion(in.Dir); v != "" {
+				return v
+			}
+		}
+	}
+	if (in.Store == gamestore.LauncherSteam || in.Store == gamestore.LauncherFlatpakSteam) && info.SteamAppID() != "" {
+		return steam.BuildID(in.Dir, info.SteamAppID())
+	}
+	return ""
 }
 
 // CompatData is the Steam compatdata folder of a Proton install, the parent of its Wine prefix.

@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -57,6 +59,23 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 	}
 	return out
 }
+
+// gameVersionFailure is the loader's complaint that the installed game is older than the loader's component accepts.
+// A loader that declares no minimum, or a game whose version is unknown, has none.
+func gameVersionFailure(gameID string, l loader.Loader, env Environment) (LoadFailure, bool) {
+	accepted := components.BundledAccepted(gameID, l.ID())
+	minimum, ok := strings.CutPrefix(accepted, ">=")
+	if !ok || env.GameVersion == "" || deps.Satisfies(env.VersionScheme, env.GameVersion, minimum) {
+		return LoadFailure{}, false
+	}
+	return LoadFailure{
+		Plugin: l.ID(), Kind: KindGameVersion,
+		Message: "game version " + env.GameVersion + " is older than the loader accepts (" + accepted + ")",
+	}, true
+}
+
+// KindGameVersion is the LoadFailure kind of a game version the loader does not accept.
+const KindGameVersion = "game-version"
 
 // pluginOwners maps every way a log names a plugin (its GUID, its name, or "name version") to the enabled package
 // whose plugin DLLs declare it. A package is the identity; the GUIDs are read from its files, since a package may hold

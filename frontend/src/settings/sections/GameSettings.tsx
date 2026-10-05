@@ -167,6 +167,7 @@ function GameFolder({
     run.then(onRefresh).catch((e: unknown) => setError(inlineError(e)))
   }
   const runtimeVersion = installs.find((i) => i.dir === folder)?.runtimeVersion
+  const gameVersion = installs.find((i) => i.dir === folder)?.version
   const known = storeName(store)
   const foundIn = known ? t(known) : t`Steam`
   let source = t`${gameName} was not found. Browse to its folder.`
@@ -203,6 +204,11 @@ function GameFolder({
             ) : null}
           </Box>
         </SettingRow>
+        {gameVersion ? (
+          <SettingRow label={t`Game version`} description={t`Read from the game's install.`}>
+            <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>{gameVersion}</Box>
+          </SettingRow>
+        ) : null}
         {runtimeVersion ? (
           <SettingRow
             label={t`Compatibility tool`}

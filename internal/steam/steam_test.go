@@ -157,3 +157,16 @@ func TestRunFlatpakGoesThroughHostInFlatpak(t *testing.T) {
 		t.Fatalf("argv %v", got)
 	}
 }
+
+func TestBuildIDReadsTheLibrariesAppManifest(t *testing.T) {
+	lib := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(lib, "steamapps", "common", "Game"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(lib, "steamapps", "appmanifest_7.acf"), []byte("\"AppState\"\n{\n\t\"buildid\"\t\t\"123\"\n}\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := BuildID(filepath.Join(lib, "steamapps", "common", "Game"), "7"); got != "123" {
+		t.Fatalf("BuildID = %q", got)
+	}
+}

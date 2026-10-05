@@ -4,8 +4,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -32,6 +34,19 @@ func TestLoaderFailuresAttributeLogFindingsToPackages(t *testing.T) {
 		}
 		if got[0].Key != wantKey || got[0].Name != boombox.Name && wantKey != "" {
 			t.Fatalf("%s: owner = %q %q", name, got[0].Key, got[0].Name)
+		}
+	}
+}
+
+func TestGameVersionFailureNeedsAnOlderGameThanTheLoaderAccepts(t *testing.T) {
+	l, _ := game.PrimaryLoader("stardew")
+	for _, c := range []struct {
+		version string
+		bad     bool
+	}{{"1.5.6", true}, {"1.6.14", false}, {"", false}} {
+		_, bad := gameVersionFailure("stardew", l, Environment{GameVersion: c.version, VersionScheme: deps.SemverSMAPI})
+		if bad != c.bad {
+			t.Errorf("game %q flagged = %v", c.version, bad)
 		}
 	}
 }

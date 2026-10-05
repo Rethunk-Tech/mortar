@@ -121,6 +121,8 @@ function loadKindText(kind: string): string {
       return i18n._(msg`Error in a patch`)
     case 'preloader-patch':
       return i18n._(msg`Error in a preloader patch`)
+    case 'game-version':
+      return i18n._(msg`Game version not supported`)
     case 'unity-exception':
       return i18n._(msg`Unity exception`)
     default:

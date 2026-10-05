@@ -116,6 +116,9 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 			info.Installed, info.InstallDir, info.Store = dir != "", dir, store
 			if all != nil {
 				info.Installs = all
+				for i := range info.Installs {
+					info.Installs[i].Version = info.Installs[i].readVersion(c)
+				}
 			}
 		}
 		info.ArtURL = artFor(home, info.AppID)

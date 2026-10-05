@@ -302,6 +302,9 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 			if dir, err := s.profiles.ProfileDir(gameID, id); err == nil {
 				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, l), func() map[string]framework.Mod { return pluginOwners(mods) })
 			}
+			if f, bad := gameVersionFailure(gameID, l, env); bad {
+				r.LoadFailures = append(r.LoadFailures, f)
+			}
 		}
 		if s.Runs != nil && runID != "" {
 			_, summary, err := s.Runs.LastRunSummary(gameID, id)

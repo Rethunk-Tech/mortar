@@ -102,6 +102,11 @@ type WithLogs interface {
 	Analyzers() []Analyzer
 }
 
+// InstalledVersion is a loader that can read the game's version from an install.
+type InstalledVersion interface {
+	InstalledVersion(installDir string) string
+}
+
 // WithPlayerLog is a loader whose analyzers also read the game's Unity player log, which the catalog places under
 // this path role.
 type WithPlayerLog interface{ PlayerLogRole() string }

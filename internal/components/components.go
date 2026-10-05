@@ -475,6 +475,17 @@ func BundledManifest() (Manifest, error) {
 	return Decode(bundledJSON)
 }
 
+// BundledAccepted is the game versions the bundled loader component of game accepts (">=1.6.14"), empty when it
+// declares none.
+func BundledAccepted(game, loader string) string {
+	m, err := BundledManifest()
+	if err != nil {
+		return ""
+	}
+	c, _ := findComponent(m.Components, game, loader)
+	return c.Accepted
+}
+
 type cachedManifest struct {
 	Manifest  []byte `json:"manifest"`
 	Signature []byte `json:"signature"`
