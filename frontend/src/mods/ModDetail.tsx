@@ -22,7 +22,6 @@ import type {
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CompatDetail } from './CompatChip.tsx'
-import { EditConfigButton } from './ConfigEditor.tsx'
 import { useDetail } from './detail.ts'
 import { LockedNote } from './LockedNote.tsx'
 import { LockedReason } from './LockedReason.tsx'
@@ -31,6 +30,7 @@ import { openPage } from './menu.ts'
 import { NexusDetails } from './NexusDetails.tsx'
 import { heading } from './paper.ts'
 import { useMods } from './store.ts'
+import { EditConfigButton } from './typedConfig/EditConfigButton.tsx'
 import { useLocked } from './useLocked.ts'
 
 const text = { fontSize: 13 } as const

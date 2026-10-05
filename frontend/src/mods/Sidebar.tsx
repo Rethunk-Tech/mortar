@@ -61,7 +61,7 @@ import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { ResizableAside } from './ResizableAside.tsx'
 import { useMods } from './store.ts'
-import { useTypedConfig } from './typedConfig/store.ts'
+import { EditConfigButton } from './typedConfig/EditConfigButton.tsx'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { useUpdates } from './updates.ts'
 
@@ -376,21 +376,7 @@ function ActionRows({ mod, nexus }: { mod: Mod; nexus: boolean }) {
       {hasConfig ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography sx={{ flex: 1, fontSize: 13 }}>{t`Config`}</Typography>
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => {
-              const { game, openId } = useProfiles.getState()
-              if (game && openId) {
-                useTypedConfig
-                  .getState()
-                  .open(mod, { game: game.id, profile: openId, key: mod.key, id: mod.id })
-                  .catch(reportUnexpected)
-              }
-            }}
-          >
-            {t`Edit config`}
-          </Button>
+          <EditConfigButton mod={mod} />
         </Box>
       ) : null}
       {nexus ? (

@@ -11,9 +11,11 @@ import {
   Typography,
 } from '@mui/material'
 import { CircleHelp, RotateCcw, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
+import { PresetsButton } from '../ConfigPresets.tsx'
 import { filterFile, isModified, modifiedCount } from './entries.ts'
 import { useTypedConfig } from './store.ts'
 import type { ConfigEntry } from './types.ts'
@@ -90,6 +92,13 @@ export function ConfigPane() {
   const resetAll = useTypedConfig((s) => s.resetAll)
   const [query, setQuery] = useState('')
   const [confirming, setConfirming] = useState(false)
+  // A preset applied from here rewrites the file, so the profile's change time rereads it.
+  const updated = useProfiles((st) => openProfileOf(st)?.updated)
+  useEffect(() => {
+    if (updated !== undefined && current !== '') {
+      select(current).catch(() => undefined)
+    }
+  }, [updated, current, select])
   if (!mod) {
     return null
   }
@@ -111,6 +120,7 @@ export function ConfigPane() {
           onChange={setQuery}
           sx={{ width: 260 }}
         />
+        <PresetsButton mod={mod} />
         <Button
           variant="outlined"
           size="small"
