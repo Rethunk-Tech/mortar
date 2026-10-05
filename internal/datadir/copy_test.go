@@ -91,3 +91,31 @@ func TestCopyTreeReportsSkippedLinkedFolders(t *testing.T) {
 		t.Fatalf("skipped = %v, err = %v", skipped, err)
 	}
 }
+
+func TestCopyFileReplacesInPlaceAndLeavesNoTemp(t *testing.T) {
+	dir := t.TempDir()
+	testfs.WriteFile(t, dir, "src.txt", "new")
+	testfs.WriteFile(t, dir, "dst.txt", "old")
+	link := filepath.Join(dir, "linked.txt")
+	if err := os.Link(filepath.Join(dir, "dst.txt"), link); err != nil {
+		t.Skip("no hard links here")
+	}
+	if err := CopyFile(filepath.Join(dir, "src.txt"), filepath.Join(dir, "dst.txt")); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := fsx.ReadFile(filepath.Join(dir, "dst.txt")); string(b) != "new" {
+		t.Fatalf("dst = %q", b)
+	}
+	if b, _ := fsx.ReadFile(link); string(b) != "old" {
+		t.Fatalf("the copy wrote through a link: %q", b)
+	}
+	if _, err := os.Lstat(filepath.Join(dir, "dst.txt.mortar-tmp")); err == nil {
+		t.Fatal("the temp file stays")
+	}
+	if err := CopyFile(filepath.Join(dir, "missing.txt"), filepath.Join(dir, "dst.txt")); err == nil {
+		t.Fatal("a missing source copied")
+	}
+	if b, _ := fsx.ReadFile(filepath.Join(dir, "dst.txt")); string(b) != "new" {
+		t.Fatalf("a failed copy changed dst: %q", b)
+	}
+}

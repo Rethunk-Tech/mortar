@@ -194,7 +194,8 @@ func RealDirUnder(root, p string) bool {
 	return UnderRoot(root, resolved)
 }
 
-// CopyFile copies the regular file src to dst, which must not exist yet.
+// CopyFile copies the regular file src to dst, replacing what is there. The bytes go to a temporary file beside dst,
+// are flushed to disk, and only then renamed into place, so a crash leaves dst whole or absent, never truncated.
 func CopyFile(src, dst string) (err error) {
 	in, err := fsx.Open(src)
 	if err != nil {
@@ -205,12 +206,23 @@ func CopyFile(src, dst string) (err error) {
 	if err != nil {
 		return err
 	}
+	tmp := dst + ".mortar-tmp"
+	_ = os.Remove(tmp)
 	// The copy keeps the source's exec and read bits but never grants write to group or others.
-	out, err := fsx.CreateExcl(dst, info.Mode().Perm()&0o755)
+	out, err := fsx.CreateExcl(tmp, info.Mode().Perm()&0o755)
 	if err != nil {
 		return err
 	}
-	defer func() { err = errors.Join(err, out.Close()) }()
-	_, err = io.Copy(out, in)
-	return err
+	defer func() {
+		if err != nil {
+			_ = os.Remove(tmp)
+		}
+	}()
+	if _, err = io.Copy(out, in); err == nil {
+		err = out.Sync()
+	}
+	if err = errors.Join(err, out.Close()); err != nil {
+		return err
+	}
+	return fsx.Rename(tmp, dst)
 }

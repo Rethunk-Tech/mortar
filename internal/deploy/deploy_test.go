@@ -210,3 +210,22 @@ func TestACanceledApplyRecordsWhatItPlaced(t *testing.T) {
 		t.Fatalf("purge after a canceled apply: %v", err)
 	}
 }
+
+func TestAPlacedFileIsACopyOfTheSource(t *testing.T) {
+	r := newRig(t)
+	m := r.apply()
+	// The game rewrites a placed file in place; the profile's own copy must not change with it.
+	f, err := os.OpenFile(filepath.Join(r.install, "winhttp.dll"), os.O_WRONLY|os.O_TRUNC, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = f.WriteString("rewritten by the game")
+	_ = f.Close()
+	d, _ := Get(copyID)
+	if err := d.Purge(t.Context(), m); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(filepath.Join(r.store, "winhttp.dll")); got != "proxy" {
+		t.Fatalf("the source is now %q", got)
+	}
+}
