@@ -1,8 +1,9 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip } from '@mui/material'
+import { Box, Button, Chip, Tooltip } from '@mui/material'
 import { ArrowRight, ExternalLink } from 'lucide-react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { formatKb } from '../../i18n/bytes.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useQueue } from '../../queue/store.ts'
 import { changelogsBetween, changelogsHaveRiskyNotes } from '../changelogRange.ts'
@@ -12,6 +13,7 @@ import { useNexusDetails } from '../nexusDetails.ts'
 import { LetterTile } from '../parts.tsx'
 import { useMods } from '../store.ts'
 import { ROW_TILE } from './constants.ts'
+import { rowDetails } from './details.ts'
 import { OptionalUpdates } from './OptionalUpdates.tsx'
 import { RowCopy } from './RowCopy.tsx'
 import { RowInclude } from './RowInclude.tsx'
@@ -51,6 +53,7 @@ export function Row({
           changelogsBetween(details.changelogs ?? [], update.installed, update.version),
         )
       : false
+  const { sizeKb, changelog } = rowDetails(update, details)
   const queued = useQueue((s) => pendingUpdate(s.state.items, profileId, update))
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
@@ -106,6 +109,38 @@ export function Row({
           <Version isNew={true}>{update.version}</Version>
           {update.source ? <Chip size="small" variant="outlined" label={update.source} /> : null}
         </Box>
+        {sizeKb > 0 || changelog ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, fontSize: 12 }}>
+            {sizeKb > 0 ? (
+              <Box component="span" sx={{ color: 'text.secondary', flexShrink: 0 }}>
+                {formatKb(sizeKb)}
+              </Box>
+            ) : null}
+            {changelog ? (
+              <>
+                <Tooltip title={changelog}>
+                  <Box
+                    component="span"
+                    sx={{
+                      color: 'text.secondary',
+                      minWidth: 0,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {changelog}
+                  </Box>
+                </Tooltip>
+                {update.url ? (
+                  <Button size="small" sx={{ flexShrink: 0 }} onClick={() => openPage(update.url)}>
+                    {t`Changelog`}
+                  </Button>
+                ) : null}
+              </>
+            ) : null}
+          </Box>
+        ) : null}
         <OptionalUpdates update={update} profileId={profileId} />
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
