@@ -68,9 +68,12 @@ export function ShareShell({
             <X size={18} />
           </TipIconButton>
           <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
-            <TipBanner tip="share">
-              {t`A share link names this profile and the Nexus or GitHub files in it, not the archives.`}
-            </TipBanner>
+            {/* Clears the dialog's absolute Close button in the top-right corner. */}
+            <Box sx={{ pr: 5 }}>
+              <TipBanner tip="share">
+                {t`A share link names this profile and the Nexus or GitHub files in it, not the archives.`}
+              </TipBanner>
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: '20px 24px 0' }}>
               {art ? (
                 <Box

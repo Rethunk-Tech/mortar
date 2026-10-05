@@ -1253,7 +1253,7 @@ msgstr "Share log…"
 #: src/downloads/newDownloads.ts:45
 #: src/launch/events.ts:47
 #: src/mods/updateDigestToast.ts:54
-#: src/mods/updateReview/UpdateBar.tsx:54
+#: src/mods/updateReview/UpdateBar.tsx:57
 #: src/mods/updates.ts:108
 #: src/settings/sections/Updates.tsx:197
 msgid "Review"
@@ -2719,7 +2719,7 @@ msgstr "Game settings"
 msgid "{name} is marked abandoned and may no longer be maintained."
 msgstr "{name} is marked abandoned and may no longer be maintained."
 
-#: src/share/ShareShell.tsx:109
+#: src/share/ShareShell.tsx:112
 msgid "Send nearby…"
 msgstr "Send nearby…"
 
@@ -6246,7 +6246,7 @@ msgstr "Change folder"
 msgid "older, profile has {0}"
 msgstr "older, profile has {0}"
 
-#: src/share/ShareShell.tsx:86
+#: src/share/ShareShell.tsx:89
 msgid "Share profile"
 msgstr "Share profile"
 
@@ -6509,7 +6509,7 @@ msgstr "Keep this one"
 msgid "{gameName} save backups: {0}"
 msgstr "{gameName} save backups: {0}"
 
-#: src/share/ShareShell.tsx:97
+#: src/share/ShareShell.tsx:100
 msgid "How to share"
 msgstr "How to share"
 
@@ -9317,7 +9317,7 @@ msgstr "In game"
 msgid "Details"
 msgstr "Details"
 
-#: src/mods/updateReview/UpdateBar.tsx:46
+#: src/mods/updateReview/UpdateBar.tsx:49
 msgid "{count, plural, one {# update is available} other {# updates are available}}"
 msgstr "{count, plural, one {# update is available} other {# updates are available}}"
 
@@ -10237,7 +10237,7 @@ msgstr "Profile history: {0}"
 msgid "Reinstall Stardew Valley from your game launcher."
 msgstr "Reinstall Stardew Valley from your game launcher."
 
-#: src/share/ShareShell.tsx:72
+#: src/share/ShareShell.tsx:74
 msgid "A share link names this profile and the Nexus or GitHub files in it, not the archives."
 msgstr "A share link names this profile and the Nexus or GitHub files in it, not the archives."
 
@@ -10902,7 +10902,7 @@ msgid "Close"
 msgstr "Close"
 
 #: src/share/ImportDialog.tsx:208
-#: src/share/ShareShell.tsx:99
+#: src/share/ShareShell.tsx:102
 msgid "Link"
 msgstr "Link"
 
@@ -11254,7 +11254,7 @@ msgstr "Preferred download server"
 msgid "Update profiles"
 msgstr "Update profiles"
 
-#: src/share/ShareShell.tsx:100
+#: src/share/ShareShell.tsx:103
 msgid ".mortar file with settings"
 msgstr ".mortar file with settings"
 
