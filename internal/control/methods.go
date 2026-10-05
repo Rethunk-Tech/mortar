@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/logshare"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
+	"github.com/Rethunk-Tech/mortar/internal/packsvc"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -85,6 +86,7 @@ type Services struct {
 	Updates    *updatesvc.Service
 	Nxm        *nxmsvc.Service
 	Support    *support.Service
+	Packs      *packsvc.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 	// Quit closes the app as its tray Quit does; nil in tests.
@@ -583,6 +585,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.modsByAuthor(p)
 	case "browse":
 		return s.browseFromParams(ctx, p)
+	case "pack.import":
+		return s.packImport(ctx, p)
 	}
 	if res, ok, err := s.handleLibrary(ctx, method, p); ok {
 		return res, err

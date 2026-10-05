@@ -703,6 +703,7 @@ func run() error {
 	problemsSvc.Damage = items.Damaged
 
 	browseSvc := browse.NewService(version, profileSvc)
+	packs := &packsvc.Service{Profiles: profiles, Queue: queueSvc}
 	browseSvc.ShowAdult = func() bool { return store.Get().ShowAdultContent }
 	browseSvc.Installed = profiles.Installed
 	browseSvc.Compat = func(game string) func(ctx context.Context) (meta.CompatIndex, error) {
@@ -740,7 +741,7 @@ func run() error {
 		application.NewService(quitSvc),
 		application.NewService(browseSvc),
 		application.NewService(&netstate.Service{}),
-		application.NewService(&packsvc.Service{Profiles: profiles, Queue: queueSvc}),
+		application.NewService(packs),
 	} {
 		app.RegisterService(s)
 	}
@@ -784,7 +785,7 @@ func run() error {
 	ctl := &control.Services{
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, Bundles: bundlesSvc,
-		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Emit: emit,
+		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Packs: packs, Emit: emit,
 		Quit: func() {
 			// Busy downloads or a running game get the window's own confirmation, as the tray Quit does.
 			if quitSvc.BusySummary() == "" {

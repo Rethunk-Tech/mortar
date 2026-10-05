@@ -87,6 +87,7 @@ type cmd struct {
 	run           string
 	game          string
 	profileFlag   string
+	nameFlag      string
 	updateFlag    bool
 	unlinkFlag    bool
 	reasonFlag    string
@@ -310,6 +311,14 @@ func (c *cmd) parse(args []string) error {
 			c.profileFlag = args[i]
 		case strings.HasPrefix(a, "--profile="):
 			c.profileFlag = strings.TrimPrefix(a, "--profile=")
+		case a == "--name":
+			if i+1 >= len(args) {
+				return usageError{"--name needs a name"}
+			}
+			i++
+			c.nameFlag = args[i]
+		case strings.HasPrefix(a, "--name="):
+			c.nameFlag = strings.TrimPrefix(a, "--name=")
 		case a == "--game":
 			if i+1 >= len(args) {
 				return usageError{"--game needs a game id"}
@@ -553,6 +562,8 @@ func (c *cmd) dispatch() error {
 				return c.profileChanges()
 			case "good":
 				return c.profileGood()
+			case "import":
+				return c.profileImport()
 			}
 		}
 		return c.profile()
@@ -1126,7 +1137,7 @@ func (c *cmd) source() error {
 
 func (c *cmd) profile() error {
 	if len(c.args) < 2 {
-		return usageError{"profile needs create, from-save, rename, copy, compare, match, collection, history, health, revert, load-order, repair, list, shortcut, steam, delete, changes or good"}
+		return usageError{"profile needs create, from-save, rename, copy, compare, match, collection, history, health, revert, load-order, repair, list, shortcut, steam, delete, changes, good or import"}
 	}
 	sub := c.args[1]
 	var p profile.Profile
@@ -2254,6 +2265,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   profile changes <game> <profile>       changes since last run
   profile good <game> <profile> [--mark|--restore]
   profile revert <game> <profile> <eventId>
+  profile import <code|key|file> [--game <id>] [--name N | --profile P] [--preview]
+                                          import an r2modman code, .r2z or modpack and queue its downloads
   profile load-order <game> <profile>    enabled mods in SMAPI load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
   profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|loader|
