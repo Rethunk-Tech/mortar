@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
-	"slices"
+	"strings"
 )
 
 // Scope names where a setting is read: the most specific part that is set wins, then the broader ones, then the
@@ -19,13 +19,23 @@ const (
 	ScopeInstall = "install"
 )
 
-// sourceFields lists, per source id, the settings.json names of the keys that belong to that mod source.
+// sourceFields lists, per source id, the keys that belong to that mod source. An entry is the Settings field's JSON
+// name, or "name=local" when the key is stored in the source's block under a shorter local name.
 var sourceFields = map[string][]string{
+	"thunderstore": {"thunderstoreHandleLinks=handleLinks"},
 	"nexus": {
 		"nexusUserId", "nexusName", "nexusPremium", "nexusPreferredDownloadServer", "nexusSeenDownloadServers",
 		"nxmHandled", "nxmPreviousHandlers", "nxmAsked", "nxmPreviousName", "nxmRedirectOtherGames",
 		"autoTrackNexus", "verifyNexusMD5",
 	},
+}
+
+func fieldNames(entry string) (flat, local string) {
+	flat, local, found := strings.Cut(entry, "=")
+	if !found {
+		local = flat
+	}
+	return flat, local
 }
 
 // gamesField is the per-game block's name, in settings.json and in exports.
@@ -41,21 +51,23 @@ type scoped struct {
 // split sorts a flat settings object into its scopes.
 func split(flat map[string]json.RawMessage) scoped {
 	out := scoped{Global: map[string]json.RawMessage{}, Sources: map[string]map[string]json.RawMessage{}}
-	owner := map[string]string{}
+	type home struct{ src, local string }
+	owner := map[string]home{}
 	for src, names := range sourceFields {
 		for _, n := range names {
-			owner[n] = src
+			flatName, local := fieldNames(n)
+			owner[flatName] = home{src, local}
 		}
 	}
 	for k, v := range flat {
-		switch src, ok := owner[k]; {
+		switch h, ok := owner[k]; {
 		case k == gamesField:
 			out.Games = v
 		case ok:
-			if out.Sources[src] == nil {
-				out.Sources[src] = map[string]json.RawMessage{}
+			if out.Sources[h.src] == nil {
+				out.Sources[h.src] = map[string]json.RawMessage{}
 			}
-			out.Sources[src][k] = v
+			out.Sources[h.src][h.local] = v
 		default:
 			out.Global[k] = v
 		}
@@ -71,9 +83,10 @@ func (sc scoped) flatten() map[string]json.RawMessage {
 		if _, known := sourceFields[src]; !known {
 			continue
 		}
-		for k, v := range fields {
-			if slices.Contains(sourceFields[src], k) {
-				out[k] = v
+		for _, n := range sourceFields[src] {
+			flatName, local := fieldNames(n)
+			if v, ok := fields[local]; ok {
+				out[flatName] = v
 			}
 		}
 	}

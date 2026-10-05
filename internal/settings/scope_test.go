@@ -84,3 +84,28 @@ func PrefDefault(t *testing.T, key string) string {
 	}
 	return p.spec.Default
 }
+
+func TestHandleLinksLivesInItsSourceBlock(t *testing.T) {
+	s, dir := open(t)
+	on := true
+	if _, err := s.Update(func(v *Settings) { v.ThunderstoreHandleLinks = &on }); err != nil {
+		t.Fatal(err)
+	}
+	b, err := fsx.ReadFile(filepath.Join(dir, FileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc struct {
+		Sources map[string]map[string]any `json:"sources"`
+	}
+	if err := json.Unmarshal(b, &doc); err != nil || doc.Sources["thunderstore"]["handleLinks"] != true {
+		t.Fatalf("scopes: %v %s", err, b)
+	}
+	s2, err := Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := s2.Get().ThunderstoreHandleLinks; got == nil || !*got {
+		t.Fatalf("reload = %v", got)
+	}
+}

@@ -76,6 +76,8 @@ type Settings struct {
 	NxmPreviousName string `json:"nxmPreviousName"`
 	// NxmRedirectOtherGames sends nxm:// links for other games to the nxm scheme's previous owner when on.
 	NxmRedirectOtherGames *bool `json:"nxmRedirectOtherGames"`
+	// ThunderstoreHandleLinks is whether Mortar claims ror2mm:// links from the system. Nil means the source's default (off).
+	ThunderstoreHandleLinks *bool `json:"thunderstoreHandleLinks"`
 	// NexusPreferredDownloadServer is a seen download_link.json short_name, or empty for Automatic.
 	NexusPreferredDownloadServer string `json:"nexusPreferredDownloadServer"`
 	// NexusSeenDownloadServers lists short_name values Mortar has seen from Nexus.
