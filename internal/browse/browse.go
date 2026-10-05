@@ -36,6 +36,8 @@ type Client struct {
 	Installed InstalledFunc
 	// ShowAdult keeps hits their source flags as adult content; by default they are dropped.
 	ShowAdult bool
+	// Prefer lists source ids that rank ahead of the rest of the game's sources, which keep catalog order.
+	Prefer []string
 }
 
 // Search returns one page of mods for game from the source matching text.
@@ -79,12 +81,28 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 	if len(answered) == 0 {
 		return Page{}, errors.Join(errs...)
 	}
-	order := make([]string, len(sources))
+	ids := make([]string, len(sources))
 	for i, s := range sources {
-		order[i] = s.ID()
+		ids[i] = s.ID()
 	}
-	merged.Items = mergeSame(interleave(answered), order)
+	merged.Items = mergeSame(interleave(answered), ranked(c.Prefer, ids))
 	return merged, nil
+}
+
+// ranked puts the preferred ids that are among ids first, then the rest in their given order.
+func ranked(prefer, ids []string) []string {
+	out := make([]string, 0, len(ids))
+	for _, p := range prefer {
+		if slices.Contains(ids, p) && !slices.Contains(out, p) {
+			out = append(out, p)
+		}
+	}
+	for _, id := range ids {
+		if !slices.Contains(out, id) {
+			out = append(out, id)
+		}
+	}
+	return out
 }
 
 func interleave(pages []Page) []Item {

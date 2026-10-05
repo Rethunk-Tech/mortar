@@ -21,6 +21,7 @@ import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
 import { HistoryUsageRows } from './sections/DataHistory.tsx'
 import { DismissedFolders } from './sections/DismissedFolders.tsx'
 import { BackupsPage, ExtraModsFolder, GameFolder, SmapiPage } from './sections/GameSettings.tsx'
+import { SourceOrder } from './sections/SourceOrder.tsx'
 import { StreamOverlay } from './sections/StreamOverlay.tsx'
 import { useSettings } from './store.ts'
 
@@ -100,6 +101,7 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
                 game={game}
               />
               <ExtraModsFolder />
+              <SourceOrder />
             </SettingsSection>
             <DismissedFolders />
             <SettingsSection title={t`${name} profile history`}>

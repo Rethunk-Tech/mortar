@@ -116,7 +116,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeConfigFiles": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
 		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
-		"saveBackupHours": "6", "saveBackupKeep": "3", "showAdultContent": "true",
+		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "showAdultContent": "true",
 	}
 	if len(overrides) != len(registry) {
 		t.Fatalf("%d overrides for %d registered keys", len(overrides), len(registry))

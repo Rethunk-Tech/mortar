@@ -125,7 +125,7 @@ msgstr "Priority Default"
 msgid "Show failed"
 msgstr "Show failed"
 
-#: src/settings/GameSettingsPage.tsx:61
+#: src/settings/GameSettingsPage.tsx:62
 msgid "Streaming"
 msgstr "Streaming"
 
@@ -879,6 +879,7 @@ msgid "Mortar does not manage mods for that game."
 msgstr "Mortar does not manage mods for that game."
 
 #: src/mods/configFormUi.tsx:262
+#: src/settings/sections/SourceOrder.tsx:64
 msgid "Move down"
 msgstr "Move down"
 
@@ -2916,8 +2917,8 @@ msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
 #: src/game/ProfileWorkspace.tsx:93
-#: src/settings/GameSettingsPage.tsx:60
-#: src/settings/GameSettingsPage.tsx:114
+#: src/settings/GameSettingsPage.tsx:61
+#: src/settings/GameSettingsPage.tsx:116
 msgid "Console"
 msgstr "Console"
 
@@ -3480,7 +3481,7 @@ msgstr "Downloads paused"
 msgid "{0, plural, one {# error} other {# errors}}"
 msgstr "{0, plural, one {# error} other {# errors}}"
 
-#: src/settings/GameSettingsPage.tsx:134
+#: src/settings/GameSettingsPage.tsx:136
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
@@ -3890,6 +3891,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/ModsProfiles.tsx:20
 #: src/settings/sections/Notifications.tsx:35
 #: src/settings/sections/SmapiRow.tsx:46
+#: src/settings/sections/SourceOrder.tsx:45
 #: src/settings/sections/StreamOverlay.tsx:408
 #: src/settings/sections/Updates.tsx:161
 #: src/tips/TipBanner.tsx:39
@@ -3986,7 +3988,7 @@ msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
 #. placeholder {0}: g.version
-#: src/settings/GameSettingsPage.tsx:72
+#: src/settings/GameSettingsPage.tsx:73
 msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
@@ -4356,7 +4358,7 @@ msgstr "Needs"
 msgid "Files set aside"
 msgstr "Files set aside"
 
-#: src/settings/GameSettingsPage.tsx:105
+#: src/settings/GameSettingsPage.tsx:107
 msgid "{name} profile history"
 msgstr "{name} profile history"
 
@@ -5061,7 +5063,7 @@ msgstr "Imported"
 msgid "In Mortar"
 msgstr "In Mortar"
 
-#: src/settings/GameSettingsPage.tsx:133
+#: src/settings/GameSettingsPage.tsx:135
 msgid "{name} settings"
 msgstr "{name} settings"
 
@@ -5672,8 +5674,8 @@ msgstr "Send"
 #: src/game/Hero.tsx:325
 #: src/game/ProfileWorkspace.tsx:73
 #: src/mods/ModListVirtual.tsx:275
-#: src/settings/GameSettingsPage.tsx:58
-#: src/settings/GameSettingsPage.tsx:89
+#: src/settings/GameSettingsPage.tsx:59
+#: src/settings/GameSettingsPage.tsx:90
 #: src/settings/sections/Updates.tsx:175
 msgid "Mods"
 msgstr "Mods"
@@ -6097,7 +6099,7 @@ msgid "Use default"
 msgstr "Use default"
 
 #: src/profiles/OverrideRows.tsx:90
-#: src/settings/GameSettingsPage.tsx:56
+#: src/settings/GameSettingsPage.tsx:57
 #: src/settings/sections/GameSettings.tsx:309
 msgid "SMAPI"
 msgstr "SMAPI"
@@ -8134,6 +8136,7 @@ msgid "This update changed its install options. Your earlier picks are kept wher
 msgstr "This update changed its install options. Your earlier picks are kept where they still exist."
 
 #: src/mods/configFormUi.tsx:247
+#: src/settings/sections/SourceOrder.tsx:58
 msgid "Move up"
 msgstr "Move up"
 
@@ -8697,6 +8700,10 @@ msgstr "Author on cards"
 msgid "Add to bundle"
 msgstr "Add to bundle"
 
+#: src/settings/sections/SourceOrder.tsx:51
+msgid "When a mod is on several sites, its card installs from the first one here."
+msgstr "When a mod is on several sites, its card installs from the first one here."
+
 #: src/profiles/EditProfileDialog.tsx:183
 msgid "Sparkles"
 msgstr "Sparkles"
@@ -8746,7 +8753,7 @@ msgid "Show file"
 msgstr "Show file"
 
 #: src/saves/BackupsDialog.tsx:128
-#: src/settings/GameSettingsPage.tsx:59
+#: src/settings/GameSettingsPage.tsx:60
 #: src/settings/sections/DataUsage.tsx:207
 #: src/settings/sections/GameSettings.tsx:380
 msgid "Save backups"
@@ -8832,8 +8839,8 @@ msgstr "Find the crash cause"
 #: src/firstrunTour/TourPopover.tsx:64
 #: src/games/GameSelect.tsx:230
 #: src/launch/PlayControl.tsx:162
-#: src/settings/GameSettingsPage.tsx:57
-#: src/settings/GameSettingsPage.tsx:79
+#: src/settings/GameSettingsPage.tsx:58
+#: src/settings/GameSettingsPage.tsx:80
 msgid "Play"
 msgstr "Play"
 
@@ -8976,7 +8983,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 #: src/console/RunProblems.tsx:116
 #: src/fomod/Dialog.tsx:264
 #: src/loader/Banner.tsx:27
-#: src/settings/GameSettingsPage.tsx:55
+#: src/settings/GameSettingsPage.tsx:56
 #: src/settings/sections/SmapiRow.tsx:87
 #: src/settings/sections/SmapiRow.tsx:142
 msgid "Install"
@@ -9143,6 +9150,10 @@ msgstr "Unpin version"
 #: src/settings/sections/NexusMods.tsx:160
 msgid "Tracking"
 msgstr "Tracking"
+
+#: src/settings/sections/SourceOrder.tsx:50
+msgid "Preferred source"
+msgstr "Preferred source"
 
 #: src/settings/prefCopy.ts:453
 msgid "Check the file hash when Nexus provides one"

@@ -641,6 +641,9 @@ func run() error {
 
 	browseSvc := browse.NewService(version, profileSvc)
 	browseSvc.ShowAdult = func() bool { return store.Get().ShowAdultContent }
+	browseSvc.SourceOrder = func(game string) []string {
+		return strings.FieldsFunc(store.Get().GamePrefs(game).SourceOrder, func(r rune) bool { return r == ',' })
+	}
 	for _, s := range []application.Service{
 		application.NewService(svc), application.NewService(gamesSvc),
 		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),

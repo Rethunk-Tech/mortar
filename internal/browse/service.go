@@ -15,6 +15,8 @@ type Service struct {
 	Profiles *profile.Service
 	// ShowAdult reports the player's "show adult mods" setting.
 	ShowAdult func() bool
+	// SourceOrder is the game's preferred source ids, first first; nil means catalog order.
+	SourceOrder func(game string) []string
 }
 
 // NewService returns a Service that marks hits already on the named profile.
@@ -25,6 +27,9 @@ func NewService(version string, profiles *profile.Service) *Service {
 // Search returns one page of mods for game from sourceID matching text.
 func (s *Service) Search(ctx context.Context, game, sourceID, text string, page int, profileID string) (Page, error) {
 	c := &Client{Version: s.Version, Installed: s.installed(game, profileID), ShowAdult: s.ShowAdult != nil && s.ShowAdult()}
+	if s.SourceOrder != nil {
+		c.Prefer = s.SourceOrder(game)
+	}
 	return c.Search(ctx, game, sourceID, text, page)
 }
 

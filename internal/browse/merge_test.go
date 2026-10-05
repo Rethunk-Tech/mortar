@@ -31,3 +31,11 @@ func TestMergeSameKeepsSameNameDifferentAuthorApart(t *testing.T) {
 		t.Fatalf("cards = %+v", got)
 	}
 }
+
+func TestRankedPutsPreferredSourcesFirst(t *testing.T) {
+	got := ranked([]string{"github", "bogus", "github", "nexus"}, []string{"nexus", "thunderstore", "github"})
+	want := []string{"github", "nexus", "thunderstore"}
+	if len(got) != 3 || got[0] != want[0] || got[1] != want[1] || got[2] != want[2] {
+		t.Errorf("ranked = %v, want %v", got, want)
+	}
+}

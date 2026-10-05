@@ -48,6 +48,9 @@ type GameSettings struct {
 	ExtraModsFolder       string                 `json:"extraModsFolder,omitempty"`
 	ShowDotHiddenMods     bool                   `json:"showDotHiddenMods,omitempty"`
 	OldFilesOnUpdate      string                 `json:"oldFilesOnUpdate,omitempty"`
+	// SourceOrder is the comma-separated source ids the player prefers, first first; sources it omits follow in
+	// catalog order.
+	SourceOrder string `json:"sourceOrder,omitempty"`
 }
 
 // PrefSpec is one registry row, served to the CLI and frontend.
@@ -172,6 +175,7 @@ var registry = []pref{
 		gp.ShowDotHiddenMods = on
 		putGame(s, g, gp)
 	}),
+	strPref("sourceOrder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SourceOrder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SourceOrder = v; putGame(s, g, gp) }),
 	enumPref("oldFilesOnUpdate", ScopeGame, OldFilesAsk, oldFilesValues, func(s Settings, g string) string { return s.GamePrefs(g).OldFilesOnUpdate }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.OldFilesOnUpdate = v; putGame(s, g, gp) }),
 }
 
@@ -221,6 +225,9 @@ func putGame(s *Settings, gameID string, g GameSettings) {
 }
 
 func mergeGame(dst *GameSettings, src GameSettings) {
+	if src.SourceOrder != "" {
+		dst.SourceOrder = src.SourceOrder
+	}
 	if src.BackupBeforePlay != "" {
 		dst.BackupBeforePlay = src.BackupBeforePlay
 	}
