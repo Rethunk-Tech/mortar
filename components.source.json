@@ -30,22 +30,69 @@
     {
       "id": "stardew",
       "name": "Stardew Valley",
-      "steamAppId": "413150",
+      "enabled": true,
       "marker": "Stardew Valley.dll",
-      "loader": "SMAPI",
-      "gog": {
-        "productId": "1453375253",
-        "folder": "Stardew Valley"
+      "stores": {
+        "steam": {
+          "appId": "413150"
+        },
+        "gog": {
+          "productId": "1453375253",
+          "folder": "Stardew Valley"
+        },
+        "lutris": {
+          "slug": "stardew-valley",
+          "keyword": "stardew"
+        }
       },
-      "lutris": {
-        "slug": "stardew-valley",
-        "keyword": "stardew"
+      "loaders": [
+        {
+          "id": "smapi",
+          "name": "SMAPI",
+          "nexusModId": 2400
+        }
+      ],
+      "sources": [
+        {
+          "id": "nexus",
+          "key": "stardewvalley",
+          "gameId": 1303
+        },
+        {
+          "id": "github"
+        }
+      ]
+    },
+    {
+      "id": "lethal-company",
+      "name": "Lethal Company",
+      "enabled": false,
+      "marker": "Lethal Company.exe",
+      "stores": {
+        "steam": {
+          "appId": "1966720"
+        }
       },
-      "nexus": {
-        "domain": "stardewvalley",
-        "id": 1303,
-        "loaderModId": 2400
-      }
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "lethal-company"
+        },
+        {
+          "id": "nexus",
+          "key": "lethalcompany",
+          "gameId": 5848
+        },
+        {
+          "id": "github"
+        }
+      ]
     }
   ]
 }

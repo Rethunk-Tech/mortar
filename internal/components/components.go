@@ -70,50 +70,109 @@ type SourceFile struct {
 	Games      []GameInfo        `json:"games"`
 }
 
-// GameInfo is one game's identity: the names and ids the stores and mod sites know it by. How a game is launched or
-// modded stays in its Go implementation; this is only what can change without a Mortar release.
+// GameInfo is one game's catalog entry: the names and ids the stores and mod sites know it by, its loaders and its mod
+// sources. How a game is launched or modded stays in its Go implementation; this is only what can change without a
+// Mortar release.
 type GameInfo struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	SteamAppID string `json:"steamAppId"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	// Enabled is false for a game listed as coming later.
+	Enabled bool `json:"enabled"`
 	// Marker is a file every install of the game holds, at its root or one "game" folder down.
-	Marker string     `json:"marker"`
-	Loader string     `json:"loader"`
-	GOG    GOGInfo    `json:"gog"`
-	Lutris LutrisInfo `json:"lutris"`
-	Nexus  NexusInfo  `json:"nexus"`
+	Marker  string       `json:"marker"`
+	Stores  GameStores   `json:"stores"`
+	Loaders []GameLoader `json:"loaders"`
+	Sources []GameSource `json:"sources"`
 }
 
-// GOGInfo names a game to GOG: its product id and the folder GOG installers give it.
-type GOGInfo struct {
+// GameStores names a game to each store that sells it; a store that does not sell it is nil.
+type GameStores struct {
+	Steam  *SteamStore  `json:"steam,omitempty"`
+	GOG    *GOGStore    `json:"gog,omitempty"`
+	Lutris *LutrisStore `json:"lutris,omitempty"`
+}
+
+// SteamStore names a game to Steam.
+type SteamStore struct {
+	AppID string `json:"appId"`
+}
+
+// GOGStore names a game to GOG: its product id and the folder GOG installers give it.
+type GOGStore struct {
 	ProductID string `json:"productId"`
 	Folder    string `json:"folder"`
 }
 
-// LutrisInfo names a game to Lutris: its slug and a word its executable paths contain.
-type LutrisInfo struct {
+// LutrisStore names a game to Lutris: its slug and a word its executable paths contain.
+type LutrisStore struct {
 	Slug    string `json:"slug"`
 	Keyword string `json:"keyword"`
 }
 
-// NexusInfo names a game to Nexus Mods: its domain in v1 URLs and its numeric id in the v2 API.
-type NexusInfo struct {
-	Domain string `json:"domain"`
-	ID     int    `json:"id"`
-	// LoaderModID is the Nexus mod page of the game's mod loader, which Mortar installs outside any profile entry's
-	// Nexus source but which is installed all the same.
-	LoaderModID int `json:"loaderModId,omitempty"`
+// GameLoader is a mod loader a game can run.
+type GameLoader struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	// NexusModID is the loader's Nexus mod page, which Mortar installs outside any profile entry's Nexus source but
+	// which is installed all the same.
+	NexusModID int `json:"nexusModId,omitempty"`
 }
 
-// Validate checks that a game names itself and that no file or folder name could leave its folder.
+// GameSource is a site the game's mods come from. Key is the site's name for the game (Nexus domain, Thunderstore
+// community) and GameID its numeric id where the site's API uses one.
+type GameSource struct {
+	ID     string `json:"id"`
+	Key    string `json:"key,omitempty"`
+	GameID int    `json:"gameId,omitempty"`
+}
+
+// Source returns the game's source with the given id.
+func (g GameInfo) Source(id string) (GameSource, bool) {
+	for _, s := range g.Sources {
+		if s.ID == id {
+			return s, true
+		}
+	}
+	return GameSource{}, false
+}
+
+// SteamAppID is the game's Steam app id, empty when Steam does not sell it.
+func (g GameInfo) SteamAppID() string {
+	if g.Stores.Steam == nil {
+		return ""
+	}
+	return g.Stores.Steam.AppID
+}
+
+// Validate checks that a game names itself, has a loader, and that no file or folder name could leave its folder.
 func (g GameInfo) Validate() error {
 	if g.ID == "" || g.Name == "" || g.Marker == "" {
 		return errors.New("a game needs an id, a name and a marker file")
 	}
-	for _, name := range []string{g.Marker, g.GOG.Folder} {
+	if len(g.Loaders) == 0 {
+		return fmt.Errorf("game %q needs a loader", g.ID)
+	}
+	if g.Enabled && g.Stores == (GameStores{}) {
+		return fmt.Errorf("enabled game %q needs a store", g.ID)
+	}
+	names := []string{g.Marker}
+	if g.Stores.GOG != nil {
+		names = append(names, g.Stores.GOG.Folder)
+	}
+	for _, name := range names {
 		if strings.ContainsAny(name, "/\\") || name == "." || name == ".." {
 			return fmt.Errorf("game %q has an unsafe file or folder name %q", g.ID, name)
 		}
+	}
+	sources := make(map[string]struct{}, len(g.Sources))
+	for _, s := range g.Sources {
+		if s.ID == "" {
+			return fmt.Errorf("game %q has a source without an id", g.ID)
+		}
+		if _, ok := sources[s.ID]; ok {
+			return fmt.Errorf("game %q lists source %q more than once", g.ID, s.ID)
+		}
+		sources[s.ID] = struct{}{}
 	}
 	return nil
 }
@@ -390,7 +449,7 @@ func BundledGame(id string) (GameInfo, bool) {
 	return findGame(m.Games, id)
 }
 
-// BundledGameByNexusDomain returns the game whose Nexus domain (the v1 URL segment) is domain, from the manifest
+// BundledGameByNexusDomain returns the game whose Nexus source key (the v1 URL segment) is domain, from the manifest
 // compiled into Mortar; the browser extension names games by that domain.
 func BundledGameByNexusDomain(domain string) (GameInfo, bool) {
 	m, err := BundledManifest()
@@ -398,7 +457,7 @@ func BundledGameByNexusDomain(domain string) (GameInfo, bool) {
 		return GameInfo{}, false
 	}
 	for _, g := range m.Games {
-		if g.Nexus.Domain != "" && strings.EqualFold(g.Nexus.Domain, domain) {
+		if s, ok := g.Source("nexus"); ok && s.Key != "" && strings.EqualFold(s.Key, domain) {
 			return g, true
 		}
 	}

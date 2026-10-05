@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -220,16 +221,44 @@ func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 	c := NewClient(nil)
 	c.SetManifest(Manifest{Serial: 1})
 	g, ok := c.Game("stardew")
-	if !ok || g.Name != "Stardew Valley" || g.Marker == "" || g.GOG.ProductID == "" {
+	if !ok || g.Name != "Stardew Valley" || g.Marker == "" || g.Stores.GOG == nil || g.Stores.GOG.ProductID == "" || len(g.Loaders) == 0 {
 		t.Fatalf("a manifest without games must fall back to the bundled identity: %+v %v", g, ok)
 	}
-	bad := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "../escape.dll"}}}
+	bad := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "../escape.dll", Loaders: []GameLoader{{ID: "l"}}}}}
 	if err := bad.Validate(); err == nil {
 		t.Fatal("a marker that leaves the game folder must be refused")
 	}
-	dup := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m"}, {ID: "x", Name: "X", Marker: "m"}}}
+	dup := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l"}}}, {ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l"}}}}}
 	if err := dup.Validate(); err == nil {
 		t.Fatal("a game listed twice must be refused")
+	}
+}
+
+func TestLoadRefusesManifestWithoutCatalogShape(t *testing.T) {
+	_, private, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	public, ok := private.Public().(ed25519.PublicKey)
+	if !ok {
+		t.Fatal("generated key is not Ed25519")
+	}
+	base := bundledSerial(t)
+	body := []byte(`{"serial":` + strconv.FormatUint(base+1, 10) + `,"components":[],"games":[{"id":"stardew","name":"Stardew Valley","steamAppId":"413150","marker":"Stardew Valley.dll","loader":"SMAPI"}]}`)
+	signature := ed25519.Sign(private, body)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/components.json.sig" {
+			_, _ = w.Write(signature)
+			return
+		}
+		_, _ = w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+	client := NewClient(server.Client())
+	client.ManifestURL = server.URL + "/components.json"
+	manifest, err := client.Load(t.Context(), nil, public)
+	if err == nil || manifest.Serial != base {
+		t.Fatalf("old-shape manifest = serial %d, %v; want the bundled serial %d and an error", manifest.Serial, err, base)
 	}
 }
 
