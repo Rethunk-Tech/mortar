@@ -3,7 +3,6 @@ package datasvc
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -14,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // Progress is a size walk in progress.

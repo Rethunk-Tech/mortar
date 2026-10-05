@@ -1,10 +1,11 @@
 package datasvc
 
 import (
-	"github.com/Rethunk-Tech/mortar/internal/store"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func TestMeasureSizesSkipSymlinks(t *testing.T) {
