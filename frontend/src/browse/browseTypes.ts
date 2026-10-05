@@ -33,4 +33,4 @@ interface BrowsePageProps {
   addGitHub: (repo: string) => void
 }
 
-export type { BrowseItem, BrowsePageProps, BrowseSearch, BrowseSource }
+export type { BrowseItem, BrowsePageProps, BrowseSearch }
