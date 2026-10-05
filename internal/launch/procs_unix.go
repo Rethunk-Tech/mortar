@@ -17,7 +17,8 @@ import (
 // runs reports whether args start the program name, directly or through dotnet or mono.
 func runs(args []string, name string) bool {
 	is := func(a string) bool {
-		base := filepath.Base(a)
+		// Wine and Proton processes carry the Windows path of the game as their program.
+		base := filepath.Base(strings.ReplaceAll(a, `\`, "/"))
 		return strings.EqualFold(strings.TrimSuffix(strings.TrimSuffix(base, ".exe"), ".dll"), name)
 	}
 	if len(args) == 0 {

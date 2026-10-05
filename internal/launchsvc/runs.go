@@ -311,7 +311,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	}
 	stats := launch.Summarize(text)
 	s.mu.Lock()
-	sess := s.logs[g.ID()]
+	sess := s.logs[keyOf(g)]
 	s.mu.Unlock()
 	if sess.haveExit {
 		launch.ApplyExit(&stats, sess.exit)
@@ -476,7 +476,7 @@ func (s *Service) runText(g game.Game, profileID, modsDir string) string {
 		}
 	}
 	s.mu.Lock()
-	sess, ok := s.logs[g.ID()]
+	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()
 	if ok && sess.profile == profileID && sess.buf != nil {
 		return launch.FormatLog(sess.buf.Lines())

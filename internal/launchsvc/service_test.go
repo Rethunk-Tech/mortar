@@ -90,7 +90,7 @@ func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 
 	buf := &launch.Buffer{}
 	buf.Add(launch.Entry{Message: "session"})
-	svc.logs["stardew"] = session{buf: buf, profile: b.ID}
+	svc.logs["stardew/"] = session{buf: buf, profile: b.ID}
 	if got, err := svc.Lines("stardew", b.ID); err != nil || len(got) != 1 {
 		t.Fatalf("profile B's session: %v, %v", got, err)
 	}
@@ -100,7 +100,7 @@ func TestLinesReadsTheProfilesLastLog(t *testing.T) {
 
 	buf = &launch.Buffer{}
 	buf.Add(launch.Entry{Message: "Started without mods"})
-	svc.logs["stardew"] = session{buf: buf, vanilla: true}
+	svc.logs["stardew/"] = session{buf: buf, vanilla: true}
 	if got, err := svc.Lines("stardew", a.ID); err != nil || got == nil || len(got) != 0 {
 		t.Fatalf("vanilla session leaked to a profile: %v, %v", got, err)
 	}
@@ -125,15 +125,15 @@ func TestGameClosingEndsTheConsoleWithAMortarLine(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := game.Find("stardew")
-	if !svc.poll(g) || svc.current("stardew").State != Running {
+	if !svc.poll(g) || svc.current(game.Find("stardew")).State != Running {
 		t.Fatal("the running process should mark the game running")
 	}
 	buf := &launch.Buffer{}
-	svc.logs["stardew"] = session{buf: buf, profile: a.ID}
+	svc.logs["stardew/"] = session{buf: buf, profile: a.ID}
 	if err := os.RemoveAll(pid); err != nil {
 		t.Fatal(err)
 	}
-	if svc.poll(g) || svc.current("stardew").State != Idle {
+	if svc.poll(g) || svc.current(game.Find("stardew")).State != Idle {
 		t.Fatal("the game should be idle once its process is gone")
 	}
 	lines := buf.Lines()
@@ -202,7 +202,7 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		svc.mu.Lock()
-		_, busy := svc.preparing["stardew"]
+		_, busy := svc.preparing["stardew/"]
 		svc.mu.Unlock()
 		if !busy {
 			break
@@ -212,7 +212,7 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	if st := svc.current("stardew"); st.State != Idle {
+	if st := svc.current(game.Find("stardew")); st.State != Idle {
 		t.Fatalf("state after a failed install = %v", st.State)
 	}
 }
@@ -269,8 +269,8 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 		t.Fatal(err)
 	}
 	buf := &launch.Buffer{}
-	svc.logs["stardew"] = session{buf: buf, profile: p.ID}
-	svc.status["stardew"] = Status{Game: "stardew", State: Running, Profile: p.ID}
+	svc.logs["stardew/"] = session{buf: buf, profile: p.ID}
+	svc.status["stardew/"] = Status{Game: "stardew", State: Running, Profile: p.ID}
 	if err := svc.Send("stardew", "  help  "); err != nil {
 		t.Fatal(err)
 	}
@@ -330,14 +330,14 @@ func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
 		t.Fatal(err)
 	}
 	<-asked
-	if st := svc.current("stardew"); st.State != Idle {
+	if st := svc.current(game.Find("stardew")); st.State != Idle {
 		t.Fatalf("launched while the loader was being updated: %v", st.State)
 	}
 	close(release)
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		svc.mu.Lock()
-		_, busy := svc.preparing["stardew"]
+		_, busy := svc.preparing["stardew/"]
 		svc.mu.Unlock()
 		if !busy {
 			break
@@ -347,7 +347,7 @@ func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	if st := svc.current("stardew"); st.State != Idle {
+	if st := svc.current(game.Find("stardew")); st.State != Idle {
 		t.Fatalf("state after a failed update = %v", st.State)
 	}
 }
@@ -359,7 +359,7 @@ func TestAProfileReadiedForLaunchIsRunning(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc.procDir = t.TempDir()
-	svc.preparing["stardew"] = p.ID
+	svc.preparing[keyOf(svc.selectedSlot(game.Find("stardew")))] = p.ID
 	if !svc.Running("stardew", p.ID) {
 		t.Fatal("the profile is locked while its loader is still being checked")
 	}
@@ -461,7 +461,7 @@ func TestStartPresetRefusesAnUnknownPreset(t *testing.T) {
 		t.Fatal("unknown preset accepted")
 	}
 	svc.mu.Lock()
-	_, busy := svc.preparing["stardew"]
+	_, busy := svc.preparing["stardew/"]
 	svc.mu.Unlock()
 	if busy {
 		t.Fatal("a refused launch left the game marked busy")

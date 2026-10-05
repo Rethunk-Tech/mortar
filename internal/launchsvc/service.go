@@ -182,41 +182,36 @@ func (s *Service) emit(name string, data any) {
 
 // set records st and announces it. Failed and NoSteam are announced but not kept.
 func (s *Service) set(st Status) {
-	if st.Install == "" && st.State.Active() && s.settings != nil {
-		if st.Install = s.current(st.Game).Install; st.Install == "" {
-			in, _ := game.ResolveInstall(s.home, s.settings.Get(), st.Game, "")
-			st.Install = in.ID
-		}
-	}
+	key := slotKey(st.Game, st.Install)
 	stored := st
 	switch st.State {
 	case Failed, NoSteam:
 		if st.State == Failed {
 			log.Printf("launch: %s %s failed: %s", st.Game, st.Profile, st.Error)
 		}
-		stored = Status{Game: st.Game, State: Idle}
+		stored = Status{Game: st.Game, Install: st.Install, State: Idle}
 	case Idle, Launching, Running:
 	}
 	s.mu.Lock()
-	prev, had := s.status[st.Game]
-	s.status[st.Game] = stored
-	if stored.State == Idle && s.stop[st.Game] != nil {
-		s.stop[st.Game]()
-		delete(s.stop, st.Game)
+	prev, had := s.status[key]
+	s.status[key] = stored
+	if stored.State == Idle && s.stop[key] != nil {
+		s.stop[key]()
+		delete(s.stop, key)
 	}
 	s.mu.Unlock()
 	s.emit(StateEvent, st)
 	if st.State == Running && st.Profile != "" && s.settings != nil {
-		_, _ = s.settings.RecordLastPlayed(st.Game, st.Profile, time.Now(), launchGameVersion(s, st.Game))
+		_, _ = s.settings.RecordLastPlayed(st.Game, st.Profile, time.Now(), launchGameVersion(s, key))
 	}
 	if stored.State == Idle && had && prev.State != Idle && s.Unlocked != nil {
 		s.Unlocked()
 	}
 }
 
-func launchGameVersion(s *Service, gameID string) string {
+func launchGameVersion(s *Service, key string) string {
 	s.mu.Lock()
-	sess := s.logs[gameID]
+	sess := s.logs[key]
 	s.mu.Unlock()
 	if sess.buf == nil {
 		return ""
@@ -229,24 +224,25 @@ func launchGameVersion(s *Service, gameID string) string {
 	return ""
 }
 
-func (s *Service) current(id string) Status {
+func (s *Service) current(g game.Game) Status {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if st, ok := s.status[id]; ok {
+	if st, ok := s.status[keyOf(g)]; ok {
 		return st
 	}
-	return Status{Game: id, State: Idle}
+	return Status{Game: g.ID(), Install: installOf(g), State: Idle}
 }
 
-// procsFor returns the game's loader processes that run modsDir.
+// procsFor returns the loader processes of g's install that run modsDir.
 func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Process, error) {
 	procs, err := launch.Processes(s.procDir, g.ProcessName())
 	if err != nil {
 		return nil, err
 	}
+	procs = s.ownedBy(g, procs)
 	s.mu.Lock()
-	cur := s.status[g.ID()]
-	sess, ok := s.logs[g.ID()]
+	cur := s.status[keyOf(g)]
+	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()
 	launched := ""
 	vanilla := false
@@ -282,21 +278,25 @@ func (s *Service) Running(gameID, profileID string) bool {
 	if g == nil {
 		return false
 	}
-	s.mu.Lock()
-	cur, prep := s.status[gameID], s.preparing[gameID]
-	s.mu.Unlock()
-	if (prep != "" && prep == profileID) || (cur.State == Launching && cur.Profile != "" && cur.Profile == profileID) {
-		return true
+	dir, dirErr := s.profiles.ModsDir(gameID, profileID)
+	for _, sl := range s.slots(g) {
+		s.mu.Lock()
+		cur, prep := s.status[keyOf(sl)], s.preparing[keyOf(sl)]
+		s.mu.Unlock()
+		if (prep != "" && prep == profileID) || (cur.State == Launching && cur.Profile != "" && cur.Profile == profileID) {
+			return true
+		}
+		if dirErr != nil {
+			continue
+		}
+		if procs, err := s.procsFor(sl, dir, profileID); err == nil && len(procs) > 0 {
+			return true
+		}
 	}
-	dir, err := s.profiles.ModsDir(gameID, profileID)
-	if err != nil {
-		return false
-	}
-	procs, err := s.procsFor(g, dir, profileID)
-	return err == nil && len(procs) > 0
+	return false
 }
 
-// find returns the profile of the game the loader is running, and when that process began.
+// find returns the profile of the install the loader is running, and when that process began.
 func (s *Service) find(g game.Game) (string, time.Time) {
 	all, err := s.profiles.List(g.ID())
 	if err != nil {
@@ -334,7 +334,7 @@ func (s *Service) gameProcs(g game.Game) ([]launch.Process, error) {
 		}
 		out = append(out, ps...)
 	}
-	return out, nil
+	return s.ownedBy(g, out), nil
 }
 
 func (s *Service) seen(g game.Game) func() bool {
@@ -348,42 +348,42 @@ func (s *Service) poll(g game.Game) bool {
 	profileID, began := s.find(g)
 	procs, _ := s.gameProcs(g)
 	alive := len(procs) > 0
-	cur := s.current(g.ID())
+	cur := s.current(g)
 	switch {
 	case cur.State == Launching:
 	case cur.State == Idle && profileID != "":
 		// A game Mortar did not start has its own log; the last session's buffer is stale.
 		s.mu.Lock()
-		delete(s.logs, g.ID())
+		delete(s.logs, keyOf(g))
 		s.mu.Unlock()
-		s.set(Status{Game: g.ID(), State: Running, Profile: profileID, Since: sinceOr(began)})
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: Running, Profile: profileID, Since: sinceOr(began)})
 	case cur.State == Idle && alive:
 		s.mu.Lock()
-		delete(s.logs, g.ID())
+		delete(s.logs, keyOf(g))
 		s.mu.Unlock()
-		s.set(Status{Game: g.ID(), State: Running, Since: sinceOr(procs[0].Start)})
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: Running, Since: sinceOr(procs[0].Start)})
 	case cur.State == Running && cur.Profile != "" && profileID == "":
-		if s.reapArmed(g.ID()) {
+		if s.reapArmed(g) {
 			break
 		}
 		s.closed(g, cur, false)
 	case cur.State == Running && cur.Profile == "" && !alive:
-		if s.reapArmed(g.ID()) {
+		if s.reapArmed(g) {
 			break
 		}
 		s.closed(g, cur, false)
 	}
-	return s.current(g.ID()).State != Idle
+	return s.current(g).State != Idle
 }
 
 // watch polls every 2 s until the game is idle.
 func (s *Service) watch(g game.Game) {
 	s.mu.Lock()
-	if s.watching[g.ID()] {
+	if s.watching[keyOf(g)] {
 		s.mu.Unlock()
 		return
 	}
-	s.watching[g.ID()] = true
+	s.watching[keyOf(g)] = true
 	s.mu.Unlock()
 	go func() {
 		tick := time.NewTicker(pollEvery)
@@ -391,7 +391,7 @@ func (s *Service) watch(g game.Game) {
 		for range tick.C {
 			if !s.poll(g) {
 				s.mu.Lock()
-				s.watching[g.ID()] = false
+				s.watching[keyOf(g)] = false
 				s.mu.Unlock()
 				return
 			}
@@ -399,7 +399,7 @@ func (s *Service) watch(g game.Game) {
 	}()
 }
 
-// Busy reports whether the game is launching or running.
+// Busy reports whether any install of the game is launching or running.
 func (s *Service) Busy(gameID string) bool {
 	st, err := s.Status(gameID)
 	return err == nil && st.State.Active()
@@ -407,29 +407,24 @@ func (s *Service) Busy(gameID string) bool {
 
 // BusyInstall reports whether the install with this id is launching or running.
 func (s *Service) BusyInstall(installID string) bool {
-	return s.runningInstall(installID) != ""
+	sl, ok := s.findInstall(installID)
+	return ok && s.statusOf(sl).State.Active()
 }
 
-// runningInstall returns the game whose launch or run uses the install, or "".
-//
-// ponytail: Mortar finds a running game by process name, so two installs of one game cannot run side by side and
-// each game holds one status; the lock is therefore per install in what it reports and stops, not in what it admits.
-func (s *Service) runningInstall(installID string) string {
+// findInstall is the slot of the install with this id.
+func (s *Service) findInstall(installID string) (slot, bool) {
+	if installID == "" {
+		return slot{}, false
+	}
 	for _, id := range game.Implemented() {
-		if st, err := s.Status(id); err == nil && st.State.Active() && st.Install == installID {
-			return id
+		g := game.Find(id)
+		for _, sl := range s.slots(g) {
+			if sl.inst == installID {
+				return sl, true
+			}
 		}
 	}
-	return ""
-}
-
-// StopInstall stops the game running from the install with this id.
-func (s *Service) StopInstall(installID string) error {
-	id := s.runningInstall(installID)
-	if id == "" {
-		return usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q is not running", installID))
-	}
-	return s.Stop(id)
+	return slot{}, false
 }
 
 // AnyBusy reports whether any implemented game is launching or running.
@@ -437,16 +432,30 @@ func (s *Service) AnyBusy() bool {
 	return slices.ContainsFunc(game.Implemented(), s.Busy)
 }
 
-// Status returns the game's launch state after looking for a game Mortar did not start.
+// statusOf is the install's launch state after looking for a game Mortar did not start.
+func (s *Service) statusOf(sl slot) Status {
+	if s.poll(sl) {
+		s.watch(sl)
+	}
+	return s.current(sl)
+}
+
+// Status returns the launch state of the game's install that is launching or running, else of the selected install.
 func (s *Service) Status(gameID string) (Status, error) {
 	g, err := game.Require(gameID)
 	if err != nil {
 		return Status{}, err
 	}
-	if s.poll(g) {
-		s.watch(g)
+	var out Status
+	found := false
+	for i, sl := range s.slots(g) {
+		st := s.statusOf(sl)
+		if i == 0 || (!found && st.State.Active()) {
+			out = st
+		}
+		found = found || st.State.Active()
 	}
-	return s.current(gameID), nil
+	return out, nil
 }
 
 // Start launches the profile. Its outcome arrives as StateEvents: Launching, then Running or Failed, or NoSteam
@@ -467,13 +476,15 @@ func (s *Service) start(parent context.Context, gameID, profileID, preset string
 	if err != nil {
 		return err
 	}
-	// preparing is claimed under the same lock as the check, so two Starts cannot both pass it.
+	sl := s.profileSlot(g, profileID)
+	key := keyOf(sl)
+	// preparing is claimed under the same lock as the check, so two Starts of one install cannot both pass it.
 	s.mu.Lock()
-	cur := s.status[gameID]
-	_, busy := s.preparing[gameID]
+	cur := s.status[key]
+	_, busy := s.preparing[key]
 	busy = busy || cur.State.Active()
 	if !busy {
-		s.preparing[gameID] = profileID
+		s.preparing[key] = profileID
 	}
 	s.mu.Unlock()
 	if busy {
@@ -484,13 +495,13 @@ func (s *Service) start(parent context.Context, gameID, profileID, preset string
 		_, err = s.profiles.LaunchSpec(gameID, profileID, preset)
 	}
 	if err != nil {
-		s.donePreparing(gameID)
+		s.donePreparing(sl)
 		return err
 	}
 	// Even an installed loader goes through EnsureLoader: it waits out an update in progress, which would
 	// otherwise launch the game on half-replaced files.
 	go func() {
-		defer s.donePreparing(gameID)
+		defer s.donePreparing(sl)
 		ctx, cancel := context.WithCancel(parent)
 		defer cancel()
 		// Checked before the watcher starts, so a quit that already happened cancels before EnsureLoader runs.
@@ -515,11 +526,11 @@ func (s *Service) start(parent context.Context, gameID, profileID, preset string
 			if _, err = s.profiles.Mods(gameID, profileID); err == nil {
 				// The run gets parent, not ctx: ctx is cancelled as soon as this goroutine returns, which would
 				// end the game Mortar just started.
-				err = s.begin(parent, g, launchTarget{profileID: profileID, preset: preset, dir: dir, modsDir: modsDir}, direct, false)
+				err = s.begin(parent, sl, launchTarget{profileID: profileID, preset: preset, dir: dir, modsDir: modsDir}, direct, false)
 			}
 		}
 		if err != nil {
-			s.set(Status{Game: gameID, State: Failed, Profile: profileID, Error: err.Error()})
+			s.set(Status{Game: gameID, Install: sl.inst, State: Failed, Profile: profileID, Error: err.Error()})
 		}
 	}()
 	return nil
@@ -553,12 +564,14 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 	if err != nil {
 		return err
 	}
+	sl := s.selectedSlot(g)
+	key := keyOf(sl)
 	s.mu.Lock()
-	cur := s.status[gameID]
-	_, busy := s.preparing[gameID]
+	cur := s.status[key]
+	_, busy := s.preparing[key]
 	busy = busy || cur.State.Active()
 	if !busy {
-		s.preparing[gameID] = ""
+		s.preparing[key] = ""
 	}
 	s.mu.Unlock()
 	if busy {
@@ -566,17 +579,17 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 	}
 	dir, err := game.InstallDir(s.home, s.settings.Get(), g.ID())
 	if err != nil {
-		s.donePreparing(gameID)
+		s.donePreparing(sl)
 		return err
 	}
 	if dir == "" {
-		s.donePreparing(gameID)
+		s.donePreparing(sl)
 		return fmt.Errorf("%s is not installed", g.Name())
 	}
 	go func() {
-		defer s.donePreparing(gameID)
-		if err := s.begin(context.Background(), g, launchTarget{dir: dir}, direct, true); err != nil {
-			s.set(Status{Game: gameID, State: Failed, Error: plainLaunchError(err, dir)})
+		defer s.donePreparing(sl)
+		if err := s.begin(context.Background(), sl, launchTarget{dir: dir}, direct, true); err != nil {
+			s.set(Status{Game: gameID, Install: sl.inst, State: Failed, Error: plainLaunchError(err, dir)})
 		}
 	}()
 	return nil
@@ -647,10 +660,10 @@ func (s *Service) PreviewCommand(gameID, profileID, options, prefix, env string)
 	return preview
 }
 
-func (s *Service) donePreparing(gameID string) {
+func (s *Service) donePreparing(g game.Game) {
 	s.mu.Lock()
-	delete(s.preparing, gameID)
-	st := s.status[gameID]
+	delete(s.preparing, keyOf(g))
+	st := s.status[keyOf(g)]
 	s.mu.Unlock()
 	if !st.State.Active() && s.Unlocked != nil {
 		s.Unlocked()
@@ -683,7 +696,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	var startupBefore map[string]bool
 	if waitOnChild(req) {
 		req.OnExit = func(x launch.Exit) { s.finishWait(g, x) }
-		s.armReap(g.ID())
+		s.armReap(g)
 	}
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
@@ -759,7 +772,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	started := time.Now()
 	mods := s.profileModRefs(gameID, profileID)
 	s.mu.Lock()
-	s.logs[gameID], s.stop[gameID] = session{
+	s.logs[keyOf(g)], s.stop[keyOf(g)] = session{
 		buf:             buf,
 		profile:         profileID,
 		preset:          spec.Name,
@@ -770,20 +783,20 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		settingsMissing: settingsMissing,
 	}, cancel
 	s.mu.Unlock()
-	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Install: inst.ID, Since: started.UnixMilli()})
+	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Install: installOf(g), Since: started.UnixMilli()})
 	if settingsMissing {
-		s.say(gameID, profileID, "startup_preferences is missing; skipped profile game settings.")
+		s.say(g, profileID, "startup_preferences is missing; skipped profile game settings.")
 	}
 	if backupErr != nil {
 		msg := fmt.Sprintf("Could not back up saves before playing: %v.", backupErr)
-		s.say(gameID, profileID, msg)
+		s.say(g, profileID, msg)
 		s.emit(BackupWarningEvent, BackupWarning{Game: gameID, Profile: profileID, Error: backupErr.Error()})
 	}
 	s.watch(g)
 	if measure {
 		stopped := make(chan struct{})
 		s.mu.Lock()
-		s.sampled[g.ID()] = stopped
+		s.sampled[keyOf(g)] = stopped
 		s.mu.Unlock()
 		go s.sampleStartup(runCtx, g, profileID, modsDir, startupBefore, sync.OnceFunc(func() { close(stopped) }))
 	}
@@ -793,10 +806,10 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 
 // waitSampled waits for a measured launch's sampler to stop its session, so stopping the game does not cut off the
 // method rundown the samples are resolved with.
-func (s *Service) waitSampled(gameID string, limit time.Duration) {
+func (s *Service) waitSampled(g game.Game, limit time.Duration) {
 	s.mu.Lock()
-	stopped := s.sampled[gameID]
-	delete(s.sampled, gameID)
+	stopped := s.sampled[keyOf(g)]
+	delete(s.sampled, keyOf(g))
 	s.mu.Unlock()
 	if stopped == nil {
 		return
@@ -879,7 +892,7 @@ func changedSinceLastRun(events []profile.HistoryEvent, lastRun time.Time) bool 
 }
 
 // collect parses log lines into buf and announces them, unless a newer launch has replaced buf.
-func (s *Service) collect(gameID, profileID string, buf *launch.Buffer) func([]string) {
+func (s *Service) collect(g game.Game, profileID string, buf *launch.Buffer) func([]string) {
 	var p launch.Parser
 	return func(lines []string) {
 		entries := make([]launch.Entry, 0, len(lines))
@@ -890,7 +903,7 @@ func (s *Service) collect(gameID, profileID string, buf *launch.Buffer) func([]s
 			}
 		}
 		s.mu.Lock()
-		current := s.logs[gameID].buf == buf
+		current := s.logs[keyOf(g)].buf == buf
 		s.mu.Unlock()
 		if !current {
 			return
@@ -898,7 +911,7 @@ func (s *Service) collect(gameID, profileID string, buf *launch.Buffer) func([]s
 		for _, e := range entries {
 			buf.Add(e)
 		}
-		s.emit(LineEvent, Lines{Game: gameID, Profile: profileID, Entries: entries})
+		s.emit(LineEvent, Lines{Game: g.ID(), Profile: profileID, Entries: entries})
 	}
 }
 
@@ -911,7 +924,7 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 		return nil, err
 	}
 	s.mu.Lock()
-	sess, ok := s.logs[gameID]
+	sess, ok := s.logs[keyOf(s.profileSlot(g, profileID))]
 	s.mu.Unlock()
 	if ok {
 		if sess.vanilla {
@@ -958,14 +971,14 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 }
 
 func (s *Service) run(ctx context.Context, g game.Game, profileID string, req launch.Request, buf *launch.Buffer) {
-	err := g.Launch(ctx, req, s.collect(g.ID(), profileID, buf))
+	err := g.Launch(ctx, req, s.collect(g, profileID, buf))
 	if err != nil {
 		s.mu.Lock()
-		sess := s.logs[g.ID()]
+		sess := s.logs[keyOf(g)]
 		s.mu.Unlock()
 		if sess.buf == buf && sess.profile == profileID {
 			if restoreErr := s.restoreGameSettings(sess.restore); restoreErr != nil {
-				s.reportSettingsRestore(g.ID(), profileID, restoreErr)
+				s.reportSettingsRestore(g, profileID, restoreErr)
 			}
 		}
 	}
@@ -973,37 +986,37 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, req la
 	var exited *launch.ExitError
 	switch {
 	case err == nil:
-		s.set(Status{Game: g.ID(), State: Running, Profile: profileID, Since: time.Now().UnixMilli()})
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: Running, Profile: profileID, Since: time.Now().UnixMilli()})
 		if req.Vanilla {
-			s.say(g.ID(), profileID, "Started without mods")
+			s.say(g, profileID, "Started without mods")
 		}
 		if !waitOnChild(req) {
-			s.armReap(g.ID())
+			s.armReap(g)
 			go s.awaitPID(g, profileID)
 		}
 	case errors.Is(err, launch.ErrNoSteam):
-		s.clearReap(g.ID())
-		s.set(Status{Game: g.ID(), State: NoSteam, Profile: profileID})
+		s.clearReap(g)
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: NoSteam, Profile: profileID})
 	case errors.As(err, &exited):
-		s.clearReap(g.ID())
+		s.clearReap(g)
 		if len(buf.Lines()) == 0 {
-			s.say(g.ID(), profileID, fmt.Sprintf("%s exited with code %d.", g.LoaderName(), exited.Code))
+			s.say(g, profileID, fmt.Sprintf("%s exited with code %d.", g.LoaderName(), exited.Code))
 		}
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g.ID(), profileID, buf)})
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g, profileID, buf)})
 	case errors.As(err, &f):
-		s.clearReap(g.ID())
+		s.clearReap(g)
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error(), Cause: causeFromBuffer(s, g.ID(), profileID, buf)})
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error(), Cause: causeFromBuffer(s, g, profileID, buf)})
 	default:
-		s.clearReap(g.ID())
+		s.clearReap(g)
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g.ID(), profileID, buf)})
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, req.InstallDir), Cause: causeFromBuffer(s, g, profileID, buf)})
 	}
 }
 
-func causeFromBuffer(s *Service, gameID, profileID string, buf *launch.Buffer) *Cause {
-	cause := s.cause(gameID, profileID, launch.FormatLog(buf.Lines()))
+func causeFromBuffer(s *Service, g game.Game, profileID string, buf *launch.Buffer) *Cause {
+	cause := s.cause(g.ID(), profileID, launch.FormatLog(buf.Lines()))
 	if cause.ModName == "" {
 		return nil
 	}
@@ -1020,16 +1033,33 @@ func plainLaunchError(err error, dir string) string {
 	return err.Error()
 }
 
-// Stop terminates the loader process of the profile the game is running.
+// Stop terminates the loader process of the profile the game is running, in whichever install it runs.
 func (s *Service) Stop(gameID string) error {
 	g, err := game.Require(gameID)
 	if err != nil {
 		return err
 	}
-	cur := s.current(gameID)
-	if cur.State != Running {
-		return fmt.Errorf("%s is not running", g.Name())
+	for _, sl := range s.slots(g) {
+		if s.current(sl).State == Running {
+			return s.stopSlot(sl)
+		}
 	}
+	return fmt.Errorf("%s is not running", g.Name())
+}
+
+// StopInstall stops the game running from the install with this id.
+func (s *Service) StopInstall(installID string) error {
+	sl, ok := s.findInstall(installID)
+	if !ok || s.current(sl).State != Running {
+		return usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q is not running", installID))
+	}
+	return s.stopSlot(sl)
+}
+
+func (s *Service) stopSlot(g slot) error {
+	gameID := g.ID()
+	cur := s.current(g)
+	var err error
 	var procs []launch.Process
 	if cur.Profile == "" {
 		procs, err = s.gameProcs(g)
@@ -1045,7 +1075,7 @@ func (s *Service) Stop(gameID string) error {
 		return err
 	}
 	s.mu.Lock()
-	s.stopping[gameID] = true
+	s.stopping[keyOf(g)] = true
 	s.mu.Unlock()
 	var errs []error
 	for _, p := range procs {
@@ -1061,15 +1091,15 @@ func (s *Service) Stop(gameID string) error {
 // closed ends the game's session with a console line of Mortar's own, so the log does not just stop, then marks
 // the game idle. It does nothing when a concurrent poll or Stop already closed the session.
 func (s *Service) closed(g game.Game, cur Status, stopped bool) {
-	if s.current(g.ID()).State != Running {
+	if s.current(g).State != Running {
 		return
 	}
 	if stopped {
 		s.mu.Lock()
-		if sess, ok := s.logs[g.ID()]; ok && !sess.haveExit {
+		if sess, ok := s.logs[keyOf(g)]; ok && !sess.haveExit {
 			sess.exit = launch.Exit{Stopped: true}
 			sess.haveExit = true
-			s.logs[g.ID()] = sess
+			s.logs[keyOf(g)] = sess
 		}
 		s.mu.Unlock()
 	}
@@ -1078,7 +1108,7 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		msg = g.Name() + " was stopped from Mortar"
 	} else {
 		s.mu.Lock()
-		sessExit := s.logs[g.ID()]
+		sessExit := s.logs[keyOf(g)]
 		s.mu.Unlock()
 		if sessExit.haveExit && launch.ExitCrashed(sessExit.exit) {
 			msg = g.Name() + " crashed; " + launch.DescribeExit(sessExit.exit)
@@ -1087,13 +1117,13 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 	if cur.Since > 0 {
 		msg += " after " + time.Since(time.UnixMilli(cur.Since)).Round(time.Second).String()
 	}
-	s.say(g.ID(), cur.Profile, msg+".")
+	s.say(g, cur.Profile, msg+".")
 	s.mu.Lock()
-	sess, ok := s.logs[g.ID()]
+	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()
 	if ok && !sess.vanilla && cur.Profile != "" {
 		if restoreErr := s.restoreGameSettings(sess.restore); restoreErr != nil {
-			s.reportSettingsRestore(g.ID(), cur.Profile, restoreErr)
+			s.reportSettingsRestore(g, cur.Profile, restoreErr)
 		}
 		started := sess.started
 		if cur.Since > 0 {
@@ -1109,13 +1139,13 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		}
 		s.record(g, cur.Profile, started, false, sess.mods)
 	}
-	s.set(Status{Game: g.ID(), State: Idle})
-	s.clearReap(g.ID())
+	s.set(Status{Game: g.ID(), Install: installOf(g), State: Idle})
+	s.clearReap(g)
 }
 
 func (s *Service) finishFailed(g game.Game, profileID string, buf *launch.Buffer) {
 	s.mu.Lock()
-	sess, ok := s.logs[g.ID()]
+	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()
 	if !ok || sess.vanilla || sess.buf != buf || profileID == "" {
 		return
@@ -1124,21 +1154,21 @@ func (s *Service) finishFailed(g game.Game, profileID string, buf *launch.Buffer
 }
 
 // say adds a console line of Mortar's own to the session of the profile the game runs.
-func (s *Service) say(gameID, profileID, msg string) {
+func (s *Service) say(g game.Game, profileID, msg string) {
 	e := launch.Entry{Seq: s.seq.Add(1), Time: time.Now().Format(time.TimeOnly), Level: launch.Info, Mod: "Mortar", Message: msg}
 	s.mu.Lock()
-	sess, ok := s.logs[gameID]
+	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()
 	if ok && sess.profile == profileID {
 		sess.buf.Add(e)
 	}
-	s.emit(LineEvent, Lines{Game: gameID, Profile: profileID, Entries: []launch.Entry{e}})
+	s.emit(LineEvent, Lines{Game: g.ID(), Profile: profileID, Entries: []launch.Entry{e}})
 }
 
-func (s *Service) reportSettingsRestore(gameID, profileID string, err error) {
+func (s *Service) reportSettingsRestore(g game.Game, profileID string, err error) {
 	msg := fmt.Sprintf("Could not restore profile game settings: %v.", err)
-	s.say(gameID, profileID, msg)
-	s.emit(SettingsRestoreWarningEvent, SettingsRestoreWarning{Game: gameID, Profile: profileID, Error: err.Error()})
+	s.say(g, profileID, msg)
+	s.emit(SettingsRestoreWarningEvent, SettingsRestoreWarning{Game: g.ID(), Profile: profileID, Error: err.Error()})
 }
 
 // Send runs a console command in the running game through the bridge mod in the running profile. The command
@@ -1152,10 +1182,11 @@ func (s *Service) Send(gameID, command string) error {
 	if command == "" {
 		return errors.New("enter a command")
 	}
-	cur := s.current(gameID)
-	if cur.State != Running {
+	sl, ok := s.activeSlot(g)
+	if !ok || s.current(sl).State != Running {
 		return fmt.Errorf("%s is not running", g.Name())
 	}
+	cur := s.current(sl)
 	folder, err := s.bridgeFolder(g, cur.Profile)
 	if err != nil {
 		return err
@@ -1163,7 +1194,7 @@ func (s *Service) Send(gameID, command string) error {
 	if err := bridge.Send(folder, command); err != nil {
 		return err
 	}
-	s.say(gameID, cur.Profile, "> "+command)
+	s.say(sl, cur.Profile, "> "+command)
 	return nil
 }
 

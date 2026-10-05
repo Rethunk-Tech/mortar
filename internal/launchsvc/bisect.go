@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -29,6 +30,11 @@ var bisectStartupGrace = 20 * time.Second
 func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (bool, launch.Summary, error) {
 	runCtx, cancel := context.WithTimeout(ctx, bisectRunTimeout)
 	defer cancel()
+	g, err := game.Require(gameID)
+	if err != nil {
+		return false, launch.Summary{}, err
+	}
+	sl := s.profileSlot(g, profileID)
 	beforeRunID, _, err := s.LastRunSummary(gameID, profileID)
 	if err != nil {
 		return false, launch.Summary{}, err
@@ -56,16 +62,13 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 	defer ticker.Stop()
 	for {
 		if hasBridge && startupReportAfter(startup, launched) {
-			s.waitSampled(gameID, time.Minute)
-			if err := s.Stop(gameID); err != nil {
+			s.waitSampled(sl, time.Minute)
+			if err := s.stopSlot(sl); err != nil {
 				return false, launch.Summary{}, err
 			}
 			return true, launch.Summary{}, nil
 		}
-		status, err := s.Status(gameID)
-		if err != nil {
-			return false, launch.Summary{}, err
-		}
+		status := s.statusOf(sl)
 		switch status.State {
 		case Launching:
 			started = true
@@ -76,7 +79,7 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 				return false, launch.Summary{}, err
 			}
 			if bisectStartupFailure(lines) {
-				if err := s.Stop(gameID); err != nil {
+				if err := s.stopSlot(sl); err != nil {
 					return false, launch.Summary{}, err
 				}
 				return false, launch.Summary{}, nil
@@ -86,7 +89,7 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 					runningSince = time.Now()
 				}
 				if time.Since(runningSince) >= bisectStartupGrace {
-					if err := s.Stop(gameID); err != nil {
+					if err := s.stopSlot(sl); err != nil {
 						return false, launch.Summary{}, err
 					}
 					return true, launch.Summary{}, nil
@@ -112,7 +115,7 @@ func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (b
 
 		select {
 		case <-runCtx.Done():
-			_ = s.stopBisectRun(gameID)
+			_ = s.stopBisectRun(sl)
 			if errors.Is(ctx.Err(), context.Canceled) {
 				return false, launch.Summary{}, ctx.Err()
 			}
@@ -167,13 +170,9 @@ func (s *Service) launchesDirect(gameID, profileID string) bool {
 	return method == settings.LaunchDirect
 }
 
-func (s *Service) stopBisectRun(gameID string) error {
-	status, err := s.Status(gameID)
-	if err != nil || !status.State.Active() {
-		return err
-	}
-	if status.State == Running {
-		return s.Stop(gameID)
+func (s *Service) stopBisectRun(sl slot) error {
+	if status := s.statusOf(sl); status.State == Running {
+		return s.stopSlot(sl)
 	}
 	return nil
 }

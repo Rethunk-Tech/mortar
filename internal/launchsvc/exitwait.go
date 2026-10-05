@@ -15,23 +15,23 @@ func waitOnChild(req launch.Request) bool {
 	return req.Vanilla && runtime.GOOS != "windows"
 }
 
-func (s *Service) armReap(gameID string) {
+func (s *Service) armReap(g game.Game) {
 	s.mu.Lock()
-	s.reaping[gameID] = true
+	s.reaping[keyOf(g)] = true
 	s.mu.Unlock()
 }
 
-func (s *Service) clearReap(gameID string) {
+func (s *Service) clearReap(g game.Game) {
 	s.mu.Lock()
-	delete(s.reaping, gameID)
-	delete(s.stopping, gameID)
+	delete(s.reaping, keyOf(g))
+	delete(s.stopping, keyOf(g))
 	s.mu.Unlock()
 }
 
-func (s *Service) reapArmed(gameID string) bool {
+func (s *Service) reapArmed(g game.Game) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.reaping[gameID]
+	return s.reaping[keyOf(g)]
 }
 
 func (s *Service) waitPID(pid int) (launch.Exit, error) {
@@ -43,16 +43,16 @@ func (s *Service) waitPID(pid int) (launch.Exit, error) {
 
 func (s *Service) finishWait(g game.Game, x launch.Exit) {
 	s.mu.Lock()
-	if s.stopping[g.ID()] {
+	if s.stopping[keyOf(g)] {
 		x.Stopped = true
 	}
-	if sess, ok := s.logs[g.ID()]; ok {
+	if sess, ok := s.logs[keyOf(g)]; ok {
 		sess.exit = x
 		sess.haveExit = true
-		s.logs[g.ID()] = sess
+		s.logs[keyOf(g)] = sess
 	}
 	s.mu.Unlock()
-	cur := s.current(g.ID())
+	cur := s.current(g)
 	if cur.State != Running {
 		return
 	}
@@ -61,7 +61,7 @@ func (s *Service) finishWait(g game.Game, x launch.Exit) {
 
 func (s *Service) awaitPID(g game.Game, profileID string) {
 	for {
-		cur := s.current(g.ID())
+		cur := s.current(g)
 		if !cur.State.Active() {
 			return
 		}

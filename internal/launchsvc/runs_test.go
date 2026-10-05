@@ -151,7 +151,7 @@ func TestRecordFailedLaunchAndUnownedLogUsesSession(t *testing.T) {
 	}
 	buf := &launch.Buffer{}
 	buf.Add(launch.Entry{Time: "19:43:50", Level: launch.Error, Mod: "Farm", Message: "broke"})
-	svc.logs["stardew"] = session{buf: buf, profile: p.ID}
+	svc.logs["stardew/"] = session{buf: buf, profile: p.ID}
 	svc.record(g, p.ID, time.Now(), true)
 	runs, err := svc.Runs("stardew", p.ID)
 	if err != nil || len(runs) != 1 || runs[0].Outcome != launch.OutcomeFailed {
@@ -232,7 +232,7 @@ func TestRecordKeepsThePresetName(t *testing.T) {
 	}
 	writeOwnedLog(t, cfg, home, mods, "")
 	svc.mu.Lock()
-	svc.logs["stardew"] = session{profile: p.ID, preset: "Debug"}
+	svc.logs["stardew/"] = session{profile: p.ID, preset: "Debug"}
 	svc.mu.Unlock()
 	svc.record(game.Find("stardew"), p.ID, time.Now(), false)
 	runs, err := svc.Runs("stardew", p.ID)

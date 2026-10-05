@@ -12,7 +12,7 @@ func TestRecordExitWithoutCrashLogMarksCrashed(t *testing.T) {
 	svc, p, _, _ := runEnv(t)
 	g := game.Find("stardew")
 	svc.mu.Lock()
-	svc.logs[g.ID()] = session{haveExit: true, exit: launch.Exit{Code: 134, Signal: "SIGABRT"}}
+	svc.logs[keyOf(g)] = session{haveExit: true, exit: launch.Exit{Code: 134, Signal: "SIGABRT"}}
 	svc.mu.Unlock()
 	svc.record(g, p.ID, time.Now(), false)
 	runs, err := svc.Runs("stardew", p.ID)
@@ -28,7 +28,7 @@ func TestRecordUserStopNotCrashed(t *testing.T) {
 	svc, p, _, _ := runEnv(t)
 	g := game.Find("stardew")
 	svc.mu.Lock()
-	svc.logs[g.ID()] = session{haveExit: true, exit: launch.Exit{Code: 137, Signal: "SIGKILL", Stopped: true}}
+	svc.logs[keyOf(g)] = session{haveExit: true, exit: launch.Exit{Code: 137, Signal: "SIGKILL", Stopped: true}}
 	svc.mu.Unlock()
 	svc.record(g, p.ID, time.Now(), false)
 	runs, err := svc.Runs("stardew", p.ID)

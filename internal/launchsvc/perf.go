@@ -139,12 +139,17 @@ func readPerformanceReports(dir string) (performanceReportsIndex, error) {
 }
 
 func (s *Service) activeRunID(gameID, profileID string) string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if status, ok := s.status[gameID]; !ok || !status.State.Active() || status.Profile != profileID {
+	g := game.Find(gameID)
+	if g == nil {
 		return ""
 	}
-	session, ok := s.logs[gameID]
+	key := keyOf(s.profileSlot(g, profileID))
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if status, ok := s.status[key]; !ok || !status.State.Active() || status.Profile != profileID {
+		return ""
+	}
+	session, ok := s.logs[key]
 	if !ok || session.profile != profileID || session.started.IsZero() {
 		return ""
 	}
