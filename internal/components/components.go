@@ -88,6 +88,9 @@ type GameInfo struct {
 	Metadata []string `json:"metadata"`
 	// Paths names folders and files outside the install by role (saves, startupPreferences).
 	Paths map[string]PathTemplate `json:"paths,omitempty"`
+	// Deploy is how the profile's files reach the game: redirect (the loader points the game at the profile's folder,
+	// nothing is placed) or link-into-install (files are placed into the install for the launch and taken back after).
+	Deploy string `json:"deploy"`
 	// Targets are the places the game's mod files go.
 	Targets []TargetDef  `json:"targets"`
 	Stores  GameStores   `json:"stores"`
