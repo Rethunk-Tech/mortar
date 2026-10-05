@@ -50,13 +50,28 @@ func splitShellWords(s string, windows bool) ([]string, error) {
 			continue
 		}
 		if r == '\\' && windows {
-			if strings.HasPrefix(s[i:], `"`) {
-				b.WriteByte('"')
+			// A run of n backslashes before a quote is n/2 backslashes, and an odd n makes the quote literal; the
+			// quote of an even run toggles quoting. Anywhere else backslashes are literal.
+			run := 1
+			for strings.HasPrefix(s[i:], `\`) {
+				run++
 				i++
-			} else {
-				b.WriteRune(r)
 			}
 			started = true
+			if !strings.HasPrefix(s[i:], `"`) {
+				b.WriteString(strings.Repeat(`\`, run))
+				continue
+			}
+			b.WriteString(strings.Repeat(`\`, run/2))
+			i++
+			switch {
+			case run%2 == 1:
+				b.WriteByte('"')
+			case quote == '"':
+				quote = 0
+			default:
+				quote = '"'
+			}
 			continue
 		}
 		if r == '\\' && quote != '\'' {

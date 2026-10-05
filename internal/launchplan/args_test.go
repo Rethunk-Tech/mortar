@@ -20,6 +20,8 @@ func TestSplitLaunchOptions(t *testing.T) {
 		{"windows bare path", true, `--dir C:\Games\Stardew\Mods`, []string{"--dir", `C:\Games\Stardew\Mods`}},
 		{"windows apostrophe in a path", true, `--dir "C:\Users\O'Brien\Mods"`, []string{"--dir", `C:\Users\O'Brien\Mods`}},
 		{"windows escaped quote", true, `--title "say \"hi\""`, []string{"--title", `say "hi"`}},
+		{"windows trailing backslashes close the quote", true, `--dir "C:\a b\\" --x`, []string{"--dir", `C:\a b\`, "--x"}},
+		{"windows odd run keeps the quote", true, `a\\\"b`, []string{`a\"b`}},
 	} {
 		got, err := splitShellWords(tc.in, tc.windows)
 		if err != nil || !slices.Equal(got, tc.want) {
