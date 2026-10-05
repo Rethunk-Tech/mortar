@@ -2,7 +2,7 @@
 <component type="desktop-application">
   <id>tech.rethunk.Mortar</id>
   <name>Mortar</name>
-  <summary>Desktop mod manager for Stardew Valley</summary>
+  <summary>Desktop mod manager for PC games</summary>
   <metadata_license>FSFAP</metadata_license>
   <project_license>AGPL-3.0-only</project_license>
   <developer id="tech.rethunk">
