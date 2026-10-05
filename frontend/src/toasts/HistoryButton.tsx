@@ -1,10 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Badge, Box, Button, IconButton, Popover, Tooltip, Typography } from '@mui/material'
 import { Bell } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { compact } from '../game/compact.ts'
 import { When } from '../i18n/When.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
+import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
+import { useProfiles } from '../profiles/store.ts'
+import { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
+import { EarlierChanges } from './EarlierChanges.tsx'
 import { historyActionState } from './history.ts'
 import { reportUnexpected } from './report.ts'
 import { type ToastHistoryItem, useToasts } from './store.ts'
@@ -68,20 +72,37 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
 
 let bellMounted = false
 
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <Typography sx={{ px: 1.5, pt: 1, fontSize: 11, fontWeight: 700, color: 'text.secondary' }}>
+      {children}
+    </Typography>
+  )
+}
+
 function HistoryPopover({
   open,
   anchorEl,
   history,
+  freshCount,
   onClose,
   onClear,
+  onAll,
 }: {
   open: boolean
   anchorEl: HTMLElement | null
   history: ToastHistoryItem[]
+  freshCount: number
   onClose: () => void
   onClear: () => void
+  onAll: () => void
 }) {
   const { t } = useLingui()
+  const profileId = useProfiles((st) => st.openId)
+  const panel = useHistoryPanel(profileId, open)
+  // A change to the profile is listed once: while unread under New, then in the history under Earlier.
+  const fresh = history.slice(0, freshCount)
+  const readNotes = history.slice(freshCount).filter((item) => item.action?.profileId === undefined)
   return (
     <Popover
       open={open}
@@ -121,13 +142,24 @@ function HistoryPopover({
         </Button>
       </Box>
       <Box sx={{ overflowY: 'auto', maxHeight: 380, [compact]: { maxHeight: 280 } }}>
-        {history.length === 0 ? (
-          <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
-            {t`No notifications yet`}
+        <SectionLabel>{t`New`}</SectionLabel>
+        {fresh.length === 0 ? (
+          <Typography sx={{ px: 1.5, pb: 1, fontSize: 13, color: 'text.secondary' }}>
+            {t`Nothing new`}
           </Typography>
         ) : (
-          history.map((item) => <HistoryRow key={item.id} item={item} />)
+          fresh.map((item) => <HistoryRow key={item.id} item={item} />)
         )}
+        <SectionLabel>{t`Earlier`}</SectionLabel>
+        {readNotes.map((item) => (
+          <HistoryRow key={item.id} item={item} />
+        ))}
+        <EarlierChanges panel={panel} />
+      </Box>
+      <Box sx={{ borderTop: '1px solid var(--mortar-hairline-muted)', px: 1.5, py: 0.5 }}>
+        <Button size="small" disabled={!panel.game || profileId === ''} onClick={onAll}>
+          {t`All changes…`}
+        </Button>
       </Box>
     </Popover>
   )
@@ -142,6 +174,13 @@ export function HistoryButton() {
   const clearHistory = useToasts((s) => s.clearHistory)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const bell = useRef<HTMLButtonElement>(null)
+  const openId = useProfiles((st) => st.openId)
+  const [allOpen, setAllOpen] = useState(false)
+  // Opening marks everything read, so the unread count is kept for the length of the visit.
+  const unreadBefore = useRef(0)
+  if (!historyOpen) {
+    unreadBefore.current = unread
+  }
   useEffect(() => {
     bellMounted = true
     return () => {
@@ -174,9 +213,15 @@ export function HistoryButton() {
         open={historyOpen}
         anchorEl={anchor ?? bell.current}
         history={history}
+        freshCount={historyOpen ? unreadBefore.current : 0}
         onClose={close}
         onClear={clearHistory}
+        onAll={() => {
+          close()
+          setAllOpen(true)
+        }}
       />
+      <HistoryDialog profileId={openId} open={allOpen} onClose={() => setAllOpen(false)} />
     </>
   )
 }
@@ -191,8 +236,10 @@ export function HistoryFallback() {
       open={historyOpen && !bellMounted}
       anchorEl={null}
       history={history}
+      freshCount={0}
       onClose={() => setHistoryOpen(false)}
       onClear={clearHistory}
+      onAll={() => setHistoryOpen(false)}
     />
   )
 }

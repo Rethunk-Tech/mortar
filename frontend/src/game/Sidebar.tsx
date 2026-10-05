@@ -9,7 +9,6 @@ import { useBadges } from '../mods/badges.ts'
 import { ProfileHealth } from '../mods/ProfileHealth.tsx'
 import { useNav } from '../nav/store.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
-import { RecentChangesButton } from '../profiles/RecentChangesButton.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { QueueButton } from '../queue/QueueButton.tsx'
 import { CoverButton } from '../shell/CoverButton.tsx'
@@ -246,7 +245,6 @@ function BottomBlock({ game }: { game: string }) {
         <Box sx={{ height: 40, display: 'flex', alignItems: 'center' }}>
           <QueueButton />
         </Box>
-        <RecentChangesButton game={game} />
         <HistoryButton />
       </Box>
       <PlayControl game={game} />
