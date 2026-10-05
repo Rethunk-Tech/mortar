@@ -3,8 +3,9 @@ package queue
 import (
 	"context"
 	"errors"
-	"github.com/Rethunk-Tech/mortar/internal/game"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/game"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"

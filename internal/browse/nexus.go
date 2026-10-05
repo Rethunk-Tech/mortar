@@ -5,11 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
+
+	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )

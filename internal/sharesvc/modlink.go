@@ -3,10 +3,11 @@ package sharesvc
 import (
 	"context"
 	"errors"
-	"github.com/Rethunk-Tech/mortar/internal/game"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/game"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"

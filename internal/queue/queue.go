@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Rethunk-Tech/mortar/internal/game"
 	"io/fs"
 	"log"
 	"net/http"
@@ -19,6 +18,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/game"
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 

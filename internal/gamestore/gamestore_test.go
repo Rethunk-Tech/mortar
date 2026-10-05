@@ -12,10 +12,10 @@ func TestDriversRunOnlyForCatalogStores(t *testing.T) {
 	home := t.TempDir()
 	// A GOG offline-installer folder that would match if the GOG driver ran.
 	dir := filepath.Join(home, "GOG Games", "Stardew Valley")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	roots := map[string][]string{LauncherGOG: {filepath.Join(home, "GOG Games")}}
@@ -33,7 +33,7 @@ func TestDriversRunOnlyForCatalogStores(t *testing.T) {
 }
 
 func TestRankKeepsStoreOrder(t *testing.T) {
-	if !(Rank(StoreSteam) < Rank(StoreGOG) && Rank(StoreGOG) < Rank(StoreLutris) && Rank("unknown") == Rank(StoreSteam)) {
+	if Rank(StoreSteam) >= Rank(StoreGOG) || Rank(StoreGOG) >= Rank(StoreLutris) || Rank("unknown") != Rank(StoreSteam) {
 		t.Fatal("store order changed")
 	}
 }
