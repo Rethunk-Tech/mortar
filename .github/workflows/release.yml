@@ -322,43 +322,14 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: build/release/verify.sh --public "$TAG"
 
-  # The site deploy copies this artifact under https://mortar.rethunk.tech/packages.
+  # Publishes the signed package repository to the `packages` branch, served at https://mortar.rethunk.tech/packages.
   package-repo:
     needs: finalize
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Download packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: mortar
-          path: bin
-
-      - name: Build the package repository
-        id: repo
-        env:
-          REPO_KEY: ${{ secrets.MORTAR_REPO_GPG_KEY }}
-        run: |
-          set -euo pipefail
-          if [ -z "$REPO_KEY" ]; then
-            echo "::notice::MORTAR_REPO_GPG_KEY is not set; no apt, dnf or pacman repository is built"
-            exit 0
-          fi
-          key="$RUNNER_TEMP/repo.key"
-          trap 'rm -f "$key"' EXIT
-          (umask 077 && printf '%s\n' "$REPO_KEY" >"$key")
-          MORTAR_REPO_KEY="$key" scripts/package-repo.sh bin "$RUNNER_TEMP/packages"
-          echo "built=true" >>"$GITHUB_OUTPUT"
-
-      - name: Upload the package repository
-        if: steps.repo.outputs.built == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: package-repo
-          path: ${{ runner.temp }}/packages
-          if-no-files-found: error
+    if: github.ref_type == 'tag'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/package-repo.yml
+    with:
+      tag: ${{ github.ref_name }}
+    secrets:
+      MORTAR_REPO_GPG_KEY: ${{ secrets.MORTAR_REPO_GPG_KEY }}

@@ -17,3 +17,14 @@ static_sites:
       branch: main
       deploy_on_push: false
     source_dir: site
+    routes:
+      - path: /
+  # The signed apt, dnf and pacman repository: package-repo.yml force-replaces the orphan `packages` branch each release.
+  - name: packages
+    github:
+      repo: Rethunk-Tech/mortar
+      branch: packages
+      deploy_on_push: true
+    source_dir: /
+    routes:
+      - path: /packages

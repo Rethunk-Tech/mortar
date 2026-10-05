@@ -1,12 +1,21 @@
 name: Package repository
 
-# Rebuilds the signed apt, dnf and pacman repository from a published release's packages, for a release whose own
-# package-repo job failed or whose repository must be rebuilt for a deploy. release.yml builds it for each new tag.
+# Builds the signed apt, dnf and pacman repository from a published release's packages and publishes it as the single
+# commit of the orphan `packages` branch, which mortar.rethunk.tech serves at /packages (.do/app.yaml). release.yml
+# calls it after each release; a manual run rebuilds it for an existing tag.
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: Published release tag, for example v0.2.0
+        required: true
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+    secrets:
+      MORTAR_REPO_GPG_KEY:
         required: true
 
 permissions:
@@ -20,6 +29,8 @@ jobs:
   package-repo:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -48,3 +59,17 @@ jobs:
           name: package-repo-${{ inputs.tag }}
           path: ${{ runner.temp }}/packages
           if-no-files-found: error
+
+      # The branch holds only the latest repository: one orphan commit, force-replaced, so its history never grows.
+      - name: Publish the packages branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/packages"
+          git init -q -b packages
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "packages: $TAG"
+          git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" packages:packages
