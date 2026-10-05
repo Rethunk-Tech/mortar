@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -394,6 +395,11 @@ func (s *Service) watch(g game.Game) {
 func (s *Service) Busy(gameID string) bool {
 	st, err := s.Status(gameID)
 	return err == nil && st.State.Active()
+}
+
+// AnyBusy reports whether any implemented game is launching or running.
+func (s *Service) AnyBusy() bool {
+	return slices.ContainsFunc(game.Implemented(), s.Busy)
 }
 
 // Status returns the game's launch state after looking for a game Mortar did not start.
@@ -788,7 +794,7 @@ func (s *Service) backupChangedSaves(gameID, profileID string, g game.Game, inst
 	if err != nil {
 		return err
 	}
-	savesDir, err := game.SavesDir(selected, s.home)
+	savesDir, err := game.SavesDir(gameID, selected, s.home)
 	if err != nil {
 		return err
 	}

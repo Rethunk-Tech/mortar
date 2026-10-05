@@ -150,6 +150,17 @@ func Find(id string) Game {
 	return nil
 }
 
+// Implemented lists the ids of enabled catalog games that have a registered implementation.
+func Implemented() []string {
+	var ids []string
+	for _, g := range Catalog() {
+		if g.Enabled && Find(g.ID) != nil {
+			ids = append(ids, g.ID)
+		}
+	}
+	return ids
+}
+
 // Require returns the implemented game with this id, or a NotFound error.
 func Require(id string) (Game, error) {
 	g := Find(id)

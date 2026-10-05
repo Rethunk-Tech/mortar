@@ -37,7 +37,11 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 				cur := store.Get()
 				id := cur.LastGame
 				if id == "" {
-					id = "stardew"
+					ids := game.Implemented()
+					if len(ids) != 1 {
+						return nil
+					}
+					id = ids[0]
 				}
 				out := []folderwatch.Target{{Event: folderwatch.ExtraFolderEvent, Game: id, Dir: cur.GamePrefs(id).ExtraModsFolder}}
 				for _, dir := range downloadDirs(store, dataDir) {

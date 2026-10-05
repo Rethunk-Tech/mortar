@@ -394,27 +394,27 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		return s.Saves.ListBackups()
+		return s.Saves.ListBackups(p.Game)
 	case "backups.restore":
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		return nil, s.Saves.RestoreBackup(p.Name, p.UniqueIDs)
+		return nil, s.Saves.RestoreBackup(p.Game, p.Name, p.UniqueIDs)
 	case "backups.keep":
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		return nil, s.Saves.SetBackupPinned(p.Name, true)
+		return nil, s.Saves.SetBackupPinned(p.Game, p.Name, true)
 	case "backups.unkeep":
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		return nil, s.Saves.SetBackupPinned(p.Name, false)
+		return nil, s.Saves.SetBackupPinned(p.Game, p.Name, false)
 	case "backups.create":
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		return nil, s.Saves.CreateBackup(p.Name)
+		return nil, s.Saves.CreateBackup(p.Game, p.Name)
 	case "bundles":
 		if s.Bundles == nil {
 			return nil, errors.New("bundles are unavailable")
@@ -875,7 +875,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return s.Queue.State(), nil
 	case "share":
-		res, err := share.Encode(prof)
+		res, err := share.Encode(p.Game, prof)
 		if errors.Is(err, share.ErrTooLarge) {
 			return ShareLink{TooLarge: true}, nil
 		}
@@ -1271,7 +1271,15 @@ func (s *Services) shareLog(ctx context.Context, gameID, id, run string) (map[st
 // launchWait bounds how long launch waits for the game to leave Launching.
 const launchWait = 3 * time.Minute
 
+func gameName(id string) string {
+	if g := game.Find(id); g != nil {
+		return g.Name()
+	}
+	return id
+}
+
 type launchWarningError struct {
+	game   string
 	update problems.UpdateWarning
 	save   savessvc.Fit
 	gap    bool
@@ -1281,7 +1289,8 @@ func (e launchWarningError) Error() string {
 	var warnings []string
 	if e.update.Changed {
 		warning := fmt.Sprintf(
-			"The game was updated: Stardew Valley is now %s; this profile last launched on %s.",
+			"The game was updated: %s is now %s; this profile last launched on %s.",
+			e.game,
 			e.update.Installed,
 			e.update.Recorded,
 		)
@@ -1453,7 +1462,7 @@ func (s *Services) launch(ctx context.Context, gameID, id, preset string, force 
 		return launchsvc.Status{}, err
 	}
 	if !force && (update.Changed || gap) {
-		return launchsvc.Status{}, launchWarningError{update: update, save: save, gap: gap}
+		return launchsvc.Status{}, launchWarningError{game: gameName(gameID), update: update, save: save, gap: gap}
 	}
 	if err := s.Launches.StartPreset(ctx, gameID, id, preset, false); err != nil {
 		return launchsvc.Status{}, err

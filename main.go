@@ -308,7 +308,11 @@ func run() error {
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
-	loadersvc.Attach(loaders, "stardew")
+	implemented := game.Implemented()
+	loadersvc.Attach(loaders)
+	for _, id := range implemented {
+		loadersvc.SyncBundled(loaders, id)
+	}
 	launches.EnsureLoader = func(ctx context.Context, id string, fromStart bool) error {
 		_, err := loaders.Ensure(ctx, id, fromStart)
 		return err
@@ -439,7 +443,7 @@ func run() error {
 			}
 		},
 		PauseWhilePlaying: func() bool { return store.Get().PauseDownloadsWhilePlaying },
-		GameBusy:          func() bool { return launches.Busy(settings.GameStardew) },
+		GameBusy:          launches.AnyBusy,
 		VerifyNexusMD5:    func() bool { return store.Get().VerifyNexusMD5 },
 		Track: func(ctx context.Context, gameID string, modID int) {
 			if !store.Get().AutoTrackNexus || modID <= 0 {
@@ -577,7 +581,7 @@ func run() error {
 	}
 	dataSvc := datasvc.NewService(items, profiles, keepSources,
 		queueSvc, lanSvc,
-		datasvc.BusyFunc(func() bool { return launches.Busy(settings.GameStardew) }),
+		datasvc.BusyFunc(launches.AnyBusy),
 	)
 	dataSvc.Restart = datasvc.RestartSelf
 	dataSvc.OnClearCache = problemsSvc.ForgetCached
@@ -601,7 +605,7 @@ func run() error {
 			return "", err
 		},
 		ArchiveDir: func() string { return archiveDir(store, dataDir) },
-		Busy:       func() bool { return launches.Busy(settings.GameStardew) || queueSvc.Active() },
+		Busy:       func() bool { return launches.AnyBusy() || queueSvc.Active() },
 		Emit:       emit,
 	})
 	problemsSvc.Damage = items.Damaged
@@ -670,10 +674,12 @@ func run() error {
 	launches.App = app
 	if err := launches.RecoverGameSettings(); err != nil {
 		log.Printf("game settings restore: %v", err)
-		app.Event.Emit(launchsvc.SettingsRestoreWarningEvent, launchsvc.SettingsRestoreWarning{Game: "stardew", Error: err.Error()})
+		app.Event.Emit(launchsvc.SettingsRestoreWarningEvent, launchsvc.SettingsRestoreWarning{Error: err.Error()})
 	}
-	loadersvc.EnsureExisting(loaders, "stardew")
-	launchsvc.SweepOnStart(launches, "stardew")
+	for _, id := range implemented {
+		loadersvc.EnsureExisting(loaders, id)
+		launchsvc.SweepOnStart(launches, id)
+	}
 	pick.App = app
 	nexusSvc.App = app
 	nxmSvc.App = app
@@ -800,7 +806,9 @@ func run() error {
 		}
 		_ = os.Remove(failurePath)
 		// A fetched manifest can name a newer bridge than the one synced at startup from the bundled copy.
-		loadersvc.SyncBundled(loaders, "stardew")
+		for _, id := range implemented {
+			loadersvc.SyncBundled(loaders, id)
+		}
 	}()
 	windowClosed = func() bool {
 		windowMu.Lock()
@@ -830,14 +838,16 @@ func run() error {
 		trayMenu.Add("Show Mortar").OnClick(func(*application.Context) {
 			showWindow()
 		})
-		running := launches.Busy(settings.GameStardew)
-		gameName := "Stardew Valley"
-		if g := game.Find("stardew"); g != nil {
-			gameName = g.Name()
-		}
-		if running {
-			trayMenu.Add("Stop " + gameName).OnClick(func(*application.Context) {
-				_ = launches.Stop("stardew")
+		for _, id := range implemented {
+			if !launches.Busy(id) {
+				continue
+			}
+			name := id
+			if g := game.Find(id); g != nil {
+				name = g.Name()
+			}
+			trayMenu.Add("Stop " + name).OnClick(func(*application.Context) {
+				_ = launches.Stop(id)
 			})
 		}
 		left := 0
@@ -852,16 +862,18 @@ func run() error {
 				app.Event.Emit("queue:open", nil)
 			})
 		}
-		recent, _ := launches.RecentLaunches("stardew", 3)
-		for _, row := range recent {
-			item := trayMenu.Add("Play " + row.Name)
-			if running {
-				item.SetEnabled(false)
-			} else {
-				profileID := row.ProfileID
-				item.OnClick(func(*application.Context) {
-					app.Event.Emit(shortcut.RequestedEvent, shortcut.Request{Game: "stardew", Profile: profileID})
-				})
+		for _, id := range implemented {
+			recent, _ := launches.RecentLaunches(id, 3)
+			for _, row := range recent {
+				item := trayMenu.Add("Play " + row.Name)
+				if launches.Busy(id) {
+					item.SetEnabled(false)
+				} else {
+					profileID := row.ProfileID
+					item.OnClick(func(*application.Context) {
+						app.Event.Emit(shortcut.RequestedEvent, shortcut.Request{Game: id, Profile: profileID})
+					})
+				}
 			}
 		}
 		trayMenu.AddSeparator()

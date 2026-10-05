@@ -81,10 +81,9 @@ func NewService(home string, s *settings.Store, items *store.Store, profiles *pr
 
 // Attach wires the service into the profile store: every profile gets the game's bundled mods, and creating a
 // profile installs a missing loader in the background. It also syncs the bundled mods into the existing profiles.
-func Attach(s *Service, id string) {
+func Attach(s *Service) {
 	s.profiles.Bundled = s.bundles
 	s.profiles.Created = s.ensureInBackground
-	SyncBundled(s, id)
 }
 
 // EnsureExisting installs the game's loader in the background when profiles exist and it is missing or broken.

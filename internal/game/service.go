@@ -130,24 +130,47 @@ func InstallDir(home string, s settings.Settings, id string) (string, error) {
 	return dir, err
 }
 
-// SteamAccess reports the Flatpak Steam filesystem override for Mortar's data folder.
+// SteamAccess reports the Flatpak Steam filesystem override for Mortar's data folder, needed when any game is installed through Flatpak Steam.
 func (s *Service) SteamAccess() (SteamAccess, error) {
 	data, err := datadir.Dir()
 	if err != nil {
 		return SteamAccess{}, err
 	}
 	acc := SteamAccess{Command: steam.OverrideCommand(data)}
-	_, store, _, err := Resolve(s.home, s.store.Get(), "stardew")
-	if err != nil {
-		return SteamAccess{}, err
+	cur := s.store.Get()
+	flatpak := false
+	for _, id := range Implemented() {
+		_, store, _, err := Resolve(s.home, cur, id)
+		if err != nil {
+			return SteamAccess{}, err
+		}
+		flatpak = flatpak || store == StoreFlatpakSteam
 	}
-	if store != StoreFlatpakSteam {
+	if !flatpak {
 		return acc, nil
 	}
 	acc.Needed = true
 	show, err := steam.ShowOverride()
 	acc.Granted = err == nil && steam.HasFilesystem(show, data)
 	return acc, nil
+}
+
+// LoaderLaunchLine is the Steam launch-options line that starts the game's loader from installDir.
+func (s *Service) LoaderLaunchLine(gameID, installDir string) (string, error) {
+	g, err := Require(gameID)
+	if err != nil {
+		return "", err
+	}
+	return g.SteamLaunchWithLoader(installDir, ""), nil
+}
+
+// LaunchOptionsStartLoader reports whether Steam launch options already start the game's loader.
+func (s *Service) LaunchOptionsStartLoader(gameID, options string) (bool, error) {
+	g, err := Require(gameID)
+	if err != nil {
+		return false, err
+	}
+	return g.SteamLaunchForcesLoader(options), nil
 }
 
 // GrantSteamAccess runs the Flatpak Steam filesystem override after the user confirms.
