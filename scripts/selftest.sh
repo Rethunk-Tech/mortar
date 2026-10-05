@@ -551,19 +551,43 @@ EOF
   fi
   tree_hash "$game" >"$ROOT/game-before.txt"
 
-  log="$data/profiles/lethal-company/$profile/BepInEx/LogOutput.log"
+  # lc_launch launches profile $1 and waits for BepInEx to finish loading; the run's log path is left in $log.
+  lc_launch() {
+    log="$data/profiles/lethal-company/$1/BepInEx/LogOutput.log"
+    if [ ${#failures[@]} -eq 0 ]; then
+      cli launch lethal-company "$1" >"$ROOT/launch-$2.txt" 2>&1 || failures+=("$2 launch failed: $(head -c 300 "$ROOT/launch-$2.txt")")
+    fi
+    deadline=$((SECONDS + timeout))
+    while [ ${#failures[@]} -eq 0 ] && [ "$SECONDS" -lt "$deadline" ]; do
+      grep -q 'Chainloader startup complete' "$log" 2>/dev/null && break
+      sleep 2
+    done
+    if [ ${#failures[@]} -eq 0 ] && ! grep -q 'Chainloader startup complete' "$log" 2>/dev/null; then
+      failures+=("$2: BepInEx never logged \"Chainloader startup complete\" within ${timeout}s ($(cli status lethal-company 2>&1 | head -c 200))")
+    fi
+  }
+  # lc_stop stops the game by verified pid, waits for Mortar to go idle (which purges the deploy) and requires the game
+  # folder to hash as it did before the first launch.
+  lc_stop() {
+    killed="$killed $(reap_prefix "$compat")"
+    local state=""
+    for _ in $(seq 1 60); do
+      state=$(cli status lethal-company --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')
+      [ "$state" = idle ] && break
+      sleep 1
+    done
+    [ "$state" = idle ] || failures+=("$1: Mortar never went idle after the game stopped")
+    sleep 3
+    tree_hash "$game" >"$ROOT/game-after-$1.txt"
+    local n
+    n=$(diff "$ROOT/game-before.txt" "$ROOT/game-after-$1.txt" | grep -c '^[<>]' || true)
+    diff_lines=$((diff_lines + n))
+    [ "$n" -eq 0 ] || failures+=("$1: game folder differs after purge ($n lines); see $ROOT/game-before.txt vs game-after-$1.txt")
+    cp "$log" "$ROOT/LogOutput-$1.log" 2>/dev/null || true
+  }
+
   echo "launching profile $profile (${#plugins[@]} plugins)"
-  if [ ${#failures[@]} -eq 0 ]; then
-    cli launch lethal-company "$profile" >"$ROOT/launch.txt" 2>&1 || failures+=("launch failed: $(head -c 300 "$ROOT/launch.txt")")
-  fi
-  deadline=$((SECONDS + timeout))
-  while [ ${#failures[@]} -eq 0 ] && [ "$SECONDS" -lt "$deadline" ]; do
-    grep -q 'Chainloader startup complete' "$log" 2>/dev/null && break
-    sleep 2
-  done
-  if [ ${#failures[@]} -eq 0 ] && ! grep -q 'Chainloader startup complete' "$log" 2>/dev/null; then
-    failures+=("BepInEx never logged \"Chainloader startup complete\" within ${timeout}s ($(cli status lethal-company 2>&1 | head -c 200))")
-  fi
+  lc_launch "$profile" base
   local name
   for name in "${plugins[@]}"; do
     if [ ${#failures[@]} -gt 0 ]; then break; fi
@@ -579,19 +603,64 @@ EOF
   fi
 
   echo "stopping the game"
-  killed=$(reap_prefix "$compat")
-  for _ in $(seq 1 60); do
-    [ "$(cli status lethal-company --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')" = idle ] && break
-    sleep 1
-  done
-  [ "$(cli status lethal-company --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')" = idle ] || failures+=("Mortar never went idle after the game stopped")
-  sleep 3
-  tree_hash "$game" >"$ROOT/game-after.txt"
-  diff_lines=$(diff "$ROOT/game-before.txt" "$ROOT/game-after.txt" | grep -c '^[<>]' || true)
-  if [ "$diff_lines" -ne 0 ]; then
-    failures+=("game folder differs after purge ($diff_lines lines); see $ROOT/game-before.txt vs game-after.txt")
+  lc_stop base
+
+  # MORTAR_REGRESS_R2_CODE imports an r2modman code into a new profile through `mortar profile import`, waits for its
+  # downloads, launches it and requires BepInEx to load every plugin it counted. MORTAR_REGRESS_R2_DISABLE lists
+  # package ids (Namespace-Name) to switch off before the launch.
+  local code=${MORTAR_REGRESS_R2_CODE:-} r2=skipped r2_profile="" r2_listed=0 r2_mods=0 r2_plugins="" r2_loading=0 r2_errors=0
+  if [ -n "$code" ] && [ ${#failures[@]} -eq 0 ]; then
+    r2=run
+    cli profile import "$code" --preview --json >"$ROOT/r2-preview.json" 2>&1 || failures+=("r2 preview failed: $(head -c 300 "$ROOT/r2-preview.json")")
+    r2_listed=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["packages"]))' "$ROOT/r2-preview.json" 2>/dev/null || echo 0)
+    if cli profile import "$code" --game lethal-company --name "Regress R2" --json >"$ROOT/r2-import.json" 2>&1; then
+      r2_profile=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["profile"])' "$ROOT/r2-import.json")
+    else
+      failures+=("r2 import failed: $(head -c 300 "$ROOT/r2-import.json")")
+    fi
+    echo "imported $code into $r2_profile; waiting for its downloads"
+    local pending=1
+    deadline=$((SECONDS + 600))
+    while [ -n "$r2_profile" ] && [ "$SECONDS" -lt "$deadline" ]; do
+      cli queue --json >"$ROOT/r2-queue.json"
+      pending=$(python3 - "$ROOT/r2-queue.json" "$r2_profile" 2>"$ROOT/r2-queue-open.txt" <<'PY'
+import json, sys
+items = [i for i in json.load(open(sys.argv[1]))["items"] if i["profileId"] == sys.argv[2]]
+print(sum(1 for i in items if i["state"] not in ("done", "failed", "skipped", "cancelled")))
+for i in items:
+    if i["state"] != "done":
+        print(f'{i["name"]} {i["version"]}: {i["state"]} {i["error"]}', file=sys.stderr)
+PY
+)
+      [ "$pending" = 0 ] && break
+      sleep 2
+    done
+    [ "$pending" = 0 ] || failures+=("r2 downloads never finished: $(head -c 300 "$ROOT/r2-queue-open.txt")")
+    [ -s "$ROOT/r2-queue-open.txt" ] && failures+=("r2 downloads failed: $(head -c 600 "$ROOT/r2-queue-open.txt")")
+    if [ -n "$r2_profile" ]; then
+      local off
+      for off in ${MORTAR_REGRESS_R2_DISABLE:-}; do
+        cli mods disable lethal-company "$r2_profile" "thunderstore:$off" >>"$ROOT/r2-disable.txt" 2>&1 || failures+=("disabling $off failed: $(tail -c 200 "$ROOT/r2-disable.txt")")
+      done
+      cli mods lethal-company "$r2_profile" --json >"$ROOT/r2-mods.json"
+      r2_mods=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$ROOT/r2-mods.json")
+      cli profile set lethal-company "$r2_profile" launchPrefix "$ROOT/run-proton.sh" >/dev/null
+      echo "launching profile $r2_profile ($r2_mods mods)"
+      lc_launch "$r2_profile" r2
+      r2_plugins=$(grep -oE 'BepInEx\] [0-9]+ plugins? to load' "$log" 2>/dev/null | grep -oE '[0-9]+' | head -1)
+      r2_loading=$(grep -cE 'BepInEx\] Loading \[' "$log" 2>/dev/null || true)
+      # A plugin's own errors (a transpiler that no longer matches the game) are the mod's, reported but not failed.
+      r2_errors=$(grep -cE '^\[(Error|Fatal) ' "$log" 2>/dev/null || true)
+      if [ ${#failures[@]} -eq 0 ] && { [ -z "$r2_plugins" ] || [ "$r2_loading" -ne "$r2_plugins" ]; }; then
+        failures+=("r2: BepInEx counted ${r2_plugins:-no} plugins but logged $r2_loading Loading lines")
+      fi
+      if grep -qE '\[(Error|Fatal) *: *BepInEx\]' "$log" 2>/dev/null; then
+        failures+=("r2: BepInEx logged errors: $(grep -E '\[(Error|Fatal) *: *BepInEx\]' "$log" | head -5 | tr '\n' ' ')")
+      fi
+      echo "stopping the game"
+      lc_stop r2
+    fi
   fi
-  cp "$log" "$ROOT/LogOutput.log" 2>/dev/null || true
 
   [ ${#failures[@]} -eq 0 ] && verdict=PASS
   echo "---- regress lethal-company: $verdict ($((SECONDS - t0))s)"
@@ -600,6 +669,7 @@ EOF
   echo "plugins loaded $loaded of ${#plugins[@]} (${plugins[*]})"
   echo "bridge         $bridge"
   echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after purge"
+  echo "r2 code        ${code:-none}: $r2 into ${r2_profile:-none}, $r2_listed listed, $r2_mods mods installed, BepInEx counted ${r2_plugins:-?} plugins and logged $r2_loading Loading lines, $r2_errors error lines"
   echo "stopped pids   ${killed:-none}"
   local f
   for f in "${failures[@]}"; do echo "FAIL: $f"; done
