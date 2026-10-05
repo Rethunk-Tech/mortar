@@ -67,7 +67,7 @@ Mortar opens with a welcome screen and lists the launchers it found (Steam, GOG,
 Mortar downloads from Nexus with your account, so it needs a personal API key.
 
 1. Sign in on nexusmods.com and open your account **Settings**, then **API Keys**. Copy the personal API key.
-2. In Mortar open **Settings › Nexus account**, paste the key into **Personal API key** and choose **Sign in**. The key is kept in your system keyring.
+2. In Mortar open **Settings › Accounts**, find the Nexus Mods section, paste the key into **Personal API key** and choose **Sign in**. The key is kept in your system keyring.
 
 Mortar then shows your name and whether the account is Premium or Free. Free accounts click **Mod Manager Download** on the Nexus page once for each file; Mortar opens each page in turn. Premium accounts download directly from inside Mortar. Mortar only downloads what Nexus allows and never re-hosts mod files.
 
@@ -82,11 +82,50 @@ The extension marks Nexus Mods pages with what your profile already has and send
 
 ## Find and add mods
 
-The **Browse** tab searches every site the game's mods come from at once: for Stardew Valley, Nexus Mods and GitHub. **All sources** is the default, so where an author published a mod does not matter; results from each site are interleaved, each site keeping its own ranking. The chips next to it narrow the search to one site. If a site does not answer, the result count says which one and the rest still show.
+The **Browse** tab searches every site the game's mods come from at once: for Stardew Valley, Nexus Mods and GitHub. **All sources** is the default, so where an author published a mod does not matter; results from each site are interleaved, each site keeping its own ranking. A mod that several sites list shows as one card, and a badge on the card picks the site to install from. The game's settings (the **Mods** page) have a **Preferred source** row that sets which site a card installs from first. The chips next to **All sources** narrow the search to one site. If a site does not answer, the result count says which one and the rest still show.
+
+1. Open the **Browse** tab. With nothing typed, each site lists its top mods, so the page is never empty.
+2. Type a name to search. Results update as you type.
+3. Choose **Add** (or **Download** on Nexus for a Premium account) on a card. The card shows the install's progress, then **In this profile**.
 
 - **Nexus Mods:** Premium accounts download straight into the profile. Free accounts open the mod's files page and use **Mod Manager Download**, which the browser extension or the nxm link hands to Mortar.
 - **GitHub:** **Add** puts the latest release in the profile. Mortar uses your GitHub CLI login (`gh auth login`) when it is present, which raises GitHub's rate limits; without it, it works anonymously.
-- Mods already in the profile show **In this profile**.
+- **Grid or list:** the toggle at the left of the search row switches between cards and rows.
+
+### Narrow and sort the results
+
+Under the search row:
+
+- **Include categories** keeps only mods in any of the categories you pick. **Exclude categories** drops mods in any of them. A site with no categories (GitHub, or Nexus while you are signed out) turns both off, and a search that includes categories leaves such a site out.
+- **Sort** orders each site's results: best match, most downloaded, most endorsed, recently updated or name. A site that cannot sort a given way keeps its own order.
+- **Show** has one row for each kind of mod you may not want in the way: **Mods in this profile**, **Obsolete** and **Broken**. Each is **Off** (shown as usual), **Gray out** (dimmed, still there) or **Hide** (left out, and counted as "N hidden" beside the result count). **Broken** needs the game to have a compatibility list, which Stardew Valley has.
+
+Mods Mortar already holds in the profile show **In this profile**, whichever site they came from, including a mod you installed from an archive when its manifest names the same Nexus or GitHub page. A loader's helper mod that Mortar installs for you shows **Installed by Mortar**.
+
+## Modrinth and itch.io
+
+Modrinth and itch.io are mod sites Mortar can search and install from for a game that lists them. They show as chips beside **All sources** on that game's Browse tab and take part in the merged search like any other site. Stardew Valley and Lethal Company list neither, so a game whose catalog entry names one gets its chip and the two games here do not.
+
+- **Modrinth** needs no account. **Add** installs the project's newest version together with the projects it requires, and Mortar checks each downloaded file against the SHA-512 Modrinth publishes.
+- **itch.io** needs your own API key, which keeps itch.io's search working for you:
+  1. On itch.io open your account **Settings**, then **API keys**, and create a key.
+  2. In Mortar open **Settings › Accounts**, find the itch.io section, paste the key into **API key** and choose **Test**.
+  3. Mortar shows your itch.io name once the key works. The key is kept in your system keyring. **Remove key** forgets it.
+
+  Until a key is stored, the itch.io chip is greyed out and its tooltip says it needs an API key. itch.io's search has no sort order and no categories, so **Sort** and the category pickers leave it alone. **Add** downloads the game's first upload that is not a demo or a soundtrack.
+
+## Edit a mod's settings
+
+Mortar edits a mod's config file as a form, so you never open a text file.
+
+1. In the **Mods** tab, select a mod. The details panel opens beside the list; drag its left edge to resize it.
+2. Under **Config**, choose **Edit config**. (The **More details** dialog has the same button under **Settings**.)
+3. The editor takes over the tab. The mod's config files are listed on the left (`config.json` for a SMAPI mod, each BepInEx `.cfg` for a Lethal Company plugin). Pick one.
+4. Change a value. On and off settings are switches, numbers are fields (sliders when the mod gives a small range), choices are drop-downs, colours open a colour picker and lists are chips you add to and remove from. A setting's info button shows the mod's own description of it.
+5. Each change saves as you make it. A setting that is not the mod's default shows a **Reset to default** button; **Reset all** puts the whole file back after you confirm. **Search entries** filters the long ones.
+6. **Presets** saves the file's values under a name (**Save current as…**) and applies a saved set to any profile's copy. The **X** closes the editor.
+
+Mortar does not save a change while the game runs the profile.
 
 ## Lethal Company and Thunderstore
 
@@ -97,6 +136,7 @@ Lethal Company mods are Thunderstore packages that run on BepInEx. Mortar instal
 - **Play:** BepInEx reads only the game's own folder, so for each launch Mortar places the profile's BepInEx files beside the game and takes them back when the game exits. Nothing of the profile stays in the game folder, and a crash is finished off at the next start.
 - **Settings the game writes:** BepInEx reads and writes its plugins and settings (`BepInEx/config`) in the profile, so the next launch and a shared profile keep them. The game folder gets only `winhttp.dll` and `doorstop_config.ini` for the launch, and they are removed when the game exits.
 - **Log:** the profile's BepInEx log is `BepInEx/LogOutput.log` in the profile folder; diagnostics include its last lines.
+- **BepInEx launch options:** open the profile's menu, choose **Edit profile**, and find the **BepInEx** group under the launch options. **Show the console window** switches BepInEx's console on or off, and **Log level** picks what BepInEx writes to its console and log: **Warnings and errors**, **Standard**, **Debug** or **Everything**. Each change saves at once into the profile's `BepInEx/config/BepInEx.cfg` and applies the next time the game starts.
 
 ## Pair your computers
 
@@ -109,26 +149,82 @@ Pairing makes two of your own computers trust each other, so a profile sent betw
 
 To send, use **Share profile** then **Send to…** and pick the computer. The receiver is asked to accept; **Auto-accept from paired computers** in the same settings skips the question.
 
+## Switch games
+
+Click the game's name in the title bar (the tab after **Game select**). A drawer drops from the title bar with a compact card for each playable game, the one you opened last first. Choose a card, or move with the Left and Right arrow keys and press Enter, and Mortar opens that game on the profile you used last. The **Game select** tab shows every game, including the ones Mortar did not find.
+
 ## Game installs
 
 When a game is installed more than once (Steam and GOG, a Steam beta branch, a copy in another folder), each is a separate install. A profile uses the selected install unless you pin it to one in the game's settings, and two profiles pinned to different installs can run at the same time. The install row shows its store and, on Linux, whether it runs natively or through Proton.
+
+### Bottles
+
+On Linux, Mortar finds a Windows build of the game inside a [Bottles](https://usebottles.com) bottle, from the native or the Flatpak Bottles, when the game sits in the bottle's Steam or GOG folders. The install's store reads **Bottles**.
+
+1. Open the game from **Game select**. Setup lists Bottles among the launchers it read, and a game found in a bottle needs no folder to be chosen. If the bottle keeps the game somewhere unusual, choose its folder with **Choose folder…**; Mortar still runs it in that bottle.
+2. For the loader step, Mortar runs SMAPI's own Windows installer inside the bottle, so the bottle holds the Windows SMAPI and not the Linux one.
+3. Press **Play**. Mortar starts the game through the bottle with the profile you picked.
+
+The Mortar Flatpak is allowed to read and write the Bottles data folders, native and Flatpak, so installing SMAPI into a bottle works from it.
 
 ## Profiles
 
 A profile is one set of mods. Switching profiles never touches the game folder's own `Mods` folder.
 
-- **Create:** **New profile…** on the Profiles page.
+- **Create:** **New profile…** on the Profiles page, or **New profile** at the foot of the sidebar. Type a name, then pick **Start from**:
+  - **Empty profile** holds only the loader.
+  - **Copy of \<the open profile\>** duplicates the profile that is open now, with its mods, their settings and what the mods wrote, and opens the copy.
+  - A template (one you saved with **Save as template…**) starts with the template's mods and its launch settings. Mods Mortar does not hold download in the background, and a toast says how many. **Manage templates…** renames or deletes templates.
 - **Switch:** **Switch profile**, or pick one from the Profiles page. Play always starts the open profile.
 - **Rename, duplicate, delete:** from the profile's menu. Deleted profiles wait in **Recently deleted** for 30 days, with **Restore** and **Delete permanently**.
 - **Share as a link:** **Share profile**, then **Copy link**. A link names the mods and their Nexus or GitHub files, not the files. A profile too large for a link says so.
 - **Share as a file:** the same dialog saves a `.mortar` file. It also carries the mods' settings and your notes, and suits large profiles.
-- **Import:** **Import** on the Profiles page, then **From a link or file…**, **From the game's Mods folder…** or **From a backup…**. Mortar shows what the profile holds first, then installs or queues what is missing.
+- **Import:** **Import** on the Profiles page, then **From a link or file…**, **From the game's Mods folder…**, **From a backup…** or **Import…**. Mortar shows what the profile holds first, then installs or queues what is missing.
+- **Import from another manager:** choose **Import…** to see every profile Mortar found on this computer for the game, from r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop, each with its manager and mod count. Pick one and Mortar previews it before anything downloads, then makes a new profile. For a Thunderstore game, **Use a code or file…** reads an r2modman or Gale profile code or `.r2z` file instead.
+- **Keep a profile's saves separate:** by default every profile plays on the game's one Saves folder. To give a profile its own, open the profile's menu, choose **Edit profile**, switch on **Keep this profile's saves separate** and confirm **Turn on**. Leave **Start with a copy of my current saves** ticked to start from your saves, or untick it to start empty. From then on, each time you press Play Mortar sets your shared Saves folder aside, shows the game the profile's own folder (`saves` inside the profile) and puts the shared folder back when the game closes. Nothing is deleted or moved for good, and if Mortar quits while the game runs, the next start puts the shared folder back. Switching the option off leaves the profile's folder where it is. Only games with a save folder have the switch.
 
 ## Play
 
 Press **Play** in Mortar. It applies the profile's mod list, then starts the game through SMAPI.
 
+When a run crashes, a card appears at the top of the profile. Mortar reads the loader's log (and, for a Lethal Company run, Unity's player log, where a crash prints `Crash!!!` or `Fatal error`) and names the likely cause:
+
+- **Mortar thinks \<mod\> caused the crash** with the log's line. **Disable and retry** switches that mod off and starts the game again.
+- **The last run crashed.** with the log's line, when the log names no mod you have.
+- **Bisect from here** halves the mods and relaunches until one mod is left, and **Dismiss** hides the card for that run.
+
 On Windows, Steam's own **Play** button is different: it starts SMAPI with the game's own `Mods` folder, not a profile. To play a profile, press Play in Mortar, or use a profile shortcut. A profile's menu has **Add a shortcut that plays this profile** (a Start Menu shortcut on Windows, a launcher entry on Linux) and **Add this profile to Steam**, which adds the profile to your Steam library as a non-Steam game. Close Steam before adding.
+
+## Problems
+
+The **Problems** tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and never blocks Play.
+
+- A strip across the top of the tab has one segment for each kind of problem the profile has, each with its count. Choose a segment to see its rows; the others are hidden, so only one list is on screen at a time. Left and Right arrow keys move between segments.
+- Mortar opens on the first segment that holds something broken, and remembers your choice for each profile while Mortar runs. A kind with nothing in it has no segment.
+- The chosen segment's own action sits at the right end of the strip: **Add all** installs every missing requirement Mortar can find, and **Dismiss all** hides harmless overlaps.
+- Segments include **Failed to load** (a plugin the loader's log shows failed), **Plugins shipped twice** (two enabled packages carrying the same plugin, with **Keep newer**) and **Deprecated packages** (Thunderstore marks them, with **Replace with** where it names a replacement).
+- A mod's name in a row filters the **Mods** tab to that mod.
+
+## Notifications and change history
+
+The bell at the foot of the sidebar opens **Notifications** (Ctrl+Shift+N does the same). It holds two lists:
+
+- **New** has this session's toasts you have not read, with their buttons (such as **Undo**) while they still apply.
+- **Earlier** has the open profile's own change history, newest first: mods added, removed, updated, rolled back and switched, each with when it happened. **Show diff** lists what changed and **Undo** puts the profile back to how it was before that change.
+
+**All changes…** opens the full history, and **Clear** empties the toasts. History lives with the profile, so it is still there after a restart.
+
+## Sync your profiles between computers
+
+A sync folder shares each profile's mod list, sources, settings and mod config files between your computers through a folder that something else carries, such as Syncthing, Dropbox or a NAS. Mod files are never copied; each computer downloads them from their sources. Sync is off until you choose a folder.
+
+1. On each computer open **Settings › Mods and profiles**, find **Sync folder** and choose **Choose…**. Pick the folder your sync tool keeps in step.
+2. Work as usual. A few seconds after a profile stops changing, Mortar writes it into the folder.
+3. On another computer, **Changes from your other machines** opens when a profile there changed. Each row says which computer changed it. **Show diff** lists the mods it adds and removes, **Apply** makes your profile match, **Keep mine** keeps yours and writes it over the other revision, and **Later** closes the list.
+4. A profile that exists only on the other computer arrives as a new profile when you choose **Apply**.
+5. When both computers changed the same profile, Mortar says so and never merges: pick **Use theirs** or **Keep mine**.
+
+**Turn off** beside the folder stops syncing and leaves the folder's files alone.
 
 ## Updates
 
