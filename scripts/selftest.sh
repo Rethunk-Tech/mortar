@@ -311,6 +311,54 @@ game_pids() {
   done
 }
 
+# sandbox_pids prints the pids of the processes running from $ROOT: an executable or working directory inside it (the
+# server, its namespace reaper, the copied game and its Wine processes). This script's own pid is never one of them.
+sandbox_pids() {
+  local d e c
+  for d in /proc/[0-9]*; do
+    [ "${d#/proc/}" = "$$" ] && continue
+    e=$(readlink "$d/exe" 2>/dev/null) || e=""
+    c=$(readlink "$d/cwd" 2>/dev/null) || c=""
+    e=${e% (deleted)}
+    c=${c% (deleted)}
+    case "$e" in "$ROOT"/*) echo "${d#/proc/}"; continue ;; esac
+    case "$c" in "$ROOT" | "$ROOT"/*) echo "${d#/proc/}" ;; esac
+  done
+}
+
+# release_sandbox stops the server, then everything else still running from $ROOT (SIGTERM, then SIGKILL, each pid
+# looked up again first), and deletes $ROOT only after a pass and only once nothing runs from it: a server whose folder
+# is gone keeps running unseen. Anything left running keeps the folder and is named.
+release_sandbox() {
+  (stop) >/dev/null 2>&1 || true
+  local left=() i
+  for i in $(seq 1 30); do
+    mapfile -t left < <(sandbox_pids)
+    [ ${#left[@]} -eq 0 ] && break
+    [ "$i" = 10 ] && kill "${left[@]}" 2>/dev/null
+    [ "$i" = 20 ] && kill -KILL "${left[@]}" 2>/dev/null
+    sleep 1
+  done
+  if [ ${#left[@]} -gt 0 ]; then
+    echo "sandbox kept, still running from it: pids ${left[*]} ($ROOT)" >&3
+  elif [ "$verdict" = PASS ]; then
+    rm -rf "$ROOT"
+  else
+    echo "sandbox kept for inspection: $ROOT" >&3
+  fi
+}
+
+# regress_traps makes an interrupt or kill run the EXIT trap, which bash skips on a fatal signal; a failing command under
+# set -e already exits through it. A trap can fire inside a command's redirection, so the trap's messages go to fd 3, the
+# script's own stderr.
+regress_traps() {
+  exec 3>&2
+  trap finish EXIT
+  trap 'exit 129' HUP
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+}
+
 regress() {
   ROOT=$(mktemp -d /var/tmp/mortar-regress-XXXXXX)
   case "$ROOT" in /var/tmp/mortar-regress-??????) ;; *) echo "unexpected sandbox dir $ROOT" >&2; exit 1 ;; esac
@@ -318,7 +366,7 @@ regress() {
   while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
   SANDBOX_HOME=$ROOT/home
   SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
-  # game, gpids and verdict are read by the EXIT trap, after this function's locals are gone.
+  # game and verdict are read by the EXIT trap, after this function's locals are gone.
   game="$SANDBOX_STEAM/steamapps/common/$GAME_FOLDER"
   gpids=""
   verdict=FAIL
@@ -326,21 +374,8 @@ regress() {
   local log="$SANDBOX_HOME/.config/StardewValley/ErrorLogs/SMAPI-latest.txt" t0=$SECONDS
   local failures=() mods_n="" packs_n="" skips=0 enabled="" profile="" diff_lines=0
 
-  finish() {
-    local pid
-    for pid in $gpids; do
-      if [ "$(readlink "/proc/$pid/exe" 2>/dev/null)" ] && case "$(readlink "/proc/$pid/exe")" in "$game"/*) true ;; *) false ;; esac; then
-        kill "$pid" 2>/dev/null || true
-      fi
-    done
-    stop >/dev/null 2>&1 || true
-    if [ "$verdict" = PASS ]; then
-      rm -rf "$ROOT"
-    else
-      echo "sandbox kept for inspection: $ROOT" >&2
-    fi
-  }
-  trap finish EXIT
+  finish() { release_sandbox; }
+  regress_traps
 
   setup
   copy_data
@@ -460,14 +495,9 @@ regress_lc() {
 
   finish() {
     reap_prefix "$compat" >/dev/null 2>&1 || true
-    stop >/dev/null 2>&1 || true
-    if [ "$verdict" = PASS ]; then
-      rm -rf "$ROOT"
-    else
-      echo "sandbox kept for inspection: $ROOT" >&2
-    fi
+    release_sandbox
   }
-  trap finish EXIT
+  regress_traps
 
   [ -d "$proton" ] || { echo "no Proton at $proton (set MORTAR_REGRESS_PROTON)" >&2; exit 1; }
   [ -f "$STEAM/linux64/steamclient.so" ] || { echo "no steamclient.so under $STEAM" >&2; exit 1; }
