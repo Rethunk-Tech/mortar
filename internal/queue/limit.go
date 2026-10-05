@@ -73,9 +73,13 @@ func (s *Service) limitFor(ctx context.Context, source string) *sourceLimit {
 		return l
 	}
 	now := s.d.Now()
-	if loggedIn {
+	switch {
+	case source == "modrinth":
+		// Modrinth allows 300 requests a minute per address.
+		l = newSourceLimit(4, 10, 5, now)
+	case loggedIn:
 		l = newSourceLimit(6, 10, 5, now)
-	} else {
+	default:
 		l = newSourceLimit(2, 2, 1, now)
 	}
 	if s.limits == nil {
