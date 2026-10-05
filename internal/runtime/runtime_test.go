@@ -54,6 +54,9 @@ func TestNativeWindowsUsesAppData(t *testing.T) {
 	if want := filepath.Join(appData, "StardewValley", "Saves"); err != nil || got != want {
 		t.Fatalf("got %q, %v; want %q", got, err, want)
 	}
+	if got, err := Resolve(inst, components.PathTemplate{Windows: "{localLow}/../../../../../../outside"}); err == nil {
+		t.Fatalf("a template climbed out of the prefix to %q", got)
+	}
 }
 
 func TestProtonResolvesInsideThePrefix(t *testing.T) {

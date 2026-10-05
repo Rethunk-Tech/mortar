@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	goruntime "runtime"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -103,6 +104,10 @@ func template(inst Install, t components.PathTemplate) (string, error) {
 }
 
 func expand(p string, tokens map[string]string) (string, error) {
+	// A template names a place under a token's folder; ".." would step out of it.
+	if slices.Contains(strings.FieldsFunc(p, func(r rune) bool { return r == '/' || r == '\\' }), "..") {
+		return "", fmt.Errorf("path %q climbs out of its folder", p)
+	}
 	for k, v := range tokens {
 		p = strings.ReplaceAll(p, "{"+k+"}", v)
 	}
