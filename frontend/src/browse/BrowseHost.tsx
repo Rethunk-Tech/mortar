@@ -63,6 +63,9 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       addPackage={(pkg) => {
         download([{ kind: KIND_INSTALL, package: pkg }]).catch(reportUnexpected)
       }}
+      addDirect={(source, id) => {
+        download([{ kind: KIND_INSTALL, source, package: id }]).catch(reportUnexpected)
+      }}
     />
   )
 }

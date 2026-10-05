@@ -22,6 +22,7 @@ export type Want = Pick<Request, 'kind'> &
       | 'currentKey'
       | 'repo'
       | 'package'
+      | 'source'
       | 'tag'
       | 'asset'
       | 'latest'
@@ -33,7 +34,7 @@ export type Want = Pick<Request, 'kind'> &
 // sign-in instead. GitHub needs no account.
 export async function download(reqs: Want[], showQueue = false): Promise<boolean> {
   const toasts = useToasts.getState()
-  if (!useNexus.getState().signedIn && reqs.some((r) => !r.repo)) {
+  if (!useNexus.getState().signedIn && reqs.some((r) => !(r.repo || r.package))) {
     toasts.push({
       kind: 'warning',
       title: i18n._(msg`Sign in to Nexus Mods to download`),

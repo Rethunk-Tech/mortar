@@ -5,6 +5,7 @@ import { CloudOff, Download, ExternalLink, Plus, Search, SearchX } from 'lucide-
 import { useEffect, useState } from 'react'
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
+import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { PrefSegmented } from '../settings/PrefControls.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -16,6 +17,8 @@ import { usePending } from '../toasts/usePending.ts'
 import { BrowseFilters } from './BrowseFilters.tsx'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
+import { CardProgress } from './CardProgress.tsx'
+import { cardState } from './cardState.ts'
 import { useCategoryNames } from './useCategoryNames.ts'
 import { useBrowseView } from './view.ts'
 
@@ -179,6 +182,7 @@ function BrowsePage({
   downloadNexus,
   addGitHub,
   addPackage,
+  addDirect,
 }: BrowsePageProps) {
   const { t } = useLingui()
   const sourceNames = new Map(searchable.map((s) => [s.id, s.name]))
@@ -274,6 +278,8 @@ function BrowsePage({
               downloadNexus={downloadNexus}
               addGitHub={addGitHub}
               addPackage={addPackage}
+              addDirect={addDirect}
+              profileID={profileID}
               sourceNames={sourceNames}
             />
           ))}
@@ -449,6 +455,8 @@ function ResultCard({
   downloadNexus,
   addGitHub,
   addPackage,
+  addDirect,
+  profileID,
   sourceNames,
 }: {
   row: boolean
@@ -458,10 +466,14 @@ function ResultCard({
   downloadNexus: (modID: string) => void
   addGitHub: (repo: string) => void
   addPackage: (id: string) => void
+  addDirect: (source: string, id: string) => void
+  profileID: string
   sourceNames: Map<string, string>
 }) {
   const { t } = useLingui()
   const [pending, run] = usePending()
+  const [openedFiles, setOpenedFiles] = useState(false)
+  const items = useQueue((s) => s.state.items)
   const { name, summary, author, picture, endorsements, stars, downloads } = item
   // The same mod found on several sources is one card; its first source is the default and a badge picks another.
   const primary = { source: item.source, id: item.id, url: item.url, installed: item.installed }
@@ -474,7 +486,12 @@ function ResultCard({
       ? t`${plural(endorsements, { one: '# endorsement', other: '# endorsements' })} · ${plural(downloads, { one: '# download', other: '# downloads' })}`
       : plural(stars, { one: '# star', other: '# stars' })
   let action: React.ReactNode = null
-  if (installed) {
+  const live = cardState(items, source, id, profileID)
+  // A free account's click on Mod Manager Download is not ours to see; the card waits for its nxm item.
+  const shown = live.kind === 'idle' && openedFiles ? ({ kind: 'waiting-nexus' } as const) : live
+  if (shown.kind !== 'idle') {
+    action = <CardProgress state={shown} />
+  } else if (installed) {
     action = <Chip size="small" label={t`In this profile`} />
   } else if (source === GITHUB) {
     action = (
@@ -506,8 +523,23 @@ function ResultCard({
         premium={premium}
         pending={pending}
         onDownload={() => run(() => Promise.resolve(downloadNexus(id)))}
-        onOpenFiles={() => openUrl(`${url}?tab=files`)}
+        onOpenFiles={() => {
+          setOpenedFiles(true)
+          openUrl(`${url}?tab=files`)
+        }}
       />
+    )
+  } else {
+    action = (
+      <Button
+        size="small"
+        variant="contained"
+        startIcon={<Plus size={14} />}
+        disabled={pending}
+        onClick={() => run(() => Promise.resolve(addDirect(source, id)))}
+      >
+        {t`Add`}
+      </Button>
     )
   }
   const picturePx = row ? ROW_PICTURE_PX : PICTURE_PX
