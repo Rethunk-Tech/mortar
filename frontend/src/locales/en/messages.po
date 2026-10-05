@@ -1737,7 +1737,7 @@ msgstr "Start screen"
 msgid "Pre-releases and unofficial SMAPI updates. Show lists them; Include lets Update all install them."
 msgstr "Pre-releases and unofficial SMAPI updates. Show lists them; Include lets Update all install them."
 
-#: src/shell/AppMenu.tsx:43
+#: src/shell/AppMenu.tsx:55
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
@@ -2033,8 +2033,8 @@ msgstr "Dependency cycle"
 #: src/commandPalette/paletteLabels.ts:17
 #: src/firstrun/ProfileStep.tsx:136
 #: src/game/NewProfileDialog.tsx:149
-#: src/game/Sidebar.tsx:378
-#: src/game/Sidebar.tsx:396
+#: src/game/Sidebar.tsx:376
+#: src/game/Sidebar.tsx:394
 #: src/nxm/ArrivalDialog.tsx:158
 #: src/share/ImportFooter.tsx:34
 msgid "New profile"
@@ -2471,8 +2471,8 @@ msgstr "All mods present"
 msgid "Switch them on too"
 msgstr "Switch them on too"
 
-#: src/game/SupportButton.tsx:30
 #: src/settings/shortcutLabels.ts:40
+#: src/shell/AppMenu.tsx:159
 msgid "Get help"
 msgstr "Get help"
 
@@ -2865,10 +2865,6 @@ msgstr "Open files page"
 msgid "Manual"
 msgstr "Manual"
 
-#: src/game/SupportButton.tsx:39
-msgid "Report a Mortar bug"
-msgstr "Report a Mortar bug"
-
 #: src/settings/prefCopy.ts:322
 msgid "History events kept"
 msgstr "History events kept"
@@ -2991,7 +2987,7 @@ msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
 
 #: src/settings/startupChecks.ts:32
-#: src/shell/AppMenu.tsx:145
+#: src/shell/AppMenu.tsx:170
 #: src/shell/BugReportDialog.tsx:58
 #: src/shell/ErrorBoundary.tsx:31
 msgid "Report a bug"
@@ -3313,7 +3309,7 @@ msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On 
 msgid "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 msgstr "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 
-#: src/game/Sidebar.tsx:193
+#: src/game/Sidebar.tsx:192
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
@@ -3745,7 +3741,7 @@ msgstr "Archive…"
 #: src/settings/sections/About.tsx:62
 #: src/settings/sections/About.tsx:67
 #: src/settings/sections/Updates.tsx:164
-#: src/shell/AppMenu.tsx:67
+#: src/shell/AppMenu.tsx:79
 msgid "Mortar"
 msgstr "Mortar"
 
@@ -4676,7 +4672,7 @@ msgstr "Another file from a mod you have"
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
-#: src/shell/AppMenu.tsx:157
+#: src/shell/AppMenu.tsx:182
 msgid "About Mortar"
 msgstr "About Mortar"
 
@@ -5555,7 +5551,7 @@ msgstr "Selected mod"
 msgid "Nothing would change."
 msgstr "Nothing would change."
 
-#: src/shell/AppMenu.tsx:121
+#: src/shell/AppMenu.tsx:133
 msgid "What's new in {version}"
 msgstr "What's new in {version}"
 
@@ -5698,7 +5694,7 @@ msgstr "Create a profile first."
 msgid "Mods their site marks as adult stay hidden from browse unless this is on. Installed mods are never hidden."
 msgstr "Mods their site marks as adult stay hidden from browse unless this is on. Installed mods are never hidden."
 
-#: src/shell/AppMenu.tsx:134
+#: src/shell/AppMenu.tsx:146
 msgid "Open data folder"
 msgstr "Open data folder"
 
@@ -5944,7 +5940,7 @@ msgstr "When you switch a mod on, also enable its required mods already in the p
 msgid "requirements"
 msgstr "requirements"
 
-#: src/shell/AppMenu.tsx:168
+#: src/shell/AppMenu.tsx:193
 msgid "Source code"
 msgstr "Source code"
 
@@ -9106,7 +9102,7 @@ msgid "Sparkles"
 msgstr "Sparkles"
 
 #: src/QuitPrompt.tsx:20
-#: src/shell/AppMenu.tsx:175
+#: src/shell/AppMenu.tsx:200
 msgid "Quit"
 msgstr "Quit"
 
@@ -9168,9 +9164,9 @@ msgstr "Save backups"
 msgid "The game's first frames; mods doing setup work in update events show up here"
 msgstr "The game's first frames; mods doing setup work in update events show up here"
 
-#: src/shell/AppMenu.tsx:48
-#: src/shell/AppMenu.tsx:78
-#: src/shell/AppMenu.tsx:88
+#: src/shell/AppMenu.tsx:60
+#: src/shell/AppMenu.tsx:90
+#: src/shell/AppMenu.tsx:100
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
@@ -9179,7 +9175,7 @@ msgid "Enter a number from 1 to {maxLanPort}"
 msgstr "Enter a number from 1 to {maxLanPort}"
 
 #: src/game/detailStates.tsx:53
-#: src/game/Sidebar.tsx:393
+#: src/game/Sidebar.tsx:391
 msgid "Manage profiles"
 msgstr "Manage profiles"
 
@@ -9527,7 +9523,7 @@ msgstr "colour"
 #: src/mods/ModDetail.tsx:146
 #: src/mods/ProblemsTab.tsx:90
 #: src/settings/SettingsPage.tsx:61
-#: src/shell/AppMenu.tsx:98
+#: src/shell/AppMenu.tsx:110
 #: src/shell/TitleBar.tsx:117
 msgid "Settings"
 msgstr "Settings"
@@ -10226,7 +10222,7 @@ msgid "Player"
 msgstr "Player"
 
 #: src/firstrunTour/TourPopover.tsx:58
-#: src/game/Sidebar.tsx:336
+#: src/game/Sidebar.tsx:334
 #: src/profiles/ProfilesPage.tsx:337
 #: src/settings/sections/AboutDiagnostics.tsx:96
 #: src/settings/sections/DataUsage.tsx:204
@@ -10480,7 +10476,7 @@ msgstr "Signed in as {name}"
 
 #: src/commandPalette/paletteLabels.ts:8
 #: src/settings/shortcutLabels.ts:11
-#: src/shell/AppMenu.tsx:109
+#: src/shell/AppMenu.tsx:121
 msgid "Check for updates"
 msgstr "Check for updates"
 
@@ -11076,11 +11072,6 @@ msgstr "Save log…"
 #: src/share/ShareShell.tsx:39
 msgid "Share {0}"
 msgstr "Share {0}"
-
-#: src/game/SupportButton.tsx:16
-#: src/game/SupportButton.tsx:18
-msgid "Support"
-msgstr "Support"
 
 #. placeholder {0}: e.action
 #. placeholder {0}: loader.name

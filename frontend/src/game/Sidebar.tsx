@@ -19,7 +19,6 @@ import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { compact } from './compact.ts'
 import { NewProfileDialog } from './NewProfileDialog.tsx'
 import { ProfileContextMenu } from './ProfileContextMenu.tsx'
-import { SupportButton } from './SupportButton.tsx'
 import { useSidebarCollapsed } from './sidebarCollapsed.ts'
 import { useTab } from './tab.ts'
 import { useOrderedProfiles, useSidebarBadges } from './useSidebarProfiles.ts'
@@ -249,7 +248,6 @@ function BottomBlock({ game }: { game: string }) {
         </Box>
         <RecentChangesButton game={game} />
         <HistoryButton />
-        <SupportButton game={game} />
       </Box>
       <PlayControl game={game} />
     </Box>
