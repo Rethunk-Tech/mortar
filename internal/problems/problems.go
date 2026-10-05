@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -228,14 +229,10 @@ func (r Result) WarningCount() int {
 	return n
 }
 
-// meets reports whether version satisfies minimum. What cannot be compared is taken as satisfied: SMAPI itself
-// only complains about versions it can order.
+// meets reports whether version satisfies minimum under SMAPI's scheme, which is what every mod these checks read
+// is versioned in.
 func meets(version, minimum string) bool {
-	if minimum == "" {
-		return true
-	}
-	c, ok := meta.CompareVersions(version, minimum)
-	return !ok || c >= 0
+	return deps.Satisfies(deps.SemverSMAPI, version, minimum)
 }
 
 // Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error.

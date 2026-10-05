@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -274,6 +275,11 @@ func (m Manifest) ContentPackForID() mod.ID {
 		return ""
 	}
 	return mod.SMAPI(m.ContentPackFor)
+}
+
+// Dep is the dependency in the model every loader shares.
+func (d Dependency) Dep() deps.Dependency {
+	return deps.SMAPI(d.UniqueID, d.MinimumVersion, d.Required)
 }
 
 // ModID is the needed mod as a mod.ID.

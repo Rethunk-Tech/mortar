@@ -154,6 +154,10 @@ type BundledCopier interface {
 	CopyBundled(installDir, dst string) error
 }
 
+// VersionScheme is a loader whose components are versioned in one scheme (deps.SemverSMAPI, deps.SemverStrict,
+// deps.Opaque); a dependency's constraint is read in the owner's loader's scheme.
+type VersionScheme interface{ VersionScheme() string }
+
 // ProcessNames is a loader whose running game is found by these executable names.
 type ProcessNames interface{ ProcessNames() []string }
 

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -40,6 +41,9 @@ func readMarker(profileDir string) marker {
 }
 
 func (Loader) ID() string { return ID }
+
+// VersionScheme is Thunderstore's strict d.d.d.
+func (Loader) VersionScheme() string { return deps.SemverStrict }
 
 func (Loader) Formats() []string { return []string{"bepinplugin"} }
 

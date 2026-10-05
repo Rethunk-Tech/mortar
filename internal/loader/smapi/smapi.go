@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -56,6 +57,9 @@ func gameInfo() components.GameInfo {
 }
 
 func (Loader) ID() string { return ID }
+
+// VersionScheme is SMAPI's lenient semver.
+func (Loader) VersionScheme() string { return deps.SemverSMAPI }
 
 func (Loader) Formats() []string { return []string{"smapi"} }
 
