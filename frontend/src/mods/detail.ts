@@ -53,6 +53,10 @@ function keyAfterRollBack(
   return entries?.find((e) => (e.mods ?? []).some((m) => m.id === id))?.key ?? fallback
 }
 
+// Arrow keys move the selection, so the panel follows the row that took focus.
+const showModId = (id: string) =>
+  useDetail.getState().show(useMods.getState().mods.find((m) => modId(m) === id) ?? null)
+
 // The selected mod (by modId) shown in the sidebar, whether its details dialog is open, and what the dialog reads beyond the mod list.
 export const useDetail = create<{
   detailId: string
@@ -145,4 +149,4 @@ export const useDetail = create<{
   },
 }))
 
-export { keyAfterRollBack, versionAfterRollBack }
+export { keyAfterRollBack, showModId, versionAfterRollBack }

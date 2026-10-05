@@ -1,5 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Drawer, Link, Tooltip, Typography, useMediaQuery } from '@mui/material'
+import {
+  Box,
+  Button,
+  Chip,
+  Collapse,
+  Drawer,
+  Link,
+  Tooltip,
+  Typography,
+  useMediaQuery,
+} from '@mui/material'
 import { TriangleAlert, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
@@ -18,10 +28,11 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
+import { EditConfigButton } from './ConfigEditor.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
-import { useDetail } from './detail.ts'
+import { showModId, useDetail } from './detail.ts'
 import { customCategoryById, resolvedCategoryLabel } from './group.ts'
 import { HiddenInside } from './HiddenInside.tsx'
 import { lastRunSummary, showLastRunInConsole, useLastRun } from './lastRun.ts'
@@ -49,6 +60,7 @@ import { OptionalFiles } from './OptionalFiles.tsx'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
+import { ResizableAside } from './ResizableAside.tsx'
 import { useMods } from './store.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { useUpdates } from './updates.ts'
@@ -322,6 +334,94 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
   )
 }
 
+// What the mod is at a glance: where it came from, what kind it is, and whether it is on.
+function ModChips({ mod, sourceName }: { mod: Mod; sourceName: string }) {
+  const { t } = useLingui()
+  return (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+      <Chip size="small" variant="outlined" label={sourceName} />
+      {mod.contentPackFor ? (
+        <Chip
+          size="small"
+          variant="outlined"
+          label={t`Content pack for ${localId(mod.contentPackFor)}`}
+        />
+      ) : null}
+      <Chip
+        size="small"
+        color={mod.enabled ? 'primary' : 'default'}
+        label={mod.enabled ? t`On` : t`Off`}
+      />
+    </Box>
+  )
+}
+
+// Rows that lead out of the panel: the config editor, the mod's page, the Nexus changelog and who needs the mod.
+// The relations load with the panel, so the rows appear once they arrive.
+function ActionRows({ mod, nexus }: { mod: Mod; nexus: boolean }) {
+  const { t, i18n } = useLingui()
+  const extras = useDetail((s) => s.extras)
+  const loadExtras = useDetail((s) => s.loadExtras)
+  const setOpen = useDetail((s) => s.setOpen)
+  const [showNeededBy, setShowNeededBy] = useState(false)
+  useEffect(() => {
+    loadExtras(mod).catch(reportUnexpected)
+  }, [mod, loadExtras])
+  const mine = extras?.id === modId(mod) ? extras : null
+  const pageUrl = mine?.relations.pageUrl ?? ''
+  const neededBy = mine?.relations.neededBy ?? []
+  const hasConfig = mine !== null && mine.state.config !== ''
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+      {hasConfig ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography sx={{ flex: 1, fontSize: 13 }}>{t`Config`}</Typography>
+          <EditConfigButton mod={mod} />
+        </Box>
+      ) : null}
+      {nexus ? (
+        <Link component="button" onClick={() => setOpen(true)} sx={rowLink}>
+          {t`Changelog`}
+        </Link>
+      ) : null}
+      {pageUrl ? (
+        <Link component="button" onClick={() => openPage(pageUrl)} sx={rowLink}>
+          {isGitHub(pageUrl) ? t`Open on GitHub` : t`Open on Nexus Mods`}
+        </Link>
+      ) : null}
+      {neededBy.length > 0 ? (
+        <>
+          <Link
+            component="button"
+            aria-expanded={showNeededBy}
+            onClick={() => setShowNeededBy((on) => !on)}
+            sx={rowLink}
+          >
+            {t`Required by (${neededBy.length.toLocaleString(i18n.locale)})`}
+          </Link>
+          <Collapse in={showNeededBy} unmountOnExit={true}>
+            <Box sx={{ pl: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+              {neededBy.map((d) => (
+                <Link
+                  key={`${d.key}/${d.id}`}
+                  component="button"
+                  onClick={() => showModId(modId(d))}
+                  sx={{ ...rowLink, fontSize: 13, color: 'text.primary' }}
+                >
+                  {d.name}
+                </Link>
+              ))}
+            </Box>
+          </Collapse>
+        </>
+      ) : null}
+    </Box>
+  )
+}
+
+const rowLink = { display: 'block', fontSize: 14, textAlign: 'left' } as const
+const isGitHub = (url: string) => URL.canParse(url) && new URL(url).hostname.endsWith('github.com')
+
 function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t, i18n } = useLingui()
   const all = useMods((s) => s.mods)
@@ -364,6 +464,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
           onClick={() => useDetail.getState().show(null)}
         />
       </Box>
+      <ModChips mod={mod} sourceName={sourceName} />
       <Field label={t`Version`} value={mod.version} />
       <ModUpdateControls mod={mod} entry={entry} />
       {entry?.skipVersion && !offered ? (
@@ -412,6 +513,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       <ProblemLine mod={mod} />
       <LastRunLine mod={mod} profile={profile} />
       <ModDependencyTree mod={mod} />
+      <ActionRows mod={mod} nexus={nexusId > 0} />
       <AlsoInProfiles mod={mod} profile={profile} />
       <HiddenInside mod={mod} profile={profile} />
       <ModNoteTags profile={profile} mod={mod} />
@@ -432,7 +534,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       ) : null}
       <Box sx={{ flexGrow: 1 }} />
       <Button variant="contained" onClick={() => setOpen(true)}>
-        {t`More details`}
+        {t`More…`}
       </Button>
       <Box
         sx={{
@@ -485,17 +587,8 @@ export function ModSidebar({ profile }: { profile: Profile }) {
     return null
   }
   return (
-    <Box
-      aria-label={t`Selected mod`}
-      component="aside"
-      sx={{
-        width: 300,
-        overflowY: 'auto',
-        bgcolor: 'var(--mortar-panel)',
-        borderLeft: '1px solid var(--mortar-hairline)',
-      }}
-    >
+    <ResizableAside label={t`Selected mod`}>
       <Inspector mod={selected} profile={profile} />
-    </Box>
+    </ResizableAside>
   )
 }

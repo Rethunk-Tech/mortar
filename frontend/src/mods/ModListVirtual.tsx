@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Table, TableBody, TableHead, TableRow } from '@mui/material'
 import type { MouseEvent, ReactNode, Ref } from 'react'
-import { useDetail } from './detail.ts'
+import { showModId, useDetail } from './detail.ts'
 import type { sanitizeListGroupBy } from './group.ts'
 import { HeaderCells, ListColumnMenu } from './ListColumnMenu.tsx'
 import {
@@ -261,6 +261,7 @@ export function ModListTable({
     const next = stepId(navIds, id, dir)
     if (next && next !== id) {
       focusModAt({ items, idOf: listRowId, virtualizer, parentRef }, next)
+      showModId(next)
     }
   }
   return (

@@ -139,7 +139,17 @@ function ModsBody({
     )
   }
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}>
+    <Box
+      onKeyDown={(e) => {
+        // Escape belongs to a field or dialog first; otherwise it closes the details panel.
+        const typing =
+          e.target instanceof Element && e.target.closest('input, textarea, [role="dialog"]')
+        if (e.key === 'Escape' && !typing && useDetail.getState().detailId !== '') {
+          useDetail.getState().show(null)
+        }
+      }}
+      sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}
+    >
       <Box sx={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {view === 'list' ? (
           <ModList profile={profile} mods={shown} />

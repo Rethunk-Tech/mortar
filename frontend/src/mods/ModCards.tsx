@@ -12,7 +12,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { actingMods, toggleActing } from './actingMods.ts'
 import { CompatChip } from './CompatChip.tsx'
-import { useDetail } from './detail.ts'
+import { showModId, useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import { firstTag, listHeadingFor } from './group.ts'
 import type { ListRow } from './listColumns.ts'
@@ -350,6 +350,7 @@ function CardsPane({
     const next = stepId(navIds, id, delta)
     if (next && next !== id) {
       focusModAt({ items, idOf: listRowId, virtualizer, parentRef }, next)
+      showModId(next)
     }
   }
   useModTypeahead({
