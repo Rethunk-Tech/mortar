@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -199,7 +200,7 @@ func (s *Service) Import(ctx context.Context, src Source, gameID, profileID stri
 		profileID = p.ID
 	}
 	res.Profile = profileID
-	if err := s.Profiles.WriteFiles(gameID, profileID, packFiles(d)); err != nil {
+	if err := s.Profiles.WriteFiles(gameID, profileID, packFiles(d, importRoots(gameID))); err != nil {
 		return res, err
 	}
 	for i := range reqs {
@@ -218,19 +219,42 @@ var blockedExtensions = []string{
 }
 
 // packFiles is the pack's config files and loose files as the profile holds them, by r2modman's import rule
-// (ProfileUtils.ts:56-67): a config/ entry goes below BepInEx/, any other path is relative to the profile as it
-// stands, and executable types are skipped. A file the pack lists twice keeps its config.
-func packFiles(d pack.Draft) map[string][]byte {
+// (ProfileUtils.ts:56-67): a config/ entry goes below BepInEx/, any other path is relative to the profile, and
+// executable types are skipped. Mortar's profile folder also holds its own records (profile.json, history, saves), so
+// only a file below one of roots, the game's loaders' import folders, is kept, written under the root's own spelling. A
+// file the pack lists twice keeps its config.
+func packFiles(d pack.Draft, roots []string) map[string][]byte {
 	out := map[string][]byte{}
+	keep := func(p string, data []byte) {
+		first, rest, ok := strings.Cut(p, "/")
+		if !ok {
+			return
+		}
+		i := slices.IndexFunc(roots, func(r string) bool { return strings.EqualFold(r, first) })
+		if i < 0 || slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(strings.ToLower(p), e) }) {
+			return
+		}
+		out[roots[i]+"/"+rest] = data
+	}
 	for _, f := range d.Loose {
-		out[f.Path] = f.Data
+		keep(f.Path, f.Data)
 	}
 	for _, f := range d.Configs {
-		out["BepInEx/"+f.Path] = f.Data
+		keep("BepInEx/"+f.Path, f.Data)
 	}
-	for p := range out {
-		if slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(strings.ToLower(p), e) }) {
-			delete(out, p)
+	return out
+}
+
+// importRoots are the folders the game's loaders let an imported pack write loose files into.
+func importRoots(gameID string) []string {
+	info, ok := components.BundledGame(gameID)
+	if !ok {
+		return nil
+	}
+	var out []string
+	for _, l := range loader.For(info) {
+		if r, ok := l.(loader.ImportRoots); ok {
+			out = append(out, r.ImportRoots()...)
 		}
 	}
 	return out

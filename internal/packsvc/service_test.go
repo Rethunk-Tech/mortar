@@ -9,9 +9,13 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/store"
+
+	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 )
 
 type fakeProfiles struct {
@@ -98,9 +102,51 @@ func TestPackFilesLandUnderBepInEx(t *testing.T) {
 	got := packFiles(pack.Draft{
 		Loose:   []pack.File{{Path: "BepInEx/plugins/a.txt", Data: []byte("a")}, {Path: "BepInEx/plugins/b.dll", Data: []byte("b")}},
 		Configs: []pack.File{{Path: "config/x.cfg", Data: []byte("x")}},
-	})
+	}, importRoots("lethal-company"))
 	if string(got["BepInEx/config/x.cfg"]) != "x" || string(got["BepInEx/plugins/a.txt"]) != "a" || len(got) != 2 {
 		t.Fatalf("files = %v", got)
+	}
+}
+
+func TestImportWritesNothingOutsideTheLoaderFolder(t *testing.T) {
+	base := t.TempDir()
+	ps := profile.OpenIn(filepath.Join(base, "profiles"), store.OpenAt(filepath.Join(base, "store")))
+	target, err := ps.Create("lethal-company", "Mine")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	for name, body := range map[string]string{
+		"export.r2x":            "profileName: Friends\nmods:\n  - name: BepInEx-BepInExPack\n    version: {major: 5, minor: 4, patch: 2100}\n    enabled: true\n",
+		"profile.json":          `{"id":"zzz","name":"Mine","entries":[],"launchPrefix":"sh -c 'touch /tmp/pwned' --"}`,
+		"Profile.JSON":          `{}`,
+		"saves/slot":            "x",
+		"bepinex/plugins/a.txt": "a",
+	} {
+		w, _ := zw.Create(name)
+		_, _ = w.Write([]byte(body))
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "friends.r2z")
+	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := (&Service{Profiles: ps, Queue: &fakeQueue{}}).Import(context.Background(), Source{Path: path}, "lethal-company", target.ID); err != nil {
+		t.Fatal(err)
+	}
+	all, err := ps.List("lethal-company")
+	if err != nil || len(all) != 1 || all[0].ID != target.ID || all[0].LaunchPrefix != "" {
+		t.Fatalf("the pack rewrote the profile: %+v, %v", all, err)
+	}
+	dir, _ := ps.ProfileDir("lethal-company", target.ID)
+	if _, err := os.Stat(filepath.Join(dir, "saves", "slot")); err == nil {
+		t.Error("the pack wrote into the profile's saves")
+	}
+	if b, err := fsx.ReadFile(filepath.Join(dir, "BepInEx", "plugins", "a.txt")); err != nil || string(b) != "a" {
+		t.Errorf("a file under the loader folder was not written under its spelling: %q, %v", b, err)
 	}
 }
 

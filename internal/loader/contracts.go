@@ -117,6 +117,10 @@ type WithConfig interface {
 	ConfigDirs() []string
 }
 
+// ImportRoots is a loader whose files an imported profile pack may carry loose: the folders, relative to the profile's
+// folder, that hold them. Everything else in a profile folder is Mortar's own, so a pack file outside them is dropped.
+type ImportRoots interface{ ImportRoots() []string }
+
 // LaunchSetting is one launch option a loader keeps in the profile, shown beside the profile's launch settings. A
 // setting with no Choices is a toggle holding "true" or "false".
 type LaunchSetting struct {

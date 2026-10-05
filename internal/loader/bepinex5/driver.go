@@ -49,6 +49,9 @@ func readMarker(profileDir string) marker {
 
 func (Loader) ID() string { return ID }
 
+// ImportRoots is BepInEx's folder, where an r2modman profile's loose files belong.
+func (Loader) ImportRoots() []string { return []string{"BepInEx"} }
+
 // VersionScheme is Thunderstore's strict d.d.d.
 func (Loader) VersionScheme() string { return deps.SemverStrict }
 
