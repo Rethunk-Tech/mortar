@@ -12,6 +12,7 @@ import {
   ImagePlus,
   PackagePlus,
   Send as SendIcon,
+  ShieldCheck,
   SquareArrowOutUpRight,
   Trash2,
   Users,
@@ -30,6 +31,7 @@ import { bundleApplied } from '../bundles/applied.ts'
 import { ApplyBundleDialog } from '../bundles/dialogs.tsx'
 import { SendDialog } from '../lan/SendDialog.tsx'
 import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
+import { HealthDialog } from '../profiles/HealthDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
@@ -169,6 +171,24 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
           }}
         />
       ) : null}
+    </>
+  )
+}
+
+function CheckProfileMenuItem({ profile, close }: { profile: Profile; close: () => void }) {
+  const { t } = useLingui()
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <ProfileMenuItem
+        icon={<ShieldCheck size={16} />}
+        label={t`Check this profile`}
+        onClick={() => {
+          close()
+          setOpen(true)
+        }}
+      />
+      <HealthDialog profileId={profile.id} open={open} onClose={() => setOpen(false)} />
     </>
   )
 }
@@ -324,6 +344,7 @@ function MoreMenuItems({
         onHistory()
       }}
     />,
+    <CheckProfileMenuItem key="check" profile={profile} close={close} />,
     <ProfileMenuItem
       key="duplicate"
       icon={<Copy size={16} />}
