@@ -445,13 +445,13 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if err != nil {
 		return err
 	}
-	var mod nexus.Mod
+	var im nexus.Mod
 	// The picture and name are nice to have: a page that cannot be fetched only leaves the letter tile. describe
 	// usually fetched them while the item waited.
 	if it.Picture != "" {
-		mod = nexus.Mod{Name: it.Name, PictureURL: it.Picture, EndorsementCount: it.endorsed}
+		im = nexus.Mod{Name: it.Name, PictureURL: it.Picture, EndorsementCount: it.endorsed}
 	} else if m, merr := c.Mod(ctx, t, it.ModID); merr == nil {
-		mod = m
+		im = m
 		s.mu.Lock()
 		if cur := s.find(it.ID); cur != nil {
 			if cur.Name == "" {
@@ -466,7 +466,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		if s.parkOverlay(it.ID, it.overlay, false) {
 			return nil
 		}
-		if done, err := s.installStored(it, mod); done {
+		if done, err := s.installStored(it, im); done {
 			return err
 		}
 	}
@@ -562,7 +562,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	}
 	s.mu.Unlock()
 	s.publish(true)
-	return s.contentPatcherHint(ctx, it, s.installNexusPath(ctx, it, path, mod))
+	return s.contentPatcherHint(ctx, it, s.installNexusPath(ctx, it, path, im))
 }
 
 func (s *Service) pauseFomod(id, key string) {
@@ -689,7 +689,7 @@ func (p *progress) set(n int64) {
 
 // installStored adds a Nexus file the store already holds to the item's profile. It reports false, so the file is
 // downloaded as usual, when the profile has an entry from the same mod page: that choice installs from the archive.
-func (s *Service) installStored(it Item, mod nexus.Mod) (bool, error) {
+func (s *Service) installStored(it Item, im nexus.Mod) (bool, error) {
 	if it.Kind != KindUpdate && !it.overlay && s.d.SamePage != nil {
 		if _, ok := s.d.SamePage(it.Game, it.Profile, it.ModID, it.FileID, it.Category); ok {
 			s.mu.Lock()
@@ -712,7 +712,7 @@ func (s *Service) installStored(it Item, mod nexus.Mod) (bool, error) {
 	key := store.NexusKey(it.ModID, it.FileID)
 	log.Printf("queue: mod %d file %d installs from the store (%s)", it.ModID, it.FileID, key)
 	s.installMu.Lock()
-	res, err := s.d.InstallStaged(it.Game, it.Profile, key, nexusSource(it, mod))
+	res, err := s.d.InstallStaged(it.Game, it.Profile, key, nexusSource(it, im))
 	s.installMu.Unlock()
 	return true, s.afterInstall(it.ID, res, err, false)
 }

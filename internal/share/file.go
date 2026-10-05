@@ -15,6 +15,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -27,7 +29,7 @@ const (
 	MaxConfigTotal  = 32 << 20
 	MaxConfigFiles  = 5000
 	maxProfileBytes = 256 << 10
-	maxUniqueID     = 100
+	maxIDLen        = 100
 	maxSegment      = 100
 	maxRelPath      = 240
 )
@@ -36,6 +38,7 @@ const profileFile = "profile.json"
 
 var (
 	uniqueID = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+	format   = regexp.MustCompile(`^[a-z][a-z0-9]*$`)
 	segment  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9 ._()+~-]*$`)
 	reserved = regexp.MustCompile(`(?i)^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$`)
 )
@@ -46,9 +49,9 @@ var ErrBadFile = errors.New("not a valid .mortar file")
 // Config is one config file to write into an installed mod's folder: Path is relative to the mod folder, slash
 // separated, ends in .json and stays inside it.
 type Config struct {
-	UniqueID string `json:"uniqueId"`
-	Path     string `json:"path"`
-	Data     []byte `json:"data"`
+	ID   mod.ID `json:"id"`
+	Path string `json:"path"`
+	Data []byte `json:"data"`
 }
 
 // Preview is what reading a .mortar file yields. The apply step writes Configs only into installed mod folders.
@@ -56,7 +59,7 @@ type Preview struct {
 	Shared
 	Notes       string
 	Description string
-	UniqueIDs   []string
+	IDs         []mod.ID
 	Configs     []Config
 	Groups      []FileGroup
 }
@@ -69,7 +72,7 @@ type fileDoc struct {
 	Notes       string            `json:"notes"`
 	Description string            `json:"description,omitempty"`
 	Entries     json.RawMessage   `json:"entries"`
-	UniqueIDs   []string          `json:"uniqueIds"`
+	IDs         []mod.ID          `json:"ids"`
 	Groups      []FileGroup       `json:"groups,omitempty"`
 }
 
@@ -97,12 +100,14 @@ func validConfigPath(p string) bool {
 	return true
 }
 
-func validUniqueID(id string) bool {
-	return len(id) <= maxUniqueID && uniqueID.MatchString(id) && !reserved.MatchString(id)
+// validID accepts ids whose format and local part are safe to use as zip path segments.
+func validID(id mod.ID) bool {
+	local := id.Local()
+	return format.MatchString(id.Format()) && len(local) <= maxIDLen && uniqueID.MatchString(local) && !reserved.MatchString(local)
 }
 
 // Write writes the profile as a .mortar zip: profile.json with the link's entries plus name, notes and
-// description, and the .json files of each enabled mod's folder under configs/<UniqueID>/. modsDir is the
+// description, and the .json files of each enabled mod's folder under configs/<mod id>/. modsDir is the
 // profile's mods/ folder. Config files that are over the caps or have unusual names are skipped and returned as paths.
 func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, include ...Include) (skipped []string, err error) {
 	inc := DefaultInclude()
@@ -122,7 +127,7 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 	}
 	doc := fileDoc{
 		Version: FormatVersion, Name: s.Name, Game: s.Game, SourceKeys: s.SourceKeys, Notes: notes, Description: p.Description,
-		Entries: entries, UniqueIDs: []string{},
+		Entries: entries, IDs: []mod.ID{},
 	}
 	if inc.Notes {
 		doc.Groups = collectFileGroups(p)
@@ -145,10 +150,10 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 			continue
 		}
 		for _, m := range e.Mods {
-			if !e.Enabled(m.UniqueID) || !validUniqueID(m.UniqueID) {
+			if !e.Enabled(m.ID) || !validID(m.ID) {
 				continue
 			}
-			doc.UniqueIDs = append(doc.UniqueIDs, m.UniqueID)
+			doc.IDs = append(doc.IDs, m.ID)
 			found, skip, err := readConfigs(modsDir, e.Key, m)
 			if err != nil {
 				return nil, err
@@ -162,7 +167,7 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 	for _, c := range configs {
 		total += int64(len(c.Data))
 		if total > MaxConfigTotal || len(kept) >= MaxConfigFiles {
-			skipped = append(skipped, c.UniqueID+"/"+c.Path)
+			skipped = append(skipped, c.ID.Local()+"/"+c.Path)
 			continue
 		}
 		kept = append(kept, c)
@@ -175,7 +180,7 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 		return nil, err
 	}
 	for _, c := range kept {
-		if err := putFile(zw, "configs/"+c.UniqueID+"/"+c.Path, c.Data); err != nil {
+		if err := putFile(zw, "configs/"+c.ID.Format()+"/"+c.ID.Local()+"/"+c.Path, c.Data); err != nil {
 			return nil, err
 		}
 	}
@@ -193,12 +198,12 @@ func putFile(zw *zip.Writer, name string, data []byte) error {
 
 // ReadConfigs collects the .json files of one mod's folder, except its manifest; skipped are the ones left out for
 // their size or name.
-func ReadConfigs(modsDir, key string, m profile.EntryMod) (found []Config, skipped []string, err error) {
+func ReadConfigs(modsDir, key string, m profile.Component) (found []Config, skipped []string, err error) {
 	return readConfigs(modsDir, key, m)
 }
 
 // readConfigs collects the .json files under one enabled mod's folder, except its manifest.
-func readConfigs(modsDir, key string, m profile.EntryMod) (found []Config, skipped []string, err error) {
+func readConfigs(modsDir, key string, m profile.Component) (found []Config, skipped []string, err error) {
 	folder := filepath.Join(modsDir, key)
 	if m.Folder != "." {
 		if !filepath.IsLocal(filepath.FromSlash(m.Folder)) {
@@ -226,13 +231,13 @@ func readConfigs(modsDir, key string, m profile.EntryMod) (found []Config, skipp
 		}
 		data, err := readCapped(p)
 		if errors.Is(err, errOverCap) || !validConfigPath(rel) {
-			skipped = append(skipped, m.UniqueID+"/"+rel)
+			skipped = append(skipped, m.ID.Local()+"/"+rel)
 			return nil
 		}
 		if err != nil {
 			return err
 		}
-		found = append(found, Config{UniqueID: m.UniqueID, Path: rel, Data: data})
+		found = append(found, Config{ID: m.ID, Path: rel, Data: data})
 		return nil
 	})
 	return found, skipped, err
@@ -257,7 +262,7 @@ func readCapped(p string) ([]byte, error) {
 }
 
 // Read opens a .mortar file and returns its preview. Any entry outside the layout, any unsafe path, and any
-// config for a UniqueID the profile does not list fails the whole file.
+// config for a mod id the profile does not list fails the whole file.
 func Read(file string) (Preview, error) {
 	info, err := os.Stat(file)
 	if err != nil {
@@ -330,9 +335,9 @@ func readZip(zr *zip.Reader) (Preview, error) {
 	if err != nil {
 		return Preview{}, err
 	}
-	known := map[string]string{}
-	for _, id := range pv.UniqueIDs {
-		known[strings.ToLower(id)] = id
+	known := map[string]mod.ID{}
+	for _, id := range pv.IDs {
+		known[id.Fold()] = id
 	}
 	seen := map[string]bool{profileFile: true}
 	var total int64
@@ -341,18 +346,19 @@ func readZip(zr *zip.Reader) (Preview, error) {
 			continue
 		}
 		rest, ok := strings.CutPrefix(f.Name, "configs/")
-		id, rel, ok2 := strings.Cut(rest, "/")
-		if !ok || !ok2 {
+		fmtSeg, rest, ok2 := strings.Cut(rest, "/")
+		local, rel, ok3 := strings.Cut(rest, "/")
+		if !ok || !ok2 || !ok3 {
 			return Preview{}, fmt.Errorf("%w: unexpected entry %q", ErrBadFile, f.Name)
 		}
-		canon, ok := known[strings.ToLower(id)]
+		canon, ok := known[mod.NewID(fmtSeg, local).Fold()]
 		if !ok {
 			return Preview{}, fmt.Errorf("%w: %q is for a mod the profile does not list", ErrBadFile, f.Name)
 		}
 		if path.Clean(rel) != rel || !validConfigPath(rel) {
 			return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
 		}
-		key := strings.ToLower(canon + "/" + rel)
+		key := strings.ToLower(string(canon) + "/" + rel)
 		if seen[key] {
 			return Preview{}, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.Name)
 		}
@@ -364,7 +370,7 @@ func readZip(zr *zip.Reader) (Preview, error) {
 		if total += int64(len(data)); total > MaxConfigTotal {
 			return Preview{}, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
 		}
-		pv.Configs = append(pv.Configs, Config{UniqueID: canon, Path: rel, Data: data})
+		pv.Configs = append(pv.Configs, Config{ID: canon, Path: rel, Data: data})
 	}
 	return pv, nil
 }
@@ -384,7 +390,7 @@ func parseFileDoc(raw []byte) (Preview, error) {
 	if err != nil {
 		return Preview{}, err
 	}
-	pv := Preview{Name: d.Name, Game: d.Game, SourceKeys: d.SourceKeys, Entries: entries, Notes: d.Notes, Description: d.Description, UniqueIDs: d.UniqueIDs, Groups: d.Groups}
+	pv := Preview{Name: d.Name, Game: d.Game, SourceKeys: d.SourceKeys, Entries: entries, Notes: d.Notes, Description: d.Description, IDs: d.IDs, Groups: d.Groups}
 	if err := checkShared(pv.Shared); err != nil {
 		return Preview{}, err
 	}
@@ -394,12 +400,12 @@ func parseFileDoc(raw []byte) (Preview, error) {
 	if utf8.RuneCountInString(d.Description) > profile.MaxDescription {
 		return Preview{}, fmt.Errorf("%w: description is too long", ErrBadFile)
 	}
-	if len(d.UniqueIDs) > MaxConfigFiles {
+	if len(d.IDs) > MaxConfigFiles {
 		return Preview{}, fmt.Errorf("%w: too many mods", ErrBadFile)
 	}
-	for _, id := range d.UniqueIDs {
-		if !validUniqueID(id) {
-			return Preview{}, fmt.Errorf("%w: bad UniqueID %q", ErrBadFile, id)
+	for _, id := range d.IDs {
+		if !validID(id) {
+			return Preview{}, fmt.Errorf("%w: bad mod id %q", ErrBadFile, id)
 		}
 	}
 	return pv, nil

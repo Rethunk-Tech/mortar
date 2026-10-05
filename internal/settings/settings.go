@@ -60,7 +60,7 @@ type Settings struct {
 	LaunchersConfirmed bool `json:"launchersConfirmed"`
 	// Loaders maps a game id to the loader version Mortar installed.
 	Loaders map[string]string `json:"loaders"`
-	// Dismissed maps a save folder name to the UniqueIDs whose missing-mod warning the user dismissed for it.
+	// Dismissed maps a save folder name to the mod ids whose missing-mod warning the user dismissed for it.
 	Dismissed map[string][]string `json:"dismissed"`
 	// The signed-in Nexus account, for display only; the API key lives in the keyring. Zero NexusUserID means signed out.
 	NexusUserID  int    `json:"nexusUserId"`

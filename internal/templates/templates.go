@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/gamesettings"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -33,13 +34,13 @@ type LaunchConfig struct {
 	DefaultLaunchPreset string                 `json:"defaultLaunchPreset"`
 }
 
-// Template is a named starting point for new profiles of one game. Disabled lists the UniqueIDs of its mods that
+// Template is a named starting point for new profiles of one game. Disabled lists the ids of its mods that
 // start switched off.
 type Template struct {
 	Name          string                `json:"name"`
 	Game          string                `json:"game"`
 	Bundle        []bundles.Mod         `json:"bundle"`
-	Disabled      []string              `json:"disabled"`
+	Disabled      []mod.ID              `json:"disabled"`
 	GameSettings  gamesettings.Settings `json:"gameSettings"`
 	LaunchOptions string                `json:"launchOptions"`
 	LaunchConfig

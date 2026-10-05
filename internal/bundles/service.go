@@ -12,10 +12,11 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	modstore "github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -27,12 +28,12 @@ var idPattern = regexp.MustCompile(`^[0-9a-f]{16}$`)
 
 // Mod is one profile mod captured by a bundle.
 type Mod struct {
-	UniqueID string         `json:"uniqueId"`
+	ID       mod.ID         `json:"id"`
 	Name     string         `json:"name"`
 	EntryKey string         `json:"entryKey"`
 	Source   profile.Source `json:"source"`
 	// OverlayOf is set on an optional file without a manifest: the entry key of the mod it is laid over, with
-	// OverlayFrom and OverlayTo as recorded on the profile entry. Its UniqueID is empty.
+	// OverlayFrom and OverlayTo as recorded on the profile entry. Its id is empty.
 	OverlayOf   string `json:"overlayOf,omitempty"`
 	OverlayFrom string `json:"overlayFrom,omitempty"`
 	OverlayTo   string `json:"overlayTo,omitempty"`
@@ -150,40 +151,40 @@ func profileFor(profiles []profile.Profile, id string) (profile.Profile, error) 
 	return profile.Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("profile %q was not found", id))
 }
 
-func snapshot(p profile.Profile, uniqueIDs []string) ([]Mod, error) {
+func snapshot(p profile.Profile, uniqueIDs []mod.ID) ([]Mod, error) {
 	if len(uniqueIDs) == 0 {
 		return nil, errors.New("select at least one mod")
 	}
 	byID := map[string]Mod{}
 	for _, e := range p.Entries {
 		for _, m := range e.Mods {
-			id := manifest.FoldID(m.UniqueID)
+			id := m.ID.Fold()
 			if _, exists := byID[id]; exists {
 				continue
 			}
 			name := m.Name
 			if name == "" {
-				name = m.UniqueID
+				name = m.ID.Local()
 			}
-			byID[id] = Mod{UniqueID: m.UniqueID, Name: name, EntryKey: e.Key, Source: e.Source}
+			byID[id] = Mod{ID: m.ID, Name: name, EntryKey: e.Key, Source: e.Source}
 		}
 	}
 	out := make([]Mod, 0, len(uniqueIDs))
 	seen := map[string]struct{}{}
 	for _, id := range uniqueIDs {
-		key := manifest.FoldID(id)
+		key := id.Fold()
 		if key == "" {
 			return nil, errors.New("mod id is empty")
 		}
 		if _, exists := seen[key]; exists {
 			continue
 		}
-		mod, ok := byID[key]
+		im, ok := byID[key]
 		if !ok {
 			return nil, fmt.Errorf("mod %q is not in this profile", id)
 		}
 		seen[key] = struct{}{}
-		out = append(out, mod)
+		out = append(out, im)
 	}
 	if len(out) == 0 {
 		return nil, errors.New("select at least one mod")
@@ -195,7 +196,7 @@ func snapshot(p profile.Profile, uniqueIDs []string) ([]Mod, error) {
 // each main file in first.
 func withOverlays(p profile.Profile, mods []Mod) []Mod {
 	for _, e := range p.Entries {
-		if !e.IsOverlay() || !slices.ContainsFunc(mods, func(m Mod) bool { return m.EntryKey == e.OverlayOf && m.UniqueID != "" }) {
+		if !e.IsOverlay() || !slices.ContainsFunc(mods, func(m Mod) bool { return m.EntryKey == e.OverlayOf && m.ID != "" }) {
 			continue
 		}
 		if slices.ContainsFunc(mods, func(m Mod) bool { return m.EntryKey == e.Key }) {
@@ -209,7 +210,7 @@ func withOverlays(p profile.Profile, mods []Mod) []Mod {
 	return mods
 }
 
-func (s *Service) modsFromProfile(gameID, profileID string, uniqueIDs []string) ([]Mod, error) {
+func (s *Service) modsFromProfile(gameID, profileID string, uniqueIDs []mod.ID) ([]Mod, error) {
 	profiles, err := s.profiles.List(gameID)
 	if err != nil {
 		return nil, err
@@ -255,9 +256,9 @@ func (s *Service) ReferencedStoreKeys() (map[string][]string, error) {
 			return nil, err
 		}
 		for _, bundle := range list {
-			for _, mod := range bundle.Mods {
-				if mod.EntryKey != "" {
-					out[gameID] = append(out[gameID], mod.EntryKey)
+			for _, im := range bundle.Mods {
+				if im.EntryKey != "" {
+					out[gameID] = append(out[gameID], im.EntryKey)
 				}
 			}
 		}
@@ -302,7 +303,7 @@ func (s *Service) update(gameID string, fn func([]Bundle) ([]Bundle, Bundle, err
 }
 
 // Create makes a bundle by snapshotting selected mods from a profile.
-func (s *Service) Create(gameID, name, profileID string, uniqueIDs []string) (Bundle, error) {
+func (s *Service) Create(gameID, name, profileID string, uniqueIDs []mod.ID) (Bundle, error) {
 	name, err := bundleName(name)
 	if err != nil {
 		return Bundle{}, err
@@ -345,7 +346,7 @@ func (s *Service) Delete(gameID, id string) error {
 }
 
 // AddMods snapshots selected mods from a profile into a bundle.
-func (s *Service) AddMods(gameID, bundleID, profileID string, uniqueIDs []string) (Bundle, error) {
+func (s *Service) AddMods(gameID, bundleID, profileID string, uniqueIDs []mod.ID) (Bundle, error) {
 	return s.update(gameID, func(bundles []Bundle) ([]Bundle, Bundle, error) {
 		i, err := findBundle(bundles, bundleID)
 		if err != nil {
@@ -356,23 +357,23 @@ func (s *Service) AddMods(gameID, bundleID, profileID string, uniqueIDs []string
 			return nil, Bundle{}, err
 		}
 		known := make(map[string]struct{}, len(bundles[i].Mods))
-		for _, mod := range bundles[i].Mods {
-			known[manifest.FoldID(mod.UniqueID)] = struct{}{}
+		for _, im := range bundles[i].Mods {
+			known[im.ID.Fold()] = struct{}{}
 		}
-		for _, mod := range mods {
-			if _, exists := known[manifest.FoldID(mod.UniqueID)]; exists {
+		for _, im := range mods {
+			if _, exists := known[im.ID.Fold()]; exists {
 				continue
 			}
-			bundles[i].Mods = append(bundles[i].Mods, mod)
-			known[manifest.FoldID(mod.UniqueID)] = struct{}{}
+			bundles[i].Mods = append(bundles[i].Mods, im)
+			known[im.ID.Fold()] = struct{}{}
 		}
 		return bundles, bundles[i], nil
 	})
 }
 
-// RemoveMods drops the mods with the given UniqueIDs from a bundle. A bundle keeps at least one mod: delete it to
+// RemoveMods drops the mods with the given ids from a bundle. A bundle keeps at least one mod: delete it to
 // empty it.
-func (s *Service) RemoveMods(gameID, bundleID string, uniqueIDs []string) (Bundle, error) {
+func (s *Service) RemoveMods(gameID, bundleID string, uniqueIDs []mod.ID) (Bundle, error) {
 	return s.update(gameID, func(bundles []Bundle) ([]Bundle, Bundle, error) {
 		i, err := findBundle(bundles, bundleID)
 		if err != nil {
@@ -380,10 +381,10 @@ func (s *Service) RemoveMods(gameID, bundleID string, uniqueIDs []string) (Bundl
 		}
 		drop := make(map[string]struct{}, len(uniqueIDs))
 		for _, id := range uniqueIDs {
-			drop[manifest.FoldID(id)] = struct{}{}
+			drop[id.Fold()] = struct{}{}
 		}
 		kept := slices.DeleteFunc(slices.Clone(bundles[i].Mods), func(m Mod) bool {
-			_, gone := drop[manifest.FoldID(m.UniqueID)]
+			_, gone := drop[m.ID.Fold()]
 			return gone
 		})
 		if len(kept) == 0 {
@@ -444,18 +445,18 @@ func (s *Service) applyLocked(gameID, bundleID string, mods []Mod, profileID str
 	defer func() { _ = s.profiles.CloseHistoryBatch(gameID, profileID) }()
 	groups := make([]entryMods, 0, len(mods))
 	groupAt := map[string]int{}
-	for _, mod := range mods {
-		at, ok := groupAt[mod.EntryKey]
+	for _, im := range mods {
+		at, ok := groupAt[im.EntryKey]
 		if !ok {
-			groupAt[mod.EntryKey] = len(groups)
-			src := mod.Source
-			if mod.OverlayOf != "" {
-				src = src.WithOverlay(mod.OverlayFrom, mod.OverlayTo)
+			groupAt[im.EntryKey] = len(groups)
+			src := im.Source
+			if im.OverlayOf != "" {
+				src = src.WithOverlay(im.OverlayFrom, im.OverlayTo)
 			}
-			groups = append(groups, entryMods{key: mod.EntryKey, source: src, mods: []Mod{mod}})
+			groups = append(groups, entryMods{key: im.EntryKey, source: src, mods: []Mod{im}})
 			continue
 		}
-		groups[at].mods = append(groups[at].mods, mod)
+		groups[at].mods = append(groups[at].mods, im)
 	}
 	result := ApplyResult{Profile: current, Missing: []string{}, MissingMods: []Mod{}}
 	for _, group := range groups {
@@ -469,9 +470,9 @@ func (s *Service) applyLocked(gameID, bundleID string, mods []Mod, profileID str
 			continue
 		}
 		if errors.Is(err, modstore.ErrNotFound) {
-			for _, mod := range group.mods {
-				result.Missing = append(result.Missing, mod.Name)
-				result.MissingMods = append(result.MissingMods, mod)
+			for _, im := range group.mods {
+				result.Missing = append(result.Missing, im.Name)
+				result.MissingMods = append(result.MissingMods, im)
 			}
 			continue
 		}

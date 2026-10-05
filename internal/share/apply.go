@@ -7,16 +7,17 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 const configPerm = 0o644
 
-// Apply writes configs into the folders of the entries' mods, matched by UniqueID, and returns the UniqueIDs it
+// Apply writes configs into the folders of the entries' mods, matched by mod id, and returns the ids it
 // wrote for. It re-checks every path, since a Config may not have come through Read: only a plain relative
 // .json path is written, never a manifest, and only inside a folder the entry's mod already has, switched on or
 // off. modsDir is the profile's mods/ folder.
-func Apply(modsDir string, entries []profile.Entry, configs []Config) (written []string, err error) {
+func Apply(modsDir string, entries []profile.Entry, configs []Config) (written []mod.ID, err error) {
 	done := map[string]bool{}
 	for _, e := range entries {
 		for _, m := range e.Mods {
@@ -32,7 +33,7 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 				continue
 			}
 			for _, c := range configs {
-				if !manifest.SameID(c.UniqueID, m.UniqueID) || !validConfigPath(c.Path) || strings.EqualFold(c.Path, manifest.FileName) {
+				if !mod.Equal(c.ID, m.ID) || !validConfigPath(c.Path) || strings.EqualFold(c.Path, manifest.FileName) {
 					continue
 				}
 				dest := filepath.Join(folder, filepath.FromSlash(c.Path))
@@ -45,9 +46,9 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 				if err := fsx.WriteFile(dest, c.Data, configPerm); err != nil {
 					return written, err
 				}
-				if !done[m.UniqueID] {
-					done[m.UniqueID] = true
-					written = append(written, m.UniqueID)
+				if !done[m.ID.Fold()] {
+					done[m.ID.Fold()] = true
+					written = append(written, m.ID)
 				}
 			}
 		}

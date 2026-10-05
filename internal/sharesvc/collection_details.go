@@ -11,6 +11,7 @@ import (
 	"github.com/bodgit/sevenzip"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
@@ -26,7 +27,7 @@ type modFile struct{ modID, fileID int }
 type collectionDetails struct {
 	// Fomod is the curator's installer choices by Nexus file, ready for Ref.Fomod.
 	Fomod map[modFile]map[string]map[string][]string
-	// Configs are config files of the collection's bundled mods, written once a mod with that UniqueID is installed.
+	// Configs are config files of the collection's bundled mods, written once a mod with that mod id is installed.
 	Configs []share.Config
 }
 
@@ -85,9 +86,9 @@ func readCollectionArchive(raw []byte) (collectionDetails, error) {
 
 type bundle struct{ files map[string][]byte }
 
-// configs maps a bundle's config files to the UniqueID of the manifest at the shallowest folder, paths relative to it.
+// configs maps a bundle's config files to the mod id of the manifest at the shallowest folder, paths relative to it.
 func (b *bundle) configs() []share.Config {
-	root, uid := "", ""
+	root, uid := "", mod.ID("")
 	for rel, data := range b.files {
 		if path.Base(rel) != manifest.FileName {
 			continue
@@ -97,7 +98,7 @@ func (b *bundle) configs() []share.Config {
 			continue
 		}
 		if dir := path.Dir(rel); uid == "" || len(dir) < len(root) {
-			root, uid = dir, m.UniqueID
+			root, uid = dir, m.ModID()
 		}
 	}
 	if uid == "" {
@@ -116,7 +117,7 @@ func (b *bundle) configs() []share.Config {
 		if (lower != "config.json" && !strings.HasPrefix(lower, "config/")) || !share.ValidConfigPath(local) {
 			continue
 		}
-		out = append(out, share.Config{UniqueID: uid, Path: local, Data: data})
+		out = append(out, share.Config{ID: uid, Path: local, Data: data})
 	}
 	return out
 }

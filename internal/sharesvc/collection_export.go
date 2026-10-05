@@ -167,7 +167,7 @@ func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts)
 		}
 		doc.Mods = append(doc.Mods, modOf(e, domain, facts))
 		for _, m := range e.Mods {
-			if !e.Enabled(m.UniqueID) {
+			if !e.Enabled(m.ID) {
 				continue
 			}
 			found, skip, err := share.ReadConfigs(modsDir, e.Key, m)
@@ -184,10 +184,10 @@ func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts)
 			}
 			raw, err := fsx.ReadFile(filepath.Join(mf, manifest.FileName))
 			if err != nil {
-				skipped = append(skipped, m.UniqueID+"/"+manifest.FileName)
+				skipped = append(skipped, m.ID.Local()+"/"+manifest.FileName)
 				continue
 			}
-			dir := "bundled/" + m.UniqueID + "/"
+			dir := "bundled/" + m.ID.Local() + "/"
 			files = append(files, bundledFile{dir + manifest.FileName, raw})
 			for _, c := range found {
 				files = append(files, bundledFile{dir + c.Path, c.Data})

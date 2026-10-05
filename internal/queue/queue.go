@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
@@ -117,7 +118,7 @@ type Item struct {
 	Progress float64 `json:"progress"`
 	// Latest carries Request.Latest so a restart still resolves to the newest file.
 	Latest   bool                           `json:"latest,omitempty"`
-	Disabled []string                       `json:"disabled,omitempty"`
+	Disabled []mod.ID                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	// Overlay is where an optional file without a manifest goes in its main file, from a share; nil asks the user.
 	Overlay *OverlayPlace `json:"overlay,omitempty"`
@@ -131,7 +132,7 @@ type Item struct {
 	Asset        string            `json:"asset"`
 	Assets       []string          `json:"assets"`
 	FallbackRepo string            `json:"fallbackRepo,omitempty"`
-	FallbackID   string            `json:"fallbackId,omitempty"`
+	FallbackID   mod.ID            `json:"fallbackId,omitempty"`
 	Unverified   bool              `json:"unverified"`
 	FomodKey     string            `json:"fomodKey,omitempty"`
 	Remap        *profile.RemapAsk `json:"remap,omitempty"`
@@ -203,13 +204,13 @@ type Request struct {
 	// FallbackRepo is the mod's GitHub repo (owner/name) for a Nexus update: when the account would have to click
 	// Mod Manager Download, the same version's GitHub release is used instead, if there is exactly one archive.
 	FallbackRepo string `json:"fallbackRepo,omitempty"`
-	// FallbackID is the UniqueID the GitHub release must contain: a repo SMAPI's metadata names may publish
+	// FallbackID is the mod id the GitHub release must contain: a repo SMAPI's metadata names may publish
 	// several mods, so a release at the same version is used only when it holds the mod being updated.
-	FallbackID string `json:"fallbackId,omitempty"`
+	FallbackID mod.ID `json:"fallbackId,omitempty"`
 	// Latest asks for the newest file that updates FileID: a file found in the mod dataset, or that a save
 	// recorded, may have been superseded since. Share imports leave it off to reproduce the shared files.
 	Latest   bool                           `json:"latest"`
-	Disabled []string                       `json:"disabled,omitempty"`
+	Disabled []mod.ID                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Overlay  *OverlayPlace                  `json:"overlay,omitempty"`
 
@@ -235,9 +236,9 @@ type Deps struct {
 	// does, with the source a profile recorded for it (zero when none does). Such a file installs from the store
 	// without downloading or a click, and the recorded source spares the Nexus lookups.
 	Stored func(game, key string) (profile.Source, bool)
-	// Stage unpacks a downloaded GitHub asset into the store and returns the UniqueIDs of its mods; InstallStaged
+	// Stage unpacks a downloaded GitHub asset into the store and returns the mod ids of its mods; InstallStaged
 	// then adds it to the profile. Between the two, Verify checks the source.
-	Stage         func(game string, source profile.Source, path string) (key string, uniqueIDs []string, err error)
+	Stage         func(game string, source profile.Source, path string) (key string, uniqueIDs []mod.ID, err error)
 	InstallStaged func(game, profileID, key string, source profile.Source) (profile.InstallResult, error)
 	InstallRemap  func(game, profileID, key, root string, source profile.Source) (profile.InstallResult, error)
 	// StoredOverlay reports a stored Nexus file that installs as an optional file over its mod's main file; nil
@@ -250,7 +251,7 @@ type Deps struct {
 	SamePage func(game, profileID string, modID, fileID int, category string) (profile.MergeAsk, bool)
 	// InstallExtra adds a downloaded Nexus file to an existing same-page entry.
 	InstallExtra func(game, profileID, entryKey, path string, source profile.Source) (profile.InstallResult, error)
-	Verify       func(ctx context.Context, uniqueID, owner, repo string) (bool, error)
+	Verify       func(ctx context.Context, id mod.ID, owner, repo string) (bool, error)
 	GitHub       *github.Client
 	OpenURL      func(url string) error
 	// Running reports whether the game runs the profile; its items wait until it stops. Nil means never.

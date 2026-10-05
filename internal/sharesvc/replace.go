@@ -41,8 +41,8 @@ func shareIndex(mods []Mod) (files, ids map[string]struct{}) {
 		if tok := modToken(m); tok != "" {
 			files[tok] = struct{}{}
 		}
-		for _, id := range m.UniqueIDs {
-			ids[strings.ToLower(id)] = struct{}{}
+		for _, id := range m.IDs {
+			ids[id.Fold()] = struct{}{}
 		}
 	}
 	return files, ids
@@ -53,7 +53,7 @@ func entryLabel(e profile.Entry) string {
 		return e.Mods[0].Name
 	}
 	if len(e.Mods) > 0 {
-		return e.Mods[0].UniqueID
+		return e.Mods[0].ID.Local()
 	}
 	return e.Key
 }
@@ -61,7 +61,7 @@ func entryLabel(e profile.Entry) string {
 func idsOf(e profile.Entry) []string {
 	out := make([]string, 0, len(e.Mods))
 	for _, m := range e.Mods {
-		out = append(out, strings.ToLower(m.UniqueID))
+		out = append(out, m.ID.Fold())
 	}
 	return out
 }

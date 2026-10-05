@@ -20,6 +20,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
@@ -199,7 +200,7 @@ func (s *Service) find(game, id string) (profile.Profile, error) {
 func entryNames(e profile.Entry, withDisabled bool) []string {
 	var names []string
 	for _, m := range e.Mods {
-		if (withDisabled || !slices.Contains(e.Disabled, m.UniqueID)) && m.Name != "" && !slices.Contains(names, m.Name) {
+		if (withDisabled || !slices.Contains(e.Disabled, m.ID)) && m.Name != "" && !slices.Contains(names, m.Name) {
 			names = append(names, m.Name)
 		}
 	}
@@ -458,9 +459,9 @@ func (s *Service) PreviewData(ctx context.Context, game, encoded, profileID stri
 // PreviewExternal resolves missing external mods through the normal import resolver and keeps staged folders local.
 func (s *Service) PreviewExternal(ctx context.Context, game string, external migrate.ProfilePreview, profileID string) (Preview, error) {
 	var refs []share.Ref
-	for _, mod := range external.Mods {
-		if mod.SourcePath == "" && mod.NexusModID > 0 {
-			refs = append(refs, share.Ref{ModID: mod.NexusModID})
+	for _, im := range external.Mods {
+		if im.SourcePath == "" && im.NexusModID > 0 {
+			refs = append(refs, share.Ref{ModID: im.NexusModID})
 		}
 	}
 	configs, skipped := externalConfigs(external.Mods)
@@ -485,42 +486,42 @@ func (s *Service) PreviewExternal(ctx context.Context, game string, external mig
 // lists the ones left out.
 func externalConfigs(mods []migrate.ModPreview) (configs []share.Config, skipped []string) {
 	var total int64
-	for _, mod := range mods {
-		if len(mod.Config) == 0 || mod.UniqueID == "" {
+	for _, im := range mods {
+		if len(im.Config) == 0 || im.ID == "" {
 			continue
 		}
-		total += int64(len(mod.Config))
-		if len(mod.Config) > share.MaxConfigBytes || total > share.MaxConfigTotal || len(configs) >= share.MaxConfigFiles {
-			skipped = append(skipped, mod.UniqueID+"/config.json")
+		total += int64(len(im.Config))
+		if len(im.Config) > share.MaxConfigBytes || total > share.MaxConfigTotal || len(configs) >= share.MaxConfigFiles {
+			skipped = append(skipped, im.ID.Local()+"/config.json")
 			continue
 		}
-		configs = append(configs, share.Config{UniqueID: mod.UniqueID, Path: "config.json", Data: mod.Config})
+		configs = append(configs, share.Config{ID: im.ID, Path: "config.json", Data: im.Config})
 	}
 	return configs, skipped
 }
 
 func externalLocalMods(mods []migrate.ModPreview) []Mod {
 	out := make([]Mod, 0, len(mods))
-	for i, mod := range mods {
-		if mod.SourcePath != "" {
-			name := mod.Name
+	for i, im := range mods {
+		if im.SourcePath != "" {
+			name := im.Name
 			if name == "" {
-				name = mod.UniqueID
+				name = im.ID.Local()
 			}
 			out = append(out, Mod{
-				Key: externalKey(i), Site: SiteLocal, Name: name, Version: mod.Version,
-				State: StateDownload, Enabled: mod.Enabled, UniqueIDs: []string{mod.UniqueID},
+				Key: externalKey(i), Site: SiteLocal, Name: name, Version: im.Version,
+				State: StateDownload, Enabled: im.Enabled, IDs: []mod.ID{im.ID},
 			})
 			continue
 		}
-		if mod.NexusModID == 0 {
-			name := mod.Name
+		if im.NexusModID == 0 {
+			name := im.Name
 			if name == "" {
-				name = mod.UniqueID
+				name = im.ID.Local()
 			}
 			out = append(out, Mod{
-				Key: externalKey(i), Site: SiteLocal, Name: name, Version: mod.Version,
-				State: StateUnavailable, Enabled: mod.Enabled, Reason: ReasonNoFile, UniqueIDs: []string{mod.UniqueID},
+				Key: externalKey(i), Site: SiteLocal, Name: name, Version: im.Version,
+				State: StateUnavailable, Enabled: im.Enabled, Reason: ReasonNoFile, IDs: []mod.ID{im.ID},
 			})
 		}
 	}
@@ -720,8 +721,8 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	var wanted []wantedFile
 	var local []profile.ExternalMod
 	external := make(map[string]migrate.ModPreview, len(cur.external))
-	for i, mod := range cur.external {
-		external[externalKey(i)] = mod
+	for i, im := range cur.external {
+		external[externalKey(i)] = im
 	}
 	for _, m := range mods {
 		if slices.Contains(exclude, m.Key) || m.State == StateUnavailable ||
@@ -729,8 +730,8 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			continue
 		}
 		if m.Site == SiteLocal {
-			if mod, ok := external[m.Key]; ok {
-				local = append(local, profile.ExternalMod{SourcePath: mod.SourcePath, UniqueID: mod.UniqueID, Enabled: mod.Enabled})
+			if im, ok := external[m.Key]; ok {
+				local = append(local, profile.ExternalMod{SourcePath: im.SourcePath, ID: im.ID, Enabled: im.Enabled})
 			}
 			continue
 		}
@@ -805,7 +806,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		res.Profile = p
 		configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool {
-			_, _, held := p.FindMod("", c.UniqueID)
+			_, _, held := p.FindMod("", c.ID)
 			return held
 		})
 	}
@@ -832,7 +833,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		// Copied folders are on the profile now, so their configs land at once; the rest wait for their downloads.
 		if len(configs) > 0 {
-			var written []string
+			var written []mod.ID
 			err := s.d.Profiles.InMods(game, profileID, func(prof profile.Profile, modsDir string) error {
 				var err error
 				written, err = share.Apply(modsDir, prof.Entries, configs)
@@ -845,7 +846,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 				return Result{}, err
 			}
 			configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool {
-				return slices.ContainsFunc(written, func(id string) bool { return profile.SameID(id, c.UniqueID) })
+				return slices.ContainsFunc(written, func(id mod.ID) bool { return mod.Equal(id, c.ID) })
 			})
 		}
 	}
@@ -1095,7 +1096,7 @@ var errRunning = usererr.New(usererr.Busy, "the game is running the profile")
 // apply writes the config files whose mods are installed, and keeps the rest for later. While the game runs the
 // profile it waits for the next change.
 func (s *Service) apply(p *pending) {
-	var written []string
+	var written []mod.ID
 	var applyErr error
 	err := s.d.Profiles.InMods(p.Game, p.Profile, func(prof profile.Profile, modsDir string) error {
 		if r := s.d.Profiles.Running; r != nil && r(p.Game, p.Profile) {
@@ -1112,7 +1113,7 @@ func (s *Service) apply(p *pending) {
 		return
 	}
 	p.Configs = slices.DeleteFunc(p.Configs, func(c share.Config) bool {
-		return slices.ContainsFunc(written, func(id string) bool { return profile.SameID(id, c.UniqueID) })
+		return slices.ContainsFunc(written, func(id mod.ID) bool { return mod.Equal(id, c.ID) })
 	})
 }
 

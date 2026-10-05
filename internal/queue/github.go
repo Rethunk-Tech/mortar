@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/github"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -154,7 +154,7 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	if s.d.KeepArchives == nil || !s.d.KeepArchives() {
 		dropDownload(path)
 	}
-	if it.FallbackID != "" && it.ModID != 0 && !slices.ContainsFunc(ids, func(id string) bool { return manifest.SameID(id, it.FallbackID) }) {
+	if it.FallbackID != "" && it.ModID != 0 && !slices.ContainsFunc(ids, func(id mod.ID) bool { return mod.Equal(id, it.FallbackID) }) {
 		s.backToNexus(it.ID)
 		return nil
 	}

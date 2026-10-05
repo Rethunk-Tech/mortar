@@ -8,7 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bundles"
 	"github.com/Rethunk-Tech/mortar/internal/gamesettings"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -45,14 +45,14 @@ func split(p profile.Profile, mods []bundles.Mod) (add, have, differs []bundles.
 	for _, e := range p.Entries {
 		keys[e.Key] = true
 		for _, m := range e.Mods {
-			ids[manifest.FoldID(m.UniqueID)] = true
+			ids[m.ID.Fold()] = true
 		}
 	}
 	for _, m := range mods {
 		switch {
 		case keys[m.EntryKey]:
 			have = append(have, m)
-		case ids[manifest.FoldID(m.UniqueID)]:
+		case ids[m.ID.Fold()]:
 			differs = append(differs, m)
 		default:
 			add = append(add, m)
@@ -221,8 +221,8 @@ func launchOf(p profile.Profile) LaunchConfig {
 	}
 }
 
-func disabledMods(p profile.Profile) []string {
-	out := []string{}
+func disabledMods(p profile.Profile) []mod.ID {
+	out := []mod.ID{}
 	for _, e := range p.Entries {
 		if !e.Source.Bundled() {
 			out = append(out, e.Disabled...)

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -20,7 +22,7 @@ import (
 
 // Where a previewed mod stands. Installed means the target profile already has that file; Download and Dependency
 // will be downloaded (a dependency being one the shared mods need and the link did not carry); Later is a file the
-// mod dataset lacks, so its UniqueID and needs are known only after download; Unavailable cannot be installed.
+// mod dataset lacks, so its mod id and needs are known only after download; Unavailable cannot be installed.
 const (
 	StateInstalled   = "installed"
 	StateDownload    = "download"
@@ -65,15 +67,15 @@ type Mod struct {
 	SizeKB     int64                          `json:"sizeKb"`
 	Different  bool                           `json:"different"`
 	Unverified bool                           `json:"unverified"`
-	UniqueIDs  []string                       `json:"uniqueIds"`
-	Disabled   []string                       `json:"disabled,omitempty"`
+	IDs        []mod.ID                       `json:"ids"`
+	Disabled   []mod.ID                       `json:"disabled,omitempty"`
 	Fomod      map[string]map[string][]string `json:"fomod,omitempty"`
 	// Overlay is set on an optional file: where it goes in its main file, and whether it starts off.
 	Overlay *share.Overlay `json:"overlay,omitempty"`
 }
 
 // Problem is something found before any download. Key is the mod it is about, when one is; Detail is a version
-// or a UniqueID depending on Kind.
+// or a mod id depending on Kind.
 type Problem struct {
 	Kind   string `json:"kind"`
 	Key    string `json:"key"`
@@ -89,7 +91,7 @@ type Preview struct {
 	Name     string `json:"name"`
 	Notes    string `json:"notes"`
 	Settings int    `json:"settings"`
-	// SkippedSettings lists the external import's config files left out as too large, as UniqueID/path.
+	// SkippedSettings lists the external import's config files left out as too large, as mod id/path.
 	SkippedSettings []string    `json:"skippedSettings,omitempty"`
 	Mods            []Mod       `json:"mods"`
 	Problems        []Problem   `json:"problems"`
@@ -251,7 +253,7 @@ func substitute(files []nexus.File, version string) *nexus.File {
 }
 
 func nexusMod(domain string, modID, fileID int, state string) Mod {
-	return Mod{Key: store.NexusKey(modID, fileID), Site: SiteNexus, ModID: modID, FileID: fileID, PageURL: nexus.ModURL(domain, modID), State: state, UniqueIDs: []string{}}
+	return Mod{Key: store.NexusKey(modID, fileID), Site: SiteNexus, ModID: modID, FileID: fileID, PageURL: nexus.ModURL(domain, modID), State: state, IDs: []mod.ID{}}
 }
 
 // nexus resolves one Nexus file.
@@ -320,7 +322,7 @@ func (r *resolver) nexus(modID, fileID int, state string) Mod {
 			m.SizeKB = df.SizeInBytes / 1024
 		}
 		for _, dm := range df.Mods {
-			m.UniqueIDs = append(m.UniqueIDs, dm.UniqueID)
+			m.IDs = append(m.IDs, dm.ModID())
 		}
 	} else if m.State == StateDownload {
 		m.State = StateLater
@@ -338,8 +340,8 @@ func (r *resolver) github(ref share.Ref) Mod {
 	owner, name, _ := strings.Cut(repo, "/")
 	m := Mod{
 		Key: "github:" + ref.GitHub, Site: SiteGitHub, Name: name, Author: owner, Version: tag, Repo: repo, Tag: tag, Asset: asset,
-		PageURL: githubBase + repo, State: StateDownload, Unverified: true, UniqueIDs: []string{},
-		Disabled: append([]string{}, ref.Disabled...), Fomod: ref.Fomod,
+		PageURL: githubBase + repo, State: StateDownload, Unverified: true, IDs: []mod.ID{},
+		Disabled: append([]mod.ID{}, ref.Disabled...), Fomod: ref.Fomod,
 	}
 	if r.hasGitHub(repo, tag, asset) {
 		m.State = StateInstalled
@@ -377,7 +379,7 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 			continue
 		}
 		m := r.nexus(ref.ModID, ref.FileID, StateDownload)
-		m.Disabled, m.Fomod, m.Overlay = append([]string{}, ref.Disabled...), ref.Fomod, ref.Overlay
+		m.Disabled, m.Fomod, m.Overlay = append([]mod.ID{}, ref.Disabled...), ref.Fomod, ref.Overlay
 		mods = append(mods, m)
 	}
 	deps, probs := r.dependencies(ctx, mods)
@@ -389,9 +391,9 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 func asInstalled(m Mod, df *meta.File) []problems.Installed {
 	var out []problems.Installed
 	for _, dm := range df.Mods {
-		mf := manifest.Manifest{Name: dm.Name, Version: dm.Version, UniqueID: dm.UniqueID, UpdateKeys: dm.UpdateKeys}
+		mf := manifest.Manifest{Name: dm.Name, Version: dm.Version, UpdateKeys: dm.UpdateKeys}.WithModID(dm.ModID())
 		for _, d := range dm.Dependencies {
-			mf.Dependencies = append(mf.Dependencies, manifest.Dependency{UniqueID: d.UniqueID, MinimumVersion: d.MinimumVersion, Required: d.Required})
+			mf.Dependencies = append(mf.Dependencies, manifest.NewDependency(d.ModID(), d.MinimumVersion, d.Required))
 		}
 		out = append(out, problems.Installed{Key: m.Key, SourceKind: profile.KindNexus, Enabled: true, Manifest: mf})
 	}
@@ -412,7 +414,7 @@ func (r *resolver) dependencies(ctx context.Context, mods []Mod) ([]Mod, []Probl
 		if df := datasetFile(r.infos[m.ModID].page, m.FileID); df != nil {
 			shared[m.Key] = m
 			for _, i := range asInstalled(m, df) {
-				dependents[strings.ToLower(i.UniqueID)] = true
+				dependents[i.ModID().Fold()] = true
 				all = append(all, i)
 			}
 		}
@@ -421,10 +423,10 @@ func (r *resolver) dependencies(ctx context.Context, mods []Mod) ([]Mod, []Probl
 	var deps []Mod
 	var probs []Problem
 	for _, miss := range found.Missing {
-		if !dependents[strings.ToLower(miss.DependentID)] || r.addDependency(ctx, miss.Where, mods, &deps) {
+		if !dependents[miss.DependentID.Fold()] || r.addDependency(ctx, miss.Where, mods, &deps) {
 			continue
 		}
-		p := Problem{Kind: ProblemMissing, Name: miss.DependentName, Detail: miss.UniqueID}
+		p := Problem{Kind: ProblemMissing, Name: miss.DependentName, Detail: miss.ID.Local()}
 		if miss.Where != nil {
 			p.URL = miss.Where.URL
 		}
@@ -453,7 +455,7 @@ func (r *resolver) addDependency(ctx context.Context, where *problems.Ref, mods 
 		owner, name, _ := strings.Cut(where.GitHub, "/")
 		m = Mod{
 			Key: "dep-github:" + where.GitHub, Site: SiteGitHub, Name: name, Author: owner, Repo: where.GitHub,
-			PageURL: githubBase + where.GitHub, State: StateDependency, Unverified: true, UniqueIDs: []string{},
+			PageURL: githubBase + where.GitHub, State: StateDependency, Unverified: true, IDs: []mod.ID{},
 		}
 	default:
 		return false

@@ -31,8 +31,8 @@ func fileCategory(ctx context.Context, c *nexus.Client, it Item) string {
 	return ""
 }
 
-func nexusSource(it Item, mod nexus.Mod) profile.Source {
-	pic, end := mod.PictureURL, mod.EndorsementCount
+func nexusSource(it Item, im nexus.Mod) profile.Source {
+	pic, end := im.PictureURL, im.EndorsementCount
 	if pic == "" {
 		pic = it.Picture
 	}
@@ -65,8 +65,8 @@ func sourceWithOptions(it Item, source profile.Source) profile.Source {
 	return source
 }
 
-func (s *Service) installNexusPath(ctx context.Context, it Item, path string, mod nexus.Mod) error {
-	src := nexusSource(it, mod)
+func (s *Service) installNexusPath(ctx context.Context, it Item, path string, im nexus.Mod) error {
+	src := nexusSource(it, im)
 	var res profile.InstallResult
 	var err error
 	s.installMu.Lock()

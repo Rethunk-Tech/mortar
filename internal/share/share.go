@@ -18,6 +18,7 @@ import (
 	"github.com/andybalholm/brotli"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -50,7 +51,7 @@ type Ref struct {
 	ModID    int                            `json:"modId,omitempty"`
 	FileID   int                            `json:"fileId,omitempty"`
 	GitHub   string                         `json:"github,omitempty"`
-	Disabled []string                       `json:"disabled,omitempty"`
+	Disabled []mod.ID                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Note     string                         `json:"note,omitempty"`
 	Tags     []string                       `json:"tags,omitempty"`
@@ -140,7 +141,7 @@ type wireRef struct {
 	Repo     string                         `json:"repo,omitempty"`
 	Tag      string                         `json:"tag,omitempty"`
 	Asset    string                         `json:"asset,omitempty"`
-	Disabled []string                       `json:"disabled,omitempty"`
+	Disabled []mod.ID                       `json:"disabled,omitempty"`
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Note     string                         `json:"note,omitempty"`
 	Tags     []string                       `json:"tags,omitempty"`
@@ -230,7 +231,8 @@ func validDetails(r Ref) bool {
 	if r.Overlay != nil && (r.GitHub != "" || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
 		return false
 	}
-	for _, id := range r.Disabled {
+	for _, disabled := range r.Disabled {
+		id := string(disabled)
 		if id == "" || len(id) > 100 || strings.TrimSpace(id) != id || strings.ContainsFunc(id, unicode.IsControl) {
 			return false
 		}
@@ -497,7 +499,7 @@ func Enabled(e profile.Entry) bool {
 		return true
 	}
 	for _, m := range e.Mods {
-		if e.Enabled(m.UniqueID) {
+		if e.Enabled(m.ID) {
 			return true
 		}
 	}
