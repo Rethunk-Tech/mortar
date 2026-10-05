@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -252,7 +253,8 @@ func TestDuplicateIsIndependent(t *testing.T) {
 	if b, _ := os.ReadFile(filepath.Join(e.mods(a.ID), "local-a", "save.json")); string(b) != "orig" {
 		t.Fatalf("original changed: %q", b)
 	}
-	if b, _ := os.ReadFile(filepath.Join(e.base, "mortar", "store", "stardew", "local-a", "manifest.json")); !strings.Contains(string(b), "X.A") {
+	itemDir, _ := e.items.Path("stardew", "local-a")
+	if b, _ := fsx.ReadFile(filepath.Join(itemDir, "manifest.json")); !strings.Contains(string(b), "X.A") {
 		t.Fatal("store item changed")
 	}
 	long, _ := e.Create("stardew", strings.Repeat("é", 60))

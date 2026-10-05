@@ -85,6 +85,9 @@ func (s *Store) StageGitHub(game string, source Source, path string) (key string
 	if err := s.items.AddArchiveKey(game, key, path); err != nil {
 		return "", nil, installError(err)
 	}
+	if err := s.items.Describe(game, key, KindGitHub, source.Repo, source.Tag); err != nil {
+		return "", nil, installError(err)
+	}
 	dir, err := s.items.Path(game, key)
 	if err != nil {
 		return "", nil, installError(err)

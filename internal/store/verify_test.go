@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -27,7 +28,7 @@ func TestVerifyReportsMissingChangedAndExtraFiles(t *testing.T) {
 	if d, err := s.Verify(ctx, "stardew", key); err != nil || !d.Empty() {
 		t.Fatalf("fresh item = %+v, %v", d, err)
 	}
-	dir := filepath.Join(s.root, "stardew", key, "Mod")
+	dir := filepath.Join(s.root, blobsDir, strings.TrimPrefix(key, "local-"), "Mod")
 	if err := os.Remove(filepath.Join(dir, "a.txt")); err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +55,7 @@ func TestVerifyBaselinesAnItemStoredWithoutHashes(t *testing.T) {
 	if d, err := s.Verify(context.Background(), "stardew", key); err != nil || !d.Empty() {
 		t.Fatalf("baseline = %+v, %v", d, err)
 	}
-	if err := os.WriteFile(filepath.Join(s.root, "stardew", key, "Mod", "a.txt"), []byte("x"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(s.root, blobsDir, strings.TrimPrefix(key, "local-"), "Mod", "a.txt"), []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if d, _ := s.Verify(context.Background(), "stardew", key); len(d.Changed) != 1 {

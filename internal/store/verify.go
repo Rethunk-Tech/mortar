@@ -207,10 +207,10 @@ func (s *Store) HasBaseline(game, key string) bool {
 // next Verify compares the stored files with the archive instead of with themselves. The caller vouches that the
 // archive is the one the item came from.
 func (s *Store) BaselineFromArchive(ctx context.Context, game, key, archivePath string) error {
-	gdir, err := s.gameDir(game)
-	if err != nil {
+	if err := checkKey(game, key); err != nil {
 		return err
 	}
+	gdir := filepath.Join(s.root, blobsDir)
 	if err := os.MkdirAll(gdir, 0o700); err != nil {
 		return err
 	}
@@ -293,7 +293,7 @@ func (s *Store) Damaged(game string) map[string]Damage {
 func (s *Store) Refs(due bool, now time.Time) ([]Ref, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	games, err := s.games()
+	idx, err := s.loadIndex()
 	if err != nil {
 		return nil, err
 	}
@@ -303,17 +303,17 @@ func (s *Store) Refs(due bool, now time.Time) ([]Ref, error) {
 		at  time.Time
 	}
 	var all []aged
-	for _, g := range games {
-		for _, key := range g.keys {
-			dir := filepath.Join(s.root, g.name, key)
-			if !completeItem(dir) {
+	for game, keys := range idx {
+		for key, r := range keys {
+			dir, err := s.destOf(key, r.Blob)
+			if err != nil || !completeItem(dir) {
 				continue
 			}
-			at := st.Items[g.name][key].Verified
+			at := st.Items[game][key].Verified
 			if due && now.Sub(at) < VerifyEvery {
 				continue
 			}
-			all = append(all, aged{Ref{Game: g.name, Key: key}, at})
+			all = append(all, aged{Ref{Game: game, Key: key}, at})
 		}
 	}
 	slices.SortFunc(all, func(a, b aged) int { return a.at.Compare(b.at) })
@@ -329,7 +329,11 @@ func (s *Store) Refs(due bool, now time.Time) ([]Ref, error) {
 func (s *Store) Quarantine(game, key string) (restore func() error, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	dir, err := s.itemDir(game, key)
+	idx, err := s.loadIndex()
+	if err != nil {
+		return nil, err
+	}
+	dir, err := s.locate(idx, game, key)
 	if err != nil {
 		return nil, err
 	}

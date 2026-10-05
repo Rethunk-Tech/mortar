@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,6 +31,9 @@ func buildZip(t *testing.T, files map[string]string) string {
 func names(t *testing.T, dir string) []string {
 	t.Helper()
 	es, err := os.ReadDir(dir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,8 +62,8 @@ func TestAddArchiveIsIdempotent(t *testing.T) {
 	if err != nil || again != key {
 		t.Fatalf("re-add = %q, %v", again, err)
 	}
-	if got := names(t, filepath.Join(s.root, "stardew")); len(got) != 1 {
-		t.Fatalf("game dir = %v", got)
+	if got := names(t, filepath.Join(s.root, blobsDir)); len(got) != 1 || got[0] != strings.TrimPrefix(key, "local-") {
+		t.Fatalf("blobs = %v", got)
 	}
 }
 
@@ -106,7 +110,7 @@ func TestAddArchiveFailureLeavesNothing(t *testing.T) {
 	if !errors.As(err, &ae) || !errors.Is(err, archive.ErrTraversal) {
 		t.Fatalf("err = %v", err)
 	}
-	if got := names(t, filepath.Join(s.root, "stardew")); len(got) != 0 {
+	if got := names(t, filepath.Join(s.root, blobsDir)); len(got) != 0 {
 		t.Fatalf("left behind: %v", got)
 	}
 }
@@ -118,7 +122,7 @@ func TestDiskFullMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	n, _ := datadir.Size(src)
-	err := s.install("stardew", "smapi-1", func(string) error { return syscall.ENOSPC }, func() int64 { return n })
+	err := s.install("stardew", "smapi-1", filepath.Join(s.root, loadersDir, "smapi", "1"), func(string) error { return syscall.ENOSPC }, func() int64 { return n })
 	if !errors.Is(err, syscall.ENOSPC) || !strings.Contains(err.Error(), "needs about 4 MB") {
 		t.Fatalf("err = %v", err)
 	}
@@ -155,8 +159,8 @@ func TestAddDir(t *testing.T) {
 		t.Fatal(err)
 	}
 	dir, err := s.Path("stardew", "smapi-4.1.0")
-	if err != nil {
-		t.Fatal(err)
+	if err != nil || dir != filepath.Join(s.root, "loaders", "smapi", "4.1.0") {
+		t.Fatalf("dir = %q, %v", dir, err)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "ConsoleCommands", "manifest.json")); err != nil {
 		t.Fatal(err)
@@ -173,7 +177,10 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 	if err := s.AddDir("stardew", "local-item", first); err != nil {
 		t.Fatal(err)
 	}
-	dir := filepath.Join(s.root, "stardew", "local-item")
+	dir, err := s.Path("stardew", "local-item")
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := os.Remove(filepath.Join(dir, completeMarker)); err != nil {
 		t.Fatal(err)
 	}
@@ -181,6 +188,10 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 	testfs.WriteFile(t, second, "mod.dll", "new")
 
 	if err := s.AddDir("stardew", "local-item", second); err != nil {
+		t.Fatal(err)
+	}
+	dir, err = s.Path("stardew", "local-item")
+	if err != nil {
 		t.Fatal(err)
 	}
 	got, err := fsx.ReadFile(filepath.Join(dir, "mod.dll"))
@@ -194,8 +205,12 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 
 func TestLegacyItemsWithoutArchiveAreIncomplete(t *testing.T) {
 	s := newStore(t)
-	dir := filepath.Join(s.root, "stardew", "legacy")
+	blob := strings.Repeat("a", 64)
+	dir := filepath.Join(s.root, blobsDir, blob)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.saveIndex(index{"stardew": {"legacy": {Blob: blob}}}); err != nil {
 		t.Fatal(err)
 	}
 	testfs.WriteFile(t, dir, "mod.dll", "old")
@@ -225,7 +240,7 @@ func TestAddDirVerifiedChecksLocalKey(t *testing.T) {
 	}
 }
 
-func TestCorruptIndexIsRebuiltForInstall(t *testing.T) {
+func TestCorruptIndexIsSetAsideForInstall(t *testing.T) {
 	s := newStore(t)
 	if err := os.MkdirAll(s.root, 0o700); err != nil {
 		t.Fatal(err)
@@ -243,9 +258,11 @@ func TestCorruptIndexIsRebuiltForInstall(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	last, ok := idx["stardew"]["local-corrupt-index"]
-	if !ok || time.Since(last) > time.Minute {
-		t.Fatalf("rebuilt index = %v", idx)
+	if r, ok := idx["stardew"]["local-corrupt-index"]; !ok || time.Since(r.Used) > time.Minute || r.Blob == "" {
+		t.Fatalf("new index = %v", idx)
+	}
+	if _, err := os.Stat(s.indexPath() + ".corrupt"); err != nil {
+		t.Fatalf("corrupt index was not kept: %v", err)
 	}
 }
 
@@ -258,7 +275,7 @@ func TestCollect(t *testing.T) {
 	}
 	old := time.Now().Add(-40 * 24 * time.Hour).UTC()
 	recent := time.Now().Add(-5 * 24 * time.Hour).UTC()
-	idx := index{"stardew": {"smapi-1": old, "smapi-2": old, "smapi-3": recent, "smapi-4": old}}
+	idx := index{"stardew": {"smapi-1": {Used: old}, "smapi-2": {Used: old}, "smapi-3": {Used: recent}, "smapi-4": {Used: old}}}
 	if err := s.saveIndex(idx); err != nil {
 		t.Fatal(err)
 	}
@@ -266,16 +283,16 @@ func TestCollect(t *testing.T) {
 	if err := s.Collect(map[string][]string{"stardew": {"smapi-1"}}, now); err != nil {
 		t.Fatal(err)
 	}
-	got := names(t, filepath.Join(s.root, "stardew"))
-	if len(got) != 2 || got[0] != "smapi-1" || got[1] != "smapi-3" {
+	got := names(t, filepath.Join(s.root, loadersDir, "smapi"))
+	if len(got) != 2 || got[0] != "1" || got[1] != "3" {
 		t.Fatalf("kept %v, want smapi-1 (referenced) and smapi-3 (recent)", got)
 	}
 	after, err := s.loadIndex()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !after["stardew"]["smapi-1"].Equal(now.UTC()) && after["stardew"]["smapi-1"].Sub(now) > time.Second {
-		t.Errorf("referenced item not refreshed: %v", after["stardew"]["smapi-1"])
+	if used := after["stardew"]["smapi-1"].Used; !used.Equal(now.UTC()) && used.Sub(now) > time.Second {
+		t.Errorf("referenced item not refreshed: %v", used)
 	}
 	if _, ok := after["stardew"]["smapi-2"]; ok || len(after["stardew"]) != 2 {
 		t.Errorf("index = %v", after)
@@ -289,7 +306,7 @@ func TestUnreferencedKeepsReferenced(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if err := os.MkdirAll(filepath.Join(s.root, "stardew", ".tmp-left"), 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Join(s.root, loadersDir, "smapi", ".tmp-left"), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	got, err := s.Unreferenced(map[string][]string{"stardew": {"smapi-1"}})
@@ -302,8 +319,8 @@ func TestUnreferencedKeepsReferenced(t *testing.T) {
 	if err := s.Remove(got); err != nil {
 		t.Fatal(err)
 	}
-	kept := names(t, filepath.Join(s.root, "stardew"))
-	if len(kept) != 2 || kept[0] != ".tmp-left" || kept[1] != "smapi-1" {
+	kept := names(t, filepath.Join(s.root, loadersDir, "smapi"))
+	if len(kept) != 2 || kept[0] != ".tmp-left" || kept[1] != "1" {
 		t.Fatalf("after Remove = %v", kept)
 	}
 }
@@ -313,24 +330,24 @@ func TestTouchAndCleanup(t *testing.T) {
 	if err := s.AddDir("stardew", "smapi-1", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.saveIndex(index{"stardew": {"smapi-1": time.Unix(0, 0).UTC()}}); err != nil {
+	if err := s.saveIndex(index{"stardew": {"smapi-1": {Used: time.Unix(0, 0).UTC()}}}); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.Touch("stardew", "smapi-1"); err != nil {
 		t.Fatal(err)
 	}
-	if idx, _ := s.loadIndex(); time.Since(idx["stardew"]["smapi-1"]) > time.Minute {
+	if idx, _ := s.loadIndex(); time.Since(idx["stardew"]["smapi-1"].Used) > time.Minute {
 		t.Errorf("touch did not update: %v", idx)
 	}
 
-	tmp := filepath.Join(s.root, "stardew", tempPrefix+"123")
+	tmp := filepath.Join(s.root, loadersDir, "smapi", tempPrefix+"123")
 	if err := os.MkdirAll(filepath.Join(tmp, "x"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if removed, err := s.Cleanup(); err != nil || len(removed) != 1 || removed[0] != "stardew/"+tempPrefix+"123" {
+	if removed, err := s.Cleanup(); err != nil || len(removed) != 1 || removed[0] != "loaders/smapi/"+tempPrefix+"123" {
 		t.Fatalf("cleanup = %v, %v", removed, err)
 	}
-	if got := names(t, filepath.Join(s.root, "stardew")); len(got) != 1 || got[0] != "smapi-1" {
+	if got := names(t, filepath.Join(s.root, loadersDir, "smapi")); len(got) != 1 || got[0] != "1" {
 		t.Fatalf("after cleanup: %v", got)
 	}
 	if _, err := (&Store{root: filepath.Join(t.TempDir(), "none")}).Cleanup(); err != nil {
@@ -433,7 +450,7 @@ func TestPathUsesStoredRootWhenPresent(t *testing.T) {
 
 func TestCollectLeavesFoldersThatAreNotStoreItems(t *testing.T) {
 	s := newStore(t)
-	stray := filepath.Join(s.root, "stardew", "Not A Key")
+	stray := filepath.Join(s.root, blobsDir, "Not A Blob")
 	if err := os.MkdirAll(stray, 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -469,7 +486,7 @@ func TestCollectWithRetentionOffRestartsTheClock(t *testing.T) {
 		t.Fatal(err)
 	}
 	old := time.Now().Add(-90 * 24 * time.Hour).UTC()
-	if err := s.saveIndex(index{"stardew": {"smapi-1": old}}); err != nil {
+	if err := s.saveIndex(index{"stardew": {"smapi-1": {Used: old}}}); err != nil {
 		t.Fatal(err)
 	}
 	s.UnusedFor = -1
@@ -480,7 +497,46 @@ func TestCollectWithRetentionOffRestartsTheClock(t *testing.T) {
 	if err := s.Collect(map[string][]string{}, time.Now()); err != nil {
 		t.Fatal(err)
 	}
-	if got := names(t, filepath.Join(s.root, "stardew")); len(got) != 1 {
+	if got := names(t, filepath.Join(s.root, loadersDir, "smapi")); len(got) != 1 {
 		t.Fatalf("item deleted right after retention was turned on: %v", got)
+	}
+}
+
+func TestKeysWithTheSameBytesShareOneBlobAndAreFoundBySource(t *testing.T) {
+	s := newStore(t)
+	p := buildZip(t, map[string]string{"Mod/manifest.json": "{}"})
+	if err := s.AddArchiveKey("stardew", NexusKey(7, 9), p); err != nil {
+		t.Fatal(err)
+	}
+	local, err := s.AddArchive("stardew", p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := names(t, filepath.Join(s.root, blobsDir)); len(got) != 1 {
+		t.Fatalf("blobs = %v", got)
+	}
+	if es, err := s.Entries(); err != nil || len(es) != 2 || es[0].Dir != es[1].Dir {
+		t.Fatalf("entries = %+v, %v", es, err)
+	}
+	if key, ok := s.Find("stardew", "nexus", "7", "9"); !ok || key != NexusKey(7, 9) {
+		t.Fatalf("Find = %q, %v", key, ok)
+	}
+	if err := s.Describe("stardew", local, "github", "o/r", "v1"); err != nil {
+		t.Fatal(err)
+	}
+	if key, ok := s.Find("stardew", "github", "o/r", "v1"); !ok || key != local {
+		t.Fatalf("Find after Describe = %q, %v", key, ok)
+	}
+	if err := s.Remove([]Ref{{Game: "stardew", Key: NexusKey(7, 9)}}); err != nil {
+		t.Fatal(err)
+	}
+	if got := names(t, filepath.Join(s.root, blobsDir)); len(got) != 1 {
+		t.Fatalf("blob went with its first key: %v", got)
+	}
+	if err := s.Remove([]Ref{{Game: "stardew", Key: local}}); err != nil {
+		t.Fatal(err)
+	}
+	if got := names(t, filepath.Join(s.root, blobsDir)); len(got) != 0 {
+		t.Fatalf("blob outlived its last key: %v", got)
 	}
 }

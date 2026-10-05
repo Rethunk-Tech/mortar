@@ -1,16 +1,12 @@
 package store
 
 import (
-	"errors"
-	"io/fs"
-	"os"
-	"path/filepath"
+	"maps"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -46,52 +42,35 @@ func (s *Store) Report(referenced map[string][]string) (Report, error) {
 	if err != nil {
 		return nil, err
 	}
-	games, err := os.ReadDir(s.root)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return nil, err
-	}
 	out := Report{}
-	for _, g := range games {
-		if !g.IsDir() || !game.Valid(g.Name()) {
-			continue
-		}
-		rep, err := s.gameReport(g.Name(), idx, keepSet(referenced[g.Name()]))
-		if err != nil {
-			return nil, err
-		}
+	for _, game := range slices.Sorted(maps.Keys(idx)) {
+		rep := s.gameReport(idx[game], keepSet(referenced[game]))
 		if len(rep.Unused) == 0 && len(rep.Duplicates) == 0 {
 			continue
 		}
-		out[g.Name()] = rep
+		out[game] = rep
 	}
 	return out, nil
 }
 
-func (s *Store) gameReport(gameID string, idx index, keep map[string]bool) (GameReport, error) {
-	items, err := os.ReadDir(filepath.Join(s.root, gameID))
-	if err != nil {
-		return GameReport{}, err
-	}
+func (s *Store) gameReport(keys map[string]record, keep map[string]bool) GameReport {
 	var unused []Item
 	var taggedItems []tagged
-	for _, it := range items {
-		key := it.Name()
-		if !it.IsDir() || strings.HasPrefix(key, tempPrefix) || !keyPattern.MatchString(key) {
+	for key, r := range keys {
+		dir, err := s.destOf(key, r.Blob)
+		if err != nil || !completeItem(dir) {
 			continue
 		}
-		dir := filepath.Join(s.root, gameID, key)
 		name, id, version := readManifest(dir)
 		size, _ := datadir.Size(dir)
-		entry := Item{
-			Key: key, Name: name, Version: version, LastUsed: idx[gameID][key], Size: size,
-		}
+		entry := Item{Key: key, Name: name, Version: version, LastUsed: r.Used, Size: size}
 		if !keep[key] {
 			unused = append(unused, entry)
 		}
 		taggedItems = append(taggedItems, tagged{item: entry, id: id})
 	}
 	slices.SortFunc(unused, func(a, b Item) int { return strings.Compare(a.Key, b.Key) })
-	return GameReport{Unused: unused, Duplicates: duplicateGroups(taggedItems)}, nil
+	return GameReport{Unused: unused, Duplicates: duplicateGroups(taggedItems)}
 }
 
 func duplicateGroups(items []tagged) [][]Item {
