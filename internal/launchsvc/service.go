@@ -137,7 +137,10 @@ type Service struct {
 	stop map[string]context.CancelFunc
 	// preparing holds the profile being readied for launch (loader check/install, then launch) and counts as running.
 	preparing map[string]string
-	seq       atomic.Int64
+	// startFailed is the error of the last start of each slot that failed, until the next start; a failed state is not
+	// kept in status, so a caller that waits on a launch reads it here.
+	startFailed map[string]string
+	seq         atomic.Int64
 	// App is set after application.New so events can be emitted.
 	App *application.App
 	// EnsureLoader installs the game's loader when it is missing or broken. Start calls it before launching.
@@ -169,7 +172,7 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 	return &Service{
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
-		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{},
+		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{}, startFailed: map[string]string{},
 		stopping: map[string]bool{}, reaping: map[string]bool{}, sampled: map[string]chan struct{}{},
 		EnsureLoader: func(context.Context, string, bool) error { return errors.New("the loader cannot be installed here") },
 	}
@@ -186,6 +189,15 @@ func (s *Service) emit(name string, data any) {
 	}
 }
 
+// failStart records that the game did not start, then sets st. A loader that exits before it is ready is not recorded:
+// the run's own summary says how it ended.
+func (s *Service) failStart(st Status) {
+	s.mu.Lock()
+	s.startFailed[slotKey(st.Game, st.Install)] = st.Error
+	s.mu.Unlock()
+	s.set(st)
+}
+
 // set records st and announces it. Failed and NoSteam are announced but not kept.
 func (s *Service) set(st Status) {
 	key := slotKey(st.Game, st.Install)
@@ -199,6 +211,9 @@ func (s *Service) set(st Status) {
 	case Idle, Launching, Running:
 	}
 	s.mu.Lock()
+	if st.State == Launching {
+		delete(s.startFailed, key)
+	}
 	prev, had := s.status[key]
 	s.status[key] = stored
 	if stored.State == Idle && s.stop[key] != nil {
@@ -456,6 +471,13 @@ func (s *Service) AnyBusy() bool {
 }
 
 // statusOf is the install's launch state after looking for a game Mortar did not start.
+// startFailure is why the last start of the slot failed, "" when it did not.
+func (s *Service) startFailure(sl slot) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.startFailed[keyOf(sl)]
+}
+
 func (s *Service) statusOf(sl slot) Status {
 	if s.poll(sl) {
 		s.watch(sl)
@@ -552,6 +574,8 @@ func (s *Service) start(parent context.Context, gameID, profileID, installID, pr
 		s.donePreparing(sl)
 		return err
 	}
+	// Launching from the moment the start is accepted, so a caller polling the state never sees the idle gap.
+	s.set(Status{Game: gameID, Install: sl.inst, State: Launching, Profile: profileID})
 	// Even an installed loader goes through EnsureLoader: it waits out an update in progress, which would
 	// otherwise launch the game on half-replaced files.
 	go func() {
@@ -584,7 +608,7 @@ func (s *Service) start(parent context.Context, gameID, profileID, installID, pr
 			}
 		}
 		if err != nil {
-			s.set(Status{Game: gameID, Install: sl.inst, State: Failed, Profile: profileID, Error: err.Error()})
+			s.failStart(Status{Game: gameID, Install: sl.inst, State: Failed, Profile: profileID, Error: err.Error()})
 		}
 	}()
 	return nil
@@ -613,7 +637,7 @@ func (s *Service) ForcesLoader(gameID string) (bool, error) {
 // StartVanilla launches the game without a profile mods folder. On Windows that is steam -applaunch
 // with no extra arguments (Steam launch options may still force SMAPI). On Linux SMAPI replaced the
 // game launcher, so Mortar starts StardewValley-original directly.
-func (s *Service) StartVanilla(gameID string, direct bool) error {
+func (s *Service) StartVanilla(parent context.Context, gameID string, direct bool) error {
 	g, err := game.Require(gameID)
 	if err != nil {
 		return err
@@ -642,7 +666,7 @@ func (s *Service) StartVanilla(gameID string, direct bool) error {
 	}
 	go func() {
 		defer s.donePreparing(sl)
-		if err := s.begin(context.Background(), sl, launchTarget{dir: dir}, direct, true); err != nil {
+		if err := s.begin(parent, sl, launchTarget{dir: dir}, direct, true); err != nil {
 			s.set(Status{Game: gameID, Install: sl.inst, State: Failed, Error: plainLaunchError(err, dir)})
 		}
 	}()
@@ -1062,11 +1086,11 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 	case errors.As(err, &f):
 		s.clearReap(g)
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error(), Cause: causeFromBuffer(s, g, profileID, buf)})
+		s.failStart(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error(), Cause: causeFromBuffer(s, g, profileID, buf)})
 	default:
 		s.clearReap(g)
 		s.finishFailed(g, profileID, buf)
-		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, r.inst.Dir), Cause: causeFromBuffer(s, g, profileID, buf)})
+		s.failStart(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, r.inst.Dir), Cause: causeFromBuffer(s, g, profileID, buf)})
 	}
 }
 

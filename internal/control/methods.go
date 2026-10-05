@@ -561,7 +561,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "sweep":
 		return s.Launches.Sweep(ctx, p.Game, p.Install)
 	case "launch.vanilla":
-		if err := s.Launches.StartVanilla(p.Game, false); err != nil {
+		if err := s.Launches.StartVanilla(ctx, p.Game, false); err != nil {
 			return nil, err
 		}
 		return s.awaitStart(ctx, p.Game, "")

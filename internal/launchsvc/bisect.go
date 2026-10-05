@@ -79,6 +79,11 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 			return true, launch.Summary{}, nil
 		}
 		status := s.statusOf(sl)
+		if status.State == Idle {
+			if why := s.startFailure(sl); why != "" {
+				return false, launch.Summary{}, fmt.Errorf("the game did not start: %s", why)
+			}
+		}
 		switch status.State {
 		case Launching:
 			started = true
