@@ -38,7 +38,13 @@ func (Driver) Modes() []source.Acquire { return []source.Acquire{source.Download
 func (Driver) Schemes() []string { return []string{"nxm"} }
 
 // ModPageURL is the mod's page.
-func (Driver) ModPageURL(gameKey string, modID int) string { return nexus.ModURL(gameKey, modID) }
+func (Driver) ModPageURL(gameKey, id string) string {
+	modID, err := strconv.Atoi(id)
+	if err != nil {
+		return ""
+	}
+	return nexus.ModURL(gameKey, modID)
+}
 
 type searchBody struct {
 	Query string `json:"query"`

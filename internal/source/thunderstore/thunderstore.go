@@ -37,13 +37,17 @@ func (Driver) Name() string { return "Thunderstore" }
 // Modes lists both ways: Mortar downloads packages itself, and ror2mm links hand one over.
 func (Driver) Modes() []source.Acquire { return []source.Acquire{source.Download, source.Handoff} }
 
-// PageURL is the package's page.
-func (d Driver) PageURL(key, owner, name string) string {
+// ModPageURL is the package's page; id is Namespace-Name, and a namespace holds no dash.
+func (d Driver) ModPageURL(gameKey, id string) string {
+	owner, name, ok := strings.Cut(id, "-")
+	if !ok {
+		return ""
+	}
 	base := d.URL
 	if base == "" {
 		base = BaseURL
 	}
-	return base + "/c/" + key + "/p/" + owner + "/" + name + "/"
+	return base + "/c/" + gameKey + "/p/" + owner + "/" + name + "/"
 }
 
 // score ranks a package against the query tokens: name over owner over summary; zero when a token matches nowhere.

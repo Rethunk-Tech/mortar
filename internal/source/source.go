@@ -79,9 +79,9 @@ type Schemer interface {
 	Schemes() []string
 }
 
-// PageLinker is a source that can name a mod's web page.
+// PageLinker is a source that can name a mod's web page from its native id (Item.ID).
 type PageLinker interface {
-	ModPageURL(gameKey string, modID int) string
+	ModPageURL(gameKey, id string) string
 }
 
 // LinkOptIn is a schemer that does not claim its scheme from the system unless the user opts in. A source that does

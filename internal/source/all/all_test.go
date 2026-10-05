@@ -45,7 +45,7 @@ func TestModDropLinkUsesCatalogKey(t *testing.T) {
 	if !ok {
 		t.Fatal("moddrop should link pages")
 	}
-	if got := linker.ModPageURL("stardew-valley", 42); got != "https://www.moddrop.com/stardew-valley/mods/42" {
+	if got := linker.ModPageURL("stardew-valley", "42"); got != "https://www.moddrop.com/stardew-valley/mods/42" {
 		t.Fatalf("got %s", got)
 	}
 }
