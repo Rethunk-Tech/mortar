@@ -147,6 +147,7 @@ type Result struct {
 	Compat         []Compat                  `json:"compat,omitempty"`
 	Redundant      []framework.Redundant     `json:"redundant,omitempty"`
 	RunErrors      []RunError                `json:"runErrors"`
+	LoadFailures   []LoadFailure             `json:"loadFailures,omitempty"`
 	Drift          []profile.Drift           `json:"drift,omitempty"`
 	Damaged        []Damaged                 `json:"damaged,omitempty"`
 	Dismissed      []DismissedProblem        `json:"dismissed"`
@@ -161,7 +162,7 @@ type CheckTiming struct {
 	Count int    `json:"count"`
 }
 
-// Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict, setting and last-run error.
+// Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict, setting last-run error and loader load failure.
 func (r Result) Count() int {
 	conflicts := conflictRows(r.AssetConflicts)
 	duplicates := 0
@@ -170,7 +171,7 @@ func (r Result) Count() int {
 			duplicates++
 		}
 	}
-	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.Drift) + len(r.Damaged)
+	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.LoadFailures) + len(r.Drift) + len(r.Damaged)
 }
 
 // WarningCount is cosmetic asset conflicts plus compat, cleanup and redundancy hints.

@@ -1,4 +1,5 @@
-// Package dotnet reads which external members a compiled .NET assembly assigns, from its ECMA-335 metadata and IL.
+// Package dotnet reads which external members a compiled .NET assembly assigns, and which BepInEx plugins it declares,
+// from its ECMA-335 metadata and IL.
 package dotnet
 
 import (
@@ -25,6 +26,7 @@ const (
 	tMethodDef   = 0x06
 	tParam       = 0x08
 	tMemberRef   = 0x0A
+	tCustomAttr  = 0x0C
 	tDeclSec     = 0x0E
 	tStandAlone  = 0x11
 	tEvent       = 0x14
@@ -747,3 +749,58 @@ func operand(op int) (int, bool) {
 
 func le16(b []byte) uint16 { return binary.LittleEndian.Uint16(b) }
 func le32(b []byte) uint32 { return binary.LittleEndian.Uint32(b) }
+
+// Plugin is one [BepInPlugin(GUID, Name, Version)] an assembly declares.
+type Plugin struct{ GUID, Name, Version string }
+
+// Plugins lists the BepInEx plugins the assembly at path declares; an assembly with none yields none.
+func Plugins(path string) ([]Plugin, error) {
+	data, err := fsx.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	m, err := open(data)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", path, err)
+	}
+	var out []Plugin
+	for row := 1; row <= m.rows[tCustomAttr]; row++ {
+		kind, ctor := decode(cCustomAttributeType, m.cell(tCustomAttr, row, 1))
+		if kind != tMemberRef {
+			continue
+		}
+		parent, ref := decode(cMemberRefParent, m.cell(tMemberRef, ctor, 0))
+		if parent != tTypeRef {
+			continue
+		}
+		if ns, name := m.typeRef(ref); ns != "BepInEx" || name != "BepInPlugin" {
+			continue
+		}
+		if p, ok := pluginArgs(m.blob(m.cell(tCustomAttr, row, 2))); ok {
+			out = append(out, p)
+		}
+	}
+	return out, nil
+}
+
+// pluginArgs reads a custom attribute blob holding three strings: the prolog 0x0001, then each as a compressed length
+// and UTF-8 bytes.
+func pluginArgs(b []byte) (Plugin, bool) {
+	if len(b) < 2 || b[0] != 1 || b[1] != 0 {
+		return Plugin{}, false
+	}
+	b = b[2:]
+	var args [3]string
+	for i := range args {
+		if len(b) == 0 {
+			return Plugin{}, false
+		}
+		n, size := compressed(append(slices.Clip(b), 0, 0, 0))
+		if int(n)+size > len(b) {
+			return Plugin{}, false
+		}
+		args[i] = string(b[size : size+int(n)])
+		b = b[size+int(n):]
+	}
+	return Plugin{GUID: args[0], Name: args[1], Version: args[2]}, true
+}

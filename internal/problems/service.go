@@ -282,6 +282,11 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool {
 			return !x.Enabled
 		}))...)
+		if l, ok := game.PrimaryLoader(gameID); ok {
+			if dir, err := s.profiles.ProfileDir(gameID, id); err == nil {
+				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, func() map[string]framework.Mod { return pluginOwners(mods) })
+			}
+		}
 		if s.Runs != nil && runID != "" {
 			_, summary, err := s.Runs.LastRunSummary(gameID, id)
 			if err == nil {

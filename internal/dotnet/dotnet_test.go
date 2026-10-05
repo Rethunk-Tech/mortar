@@ -46,3 +46,14 @@ func TestWritesRejectsFilesThatAreNotAssemblies(t *testing.T) {
 		}
 	}
 }
+
+func TestPluginArgsReadsTheAttributeBlob(t *testing.T) {
+	blob := []byte{1, 0, 8, 'a', '.', 'b', '.', 'c', 'd', 'e', 'f', 4, 'N', 'a', 'm', 'e', 5, '1', '.', '0', '.', '0', 0, 0}
+	got, ok := pluginArgs(blob)
+	if !ok || got != (Plugin{GUID: "a.b.cdef", Name: "Name", Version: "1.0.0"}) {
+		t.Fatalf("pluginArgs = %+v, %v", got, ok)
+	}
+	if _, ok := pluginArgs(blob[:12]); ok {
+		t.Fatal("truncated blob accepted")
+	}
+}
