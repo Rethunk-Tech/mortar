@@ -79,6 +79,9 @@ type GameInfo struct {
 	Name string `json:"name"`
 	// Enabled is false for a game listed as coming later.
 	Enabled bool `json:"enabled"`
+	// ImportIDs are the names Vortex and Mod Organizer 2 give the game, so their profiles can be imported; a game
+	// neither manager has an extension or plugin for has none.
+	ImportIDs ImportIDs `json:"importIds,omitzero"`
 	// Marker is a file every install of the game holds, at its root or one "game" folder down.
 	Marker string `json:"marker"`
 	// R2modmanFolder is r2modman's own folder name for the game (the Thunderstore schema's internalFolderName), the
@@ -96,6 +99,13 @@ type GameInfo struct {
 	Stores  GameStores   `json:"stores"`
 	Loaders []GameLoader `json:"loaders"`
 	Sources []GameSource `json:"sources"`
+}
+
+// ImportIDs name a game to the managers whose profiles Mortar imports: Vortex's game id (its game extension's
+// GAME_ID) and MO2's game plugin name (GameName).
+type ImportIDs struct {
+	Vortex string `json:"vortex,omitempty"`
+	MO2    string `json:"mo2,omitempty"`
 }
 
 // PathTemplate is a path per platform of the game build. Tokens: {appData} {localAppData} {localLow} {documents}

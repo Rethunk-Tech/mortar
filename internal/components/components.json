@@ -36,6 +36,7 @@
       "id": "stardew",
       "name": "Stardew Valley",
       "enabled": true,
+      "importIds": { "vortex": "stardewvalley", "mo2": "Stardew Valley" },
       "marker": "Stardew Valley.dll",
       "metadata": ["smapi-updates", "smapi-compat", "stardew-dataset"],
       "paths": {

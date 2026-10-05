@@ -10,14 +10,14 @@ func TestDetectsStardropProfileAndReadsGameMods(t *testing.T) {
 	home := filepath.Join("testdata", "stardrop", "home")
 	mods := filepath.Join("testdata", "stardrop", "game", "Mods")
 
-	sources, err := Detect(home, mods, "stardewvalley")
+	sources, err := Detect(home, mods, "stardew")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(sources) != 1 || sources[0].Kind != KindStardrop {
 		t.Fatalf("sources = %#v", sources)
 	}
-	preview, err := Preview(home, mods, "stardewvalley", KindStardrop, "Farm")
+	preview, err := Preview(home, mods, "stardew", KindStardrop, "Farm")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,14 +40,14 @@ func TestDetectsVortexProfileAndReadsStagingMods(t *testing.T) {
 	home := filepath.Join("testdata", "vortex", "home")
 	mods := filepath.Join(home, ".config", "Vortex", "game", "mods")
 
-	sources, err := Detect(home, "", "stardewvalley")
+	sources, err := Detect(home, "", "stardew")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(sources) != 1 || sources[0].Kind != KindVortex {
 		t.Fatalf("sources = %#v", sources)
 	}
-	preview, err := Preview(home, mods, "stardewvalley", KindVortex, "profile-1")
+	preview, err := Preview(home, mods, "stardew", KindVortex, "profile-1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +67,7 @@ func TestStardropProfileCarriesItsOwnConfigCopy(t *testing.T) {
 	home := filepath.Join("testdata", "stardrop", "home")
 	mods := filepath.Join("testdata", "stardrop", "game", "Mods")
 
-	preview, err := Preview(home, mods, "stardewvalley", KindStardrop, "Kept")
+	preview, err := Preview(home, mods, "stardew", KindStardrop, "Kept")
 	if err != nil {
 		t.Fatal(err)
 	}

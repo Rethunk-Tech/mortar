@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/migrate"
 )
 
@@ -11,11 +10,7 @@ func (s *Service) ExternalSources(gameID string) ([]migrate.SourceInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	t, err := game.NexusTitle(gameID)
-	if err != nil {
-		return nil, err
-	}
-	return migrate.Detect("", modsDir, t.Domain)
+	return migrate.Detect("", modsDir, gameID)
 }
 
 // ExternalPreview reads one detected external profile without changing either manager's files.
@@ -24,9 +19,5 @@ func (s *Service) ExternalPreview(gameID, kind, id string) (migrate.ProfilePrevi
 	if err != nil {
 		return migrate.ProfilePreview{}, err
 	}
-	t, err := game.NexusTitle(gameID)
-	if err != nil {
-		return migrate.ProfilePreview{}, err
-	}
-	return migrate.Preview("", modsDir, t.Domain, kind, id)
+	return migrate.Preview("", modsDir, gameID, kind, id)
 }

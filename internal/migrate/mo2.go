@@ -10,7 +10,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
@@ -32,10 +31,11 @@ type mo2Meta struct {
 	version string
 }
 
-// mo2Installations finds the MO2 instances managing the game whose Nexus domain is domain.
-func mo2Installations(home, modsPath, domain string) ([]installation, error) {
-	info, _ := components.BundledGameByNexusDomain(domain)
-	gameName := info.Name
+// mo2Installations finds the MO2 instances managing the game MO2 calls gameName.
+func mo2Installations(home, modsPath, gameName string) ([]installation, error) {
+	if gameName == "" {
+		return nil, nil
+	}
 	var out []installation
 	root := filepath.Join(mo2LocalAppData(home), "ModOrganizer")
 	entries, err := os.ReadDir(root)

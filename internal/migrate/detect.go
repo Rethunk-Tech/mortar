@@ -6,16 +6,21 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
 type installation struct {
 	info     SourceInfo
 	root     string
 	modsPath string
+	// vortexID is the game id Vortex files the profiles under.
+	vortexID string
 }
 
-func Detect(home, modsPath, vortexDomain string) ([]SourceInfo, error) {
-	installs, err := detect(home, modsPath, vortexDomain)
+// Detect lists the external mod managers whose profiles for the catalog game gameID can be imported.
+func Detect(home, modsPath, gameID string) ([]SourceInfo, error) {
+	installs, err := detect(home, modsPath, gameID)
 	if err != nil {
 		return nil, err
 	}
@@ -26,8 +31,8 @@ func Detect(home, modsPath, vortexDomain string) ([]SourceInfo, error) {
 	return out, nil
 }
 
-func Preview(home, modsPath, vortexDomain, kind, id string) (ProfilePreview, error) {
-	installs, err := detect(home, modsPath, vortexDomain)
+func Preview(home, modsPath, gameID, kind, id string) (ProfilePreview, error) {
+	installs, err := detect(home, modsPath, gameID)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -38,7 +43,7 @@ func Preview(home, modsPath, vortexDomain, kind, id string) (ProfilePreview, err
 			continue
 		}
 		seen = true
-		preview, previewErr := previewInstallation(install, vortexDomain, id)
+		preview, previewErr := previewInstallation(install, id)
 		if previewErr == nil {
 			return preview, nil
 		}
@@ -53,7 +58,8 @@ func Preview(home, modsPath, vortexDomain, kind, id string) (ProfilePreview, err
 	return ProfilePreview{}, fmt.Errorf("%s is not detected", kind)
 }
 
-func detect(home, modsPath, vortexDomain string) ([]installation, error) {
+func detect(home, modsPath, gameID string) ([]installation, error) {
+	ids := importIDs(gameID)
 	base, err := userHome(home)
 	if err != nil {
 		return nil, err
@@ -61,31 +67,38 @@ func detect(home, modsPath, vortexDomain string) ([]installation, error) {
 	config := configDir(base)
 	var out []installation
 
-	stardropRoot := filepath.Join(config, "Stardrop", "Data", "Profiles")
-	if profiles, err := stardropProfiles(stardropRoot, modsPath); err != nil {
-		return nil, err
-	} else if len(profiles) > 0 {
-		out = append(out, installation{
-			info:     SourceInfo{Kind: KindStardrop, Name: "Stardrop", Profiles: profileInfos(profiles)},
-			root:     stardropRoot,
-			modsPath: stardropModsPath(filepath.Dir(stardropRoot), modsPath),
-		})
-	}
-
-	vortexRoot := filepath.Join(config, "Vortex")
-	if profiles, resolvedModsPath, err := vortexProfiles(vortexRoot, modsPath, vortexDomain); err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
+	if gameID == "stardew" {
+		stardropRoot := filepath.Join(config, "Stardrop", "Data", "Profiles")
+		profiles, err := stardropProfiles(stardropRoot, modsPath)
+		if err != nil {
 			return nil, err
 		}
-	} else if len(profiles) > 0 {
-		out = append(out, installation{
-			info:     SourceInfo{Kind: KindVortex, Name: "Vortex", Profiles: profileInfos(profiles)},
-			root:     vortexRoot,
-			modsPath: resolvedModsPath,
-		})
+		if len(profiles) > 0 {
+			out = append(out, installation{
+				info:     SourceInfo{Kind: KindStardrop, Name: "Stardrop", Profiles: profileInfos(profiles)},
+				root:     stardropRoot,
+				modsPath: stardropModsPath(filepath.Dir(stardropRoot), modsPath),
+			})
+		}
 	}
 
-	mo2, err := mo2Installations(base, modsPath, vortexDomain)
+	if ids.Vortex != "" {
+		vortexRoot := filepath.Join(config, "Vortex")
+		profiles, resolvedModsPath, err := vortexProfiles(vortexRoot, modsPath, ids.Vortex)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return nil, err
+		}
+		if err == nil && len(profiles) > 0 {
+			out = append(out, installation{
+				info:     SourceInfo{Kind: KindVortex, Name: "Vortex", Profiles: profileInfos(profiles)},
+				root:     vortexRoot,
+				modsPath: resolvedModsPath,
+				vortexID: ids.Vortex,
+			})
+		}
+	}
+
+	mo2, err := mo2Installations(base, modsPath, ids.MO2)
 	if err != nil {
 		return nil, err
 	}
@@ -93,12 +106,12 @@ func detect(home, modsPath, vortexDomain string) ([]installation, error) {
 	return out, nil
 }
 
-func previewInstallation(install installation, vortexDomain, id string) (ProfilePreview, error) {
+func previewInstallation(install installation, id string) (ProfilePreview, error) {
 	switch install.info.Kind {
 	case KindStardrop:
 		return stardropPreview(install.root, install.modsPath, id)
 	case KindVortex:
-		return vortexPreview(install.root, install.modsPath, vortexDomain, id)
+		return vortexPreview(install.root, install.modsPath, install.vortexID, id)
 	case KindMO2:
 		return mo2Preview(install.root, install.modsPath, id)
 	default:
@@ -144,4 +157,9 @@ func configDir(home string) string {
 		return xdg
 	}
 	return filepath.Join(home, ".config")
+}
+
+func importIDs(gameID string) components.ImportIDs {
+	info, _ := components.BundledGame(gameID)
+	return info.ImportIDs
 }

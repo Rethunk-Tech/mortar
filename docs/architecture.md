@@ -6,7 +6,7 @@ How Mortar works: storage, profile semantics, the game catalog and its registrie
 
 Mortar finds a game, installs its mod loader, keeps each set of mods in its own profile, and launches the game with the chosen profile.
 
-External profile import is available for Stardrop and Vortex when their default data is present:
+External profile import is available for Stardrop (Stardew Valley only), Vortex and Mod Organizer 2 when their default data is present. Vortex and MO2 take the game's names from its catalog entry (`importIds`: `vortex` is the game extension's `GAME_ID`, `mo2` the game plugin's `GameName`); a game with no `importIds`, such as Lethal Company, which neither manager ships support for, has neither:
 
 - **Stardrop:** profiles from the platform application-data `Stardrop/Data/Profiles` folder; `EnabledModIds` match manifests in the configured game `Mods` folder. A profile that keeps configs per profile (`PreservedModConfigs`) writes its own copy over the folder's, or onto a downloaded mod once it installs, under the same caps as a `.mortar` file's configs; oversize ones are listed in the import preview.
 - **Vortex:** profiles from its `state.v2` persistent JSON; each profile's `modState` is matched to the extracted staging folder. Configs live only in that staging folder.

@@ -15,7 +15,7 @@ func TestMO2DetectTwoProfiles(t *testing.T) {
 	if err := copyMO2Fixture(filepath.Join("testdata", "mo2"), inst); err != nil {
 		t.Fatal(err)
 	}
-	sources, err := Detect(home, "", "stardewvalley")
+	sources, err := Detect(home, "", "stardew")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,11 +33,11 @@ func TestMO2DetectTwoProfiles(t *testing.T) {
 		t.Fatalf("profiles: got %d want 2 (%#v)", len(source.Profiles), source.Profiles)
 	}
 
-	def, err := Preview(home, "", "stardewvalley", KindMO2, "Default")
+	def, err := Preview(home, "", "stardew", KindMO2, "Default")
 	if err != nil {
 		t.Fatal(err)
 	}
-	coop, err := Preview(home, "", "stardewvalley", KindMO2, "Coop")
+	coop, err := Preview(home, "", "stardew", KindMO2, "Coop")
 	if err != nil {
 		t.Fatal(err)
 	}
