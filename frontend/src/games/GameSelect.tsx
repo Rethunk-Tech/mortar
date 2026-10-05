@@ -35,6 +35,9 @@ import { storeName } from './storeName.ts'
 type Game = GameInfo
 
 const LONG_NAME = 8
+// Tiles share the window in a grid that grows with the catalog: two games sit side by side, more wrap into rows.
+const TILE_MIN_PX = 240
+const TILE_MIN_WIDTH_PX = 560
 const SMALL_FONT = 13
 const NORMAL_FONT = 15
 const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
@@ -233,12 +236,15 @@ function Row({
   )
   const sx = {
     position: 'relative',
-    flex: '1 1 0',
-    minHeight: 0,
+    minHeight: TILE_MIN_PX,
     display: 'flex',
+    flexWrap: 'wrap',
     alignItems: 'center',
+    alignContent: 'center',
     justifyContent: 'space-between',
-    px: '96px',
+    gap: '16px',
+    px: '48px',
+    py: '24px',
     overflow: 'hidden',
     bgcolor: gameArt(game) ? 'transparent' : 'background.paper',
     borderLeft: '4px solid',
@@ -247,6 +253,20 @@ function Row({
     fontFamily: 'inherit',
   } as const
   return <Box sx={sx}>{content}</Box>
+}
+
+// Installed games first, then supported ones not found, then those coming later; catalog order within each.
+function ordered(games: Game[]): Game[] {
+  const rank = (g: Game) => {
+    if (g.available && g.installed) {
+      return 0
+    }
+    return g.available ? 1 : 2
+  }
+  return games
+    .map((g, i) => ({ g, i }))
+    .sort((a, b) => rank(a.g) - rank(b.g) || a.i - b.i)
+    .map(({ g }) => g)
 }
 
 interface GameState {
@@ -329,8 +349,17 @@ export function GameSelect() {
   }
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-        {status.games.map((g) => {
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          display: 'grid',
+          gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${TILE_MIN_WIDTH_PX}px), 1fr))`,
+          gridAutoRows: `minmax(${TILE_MIN_PX}px, 1fr)`,
+        }}
+      >
+        {ordered(status.games).map((g) => {
           const st = states[g.id]
           const lastId = st?.lastPlayedId ?? ''
           const showCards =
