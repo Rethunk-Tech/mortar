@@ -57,14 +57,14 @@ func TestSearchBuildsFacetsAndMapsHits(t *testing.T) {
 func TestResolveAndVersions(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
-	r, err := d.Resolve(context.Background(), "AANobbMI", "", "1.2")
+	r, err := d.Resolve(context.Background(), "AANobbMI", "", "1.2", nil)
 	if err != nil || r.URL != "https://cdn/y.jar" || r.Digest != "sha512:cd" || r.Size != 7 || r.Version != "2.0" || len(r.Dependencies) != 1 || r.Dependencies[0] != (Dependency{ProjectID: "P1", VersionID: "V1"}) {
 		t.Fatalf("%+v %v", r, err)
 	}
-	if r, err = d.Resolve(context.Background(), "AANobbMI", "1.0", "1.2"); err != nil || r.Digest != "" || r.FileName != "o.jar" {
+	if r, err = d.Resolve(context.Background(), "AANobbMI", "1.0", "1.2", nil); err != nil || r.Digest != "" || r.FileName != "o.jar" {
 		t.Fatalf("%+v %v", r, err)
 	}
-	if _, err = d.Resolve(context.Background(), "AANobbMI", "9", "1.2"); err == nil {
+	if _, err = d.Resolve(context.Background(), "AANobbMI", "9", "1.2", nil); err == nil {
 		t.Fatal("unknown version resolved")
 	}
 	if v, _ := d.Versions(context.Background(), "AANobbMI", "1.2"); strings.Join(v, ",") != "2.0,1.0" {
@@ -144,8 +144,36 @@ func TestLatestSaysBusyWhenRateLimited(t *testing.T) {
 		w.WriteHeader(http.StatusTooManyRequests)
 	}))
 	t.Cleanup(srv.Close)
-	_, err := Driver{URL: srv.URL}.Latest(context.Background(), components.GameSource{}, "", []source.InstalledFile{{Digest: "sha512:aa"}})
+	_, err := Driver{URL: srv.URL}.Latest(context.Background(), components.GameSource{Loaders: []string{"fabric"}}, "", []source.InstalledFile{{Digest: "sha512:aa"}})
 	if !errors.Is(err, source.ErrBusy) {
 		t.Fatalf("err = %v, want ErrBusy", err)
+	}
+}
+
+func TestLatestAsksNothingWithoutLoaders(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+		t.Errorf("asked %s without loaders", r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+	got, err := Driver{URL: srv.URL}.Latest(context.Background(), components.GameSource{ID: "modrinth"}, "", []source.InstalledFile{{Digest: "sha512:aa"}})
+	if err != nil || len(got) != 0 {
+		t.Fatalf("latest = %+v %v", got, err)
+	}
+}
+
+func TestResolvePassesLoadersThrough(t *testing.T) {
+	t.Parallel()
+	var got string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got = r.URL.Query().Get("loaders")
+		_, _ = w.Write([]byte(`[{"id":"v","project_id":"p","version_number":"1","files":[{"url":"u","filename":"f.jar","primary":true}]}]`))
+	}))
+	t.Cleanup(srv.Close)
+	if _, err := (Driver{URL: srv.URL}).Resolve(context.Background(), "p", "", "", []string{"fabric", "quilt"}); err != nil {
+		t.Fatal(err)
+	}
+	if got != `["fabric","quilt"]` {
+		t.Fatalf("loaders param = %q", got)
 	}
 }

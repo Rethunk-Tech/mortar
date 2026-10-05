@@ -293,7 +293,7 @@ type Deps struct {
 	// InstallPackage adds a downloaded Thunderstore package archive to the profile; nil refuses packages.
 	InstallPackage func(game, profileID, path string, source profile.Source) (profile.InstallResult, error)
 	// Direct resolves a Modrinth project or itch.io game to its file and required dependencies; nil refuses them.
-	Direct  func(ctx context.Context, source, id, version string) (DirectFile, error)
+	Direct  func(ctx context.Context, source, id, version string, loaders []string) (DirectFile, error)
 	GitHub  *github.Client
 	OpenURL func(url string) error
 	// Running reports whether the game runs the profile; its items wait until it stops. Nil means never.

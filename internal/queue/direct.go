@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/source/itch"
@@ -30,6 +31,7 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 	if s.d.Direct == nil {
 		return nil, errors.New("cannot install " + r.Source + " mods here")
 	}
+	loaders := sourceLoaders(r.Game, r.Source)
 	var out []Request
 	seen := map[string]bool{}
 	var visit func(ref DirectRef, root bool, depth int) error
@@ -43,7 +45,7 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 			return fmt.Errorf("%s dependencies nest too deep at %s", r.Source, ref.ID)
 		}
 		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
-		f, err := s.d.Direct(cctx, r.Source, ref.ID, ref.Version)
+		f, err := s.d.Direct(cctx, r.Source, ref.ID, ref.Version, loaders)
 		cancel()
 		if err != nil {
 			return err
@@ -71,11 +73,24 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 	return out, nil
 }
 
+// sourceLoaders are the loaders the game's catalog lists for the source, which narrow the versions a dependency may take.
+func sourceLoaders(gameID, sourceID string) []string {
+	for _, g := range game.Catalog() {
+		if g.ID != gameID {
+			continue
+		}
+		if src, ok := g.Source(sourceID); ok {
+			return src.Loaders
+		}
+	}
+	return nil
+}
+
 // ResolveDirect is Deps.Direct for the real sites.
-func ResolveDirect(ctx context.Context, src, id, version string) (DirectFile, error) {
+func ResolveDirect(ctx context.Context, src, id, version string, loaders []string) (DirectFile, error) {
 	switch src {
 	case "modrinth":
-		r, err := modrinth.Driver{}.Resolve(ctx, id, version, "")
+		r, err := modrinth.Driver{}.Resolve(ctx, id, version, "", loaders)
 		if err != nil {
 			return DirectFile{}, err
 		}

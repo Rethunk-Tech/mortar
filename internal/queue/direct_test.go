@@ -25,7 +25,7 @@ func TestExpandDirectQueuesDependenciesFirstOnce(t *testing.T) {
 		"a":    {Version: "1", URL: "u/a", Dependencies: []DirectRef{{ID: "b"}}},
 		"b":    {Version: "5", URL: "u/b"},
 	}
-	s := &Service{d: Deps{Direct: func(_ context.Context, src, id, _ string) (DirectFile, error) {
+	s := &Service{d: Deps{Direct: func(_ context.Context, src, id, _ string, _ []string) (DirectFile, error) {
 		if src != "modrinth" {
 			t.Errorf("source %q", src)
 		}

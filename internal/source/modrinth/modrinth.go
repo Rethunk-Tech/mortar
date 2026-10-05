@@ -247,16 +247,26 @@ type versionResp struct {
 	} `json:"files"`
 }
 
-func (d Driver) versions(ctx context.Context, project, mortarVersion string) ([]versionResp, error) {
+// versions lists the project's versions, only those for loaders when it names any.
+func (d Driver) versions(ctx context.Context, project, mortarVersion string, loaders []string) ([]versionResp, error) {
 	var out []versionResp
-	err := d.get(ctx, "/project/"+url.PathEscape(project)+"/version", nil, mortarVersion, &out)
+	var params url.Values
+	if len(loaders) > 0 {
+		encoded, err := json.Marshal(loaders)
+		if err != nil {
+			return nil, err
+		}
+		params = url.Values{"loaders": {string(encoded)}}
+	}
+	err := d.get(ctx, "/project/"+url.PathEscape(project)+"/version", params, mortarVersion, &out)
 	return out, err
 }
 
 // Resolve finds the project's version, matching its number or id; an empty version means the newest. The file is
-// the version's primary one.
-func (d Driver) Resolve(ctx context.Context, project, version, mortarVersion string) (Resolved, error) {
-	all, err := d.versions(ctx, project, mortarVersion)
+// the version's primary one. A game's loaders narrow the versions considered, so a dependency is not the build for
+// another loader.
+func (d Driver) Resolve(ctx context.Context, project, version, mortarVersion string, loaders []string) (Resolved, error) {
+	all, err := d.versions(ctx, project, mortarVersion, loaders)
 	if err != nil {
 		return Resolved{}, err
 	}
@@ -291,7 +301,7 @@ func (d Driver) Resolve(ctx context.Context, project, version, mortarVersion str
 
 // Versions lists the project's version numbers, newest first.
 func (d Driver) Versions(ctx context.Context, project, mortarVersion string) ([]string, error) {
-	all, err := d.versions(ctx, project, mortarVersion)
+	all, err := d.versions(ctx, project, mortarVersion, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -330,13 +340,17 @@ func (v versionResp) hasFile(sha512 string) bool {
 // The installed versions of the files that have a newer one are then read through POST /version_files
 // (https://docs.modrinth.com/api/operations/versionsfromhashes/), so Dependencies knows both sides.
 func (d Driver) Latest(ctx context.Context, src components.GameSource, mortarVersion string, files []source.InstalledFile) (map[string]source.Latest, error) {
+	out := map[string]source.Latest{}
+	// Without loaders the site would answer with the newest file of any loader, which may not run in the game.
+	if len(src.Loaders) == 0 {
+		return out, nil
+	}
 	byHash := map[string]string{}
 	for _, f := range files {
 		if h, ok := strings.CutPrefix(f.Digest, "sha512:"); ok && h != "" {
 			byHash[strings.ToLower(h)] = f.Digest
 		}
 	}
-	out := map[string]source.Latest{}
 	if len(byHash) == 0 {
 		return out, nil
 	}

@@ -24,7 +24,7 @@ func FuzzDecoders(f *testing.F) {
 	f.Fuzz(func(t *testing.T, body []byte) {
 		d := Driver{HTTP: &http.Client{Transport: canned(body)}, URL: "http://modrinth.test"}
 		_, _ = d.Search(t.Context(), source.Query{Key: "fabric"})
-		_, _ = d.Resolve(t.Context(), "p", "", "")
+		_, _ = d.Resolve(t.Context(), "p", "", "", nil)
 		_, _ = d.Versions(t.Context(), "p", "")
 		_, _ = d.Categories(t.Context(), "")
 	})
