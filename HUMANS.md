@@ -181,20 +181,38 @@ Add the game to `games` in `components.source.json`, then publish as described u
 - `stores`: the game's id in each store that sells it, keyed by the store driver's key: `steam.appId`, `gog.productId` and `gog.folder`, `lutris.slug` and `lutris.keyword`.
 - `paths`: folders outside the install by role (`saves`, `errorLogs`, `startupPreferences`), one template per platform. A template starts with a token: `{appData}`, `{localAppData}`, `{localLow}`, `{documents}`, `{xdgConfig}`, `{xdgData}`, `{home}` or `{install}`. The runtime gives each token its folder.
 - `sources`: each mod site with `key`, the site's name for the game (Nexus domain, Thunderstore community, ModDrop slug), and `gameId` where the site's API wants a number. Catalog order is the order browse lists them.
-- `loaders`: the loader ids the game can run; the test's `knownLoaders` list names the ids Mortar has.
+- `loaders`: the loader ids the game can run (`smapi`, `bepinex5`; the test's `knownLoaders` list names the ids Mortar has), each with an optional `companion`, the name of the catalog component (kind `bridge`) installed beside it so the running game can be queried.
+- `deploy`: `redirect` when the loader points the game at the profile's folder (SMAPI's `--mods-path`), so nothing is placed, or `link-into-install` when the loader reads only the install (BepInEx), so the deployer places the profile's files there for the launch and takes back what the game wrote.
+- `targets`: the places mod files go, each with a profile `root` and, for a deployed game, the `install` path it maps to (`writable` for a folder the game writes into, `maxDepth` to cap how deep a file may sit).
+- `importIds`: the game's Vortex id (its extension's `GAME_ID`) and MO2 name (its plugin's `GameName`); leave it out for a game neither manager supports.
 - `metadata`: provider ids (`smapi-updates`, `smapi-compat`, `stardew-dataset`); none for a game without them.
 - `r2modmanFolder`: r2modman's name for the game (the Thunderstore ecosystem schema's `internalFolderName`), which maps an imported r2modman profile to the game.
 
+### A catalog-only game, end to end
+
+A game that runs on a loader Mortar has, is sold by a store Mortar has, and is modded from sources Mortar has needs no Go. The worked example is Lethal Company: Steam, BepInEx 5, Thunderstore, Nexus and GitHub.
+
+1. **Entry.** Add the game to `games` in `components.source.json` with `enabled: false` while it is checked. Lethal Company's entry names `stores.steam.appId`, `loaders: [{id: "bepinex5", companion: "bridge"}]`, `sources` for `thunderstore` (`key` is the community slug), `nexus` (domain `key` and numeric `gameId`) and `github`, `r2modmanFolder`, `paths.saves`, `deploy: "link-into-install"` and the `profile` and `config` targets.
+2. **Companion and loader components.** A loader whose release Mortar installs (SMAPI) or a companion (the bridge) is a `components` entry for the game with a GitHub source, an asset pattern and a version policy; BepInEx ships as a Thunderstore package and needs none.
+3. **Manifest.** Regenerate the embedded manifest as described under [Publishing components](#publishing-components).
+4. **Check.** `go test ./internal/components ./internal/source/all` runs `GameInfo.Validate` and `TestEveryCatalogReferenceResolves` on the entry.
+5. **Try it.** `MORTAR_ENABLE_GAMES=<id>` (the self-test sets it) enables a game the shipped catalog lists as disabled. `scripts/selftest.sh seed` fills the sandbox with a profile for it when the game is installed there; browse, install, a profile and its Problems tab are then exercised in the sandbox's browser.
+6. **Enable.** Flip `enabled` to true and publish the manifest.
+
 ### Drivers
 
-A new store, site, runtime, provider or host is one Go package or file plus its registration; a game that uses only existing ones needs none of this.
+A new store, site, runtime, provider, host, installer, deployer, framework or loader is one Go package or file plus its registration; a game that uses only existing ones needs none of this.
 
 1. **Store** (`internal/gamestore`): implement `Store` (`Key`, `Launchers`, `Discover`) in `drivers.go`, add it to `All()`, and give `components.GameStores` the matching field. `Key` is the name used in the catalog's `stores`.
 2. **Source** (`internal/source`): implement `Source` (`ID`, `Name`, `Modes`) in `internal/source/<id>/`, call `source.Register` in a package variable, and import the package in `internal/source/all/all.go`. Add the capabilities the site supports, each found by type assertion: `Searcher` (browse), `Schemer` (a URL scheme the site's links open Mortar with), `PageLinker` (`ModPageURL(gameKey, id)`), `Hoster` (web hosts, so a bare URL traces back to the site), and `LinkOptIn` (a scheme claimed from the system only when the player turns it on; Thunderstore's `ror2mm` is off by default). A searcher sets `Item.Adult` from the site's flag, since browse hides adult hits unless the player opts in. Tests serve the site from a fake HTTP server.
 3. **Runtime** (`internal/runtime`): implement `Runtime` (`ID`, `Detect`, `Resolve`) and add it to `drivers` before `native`, which claims whatever nothing else does. `Resolve` expands a catalog path template for the install.
 4. **Metadata provider** (`internal/metadata`): add the capability (`Updates`, `Status` or `Dataset`) and the case for its id in `For`.
 5. **Host** (`internal/host`): implement `Host` (`ID`, `Match`, `Fetch`) and add it to `For` ahead of the direct host, which takes any HTTPS URL.
-6. **Loader**: loader drivers are documented here when the loader interface lands.
+6. **Pack format** (`internal/pack`): implement `Format` so another manager's list reads into a `Draft` and pass it to `pack.Read` where the importer lists its formats; a format writes nothing.
+7. **Installer** (`internal/installer`): implement `Installer` (`ID`, `Detect`, `Layout`) for an archive shape, call `installer.Register`, and add its id to `detectionOrder` before `plain`, which takes any archive. `Layout` returns files with a catalog target and a path inside it; every path is validated to stay inside its target.
+8. **Deployer** (`internal/deploy`): implement `Deployer` (`Plan`, `Apply`, `Harvest`, `Purge`, `Recover`) and call `deploy.Register`; the catalog's `deploy` names the id.
+9. **Framework** (`internal/framework`): implement `Framework` (`ID`, `Matches`, `Analyze`) in a package that calls `framework.Register`; its analyzers run when an enabled mod matches. Content Patcher is the one driver.
+10. **Loader** (`internal/loader`): implement `Loader` (`ID`, `Formats`, `Status`, `Install`, `Contribute`) in `internal/loader/<id>/`, call `loader.Register`, and import the package where the other loaders are imported. Add the capabilities it supports, found by type assertion: `Vanilla` (a launch without mods), `Owner` (which process is this loader's), `WithLogs` (the loader's log, its readiness line and analyzers), `WithConfig` (writable settings folders), `WithCompanion` (the bridge mod's folder, id and state file), `Console`, `Releases`, `ProcessNames` and `SteamExe`. A loader that redirects the game to the profile (SMAPI) declares no install-side files; one that needs files beside the executable (BepInEx's Doorstop `winhttp.dll` and `doorstop_config.ini`) declares them in its plan and the deployer places them.
 
 ### Self-test
 
