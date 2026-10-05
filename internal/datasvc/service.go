@@ -178,7 +178,7 @@ func (s *Service) EntrySizes() ([]EntrySize, error) {
 		return out, nil
 	}
 	s.mu.Unlock()
-	out, err := storeSizes(dir)
+	out, err := storeSizes(s.items)
 	if err != nil {
 		return nil, err
 	}

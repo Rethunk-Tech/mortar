@@ -191,7 +191,7 @@ func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
 	if b.Size != 40 || b.Profiles != 0 || b.ProfileSize != 0 {
 		t.Fatalf("local-aa = %+v", b)
 	}
-	sizes, err := storeSizes(root)
+	sizes, err := storeSizes(items)
 	if err != nil || len(sizes) != len(got.Items) {
 		t.Fatalf("store sizes = %+v, %v", sizes, err)
 	}

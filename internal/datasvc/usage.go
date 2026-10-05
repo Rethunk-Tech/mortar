@@ -343,9 +343,9 @@ func MeasureMods(root string) (ModUsage, error) {
 }
 
 // storeSizes is the Size column of MeasureMods alone, from the sizes the store records; an item without one is
-// measured and its size recorded.
-func storeSizes(root string) ([]EntrySize, error) {
-	items := store.OpenAt(filepath.Join(root, "store"))
+// measured and its size recorded. items must be the store the rest of Mortar writes through, whose lock keeps this
+// write from undoing another.
+func storeSizes(items *store.Store) ([]EntrySize, error) {
 	entries, err := items.Entries()
 	if err != nil {
 		return nil, err
