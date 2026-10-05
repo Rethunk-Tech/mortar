@@ -6,10 +6,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
-
-// pinKeys maps a loader id to the setting that pins its version; a loader without an entry cannot be pinned.
-var pinKeys = map[string]string{"smapi": "smapiPin"}
 
 // loaderOf checks that the game has a loader named want, or names the game's own when want is empty.
 func loaderOf(gameID, want string) (string, error) {
@@ -57,7 +55,7 @@ func (s *Services) loaderPin(p Params) error {
 	if err != nil {
 		return err
 	}
-	key, ok := pinKeys[id]
+	key, ok := settings.PinKey(id)
 	if !ok {
 		return fmt.Errorf("the %s loader has no version pin", id)
 	}

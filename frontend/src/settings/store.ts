@@ -39,7 +39,7 @@ const defaults: Settings = {
   checkModUpdatesOnStart: true,
   tellWhenSmapiOut: true,
   smapiBuilds: 'show',
-  smapiPin: '',
+  loaderPrefs: {},
   showSmapiConsole: true,
   askEndorseMods: true,
   keepInTray: false,

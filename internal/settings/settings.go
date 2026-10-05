@@ -96,8 +96,8 @@ type Settings struct {
 	CheckModUpdatesOnStart *bool `json:"checkModUpdatesOnStart"`
 	// SmapiBuilds is whether SMAPI prerelease builds are never offered, shown, or included in updates.
 	SmapiBuilds string `json:"smapiBuilds"`
-	// SmapiPin is the SMAPI version to stay on; empty follows the latest release.
-	SmapiPin string `json:"smapiPin"`
+	// LoaderPrefs holds each loader's own settings by loader id; on disk they sit in the loader's block.
+	LoaderPrefs map[string]LoaderPrefs `json:"loaderPrefs"`
 	// ShowSmapiConsole is whether launches show SMAPI's console. Nil or omitted means on.
 	ShowSmapiConsole *bool `json:"showSmapiConsole"`
 	// TellWhenSmapiOut is whether Mortar toasts when a newer SMAPI exists. Nil or omitted means on.
@@ -218,6 +218,7 @@ func Defaults() Settings {
 	s.GameStores = map[string]string{}
 	s.LauncherRoots = map[string][]string{}
 	s.Loaders = map[string]string{}
+	s.LoaderPrefs = map[string]LoaderPrefs{}
 	s.Dismissed = map[string][]string{}
 	s.NexusSeenDownloadServers = []string{}
 	s.LanPort = DefaultLanPort
@@ -279,6 +280,9 @@ func Open() (*Store, error) {
 	normalizeStores(&s.cur)
 	if s.cur.Loaders == nil {
 		s.cur.Loaders = map[string]string{}
+	}
+	if s.cur.LoaderPrefs == nil {
+		s.cur.LoaderPrefs = map[string]LoaderPrefs{}
 	}
 	if s.cur.Dismissed == nil {
 		s.cur.Dismissed = map[string][]string{}

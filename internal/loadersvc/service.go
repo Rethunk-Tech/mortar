@@ -299,7 +299,7 @@ func (s *Service) Status(ctx context.Context, id string) (loader.Status, error) 
 	if err != nil {
 		return loader.Status{}, err
 	}
-	if pin := s.settings.Get().SmapiPin; pin != "" {
+	if pin := s.settings.Get().LoaderPin(loaderIDOf(id)); pin != "" {
 		return st, nil
 	}
 	l, _ := game.PrimaryLoader(id)
@@ -335,7 +335,7 @@ func (s *Service) Ensure(ctx context.Context, id string, fromStart bool) (loader
 	if err != nil {
 		return loader.Status{}, err
 	}
-	pin := s.settings.Get().SmapiPin
+	pin := s.settings.Get().LoaderPin(loaderIDOf(id))
 	if st.Installed && !st.Broken && (pin == "" || st.Version == pin) {
 		return st, nil
 	}
@@ -355,7 +355,7 @@ func (s *Service) install(ctx context.Context, id string, fromStart bool) (st lo
 	if running || (!fromStart && s.profiles.AnyRunning(id)) {
 		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), game.LoaderName(id)))
 	}
-	return s.installVersion(ctx, g, dir, id, s.settings.Get().SmapiPin, fromStart)
+	return s.installVersion(ctx, g, dir, id, s.settings.Get().LoaderPin(loaderIDOf(id)), fromStart)
 }
 
 // gameRunning reports whether any process of the game runs, with or without its loader and however it was started.
@@ -376,4 +376,12 @@ func (s *Service) emit(name string, data any) {
 	if s.App != nil {
 		s.App.Event.Emit(name, data)
 	}
+}
+
+// loaderIDOf is the id of the game's first loader, "" when it has none.
+func loaderIDOf(gameID string) string {
+	if l, ok := game.PrimaryLoader(gameID); ok {
+		return l.ID()
+	}
+	return ""
 }

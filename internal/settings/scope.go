@@ -34,7 +34,7 @@ var sourceFields = map[string][]string{
 
 // loaderFields is sourceFields for mod loaders: the keys that belong to one loader, whichever game uses it.
 var loaderFields = map[string][]string{
-	"smapi": {"smapiBuilds=builds", "smapiPin=pin", "showSmapiConsole=showConsole", "tellWhenSmapiOut=tellWhenOut", "smapiToastAt=toastAt"},
+	"smapi": {"smapiBuilds=builds", "showSmapiConsole=showConsole", "tellWhenSmapiOut=tellWhenOut", "smapiToastAt=toastAt"},
 }
 
 // scopeTables names each keyed scope's block in settings.json and its field table.
@@ -53,6 +53,10 @@ func fieldNames(entry string) (flat, local string) {
 
 // gamesField is the per-game block's name, in settings.json and in exports.
 const gamesField = "games"
+
+// loaderPrefsField is the flat name of Settings.LoaderPrefs: its fields live in the loader's block under their own
+// names, beside the keys loaderFields lists.
+const loaderPrefsField = "loaderPrefs"
 
 // scoped is a settings object split by scope, the layout of settings.json and of an export.
 type scoped struct {
@@ -89,6 +93,16 @@ func split(flat map[string]json.RawMessage) scoped {
 		switch h, ok := owner[k]; {
 		case k == gamesField:
 			out.Games = v
+		case k == loaderPrefsField:
+			var prefs map[string]map[string]json.RawMessage
+			if json.Unmarshal(v, &prefs) == nil {
+				for id, fields := range prefs {
+					if out.Loaders[id] == nil {
+						out.Loaders[id] = map[string]json.RawMessage{}
+					}
+					maps.Copy(out.Loaders[id], fields)
+				}
+			}
 		case ok:
 			block := blocks[h.block]
 			if block[h.id] == nil {
@@ -119,6 +133,28 @@ func (sc scoped) flatten() map[string]json.RawMessage {
 	}
 	if len(sc.Games) > 0 {
 		out[gamesField] = sc.Games
+	}
+	prefs := map[string]map[string]json.RawMessage{}
+	for id, fields := range sc.Loaders {
+		known := map[string]bool{}
+		for _, n := range loaderFields[id] {
+			_, local := fieldNames(n)
+			known[local] = true
+		}
+		for name, v := range fields {
+			if known[name] {
+				continue
+			}
+			if prefs[id] == nil {
+				prefs[id] = map[string]json.RawMessage{}
+			}
+			prefs[id][name] = v
+		}
+	}
+	if len(prefs) > 0 {
+		if b, err := json.Marshal(prefs); err == nil {
+			out[loaderPrefsField] = b
+		}
 	}
 	return out
 }

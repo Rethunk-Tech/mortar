@@ -45,7 +45,7 @@ function SmapiRow({ onVersion }: { onVersion: (v: string) => void }) {
   const push = useToasts((s) => s.push)
   const fail = t`Could not save that setting`
   const game = useCurrentGame()
-  const pin = useSettings((s) => s.smapiPin)
+  const pin = useSettings((s) => s.loaderPrefs?.smapi?.pin ?? '')
   const status = useLoader((s) => s.status)
   const check = useLoader((s) => s.check)
   const install = useLoader((s) => s.install)

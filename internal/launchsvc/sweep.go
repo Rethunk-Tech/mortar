@@ -77,7 +77,7 @@ func (s *Service) Sweep(ctx context.Context, gameID, installID string) (SweepRep
 	}
 	updates := s.sweepUpdateSet(ctx, gameID, gameVer, smapiVer, profiles)
 	rep.Profiles = s.scanSweepProfiles(gameID, profiles, idx, updates)
-	if err := s.settings.RecordLastSweep(gameID, gameVer, smapiVer); err != nil {
+	if err := s.settings.RecordLastSweep(gameID, gameVer, rep.Loader, smapiVer); err != nil {
 		return SweepReport{}, err
 	}
 	return rep, nil
@@ -122,8 +122,8 @@ func (s *Service) installedSweepVersions(gameID, installID string) (string, stri
 }
 
 func (s *Service) sweepVersionsChanged(gameID, gameVer, smapiVer string) bool {
-	last := s.settings.Get().GamePrefs(gameID)
-	return loader.VersionChanged(last.LastSweepGameVersion, gameVer) || last.LastSweepSMAPIVersion != smapiVer
+	set := s.settings.Get()
+	return loader.VersionChanged(set.GamePrefs(gameID).LastSweepGameVersion, gameVer) || set.LoaderPrefs[loaderID(gameID)].LastSweepVersion != smapiVer
 }
 
 func (s *Service) sweepCompat(ctx context.Context) (meta.CompatIndex, error) {

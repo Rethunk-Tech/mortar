@@ -53,7 +53,7 @@ func addSweepMod(t *testing.T, profiles *profile.Store, profileID, uniqueID, nam
 
 func TestSweepNoChangeSkips(t *testing.T) {
 	svc, _ := sweepEnv(t)
-	if err := svc.settings.RecordLastSweep("stardew", "1.6.15", "4.1.10"); err != nil {
+	if err := svc.settings.RecordLastSweep("stardew", "1.6.15", "smapi", "4.1.10"); err != nil {
 		t.Fatal(err)
 	}
 	rep, err := svc.Sweep(context.Background(), "stardew", "")

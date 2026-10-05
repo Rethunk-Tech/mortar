@@ -42,7 +42,7 @@ var sectionFields = map[string][]string{
 		"shareIncludeDisabledMods", "shareIncludeFomodChoices", "shareIncludeNotes", "shareIncludeConfigFiles",
 		"lanName", "lanAutoAcceptPaired",
 	},
-	SectionGames: {"games", "smapiBuilds", "smapiPin", "showSmapiConsole"},
+	SectionGames: {"games", "smapiBuilds", "loaderPrefs", "showSmapiConsole"},
 }
 
 // ImportSections lists every section id.

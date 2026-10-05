@@ -15,6 +15,7 @@ func TestFileIsSplitByScope(t *testing.T) {
 		v.NexusName = "Farmer"
 		v.NxmPreviousHandlers = map[string]string{"nxm": "vortex.desktop"}
 		v.AutoTrackNexus = true
+		v.LoaderPrefs = map[string]LoaderPrefs{"smapi": {Pin: "4.0.0"}, "bepinex5": {LastSweepVersion: "5.4.2304"}}
 		if err := ApplyKeyGame(v, "runsKept", "7", "stardew"); err != nil {
 			t.Error(err)
 		}
@@ -45,11 +46,14 @@ func TestFileIsSplitByScope(t *testing.T) {
 	if doc.Loaders["smapi"]["builds"] != "show" || doc.Loaders["smapi"]["tellWhenOut"] != true || doc.Games["stardew"]["smapiBuilds"] != nil {
 		t.Fatalf("loader scope: %s", b)
 	}
+	if doc.Loaders["smapi"]["pin"] != "4.0.0" || doc.Loaders["bepinex5"]["lastSweepVersion"] != "5.4.2304" || doc.Global["loaderPrefs"] != nil {
+		t.Fatalf("loader prefs: %s", b)
+	}
 	s2, err := Open()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := s2.Get(); got.NexusName != "Farmer" || got.NxmPreviousHandlers["nxm"] != "vortex.desktop" || got.GamePrefs("stardew").RunsKept != 7 {
+	if got := s2.Get(); got.NexusName != "Farmer" || got.NxmPreviousHandlers["nxm"] != "vortex.desktop" || got.GamePrefs("stardew").RunsKept != 7 || got.LoaderPin("smapi") != "4.0.0" || got.LoaderPrefs["bepinex5"].LastSweepVersion != "5.4.2304" {
 		t.Fatalf("reload = %+v", got)
 	}
 }

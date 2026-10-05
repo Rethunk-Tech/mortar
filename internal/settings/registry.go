@@ -43,7 +43,6 @@ type GameSettings struct {
 	// LastDownloadsSeen is the newest archive mtime (ms) in the download folder already offered or skipped.
 	LastDownloadsSeen     int64                  `json:"lastDownloadsSeen,omitempty"`
 	LastSweepGameVersion  string                 `json:"lastSweepGameVersion,omitempty"`
-	LastSweepSMAPIVersion string                 `json:"lastSweepSMAPIVersion,omitempty"`
 	LaunchPresetTemplates []LaunchPresetTemplate `json:"launchPresetTemplates,omitempty"`
 	ExtraModsFolder       string                 `json:"extraModsFolder,omitempty"`
 	ShowDotHiddenMods     bool                   `json:"showDotHiddenMods,omitempty"`
@@ -148,7 +147,8 @@ var registry = []pref{
 	enumPref("enableRequirements", ScopeGame, EnableReqAlways, enableReqValues, func(s Settings, g string) string { return s.GamePrefs(g).EnableRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.EnableRequirements = v; putGame(s, g, gp) }),
 	enumPref("missingRequirements", ScopeGame, MissingReqAsk, missingReqValues, func(s Settings, g string) string { return s.GamePrefs(g).MissingRequirements }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.MissingRequirements = v; putGame(s, g, gp) }),
 	loaderPref("smapi", enumPref("smapiBuilds", ScopeLoader, SmapiBuildsShow, smapiBuildsValues, func(s Settings, _ string) string { return s.SmapiBuilds }, func(s *Settings, _, v string) { s.SmapiBuilds = v })),
-	loaderPref("smapi", strPref("smapiPin", ScopeLoader, func(s Settings, _ string) string { return s.SmapiPin }, func(s *Settings, _, v string) { s.SmapiPin = v })),
+	loaderPref("smapi", pinPref("smapiPin", "smapi")),
+	loaderPref("bepinex5", pinPref("bepinex5Pin", "bepinex5")),
 	overridable(enumPref("defaultLaunchMethod", ScopeGame, LaunchSteam, launchMethodValues, func(s Settings, g string) string { return s.GamePrefs(g).DefaultLaunchMethod }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DefaultLaunchMethod = v; putGame(s, g, gp) })),
 	overridable(loaderPref("smapi", ptrPref("showSmapiConsole", ScopeLoader, true, func(s Settings, _ string) *bool { return s.ShowSmapiConsole }, func(s *Settings, _ string, on bool) { s.ShowSmapiConsole = &on }))),
 	overridable(boolPref("skipPlayCheck", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).SkipPlayCheck }, func(s *Settings, g string, on bool) {
@@ -281,9 +281,6 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	}
 	if src.LastSweepGameVersion != "" {
 		dst.LastSweepGameVersion = src.LastSweepGameVersion
-	}
-	if src.LastSweepSMAPIVersion != "" {
-		dst.LastSweepSMAPIVersion = src.LastSweepSMAPIVersion
 	}
 	dst.LaunchPresetTemplates = append([]LaunchPresetTemplate(nil), src.LaunchPresetTemplates...)
 	dst.ExtraModsFolder = src.ExtraModsFolder
