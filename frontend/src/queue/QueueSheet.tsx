@@ -33,7 +33,6 @@ import { clockTime, isClearableFinished, parallelDownloads, totals } from './tot
 
 const UNIX_MS_PER_SECOND = 1000
 const WIDTH = 500
-const RED = '#ff6b5f'
 
 function Header({
   onClose,
@@ -120,7 +119,7 @@ function Header({
       >
         <Box sx={{ width: `${sum.doneShare}%`, bgcolor: 'success.main' }} />
         <Box sx={{ width: `${sum.activeShare}%`, bgcolor: 'info.main' }} />
-        <Box sx={{ width: `${sum.failedShare}%`, bgcolor: RED }} />
+        <Box sx={{ width: `${sum.failedShare}%`, bgcolor: 'error.main' }} />
       </Box>
       {limitedUntil > 0 ? (
         <Typography
