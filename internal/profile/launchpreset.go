@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
+	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 )
 
@@ -81,7 +81,7 @@ func (l LaunchSpec) Overrides(base map[string]string) map[string]string {
 	return out
 }
 
-func validateLaunchPresets(presets []LaunchPreset, defaultID string) ([]LaunchPreset, error) {
+func validateLaunchPresets(gameID string, presets []LaunchPreset, defaultID string) ([]LaunchPreset, error) {
 	if len(presets) > maxLaunchPresets {
 		return nil, fmt.Errorf("a profile holds at most %d launch presets", maxLaunchPresets)
 	}
@@ -102,7 +102,7 @@ func validateLaunchPresets(presets []LaunchPreset, defaultID string) ([]LaunchPr
 			preset.ID = ids.New()
 		}
 		seenID[preset.ID] = true
-		if _, err := stardew.ParseLaunchOptions(preset.LaunchOptions); err != nil {
+		if _, err := gamereg.ParseLaunchOptions(gameID, preset.LaunchOptions); err != nil {
 			return nil, fmt.Errorf("%s: %w", preset.Name, err)
 		}
 		if _, err := LaunchPrefixArgs(preset.LaunchPrefix); err != nil {
@@ -125,7 +125,7 @@ func validateLaunchPresets(presets []LaunchPreset, defaultID string) ([]LaunchPr
 // SetLaunchPresets replaces a profile's named launch presets and which one is the default ("" is the profile's
 // own settings). Presets without an id get one. It never touches mods/, so a running game does not block it.
 func (s *Store) SetLaunchPresets(game, id string, presets []LaunchPreset, defaultID string) (Profile, error) {
-	checked, err := validateLaunchPresets(presets, defaultID)
+	checked, err := validateLaunchPresets(game, presets, defaultID)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -149,7 +149,7 @@ func (s *Store) AddLaunchPreset(game, id string, preset LaunchPreset) (Profile, 
 		for n := 2; taken[strings.ToLower(preset.Name)]; n++ {
 			preset.Name = fmt.Sprintf("%s %d", base, n)
 		}
-		checked, err := validateLaunchPresets(append(slices.Clone(p.LaunchPresets), preset), p.DefaultLaunchPreset)
+		checked, err := validateLaunchPresets(game, append(slices.Clone(p.LaunchPresets), preset), p.DefaultLaunchPreset)
 		if err != nil {
 			return err
 		}

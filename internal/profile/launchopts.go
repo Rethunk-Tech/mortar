@@ -1,6 +1,6 @@
 package profile
 
-import "github.com/Rethunk-Tech/mortar/internal/game/stardew"
+import gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 
 // LaunchOptions returns the profile's extra SMAPI arguments as stored.
 func (s *Store) LaunchOptions(game, id string) (string, error) {
@@ -14,7 +14,7 @@ func (s *Store) LaunchOptions(game, id string) (string, error) {
 // SetLaunchOptions replaces a profile's extra SMAPI arguments. It never touches mods/, so a running
 // game does not block it.
 func (s *Store) SetLaunchOptions(game, id, options string) (Profile, error) {
-	if _, err := stardew.ParseLaunchOptions(options); err != nil {
+	if _, err := gamereg.ParseLaunchOptions(game, options); err != nil {
 		return Profile{}, err
 	}
 	return s.update(game, id, func(p *Profile, _ string) error {

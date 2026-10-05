@@ -19,7 +19,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -926,7 +925,7 @@ func launchOverrides(profiles *profile.Store, gameID, profileID string) map[stri
 }
 
 func backupNeeded(mode string, events []profile.HistoryEvent, lastRun time.Time, recorded, installed string) bool {
-	return settings.ShouldBackupBeforePlay(mode, changedSinceLastRun(events, lastRun), stardew.GameVersionChanged(recorded, installed))
+	return settings.ShouldBackupBeforePlay(mode, changedSinceLastRun(events, lastRun), loader.VersionChanged(recorded, installed))
 }
 
 func changedSinceLastRun(events []profile.HistoryEvent, lastRun time.Time) bool {
@@ -1178,7 +1177,9 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()
 	if ok && !sess.vanilla && cur.Profile != "" {
-		sess.deployed.unwind(context.Background())
+		if sess.deployed != nil && sess.deployed.finish != nil {
+			sess.deployed.finish()
+		}
 		if restoreErr := s.restoreGameSettings(sess.restore); restoreErr != nil {
 			s.reportSettingsRestore(g, cur.Profile, restoreErr)
 		}

@@ -9,7 +9,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -123,7 +123,7 @@ func (s *Service) installedSweepVersions(gameID, installID string) (string, stri
 
 func (s *Service) sweepVersionsChanged(gameID, gameVer, smapiVer string) bool {
 	last := s.settings.Get().GamePrefs(gameID)
-	return stardew.GameVersionChanged(last.LastSweepGameVersion, gameVer) || last.LastSweepSMAPIVersion != smapiVer
+	return loader.VersionChanged(last.LastSweepGameVersion, gameVer) || last.LastSweepSMAPIVersion != smapiVer
 }
 
 func (s *Service) sweepCompat(ctx context.Context) (meta.CompatIndex, error) {

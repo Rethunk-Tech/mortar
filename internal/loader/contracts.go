@@ -157,6 +157,9 @@ type BundledCopier interface {
 // ProcessNames is a loader whose running game is found by these executable names.
 type ProcessNames interface{ ProcessNames() []string }
 
+// DeniedArgs is a loader that sets some launch flags itself, which a profile's own launch options may not repeat.
+type DeniedArgs interface{ DeniedArgs() []string }
+
 // SteamExe is a loader that Steam's launch options start in place of the game: the executable they run.
 type SteamExe interface {
 	SteamExe(installDir string) string

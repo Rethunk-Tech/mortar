@@ -62,6 +62,11 @@ func (Loader) Formats() []string { return []string{"smapi"} }
 // ProcessNames is SMAPI's executable, the process a running profile is found by.
 func (Loader) ProcessNames() []string { return []string{smapiMarker} }
 
+// DeniedArgs are the SMAPI flags Mortar always sets itself.
+func (Loader) DeniedArgs() []string {
+	return []string{"--mods-path", "--no-terminal", "--skip-terminal"}
+}
+
 // SteamExe is the executable Steam's launch options start in place of the game.
 func (Loader) SteamExe(installDir string) string {
 	return filepath.Join(installDir, smapiMarker+".exe")

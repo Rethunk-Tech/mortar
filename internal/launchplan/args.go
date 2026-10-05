@@ -1,4 +1,4 @@
-package stardew
+package launchplan
 
 import (
 	"fmt"
@@ -7,21 +7,18 @@ import (
 	"unicode/utf8"
 )
 
-// DeniedLaunchOptions are SMAPI flags Mortar always sets itself.
-var DeniedLaunchOptions = []string{"--mods-path", "--no-terminal", "--skip-terminal"}
-
-// ParseLaunchOptions splits a profile's extra SMAPI arguments as shell-like words
-// (spaces separate; single or double quotes keep spaces; backslash escapes the next rune).
-func ParseLaunchOptions(s string) ([]string, error) {
+// ParseArgs splits a profile's extra launch arguments as shell-like words (spaces separate; single or double quotes
+// keep spaces; backslash escapes the next rune) and refuses a flag in denied, which the loader sets itself.
+func ParseArgs(s string, denied []string) ([]string, error) {
 	words, err := splitShellWords(s)
 	if err != nil {
 		return nil, err
 	}
 	for _, w := range words {
 		flag, _, _ := strings.Cut(w, "=")
-		for _, denied := range DeniedLaunchOptions {
-			if flag == denied {
-				return nil, fmt.Errorf("%s is set by Mortar and cannot be in launch options", denied)
+		for _, d := range denied {
+			if flag == d {
+				return nil, fmt.Errorf("%s is set by Mortar and cannot be in launch options", d)
 			}
 		}
 	}

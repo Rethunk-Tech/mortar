@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -591,7 +591,7 @@ type UpdateWarning struct {
 func (s *Service) UpdateWarning(ctx context.Context, gameID, id string) (UpdateWarning, error) {
 	env := s.Environment(gameID)
 	recorded := s.settings.Get().LastPlayed[gameID].GameVersion
-	if !stardew.GameVersionChanged(recorded, env.GameVersion) {
+	if !loader.VersionChanged(recorded, env.GameVersion) {
 		return versionChangeWarning(recorded, env.GameVersion, nil), nil
 	}
 	mods, err := s.installed(gameID, id)
@@ -603,7 +603,7 @@ func (s *Service) UpdateWarning(ctx context.Context, gameID, id string) (UpdateW
 
 func versionChangeWarning(recorded, installed string, broken []Broken) UpdateWarning {
 	out := UpdateWarning{Recorded: recorded, Installed: installed, Broken: []Broken{}}
-	if !stardew.GameVersionChanged(recorded, installed) {
+	if !loader.VersionChanged(recorded, installed) {
 		return out
 	}
 	out.Changed = true

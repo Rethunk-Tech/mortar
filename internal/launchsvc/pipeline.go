@@ -13,7 +13,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deploy"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
@@ -60,7 +59,7 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 	if err := l.Contribute(ctx, plan, view); err != nil {
 		return nil, err
 	}
-	extra, err := stardew.ParseLaunchOptions(options)
+	extra, err := game.ParseLaunchOptions(g.ID(), options)
 	if err != nil {
 		return nil, err
 	}
@@ -85,9 +84,11 @@ const deployerID = "link-into-install"
 
 // deployment is the placed files of one launch, taken back once the game has exited.
 type deployment struct {
-	d    deploy.Deployer
-	m    deploy.Manifest
-	once sync.Once
+	d deploy.Deployer
+	m deploy.Manifest
+	// finish unwinds under a context that outlives the launch call, for the waiter, which has none of its own.
+	finish func()
+	once   sync.Once
 }
 
 // journalDir is where an install's deploy journal lives: beside Mortar's data, never inside the install, so a game
@@ -133,6 +134,8 @@ func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, 
 	}
 	m, err := d.Apply(ctx, p)
 	dep := &deployment{d: d, m: m}
+	detached := context.WithoutCancel(ctx)
+	dep.finish = func() { dep.unwind(detached) }
 	if err != nil {
 		if len(m.Ops) > 0 {
 			dep.unwind(context.WithoutCancel(ctx))

@@ -1,4 +1,4 @@
-package stardew
+package launchplan
 
 import (
 	"slices"
@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-func TestParseLaunchOptions(t *testing.T) {
+func TestParseArgs(t *testing.T) {
 	t.Parallel()
-	got, err := ParseLaunchOptions(`  --developer-mode  "path with space"  'also here'  `)
+	got, err := ParseArgs(`  --developer-mode  "path with space"  'also here'  `, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,10 +18,11 @@ func TestParseLaunchOptions(t *testing.T) {
 	}
 }
 
-func TestParseLaunchOptionsDenied(t *testing.T) {
+func TestParseArgsDenied(t *testing.T) {
 	t.Parallel()
+	denied := []string{"--mods-path", "--no-terminal", "--skip-terminal"}
 	for _, in := range []string{"--mods-path /tmp/x", `--mods-path="/tmp/x"`, "--no-terminal", "--skip-terminal"} {
-		_, err := ParseLaunchOptions(in)
+		_, err := ParseArgs(in, denied)
 		if err == nil {
 			t.Fatalf("%q: want denylist error", in)
 		}
@@ -31,9 +32,9 @@ func TestParseLaunchOptionsDenied(t *testing.T) {
 	}
 }
 
-func TestParseLaunchOptionsUnclosedQuote(t *testing.T) {
+func TestParseArgsUnclosedQuote(t *testing.T) {
 	t.Parallel()
-	if _, err := ParseLaunchOptions(`"oops`); err == nil {
+	if _, err := ParseArgs(`"oops`, nil); err == nil {
 		t.Fatal("want unclosed quote")
 	}
 }

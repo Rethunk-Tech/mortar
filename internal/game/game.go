@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -82,6 +83,17 @@ func LoaderStatus(id, dir, recorded string) (loader.Status, error) {
 		st.Version = cmp.Or(recorded, st.Version)
 	}
 	return st, nil
+}
+
+// ParseLaunchOptions splits a profile's extra launch arguments for the game, refusing the flags its loader sets itself.
+func ParseLaunchOptions(id, options string) ([]string, error) {
+	var denied []string
+	if l, ok := PrimaryLoader(id); ok {
+		if d, ok := l.(loader.DeniedArgs); ok {
+			denied = d.DeniedArgs()
+		}
+	}
+	return launchplan.ParseArgs(options, denied)
 }
 
 // LogFile is the game's first loader's log, which outlives the game.
