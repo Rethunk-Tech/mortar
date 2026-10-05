@@ -12,6 +12,7 @@ import (
 )
 
 func TestApplyWritesOnlyValidConfigsInsideModFolders(t *testing.T) {
+	t.Parallel()
 	mods := t.TempDir()
 	must := func(err error) {
 		t.Helper()

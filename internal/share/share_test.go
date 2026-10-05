@@ -46,6 +46,7 @@ func sample() profile.Profile {
 }
 
 func TestRoundTripAndLinks(t *testing.T) {
+	t.Parallel()
 	res, err := Encode("stardew", sample())
 	if err != nil {
 		t.Fatal(err)
@@ -73,6 +74,7 @@ func TestRoundTripAndLinks(t *testing.T) {
 }
 
 func TestDetailsRoundTrip(t *testing.T) {
+	t.Parallel()
 	choices := map[string]map[string][]string{"Options": {"Pack": {"Optional"}}}
 	p := profile.Profile{Name: "Choices", Entries: []profile.Entry{{
 		Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 4, FileID: 5},
@@ -114,6 +116,7 @@ func TestDetailsRoundTrip(t *testing.T) {
 }
 
 func TestV3WireShape(t *testing.T) {
+	t.Parallel()
 	doc := `[3,"mixed","stardew",{"nexus":"stardewvalley"},[` +
 		`{"s":"nexus","mod":4,"file":5,"disabled":["A.Off"],"note":"n","tags":["t"]},` +
 		`{"s":"github","repo":"owner/repo","tag":"v1","asset":"a.zip","note":"g"}]]`
@@ -140,6 +143,7 @@ func TestV3WireShape(t *testing.T) {
 }
 
 func TestLinkDropsDetailsBeforeRefs(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Name: "large"}
 	for i := range 250 {
 		sum := sha256.Sum256(fmt.Appendf(nil, "choice-%d", i))
@@ -164,6 +168,7 @@ func TestLinkDropsDetailsBeforeRefs(t *testing.T) {
 }
 
 func TestWrongForms(t *testing.T) {
+	t.Parallel()
 	p, err := Encode("stardew", sample())
 	if err != nil {
 		t.Fatal(err)
@@ -194,6 +199,7 @@ func pack(t *testing.T, doc string) string {
 }
 
 func TestNewerVersionRefused(t *testing.T) {
+	t.Parallel()
 	for _, doc := range []string{`[4,"x","stardew",{},[]]`, `[9,{"weird":true}]`} {
 		if _, err := Parse(pack(t, doc)); !errors.Is(err, ErrNewerVersion) {
 			t.Errorf("%s: err = %v", doc, err)
@@ -202,6 +208,7 @@ func TestNewerVersionRefused(t *testing.T) {
 }
 
 func TestHostileShapes(t *testing.T) {
+	t.Parallel()
 	long := strings.Repeat("a", 61)
 	many := "[" + strings.Repeat("[1,2],", MaxEntries) + "[1,2]]"
 	for _, doc := range []string{
@@ -220,6 +227,7 @@ func TestHostileShapes(t *testing.T) {
 }
 
 func TestCaps(t *testing.T) {
+	t.Parallel()
 	if _, err := Parse(strings.Repeat("A", MaxEncoded+1)); !errors.Is(err, ErrTooLarge) {
 		t.Errorf("oversized payload: %v", err)
 	}
@@ -252,6 +260,7 @@ func TestCaps(t *testing.T) {
 }
 
 func TestEncodeRefusesTooLarge(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Name: "big"}
 	for i := range 1000 {
 		p.Entries = append(p.Entries, nexus(fmt.Sprint(i), pseudo(1, i, 0, 2_000_000_000), pseudo(1, i, 1, 2_000_000_000)))
@@ -273,6 +282,7 @@ func pseudo(seed, i, field, limit int) int {
 }
 
 func TestLinkSizes(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct{ mods, min, max int }{{50, 540, 660}, {100, 900, 1100}, {200, 1600, 1950}} {
 		p := profile.Profile{Name: "Sample profile"}
 		for i := range tc.mods {
@@ -290,6 +300,7 @@ func TestLinkSizes(t *testing.T) {
 }
 
 func TestBundledNeverListed(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Name: "x", Entries: []profile.Entry{
 		{Key: "smapi", Source: profile.Source{Kind: profile.SourceSMAPI}},
 		{Key: "bridge", Source: profile.Source{Kind: profile.SourceMortar}},
@@ -302,6 +313,7 @@ func TestBundledNeverListed(t *testing.T) {
 }
 
 func TestLeftOutReasons(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Name: "x", Entries: []profile.Entry{
 		{Key: "a", Source: profile.Source{Kind: profile.KindNexus}},
 		{Key: "b", Source: profile.Source{Kind: profile.KindGitHub, Repo: "bad name"}},
@@ -329,6 +341,7 @@ func modsDirWith(t *testing.T, files map[string]string) string {
 }
 
 func TestMortarFileRoundTrip(t *testing.T) {
+	t.Parallel()
 	p := sample()
 	p.Entries[2].Mods[0].Folder = "inner"
 	dir := modsDirWith(t, map[string]string{
@@ -375,6 +388,7 @@ func TestMortarFileRoundTrip(t *testing.T) {
 }
 
 func TestEntryNotesRoundTrip(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Name: "Notes", Entries: []profile.Entry{
 		nexus("one", 541, 1000),
 		{
@@ -410,6 +424,7 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 }
 
 func TestGroupsFileRoundTrip(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Name: "G", Entries: []profile.Entry{
 		nexus("one", 541, 1000),
 		nexus("two", 2, 3),
@@ -449,6 +464,7 @@ func TestGroupsFileRoundTrip(t *testing.T) {
 }
 
 func TestCollectOmitsEntryNotesWhenDisabled(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Name: "x", Entries: []profile.Entry{
 		{
 			Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 2},
@@ -462,6 +478,7 @@ func TestCollectOmitsEntryNotesWhenDisabled(t *testing.T) {
 }
 
 func TestImportEntryNotesTruncates(t *testing.T) {
+	t.Parallel()
 	long := strings.Repeat("n", profile.MaxEntryNote+10)
 	ref := Ref{ModID: 1, FileID: 2, Note: long, Tags: []string{
 		strings.Repeat("t", profile.MaxEntryTag+1), "ok", "", "ok", "dup", "DUP",
@@ -478,6 +495,7 @@ func TestImportEntryNotesTruncates(t *testing.T) {
 }
 
 func TestEncodeOmitsDescription(t *testing.T) {
+	t.Parallel()
 	with := sample()
 	without := sample()
 	without.Description = ""
@@ -518,6 +536,7 @@ func zipOf(t *testing.T, files ...[2]string) string {
 }
 
 func TestReadRejects(t *testing.T) {
+	t.Parallel()
 	head := [2]string{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","notes":"","entries":[{"s":"nexus","mod":1,"file":2}],"ids":["smapi:A.one"]}`}
 	for name, files := range map[string][][2]string{
 		"no profile":         {{"configs/smapi/A.one/c.json", "{}"}},
@@ -564,6 +583,7 @@ func TestReadRejects(t *testing.T) {
 }
 
 func TestReadEntryCap(t *testing.T) {
+	t.Parallel()
 	files := [][2]string{{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","entries":[],"ids":["smapi:A.one"]}`}}
 	for i := range MaxConfigFiles + 1 {
 		files = append(files, [2]string{fmt.Sprintf("configs/smapi/A.one/%d.json", i), "{}"})
@@ -574,6 +594,7 @@ func TestReadEntryCap(t *testing.T) {
 }
 
 func TestOverlayPlacementTravels(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Name: "P", Entries: []profile.Entry{
 		nexus("main", 7, 1),
 		{Key: "opt", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}, OverlayOf: "main", OverlayFrom: "[CP] X", OverlayTo: "[CP] X/assets"},
@@ -603,6 +624,7 @@ func TestOverlayPlacementTravels(t *testing.T) {
 }
 
 func TestOverlayPlacementIsChecked(t *testing.T) {
+	t.Parallel()
 	for _, r := range []Ref{
 		{ModID: 1, FileID: 2, Overlay: &Overlay{To: "../x"}},
 		{ModID: 1, FileID: 2, Overlay: &Overlay{From: "/abs"}},
