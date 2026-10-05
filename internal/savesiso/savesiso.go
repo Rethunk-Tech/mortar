@@ -35,6 +35,9 @@ type Manifest struct {
 	// and only a complete copy is written back.
 	Copied bool `json:"copied,omitempty"`
 	Live   bool `json:"live,omitempty"`
+	// WrittenBack is set once Profile holds the working copy, so a Purge run again after the copy was partly removed
+	// does not write that remainder over it.
+	WrittenBack bool `json:"writtenBack,omitempty"`
 }
 
 func journalPath(dir string) string { return filepath.Join(dir, journalFile) }
@@ -120,16 +123,22 @@ func undoOnError(m Manifest, cause error) error {
 func Purge(m Manifest) error {
 	switch {
 	case m.Copied && m.Live && exists(m.Saves) && !isLink(m.Saves):
-		next := m.Profile + ".new"
-		_ = os.RemoveAll(next)
-		if err := datadir.CopyTree(m.Saves, next); err != nil {
-			return err
-		}
-		if err := os.RemoveAll(m.Profile); err != nil {
-			return err
-		}
-		if err := os.Rename(next, m.Profile); err != nil {
-			return err
+		if !m.WrittenBack {
+			next := m.Profile + ".new"
+			_ = os.RemoveAll(next)
+			if err := datadir.CopyTree(m.Saves, next); err != nil {
+				return err
+			}
+			if err := os.RemoveAll(m.Profile); err != nil {
+				return err
+			}
+			if err := os.Rename(next, m.Profile); err != nil {
+				return err
+			}
+			m.WrittenBack = true
+			if err := persist(m); err != nil {
+				return err
+			}
 		}
 		if err := os.RemoveAll(m.Saves); err != nil {
 			return err

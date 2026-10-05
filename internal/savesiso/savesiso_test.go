@@ -3,7 +3,10 @@ package savesiso
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func write(t *testing.T, p, body string) {
@@ -84,5 +87,36 @@ func TestNoSharedSavesLeavesNothingBehind(t *testing.T) {
 	}
 	if err := Purge(m); err != nil || exists(saves) {
 		t.Fatalf("no shared folder means none after: %v", err)
+	}
+}
+
+func TestPurgeRunAgainKeepsTheWrittenBackSaves(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("a read-only folder does not stop a delete on Windows")
+	}
+	root := t.TempDir()
+	saves, prof, journal := filepath.Join(root, "saves"), filepath.Join(root, "profile"), filepath.Join(root, "j")
+	write(t, filepath.Join(prof, "a.sav"), "slot a")
+	write(t, filepath.Join(prof, "locked", "b.sav"), "slot b")
+	m, err := Apply(journal, saves, prof, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	locked := filepath.Join(saves, "locked")
+	// A read-only folder stands in for a save file held open on Windows.
+	if err := fsx.Chmod(locked, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	if err := Purge(m); err == nil {
+		t.Fatal("the working copy was removed from a read-only folder")
+	}
+	if err := fsx.Chmod(locked, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := Recover(journal, nil); err != nil {
+		t.Fatal(err)
+	}
+	if read(t, filepath.Join(prof, "a.sav")) != "slot a" || read(t, filepath.Join(prof, "locked", "b.sav")) != "slot b" || exists(saves) {
+		t.Fatal("the second purge lost saves or left the working copy")
 	}
 }
