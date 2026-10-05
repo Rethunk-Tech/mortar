@@ -240,3 +240,40 @@ func TestRecordKeepsThePresetName(t *testing.T) {
 		t.Fatalf("runs = %+v, %v", runs, err)
 	}
 }
+
+func TestRecordStoresTheBepInExLogOfTheProfile(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", filepath.Join(t.TempDir(), "data"))
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "lethal-company", "A")
+	dir, err := profiles.ProfileDir("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logDir := filepath.Join(dir, "BepInEx")
+	if err := os.MkdirAll(logDir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	const body = "[Info   :   BepInEx] BepInEx 5.4.22 - Lethal Company\n[Error  :   BepInEx] Error loading [Foo]: boom\n"
+	if err := os.WriteFile(filepath.Join(logDir, "LogOutput.log"), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	svc := NewService(t.TempDir(), nil, profiles)
+	svc.record(game.Find("lethal-company"), p.ID, time.Now(), false)
+	runs, err := svc.Runs("lethal-company", p.ID)
+	if err != nil || len(runs) != 1 {
+		t.Fatalf("runs = %v, %v", runs, err)
+	}
+	if got, err := svc.RunLog("lethal-company", p.ID, runs[0].ID); err != nil || got != body {
+		t.Fatalf("stored log = %q, %v", got, err)
+	}
+}
+
+func TestUnityCrashMarkers(t *testing.T) {
+	for text, want := range map[string]bool{
+		"Crash!!!\nSymbolInfo:": true, "Fatal error in GC": true, "Exception: x\n  at Foo": false,
+	} {
+		if unityCrashed(text) != want {
+			t.Errorf("unityCrashed(%q) = %v", text, !want)
+		}
+	}
+}

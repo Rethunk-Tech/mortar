@@ -798,7 +798,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	if plan, err = s.launchPlan(ctx, g, inst, profileID, mode, spec.Options, spec.Prefix, spec.Env); err != nil {
 		return err
 	}
-	env.LogFile, _ = game.LogFile(g.ID())
+	env.LogFile, _, _ = s.logPath(g.ID(), profileID)
 	// The install is locked from the preparing claim until the waiter has unwound: a second launch finds the game busy.
 	dep, err := s.deployProfile(ctx, g.ID(), inst, profileID, plan)
 	if err != nil {
@@ -1017,7 +1017,7 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 		}
 		return []launch.Entry{}, nil
 	}
-	path, err := game.LogFile(g.ID())
+	path, own, err := s.logPath(g.ID(), profileID)
 	if err != nil {
 		return nil, err
 	}
@@ -1033,7 +1033,7 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 		return nil, err
 	}
 	text := strings.ToValidUTF8(string(data), "")
-	if !launch.LogOwnedBy(text, s.home, modsDir) {
+	if !own && !launch.LogOwnedBy(text, s.home, modsDir) {
 		return []launch.Entry{}, nil
 	}
 	var p launch.Parser

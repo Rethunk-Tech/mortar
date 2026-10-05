@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -321,6 +322,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if sess.haveExit {
 		launch.ApplyExit(&stats, sess.exit)
 	}
+	if !stats.Crashed && !(sess.haveExit && sess.exit.Stopped) && s.playerCrashed(g.ID(), profileID, started) {
+		stats.Crashed = true
+	}
 	text = launch.CapLog(text, launch.MaxLogBytes)
 	ended := time.Now()
 	if started.IsZero() {
@@ -478,8 +482,8 @@ func pathWithin(path, dir string) bool {
 }
 
 func (s *Service) runText(g game.Game, profileID, modsDir string) string {
-	if path, err := game.LogFile(g.ID()); err == nil {
-		if text, ok := readOwnedLog(path, s.home, modsDir); ok {
+	if path, own, err := s.logPath(g.ID(), profileID); err == nil {
+		if text, ok := readOwnedLog(path, own, s.home, modsDir); ok {
 			return text
 		}
 	}
@@ -492,7 +496,31 @@ func (s *Service) runText(g game.Game, profileID, modsDir string) string {
 	return ""
 }
 
-func readOwnedLog(path, home, modsDir string) (string, bool) {
+// logPath is the loader log of the profile's loader. own is true when the loader writes it inside the profile's folder,
+// where it can only be this profile's; a log in a shared place must say which mods folder it loaded.
+func (s *Service) logPath(gameID, profileID string) (path string, own bool, err error) {
+	l, ok := s.loaderOf(gameID, profileID)
+	logs, isLogs := l.(loader.WithLogs)
+	if !ok || !isLogs {
+		return "", false, fmt.Errorf("game %q has no loader log", gameID)
+	}
+	if s.profiles == nil || profileID == "" {
+		path, err = logs.Path(loader.ProfileView{Game: gameID})
+		return path, false, err
+	}
+	dir, err := s.profiles.ProfileDir(gameID, profileID)
+	if err != nil {
+		return "", false, err
+	}
+	path, err = logs.Path(loader.ProfileView{Game: gameID, Dir: dir})
+	if err != nil {
+		return "", false, err
+	}
+	rel, relErr := filepath.Rel(dir, path)
+	return path, relErr == nil && !strings.HasPrefix(rel, ".."), nil
+}
+
+func readOwnedLog(path string, own bool, home, modsDir string) (string, bool) {
 	f, err := fsx.Open(path)
 	if err != nil {
 		return "", false
@@ -519,7 +547,7 @@ func readOwnedLog(path, home, modsDir string) (string, bool) {
 	if len(head) > 0 {
 		text = strings.ToValidUTF8(string(head), "") + "\n" + launch.CapLog(text, launch.MaxLogBytes)
 	}
-	if !launch.LogOwnedBy(text, home, modsDir) && !launch.LogOwnedBy(strings.ToValidUTF8(string(head), ""), home, modsDir) {
+	if !own && !launch.LogOwnedBy(text, home, modsDir) && !launch.LogOwnedBy(strings.ToValidUTF8(string(head), ""), home, modsDir) {
 		return "", false
 	}
 	return text, true
