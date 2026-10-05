@@ -7,7 +7,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	githubsource "github.com/Rethunk-Tech/mortar/internal/source/github"
 	nexussource "github.com/Rethunk-Tech/mortar/internal/source/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
@@ -29,14 +28,12 @@ func (f fakeThunderstore) Search(context.Context, source.Query) (source.Page, er
 func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T) {
 	// The game's other sources answer nothing, so the test never reaches the network.
 	source.Register(fakeThunderstore{id: "nexus"})
-	source.Register(fakeThunderstore{id: "github"})
 	source.Register(fakeThunderstore{id: "thunderstore", items: []source.Item{
 		{ID: "Alice-Cool", Name: "Cool", Author: "Alice", Version: "2.0.0", Repo: "alice/cool", URL: "https://t/cool"},
 	}})
 	t.Cleanup(func() {
 		source.Register(thunderstore.Driver{})
 		source.Register(nexussource.Driver{})
-		source.Register(&githubsource.Driver{})
 	})
 	turns := 0
 	s := &Service{Throttle: func(context.Context, string) (func(), error) {
