@@ -89,7 +89,7 @@ func TestDeployRecoversALaunchNothingTookBack(t *testing.T) {
 	}
 	launch() // Mortar lost this one
 	launch().unwind(t.Context())
-	if b, _ := os.ReadFile(filepath.Join(install, "winhttp.dll")); string(b) != "the player's own" {
+	if b, _ := fsx.ReadFile(filepath.Join(install, "winhttp.dll")); string(b) != "the player's own" {
 		t.Fatalf("the player's file is now %q", b)
 	}
 }
