@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -85,17 +86,25 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		}
 	}
 	var placed []string
-	for rel, f := range files {
+	for rel := range files {
+		if !strings.HasPrefix(rel, "BepInEx/config/") {
+			placed = append(placed, rel)
+		}
+	}
+	slices.Sort(placed)
+	// The record goes first and names the old files too: a sync that stops part way still names every file it or an
+	// earlier sync may have put there, so the next one can take them away.
+	if err := writePlaced(dir, append(slices.Clone(prev), placed...)); err != nil {
+		return err
+	}
+	for _, rel := range slices.Sorted(maps.Keys(files)) {
 		dst := filepath.Join(dir, filepath.FromSlash(rel))
 		if strings.HasPrefix(rel, "BepInEx/config/") {
 			if _, err := os.Lstat(dst); err == nil {
 				continue
 			}
-		} else {
-			placed = append(placed, rel)
-			if placedCurrent(f.src, dst) {
-				continue
-			}
+		} else if placedCurrent(files[rel].src, dst) {
+			continue
 		}
 		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
 			return err
@@ -103,12 +112,16 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		if err := os.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
-		if err := datadir.CopyFile(f.src, dst); err != nil {
+		if err := datadir.CopyFile(files[rel].src, dst); err != nil {
 			return err
 		}
 	}
-	slices.Sort(placed)
-	b, err := json.Marshal(placed)
+	return writePlaced(dir, placed)
+}
+
+func writePlaced(dir string, rels []string) error {
+	slices.Sort(rels)
+	b, err := json.Marshal(slices.Compact(rels))
 	if err != nil {
 		return err
 	}
