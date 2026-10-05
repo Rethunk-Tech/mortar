@@ -29,6 +29,7 @@ import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
 import { ProfileCards } from './ProfileCards.tsx'
+import { formatPlaytime } from './playtime.ts'
 import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 import { storeName } from './storeName.ts'
 
@@ -121,6 +122,7 @@ function Row({
   lastPlayedName,
   lastPlayedAt,
   lastPlayedId,
+  playtimeMs,
   cards,
 }: {
   game: Game
@@ -130,6 +132,7 @@ function Row({
   lastPlayedName: string
   lastPlayedAt: string
   lastPlayedId: string
+  playtimeMs: number
   cards: { gameId: GameId; profiles: Profile[]; lastPlayed: Played | undefined } | undefined
 }) {
   const { t, i18n } = useLingui()
@@ -141,6 +144,11 @@ function Row({
     lastLine = t`last played ${lastPlayedName} · ${ago}`
   } else if (lastPlayedName) {
     lastLine = t`last played ${lastPlayedName}`
+  }
+  const playtime = formatPlaytime(playtimeMs, i18n.locale)
+  if (playtime) {
+    const total = t`${playtime} played`
+    lastLine = lastLine ? `${lastLine} · ${total}` : total
   }
   const open = () => {
     if (!isGameId(game.id)) {
@@ -274,6 +282,7 @@ interface GameState {
   lastPlayedId: string
   lastPlayedAt: string
   lastPlayed: Played | undefined
+  playtimeMs: number
   setupNeeded: boolean
 }
 
@@ -314,6 +323,7 @@ export function GameSelect() {
                   lastPlayedId: still && played ? played.profile : '',
                   lastPlayedAt: still && played ? played.at : '',
                   lastPlayed: still && played ? played : undefined,
+                  playtimeMs: played?.playtimeMs ?? 0,
                 },
               ]
             }),
@@ -378,6 +388,7 @@ export function GameSelect() {
               lastPlayedName={st?.profiles.find((p) => p.id === lastId)?.name ?? ''}
               lastPlayedAt={st?.lastPlayedAt ?? ''}
               lastPlayedId={st?.setupNeeded ? '' : lastId}
+              playtimeMs={st?.playtimeMs ?? 0}
               cards={
                 showCards && isGameId(g.id)
                   ? { gameId: g.id, profiles: st.profiles, lastPlayed: st.lastPlayed }

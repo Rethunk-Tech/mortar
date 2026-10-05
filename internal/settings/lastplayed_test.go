@@ -71,3 +71,30 @@ func TestRecordLastPlayed(t *testing.T) {
 		t.Fatal("empty version must keep the last recorded game version")
 	}
 }
+
+func TestAddPlaytimeSurvivesRelaunch(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	s, err := Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.AddPlaytime("stardew", time.Minute); err != nil {
+		t.Fatal(err)
+	}
+	if len(s.Get().LastPlayed) != 0 {
+		t.Fatal("playtime for a never-launched game must not create an entry")
+	}
+	at := time.Date(2026, 9, 30, 16, 0, 0, 0, time.UTC)
+	if _, err := s.RecordLastPlayed("stardew", "p1", at, ""); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.AddPlaytime("stardew", 90*time.Second); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.RecordLastPlayed("stardew", "p2", at, ""); err != nil {
+		t.Fatal(err)
+	}
+	if got := s.Get().LastPlayed["stardew"].PlaytimeMs; got != 90_000 {
+		t.Fatalf("PlaytimeMs = %d", got)
+	}
+}

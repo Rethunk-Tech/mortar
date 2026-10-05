@@ -27,6 +27,8 @@ type Played struct {
 	At      string `json:"at"`
 	// GameVersion is the Stardew version from the SMAPI log header of that launch.
 	GameVersion string `json:"gameVersion,omitempty"`
+	// PlaytimeMs totals the duration of every Mortar-started run of the game that exited cleanly.
+	PlaytimeMs int64 `json:"playtimeMs,omitempty"`
 }
 
 // The window backgrounds: the chosen wallpaper under the tint, the user's own desktop wallpaper under it, or an opaque colour.
@@ -477,6 +479,19 @@ func (s *Store) RecordLastPlayed(game, profile string, at time.Time, gameVersion
 		if ver == "" {
 			ver = prev.GameVersion
 		}
-		cur.LastPlayed[game] = Played{Profile: profile, At: at.UTC().Format(time.RFC3339), GameVersion: ver}
+		cur.LastPlayed[game] = Played{Profile: profile, At: at.UTC().Format(time.RFC3339), GameVersion: ver, PlaytimeMs: prev.PlaytimeMs}
+	})
+}
+
+// AddPlaytime adds a finished run's duration to the game's total. A game never launched has no entry to add to.
+func (s *Store) AddPlaytime(game string, d time.Duration) (Settings, error) {
+	if d <= 0 {
+		return s.Get(), nil
+	}
+	return s.Update(func(cur *Settings) {
+		if p, ok := cur.LastPlayed[game]; ok {
+			p.PlaytimeMs += d.Milliseconds()
+			cur.LastPlayed[game] = p
+		}
 	})
 }

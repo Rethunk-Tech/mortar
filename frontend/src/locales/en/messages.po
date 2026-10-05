@@ -1088,7 +1088,7 @@ msgstr "Scheduled"
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
 
-#: src/game/ExportCodeMenuItem.tsx:34
+#: src/game/ExportCodeMenuItem.tsx:41
 msgid "Could not publish the code"
 msgstr "Could not publish the code"
 
@@ -1337,7 +1337,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:393
+#: src/games/GameSelect.tsx:404
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -3046,7 +3046,7 @@ msgstr "Edit launch preset"
 msgid "Size"
 msgstr "Size"
 
-#: src/mods/ModDetail.tsx:263
+#: src/mods/ModDetail.tsx:272
 msgid "GitHub page"
 msgstr "GitHub page"
 
@@ -3194,7 +3194,7 @@ msgstr "Should Mortar open Nexus \"Mod Manager Download\" links, so a click on N
 msgid "Also enabled {0}"
 msgstr "Also enabled {0}"
 
-#: src/games/GameSelect.tsx:340
+#: src/games/GameSelect.tsx:350
 msgid "Coming in a later Mortar version"
 msgstr "Coming in a later Mortar version"
 
@@ -3351,7 +3351,7 @@ msgstr "Apply"
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
-#: src/games/GameSelect.tsx:396
+#: src/games/GameSelect.tsx:407
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
@@ -3371,7 +3371,7 @@ msgstr "Cover image"
 msgid "Where save backups are kept. Empty uses the default."
 msgstr "Where save backups are kept. Empty uses the default."
 
-#: src/game/ExportCodeMenuItem.tsx:48
+#: src/game/ExportCodeMenuItem.tsx:55
 msgid "Share as r2modman code?"
 msgstr "Share as r2modman code?"
 
@@ -5032,7 +5032,7 @@ msgstr "Trace"
 msgid "Revision {review} is out — Review"
 msgstr "Revision {review} is out — Review"
 
-#: src/games/GameSelect.tsx:343
+#: src/games/GameSelect.tsx:353
 msgid "Not set up · Open it to set it up"
 msgstr "Not set up · Open it to set it up"
 
@@ -5176,7 +5176,7 @@ msgstr "{found, plural, one {# mod update} other {# mod updates}}"
 
 #. placeholder {0}: game.name
 #. placeholder {0}: profile.name
-#: src/games/GameSelect.tsx:182
+#: src/games/GameSelect.tsx:190
 #: src/games/ProfileCards.tsx:134
 msgid "Open {0}"
 msgstr "Open {0}"
@@ -5206,7 +5206,7 @@ msgstr "No profiles yet"
 msgid "{0, plural, one {Removed # backup} other {Removed # backups}}, freed {1}"
 msgstr "{0, plural, one {Removed # backup} other {Removed # backups}}, freed {1}"
 
-#: src/games/GameSelect.tsx:164
+#: src/games/GameSelect.tsx:172
 #: src/games/ProfileCards.tsx:52
 #: src/profiles/store.ts:335
 msgid "Could not save the open profile"
@@ -5300,7 +5300,7 @@ msgstr "{summary} · {0}"
 msgid "Console command"
 msgstr "Console command"
 
-#: src/game/ExportCodeMenuItem.tsx:40
+#: src/game/ExportCodeMenuItem.tsx:47
 msgid "Share as r2modman code…"
 msgstr "Share as r2modman code…"
 
@@ -6641,6 +6641,10 @@ msgstr "Game"
 msgid "Minutes between background update checks"
 msgstr "Minutes between background update checks"
 
+#: src/games/GameSelect.tsx:150
+msgid "{playtime} played"
+msgstr "{playtime} played"
+
 #: src/settings/sections/AboutDiagnostics.tsx:183
 msgid "Could not run diagnostics"
 msgstr "Could not run diagnostics"
@@ -7143,7 +7147,7 @@ msgstr "Show mods of {0}"
 msgid "On Nexus"
 msgstr "On Nexus"
 
-#: src/game/ExportCodeMenuItem.tsx:28
+#: src/game/ExportCodeMenuItem.tsx:35
 msgid "Copy code"
 msgstr "Copy code"
 
@@ -7537,7 +7541,7 @@ msgstr "Mortar can start SMAPI directly instead. The Steam overlay and Steam's p
 msgid "No Mortar computers found nearby."
 msgstr "No Mortar computers found nearby."
 
-#: src/game/ExportCodeMenuItem.tsx:50
+#: src/game/ExportCodeMenuItem.tsx:57
 msgid "Upload"
 msgstr "Upload"
 
@@ -7558,7 +7562,7 @@ msgstr "Remove SMAPI from Steam's launch options"
 msgid "Check later"
 msgstr "Check later"
 
-#: src/games/GameSelect.tsx:143
+#: src/games/GameSelect.tsx:146
 msgid "last played {lastPlayedName}"
 msgstr "last played {lastPlayedName}"
 
@@ -7679,7 +7683,7 @@ msgstr "{0} was updated: mods to check"
 msgid "new"
 msgstr "new"
 
-#: src/game/ExportCodeMenuItem.tsx:26
+#: src/game/ExportCodeMenuItem.tsx:33
 msgid "Code published"
 msgstr "Code published"
 
@@ -7837,8 +7841,8 @@ msgid "Default for Share and Export. You can change it per share."
 msgstr "Default for Share and Export. You can change it per share."
 
 #: src/App.tsx:71
-#: src/games/GameSelect.tsx:155
-#: src/games/GameSelect.tsx:325
+#: src/games/GameSelect.tsx:163
+#: src/games/GameSelect.tsx:335
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
@@ -7969,7 +7973,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:43
 #: src/firstrun/GameSetup.tsx:129
 #: src/firstrun/SmapiStep.tsx:218
-#: src/games/GameSelect.tsx:335
+#: src/games/GameSelect.tsx:345
 #: src/profiles/GameSettings.tsx:99
 #: src/profiles/RecentChangesButton.tsx:128
 msgid "Loading…"
@@ -8822,7 +8826,7 @@ msgstr "Overrides"
 msgid "Import…"
 msgstr "Import…"
 
-#: src/games/GameSelect.tsx:175
+#: src/games/GameSelect.tsx:183
 msgid "{loader} | {store}"
 msgstr "{loader} | {store}"
 
@@ -8911,7 +8915,7 @@ msgstr "Sparkles"
 msgid "Quit"
 msgstr "Quit"
 
-#: src/games/GameSelect.tsx:177
+#: src/games/GameSelect.tsx:185
 msgid "{loader} · {lastLine}"
 msgstr "{loader} · {lastLine}"
 
@@ -9036,7 +9040,7 @@ msgid "Find the crash cause"
 msgstr "Find the crash cause"
 
 #: src/firstrunTour/TourPopover.tsx:64
-#: src/games/GameSelect.tsx:230
+#: src/games/GameSelect.tsx:238
 #: src/launch/PlayControl.tsx:162
 #: src/settings/GameSettingsPage.tsx:58
 #: src/settings/GameSettingsPage.tsx:80
@@ -9481,7 +9485,7 @@ msgid "Diagnostics saved"
 msgstr "Diagnostics saved"
 
 #. placeholder {0}: st.profiles.length
-#: src/games/GameSelect.tsx:345
+#: src/games/GameSelect.tsx:355
 msgid "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 msgstr "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 
@@ -9734,7 +9738,7 @@ msgstr "You can roll back the completed updates from the profile history."
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
-#: src/game/ExportCodeMenuItem.tsx:49
+#: src/game/ExportCodeMenuItem.tsx:56
 msgid "This uploads the profile to Thunderstore and gives a public code."
 msgstr "This uploads the profile to Thunderstore and gives a public code."
 
@@ -9809,7 +9813,7 @@ msgstr "{0} (optional)"
 msgid "From the downloads folder"
 msgstr "From the downloads folder"
 
-#: src/games/GameSelect.tsx:141
+#: src/games/GameSelect.tsx:144
 msgid "last played {lastPlayedName} · {ago}"
 msgstr "last played {lastPlayedName} · {ago}"
 
@@ -9996,7 +10000,7 @@ msgstr "Your last save needs other mods"
 msgid "Delete category"
 msgstr "Delete category"
 
-#: src/games/GameSelect.tsx:216
+#: src/games/GameSelect.tsx:224
 msgid "Play {lastPlayedName}"
 msgstr "Play {lastPlayedName}"
 
@@ -10297,7 +10301,7 @@ msgstr "{0, plural, one {# config file} other {# config files}}"
 msgid "Open Problems"
 msgstr "Open Problems"
 
-#: src/games/GameSelect.tsx:173
+#: src/games/GameSelect.tsx:181
 msgid "{loader} | {store} · {lastLine}"
 msgstr "{loader} | {store} · {lastLine}"
 
@@ -10540,7 +10544,7 @@ msgstr "Soft and warm"
 msgid "This is no longer the latest change."
 msgstr "This is no longer the latest change."
 
-#: src/mods/ModDetail.tsx:263
+#: src/mods/ModDetail.tsx:272
 msgid "Nexus page"
 msgstr "Nexus page"
 
@@ -10587,8 +10591,8 @@ msgstr "Skip this update"
 msgid "Command-line control"
 msgstr "Command-line control"
 
-#: src/games/GameSelect.tsx:150
-#: src/games/GameSelect.tsx:162
+#: src/games/GameSelect.tsx:158
+#: src/games/GameSelect.tsx:170
 #: src/games/ProfileCards.tsx:50
 #: src/games/ProfileCards.tsx:64
 msgid "Could not save the last game"
@@ -11170,7 +11174,7 @@ msgstr "Downloads finished"
 #: src/mods/AssetMapDialog.tsx:265
 #: src/mods/AuthorDialog.tsx:165
 #: src/mods/ConfigEditor.tsx:236
-#: src/mods/ModDetail.tsx:303
+#: src/mods/ModDetail.tsx:312
 #: src/mods/updateReview/ReviewFooter.tsx:61
 #: src/mods/updateReview/ReviewTitle.tsx:40
 #: src/profiles/CompareDialog.tsx:148
