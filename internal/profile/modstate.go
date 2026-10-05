@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 
@@ -141,11 +142,12 @@ func (s *Store) ResetConfig(game, id, key string, uniqueID mod.ID) error {
 	if err != nil {
 		return err
 	}
-	err = os.Remove(filepath.Join(folder, configFile))
-	if errors.Is(err, fs.ErrNotExist) {
+	if _, err := os.Stat(filepath.Join(folder, configFile)); errors.Is(err, fs.ErrNotExist) {
 		return nil
 	}
-	return err
+	return s.editConfigLocked(game, id, "Reset "+uniqueID.Local()+" settings", func() error {
+		return os.Remove(filepath.Join(folder, configFile))
+	})
 }
 
 // configInMod joins rel onto the mod folder and refuses anything that leaves it.
@@ -182,8 +184,12 @@ func (s *Store) ReadConfig(game, id, key string, uniqueID mod.ID) (string, error
 	return string(normalized), nil
 }
 
-// WriteConfig replaces the mod's config.json atomically after checking JSON and the path.
+// WriteConfig replaces the mod's config.json atomically after checking JSON and the path, and records a history event.
 func (s *Store) WriteConfig(game, id, key string, uniqueID mod.ID, contents string) error {
+	return s.writeConfig(game, id, key, uniqueID, contents, "Edited "+uniqueID.Local()+" settings")
+}
+
+func (s *Store) writeConfig(game, id, key string, uniqueID mod.ID, contents, label string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
@@ -201,5 +207,44 @@ func (s *Store) WriteConfig(game, id, key string, uniqueID mod.ID, contents stri
 	if err != nil {
 		return fmt.Errorf("config.json is not valid JSON: %w", err)
 	}
-	return datadir.WriteFile(path, rewritten, 0o600)
+	return s.editConfigLocked(game, id, label, func() error {
+		return datadir.WriteFile(path, rewritten, 0o600)
+	})
+}
+
+// editConfigLocked runs a config.json change between two history events: one capturing the file as it was, when the
+// newest event does not already, and one capturing the result, so the edit can be undone.
+func (s *Store) editConfigLocked(game, id, label string, edit func() error) error {
+	p, dir, err := s.readDir(game, id)
+	if err != nil {
+		return err
+	}
+	if err := s.captureBeforeEdit(dir, p); err != nil {
+		return err
+	}
+	if err := edit(); err != nil {
+		return err
+	}
+	s.historyKind, s.historyLabel = historyConfigEdit, label
+	_, err = s.updateLocked(game, id, func(*Profile, string) error { return nil })
+	return err
+}
+
+// captureBeforeEdit appends a "Before this change" event unless the newest event already holds every config as it is.
+func (s *Store) captureBeforeEdit(dir string, p Profile) error {
+	data, err := readHistory(dir)
+	if err != nil {
+		return err
+	}
+	if n := len(data.Events); n > 0 {
+		head := data.Events[n-1]
+		if snap, ok := snapshotEntries(&data, head.SnapshotID); ok && entriesEqual(snap, p.Entries) {
+			idx, _ := historyConfigIndex(dir, p.Entries)
+			if captured, err := readSnapshotIndex(dir, head.SnapshotID); err == nil && reflect.DeepEqual(idx, captured) {
+				return nil
+			}
+		}
+	}
+	_, err = appendHistory(dir, HistoryEvent{Kind: historyRestored, Label: "Before this change", Count: 1}, p.Entries, s.historyKeep())
+	return err
 }

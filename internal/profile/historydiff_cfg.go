@@ -20,11 +20,10 @@ const (
 	historySnapshotIndex = "index.json"
 )
 
-func captureHistoryConfigs(dir, snapshotID string, entries []Entry) {
-	if snapshotID == "" {
-		return
-	}
+// historyConfigIndex hashes each entry's live config files: key to file to sha256, with the bodies by hash.
+func historyConfigIndex(dir string, entries []Entry) (map[string]map[string]string, map[string][]byte) {
 	idx := map[string]map[string]string{}
+	bodies := map[string][]byte{}
 	mods := filepath.Join(dir, "mods")
 	for _, e := range entries {
 		files := configFilesIn(liveEntryDir(mods, e.Key))
@@ -35,29 +34,42 @@ func captureHistoryConfigs(dir, snapshotID string, entries []Entry) {
 		for rel, body := range files {
 			sum := sha256.Sum256(body)
 			hash := hex.EncodeToString(sum[:])
-			blob := filepath.Join(dir, historyFilesDir, historyBlobsDir, hash)
-			if _, err := os.Stat(blob); errors.Is(err, os.ErrNotExist) {
-				if err := os.MkdirAll(filepath.Dir(blob), 0o700); err != nil {
-					return
-				}
-				if err := datadir.WriteFile(blob, body, 0o600); err != nil {
-					return
-				}
-			} else if err != nil {
-				return
-			}
+			bodies[hash] = body
 			paths[rel] = hash
 		}
 		idx[e.Key] = paths
+	}
+	return idx, bodies
+}
+
+func storeHistoryConfigs(dir, snapshotID string, idx map[string]map[string]string, bodies map[string][]byte) {
+	if snapshotID == "" {
+		return
+	}
+	for hash, body := range bodies {
+		blob := filepath.Join(dir, historyFilesDir, historyBlobsDir, hash)
+		if _, err := os.Stat(blob); errors.Is(err, os.ErrNotExist) {
+			if err := os.MkdirAll(filepath.Dir(blob), 0o700); err != nil {
+				return
+			}
+			if err := datadir.WriteFile(blob, body, 0o600); err != nil {
+				return
+			}
+		} else if err != nil {
+			return
+		}
 	}
 	snapDir := filepath.Join(dir, historyFilesDir, snapshotID)
 	_ = fsx.RemoveAll(snapDir)
 	if err := os.MkdirAll(snapDir, 0o700); err != nil {
 		return
 	}
-	if err := datadir.WriteJSON(filepath.Join(snapDir, historySnapshotIndex), idx); err != nil {
-		return
-	}
+	_ = datadir.WriteJSON(filepath.Join(snapDir, historySnapshotIndex), idx)
+}
+
+func captureHistoryConfigs(dir, snapshotID string, entries []Entry) {
+	idx, bodies := historyConfigIndex(dir, entries)
+	storeHistoryConfigs(dir, snapshotID, idx, bodies)
 }
 
 func loadHistoryConfigs(dir, snapshotID string, entries []Entry) map[string]map[string][]byte {

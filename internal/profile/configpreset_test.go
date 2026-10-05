@@ -26,7 +26,7 @@ func TestApplyConfigPresetWritesAndRecordsHistory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(events) == 0 || events[0].Kind != historyConfigPreset {
+	if len(events) == 0 || events[0].Kind != historyConfigEdit {
 		t.Fatalf("history = %+v", events)
 	}
 }

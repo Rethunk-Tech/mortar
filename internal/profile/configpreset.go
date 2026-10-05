@@ -5,7 +5,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
-const historyConfigPreset = "config"
+const historyConfigEdit = "config"
 
 // ListConfigPresets names saved configs for a mod.
 func (s *Service) ListConfigPresets(game string, uniqueID mod.ID) ([]string, error) {
@@ -28,17 +28,5 @@ func (s *Service) ApplyConfigPreset(game, id, key string, uniqueID mod.ID, name 
 	if err != nil {
 		return err
 	}
-	if err := s.store.WriteConfig(game, id, key, uniqueID, string(body)); err != nil {
-		return err
-	}
-	return s.store.recordConfigPreset(game, id, "Applied preset "+name)
-}
-
-func (s *Store) recordConfigPreset(game, id, label string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.historyKind = historyConfigPreset
-	s.historyLabel = label
-	_, err := s.updateLocked(game, id, func(*Profile, string) error { return nil })
-	return err
+	return s.store.writeConfig(game, id, key, uniqueID, string(body), "Applied preset "+name)
 }

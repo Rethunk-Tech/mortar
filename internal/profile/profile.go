@@ -630,6 +630,7 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 		return Profile{}, err
 	}
 	before := cloneEntries(p.Entries)
+	stateBefore := stateOf(p)
 	if err := fn(&p, dir); err != nil {
 		s.historyKind, s.historyLabel = "", ""
 		return Profile{}, err
@@ -650,7 +651,7 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 				log.Printf("profile %s/%s: record history: %v", game, id, err)
 			}
 			s.historyBatches[key] = batch
-		} else if err := recordHistory(dir, before, p.Entries, kind, label, s.historyKeep()); err != nil {
+		} else if err := recordHistory(dir, before, p.Entries, stateChange(stateBefore, stateOf(p)), kind, label, s.historyKeep()); err != nil {
 			log.Printf("profile %s/%s: record history: %v", game, id, err)
 		}
 	}

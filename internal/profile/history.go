@@ -52,6 +52,8 @@ type HistoryEvent struct {
 	From       string    `json:"from,omitempty"`
 	To         string    `json:"to,omitempty"`
 	SnapshotID string    `json:"snapshotId"`
+	// State is the profile's settings after this event; nil on an event recorded before settings were history.
+	State *ProfileState `json:"state,omitempty"`
 }
 
 type historyFileData struct {
@@ -223,8 +225,25 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 	}
 	label := "Reverted to " + target.At.UTC().Format(time.RFC3339)
 	snap = cloneEntries(snap)
+	headID := data.Events[len(data.Events)-1].SnapshotID
+	// Config files are rolled back only to undo Mortar's own config edits; a revert across other changes leaves the
+	// configs as they are, since people and the game edit them between events.
+	configsToo := true
+	for i := len(data.Events) - 1; i >= 0 && data.Events[i].ID != eventID; i-- {
+		configsToo = configsToo && data.Events[i].Kind == historyConfigEdit
+	}
+	state := target.State
 	return s.updateLockedAs(game, id, historyReverted, label, func(p *Profile, profDir string) error {
-		return s.applyEntrySnapshot(game, p, profDir, snap)
+		if err := s.applyEntrySnapshot(game, p, profDir, snap); err != nil {
+			return err
+		}
+		if state != nil {
+			state.applyTo(p)
+		}
+		if configsToo {
+			restoreConfigsTo(profDir, p.Entries, target.SnapshotID, headID)
+		}
+		return nil
 	})
 }
 
@@ -892,10 +911,13 @@ func entriesEqual(a, b []Entry) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func recordHistory(dir string, before, after []Entry, kind, label string, keep int) error {
+func recordHistory(dir string, before, after []Entry, stateLabel, kind, label string, keep int) error {
 	if entriesEqual(before, after) {
-		if kind == "" {
+		if kind == "" && stateLabel == "" {
 			return nil
+		}
+		if kind == "" {
+			kind, label = historySettings, stateLabel
 		}
 		ev := HistoryEvent{Kind: kind, Label: label, Count: 1}
 		_, err := appendHistory(dir, ev, after, keep)
@@ -915,10 +937,26 @@ func recordHistory(dir string, before, after []Entry, kind, label string, keep i
 func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (HistoryEvent, error) {
 	ev.At = time.Now().UTC().Truncate(time.Second)
 	ev.ID = ids.New()
+	if ev.State == nil {
+		if p, err := readAt(dir, ""); err == nil {
+			st := stateOf(p)
+			ev.State = &st
+		}
+	}
 	entries := cloneEntries(after)
 	snapshotID, err := entriesSnapshotID(entries)
 	if err != nil {
 		return HistoryEvent{}, err
+	}
+	// Two events with the same entries but different config files must not share one capture.
+	cfgIdx, cfgBodies := historyConfigIndex(dir, entries)
+	if len(cfgIdx) > 0 {
+		raw, err := json.Marshal(cfgIdx)
+		if err != nil {
+			return HistoryEvent{}, err
+		}
+		sum := sha256.Sum256([]byte(snapshotID + "|" + string(raw)))
+		snapshotID = hex.EncodeToString(sum[:])
 	}
 	ev.SnapshotID = snapshotID
 	data, err := readHistory(dir)
@@ -938,7 +976,7 @@ func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (Histor
 	data.Events = append(data.Events, ev)
 	countEvent(&data, len(data.Events)-1, entries)
 	ev = data.Events[len(data.Events)-1]
-	captureHistoryConfigs(dir, snapshotID, after)
+	storeHistoryConfigs(dir, snapshotID, cfgIdx, cfgBodies)
 	if err := writeHistory(dir, data, keep); err != nil {
 		return HistoryEvent{}, err
 	}
