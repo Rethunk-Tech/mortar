@@ -132,7 +132,7 @@ func findHidden(root string, e Entry, folder string) (HiddenMod, error) {
 }
 
 // UnhideMod strips the leading dots from every folder on the path to the hidden mod. It refuses when the mod's
-// UniqueID is already loaded elsewhere in the profile or a folder with the undotted name exists.
+// mod id is already loaded elsewhere in the profile or a folder with the undotted name exists.
 func (s *Store) UnhideMod(game, id, key, folder string) (Profile, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

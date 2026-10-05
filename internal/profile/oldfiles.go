@@ -20,7 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
-// oldFilesDir holds, per entry key and UniqueID, the files an update set aside because the new version no longer
+// oldFilesDir holds, per entry key and mod id, the files an update set aside because the new version no longer
 // ships them and oldFilesOnUpdate is ask.
 const oldFilesDir = "old-files"
 

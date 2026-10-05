@@ -165,7 +165,7 @@ func (id everywhereID) match(p Profile) int {
 }
 
 // UpdateEverywhere replaces the matching entry in every eligible profile with newStoreKey
-// (empty or "latest" means the newest store item that shares UniqueID / Nexus identity).
+// (empty or "latest" means the newest store item that shares mod id / Nexus identity).
 // The store item is used once; each profile records its own history (and so its own Undo).
 func (s *Store) UpdateEverywhere(game, modKeyOrID, newStoreKey string) (EverywhereResult, error) {
 	preview, err := s.PreviewEverywhere(game, modKeyOrID)

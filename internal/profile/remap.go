@@ -127,7 +127,7 @@ func hasRawXNB(root string) (bool, error) {
 }
 
 // variants returns one folder per copy of each mod the archive holds more than once, since SMAPI refuses to load a
-// UniqueID twice. Each folder is widened to its highest ancestor that still holds a single copy, so a variant that
+// mod id twice. Each folder is widened to its highest ancestor that still holds a single copy, so a variant that
 // bundles several mods ("Option A/[CP] Mod", "Option A/[JA] Mod") is picked whole.
 func variants(found []manifest.Mod) []RemapVariant {
 	byID := map[string][]manifest.Mod{}

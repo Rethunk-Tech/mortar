@@ -508,8 +508,8 @@ func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error
 				if m.Key != want.Key {
 					continue
 				}
-				for _, mod := range m.Mods {
-					if err := applyEnabled(p, dir, want.Key, mod.ID, !hasID(want.Disabled, mod.ID)); err != nil {
+				for _, im := range m.Mods {
+					if err := applyEnabled(p, dir, want.Key, im.ID, !hasID(want.Disabled, im.ID)); err != nil {
 						return err
 					}
 				}
@@ -566,7 +566,7 @@ func applyEnabled(p *Profile, dir, key string, uniqueID mod.ID, enabled bool) er
 }
 
 // SetModEnabled switches a mod on or off by renaming its folder with or without a leading dot. key names the
-// entry holding it, which tells apart two copies of one UniqueID; an empty key means the first entry that has it.
+// entry holding it, which tells apart two copies of one mod id; an empty key means the first entry that has it.
 func (s *Store) SetModEnabled(game, id, key string, uniqueID mod.ID, enabled bool) (Profile, error) {
 	p, _, err := s.enableMod(game, id, key, uniqueID, enabled)
 	return p, err
@@ -874,7 +874,7 @@ func (s *Store) tidied(what, profileName, folder string) {
 }
 
 // ModFolder returns the mod's folder inside the profile, under whichever name (plain or dot-prefixed) it has now.
-// key names the entry holding it, which tells apart two copies of one UniqueID; an empty key means the first entry that has it.
+// key names the entry holding it, which tells apart two copies of one mod id; an empty key means the first entry that has it.
 func (s *Store) ModFolder(game, id, key string, uniqueID mod.ID) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

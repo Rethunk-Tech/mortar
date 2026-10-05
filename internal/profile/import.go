@@ -167,8 +167,8 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 		mods = found
 	}
 	allBundled := true
-	for _, mod := range mods {
-		if !manifest.LoaderManaged(mod.ModID()) {
+	for _, im := range mods {
+		if !manifest.LoaderManaged(im.ModID()) {
 			allBundled = false
 			break
 		}
@@ -442,12 +442,12 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) error {
 	enabled := make(map[string]bool, len(mods))
 	paths := make(map[string]bool, len(mods))
-	for _, mod := range mods {
-		if mod.SourcePath == "" {
+	for _, im := range mods {
+		if im.SourcePath == "" {
 			continue
 		}
-		paths[filepath.Clean(mod.SourcePath)] = true
-		enabled[mod.ID.Fold()] = mod.Enabled
+		paths[filepath.Clean(im.SourcePath)] = true
+		enabled[im.ID.Fold()] = im.Enabled
 	}
 	var slots []gameModSlot
 	for path := range paths {
@@ -466,9 +466,9 @@ func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) error {
 		if err != nil {
 			return err
 		}
-		for _, mod := range slot.folder.mods {
-			if want, ok := enabled[mod.ModID().Fold()]; ok {
-				if _, err := s.SetModEnabled(game, id, key, mod.ModID(), want); err != nil {
+		for _, im := range slot.folder.mods {
+			if want, ok := enabled[im.ModID().Fold()]; ok {
+				if _, err := s.SetModEnabled(game, id, key, im.ModID(), want); err != nil {
 					return err
 				}
 			}

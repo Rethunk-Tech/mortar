@@ -19,7 +19,7 @@ type DiffSide struct {
 	Source  Source `json:"source"`
 }
 
-// DiffPair is the same UniqueID in both profiles with a different version or enabled state.
+// DiffPair is the same mod id in both profiles with a different version or enabled state.
 type DiffPair struct {
 	ID   mod.ID   `json:"id"`
 	Name string   `json:"name"`
@@ -27,7 +27,7 @@ type DiffPair struct {
 	B    DiffSide `json:"b"`
 }
 
-// Diff is the user-mod comparison of two profiles of the same game, matched by UniqueID.
+// Diff is the user-mod comparison of two profiles of the same game, matched by mod id.
 type Diff struct {
 	OnlyA   []DiffSide `json:"onlyA"`
 	OnlyB   []DiffSide `json:"onlyB"`
@@ -54,7 +54,7 @@ func indexUserMods(p Profile) map[string]DiffSide {
 	return out
 }
 
-// compareNameThenID orders mods by name, then UniqueID, ignoring case.
+// compareNameThenID orders mods by name, then mod id, ignoring case.
 func compareNameThenID(aName string, aID mod.ID, bName string, bID mod.ID) int {
 	return cmp.Or(
 		strings.Compare(strings.ToLower(aName), strings.ToLower(bName)),

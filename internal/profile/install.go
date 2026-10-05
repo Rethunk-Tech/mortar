@@ -78,7 +78,7 @@ func (s *Store) InstallNexus(game, id, path string, source Source) (InstallResul
 }
 
 // StageGitHub unpacks the archive at path into the store under the key of its GitHub asset and returns the key with
-// the UniqueIDs of the mods it holds, so the source can be checked before anything lands in a profile.
+// the mod ids of the mods it holds, so the source can be checked before anything lands in a profile.
 func (s *Store) StageGitHub(game string, source Source, path string) (key string, uniqueIDs []mod.ID, err error) {
 	owner, repo, _ := strings.Cut(source.Repo, "/")
 	key = github.Key(owner, repo, source.Tag, source.Asset)

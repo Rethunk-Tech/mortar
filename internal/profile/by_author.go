@@ -56,14 +56,14 @@ func (s *Store) ModsByAuthor(game, author string) ([]AuthorMod, error) {
 		}
 	}
 	out := make([]AuthorMod, 0, len(byID))
-	for _, mod := range byID {
-		slices.SortFunc(mod.Profiles, func(a, b ModInProfile) int {
+	for _, im := range byID {
+		slices.SortFunc(im.Profiles, func(a, b ModInProfile) int {
 			if n := strings.Compare(strings.ToLower(a.ProfileName), strings.ToLower(b.ProfileName)); n != 0 {
 				return n
 			}
 			return strings.Compare(a.ID.Fold(), b.ID.Fold())
 		})
-		out = append(out, *mod)
+		out = append(out, *im)
 	}
 	slices.SortFunc(out, func(a, b AuthorMod) int {
 		return compareNameThenID(a.Name, a.ID, b.Name, b.ID)

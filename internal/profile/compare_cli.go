@@ -13,7 +13,7 @@ type CLICompare struct {
 	Identical        []DiffPair `json:"identical"`
 }
 
-// CompareProfilesCLI compares user mods by case-insensitive UniqueID.
+// CompareProfilesCLI compares user mods by case-insensitive mod id.
 func CompareProfilesCLI(a, b Profile) CLICompare {
 	left, right := indexUserMods(a), indexUserMods(b)
 	out := CLICompare{

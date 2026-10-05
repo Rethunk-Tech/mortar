@@ -2,7 +2,7 @@ package profile
 
 import "github.com/Rethunk-Tech/mortar/internal/mod"
 
-// ModInProfile is one profile that holds a UniqueID, as read from profile.json.
+// ModInProfile is one profile that holds a mod id, as read from profile.json.
 type ModInProfile struct {
 	ProfileID   string `json:"profileId"`
 	ProfileName string `json:"profileName"`

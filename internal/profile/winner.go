@@ -12,16 +12,15 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-// SetWinner records or clears a LoadAfter on winnerKey for loserUniqueID and rewrites the winner's
+// SetWinner records or clears a LoadAfter on winnerKey for loser and rewrites the winner's
 // installed manifest so SMAPI loads the winner later.
-func (s *Store) SetWinner(game, profileID, winnerKey string, loserUniqueID mod.ID, on bool) (Profile, error) {
-	loserUniqueID = loserUniqueID
-	if loserUniqueID == "" {
+func (s *Store) SetWinner(game, profileID, winnerKey string, loser mod.ID, on bool) (Profile, error) {
+	if loser == "" {
 		return Profile{}, fmt.Errorf("loser unique ID is empty")
 	}
 	var drop []mod.ID
 	if !on {
-		drop = []mod.ID{loserUniqueID}
+		drop = []mod.ID{loser}
 	}
 	return s.updateMods(game, profileID, func(p *Profile, dir string) error {
 		i := entryIndex(p.Entries, winnerKey)
@@ -29,15 +28,15 @@ func (s *Store) SetWinner(game, profileID, winnerKey string, loserUniqueID mod.I
 			return fmt.Errorf("mod %q is not in this profile", winnerKey)
 		}
 		e := p.Entries[i]
-		e.LoadAfter = setLoadAfter(e.LoadAfter, loserUniqueID, on)
+		e.LoadAfter = setLoadAfter(e.LoadAfter, loser, on)
 		p.Entries[i] = e
 		return applyLoadAfter(filepath.Join(dir, "mods", e.Key), e, drop)
 	})
 }
 
-// SetWinner records or clears a LoadAfter on winnerKey for loserUniqueID.
-func (s *Service) SetWinner(game, profileID, winnerKey string, loserUniqueID mod.ID, on bool) (Profile, error) {
-	return s.store.SetWinner(game, profileID, winnerKey, loserUniqueID, on)
+// SetWinner records or clears a LoadAfter on winnerKey for loser.
+func (s *Service) SetWinner(game, profileID, winnerKey string, loser mod.ID, on bool) (Profile, error) {
+	return s.store.SetWinner(game, profileID, winnerKey, loser, on)
 }
 
 func entryIndex(entries []Entry, key string) int {
@@ -102,7 +101,7 @@ func rewriteManifestDeps(raw []byte, want, drop []mod.ID) ([]byte, error) {
 		return nil, err
 	}
 	type dep struct {
-		UniqueID       string `json:"UniqueID"`
+		ID             string `json:"mod id"`
 		IsRequired     *bool  `json:"IsRequired,omitempty"`
 		MinimumVersion string `json:"MinimumVersion,omitempty"`
 	}
@@ -114,7 +113,7 @@ func rewriteManifestDeps(raw []byte, want, drop []mod.ID) ([]byte, error) {
 	kept := make([]dep, 0, len(deps)+len(want))
 	seen := map[string]bool{}
 	for _, d := range deps {
-		low := mod.SMAPI(d.UniqueID).Fold()
+		low := mod.SMAPI(d.ID).Fold()
 		required := d.IsRequired == nil || *d.IsRequired
 		if !required && dropSet[low] && !wantSet[low] {
 			continue
@@ -127,7 +126,7 @@ func rewriteManifestDeps(raw []byte, want, drop []mod.ID) ([]byte, error) {
 		if seen[id.Fold()] {
 			continue
 		}
-		kept = append(kept, dep{UniqueID: id.Local(), IsRequired: &off})
+		kept = append(kept, dep{ID: id.Local(), IsRequired: &off})
 		seen[id.Fold()] = true
 	}
 	if len(kept) == 0 {
