@@ -326,7 +326,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	// frozen game is how a player gets out of a crash, but the stop itself is never one.
 	stopped := sess.haveExit && sess.exit.Stopped
 	if stopped {
-		stats.Crashed = crashedBefore(text, sess.stoppedAt)
+		stats.Crashed = crashedBefore(text, s.logEnd(g, profileID), sess.stoppedAt)
 	} else if !stats.Crashed && s.playerCrashed(g.ID(), profileID, started) {
 		stats.Crashed = true
 	}
@@ -561,14 +561,68 @@ func readOwnedLog(path string, own bool, home, modsDir string) (string, bool) {
 	return text, true
 }
 
-// crashedBefore reports a crash line in text logged no later than at, or any crash line when at is unknown.
-// ponytail: log lines carry only a time of day, so a run stopped across midnight compares wrongly; dated lines would fix it.
-func crashedBefore(text string, at time.Time) bool {
-	stop := at.Local().Format("15:04:05")
-	for _, e := range launch.ParseLog(text) {
-		if !e.Cont && launch.IsCrash(e) && (at.IsZero() || e.Time <= stop) {
+// crashedBefore reports a crash line in text logged no later than at, or any crash line when at is unknown. Log lines
+// carry only a time of day; logEnd, when the log was last written, dates them when the log has no start header.
+func crashedBefore(text string, logEnd, at time.Time) bool {
+	entries := launch.ParseLog(text)
+	when := entryTimes(entries, text, logEnd)
+	for i, e := range entries {
+		if !e.Cont && launch.IsCrash(e) && (at.IsZero() || !when[i].After(at)) {
 			return true
 		}
 	}
 	return false
+}
+
+var logStartedRe = regexp.MustCompile(`Log started at (\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d) UTC`)
+
+// entryTimes dates each timed entry: SMAPI's "Log started at" header dates the first line, else logEnd dates the
+// last, and a clock that goes back between two lines is a midnight passed.
+func entryTimes(entries []launch.Entry, text string, logEnd time.Time) []time.Time {
+	out := make([]time.Time, len(entries))
+	at := func(day time.Time, clock string) time.Time {
+		c, err := time.Parse(time.TimeOnly, clock)
+		if err != nil {
+			return time.Time{}
+		}
+		y, m, d := day.Date()
+		return time.Date(y, m, d, c.Hour(), c.Minute(), c.Second(), 0, time.Local)
+	}
+	if m := logStartedRe.FindStringSubmatch(text); m != nil {
+		if start, err := time.Parse("2006-01-02T15:04:05", m[1]); err == nil {
+			day, prev := start.Local(), ""
+			for i, e := range entries {
+				if e.Time == "" {
+					continue
+				}
+				if e.Time < prev {
+					day = day.AddDate(0, 0, 1)
+				}
+				out[i], prev = at(day, e.Time), e.Time
+			}
+			return out
+		}
+	}
+	day, next := logEnd.Local(), ""
+	for i := len(entries) - 1; i >= 0; i-- {
+		e := entries[i]
+		if e.Time == "" {
+			continue
+		}
+		if next != "" && e.Time > next {
+			day = day.AddDate(0, 0, -1)
+		}
+		out[i], next = at(day, e.Time), e.Time
+	}
+	return out
+}
+
+// logEnd is when the profile's loader log was last written, or now when it cannot be read.
+func (s *Service) logEnd(g game.Game, profileID string) time.Time {
+	if path, _, err := s.logPath(g.ID(), profileID); err == nil {
+		if st, err := os.Stat(path); err == nil {
+			return st.ModTime()
+		}
+	}
+	return time.Now()
 }

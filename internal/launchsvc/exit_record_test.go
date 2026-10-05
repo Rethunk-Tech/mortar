@@ -55,7 +55,7 @@ func TestRecordUserStopIsACrashOnlyWhenTheLogCrashedFirst(t *testing.T) {
 				t.Fatal(err)
 			}
 			writeOwnedLog(t, cfg, home, mods, "[19:43:51 ALERT SMAPI] The game crashed: boom\n")
-			stopAt, err := time.ParseInLocation("15:04:05", tc.stopAt, time.Local)
+			stopAt, err := time.ParseInLocation(time.DateTime, time.Now().Format(time.DateOnly)+" "+tc.stopAt, time.Local)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -67,6 +67,43 @@ func TestRecordUserStopIsACrashOnlyWhenTheLogCrashedFirst(t *testing.T) {
 			runs, err := svc.Runs("stardew", p.ID)
 			if err != nil || len(runs) != 1 || runs[0].Outcome != tc.outcome {
 				t.Fatalf("stop = %#v, %v", runs, err)
+			}
+		})
+	}
+}
+
+func TestCrashedBeforeAcrossMidnight(t *testing.T) {
+	local := func(v string) time.Time {
+		at, err := time.ParseInLocation(time.DateTime, v, time.Local)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return at
+	}
+	// The session starts at 23:50 on the 4th, crashes at 00:05 on the 5th, and is stopped at 23:55 on the 4th or
+	// 00:10 on the 5th; by time of day alone the crash would read as before either stop.
+	lines := "[23:50:00 INFO  SMAPI] SMAPI 4.1.10 with Stardew Valley 1.6.15\n" +
+		"[00:05:00 ALERT SMAPI] The game crashed: boom\n"
+	start := local("2026-10-04 23:50:00").UTC().Format("2006-01-02T15:04:05")
+	header := "[23:50:00 TRACE SMAPI] Log started at " + start + " UTC\n" + lines
+	logEnd := local("2026-10-05 00:05:00")
+	for _, tc := range []struct {
+		name, text, stop string
+		crashed          bool
+	}{
+		{"header, stop after the crash", header, "2026-10-05 00:10:00", true},
+		{"header, stop before midnight", header, "2026-10-04 23:55:00", false},
+		{"file time, stop after the crash", lines, "2026-10-05 00:10:00", true},
+		{"file time, stop before midnight", lines, "2026-10-04 23:55:00", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			// A wrong log end shows that the header, when present, is what dates the lines.
+			end := logEnd
+			if tc.text == header {
+				end = logEnd.AddDate(0, 0, 3)
+			}
+			if got := crashedBefore(tc.text, end, local(tc.stop)); got != tc.crashed {
+				t.Fatalf("crashedBefore = %v, want %v", got, tc.crashed)
 			}
 		})
 	}
