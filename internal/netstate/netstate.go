@@ -35,6 +35,9 @@ type State struct {
 	LastFail time.Time `json:"lastFail"`
 }
 
+// OnChange is called, when set, after a source flips between reachable and unreachable, so the window need not poll.
+var OnChange func()
+
 var (
 	mu     sync.Mutex
 	states = map[string]State{}
@@ -59,8 +62,8 @@ func Record(id string, err error) {
 		return
 	}
 	mu.Lock()
-	defer mu.Unlock()
 	st := states[id]
+	was, seen := st.Unreachable, st.ID != ""
 	st.ID = id
 	if err == nil {
 		st.Unreachable, st.LastOK = false, time.Now()
@@ -68,6 +71,10 @@ func Record(id string, err error) {
 		st.Unreachable, st.LastFail = true, time.Now()
 	}
 	states[id] = st
+	mu.Unlock()
+	if OnChange != nil && (st.Unreachable != was || !seen) {
+		OnChange()
+	}
 }
 
 // Service is the window's reachability API.

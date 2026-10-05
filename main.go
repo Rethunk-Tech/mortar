@@ -401,6 +401,7 @@ func run() error {
 		return err
 	}
 	emit := func(name string, data any) { app.Event.Emit(name, data) }
+	netstate.OnChange = func() { app.Event.Emit("netstate:changed", nil) }
 	plays.Emit = emit
 	queueSvc, err := queue.New(queue.Deps{
 		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },

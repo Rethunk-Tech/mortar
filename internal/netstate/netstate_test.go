@@ -43,3 +43,18 @@ func TestRecheckProbesOnlyUnreachableSources(t *testing.T) {
 		t.Fatalf("an HTTP answer, even 403, should clear the failure: hits=%d %+v", hits, got)
 	}
 }
+
+func TestOnChangeFiresOnlyWhenReachabilityFlips(t *testing.T) {
+	states = map[string]State{}
+	var calls int
+	OnChange = func() { calls++ }
+	defer func() { OnChange = nil }()
+	Record("nexus", nil)
+	Record("nexus", nil)
+	Record("nexus", context.DeadlineExceeded)
+	Record("nexus", context.DeadlineExceeded)
+	Record("nexus", nil)
+	if calls != 3 {
+		t.Fatalf("OnChange called %d times, want 3 (first sight, down, up)", calls)
+	}
+}
