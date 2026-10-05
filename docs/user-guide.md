@@ -1,6 +1,6 @@
 # Mortar user guide
 
-Mortar manages mods for PC games; Stardew Valley is the game it supports today. It finds the game, installs its mod loader (SMAPI for Stardew Valley), keeps each set of mods in its own profile and starts the game with the profile you pick. This guide is for players. For how Mortar works inside, see [architecture.md](architecture.md).
+Mortar manages mods for PC games: Stardew Valley and Lethal Company. It finds the game, installs its mod loader (SMAPI for Stardew Valley, BepInEx for Lethal Company), keeps each set of mods in its own profile and starts the game with the profile you pick. This guide is for players. For how Mortar works inside, see [architecture.md](architecture.md).
 
 ## Install
 
@@ -87,6 +87,27 @@ The **Browse** tab searches every site the game's mods come from at once: for St
 - **Nexus Mods:** Premium accounts download straight into the profile. Free accounts open the mod's files page and use **Mod Manager Download**, which the browser extension or the nxm link hands to Mortar.
 - **GitHub:** **Add** puts the latest release in the profile. Mortar uses your GitHub CLI login (`gh auth login`) when it is present, which raises GitHub's rate limits; without it, it works anonymously.
 - Mods already in the profile show **In this profile**.
+
+## Lethal Company and Thunderstore
+
+Lethal Company mods are Thunderstore packages that run on BepInEx. Mortar installs BepInEx, searches Thunderstore, and keeps each package in the profile, the way it does for Stardew Valley's mods.
+
+- **Browse:** the Browse tab searches Thunderstore's Lethal Company community along with Nexus Mods and GitHub. **Add** puts the package in the profile and installs the packages it depends on; a dependency the profile lacks is flagged on the Load order tab and in the **Before you play** list.
+- **Thunderstore links:** the **Install with Mod Manager** button on thunderstore.io opens a `ror2mm://` link. Mortar does not take these links over from another manager until you ask: run `mortar links enable --source thunderstore` (and `mortar links disable --source thunderstore` to hand them back). A package link names no game, so it installs into the open game when that game has a Thunderstore community.
+- **Play:** BepInEx reads only the game's own folder, so for each launch Mortar places the profile's BepInEx files beside the game and takes them back when the game exits. Nothing of the profile stays in the game folder, and a crash is finished off at the next start.
+- **Settings the game writes:** BepInEx plugin settings (`BepInEx/config`) that change while you play go back into the profile, so the next launch and a shared profile keep them. Any other new file the game writes lands in the profile's `overwrite` folder in Mortar's data folder, where it stays out of the way of the mods but is not lost.
+- **Log:** the profile's BepInEx log is `BepInEx/LogOutput.log` in the profile folder; diagnostics include its last lines.
+
+## Pair your computers
+
+Pairing makes two of your own computers trust each other, so a profile sent between them carries its mod files from every source (Nexus, GitHub and Thunderstore) instead of being downloaded again. It needs no account. A computer you have not paired still receives the profile and downloads each mod from its source.
+
+1. On both computers turn on **Share profiles on the local network** in **Settings › General › Sharing**.
+2. On the first computer choose **Pair a computer**. It shows a code like `ABCD-EFGH`; the code works once and for five minutes.
+3. On the second choose **Enter code**, pick the first computer from the nearby list (or type its `host:port` when none is listed) and type the code. Five wrong codes lock the entry from that computer for ten minutes.
+4. Both computers now list each other under **Paired computers**; **Unpair** forgets one. From the command line, `mortar lan pair` shows a code and `mortar lan pair --code <code>` enters one.
+
+To send, use **Share profile** then **Send to…** and pick the computer. The receiver is asked to accept; **Auto-accept from paired computers** in the same settings skips the question.
 
 ## Game installs
 
