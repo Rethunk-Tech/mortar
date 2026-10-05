@@ -66,7 +66,9 @@ func hasID(ids []mod.ID, id mod.ID) bool {
 
 func writeProfile(dir string, p Profile) error {
 	p.FormatVersion = datadir.FormatVersion
-	return datadir.WriteVersioned(filepath.Join(dir, fileName), p)
+	path := filepath.Join(dir, fileName)
+	forgetProfile(path)
+	return datadir.WriteVersioned(path, p)
 }
 
 // ModPaths returns a mod folder's enabled and disabled paths under modsDir. folder comes from profile.json, so it must stay inside.

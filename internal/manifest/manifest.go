@@ -8,8 +8,10 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
@@ -48,9 +50,44 @@ type Dependency struct {
 	Required       bool
 }
 
+// parsed holds manifests already parsed, by their exact bytes, so the same file read again (a start reads each
+// installed manifest several times) is not parsed again. It is emptied when full rather than tracking age.
+var parsed struct {
+	sync.Mutex
+	m map[string]Manifest
+}
+
+const maxParsed = 8192
+
 // Parse reads a manifest tolerating a UTF-8 BOM, // and /* */ comments, trailing commas and any key casing.
 // A manifest without a UniqueID is an error, since nothing can refer to that mod.
 func Parse(b []byte) (Manifest, error) {
+	parsed.Lock()
+	m, ok := parsed.m[string(b)]
+	parsed.Unlock()
+	if ok {
+		return m.clone(), nil
+	}
+	m, err := parse(b)
+	if err != nil {
+		return Manifest{}, err
+	}
+	parsed.Lock()
+	if parsed.m == nil || len(parsed.m) >= maxParsed {
+		parsed.m = map[string]Manifest{}
+	}
+	parsed.m[string(b)] = m.clone()
+	parsed.Unlock()
+	return m, nil
+}
+
+func (m Manifest) clone() Manifest {
+	m.UpdateKeys = slices.Clone(m.UpdateKeys)
+	m.Dependencies = slices.Clone(m.Dependencies)
+	return m
+}
+
+func parse(b []byte) (Manifest, error) {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(jsonc.Clean(b), &raw); err != nil {
 		return Manifest{}, fmt.Errorf("invalid manifest: %w", err)

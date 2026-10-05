@@ -493,7 +493,14 @@ func (s *Store) readDir(game, id string) (Profile, string, error) {
 }
 
 func readAt(dir, id string) (Profile, error) {
-	b, err := fsx.ReadFile(filepath.Join(dir, fileName))
+	path := filepath.Join(dir, fileName)
+	fi, statErr := fsx.Stat(path)
+	if statErr == nil {
+		if p, ok := cachedProfile(path, fi); ok {
+			return p, nil
+		}
+	}
+	b, err := fsx.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return Profile{}, usererr.Wrap(usererr.NotFound, err)
@@ -516,6 +523,9 @@ func readAt(dir, id string) (Profile, error) {
 		}
 	}
 	sanitizeAppearance(&p)
+	if statErr == nil {
+		rememberProfile(path, fi, p)
+	}
 	return p, nil
 }
 

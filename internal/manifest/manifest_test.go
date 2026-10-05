@@ -142,3 +142,20 @@ func TestModIDIsSMAPIScoped(t *testing.T) {
 		t.Error("LoaderManaged must match SMAPI's bundled mods by folded id")
 	}
 }
+
+// A manifest parsed again comes from the cache; a caller changing its copy does not change the next one.
+func TestParseAgainReturnsAnUnsharedCopy(t *testing.T) {
+	raw := []byte(`{"UniqueID":"Me.Cached","UpdateKeys":["Nexus:1"],"Dependencies":[{"UniqueID":"Me.Dep"}]}`)
+	first, err := Parse(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first.UpdateKeys[0], first.Dependencies[0].UniqueID = "changed", "changed"
+	again, err := Parse(raw)
+	if err != nil || again.UpdateKeys[0] != "Nexus:1" || again.Dependencies[0].UniqueID != "Me.Dep" {
+		t.Fatalf("second parse = %+v %v", again, err)
+	}
+	if _, err := Parse([]byte(`{"Name":"no id"}`)); err == nil {
+		t.Fatal("a manifest without a UniqueID parsed")
+	}
+}
