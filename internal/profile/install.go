@@ -64,15 +64,29 @@ func (s *Store) InstallFolder(game, id, path string) (InstallResult, error) {
 	return s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
 }
 
-// InstallNexus unpacks the archive at path into the store under the key of its Nexus file and adds it to the
-// profile, replacing the version of a mod the profile already holds.
-func (s *Store) InstallNexus(game, id, path string, source Source) (InstallResult, error) {
+// InstallSource unpacks the archive at path into the store under the key of its source's file and adds it to the profile,
+// replacing the version of a package the profile already holds. A Nexus file is keyed by mod and file id, a Thunderstore
+// package by name and version.
+func (s *Store) InstallSource(game, id, path string, source Source) (InstallResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return InstallResult{}, err
 	}
-	key := store.NexusKey(source.ModID, source.FileID)
+	var key string
+	switch source.Kind {
+	case KindNexus:
+		key = store.NexusKey(source.ModID, source.FileID)
+	case KindThunderstore:
+		key = store.PackageKey(source.Name, source.Version)
+	default:
+		return InstallResult{}, installError(fmt.Errorf("cannot install a %q archive", source.Kind))
+	}
 	if err := s.items.AddArchiveKey(game, key, path); err != nil {
 		return InstallResult{}, installError(err)
+	}
+	if source.Kind == KindThunderstore {
+		if err := s.items.Describe(game, key, KindThunderstore, source.Name, source.Version); err != nil {
+			return InstallResult{}, installError(err)
+		}
 	}
 	return s.installKey(game, id, key, source)
 }
@@ -176,6 +190,11 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	} else if over {
 		p, err := s.placeOverlayLocked(game, id, key, source)
 		return p, false, false, err
+	}
+	if mods, isPackage, err := s.packageMods(game, key); err != nil {
+		return Profile{}, false, false, err
+	} else if isPackage {
+		return s.placePackageLocked(game, id, key, source, mods)
 	}
 	source, ask, need, err := s.installAsk(game, id, key, source)
 	if err != nil {

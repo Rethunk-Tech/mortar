@@ -2,6 +2,7 @@ package profile
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -108,7 +109,7 @@ func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "a-1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindNexus, Name: "a-1.zip", ModID: 7, FileID: 1, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 3}
-	res, err := e.InstallNexus("stardew", p.ID, v1, src)
+	res, err := e.InstallSource("stardew", p.ID, v1, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +118,7 @@ func TestInstallNexusKeepsTheSourceAndUpdatesInPlace(t *testing.T) {
 	}
 	v2 := buildZip(t, "a-2.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/extra.txt": "new"})
 	next := Source{Kind: KindNexus, Name: "a-2.zip", ModID: 7, FileID: 2, Version: "2.0"}
-	res, err = e.InstallNexus("stardew", p.ID, v2, next)
+	res, err = e.InstallSource("stardew", p.ID, v2, next)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,5 +177,47 @@ func TestConcurrentInstallsOfOneModKeepOneEntry(t *testing.T) {
 	}
 	if len(got.Entries) != 1 {
 		t.Fatalf("entries = %+v", got.Entries)
+	}
+}
+
+func tsZip(t *testing.T, version string) string {
+	t.Helper()
+	return testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
+		"manifest.json": `{"name":"Mod","version_number":"` + version + `"}`, "Mod.dll": version,
+	})
+}
+
+func TestInstallThunderstorePackageRecordsAnEntryWithoutAFolder(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}
+	res, err := e.InstallSource("lethal-company", p.ID, tsZip(t, "1.0.0"), src)
+	if err != nil || len(res.Profile.Entries) != 1 {
+		t.Fatalf("install = %+v, %v", res, err)
+	}
+	en := res.Profile.Entries[0]
+	if en.Source.Name != "Ns-Mod" || len(en.Mods) != 1 || en.Mods[0].ID != "thunderstore:Ns-Mod" {
+		t.Fatalf("entry = %+v", en)
+	}
+	if _, err := os.Stat(filepath.Join(e.root, "lethal-company", p.ID, "mods", en.Key)); err == nil {
+		t.Fatal("a Thunderstore package got a mods folder")
+	}
+	res, err = e.InstallSource("lethal-company", p.ID, tsZip(t, "1.1.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.1.0"})
+	if err != nil || !res.Updated || len(res.Profile.Entries) != 1 || res.Profile.Entries[0].Source.Version != "1.1.0" {
+		t.Fatalf("update = %+v, %v", res, err)
+	}
+	off, err := e.SetModEnabled("lethal-company", p.ID, "", "thunderstore:Ns-Mod", false)
+	if err != nil || len(off.Entries[0].Disabled) != 1 {
+		t.Fatalf("disable = %+v, %v", off, err)
+	}
+	if err := e.WriteFiles("lethal-company", p.ID, map[string][]byte{"BepInEx/config/a.cfg": []byte("x")}); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.WriteFiles("lethal-company", p.ID, map[string][]byte{"../x": nil}); err == nil {
+		t.Fatal("a path outside the profile was written")
 	}
 }

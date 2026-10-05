@@ -38,10 +38,10 @@ func TestReplaceRemovesExtrasAndQueuesTheShare(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Keep"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
+	if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, "A.Keep"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Drop"), profile.Source{Kind: profile.KindNexus, ModID: 600, FileID: 6}); err != nil {
+	if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, "A.Drop"), profile.Source{Kind: profile.KindNexus, ModID: 600, FileID: 6}); err != nil {
 		t.Fatal(err)
 	}
 	text := link(t, "Cozy", share.Ref{ModID: 100, FileID: 1})

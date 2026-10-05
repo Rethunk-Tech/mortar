@@ -142,8 +142,8 @@ func materialize(tmp string, e Entry) (string, error) {
 
 // place lays the store item for e out as mods/<key> through a temp sibling and renames it into position.
 func (s *Store) place(game, modsDir string, e Entry) error {
-	arch, l, _, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.Key, e.Fomod)
-	if err != nil {
+	arch, l, driver, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.Key, e.Fomod)
+	if err != nil || driver == driverThunderstore {
 		return err
 	}
 	scratch, err := os.MkdirTemp(modsDir, tempPrefix)
@@ -229,21 +229,28 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 			return "", &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 	}
-	src, tmp, err := s.layoutItem(game, p.ID, key, source.fomodMap())
-	if tmp != "" {
-		defer func() { _ = fsx.RemoveAll(tmp) }()
-	}
+	mods, isPackage, err := s.packageMods(game, key)
 	if err != nil {
 		return "", err
 	}
-	found, err := manifest.Scan(src)
-	if err != nil {
-		return "", err
+	if !isPackage {
+		src, tmp, err := s.layoutItem(game, p.ID, key, source.fomodMap())
+		if tmp != "" {
+			defer func() { _ = fsx.RemoveAll(tmp) }()
+		}
+		if err != nil {
+			return "", err
+		}
+		found, err := manifest.Scan(src)
+		if err != nil {
+			return "", err
+		}
+		if len(found) == 0 {
+			return "", &NoModError{Key: key}
+		}
+		mods = entryMods(found)
 	}
-	if len(found) == 0 {
-		return "", &NoModError{Key: key}
-	}
-	e := Entry{Key: key, Source: source, Mods: entryMods(found), Disabled: []mod.ID{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap())}
+	e := Entry{Key: key, Source: source, Mods: mods, Disabled: []mod.ID{}, Added: time.Now().UTC(), Fomod: cloneFomod(source.fomodMap())}
 	if source.disabled != nil {
 		disabled = append(disabled, source.disabled.ids...)
 	}
@@ -546,12 +553,14 @@ func applyEnabled(p *Profile, dir, key string, uniqueID mod.ID, enabled bool) er
 		if mi < 0 {
 			continue
 		}
-		plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, e.Mods[mi].Folder)
-		if err != nil {
-			return err
-		}
-		if err := flip(plain, dotted, enabled); err != nil {
-			return err
+		if e.hasFolder() {
+			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, e.Mods[mi].Folder)
+			if err != nil {
+				return err
+			}
+			if err := flip(plain, dotted, enabled); err != nil {
+				return err
+			}
 		}
 		e.Disabled = slices.DeleteFunc(e.Disabled, func(x mod.ID) bool { return mod.Equal(x, uniqueID) })
 		if !enabled {

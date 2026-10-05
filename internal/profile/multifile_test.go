@@ -44,7 +44,7 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 	p := mustCreate(t, e, "P")
 	main := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0"}
-	res, err := e.InstallNexus("stardew", p.ID, main, src)
+	res, err := e.InstallSource("stardew", p.ID, main, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func TestSplitAndCombineEntries(t *testing.T) {
 	p := mustCreate(t, e, "P")
 	main := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0"}
-	res, err := e.InstallNexus("stardew", p.ID, main, src)
+	res, err := e.InstallSource("stardew", p.ID, main, src)
 	if err != nil {
 		t.Fatal(err)
 	}

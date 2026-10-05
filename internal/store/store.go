@@ -114,6 +114,25 @@ func SMAPIVersion(key string) (version string, ok bool) {
 	return version, ok && version != ""
 }
 
+// PackageKey is the key of a package from a source whose names are not valid keys (a Thunderstore Namespace-Name
+// has capitals and underscores): a hash of its name and version.
+func PackageKey(name, version string) string {
+	sum := sha256.Sum256([]byte(name + "@" + version))
+	return "pkg-" + hex.EncodeToString(sum[:12])
+}
+
+// Meta is what the index records about a key's source, package and version.
+func (s *Store) Meta(game, key string) (source, pkg, version string, ok bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	idx, err := s.loadIndex()
+	if err != nil {
+		return "", "", "", false
+	}
+	r, ok := idx[game][key]
+	return r.Source, r.Package, r.Version, ok
+}
+
 // Keys lists the game's store keys.
 func (s *Store) Keys(game string) ([]string, error) {
 	s.mu.Lock()

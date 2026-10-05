@@ -47,11 +47,11 @@ func installOverlayPair(t *testing.T) (env, Profile, string, string) {
 	t.Helper()
 	e := newEnvWithData(t)
 	p, _ := e.Create("stardew", "P")
-	if _, err := e.InstallNexus("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
+	if _, err := e.InstallSource("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
 		t.Fatal(err)
 	}
 	opt := buildZip(t, "opt.zip", map[string]string{overlayDir + "/assets/a.png": "A-opt", overlayDir + "/assets/new.png": "N-opt"})
-	res, err := e.InstallNexus("stardew", p.ID, opt, overlaySource(2, "opt.zip"))
+	res, err := e.InstallSource("stardew", p.ID, opt, overlaySource(2, "opt.zip"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +91,7 @@ func TestOverlayWithoutMainFileIsRefused(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	opt := buildZip(t, "opt.zip", map[string]string{overlayDir + "/assets/a.png": "A-opt"})
-	_, err := e.InstallNexus("stardew", p.ID, opt, overlaySource(2, "opt.zip"))
+	_, err := e.InstallSource("stardew", p.ID, opt, overlaySource(2, "opt.zip"))
 	var ie *InstallError
 	want := "opt.zip has no manifest. Install the main file of No Sell Effects first, then this optional file goes on top of it."
 	if !errors.As(err, &ie) || ie.Msg != want || !errors.As(err, new(*NoBaseError)) || usererr.KindOf(err) != usererr.NotFound {
@@ -131,11 +131,11 @@ func TestOverlayAmbiguousAsksForTarget(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
-	if _, err := e.InstallNexus("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
+	if _, err := e.InstallSource("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
 		t.Fatal(err)
 	}
 	opt := buildZip(t, "opt.zip", map[string]string{"Pics/b.png": "B", "readme.txt": "r"})
-	res, err := e.InstallNexus("stardew", p.ID, opt, overlaySource(2, "opt.zip"))
+	res, err := e.InstallSource("stardew", p.ID, opt, overlaySource(2, "opt.zip"))
 	if err != nil || res.Remap == nil || res.Remap.Overlay == nil || len(res.Remap.Overlay.Targets) != 1 || len(res.Profile.Entries) != 1 {
 		t.Fatalf("ask = %+v, %v", res, err)
 	}
@@ -160,7 +160,7 @@ func overlayEntry(p Profile, key string) Entry {
 func TestOverlayAlternativesSwitchEachOtherOff(t *testing.T) {
 	e, p, baseKey, optKey := installOverlayPair(t)
 	second := buildZip(t, "opt2.zip", map[string]string{overlayDir + "/assets/a.png": "A-two"})
-	res, err := e.InstallNexus("stardew", p.ID, second, overlaySource(3, "opt2.zip"))
+	res, err := e.InstallSource("stardew", p.ID, second, overlaySource(3, "opt2.zip"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -223,7 +223,7 @@ func TestOverlayNewVersionTakesItsPlace(t *testing.T) {
 		t.Fatal("NewestFromPage counts an optional file's own versions only for it")
 	}
 	v2 := buildZip(t, "opt-2.zip", map[string]string{overlayDir + "/assets/a.png": "A-opt2"})
-	res, err := e.InstallNexus("stardew", p.ID, v2, overlaySource(5, "opt-2.zip").WithReplacing(2))
+	res, err := e.InstallSource("stardew", p.ID, v2, overlaySource(5, "opt-2.zip").WithReplacing(2))
 	newKey := store.NexusKey(overlayModID, 5)
 	if err != nil || len(res.Profile.Entries) != 2 {
 		t.Fatalf("new version = %+v, %v", res.Profile.Entries, err)
@@ -244,7 +244,7 @@ func TestOverlayNewVersionTakesItsPlace(t *testing.T) {
 
 func TestOverlayFollowsMainFileUpdate(t *testing.T) {
 	e, p, _, optKey := installOverlayPair(t)
-	res, err := e.InstallNexus("stardew", p.ID, mainZip(t, "1.1.0", "A-main2"), overlaySource(4, "main-1.1.zip"))
+	res, err := e.InstallSource("stardew", p.ID, mainZip(t, "1.1.0", "A-main2"), overlaySource(4, "main-1.1.zip"))
 	if err != nil || !res.Updated {
 		t.Fatalf("update = %+v, %v", res, err)
 	}
@@ -308,7 +308,7 @@ func TestOverlayRevertAndRebuild(t *testing.T) {
 func TestOverlayExportRestoreRoundTrip(t *testing.T) {
 	e, p, baseKey, optKey := installOverlayPair(t)
 	second := buildZip(t, "opt2.zip", map[string]string{overlayDir + "/assets/a.png": "A-two"})
-	if _, err := e.InstallNexus("stardew", p.ID, second, overlaySource(3, "opt2.zip")); err != nil {
+	if _, err := e.InstallSource("stardew", p.ID, second, overlaySource(3, "opt2.zip")); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.SetOverlayEnabled("stardew", p.ID, optKey, true); err != nil {
@@ -365,12 +365,12 @@ func TestOverlayPlacedWithoutAskingAndOff(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
-	if _, err := e.InstallNexus("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
+	if _, err := e.InstallSource("stardew", p.ID, mainZip(t, "1.0.0", "A-main"), overlaySource(1, "main.zip")); err != nil {
 		t.Fatal(err)
 	}
 	opt := buildZip(t, "opt.zip", map[string]string{overlayDir + "/assets/a.png": "A-opt"})
 	src := overlaySource(2, "opt.zip").WithOverlay(overlayDir, overlayDir).WithOverlayOff(true)
-	res, err := e.InstallNexus("stardew", p.ID, opt, src)
+	res, err := e.InstallSource("stardew", p.ID, opt, src)
 	if err != nil || res.Remap != nil {
 		t.Fatalf("install = %+v, %v", res, err)
 	}

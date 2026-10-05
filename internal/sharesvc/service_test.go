@@ -328,7 +328,7 @@ func TestImportLeavesTheConfigOfModsTheProfileHas(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
+	if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
 		t.Fatal(err)
 	}
 	s.current = &session{
@@ -395,7 +395,7 @@ func TestANewProfileFromAPreviewOfTheOpenOneGetsItsMods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.d.Profiles.InstallNexus("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
+	if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
 		t.Fatal(err)
 	}
 	pv, err := s.PreviewLink(context.Background(), "stardew", link(t, "Cozy", share.Ref{ModID: 100, FileID: 1}), prof.ID)

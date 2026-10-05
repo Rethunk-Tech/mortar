@@ -309,7 +309,7 @@ func scanDrift(names map[string]string, stats map[string]FolderStat, keys []stri
 func entryKeys(p Profile) []string {
 	keys := make([]string, 0, len(p.Entries))
 	for _, e := range p.Entries {
-		if e.Key != "" && !e.IsOverlay() {
+		if e.Key != "" && !e.IsOverlay() && e.hasFolder() {
 			keys = append(keys, e.Key)
 		}
 	}

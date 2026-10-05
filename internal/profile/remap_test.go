@@ -73,7 +73,7 @@ func TestRemapStoredRootReused(t *testing.T) {
 	if err := e.items.SetRoot("stardew", key, "Outer/Mod"); err != nil {
 		t.Fatal(err)
 	}
-	res, err := e.InstallNexus("stardew", p.ID, z, src)
+	res, err := e.InstallSource("stardew", p.ID, z, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +92,7 @@ func TestRemapStoredRootReused(t *testing.T) {
 	}
 
 	q, _ := e.Create("stardew", "Q")
-	res, err = e.InstallNexus("stardew", q.ID, z, src)
+	res, err = e.InstallSource("stardew", q.ID, z, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func TestRemapStoredRootReused(t *testing.T) {
 		t.Fatal(err)
 	}
 	r, _ := e.Create("stardew", "R")
-	res, err = e.InstallNexus("stardew", r.ID, z, src)
+	res, err = e.InstallSource("stardew", r.ID, z, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +128,7 @@ func TestRemapVariantsAskThenUpdateReuses(t *testing.T) {
 	}
 	install := func(fileID int, z string) InstallResult {
 		t.Helper()
-		res, err := e.InstallNexus("stardew", p.ID, z, Source{Kind: KindNexus, Name: "v.zip", ModID: 9, FileID: fileID})
+		res, err := e.InstallSource("stardew", p.ID, z, Source{Kind: KindNexus, Name: "v.zip", ModID: 9, FileID: fileID})
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -388,7 +388,7 @@ func run() error {
 		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
 		Premium: func() bool { return store.Get().NexusPremium },
 		Install: func(game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
-			res, err := profiles.InstallNexus(game, profileID, path, src)
+			res, err := profiles.InstallSource(game, profileID, path, src)
 			if err == nil {
 				// Warm the detail dialog's cache while the account is known to be signed in and online.
 				go func() { _, _ = nexusSvc.Details(context.Background(), game, src.ModID) }()
@@ -448,7 +448,7 @@ func run() error {
 			}
 			return thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.Closure(ctx, key, roots, version)
 		},
-		InstallPackage: profiles.InstallNexus,
+		InstallPackage: profiles.InstallSource,
 		GitHub:         &github.Client{},
 		OpenURL:        func(url string) error { return app.Browser.OpenURL(url) },
 		Running:        launches.Running,
@@ -579,7 +579,7 @@ func run() error {
 		Dirs: func() []string { return downloadDirs(store, dataDir) },
 		Install: func(game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
 			if src.ModID > 0 {
-				return profiles.InstallNexus(game, profileID, path, src)
+				return profiles.InstallSource(game, profileID, path, src)
 			}
 			return profileSvc.InstallArchive(game, profileID, path)
 		},
