@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -38,7 +39,7 @@ func (s *Service) CompatibilityFor(ctx context.Context, gameID, id string) ([]Co
 	return matchCompat(idx, mods, false), nil
 }
 
-func (s *Service) withCompat(ctx context.Context, r Result, gameID string, mods []Installed, sameJob []Redundant) Result {
+func (s *Service) withCompat(ctx context.Context, r Result, gameID string, mods []framework.Mod, sameJob []framework.Redundant) Result {
 	idx, ok := s.compatIndex(ctx, gameID)
 	switch {
 	case ok:
@@ -61,7 +62,7 @@ func (s *Service) compatIndex(ctx context.Context, gameID string) (meta.CompatIn
 	return idx, true
 }
 
-func matchCompat(idx meta.CompatIndex, mods []Installed, skipOK bool) []Compat {
+func matchCompat(idx meta.CompatIndex, mods []framework.Mod, skipOK bool) []Compat {
 	out := []Compat{}
 	seen := map[string]bool{}
 	for _, m := range mods {
@@ -86,7 +87,7 @@ func matchCompat(idx meta.CompatIndex, mods []Installed, skipOK bool) []Compat {
 	return out
 }
 
-func nexusIDOf(m Installed) int {
+func nexusIDOf(m framework.Mod) int {
 	for _, key := range m.UpdateKeys {
 		if n, ok := manifest.NexusUpdateKey(key); ok {
 			return n

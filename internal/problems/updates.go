@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -104,10 +105,10 @@ type NexusFilesOf func(ctx context.Context, t nexus.Title, modIDs []int) (map[in
 
 // checkUpdates asks SMAPI's API about every user mod (the bundled ones update with SMAPI). It never returns an
 // error: a failed lookup leaves Unknown set.
-func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly, fresh bool, filesOf NexusFilesOf) UpdatesResult {
+func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework.Mod, enabledOnly, fresh bool, filesOf NexusFilesOf) UpdatesResult {
 	r := UpdatesResult{Updates: []Update{}, Held: []Held{}}
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform, Fresh: fresh}
-	var asked []Installed
+	var asked []framework.Mod
 	for _, x := range mods {
 		if (profile.Source{Kind: x.SourceKind}).Bundled() {
 			continue
@@ -123,7 +124,7 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 	}
 	results := m.CheckUpdates(ctx, req)
 	live := liveNexusFiles(ctx, filesOf, env.Nexus, asked, results)
-	current := func(x Installed, url, version string) bool {
+	current := func(x framework.Mod, url, version string) bool {
 		if files, ok := live[nexusUpdate(x.UpdateKeys, url)]; ok {
 			if is, known := liveFileIsCurrent(files, x, version); known {
 				return is
@@ -175,8 +176,8 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []Installed
 
 // HideHeld drops updates the profile has pinned or skipped for that exact newer version, and prerelease
 // versions when includePrerelease is false unless the installed version is itself a prerelease.
-func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool, smapiBuilds string) UpdatesResult {
-	byKey := make(map[string]Installed, len(mods))
+func HideHeld(r UpdatesResult, mods []framework.Mod, includePrerelease bool, smapiBuilds string) UpdatesResult {
+	byKey := make(map[string]framework.Mod, len(mods))
 	for _, m := range mods {
 		byKey[m.Key] = m
 	}
@@ -192,7 +193,7 @@ func HideHeld(r UpdatesResult, mods []Installed, includePrerelease bool, smapiBu
 		}
 		m, ok := byKey[u.Key]
 		if !ok {
-			if !keepPrerelease(Installed{}, includePrerelease, u.Version, u.Installed) {
+			if !keepPrerelease(framework.Mod{}, includePrerelease, u.Version, u.Installed) {
 				hold(u, HeldPrerelease)
 				continue
 			}
@@ -288,8 +289,8 @@ type Relations struct {
 }
 
 // Relate reports what the mod key/uniqueID needs and which mods need it. ok is false when the profile lacks it.
-func Relate(mods []Installed, domain, key string, uniqueID mod.ID) (r Relations, ok bool) {
-	i := slices.IndexFunc(mods, func(x Installed) bool { return x.Key == key && mod.Equal(x.ModID(), uniqueID) })
+func Relate(mods []framework.Mod, domain, key string, uniqueID mod.ID) (r Relations, ok bool) {
+	i := slices.IndexFunc(mods, func(x framework.Mod) bool { return x.Key == key && mod.Equal(x.ModID(), uniqueID) })
 	if i < 0 {
 		return Relations{}, false
 	}
@@ -297,7 +298,7 @@ func Relate(mods []Installed, domain, key string, uniqueID mod.ID) (r Relations,
 	r = Relations{PageURL: pageURL(domain, self.UpdateKeys), Needs: []Need{}, NeededBy: []Dependent{}}
 	for _, dep := range self.Dependencies {
 		n := Need{ID: dep.ModID(), Name: dep.ModID().Local(), MinimumVersion: dep.MinimumVersion, Required: dep.Required, State: "ok"}
-		if j := slices.IndexFunc(mods, func(x Installed) bool { return mod.Equal(x.ModID(), dep.ModID()) }); j >= 0 {
+		if j := slices.IndexFunc(mods, func(x framework.Mod) bool { return mod.Equal(x.ModID(), dep.ModID()) }); j >= 0 {
 			n.Name = mods[j].Name
 		}
 		if reason, have := depState(mods, dep); reason != "" {
@@ -317,7 +318,7 @@ func Relate(mods []Installed, domain, key string, uniqueID mod.ID) (r Relations,
 }
 
 // Pages maps "key/id" to the page of each mod whose update keys name one.
-func Pages(mods []Installed, domain string) map[string]string {
+func Pages(mods []framework.Mod, domain string) map[string]string {
 	out := map[string]string{}
 	for _, m := range mods {
 		if u := pageURL(domain, m.UpdateKeys); u != "" {
@@ -396,7 +397,7 @@ func githubFallback(keys []string, url string) string {
 
 // downloaded reports whether the entry's download is already at version or newer, so the update is installed
 // even though this manifest was left at an older version inside it.
-func downloaded(x Installed, version string) bool {
+func downloaded(x framework.Mod, version string) bool {
 	if x.SourceVersion == "" {
 		return false
 	}
@@ -450,7 +451,7 @@ func containsPreviewMod(file meta.File, uniqueID mod.ID) bool {
 
 // nexusFileIsCurrent uses the cached SMAPI file preview to keep a stale manifest from making a file update itself.
 // The preview also prevents a raw game-content file from becoming an update target for a SMAPI mod.
-func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url, suggested string) bool {
+func nexusFileIsCurrent(ctx context.Context, m Meta, x framework.Mod, url, suggested string) bool {
 	modID := nexusUpdate(x.UpdateKeys, url)
 	if modID == 0 {
 		return false
@@ -492,7 +493,7 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x Installed, url, suggested
 
 // liveNexusFiles asks Nexus once for the current files of every flagged Nexus mod, so a stale dataset page cannot
 // hide a new file or invent one. It returns nothing when signed out or when the call fails.
-func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, asked []Installed, results []meta.UpdateResult) map[int][]nexus.BatchFile {
+func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, asked []framework.Mod, results []meta.UpdateResult) map[int][]nexus.BatchFile {
 	if filesOf == nil {
 		return nil
 	}
@@ -519,7 +520,7 @@ func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, as
 
 // liveFileIsCurrent says whether the installed Nexus file is still the newest in its group (same display name) and
 // already at the suggested version. known is false when the installed file is not in the list.
-func liveFileIsCurrent(files []nexus.BatchFile, x Installed, suggested string) (current, known bool) {
+func liveFileIsCurrent(files []nexus.BatchFile, x framework.Mod, suggested string) (current, known bool) {
 	_, fileID, ok := store.NexusFile(x.Key)
 	if !ok {
 		return false, false

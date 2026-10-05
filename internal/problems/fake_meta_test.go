@@ -3,6 +3,7 @@ package problems
 import (
 	"context"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
@@ -16,7 +17,7 @@ func (fakeMeta) Collection(context.Context, string, string, int) (meta.Collectio
 }
 
 // CheckUpdates is checkUpdates without a fresh lookup or Nexus file listing.
-func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []Installed, enabledOnly bool) UpdatesResult {
+func CheckUpdates(ctx context.Context, m Meta, env Environment, mods []framework.Mod, enabledOnly bool) UpdatesResult {
 	return checkUpdates(ctx, m, env, mods, enabledOnly, false, nil)
 }
 

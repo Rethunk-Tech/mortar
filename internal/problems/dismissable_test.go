@@ -1,9 +1,13 @@
 package problems
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/framework"
+)
 
 func TestHideDismissedSoftOnly(t *testing.T) {
-	in := []AssetConflict{
+	in := []framework.AssetConflict{
 		{Kind: "load", Target: "a"},
 		{Kind: "edit", Target: "b"},
 	}

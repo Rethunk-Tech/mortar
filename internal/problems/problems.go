@@ -18,7 +18,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -27,20 +26,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 	"github.com/Rethunk-Tech/mortar/internal/store"
-)
-
-// The checks' own names for what frameworks report.
-type (
-	Installed        = framework.Mod
-	SettingHint      = framework.SettingHint
-	Cleanup          = framework.Cleanup
-	AssetConflict    = framework.AssetConflict
-	ConflictEvidence = framework.ConflictEvidence
-	AssetTarget      = contentpatcher.AssetTarget
-	WhoChangesPage   = contentpatcher.WhoChangesPage
-	AssetMapPage     = contentpatcher.AssetMapPage
-	Redundant        = framework.Redundant
-	ModRef           = framework.ModRef
 )
 
 // Meta is the slice of meta.Client the checks use.
@@ -141,29 +126,29 @@ type Damaged struct {
 }
 
 type DismissedProblem struct {
-	Token         string         `json:"token"`
-	AssetConflict *AssetConflict `json:"assetConflict,omitempty"`
-	Broken        *Broken        `json:"broken,omitempty"`
-	Missing       *Missing       `json:"missing,omitempty"`
-	Setting       *SettingHint   `json:"setting,omitempty"`
+	Token         string                   `json:"token"`
+	AssetConflict *framework.AssetConflict `json:"assetConflict,omitempty"`
+	Broken        *Broken                  `json:"broken,omitempty"`
+	Missing       *Missing                 `json:"missing,omitempty"`
+	Setting       *framework.SettingHint   `json:"setting,omitempty"`
 }
 
 // Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.
 type Result struct {
-	Missing        []Missing          `json:"missing"`
-	Duplicates     []Duplicate        `json:"duplicates"`
-	Broken         []Broken           `json:"broken"`
-	AssetConflicts []AssetConflict    `json:"assetConflicts"`
-	Settings       []SettingHint      `json:"settings"`
-	Cleanup        []Cleanup          `json:"cleanup,omitempty"`
-	Compat         []Compat           `json:"compat,omitempty"`
-	Redundant      []Redundant        `json:"redundant,omitempty"`
-	RunErrors      []RunError         `json:"runErrors"`
-	Drift          []profile.Drift    `json:"drift,omitempty"`
-	Damaged        []Damaged          `json:"damaged,omitempty"`
-	Dismissed      []DismissedProblem `json:"dismissed"`
-	Unknown        bool               `json:"unknown"`
-	Timings        []CheckTiming      `json:"timings,omitempty"`
+	Missing        []Missing                 `json:"missing"`
+	Duplicates     []Duplicate               `json:"duplicates"`
+	Broken         []Broken                  `json:"broken"`
+	AssetConflicts []framework.AssetConflict `json:"assetConflicts"`
+	Settings       []framework.SettingHint   `json:"settings"`
+	Cleanup        []framework.Cleanup       `json:"cleanup,omitempty"`
+	Compat         []Compat                  `json:"compat,omitempty"`
+	Redundant      []framework.Redundant     `json:"redundant,omitempty"`
+	RunErrors      []RunError                `json:"runErrors"`
+	Drift          []profile.Drift           `json:"drift,omitempty"`
+	Damaged        []Damaged                 `json:"damaged,omitempty"`
+	Dismissed      []DismissedProblem        `json:"dismissed"`
+	Unknown        bool                      `json:"unknown"`
+	Timings        []CheckTiming             `json:"timings,omitempty"`
 }
 
 // CheckTiming is one check family's duration and item count from the last Problems run for a profile.
@@ -203,8 +188,8 @@ func meets(version, minimum string) bool {
 }
 
 // Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error.
-func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Result {
-	enabled := slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool { return !x.Enabled })
+func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod) Result {
+	enabled := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return !x.Enabled })
 	found, timings := runFrameworks(framework.Input{Enabled: enabled, All: mods})
 	r := Result{
 		Missing:        []Missing{},
@@ -243,7 +228,7 @@ func runFrameworks(in framework.Input) (framework.Findings, []CheckTiming) {
 		timings = append(timings, CheckTiming{
 			Name:  "framework:" + f.ID().Local(),
 			Ms:    time.Since(start).Milliseconds(),
-			Count: len(slices.DeleteFunc(slices.Clone(in.Enabled), func(m Installed) bool { return !f.Matches(m) })),
+			Count: len(slices.DeleteFunc(slices.Clone(in.Enabled), func(m framework.Mod) bool { return !f.Matches(m) })),
 		})
 		all.AssetConflicts = append(all.AssetConflicts, got.AssetConflicts...)
 		all.Settings = append(all.Settings, got.Settings...)
@@ -259,7 +244,7 @@ func logCheckTimings(profileID string, timings []CheckTiming) {
 	}
 }
 
-func duplicatesWithNexus(ctx context.Context, m Meta, enabled []Installed) []Duplicate {
+func duplicatesWithNexus(ctx context.Context, m Meta, enabled []framework.Mod) []Duplicate {
 	out := duplicates(enabled)
 	for i := range out {
 		var pageID int
@@ -326,7 +311,7 @@ func newerNexusFile(a, b NexusFile) bool {
 	return aID > bID
 }
 
-func missingDeps(enabled, all []Installed) []Missing {
+func missingDeps(enabled, all []framework.Mod) []Missing {
 	out := []Missing{}
 	for _, d := range enabled {
 		for _, dep := range d.Dependencies {
@@ -372,7 +357,7 @@ func fetchAll[T any](ctx context.Context, ids []int, fetch func(context.Context,
 	return got, failed
 }
 
-func listedRequirements(ctx context.Context, m Meta, domain string, enabled, all []Installed) ([]Missing, bool) {
+func listedRequirements(ctx context.Context, m Meta, domain string, enabled, all []framework.Mod) ([]Missing, bool) {
 	out := []Missing{}
 	var pageIDs []int
 	for _, d := range enabled {
@@ -462,7 +447,7 @@ func listedRequirements(ctx context.Context, m Meta, domain string, enabled, all
 	return out, unknown
 }
 
-func listedDepState(all []Installed, pageID int, page meta.Page, pageKnown bool) (string, bool) {
+func listedDepState(all []framework.Mod, pageID int, page meta.Page, pageKnown bool) (string, bool) {
 	disabled := false
 	for _, x := range all {
 		entryPage, _, listed := store.NexusFile(x.Key)
@@ -494,7 +479,7 @@ func listedDepState(all []Installed, pageID int, page meta.Page, pageKnown bool)
 	return "absent", false
 }
 
-func manifestHasRequirement(all []Installed, entryKey string, page meta.Page) bool {
+func manifestHasRequirement(all []framework.Mod, entryKey string, page meta.Page) bool {
 	for _, d := range all {
 		if !d.Enabled || !strings.EqualFold(d.Key, entryKey) {
 			continue
@@ -543,8 +528,8 @@ func isWordByte(b byte) bool {
 
 // depState says why the mods in all do not satisfy dep: "absent", "disabled" or "outdated", with the highest
 // installed version for the last. An empty reason means the dependency is met.
-func depState(all []Installed, dep manifest.Dependency) (reason, installedVersion string) {
-	var installed []Installed
+func depState(all []framework.Mod, dep manifest.Dependency) (reason, installedVersion string) {
+	var installed []framework.Mod
 	for _, x := range all {
 		if mod.Equal(x.ModID(), dep.ModID()) {
 			installed = append(installed, x)
@@ -553,17 +538,17 @@ func depState(all []Installed, dep manifest.Dependency) (reason, installedVersio
 	switch {
 	case len(installed) == 0:
 		return "absent", ""
-	case slices.ContainsFunc(installed, func(x Installed) bool { return x.Enabled && meets(x.Version, dep.MinimumVersion) }):
+	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return x.Enabled && meets(x.Version, dep.MinimumVersion) }):
 		return "", ""
-	case slices.ContainsFunc(installed, func(x Installed) bool { return x.Enabled }):
+	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return x.Enabled }):
 		return "outdated", highest(installed)
-	case slices.ContainsFunc(installed, func(x Installed) bool { return meets(x.Version, dep.MinimumVersion) }):
+	case slices.ContainsFunc(installed, func(x framework.Mod) bool { return meets(x.Version, dep.MinimumVersion) }):
 		return "disabled", ""
 	}
 	return "outdated", highest(installed)
 }
 
-func highest(mods []Installed) string {
+func highest(mods []framework.Mod) string {
 	best := mods[0].Version
 	for _, x := range mods[1:] {
 		if c, ok := meta.CompareVersions(x.Version, best); ok && c > 0 {
@@ -573,7 +558,7 @@ func highest(mods []Installed) string {
 	return best
 }
 
-func duplicates(enabled []Installed) []Duplicate {
+func duplicates(enabled []framework.Mod) []Duplicate {
 	out := []Duplicate{}
 	seen := map[string]bool{}
 	for _, first := range enabled {
@@ -582,7 +567,7 @@ func duplicates(enabled []Installed) []Duplicate {
 			continue
 		}
 		seen[id] = true
-		var group []Installed
+		var group []framework.Mod
 		for _, x := range enabled {
 			if mod.Equal(x.ModID(), first.ModID()) {
 				group = append(group, x)
@@ -596,7 +581,7 @@ func duplicates(enabled []Installed) []Duplicate {
 	return out
 }
 
-func copies(group, enabled []Installed) []Copy {
+func copies(group, enabled []framework.Mod) []Copy {
 	top := highest(group)
 	out := make([]Copy, len(group))
 	for i, g := range group {
@@ -621,7 +606,7 @@ func copies(group, enabled []Installed) []Copy {
 	return out
 }
 
-func brokenMods(ctx context.Context, m Meta, env Environment, enabled []Installed) (broken []Broken, unknown bool) {
+func brokenMods(ctx context.Context, m Meta, env Environment, enabled []framework.Mod) (broken []Broken, unknown bool) {
 	broken = []Broken{}
 	if len(enabled) == 0 {
 		return broken, false
@@ -648,7 +633,7 @@ func brokenMods(ctx context.Context, m Meta, env Environment, enabled []Installe
 }
 
 // fillWhere finds where each absent or outdated dependency can be had. It reports whether any lookup failed.
-func fillWhere(ctx context.Context, m Meta, domain string, enabled []Installed, missing []Missing) (unknown bool) {
+func fillWhere(ctx context.Context, m Meta, domain string, enabled []framework.Mod, missing []Missing) (unknown bool) {
 	type found struct {
 		ref *Ref
 		ok  bool
@@ -662,7 +647,7 @@ func fillWhere(ctx context.Context, m Meta, domain string, enabled []Installed, 
 		if x.Where != nil {
 			continue
 		}
-		dependent := slices.IndexFunc(enabled, func(e Installed) bool { return mod.Equal(e.ModID(), x.DependentID) })
+		dependent := slices.IndexFunc(enabled, func(e framework.Mod) bool { return mod.Equal(e.ModID(), x.DependentID) })
 		var keys []string
 		if dependent >= 0 {
 			keys = enabled[dependent].UpdateKeys
@@ -818,7 +803,7 @@ func newer(a, b Ref) bool {
 
 // conflictRows counts non-cosmetic conflicts as the Problems tab shows them: conflicts between the same mods with the
 // same winner and fix are one row however many assets they span.
-func conflictRows(conflicts []AssetConflict) int {
+func conflictRows(conflicts []framework.AssetConflict) int {
 	rows := map[string]bool{}
 	for _, c := range conflicts {
 		if c.Cosmetic {

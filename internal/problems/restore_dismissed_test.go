@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -16,7 +17,7 @@ func TestDismissThenRestoreALoadConflict(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := &Service{settings: set, cache: map[string]cached{}}
-	conflicts := []AssetConflict{{Kind: "load", Target: "maps/greenhouse"}, {Kind: "edit", Target: "maps/desert", Cosmetic: true}}
+	conflicts := []framework.AssetConflict{{Kind: "load", Target: "maps/greenhouse"}, {Kind: "edit", Target: "maps/desert", Cosmetic: true}}
 	if err := s.DismissAssetConflict(context.Background(), "stardew", "p", "load", "maps/greenhouse"); err != nil {
 		t.Fatal(err)
 	}

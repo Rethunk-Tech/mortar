@@ -3,17 +3,18 @@ package problems
 import (
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
-func installedMod(key, name, id string, enabled bool) Installed {
-	m := Installed{Key: key, Enabled: enabled}
+func installedMod(key, name, id string, enabled bool) framework.Mod {
+	m := framework.Mod{Key: key, Enabled: enabled}
 	m.Name, m.UniqueID = name, id
 	return m
 }
 
 func TestRunErrorsFromSummary(t *testing.T) {
-	mods := []Installed{
+	mods := []framework.Mod{
 		installedMod("a", "Alpha", "author.alpha", true),
 		installedMod("b", "Beta", "author.beta", false),
 	}
@@ -39,7 +40,7 @@ func TestRunErrorsFromSummary(t *testing.T) {
 }
 
 func TestRunErrorsFromSummary_cleanRun(t *testing.T) {
-	mods := []Installed{installedMod("a", "Alpha", "author.alpha", true)}
+	mods := []framework.Mod{installedMod("a", "Alpha", "author.alpha", true)}
 	got := RunErrorsFromSummary("run-2", launch.Summary{}, mods)
 	if len(got) != 0 {
 		t.Fatalf("clean run: %#v", got)
@@ -47,7 +48,7 @@ func TestRunErrorsFromSummary_cleanRun(t *testing.T) {
 }
 
 func TestRunErrorsFromSummary_infoWhenNoCrash(t *testing.T) {
-	mods := []Installed{installedMod("a", "Alpha", "author.alpha", true)}
+	mods := []framework.Mod{installedMod("a", "Alpha", "author.alpha", true)}
 	summary := launch.Summary{
 		Mods: []launch.ModError{{Mod: "author.alpha", Count: 1, First: "oops"}},
 	}
@@ -58,7 +59,7 @@ func TestRunErrorsFromSummary_infoWhenNoCrash(t *testing.T) {
 }
 
 func TestRunErrorsFromSummary_matchByUniqueID(t *testing.T) {
-	mods := []Installed{installedMod("k", "Display Name", "me.mod", true)}
+	mods := []framework.Mod{installedMod("k", "Display Name", "me.mod", true)}
 	summary := launch.Summary{
 		Mods: []launch.ModError{{Mod: "me.mod", Count: 1, First: "x"}},
 	}
@@ -77,7 +78,7 @@ func TestRunErrorsFromSummaryMarksModsUpdatedSinceRun(t *testing.T) {
 		}},
 		Mods: []launch.ModError{{Mod: "Alpha", Count: 1, First: "old error"}},
 	}
-	got := RunErrorsFromSummary("run", summary, []Installed{im})
+	got := RunErrorsFromSummary("run", summary, []framework.Mod{im})
 	if len(got) != 1 || got[0].Key != "new-key" || !got[0].Updated {
 		t.Fatalf("updated row = %#v", got)
 	}

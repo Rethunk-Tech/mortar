@@ -4,11 +4,12 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // cleanupHints lists framework mods only disabled mods need, with what the frameworks found unused.
-func cleanupHints(mods []Installed, found []Cleanup) []Cleanup {
+func cleanupHints(mods []framework.Mod, found []framework.Cleanup) []framework.Cleanup {
 	enabledNeeds := map[string]bool{}
 	disabledDependents := map[string]bool{}
 	frameworkIDs := map[string]bool{}
@@ -24,16 +25,16 @@ func cleanupHints(mods []Installed, found []Cleanup) []Cleanup {
 		}
 	}
 
-	out := make([]Cleanup, 0)
+	out := make([]framework.Cleanup, 0)
 	for _, im := range mods {
 		id := im.ModID().Fold()
 		if id == "" || im.ContentPackFor != "" || frameworkIDs[id] || enabledNeeds[id] || !disabledDependents[id] {
 			continue
 		}
-		out = append(out, Cleanup{Key: im.Key, ID: im.ModID(), Name: im.Name})
+		out = append(out, framework.Cleanup{Key: im.Key, ID: im.ModID(), Name: im.Name})
 	}
 	out = append(out, found...)
-	slices.SortFunc(out, func(a, b Cleanup) int {
+	slices.SortFunc(out, func(a, b framework.Cleanup) int {
 		if c := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); c != 0 {
 			return c
 		}
@@ -42,7 +43,7 @@ func cleanupHints(mods []Installed, found []Cleanup) []Cleanup {
 	return out
 }
 
-func recordCleanupDependency(im Installed, uniqueID mod.ID, enabledNeeds, disabledDependents map[string]bool) {
+func recordCleanupDependency(im framework.Mod, uniqueID mod.ID, enabledNeeds, disabledDependents map[string]bool) {
 	id := uniqueID.Fold()
 	if id == "" {
 		return

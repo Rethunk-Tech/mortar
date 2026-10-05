@@ -1,9 +1,13 @@
 package problems
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/framework"
+)
 
 func TestSupersededWhenTheNamedReplacementIsEnabled(t *testing.T) {
-	mods := []Installed{
+	mods := []framework.Mod{
 		{Key: "old", UniqueID: "A.Old", Name: "Old Clock", Enabled: true},
 		{Key: "new", UniqueID: "B.Clock", Name: "24h Clock", Enabled: true, UpdateKeys: []string{"Nexus:20794"}},
 		{Key: "lone", UniqueID: "C.Lone", Name: "Lone", Enabled: true},
@@ -25,12 +29,12 @@ func TestSupersededWhenTheNamedReplacementIsEnabled(t *testing.T) {
 }
 
 func TestSupersededSkipsAModAlreadyRedundant(t *testing.T) {
-	mods := []Installed{
+	mods := []framework.Mod{
 		{Key: "old", UniqueID: "A.Old", Name: "Old", Enabled: true},
 		{Key: "new", UniqueID: "B.New", Name: "New", Enabled: true},
 	}
 	r := Result{
-		Redundant: []Redundant{{Kind: "shadowed", Key: "old"}},
+		Redundant: []framework.Redundant{{Kind: "shadowed", Key: "old"}},
 		Broken:    []Broken{{Key: "old", ID: "smapi:A.Old", Name: "Old", Status: "obsolete", Summary: "use [New](#) instead."}},
 	}
 	if r = superseded(r, "stardewvalley", mods); len(r.Redundant) != 1 {
@@ -39,18 +43,18 @@ func TestSupersededSkipsAModAlreadyRedundant(t *testing.T) {
 }
 
 func TestRedundantCountsASameJobGroupOnce(t *testing.T) {
-	pair := func(key string, by ...string) Redundant {
-		r := Redundant{Kind: "sameJob", Key: key}
+	pair := func(key string, by ...string) framework.Redundant {
+		r := framework.Redundant{Kind: "sameJob", Key: key}
 		for _, b := range by {
-			r.By = append(r.By, ModRef{Key: b})
+			r.By = append(r.By, framework.ModRef{Key: b})
 		}
 		return r
 	}
-	rows := []Redundant{
+	rows := []framework.Redundant{
 		pair("a", "b", "c"), pair("b", "a", "c"), pair("c", "a", "b"),
 		pair("x", "y"), pair("y", "x"),
-		{Kind: "sameJob", Key: "small", Covered: true, By: []ModRef{{Key: "big"}}},
-		{Kind: "superseded", Key: "old", By: []ModRef{{Key: "new"}}},
+		{Kind: "sameJob", Key: "small", Covered: true, By: []framework.ModRef{{Key: "big"}}},
+		{Kind: "superseded", Key: "old", By: []framework.ModRef{{Key: "new"}}},
 	}
 	if got := redundantCount(rows); got != 4 {
 		t.Fatalf("count = %d, want 4", got)

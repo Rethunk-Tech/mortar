@@ -94,7 +94,7 @@ type cached struct {
 	// without re-running the whole check on every refresh; zero for complete results.
 	until time.Time
 	// sameJob is the result's same-job rows; the fingerprint covers their inputs (the mods and the last run).
-	sameJob []Redundant
+	sameJob []framework.Redundant
 }
 
 const unknownResultTTL = 2 * time.Minute
@@ -140,7 +140,7 @@ func nexusDomain(gameID string) string {
 	return t.Domain
 }
 
-func fingerprint(env Environment, mods []Installed, runID string) string {
+func fingerprint(env Environment, mods []framework.Mod, runID string) string {
 	var b strings.Builder
 	b.WriteString(env.GameVersion + "|" + env.APIVersion + "|run:" + runID)
 	for _, m := range mods {
@@ -167,14 +167,14 @@ func fingerprint(env Environment, mods []Installed, runID string) string {
 	return b.String()
 }
 
-func (s *Service) installed(gameID, id string) ([]Installed, error) {
+func (s *Service) installed(gameID, id string) ([]framework.Mod, error) {
 	installed, err := s.profiles.Installed(gameID, id)
 	if err != nil {
 		return nil, err
 	}
-	mods := make([]Installed, len(installed))
+	mods := make([]framework.Mod, len(installed))
 	for i, m := range installed {
-		mods[i] = Installed{
+		mods[i] = framework.Mod{
 			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, SourceName: m.Source.Name, SourceRepo: m.Source.Repo, Enabled: m.Enabled, Folder: m.Folder,
 			Pinned: m.Pinned, SkipVersion: m.SkipVersion, SkipSources: m.SkipSources, IgnoreUpdates: m.IgnoreUpdates,
 			UpdateChannel: m.UpdateChannel,
@@ -185,7 +185,7 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 }
 
 // Problems checks the profile's mods and leaves out each conflict's evidence, which is most of the result and
-// only an expanded row shows; ConflictEvidence fetches it.
+// only an expanded row shows; framework.ConflictEvidence fetches it.
 func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, error) {
 	r, err := s.ProblemsWithEvidence(ctx, gameID, id)
 	if err != nil {
@@ -206,8 +206,8 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 	return r, nil
 }
 
-// ConflictEvidence returns the per-pack evidence of one asset conflict, shown or dismissed.
-func (s *Service) ConflictEvidence(ctx context.Context, gameID, id, kind, target string) ([]ConflictEvidence, error) {
+// framework.ConflictEvidence returns the per-pack evidence of one asset conflict, shown or dismissed.
+func (s *Service) ConflictEvidence(ctx context.Context, gameID, id, kind, target string) ([]framework.ConflictEvidence, error) {
 	r, err := s.ProblemsWithEvidence(ctx, gameID, id)
 	if err != nil {
 		return nil, err
@@ -222,7 +222,7 @@ func (s *Service) ConflictEvidence(ctx context.Context, gameID, id, kind, target
 			return c.Evidence, nil
 		}
 	}
-	return []ConflictEvidence{}, nil
+	return []framework.ConflictEvidence{}, nil
 }
 
 // ProblemsWithEvidence is Problems with every conflict's evidence. The answer is kept until the mods or versions
@@ -268,7 +268,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		contentpatcher.SkipImageOverlap = depth == settings.ConflictScanSkipImages
 		defer func() { contentpatcher.SkipImageOverlap = false }()
 		r := Check(ctx, s.metaFor(gameID), env, mods)
-		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool {
+		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool {
 			return !x.Enabled
 		}))...)
 		if s.Runs != nil && runID != "" {
@@ -538,11 +538,11 @@ func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
 	}
 }
 
-func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings) UpdatesResult {
+func hideUpdates(r UpdatesResult, mods []framework.Mod, set settings.Settings) UpdatesResult {
 	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.SmapiBuilds)
 }
 
-func (s *Service) recordHealth(gameID, id string, env Environment, mods []Installed, r Result) {
+func (s *Service) recordHealth(gameID, id string, env Environment, mods []framework.Mod, r Result) {
 	if s.profiles == nil {
 		return
 	}
@@ -560,7 +560,7 @@ func (s *Service) recordHealth(gameID, id string, env Environment, mods []Instal
 	_ = profile.AppendHealth(dir, point)
 }
 
-func (s *Service) visibleUpdateCount(gameID, id string, env Environment, mods []Installed) int {
+func (s *Service) visibleUpdateCount(gameID, id string, env Environment, mods []framework.Mod) int {
 	if s.settings == nil {
 		return 0
 	}
@@ -652,7 +652,7 @@ func (s *Service) damagedMods(gameID, id string) []Damaged {
 	return damagedRows(mods, damaged)
 }
 
-func damagedRows(mods []Installed, damaged map[string]store.Damage) []Damaged {
+func damagedRows(mods []framework.Mod, damaged map[string]store.Damage) []Damaged {
 	var out []Damaged
 	for _, m := range mods {
 		d, ok := damaged[m.Key]

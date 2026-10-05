@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -23,7 +24,7 @@ type RunReader interface {
 	LastRunSummary(gameID, profileID string) (runID string, summary launch.Summary, err error)
 }
 
-func modRefs(mods []Installed) []launch.ModRef {
+func modRefs(mods []framework.Mod) []launch.ModRef {
 	out := make([]launch.ModRef, 0, len(mods))
 	for _, m := range mods {
 		out = append(out, launch.ModRef{Name: m.Name, ID: m.ModID()})
@@ -31,7 +32,7 @@ func modRefs(mods []Installed) []launch.ModRef {
 	return out
 }
 
-func installedByRef(mods []Installed, ref launch.ModRef) (Installed, bool) {
+func installedByRef(mods []framework.Mod, ref launch.ModRef) (framework.Mod, bool) {
 	for _, m := range mods {
 		if !m.Enabled {
 			continue
@@ -45,10 +46,10 @@ func installedByRef(mods []Installed, ref launch.ModRef) (Installed, bool) {
 			return m, true
 		}
 	}
-	return Installed{}, false
+	return framework.Mod{}, false
 }
 
-func changedSinceRun(now Installed, then launch.ModRef) bool {
+func changedSinceRun(now framework.Mod, then launch.ModRef) bool {
 	if then.Key == "" {
 		return false
 	}
@@ -58,7 +59,7 @@ func changedSinceRun(now Installed, then launch.ModRef) bool {
 }
 
 // RunErrorsFromSummary maps a run summary to profile mods that logged errors and are still enabled.
-func RunErrorsFromSummary(runID string, summary launch.Summary, mods []Installed) []RunError {
+func RunErrorsFromSummary(runID string, summary launch.Summary, mods []framework.Mod) []RunError {
 	if runID == "" || len(summary.Mods) == 0 {
 		return []RunError{}
 	}

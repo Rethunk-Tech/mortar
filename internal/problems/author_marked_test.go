@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
@@ -32,7 +33,7 @@ func TestAuthorMarkedMods(t *testing.T) {
 		Files: []nexus.File{{FileID: 43, Name: "File Only 1.6", Description: "Deprecated - use the 1.6 version"}},
 	})
 
-	mods := []Installed{
+	mods := []framework.Mod{
 		{Key: "local-obsolete", Enabled: true, Name: "[OBSOLETE] Foo", UniqueID: "foo"},
 		{Key: "nexus-10-42", Enabled: true, Name: "Foo", UniqueID: "foo.file"},
 		{Key: "nexus-11-43", Enabled: true, Name: "File Only", UniqueID: "file.only"},
@@ -55,7 +56,7 @@ func TestAuthorMarkedMods(t *testing.T) {
 }
 
 func TestAuthorMarkedManifestDescription(t *testing.T) {
-	var im Installed
+	var im framework.Mod
 	var fields map[string]string
 	if err := json.Unmarshal([]byte(`{"Name":"Foo","UniqueID":"foo","Description":"This file is deprecated - use the 1.6 version"}`), &fields); err != nil {
 		t.Fatal(err)
@@ -64,7 +65,7 @@ func TestAuthorMarkedManifestDescription(t *testing.T) {
 	for name, text := range fields {
 		value.FieldByName(name).SetString(text)
 	}
-	got := authorMarkedMods(t.TempDir(), "stardewvalley", []Installed{im})
+	got := authorMarkedMods(t.TempDir(), "stardewvalley", []framework.Mod{im})
 	if len(got) != 1 || got[0].Status != "deprecated" {
 		t.Fatalf("got %+v", got)
 	}

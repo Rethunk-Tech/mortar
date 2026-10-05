@@ -3,6 +3,7 @@ package problems
 import (
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -16,7 +17,7 @@ func TestMatchCompatByUniqueIDAndNexus(t *testing.T) {
 			42: {Status: meta.StatusUnofficial, UnofficialURL: "https://example.com/u", Summary: "Patch."},
 		},
 	}
-	mods := []Installed{
+	mods := []framework.Mod{
 		{Key: "a", UniqueID: "Author.Broken", Name: "Broken"},
 		{Key: "b", UniqueID: "Author.NexusOnly", Name: "Nexus", UpdateKeys: []string{"Nexus:42"}},
 		{Key: "c", UniqueID: "Author.Ok", Name: "Fine"},

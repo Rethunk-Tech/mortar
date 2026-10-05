@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -24,13 +25,13 @@ func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T
 	}})
 	t.Cleanup(func() { source.Register(thunderstore.Driver{}) })
 	s := &Service{}
-	same := Installed{Key: "a", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "1.0.0"}
+	same := framework.Mod{Key: "a", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "1.0.0"}
 	same.Name, same.Version = "Cool", "1.0.0"
-	viaRepo := Installed{Key: "b", SourceKind: profile.KindGitHub, SourceRepo: "Alice/Cool"}
+	viaRepo := framework.Mod{Key: "b", SourceKind: profile.KindGitHub, SourceRepo: "Alice/Cool"}
 	viaRepo.Name, viaRepo.Version = "Other", "1.0.0"
-	current := Installed{Key: "c", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "2.0.0"}
+	current := framework.Mod{Key: "c", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "2.0.0"}
 	current.Name, current.Version = "Cool", "2.0.0"
-	got := s.thunderstoreUpdates(context.Background(), "lethal-company", []Installed{same, viaRepo, current}, nil)
+	got := s.thunderstoreUpdates(context.Background(), "lethal-company", []framework.Mod{same, viaRepo, current}, nil)
 	if len(got) != 2 {
 		t.Fatalf("updates = %+v", got)
 	}
@@ -40,7 +41,7 @@ func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T
 	if got[1].Key != "b" || !got[1].Switch {
 		t.Errorf("cross-source update = %+v", got[1])
 	}
-	covered := s.thunderstoreUpdates(context.Background(), "lethal-company", []Installed{viaRepo}, []Update{{Key: "b", Version: "2.0.0"}})
+	covered := s.thunderstoreUpdates(context.Background(), "lethal-company", []framework.Mod{viaRepo}, []Update{{Key: "b", Version: "2.0.0"}})
 	if len(covered) != 0 {
 		t.Errorf("an update already offered was offered again: %+v", covered)
 	}

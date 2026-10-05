@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
-	"github.com/Rethunk-Tech/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
 )
 
 func (c *cmd) who() error {
@@ -14,7 +14,7 @@ func (c *cmd) who() error {
 		return err
 	}
 	p := control.Params{Game: a[0], Profile: a[1], Query: strings.Join(a[2:], " ")}
-	return show(c, "who", p, func(page problems.WhoChangesPage) { printAssetTargets(c, page.Targets) })
+	return show(c, "who", p, func(page contentpatcher.WhoChangesPage) { printAssetTargets(c, page.Targets) })
 }
 
 func (c *cmd) conflictsMap() error {
@@ -23,10 +23,10 @@ func (c *cmd) conflictsMap() error {
 		return err
 	}
 	p := control.Params{Game: a[0], Profile: a[1], Query: c.filter}
-	return show(c, "conflicts.map", p, func(page problems.AssetMapPage) { printAssetTargets(c, page.Targets) })
+	return show(c, "conflicts.map", p, func(page contentpatcher.AssetMapPage) { printAssetTargets(c, page.Targets) })
 }
 
-func printAssetTargets(c *cmd, targets []problems.AssetTarget) {
+func printAssetTargets(c *cmd, targets []contentpatcher.AssetTarget) {
 	if len(targets) == 0 {
 		fmt.Fprintln(c.out, "No assets.")
 		return

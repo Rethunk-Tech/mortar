@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
@@ -17,7 +18,7 @@ var (
 	nexusModLink     = regexp.MustCompile(`(?i)nexusmods\.com/([a-z0-9]+)/mods/([0-9]+)`)
 )
 
-func authorMarkedMods(home, domain string, enabled []Installed) []Broken {
+func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
 	var out []Broken
 	for _, im := range enabled {
 		if pageID, fileID, ok := store.NexusFile(im.Key); ok {
@@ -49,7 +50,7 @@ func readCachedNexusDetails(home, domain string, pageID int) (nexussvc.Details, 
 	return meta.Peek[nexussvc.Details](&meta.Client{CacheDir: filepath.Join(home, "cache")}, nexussvc.DetailsName(domain, pageID))
 }
 
-func markedManifest(im Installed, domain string) *Broken {
+func markedManifest(im framework.Mod, domain string) *Broken {
 	if match := statusMatch(im.Name, true); match != "" {
 		return authorBroken(im, domain, match, "Its installed manifest name")
 	}
@@ -59,7 +60,7 @@ func markedManifest(im Installed, domain string) *Broken {
 	return nil
 }
 
-func markedBroken(im Installed, domain, name, summary, description string, file *nexus.File) *Broken {
+func markedBroken(im framework.Mod, domain, name, summary, description string, file *nexus.File) *Broken {
 	if match := statusMatch(name, true); match != "" {
 		return authorBroken(im, domain, match, "Its Nexus mod name")
 	}
@@ -120,11 +121,11 @@ func quoteAround(text string, start, end int) string {
 	return sentence
 }
 
-func authorBroken(im Installed, domain, quote, where string) *Broken {
+func authorBroken(im framework.Mod, domain, quote, where string) *Broken {
 	return authorBrokenWithReplacement(im, domain, quote, where)
 }
 
-func authorBrokenText(im Installed, domain, quote, where, text string) *Broken {
+func authorBrokenText(im framework.Mod, domain, quote, where, text string) *Broken {
 	b := authorBrokenWithReplacement(im, domain, quote, where)
 	if ids := modPageIDs(nexusModLink, text, domain); len(ids) > 0 {
 		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexus.ModURL(domain, ids[0])}
@@ -132,7 +133,7 @@ func authorBrokenText(im Installed, domain, quote, where, text string) *Broken {
 	return b
 }
 
-func authorBrokenWithReplacement(im Installed, domain, quote, where string) *Broken {
+func authorBrokenWithReplacement(im framework.Mod, domain, quote, where string) *Broken {
 	status := "obsolete"
 	if match := authorStatusWord.FindString(quote); match != "" {
 		status = strings.ToLower(match)

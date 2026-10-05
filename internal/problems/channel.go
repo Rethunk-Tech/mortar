@@ -3,13 +3,14 @@ package problems
 import (
 	"context"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
-func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []Installed, r *UpdatesResult) {
+func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []framework.Mod, r *UpdatesResult) {
 	for _, x := range asked {
 		ch := profile.NormalizeChannel(x.UpdateChannel)
 		if ch == profile.ChannelMain {
@@ -42,7 +43,7 @@ func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []
 	}
 }
 
-func upsertChannelOffer(r *UpdatesResult, x Installed, version, pageURL string, nexusID int) {
+func upsertChannelOffer(r *UpdatesResult, x framework.Mod, version, pageURL string, nexusID int) {
 	for i, u := range r.Updates {
 		if u.Key != x.Key || u.ID != x.ModID() || u.Unofficial {
 			continue
@@ -63,7 +64,7 @@ func upsertChannelOffer(r *UpdatesResult, x Installed, version, pageURL string, 
 	})
 }
 
-func keepPrerelease(m Installed, includePrerelease bool, version, installed string) bool {
+func keepPrerelease(m framework.Mod, includePrerelease bool, version, installed string) bool {
 	if includePrerelease || profile.NormalizeChannel(m.UpdateChannel) == profile.ChannelBeta {
 		return true
 	}

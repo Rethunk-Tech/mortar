@@ -3,6 +3,7 @@ package problems
 import (
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
@@ -26,7 +27,7 @@ func TestCleanupHintsFindsUnusedFrameworkNeededOnlyByDisabledMod(t *testing.T) {
 		UniqueID:       "Example.OldContentPack",
 		ContentPackFor: "Example.ContentFramework",
 	}
-	mods := []Installed{
+	mods := []framework.Mod{
 		{
 			Key:      "spacecore",
 			Enabled:  true,

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -416,22 +417,22 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 }
 
 // asInstalled presents a resolved mod to the problem checks as installed.
-func asInstalled(m Mod, df *meta.File) []problems.Installed {
-	var out []problems.Installed
+func asInstalled(m Mod, df *meta.File) []framework.Mod {
+	var out []framework.Mod
 	for _, dm := range df.Mods {
 		mf := manifest.Manifest{Name: dm.Name, Version: dm.Version, UpdateKeys: dm.UpdateKeys}.WithModID(dm.ModID())
 		for _, d := range dm.Dependencies {
 			mf.Dependencies = append(mf.Dependencies, manifest.NewDependency(d.ModID(), d.MinimumVersion, d.Required))
 		}
-		out = append(out, problems.Installed{Key: m.Key, SourceKind: profile.KindNexus, Enabled: true, Manifest: mf})
+		out = append(out, framework.Mod{Key: m.Key, SourceKind: profile.KindNexus, Enabled: true, Manifest: mf})
 	}
 	return out
 }
 
 func (r *resolver) dependencies(ctx context.Context, mods []Mod) ([]Mod, []Problem) {
-	var all []problems.Installed
+	var all []framework.Mod
 	for _, i := range r.installed {
-		all = append(all, problems.Installed{Key: i.Key, SourceKind: i.Source.Kind, Enabled: i.Enabled, Manifest: i.Manifest})
+		all = append(all, framework.Mod{Key: i.Key, SourceKind: i.Source.Kind, Enabled: i.Enabled, Manifest: i.Manifest})
 	}
 	shared := map[string]Mod{}
 	dependents := map[string]bool{}

@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
@@ -44,7 +45,7 @@ func TestModProblemsFiltersByNexusModAndOmitsCosmeticConflicts(t *testing.T) {
 	result := problems.Result{
 		Missing: []problems.Missing{{DependentID: "smapi:pack.target", DependentName: "Target", ID: "smapi:Core.Required", Reason: "absent"}},
 		Broken:  []problems.Broken{{ID: "smapi:Pack.Target", Name: "Target"}},
-		AssetConflicts: []problems.AssetConflict{
+		AssetConflicts: []framework.AssetConflict{
 			{PackIDs: []mod.ID{"smapi:Pack.Target", "smapi:Pack.Other"}, Names: []string{"Target", "Other"}},
 			{PackIDs: []mod.ID{"smapi:Pack.Target", "smapi:Pack.Other"}, Names: []string{"Target", "Other"}, Cosmetic: true},
 		},
@@ -222,7 +223,7 @@ func TestHandleProfilesByNameAndID(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, ok := res.([]problems.AssetConflict); !ok || len(got) != 0 {
+	if got, ok := res.([]framework.AssetConflict); !ok || len(got) != 0 {
 		t.Fatalf("empty profile has conflicts %v", got)
 	}
 	if _, err := s.Handle(ctx, "mods.disable", Params{Game: "stardew", Profile: p.ID, IDs: []string{"Some.Mod"}}); err == nil {

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -26,7 +27,7 @@ func fold(s string) string {
 // from it, or a mod installed elsewhere that Thunderstore lists under the same GitHub repo or the same name and
 // author. An update from a source other than the installed one is marked Switch. have holds the updates already
 // found, so a version they cover is not offered twice.
-func (s *Service) thunderstoreUpdates(ctx context.Context, gameID string, mods []Installed, have []Update) []Update {
+func (s *Service) thunderstoreUpdates(ctx context.Context, gameID string, mods []framework.Mod, have []Update) []Update {
 	key := ""
 	for _, g := range game.Catalog() {
 		if g.ID != gameID {
@@ -78,7 +79,7 @@ func (s *Service) thunderstoreUpdates(ctx context.Context, gameID string, mods [
 	return out
 }
 
-func sameMod(x Installed, it source.Item) bool {
+func sameMod(x framework.Mod, it source.Item) bool {
 	switch {
 	case x.SourceKind == profile.KindThunderstore:
 		return strings.EqualFold(it.ID, x.SourceName)

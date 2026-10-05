@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -45,8 +46,8 @@ func (f fakeMeta) CheckUpdates(_ context.Context, req meta.UpdateRequest) []meta
 	return out
 }
 
-func inst(key, id, version string, enabled bool, deps ...manifest.Dependency) Installed {
-	m := Installed{Key: key, SourceKind: profile.KindLocal, Enabled: enabled}
+func inst(key, id, version string, enabled bool, deps ...manifest.Dependency) framework.Mod {
+	m := framework.Mod{Key: key, SourceKind: profile.KindLocal, Enabled: enabled}
 	m.Name, m.UniqueID, m.Version, m.Dependencies = id, id, version, deps
 	return m
 }
@@ -58,21 +59,21 @@ func req(id, minimum string) manifest.Dependency {
 func TestMissingKinds(t *testing.T) {
 	cases := []struct {
 		name string
-		mods []Installed
+		mods []framework.Mod
 		want []string // reasons
 	}{
-		{"absent", []Installed{inst("a", "A", "1.0", true, req("B", ""))}, []string{"absent"}},
-		{"present", []Installed{inst("a", "A", "1.0", true, req("B", "")), inst("b", "B", "1.0", true)}, nil},
-		{"disabled", []Installed{inst("a", "A", "1.0", true, req("B", "1.0")), inst("b", "B", "1.0", false)}, []string{"disabled"}},
-		{"outdated", []Installed{inst("a", "A", "1.0", true, req("B", "2.0")), inst("b", "B", "1.5", true)}, []string{"outdated"}},
-		{"case-insensitive id", []Installed{inst("a", "A", "1.0", true, req("b", "")), inst("b", "B", "1.0", true)}, nil},
-		{"prerelease below release", []Installed{inst("a", "A", "1.0", true, req("B", "1.2")), inst("b", "B", "1.2-beta.1", true)}, []string{"outdated"}},
-		{"release meets prerelease minimum", []Installed{inst("a", "A", "1.0", true, req("B", "1.2-beta.1")), inst("b", "B", "1.2", true)}, nil},
-		{"prerelease meets lower prerelease", []Installed{inst("a", "A", "1.0", true, req("B", "1.2-alpha")), inst("b", "B", "1.2-beta", true)}, nil},
-		{"unparseable version is not flagged", []Installed{inst("a", "A", "1.0", true, req("B", "1.2")), inst("b", "B", "weird", true)}, nil},
-		{"optional ignored", []Installed{inst("a", "A", "1.0", true, manifest.Dependency{UniqueID: "B", Required: false})}, nil},
-		{"disabled dependent ignored", []Installed{inst("a", "A", "1.0", false, req("B", ""))}, nil},
-		{"one of two copies satisfies", []Installed{
+		{"absent", []framework.Mod{inst("a", "A", "1.0", true, req("B", ""))}, []string{"absent"}},
+		{"present", []framework.Mod{inst("a", "A", "1.0", true, req("B", "")), inst("b", "B", "1.0", true)}, nil},
+		{"disabled", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.0")), inst("b", "B", "1.0", false)}, []string{"disabled"}},
+		{"outdated", []framework.Mod{inst("a", "A", "1.0", true, req("B", "2.0")), inst("b", "B", "1.5", true)}, []string{"outdated"}},
+		{"case-insensitive id", []framework.Mod{inst("a", "A", "1.0", true, req("b", "")), inst("b", "B", "1.0", true)}, nil},
+		{"prerelease below release", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2")), inst("b", "B", "1.2-beta.1", true)}, []string{"outdated"}},
+		{"release meets prerelease minimum", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2-beta.1")), inst("b", "B", "1.2", true)}, nil},
+		{"prerelease meets lower prerelease", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2-alpha")), inst("b", "B", "1.2-beta", true)}, nil},
+		{"unparseable version is not flagged", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2")), inst("b", "B", "weird", true)}, nil},
+		{"optional ignored", []framework.Mod{inst("a", "A", "1.0", true, manifest.Dependency{UniqueID: "B", Required: false})}, nil},
+		{"disabled dependent ignored", []framework.Mod{inst("a", "A", "1.0", false, req("B", ""))}, nil},
+		{"one of two copies satisfies", []framework.Mod{
 			inst("a", "A", "1.0", true, req("B", "2.0")), inst("b1", "B", "1.0", true), inst("b2", "B", "2.0", true),
 		}, []string{}},
 	}
@@ -98,7 +99,7 @@ func TestMissingKinds(t *testing.T) {
 func TestContentPackForIsRequired(t *testing.T) {
 	m := inst("a", "A", "1.0", true)
 	m.Dependencies = []manifest.Dependency{{UniqueID: "Pathoschild.ContentPatcher", MinimumVersion: "2.0", Required: true}}
-	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{m})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []framework.Mod{m})
 	if len(got.Missing) != 1 || got.Missing[0].ID != "smapi:Pathoschild.ContentPatcher" {
 		t.Fatalf("missing = %+v", got.Missing)
 	}
@@ -113,16 +114,16 @@ func TestWhere(t *testing.T) {
 		10: {ID: 10, Name: "Old host", PageURL: "https://n/10", Downloads: []meta.File{file(1, "MAIN", "1.0"), file(2, "OPTIONAL", "1.5")}},
 		20: {ID: 20, Name: "New host", PageURL: "https://n/20", Downloads: []meta.File{file(3, "MAIN", "2.0"), file(4, "MAIN", "2.5"), file(5, "MAIN", "1.0")}},
 	}
-	dependent := func(keys ...string) []Installed {
+	dependent := func(keys ...string) []framework.Mod {
 		a := inst("a", "A", "1.0", true, req("B", "2.0"))
 		a.UpdateKeys = keys
-		return []Installed{a}
+		return []framework.Mod{a}
 	}
 	both := []meta.Ref{{Site: "Nexus", ID: 10}, {Site: "Nexus", ID: 20}}
 	cases := []struct {
 		name    string
 		meta    fakeMeta
-		mods    []Installed
+		mods    []framework.Mod
 		want    *Ref
 		unknown bool
 	}{
@@ -170,7 +171,7 @@ func TestWhere(t *testing.T) {
 func TestDuplicates(t *testing.T) {
 	nexus := inst("n", "S", "2.0", true)
 	nexus.SourceKind = "nexus"
-	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{
+	got := Check(context.Background(), fakeMeta{}, testEnv, []framework.Mod{
 		inst("x", "L", "1.0", true, req("S", "2.0")),
 		inst("o", "S", "1.0", true),
 		nexus,
@@ -198,7 +199,7 @@ func TestNexusFilesInDuplicate(t *testing.T) {
 			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
 			{ID: 175477, Type: "MAIN", FileName: "WorldMap-2.0.zip", Version: "2.0"},
 		},
-	}}}, testEnv, []Installed{a, b})
+	}}}, testEnv, []framework.Mod{a, b})
 	if len(got.Duplicates) != 1 || len(got.Duplicates[0].NexusFiles) != 2 {
 		t.Fatalf("nexus files = %+v", got.Duplicates)
 	}
@@ -217,7 +218,7 @@ func TestOptionalNexusFileDuplicateIsInformational(t *testing.T) {
 			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
 			{ID: 175477, Type: "MISCELLANEOUS", FileName: "WorldMap-addon.zip", Version: "1.0"},
 		},
-	}}}, testEnv, []Installed{a, b})
+	}}}, testEnv, []framework.Mod{a, b})
 	if len(got.Duplicates) != 1 || !got.Duplicates[0].NexusOptional || got.Count() != 0 {
 		t.Fatalf("optional duplicate = %+v, count = %d", got.Duplicates, got.Count())
 	}
@@ -230,7 +231,7 @@ func TestBroken(t *testing.T) {
 		"C": {Compatibility: "Obsolete"},
 		"D": {Compatibility: "Broken"},
 	}}
-	mods := []Installed{inst("a", "A", "1", true), inst("b", "B", "1", true), inst("c", "C", "1", true), inst("d", "D", "1", false)}
+	mods := []framework.Mod{inst("a", "A", "1", true), inst("b", "B", "1", true), inst("c", "C", "1", true), inst("d", "D", "1", false)}
 	got := Check(context.Background(), m, testEnv, mods)
 	want := []Broken{
 		{Key: "a", ID: "smapi:A", Name: "A", Status: "broken", BrokeIn: "Stardew Valley 1.6"},
@@ -248,7 +249,7 @@ func TestBroken(t *testing.T) {
 func TestCheckPopulatesTimings(t *testing.T) {
 	pack := inst("p", "P", "1.0", true)
 	pack.ContentPackFor = "Pathoschild.ContentPatcher"
-	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{inst("a", "A", "1.0", true), pack})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []framework.Mod{inst("a", "A", "1.0", true), pack})
 	names := map[string]bool{}
 	for _, tmg := range got.Timings {
 		names[tmg.Name] = true
@@ -261,10 +262,10 @@ func TestCheckPopulatesTimings(t *testing.T) {
 }
 
 func TestCountShowsConflictsBetweenTheSameModsOnce(t *testing.T) {
-	seasonal := func(target string) AssetConflict {
-		return AssetConflict{Kind: "edit", Target: target, PackIDs: []mod.ID{"smapi:B", "smapi:A"}, WinnerName: "unclear"}
+	seasonal := func(target string) framework.AssetConflict {
+		return framework.AssetConflict{Kind: "edit", Target: target, PackIDs: []mod.ID{"smapi:B", "smapi:A"}, WinnerName: "unclear"}
 	}
-	r := Result{AssetConflicts: []AssetConflict{
+	r := Result{AssetConflicts: []framework.AssetConflict{
 		seasonal("loosesprites/map"), seasonal("loosesprites/map_fall"),
 		{Kind: "edit", Target: "maps/forest", PackIDs: []mod.ID{"smapi:A", "smapi:C"}, WinnerName: "unclear"},
 		{Kind: "edit", Target: "x", PackIDs: []mod.ID{"smapi:A", "smapi:B"}, Cosmetic: true},

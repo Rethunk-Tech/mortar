@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
@@ -1493,7 +1494,7 @@ func (c *cmd) installMethod(method string, p control.Params) error {
 }
 
 func (c *cmd) conflicts(p control.Params) error {
-	return show(c, "conflicts", p, func(list []problems.AssetConflict) {
+	return show(c, "conflicts", p, func(list []framework.AssetConflict) {
 		if len(list) == 0 {
 			fmt.Fprintln(c.out, "No conflicts.")
 			return

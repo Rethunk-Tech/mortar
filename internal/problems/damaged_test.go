@@ -3,11 +3,12 @@ package problems
 import (
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func TestDamagedRowsAreOnePerStoreItemWithAFewFileNames(t *testing.T) {
-	mods := []Installed{
+	mods := []framework.Mod{
 		{Key: "nexus-1-2", Name: "Pack"},
 		{Key: "nexus-1-2", Name: "Pack Extra"},
 		{Key: "local-fine", Name: "Fine"},

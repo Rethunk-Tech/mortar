@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
@@ -113,12 +114,12 @@ type ModRow struct {
 // ModInfo is one mod with what relates to it.
 type ModInfo struct {
 	ModRow
-	Needs      []mod.ID                 `json:"needs"`
-	Optional   []mod.ID                 `json:"optional"`
-	Dependents []mod.ID                 `json:"dependents"`
-	Missing    []problems.Missing       `json:"missing"`
-	Conflicts  []problems.AssetConflict `json:"conflicts"`
-	Settings   []problems.SettingHint   `json:"settings"`
+	Needs      []mod.ID                  `json:"needs"`
+	Optional   []mod.ID                  `json:"optional"`
+	Dependents []mod.ID                  `json:"dependents"`
+	Missing    []problems.Missing        `json:"missing"`
+	Conflicts  []framework.AssetConflict `json:"conflicts"`
+	Settings   []framework.SettingHint   `json:"settings"`
 }
 
 // ModProblem is a short, read-only problem shown beside a Nexus mod page.
@@ -847,7 +848,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if err != nil {
 			return nil, err
 		}
-		out := []problems.AssetConflict{}
+		out := []framework.AssetConflict{}
 		for _, c := range res.AssetConflicts {
 			if p.All || !c.Cosmetic {
 				out = append(out, c)
@@ -1199,7 +1200,7 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 	if !ok {
 		return ModInfo{}, fmt.Errorf("profile %s has no mod %q", p.Name, uid)
 	}
-	info := ModInfo{Needs: []mod.ID{}, Optional: []mod.ID{}, Dependents: []mod.ID{}, Missing: []problems.Missing{}, Conflicts: []problems.AssetConflict{}, Settings: []problems.SettingHint{}}
+	info := ModInfo{Needs: []mod.ID{}, Optional: []mod.ID{}, Dependents: []mod.ID{}, Missing: []problems.Missing{}, Conflicts: []framework.AssetConflict{}, Settings: []framework.SettingHint{}}
 	for _, r := range modRows(p) {
 		if mod.Equal(r.ID, uid) {
 			info.ModRow = r

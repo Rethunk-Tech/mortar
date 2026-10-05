@@ -3,6 +3,7 @@ package problems
 import (
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -97,7 +98,7 @@ func hideDismissedListed(missing []Missing, tokens []string) ([]Missing, []Dismi
 	return out, dismissed
 }
 
-func hideDismissedSettings(settings []SettingHint, tokens []string) ([]SettingHint, []DismissedProblem) {
+func hideDismissedSettings(settings []framework.SettingHint, tokens []string) ([]framework.SettingHint, []DismissedProblem) {
 	if len(tokens) == 0 {
 		return settings, nil
 	}
@@ -105,7 +106,7 @@ func hideDismissedSettings(settings []SettingHint, tokens []string) ([]SettingHi
 	for _, t := range tokens {
 		skip[t] = true
 	}
-	out := []SettingHint{}
+	out := []framework.SettingHint{}
 	dismissed := []DismissedProblem{}
 	for _, setting := range settings {
 		target := setting.ID.Fold() + "\t" + strings.ToLower(setting.Field)
@@ -124,7 +125,7 @@ func hideDismissedSettings(settings []SettingHint, tokens []string) ([]SettingHi
 	return out, dismissed
 }
 
-func hideDismissed(conflicts []AssetConflict, tokens []string) ([]AssetConflict, []DismissedProblem) {
+func hideDismissed(conflicts []framework.AssetConflict, tokens []string) ([]framework.AssetConflict, []DismissedProblem) {
 	if len(tokens) == 0 {
 		return conflicts, nil
 	}
@@ -132,7 +133,7 @@ func hideDismissed(conflicts []AssetConflict, tokens []string) ([]AssetConflict,
 	for _, t := range tokens {
 		skip[t] = true
 	}
-	out := []AssetConflict{}
+	out := []framework.AssetConflict{}
 	dismissed := []DismissedProblem{}
 	for _, c := range conflicts {
 		token := dismissToken(c.Kind, c.Target)

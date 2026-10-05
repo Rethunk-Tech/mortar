@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
@@ -30,7 +31,7 @@ func TestCheckUpdates(t *testing.T) {
 		"me.b":   {Known: true},
 	}
 	env := Environment{GameVersion: "1.6.15", APIVersion: "4.3.2", Platform: "Linux"}
-	got := CheckUpdates(context.Background(), rm, env, []Installed{bundled, inst("k1", "me.a", "1.0.0", true), inst("k3", "me.b", "1.0.0", true), off}, false)
+	got := CheckUpdates(context.Background(), rm, env, []framework.Mod{bundled, inst("k1", "me.a", "1.0.0", true), inst("k3", "me.b", "1.0.0", true), off}, false)
 	want := []Update{
 		{Key: "k1", ID: "smapi:me.a", Name: "me.a", Installed: "1.0.0", Version: "2.0.0", URL: "https://example.test/a", Source: "example.test"},
 		{Key: "k2", ID: "smapi:me.off", Name: "me.off", Installed: "1.0.0", Version: "1.1.0", URL: "https://example.test/off", Source: "example.test"},
@@ -52,7 +53,7 @@ func TestCheckUpdatesNamesTheGitHubRepo(t *testing.T) {
 		"me.a": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://github.com/me/a/releases/tag/2.0.0"}},
 		"me.b": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
 	}}
-	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{gh, elsewhere}, false).Updates
+	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{gh, elsewhere}, false).Updates
 	if len(got) != 2 || got[0].GitHubRepo != "me/a" || got[0].NexusID != 5 || got[1].GitHubRepo != "" {
 		t.Fatalf("got %+v", got)
 	}
@@ -65,7 +66,7 @@ func TestCheckUpdatesIncludesUnofficialWithoutReplacingSuggested(t *testing.T) {
 			Unofficial: &meta.Update{Version: "2.1.0-unofficial.1-x", URL: "https://smapi.io/u"},
 		},
 	}}
-	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{inst("k1", "me.a", "1.0.0", true)}, false).Updates
+	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{inst("k1", "me.a", "1.0.0", true)}, false).Updates
 	if len(got) != 2 || got[0].Unofficial || got[0].Version != "2.0.0" || !got[1].Unofficial || got[1].Version != "2.1.0-unofficial.1-x" {
 		t.Fatalf("got %+v", got)
 	}
@@ -78,7 +79,7 @@ func TestHideHeldDropsPinnedAndSkipped(t *testing.T) {
 		{Key: "later", Version: "2.1.0"},
 		{Key: "open", Version: "2.0.0"},
 	}}
-	got := HideHeld(r, []Installed{
+	got := HideHeld(r, []framework.Mod{
 		{Key: "pin", Pinned: true},
 		{Key: "skip", SkipVersion: "2.0.0"},
 		{Key: "later", SkipVersion: "2.0.0"},
@@ -94,7 +95,7 @@ func TestHideHeldDropsSkippedSources(t *testing.T) {
 		{Key: "nexus", Version: "2.0.0", Source: "Nexus"},
 		{Key: "github", Version: "2.0.0", Source: "GitHub"},
 	}}
-	got := HideHeld(r, []Installed{
+	got := HideHeld(r, []framework.Mod{
 		{Key: "nexus", SkipSources: []string{"Nexus"}},
 		{Key: "github"},
 	}, true, "")
@@ -123,7 +124,7 @@ func TestUpdateSource(t *testing.T) {
 }
 
 func TestCheckUpdatesUnknownNeverBlocks(t *testing.T) {
-	got := CheckUpdates(context.Background(), fakeMeta{updatesOff: true}, testEnv, []Installed{inst("k1", "me.a", "1.0.0", true)}, false)
+	got := CheckUpdates(context.Background(), fakeMeta{updatesOff: true}, testEnv, []framework.Mod{inst("k1", "me.a", "1.0.0", true)}, false)
 	if !got.Unknown || len(got.Updates) != 0 {
 		t.Fatalf("got %+v", got)
 	}
@@ -139,7 +140,7 @@ func TestCheckUpdatesEnabledOnlySkipsDisabled(t *testing.T) {
 		"me.on":  {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://example.test/on"}},
 		"me.off": {Known: true, Suggested: &meta.Update{Version: "2.0.0", URL: "https://example.test/off"}},
 	}
-	mods := []Installed{
+	mods := []framework.Mod{
 		inst("k1", "me.on", "1.0.0", true),
 		inst("k2", "me.off", "1.0.0", false),
 	}
@@ -158,7 +159,7 @@ func TestHideHeldDropsPrereleaseUnlessInstalledIsPrerelease(t *testing.T) {
 		{Key: "beta", Installed: "1.0.0-beta", Version: "2.0.0-beta", URL: "https://example.test/beta2"},
 		{Key: "release", Installed: "1.0.0", Version: "2.0.0", URL: "https://example.test/stable"},
 	}}
-	mods := []Installed{{Key: "stable"}, {Key: "beta"}, {Key: "release"}}
+	mods := []framework.Mod{{Key: "stable"}, {Key: "beta"}, {Key: "release"}}
 	got := HideHeld(r, mods, false, "")
 	if len(got.Updates) != 2 || got.Updates[0].Key != "beta" || got.Updates[1].Key != "release" {
 		t.Fatalf("got %+v", got.Updates)
@@ -173,7 +174,7 @@ func TestHideHeldKeepsPrereleaseOnBetaChannel(t *testing.T) {
 	r := UpdatesResult{Updates: []Update{
 		{Key: "stable", Installed: "1.0.0", Version: "2.0.0-beta"},
 	}}
-	mods := []Installed{{Key: "stable", UpdateChannel: "beta"}}
+	mods := []framework.Mod{{Key: "stable", UpdateChannel: "beta"}}
 	got := HideHeld(r, mods, false, "")
 	if len(got.Updates) != 1 {
 		t.Fatalf("beta channel should keep prerelease, got %+v", got.Updates)
@@ -185,7 +186,7 @@ func TestHideHeldDropsUnofficialWhenNever(t *testing.T) {
 		{Key: "off", Version: "2.0.0", Unofficial: true},
 		{Key: "on", Version: "2.0.0"},
 	}}
-	mods := []Installed{{Key: "off"}, {Key: "on"}}
+	mods := []framework.Mod{{Key: "off"}, {Key: "on"}}
 	got := HideHeld(r, mods, true, "never")
 	if len(got.Updates) != 1 || got.Updates[0].Key != "on" {
 		t.Fatalf("got %+v", got.Updates)
@@ -201,7 +202,7 @@ func TestRelate(t *testing.T) {
 	a.UpdateKeys = []string{"Chucklefish:1", "Nexus:42@x"}
 	core := inst("k2", "me.core", "1.0.0", true)
 	user := inst("k3", "me.user", "1.0.0", true, req("me.a", ""))
-	r, ok := Relate([]Installed{a, core, user}, "stardewvalley", "k1", "smapi:me.a")
+	r, ok := Relate([]framework.Mod{a, core, user}, "stardewvalley", "k1", "smapi:me.a")
 	if !ok || r.PageURL != "https://www.nexusmods.com/stardewvalley/mods/42" {
 		t.Fatalf("relations = %+v, %v", r, ok)
 	}
@@ -215,7 +216,7 @@ func TestRelate(t *testing.T) {
 	if !reflect.DeepEqual(r.NeededBy, []Dependent{{Key: "k3", ID: "smapi:me.user", Name: "me.user"}}) {
 		t.Fatalf("neededBy = %+v", r.NeededBy)
 	}
-	if _, ok := Relate([]Installed{a}, "stardewvalley", "k9", "smapi:me.a"); ok {
+	if _, ok := Relate([]framework.Mod{a}, "stardewvalley", "k9", "smapi:me.a"); ok {
 		t.Fatal("unknown key related")
 	}
 }
@@ -230,10 +231,10 @@ func TestPageURL(t *testing.T) {
 }
 
 func TestPagesKeysByEntryAndID(t *testing.T) {
-	with, without := Installed{Key: "k1"}, Installed{Key: "k2"}
+	with, without := framework.Mod{Key: "k1"}, framework.Mod{Key: "k2"}
 	with.UniqueID, with.UpdateKeys = "me.a", []string{"GitHub:me/repo"}
 	without.UniqueID = "me.b"
-	got := Pages([]Installed{with, without}, "stardewvalley")
+	got := Pages([]framework.Mod{with, without}, "stardewvalley")
 	if len(got) != 1 || got["k1/smapi:me.a"] != "https://github.com/me/repo" {
 		t.Fatalf("got %v", got)
 	}

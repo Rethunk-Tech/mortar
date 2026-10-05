@@ -13,6 +13,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -44,7 +45,7 @@ const (
 )
 
 // sameJobRows lists the enabled C# mods that do the same job as another, from their assemblies and the last run.
-func (s *Service) sameJobRows(gameID, id string, mods []Installed) []Redundant {
+func (s *Service) sameJobRows(gameID, id string, mods []framework.Mod) []framework.Redundant {
 	dir, err := s.profiles.ProfileDir(gameID, id)
 	if err != nil {
 		return nil
@@ -52,8 +53,8 @@ func (s *Service) sameJobRows(gameID, id string, mods []Installed) []Redundant {
 	return sameJob(footprints(mods, launchsvc.LatestReplaces(dir)), mods)
 }
 
-// withSameJob adds the "sameJob" rows, skipping mods another check already lists under Redundant.
-func withSameJob(r Result, rows []Redundant) Result {
+// withSameJob adds the "sameJob" rows, skipping mods another check already lists under framework.Redundant.
+func withSameJob(r Result, rows []framework.Redundant) Result {
 	listed := map[string]bool{}
 	for _, x := range r.Redundant {
 		listed[x.Key] = true
@@ -69,7 +70,7 @@ func withSameJob(r Result, rows []Redundant) Result {
 // footprints maps each enabled C# mod, by folded mod id, to the game members it changes: those its assembly
 // assigns, and the methods the bridge saw it replace through Harmony as "harmony:Type::Method". replaces is keyed by
 // Harmony ID, which mods set to their SMAPI id by convention.
-func footprints(mods []Installed, replaces map[string][]string) map[string]map[string]bool {
+func footprints(mods []framework.Mod, replaces map[string][]string) map[string]map[string]bool {
 	byID := map[string][]string{}
 	for owner, methods := range replaces {
 		byID[mod.SMAPI(owner).Fold()] = methods
@@ -101,9 +102,9 @@ func footprints(mods []Installed, replaces map[string][]string) map[string]map[s
 // smaller mods whose footprint a larger one covers (listed on the smaller mod only).
 // Pairs that are meant to run together are left out: one depends on the other, they share an author or download,
 // or either is something another enabled mod builds on, since a framework writes what its users write.
-func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
+func sameJob(fp map[string]map[string]bool, mods []framework.Mod) []framework.Redundant {
 	builtOn := map[string]bool{}
-	var code []Installed
+	var code []framework.Mod
 	seen := map[string]bool{}
 	for _, m := range mods {
 		if !m.Enabled {
@@ -133,9 +134,9 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 			total[id] += weight(member)
 		}
 	}
-	by := map[string][]ModRef{}
+	by := map[string][]framework.ModRef{}
 	shared := map[string]map[string]bool{}
-	coveredBy := map[string][]ModRef{}
+	coveredBy := map[string][]framework.ModRef{}
 	coveredShared := map[string]map[string]bool{}
 	note := func(into map[string]map[string]bool, id string, members []string) {
 		if into[id] == nil {
@@ -173,8 +174,8 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 				similar = sum > 0 && rarest <= sameJobDistinctDF && sum >= sameJobScore*max(total[ida], total[idb])
 			}
 			if similar {
-				by[ida] = append(by[ida], ModRef{Key: b.Key, Name: b.Name})
-				by[idb] = append(by[idb], ModRef{Key: a.Key, Name: a.Name})
+				by[ida] = append(by[ida], framework.ModRef{Key: b.Key, Name: b.Name})
+				by[idb] = append(by[idb], framework.ModRef{Key: a.Key, Name: a.Name})
 				note(shared, ida, both)
 				note(shared, idb, both)
 				continue
@@ -185,25 +186,25 @@ func sameJob(fp map[string]map[string]bool, mods []Installed) []Redundant {
 			}
 			ids := small.ModID().Fold()
 			if n >= sameJobSmall && total[ids] >= sameJobCoveredWeight && common <= sameJobCoveredDF && sum >= sameJobCovered*total[ids] {
-				coveredBy[ids] = append(coveredBy[ids], ModRef{Key: large.Key, Name: large.Name})
+				coveredBy[ids] = append(coveredBy[ids], framework.ModRef{Key: large.Key, Name: large.Name})
 				note(coveredShared, ids, both)
 			}
 		}
 	}
-	var out []Redundant
+	var out []framework.Redundant
 	for _, m := range code {
 		id := m.ModID().Fold()
 		switch {
 		case len(by[id]) > 0:
-			out = append(out, Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: by[id], Detail: shortMembers(shared[id], weight)})
+			out = append(out, framework.Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: by[id], Detail: shortMembers(shared[id], weight)})
 		case len(coveredBy[id]) > 0:
-			out = append(out, Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: coveredBy[id], Detail: shortMembers(coveredShared[id], weight), Covered: true})
+			out = append(out, framework.Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: coveredBy[id], Detail: shortMembers(coveredShared[id], weight), Covered: true})
 		}
 	}
 	return out
 }
 
-func mayShareJob(a, b Installed, builtOn map[string]bool) bool {
+func mayShareJob(a, b framework.Mod, builtOn map[string]bool) bool {
 	ida, idb := a.ModID().Fold(), b.ModID().Fold()
 	if a.Key == b.Key || builtOn[ida] || builtOn[idb] {
 		return false
@@ -214,7 +215,7 @@ func mayShareJob(a, b Installed, builtOn map[string]bool) bool {
 	return !dependsOn(a, idb) && !dependsOn(b, ida)
 }
 
-func dependsOn(m Installed, id string) bool {
+func dependsOn(m framework.Mod, id string) bool {
 	return slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return d.ModID().Fold() == id })
 }
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -51,8 +52,8 @@ func (listedFakeMeta) Collection(context.Context, string, string, int) (meta.Col
 	return meta.Collection{}, nil
 }
 
-func listedDependent() Installed {
-	return Installed{
+func listedDependent() framework.Mod {
+	return framework.Mod{
 		Key:      "nexus-520-100",
 		Enabled:  true,
 		UniqueID: "Example.Dependent",
@@ -76,7 +77,7 @@ func TestListedRequirementSatisfiedByPageKey(t *testing.T) {
 		requirements: map[int][]meta.Requirement{520: {{ModID: 11148, Name: "Requirement"}}},
 		pages:        map[int]meta.Page{11148: listedPage(11148, "Requirement.Mod")},
 	}
-	mods := []Installed{listedDependent(), {Key: "nexus-11148-200", Enabled: true}}
+	mods := []framework.Mod{listedDependent(), {Key: "nexus-11148-200", Enabled: true}}
 
 	result := Check(context.Background(), fake, testEnv, mods)
 
@@ -90,7 +91,7 @@ func TestListedRequirementSatisfiedByDatasetUniqueID(t *testing.T) {
 		requirements: map[int][]meta.Requirement{520: {{ModID: 1915, Name: "Content Patcher"}}},
 		pages:        map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
 	}
-	mods := []Installed{
+	mods := []framework.Mod{
 		listedDependent(),
 		{Key: "local-content-patcher", Enabled: true, UniqueID: "Pathoschild.ContentPatcher"},
 	}
@@ -108,7 +109,7 @@ func TestListedRequirementMissing(t *testing.T) {
 		pages:        map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
 	}
 
-	result := Check(context.Background(), fake, testEnv, []Installed{listedDependent()})
+	result := Check(context.Background(), fake, testEnv, []framework.Mod{listedDependent()})
 
 	if len(result.Missing) != 1 {
 		t.Fatalf("Missing = %#v, want one item", result.Missing)
@@ -125,7 +126,7 @@ func TestListedRequirementOptionalNote(t *testing.T) {
 		pages:        map[int]meta.Page{14426: listedPage(14426, "GenderNeutrality.Tokens")},
 	}
 
-	result := Check(context.Background(), fake, testEnv, []Installed{listedDependent()})
+	result := Check(context.Background(), fake, testEnv, []framework.Mod{listedDependent()})
 
 	if len(result.Missing) != 1 || !result.Missing[0].Optional || result.Missing[0].Note != "For Gender Neutral Version" {
 		t.Fatalf("Missing = %#v, want optional noted requirement", result.Missing)
@@ -137,7 +138,7 @@ func TestListedRequirementFetchFailureIsUnknown(t *testing.T) {
 		requirementErr: map[int]error{520: errors.New("offline")},
 	}
 
-	result := Check(context.Background(), fake, testEnv, []Installed{listedDependent()})
+	result := Check(context.Background(), fake, testEnv, []framework.Mod{listedDependent()})
 
 	if !result.Unknown {
 		t.Fatal("Unknown = false, want true")

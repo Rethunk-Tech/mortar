@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -368,7 +369,7 @@ func TestProblemsDismissRestoreAndDismissed(t *testing.T) {
 			{DependentName: "Pack", ID: "smapi:Need.Mod", Listed: true},
 			{DependentName: "Other", ID: "smapi:Core", Reason: "absent"},
 		},
-		Settings: []problems.SettingHint{{ID: "smapi:A.Mod", Name: "Alpha", Field: "Enabled", Current: "false", ForNames: []string{"Beta"}}},
+		Settings: []framework.SettingHint{{ID: "smapi:A.Mod", Name: "Alpha", Field: "Enabled", Current: "false", ForNames: []string{"Beta"}}},
 		Dismissed: []problems.DismissedProblem{
 			{Token: strings.Join([]string{"listed", "need.mod"}, "\t"), Missing: &problems.Missing{DependentName: "Pack", ID: "smapi:Need.Mod", Listed: true}},
 		},
@@ -516,7 +517,7 @@ func TestProfileListAndProblemsText(t *testing.T) {
 		},
 		"problems": problems.Result{
 			Missing:        []problems.Missing{{ID: "smapi:Need.Mod", Optional: false}, {ID: "smapi:Opt", Optional: true}},
-			AssetConflicts: []problems.AssetConflict{{Kind: "load", Target: "x", Names: []string{"A"}}, {Kind: "edit", Target: "y", Cosmetic: true}},
+			AssetConflicts: []framework.AssetConflict{{Kind: "load", Target: "x", Names: []string{"A"}}, {Kind: "edit", Target: "y", Cosmetic: true}},
 		},
 	}
 	r := invoke(t, results, "profile", "list", "stardew", "Farm", "--format", "text")

@@ -7,6 +7,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -27,7 +28,7 @@ func TestFootprintsJoinAssemblyWritesAndHarmonyReplaces(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(profile, "startup", "20261003T000000Z.json"), []byte(report), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	var mods []Installed
+	var mods []framework.Mod
 	for _, id := range []string{"A.Tools", "B.Tools"} {
 		folder := filepath.Join(profile, "mods", id)
 		if err := os.MkdirAll(folder, 0o700); err != nil {
@@ -36,9 +37,9 @@ func TestFootprintsJoinAssemblyWritesAndHarmonyReplaces(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(folder, "Mod.dll"), dll, 0o600); err != nil {
 			t.Fatal(err)
 		}
-		mods = append(mods, packs.FromDisk(Installed{Key: id, Folder: folder, Enabled: true, UniqueID: id, Name: id, EntryDll: "Mod.dll"}))
+		mods = append(mods, packs.FromDisk(framework.Mod{Key: id, Folder: folder, Enabled: true, UniqueID: id, Name: id, EntryDll: "Mod.dll"}))
 	}
-	mods = append(mods, packs.FromDisk(Installed{Key: "escape", Folder: profile, Enabled: true, UniqueID: "C.Escape", EntryDll: "../Mod.dll"}))
+	mods = append(mods, packs.FromDisk(framework.Mod{Key: "escape", Folder: profile, Enabled: true, UniqueID: "C.Escape", EntryDll: "../Mod.dll"}))
 
 	fp := footprints(mods, launchsvc.LatestReplaces(profile))
 
@@ -52,14 +53,14 @@ func TestFootprintsJoinAssemblyWritesAndHarmonyReplaces(t *testing.T) {
 
 func TestSameJobWeighsMembersByHowFewModsWriteThem(t *testing.T) {
 	fp := map[string]map[string]bool{}
-	var mods []Installed
+	var mods []framework.Mod
 	add := func(id, author string, deps []string, members ...string) {
 		set := map[string]bool{"Common::all": true}
 		for _, m := range members {
 			set[m] = true
 		}
 		fp[mod.SMAPI(id).Fold()] = set
-		m := Installed{Key: "k-" + id, Enabled: true, UniqueID: id, Name: id, Author: author}
+		m := framework.Mod{Key: "k-" + id, Enabled: true, UniqueID: id, Name: id, Author: author}
 		for _, d := range deps {
 			m.Dependencies = append(m.Dependencies, manifest.Dependency{UniqueID: d})
 		}
@@ -83,7 +84,7 @@ func TestSameJobWeighsMembersByHowFewModsWriteThem(t *testing.T) {
 			add(fmt.Sprint("filler", i), "", []string{"r1"}, fmt.Sprint("F::", i))
 		}
 	}
-	mods = append(mods, Installed{Key: "off", UniqueID: "off"})
+	mods = append(mods, framework.Mod{Key: "off", UniqueID: "off"})
 	fp["smapi:off"] = map[string]bool{"T::tool": true}
 
 	got := sameJob(fp, mods)
@@ -91,7 +92,7 @@ func TestSameJobWeighsMembersByHowFewModsWriteThem(t *testing.T) {
 	if len(got) != 2 || got[0].Key != "k-a" || got[1].Key != "k-b" || got[0].Kind != "sameJob" {
 		t.Fatalf("rows = %+v", got)
 	}
-	if !slices.Equal(got[0].By, []ModRef{{Key: "k-b", Name: "b"}}) || got[0].Detail != "T.tool" {
+	if !slices.Equal(got[0].By, []framework.ModRef{{Key: "k-b", Name: "b"}}) || got[0].Detail != "T.tool" {
 		t.Fatalf("row = %+v", got[0])
 	}
 }
@@ -103,9 +104,9 @@ func TestSameJobOnSmallProfilesNeedsOneFootprintInsideTheOther(t *testing.T) {
 		"smapi:c": {"V::v": true, "W::w": true},
 		"smapi:d": {"V::v": true, "X::x": true},
 	}
-	var mods []Installed
+	var mods []framework.Mod
 	for _, id := range []string{"a", "b", "c", "d"} {
-		mods = append(mods, Installed{Key: id, Enabled: true, UniqueID: id, Name: id})
+		mods = append(mods, framework.Mod{Key: id, Enabled: true, UniqueID: id, Name: id})
 	}
 
 	got := sameJob(fp, mods)
@@ -125,14 +126,14 @@ func TestShortMembersCapsAtThreeMostDistinctive(t *testing.T) {
 
 func TestSameJobListsASmallerModALargerOneCovers(t *testing.T) {
 	fp := map[string]map[string]bool{}
-	var mods []Installed
+	var mods []framework.Mod
 	add := func(id string, members ...string) {
 		key := mod.SMAPI(id).Fold()
 		fp[key] = map[string]bool{}
 		for _, m := range members {
 			fp[key][m] = true
 		}
-		mods = append(mods, Installed{Key: "k-" + id, Enabled: true, UniqueID: id, Name: id, Author: id})
+		mods = append(mods, framework.Mod{Key: "k-" + id, Enabled: true, UniqueID: id, Name: id, Author: id})
 	}
 	var large []string
 	for i := range 20 {
@@ -153,7 +154,7 @@ func TestSameJobListsASmallerModALargerOneCovers(t *testing.T) {
 
 	got := sameJob(fp, mods)
 
-	if len(got) != 1 || got[0].Key != "k-small" || !got[0].Covered || !slices.Equal(got[0].By, []ModRef{{Key: "k-large", Name: "large"}}) {
+	if len(got) != 1 || got[0].Key != "k-small" || !got[0].Covered || !slices.Equal(got[0].By, []framework.ModRef{{Key: "k-large", Name: "large"}}) {
 		t.Fatalf("rows = %+v", got)
 	}
 	if got[0].Detail != "S.1, S.2, S.3, …" {

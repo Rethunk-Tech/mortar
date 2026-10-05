@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -12,8 +13,8 @@ var markdownLinkText = regexp.MustCompile(`\[([^\]]+)\]\(`)
 // superseded finds enabled mods whose SMAPI compatibility summary sends the player to another mod that is enabled
 // too: by Nexus page, mod id or the linked name. Their Broken and Compat rows are dropped, since the advice is
 // already taken.
-func superseded(r Result, domain string, mods []Installed) Result {
-	enabled := make([]Installed, 0, len(mods))
+func superseded(r Result, domain string, mods []framework.Mod) Result {
+	enabled := make([]framework.Mod, 0, len(mods))
 	for _, m := range mods {
 		if m.Enabled {
 			enabled = append(enabled, m)
@@ -33,7 +34,7 @@ func superseded(r Result, domain string, mods []Installed) Result {
 			return
 		}
 		gone[key] = true
-		r.Redundant = append(r.Redundant, Redundant{Kind: "superseded", Key: key, ID: uniqueID, Name: name, By: by, Detail: summary})
+		r.Redundant = append(r.Redundant, framework.Redundant{Kind: "superseded", Key: key, ID: uniqueID, Name: name, By: by, Detail: summary})
 	}
 	for _, b := range r.Broken {
 		add(b.Key, b.ID, b.Name, b.Summary)
@@ -63,7 +64,7 @@ func superseded(r Result, domain string, mods []Installed) Result {
 }
 
 // namedIn lists the enabled mods, other than self, that summary names.
-func namedIn(domain, summary string, enabled []Installed, self string) []ModRef {
+func namedIn(domain, summary string, enabled []framework.Mod, self string) []framework.ModRef {
 	if strings.TrimSpace(summary) == "" {
 		return nil
 	}
@@ -79,21 +80,21 @@ func namedIn(domain, summary string, enabled []Installed, self string) []ModRef 
 	for _, parts := range markdownLinkText.FindAllStringSubmatch(summary, -1) {
 		names[strings.ToLower(strings.TrimSpace(parts[1]))] = true
 	}
-	var out []ModRef
+	var out []framework.ModRef
 	for _, m := range enabled {
 		if m.Key == self {
 			continue
 		}
 		if pages[nexusIDOf(m)] || ids[m.ModID().Fold()] || names[strings.ToLower(strings.TrimSpace(m.Name))] {
-			out = append(out, ModRef{Key: m.Key, Name: m.Name})
+			out = append(out, framework.ModRef{Key: m.Key, Name: m.Name})
 		}
 	}
 	return out
 }
 
 // redundantCount counts each group of mods doing the same job once, as the Problems tab shows it, and every other
-// Redundant row on its own.
-func redundantCount(rows []Redundant) int {
+// framework.Redundant row on its own.
+func redundantCount(rows []framework.Redundant) int {
 	parent := map[string]string{}
 	var find func(string) string
 	find = func(k string) string {

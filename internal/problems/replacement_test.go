@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -32,7 +33,7 @@ func TestBrokenIncludesAbandoned(t *testing.T) {
 	m := fakeMeta{compat: map[string]meta.UpdateResult{
 		"A": {Compatibility: "Abandoned", CompatibilitySummary: "unmaintained"},
 	}}
-	got := Check(context.Background(), m, testEnv, []Installed{inst("a", "A", "1", true)})
+	got := Check(context.Background(), m, testEnv, []framework.Mod{inst("a", "A", "1", true)})
 	if len(got.Broken) != 1 || got.Broken[0].Status != "abandoned" || got.Broken[0].Summary != "unmaintained" {
 		t.Fatalf("broken = %+v", got.Broken)
 	}

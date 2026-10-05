@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
@@ -35,7 +36,7 @@ func TestCheckUpdatesUsesTheNewestFileInTheInstalledGroup(t *testing.T) {
 	installed := inst("nexus-2364-9545", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:2364"}
 
-	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{installed}, false)
+	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false)
 	if len(got.Updates) != 0 {
 		t.Fatalf("updates = %+v, want none", got.Updates)
 	}
@@ -75,7 +76,7 @@ func TestCheckUpdatesChoosesANewerFileFromTheSameStem(t *testing.T) {
 	installed := inst("nexus-2364-9544", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:2364"}
 
-	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{installed}, false)
+	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false)
 	if len(got.Updates) != 1 || got.Updates[0].Version != "1.2" {
 		t.Fatalf("updates = %+v, want one same-stem update", got.Updates)
 	}
@@ -100,7 +101,7 @@ func TestCheckUpdatesTrustsSMAPIOverAStaleDatasetPage(t *testing.T) {
 	installed := inst("nexus-28261-179112", id, "2.4.1", true)
 	installed.UpdateKeys = []string{"Nexus:28261"}
 
-	got := CheckUpdates(context.Background(), rm, testEnv, []Installed{installed}, false)
+	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false)
 	if len(got.Updates) != 1 || got.Updates[0].Version != "2.5.0" {
 		t.Fatalf("updates = %+v, want 2.5.0", got.Updates)
 	}
@@ -142,7 +143,7 @@ func TestCheckUpdatesUsesOneLiveCallWhenAvailable(t *testing.T) {
 			{FileID: 185367, Name: "Machine Control Panel", Version: "2.5.0", Category: "MAIN"},
 		}}, nil
 	}
-	got := checkUpdates(context.Background(), rm, testEnv, []Installed{installed}, false, false, filesOf)
+	got := checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf)
 	if calls != 1 || len(got.Updates) != 1 {
 		t.Fatalf("calls %d updates %+v", calls, got.Updates)
 	}
