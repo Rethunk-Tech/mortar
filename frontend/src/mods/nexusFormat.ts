@@ -110,4 +110,6 @@ export const isNewer = (latest: string, installed: string) => {
   return cmp !== null && cmp > 0
 }
 
+export const isSameVersion = (a: string, b: string) => compareVersions(a, b) === 0
+
 export const recentChangelogs = <T>(logs: T[]) => logs.slice(0, CHANGELOG_CAP)

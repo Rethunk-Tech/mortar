@@ -30,6 +30,7 @@ import { OfflineGate } from '../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../shell/offlineText.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
+import { ChangelogDialog } from './ChangelogDialog.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
@@ -365,11 +366,19 @@ function ModChips({ mod, sourceName }: { mod: Mod; sourceName: string }) {
 
 // Rows that lead out of the panel: the config editor, the mod's page, the Nexus changelog and who needs the mod.
 // The relations load with the panel, so the rows appear once they arrive.
-function ActionRows({ mod, nexus }: { mod: Mod; nexus: boolean }) {
+function ActionRows({
+  mod,
+  nexusId,
+  githubRepo,
+}: {
+  mod: Mod
+  nexusId: number
+  githubRepo: string
+}) {
   const { t, i18n } = useLingui()
   const extras = useDetail((s) => s.extras)
   const loadExtras = useDetail((s) => s.loadExtras)
-  const setOpen = useDetail((s) => s.setOpen)
+  const [showChangelog, setShowChangelog] = useState(false)
   const [showNeededBy, setShowNeededBy] = useState(false)
   useEffect(() => {
     loadExtras(mod).catch(reportUnexpected)
@@ -386,10 +395,20 @@ function ActionRows({ mod, nexus }: { mod: Mod; nexus: boolean }) {
           <EditConfigButton mod={mod} />
         </Box>
       ) : null}
-      {nexus ? (
-        <Link component="button" onClick={() => setOpen(true)} sx={rowLink}>
-          {t`Changelog`}
-        </Link>
+      {nexusId > 0 || githubRepo !== '' ? (
+        <>
+          <Link component="button" onClick={() => setShowChangelog(true)} sx={rowLink}>
+            {t`Changelog`}
+          </Link>
+          <ChangelogDialog
+            open={showChangelog}
+            onClose={() => setShowChangelog(false)}
+            name={mod.name}
+            installed={mod.version}
+            nexusId={nexusId}
+            githubRepo={githubRepo}
+          />
+        </>
       ) : null}
       {pageUrl ? (
         <Link component="button" onClick={() => openPage(pageUrl)} sx={rowLink}>
@@ -520,7 +539,11 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       <ProblemLine mod={mod} />
       <LastRunLine mod={mod} profile={profile} />
       <ModDependencyTree mod={mod} />
-      <ActionRows mod={mod} nexus={nexusId > 0} />
+      <ActionRows
+        mod={mod}
+        nexusId={nexusId}
+        githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
+      />
       <AlsoInProfiles mod={mod} profile={profile} />
       <HiddenInside mod={mod} profile={profile} />
       <ModNoteTags profile={profile} mod={mod} />

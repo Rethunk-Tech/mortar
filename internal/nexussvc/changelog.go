@@ -35,20 +35,41 @@ func (s *Service) UpdateChangelog(ctx context.Context, game string, modID int, g
 		return s.ChangelogBetween(ctx, game, modID, installed, latest)
 	}
 	owner, repo, _ := strings.Cut(githubRepo, "/")
-	gh := s.GitHub
-	if gh == nil {
-		gh = &github.Client{}
-	}
-	rels, err := gh.ReleasesBetween(ctx, owner, repo, installed, latest)
+	rels, err := s.githubClient().ReleasesBetween(ctx, owner, repo, installed, latest)
 	if err != nil {
 		return nil, err
 	}
+	return releaseChangelogs(rels), nil
+}
+
+// ReleaseChangelog returns every published release of githubRepo ("owner/repo") newest first, from the cached
+// releases list the update check already reads.
+func (s *Service) ReleaseChangelog(ctx context.Context, githubRepo string) ([]nexus.Changelog, error) {
+	owner, repo, _ := strings.Cut(githubRepo, "/")
+	rels, err := s.githubClient().Releases(ctx, owner, repo)
+	if err != nil {
+		return nil, err
+	}
+	return releaseChangelogs(rels), nil
+}
+
+func (s *Service) githubClient() *github.Client {
+	if s.GitHub == nil {
+		return &github.Client{}
+	}
+	return s.GitHub
+}
+
+func releaseChangelogs(rels []github.Release) []nexus.Changelog {
 	out := make([]nexus.Changelog, 0, len(rels))
 	for _, r := range rels {
+		if r.Draft {
+			continue
+		}
 		date, _, _ := strings.Cut(r.Published, "T")
 		out = append(out, nexus.Changelog{Version: strings.TrimLeft(r.Tag, "vV"), Date: date, Notes: []string{}, Body: strings.TrimSpace(r.Body)})
 	}
-	return out, nil
+	return out
 }
 
 func (s *Service) changelogs(ctx context.Context, gameID string, modID int) ([]nexus.Changelog, error) {

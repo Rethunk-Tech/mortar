@@ -3,6 +3,7 @@ package nexussvc
 import (
 	"context"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -13,11 +14,10 @@ import (
 const (
 	detailsTTL    = 24 * time.Hour
 	categoriesTTL = 30 * 24 * time.Hour
-	changelogs    = 5
 )
 
-// Details is what the mod detail dialog shows from a Nexus page: the page, its category's name, every file and the
-// newest changelog versions.
+// Details is what the mod detail dialog shows from a Nexus page: the page, its category's name, every file and every
+// changelog version (one request however many there are).
 type Details struct {
 	Page       nexus.Page        `json:"page"`
 	Category   string            `json:"category"`
@@ -48,7 +48,7 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 		if err != nil {
 			return Details{}, err
 		}
-		logs, err := c.Changelogs(ctx, t, modID, changelogs)
+		logs, err := c.Changelogs(ctx, t, modID, math.MaxInt)
 		if err != nil {
 			return Details{}, err
 		}

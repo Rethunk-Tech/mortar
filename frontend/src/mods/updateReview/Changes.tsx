@@ -10,7 +10,7 @@ import { parseInstructions } from '../../share/instructions.ts'
 import { Fold } from '../../shell/Fold.tsx'
 import { changelogNoteIsRisky } from '../changelogRange.ts'
 
-function Text({ text, risky }: { text: string; risky?: boolean }) {
+function ChangelogText({ text, risky }: { text: string; risky?: boolean }) {
   return (
     <Box sx={{ fontSize: 13, overflowWrap: 'anywhere', color: risky ? 'warning.main' : undefined }}>
       {parseInstructions(text).map(({ at, parts }) => (
@@ -30,9 +30,9 @@ function Version({ entry }: { entry: Changelog }) {
       <Typography variant="subtitle2">
         {entry.date ? `${entry.version} · ${entry.date}` : entry.version}
       </Typography>
-      {entry.body ? <Text text={entry.body} /> : null}
+      {entry.body ? <ChangelogText text={entry.body} /> : null}
       {(entry.notes ?? []).map((n) => (
-        <Text key={n} text={`• ${n}`} risky={changelogNoteIsRisky(n)} />
+        <ChangelogText key={n} text={`• ${n}`} risky={changelogNoteIsRisky(n)} />
       ))}
     </Box>
   )
@@ -76,3 +76,5 @@ export function Changes({ update }: { update: Update }) {
     </Fold>
   )
 }
+
+export { ChangelogText }
