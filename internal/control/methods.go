@@ -1514,9 +1514,11 @@ func (s *Services) launch(ctx context.Context, gameID, id, installID, preset str
 	if err != nil {
 		return launchsvc.Status{}, err
 	}
+	// The save check is advice and needs the mod dataset from the network: offline it says nothing instead of refusing
+	// to launch.
 	save, gap, err := s.Saves.LastSaveGap(ctx, gameID, id)
 	if err != nil {
-		return launchsvc.Status{}, err
+		save, gap = savessvc.Fit{}, false
 	}
 	if !force && (update.Changed || gap) {
 		return launchsvc.Status{}, launchWarningError{game: gameName(gameID), update: update, save: save, gap: gap}

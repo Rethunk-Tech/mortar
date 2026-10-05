@@ -8,7 +8,7 @@
 #   scripts/selftest.sh restart               rebuild from the working tree and restart
 #   scripts/selftest.sh stop                  stop the server
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
-#   scripts/selftest.sh regress               one-shot Stardew regression run in its own throwaway sandbox (see below)
+#   scripts/selftest.sh regress [--game lethal-company]  one-shot regression run (Stardew, or Lethal Company through Proton) in its own throwaway sandbox (see below)
 #
 # --copy-data copies the real Mortar profiles and settings into the sandbox once (downloads, cache, trash and
 # backups are left out). The sandbox is never deleted by this script; remove $ROOT by hand to start over.
@@ -17,6 +17,9 @@
 # first Stardew profile directly, waits for SMAPI to load every enabled mod, then stops the game and requires the game
 # folder to hash exactly as before. It deletes only its own directory, after a pass; a failure keeps it for the logs.
 # MORTAR_REGRESS_PROFILE picks another profile and MORTAR_REGRESS_TIMEOUT (seconds, default 180) bounds the load wait.
+# regress --game lethal-company builds its own sandbox, bootstraps a Proton prefix, installs BepInEx and three plugins
+# from Thunderstore (cached in /var/tmp/mortar-regress-cache; MORTAR_REGRESS_OFFLINE=1 proves a rerun needs no network),
+# launches directly under Proton, and requires the plugins to load and the purge to leave the game folder identical.
 set -euo pipefail
 
 ROOT=${MORTAR_SELFTEST_DIR:-/var/tmp/mortar-selftest}
@@ -402,9 +405,190 @@ regress() {
   [ "$verdict" = PASS ]
 }
 
+# reap_prefix stops the processes that run in the Lethal Company prefix at $1 (a compatdata folder), each verified
+# through /proc/PID/environ: a Wine process names the prefix in WINEPREFIX, Proton's own script in STEAM_COMPAT_DATA_PATH.
+# The game's executable goes first so Mortar sees it exit while the wineserver still answers.
+reap_prefix() {
+  local compat=$1 d p pids=() first=()
+  for d in /proc/[0-9]*; do
+    p=${d#/proc/}
+    if { tr '\0' '\n' <"$d/environ" | grep -qxE "(WINEPREFIX=${compat}/pfx/?|STEAM_COMPAT_DATA_PATH=${compat}/?)"; } 2>/dev/null; then
+      if tr '\0' ' ' <"$d/cmdline" 2>/dev/null | grep -q 'Lethal Company.exe' && ! tr '\0' ' ' <"$d/cmdline" | grep -q 'steam.exe'; then
+        first+=("$p")
+      else
+        pids+=("$p")
+      fi
+    fi
+  done
+  [ ${#first[@]} -gt 0 ] && kill "${first[@]}" 2>/dev/null
+  sleep 2
+  [ ${#pids[@]} -gt 0 ] && kill "${pids[@]}" 2>/dev/null
+  sleep 2
+  for p in "${first[@]}" "${pids[@]}"; do
+    # A process that ignored SIGTERM is checked against its prefix again before it is killed.
+    if { tr '\0' '\n' <"/proc/$p/environ" | grep -qxE "(WINEPREFIX=${compat}/pfx/?|STEAM_COMPAT_DATA_PATH=${compat}/?)"; } 2>/dev/null \
+      && ! grep -q ') Z' "/proc/$p/stat" 2>/dev/null; then
+      kill -KILL "$p" 2>/dev/null || true
+    fi
+  done
+  echo "${first[*]} ${pids[*]}"
+}
+
+# regress_lc is regress for Lethal Company: a direct Proton launch of a BepInEx profile with three Thunderstore plugins,
+# in its own sandbox. Steam is never started; Proton only needs Steam's client library and the .steam links, both
+# copied into the sandbox home. The Thunderstore index and downloads are cached in $REGRESS_CACHE after the first run.
+regress_lc() {
+  ROOT=$(mktemp -d /var/tmp/mortar-regress-lc-XXXXXX)
+  case "$ROOT" in /var/tmp/mortar-regress-lc-??????) ;; *) echo "unexpected sandbox dir $ROOT" >&2; exit 1 ;; esac
+  PORT=$((9600 + RANDOM % 300))
+  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
+  SANDBOX_HOME=$ROOT/home
+  SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  verdict=FAIL
+  game="$SANDBOX_STEAM/steamapps/common/$LC_FOLDER"
+  compat="$SANDBOX_STEAM/steamapps/compatdata/$LC_APP_ID"
+  local proton=${MORTAR_REGRESS_PROTON:-$STEAM/steamapps/common/Proton - Experimental}
+  local cache=${MORTAR_REGRESS_CACHE:-/var/tmp/mortar-regress-cache}/lc-data
+  local data=$SANDBOX_HOME/.local/share/mortar
+  local timeout=${MORTAR_REGRESS_TIMEOUT:-240} t0=$SECONDS
+  local bepinex=${MORTAR_REGRESS_BEPINEX:-5.4.2305}
+  local plugins=(LethalConfig ShipLoot MoreCompany)
+  # Pinned so the cached zips stay the ones the run was written against.
+  local packages=(AinaVT/LethalConfig/1.4.6 tinyhoot/ShipLoot/1.1.0 notnotnotswipez/MoreCompany/1.14.0)
+  local failures=() profile="" loaded=0 diff_lines=0 log="" killed=""
+  local gdirs=(cache/thunderstore store)
+
+  finish() {
+    reap_prefix "$compat" >/dev/null 2>&1 || true
+    stop >/dev/null 2>&1 || true
+    if [ "$verdict" = PASS ]; then
+      rm -rf "$ROOT"
+    else
+      echo "sandbox kept for inspection: $ROOT" >&2
+    fi
+  }
+  trap finish EXIT
+
+  [ -d "$proton" ] || { echo "no Proton at $proton (set MORTAR_REGRESS_PROTON)" >&2; exit 1; }
+  [ -f "$STEAM/linux64/steamclient.so" ] || { echo "no steamclient.so under $STEAM" >&2; exit 1; }
+  if [ -n "${MORTAR_REGRESS_OFFLINE:-}" ]; then
+    export HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 NO_PROXY=127.0.0.1
+  fi
+
+  mkdir -p "$SANDBOX_STEAM/config"
+  copy_game "$LC_APP_ID" "$LC_FOLDER" || exit 1
+  [ -f "$STEAM/config/loginusers.vdf" ] && cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
+  write_library
+  # Proton loads Steam's client library from the Steam folder it is told about, which is the sandbox's own.
+  mkdir -p "$SANDBOX_STEAM/linux64" "$SANDBOX_STEAM/linux32" "$SANDBOX_HOME/.steam"
+  cp "$STEAM/linux64/steamclient.so" "$SANDBOX_STEAM/linux64/"
+  cp "$STEAM/linux32/steamclient.so" "$SANDBOX_STEAM/linux32/"
+  ln -sfn "$SANDBOX_STEAM" "$SANDBOX_HOME/.steam/steam"
+  ln -sfn "$SANDBOX_STEAM" "$SANDBOX_HOME/.steam/root"
+  ln -sfn "$SANDBOX_STEAM/linux64" "$SANDBOX_HOME/.steam/sdk64"
+  ln -sfn "$SANDBOX_STEAM/linux32" "$SANDBOX_HOME/.steam/sdk32"
+
+  mkdir -p "$ROOT"
+  cat >"$ROOT/run-proton.sh" <<EOF
+#!/bin/bash
+export STEAM_COMPAT_DATA_PATH='$compat'
+export STEAM_COMPAT_CLIENT_INSTALL_PATH='$SANDBOX_STEAM'
+export STEAM_COMPAT_APP_ID=$LC_APP_ID SteamAppId=$LC_APP_ID SteamGameId=$LC_APP_ID
+exec '$proton/proton' run "\$@"
+EOF
+  chmod +x "$ROOT/run-proton.sh"
+  # The first Proton run creates the prefix; Mortar can only add its winhttp override to a prefix that exists.
+  echo "creating the Proton prefix"
+  mkdir -p "$compat"
+  (cd "$ROOT" && env HOME="$SANDBOX_HOME" timeout 300 "$ROOT/run-proton.sh" wineboot -u >"$ROOT/wineboot.log" 2>&1) \
+    || failures+=("the Proton prefix could not be created; see $ROOT/wineboot.log")
+  reap_prefix "$compat" >/dev/null
+
+  build
+  start
+  if [ -d "$cache/store" ]; then
+    local d
+    for d in "${gdirs[@]}"; do [ -d "$cache/$d" ] && mkdir -p "$data/$(dirname "$d")" && cp -a "$cache/$d" "$data/$(dirname "$d")/"; done
+  fi
+  cli settings set --game lethal-company defaultLaunchMethod direct >/dev/null
+  profile=$(cli profile create lethal-company "Regress LC" | cut -f1)
+  # The server may already be installing the loader for the new game; a second install waits its turn.
+  for _ in $(seq 1 30); do
+    cli loader install lethal-company "$bepinex" >"$ROOT/loader.txt" 2>&1 && break
+    grep -q 'already running' "$ROOT/loader.txt" || break
+    sleep 2
+  done
+  grep -q "^Installed loader $bepinex" "$ROOT/loader.txt" || failures+=("BepInEx $bepinex did not install: $(head -c 300 "$ROOT/loader.txt")")
+  local pkg
+  # A pinned loader is not looked up again at launch.
+  cli loader pin lethal-company "$bepinex" >/dev/null 2>&1 || failures+=("pinning BepInEx $bepinex failed")
+  local zip
+  mkdir -p "$cache/zips"
+  for pkg in "${packages[@]}"; do
+    zip=$cache/zips/${pkg//\//-}.zip
+    [ -s "$zip" ] || curl -fsSL -o "$zip" "https://thunderstore.io/package/download/$pkg/" || failures+=("downloading $pkg failed")
+    cli install lethal-company "$profile" "$zip" >>"$ROOT/install.txt" 2>&1 || failures+=("installing $pkg failed: $(tail -c 200 "$ROOT/install.txt")")
+  done
+  cli profile set lethal-company "$profile" launchPrefix "$ROOT/run-proton.sh" >/dev/null
+  if [ ! -d "$cache/store" ] && [ ${#failures[@]} -eq 0 ]; then
+    for d in "${gdirs[@]}"; do [ -d "$data/$d" ] && mkdir -p "$cache/$(dirname "$d")" && cp -a "$data/$d" "$cache/$(dirname "$d")/"; done
+  fi
+  tree_hash "$game" >"$ROOT/game-before.txt"
+
+  log="$data/profiles/lethal-company/$profile/BepInEx/LogOutput.log"
+  echo "launching profile $profile (${#plugins[@]} plugins)"
+  if [ ${#failures[@]} -eq 0 ]; then
+    cli launch lethal-company "$profile" >"$ROOT/launch.txt" 2>&1 || failures+=("launch failed: $(head -c 300 "$ROOT/launch.txt")")
+  fi
+  deadline=$((SECONDS + timeout))
+  while [ ${#failures[@]} -eq 0 ] && [ "$SECONDS" -lt "$deadline" ]; do
+    grep -q 'Chainloader startup complete' "$log" 2>/dev/null && break
+    sleep 2
+  done
+  if [ ${#failures[@]} -eq 0 ] && ! grep -q 'Chainloader startup complete' "$log" 2>/dev/null; then
+    failures+=("BepInEx never logged \"Chainloader startup complete\" within ${timeout}s ($(cli status lethal-company 2>&1 | head -c 200))")
+  fi
+  local name
+  for name in "${plugins[@]}"; do
+    if [ ${#failures[@]} -gt 0 ]; then break; fi
+    if grep -qE "BepInEx\] Loading \[$name " "$log" 2>/dev/null; then loaded=$((loaded + 1)); else failures+=("plugin $name did not load"); fi
+  done
+
+  echo "stopping the game"
+  killed=$(reap_prefix "$compat")
+  for _ in $(seq 1 60); do
+    [ "$(cli status lethal-company --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')" = idle ] && break
+    sleep 1
+  done
+  [ "$(cli status lethal-company --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')" = idle ] || failures+=("Mortar never went idle after the game stopped")
+  sleep 3
+  tree_hash "$game" >"$ROOT/game-after.txt"
+  diff_lines=$(diff "$ROOT/game-before.txt" "$ROOT/game-after.txt" | grep -c '^[<>]' || true)
+  if [ "$diff_lines" -ne 0 ]; then
+    failures+=("game folder differs after purge ($diff_lines lines); see $ROOT/game-before.txt vs game-after.txt")
+  fi
+  cp "$log" "$ROOT/LogOutput.log" 2>/dev/null || true
+
+  [ ${#failures[@]} -eq 0 ] && verdict=PASS
+  echo "---- regress lethal-company: $verdict ($((SECONDS - t0))s)"
+  echo "profile        $profile"
+  echo "BepInEx        $bepinex"
+  echo "plugins loaded $loaded of ${#plugins[@]} (${plugins[*]})"
+  echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after purge"
+  echo "stopped pids   ${killed:-none}"
+  local f
+  for f in "${failures[@]}"; do echo "FAIL: $f"; done
+  [ "$verdict" = PASS ]
+}
+
 case "${1:-}" in
   regress)
-    regress
+    case "${2:-}${3:-}" in
+      "") regress ;;
+      --gamelethal-company) regress_lc ;;
+      --gamestardew) regress ;;
+      *) echo "regress takes --game stardew or --game lethal-company" >&2; exit 2 ;;
+    esac
     ;;
   *) mkdir -p "$ROOT" ;;
 esac

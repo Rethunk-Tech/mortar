@@ -94,6 +94,14 @@ scripts/selftest.sh regress     # about 40 s warm, needs the real Stardew instal
 
 One command in a throwaway `/var/tmp/mortar-regress-XXXXXX` sandbox on a free port: builds under the shared flock, copies the real data, sets the launch method to direct, hashes the game folder (type, mode, path, link target or sha256, sorted), launches the first profile through the CLI (`MORTAR_REGRESS_PROFILE` picks another) and waits for SMAPI's "Loaded N mods" and "Loaded M content packs" (`MORTAR_REGRESS_TIMEOUT`, default 180 s). It requires N + M plus the mods SMAPI names as skipped to equal the profile's enabled count, stops the game by its exe-verified pid, waits for Mortar to go idle, re-hashes and requires an empty diff. It exits non-zero on any failure and prints a short summary; a pass deletes only its own directory, a failure keeps it (`game-before.txt`, `game-after.txt`, `server.log`).
 
+### Lethal Company regression run (opt-in, not in the gate)
+
+```sh
+scripts/selftest.sh regress --game lethal-company     # about 50 s, needs Lethal Company and Proton - Experimental in the real Steam library
+```
+
+Same shape as the Stardew run, in `/var/tmp/mortar-regress-lc-XXXXXX`: copies the game, copies Steam's `steamclient.so` files and `.steam` links into the sandbox home (Proton needs the library, not a running Steam; Steam is never started), creates the Proton prefix once, installs BepInEx 5 (`MORTAR_REGRESS_BEPINEX`) and LethalConfig, ShipLoot and MoreCompany from Thunderstore, hashes the game folder and launches the profile directly through a Proton wrapper set as its launch prefix. It waits for BepInEx's "Chainloader startup complete" (`MORTAR_REGRESS_TIMEOUT`, default 240 s) and requires the three plugins' "Loading" lines. It then stops every process of the sandbox prefix by pid, each verified by its `WINEPREFIX` or `STEAM_COMPAT_DATA_PATH`, waits for Mortar to go idle, re-hashes and requires an empty diff. The Thunderstore index and downloads are cached after the first run in `/var/tmp/mortar-regress-cache` (`MORTAR_REGRESS_CACHE`), so a rerun needs no network; `MORTAR_REGRESS_OFFLINE=1` proves it with a dead proxy. A pass deletes only its own directory; a failure keeps it and prints the path (`LogOutput.log`, `game-before.txt`, `game-after.txt`, `server.log`, `wineboot.log`).
+
 ## Release
 
 ```sh
