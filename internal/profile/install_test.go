@@ -263,3 +263,18 @@ func TestInstallThunderstorePackageRecordsAnEntryWithoutAFolder(t *testing.T) {
 		t.Fatal("a path outside the profile was written")
 	}
 }
+
+func TestGitHubThunderstorePackageTakesTheRepoOwnerAsPublisher(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create("lethal-company", "LC")
+	src := Source{Kind: KindGitHub, Name: "Mod-1.0.0.0.zip", Repo: "Owner/Lethal-Mod", Tag: "v1.0", Asset: "Mod-1.0.0.0.zip"}
+	key, _, err := e.StageGitHub("lethal-company", src, tsZip(t, "1.0.0"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := e.InstallStaged("lethal-company", p.ID, key, src)
+	if err != nil || len(res.Profile.Entries) != 1 || res.Profile.Entries[0].Mods[0].ID != "thunderstore:Owner-Mod" || res.Profile.Entries[0].Source != src {
+		t.Fatalf("install = %+v, %v", res, err)
+	}
+}

@@ -49,7 +49,7 @@ func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	if err := s.namePackage(game, key, filepath.Base(path)); err != nil {
+	if err := s.namePackage(game, key, filepath.Base(path), ""); err != nil {
 		return InstallResult{}, installError(err)
 	}
 	return s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
@@ -105,6 +105,9 @@ func (s *Store) StageGitHub(game string, source Source, path string) (key string
 		return "", nil, installError(err)
 	}
 	if err := s.items.Describe(game, key, KindGitHub, source.Repo, source.Tag); err != nil {
+		return "", nil, installError(err)
+	}
+	if err := s.namePackage(game, key, source.Asset, owner); err != nil {
 		return "", nil, installError(err)
 	}
 	dir, err := s.items.Path(game, key)

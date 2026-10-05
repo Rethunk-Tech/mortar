@@ -48,7 +48,8 @@ func (s *Store) pick(game, key string) (installer.Archive, installer.Game, insta
 		// The driver names files by package, Namespace-Name, which is not the store key. An archive from disk has only
 		// the manifest's name, which the driver reads itself.
 		_, arch.Key, _, _ = s.items.Meta(game, key)
-		if _, _, isTS := strings.Cut(arch.Key, "-"); !isTS {
+		// A GitHub item is described by owner/repo, which may hold a dash but is no package name.
+		if _, _, isTS := strings.Cut(arch.Key, "-"); !isTS || strings.Contains(arch.Key, "/") {
 			arch.Key = ""
 		}
 	}
@@ -119,9 +120,9 @@ func (e Entry) hasFolder() bool { return !e.Package }
 
 // namePackage records the Namespace-Name of a Thunderstore package added from disk when its manifest does not carry a
 // namespace: from the download's file name, which Thunderstore makes <Namespace>-<Name>-<version>.zip, else from the
-// one package of that name and version in the game's index. Nothing is recorded when neither names it; packageMods
-// then refuses the package.
-func (s *Store) namePackage(game, key, fileName string) error {
+// one package of that name and version in the game's index, else fallback (a GitHub release's owner). Nothing is
+// recorded when none names it; packageMods then refuses the package.
+func (s *Store) namePackage(game, key, fileName, fallback string) error {
 	arch, _, inst, err := s.pick(game, key)
 	if err != nil || inst.ID() != driverThunderstore || arch.Key != "" {
 		return err
@@ -149,6 +150,7 @@ func (s *Store) namePackage(game, key, fileName string) error {
 	} else if s.Publisher != nil {
 		ns, _ = s.Publisher(game, m.Name, m.Version)
 	}
+	ns = cmp.Or(ns, fallback)
 	if ns == "" {
 		return nil
 	}
