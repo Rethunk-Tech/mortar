@@ -776,7 +776,7 @@ msgstr "Resolve"
 msgid "This file is from the same Nexus page as {0}. Install it with that mod to update them as one, or as a separate mod."
 msgstr "This file is from the same Nexus page as {0}. Install it with that mod to update them as one, or as a separate mod."
 
-#: src/mods/NexusAccountActions.tsx:118
+#: src/mods/NexusAccountActions.tsx:132
 msgid "Untrack"
 msgstr "Untrack"
 
@@ -4330,6 +4330,10 @@ msgstr "None of this profile's mods are marked broken for the new version."
 msgid "One argument per line. Placeholders: {placeholders}."
 msgstr "One argument per line. Placeholders: {placeholders}."
 
+#: src/mods/NexusAccountActions.tsx:86
+msgid "You chose not to endorse this mod."
+msgstr "You chose not to endorse this mod."
+
 #: src/profiles/OverrideRows.tsx:47
 msgid "These apply only to this profile."
 msgstr "These apply only to this profile."
@@ -5909,7 +5913,7 @@ msgstr "Open author page on Nexus"
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
-#: src/mods/NexusAccountActions.tsx:139
+#: src/mods/NexusAccountActions.tsx:153
 msgid "Track"
 msgstr "Track"
 
@@ -7117,7 +7121,7 @@ msgstr "Set to {value}"
 msgid "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 
-#: src/mods/NexusAccountActions.tsx:114
+#: src/mods/NexusAccountActions.tsx:128
 msgid "Could not untrack"
 msgstr "Could not untrack"
 
@@ -7180,7 +7184,7 @@ msgstr "Update check failed"
 msgid "Manage templates"
 msgstr "Manage templates"
 
-#: src/mods/NexusAccountActions.tsx:135
+#: src/mods/NexusAccountActions.tsx:149
 msgid "Could not track"
 msgstr "Could not track"
 
@@ -7894,7 +7898,7 @@ msgid "Upload"
 msgstr "Upload"
 
 #: src/mods/EndorsePrompt.tsx:138
-#: src/mods/NexusAccountActions.tsx:84
+#: src/mods/NexusAccountActions.tsx:105
 msgid "Endorse"
 msgstr "Endorse"
 
@@ -8392,6 +8396,10 @@ msgstr "Remove from {0}"
 #: src/mods/updateReview/UndoAllConfirm.tsx:36
 msgid "Restoring from before Update all also reverts these later changes:"
 msgstr "Restoring from before Update all also reverts these later changes:"
+
+#: src/mods/NexusAccountActions.tsx:84
+msgid "You endorsed this mod."
+msgstr "You endorsed this mod."
 
 #: src/browse/browseConstants.ts:43
 #: src/console/CrashDialog.tsx:133
@@ -8975,7 +8983,7 @@ msgstr "No matching mods"
 msgid "Removed from Nexus · {0}"
 msgstr "Removed from Nexus · {0}"
 
-#: src/mods/NexusAccountActions.tsx:100
+#: src/mods/NexusAccountActions.tsx:114
 msgid "Abstain"
 msgstr "Abstain"
 
@@ -10331,10 +10339,6 @@ msgstr "Stop the game to change SMAPI."
 msgid "No problems found"
 msgstr "No problems found"
 
-#: src/mods/NexusAccountActions.tsx:96
-msgid "Could not abstain"
-msgstr "Could not abstain"
-
 #: src/game/NewProfileDialog.tsx:70
 #: src/game/TemplateMenuItems.tsx:77
 msgid "Manage templates…"
@@ -11190,10 +11194,6 @@ msgstr "{0} was blocked by your antivirus"
 msgid "Leaf"
 msgstr "Leaf"
 
-#: src/mods/NexusAccountActions.tsx:80
-msgid "Could not endorse"
-msgstr "Could not endorse"
-
 #: src/settings/prefCopy.ts:337
 msgid "After each check"
 msgstr "After each check"
@@ -11503,6 +11503,10 @@ msgstr "Restore"
 #: src/profiles/SinceLastRun.tsx:147
 msgid "Changes since last run"
 msgstr "Changes since last run"
+
+#: src/mods/NexusAccountActions.tsx:82
+msgid "You have not endorsed this mod. Nexus asks that you download and play it first."
+msgstr "You have not endorsed this mod. Nexus asks that you download and play it first."
 
 #: src/saves/BackupsDialog.tsx:199
 msgid "Restore all"
