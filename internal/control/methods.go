@@ -561,7 +561,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "sweep":
 		return s.Launches.Sweep(ctx, p.Game, p.Install)
 	case "launch.vanilla":
-		if err := s.Launches.StartVanilla(ctx, p.Game, false); err != nil {
+		if err := s.Launches.StartVanilla(ctx, p.Game, s.Launches.LaunchesDirect(p.Game, "")); err != nil {
 			return nil, err
 		}
 		return s.awaitStart(ctx, p.Game, "")
@@ -1521,7 +1521,7 @@ func (s *Services) launch(ctx context.Context, gameID, id, installID, preset str
 	if !force && (update.Changed || gap) {
 		return launchsvc.Status{}, launchWarningError{game: gameName(gameID), update: update, save: save, gap: gap}
 	}
-	if err := s.Launches.StartPreset(ctx, gameID, id, installID, preset, false); err != nil {
+	if err := s.Launches.StartPreset(ctx, gameID, id, installID, preset, s.Launches.LaunchesDirect(gameID, id)); err != nil {
 		return launchsvc.Status{}, err
 	}
 	return s.awaitStart(ctx, gameID, installID)

@@ -489,3 +489,26 @@ func TestInstallTargetedCallsRefuseAnUnknownInstall(t *testing.T) {
 		t.Fatal("start on an unknown install")
 	}
 }
+
+func TestLaunchesDirectFollowsTheGameAndProfileLaunchMethod(t *testing.T) {
+	svc, p := startEnv(t)
+	if svc.LaunchesDirect("stardew", p.ID) {
+		t.Fatal("Steam is the default")
+	}
+	if _, err := svc.settings.Update(func(v *settings.Settings) {
+		gp := v.GamePrefs("stardew")
+		gp.DefaultLaunchMethod = settings.LaunchDirect
+		v.Games["stardew"] = &gp
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if !svc.LaunchesDirect("stardew", p.ID) || !svc.LaunchesDirect("stardew", "") {
+		t.Fatal("the game's direct method applies to its profiles and a vanilla launch")
+	}
+	if _, err := svc.profiles.SetOverride("stardew", p.ID, "defaultLaunchMethod", settings.LaunchSteam); err != nil {
+		t.Fatal(err)
+	}
+	if svc.LaunchesDirect("stardew", p.ID) {
+		t.Fatal("the profile's own method wins")
+	}
+}

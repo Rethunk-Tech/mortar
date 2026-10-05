@@ -50,7 +50,7 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 		return false, launch.Summary{}, err
 	}
 	launched := time.Now()
-	if err := s.start(runCtx, gameID, profileID, installID, "", s.launchesDirect(gameID, profileID)); err != nil {
+	if err := s.start(runCtx, gameID, profileID, installID, "", s.LaunchesDirect(gameID, profileID)); err != nil {
 		return false, launch.Summary{}, err
 	}
 
@@ -180,7 +180,10 @@ func summaryHealthy(summary launch.Summary) bool {
 	return !summary.Crashed
 }
 
-func (s *Service) launchesDirect(gameID, profileID string) bool {
+// LaunchesDirect reports whether the profile's launch method (or the game's, for profileID "") skips Steam.
+//
+//wails:ignore
+func (s *Service) LaunchesDirect(gameID, profileID string) bool {
 	method := settings.ResolveAt(s.settings.Get(), "defaultLaunchMethod", settings.Scope{Game: gameID, Install: s.profiles.InstallOf(gameID, profileID), Profile: profileID}, launchOverrides(s.profiles, gameID, profileID))
 	return method == settings.LaunchDirect
 }
