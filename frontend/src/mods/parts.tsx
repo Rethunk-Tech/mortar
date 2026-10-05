@@ -280,7 +280,7 @@ export function ModSwitch({ mod }: { mod: Mod }) {
         onClick={(e) => e.stopPropagation()}
         slotProps={{
           input: {
-            'aria-label': mod.enabled ? t`Switch off ${mod.name}` : t`Switch on ${mod.name}`,
+            'aria-label': mod.enabled ? t`Disable ${mod.name}` : t`Enable ${mod.name}`,
           },
         }}
       />
@@ -340,11 +340,11 @@ export function RemoveDialog() {
     removingKeys.has(e.overlayOf ?? ''),
   ).length
   const close = () => askRemove(null)
-  let body = t`Their folders in this profile are deleted. You can undo this.`
+  let body = t`Their folders are removed from this profile. You can undo this.`
   if (extra.length > 0) {
     body = t`Mods from the same download are removed together: ${extra.join(', ')}. You can undo this.`
   } else if (one) {
-    body = t`Its folder in this profile is deleted. You can undo this.`
+    body = t`Its folder is removed from this profile. You can undo this.`
   }
   const drop = (list: typeof removing) => {
     close()

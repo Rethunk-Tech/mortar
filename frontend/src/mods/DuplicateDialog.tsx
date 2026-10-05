@@ -90,7 +90,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-          {t`${profileName} has ${dup.name} more than once. SMAPI loads only one, so pick which to keep. The others are switched off, not deleted.`}
+          {t`${profileName} has ${dup.name} more than once. SMAPI loads only one, so pick which to keep. The others are disabled, not removed.`}
         </Typography>
         <RadioGroup
           aria-label={t`Copy to keep`}

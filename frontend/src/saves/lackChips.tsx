@@ -71,7 +71,7 @@ function LackChip({
       }}
     >
       <Typography sx={{ fontSize: 13, ...nowrap }}>
-        {lack.disabled ? t`${name} (switched off)` : lack.name}
+        {lack.disabled ? t`${name} (disabled)` : lack.name}
       </Typography>
       <LackChipActions
         fit={fit}

@@ -54,7 +54,7 @@ function SwitchOffButton({ mod, primary = false }: { mod: Mod; primary?: boolean
           .then(() => {
             useToasts.getState().push({
               kind: 'success',
-              title: t`Switched off ${mod.name}`,
+              title: t`Disabled ${mod.name}`,
               action: {
                 label: t`Undo`,
                 run: () => useMods.getState().setEnabled(mod, true),
@@ -65,7 +65,7 @@ function SwitchOffButton({ mod, primary = false }: { mod: Mod; primary?: boolean
           .finally(() => setSwitching(false))
       }}
     >
-      {t`Switch off`}
+      {t`Disable`}
     </Button>
   )
 }
@@ -177,7 +177,7 @@ function causeText(cause: { reason: string; detail: string }) {
   return crashCauseDetailLine(cause.detail)
 }
 
-// The one main action: switch off the mod that caused it, find the cause by halving, or read the log.
+// The one main action: disable the mod that caused it, find the cause by halving, or read the log.
 function CrashPrimary({
   mod,
   canBisect,

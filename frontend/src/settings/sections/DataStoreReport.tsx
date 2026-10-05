@@ -399,14 +399,14 @@ function CleanupDialog({
           disabled={picked.size === 0}
           onClick={() => setConfirm(true)}
         >
-          {t`Remove`}
+          {t`Delete`}
         </Button>
       </DialogActions>
       <ConfirmDialog
         open={confirm}
-        title={t`Remove the selected items?`}
-        body={t`This frees ${formatBytes(bytes)}. Removed mods download again if a profile needs them later.`}
-        confirmLabel={t`Remove`}
+        title={t`Delete the selected items?`}
+        body={t`This frees ${formatBytes(bytes)}. Deleted mods download again if a profile needs them later.`}
+        confirmLabel={t`Delete`}
         color="error"
         busy={busy}
         onCancel={() => setConfirm(false)}

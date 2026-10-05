@@ -49,7 +49,7 @@ export function SeparateSavesRow({
         open={asking}
         title={t`Keep this profile's saves separate?`}
         body={t`While this profile runs, Mortar sets your shared saves folder aside and shows the game this profile's own folder instead. When the game closes, your shared saves come back exactly as they were. Nothing is deleted.`}
-        confirmLabel={t`Turn on`}
+        confirmLabel={t`Enable`}
         onCancel={() => setAsking(false)}
         onConfirm={() => {
           setAsking(false)

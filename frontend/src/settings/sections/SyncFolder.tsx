@@ -39,7 +39,7 @@ export function SyncFolder() {
         >
           {t`Choose…`}
         </Button>
-        {folder ? <Button onClick={() => save('')}>{t`Turn off`}</Button> : null}
+        {folder ? <Button onClick={() => save('')}>{t`Disable`}</Button> : null}
       </Box>
     </SettingRow>
   )

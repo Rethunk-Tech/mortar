@@ -381,7 +381,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   if (kind === 'empty') {
     return (
       <EmptyState icon={<ListOrdered size={40} />} title={t`No enabled mods`}>
-        {t`Switch mods on in the Mods tab to see the order SMAPI loads them.`}
+        {t`Enable mods in the Mods tab to see the order SMAPI loads them.`}
       </EmptyState>
     )
   }

@@ -113,7 +113,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
       const names = mods.map((mod) => mod.name).join(' + ')
       useToasts.getState().push({
         kind: 'success',
-        title: t`Switched off ${names}`,
+        title: t`Disabled ${names}`,
         action: {
           label: t`Undo`,
           run: () =>
@@ -175,7 +175,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
             onClose()
           }}
         >{t`Open profile`}</Button>
-        <Button variant="contained" onClick={switchOff}>{t`Switch off`}</Button>
+        <Button variant="contained" onClick={switchOff}>{t`Disable`}</Button>
       </>
     )
   } else if (stopped || failed) {

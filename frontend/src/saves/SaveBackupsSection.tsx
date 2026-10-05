@@ -142,7 +142,7 @@ export function SaveBackupsSection({ folder, label }: { folder: string; label: s
         busy={pending || (ask?.kind === 'restore' && busyGame)}
         body={
           ask?.kind === 'delete'
-            ? t`The backup from ${when} is removed for good, with every save in it.`
+            ? t`The backup from ${when} is deleted for good, with every save in it.`
             : t`${label} is replaced by the copy in this backup. The current ${label} is backed up first.`
         }
         onCancel={() => setAsk(null)}

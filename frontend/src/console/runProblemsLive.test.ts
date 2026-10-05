@@ -20,7 +20,7 @@ const mods = [
   { id: 'a.Old', name: 'Old Thing', version: '1.0.0', enabled: false },
 ]
 
-test('a run problem drops once the mod is removed, updated, or already switched off', () => {
+test('a run problem drops once the mod is removed, updated, or already disabled', () => {
   expect(stillApplies(problem({ modName: 'Non Destructive NPCs 1.0.0' }), mods)).toBe(false)
   expect(stillApplies(problem({ modName: 'Cooking Skill 1.4.5' }), mods)).toBe(false)
   expect(stillApplies(problem({ modName: 'Cooking Skill 1.5.0' }), mods)).toBe(true)

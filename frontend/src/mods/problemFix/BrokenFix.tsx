@@ -83,11 +83,7 @@ export function BrokenFix({
     <>
       {replace}
       {mod
-        ? button(
-            t`Switch off`,
-            () => setEnabled(mod, false).catch(reportUnexpected),
-            Boolean(replace),
-          )
+        ? button(t`Disable`, () => setEnabled(mod, false).catch(reportUnexpected), Boolean(replace))
         : null}
       {dismiss}
     </>

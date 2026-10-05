@@ -29,7 +29,7 @@ function fixLabel(i18n: I18n, fix: string): string {
     return i18n._(msg`Update available`)
   }
   if (fix === 'off') {
-    return i18n._(msg`Switch off suggested`)
+    return i18n._(msg`Disable suggested`)
   }
   return i18n._(msg`No fix yet`)
 }

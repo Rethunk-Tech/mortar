@@ -399,7 +399,7 @@ function BackupsPage() {
       <PrefByKey
         prefKey="saveBackupKeep"
         game={game}
-        disabledReason={scheduleOff ? t`Turn on scheduled save backups first.` : ''}
+        disabledReason={scheduleOff ? t`Enable scheduled save backups first.` : ''}
       />
       <PrefByKey
         prefKey="backupLocation"

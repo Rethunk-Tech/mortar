@@ -69,7 +69,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
   const notes = [
     mod.different ? t`different file` : '',
     mod.unverified ? t`unverified until downloaded` : '',
-    mod.site === 'local' && !mod.enabled ? t`switched off` : '',
+    mod.site === 'local' && !mod.enabled ? t`disabled` : '',
   ].filter(Boolean)
   const byline = [mod.author, ...notes].filter(Boolean).join(' · ')
   return (

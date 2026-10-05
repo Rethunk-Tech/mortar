@@ -144,7 +144,7 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
       <ConfirmDialog
         open={deleting !== null}
         title={t`Delete ${deleting?.name ?? ''}?`}
-        body={t`This bundle will be removed from Mortar.`}
+        body={t`This bundle will be deleted.`}
         confirmLabel={t`Delete`}
         color="error"
         busy={busy}

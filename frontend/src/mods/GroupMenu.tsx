@@ -50,10 +50,10 @@ export function GroupMenu({ name }: { name: string }) {
           {item(t`Rename…`, <Pencil size={ICON_SIZE} />, () => setRenaming(true))}
         </LockedReason>
         <LockedReason locked={locked}>
-          {item(t`Switch all on`, <Power size={ICON_SIZE} />, () => switchAll(true))}
+          {item(t`Enable all`, <Power size={ICON_SIZE} />, () => switchAll(true))}
         </LockedReason>
         <LockedReason locked={locked}>
-          {item(t`Switch all off`, <PowerOff size={ICON_SIZE} />, () => switchAll(false))}
+          {item(t`Disable all`, <PowerOff size={ICON_SIZE} />, () => switchAll(false))}
         </LockedReason>
         <LockedReason locked={locked}>
           {item(t`Delete group (mods stay)`, <Trash2 size={ICON_SIZE} />, () => setDeleting(true))}
@@ -76,7 +76,7 @@ export function GroupMenu({ name }: { name: string }) {
         open={deleting}
         color="error"
         title={t`Delete group ${name}?`}
-        body={t`The mods in it stay in the profile; only the group is removed.`}
+        body={t`The mods in it stay in the profile; only the group is deleted.`}
         confirmLabel={t`Delete group`}
         onCancel={() => setDeleting(false)}
         onConfirm={() => {

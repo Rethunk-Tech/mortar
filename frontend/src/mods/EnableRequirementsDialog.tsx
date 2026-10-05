@@ -41,7 +41,7 @@ export function EnableRequirementsDialog() {
     <ConfirmDialog
       open={true}
       title={t`${offer.dependentName} needs ${andList(names)}`}
-      confirmLabel={t`Switch them on too`}
+      confirmLabel={t`Enable them too`}
       cancelLabel={t`Just this mod`}
       onCancel={dismiss}
       onConfirm={enableThem}

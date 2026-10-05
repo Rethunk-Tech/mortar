@@ -357,7 +357,7 @@ function ModChips({ mod, sourceName }: { mod: Mod; sourceName: string }) {
       <Chip
         size="small"
         color={mod.enabled ? 'primary' : 'default'}
-        label={mod.enabled ? t`On` : t`Off`}
+        label={mod.enabled ? t`Enabled` : t`Disabled`}
       />
     </Box>
   )

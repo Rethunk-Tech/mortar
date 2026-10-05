@@ -40,7 +40,7 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 ## Screenshots
 
 <table>
-<tr><td align="center"><img src="build/linux/screenshots/problems.png" alt="Problems tab explaining which mod wins each content conflict, with Switch off and Make a pack win buttons" width="440"><br><sub>Problems: content conflicts explained, with one-click fixes</sub></td><td align="center"><img src="build/linux/screenshots/performance.png" alt="Performance tab: time to the title screen and each mod's startup cost" width="440"><br><sub>Performance: what each mod costs at startup</sub></td></tr>
+<tr><td align="center"><img src="build/linux/screenshots/problems.png" alt="Problems tab explaining which mod wins each content conflict, with Disable and Make a pack win buttons" width="440"><br><sub>Problems: content conflicts explained, with one-click fixes</sub></td><td align="center"><img src="build/linux/screenshots/performance.png" alt="Performance tab: time to the title screen and each mod's startup cost" width="440"><br><sub>Performance: what each mod costs at startup</sub></td></tr>
 <tr><td align="center" colspan="2"><img src="build/linux/screenshots/settings.png" alt="Appearance settings: theme, accent colours and background" width="600"><br><sub>Themes, accent colours and the window background</sub></td></tr>
 </table>
 

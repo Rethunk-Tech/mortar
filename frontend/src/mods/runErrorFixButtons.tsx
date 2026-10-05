@@ -45,7 +45,7 @@ export function RunErrorButtons({
   return (
     <>
       {current && !runError.updated
-        ? button(t`Switch off`, () => setEnabled(current, false).catch(reportUnexpected))
+        ? button(t`Disable`, () => setEnabled(current, false).catch(reportUnexpected))
         : null}
       {installable
         ? button(t`Update`, () =>

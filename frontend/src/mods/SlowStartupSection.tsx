@@ -53,7 +53,7 @@ function SlowRow({ row }: { row: SlowStartup }) {
           color="inherit"
           onClick={() => setEnabled(mod, false).catch(reportUnexpected)}
         >
-          {t`Switch off`}
+          {t`Disable`}
         </Button>
       ) : null}
     </Box>

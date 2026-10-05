@@ -53,8 +53,8 @@ export function OverlayListRow({ overlay }: { overlay: OverlayRow }) {
             slotProps={{
               input: {
                 'aria-label': overlay.enabled
-                  ? t`Switch off ${overlay.label}`
-                  : t`Switch on ${overlay.label}`,
+                  ? t`Disable ${overlay.label}`
+                  : t`Enable ${overlay.label}`,
               },
             }}
           />
@@ -71,7 +71,7 @@ export function OverlayListRow({ overlay }: { overlay: OverlayRow }) {
         title={
           overlay.baseEnabled
             ? t`Replaces some files of the mod above`
-            : t`Off while the mod above is switched off`
+            : t`Disabled while the mod above is disabled`
         }
       >
         <Chip size="small" label={t`Optional file`} sx={chipSx} />

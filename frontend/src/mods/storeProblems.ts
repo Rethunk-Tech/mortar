@@ -135,7 +135,7 @@ export function problemActions(
             .replace((await SetModEnabled(target.game, target.id, c.key, dup.id, false)).profile)
         }
       } catch (e) {
-        reportError(i18n._(msg`Could not switch off the other copy of ${dup.name}`))(e)
+        reportError(i18n._(msg`Could not disable the other copy of ${dup.name}`))(e)
       }
       set({ resolving: null })
       await get().load()

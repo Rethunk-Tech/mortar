@@ -10,8 +10,8 @@ describe('gameModsFormat', () => {
   test('marks switched-off mods and lists skip reasons instead of imports', () => {
     expect(willImport('imported')).toBe(true)
     expect(willImport('skipped')).toBe(false)
-    expect(withSwitchedOff('NPC Map Locations', true, 'switched off')).toBe(
-      'NPC Map Locations (switched off)',
+    expect(withSwitchedOff('NPC Map Locations', true, 'disabled')).toBe(
+      'NPC Map Locations (disabled)',
     )
     expect(
       formatPreviewRow(
@@ -22,9 +22,9 @@ describe('gameModsFormat', () => {
           status: 'imported',
           disabled: true,
         },
-        'switched off',
+        'disabled',
       ),
-    ).toBe('NPC Map Locations (switched off) · 3.3.0 · Nexus')
+    ).toBe('NPC Map Locations (disabled) · 3.3.0 · Nexus')
     expect(
       formatPreviewRow(
         {
@@ -32,7 +32,7 @@ describe('gameModsFormat', () => {
           status: 'skipped',
           reason: 'same mod as NPCMapLocations',
         },
-        'switched off',
+        'disabled',
       ),
     ).toBe('DisabledCopy · same mod as NPCMapLocations')
   })

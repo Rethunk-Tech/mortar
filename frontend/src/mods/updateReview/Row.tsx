@@ -54,7 +54,7 @@ export function Row({
   const queued = useQueue((s) => pendingUpdate(s.state.items, profileId, update))
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
-    ...(mod && !mod.enabled ? [t`Switched off in this profile`] : []),
+    ...(mod && !mod.enabled ? [t`Disabled in this profile`] : []),
     ...(entry?.pinned && entry.pinReason ? [t`Pinned: ${entry.pinReason}`] : []),
     ...(optional > 0
       ? [

@@ -101,7 +101,7 @@ export function useDescribe(): Describe {
         : t`${dependentName}'s Nexus page lists ${dep} as a requirement: ${note}`
     }
     if (reason === 'disabled') {
-      return t`${dependentName} needs ${dep}, which is switched off.`
+      return t`${dependentName} needs ${dep}, which is disabled.`
     }
     if (reason === 'outdated') {
       return t`${dependentName} needs ${dep} ${minimumVersion} or newer, and this profile has ${installedVersion}.`

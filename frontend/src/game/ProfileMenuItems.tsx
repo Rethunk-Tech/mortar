@@ -184,7 +184,7 @@ function SendProfileMenuItem({ profile, close }: { profile: Profile; close: () =
         icon={<SendIcon size={16} />}
         label={t`Send to…`}
         disabled={!(lanSharing && currentGame)}
-        {...(lanSharing ? {} : { tooltip: t`Turn on sharing nearby in Settings › General.` })}
+        {...(lanSharing ? {} : { tooltip: t`Enable sharing nearby in Settings › General.` })}
         onClick={() => {
           close()
           setOpen(true)

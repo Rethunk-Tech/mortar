@@ -122,7 +122,7 @@ function ModMenuItems({
     { label: string; icon: ReactNode; run: () => void }
   > = {
     toggle: {
-      label: mod.enabled ? t`Switch off` : t`Switch on`,
+      label: mod.enabled ? t`Disable` : t`Enable`,
       icon: mod.enabled ? <PowerOff size={ICON_SIZE} /> : <Power size={ICON_SIZE} />,
       run: () => toggleActing(mod).catch(reportUnexpected),
     },
@@ -336,7 +336,7 @@ function ModActionMenu({
         id={mod.id}
         mode="remove"
         title={t`Remove ${mod.name} from other profiles`}
-        helper={t`Where it came in one download with other mods, it is switched off instead.`}
+        helper={t`Where it came in one download with other mods, it is disabled instead.`}
         confirmLabel={t`Remove`}
         onConfirm={async (profiles, _pinned, rows) => {
           await Promise.all(

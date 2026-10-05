@@ -63,7 +63,7 @@ export function useNxmHandler(): {
       ? t`Should Mortar open Nexus "Mod Manager Download" links, so a click on Nexus starts the download here?`
       : t`Mortar downloads and installs a mod when you click Mod Manager Download on Nexus.`
   const ownerNote = prompt?.owner
-    ? t`${prompt.owner} opens these links now. Mortar takes them over and gives them back when you turn this off in Settings.`
+    ? t`${prompt.owner} opens these links now. Mortar takes them over and gives them back when you disable this in Settings.`
     : ''
   const dialog = (
     <ConfirmDialog

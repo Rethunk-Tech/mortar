@@ -9,7 +9,7 @@ import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
 import { RestoreButton } from './RestoreButton.tsx'
 
-// Order and weight: the suggested fix first and filled, then the "make a pack win" choice, then Switch off,
+// Order and weight: the suggested fix first and filled, then the "make a pack win" choice, then Disable,
 // then Dismiss as the quietest action.
 export function AssetFix({
   problem,
@@ -64,7 +64,7 @@ export function AssetFix({
         onClick={() => setEnabled(mod, false).catch(reportUnexpected)}
         sx={{ flexShrink: 0 }}
       >
-        {t`Switch off`}
+        {t`Disable`}
       </Button>
     </DisabledReason>
   ) : null

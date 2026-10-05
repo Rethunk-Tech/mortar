@@ -41,7 +41,7 @@ function HistoryRow({
           kind: 'success',
           title:
             next.events === usage.events
-              ? t`No changes to remove`
+              ? t`No changes to trim`
               : t`Trimmed ${usage.profileName}'s history, freed ${formatBytes(Math.max(freed, 0))}`,
         })
       },

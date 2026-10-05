@@ -120,8 +120,8 @@ export function BackupsUsageRow() {
           kind: 'success',
           title:
             res.removed === 0
-              ? t`No backups to remove`
-              : t`${plural(res.removed, { one: 'Removed # backup', other: 'Removed # backups' })}, freed ${formatBytes(res.freedBytes)}`,
+              ? t`No backups to delete`
+              : t`${plural(res.removed, { one: 'Deleted # backup', other: 'Deleted # backups' })}, freed ${formatBytes(res.freedBytes)}`,
         })
         setUsage(await LoadBackupsUsage(gameId))
       },
@@ -143,7 +143,7 @@ export function BackupsUsageRow() {
       </DisabledReason>
       <TrimDialog
         title={t`Trim save backups`}
-        body={t`Keep the newest backups of each save and delete the rest. Pinned backups are never removed.`}
+        body={t`Keep the newest backups of each save and delete the rest. Pinned backups are never deleted.`}
         fieldLabel={t`Backups to keep per save`}
         defaultKeep={keepPerSave}
         open={open}

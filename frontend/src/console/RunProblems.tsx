@@ -77,7 +77,7 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem) {
       await useMods.getState().setEnabled(mod, false)
       useToasts.getState().push({
         kind: 'success',
-        title: i18n._(msg`Switched off ${mod.name}`),
+        title: i18n._(msg`Disabled ${mod.name}`),
         action: {
           label: i18n._(msg`Undo`),
           run: () => useMods.getState().setEnabled(mod, true),
@@ -117,7 +117,7 @@ function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: 
   } else if (problem.fix === 'update') {
     label = t`Update`
   } else if (problem.fix === 'disable') {
-    label = t`Switch off`
+    label = t`Disable`
   } else if (problem.fix === 'removeDuplicate') {
     label = t`Remove duplicate`
   }

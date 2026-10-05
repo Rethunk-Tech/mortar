@@ -71,7 +71,7 @@ Mortar downloads from Nexus with your account, so it needs a personal API key.
 
 Mortar then shows your name and whether the account is Premium or Free. Free accounts click **Mod Manager Download** on the Nexus page once for each file; Mortar opens each page in turn. Premium accounts download directly from inside Mortar. Mortar only downloads what Nexus allows and never re-hosts mod files.
 
-To make that button work, turn on **Handle "Mod Manager Download" links** in **Settings › Downloads**.
+To make that button work, enable **Handle "Mod Manager Download" links** in **Settings › Downloads**.
 
 ## Browser extension
 
@@ -142,7 +142,7 @@ When the catalog enables Lethal Company, its mods are Thunderstore packages that
 
 Pairing makes two of your own computers trust each other, so a profile sent between them carries its mod files from every source (Nexus, GitHub and Thunderstore) instead of being downloaded again. It needs no account. A computer you have not paired still receives the profile and downloads each mod from its source.
 
-1. On both computers turn on **Share profiles on the local network** in **Settings › General › Sharing**.
+1. On both computers enable **Share profiles on the local network** in **Settings › General › Sharing**.
 2. On the first computer choose **Pair a computer**. It shows a code like `ABCD-EFGH`; the code works once and for five minutes.
 3. On the second choose **Enter code**, pick the first computer from the nearby list (or type its `host:port` when none is listed) and type the code. Five wrong codes lock the entry from that computer for ten minutes.
 4. Both computers now list each other under **Paired computers**; **Unpair** forgets one. From the command line, `mortar lan pair` shows a code and `mortar lan pair --code <code>` enters one.
@@ -181,7 +181,7 @@ A profile is one set of mods. Switching profiles never touches the game folder's
 - **Share as a file:** the same dialog saves a `.mortar` file. It also carries the mods' settings and your notes, and suits large profiles.
 - **Import:** **Import** on the Profiles page, then **From a link or file…**, **From the game's Mods folder…**, **From a backup…** or **Import…**. Mortar shows what the profile holds first, then installs or queues what is missing.
 - **Import from another manager:** choose **Import…** to see every profile Mortar found on this computer for the game, from r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop, each with its manager and mod count. Pick one and Mortar previews it before anything downloads, then makes a new profile. For a Thunderstore game, **Use a code or file…** reads an r2modman or Gale profile code or `.r2z` file instead.
-- **Keep a profile's saves separate:** by default every profile plays on the game's one Saves folder. To give a profile its own, open the profile's menu, choose **Edit profile**, switch on **Keep this profile's saves separate** and confirm **Turn on**. Leave **Start with a copy of my current saves** ticked to start from your saves, or untick it to start empty. From then on, each time you press Play Mortar sets your shared Saves folder aside, shows the game the profile's own folder (`saves` inside the profile) and puts the shared folder back when the game closes. Nothing is deleted or moved for good, and if Mortar quits while the game runs, the next start puts the shared folder back. Switching the option off leaves the profile's folder where it is. Only games with a save folder have the switch.
+- **Keep a profile's saves separate:** by default every profile plays on the game's one Saves folder. To give a profile its own, open the profile's menu, choose **Edit profile**, enable **Keep this profile's saves separate** and confirm **Enable**. Leave **Start with a copy of my current saves** ticked to start from your saves, or untick it to start empty. From then on, each time you press Play Mortar sets your shared Saves folder aside, shows the game the profile's own folder (`saves` inside the profile) and puts the shared folder back when the game closes. Nothing is deleted or moved for good, and if Mortar quits while the game runs, the next start puts the shared folder back. Switching the option off leaves the profile's folder where it is. Only games with a save folder have the switch.
 
 ## Play
 
@@ -224,7 +224,7 @@ A sync folder shares each profile's mod list, sources, settings and mod config f
 4. A profile that exists only on the other computer arrives as a new profile when you choose **Apply**.
 5. When both computers changed the same profile, the toast and the list say so and Mortar never merges them: pick **Use theirs** or **Keep mine**.
 
-**Turn off** beside the folder stops syncing and leaves the folder's files alone.
+**Disable** beside the folder stops syncing and leaves the folder's files alone.
 
 ## Updates
 

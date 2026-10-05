@@ -41,7 +41,7 @@ export function LackChipActions(p: {
     <>
       {lack.disabled ? (
         <TipIconButton
-          label={locked ? t`Stop the game to change mods.` : t`Switch on ${name} in this profile`}
+          label={locked ? t`Stop the game to change mods.` : t`Enable ${name} in this profile`}
           disabled={locked}
           onClick={() => {
             enable(game, profile, lack.id).catch(reportUnexpected)

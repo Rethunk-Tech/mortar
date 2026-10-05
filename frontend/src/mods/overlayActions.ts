@@ -29,8 +29,8 @@ function toastSwitchedOff(row: OverlayRow, before: Entry[], after: Profile, prof
   const names = off.map(overlayLabel).join(', ')
   useToasts.getState().push({
     kind: 'success',
-    title: i18n._(msg`Switched on ${row.label}`),
-    body: i18n._(msg`It replaces the same files, so this is switched off: ${names}`),
+    title: i18n._(msg`Enabled ${row.label}`),
+    body: i18n._(msg`It replaces the same files, so this is disabled: ${names}`),
     action: {
       label: i18n._(msg`Undo`),
       profileId,
@@ -70,8 +70,8 @@ export async function setOverlayEnabled(row: OverlayRow, enabled: boolean) {
   } catch (e) {
     reportError(
       enabled
-        ? i18n._(msg`Could not switch on ${row.label}`)
-        : i18n._(msg`Could not switch off ${row.label}`),
+        ? i18n._(msg`Could not enable ${row.label}`)
+        : i18n._(msg`Could not disable ${row.label}`),
     )(e)
   }
 }

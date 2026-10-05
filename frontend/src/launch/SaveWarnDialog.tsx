@@ -55,7 +55,7 @@ export function SaveWarnDialog() {
                       {(m.name ?? '').trim() === '' ? t`Unknown mod` : m.name}
                     </span>
                   }
-                  secondary={m.disabled ? t`Switched off in this profile` : t`Not in this profile`}
+                  secondary={m.disabled ? t`Disabled in this profile` : t`Not in this profile`}
                 />
               </ListItem>
             ))}

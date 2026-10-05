@@ -48,7 +48,7 @@ function useTourCopy(step: number, paletteKeys: string) {
       break
     case 'mods':
       title = t`Mods`
-      body = t`Switch mods on and off, and update them for the open profile.`
+      body = t`Enable and disable mods, and update them for the open profile.`
       break
     case 'details':
       title = t`Mod details`

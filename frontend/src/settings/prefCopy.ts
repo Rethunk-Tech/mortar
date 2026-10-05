@@ -225,7 +225,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
     saveBackupsKept: {
       label: i18n._(msg`Save backups kept`),
       description: i18n._(
-        msg`How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never removed.`,
+        msg`How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never deleted.`,
       ),
     },
     extraModsFolder: {
@@ -252,7 +252,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
         {
           value: 'delete',
           label: i18n._(msg`Delete`),
-          hint: i18n._(msg`Remove them; rolling back still restores the old version.`),
+          hint: i18n._(msg`Delete them; rolling back still restores the old version.`),
         },
         {
           value: 'keep',

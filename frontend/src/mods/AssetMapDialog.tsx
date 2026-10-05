@@ -84,7 +84,7 @@ function TouchActions({
             }}
             sx={buttonSx}
           >
-            {t`Switch off`}
+            {t`Disable`}
           </Button>
         ) : null}
       </Box>

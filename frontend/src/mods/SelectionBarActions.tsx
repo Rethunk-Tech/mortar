@@ -133,14 +133,14 @@ export function SelectionBarActions({
             disabled={locked}
             startIcon={<Power size={15} />}
             onClick={() => setEnabledMany(selected, true).catch(reportUnexpected)}
-          >{t`Switch on`}</Button>
+          >{t`Enable`}</Button>
           <Button
             size="small"
             variant="outlined"
             disabled={locked}
             startIcon={<PowerOff size={15} />}
             onClick={() => setEnabledMany(selected, false).catch(reportUnexpected)}
-          >{t`Switch off`}</Button>
+          >{t`Disable`}</Button>
           <Button
             size="small"
             variant="outlined"

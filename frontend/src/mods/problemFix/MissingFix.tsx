@@ -34,7 +34,7 @@ export function MissingFix({
   }
   if (missing.reason === 'disabled') {
     const off = mods.find((m) => !m.enabled && sameId(m.id, missing.id))
-    return off ? button(t`Switch on`, () => setEnabled(off, true).catch(reportUnexpected)) : null
+    return off ? button(t`Enable`, () => setEnabled(off, true).catch(reportUnexpected)) : null
   }
   const { where } = missing
   if (!where) {

@@ -25,7 +25,7 @@ export function SharedMods({ info, notIn }: { info: ShownInfo; notIn: string }) 
       case 'local':
         return t`Added from an archive, so it only exists on this computer.`
       case 'off':
-        return t`Switched off in this profile`
+        return t`Disabled in this profile`
       default:
         return t`Its source is not known.`
     }
