@@ -249,6 +249,56 @@ function PackageMoveItems({ mod, close }: { mod: Mod; close: () => void }) {
   ]
 }
 
+function RemoveFromOthersDialog({
+  open,
+  onClose,
+  mod,
+  game,
+  currentProfileId,
+}: {
+  open: boolean
+  onClose: () => void
+  mod: Mod
+  game: string
+  currentProfileId: string
+}) {
+  const { t } = useLingui()
+  return (
+    <OtherProfilesDialog
+      open={open}
+      onClose={onClose}
+      game={game}
+      currentProfileId={currentProfileId}
+      id={mod.id}
+      mode="remove"
+      title={t`Remove ${mod.name} from other profiles`}
+      helper={t`Where it came in one download with other mods, it is disabled instead.`}
+      confirmLabel={t`Remove`}
+      onConfirm={async (profiles, _pinned, rows) => {
+        await Promise.all(
+          profiles.map((other) => {
+            const row = rows.find((candidate) => candidate.profileId === other.id)
+            const entryMods =
+              useProfiles
+                .getState()
+                .profiles.find((candidate) => candidate.id === other.id)
+                ?.entries?.find((profileEntry) => profileEntry.key === row?.key)?.mods ?? []
+            return entryMods.length > 1
+              ? SetModEnabled(game, other.id, row?.key ?? '', mod.id, false).then((result) =>
+                  useProfiles.getState().replace(result.profile),
+                )
+              : RemoveEntry(game, other.id, row?.key ?? '')
+          }),
+        )
+        useToasts.getState().push({
+          kind: 'success',
+          title: t`${mod.name} removed from ${plural(profiles.length, { one: '# profile', other: '# profiles' })}`,
+        })
+      }}
+    />
+  )
+}
+
 function ModActionMenu({
   mod,
   anchor,
@@ -328,37 +378,12 @@ function ModActionMenu({
           )
         }}
       />
-      <OtherProfilesDialog
+      <RemoveFromOthersDialog
         open={removeOtherOpen}
         onClose={() => setRemoveOtherOpen(false)}
+        mod={mod}
         game={game}
         currentProfileId={currentProfileId}
-        id={mod.id}
-        mode="remove"
-        title={t`Remove ${mod.name} from other profiles`}
-        helper={t`Where it came in one download with other mods, it is disabled instead.`}
-        confirmLabel={t`Remove`}
-        onConfirm={async (profiles, _pinned, rows) => {
-          await Promise.all(
-            profiles.map((other) => {
-              const row = rows.find((candidate) => candidate.profileId === other.id)
-              const entryMods =
-                useProfiles
-                  .getState()
-                  .profiles.find((candidate) => candidate.id === other.id)
-                  ?.entries?.find((profileEntry) => profileEntry.key === row?.key)?.mods ?? []
-              return entryMods.length > 1
-                ? SetModEnabled(game, other.id, row?.key ?? '', mod.id, false).then((result) =>
-                    useProfiles.getState().replace(result.profile),
-                  )
-                : RemoveEntry(game, other.id, row?.key ?? '')
-            }),
-          )
-          useToasts.getState().push({
-            kind: 'success',
-            title: t`${mod.name} removed from ${plural(profiles.length, { one: '# profile', other: '# profiles' })}`,
-          })
-        }}
       />
       <AddToBundleDialog
         open={bundleOpen}

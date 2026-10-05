@@ -87,7 +87,7 @@ function RemoveMenuItem({
   )
 }
 
-export function ModActionItems({
+function ModActionItems({
   actions,
   items,
   close,
@@ -120,6 +120,10 @@ export function ModActionItems({
 }) {
   const { t } = useLingui()
   const lockedTip = t`Stop the game to change mods.`
+  const closeThen = (fn: () => void) => () => {
+    close()
+    fn()
+  }
   const renderAction = (action: ModAction | 'reinstall', disabled = false) => (
     <MenuAction
       key={action}
@@ -127,10 +131,7 @@ export function ModActionItems({
       tooltip={lockedTip}
       icon={items[action].icon}
       label={items[action].label}
-      onClick={() => {
-        close()
-        items[action].run()
-      }}
+      onClick={closeThen(items[action].run)}
     />
   )
   const has = (action: ModAction) => actions.includes(action)
@@ -155,10 +156,7 @@ export function ModActionItems({
         key="manifest"
         icon={<FileJson size={ICON_SIZE} />}
         label={labels.manifest}
-        onClick={() => {
-          close()
-          openManifestOf(mod, profile)
-        }}
+        onClick={closeThen(() => openManifestOf(mod, profile))}
       />,
     )
     result.push(<Divider key="organisation-divider" />)
@@ -167,10 +165,7 @@ export function ModActionItems({
         key="category"
         icon={<FolderTree size={ICON_SIZE} />}
         label={labels.category}
-        onClick={() => {
-          close()
-          onSetCategory()
-        }}
+        onClick={closeThen(onSetCategory)}
       />,
     )
     result.push(
@@ -180,10 +175,7 @@ export function ModActionItems({
         tooltip={lockedTip}
         icon={<PackagePlus size={ICON_SIZE} />}
         label={labels.addBundle}
-        onClick={() => {
-          close()
-          onAddBundle()
-        }}
+        onClick={closeThen(onAddBundle)}
       />,
     )
     if (has('pin')) {
@@ -200,10 +192,7 @@ export function ModActionItems({
         tooltip={lockedTip}
         icon={<CopyPlus size={ICON_SIZE} />}
         label={labels.alsoAdd}
-        onClick={() => {
-          close()
-          onAlsoAdd()
-        }}
+        onClick={closeThen(onAlsoAdd)}
       />,
     )
   }
@@ -234,3 +223,5 @@ export function ModActionItems({
   }
   return result
 }
+
+export { ModActionItems }
