@@ -26,9 +26,9 @@ type TrimResult struct {
 	FreedBytes int64 `json:"freedBytes"`
 }
 
-// BackupsUsage sums backup sizes in total and per save of the one game that has saves; game is not read.
-func (s *Service) BackupsUsage(_ string) (BackupsUsage, error) {
-	list, err := s.ListBackups()
+// BackupsUsage sums backup sizes in total and per save of one game.
+func (s *Service) BackupsUsage(game string) (BackupsUsage, error) {
+	list, err := s.ListBackups(game)
 	if err != nil {
 		return BackupsUsage{}, err
 	}
@@ -53,11 +53,11 @@ func (s *Service) BackupsUsage(_ string) (BackupsUsage, error) {
 
 // TrimBackups deletes backups that are not among the newest keepPerSave of any save they hold. Pinned backups are
 // never deleted and do not count toward the limit; a backup whose saves cannot be read is kept.
-func (s *Service) TrimBackups(_ string, keepPerSave int) (TrimResult, error) {
+func (s *Service) TrimBackups(game string, keepPerSave int) (TrimResult, error) {
 	if keepPerSave < 1 {
 		return TrimResult{}, fmt.Errorf("keep at least 1 backup per save, got %d", keepPerSave)
 	}
-	id, err := s.onlyGame()
+	id, err := s.saveGame(game)
 	if err != nil {
 		return TrimResult{}, err
 	}
@@ -68,7 +68,7 @@ func (s *Service) TrimBackups(_ string, keepPerSave int) (TrimResult, error) {
 	if err != nil {
 		return TrimResult{}, err
 	}
-	list, err := s.ListBackups()
+	list, err := s.ListBackups(game)
 	if err != nil {
 		return TrimResult{}, err
 	}

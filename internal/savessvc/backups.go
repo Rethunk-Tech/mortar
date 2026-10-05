@@ -2,13 +2,14 @@ package savessvc
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 	"time"
+
+	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -20,8 +21,8 @@ import (
 var ErrBusy = usererr.New(usererr.Busy, "stop the game to change save backups")
 
 // ListBackups returns save backups newest first.
-func (s *Service) ListBackups() ([]backup.Backup, error) {
-	id, err := s.onlyGame()
+func (s *Service) ListBackups(game string) ([]backup.Backup, error) {
+	id, err := s.saveGame(game)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +52,8 @@ func (s *Service) ListBackups() ([]backup.Backup, error) {
 }
 
 // SaveBackups lists, newest first, every backup that contains the save folder.
-func (s *Service) SaveBackups(save string) ([]backup.Backup, error) {
-	all, err := s.ListBackups()
+func (s *Service) SaveBackups(game, save string) ([]backup.Backup, error) {
+	all, err := s.ListBackups(game)
 	if err != nil {
 		return nil, err
 	}
@@ -62,11 +63,11 @@ func (s *Service) SaveBackups(save string) ([]backup.Backup, error) {
 }
 
 // DeleteBackup removes an unpinned backup, wherever the backups folders hold it.
-func (s *Service) DeleteBackup(name string) error {
+func (s *Service) DeleteBackup(game, name string) error {
 	if err := backupNameOK(name); err != nil {
 		return err
 	}
-	id, err := s.onlyGame()
+	id, err := s.saveGame(game)
 	if err != nil {
 		return err
 	}
@@ -78,11 +79,11 @@ func (s *Service) DeleteBackup(name string) error {
 }
 
 // SetBackupPinned keeps or unkeeps a backup during rotation.
-func (s *Service) SetBackupPinned(name string, pinned bool) error {
+func (s *Service) SetBackupPinned(game, name string, pinned bool) error {
 	if err := backupNameOK(name); err != nil {
 		return err
 	}
-	id, err := s.onlyGame()
+	id, err := s.saveGame(game)
 	if err != nil {
 		return err
 	}
@@ -95,8 +96,8 @@ func (s *Service) SetBackupPinned(name string, pinned bool) error {
 
 // RestoreBackup copies folders from the named zip into the Saves folder after zipping the current saves.
 // An empty folders list restores every save in the zip.
-func (s *Service) RestoreBackup(name string, folders []string) error {
-	id, err := s.onlyGame()
+func (s *Service) RestoreBackup(game, name string, folders []string) error {
+	id, err := s.saveGame(game)
 	if err != nil {
 		return err
 	}
@@ -115,8 +116,8 @@ func (s *Service) RestoreBackup(name string, folders []string) error {
 }
 
 // OpenBackupsFolder shows the backups folder in the system file manager.
-func (s *Service) OpenBackupsFolder() error {
-	id, err := s.onlyGame()
+func (s *Service) OpenBackupsFolder(game string) error {
+	id, err := s.saveGame(game)
 	if err != nil {
 		return err
 	}
@@ -131,8 +132,8 @@ func (s *Service) OpenBackupsFolder() error {
 }
 
 // CreateBackup zips one save and marks the zip kept, with cause kind manual.
-func (s *Service) CreateBackup(folder string) error {
-	id, err := s.onlyGame()
+func (s *Service) CreateBackup(game, folder string) error {
+	id, err := s.saveGame(game)
 	if err != nil {
 		return err
 	}
@@ -161,8 +162,8 @@ func uniqueBackupTime(dirs []string, now time.Time) time.Time {
 }
 
 // OpenSaveFolder shows one save's folder (a direct child of the Saves folder) in the system file manager.
-func (s *Service) OpenSaveFolder(folder string) error {
-	id, err := s.onlyGame()
+func (s *Service) OpenSaveFolder(game, folder string) error {
+	id, err := s.saveGame(game)
 	if err != nil {
 		return err
 	}
@@ -177,15 +178,15 @@ func (s *Service) OpenSaveFolder(folder string) error {
 	return datadir.Open(dir)
 }
 
-// onlyGame is the one game that has a save folder. Backup calls that name no game cannot pick between several.
-func (s *Service) onlyGame() (string, error) {
-	if len(s.scanners) != 1 {
-		return "", errors.New("save backups need one game with a save folder")
+// saveGame checks that game has a save folder.
+func (s *Service) saveGame(game string) (string, error) {
+	if s.scanners[game] != nil {
+		return game, nil
 	}
-	for id := range s.scanners {
-		return id, nil
+	if gamepkg.Find(game) == nil {
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", game))
 	}
-	return "", nil
+	return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("game %q has no save folder", game))
 }
 
 func (s *Service) target(gameID string) (backup.Target, error) {

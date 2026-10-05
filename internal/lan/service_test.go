@@ -44,7 +44,8 @@ func TestValidateRequest(t *testing.T) {
 
 	for _, request := range []shareRequest{
 		{Sender: "Alex", Game: "stardew", Payload: "not-base64"},
-		{Sender: "Alex", Game: "other", Payload: payload},
+		{Sender: "Alex", Game: "other", Payload: payload, Version: protocolVersion},
+		{Sender: "Alex", Game: "lethal-company", Payload: payload, Version: protocolVersion},
 		{Sender: "Alex", Game: "stardew", Payload: payload, Version: "1"},
 	} {
 		if _, err := validateRequest(request); err == nil {

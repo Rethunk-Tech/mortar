@@ -19,14 +19,14 @@ func TestServiceListsAndRestoresWithTempDataDirs(t *testing.T) {
 	if _, err := backup.Saves(savesDir, filepath.Join(mustData(t), "mortar", "backups"), backup.DefaultKeep, time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC), backup.Cause{Profile: "p1", Kind: backup.KindUpdate}); err != nil {
 		t.Fatal(err)
 	}
-	listed, err := s.ListBackups()
+	listed, err := s.ListBackups("stardew")
 	if err != nil || len(listed) != 1 || listed[0].Profile != "p1" {
 		t.Fatalf("list = %+v, %v", listed, err)
 	}
 	if err := fsx.WriteFile(filepath.Join(savesDir, "Farm_1", "Farm_1"), []byte("v2"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.RestoreBackup(listed[0].Name, []string{"Farm_1"}); err != nil {
+	if err := s.RestoreBackup("stardew", listed[0].Name, []string{"Farm_1"}); err != nil {
 		t.Fatal(err)
 	}
 	got, err := fsx.ReadFile(filepath.Join(savesDir, "Farm_1", "Farm_1"))
@@ -40,7 +40,7 @@ func TestServiceRefusesRestoreWhileBusy(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
 	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: t.TempDir()}}, busy: func() bool { return true }}
-	if err := s.RestoreBackup("2026-01-01T00-00-00.000.zip", nil); !errors.Is(err, ErrBusy) {
+	if err := s.RestoreBackup("stardew", "2026-01-01T00-00-00.000.zip", nil); !errors.Is(err, ErrBusy) {
 		t.Fatalf("err = %v", err)
 	}
 }
@@ -72,10 +72,10 @@ func TestCreateBackupIsManualPinnedAndOnlyThatSave(t *testing.T) {
 	s, savesDir := backupService(t)
 	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
 	writeFarm(t, savesDir, "Farm_2", "Rainy", "v2")
-	if err := s.CreateBackup("Farm_1"); err != nil {
+	if err := s.CreateBackup("stardew", "Farm_1"); err != nil {
 		t.Fatal(err)
 	}
-	listed, err := s.ListBackups()
+	listed, err := s.ListBackups("stardew")
 	if err != nil || len(listed) != 1 {
 		t.Fatalf("list = %+v, %v", listed, err)
 	}
@@ -84,7 +84,7 @@ func TestCreateBackupIsManualPinnedAndOnlyThatSave(t *testing.T) {
 		t.Fatalf("backup = %+v", b)
 	}
 	for _, folder := range []string{"", ".", "..", "../etc", "a/b", "Missing_123"} {
-		if err := s.CreateBackup(folder); err == nil {
+		if err := s.CreateBackup("stardew", folder); err == nil {
 			t.Errorf("CreateBackup(%q) = nil, want an error", folder)
 		}
 	}
@@ -93,10 +93,10 @@ func TestCreateBackupIsManualPinnedAndOnlyThatSave(t *testing.T) {
 func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) {
 	s, savesDir := backupService(t)
 	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
-	if err := s.CreateBackup("Farm_1"); err != nil {
+	if err := s.CreateBackup("stardew", "Farm_1"); err != nil {
 		t.Fatal(err)
 	}
-	old, err := s.ListBackups()
+	old, err := s.ListBackups("stardew")
 	if err != nil || len(old) != 1 {
 		t.Fatalf("default list = %+v, %v", old, err)
 	}
@@ -106,10 +106,10 @@ func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) 
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.CreateBackup("Farm_1"); err != nil {
+	if err := s.CreateBackup("stardew", "Farm_1"); err != nil {
 		t.Fatal(err)
 	}
-	listed, err := s.ListBackups()
+	listed, err := s.ListBackups("stardew")
 	if err != nil || len(listed) != 2 {
 		t.Fatalf("list after custom = %+v, %v", listed, err)
 	}
@@ -126,10 +126,10 @@ func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) 
 	if zips != 1 {
 		t.Fatalf("custom dir %v", names)
 	}
-	if err := s.SetBackupPinned(old[0].Name, true); err != nil {
+	if err := s.SetBackupPinned("stardew", old[0].Name, true); err != nil {
 		t.Fatalf("pin a backup in the default folder: %v", err)
 	}
-	after, err := s.ListBackups()
+	after, err := s.ListBackups("stardew")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -147,7 +147,7 @@ func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) 
 func TestOpenSaveFolderRefusesPathsOutsideSaves(t *testing.T) {
 	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: t.TempDir()}}}
 	for _, folder := range []string{"", ".", "..", "../etc", "a/b", "Missing_123"} {
-		if err := s.OpenSaveFolder(folder); err == nil {
+		if err := s.OpenSaveFolder("stardew", folder); err == nil {
 			t.Errorf("OpenSaveFolder(%q) = nil, want an error", folder)
 		}
 	}
@@ -169,21 +169,21 @@ func TestSaveBackupsFiltersAndDeleteRefusesPinned(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: savesDir}}}
-	one, err := s.SaveBackups("Farm_1")
+	one, err := s.SaveBackups("stardew", "Farm_1")
 	if err != nil || len(one) != 1 || one[0].Kind != backup.KindLaunch {
 		t.Fatalf("Farm_1 = %+v, %v", one, err)
 	}
-	two, err := s.SaveBackups("Farm_2")
+	two, err := s.SaveBackups("stardew", "Farm_2")
 	if err != nil || len(two) != 2 || two[0].Kind != backup.KindManual {
 		t.Fatalf("Farm_2 = %+v, %v", two, err)
 	}
-	if err := s.DeleteBackup(two[0].Name); err == nil {
+	if err := s.DeleteBackup("stardew", two[0].Name); err == nil {
 		t.Fatal("deleted a pinned backup")
 	}
-	if err := s.DeleteBackup(two[1].Name); err != nil {
+	if err := s.DeleteBackup("stardew", two[1].Name); err != nil {
 		t.Fatal(err)
 	}
-	if left, _ := s.SaveBackups("Farm_2"); len(left) != 1 {
+	if left, _ := s.SaveBackups("stardew", "Farm_2"); len(left) != 1 {
 		t.Fatalf("left = %+v", left)
 	}
 }

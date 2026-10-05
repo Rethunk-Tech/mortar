@@ -39,7 +39,7 @@ func TestBackupsUsageAndTrimKeepNewestPerSaveAndPinned(t *testing.T) {
 	if err != nil || res.Removed != 1 || res.FreedBytes == 0 {
 		t.Fatalf("trim = %+v, %v", res, err)
 	}
-	left, err := s.ListBackups()
+	left, err := s.ListBackups("stardew")
 	if err != nil || len(left) != 2 {
 		t.Fatalf("left = %+v, %v", left, err)
 	}
