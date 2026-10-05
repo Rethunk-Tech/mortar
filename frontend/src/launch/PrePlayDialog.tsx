@@ -17,9 +17,10 @@ import {
 import { SetSkipPlayCheck } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
-import { addRecordedMods } from '../saves/recordedActions.ts'
+import { addRecordedMods, enableRecordedMods } from '../saves/recordedActions.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -44,6 +45,8 @@ function GroupHeading({ group }: { group: PlayIssueGroup }) {
       return t`Changed since last run (${group.count})`
     case 'saveMods':
       return t`This save was last played with ${plural(group.count, { one: '# mod this profile lacks', other: '# mods this profile lacks' })}`
+    case 'saveModsOff':
+      return t`This save was last played with ${plural(group.count, { one: '# mod that is disabled here', other: '# mods that are disabled here' })}`
     default:
       return ''
   }
@@ -63,7 +66,16 @@ function Group({ group }: { group: PlayIssueGroup }) {
       <Typography sx={{ mt: 1.5, fontWeight: 600 }}>
         <GroupHeading group={group} />
       </Typography>
-      {group.names.length === 0 ? null : (
+      {group.kind === 'saveMods' || group.kind === 'saveModsOff' ? (
+        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+          {extra > 0
+            ? t`${listNames(group.names)} and ${{ count: extra }} more`
+            : listNames(group.names)}
+        </Typography>
+      ) : null}
+      {group.names.length === 0 ||
+      group.kind === 'saveMods' ||
+      group.kind === 'saveModsOff' ? null : (
         <List dense={true}>
           {group.names.map((name, i) => (
             <ListItem key={name} disableGutters={true}>
@@ -95,6 +107,7 @@ export function PrePlayDialog() {
   const hasUpdates = (check?.groups ?? []).some((g) => g.kind === 'updates')
   const lastProfile = (check?.groups ?? []).find((g) => g.kind === 'lastProfile')
   const saveMods = (check?.groups ?? []).find((g) => g.kind === 'saveMods')
+  const saveModsOff = (check?.groups ?? []).find((g) => g.kind === 'saveModsOff')
   const switchName = useProfiles(
     (s) => s.profiles.find((p) => p.id === lastProfile?.switchProfileId)?.name ?? '',
   )
@@ -147,6 +160,27 @@ export function PrePlayDialog() {
             {switchName ? t`Switch to ${switchName}` : t`Switch profile`}
           </Button>
         ) : null}
+        {saveModsOff && check ? (
+          <Button
+            disabled={adding}
+            onClick={() =>
+              persistThen(() =>
+                runAdding(async () => {
+                  const [save] = await LastSaveGap(check.game, check.profile)
+                  const enabled = await enableRecordedMods(check.game, check.profile, save)
+                  cancel()
+                  useToasts.getState().push({
+                    kind: 'success',
+                    title: plural(enabled, { one: 'Enabled # mod', other: 'Enabled # mods' }),
+                    body: i18n._(msg`Press Play to start.`),
+                  })
+                }),
+              )
+            }
+          >
+            {t`Enable them`}
+          </Button>
+        ) : null}
         {saveMods && check ? (
           <Button
             disabled={adding}
@@ -154,7 +188,7 @@ export function PrePlayDialog() {
               persistThen(() =>
                 runAdding(async () => {
                   const [save] = await LastSaveGap(check.game, check.profile)
-                  await addRecordedMods(check.game, check.profile, save)
+                  await addRecordedMods(check.game, check.profile, save, false)
                   cancel()
                   useQueue.getState().setOpen(true)
                   useToasts.getState().push({

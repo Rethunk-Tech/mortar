@@ -32,6 +32,7 @@ type PlayIssueKind =
   | 'lastProfile'
   | 'changes'
   | 'saveMods'
+  | 'saveModsOff'
 
 interface PlayIssueGroup {
   kind: PlayIssueKind
@@ -80,7 +81,7 @@ function playIssueSummary(input: {
   updates?: Update[] | null
   currentProfileId?: string
   lastPlayed?: { folder: string; farm: string; profileId: string; profileName: string } | null
-  saveMods?: { name: string }[]
+  saveMods?: { name: string; disabled?: boolean }[]
   switchProfileId?: string
 }): PlayIssueGroup[] {
   const groups: PlayIssueGroup[] = []
@@ -118,15 +119,20 @@ function playIssueSummary(input: {
       switchProfileId: last.profileId,
     })
   }
-  const saveMods = input.saveMods ?? []
-  if (saveMods.length > 0) {
-    const slice = saveMods.slice(0, PLAY_ISSUE_NAME_CAP)
-    groups.push({
-      kind: 'saveMods',
-      count: saveMods.length,
-      names: slice.map((m) => m.name),
-      ...(input.switchProfileId ? { switchProfileId: input.switchProfileId } : {}),
-    })
+  // Mods the profile lacks and mods it has switched off need different fixes, so they are listed apart.
+  for (const [kind, disabled] of [
+    ['saveMods', false],
+    ['saveModsOff', true],
+  ] as const) {
+    const found = (input.saveMods ?? []).filter((m) => (m.disabled ?? false) === disabled)
+    if (found.length > 0) {
+      groups.push({
+        kind,
+        count: found.length,
+        names: found.slice(0, PLAY_ISSUE_NAME_CAP).map((m) => m.name),
+        ...(input.switchProfileId ? { switchProfileId: input.switchProfileId } : {}),
+      })
+    }
   }
   return groups
 }
@@ -162,7 +168,10 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
             profileName: lastName,
           }
         : null,
-    saveMods: (fit?.lastMissing ?? []).map((m) => ({ name: m.name || localId(m.id) })),
+    saveMods: (fit?.lastMissing ?? []).map((m) => ({
+      name: m.name || localId(m.id),
+      disabled: m.disabled,
+    })),
     switchProfileId: fit?.lastProfileExists ? fit.lastProfileId : '',
   })
   try {

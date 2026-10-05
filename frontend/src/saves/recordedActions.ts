@@ -6,22 +6,44 @@ import { download } from '../queue/actions.ts'
 import { useSaves } from './store.ts'
 import { wantFor } from './wantFor.ts'
 
-export async function addRecordedMods(game: string, profileId: string, fit: Fit): Promise<void> {
+// Switches on the recorded mods this profile has but disabled; returns how many.
+export async function enableRecordedMods(
+  game: string,
+  profileId: string,
+  fit: Fit,
+): Promise<number> {
+  const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
+  const off = ((fit.lastMissing?.length ? fit.lastMissing : fit.missing) ?? []).filter(
+    (m) => m.disabled,
+  )
+  if (!profile) {
+    return 0
+  }
+  for (const lack of off) {
+    await useSaves.getState().enable(game, profile, lack.id)
+  }
+  return off.length
+}
+
+// Adds the recorded mods the profile lacks, and with `enable` also switches on the ones it has disabled.
+export async function addRecordedMods(
+  game: string,
+  profileId: string,
+  fit: Fit,
+  enable = true,
+): Promise<void> {
   const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
   if (!profile) {
     return
   }
   const missing = (fit.lastMissing?.length ? fit.lastMissing : fit.missing) ?? []
-  const { enable } = useSaves.getState()
   const fromId = fit.lastProfileExists ? fit.lastProfileId : ''
   const copyIds = missing.filter((m) => !m.disabled).map((m) => m.id)
   if (fromId && fromId !== profileId && copyIds.length > 0) {
     useProfiles.getState().replace(await CopyMods(game, fromId, profileId, copyIds))
   }
-  for (const lack of missing) {
-    if (lack.disabled) {
-      await enable(game, profile, lack.id)
-    }
+  if (enable) {
+    await enableRecordedMods(game, profileId, fit)
   }
   const wants = missing
     .filter((m) => !m.disabled)

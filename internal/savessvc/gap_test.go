@@ -67,3 +67,43 @@ func TestSaveGapReportsSwitchedOffModAsDisabled(t *testing.T) {
 		t.Fatalf("gap %#v", gap)
 	}
 }
+
+func TestFillLastSplitsAbsentFromSwitchedOffMods(t *testing.T) {
+	e := newSaveEnv(t)
+	p, err := e.profiles.Create("stardew", "Main")
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.alphaItem(t)
+	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.profiles.SetModEnabled("stardew", p.ID, "local-a", "smapi:A.Mod", false); err != nil {
+		t.Fatal(err)
+	}
+	last := NewStore(t.TempDir())
+	if err := last.RecordRun("stardew", "Farm_1", p.ID, time.Now(), []PlayedMod{
+		{ID: "smapi:A.Mod", Name: "Alpha", Version: "1.0.0"},
+		{ID: "smapi:B.Mod", Name: "Beta", Version: "1.5.0"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	svc := &Service{last: last, profiles: e.profiles}
+	mods, err := e.profiles.Mods("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	present, enabled := haveMaps(mods)
+	fit := Fit{Folder: "Farm_1"}
+	svc.fillLast("stardew", &fit, present, enabled)
+	if len(fit.LastMissing) != 2 {
+		t.Fatalf("lastMissing %#v", fit.LastMissing)
+	}
+	off := map[string]bool{}
+	for _, l := range fit.LastMissing {
+		off[string(l.ID)] = l.Disabled
+	}
+	if !off["smapi:A.Mod"] || off["smapi:B.Mod"] {
+		t.Fatalf("disabled flags %#v", off)
+	}
+}

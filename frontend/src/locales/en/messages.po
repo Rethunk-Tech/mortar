@@ -798,7 +798,7 @@ msgstr "Installed by Mortar"
 
 #. placeholder {0}: group.save
 #. placeholder {1}: group.profileName
-#: src/launch/PrePlayDialog.tsx:42
+#: src/launch/PrePlayDialog.tsx:43
 msgid "{0} was last played with {1}"
 msgstr "{0} was last played with {1}"
 
@@ -1106,7 +1106,7 @@ msgid "Could not restore {0}"
 msgstr "Could not restore {0}"
 
 #. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx:46
+#: src/launch/PrePlayDialog.tsx:47
 msgid "This save was last played with {0, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
 msgstr "This save was last played with {0, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
 
@@ -2031,6 +2031,11 @@ msgstr "Rename template"
 msgid "Console timestamps"
 msgstr "Console timestamps"
 
+#. placeholder {0}: group.count
+#: src/launch/PrePlayDialog.tsx:49
+msgid "This save was last played with {0, plural, one {# mod that is disabled here} other {# mods that are disabled here}}"
+msgstr "This save was last played with {0, plural, one {# mod that is disabled here} other {# mods that are disabled here}}"
+
 #: src/mods/updateReview/EverywhereDialog.tsx:38
 msgid "Will update"
 msgstr "Will update"
@@ -2221,7 +2226,7 @@ msgid "Don't ask about these"
 msgstr "Don't ask about these"
 
 #. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx:36
+#: src/launch/PrePlayDialog.tsx:37
 msgid "Conflicts ({0})"
 msgstr "Conflicts ({0})"
 
@@ -2824,7 +2829,7 @@ msgid "Choose folder…"
 msgstr "Choose folder…"
 
 #. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx:44
+#: src/launch/PrePlayDialog.tsx:45
 msgid "Changed since last run ({0})"
 msgstr "Changed since last run ({0})"
 
@@ -3619,7 +3624,7 @@ msgstr "Share as r2modman code?"
 #: src/lan/PairedComputers.tsx:60
 #: src/lan/PairedComputers.tsx:136
 #: src/lan/SendDialog.tsx:174
-#: src/launch/PrePlayDialog.tsx:136
+#: src/launch/PrePlayDialog.tsx:149
 #: src/launch/SaveWarnDialog.tsx:67
 #: src/launch/UpdateWarnDialog.tsx:49
 #: src/launch/VanillaPlay.tsx:238
@@ -3692,7 +3697,7 @@ msgstr "{name} is abandoned: {summary}"
 msgid "Choose image…"
 msgstr "Choose image…"
 
-#: src/launch/PrePlayDialog.tsx:116
+#: src/launch/PrePlayDialog.tsx:129
 msgid "Check these before you play."
 msgstr "Check these before you play."
 
@@ -4077,7 +4082,7 @@ msgid "Nothing will be removed."
 msgstr "Nothing will be removed."
 
 #. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx:34
+#: src/launch/PrePlayDialog.tsx:35
 msgid "Missing required dependencies ({0})"
 msgstr "Missing required dependencies ({0})"
 
@@ -4276,7 +4281,7 @@ msgstr "No backups to delete"
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/launch/PrePlayDialog.tsx:78
+#: src/launch/PrePlayDialog.tsx:90
 #: src/share/SharedMods.tsx:68
 msgid "and {count} more"
 msgstr "and {count} more"
@@ -4981,7 +4986,7 @@ msgstr "Open on GitHub"
 msgid "Profile name"
 msgstr "Profile name"
 
-#: src/launch/PrePlayDialog.tsx:55
+#: src/launch/PrePlayDialog.tsx:58
 msgid "Could not save the profile"
 msgstr "Could not save the profile"
 
@@ -5169,7 +5174,7 @@ msgstr "Install yourself"
 msgid "Found"
 msgstr "Found"
 
-#: src/launch/PrePlayDialog.tsx:114
+#: src/launch/PrePlayDialog.tsx:127
 msgid "Before you play"
 msgstr "Before you play"
 
@@ -5188,7 +5193,7 @@ msgstr "Game and SMAPI"
 msgid "Stream overlay"
 msgstr "Stream overlay"
 
-#: src/launch/PrePlayDialog.tsx:162
+#: src/launch/PrePlayDialog.tsx:196
 msgid "Adding the missing mods"
 msgstr "Adding the missing mods"
 
@@ -5898,6 +5903,10 @@ msgstr "Share FOMOD choices"
 msgid "Untrack every mod you track on Nexus"
 msgstr "Untrack every mod you track on Nexus"
 
+#: src/launch/PrePlayDialog.tsx:175
+msgid "Press Play to start."
+msgstr "Press Play to start."
+
 #: src/console/PerformanceComparison.tsx:66
 #: src/mods/ChangelogDialog.tsx:59
 #: src/mods/NewSince.tsx:14
@@ -6006,6 +6015,11 @@ msgstr "Dismissed"
 #: src/profiles/PackImportDialog.tsx:140
 msgid "Profile code"
 msgstr "Profile code"
+
+#. placeholder {0}: listNames(group.names)
+#: src/launch/PrePlayDialog.tsx:72
+msgid "{0} and {count} more"
+msgstr "{0} and {count} more"
 
 #: src/mods/ModMenu.tsx:208
 #: src/mods/SelectionBarActions.tsx:108
@@ -7588,7 +7602,7 @@ msgid "Executable"
 msgstr "Executable"
 
 #: src/launch/playStart.ts:87
-#: src/launch/PrePlayDialog.tsx:176
+#: src/launch/PrePlayDialog.tsx:210
 #: src/launch/SaveWarnDialog.tsx:90
 #: src/launch/UpdateWarnDialog.tsx:52
 msgid "Play anyway"
@@ -8042,7 +8056,7 @@ msgid "Debug"
 msgstr "Debug"
 
 #. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx:40
+#: src/launch/PrePlayDialog.tsx:41
 msgid "Broken or obsolete ({0})"
 msgstr "Broken or obsolete ({0})"
 
@@ -8160,7 +8174,7 @@ msgstr "Grant access"
 msgid "{count, plural, one {{name} logged # error in the last run.} other {{name} logged # errors in the last run.}}"
 msgstr "{count, plural, one {{name} logged # error in the last run.} other {{name} logged # errors in the last run.}}"
 
-#: src/launch/PrePlayDialog.tsx:163
+#: src/launch/PrePlayDialog.tsx:197
 msgid "Press Play when the downloads finish."
 msgstr "Press Play when the downloads finish."
 
@@ -8877,7 +8891,7 @@ msgstr "From {0}, not the site you installed it from. Updating switches its sour
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
 
-#: src/launch/PrePlayDialog.tsx:169
+#: src/launch/PrePlayDialog.tsx:203
 #: src/saves/SaveGapLine.tsx:66
 msgid "Add the missing mods"
 msgstr "Add the missing mods"
@@ -9640,7 +9654,7 @@ msgid "Mod"
 msgstr "Mod"
 
 #. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx:38
+#: src/launch/PrePlayDialog.tsx:39
 msgid "Pending updates ({0})"
 msgstr "Pending updates ({0})"
 
@@ -9718,7 +9732,7 @@ msgstr "Average ms"
 msgid "{importable, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
 msgstr "{importable, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
 
-#: src/launch/PrePlayDialog.tsx:132
+#: src/launch/PrePlayDialog.tsx:145
 msgid "Don't check before Play"
 msgstr "Don't check before Play"
 
@@ -10903,7 +10917,7 @@ msgstr "Everything"
 msgid "The author has not listed any versions here."
 msgstr "The author has not listed any versions here."
 
-#: src/launch/PrePlayDialog.tsx:137
+#: src/launch/PrePlayDialog.tsx:150
 #: src/launch/UpdateWarnDialog.tsx:50
 #: src/mods/ProblemBar.tsx:85
 msgid "Open Problems"
@@ -10979,7 +10993,7 @@ msgstr "Could not save the note and tags for {0}"
 msgid "Could not add to the group"
 msgstr "Could not add to the group"
 
-#: src/launch/PrePlayDialog.tsx:147
+#: src/launch/PrePlayDialog.tsx:160
 msgid "Switch to {switchName}"
 msgstr "Switch to {switchName}"
 
@@ -11859,7 +11873,7 @@ msgstr "Stop ignoring {ignoredSource} updates"
 msgid "ToArea {0}"
 msgstr "ToArea {0}"
 
-#: src/launch/PrePlayDialog.tsx:183
+#: src/launch/PrePlayDialog.tsx:217
 msgid "Update and play"
 msgstr "Update and play"
 
@@ -11994,6 +12008,10 @@ msgstr "Launch"
 #: src/saves/SaveBackupsSection.tsx:117
 msgid "Reading backups…"
 msgstr "Reading backups…"
+
+#: src/launch/PrePlayDialog.tsx:181
+msgid "Enable them"
+msgstr "Enable them"
 
 #: src/browse/BrowsePage.tsx:49
 msgid "Search all mod sites"
@@ -12138,7 +12156,7 @@ msgstr "Adopt"
 msgid "Not in this profile"
 msgstr "Not in this profile"
 
-#: src/launch/PrePlayDialog.tsx:147
+#: src/launch/PrePlayDialog.tsx:160
 #: src/launch/SaveWarnDialog.tsx:75
 msgid "Switch profile"
 msgstr "Switch profile"
@@ -12191,6 +12209,10 @@ msgstr "Untrack mods?"
 #: src/tools/ToolsManageDialog.tsx:88
 msgid "This tool will be removed from Mortar."
 msgstr "This tool will be removed from Mortar."
+
+#: src/launch/PrePlayDialog.tsx:174
+msgid "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
+msgstr "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
 
 #. placeholder {0}: sourceLabel(id)
 #: src/settings/sections/Sources.tsx:53
