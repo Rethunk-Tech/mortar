@@ -149,6 +149,7 @@ type Result struct {
 	RunErrors      []RunError                `json:"runErrors"`
 	LoadFailures   []LoadFailure             `json:"loadFailures,omitempty"`
 	PluginClashes  []PluginClash             `json:"pluginClashes,omitempty"`
+	Deprecated     []DeprecatedPackage       `json:"deprecated,omitempty"`
 	Drift          []profile.Drift           `json:"drift,omitempty"`
 	Damaged        []Damaged                 `json:"damaged,omitempty"`
 	Dismissed      []DismissedProblem        `json:"dismissed"`
@@ -177,7 +178,7 @@ func (r Result) Count() int {
 
 // WarningCount is cosmetic asset conflicts plus compat, cleanup and redundancy hints.
 func (r Result) WarningCount() int {
-	n := len(r.Compat) + len(r.Cleanup) + redundantCount(r.Redundant)
+	n := len(r.Compat) + len(r.Cleanup) + len(r.Deprecated) + redundantCount(r.Redundant)
 	for _, c := range r.AssetConflicts {
 		if c.Cosmetic {
 			n++

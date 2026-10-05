@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -89,7 +90,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	var hits []hit
 	for _, p := range pk {
-		if p.Hidden || !source.CategoryMatch(p.Categories, q.Categories, q.ExcludeCategories) {
+		if !source.CategoryMatch(p.Categories, q.Categories, q.ExcludeCategories) {
 			continue
 		}
 		if s := score(p, tokens); s > 0 || len(tokens) == 0 {
@@ -120,7 +121,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		items = append(items, source.Item{
 			Source: d.ID(), ID: p.Owner + "-" + p.Name, Name: p.Name, Summary: p.Summary, Author: p.Owner,
 			Version: p.Versions[0].Number, Picture: p.Icon, Endorsements: p.Rating, Downloads: p.Downloads,
-			Updated: p.Updated, URL: p.URL, Adult: p.Adult, Repo: p.Repo,
+			Updated: p.Updated, URL: p.URL, Adult: p.Adult, Repo: p.Repo, Obsolete: p.Hidden,
 		})
 	}
 	return source.Page{Total: len(hits), Items: items}, nil
@@ -137,4 +138,44 @@ func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
 		all = append(all, p.Categories...)
 	}
 	return source.UniqueNames(all), nil
+}
+
+// Deprecation is the index's word on a package its author deprecated. Replacement is another listed package the
+// deprecated package's own summary points to ("Namespace-Name"), or empty: Thunderstore has no replacement field.
+type Deprecation struct {
+	Replacement string
+}
+
+var replaceHint = regexp.MustCompile(`(?i)\b(deprecated|replaced|superseded|obsolete|moved|use)\b`)
+
+// Deprecated lists the community's deprecated packages by lower-cased "Namespace-Name", from the cached index.
+func (d Driver) Deprecated(ctx context.Context, key, version string) (map[string]Deprecation, error) {
+	pk, err := d.packages(ctx, key, source.UserAgent(version)+" (+https://mortar.rethunk.tech)")
+	if err != nil {
+		return nil, err
+	}
+	live := map[string]string{}
+	for _, p := range pk {
+		if !p.Hidden {
+			live[strings.ToLower(p.Owner+"-"+p.Name)] = p.Owner + "-" + p.Name
+		}
+	}
+	out := map[string]Deprecation{}
+	for _, p := range pk {
+		if !p.Hidden {
+			continue
+		}
+		self := strings.ToLower(p.Owner + "-" + p.Name)
+		dep := Deprecation{}
+		if replaceHint.MatchString(p.Summary) {
+			for _, tok := range strings.FieldsFunc(p.Summary, func(r rune) bool { return strings.ContainsRune(" \t\n,;:()[]\"'", r) }) {
+				if name, ok := live[strings.ToLower(strings.Trim(tok, "."))]; ok && strings.ToLower(name) != self {
+					dep.Replacement = name
+					break
+				}
+			}
+		}
+		out[self] = dep
+	}
+	return out, nil
 }

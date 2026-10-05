@@ -316,6 +316,9 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 			}
 		}
 		r.PluginClashes = pluginClashes(pkgs)
+		if src, ok := thunderstoreSource(); ok {
+			r.Deprecated = deprecatedPackages(ctx, src, thunderstoreKey(gameID), "", pkgs)
+		}
 		if s.Runs != nil && runID != "" {
 			_, summary, err := s.Runs.LastRunSummary(gameID, id)
 			if err == nil {
