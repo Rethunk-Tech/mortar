@@ -36,3 +36,17 @@ func TestCompareProfilesCLI(t *testing.T) {
 		t.Fatalf("identical: %#v", got.Identical)
 	}
 }
+
+func TestCompareProfilesCLINamesDifferentSources(t *testing.T) {
+	t.Parallel()
+	mods := []Component{{ID: "bepinex:Me.More", Name: "More", Version: "1.0.0"}}
+	a := Profile{Entries: []Entry{{Key: "a", Source: Source{Kind: KindNexus, ModID: 1, FileID: 1}, Mods: mods}}}
+	b := Profile{Entries: []Entry{{Key: "b", Source: Source{Kind: KindThunderstore, Name: "Me-More", Version: "1.0.0"}, Mods: mods}}}
+	got := CompareProfilesCLI(a, b)
+	if len(got.DifferentSource) != 1 || got.DifferentSource[0].A.Source.Kind != KindNexus || got.DifferentSource[0].B.Source.Kind != KindThunderstore {
+		t.Fatalf("source differences: %#v", got.DifferentSource)
+	}
+	if len(got.Identical) != 0 || len(got.OnlyA) != 0 || len(got.OnlyB) != 0 || len(got.DifferentVersion) != 0 {
+		t.Fatalf("the same mod from two sources is one mod: %#v", got)
+	}
+}

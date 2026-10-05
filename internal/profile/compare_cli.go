@@ -10,7 +10,9 @@ type CLICompare struct {
 	OnlyB            []DiffSide `json:"onlyB"`
 	DifferentVersion []DiffPair `json:"differentVersion"`
 	DifferentEnabled []DiffPair `json:"differentEnabled"`
-	Identical        []DiffPair `json:"identical"`
+	// DifferentSource lists mods both profiles hold, from different sources (a Nexus and a Thunderstore copy).
+	DifferentSource []DiffPair `json:"differentSource"`
+	Identical       []DiffPair `json:"identical"`
 }
 
 // CompareProfilesCLI compares user mods by case-insensitive mod id.
@@ -21,6 +23,7 @@ func CompareProfilesCLI(a, b Profile) CLICompare {
 		OnlyB:            []DiffSide{},
 		DifferentVersion: []DiffPair{},
 		DifferentEnabled: []DiffPair{},
+		DifferentSource:  []DiffPair{},
 		Identical:        []DiffPair{},
 	}
 	for key, side := range left {
@@ -42,7 +45,11 @@ func CompareProfilesCLI(a, b Profile) CLICompare {
 		if enabledDiff {
 			out.DifferentEnabled = append(out.DifferentEnabled, pair)
 		}
-		if !versionDiff && !enabledDiff {
+		sourceDiff := side.Source.Kind != other.Source.Kind
+		if sourceDiff {
+			out.DifferentSource = append(out.DifferentSource, pair)
+		}
+		if !versionDiff && !enabledDiff && !sourceDiff {
 			out.Identical = append(out.Identical, pair)
 		}
 	}
@@ -60,6 +67,7 @@ func CompareProfilesCLI(a, b Profile) CLICompare {
 	}
 	sortPairs(out.DifferentVersion)
 	sortPairs(out.DifferentEnabled)
+	sortPairs(out.DifferentSource)
 	sortPairs(out.Identical)
 	return out
 }

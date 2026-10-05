@@ -1255,21 +1255,24 @@ func (c *cmd) profile() error {
 func (c *cmd) compareTable(diff profile.CLICompare) {
 	rows := [][]string{}
 	for _, side := range diff.OnlyA {
-		rows = append(rows, []string{"only-in-A", side.Name, side.Version, enabledLabel(side.Enabled)})
+		rows = append(rows, []string{"only-in-A", side.Name, side.Version, side.Source.Kind, enabledLabel(side.Enabled)})
 	}
 	for _, side := range diff.OnlyB {
-		rows = append(rows, []string{"only-in-B", side.Name, side.Version, enabledLabel(side.Enabled)})
+		rows = append(rows, []string{"only-in-B", side.Name, side.Version, side.Source.Kind, enabledLabel(side.Enabled)})
 	}
 	for _, pair := range diff.DifferentVersion {
-		rows = append(rows, []string{"different-version", pair.Name, pair.A.Version + " -> " + pair.B.Version, ""})
+		rows = append(rows, []string{"different-version", pair.Name, pair.A.Version + " -> " + pair.B.Version, pair.A.Source.Kind + " -> " + pair.B.Source.Kind, ""})
+	}
+	for _, pair := range diff.DifferentSource {
+		rows = append(rows, []string{"different-source", pair.Name, pair.A.Version + " -> " + pair.B.Version, pair.A.Source.Kind + " -> " + pair.B.Source.Kind, ""})
 	}
 	for _, pair := range diff.DifferentEnabled {
-		rows = append(rows, []string{"different-enabled", pair.Name, "", enabledLabel(pair.A.Enabled) + " -> " + enabledLabel(pair.B.Enabled)})
+		rows = append(rows, []string{"different-enabled", pair.Name, "", pair.A.Source.Kind, enabledLabel(pair.A.Enabled) + " -> " + enabledLabel(pair.B.Enabled)})
 	}
 	for _, pair := range diff.Identical {
-		rows = append(rows, []string{"identical", pair.Name, pair.A.Version, enabledLabel(pair.A.Enabled)})
+		rows = append(rows, []string{"identical", pair.Name, pair.A.Version, pair.A.Source.Kind, enabledLabel(pair.A.Enabled)})
 	}
-	c.table("SECTION\tNAME\tVERSION\tENABLED", rows)
+	c.table("SECTION\tNAME\tVERSION\tSOURCE\tENABLED", rows)
 }
 
 func enabledMods(rows []control.ModRow) []control.ModRow {

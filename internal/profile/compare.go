@@ -19,19 +19,12 @@ type DiffSide struct {
 	Source  Source `json:"source"`
 }
 
-// DiffPair is the same mod id in both profiles with a different version or enabled state.
+// DiffPair is the same mod id in both profiles, with each profile's copy.
 type DiffPair struct {
 	ID   mod.ID   `json:"id"`
 	Name string   `json:"name"`
 	A    DiffSide `json:"a"`
 	B    DiffSide `json:"b"`
-}
-
-// Diff is the user-mod comparison of two profiles of the same game, matched by mod id.
-type Diff struct {
-	OnlyA   []DiffSide `json:"onlyA"`
-	OnlyB   []DiffSide `json:"onlyB"`
-	Changed []DiffPair `json:"changed"`
 }
 
 func indexUserMods(p Profile) map[string]DiffSide {
@@ -66,46 +59,6 @@ func sortSides(sides []DiffSide) {
 	slices.SortFunc(sides, func(a, b DiffSide) int {
 		return compareNameThenID(a.Name, a.ID, b.Name, b.ID)
 	})
-}
-
-// DiffProfiles lists user mods only in a, only in b, and in both with a different version or enabled state.
-func DiffProfiles(a, b Profile) Diff {
-	left, right := indexUserMods(a), indexUserMods(b)
-	var d Diff
-	for k, side := range left {
-		other, ok := right[k]
-		if !ok {
-			d.OnlyA = append(d.OnlyA, side)
-			continue
-		}
-		if side.Version != other.Version || side.Enabled != other.Enabled {
-			name := side.Name
-			if name == "" {
-				name = other.Name
-			}
-			d.Changed = append(d.Changed, DiffPair{ID: side.ID, Name: name, A: side, B: other})
-		}
-	}
-	for k, side := range right {
-		if _, ok := left[k]; !ok {
-			d.OnlyB = append(d.OnlyB, side)
-		}
-	}
-	sortSides(d.OnlyA)
-	sortSides(d.OnlyB)
-	slices.SortFunc(d.Changed, func(a, b DiffPair) int {
-		return compareNameThenID(a.Name, a.ID, b.Name, b.ID)
-	})
-	if d.OnlyA == nil {
-		d.OnlyA = []DiffSide{}
-	}
-	if d.OnlyB == nil {
-		d.OnlyB = []DiffSide{}
-	}
-	if d.Changed == nil {
-		d.Changed = []DiffPair{}
-	}
-	return d
 }
 
 func (s *Store) load(game, id string) (Profile, error) {

@@ -7,39 +7,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-func TestDiffProfilesSplitsByUniqueID(t *testing.T) {
-	t.Parallel()
-	a := Profile{Entries: []Entry{
-		{Key: "smapi-1", Source: Source{Kind: SourceSMAPI}, Mods: []Component{{ID: "smapi:SMAPI.ConsoleCommands", Name: "Console", Version: "1"}}},
-		{Key: "only-a", Source: Source{Kind: KindLocal, Name: "a.zip"}, Mods: []Component{{ID: "smapi:Me.A", Name: "Alpha", Version: "1.0.0"}}},
-		{Key: "shared-old", Source: Source{Kind: KindNexus, ModID: 1, FileID: 1}, Mods: []Component{{ID: "smapi:Me.Shared", Name: "Shared", Version: "1.0.0"}}},
-		{Key: "off-a", Source: Source{Kind: KindLocal, Name: "off.zip"}, Mods: []Component{{ID: "smapi:Me.Off", Name: "Off", Version: "1.0.0"}}, Disabled: []mod.ID{"smapi:Me.Off"}},
-	}}
-	b := Profile{Entries: []Entry{
-		{Key: "smapi-1", Source: Source{Kind: SourceSMAPI}, Mods: []Component{{ID: "smapi:SMAPI.ConsoleCommands", Name: "Console", Version: "1"}}},
-		{Key: "only-b", Source: Source{Kind: KindLocal, Name: "b.zip"}, Mods: []Component{{ID: "smapi:Me.B", Name: "Beta", Version: "2.0.0"}}},
-		{Key: "shared-new", Source: Source{Kind: KindNexus, ModID: 1, FileID: 2}, Mods: []Component{{ID: "smapi:Me.Shared", Name: "Shared", Version: "2.0.0"}}},
-		{Key: "off-a", Source: Source{Kind: KindLocal, Name: "off.zip"}, Mods: []Component{{ID: "smapi:Me.Off", Name: "Off", Version: "1.0.0"}}},
-	}}
-	d := DiffProfiles(a, b)
-	if len(d.OnlyA) != 1 || d.OnlyA[0].ID != "smapi:Me.A" || len(d.OnlyB) != 1 || d.OnlyB[0].ID != "smapi:Me.B" {
-		t.Fatalf("only = %+v / %+v", d.OnlyA, d.OnlyB)
-	}
-	if len(d.Changed) != 2 {
-		t.Fatalf("changed = %+v", d.Changed)
-	}
-	byID := map[string]DiffPair{}
-	for _, p := range d.Changed {
-		byID[p.ID.Local()] = p
-	}
-	if byID["Me.Shared"].A.Version != "1.0.0" || byID["Me.Shared"].B.Version != "2.0.0" {
-		t.Fatalf("version pair = %+v", byID["Me.Shared"])
-	}
-	if byID["Me.Off"].A.Enabled || !byID["Me.Off"].B.Enabled {
-		t.Fatalf("enabled pair = %+v", byID["Me.Off"])
-	}
-}
-
 func TestCopyModsAddsFromStoreAndRespectsTheRunningLock(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
@@ -65,8 +32,8 @@ func TestCopyModsAddsFromStoreAndRespectsTheRunningLock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	d := DiffProfiles(src, got)
-	if len(d.OnlyA) != 0 || len(d.OnlyB) != 0 || len(d.Changed) != 0 {
+	d := CompareProfilesCLI(src, got)
+	if len(d.OnlyA) != 0 || len(d.OnlyB) != 0 || len(d.DifferentVersion) != 0 || len(d.DifferentEnabled) != 0 || len(d.DifferentSource) != 0 {
 		t.Fatalf("after copy diff = %+v", d)
 	}
 	off := false
