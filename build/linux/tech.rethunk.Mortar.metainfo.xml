@@ -49,6 +49,48 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.2.0" date="2026-10-05">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Downloads dialog names its folders; inline errors carry the cause</li>
+          <li>What's new reopens from the Mortar menu and Settings</li>
+          <li>Optional files update with their main file before Play and from a run error</li>
+          <li>Links and LAN transfers carry each optional file's placement and switch</li>
+          <li>Native data-location dialog on Linux; drop legacy templates reader; clean old exes</li>
+          <li>Mod details list optional files with their files and alternatives; update review updates them with the main file</li>
+          <li>Baseline Nexus items from their original archive when its MD5 matches Nexus</li>
+          <li>Launch preset templates carry the SMAPI console choice</li>
+          <li>Only a file without a manifest waits for its mod's main file, in the store too</li>
+          <li>Optional files keep their slot across versions, switch alternatives off, list their files and export apart</li>
+          <li>Ignore or use update source for a multi-selection, show cache size when clearing</li>
+          <li>Optional files nest under their main mod with their own switch and Remove</li>
+          <li>Bundles, templates and shares carry optional files after their main mod</li>
+          <li>A main file installs before its optional files, which skip the join question</li>
+          <li>Optional Nexus files without a manifest overlay their main file</li>
+          <li>…and 581 more</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Restore the cover fade into the backdrop</li>
+          <li>Rebuild's tidied notices sit back inside rebuild, so the package builds</li>
+          <li>Import the overlay place dialog once</li>
+          <li>Restore the catalog entries the release commit's stale base dropped</li>
+          <li>One keep set; one save-backup target; templates carry launch state</li>
+          <li>A version bump adds a new metainfo release instead of renaming the last</li>
+          <li>Restore the glibc check, portable update platform and guide lines a stale-base commit dropped</li>
+          <li>Announce a download written in place only once its size holds for a second</li>
+          <li>The sidebar asks for one entry's dot-hidden mods</li>
+          <li>Package removal and uninstall-cleanup undo per-user desktop integration</li>
+          <li>Throttle per-file transfer progress to the queue's 250 ms cadence</li>
+          <li>Apply always records its own history event, and Undo restores the mods, game settings and launch options</li>
+          <li>Dialog actions follow the order rule; empty Mods tab, tag and category dialogs, first-run focus refresh, truncated text titles, copy consistency, search without source JSON</li>
+          <li>Inline errors show a plain sentence with the cause in a tooltip; data move shows its destination and blocks on short space; trim rows and backup copy</li>
+          <li>Restore files 9ed5c138 reverted by mistake</li>
+          <li>…and 598 more</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.1" date="2026-10-04">
       <description>
         <p>New</p>

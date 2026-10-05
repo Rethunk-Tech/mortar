@@ -1,5 +1,5 @@
 // Command version copies the app version from build/config.yml into the files that cannot read it themselves
-// (the Windows resource manifest and info, the Linux metainfo, the browser extension manifest). With -check it
+// (the Windows resource manifest and info, the Linux metainfo, the AUR PKGBUILD). With -check it
 // changes nothing and fails when any copy differs, so the gate catches a version set in only one place. With
 // -print it only prints the version, for scripts and workflows.
 package main

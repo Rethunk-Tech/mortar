@@ -8,7 +8,7 @@ info:
   productIdentifier: "tech.rethunk.mortar" # The unique product identifier
   description: "Multi-game desktop mod manager" # The application description
   copyright: "(c) 2026, Rethunk.Tech" # Copyright text
-  version: "0.1.1" # The application version; the only place it is set (go run ./cmd/version copies it)
+  version: "0.2.0" # The application version; the only place it is set (go run ./cmd/version copies it)
 
 protocols:
   - scheme: mortar
