@@ -5,6 +5,9 @@ type BrowseItem = Item
 interface BrowsePageResult {
   total: number
   items: Item[]
+  // A search across every source sets pages (its largest source's page count) and names sources that did not answer.
+  pages?: number
+  failed?: string[]
 }
 
 interface BrowseSource {

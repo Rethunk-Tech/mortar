@@ -17,6 +17,8 @@ import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
 import type { BrowseItem, BrowsePageProps } from './browseTypes.ts'
 import { useBrowseView } from './view.ts'
 
+// ALL searches every source the game has; it is the default so where a mod is published never matters to the player.
+const ALL = 'all'
 const NEXUS = 'nexus'
 const GITHUB = 'github'
 const FIRST_PAGE = 1
@@ -28,6 +30,11 @@ const ICON_SIZE = 40
 const STALE_OPACITY = 0.6
 
 function searchHint(source: string, premium: boolean): string {
+  if (source === ALL) {
+    return i18n._(
+      msg`Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it.`,
+    )
+  }
   if (source === GITHUB) {
     return i18n._(
       msg`Search GitHub for mods published as releases. Add puts the latest release in this profile.`,
@@ -58,26 +65,43 @@ const grid = {
 
 type Status = 'idle' | 'loading' | 'done' | 'error'
 
+interface BrowseResult {
+  total: number
+  items: BrowseItem[]
+  pages?: number
+  failed?: string[]
+}
+
+const EMPTY_RESULT: BrowseResult = { total: 0, items: [] }
+
+// pagedTotal is the result count paging should assume: a search across sources pages by its largest source.
+function pagedTotal(r: BrowseResult): number {
+  return r.pages ? r.pages * PAGE_SIZE : r.total
+}
+
 function useBrowseQuery({
   game,
   profileID,
   search,
   sources,
 }: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources'>) {
-  const [chosen, setSource] = useState(NEXUS)
-  const source = sources.some((s) => s.id === chosen) ? chosen : (sources[0]?.id ?? '')
+  const [chosen, setSource] = useState(ALL)
+  const merged = sources.length > 1
+  const known = sources.some((s) => s.id === chosen) || (chosen === ALL && merged)
+  const fallback = merged ? ALL : (sources[0]?.id ?? '')
+  const source = known ? chosen : fallback
   const [draft, setDraft] = useState('')
   const [text, setText] = useState('')
   const [page, setPage] = useState(FIRST_PAGE)
   const [retry, setRetry] = useState(0)
-  const [result, setResult] = useState({ total: 0, items: [] as BrowseItem[] })
+  const [result, setResult] = useState<BrowseResult>(EMPTY_RESULT)
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState<InlineError | null>(null)
 
   const pendingQuery = useBrowseView((s) => s.pendingQuery)
   useEffect(() => {
     if (pendingQuery !== '') {
-      setSource(NEXUS)
+      setSource(ALL)
       setDraft(pendingQuery)
       useBrowseView.getState().setPendingQuery('')
     }
@@ -95,7 +119,7 @@ function useBrowseQuery({
 
   useEffect(() => {
     if (text.trim() === '' || source === '' || retry < 0) {
-      setResult({ total: 0, items: [] })
+      setResult(EMPTY_RESULT)
       setStatus('idle')
       return
     }
@@ -106,7 +130,7 @@ function useBrowseQuery({
         if (!cancelled) {
           setResult(next)
           setStatus('done')
-          setPage((current) => clampPage({ page: current, total: next.total }))
+          setPage((current) => clampPage({ page: current, total: pagedTotal(next) }))
         }
       })
       .catch((err: unknown) => {
@@ -160,10 +184,18 @@ function BrowsePage({
     status,
     error,
   } = useBrowseQuery({ game, profileID, search, sources: searchable })
-  const pageCount = Math.max(FIRST_PAGE, Math.ceil(result.total / PAGE_SIZE) || FIRST_PAGE)
-  const sources = searchable.map((s) => ({ value: s.id, label: s.name }))
+  const pageCount = Math.max(FIRST_PAGE, Math.ceil(pagedTotal(result) / PAGE_SIZE) || FIRST_PAGE)
+  const sources = [
+    ...(searchable.length > 1 ? [{ value: ALL, label: t`All sources` }] : []),
+    ...searchable.map((s) => ({ value: s.id, label: s.name })),
+  ]
   const sourceName = sources.find((s) => s.value === source)?.label ?? ''
-  const placeholder = source === GITHUB ? t`Search GitHub releases` : t`Search ${sourceName}`
+  let placeholder = t`Search ${sourceName}`
+  if (source === ALL) {
+    placeholder = t`Search all mod sites`
+  } else if (source === GITHUB) {
+    placeholder = t`Search GitHub releases`
+  }
   const hint = searchHint(source, premium)
   let body: React.ReactNode
   if (status === 'idle') {
@@ -207,6 +239,9 @@ function BrowsePage({
       <>
         <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
           {plural(result.total, { one: '# result', other: '# results' })}
+          {result.failed && result.failed.length > 0
+            ? ` · ${t`${result.failed.join(', ')} did not answer`}`
+            : ''}
         </Typography>
         <Box
           sx={{
@@ -226,7 +261,7 @@ function BrowsePage({
             />
           ))}
         </Box>
-        {result.total > PAGE_SIZE ? (
+        {pageCount > FIRST_PAGE ? (
           <Pagination
             count={pageCount}
             page={page}

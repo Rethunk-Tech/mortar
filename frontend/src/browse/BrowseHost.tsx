@@ -28,7 +28,12 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
     profileID: nextProfile,
   }) => {
     const result = await Search(nextGame, source, text, page, nextProfile)
-    return { total: result.total, items: result.items ?? [] }
+    return {
+      total: result.total,
+      items: result.items ?? [],
+      pages: result.pages ?? 0,
+      failed: result.failed ?? [],
+    }
   }
   return (
     <BrowsePage
