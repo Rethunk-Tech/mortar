@@ -50,6 +50,7 @@
           "darwin": "{xdgConfig}/StardewValley/startup_preferences"
         }
       },
+      "targets": [{ "id": "mods", "root": "{profileMods}" }],
       "stores": {
         "steam": {
           "appId": "413150"
@@ -67,7 +68,8 @@
         {
           "id": "smapi",
           "name": "SMAPI",
-          "nexusModId": 2400
+          "nexusModId": 2400,
+          "companion": "bridge"
         }
       ],
       "sources": [
@@ -96,6 +98,7 @@
       "paths": {
         "saves": { "windows": "{localLow}/ZeekerssRBLX/Lethal Company" }
       },
+      "targets": [{ "id": "profile", "root": "{profile}", "writable": true }],
       "stores": {
         "steam": {
           "appId": "1966720"
@@ -104,7 +107,8 @@
       "loaders": [
         {
           "id": "bepinex5",
-          "name": "BepInEx 5"
+          "name": "BepInEx 5",
+          "companion": "bridge"
         }
       ],
       "sources": [

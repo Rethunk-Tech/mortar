@@ -87,10 +87,12 @@ type GameInfo struct {
 	// Metadata names the SMAPI-derived features that apply to the game: smapi-updates, smapi-compat, stardew-dataset.
 	Metadata []string `json:"metadata"`
 	// Paths names folders and files outside the install by role (saves, startupPreferences).
-	Paths   map[string]PathTemplate `json:"paths,omitempty"`
-	Stores  GameStores              `json:"stores"`
-	Loaders []GameLoader            `json:"loaders"`
-	Sources []GameSource            `json:"sources"`
+	Paths map[string]PathTemplate `json:"paths,omitempty"`
+	// Targets are the places the game's mod files go.
+	Targets []TargetDef  `json:"targets"`
+	Stores  GameStores   `json:"stores"`
+	Loaders []GameLoader `json:"loaders"`
+	Sources []GameSource `json:"sources"`
 }
 
 // PathTemplate is a path per platform of the game build. Tokens: {appData} {localAppData} {localLow} {documents}
@@ -99,6 +101,26 @@ type PathTemplate struct {
 	Windows string `json:"windows,omitempty"`
 	Linux   string `json:"linux,omitempty"`
 	Darwin  string `json:"darwin,omitempty"`
+}
+
+// TargetDef is a content target: a named place mod files go. Root is a token naming where it lives, {profileMods}
+// (the profile's mods folder) or {profile} (the profile's root). Writable targets receive copies because the game
+// writes into them. MaxDepth caps, per lower-case file extension, how many folders deep a file may sit below Root.
+type TargetDef struct {
+	ID       string         `json:"id"`
+	Root     string         `json:"root"`
+	Writable bool           `json:"writable,omitempty"`
+	MaxDepth map[string]int `json:"maxDepth,omitempty"`
+}
+
+// Target returns the game's content target with the given id.
+func (g GameInfo) Target(id string) (TargetDef, bool) {
+	for _, t := range g.Targets {
+		if t.ID == id {
+			return t, true
+		}
+	}
+	return TargetDef{}, false
 }
 
 // GameStores names a game to each store that sells it; a store that does not sell it is nil.
@@ -132,6 +154,9 @@ type GameLoader struct {
 	// NexusModID is the loader's Nexus mod page, which Mortar installs outside any profile entry's Nexus source but
 	// which is installed all the same.
 	NexusModID int `json:"nexusModId,omitempty"`
+	// Companion names the game's component (kind bridge) that Mortar installs alongside the loader so the running game
+	// can talk to Mortar.
+	Companion string `json:"companion,omitempty"`
 }
 
 // GameSource is a site the game's mods come from. Key is the site's name for the game (Nexus domain, Thunderstore
@@ -188,6 +213,9 @@ func (g GameInfo) Validate() error {
 	if len(g.Loaders) == 0 {
 		return fmt.Errorf("game %q needs a loader", g.ID)
 	}
+	if g.Enabled && len(g.Targets) == 0 {
+		return fmt.Errorf("enabled game %q needs a content target", g.ID)
+	}
 	if g.Enabled && g.Stores == (GameStores{}) {
 		return fmt.Errorf("enabled game %q needs a store", g.ID)
 	}
@@ -206,6 +234,16 @@ func (g GameInfo) Validate() error {
 				return fmt.Errorf("game %q path %q must start with a token", g.ID, role)
 			}
 		}
+	}
+	targets := make(map[string]struct{}, len(g.Targets))
+	for _, t := range g.Targets {
+		if t.ID == "" || (t.Root != "{profileMods}" && t.Root != "{profile}") {
+			return fmt.Errorf("game %q has a target without an id or with an unknown root %q", g.ID, t.Root)
+		}
+		if _, ok := targets[t.ID]; ok {
+			return fmt.Errorf("game %q lists target %q more than once", g.ID, t.ID)
+		}
+		targets[t.ID] = struct{}{}
 	}
 	sources := make(map[string]struct{}, len(g.Sources))
 	for _, s := range g.Sources {

@@ -298,3 +298,22 @@ func TestBundledGamesCarryPathTemplates(t *testing.T) {
 		t.Fatal("a path without a token validated")
 	}
 }
+
+func TestBundledGamesCarryTargetsAndCompanions(t *testing.T) {
+	s, _ := BundledGame("stardew")
+	if tgt, ok := s.Target("mods"); !ok || tgt.Root != "{profileMods}" || tgt.Writable {
+		t.Fatalf("stardew mods target = %+v", tgt)
+	}
+	if s.Loaders[0].Companion != "bridge" {
+		t.Fatalf("smapi companion = %q", s.Loaders[0].Companion)
+	}
+	lc, _ := BundledGame("lethal-company")
+	if tgt, ok := lc.Target("profile"); !ok || tgt.Root != "{profile}" || !tgt.Writable {
+		t.Fatalf("lethal-company profile target = %+v", tgt)
+	}
+	bad := s
+	bad.Targets = []TargetDef{{ID: "mods", Root: "mods"}}
+	if bad.Validate() == nil {
+		t.Fatal("a target root without a token validated")
+	}
+}
