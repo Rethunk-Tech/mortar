@@ -560,6 +560,11 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Launches.Status(p.Game)
 	case "sweep":
 		return s.Launches.Sweep(ctx, p.Game, p.Install)
+	case "launch.vanilla":
+		if err := s.Launches.StartVanilla(p.Game, false); err != nil {
+			return nil, err
+		}
+		return s.awaitStart(ctx, p.Game, "")
 	case "stop":
 		if _, err := s.Launches.Status(p.Game); err != nil {
 			return nil, err
@@ -950,6 +955,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.playTest(ctx, p.Game, id, p.Install)
 	case "launch":
 		return s.launch(ctx, p.Game, id, p.Install, p.Preset, p.Force)
+	case "perf.reports":
+		return s.Launches.PerformanceReports(p.Game, id)
 	}
 	return nil, fmt.Errorf("unknown method %q", method)
 }
@@ -1517,6 +1524,11 @@ func (s *Services) launch(ctx context.Context, gameID, id, installID, preset str
 	if err := s.Launches.StartPreset(ctx, gameID, id, installID, preset, false); err != nil {
 		return launchsvc.Status{}, err
 	}
+	return s.awaitStart(ctx, gameID, installID)
+}
+
+// awaitStart waits for a launch Mortar just began to reach the game running, or to fail.
+func (s *Services) awaitStart(ctx context.Context, gameID, installID string) (launchsvc.Status, error) {
 	deadline := time.Now().Add(launchWait)
 	for {
 		st, err := s.Launches.Status(gameID)

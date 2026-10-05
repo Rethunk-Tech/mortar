@@ -46,7 +46,7 @@ const (
 var verbs = map[string]bool{
 	"games": true, "game": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
 	"conflicts": true, "problems": true, "who": true, "updates": true, "share": true, "export": true, "open": true, "play": true,
-	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
+	"runs": true, "logs": true, "saves": true, "launch": true, "perf": true, "stop": true, "status": true, "queue": true,
 	"templates": true, "library": true, "archive": true,
 	"browse":  true,
 	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true, "bisect": true, "lan": true, "app": true, "support": true, "links": true,
@@ -80,6 +80,7 @@ type cmd struct {
 	force         bool
 	presetFlag    string
 	wait          bool
+	vanilla       bool
 	byMod         bool
 	check         bool
 	format        string
@@ -257,6 +258,8 @@ func (c *cmd) parse(args []string) error {
 			c.check = true
 		case a == "--wait":
 			c.wait = true
+		case a == "--vanilla":
+			c.vanilla = true
 		case a == "--update":
 			c.updateFlag = true
 		case a == "--unlink":
@@ -613,6 +616,20 @@ func (c *cmd) dispatch() error {
 	}
 	if verb == "who" {
 		return c.who()
+	}
+	if verb == "launch" && c.vanilla {
+		a, err := c.need(1, "a game")
+		if err != nil {
+			return err
+		}
+		var st launchsvc.Status
+		if err := c.call("launch.vanilla", control.Params{Game: a[0]}, &st, launchTimeout); err != nil {
+			return err
+		}
+		return c.emit(st, func() { fmt.Fprintf(c.out, "%s is %s without mods.\n", a[0], st.State) })
+	}
+	if verb == "perf" {
+		return c.perfReports()
 	}
 	if verb == "conflicts" && len(c.args) > 1 && c.args[1] == "map" {
 		return c.conflictsMap()
@@ -1805,6 +1822,29 @@ func (c *cmd) runs(p control.Params) error {
 	})
 }
 
+func (c *cmd) perfReports() error {
+	if len(c.args) < 2 || c.args[1] != "reports" {
+		return usageError{"perf needs reports <game> <profile>"}
+	}
+	a, err := c.need(2, "a game", "a profile")
+	if err != nil {
+		return err
+	}
+	return show(c, "perf.reports", control.Params{Game: a[0], Profile: a[1]}, func(list []launchsvc.SavedReport) {
+		if len(list) == 0 {
+			fmt.Fprintln(c.out, "No performance reports.")
+		}
+		for _, r := range list {
+			fmt.Fprintf(c.out, "%s  %s\n", r.At, r.ID)
+			rows := [][]string{}
+			for _, row := range r.Rows {
+				rows = append(rows, []string{row.Name, fmt.Sprintf("%.1f", row.AverageMs), fmt.Sprintf("%.1f", row.PeakMs), fmt.Sprintf("%.0f", row.Calls)})
+			}
+			c.table("MOD\tAVG MS\tPEAK MS\tCALLS", rows)
+		}
+	})
+}
+
 func (c *cmd) logs(p control.Params) error {
 	return show(c, "logs", p, func(l control.RunLog) { fmt.Fprint(c.out, l.Text) })
 }
@@ -2259,6 +2299,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   play <game> <profile> --test            launch, wait for the title screen, and stop
   launch <game> <profile> [--install <id>] [--preset NAME] [--wait] [--force]
                                        play (default launch preset unless --preset); --force skips Play warnings
+  launch <game> --vanilla               start the game without mods
+  perf reports <game> <profile>         saved performance reports
   status <game> | stop <game> [--install <id>]
   runs <game> <profile>                   recent launches
 	logs <game> <profile> [--run <id>]      a stored SMAPI log (latest by default)
