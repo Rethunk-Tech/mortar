@@ -53,9 +53,10 @@ func (s *Service) sourceUpdates(ctx context.Context, gameID string, mods []frame
 func (s *Service) searchUpdates(ctx context.Context, gameID string, src components.GameSource, mods []framework.Mod, have []Update) ([]Update, error) {
 	entry, ok := source.Get(src.ID)
 	searcher, canSearch := entry.Source.(source.Searcher)
-	// A GitHub repository search lists no versions, so it could only spend the rate limit. GitHub-installed mods get
-	// their release updates from SMAPI's API through their update keys (checkUpdates).
-	if src.Key == "" || !ok || !canSearch || src.ID == profile.KindGitHub {
+	// GitHub and Nexus mods get their updates from SMAPI's API through their update keys (checkUpdates). A search per
+	// installed mod would repeat that answer at one request each: hundreds per check against Nexus's hourly quota, and
+	// a GitHub repository search lists no versions anyway.
+	if src.Key == "" || !ok || !canSearch || src.ID == profile.KindGitHub || src.ID == profile.KindNexus {
 		return nil, nil
 	}
 	var out []Update

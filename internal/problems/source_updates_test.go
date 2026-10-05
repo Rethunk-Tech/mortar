@@ -35,9 +35,12 @@ func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T
 		source.Register(thunderstore.Driver{})
 		source.Register(nexussource.Driver{})
 	})
-	turns := 0
-	s := &Service{Throttle: func(context.Context, string) (func(), error) {
+	turns, nexusTurns := 0, 0
+	s := &Service{Throttle: func(_ context.Context, src string) (func(), error) {
 		turns++
+		if src == profile.KindNexus {
+			nexusTurns++
+		}
 		return func() {}, nil
 	}}
 	same := framework.Mod{Key: "a", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "1.0.0"}
@@ -46,7 +49,9 @@ func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T
 	viaRepo.Name, viaRepo.Version = "Other", "1.0.0"
 	current := framework.Mod{Key: "c", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "2.0.0"}
 	current.Name, current.Version = "Cool", "2.0.0"
-	got := s.sourceUpdates(context.Background(), "lethal-company", []framework.Mod{same, viaRepo, current}, nil)
+	fromNexus := framework.Mod{Key: "d", SourceKind: profile.KindNexus}
+	fromNexus.Name, fromNexus.Version = "Nexus Mod", "1.0.0"
+	got := s.sourceUpdates(context.Background(), "lethal-company", []framework.Mod{same, viaRepo, current, fromNexus}, nil)
 	if len(got) != 2 {
 		t.Fatalf("updates = %+v", got)
 	}
@@ -58,6 +63,9 @@ func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T
 	}
 	if turns == 0 {
 		t.Error("searches did not wait for their source's turn")
+	}
+	if nexusTurns != 0 {
+		t.Errorf("Nexus was searched %d times; its updates come from update keys", nexusTurns)
 	}
 	covered := s.sourceUpdates(context.Background(), "lethal-company", []framework.Mod{viaRepo}, []Update{{Key: "b", Version: "2.0.0"}})
 	if len(covered) != 0 {
