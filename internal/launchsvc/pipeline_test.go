@@ -67,3 +67,29 @@ func TestEnsureRuntimeEditsAnExistingProtonPrefix(t *testing.T) {
 		t.Fatalf("user.reg = %q", b)
 	}
 }
+
+func TestDeployRecoversALaunchNothingTookBack(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	install := t.TempDir()
+	src := filepath.Join(t.TempDir(), "winhttp.dll")
+	for path, body := range map[string]string{src: "proxy", filepath.Join(install, "winhttp.dll"): "the player's own"} {
+		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	inst := game.Install{ID: "abc", Dir: install}
+	launch := func() *deployment {
+		plan := launchplan.New(launchplan.ModeProfile)
+		plan.AddFile(launchplan.PlanFile{Src: src, Dst: "winhttp.dll"})
+		dep, err := startDeploy(t.Context(), inst, plan)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return dep
+	}
+	launch() // Mortar lost this one
+	launch().unwind(t.Context())
+	if b, _ := os.ReadFile(filepath.Join(install, "winhttp.dll")); string(b) != "the player's own" {
+		t.Fatalf("the player's file is now %q", b)
+	}
+}

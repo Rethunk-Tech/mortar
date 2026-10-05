@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -160,5 +161,24 @@ func TestRecoverAfterACrash(t *testing.T) {
 	}
 	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
 		t.Fatalf("recover with no journal: %v", err)
+	}
+}
+
+func TestApplyRefusesAnUnrecoveredJournal(t *testing.T) {
+	r := newRig(t)
+	r.apply()
+	d, _ := Get(copyID)
+	if _, err := d.Apply(t.Context(), r.plan()); !errors.Is(err, ErrUnrecovered) {
+		t.Fatalf("second apply: %v", err)
+	}
+	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
+		t.Fatal(err)
+	}
+	if read(filepath.Join(r.install, "winhttp.dll")) != "the player's own" {
+		t.Fatal("the player's file was not restored")
+	}
+	m := r.apply()
+	if err := d.Purge(t.Context(), m); err != nil || read(filepath.Join(r.install, "winhttp.dll")) != "the player's own" {
+		t.Fatalf("purge after the retry: %v", err)
 	}
 }

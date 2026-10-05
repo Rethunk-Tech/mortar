@@ -72,7 +72,14 @@ func persist(m Manifest) error {
 	return fsx.Rename(tmp, journalPath(m.View.JournalDir))
 }
 
+// ErrUnrecovered is Apply's refusal to deploy over the journal of a deploy that was never taken back: a second
+// manifest would overwrite the first's record of the player's own files, and they would be lost.
+var ErrUnrecovered = errors.New("an earlier deploy has not been taken back")
+
 func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
+	if _, err := os.Lstat(journalPath(p.View.JournalDir)); err == nil {
+		return Manifest{}, fmt.Errorf("%w: recover %s first", ErrUnrecovered, p.View.JournalDir)
+	}
 	m := Manifest{Dir: p.Dir, View: p.View}
 	for i, op := range p.Ops {
 		hash, err := fsx.SHA256(op.Src)

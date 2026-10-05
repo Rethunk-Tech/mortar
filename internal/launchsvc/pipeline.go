@@ -139,6 +139,10 @@ func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan) 
 	if err != nil {
 		return nil, err
 	}
+	// begin refused a running game, so a journal still here belongs to a launch nothing is taking back.
+	if err := d.Recover(ctx, dir, nil); err != nil {
+		return nil, err
+	}
 	p, err := d.Plan(deploy.View{JournalDir: dir}, inst.Dir, plan.Files)
 	if err != nil {
 		return nil, err
