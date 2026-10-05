@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"slices"
@@ -117,8 +118,8 @@ func (e HistoryEntry) request() Request {
 }
 
 // RetryHistory re-enqueues the request represented by a failed or skipped history entry.
-func (s *Service) RetryHistory(entry HistoryEntry) ([]Item, error) {
-	return s.Add([]Request{entry.request()})
+func (s *Service) RetryHistory(ctx context.Context, entry HistoryEntry) ([]Item, error) {
+	return s.Add(ctx, []Request{entry.request()})
 }
 
 // RetryAllResult says what RetryAllFailed did. Skipped counts failed entries left alone, by reason: "queued"
@@ -131,7 +132,7 @@ type RetryAllResult struct {
 
 // RetryAllFailed re-enqueues every failed history entry that is still retryable. Only the newest entry of a
 // download counts, so one that later succeeded or already failed again is not queued twice.
-func (s *Service) RetryAllFailed() (RetryAllResult, error) {
+func (s *Service) RetryAllFailed(ctx context.Context) (RetryAllResult, error) {
 	res := RetryAllResult{Skipped: map[string]int{}}
 	entries := s.History()
 	seen := map[string]bool{}
@@ -161,7 +162,7 @@ func (s *Service) RetryAllFailed() (RetryAllResult, error) {
 	if len(reqs) == 0 {
 		return res, nil
 	}
-	if _, err := s.Add(reqs); err != nil {
+	if _, err := s.Add(ctx, reqs); err != nil {
 		return res, err
 	}
 	res.Requeued = len(reqs)

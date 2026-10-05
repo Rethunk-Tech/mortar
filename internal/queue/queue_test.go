@@ -219,7 +219,7 @@ func req(fileID int) Request {
 func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
 	f := newFixture(t)
 	f.start()
-	if _, err := f.s.Add([]Request{req(10), {Kind: KindUpdate, Game: "stardew", Profile: "p1", ModID: 1, Version: "2.0", CurrentKey: "nexus-1-10"}}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10), {Kind: KindUpdate, Game: "stardew", Profile: "p1", ModID: 1, Version: "2.0", CurrentKey: "nexus-1-10"}}); err != nil {
 		t.Fatal(err)
 	}
 	st := f.wait("both done", func(st State) bool {
@@ -241,7 +241,7 @@ func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
 func TestSkipProfileHoldsDownloadsUntilRestore(t *testing.T) {
 	f := newFixture(t)
 	f.s.Pause()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	f.s.SkipProfile("stardew", "p1")
@@ -266,7 +266,7 @@ func TestSkipCancelsAFetch(t *testing.T) {
 		fmt.Fprint(w, payload)
 	}
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	<-entered
@@ -362,7 +362,7 @@ func TestAStoredFileInstallsFromTheStoreWithoutAClick(t *testing.T) {
 	f.premium.Store(false)
 	f.stored = map[string]profile.Source{"nexus-1-10": {Kind: "nexus", Name: "a-1.0.zip", ModID: 1, FileID: 10, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 7}}
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	st := f.wait("done", f.item(StateDone))
@@ -396,7 +396,7 @@ func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	f.wait("the click", f.item(StateWaitingClick))
@@ -430,7 +430,7 @@ func TestWaitingLatestItemIsSkippedOnceTheProfileHasANewerFile(t *testing.T) {
 	f.start()
 	exact, latest := req(10), req(10)
 	exact.Profile, latest.Latest = "p2", true
-	if _, err := f.s.Add([]Request{latest, exact}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{latest, exact}); err != nil {
 		t.Fatal(err)
 	}
 	f.wait("the click", f.item(StateWaitingClick))
@@ -445,7 +445,7 @@ func TestExpiredKeyReopensThePage(t *testing.T) {
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	f.wait("the click", f.item(StateWaitingClick))
@@ -464,7 +464,7 @@ func TestRateLimitPausesUntilTheReset(t *testing.T) {
 	f := newFixture(t)
 	f.limitNow.Store(true)
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	st := f.wait("the limit", func(st State) bool { return st.LimitedUntil != 0 })
@@ -502,7 +502,7 @@ func TestFailedRetrySkipAndCancel(t *testing.T) {
 	}
 	t.Cleanup(func() { close(block) })
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	st := f.wait("failure", f.item(StateFailed))
@@ -514,7 +514,7 @@ func TestFailedRetrySkipAndCancel(t *testing.T) {
 	f.wait("done after retry", f.item(StateDone))
 
 	fail.Store(true)
-	if _, err := f.s.Add([]Request{req(11)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(11)}); err != nil {
 		t.Fatal(err)
 	}
 	st = f.wait("second failure", func(st State) bool { return len(st.Items) == 2 && st.Items[1].State == StateFailed })
@@ -522,7 +522,7 @@ func TestFailedRetrySkipAndCancel(t *testing.T) {
 	f.wait("skipped", func(st State) bool { return st.Items[1].State == StateSkipped })
 
 	hold.Store(true)
-	if _, err := f.s.Add([]Request{req(12)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(12)}); err != nil {
 		t.Fatal(err)
 	}
 	st = f.wait("downloading", func(st State) bool { return len(st.Items) == 3 && st.Items[2].State == StateDownloading })
@@ -538,7 +538,7 @@ func TestPauseHoldsBackNewDownloads(t *testing.T) {
 	f := newFixture(t)
 	f.start()
 	f.s.Pause()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	time.Sleep(50 * time.Millisecond)
@@ -552,7 +552,7 @@ func TestPauseHoldsBackNewDownloads(t *testing.T) {
 func TestQueueSurvivesARestart(t *testing.T) {
 	f := newFixture(t)
 	f.s.Pause()
-	if _, err := f.s.Add([]Request{req(10), req(11)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10), req(11)}); err != nil {
 		t.Fatal(err)
 	}
 	f.s.mu.Lock()
@@ -578,7 +578,7 @@ func TestQueueSurvivesARestart(t *testing.T) {
 func TestSignedOutRefusesToQueue(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("sign in") }
-	if _, err := f.s.Add([]Request{req(10)}); err == nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err == nil {
 		t.Fatal("queued while signed out")
 	}
 }
@@ -620,7 +620,7 @@ func TestNexusDownloadOverTheCapFails(t *testing.T) {
 		fmt.Fprint(w, payload)
 	}
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	st := f.wait("failed", f.item(StateFailed))
@@ -636,7 +636,7 @@ func TestItemsForARunningProfileWait(t *testing.T) {
 	running.Store(true)
 	f.s.d.Running = func(_, id string) bool { return id == "p1" && running.Load() }
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	time.Sleep(100 * time.Millisecond)
@@ -671,7 +671,7 @@ func TestARejectedLinkCanBeRetried(t *testing.T) {
 
 func TestAddValidatesTheWholeBatch(t *testing.T) {
 	f := newFixture(t)
-	if _, err := f.s.Add([]Request{req(10), {Kind: KindInstall, Game: "stardew", ModID: 1, FileID: 11}}); err == nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10), {Kind: KindInstall, Game: "stardew", ModID: 1, FileID: 11}}); err == nil {
 		t.Fatal("expected error")
 	}
 	if st := f.s.State(); len(st.Items) != 0 {
@@ -683,7 +683,7 @@ func TestAddCarriesHistoryBatchID(t *testing.T) {
 	f := newFixture(t)
 	request := req(10)
 	request.BatchID = "batch-1"
-	items, err := f.s.Add([]Request{request})
+	items, err := f.s.Add(t.Context(), []Request{request})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -774,7 +774,7 @@ func TestAutoRetryFetchesBeforeFailing(t *testing.T) {
 	}
 	f.s.d.RetryFetches = func() int { return 2 }
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	f.wait("done after retries", f.item(StateDone))
@@ -790,7 +790,7 @@ func TestPauseDownloadsWhileGameRuns(t *testing.T) {
 	f.s.d.PauseWhilePlaying = func() bool { return true }
 	f.s.d.GameBusy = busy.Load
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	time.Sleep(80 * time.Millisecond)
@@ -809,7 +809,7 @@ func TestNexusMD5MismatchFailsDownload(t *testing.T) {
 		fmt.Fprint(w, "not the archive")
 	}
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	st := f.wait("md5 failed", f.item(StateFailed))
@@ -822,7 +822,7 @@ func TestNexusMD5MatchAllowsInstall(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.VerifyNexusMD5 = func() bool { return true }
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	f.wait("md5 ok", f.item(StateDone))

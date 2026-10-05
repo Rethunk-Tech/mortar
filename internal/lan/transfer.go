@@ -54,7 +54,7 @@ type incomingTransfer struct {
 var errRemoteStoreEntryMissing = errors.New("peer does not have this store entry")
 
 // Transfer copies missing store entries for an accepted paired share.
-func (s *Service) Transfer(id int) error {
+func (s *Service) Transfer(ctx context.Context, id int) error {
 	s.mu.Lock()
 	incoming, ok := s.incoming[id]
 	if !ok || time.Now().After(incoming.Expires) {
@@ -65,7 +65,7 @@ func (s *Service) Transfer(id int) error {
 		s.mu.Unlock()
 		return errors.New("LAN transfer is already running")
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	s.active[id] = cancel
 	s.mu.Unlock()
 	defer func() {

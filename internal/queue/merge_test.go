@@ -25,7 +25,7 @@ func TestNexusOptionalFileOffersMergeIntoTheSamePageEntry(t *testing.T) {
 		return profile.InstallResult{}, nil
 	}
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	st := f.wait("merge choice", f.item(StateNeedsMerge))
@@ -46,7 +46,7 @@ func TestNexusSecondMainFileCanStayASeparateEntry(t *testing.T) {
 		return profile.MergeAsk{EntryKey: "nexus-1-9", Label: "Alpha", DefaultAdd: false}, true
 	}
 	f.start()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	st := f.wait("merge choice", f.item(StateNeedsMerge))

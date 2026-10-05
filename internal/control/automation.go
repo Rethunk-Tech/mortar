@@ -15,7 +15,7 @@ import (
 // queueAdd queues one mod from a source for the profile: Nexus by mod id (File is a file id, else the queue
 // resolves one), GitHub by owner/repo (Version is the tag, File the asset), Thunderstore by Namespace-Name
 // (Version, else the newest, with its dependencies).
-func (s *Services) queueAdd(p Params) (any, error) {
+func (s *Services) queueAdd(ctx context.Context, p Params) (any, error) {
 	if s.Queue == nil {
 		return nil, errors.New("the download queue is unavailable")
 	}
@@ -41,7 +41,7 @@ func (s *Services) queueAdd(p Params) (any, error) {
 	default:
 		return nil, fmt.Errorf("source %q cannot be queued; use nexus, github or thunderstore", p.Source)
 	}
-	if _, err := s.Queue.Add([]queue.Request{req}); err != nil {
+	if _, err := s.Queue.Add(ctx, []queue.Request{req}); err != nil {
 		return nil, err
 	}
 	return s.Queue.State(), nil
@@ -129,7 +129,7 @@ func (s *Services) storeRepair(p Params, profileID string) (any, error) {
 	return s.StoreCheck.Repair(p.Game, profileID, p.Key)
 }
 
-func (s *Services) bisectStart(p Params) (any, error) {
+func (s *Services) bisectStart(ctx context.Context, p Params) (any, error) {
 	if s.Bisect == nil {
 		return nil, errors.New("crash check is unavailable")
 	}
@@ -137,7 +137,7 @@ func (s *Services) bisectStart(p Params) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	id, err := s.Bisect.Start(p.Game, prof.ID)
+	id, err := s.Bisect.Start(ctx, p.Game, prof.ID)
 	if err != nil {
 		return nil, err
 	}

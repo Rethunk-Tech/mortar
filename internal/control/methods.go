@@ -398,7 +398,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return s.Queue.State(), nil
 	case "queue.add":
-		return s.queueAdd(p)
+		return s.queueAdd(ctx, p)
 	case "queue.pause":
 		s.Queue.Pause()
 		return s.Queue.State(), nil
@@ -542,7 +542,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "store.check":
 		return s.storeCheck(ctx, p.Game)
 	case "bisect.start":
-		return s.bisectStart(p)
+		return s.bisectStart(ctx, p)
 	case "bisect.status":
 		return s.bisectStatus(p.Name)
 	case "bisect.stop":
@@ -584,7 +584,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "browse":
 		return s.browseFromParams(ctx, p)
 	}
-	if res, ok, err := s.handleLibrary(method, p); ok {
+	if res, ok, err := s.handleLibrary(ctx, method, p); ok {
 		return res, err
 	}
 	if res, ok, err := s.handleMore(ctx, method, p); ok {
@@ -895,7 +895,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return modProblems(prof, result, p.Source, p.ID), nil
 	case "installPackage":
-		_, err := s.Queue.Add([]queue.Request{{Kind: queue.KindInstall, Game: p.Game, Profile: id, Package: p.Name}})
+		_, err := s.Queue.Add(ctx, []queue.Request{{Kind: queue.KindInstall, Game: p.Game, Profile: id, Package: p.Name}})
 		return nil, err
 	case "updates":
 		return s.Problems.Updates(ctx, p.Game, id)
@@ -922,7 +922,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 			return nil, usererr.New(usererr.NotFound, "no update available for "+strings.Join(p.IDs, ", "))
 		}
-		if _, err := s.Queue.Add(reqs); err != nil {
+		if _, err := s.Queue.Add(ctx, reqs); err != nil {
 			return nil, err
 		}
 		return s.Queue.State(), nil

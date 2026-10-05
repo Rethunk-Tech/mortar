@@ -12,7 +12,7 @@ func TestHistoryRecordsAFinishedDownload(t *testing.T) {
 	f.start()
 	r := req(10)
 	r.BatchID = "batch-1"
-	if _, err := f.s.Add([]Request{r}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{r}); err != nil {
 		t.Fatal(err)
 	}
 	f.wait("done", f.item(StateDone))
@@ -32,7 +32,7 @@ func TestHistoryRecordsAFinishedDownload(t *testing.T) {
 func TestHistoryRecordsSkipAndClear(t *testing.T) {
 	f := newFixture(t)
 	f.s.Pause()
-	if _, err := f.s.Add([]Request{req(10)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
 		t.Fatal(err)
 	}
 	id := f.s.State().Items[0].ID
@@ -78,7 +78,7 @@ func TestHistoryFileIsJSON(t *testing.T) {
 func TestRetryAllFailed(t *testing.T) {
 	f := newFixture(t)
 	f.s.Pause()
-	if _, err := f.s.Add([]Request{req(30)}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{req(30)}); err != nil {
 		t.Fatal(err)
 	}
 	base := HistoryEntry{Game: "stardew", Profile: "p1", ModID: 1, Kind: "nexus"}
@@ -98,7 +98,7 @@ func TestRetryAllFailed(t *testing.T) {
 		mk(13, StateSkipped),
 		gh, bad,
 	})
-	got, err := f.s.RetryAllFailed()
+	got, err := f.s.RetryAllFailed(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func TestRetryAllFailed(t *testing.T) {
 	if n := len(f.s.State().Items); n != 4 {
 		t.Fatalf("%d items queued", n)
 	}
-	again, err := f.s.RetryAllFailed()
+	again, err := f.s.RetryAllFailed(t.Context())
 	if err != nil || again.Requeued != 0 || again.Skipped["queued"] != 4 {
 		t.Fatalf("second run %+v, %v", again, err)
 	}

@@ -132,7 +132,7 @@ func TestStoredOptionalFileInstallsOverItsMainFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Add([]Request{
+	if _, err := s.Add(t.Context(), []Request{
 		{Kind: KindInstall, Game: "stardew", Profile: p.ID, ModID: 5, FileID: 1, FileName: "main.zip"},
 		{Kind: KindInstall, Game: "stardew", Profile: p.ID, ModID: 5, FileID: 2, FileName: "opt.zip"},
 	}); err != nil {

@@ -72,7 +72,7 @@ func NewService(profiles *profile.Store, launches *launchsvc.Service) *Service {
 }
 
 // Start begins a crash check against a hidden duplicate of the requested profile.
-func (s *Service) Start(gameID, profileID string) (string, error) {
+func (s *Service) Start(ctx context.Context, gameID, profileID string) (string, error) {
 	if gameID == "" || profileID == "" {
 		return "", errors.New("game and profile are required")
 	}
@@ -103,7 +103,8 @@ func (s *Service) Start(gameID, profileID string) (string, error) {
 		return "", errors.New("the profile has no enabled user mods")
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	// The check outlives the request that started it.
+	ctx, cancel := context.WithCancel(context.WithoutCancel(ctx))
 	id := fmt.Sprintf("bisect-%d", s.seq.Add(1))
 	j := &job{
 		id:      id,

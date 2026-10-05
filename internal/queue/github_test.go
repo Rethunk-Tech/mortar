@@ -97,7 +97,7 @@ func ghReq(version string) Request {
 func TestGitHubSingleAssetInstalls(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.start()
-	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
 		t.Fatal(err)
 	}
 	st := g.wait("done", g.item(StateDone))
@@ -115,7 +115,7 @@ func TestGitHubSeveralAssetsWaitForAChoice(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.multi.Store(true)
 	g.start()
-	if _, err := g.s.Add([]Request{ghReq("")}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{ghReq("")}); err != nil {
 		t.Fatal(err)
 	}
 	st := g.wait("the choice", g.item(StateNeedsChoice))
@@ -137,7 +137,7 @@ func TestGitHubMismatchWaitsForConfirmation(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.ok.Store(false)
 	g.start()
-	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
 		t.Fatal(err)
 	}
 	st := g.wait("the confirmation", g.item(StateNeedsConfirm))
@@ -150,7 +150,7 @@ func TestGitHubMismatchWaitsForConfirmation(t *testing.T) {
 		t.Errorf("installed %+v staged %+v item %+v", g.final, g.staged, st.Items[0])
 	}
 
-	if _, err := g.s.Add([]Request{{Kind: KindInstall, Game: "stardew", Profile: "p2", Repo: "me/mod"}}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "stardew", Profile: "p2", Repo: "me/mod"}}); err != nil {
 		t.Fatal(err)
 	}
 	st = g.wait("the second confirmation", func(st State) bool { return len(st.Items) == 2 && st.Items[1].State == StateNeedsConfirm })
@@ -165,7 +165,7 @@ func TestGitHubUnknownSourceInstallsWithANote(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.verdict.Store(github.ErrUnknown)
 	g.start()
-	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
 		t.Fatal(err)
 	}
 	st := g.wait("done", g.item(StateDone))
@@ -178,7 +178,7 @@ func TestGitHubRateLimitPausesUntilTheReset(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.limited.Store(true)
 	g.start()
-	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
 		t.Fatal(err)
 	}
 	st := g.wait("the limit", func(st State) bool { return st.LimitedUntil != 0 })
@@ -196,11 +196,11 @@ func TestGitHubRequestsNeedNoSignInButAValidRepo(t *testing.T) {
 	for _, repo := range []string{"", "me", "me/mod/extra", "../etc/passwd", "me/mo d"} {
 		r := ghReq("")
 		r.Repo = repo
-		if _, err := g.s.Add([]Request{r}); err == nil {
+		if _, err := g.s.Add(t.Context(), []Request{r}); err == nil {
 			t.Errorf("repo %q was queued", repo)
 		}
 	}
-	if _, err := g.s.Add([]Request{ghReq("")}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{ghReq("")}); err != nil {
 		t.Fatalf("signed out: %v", err)
 	}
 }
@@ -220,7 +220,7 @@ func TestConfirmSurvivesARestartAndItsInstallIgnoresCancel(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.ok.Store(false)
 	g.start()
-	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
 		t.Fatal(err)
 	}
 	id := g.wait("the confirmation", g.item(StateNeedsConfirm)).Items[0].ID
@@ -272,7 +272,7 @@ func TestAStagedKeyIsKeptAndALostOneDownloadsAgain(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.ok.Store(false)
 	g.start()
-	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
 		t.Fatal(err)
 	}
 	id := g.wait("the confirmation", g.item(StateNeedsConfirm)).Items[0].ID
@@ -303,7 +303,7 @@ func TestSkippingAConfirmationReleasesItsStagedKey(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.ok.Store(false)
 	g.start()
-	if _, err := g.s.Add([]Request{ghReq("2.0.0")}); err != nil {
+	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
 		t.Fatal(err)
 	}
 	id := g.wait("the confirmation", g.item(StateNeedsConfirm)).Items[0].ID
@@ -315,7 +315,7 @@ func TestSkippingAConfirmationReleasesItsStagedKey(t *testing.T) {
 
 func TestAddKeepsGitHubTagAndAssetDistinct(t *testing.T) {
 	g := newGitHubFixture(t)
-	first, err := g.s.Add([]Request{
+	first, err := g.s.Add(t.Context(), []Request{
 		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0", Asset: "a.zip"},
 		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0", Asset: "b.zip"},
 		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v2.0.0", Asset: "a.zip"},
@@ -324,7 +324,7 @@ func TestAddKeepsGitHubTagAndAssetDistinct(t *testing.T) {
 	if err != nil || len(first) != 4 {
 		t.Fatalf("queued %d, %v, want 4 distinct GitHub rows", len(first), err)
 	}
-	again, err := g.s.Add([]Request{
+	again, err := g.s.Add(t.Context(), []Request{
 		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0", Asset: "a.zip"},
 		{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "me/mod", Tag: "v1.0.0"},
 	})

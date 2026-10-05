@@ -355,7 +355,7 @@ func (s *Service) Peers() []Peer {
 }
 
 // Send sends a profile's .mortar payload to a discovered peer.
-func (s *Service) Send(peerID, game, profileID string) error {
+func (s *Service) Send(ctx context.Context, peerID, game, profileID string) error {
 	s.mu.RLock()
 	enabled := s.enabled
 	s.mu.RUnlock()
@@ -369,15 +369,15 @@ func (s *Service) Send(peerID, game, profileID string) error {
 	if err != nil {
 		return err
 	}
-	return s.sendPayload(peerID, game, payload)
+	return s.sendPayload(ctx, peerID, game, payload)
 }
 
-func (s *Service) sendPayload(peerID, game string, payload []byte) error {
+func (s *Service) sendPayload(ctx context.Context, peerID, game string, payload []byte) error {
 	encoded := base64.RawStdEncoding.EncodeToString(payload)
 	if _, err := validateRequest(shareRequest{Sender: s.deviceName(), Game: game, Payload: encoded, Version: protocolVersion}); err != nil {
 		return err
 	}
-	hello, err := s.hello(peerID)
+	hello, err := s.hello(ctx, peerID)
 	if err != nil {
 		return err
 	}
@@ -406,7 +406,7 @@ func (s *Service) sendPayload(peerID, game string, payload []byte) error {
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), httpTimeout)
+	ctx, cancel := context.WithTimeout(ctx, httpTimeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
@@ -436,12 +436,12 @@ func (s *Service) sendPayload(peerID, game string, payload []byte) error {
 	return nil
 }
 
-func (s *Service) hello(peerID string) (helloResponse, error) {
+func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, error) {
 	endpoint, err := shareEndpoint(peerID, "/hello")
 	if err != nil {
 		return helloResponse{}, err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), httpTimeout)
+	ctx, cancel := context.WithTimeout(ctx, httpTimeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -928,8 +928,8 @@ func slicesSortPeers(peers []Peer) {
 	}
 }
 
-func postRaw(endpoint string, body []byte) (*http.Response, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), httpTimeout)
+func postRaw(ctx context.Context, endpoint string, body []byte) (*http.Response, error) {
+	ctx, cancel := context.WithTimeout(ctx, httpTimeout)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
 		cancel()

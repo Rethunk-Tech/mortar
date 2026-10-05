@@ -585,11 +585,11 @@ func (s *Service) find(id string) *Item {
 
 // Add queues files. It refuses a Nexus file while signed out, since nothing could be downloaded. A file already
 // waiting in the same profile is not queued twice, and a failed one is retried.
-func (s *Service) Add(reqs []Request) ([]Item, error) {
+func (s *Service) Add(ctx context.Context, reqs []Request) ([]Item, error) {
 	for i := range reqs {
 		reqs[i].key, reqs[i].expires = "", 0
 	}
-	return s.add(context.Background(), reqs)
+	return s.add(ctx, reqs)
 }
 
 func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {

@@ -24,7 +24,7 @@ func (s *Services) handleMore(ctx context.Context, method string, p Params) (res
 	case "tools.add", "tools.update", "tools.remove":
 		res, err = s.toolsWrite(method, p)
 	case "lan.peers", "lan.send", "lan.inbox", "lan.accept", "lan.decline", "lan.paircode", "lan.pair", "lan.paired", "lan.unpair":
-		res, err = s.lanMethod(method, p)
+		res, err = s.lanMethod(ctx, method, p)
 	case "data.move":
 		res, err = s.dataMove(p)
 	case "data.cleanup":
@@ -126,7 +126,7 @@ func (s *Services) toolsWrite(method string, p Params) (any, error) {
 	}
 }
 
-func (s *Services) lanMethod(method string, p Params) (any, error) {
+func (s *Services) lanMethod(ctx context.Context, method string, p Params) (any, error) {
 	if s.Lan == nil {
 		return nil, errors.New("LAN sharing is unavailable")
 	}
@@ -134,13 +134,13 @@ func (s *Services) lanMethod(method string, p Params) (any, error) {
 	case "lan.peers":
 		return s.Lan.Peers(), nil
 	case "lan.send":
-		return s.profileCall(p, func(id string) (any, error) { return nil, s.Lan.Send(p.Name, p.Game, id) })
+		return s.profileCall(p, func(id string) (any, error) { return nil, s.Lan.Send(ctx, p.Name, p.Game, id) })
 	case "lan.inbox":
 		return s.Lan.Pending(), nil
 	case "lan.paircode":
 		return s.Lan.PairCode()
 	case "lan.pair":
-		return nil, s.Lan.Pair(p.Name, p.Value)
+		return nil, s.Lan.Pair(ctx, p.Name, p.Value)
 	case "lan.paired":
 		return s.Lan.Paired()
 	case "lan.unpair":
@@ -154,7 +154,7 @@ func (s *Services) lanMethod(method string, p Params) (any, error) {
 		s.Lan.Dismiss(id)
 		return struct{}{}, nil
 	}
-	if err := s.Lan.Transfer(id); err != nil {
+	if err := s.Lan.Transfer(ctx, id); err != nil {
 		return nil, err
 	}
 	s.Lan.Dismiss(id)

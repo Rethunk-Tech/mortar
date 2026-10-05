@@ -23,7 +23,7 @@ func TestPackageInstallsWithItsDependencies(t *testing.T) {
 	}
 	f.s.d.InstallPackage = f.s.d.Install
 	f.start()
-	if _, err := f.s.Add([]Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod"}}); err != nil {
+	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod"}}); err != nil {
 		t.Fatal(err)
 	}
 	st := f.wait("both done", func(st State) bool {
@@ -35,7 +35,7 @@ func TestPackageInstallsWithItsDependencies(t *testing.T) {
 	if len(f.installs) != 2 || f.installs[0].Kind != profile.KindThunderstore {
 		t.Errorf("installed %+v", f.installs)
 	}
-	if _, err := f.s.Add([]Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "not a package"}}); err == nil {
+	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "not a package"}}); err == nil {
 		t.Error("a malformed package was queued")
 	}
 }

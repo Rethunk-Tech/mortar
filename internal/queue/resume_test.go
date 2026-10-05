@@ -176,7 +176,7 @@ func TestTruncatedPartialResumesAfterRestart(t *testing.T) {
 		_, _ = io.WriteString(w, body[half:])
 	}
 	f.s.Pause()
-	items, err := f.s.Add([]Request{req(10)})
+	items, err := f.s.Add(t.Context(), []Request{req(10)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -274,7 +274,7 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	items, err := s.Add([]Request{req(10)})
+	items, err := s.Add(t.Context(), []Request{req(10)})
 	if err != nil {
 		t.Fatal(err)
 	}

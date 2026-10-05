@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"errors"
 )
 
@@ -8,7 +9,7 @@ var errUnavailable = errors.New("that service is not running")
 
 // handleLibrary answers the methods that manage templates, history and backup size, library cleanups, the data
 // folder and archives; ok is false for any other method.
-func (s *Services) handleLibrary(method string, p Params) (res any, ok bool, err error) {
+func (s *Services) handleLibrary(ctx context.Context, method string, p Params) (res any, ok bool, err error) {
 	switch method {
 	case "templates", "templates.save", "templates.delete", "templates.new":
 		res, err = s.templatesMethod(method, p)
@@ -37,7 +38,7 @@ func (s *Services) handleLibrary(method string, p Params) (res any, ok bool, err
 	case "library.strays.dismiss":
 		res, err = nil, s.Profiles.DismissGameModsFolder(p.Game, p.Name)
 	case "queue.retry-failed":
-		res, err = s.Queue.RetryAllFailed()
+		res, err = s.Queue.RetryAllFailed(ctx)
 	case "data.location":
 		if s.Data == nil {
 			return nil, true, errUnavailable

@@ -91,7 +91,7 @@ func pair(t *testing.T, host, joiner *Service, hostAddr string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := joiner.Pair(hostAddr, strings.ToLower(code)); err != nil {
+	if err := joiner.Pair(t.Context(), hostAddr, strings.ToLower(code)); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -110,11 +110,11 @@ func TestPairing(t *testing.T) {
 		wrong = "BBBB-BBBB"
 	}
 	for range maxFailures {
-		if err := joiner.Pair(hostAddr, wrong); err == nil {
+		if err := joiner.Pair(t.Context(), hostAddr, wrong); err == nil {
 			t.Fatal("a wrong code paired")
 		}
 	}
-	if err := joiner.Pair(hostAddr, code); err == nil {
+	if err := joiner.Pair(t.Context(), hostAddr, code); err == nil {
 		t.Fatal("a locked-out computer paired")
 	}
 
@@ -125,7 +125,7 @@ func TestPairing(t *testing.T) {
 	host.pairing.mu.Lock()
 	host.pairing.locks = nil
 	host.pairing.mu.Unlock()
-	if err := joiner.Pair(hostAddr, code); err != nil {
+	if err := joiner.Pair(t.Context(), hostAddr, code); err != nil {
 		t.Fatal(err)
 	}
 	hostID, _ := host.book.self()
@@ -133,7 +133,7 @@ func TestPairing(t *testing.T) {
 	if key := joiner.book.key(hostID); len(key) != 32 || string(key) != string(host.book.key(joinerID)) {
 		t.Fatal("both computers must hold the same key")
 	}
-	if err := joiner.Pair(hostAddr, code); err == nil {
+	if err := joiner.Pair(t.Context(), hostAddr, code); err == nil {
 		t.Fatal("a code paired twice")
 	}
 	info, err := os.Stat(filepath.Join(joiner.book.dir, "peers.json"))
@@ -253,7 +253,7 @@ func TestLoopbackTransfer(t *testing.T) {
 	}
 	send := func() Arrival {
 		t.Helper()
-		if err := sender.sendPayload(receiverAddr, "stardew", payload.Bytes()); err != nil {
+		if err := sender.sendPayload(t.Context(), receiverAddr, "stardew", payload.Bytes()); err != nil {
 			t.Fatal(err)
 		}
 		select {
@@ -275,7 +275,7 @@ func TestLoopbackTransfer(t *testing.T) {
 	if !arrival.Paired {
 		t.Fatal("a paired share did not receive a transfer grant")
 	}
-	if err := receiver.Transfer(arrival.ID); err != nil {
+	if err := receiver.Transfer(t.Context(), arrival.ID); err != nil {
 		t.Fatal(err)
 	}
 	installed, err := receiverStore.Path("stardew", key)
@@ -341,14 +341,14 @@ func TestLethalCompanyProfileOverLAN(t *testing.T) {
 	})
 	sender, _ := pairedService(t, senderStore, nil)
 	pair(t, receiver, sender, receiverAddr)
-	if err := sender.sendPayload(receiverAddr, "lethal-company", payload.Bytes()); err != nil {
+	if err := sender.sendPayload(t.Context(), receiverAddr, "lethal-company", payload.Bytes()); err != nil {
 		t.Fatal(err)
 	}
 	arrival := <-arrivals
 	if !arrival.Paired {
 		t.Fatal("a paired share did not receive a transfer grant")
 	}
-	if err := receiver.Transfer(arrival.ID); err != nil {
+	if err := receiver.Transfer(t.Context(), arrival.ID); err != nil {
 		t.Fatal(err)
 	}
 	for _, p := range packages {
@@ -390,7 +390,7 @@ func TestLoopbackSendReceive(t *testing.T) {
 	server := httptest.NewServer(service.handler())
 	defer server.Close()
 
-	if err := service.sendPayload(strings.TrimPrefix(server.URL, "http://"), "stardew", payload); err != nil {
+	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", payload); err != nil {
 		t.Fatal(err)
 	}
 	select {
@@ -442,7 +442,7 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 	}})
 	server := httptest.NewServer(service.handler())
 	defer server.Close()
-	if err := service.sendPayload(strings.TrimPrefix(server.URL, "http://"), "stardew", archive.Bytes()); err != nil {
+	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", archive.Bytes()); err != nil {
 		t.Fatal(err)
 	}
 	arrival := <-arrivals

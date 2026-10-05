@@ -1,6 +1,7 @@
 package lan
 
 import (
+	"context"
 	"crypto/ecdh"
 	"crypto/hkdf"
 	"crypto/hmac"
@@ -442,7 +443,7 @@ func (s *Service) pairFailed(remote string, now time.Time) {
 }
 
 // Pair enters the code shown by the computer at peerID (host:port) and stores the key both sides derive.
-func (s *Service) Pair(peerID, code string) error {
+func (s *Service) Pair(ctx context.Context, peerID, code string) error {
 	selfID, err := s.book.self()
 	if err != nil {
 		return err
@@ -453,7 +454,7 @@ func (s *Service) Pair(peerID, code string) error {
 	}
 	aPub := a.PublicKey().Bytes()
 	var begin pairBeginResponse
-	if err := s.postJSON(peerID, "/pair/begin", pairBeginRequest{ID: selfID, Name: s.deviceName(), A: base64.RawStdEncoding.EncodeToString(aPub)}, &begin); err != nil {
+	if err := s.postJSON(ctx, peerID, "/pair/begin", pairBeginRequest{ID: selfID, Name: s.deviceName(), A: base64.RawStdEncoding.EncodeToString(aPub)}, &begin); err != nil {
 		return err
 	}
 	bPub, err := base64.RawStdEncoding.DecodeString(begin.B)
@@ -475,7 +476,7 @@ func (s *Service) Pair(peerID, code string) error {
 	}
 	var finish pairFinishResponse
 	proof := base64.RawStdEncoding.EncodeToString(pairProof(authKey, "J", transcript, shared))
-	if err := s.postJSON(peerID, "/pair/finish", pairFinishRequest{Session: begin.Session, Proof: proof}, &finish); err != nil {
+	if err := s.postJSON(ctx, peerID, "/pair/finish", pairFinishRequest{Session: begin.Session, Proof: proof}, &finish); err != nil {
 		return err
 	}
 	got, _ := base64.RawStdEncoding.DecodeString(finish.Proof)
@@ -502,7 +503,7 @@ func writeJSON(w http.ResponseWriter, v any) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
-func (s *Service) postJSON(peerID, endpointPath string, body, into any) error {
+func (s *Service) postJSON(ctx context.Context, peerID, endpointPath string, body, into any) error {
 	endpoint, err := shareEndpoint(peerID, endpointPath)
 	if err != nil {
 		return err
@@ -511,7 +512,7 @@ func (s *Service) postJSON(peerID, endpointPath string, body, into any) error {
 	if err != nil {
 		return err
 	}
-	resp, err := postRaw(endpoint, raw)
+	resp, err := postRaw(ctx, endpoint, raw)
 	if err != nil {
 		return fmt.Errorf("contact LAN peer: %w", err)
 	}
