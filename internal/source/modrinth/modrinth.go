@@ -84,7 +84,7 @@ func (d Driver) get(ctx context.Context, path string, params url.Values, version
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return &source.BusyError{Source: "Modrinth"}
+		return source.Busy("Modrinth", resp)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("modrinth answered %s", resp.Status)

@@ -189,6 +189,8 @@ type Item struct {
 	// started is when this attempt left the queue for a fetch; it is not persisted.
 	started time.Time
 	fileMD5 string
+	// busy counts the source's busy answers in a row; Retry starts it over.
+	busy int
 }
 
 // saved is queue.json: the state, and the staged key of each item that has one, so a restart still asks for
@@ -199,7 +201,7 @@ type saved struct {
 	Staged map[string]string `json:"staged,omitempty"`
 }
 
-// State is the whole queue. LimitedUntil is the Unix time Nexus's rate limit lifts, 0 when it is not limiting.
+// State is the whole queue. LimitedUntil is the Unix time the last source limit lifts, 0 when none is limiting.
 type State struct {
 	Items        []Item `json:"items"`
 	Paused       bool   `json:"paused"`
@@ -333,8 +335,9 @@ type Service struct {
 	mu    sync.Mutex
 	items []*Item
 	// paused stops new downloads from starting; one under way finishes.
-	paused       bool
-	until        time.Time
+	paused bool
+	// until is when each limiting source (sourceKey) may be asked again.
+	until        map[string]time.Time
 	cancels      map[string]context.CancelFunc
 	installMu    sync.Mutex
 	hashMu       sync.Mutex
@@ -493,8 +496,10 @@ func (s *Service) snapshot() State {
 	for i, it := range s.items {
 		st.Items[i] = *it
 	}
-	if s.until.After(s.d.Now()) {
-		st.LimitedUntil = s.until.Unix()
+	for _, u := range s.until {
+		if u.After(s.d.Now()) {
+			st.LimitedUntil = max(st.LimitedUntil, u.Unix())
+		}
 	}
 	return st
 }
@@ -748,7 +753,7 @@ func (s *Service) retry(match func(*Item) bool) {
 	s.mu.Lock()
 	for _, it := range s.items {
 		if (it.State == StateFailed || it.State == StateSkipped) && match(it) {
-			it.State, it.Error, it.ErrorKind = StateQueued, "", ""
+			it.State, it.Error, it.ErrorKind, it.busy = StateQueued, "", "", 0
 		}
 	}
 	s.mu.Unlock()
@@ -819,7 +824,7 @@ func (s *Service) RestoreProfile(game, profileID string) {
 	s.mu.Lock()
 	for _, it := range s.items {
 		if it.Game == game && it.Profile == profileID && it.State == StateSkipped && it.Error == "profile deleted" {
-			it.State, it.Error, it.ErrorKind = StateQueued, "", ""
+			it.State, it.Error, it.ErrorKind, it.busy = StateQueued, "", "", 0
 		}
 	}
 	s.mu.Unlock()

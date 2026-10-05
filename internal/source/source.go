@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"maps"
+	"net/http"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -37,6 +39,18 @@ type BusyError struct {
 func (e *BusyError) Error() string { return e.Source + " is busy, try again in a minute" }
 
 func (e *BusyError) Is(target error) bool { return target == ErrBusy }
+
+// Busy is name refusing resp, waiting as long as its Retry-After asks (seconds or an HTTP date) when it says.
+func Busy(name string, resp *http.Response) *BusyError {
+	e := &BusyError{Source: name}
+	v := resp.Header.Get("Retry-After")
+	if n, err := strconv.Atoi(v); err == nil && n > 0 {
+		e.Reset = time.Now().Add(time.Duration(n) * time.Second)
+	} else if t, err := http.ParseTime(v); err == nil {
+		e.Reset = t
+	}
+	return e
+}
 
 // Source is one mod site.
 type Source interface {

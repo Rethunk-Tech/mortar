@@ -1,7 +1,10 @@
 package source
 
 import (
+	"errors"
+	"net/http"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
@@ -25,5 +28,19 @@ func TestRegistryContract(t *testing.T) {
 	got := ForGame(g)
 	if len(got) != 2 || got[0].ID() != "contract-b" || got[1].ID() != "contract-a" {
 		t.Errorf("ForGame lists catalog order and skips a source with no driver: %v", got)
+	}
+}
+
+func TestBusyKeepsTheRetryAfterWait(t *testing.T) {
+	at := time.Date(2030, 1, 2, 3, 4, 5, 0, time.UTC)
+	for v, ok := range map[string]func(time.Time) bool{
+		"120":                      func(r time.Time) bool { return time.Until(r) > 110*time.Second && time.Until(r) <= 120*time.Second },
+		at.Format(http.TimeFormat): func(r time.Time) bool { return r.Equal(at) },
+		"":                         time.Time.IsZero,
+	} {
+		e := Busy("Modrinth", &http.Response{Header: http.Header{"Retry-After": {v}}})
+		if !ok(e.Reset) || !errors.Is(e, ErrBusy) {
+			t.Errorf("Retry-After %q: reset %v", v, e.Reset)
+		}
 	}
 }

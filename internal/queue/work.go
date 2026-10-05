@@ -41,7 +41,7 @@ func (s *Service) usable(it *Item) bool {
 // from a link); otherwise the head item waits for its click, unless one already does. Items for a profile the game
 // runs stay queued, and held reports whether any did.
 func (s *Service) next(running map[string]bool) (it *Item, act action, held bool) {
-	if s.paused || s.until.After(s.d.Now()) {
+	if s.paused {
 		return nil, resolve, false
 	}
 	pauseFetch := s.pauseFetch()
@@ -61,9 +61,15 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 				held = true
 				continue
 			}
+			if s.waits(it) {
+				continue
+			}
 			return it, fetch, held
 		case it.Repo != "":
 			act := s.forAsset(it)
+			if act != install && s.waits(it) {
+				continue
+			}
 			if act == fetch && pauseFetch {
 				held = true
 				continue
@@ -71,12 +77,15 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 			return it, act, held
 		case premium || s.usable(it) || s.stored(it):
 			act := s.forFile(it, fetch)
+			if act != install && s.waits(it) {
+				continue
+			}
 			if act == fetch && pauseFetch {
 				held = true
 				continue
 			}
 			return it, act, held
-		case head == nil:
+		case head == nil && (s.forFile(it, click) == install || !s.waits(it)):
 			head = it
 		}
 	}
@@ -84,6 +93,34 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 		return nil, resolve, held
 	}
 	return head, s.forFile(head, click), held
+}
+
+// maxBusy is how many busy answers in a row an item waits out before it fails; the waits double from defaultBackoff.
+const maxBusy = 5
+
+// sourceKey names the source an item's network steps reach, so a source that is limiting holds only its own items.
+func sourceKey(it *Item) string {
+	switch {
+	case it.Package != "":
+		return cmp.Or(it.Source, "package")
+	case it.Repo != "":
+		return "github"
+	}
+	return "nexus"
+}
+
+// waits reports whether it's source is limiting now.
+func (s *Service) waits(it *Item) bool { return s.until[sourceKey(it)].After(s.d.Now()) }
+
+// wait holds the source's items until reset, or for backoff when the source named no time.
+func (s *Service) wait(key string, reset time.Time, backoff time.Duration) {
+	if !reset.After(s.d.Now()) {
+		reset = s.d.Now().Add(backoff)
+	}
+	if s.until == nil {
+		s.until = map[string]time.Time{}
+	}
+	s.until[key] = reset
 }
 
 func retryBackoff(n int) time.Duration {
@@ -303,22 +340,18 @@ func (s *Service) settle(id string, err error) {
 		// Cancel already set the state; a shutdown leaves the item to start over next time.
 	case errors.As(err, &limit):
 		it.State, it.Progress, it.Speed = StateQueued, 0, 0
-		s.until = limit.Reset
-		if !s.until.After(s.d.Now()) {
-			s.until = s.d.Now().Add(defaultBackoff)
-		}
+		s.wait("nexus", limit.Reset, defaultBackoff)
 	case errors.As(err, &ghLimit):
 		it.State, it.Progress, it.Speed = StateQueued, 0, 0
-		s.until = ghLimit.Reset
-		if !s.until.After(s.d.Now()) {
-			s.until = s.d.Now().Add(defaultBackoff)
-		}
+		s.wait("github", ghLimit.Reset, defaultBackoff)
 	case errors.As(err, &busy):
-		it.State, it.Progress, it.Speed = StateQueued, 0, 0
-		s.until = busy.Reset
-		if !s.until.After(s.d.Now()) {
-			s.until = s.d.Now().Add(defaultBackoff)
+		it.busy++
+		if it.busy > maxBusy {
+			it.State, it.Error = StateFailed, busy.Source+" kept refusing; Retry"
+			break
 		}
+		it.State, it.Progress, it.Speed = StateQueued, 0, 0
+		s.wait(sourceKey(it), busy.Reset, defaultBackoff<<(it.busy-1))
 	case errors.Is(err, nexus.ErrPremiumRequired):
 		it.State, it.Progress, it.Speed, it.key = StateWaitingClick, 0, 0, ""
 	case errors.Is(err, nexus.ErrUnauthorized):
