@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"path/filepath"
+	"slices"
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
@@ -15,7 +16,13 @@ import (
 // downloadDirs are the folders new archives are offered from: Mortar's own download folder and the user's
 // Downloads folder, which is looked up once because it runs a command.
 func downloadDirs(store *settings.Store, dataDir string) []string {
-	return []string{archiveDir(store, dataDir), userDownloads()}
+	dirs := []string{archiveDir(store, dataDir), userDownloads()}
+	for _, d := range store.Get().WatchedFolders() {
+		if !slices.Contains(dirs, d) {
+			dirs = append(dirs, d)
+		}
+	}
+	return dirs
 }
 
 var userDownloads = sync.OnceValue(dlwatch.UserDir)

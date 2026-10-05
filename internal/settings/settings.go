@@ -164,20 +164,22 @@ type Settings struct {
 	// DesktopRunCrashed sends a desktop notification when a Mortar-started run crashes. Nil means on.
 	DesktopRunCrashed *bool `json:"desktopRunCrashed"`
 	// DesktopModUpdates sends a desktop notification when a background check finds updates. Nil means off.
-	DesktopModUpdates          *bool  `json:"desktopModUpdates"`
-	Density                    string `json:"density"`
-	Theme                      string `json:"theme"`
-	GridCardSize               string `json:"gridCardSize"`
-	ShowAuthorOnCards          *bool  `json:"showAuthorOnCards"`
-	ReduceMotion               string `json:"reduceMotion"`
-	ProfileHero                string `json:"profileHero"`
-	ReuseFomodChoices          *bool  `json:"reuseFomodChoices"`
-	DriftChecks                *bool  `json:"driftChecks"`
-	AutoInstallMortarUpdates   *bool  `json:"autoInstallMortarUpdates"`
-	AutoTrackNexus             bool   `json:"autoTrackNexus"`
-	LanName                    string `json:"lanName"`
-	LanAutoAcceptSameAccount   bool   `json:"lanAutoAcceptSameAccount"`
-	DownloadFolder             string `json:"downloadFolder"`
+	DesktopModUpdates        *bool  `json:"desktopModUpdates"`
+	Density                  string `json:"density"`
+	Theme                    string `json:"theme"`
+	GridCardSize             string `json:"gridCardSize"`
+	ShowAuthorOnCards        *bool  `json:"showAuthorOnCards"`
+	ReduceMotion             string `json:"reduceMotion"`
+	ProfileHero              string `json:"profileHero"`
+	ReuseFomodChoices        *bool  `json:"reuseFomodChoices"`
+	DriftChecks              *bool  `json:"driftChecks"`
+	AutoInstallMortarUpdates *bool  `json:"autoInstallMortarUpdates"`
+	AutoTrackNexus           bool   `json:"autoTrackNexus"`
+	LanName                  string `json:"lanName"`
+	LanAutoAcceptSameAccount bool   `json:"lanAutoAcceptSameAccount"`
+	DownloadFolder           string `json:"downloadFolder"`
+	// WatchFolders are extra folders, joined by the OS path-list separator, that new archives are offered from.
+	WatchFolders               string `json:"watchFolders,omitempty"`
 	ProfileOrder               string `json:"profileOrder"`
 	AutoRetryDownloads         string `json:"autoRetryDownloads"`
 	PauseDownloadsWhilePlaying bool   `json:"pauseDownloadsWhilePlaying"`

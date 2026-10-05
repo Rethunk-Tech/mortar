@@ -987,7 +987,7 @@ msgid "Shorter animations. Honour the OS unless you override it."
 msgstr "Shorter animations. Honour the OS unless you override it."
 
 #: src/settings/prefCopy.ts:40
-#: src/settings/sections/Downloads.tsx:40
+#: src/settings/sections/Downloads.tsx:41
 msgid "Last opened profile"
 msgstr "Last opened profile"
 
@@ -1066,7 +1066,7 @@ msgstr "Use this folder"
 msgid "Scheduled"
 msgstr "Scheduled"
 
-#: src/launch/autoUpdate.ts:226
+#: src/launch/autoUpdate.ts:228
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
 
@@ -1162,7 +1162,7 @@ msgstr "Notify when updates are found"
 msgid "Switch on {0}"
 msgstr "Switch on {0}"
 
-#: src/settings/sections/Downloads.tsx:123
+#: src/settings/sections/Downloads.tsx:124
 msgid "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 msgstr "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 
@@ -1484,7 +1484,7 @@ msgstr "Could not ignore updates from {source}"
 msgid "Startup"
 msgstr "Startup"
 
-#: src/settings/sections/Downloads.tsx:109
+#: src/settings/sections/Downloads.tsx:110
 msgid "Not connected yet"
 msgstr "Not connected yet"
 
@@ -1622,6 +1622,10 @@ msgstr "SMAPI unofficial builds"
 #: src/settings/sections/DataUsage.tsx:228
 msgid "Usage"
 msgstr "Usage"
+
+#: src/settings/sections/WatchFolders.tsx:27
+msgid "Folder to watch for archives"
+msgstr "Folder to watch for archives"
 
 #: src/profiles/LaunchPresetsBlock.tsx:137
 msgid "Launch presets"
@@ -2019,7 +2023,7 @@ msgstr "Writes a zip with logs and settings, personal paths removed, to attach t
 msgid "Switched on"
 msgstr "Switched on"
 
-#: src/settings/sections/Downloads.tsx:254
+#: src/settings/sections/Downloads.tsx:255
 msgid "Downloading"
 msgstr "Downloading"
 
@@ -2529,7 +2533,7 @@ msgid "Installed file"
 msgstr "Installed file"
 
 #. placeholder {0}: contact.browser
-#: src/settings/sections/Downloads.tsx:105
+#: src/settings/sections/Downloads.tsx:106
 msgid "Connected from {0}, last seen "
 msgstr "Connected from {0}, last seen "
 
@@ -2675,7 +2679,7 @@ msgstr "Download and stage a found update without asking"
 msgid "Search GitHub releases"
 msgstr "Search GitHub releases"
 
-#: src/settings/sections/Downloads.tsx:246
+#: src/settings/sections/Downloads.tsx:247
 msgid "Nexus links"
 msgstr "Nexus links"
 
@@ -2899,7 +2903,7 @@ msgstr "Open notification history"
 msgid "Past run"
 msgstr "Past run"
 
-#: src/settings/sections/Downloads.tsx:95
+#: src/settings/sections/Downloads.tsx:96
 msgid "The browser extension is too old for this Mortar"
 msgstr "The browser extension is too old for this Mortar"
 
@@ -3068,7 +3072,7 @@ msgstr "Not checked yet."
 msgid "How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never removed."
 msgstr "How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never removed."
 
-#: src/launch/autoUpdate.ts:140
+#: src/launch/autoUpdate.ts:142
 msgid "Timed out waiting for mod updates"
 msgstr "Timed out waiting for mod updates"
 
@@ -3257,7 +3261,7 @@ msgstr "Local"
 msgid "Review mod updates"
 msgstr "Review mod updates"
 
-#: src/settings/sections/Downloads.tsx:126
+#: src/settings/sections/Downloads.tsx:127
 msgid "Download the extension"
 msgstr "Download the extension"
 
@@ -3436,7 +3440,7 @@ msgstr "Use update source"
 msgid "Reported by {0}"
 msgstr "Reported by {0}"
 
-#: src/settings/sections/Downloads.tsx:210
+#: src/settings/sections/Downloads.tsx:211
 msgid "Automatic"
 msgstr "Automatic"
 
@@ -3662,7 +3666,7 @@ msgstr "Last scheduled backup {when} · next one is due"
 msgid "Just this mod"
 msgstr "Just this mod"
 
-#: src/settings/sections/Downloads.tsx:185
+#: src/settings/sections/Downloads.tsx:186
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
@@ -3678,7 +3682,7 @@ msgstr "Needs your click"
 msgid "This save has no recorded mod list yet."
 msgstr "This save has no recorded mod list yet."
 
-#: src/settings/sections/Downloads.tsx:122
+#: src/settings/sections/Downloads.tsx:123
 msgid "Get the extension"
 msgstr "Get the extension"
 
@@ -3706,7 +3710,7 @@ msgid "Version"
 msgstr "Version"
 
 #: src/settings/sections/AboutDiagnostics.tsx:89
-#: src/settings/sections/Downloads.tsx:250
+#: src/settings/sections/Downloads.tsx:251
 msgid "Browser extension"
 msgstr "Browser extension"
 
@@ -3790,7 +3794,7 @@ msgstr "Review {updateN, plural, one {# update} other {# updates}}"
 msgid "Update"
 msgstr "Update"
 
-#: src/settings/sections/Downloads.tsx:142
+#: src/settings/sections/Downloads.tsx:143
 msgid "Chrome, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
 msgstr "Chrome, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
 
@@ -3879,10 +3883,10 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/PrefRow.tsx:38
 #: src/settings/sections/Appearance.tsx:43
 #: src/settings/sections/Appearance.tsx:66
-#: src/settings/sections/Downloads.tsx:51
-#: src/settings/sections/Downloads.tsx:190
-#: src/settings/sections/Downloads.tsx:221
-#: src/settings/sections/Downloads.tsx:242
+#: src/settings/sections/Downloads.tsx:52
+#: src/settings/sections/Downloads.tsx:191
+#: src/settings/sections/Downloads.tsx:222
+#: src/settings/sections/Downloads.tsx:243
 #: src/settings/sections/GameSettings.tsx:315
 #: src/settings/sections/GameSettings.tsx:339
 #: src/settings/sections/GameSettings.tsx:342
@@ -3894,6 +3898,8 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/SourceOrder.tsx:45
 #: src/settings/sections/StreamOverlay.tsx:408
 #: src/settings/sections/Updates.tsx:161
+#: src/settings/sections/WatchFolders.tsx:22
+#: src/settings/sections/WatchFolders.tsx:33
 #: src/tips/TipBanner.tsx:39
 msgid "Could not save that setting"
 msgstr "Could not save that setting"
@@ -3992,7 +3998,7 @@ msgstr "Changed outside Mortar"
 msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
-#: src/settings/sections/Downloads.tsx:100
+#: src/settings/sections/Downloads.tsx:101
 msgid "Connection"
 msgstr "Connection"
 
@@ -4019,7 +4025,7 @@ msgstr "Launch environment"
 msgid "Ask"
 msgstr "Ask"
 
-#: src/settings/sections/Downloads.tsx:153
+#: src/settings/sections/Downloads.tsx:154
 msgid "and open it in Firefox. If that release has none, unzip the download, open about:debugging, choose This Firefox, then Load Temporary Add-on and pick manifest.json; Firefox removes it when it restarts."
 msgstr "and open it in Firefox. If that release has none, unzip the download, open about:debugging, choose This Firefox, then Load Temporary Add-on and pick manifest.json; Firefox removes it when it restarts."
 
@@ -4593,7 +4599,7 @@ msgid "Could not add the archive"
 msgstr "Could not add the archive"
 
 #. placeholder {0}: copy.label
-#: src/settings/sections/Downloads.tsx:44
+#: src/settings/sections/Downloads.tsx:45
 msgid "{0} ({gameName})"
 msgstr "{0} ({gameName})"
 
@@ -4717,7 +4723,7 @@ msgid "Ready to import"
 msgstr "Ready to import"
 
 #: src/settings/prefCopy.ts:300
-#: src/settings/sections/Downloads.tsx:236
+#: src/settings/sections/Downloads.tsx:237
 msgid "Download folder"
 msgstr "Download folder"
 
@@ -4862,7 +4868,7 @@ msgstr "No notifications yet"
 msgid "Optional files"
 msgstr "Optional files"
 
-#: src/settings/sections/Downloads.tsx:151
+#: src/settings/sections/Downloads.tsx:152
 msgid "download the signed add-on"
 msgstr "download the signed add-on"
 
@@ -5222,7 +5228,7 @@ msgstr "Reverted"
 msgid "Pin {name}"
 msgstr "Pin {name}"
 
-#: src/settings/sections/Downloads.tsx:216
+#: src/settings/sections/Downloads.tsx:217
 msgid "Premium downloads come from this Nexus server when it offers the file."
 msgstr "Premium downloads come from this Nexus server when it offers the file."
 
@@ -5230,7 +5236,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:205
-#: src/mods/updateReview/Row.tsx:112
+#: src/mods/updateReview/Row.tsx:118
 msgid "Open page"
 msgstr "Open page"
 
@@ -5552,7 +5558,7 @@ msgid "Track"
 msgstr "Track"
 
 #. placeholder {0}: item.name || i18n._(msg`the mod`)
-#: src/launch/autoUpdate.ts:112
+#: src/launch/autoUpdate.ts:114
 msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
@@ -5622,7 +5628,7 @@ msgstr "Could not check the mods for problems"
 msgid "Search the log"
 msgstr "Search the log"
 
-#: src/settings/sections/Downloads.tsx:173
+#: src/settings/sections/Downloads.tsx:174
 msgid "{owner} opens these links now."
 msgstr "{owner} opens these links now."
 
@@ -6109,7 +6115,7 @@ msgid "Open game settings"
 msgstr "Open game settings"
 
 #. placeholder {0}: update.githubFallback
-#: src/mods/updateReview/Row.tsx:66
+#: src/mods/updateReview/Row.tsx:71
 msgid "From GitHub ({0}) when its release matches, else Nexus"
 msgstr "From GitHub ({0}) when its release matches, else Nexus"
 
@@ -6397,6 +6403,7 @@ msgid "Turn on scheduled save backups first."
 msgstr "Turn on scheduled save backups first."
 
 #: src/launchers/LauncherList.tsx:184
+#: src/settings/sections/WatchFolders.tsx:52
 msgid "Add folder…"
 msgstr "Add folder…"
 
@@ -6739,7 +6746,7 @@ msgstr "There is no SMAPI log for this profile yet. Play this profile once, then
 msgid "Replacement: {0}"
 msgstr "Replacement: {0}"
 
-#: src/settings/sections/Downloads.tsx:145
+#: src/settings/sections/Downloads.tsx:146
 msgid "Firefox:"
 msgstr "Firefox:"
 
@@ -6786,7 +6793,7 @@ msgstr "Created {0}"
 msgid "Date"
 msgstr "Date"
 
-#: src/settings/sections/Downloads.tsx:96
+#: src/settings/sections/Downloads.tsx:97
 msgid "The browser extension is too new for this Mortar"
 msgstr "The browser extension is too new for this Mortar"
 
@@ -7236,7 +7243,7 @@ msgstr "Mod or event"
 msgid "Untrack every {gameName} mod on Nexus"
 msgstr "Untrack every {gameName} mod on Nexus"
 
-#: src/settings/sections/Downloads.tsx:172
+#: src/settings/sections/Downloads.tsx:173
 msgid "Clicking these links on Nexus starts the download in Mortar."
 msgstr "Clicking these links on Nexus starts the download in Mortar."
 
@@ -8156,6 +8163,11 @@ msgstr "Could not reset the game install"
 msgid "Handle Nexus download links?"
 msgstr "Handle Nexus download links?"
 
+#. placeholder {0}: update.source
+#: src/mods/updateReview/Row.tsx:67
+msgid "From {0}, not the site you installed it from. Updating switches its source."
+msgstr "From {0}, not the site you installed it from. Updating switches its source."
+
 #: src/bundles/BundlesSection.tsx:110
 msgid "none"
 msgstr "none"
@@ -8511,8 +8523,8 @@ msgstr "winner"
 msgid "Maximise"
 msgstr "Maximise"
 
-#: src/settings/sections/Downloads.tsx:171
-#: src/settings/sections/Downloads.tsx:179
+#: src/settings/sections/Downloads.tsx:172
+#: src/settings/sections/Downloads.tsx:180
 msgid "Handle \"Mod Manager Download\" links"
 msgstr "Handle \"Mod Manager Download\" links"
 
@@ -8536,7 +8548,7 @@ msgstr "GOG via Heroic"
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
-#: src/launch/autoUpdate.ts:112
+#: src/launch/autoUpdate.ts:114
 msgid "the mod"
 msgstr "the mod"
 
@@ -8571,7 +8583,7 @@ msgstr "In {0}; turns off its edits here"
 msgid "Could not set the default launch preset"
 msgstr "Could not set the default launch preset"
 
-#: src/settings/sections/Downloads.tsx:265
+#: src/settings/sections/Downloads.tsx:266
 msgid "Files"
 msgstr "Files"
 
@@ -8809,6 +8821,7 @@ msgstr "Switch to Saves"
 #: src/mods/SelectionBarDialogs.tsx:82
 #: src/settings/sections/DataStoreReport.tsx:401
 #: src/settings/sections/DataStoreReport.tsx:408
+#: src/settings/sections/WatchFolders.tsx:47
 msgid "Remove"
 msgstr "Remove"
 
@@ -9245,8 +9258,8 @@ msgstr "SMAPI mods"
 msgid "Dates"
 msgstr "Dates"
 
-#: src/settings/sections/Downloads.tsx:184
-#: src/settings/sections/Downloads.tsx:192
+#: src/settings/sections/Downloads.tsx:185
+#: src/settings/sections/Downloads.tsx:193
 msgid "Send other games' links to {redirectName}"
 msgstr "Send other games' links to {redirectName}"
 
@@ -9611,7 +9624,7 @@ msgid "Profile"
 msgstr "Profile"
 
 #: src/firstrun/FindStep.tsx:181
-#: src/settings/sections/Downloads.tsx:270
+#: src/settings/sections/Downloads.tsx:271
 #: src/settings/sections/GameSettings.tsx:192
 #: src/settings/sections/GameSettings.tsx:393
 msgid "Change folder…"
@@ -9731,7 +9744,7 @@ msgstr "Accent colour"
 msgid " {winnerName} wins."
 msgstr " {winnerName} wins."
 
-#: src/settings/sections/Downloads.tsx:173
+#: src/settings/sections/Downloads.tsx:174
 msgid "Mortar handles these links now."
 msgstr "Mortar handles these links now."
 
@@ -10098,6 +10111,10 @@ msgstr "Could not redo the update"
 msgid "Ignored fields Mortar does not import: {0}"
 msgstr "Ignored fields Mortar does not import: {0}"
 
+#: src/settings/sections/WatchFolders.tsx:37
+msgid "Also watch these folders"
+msgstr "Also watch these folders"
+
 #: src/mods/columnLabel.ts:21
 msgid "Last run"
 msgstr "Last run"
@@ -10194,6 +10211,10 @@ msgstr "Press Play. Mortar samples the game until the title screen and skips the
 #: src/settings/shortcutLabels.ts:13
 msgid "Close dialog or clear selection"
 msgstr "Close dialog or clear selection"
+
+#: src/settings/sections/WatchFolders.tsx:38
+msgid "New .zip, .7z and .rar files that land in them are offered for install, like the download folder. Subfolders are not watched."
+msgstr "New .zip, .7z and .rar files that land in them are offered for install, like the download folder. Subfolders are not watched."
 
 #: src/console/PerformancePanelParts.tsx:281
 msgid "Compare saved reports"
@@ -11284,8 +11305,8 @@ msgstr "Checks the data folder, games, Nexus download links and the browser exte
 msgid "The SMAPI event handler that took longest, and its time"
 msgstr "The SMAPI event handler that took longest, and its time"
 
-#: src/settings/sections/Downloads.tsx:215
-#: src/settings/sections/Downloads.tsx:224
+#: src/settings/sections/Downloads.tsx:216
+#: src/settings/sections/Downloads.tsx:225
 msgid "Preferred download server"
 msgstr "Preferred download server"
 

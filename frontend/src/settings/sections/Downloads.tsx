@@ -23,6 +23,7 @@ import { prefCopy } from '../prefCopy.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useNxmHandler } from './nxmHandler.tsx'
+import { WatchFolders } from './WatchFolders.tsx'
 
 // Nexus links carry no profile, so the target profile is per game: one row for each game Nexus serves.
 function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string }) {
@@ -272,6 +273,7 @@ export function Downloads() {
           }
         />
         <PrefByKey prefKey="keepDownloadArchives" />
+        <WatchFolders />
       </SettingsSection>
     </>
   )

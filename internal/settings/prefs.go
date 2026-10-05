@@ -2,6 +2,7 @@ package settings
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -447,6 +448,17 @@ func (s Settings) AutoInstallMortar() bool {
 }
 
 // ArchiveDir is where download zips land; empty means the data folder's downloads directory.
+// WatchedFolders lists the extra archive folders: absolute paths only, each once.
+func (s Settings) WatchedFolders() []string {
+	var out []string
+	for _, d := range filepath.SplitList(s.WatchFolders) {
+		if d = strings.TrimSpace(d); filepath.IsAbs(d) && !slices.Contains(out, d) {
+			out = append(out, d)
+		}
+	}
+	return out
+}
+
 func (s Settings) ArchiveDir() string {
 	return strings.TrimSpace(s.DownloadFolder)
 }

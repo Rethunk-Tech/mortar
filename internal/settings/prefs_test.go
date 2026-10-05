@@ -2,6 +2,8 @@ package settings
 
 import (
 	"os"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 )
@@ -116,7 +118,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeConfigFiles": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
 		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
-		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "showAdultContent": "true",
+		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "showAdultContent": "true",
 	}
 	if len(overrides) != len(registry) {
 		t.Fatalf("%d overrides for %d registered keys", len(overrides), len(registry))
@@ -243,4 +245,11 @@ func TestPrefKeysRoundTrip(t *testing.T) {
 func writeRaw(t *testing.T, s *Store, raw string) error {
 	t.Helper()
 	return os.WriteFile(s.path, []byte(raw), 0o600)
+}
+
+func TestWatchedFoldersKeepsAbsoluteUniquePaths(t *testing.T) {
+	s := Settings{WatchFolders: strings.Join([]string{"/a", "rel", "/a", " /b "}, string(os.PathListSeparator))}
+	if got := s.WatchedFolders(); !slices.Equal(got, []string{"/a", "/b"}) {
+		t.Errorf("WatchedFolders = %v", got)
+	}
 }

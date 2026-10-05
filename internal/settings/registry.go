@@ -113,6 +113,7 @@ var registry = []pref{
 	strPref("lanName", ScopeApp, func(s Settings, _ string) string { return s.LanName }, func(s *Settings, _, v string) { s.LanName = v }),
 	boolPref("lanAutoAcceptSameAccount", ScopeApp, func(s Settings, _ string) bool { return s.LanAutoAcceptSameAccount }, func(s *Settings, _ string, on bool) { s.LanAutoAcceptSameAccount = on }),
 	strPref("downloadFolder", ScopeApp, func(s Settings, _ string) string { return s.DownloadFolder }, func(s *Settings, _, v string) { s.DownloadFolder = v }),
+	strPref("watchFolders", ScopeApp, func(s Settings, _ string) string { return s.WatchFolders }, func(s *Settings, _, v string) { s.WatchFolders = v }),
 	enumPref("profileOrder", ScopeApp, ProfileOrderManual, profileOrderValues, func(s Settings, _ string) string { return s.ProfileOrder }, func(s *Settings, _, v string) { s.ProfileOrder = v }),
 	enumPref("autoRetryDownloads", ScopeApp, AutoRetryOff, autoRetryValues, func(s Settings, _ string) string { return s.AutoRetryDownloads }, func(s *Settings, _, v string) { s.AutoRetryDownloads = v }),
 	boolPref("pauseDownloadsWhilePlaying", ScopeApp, func(s Settings, _ string) bool { return s.PauseDownloadsWhilePlaying }, func(s *Settings, _ string, on bool) { s.PauseDownloadsWhilePlaying = on }),
