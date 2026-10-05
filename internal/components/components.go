@@ -82,10 +82,20 @@ type GameInfo struct {
 	// Marker is a file every install of the game holds, at its root or one "game" folder down.
 	Marker string `json:"marker"`
 	// Metadata names the SMAPI-derived features that apply to the game: smapi-updates, smapi-compat, stardew-dataset.
-	Metadata []string     `json:"metadata"`
-	Stores   GameStores   `json:"stores"`
-	Loaders  []GameLoader `json:"loaders"`
-	Sources  []GameSource `json:"sources"`
+	Metadata []string `json:"metadata"`
+	// Paths names folders and files outside the install by role (saves, startupPreferences).
+	Paths   map[string]PathTemplate `json:"paths,omitempty"`
+	Stores  GameStores              `json:"stores"`
+	Loaders []GameLoader            `json:"loaders"`
+	Sources []GameSource            `json:"sources"`
+}
+
+// PathTemplate is a path per platform of the game build. Tokens: {appData} {localAppData} {localLow} {documents}
+// {xdgConfig} {xdgData} {home} {install}; the runtime that runs the install gives them their folders.
+type PathTemplate struct {
+	Windows string `json:"windows,omitempty"`
+	Linux   string `json:"linux,omitempty"`
+	Darwin  string `json:"darwin,omitempty"`
 }
 
 // GameStores names a game to each store that sells it; a store that does not sell it is nil.
@@ -185,6 +195,13 @@ func (g GameInfo) Validate() error {
 	for _, name := range names {
 		if strings.ContainsAny(name, "/\\") || name == "." || name == ".." {
 			return fmt.Errorf("game %q has an unsafe file or folder name %q", g.ID, name)
+		}
+	}
+	for role, t := range g.Paths {
+		for _, p := range []string{t.Windows, t.Linux, t.Darwin} {
+			if p != "" && !strings.HasPrefix(p, "{") {
+				return fmt.Errorf("game %q path %q must start with a token", g.ID, role)
+			}
 		}
 	}
 	sources := make(map[string]struct{}, len(g.Sources))

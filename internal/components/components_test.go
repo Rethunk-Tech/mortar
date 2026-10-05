@@ -269,3 +269,32 @@ func TestComponentFallsBackToTheBundledManifestBeforeLoad(t *testing.T) {
 		t.Fatalf("component %+v ok %v", got, ok)
 	}
 }
+
+func TestBundledGamesCarryPathTemplates(t *testing.T) {
+	m, err := BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, g := range m.Games {
+		if err := g.Validate(); err != nil {
+			t.Fatal(err)
+		}
+		switch g.ID {
+		case "stardew":
+			if got := g.Paths["saves"].Linux; got != "{xdgConfig}/StardewValley/Saves" {
+				t.Fatalf("stardew linux saves = %q", got)
+			}
+			if got := g.Paths["startupPreferences"].Windows; got != "{appData}/StardewValley/startup_preferences" {
+				t.Fatalf("stardew windows startup preferences = %q", got)
+			}
+		case "lethal-company":
+			if got := g.Paths["saves"].Windows; got != "{localLow}/ZeekerssRBLX/Lethal Company" {
+				t.Fatalf("lc windows saves = %q", got)
+			}
+		}
+	}
+	bad := GameInfo{ID: "x", Name: "x", Marker: "x", Loaders: []GameLoader{{ID: "l"}}, Paths: map[string]PathTemplate{"saves": {Linux: "/etc"}}}
+	if bad.Validate() == nil {
+		t.Fatal("a path without a token validated")
+	}
+}
