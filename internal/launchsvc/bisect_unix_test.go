@@ -23,7 +23,7 @@ func TestRunForBisectStopsWhenStartupReportAppears(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := svc.profiles.SetLaunchSettings("stardew", p.ID, "", fakeGameEnv+"=1"); err != nil {
+	if _, err := svc.profiles.SetLaunchSettings("stardew", p.ID, "", fakeGameEnvLines); err != nil {
 		t.Fatal(err)
 	}
 	for _, name := range []string{"StardewValley", "StardewValley-original", "StardewModdingAPI"} {

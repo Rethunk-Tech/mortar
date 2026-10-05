@@ -411,6 +411,10 @@ func TestStartLoaderUsesAppLifetime(t *testing.T) {
 
 const fakeGameEnv = "MORTAR_TEST_FAKE_GAME"
 
+// fakeGameEnvLines is the stand-in game's launch environment. The race runtime sleeps a second before every exit
+// unless told not to, which would triple the stand-in's runtime.
+const fakeGameEnvLines = fakeGameEnv + "=1\nGORACE=atexit_sleep_ms=0"
+
 func TestMain(m *testing.M) {
 	if os.Getenv(fakeGameEnv) != "" {
 		time.Sleep(700 * time.Millisecond)
@@ -430,7 +434,7 @@ func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 	}
 	// The test binary stands in for the game: the profile's launch environment sets fakeGameEnv, so it sleeps, then
 	// exits cleanly.
-	if _, err := svc.profiles.SetLaunchSettings("stardew", p.ID, "", fakeGameEnv+"=1"); err != nil {
+	if _, err := svc.profiles.SetLaunchSettings("stardew", p.ID, "", fakeGameEnvLines); err != nil {
 		t.Fatal(err)
 	}
 	for _, name := range []string{"StardewValley", "StardewValley-original", "StardewModdingAPI"} {
