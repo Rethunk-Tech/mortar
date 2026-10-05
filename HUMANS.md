@@ -159,3 +159,40 @@ gh api repos/Rethunk-Tech/mortar/dispatches -f event_type=components
 ```
 
 The workflow writes the secret to a temporary file, runs the generator with `GOTMPDIR=/var/tmp TMPDIR=/var/tmp`, and creates a `components-<serial>` release (not marked latest) holding `components.json` and `components.json.sig`, each published once because releases are immutable. Until `Rethunk-Tech/mortar-smapi-bridge` is public the generator fails with a 404 looking it up, since the workflow's token reads only this repo.
+
+## Adding a game
+
+A game is catalog data first and code only where its behaviour differs. Each step below names the registry that answers to a catalog reference; `TestEveryCatalogReferenceResolves` (`internal/source/all/catalog_test.go`) fails when an entry names a source, loader, metadata id, store field, path role or path token nothing answers to.
+
+### The catalog entry
+
+Add the game to `games` in `components.source.json`, then publish as described under [Publishing components](#publishing-components); `cmd/components` copies `games` into the signed manifest, and `internal/components/components.json` is the embedded fallback it refreshes. `GameInfo.Validate` (`internal/components/components.go`) rejects an entry without an id, name, marker or loader, an enabled game with no store, a marker or GOG folder holding a path separator, a path template that does not start with a token, and a repeated source.
+
+- `id`: the slug; permanent, because profiles, settings and links store it.
+- `name`, `enabled`, `marker`: the display name, whether the game is selectable (false lists it as coming later), and a file every install holds, at its root or one `game` folder down. A `.exe` marker makes the build a Windows build.
+- `stores`: the game's id in each store that sells it, keyed by the store driver's key: `steam.appId`, `gog.productId` and `gog.folder`, `lutris.slug` and `lutris.keyword`.
+- `paths`: folders outside the install by role (`saves`, `errorLogs`, `startupPreferences`), one template per platform. A template starts with a token: `{appData}`, `{localAppData}`, `{localLow}`, `{documents}`, `{xdgConfig}`, `{xdgData}`, `{home}` or `{install}`. The runtime gives each token its folder.
+- `sources`: each mod site with `key`, the site's name for the game (Nexus domain, Thunderstore community, ModDrop slug), and `gameId` where the site's API wants a number. Catalog order is the order browse lists them.
+- `loaders`: the loader ids the game can run; the test's `knownLoaders` list names the ids Mortar has.
+- `metadata`: provider ids (`smapi-updates`, `smapi-compat`, `stardew-dataset`); none for a game without them.
+- `r2modmanFolder`: r2modman's name for the game (the Thunderstore ecosystem schema's `internalFolderName`), which maps an imported r2modman profile to the game.
+
+### Drivers
+
+A new store, site, runtime, provider or host is one Go package or file plus its registration; a game that uses only existing ones needs none of this.
+
+1. **Store** (`internal/gamestore`): implement `Store` (`Key`, `Launchers`, `Discover`) in `drivers.go`, add it to `All()`, and give `components.GameStores` the matching field. `Key` is the name used in the catalog's `stores`.
+2. **Source** (`internal/source`): implement `Source` (`ID`, `Name`, `Modes`) in `internal/source/<id>/`, call `source.Register` in a package variable, and import the package in `internal/source/all/all.go`. Add the capabilities the site supports, each found by type assertion: `Searcher` (browse), `Schemer` (a URL scheme the site's links open Mortar with), `PageLinker` (`ModPageURL(gameKey, id)`), `Hoster` (web hosts, so a bare URL traces back to the site), and `LinkOptIn` (a scheme claimed from the system only when the player turns it on; Thunderstore's `ror2mm` is off by default). A searcher sets `Item.Adult` from the site's flag, since browse hides adult hits unless the player opts in. Tests serve the site from a fake HTTP server.
+3. **Runtime** (`internal/runtime`): implement `Runtime` (`ID`, `Detect`, `Resolve`) and add it to `drivers` before `native`, which claims whatever nothing else does. `Resolve` expands a catalog path template for the install.
+4. **Metadata provider** (`internal/metadata`): add the capability (`Updates`, `Status` or `Dataset`) and the case for its id in `For`.
+5. **Host** (`internal/host`): implement `Host` (`ID`, `Match`, `Fetch`) and add it to `For` ahead of the direct host, which takes any HTTPS URL.
+6. **Loader**: loader drivers are documented here when the loader interface lands.
+
+### Self-test
+
+```sh
+go test ./internal/source/all ./internal/components ./internal/gamestore ./internal/runtime
+scripts/selftest.sh start
+```
+
+`scripts/selftest.sh` serves a sandboxed Mortar in a browser at `http://127.0.0.1:$PORT` (default 9455), with a minimal Steam library holding copies of Stardew Valley and, when installed, Lethal Company; `setup` creates the library only. Add the game's app id and folder to the script to put a copy of a new game in the sandbox.
