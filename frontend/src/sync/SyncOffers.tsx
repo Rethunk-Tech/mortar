@@ -8,25 +8,40 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { useState } from 'react'
-import type {
-  Diff,
-  Offer,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/models.ts'
+import { useCallback, useEffect, useState } from 'react'
+import type { Offer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/models.ts'
 import {
   Diff as ReadDiff,
   Resolve,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { diffIsStale, revisionToAnswer, type ShownDiff } from './revision.ts'
 import { useSync } from './store.ts'
 
 function OfferRow({ offer }: { offer: Offer }) {
   const { t } = useLingui()
-  const [diff, setDiff] = useState<Diff | null>(null)
+  const [shown, setShown] = useState<ShownDiff | null>(null)
+  const [updated, setUpdated] = useState(false)
   const [busy, setBusy] = useState(false)
+  const diff = shown?.diff
+  const { game, remote, revision } = offer
+  const load = useCallback(
+    () =>
+      ReadDiff(game, remote)
+        .then((d) => setShown({ diff: d, revision }))
+        .catch(reportUnexpected),
+    [game, remote, revision],
+  )
+  // The other machine wrote again while the diff was open: show the new one rather than answer an old one.
+  useEffect(() => {
+    if (diffIsStale(offer.revision, shown)) {
+      setUpdated(true)
+      load()
+    }
+  }, [offer.revision, shown, load])
   const answer = (choice: string) => {
     setBusy(true)
-    Resolve(offer.game, offer.remote, choice)
+    Resolve(offer.game, offer.remote, revisionToAnswer(offer.revision, shown), choice)
       .catch(reportUnexpected)
       .finally(() => setBusy(false))
   }
@@ -51,11 +66,17 @@ function OfferRow({ offer }: { offer: Offer }) {
         )}
         <Button
           disabled={busy}
-          onClick={() => ReadDiff(offer.game, offer.remote).then(setDiff).catch(reportUnexpected)}
+          onClick={() => {
+            setUpdated(false)
+            load()
+          }}
         >{t`Show diff`}</Button>
       </Box>
       {diff ? (
         <Box sx={{ mt: 1, fontSize: 13 }}>
+          {updated ? (
+            <Box sx={{ color: 'text.secondary', mb: 0.5 }}>{t`Updated from ${offer.machine}`}</Box>
+          ) : null}
           {(diff.add ?? []).map((name) => (
             <Box key={`add-${name}`}>{t`Adds ${name}`}</Box>
           ))}

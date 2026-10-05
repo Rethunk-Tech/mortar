@@ -86,6 +86,10 @@ msgstr "Could not open the folder"
 msgid "Author · {author}"
 msgstr "Author · {author}"
 
+#: src/toasts/EarlierChanges.tsx:103
+msgid "These changes will be reverted too:"
+msgstr "These changes will be reverted too:"
+
 #. placeholder {0}: items.length
 #: src/queue/QueueBody.tsx:232
 msgid "Failed ({0})"
@@ -237,7 +241,7 @@ msgstr "Every entry in {current} goes back to its default."
 
 #: src/mods/storeEntries.ts:73
 #: src/mods/storeEntries.ts:112
-#: src/profiles/historyRevert.ts:77
+#: src/profiles/historyRevert.ts:99
 msgid "That profile is gone."
 msgstr "That profile is gone."
 
@@ -343,8 +347,8 @@ msgstr "Kept at this version ({0})"
 
 #: src/game/ProfileMenuItems.tsx:321
 #: src/profiles/HistoryPanel.tsx:44
-#: src/queue/QueueSheet.tsx:72
-#: src/queue/QueueSheet.tsx:79
+#: src/queue/QueueSheet.tsx:71
+#: src/queue/QueueSheet.tsx:78
 msgid "History"
 msgstr "History"
 
@@ -962,7 +966,7 @@ msgstr "Already in Steam"
 msgid "Nexus download links"
 msgstr "Nexus download links"
 
-#: src/queue/QueueSheet.tsx:63
+#: src/queue/QueueSheet.tsx:62
 msgid "{parallel} · {counts}"
 msgstr "{parallel} · {counts}"
 
@@ -1016,7 +1020,7 @@ msgid "Replaces some files of the mod above"
 msgstr "Replaces some files of the mod above"
 
 #. placeholder {0}: sum.done
-#: src/queue/QueueSheet.tsx:52
+#: src/queue/QueueSheet.tsx:51
 msgid "{0} done"
 msgstr "{0} done"
 
@@ -1448,7 +1452,7 @@ msgstr "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 #. placeholder {1}: o.machine
 #. placeholder {1}: offer.machine
 #: src/sync/store.ts:29
-#: src/sync/SyncOffers.tsx:38
+#: src/sync/SyncOffers.tsx:53
 msgid "{0} was changed on {1}"
 msgstr "{0} was changed on {1}"
 
@@ -1551,7 +1555,7 @@ msgid "Show less"
 msgstr "Show less"
 
 #. placeholder {0}: sum.left
-#: src/queue/QueueSheet.tsx:55
+#: src/queue/QueueSheet.tsx:54
 msgid "{0} left"
 msgstr "{0} left"
 
@@ -1711,7 +1715,7 @@ msgstr "{0} of {1} mods · {2} · {3}/s"
 msgid "Hold the download queue until the game exits"
 msgstr "Hold the download queue until the game exits"
 
-#: src/sync/SyncOffers.tsx:60
+#: src/sync/SyncOffers.tsx:81
 msgid "Adds {name}"
 msgstr "Adds {name}"
 
@@ -2170,7 +2174,7 @@ msgstr "{0, plural, one {# tracked mod on Nexus is not in this profile} other {#
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
-#: src/sync/SyncOffers.tsx:63
+#: src/sync/SyncOffers.tsx:84
 msgid "Removes {name}"
 msgstr "Removes {name}"
 
@@ -2224,14 +2228,15 @@ msgstr "Ignore update source"
 #: src/mods/storeEntries.ts:99
 #: src/profiles/collectionUnlink.ts:35
 #: src/profiles/CompareDialog.tsx:103
-#: src/profiles/historyRevert.ts:69
+#: src/profiles/historyRevert.ts:91
 #: src/profiles/store.ts:190
 #: src/profiles/store.ts:233
 #: src/queue/store.ts:284
 #: src/saves/store.ts:65
 #: src/templates/ApplyTemplateDialog.tsx:84
 #: src/templates/TemplateDialogs.tsx:226
-#: src/toasts/EarlierChanges.tsx:39
+#: src/toasts/EarlierChanges.tsx:46
+#: src/toasts/EarlierChanges.tsx:91
 msgid "Undo"
 msgstr "Undo"
 
@@ -2363,7 +2368,7 @@ msgstr "Imported {name}"
 msgid "Account"
 msgstr "Account"
 
-#: src/sync/SyncOffers.tsx:42
+#: src/sync/SyncOffers.tsx:57
 msgid "Both sides changed it, so Mortar will not merge them. Pick one side."
 msgstr "Both sides changed it, so Mortar will not merge them. Pick one side."
 
@@ -2579,7 +2584,7 @@ msgstr "Import {count} changes"
 msgid "This frees {0}. Deleted mods download again if a profile needs them later."
 msgstr "This frees {0}. Deleted mods download again if a profile needs them later."
 
-#: src/queue/QueueSheet.tsx:79
+#: src/queue/QueueSheet.tsx:78
 msgid "Queue"
 msgstr "Queue"
 
@@ -3437,7 +3442,7 @@ msgstr "Days a deleted profile stays restorable"
 
 #: src/mods/SelectionBarDialogs.tsx:88
 #: src/mods/SelectionBarDialogs.tsx:144
-#: src/sync/SyncOffers.tsx:47
+#: src/sync/SyncOffers.tsx:62
 #: src/templates/ApplyTemplateDialog.tsx:158
 msgid "Apply"
 msgstr "Apply"
@@ -4437,7 +4442,7 @@ msgstr "Edit config"
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 
-#: src/sync/SyncOffers.tsx:89
+#: src/sync/SyncOffers.tsx:110
 msgid "Later"
 msgstr "Later"
 
@@ -4459,8 +4464,8 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/mods/Sidebar.tsx:160
 #: src/queue/QueueButton.tsx:14
 #: src/queue/QueueButton.tsx:17
-#: src/queue/QueueSheet.tsx:72
-#: src/queue/QueueSheet.tsx:183
+#: src/queue/QueueSheet.tsx:71
+#: src/queue/QueueSheet.tsx:182
 #: src/settings/SettingsPage.tsx:37
 msgid "Downloads"
 msgstr "Downloads"
@@ -4621,7 +4626,7 @@ msgstr "Has problems"
 msgid "LAN port"
 msgstr "LAN port"
 
-#: src/queue/QueueSheet.tsx:86
+#: src/queue/QueueSheet.tsx:85
 msgid "Clear finished"
 msgstr "Clear finished"
 
@@ -4794,6 +4799,11 @@ msgstr "You started this download on Nexus. Show Mortar to choose the profile it
 msgid "Pinned at this version"
 msgstr "Pinned at this version"
 
+#. placeholder {0}: offer.machine
+#: src/sync/SyncOffers.tsx:78
+msgid "Updated from {0}"
+msgstr "Updated from {0}"
+
 #: src/commandPalette/paletteLabels.ts:22
 msgid "Open mod"
 msgstr "Open mod"
@@ -4920,6 +4930,11 @@ msgstr "Remove filter {mod}"
 #: src/console/StartupSections.tsx:109
 msgid "Title intro"
 msgstr "Title intro"
+
+#. placeholder {0}: unfetchable.join(', ')
+#: src/profiles/historyRevert.ts:47
+msgid "Mortar cannot download {0} again."
+msgstr "Mortar cannot download {0} again."
 
 #: src/profiles/EditProfileDialog.tsx:100
 msgid "The automatic cover is used after Save."
@@ -5082,7 +5097,7 @@ msgid "Deleted {name}"
 msgstr "Deleted {name}"
 
 #. placeholder {0}: extras.length
-#: src/mods/ExtraFilesChip.tsx:23
+#: src/mods/ExtraFilesChip.tsx:25
 msgid "{0, plural, one {+# file} other {+# files}}"
 msgstr "{0, plural, one {+# file} other {+# files}}"
 
@@ -5421,7 +5436,7 @@ msgid "Token regenerated"
 msgstr "Token regenerated"
 
 #. placeholder {0}: sum.active
-#: src/queue/QueueSheet.tsx:53
+#: src/queue/QueueSheet.tsx:52
 msgid "{0} in progress"
 msgstr "{0} in progress"
 
@@ -5434,7 +5449,7 @@ msgid "Start the game to see values"
 msgstr "Start the game to see values"
 
 #. placeholder {0}: formatKb(sum.sizeKb)
-#: src/queue/QueueSheet.tsx:64
+#: src/queue/QueueSheet.tsx:63
 msgid "{summary} · {0}"
 msgstr "{summary} · {0}"
 
@@ -5621,6 +5636,10 @@ msgstr "{0, plural, one {Update # mod} other {Update # mods}}"
 #: src/mods/typedConfig/ConfigPane.tsx:115
 msgid "Config of {0}"
 msgstr "Config of {0}"
+
+#: src/profiles/historyRevert.ts:50
+msgid "Download missing"
+msgstr "Download missing"
 
 #. placeholder {0}: why.event ?? ''
 #: src/console/startupHooks.ts:21
@@ -5891,7 +5910,7 @@ msgstr "Notes for {0}"
 msgid "The disk is full."
 msgstr "The disk is full."
 
-#: src/sync/SyncOffers.tsx:47
+#: src/sync/SyncOffers.tsx:62
 msgid "Use theirs"
 msgstr "Use theirs"
 
@@ -6184,7 +6203,7 @@ msgstr "Profiles you send between paired computers carry their mod files, whatev
 msgid "New bundle name"
 msgstr "New bundle name"
 
-#: src/sync/SyncOffers.tsx:66
+#: src/sync/SyncOffers.tsx:87
 msgid "Only settings and options differ."
 msgstr "Only settings and options differ."
 
@@ -6353,8 +6372,8 @@ msgstr "SMAPI"
 msgid "Open game settings"
 msgstr "Open game settings"
 
-#: src/sync/SyncOffers.tsx:55
-#: src/toasts/EarlierChanges.tsx:30
+#: src/sync/SyncOffers.tsx:73
+#: src/toasts/EarlierChanges.tsx:41
 msgid "Show diff"
 msgstr "Show diff"
 
@@ -6956,6 +6975,11 @@ msgstr "Weather"
 msgid "Set to {value}"
 msgstr "Set to {value}"
 
+#. placeholder {0}: later.length
+#: src/toasts/EarlierChanges.tsx:87
+msgid "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
+msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
+
 #: src/mods/NexusAccountActions.tsx:114
 msgid "Could not untrack"
 msgstr "Could not untrack"
@@ -6993,6 +7017,10 @@ msgstr "Mods list"
 #: src/settings/sections/LoaderRow.tsx:100
 msgid "A game update replaced {0}'s launcher"
 msgstr "A game update replaced {0}'s launcher"
+
+#: src/profiles/historyRevert.ts:45
+msgid "Could not undo. Missing from the store: {list}"
+msgstr "Could not undo. Missing from the store: {list}"
 
 #: src/firstrun/FirstRun.tsx:95
 msgid "No launchers found. Continue and choose each game's folder when you open it."
@@ -7527,7 +7555,7 @@ msgstr "{name} takes {own} of your {total} start."
 
 #. placeholder {0}: offer.name
 #. placeholder {1}: offer.machine
-#: src/sync/SyncOffers.tsx:37
+#: src/sync/SyncOffers.tsx:52
 msgid "{0} was changed on {1} and on this machine"
 msgstr "{0} was changed on {1} and on this machine"
 
@@ -7774,7 +7802,7 @@ msgstr "{0, plural, one {with # settings file, written once its mod is installed
 #. placeholder {0}: sum.failed
 #: src/mods/MoveFoldersDialog.tsx:75
 #: src/mods/updateReview/updateAll.ts:31
-#: src/queue/QueueSheet.tsx:54
+#: src/queue/QueueSheet.tsx:53
 #: src/share/importCompletion.ts:20
 msgid "{0} failed"
 msgstr "{0} failed"
@@ -8706,7 +8734,7 @@ msgstr "Include notes"
 msgid "Could not pin the selected mods"
 msgstr "Could not pin the selected mods"
 
-#: src/queue/QueueSheet.tsx:96
+#: src/queue/QueueSheet.tsx:95
 msgid "Pause all"
 msgstr "Pause all"
 
@@ -8777,7 +8805,7 @@ msgstr "Delete the template {0}?"
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
 
-#: src/queue/QueueSheet.tsx:102
+#: src/queue/QueueSheet.tsx:101
 msgid "Close downloads"
 msgstr "Close downloads"
 
@@ -9057,7 +9085,7 @@ msgid "Could not restore the profile"
 msgstr "Could not restore the profile"
 
 #: src/profiles/HistoryPanel.tsx:52
-#: src/toasts/EarlierChanges.tsx:60
+#: src/toasts/EarlierChanges.tsx:76
 msgid "No changes yet"
 msgstr "No changes yet"
 
@@ -9407,7 +9435,7 @@ msgstr "Checking the mods for problems…"
 msgid "Dismiss {name} for this save"
 msgstr "Dismiss {name} for this save"
 
-#: src/sync/SyncOffers.tsx:50
+#: src/sync/SyncOffers.tsx:65
 msgid "Keep mine"
 msgstr "Keep mine"
 
@@ -9466,7 +9494,7 @@ msgstr "Already installed"
 msgid "Steam"
 msgstr "Steam"
 
-#: src/sync/SyncOffers.tsx:82
+#: src/sync/SyncOffers.tsx:103
 msgid "Changes from your other machines"
 msgstr "Changes from your other machines"
 
@@ -9815,7 +9843,7 @@ msgid "Launch preset templates"
 msgstr "Launch preset templates"
 
 #. placeholder {0}: formatWhen(limitedUntil * UNIX_MS_PER_SECOND)
-#: src/queue/QueueSheet.tsx:130
+#: src/queue/QueueSheet.tsx:129
 msgid "Downloads resume {0}."
 msgstr "Downloads resume {0}."
 
@@ -9898,7 +9926,7 @@ msgstr "Acknowledge caution to include"
 msgid "Mod details"
 msgstr "Mod details"
 
-#: src/queue/QueueSheet.tsx:96
+#: src/queue/QueueSheet.tsx:95
 msgid "Resume"
 msgstr "Resume"
 
@@ -10384,7 +10412,7 @@ msgstr "Share selection"
 msgid "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 msgstr "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 
-#: src/queue/QueueSheet.tsx:108
+#: src/queue/QueueSheet.tsx:107
 msgid "Download progress"
 msgstr "Download progress"
 
@@ -10571,7 +10599,7 @@ msgid "On the other computer, choose Enter code and type this. It works once, fo
 msgstr "On the other computer, choose Enter code and type this. It works once, for five minutes."
 
 #. placeholder {0}: next.name
-#: src/profiles/historyRevert.ts:67
+#: src/profiles/historyRevert.ts:89
 msgid "Restored {0} to before that change"
 msgstr "Restored {0} to before that change"
 
@@ -10736,7 +10764,7 @@ msgstr "Soft and warm"
 #: src/mods/overlayActions.ts:111
 #: src/mods/storeEntries.ts:77
 #: src/mods/storeEntries.ts:117
-#: src/profiles/historyRevert.ts:82
+#: src/profiles/historyRevert.ts:104
 msgid "This is no longer the latest change."
 msgstr "This is no longer the latest change."
 
@@ -11087,7 +11115,7 @@ msgstr "Matched {0} versions in {1}"
 msgid "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
 msgstr "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
 
-#: src/queue/QueueSheet.tsx:183
+#: src/queue/QueueSheet.tsx:182
 msgid "Download history"
 msgstr "Download history"
 
@@ -11356,7 +11384,8 @@ msgstr "Errors in the last run"
 
 #: src/profiles/HistoryEventRow.tsx:31
 #: src/profiles/HistoryEventRow.tsx:52
-#: src/toasts/EarlierChanges.tsx:14
+#: src/toasts/EarlierChanges.tsx:25
+#: src/toasts/EarlierChanges.tsx:106
 msgid "Known good"
 msgstr "Known good"
 
@@ -11548,7 +11577,7 @@ msgstr "Could not update Steam's launch options"
 msgid "Alert"
 msgstr "Alert"
 
-#: src/queue/QueueSheet.tsx:61
+#: src/queue/QueueSheet.tsx:60
 msgid "{downloading, plural, one {# downloading} other {# downloading}} · {waiting, plural, one {# waiting} other {# waiting}}"
 msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {waiting, plural, one {# waiting} other {# waiting}}"
 
