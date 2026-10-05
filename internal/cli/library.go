@@ -276,3 +276,19 @@ func (c *cmd) printGameMods(pv profile.GameModsPreview) {
 	}
 	c.table("FOLDER\tUNIQUEID\tNAME\tVERSION\tSTATUS", rows)
 }
+
+func (c *cmd) queueAdd() error {
+	a, err := c.need(2, "a game", "a profile", "a mod id")
+	if err != nil {
+		return err
+	}
+	if c.sourceFlag == "" {
+		return usageError{"queue add needs --source nexus, github or thunderstore"}
+	}
+	p := control.Params{Game: a[0], Profile: a[1], ID: a[2], Source: c.sourceFlag, File: c.fileFlag, Version: c.versionFlag}
+	var st queue.State
+	if err := c.call("queue.add", p, &st, installTimeout); err != nil {
+		return err
+	}
+	return c.emit(st, func() { fmt.Fprintf(c.out, "Queued %s.\n", a[2]) })
+}

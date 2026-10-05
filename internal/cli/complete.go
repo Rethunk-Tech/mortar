@@ -52,14 +52,15 @@ var subverbs = map[string][]string{
 	"launchers":  {"add", "remove"},
 	"tools":      {"run"},
 	"saves":      {"check"},
-	"queue":      {"retry", "retry-failed", "skip", "pause", "resume", "clear"},
+	"queue":      {"add", "retry", "retry-failed", "skip", "pause", "resume", "clear"},
 	"backups":    {"list", "create", "keep", "unkeep", "restore", "usage", "trim"},
 	"cache":      {"size", "clear"},
 	"data":       {"usage", "location"},
 	"templates":  {"list", "save", "delete", "new"},
 	"library":    {"extra", "hidden", "old-files", "strays"},
 	"archive":    {"preview", "downloads"},
-	"store":      {"report", "remove"},
+	"store":      {"report", "remove", "check", "repair"},
+	"bisect":     {"start", "status", "stop"},
 	"settings":   {"get", "set", "export", "import", "reset"},
 	"loader":     {"versions", "install", "pin"},
 	"logs":       {"search", "share", "fixes"},
@@ -82,8 +83,16 @@ func positions(words []string) (gameAt, profileAt, modAt int) {
 		}
 		return 2, 0, 0
 	case "store":
-		if len(words) > 1 && words[1] == "remove" {
+		switch {
+		case len(words) > 1 && words[1] == "repair":
+			return 2, 3, 0
+		case len(words) > 1 && (words[1] == "remove" || words[1] == "check"):
 			return 2, 0, 0
+		}
+		return 0, 0, 0
+	case "bisect":
+		if len(words) > 1 && words[1] == "start" {
+			return 2, 3, 0
 		}
 		return 0, 0, 0
 	case "game":

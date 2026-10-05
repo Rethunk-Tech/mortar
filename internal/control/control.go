@@ -33,6 +33,9 @@ type Params struct {
 	ID     string `json:"id,omitempty"`
 	// Install is a game install id; empty means the game's only or default install.
 	Install string `json:"install,omitempty"`
+	// Version and File pick a release: a package or GitHub tag version, a Nexus file id or a GitHub asset name.
+	Version string `json:"version,omitempty"`
+	File    string `json:"file,omitempty"`
 	// Page is a 1-based result page, Index a 1-based row in a listing.
 	Page   int      `json:"page,omitempty"`
 	Index  int      `json:"index,omitempty"`

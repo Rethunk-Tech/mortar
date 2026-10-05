@@ -28,3 +28,10 @@ func TestSourceAndInstallParamsAreChecked(t *testing.T) {
 		t.Fatalf("github entry matched nexus: %q", got)
 	}
 }
+
+func TestProfileSetRejectsABadFlag(t *testing.T) {
+	t.Parallel()
+	if _, err := (&Services{}).profileSet(Params{Key: "hidden", Value: "maybe"}, profile.Profile{}, "id"); err == nil {
+		t.Fatal("a non-boolean hidden value must be refused")
+	}
+}

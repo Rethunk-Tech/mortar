@@ -48,7 +48,7 @@ var verbs = map[string]bool{
 	"runs": true, "logs": true, "saves": true, "launch": true, "stop": true, "status": true, "queue": true,
 	"templates": true, "library": true, "archive": true,
 	"browse":  true,
-	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true,
+	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true, "bisect": true,
 	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
@@ -101,6 +101,8 @@ type cmd struct {
 	restore       bool
 	sourceFlag    string
 	loaderFlag    string
+	fileFlag      string
+	versionFlag   string
 	installFlag   string
 	pageFlag      int
 	keepFlag      string
@@ -325,6 +327,22 @@ func (c *cmd) parse(args []string) error {
 			c.installFlag = args[i]
 		case strings.HasPrefix(a, "--install="):
 			c.installFlag = strings.TrimPrefix(a, "--install=")
+		case a == "--file":
+			if i+1 >= len(args) {
+				return usageError{"--file needs a value"}
+			}
+			i++
+			c.fileFlag = args[i]
+		case strings.HasPrefix(a, "--file="):
+			c.fileFlag = strings.TrimPrefix(a, "--file=")
+		case a == "--version":
+			if i+1 >= len(args) {
+				return usageError{"--version needs a value"}
+			}
+			i++
+			c.versionFlag = args[i]
+		case strings.HasPrefix(a, "--version="):
+			c.versionFlag = strings.TrimPrefix(a, "--version=")
 		case a == "--source":
 			if i+1 >= len(args) {
 				return usageError{"--source needs a source id"}
@@ -474,6 +492,8 @@ func (c *cmd) dispatch() error {
 		return c.bundles()
 	case "source":
 		return c.source()
+	case "bisect":
+		return c.bisectCmd()
 	case "trash":
 		return c.trash()
 	case "cache":
@@ -1902,6 +1922,8 @@ func (c *cmd) queue() error {
 				}
 				fmt.Fprintf(c.out, "Skipped %d downloads.\n", n)
 			})
+		case "add":
+			return c.queueAdd()
 		case "retry-failed":
 			return c.queueRetryFailed()
 		case "pause", "resume", "clear":
@@ -2163,6 +2185,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   profile revert <game> <profile> <eventId>
   profile load-order <game> <profile>    enabled mods in SMAPI load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
+  profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|
+                                          defaultLaunchPreset|skipPlayCheck|hidden|cover, or a per-profile game setting
   profile steam <game> <profile>         add this profile to Steam as a non-Steam game
   game steam-launch-option <game> [--set|--clear]  read or change Steam's loader launch options
   game launch-preset-templates <game> [add|remove <name> [options [prefix [env]]]|use <name> <profile>]  game-wide launch preset templates (use copies one into a profile)
@@ -2212,6 +2236,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   logs fixes <game> <profile> [run]       recognised SMAPI errors in that run and their fixes
   queue                                   the download queue
   queue retry|skip [<id>]                 retry or skip queued downloads
+  queue add <game> <profile> <id> --source nexus|github|thunderstore [--file <nexus file id|asset>] [--version <tag|version>]
+                                          queue one mod (GitHub id is owner/repo, Thunderstore Namespace-Name)
   queue retry-failed                      requeue every retryable failed download in the history
   queue pause|resume|clear                control the download queue
   browse <game> <text> [--source <id>|all] [--page N]  search a source, or all of them (default)
@@ -2238,6 +2264,10 @@ takes --game <id>, which may be left out when exactly one game is installed.
   archive downloads <game>                archives in the download folder no profile or store item accounts for
   store report [--game G]                 unused and duplicate store items
   store remove <game> <key>...            delete store items no profile uses
+  store check <game>                      verify store files; lists damaged items
+  store repair <game> <profile> <key>     fetch a damaged item again through the queue
+  bisect start <game> <profile>           crash check on a hidden copy; prints its id
+  bisect status|stop <id>                 follow or cancel a crash check
   backups keep <name>                     keep a save backup during rotation
   backups unkeep <name>                   stop keeping a save backup
   backups restore <name> [save...]        restore a save backup

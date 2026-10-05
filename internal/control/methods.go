@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
+	"github.com/Rethunk-Tech/mortar/internal/bisect"
 	"github.com/Rethunk-Tech/mortar/internal/bundles"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
@@ -29,6 +30,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
+	"github.com/Rethunk-Tech/mortar/internal/storecheck"
 	"github.com/Rethunk-Tech/mortar/internal/templates"
 	"github.com/Rethunk-Tech/mortar/internal/tools"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -71,6 +73,9 @@ type Services struct {
 	Loaders     *loadersvc.Service
 	Templates   *templates.Service
 	Archives    *archivesvc.Service
+	// Bisect and StoreCheck are the window's services; nil in tests that do not need them.
+	Bisect     *bisect.Service
+	StoreCheck *storecheck.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
 	// Quit closes the app as its tray Quit does; nil in tests.
@@ -383,6 +388,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			s.Queue.Skip(p.Name)
 		}
 		return s.Queue.State(), nil
+	case "queue.add":
+		return s.queueAdd(p)
 	case "queue.pause":
 		s.Queue.Pause()
 		return s.Queue.State(), nil
@@ -523,6 +530,14 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("data is unavailable")
 		}
 		return s.Data.ModUsage()
+	case "store.check":
+		return s.storeCheck(ctx, p.Game)
+	case "bisect.start":
+		return s.bisectStart(p)
+	case "bisect.status":
+		return s.bisectStatus(p.Name)
+	case "bisect.stop":
+		return s.bisectStop(p.Name)
 	case "store.report":
 		return s.storeReport(p)
 	case "store.remove":
@@ -658,7 +673,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return Removed{Mods: []string{prof.Name}}, s.Profiles.Delete(p.Game, id)
 		})
 	case "profile.set":
-		return s.changed(p.Game, func() (any, error) { return s.Profiles.SetOverride(p.Game, id, p.Key, p.Value) })
+		return s.changed(p.Game, func() (any, error) { return s.profileSet(p, prof, id) })
+	case "store.repair":
+		return s.storeRepair(p, id)
 	case "profile.repair":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Repair(p.Game, id) })
 	case "profile.shortcut":

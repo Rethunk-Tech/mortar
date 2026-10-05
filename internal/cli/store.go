@@ -6,20 +6,48 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/storecheck"
 )
 
 func (c *cmd) storeCmd() error {
 	if len(c.args) < 2 {
-		return usageError{"store needs report or remove"}
+		return usageError{"store needs report, remove, check or repair"}
 	}
 	switch c.args[1] {
 	case "report":
 		return c.storeReport()
 	case "remove":
 		return c.storeRemove()
+	case "check":
+		return c.storeCheck()
+	case "repair":
+		return c.storeRepair()
 	default:
-		return usageError{"store needs report or remove"}
+		return usageError{"store needs report, remove, check or repair"}
 	}
+}
+
+func (c *cmd) storeCheck() error {
+	a, err := c.need(2, "a game")
+	if err != nil {
+		return err
+	}
+	return show(c, "store.check", control.Params{Game: a[0]}, func(sum storecheck.Summary) {
+		for _, d := range sum.Damaged {
+			fmt.Fprintf(c.out, "%s\t%s\t%d missing\n", d.Key, d.Name, d.Missing)
+		}
+		fmt.Fprintf(c.out, "Checked %d items; %d damaged.\n", sum.Checked, len(sum.Damaged))
+	})
+}
+
+func (c *cmd) storeRepair() error {
+	a, err := c.need(2, "a game", "a profile", "a store key")
+	if err != nil {
+		return err
+	}
+	return show(c, "store.repair", control.Params{Game: a[0], Profile: a[1], Key: a[2]}, func(r storecheck.RepairResult) {
+		fmt.Fprintln(c.out, r.Status)
+	})
 }
 
 func (c *cmd) storeReport() error {

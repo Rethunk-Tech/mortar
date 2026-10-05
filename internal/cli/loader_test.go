@@ -30,3 +30,20 @@ func TestLoaderCommands(t *testing.T) {
 		t.Fatalf("pin: %+v", r)
 	}
 }
+
+func TestAutomationVerbs(t *testing.T) {
+	results := map[string]any{"queue.add": map[string]any{}, "bisect.start": map[string]any{"id": "bisect-1"}, "store.check": map[string]any{"checked": 3}}
+	r := invoke(t, results, "queue", "add", "stardew", "Farm", "1915", "--source", "nexus", "--file", "7", "--version", "2.0")
+	if p := r.calls[0].params; r.code != 0 || r.calls[0].method != "queue.add" || p.Source != "nexus" || p.ID != "1915" || p.File != "7" || p.Version != "2.0" {
+		t.Fatalf("queue add: %+v", r)
+	}
+	if r = invoke(t, results, "queue", "add", "stardew", "Farm", "1915"); r.code != 2 || len(r.calls) != 0 {
+		t.Fatalf("queue add without a source: %+v", r)
+	}
+	if r = invoke(t, results, "bisect", "start", "stardew", "Farm"); r.code != 0 || r.calls[0].method != "bisect.start" || r.calls[0].params.Profile != "Farm" {
+		t.Fatalf("bisect start: %+v", r)
+	}
+	if r = invoke(t, results, "store", "check", "stardew"); r.code != 0 || r.calls[0].method != "store.check" {
+		t.Fatalf("store check: %+v", r)
+	}
+}
