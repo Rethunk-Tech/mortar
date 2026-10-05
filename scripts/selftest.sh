@@ -136,9 +136,20 @@ start() {
   # Mortar counts any Stardew Valley process it cannot place in another install as its own game running, which holds
   # back scheduled backups; one launched anywhere else on the machine (another sandbox, a QA copy, the real game)
   # would then stall the seed. A PID namespace with its own /proc shows the server only the sandbox's processes.
+  # The namespace ends, taking every process in it, when its PID 1 exits, and the server restarts by starting itself
+  # again and exiting (a data move, an update). So PID 1 is a reaper that runs the server and leaves only once no
+  # process is left in the namespace.
   local isolate=()
+  local reaper='import os, sys
+if os.fork() == 0:
+    os.execv(sys.argv[1], sys.argv[1:])
+while True:
+    try:
+        os.wait()
+    except ChildProcessError:
+        break'
   if unshare --user --map-current-user --pid --fork --mount --mount-proc true 2>/dev/null; then
-    isolate=(unshare --user --map-current-user --pid --fork --mount --mount-proc)
+    isolate=(unshare --user --map-current-user --pid --fork --mount --mount-proc python3 -c "$reaper")
   fi
   (cd "$ROOT" && env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" PATH="$ROOT/bin:$PATH" \
     WAILS_SERVER_HOST=127.0.0.1 WAILS_SERVER_PORT="$PORT" nohup "${isolate[@]}" ./mortar-server >"$ROOT/server.log" 2>&1 &)
