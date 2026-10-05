@@ -6,7 +6,9 @@ pkgdesc='Desktop mod manager for Stardew Valley'
 arch=('x86_64' 'aarch64')
 url='https://github.com/Rethunk-Tech/mortar'
 license=('AGPL-3.0-only')
-depends=('webkitgtk-6.0' 'xdg-utils')
+depends=('glib2' 'glibc' 'gtk4' 'hicolor-icon-theme' 'libsoup3' 'libx11' 'webkitgtk-6.0' 'xdg-utils')
+# A prebuilt binary: no debug split package, and makepkg must not re-strip it.
+options=('!debug' '!strip')
 provides=('mortar')
 conflicts=('mortar')
 source=(
