@@ -1,14 +1,21 @@
 import { expect, test } from 'bun:test'
-import { sameRectOr, tourEligible, tourOnLastStep, tourStepBack, tourStepNext } from './logic.ts'
+import {
+  sameRectOr,
+  TOUR_STEP_COUNT,
+  tourEligible,
+  tourOnLastStep,
+  tourStepBack,
+  tourStepNext,
+} from './logic.ts'
 import { tourClearSeen, tourMarkSeen, tourShouldRun } from './seen.ts'
 
 test('tour step sequencing clamps at ends', () => {
   expect(tourStepNext(0)).toBe(1)
-  expect(tourStepNext(5)).toBe(5)
-  expect(tourStepBack(5)).toBe(4)
+  expect(tourStepNext(TOUR_STEP_COUNT - 1)).toBe(TOUR_STEP_COUNT - 1)
+  expect(tourStepBack(TOUR_STEP_COUNT - 1)).toBe(TOUR_STEP_COUNT - 2)
   expect(tourStepBack(0)).toBe(0)
-  expect(tourOnLastStep(4)).toBe(false)
-  expect(tourOnLastStep(5)).toBe(true)
+  expect(tourOnLastStep(TOUR_STEP_COUNT - 2)).toBe(false)
+  expect(tourOnLastStep(TOUR_STEP_COUNT - 1)).toBe(true)
 })
 
 test('tour seen state uses the tour tip id', () => {

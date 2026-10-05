@@ -13,10 +13,12 @@ import { win } from './win.ts'
 const noDrag = { '--wails-draggable': 'no-drag' } as const
 
 function Tab({
+  tour,
   active,
   onClick,
   children,
 }: {
+  tour?: string
   active: boolean
   onClick?: () => void
   children: ReactNode
@@ -24,6 +26,7 @@ function Tab({
   return (
     <ButtonBase
       onClick={onClick}
+      data-tour={tour}
       aria-current={active ? 'page' : undefined}
       sx={{
         ...noDrag,
@@ -106,7 +109,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       )}
       {(route.name === 'game' || route.name === 'profiles' || route.name === 'game-settings') && (
         <>
-          <Tab active={true} onClick={() => setSwitching((on) => !on)}>
+          <Tab tour="game-tab" active={true} onClick={() => setSwitching((on) => !on)}>
             {gameName ?? t`Game`}
           </Tab>
           <GameSwitcher current={route.game} open={switching} onClose={() => setSwitching(false)} />

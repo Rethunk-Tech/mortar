@@ -11,20 +11,66 @@ import {
   tourStepBack,
   tourStepNext,
 } from './logic.ts'
-import {
-  TOUR_STEP_ADD,
-  TOUR_STEP_COMMAND,
-  TOUR_STEP_MODS,
-  TOUR_STEP_PLAY,
-  TOUR_STEP_PROBLEMS,
-  TOUR_STEP_PROFILES,
-} from './steps.ts'
+import { TOUR_STEPS } from './steps.ts'
 
 const TOUR_Z_INDEX = 1400
 const POPPER_OFFSET = 12
 const SPOTLIGHT_PAD = 6
 
-const placements = ['right-start', 'bottom', 'right', 'bottom', 'bottom', 'bottom-start'] as const
+const placements = [
+  'right-start',
+  'bottom',
+  'bottom',
+  'right',
+  'bottom',
+  'bottom',
+  'bottom',
+  'bottom',
+  'bottom-start',
+] as const
+
+function useTourCopy(step: number, paletteKeys: string) {
+  const { t } = useLingui()
+  let title = t`Profiles`
+  let body = t`Switch mod sets here. Right-click a profile for rename, duplicate, and more.`
+  switch (TOUR_STEPS[step]) {
+    case 'browse':
+      title = t`Browse`
+      body = t`Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window.`
+      break
+    case 'game':
+      title = t`Switch game`
+      body = t`Click the game's name in the title bar to open the game drawer and jump to another game.`
+      break
+    case 'play':
+      title = t`Play`
+      body = t`Launch the game with this profile's mods. Mortar applies your list before SMAPI starts.`
+      break
+    case 'mods':
+      title = t`Mods`
+      body = t`Switch mods on and off, and update them for the open profile.`
+      break
+    case 'details':
+      title = t`Mod details`
+      body = t`Click a mod to open its details: versions, what it needs and what needs it, and its update.`
+      break
+    case 'config':
+      title = t`Mod config`
+      body = t`A mod with a config file has an Edit config button in its details: a typed editor with presets and Reset all.`
+      break
+    case 'problems':
+      title = t`Problems`
+      body = t`See load errors, missing dependencies, and other issues before you play.`
+      break
+    case 'command':
+      title = t`Command palette`
+      body = t`Press ${paletteKeys} to jump anywhere — profiles, settings, downloads, and more.`
+      break
+    default:
+      break
+  }
+  return { title, body }
+}
 
 function TourPopover({
   anchorEl,
@@ -55,24 +101,7 @@ function TourPopover({
     previousFocus.current?.focus()
   }
 
-  let title = t`Profiles`
-  let body = t`Switch mod sets here. Right-click a profile for rename, duplicate, and more.`
-  if (step === TOUR_STEP_ADD) {
-    title = t`Add mods`
-    body = t`Search Nexus here, press Mod Manager Download on a Nexus page, or drop a downloaded archive anywhere on this window.`
-  } else if (step === TOUR_STEP_PLAY) {
-    title = t`Play`
-    body = t`Launch the game with this profile's mods. Mortar applies your list before SMAPI starts.`
-  } else if (step === TOUR_STEP_MODS) {
-    title = t`Mods`
-    body = t`Switch mods on and off, and update them for the open profile.`
-  } else if (step === TOUR_STEP_PROBLEMS) {
-    title = t`Problems`
-    body = t`See load errors, missing dependencies, and other issues before you play.`
-  } else if (step === TOUR_STEP_COMMAND) {
-    title = t`Command palette`
-    body = t`Press ${paletteKeys} to jump anywhere — profiles, settings, downloads, and more.`
-  }
+  const { title, body } = useTourCopy(step, paletteKeys)
 
   const stepLabel = t`Step ${step + 1} of ${TOUR_STEP_COUNT}`
 
@@ -151,7 +180,7 @@ function TourPopover({
                   <Stack direction="row" spacing={1}>
                     <Button
                       size="small"
-                      disabled={step === TOUR_STEP_PROFILES}
+                      disabled={step === 0}
                       onClick={() => setStep((s) => tourStepBack(s))}
                     >
                       {t`Back`}

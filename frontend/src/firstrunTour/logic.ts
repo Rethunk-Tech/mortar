@@ -1,4 +1,6 @@
-const TOUR_STEP_COUNT = 6
+import { TOUR_STEPS } from './steps.ts'
+
+const TOUR_STEP_COUNT = TOUR_STEPS.length
 
 const LAST_TOUR_STEP = TOUR_STEP_COUNT - 1
 
