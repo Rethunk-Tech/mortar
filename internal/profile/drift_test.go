@@ -339,3 +339,32 @@ func TestRestoreModsFolderUndoesTrash(t *testing.T) {
 		t.Fatalf("restored file = %q, %v", b, err)
 	}
 }
+
+func TestListStoreItemMatchesSeparateWalks(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
+	writeTimed(t, filepath.Join(root, "manifest.json"), "{}", when)
+	writeTimed(t, filepath.Join(root, "assets", "a.png"), "png", when.Add(time.Hour))
+	writeTimed(t, filepath.Join(root, "config.json"), "user", when.Add(2*time.Hour))
+	got, err := listStoreItem(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	files, err := relFiles(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st, err := walkFolderStat(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.files) != len(files) || got.stat != st {
+		t.Fatalf("one walk = %v %+v, separate walks = %v %+v", got.files, got.stat, files, st)
+	}
+	for f := range files {
+		if _, ok := got.files[f]; !ok {
+			t.Fatalf("one walk is missing %s", f)
+		}
+	}
+}

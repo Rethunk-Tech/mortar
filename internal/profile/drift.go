@@ -41,6 +41,12 @@ type FolderStat struct {
 	Newest int64 `json:"newest"`
 }
 
+func (st *FolderStat) add(info fs.FileInfo) {
+	st.Files++
+	st.Size += info.Size()
+	st.Newest = max(st.Newest, info.ModTime().UnixNano())
+}
+
 // ModsSnapshot is stored beside profile.json after a matching install or an explicit keep.
 type ModsSnapshot struct {
 	Folders map[string]FolderStat `json:"folders"`
@@ -147,9 +153,7 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 		if err != nil {
 			return err
 		}
-		st.Files++
-		st.Size += info.Size()
-		st.Newest = max(st.Newest, info.ModTime().UnixNano())
+		st.add(info)
 		return nil
 	})
 	return st, err
@@ -183,19 +187,38 @@ func storeListingFor(peer string) (storeListing, error) {
 	if ok && cached.modTime == stamp {
 		return cached, nil
 	}
-	files, err := relFiles(peer)
+	listing, err := listStoreItem(peer)
 	if err != nil {
 		return storeListing{}, err
 	}
-	st, err := walkFolderStat(peer, peer)
-	if err != nil {
-		return storeListing{}, err
-	}
-	listing := storeListing{modTime: stamp, files: files, stat: st}
+	listing.modTime = stamp
 	storeListings.Lock()
 	storeListings.byPath[peer] = listing
 	storeListings.Unlock()
 	return listing, nil
+}
+
+// listStoreItem is relFiles and walkFolderStat of a store item in one walk.
+func listStoreItem(root string) (storeListing, error) {
+	prefix := root + string(filepath.Separator)
+	out := storeListing{files: map[string]struct{}{}}
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		rel := strings.TrimPrefix(path, prefix)
+		out.files[rel] = struct{}{}
+		if isUserWritten(rel) {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		out.stat.add(info)
+		return nil
+	})
+	return out, err
 }
 
 func storeFiles(peer string) (map[string]struct{}, error) {
