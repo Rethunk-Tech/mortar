@@ -164,30 +164,37 @@ func (s *Service) Set(game, profileID, modID, file, section, key, value string) 
 
 // Reset puts one setting back to its default.
 func (s *Service) Reset(game, profileID, modID, file, section, key string) error {
-	return s.reset(game, profileID, modID, file, func(sec, k string) bool { return sec == section && k == key })
+	skipped, err := s.reset(game, profileID, modID, file, func(sec, k string) bool { return sec == section && k == key })
+	if err == nil && skipped > 0 {
+		return fmt.Errorf("%s has no default to go back to", key)
+	}
+	return err
 }
 
-// ResetAll puts every setting that has a default back to it.
-func (s *Service) ResetAll(game, profileID, modID, file string) error {
+// ResetAll puts every setting that has a default back to it and leaves the others as they are; it returns how many
+// settings have no default.
+func (s *Service) ResetAll(game, profileID, modID, file string) (int, error) {
 	return s.reset(game, profileID, modID, file, func(string, string) bool { return true })
 }
 
-func (s *Service) reset(game, profileID, modID, file string, pick func(section, key string) bool) error {
+func (s *Service) reset(game, profileID, modID, file string, pick func(section, key string) bool) (int, error) {
 	if err := s.refuseRunning(game, profileID); err != nil {
-		return err
+		return 0, err
 	}
 	schema, err := s.Schema(game, profileID, modID, file)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	var edits []edit
+	skipped := 0
 	for _, sec := range schema.Sections {
 		for _, e := range sec.Entries {
 			if !pick(sec.Name, e.Key) {
 				continue
 			}
 			if !e.HasDefault {
-				return fmt.Errorf("%s has no default to go back to", e.Key)
+				skipped++
+				continue
 			}
 			if e.Value != e.Default {
 				edits = append(edits, edit{sec.Name, e.Key, e.Default})
@@ -195,9 +202,9 @@ func (s *Service) reset(game, profileID, modID, file string, pick func(section, 
 		}
 	}
 	if len(edits) == 0 {
-		return nil
+		return skipped, nil
 	}
-	return s.write(game, profileID, modID, schema.File, edits)
+	return skipped, s.write(game, profileID, modID, schema.File, edits)
 }
 
 type edit struct{ section, key, value string }

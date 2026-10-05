@@ -61,8 +61,8 @@ func TestFilesSetResetOnABepInExFile(t *testing.T) {
 	if err := s.Set("lc", "p", "com.example.betterstuff", files[0].Name, "General", "LeaveDelay", "9999"); err == nil {
 		t.Fatal("out of range must be refused")
 	}
-	if err := s.ResetAll("lc", "p", "com.example.betterstuff", files[0].Name); err != nil {
-		t.Fatal(err)
+	if n, err := s.ResetAll("lc", "p", "com.example.betterstuff", files[0].Name); err != nil || n != 0 {
+		t.Fatalf("reset all: %d %v", n, err)
 	}
 	got, _ := os.ReadFile(filepath.Clean(path))
 	want := strings.NewReplacer(
@@ -93,3 +93,22 @@ func TestJSONFileGoesThroughTheProfileSetter(t *testing.T) {
 		t.Fatal("a running game must block writes")
 	}
 }
+
+func TestResetAllLeavesEntriesWithoutADefaultAndCountsThem(t *testing.T) {
+	s, _ := newService(t)
+	base := s.Profiles
+	s.Profiles = noExtra{base, `{"Speed": 2, "Extra": "x"}`}
+	var wrote []string
+	s.SetJSON = func(_, _ string, _ mod.ID, f, v string) error { wrote = append(wrote, f+"="+v); return nil }
+	n, err := s.ResetAll("stardew", "p", "Author.Mod", "config.json")
+	if err != nil || n != 1 || len(wrote) != 1 || wrote[0] != "Speed=1" {
+		t.Fatalf("skipped %d wrote %v err %v", n, wrote, err)
+	}
+}
+
+type noExtra struct {
+	Profiles
+	config string
+}
+
+func (n noExtra) ReadConfig(string, string, string, mod.ID) (string, error) { return n.config, nil }
