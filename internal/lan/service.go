@@ -348,7 +348,7 @@ func stopResources(server *http.Server, listener net.Listener, advertiser *mdns.
 
 // Peers returns the Mortar installations found during the latest discovery rounds. Discovery runs only while
 // someone asks: a call after a quiet spell looks for peers before answering, and keeps discovery going for a while.
-func (s *Service) Peers() []Peer {
+func (s *Service) Peers(ctx context.Context) []Peer {
 	s.mu.Lock()
 	cold := !time.Now().Before(s.wantUntil)
 	s.wantUntil = time.Now().Add(browseInterest)
@@ -356,8 +356,8 @@ func (s *Service) Peers() []Peer {
 	s.mu.Unlock()
 	if running {
 		if cold {
-			ctx, cancel := context.WithTimeout(context.Background(), queryTimeout+time.Second)
-			s.query(ctx)
+			qctx, cancel := context.WithTimeout(ctx, queryTimeout+time.Second)
+			s.query(qctx)
 			cancel()
 		}
 		select {

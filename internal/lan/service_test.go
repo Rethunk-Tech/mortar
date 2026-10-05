@@ -495,7 +495,7 @@ func TestAddPeerDropsOurInstance(t *testing.T) {
 		AddrV4:     net.ParseIP("192.0.2.1"),
 		InfoFields: []string{"instance=" + service.instanceID},
 	})
-	if peers := service.Peers(); len(peers) != 0 {
+	if peers := service.Peers(context.Background()); len(peers) != 0 {
 		t.Fatalf("Peers() = %#v, want no peers", peers)
 	}
 }
