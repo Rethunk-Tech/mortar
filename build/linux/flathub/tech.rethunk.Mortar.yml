@@ -15,6 +15,8 @@ modules:
         GOTOOLCHAIN: local
         GOFLAGS: -modcacherw
         XDG_CACHE_HOME: /run/build/mortar/flatpak-node/cache
+        # package.json pins bun in packageManager, which yarn 1's Corepack guard otherwise refuses to run under.
+        SKIP_YARN_COREPACK_CHECK: "1"
     build-commands:
       # The Wails CLI comes from the fork go.mod pins; it generates the frontend's TypeScript bindings.
       - go mod download github.com/wailsapp/wails/v3
