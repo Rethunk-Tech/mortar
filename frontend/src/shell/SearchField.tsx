@@ -50,7 +50,11 @@ export function SearchField({
             height: 36,
             fontSize: 13,
             borderRadius: '6px',
-            bgcolor: 'var(--mortar-overlay-30)',
+            // Opaque paper in light mode: a dark tint over the wallpaper reads as grey.
+            bgcolor: (theme) =>
+              theme.palette.mode === 'light'
+                ? theme.palette.background.paper
+                : 'var(--mortar-overlay-30)',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--mortar-hairline-15)' },
           },
         },
