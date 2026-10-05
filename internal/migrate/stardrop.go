@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
@@ -34,17 +36,17 @@ func (r *stardropModRef) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 	var ref struct {
-		UniqueID string `json:"UniqueId"`
+		ID string `json:"UniqueId"`
 	}
 	if err := json.Unmarshal(b, &ref); err != nil {
 		return err
 	}
-	*r = stardropModRef(ref.UniqueID)
+	*r = stardropModRef(ref.ID)
 	return nil
 }
 
 type stardropModData struct {
-	UniqueID   string `json:"UniqueId"`
+	ID         string `json:"UniqueId"`
 	Version    string `json:"Version"`
 	Name       string `json:"Name"`
 	ModPageURI string `json:"ModPageUri"`
@@ -96,10 +98,10 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 		name = id
 	}
 	enabled := make(map[string]bool, len(source.EnabledModIDs))
-	enabledIDs := make([]string, 0, len(source.EnabledModIDs))
-	for _, uniqueID := range source.EnabledModIDs {
-		id := strings.TrimSpace(string(uniqueID))
-		enabled[strings.ToLower(id)] = true
+	enabledIDs := make([]mod.ID, 0, len(source.EnabledModIDs))
+	for _, ref := range source.EnabledModIDs {
+		id := mod.SMAPI(strings.TrimSpace(string(ref)))
+		enabled[id.Fold()] = true
 		enabledIDs = append(enabledIDs, id)
 	}
 	mods, missing, err := stardropMods(modsPath, enabled, enabledIDs, source.ModData)
@@ -107,11 +109,11 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 		return ProfilePreview{}, err
 	}
 	configs := make(map[string]json.RawMessage, len(source.PreservedModConfigs))
-	for uniqueID, config := range source.PreservedModConfigs {
-		configs[manifest.FoldID(uniqueID)] = config
+	for ref, config := range source.PreservedModConfigs {
+		configs[mod.SMAPI(string(ref)).Fold()] = config
 	}
 	for i := range mods {
-		if config := configs[manifest.FoldID(mods[i].UniqueID)]; len(config) > 0 && string(config) != "null" {
+		if config := configs[mods[i].ID.Fold()]; len(config) > 0 && string(config) != "null" {
 			mods[i].Config = config
 		}
 	}
@@ -142,7 +144,7 @@ func stardropModsPath(dataDir, fallback string) string {
 func stardropMods(
 	modsPath string,
 	enabled map[string]bool,
-	enabledIDs []string,
+	enabledIDs []mod.ID,
 	portable []stardropModData,
 ) ([]ModPreview, []string, error) {
 	found, err := folderMods(modsPath)
@@ -152,16 +154,16 @@ func stardropMods(
 	seen := make(map[string]bool, len(found))
 	out := make([]ModPreview, 0, len(found)+len(portable))
 	for _, item := range found {
-		key := manifest.FoldID(item.UniqueID)
+		key := item.ModID().Fold()
 		seen[key] = true
 		out = append(out, ModPreview{
-			UniqueID: item.UniqueID, Name: item.Name, Version: item.Version,
+			ID: item.ModID(), Name: item.Name, Version: item.Version,
 			Enabled: enabled[key], NexusModID: nexusID(item.UpdateKeys), SourcePath: item.Path,
 		})
 	}
 	for _, item := range portable {
-		key := manifest.FoldID(item.UniqueID)
-		if key == "" || seen[key] {
+		key := mod.SMAPI(item.ID).Fold()
+		if item.ID == "" || seen[key] {
 			continue
 		}
 		isEnabled := enabled[key]
@@ -172,27 +174,27 @@ func stardropMods(
 			isEnabled = true
 		}
 		out = append(out, ModPreview{
-			UniqueID: item.UniqueID, Name: item.Name, Version: item.Version,
+			ID: mod.SMAPI(item.ID), Name: item.Name, Version: item.Version,
 			Enabled: isEnabled, NexusModID: nexusIDFromURL(item.ModPageURI),
 		})
 	}
 	return out, missingEnabledIDs(enabledIDs, found), nil
 }
 
-func missingEnabledIDs(enabledIDs []string, found []folderMod) []string {
+func missingEnabledIDs(enabledIDs []mod.ID, found []folderMod) []string {
 	foundIDs := make(map[string]bool, len(found))
 	for _, item := range found {
-		foundIDs[manifest.FoldID(item.UniqueID)] = true
+		foundIDs[item.ModID().Fold()] = true
 	}
 	seen := make(map[string]bool, len(enabledIDs))
 	var missing []string
 	for _, id := range enabledIDs {
-		key := manifest.FoldID(id)
-		if key == "" || seen[key] || foundIDs[key] || manifest.LoaderManaged(id) {
+		key := id.Fold()
+		if id.Local() == "" || seen[key] || foundIDs[key] || manifest.LoaderManaged(id) {
 			continue
 		}
 		seen[key] = true
-		missing = append(missing, strings.TrimSpace(id))
+		missing = append(missing, id.Local())
 	}
 	return missing
 }
@@ -221,7 +223,7 @@ func folderMods(modsPath string) ([]folderMod, error) {
 			return nil, err
 		}
 		for _, item := range mods {
-			if manifest.LoaderManaged(item.UniqueID) {
+			if manifest.LoaderManaged(item.ModID()) {
 				continue
 			}
 			out = append(out, folderMod{Mod: item, Path: path})

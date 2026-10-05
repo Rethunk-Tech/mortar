@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // Item is one store folder in a cleanup report.
@@ -33,11 +34,11 @@ type GameReport struct {
 type Report map[string]GameReport
 
 type tagged struct {
-	item     Item
-	uniqueID string
+	item Item
+	id   mod.ID
 }
 
-// Report lists items no profile names, and groups whose manifest UniqueID and Version match.
+// Report lists items no profile names, and groups whose manifest mod id and Version match.
 func (s *Store) Report(referenced map[string][]string) (Report, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -79,7 +80,7 @@ func (s *Store) gameReport(gameID string, idx index, keep map[string]bool) (Game
 			continue
 		}
 		dir := filepath.Join(s.root, gameID, key)
-		name, uniqueID, version := readManifest(dir)
+		name, id, version := readManifest(dir)
 		size, _ := datadir.Size(dir)
 		entry := Item{
 			Key: key, Name: name, Version: version, LastUsed: idx[gameID][key], Size: size,
@@ -87,7 +88,7 @@ func (s *Store) gameReport(gameID string, idx index, keep map[string]bool) (Game
 		if !keep[key] {
 			unused = append(unused, entry)
 		}
-		taggedItems = append(taggedItems, tagged{item: entry, uniqueID: uniqueID})
+		taggedItems = append(taggedItems, tagged{item: entry, id: id})
 	}
 	slices.SortFunc(unused, func(a, b Item) int { return strings.Compare(a.Key, b.Key) })
 	return GameReport{Unused: unused, Duplicates: duplicateGroups(taggedItems)}, nil
@@ -96,10 +97,10 @@ func (s *Store) gameReport(gameID string, idx index, keep map[string]bool) (Game
 func duplicateGroups(items []tagged) [][]Item {
 	byID := map[string][]Item{}
 	for _, it := range items {
-		if it.uniqueID == "" || it.item.Version == "" {
+		if it.id == "" || it.item.Version == "" {
 			continue
 		}
-		id := it.uniqueID + "\x00" + it.item.Version
+		id := string(it.id) + "\x00" + it.item.Version
 		if slices.ContainsFunc(byID[id], func(x Item) bool { return x.Key == it.item.Key }) {
 			continue
 		}
@@ -116,10 +117,10 @@ func duplicateGroups(items []tagged) [][]Item {
 	return groups
 }
 
-func readManifest(dir string) (name, uniqueID, version string) {
+func readManifest(dir string) (name string, id mod.ID, version string) {
 	mods, err := manifest.Scan(dir)
 	if err != nil || len(mods) == 0 {
 		return "", "", ""
 	}
-	return mods[0].Name, mods[0].UniqueID, mods[0].Version
+	return mods[0].Name, mods[0].ModID(), mods[0].Version
 }

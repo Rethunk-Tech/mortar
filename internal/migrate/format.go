@@ -1,9 +1,11 @@
 // Package migrate reads external mod-manager profile layouts for import preview.
 package migrate
 
+import "github.com/Rethunk-Tech/mortar/internal/mod"
+
 // ModPreview is one mod exposed by an external profile import.
 type ModPreview struct {
-	UniqueID   string `json:"uniqueID"`
+	ID         mod.ID `json:"id"`
 	Name       string `json:"name"`
 	Version    string `json:"version"`
 	Enabled    bool   `json:"enabled"`

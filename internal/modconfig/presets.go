@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 const (
@@ -20,8 +21,8 @@ const (
 )
 
 // ListPresets names saved configs for a mod, sorted.
-func ListPresets(dataDir, game, uniqueID string) ([]string, error) {
-	dir, err := presetFolder(dataDir, game, uniqueID)
+func ListPresets(dataDir, game string, id mod.ID) ([]string, error) {
+	dir, err := presetFolder(dataDir, game, id)
 	if err != nil {
 		return nil, err
 	}
@@ -45,16 +46,16 @@ func ListPresets(dataDir, game, uniqueID string) ([]string, error) {
 }
 
 // SavePreset stores validated JSON as a named preset, at most maxPresetCount per mod.
-func SavePreset(dataDir, game, uniqueID, name string, contents []byte) error {
+func SavePreset(dataDir, game string, id mod.ID, name string, contents []byte) error {
 	normalized, err := normalizePresetJSON(contents)
 	if err != nil {
 		return err
 	}
-	path, err := presetFile(dataDir, game, uniqueID, name)
+	path, err := presetFile(dataDir, game, id, name)
 	if err != nil {
 		return err
 	}
-	names, err := ListPresets(dataDir, game, uniqueID)
+	names, err := ListPresets(dataDir, game, id)
 	if err != nil {
 		return err
 	}
@@ -68,8 +69,8 @@ func SavePreset(dataDir, game, uniqueID, name string, contents []byte) error {
 }
 
 // LoadPreset returns a saved preset's JSON.
-func LoadPreset(dataDir, game, uniqueID, name string) ([]byte, error) {
-	path, err := presetFile(dataDir, game, uniqueID, name)
+func LoadPreset(dataDir, game string, id mod.ID, name string) ([]byte, error) {
+	path, err := presetFile(dataDir, game, id, name)
 	if err != nil {
 		return nil, err
 	}
@@ -84,8 +85,8 @@ func LoadPreset(dataDir, game, uniqueID, name string) ([]byte, error) {
 }
 
 // DeletePreset removes a named preset.
-func DeletePreset(dataDir, game, uniqueID, name string) error {
-	path, err := presetFile(dataDir, game, uniqueID, name)
+func DeletePreset(dataDir, game string, id mod.ID, name string) error {
+	path, err := presetFile(dataDir, game, id, name)
 	if err != nil {
 		return err
 	}
@@ -98,23 +99,23 @@ func DeletePreset(dataDir, game, uniqueID, name string) error {
 	return nil
 }
 
-func presetFolder(dataDir, game, uniqueID string) (string, error) {
+func presetFolder(dataDir, game string, id mod.ID) (string, error) {
 	g, err := pathSeg(game, "game")
 	if err != nil {
 		return "", err
 	}
-	id, err := pathSeg(uniqueID, "mod")
+	seg, err := pathSeg(id.Local(), "mod")
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dataDir, presetsDir, g, id), nil
+	return filepath.Join(dataDir, presetsDir, g, seg), nil
 }
 
-func presetFile(dataDir, game, uniqueID, name string) (string, error) {
+func presetFile(dataDir, game string, id mod.ID, name string) (string, error) {
 	if err := validatePresetName(name); err != nil {
 		return "", err
 	}
-	dir, err := presetFolder(dataDir, game, uniqueID)
+	dir, err := presetFolder(dataDir, game, id)
 	if err != nil {
 		return "", err
 	}

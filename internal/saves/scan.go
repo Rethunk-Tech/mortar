@@ -16,9 +16,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -29,7 +30,7 @@ const (
 
 // Info is what a scan learned about one save. Season is 0 (spring) to 3 (winter); Day is 0 when SaveGameInfo
 // did not say. Played is when the save was last written, in Unix milliseconds. WhichFarm is Game1.whichFarm
-// (−1 when the tag is missing). MillisecondsPlayed and Money come from SaveGameInfo. Used holds lowercased UniqueIDs.
+// (−1 when the tag is missing). MillisecondsPlayed and Money come from SaveGameInfo. Used holds mod ids with lowercased locals.
 type Info struct {
 	Folder             string   `json:"folder"`
 	Farm               string   `json:"farm"`
@@ -41,10 +42,10 @@ type Info struct {
 	WhichFarm          int      `json:"whichFarm"`
 	MillisecondsPlayed int64    `json:"millisecondsPlayed"`
 	Money              int      `json:"money"`
-	Used               []string `json:"used"`
+	Used               []mod.ID `json:"used"`
 }
 
-const scanRev = 1
+const scanRev = 2
 
 // stamp is what a cached result was computed from; any change recomputes it. Index is the dataset index's size,
 // because a newer index can recognise IDs an older one missed. Rev is this parser's shape, so a new field
@@ -187,7 +188,7 @@ func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err erro
 }
 
 func (s *Scanner) read(folder string, index map[string][]meta.Ref) (Info, error) {
-	info := Info{Folder: folder, WhichFarm: -1, Used: []string{}}
+	info := Info{Folder: folder, WhichFarm: -1, Used: []mod.ID{}}
 	dir := filepath.Join(s.Dir, folder)
 	// A missing SaveGameInfo only costs the details it holds.
 	if b, err := fsx.ReadFile(filepath.Join(dir, infoFile)); err == nil {
@@ -210,10 +211,10 @@ func (s *Scanner) read(folder string, index map[string][]meta.Ref) (Info, error)
 	if hasFarm {
 		info.WhichFarm = which
 	}
-	seen := map[string]struct{}{}
+	seen := map[mod.ID]struct{}{}
 	for k := range keys {
 		if id, ok := uniqueID(k, index); ok {
-			seen[id] = struct{}{}
+			seen[mod.SMAPI(id)] = struct{}{}
 		}
 	}
 	for id := range seen {
@@ -311,20 +312,20 @@ func (s *Scanner) store(m map[string]cached) {
 
 // Lack is a mod a save has used that the profile does not run. Disabled means the profile has it but switched off.
 type Lack struct {
-	UniqueID string
+	ID       mod.ID
 	Disabled bool
 }
 
-// Lacking returns the used UniqueIDs that are not enabled in the profile, minus the dismissed ones. have maps a
-// lowercased UniqueID in the profile to whether it is enabled.
-func Lacking(used []string, have map[string]bool, dismissed []string) []Lack {
+// Lacking returns the used ids that are not enabled in the profile, minus the dismissed ones. have maps a folded
+// id (mod.ID.Fold) in the profile to whether it is enabled.
+func Lacking(used []mod.ID, have map[string]bool, dismissed []mod.ID) []Lack {
 	out := []Lack{}
 	for _, id := range used {
-		enabled, present := have[id]
-		if enabled || slices.ContainsFunc(dismissed, func(d string) bool { return manifest.SameID(d, id) }) {
+		enabled, present := have[id.Fold()]
+		if enabled || slices.ContainsFunc(dismissed, func(d mod.ID) bool { return mod.Equal(d, id) }) {
 			continue
 		}
-		out = append(out, Lack{UniqueID: id, Disabled: present})
+		out = append(out, Lack{ID: id, Disabled: present})
 	}
 	return out
 }

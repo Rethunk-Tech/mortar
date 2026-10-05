@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 const (
@@ -18,23 +19,26 @@ const (
 
 var ErrNoCapture = errors.New("gmcm: no capture")
 
-func CapturePath(profileDir, uniqueID string) string {
-	return filepath.Join(profileDir, captureDir, uniqueID+".json")
+// fileName is the id's local part: the in-game bridge writes these files and names them by SMAPI's unique id.
+func fileName(id mod.ID) string { return id.Local() }
+
+func CapturePath(profileDir string, id mod.ID) string {
+	return filepath.Join(profileDir, captureDir, fileName(id)+".json")
 }
 
-func PendingPath(profileDir, uniqueID string) string {
-	return filepath.Join(profileDir, pendingDir, uniqueID+".json")
+func PendingPath(profileDir string, id mod.ID) string {
+	return filepath.Join(profileDir, pendingDir, fileName(id)+".json")
 }
 
-func ResultPath(profileDir, uniqueID string) string {
-	return filepath.Join(profileDir, pendingDir, uniqueID+resultExt)
+func ResultPath(profileDir string, id mod.ID) string {
+	return filepath.Join(profileDir, pendingDir, fileName(id)+resultExt)
 }
 
-func ReadCapture(profileDir, uniqueID string) (Capture, error) {
+func ReadCapture(profileDir string, id mod.ID) (Capture, error) {
 	var out Capture
-	err := readJSON(CapturePath(profileDir, uniqueID), &out)
+	err := readJSON(CapturePath(profileDir, id), &out)
 	if errors.Is(err, fs.ErrNotExist) {
-		return out, fmt.Errorf("%w: %s", ErrNoCapture, uniqueID)
+		return out, fmt.Errorf("%w: %s", ErrNoCapture, id)
 	}
 	if err != nil {
 		return out, err
@@ -42,9 +46,9 @@ func ReadCapture(profileDir, uniqueID string) (Capture, error) {
 	return out, checkSchema(out.Schema)
 }
 
-func ReadPending(profileDir, uniqueID string) (Pending, error) {
+func ReadPending(profileDir string, id mod.ID) (Pending, error) {
 	var out Pending
-	err := readJSON(PendingPath(profileDir, uniqueID), &out)
+	err := readJSON(PendingPath(profileDir, id), &out)
 	if errors.Is(err, fs.ErrNotExist) {
 		return Pending{Schema: Schema}, nil
 	}
@@ -54,22 +58,22 @@ func ReadPending(profileDir, uniqueID string) (Pending, error) {
 	return out, checkSchema(out.Schema)
 }
 
-func WritePending(profileDir, uniqueID string, edits []Edit) error {
+func WritePending(profileDir string, id mod.ID, edits []Edit) error {
 	if err := os.MkdirAll(filepath.Join(profileDir, pendingDir), 0o750); err != nil {
 		return err
 	}
 	if len(edits) == 0 {
-		if err := os.Remove(PendingPath(profileDir, uniqueID)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := os.Remove(PendingPath(profileDir, id)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil
 	}
-	return datadir.WriteJSON(PendingPath(profileDir, uniqueID), Pending{Schema: Schema, Edits: edits})
+	return datadir.WriteJSON(PendingPath(profileDir, id), Pending{Schema: Schema, Edits: edits})
 }
 
-func ReadResult(profileDir, uniqueID string) (Result, error) {
+func ReadResult(profileDir string, id mod.ID) (Result, error) {
 	var out Result
-	err := readJSON(ResultPath(profileDir, uniqueID), &out)
+	err := readJSON(ResultPath(profileDir, id), &out)
 	if errors.Is(err, fs.ErrNotExist) {
 		return Result{}, nil
 	}

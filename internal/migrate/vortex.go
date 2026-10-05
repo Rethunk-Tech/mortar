@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
@@ -73,20 +75,20 @@ func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessag
 	}
 	mods := vortexModList(state, domain)
 	byID := make(map[string]vortexMod, len(mods))
-	for _, mod := range mods {
-		byID[mod.ID] = mod
+	for _, vm := range mods {
+		byID[vm.ID] = vm
 	}
 	staged, err := folderMods(modsPath)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
 	byPath := make(map[string][]folderMod)
-	for _, mod := range staged {
-		byPath[filepath.Clean(mod.Path)] = append(byPath[filepath.Clean(mod.Path)], mod)
+	for _, vm := range staged {
+		byPath[filepath.Clean(vm.Path)] = append(byPath[filepath.Clean(vm.Path)], vm)
 	}
 	modIDs := make(map[string]bool, len(mods)+len(selected.ModState))
-	for _, mod := range mods {
-		modIDs[mod.ID] = true
+	for _, vm := range mods {
+		modIDs[vm.ID] = true
 	}
 	for id := range selected.ModState {
 		modIDs[id] = true
@@ -94,32 +96,32 @@ func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessag
 	var out []ModPreview
 	var missing []string
 	for modID := range modIDs {
-		mod := byID[modID]
+		vm := byID[modID]
 		enabled := selected.ModState[modID].Enabled
-		path := vortexModPath(modsPath, mod)
+		path := vortexModPath(modsPath, vm)
 		items := byPath[filepath.Clean(path)]
-		if enabled && len(items) == 0 && !manifest.LoaderManaged(modID) &&
-			!manifest.LoaderManaged(rawString(mod.Attributes, "uniqueId", "uniqueID")) {
+		if enabled && len(items) == 0 && !manifest.LoaderManaged(mod.SMAPI(modID)) &&
+			!manifest.LoaderManaged(mod.SMAPI(rawString(vm.Attributes, "uniqueId", "uniqueID"))) {
 			missing = append(missing, modID)
 			continue
 		}
 		for _, item := range items {
 			out = append(out, ModPreview{
-				UniqueID: item.UniqueID, Name: item.Name, Version: item.Version,
+				ID: item.ModID(), Name: item.Name, Version: item.Version,
 				Enabled: enabled, NexusModID: nexusID(item.UpdateKeys), SourcePath: item.Path,
 			})
 		}
 		if len(items) > 0 {
 			continue
 		}
-		name := rawString(mod.Attributes, "name", "modName")
+		name := rawString(vm.Attributes, "name", "modName")
 		if name == "" {
 			name = modID
 		}
-		uniqueID := rawString(mod.Attributes, "uniqueId", "uniqueID")
+		uniqueID := rawString(vm.Attributes, "uniqueId", "uniqueID")
 		out = append(out, ModPreview{
-			UniqueID: uniqueID, Name: name, Version: rawString(mod.Attributes, "version", "modVersion"),
-			Enabled: enabled, NexusModID: rawInt(mod.Attributes, "modId"),
+			ID: mod.SMAPI(uniqueID), Name: name, Version: rawString(vm.Attributes, "version", "modVersion"),
+			Enabled: enabled, NexusModID: rawInt(vm.Attributes, "modId"),
 		})
 	}
 	if out == nil {
@@ -243,14 +245,14 @@ func vortexModList(state map[string]json.RawMessage, domain string) []vortexMod 
 	}
 	out := make([]vortexMod, 0, len(values))
 	for key, value := range values {
-		var mod vortexMod
-		if json.Unmarshal(value, &mod) != nil {
+		var vm vortexMod
+		if json.Unmarshal(value, &vm) != nil {
 			continue
 		}
-		if mod.ID == "" {
-			mod.ID = key
+		if vm.ID == "" {
+			vm.ID = key
 		}
-		out = append(out, mod)
+		out = append(out, vm)
 	}
 	return out
 }
@@ -268,10 +270,10 @@ func vortexModsPath(root, fallback, domain string, state map[string]json.RawMess
 	return filepath.Join(root, domain, "mods")
 }
 
-func vortexModPath(modsPath string, mod vortexMod) string {
-	path := mod.InstallationPath
+func vortexModPath(modsPath string, vm vortexMod) string {
+	path := vm.InstallationPath
 	if path == "" {
-		path = mod.ID
+		path = vm.ID
 	}
 	return cleanVortexPath(modsPath, path)
 }

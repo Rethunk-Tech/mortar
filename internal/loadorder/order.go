@@ -10,47 +10,46 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // Mod is the manifest fields the resolver needs.
 type Mod struct {
-	UniqueID       string
+	ID             mod.ID
 	Name           string
-	Needs          []string
-	Optional       []string
-	ContentPackFor string
+	Needs          []mod.ID
+	Optional       []mod.ID
+	ContentPackFor mod.ID
 }
 
 // Row is one enabled mod in SMAPI load order.
 type Row struct {
 	Position        int      `json:"position"`
-	UniqueID        string   `json:"uniqueId"`
+	ID              mod.ID   `json:"id"`
 	Name            string   `json:"name"`
-	Required        []string `json:"required,omitempty"`
-	Optional        []string `json:"optional,omitempty"`
-	Dependents      []string `json:"dependents,omitempty"`
-	MissingRequired []string `json:"missingRequired,omitempty"`
+	Required        []mod.ID `json:"required,omitempty"`
+	Optional        []mod.ID `json:"optional,omitempty"`
+	Dependents      []mod.ID `json:"dependents,omitempty"`
+	MissingRequired []mod.ID `json:"missingRequired,omitempty"`
 	Cycle           bool     `json:"cycle,omitempty"`
 }
 
 type node struct {
-	id       string
+	id       mod.ID
 	mod      Mod
-	required []string
-	optional []string
+	required []mod.ID
+	optional []mod.ID
 	preds    []string
 }
 
-func cleanIDs(ids []string) []string {
-	out := make([]string, 0, len(ids))
+func cleanIDs(ids []mod.ID) []mod.ID {
+	out := make([]mod.ID, 0, len(ids))
 	seen := map[string]bool{}
 	for _, id := range ids {
-		id = strings.TrimSpace(id)
-		if id == "" || seen[manifest.FoldID(id)] {
+		if id == "" || seen[id.Fold()] {
 			continue
 		}
-		seen[manifest.FoldID(id)] = true
+		seen[id.Fold()] = true
 		out = append(out, id)
 	}
 	return out
@@ -60,7 +59,7 @@ func byName(a, b node) int {
 	if n := cmp.Compare(strings.ToLower(a.mod.Name), strings.ToLower(b.mod.Name)); n != 0 {
 		return n
 	}
-	return cmp.Compare(manifest.FoldID(a.id), manifest.FoldID(b.id))
+	return cmp.Compare(a.id.Fold(), b.id.Fold())
 }
 
 // Resolve returns enabled mods in SMAPI load order. Duplicate UniqueIDs keep the first.
@@ -68,27 +67,27 @@ func Resolve(mods []Mod) []Row {
 	nodes := make([]node, 0, len(mods))
 	index := map[string]int{}
 	for _, m := range mods {
-		id := strings.TrimSpace(m.UniqueID)
+		id := m.ID
 		if id == "" {
 			continue
 		}
-		key := manifest.FoldID(id)
+		key := id.Fold()
 		if _, ok := index[key]; ok {
 			continue
 		}
 		required := cleanIDs(m.Needs)
-		if cp := strings.TrimSpace(m.ContentPackFor); cp != "" && !slices.ContainsFunc(required, func(x string) bool { return manifest.FoldID(x) == manifest.FoldID(cp) }) {
+		if cp := m.ContentPackFor; cp != "" && !slices.ContainsFunc(required, func(x mod.ID) bool { return x.Fold() == cp.Fold() }) {
 			required = append(required, cp)
 		}
 		optional := cleanIDs(m.Optional)
-		optional = slices.DeleteFunc(optional, func(x string) bool {
-			return slices.ContainsFunc(required, func(y string) bool { return manifest.FoldID(x) == manifest.FoldID(y) })
+		optional = slices.DeleteFunc(optional, func(x mod.ID) bool {
+			return slices.ContainsFunc(required, func(y mod.ID) bool { return x.Fold() == y.Fold() })
 		})
 		index[key] = len(nodes)
 		nodes = append(nodes, node{id: id, mod: m, required: required, optional: optional})
 	}
-	present := func(id string) bool {
-		_, ok := index[manifest.FoldID(id)]
+	present := func(id mod.ID) bool {
+		_, ok := index[id.Fold()]
 		return ok
 	}
 	for i := range nodes {
@@ -96,12 +95,12 @@ func Resolve(mods []Mod) []Row {
 		preds := make([]string, 0, len(n.required)+len(n.optional))
 		for _, id := range n.required {
 			if present(id) {
-				preds = append(preds, manifest.FoldID(id))
+				preds = append(preds, id.Fold())
 			}
 		}
 		for _, id := range n.optional {
 			if present(id) {
-				preds = append(preds, manifest.FoldID(id))
+				preds = append(preds, id.Fold())
 			}
 		}
 		n.preds = preds
@@ -163,7 +162,7 @@ func Resolve(mods []Mod) []Row {
 	slices.SortFunc(rest, func(a, b int) int { return byName(nodes[a], nodes[b]) })
 	ordered = append(ordered, rest...)
 
-	dependents := make([][]string, len(nodes))
+	dependents := make([][]mod.ID, len(nodes))
 	for _, n := range nodes {
 		for _, pred := range n.preds {
 			p := index[pred]
@@ -171,15 +170,15 @@ func Resolve(mods []Mod) []Row {
 		}
 	}
 	for i := range dependents {
-		slices.SortFunc(dependents[i], func(a, b string) int {
-			return byName(nodes[index[manifest.FoldID(a)]], nodes[index[manifest.FoldID(b)]])
+		slices.SortFunc(dependents[i], func(a, b mod.ID) int {
+			return byName(nodes[index[a.Fold()]], nodes[index[b.Fold()]])
 		})
 	}
 
 	out := make([]Row, 0, len(ordered))
 	for pos, i := range ordered {
 		n := nodes[i]
-		missing := make([]string, 0)
+		missing := make([]mod.ID, 0)
 		for _, id := range n.required {
 			if !present(id) {
 				missing = append(missing, id)
@@ -187,7 +186,7 @@ func Resolve(mods []Mod) []Row {
 		}
 		out = append(out, Row{
 			Position:        pos + 1,
-			UniqueID:        n.id,
+			ID:              n.id,
 			Name:            n.mod.Name,
 			Required:        n.required,
 			Optional:        n.optional,

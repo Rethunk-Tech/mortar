@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -169,7 +171,7 @@ func appendMO2Mod(out []ModPreview, missing []string, modsPath string, byBase ma
 	modDir := filepath.Join(modsPath, entry.name)
 	meta := readMO2Meta(modDir)
 	items := byBase[entry.name]
-	if entry.enabled && len(items) == 0 && meta.modID == 0 && !manifest.LoaderManaged(entry.name) {
+	if entry.enabled && len(items) == 0 && meta.modID == 0 && !manifest.LoaderManaged(mod.SMAPI(entry.name)) {
 		if _, err := os.Stat(modDir); err != nil {
 			return out, append(missing, entry.name)
 		}
@@ -180,7 +182,7 @@ func appendMO2Mod(out []ModPreview, missing []string, modsPath string, byBase ma
 			nexus = nexusID(item.UpdateKeys)
 		}
 		out = append(out, ModPreview{
-			UniqueID: item.UniqueID, Name: item.Name, Version: cmp.Or(item.Version, meta.version),
+			ID: item.ModID(), Name: item.Name, Version: cmp.Or(item.Version, meta.version),
 			Enabled: entry.enabled, NexusModID: nexus, SourcePath: localMO2Path(meta.modID, item.Path),
 		})
 	}
@@ -188,7 +190,7 @@ func appendMO2Mod(out []ModPreview, missing []string, modsPath string, byBase ma
 		return out, missing
 	}
 	out = append(out, ModPreview{
-		UniqueID: "", Name: entry.name, Version: meta.version,
+		ID: "", Name: entry.name, Version: meta.version,
 		Enabled: entry.enabled, NexusModID: meta.modID, SourcePath: localMO2Path(meta.modID, modDir),
 	})
 	return out, missing

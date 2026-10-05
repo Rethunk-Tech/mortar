@@ -3,7 +3,7 @@ package launch
 import (
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // SMAPIProblemKind is a recognised class of SMAPI log error.
@@ -73,7 +73,7 @@ func ParseSMAPIProblems(log string) []SMAPIProblem {
 	return out
 }
 
-// ResolveSMAPIProblemMods fills UniqueID/name from installed mods when the log only named the display name.
+// ResolveSMAPIProblemMods fills the id and name from installed mods when the log only named the display name.
 func ResolveSMAPIProblemMods(problems []SMAPIProblem, mods []ModRef) []SMAPIProblem {
 	if len(problems) == 0 {
 		return problems
@@ -81,7 +81,7 @@ func ResolveSMAPIProblemMods(problems []SMAPIProblem, mods []ModRef) []SMAPIProb
 	out := append([]SMAPIProblem(nil), problems...)
 	for i, p := range out {
 		if m, ok := matchModRef(p.ModID, p.ModName, mods); ok {
-			out[i].ModID = m.UniqueID
+			out[i].ModID = m.ID.Local()
 			if p.ModName == "" || strings.EqualFold(p.ModName, p.ModID) {
 				out[i].ModName = m.Name
 			}
@@ -92,7 +92,7 @@ func ResolveSMAPIProblemMods(problems []SMAPIProblem, mods []ModRef) []SMAPIProb
 
 func matchModRef(id, name string, mods []ModRef) (ModRef, bool) {
 	for _, m := range mods {
-		if id != "" && manifest.SameID(m.UniqueID, id) {
+		if id != "" && mod.Equal(m.ID, mod.SMAPI(id)) {
 			return m, true
 		}
 		if name != "" && strings.EqualFold(m.Name, name) {

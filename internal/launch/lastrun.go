@@ -3,12 +3,14 @@ package launch
 import (
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // ModRef is an installed mod the SMAPI log column can name.
 type ModRef struct {
 	Name          string `json:"name"`
-	UniqueID      string `json:"uniqueId"`
+	ID            mod.ID `json:"id"`
 	Key           string `json:"key"`
 	Version       string `json:"version"`
 	SourceVersion string `json:"sourceVersion"`
@@ -18,20 +20,20 @@ type ModRef struct {
 // from a completed run's SMAPI log.
 type ModRunIssues struct {
 	Name     string `json:"name"`
-	UniqueID string `json:"uniqueId"`
+	ID       mod.ID `json:"id"`
 	Errors   int    `json:"errors"`
 	Warnings int    `json:"warnings"`
 }
 
 // MatchModColumn maps a SMAPI log mod column the way the Console does:
-// the whole column must equal an installed Name or UniqueID.
+// the whole column must equal an installed Name or SMAPI unique id.
 func MatchModColumn(column string, mods []ModRef) (ModRef, bool) {
 	key := strings.TrimSpace(column)
 	if key == "" {
 		return ModRef{}, false
 	}
 	for _, m := range mods {
-		if m.Name == key || m.UniqueID == key {
+		if m.Name == key || m.ID.Local() == key {
 			return m, true
 		}
 	}
@@ -47,17 +49,17 @@ func AttributeLog(log string, mods []ModRef) []ModRunIssues {
 		if e.Cont {
 			continue
 		}
-		mod, ok := MatchModColumn(e.Mod, mods)
+		ref, ok := MatchModColumn(e.Mod, mods)
 		if !ok {
 			continue
 		}
-		key := mod.UniqueID
+		key := string(ref.ID)
 		if key == "" {
-			key = mod.Name
+			key = ref.Name
 		}
 		row := byKey[key]
 		if row == nil {
-			row = &ModRunIssues{Name: mod.Name, UniqueID: mod.UniqueID}
+			row = &ModRunIssues{Name: ref.Name, ID: ref.ID}
 			byKey[key] = row
 		}
 		switch e.Level {
@@ -82,7 +84,7 @@ func AttributeLog(log string, mods []ModRef) []ModRunIssues {
 		if a.Warnings != b.Warnings {
 			return b.Warnings - a.Warnings
 		}
-		return strings.Compare(a.UniqueID, b.UniqueID)
+		return strings.Compare(string(a.ID), string(b.ID))
 	})
 	return out
 }
