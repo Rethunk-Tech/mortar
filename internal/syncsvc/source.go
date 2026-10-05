@@ -12,6 +12,7 @@ import (
 type profileStore interface {
 	List(game string) ([]profile.Profile, error)
 	Create(game, name string) (profile.Profile, error)
+	Delete(game, id string) error
 }
 
 // Shares is the part of the share service the sync uses: the .mortar export and the import that makes a profile match.
@@ -57,6 +58,8 @@ func (a *AppSource) Create(gameID, name string) (string, error) {
 	p, err := a.profiles.Create(gameID, name)
 	return p.ID, err
 }
+
+func (a *AppSource) Delete(gameID, id string) error { return a.profiles.Delete(gameID, id) }
 
 func (a *AppSource) Preview(ctx context.Context, gameID, id string, payload []byte) (Diff, error) {
 	pv, err := a.shares.PreviewPayload(ctx, gameID, id, payload)

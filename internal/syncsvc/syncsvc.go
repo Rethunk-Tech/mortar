@@ -7,6 +7,7 @@ package syncsvc
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -48,6 +49,7 @@ type Source interface {
 	Export(game, id string) ([]byte, error)
 	// Create makes an empty profile and returns its id.
 	Create(game, name string) (string, error)
+	Delete(game, id string) error
 	Preview(ctx context.Context, game, id string, payload []byte) (Diff, error)
 	// Apply makes the profile match the payload; mods it names are fetched from their sources.
 	Apply(ctx context.Context, game, id string, payload []byte) error
@@ -96,6 +98,9 @@ type shared struct {
 	Machine     string `json:"machine"`
 	MachineName string `json:"machineName"`
 	Vector      Vector `json:"vector"`
+	// Payload is the SHA-256 of the payload this revision wrote. A sync tool may deliver the two files in either
+	// order, so a payload that does not match has not arrived yet.
+	Payload string `json:"payload"`
 }
 
 // tracked is what this machine knows of one local profile's sync.
@@ -190,6 +195,16 @@ func (s *Service) readShared(folder, game, remote string) (shared, bool) {
 	return sh, true
 }
 
+// payload reads the payload sh names, and reports whether it is that payload rather than one still on its way.
+func (s *Service) payload(folder, game, remote string, sh shared) ([]byte, bool) {
+	b, err := fsx.ReadFile(s.payloadPath(folder, game, remote))
+	if err != nil {
+		return nil, false
+	}
+	sum := sha256.Sum256(b)
+	return b, hex.EncodeToString(sum[:]) == sh.Payload
+}
+
 // Kick asks Run for a scan soon; a folder change calls it.
 //
 //wails:ignore
@@ -268,6 +283,9 @@ func (s *Service) scanOne(folder string, ref Ref, t tracked) (Offer, bool, error
 	remote, found := s.readShared(folder, ref.Game, t.Remote)
 	dirty := t.Seen.IsZero() || !ref.Updated.Equal(t.Seen)
 	if found && remote.Vector.newer(t.Synced) {
+		if _, ok := s.payload(folder, ref.Game, t.Remote, remote); !ok {
+			return Offer{}, false, nil
+		}
 		return Offer{
 			Game: ref.Game, Profile: ref.ID, Remote: t.Remote, Name: remote.Name, Machine: remote.MachineName,
 			Conflict: dirty && !t.Seen.IsZero(), Revision: fmt.Sprint(remote.Vector),
@@ -290,6 +308,9 @@ func (s *Service) newOffers(folder, game string, known map[string]bool) []Offer 
 			continue
 		}
 		if sh, ok := s.readShared(folder, game, remote); ok {
+			if _, ok := s.payload(folder, game, remote, sh); !ok {
+				continue
+			}
 			out = append(out, Offer{Game: game, Remote: remote, Name: sh.Name, Machine: sh.MachineName, New: true, Revision: fmt.Sprint(sh.Vector)})
 		}
 	}
@@ -318,7 +339,8 @@ func (s *Service) push(folder string, ref Ref, t tracked, base Vector) error {
 	if err := datadir.WriteFile(s.payloadPath(folder, ref.Game, t.Remote), payload, 0o600); err != nil {
 		return err
 	}
-	meta, err := json.Marshal(shared{Name: ref.Name, Machine: s.st.Machine, MachineName: s.d.Machine, Vector: vec})
+	sum := sha256.Sum256(payload)
+	meta, err := json.Marshal(shared{Name: ref.Name, Machine: s.st.Machine, MachineName: s.d.Machine, Vector: vec, Payload: hex.EncodeToString(sum[:])})
 	if err != nil {
 		return err
 	}
@@ -362,6 +384,8 @@ func (s *Service) find(game, remote string) (Offer, bool) {
 	return Offer{}, false
 }
 
+var errNotArrived = errors.New("the other machine's change has not fully arrived in the sync folder yet")
+
 // Resolve answers the offer for the profile whose sync id is remote, as shown at revision: Theirs applies the other revision, Mine keeps
 // the local profile and writes it over it. Neither merges anything.
 func (s *Service) Resolve(ctx context.Context, game, remote, revision, choice string) error {
@@ -382,16 +406,21 @@ func (s *Service) Resolve(ctx context.Context, game, remote, revision, choice st
 	local := o.Profile
 	switch choice {
 	case Theirs:
-		payload, err := fsx.ReadFile(s.payloadPath(folder, game, remote))
-		if err != nil {
-			return err
+		payload, ok := s.payload(folder, game, remote, sh)
+		if !ok {
+			return errNotArrived
 		}
 		if o.New {
+			var err error
 			if local, err = s.d.Source.Create(game, sh.Name); err != nil {
 				return err
 			}
 		}
 		if err := s.d.Source.Apply(ctx, game, local, payload); err != nil {
+			// Left behind, the new profile would be written out to every machine on the next scan.
+			if o.New {
+				err = errors.Join(err, s.d.Source.Delete(game, local))
+			}
 			return err
 		}
 		ref, err := s.ref(game, local)
@@ -452,9 +481,13 @@ func (s *Service) Diff(ctx context.Context, game, remote string) (Diff, error) {
 	if !ok {
 		return Diff{}, errors.New("that change is no longer waiting")
 	}
-	payload, err := fsx.ReadFile(s.payloadPath(folder, game, remote))
-	if err != nil {
-		return Diff{}, err
+	sh, ok := s.readShared(folder, game, remote)
+	if !ok {
+		return Diff{}, errors.New("the synced profile is gone from the sync folder")
+	}
+	payload, ok := s.payload(folder, game, remote, sh)
+	if !ok {
+		return Diff{}, errNotArrived
 	}
 	return s.d.Source.Preview(ctx, game, o.Profile, payload)
 }
