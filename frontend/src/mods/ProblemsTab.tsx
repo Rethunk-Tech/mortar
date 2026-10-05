@@ -257,7 +257,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
 }
 
 // ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
-export function ProblemActions() {
+function ProblemActions() {
   const { t } = useLingui()
   const result = useOpenProblems()
   const [mapOpen, setMapOpen] = useState(false)
@@ -360,7 +360,7 @@ export function ProblemActions() {
   )
 }
 
-export function ProblemsTab() {
+function ProblemsTab() {
   const { t } = useLingui()
   const result = useOpenProblems()
   useLoadProblemsOnFocus()
@@ -376,3 +376,5 @@ export function ProblemsTab() {
   }
   return <ProblemsContent result={result} />
 }
+
+export { ProblemActions, ProblemsTab }
