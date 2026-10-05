@@ -79,7 +79,11 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 	if len(answered) == 0 {
 		return Page{}, errors.Join(errs...)
 	}
-	merged.Items = interleave(answered)
+	order := make([]string, len(sources))
+	for i, s := range sources {
+		order[i] = s.ID()
+	}
+	merged.Items = mergeSame(interleave(answered), order)
 	return merged, nil
 }
 

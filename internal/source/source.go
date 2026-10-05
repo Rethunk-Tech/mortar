@@ -58,8 +58,21 @@ type Item struct {
 	Updated      string `json:"updated"`
 	URL          string `json:"url"`
 	Installed    bool   `json:"installed"`
+	// Repo is the mod's GitHub repository as "owner/repo" when its site links one; it ties the same mod on
+	// several sources together.
+	Repo string `json:"repo,omitempty"`
+	// Alts are the same mod's hits on the game's other sources, set by a merged search that found it on several.
+	Alts []Alt `json:"alts,omitempty"`
 	// Adult marks a mod its site flags as adult content; browse hides it unless the player opted in.
 	Adult bool `json:"adult"`
+}
+
+// Alt is the same mod on another source: where to open it and install it from.
+type Alt struct {
+	Source    string `json:"source"`
+	ID        string `json:"id"`
+	URL       string `json:"url"`
+	Installed bool   `json:"installed"`
 }
 
 // Page is one slice of search hits. A merged search across sources also sets Pages, the page count of its largest

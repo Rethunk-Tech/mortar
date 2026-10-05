@@ -70,6 +70,10 @@ func InstalledOn(prof profile.Profile) InstalledFunc {
 				if source == "nexus" && strconv.Itoa(entry.Source.ModID) == id {
 					return true
 				}
+			case profile.KindThunderstore:
+				if source == "thunderstore" && strings.EqualFold(entry.Source.Name, id) {
+					return true
+				}
 			case profile.KindGitHub:
 				if source == "github" && entry.Source.Repo == id {
 					return true

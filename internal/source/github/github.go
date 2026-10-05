@@ -155,6 +155,7 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 			Stars:   n.StargazersCount,
 			Updated: n.UpdatedAt,
 			URL:     n.HTMLURL,
+			Repo:    n.FullName,
 		})
 	}
 	page := source.Page{Total: parsed.TotalCount, Items: items}

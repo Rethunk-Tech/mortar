@@ -45,6 +45,8 @@ type pkg struct {
 	Rating    int    `json:"rating"`
 	Downloads int    `json:"downloads"`
 	// Hidden is a deprecated package: not searchable, but still resolvable as a dependency.
+	// Repo is the GitHub repository the newest version's website links, as "owner/repo".
+	Repo     string    `json:"repo,omitempty"`
 	Hidden   bool      `json:"hidden,omitempty"`
 	Adult    bool      `json:"adult,omitempty"`
 	Versions []version `json:"versions"`
@@ -65,6 +67,7 @@ type wirePackage struct {
 		VersionNumber string   `json:"version_number"`
 		Dependencies  []string `json:"dependencies"`
 		Downloads     int      `json:"downloads"`
+		WebsiteURL    string   `json:"website_url"`
 		FileSize      int64    `json:"file_size"`
 	} `json:"versions"`
 }
@@ -268,6 +271,7 @@ func (d Driver) build(ctx context.Context, chunks []string, path, ua string) err
 			p := pkg{
 				Owner: w.Owner, Name: w.Name, URL: w.PackageURL, Updated: w.DateUpdated, Rating: w.RatingScore,
 				Hidden: w.IsDeprecated, Adult: w.HasNSFWContent, Summary: w.Versions[0].Description, Icon: w.Versions[0].Icon,
+				Repo: source.GitHubRepo(w.Versions[0].WebsiteURL),
 			}
 			for _, v := range w.Versions {
 				p.Downloads += v.Downloads

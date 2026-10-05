@@ -110,7 +110,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		items = append(items, source.Item{
 			Source: d.ID(), ID: p.Owner + "-" + p.Name, Name: p.Name, Summary: p.Summary, Author: p.Owner,
 			Version: p.Versions[0].Number, Picture: p.Icon, Endorsements: p.Rating, Downloads: p.Downloads,
-			Updated: p.Updated, URL: p.URL, Adult: p.Adult,
+			Updated: p.Updated, URL: p.URL, Adult: p.Adult, Repo: p.Repo,
 		})
 	}
 	return source.Page{Total: len(hits), Items: items}, nil
