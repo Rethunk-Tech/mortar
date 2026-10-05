@@ -87,8 +87,17 @@ export const safeUrl = (raw: string): string | undefined => {
   return WEB_URL.test(url) ? url : undefined
 }
 
+// Removing a tag can join the text around it into a new one ("<<b>b>"), so it repeats until none is left.
+const stripTags = (raw: string): string => {
+  let text = raw
+  for (let next = text.replace(HTML_TAG, ''); next !== text; next = text.replace(HTML_TAG, '')) {
+    text = next
+  }
+  return text
+}
+
 export function parseBBCode(source: string): Block[] {
-  const text = decode(source.replace(NEWLINE, '').replace(BREAK, '\n').replace(HTML_TAG, ''))
+  const text = decode(stripTags(source.replace(NEWLINE, '').replace(BREAK, '\n')))
   const blocks: Block[] = []
   let block: Block = { id: 0, kind: 'paragraph', runs: [] }
   const stack: Open[] = []

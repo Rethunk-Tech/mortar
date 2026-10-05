@@ -52,3 +52,10 @@ test('keeps unknown brackets as text and only web links as links', () => {
   expect(safeUrl('javascript:alert(1)')).toBeUndefined()
   expect(safeUrl('https://a.b/"onclick')).toBeUndefined()
 })
+
+test('tags that reassemble after one is removed are removed too', () => {
+  const text = parseBBCode('a <<b>script>x</b> b')
+    .flatMap((b) => b.runs.map((r) => r.text))
+    .join('')
+  expect(text).not.toContain('<')
+})

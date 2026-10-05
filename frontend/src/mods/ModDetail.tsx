@@ -252,6 +252,15 @@ interface BodyProps {
   ask: (what: Confirming) => void
 }
 
+const isGitHubPage = (url: string): boolean => {
+  try {
+    const host = new URL(url).hostname
+    return host === 'github.com' || host.endsWith('.github.com')
+  } catch {
+    return false
+  }
+}
+
 function PageLink({ url }: { url: string }) {
   const { t } = useLingui()
   return url ? (
@@ -260,7 +269,7 @@ function PageLink({ url }: { url: string }) {
       onClick={() => openPage(url)}
       sx={{ ...text, alignSelf: 'flex-start' }}
     >
-      {url.includes('github.com') ? t`GitHub page` : t`Nexus page`}
+      {isGitHubPage(url) ? t`GitHub page` : t`Nexus page`}
     </Link>
   ) : null
 }
