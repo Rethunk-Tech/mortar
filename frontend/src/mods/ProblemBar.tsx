@@ -1,8 +1,8 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, CircularProgress, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { useTab } from '../game/tab.ts'
+import { problemsLabel } from '../i18n/counts.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
 import { problemsOf } from './lookup.ts'
@@ -52,7 +52,7 @@ export function ProblemBar() {
   const headline =
     problems.length === 0
       ? t`Some checks could not run without a connection, so more problems may show up later.`
-      : plural(problems.length, { one: '# problem', other: '# problems' })
+      : problemsLabel(problems.length)
   let detail = ''
   if (first !== undefined) {
     detail = first.kind === 'drift' ? describeDrift(first.drift) : describe(first)

@@ -77,7 +77,7 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem) {
       await useMods.getState().setEnabled(mod, false)
       useToasts.getState().push({
         kind: 'success',
-        title: i18n._(msg`Disabled ${mod.name}`),
+        title: i18n._(msg`Disabled ${{ names: mod.name }}`),
         action: {
           label: i18n._(msg`Undo`),
           run: () => useMods.getState().setEnabled(mod, true),
@@ -162,7 +162,7 @@ function ProblemRow({ problem, contained }: { problem: SMAPIProblem; contained: 
         body={
           copies.keep
             ? t`Keep ${copies.keep.name} and remove ${copies.remove.map((m) => m.name).join(', ')}.`
-            : t`Remove ${copies.remove.map((m) => m.name).join(', ')}.`
+            : t`Remove ${{ name: copies.remove.map((m) => m.name).join(', ') }}`
         }
         confirmLabel={t`Remove`}
         onCancel={() => setConfirmDup(false)}

@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { HealthHistory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { compact } from '../game/compact.ts'
-import { updatesLabel } from '../i18n/counts.ts'
+import { problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useSettings } from '../settings/store.ts'
 import { healthView } from './badgeDisplay.ts'
 import type { Counts } from './badges.ts'
@@ -61,7 +61,7 @@ export function ProfileHealth({
   const view = healthView(counts, mode, {
     missing: (n) =>
       t`${plural(n, { one: '# missing requirement', other: '# missing requirements' })}`,
-    problems: (n) => t`${plural(n, { one: '# problem', other: '# problems' })}`,
+    problems: (n) => problemsLabel(n),
     updates: (n) => updatesLabel(n),
   })
   const [detail, setDetail] = useState<{

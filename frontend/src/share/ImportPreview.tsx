@@ -69,7 +69,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
   const notes = [
     mod.different ? t`different file` : '',
     mod.unverified ? t`unverified until downloaded` : '',
-    mod.site === 'local' && !mod.enabled ? t`disabled` : '',
+    mod.site === 'local' && !mod.enabled ? t`Disabled`.toLowerCase() : '',
   ].filter(Boolean)
   const byline = [mod.author, ...notes].filter(Boolean).join(' · ')
   return (
@@ -245,7 +245,7 @@ function Pill({
 function CountLabel({ state, count }: { state: ModState; count: number }) {
   const { t } = useLingui()
   return {
-    installed: t`${count} installed`,
+    installed: t`${{ what: count }} installed`,
     download: t`${count} to download`,
     dependency: plural(count, { one: '# dependency', other: '# dependencies' }),
     later: t`${count} checked later`,

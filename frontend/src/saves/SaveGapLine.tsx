@@ -18,7 +18,7 @@ import { addRecordedMods } from './recordedActions.ts'
 
 function stateText(kind: 'missing' | 'disabled' | 'older', m: GapMod): string {
   if (kind === 'disabled') {
-    return i18n._(msg`disabled`)
+    return i18n._(msg`Disabled`).toLowerCase()
   }
   if (kind === 'older') {
     return i18n._(msg`older, profile has ${m.have}`)

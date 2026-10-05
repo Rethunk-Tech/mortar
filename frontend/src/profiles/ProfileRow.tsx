@@ -1,6 +1,5 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, Button, Divider, IconButton, Menu, Tooltip, Typography } from '@mui/material'
 import { GripVertical, MoreHorizontal, Palette, Pencil, Share2 } from 'lucide-react'
@@ -9,7 +8,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { NameField } from '../game/NameField.tsx'
 import { CoverMenuItems, MoreMenuItems, ProfileMenuItem } from '../game/ProfileMenuItems.tsx'
 import { useRestoreFocus } from '../game/useRestoreFocus.ts'
-import { modsLabel, updatesLabel } from '../i18n/counts.ts'
+import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
 import { userModCount } from './count.ts'
@@ -102,11 +101,11 @@ function useRowSummary(profile: Profile): string {
   const modsText = modsLabel(mods)
   const badge = useBadges((s) => s.byProfile[profile.id])
   const updatesText = updatesLabel(badge?.updates ?? 0)
-  const problemsLabel = plural(badge?.problems ?? 0, { one: '# problem', other: '# problems' })
+  const problemsText = problemsLabel(badge?.problems ?? 0)
   return joinSummary([
     modsText,
     knownCount(badge?.updates, updatesText),
-    knownCount(badge?.problems, problemsLabel),
+    knownCount(badge?.problems, problemsText),
     originLine(profile.origin, profile.copyOf, {
       link: t`imported from a link`,
       mortar: t`imported from a .mortar file`,

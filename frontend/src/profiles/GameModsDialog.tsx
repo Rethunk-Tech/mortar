@@ -34,7 +34,7 @@ export function GameModsDialog({
   onImported: (id: string) => void
 }) {
   const { t } = useLingui()
-  const switchedOff = t`disabled`
+  const switchedOff = t`Disabled`.toLowerCase()
   const load = useProfiles((s) => s.load)
   const [mods, setMods] = useState<GameModPreview[]>([])
   const [error, setError] = useState<InlineError | null>(null)

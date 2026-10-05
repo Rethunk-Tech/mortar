@@ -154,7 +154,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
           <StepChip
             n={LOADER}
             label={
-              step > LOADER ? t`${{ name: game.loader }} installed` : t`Install ${game.loader}`
+              step > LOADER ? t`${{ what: game.loader }} installed` : t`Install ${game.loader}`
             }
             state={stateOf(LOADER)}
           />

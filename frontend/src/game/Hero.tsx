@@ -1,9 +1,8 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { modsLabel, updatesLabel } from '../i18n/counts.ts'
+import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { openPage } from '../mods/menu.ts'
@@ -264,7 +263,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
     if (part.kind === 'updates') {
       return updatesLabel(part.n)
     }
-    return t`${plural(part.n, { one: '# problem', other: '# problems' })}`
+    return problemsLabel(part.n)
   })
   if (hero === 'hidden') {
     return null

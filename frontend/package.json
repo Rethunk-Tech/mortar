@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "i18n:extract": "lingui extract --clean",
     "i18n:compile": "lingui compile --typescript",
+    "i18n:dupes": "bun ../scripts/i18n-dupes.ts",
     "e2e": "playwright test"
   },
   "dependencies": {

@@ -141,7 +141,7 @@ export function PlayControl({ game }: { game: string }) {
             <span>
               <IconButton
                 aria-label={t`Stop game`}
-                title={t`Running ${time}`}
+                title={t`Running for ${time}`}
                 color="error"
                 disabled={stopping}
                 onClick={() => setConfirming(true)}

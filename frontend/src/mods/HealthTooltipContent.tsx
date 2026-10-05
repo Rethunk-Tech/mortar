@@ -18,7 +18,9 @@ function runSummary(i18n: I18n, runs: Run[]): string {
   const errors = runs.filter((r) => r.outcome !== 'crashed' && (r.errors ?? 0) > 0).length
   const clean = runs.length - crashed - errors
   const parts = [
-    crashed > 0 ? i18n._(msg`${crashed} crashed`) : '',
+    crashed > 0
+      ? i18n._(msg`${plural(crashed, { one: '# crashed run', other: '# crashed runs' })}`)
+      : '',
     errors > 0 ? i18n._(msg`${errors} with errors`) : '',
     clean > 0 ? i18n._(msg`${clean} clean`) : '',
   ].filter((p) => p !== '')

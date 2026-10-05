@@ -19,7 +19,7 @@ export function PreviewPick({
   action?: (row: GameModPreview) => ReactNode
 }) {
   const { t } = useLingui()
-  const switchedOff = t`disabled`
+  const switchedOff = t`Disabled`.toLowerCase()
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       {pickable.map((m) => (
