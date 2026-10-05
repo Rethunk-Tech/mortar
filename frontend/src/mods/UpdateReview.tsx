@@ -22,7 +22,9 @@ import { ReviewFooter } from './updateReview/ReviewFooter.tsx'
 import { ReviewList } from './updateReview/ReviewList.tsx'
 import { ReviewTitle } from './updateReview/ReviewTitle.tsx'
 import { UpdateBar as ReviewBar } from './updateReview/UpdateBar.tsx'
+import { WithheldGroup } from './updateReview/WithheldGroup.tsx'
 import { installedCaution, pendingUpdate, withOptional } from './updateReview/wants.ts'
+import { useEmptyReviewNotice, withheldUpdates } from './updateReview/withheld.ts'
 import { checkedWithSmapi, useUpdates } from './updates.ts'
 
 export function UpdateBar() {
@@ -39,6 +41,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   const close = () => setReviewing(false)
   const byId = useNexusDetails((s) => s.byId)
   const list = updatesForReview(updates, profile, byId)
+  const withheld = withheldUpdates(updates, profile, byId)
   const items = useQueue((s) => s.state.items)
   const mods = useMods((s) => s.mods)
   const [acked, setAcked] = useState<Record<string, boolean>>({})
@@ -58,6 +61,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
       (updates?.updates ?? []).filter((u) => u.nexusId > 0).map((u) => u.nexusId),
     ).catch(reportUnexpected)
   }, [open, updates])
+  useEmptyReviewNotice(open && updates !== null && list.length === 0 && withheld.length === 0)
   const chosen = list.filter(
     (u) =>
       include[modId(u)] !== false &&
@@ -75,7 +79,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
   ]
   return (
     <Dialog
-      open={open && list.length > 0}
+      open={open && (list.length > 0 || withheld.length > 0)}
       onClose={close}
       maxWidth={false}
       slotProps={{
@@ -98,6 +102,7 @@ export function UpdateReview({ profile }: { profile: Profile }) {
           onAck={(id, on) => setAcked((prev) => ({ ...prev, [id]: on }))}
           onInclude={(id, on) => setInclude((prev) => ({ ...prev, [id]: on }))}
         />
+        <WithheldGroup withheld={withheld} mods={mods} />
         <KeptGroup kept={keptUpdates(updates, profile)} mods={mods} />
       </DialogContent>
       <ReviewFooter

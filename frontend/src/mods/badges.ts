@@ -7,6 +7,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { useSettings } from '../settings/store.ts'
 import { runBackgroundBadgeChecks } from './badgeDisplay.ts'
 import { missingCount, problemCount, updateCount } from './lookup.ts'
+import { useNexusDetails } from './nexusDetails.ts'
 
 export interface Counts {
   updates: number
@@ -53,7 +54,7 @@ export const useBadges = create<{
             [p.id]: {
               missing,
               problems: problemCount(problems) - missing,
-              updates: updateCount(updates, p),
+              updates: updateCount(updates, p, useNexusDetails.getState().byId),
             },
           },
         }))
