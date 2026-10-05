@@ -112,7 +112,12 @@ stop() {
 }
 
 start() {
-  (cd "$ROOT" && env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" \
+  # The host's steam run with the sandbox HOME brings up a second, signed-out Steam; the sandbox gets a steam that
+  # refuses, so a Steam launch fails here and only a direct launch can start the copied game.
+  mkdir -p "$ROOT/bin"
+  printf '#!/bin/sh\necho "self-test sandbox: Steam is never started from here" >&2\nexit 1\n' >"$ROOT/bin/steam"
+  chmod +x "$ROOT/bin/steam"
+  (cd "$ROOT" && env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" PATH="$ROOT/bin:$PATH" \
     WAILS_SERVER_HOST=127.0.0.1 WAILS_SERVER_PORT="$PORT" nohup ./mortar-server >"$ROOT/server.log" 2>&1 &)
   for _ in $(seq 1 30); do
     if [ -n "$(listener || true)" ]; then
