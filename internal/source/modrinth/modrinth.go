@@ -199,13 +199,23 @@ type Resolved struct {
 	Size      int64
 	// Digest is "sha512:<hex>" of the file, as Modrinth publishes it.
 	Digest string
+	// Dependencies are the projects this version requires, each at the version it names (empty means the newest).
+	Dependencies []Dependency
 }
+
+// Dependency is a required project.
+type Dependency struct{ ProjectID, VersionID string }
 
 type versionResp struct {
 	ID            string `json:"id"`
 	ProjectID     string `json:"project_id"`
 	VersionNumber string `json:"version_number"`
-	Files         []struct {
+	Dependencies  []struct {
+		ProjectID      string `json:"project_id"`
+		VersionID      string `json:"version_id"`
+		DependencyType string `json:"dependency_type"`
+	} `json:"dependencies"`
+	Files []struct {
 		Hashes   map[string]string `json:"hashes"`
 		URL      string            `json:"url"`
 		Filename string            `json:"filename"`
@@ -245,7 +255,13 @@ func (d Driver) Resolve(ctx context.Context, project, version, mortarVersion str
 		if h := f.Hashes["sha512"]; h != "" {
 			digest = "sha512:" + h
 		}
-		return Resolved{ProjectID: v.ProjectID, Version: v.VersionNumber, FileName: f.Filename, URL: f.URL, Size: f.Size, Digest: digest}, nil
+		res := Resolved{ProjectID: v.ProjectID, Version: v.VersionNumber, FileName: f.Filename, URL: f.URL, Size: f.Size, Digest: digest}
+		for _, dep := range v.Dependencies {
+			if dep.DependencyType == "required" && dep.ProjectID != "" {
+				res.Dependencies = append(res.Dependencies, Dependency{ProjectID: dep.ProjectID, VersionID: dep.VersionID})
+			}
+		}
+		return res, nil
 	}
 	return Resolved{}, fmt.Errorf("%s %s is not on Modrinth", project, version)
 }

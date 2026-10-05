@@ -25,7 +25,7 @@ func fake(t *testing.T) Driver {
 			}
 			_, _ = w.Write([]byte(`{"total_hits":41,"hits":[{"project_id":"AANobbMI","slug":"sodium","title":"Sodium","description":"fast","author":"jelly","downloads":9,"follows":3,"date_modified":"2026-09-20T00:00:00Z"}]}`))
 		case "/project/AANobbMI/version":
-			_, _ = w.Write([]byte(`[{"id":"v2","project_id":"AANobbMI","version_number":"2.0","files":[{"hashes":{"sha512":"ab"},"url":"https://cdn/x.jar","filename":"x.jar","primary":false,"size":1},{"hashes":{"sha512":"cd"},"url":"https://cdn/y.jar","filename":"y.jar","primary":true,"size":7}]},{"id":"v1","project_id":"AANobbMI","version_number":"1.0","files":[{"hashes":{},"url":"https://cdn/o.jar","filename":"o.jar","size":2}]}]`))
+			_, _ = w.Write([]byte(`[{"id":"v2","project_id":"AANobbMI","version_number":"2.0","dependencies":[{"project_id":"P1","version_id":"V1","dependency_type":"required"},{"project_id":"P2","dependency_type":"optional"},{"version_id":"V3","dependency_type":"required"}],"files":[{"hashes":{"sha512":"ab"},"url":"https://cdn/x.jar","filename":"x.jar","primary":false,"size":1},{"hashes":{"sha512":"cd"},"url":"https://cdn/y.jar","filename":"y.jar","primary":true,"size":7}]},{"id":"v1","project_id":"AANobbMI","version_number":"1.0","files":[{"hashes":{},"url":"https://cdn/o.jar","filename":"o.jar","size":2}]}]`))
 		case "/tag/category":
 			_, _ = w.Write([]byte(`[{"name":"fabric"},{"name":"Fabric"},{"name":"adventure"}]`))
 		default:
@@ -55,7 +55,7 @@ func TestResolveAndVersions(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
 	r, err := d.Resolve(context.Background(), "AANobbMI", "", "1.2")
-	if err != nil || r.URL != "https://cdn/y.jar" || r.Digest != "sha512:cd" || r.Size != 7 || r.Version != "2.0" {
+	if err != nil || r.URL != "https://cdn/y.jar" || r.Digest != "sha512:cd" || r.Size != 7 || r.Version != "2.0" || len(r.Dependencies) != 1 || r.Dependencies[0] != (Dependency{ProjectID: "P1", VersionID: "V1"}) {
 		t.Fatalf("%+v %v", r, err)
 	}
 	if r, err = d.Resolve(context.Background(), "AANobbMI", "1.0", "1.2"); err != nil || r.Digest != "" || r.FileName != "o.jar" {
