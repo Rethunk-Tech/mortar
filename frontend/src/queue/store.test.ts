@@ -87,6 +87,8 @@ beforeEach(() => {
         name: 'Stardew Valley',
         appId: '',
         loader: '',
+        loaderId: '',
+        sources: [],
         available: true,
         installed: true,
         installDir: '',

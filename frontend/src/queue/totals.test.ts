@@ -80,5 +80,5 @@ test('profileOf names the profile, marks a deleted one and stays silent for anot
   const profiles = [{ id: 'p', name: 'Main' }]
   expect(profileOf(item('queued'), 'stardew', profiles)).toBe('Main')
   expect(profileOf({ game: 'stardew', profileId: 'gone' }, 'stardew', profiles)).toBe('')
-  expect(profileOf(item('queued'), 'lethal', profiles)).toBeNull()
+  expect(profileOf(item('queued'), 'lethal-company', profiles)).toBeNull()
 })

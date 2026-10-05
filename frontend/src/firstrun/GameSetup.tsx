@@ -31,9 +31,9 @@ type Step = typeof FIND | typeof NEXUS | typeof LOADER | typeof PROFILE
 
 type LoaderStep = (p: { game: GameId; gameDir: string; onDone: () => void }) => ReactNode
 
-// Each game's own setup between finding its folder and its first profile; a game without a loader has none.
-const loaderSteps: Record<GameId, LoaderStep | null> = {
-  stardew: SmapiStep,
+// Each loader's own setup between finding the game's folder and its first profile; a loader without one has none.
+const loaderSteps: Record<string, LoaderStep> = {
+  smapi: SmapiStep,
 }
 
 function StepChip({
@@ -114,7 +114,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
   }, [id])
   useEffect(refresh, [refresh])
   const goToProfile = useCallback(() => setStep(PROFILE), [])
-  const Loader = loaderSteps[id]
+  const Loader = loaderSteps[game?.loaderId ?? '']
   const signedIn = useNexus((s) => s.signedIn)
   const afterNexus = Loader ? LOADER : PROFILE
   const firstStep = useRef(step)

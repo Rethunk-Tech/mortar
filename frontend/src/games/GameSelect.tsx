@@ -13,6 +13,7 @@ import {
   SetLastProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { gameSetupNeeded } from '../firstrun/needed.ts'
 import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
@@ -22,6 +23,7 @@ import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
@@ -31,11 +33,6 @@ import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 import { storeName } from './storeName.ts'
 
 type Game = GameInfo
-
-const SOURCES: Record<string, string[]> = {
-  stardew: ['Nexus', 'GitHub'],
-  lethal: ['Thunderstore'],
-}
 
 const LONG_NAME = 8
 const SMALL_FONT = 13
@@ -82,30 +79,33 @@ function Art({ src, openable }: { src: string; openable: boolean }) {
   )
 }
 
-function SourceBadges({ gameId }: { gameId: string }) {
+function SourceBadges({ sources }: { sources: string[] }) {
   return (
     <>
-      {(SOURCES[gameId] ?? []).map((name) => (
-        <Box
-          key={name}
-          sx={{
-            width: 96,
-            height: 96,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            bgcolor: 'var(--mortar-game-dim)',
-            fontSize: name.length > LONG_NAME ? SMALL_FONT : NORMAL_FONT,
-            fontWeight: 700,
-            color: '#fff',
-          }}
-        >
-          <SourceLogo name={name} size={40} />
-          {name}
-        </Box>
-      ))}
+      {sources.map((id) => {
+        const name = sourceLabel(id)
+        return (
+          <Box
+            key={id}
+            sx={{
+              width: 96,
+              height: 96,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              bgcolor: 'var(--mortar-game-dim)',
+              fontSize: name.length > LONG_NAME ? SMALL_FONT : NORMAL_FONT,
+              fontWeight: 700,
+              color: '#fff',
+            }}
+          >
+            <SourceLogo id={id} size={40} />
+            {name}
+          </Box>
+        )
+      })}
     </>
   )
 }
@@ -153,7 +153,7 @@ function Row({
   }
   const playLast = (ev: MouseEvent) => {
     ev.stopPropagation()
-    if (game.id !== 'stardew' || !lastPlayedId) {
+    if (!lastPlayedId) {
       return
     }
     SetLastGame(game.id).catch((err: unknown) => fail(t`Could not save the last game`, err))
@@ -227,7 +227,7 @@ function Row({
             {t`Play`}
           </Button>
         ) : null}
-        <SourceBadges gameId={game.id} />
+        <SourceBadges sources={game.sources ?? []} />
       </Box>
     </>
   )
@@ -264,9 +264,14 @@ export function GameSelect() {
   const [loadError, setLoadError] = useState<InlineError | null>(null)
   const loaderStatus = useLoader((s) => s.status)
   const checkLoader = useLoader((s) => s.check)
+  const lastGame = useSettings((s) => s.lastGame)
+  const availableGames = status?.games.filter((g) => g.available) ?? []
+  const loaderGame = (availableGames.find((g) => g.id === lastGame) ?? availableGames[0])?.id
   useEffect(() => {
-    checkLoader('stardew')
-  }, [checkLoader])
+    if (loaderGame) {
+      checkLoader(loaderGame)
+    }
+  }, [checkLoader, loaderGame])
   const refresh = useCallback(() => {
     setLoadError(null)
     Promise.all([loadGameStatus(), Get()])
@@ -340,7 +345,7 @@ export function GameSelect() {
               game={g}
               openable={g.available}
               note={noteFor(g)}
-              loader={loaderCaption(g.loader, g.id === 'stardew' ? loaderStatus : null)}
+              loader={loaderCaption(g.loader, g.id === loaderGame ? loaderStatus : null)}
               lastPlayedName={st?.profiles.find((p) => p.id === lastId)?.name ?? ''}
               lastPlayedAt={st?.lastPlayedAt ?? ''}
               lastPlayedId={st?.setupNeeded ? '' : lastId}
