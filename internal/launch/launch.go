@@ -27,6 +27,12 @@ const (
 	HintLaunchOptions Hint = "launch-options"
 	// HintFlatpakFS: Flatpak Steam cannot read Mortar's data folder until a filesystem override is granted.
 	HintFlatpakFS Hint = "flatpak-fs"
+	// HintSteamClient: Proton could not load Steam's client library, so the game needs Steam installed and signed in.
+	HintSteamClient Hint = "steam-client"
+	// HintWine: Wine or Proton stopped on an error before the game came up.
+	HintWine Hint = "wine"
+	// HintMissingExe: the process to start, or the game's executable, was not found.
+	HintMissingExe Hint = "missing-exe"
 )
 
 // ErrNoSteam means there is no Steam to launch through; the user may choose to launch directly.
@@ -35,10 +41,15 @@ var ErrNoSteam = errors.New("no Steam was found")
 // ExitError is a loader process that ended before it rewrote its log.
 type ExitError struct {
 	Code int
+	// Output is the last lines the process wrote, when it wrote any.
+	Output []string
 }
 
 func (e *ExitError) Error() string {
-	return fmt.Sprintf("the loader exited with code %d", e.Code)
+	if len(e.Output) == 0 {
+		return fmt.Sprintf("the loader exited with code %d", e.Code)
+	}
+	return fmt.Sprintf("the loader exited with code %d: %s", e.Code, e.Output[len(e.Output)-1])
 }
 
 // Failure is a launch that did not start the game.
@@ -100,12 +111,18 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 		cmd.Env = append(os.Environ(), env...)
 	}
 	hideWindow(cmd, hide)
+	out := newCapture(cmd)
 	if err := cmd.Start(); err != nil {
+		out.release()
 		return nil, err
 	}
 	done := make(chan error, 1)
 	go func() { done <- cmd.Wait() }()
-	return done, nil
+	exited := (<-chan error)(done)
+	if out != nil {
+		captured.Store(exited, out)
+	}
+	return exited, nil
 }
 
 // Command is one process to start, plus how to tell it worked.
@@ -156,6 +173,21 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 	if err != nil {
 		return &Failure{Hint: c.Failure, Err: err}
 	}
+	out := captureOf(exited)
+	if out != nil {
+		captured.Delete(exited)
+		defer out.release()
+	}
+	// stalled reports a known cause in the process's output while the game is not up, and ends the process: Wine
+	// leaves an assertion dialog open forever, so waiting out the timeout would only hide the reason.
+	stalled := func(exited bool) *Failure {
+		hint, line, found := Diagnose(out.tail(), exited)
+		if !found {
+			return nil
+		}
+		out.stop()
+		return &Failure{Hint: hint, Err: errors.New(line)}
+	}
 	// File timestamps come from a coarse kernel clock that can trail time.Now by a few milliseconds.
 	tail := tailer{path: c.LogFile, since: began.Add(-clockSlack), onLines: onLines}
 	deadline := time.NewTimer(tm.Timeout)
@@ -182,6 +214,9 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 		if ok() {
 			return started()
 		}
+		if f := stalled(false); f != nil {
+			return f
+		}
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -195,7 +230,10 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 				exited = nil
 				continue
 			}
-			return &ExitError{Code: waitCode(waitErr)}
+			if f := stalled(true); f != nil {
+				return f
+			}
+			return &ExitError{Code: waitCode(waitErr), Output: lastLines(out.tail(), 5)}
 		case <-tick.C:
 		}
 	}

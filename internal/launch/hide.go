@@ -2,6 +2,10 @@
 
 package launch
 
-import "os/exec"
+import (
+	"os/exec"
+	"syscall"
+)
 
-func hideWindow(*exec.Cmd, bool) {}
+// hideWindow puts the process in its own group, so a stalled launch can be ended with everything it started.
+func hideWindow(cmd *exec.Cmd, _ bool) { cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} }

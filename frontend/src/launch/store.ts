@@ -59,6 +59,19 @@ function failureBody(status: Status): string {
   if (status.hint === Hint.HintSteam) {
     return i18n._(msg`Steam may not be running or signed in. Start Steam, sign in and try again.`)
   }
+  if (status.hint === Hint.HintSteamClient) {
+    return i18n._(
+      msg`Steam must be installed and signed in for this game. Install Steam, sign in once and try again.`,
+    )
+  }
+  if (status.hint === Hint.HintWine) {
+    return i18n._(msg`Wine stopped on an error before ${name} started: ${status.error}`)
+  }
+  if (status.hint === Hint.HintMissingExe) {
+    return i18n._(
+      msg`The program to start ${name} was not found. Check that the game is still installed and the launch prefix names a real command. ${status.error}`,
+    )
+  }
   if (status.hint === Hint.HintFlatpakFS) {
     return i18n._(
       msg`Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › ${name}) or SMAPI will not see this profile.`,

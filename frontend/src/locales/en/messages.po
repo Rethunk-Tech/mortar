@@ -1494,7 +1494,7 @@ msgstr "{0} was changed on {1}"
 msgid "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 msgstr "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 
-#: src/launch/store.ts:120
+#: src/launch/store.ts:133
 #: src/mods/ModDetail.tsx:117
 #: src/mods/ModDetail.tsx:195
 msgid "Roll back"
@@ -2377,6 +2377,11 @@ msgstr "Add tool"
 #: src/settings/SettingsPage.tsx:35
 msgid "Appearance"
 msgstr "Appearance"
+
+#. placeholder {0}: status.error
+#: src/launch/store.ts:72
+msgid "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {0}"
+msgstr "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {0}"
 
 #: src/mods/storeProblems.ts:114
 msgid "Could not restore the warning"
@@ -4156,7 +4161,7 @@ msgstr "Set category"
 msgid "File saved"
 msgstr "File saved"
 
-#: src/launch/store.ts:64
+#: src/launch/store.ts:77
 msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or SMAPI will not see this profile."
 msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or SMAPI will not see this profile."
 
@@ -4715,7 +4720,7 @@ msgid "Show hidden mods"
 msgstr "Show hidden mods"
 
 #. placeholder {0}: profileName(rollback)
-#: src/launch/store.ts:117
+#: src/launch/store.ts:130
 msgid "New errors after updating {0}"
 msgstr "New errors after updating {0}"
 
@@ -5854,7 +5859,7 @@ msgstr "Mod list format"
 msgid "Open author page on Nexus"
 msgstr "Open author page on Nexus"
 
-#: src/launch/store.ts:269
+#: src/launch/store.ts:282
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
@@ -6339,7 +6344,7 @@ msgstr "Nexus rejected your API key"
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
-#: src/launch/store.ts:84
+#: src/launch/store.ts:97
 msgid "Could not roll back updates"
 msgstr "Could not roll back updates"
 
@@ -6511,7 +6516,7 @@ msgstr "Run again"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/launch/store.ts:340
+#: src/launch/store.ts:353
 msgid "Could not stop the game"
 msgstr "Could not stop the game"
 
@@ -7094,6 +7099,11 @@ msgstr "Could not undo. Missing from the store: {list}"
 #: src/firstrun/FirstRun.tsx:95
 msgid "No launchers found. Continue and choose each game's folder when you open it."
 msgstr "No launchers found. Continue and choose each game's folder when you open it."
+
+#. placeholder {0}: status.error
+#: src/launch/store.ts:68
+msgid "Wine stopped on an error before {name} started: {0}"
+msgstr "Wine stopped on an error before {name} started: {0}"
 
 #: src/mods/updateReview/ReviewFooter.tsx:70
 msgid "Update all everywhere…"
@@ -8536,7 +8546,7 @@ msgstr "Focus the search"
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
-#: src/launch/store.ts:69
+#: src/launch/store.ts:82
 msgid "Steam's launch options for {name} lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
 msgstr "Steam's launch options for {name} lack the SMAPI line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
 
@@ -11477,6 +11487,10 @@ msgstr "From a link or file…"
 #: src/settings/prefCopy.ts:302
 msgid "Archives land here instead of Mortar's downloads folder. Empty uses the default."
 msgstr "Archives land here instead of Mortar's downloads folder. Empty uses the default."
+
+#: src/launch/store.ts:64
+msgid "Steam must be installed and signed in for this game. Install Steam, sign in once and try again."
+msgstr "Steam must be installed and signed in for this game. Install Steam, sign in once and try again."
 
 #: src/settings/prefCopy.ts:15
 msgid "What Mortar does when the game starts, then restore when it exits."

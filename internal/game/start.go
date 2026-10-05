@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
+	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
@@ -126,7 +127,12 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 		if goos != "windows" && len(plan.Prefix) > 0 {
 			name, args = plan.Prefix[0], append(slices.Clone(plan.Prefix[1:]), append([]string{exe}, args...)...)
 		}
-		return launch.Command{Dir: inst.Dir, Name: name, Args: args, Env: environ(plan.Env)}, nil
+		env := environ(plan.Env)
+		// Wine prints its errors only when asked; without them a launch that stalls on one says nothing.
+		if inst.Runtime == gameruntime.Proton && plan.Env["WINEDEBUG"] == "" {
+			env = append(env, "WINEDEBUG=err+all")
+		}
+		return launch.Command{Dir: inst.Dir, Name: name, Args: args, Env: env}, nil
 	}
 	info, _ := catalogGame(inst.Game)
 	appID := []string{"-applaunch", info.SteamAppID()}

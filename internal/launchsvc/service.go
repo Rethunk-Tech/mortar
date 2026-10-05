@@ -1106,11 +1106,17 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 		s.clearReap(g)
 		if len(buf.Lines()) == 0 {
 			s.say(g, profileID, fmt.Sprintf("%s exited with code %d.", game.LoaderName(g.ID(), s.profileLoader(g.ID(), profileID)), exited.Code))
+			for _, line := range exited.Output {
+				s.say(g, profileID, line)
+			}
 		}
 		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, r.inst.Dir), Cause: causeFromBuffer(s, g, profileID, buf)})
 	case errors.As(err, &f):
 		s.clearReap(g)
+		if f.Hint == launch.HintSteamClient || f.Hint == launch.HintWine || f.Hint == launch.HintMissingExe {
+			s.say(g, profileID, f.Error())
+		}
 		s.finishFailed(g, profileID, buf)
 		s.failStart(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error(), Cause: causeFromBuffer(s, g, profileID, buf)})
 	default:
