@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"testing"
 	"time"
@@ -310,5 +311,24 @@ func TestSteamLaunchWithoutLoaderKeepsTheUsersOptions(t *testing.T) {
 		if got := launchWithout(exe, current); got != want {
 			t.Errorf("%q -> %q, want %q", current, got, want)
 		}
+	}
+}
+
+func TestDirectCommandRunsBottleInstallThroughBottlesCLI(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Bottles is Linux only")
+	}
+	bottle := filepath.Join(t.TempDir(), "bottles", "Games")
+	dir := filepath.Join(bottle, "drive_c", "Stardew Valley")
+	mods := filepath.FromSlash("/data/profile/mods")
+	plan := smapiPlan("windows", dir, mods)
+	inst := Install{Game: "stardew", Store: StoreBottles, Dir: dir, Prefix: bottle, Platform: "windows", Runtime: "wine-prefix"}
+	cmd, err := Starter{}.command("linux", inst, plan, StartEnv{Direct: true}, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"run", "-b", "Games", "-e", filepath.Join(dir, "StardewModdingAPI.exe"), "--", "--mods-path", mods}
+	if cmd.Name != "bottles-cli" || !slices.Equal(cmd.Args, want) {
+		t.Fatalf("command = %s %q", cmd.Name, cmd.Args)
 	}
 }

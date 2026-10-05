@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -182,5 +183,25 @@ func ResolveInstall(home string, s settings.Settings, id, pin string) (Install, 
 		in.ID = ""
 		return in, nil
 	}
-	return newInstall(info, store, dir, "", OriginFolder), nil
+	// A folder the user chose inside a bottle still runs in it.
+	prefix := gamestore.BottleOf(dir)
+	if prefix != "" {
+		store = StoreBottles
+	}
+	return newInstall(info, store, dir, prefix, OriginFolder), nil
+}
+
+// RunsInBottle reports whether the install runs through a Bottles bottle.
+func (in Install) RunsInBottle() bool { return in.Runtime == runtime.WinePrefix }
+
+// BottleCommand is the host command that runs exe with args inside the install's bottle.
+func (in Install) BottleCommand(exe string, args ...string) ([]string, error) {
+	info, _ := catalogGame(in.Game)
+	return runtime.Command(in.runtime(info, ""), exe, args...)
+}
+
+// RunInBottle runs exe with args inside the install's bottle through run.
+func (in Install) RunInBottle(ctx context.Context, run runtime.Runner, exe string, args ...string) error {
+	info, _ := catalogGame(in.Game)
+	return runtime.Run(ctx, run, in.runtime(info, ""), exe, args...)
 }

@@ -110,6 +110,13 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 			return launch.Command{}, errors.New("the game has no executable to start")
 		}
 		args := slices.Clone(plan.Args)
+		if inst.RunsInBottle() {
+			argv, err := inst.BottleCommand(exe, args...)
+			if err != nil {
+				return launch.Command{}, err
+			}
+			return launch.Command{Dir: inst.Dir, Name: argv[0], Args: argv[1:], Env: environ(plan.Env)}, nil
+		}
 		if goos != "windows" {
 			args = append(slices.Clone(plan.Prefix), args...)
 		}
