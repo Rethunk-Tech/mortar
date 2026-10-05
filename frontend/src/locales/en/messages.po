@@ -178,7 +178,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
-#: src/game/Hero.tsx:332
+#: src/game/Hero.tsx:327
 #: src/mods/Sidebar.tsx:147
 #: src/profiles/RecentChangesButton.tsx:50
 msgid "Updated"
@@ -549,7 +549,7 @@ msgstr "This computer"
 
 #. placeholder {0}: badge?.updates ?? 0
 #. placeholder {0}: part.n
-#: src/game/Hero.tsx:262
+#: src/game/Hero.tsx:260
 #: src/profiles/ProfileRow.tsx:103
 msgid "{0, plural, one {# update} other {# updates}}"
 msgstr "{0, plural, one {# update} other {# updates}}"
@@ -3248,7 +3248,7 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 msgid "Search archives"
 msgstr "Search archives"
 
-#: src/game/Hero.tsx:333
+#: src/game/Hero.tsx:328
 msgid "Created"
 msgstr "Created"
 
@@ -3736,7 +3736,7 @@ msgstr "This save has no recorded mod list yet."
 msgid "Get the extension"
 msgstr "Get the extension"
 
-#: src/game/Hero.tsx:328
+#: src/game/Hero.tsx:323
 #: src/mods/ModDependencyTree.tsx:159
 #: src/mods/Toolbar.tsx:193
 #: src/settings/prefCopy.ts:122
@@ -5776,7 +5776,7 @@ msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:54
 #: src/firstrunTour/TourPopover.tsx:67
-#: src/game/Hero.tsx:325
+#: src/game/Hero.tsx:320
 #: src/game/ProfileWorkspace.tsx:92
 #: src/mods/ModListVirtual.tsx:275
 #: src/settings/GameSettingsPage.tsx:63
@@ -6373,7 +6373,7 @@ msgstr "All sources"
 msgid "Notification history"
 msgstr "Notification history"
 
-#: src/game/Hero.tsx:329
+#: src/game/Hero.tsx:324
 msgid "Open Saves ({fitting} of {total})"
 msgstr "Open Saves ({fitting} of {total})"
 
@@ -9169,7 +9169,7 @@ msgstr "Keep Mortar in the tray"
 #. placeholder {0}: badge?.problems ?? 0
 #. placeholder {0}: part.n
 #. placeholder {0}: problems.length
-#: src/game/Hero.tsx:264
+#: src/game/Hero.tsx:262
 #: src/mods/ProblemBar.tsx:55
 #: src/profiles/ProfileRow.tsx:104
 msgid "{0, plural, one {# problem} other {# problems}}"
@@ -9397,7 +9397,7 @@ msgstr "Markdown"
 msgid "Could not cancel transfer"
 msgstr "Could not cancel transfer"
 
-#: src/game/Hero.tsx:328
+#: src/game/Hero.tsx:323
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
@@ -9710,7 +9710,7 @@ msgstr "Could not roll back {0}"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Hero.tsx:327
+#: src/game/Hero.tsx:322
 #: src/game/ProfileWorkspace.tsx:110
 msgid "Saves"
 msgstr "Saves"
@@ -10286,7 +10286,7 @@ msgstr "API requests"
 #. placeholder {0}: info.count
 #: src/bundles/BundleRow.tsx:34
 #: src/bundles/dialogs.tsx:136
-#: src/game/Hero.tsx:259
+#: src/game/Hero.tsx:257
 #: src/game/NewProfileDialog.tsx:85
 #: src/share/ShareDialog.tsx:91
 #: src/share/ShareDialog.tsx:194
