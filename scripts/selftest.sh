@@ -133,8 +133,15 @@ start() {
     printf '#!/bin/sh\necho "self-test sandbox: not opening $*" >&2\nexit 0\n' >"$ROOT/bin/$opener"
     chmod +x "$ROOT/bin/$opener"
   done
+  # Mortar counts any Stardew Valley process it cannot place in another install as its own game running, which holds
+  # back scheduled backups; one launched anywhere else on the machine (another sandbox, a QA copy, the real game)
+  # would then stall the seed. A PID namespace with its own /proc shows the server only the sandbox's processes.
+  local isolate=()
+  if unshare --user --map-current-user --pid --fork --mount --mount-proc true 2>/dev/null; then
+    isolate=(unshare --user --map-current-user --pid --fork --mount --mount-proc)
+  fi
   (cd "$ROOT" && env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" PATH="$ROOT/bin:$PATH" \
-    WAILS_SERVER_HOST=127.0.0.1 WAILS_SERVER_PORT="$PORT" nohup ./mortar-server >"$ROOT/server.log" 2>&1 &)
+    WAILS_SERVER_HOST=127.0.0.1 WAILS_SERVER_PORT="$PORT" nohup "${isolate[@]}" ./mortar-server >"$ROOT/server.log" 2>&1 &)
   for _ in $(seq 1 30); do
     if [ -n "$(listener || true)" ]; then
       # Recorded so a test run that dies can have its server stopped by pid later (frontend/e2e/sandbox.ts).
@@ -237,8 +244,8 @@ PY
   # The scheduled backup runs on the server's first check after start, so enable it and restart without rebuilding.
   cli settings set --game stardew saveBackupHours 1
   stop
-  sleep 1
   start
+  # stop waits for the old server to exit; the new one's first check runs at start and logs its pass.
   for _ in $(seq 1 30); do
     if cli backups list --game stardew --json | grep -q scheduled; then
       seed_lc
@@ -247,6 +254,9 @@ PY
     fi
     sleep 1
   done
+  if ! grep -q "scheduled save backup:" "$ROOT/server.log"; then
+    echo "the scheduled backup pass never ran: Mortar took the game for running (cli status stardew)" >&2
+  fi
   echo "the scheduled backup never appeared; see $ROOT/server.log" >&2
   exit 1
 }
