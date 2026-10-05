@@ -720,8 +720,8 @@ msgid "List"
 msgstr "List"
 
 #. placeholder {0}: profile.name
-#: src/profiles/ProfileRow.tsx:162
-#: src/profiles/ProfileRow.tsx:165
+#: src/profiles/ProfileRow.tsx:164
+#: src/profiles/ProfileRow.tsx:167
 msgid "Reorder {0}"
 msgstr "Reorder {0}"
 
@@ -891,7 +891,7 @@ msgstr "What they see"
 
 #: src/game/ProfileContextMenu.tsx:38
 #: src/mods/GroupMenu.tsx:68
-#: src/profiles/ProfileRow.tsx:73
+#: src/profiles/ProfileRow.tsx:74
 #: src/templates/TemplateDialogs.tsx:111
 #: src/templates/TemplateDialogs.tsx:189
 msgid "Rename"
@@ -1930,7 +1930,7 @@ msgstr "{0} (optional file)"
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
-#: src/mods/updateReview/Row.tsx:122
+#: src/mods/updateReview/Row.tsx:124
 msgid "Changes dependencies"
 msgstr "Changes dependencies"
 
@@ -2116,8 +2116,8 @@ msgstr "Dependency cycle"
 #: src/commandPalette/paletteLabels.ts:17
 #: src/firstrun/ProfileStep.tsx:136
 #: src/game/NewProfileDialog.tsx:154
-#: src/game/Sidebar.tsx:374
-#: src/game/Sidebar.tsx:392
+#: src/game/Sidebar.tsx:376
+#: src/game/Sidebar.tsx:394
 #: src/nxm/ArrivalDialog.tsx:158
 #: src/share/ImportFooter.tsx:34
 msgid "New profile"
@@ -2233,7 +2233,7 @@ msgstr "Skipped"
 
 #: src/game/ProfileContextMenu.tsx:47
 #: src/profiles/EditProfileDialog.tsx:437
-#: src/profiles/ProfileRow.tsx:78
+#: src/profiles/ProfileRow.tsx:79
 msgid "Edit profile"
 msgstr "Edit profile"
 
@@ -3078,7 +3078,7 @@ msgstr "Enable and disable mods, and update them for the open profile."
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
-#: src/mods/ProfileHealth.tsx:63
+#: src/mods/ProfileHealth.tsx:32
 msgid "{n, plural, one {# missing requirement} other {# missing requirements}}"
 msgstr "{n, plural, one {# missing requirement} other {# missing requirements}}"
 
@@ -3371,7 +3371,7 @@ msgid "Already has {0}"
 msgstr "Already has {0}"
 
 #: src/mods/Sidebar.tsx:391
-#: src/mods/updateReview/Row.tsx:151
+#: src/mods/updateReview/Row.tsx:153
 msgid "Changelog"
 msgstr "Changelog"
 
@@ -3400,7 +3400,7 @@ msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On 
 msgid "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 msgstr "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 
-#: src/game/Sidebar.tsx:191
+#: src/game/Sidebar.tsx:193
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
@@ -3420,7 +3420,7 @@ msgstr "Created"
 msgid "The game started without errors"
 msgstr "The game started without errors"
 
-#: src/profiles/ProfileRow.tsx:205
+#: src/profiles/ProfileRow.tsx:207
 #: src/settings/prefCopy.ts:149
 #: src/settings/prefCopy.ts:198
 msgid "Hidden"
@@ -4877,7 +4877,7 @@ msgstr "Open on GitHub"
 
 #: src/game/Hero.tsx:168
 #: src/game/NewProfileDialog.tsx:159
-#: src/profiles/ProfileRow.tsx:185
+#: src/profiles/ProfileRow.tsx:187
 msgid "Profile name"
 msgstr "Profile name"
 
@@ -4970,7 +4970,7 @@ msgid "A profile with only {loader}. Add mods from Nexus or from archives."
 msgstr "A profile with only {loader}. Add mods from Nexus or from archives."
 
 #. placeholder {0}: listNames(removed)
-#: src/mods/updateReview/Row.tsx:118
+#: src/mods/updateReview/Row.tsx:119
 msgid "No longer needs {0}"
 msgstr "No longer needs {0}"
 
@@ -5545,7 +5545,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:220
-#: src/mods/updateReview/Row.tsx:167
+#: src/mods/updateReview/Row.tsx:169
 msgid "Open page"
 msgstr "Open page"
 
@@ -5616,7 +5616,7 @@ msgstr "Stamina"
 msgid "Removed {0}"
 msgstr "Removed {0}"
 
-#: src/profiles/ProfileRow.tsx:110
+#: src/profiles/ProfileRow.tsx:111
 msgid "imported from a link"
 msgstr "imported from a link"
 
@@ -6032,7 +6032,7 @@ msgstr "Source code"
 msgid "color"
 msgstr "color"
 
-#: src/profiles/ProfileRow.tsx:112
+#: src/profiles/ProfileRow.tsx:113
 msgid "imported from the game's Mods folder"
 msgstr "imported from the game's Mods folder"
 
@@ -7396,7 +7396,7 @@ msgstr "Could not read the mods: {loadError}"
 msgid "No other profiles with overrides"
 msgstr "No other profiles with overrides"
 
-#: src/profiles/ProfileRow.tsx:113
+#: src/profiles/ProfileRow.tsx:114
 msgid "a copy of {name}"
 msgstr "a copy of {name}"
 
@@ -7863,6 +7863,10 @@ msgstr "Broken or obsolete ({0})"
 #: src/profiles/OverrideRows.tsx:20
 msgid "Show the game log"
 msgstr "Show the game log"
+
+#: src/profiles/HealthCheckBadge.tsx:27
+msgid "{count, plural, one {# thing to repair} other {# things to repair}}"
+msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 
 #: src/launch/VanillaPlay.tsx:178
 #: src/profiles/LaunchPresetsBlock.tsx:44
@@ -8832,8 +8836,8 @@ msgid "Copy to keep"
 msgstr "Copy to keep"
 
 #. placeholder {0}: profile.name
-#: src/profiles/ProfileRow.tsx:231
-#: src/profiles/ProfileRow.tsx:235
+#: src/profiles/ProfileRow.tsx:234
+#: src/profiles/ProfileRow.tsx:238
 msgid "Actions for {0}"
 msgstr "Actions for {0}"
 
@@ -9316,7 +9320,7 @@ msgid "Mortar menu"
 msgstr "Mortar menu"
 
 #: src/game/detailStates.tsx:53
-#: src/game/Sidebar.tsx:389
+#: src/game/Sidebar.tsx:391
 msgid "Manage profiles"
 msgstr "Manage profiles"
 
@@ -10355,7 +10359,7 @@ msgid "Player"
 msgstr "Player"
 
 #: src/firstrunTour/TourPopover.tsx:34
-#: src/game/Sidebar.tsx:332
+#: src/game/Sidebar.tsx:334
 #: src/profiles/ProfilesPage.tsx:337
 #: src/settings/sections/AboutDiagnostics.tsx:96
 #: src/settings/sections/DataUsage.tsx:204
@@ -11177,7 +11181,7 @@ msgstr "Save log…"
 
 #. placeholder {0}: info.name
 #. placeholder {0}: profile.name
-#: src/profiles/ProfileRow.tsx:225
+#: src/profiles/ProfileRow.tsx:228
 #: src/share/ShareShell.tsx:39
 msgid "Share {0}"
 msgstr "Share {0}"
@@ -11291,7 +11295,7 @@ msgstr "Moving data"
 msgid "Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together. Notes travel in a shared .mortar file, not in a share link."
 msgstr "Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together. Notes travel in a shared .mortar file, not in a share link."
 
-#: src/profiles/ProfileRow.tsx:111
+#: src/profiles/ProfileRow.tsx:112
 msgid "imported from a .mortar file"
 msgstr "imported from a .mortar file"
 
@@ -11667,7 +11671,7 @@ msgstr "Open in the tray instead of showing the window"
 
 #: src/commandPalette/paletteLabels.ts:16
 #: src/game/ProfileWorkspace.tsx:141
-#: src/profiles/ProfileRow.tsx:229
+#: src/profiles/ProfileRow.tsx:232
 msgid "Share"
 msgstr "Share"
 

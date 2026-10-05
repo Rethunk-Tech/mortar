@@ -8,6 +8,7 @@ import { PlayControl } from '../launch/PlayControl.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { ProfileHealth } from '../mods/ProfileHealth.tsx'
 import { useNav } from '../nav/store.ts'
+import { HealthCheckBadge } from '../profiles/HealthCheckBadge.tsx'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { QueueButton } from '../queue/QueueButton.tsx'
@@ -150,6 +151,7 @@ function ProfileButton({
       </Box>
       <Box data-control={true} sx={{ position: 'relative', display: 'flex' }}>
         <Badges game={game} profile={profile} onOpen={onOpen} />
+        <HealthCheckBadge game={game} profileId={profile.id} sidebar={true} />
       </Box>
       <Box
         component="span"

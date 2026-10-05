@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -30,6 +31,10 @@ type Service struct {
 	// HealthJournals lists the game's launch journals a crash left behind, and HealthRecover finishes them.
 	HealthJournals func(game string) []string
 	HealthRecover  func() error
+	// HealthEmit sends HealthEvent after each check.
+	HealthEmit func(name string, data any)
+	healthMu   sync.Mutex
+	healthDue  map[string]bool
 }
 
 func NewService(store *Store, home string, settings *settings.Store) *Service {

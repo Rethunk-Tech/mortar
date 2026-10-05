@@ -4,43 +4,12 @@ import { Box, ButtonBase, Tooltip } from '@mui/material'
 import { useState } from 'react'
 import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { HealthHistory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { compact } from '../game/compact.ts'
 import { problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useSettings } from '../settings/store.ts'
 import { healthView } from './badgeDisplay.ts'
 import type { Counts } from './badges.ts'
 import { HealthTooltipContent } from './HealthTooltipContent.tsx'
-
-const pill = {
-  flexShrink: 0,
-  ml: 0.5,
-  px: '7px',
-  py: '1px',
-  borderRadius: '10px',
-  color: '#1b1a17',
-  fontSize: 12,
-  fontWeight: 700,
-}
-
-const sidebarPill = {
-  ...pill,
-  [compact]: {
-    position: 'absolute' as const,
-    top: 1,
-    right: 1,
-    ml: 0,
-    px: '4px',
-    fontSize: 10,
-  },
-  '[data-collapsed="true"] &': {
-    position: 'absolute' as const,
-    top: 1,
-    right: 1,
-    ml: 0,
-    px: '4px',
-    fontSize: 10,
-  },
-}
+import { pill, sidebarPill } from './pills.ts'
 
 export function ProfileHealth({
   counts,

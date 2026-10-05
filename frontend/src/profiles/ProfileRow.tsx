@@ -13,6 +13,7 @@ import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
 import { userModCount } from './count.ts'
 import { EditProfileDialog } from './EditProfileDialog.tsx'
+import { HealthCheckBadge } from './HealthCheckBadge.tsx'
 import { HistoryDialog } from './HistoryDialog.tsx'
 import { ProfileMark } from './ProfileMark.tsx'
 import { useProfiles } from './store.ts'
@@ -117,6 +118,7 @@ function useRowSummary(profile: Profile): string {
 
 export function ProfileRow({ profile }: { profile: Profile }) {
   const { t } = useLingui()
+  const game = useProfiles((s) => s.game?.id ?? '')
   const rename = useProfiles((s) => s.rename)
   const [renaming, setRenaming] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -205,6 +207,7 @@ export function ProfileRow({ profile }: { profile: Profile }) {
                 {t`Hidden`}
               </Box>
             ) : null}
+            <HealthCheckBadge game={game} profileId={profile.id} />
           </Box>
         )}
         {profile.description ? (

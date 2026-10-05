@@ -43,6 +43,9 @@ type Service struct {
 	// Throttle waits for a source's turn to be asked (the download queue's per-source limit) and returns the func that
 	// ends it; nil asks without waiting.
 	Throttle func(ctx context.Context, source string) (release func(), err error)
+	// AfterFirstCheck runs once, when the first problem check has finished: startup has settled by then.
+	AfterFirstCheck func()
+	firstCheck      sync.Once
 
 	mu      sync.Mutex
 	drift   map[string]driftScan
@@ -220,6 +223,9 @@ func (s *Service) installed(gameID, id string) ([]framework.Mod, error) {
 // only an expanded row shows; ConflictEvidence fetches it.
 func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, error) {
 	r, err := s.ProblemsWithEvidence(ctx, gameID, id)
+	if s.AfterFirstCheck != nil {
+		s.firstCheck.Do(s.AfterFirstCheck)
+	}
 	if err != nil {
 		return r, err
 	}

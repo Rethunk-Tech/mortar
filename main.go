@@ -669,7 +669,10 @@ func run() error {
 	)
 	profileSvc.HealthKeep = func() (map[string][]string, error) { return datasvc.KeepSet(profiles, true, keepSources) }
 	profileSvc.HealthJournals = launches.LeftoverJournals
-	profileSvc.HealthRecover = func() error { return launches.RecoverDeploys(context.Background()) }
+	profileSvc.HealthRecover = func() error {
+		_, err := launches.RecoverDeploys(context.Background())
+		return err
+	}
 	dataSvc.Restart = datasvc.RestartSelf
 	dataSvc.OnClearCache = problemsSvc.ForgetCached
 	checkSvc := storecheck.New(storecheck.Deps{
@@ -756,6 +759,10 @@ func run() error {
 	updates.StartBackground(updateCtx, emit)
 	savesSvc.Emit = emit
 	go savesSvc.RunScheduledBackups(updateCtx)
+	settled := make(chan struct{})
+	problemsSvc.AfterFirstCheck = func() { close(settled) }
+	profileSvc.HealthEmit = emit
+	go profileSvc.RunHealthChecks(updateCtx, settled)
 	queueCtx, stopQueue := context.WithCancel(context.Background())
 	launchsvc.SetLife(launches, queueCtx)
 	go storecheck.Run(queueCtx, checkSvc)
@@ -798,9 +805,11 @@ func run() error {
 		log.Printf("game settings restore: %v", err)
 		app.Event.Emit(launchsvc.SettingsRestoreWarningEvent, launchsvc.SettingsRestoreWarning{Error: err.Error()})
 	}
-	if err := launches.RecoverDeploys(queueCtx); err != nil {
+	recovered, err := launches.RecoverDeploys(queueCtx)
+	if err != nil {
 		log.Printf("deploy recovery: %v", err)
 	}
+	profileSvc.FlagHealth(recovered...)
 	for _, id := range implemented {
 		loadersvc.EnsureExisting(loaders, id)
 		launchsvc.SweepOnStart(launches, id)

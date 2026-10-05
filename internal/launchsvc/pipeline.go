@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
@@ -219,15 +220,16 @@ func (dep *deployment) unwind(ctx context.Context) {
 }
 
 // RecoverDeploys finishes the deploy of any launch Mortar did not see end (a crash or a quit while the game ran), for
-// every install whose game is no longer running.
+// every install whose game is no longer running, and returns the games it found such a journal for.
 //
 //wails:ignore
-func (s *Service) RecoverDeploys(ctx context.Context) error {
+func (s *Service) RecoverDeploys(ctx context.Context) ([]string, error) {
 	d, ok := deploy.Get(deployerID)
 	if !ok {
-		return nil
+		return nil, nil
 	}
 	var errs []error
+	var found []string
 	for _, id := range game.Implemented() {
 		g := game.Find(id)
 		for _, sl := range s.slots(g) {
@@ -243,6 +245,9 @@ func (s *Service) RecoverDeploys(ctx context.Context) error {
 				procs, err := s.gameProcs(sl)
 				return err != nil || len(procs) > 0
 			}
+			if sj, err := savesJournal(sl.inst); deploy.HasJournal(dir) || (err == nil && savesiso.HasJournal(sj)) {
+				found = append(found, id)
+			}
 			if err := d.Recover(ctx, dir, alive); err != nil {
 				errs = append(errs, fmt.Errorf("%s: %w", id, err))
 			}
@@ -253,7 +258,7 @@ func (s *Service) RecoverDeploys(ctx context.Context) error {
 			}
 		}
 	}
-	return errors.Join(errs...)
+	return slices.Compact(found), errors.Join(errs...)
 }
 
 // LeftoverJournals lists the deploy and save swap journals of the game's installs that RecoverDeploys would finish:

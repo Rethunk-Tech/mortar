@@ -90,6 +90,7 @@ func (s *Service) ProfileHealth(game, id string) ([]HealthFinding, error) {
 	if out == nil {
 		out = []HealthFinding{}
 	}
+	s.recordHealth(game, id, len(out), time.Now())
 	return out, nil
 }
 
