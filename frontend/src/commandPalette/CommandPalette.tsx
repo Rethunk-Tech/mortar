@@ -143,6 +143,7 @@ function paletteSections(i18n: I18n) {
     { id: 'mods' as const, label: i18n._(msg`Mods and profiles`) },
     { id: 'downloads' as const, label: i18n._(msg`Downloads`) },
     { id: 'accounts' as const, label: i18n._(msg`Accounts`) },
+    { id: 'sources' as const, label: i18n._(msg`Source health`) },
     { id: 'updates' as const, label: i18n._(msg`Updates`) },
     { id: 'notifications' as const, label: i18n._(msg`Notifications`) },
     { id: 'storage' as const, label: i18n._(msg`Storage`) },

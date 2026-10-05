@@ -18,6 +18,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -69,6 +70,38 @@ func (e *RateLimitError) Error() string {
 	return msg
 }
 
+// Rate is the quota GitHub last reported on a response, so Settings can show it without a request of its own.
+type Rate struct {
+	Known     bool      `json:"known"`
+	Limit     int       `json:"limit"`
+	Remaining int       `json:"remaining"`
+	Reset     time.Time `json:"reset"`
+}
+
+var (
+	rateMu   sync.Mutex
+	lastRate Rate
+)
+
+// CurrentRate is the quota from the most recent GitHub response that carried one.
+func CurrentRate() Rate {
+	rateMu.Lock()
+	defer rateMu.Unlock()
+	return lastRate
+}
+
+func noteRate(resp *http.Response) {
+	limit, e1 := strconv.Atoi(resp.Header.Get("X-Ratelimit-Limit"))
+	left, e2 := strconv.Atoi(resp.Header.Get("X-Ratelimit-Remaining"))
+	reset, e3 := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64)
+	if e1 != nil || e2 != nil || e3 != nil {
+		return
+	}
+	rateMu.Lock()
+	lastRate = Rate{Known: true, Limit: limit, Remaining: left, Reset: time.Unix(reset, 0)}
+	rateMu.Unlock()
+}
+
 // RateLimited returns a *RateLimitError when resp is GitHub's limit answer, else nil.
 func RateLimited(resp *http.Response) error {
 	if resp.StatusCode != http.StatusForbidden && resp.StatusCode != http.StatusTooManyRequests {
@@ -105,6 +138,7 @@ func FetchReleases(ctx context.Context, hc *http.Client, url string) ([]Release,
 		return nil, fmt.Errorf("could not reach GitHub: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
+	noteRate(resp)
 	if err := RateLimited(resp); err != nil {
 		return nil, err
 	}
@@ -205,6 +239,7 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 		return err, false
 	}
 	defer func() { _ = resp.Body.Close() }()
+	noteRate(resp)
 	if err := RateLimited(resp); err != nil {
 		return err, false
 	}

@@ -32,6 +32,8 @@ type State struct {
 	LastOK time.Time `json:"lastOK"`
 	// LastFail is when the last network error happened; zero when there has been none.
 	LastFail time.Time `json:"lastFail"`
+	// LastError is the network error behind LastFail; empty once a request succeeds.
+	LastError string `json:"lastError"`
 }
 
 // OnChange is called, when set, after a source flips between reachable and unreachable, so the window need not poll.
@@ -65,9 +67,9 @@ func Record(id string, err error) {
 	was, seen := st.Unreachable, st.ID != ""
 	st.ID = id
 	if err == nil {
-		st.Unreachable, st.LastOK = false, time.Now()
+		st.Unreachable, st.LastOK, st.LastError = false, time.Now(), ""
 	} else {
-		st.Unreachable, st.LastFail = true, time.Now()
+		st.Unreachable, st.LastFail, st.LastError = true, time.Now(), err.Error()
 	}
 	states[id] = st
 	mu.Unlock()

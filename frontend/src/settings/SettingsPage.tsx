@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  Activity,
   Bell,
   Download,
   HardDrive,
@@ -24,6 +25,7 @@ import { Launchers } from './sections/Launchers.tsx'
 import { ModsProfiles } from './sections/ModsProfiles.tsx'
 import { Notifications } from './sections/Notifications.tsx'
 import { ResetAllShortcuts, Shortcuts } from './sections/Shortcuts.tsx'
+import { Sources } from './sections/Sources.tsx'
 import { Storage } from './sections/Storage.tsx'
 import { Updates } from './sections/Updates.tsx'
 
@@ -36,6 +38,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     { id: 'mods', label: t`Mods and profiles`, icon: Package },
     { id: 'downloads', label: t`Downloads`, icon: Download },
     { id: 'accounts', label: t`Accounts`, icon: UserRound },
+    { id: 'sources', label: t`Source health`, icon: Activity },
     { id: 'updates', label: t`Updates`, icon: RefreshCw },
     { id: 'notifications', label: t`Notifications`, icon: Bell, groupEnd: true },
     { id: 'storage', label: t`Storage`, icon: HardDrive },
@@ -49,6 +52,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
     mods: <ModsProfiles />,
     downloads: <Downloads />,
     accounts: <Accounts />,
+    sources: <Sources />,
     updates: <Updates />,
     notifications: <Notifications />,
     storage: <Storage />,

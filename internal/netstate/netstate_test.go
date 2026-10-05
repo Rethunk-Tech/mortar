@@ -3,6 +3,7 @@ package netstate
 import (
 	"context"
 	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -56,5 +57,25 @@ func TestOnChangeFiresOnlyWhenReachabilityFlips(t *testing.T) {
 	Record("nexus", nil)
 	if calls != 3 {
 		t.Fatalf("OnChange called %d times, want 3 (first sight, down, up)", calls)
+	}
+}
+
+func TestRecordKeepsTheLastErrorUntilASuccess(t *testing.T) {
+	Record("thunderstore", &net.DNSError{Err: "no such host", Name: "thunderstore.io"})
+	st := (&Service{}).States()
+	var got State
+	for _, s := range st {
+		if s.ID == "thunderstore" {
+			got = s
+		}
+	}
+	if !got.Unreachable || got.LastError == "" {
+		t.Fatalf("after failure %+v", got)
+	}
+	Record("thunderstore", nil)
+	for _, s := range (&Service{}).States() {
+		if s.ID == "thunderstore" && (s.Unreachable || s.LastError != "") {
+			t.Fatalf("after success %+v", s)
+		}
 	}
 }

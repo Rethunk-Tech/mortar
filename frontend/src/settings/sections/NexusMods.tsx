@@ -20,7 +20,6 @@ import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
-import { NexusMeter } from '../NexusMeter.tsx'
 import { useNexus } from '../nexus.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey } from '../PrefRow.tsx'
@@ -182,20 +181,6 @@ function NexusModsSignedIn({
             label={t`Ask me to endorse mods I keep using`}
           />
         </SettingRow>
-      </SettingsSection>
-      <SettingsSection
-        title={t`API requests`}
-        {...(premium
-          ? {}
-          : {
-              description: t`Free accounts click Download on Nexus for each file; Mortar opens each page in turn.`,
-            })}
-      >
-        <Searchable terms={`${t`API requests`} Nexus ${t`rate limit`}`}>
-          <Box sx={{ px: 2, py: 1.5 }}>
-            <NexusMeter />
-          </Box>
-        </Searchable>
       </SettingsSection>
       <UntrackConfirmDialog
         unused={confirming}

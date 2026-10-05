@@ -7,6 +7,7 @@ const down = (id: string, lastOK: string): State => ({
   unreachable: true,
   lastOK,
   lastFail: '2026-10-05T10:00:00Z',
+  lastError: '',
 })
 
 test('savedAt is the clock time of the last success, empty when there was none', () => {

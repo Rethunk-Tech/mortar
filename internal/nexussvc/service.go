@@ -89,6 +89,11 @@ func (s *Service) GitHubLoggedIn(ctx context.Context) bool {
 	return github.DefaultAuth.LoggedIn(ctx)
 }
 
+// GitHubRate is the quota GitHub last reported; Known is false until a request has been made.
+func (s *Service) GitHubRate() github.Rate {
+	return github.CurrentRate()
+}
+
 // SignIn checks the key against Nexus, then keeps it in the keyring. A rejected key stores nothing.
 func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
 	key = strings.TrimSpace(key)

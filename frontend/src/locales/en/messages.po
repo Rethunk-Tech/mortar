@@ -426,7 +426,7 @@ msgstr "No user mods in either profile."
 msgid "Keep newer"
 msgstr "Keep newer"
 
-#: src/settings/sections/NexusMods.tsx:87
+#: src/settings/sections/NexusMods.tsx:86
 msgid "Untrack mods"
 msgstr "Untrack mods"
 
@@ -831,7 +831,7 @@ msgstr "Resize details"
 msgid "Delete group (mods stay)"
 msgstr "Delete group (mods stay)"
 
-#: src/settings/sections/NexusMods.tsx:155
+#: src/settings/sections/NexusMods.tsx:154
 #: src/shell/NexusAccount.tsx:36
 msgid "Free"
 msgstr "Free"
@@ -905,6 +905,10 @@ msgstr "Rename"
 #: src/share/ImportFooter.tsx:107
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
+
+#: src/settings/sections/Sources.tsx:97
+msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
+msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
 
 #: src/mods/MoveFoldersDialog.tsx:116
 msgid "Don't ask again"
@@ -1058,6 +1062,10 @@ msgstr "Could not dismiss that folder"
 msgid "Could not export the collection draft"
 msgstr "Could not export the collection draft"
 
+#: src/settings/sections/Sources.tsx:57
+msgid "Recheck"
+msgstr "Recheck"
+
 #: src/settings/prefCopy.ts:185
 msgid "Shorter animations. Honour the OS unless you override it."
 msgstr "Shorter animations. Honour the OS unless you override it."
@@ -1128,7 +1136,7 @@ msgstr "{0}/{1} files · {2} / {3}"
 msgid "Bundled with SMAPI"
 msgstr "Bundled with SMAPI"
 
-#: src/settings/sections/NexusMods.tsx:162
+#: src/settings/sections/NexusMods.tsx:161
 msgid "Untrack on Nexus"
 msgstr "Untrack on Nexus"
 
@@ -1393,8 +1401,8 @@ msgstr "Choose an existing bundle or create one."
 msgid "Could not trim save backups"
 msgstr "Could not trim save backups"
 
-#: src/settings/sections/NexusMods.tsx:256
-#: src/settings/sections/NexusMods.tsx:285
+#: src/settings/sections/NexusMods.tsx:241
+#: src/settings/sections/NexusMods.tsx:270
 #: src/shell/NexusAccount.tsx:59
 msgid "Sign in"
 msgstr "Sign in"
@@ -1525,6 +1533,11 @@ msgstr "Could not dismiss the warning"
 #: src/profiles/HealthDialog.tsx:260
 msgid "Repair all"
 msgstr "Repair all"
+
+#. placeholder {0}: sourceLabel(id)
+#: src/settings/sections/Sources.tsx:32
+msgid "Mortar has not asked {0} this session."
+msgstr "Mortar has not asked {0} this session."
 
 #. placeholder {0}: row.folder ?? ''
 #: src/mods/MoveFoldersDialog.tsx:110
@@ -1871,8 +1884,8 @@ msgstr "Host:port"
 msgid "Tell me when a new SMAPI is out"
 msgstr "Tell me when a new SMAPI is out"
 
-#: src/settings/sections/NexusMods.tsx:128
-#: src/settings/sections/NexusMods.tsx:256
+#: src/settings/sections/NexusMods.tsx:127
+#: src/settings/sections/NexusMods.tsx:241
 msgid "Nexus account"
 msgstr "Nexus account"
 
@@ -2390,7 +2403,7 @@ msgstr "Add tool"
 
 #: src/commandPalette/CommandPalette.tsx:142
 #: src/settings/sections/DataImport.tsx:17
-#: src/settings/SettingsPage.tsx:35
+#: src/settings/SettingsPage.tsx:37
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -2420,7 +2433,7 @@ msgid "Lutris"
 msgstr "Lutris"
 
 #: src/commandPalette/CommandPalette.tsx:143
-#: src/settings/SettingsPage.tsx:36
+#: src/settings/SettingsPage.tsx:38
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
 
@@ -2429,6 +2442,7 @@ msgid "Imported {name}"
 msgstr "Imported {name}"
 
 #: src/settings/sections/ItchAccount.tsx:52
+#: src/settings/sections/Sources.tsx:123
 msgid "Account"
 msgstr "Account"
 
@@ -2550,6 +2564,10 @@ msgstr "Mortar checks for updates at startup, on F5, and at most hourly while it
 #: src/mods/updateDigestToast.ts:14
 msgid "{0, plural, one {# update for {1, plural, one {# profile} other {# profiles}}} other {# updates for {2, plural, one {# profile} other {# profiles}}}}"
 msgstr "{0, plural, one {# update for {1, plural, one {# profile} other {# profiles}}} other {# updates for {2, plural, one {# profile} other {# profiles}}}}"
+
+#: src/settings/sections/Sources.tsx:90
+msgid "Not signed in. Add your API key in Accounts."
+msgstr "Not signed in. Add your API key in Accounts."
 
 #: src/game/ExportCollectionMenuItem.tsx:32
 msgid "Collection draft saved"
@@ -2904,7 +2922,7 @@ msgid "Show: {0}"
 msgstr "Show: {0}"
 
 #: src/commandPalette/CommandPalette.tsx:145
-#: src/settings/SettingsPage.tsx:38
+#: src/settings/SettingsPage.tsx:40
 msgid "Accounts"
 msgstr "Accounts"
 
@@ -2938,16 +2956,20 @@ msgstr "It shows in your Steam library the next time Steam starts."
 msgid "Local-only mods kept ({0})"
 msgstr "Local-only mods kept ({0})"
 
-#: src/commandPalette/CommandPalette.tsx:148
+#: src/commandPalette/CommandPalette.tsx:149
 #: src/settings/sections/DataImport.tsx:23
 #: src/settings/sections/DataUsage.tsx:228
-#: src/settings/SettingsPage.tsx:41
+#: src/settings/SettingsPage.tsx:44
 msgid "Storage"
 msgstr "Storage"
 
 #: src/settings/sections/About.tsx:74
 msgid "Licence"
 msgstr "Licence"
+
+#: src/settings/sections/Sources.tsx:34
+msgid "Unreachable"
+msgstr "Unreachable"
 
 #: src/mods/storeEntries.ts:418
 msgid "Updated tags"
@@ -2964,6 +2986,10 @@ msgstr "Update mods before Play on new profiles"
 #: src/console/UpdateNoteTag.tsx:28
 msgid "Not downloadable here"
 msgstr "Not downloadable here"
+
+#: src/settings/sections/Sources.tsx:103
+msgid "API key set for {itch}"
+msgstr "API key set for {itch}"
 
 #: src/settings/sections/DataStoreReport.tsx:289
 msgid "a newer copy is kept"
@@ -3166,7 +3192,7 @@ msgid "Grid card size"
 msgstr "Grid card size"
 
 #. placeholder {0}: result.remaining
-#: src/settings/sections/NexusMods.tsx:66
+#: src/settings/sections/NexusMods.tsx:65
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
@@ -3334,8 +3360,8 @@ msgstr "Could not copy"
 msgid "No performance data was returned."
 msgstr "No performance data was returned."
 
-#: src/settings/sections/NexusMods.tsx:178
-#: src/settings/sections/NexusMods.tsx:182
+#: src/settings/sections/NexusMods.tsx:177
+#: src/settings/sections/NexusMods.tsx:181
 msgid "Ask me to endorse mods I keep using"
 msgstr "Ask me to endorse mods I keep using"
 
@@ -3357,8 +3383,8 @@ msgstr "Extra SMAPI arguments for this profile. Mortar already sets the mods fol
 msgid "Bundle deleted"
 msgstr "Bundle deleted"
 
-#: src/commandPalette/CommandPalette.tsx:150
-#: src/settings/SettingsPage.tsx:43
+#: src/commandPalette/CommandPalette.tsx:151
+#: src/settings/SettingsPage.tsx:46
 msgid "Shortcuts"
 msgstr "Shortcuts"
 
@@ -3707,7 +3733,7 @@ msgstr "From the extra mods folder…"
 msgid "Done"
 msgstr "Done"
 
-#: src/settings/sections/NexusMods.tsx:84
+#: src/settings/sections/NexusMods.tsx:83
 msgid "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 msgstr "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 
@@ -4017,8 +4043,8 @@ msgstr "Folder chosen by you"
 msgid "You started this download on {site}, but you have no {gameName} profile yet."
 msgstr "You started this download on {site}, but you have no {gameName} profile yet."
 
-#: src/commandPalette/CommandPalette.tsx:235
-#: src/commandPalette/CommandPalette.tsx:238
+#: src/commandPalette/CommandPalette.tsx:236
+#: src/commandPalette/CommandPalette.tsx:239
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
 
@@ -4284,6 +4310,7 @@ msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
 #: src/settings/sections/Downloads.tsx:107
+#: src/settings/sections/Sources.tsx:44
 msgid "Connection"
 msgstr "Connection"
 
@@ -4329,6 +4356,10 @@ msgstr "None of this profile's mods are marked broken for the new version."
 #: src/tools/ToolEditorDialog.tsx:121
 msgid "One argument per line. Placeholders: {placeholders}."
 msgstr "One argument per line. Placeholders: {placeholders}."
+
+#: src/settings/sections/Sources.tsx:105
+msgid "API key not set. Itch.io search is off until you add one."
+msgstr "API key not set. Itch.io search is off until you add one."
 
 #: src/mods/NexusAccountActions.tsx:86
 msgid "You chose not to endorse this mod."
@@ -4422,8 +4453,8 @@ msgstr "Could not permanently delete the profile"
 msgid "Heart"
 msgstr "Heart"
 
-#: src/settings/sections/NexusMods.tsx:128
-#: src/settings/sections/NexusMods.tsx:145
+#: src/settings/sections/NexusMods.tsx:127
+#: src/settings/sections/NexusMods.tsx:144
 #: src/shell/NexusAccount.tsx:43
 msgid "Sign out"
 msgstr "Sign out"
@@ -4468,7 +4499,7 @@ msgstr "When Mortar makes a save backup before launching"
 msgid "Settings backups"
 msgstr "Settings backups"
 
-#: src/settings/sections/NexusMods.tsx:173
+#: src/settings/sections/NexusMods.tsx:172
 msgid "Untrack all…"
 msgstr "Untrack all…"
 
@@ -4501,6 +4532,10 @@ msgstr "Install {0}"
 #: src/profiles/HealthDialog.tsx:57
 msgid "Files of {name} changed outside Mortar"
 msgstr "Files of {name} changed outside Mortar"
+
+#: src/settings/sections/Sources.tsx:109
+msgid "No account needed"
+msgstr "No account needed"
 
 #: src/queue/QueueHistory.tsx:166
 msgid "Filter by profile"
@@ -4555,7 +4590,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/queue/QueueButton.tsx:17
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:183
-#: src/settings/SettingsPage.tsx:37
+#: src/settings/SettingsPage.tsx:39
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -5051,7 +5086,7 @@ msgstr "Deprecated packages"
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 msgstr "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 
-#: src/settings/sections/NexusMods.tsx:275
+#: src/settings/sections/NexusMods.tsx:260
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
@@ -5321,7 +5356,7 @@ msgstr "Enter 1 or more"
 #: src/mods/columnLabel.ts:14
 #: src/mods/NexusDetails.tsx:106
 #: src/mods/Sidebar.tsx:512
-#: src/settings/sections/NexusMods.tsx:177
+#: src/settings/sections/NexusMods.tsx:176
 msgid "Endorsements"
 msgstr "Endorsements"
 
@@ -5624,9 +5659,9 @@ msgstr "{queued, plural, one {# already queued} other {# already queued}}"
 msgid "Could not remove the selected mods"
 msgstr "Could not remove the selected mods"
 
-#: src/commandPalette/CommandPalette.tsx:147
+#: src/commandPalette/CommandPalette.tsx:148
 #: src/settings/sections/DataImport.tsx:19
-#: src/settings/SettingsPage.tsx:40
+#: src/settings/SettingsPage.tsx:43
 #: src/toasts/HistoryButton.tsx:140
 #: src/toasts/HistoryButton.tsx:211
 #: src/toasts/ToastHost.tsx:229
@@ -5699,7 +5734,7 @@ msgstr "{0, plural, one {Stopped asking about # folder} other {Stopped asking ab
 #: src/firstrunTour/TourPopover.tsx:186
 #: src/fomod/Dialog.tsx:256
 #: src/profiles/ProfilesPage.tsx:326
-#: src/settings/SettingsPage.tsx:62
+#: src/settings/SettingsPage.tsx:66
 msgid "Back"
 msgstr "Back"
 
@@ -5805,7 +5840,7 @@ msgid "Moon"
 msgstr "Moon"
 
 #: src/settings/sections/ItchAccount.tsx:67
-#: src/settings/sections/NexusMods.tsx:256
+#: src/settings/sections/NexusMods.tsx:241
 msgid "API key"
 msgstr "API key"
 
@@ -5821,7 +5856,7 @@ msgstr "Incompatible version"
 msgid "Share FOMOD choices"
 msgstr "Share FOMOD choices"
 
-#: src/settings/sections/NexusMods.tsx:119
+#: src/settings/sections/NexusMods.tsx:118
 msgid "Untrack every mod you track on Nexus"
 msgstr "Untrack every mod you track on Nexus"
 
@@ -6391,7 +6426,7 @@ msgid "Add a tag"
 msgstr "Add a tag"
 
 #: src/queue/store.ts:120
-#: src/settings/sections/NexusMods.tsx:235
+#: src/settings/sections/NexusMods.tsx:220
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
 
@@ -6416,12 +6451,16 @@ msgstr "Update ready: applies when you close Mortar."
 msgid "Default mods view"
 msgstr "Default mods view"
 
+#: src/settings/sections/Sources.tsx:40
+msgid "Reachable"
+msgstr "Reachable"
+
 #: src/profiles/EditProfileDialog.tsx:193
 #: src/settings/sections/Appearance.tsx:83
 msgid "Colour"
 msgstr "Colour"
 
-#: src/settings/sections/NexusMods.tsx:85
+#: src/settings/sections/NexusMods.tsx:84
 msgid "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus? Nexus has no undo for this.} other {Untrack all # tracked {gameName} mods on Nexus? Nexus has no undo for this.}}"
 msgstr "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus? Nexus has no undo for this.} other {Untrack all # tracked {gameName} mods on Nexus? Nexus has no undo for this.}}"
 
@@ -6452,6 +6491,10 @@ msgstr "{0}: {1}"
 #: src/settings/sections/SyncFolder.tsx:30
 msgid "Sync folder"
 msgstr "Sync folder"
+
+#: src/settings/sections/Sources.tsx:116
+msgid "No account"
+msgstr "No account"
 
 #. placeholder {0}: formatCount(page.downloads, i18n.locale)
 #. placeholder {1}: formatCount(page.uniqueDownloads, i18n.locale)
@@ -6561,6 +6604,10 @@ msgstr "Preparing transfer…"
 #: src/settings/prefCopy.ts:312
 msgid "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
 msgstr "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
+
+#: src/settings/sections/Sources.tsx:137
+msgid "Request counts appear after Mortar talks to GitHub."
+msgstr "Request counts appear after Mortar talks to GitHub."
 
 #: src/settings/sections/AboutDiagnostics.tsx:185
 #: src/settings/sections/AboutDiagnostics.tsx:231
@@ -7099,6 +7146,11 @@ msgstr "Title"
 msgid "Open Saves"
 msgstr "Open Saves"
 
+#: src/commandPalette/CommandPalette.tsx:146
+#: src/settings/SettingsPage.tsx:41
+msgid "Source health"
+msgstr "Source health"
+
 #. placeholder {0}: e.label
 #: src/settings/sections/Notifications.tsx:83
 msgid "{0}: desktop notification"
@@ -7188,7 +7240,7 @@ msgstr "Manage templates"
 msgid "Could not track"
 msgstr "Could not track"
 
-#: src/settings/sections/NexusMods.tsx:140
+#: src/settings/sections/NexusMods.tsx:139
 msgid "Signed out of Nexus"
 msgstr "Signed out of Nexus"
 
@@ -7459,9 +7511,9 @@ msgstr "{remaining} of {limit} left today; the count resets {when}."
 msgid " {winnerName} wins; {losers} overridden."
 msgstr " {winnerName} wins; {losers} overridden."
 
-#: src/commandPalette/CommandPalette.tsx:149
+#: src/commandPalette/CommandPalette.tsx:150
 #: src/settings/sections/Launchers.tsx:23
-#: src/settings/SettingsPage.tsx:42
+#: src/settings/SettingsPage.tsx:45
 msgid "Launchers"
 msgstr "Launchers"
 
@@ -7659,7 +7711,7 @@ msgstr "Something went wrong"
 msgid "already listed"
 msgstr "already listed"
 
-#: src/settings/sections/NexusMods.tsx:73
+#: src/settings/sections/NexusMods.tsx:72
 msgid "Could not untrack mods"
 msgstr "Could not untrack mods"
 
@@ -7777,7 +7829,7 @@ msgstr "Archive contents"
 msgid "Mod or event"
 msgstr "Mod or event"
 
-#: src/settings/sections/NexusMods.tsx:123
+#: src/settings/sections/NexusMods.tsx:122
 msgid "Untrack every {gameName} mod on Nexus"
 msgstr "Untrack every {gameName} mod on Nexus"
 
@@ -8253,7 +8305,7 @@ msgid "Set as default"
 msgstr "Set as default"
 
 #. placeholder {0}: result.untracked
-#: src/settings/sections/NexusMods.tsx:61
+#: src/settings/sections/NexusMods.tsx:60
 msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
@@ -8320,6 +8372,11 @@ msgstr "Dark"
 #: src/settings/sections/DataUsage.tsx:272
 msgid "Open folder"
 msgstr "Open folder"
+
+#: src/settings/sections/Sources.tsx:139
+#: src/settings/sections/Sources.tsx:156
+msgid "Requests"
+msgstr "Requests"
 
 #: src/settings/sections/Shortcuts.tsx:110
 msgid "Reset every shortcut?"
@@ -8432,6 +8489,10 @@ msgstr "Their folders are removed from this profile. You can undo this."
 msgid "Clear filter"
 msgstr "Clear filter"
 
+#: src/settings/sections/Sources.tsx:118
+msgid "Signed in"
+msgstr "Signed in"
+
 #: src/shell/FlatpakGrant.tsx:39
 msgid "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
 msgstr "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
@@ -8518,10 +8579,10 @@ msgstr "Could not enable {0}"
 msgid "Slate"
 msgstr "Slate"
 
-#: src/commandPalette/CommandPalette.tsx:146
+#: src/commandPalette/CommandPalette.tsx:147
 #: src/game/Hero.tsx:239
 #: src/mods/SlowStartupSection.tsx:73
-#: src/settings/SettingsPage.tsx:39
+#: src/settings/SettingsPage.tsx:42
 msgid "Updates"
 msgstr "Updates"
 
@@ -8726,6 +8787,11 @@ msgstr "This update changed its install options. Your earlier picks are kept whe
 msgid "Move up"
 msgstr "Move up"
 
+#. placeholder {0}: formatWhen(state.lastFail)
+#: src/settings/sections/Sources.tsx:37
+msgid "Failed {0}: {error}"
+msgstr "Failed {0}: {error}"
+
 #: src/queue/QueueBody.tsx:140
 msgid "Open download page"
 msgstr "Open download page"
@@ -8869,6 +8935,10 @@ msgstr "SMAPI UniqueID"
 #: src/mods/describe.ts:171
 msgid "{name} is deprecated on Thunderstore."
 msgstr "{name} is deprecated on Thunderstore."
+
+#: src/settings/sections/Sources.tsx:120
+msgid "Not set up"
+msgstr "Not set up"
 
 #: src/profiles/OverrideRows.tsx:24
 #: src/settings/prefCopy.ts:226
@@ -9080,7 +9150,7 @@ msgstr "Auto-enable requirements"
 msgid "Enabled"
 msgstr "Enabled"
 
-#: src/settings/sections/NexusMods.tsx:155
+#: src/settings/sections/NexusMods.tsx:154
 #: src/shell/NexusAccount.tsx:36
 msgid "Premium"
 msgstr "Premium"
@@ -9719,6 +9789,10 @@ msgstr "Dependency"
 msgid "Could not check the profile"
 msgstr "Could not check the profile"
 
+#: src/settings/sections/Sources.tsx:31
+msgid "Not contacted yet"
+msgstr "Not contacted yet"
+
 #: src/game/detailStates.tsx:50
 msgid "All profiles are hidden"
 msgstr "All profiles are hidden"
@@ -9754,7 +9828,7 @@ msgstr "Include"
 #: src/commandPalette/paletteLabels.ts:23
 #: src/mods/ModDetail.tsx:146
 #: src/mods/problemText.ts:44
-#: src/settings/SettingsPage.tsx:61
+#: src/settings/SettingsPage.tsx:65
 #: src/shell/AppMenu.tsx:115
 #: src/shell/TitleBar.tsx:120
 msgid "Settings"
@@ -9792,7 +9866,7 @@ msgstr "Pinned: {0}"
 msgid "Unpin version"
 msgstr "Unpin version"
 
-#: src/settings/sections/NexusMods.tsx:160
+#: src/settings/sections/NexusMods.tsx:159
 msgid "Tracking"
 msgstr "Tracking"
 
@@ -10126,8 +10200,8 @@ msgstr "Pick the computer showing the code, then type it."
 msgid "Play the open profile without SMAPI"
 msgstr "Play the open profile without SMAPI"
 
-#: src/commandPalette/CommandPalette.tsx:151
-#: src/settings/SettingsPage.tsx:44
+#: src/commandPalette/CommandPalette.tsx:152
+#: src/settings/SettingsPage.tsx:47
 msgid "About"
 msgstr "About"
 
@@ -10211,6 +10285,10 @@ msgstr "Move down (wins files)"
 #: src/browse/BrowseBody.tsx:117
 msgid "Clear search"
 msgstr "Clear search"
+
+#: src/settings/sections/Sources.tsx:38
+msgid "Could not be reached: {error}"
+msgstr "Could not be reached: {error}"
 
 #: src/mods/describe.ts:53
 msgid "{name} is obsolete: {summary}"
@@ -10629,7 +10707,7 @@ msgstr "Source"
 #: src/commandPalette/CommandPalette.tsx:141
 #: src/settings/sections/DataImport.tsx:29
 #: src/settings/sections/Shortcuts.tsx:166
-#: src/settings/SettingsPage.tsx:34
+#: src/settings/SettingsPage.tsx:36
 msgid "General"
 msgstr "General"
 
@@ -10678,7 +10756,7 @@ msgstr "Show mod"
 msgid "Closing the window hides Mortar instead of quitting."
 msgstr "Closing the window hides Mortar instead of quitting."
 
-#: src/settings/sections/NexusMods.tsx:191
+#: src/settings/sections/Sources.tsx:160
 msgid "Free accounts click Download on Nexus for each file; Mortar opens each page in turn."
 msgstr "Free accounts click Download on Nexus for each file; Mortar opens each page in turn."
 
@@ -10712,7 +10790,8 @@ msgid "SMAPI {0} is out"
 msgstr "SMAPI {0} is out"
 
 #: src/firstrun/NexusStep.tsx:26
-#: src/settings/sections/NexusMods.tsx:151
+#: src/settings/sections/NexusMods.tsx:150
+#: src/settings/sections/Sources.tsx:87
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
@@ -10729,11 +10808,6 @@ msgstr "Check for updates"
 #: src/mods/DuplicateDialog.tsx:39
 msgid "Gets update checks."
 msgstr "Gets update checks."
-
-#: src/settings/sections/NexusMods.tsx:187
-#: src/settings/sections/NexusMods.tsx:194
-msgid "API requests"
-msgstr "API requests"
 
 #: src/firstrun/LoaderStep.tsx:32
 #: src/loader/InstallSteps.tsx:10
@@ -11487,10 +11561,6 @@ msgstr "Sort: name"
 msgid "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 msgstr "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 
-#: src/settings/sections/NexusMods.tsx:194
-msgid "rate limit"
-msgstr "rate limit"
-
 #: src/mods/problemFix/RestoreButton.tsx:17
 #: src/mods/problemFixButtons.tsx:213
 #: src/saves/BackupsDialog.tsx:224
@@ -11542,7 +11612,7 @@ msgstr "{0}'s farm ({1}) was last played with mods this profile lacks or has dis
 msgid "{0, plural, one {Deleted # backup} other {Deleted # backups}}, freed {1}"
 msgstr "{0, plural, one {Deleted # backup} other {Deleted # backups}}, freed {1}"
 
-#: src/settings/sections/NexusMods.tsx:121
+#: src/settings/sections/NexusMods.tsx:120
 msgid "{trackedCount, plural, one {# {gameName} mod tracked on Nexus} other {# {gameName} mods tracked on Nexus}}"
 msgstr "{trackedCount, plural, one {# {gameName} mod tracked on Nexus} other {# {gameName} mods tracked on Nexus}}"
 
@@ -11594,7 +11664,7 @@ msgstr "Steam must be installed and signed in for this game. Install Steam, sign
 msgid "What Mortar does when the game starts, then restore when it exits."
 msgstr "What Mortar does when the game starts, then restore when it exits."
 
-#: src/settings/sections/NexusMods.tsx:168
+#: src/settings/sections/NexusMods.tsx:167
 msgid "Untrack unused…"
 msgstr "Untrack unused…"
 
@@ -11905,7 +11975,12 @@ msgstr "Decide later"
 msgid "Start with a copy of my current saves"
 msgstr "Start with a copy of my current saves"
 
-#: src/commandPalette/CommandPalette.tsx:221
+#. placeholder {0}: formatWhen(state.lastOK)
+#: src/settings/sections/Sources.tsx:41
+msgid "Last answered {0}"
+msgstr "Last answered {0}"
+
+#: src/commandPalette/CommandPalette.tsx:222
 #: src/firstrunTour/TourPopover.tsx:66
 msgid "Command palette"
 msgstr "Command palette"
@@ -11956,6 +12031,10 @@ msgstr "Set category…"
 #: src/install/DownloadsDialog.tsx:254
 msgid "Choose an archive first."
 msgstr "Choose an archive first."
+
+#: src/settings/sections/Sources.tsx:96
+msgid "Using your gh login"
+msgstr "Using your gh login"
 
 #: src/settings/sections/General.tsx:128
 #: src/settings/sections/General.tsx:134
@@ -12010,7 +12089,7 @@ msgstr "Switch profile"
 msgid " · "
 msgstr " · "
 
-#: src/settings/sections/NexusMods.tsx:265
+#: src/settings/sections/NexusMods.tsx:250
 msgid "Personal API key"
 msgstr "Personal API key"
 
@@ -12036,17 +12115,29 @@ msgstr "Last played"
 msgid "Nothing to trim yet."
 msgstr "Nothing to trim yet."
 
+#. placeholder {0}: rate.remaining
+#. placeholder {1}: rate.limit
+#. placeholder {2}: formatWhen(rate.reset)
+#: src/settings/sections/Sources.tsx:136
+msgid "{0} of {1} requests left · resets {2}"
+msgstr "{0} of {1} requests left · resets {2}"
+
 #: src/settings/shortcutLabels.ts:15
 msgid "Focus the previous mod"
 msgstr "Focus the previous mod"
 
-#: src/settings/sections/NexusMods.tsx:81
+#: src/settings/sections/NexusMods.tsx:80
 msgid "Untrack mods?"
 msgstr "Untrack mods?"
 
 #: src/tools/ToolsManageDialog.tsx:88
 msgid "This tool will be removed from Mortar."
 msgstr "This tool will be removed from Mortar."
+
+#. placeholder {0}: sourceLabel(id)
+#: src/settings/sections/Sources.tsx:53
+msgid "Could not recheck {0}"
+msgstr "Could not recheck {0}"
 
 #: src/settings/prefCopy.ts:387
 msgid "Sidebar profile order"
