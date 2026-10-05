@@ -35,7 +35,9 @@ interface AutoUpdatePlan {
 }
 
 function planAutoUpdates(updates: Update[], pinned: ReadonlySet<string>): AutoUpdatePlan {
-  const selected = updates.filter((update) => !pinned.has(update.key) && installableUpdate(update))
+  const selected = updates.filter(
+    (update) => !(pinned.has(update.key) || update.switch) && installableUpdate(update),
+  )
   return {
     updates: selected,
     wants: selected.map(updateWant),

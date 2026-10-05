@@ -189,7 +189,7 @@ export const updatesForReview = (
 
 export const installableUpdate = (u: Update): boolean =>
   (!u.unofficial || gamePrefs(useSettings.getState()).smapiBuilds === 'include') &&
-  (u.githubRepo !== '' || u.nexusId > 0)
+  (u.githubRepo !== '' || u.nexusId > 0 || !!u.package)
 
 export const updateCount = (
   result: UpdatesResult | null,

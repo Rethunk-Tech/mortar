@@ -62,6 +62,11 @@ export function Row({
         ]
       : []),
     ...(update.unofficial ? [t`Unofficial`] : []),
+    ...(update.switch
+      ? [
+          t`From ${update.source}, not the site you installed it from. Updating switches its source.`,
+        ]
+      : []),
     ...(update.githubFallback && !update.githubRepo
       ? [t`From GitHub (${update.githubFallback}) when its release matches, else Nexus`]
       : []),

@@ -15,12 +15,14 @@ import { optionalUpdateWants, useOptionalSkips } from '../optionalFiles.ts'
  * version first, since a free Nexus account must click for every file. */
 export const updateWant = (u: Update): Want => ({
   kind: 'update',
-  ...(u.githubRepo
-    ? { repo: u.githubRepo }
-    : {
-        modId: u.nexusId,
-        ...(u.githubFallback ? { fallbackRepo: u.githubFallback, fallbackId: u.id } : {}),
-      }),
+  ...(u.package
+    ? { package: u.package }
+    : u.githubRepo
+      ? { repo: u.githubRepo }
+      : {
+          modId: u.nexusId,
+          ...(u.githubFallback ? { fallbackRepo: u.githubFallback, fallbackId: u.id } : {}),
+        }),
   name: u.name,
   version: u.version,
   currentKey: u.key,

@@ -173,7 +173,7 @@ func (s *Service) installed(gameID, id string) ([]Installed, error) {
 	mods := make([]Installed, len(installed))
 	for i, m := range installed {
 		mods[i] = Installed{
-			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, Enabled: m.Enabled, Folder: m.Folder,
+			Key: m.Key, SourceKind: m.Source.Kind, SourceVersion: m.Source.Version, SourceName: m.Source.Name, SourceRepo: m.Source.Repo, Enabled: m.Enabled, Folder: m.Folder,
 			Pinned: m.Pinned, SkipVersion: m.SkipVersion, SkipSources: m.SkipSources, IgnoreUpdates: m.IgnoreUpdates,
 			UpdateChannel: m.UpdateChannel,
 			LoadAfter:     m.LoadAfter, Manifest: m.Manifest,
@@ -504,17 +504,18 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 	c, ok := s.updates[key]
 	s.mu.Unlock()
 	if ok && !fresh && c.fingerprint == fp && time.Since(c.at) < updatesTTL {
-		return hideUpdates(c.result, mods, s.settings.Get(), gameID), nil
+		return hideUpdates(c.result, mods, s.settings.Get()), nil
 	}
 	set := s.settings.Get()
 	r := checkUpdates(ctx, s.metaFor(gameID), env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
 	s.fixStaleManifests(gameID, id, r.Held)
+	r.Updates = append(r.Updates, s.thunderstoreUpdates(ctx, gameID, mods, r.Updates)...)
 	if !r.Unknown {
 		s.mu.Lock()
 		s.updates[key] = cachedUpdates{fp, time.Now(), r}
 		s.mu.Unlock()
 	}
-	return hideUpdates(r, mods, set, gameID), nil
+	return hideUpdates(r, mods, set), nil
 }
 
 // fixStaleManifests sets each manifest whose download is already the suggested version to that version, so SMAPI
@@ -540,7 +541,7 @@ func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
 	}
 }
 
-func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings, gameID string) UpdatesResult {
+func hideUpdates(r UpdatesResult, mods []Installed, set settings.Settings) UpdatesResult {
 	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.SmapiBuilds)
 }
 
@@ -574,7 +575,7 @@ func (s *Service) visibleUpdateCount(gameID, id string, env Environment, mods []
 	if !ok || c.fingerprint != fp {
 		return 0
 	}
-	return len(hideUpdates(c.result, mods, s.settings.Get(), gameID).Updates)
+	return len(hideUpdates(c.result, mods, s.settings.Get()).Updates)
 }
 
 // UpdateWarning is the Play dialog after a game update: the last launched Stardew version versus the installed one.

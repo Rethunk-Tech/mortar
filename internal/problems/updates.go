@@ -58,6 +58,11 @@ type Update struct {
 	GitHubFallback string `json:"githubFallback,omitempty"`
 	Unofficial     bool   `json:"unofficial"`
 	Source         string `json:"source"`
+	// Package is the Thunderstore "Namespace-Name" the update installs.
+	Package string `json:"package,omitempty"`
+	// Switch marks an update from a source other than the one the mod was installed from. It is offered, never
+	// applied on its own.
+	Switch bool `json:"switch,omitempty"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,
