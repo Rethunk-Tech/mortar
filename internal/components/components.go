@@ -81,6 +81,9 @@ type GameInfo struct {
 	Enabled bool `json:"enabled"`
 	// Marker is a file every install of the game holds, at its root or one "game" folder down.
 	Marker string `json:"marker"`
+	// R2modmanFolder is r2modman's own folder name for the game (the Thunderstore schema's internalFolderName), the
+	// parent of its profiles folder.
+	R2modmanFolder string `json:"r2modmanFolder,omitempty"`
 	// Metadata names the SMAPI-derived features that apply to the game: smapi-updates, smapi-compat, stardew-dataset.
 	Metadata []string `json:"metadata"`
 	// Paths names folders and files outside the install by role (saves, startupPreferences).

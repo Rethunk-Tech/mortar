@@ -131,6 +131,16 @@ func ByNexusDomain(domain string) (string, bool) {
 	return "", false
 }
 
+// ByR2modmanFolder is the catalog game that r2modman keeps under the folder name, enabled or not.
+func ByR2modmanFolder(name string) (string, bool) {
+	for _, g := range Catalog() {
+		if g.R2modmanFolder != "" && g.R2modmanFolder == name {
+			return g.ID, true
+		}
+	}
+	return "", false
+}
+
 // NexusTitle is how Nexus knows the game with this id, from the catalog's nexus source.
 func NexusTitle(id string) (nexus.Title, error) {
 	g, ok := catalogGame(id)

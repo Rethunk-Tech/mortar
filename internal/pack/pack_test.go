@@ -92,7 +92,7 @@ func TestFormats(t *testing.T) {
 		{"code by key", Code{URL: srv.URL}, Input{Text: key}, Draft{Name: "Friends", Game: "lethal-company"}, false},
 		{"r2z file", Code{}, Input{Path: filepath.Join(dir, "x.r2z")}, Draft{}, true},
 		{"zip path escape", Code{}, Input{Path: evil}, Draft{}, true},
-		{"profile folder", Profile{}, Input{Path: prof}, Draft{Name: "Mine", Game: "LethalCompany", Packages: []Ref{{Source: thunderstore, Native: "Alice-MoreCompany", Version: "1.2.3", Disabled: true}}}, false},
+		{"profile folder", Profile{GameByFolder: func(f string) (string, bool) { return "lethal-company", f == "LethalCompany" }}, Input{Path: prof}, Draft{Name: "Mine", Game: "lethal-company", Packages: []Ref{{Source: thunderstore, Native: "Alice-MoreCompany", Version: "1.2.3", Disabled: true}}}, false},
 		{"modpack", Modpack{}, Input{Path: pack}, Draft{Name: "Pack", Packages: []Ref{mod, {Source: thunderstore, Native: "BepInEx-BepInExPack", Version: "5.4.2100"}}}, false},
 	}
 	for _, tc := range tests {

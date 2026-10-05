@@ -203,3 +203,12 @@ func TestRequire(t *testing.T) {
 		t.Fatalf("unknown = %v", err)
 	}
 }
+
+func TestByR2modmanFolderNamesTheCatalogGame(t *testing.T) {
+	if id, ok := ByR2modmanFolder("LethalCompany"); !ok || id != "lethal-company" {
+		t.Fatalf("got %q %v", id, ok)
+	}
+	if _, ok := ByR2modmanFolder("Nope"); ok {
+		t.Fatal("unknown folder matched")
+	}
+}

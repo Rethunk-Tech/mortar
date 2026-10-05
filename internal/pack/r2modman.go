@@ -166,7 +166,11 @@ func parseR2Zip(data []byte) (Draft, error) {
 }
 
 // Profile reads an r2modman profile folder, <data>/<Game>/profiles/<name>, which holds mods.yml. It reads only.
-type Profile struct{}
+type Profile struct {
+	// GameByFolder maps r2modman's folder name for a game to the catalog game id (game.ByR2modmanFolder); nil or a
+	// miss leaves the folder name in Draft.Game.
+	GameByFolder func(folder string) (string, bool)
+}
 
 // ID names the format.
 func (Profile) ID() string { return "r2modman-profile" }
@@ -177,9 +181,9 @@ func (Profile) Detect(in Input) bool {
 	return in.Path != "" && err == nil && !st.IsDir()
 }
 
-// Parse reads mods.yml and the profile's BepInEx/config files. Game is r2modman's own folder name for the game
-// (for example "LethalCompany"), not a Thunderstore community key.
-func (Profile) Parse(_ context.Context, in Input) (Draft, error) {
+// Parse reads mods.yml and the profile's BepInEx/config files. Game is the catalog id when GameByFolder knows
+// r2modman's folder name for the game (for example "LethalCompany"), else that folder name.
+func (p Profile) Parse(_ context.Context, in Input) (Draft, error) {
 	raw, err := fsx.ReadFile(filepath.Join(in.Path, "mods.yml"))
 	if err != nil {
 		return Draft{}, err
@@ -189,6 +193,9 @@ func (Profile) Parse(_ context.Context, in Input) (Draft, error) {
 		return Draft{}, fmt.Errorf("reading mods.yml: %w", err)
 	}
 	d := Draft{Name: filepath.Base(in.Path), Game: filepath.Base(filepath.Dir(filepath.Dir(in.Path))), Packages: refs(mods)}
+	if id, ok := p.lookup(d.Game); ok {
+		d.Game = id
+	}
 	cfg := filepath.Join(in.Path, "BepInEx", "config")
 	entries, _ := os.ReadDir(cfg)
 	for _, e := range entries {
@@ -221,4 +228,11 @@ func DataDirs() []string {
 		}
 	}
 	return out
+}
+
+func (p Profile) lookup(folder string) (string, bool) {
+	if p.GameByFolder == nil {
+		return "", false
+	}
+	return p.GameByFolder(folder)
 }

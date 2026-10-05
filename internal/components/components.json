@@ -96,6 +96,7 @@
       "name": "Lethal Company",
       "enabled": false,
       "marker": "Lethal Company.exe",
+      "r2modmanFolder": "LethalCompany",
       "metadata": [],
       "paths": {
         "saves": { "windows": "{localLow}/ZeekerssRBLX/Lethal Company" }
