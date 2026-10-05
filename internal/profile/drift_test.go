@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func writeTimed(t *testing.T, path, body string, when time.Time) {
@@ -366,5 +367,36 @@ func TestListStoreItemMatchesSeparateWalks(t *testing.T) {
 		if _, ok := got.files[f]; !ok {
 			t.Fatalf("one walk is missing %s", f)
 		}
+	}
+}
+
+// A store item is listed once: the listing survives a restart until the item's folder is replaced.
+func TestStoreListingKeptAcrossStarts(t *testing.T) {
+	testfs.DataHome(t)
+	reset := func() {
+		storeListings.Lock()
+		storeListings.byPath, storeListings.loaded, storeListings.dirty = map[string]storeListing{}, false, false
+		storeListings.Unlock()
+	}
+	reset()
+	t.Cleanup(reset)
+	peer := t.TempDir()
+	writeTimed(t, filepath.Join(peer, "sub", "a.dll"), "a", time.Time{})
+	first, err := storeListingFor(peer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	saveStoreListings()
+	reset()
+	// Removing a nested file leaves the item folder's own mtime alone, so only a kept listing still names it.
+	if err := os.Remove(filepath.Join(peer, "sub", "a.dll")); err != nil {
+		t.Fatal(err)
+	}
+	got, err := storeListingFor(peer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := got.files[filepath.Join("sub", "a.dll")]; !ok || got.stat != first.stat {
+		t.Fatalf("after a restart the item was listed again: %+v", got)
 	}
 }

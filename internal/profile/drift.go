@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -159,8 +161,8 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 	return st, err
 }
 
-// storeListing is a store item's file list and stats. Store items do not change once installed, so
-// they are listed once per process (again only if the item's folder is replaced) instead of every scan.
+// storeListing is a store item's file list and stats. Store items do not change once installed, so a listing is
+// kept on disk across starts and measured again only if the item's folder is replaced.
 type storeListing struct {
 	modTime int64
 	files   map[string]struct{}
@@ -170,7 +172,90 @@ type storeListing struct {
 var storeListings = struct {
 	sync.Mutex
 	byPath map[string]storeListing
+	loaded bool
+	dirty  bool
 }{byPath: map[string]storeListing{}}
+
+// diskListing is a storeListing as the listings cache file holds it.
+type diskListing struct {
+	ModTime int64
+	Files   []string
+	Stat    FolderStat
+}
+
+func storeListingsPath() (string, error) {
+	base, err := datadir.Dir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(base, "cache", "store-listings.gob"), nil
+}
+
+// loadStoreListingsLocked reads the listings cache once per process; an unreadable one is measured again.
+func loadStoreListingsLocked() {
+	if storeListings.loaded {
+		return
+	}
+	storeListings.loaded = true
+	path, err := storeListingsPath()
+	if err != nil {
+		return
+	}
+	raw, err := fsx.ReadFile(path)
+	if err != nil {
+		return
+	}
+	var disk map[string]diskListing
+	if gob.NewDecoder(bytes.NewReader(raw)).Decode(&disk) != nil {
+		return
+	}
+	for peer, d := range disk {
+		if _, ok := storeListings.byPath[peer]; ok {
+			continue
+		}
+		files := make(map[string]struct{}, len(d.Files))
+		for _, f := range d.Files {
+			files[f] = struct{}{}
+		}
+		storeListings.byPath[peer] = storeListing{modTime: d.ModTime, files: files, stat: d.Stat}
+	}
+}
+
+// saveStoreListings writes the listings measured since the last write.
+func saveStoreListings() {
+	storeListings.Lock()
+	if !storeListings.dirty {
+		storeListings.Unlock()
+		return
+	}
+	disk := make(map[string]diskListing, len(storeListings.byPath))
+	for peer, l := range storeListings.byPath {
+		// A collected store item's listing goes with it.
+		if _, err := os.Stat(peer); err != nil {
+			delete(storeListings.byPath, peer)
+			continue
+		}
+		disk[peer] = diskListing{ModTime: l.modTime, Files: slices.Collect(maps.Keys(l.files)), Stat: l.stat}
+	}
+	storeListings.dirty = false
+	storeListings.Unlock()
+	path, err := storeListingsPath()
+	if err != nil {
+		return
+	}
+	var buf bytes.Buffer
+	if err := gob.NewEncoder(&buf).Encode(disk); err != nil {
+		return
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return
+	}
+	if err := datadir.WriteFile(path, buf.Bytes(), 0o600); err != nil {
+		storeListings.Lock()
+		storeListings.dirty = true
+		storeListings.Unlock()
+	}
+}
 
 func storeListingFor(peer string) (storeListing, error) {
 	info, err := os.Stat(peer)
@@ -182,6 +267,7 @@ func storeListingFor(peer string) (storeListing, error) {
 	}
 	stamp := info.ModTime().UnixNano()
 	storeListings.Lock()
+	loadStoreListingsLocked()
 	cached, ok := storeListings.byPath[peer]
 	storeListings.Unlock()
 	if ok && cached.modTime == stamp {
@@ -194,8 +280,14 @@ func storeListingFor(peer string) (storeListing, error) {
 	listing.modTime = stamp
 	storeListings.Lock()
 	storeListings.byPath[peer] = listing
+	storeListings.dirty = true
 	storeListings.Unlock()
 	return listing, nil
+}
+
+func storeFiles(peer string) (map[string]struct{}, error) {
+	listing, err := storeListingFor(peer)
+	return listing.files, err
 }
 
 // listStoreItem is relFiles and walkFolderStat of a store item in one walk.
@@ -219,11 +311,6 @@ func listStoreItem(root string) (storeListing, error) {
 		return nil
 	})
 	return out, err
-}
-
-func storeFiles(peer string) (map[string]struct{}, error) {
-	listing, err := storeListingFor(peer)
-	return listing.files, err
 }
 
 // relFiles lists the files under root by path relative to it, from directory entries alone.
@@ -429,6 +516,7 @@ func (s *Store) unplaceKeys(game, id string, keys []string) error {
 }
 
 func (s *Store) liveDriftState(game, id string) (Profile, string, map[string]string, map[string]FolderStat, error) {
+	defer saveStoreListings()
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return Profile{}, "", nil, nil, err
