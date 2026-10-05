@@ -3,7 +3,7 @@
 # summary line is the check.
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
-out=$(bunx biome check --error-on-warnings . 2>&1)
+out=$(bun run --silent lint:biome 2>&1)
 status=$?
 printf '%s\n' "$out"
 [[ $status -eq 0 ]] && ! grep -Eq '^Found [0-9]+ infos?\.' <<<"$out"
