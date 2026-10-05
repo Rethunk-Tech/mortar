@@ -25,6 +25,7 @@ const defaults: Settings = {
   launchersConfirmed: false,
   loaders: {},
   dismissed: {},
+  thunderstoreHandleLinks: null,
   nexusUserId: 0,
   nexusName: '',
   nexusPremium: false,
