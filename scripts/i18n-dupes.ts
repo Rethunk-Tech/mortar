@@ -1,9 +1,42 @@
-// Fails when two msgids in the English catalog say the same thing: they differ only in case, punctuation or placeholder
+// Fails when two messages in the source say the same thing: they differ only in case, punctuation or placeholder
 // names. "…" and "?" stay significant, since a control that opens a dialog and the dialog's title are two messages.
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+// The messages are extracted from the source into a scratch catalog, so a committed catalog that is behind cannot hide
+// one.
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 
-const CATALOG = resolve(import.meta.dir, '../frontend/src/locales/en/messages.po')
+const FRONTEND = resolve(import.meta.dir, '../frontend')
+
+function extractedCatalog(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'mortar-i18n-'))
+  try {
+    const config = join(dir, 'lingui.config.mjs')
+    writeFileSync(
+      config,
+      `export default ${JSON.stringify({
+        rootDir: FRONTEND,
+        sourceLocale: 'en',
+        locales: ['en'],
+        catalogs: [{ path: join(dir, '{locale}', 'messages'), include: [join(FRONTEND, 'src')] }],
+      })}\n`,
+    )
+    const run = Bun.spawnSync(
+      [join(FRONTEND, 'node_modules/.bin/lingui'), 'extract', '--config', config],
+      {
+        cwd: FRONTEND,
+        stdout: 'ignore',
+        stderr: 'inherit',
+      },
+    )
+    if (!run.success) {
+      throw new Error('i18n: lingui extract failed')
+    }
+    return readFileSync(join(dir, 'en', 'messages.po'), 'utf8')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+}
 
 function msgids(po: string): string[] {
   const ids: string[] = []
@@ -30,7 +63,7 @@ function normalise(id: string): string | null {
     return null
   }
   return flat
-    .replace(/[.,:;!'"‘’“”]/g, '')
+    .replace(/[.,:;!'"‘’“”—–·()]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
 }
@@ -48,7 +81,7 @@ function duplicates(ids: string[]): string[][] {
 }
 
 if (import.meta.main) {
-  const dupes = duplicates(msgids(readFileSync(CATALOG, 'utf8')))
+  const dupes = duplicates(msgids(extractedCatalog()))
   for (const group of dupes) {
     console.error(
       `i18n: one message written ${group.length} ways: ${group.map((g) => JSON.stringify(g)).join(' | ')}`,
