@@ -2,7 +2,8 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Card, Chip, Typography } from '@mui/material'
 import { ExternalLink } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { usePending } from '../toasts/usePending.ts'
@@ -18,7 +19,7 @@ import {
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
 import { CardAction } from './CardAction.tsx'
-import { cardState, isActive, shownState } from './cardState.ts'
+import { cardState, inProfile, isActive, shownState } from './cardState.ts'
 
 // One badge per source the mod is on; the filled one is where Add installs from.
 function SourceBadges({
@@ -88,7 +89,13 @@ function ResultCard(props: ResultCardProps) {
   const choices = [primary, ...(item.alts ?? [])]
   const [picked, setPicked] = useState(item.source)
   const { source, id, url } = choices.find((c) => c.source === picked) ?? primary
-  const installed = choices.some((c) => c.installed)
+  // The profile's own entries are the live word: the search result's flag is only as new as the search, so it counts
+  // only until the profile changes.
+  const profile = useProfiles(openProfileOf)
+  const searchedUpdated = useRef(profile?.updated)
+  const held = inProfile(profile, source, id)
+  const installed =
+    held || (choices.some((c) => c.installed) && profile?.updated === searchedUpdated.current)
   const stats = useStats(item)
   const live = cardState(items, source, id, profileID)
   // A free account's click on Mod Manager Download is not ours to see; the card waits for its nxm item.
@@ -100,6 +107,16 @@ function ResultCard(props: ResultCardProps) {
       setWatched(true)
     }
   }, [queueState])
+  // A mod removed again (Undo from the bell) is no longer one this card watched arrive.
+  const wasHeld = useRef(false)
+  useEffect(() => {
+    if (held) {
+      wasHeld.current = true
+    } else if (wasHeld.current) {
+      wasHeld.current = false
+      setWatched(false)
+    }
+  }, [held])
   const shown = shownState(queueState, installed, watched)
   const add = () => {
     if (source === GITHUB) {

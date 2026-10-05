@@ -1,3 +1,4 @@
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 
 type CardState =
@@ -86,5 +87,21 @@ function isActive(state: CardState): boolean {
   return ACTIVE.has(state.kind)
 }
 
+// Whether the profile's entries hold the mod, by the entry's own source: Nexus by mod id, GitHub by repository, any
+// other source by the package name it was installed under (the same rule as the backend's browse.Holdings).
+function inProfile(profile: Profile | undefined, source: string, id: string): boolean {
+  const want = id.toLowerCase()
+  return (profile?.entries ?? []).some((e) => {
+    const src = e.source
+    if (src.kind !== source) {
+      return false
+    }
+    if (source === 'nexus') {
+      return String(src.modId) === id
+    }
+    return ((source === 'github' ? src.repo : src.name) ?? '').toLowerCase() === want
+  })
+}
+
 export type { CardState }
-export { cardState, isActive, shownState }
+export { cardState, inProfile, isActive, shownState }
