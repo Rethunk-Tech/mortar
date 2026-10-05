@@ -309,8 +309,8 @@ function DirectDialog() {
       title={t`Steam was not found`}
       body={
         ask?.profile === ''
-          ? t`Mortar can start ${{ name: gameName }} directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
-          : t`Mortar can start ${{ name: 'SMAPI' }} directly instead. The Steam overlay and Steam's playtime tracking will not work while you play this way.`
+          ? t`Mortar can start ${{ name: gameName }} directly instead, without the Steam overlay or Steam's playtime tracking.`
+          : t`Mortar can start ${{ name: 'SMAPI' }} directly instead, without the Steam overlay or Steam's playtime tracking.`
       }
       confirmLabel={t`Launch without Steam`}
       onCancel={() => answer(false)}

@@ -88,7 +88,7 @@ export function ProfileStep({ game }: { game: GameId }) {
               {t`Import from the game's Mods folder`}
             </Typography>
             <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-              {t`Copy the mods already in ${gameName}'s Mods folder into a new profile. Nothing in the game folder is moved or changed.`}
+              {t`Copy the mods already in ${gameName}'s Mods folder into a new profile. The game folder is not changed.`}
             </Typography>
             <Box sx={{ flex: 1 }} />
             <Button variant="contained" onClick={() => setImportOpen(true)} size="large">
@@ -149,7 +149,7 @@ export function ProfileStep({ game }: { game: GameId }) {
           </Box>
           <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`From a shared link`}</Typography>
           <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-            {t`Someone sent you a Mortar link? You see what it holds first. Mods from Nexus need your Nexus sign-in, which Mortar asks for then.`}
+            {t`Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then.`}
           </Typography>
           <TextField
             fullWidth={true}

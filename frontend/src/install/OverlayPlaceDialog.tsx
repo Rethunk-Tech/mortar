@@ -95,7 +95,7 @@ export function OverlayPlaceDialog() {
       <DialogTitle>{t`Place ${file}`}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" sx={{ mb: 1.5 }}>
-          {t`This optional file has no manifest; it replaces files of ${overlay.baseLabel}. Mortar could not tell where its files go. Pick the folder to take from it and the folder of the main mod it goes into.`}
+          {t`This optional file has no manifest and replaces files of ${overlay.baseLabel}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into.`}
         </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 2 }}>
           <FolderPick

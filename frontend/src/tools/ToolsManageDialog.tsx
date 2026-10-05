@@ -44,7 +44,7 @@ export function ToolsManageDialog({
         <DialogContent>
           {tools.length === 0 ? (
             <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No tools yet`}>
-              {t`Add a program you run alongside the game, such as a save editor or a map viewer.`}
+              {t`Add a program to run alongside the game, such as a save editor or map viewer.`}
             </EmptyState>
           ) : null}
           <List dense={true}>

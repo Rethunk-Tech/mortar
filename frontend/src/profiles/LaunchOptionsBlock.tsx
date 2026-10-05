@@ -146,7 +146,7 @@ function LaunchOptionsBlock({
         error={launchError?.field === 'settings'}
         helperText={
           (launchError?.field === 'settings' && launchError.message) ||
-          t`One VAR=value per line; applies to direct launches only. Steam launches do not receive these settings.`
+          t`One VAR=value per line, for direct launches only; Steam launches ignore them.`
         }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />

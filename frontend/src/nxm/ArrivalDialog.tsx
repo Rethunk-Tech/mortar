@@ -90,8 +90,8 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
     text = t`Loading profiles…`
   } else if (profiles.length === 0) {
     text = canCreate
-      ? t`You started this download on ${site}. There is no profile to put it in yet; create one first.`
-      : t`You started this download on ${site}, but there is no ${gameName} profile to put it in yet.`
+      ? t`You started this download on ${site}. Create a profile to put it in first.`
+      : t`You started this download on ${site}, but you have no ${gameName} profile yet.`
   }
   return (
     <Dialog

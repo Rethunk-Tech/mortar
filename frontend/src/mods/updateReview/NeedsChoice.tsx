@@ -15,7 +15,7 @@ export function NeedsChoice(props: ComponentProps<typeof ReviewList>) {
         {t`Needs your choice (${props.list.length})`}
       </Typography>
       <Typography sx={{ px: 3, fontSize: 13, color: 'text.secondary' }}>
-        {t`These come from a different site than the one you installed them from. Update all leaves them out.`}
+        {t`These come from a different site than you installed them from. Update all skips them.`}
       </Typography>
       <ReviewList {...props} />
     </>

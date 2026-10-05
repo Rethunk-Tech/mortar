@@ -407,7 +407,7 @@ function FileTab({
     <>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, p: '18px 24px' }}>
         <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-          {t`A .mortar file holds the same mods as the link, plus the settings files (.json) each mod has written. Send it to someone, and they open it from Mortar's Import.`}
+          {t`A .mortar file holds the link's mods plus each mod's settings files (.json). Send it; they open it from Mortar's Import.`}
         </Typography>
         <IncludeOptions value={include} onChange={onInclude} file={true} />
         <Box>

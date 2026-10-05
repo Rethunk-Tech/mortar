@@ -60,7 +60,7 @@ function ResetInstallDialog({
     <ConfirmDialog
       open={open}
       title={t`Reset game install?`}
-      body={t`This deletes the game folder at ${folder}, including every file in it, SMAPI, and any mods placed there. Saves are not in this folder and will be kept. Profiles' mods are stored separately by Mortar and will be kept.`}
+      body={t`This deletes the game folder at ${folder}, with every file in it, including SMAPI and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept.`}
       confirmLabel={t`Reset install`}
       color="error"
       busy={busy}

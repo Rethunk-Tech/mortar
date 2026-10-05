@@ -36,7 +36,7 @@ function CacheClearDialog({
       title={t`Clear cache?`}
       body={
         <>
-          {t`Clears cached Nexus and SMAPI details and problem scans. Use it if an API key was revoked or the details look wrong. Mortar fetches them again as needed, so the next problem check takes longer.`}
+          {t`Clears cached Nexus and SMAPI details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower.`}
           {info === null ? null : (
             <Box component="span" sx={{ display: 'block', mt: 1, wordBreak: 'break-all' }}>
               {t`${size} in ${path}`}

@@ -16,7 +16,7 @@ export function SyncFolder() {
   return (
     <SettingRow
       label={t`Sync folder`}
-      description={t`Profile settings, mod lists and configs are written here and offered to your other machines that use the same folder (through Syncthing, Dropbox or a NAS). Mod files are not copied; each machine gets them from their sources. Off by default.`}
+      description={t`Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through Syncthing, Dropbox or a NAS). Mod files are not copied; each machine downloads them from their sources. Off by default.`}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography noWrap={true} title={folder} sx={{ maxWidth: 360 }}>

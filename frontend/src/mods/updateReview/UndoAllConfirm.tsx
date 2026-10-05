@@ -33,7 +33,7 @@ export function UndoAllConfirm() {
       }}
     >
       <Typography sx={{ fontSize: 13, mb: 1 }}>
-        {t`The profile changed after the updates. Restoring it from before Update all reverts these too:`}
+        {t`Restoring from before Update all also reverts these later changes:`}
       </Typography>
       {(target?.later ?? []).map((e) => (
         <Typography key={e.id} sx={{ fontSize: 13 }} color="text.secondary">

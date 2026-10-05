@@ -286,7 +286,7 @@ function ConsoleEmpty() {
       icon={<SquareTerminal size={40} aria-hidden={true} />}
       title={t`No game output yet`}
     >
-      {t`Play this profile and SMAPI's log shows here as it runs. Every run is kept, so you can look back at it later.`}
+      {t`Play this profile and SMAPI's log shows here as it runs. Every run is kept.`}
     </EmptyState>
   )
 }

@@ -109,7 +109,7 @@ function LaunchLine({
     <>
       <Typography sx={{ fontSize: 22, fontWeight: 700 }}>{t`One step in Steam`}</Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
-        {t`On Windows, Steam starts the game without ${loader} unless you tell it otherwise. With Steam closed, Mortar can set it for you; or in Steam, right-click ${gameName}, choose Properties, and paste this line into Launch Options:`}
+        {t`On Windows, Steam starts the game without ${loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click ${gameName}, choose Properties and paste this line into Launch Options:`}
       </Typography>
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Box

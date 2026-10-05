@@ -19,7 +19,7 @@ export function NexusStep({ onDone }: { onDone: () => void }) {
     <Panel>
       <Typography variant="h6" component="h2">{t`Sign in to Nexus Mods`}</Typography>
       <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-        {t`Mod Manager Download buttons on Nexus Mods only work in Mortar when you are signed in.`}
+        {t`Mod Manager Download on Nexus Mods only works in Mortar when you are signed in.`}
       </Typography>
       <NexusSignIn />
       <Box role="status">

@@ -92,10 +92,10 @@ export function BugReportDialog() {
             control={
               <Checkbox checked={diagnostics} onChange={(e) => setDiagnostics(e.target.checked)} />
             }
-            label={t`Attach diagnostics (a zip of Mortar's checks, logs and settings with secrets and your home folder removed; you drag it into the issue)`}
+            label={t`Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)`}
           />
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-            {t`This opens a new issue on GitHub with these filled in; you can review everything before posting.`}
+            {t`Opens a GitHub issue with these filled in. You review it before posting.`}
           </Typography>
         </DialogContent>
         <DialogActions>

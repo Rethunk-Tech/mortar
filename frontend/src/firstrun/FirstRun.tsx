@@ -74,7 +74,7 @@ export function FirstRun() {
           {t`Welcome to Mortar`}
         </Typography>
         <Typography sx={{ fontSize: 17, textAlign: 'center' }}>
-          {t`Mortar finds your games through the launchers that installed them. You set up each game when you first open it.`}
+          {t`Mortar finds games through their launchers. Set each one up when you first open it.`}
         </Typography>
       </Box>
       <Box sx={{ width: 'min(1200px, 100%)' }}>
@@ -92,7 +92,7 @@ export function FirstRun() {
         <Typography sx={{ fontSize: 14, color: 'text.secondary', flex: 1 }}>
           {found > 0
             ? t`${found} of ${plural(launchers.length, { one: '# launcher', other: '# launchers' })} found.`
-            : t`No launchers found. You can still continue and choose each game's folder when you open it.`}
+            : t`No launchers found. Continue and choose each game's folder when you open it.`}
         </Typography>
         <Button variant="contained" disabled={busy} onClick={finish} size="large" sx={{ px: 4 }}>
           {t`Continue`}

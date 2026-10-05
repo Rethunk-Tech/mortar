@@ -36,7 +36,7 @@ function overwriteMessage(snaps: Snap[], have: Set<string>): string {
   const hit = snaps.filter((s) => have.has(s.folder)).map((s) => s.farm || s.folder)
   if (hit.length === 0) {
     return i18n._(
-      msg`None of ${names.join(', ')} are in Saves yet; they will be added. A backup of the current Saves folder is made first.`,
+      msg`None of ${names.join(', ')} are in Saves yet; they will be added. The current Saves folder is backed up first.`,
     )
   }
   return i18n._(

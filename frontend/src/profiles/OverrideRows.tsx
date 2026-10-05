@@ -81,7 +81,7 @@ export function OverridesSection({
             </Select>
             {key === 'updateModsBeforePlayDefault' && !premium ? (
               <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
-                {t`Free Nexus accounts must click each download on Nexus; those updates will not block Play.`}
+                {t`Free Nexus accounts click each download on Nexus; those updates do not block Play.`}
               </Typography>
             ) : null}
           </FormControl>

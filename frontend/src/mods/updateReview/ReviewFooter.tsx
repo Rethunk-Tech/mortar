@@ -43,8 +43,8 @@ export function ReviewFooter({
           <ShieldCheck size={18} aria-hidden={true} />
         </Box>
         <Typography sx={{ fontSize: 13, lineHeight: 1.45, color: 'text.secondary' }}>
-          {t`Update downloads a mod's new file from Nexus or GitHub. For other pages, download the archive and drop it on this window: Mortar updates the mod in place, keeps its settings, and backs up your saves first. Roll back any mod later from its details.`}{' '}
-          {t`Mortar checks for updates at startup, when you press F5, and at most once an hour while it is running.`}
+          {t`Update downloads the new file from Nexus or GitHub. For other pages, drop the downloaded archive on this window. Either way Mortar updates the mod in place, keeps its settings and backs up your saves first. Roll back later from the mod's details.`}{' '}
+          {t`Mortar checks for updates at startup, on F5, and at most hourly while it runs.`}
         </Typography>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>

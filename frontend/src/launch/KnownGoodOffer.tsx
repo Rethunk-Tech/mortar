@@ -50,7 +50,7 @@ export function KnownGoodOffer() {
           kind: 'success',
           title: i18n._(msg`The game started without errors`),
           body: i18n._(
-            msg`Mark these mods known good, so History can put them back if a later change breaks the game.`,
+            msg`Mark these mods known good so History can restore them if a later change breaks the game.`,
           ),
           action: {
             label: i18n._(msg`Mark known good`),

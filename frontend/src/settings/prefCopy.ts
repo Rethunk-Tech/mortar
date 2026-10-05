@@ -95,7 +95,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
     enableRequirements: {
       label: i18n._(msg`Auto-enable requirements`),
       description: i18n._(
-        msg`When you switch a mod on, also enable its required mods already in the profile`,
+        msg`When you enable a mod, also enable its required mods already in the profile`,
       ),
       options: [
         { value: 'always', label: i18n._(msg`Always`) },
@@ -230,9 +230,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
     },
     extraModsFolder: {
       label: i18n._(msg`Extra mods folder`),
-      description: i18n._(
-        msg`A folder of unpacked mods you can add to a profile from the Add menu`,
-      ),
+      description: i18n._(msg`A folder of unpacked mods to add from the Add menu`),
     },
     showDotHiddenMods: {
       label: i18n._(msg`Show hidden mods`),
@@ -377,7 +375,7 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
     offerNewDownloads: {
       label: i18n._(msg`Offer new downloads`),
       description: i18n._(
-        msg`Show a notice when a new mod archive lands in your Downloads folder or Mortar's download folder, with a button to add it`,
+        msg`Offer to add new mod archives that land in your Downloads folder or Mortar's download folder`,
       ),
     },
   }
@@ -447,7 +445,7 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
     showAdultContent: {
       label: i18n._(msg`Show adult mods in browse`),
       description: i18n._(
-        msg`Mods their site marks as adult stay hidden from browse unless this is on. Installed mods are never hidden.`,
+        msg`Browse hides mods their site marks as adult unless this is on. Installed mods are never hidden.`,
       ),
     },
     verifyNexusMD5: {

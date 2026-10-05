@@ -58,7 +58,7 @@ function MeasureBanner({ onCancel }: { onCancel: () => void }) {
       }
     >
       <AlertTitle>{t`The next launch will be measured`}</AlertTitle>
-      {t`Press Play. Mortar samples the game until the title screen and skips the intro animation; the results, with a Sampled column, appear here when the title screen is reached.`}
+      {t`Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column.`}
     </Alert>
   )
 }

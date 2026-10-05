@@ -35,7 +35,7 @@ function WatchFolders() {
   return (
     <SettingRow
       label={t`Also watch these folders`}
-      description={t`New .zip, .7z and .rar files that land in them are offered for install, like the download folder. Subfolders are not watched.`}
+      description={t`New .zip, .7z and .rar files that land in them are offered for install. Subfolders are not watched.`}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
         {folders.map((dir) => (

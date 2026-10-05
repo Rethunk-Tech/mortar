@@ -77,7 +77,7 @@ export function FlatpakGrant() {
       <ConfirmDialog
         open={ask}
         title={t`Grant Flatpak Steam access?`}
-        body={t`This runs the command below once for your user. Steam will then be able to read Mortar's data folder.`}
+        body={t`This runs the command below once for your user, so Steam can read Mortar's data folder.`}
         confirmLabel={t`Grant access`}
         onCancel={() => setAsk(false)}
         onConfirm={() => {

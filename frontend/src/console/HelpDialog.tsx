@@ -201,7 +201,7 @@ export function HelpDialog({ game }: { game: string }) {
 
   let body: string | null = null
   if (log === '') {
-    body = t`There is no SMAPI log for this profile yet. Play this profile once, then try again.`
+    body = t`No SMAPI log for this profile yet. Play it once, then try again.`
   } else if (log === null) {
     body = t`Reading the log…`
   }

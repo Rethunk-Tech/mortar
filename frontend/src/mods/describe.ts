@@ -18,7 +18,7 @@ export function useDescribeDrift(): (d: Drift) => string {
       .join(', ') || key
   return (d) => {
     if (d.kind === 'unknown') {
-      return t`Mortar did not install ${d.folder}. It was added to this profile's mods folder by hand.`
+      return t`${d.folder} was added to this profile's mods folder by hand, not installed by Mortar.`
     }
     const name = entryName(d.key)
     if (d.kind === 'deleted') {

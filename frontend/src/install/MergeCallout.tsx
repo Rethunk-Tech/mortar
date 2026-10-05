@@ -39,7 +39,7 @@ export function MergeCallout({ item }: { item: Item }) {
     <Callout
       item={item}
       label={t`Another file from a mod you have`}
-      text={t`This file comes from the same Nexus page as ${ask.label}. Install it together with that mod so they update as one, or as a separate mod.`}
+      text={t`This file is from the same Nexus page as ${ask.label}. Install it with that mod to update them as one, or as a separate mod.`}
       actions={null}
     >
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', flexWrap: 'wrap' }}>

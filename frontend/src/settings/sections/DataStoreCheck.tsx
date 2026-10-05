@@ -72,7 +72,7 @@ export function StoreCheckRow() {
   return (
     <SettingRow
       label={t`Check store files`}
-      description={t`Compares every stored mod's files with what was saved when it was added. Mortar also does this slowly in the background, about once a week.`}
+      description={t`Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly.`}
       block={true}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

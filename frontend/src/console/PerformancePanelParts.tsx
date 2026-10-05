@@ -285,7 +285,7 @@ export function PerformanceEmpty({
       }
     >
       {running
-        ? t`Measure while you play, then show a report of the mods that take the most time each frame.`
+        ? t`Measure while you play, then report the mods that take the most time per frame.`
         : t`Start the game with this profile, then measure here while you play.`}
     </EmptyState>
   )

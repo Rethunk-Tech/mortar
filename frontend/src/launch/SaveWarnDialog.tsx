@@ -43,7 +43,7 @@ export function SaveWarnDialog() {
         <DialogContentText>
           {recorded
             ? t`This save was last played with ${plural(missing.length, { one: '# mod this profile lacks', other: '# mods this profile lacks' })} (${listed}).`
-            : t`${save?.farmer ?? ''}'s farm (${save?.folder ?? ''}) was last played with mods this profile does not have on. Loading it without them can lose their items or break the save.`}
+            : t`${save?.farmer ?? ''}'s farm (${save?.folder ?? ''}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save.`}
         </DialogContentText>
         {recorded ? null : (
           <List dense={true} sx={{ mt: 1 }}>

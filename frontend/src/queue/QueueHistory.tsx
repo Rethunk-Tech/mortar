@@ -191,7 +191,7 @@ export function HistoryList({
           open={confirmClear}
           color="error"
           title={t`Clear download history?`}
-          body={t`This clears the list of past downloads. In-progress downloads are not affected. Failed items lose Retry until you download them again.`}
+          body={t`Clears the list of past downloads; downloads in progress are unaffected. Failed items lose Retry until downloaded again.`}
           confirmLabel={t`Clear history`}
           onCancel={() => setConfirmClear(false)}
           onConfirm={() =>
