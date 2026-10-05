@@ -17,6 +17,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/deps"
+	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -27,6 +29,20 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
+// The checks' own names for what frameworks report.
+type (
+	Installed        = framework.Mod
+	SettingHint      = framework.SettingHint
+	Cleanup          = framework.Cleanup
+	AssetConflict    = framework.AssetConflict
+	ConflictEvidence = framework.ConflictEvidence
+	AssetTarget      = contentpatcher.AssetTarget
+	WhoChangesPage   = contentpatcher.WhoChangesPage
+	AssetMapPage     = contentpatcher.AssetMapPage
+	Redundant        = framework.Redundant
+	ModRef           = framework.ModRef
+)
+
 // Meta is the slice of meta.Client the checks use.
 type Meta interface {
 	Lookup(ctx context.Context, uniqueID string) ([]meta.Ref, error)
@@ -34,30 +50,6 @@ type Meta interface {
 	PageRequirements(ctx context.Context, domain string, pageID int) ([]meta.Requirement, error)
 	Collection(ctx context.Context, domain, slug string, revision int) (meta.Collection, error)
 	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []meta.UpdateResult
-}
-
-// Installed is one mod of the profile.
-type Installed struct {
-	Key string
-	// SourceKind is the entry's source: "local" for an archive, "smapi" for the loader's own mods, "mortar" for the console bridge, "nexus" for a download.
-	SourceKind string
-	// SourceVersion is the version of the download the entry came from (a Nexus file's version). Authors
-	// often leave some manifests of a multi-part download unbumped, so it can be newer than Version.
-	SourceVersion string
-	// SourceName and SourceRepo are the entry's source name (a Thunderstore "Namespace-Name") and GitHub repo.
-	SourceName    string
-	SourceRepo    string
-	Enabled       bool
-	Pinned        bool
-	SkipVersion   string
-	SkipSources   []string
-	IgnoreUpdates bool
-	UpdateChannel string
-	// LoadAfter is mod ids this pack should load after when the user made it win an edit conflict.
-	LoadAfter []mod.ID
-	// Folder is the mod's directory in the profile, used to read Content Patcher content.json.
-	Folder string
-	manifest.Manifest
 }
 
 // Environment says what the profile runs on, for the broken-mod check.
@@ -137,31 +129,6 @@ type Broken struct {
 	Replacement *Ref   `json:"replacement,omitempty"`
 }
 
-// SettingHint is a Content Patcher compatibility setting that is not enabled for the profile.
-type SettingHint struct {
-	Key         string   `json:"key"`
-	ID          mod.ID   `json:"id"`
-	Name        string   `json:"name"`
-	Field       string   `json:"field"`
-	Current     string   `json:"current"`
-	Suggested   []string `json:"suggested"`
-	For         []mod.ID `json:"for"`
-	ForNames    []string `json:"forNames"`
-	Description string   `json:"description"`
-	// Variant marks a picker (a palette, recolour or similar choice) whose values the pack maps to mods.
-	// CurrentFor names the mod the current value is for when that mod is not enabled.
-	Variant    bool   `json:"variant"`
-	CurrentFor string `json:"currentFor"`
-}
-
-// Cleanup is a framework mod that no enabled mod currently needs.
-type Cleanup struct {
-	Key    string `json:"key"`
-	ID     mod.ID `json:"id"`
-	Name   string `json:"name"`
-	Reason string `json:"reason,omitempty"`
-}
-
 // Damaged is a mod whose stored files no longer match what was stored: files went missing, changed or appeared.
 // Files names the first few.
 type Damaged struct {
@@ -237,27 +204,13 @@ func meets(version, minimum string) bool {
 
 // Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error.
 func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Result {
-	clearPackValidated()
-	defer clearPackValidated()
 	enabled := slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool { return !x.Enabled })
-	packCount := 0
-	for _, inst := range enabled {
-		if inst.ContentPackFor != "" {
-			packCount++
-		}
-	}
-	var timings []CheckTiming
-	parseStart := time.Now()
-	preloadContentPacks(enabled)
-	timings = append(timings, CheckTiming{Name: "contentPatcher", Ms: time.Since(parseStart).Milliseconds(), Count: packCount})
-	conflictStart := time.Now()
-	conflicts, conflictSettings, shadowed := assetConflictScan(enabled)
-	timings = append(timings, CheckTiming{Name: "conflicts", Ms: time.Since(conflictStart).Milliseconds(), Count: packCount})
+	found, timings := runFrameworks(framework.Input{Enabled: enabled, All: mods})
 	r := Result{
 		Missing:        []Missing{},
 		Broken:         []Broken{},
-		AssetConflicts: conflicts,
-		Redundant:      shadowed,
+		AssetConflicts: found.AssetConflicts,
+		Redundant:      found.Redundant,
 		Drift:          []profile.Drift{},
 		Timings:        timings,
 	}
@@ -271,13 +224,33 @@ func Check(ctx context.Context, m Meta, env Environment, mods []Installed) Resul
 	r.Missing = missing
 	otherStart := time.Now()
 	r.Duplicates = duplicatesWithNexus(ctx, m, enabled)
-	r.Settings = append(compatibilitySettings(enabled), conflictSettings...)
-	r.Cleanup = cleanupHints(mods)
+	r.Settings = found.Settings
+	r.Cleanup = cleanupHints(mods, found.Cleanup)
 	broken, unknown := brokenMods(ctx, m, env, enabled)
 	r.Broken = broken
 	r.Unknown = r.Unknown || unknown
 	r.Timings = append(r.Timings, CheckTiming{Name: "others", Ms: time.Since(otherStart).Milliseconds(), Count: len(r.Duplicates) + len(r.Broken) + len(r.Cleanup)})
 	return r
+}
+
+// runFrameworks runs the analyzers of the frameworks present in the profile and merges what they find, timing each.
+func runFrameworks(in framework.Input) (framework.Findings, []CheckTiming) {
+	var all framework.Findings
+	var timings []CheckTiming
+	for _, f := range framework.Present(in.Enabled) {
+		start := time.Now()
+		got := f.Analyze(in)
+		timings = append(timings, CheckTiming{
+			Name:  "framework:" + f.ID().Local(),
+			Ms:    time.Since(start).Milliseconds(),
+			Count: len(slices.DeleteFunc(slices.Clone(in.Enabled), func(m Installed) bool { return !f.Matches(m) })),
+		})
+		all.AssetConflicts = append(all.AssetConflicts, got.AssetConflicts...)
+		all.Settings = append(all.Settings, got.Settings...)
+		all.Cleanup = append(all.Cleanup, got.Cleanup...)
+		all.Redundant = append(all.Redundant, got.Redundant...)
+	}
+	return all, timings
 }
 
 func logCheckTimings(profileID string, timings []CheckTiming) {

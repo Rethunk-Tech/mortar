@@ -1,4 +1,4 @@
-package problems
+package contentpatcher
 
 import (
 	"bytes"
@@ -14,11 +14,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-func conflictEvidence(kind string, hits []packHit) []ConflictEvidence {
-	out := []ConflictEvidence{}
+func conflictEvidence(kind string, hits []packHit) []framework.ConflictEvidence {
+	out := []framework.ConflictEvidence{}
 	var bounds [][]patchBounds
 	for _, hit := range hits {
 		patches, clashes := hit.edits, hit.clashes
@@ -29,7 +30,7 @@ func conflictEvidence(kind string, hits []packHit) []ConflictEvidence {
 			if clashes != nil && !clashes[i] {
 				continue
 			}
-			e := ConflictEvidence{
+			e := framework.ConflictEvidence{
 				PackName: hit.name,
 				PackID:   hit.id,
 				Source:   patch.source,
@@ -232,7 +233,7 @@ func sourceCrop(p cpPatch, ox, oy, ow, oh int) (int, int, int, int) {
 	return fx + (ox - tx), fy + (oy - ty), ow, oh
 }
 
-func cropPackImage(root, fromFile string, x, y, w, h int) (string, error) {
+func CropPackImage(root, fromFile string, x, y, w, h int) (string, error) {
 	raw, ok := readPackPath(root, fromFile)
 	if !ok {
 		return "", errors.New("missing image")

@@ -11,6 +11,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 )
 
 func TestFootprintsJoinAssemblyWritesAndHarmonyReplaces(t *testing.T) {
@@ -35,9 +36,9 @@ func TestFootprintsJoinAssemblyWritesAndHarmonyReplaces(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(folder, "Mod.dll"), dll, 0o600); err != nil {
 			t.Fatal(err)
 		}
-		mods = append(mods, fromDisk(Installed{Key: id, Folder: folder, Enabled: true, UniqueID: id, Name: id, EntryDll: "Mod.dll"}))
+		mods = append(mods, packs.FromDisk(Installed{Key: id, Folder: folder, Enabled: true, UniqueID: id, Name: id, EntryDll: "Mod.dll"}))
 	}
-	mods = append(mods, fromDisk(Installed{Key: "escape", Folder: profile, Enabled: true, UniqueID: "C.Escape", EntryDll: "../Mod.dll"}))
+	mods = append(mods, packs.FromDisk(Installed{Key: "escape", Folder: profile, Enabled: true, UniqueID: "C.Escape", EntryDll: "../Mod.dll"}))
 
 	fp := footprints(mods, launchsvc.LatestReplaces(profile))
 

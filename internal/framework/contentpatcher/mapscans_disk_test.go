@@ -1,6 +1,10 @@
-package problems
+package contentpatcher
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/framework"
+)
 
 func TestMapScansPersistAndPruneUninstalledFolders(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
@@ -12,7 +16,7 @@ func TestMapScansPersistAndPruneUninstalledFolders(t *testing.T) {
 	mapScans.loaded, mapScans.dirty = true, true
 	mapScans.Unlock()
 
-	flushMapScans([]Installed{{Folder: "/mods/a"}})
+	flushMapScans([]framework.Mod{{Folder: "/mods/a"}})
 
 	mapScans.Lock()
 	mapScans.byPath, mapScans.loaded = map[string]mapScan{}, false

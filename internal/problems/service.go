@@ -14,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -263,8 +265,8 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	s.mu.Unlock()
 
 	r, err := s.shareCheck(ctx, checkKey, func() Result {
-		skipImageOverlap = depth == settings.ConflictScanSkipImages
-		defer func() { skipImageOverlap = false }()
+		contentpatcher.SkipImageOverlap = depth == settings.ConflictScanSkipImages
+		defer func() { contentpatcher.SkipImageOverlap = false }()
 		r := Check(ctx, s.metaFor(gameID), env, mods)
 		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, slices.DeleteFunc(slices.Clone(mods), func(x Installed) bool {
 			return !x.Enabled
@@ -329,12 +331,7 @@ func (s *Service) ForgetCached() {
 	s.updates = map[string]cachedUpdates{}
 	s.assets = map[string]cachedIndex{}
 	s.mu.Unlock()
-	packDiskState.Lock()
-	packDiskState.loaded, packDiskState.entries, packDiskState.dirty = false, nil, false
-	packDiskState.Unlock()
-	mapScans.Lock()
-	mapScans.byPath, mapScans.loaded, mapScans.dirty = map[string]mapScan{}, false, false
-	mapScans.Unlock()
+	framework.Forget()
 }
 
 // driftRescan is how long one drift scan answers repeated checks of an unchanged profile, such as the focus events
@@ -434,7 +431,7 @@ func (s *Service) ConflictImageCrop(_ context.Context, gameID, id string, unique
 	if err != nil {
 		return "", err
 	}
-	fromFile = contentReference("", fromFile)
+	fromFile = contentpatcher.ContentReference("", fromFile)
 	if uniqueID == "" || fromFile == "" {
 		return "", errors.New("missing pack or image")
 	}
@@ -442,7 +439,7 @@ func (s *Service) ConflictImageCrop(_ context.Context, gameID, id string, unique
 		if !mod.Equal(m.ModID(), uniqueID) {
 			continue
 		}
-		return cropPackImage(m.Folder, fromFile, x, y, w, h)
+		return contentpatcher.CropPackImage(m.Folder, fromFile, x, y, w, h)
 	}
 	return "", errors.New("unknown pack")
 }

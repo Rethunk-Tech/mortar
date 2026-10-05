@@ -1,6 +1,10 @@
 package problems
 
-import "github.com/Rethunk-Tech/mortar/internal/mod"
+import (
+	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+)
 
 // Dismissable is one counted problem a user can dismiss, in the order the CLI numbers them.
 type Dismissable struct {
@@ -34,4 +38,109 @@ func DismissableRows(r Result) []Dismissable {
 		out = append(out, Dismissable{Kind: "setting", ID: x.ID, Field: x.Field})
 	}
 	return out
+}
+
+func dismissBucket(gameID, profileID string) string {
+	return "~mortar/cp/" + gameID + "/" + profileID
+}
+
+func dismissToken(kind, target string) string {
+	return kind + "\t" + target
+}
+
+func settingChoiceToken(uniqueID mod.ID, field, value string) string {
+	target := uniqueID.Fold() + "\t" +
+		strings.ToLower(strings.TrimSpace(field)) + "\t" +
+		strings.ToLower(strings.TrimSpace(value))
+	return dismissToken("setting-choice", target)
+}
+
+func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []DismissedProblem) {
+	if len(tokens) == 0 {
+		return broken, nil
+	}
+	skip := map[string]bool{}
+	for _, t := range tokens {
+		skip[t] = true
+	}
+	out := []Broken{}
+	dismissed := []DismissedProblem{}
+	for _, b := range broken {
+		token := dismissToken("broken", b.ID.Fold())
+		if (b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated") && skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, Broken: &b})
+			continue
+		}
+		out = append(out, b)
+	}
+	return out, dismissed
+}
+
+func hideDismissedListed(missing []Missing, tokens []string) ([]Missing, []DismissedProblem) {
+	if len(tokens) == 0 {
+		return missing, nil
+	}
+	skip := map[string]bool{}
+	for _, t := range tokens {
+		skip[t] = true
+	}
+	out := []Missing{}
+	dismissed := []DismissedProblem{}
+	for _, m := range missing {
+		token := dismissToken("listed", m.ID.Fold())
+		if m.Listed && skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, Missing: &m})
+			continue
+		}
+		out = append(out, m)
+	}
+	return out, dismissed
+}
+
+func hideDismissedSettings(settings []SettingHint, tokens []string) ([]SettingHint, []DismissedProblem) {
+	if len(tokens) == 0 {
+		return settings, nil
+	}
+	skip := map[string]bool{}
+	for _, t := range tokens {
+		skip[t] = true
+	}
+	out := []SettingHint{}
+	dismissed := []DismissedProblem{}
+	for _, setting := range settings {
+		target := setting.ID.Fold() + "\t" + strings.ToLower(setting.Field)
+		token := dismissToken("setting", target)
+		if skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
+			continue
+		}
+		token = settingChoiceToken(setting.ID, setting.Field, setting.Current)
+		if skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
+			continue
+		}
+		out = append(out, setting)
+	}
+	return out, dismissed
+}
+
+func hideDismissed(conflicts []AssetConflict, tokens []string) ([]AssetConflict, []DismissedProblem) {
+	if len(tokens) == 0 {
+		return conflicts, nil
+	}
+	skip := map[string]bool{}
+	for _, t := range tokens {
+		skip[t] = true
+	}
+	out := []AssetConflict{}
+	dismissed := []DismissedProblem{}
+	for _, c := range conflicts {
+		token := dismissToken(c.Kind, c.Target)
+		if skip[token] {
+			dismissed = append(dismissed, DismissedProblem{Token: token, AssetConflict: &c})
+			continue
+		}
+		out = append(out, c)
+	}
+	return out, dismissed
 }

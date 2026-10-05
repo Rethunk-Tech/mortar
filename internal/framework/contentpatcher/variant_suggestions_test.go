@@ -1,8 +1,9 @@
-package problems
+package contentpatcher
 
 import (
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
@@ -15,7 +16,7 @@ func TestVariantSettingsSuggestsOnlyValueMappedToEnabledMod(t *testing.T) {
 		Name:     "Fish Recolour",
 		UniqueID: "Example.FishRecolour",
 	}
-	packMod := Installed{
+	packMod := framework.Mod{
 		Key:      "recolour-pack",
 		Manifest: recolourManifest,
 	}
@@ -49,7 +50,7 @@ func TestVariantSettingsSuggestsOnlyValueMappedToEnabledMod(t *testing.T) {
 		},
 	}
 	present := map[string]bool{"example.fishrecolour": true}
-	byID := map[string]Installed{
+	byID := map[string]framework.Mod{
 		"example.fishrecolour": {
 			Manifest: fishManifest,
 		},

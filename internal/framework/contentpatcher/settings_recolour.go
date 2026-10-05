@@ -1,10 +1,11 @@
-package problems
+package contentpatcher
 
 import (
 	"cmp"
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -44,8 +45,8 @@ func familyOfValue(value string) int {
 }
 
 // enabledRecolours finds, per family, the enabled mod that is that recolour.
-func enabledRecolours(mods []Installed, self mod.ID) map[int]Installed {
-	out := map[int]Installed{}
+func enabledRecolours(mods []framework.Mod, self mod.ID) map[int]framework.Mod {
+	out := map[int]framework.Mod{}
 	for _, m := range mods {
 		if !m.Enabled || mod.Equal(m.ModID(), self) {
 			continue
@@ -65,8 +66,8 @@ func enabledRecolours(mods []Installed, self mod.ID) map[int]Installed {
 // recolourSettings suggests a pack's recolour choice from the recolours the profile has enabled, for packs whose
 // choices name recolours without a HasMod mapping the pack could detect on its own. It also catches a choice made
 // for a recolour the profile does not have enabled.
-func recolourSettings(packMod Installed, pack cachedPack, config map[string]string, enabled map[int]Installed, covered map[string]bool) []SettingHint {
-	var out []SettingHint
+func recolourSettings(packMod framework.Mod, pack cachedPack, config map[string]string, enabled map[int]framework.Mod, covered map[string]bool) []framework.SettingHint {
+	var out []framework.SettingHint
 	for _, schema := range pack.schema {
 		if schema.allowMultiple || len(schema.allowValues) < 2 || covered[strings.ToLower(schema.key)] || mapsByHasMod(pack, schema.key) {
 			continue
@@ -122,7 +123,7 @@ func recolourSettings(packMod Installed, pack cachedPack, config map[string]stri
 		if len(suggested) == 0 {
 			continue
 		}
-		out = append(out, SettingHint{
+		out = append(out, framework.SettingHint{
 			Key: packMod.Key, ID: packMod.ModID(), Name: packMod.Name, Field: schema.key, Current: current,
 			Suggested: suggested, Description: schema.description, Variant: true, CurrentFor: currentFor,
 			For: forIDs, ForNames: forNames,
@@ -149,9 +150,9 @@ var recolourNameWords = map[string]int{"earthy": 0, "starblue": 1, "vpr": 2, "wi
 
 // recolourAddons lists enabled mods made for a recolour the profile does not have enabled, such as "Earthy Icons
 // for Worldmaps Everywhere" without Earthy Recolour; their manifests rarely declare the recolour.
-func recolourAddons(mods []Installed) []Cleanup {
+func recolourAddons(mods []framework.Mod) []framework.Cleanup {
 	enabled := enabledRecolours(mods, "")
-	var out []Cleanup
+	var out []framework.Cleanup
 	for _, m := range mods {
 		if !m.Enabled {
 			continue
@@ -165,7 +166,7 @@ func recolourAddons(mods []Installed) []Cleanup {
 			if _, on := enabled[f]; on || slices.ContainsFunc(recolourFamilies[f].idParts, func(p string) bool { return strings.Contains(id, p) }) {
 				break
 			}
-			out = append(out, Cleanup{Key: m.Key, ID: m.ModID(), Name: m.Name, Reason: "Made for " + recolourFamilies[f].name + ", which is not enabled"})
+			out = append(out, framework.Cleanup{Key: m.Key, ID: m.ModID(), Name: m.Name, Reason: "Made for " + recolourFamilies[f].name + ", which is not enabled"})
 			break
 		}
 	}

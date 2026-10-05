@@ -1,14 +1,14 @@
-package problems
+package contentpatcher
 
 import (
-	"context"
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
-func shadowedNames(t *testing.T, mods ...Installed) map[string][]string {
+func shadowedNames(t *testing.T, mods ...framework.Mod) map[string][]string {
 	t.Helper()
 	_, _, shadowed := assetConflictScan(mods)
 	out := map[string][]string{}
@@ -28,7 +28,7 @@ func TestShadowedPacks(t *testing.T) {
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
-	pack := func(content string, loadAfter ...Installed) Installed {
+	pack := func(content string, loadAfter ...framework.Mod) framework.Mod {
 		m := syntheticLoadPack(t, content, nil)
 		for _, other := range loadAfter {
 			m.LoadAfter = append(m.LoadAfter, other.ModID())
@@ -50,7 +50,7 @@ func TestShadowedPacks(t *testing.T) {
 		if len(got) != 1 || !slices.Equal(got[a.Key], []string{b.Key}) {
 			t.Fatalf("got %v", got)
 		}
-		r := Check(context.Background(), fakeMeta{}, testEnv, []Installed{a, b})
+		r := check([]framework.Mod{a, b})
 		if len(r.Redundant) != 1 || r.Redundant[0].Key != a.Key || r.Redundant[0].By[0].Name != b.Name {
 			t.Fatalf("Check redundant = %+v", r.Redundant)
 		}

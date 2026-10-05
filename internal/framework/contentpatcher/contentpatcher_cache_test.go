@@ -1,4 +1,4 @@
-package problems
+package contentpatcher
 
 import (
 	"bytes"
@@ -15,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -33,7 +35,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	if len(first.patches) != 2 || first.patches[0].kind != "load" || first.patches[1].kind != "edit" {
 		t.Fatalf("initial pack = %#v", first.patches)
 	}
-	flushPackDiskCache([]Installed{im})
+	flushPackDiskCache([]framework.Mod{im})
 	cachePath := filepath.Join(dataHome, "mortar", "cache", "problems-content-packs.json")
 	cache := readDiskPackCache(t, cachePath)
 	entry, ok := cache.Packs[filepath.Clean(im.Folder)]
@@ -68,7 +70,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	if len(invalidatedJSON.patches) != 1 || invalidatedJSON.patches[0].kind != "edit" {
 		t.Fatalf("included JSON invalidation = %#v", invalidatedJSON.patches)
 	}
-	flushPackDiskCache([]Installed{im})
+	flushPackDiskCache([]framework.Mod{im})
 
 	img := image.NewNRGBA(image.Rect(0, 0, 32, 16))
 	img.SetNRGBA(16, 0, color.NRGBA{A: 255})
@@ -79,7 +81,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	if got := invalidatedPNG.patches[0].shapes[0].cells; got != ";1,0" {
 		t.Fatalf("PNG invalidation cells = %q, want %q", got, ";1,0")
 	}
-	flushPackDiskCache([]Installed{im})
+	flushPackDiskCache([]framework.Mod{im})
 
 	cache = readDiskPackCache(t, cachePath)
 	entry = cache.Packs[filepath.Clean(im.Folder)]
@@ -114,7 +116,7 @@ func TestContentPackDiskCache(t *testing.T) {
 	}
 }
 
-func diskCachePack(t *testing.T) (Installed, string, string) {
+func diskCachePack(t *testing.T) (framework.Mod, string, string) {
 	t.Helper()
 	root := t.TempDir()
 	writeFile := func(name, contents string) string {
@@ -133,14 +135,14 @@ func diskCachePack(t *testing.T) (Installed, string, string) {
 	img.SetNRGBA(0, 0, color.NRGBA{A: 255})
 	pngPath := filepath.Join(root, "patch.png")
 	writePNG(t, pngPath, img)
-	return fromDisk(Installed{Enabled: true, Folder: root, UniqueID: "Disk.Cache", Name: "Disk Cache", Key: "Disk.Cache"}), extra, pngPath
+	return packs.FromDisk(framework.Mod{Enabled: true, Folder: root, UniqueID: "Disk.Cache", Name: "Disk Cache", Key: "Disk.Cache"}), extra, pngPath
 }
 
 func TestReadContentPackConcurrent(t *testing.T) {
 	testfs.DataHome(t)
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
-	mods := make([]Installed, 8)
+	mods := make([]framework.Mod, 8)
 	for i := range mods {
 		im, _, _ := diskCachePack(t)
 		im.UniqueID = "Disk.Cache." + strconv.Itoa(i)
@@ -292,7 +294,7 @@ func TestPackMemoryCacheDropsFoldersNotInCurrentMods(t *testing.T) {
 		t.Fatal("pack was not memoized")
 	}
 	other := t.TempDir()
-	flushPackDiskCache([]Installed{{Folder: other}})
+	flushPackDiskCache([]framework.Mod{{Folder: other}})
 	if _, ok := packCache.Load(filepath.Clean(im.Folder)); ok {
 		t.Fatal("packCache kept a folder that is not in the current mods list")
 	}
@@ -455,7 +457,7 @@ func TestScanBenchConflictRSS(t *testing.T) {
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 
-	var mods []Installed
+	var mods []framework.Mod
 	var globErr, parseErr int
 	packs, err := filepath.Glob("/var/tmp/scan-bench/*/mods/*")
 	if err != nil {
@@ -481,7 +483,7 @@ func TestScanBenchConflictRSS(t *testing.T) {
 				return filepath.SkipDir
 			}
 			seen[man.UniqueID] = true
-			mods = append(mods, Installed{
+			mods = append(mods, framework.Mod{
 				Key:      filepath.Base(folder) + ":" + man.UniqueID,
 				Enabled:  true,
 				Folder:   path,
@@ -542,7 +544,7 @@ func vmHWM() int64 {
 }
 
 func contentPackManifest(folder string) (manifest.Manifest, bool) {
-	im := fromDisk(Installed{Folder: folder})
+	im := packs.FromDisk(framework.Mod{Folder: folder})
 	if !isContentPatcherPack(im) {
 		return manifest.Manifest{}, false
 	}

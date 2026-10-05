@@ -1,4 +1,4 @@
-package problems
+package contentpatcher
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -56,8 +57,8 @@ func changeDoesMore(raw json.RawMessage, ch cpChange) bool {
 // after it, and each Load loses to another pack's unconditional Load of higher priority. A pack with any
 // change this cannot judge (a tokenized target, a change with no shape, one that does more than its shape)
 // is never shadowed.
-func shadowedPacks(mods []Installed, at map[string]map[string][]packHit) []Redundant {
-	var out []Redundant
+func shadowedPacks(mods []framework.Mod, at map[string]map[string][]packHit) []framework.Redundant {
+	var out []framework.Redundant
 	for _, im := range mods {
 		pack := readContentPack(im)
 		if len(pack.patches) == 0 || pack.skips > 0 {
@@ -67,20 +68,24 @@ func shadowedPacks(mods []Installed, at map[string]map[string][]packHit) []Redun
 		if !ok {
 			continue
 		}
-		refs := make([]ModRef, 0, len(by))
+		refs := make([]framework.ModRef, 0, len(by))
 		for _, key := range slices.Sorted(maps.Keys(by)) {
-			refs = append(refs, ModRef{Key: key, Name: by[key]})
+			refs = append(refs, framework.ModRef{Key: key, Name: by[key]})
 		}
-		slices.SortStableFunc(refs, func(a, b ModRef) int { return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)) })
-		out = append(out, Redundant{Kind: "shadowed", Key: im.Key, ID: im.ModID(), Name: im.Name, By: refs})
+		slices.SortStableFunc(refs, func(a, b framework.ModRef) int {
+			return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+		})
+		out = append(out, framework.Redundant{Kind: "shadowed", Key: im.Key, ID: im.ModID(), Name: im.Name, By: refs})
 	}
-	slices.SortFunc(out, func(a, b Redundant) int { return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)) })
+	slices.SortFunc(out, func(a, b framework.Redundant) int {
+		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+	})
 	return out
 }
 
 // packShadowedBy returns the packs, by key, that overwrite all of mod's active changes, or false when any of
 // them still shows or the pack has none.
-func packShadowedBy(im Installed, pack cachedPack, at map[string]map[string][]packHit) (map[string]string, bool) {
+func packShadowedBy(im framework.Mod, pack cachedPack, at map[string]map[string][]packHit) (map[string]string, bool) {
 	if slices.ContainsFunc(pack.patches, func(p cpPatch) bool { return p.kind == "other" && p.tokenName == "" }) {
 		return nil, false
 	}

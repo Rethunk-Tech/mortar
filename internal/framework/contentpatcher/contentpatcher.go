@@ -1,4 +1,4 @@
-package problems
+package contentpatcher
 
 import (
 	"bytes"
@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -35,57 +36,6 @@ const (
 	kindEditMap   = "EditMap"
 	kindEditData  = "EditData"
 )
-
-// AssetConflict is two or more enabled Content Patcher packs that Load the same target (hard)
-// or EditImage/EditMap the same target, or EditData the same entry or field (soft).
-type AssetConflict struct {
-	Kind       string   `json:"kind"` // "load" (hard) or "edit" (soft)
-	Target     string   `json:"target"`
-	PackIDs    []mod.ID `json:"packIds"`
-	Names      []string `json:"names"`
-	Keys       []string `json:"keys"`
-	WinnerID   mod.ID   `json:"winnerId"`
-	WinnerName string   `json:"winnerName"`
-	Overridden []string `json:"overridden"`
-	// Cosmetic marks an edit conflict whose every overlap is harmless (see harmless): shown, never counted.
-	Cosmetic bool `json:"cosmetic"`
-	// Fixes are settings that switch off every clashing edit of one pack.
-	Fixes    []ConflictFix      `json:"fixes"`
-	Info     string             `json:"info,omitempty"`
-	Evidence []ConflictEvidence `json:"evidence"`
-}
-
-// ConflictEvidence is one clashing patch of a pack in an AssetConflict.
-type ConflictEvidence struct {
-	PackName string `json:"packName"`
-	PackID   mod.ID `json:"packId"`
-	Source   string `json:"source"`
-	Index    int    `json:"index"`
-	Action   string `json:"action"`
-	Target   string `json:"target"`
-	ToArea   string `json:"toArea,omitempty"`
-	FromArea string `json:"fromArea,omitempty"`
-	When     string `json:"when,omitempty"`
-	Priority string `json:"priority"`
-	FromFile string `json:"fromFile,omitempty"`
-	CropX    int    `json:"cropX"`
-	CropY    int    `json:"cropY"`
-	CropW    int    `json:"cropW"`
-	CropH    int    `json:"cropH"`
-	// Keys are the data entries or fields this patch sets that another pack's patch also sets.
-	Keys []string `json:"keys"`
-}
-
-// ConflictFix sets one on/off field of a pack (Key, id) to Value, which turns off all of that pack's edits
-// in the conflict; Current is the field's value now.
-type ConflictFix struct {
-	Key     string `json:"key"`
-	ID      mod.ID `json:"id"`
-	Name    string `json:"name"`
-	Field   string `json:"field"`
-	Current string `json:"current"`
-	Value   string `json:"value"`
-}
 
 type packHit struct {
 	id           mod.ID
@@ -721,15 +671,15 @@ var packCache sync.Map // folder path -> cachedPack
 // pack read many times in one Check is stat'ed once. Check clears it at both ends, never mid-check.
 var packValidated sync.Map
 
-func readContentPack(im Installed) cachedPack {
+func readContentPack(im framework.Mod) cachedPack {
 	return readContentPackWithEnabled(im, true)
 }
 
-func readContentPackForCleanup(im Installed) cachedPack {
+func readContentPackForCleanup(im framework.Mod) cachedPack {
 	return readContentPackWithEnabled(im, false)
 }
 
-func readContentPackWithEnabled(im Installed, requireEnabled bool) cachedPack {
+func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPack {
 	if (requireEnabled && !im.Enabled) || im.Folder == "" || !isContentPatcherPack(im) {
 		return cachedPack{}
 	}
@@ -924,7 +874,7 @@ func clearDiskPackPayload(root string) {
 	}
 }
 
-func flushPackDiskCache(mods []Installed) {
+func flushPackDiskCache(mods []framework.Mod) {
 	present := map[string]bool{}
 	for _, im := range mods {
 		if im.Folder != "" {
@@ -1048,7 +998,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 	return out
 }
 
-func isContentPatcherPack(im Installed) bool {
+func isContentPatcherPack(im framework.Mod) bool {
 	return mod.Equal(im.ContentPackForID(), contentPatcherID)
 }
 
@@ -1798,7 +1748,7 @@ func splitTargets(s string) []string {
 	return out
 }
 
-func contentReference(_, rel string) string {
+func ContentReference(_, rel string) string {
 	rel = strings.ReplaceAll(strings.TrimSpace(rel), "\\", "/")
 	if rel == "" {
 		return ""
@@ -1807,7 +1757,7 @@ func contentReference(_, rel string) string {
 }
 
 func contentSourceReference(_, _, rel string) string {
-	return contentReference("content.json", rel)
+	return ContentReference("content.json", rel)
 }
 
 func hasToken(s string) bool {
@@ -1835,7 +1785,7 @@ func inside(root, rel string) (string, bool) {
 	return joined, true
 }
 
-func preloadContentPacks(mods []Installed) {
+func preloadContentPacks(mods []framework.Mod) {
 	workers := max(1, runtime.GOMAXPROCS(0))
 	sem := make(chan struct{}, workers)
 	var wg sync.WaitGroup
@@ -1914,7 +1864,7 @@ func dropCheckScratch() {
 }
 
 // assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).
-func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redundant) {
+func assetConflictScan(mods []framework.Mod) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
 	defer flushPackDiskCache(mods)
 	defer dropCheckScratch()
 	preloadContentPacks(mods)
@@ -1980,8 +1930,8 @@ func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redu
 		}
 	}
 	shadowed := shadowedPacks(mods, at)
-	out := []AssetConflict{}
-	settings := []SettingHint{}
+	out := []framework.AssetConflict{}
+	settings := []framework.SettingHint{}
 	for kind, targets := range at {
 		for t, hits := range targets {
 			cosmetic := false
@@ -1997,7 +1947,7 @@ func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redu
 					if allLoadFilesBlank(hits, t) || allLoadFilesIdentical(hits, t) {
 						continue
 					}
-					var hint *SettingHint
+					var hint *framework.SettingHint
 					c.Cosmetic, hint = harmlessLoads(hits, c)
 					if hint != nil {
 						settings = append(settings, *hint)
@@ -2008,7 +1958,7 @@ func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redu
 					c.Cosmetic = cosmetic
 					markLoadAfterWinner(&c, hits)
 				}
-				c.Fixes = []ConflictFix{}
+				c.Fixes = []framework.ConflictFix{}
 				for _, h := range hits {
 					if fix, ok := switchOff(h, hits); ok {
 						c.Fixes = append(c.Fixes, fix)
@@ -2018,7 +1968,7 @@ func assetConflictScan(mods []Installed) ([]AssetConflict, []SettingHint, []Redu
 			}
 		}
 	}
-	slices.SortFunc(out, func(a, b AssetConflict) int {
+	slices.SortFunc(out, func(a, b framework.AssetConflict) int {
 		if a.Kind != b.Kind {
 			if a.Kind == "load" {
 				return -1
@@ -2098,9 +2048,9 @@ func aware(a, b packHit) bool {
 	return (a.key != "" && a.key == b.key) || a.mentions[b.id.Fold()] || b.mentions[a.id.Fold()]
 }
 
-func conflictOf(kind, target string, hits []packHit) AssetConflict {
+func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
 	slices.SortFunc(hits, func(a, b packHit) int { return strings.Compare(a.id.Fold(), b.id.Fold()) })
-	c := AssetConflict{Kind: kind, Target: target, PackIDs: make([]mod.ID, len(hits)), Names: make([]string, len(hits)), Keys: make([]string, len(hits))}
+	c := framework.AssetConflict{Kind: kind, Target: target, PackIDs: make([]mod.ID, len(hits)), Names: make([]string, len(hits)), Keys: make([]string, len(hits))}
 	for i, h := range hits {
 		c.PackIDs[i], c.Names[i], c.Keys[i] = h.id, h.name, h.key
 	}
@@ -2281,7 +2231,7 @@ func dependencyLoadWinner(hits []packHit, tied []int) (int, bool) {
 	return right, true
 }
 
-func harmlessLoads(hits []packHit, conflict AssetConflict) (bool, *SettingHint) {
+func harmlessLoads(hits []packHit, conflict framework.AssetConflict) (bool, *framework.SettingHint) {
 	if len(hits) < 2 {
 		return false, nil
 	}
@@ -2307,7 +2257,7 @@ func harmlessLoads(hits []packHit, conflict AssetConflict) (bool, *SettingHint) 
 	for _, load := range hits[winner].loads {
 		winnerBlank = winnerBlank && loadFileBlank(hits[winner], load, conflict.Target)
 	}
-	var hint *SettingHint
+	var hint *framework.SettingHint
 	for i, hit := range hits {
 		if i == winner {
 			continue
@@ -2341,7 +2291,7 @@ func harmlessLoads(hits []packHit, conflict AssetConflict) (bool, *SettingHint) 
 	return true, hint
 }
 
-func settingForDeadLoad(hit packHit, load cpPatch, winner packHit, conflict AssetConflict) *SettingHint {
+func settingForDeadLoad(hit packHit, load cpPatch, winner packHit, conflict framework.AssetConflict) *framework.SettingHint {
 	if hitPriority("load", hit) > -1000 {
 		return nil
 	}
@@ -2357,7 +2307,7 @@ func settingForDeadLoad(hit packHit, load cpPatch, winner packHit, conflict Asse
 		if current == schema.defaultValue || !configHolds([]cpConfig{condition}, hit.schema, hit.config) {
 			continue
 		}
-		return &SettingHint{
+		return &framework.SettingHint{
 			Key: hit.key, ID: hit.id, Name: hit.name, Field: schema.key,
 			Current: current, Suggested: []string{schema.defaultValue},
 			Description: "This setting has no effect because " + winner.name + " loads " + conflict.Target + " over it.",
@@ -2404,7 +2354,7 @@ func allLoadFilesBlank(hits []packHit, target string) bool {
 	return found
 }
 
-func loadPriorityDecided(hits []packHit, conflict AssetConflict) bool {
+func loadPriorityDecided(hits []packHit, conflict framework.AssetConflict) bool {
 	if conflict.WinnerID == "" {
 		return false
 	}
@@ -2617,109 +2567,4 @@ func strongerContentPatcherPriority(current, candidate, kind string) string {
 		return strings.TrimSpace(candidate)
 	}
 	return strings.TrimSpace(current)
-}
-
-func dismissBucket(gameID, profileID string) string {
-	return "~mortar/cp/" + gameID + "/" + profileID
-}
-
-func dismissToken(kind, target string) string {
-	return kind + "\t" + target
-}
-
-func settingChoiceToken(uniqueID mod.ID, field, value string) string {
-	target := uniqueID.Fold() + "\t" +
-		strings.ToLower(strings.TrimSpace(field)) + "\t" +
-		strings.ToLower(strings.TrimSpace(value))
-	return dismissToken("setting-choice", target)
-}
-
-func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []DismissedProblem) {
-	if len(tokens) == 0 {
-		return broken, nil
-	}
-	skip := map[string]bool{}
-	for _, t := range tokens {
-		skip[t] = true
-	}
-	out := []Broken{}
-	dismissed := []DismissedProblem{}
-	for _, b := range broken {
-		token := dismissToken("broken", b.ID.Fold())
-		if (b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated") && skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, Broken: &b})
-			continue
-		}
-		out = append(out, b)
-	}
-	return out, dismissed
-}
-
-func hideDismissedListed(missing []Missing, tokens []string) ([]Missing, []DismissedProblem) {
-	if len(tokens) == 0 {
-		return missing, nil
-	}
-	skip := map[string]bool{}
-	for _, t := range tokens {
-		skip[t] = true
-	}
-	out := []Missing{}
-	dismissed := []DismissedProblem{}
-	for _, m := range missing {
-		token := dismissToken("listed", m.ID.Fold())
-		if m.Listed && skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, Missing: &m})
-			continue
-		}
-		out = append(out, m)
-	}
-	return out, dismissed
-}
-
-func hideDismissedSettings(settings []SettingHint, tokens []string) ([]SettingHint, []DismissedProblem) {
-	if len(tokens) == 0 {
-		return settings, nil
-	}
-	skip := map[string]bool{}
-	for _, t := range tokens {
-		skip[t] = true
-	}
-	out := []SettingHint{}
-	dismissed := []DismissedProblem{}
-	for _, setting := range settings {
-		target := setting.ID.Fold() + "\t" + strings.ToLower(setting.Field)
-		token := dismissToken("setting", target)
-		if skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
-			continue
-		}
-		token = settingChoiceToken(setting.ID, setting.Field, setting.Current)
-		if skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
-			continue
-		}
-		out = append(out, setting)
-	}
-	return out, dismissed
-}
-
-func hideDismissed(conflicts []AssetConflict, tokens []string) ([]AssetConflict, []DismissedProblem) {
-	if len(tokens) == 0 {
-		return conflicts, nil
-	}
-	skip := map[string]bool{}
-	for _, t := range tokens {
-		skip[t] = true
-	}
-	out := []AssetConflict{}
-	dismissed := []DismissedProblem{}
-	for _, c := range conflicts {
-		token := dismissToken(c.Kind, c.Target)
-		if skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, AssetConflict: &c})
-			continue
-		}
-		out = append(out, c)
-	}
-	return out, dismissed
 }

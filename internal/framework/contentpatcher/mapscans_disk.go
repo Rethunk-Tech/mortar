@@ -1,4 +1,4 @@
-package problems
+package contentpatcher
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -55,7 +56,7 @@ func loadMapScans() {
 
 // flushMapScans drops scans of files in folders that are no longer installed, then saves the scans when any
 // changed.
-func flushMapScans(mods []Installed) {
+func flushMapScans(mods []framework.Mod) {
 	prefixes := make([]string, 0, len(mods))
 	for _, im := range mods {
 		if im.Folder != "" {

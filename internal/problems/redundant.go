@@ -7,25 +7,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-// Redundant is an enabled mod that adds nothing beside the others: "superseded" when its replacement is enabled too,
-// "shadowed" when later packs overwrite every edit it makes, "sameJob" when another enabled C# mod changes the same game
-// members (Covered when a larger mod changes everything this one does).
-type Redundant struct {
-	Kind    string   `json:"kind"`
-	Key     string   `json:"key"`
-	ID      mod.ID   `json:"id"`
-	Name    string   `json:"name"`
-	By      []ModRef `json:"by"`
-	Detail  string   `json:"detail,omitempty"`
-	Covered bool     `json:"covered,omitempty"`
-}
-
-// ModRef names one enabled mod.
-type ModRef struct {
-	Key  string `json:"key"`
-	Name string `json:"name"`
-}
-
 var markdownLinkText = regexp.MustCompile(`\[([^\]]+)\]\(`)
 
 // superseded finds enabled mods whose SMAPI compatibility summary sends the player to another mod that is enabled

@@ -1,9 +1,9 @@
-package problems
+package contentpatcher
 
 import (
-	"context"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -15,15 +15,12 @@ func TestLoadAfterEditConflictIsShownNotCounted(t *testing.T) {
 	a.Name = "Edit A"
 	a.LoadAfter = []mod.ID{b.ModID()}
 	a.Dependencies = []manifest.Dependency{{UniqueID: b.UniqueID, Required: false}}
-	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{a, b})
+	got := check([]framework.Mod{a, b})
 	if len(got.AssetConflicts) != 1 {
 		t.Fatalf("got %+v", got.AssetConflicts)
 	}
 	c := got.AssetConflicts[0]
 	if c.Kind != "edit" || !c.Cosmetic || c.WinnerName != "Edit A wins" {
 		t.Fatalf("got %+v", c)
-	}
-	if got.Count() != 0 {
-		t.Fatalf("counted %d: %+v", got.Count(), got)
 	}
 }

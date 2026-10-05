@@ -1,10 +1,11 @@
-package problems
+package contentpatcher
 
 import (
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-func markLoadAfterWinner(c *AssetConflict, hits []packHit) {
+func markLoadAfterWinner(c *framework.AssetConflict, hits []packHit) {
 	winner, ok := loadAfterWinner(hits)
 	if !ok {
 		return

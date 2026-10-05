@@ -1,4 +1,4 @@
-package problems
+package contentpatcher
 
 import (
 	"bytes"
@@ -168,8 +168,8 @@ func TestSkipImageOverlapUsesRectangles(t *testing.T) {
 	if len(full) != 1 || full[0].cells == "" {
 		t.Fatalf("full scan shapes = %#v", full)
 	}
-	skipImageOverlap = true
-	t.Cleanup(func() { skipImageOverlap = false })
+	SkipImageOverlap = true
+	t.Cleanup(func() { SkipImageOverlap = false })
 	skipped := imagePatchShapes(dir, ch, 0, 0)
 	if len(skipped) != 1 || skipped[0].cells != "" || skipped[0].w != 32 || skipped[0].h != 16 {
 		t.Fatalf("skip scan shapes = %#v", skipped)

@@ -3,11 +3,9 @@ package problems
 import (
 	"context"
 	"errors"
-	"path/filepath"
 	"reflect"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -248,12 +246,14 @@ func TestBroken(t *testing.T) {
 }
 
 func TestCheckPopulatesTimings(t *testing.T) {
-	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{inst("a", "A", "1.0", true)})
+	pack := inst("p", "P", "1.0", true)
+	pack.ContentPackFor = "Pathoschild.ContentPatcher"
+	got := Check(context.Background(), fakeMeta{}, testEnv, []Installed{inst("a", "A", "1.0", true), pack})
 	names := map[string]bool{}
 	for _, tmg := range got.Timings {
 		names[tmg.Name] = true
 	}
-	for _, name := range []string{"contentPatcher", "conflicts", "requirements", "others"} {
+	for _, name := range []string{"framework:Pathoschild.ContentPatcher", "requirements", "others"} {
 		if !names[name] {
 			t.Fatalf("missing timing %q in %+v", name, got.Timings)
 		}
@@ -272,16 +272,4 @@ func TestCountShowsConflictsBetweenTheSameModsOnce(t *testing.T) {
 	if got := r.Count(); got != 2 {
 		t.Fatalf("count = %d, want 2", got)
 	}
-}
-
-// fromDisk fills in what the profile scan reads from a mod's manifest and Check relies on.
-func fromDisk(im Installed) Installed {
-	raw, err := fsx.ReadFile(filepath.Join(im.Folder, manifest.FileName))
-	if err != nil {
-		return im
-	}
-	if m, err := manifest.Parse(raw); err == nil {
-		im.ContentPackFor = m.ContentPackFor
-	}
-	return im
 }

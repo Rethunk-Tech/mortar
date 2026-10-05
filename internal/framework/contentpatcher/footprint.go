@@ -1,4 +1,4 @@
-package problems
+package contentpatcher
 
 import (
 	"bytes"
@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -379,11 +380,12 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 }
 
 var (
-	pngShapeCache    sync.Map
-	pngAlphaCache    sync.Map
-	pngPixPools      sync.Map
-	cellSetCache     sync.Map
-	skipImageOverlap bool
+	pngShapeCache sync.Map
+	pngAlphaCache sync.Map
+	pngPixPools   sync.Map
+	cellSetCache  sync.Map
+	// SkipImageOverlap turns off the pixel-overlap scan of image edits, trading accuracy for speed.
+	SkipImageOverlap bool
 )
 
 type pngAlpha struct {
@@ -431,7 +433,7 @@ func imagePatchShapes(root string, ch cpChange, x, y int) []cpShape {
 	if len(files) == 0 {
 		return whole
 	}
-	if skipImageOverlap || !strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
+	if SkipImageOverlap || !strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
 		var out []cpShape
 		for _, file := range files {
 			if from, ok := areaOf(ch.FromArea); ok {
@@ -1605,14 +1607,14 @@ func markClashes(a, b *packHit) {
 // from the conflict, such as Better Things' DesertMinecart for an expansion that redraws the desert. Of the
 // fields that would, it offers the narrowest: one named for what the target is about, then the one gating
 // the fewest of the pack's patches. When only the pack's master switch would, it offers nothing.
-func switchOff(h packHit, peerSets ...[]packHit) (ConflictFix, bool) {
+func switchOff(h packHit, peerSets ...[]packHit) (framework.ConflictFix, bool) {
 	if len(h.clashes) == 0 {
-		return ConflictFix{}, false
+		return framework.ConflictFix{}, false
 	}
 	clashing := slices.Sorted(maps.Keys(h.clashes))
 	subject := h.edits[clashing[0]].target
 	subject = strings.ToLower(subject[strings.LastIndex(subject, "/")+1:])
-	var best ConflictFix
+	var best framework.ConflictFix
 	bestGated, bestNamed, found := 0, false, false
 	for _, c := range h.edits[clashing[0]].when.config {
 		field, ok := h.schema[strings.ToLower(c.field)]
@@ -1653,7 +1655,7 @@ func switchOff(h packHit, peerSets ...[]packHit) (ConflictFix, bool) {
 		if !set {
 			current = field.defaultValue
 		}
-		best = ConflictFix{Key: h.key, ID: h.id, Name: h.name, Field: field.key, Current: current, Value: value}
+		best = framework.ConflictFix{Key: h.key, ID: h.id, Name: h.name, Field: field.key, Current: current, Value: value}
 		bestGated, bestNamed, found = gated, named, true
 	}
 	return best, found

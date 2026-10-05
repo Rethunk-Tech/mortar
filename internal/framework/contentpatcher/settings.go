@@ -1,4 +1,4 @@
-package problems
+package contentpatcher
 
 import (
 	"cmp"
@@ -7,23 +7,24 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 type settingGroup struct {
-	pack      Installed
+	pack      framework.Mod
 	schema    cpSchema
 	current   string
-	required  []Installed
+	required  []framework.Mod
 	suggested []string
 	active    bool
 }
 
-func compatibilitySettings(mods []Installed) []SettingHint {
+func compatibilitySettings(mods []framework.Mod) []framework.SettingHint {
 	present := map[string]bool{}
-	byID := map[string]Installed{}
+	byID := map[string]framework.Mod{}
 	for _, im := range mods {
 		if !im.Enabled {
 			continue
@@ -38,7 +39,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 		}
 	}
 
-	var out []SettingHint
+	var out []framework.SettingHint
 	for _, packMod := range mods {
 		if !packMod.Enabled {
 			continue
@@ -64,7 +65,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 			if len(ids) == 0 {
 				continue
 			}
-			required := make([]Installed, 0, len(ids))
+			required := make([]framework.Mod, 0, len(ids))
 			for _, id := range ids {
 				required = append(required, byID[id])
 			}
@@ -91,7 +92,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 					groups[groupKey] = group
 				} else {
 					for _, im := range required {
-						if !slices.ContainsFunc(group.required, func(m Installed) bool { return mod.Equal(m.ModID(), im.ModID()) }) {
+						if !slices.ContainsFunc(group.required, func(m framework.Mod) bool { return mod.Equal(m.ModID(), im.ModID()) }) {
 							group.required = append(group.required, im)
 						}
 					}
@@ -108,7 +109,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 			if group.active || len(group.suggested) == 0 {
 				continue
 			}
-			hint := SettingHint{
+			hint := framework.SettingHint{
 				Key:         group.pack.Key,
 				ID:          group.pack.ModID(),
 				Name:        group.pack.Name,
@@ -128,7 +129,7 @@ func compatibilitySettings(mods []Installed) []SettingHint {
 			out = append(out, hint)
 		}
 	}
-	slices.SortFunc(out, func(a, b SettingHint) int {
+	slices.SortFunc(out, func(a, b framework.SettingHint) int {
 		if c := strings.Compare(strings.ToLower(a.Key), strings.ToLower(b.Key)); c != 0 {
 			return c
 		}
@@ -265,8 +266,8 @@ func (s cpSchema) booleanToggle() bool {
 // DaisyNiko.EarthyRecolour). A field with two or more such values is a picker. Its automatic choice is a
 // blank value when allowed, or the value the mapping tokens themselves require of the field ("Off"), since
 // with it the pack detects the installed mod on its own.
-func variantSettings(packMod Installed, pack cachedPack, config map[string]string, present map[string]bool, byID map[string]Installed) []SettingHint {
-	var out []SettingHint
+func variantSettings(packMod framework.Mod, pack cachedPack, config map[string]string, present map[string]bool, byID map[string]framework.Mod) []framework.SettingHint {
+	var out []framework.SettingHint
 	for _, schema := range pack.schema {
 		if schema.allowMultiple || len(schema.allowValues) < 2 {
 			continue
@@ -333,7 +334,7 @@ func variantSettings(packMod Installed, pack cachedPack, config map[string]strin
 		if (current == "" && schema.allowBlank) || slices.ContainsFunc(auto, func(a string) bool { return strings.EqualFold(a, current) }) {
 			continue
 		}
-		var enabledFor []Installed
+		var enabledFor []framework.Mod
 		var enabledValues []string
 		for _, value := range schema.allowValues {
 			for _, id := range forValue[strings.ToLower(value)] {
@@ -369,7 +370,7 @@ func variantSettings(packMod Installed, pack cachedPack, config map[string]strin
 		if len(suggested) == 0 {
 			continue
 		}
-		hint := SettingHint{
+		hint := framework.SettingHint{
 			Key: packMod.Key, ID: packMod.ModID(), Name: packMod.Name, Field: schema.key, Current: current,
 			Suggested: suggested, Description: schema.description, Variant: true, CurrentFor: currentFor,
 		}
