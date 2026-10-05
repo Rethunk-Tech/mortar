@@ -440,6 +440,11 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		return err
 	}
 	defer release()
+	releaseSource, err := s.sourceSlot(ctx, it)
+	if err != nil {
+		return err
+	}
+	defer releaseSource()
 	if it.Package != "" {
 		return s.downloadPackage(ctx, it)
 	}

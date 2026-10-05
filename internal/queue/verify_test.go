@@ -1,11 +1,13 @@
 package queue
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func writeFile(t *testing.T, body string) string {
@@ -47,4 +49,30 @@ func TestPackageHashHoldsLaterCopiesToTheFirst(t *testing.T) {
 	if err := s.checkPackageHash(it, writeFile(t, "two")); err != nil {
 		t.Errorf("new version: %v", err)
 	}
+}
+
+func TestSourceLimitPacesStartsAndCapsConcurrency(t *testing.T) {
+	now := time.Unix(1000, 0)
+	l := newSourceLimit(1, 2, 1, now)
+	for range 2 {
+		if l.take(now) != 0 {
+			t.Fatal("the burst was refused")
+		}
+	}
+	if w := l.take(now); w != time.Second {
+		t.Errorf("third start waits %v, want 1s", w)
+	}
+	if l.take(now.Add(time.Second)) != 0 {
+		t.Error("a token did not refill")
+	}
+	release, err := l.acquire(context.Background(), func() time.Time { return now.Add(time.Hour) })
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
+	defer cancel()
+	if _, err := l.acquire(ctx, time.Now); err == nil {
+		t.Error("a second fetch got past the cap of one")
+	}
+	release()
 }

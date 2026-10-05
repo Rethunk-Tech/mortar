@@ -52,6 +52,9 @@ func (a *Auth) get(ctx context.Context) string {
 	return a.token
 }
 
+// LoggedIn reports whether requests carry a gh token, which raises GitHub's rate limit.
+func (a *Auth) LoggedIn(ctx context.Context) bool { return a.get(ctx) != "" }
+
 // IsGitHubHost reports whether host is one that the gh token may be sent to.
 func IsGitHubHost(host string) bool {
 	return host == "github.com" || host == "api.github.com"

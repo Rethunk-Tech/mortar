@@ -318,6 +318,7 @@ type Service struct {
 	cancels      map[string]context.CancelFunc
 	installMu    sync.Mutex
 	hashMu       sync.Mutex
+	limits       map[string]*sourceLimit
 	premiumFetch chan struct{}
 	freeFetch    chan struct{}
 	premiumInUse int
