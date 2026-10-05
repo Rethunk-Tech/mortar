@@ -892,7 +892,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		return Result{}, err
 	}
 	var placed []string
-	if replace {
+	if replace || created {
 		if err := s.d.Profiles.FollowOrder(game, profileID, refRank(cur.refs)); err != nil {
 			return Result{}, err
 		}
