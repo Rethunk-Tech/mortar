@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -35,6 +36,8 @@ type Arrival struct {
 	// Package and Version name the Thunderstore package of a ror2mm link, whose Link is empty.
 	Package string `json:"package,omitempty"`
 	Version string `json:"version,omitempty"`
+	// Games are the games with a Thunderstore community: the link names none, so the window picks from these.
+	Games []string `json:"games,omitempty"`
 }
 
 // Rejection is a refused link; Reason is one of nxm.Reason*.
@@ -129,7 +132,7 @@ func (s *Service) Receive(args []string) bool {
 		if ref, err := thunderstore.ParseLink(arg); err == nil {
 			s.mu.Lock()
 			s.nextID++
-			a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version}
+			a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version, Games: thunderstoreGames()}
 			log.Printf("nxm: link %d arrived: package %s", a.ID, a.Package)
 			s.arrivals = append(s.arrivals, a)
 			s.mu.Unlock()
@@ -173,6 +176,16 @@ func (s *Service) Receive(args []string) bool {
 		s.emit(ArrivedEvent, a)
 	}
 	return found
+}
+
+func thunderstoreGames() []string {
+	var out []string
+	for _, g := range game.Catalog() {
+		if slices.ContainsFunc(g.Sources, func(src components.GameSource) bool { return src.ID == "thunderstore" }) {
+			out = append(out, g.ID)
+		}
+	}
+	return out
 }
 
 func isMortarGame(domain string) bool {

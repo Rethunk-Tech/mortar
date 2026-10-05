@@ -25,31 +25,32 @@ import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
-import { fallbackName, modName, useNxm } from './store.ts'
+import { arrivalGame, arrivalName, fallbackName, useNxm } from './store.ts'
 
-function useModName(game: string, modId: number): string {
-  const [name, setName] = useState(() => fallbackName(modId))
+function useModName(arrival: Arrival): string {
+  const [name, setName] = useState(() => arrival.package || fallbackName(arrival.link.modId))
   useEffect(() => {
     let live = true
-    setName(fallbackName(modId))
-    modName(game, modId)
+    arrivalName(arrival)
       .then((n) => live && setName(n))
       .catch(reportUnexpected)
     return () => {
       live = false
     }
-  }, [game, modId])
+  }, [arrival])
   return name
 }
 
 function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const { t } = useLingui()
-  const { game } = arrival.link
+  const openGameId = useProfiles((s) => s.game?.id)
+  const game = arrivalGame(arrival, openGameId)
+  const site = arrival.package ? 'Thunderstore' : 'Nexus'
   const choose = useNxm((s) => s.choose)
   const arrivals = useNxm((s) => s.arrivals)
   const dismiss = useNxm((s) => s.dismiss)
   const lastId = useSettings((s) => gamePrefs(s, game).nxmDefaultProfile || s.lastProfile?.[game])
-  const name = useModName(game, arrival.link.modId)
+  const name = useModName(arrival)
   const file = useNexusDetails((s) =>
     s.byId[arrival.link.modId]?.details?.files?.find((f) => f.fileId === arrival.link.fileId),
   )
@@ -84,13 +85,13 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
       .catch((e: unknown) => setError(inlineError(e)))
       .finally(() => setBusy(false))
   }
-  let text = t`You started this download on Nexus. Choose the profile it goes into.`
+  let text = t`You started this download on ${site}. Choose the profile it goes into.`
   if (profiles === null) {
     text = t`Loading profiles…`
   } else if (profiles.length === 0) {
     text = canCreate
-      ? t`You started this download on Nexus. There is no profile to put it in yet; create one first.`
-      : t`You started this download on Nexus, but there is no ${gameName} profile to put it in yet.`
+      ? t`You started this download on ${site}. There is no profile to put it in yet; create one first.`
+      : t`You started this download on ${site}, but there is no ${gameName} profile to put it in yet.`
   }
   return (
     <Dialog

@@ -2,6 +2,7 @@ package nxmsvc
 
 import (
 	"errors"
+	"slices"
 	"testing"
 	"time"
 
@@ -252,7 +253,7 @@ func TestReceiveQueuesAThunderstoreLink(t *testing.T) {
 		t.Fatal("the ror2mm link was not taken")
 	}
 	in := s.Inbox()
-	if len(in.Arrivals) != 1 || in.Arrivals[0].Package != "Me-Mod" || in.Arrivals[0].Version != "1.2.3" || len(in.Rejections) != 0 {
+	if len(in.Arrivals) != 1 || in.Arrivals[0].Package != "Me-Mod" || in.Arrivals[0].Version != "1.2.3" || !slices.Contains(in.Arrivals[0].Games, "lethal-company") || len(in.Rejections) != 0 {
 		t.Fatalf("inbox %+v", in)
 	}
 	if err := s.Assign(in.Arrivals[0].ID, "riskofrain2", "p1"); err != nil {

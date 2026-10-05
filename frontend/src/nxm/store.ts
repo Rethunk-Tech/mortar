@@ -55,21 +55,31 @@ async function notify(arrival: Arrival, title: string, body: string, evenUnfocus
   await SendNotificationWithActions(nxmShowWithIcon(arrival.id, title, body, icon))
 }
 
+const openGame = () => useProfiles.getState().game?.id
+
 async function install(arrival: Arrival, profile: Profile) {
   try {
-    await Assign(arrival.id, arrival.link.game, profile.id)
+    await Assign(arrival.id, arrivalGame(arrival, openGame()), profile.id)
   } catch (e) {
     // Nothing downloads, so the prompt keeps the link for another profile to take.
     toastError(i18n._(msg`Could not start the Nexus download`), e)
     useNxm.getState().add(arrival)
     return
   }
-  const name = await modName(arrival.link.game, arrival.link.modId)
+  const name = await arrivalName(arrival)
   const profileName = profile.name
   const title = i18n._(msg`Downloading ${name} into ${profileName}`)
   useToasts.getState().push({ kind: 'info', title })
   await notify(arrival, title, '')
 }
+
+// A ror2mm link names no game, so a package arrival takes the open game when it has a Thunderstore community, else
+// the first game that does.
+export const arrivalGame = (a: Arrival, open?: string): string =>
+  a.link.game || (open && a.games?.includes(open) ? open : (a.games?.[0] ?? ''))
+
+export const arrivalName = (a: Arrival): Promise<string> =>
+  a.package ? Promise.resolve(a.package) : modName(a.link.game, a.link.modId)
 
 export const fallbackName = (modId: number) => i18n._(msg`Nexus mod ${modId}`)
 
@@ -102,8 +112,8 @@ export const useNxm = create<{
       s.arrivals.some((a) => a.id === arrival.id) ? s : { arrivals: [...s.arrivals, arrival] },
     ),
   choose: async (id, profile) => {
-    const game = get().arrivals.find((a) => a.id === id)?.link.game ?? ''
-    await Assign(id, game, profile)
+    const arrival = get().arrivals.find((a) => a.id === id)
+    await Assign(id, arrival ? arrivalGame(arrival, openGame()) : '', profile)
     set((s) => ({ arrivals: s.arrivals.filter((a) => a.id !== id) }))
   },
   dismiss: (id) => {
@@ -125,7 +135,7 @@ export async function initNxm(): Promise<void> {
   }
   const arrive = (a: Arrival) => {
     const { game, openId, profiles } = useProfiles.getState()
-    const direct = directProfile(useNav.getState().route, a.link.game, {
+    const direct = directProfile(useNav.getState().route, arrivalGame(a, game?.id), {
       game: game?.id,
       openId,
       profiles,
@@ -135,7 +145,7 @@ export async function initNxm(): Promise<void> {
       return
     }
     useNxm.getState().add(a)
-    modName(a.link.game, a.link.modId)
+    arrivalName(a)
       .then((name) =>
         notify(
           a,
