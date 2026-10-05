@@ -53,7 +53,8 @@ func TestHistoryRecordsSkipAndClear(t *testing.T) {
 func TestHistoryKeepsOnlyTheLastThousand(t *testing.T) {
 	f := newFixture(t)
 	it := &Item{Name: "n", Version: "1", Profile: "p1", started: f.now()}
-	for range historyLimit + 3 {
+	f.s.writeHistory(make([]HistoryEntry, historyLimit))
+	for range 3 {
 		f.s.recordHistory(it, StateDone)
 	}
 	got := f.s.History()
