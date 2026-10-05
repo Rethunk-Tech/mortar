@@ -3,8 +3,18 @@ import type { ReactNode } from 'react'
 import { useTab } from '../game/tab.ts'
 import { useDetail } from './detail.ts'
 import type { ModLink } from './modLinks.ts'
+import { useMods } from './store.ts'
+import { openTarget } from './storeView.ts'
 
-const showInMods = ({ key, id }: ModLink) => {
+// Narrowing the list to the mod's name leaves it selected and in view, the same as picking it from a search.
+const showInMods = ({ name, key, id }: ModLink) => {
+  const target = openTarget()
+  if (target) {
+    const mods = useMods.getState()
+    mods.setQuery(target.id, name)
+    mods.setFilter(target.id, 'all')
+    mods.setTagFilter(target.id, [])
+  }
   useTab.getState().setTab('mods')
   useDetail.getState().showAfterLoad({ key, id })
 }
