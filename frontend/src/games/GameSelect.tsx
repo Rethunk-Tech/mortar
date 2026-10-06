@@ -104,7 +104,8 @@ function SourceBadges({ sources }: { sources: string[] }) {
               bgcolor: 'var(--mortar-game-dim)',
               fontSize: name.length > LONG_NAME ? SMALL_FONT : NORMAL_FONT,
               fontWeight: 700,
-              color: '#fff',
+              // The tile is near-white in the light theme, so the label takes the theme's text colour.
+              color: 'text.primary',
             }}
           >
             <SourceLogo id={id} size={40} />
