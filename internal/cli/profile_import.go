@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cmp"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,7 +28,7 @@ func (c *cmd) profileImport() error {
 	}
 	if c.previewFlag {
 		return show(c, "pack.import", p, func(pv packsvc.Preview) {
-			fmt.Fprintf(c.out, "%s (%s): %d packages, %d config files\n", pv.Name, pv.Game, len(pv.Packages), pv.Configs)
+			fmt.Fprintf(c.out, "%s (%s): %d packages, %d config files\n", pv.Name, cmp.Or(pv.Game, c.game), len(pv.Packages), pv.Configs)
 			for _, pkg := range pv.Packages {
 				off := ""
 				if pkg.Disabled {
