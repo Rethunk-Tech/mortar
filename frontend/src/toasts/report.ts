@@ -28,6 +28,10 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
       return i18n._(msg`That is for another game. Open that game and import it there.`)
     case 'outdated':
       return i18n._(msg`That was made by a newer Mortar. Update Mortar to open it.`)
+    case 'external':
+      return i18n._(
+        msg`The author only allows this download on the source's own page. Download the file there and add it from your computer.`,
+      )
     default:
       return i18n._(msg`Something went wrong`)
   }

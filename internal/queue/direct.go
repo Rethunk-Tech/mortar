@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // DirectFile is what a Modrinth, CurseForge or itch.io download needs: the file's address, size and digest, and the projects the
@@ -91,12 +92,12 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 func (s *Service) handOff(e *curseforge.NotDistributableError) error {
 	msg := e.Error() + ": download the file from its CurseForge page and add it from your computer"
 	if s.d.OpenURL == nil {
-		return errors.New(msg)
+		return usererr.New(usererr.External, msg)
 	}
 	if err := s.d.OpenURL(e.PageURL); err != nil {
 		return err
 	}
-	return errors.New(msg + " (the page is open)")
+	return usererr.New(usererr.External, msg+" (the page is open)")
 }
 
 // sourceLoaders are the loaders the game's catalog lists for the source, which narrow the versions a dependency may take.

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestVerifyDigestSHA512(t *testing.T) {
@@ -59,7 +60,7 @@ func TestExpandDirectOpensThePageOfAForbiddenFile(t *testing.T) {
 		},
 	}}
 	_, err := s.expandPackages(context.Background(), []Request{{Kind: KindInstall, Game: "g", Profile: "p", Source: "curseforge", Package: "20"}})
-	if err == nil || opened != "https://www.curseforge.com/projects/20" || !strings.Contains(err.Error(), "Shut") {
+	if err == nil || opened != "https://www.curseforge.com/projects/20" || !strings.Contains(err.Error(), "Shut") || usererr.KindOf(err) != usererr.External {
 		t.Fatalf("opened %q, err %v", opened, err)
 	}
 }

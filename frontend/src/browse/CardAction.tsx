@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, Chip } from '@mui/material'
 import { Download, ExternalLink, Plus } from 'lucide-react'
+import { openPage } from '../mods/menu.ts'
 import { useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { OfflineGate } from '../shell/OfflineGate.tsx'
@@ -118,6 +119,13 @@ function CardAction(props: CardActionProps) {
   }
   if (installed) {
     return <Chip size="small" label={t`In this profile`} />
+  }
+  if (item.external === true) {
+    return (
+      <Button size="small" variant="outlined" onClick={() => openPage(item.url)}>
+        {t`Open page`}
+      </Button>
+    )
   }
   const action = sourceAction(props)
   return offline === '' ? action : <OfflineGate reason={offline}>{action}</OfflineGate>

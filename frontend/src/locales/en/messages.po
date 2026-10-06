@@ -205,7 +205,7 @@ msgid "Updated categories"
 msgstr "Updated categories"
 
 #: src/queue/store.ts:149
-#: src/toasts/report.ts:55
+#: src/toasts/report.ts:57
 msgid "Open storage settings"
 msgstr "Open storage settings"
 
@@ -847,7 +847,7 @@ msgstr "Mods' Entry is timed only on a measured launch."
 msgid "Game version not supported"
 msgstr "Game version not supported"
 
-#: src/browse/CardAction.tsx:114
+#: src/browse/CardAction.tsx:115
 msgid "Installed by Mortar"
 msgstr "Installed by Mortar"
 
@@ -1356,7 +1356,7 @@ msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
 #: src/settings/sections/AboutDiagnostics.tsx:227
-#: src/toasts/report.ts:62
+#: src/toasts/report.ts:64
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
 
@@ -1714,7 +1714,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/shell/ErrorRetry.tsx:14
 #: src/shell/LoadingRow.tsx:26
 #: src/shell/OfflineBanner.tsx:72
-#: src/toasts/report.ts:58
+#: src/toasts/report.ts:60
 msgid "Retry"
 msgstr "Retry"
 
@@ -3280,7 +3280,7 @@ msgid "Only in {name}"
 msgstr "Only in {name}"
 
 #: src/browse/BrowseMenu.tsx:56
-#: src/browse/CardAction.tsx:58
+#: src/browse/CardAction.tsx:59
 #: src/mods/OptionalFileRows.tsx:176
 #: src/queue/store.ts:141
 msgid "Open files page"
@@ -4210,6 +4210,10 @@ msgstr "Show in queue"
 msgid "Disabled"
 msgstr "Disabled"
 
+#: src/toasts/report.ts:32
+msgid "The author only allows this download on the source's own page. Download the file there and add it from your computer."
+msgstr "The author only allows this download on the source's own page. Download the file there and add it from your computer."
+
 #. placeholder {0}: acting.length
 #: src/mods/ModMenu.tsx:176
 msgid "{0, plural, one {Remove # mod} other {Remove # mods}}"
@@ -4283,7 +4287,7 @@ msgstr "{0} {1} has several archives. Which one should Mortar install?"
 msgid "Reset {label}"
 msgstr "Reset {label}"
 
-#: src/toasts/report.ts:64
+#: src/toasts/report.ts:66
 msgid "Open log"
 msgstr "Open log"
 
@@ -4309,7 +4313,7 @@ msgstr "Last run: {summary}"
 msgid "Offer new downloads"
 msgstr "Offer new downloads"
 
-#: src/browse/CardAction.tsx:111
+#: src/browse/CardAction.tsx:112
 msgid "Loader"
 msgstr "Loader"
 
@@ -6107,6 +6111,7 @@ msgstr "Pin {name}"
 msgid "Premium downloads come from this Nexus server when it offers the file."
 msgstr "Premium downloads come from this Nexus server when it offers the file."
 
+#: src/browse/CardAction.tsx:126
 #: src/mods/modActions.ts:38
 #: src/mods/modActions.ts:39
 #: src/mods/ModDependencyTree.tsx:57
@@ -6315,7 +6320,7 @@ msgstr "Another preset already has this name."
 msgid "Unknown author"
 msgstr "Unknown author"
 
-#: src/browse/CardAction.tsx:120
+#: src/browse/CardAction.tsx:121
 msgid "In this profile"
 msgstr "In this profile"
 
@@ -7651,7 +7656,7 @@ msgid "·"
 msgstr "·"
 
 #: src/browse/BrowseMenu.tsx:56
-#: src/browse/CardAction.tsx:73
+#: src/browse/CardAction.tsx:74
 #: src/console/RunProblems.tsx:137
 #: src/downloads/newDownloads.ts:35
 #: src/game/FarmMenuItem.tsx:90
@@ -8035,7 +8040,7 @@ msgstr "Every profile of this game runs the {0} installed for it, so they all sw
 msgid "Store"
 msgstr "Store"
 
-#: src/browse/CardAction.tsx:47
+#: src/browse/CardAction.tsx:48
 #: src/share/ImportPreview.tsx:59
 msgid "Download"
 msgstr "Download"
@@ -8421,8 +8426,8 @@ msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
 #: src/firstrun/GameSetup.tsx:137
-#: src/toasts/report.ts:32
-#: src/toasts/report.ts:111
+#: src/toasts/report.ts:34
+#: src/toasts/report.ts:113
 #: src/toasts/usePending.ts:31
 msgid "Something went wrong"
 msgstr "Something went wrong"
@@ -10995,7 +11000,7 @@ msgstr "Add category"
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 
-#: src/browse/CardAction.tsx:111
+#: src/browse/CardAction.tsx:112
 msgid "Mortar installs the loader for you."
 msgstr "Mortar installs the loader for you."
 
@@ -11997,7 +12002,7 @@ msgstr "Quiet grey-blue"
 msgid "Name a group below to create it and add this mod."
 msgstr "Name a group below to create it and add this mod."
 
-#: src/browse/CardAction.tsx:34
+#: src/browse/CardAction.tsx:35
 msgid "Sign in to download"
 msgstr "Sign in to download"
 

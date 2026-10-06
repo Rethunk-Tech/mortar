@@ -342,6 +342,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			Source: d.ID(), ID: strconv.Itoa(m.ID), Name: m.Name, Summary: m.Summary, Picture: m.Logo.ThumbnailURL,
 			Endorsements: m.ThumbsUpCount, Downloads: m.DownloadCount, Updated: m.DateModified,
 			URL: cmp.Or(m.Links.WebsiteURL, d.ModPageURL(q.Key, strconv.Itoa(m.ID))), Repo: source.GitHubRepo(m.Links.SourceURL),
+			External: m.AllowModDistribution != nil && !*m.AllowModDistribution,
 		}
 		if len(m.Authors) > 0 {
 			it.Author = m.Authors[0].Name

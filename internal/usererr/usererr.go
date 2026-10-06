@@ -25,6 +25,8 @@ const (
 	OtherGame Kind = "other_game"
 	// Outdated is something made by a newer Mortar than this one.
 	Outdated Kind = "outdated"
+	// External is a download its author only allows on the source's own page.
+	External Kind = "external"
 	Unknown  Kind = "unknown"
 )
 
@@ -123,7 +125,7 @@ func Parse(s string) (kind Kind, raw string) {
 		if s[i] == ']' && i+1 < len(s) && s[i+1] == ' ' {
 			k := Kind(s[1:i])
 			switch k {
-			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated:
+			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External:
 				return k, s[i+2:]
 			case Unknown:
 			}

@@ -112,6 +112,8 @@ type Item struct {
 	Loader   bool `json:"loader"`
 	// Bundled marks a mod Mortar installs itself with the loader (its companion), so Add does not apply.
 	Bundled bool `json:"bundled"`
+	// External marks a mod whose author only allows downloads on the site's own page, so Add does not apply.
+	External bool `json:"external,omitempty"`
 }
 
 // Alt is the same mod on another source: where to open it and install it from, and that hit's own flags.

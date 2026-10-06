@@ -10,6 +10,7 @@ const knownKinds = [
   'invalid',
   'other_game',
   'outdated',
+  'external',
 ] as const
 
 const kinds = new Set<string>(knownKinds)

@@ -34,7 +34,7 @@ func fake(t *testing.T) Driver {
 				q.Get("sortField") != "6" || q.Get("index") != "20" || q.Get("pageSize") != "20" {
 				t.Errorf("search params %v", q)
 			}
-			_, _ = w.Write([]byte(`{"data":[{"id":10,"name":"Open Mod","summary":"s","downloadCount":9,"thumbsUpCount":3,"dateModified":"2026-01-01T00:00:00Z","mainFileId":102,"links":{"websiteUrl":"https://www.curseforge.com/stardewvalley/mods/open","sourceUrl":"https://github.com/me/open"},"authors":[{"name":"me"}],"logo":{"thumbnailUrl":"https://img/t.png"},"latestFiles":[` + file2 + `]}],"pagination":{"totalCount":41}}`))
+			_, _ = w.Write([]byte(`{"data":[{"id":10,"name":"Open Mod","summary":"s","downloadCount":9,"thumbsUpCount":3,"dateModified":"2026-01-01T00:00:00Z","mainFileId":102,"links":{"websiteUrl":"https://www.curseforge.com/stardewvalley/mods/open","sourceUrl":"https://github.com/me/open"},"authors":[{"name":"me"}],"logo":{"thumbnailUrl":"https://img/t.png"},"latestFiles":[` + file2 + `]},{"id":20,"name":"Shut Mod","allowModDistribution":false,"links":{"websiteUrl":"https://www.curseforge.com/stardewvalley/mods/shut"}}],"pagination":{"totalCount":41}}`))
 		case "/mods/10":
 			_, _ = w.Write([]byte(modOpen))
 		case "/mods/20":
@@ -65,12 +65,15 @@ func fake(t *testing.T) Driver {
 func TestSearchMapsHitsAndPages(t *testing.T) {
 	t.Parallel()
 	page, err := fake(t).Search(context.Background(), source.Query{Game: "stardew", Key: "4643", Text: "cp", Page: 2, Sort: source.SortDownloads})
-	if err != nil || page.Total != 41 || len(page.Items) != 1 {
+	if err != nil || page.Total != 41 || len(page.Items) != 2 {
 		t.Fatalf("%+v %v", page, err)
 	}
 	it := page.Items[0]
 	if it.ID != "10" || it.Author != "me" || it.Repo != "me/open" || it.Version != "Open 2.0" || it.Endorsements != 3 || it.Downloads != 9 {
 		t.Fatalf("%+v", it)
+	}
+	if it.External || !page.Items[1].External {
+		t.Fatalf("external flags: %+v %+v", it, page.Items[1])
 	}
 	deep, err := fake(t).Search(context.Background(), source.Query{Game: "stardew", Key: "4643", Page: 600})
 	if err != nil || len(deep.Items) != 0 {
