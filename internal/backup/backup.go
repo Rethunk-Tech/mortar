@@ -43,7 +43,7 @@ type Cause struct {
 // backups apart again, so one kind cannot evict another's backups.
 func (c Cause) group() string {
 	if c.Kind == KindScheduled {
-		return KindScheduled + "/" + c.Save
+		return KindScheduled + "/" + scheduledKey(c.Profile, c.Save)
 	}
 	return c.Kind
 }

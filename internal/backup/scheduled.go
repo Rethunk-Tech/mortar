@@ -18,8 +18,9 @@ type Run struct {
 }
 
 // Scheduled zips each save of l written since its newest scheduled backup and keeps the newest keep scheduled
-// backups per save. A missing saves folder is an empty run.
-func Scheduled(l saves.Layout, backupsDir string, keep int, now time.Time) (Run, error) {
+// backups per save. profile names the profile whose own saves folder l is, "" for the game's shared one, so a save
+// folder name in both is tracked and rotated apart. A missing saves folder is an empty run.
+func Scheduled(l saves.Layout, backupsDir, profile string, keep int, now time.Time) (Run, error) {
 	var run Run
 	names, err := l.Names()
 	if err != nil || len(names) == 0 {
@@ -31,7 +32,7 @@ func Scheduled(l saves.Layout, backupsDir string, keep int, now time.Time) (Run,
 	}
 	var errs []error
 	for _, folder := range names {
-		if last, ok := newest[folder]; ok {
+		if last, ok := newest[scheduledKey(profile, folder)]; ok {
 			changed, err := saveChange(l, folder)
 			if err != nil {
 				run.Failed++
@@ -43,7 +44,7 @@ func Scheduled(l saves.Layout, backupsDir string, keep int, now time.Time) (Run,
 				continue
 			}
 		}
-		if _, err := Folder(l, backupsDir, folder, keep, now, Cause{Kind: KindScheduled, Save: folder}); err != nil {
+		if _, err := Folder(l, backupsDir, folder, keep, now, Cause{Kind: KindScheduled, Save: folder, Profile: profile}); err != nil {
 			run.Failed++
 			errs = append(errs, err)
 			continue
@@ -82,9 +83,13 @@ func scheduledNewest(backupsDir string, now time.Time) (map[string]time.Time, er
 		if c.Kind != KindScheduled {
 			continue
 		}
-		if t, err := time.Parse(stamp, strings.TrimSuffix(n, ".zip")); err == nil && t.After(newest[c.Save]) && !t.After(now.Add(clockSkew)) {
-			newest[c.Save] = t
+		key := scheduledKey(c.Profile, c.Save)
+		if t, err := time.Parse(stamp, strings.TrimSuffix(n, ".zip")); err == nil && t.After(newest[key]) && !t.After(now.Add(clockSkew)) {
+			newest[key] = t
 		}
 	}
 	return newest, nil
 }
+
+// scheduledKey is the save a scheduled backup tracks: its folder within the profile's own saves, or the shared ones.
+func scheduledKey(profile, save string) string { return profile + "/" + save }

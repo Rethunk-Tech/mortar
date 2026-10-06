@@ -2,6 +2,7 @@ package savessvc
 
 import (
 	"context"
+	"errors"
 	"log"
 	"maps"
 	"slices"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -71,7 +73,12 @@ func (s *Service) scheduledTickFor(gameID string, now time.Time) {
 	if err != nil || keep < 1 {
 		keep = backup.DefaultKeep
 	}
-	run, err := backup.Scheduled(l, backupsDir, keep, now)
+	run, err := backup.Scheduled(l, backupsDir, "", keep, now)
+	for _, own := range s.ownSaves(gameID) {
+		r, ownErr := backup.Scheduled(own.layout, backupsDir, own.profile, keep, now)
+		run.Saved, run.Unchanged, run.Failed = run.Saved+r.Saved, run.Unchanged+r.Unchanged, run.Failed+r.Failed
+		err = errors.Join(err, ownErr)
+	}
 	interval := time.Duration(hours) * time.Hour
 	s.schedMu.Lock()
 	s.lastScheduled[gameID] = now
@@ -142,4 +149,35 @@ func (s *Service) lastScheduledAt(gameID, backupsDir string, now time.Time) (tim
 		s.lastScheduled[gameID] = last
 	}
 	return s.lastScheduled[gameID], nil
+}
+
+type profileSaves struct {
+	profile string
+	layout  saves.Layout
+}
+
+// ownSaves are the saves folders of the game's profiles that keep their saves separate; the others share the folder
+// the scheduled pass already backs up.
+func (s *Service) ownSaves(gameID string) []profileSaves {
+	if s.profiles == nil {
+		return nil
+	}
+	all, err := s.profiles.List(gameID)
+	if err != nil {
+		log.Printf("scheduled save backup: %v", err)
+		return nil
+	}
+	var out []profileSaves
+	for _, p := range all {
+		if !p.SeparateSaves {
+			continue
+		}
+		sc, err := s.scannerFor(gameID, p.ID)
+		if err != nil {
+			log.Printf("scheduled save backup: %s: %v", p.ID, err)
+			continue
+		}
+		out = append(out, profileSaves{p.ID, sc.Layout()})
+	}
+	return out
 }

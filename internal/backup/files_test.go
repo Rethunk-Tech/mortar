@@ -64,7 +64,7 @@ func TestFileSavesBackUpAndRestore(t *testing.T) {
 	if got := zipNames(t, one); !slices.Equal(got, []string{"Saves/LCSaveFile2"}) {
 		t.Fatalf("one-save zip = %v", got)
 	}
-	if run, err := Scheduled(l, out, DefaultKeep, start.Add(time.Hour)); err != nil || run.Saved != 3 {
+	if run, err := Scheduled(l, out, "", DefaultKeep, start.Add(time.Hour)); err != nil || run.Saved != 3 {
 		t.Fatalf("Scheduled = %+v, %v", run, err)
 	}
 

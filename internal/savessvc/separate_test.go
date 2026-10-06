@@ -4,9 +4,12 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -126,5 +129,42 @@ func TestSeparateSavesBackupRestoreAndOpenActOnTheProfilesOwn(t *testing.T) {
 	}
 	if slices.Contains([]string{byFolder["Farm_1"], byFolder["Farm_2"]}, "") {
 		t.Fatalf("backups by folder %v", byFolder)
+	}
+}
+
+func TestScheduledBackupsCoverEachSeparateSavesFolderOnce(t *testing.T) {
+	s, _, ownDir, own, _ := separateEnv(t)
+	writeFarm(t, ownDir, "Farm_1", "Own", "own-v1")
+	if _, err := s.settings.Update(func(v *settings.Settings) {
+		if err := settings.ApplyKeyGame(v, "saveBackupHours", "6", "stardew"); err != nil {
+			t.Error(err)
+		}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	scheduled := func() []string {
+		listed, err := s.ListBackups("stardew", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var out []string
+		for _, b := range listed {
+			if b.Kind == backup.KindScheduled {
+				out = append(out, b.Profile+":"+b.Saves[0].Folder)
+			}
+		}
+		slices.Sort(out)
+		return out
+	}
+	now := time.Now()
+	s.scheduledTickFor("stardew", now)
+	want := []string{":Farm_1", own.ID + ":Farm_1", own.ID + ":Farm_2"}
+	slices.Sort(want)
+	if got := scheduled(); !slices.Equal(got, want) {
+		t.Fatalf("scheduled = %v, want %v", got, want)
+	}
+	s.scheduledTickFor("stardew", now.Add(7*time.Hour))
+	if got := scheduled(); !slices.Equal(got, want) {
+		t.Fatalf("unchanged saves backed up again: %v", got)
 	}
 }
