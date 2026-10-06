@@ -48,12 +48,14 @@ const (
 	maxFailures      = 5
 	burnFailures     = 15
 	lockout          = 10 * time.Minute
-	pairIterations   = 200_000
 	pairProtocolInfo = "mortar-lan-pair-v1"
 
 	// PairedEvent tells the window a computer finished pairing with this one.
 	PairedEvent = "lan:paired"
 )
+
+// pairIterations is a var so tests can run the handshake without paying for a production-strength key.
+var pairIterations = 200_000
 
 // PairedPeer is a computer this one trusts.
 type PairedPeer struct {

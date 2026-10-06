@@ -30,6 +30,11 @@ import (
 	"github.com/hashicorp/mdns"
 )
 
+func TestMain(m *testing.M) {
+	pairIterations = 1_000
+	os.Exit(m.Run())
+}
+
 func testPayload(t *testing.T) string {
 	t.Helper()
 	var buf bytes.Buffer
