@@ -45,6 +45,7 @@ import {
 } from './listColumns.ts'
 
 const DRAG_TINT = 0.16
+const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const
 
 function headerCursor(id: ListColumnId, isDragging: boolean): string {
   if (isDragging) {
@@ -54,10 +55,19 @@ function headerCursor(id: ListColumnId, isDragging: boolean): string {
 }
 
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
+const visuallyHidden = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+} as const
 const cellBase = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
 
+// The role comes last: dnd-kit's sortable attributes would otherwise make each header a button.
 function Cell({ sx, ...props }: TableCellProps) {
-  return <TableCell role="columnheader" {...props} sx={{ ...cellBase, ...sx }} />
+  return <TableCell {...props} role="columnheader" sx={{ ...cellBase, ...sx }} />
 }
 
 function HeaderCell({
@@ -84,6 +94,7 @@ function HeaderCell({
       title={label}
       {...attributes}
       {...listeners}
+      aria-sort={active ? ARIA_SORT[sortDir] : undefined}
       onClick={id === 'on' ? undefined : () => onSort(id)}
       onContextMenu={onMenu}
       sx={(theme) => ({
@@ -152,6 +163,7 @@ function HeaderCells({
   onCommit: () => void
   onCancel: () => void
 }) {
+  const { t } = useLingui()
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -185,7 +197,13 @@ function HeaderCells({
   const cells: ReactNode[] = []
   for (const id of cols) {
     if (id === 'name') {
-      cells.push(<Cell key="tile" onContextMenu={onMenu} />)
+      cells.push(
+        <Cell key="tile" onContextMenu={onMenu}>
+          <Box component="span" sx={visuallyHidden}>
+            {t`Icon`}
+          </Box>
+        </Cell>,
+      )
     }
     cells.push(
       <HeaderCell

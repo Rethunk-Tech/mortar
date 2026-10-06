@@ -104,6 +104,7 @@ function ListShell({
       </Table>
       <Box
         ref={parentRef}
+        role="rowgroup"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.target === e.currentTarget && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
@@ -120,7 +121,10 @@ function ListShell({
         }}
       >
         <Table role="presentation" sx={{ display: 'block', '& tbody': { display: 'block' } }}>
-          <TableBody role="rowgroup" sx={{ display: 'block', position: 'relative', height: total }}>
+          <TableBody
+            role="presentation"
+            sx={{ display: 'block', position: 'relative', height: total }}
+          >
             {children}
           </TableBody>
         </Table>
