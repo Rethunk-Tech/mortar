@@ -44,7 +44,8 @@ document.addEventListener('contextmenu', (event) => {
 })
 
 await activateLanguage((await Get()).language)
-initSettings().catch(reportUnexpected)
+// Settings land before the first render, so the first frame already uses the saved sort, grouping and columns.
+await initSettings().catch(reportUnexpected)
 initInstallAsks()
 initMortarUpdateBackground()
 initUpdateDigestToast()
