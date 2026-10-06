@@ -12,11 +12,12 @@ import (
 )
 
 // mapScanCacheVersion changes whenever what mapScan records changes, so an older file is ignored.
-const mapScanCacheVersion = 1
+const mapScanCacheVersion = 2
 
 type diskMapScans struct {
-	Version int                `json:"version"`
-	Scans   map[string]mapScan `json:"scans"`
+	Version int                    `json:"version"`
+	Scans   map[string]mapScan     `json:"scans"`
+	Folders map[string]mapFileList `json:"folders"`
 }
 
 func mapScanCachePath() (string, error) {
@@ -49,18 +50,20 @@ func loadMapScans() {
 		return
 	}
 	var saved diskMapScans
-	if json.Unmarshal(payload, &saved) == nil && saved.Version == mapScanCacheVersion && saved.Scans != nil {
-		mapScans.byPath = saved.Scans
+	if json.Unmarshal(payload, &saved) == nil && saved.Version == mapScanCacheVersion && saved.Scans != nil && saved.Folders != nil {
+		mapScans.byPath, mapScans.folders = saved.Scans, saved.Folders
 	}
 }
 
-// flushMapScans drops scans of files in folders that are no longer installed, then saves the scans when any
+// flushMapScans drops the scans and listings of folders that are no longer installed, then saves them when any
 // changed.
 func flushMapScans(mods []framework.Mod) {
 	prefixes := make([]string, 0, len(mods))
+	installed := map[string]bool{}
 	for _, im := range mods {
 		if im.Folder != "" {
 			prefixes = append(prefixes, filepath.Clean(im.Folder)+string(filepath.Separator))
+			installed[im.Folder] = true
 		}
 	}
 	mapScans.Lock()
@@ -78,6 +81,12 @@ func flushMapScans(mods []framework.Mod) {
 			mapScans.dirty = true
 		}
 	}
+	for folder := range mapScans.folders {
+		if !installed[folder] {
+			delete(mapScans.folders, folder)
+			mapScans.dirty = true
+		}
+	}
 	if !mapScans.dirty {
 		return
 	}
@@ -85,7 +94,7 @@ func flushMapScans(mods []framework.Mod) {
 	if err != nil {
 		return
 	}
-	raw, err := json.Marshal(diskMapScans{Version: mapScanCacheVersion, Scans: mapScans.byPath})
+	raw, err := json.Marshal(diskMapScans{Version: mapScanCacheVersion, Scans: mapScans.byPath, Folders: mapScans.folders})
 	if err != nil {
 		return
 	}

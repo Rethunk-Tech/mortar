@@ -51,7 +51,7 @@ func releasePacks(gen int) {
 	packDiskState.Unlock()
 	mapScans.Lock()
 	if !mapScans.dirty {
-		mapScans.byPath, mapScans.loaded = map[string]mapScan{}, false
+		resetMapScans()
 	}
 	mapScans.Unlock()
 	parts.Lock()

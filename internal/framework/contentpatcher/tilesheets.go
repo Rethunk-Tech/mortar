@@ -17,20 +17,13 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
-// markUnreadable records that a map could not be read, so the tilesheets it might use count as possibly used, and
-// lets the walk go on to the other files.
-// mapFiles remembers each mod folder's .tmx and .tbin files for its store key. A store item never changes after it
-// is extracted, so the list holds until the folder holds another key or is itself changed; the folder's own
-// modification time catches files added or removed at its top level.
-var mapFiles = struct {
-	sync.Mutex
-	byFolder map[string]mapFileList
-}{byFolder: map[string]mapFileList{}}
-
+// mapFileList is one mod folder's .tmx and .tbin files for its store key. A store item never changes after it is
+// extracted, so the list holds until the folder holds another key or is itself changed; the folder's own modification
+// time catches files added or removed at its top level.
 type mapFileList struct {
-	stamp    string
-	paths    []string
-	complete bool
+	Stamp    string   `json:"stamp"`
+	Paths    []string `json:"paths,omitempty"`
+	Complete bool     `json:"complete"`
 }
 
 // modMapFiles lists the map files in mod's folder; complete is false when part of the folder could not be read.
@@ -41,11 +34,12 @@ func modMapFiles(im framework.Mod) (paths []string, complete bool) {
 		stamp += "|" + strconv.FormatInt(info.ModTime().UnixNano(), 10)
 	}
 	noteRead(im.Folder, info)
-	mapFiles.Lock()
-	cached, ok := mapFiles.byFolder[im.Folder]
-	mapFiles.Unlock()
-	if ok && cached.stamp == stamp {
-		return cached.paths, cached.complete
+	loadMapScans()
+	mapScans.Lock()
+	cached, ok := mapScans.folders[im.Folder]
+	mapScans.Unlock()
+	if ok && cached.Stamp == stamp {
+		return cached.Paths, cached.Complete
 	}
 	unreadable := false
 	if err := filepath.WalkDir(im.Folder, func(path string, entry os.DirEntry, err error) error {
@@ -61,12 +55,15 @@ func modMapFiles(im framework.Mod) (paths []string, complete bool) {
 		unreadable = true
 	}
 	complete = !unreadable
-	mapFiles.Lock()
-	mapFiles.byFolder[im.Folder] = mapFileList{stamp: stamp, paths: paths, complete: complete}
-	mapFiles.Unlock()
+	mapScans.Lock()
+	mapScans.folders[im.Folder] = mapFileList{Stamp: stamp, Paths: paths, Complete: complete}
+	mapScans.dirty = true
+	mapScans.Unlock()
 	return paths, complete
 }
 
+// markUnreadable records that a map could not be read, so the tilesheets it might use count as possibly used, and
+// lets the walk go on to the other files.
 func markUnreadable(flag *bool) error {
 	*flag = true
 	return nil
@@ -173,11 +170,7 @@ func unusedTilesheetPacks(mods []framework.Mod) []framework.Cleanup {
 			for _, candidate := range candidates {
 				id := candidate.ModID().Fold()
 				if ext == ".tbin" {
-					if slices.ContainsFunc(basenamesByID[id], func(name string) bool {
-						return slices.ContainsFunc(scan.Runs, func(run string) bool {
-							return strings.Contains(run, name)
-						})
-					}) {
+					if slices.ContainsFunc(basenamesByID[id], func(name string) bool { return tbinNames(path, scan, name) }) {
 						recordTilesheetUse(uses[id], im)
 					}
 					continue
@@ -271,14 +264,44 @@ type mapScan struct {
 	ModTime int64    `json:"modTime"`
 	Keys    []string `json:"keys,omitempty"`
 	Runs    []string `json:"runs,omitempty"`
+	// Has holds the tilesheet names already looked for in Runs.
+	Has map[string]bool `json:"has,omitempty"`
 }
 
 var mapScans = struct {
 	sync.Mutex
-	byPath map[string]mapScan
-	loaded bool
-	dirty  bool
-}{byPath: map[string]mapScan{}}
+	byPath  map[string]mapScan
+	folders map[string]mapFileList
+	loaded  bool
+	dirty   bool
+}{byPath: map[string]mapScan{}, folders: map[string]mapFileList{}}
+
+func resetMapScans() {
+	mapScans.byPath, mapScans.folders, mapScans.loaded, mapScans.dirty = map[string]mapScan{}, map[string]mapFileList{}, false, false
+}
+
+// tbinNames reports whether a tilesheet name occurs in the .tbin at path. Each answer is kept with the map's scan, as
+// the same names are looked for in the same maps check after check.
+func tbinNames(path string, scan mapScan, name string) bool {
+	mapScans.Lock()
+	found, known := scan.Has[name]
+	mapScans.Unlock()
+	if known {
+		return found
+	}
+	found = slices.ContainsFunc(scan.Runs, func(run string) bool { return strings.Contains(run, name) })
+	mapScans.Lock()
+	defer mapScans.Unlock()
+	if current, ok := mapScans.byPath[path]; ok && current.Size == scan.Size && current.ModTime == scan.ModTime {
+		if current.Has == nil {
+			current.Has = map[string]bool{}
+			mapScans.byPath[path] = current
+		}
+		current.Has[name] = found
+		mapScans.dirty = true
+	}
+	return found
+}
 
 func mapScanFor(path string, entry os.DirEntry, ext string) (mapScan, error) {
 	info, err := entry.Info()

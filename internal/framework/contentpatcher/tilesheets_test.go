@@ -25,6 +25,15 @@ func TestCleanupHintsTilesheets(t *testing.T) {
 		if got := cleanup([]framework.Mod{pack, other}); len(got) != 0 {
 			t.Fatalf("TBIN use was flagged: %#v", got)
 		}
+		mapScans.Lock()
+		scan := mapScans.byPath[filepath.Join(other.Folder, "map.tbin")]
+		mapScans.Unlock()
+		if !scan.Has["sharedtiles"] {
+			t.Fatalf("the name match was not kept with the scan: %#v", scan)
+		}
+		if got := cleanup([]framework.Mod{pack, other}); len(got) != 0 {
+			t.Fatalf("TBIN use was flagged from the kept match: %#v", got)
+		}
 	})
 	t.Run("optional dependency", func(t *testing.T) {
 		pack := tilesheetPack(t, "Tiles.Optional", `{"Changes":[{"Action":"Load","Target":"Maps/OptionalTiles"}]}`)

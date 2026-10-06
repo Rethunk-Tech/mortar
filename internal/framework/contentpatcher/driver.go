@@ -65,7 +65,7 @@ func (Driver) Forget() {
 	packDiskState.loaded, packDiskState.entries, packDiskState.dirty = false, nil, false
 	packDiskState.Unlock()
 	mapScans.Lock()
-	mapScans.byPath, mapScans.loaded, mapScans.dirty = map[string]mapScan{}, false, false
+	resetMapScans()
 	mapScans.Unlock()
 	dropParts()
 }
