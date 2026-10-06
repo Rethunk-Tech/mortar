@@ -18,6 +18,9 @@ func cleanupHints(mods []framework.Mod, found []framework.Cleanup) []framework.C
 	}
 	for _, im := range mods {
 		for _, dep := range im.Dependencies {
+			if !dep.Required {
+				continue
+			}
 			recordCleanupDependency(im, dep.ModID(), enabledNeeds, disabledDependents)
 		}
 		if im.ContentPackFor != "" {

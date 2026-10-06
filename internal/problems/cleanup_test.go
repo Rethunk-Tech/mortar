@@ -16,7 +16,7 @@ func TestCleanupHintsFindsUnusedFrameworkNeededOnlyByDisabledMod(t *testing.T) {
 		UniqueID: "Example.OldPack",
 		Dependencies: []manifest.Dependency{{
 			UniqueID: "spacechase0.SpaceCore",
-			Required: false,
+			Required: true,
 		}},
 	}
 	contentFramework := manifest.Manifest{
@@ -53,5 +53,18 @@ func TestCleanupHintsFindsUnusedFrameworkNeededOnlyByDisabledMod(t *testing.T) {
 	got := cleanupHints(mods, nil)
 	if len(got) != 2 || got[0].Key != "content-framework" || got[1].Key != "spacecore" {
 		t.Fatalf("cleanupHints() = %#v, want both unused frameworks", got)
+	}
+}
+
+func TestCleanupHintsIgnoresOptionalDependents(t *testing.T) {
+	mods := []framework.Mod{
+		{Key: "a", Enabled: true, Manifest: manifest.Manifest{Name: "World Maps", UniqueID: "Example.WorldMaps"}},
+		{Key: "b", Enabled: false, Manifest: manifest.Manifest{
+			UniqueID:     "Example.EarthyMaps",
+			Dependencies: []manifest.Dependency{{UniqueID: "Example.WorldMaps", Required: false}},
+		}},
+	}
+	if got := cleanupHints(mods, nil); len(got) != 0 {
+		t.Fatalf("cleanupHints() = %#v, want none", got)
 	}
 }
