@@ -418,7 +418,7 @@ export function EmptyMods({ profileId }: { profileId: string }) {
         </>
       }
     >
-      {t`Or paste a share or collection link with Ctrl+V.`}
+      {t`Browse for mods, add an archive, or paste a share or collection link with Ctrl+V.`}
     </EmptyState>
   )
 }

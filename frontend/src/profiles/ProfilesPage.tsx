@@ -382,7 +382,7 @@ function ProfilesHeader({
         />
         <MenuAction
           icon={<Download size={16} aria-hidden={true} />}
-          label={t`Import…`}
+          label={t`From another mod manager…`}
           onClick={() => {
             closeImportMenu()
             setWizard(true)
