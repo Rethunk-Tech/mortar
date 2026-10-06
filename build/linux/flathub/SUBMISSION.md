@@ -7,7 +7,9 @@ disclosure of AI-generated code in Mortar. Flathub also expects a meaningful pub
 submission waits until the public repository has one. The release workflow renders the submission with
 `build/linux/flathub/render.sh` and attaches its files with a `flathub-` prefix: `tech.rethunk.Mortar.yml`
 (builds the v@VERSION@ tag from source), `go-sources.json` and `node-sources.json` (every Go module and npm
-package the build reads, with sha256 or sha512) and `yarn.lock`.
+package the build reads, with sha256 or sha512) and `yarn.lock`. Those rendered files, finish-args included (they are
+copied from the sideload manifest, `build/linux/flatpak/tech.rethunk.Mortar.yml`), were written with AI help: they are the
+owner's reference, never what is submitted.
 
 ## Steps
 
