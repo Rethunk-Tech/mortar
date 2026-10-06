@@ -19,8 +19,16 @@ export function searchFields(
     m.id,
     ...(entry?.tags ?? []),
     entry?.note ?? '',
-    ...categoryNames(entry, nexusById[nexusId]?.details?.category, customById),
+    ...categoryNames(entry, siteCategory(entry, nexusById[nexusId]?.details?.category), customById),
   ]
+}
+
+/** The category the mod's site gives it: a Thunderstore package's, recorded at install, or the Nexus page's. */
+export function siteCategory(
+  entry: Entry | undefined,
+  nexusCategory: string | undefined,
+): string | undefined {
+  return entry?.source.kind === 'thunderstore' ? entry.source.category : nexusCategory
 }
 
 /** Category names a search can match: the resolved label (custom name or Nexus category) and the raw override. */

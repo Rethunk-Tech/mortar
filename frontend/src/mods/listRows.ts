@@ -16,6 +16,7 @@ import { idKey } from './dependents.ts'
 import { type customCategoryById, resolvedCategoryLabel } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { kindLabel } from './lookup.ts'
+import { siteCategory } from './modSearch.ts'
 
 function useEntrySizes(): Readonly<Record<string, number>> {
   const [sizes, setSizes] = useState<Record<string, number>>({})
@@ -121,7 +122,7 @@ function toListRow(
   const details = byId[nexusId]?.details
   const categoryLabel = resolvedCategoryLabel(
     entry?.categoryOverride,
-    details?.category,
+    siteCategory(entry, details?.category),
     customById,
   )
   const row: ListRow = {

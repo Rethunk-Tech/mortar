@@ -54,6 +54,7 @@ import {
   useMenuState,
 } from './menu.ts'
 import { type ModAction, modActions } from './modActions.ts'
+import { siteCategory } from './modSearch.ts'
 import { useNexusDetails } from './nexusDetails.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { SplitCombineItems } from './SplitCombineItems.tsx'
@@ -313,7 +314,9 @@ function ModActionMenu({
   const byId = useNexusDetails((s) => s.byId)
   const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
   const nexusCategory =
-    profile === undefined ? '' : (byId[nexusIdOf(profile, mod)]?.details?.category ?? '')
+    profile === undefined
+      ? ''
+      : (siteCategory(entry, byId[nexusIdOf(profile, mod)]?.details?.category) ?? '')
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [alsoOpen, setAlsoOpen] = useState(false)
   const [bundleOpen, setBundleOpen] = useState(false)
