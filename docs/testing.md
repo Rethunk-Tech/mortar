@@ -32,10 +32,11 @@ go test -race ./internal/<pkg>
 
 | Run | Command | Proves |
 | --- | --- | --- |
-| Fuzz | `go test -fuzz=FuzzExtract -fuzztime=60s ./internal/archive` (also `FuzzCleanName` and `FuzzExtractZipEntries` there, and `FuzzFOMODLayout` in `internal/installer`, `FuzzParse` in `internal/nxm`, `FuzzParseR2Zip`, `FuzzModpackManifest` and `FuzzGaleRows` in `internal/pack`, `FuzzCfgSetKeepsOtherLines` in `internal/configsvc`, `FuzzParseLink` and `FuzzIndexChunkDecode` in `internal/source/thunderstore`, and `FuzzDecoders` in `internal/source/modrinth` and `internal/source/itch`) | Hostile input never panics and never writes outside its destination. The default run replays each seed and every file in `testdata/fuzz` as a regression test |
+| Fuzz | `go test -fuzz=FuzzExtract -fuzztime=2m ./internal/archive`; every untrusted input's target is named in [security.md](security.md), each in its package's `fuzz_test.go` | Hostile input never panics, never writes outside its destination, and where a format round-trips, survives it. The default run replays each seed and every file in `testdata/fuzz` as a regression test |
 | Property | `MORTAR_SYNC_SEEDS=2000 go test ./internal/syncsvc -run Property` | Two machines editing at random never lose or invent a change (`syncsvc/property_test.go`) |
 | Updater e2e | `wails3 task test:updater` | The self-updater swaps the binary through a signed manifest (`-tags updatetest`; skipped under `-short`) |
 | Real SMAPI installer | `MORTAR_SMOKE=1 go test ./internal/loader/smapi -run Smoke` | The real installer works on a copy of a Stardew install (needs the network) |
+| Real Content Patcher profile | `MORTAR_CP_REAL=<game>/<profile id> HOME=<sandbox copy> go test ./internal/framework/contentpatcher -run RealIncremental` | An incremental check after a pack is edited, added or removed finds what a full check finds, on a real profile |
 | Scan benchmark | `MORTAR_SCAN_BENCH=1 go test ./internal/framework/contentpatcher -run ScanBench` | Peak memory of a conflict scan on a large mod folder |
 | Browser e2e | `bun run --cwd frontend e2e` | The main flows through the real UI against a seeded sandbox |
 | Stardew regress | `scripts/selftest.sh regress` | Mortar launches a real profile, SMAPI loads every enabled mod, and the game folder hashes the same after the purge |

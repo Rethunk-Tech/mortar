@@ -29,7 +29,6 @@ Not in the first release; re-weigh only when asked:
 - The Xbox app version (WindowsApps folders are locked down).
 - Windows code signing: SignPath Foundation declined while Mortar has little public history; re-apply once it has more.
 - Needs Nexus's approval through app registration first (below), since it starts downloads outside Nexus's own Mod Manager Download button: an "Add to Mortar" button on Nexus listing tiles.
-- Per-profile save isolation.
 - Decided against: ModDrop as a source. It has no public listing or download API (the site is a single-page app and `/api/v1/*` answers "does not exist"), so Mortar could only build a page link. SMAPI `ModDrop:N` update keys show as an unknown source.
 - Decided against: deduplicating identical files across store items. Measured, not worth it (2026-10-05, a 1.6 GB store of 724 items, 50,257 files): files identical across items hold 76 MB, 4.7% of the store, under the 5% bar, and writable files barely change that; counting copies inside one item too it is 99 MB, 6.1%.
 - Decided against: speeding up Play. Measured, not worth it (2026-10-05, the 811-mod Stardew profile, direct launch in a sandbox copy): Play to the game process takes 93 to 120 ms wall and 60 to 130 ms of Mortar CPU (deploy and journal included), and the warm pre-Play checks take 74 to 260 ms. A run changes the problems fingerprint, and the recheck that follows runs when the game exits, so the next Play finds it done.
