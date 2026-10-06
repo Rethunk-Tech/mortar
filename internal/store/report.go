@@ -18,7 +18,7 @@ type Item struct {
 	Version  string    `json:"version"`
 	LastUsed time.Time `json:"lastUsed"`
 	Size     int64     `json:"size"`
-	// InUse is true when a profile, history entry or snapshot names the key; Remove refuses it.
+	// InUse is true when a profile entry, a profile's loader, a history entry or a snapshot names the key; Remove refuses it.
 	InUse bool `json:"inUse"`
 }
 

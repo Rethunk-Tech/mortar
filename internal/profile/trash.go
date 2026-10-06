@@ -15,6 +15,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -280,12 +282,17 @@ func (s *Store) StoreKeys(history bool) (map[string][]string, error) {
 		}
 		for _, p := range profiles {
 			out[g] = append(out[g], entriesStoreKeys(p.Entries)...)
-			if !history {
-				continue
-			}
 			dir := filepath.Join(s.root, g, p.ID)
 			if _, err := os.Stat(filepath.Join(dir, fileName)); err != nil {
 				dir = filepath.Join(s.trash, g, p.ID)
+			}
+			key, err := loaderStoreKey(g, p, dir)
+			if err != nil {
+				return nil, err
+			}
+			out[g] = append(out[g], key)
+			if !history {
+				continue
 			}
 			keys, err := historyStoreKeys(dir)
 			if err != nil {
@@ -360,4 +367,21 @@ func historyStoreKeys(dir string) ([]string, error) {
 		}
 	}
 	return keys, nil
+}
+
+// loaderStoreKey is the store key of the installer a per-profile loader was laid into the profile from, "" when the
+// profile holds no such loader. No entry names that key, yet removing it would force a download for the next profile.
+func loaderStoreKey(gameID string, p Profile, dir string) (string, error) {
+	l, ok := game.LoaderOf(gameID, p.Loader)
+	if !ok {
+		return "", nil
+	}
+	if _, perProfile := l.(loader.InProfile); !perProfile {
+		return "", nil
+	}
+	st, err := l.Status(loader.Target{Game: gameID, ProfileDir: dir})
+	if err != nil || !st.Installed || st.Version == "" {
+		return "", err
+	}
+	return store.LoaderKey(l.ID(), st.Version), nil
 }
