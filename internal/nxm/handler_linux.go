@@ -15,6 +15,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -37,12 +38,22 @@ var packaged string
 
 func skipUserDesktop() bool { return packaged != "" }
 
-func skipXdgMime() bool {
+func inFlatpak() bool {
 	if packaged == "flatpak" {
 		return true
 	}
 	_, err := os.Stat("/.flatpak-info")
 	return err == nil
+}
+
+// mimeDefaults runs xdg-mime. Inside a Flatpak the runtime has none, and the defaults that count are the host's, so
+// it runs the host's.
+func (l *System) mimeDefaults(args ...string) (string, error) {
+	if inFlatpak() {
+		name, hostArgs := sandbox.HostArgv("", nil, "xdg-mime", args...)
+		return l.run(name, hostArgs...)
+	}
+	return l.run(xdgMime, args...)
 }
 
 func schemeMime(scheme string) string { return "x-scheme-handler/" + scheme }
@@ -67,10 +78,7 @@ func (l *System) setDefaults() error {
 }
 
 func (l *System) setDefault(mime string) error {
-	if skipXdgMime() {
-		return nil
-	}
-	if _, err := l.run(xdgMime, "default", desktopID, mime); err != nil {
+	if _, err := l.mimeDefaults("default", desktopID, mime); err != nil {
 		return fmt.Errorf("xdg-mime default: %w", err)
 	}
 	return nil
@@ -119,10 +127,7 @@ func (l *System) desktopPath() string {
 }
 
 func (l *System) Owner(scheme string) (Owner, error) {
-	if skipXdgMime() {
-		return Owner{}, nil
-	}
-	out, err := l.run(xdgMime, "query", "default", schemeMime(scheme))
+	out, err := l.mimeDefaults("query", "default", schemeMime(scheme))
 	if err != nil {
 		return Owner{}, fmt.Errorf("xdg-mime query: %w", err)
 	}
@@ -348,10 +353,7 @@ func (l *System) handBack(schemes []string, previous map[string]string) error {
 			unowned = append(unowned, schemeMime(scheme))
 			continue
 		}
-		if skipXdgMime() {
-			continue
-		}
-		if _, err := l.run(xdgMime, "default", previous[scheme], schemeMime(scheme)); err != nil {
+		if _, err := l.mimeDefaults("default", previous[scheme], schemeMime(scheme)); err != nil {
 			return fmt.Errorf("xdg-mime default: %w", err)
 		}
 	}

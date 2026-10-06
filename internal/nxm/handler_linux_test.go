@@ -21,6 +21,9 @@ type recorder struct {
 // run plays xdg-mime: query answers the current default, default changes it. Nothing touches the real system.
 func (r *recorder) run(name string, args ...string) (string, error) {
 	r.calls = append(r.calls, name+" "+strings.Join(args, " "))
+	if name == "flatpak-spawn" && len(args) > 2 && args[0] == "--host" && args[1] == "xdg-mime" {
+		name, args = xdgMime, args[2:]
+	}
 	if name == xdgMime && args[0] == "query" {
 		mime := args[len(args)-1]
 		if r.byMime != nil {
@@ -391,21 +394,24 @@ func TestPackagedRegisterSetsNxmDefaultWithoutWriting(t *testing.T) {
 	}
 }
 
-func TestFlatpakSkipsXdgMime(t *testing.T) {
+func TestFlatpakSetsTheHostsDefault(t *testing.T) {
 	packaged = "flatpak"
 	t.Cleanup(func() { packaged = "" })
-	l, r := newLinux(t, "")
+	l, r := newLinux(t, "other.desktop")
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
 	if err := l.RegisterLinks(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := l.Owner("nxm"); err != nil {
-		t.Fatal(err)
+	owner, err := l.Owner("nxm")
+	if err != nil || !owner.Mine {
+		t.Fatalf("owner = %+v, %v", owner, err)
 	}
-	if len(r.calls) != 0 {
-		t.Errorf("flatpak ran xdg-mime: %q", r.calls)
+	for _, c := range r.calls {
+		if !strings.HasPrefix(c, "flatpak-spawn --host xdg-mime ") {
+			t.Errorf("flatpak ran %q, not the host's xdg-mime", c)
+		}
 	}
 	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("flatpak wrote a user desktop entry")

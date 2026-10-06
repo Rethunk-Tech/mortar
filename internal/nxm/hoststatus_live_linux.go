@@ -4,7 +4,7 @@ package nxm
 
 // A Flatpak build writes no host manifests (see WriteNativeHosts), so it has none to report.
 func statusForExecutable(exe string) []HostStatus {
-	if skipXdgMime() {
+	if inFlatpak() {
 		return nil
 	}
 	l, err := New(exe)

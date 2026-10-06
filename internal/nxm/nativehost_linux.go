@@ -23,7 +23,7 @@ func (l *System) hostManifestPaths() map[string]bool {
 // WriteNativeHosts lets the Mortar browser extension start this copy of Mortar. A browser outside the Flatpak
 // sandbox cannot run the binary inside it, so a Flatpak build writes none.
 func (l *System) WriteNativeHosts() error {
-	if skipXdgMime() {
+	if inFlatpak() {
 		return nil
 	}
 	var errs []error
