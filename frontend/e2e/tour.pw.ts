@@ -1,6 +1,7 @@
 import { expect, type Page, test } from '@playwright/test'
 
-const SETTLE_MS = 700
+// The tour opens from an effect once the reloaded app has its profile; this covers a slow first render.
+const REOPEN_MS = 500
 
 async function serverUp(baseURL: string): Promise<boolean> {
   try {
@@ -56,8 +57,9 @@ test('the replayed tour spotlights each step and Skip keeps it closed after a re
   await expect(dialog).toBeVisible({ timeout: 10_000 })
 
   for (const [i, selector] of STEP_TARGETS.entries()) {
-    await page.waitForTimeout(SETTLE_MS)
-    expect(await spotlightCovers(page, selector), `step ${i + 1} spotlight`).toBe(true)
+    await expect
+      .poll(() => spotlightCovers(page, selector), { message: `step ${i + 1} spotlight` })
+      .toBe(true)
     if (i < STEP_TARGETS.length - 1) {
       await dialog.getByRole('button', { name: 'Next' }).click()
     }
@@ -66,6 +68,6 @@ test('the replayed tour spotlights each step and Skip keeps it closed after a re
   await expect(dialog).toBeHidden()
   await page.reload()
   await expect(page.getByRole('tab').first()).toBeVisible({ timeout: 30_000 })
-  await page.waitForTimeout(SETTLE_MS * 2)
+  await page.waitForTimeout(REOPEN_MS)
   await expect(page.getByRole('dialog')).toBeHidden()
 })
