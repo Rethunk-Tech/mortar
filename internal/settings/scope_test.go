@@ -15,7 +15,7 @@ func TestFileIsSplitByScope(t *testing.T) {
 		v.NexusName = "Farmer"
 		v.NxmPreviousHandlers = map[string]string{"nxm": "vortex.desktop"}
 		v.AutoTrackNexus = true
-		v.LoaderPrefs = map[string]LoaderPrefs{"smapi": {Pin: "4.0.0"}, "bepinex5": {LastSweepVersion: "5.4.2304"}}
+		v.LoaderPrefs = map[string]LoaderPrefs{"stardew/smapi": {Pin: "4.0.0"}, "valheim/bepinex5": {LastSweepVersion: "5.4.2304"}}
 		if err := ApplyKeyGame(v, "runsKept", "7", "stardew"); err != nil {
 			t.Error(err)
 		}
@@ -46,14 +46,14 @@ func TestFileIsSplitByScope(t *testing.T) {
 	if doc.Loaders["smapi"]["builds"] != "show" || doc.Loaders["smapi"]["tellWhenOut"] != true || doc.Games["stardew"]["smapiBuilds"] != nil {
 		t.Fatalf("loader scope: %s", b)
 	}
-	if doc.Loaders["smapi"]["pin"] != "4.0.0" || doc.Loaders["bepinex5"]["lastSweepVersion"] != "5.4.2304" || doc.Global["loaderPrefs"] != nil {
+	if doc.Loaders["stardew/smapi"]["pin"] != "4.0.0" || doc.Loaders["valheim/bepinex5"]["lastSweepVersion"] != "5.4.2304" || doc.Global["loaderPrefs"] != nil {
 		t.Fatalf("loader prefs: %s", b)
 	}
 	s2, err := Open()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := s2.Get(); got.NexusName != "Farmer" || got.NxmPreviousHandlers["nxm"] != "vortex.desktop" || got.GamePrefs("stardew").RunsKept != 7 || got.LoaderPin("smapi") != "4.0.0" || got.LoaderPrefs["bepinex5"].LastSweepVersion != "5.4.2304" {
+	if got := s2.Get(); got.NexusName != "Farmer" || got.NxmPreviousHandlers["nxm"] != "vortex.desktop" || got.GamePrefs("stardew").RunsKept != 7 || got.LoaderPin("stardew", "smapi") != "4.0.0" || got.LoaderPrefs["valheim/bepinex5"].LastSweepVersion != "5.4.2304" {
 		t.Fatalf("reload = %+v", got)
 	}
 }
@@ -115,5 +115,29 @@ func TestHandleLinksLivesInItsSourceBlock(t *testing.T) {
 	}
 	if got := s2.Get().ThunderstoreHandleLinks; got == nil || !*got {
 		t.Fatalf("reload = %v", got)
+	}
+}
+
+func TestLoaderPinAndSweepBelongToOneGame(t *testing.T) {
+	st, _ := open(t)
+	if _, err := st.Update(func(v *Settings) {
+		if err := ApplyKeyGame(v, "bepinex5Pin", "5.4.2100", "lethal-company"); err != nil {
+			t.Error(err)
+		}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.RecordLastSweep("lethal-company", "v73", "bepinex5", "5.4.2100"); err != nil {
+		t.Fatal(err)
+	}
+	got := st.Get()
+	if got.LoaderPin("lethal-company", "bepinex5") != "5.4.2100" || got.LoaderPin("valheim", "bepinex5") != "" {
+		t.Fatalf("pins = %+v", got.LoaderPrefs)
+	}
+	if v, err := got.LookupGame("bepinex5Pin", "valheim"); err != nil || v != "" {
+		t.Fatalf("valheim bepinex5Pin = %q, %v", v, err)
+	}
+	if got.LoaderPrefs[LoaderKey("valheim", "bepinex5")].LastSweepVersion != "" {
+		t.Fatalf("sweep = %+v", got.LoaderPrefs)
 	}
 }

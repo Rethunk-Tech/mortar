@@ -10,7 +10,7 @@ func (s *Store) RecordLastSweep(gameID, gameVer, loaderID, loaderVer string) err
 		g.LastSweepGameVersion = gameVer
 		putGame(cur, gameID, g)
 		if loaderID != "" {
-			setLoaderPrefs(cur, loaderID, func(p *LoaderPrefs) { p.LastSweepVersion = loaderVer })
+			setLoaderPrefs(cur, gameID, loaderID, func(p *LoaderPrefs) { p.LastSweepVersion = loaderVer })
 		}
 	})
 	return err

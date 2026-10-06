@@ -48,7 +48,8 @@ func sourcePref(source string, p pref) pref {
 	return p
 }
 
-// LoaderPrefs is what Mortar keeps for one loader, whichever game uses it.
+// LoaderPrefs is what Mortar keeps for one game's loader. A loader id is shared by games (bepinex5 runs Lethal Company
+// and Valheim), so one game's pin or sweep must not stand for another's.
 type LoaderPrefs struct {
 	// Pin is the loader version to stay on; empty follows the latest release.
 	Pin string `json:"pin,omitempty"`
@@ -56,8 +57,10 @@ type LoaderPrefs struct {
 	LastSweepVersion string `json:"lastSweepVersion,omitempty"`
 }
 
-// LoaderPin is the version the loader is pinned to, "" when it follows the latest release.
-func (s Settings) LoaderPin(loaderID string) string { return s.LoaderPrefs[loaderID].Pin }
+// LoaderPin is the version game's loader is pinned to, "" when it follows the latest release.
+func (s Settings) LoaderPin(game, loaderID string) string {
+	return s.LoaderPrefs[LoaderKey(game, loaderID)].Pin
+}
 
 // PinKey is the setting that pins the loader's version, false for a loader that has none.
 func PinKey(loaderID string) (string, bool) {
@@ -69,24 +72,25 @@ func PinKey(loaderID string) (string, bool) {
 	return "", false
 }
 
-func setLoaderPrefs(s *Settings, loaderID string, edit func(*LoaderPrefs)) {
+func setLoaderPrefs(s *Settings, game, loaderID string, edit func(*LoaderPrefs)) {
+	key := LoaderKey(game, loaderID)
 	next := maps.Clone(s.LoaderPrefs)
 	if next == nil {
 		next = map[string]LoaderPrefs{}
 	}
-	p := next[loaderID]
+	p := next[key]
 	edit(&p)
 	if p == (LoaderPrefs{}) {
-		delete(next, loaderID)
+		delete(next, key)
 	} else {
-		next[loaderID] = p
+		next[key] = p
 	}
 	s.LoaderPrefs = next
 }
 
 func pinPref(key, loaderID string) pref {
-	return strPref(key, ScopeLoader, func(s Settings, _ string) string { return s.LoaderPin(loaderID) }, func(s *Settings, _, v string) {
-		setLoaderPrefs(s, loaderID, func(p *LoaderPrefs) { p.Pin = v })
+	return strPref(key, ScopeGame, func(s Settings, g string) string { return s.LoaderPin(g, loaderID) }, func(s *Settings, g, v string) {
+		setLoaderPrefs(s, g, loaderID, func(p *LoaderPrefs) { p.Pin = v })
 	})
 }
 

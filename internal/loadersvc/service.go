@@ -310,7 +310,7 @@ func (s *Service) Status(ctx context.Context, id, loaderID string) (loader.Statu
 	if l == nil {
 		return st, nil
 	}
-	if pin := s.settings.Get().LoaderPin(l.ID()); pin != "" {
+	if pin := s.settings.Get().LoaderPin(id, l.ID()); pin != "" {
 		return st, nil
 	}
 	rel, ok := l.(loader.Releases)
@@ -345,7 +345,7 @@ func (s *Service) Ensure(ctx context.Context, id, loaderID string, fromStart boo
 	if err != nil {
 		return loader.Status{}, err
 	}
-	pin := s.settings.Get().LoaderPin(s.loaderID(id, loaderID))
+	pin := s.settings.Get().LoaderPin(id, s.loaderID(id, loaderID))
 	if st.Installed && !st.Broken && (pin == "" || st.Version == pin) {
 		return st, nil
 	}
@@ -365,7 +365,7 @@ func (s *Service) install(ctx context.Context, id, loaderID string, fromStart bo
 	if running || (!fromStart && s.profiles.AnyRunning(id)) {
 		return loader.Status{}, usererr.Wrap(usererr.Busy, fmt.Errorf("%s is running: close it before installing %s", g.Name(), game.LoaderName(id, loaderID)))
 	}
-	return s.installVersion(ctx, g, dir, id, loaderID, s.settings.Get().LoaderPin(s.loaderID(id, loaderID)), fromStart)
+	return s.installVersion(ctx, g, dir, id, loaderID, s.settings.Get().LoaderPin(id, s.loaderID(id, loaderID)), fromStart)
 }
 
 // gameRunning reports whether any process of the game runs, with or without its loader and however it was started.

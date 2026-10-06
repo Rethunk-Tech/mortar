@@ -101,7 +101,8 @@ type Settings struct {
 	CheckModUpdatesOnStart *bool `json:"checkModUpdatesOnStart"`
 	// SmapiBuilds is whether SMAPI prerelease builds are never offered, shown, or included in updates.
 	SmapiBuilds string `json:"smapiBuilds"`
-	// LoaderPrefs holds each loader's own settings by loader id; on disk they sit in the loader's block.
+	// LoaderPrefs holds each game's loader settings by LoaderKey(game, loader); on disk they sit in the loaders block
+	// under that key.
 	LoaderPrefs map[string]LoaderPrefs `json:"loaderPrefs"`
 	// ShowSmapiConsole is whether launches show SMAPI's console. Nil or omitted means on.
 	ShowSmapiConsole *bool `json:"showSmapiConsole"`

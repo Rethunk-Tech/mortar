@@ -56,8 +56,8 @@ func fieldNames(entry string) (flat, local string) {
 // gamesField is the per-game block's name, in settings.json and in exports.
 const gamesField = "games"
 
-// loaderPrefsField is the flat name of Settings.LoaderPrefs: its fields live in the loader's block under their own
-// names, beside the keys loaderFields lists.
+// loaderPrefsField is the flat name of Settings.LoaderPrefs: its fields live in the loaders block under
+// LoaderKey(game, loader), such as "valheim/bepinex5", beside the loader-id blocks loaderFields fills.
 const loaderPrefsField = "loaderPrefs"
 
 // scoped is a settings object split by scope, the layout of settings.json and of an export.

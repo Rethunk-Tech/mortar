@@ -51,7 +51,7 @@ function LoaderRow({
   const push = useToasts((s) => s.push)
   const fail = t`Could not save that setting`
   const game = useCurrentGame()
-  const pin = useSettings((s) => s.loaderPrefs?.[loader.id]?.pin ?? '')
+  const pin = useSettings((s) => s.loaderPrefs?.[`${game}/${loader.id}`]?.pin ?? '')
   const status = useLoader((s) => s.status)
   const check = useLoader((s) => s.check)
   const install = useLoader((s) => s.install)

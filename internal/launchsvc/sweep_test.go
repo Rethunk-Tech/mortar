@@ -106,3 +106,16 @@ func TestSweepBrokenWithAndWithoutFix(t *testing.T) {
 		t.Fatalf("stuck = %#v", byID["A.Stuck"])
 	}
 }
+
+func TestSweepVersionIsPerGame(t *testing.T) {
+	svc, _ := sweepEnv(t)
+	if err := svc.settings.RecordLastSweep("lethal-company", "v73", "bepinex5", "5.4.2100"); err != nil {
+		t.Fatal(err)
+	}
+	if svc.sweepVersionsChanged("lethal-company", "v73", "5.4.2100") {
+		t.Fatal("lethal company's recorded sweep reads as changed")
+	}
+	if !svc.sweepVersionsChanged("valheim", "", "5.4.2100") {
+		t.Fatal("valheim took lethal company's bepinex sweep version")
+	}
+}

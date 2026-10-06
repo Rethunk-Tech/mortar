@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 const (
@@ -123,7 +124,7 @@ func (s *Service) installedSweepVersions(gameID, installID string) (string, stri
 
 func (s *Service) sweepVersionsChanged(gameID, gameVer, smapiVer string) bool {
 	set := s.settings.Get()
-	return loader.VersionChanged(set.GamePrefs(gameID).LastSweepGameVersion, gameVer) || set.LoaderPrefs[loaderID(gameID)].LastSweepVersion != smapiVer
+	return loader.VersionChanged(set.GamePrefs(gameID).LastSweepGameVersion, gameVer) || set.LoaderPrefs[settings.LoaderKey(gameID, loaderID(gameID))].LastSweepVersion != smapiVer
 }
 
 func (s *Service) sweepCompat(ctx context.Context) (meta.CompatIndex, error) {
