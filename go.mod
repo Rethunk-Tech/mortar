@@ -12,7 +12,7 @@ require (
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/hashicorp/mdns v1.0.7
 	github.com/nwaples/rardecode/v2 v2.4.1
-	github.com/wailsapp/wails/v3 v3.0.0-beta.27
+	github.com/wailsapp/wails/v3 v3.0.0-beta.28
 	github.com/zalando/go-keyring v0.2.8
 	golang.org/x/sys v0.48.0
 	golang.org/x/text v0.42.0
@@ -47,4 +47,4 @@ require (
 	modernc.org/memory v1.12.1 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.27.0.20261006052126-8c83de4bf39c
+replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.28.0.20261006055024-4904ea33a263

@@ -966,7 +966,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@wailsio/runtime@3.0.0-beta.27
+@wailsio/runtime@3.0.0-beta.28
 licence: MIT
 https://v3.wails.io
 
@@ -2885,7 +2885,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/wailsapp/wails/v3@v3.0.0-beta.27
+github.com/wailsapp/wails/v3@v3.0.0-beta.28
 licence: MIT
 https://github.com/wailsapp/wails
 
