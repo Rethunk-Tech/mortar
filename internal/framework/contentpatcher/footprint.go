@@ -1644,7 +1644,7 @@ func farmTypesOf(p cpPatch, custom string) []string {
 // editsClash reports whether any active edit of one pack can overwrite one of the other's, and whether every
 // such overlap is harmless (see harmless).
 func editsClash(a, b []cpPatch) (clash, minor bool) {
-	clash, minor, _ = editsClashIndexed(a, b, indexesOf(b))
+	clash, minor, _ = editsClashIndexed(a, b, indexesOf(b), false)
 	return clash, minor
 }
 
@@ -1659,7 +1659,8 @@ func indexesOf(patches []cpPatch) []*shapeSet {
 
 // editsClashIndexed is editsClash with bIndex[i] the shape index of b[i], and the note that explains why a
 // minor clash is harmless.
-func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet) (clash, minor bool, why *framework.ConflictNote) {
+// One author ordering two of their packs' edits with an explicit priority meant the result.
+func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet, sameAuthor bool) (clash, minor bool, why *framework.ConflictNote) {
 	minor = true
 	var note noteAgreement
 	for _, x := range a {
@@ -1673,7 +1674,7 @@ func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet) (clash, minor bool, w
 			if x.image && y.image && strings.EqualFold(strings.TrimSpace(x.patchMode), "overlay") && strings.EqualFold(strings.TrimSpace(y.patchMode), "overlay") {
 				continue
 			}
-			if exclusive(x, y) {
+			if exclusive(x, y) || sameAuthor && (explicitOrder(x) || explicitOrder(y)) {
 				continue
 			}
 			if bIndex[j].overlaps(x.shapes) {
@@ -1688,6 +1689,15 @@ func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet) (clash, minor bool, w
 		}
 	}
 	return clash, clash && minor, note.result()
+}
+
+// explicitOrder is an edit given a Late, Early or Low priority, set to run before or after the others.
+func explicitOrder(p cpPatch) bool {
+	base := strings.ToLower(strings.TrimSpace(p.priority))
+	if i := strings.IndexAny(base, "+-"); i > 0 {
+		base = strings.TrimSpace(base[:i])
+	}
+	return base == "late" || base == "early" || base == "low"
 }
 
 // noteAgreement keeps a ConflictNote only while every harmless overlap gives the same one.
@@ -1824,9 +1834,10 @@ func tinyOnly(p cpPatch) bool {
 
 // markClashes records which edits of a and b overlap each other.
 func markClashes(a, b *packHit) {
+	ordered := sameAuthor(*a, *b)
 	for i, x := range a.edits {
 		for j, y := range b.edits {
-			if exclusive(x, y) || !shapesOverlap(x.shapes, y.shapes) {
+			if exclusive(x, y) || ordered && (explicitOrder(x) || explicitOrder(y)) || !shapesOverlap(x.shapes, y.shapes) {
 				continue
 			}
 			if a.clashes == nil {

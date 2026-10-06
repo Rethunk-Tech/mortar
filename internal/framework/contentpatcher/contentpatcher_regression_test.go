@@ -787,3 +787,48 @@ func TestFarmMapConflictsNameTheirFarmTypes(t *testing.T) {
 		t.Fatalf("a Standard-only edit never meets the Forest map, got %#v", conflicts)
 	}
 }
+
+func authoredPack(t *testing.T, author, content string, files map[string]string) framework.Mod {
+	t.Helper()
+	m := syntheticLoadPack(t, content, files)
+	m.Author = author
+	return m
+}
+
+func TestSameAuthorExplicitPriorityIsIntended(t *testing.T) {
+	pack := func(author, priority, value string) framework.Mod {
+		return authoredPack(t, author, `{"Changes":[{"Action":"EditData","Target":"Data/Objects","Fields":{"Cheese":{"Price":`+value+`,"Edibility":`+value+`}}`+priority+`}]}`, nil)
+	}
+	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"Late"`, "2")}); len(conflicts) != 0 {
+		t.Fatalf("one author's Late edit is an intended override, got %#v", conflicts)
+	}
+	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack("Other", `,"Priority":"Late"`, "2")}); len(conflicts) != 1 {
+		t.Fatalf("another author's Late edit still conflicts, got %#v", conflicts)
+	}
+	load := func(author, priority, file string) framework.Mod {
+		return authoredPack(t, author, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"m.tmx"`+priority+`}]}`, map[string]string{"m.tmx": file})
+	}
+	if conflicts := assetConflicts([]framework.Mod{load("Em", "", "a"), load("Em", `,"Priority":"Exclusive"`, "b")}); len(conflicts) != 1 {
+		t.Fatalf("one author's clashing loads still conflict, got %#v", conflicts)
+	}
+}
+
+func TestSameAuthorBundleIsRedundant(t *testing.T) {
+	dino := `{"Action":"EditImage","Target":"Animals/Dinosaur","FromFile":"dino.png","ToArea":{"X":0,"Y":0,"Width":16,"Height":16}}`
+	files := map[string]string{"dino.png": "dino"}
+	dinos := authoredPack(t, "Em", `{"Changes":[`+dino+`]}`, files)
+	animals := authoredPack(t, "Em", `{"Changes":[`+dino+`,{"Action":"EditImage","Target":"Animals/Dinosaur","FromFile":"dino.png","ToArea":{"X":16,"Y":0,"Width":16,"Height":16}}]}`, files)
+	dinos.Name, animals.Name = "Em's Dinos", "Em's Farm Animals"
+	got := check([]framework.Mod{dinos, animals})
+	if len(got.AssetConflicts) != 0 {
+		t.Fatalf("a bundled pack is not a conflict, got %#v", got.AssetConflicts)
+	}
+	if len(got.Redundant) != 1 || got.Redundant[0].Kind != "bundled" || got.Redundant[0].Key != dinos.Key ||
+		got.Redundant[0].By[0].Name != "Em's Farm Animals" || got.Redundant[0].Detail != "animals/dinosaur" {
+		t.Fatalf("expected Em's Dinos bundled in Em's Farm Animals, got %#v", got.Redundant)
+	}
+	stranger := authoredPack(t, "Someone", `{"Changes":[`+dino+`]}`, files)
+	if got := check([]framework.Mod{stranger, animals}); slices.ContainsFunc(got.Redundant, func(r framework.Redundant) bool { return r.Kind == "bundled" }) {
+		t.Fatalf("another author's copy is not a bundle, got %#v", got.Redundant)
+	}
+}

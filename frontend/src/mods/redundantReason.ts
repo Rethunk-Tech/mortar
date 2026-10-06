@@ -102,6 +102,8 @@ export function useRedundantRows() {
       let reason = t`Every edit it makes is overwritten by ${by}`
       if (item.kind === 'superseded') {
         reason = t`Replaced by ${by}, which is also enabled`
+      } else if (item.kind === 'bundled') {
+        reason = t`${by} already includes this: ${detail}`
       } else if (item.covered) {
         reason = t`Overlaps with ${by}: both change ${detail}`
       }

@@ -127,7 +127,8 @@ type Cleanup struct {
 }
 
 // Redundant is an enabled mod that adds nothing beside the others: "superseded" when its replacement is enabled too,
-// "shadowed" when later packs overwrite every edit it makes, "sameJob" when another enabled C# mod changes the same game
+// "shadowed" when later packs overwrite every edit it makes, "bundled" when a pack by the same author already makes
+// its patches of the targets in Detail, "sameJob" when another enabled C# mod changes the same game
 // members (Covered when a larger mod changes everything this one does).
 type Redundant struct {
 	Kind    string   `json:"kind"`

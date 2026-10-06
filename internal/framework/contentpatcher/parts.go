@@ -25,7 +25,7 @@ import (
 // a target's or a pack's outcome.
 
 // partsCacheVersion changes whenever what a part records changes, so an older file is ignored.
-const partsCacheVersion = 2
+const partsCacheVersion = 3
 
 // partsKeep is how many checks may go by without using a part before it is dropped: enough for a few profiles' checks
 // to take turns without evicting each other.
@@ -36,7 +36,9 @@ type partEntry struct {
 	Files    []packFileStamp          `json:"files,omitempty"`
 	Conflict *framework.AssetConflict `json:"conflict,omitempty"`
 	Settings []framework.SettingHint  `json:"settings,omitempty"`
-	Check    int                      `json:"check"`
+	// Bundled is a pack whose patches of the target another pack by the same author already makes.
+	Bundled *framework.Redundant `json:"bundled,omitempty"`
+	Check   int                  `json:"check"`
 }
 
 type diskParts struct {
@@ -206,7 +208,7 @@ func presentFor(pack cachedPack, present map[string]bool) map[string]bool {
 // packSig is pack's share of a part's key; stable is false when the pack has no trusted stamps.
 func packSig(im framework.Mod, pack cachedPack, present map[string]bool) (sig string, stable bool) {
 	var b strings.Builder
-	_, _ = fmt.Fprintf(&b, "%q|%q|%q|%q|%q|", pack.fingerprint, im.ModID(), im.Name, im.Key, im.Folder)
+	_, _ = fmt.Fprintf(&b, "%q|%q|%q|%q|%q|%q|", pack.fingerprint, im.ModID(), im.Name, im.Key, im.Folder, im.Author)
 	for _, d := range im.Dependencies {
 		_, _ = fmt.Fprintf(&b, "d%q", d.ModID())
 	}

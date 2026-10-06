@@ -907,6 +907,10 @@ msgstr "Sign in to Nexus Mods to download these mods."
 msgid "Move into this profile…"
 msgstr "Move into this profile…"
 
+#: src/mods/redundantReason.ts:106
+msgid "{by} already includes this: {detail}"
+msgstr "{by} already includes this: {detail}"
+
 #: src/mods/ConfigPresets.tsx:156
 msgid "This preset will be deleted."
 msgstr "This preset will be deleted."
@@ -8202,7 +8206,7 @@ msgstr "That request was not valid."
 msgid "Description"
 msgstr "Description"
 
-#: src/mods/redundantReason.ts:106
+#: src/mods/redundantReason.ts:108
 msgid "Overlaps with {by}: both change {detail}"
 msgstr "Overlaps with {by}: both change {detail}"
 

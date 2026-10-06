@@ -59,6 +59,8 @@ type packHit struct {
 	schema       map[string]cpSchema
 	config       map[string]string
 	clashes      map[int]bool // indices into edits that overlap an edit of a pack it was not built with
+	// author is the manifest Author, normalised, so two packs by one author can be told apart from strangers.
+	author string
 	// sig is the pack's share of a target's memo key (packSig), and stable whether its stamps can be trusted.
 	sig    string
 	stable bool
@@ -2093,7 +2095,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 				hits = append(hits, packHit{
 					id: im.ModID(), name: im.Name, key: im.Key, priority: p.priority, mentions: knows,
 					root: im.Folder, tokens: pack.patches, present: seen, schema: pack.schema, config: config,
-					dependencies: dependencies, loadAfter: loadAfter, sig: sig, stable: stable,
+					dependencies: dependencies, loadAfter: loadAfter, sig: sig, stable: stable, author: normalAuthor(im.Author),
 				})
 				i = len(hits) - 1
 				index[k] = i
@@ -2145,6 +2147,9 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 			if e.Conflict != nil {
 				out = append(out, *e.Conflict)
 			}
+			if e.Bundled != nil {
+				shadowed = addBundled(shadowed, *e.Bundled)
+			}
 			settings = append(settings, e.Settings...)
 		}
 	}
@@ -2164,6 +2169,9 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 // nothing.
 // farm is the custom farm type whose map target is, or "".
 func targetPart(kind, target string, hits []packHit, farm string) partEntry {
+	if b, ok := bundled(kind, target, hits); ok {
+		return partEntry{Bundled: &b}
+	}
 	cosmetic := false
 	var note *framework.ConflictNote
 	if kind == "edit" {
@@ -2323,7 +2331,7 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool, why *framework.Conf
 			if aware(hits[i], hits[j]) || !summaries[i].mayOverlap(summaries[j]) {
 				continue
 			}
-			clash, minor, pairNote := editsClashIndexed(hits[i].edits, hits[j].edits, indexes[j])
+			clash, minor, pairNote := editsClashIndexed(hits[i].edits, hits[j].edits, indexes[j], sameAuthor(hits[i], hits[j]))
 			if !clash {
 				continue
 			}
@@ -2342,6 +2350,72 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool, why *framework.Conf
 		return out, false, nil
 	}
 	return out, true, note.result()
+}
+
+func sameAuthor(a, b packHit) bool {
+	return a.author != "" && a.author == b.author
+}
+
+func normalAuthor(author string) string {
+	return strings.Join(strings.Fields(strings.ToLower(author)), " ")
+}
+
+// bundled finds, among packs by one author, one whose every patch of the target the other makes too: the
+// larger pack bundles the smaller one, so there is nothing to conflict.
+func bundled(kind, target string, hits []packHit) (framework.Redundant, bool) {
+	sigs := make([]map[string]bool, len(hits))
+	for i, h := range hits {
+		patches := h.edits
+		if kind == "load" {
+			patches = h.loads
+		}
+		sigs[i] = map[string]bool{}
+		for _, p := range patches {
+			sigs[i][patchSig(h, p)] = true
+		}
+	}
+	for i, small := range hits {
+		for j, big := range hits {
+			if i == j || !sameAuthor(small, big) || len(sigs[i]) == 0 || len(sigs[i]) > len(sigs[j]) {
+				continue
+			}
+			if len(sigs[i]) == len(sigs[j]) && i > j {
+				continue
+			}
+			subset := true
+			for s := range sigs[i] {
+				subset = subset && sigs[j][s]
+			}
+			if subset && len(hits) == 2 {
+				return framework.Redundant{Kind: "bundled", Key: small.key, ID: small.id, Name: small.name, By: []framework.ModRef{{Key: big.key, Name: big.name}}, Detail: target}, true
+			}
+		}
+	}
+	return framework.Redundant{}, false
+}
+
+// patchSig is what a patch writes, so two packs that make the same change compare equal.
+func patchSig(h packHit, p cpPatch) string {
+	file := p.imageDigest
+	if p.kind == "load" {
+		file = imageFileDigest(h.root, p.fromFile, true)
+	}
+	return fmt.Sprintf("%s|%s|%s|%s|%s|%s|%v", p.action, p.toArea, p.imageFromArea, p.patchMode, file, p.when.places, p.shapes)
+}
+
+// addBundled adds a bundled row, folding a pack's targets into one row per bundling pack; a pack already
+// listed as shadowed keeps that row.
+func addBundled(rows []framework.Redundant, b framework.Redundant) []framework.Redundant {
+	for i, row := range rows {
+		if row.Key != b.Key {
+			continue
+		}
+		if row.Kind == "bundled" && row.By[0].Key == b.By[0].Key {
+			rows[i].Detail += ", " + b.Detail
+		}
+		return rows
+	}
+	return append(rows, b)
 }
 
 func aware(a, b packHit) bool {
