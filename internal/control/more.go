@@ -27,6 +27,10 @@ func (s *Services) handleMore(ctx context.Context, method string, p Params) (res
 		res, err = s.templatesWrite(method, p)
 	case "tools.add", "tools.update", "tools.remove":
 		res, err = s.toolsWrite(method, p)
+	case "external.sources":
+		res, err = s.externalSources(p)
+	case "external.import":
+		res, err = s.externalImport(ctx, p)
 	case "lan.peers", "lan.send", "lan.inbox", "lan.accept", "lan.decline", "lan.paircode", "lan.pair", "lan.paired", "lan.unpair":
 		res, err = s.lanMethod(ctx, method, p)
 	case "data.move":

@@ -474,6 +474,18 @@ func (s *Service) ImportData(ctx context.Context, game, encoded string) (Result,
 	return s.Import(ctx, game, pv.Session, "", nil)
 }
 
+// ImportExternal imports another manager's profile as the import wizard does by default: every mod, into a new
+// profile named as the external one.
+//
+//wails:ignore
+func (s *Service) ImportExternal(ctx context.Context, game string, external migrate.ProfilePreview) (Result, error) {
+	pv, err := s.PreviewExternal(ctx, game, external, "")
+	if err != nil {
+		return Result{}, err
+	}
+	return s.Import(ctx, game, pv.Session, "", nil)
+}
+
 // PreviewExternal resolves missing external mods through the normal import resolver and keeps staged folders local.
 func (s *Service) PreviewExternal(ctx context.Context, game string, external migrate.ProfilePreview, profileID string) (Preview, error) {
 	var refs []share.Ref

@@ -105,6 +105,7 @@ type cmd struct {
 	mark          bool
 	restore       bool
 	sourceFlag    string
+	fromFlag      string
 	codeFlag      string
 	peerFlag      string
 	loaderFlag    string
@@ -368,6 +369,14 @@ func (c *cmd) parse(args []string) error {
 			c.versionFlag = args[i]
 		case strings.HasPrefix(a, "--version="):
 			c.versionFlag = strings.TrimPrefix(a, "--version=")
+		case a == "--from":
+			if i+1 >= len(args) {
+				return usageError{"--from needs a mod manager (vortex or mo2)"}
+			}
+			i++
+			c.fromFlag = args[i]
+		case strings.HasPrefix(a, "--from="):
+			c.fromFlag = strings.TrimPrefix(a, "--from=")
 		case a == "--source":
 			if i+1 >= len(args) {
 				return usageError{"--source needs a source id"}
@@ -2291,6 +2300,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   profile good <game> <profile> [--mark|--restore]
   profile revert <game> <profile> <eventId>
   profile import <code|key|file> [--game <id>] [--name N | --profile P] [--preview]
+  profile import --from vortex|mo2 [--game <id>] [<their profile>] [--preview]
+                                          list another manager's profiles, or import one as a new profile
                                           import an r2modman code, .r2z or modpack and queue its downloads
   profile export <game> <profile> <file.zip> --format modpack [--no-configs]
                                           write a Thunderstore modpack of the profile's Thunderstore packages
