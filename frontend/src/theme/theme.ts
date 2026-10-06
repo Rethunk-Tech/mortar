@@ -257,6 +257,16 @@ function createMortarTheme(
           },
         },
       },
+      // MUI's tooltip is a translucent grey over whatever it covers; it takes the menu surface like every other popup.
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            backgroundColor: s.menu,
+            color: s.ink,
+            border: `1px solid ${s.hairline14}`,
+          },
+        },
+      },
       MuiPopover: { defaultProps: { transitionDuration: 0 } },
       MuiCollapse: { defaultProps: { timeout: 0 } },
       // A sliding exit leaves the modal's backdrop mounted for its duration, so the click right after a drawer closes

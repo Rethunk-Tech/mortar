@@ -25,6 +25,13 @@ describe('createMortarTheme', () => {
     expect(paper).toEqual({ backgroundColor: 'rgb(40,40,48)' })
   })
 
+  test.each(['dark', 'light'] as const)('%s tooltips use the opaque menu surface', (mode) => {
+    const tip = createMortarTheme('sand', { mode }).components?.MuiTooltip?.styleOverrides?.tooltip
+    expect(tip).toMatchObject({
+      backgroundColor: mode === 'dark' ? 'rgba(28,28,34,0.99)' : '#ffffff',
+    })
+  })
+
   test('links are secondary text with a dotted underline', () => {
     const root = createMortarTheme('sand').components?.MuiLink?.styleOverrides?.root
     expect(root).toEqual({
