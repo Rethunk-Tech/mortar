@@ -3111,7 +3111,7 @@ msgstr "Game settings"
 msgid "{name} is marked abandoned and may no longer be maintained."
 msgstr "{name} is marked abandoned and may no longer be maintained."
 
-#: src/share/ShareShell.tsx:112
+#: src/share/ShareShell.tsx:128
 msgid "Send nearby…"
 msgstr "Send nearby…"
 
@@ -5060,7 +5060,7 @@ msgstr "Needs {need, plural, one {# mod this profile lacks} other {# mods this p
 msgid "Cosmetic overlaps on the Problems tab"
 msgstr "Cosmetic overlaps on the Problems tab"
 
-#: src/share/ShareShell.tsx:74
+#: src/share/ShareShell.tsx:73
 msgid "A share link names this profile and where each mod comes from, not the files themselves."
 msgstr "A share link names this profile and where each mod comes from, not the files themselves."
 
@@ -6996,7 +6996,7 @@ msgstr "{dependentName} needs {dep}, which is disabled."
 msgid "older, profile has {0}"
 msgstr "older, profile has {0}"
 
-#: src/share/ShareShell.tsx:89
+#: src/share/ShareShell.tsx:97
 msgid "Share profile"
 msgstr "Share profile"
 
@@ -7328,7 +7328,7 @@ msgstr "{gameName} save backups: {0}"
 msgid "Update all ({wantedCount})"
 msgstr "Update all ({wantedCount})"
 
-#: src/share/ShareShell.tsx:100
+#: src/share/ShareShell.tsx:116
 msgid "How to share"
 msgstr "How to share"
 
@@ -12164,7 +12164,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/share/ImportDialog.tsx:213
 #: src/share/ImportDialog.tsx:216
 #: src/share/ImportFooter.tsx:86
-#: src/share/ShareShell.tsx:64
+#: src/share/ShareShell.tsx:65
 #: src/shell/TitleBar.tsx:131
 #: src/templates/TemplateDialogs.tsx:179
 #: src/tools/ToolsManageDialog.tsx:79
@@ -12172,7 +12172,7 @@ msgid "Close"
 msgstr "Close"
 
 #: src/share/ImportDialog.tsx:210
-#: src/share/ShareShell.tsx:102
+#: src/share/ShareShell.tsx:118
 msgid "Link"
 msgstr "Link"
 
@@ -12546,7 +12546,7 @@ msgstr "Preferred download server"
 msgid "Update profiles"
 msgstr "Update profiles"
 
-#: src/share/ShareShell.tsx:103
+#: src/share/ShareShell.tsx:119
 msgid ".mortar file with settings"
 msgstr ".mortar file with settings"
 
