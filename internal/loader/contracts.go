@@ -18,6 +18,8 @@ type ProfileView struct {
 	InstallDir string
 	// Runtime is the id of the runtime that runs the install: native or proton.
 	Runtime string
+	// Platform is the OS the install's build is for: windows, linux or darwin.
+	Platform string
 	// Enabled are the folders of the profile's enabled packages.
 	Enabled []string
 	// Companion is the folder of the loader's companion mod in the profile (a loader whose companion is not a mod folder

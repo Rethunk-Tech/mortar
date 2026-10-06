@@ -179,11 +179,18 @@
       "enabled": true,
       "importIds": { "vortex": "valheim", "mo2": "Valheim" },
       "marker": "valheim.exe",
+      "linuxMarker": "valheim.x86_64",
       "r2modmanFolder": "Valheim",
       "metadata": [],
       "paths": {
-        "saves": { "windows": "{localLow}/IronGate/Valheim" },
-        "unityLog": { "windows": "{localLow}/IronGate/Valheim/Player.log" }
+        "saves": {
+          "windows": "{localLow}/IronGate/Valheim",
+          "linux": "{xdgConfig}/unity3d/IronGate/Valheim"
+        },
+        "unityLog": {
+          "windows": "{localLow}/IronGate/Valheim/Player.log",
+          "linux": "{xdgConfig}/unity3d/IronGate/Valheim/Player.log"
+        }
       },
       "saveFiles": ["characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"],
       "saveCompanions": [".db"],

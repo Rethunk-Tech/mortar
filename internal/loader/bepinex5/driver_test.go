@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
@@ -87,5 +88,36 @@ func TestQueryReadsTheProfilesStateFile(t *testing.T) {
 	}
 	if l.Companion().ID != "Rethunk.MortarBepInExBridge" {
 		t.Fatalf("companion = %+v", l.Companion())
+	}
+}
+
+func TestANativeLinuxBuildStartsDirectlyWithDoorstopPreloaded(t *testing.T) {
+	profile := filepath.Join(t.TempDir(), "profile")
+	if _, err := (Loader{}).Install(t.Context(), loader.Target{ProfileDir: profile}, loader.Package{Archive: buildPackIn(t, "BepInExPack_Valheim", "4.4.0")}, nil); err != nil {
+		t.Fatal(err)
+	}
+	view := loader.ProfileView{Game: "valheim", Dir: profile, InstallDir: "/games/Valheim", Runtime: "native", Platform: "linux"}
+	if err := (Loader{}).Contribute(t.Context(), launchplan.New(launchplan.ModeProfile), view); err == nil {
+		t.Fatal("a pack without a Linux Doorstop library started")
+	}
+	lib := filepath.Join(profile, "doorstop_libs", "libdoorstop_x64.so")
+	if err := fsx.WriteFile(lib, []byte("so"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	plan := launchplan.New(launchplan.ModeProfile)
+	if err := (Loader{}).Contribute(t.Context(), plan, view); err != nil {
+		t.Fatal(err)
+	}
+	target := filepath.Join(profile, "BepInEx", "core", "BepInEx.Preloader.dll")
+	if plan.Exe != "/games/Valheim/valheim.x86_64" || len(plan.Files) != 0 || len(plan.RuntimeReqs) != 0 {
+		t.Fatalf("plan %+v", plan)
+	}
+	for k, want := range map[string]string{"LD_PRELOAD": lib, "DOORSTOP_ENABLED": "1", "DOORSTOP_TARGET_ASSEMBLY": target, "SteamAppId": "892970"} {
+		if plan.Env[k] != want {
+			t.Errorf("%s = %q, want %q", k, plan.Env[k], want)
+		}
+	}
+	if !(Loader{}).Owns(loader.Process{Args: append([]string{plan.Exe}, plan.Args...)}, view) {
+		t.Fatal("the profile does not own its own native process")
 	}
 }

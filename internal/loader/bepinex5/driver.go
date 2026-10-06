@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -95,9 +96,12 @@ func (Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, pr
 }
 
 // Contribute points Doorstop at the profile's preloader, declares the proxy files for the game folder and, under
-// Proton, asks for the winhttp override.
+// Proton, asks for the winhttp override. A native Linux build is started through LD_PRELOAD instead (see contributeLinux).
 func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {
 	m := readMarker(p.Dir)
+	if p.Platform == "linux" {
+		return contributeLinux(plan, p, m)
+	}
 	proton := p.Runtime == "proton"
 	plan.AddArgs(LaunchArgs(p.Dir, m.Doorstop, proton)...)
 	for _, f := range DoorstopFiles(p.Dir) {
@@ -107,6 +111,50 @@ func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.Prof
 		plan.RequireRuntime(launchplan.RuntimeReq{Kind: "dll-override", Key: "winhttp", Value: "native,builtin"})
 	}
 	return nil
+}
+
+// contributeLinux starts a native Linux build directly with the pack's libdoorstop preloaded and the Doorstop
+// settings in the environment, as the pack's run_bepinex.sh does; nothing is placed in the game folder. A store relay
+// cannot carry that environment, so the start is direct. The Doorstop flags are passed too, ignored by the game,
+// so Owns can tell the profile's process.
+func contributeLinux(plan *launchplan.Plan, p loader.ProfileView, m marker) error {
+	g, _ := components.Game(p.Game)
+	if g.LinuxMarker == "" {
+		return errors.New(g.Name + " names no native Linux executable")
+	}
+	lib, err := linuxDoorstop(p.Dir)
+	if err != nil {
+		return err
+	}
+	if err := plan.OverrideExe(ID, filepath.Join(p.InstallDir, g.LinuxMarker)); err != nil {
+		return err
+	}
+	plan.AddArgs(LaunchArgs(p.Dir, m.Doorstop, false)...)
+	target := targetPath(p.Dir, false)
+	if m.Doorstop >= 4 {
+		plan.SetEnv("DOORSTOP_ENABLED", "1")
+		plan.SetEnv("DOORSTOP_TARGET_ASSEMBLY", target)
+	} else {
+		plan.SetEnv("DOORSTOP_ENABLE", "TRUE")
+		plan.SetEnv("DOORSTOP_INVOKE_DLL_PATH", target)
+	}
+	plan.SetEnv("LD_PRELOAD", lib)
+	// Steamworks reads the app id from here when Steam did not start the process, instead of restarting it through
+	// Steam without the preload.
+	if id := g.SteamAppID(); id != "" {
+		plan.SetEnv("SteamAppId", id)
+	}
+	return nil
+}
+
+// linuxDoorstop is the pack's 64-bit Linux Doorstop library. Only a pack for a game with a native Linux build ships
+// one (Valheim's); the shared BepInExPack is Windows-only.
+func linuxDoorstop(profileDir string) (string, error) {
+	p := filepath.Join(profileDir, "doorstop_libs", "libdoorstop_x64.so")
+	if st, err := os.Stat(p); err != nil || !st.Mode().IsRegular() {
+		return "", errors.New("the BepInEx pack has no 64-bit Linux Doorstop library; reinstall the loader")
+	}
+	return filepath.Abs(p)
 }
 
 // Owns is true for a game process whose Doorstop target is this profile's preloader, in either the host or the Wine

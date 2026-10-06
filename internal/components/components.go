@@ -86,6 +86,9 @@ type GameInfo struct {
 	ImportIDs ImportIDs `json:"importIds,omitzero"`
 	// Marker is a file every install of the game holds, at its root or one "game" folder down.
 	Marker string `json:"marker"`
+	// LinuxMarker is the executable of the game's native Linux build where the store ships one beside the build Marker
+	// names: an install holding it and not Marker is that build, started natively rather than under Proton.
+	LinuxMarker string `json:"linuxMarker,omitempty"`
 	// R2modmanFolder is r2modman's own folder name for the game (the Thunderstore schema's internalFolderName), the
 	// parent of its profiles folder.
 	R2modmanFolder string `json:"r2modmanFolder,omitempty"`
@@ -322,6 +325,9 @@ func (g GameInfo) Validate() error {
 		return fmt.Errorf("enabled game %q needs a store", g.ID)
 	}
 	names := []string{g.Marker}
+	if g.LinuxMarker != "" {
+		names = append(names, g.LinuxMarker)
+	}
 	if g.Stores.GOG != nil {
 		names = append(names, g.Stores.GOG.Folder)
 	}

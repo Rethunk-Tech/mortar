@@ -49,7 +49,7 @@ func (s *Service) view(g game.Game, inst game.Install, profileID string) (loader
 		return loader.ProfileView{}, err
 	}
 	companion, _ := s.bridgeFolder(g, profileID)
-	return loader.ProfileView{Game: g.ID(), Dir: dir, InstallDir: inst.Dir, Runtime: inst.Runtime, Companion: companion}, nil
+	return loader.ProfileView{Game: g.ID(), Dir: dir, InstallDir: inst.Dir, Runtime: inst.Runtime, Platform: inst.Platform, Companion: companion}, nil
 }
 
 // launchPlan is what a launch starts. Loaders contribute first; the profile's own launch options, prefix and

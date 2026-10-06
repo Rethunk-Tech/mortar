@@ -32,24 +32,30 @@ func (g catalogOnly) ModSources() []string {
 }
 
 // GameProcesses are the marker, when it is an executable, and the marker without its extension: a Windows build's
-// process under Proton, and a native build's.
+// process under Proton, and a native build's; and the native Linux build's executable when the catalog names one.
 func (g catalogOnly) GameProcesses() []string {
 	info, _ := catalogGame(string(g))
 	stem := strings.TrimSuffix(info.Marker, filepath.Ext(info.Marker))
+	out := []string{stem}
 	if strings.EqualFold(filepath.Ext(info.Marker), ".exe") {
-		return []string{info.Marker, stem}
+		out = []string{info.Marker, stem}
 	}
-	return []string{stem}
+	if info.LinuxMarker != "" {
+		out = append(out, info.LinuxMarker)
+	}
+	return out
 }
 
-// ValidInstall reports why dir is not the game's install folder: it lacks the catalog's marker file.
+// ValidInstall reports why dir is not the game's install folder: it lacks the catalog's marker file and its native
+// Linux build's executable.
 func (g catalogOnly) ValidInstall(dir string) error {
 	info, _ := catalogGame(string(g))
-	st, err := os.Stat(filepath.Join(dir, info.Marker))
-	if err != nil || !st.Mode().IsRegular() {
-		return fmt.Errorf("%q is not a %s folder: it has no %s", dir, info.Name, info.Marker)
+	for _, m := range []string{info.Marker, info.LinuxMarker} {
+		if st, err := os.Stat(filepath.Join(dir, m)); m != "" && err == nil && st.Mode().IsRegular() {
+			return nil
+		}
 	}
-	return nil
+	return fmt.Errorf("%q is not a %s folder: it has no %s", dir, info.Name, info.Marker)
 }
 
 // stardewValley differs from its catalog entry only in its processes: SMAPI's install renames and wraps the game's
