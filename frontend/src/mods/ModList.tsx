@@ -366,7 +366,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     tag: t`Untagged`,
     author: t`Unknown author`,
     group: t`Ungrouped`,
-    problems: t`Problems`,
+    problems: t`Mods with problems`,
     update: t`Update available`,
     enabled: t`Enabled`,
     disabled: t`Off`,

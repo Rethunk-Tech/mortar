@@ -443,7 +443,7 @@ export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     tag: t`Untagged`,
     author: t`Unknown author`,
     group: t`Ungrouped`,
-    problems: t`Problems`,
+    problems: t`Mods with problems`,
     update: t`Update available`,
     enabled: t`Enabled`,
     disabled: t`Off`,

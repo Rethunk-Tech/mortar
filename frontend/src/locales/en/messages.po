@@ -8178,6 +8178,11 @@ msgstr "The backup holds up to {0}: the profile, its settings and config files, 
 msgid "Set default preset…"
 msgstr "Set default preset…"
 
+#: src/mods/ModCards.tsx:446
+#: src/mods/ModList.tsx:369
+msgid "Mods with problems"
+msgstr "Mods with problems"
+
 #: src/mods/SplitCombineItems.tsx:59
 msgid "Installed separately"
 msgstr "Installed separately"
@@ -8327,8 +8332,6 @@ msgstr "{0} failed"
 
 #: src/firstrunTour/TourPopover.tsx:62
 #: src/game/ProfileWorkspace.tsx:93
-#: src/mods/ModCards.tsx:446
-#: src/mods/ModList.tsx:369
 msgid "Problems"
 msgstr "Problems"
 
