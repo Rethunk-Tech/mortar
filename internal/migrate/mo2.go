@@ -46,7 +46,7 @@ func mo2Installations(home, modsPath, gameName string) ([]installation, error) {
 		if !entry.IsDir() {
 			continue
 		}
-		inst, ok, instErr := mo2Installation(filepath.Join(root, entry.Name()), modsPath, gameName)
+		inst, ok, instErr := mo2Installation(filepath.Join(root, entry.Name()), mo2Name+" ("+entry.Name()+")", modsPath, gameName)
 		if instErr != nil {
 			return nil, instErr
 		}
@@ -55,7 +55,7 @@ func mo2Installations(home, modsPath, gameName string) ([]installation, error) {
 		}
 		out = append(out, inst)
 	}
-	portable, ok, err := mo2Installation(home, modsPath, gameName)
+	portable, ok, err := mo2Installation(home, mo2Name, modsPath, gameName)
 	if err != nil {
 		return nil, err
 	}
@@ -81,17 +81,16 @@ func mo2LocalAppData(home string) string {
 	return filepath.Join(home, "AppData", "Local")
 }
 
-func mo2Installation(root, fallbackModsPath, gameName string) (installation, bool, error) {
+const mo2Name = "Mod Organizer 2"
+
+// mo2Installation reads the MO2 instance at root; name is what the import list shows as its source.
+func mo2Installation(root, name, fallbackModsPath, gameName string) (installation, bool, error) {
 	profiles, modsPath, err := mo2Profiles(root, fallbackModsPath, gameName)
 	if err != nil {
 		return installation{}, false, err
 	}
 	if len(profiles) == 0 {
 		return installation{}, false, nil
-	}
-	name := filepath.Base(root)
-	if name == "." || name == string(filepath.Separator) || name == "" {
-		name = "Mod Organizer 2"
 	}
 	return installation{
 		info:     SourceInfo{Kind: KindMO2, Name: name, Profiles: profileInfos(profiles)},

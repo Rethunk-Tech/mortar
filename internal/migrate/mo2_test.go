@@ -26,8 +26,8 @@ func TestMO2DetectTwoProfiles(t *testing.T) {
 			break
 		}
 	}
-	if source.Kind != KindMO2 {
-		t.Fatalf("expected MO2 source, got %#v", sources)
+	if source.Kind != KindMO2 || source.Name != "Mod Organizer 2 (Stardew)" {
+		t.Fatalf("expected the MO2 instance Stardew, got %#v", sources)
 	}
 	if len(source.Profiles) != 2 {
 		t.Fatalf("profiles: got %d want 2 (%#v)", len(source.Profiles), source.Profiles)
@@ -107,4 +107,19 @@ func copyMO2Fixture(src, dest string) error {
 		}
 		return os.WriteFile(target, data, 0o600)
 	})
+}
+
+func TestMO2PortableIsNamedForTheProductNotTheFolder(t *testing.T) {
+	t.Parallel()
+	home := t.TempDir()
+	if err := copyMO2Fixture(filepath.Join("testdata", "mo2"), home); err != nil {
+		t.Fatal(err)
+	}
+	sources, err := Detect(home, "", "stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sources) != 1 || sources[0].Name != "Mod Organizer 2" {
+		t.Fatalf("sources: %#v", sources)
+	}
 }

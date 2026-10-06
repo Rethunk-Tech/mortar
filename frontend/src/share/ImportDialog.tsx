@@ -143,6 +143,8 @@ function Body({ request }: { request: ImportRequest }) {
   const signedIn = useNexus((s) => s.signedIn)
   const flow = useImportFlow(game, request.profileId, close, request.external)
   const { setTab } = flow
+  const source = flow.external?.source ?? ''
+  const manager = SOURCE_NAMES[source] ?? source
   useSeedPreview(request, game, flow)
 
   useEffect(() => {
@@ -180,9 +182,7 @@ function Body({ request }: { request: ImportRequest }) {
             whiteSpace: 'nowrap',
           }}
         >
-          {flow.external
-            ? t`Import from ${SOURCE_NAMES[flow.external.source] ?? flow.external.source}`
-            : t`Import profile from…`}
+          {manager ? t`Import from ${manager}` : t`Import profile from…`}
         </Typography>
         <Tabs
           value={flow.tab}
@@ -265,7 +265,11 @@ function Body({ request }: { request: ImportRequest }) {
 }
 
 // SOURCE_NAMES are the product names of the mod managers Mortar imports profiles from, keyed by migrate's source kind.
-const SOURCE_NAMES: Record<string, string> = { stardrop: 'Stardrop', vortex: 'Vortex' }
+const SOURCE_NAMES: Record<string, string> = {
+  mo2: 'Mod Organizer 2',
+  stardrop: 'Stardrop',
+  vortex: 'Vortex',
+}
 
 export function ImportDialog() {
   const { t } = useLingui()
