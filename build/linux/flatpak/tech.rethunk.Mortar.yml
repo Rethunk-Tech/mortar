@@ -9,6 +9,7 @@ finish-args:
   - --socket=fallback-x11
   - --share=ipc
   - --device=dri
+  - --device=input
   - --filesystem=xdg-config/StardewValley
   - --filesystem=xdg-data/Steam
   - --filesystem=~/.var/app/com.valvesoftware.Steam
