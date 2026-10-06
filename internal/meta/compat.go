@@ -30,7 +30,9 @@ type CompatEntry struct {
 	Summary       string `json:"summary"`
 	BrokeIn       string `json:"brokeIn"`
 	UnofficialURL string `json:"unofficialUrl"`
-	Replacement   string `json:"replacement"`
+	// UnofficialVersion is the version of the unofficial update, so an install at or past it is not flagged.
+	UnofficialVersion string `json:"unofficialVersion"`
+	Replacement       string `json:"replacement"`
 }
 
 // CompatIndex maps UniqueID (lowercased) and Nexus page id onto the same entry.
@@ -283,12 +285,16 @@ func entryFromRaw(raw rawCompatMod) CompatEntry {
 			}
 		}
 	}
-	if e.UnofficialURL == "" && len(raw.UnofficialUpdate) > 0 {
+	if len(raw.UnofficialUpdate) > 0 {
 		var u struct {
-			URL string `json:"url"`
+			URL     string `json:"url"`
+			Version string `json:"version"`
 		}
 		if json.Unmarshal(raw.UnofficialUpdate, &u) == nil {
-			e.UnofficialURL = strings.TrimSpace(u.URL)
+			if e.UnofficialURL == "" {
+				e.UnofficialURL = strings.TrimSpace(u.URL)
+			}
+			e.UnofficialVersion = strings.TrimSpace(u.Version)
 		}
 	}
 	if e.Replacement == "" {

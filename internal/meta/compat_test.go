@@ -168,3 +168,15 @@ func TestCompatIndexTiesRefsToAUniqueIDUnlessAmbiguous(t *testing.T) {
 		t.Fatal("a page of two mods names no identity")
 	}
 }
+
+func TestParseCompatJSONKeepsUnofficialVersion(t *testing.T) {
+	idx, err := parseCompatJSON([]byte(`[{"name":"Bus","id":"hootless.BusLocations","brokeIn":"Stardew Valley 1.6",
+		"unofficialUpdate":{"version":"1.2.2-unofficial.1-Xytronix","url":"https://example.com/b"}}]`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	e, ok := idx.Lookup("hootless.BusLocations", 0)
+	if !ok || e.Status != StatusUnofficial || e.UnofficialVersion != "1.2.2-unofficial.1-Xytronix" || e.UnofficialURL != "https://example.com/b" {
+		t.Fatalf("entry = %+v ok=%v", e, ok)
+	}
+}

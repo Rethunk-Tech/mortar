@@ -38,3 +38,23 @@ func TestMatchCompatByUniqueIDAndNexus(t *testing.T) {
 		t.Fatalf("nexus map: %+v", info[1])
 	}
 }
+
+func TestMatchCompatSkipsUnofficialRowOnceInstalledMeetsIt(t *testing.T) {
+	idx := meta.CompatIndex{ByID: map[string]meta.CompatEntry{
+		"bungus.showitemquality": {Status: meta.StatusUnofficial, UnofficialVersion: "1.1.3-unofficial.1-bungus"},
+		"hootless.buslocations":  {Status: meta.StatusUnofficial, UnofficialVersion: "1.2.2-unofficial.1-Xytronix"},
+		"author.old":             {Status: meta.StatusUnofficial, UnofficialVersion: "2.0.0-unofficial.1-x"},
+	}}
+	mods := []framework.Mod{
+		{Key: "a", UniqueID: "bungus.ShowItemQuality", Version: "1.1.3-unofficial.1-bungus"},
+		{Key: "b", UniqueID: "hootless.BusLocations", Version: "2.1.1"},
+		{Key: "c", UniqueID: "author.Old", Version: "1.0.0"},
+		{Key: "d", UniqueID: "author.Old", Version: "not a version"},
+	}
+
+	got := matchCompat(idx, mods, true)
+
+	if len(got) != 2 || got[0].Key != "c" || got[1].Key != "d" {
+		t.Fatalf("matchCompat() = %+v, want only the older and the unparseable install", got)
+	}
+}

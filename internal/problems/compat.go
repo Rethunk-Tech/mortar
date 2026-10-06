@@ -73,6 +73,9 @@ func matchCompat(idx meta.CompatIndex, mods []framework.Mod, skipOK bool) []Comp
 		if skipOK && e.Status == meta.StatusOK {
 			continue
 		}
+		if e.Status == meta.StatusUnofficial && installedMeetsUnofficial(m.Version, e.UnofficialVersion) {
+			continue
+		}
 		key := strings.ToLower(m.Key) + "\x00" + m.ModID().Fold()
 		if seen[key] {
 			continue
@@ -85,6 +88,16 @@ func matchCompat(idx meta.CompatIndex, mods []framework.Mod, skipOK bool) []Comp
 		})
 	}
 	return out
+}
+
+// installedMeetsUnofficial reports whether the installed version is the unofficial update or newer, which is what the row
+// would ask for. An unparseable version on either side keeps the row.
+func installedMeetsUnofficial(installed, unofficial string) bool {
+	if unofficial == "" {
+		return false
+	}
+	c, ok := meta.CompareVersions(installed, unofficial)
+	return ok && c >= 0
 }
 
 func nexusIDOf(m framework.Mod) int {
