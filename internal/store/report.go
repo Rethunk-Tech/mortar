@@ -63,7 +63,12 @@ func (s *Store) gameReport(keys map[string]record, keep map[string]bool) GameRep
 		if err != nil || !completeItem(dir) {
 			continue
 		}
-		name, id, version := readManifest(dir)
+		// A loader's item holds its installer or its bundled mods, whose first manifest would misname the item.
+		var name, version string
+		var id mod.ID
+		if _, _, isLoader := LoaderOf(key); !isLoader {
+			name, id, version = readManifest(dir)
+		}
 		size, _ := datadir.Size(dir)
 		entry := Item{Key: key, Name: name, Version: version, LastUsed: r.Used, Size: size, InUse: keep[key]}
 		if !keep[key] {

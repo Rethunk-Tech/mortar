@@ -8,6 +8,7 @@ import (
 	"slices"
 	"time"
 
+	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -224,7 +225,9 @@ func unusedFinding(game string, unused []store.Item) (HealthFinding, bool) {
 	items := make([]string, len(unused))
 	for i, it := range unused {
 		items[i] = it.Key
-		if it.Name != "" {
+		if loaderID, version, ok := store.LoaderOf(it.Key); ok && gamereg.LoaderName(game, loaderID) != "" {
+			items[i] = gamereg.LoaderName(game, loaderID) + " " + version
+		} else if it.Name != "" {
 			items[i] = it.Name
 			if it.Version != "" {
 				items[i] += " " + it.Version

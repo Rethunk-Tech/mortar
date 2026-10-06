@@ -120,3 +120,22 @@ func TestReportMarksInUseDuplicates(t *testing.T) {
 		t.Fatalf("inUse flags: %+v", g)
 	}
 }
+
+func TestReportLeavesALoaderItemUnnamedAndOutOfDuplicates(t *testing.T) {
+	s := &Store{root: t.TempDir()}
+	addTestItem(t, s, "lethal-company", testItem{key: "bepinex5-5.4.2304", uniqueID: "A.Mod", version: "1.0.0", name: "Alpha"})
+	addTestItem(t, s, "lethal-company", testItem{key: "bepinex5-5.4.2305", uniqueID: "A.Mod", version: "1.0.0", name: "Alpha"})
+	rep, err := s.Report(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := rep["lethal-company"]
+	if len(got.Duplicates) != 0 {
+		t.Fatalf("loader items grouped as duplicates: %v", got.Duplicates)
+	}
+	for _, u := range got.Unused {
+		if u.Name != "" || u.Version != "" {
+			t.Fatalf("loader item %s named from a manifest inside it: %+v", u.Key, u)
+		}
+	}
+}

@@ -124,7 +124,7 @@ function itemName(i18n: I18n, game: string, item: Item): string {
   }
   const loader = gameInfo(game)?.loaders?.find((l) => item.key.startsWith(`${l.id}-`))
   if (loader) {
-    return item.version ? loader.name : `${loader.name} ${item.key.slice(loader.id.length + 1)}`
+    return `${loader.name} ${item.key.slice(loader.id.length + 1)}`
   }
   return item.key.startsWith('bridge-') ? i18n._(msg`Mortar bridge`) : item.key
 }
