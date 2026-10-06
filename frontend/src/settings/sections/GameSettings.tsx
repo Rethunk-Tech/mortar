@@ -18,6 +18,7 @@ import {
   SetGameStore,
   SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { LauncherLogo } from '../../brand/launchers/LauncherLogo.tsx'
 import { gameInfo, useGameName } from '../../games/info.ts'
 import { storeName } from '../../games/storeName.ts'
 import { currentGame, useCurrentGame } from '../../nav/currentGame.ts'
@@ -35,6 +36,9 @@ import { LoaderRow } from './LoaderRow.tsx'
 import { ScheduledStatus } from './ScheduledStatus.tsx'
 
 const noShrink = { flexShrink: 0 }
+
+// A GOG install found through Heroic or Minigalaxy carries that launcher's logo.
+const launcherOf = (store: string) => store.replace(/^gog-/, '')
 
 function StoreLabel({ store }: { store: string }) {
   const { t } = useLingui()
@@ -120,19 +124,22 @@ function ExtraInstalls({
           value={item.store}
           control={<Radio size="small" />}
           label={
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <StoreLabel store={item.store} />
-              <Box
-                sx={{
-                  fontSize: 12,
-                  color: 'var(--mortar-ink-sec)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-                title={item.dir}
-              >
-                {item.dir}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+              <LauncherLogo id={launcherOf(item.store)} size={22} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <StoreLabel store={item.store} />
+                <Box
+                  sx={{
+                    fontSize: 12,
+                    color: 'var(--mortar-ink-sec)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title={item.dir}
+                >
+                  {item.dir}
+                </Box>
               </Box>
             </Box>
           }
