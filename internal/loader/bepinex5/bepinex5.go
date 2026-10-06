@@ -64,6 +64,9 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 	if b, err := fsx.ReadFile(filepath.Join(tmp, "manifest.json")); err == nil {
 		manifest, _ = ParseManifest(b)
 	}
+	if err := clearPack(profileRoot); err != nil {
+		return Installed{}, err
+	}
 	err = filepath.WalkDir(src, func(p string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -73,12 +76,45 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 		if d.IsDir() {
 			return os.MkdirAll(dst, 0o750)
 		}
+		// A config file the profile already has holds the player's settings; BepInEx adds any new keys itself.
+		if filepath.Dir(rel) == filepath.Join("BepInEx", "config") {
+			if _, err := os.Stat(dst); err == nil {
+				return nil
+			}
+		}
 		return fsx.Rename(p, dst)
 	})
 	if err != nil {
 		return Installed{}, err
 	}
 	return Installed{Version: manifest.Version, Doorstop: doorstopMajor(profileRoot)}, nil
+}
+
+// clearPack removes the Doorstop files and BepInEx core a previous pack laid out, so a pack installed over another
+// keeps none of its files: an older pack has no .doorstop_version, and a newer one's left behind would make Mortar
+// pass Doorstop 4 flags to a Doorstop 3 proxy, which then never starts BepInEx. A package's own core files sit in
+// folders below core and stay.
+func clearPack(profileRoot string) error {
+	for _, name := range []string{doorstopFile, "winhttp.dll", "doorstop_config.ini", "doorstop_libs"} {
+		if err := fsx.RemoveAll(filepath.Join(profileRoot, name)); err != nil {
+			return err
+		}
+	}
+	core := filepath.Join(profileRoot, "BepInEx", "core")
+	ents, err := os.ReadDir(core)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	for _, e := range ents {
+		if !e.IsDir() {
+			if err := fsx.RemoveAll(filepath.Join(core, e.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // packRoot is the top-level folder of the extracted pack that holds BepInEx's preloader.

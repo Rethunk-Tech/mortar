@@ -32,6 +32,9 @@ func buildPackIn(t *testing.T, root, doorstop string) string {
 		"doorstop_libs/x64/libdoorstop.so":   "lib",
 		"BepInEx/core/BepInEx.Preloader.dll": "pre",
 	} {
+		if name == ".doorstop_version" && doorstop == "" {
+			continue
+		}
 		if name != "manifest.json" && name != "README.md" {
 			name = root + "/" + name
 		}
@@ -67,6 +70,41 @@ func TestInstallPackAndDoorstopFiles(t *testing.T) {
 	}
 	if got, _ := InstallPack(buildPack(t, "garbage"), filepath.Join(t.TempDir(), "p")); got.Doorstop != 3 {
 		t.Fatalf("default doorstop %d", got.Doorstop)
+	}
+}
+
+func TestAnOlderPackOverANewerOneKeepsNoneOfItsFiles(t *testing.T) {
+	root := filepath.Join(t.TempDir(), "profile")
+	if _, err := InstallPack(buildPack(t, "4.3.0.0\n"), root); err != nil {
+		t.Fatal(err)
+	}
+	for name, body := range map[string]string{
+		"BepInEx/core/Stale.dll":         "newer pack only",
+		"BepInEx/core/Ns-Mod/Mod.dll":    "a package's core file",
+		"BepInEx/config/BepInEx.cfg":     "[Logging.Console]\nEnabled = true\n",
+		"BepInEx/plugins/Ns-Mod/Mod.dll": "plugin",
+	} {
+		if err := os.MkdirAll(filepath.Dir(filepath.Join(root, name)), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := fsx.WriteFile(filepath.Join(root, name), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := InstallPack(buildPack(t, ""), root)
+	if err != nil || got.Doorstop != 3 {
+		t.Fatalf("an older pack without .doorstop_version is Doorstop 3: %+v, %v", got, err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "BepInEx", "core", "Stale.dll")); err == nil {
+		t.Fatal("the newer pack's core file was left behind")
+	}
+	for _, kept := range []string{"BepInEx/core/Ns-Mod/Mod.dll", "BepInEx/plugins/Ns-Mod/Mod.dll", "BepInEx/core/BepInEx.Preloader.dll"} {
+		if _, err := os.Stat(filepath.Join(root, kept)); err != nil {
+			t.Fatalf("%s: %v", kept, err)
+		}
+	}
+	if b, _ := fsx.ReadFile(filepath.Join(root, "BepInEx", "config", "BepInEx.cfg")); !strings.Contains(string(b), "Enabled = true") {
+		t.Fatalf("the player's BepInEx.cfg was replaced: %q", b)
 	}
 }
 
