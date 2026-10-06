@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -129,8 +130,42 @@ func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
 	if manifest.Serial != base+2 {
 		t.Fatalf("rollback replaced cached serial: %d", manifest.Serial)
 	}
-	if err == nil {
-		t.Fatal("serial rollback was not reported")
+	if !errors.Is(err, ErrRollback) || errors.Is(err, ErrBadSignature) {
+		t.Fatalf("serial rollback reported as %v, want ErrRollback", err)
+	}
+}
+
+func TestLoadTellsABadSignatureFromAnUnavailableManifest(t *testing.T) {
+	_, private, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	public, ok := private.Public().(ed25519.PublicKey)
+	if !ok {
+		t.Fatal("generated key is not Ed25519")
+	}
+	body, signature := signedManifest(t, bundledSerial(t)+1, private)
+	signature[0] ^= 0xff
+	missing := false
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case missing:
+			http.NotFound(w, r)
+		case r.URL.Path == "/components.json.sig":
+			_, _ = w.Write(signature)
+		default:
+			_, _ = w.Write(body)
+		}
+	}))
+	t.Cleanup(server.Close)
+	client := NewClient(server.Client())
+	client.ManifestURL = server.URL + "/components.json"
+	if _, err := client.Load(t.Context(), nil, public); !errors.Is(err, ErrBadSignature) || errors.Is(err, ErrRollback) {
+		t.Fatalf("tampered signature reported as %v, want ErrBadSignature", err)
+	}
+	missing = true
+	if _, err := client.Load(t.Context(), nil, public); err == nil || errors.Is(err, ErrBadSignature) || errors.Is(err, ErrRollback) {
+		t.Fatalf("missing manifest reported as %v, want a plain failure", err)
 	}
 }
 

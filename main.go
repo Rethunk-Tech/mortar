@@ -1031,7 +1031,11 @@ func run() error {
 			}
 		}
 		if _, err := componentClient.Load(context.Background(), modMeta, updateKey); err != nil {
-			log.Printf("components manifest unavailable; using bundled copy: %v", err)
+			if errors.Is(err, components.ErrBadSignature) || errors.Is(err, components.ErrRollback) {
+				slog.Warn("components manifest refused; keeping the last trusted copy", "err", err)
+			} else {
+				log.Printf("components manifest unavailable; using bundled copy: %v", err)
+			}
 			_ = os.MkdirAll(filepath.Dir(failurePath), 0o700)
 			_ = fsx.WriteFile(failurePath, []byte(time.Now().Format(time.RFC3339Nano)), 0o600)
 			return

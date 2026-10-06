@@ -723,6 +723,13 @@ func findGame(games []GameInfo, id string) (GameInfo, bool) {
 	return GameInfo{}, false
 }
 
+// ErrBadSignature and ErrRollback are the Load failures that point at tampering rather than an unreachable or
+// unreadable manifest: one whose signature does not verify, and one older than the manifest Mortar already trusts.
+var (
+	ErrBadSignature = errors.New("component manifest signature does not verify")
+	ErrRollback     = errors.New("component manifest is older than the one already trusted")
+)
+
 // Load fetches the signed manifest at startup, using the existing meta cache for a daily TTL. A failed
 // fetch or invalid cached entry falls back to the bundled manifest.
 func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte) (Manifest, error) {
@@ -743,14 +750,14 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	}
 	var fetchFailure error
 	fetch := func() (cachedManifest, error) {
-		manifest, signature, err := c.fetch(ctx)
+		url, manifest, signature, err := c.fetch(ctx)
 		if err != nil {
 			fetchFailure = err
 			return cachedManifest{}, err
 		}
 		if err := Verify(manifest, signature, publicKey); err != nil {
-			fetchFailure = err
-			return cachedManifest{}, err
+			fetchFailure = fmt.Errorf("%w: %s: %w", ErrBadSignature, url, err)
+			return cachedManifest{}, fetchFailure
 		}
 		parsed, err := Decode(manifest)
 		if err != nil {
@@ -758,7 +765,7 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 			return cachedManifest{}, err
 		}
 		if parsed.Serial < oldSerial {
-			fetchFailure = fmt.Errorf("component manifest serial %d is older than cached serial %d", parsed.Serial, oldSerial)
+			fetchFailure = fmt.Errorf("%w: %s has serial %d, below %d", ErrRollback, url, parsed.Serial, oldSerial)
 			return cachedManifest{}, fetchFailure
 		}
 		return cachedManifest{Manifest: manifest, Signature: signature}, nil
@@ -780,27 +787,28 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 				err = parseErr
 			}
 		} else {
-			err = verifyErr
+			err = fmt.Errorf("%w: cached copy: %w", ErrBadSignature, verifyErr)
 		}
 	}
 	c.SetManifest(bundled)
 	return bundled, err
 }
 
-func (c *Client) fetch(ctx context.Context) ([]byte, []byte, error) {
+// fetch returns the manifest's URL, which names its release, with the manifest and its signature.
+func (c *Client) fetch(ctx context.Context) (string, []byte, []byte, error) {
 	url, err := c.manifestURL(ctx)
 	if err != nil {
-		return nil, nil, err
+		return "", nil, nil, err
 	}
 	manifest, err := c.get(ctx, url, maxManifest)
 	if err != nil {
-		return nil, nil, err
+		return url, nil, nil, err
 	}
 	signature, err := c.get(ctx, url+".sig", maxSignature)
 	if err != nil {
-		return nil, nil, err
+		return url, nil, nil, err
 	}
-	return manifest, signature, nil
+	return url, manifest, signature, nil
 }
 
 func (c *Client) get(ctx context.Context, address string, limit int64) ([]byte, error) {
