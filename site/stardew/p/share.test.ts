@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { brotliCompressSync, constants } from 'node:zlib'
-import { decodeShare, type ShareError } from './share.js'
+import { decodeShare, newer, type ShareError } from './share.js'
 
 const wasm = readFileSync(
   new URL('../../vendor/brotli-dec-wasm/brotli_dec_wasm_bg.wasm', import.meta.url),
@@ -28,11 +28,12 @@ test('decodes a version 3 profile', async () => {
   expect(await decodeShare(`#${p}`, wasm)).toEqual({
     name: 'My farm',
     game: 'stardew',
+    gameVersion: '',
     sourceKeys: keys,
     entries: [
       { kind: 'nexus', mod: 2400 },
       { kind: 'github', repo: 'owner/repo', tag: 'v1.2', asset: 'mod.zip' },
-      { kind: 'thunderstore', ns: 'Alice', name: 'MoreCompany' },
+      { kind: 'thunderstore', ns: 'Alice', name: 'MoreCompany', version: '1.2.3' },
     ],
   })
 })
@@ -61,4 +62,27 @@ test('rejects bad input', async () => {
   expect(await kind(`#${encode({ a: 1 })}`)).toBe('bad')
   expect(await kind(`#${encode([3, 'x', 'stardew', keys, ['nope']])}`)).toBe('bad')
   expect(await kind(`#${encode([3, 'x'.repeat(70_000), 'stardew', keys, []])}`)).toBe('bad')
+})
+
+test('reads the game version and each mod size and minimum game version', async () => {
+  const p = encode([
+    3,
+    'Main',
+    'stardew',
+    keys,
+    [
+      { s: 'nexus', mod: 1, file: 2, kb: 12_000, min: '1.6.15' },
+      { s: 'thunderstore', ns: 'A', name: 'B', version: '1.0.0', kb: -1, min: 'soon' },
+    ],
+    '1.6.9',
+  ])
+  const share = await decodeShare(`#${p}`, wasm)
+  expect(share.gameVersion).toBe('1.6.9')
+  expect(share.entries).toEqual([
+    { kind: 'nexus', mod: 1, kb: 12_000, min: '1.6.15' },
+    { kind: 'thunderstore', ns: 'A', name: 'B', version: '1.0.0' },
+  ])
+  expect(newer('1.6.15', '1.6.9')).toBe(true)
+  expect(newer('1.6', '1.6.0')).toBe(false)
+  expect(newer('1.5.6', '1.6')).toBe(false)
 })

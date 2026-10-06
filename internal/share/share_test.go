@@ -666,3 +666,28 @@ func TestThunderstoreEntriesTravelInLinks(t *testing.T) {
 		t.Error("a malformed version was accepted")
 	}
 }
+
+func TestPageFactsRoundTrip(t *testing.T) {
+	t.Parallel()
+	s := Shared{
+		Game: "stardew", SourceKeys: map[string]string{"nexus": "stardewvalley"}, Name: "Main", GameVersion: "1.6.15",
+		Entries: []Ref{{ModID: 1, FileID: 2, SizeKB: roundKB(12_345), MinGame: "1.6.9"}, {ModID: 3, FileID: 4}},
+	}
+	payload, err := s.payload()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Parse(payload)
+	if err != nil || got.GameVersion != "1.6.15" || got.Entries[0].SizeKB != 12_000 || got.Entries[0].MinGame != "1.6.9" || got.Entries[1].SizeKB != 0 {
+		t.Fatalf("got %+v, %v", got, err)
+	}
+	s.Entries[0].MinGame = "soon"
+	if _, err := s.payload(); err == nil {
+		t.Error("a minimum game version that is not a version was accepted")
+	}
+	for in, want := range map[int64]int64{0: 0, 7: 7, 99: 99, 155: 160, 12_345: 12_000, 995_000: 1_000_000} {
+		if got := roundKB(in); got != want {
+			t.Errorf("roundKB(%d) = %d, want %d", in, got, want)
+		}
+	}
+}

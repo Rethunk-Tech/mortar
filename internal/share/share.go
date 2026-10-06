@@ -60,6 +60,11 @@ type Ref struct {
 	Note     string                         `json:"note,omitempty"`
 	Tags     []string                       `json:"tags,omitempty"`
 	Overlay  *Overlay                       `json:"overlay,omitempty"`
+	// SizeKB and MinGame are for the share page alone: the mod's size on disk, rounded to two significant digits,
+	// and the oldest game version its mods declare they run on.
+	SizeKB  int64  `json:"sizeKb,omitempty"`
+	MinGame string `json:"minGame,omitempty"`
+	key     string
 }
 
 // Overlay places an optional file inside the main file of the same mod: the folder of its archive that is laid
@@ -78,7 +83,13 @@ type Shared struct {
 	SourceKeys map[string]string
 	Name       string
 	Entries    []Ref
+	// GameVersion is the version of the game the profile was shared from, empty when unknown.
+	GameVersion string
 }
+
+// Facts tells Encode, when set, the game version a profile of game is on and, by entry key, each entry's size and
+// the oldest game version its mods declare, which the share page shows.
+var Facts func(game string, p profile.Profile) profile.ShareFacts
 
 // LeftOut is an enabled entry that cannot travel in a link.
 type LeftOut struct {
@@ -162,11 +173,13 @@ type wireRef struct {
 	Note     string                         `json:"note,omitempty"`
 	Tags     []string                       `json:"tags,omitempty"`
 	Overlay  *Overlay                       `json:"overlay,omitempty"`
+	KB       int64                          `json:"kb,omitempty"`
+	Min      string                         `json:"min,omitempty"`
 }
 
 // MarshalJSON writes the ref as its wire object.
 func (r Ref) MarshalJSON() ([]byte, error) {
-	w := wireRef{Disabled: r.Disabled, Fomod: r.Fomod, Note: r.Note, Tags: r.Tags, Overlay: r.Overlay}
+	w := wireRef{Disabled: r.Disabled, Fomod: r.Fomod, Note: r.Note, Tags: r.Tags, Overlay: r.Overlay, KB: r.SizeKB, Min: r.MinGame}
 	switch {
 	case r.Package != "":
 		w.Source, w.Version = "thunderstore", r.Version
@@ -192,7 +205,7 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 	if err := json.Unmarshal(raw, &w); err != nil {
 		return Ref{}, fmt.Errorf("%w: bad entry", ErrMalformed)
 	}
-	r := Ref{Disabled: w.Disabled, Fomod: w.Fomod, Note: w.Note, Tags: w.Tags, Overlay: w.Overlay}
+	r := Ref{Disabled: w.Disabled, Fomod: w.Fomod, Note: w.Note, Tags: w.Tags, Overlay: w.Overlay, SizeKB: w.KB, MinGame: w.Min}
 	switch {
 	case w.Source == "thunderstore" && w.Mod == 0 && w.File == 0 && w.Repo == "" && w.NS != "" && w.Name != "":
 		r.Package, r.Version = w.NS+"-"+w.Name, w.Version
@@ -209,6 +222,7 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 var (
 	gameIDPattern = regexp.MustCompile(`^[a-z0-9-]{1,40}$`)
 	sourceKey     = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
+	gameVersion   = regexp.MustCompile(`^(\d{1,9}(\.\d{1,9}){0,3})?$`)
 )
 
 const maxSourceKeys = 16
@@ -229,7 +243,7 @@ func checkShared(s Shared) error {
 	if !validName(s.Name) {
 		return fmt.Errorf("%w: bad profile name", ErrMalformed)
 	}
-	if !validOrigin(s) {
+	if !validOrigin(s) || !gameVersion.MatchString(s.GameVersion) {
 		return fmt.Errorf("%w: bad game or source keys", ErrMalformed)
 	}
 	if len(s.Entries) > MaxEntries {
@@ -248,7 +262,7 @@ func validDetails(r Ref) bool {
 	if len(r.Disabled) > MaxEntries || len(r.Fomod) > MaxEntries {
 		return false
 	}
-	if !validEntryNote(r.Note) || !validEntryTags(r.Tags) {
+	if !validEntryNote(r.Note) || !validEntryTags(r.Tags) || r.SizeKB < 0 || r.SizeKB > maxID || !gameVersion.MatchString(r.MinGame) {
 		return false
 	}
 	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
@@ -394,7 +408,9 @@ func cloneFomod(in map[string]map[string][]string) map[string]map[string][]strin
 
 // versioned splits a payload document into its version and the rest, refusing a newer version before the rest
 // is looked at, since its shape may differ.
-func versioned(raw []byte, parts int) ([]json.RawMessage, error) {
+// versioned reads the array, checks its version and that it has minParts to minParts+1 elements; the last one is
+// optional.
+func versioned(raw []byte, minParts int) ([]json.RawMessage, error) {
 	var doc []json.RawMessage
 	if err := json.Unmarshal(raw, &doc); err != nil || len(doc) == 0 {
 		return nil, fmt.Errorf("%w: not a JSON array", ErrMalformed)
@@ -409,7 +425,7 @@ func versioned(raw []byte, parts int) ([]json.RawMessage, error) {
 	if v != FormatVersion {
 		return nil, fmt.Errorf("%w: unsupported version %d", ErrMalformed, v)
 	}
-	if len(doc) != parts {
+	if len(doc) != minParts && len(doc) != minParts+1 {
 		return nil, fmt.Errorf("%w: wrong shape", ErrMalformed)
 	}
 	return doc, nil
@@ -457,7 +473,16 @@ func (s Shared) payload() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	raw := fmt.Appendf(nil, "[%d,%s,%s,%s,%s]", FormatVersion, name, game, keys, entries)
+	raw := fmt.Appendf(nil, "[%d,%s,%s,%s,%s", FormatVersion, name, game, keys, entries)
+	// The game version is the array's optional last element, left out when unknown.
+	if s.GameVersion != "" {
+		gv, err := json.Marshal(s.GameVersion)
+		if err != nil {
+			return "", err
+		}
+		raw = fmt.Appendf(raw, ",%s", gv)
+	}
+	raw = append(raw, ']')
 	var buf bytes.Buffer
 	w := brotli.NewWriterLevel(&buf, brotli.BestCompression)
 	if _, err := w.Write(raw); err != nil {
@@ -473,8 +498,17 @@ func (s Shared) payload() (string, error) {
 	return out, nil
 }
 
+// roundKB keeps two significant digits, which is all the page shows and compresses far better than exact sizes.
+func roundKB(kb int64) int64 {
+	scale := int64(1)
+	for kb >= 100*scale {
+		scale *= 10
+	}
+	return (kb + scale/2) / scale * scale
+}
+
 func withoutDetails(s Shared) Shared {
-	out := Shared{Game: s.Game, SourceKeys: s.SourceKeys, Name: s.Name, Entries: make([]Ref, len(s.Entries))}
+	out := Shared{Game: s.Game, SourceKeys: s.SourceKeys, Name: s.Name, Entries: make([]Ref, len(s.Entries)), GameVersion: s.GameVersion}
 	for i, r := range s.Entries {
 		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Package: r.Package, Version: r.Version}
 	}
@@ -557,6 +591,7 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 			left = append(left, LeftOut{Key: e.Key, Reason: why})
 			continue
 		}
+		r.key = e.Key
 		s.Entries = append(s.Entries, r)
 	}
 	return s, left, off
@@ -585,11 +620,23 @@ var linkPrefix = regexp.MustCompile(`^(?:https://mortar\.rethunk\.tech/([a-z0-9-
 func Encode(gameID string, p profile.Profile, include ...Include) (Result, error) {
 	s, left, _ := Collect(p, include...)
 	s.Game, s.SourceKeys = gameID, SourceKeys(gameID)
+	plain := s
+	if Facts != nil {
+		f := Facts(gameID, p)
+		s.GameVersion = f.GameVersion
+		s.Entries = slices.Clone(s.Entries)
+		for i, r := range s.Entries {
+			s.Entries[i].SizeKB, s.Entries[i].MinGame = roundKB(f.SizeKB[r.key]), f.MinGame[r.key]
+		}
+	}
+	// What the page shows goes before what the install uses: a link too large drops the sizes and minimum versions
+	// first, then the notes, choices and disabled mods.
 	payload, err := s.payload()
-	if errors.Is(err, ErrTooLarge) {
-		fallback := withoutDetails(s)
-		payload, err = fallback.payload()
-		if err == nil {
+	for _, fallback := range []Shared{plain, withoutDetails(plain)} {
+		if !errors.Is(err, ErrTooLarge) {
+			break
+		}
+		if payload, err = fallback.payload(); err == nil {
 			s = fallback
 		}
 	}
@@ -650,6 +697,9 @@ func decode(payload string) (Shared, error) {
 	}
 	if s.Entries, err = parseEntries(doc[4]); err != nil {
 		return Shared{}, err
+	}
+	if len(doc) > 5 && json.Unmarshal(doc[5], &s.GameVersion) != nil {
+		return Shared{}, fmt.Errorf("%w: bad game version", ErrMalformed)
 	}
 	if err := checkShared(s); err != nil {
 		return Shared{}, err

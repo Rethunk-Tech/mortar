@@ -39,6 +39,8 @@ type Manifest struct {
 	Dependencies []Dependency
 	// UpdateCautionMessage is shown at update time when Stardrop or Mortar cannot read the new version's manifest yet.
 	UpdateCautionMessage string
+	// MinimumGameVersion is the oldest game version the mod runs on, when it declares one.
+	MinimumGameVersion string
 	// DeleteOldVersion tells Mortar to carry over only user-written config (such as config.json), not other edited files.
 	DeleteOldVersion bool
 }
@@ -102,6 +104,7 @@ func parse(b []byte) (Manifest, error) {
 		UpdateKeys:           texts(field(raw, "updatekeys")),
 		UpdateCautionMessage: text(raw, "updatecautionmessage"),
 		DeleteOldVersion:     boolean(field(raw, "deleteoldversion")),
+		MinimumGameVersion:   text(raw, "minimumgameversion"),
 	}
 	if d, ok := dependency(field(raw, "contentpackfor")); ok {
 		m.ContentPackFor = d.UniqueID

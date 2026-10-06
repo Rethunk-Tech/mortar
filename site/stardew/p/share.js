@@ -3,8 +3,12 @@ import init, { DecompressStream } from '../../vendor/brotli-dec-wasm/brotli_dec_
 const MAX_ENCODED = 8192
 const MAX_DECODED = 65_536
 const VERSION = 3
+// PARTS is the payload array's length with its optional game version.
+const PARTS = 6
 const PART = /^\w+$/
 const REPO = /^[\w.-]+\/[\w.-]+$/
+const GAME_VERSION = /^\d{1,9}(\.\d{1,9}){0,3}$/
+const PACKAGE_VERSION = /^\d+\.\d+\.\d+$/
 const HASH = /^#/
 const B64URL = /^[\w-]+$/
 const DASH = /-/g
@@ -25,9 +29,26 @@ function inflate(bytes, wasm) {
   })
 }
 
+// facts are what the page shows beside a source: kb, the size rounded to two digits, and min, the oldest game version
+// the mod runs on. Either may be absent.
+function facts(e) {
+  const out = {}
+  if (Number.isInteger(e.kb) && e.kb > 0) {
+    out.kb = e.kb
+  }
+  if (typeof e.min === 'string' && GAME_VERSION.test(e.min)) {
+    out.min = e.min
+  }
+  return out
+}
+
 // An entry is an object naming its source: {s: 'nexus', mod, file}, {s: 'github', repo, tag, asset} or
-// {s: 'thunderstore', ns, name, version}.
+// {s: 'thunderstore', ns, name, version}, with optional page facts.
 function entry(e) {
+  return { ...source(e), ...facts(e) }
+}
+
+function source(e) {
   if (e && typeof e === 'object' && !Array.isArray(e)) {
     if (e.s === 'nexus' && Number.isInteger(e.mod) && e.mod > 0) {
       return { kind: 'nexus', mod: e.mod }
@@ -40,13 +61,18 @@ function entry(e) {
       return { kind: 'github', repo: e.repo, tag: e.tag, asset: e.asset }
     }
     if (e.s === 'thunderstore' && PART.test(e.ns) && PART.test(e.name)) {
-      return { kind: 'thunderstore', ns: e.ns, name: e.name }
+      const out = { kind: 'thunderstore', ns: e.ns, name: e.name }
+      if (typeof e.version === 'string' && PACKAGE_VERSION.test(e.version)) {
+        out.version = e.version
+      }
+      return out
     }
   }
   throw new ShareError('bad')
 }
 
-// Payload is the text after "#": base64url(brotli(JSON [3, name, game, sourceKeys, entries])); only VERSION is read.
+// Payload is the text after "#": base64url(brotli(JSON [3, name, game, sourceKeys, entries, gameVersion?])); only
+// VERSION is read, and the game version the profile was shared from is optional.
 export async function decodeShare(hash, wasm) {
   const payload = hash.replace(HASH, '')
   if (!payload) {
@@ -69,9 +95,12 @@ export async function decodeShare(hash, wasm) {
   if (Number.isInteger(json[0]) && json[0] > VERSION) {
     throw new ShareError('version')
   }
-  const [version, name, game, sourceKeys, entries] = json
+  const [version, name, game, sourceKeys, entries, gameVersion = ''] = json
   if (
     version !== VERSION ||
+    json.length > PARTS ||
+    typeof gameVersion !== 'string' ||
+    (gameVersion !== '' && !GAME_VERSION.test(gameVersion)) ||
     typeof name !== 'string' ||
     typeof game !== 'string' ||
     !game ||
@@ -88,7 +117,19 @@ export async function decodeShare(hash, wasm) {
       throw new ShareError('bad')
     }
   }
-  return { name, game, sourceKeys, entries: out }
+  return { name, game, gameVersion, sourceKeys, entries: out }
+}
+
+// newer reports whether version a is above b, comparing dot-separated numbers; a missing part counts as 0.
+export function newer(a, b) {
+  const x = a.split('.').map(Number)
+  const y = b.split('.').map(Number)
+  for (let i = 0; i < Math.max(x.length, y.length); i++) {
+    if ((x[i] ?? 0) !== (y[i] ?? 0)) {
+      return (x[i] ?? 0) > (y[i] ?? 0)
+    }
+  }
+  return false
 }
 
 export class ShareError extends Error {

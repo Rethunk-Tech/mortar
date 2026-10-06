@@ -11,6 +11,7 @@
     <style>
       :root {
         --error: rgb(199, 10, 10);
+        --warn: rgb(240, 180, 60);
       }
       .title {
         margin: 0;
@@ -26,14 +27,61 @@
         overflow: auto;
       }
       li {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0 0.5rem;
         padding: 0.3rem 0;
         border-top: 1px solid rgba(255, 255, 255, 0.08);
         overflow-wrap: anywhere;
       }
+      .pic {
+        width: 32px;
+        height: 32px;
+        flex: none;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.06);
+        object-fit: cover;
+      }
+      li a {
+        flex: 1;
+        min-width: 8rem;
+      }
+      .size {
+        font-size: 0.8rem;
+        opacity: 0.7;
+        white-space: nowrap;
+      }
+      .flag {
+        flex-basis: 100%;
+        padding-left: calc(32px + 0.5rem);
+        font-size: 0.8rem;
+        color: var(--warn);
+      }
+      .flag[hidden],
+      #versionRow[hidden] {
+        display: none;
+      }
+      #versionRow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+      }
+      #version {
+        width: 6rem;
+        padding: 0.2rem 0.4rem;
+        font: inherit;
+        color: inherit;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+      }
       .source {
         display: inline-block;
         min-width: 6.5rem;
-        margin-right: 0.5rem;
         font-size: 0.8rem;
         opacity: 0.7;
       }
@@ -89,6 +137,11 @@
         <p class="muted">
           <span id="count"></span>. Mortar resolves mod names when you import.
         </p>
+        <label id="versionRow" hidden
+          >Your game version
+          <input id="version" inputmode="decimal" autocomplete="off" />
+          <span id="flagged" class="muted"></span>
+        </label>
         <ul id="list"></ul>
       </section>
       <div class="actions">
@@ -103,7 +156,8 @@
       </p>
       <p class="muted">
         Everything on this page happens in your browser; the profile is never
-        sent anywhere.
+        sent anywhere. Pictures of GitHub and Thunderstore mods load from those
+        sites.
       </p>
     </main>
     <script type="module" src="app.js"></script>
