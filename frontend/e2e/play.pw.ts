@@ -1,0 +1,144 @@
+import { type ChildProcess, execFileSync, spawn } from 'node:child_process'
+import { chmodSync, readFileSync, writeFileSync } from 'node:fs'
+import process from 'node:process'
+import { expect, type Page, test } from '@playwright/test'
+import { sandboxPort, selftest } from './sandbox.ts'
+
+// --play runs its own server on the sandbox's port, so each test stops the shared one and starts its binary again
+// after, with the environment it ran with (read from /proc), without the rebuild `selftest.sh start` does.
+
+const dir = process.env.MORTAR_E2E_DIR ?? ''
+const serverPid = () => Number.parseInt(readFileSync(`${dir}/server.pid`, 'utf8'), 10)
+// Filled once the shared server runs: test files load before the global setup starts it.
+let env: Record<string, string> = {}
+
+const EXIT_WAIT_MS = 20_000
+
+// Stands in for SMAPI and the game: writes SMAPI's log as a start does, then runs under SMAPI's process name with
+// the profile's arguments for a few seconds, so Mortar sees the game run and close.
+const FAKE_GAME = `#!/bin/bash
+log="$HOME/.config/StardewValley/ErrorLogs/SMAPI-latest.txt"
+mkdir -p "$(dirname "$log")"
+printf '[00:00:00 INFO  SMAPI] SMAPI 4.1.10 with Stardew Valley 1.6.15 on Unix\\n[00:00:01 INFO  SMAPI] Loaded 0 mods:\\n' >"$log"
+exec -a StardewModdingAPI bash -c 'sleep "$0"; :' 3 "$@"
+`
+
+const cli = (...args: string[]) =>
+  execFileSync(`${dir}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
+
+const profileId = (name: string) =>
+  (
+    cli('profiles', 'stardew')
+      .split('\n')
+      .find((line) => line.includes(name)) ?? ''
+  ).split(/\s+/)[0] ?? ''
+
+/** Starts the shared server again from its built binary, detached so init reaps it, and waits until it serves. */
+async function restartShared(page: Page) {
+  const pid = execFileSync('sh', ['-c', 'nohup ./mortar-server >>server.log 2>&1 & echo $!'], {
+    cwd: dir,
+    env,
+    encoding: 'utf8',
+  })
+  writeFileSync(`${dir}/server.pid`, pid)
+  await served(page)
+}
+
+/** Runs `mortar --play` for the profile in place of the shared server, which is back up when this returns. */
+async function playing(
+  page: Page,
+  profile: string,
+  check: (exited: Promise<number | null>) => Promise<void>,
+) {
+  selftest(dir, 'stop')
+  let child: ChildProcess | null = null
+  try {
+    child = spawn(`${dir}/mortar-server`, [`--play=stardew/${profile}`], {
+      cwd: dir,
+      env,
+      stdio: 'ignore',
+    })
+    const running = child
+    await check(new Promise((done) => running.on('exit', (code) => done(code))))
+  } finally {
+    // Only the server this test started, by its own pid.
+    if (child?.exitCode === null && child.signalCode === null && child.pid) {
+      process.kill(child.pid, 'SIGTERM')
+    }
+    await restartShared(page)
+  }
+}
+
+const within = <T>(p: Promise<T>) =>
+  Promise.race([p, new Promise((r) => setTimeout(r, EXIT_WAIT_MS, 'still running'))])
+
+async function served(page: Page) {
+  await expect(async () => {
+    await page.goto('/')
+  }).toPass({ timeout: 15_000 })
+}
+
+let fine = ''
+let blocked = ''
+
+test.beforeAll(() => {
+  env = Object.fromEntries(
+    readFileSync(`/proc/${serverPid()}/environ`, 'utf8')
+      .split('\0')
+      .filter((kv) => kv.includes('='))
+      .map((kv) => [kv.slice(0, kv.indexOf('=')), kv.slice(kv.indexOf('=') + 1)]),
+  )
+  env.WAILS_SERVER_HOST = '127.0.0.1'
+  env.WAILS_SERVER_PORT = sandboxPort()
+  const fake = `${dir}/fake-game.sh`
+  writeFileSync(fake, FAKE_GAME)
+  chmodSync(fake, 0o755)
+  fine =
+    profileId('Deck Play') || cli('profile', 'create', 'stardew', 'Deck Play').split('\t')[0] || ''
+  blocked = profileId('Seed Farm')
+  cli('profile', 'set', 'stardew', fine, 'launchPrefix', fake)
+  cli('profile', 'set', 'stardew', fine, 'skipPlayCheck', 'true')
+  cli('settings', 'set', '--game', 'stardew', 'defaultLaunchMethod', 'direct')
+})
+
+test('--play with a blocked profile shows only the pre-Play prompt, and Cancel quits', async ({
+  page,
+}) => {
+  await playing(page, blocked, async (exited) => {
+    await served(page)
+    const prompt = page.getByRole('dialog', { name: 'Before you play' })
+    await expect(prompt).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('button', { name: 'Mortar menu' })).toHaveCount(0)
+    await prompt.getByRole('button', { name: 'Cancel' }).click()
+    expect(await within(exited)).toBe(0)
+  })
+})
+
+test('--play with a blocked profile turns into a normal session when the user picks a fix', async ({
+  page,
+}) => {
+  await playing(page, blocked, async (exited) => {
+    await served(page)
+    const prompt = page.getByRole('dialog', { name: 'Before you play' })
+    await prompt.getByRole('button', { name: 'Open Problems' }).click()
+    await expect(page.getByRole('button', { name: 'Mortar menu' })).toBeVisible()
+    await expect(page.getByRole('tab', { name: /^Problems/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(await Promise.race([exited, Promise.resolve('running')])).toBe('running')
+  })
+})
+
+test('--play with a fine profile launches the game and exits when it closes', async ({ page }) => {
+  const runs = () => cli('runs', 'stardew', fine).split('\n').slice(1)
+  const before = runs().length
+  await playing(page, fine, async (exited) => {
+    await served(page)
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    expect(await within(exited)).toBe(0)
+  })
+  const after = runs()
+  expect(after.length).toBe(before + 1)
+  expect(after[0]).toContain('Ran')
+})

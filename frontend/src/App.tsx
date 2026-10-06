@@ -10,6 +10,7 @@ import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
 import { DownloadsDialog } from './install/DownloadsDialog.tsx'
 import { LaunchLayer } from './launch/LaunchLayer.tsx'
+import { usePlayMode } from './launch/playModeState.ts'
 import { overlayGame, useLaunch } from './launch/store.ts'
 import { PinReasonDialog } from './mods/pinReasonDialog.tsx'
 import { isGameId, useNav } from './nav/store.ts'
@@ -53,7 +54,13 @@ export function App() {
     useLaunch((s) => s.status?.game ?? ''),
   )
   const [ready, setReady] = useState(false)
+  const solo = usePlayMode((s) => s.solo)
   const boot = useCallback((): void => {
+    // Play mode opens the played profile's game itself, and a later jump to the last game would race it.
+    if (usePlayMode.getState().solo) {
+      setReady(true)
+      return
+    }
     Promise.all([Get(), loadGameStatus()])
       .then(async ([settings, { games }]) => {
         if (!settings.launchersConfirmed) {
@@ -72,6 +79,9 @@ export function App() {
       .finally(() => setReady(true))
   }, [t])
   useEffect(boot, [boot])
+  if (solo) {
+    return <LaunchLayer game={game} />
+  }
   return (
     <>
       <AppFrame>

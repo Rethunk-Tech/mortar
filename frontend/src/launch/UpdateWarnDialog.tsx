@@ -12,13 +12,14 @@ import {
 } from '@mui/material'
 import { useGameName } from '../games/info.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
 
 export function UpdateWarnDialog() {
   const { t } = useLingui()
   const gameName = useGameName()
   const warn = useLaunch((s) => s.updateWarn)
-  const cancel = useLaunch((s) => s.dismissUpdateWarn)
+  const cancel = cancelling(useLaunch((s) => s.dismissUpdateWarn))
   const playAnyway = useLaunch((s) => s.playAnyway)
   const openProblems = useLaunch((s) => s.openProblems)
   return (

@@ -634,7 +634,7 @@ func run() error {
 	}
 	// Queue changes reach shareSvc, so links are routed only once both exist.
 	nxmSvc.Receive(os.Args[1:])
-	plays.Receive(os.Args[1:])
+	solo := plays.StartSolo(os.Args[1:])
 	shareSvc.Receive(sharesvc.InDir(os.Args[1:], sharesvc.LaunchDir()))
 	shareSvc.QueueChanged(queueSvc.State())
 
@@ -883,7 +883,7 @@ func run() error {
 			BackgroundColour: application.NewRGBA(25, 25, 30, 255),
 			EnableFileDrop:   true,
 			URL:              "/",
-			Hidden:           store.Get().StartMinimised,
+			Hidden:           store.Get().StartMinimised || plays.PlayMode(),
 		}
 		if store.Get().RememberWindow {
 			if g, ok := loadWindowGeom(dataDir, screensOf(app)); ok {
@@ -897,7 +897,7 @@ func run() error {
 		// Wayland gives an app no say over where a re-shown window goes, so closing to the tray
 		// destroys the window and showing builds a fresh one that the compositor places as new.
 		w.RegisterHook(events.Common.WindowClosing, func(*application.WindowEvent) {
-			if store.Get().RememberWindow {
+			if store.Get().RememberWindow && !plays.PlayMode() {
 				x, y := w.Position()
 				saveWindowGeom(dataDir, windowGeom{X: x, Y: y, W: w.Width(), H: w.Height()})
 			}
@@ -915,6 +915,31 @@ func run() error {
 		return w
 	}
 	window = newWindow()
+	plays.Window = func(m shortcut.WindowMode) {
+		switch m {
+		case shortcut.WindowPrompt:
+			window.SetMinSize(promptWindowWidth, promptWindowHeight)
+			window.SetSize(promptWindowWidth, promptWindowHeight)
+			window.Center()
+			window.Show().Focus()
+		case shortcut.WindowHidden:
+			window.Hide()
+		case shortcut.WindowFull:
+			window.SetMinSize(minWindowWidth, minWindowHeight)
+			window.SetSize(defaultWindowWidth, defaultWindowHeight)
+			window.Center()
+			showWindow()
+		}
+	}
+	if solo {
+		app.Event.On(launchsvc.StateEvent, func(e *application.CustomEvent) {
+			st, ok := e.Data.(launchsvc.Status)
+			if ok && (st.State == launchsvc.Running || st.State == launchsvc.Idle) && plays.Observe(st.Game, st.State == launchsvc.Running) {
+				log.Printf("play mode: %s closed; exiting", st.Game)
+				quitSvc.ConfirmQuit()
+			}
+		})
+	}
 	go func() {
 		defer func() {
 			if tidied.Pending() > 0 {

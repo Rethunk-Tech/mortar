@@ -52,10 +52,15 @@ func validID(s string) bool {
 // Service holds the latest play request until the window takes it, and makes shortcuts.
 type Service struct {
 	// Emit is nil in tests that do not watch events.
-	Emit    func(name string, data any)
-	Covers  func(game, profile string) ([]string, error)
+	Emit   func(name string, data any)
+	Covers func(game, profile string) ([]string, error)
+	// Window shows, hides or restores the window for play mode; nil in tests.
+	Window  func(WindowMode)
 	mu      sync.Mutex
 	pending *Request
+	// solo is the request play mode runs for, nil outside play mode; ran is set once its game was running.
+	solo *Request
+	ran  bool
 }
 
 // Receive keeps a play request found in args and tells the window; it reports whether there was one.

@@ -26,6 +26,7 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import type { PlayIssueGroup } from './playIssues.ts'
 import { overflowIssueCount } from './playIssues.ts'
+import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
 
 function GroupHeading({ group }: { group: PlayIssueGroup }) {
@@ -100,6 +101,7 @@ export function PrePlayDialog() {
   const { t } = useLingui()
   const check = useLaunch((s) => s.playCheck)
   const cancel = useLaunch((s) => s.dismissPlayCheck)
+  const quit = cancelling(cancel)
   const playAnyway = useLaunch((s) => s.playAnyway)
   const openProblems = useLaunch((s) => s.openProblems)
   const updateAndPlay = useLaunch((s) => s.updateAndPlay)
@@ -121,7 +123,7 @@ export function PrePlayDialog() {
   return (
     <Dialog
       open={check !== null}
-      onClose={() => persistThen(cancel)}
+      onClose={() => persistThen(quit)}
       slotProps={{ paper: { sx: { maxWidth: 480 } } }}
     >
       <DialogTitle>{t`Before you play`}</DialogTitle>
@@ -146,7 +148,7 @@ export function PrePlayDialog() {
         />
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
-        <Button onClick={() => persistThen(cancel)}>{t`Cancel`}</Button>
+        <Button onClick={() => persistThen(quit)}>{t`Cancel`}</Button>
         <Button onClick={() => persistThen(openProblems)}>{t`Open Problems`}</Button>
         {lastProfile?.switchProfileId ? (
           <Button

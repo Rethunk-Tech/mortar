@@ -40,6 +40,7 @@ import { useToasts } from '../toasts/store.ts'
 import { holdFocus, launchEscHides } from './holdFocus.ts'
 import { KnownGoodOffer } from './KnownGoodOffer.tsx'
 import { PrePlayDialog } from './PrePlayDialog.tsx'
+import { cancelling } from './playModeState.ts'
 import { SaveWarnDialog } from './SaveWarnDialog.tsx'
 import { useLaunch } from './store.ts'
 import { UpdateWarnDialog } from './UpdateWarnDialog.tsx'
@@ -239,6 +240,7 @@ function Failure({ game }: { game: string }) {
   const info = useProfiles((s) => s.game)
   const failure = useLaunch((s) => s.failure)
   const dismiss = useLaunch((s) => s.dismissFailure)
+  const close = cancelling(dismiss)
   const start = useLaunch((s) => s.start)
   const cause = failure?.cause
   const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
@@ -259,7 +261,7 @@ function Failure({ game }: { game: string }) {
   return (
     <Dialog
       open={true}
-      onClose={dismiss}
+      onClose={close}
       fullWidth={true}
       maxWidth="sm"
       slotProps={{ paper: { sx: { bgcolor: 'var(--mortar-panel-solid)' } } }}
@@ -283,7 +285,7 @@ function Failure({ game }: { game: string }) {
         {showFlatpak ? <FlatpakGrant /> : null}
       </DialogContent>
       <DialogActions>
-        <Button onClick={dismiss}>{t`Close`}</Button>
+        <Button onClick={close}>{t`Close`}</Button>
         <Button
           onClick={() => {
             dismiss()
@@ -330,7 +332,9 @@ function DirectDialog() {
           : t`Mortar can start ${{ name: loader }} directly instead, without the Steam overlay or Steam's playtime tracking.`
       }
       confirmLabel={t`Launch without Steam`}
-      onCancel={() => answer(false)}
+      onCancel={cancelling(() => {
+        answer(false).catch(reportUnexpected)
+      })}
       onConfirm={() => {
         answer(true).catch(reportUnexpected)
       }}

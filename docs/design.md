@@ -18,7 +18,6 @@ Remaining ([architecture.md](architecture.md#release)):
 ## Later
 
 - **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
-- **Steam Deck / gamepad mode** (larger targets, gamepad focus navigation, Game Mode play: a `--play` launch from a Steam shortcut starts Mortar minimised or headless, shows only a small controller-friendly prompt when Play is blocked, and exits when the game closes so Steam tracks playtime): parked 2026-10-02 (not v1).
 - **macOS build**: Stardew runs on macOS, and Stardrop ships for x64 and arm64, but Mortar has no macOS CI or test machine; it needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on. Parked 2026-10-02 (not v1).
 - **One top toolbar** (Gale-style: game switcher and profile switcher with mod count side by side in the title bar, download status next to them): parked 2026-10-05. Play stays at the foot of the sidebar; a Play control in the top-left corner is rejected.
 

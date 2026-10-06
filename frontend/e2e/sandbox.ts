@@ -83,6 +83,8 @@ function reapStale() {
 function freshSandbox(): () => void {
   reapStale()
   const dir = sandboxDir(process.pid)
+  // Specs that run the sandbox's own binary (play.pw.ts) find it here; workers inherit the main process's env.
+  process.env.MORTAR_E2E_DIR = dir
   const teardown = () => {
     selftest(dir, 'stop')
     rmSync(dir, { recursive: true, force: true })
@@ -98,4 +100,4 @@ function freshSandbox(): () => void {
   return teardown
 }
 
-export { freshSandbox, sandboxPort }
+export { freshSandbox, sandboxPort, selftest }

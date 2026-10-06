@@ -16,12 +16,14 @@ import { localId } from '../mods/dependents.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { addRecordedMods } from '../saves/recordedActions.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
 
 export function SaveWarnDialog() {
   const { t } = useLingui()
   const warn = useLaunch((s) => s.saveWarn)
   const cancel = useLaunch((s) => s.dismissSaveWarn)
+  const quit = cancelling(cancel)
   const playAnyway = useLaunch((s) => s.playAnyway)
   const save = warn?.save
   const recorded = (save?.lastMissing ?? []).length > 0
@@ -36,7 +38,7 @@ export function SaveWarnDialog() {
       ? save.lastProfileId
       : ''
   return (
-    <Dialog open={warn !== null} onClose={cancel} slotProps={{ paper: { sx: { maxWidth: 480 } } }}>
+    <Dialog open={warn !== null} onClose={quit} slotProps={{ paper: { sx: { maxWidth: 480 } } }}>
       <DialogTitle>
         {recorded ? t`This save needs other mods` : t`Your last save needs other mods`}
       </DialogTitle>
@@ -64,7 +66,7 @@ export function SaveWarnDialog() {
         )}
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
-        <Button onClick={cancel}>{t`Cancel`}</Button>
+        <Button onClick={quit}>{t`Cancel`}</Button>
         {switchTo ? (
           <Button
             onClick={() => {

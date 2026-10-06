@@ -16,6 +16,9 @@ const (
 	minWindowWidth      = 768
 	minWindowHeight     = 432
 	minVisible          = 80
+	// The play prompt fits one launch dialog (480px wide) with its margins.
+	promptWindowWidth  = 560
+	promptWindowHeight = 480
 )
 
 type windowGeom struct {

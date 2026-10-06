@@ -12,6 +12,7 @@ import { initInstallAsks } from './install/store.ts'
 import { IncomingPrompt } from './lan/IncomingPrompt.tsx'
 import { initIncoming } from './lan/incoming.ts'
 import { initLaunch } from './launch/events.ts'
+import { initPlayMode } from './launch/playMode.ts'
 import { initPlayRequests } from './launch/playRequests.ts'
 import { initLoader } from './loader/store.ts'
 import { initNexusSeen } from './mods/nexusDetails.ts'
@@ -60,6 +61,8 @@ initLoader()
 initNxm().catch(reportUnexpected)
 initQueue().catch(reportUnexpected)
 initProfilesChanged()
+// Play mode is known before the first render, so the full window never draws behind the play prompt.
+await initPlayMode().catch(reportUnexpected)
 initPlayRequests()
 initShare().catch(reportUnexpected)
 initIncoming().catch(reportUnexpected)
