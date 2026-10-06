@@ -277,6 +277,8 @@ jobs:
           gpg --batch --verify bin/SHA256SUMS.asc bin/SHA256SUMS
 
       - name: Build provenance
+        # Only a tag attests: a dry run's files are never published, and an attestation is a public Sigstore entry.
+        if: github.ref_type == 'tag'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: bin/*
