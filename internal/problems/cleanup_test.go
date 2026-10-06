@@ -57,12 +57,14 @@ func TestCleanupHintsFindsUnusedFrameworkNeededOnlyByDisabledMod(t *testing.T) {
 }
 
 func TestCleanupHintsIgnoresOptionalDependents(t *testing.T) {
+	worldMaps := manifest.Manifest{Name: "World Maps", UniqueID: "Example.WorldMaps"}
+	earthyMaps := manifest.Manifest{
+		UniqueID:     "Example.EarthyMaps",
+		Dependencies: []manifest.Dependency{{UniqueID: "Example.WorldMaps", Required: false}},
+	}
 	mods := []framework.Mod{
-		{Key: "a", Enabled: true, Manifest: manifest.Manifest{Name: "World Maps", UniqueID: "Example.WorldMaps"}},
-		{Key: "b", Enabled: false, Manifest: manifest.Manifest{
-			UniqueID:     "Example.EarthyMaps",
-			Dependencies: []manifest.Dependency{{UniqueID: "Example.WorldMaps", Required: false}},
-		}},
+		{Key: "a", Enabled: true, Manifest: worldMaps},
+		{Key: "b", Enabled: false, Manifest: earthyMaps},
 	}
 	if got := cleanupHints(mods, nil); len(got) != 0 {
 		t.Fatalf("cleanupHints() = %#v, want none", got)
