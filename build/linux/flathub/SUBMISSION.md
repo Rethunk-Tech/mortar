@@ -50,8 +50,9 @@ https://github.com/Rethunk-Tech/mortar (AGPL-3.0-only)
   the project uses bun, so `yarn.lock` is bun's lock written in yarn's format). The Wails CLI is built from the
   same Go sources to generate the frontend's TypeScript bindings. No install scripts run.
 - finish-args: network (mod downloads), Wayland/X11 with ipc and DRI (WebKitGTK window), xdg-download (mod archives
-  the user downloads), /run/media and /mnt (game libraries on other drives) and org.freedesktop.secrets (the Nexus
-  sign-in). Launch at login uses the Background portal and per-profile shortcuts the DynamicLauncher portal; the
+  the user downloads), /run/media and /mnt (game libraries on other drives), org.freedesktop.secrets (the Nexus
+  sign-in), org.freedesktop.Notifications (download and run notices) and org.kde.StatusNotifierWatcher with
+  `org.kde.StatusNotifierItem-2-1` (the optional tray icon). Launch at login uses the Background portal and per-profile shortcuts the DynamicLauncher portal; the
   single-instance name is `tech.rethunk.Mortar.SingleInstance`, under the app id.
 
 ### Linter exceptions requested
