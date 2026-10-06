@@ -1,16 +1,20 @@
-import { siGithub, siThunderstore } from 'simple-icons'
+import { siGithub, siItchdotio, siModrinth, siThunderstore } from 'simple-icons'
 import nexusmods from '../vendor/nexusmods.svg'
 
 // GitHub's brand mark is black, so it uses the ink colour (its own dark-mode treatment); the others keep their colour.
 const ICONS: Record<string, { path: string; fill: string }> = {
   github: { path: siGithub.path, fill: 'var(--mortar-ink)' },
   thunderstore: { path: siThunderstore.path, fill: `#${siThunderstore.hex}` },
+  modrinth: { path: siModrinth.path, fill: `#${siModrinth.hex}` },
+  itch: { path: siItchdotio.path, fill: `#${siItchdotio.hex}` },
 }
+
+const hasSourceLogo = (id: string) => id === 'nexus' || id in ICONS
 
 // The Nexus artwork leaves a margin inside its square that the vector marks do not, so it is drawn larger to match.
 const NEXUS_SCALE = 1.2
 
-export function SourceLogo({ id, size }: { id: string; size: number }) {
+function SourceLogo({ id, size }: { id: string; size: number }) {
   if (id === 'nexus') {
     const drawn = Math.round(size * NEXUS_SCALE)
     return (
@@ -33,3 +37,5 @@ export function SourceLogo({ id, size }: { id: string; size: number }) {
     </svg>
   )
 }
+
+export { hasSourceLogo, SourceLogo }

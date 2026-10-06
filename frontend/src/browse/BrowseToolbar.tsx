@@ -1,12 +1,83 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box } from '@mui/material'
-import { PrefSegmented } from '../settings/PrefControls.tsx'
+import { Box, ButtonBase, Tooltip } from '@mui/material'
+import { Layers } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { hasSourceLogo, SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { OfflineGate } from '../shell/OfflineGate.tsx'
 import { useOfflineReason } from '../shell/offlineText.ts'
 import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { ALL } from './browseConstants.ts'
 import { useBrowseView } from './view.ts'
+
+interface SourceOption {
+  value: string
+  label: string
+  unavailable?: string | undefined
+}
+
+const sourceButton = (active: boolean) => ({
+  minWidth: 34,
+  height: 30,
+  px: 1,
+  borderRadius: '6px',
+  fontSize: 13,
+  bgcolor: active ? 'var(--mortar-hairline-16)' : 'transparent',
+  color: active ? 'var(--mortar-ink)' : 'text.secondary',
+  '&:hover': { bgcolor: active ? 'var(--mortar-hairline-16)' : 'var(--mortar-hairline-muted)' },
+  '&.Mui-disabled': { opacity: 0.4 },
+})
+
+// The source picker shows each site's logo, named in its tooltip; a source with no logo shows its name.
+function SourceToggle({
+  sources,
+  value,
+  onChange,
+}: {
+  sources: SourceOption[]
+  value: string
+  onChange: (next: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Box
+      role="group"
+      aria-label={t`Source`}
+      sx={{
+        display: 'flex',
+        p: '3px',
+        gap: '2px',
+        bgcolor: 'var(--mortar-overlay-30)',
+        borderRadius: '8px',
+        flexShrink: 0,
+      }}
+    >
+      {sources.map((o) => {
+        let mark: ReactNode = o.label
+        if (o.value === ALL) {
+          mark = <Layers size={15} />
+        } else if (hasSourceLogo(o.value)) {
+          mark = <SourceLogo id={o.value} size={16} />
+        }
+        return (
+          <Tooltip key={o.value} title={o.unavailable ?? o.label}>
+            <span>
+              <ButtonBase
+                aria-label={o.label}
+                aria-pressed={o.value === value}
+                disabled={Boolean(o.unavailable)}
+                onClick={() => onChange(o.value)}
+                sx={sourceButton(o.value === value)}
+              >
+                {mark}
+              </ButtonBase>
+            </span>
+          </Tooltip>
+        )
+      })}
+    </Box>
+  )
+}
 
 function BrowseToolbar({
   sources,
@@ -16,21 +87,20 @@ function BrowseToolbar({
   onDraft,
   placeholder,
 }: {
-  sources: { value: string; label: string }[]
+  sources: SourceOption[]
   source: string
   onSource: (next: string) => void
   draft: string
   onDraft: (next: string) => void
   placeholder: string
 }) {
-  const { t } = useLingui()
   const view = useBrowseView((s) => s.view)
   const setView = useBrowseView((s) => s.setView)
   const offline = useOfflineReason(source === ALL ? [] : [source])
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.25, pb: 0.75 }}>
       <ViewToggle value={view} onChange={setView} />
-      <PrefSegmented value={source} label={t`Source`} options={sources} onChange={onSource} />
+      <SourceToggle sources={sources} value={source} onChange={onSource} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <OfflineGate reason={offline}>
           <SearchField

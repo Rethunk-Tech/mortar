@@ -10979,7 +10979,7 @@ msgstr "{0, plural, one {Created {name}; # mod still to download} other {Created
 msgid "Framework"
 msgstr "Framework"
 
-#: src/browse/BrowseToolbar.tsx:33
+#: src/browse/BrowseToolbar.tsx:45
 #: src/mods/columnLabel.ts:12
 #: src/mods/Toolbar.tsx:196
 #: src/settings/prefCopy.ts:125
