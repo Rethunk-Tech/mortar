@@ -675,6 +675,7 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 				log.Printf("profile %s/%s: record history: %v", game, id, err)
 			}
 			s.historyBatches[key] = batch
+			p.LastChange = batch.EventID
 		} else if evID, err := recordHistory(dir, before, p.Entries, stateChange(stateBefore, stateOf(p)), kind, note, configs, s.historyKeep()); err != nil {
 			log.Printf("profile %s/%s: record history: %v", game, id, err)
 		} else {

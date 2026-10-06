@@ -22,6 +22,7 @@ export function bundleApplied(result: ApplyResult, profileId: string): void {
   useToasts.getState().push({
     kind: missing.length > 0 ? 'warning' : 'success',
     title: i18n._(msg`Bundle added`),
+    changes: [result.profile.lastChange ?? ''],
     body:
       missing.length > 0
         ? `${added}\n${i18n._(msg`Not downloaded yet: ${listNames(missing, missing.length)}`)}`

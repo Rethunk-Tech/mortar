@@ -167,12 +167,17 @@ export function PrePlayDialog() {
               persistThen(() =>
                 runAdding(async () => {
                   const [save] = await LastSaveGap(check.game, check.profile)
-                  const enabled = await enableRecordedMods(check.game, check.profile, save)
+                  const { enabled, changes } = await enableRecordedMods(
+                    check.game,
+                    check.profile,
+                    save,
+                  )
                   cancel()
                   useToasts.getState().push({
                     kind: 'success',
                     title: plural(enabled, { one: 'Enabled # mod', other: 'Enabled # mods' }),
                     body: i18n._(msg`Press Play to start.`),
+                    changes,
                   })
                 }),
               )

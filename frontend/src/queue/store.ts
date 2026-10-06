@@ -288,6 +288,7 @@ function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
         ? i18n._(msg`${first} installed into ${profile.name}`)
         : i18n._(msg`${{ name: first }} installed`),
       ...(unblocked ? { body: i18n._(msg`${unblocked} can load now.`) } : {}),
+      changes: [item.change ?? ''],
       ...(extra
         ? {
             picture: extra.picture,
@@ -312,10 +313,11 @@ function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
     const title = i18n._(
       msg`${plural(count, { one: '# mod installed', other: '# mods installed' })}`,
     )
+    const changes = shownDone.map((item) => item.change ?? '')
     if (installToast === undefined) {
-      installToast = useToasts.getState().push({ kind: 'success', title })
+      installToast = useToasts.getState().push({ kind: 'success', title, changes })
     } else {
-      useToasts.getState().update(installToast, { title })
+      useToasts.getState().update(installToast, { title, changes })
     }
   }
 }

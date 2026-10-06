@@ -428,7 +428,7 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 		res.Outcomes = []GameModOutcome{}
 	}
 	if res.Imported > 0 {
-		if err := s.recordSnapshot(game, created.ID, historyImported, HistoryEvent{Change: ChangeImported}, res.Imported); err != nil {
+		if res.Profile.LastChange, err = s.recordSnapshot(game, created.ID, historyImported, HistoryEvent{Change: ChangeImported}, res.Imported); err != nil {
 			return res, err
 		}
 		if err := s.RecordModsSnapshot(game, created.ID); err != nil {

@@ -131,6 +131,7 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 		errs = append(errs, s.HealthRecover(game))
 	}
 	var restored []string
+	var change string
 	for _, key := range restore {
 		if _, err := s.RestoreDriftEntry(game, id, key); err != nil {
 			errs = append(errs, err)
@@ -152,7 +153,10 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 		if len(restored) == 1 {
 			note.Name = restored[0]
 		}
-		errs = append(errs, s.store.recordSnapshot(game, id, historyRestored, note, len(restored)))
+		var err error
+		if change, err = s.store.recordSnapshot(game, id, historyRestored, note, len(restored)); err != nil {
+			errs = append(errs, err)
+		}
 	}
 	for _, ev := range drop {
 		errs = append(errs, s.store.dropHistoryEvent(game, id, ev))
@@ -160,6 +164,7 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 	// What was repaired changes what the next check finds, so the badge is refreshed by the scheduler.
 	s.FlagHealth(game)
 	p, err := s.store.read(game, id)
+	p.LastChange = change
 	return p, errors.Join(append(errs, err)...)
 }
 

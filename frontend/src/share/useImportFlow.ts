@@ -147,6 +147,7 @@ function announce(
     kind: 'info',
     title: queued > 0 ? i18n._(msg`Importing into ${name}`) : i18n._(msg`Imported ${name}`),
     body,
+    changes: [result.profile.lastChange ?? ''],
     ...(intoOpen
       ? {}
       : {

@@ -19,7 +19,7 @@ const needChoiceUpdates = (list: readonly Update[]): Update[] =>
 
 function summarize(
   at: { game: string; profileId: string; beforeId: string },
-  counts: { installed: number; failed: number },
+  counts: { installed: number; failed: number; changes: string[] },
   needChoice: number,
 ) {
   const toasts = useToasts.getState()
@@ -34,6 +34,7 @@ function summarize(
   toasts.push({
     kind: counts.failed > 0 ? 'warning' : 'success',
     title: parts.join('; '),
+    changes: counts.changes,
     ...(counts.installed > 0
       ? {
           action: {

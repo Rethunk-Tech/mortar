@@ -23,7 +23,8 @@ interface State {
   load: (game: string, profileId: string, stamp: string) => Promise<void>
   reload: () => Promise<void>
   dismiss: (folder: string, id: string) => Promise<void>
-  enable: (game: string, profile: Profile, id: string) => Promise<void>
+  // Resolves to the history event the change recorded, or '' when nothing changed.
+  enable: (game: string, profile: Profile, id: string) => Promise<string>
 }
 
 export const useSaves = create<State>((set, get) => ({
@@ -78,13 +79,16 @@ export const useSaves = create<State>((set, get) => ({
       (e.mods ?? []).some((m) => sameId(m.id, id)),
     )?.key
     if (!key) {
-      return
+      return ''
     }
     try {
-      useProfiles.getState().replace((await SetModEnabled(game, profile.id, key, id, true)).profile)
+      const { profile: next } = await SetModEnabled(game, profile.id, key, id, true)
+      useProfiles.getState().replace(next)
       set((s) => ({ fits: dropMissing(s.fits, id) }))
+      return next.lastChange ?? ''
     } catch (e) {
       reportUnexpected(e)
+      return ''
     }
   },
 }))

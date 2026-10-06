@@ -910,14 +910,17 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			return Result{}, err
 		}
 	}
+	var change string
 	for _, e := range fromStore {
-		if _, err := s.d.Profiles.AddEntry(game, profileID, e.key, e.source); err != nil {
+		added, err := s.d.Profiles.AddEntry(game, profileID, e.key, e.source)
+		if err != nil {
 			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
 			if created {
 				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
 			}
 			return Result{}, err
 		}
+		change = added.LastChange
 	}
 	if len(local) > 0 {
 		if err := s.d.Profiles.ImportExternalMods(game, profileID, local); err != nil {
@@ -930,6 +933,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	if len(local) > 0 || len(fromStore) > 0 {
 		if p, err := s.find(game, profileID); err == nil {
 			res.Profile = p
+			res.Profile.LastChange = change
 		}
 		// Copied folders and store items are on the profile now, so their configs land at once; the rest wait for
 		// their downloads.

@@ -43,8 +43,15 @@ const lifetime = (kind: ToastKind) => (kind === 'info' || kind === 'success' ? Q
 // The profiles store answers with the history event its last change returned; toasts cannot import it back.
 let latestChange: (profileId: string) => string = () => ''
 
-const changeOf = (input: ToastInput) =>
-  input.action?.profileId ? latestChange(input.action.profileId) : ''
+const changesOf = (
+  input: Pick<ToastInput, 'action' | 'changes'>,
+  earlier: readonly string[] = [],
+) => {
+  const latest = input.action?.profileId ? latestChange(input.action.profileId) : ''
+  const all = new Set([...earlier, ...(input.changes ?? []), ...(latest ? [latest] : [])])
+  all.delete('')
+  return [...all]
+}
 
 export type ToastKind = 'info' | 'success' | 'warning' | 'error'
 
@@ -63,6 +70,8 @@ export interface ToastInput {
   picture?: string
   count?: number
   action?: ToastAction
+  // History events a change reports that the profiles store cannot answer for: those a batch wrote.
+  changes?: string[]
 }
 
 export interface Toast extends ToastInput {
@@ -114,9 +123,8 @@ export const useToasts = create<{
       const [previous] = get().history
       if (previous && previous.title === input.title && now - previous.at < QUICK_MS) {
         const count = (previous.count ?? 1) + 1
-        const change = changeOf(input)
-        const changes = change ? [...(previous.changes ?? []), change] : previous.changes
-        const merged = { ...previous, at: now, count, ...(changes ? { changes } : {}) }
+        const changes = changesOf(input, previous.changes)
+        const merged = { ...previous, at: now, count, ...(changes.length > 0 ? { changes } : {}) }
         set((s) => ({
           history: [merged, ...s.history.slice(1)],
           toasts: s.toasts.map((toast) =>
@@ -133,11 +141,11 @@ export const useToasts = create<{
         clearTimeout(timers.get(gone.id))
         timers.delete(gone.id)
       }
-      const change = changeOf(input)
+      const changes = changesOf(input)
       const item: ToastHistoryItem = {
         id,
         at: now,
-        ...(change ? { changes: [change] } : {}),
+        ...(changes.length > 0 ? { changes } : {}),
         kind: input.kind,
         title: input.title,
         ...(input.body === undefined ? {} : { body: input.body }),
@@ -157,7 +165,13 @@ export const useToasts = create<{
     update: (id, input) => {
       set((s) => ({
         toasts: s.toasts.map((toast) => (toast.id === id ? { ...toast, ...input } : toast)),
-        history: s.history.map((toast) => (toast.id === id ? { ...toast, ...input } : toast)),
+        history: s.history.map((item) => {
+          if (item.id !== id) {
+            return item
+          }
+          const changes = changesOf(input, item.changes)
+          return { ...item, ...input, ...(changes.length > 0 ? { changes } : {}) }
+        }),
       }))
       saveHistory(get().history)
     },

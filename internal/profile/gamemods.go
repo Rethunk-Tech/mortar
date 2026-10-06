@@ -89,8 +89,9 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 		}
 		res.Outcomes = append(res.Outcomes, out)
 	}
+	var change string
 	if res.Imported > 0 {
-		if err := s.recordSnapshot(game, id, historyImported, HistoryEvent{Change: ChangeMoved}, res.Imported); err != nil {
+		if change, err = s.recordSnapshot(game, id, historyImported, HistoryEvent{Change: ChangeMoved}, res.Imported); err != nil {
 			return res, err
 		}
 		if err := s.RecordModsSnapshot(game, id); err != nil {
@@ -98,6 +99,7 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 		}
 	}
 	res.Profile, err = s.read(game, id)
+	res.Profile.LastChange = change
 	return res, err
 }
 

@@ -61,15 +61,19 @@ func TestHistoryRecordsEachOperation(t *testing.T) {
 	}, false); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.recordSnapshot("stardew", p.ID, historyImported, HistoryEvent{Change: ChangeImported}, 2); err != nil {
+	if _, err := e.recordSnapshot("stardew", p.ID, historyImported, HistoryEvent{Change: ChangeImported}, 2); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.recordSnapshot("stardew", p.ID, historyRestored, HistoryEvent{Change: ChangeRestored}, 2); err != nil {
+	restoredID, err := e.recordSnapshot("stardew", p.ID, historyRestored, HistoryEvent{Change: ChangeRestored}, 2)
+	if err != nil {
 		t.Fatal(err)
 	}
 	events, err := e.History("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if restoredID != events[0].ID {
+		t.Fatalf("recordSnapshot returned %q, newest event %q", restoredID, events[0].ID)
 	}
 	want := []string{
 		historyRestored, historyImported, historyBulk, historyAdded, historyRemoved,
@@ -313,10 +317,17 @@ func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
 	if err := e.OpenHistoryBatch("stardew", p.ID, "batch-1"); err != nil {
 		t.Fatal(err)
 	}
+	changes := map[string]bool{}
 	for _, key := range []string{"a", "b", "c"} {
-		if _, err := e.AddEntry("stardew", p.ID, key, Source{}); err != nil {
+		changed, err := e.AddEntry("stardew", p.ID, key, Source{})
+		if err != nil {
 			t.Fatal(err)
 		}
+		changes[changed.LastChange] = true
+	}
+	recorded, err := e.RecordHistoryBatch("stardew", p.ID, "batch-1")
+	if err != nil {
+		t.Fatal(err)
 	}
 	if err := e.CloseHistoryBatch("stardew", p.ID); err != nil {
 		t.Fatal(err)
@@ -327,6 +338,9 @@ func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
 	}
 	if len(events) != 1 || events[0].Kind != historyBulk || events[0].Count != 3 {
 		t.Fatalf("batch history = %+v", events)
+	}
+	if len(changes) != 1 || !changes[events[0].ID] || recorded != events[0].ID {
+		t.Fatalf("batched changes returned %v and %q, want only the bulk event %q", changes, recorded, events[0].ID)
 	}
 	snapshot, err := e.Snapshot("stardew", p.ID, events[0].SnapshotID)
 	if err != nil || len(snapshot) != 3 {

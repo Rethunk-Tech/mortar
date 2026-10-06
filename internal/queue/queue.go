@@ -161,6 +161,8 @@ type Item struct {
 	Category     string            `json:"category,omitempty"`
 	Merge        *profile.MergeAsk `json:"merge,omitempty"`
 	MergeAdd     bool              `json:"mergeAdd,omitempty"`
+	// Change is the profile history event a finished install recorded, or the bulk event of its batch.
+	Change string `json:"change,omitempty"`
 
 	// fallbackTried stops a Nexus item from asking GitHub again once its fallback was looked up.
 	fallbackTried bool
@@ -305,8 +307,9 @@ type Deps struct {
 	Emit func(name string, data any)
 	// Changed is called with the state after every change, from the goroutine that made it; nil means nothing.
 	Changed func(State)
-	// HistoryBatch records a completed install in the profile's bulk history event; an empty batch closes it.
-	HistoryBatch func(game, profileID, batchID string) error
+	// HistoryBatch records a completed install in the profile's bulk history event and returns that event's id; an
+	// empty batch closes it.
+	HistoryBatch func(game, profileID, batchID string) (string, error)
 	HTTP         *http.Client
 	// Dir is the data folder holding queue.json and the downloads folder; it must be on the store's volume.
 	Dir string

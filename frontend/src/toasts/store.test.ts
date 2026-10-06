@@ -154,3 +154,11 @@ test('a profile change notification keeps the history events it reports', () => 
   expect(plain?.changes).toBeUndefined()
   setLatestChange(() => '')
 })
+
+test('a batched change notification keeps the history events it was given', () => {
+  const { push, update } = useToasts.getState()
+  const id = push({ kind: 'success', title: 'Updated 3 mods', changes: ['bulk', ''] })
+  expect(useToasts.getState().history[0]?.changes).toEqual(['bulk'])
+  update(id, { title: 'Updated 4 mods', changes: ['bulk', 'other'] })
+  expect(useToasts.getState().history[0]?.changes).toEqual(['bulk', 'other'])
+})

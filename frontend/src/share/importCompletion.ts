@@ -30,9 +30,11 @@ interface SettledImportCounts {
   installed: number
   failed: number
   skipped: number
+  // The profile history events the batch's installs recorded.
+  changes: string[]
 }
 
-type Row = Pick<Item, 'id' | 'state'>
+type Row = Pick<Item, 'id' | 'state'> & Partial<Pick<Item, 'change'>>
 
 /** Reads a batch's queue snapshots and returns its counts once every item has settled. */
 type BatchWatch = (items: readonly Row[]) => SettledImportCounts | undefined
@@ -44,12 +46,16 @@ type BatchWatch = (items: readonly Row[]) => SettledImportCounts | undefined
 export function watchBatch(ids: readonly string[]): BatchWatch {
   const want = new Set(ids)
   const last = new Map<string, string>()
+  const changes = new Set<string>()
   return (items) => {
     const listed = new Set<string>()
     for (const item of items) {
       if (want.has(item.id)) {
         last.set(item.id, item.state)
         listed.add(item.id)
+        if (item.change) {
+          changes.add(item.change)
+        }
       }
     }
     const states: string[] = []
@@ -65,7 +71,7 @@ export function watchBatch(ids: readonly string[]): BatchWatch {
     }
     const installed = states.filter((state) => state === 'done').length
     const failed = states.filter((state) => state === 'failed').length
-    return { installed, failed, skipped: states.length - installed - failed }
+    return { installed, failed, skipped: states.length - installed - failed, changes: [...changes] }
   }
 }
 
@@ -100,6 +106,7 @@ export function observeImportState(items: readonly Row[]) {
       useToasts.getState().push({
         kind: counts.failed > 0 ? 'warning' : 'success',
         title: i18n._(msg`Imported ${batch.name}: ${importCountsLine(counts)}`),
+        changes: counts.changes,
         ...(batch.pendingSettings > 0
           ? {
               body: i18n._(

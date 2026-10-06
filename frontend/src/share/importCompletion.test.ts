@@ -9,7 +9,7 @@ test('counts a settled batch by queue outcome', () => {
       { id: 'b', state: 'failed' },
       { id: 'c', state: 'cancelled' },
     ]),
-  ).toEqual({ installed: 1, failed: 1, skipped: 1 })
+  ).toEqual({ installed: 1, failed: 1, skipped: 1, changes: [] })
 })
 
 test('waits for items the queue has not listed yet', () => {
@@ -33,10 +33,26 @@ test('an item the queue trimmed after it finished keeps its outcome', () => {
     ]),
   ).toBeUndefined()
   // c was removed unfinished; a and b were trimmed as done.
-  expect(watch([])).toEqual({ installed: 2, failed: 0, skipped: 1 })
+  expect(watch([])).toEqual({ installed: 2, failed: 0, skipped: 1, changes: [] })
 })
 
 test('an item joined from an earlier batch counts once', () => {
   const watch = watchBatch(['a', 'a'])
-  expect(watch([{ id: 'a', state: 'done' }])).toEqual({ installed: 1, failed: 0, skipped: 0 })
+  expect(watch([{ id: 'a', state: 'done' }])).toEqual({
+    installed: 1,
+    failed: 0,
+    skipped: 0,
+    changes: [],
+  })
+})
+
+test('a settled batch names the history events its installs recorded, once each', () => {
+  const watch = watchBatch(['a', 'b', 'c'])
+  expect(
+    watch([
+      { id: 'a', state: 'done', change: 'bulk' },
+      { id: 'b', state: 'done', change: 'bulk' },
+      { id: 'c', state: 'failed' },
+    ])?.changes,
+  ).toEqual(['bulk'])
 })

@@ -682,11 +682,11 @@ func (s *Service) afterInstall(id string, res profile.InstallResult, err error, 
 		s.pauseRoot(id, res.Remap)
 		return nil
 	}
-	return s.finish(id, err, unverified)
+	return s.finish(id, err, unverified, res.Profile.LastChange)
 }
 
 // finish marks an item done after its install, which a mod already in the profile does not fail.
-func (s *Service) finish(id string, err error, unverified bool) error {
+func (s *Service) finish(id string, err error, unverified bool, change string) error {
 	var dup *profile.DuplicateError
 	if err != nil && !errors.As(err, &dup) {
 		return err
@@ -696,25 +696,33 @@ func (s *Service) finish(id string, err error, unverified bool) error {
 	if cur := s.find(id); cur != nil {
 		snap := *cur
 		rec = &snap
-		cur.State, cur.Progress, cur.key, cur.staged, cur.Unverified = StateDone, 100, "", "", unverified
+	}
+	s.mu.Unlock()
+	if rec == nil {
+		return nil
+	}
+	// The batch's event is recorded before the item shows done, so a window summing up a settled batch has its id.
+	if s.d.HistoryBatch != nil && rec.BatchID != "" {
+		if bulk, batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, rec.BatchID); batchErr != nil {
+			log.Printf("queue: record profile history batch %s: %v", rec.BatchID, batchErr)
+		} else if bulk != "" {
+			change = bulk
+		}
+	}
+	s.mu.Lock()
+	if cur := s.find(id); cur != nil {
+		cur.State, cur.Progress, cur.key, cur.staged, cur.Unverified, cur.Change = StateDone, 100, "", "", unverified, change
 	}
 	s.mu.Unlock()
 	s.publish(true)
-	if rec != nil {
-		s.recordHistory(rec, StateDone)
-		notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, true)
-		if s.Landed != nil && rec.Profile != "" {
-			s.Landed(rec.Game)
-		}
-		if s.d.HistoryBatch != nil {
-			if batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, rec.BatchID); batchErr != nil {
-				log.Printf("queue: record profile history batch %s: %v", rec.BatchID, batchErr)
-			}
-			if rec.BatchID != "" && s.batchFinished(rec) {
-				if batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, ""); batchErr != nil {
-					log.Printf("queue: close profile history batch %s: %v", rec.BatchID, batchErr)
-				}
-			}
+	s.recordHistory(rec, StateDone)
+	notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, true)
+	if s.Landed != nil && rec.Profile != "" {
+		s.Landed(rec.Game)
+	}
+	if s.d.HistoryBatch != nil && (rec.BatchID == "" || s.batchFinished(rec)) {
+		if _, batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, ""); batchErr != nil {
+			log.Printf("queue: close profile history batch %s: %v", rec.BatchID, batchErr)
 		}
 	}
 	return nil

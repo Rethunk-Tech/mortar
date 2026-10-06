@@ -845,3 +845,34 @@ func TestRouteGivesAClickedFileToAPendingUpdate(t *testing.T) {
 		t.Fatalf("update item %+v", *it)
 	}
 }
+
+func TestFinishedItemCarriesTheHistoryEventItRecorded(t *testing.T) {
+	f := newFixture(t)
+	var calls []string
+	f.s.d.HistoryBatch = func(_, _, batchID string) (string, error) {
+		calls = append(calls, batchID)
+		if batchID == "" {
+			return "", nil
+		}
+		return "bulk-ev", nil
+	}
+	f.s.mu.Lock()
+	f.s.items = []*Item{
+		{ID: "one", Name: "a", State: StateInstalling, Game: "stardew", Profile: "p1"},
+		{ID: "batched", Name: "b", State: StateInstalling, Game: "stardew", Profile: "p1", BatchID: "batch-1"},
+	}
+	f.s.mu.Unlock()
+	if err := f.s.finish("one", nil, false, "own-ev"); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.s.finish("batched", nil, false, "own-ev"); err != nil {
+		t.Fatal(err)
+	}
+	st := f.s.State()
+	if st.Items[0].Change != "own-ev" || st.Items[1].Change != "bulk-ev" {
+		t.Fatalf("changes %q %q, want own-ev bulk-ev", st.Items[0].Change, st.Items[1].Change)
+	}
+	if !slices.Equal(calls, []string{"", "batch-1", ""}) {
+		t.Fatalf("history batch calls %q", calls)
+	}
+}

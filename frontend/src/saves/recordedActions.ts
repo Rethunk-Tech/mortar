@@ -6,23 +6,24 @@ import { download } from '../queue/actions.ts'
 import { useSaves } from './store.ts'
 import { wantFor } from './wantFor.ts'
 
-// Switches on the recorded mods this profile has but disabled; returns how many.
+// Switches on the recorded mods this profile has but disabled; returns how many, and the history events written.
 export async function enableRecordedMods(
   game: string,
   profileId: string,
   fit: Fit,
-): Promise<number> {
+): Promise<{ enabled: number; changes: string[] }> {
   const profile = useProfiles.getState().profiles.find((p) => p.id === profileId)
   const off = ((fit.lastMissing?.length ? fit.lastMissing : fit.missing) ?? []).filter(
     (m) => m.disabled,
   )
   if (!profile) {
-    return 0
+    return { enabled: 0, changes: [] }
   }
+  const changes: string[] = []
   for (const lack of off) {
-    await useSaves.getState().enable(game, profile, lack.id)
+    changes.push(await useSaves.getState().enable(game, profile, lack.id))
   }
-  return off.length
+  return { enabled: off.length, changes }
 }
 
 // Adds the recorded mods the profile lacks, and with `enable` also switches on the ones it has disabled.

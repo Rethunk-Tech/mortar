@@ -546,20 +546,21 @@ func (s *Store) OpenHistoryBatch(game, id, batchID string) error {
 	return nil
 }
 
-// RecordHistoryBatch associates a completed queued install with its bulk event.
-func (s *Store) RecordHistoryBatch(game, id, batchID string) error {
+// RecordHistoryBatch associates a completed queued install with its bulk event and returns that event's id; an
+// empty batchID closes the batch and returns "".
+func (s *Store) RecordHistoryBatch(game, id, batchID string) (string, error) {
 	if batchID == "" {
-		return s.CloseHistoryBatch(game, id)
+		return "", s.CloseHistoryBatch(game, id)
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
-		return err
+		return "", err
 	}
 	data, err := readHistory(dir)
 	if err != nil {
-		return err
+		return "", err
 	}
 	key := historyBatchKey(game, id)
 	batch, ok := s.historyBatches[key]
@@ -580,13 +581,13 @@ func (s *Store) RecordHistoryBatch(game, id, batchID string) error {
 		}
 	}
 	if err := s.recordHistoryBatchData(dir, &data, &batch, p.Entries); err != nil {
-		return err
+		return "", err
 	}
 	if s.historyBatches == nil {
 		s.historyBatches = map[string]historyBatch{}
 	}
 	s.historyBatches[key] = batch
-	return nil
+	return batch.EventID, nil
 }
 
 // CloseHistoryBatch ends the current bulk event for a profile.
@@ -689,17 +690,18 @@ func (s *Store) Baseline(game, id string) (string, error) {
 	return ev.ID, err
 }
 
-func (s *Store) recordSnapshot(game, id, kind string, note HistoryEvent, count int) error {
+// recordSnapshot appends one event for a change made under quiet history and returns its id.
+func (s *Store) recordSnapshot(game, id, kind string, note HistoryEvent, count int) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
-		return err
+		return "", err
 	}
 	ev := note
 	ev.Kind, ev.Count = kind, count
-	_, err = appendHistory(dir, ev, p.Entries, s.historyKeep())
-	return err
+	ev, err = appendHistory(dir, ev, p.Entries, s.historyKeep())
+	return ev.ID, err
 }
 
 var onHistoryDecode func()
