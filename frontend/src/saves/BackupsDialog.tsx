@@ -93,7 +93,7 @@ function BackupRow({
           {meta}
         </Typography>
       </Box>
-      {backup.pinned && (
+      {backup.pinned ? (
         <Tooltip title={t`Kept forever`}>
           <Box
             component="span"
@@ -104,7 +104,7 @@ function BackupRow({
             <Pin size={14} />
           </Box>
         </Tooltip>
-      )}
+      ) : null}
       <TipIconButton
         label={busyGame ? t`Stop the game to restore saves.` : t`Restore ${{ label: when }}`}
         disabled={busyGame || pending}
