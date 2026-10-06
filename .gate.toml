@@ -12,23 +12,3 @@ e2e = true
 run = "bun run perf"
 timeout = "2m"
 e2e = true
-
-# scripts/gate.sh (CI's `bun run gate`) already runs build, typecheck, lint, shell, test and vuln in parallel; gate
-# cannot see inside it, so each role points at it and the identical gates merge into one run.
-[gates.build]
-run = "bun run gate"
-
-[gates.typecheck]
-run = "bun run gate"
-
-[gates.lint]
-run = "bun run gate"
-
-[gates.shell]
-run = "bun run gate"
-
-[gates.test]
-run = "bun run gate"
-
-[gates.vuln]
-run = "bun run gate"
