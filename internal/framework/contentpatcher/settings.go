@@ -3,6 +3,8 @@ package contentpatcher
 import (
 	"cmp"
 	"encoding/json"
+	"fmt"
+	"maps"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -22,7 +24,7 @@ type settingGroup struct {
 	active    bool
 }
 
-func compatibilitySettings(mods []framework.Mod) []framework.SettingHint {
+func compatibilitySettings(mods []framework.Mod, run *partsRun) []framework.SettingHint {
 	present := map[string]bool{}
 	byID := map[string]framework.Mod{}
 	for _, im := range mods {
@@ -38,6 +40,8 @@ func compatibilitySettings(mods []framework.Mod) []framework.SettingHint {
 			byID[id] = im
 		}
 	}
+	// Only a mod that is some recolour can be one of a pack's enabled recolours.
+	recolours := slices.DeleteFunc(slices.Clone(mods), func(m framework.Mod) bool { return len(enabledRecolours([]framework.Mod{m}, "")) == 0 })
 
 	var out []framework.SettingHint
 	for _, packMod := range mods {
@@ -48,88 +52,24 @@ func compatibilitySettings(mods []framework.Mod) []framework.SettingHint {
 		if len(pack.schema) == 0 {
 			continue
 		}
-		config := readPackConfig(packMod.Folder)
-		variants := variantSettings(packMod, pack, config, present, byID)
-		covered := map[string]bool{}
-		for _, hint := range variants {
-			covered[strings.ToLower(hint.Field)] = true
+		seen := presentFor(pack, present)
+		enabled := enabledRecolours(recolours, packMod.ModID())
+		sig, stable := packSig(packMod, pack, seen)
+		fields := []string{"settings", sig}
+		for _, id := range sortedKeys(seen) {
+			fields = append(fields, fmt.Sprintf("%q %q", byID[id].ModID(), byID[id].Name))
 		}
-		out = append(out, variants...)
-		out = append(out, recolourSettings(packMod, pack, config, enabledRecolours(mods, packMod.ModID()), covered)...)
-		groups := map[string]*settingGroup{}
-		for _, patch := range pack.patches {
-			if !patch.when.holds(present) || !dynamicWhenHolds(patch.when, pack.tokens, present, pack.schema, config) {
-				continue
-			}
-			ids := enabledRequirements(patch.when, present, packMod.ModID())
-			if len(ids) == 0 {
-				continue
-			}
-			required := make([]framework.Mod, 0, len(ids))
-			for _, id := range ids {
-				required = append(required, byID[id])
-			}
-			for _, condition := range patch.when.config {
-				schema, ok := pack.schema[strings.ToLower(condition.field)]
-				if !ok || len(condition.values) == 0 || !schema.booleanToggle() {
-					continue
-				}
-				current, present := config[strings.ToLower(schema.key)]
-				if !present {
-					current = schema.defaultValue
-				}
-				// One group per field: a value that already runs a patch for any installed mod is the player's
-				// choice, even when other patches for other mod combinations need a different value.
-				groupKey := strings.ToLower(schema.key)
-				group := groups[groupKey]
-				if group == nil {
-					group = &settingGroup{
-						pack:     packMod,
-						schema:   schema,
-						current:  current,
-						required: required,
-					}
-					groups[groupKey] = group
-				} else {
-					for _, im := range required {
-						if !slices.ContainsFunc(group.required, func(m framework.Mod) bool { return mod.Equal(m.ModID(), im.ModID()) }) {
-							group.required = append(group.required, im)
-						}
-					}
-				}
-				for _, value := range condition.values {
-					addSettingValue(&group.suggested, value)
-				}
-				if settingValueMatches(current, condition) {
-					group.active = true
-				}
+		for i := range recolourFamilies {
+			if im, ok := enabled[i]; ok {
+				fields = append(fields, fmt.Sprintf("r%d %q %q", i, im.ModID(), im.Name))
 			}
 		}
-		for _, group := range groups {
-			if group.active || len(group.suggested) == 0 {
-				continue
-			}
-			hint := framework.SettingHint{
-				Key:         group.pack.Key,
-				ID:          group.pack.ModID(),
-				Name:        group.pack.Name,
-				Field:       group.schema.key,
-				Current:     group.current,
-				Suggested:   group.suggested,
-				Description: group.schema.description,
-			}
-			for _, im := range group.required {
-				hint.For = append(hint.For, im.ModID())
-				name := im.Name
-				if name == "" {
-					name = im.ModID().Local()
-				}
-				hint.ForNames = append(hint.ForNames, name)
-			}
-			out = append(out, hint)
-		}
+		e := run.part(partKey(fields...), stable, func() partEntry {
+			return partEntry{Settings: packSettings(packMod, pack, seen, byID, enabled)}
+		})
+		out = append(out, e.Settings...)
 	}
-	slices.SortFunc(out, func(a, b framework.SettingHint) int {
+	slices.SortStableFunc(out, func(a, b framework.SettingHint) int {
 		if c := strings.Compare(strings.ToLower(a.Key), strings.ToLower(b.Key)); c != 0 {
 			return c
 		}
@@ -138,6 +78,92 @@ func compatibilitySettings(mods []framework.Mod) []framework.SettingHint {
 		}
 		return strings.Compare(strings.ToLower(a.Field), strings.ToLower(b.Field))
 	})
+	return out
+}
+
+// packSettings are one pack's compatibility settings; present holds the enabled mods its conditions name.
+func packSettings(packMod framework.Mod, pack cachedPack, present map[string]bool, byID map[string]framework.Mod, recolours map[int]framework.Mod) []framework.SettingHint {
+	config := readPackConfig(packMod.Folder)
+	variants := variantSettings(packMod, pack, config, present, byID)
+	covered := map[string]bool{}
+	for _, hint := range variants {
+		covered[strings.ToLower(hint.Field)] = true
+	}
+	out := slices.Clone(variants)
+	out = append(out, recolourSettings(packMod, pack, config, recolours, covered)...)
+	groups := map[string]*settingGroup{}
+	for _, patch := range pack.patches {
+		if !patch.when.holds(present) || !dynamicWhenHolds(patch.when, pack.tokens, present, pack.schema, config) {
+			continue
+		}
+		ids := enabledRequirements(patch.when, present, packMod.ModID())
+		if len(ids) == 0 {
+			continue
+		}
+		required := make([]framework.Mod, 0, len(ids))
+		for _, id := range ids {
+			required = append(required, byID[id])
+		}
+		for _, condition := range patch.when.config {
+			schema, ok := pack.schema[strings.ToLower(condition.field)]
+			if !ok || len(condition.values) == 0 || !schema.booleanToggle() {
+				continue
+			}
+			current, present := config[strings.ToLower(schema.key)]
+			if !present {
+				current = schema.defaultValue
+			}
+			// One group per field: a value that already runs a patch for any installed mod is the player's
+			// choice, even when other patches for other mod combinations need a different value.
+			groupKey := strings.ToLower(schema.key)
+			group := groups[groupKey]
+			if group == nil {
+				group = &settingGroup{
+					pack:     packMod,
+					schema:   schema,
+					current:  current,
+					required: required,
+				}
+				groups[groupKey] = group
+			} else {
+				for _, im := range required {
+					if !slices.ContainsFunc(group.required, func(m framework.Mod) bool { return mod.Equal(m.ModID(), im.ModID()) }) {
+						group.required = append(group.required, im)
+					}
+				}
+			}
+			for _, value := range condition.values {
+				addSettingValue(&group.suggested, value)
+			}
+			if settingValueMatches(current, condition) {
+				group.active = true
+			}
+		}
+	}
+	for _, key := range slices.Sorted(maps.Keys(groups)) {
+		group := groups[key]
+		if group.active || len(group.suggested) == 0 {
+			continue
+		}
+		hint := framework.SettingHint{
+			Key:         group.pack.Key,
+			ID:          group.pack.ModID(),
+			Name:        group.pack.Name,
+			Field:       group.schema.key,
+			Current:     group.current,
+			Suggested:   group.suggested,
+			Description: group.schema.description,
+		}
+		for _, im := range group.required {
+			hint.For = append(hint.For, im.ModID())
+			name := im.Name
+			if name == "" {
+				name = im.ModID().Local()
+			}
+			hint.ForNames = append(hint.ForNames, name)
+		}
+		out = append(out, hint)
+	}
 	return out
 }
 

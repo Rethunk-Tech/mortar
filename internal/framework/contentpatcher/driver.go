@@ -37,17 +37,22 @@ func (Driver) Analyze(in framework.Input) framework.Findings {
 	defer flushMapScans(in.All)
 	// After the cleanup pass, so the switched-off packs it reads are written too and need no parse on the next check.
 	defer flushPackDiskCache(in.All)
+	defer flushParts()
 	reads := recordReads()
+	run := newPartsRun()
 	preloadContentPacks(in.Enabled)
-	conflicts, conflictSettings, shadowed := assetConflictScan(in.Enabled)
+	conflicts, conflictSettings, shadowed := assetConflictScan(in.Enabled, run)
 	cleanup := unusedTilesheetPacks(in.All)
 	found := framework.Findings{
 		AssetConflicts: conflicts,
-		Settings:       append(compatibilitySettings(in.Enabled), conflictSettings...),
+		Settings:       append(compatibilitySettings(in.Enabled, run), conflictSettings...),
 		Redundant:      shadowed,
 		Cleanup:        append(cleanup, recolourAddons(in.All)...),
 	}
 	files, complete := reads()
+	if complete {
+		run.commit()
+	}
 	if files, stamped := packStamps(in.All, files); complete && stamped {
 		storeAnalysis(key, files, found)
 	}
@@ -62,4 +67,5 @@ func (Driver) Forget() {
 	mapScans.Lock()
 	mapScans.byPath, mapScans.loaded, mapScans.dirty = map[string]mapScan{}, false, false
 	mapScans.Unlock()
+	dropParts()
 }

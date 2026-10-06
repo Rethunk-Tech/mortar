@@ -58,6 +58,9 @@ type packHit struct {
 	schema       map[string]cpSchema
 	config       map[string]string
 	clashes      map[int]bool // indices into edits that overlap an edit of a pack it was not built with
+	// sig is the pack's share of a target's memo key (packSig), and stable whether its stamps can be trusted.
+	sig    string
+	stable bool
 }
 
 // cpPatch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
@@ -1901,7 +1904,7 @@ func dropCheckScratch() {
 }
 
 // assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).
-func assetConflictScan(mods []framework.Mod) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
+func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
 	defer dropCheckScratch()
 	preloadContentPacks(mods)
 	present := map[string]bool{}
@@ -1911,6 +1914,8 @@ func assetConflictScan(mods []framework.Mod) ([]framework.AssetConflict, []frame
 		}
 	}
 	at := map[string]map[string][]packHit{"load": {}, "edit": {}}
+	type hitAt struct{ kind, target, id string }
+	index := map[hitAt]int{}
 	for _, im := range mods {
 		pack := readContentPack(im)
 		knows := maps.Clone(pack.mentions)
@@ -1934,22 +1939,34 @@ func assetConflictScan(mods []framework.Mod) ([]framework.AssetConflict, []frame
 		if len(pack.schema) > 0 {
 			config = readPackConfig(im.Folder)
 		}
+		seen := presentFor(pack, present)
+		sig, stable := "", false
+		if len(pack.patches) > 0 {
+			sig, stable = packSig(im, pack, seen)
+		}
 		for _, p := range pack.patches {
-			if p.kind == "other" || !p.when.holds(present) || !dynamicWhenHolds(p.when, pack.tokens, present, pack.schema, config) {
+			if p.kind == "other" || !p.when.holds(seen) || !dynamicWhenHolds(p.when, pack.tokens, seen, pack.schema, config) {
 				continue
 			}
 			hits := at[p.kind][p.target]
-			i := slices.IndexFunc(hits, func(h packHit) bool { return mod.Equal(h.id, im.ModID()) })
-			if i < 0 {
+			k := hitAt{p.kind, p.target, im.ModID().Fold()}
+			i, found := index[k]
+			if !found {
 				hits = append(hits, packHit{
 					id: im.ModID(), name: im.Name, key: im.Key, priority: p.priority, mentions: knows,
-					root: im.Folder, tokens: pack.patches, present: present, schema: pack.schema, config: config,
-					dependencies: dependencies, loadAfter: loadAfter,
+					root: im.Folder, tokens: pack.patches, present: seen, schema: pack.schema, config: config,
+					dependencies: dependencies, loadAfter: loadAfter, sig: sig, stable: stable,
 				})
 				i = len(hits) - 1
+				index[k] = i
 				at[p.kind][p.target] = hits
 			} else {
 				hits[i].priority = strongerContentPatcherPriority(hits[i].priority, p.priority, p.kind)
+				// A second pack with the same id adds its patches to the first one's hit, so its share of the key too.
+				if hits[i].root != im.Folder && !strings.Contains(hits[i].sig, sig) {
+					hits[i].sig += "\x01" + sig
+					hits[i].stable = hits[i].stable && stable
+				}
 			}
 			if p.kind == "edit" {
 				hits[i].eligible = append(hits[i].eligible, p)
@@ -1968,40 +1985,24 @@ func assetConflictScan(mods []framework.Mod) ([]framework.AssetConflict, []frame
 	shadowed := shadowedPacks(mods, at)
 	out := []framework.AssetConflict{}
 	settings := []framework.SettingHint{}
-	for kind, targets := range at {
-		for t, hits := range targets {
-			cosmetic := false
-			if kind == "edit" {
-				hits, cosmetic = clashing(hits)
-			} else {
-				hits = clashingLoads(hits)
+	for _, kind := range []string{"load", "edit"} {
+		targets := at[kind]
+		for _, t := range slices.Sorted(maps.Keys(targets)) {
+			hits := targets[t]
+			if len(hits) < 2 {
+				continue
 			}
-			if len(hits) >= 2 {
-				c := conflictOf(kind, t, hits)
-				c.Evidence = conflictEvidence(kind, hits)
-				if kind == "load" {
-					if allLoadFilesBlank(hits, t) || allLoadFilesIdentical(hits, t) {
-						continue
-					}
-					var hint *framework.SettingHint
-					c.Cosmetic, hint = harmlessLoads(hits, c)
-					if hint != nil {
-						settings = append(settings, *hint)
-						continue
-					}
-				}
-				if kind == "edit" {
-					c.Cosmetic = cosmetic
-					markLoadAfterWinner(&c, hits)
-				}
-				c.Fixes = []framework.ConflictFix{}
-				for _, h := range hits {
-					if fix, ok := switchOff(h, hits); ok {
-						c.Fixes = append(c.Fixes, fix)
-					}
-				}
-				out = append(out, c)
+			fields := []string{kind, t}
+			stable := true
+			for _, h := range hits {
+				fields = append(fields, h.sig)
+				stable = stable && h.stable
 			}
+			e := run.part(partKey(fields...), stable, func() partEntry { return targetPart(kind, t, hits) })
+			if e.Conflict != nil {
+				out = append(out, *e.Conflict)
+			}
+			settings = append(settings, e.Settings...)
 		}
 	}
 	slices.SortFunc(out, func(a, b framework.AssetConflict) int {
@@ -2014,6 +2015,43 @@ func assetConflictScan(mods []framework.Mod) ([]framework.AssetConflict, []frame
 		return strings.Compare(a.Target, b.Target)
 	})
 	return out, settings, shadowed
+}
+
+// targetPart is the outcome of one target that two or more packs touch: a conflict, a setting that settles it, or
+// nothing.
+func targetPart(kind, target string, hits []packHit) partEntry {
+	cosmetic := false
+	if kind == "edit" {
+		hits, cosmetic = clashing(hits)
+	} else {
+		hits = clashingLoads(hits)
+	}
+	if len(hits) < 2 {
+		return partEntry{}
+	}
+	c := conflictOf(kind, target, hits)
+	c.Evidence = conflictEvidence(kind, hits)
+	if kind == "load" {
+		if allLoadFilesBlank(hits, target) || allLoadFilesIdentical(hits, target) {
+			return partEntry{}
+		}
+		var hint *framework.SettingHint
+		c.Cosmetic, hint = harmlessLoads(hits, c)
+		if hint != nil {
+			return partEntry{Settings: []framework.SettingHint{*hint}}
+		}
+	}
+	if kind == "edit" {
+		c.Cosmetic = cosmetic
+		markLoadAfterWinner(&c, hits)
+	}
+	c.Fixes = []framework.ConflictFix{}
+	for _, h := range hits {
+		if fix, ok := switchOff(h, hits); ok {
+			c.Fixes = append(c.Fixes, fix)
+		}
+	}
+	return partEntry{Conflict: &c}
 }
 
 func clashingLoads(hits []packHit) (out []packHit) {

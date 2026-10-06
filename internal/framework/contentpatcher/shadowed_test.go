@@ -10,7 +10,7 @@ import (
 
 func shadowedNames(t *testing.T, mods ...framework.Mod) map[string][]string {
 	t.Helper()
-	_, _, shadowed := assetConflictScan(mods)
+	_, _, shadowed := conflictScanOf(mods)
 	out := map[string][]string{}
 	for _, r := range shadowed {
 		if r.Kind != "shadowed" {
@@ -136,4 +136,8 @@ func TestShadowedPacks(t *testing.T) {
 			}
 		})
 	}
+}
+
+func conflictScanOf(mods []framework.Mod) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
+	return assetConflictScan(mods, nil)
 }

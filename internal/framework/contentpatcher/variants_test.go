@@ -58,7 +58,7 @@ func TestVariantSettings(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			hints := compatibilitySettings(append([]framework.Mod{variantPack(t, c.current, c.blank)}, c.mods...))
+			hints := settingsOf(append([]framework.Mod{variantPack(t, c.current, c.blank)}, c.mods...))
 			if c.want == "-" {
 				if len(hints) != 0 {
 					t.Fatalf("hints = %#v", hints)

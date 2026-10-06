@@ -173,11 +173,14 @@ func pruneAnalysisMemos(dir string) {
 }
 
 // passReads collects the files a check reads outside the packs' own stamps (load files compared byte for byte, mod
-// folders and the maps in them). Checks of two profiles at once share it, which only adds stamps to each.
+// folders and the maps in them). Checks of two profiles at once share it, which only adds stamps to each. log keeps
+// every read in order, repeats included, so a part of a check can take the reads it made (see markReads).
 var passReads struct {
 	sync.Mutex
 	active     int
 	files      map[string]packFileStamp
+	log        []packFileStamp
+	missed     int
 	incomplete bool
 }
 
@@ -186,7 +189,7 @@ var passReads struct {
 func recordReads() func() ([]packFileStamp, bool) {
 	passReads.Lock()
 	if passReads.active == 0 {
-		passReads.files, passReads.incomplete = map[string]packFileStamp{}, false
+		passReads.files, passReads.log, passReads.missed, passReads.incomplete = map[string]packFileStamp{}, nil, 0, false
 	}
 	passReads.active++
 	passReads.Unlock()
@@ -194,6 +197,9 @@ func recordReads() func() ([]packFileStamp, bool) {
 		passReads.Lock()
 		defer passReads.Unlock()
 		passReads.active--
+		if passReads.active == 0 {
+			passReads.log = nil
+		}
 		files := make([]packFileStamp, 0, len(passReads.files))
 		for _, s := range passReads.files {
 			files = append(files, s)
@@ -213,6 +219,7 @@ func noteRead(abs string, info fs.FileInfo) {
 	if passReads.active == 0 {
 		return
 	}
+	passReads.log = append(passReads.log, stamp)
 	if _, seen := passReads.files[abs]; !seen {
 		passReads.files[abs] = stamp
 	}
@@ -221,7 +228,28 @@ func noteRead(abs string, info fs.FileInfo) {
 func noteUnstampable() {
 	passReads.Lock()
 	passReads.incomplete = true
+	passReads.missed++
 	passReads.Unlock()
+}
+
+type readMark struct{ log, missed int }
+
+// markReads starts a part of a check, such as one conflict target; readsSince then gives the stamps of what the part
+// read. A check running beside it can add its own reads, which only makes the part's stamps stricter.
+func markReads() readMark {
+	passReads.Lock()
+	defer passReads.Unlock()
+	return readMark{len(passReads.log), passReads.missed}
+}
+
+// readsSince is false when no check is recording or a file read since m could not be stamped.
+func readsSince(m readMark) ([]packFileStamp, bool) {
+	passReads.Lock()
+	defer passReads.Unlock()
+	if passReads.active == 0 || passReads.missed != m.missed {
+		return nil, false
+	}
+	return slices.Clone(passReads.log[m.log:]), true
 }
 
 // packStamps adds the stamps of every pack the check read, and of each pack that has no content.json to read.

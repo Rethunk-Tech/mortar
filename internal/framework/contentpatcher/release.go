@@ -54,5 +54,10 @@ func releasePacks(gen int) {
 		mapScans.byPath, mapScans.loaded = map[string]mapScan{}, false
 	}
 	mapScans.Unlock()
+	parts.Lock()
+	if !parts.dirty {
+		parts.entries, parts.loaded = map[string]partEntry{}, false
+	}
+	parts.Unlock()
 	debug.FreeOSMemory()
 }

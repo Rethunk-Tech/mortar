@@ -17,22 +17,22 @@ const (
 
 func TestRecolourChoiceFollowsTheEnabledRecolour(t *testing.T) {
 	pack := settingPack(t, foliageSchema, foliageChanges, `{"Foliage":"Vanilla"}`)
-	hints := compatibilitySettings([]framework.Mod{pack, earthy(true)})
+	hints := settingsOf([]framework.Mod{pack, earthy(true)})
 	if len(hints) != 1 || hints[0].Suggested[0] != "Earthy" || hints[0].ForNames[0] != "Earthy Recolour" || !hints[0].Variant {
 		t.Fatalf("hints = %#v", hints)
 	}
-	if got := compatibilitySettings([]framework.Mod{pack, earthy(false)}); len(got) != 0 {
+	if got := settingsOf([]framework.Mod{pack, earthy(false)}); len(got) != 0 {
 		t.Fatalf("disabled recolour suggested: %#v", got)
 	}
 	matched := settingPack(t, foliageSchema, foliageChanges, `{"Foliage":"Earthy"}`)
-	if got := compatibilitySettings([]framework.Mod{matched, earthy(true)}); len(got) != 0 {
+	if got := settingsOf([]framework.Mod{matched, earthy(true)}); len(got) != 0 {
 		t.Fatalf("matching choice flagged: %#v", got)
 	}
 }
 
 func TestRecolourChoiceForAMissingRecolourFallsBackToVanilla(t *testing.T) {
 	pack := settingPack(t, foliageSchema, foliageChanges, `{"Foliage":"Starblue"}`)
-	hints := compatibilitySettings([]framework.Mod{pack})
+	hints := settingsOf([]framework.Mod{pack})
 	if len(hints) != 1 || hints[0].Suggested[0] != "Vanilla" || hints[0].CurrentFor != "Starblue Valley" {
 		t.Fatalf("hints = %#v", hints)
 	}
@@ -42,7 +42,7 @@ func TestRecolourChoiceLeftToThePack(t *testing.T) {
 	auto := settingPack(t, `{"Style":{"Default":"Auto","AllowValues":"Auto, Vanilla, Earthy"}}`, foliageChanges, "")
 	mapped := settingPack(t, foliageSchema, `[{"Action":"Load","Target":"a","When":{"Foliage":"Earthy","HasMod":"DaisyNiko.EarthyRecolour"}}]`, `{"Foliage":"Vanilla"}`)
 	for _, pack := range []framework.Mod{auto, mapped} {
-		if got := compatibilitySettings([]framework.Mod{pack, earthy(true)}); len(got) != 0 {
+		if got := settingsOf([]framework.Mod{pack, earthy(true)}); len(got) != 0 {
 			t.Fatalf("choice the pack makes itself flagged: %#v", got)
 		}
 	}

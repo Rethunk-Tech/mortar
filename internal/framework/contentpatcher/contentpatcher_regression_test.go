@@ -666,6 +666,6 @@ func assetConflicts(mods []framework.Mod) []framework.AssetConflict {
 }
 
 func assetConflictResults(mods []framework.Mod) ([]framework.AssetConflict, []framework.SettingHint) {
-	conflicts, settings, _ := assetConflictScan(mods)
+	conflicts, settings, _ := conflictScanOf(mods)
 	return conflicts, settings
 }

@@ -13,7 +13,7 @@ import (
 
 func TestCompatibilitySettingSuggestionWhenOff(t *testing.T) {
 	pack := settingPack(t, `{"Enabled":{"Default":false}}`, `[{"Action":"Load","Target":"a","When":{"Enabled":true,"HasMod":"Other.Mod"}}]`, `{"Enabled":false}`)
-	hints := compatibilitySettings([]framework.Mod{pack, settingMod()})
+	hints := settingsOf([]framework.Mod{pack, settingMod()})
 	if len(hints) != 1 || hints[0].Field != "Enabled" || len(hints[0].Suggested) != 1 || hints[0].Suggested[0] != "true" {
 		t.Fatalf("hints = %#v", hints)
 	}
@@ -21,21 +21,21 @@ func TestCompatibilitySettingSuggestionWhenOff(t *testing.T) {
 
 func TestCompatibilitySettingAlreadyActiveIsNotSuggested(t *testing.T) {
 	pack := settingPack(t, `{"Enabled":{"Default":false}}`, `[{"Action":"Load","Target":"a","When":{"Enabled":true,"HasMod":"Other.Mod"}}]`, `{"Enabled":true}`)
-	if got := compatibilitySettings([]framework.Mod{pack, settingMod()}); len(got) != 0 {
+	if got := settingsOf([]framework.Mod{pack, settingMod()}); len(got) != 0 {
 		t.Fatalf("hints = %#v", got)
 	}
 }
 
 func TestCompatibilitySettingMultipleValuesOneActiveIsNotSuggested(t *testing.T) {
 	pack := settingPack(t, `{"Modes":{"Default":"off","AllowMultiple":true}}`, `[{"Action":"Load","Target":"a","When":{"Modes":"high, low","HasMod":"Other.Mod"}}]`, `{"Modes":"off, low"}`)
-	if got := compatibilitySettings([]framework.Mod{pack, settingMod()}); len(got) != 0 {
+	if got := settingsOf([]framework.Mod{pack, settingMod()}); len(got) != 0 {
 		t.Fatalf("hints = %#v", got)
 	}
 }
 
 func TestCompatibilitySettingUnion(t *testing.T) {
 	pack := settingPack(t, `{"Mode":{"Default":"off"}}`, `[{"Action":"Load","Target":"a","When":{"Mode":"high","HasMod":"Other.Mod"}},{"Action":"Load","Target":"b","When":{"Mode":"low","HasMod":"Other.Mod"}}]`, `{"Mode":"off"}`)
-	hints := compatibilitySettings([]framework.Mod{pack, settingMod()})
+	hints := settingsOf([]framework.Mod{pack, settingMod()})
 	if len(hints) != 1 || len(hints[0].Suggested) != 2 || hints[0].Suggested[0] != "high" || hints[0].Suggested[1] != "low" {
 		t.Fatalf("hints = %#v", hints)
 	}
@@ -43,7 +43,7 @@ func TestCompatibilitySettingUnion(t *testing.T) {
 
 func TestCompatibilitySettingMissingConfigUsesDefault(t *testing.T) {
 	pack := settingPack(t, `{"Enabled":{"Default":false,"Description":"Use the compatibility patch"}}`, `[{"Action":"Load","Target":"a","When":{"Enabled":true,"HasMod":"Other.Mod"}}]`, "")
-	hints := compatibilitySettings([]framework.Mod{pack, settingMod()})
+	hints := settingsOf([]framework.Mod{pack, settingMod()})
 	if len(hints) != 1 || hints[0].Current != "false" || hints[0].Description != "Use the compatibility patch" {
 		t.Fatalf("hints = %#v", hints)
 	}
@@ -51,7 +51,7 @@ func TestCompatibilitySettingMissingConfigUsesDefault(t *testing.T) {
 
 func TestCompatibilitySettingFalseHasModIsIgnored(t *testing.T) {
 	pack := settingPack(t, `{"Enabled":{"Default":false}}`, `[{"Action":"Load","Target":"a","When":{"Enabled":true,"HasMod |contains=Other.Mod":false}}]`, `{"Enabled":false}`)
-	if got := compatibilitySettings([]framework.Mod{pack, settingMod()}); len(got) != 0 {
+	if got := settingsOf([]framework.Mod{pack, settingMod()}); len(got) != 0 {
 		t.Fatalf("hints = %#v", got)
 	}
 }
@@ -77,11 +77,11 @@ func settingPack(t *testing.T, schema, changes, config string) framework.Mod {
 func TestCompatibilitySettingContainsForm(t *testing.T) {
 	schema := `{"Patch":{"Default":"on","AllowValues":"on, off"}}`
 	active := settingPack(t, schema, `[{"Action":"Load","Target":"a","When":{"Patch|contains=on":true,"HasMod":"Other.Mod"}}]`, `{"Patch":"on"}`)
-	if got := compatibilitySettings([]framework.Mod{active, settingMod()}); len(got) != 0 {
+	if got := settingsOf([]framework.Mod{active, settingMod()}); len(got) != 0 {
 		t.Fatalf("contains=true already met: %#v", got)
 	}
 	off := settingPack(t, schema, `[{"Action":"Load","Target":"a","When":{"Patch |contains=off":false,"HasMod":"Other.Mod"}}]`, `{"Patch":"off"}`)
-	hints := compatibilitySettings([]framework.Mod{off, settingMod()})
+	hints := settingsOf([]framework.Mod{off, settingMod()})
 	if len(hints) != 1 || len(hints[0].Suggested) != 1 || hints[0].Suggested[0] != "on" {
 		t.Fatalf("contains=false should suggest the other value: %#v", hints)
 	}
@@ -89,7 +89,7 @@ func TestCompatibilitySettingContainsForm(t *testing.T) {
 
 func TestCompatibilitySettingVariantFieldIsNotSuggested(t *testing.T) {
 	pack := settingPack(t, `{"Room":{"Default":"None","AllowValues":"Plain, Glass, None"}}`, `[{"Action":"Load","Target":"a","When":{"Room":"Plain","HasMod":"Other.Mod"}}]`, `{"Room":"None"}`)
-	if got := compatibilitySettings([]framework.Mod{pack, settingMod()}); len(got) != 0 {
+	if got := settingsOf([]framework.Mod{pack, settingMod()}); len(got) != 0 {
 		t.Fatalf("variant field suggested: %#v", got)
 	}
 }
@@ -100,7 +100,7 @@ func TestCompatibilitySettingOnIncludedPropertyOnlyPatch(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(pack.Folder, "cc.json"), []byte(cc), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	hints := compatibilitySettings([]framework.Mod{pack, settingMod()})
+	hints := settingsOf([]framework.Mod{pack, settingMod()})
 	if len(hints) != 1 || hints[0].Field != "Animals" || hints[0].Suggested[0] != "on" {
 		t.Fatalf("hints = %#v", hints)
 	}
@@ -111,7 +111,7 @@ func TestCompatibilitySettingFieldActiveForAnyModIsNotSuggested(t *testing.T) {
 	third := settingMod()
 	third.UniqueID, third.Key = "Third.Mod", "third"
 	pack := settingPack(t, `{"Shift":{"Default":true}}`, changes, `{"Shift":true}`)
-	if got := compatibilitySettings([]framework.Mod{pack, settingMod(), third}); len(got) != 0 {
+	if got := settingsOf([]framework.Mod{pack, settingMod(), third}); len(got) != 0 {
 		t.Fatalf("hints = %#v", got)
 	}
 }
@@ -143,4 +143,8 @@ func TestConflictOffersTheSettingThatRemovesOnePack(t *testing.T) {
 	if f := got[0].Fixes[0]; f.ID != "smapi:Pack.Compat" || f.Field != "DesertMinecart" || f.Value != "false" || f.Current != "true" {
 		t.Fatalf("fix %+v", f)
 	}
+}
+
+func settingsOf(mods []framework.Mod) []framework.SettingHint {
+	return compatibilitySettings(mods, nil)
 }
