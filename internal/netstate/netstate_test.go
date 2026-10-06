@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"syscall"
 	"testing"
 )
 
@@ -84,9 +83,11 @@ func TestRecordKeepsTheLastErrorUntilASuccess(t *testing.T) {
 }
 
 func TestRecordSortsWhyASourceCouldNotBeReached(t *testing.T) {
-	refused := &net.OpError{Op: "proxyconnect", Net: "tcp", Err: &os.SyscallError{Syscall: "connect", Err: syscall.ECONNREFUSED}}
+	refused := &net.OpError{Op: "proxyconnect", Net: "tcp", Err: &os.SyscallError{Syscall: connectCall, Err: osRefused}}
+	timedOut := &net.OpError{Op: "dial", Net: "tcp", Err: &os.SyscallError{Syscall: connectCall, Err: osTimedOut}}
 	for err, want := range map[error]string{
 		&url.Error{Op: "Get", URL: "https://api.nexusmods.com", Err: refused}:                         ReasonRefused,
+		&url.Error{Op: "Get", URL: "https://thunderstore.io", Err: timedOut}:                          ReasonTimeout,
 		&url.Error{Op: "Get", URL: "https://api.github.com", Err: &net.DNSError{Err: "no such host"}}: ReasonDNS,
 		context.DeadlineExceeded: ReasonTimeout,
 		&net.OpError{Op: "read", Net: "tcp", Err: errors.New("connection reset by peer")}: ReasonOther,

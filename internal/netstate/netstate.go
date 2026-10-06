@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"sort"
 	"sync"
-	"syscall"
 	"time"
 )
 
@@ -52,10 +51,11 @@ func reasonOf(err error) string {
 	if _, ok := errors.AsType[*net.DNSError](err); ok {
 		return ReasonDNS
 	}
-	if errors.Is(err, syscall.ECONNREFUSED) {
+	if errors.Is(err, refusedErrno) {
 		return ReasonRefused
 	}
-	if ne, ok := errors.AsType[net.Error](err); errors.Is(err, context.DeadlineExceeded) || (ok && ne.Timeout()) {
+	ne, ok := errors.AsType[net.Error](err)
+	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, timedOutErrno) || (ok && ne.Timeout()) {
 		return ReasonTimeout
 	}
 	return ReasonOther
