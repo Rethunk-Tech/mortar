@@ -87,10 +87,6 @@ type Shared struct {
 	GameVersion string
 }
 
-// Facts tells Encode, when set, the game version a profile of game is on and, by entry key, each entry's size and
-// the oldest game version its mods declare, which the share page shows.
-var Facts func(game string, p profile.Profile) profile.ShareFacts
-
 // LeftOut is an enabled entry that cannot travel in a link.
 type LeftOut struct {
 	Key    string
@@ -616,18 +612,16 @@ func SourceKeys(gameID string) map[string]string {
 // linkPrefix matches a web or app link up to its payload; the game id is group 1 or 2.
 var linkPrefix = regexp.MustCompile(`^(?:https://mortar\.rethunk\.tech/([a-z0-9-]+)/p#|mortar://([a-z0-9-]+)/p/)`)
 
-// Encode turns a profile of the game into its share links.
-func Encode(gameID string, p profile.Profile, include ...Include) (Result, error) {
+// Encode turns a profile of the game into its share links. facts are what the share page shows beside the mods (the
+// zero value shows nothing more).
+func Encode(gameID string, p profile.Profile, facts profile.ShareFacts, include ...Include) (Result, error) {
 	s, left, _ := Collect(p, include...)
 	s.Game, s.SourceKeys = gameID, SourceKeys(gameID)
 	plain := s
-	if Facts != nil {
-		f := Facts(gameID, p)
-		s.GameVersion = f.GameVersion
-		s.Entries = slices.Clone(s.Entries)
-		for i, r := range s.Entries {
-			s.Entries[i].SizeKB, s.Entries[i].MinGame = roundKB(f.SizeKB[r.key]), f.MinGame[r.key]
-		}
+	s.GameVersion = facts.GameVersion
+	s.Entries = slices.Clone(s.Entries)
+	for i, r := range s.Entries {
+		s.Entries[i].SizeKB, s.Entries[i].MinGame = roundKB(facts.SizeKB[r.key]), facts.MinGame[r.key]
 	}
 	// What the page shows goes before what the install uses: a link too large drops the sizes and minimum versions
 	// first, then the notes, choices and disabled mods.

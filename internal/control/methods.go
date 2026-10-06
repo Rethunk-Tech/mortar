@@ -939,7 +939,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return s.Queue.State(), nil
 	case "share":
-		res, err := share.Encode(p.Game, prof)
+		res, err := share.Encode(p.Game, prof, s.Profiles.ShareFacts(p.Game, prof))
 		if errors.Is(err, share.ErrTooLarge) {
 			return ShareLink{TooLarge: true}, nil
 		}

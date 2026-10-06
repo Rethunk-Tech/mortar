@@ -250,17 +250,18 @@ func (s *Service) Share(game, profileID string, keys []string, include share.Inc
 	if err != nil {
 		return Info{}, err
 	}
-	return describe(game, withEntryKeys(p, keys), include)
+	p = withEntryKeys(p, keys)
+	return describe(game, p, s.d.Profiles.ShareFacts(game, p), include)
 }
 
-func describe(game string, p profile.Profile, include ...share.Include) (Info, error) {
+func describe(game string, p profile.Profile, facts profile.ShareFacts, include ...share.Include) (Info, error) {
 	inc := share.DefaultInclude()
 	if len(include) > 0 {
 		inc = include[0]
 	}
 	_, left, off := share.Collect(p, inc)
 	info := Info{Name: p.Name, Limit: DiscordLimit, Groups: []Group{}, LeftOut: []Omitted{}}
-	res, err := share.Encode(game, p, inc)
+	res, err := share.Encode(game, p, facts, inc)
 	switch {
 	case err == nil:
 		info.Web, info.App, info.Length = res.Web, res.App, len(res.Web)

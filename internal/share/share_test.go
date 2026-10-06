@@ -47,7 +47,7 @@ func sample() profile.Profile {
 
 func TestRoundTripAndLinks(t *testing.T) {
 	t.Parallel()
-	res, err := Encode("stardew", sample())
+	res, err := Encode("stardew", sample(), profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func TestRoundTripAndLinks(t *testing.T) {
 			t.Fatalf("Parse(%.40q) = %+v, %v", in, got, err)
 		}
 	}
-	lc, err := Encode("lethal-company", sample())
+	lc, err := Encode("lethal-company", sample(), profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +80,7 @@ func TestDetailsRoundTrip(t *testing.T) {
 		Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: 4, FileID: 5},
 		Mods: []profile.Component{{ID: "smapi:A.On", Folder: "."}, {ID: "smapi:A.Off", Folder: "."}}, Disabled: []mod.ID{"smapi:A.Off"}, Fomod: choices,
 	}}}
-	res, err := Encode("stardew", p)
+	res, err := Encode("stardew", p, profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,7 +153,7 @@ func TestLinkDropsDetailsBeforeRefs(t *testing.T) {
 			Fomod: map[string]map[string][]string{"Step": {fmt.Sprintf("Group-%d", i): {fmt.Sprintf("%x", sum)}}},
 		})
 	}
-	res, err := Encode("stardew", p)
+	res, err := Encode("stardew", p, profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,7 +169,7 @@ func TestLinkDropsDetailsBeforeRefs(t *testing.T) {
 
 func TestWrongForms(t *testing.T) {
 	t.Parallel()
-	p, err := Encode("stardew", sample())
+	p, err := Encode("stardew", sample(), profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -265,10 +265,10 @@ func TestEncodeRefusesTooLarge(t *testing.T) {
 	for i := range 1000 {
 		p.Entries = append(p.Entries, nexus(fmt.Sprint(i), pseudo(1, i, 0, 2_000_000_000), pseudo(1, i, 1, 2_000_000_000)))
 	}
-	if _, err := Encode("stardew", p); !errors.Is(err, ErrTooLarge) {
+	if _, err := Encode("stardew", p, profile.ShareFacts{}); !errors.Is(err, ErrTooLarge) {
 		t.Errorf("err = %v", err)
 	}
-	if _, err := Encode("stardew", profile.Profile{Name: strings.Repeat("a", 61)}); !errors.Is(err, ErrMalformed) {
+	if _, err := Encode("stardew", profile.Profile{Name: strings.Repeat("a", 61)}, profile.ShareFacts{}); !errors.Is(err, ErrMalformed) {
 		t.Errorf("long name: %v", err)
 	}
 }
@@ -288,7 +288,7 @@ func TestLinkSizes(t *testing.T) {
 		for i := range tc.mods {
 			p.Entries = append(p.Entries, nexus(fmt.Sprint(i), pseudo(tc.mods, i, 0, 42000), pseudo(tc.mods, i, 1, 180000)))
 		}
-		res, err := Encode("stardew", p)
+		res, err := Encode("stardew", p, profile.ShareFacts{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -306,7 +306,7 @@ func TestBundledNeverListed(t *testing.T) {
 		{Key: "bridge", Source: profile.Source{Kind: profile.SourceMortar}},
 		nexus("gone", 1, 2, "smapi:A.gone"),
 	}}
-	res, err := Encode("stardew", p)
+	res, err := Encode("stardew", p, profile.ShareFacts{})
 	if err != nil || len(res.LeftOut) != 0 || len(res.Shared.Entries) != 0 {
 		t.Fatalf("%+v, %v", res, err)
 	}
@@ -319,7 +319,7 @@ func TestLeftOutReasons(t *testing.T) {
 		{Key: "b", Source: profile.Source{Kind: profile.KindGitHub, Repo: "bad name"}},
 		{Key: "c", Source: profile.Source{Kind: "weird"}},
 	}}
-	res, err := Encode("stardew", p)
+	res, err := Encode("stardew", p, profile.ShareFacts{})
 	if err != nil || len(res.LeftOut) != 3 {
 		t.Fatalf("%+v, %v", res.LeftOut, err)
 	}
@@ -398,7 +398,7 @@ func TestEntryNotesRoundTrip(t *testing.T) {
 	}}
 	p.Entries[0].Note = "farm tweak\n\tsecond line"
 	p.Entries[0].Tags = []string{"QoL", "UI"}
-	res, err := Encode("stardew", p)
+	res, err := Encode("stardew", p, profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -499,11 +499,11 @@ func TestEncodeOmitsDescription(t *testing.T) {
 	with := sample()
 	without := sample()
 	without.Description = ""
-	a, err := Encode("stardew", with)
+	a, err := Encode("stardew", with, profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := Encode("stardew", without)
+	b, err := Encode("stardew", without, profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -600,7 +600,7 @@ func TestOverlayPlacementTravels(t *testing.T) {
 		{Key: "opt", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}, OverlayOf: "main", OverlayFrom: "[CP] X", OverlayTo: "[CP] X/assets"},
 		{Key: "alt", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 3}, OverlayOf: "main", OverlayOff: true},
 	}}
-	res, err := Encode("stardew", p)
+	res, err := Encode("stardew", p, profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -614,7 +614,7 @@ func TestOverlayPlacementTravels(t *testing.T) {
 	if o := got.Entries[1].Overlay; o == nil || *o != (Overlay{From: "[CP] X", To: "[CP] X/assets"}) {
 		t.Fatalf("overlay = %+v", got.Entries[1].Overlay)
 	}
-	res, err = Encode("stardew", p, Include{DisabledMods: true})
+	res, err = Encode("stardew", p, profile.ShareFacts{}, Include{DisabledMods: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -642,7 +642,7 @@ func TestThunderstoreEntriesTravelInLinks(t *testing.T) {
 	p := profile.Profile{Name: "Friends", Entries: []profile.Entry{
 		{Key: "a", Source: profile.Source{Kind: profile.KindThunderstore, Name: "Alice-MoreCompany", Version: "1.2.3"}},
 	}}
-	res, err := Encode("lethal-company", p)
+	res, err := Encode("lethal-company", p, profile.ShareFacts{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -659,7 +659,7 @@ func TestThunderstoreEntriesTravelInLinks(t *testing.T) {
 		t.Errorf("wire = %s, %v", out, err)
 	}
 	// stardew has no Thunderstore community, so a package cannot name its game's source.
-	if _, err := Encode("stardew", p); err == nil {
+	if _, err := Encode("stardew", p, profile.ShareFacts{}); err == nil {
 		t.Error("a Thunderstore entry was encoded for a game without a community")
 	}
 	if _, err := Parse(pack(t, `[3,"x","lethal-company",{"thunderstore":"lethal-company"},[{"s":"thunderstore","ns":"A","name":"B","version":"bad"}]]`)); err == nil {

@@ -310,7 +310,6 @@ func run() error {
 		return err
 	}
 	profiles.Tidied = func(what, profileName, folder string) { tidied.Add(what, "profile "+profileName, 1, folder) }
-	share.Facts = profiles.ShareFacts
 	profiles.Publisher = func(gameID, name, ver string) (string, bool) {
 		key := share.SourceKeys(gameID)["thunderstore"]
 		if key == "" {

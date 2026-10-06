@@ -37,6 +37,9 @@ type Service struct {
 	healthDue  map[string]bool
 }
 
+// ShareFacts is Store.ShareFacts.
+func (s *Service) ShareFacts(game string, p Profile) ShareFacts { return s.store.ShareFacts(game, p) }
+
 func NewService(store *Store, home string, settings *settings.Store) *Service {
 	store.NewModsEnabled = func() bool { return settings.Get().NewModsEnabled() }
 	if settings != nil {
