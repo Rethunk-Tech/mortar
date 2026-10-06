@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { persist } from '../settings/persist.ts'
 import { useOfflineReason } from '../shell/offlineText.ts'
@@ -56,6 +56,17 @@ function useSelectionKeys(items: BrowseItem[]) {
 }
 
 // ALL searches every source the game has; it is the default so where a mod is published never matters to the player.
+
+// A new page of results starts at its top rather than where the last page was scrolled to.
+function useTopOnPage(page: number) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (page >= FIRST_PAGE) {
+      ref.current?.scrollTo({ top: 0 })
+    }
+  }, [page])
+  return ref
+}
 function BrowsePage({
   game,
   profileID,
@@ -85,6 +96,7 @@ function BrowsePage({
   ]
   const sourceName = sources.find((s) => s.value === source)?.label ?? ''
   useSelectionKeys(result.items)
+  const results = useTopOnPage(page)
   const sourceNames = new Map(searchable.map((s) => [s.id, s.name]))
   const card = {
     premium,
@@ -138,6 +150,7 @@ function BrowsePage({
         sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}
       >
         <Box
+          ref={results}
           sx={{
             flex: 1,
             minHeight: 0,
