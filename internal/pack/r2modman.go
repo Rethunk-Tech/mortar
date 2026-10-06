@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"gopkg.in/yaml.v3"
 )
 
@@ -142,8 +143,11 @@ func (c Code) fetch(ctx context.Context, key string) (string, error) {
 		return "", err
 	}
 	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode == http.StatusNotFound {
+		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("thunderstore has no profile code %s", key))
+	}
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("thunderstore answered %s for profile code %s", resp.Status, key)
+		return "", usererr.Wrap(usererr.Network, fmt.Errorf("thunderstore answered %s for profile code %s", resp.Status, key))
 	}
 	b, err := io.ReadAll(io.LimitReader(resp.Body, 64<<20))
 	return string(b), err

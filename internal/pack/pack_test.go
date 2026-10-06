@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func makeZip(t *testing.T, files map[string]string) []byte {
@@ -190,5 +192,14 @@ func TestHostilePacksAreRefused(t *testing.T) {
 		if _, err := tc.format.Parse(t.Context(), tc.in); err == nil {
 			t.Errorf("%s: accepted", tc.name)
 		}
+	}
+}
+
+func TestAnUnknownProfileCodeIsNotFound(t *testing.T) {
+	srv := httptest.NewServer(http.NotFoundHandler())
+	t.Cleanup(srv.Close)
+	_, err := Code{URL: srv.URL}.Parse(t.Context(), Input{Text: "0123abcd-0123-0123-0123-0123456789ab"})
+	if usererr.KindOf(err) != usererr.NotFound {
+		t.Fatalf("err = %v", err)
 	}
 }
