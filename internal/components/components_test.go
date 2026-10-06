@@ -420,3 +420,43 @@ func TestACommunityBepInExPackIsTheLoaderPackage(t *testing.T) {
 		}
 	}
 }
+
+// The catalog's serial is not bumped with every change to it, so a manifest cached by another build, or by one that did
+// not stamp its cache, is fetched again instead of shadowing what this build ships.
+func TestLoadFetchesAgainAManifestCachedWithoutThisBuildsStamp(t *testing.T) {
+	_, private, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	public, ok := private.Public().(ed25519.PublicKey)
+	if !ok {
+		t.Fatal("generated key is not Ed25519")
+	}
+	base := bundledSerial(t)
+	oldBody, oldSignature := signedManifest(t, base+1, private)
+	body, signature := signedManifest(t, base+2, private)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/components.json.sig" {
+			_, _ = w.Write(signature)
+			return
+		}
+		_, _ = w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+	dir := t.TempDir()
+	seeded, err := json.Marshal(map[string]any{"fetched": time.Now(), "value": cachedManifest{Manifest: oldBody, Signature: oldSignature}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, cacheName), seeded, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	client := NewClient(server.Client())
+	client.ManifestURL = server.URL + "/components.json"
+
+	manifest, err := client.Load(t.Context(), &meta.Client{CacheDir: dir}, public)
+
+	if err != nil || manifest.Serial != base+2 {
+		t.Fatalf("manifest = serial %d, %v; want the fetched %d, not the unstamped cache's %d", manifest.Serial, err, base+2, base+1)
+	}
+}

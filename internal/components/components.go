@@ -765,7 +765,7 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	var entry cachedManifest
 	var err error
 	if cache != nil {
-		entry, err = meta.Cached(cache, cacheName, day, fetch)
+		entry, err = meta.CachedForBuild(cache, cacheName, day, fetch)
 	} else {
 		entry, err = fetch()
 	}
