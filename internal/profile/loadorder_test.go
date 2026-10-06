@@ -11,8 +11,10 @@ func TestLoadOrderNeverReportsAnOptionalDependencyMissing(t *testing.T) {
 	smapi := func(id string) mod.ID { return mod.NewID(mod.FormatSMAPI, id) }
 	lib, gmcm := smapi("SMAPI.Lib"), smapi("spacechase0.GenericModConfigMenu")
 	rows := loadorder.Resolve(loadOrderInput([]Mod{
-		{ID: smapi("BetterRanching"), Name: "Better Ranching", Enabled: true,
-			Needs: []mod.ID{lib, gmcm}, Optional: []mod.ID{smapi("spacechase0.genericmodconfigmenu")}},
+		{
+			ID: smapi("BetterRanching"), Name: "Better Ranching", Enabled: true,
+			Needs: []mod.ID{lib, gmcm}, Optional: []mod.ID{smapi("spacechase0.genericmodconfigmenu")},
+		},
 		{ID: smapi("Off"), Name: "Off", Enabled: false},
 	}))
 	if len(rows) != 1 {
