@@ -7,11 +7,15 @@
 #   scripts/selftest.sh setup                 only create or top up the sandbox's Steam library; no build, no server
 #   scripts/selftest.sh restart               rebuild from the working tree and restart
 #   scripts/selftest.sh stop                  stop the server
+#   scripts/selftest.sh destroy               stop the server and everything running from the sandbox, then delete it
+#   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
 #   scripts/selftest.sh regress [--game lethal-company]  one-shot regression run (Stardew, or Lethal Company through Proton) in its own throwaway sandbox (see below)
 #
 # --copy-data copies the real Mortar profiles and settings into the sandbox once (downloads, cache, trash and
-# backups are left out). The sandbox is never deleted by this script; remove $ROOT by hand to start over.
+# backups are left out). Every sandbox root carries a .mortar-selftest marker, and only a marked folder directly under
+# $MORTAR_SELFTEST_BASE (default /var/tmp) is ever deleted: by destroy, or by reap once nothing runs from it and nothing
+# in it changed for N hours (default 6). reap only lists unless given --yes.
 #
 # regress is the exception: it makes /var/tmp/mortar-regress-XXXXXX on a free port, copies the real data, launches the
 # first Stardew profile directly, waits for SMAPI to load every enabled mod, then stops the game and requires the game
@@ -22,7 +26,9 @@
 # launches directly under Proton, and requires the plugins to load and the purge to leave the game folder identical.
 set -euo pipefail
 
-ROOT=${MORTAR_SELFTEST_DIR:-/var/tmp/mortar-selftest}
+BASE=${MORTAR_SELFTEST_BASE:-/var/tmp}
+ROOT=${MORTAR_SELFTEST_DIR:-$BASE/mortar-selftest}
+MARKER=.mortar-selftest
 PORT=${MORTAR_SELFTEST_PORT:-9455}
 STEAM=${MORTAR_SELFTEST_STEAM:-$HOME/.local/share/Steam}
 APP_ID=413150
@@ -77,7 +83,13 @@ write_library() {
   printf '"libraryfolders"\n{\n\t"0"\n\t{\n\t\t"path"\t\t"%s"\n\t\t"apps"\n\t\t{\n%s\t\t}\n\t}\n}\n' "$SANDBOX_STEAM" "$apps" >"$SANDBOX_STEAM/steamapps/libraryfolders.vdf"
 }
 
+mark() {
+  mkdir -p "$ROOT"
+  touch "$ROOT/$MARKER"
+}
+
 setup() {
+  mark
   mkdir -p "$SANDBOX_STEAM/config"
   copy_game "$APP_ID" "$GAME_FOLDER" || exit 1
   [ -f "$SANDBOX_STEAM/config/loginusers.vdf" ] || cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
@@ -136,6 +148,7 @@ stop() {
 }
 
 start() {
+  mark
   # The host's steam run with the sandbox HOME brings up a second, signed-out Steam; the sandbox gets a steam that
   # refuses, so a Steam launch fails here and only a direct launch can start the copied game.
   mkdir -p "$ROOT/bin"
@@ -324,17 +337,11 @@ game_pids() {
 
 # sandbox_pids prints the pids of the processes running from $ROOT: an executable or working directory inside it (the
 # server, its namespace reaper, the copied game and its Wine processes). This script's own pid is never one of them.
+# One find instead of a readlink per process: reap runs this once per sandbox over every process on the machine.
 sandbox_pids() {
-  local d e c
-  for d in /proc/[0-9]*; do
-    [ "${d#/proc/}" = "$$" ] && continue
-    e=$(readlink "$d/exe" 2>/dev/null) || e=""
-    c=$(readlink "$d/cwd" 2>/dev/null) || c=""
-    e=${e% (deleted)}
-    c=${c% (deleted)}
-    case "$e" in "$ROOT"/*) echo "${d#/proc/}"; continue ;; esac
-    case "$c" in "$ROOT" | "$ROOT"/*) echo "${d#/proc/}" ;; esac
-  done
+  find /proc -mindepth 2 -maxdepth 2 \( -name exe -o -name cwd \) \
+    \( -lname "$ROOT" -o -lname "$ROOT/*" -o -lname "$ROOT (deleted)" \) 2>/dev/null \
+    | cut -d/ -f3 | grep -vx "$$" | sort -u || true
 }
 
 # release_sandbox stops the server, then everything else still running from $ROOT (SIGTERM, then SIGKILL, each pid
@@ -373,6 +380,8 @@ regress_traps() {
 regress() {
   ROOT=$(mktemp -d /var/tmp/mortar-regress-XXXXXX)
   case "$ROOT" in /var/tmp/mortar-regress-??????) ;; *) echo "unexpected sandbox dir $ROOT" >&2; exit 1 ;; esac
+  # A failed run keeps its folder for the logs; the marker lets reap collect it later.
+  mark
   PORT=$((9600 + RANDOM % 300))
   while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
   SANDBOX_HOME=$ROOT/home
@@ -489,6 +498,8 @@ reap_prefix() {
 regress_lc() {
   ROOT=$(mktemp -d /var/tmp/mortar-regress-lc-XXXXXX)
   case "$ROOT" in /var/tmp/mortar-regress-lc-??????) ;; *) echo "unexpected sandbox dir $ROOT" >&2; exit 1 ;; esac
+  # A failed run keeps its folder for the logs; the marker lets reap collect it later.
+  mark
   PORT=$((9600 + RANDOM % 300))
   while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
   SANDBOX_HOME=$ROOT/home
@@ -721,7 +732,71 @@ PY
   [ "$verdict" = PASS ]
 }
 
+# deletable DIR succeeds only for a folder that carries the marker and whose parent is exactly the base dir, both
+# resolved, so neither a typo nor a symlink can point a delete anywhere else.
+deletable() {
+  local dir base
+  dir=$(realpath -e -- "$1" 2>/dev/null) || return 1
+  base=$(realpath -e -- "$BASE" 2>/dev/null) || return 1
+  [ "$(dirname -- "$dir")" = "$base" ] && [ -f "$dir/$MARKER" ]
+}
+
+destroy() {
+  deletable "$ROOT" || {
+    echo "refusing to delete $ROOT: not a marked sandbox directly under $BASE" >&2
+    exit 1
+  }
+  ROOT=$(realpath -e -- "$ROOT")
+  exec 3>&2
+  verdict=PASS
+  release_sandbox
+  [ -e "$ROOT" ] && exit 1
+  echo "deleted $ROOT"
+}
+
+reap() {
+  local hours=6 yes="" dir
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --hours) hours=${2:?--hours takes a number}; shift 2 ;;
+      --yes) yes=1; shift ;;
+      *) echo "reap takes --hours N and --yes" >&2; exit 2 ;;
+    esac
+  done
+  [[ $hours =~ ^[0-9]+$ ]] || { echo "--hours takes a whole number" >&2; exit 2; }
+  local found=0
+  for dir in "$BASE"/*/; do
+    dir=${dir%/}
+    [ -f "$dir/$MARKER" ] || continue
+    if ! deletable "$dir"; then
+      continue
+    fi
+    ROOT=$dir
+    if [ -n "$(sandbox_pids)" ]; then
+      echo "live     $dir (processes running from it)"
+      continue
+    fi
+    if [ -n "$(find "$dir" -mmin "-$((hours * 60))" -print -quit 2>/dev/null)" ]; then
+      echo "recent   $dir (changed within ${hours}h)"
+      continue
+    fi
+    found=1
+    echo "idle     $(du -sh -- "$dir" | cut -f1)	$dir"
+    if [ -n "$yes" ]; then
+      # Checked again right before the delete: the folder may have been reused since the scan above.
+      if deletable "$dir" && [ -z "$(sandbox_pids)" ]; then
+        rm -rf -- "$dir"
+        echo "deleted  $dir"
+      fi
+    fi
+  done
+  if [ "$found" = 1 ] && [ -z "$yes" ]; then
+    echo "dry run; rerun with --yes to delete the idle sandboxes"
+  fi
+}
+
 case "${1:-}" in
+  destroy | reap) ;;
   regress)
     case "${2:-}${3:-}" in
       "") regress ;;
@@ -749,9 +824,14 @@ case "${1:-}" in
   setup) setup ;;
   seed) seed ;;
   stop) stop ;;
+  destroy) destroy ;;
+  reap)
+    shift
+    reap "$@"
+    ;;
   regress) ;;
   *)
-    sed -n '2,14p' "$0"
+    sed -n '2,18p' "$0"
     exit 2
     ;;
 esac
