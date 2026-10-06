@@ -38,6 +38,6 @@ export function shortcutLabels(i18n: I18n): Record<ShortcutId, string> {
     'collapse-sidebar': i18n._(msg`Collapse or expand the profile sidebar`),
     back: i18n._(msg`Go back`),
     help: i18n._(msg`Get help`),
-    'vanilla-play': i18n._(msg`Play the open profile without SMAPI`),
+    'vanilla-play': i18n._(msg`Play the game without mods`),
   }
 }

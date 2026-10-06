@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Download } from 'lucide-react'
 import { useEffect } from 'react'
+import { useGameInfo } from '../games/info.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { InstallSteps } from './InstallSteps.tsx'
@@ -15,7 +16,8 @@ export function LoaderBanner({ game }: { game: string }) {
   const check = useLoader((s) => s.check)
   const install = useLoader((s) => s.install)
   const pending = useLoader((s) => s.pending)
-  // SMAPI's files are in use while the game starts or runs.
+  const loader = { name: useGameInfo(game)?.loader ?? '' }
+  // The loader's files are in use while the game starts or runs.
   const playing = useGameBusy(game)
   useEffect(() => {
     check(game)
@@ -23,13 +25,13 @@ export function LoaderBanner({ game }: { game: string }) {
   if (!status || (!installing && status.installed && !status.updateAvailable)) {
     return null
   }
-  let message = t`SMAPI is not installed`
+  let message = t`${loader.name} is not installed`
   let action = t`Install`
   if (status.broken) {
-    message = t`A game update replaced SMAPI's launcher`
+    message = t`A game update replaced ${loader.name}'s launcher`
     action = t`Reinstall`
   } else if (status.installed) {
-    message = t`SMAPI ${status.latest} is available`
+    message = t`${loader.name} ${status.latest} is available`
     action = t`Update`
   }
   return (
@@ -53,7 +55,10 @@ export function LoaderBanner({ game }: { game: string }) {
       {installing ? (
         <InstallSteps steps={steps} />
       ) : (
-        <DisabledReason title={t`Stop the game to change SMAPI.`} disabled={pending || playing}>
+        <DisabledReason
+          title={t`Stop the game to change ${loader.name}.`}
+          disabled={pending || playing}
+        >
           <Button
             variant="contained"
             size="small"

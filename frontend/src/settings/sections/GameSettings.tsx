@@ -19,7 +19,7 @@ import {
   SetTellWhenSmapiOut,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LauncherLogo } from '../../brand/launchers/LauncherLogo.tsx'
-import { gameInfo, useGameName } from '../../games/info.ts'
+import { gameInfo, useGameInfo, useGameName } from '../../games/info.ts'
 import { storeName } from '../../games/storeName.ts'
 import { currentGame, useCurrentGame } from '../../nav/currentGame.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
@@ -61,11 +61,12 @@ function ResetInstallDialog({
   onConfirm: () => void
 }) {
   const { t } = useLingui()
+  const loader = useGameInfo()?.loader ?? ''
   return (
     <ConfirmDialog
       open={open}
       title={t`Reset game install?`}
-      body={t`This deletes the game folder at ${folder}, with every file in it, including SMAPI and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept.`}
+      body={t`This deletes the game folder at ${folder}, with every file in it, including ${loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept.`}
       confirmLabel={t`Reset install`}
       color="error"
       busy={busy}

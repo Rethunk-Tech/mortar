@@ -16,6 +16,7 @@ import type {
   Copy,
   Duplicate,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { useGameInfo } from '../games/info.ts'
 import { listNames } from '../i18n/list.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -77,6 +78,7 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
 
 function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string }) {
   const { t } = useLingui()
+  const loader = useGameInfo()?.loader ?? ''
   const resolve = useMods((s) => s.resolve)
   const keepCopy = useMods((s) => s.keepCopy)
   const locked = useLocked()
@@ -92,7 +94,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-          {t`${profileName} has ${dup.name} more than once. SMAPI loads only one, so pick which to keep. The others are disabled, not removed.`}
+          {t`${profileName} has ${dup.name} more than once. ${loader} loads only one, so pick which to keep. The others are disabled, not removed.`}
         </Typography>
         <RadioGroup
           aria-label={t`Copy to keep`}

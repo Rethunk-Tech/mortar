@@ -46,9 +46,11 @@ export function ImportWizard({
 }) {
   const { t } = useLingui()
   const external = useExternalImportSources(game)
-  const [packs, setPacks] = useState<Found[]>([])
+  // null until this game's manager profiles are listed, so opening never flashes "No profiles found".
+  const [packs, setPacks] = useState<Found[] | null>(null)
   useEffect(() => {
     if (!open) {
+      setPacks(null)
       return
     }
     LocalProfiles(game)
@@ -66,7 +68,7 @@ export function ImportWizard({
       .catch(reportUnexpected)
   }, [open, game])
   const all: Found[] = [
-    ...packs,
+    ...(packs ?? []),
     ...external.flatMap((s) =>
       (s.profiles ?? []).map((p) => ({
         key: `${s.kind}:${p.id}`,
@@ -96,9 +98,9 @@ export function ImportWizard({
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Import a profile`}</DialogTitle>
       <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-        {all.length === 0 ? (
+        {packs !== null && all.length === 0 ? (
           <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No profiles found.`}>
-            {t`Mortar looked for r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop profiles for this game on this computer.`}
+            {t`Mortar found no other mod manager's profiles for this game on this computer.`}
           </EmptyState>
         ) : (
           all.map((f) => (

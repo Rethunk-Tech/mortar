@@ -16,7 +16,7 @@ export function UpdateBar() {
   if (count === 0) {
     return updates?.unknown ? (
       <Typography sx={{ mx: 2, mt: 1, fontSize: 12, color: 'text.secondary' }}>
-        {t`Updates are unknown: SMAPI's update service could not be reached.`}
+        {t`Updates are unknown: the update service could not be reached.`}
       </Typography>
     ) : null
   }

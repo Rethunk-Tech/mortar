@@ -22,7 +22,7 @@ import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
 import { useLaunchLine } from '../firstrun/useLaunchLine.ts'
 import { useTab } from '../game/tab.ts'
-import { useGameName } from '../games/info.ts'
+import { useGameInfo, useGameName } from '../games/info.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
@@ -317,6 +317,7 @@ function Failure({ game }: { game: string }) {
 function DirectDialog() {
   const { t } = useLingui()
   const gameName = useGameName()
+  const loader = useGameInfo()?.loader ?? ''
   const ask = useLaunch((s) => s.askDirect)
   const answer = useLaunch((s) => s.answerDirect)
   return (
@@ -326,7 +327,7 @@ function DirectDialog() {
       body={
         ask?.profile === ''
           ? t`Mortar can start ${{ name: gameName }} directly instead, without the Steam overlay or Steam's playtime tracking.`
-          : t`Mortar can start ${{ name: 'SMAPI' }} directly instead, without the Steam overlay or Steam's playtime tracking.`
+          : t`Mortar can start ${{ name: loader }} directly instead, without the Steam overlay or Steam's playtime tracking.`
       }
       confirmLabel={t`Launch without Steam`}
       onCancel={() => answer(false)}

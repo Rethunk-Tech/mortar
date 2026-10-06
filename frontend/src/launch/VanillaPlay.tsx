@@ -53,7 +53,7 @@ export function VanillaPlayDialogs() {
         open={linuxDirect}
         maxWidth={440}
         title={t`Play without Steam overlay`}
-        body={t`Mortar starts the unmodded game directly, skipping SMAPI's Linux launcher. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running.`}
+        body={t`Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running.`}
         confirmLabel={t`Play without mods`}
         onCancel={() => setLinuxDirect(false)}
         onConfirm={() => {

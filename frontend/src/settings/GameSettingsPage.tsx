@@ -108,7 +108,8 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
                   'conflictScanDepth',
                   'offerNewDownloads',
                   'oldFilesOnUpdate',
-                  'showDotHiddenMods',
+                  // Only SMAPI skips dot-named folders; other loaders load what is inside them.
+                  ...(loader?.id === 'smapi' ? ['showDotHiddenMods'] : []),
                 ]}
                 game={game}
               />

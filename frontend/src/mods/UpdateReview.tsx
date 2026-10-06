@@ -27,7 +27,7 @@ import { needChoiceUpdates, sameSourceUpdates, updateAll } from './updateReview/
 import { WithheldGroup } from './updateReview/WithheldGroup.tsx'
 import { installedCaution, pendingUpdate, withOptional } from './updateReview/wants.ts'
 import { useEmptyReviewNotice, withheldUpdates } from './updateReview/withheld.ts'
-import { checkedWithSmapi, useUpdates } from './updates.ts'
+import { checkedLabel, useUpdates } from './updates.ts'
 
 function UpdateBar() {
   return <ReviewBar />
@@ -103,7 +103,7 @@ function UpdateReview({ profile }: { profile: Profile }) {
       <ReviewTitle
         count={list.length}
         profileName={profile.name}
-        checkedLabel={checkedWithSmapi(checkedAt, now, updates?.unknown === true)}
+        checkedLabel={checkedLabel(checkedAt, now, updates?.unknown === true)}
         onClose={close}
       />
       <DialogContent sx={{ p: 0, borderTop: '1px solid var(--mortar-hairline-muted)' }}>

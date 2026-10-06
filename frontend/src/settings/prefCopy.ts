@@ -268,7 +268,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
     saveBackupKeep: { label: i18n._(msg`Scheduled backups kept per save`) },
     runsKept: {
       label: i18n._(msg`Run logs kept`),
-      description: i18n._(msg`Stored SMAPI logs per profile`),
+      description: i18n._(msg`Logs of past runs stored per profile`),
     },
     consoleLogCap: {
       label: i18n._(msg`Console log cap`),

@@ -17,15 +17,15 @@ import { updateCount } from './lookup.ts'
 import { useNexusDetails } from './nexusDetails.ts'
 import { openTarget } from './storeView.ts'
 
-function checkedWithSmapi(at: number | null, now: number, unknown: boolean): string {
+function checkedLabel(at: number | null, now: number, unknown: boolean): string {
   if (unknown) {
     return i18n._(msg`Some mods could not be checked, so more updates may show up later.`)
   }
   if (at === null) {
-    return i18n._(msg`Checked with SMAPI's update service`)
+    return i18n._(msg`Checked for updates`)
   }
   const when = formatWhen(at, { now })
-  return i18n._(msg`Checked with SMAPI's update service · ${when}`)
+  return i18n._(msg`Checked for updates · ${when}`)
 }
 
 const MS_PER_HOUR = 3_600_000
@@ -170,4 +170,4 @@ useSettings.subscribe(syncHourlyRecheck)
 useNexusDetails.subscribe(syncBadge)
 syncHourlyRecheck()
 
-export { checkedWithSmapi, loadUpdates, useUpdates }
+export { checkedLabel, loadUpdates, useUpdates }
