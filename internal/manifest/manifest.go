@@ -163,7 +163,16 @@ func dependencies(raw map[string]json.RawMessage) []Dependency {
 	}
 	if d, ok := dependency(field(raw, "contentpackfor")); ok {
 		d.Required = true
-		out = append(out, d)
+		// Packs often list their framework in Dependencies too; it is one dependency, so it is checked and shown once.
+		i := slices.IndexFunc(out, func(o Dependency) bool { return strings.EqualFold(o.UniqueID, d.UniqueID) })
+		switch {
+		case i < 0:
+			out = append(out, d)
+		case out[i].MinimumVersion == "":
+			out[i].Required, out[i].MinimumVersion = true, d.MinimumVersion
+		default:
+			out[i].Required = true
+		}
 	}
 	return out
 }

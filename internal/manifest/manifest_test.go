@@ -31,6 +31,13 @@ func TestParseLenient(t *testing.T) {
 				},
 			},
 		},
+		"framework listed twice": {
+			`{"UniqueID":"A.P","Dependencies":[{"UniqueID":"pathoschild.contentpatcher","IsRequired":false}],"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher","MinimumVersion":"2.0"}}`,
+			Manifest{
+				UniqueID: "A.P", ContentPackFor: "Pathoschild.ContentPatcher",
+				Dependencies: []Dependency{{"pathoschild.contentpatcher", "2.0", true, ""}},
+			},
+		},
 		"legacy version object": {
 			`{"Name":"Old","Author":"A","UniqueID":"A.Old","Version":{"MajorVersion":1,"MinorVersion":2,"PatchVersion":3,"Build":"beta"}}`,
 			Manifest{Name: "Old", Author: "A", Version: "1.2.3-beta", UniqueID: "A.Old"},
