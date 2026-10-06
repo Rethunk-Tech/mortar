@@ -2507,8 +2507,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   logs fixes <game> <profile> [run]       recognised SMAPI errors in that run and their fixes
   queue                                   the download queue
   queue retry|skip [<id>]                 retry or skip queued downloads
-  queue add <game> <profile> <id> --source nexus|github|thunderstore [--file <nexus file id|asset>] [--version <tag|version>]
-                                          queue one mod (GitHub id is owner/repo, Thunderstore Namespace-Name)
+  queue add <game> <profile> <id> --source nexus|github|thunderstore|modrinth|curseforge|itch [--file <file id|asset>] [--version <tag|version>]
+                                          queue one mod (GitHub id is owner/repo, Thunderstore Namespace-Name, else the site's project id)
   queue retry-failed                      requeue every retryable failed download in the history
   queue pause|resume|clear                control the download queue
   browse <game> <text> [--source <id>|all] [--page N]  search a source, or all of them (default)

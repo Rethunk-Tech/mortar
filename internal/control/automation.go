@@ -54,8 +54,13 @@ func (s *Services) queueAdd(ctx context.Context, p Params) (any, error) {
 		}
 	case "thunderstore":
 		req.Package = p.ID
+	case "modrinth", "curseforge", "itch":
+		req.Package, req.Source = p.ID, p.Source
+		if p.File != "" {
+			req.Version = p.File
+		}
 	default:
-		return nil, fmt.Errorf("source %q cannot be queued; use nexus, github or thunderstore", p.Source)
+		return nil, fmt.Errorf("source %q cannot be queued; use nexus, github, thunderstore, modrinth, curseforge or itch", p.Source)
 	}
 	if _, err := s.Queue.Add(ctx, []queue.Request{req}); err != nil {
 		return nil, err
