@@ -8,7 +8,7 @@ import { parseBBCode } from '../mods/bbcode.ts'
 import { ChangelogEntries } from '../mods/ChangelogDialog.tsx'
 import { DetailsAside } from '../mods/DetailsAside.tsx'
 import { DetailsHeader } from '../mods/DetailsHeader.tsx'
-import { parseMarkdown } from '../mods/markdown.ts'
+import { MarkdownView } from '../mods/MarkdownView.tsx'
 import { Rich } from '../mods/NexusDetails.tsx'
 import { loadDetails, useNexusEntry } from '../mods/nexusDetails.ts'
 import { heading } from '../mods/paper.ts'
@@ -179,13 +179,13 @@ function SitePage({ game, item }: { game: string; item: BrowseItem }) {
   }
   const { details } = state
   const logs = releases.state !== null && 'logs' in releases.state ? releases.state.logs : []
-  const changelog = details.changelog ? <Rich blocks={parseMarkdown(details.changelog)} /> : null
+  const changelog = details.changelog ? <MarkdownView source={details.changelog} /> : null
   return (
     <PageSections
       page={{
         categories: details.categories ?? [],
         description: details.description ? (
-          <Rich blocks={parseMarkdown(details.description)} />
+          <MarkdownView source={details.description} />
         ) : (
           <Typography sx={text}>{item.summary}</Typography>
         ),

@@ -85,6 +85,16 @@
     "url": "https://react.dev/"
   },
   {
+    "name": "react-markdown",
+    "licence": "MIT",
+    "url": "https://github.com/remarkjs/react-markdown"
+  },
+  {
+    "name": "remark-gfm",
+    "licence": "MIT",
+    "url": "https://github.com/remarkjs/remark-gfm"
+  },
+  {
     "name": "simple-icons",
     "licence": "CC0-1.0",
     "url": "https://simpleicons.org"

@@ -5,6 +5,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { changelogNoteIsRisky } from './changelogRange.ts'
+import { MarkdownView } from './MarkdownView.tsx'
 import { useNexusEntry } from './nexusDetails.ts'
 import { isNewer, isSameVersion } from './nexusFormat.ts'
 import { useReleases } from './releases.ts'
@@ -33,7 +34,7 @@ function Version({ entry, installed }: { entry: Changelog; installed: string }) 
         {current ? <Chip size="small" color="success" label={t`Installed`} /> : null}
         {fresh ? <Chip size="small" color="primary" label={t`New`} /> : null}
       </Box>
-      {entry.body ? <ChangelogText text={entry.body} /> : null}
+      {entry.body ? <MarkdownView source={entry.body} /> : null}
       {(entry.notes ?? []).map((n) => (
         <ChangelogText key={n} text={`• ${n}`} risky={changelogNoteIsRisky(n)} />
       ))}
