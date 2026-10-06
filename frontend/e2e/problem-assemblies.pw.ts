@@ -128,4 +128,16 @@ test('an overlapping C# mod and a BepInEx incompatibility read as whole sentence
     'loadFailures',
     'E2E Alpha declares itself incompatible with E2EBeta, which is also enabled.',
   )
+  // The app remembers each game's open profile and afterAll deletes ours: point Lethal Company back at its seeded
+  // profile, then leave the app on the seed farm, so the specs after never ask for a profile that is gone.
+  await page.getByRole('button', { name: 'Game select' }).click()
+  await page
+    .getByRole('button', { name: 'Open Lethal Company' })
+    .click({ position: { x: 8, y: 8 } })
+  await page
+    .getByRole('button', { name: /^(Open )?Seed Lobby/ })
+    .first()
+    .click()
+  await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
+  await openSeedFarm(page)
 })

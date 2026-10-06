@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
+import { openSeedFarm } from './app.ts'
 
 /** A task this long freezes the window noticeably; profile switches on a 400-mod profile stay under it. */
 const LONG_TASK_MS = 200
@@ -62,8 +63,7 @@ test('every tab and settings page opens without errors or long tasks', async ({
     }).observe({ type: 'longtask', buffered: false })
   })
   const errors = watch(page)
-  await page.goto('/')
-  await expect(page.getByRole('tab').first()).toBeVisible({ timeout: 30_000 })
+  await openSeedFarm(page)
   await settle(page)
   await longTasks(page)
 
