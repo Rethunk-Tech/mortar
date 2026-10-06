@@ -234,27 +234,17 @@ function GroupByControl() {
   )
 }
 
-function BrowseMods({
-  variant,
-  toolbar = false,
-  size,
-}: {
-  variant: 'contained' | 'outlined'
-  toolbar?: boolean
-  size?: 'large'
-}) {
+// Only the empty list offers this; with mods present the Browse tab above the toolbar is the way in.
+function BrowseMods() {
   const { t } = useLingui()
-  const label = t`Browse mods`
   return (
     <Button
-      variant={variant}
-      size={size}
-      aria-label={label}
+      variant="contained"
+      size="large"
       startIcon={<Search size={14} />}
       onClick={() => useTab.getState().setTab('browse')}
-      sx={toolbar ? iconWhenCompact : undefined}
     >
-      <span className="label">{label}</span>
+      {t`Browse mods`}
     </Button>
   )
 }
@@ -401,7 +391,6 @@ export function Toolbar({
           )}
         </Button>
       ) : null}
-      <BrowseMods variant="outlined" toolbar={true} />
       <AddArchive variant="outlined" toolbar={true} />
     </Box>
   )
@@ -416,7 +405,7 @@ export function EmptyMods({ profileId }: { profileId: string }) {
       action={
         <>
           <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <BrowseMods variant="contained" size="large" />
+            <BrowseMods />
             <AddArchive variant="outlined" size="large" />
           </Box>
           <Button

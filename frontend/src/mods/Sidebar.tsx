@@ -249,7 +249,10 @@ function UpdateBanner({ mod }: { mod: Mod }) {
 function ProblemLine({ mod }: { mod: Mod }) {
   const describe = useDescribe()
   const result = useMods((s) => s.problems)
-  const mine = problemsOf(result).filter((p) => concerns(p, mod))
+  // A requirement from the mod's own manifest is listed, with its Add action, in the dependency tree below.
+  const mine = problemsOf(result).filter(
+    (p) => concerns(p, mod) && !(p.kind === 'missing' && !p.missing.listed),
+  )
   if (mine.length === 0) {
     return null
   }

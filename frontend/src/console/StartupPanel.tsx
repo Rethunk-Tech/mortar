@@ -120,7 +120,7 @@ export function StartupPanel({ game, children }: { game: string; children: React
         {report && reports.length > 1 ? (
           <ReportPicker reports={reports} value={report.id} onChange={setSelected} />
         ) : null}
-        {measure}
+        {report ? measure : null}
       </Box>
       {report ? (
         <>

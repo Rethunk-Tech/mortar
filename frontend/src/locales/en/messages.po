@@ -238,7 +238,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/problemFix/SettingFix.tsx:27
 #: src/mods/problemFix/WinFix.tsx:32
 #: src/mods/SplitCombineItems.tsx:36
-#: src/mods/Toolbar.tsx:278
+#: src/mods/Toolbar.tsx:268
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChips.tsx:59
 #: src/saves/SaveRow.tsx:111
@@ -365,7 +365,7 @@ msgstr "{name} needs {detail}, which Mortar cannot install"
 msgid "Duplicate the open profile"
 msgstr "Duplicate the open profile"
 
-#: src/mods/Toolbar.tsx:432
+#: src/mods/Toolbar.tsx:421
 msgid "Or paste a share or collection link with Ctrl+V."
 msgstr "Or paste a share or collection link with Ctrl+V."
 
@@ -535,7 +535,7 @@ msgstr "Show token"
 msgid "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
 msgstr "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
 
-#: src/mods/Sidebar.tsx:383
+#: src/mods/Sidebar.tsx:386
 msgid "Config"
 msgstr "Config"
 
@@ -750,7 +750,7 @@ msgstr "Type a command, for example help"
 msgid "{0} was changed on {1} and here"
 msgstr "{0} was changed on {1} and here"
 
-#: src/mods/Sidebar.tsx:579
+#: src/mods/Sidebar.tsx:582
 msgid "More…"
 msgstr "More…"
 
@@ -2102,9 +2102,9 @@ msgstr "No tools yet"
 msgid "Mortar is up to date"
 msgstr "Mortar is up to date"
 
-#: src/mods/Toolbar.tsx:338
-#: src/mods/Toolbar.tsx:364
-#: src/mods/Toolbar.tsx:382
+#: src/mods/Toolbar.tsx:328
+#: src/mods/Toolbar.tsx:354
+#: src/mods/Toolbar.tsx:372
 #: src/profiles/CompareBulkBody.tsx:69
 msgid "Filter mods"
 msgstr "Filter mods"
@@ -2464,7 +2464,7 @@ msgid "This bundle will be deleted."
 msgstr "This bundle will be deleted."
 
 #. placeholder {0}: neededBy.length.toLocaleString(i18n.locale)
-#: src/mods/Sidebar.tsx:416
+#: src/mods/Sidebar.tsx:419
 msgid "Required by ({0})"
 msgstr "Required by ({0})"
 
@@ -2693,7 +2693,7 @@ msgstr "Load a save to see values"
 msgid "Could not find Mortar users"
 msgstr "Could not find Mortar users"
 
-#: src/mods/Toolbar.tsx:382
+#: src/mods/Toolbar.tsx:372
 msgid "Filter mods, filter active"
 msgstr "Filter mods, filter active"
 
@@ -2832,7 +2832,7 @@ msgid "Before this change"
 msgstr "Before this change"
 
 #: src/mods/listRows.ts:117
-#: src/mods/Sidebar.tsx:537
+#: src/mods/Sidebar.tsx:540
 msgid "Archive"
 msgstr "Archive"
 
@@ -3608,7 +3608,7 @@ msgid "Already has {0}"
 msgstr "Already has {0}"
 
 #: src/browse/BrowseDetails.tsx:98
-#: src/mods/Sidebar.tsx:390
+#: src/mods/Sidebar.tsx:393
 #: src/mods/updateReview/Row.tsx:119
 msgid "Changelog"
 msgstr "Changelog"
@@ -3948,7 +3948,7 @@ msgstr "From the extra mods folder…"
 msgid "Done"
 msgstr "Done"
 
-#: src/mods/Sidebar.tsx:347
+#: src/mods/Sidebar.tsx:350
 msgid "Content pack for {hostName}"
 msgstr "Content pack for {hostName}"
 
@@ -4062,8 +4062,8 @@ msgstr "Show in queue"
 #: src/mods/ModList.tsx:388
 #: src/mods/OptionalFileRows.tsx:122
 #: src/mods/PreviewPick.tsx:22
-#: src/mods/Sidebar.tsx:318
-#: src/mods/Sidebar.tsx:331
+#: src/mods/Sidebar.tsx:321
+#: src/mods/Sidebar.tsx:334
 #: src/mods/Toolbar.tsx:59
 #: src/profiles/CompareBulkBody.tsx:129
 #: src/profiles/GameModsDialog.tsx:37
@@ -4162,7 +4162,7 @@ msgid "Add or remove the tag"
 msgstr "Add or remove the tag"
 
 #: src/mods/parts.tsx:269
-#: src/mods/Sidebar.tsx:274
+#: src/mods/Sidebar.tsx:277
 msgid "Last run: {summary}"
 msgstr "Last run: {summary}"
 
@@ -4226,7 +4226,7 @@ msgid "Link copied"
 msgstr "Link copied"
 
 #: src/mods/columnLabel.ts:8
-#: src/mods/Sidebar.tsx:457
+#: src/mods/Sidebar.tsx:460
 msgid "Version"
 msgstr "Version"
 
@@ -5396,7 +5396,7 @@ msgstr "This source has no categories to filter by"
 msgid "Download folder"
 msgstr "Download folder"
 
-#: src/mods/Toolbar.tsx:427
+#: src/mods/Toolbar.tsx:416
 msgid "Import a shared profile…"
 msgstr "Import a shared profile…"
 
@@ -5631,7 +5631,7 @@ msgstr "Enter 1 or more"
 
 #: src/mods/columnLabel.ts:14
 #: src/mods/NexusDetails.tsx:108
-#: src/mods/Sidebar.tsx:479
+#: src/mods/Sidebar.tsx:482
 #: src/settings/sections/NexusMods.tsx:176
 msgid "Endorsements"
 msgstr "Endorsements"
@@ -5818,8 +5818,8 @@ msgstr "When you press Play"
 msgid "Next"
 msgstr "Next"
 
-#: src/mods/Toolbar.tsx:285
-#: src/mods/Toolbar.tsx:292
+#: src/mods/Toolbar.tsx:275
+#: src/mods/Toolbar.tsx:282
 msgid "Add archive…"
 msgstr "Add archive…"
 
@@ -6039,7 +6039,7 @@ msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
 #: src/browse/BrowseDetails.tsx:259
-#: src/mods/Sidebar.tsx:603
+#: src/mods/Sidebar.tsx:606
 msgid "Selected mod"
 msgstr "Selected mod"
 
@@ -6306,7 +6306,7 @@ msgstr "{0} and {count} more"
 
 #: src/mods/ModMenu.tsx:211
 #: src/mods/SelectionBarActions.tsx:108
-#: src/mods/Sidebar.tsx:492
+#: src/mods/Sidebar.tsx:495
 msgid "Also add to…"
 msgstr "Also add to…"
 
@@ -6962,7 +6962,7 @@ msgid "Results"
 msgstr "Results"
 
 #: src/mods/ModMenu.tsx:169
-#: src/mods/Sidebar.tsx:461
+#: src/mods/Sidebar.tsx:464
 msgid "Show skipped update"
 msgstr "Show skipped update"
 
@@ -7419,7 +7419,7 @@ msgstr "·"
 #: src/mods/problemFix/MissingFix.tsx:43
 #: src/mods/SelectionBar.tsx:142
 #: src/mods/SelectionBarDialogs.tsx:81
-#: src/mods/Sidebar.tsx:502
+#: src/mods/Sidebar.tsx:505
 #: src/mods/TrackedNotInProfile.tsx:93
 #: src/mods/typedConfig/Widgets.tsx:158
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:63
@@ -7685,7 +7685,7 @@ msgstr "Signed out of Nexus"
 
 #. placeholder {0}: mod.name
 #: src/mods/ModMenu.tsx:380
-#: src/mods/Sidebar.tsx:500
+#: src/mods/Sidebar.tsx:503
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
 
@@ -9421,7 +9421,7 @@ msgstr "{count, plural, one {Trimmed history, dropped # older change} other {Tri
 msgid "Whole file"
 msgstr "Whole file"
 
-#: src/mods/Sidebar.tsx:474
+#: src/mods/Sidebar.tsx:477
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
@@ -9484,7 +9484,7 @@ msgid "Report it so it can be fixed."
 msgstr "Report it so it can be fixed."
 
 #: src/mods/listRows.ts:119
-#: src/mods/Sidebar.tsx:539
+#: src/mods/Sidebar.tsx:542
 #: src/settings/sections/Accounts.tsx:17
 msgid "GitHub"
 msgstr "GitHub"
@@ -9648,8 +9648,8 @@ msgstr "Auto-enable requirements"
 #: src/mods/ModCards.tsx:457
 #: src/mods/ModDependencyTree.tsx:102
 #: src/mods/ModList.tsx:387
-#: src/mods/Sidebar.tsx:318
-#: src/mods/Sidebar.tsx:331
+#: src/mods/Sidebar.tsx:321
+#: src/mods/Sidebar.tsx:334
 #: src/profiles/CompareBulkBody.tsx:128
 #: src/profiles/ProfilesPage.tsx:273
 #: src/profiles/ProfilesPage.tsx:282
@@ -9668,7 +9668,7 @@ msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
 #: src/mods/ModDetail.tsx:245
-#: src/mods/Sidebar.tsx:560
+#: src/mods/Sidebar.tsx:563
 msgid "In the same download"
 msgstr "In the same download"
 
@@ -10086,7 +10086,7 @@ msgstr "Remove"
 msgid "Running {who}"
 msgstr "Running {who}"
 
-#: src/mods/Toolbar.tsx:337
+#: src/mods/Toolbar.tsx:327
 msgid "{total, plural, one {Filter # mod} other {Filter # mods}}"
 msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
 
@@ -10712,7 +10712,7 @@ msgstr "{0, plural, one {{1} of # mod · {2} · {3}/s} other {{4} of # mods · {
 msgid "Installed: Mortar {0}"
 msgstr "Installed: Mortar {0}"
 
-#: src/mods/Sidebar.tsx:280
+#: src/mods/Sidebar.tsx:283
 msgid "Show in Console"
 msgstr "Show in Console"
 
@@ -11519,7 +11519,7 @@ msgstr "On the other computer, choose Enter code and type this. It works once, f
 msgid "Restored {0} to before that change"
 msgstr "Restored {0} to before that change"
 
-#: src/mods/Sidebar.tsx:313
+#: src/mods/Sidebar.tsx:316
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
@@ -11544,7 +11544,7 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 
 #: src/firstrun/GameSetup.tsx:159
 #: src/mods/listRows.ts:118
-#: src/mods/Sidebar.tsx:538
+#: src/mods/Sidebar.tsx:541
 #: src/shell/NexusAccount.tsx:27
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
@@ -11794,8 +11794,8 @@ msgstr "Welcome to Mortar"
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
-#: src/mods/Sidebar.tsx:474
-#: src/mods/Sidebar.tsx:476
+#: src/mods/Sidebar.tsx:477
+#: src/mods/Sidebar.tsx:479
 msgid "Mod id"
 msgstr "Mod id"
 
@@ -11977,7 +11977,7 @@ msgstr "Share {0}"
 msgid "{0} {1}"
 msgstr "{0} {1}"
 
-#: src/mods/Toolbar.tsx:415
+#: src/mods/Toolbar.tsx:404
 msgid "No mods yet"
 msgstr "No mods yet"
 
@@ -12388,7 +12388,7 @@ msgstr "Close"
 msgid "Link"
 msgstr "Link"
 
-#: src/mods/Sidebar.tsx:470
+#: src/mods/Sidebar.tsx:473
 msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
 
@@ -12428,7 +12428,7 @@ msgstr "Older."
 msgid "{0} rolled back"
 msgstr "{0} rolled back"
 
-#: src/mods/Toolbar.tsx:278
+#: src/mods/Toolbar.tsx:268
 msgid "Adding…"
 msgstr "Adding…"
 
@@ -12484,7 +12484,7 @@ msgid "No saves yet"
 msgstr "No saves yet"
 
 #: src/mods/listRows.ts:120
-#: src/mods/Sidebar.tsx:540
+#: src/mods/Sidebar.tsx:543
 msgid "Thunderstore"
 msgstr "Thunderstore"
 
