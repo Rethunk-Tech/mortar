@@ -27,6 +27,8 @@ type EverywhereHit struct {
 	ProfileID string `json:"profileId"`
 	Name      string `json:"name"`
 	OldKey    string `json:"oldKey"`
+	// Change is the history event the update recorded in this profile.
+	Change string `json:"change,omitempty"`
 }
 
 // EverywhereSkip is a profile that holds the mod but will not be updated.
@@ -210,11 +212,12 @@ func (s *Store) UpdateEverywhere(game, modKeyOrID, newStoreKey string) (Everywhe
 			out.Skipped = append(out.Skipped, EverywhereSkip{ProfileID: hit.ProfileID, Name: hit.Name, Reason: skipSameKey})
 			continue
 		}
+		var updated Profile
 		var applyErr error
 		if len(p.Entries[ei].ExtraStoreKeys) > 0 {
-			_, applyErr = s.UpdateMultiFile(game, hit.ProfileID, oldKey, target, source)
+			updated, applyErr = s.UpdateMultiFile(game, hit.ProfileID, oldKey, target, source)
 		} else {
-			_, applyErr = s.UpdateEntry(game, hit.ProfileID, oldKey, target)
+			updated, applyErr = s.UpdateEntry(game, hit.ProfileID, oldKey, target)
 		}
 		if applyErr != nil {
 			if _, ok := errors.AsType[*NeedChoicesError](applyErr); ok {
@@ -223,7 +226,7 @@ func (s *Store) UpdateEverywhere(game, modKeyOrID, newStoreKey string) (Everywhe
 			}
 			return out, applyErr
 		}
-		out.Updated = append(out.Updated, EverywhereHit{ProfileID: hit.ProfileID, Name: hit.Name, OldKey: oldKey})
+		out.Updated = append(out.Updated, EverywhereHit{ProfileID: hit.ProfileID, Name: hit.Name, OldKey: oldKey, Change: updated.LastChange})
 	}
 	return out, nil
 }

@@ -110,8 +110,12 @@ function SweepDialog() {
       return
     }
     run(async () => {
-      await Promise.all(ids.map((id) => UpdateEverywhere(report.game, id, 'latest')))
-      useToasts.getState().push({ kind: 'success', title: t`Updated fixable mods` })
+      const parts = await Promise.all(ids.map((id) => UpdateEverywhere(report.game, id, 'latest')))
+      useToasts.getState().push({
+        kind: 'success',
+        title: t`Updated fixable mods`,
+        changes: parts.flatMap((part) => (part.updated ?? []).map((hit) => hit.change ?? '')),
+      })
       close()
     })
   }

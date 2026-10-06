@@ -130,6 +130,7 @@ export function EverywhereDialog({
       useToasts.getState().push({
         kind: 'success',
         title: t`${plural(merged.updated?.length ?? 0, { one: 'Updated in # profile', other: 'Updated in # profiles' })}`,
+        changes: (merged.updated ?? []).map((hit) => hit.change ?? ''),
       })
       onClose()
     })

@@ -77,6 +77,10 @@ func TestUpdateEverywhereTwoProfilesOneStoreItem(t *testing.T) {
 	if !slices.Contains(ids, a.ID) || !slices.Contains(ids, b.ID) {
 		t.Fatalf("updated ids %v", ids)
 	}
+	change := map[string]string{}
+	for _, hit := range got.Updated {
+		change[hit.ProfileID] = hit.Change
+	}
 	for _, id := range []string{a.ID, b.ID} {
 		p, err := e.read("stardew", id)
 		if err != nil {
@@ -91,6 +95,9 @@ func TestUpdateEverywhereTwoProfilesOneStoreItem(t *testing.T) {
 		}
 		if !slices.ContainsFunc(events, func(ev HistoryEvent) bool { return ev.Kind == historyUpdated }) {
 			t.Fatalf("%s history %+v", id, events)
+		}
+		if change[id] == "" || change[id] != events[0].ID {
+			t.Fatalf("%s change %q, newest event %q", id, change[id], events[0].ID)
 		}
 	}
 }
