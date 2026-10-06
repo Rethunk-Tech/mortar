@@ -102,3 +102,8 @@ test('incompatible SMAPI is the max-version Oops line from SMAPI itself', () => 
   ).toBe(true)
   expect(incompatibleSMAPI('Failed to load a mod')).toBe(false)
 })
+
+test('an unknown or unloaded floor shows Warn and above, never Info', () => {
+  expect(levelsFromFloor('')).toEqual(DEFAULT_FILTERS.levels)
+  expect(levelsFromFloor('bogus')).toEqual(DEFAULT_FILTERS.levels)
+})

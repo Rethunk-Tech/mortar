@@ -35,11 +35,11 @@ function consoleDefaults() {
 
 const lastSeq = (entries: Entry[]) => entries.at(-1)?.seq ?? 0
 
-export function canSendTo(status: Status | null, game: string, openId: string) {
+function canSendTo(status: Status | null, game: string, openId: string) {
   return status?.state === State.Running && status.game === game && status.profile === openId
 }
 
-export const useConsole = create<{
+const useConsole = create<{
   // The game and profile whose log is shown; lines of any other profile are ignored.
   shown: { game: string; profile: string }
   entries: Entry[]
@@ -192,3 +192,21 @@ export const useConsole = create<{
     setHelping: (helping) => set({ helping }),
   }
 })
+
+// Settings load after this module, so the level floor read at creation is the built-in default. Follow the saved floor
+// whenever it changes, unless the player has picked levels by hand since.
+let appliedFloor = gamePrefs(useSettings.getState()).consoleLevel
+useSettings.subscribe((state) => {
+  const floor = gamePrefs(state).consoleLevel
+  if (floor === appliedFloor) {
+    return
+  }
+  const before = levelsFromFloor(appliedFloor)
+  appliedFloor = floor
+  const { levels } = useConsole.getState().filters
+  if (levels.length === before.length && before.every((l) => levels.includes(l))) {
+    useConsole.setState((s) => ({ filters: { ...s.filters, levels: levelsFromFloor(floor) } }))
+  }
+})
+
+export { canSendTo, useConsole }

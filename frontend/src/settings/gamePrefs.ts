@@ -23,7 +23,7 @@ const defaultGamePrefs: GamePrefBlock = {
   smapiBuilds: 'show',
   defaultLaunchMethod: 'steam',
   showSmapiConsole: true,
-  consoleLevel: 'info',
+  consoleLevel: 'warn',
   consoleTimestamps: true,
   consoleFollow: true,
 }

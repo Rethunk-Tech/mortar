@@ -33,7 +33,7 @@ export function levelsFromFloor(floor: string): Level[] {
         warn: Level.Warn,
         error: Level.Error,
       } as Record<string, Level>
-    )[floor] ?? Level.Info,
+    )[floor] ?? Level.Warn,
   )
   return LEVELS.filter((l) => l === Level.Alert || order.indexOf(l) >= start)
 }
