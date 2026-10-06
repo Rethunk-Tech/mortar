@@ -192,7 +192,7 @@ func TestModrinthUpdatesAreCheckedInOneBatch(t *testing.T) {
 	src := components.GameSource{ID: profile.KindModrinth, Loaders: []string{"fabric"}, GameVersions: []string{"1.21"}}
 	got, err := s.searchUpdates(context.Background(), "test-game", src, []framework.Mod{
 		mk("sodium", "sha512:aa", "0.5.0"), mk("lithium", "sha512:bb", "1.0"), mk("nodigest", "", "1.0"),
-	}, nil)
+	}, nil, nil)
 	if err != nil || len(asked) != 1 || len(asked[0]) != 2 || turns != 1 {
 		t.Fatalf("err %v, asked %v, turns %d", err, asked, turns)
 	}

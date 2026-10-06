@@ -37,12 +37,13 @@ func fold(s string) string {
 func (s *Service) sourceUpdates(ctx context.Context, gameID string, mods []framework.Mod, have []Update) []Update {
 	out := s.nexusPageUpdates(ctx, gameID, mods, have)
 	out = append(out, s.githubUpdates(ctx, mods, append(slices.Clone(have), out...))...)
+	twins := s.thunderstoreTwins(gameID)
 	for _, g := range game.Catalog() {
 		if g.ID != gameID {
 			continue
 		}
 		for _, src := range g.Sources {
-			found, err := s.searchUpdates(ctx, gameID, src, mods, append(slices.Clone(have), out...))
+			found, err := s.searchUpdates(ctx, gameID, src, mods, append(slices.Clone(have), out...), twins)
 			out = append(out, found...)
 			if err != nil {
 				return out
@@ -94,9 +95,47 @@ func (s *Service) githubUpdates(ctx context.Context, mods []framework.Mod, have 
 	return out
 }
 
-// searchUpdates is one source's share of sourceUpdates. The error is the first failed search, which ends the source's
+// thunderstoreTwins maps the key of each package not installed from Thunderstore to the Thunderstore package
+// ("Namespace-Name") that ships a plugin with the same BepInPlugin GUID, read from the game's installed packages in
+// every profile, so no request is made. A name search is left to match the rest.
+func (s *Service) thunderstoreTwins(gameID string) map[string]string {
+	if s.profiles == nil {
+		return nil
+	}
+	profiles, err := s.profiles.List(gameID)
+	if err != nil {
+		return nil
+	}
+	byGUID := map[string]string{}
+	var others []profile.PackageRef
+	for _, p := range profiles {
+		pkgs, _ := s.profiles.EnabledPackages(gameID, p.ID)
+		for _, pk := range pkgs {
+			if pk.Source != profile.KindThunderstore {
+				others = append(others, pk)
+				continue
+			}
+			for _, pl := range pluginsIn(pk.Dir) {
+				byGUID[strings.ToLower(pl.GUID)] = pk.Name
+			}
+		}
+	}
+	twins := map[string]string{}
+	for _, pk := range others {
+		for _, pl := range pluginsIn(pk.Dir) {
+			if name, ok := byGUID[strings.ToLower(pl.GUID)]; ok && pl.GUID != "" {
+				twins[pk.Key] = name
+				break
+			}
+		}
+	}
+	return twins
+}
+
+// searchUpdates is one source's share of sourceUpdates. twins maps a package's key to its Thunderstore twin
+// (thunderstoreTwins). The error is the first failed search, which ends the source's
 // turn: a source that is down or out of quota is not asked again for every mod.
-func (s *Service) searchUpdates(ctx context.Context, gameID string, src components.GameSource, mods []framework.Mod, have []Update) ([]Update, error) {
+func (s *Service) searchUpdates(ctx context.Context, gameID string, src components.GameSource, mods []framework.Mod, have []Update, twins map[string]string) ([]Update, error) {
 	entry, ok := source.Get(src.ID)
 	if checker, canCheck := entry.Source.(source.UpdateChecker); ok && canCheck {
 		return s.checkedUpdates(ctx, src, entry.Source, checker, mods, have)
@@ -121,6 +160,13 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 		if x.SourceKind == profile.KindThunderstore && src.ID == profile.KindThunderstore {
 			_, text, _ = strings.Cut(x.SourceName, "-")
 		}
+		twin := ""
+		if src.ID == profile.KindThunderstore && x.SourceKind != profile.KindThunderstore {
+			twin = twins[x.Key]
+		}
+		if twin != "" {
+			_, text, _ = strings.Cut(twin, "-")
+		}
 		if text == "" {
 			continue
 		}
@@ -129,7 +175,7 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 			return out, err
 		}
 		for _, it := range page.Items {
-			if !sameMod(x, it) {
+			if !sameMod(x, it) && (twin == "" || !strings.EqualFold(it.ID, twin)) {
 				continue
 			}
 			if c, ok := meta.CompareVersions(it.Version, installed); !ok || c <= 0 {
