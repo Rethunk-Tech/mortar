@@ -101,7 +101,10 @@ func NewService(home string, profiles *profile.Store, store *settings.Store, cli
 		}
 		savesDir, err := game.SavesDir(home, store.Get(), id, "")
 		if err != nil {
-			return nil, err
+			// An enabled game that is not installed has no folder to resolve; it gets no scanner until a restart
+			// finds it, like any other change of the selected install.
+			log.Printf("saves: %s: %v", id, err)
+			continue
 		}
 		scanners[id] = &saves.Scanner{Dir: savesDir, CacheDir: filepath.Join(base, "cache", id)}
 	}
