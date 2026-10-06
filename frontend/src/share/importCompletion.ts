@@ -12,6 +12,9 @@ interface ImportBatch {
 }
 
 const batches = new Map<string, ImportBatch>()
+// Batches whose result one summary toast reports, so their items get no toast of their own. Ids stay after the batch
+// settles: the queue announces the last item after the summary went out. ponytail: grows by one id per batch per run.
+const summarized = new Set<string>()
 const settled = new Set(['done', 'failed', 'skipped', 'cancelled'])
 
 function importCountsLine(counts: SettledImportCounts) {
@@ -84,6 +87,7 @@ export function trackImport(
   if (!(result.batchId && result.items?.length)) {
     return
   }
+  summarized.add(result.batchId)
   batches.set(result.batchId, {
     name: result.profile.name,
     watch: watchBatch(result.items),
@@ -95,8 +99,13 @@ export function trackImport(
   }
 }
 
-export function isTrackedImportBatch(batchId: string): boolean {
-  return batchId !== '' && batches.has(batchId)
+/** Leaves the items of a batch whose caller reports the outcome in one toast out of the per-item install toasts. */
+export function summarizeBatch(batchId: string) {
+  summarized.add(batchId)
+}
+
+export function isSummarizedBatch(batchId: string): boolean {
+  return batchId !== '' && summarized.has(batchId)
 }
 
 export function observeImportState(items: readonly Row[]) {

@@ -29,7 +29,7 @@ import { profileLocked } from '../mods/useLocked.ts'
 import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { isTrackedImportBatch, observeImportState } from '../share/importCompletion.ts'
+import { isSummarizedBatch, observeImportState } from '../share/importCompletion.ts'
 import { follow } from '../shell/follow.ts'
 import { errorDetails, errorKind } from '../toasts/errorKind.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
@@ -335,10 +335,10 @@ function announce(prev: Snapshot, next: Snapshot) {
   ]
   const blocked = useMods.getState().problems?.missing
   const games = [...new Set(done.map((i) => i.game))]
-  const shown = (items: Item[]) => items.filter((item) => !isTrackedImportBatch(item.batchId ?? ''))
+  // A summarized batch reports its installs and failures in one toast; a download waiting on a decision still asks.
+  const shown = (items: Item[]) => items.filter((item) => !isSummarizedBatch(item.batchId ?? ''))
   const shownDone = shown(done)
   const shownFailed = shown(failed)
-  const shownWaiting = shown(waiting)
   if (games.length > 0) {
     debounceProfileRefresh(games)
   }
@@ -354,11 +354,11 @@ function announce(prev: Snapshot, next: Snapshot) {
   considerMissing(dependentIds)
   const unblocked = unblockedDependent(blocked, dependentIds)
   toastInstalls(shownDone, unblocked)
-  if (shownWaiting.length > 0) {
+  if (waiting.length > 0) {
     useToasts.getState().push({
       kind: 'info',
       title: i18n._(
-        msg`${plural(shownWaiting.length, { one: '# download needs your decision', other: '# downloads need your decision' })}`,
+        msg`${plural(waiting.length, { one: '# download needs your decision', other: '# downloads need your decision' })}`,
       ),
       action: { label: i18n._(msg`Show`), run: show, live: showLive },
     })

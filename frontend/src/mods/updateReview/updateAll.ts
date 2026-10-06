@@ -5,7 +5,7 @@ import { RetryFailed } from '../../../bindings/github.com/Rethunk-Tech/mortar/in
 import { i18n } from '../../i18n/index.ts'
 import { queueWants, type Want } from '../../queue/actions.ts'
 import { useQueue } from '../../queue/store.ts'
-import { watchBatch } from '../../share/importCompletion.ts'
+import { summarizeBatch, watchBatch } from '../../share/importCompletion.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { installableUpdate } from '../lookup.ts'
 import { undoAll } from './undoAll.ts'
@@ -40,6 +40,7 @@ function summarize(
           action: {
             label: i18n._(msg`Undo all`),
             run: () => undoAll(at.game, at.profileId, at.beforeId),
+            profileId: at.profileId,
           },
         }
       : {}),
@@ -63,6 +64,7 @@ async function updateAll(
   needChoice: number,
 ): Promise<boolean> {
   const { before: beforeId, batch: batchId } = await BeginUpdateBatch(game, profileId)
+  summarizeBatch(batchId)
   const items = await queueWants(
     wants.map((w) => ({ ...w, batchId })),
     true,
