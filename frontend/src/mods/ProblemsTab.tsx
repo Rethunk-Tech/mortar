@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, Map as MapIcon, ShieldCheck } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
@@ -13,7 +13,7 @@ import { useSettings } from '../settings/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
-import { type SectionAction, SectionStrip } from '../shell/SectionStrip.tsx'
+import { SectionStrip } from '../shell/SectionStrip.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -64,6 +64,12 @@ function OfflineChecksNote() {
       {t`Some checks could not run without a connection, so more problems may show up later.`}
     </Typography>
   )
+}
+
+interface SectionAction {
+  label: string
+  onClick: () => void
+  disabled?: boolean
 }
 
 type ProblemTab = SectionTab & { body: ReactNode; action?: SectionAction }
@@ -212,7 +218,6 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           tabs={tabs}
           current={current}
           onChoose={(id) => choose(openId, id)}
-          action={shown?.action}
         />
       ) : null}
       <Box
@@ -236,6 +241,18 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           >
             {t`Every mod has what it needs and nothing clashes.`}
           </EmptyState>
+        ) : null}
+        {shown?.action ? (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: -0.5 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={shown.action.disabled}
+              onClick={shown.action.onClick}
+            >
+              {shown.action.label}
+            </Button>
+          </Box>
         ) : null}
         {shown?.body}
         <ConfirmDialog

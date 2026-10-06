@@ -1,26 +1,18 @@
-import { Box, Button, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Box, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import type { KeyboardEvent } from 'react'
 import { type SectionTab, stepSection } from '../mods/problemSection.ts'
 
-export interface SectionAction {
-  label: string
-  onClick: () => void
-  disabled?: boolean
-}
-
-// The Problems tab's one header row: an exclusive segment per section with its count, and the chosen section's
-// action at the end of the same row. Left and Right move between segments.
+// The Problems tab's header row: an exclusive segment per section with its count. Nothing else shares the row, so
+// segment widths stay the same whichever section is chosen. Left and Right move between segments.
 export function SectionStrip({
   tabs,
   current,
   onChoose,
-  action,
   label,
 }: {
   tabs: readonly SectionTab[]
   current: string
   onChoose: (id: string) => void
-  action: SectionAction | undefined
   label: string
 }) {
   const onKeyDown = (e: KeyboardEvent<HTMLElement>) => {
@@ -37,7 +29,6 @@ export function SectionStrip({
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'stretch',
         bgcolor: 'var(--mortar-panel)',
         borderBottom: '1px solid var(--mortar-hairline)',
       }}
@@ -106,11 +97,6 @@ export function SectionStrip({
           </ToggleButton>
         ))}
       </ToggleButtonGroup>
-      {action ? (
-        <Button disabled={action.disabled} onClick={action.onClick} sx={{ borderRadius: 0, px: 2 }}>
-          {action.label}
-        </Button>
-      ) : null}
     </Box>
   )
 }
