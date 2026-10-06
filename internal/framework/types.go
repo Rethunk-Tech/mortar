@@ -54,6 +54,16 @@ type AssetConflict struct {
 	Fixes    []ConflictFix      `json:"fixes"`
 	Info     string             `json:"info,omitempty"`
 	Evidence []ConflictEvidence `json:"evidence"`
+	// Note is why a cosmetic conflict cannot hurt play, when one reason covers every overlap.
+	Note *ConflictNote `json:"note,omitempty"`
+}
+
+// ConflictNote is one reason a conflict is cosmetic. Kind "balance": the packs only set prices and costs, so
+// one mod's prices win. Kind "day": the overlap only applies on Value, one day or festival. Kind "farm": it
+// only applies on Value farm types, which none of the profile's saves uses.
+type ConflictNote struct {
+	Kind  string `json:"kind"`
+	Value string `json:"value,omitempty"`
 }
 
 // ConflictEvidence is one clashing patch of a pack in an AssetConflict.

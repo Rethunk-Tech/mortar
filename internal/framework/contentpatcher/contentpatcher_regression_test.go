@@ -728,3 +728,17 @@ func TestTokenizedLoadTargetResolvesFromConfig(t *testing.T) {
 		t.Fatalf("no Winter expansion when the change needs Summer or Fall, got %#v", conflicts)
 	}
 }
+
+func TestBalanceOnlyDataEditsAreCosmetic(t *testing.T) {
+	pack := func(fields string) framework.Mod {
+		return syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Buildings","Fields":{"Coop":`+fields+`}}]}`, nil)
+	}
+	conflicts := assetConflicts([]framework.Mod{pack(`{"BuildCost":1000}`), pack(`{"BuildCost":5000}`)})
+	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || conflicts[0].Note.Kind != "balance" {
+		t.Fatalf("two build costs are balance only, got %#v", conflicts)
+	}
+	conflicts = assetConflicts([]framework.Mod{pack(`{"BuildCost":1000,"Size":{"X":6,"Y":3}}`), pack(`{"BuildCost":5000,"Size":{"X":7,"Y":3}}`)})
+	if len(conflicts) != 1 || conflicts[0].Cosmetic || conflicts[0].Note != nil {
+		t.Fatalf("a size clash is real, got %#v", conflicts)
+	}
+}

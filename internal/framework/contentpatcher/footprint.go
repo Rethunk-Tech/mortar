@@ -1616,7 +1616,8 @@ func exclusive(a, b cpPatch) bool {
 // editsClash reports whether any active edit of one pack can overwrite one of the other's, and whether every
 // such overlap is harmless (see harmless).
 func editsClash(a, b []cpPatch) (clash, minor bool) {
-	return editsClashIndexed(a, b, indexesOf(b))
+	clash, minor, _ = editsClashIndexed(a, b, indexesOf(b))
+	return clash, minor
 }
 
 // indexesOf is the shape index of each patch, looked up once so a pair loop does not repeat it per comparison.
@@ -1628,9 +1629,11 @@ func indexesOf(patches []cpPatch) []*shapeSet {
 	return out
 }
 
-// editsClashIndexed is editsClash with bIndex[i] the shape index of b[i].
-func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet) (clash, minor bool) {
+// editsClashIndexed is editsClash with bIndex[i] the shape index of b[i], and the note that explains why a
+// minor clash is harmless.
+func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet) (clash, minor bool, why *framework.ConflictNote) {
 	minor = true
+	var note noteAgreement
 	for _, x := range a {
 		for j, y := range b {
 			if mapOverlayHasUnknownLayer(x, y) {
@@ -1647,14 +1650,39 @@ func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet) (clash, minor bool) {
 			}
 			if bIndex[j].overlaps(x.shapes) {
 				clash = true
+				ok, why := harmless(x, y)
 				// One overlap that matters settles it: nothing later can make the pair minor again.
-				if !harmless(x, y) {
-					return true, false
+				if !ok {
+					return true, false, nil
 				}
+				note.add(why)
 			}
 		}
 	}
-	return clash, clash && minor
+	return clash, clash && minor, note.result()
+}
+
+// noteAgreement keeps a ConflictNote only while every harmless overlap gives the same one.
+type noteAgreement struct {
+	note  *framework.ConflictNote
+	seen  bool
+	mixed bool
+}
+
+func (a *noteAgreement) add(n *framework.ConflictNote) {
+	switch {
+	case !a.seen:
+		a.note, a.seen = n, true
+	case n == nil || a.note == nil || *n != *a.note:
+		a.mixed = true
+	}
+}
+
+func (a *noteAgreement) result() *framework.ConflictNote {
+	if a.mixed {
+		return nil
+	}
+	return a.note
 }
 
 func mapOverlayHasUnknownLayer(a, b cpPatch) bool {
@@ -1675,8 +1703,27 @@ func hasUnknownMapLayer(p cpPatch) bool {
 // harmless reports an overlap that cannot hurt play: two image edits only change how something looks; an edit
 // that applies in one location or weather only matters there; and a one-tile edit at a computed spot is too
 // small to place, so it is shown without counting as a problem.
-func harmless(x, y cpPatch) bool {
-	return (x.image && y.image) || (textOnly(x) && textOnly(y)) || overlayPriorityHarmless(x, y) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y)
+func harmless(x, y cpPatch) (bool, *framework.ConflictNote) {
+	if balanceOnly(x) && balanceOnly(y) {
+		return true, &framework.ConflictNote{Kind: "balance"}
+	}
+	return (x.image && y.image) || (textOnly(x) && textOnly(y)) || overlayPriorityHarmless(x, y) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y), nil
+}
+
+// balanceFields are data fields that only tune prices and costs: when two collide, one mod's numbers win.
+var balanceFields = map[string]bool{"buildcost": true, "buildmaterials": true, "purchaseprice": true, "sellprice": true, "price": true, "pricemodifiers": true}
+
+// balanceOnly is a data edit whose every key sits inside a balance field.
+func balanceOnly(p cpPatch) bool {
+	if p.action != kindEditData || len(p.shapes) == 0 {
+		return false
+	}
+	return !slices.ContainsFunc(p.shapes, func(s cpShape) bool {
+		key := s.key[strings.Index(s.key, ":")+1:]
+		return !slices.ContainsFunc(strings.FieldsFunc(key, func(r rune) bool { return r == '/' || r == '.' }), func(part string) bool {
+			return balanceFields[strings.ToLower(part)]
+		})
+	})
 }
 
 // textOnly is a data edit that only replaces lines of text: when two collide, one mod's line shows

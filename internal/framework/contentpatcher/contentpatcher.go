@@ -2151,8 +2151,9 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 // nothing.
 func targetPart(kind, target string, hits []packHit) partEntry {
 	cosmetic := false
+	var note *framework.ConflictNote
 	if kind == "edit" {
-		hits, cosmetic = clashing(hits)
+		hits, cosmetic, note = clashing(hits)
 	} else {
 		hits = clashingLoads(hits)
 	}
@@ -2172,7 +2173,7 @@ func targetPart(kind, target string, hits []packHit) partEntry {
 		}
 	}
 	if kind == "edit" {
-		c.Cosmetic = cosmetic
+		c.Cosmetic, c.Note = cosmetic, note
 		markLoadAfterWinner(&c, hits)
 	}
 	c.Fixes = []framework.ConflictFix{}
@@ -2233,9 +2234,10 @@ func fallbackLoad(h packHit, load cpPatch, other packHit, otherLoad cpPatch) boo
 // clashing keeps the packs that share an overlapping edit of one target with a pack they were not built
 // alongside. Packs in one entry, or where one names the other as a dependency or in a HasMod condition,
 // were patched to work together, so their overlaps are intended.
-func clashing(hits []packHit) (out []packHit, cosmetic bool) {
+func clashing(hits []packHit) (out []packHit, cosmetic bool, why *framework.ConflictNote) {
 	in := make([]bool, len(hits))
 	cosmetic = true
+	var note noteAgreement
 	indexes := make([][]*shapeSet, len(hits))
 	summaries := make([]shapeSummary, len(hits))
 	for i := range hits {
@@ -2247,13 +2249,14 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool) {
 			if aware(hits[i], hits[j]) || !summaries[i].mayOverlap(summaries[j]) {
 				continue
 			}
-			clash, minor := editsClashIndexed(hits[i].edits, hits[j].edits, indexes[j])
+			clash, minor, pairNote := editsClashIndexed(hits[i].edits, hits[j].edits, indexes[j])
 			if !clash {
 				continue
 			}
 			in[i], in[j] = true, true
 			markClashes(&hits[i], &hits[j])
 			cosmetic = cosmetic && minor
+			note.add(pairNote)
 		}
 	}
 	for i, h := range hits {
@@ -2261,7 +2264,10 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool) {
 			out = append(out, h)
 		}
 	}
-	return out, cosmetic
+	if !cosmetic {
+		return out, false, nil
+	}
+	return out, true, note.result()
 }
 
 func aware(a, b packHit) bool {

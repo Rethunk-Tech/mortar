@@ -76,9 +76,29 @@ function describeAsset(p: Extract<Problem, { kind: 'asset' }>): string {
     kind === 'load'
       ? i18n._(msg`${who} all load ${target}.${winner}`)
       : i18n._(msg`${who} all edit ${target}.${winner}`)
-  return p.asset.info
-    ? `${sentence} ${i18n._(msg`These mods may add the same item: ${p.asset.info}.`)}`
-    : sentence
+  const parts = [sentence]
+  if (p.asset.info) {
+    parts.push(i18n._(msg`These mods may add the same item: ${p.asset.info}.`))
+  }
+  const note = noteText(p.asset.note)
+  if (note) {
+    parts.push(note)
+  }
+  return parts.join(' ')
+}
+
+function noteText(note: { kind: string; value?: string } | null | undefined): string {
+  const value = note?.value ?? ''
+  switch (note?.kind) {
+    case 'balance':
+      return i18n._(msg`Balance only: one mod's prices win.`)
+    case 'day':
+      return i18n._(msg`Only on ${value}.`)
+    case 'farm':
+      return i18n._(msg`Only on ${value} saves; none of yours is one.`)
+    default:
+      return ''
+  }
 }
 
 // An installed copy's name first (a disabled or outdated one), then the page that offers it, the id only last.
