@@ -56,8 +56,9 @@ export function SectionStrip({
           flex: 1,
           minWidth: 0,
           '& .MuiToggleButton-root': {
-            flex: 1,
+            flex: '1 1 auto',
             minWidth: 0,
+            whiteSpace: 'nowrap',
             gap: 1,
             border: 0,
             borderRadius: 0,
@@ -82,7 +83,13 @@ export function SectionStrip({
             data-section={tab.id}
             tabIndex={tab.id === current ? 0 : -1}
           >
-            <span>{tab.label}</span>
+            <Box
+              component="span"
+              sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+              title={tab.label}
+            >
+              {tab.label}
+            </Box>
             <Box
               component="span"
               sx={{

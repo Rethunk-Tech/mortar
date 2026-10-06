@@ -27,23 +27,23 @@ function useSectionTitle() {
       case 'broken':
         return t`Broken or outdated mods`
       case 'damaged':
-        return t`Damaged files`
+        return t`Damaged`
       case 'runErrors':
-        return t`Errors in the last run`
+        return t`Last run`
       case 'loadFailures':
         return t`Failed to load`
       case 'pluginClashes':
-        return t`Plugins shipped twice`
+        return t`Duplicate plugins`
       case 'drift':
-        return t`Changed outside Mortar`
+        return t`Changed`
       case 'duplicates':
         return t`Duplicates`
       case 'deprecated':
-        return t`Deprecated packages`
+        return t`Deprecated`
       case 'settings':
         return t`Settings`
       case 'cosmetic':
-        return t`Cosmetic or harmless`
+        return t`Cosmetic`
       case 'dismissed':
         return t`Dismissed`
       default:
