@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"maps"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -71,17 +73,46 @@ func (m ModInfo) Page() Page {
 // Requests is how many GraphQL requests ModsByDomain makes for n mods.
 func Requests(n int) int { return (n + modsBatch - 1) / modsBatch }
 
+// modsParallel bounds the batched requests in flight: each takes about half a second, so a cold list of hundreds of
+// mods waits for a couple of rounds instead of one request after another. The request count is the same either way.
+const modsParallel = 8
+
 // ModsByDomain looks up many of one game's mods with one GraphQL request per 50 ids, instead of one request per
-// mod. A mod Nexus does not return is absent from the map. A refused or failed request ends the lookup with the
-// mods found so far and the error; a rate limit is returned as such, never retried.
+// mod. A mod Nexus does not return is absent from the map. A refused or failed request stops further requests and
+// the lookup returns the mods found and the error; a rate limit is returned as such, never retried.
 func (c *Client) ModsByDomain(ctx context.Context, domain string, modIDs []int) (map[int]ModInfo, error) {
 	out := make(map[int]ModInfo, len(modIDs))
-	for start := 0; start < len(modIDs); start += modsBatch {
-		if err := c.modsChunk(ctx, domain, modIDs[start:min(start+modsBatch, len(modIDs))], out); err != nil {
-			return out, err
-		}
+	var (
+		mu    sync.Mutex
+		first error
+		wg    sync.WaitGroup
+	)
+	failed := func() bool {
+		mu.Lock()
+		defer mu.Unlock()
+		return first != nil
 	}
-	return out, nil
+	slots := make(chan struct{}, modsParallel)
+	for start := 0; start < len(modIDs); start += modsBatch {
+		slots <- struct{}{}
+		if failed() {
+			break
+		}
+		ids := modIDs[start:min(start+modsBatch, len(modIDs))]
+		wg.Go(func() {
+			defer func() { <-slots }()
+			got := make(map[int]ModInfo, len(ids))
+			err := c.modsChunk(ctx, domain, ids, got)
+			mu.Lock()
+			defer mu.Unlock()
+			maps.Copy(out, got)
+			if first == nil {
+				first = err
+			}
+		})
+	}
+	wg.Wait()
+	return out, first
 }
 
 func (c *Client) modsChunk(ctx context.Context, domain string, ids []int, out map[int]ModInfo) error {

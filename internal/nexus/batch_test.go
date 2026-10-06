@@ -73,13 +73,15 @@ func TestModsByDomainStopsAtARateLimitWithoutRetrying(t *testing.T) {
 		}
 		return http.StatusOK
 	})
-	ids := make([]int, 450)
+	ids := make([]int, 4*modsParallel*modsBatch)
 	for i := range ids {
 		ids[i] = i + 1
 	}
 	got, err := c.ModsByDomain(context.Background(), "lethalcompany", ids)
 	var limit *RateLimitError
-	if !errors.As(err, &limit) || len(got) != modsBatch || requests.Load() != 2 {
+	// Requests already in flight finish; none starts after the refusal is seen.
+	n := int(requests.Load())
+	if !errors.As(err, &limit) || n >= Requests(len(ids)) || len(got) != (n-1)*modsBatch {
 		t.Fatalf("got %d mods after %d requests, err %v", len(got), requests.Load(), err)
 	}
 }
