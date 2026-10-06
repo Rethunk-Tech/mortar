@@ -501,7 +501,7 @@ func TestSetWinnerThenScanReportsNoDrift(t *testing.T) {
 	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetWinner("stardew", p.ID, winner, "smapi:X.Lose", true); err != nil {
+	if _, err := e.SetWinner("stardew", p.ID, winner, "smapi:X.Win", "smapi:X.Lose", true); err != nil {
 		t.Fatal(err)
 	}
 	got, err := e.ScanModsDrift("stardew", p.ID)

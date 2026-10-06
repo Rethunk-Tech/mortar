@@ -121,7 +121,7 @@ func TestEveryProfileChangeRecordsAnEventAndUndoesExactly(t *testing.T) {
 			return err
 		}},
 		{"SetWinner", func(e env, p Profile) error {
-			_, err := e.SetWinner("stardew", p.ID, "local-a", mod.ID("smapi:Me.B"), true)
+			_, err := e.SetWinner("stardew", p.ID, "local-a", "smapi:Me.A", mod.ID("smapi:Me.B"), true)
 			return err
 		}},
 		{"FollowOrder (load order)", func(e env, p Profile) error {

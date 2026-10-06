@@ -66,7 +66,7 @@ function TouchActions({
             disabled={locked}
             title={t`Load ${mod.modName} after the other mods here, so its edit applies last`}
             onClick={() => {
-              applyWins(mod.modKey, others, -1, true).then(onChanged).catch(reportUnexpected)
+              applyWins(mod.modKey, mod.modId, others, true).then(onChanged).catch(reportUnexpected)
             }}
             sx={buttonSx}
           >

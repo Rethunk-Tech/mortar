@@ -36,8 +36,8 @@ func TestEntryEnabledAndFindMod(t *testing.T) {
 func TestEntryJSONKeepsComponentIDs(t *testing.T) {
 	t.Parallel()
 	in := Entry{
-		Key: "a", Mods: []Component{{ID: "smapi:Au.One", Needs: []mod.ID{"smapi:Au.Two"}, ContentPackFor: "smapi:Au.Fw"}},
-		Disabled: []mod.ID{"smapi:Au.One"}, LoadAfter: []mod.ID{"smapi:Au.Two"},
+		Key: "a", Mods: []Component{{ID: "smapi:Au.One", Needs: []mod.ID{"smapi:Au.Two"}, ContentPackFor: "smapi:Au.Fw", LoadAfter: []mod.ID{"smapi:Au.Two"}}},
+		Disabled: []mod.ID{"smapi:Au.One"},
 	}
 	raw, err := json.Marshal(in)
 	if err != nil {

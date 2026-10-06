@@ -15,6 +15,6 @@ func (s *Services) modsWin(p Params, prof profile.Profile, id string) (any, erro
 		return nil, err
 	}
 	return s.changed(p.Game, func() (any, error) {
-		return s.Profiles.SetWinner(p.Game, id, keys[0], typedID(p.IDs[1]), !p.Remove)
+		return s.Profiles.SetWinner(p.Game, id, keys[0], typedID(p.IDs[0]), typedID(p.IDs[1]), !p.Remove)
 	})
 }

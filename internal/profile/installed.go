@@ -62,7 +62,7 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 				Key: e.Key, Folder: folder, Source: e.Source, Enabled: enabled,
 				Pinned: e.Pinned, SkipVersion: e.SkipVersion, SkipSources: e.SkipSources, IgnoreUpdates: e.IgnoreUpdates,
 				UpdateChannel: e.UpdateChannel,
-				LoadAfter:     e.LoadAfter, Manifest: mf,
+				LoadAfter:     m.LoadAfter, Manifest: mf,
 			})
 		}
 	}
@@ -89,7 +89,7 @@ func (s *Store) packageInstalled(game string, e Entry) []Installed {
 		out = append(out, Installed{
 			Key: e.Key, Folder: dir, Source: e.Source, Enabled: e.Enabled(c.ID),
 			Pinned: e.Pinned, SkipVersion: e.SkipVersion, SkipSources: e.SkipSources, IgnoreUpdates: e.IgnoreUpdates,
-			UpdateChannel: e.UpdateChannel, LoadAfter: e.LoadAfter,
+			UpdateChannel: e.UpdateChannel, LoadAfter: c.LoadAfter,
 			Manifest: mf,
 		})
 	}

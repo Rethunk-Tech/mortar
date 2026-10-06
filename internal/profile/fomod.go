@@ -364,7 +364,9 @@ func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][
 		}
 		e := p.Entries[ei]
 		e.Fomod = cloneFomod(choices)
+		prev := e.Mods
 		e.Mods = entryMods(found)
+		keepLoadAfter(e.Mods, prev)
 		disabled := e.Disabled
 		e.Disabled = []mod.ID{}
 		for _, m := range e.Mods {

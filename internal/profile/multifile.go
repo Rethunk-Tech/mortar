@@ -415,6 +415,7 @@ func (s *Store) refreshEntryMods(e *Entry, entryDir string) error {
 	}
 	prev := e.Mods
 	e.Mods = entryMods(found)
+	keepLoadAfter(e.Mods, prev)
 	kept := e.Disabled[:0]
 	for _, id := range e.Disabled {
 		if slices.ContainsFunc(e.Mods, func(m Component) bool { return mod.Equal(m.ID, id) }) {

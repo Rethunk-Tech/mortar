@@ -252,6 +252,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 		ne.ExtraStoreKeys = slices.Clone(e.ExtraStoreKeys)
 	}
 	ne.Mods, ne.Disabled, ne.SkipVersion = entryMods(found), []mod.ID{}, ""
+	keepLoadAfter(ne.Mods, e.Mods)
 	ne.Tags = slices.Clone(e.Tags)
 	ne.Fomod = cloneFomod(choices)
 	for _, m := range ne.Mods {
@@ -332,7 +333,7 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 			}
 		}
 	}
-	if err := applyLoadAfter(tmp, *ne, nil); err != nil {
+	if err := applyLoadAfter(tmp, *ne); err != nil {
 		return swapped{}, err
 	}
 	final, err := materialize(tmp, *ne)

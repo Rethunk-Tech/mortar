@@ -117,6 +117,8 @@ type Component struct {
 	Optional []mod.ID `json:"optional,omitempty"`
 	// ContentPackFor is the id of the framework when the mod is a content pack.
 	ContentPackFor mod.ID `json:"contentPackFor,omitempty"`
+	// LoadAfter is ids this pack should load after, recorded when the user makes it win an edit conflict.
+	LoadAfter []mod.ID `json:"loadAfter,omitempty"`
 }
 
 // Entry is one package in a profile: a download unit with its source, holding one or more components. Disabled
@@ -133,8 +135,6 @@ type Entry struct {
 	PreviousSource *Source     `json:"previousSource,omitempty"`
 	Mods           []Component `json:"mods"`
 	Disabled       []mod.ID    `json:"disabled"`
-	// LoadAfter is ids this entry should load after, recorded when the user makes it win an edit conflict.
-	LoadAfter []mod.ID `json:"loadAfter,omitempty"`
 	// Added is when this entry was put in the profile; zero for entries written before the field existed.
 	Added time.Time `json:"added,omitzero"`
 	// Pinned keeps this entry on its current version; Mortar offers no update while it is true.
@@ -531,6 +531,7 @@ func readAt(dir, id string) (Profile, error) {
 		}
 	}
 	sanitizeAppearance(&p)
+	adoptEntryLoadAfter(b, &p, filepath.Join(dir, "mods"))
 	if statErr == nil {
 		rememberProfile(path, fi, p)
 	}

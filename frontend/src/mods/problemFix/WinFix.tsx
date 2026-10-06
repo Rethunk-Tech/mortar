@@ -28,26 +28,35 @@ function WinFix({
   const keys = asset.keys ?? []
   const packIds = asset.packIds ?? []
   const winnerLabel = asset.winnerName ?? ''
-  const resolved = Boolean(asset.cosmetic && winnerLabel.endsWith(' wins'))
+  const perEntry = winnerLabel === 'decided per entry'
+  const resolved = Boolean(asset.cosmetic && (winnerLabel.endsWith(' wins') || perEntry))
   const lockedTitle = t`Stop the game to change mods.`
   const sx = { height: buttonHeight, whiteSpace: 'nowrap', flexShrink: 0 } as const
-  const undo = () => {
+  const undo = async () => {
     const winnerId = asset.winnerId ?? ''
-    const index = packIds.findIndex((id) => sameId(id, winnerId))
-    const winnerKey = keys[index]
-    if (winnerKey) {
-      applyWins(winnerKey, packIds, index, false).catch(reportUnexpected)
+    for (const [index, id] of packIds.entries()) {
+      const winnerKey = keys[index]
+      if (winnerKey && (perEntry || sameId(id, winnerId))) {
+        await applyWins(winnerKey, id, packIds, false)
+      }
     }
   }
   const choose = (index: number) => {
     setAnchor(null)
     const winnerKey = keys[index]
-    if (winnerKey) {
-      applyWins(winnerKey, packIds, index, true).catch(reportUnexpected)
+    const winnerId = packIds[index]
+    if (winnerKey && winnerId) {
+      applyWins(winnerKey, winnerId, packIds, true).catch(reportUnexpected)
     }
   }
   const control = resolved ? (
-    <Button size="small" variant="outlined" disabled={locked} onClick={undo} sx={sx}>
+    <Button
+      size="small"
+      variant="outlined"
+      disabled={locked}
+      onClick={() => undo().catch(reportUnexpected)}
+      sx={sx}
+    >
       {t`Undo`}
     </Button>
   ) : (
