@@ -164,14 +164,14 @@ func (s *Service) deployProfile(ctx context.Context, gameID string, inst game.In
 		if err := s.profiles.SyncPackages(gameID, profileID); err != nil {
 			return nil, err
 		}
-		if err := s.prelaunch(gameID, profileID); err != nil {
+		if err := s.prelaunch(gameID, profileID, inst.Dir); err != nil {
 			return nil, err
 		}
 	}
 	return startDeploy(ctx, inst, plan)
 }
 
-func (s *Service) prelaunch(gameID, profileID string) error {
+func (s *Service) prelaunch(gameID, profileID, installDir string) error {
 	l, ok := s.loaderOf(gameID, profileID)
 	pre, isPre := l.(loader.Prelaunch)
 	if !ok || !isPre {
@@ -181,7 +181,7 @@ func (s *Service) prelaunch(gameID, profileID string) error {
 	if err != nil {
 		return err
 	}
-	return pre.Prelaunch(loader.ProfileView{Game: gameID, Dir: dir})
+	return pre.Prelaunch(loader.ProfileView{Game: gameID, Dir: dir, InstallDir: installDir})
 }
 
 // startDeploy places plan's install-side files into inst, journaled before the first file moves. A launch with none

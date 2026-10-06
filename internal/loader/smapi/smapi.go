@@ -98,6 +98,24 @@ func contribute(goos string, plan *launchplan.Plan, p loader.ProfileView) error 
 	return nil
 }
 
+// startupMarkers are files SMAPI leaves in smapi-internal for its next start, which then waits for a key press. Mortar
+// gives the game no console input, so that wait throws and SMAPI exits before the game opens, on every later start.
+// The crash log itself (ErrorLogs/SMAPI-crash.txt) is kept.
+var startupMarkers = []string{"StardewModdingAPI.crash.marker", "StardewModdingAPI.update.marker"}
+
+// Prelaunch removes SMAPI's startup markers, so a crash in the last session cannot stop this one from starting.
+func (Loader) Prelaunch(p loader.ProfileView) error {
+	if p.InstallDir == "" {
+		return nil
+	}
+	for _, name := range startupMarkers {
+		if err := fsx.RemoveAll(filepath.Join(p.InstallDir, "smapi-internal", name)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Vanilla starts the unmodded game. SMAPI's unix-launcher.sh always execs StardewModdingAPI, so on Linux the game
 // the installer kept as StardewValley-original is run directly; Windows has a plain executable.
 func (Loader) Vanilla(_ context.Context, plan *launchplan.Plan, t loader.Target) error {
