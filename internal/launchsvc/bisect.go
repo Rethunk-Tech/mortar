@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -22,9 +24,53 @@ const bisectRunTimeout = 3 * time.Minute
 // Used only when the profile has no bridge folder to write a title-screen report.
 var bisectStartupGrace = 20 * time.Second
 
+// bisectSceneSettle is how long a BepInEx game must hold a scene, after leaving its first, to count as healthy: Lethal
+// Company's mods most often crash as a scene loads, so the step waits past the load rather than for the chainloader.
+var bisectSceneSettle = 10 * time.Second
+
+// bridgeScene is the Mortar BepInEx Bridge's line for each scene the game loads.
+var bridgeScene = regexp.MustCompile(`^Bridge plugin alive after scene (.+): \w+$`)
+
+// sceneWatch follows a BepInEx run's log to the point it counts as healthy.
+type sceneWatch struct {
+	scene        string
+	scenes       int
+	since, ready time.Time
+}
+
+// settled reports a BepInEx run healthy once its game has held a scene the bridge reported for bisectSceneSettle, or for
+// bisectStartupGrace while that is still the first scene (Lethal Company waits there for the player's Online or LAN
+// choice). Without the bridge it takes the chainloader finishing plus bisectStartupGrace. A log that shows neither
+// is not yet healthy: a slow start under Proton is not a pass.
+func (w *sceneWatch) settled(lines []launch.Entry, now time.Time) bool {
+	scene, ready := "", false
+	for _, e := range lines {
+		if m := bridgeScene.FindStringSubmatch(e.Message); m != nil {
+			scene = m[1]
+		}
+		ready = ready || bepinex5.Loader{}.Ready(e.Message)
+	}
+	if scene != "" {
+		if scene != w.scene {
+			w.scene, w.since = scene, now
+			w.scenes++
+		}
+		hold := bisectSceneSettle
+		if w.scenes == 1 {
+			hold = bisectStartupGrace
+		}
+		return now.Sub(w.since) >= hold
+	}
+	if ready && w.ready.IsZero() {
+		w.ready = now
+	}
+	return ready && now.Sub(w.ready) >= bisectStartupGrace
+}
+
 // RunForBisect launches one profile the way Play would (the profile's launch method) and returns whether it reached a
-// healthy running state. A new startup report after launch means the title screen was reached; otherwise the step
-// waits for a crash, exit, the 20 s grace when the bridge is absent, or bisectRunTimeout.
+// healthy running state. A new startup report after launch means the title screen was reached, and a BepInEx game is
+// healthy once it settles in a scene (see sceneWatch); otherwise the step waits for a crash, exit, the 20 s grace when
+// the bridge is absent, or bisectRunTimeout.
 //
 //wails:ignore
 func (s *Service) RunForBisect(ctx context.Context, gameID, profileID string) (bool, launch.Summary, error) {
@@ -65,6 +111,10 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 		}
 	}
 	hasBridge := profileHasBridge(modsDir)
+	var scenes *sceneWatch
+	if s.profileLoader(gameID, profileID) == bepinex5.ID {
+		scenes = &sceneWatch{}
+	}
 
 	started := false
 	var runningSince time.Time
@@ -99,7 +149,14 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 				}
 				return false, launch.Summary{}, nil
 			}
-			if !hasBridge {
+			if scenes != nil {
+				if scenes.settled(lines, time.Now()) {
+					if err := s.stopSlot(runCtx, sl); err != nil {
+						return false, launch.Summary{}, err
+					}
+					return true, launch.Summary{}, nil
+				}
+			} else if !hasBridge {
 				if runningSince.IsZero() {
 					runningSince = time.Now()
 				}

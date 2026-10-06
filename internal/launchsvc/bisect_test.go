@@ -3,6 +3,7 @@ package launchsvc
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -56,5 +57,33 @@ func TestProfileHasBridgeNeedsTheFolder(t *testing.T) {
 	}
 	if !profileHasBridge(dir) {
 		t.Fatal("bridge folder was not seen")
+	}
+}
+
+func TestABepInExBisectStepWaitsForTheGameToSettleInAScene(t *testing.T) {
+	log := func(lines ...string) []launch.Entry { return launch.ParseLog(strings.Join(lines, "\n")) }
+	const (
+		ready = "[Message:   BepInEx] Chainloader startup complete"
+		first = "[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene InitSceneLaunchOptions: True"
+		menu  = "[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene MainMenu: True"
+	)
+	t0 := time.Now()
+	var w sceneWatch
+	if w.settled(log("[Info   :   BepInEx] Loading [Foo 1.0.0]"), t0.Add(time.Minute)) {
+		t.Fatal("a chainloader still loading plugins is not healthy, however long it takes")
+	}
+	if w.settled(log(ready, first), t0) || w.settled(log(ready, first), t0.Add(bisectSceneSettle)) {
+		t.Fatal("the first scene, where Lethal Company waits for a click, needs the longer grace")
+	}
+	if w.settled(log(ready, first, menu), t0.Add(bisectSceneSettle+time.Second)) {
+		t.Fatal("a scene that has just loaded is where mods crash; it is not healthy yet")
+	}
+	if !w.settled(log(ready, first, menu), t0.Add(2*bisectSceneSettle+time.Second)) {
+		t.Fatal("a game that held its menu scene is healthy")
+	}
+
+	var bare sceneWatch
+	if bare.settled(log(ready), t0) || !bare.settled(log(ready), t0.Add(bisectStartupGrace)) {
+		t.Fatal("without the bridge the chainloader finishing starts the grace")
 	}
 }
