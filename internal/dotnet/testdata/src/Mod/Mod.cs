@@ -70,3 +70,57 @@ namespace Fixture.Plugins
     {
     }
 }
+
+namespace Fixture.Patches
+{
+    using System.Collections.Generic;
+    using HarmonyLib;
+    using StardewValley;
+
+    [HarmonyPatch(typeof(Farmer))]
+    public static class FarmerPatches
+    {
+        [HarmonyPatch("Update")]
+        [HarmonyPrefix]
+        public static bool SkipUpdate() => false;
+
+        [HarmonyPatch(nameof(Farmer.CurrentToolIndex), MethodType.Getter)]
+        public static void Postfix()
+        {
+        }
+    }
+
+    [HarmonyPatch(typeof(Game1), "Draw", typeof(int))]
+    public static class DrawPatch
+    {
+        public static IEnumerable<object> Transpiler(IEnumerable<object> code) => code;
+
+        public static void Prefix()
+        {
+        }
+    }
+
+    [HarmonyPatch("StardewValley.Menus.ClickableComponent", "snap")]
+    public static class ByName
+    {
+        [HarmonyFinalizer]
+        public static void Done()
+        {
+        }
+    }
+
+    [HarmonyPatch(typeof(Farmer), MethodType.Constructor)]
+    public static class Built
+    {
+        public static void Postfix()
+        {
+        }
+    }
+
+    public static class NotAPatch
+    {
+        public static void Prefix()
+        {
+        }
+    }
+}

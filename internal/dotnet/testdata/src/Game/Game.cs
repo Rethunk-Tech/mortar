@@ -105,3 +105,55 @@ namespace BepInEx
         }
     }
 }
+
+namespace HarmonyLib
+{
+    // Harmony's patch attributes, which the reader finds by namespace and name.
+    public enum MethodType
+    {
+        Normal,
+        Getter,
+        Setter,
+        Constructor,
+        StaticConstructor,
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple = true)]
+    public class HarmonyPatch : System.Attribute
+    {
+        public HarmonyPatch(System.Type declaringType)
+        {
+        }
+
+        public HarmonyPatch(System.Type declaringType, MethodType methodType)
+        {
+        }
+
+        public HarmonyPatch(System.Type declaringType, string methodName, params System.Type[] argumentTypes)
+        {
+        }
+
+        public HarmonyPatch(string methodName)
+        {
+        }
+
+        public HarmonyPatch(string methodName, MethodType methodType)
+        {
+        }
+
+        // HarmonyX names the declaring type by string.
+        public HarmonyPatch(string typeName, string methodName)
+        {
+        }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Method)]
+    public class HarmonyPrefix : System.Attribute
+    {
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Method)]
+    public class HarmonyFinalizer : System.Attribute
+    {
+    }
+}

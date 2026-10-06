@@ -23,7 +23,7 @@ func ScanDir(dir string) Declared {
 
 // ScanEach reads what each DLL under dir declares, one Declared per DLL.
 func ScanEach(dir string) []Declared {
-	paths := dllsIn(dir)
+	paths := DLLs(dir)
 	out := make([]Declared, 0, len(paths))
 	for _, path := range paths {
 		d, _ := Scan(path)
@@ -32,9 +32,9 @@ func ScanEach(dir string) []Declared {
 	return out
 }
 
-// dllsIn is every DLL under dir, which must be absolute. The walk stays inside dir and keeps only regular files, so a
+// DLLs lists every DLL under dir, which must be absolute. The walk stays inside dir and keeps only regular files, so a
 // symlinked DLL or folder that points elsewhere is never read.
-func dllsIn(dir string) []string {
+func DLLs(dir string) []string {
 	dir = filepath.Clean(dir)
 	if !filepath.IsAbs(dir) {
 		return nil

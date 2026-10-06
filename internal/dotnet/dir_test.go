@@ -26,10 +26,10 @@ func TestDLLsInStaysInsideTheFolder(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := []string{filepath.Join(dir, "Mod.dll"), filepath.Join(dir, "sub", "Other.DLL")}
-	if got := dllsIn(dir + "/./"); !slices.Equal(got, want) {
-		t.Fatalf("dllsIn = %v, want %v", got, want)
+	if got := DLLs(dir + "/./"); !slices.Equal(got, want) {
+		t.Fatalf("DLLs = %v, want %v", got, want)
 	}
-	if got := dllsIn("relative/plugins"); got != nil {
+	if got := DLLs("relative/plugins"); got != nil {
 		t.Fatalf("a relative folder gave %v", got)
 	}
 }

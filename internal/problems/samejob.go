@@ -50,7 +50,13 @@ func (s *Service) sameJobRows(gameID, id string, mods []framework.Mod) []framewo
 	if err != nil {
 		return nil
 	}
-	return sameJob(footprints(mods, launchsvc.LatestReplaces(dir)), mods)
+	fp := footprints(mods, launchsvc.LatestReplaces(dir))
+	if pkgs, _ := s.profiles.EnabledPackages(gameID, id); len(pkgs) > 0 {
+		var more map[string]map[string]bool
+		more, mods = packageFootprints(pkgs, mods)
+		maps.Copy(fp, more)
+	}
+	return sameJob(fp, mods)
 }
 
 // withSameJob adds the "sameJob" rows, skipping mods another check already lists under Redundant.
@@ -83,7 +89,8 @@ func footprints(mods []framework.Mod, replaces map[string][]string) map[string]m
 		}
 	}
 	out := map[string]map[string]bool{}
-	for i, writes := range assemblyWrites(dlls) {
+	stardew := func(dll string) []string { w, _ := dotnet.Writes(dll, "StardewValley", "Netcode"); return w }
+	for i, writes := range assemblyMembers(dlls, stardew) {
 		set := map[string]bool{}
 		for _, member := range writes {
 			set[member] = true
@@ -270,9 +277,9 @@ var assemblyCache struct {
 	entries map[string]assemblyEntry
 }
 
-// assemblyWrites reads what each assembly assigns in the game, reusing results for files whose size and modification
-// time are unchanged. An unreadable assembly writes nothing.
-func assemblyWrites(dlls []string) [][]string {
+// assemblyMembers reads the game members each assembly changes with read, reusing results for files whose size and
+// modification time are unchanged. A DLL belongs to one game, so its path alone keys the cache.
+func assemblyMembers(dlls []string, read func(dll string) []string) [][]string {
 	assemblyCache.Lock()
 	defer assemblyCache.Unlock()
 	path := ""
@@ -296,8 +303,7 @@ func assemblyWrites(dlls []string) [][]string {
 		}
 		e, ok := assemblyCache.entries[dll]
 		if !ok || e.Size != info.Size() || e.MTime != info.ModTime().UnixNano() {
-			writes, _ := dotnet.Writes(dll, "StardewValley", "Netcode")
-			e = assemblyEntry{Size: info.Size(), MTime: info.ModTime().UnixNano(), Writes: writes}
+			e = assemblyEntry{Size: info.Size(), MTime: info.ModTime().UnixNano(), Writes: read(dll)}
 			assemblyCache.entries[dll] = e
 			dirty = true
 		}
