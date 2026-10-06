@@ -25,3 +25,32 @@ func TestOneOverrideAndDedup(t *testing.T) {
 		t.Fatalf("plan %+v", p)
 	}
 }
+
+func TestApplyDLLOverridesMergesWithThePlayersValue(t *testing.T) {
+	req := RuntimeReq{Kind: "dll-override", Key: "winhttp", Value: "native,builtin"}
+	p := New(ModeProfile)
+	p.RequireRuntime(req)
+	p.ApplyDLLOverrides()
+	if got := p.Env["WINEDLLOVERRIDES"]; got != "winhttp=n,b" {
+		t.Fatalf("empty = %q", got)
+	}
+	p = New(ModeProfile)
+	p.RequireRuntime(req)
+	p.SetEnv("WINEDLLOVERRIDES", "mscoree=d")
+	p.ApplyDLLOverrides()
+	if got := p.Env["WINEDLLOVERRIDES"]; got != "winhttp=n,b;mscoree=d" {
+		t.Fatalf("merged = %q", got)
+	}
+	p = New(ModeProfile)
+	p.RequireRuntime(req)
+	p.SetEnv("WINEDLLOVERRIDES", "winhttp=b")
+	p.ApplyDLLOverrides()
+	if got := p.Env["WINEDLLOVERRIDES"]; got != "winhttp=b" {
+		t.Fatalf("the player's own winhttp setting is kept: %q", got)
+	}
+	p = New(ModeProfile)
+	p.ApplyDLLOverrides()
+	if _, ok := p.Env["WINEDLLOVERRIDES"]; ok {
+		t.Fatal("no request sets nothing")
+	}
+}

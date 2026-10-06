@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
 )
 
@@ -88,6 +89,9 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 	for _, pair := range pairs {
 		k, v, _ := strings.Cut(pair, "=")
 		plan.SetEnv(k, v)
+	}
+	if inst.Runtime == gameruntime.Proton || inst.Runtime == gameruntime.WinePrefix {
+		plan.ApplyDLLOverrides()
 	}
 	return plan, nil
 }
@@ -309,10 +313,15 @@ func (s *Service) LeftoverJournals(gameID string) []string {
 	return out
 }
 
-// ensureRuntime makes the runtime provide what the plan asks for before the game starts. A Wine prefix that does not
-// exist yet is left to Steam, which creates it on the first run; the doctor reports it until then. These edits are
-// persistent and idempotent, so they are not journaled.
-func (s *Service) ensureRuntime(inst game.Install, reqs []launchplan.RuntimeReq) error {
+// errNoPrefix is a Steam-relayed Proton launch whose prefix does not exist yet: Steam would create it without the
+// loader's DLL override, and nothing Mortar passes reaches the game.
+var errNoPrefix = errors.New("the Proton prefix does not exist yet")
+
+// ensureRuntime makes the runtime provide what the plan asks for before the game starts. A direct launch passes the
+// override in the environment (ApplyDLLOverrides), so a prefix Wine has not made yet is harmless; a launch Steam
+// relays reads the prefix's registry, which must exist to carry the override. These edits are persistent and
+// idempotent, so they are not journaled.
+func (s *Service) ensureRuntime(inst game.Install, reqs []launchplan.RuntimeReq, direct bool) error {
 	for _, r := range reqs {
 		if r.Kind != "dll-override" || r.Key != "winhttp" {
 			continue
@@ -323,7 +332,10 @@ func (s *Service) ensureRuntime(inst game.Install, reqs []launchplan.RuntimeReq)
 		}
 		reg := filepath.Join(compat, "pfx", "user.reg")
 		if _, err := os.Stat(reg); err != nil {
-			continue
+			if direct {
+				continue
+			}
+			return errNoPrefix
 		}
 		if err := bepinex5.EnsureWinHTTPOverride(reg); err != nil {
 			return fmt.Errorf("make the Proton prefix load winhttp: %w", err)

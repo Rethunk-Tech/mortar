@@ -3,6 +3,7 @@
 package launchsvc
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,8 +53,11 @@ func TestEnsureRuntimeEditsAnExistingProtonPrefix(t *testing.T) {
 	svc := &Service{home: home}
 	inst := game.Install{Game: "lethal-company", Store: "steam", Dir: dir, Platform: "windows"}
 	reqs := []launchplan.RuntimeReq{{Kind: "dll-override", Key: "winhttp", Value: "native,builtin"}}
-	if err := svc.ensureRuntime(inst, reqs); err != nil {
-		t.Fatalf("a prefix Steam has not made yet is left alone: %v", err)
+	if err := svc.ensureRuntime(inst, reqs, true); err != nil {
+		t.Fatalf("a direct launch carries the override in its environment: %v", err)
+	}
+	if err := svc.ensureRuntime(inst, reqs, false); !errors.Is(err, errNoPrefix) {
+		t.Fatalf("a Steam launch cannot carry it without a prefix: %v", err)
 	}
 	if err := os.MkdirAll(filepath.Dir(reg), 0o750); err != nil {
 		t.Fatal(err)
@@ -61,7 +65,7 @@ func TestEnsureRuntimeEditsAnExistingProtonPrefix(t *testing.T) {
 	if err := os.WriteFile(reg, []byte("WINE REGISTRY Version 2\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := svc.ensureRuntime(inst, reqs); err != nil {
+	if err := svc.ensureRuntime(inst, reqs, false); err != nil {
 		t.Fatal(err)
 	}
 	if b, _ := fsx.ReadFile(reg); !strings.Contains(string(b), "winhttp") {

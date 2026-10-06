@@ -850,7 +850,10 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 			return err
 		}
 	}
-	if err := s.ensureRuntime(inst, plan.RuntimeReqs); err != nil {
+	if err := s.ensureRuntime(inst, plan.RuntimeReqs, env.Direct || plan.Exe != ""); err != nil {
+		if errors.Is(err, errNoPrefix) {
+			err = usererr.New(usererr.Invalid, "Start "+g.Name()+" once from Steam and quit it, so Proton can create its prefix; then Play from Mortar. Or set the game's Default launch to Direct.")
+		}
 		dep.unwind(ctx)
 		if restoreErr := s.restoreGameSettings(restore); restoreErr != nil {
 			s.reportSettingsRestore(g, profileID, restoreErr)

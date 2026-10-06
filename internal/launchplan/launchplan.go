@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 )
 
 // Mode is how the game is started.
@@ -83,6 +84,35 @@ func (p *Plan) RequireRuntime(req RuntimeReq) {
 	if !slices.Contains(p.RuntimeReqs, req) {
 		p.RuntimeReqs = append(p.RuntimeReqs, req)
 	}
+}
+
+// ApplyDLLOverrides sets WINEDLLOVERRIDES for a Wine-based runtime from the plan's dll-override requests, ahead of
+// any value the plan already has, so a game whose prefix Wine has not made yet loads the loader's proxy DLL on its
+// first start. A library the existing value already names keeps the player's setting.
+func (p *Plan) ApplyDLLOverrides() {
+	have := p.Env["WINEDLLOVERRIDES"]
+	var add []string
+	for _, r := range p.RuntimeReqs {
+		if r.Kind != "dll-override" || strings.Contains(strings.ToLower(have), strings.ToLower(r.Key)+"=") {
+			continue
+		}
+		add = append(add, r.Key+"="+wineLoadOrder(r.Value))
+	}
+	if len(add) > 0 {
+		p.Env["WINEDLLOVERRIDES"] = strings.Join(append(add, have), ";")
+		p.Env["WINEDLLOVERRIDES"] = strings.TrimSuffix(p.Env["WINEDLLOVERRIDES"], ";")
+	}
+}
+
+// wineLoadOrder is a registry load order ("native,builtin") as WINEDLLOVERRIDES spells it ("n,b").
+func wineLoadOrder(order string) string {
+	parts := strings.Split(order, ",")
+	for i, o := range parts {
+		if o != "" {
+			parts[i] = o[:1]
+		}
+	}
+	return strings.Join(parts, ",")
 }
 
 func (p *Plan) claim(owner string) error {
