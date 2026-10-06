@@ -6,15 +6,18 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 )
 
 type fakeShares struct {
 	previewErr error
 	replaced   []string
+	exported   share.Include
 }
 
-func (*fakeShares) ExportBytes(string, string, []string) ([]byte, []string, error) {
+func (f *fakeShares) ExportBytes(_, _ string, inc share.Include) ([]byte, []string, error) {
+	f.exported = inc
 	return nil, nil, nil
 }
 
@@ -50,5 +53,15 @@ func TestAppSourceNeverOffersADamagedProfile(t *testing.T) {
 	refs, err := a.Profiles("stardew")
 	if err != nil || len(refs) != 1 || refs[0].ID != "ok" {
 		t.Fatalf("refs %+v %v", refs, err)
+	}
+}
+
+func TestAppSourceExportsSwitchedOffMods(t *testing.T) {
+	sh := &fakeShares{}
+	if _, err := (&AppSource{profiles: fakeProfiles{}, shares: sh}).Export("lethal-company", "p1"); err != nil {
+		t.Fatal(err)
+	}
+	if !sh.exported.DisabledMods || !sh.exported.ConfigFiles {
+		t.Fatalf("sync export include %+v leaves mods or configs out", sh.exported)
 	}
 }

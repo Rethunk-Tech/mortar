@@ -350,18 +350,17 @@ func (s *Service) SaveFile(game, profileID string, keys []string, include share.
 // ExportBytes writes the profile's .mortar payload in memory.
 //
 //wails:ignore
-func (s *Service) ExportBytes(game, profileID string, keys []string) ([]byte, []string, error) {
+func (s *Service) ExportBytes(game, profileID string, include share.Include) ([]byte, []string, error) {
 	p, err := s.find(game, profileID)
 	if err != nil {
 		return nil, nil, err
 	}
-	p = withEntryKeys(p, keys)
 	modsDir, err := s.d.Profiles.ModsDir(game, profileID)
 	if err != nil {
 		return nil, nil, err
 	}
 	var buf bytes.Buffer
-	skipped, err := share.Write(&buf, game, p, modsDir)
+	skipped, err := share.Write(&buf, game, p, modsDir, include)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 )
 
@@ -17,7 +18,7 @@ type profileStore interface {
 
 // Shares is the part of the share service the sync uses: the .mortar export and the import that makes a profile match.
 type Shares interface {
-	ExportBytes(game, profileID string, keys []string) ([]byte, []string, error)
+	ExportBytes(game, profileID string, include share.Include) ([]byte, []string, error)
 	PreviewPayload(ctx context.Context, game, profileID string, data []byte) (sharesvc.Preview, error)
 	Replace(ctx context.Context, game, session, profileID string, exclude []string) (sharesvc.Result, error)
 }
@@ -49,8 +50,12 @@ func (a *AppSource) Profiles(gameID string) ([]Ref, error) {
 	return out, nil
 }
 
+// Export carries switched-off mods too: the other machine is the same player's, and a payload without them would
+// remove them there and, written back, here.
 func (a *AppSource) Export(gameID, id string) ([]byte, error) {
-	b, _, err := a.shares.ExportBytes(gameID, id, nil)
+	inc := share.DefaultInclude()
+	inc.DisabledMods = true
+	b, _, err := a.shares.ExportBytes(gameID, id, inc)
 	return b, err
 }
 
