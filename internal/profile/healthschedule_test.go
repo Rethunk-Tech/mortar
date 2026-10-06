@@ -7,6 +7,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // counted records every HealthEvent a service emits.
@@ -159,5 +161,27 @@ func TestRepairFlagsTheGameForARecheck(t *testing.T) {
 	defer svc.healthMu.Unlock()
 	if !svc.healthDue["stardew"] {
 		t.Fatal("a repair left the health badge to go stale for a week")
+	}
+}
+
+func TestAnotherBuildsHealthCheckIsNotShownAndRunsAgain(t *testing.T) {
+	t.Parallel()
+	e, svc, p := healthEnv(t)
+	seen := &counted{}
+	svc.HealthEmit = seen.emit
+	dir, err := e.ProfileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now()
+	if err := datadir.WriteJSON(healthCheckPath(dir), healthCheck{At: now, Findings: 1, Build: "another-build"}); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := svc.HealthBadges("stardew"); len(got) != 0 {
+		t.Fatalf("another build's count is badged: %v", got)
+	}
+	svc.healthPass(context.Background(), now)
+	if seen.len() != 1 {
+		t.Fatal("another build's check postponed this build's")
 	}
 }

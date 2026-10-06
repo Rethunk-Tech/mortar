@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -28,6 +29,7 @@ const (
 type healthCheck struct {
 	At       time.Time `json:"at"`
 	Findings int       `json:"findings"`
+	Build    string    `json:"build"`
 }
 
 // HealthNotice says how many findings a profile's latest health check had.
@@ -39,13 +41,15 @@ type HealthNotice struct {
 
 func healthCheckPath(dir string) string { return filepath.Join(dir, healthCheckFile) }
 
+// readHealthCheck reads the last check, as never made when another build made it: that build's logic may have found
+// what this one does not, so its count is neither shown nor trusted to postpone the next check.
 func readHealthCheck(dir string) (healthCheck, bool) {
 	b, err := fsx.ReadFile(healthCheckPath(dir))
 	if err != nil {
 		return healthCheck{}, false
 	}
 	var c healthCheck
-	if json.Unmarshal(b, &c) != nil {
+	if json.Unmarshal(b, &c) != nil || c.Build != appversion.Build() {
 		return healthCheck{}, false
 	}
 	return c, true
@@ -69,11 +73,11 @@ func (s *Service) recordHealth(game, id string, findings []HealthFinding, now ti
 	if err != nil {
 		return
 	}
-	if err := datadir.WriteJSON(healthCheckPath(dir), healthCheck{At: now, Findings: own}); err != nil {
+	if err := datadir.WriteJSON(healthCheckPath(dir), healthCheck{At: now, Findings: own, Build: appversion.Build()}); err != nil {
 		log.Printf("health check: %v", err)
 	}
 	if gdir, err := s.store.gameDir(game); err == nil {
-		if err := datadir.WriteJSON(healthCheckPath(gdir), healthCheck{At: now, Findings: wide}); err != nil {
+		if err := datadir.WriteJSON(healthCheckPath(gdir), healthCheck{At: now, Findings: wide, Build: appversion.Build()}); err != nil {
 			log.Printf("health check: %v", err)
 		}
 	}

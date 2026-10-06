@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 )
 
 const (
@@ -119,6 +121,13 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 	if pathErr == nil {
 		if e, ok := readEntry[map[string]entry[UpdateResult]](path); ok {
 			store = e.Value
+			if e.Build != appversion.Build() {
+				// Another build's answers are asked again, and serve only while the API cannot be reached.
+				for k, v := range store {
+					v.Fetched = time.Time{}
+					store[k] = v
+				}
+			}
 		}
 	}
 	if store == nil {
@@ -172,7 +181,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 				delete(store, k)
 			}
 		}
-		writeEntry(path, entry[map[string]entry[UpdateResult]]{Fetched: now, Value: store})
+		writeEntry(path, entry[map[string]entry[UpdateResult]]{Fetched: now, Value: store, Build: appversion.Build()})
 	}
 	return out
 }

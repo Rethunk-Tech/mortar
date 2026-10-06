@@ -67,6 +67,8 @@ func (c *Client) cachePath(name string) (string, error) {
 type entry[T any] struct {
 	Fetched time.Time `json:"fetched"`
 	Value   T         `json:"value"`
+	// Build is the Mortar build that wrote a cache whose answers depend on Mortar's own logic.
+	Build string `json:"build,omitempty"`
 }
 
 func readEntry[T any](path string) (entry[T], bool) {
