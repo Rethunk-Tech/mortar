@@ -21,7 +21,6 @@ function sandboxPort(): string {
 
 /** The launch-cap session of a run's sandbox, and its counter files under the cap folder selftest.sh keeps. */
 const launchSession = (dir: string) => `e2e-${dir.slice(dir.lastIndexOf('-') + 1)}`
-
 const launchCounter = (dir: string) => `${BASE}/mortar-launch-cap/${launchSession(dir)}`
 
 /** A sandbox folder is only ever named from a run's pid, so a path to delete is never read from anywhere. */
@@ -125,4 +124,18 @@ function freshSandbox(): () => void {
   return teardown
 }
 
-export { freshSandbox, sandboxPort, selftest }
+/** The environment the shared server runs with, read from /proc, so the sandbox's own binary acts on its data. */
+function serverEnv(dir: string): Record<string, string> {
+  const pid = Number.parseInt(readFileSync(`${dir}/server.pid`, 'utf8'), 10)
+  const env = Object.fromEntries(
+    readFileSync(`/proc/${pid}/environ`, 'utf8')
+      .split('\0')
+      .filter((kv) => kv.includes('='))
+      .map((kv) => [kv.slice(0, kv.indexOf('=')), kv.slice(kv.indexOf('=') + 1)]),
+  )
+  env.WAILS_SERVER_HOST = '127.0.0.1'
+  env.WAILS_SERVER_PORT = sandboxPort()
+  return env
+}
+
+export { freshSandbox, sandboxPort, selftest, serverEnv }

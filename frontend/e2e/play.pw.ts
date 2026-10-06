@@ -1,14 +1,13 @@
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process'
-import { chmodSync, readFileSync, writeFileSync } from 'node:fs'
+import { chmodSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
-import { sandboxPort, selftest } from './sandbox.ts'
+import { selftest, serverEnv } from './sandbox.ts'
 
 // A --play start runs its own server on the sandbox's port, so each test stops the shared one and starts its binary again
 // after, with the environment it ran with (read from /proc), without the rebuild `selftest.sh start` does.
 
 const dir = process.env.MORTAR_E2E_DIR ?? ''
-const serverPid = () => Number.parseInt(readFileSync(`${dir}/server.pid`, 'utf8'), 10)
 // Filled once the shared server runs: test files load before the global setup starts it.
 let env: Record<string, string> = {}
 
@@ -94,14 +93,7 @@ let fine = ''
 let blocked = ''
 
 test.beforeAll(() => {
-  env = Object.fromEntries(
-    readFileSync(`/proc/${serverPid()}/environ`, 'utf8')
-      .split('\0')
-      .filter((kv) => kv.includes('='))
-      .map((kv) => [kv.slice(0, kv.indexOf('=')), kv.slice(kv.indexOf('=') + 1)]),
-  )
-  env.WAILS_SERVER_HOST = '127.0.0.1'
-  env.WAILS_SERVER_PORT = sandboxPort()
+  env = serverEnv(dir)
   const fake = `${dir}/fake-game.sh`
   writeFileSync(fake, FAKE_GAME)
   chmodSync(fake, 0o755)
