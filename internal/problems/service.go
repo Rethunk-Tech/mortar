@@ -324,12 +324,13 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		contentpatcher.SkipImageOverlap = depth == settings.ConflictScanSkipImages
 		defer func() { contentpatcher.SkipImageOverlap = false }()
 		r := Check(ctx, s.metaFor(gameID), env, mods, s.NexusPages.Requirements(gameID))
+		owners := sync.OnceValue(func() map[string]framework.Mod { return pluginOwners(mods) })
 		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool {
 			return !x.Enabled
 		}))...)
 		if l, ok := game.LoaderOf(gameID, s.profiles.LoaderID(gameID, id)); ok {
 			if dir, err := s.profiles.ProfileDir(gameID, id); err == nil {
-				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, id, l), func() map[string]framework.Mod { return pluginOwners(mods) })
+				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, id, l), owners)
 			}
 			if f, bad := gameVersionFailure(gameID, l, env); bad {
 				r.LoadFailures = append(r.LoadFailures, f)
@@ -362,7 +363,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		if s.Runs != nil && runID != "" {
 			_, summary, err := s.Runs.LastRunSummary(gameID, id)
 			if err == nil {
-				r.RunErrors = RunErrorsFromSummary(runID, summary, mods)
+				r.RunErrors = RunErrorsFromSummary(runID, summary, mods, owners)
 				r.LoadFailures = append(r.LoadFailures, startFailure(runID, summary)...)
 			}
 		} else if r.RunErrors == nil {

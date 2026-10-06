@@ -26,7 +26,7 @@ func TestRunErrorsFromSummary(t *testing.T) {
 			{Mod: "Unknown", Count: 1, First: "skip"},
 		},
 	}
-	got := RunErrorsFromSummary("run-1", summary, mods)
+	got := RunErrorsFromSummary("run-1", summary, mods, nil)
 	if len(got) != 1 {
 		t.Fatalf("got %d problems, want 1: %#v", len(got), got)
 	}
@@ -41,7 +41,7 @@ func TestRunErrorsFromSummary(t *testing.T) {
 
 func TestRunErrorsFromSummary_cleanRun(t *testing.T) {
 	mods := []framework.Mod{installedMod("a", "Alpha", "author.alpha", true)}
-	got := RunErrorsFromSummary("run-2", launch.Summary{}, mods)
+	got := RunErrorsFromSummary("run-2", launch.Summary{}, mods, nil)
 	if len(got) != 0 {
 		t.Fatalf("clean run: %#v", got)
 	}
@@ -52,7 +52,7 @@ func TestRunErrorsFromSummary_infoWhenNoCrash(t *testing.T) {
 	summary := launch.Summary{
 		Mods: []launch.ModError{{Mod: "author.alpha", Count: 1, First: "oops"}},
 	}
-	got := RunErrorsFromSummary("run-3", summary, mods)
+	got := RunErrorsFromSummary("run-3", summary, mods, nil)
 	if len(got) != 1 || got[0].Severe {
 		t.Fatalf("want info-level: %#v", got)
 	}
@@ -63,7 +63,7 @@ func TestRunErrorsFromSummary_matchByUniqueID(t *testing.T) {
 	summary := launch.Summary{
 		Mods: []launch.ModError{{Mod: "me.mod", Count: 1, First: "x"}},
 	}
-	got := RunErrorsFromSummary("r", summary, mods)
+	got := RunErrorsFromSummary("r", summary, mods, nil)
 	if len(got) != 1 || got[0].Key != "k" {
 		t.Fatalf("match by id: %#v", got)
 	}
@@ -78,7 +78,7 @@ func TestRunErrorsFromSummaryMarksModsUpdatedSinceRun(t *testing.T) {
 		}},
 		Mods: []launch.ModError{{Mod: "Alpha", Count: 1, First: "old error"}},
 	}
-	got := RunErrorsFromSummary("run", summary, []framework.Mod{im})
+	got := RunErrorsFromSummary("run", summary, []framework.Mod{im}, nil)
 	if len(got) != 1 || got[0].Key != "new-key" || !got[0].Updated {
 		t.Fatalf("updated row = %#v", got)
 	}
@@ -102,5 +102,22 @@ func TestThePlayerLogBelongsOnlyToTheProfileThatRanLast(t *testing.T) {
 	}
 	if ranLast(runs, "lethal-company", "never", []string{"pack"}) {
 		t.Fatal("a profile that never ran owns no player log")
+	}
+}
+
+func TestRunErrorsFromSummaryNameTheBepInExPackageBehindAPlugin(t *testing.T) {
+	pkg := installedMod("k", "SoundAPI", "", true)
+	summary := launch.Summary{Mods: []launch.ModError{{Mod: "me.loaforc.soundapi", Count: 3, First: "boom"}, {Mod: "Stranger", Count: 1}}}
+	asked := 0
+	owners := func() map[string]framework.Mod {
+		asked++
+		return map[string]framework.Mod{"me.loaforc.soundapi": pkg}
+	}
+	got := RunErrorsFromSummary("run", summary, []framework.Mod{pkg}, owners)
+	if len(got) != 1 || got[0].Key != "k" || got[0].Name != "SoundAPI" || got[0].Count != 3 {
+		t.Fatalf("got %+v", got)
+	}
+	if RunErrorsFromSummary("run", launch.Summary{Mods: []launch.ModError{{Mod: "SoundAPI", Count: 1}}}, []framework.Mod{pkg}, owners); asked != 2 {
+		t.Fatalf("owners read %d times; a column naming the mod needs no DLL scan", asked)
 	}
 }

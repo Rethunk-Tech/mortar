@@ -1,6 +1,9 @@
 package problems
 
 import (
+	"slices"
+	"strings"
+
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -58,8 +61,10 @@ func changedSinceRun(now framework.Mod, then launch.ModRef) bool {
 		then.SourceVersion != "" && now.SourceVersion != then.SourceVersion
 }
 
-// RunErrorsFromSummary maps a run summary to profile mods that logged errors and are still enabled.
-func RunErrorsFromSummary(runID string, summary launch.Summary, mods []framework.Mod) []RunError {
+// RunErrorsFromSummary maps a run summary to profile mods that logged errors and are still enabled. A column naming no
+// mod is looked up, lower-cased, in owners: a BepInEx line names its plugin, and owners maps plugin names and GUIDs to
+// the enabled package shipping them (see pluginOwners). owners is called only for such a column.
+func RunErrorsFromSummary(runID string, summary launch.Summary, mods []framework.Mod, owners func() map[string]framework.Mod) []RunError {
 	if runID == "" || len(summary.Mods) == 0 {
 		return []RunError{}
 	}
@@ -71,11 +76,16 @@ func RunErrorsFromSummary(runID string, summary launch.Summary, mods []framework
 	severe := summary.Crashed
 	out := []RunError{}
 	for _, me := range summary.Mods {
+		var inst framework.Mod
 		ref, ok := launch.MatchModColumn(me.Mod, refs)
-		if !ok {
-			continue
+		if ok {
+			inst, ok = installedByRef(mods, ref)
+		} else if owners != nil {
+			inst, ok = owners()[strings.ToLower(strings.TrimSpace(me.Mod))]
+			if i := slices.IndexFunc(refs, func(r launch.ModRef) bool { return r.Key == inst.Key }); ok && i >= 0 {
+				ref = refs[i]
+			}
 		}
-		inst, ok := installedByRef(mods, ref)
 		if !ok {
 			continue
 		}
