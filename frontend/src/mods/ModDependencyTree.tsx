@@ -202,7 +202,7 @@ function TreesView({
     <Box>
       <Typography sx={heading}>{t`Dependencies`}</Typography>
       <Branch title={t`Needs`} nodes={needs} mods={mods} />
-      <Branch title={t`Needed by`} nodes={neededBy} mods={mods} />
+      <Branch title={t`Used by`} nodes={neededBy} mods={mods} />
     </Box>
   )
 }

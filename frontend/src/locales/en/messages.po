@@ -101,7 +101,7 @@ msgstr "Author · {author}"
 msgid "These changes will be reverted too:"
 msgstr "These changes will be reverted too:"
 
-#: src/mods/describe.ts:149
+#: src/mods/describe.ts:156
 msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 
@@ -382,7 +382,7 @@ msgstr "The download could not finish. Retry or skip it from the queue."
 msgid "Log level"
 msgstr "Log level"
 
-#: src/mods/describe.ts:120
+#: src/mods/describe.ts:127
 msgid "Balance only: one mod's prices win."
 msgstr "Balance only: one mod's prices win."
 
@@ -447,7 +447,7 @@ msgid "Run checks…"
 msgstr "Run checks…"
 
 #. placeholder {0}: p.damaged.name
-#: src/mods/describe.ts:235
+#: src/mods/describe.ts:242
 msgid "{0} has damaged files."
 msgstr "{0} has damaged files."
 
@@ -1111,7 +1111,7 @@ msgstr "Keep this profile's saves separate?"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:186
+#: src/mods/describe.ts:193
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 
@@ -1774,7 +1774,6 @@ msgstr "Peak ms"
 msgid "Could not add the download"
 msgstr "Could not add the download"
 
-#: src/mods/ModDependencyTree.tsx:205
 #: src/mods/ModDetail.tsx:265
 msgid "Needed by"
 msgstr "Needed by"
@@ -2582,7 +2581,7 @@ msgstr "Fix all"
 msgid "Ran"
 msgstr "Ran"
 
-#: src/mods/describe.ts:225
+#: src/mods/describe.ts:232
 msgid "The last launch failed: {message}."
 msgstr "The last launch failed: {message}."
 
@@ -2908,6 +2907,10 @@ msgstr "Desktop"
 msgid "Could not pair"
 msgstr "Could not pair"
 
+#: src/mods/describe.ts:109
+msgid "{who} both edit {target}.{winner}"
+msgstr "{who} both edit {target}.{winner}"
+
 #. placeholder {0}: result.added
 #: src/bundles/applied.ts:20
 msgid "{0, plural, one {# mod added} other {# mods added}}"
@@ -2986,7 +2989,7 @@ msgid "Clear comparison"
 msgstr "Clear comparison"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:199
+#: src/mods/describe.ts:206
 msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
 
@@ -3290,6 +3293,10 @@ msgstr "{0, plural, one {# download added} other {# downloads added}}"
 msgid "Launch options copied"
 msgstr "Launch options copied"
 
+#: src/mods/describe.ts:105
+msgid "{who} both load {target}.{winner}"
+msgstr "{who} both load {target}.{winner}"
+
 #: src/mods/ModDetail.tsx:153
 msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
@@ -3477,7 +3484,7 @@ msgstr "Size"
 msgid "GitHub page"
 msgstr "GitHub page"
 
-#: src/mods/describe.ts:156
+#: src/mods/describe.ts:163
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 
@@ -3939,7 +3946,7 @@ msgstr "Check these before you play."
 msgid "By game"
 msgstr "By game"
 
-#: src/mods/describe.ts:124
+#: src/mods/describe.ts:131
 msgid "Only on {value} saves; none of yours is one."
 msgstr "Only on {value} saves; none of yours is one."
 
@@ -4243,7 +4250,7 @@ msgstr "Just this mod"
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
-#: src/mods/describe.ts:279
+#: src/mods/describe.ts:286
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
@@ -4563,7 +4570,7 @@ msgstr "and {count} more"
 msgid "The local port OBS reads the overlay from"
 msgstr "The local port OBS reads the overlay from"
 
-#: src/mods/describe.ts:163
+#: src/mods/describe.ts:170
 msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 
@@ -4798,7 +4805,7 @@ msgid "Rename…"
 msgstr "Rename…"
 
 #. placeholder {0}: p.pluginClash.guid
-#: src/mods/describe.ts:244
+#: src/mods/describe.ts:251
 msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
 msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
 
@@ -4841,7 +4848,7 @@ msgstr "Untrack all…"
 msgid "Disable all"
 msgstr "Disable all"
 
-#: src/mods/describe.ts:232
+#: src/mods/describe.ts:239
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
 
@@ -5006,7 +5013,7 @@ msgstr "{remaining} of {limit} left this hour; the count resets {when}."
 msgid "Select mods on the Mods tab, then Add to bundle."
 msgstr "Select mods on the Mods tab, then Add to bundle."
 
-#: src/mods/describe.ts:166
+#: src/mods/describe.ts:173
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
@@ -6206,7 +6213,7 @@ msgstr "Unknown author"
 msgid "In this profile"
 msgstr "In this profile"
 
-#: src/mods/describe.ts:150
+#: src/mods/describe.ts:157
 msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
 
@@ -6414,7 +6421,7 @@ msgid "Reading {folder}…"
 msgstr "Reading {folder}…"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:201
+#: src/mods/describe.ts:208
 msgid "{0} is installed twice, and only one of them loads."
 msgstr "{0} is installed twice, and only one of them loads."
 
@@ -6442,7 +6449,7 @@ msgstr "Clear cache"
 msgid "{endorsements, plural, one {# like} other {# likes}} · {dl}"
 msgstr "{endorsements, plural, one {# like} other {# likes}} · {dl}"
 
-#: src/mods/describe.ts:103
+#: src/mods/describe.ts:106
 msgid "{who} all load {target}.{winner}"
 msgstr "{who} all load {target}.{winner}"
 
@@ -6725,7 +6732,7 @@ msgstr "Unhide {0}?"
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
-#: src/mods/describe.ts:104
+#: src/mods/describe.ts:110
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
 
@@ -7217,7 +7224,7 @@ msgstr "Where the time goes"
 msgid "Change folder"
 msgstr "Change folder"
 
-#: src/mods/describe.ts:159
+#: src/mods/describe.ts:166
 msgid "{dependentName} needs {dep}, which is disabled."
 msgstr "{dependentName} needs {dep}, which is disabled."
 
@@ -7658,7 +7665,7 @@ msgstr "{0, plural, one {Matched # version in {1}} other {Matched # versions in 
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:181
+#: src/mods/describe.ts:188
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 
@@ -8210,7 +8217,7 @@ msgstr "{0, plural, one {Created {name}; downloading # mod} other {Created {name
 msgid "{who}: {reason}"
 msgstr "{who}: {reason}"
 
-#: src/mods/describe.ts:231
+#: src/mods/describe.ts:238
 msgid "{plugin} failed to load ({name})."
 msgstr "{plugin} failed to load ({name})."
 
@@ -8270,7 +8277,7 @@ msgstr "Money"
 msgid "Regenerate token?"
 msgstr "Regenerate token?"
 
-#: src/mods/describe.ts:228
+#: src/mods/describe.ts:235
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
@@ -8543,7 +8550,7 @@ msgid "Steam was not found"
 msgstr "Steam was not found"
 
 #. placeholder {0}: p.asset.info
-#: src/mods/describe.ts:107
+#: src/mods/describe.ts:114
 msgid "These mods may add the same item: {0}."
 msgstr "These mods may add the same item: {0}."
 
@@ -8592,7 +8599,7 @@ msgstr "Reset…"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.description
-#: src/mods/describe.ts:172
+#: src/mods/describe.ts:179
 msgid "{0}'s {1} is {2}: {3}"
 msgstr "{0}'s {1} is {2}: {3}"
 
@@ -9363,7 +9370,7 @@ msgid "Review collection update"
 msgstr "Review collection update"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:273
+#: src/mods/describe.ts:280
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
@@ -9594,7 +9601,7 @@ msgstr "Whole file"
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
-#: src/mods/describe.ts:240
+#: src/mods/describe.ts:247
 msgid "{name} is deprecated on Thunderstore."
 msgstr "{name} is deprecated on Thunderstore."
 
@@ -9614,7 +9621,7 @@ msgstr "Save backups kept"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:176
+#: src/mods/describe.ts:183
 msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
@@ -10054,7 +10061,7 @@ msgstr "{loader} | {store}"
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
-#: src/mods/describe.ts:239
+#: src/mods/describe.ts:246
 msgid "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 
@@ -10458,7 +10465,7 @@ msgstr "The backup from {when} is deleted for good, with every save in it."
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
-#: src/mods/describe.ts:155
+#: src/mods/describe.ts:162
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
@@ -11133,7 +11140,7 @@ msgstr "Could not use that image"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:189
+#: src/mods/describe.ts:196
 msgid "{0}'s {1} is {2}; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 
@@ -11200,7 +11207,7 @@ msgstr "No problems found"
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/mods/describe.ts:277
+#: src/mods/describe.ts:284
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
@@ -11217,7 +11224,7 @@ msgid "Entry"
 msgstr "Entry"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:198
+#: src/mods/describe.ts:205
 msgid "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 msgstr "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 
@@ -11382,7 +11389,7 @@ msgstr "Into a deleted profile"
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
-#: src/mods/describe.ts:122
+#: src/mods/describe.ts:129
 msgid "Only on {value}."
 msgstr "Only on {value}."
 
@@ -12103,6 +12110,10 @@ msgstr "Try fewer words, or the mod's exact name."
 #: src/game/ProfileMenuItems.tsx:157
 msgid "Add this profile to Steam"
 msgstr "Add this profile to Steam"
+
+#: src/mods/ModDependencyTree.tsx:205
+msgid "Used by"
+msgstr "Used by"
 
 #: src/console/PerformancePanelParts.tsx:266
 msgid "See which mods slow the game"

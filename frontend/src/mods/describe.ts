@@ -98,10 +98,17 @@ function describeAsset(p: Extract<Problem, { kind: 'asset' }>): string {
         ? i18n._(msg` ${winnerName} wins.`)
         : i18n._(msg` ${winnerName} wins; ${losers} overridden.`)
   }
-  const sentence =
-    kind === 'load'
-      ? i18n._(msg`${who} all load ${target}.${winner}`)
+  const pair = (names ?? []).length === 2
+  let sentence: string
+  if (kind === 'load') {
+    sentence = pair
+      ? i18n._(msg`${who} both load ${target}.${winner}`)
+      : i18n._(msg`${who} all load ${target}.${winner}`)
+  } else {
+    sentence = pair
+      ? i18n._(msg`${who} both edit ${target}.${winner}`)
       : i18n._(msg`${who} all edit ${target}.${winner}`)
+  }
   const parts = [sentence]
   if (p.asset.info) {
     parts.push(i18n._(msg`These mods may add the same item: ${p.asset.info}.`))
