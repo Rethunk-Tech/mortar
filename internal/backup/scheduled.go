@@ -3,7 +3,6 @@ package backup
 import (
 	"errors"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -18,14 +17,12 @@ type Run struct {
 	Failed    int
 }
 
-// Scheduled zips each save folder written since its newest scheduled backup and keeps the newest keep scheduled
-// backups per save. A missing Saves folder is an empty run.
-func Scheduled(savesDir, backupsDir string, keep int, now time.Time) (Run, error) {
+// Scheduled zips each save of l written since its newest scheduled backup and keeps the newest keep scheduled
+// backups per save. A missing saves folder is an empty run.
+func Scheduled(l saves.Layout, backupsDir string, keep int, now time.Time) (Run, error) {
 	var run Run
-	ents, err := os.ReadDir(savesDir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return run, nil
-	} else if err != nil {
+	names, err := l.Names()
+	if err != nil || len(names) == 0 {
 		return run, err
 	}
 	newest, err := scheduledNewest(backupsDir, now)
@@ -33,13 +30,9 @@ func Scheduled(savesDir, backupsDir string, keep int, now time.Time) (Run, error
 		return run, err
 	}
 	var errs []error
-	for _, e := range ents {
-		folder := e.Name()
-		if !e.IsDir() || !saves.IsSave(savesDir, folder) {
-			continue
-		}
+	for _, folder := range names {
 		if last, ok := newest[folder]; ok {
-			changed, err := lastChange(filepath.Join(savesDir, folder))
+			changed, err := lastChange(filepath.Join(l.Dir, folder))
 			if err != nil {
 				run.Failed++
 				errs = append(errs, err)
@@ -50,7 +43,7 @@ func Scheduled(savesDir, backupsDir string, keep int, now time.Time) (Run, error
 				continue
 			}
 		}
-		if _, err := Folder(savesDir, backupsDir, folder, keep, now, Cause{Kind: KindScheduled, Save: folder}); err != nil {
+		if _, err := Folder(l, backupsDir, folder, keep, now, Cause{Kind: KindScheduled, Save: folder}); err != nil {
 			run.Failed++
 			errs = append(errs, err)
 			continue

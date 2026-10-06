@@ -31,11 +31,12 @@ import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { causeLabel, useSaveBackups } from './backups.ts'
+import { saveName } from './saveName.ts'
 import { useSaves } from './store.ts'
 
 function overwriteMessage(snaps: Snap[], have: Set<string>): string {
-  const names = snaps.map((s) => s.farm || s.folder)
-  const hit = snaps.filter((s) => have.has(s.folder)).map((s) => s.farm || s.folder)
+  const names = snaps.map(saveName)
+  const hit = snaps.filter((s) => have.has(s.folder)).map(saveName)
   if (hit.length === 0) {
     return i18n._(
       msg`None of ${listNames(names)} are in Saves yet; they will be added. The current Saves folder is backed up first.`,
@@ -63,7 +64,7 @@ function BackupRow({
 }) {
   const { t } = useLingui()
   const when = backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name
-  const farms = (backup.saves ?? []).map((s) => s.farm || s.folder).join(', ')
+  const farms = (backup.saves ?? []).map(saveName).join(', ')
   const meta = farms
     ? t`${causeLabel(backup, profiles)} · ${formatBytes(backup.size)} · ${farms}`
     : t`${causeLabel(backup, profiles)} · ${formatBytes(backup.size)}`
@@ -217,7 +218,7 @@ export function BackupsDialog({
           <MenuAction
             key={snap.folder}
             icon={<RotateCcw size={16} />}
-            label={t`Restore ${{ label: snap.farm || snap.folder }}`}
+            label={t`Restore ${{ label: saveName(snap) }}`}
             onClick={() => {
               if (menu) {
                 setConfirm({ backup: menu.backup, snaps: [snap] })

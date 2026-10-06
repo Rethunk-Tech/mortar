@@ -61,6 +61,8 @@ type Fit struct {
 	LastProfileExists  bool        `json:"lastProfileExists"`
 	LastMods           []PlayedMod `json:"lastMods"`
 	LastMissing        []Lack      `json:"lastMissing"`
+	// Unrecorded means the save names no mods (a Lethal Company save), so an empty Missing is no promise it fits.
+	Unrecorded bool `json:"unrecorded"`
 }
 
 // Service exposes the save scan to the frontend.
@@ -106,7 +108,7 @@ func NewService(home string, profiles *profile.Store, store *settings.Store, cli
 			log.Printf("saves: %s: %v", id, err)
 			continue
 		}
-		scanners[id] = &saves.Scanner{Dir: savesDir, CacheDir: filepath.Join(base, "cache", id)}
+		scanners[id] = &saves.Scanner{Dir: savesDir, Files: game.SaveFiles(id), CacheDir: filepath.Join(base, "cache", id)}
 	}
 	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanners: scanners, last: NewStore(base)}, nil
 }
@@ -130,7 +132,7 @@ func (s *Service) scannerFor(gameID, profileID string) (*saves.Scanner, error) {
 	if s.pinned == nil {
 		s.pinned = map[string]*saves.Scanner{}
 	}
-	sc := &saves.Scanner{Dir: dir, CacheDir: filepath.Join(selected.CacheDir, "install-"+pin)}
+	sc := &saves.Scanner{Dir: dir, Files: selected.Files, CacheDir: filepath.Join(selected.CacheDir, "install-"+pin)}
 	s.pinned[dir] = sc
 	return sc, nil
 }
@@ -166,7 +168,7 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 		fits[i] = Fit{
 			Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
 			Played: in.Played, WhichFarm: in.WhichFarm, MillisecondsPlayed: in.MillisecondsPlayed, Money: in.Money,
-			Missing: make([]Lack, len(lacks)),
+			Missing: make([]Lack, len(lacks)), Unrecorded: in.Unrecorded,
 		}
 		for j, l := range lacks {
 			fits[i].Missing[j] = Lack{ID: l.ID, Name: l.ID.Local(), Disabled: l.Disabled}
@@ -198,7 +200,7 @@ func fitFor(in saves.Info, have map[string]bool, dismissed []mod.ID) (Fit, bool)
 	fit := Fit{
 		Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
 		Played: in.Played, WhichFarm: in.WhichFarm, MillisecondsPlayed: in.MillisecondsPlayed, Money: in.Money,
-		Missing: make([]Lack, len(lacks)),
+		Missing: make([]Lack, len(lacks)), Unrecorded: in.Unrecorded,
 	}
 	for i, l := range lacks {
 		fit.Missing[i] = Lack{ID: l.ID, Name: l.ID.Local(), Disabled: l.Disabled}

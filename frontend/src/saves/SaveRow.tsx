@@ -4,9 +4,11 @@ import { Box, Typography } from '@mui/material'
 import {
   Archive,
   CircleCheck,
+  CircleHelp,
   Flower2,
   FolderOpen,
   Leaf,
+  Save,
   Snowflake,
   Sun,
   TriangleAlert,
@@ -30,6 +32,7 @@ import { newProfileFromSave } from './recordedActions.ts'
 import { SaveBackupsSection } from './SaveBackupsSection.tsx'
 import { SaveDetails } from './SaveDetails.tsx'
 import { SaveGapLine } from './SaveGapLine.tsx'
+import { saveName } from './saveName.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
 
@@ -39,6 +42,9 @@ const SEASON_STYLE = [
   { color: 'error.main', Icon: Leaf },
   { color: 'info.main', Icon: Snowflake },
 ] as const
+
+// A save without Stardew's calendar (a Lethal Company slot) gets no season colour.
+const FILE_STYLE = { color: 'text.secondary', Icon: Save } as const
 
 function useFarmKind(which: number): string {
   const { t } = useLingui()
@@ -55,11 +61,23 @@ function useFarmKind(which: number): string {
   return kinds[which] ?? ''
 }
 
-function FitStatus({ missing }: { missing: number }) {
+function FitStatus({ missing, unrecorded }: { missing: number; unrecorded: boolean }) {
   const { t } = useLingui()
-  const ok = missing === 0
+  let color = 'warning.main'
+  let icon = <TriangleAlert size={13} />
+  let text = t`Has used ${plural(missing, { one: '# mod it lacks', other: '# mods it lacks' })}`
+  if (unrecorded) {
+    color = 'text.secondary'
+    icon = <CircleHelp size={13} />
+    text = t`Mods not recorded`
+  } else if (missing === 0) {
+    color = 'success.main'
+    icon = <CircleCheck size={13} />
+    text = t`All mods present`
+  }
   return (
     <Box
+      title={unrecorded ? t`This game's saves do not record which mods they used.` : undefined}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -69,15 +87,13 @@ function FitStatus({ missing }: { missing: number }) {
         borderRadius: '12px',
         fontSize: 12,
         fontWeight: 700,
-        color: ok ? 'success.main' : 'warning.main',
+        color,
         bgcolor: 'var(--mortar-overlay-30)',
         ...nowrap,
       }}
     >
-      {ok ? <CircleCheck size={13} /> : <TriangleAlert size={13} />}
-      {ok
-        ? t`All mods present`
-        : t`Has used ${plural(missing, { one: '# mod it lacks', other: '# mods it lacks' })}`}
+      {icon}
+      {text}
     </Box>
   )
 }
@@ -138,10 +154,10 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
 export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: string }) {
   const { t } = useLingui()
   const missing = fit.missing ?? []
-  const style = SEASON_STYLE[fit.season] ?? SEASON_STYLE[0]
+  const style = fit.unrecorded ? FILE_STYLE : (SEASON_STYLE[fit.season] ?? SEASON_STYLE[0])
   const kind = useFarmKind(fit.whichFarm)
   const subtitle = [fit.farmer, kind].filter(Boolean).join(' · ')
-  const label = fit.farm || fit.folder
+  const label = saveName(fit)
   const lastProfile = useProfiles.getState().profiles.find((p) => p.id === fit.lastProfileId)
   const lastGone = Boolean(fit.lastProfileId) && lastProfile === undefined
   const lastName = lastProfile?.name ?? (lastGone ? t`a deleted profile` : '')
@@ -191,7 +207,7 @@ export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; ga
         game={game}
         lastLine={lastLine}
         lastGone={lastGone}
-        status={<FitStatus missing={missing.length} />}
+        status={<FitStatus missing={missing.length} unrecorded={fit.unrecorded} />}
       />
       <SaveGapLine
         key={`${profile.updated}-${fit.lastProfileAt}`}

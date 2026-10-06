@@ -11,12 +11,13 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
 
-// Restore copies the named save folders from zipPath into savesDir. An empty folders list restores every save
-// in the zip. The current Saves folder is zipped first into backupsDir via Saves.
-func Restore(zipPath, savesDir, backupsDir string, folders []string, keep int, now time.Time) error {
-	parent := filepath.Dir(savesDir)
+// Restore copies the named saves from zipPath into l's folder. An empty folders list restores every save in the
+// zip. The current saves are zipped first into backupsDir via Saves.
+func Restore(zipPath string, l saves.Layout, backupsDir string, folders []string, keep int, now time.Time) error {
+	parent := filepath.Dir(l.Dir)
 	if err := os.MkdirAll(parent, 0o750); err != nil {
 		return err
 	}
@@ -25,19 +26,19 @@ func Restore(zipPath, savesDir, backupsDir string, folders []string, keep int, n
 		return err
 	}
 	defer func() { _ = fsx.RemoveAll(tmp) }()
-	want, err := extractSaves(zipPath, tmp, folders)
+	want, err := extractSaves(zipPath, saves.Layout{Dir: filepath.Join(tmp, "Saves"), Files: l.Files}, folders)
 	if err != nil {
 		return err
 	}
-	if _, err := Saves(savesDir, backupsDir, keep, now, Cause{Kind: KindRestore}); err != nil {
+	if _, err := Saves(l, backupsDir, keep, now, Cause{Kind: KindRestore}); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(savesDir, 0o750); err != nil {
+	if err := os.MkdirAll(l.Dir, 0o750); err != nil {
 		return err
 	}
 	for _, folder := range want {
 		src := filepath.Join(tmp, "Saves", folder)
-		dst := filepath.Join(savesDir, folder)
+		dst := filepath.Join(l.Dir, folder)
 		if _, err := os.Stat(dst); err == nil {
 			old := dst + ".mortar-restore"
 			if err := fsx.Rename(dst, old); err != nil {
@@ -61,50 +62,24 @@ func Restore(zipPath, savesDir, backupsDir string, folders []string, keep int, n
 	return nil
 }
 
-func extractSaves(zipPath, dest string, folders []string) ([]string, error) {
-	if err := archive.Extract(zipPath, dest); err != nil {
+// extractSaves unpacks zipPath beside got.Dir, its Saves folder, and lists the saves in it that folders names (all
+// of them when it names none).
+func extractSaves(zipPath string, got saves.Layout, folders []string) ([]string, error) {
+	folders = slices.DeleteFunc(slices.Clone(folders), func(f string) bool { return f == "" })
+	if err := archive.Extract(zipPath, filepath.Dir(got.Dir)); err != nil {
 		return nil, err
 	}
-	allow := map[string]bool{}
-	for _, f := range folders {
-		if f != "" {
-			allow[f] = true
-		}
-	}
-	entries, err := os.ReadDir(filepath.Join(dest, "Saves"))
+	names, err := got.Names()
 	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			if len(allow) > 0 {
-				for folder := range allow {
-					return nil, fmt.Errorf("backup has no save %q", folder)
-				}
-			}
-			return nil, nil
-		}
 		return nil, err
 	}
-	seen := map[string]bool{}
-	var order []string
-	for _, e := range entries {
-		if !e.IsDir() {
-			continue
-		}
-		folder := e.Name()
-		if len(allow) > 0 && !allow[folder] {
-			continue
-		}
-		if !seen[folder] {
-			seen[folder] = true
-			order = append(order, folder)
+	for _, f := range folders {
+		if f != "" && !slices.Contains(names, f) {
+			return nil, fmt.Errorf("backup has no save %q", f)
 		}
 	}
-	if len(allow) > 0 {
-		for folder := range allow {
-			if !seen[folder] {
-				return nil, fmt.Errorf("backup has no save %q", folder)
-			}
-		}
+	if len(folders) == 0 {
+		return names, nil
 	}
-	slices.Sort(order)
-	return order, nil
+	return slices.DeleteFunc(names, func(n string) bool { return !slices.Contains(folders, n) }), nil
 }

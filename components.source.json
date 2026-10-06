@@ -129,6 +129,7 @@
           "linux": "{xdgConfig}/unity3d/ZeekerssRBLX/Lethal Company/Player.log"
         }
       },
+      "saveFiles": ["LCSaveFile*", "LCChallengeFile"],
       "deploy": "profile",
       "targets": [{ "id": "profile", "root": "{profile}" }],
       "stores": {

@@ -1,5 +1,5 @@
-// Package saves reads Stardew Valley saves for the mods they have used. SMAPI writes no mod list into a save, but
-// mods leave keys prefixed with their mod id, which are matched against the mod dataset's index.
+// Package saves finds a game's saves and reads Stardew Valley's for the mods they have used. SMAPI writes no mod list
+// into a save, but mods leave keys prefixed with their mod id, which are matched against the mod dataset's index.
 package saves
 
 import (
@@ -43,6 +43,8 @@ type Info struct {
 	MillisecondsPlayed int64    `json:"millisecondsPlayed"`
 	Money              int      `json:"money"`
 	Used               []mod.ID `json:"used"`
+	// Unrecorded means the save's format names no mods, so an empty Used says nothing about what it needs.
+	Unrecorded bool `json:"unrecorded"`
 }
 
 const scanRev = 2
@@ -63,12 +65,16 @@ type cached struct {
 	Info  Info  `json:"info"`
 }
 
-// Scanner scans the saves in Dir and caches results in CacheDir.
+// Scanner scans the saves in Dir, laid out as Files says (see Layout), and caches results in CacheDir.
 type Scanner struct {
 	Dir      string
+	Files    []string
 	CacheDir string
 	mu       sync.Mutex
 }
+
+// Layout is the scanned folder and its save shape.
+func (s *Scanner) Layout() Layout { return Layout{Dir: s.Dir, Files: s.Files} }
 
 // Scan returns every save in Dir, newest first. A save that cannot be read is left out and reported in the
 // error, which accompanies the readable ones.
@@ -92,9 +98,6 @@ func (s *Scanner) Scan(index map[string][]meta.Ref) ([]Info, error) {
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, runtime.NumCPU())
 	for i, e := range entries {
-		if !e.IsDir() {
-			continue
-		}
 		wg.Go(func() {
 			sem <- struct{}{}
 			defer func() { <-sem }()
@@ -147,9 +150,6 @@ func (s *Scanner) Newest(index map[string][]meta.Ref) (Info, error) {
 	var newest string
 	var played int64
 	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
 		st, ok, err := s.stampOf(entry.Name(), len(index))
 		if err != nil {
 			return Info{}, err
@@ -171,18 +171,60 @@ func (s *Scanner) Newest(index map[string][]meta.Ref) (Info, error) {
 	return s.read(newest, index)
 }
 
-// IsSave reports whether folder, a child of dir, is a save: Stardew's main file is named like its folder.
-func IsSave(dir, folder string) bool {
-	fi, err := os.Stat(filepath.Join(dir, folder, folder))
+// Layout is a saves folder and how a save sits in it: a file matching one of Files, or, without Files, a folder
+// holding a file of its own name (Stardew Valley).
+type Layout struct {
+	Dir   string
+	Files []string
+}
+
+// IsSave reports whether name, a direct child of Dir, is a save.
+func (l Layout) IsSave(name string) bool {
+	if name == "" || name != filepath.Base(name) || name == "." || name == ".." {
+		return false
+	}
+	main := filepath.Join(l.Dir, name, name)
+	if len(l.Files) > 0 {
+		if !slices.ContainsFunc(l.Files, func(p string) bool { ok, _ := filepath.Match(p, name); return ok }) {
+			return false
+		}
+		main = filepath.Join(l.Dir, name)
+	}
+	fi, err := os.Stat(main)
 	return err == nil && fi.Mode().IsRegular()
 }
 
-// stampOf reports ok=false for a folder that is not a save (see IsSave).
-func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err error) {
-	main, err := os.Stat(filepath.Join(s.Dir, folder, folder))
+// Names lists the saves in Dir by name; a missing Dir holds none.
+func (l Layout) Names() ([]string, error) {
+	ents, err := os.ReadDir(l.Dir)
 	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, e := range ents {
+		if l.IsSave(e.Name()) {
+			out = append(out, e.Name())
+		}
+	}
+	return out, nil
+}
+
+// stampOf reports ok=false for an entry that is not a save (see Layout.IsSave).
+func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err error) {
+	if !s.Layout().IsSave(folder) {
 		return st, false, nil
 	}
+	if len(s.Files) > 0 {
+		fi, err := os.Stat(filepath.Join(s.Dir, folder))
+		if err != nil {
+			return st, false, err
+		}
+		return stamp{Main: fi.ModTime().UnixNano(), Size: fi.Size(), Rev: scanRev}, true, nil
+	}
+	main, err := os.Stat(filepath.Join(s.Dir, folder, folder))
 	if err != nil {
 		return st, false, err
 	}
@@ -195,6 +237,16 @@ func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err erro
 
 func (s *Scanner) read(folder string, index map[string][]meta.Ref) (Info, error) {
 	info := Info{Folder: folder, WhichFarm: -1, Used: []mod.ID{}}
+	if len(s.Files) > 0 {
+		// A save kept as one file (Lethal Company's encrypted ES3) names no mods, so its fit is unknown.
+		info.Unrecorded = true
+		fi, err := os.Stat(filepath.Join(s.Dir, folder))
+		if err != nil {
+			return info, err
+		}
+		info.Played = fi.ModTime().UnixMilli()
+		return info, nil
+	}
 	dir := filepath.Join(s.Dir, folder)
 	// A missing SaveGameInfo only costs the details it holds.
 	if b, err := fsx.ReadFile(filepath.Join(dir, infoFile)); err == nil {

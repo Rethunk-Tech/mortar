@@ -53,3 +53,9 @@ func SavesDir(home string, s settings.Settings, id, pin string) (string, error) 
 func StartupPreferencesPath(home string, s settings.Settings, id, pin string) (string, error) {
 	return PathFor(home, s, id, pin, PathStartupPreferences)
 }
+
+// SaveFiles are the patterns naming game id's save files in its saves folder; none means each save is a folder.
+func SaveFiles(id string) []string {
+	g, _ := catalogGame(id)
+	return g.SaveFiles
+}

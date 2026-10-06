@@ -16,6 +16,7 @@ import (
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -499,6 +500,6 @@ func (s *Store) saveBackup(game, profileID string) error {
 	if err != nil {
 		return err
 	}
-	_, err = backup.Saves(savesDir, target.Dir, target.Keep, time.Now(), backup.Cause{Profile: profileID, Kind: backup.KindUpdate})
+	_, err = backup.Saves(saves.Layout{Dir: savesDir, Files: gamepkg.SaveFiles(game)}, target.Dir, target.Keep, time.Now(), backup.Cause{Profile: profileID, Kind: backup.KindUpdate})
 	return err
 }

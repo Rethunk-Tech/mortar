@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"testing"
 	"time"
@@ -370,6 +371,27 @@ func TestValidateRejectsABadTemplatePackage(t *testing.T) {
 	}
 	g.Templates = []StarterTemplate{{ID: "t", Name: "T", Packages: []TemplatePackage{{Source: "nexus", Ref: "541", Name: "x"}}}}
 	if err := g.Validate(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestSaveFilePatternsStayInTheSavesFolder(t *testing.T) {
+	g := GameInfo{
+		ID: "g", Name: "G", Marker: "g.dll", Deploy: DeployRedirect,
+		Loaders: []GameLoader{{ID: "smapi"}},
+		Sources: []GameSource{{ID: "nexus"}},
+	}
+	for _, p := range []string{"", "../LCSaveFile*", "a/b", `a\b`, "["} {
+		g.SaveFiles = []string{p}
+		if g.Validate() == nil {
+			t.Errorf("pattern %q passed", p)
+		}
+	}
+	lc, ok := bundledGame("lethal-company")
+	if !ok || !slices.Equal(lc.SaveFiles, []string{"LCSaveFile*", "LCChallengeFile"}) {
+		t.Fatalf("bundled Lethal Company save files = %v", lc.SaveFiles)
+	}
+	if err := lc.Validate(); err != nil {
 		t.Fatal(err)
 	}
 }

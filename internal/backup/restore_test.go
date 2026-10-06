@@ -32,7 +32,7 @@ func TestSavesRecordsCauseBesideTheZip(t *testing.T) {
 	writeFarm(t, saves, "Farm_1", "Sunny", "a")
 	out := t.TempDir()
 	start := time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)
-	got, err := Saves(saves, out, DefaultKeep, start, Cause{Profile: "cookie", Kind: KindUpdate})
+	got, err := Saves(layout(saves), out, DefaultKeep, start, Cause{Profile: "cookie", Kind: KindUpdate})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,13 +57,13 @@ func TestListIsNewestFirst(t *testing.T) {
 	writeFarm(t, saves, "Farm_1", "Sunny", "a")
 	out := t.TempDir()
 	start := time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)
-	if _, err := Saves(saves, out, DefaultKeep, start, Cause{}); err != nil {
+	if _, err := Saves(layout(saves), out, DefaultKeep, start, Cause{}); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Chtimes(filepath.Join(saves, "Farm_1", "Farm_1"), start.Add(MinGap), start.Add(MinGap)); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Saves(saves, out, DefaultKeep, start.Add(MinGap), Cause{Kind: KindUpdate}); err != nil {
+	if _, err := Saves(layout(saves), out, DefaultKeep, start.Add(MinGap), Cause{Kind: KindUpdate}); err != nil {
 		t.Fatal(err)
 	}
 	listed, err := List(out)
@@ -85,7 +85,7 @@ func TestRestoreOneLeavesTheOtherSave(t *testing.T) {
 	writeFarm(t, saves, "Alpha_1", "Alpha", "old-a")
 	writeFarm(t, saves, "Beta_1", "Beta", "old-b")
 	start := time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)
-	zipPath, err := Saves(saves, backups, DefaultKeep, start, Cause{})
+	zipPath, err := Saves(layout(saves), backups, DefaultKeep, start, Cause{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +99,7 @@ func TestRestoreOneLeavesTheOtherSave(t *testing.T) {
 	if err := os.Chtimes(filepath.Join(saves, "Alpha_1", "Alpha_1"), later, later); err != nil {
 		t.Fatal(err)
 	}
-	if err := Restore(zipPath, saves, filepath.Dir(zipPath), []string{"Alpha_1"}, DefaultKeep, later); err != nil {
+	if err := Restore(zipPath, layout(saves), filepath.Dir(zipPath), []string{"Alpha_1"}, DefaultKeep, later); err != nil {
 		t.Fatal(err)
 	}
 	a, err := fsx.ReadFile(filepath.Join(saves, "Alpha_1", "Alpha_1"))
@@ -119,7 +119,7 @@ func TestRestoreAllAndPreRestoreBackup(t *testing.T) {
 	writeFarm(t, saves, "Alpha_1", "Alpha", "old-a")
 	writeFarm(t, saves, "Beta_1", "Beta", "old-b")
 	start := time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
-	zipPath, err := Saves(saves, backups, DefaultKeep, start, Cause{})
+	zipPath, err := Saves(layout(saves), backups, DefaultKeep, start, Cause{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ func TestRestoreAllAndPreRestoreBackup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := Restore(zipPath, saves, filepath.Dir(zipPath), nil, DefaultKeep, later); err != nil {
+	if err := Restore(zipPath, layout(saves), filepath.Dir(zipPath), nil, DefaultKeep, later); err != nil {
 		t.Fatal(err)
 	}
 	after, err := List(backups)
@@ -165,7 +165,7 @@ func TestRestoreRejectsZipSlip(t *testing.T) {
 	if err := writeSlipZip(zipPath); err != nil {
 		t.Fatal(err)
 	}
-	err := Restore(zipPath, saves, filepath.Dir(zipPath), nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
+	err := Restore(zipPath, layout(saves), filepath.Dir(zipPath), nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
 	if !errors.Is(err, archive.ErrTraversal) {
 		t.Fatalf("err = %v", err)
 	}
@@ -196,7 +196,7 @@ func TestRestoreRejectsReservedName(t *testing.T) {
 	if err := fsx.WriteFile(zipPath, buf.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	err = Restore(zipPath, saves, filepath.Dir(zipPath), nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
+	err = Restore(zipPath, layout(saves), filepath.Dir(zipPath), nil, DefaultKeep, time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
 	if !errors.Is(err, archive.ErrUnsafeName) {
 		t.Fatalf("err = %v", err)
 	}

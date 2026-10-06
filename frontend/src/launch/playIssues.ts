@@ -19,6 +19,7 @@ import { localId } from '../mods/dependents.ts'
 import { visibleUpdates } from '../mods/lookup.ts'
 import { diffLines } from '../profiles/historyDiff.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { saveName } from '../saves/saveName.ts'
 
 const PLAY_ISSUE_NAME_CAP = 5
 
@@ -114,7 +115,7 @@ function playIssueSummary(input: {
       kind: 'lastProfile',
       count: 1,
       names: [],
-      save: last.farm || last.folder,
+      save: saveName(last),
       profileName: last.profileName,
       switchProfileId: last.profileId,
     })

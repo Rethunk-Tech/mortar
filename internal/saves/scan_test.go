@@ -189,3 +189,51 @@ func TestLacking(t *testing.T) {
 		t.Fatalf("Lacking = %+v", got)
 	}
 }
+
+// lethalCompany lays out a Lethal Company save folder the way the game leaves it: three slots and the challenge file
+// beside its settings, its log and a mod's config folder, which are not saves.
+func lethalCompany(t *testing.T) Layout {
+	t.Helper()
+	dir := filepath.Join(t.TempDir(), "Lethal Company")
+	for _, name := range []string{"LCSaveFile1", "LCSaveFile3", "LCChallengeFile", "LCGeneralSaveData", "Player.log", "InputUtils/binds.json"} {
+		write(t, filepath.Join(dir, name), "ES3 "+name)
+	}
+	return Layout{Dir: dir, Files: []string{"LCSaveFile*", "LCChallengeFile"}}
+}
+
+func TestFileSavesAreFoundWithAnUnknownFit(t *testing.T) {
+	l := lethalCompany(t)
+	names, err := l.Names()
+	if want := []string{"LCChallengeFile", "LCSaveFile1", "LCSaveFile3"}; err != nil || !reflect.DeepEqual(names, want) {
+		t.Fatalf("Names = %v, %v; want %v", names, err, want)
+	}
+	s := &Scanner{Dir: l.Dir, Files: l.Files, CacheDir: t.TempDir()}
+	infos, err := s.Scan(index)
+	if err != nil || len(infos) != 3 {
+		t.Fatalf("Scan = %+v, %v", infos, err)
+	}
+	for _, in := range infos {
+		if !in.Unrecorded || in.Played == 0 || len(in.Used) != 0 {
+			t.Errorf("%s = %+v, want an unrecorded save with a played time", in.Folder, in)
+		}
+	}
+	newest, err := s.Newest(index)
+	if err != nil || !l.IsSave(newest.Folder) {
+		t.Fatalf("Newest = %+v, %v", newest, err)
+	}
+	for _, name := range []string{"LCGeneralSaveData", "Player.log", "InputUtils", "../LCSaveFile1", "LCSaveFile9"} {
+		if l.IsSave(name) {
+			t.Errorf("IsSave(%q) = true", name)
+		}
+	}
+}
+
+func TestFolderSavesStayStardewShaped(t *testing.T) {
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "Farm_1", "Farm_1"), "<SaveGame/>")
+	write(t, filepath.Join(dir, "Notes", "readme.txt"), "x")
+	write(t, filepath.Join(dir, "LCSaveFile1"), "x")
+	if names, err := (Layout{Dir: dir}).Names(); err != nil || !reflect.DeepEqual(names, []string{"Farm_1"}) {
+		t.Fatalf("Names = %v, %v", names, err)
+	}
+}

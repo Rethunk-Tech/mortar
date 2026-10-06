@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -116,7 +117,7 @@ func (s *Service) RestoreBackup(game, profile, name string, folders []string) er
 		return err
 	}
 	src := findBackup(target.Reads, name)
-	return backup.Restore(src, s.scanners[id].Dir, target.Dir, folders, target.Keep, time.Now())
+	return backup.Restore(src, s.scanners[id].Layout(), target.Dir, folders, target.Keep, time.Now())
 }
 
 // OpenBackupsFolder shows the backups folder in the system file manager.
@@ -147,7 +148,7 @@ func (s *Service) CreateBackup(game, folder string) (bool, error) {
 		return false, err
 	}
 	now := uniqueBackupTime(target.Reads, time.Now())
-	_, err = backup.Folder(s.scanners[id].Dir, target.Dir, folder, target.Keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
+	_, err = backup.Folder(s.scanners[id].Layout(), target.Dir, folder, target.Keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
 	if errors.Is(err, backup.ErrNoSaves) {
 		return false, nil
 	}
@@ -169,17 +170,24 @@ func uniqueBackupTime(dirs []string, now time.Time) time.Time {
 	}
 }
 
-// OpenSaveFolder shows one save's folder (a direct child of the Saves folder) in the system file manager.
+// OpenSaveFolder shows one save's folder (a direct child of the Saves folder) in the system file manager; a save kept
+// as one file shows the folder holding it.
 func (s *Service) OpenSaveFolder(game, folder string) error {
 	id, err := s.saveGame(game)
 	if err != nil {
 		return err
 	}
-	savesDir, _, err := s.backupDirs(id)
+	l, _, err := s.backupDirs(id)
 	if err != nil {
 		return err
 	}
-	dir, err := backup.SaveDir(savesDir, folder)
+	if len(l.Files) > 0 {
+		if !l.IsSave(folder) {
+			return fmt.Errorf("save %q not found", folder)
+		}
+		return datadir.Open(l.Dir)
+	}
+	dir, err := backup.SaveDir(l.Dir, folder)
 	if err != nil {
 		return err
 	}
@@ -220,9 +228,9 @@ func (s *Service) target(gameID, profileID string) (backup.Target, error) {
 	return backup.TargetFor(dir, set, gameID, overrides)
 }
 
-func (s *Service) backupDirs(gameID string) (savesDir, backupsDir string, err error) {
+func (s *Service) backupDirs(gameID string) (l saves.Layout, backupsDir string, err error) {
 	target, err := s.target(gameID, "")
-	return s.scanners[gameID].Dir, target.Dir, err
+	return s.scanners[gameID].Layout(), target.Dir, err
 }
 
 func (s *Service) backupReads(gameID string) ([]string, error) {

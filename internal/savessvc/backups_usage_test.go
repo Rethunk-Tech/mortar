@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
 
 func TestBackupsUsageAndTrimKeepNewestPerSaveAndPinned(t *testing.T) {
@@ -15,11 +16,11 @@ func TestBackupsUsageAndTrimKeepNewestPerSaveAndPinned(t *testing.T) {
 	dir := filepath.Join(mustData(t), "mortar", "backups", "stardew")
 	day := func(d int) time.Time { return time.Date(2026, 7, d, 0, 0, 0, 0, time.UTC) }
 	for _, d := range []int{1, 2} {
-		if _, err := backup.Saves(savesDir, dir, 50, day(d), backup.Cause{Kind: backup.KindUpdate}); err != nil {
+		if _, err := backup.Saves(saves.Layout{Dir: savesDir}, dir, 50, day(d), backup.Cause{Kind: backup.KindUpdate}); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if _, err := backup.Folder(savesDir, dir, "Farm_1", 50, day(3), backup.Cause{Kind: backup.KindManual, Pinned: true}); err != nil {
+	if _, err := backup.Folder(saves.Layout{Dir: savesDir}, dir, "Farm_1", 50, day(3), backup.Cause{Kind: backup.KindManual, Pinned: true}); err != nil {
 		t.Fatal(err)
 	}
 

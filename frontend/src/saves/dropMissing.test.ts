@@ -20,6 +20,7 @@ function saveFit(folder: string, id: string): Fit {
     lastProfileExists: false,
     lastMods: null,
     lastMissing: null,
+    unrecorded: false,
   }
 }
 

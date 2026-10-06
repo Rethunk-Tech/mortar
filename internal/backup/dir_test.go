@@ -3,6 +3,8 @@ package backup
 import (
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
 
 func TestLocationsReadsDefaultAfterCustomWriteDir(t *testing.T) {
@@ -41,3 +43,6 @@ func TestLocationsKeepEachGameApart(t *testing.T) {
 		}
 	}
 }
+
+// layout is a Stardew-shaped saves folder.
+func layout(dir string) saves.Layout { return saves.Layout{Dir: dir} }

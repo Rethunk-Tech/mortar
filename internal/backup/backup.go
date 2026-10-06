@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -64,18 +65,13 @@ const stamp = "2006-01-02T15-04-05.000"
 // FileName is the backup file name for a backup taken at t.
 func FileName(t time.Time) string { return t.UTC().Format(stamp) + ".zip" }
 
-// Saves zips savesDir into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but the
-// newest keep backups and temp files a crash left. It returns the zip's path (the newest existing one when that is
-// under MinGap old and nothing in savesDir changed since), or "" when savesDir holds no save.
-func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (string, error) {
-	ents, err := os.ReadDir(savesDir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return "", nil
-	} else if err != nil {
+// Saves zips every save in l into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but
+// the newest keep backups and temp files a crash left. It returns the zip's path (the newest existing one when that
+// is under MinGap old and no save changed since), or "" when l holds no save.
+func Saves(l saves.Layout, backupsDir string, keep int, now time.Time, cause Cause) (string, error) {
+	names, err := l.Names()
+	if err != nil || len(names) == 0 {
 		return "", err
-	}
-	if !slices.ContainsFunc(ents, func(e fs.DirEntry) bool { return e.IsDir() && saves.IsSave(savesDir, e.Name()) }) {
-		return "", nil
 	}
 	zips, err := list(backupsDir)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -94,7 +90,7 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (s
 		}
 		if t, err := time.Parse(stamp, strings.TrimSuffix(n, ".zip")); err == nil {
 			if age := now.Sub(t); age >= 0 && age < MinGap {
-				changed, err := lastChange(savesDir)
+				changed, err := lastChangeOf(l, names)
 				if err != nil {
 					return "", err
 				}
@@ -108,7 +104,7 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (s
 	if err := os.MkdirAll(backupsDir, 0o700); err != nil {
 		return "", err
 	}
-	return finishZip(backupsDir, savesDir, "", keep, now, name, cause)
+	return finishZip(backupsDir, l, names, keep, now, name, cause)
 }
 
 // ErrNoSaves is returned when a requested backup finds nothing to back up.
@@ -126,13 +122,10 @@ func SaveDir(savesDir, folder string) (string, error) {
 	return dir, nil
 }
 
-// Folder zips one save folder into backupsDir the same way Saves does, without the recent-backup stand-in so a
-// requested backup is always a new zip. A folder that is not a save is ErrNoSaves.
-func Folder(savesDir, backupsDir, folder string, keep int, now time.Time, cause Cause) (string, error) {
-	if _, err := SaveDir(savesDir, folder); err != nil {
-		return "", err
-	}
-	if !saves.IsSave(savesDir, folder) {
+// Folder zips one save of l into backupsDir the same way Saves does, without the recent-backup stand-in so a
+// requested backup is always a new zip. A name that is not a save is ErrNoSaves.
+func Folder(l saves.Layout, backupsDir, folder string, keep int, now time.Time, cause Cause) (string, error) {
+	if !l.IsSave(folder) {
 		return "", ErrNoSaves
 	}
 	zips, err := list(backupsDir)
@@ -149,13 +142,13 @@ func Folder(savesDir, backupsDir, folder string, keep int, now time.Time, cause 
 	if err := os.MkdirAll(backupsDir, 0o700); err != nil {
 		return "", err
 	}
-	return finishZip(backupsDir, savesDir, folder, keep, now, name, cause)
+	return finishZip(backupsDir, l, []string{folder}, keep, now, name, cause)
 }
 
-func finishZip(backupsDir, savesDir, only string, keep int, now, name time.Time, cause Cause) (string, error) {
+func finishZip(backupsDir string, l saves.Layout, names []string, keep int, now, name time.Time, cause Cause) (string, error) {
 	dst := filepath.Join(backupsDir, FileName(name))
 	if err := datadir.WriteStream(dst, 0o600, func(w io.Writer) error {
-		return writeZip(w, savesDir, only)
+		return writeZip(w, l.Dir, names)
 	}); err != nil {
 		return "", err
 	}
@@ -188,6 +181,26 @@ func readCause(zipPath string) Cause {
 	return c
 }
 
+// lastChangeOf is the newest modification time among the named saves of l and the folder itself, whose time covers
+// a save removed from it.
+func lastChangeOf(l saves.Layout, names []string) (time.Time, error) {
+	fi, err := os.Stat(l.Dir)
+	if err != nil {
+		return time.Time{}, err
+	}
+	last := fi.ModTime()
+	for _, n := range names {
+		t, err := lastChange(filepath.Join(l.Dir, n))
+		if err != nil {
+			return time.Time{}, err
+		}
+		if t.After(last) {
+			last = t
+		}
+	}
+	return last, nil
+}
+
 // lastChange is the newest modification time in the tree; a folder's covers the files removed from it.
 func lastChange(root string) (time.Time, error) {
 	var last time.Time
@@ -207,43 +220,42 @@ func lastChange(root string) (time.Time, error) {
 	return last, err
 }
 
-func writeZip(w io.Writer, root, only string) error {
+// writeZip stores each named save of root under Saves/, the folder a restore reads, whatever root is called.
+func writeZip(w io.Writer, root string, names []string) error {
 	zw := zip.NewWriter(w)
-	base := filepath.Base(root)
-	walk := root
-	if only != "" {
-		walk = filepath.Join(root, only)
+	var errs []error
+	for _, n := range names {
+		errs = append(errs, filepath.WalkDir(filepath.Join(root, n), func(p string, d fs.DirEntry, err error) error {
+			if err != nil || !d.Type().IsRegular() {
+				return err
+			}
+			rel, err := filepath.Rel(root, p)
+			if err != nil {
+				return err
+			}
+			info, err := d.Info()
+			if err != nil {
+				return err
+			}
+			h, err := zip.FileInfoHeader(info)
+			if err != nil {
+				return err
+			}
+			h.Name = path.Join("Saves", filepath.ToSlash(rel))
+			h.Method = zip.Deflate
+			zf, err := zw.CreateHeader(h)
+			if err != nil {
+				return err
+			}
+			in, err := fsx.Open(p)
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(zf, in)
+			return errors.Join(err, in.Close())
+		}))
 	}
-	err := filepath.WalkDir(walk, func(p string, d fs.DirEntry, err error) error {
-		if err != nil || !d.Type().IsRegular() {
-			return err
-		}
-		rel, err := filepath.Rel(root, p)
-		if err != nil {
-			return err
-		}
-		info, err := d.Info()
-		if err != nil {
-			return err
-		}
-		h, err := zip.FileInfoHeader(info)
-		if err != nil {
-			return err
-		}
-		h.Name = filepath.ToSlash(filepath.Join(base, rel))
-		h.Method = zip.Deflate
-		zf, err := zw.CreateHeader(h)
-		if err != nil {
-			return err
-		}
-		in, err := fsx.Open(p)
-		if err != nil {
-			return err
-		}
-		_, err = io.Copy(zf, in)
-		return errors.Join(err, in.Close())
-	})
-	return errors.Join(err, zw.Close())
+	return errors.Join(append(errs, zw.Close())...)
 }
 
 // list returns the backups' names, oldest first: the timestamp names sort that way.

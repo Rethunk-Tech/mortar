@@ -150,7 +150,7 @@ msgstr "Show failed"
 msgid "Streaming"
 msgstr "Streaming"
 
-#: src/saves/SaveRow.tsx:120
+#: src/saves/SaveRow.tsx:136
 msgid "Could not back up {label}"
 msgstr "Could not back up {label}"
 
@@ -182,7 +182,7 @@ msgstr "Where it came in one download with other mods, it is disabled instead."
 msgid "Click the game's name in the title bar to open the game drawer and jump to another game."
 msgstr "Click the game's name in the title bar to open the game drawer and jump to another game."
 
-#: src/saves/BackupsDialog.tsx:197
+#: src/saves/BackupsDialog.tsx:198
 #: src/saves/SaveBackupsSection.tsx:57
 msgid "Allow cleanup"
 msgstr "Allow cleanup"
@@ -241,7 +241,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/Toolbar.tsx:278
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChips.tsx:59
-#: src/saves/SaveRow.tsx:95
+#: src/saves/SaveRow.tsx:111
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
 #: src/toasts/HistoryButton.tsx:30
@@ -268,7 +268,7 @@ msgstr "Could not queue the downloads"
 #. placeholder {0}: ids.length
 #. placeholder {1}: to.name
 #. placeholder {2}: to.name
-#: src/profiles/CompareDialog.tsx:115
+#: src/profiles/CompareDialog.tsx:119
 msgid "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
 msgstr "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
 
@@ -446,7 +446,7 @@ msgstr "Run checks…"
 msgid "{0} has damaged files."
 msgstr "{0} has damaged files."
 
-#: src/profiles/store.ts:188
+#: src/profiles/store.ts:192
 msgid "Deleted a profile"
 msgstr "Deleted a profile"
 
@@ -498,7 +498,7 @@ msgstr "Compare with a profile…"
 msgid "How many times to retry a failed download"
 msgstr "How many times to retry a failed download"
 
-#: src/profiles/store.ts:419
+#: src/profiles/store.ts:423
 msgid "Could not change the profile's visibility"
 msgstr "Could not change the profile's visibility"
 
@@ -777,7 +777,7 @@ msgid "Reorder {0}"
 msgstr "Reorder {0}"
 
 #. placeholder {0}: chosen.length
-#: src/mods/MoveFoldersDialog.tsx:93
+#: src/mods/MoveFoldersDialog.tsx:94
 msgid "{0, plural, one {Move # mod} other {Move # mods}}"
 msgstr "{0, plural, one {Move # mod} other {Move # mods}}"
 
@@ -865,6 +865,10 @@ msgstr "{n, plural, one {Also update # optional file} other {Also update # optio
 msgid "Start the game without a backup."
 msgstr "Start the game without a backup."
 
+#: src/saves/SaveRow.tsx:72
+msgid "Mods not recorded"
+msgstr "Mods not recorded"
+
 #: src/mods/NexusDetails.tsx:99
 msgid "Uploaded by"
 msgstr "Uploaded by"
@@ -932,7 +936,7 @@ msgstr "gone"
 #: src/mods/ConflictWhy.tsx:104
 #: src/nxm/ArrivalDialog.tsx:111
 #: src/profiles/CompareBulkBody.tsx:50
-#: src/saves/BackupsDialog.tsx:69
+#: src/saves/BackupsDialog.tsx:70
 msgid "{0} · {1}"
 msgstr "{0} · {1}"
 
@@ -969,7 +973,7 @@ msgstr "Add to {targetName}"
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
 
-#: src/mods/MoveFoldersDialog.tsx:116
+#: src/mods/MoveFoldersDialog.tsx:117
 msgid "Don't ask again"
 msgstr "Don't ask again"
 
@@ -1135,7 +1139,7 @@ msgstr "Replaces some files of the mod above"
 msgid "{0} done"
 msgstr "{0} done"
 
-#: src/mods/MoveFoldersDialog.tsx:113
+#: src/mods/MoveFoldersDialog.tsx:114
 msgid "Could not dismiss that folder"
 msgstr "Could not dismiss that folder"
 
@@ -1401,7 +1405,7 @@ msgid "Skip this version"
 msgstr "Skip this version"
 
 #. placeholder {0}: listNames(names)
-#: src/saves/BackupsDialog.tsx:41
+#: src/saves/BackupsDialog.tsx:42
 msgid "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 msgstr "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 
@@ -1580,7 +1584,7 @@ msgstr "{count, plural, one {# stored mod is not used by any profile} other {# s
 
 #. placeholder {0}: mod.name
 #. placeholder {1}: profiles.length
-#: src/mods/ModMenu.tsx:298
+#: src/mods/ModMenu.tsx:299
 msgid "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 msgstr "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 
@@ -1630,7 +1634,7 @@ msgid "Mortar has not asked {0} this session."
 msgstr "Mortar has not asked {0} this session."
 
 #. placeholder {0}: row.folder ?? ''
-#: src/mods/MoveFoldersDialog.tsx:110
+#: src/mods/MoveFoldersDialog.tsx:111
 msgid "Don't ask again about {0}"
 msgstr "Don't ask again about {0}"
 
@@ -1665,7 +1669,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/profiles/LaunchPreview.tsx:85
 #: src/queue/QueueBody.tsx:255
 #: src/queue/store.ts:163
-#: src/saves/BackupsDialog.tsx:146
+#: src/saves/BackupsDialog.tsx:147
 #: src/saves/SavesTab.tsx:37
 #: src/settings/sections/DataStoreReport.tsx:390
 #: src/settings/sections/Storage.tsx:79
@@ -1759,6 +1763,10 @@ msgstr "Could not add the download"
 #: src/mods/ModDetail.tsx:265
 msgid "Needed by"
 msgstr "Needed by"
+
+#: src/saves/saveName.ts:13
+msgid "Save file {slot}"
+msgstr "Save file {slot}"
 
 #: src/install/MergeCallout.tsx:51
 #: src/install/NeedsRootCallout.tsx:44
@@ -1984,7 +1992,7 @@ msgstr "Nexus account"
 
 #. placeholder {0}: mod.name
 #. placeholder {0}: update.name
-#: src/mods/ModMenu.tsx:417
+#: src/mods/ModMenu.tsx:419
 #: src/mods/updateReview/UpdateActions.tsx:95
 msgid "More actions for {0}"
 msgstr "More actions for {0}"
@@ -2244,7 +2252,7 @@ msgstr "Dependency cycle"
 
 #: src/commandPalette/paletteLabels.ts:17
 #: src/firstrun/ProfileStep.tsx:136
-#: src/game/NewProfileDialog.tsx:207
+#: src/game/NewProfileDialog.tsx:208
 #: src/game/Sidebar.tsx:377
 #: src/game/Sidebar.tsx:395
 #: src/nxm/ArrivalDialog.tsx:164
@@ -2253,7 +2261,7 @@ msgid "New profile"
 msgstr "New profile"
 
 #: src/mods/problemFix/DamagedFix.tsx:34
-#: src/profiles/store.ts:231
+#: src/profiles/store.ts:235
 msgid "Repaired {name}"
 msgstr "Repaired {name}"
 
@@ -2283,7 +2291,7 @@ msgstr "Game folder"
 msgid "Remove from other profiles…"
 msgstr "Remove from other profiles…"
 
-#: src/saves/SaveRow.tsx:49
+#: src/saves/SaveRow.tsx:55
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
@@ -2332,6 +2340,10 @@ msgstr "Downloading"
 #: src/profiles/OverrideRows.tsx:88
 msgid "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 msgstr "Free Nexus accounts click each download on Nexus; those updates do not block Play."
+
+#: src/saves/SaveRow.tsx:80
+msgid "This game's saves do not record which mods they used."
+msgstr "This game's saves do not record which mods they used."
 
 #: src/mods/AddToGroupDialog.tsx:67
 msgid "No groups yet"
@@ -2414,12 +2426,12 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/SplitCombineItems.tsx:41
 #: src/mods/storeEntries.ts:60
 #: src/mods/storeEntries.ts:99
-#: src/profiles/collectionUnlink.ts:35
-#: src/profiles/CompareDialog.tsx:104
+#: src/profiles/collectionUnlink.ts:36
+#: src/profiles/CompareDialog.tsx:105
 #: src/profiles/HistoryEventRow.tsx:44
 #: src/profiles/historyRevert.ts:110
-#: src/profiles/store.ts:190
-#: src/profiles/store.ts:233
+#: src/profiles/store.ts:194
+#: src/profiles/store.ts:237
 #: src/queue/store.ts:296
 #: src/saves/store.ts:66
 #: src/templates/ApplyTemplateDialog.tsx:95
@@ -2622,7 +2634,7 @@ msgstr "Dismissed folders"
 msgid "Ignore updates from {0}"
 msgstr "Ignore updates from {0}"
 
-#: src/saves/SaveBackupsSection.tsx:146
+#: src/saves/SaveBackupsSection.tsx:154
 msgid "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 msgstr "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 
@@ -2712,7 +2724,7 @@ msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
 #: src/games/GameSelect.tsx:139
-#: src/saves/SaveRow.tsx:148
+#: src/saves/SaveRow.tsx:164
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
 
@@ -2730,7 +2742,7 @@ msgstr "Waiting for {0}'s profile file to finish syncing. Changes made here are 
 msgid "Reading the Nexus page…"
 msgstr "Reading the Nexus page…"
 
-#: src/saves/SaveRow.tsx:79
+#: src/saves/SaveRow.tsx:76
 msgid "All mods present"
 msgstr "All mods present"
 
@@ -3068,7 +3080,7 @@ msgstr "Accounts"
 msgid "Priority {0}"
 msgstr "Priority {0}"
 
-#: src/profiles/store.ts:391
+#: src/profiles/store.ts:395
 msgid "Could not open the profile folder"
 msgstr "Could not open the profile folder"
 
@@ -3271,7 +3283,7 @@ msgstr "Enable and disable mods, and update them for the open profile."
 
 #: src/game/detailStates.tsx:18
 #: src/games/ProfileCards.tsx:59
-#: src/profiles/store.ts:328
+#: src/profiles/store.ts:332
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
@@ -3366,7 +3378,7 @@ msgstr "Device name"
 
 #. placeholder {0}: causeLabel(backup, profiles)
 #. placeholder {1}: formatBytes(backup.size)
-#: src/saves/BackupsDialog.tsx:68
+#: src/saves/BackupsDialog.tsx:69
 msgid "{0} · {1} · {farms}"
 msgstr "{0} · {1} · {farms}"
 
@@ -3465,7 +3477,7 @@ msgstr "Custom categories"
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:63
 #: src/profiles/ProfilesPage.tsx:177
 #: src/saves/SaveBackupsSection.tsx:70
-#: src/saves/SaveBackupsSection.tsx:140
+#: src/saves/SaveBackupsSection.tsx:148
 #: src/settings/prefCopy.ts:252
 #: src/settings/sections/DataStoreReport.tsx:414
 #: src/settings/sections/DataStoreReport.tsx:421
@@ -3598,7 +3610,7 @@ msgstr "Reading {0}"
 msgid "Grid"
 msgstr "Grid"
 
-#: src/profiles/store.ts:101
+#: src/profiles/store.ts:105
 msgid "Could not duplicate the profile"
 msgstr "Could not duplicate the profile"
 
@@ -3630,7 +3642,7 @@ msgstr "Search archives"
 msgid "Created"
 msgstr "Created"
 
-#: src/launch/KnownGoodOffer.tsx:51
+#: src/launch/KnownGoodOffer.tsx:55
 msgid "The game started without errors"
 msgstr "The game started without errors"
 
@@ -3769,7 +3781,7 @@ msgstr "Share as r2modman code?"
 #: src/console/HelpDialog.tsx:236
 #: src/console/StartupPanel.tsx:56
 #: src/fomod/Dialog.tsx:254
-#: src/game/NewProfileDialog.tsx:232
+#: src/game/NewProfileDialog.tsx:233
 #: src/install/DownloadsDialog.tsx:252
 #: src/install/OverlayPlaceDialog.tsx:118
 #: src/install/RemapDialog.tsx:209
@@ -3813,7 +3825,7 @@ msgstr "A profile with only {loader}. Add mods from {site} or from archives."
 msgid "The saved change {change} from {when} is missing its config files"
 msgstr "The saved change {change} from {when} is missing its config files"
 
-#: src/mods/MoveFoldersDialog.tsx:92
+#: src/mods/MoveFoldersDialog.tsx:93
 msgid "The folders are moved out of the game's Mods folder and into this profile."
 msgstr "The folders are moved out of the game's Mods folder and into this profile."
 
@@ -3837,7 +3849,7 @@ msgstr "Could not unpin the selected mods"
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
-#: src/saves/SaveRow.tsx:46
+#: src/saves/SaveRow.tsx:52
 msgid "Standard farm"
 msgstr "Standard farm"
 
@@ -4173,7 +4185,7 @@ msgstr "{name} was changed outside Mortar."
 msgid "Needs your click"
 msgstr "Needs your click"
 
-#: src/saves/SaveRow.tsx:95
+#: src/saves/SaveRow.tsx:111
 msgid "This save has no recorded mod list yet."
 msgstr "This save has no recorded mod list yet."
 
@@ -4263,7 +4275,7 @@ msgstr "Nothing will be removed."
 msgid "Missing required dependencies ({0})"
 msgstr "Missing required dependencies ({0})"
 
-#: src/profiles/store.ts:372
+#: src/profiles/store.ts:376
 msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
@@ -4277,7 +4289,7 @@ msgstr "Delete group {name}?"
 #: src/mods/problemFix/LoadFailureFix.tsx:37
 #: src/mods/runErrorFixButtons.tsx:51
 #: src/mods/Sidebar.tsx:230
-#: src/mods/updateReview/EverywhereDialog.tsx:141
+#: src/mods/updateReview/EverywhereDialog.tsx:142
 #: src/mods/updateReview/UpdateActions.tsx:90
 #: src/mods/updateReview/UpdateActions.tsx:90
 #: src/settings/sections/LoaderRow.tsx:94
@@ -4375,7 +4387,7 @@ msgid "Installed"
 msgstr "Installed"
 
 #. placeholder {0}: profile.name
-#: src/mods/MoveFoldersDialog.tsx:91
+#: src/mods/MoveFoldersDialog.tsx:92
 msgid "Move mods into {0}"
 msgstr "Move mods into {0}"
 
@@ -4506,7 +4518,7 @@ msgstr "Ungrouped"
 msgid "Include beta releases"
 msgstr "Include beta releases"
 
-#: src/saves/SaveRow.tsx:53
+#: src/saves/SaveRow.tsx:59
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
@@ -4672,7 +4684,7 @@ msgstr "Needs your choice ({0})"
 msgid "Unlinked the collection {name}"
 msgstr "Unlinked the collection {name}"
 
-#: src/profiles/store.ts:441
+#: src/profiles/store.ts:445
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
 
@@ -5170,7 +5182,7 @@ msgstr "The files will download from each mod's source."
 msgid "Mortar found nothing to repair in this profile."
 msgstr "Mortar found nothing to repair in this profile."
 
-#: src/saves/SaveRow.tsx:80
+#: src/saves/SaveRow.tsx:68
 msgid "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgstr "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
 
@@ -5211,7 +5223,7 @@ msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
 #: src/game/Hero.tsx:177
-#: src/game/NewProfileDialog.tsx:212
+#: src/game/NewProfileDialog.tsx:213
 #: src/profiles/ProfileRow.tsx:219
 msgid "Profile name"
 msgstr "Profile name"
@@ -5479,7 +5491,7 @@ msgstr "Day"
 msgid "Allow"
 msgstr "Allow"
 
-#: src/profiles/collectionUnlink.ts:40
+#: src/profiles/collectionUnlink.ts:41
 msgid "Could not unlink the collection"
 msgstr "Could not unlink the collection"
 
@@ -5491,7 +5503,7 @@ msgstr "Scheduled save backups"
 msgid "Show again"
 msgstr "Show again"
 
-#: src/profiles/store.ts:188
+#: src/profiles/store.ts:192
 msgid "Deleted {name}"
 msgstr "Deleted {name}"
 
@@ -5625,7 +5637,7 @@ msgstr "Remove {name}"
 msgid "Hidden inside this mod"
 msgstr "Hidden inside this mod"
 
-#: src/saves/BackupsDialog.tsx:197
+#: src/saves/BackupsDialog.tsx:198
 #: src/saves/SaveBackupsSection.tsx:57
 msgid "Keep forever"
 msgstr "Keep forever"
@@ -5634,7 +5646,7 @@ msgstr "Keep forever"
 msgid "Delete the unreadable changes from history?"
 msgstr "Delete the unreadable changes from history?"
 
-#: src/mods/updateReview/undoAll.ts:41
+#: src/mods/updateReview/undoAll.ts:42
 msgid "Downloaded versions stay in the store for re-use."
 msgstr "Downloaded versions stay in the store for re-use."
 
@@ -5694,11 +5706,11 @@ msgstr "This profile has no mods to download"
 msgid "Relative"
 msgstr "Relative"
 
-#: src/saves/SaveRow.tsx:147
+#: src/saves/SaveRow.tsx:163
 msgid "a deleted profile"
 msgstr "a deleted profile"
 
-#: src/profiles/store.ts:211
+#: src/profiles/store.ts:215
 msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
@@ -5772,7 +5784,7 @@ msgstr "No profiles yet"
 
 #: src/games/GameSelect.tsx:183
 #: src/games/ProfileCards.tsx:52
-#: src/profiles/store.ts:335
+#: src/profiles/store.ts:339
 msgid "Could not save the open profile"
 msgstr "Could not save the open profile"
 
@@ -5790,7 +5802,7 @@ msgstr "Next"
 msgid "Add archive…"
 msgstr "Add archive…"
 
-#: src/game/NewProfileDialog.tsx:235
+#: src/game/NewProfileDialog.tsx:236
 msgid "Create"
 msgstr "Create"
 
@@ -5943,7 +5955,7 @@ msgstr "{optional, plural, one {# optional file will be re-applied; check it sti
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
-#: src/saves/SaveBackupsSection.tsx:120
+#: src/saves/SaveBackupsSection.tsx:128
 msgid "No backup contains this save yet."
 msgstr "No backup contains this save yet."
 
@@ -6038,7 +6050,7 @@ msgid "That download is no longer waiting to retry."
 msgstr "That download is no longer waiting to retry."
 
 #. placeholder {0}: ids.length
-#: src/launch/SweepDialog.tsx:135
+#: src/launch/SweepDialog.tsx:139
 msgid "{0, plural, one {Update # mod} other {Update # mods}}"
 msgstr "{0, plural, one {Update # mod} other {Update # mods}}"
 
@@ -6706,7 +6718,7 @@ msgstr "Only settings and options differ."
 msgid "Skip all"
 msgstr "Skip all"
 
-#: src/saves/BackupsDialog.tsx:143
+#: src/saves/BackupsDialog.tsx:144
 msgid "Could not list backups: {error}"
 msgstr "Could not list backups: {error}"
 
@@ -6911,7 +6923,7 @@ msgstr "Check for mod updates when Mortar starts"
 msgid "{queued, plural, one {# download queued} other {# downloads queued}}"
 msgstr "{queued, plural, one {# download queued} other {# downloads queued}}"
 
-#: src/mods/updateReview/undoAll.ts:40
+#: src/mods/updateReview/undoAll.ts:41
 msgid "Restored the profile from before Update all"
 msgstr "Restored the profile from before Update all"
 
@@ -6937,7 +6949,7 @@ msgstr "Show skipped update"
 msgid "Press {paletteKeys} to jump anywhere: profiles, settings, downloads and more."
 msgstr "Press {paletteKeys} to jump anywhere: profiles, settings, downloads and more."
 
-#: src/saves/BackupsDialog.tsx:184
+#: src/saves/BackupsDialog.tsx:185
 #: src/saves/scheduledBackups.ts:30
 msgid "Open backups folder"
 msgstr "Open backups folder"
@@ -6984,7 +6996,7 @@ msgstr "Unofficial"
 msgid "Hide archive contents"
 msgstr "Hide archive contents"
 
-#: src/saves/SaveRow.tsx:51
+#: src/saves/SaveRow.tsx:57
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
 
@@ -7145,7 +7157,7 @@ msgstr "Free space at destination: {0}"
 msgid "The link has expired. Click Mod Manager Download on Nexus again."
 msgstr "The link has expired. Click Mod Manager Download on Nexus again."
 
-#: src/launch/KnownGoodOffer.tsx:19
+#: src/launch/KnownGoodOffer.tsx:21
 msgid "Marked known good"
 msgstr "Marked known good"
 
@@ -7153,7 +7165,7 @@ msgstr "Marked known good"
 msgid "Summer"
 msgstr "Summer"
 
-#: src/saves/BackupsDialog.tsx:232
+#: src/saves/BackupsDialog.tsx:233
 msgid "Restore this backup?"
 msgstr "Restore this backup?"
 
@@ -7205,7 +7217,7 @@ msgstr "Added {name}"
 msgid "Optional"
 msgstr "Optional"
 
-#: src/saves/SaveBackupsSection.tsx:115
+#: src/saves/SaveBackupsSection.tsx:123
 msgid "Backups"
 msgstr "Backups"
 
@@ -7300,7 +7312,7 @@ msgstr "Could not upload the log"
 #: src/game/NewProfileDialog.tsx:154
 #: src/mods/SelectionBar.tsx:46
 #: src/profiles/GameModsDialog.tsx:100
-#: src/profiles/store.ts:58
+#: src/profiles/store.ts:60
 msgid "Created {name}"
 msgstr "Created {name}"
 
@@ -7344,7 +7356,7 @@ msgstr "{count, plural, one {# mod} other {# mods}}"
 msgid "{cause}. Retry or skip it from the queue."
 msgstr "{cause}. Retry or skip it from the queue."
 
-#: src/saves/SaveRow.tsx:50
+#: src/saves/SaveRow.tsx:56
 msgid "Wilderness farm"
 msgstr "Wilderness farm"
 
@@ -7374,7 +7386,7 @@ msgstr "·"
 #: src/mods/AddToGroupDialog.tsx:105
 #: src/mods/ModDependencyTree.tsx:75
 #: src/mods/ModDependencyTree.tsx:75
-#: src/mods/ModMenu.tsx:379
+#: src/mods/ModMenu.tsx:381
 #: src/mods/problemFix/ListedFix.tsx:18
 #: src/mods/problemFix/MissingFix.tsx:27
 #: src/mods/problemFix/MissingFix.tsx:43
@@ -7500,7 +7512,7 @@ msgstr "Add {0} to a profile"
 #. placeholder {0}: rows.length
 #. placeholder {1}: to.name
 #. placeholder {2}: to.name
-#: src/profiles/CompareDialog.tsx:130
+#: src/profiles/CompareDialog.tsx:134
 msgid "{0, plural, one {Matched # version in {1}} other {Matched # versions in {2}}}"
 msgstr "{0, plural, one {Matched # version in {1}} other {Matched # versions in {2}}}"
 
@@ -7567,7 +7579,7 @@ msgstr "Copy log"
 msgid "See startup"
 msgstr "See startup"
 
-#: src/saves/SaveRow.tsx:114
+#: src/saves/SaveRow.tsx:130
 msgid "No saves to back up"
 msgstr "No saves to back up"
 
@@ -7644,7 +7656,7 @@ msgid "Signed out of Nexus"
 msgstr "Signed out of Nexus"
 
 #. placeholder {0}: mod.name
-#: src/mods/ModMenu.tsx:378
+#: src/mods/ModMenu.tsx:380
 #: src/mods/Sidebar.tsx:501
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
@@ -7663,7 +7675,7 @@ msgstr "Restart now"
 msgid "Content pack for {0}"
 msgstr "Content pack for {0}"
 
-#: src/saves/SaveRow.tsx:118
+#: src/saves/SaveRow.tsx:134
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
@@ -8225,7 +8237,7 @@ msgstr "Browse"
 msgid "Message copied"
 msgstr "Message copied"
 
-#: src/mods/MoveFoldersDialog.tsx:86
+#: src/mods/MoveFoldersDialog.tsx:87
 msgid "Could not move the mods"
 msgstr "Could not move the mods"
 
@@ -8502,7 +8514,7 @@ msgid "Group actions"
 msgstr "Group actions"
 
 #. placeholder {0}: report?.gameName ?? ''
-#: src/launch/SweepDialog.tsx:126
+#: src/launch/SweepDialog.tsx:130
 msgid "{0} was updated: mods to check"
 msgstr "{0} was updated: mods to check"
 
@@ -8518,7 +8530,7 @@ msgstr "Code published"
 msgid "Combat skill"
 msgstr "Combat skill"
 
-#: src/install/overlayPlace.ts:38
+#: src/install/overlayPlace.ts:39
 msgid "Could not add the optional file"
 msgstr "Could not add the optional file"
 
@@ -8533,7 +8545,7 @@ msgstr "{count, plural, one {Imported # mod} other {Imported # mods}}"
 #. placeholder {0}: other.name
 #. placeholder {0}: profile.name
 #: src/mods/OtherProfilesDialog.tsx:66
-#: src/mods/updateReview/PropagateUpdate.tsx:62
+#: src/mods/updateReview/PropagateUpdate.tsx:64
 msgid "pinned in {0}"
 msgstr "pinned in {0}"
 
@@ -8565,6 +8577,10 @@ msgstr "Press Play when the downloads finish."
 #: src/settings/prefCopy.ts:324
 msgid "Install Mortar updates automatically"
 msgstr "Install Mortar updates automatically"
+
+#: src/saves/saveName.ts:16
+msgid "Challenge moon"
+msgstr "Challenge moon"
 
 #: src/settings/prefCopy.ts:438
 msgid "Share notes"
@@ -8894,7 +8910,7 @@ msgid "Play now"
 msgstr "Play now"
 
 #. placeholder {0}: listNames(hit)
-#: src/saves/BackupsDialog.tsx:45
+#: src/saves/BackupsDialog.tsx:46
 msgid "{0} will be overwritten. A backup of the current Saves folder is made first."
 msgstr "{0} will be overwritten. A backup of the current Saves folder is made first."
 
@@ -9557,7 +9573,7 @@ msgstr "Checked with SMAPI's update service · {when}"
 msgid "Add an item"
 msgstr "Add an item"
 
-#: src/saves/BackupsDialog.tsx:157
+#: src/saves/BackupsDialog.tsx:158
 msgid "No save backups yet."
 msgstr "No save backups yet."
 
@@ -9588,7 +9604,7 @@ msgstr "{count, plural, one {{name} was updated since this run and logged # erro
 msgid "Open focused mod details"
 msgstr "Open focused mod details"
 
-#: src/saves/SaveRow.tsx:127
+#: src/saves/SaveRow.tsx:143
 msgid "Open the folder of {label}"
 msgstr "Open the folder of {label}"
 
@@ -9670,7 +9686,7 @@ msgstr "Mortar could not load the profiles for this game."
 msgid "Install options"
 msgstr "Install options"
 
-#: src/profiles/store.ts:448
+#: src/profiles/store.ts:452
 msgid "Could not empty the trash"
 msgstr "Could not empty the trash"
 
@@ -9803,8 +9819,8 @@ msgstr "Check now"
 #: src/profiles/HistoryDiffView.tsx:42
 #: src/profiles/HistoryEventRow.tsx:69
 #: src/profiles/ProfilesPage.tsx:90
-#: src/saves/BackupsDialog.tsx:95
-#: src/saves/BackupsDialog.tsx:220
+#: src/saves/BackupsDialog.tsx:96
+#: src/saves/BackupsDialog.tsx:221
 msgid "Restore {label}"
 msgstr "Restore {label}"
 
@@ -9879,8 +9895,8 @@ msgstr "Empty trash"
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
-#: src/profiles/store.ts:60
-#: src/profiles/store.ts:434
+#: src/profiles/store.ts:64
+#: src/profiles/store.ts:438
 msgid "Could not restore the profile"
 msgstr "Could not restore the profile"
 
@@ -9957,7 +9973,7 @@ msgstr "Details of {0}"
 msgid "Carry them into the new version's folder."
 msgstr "Carry them into the new version's folder."
 
-#: src/saves/SaveBackupsSection.tsx:139
+#: src/saves/SaveBackupsSection.tsx:147
 msgid "Delete this backup?"
 msgstr "Delete this backup?"
 
@@ -9993,7 +10009,7 @@ msgstr "Hourly count resets {0} · daily count resets {1}"
 msgid "Show file"
 msgstr "Show file"
 
-#: src/saves/BackupsDialog.tsx:138
+#: src/saves/BackupsDialog.tsx:139
 #: src/settings/GameSettingsPage.tsx:64
 #: src/settings/sections/DataUsage.tsx:207
 #: src/settings/sections/GameSettings.tsx:404
@@ -10068,7 +10084,7 @@ msgstr "It encountered an error."
 msgid "Add one to group your mods your own way."
 msgstr "Add one to group your mods your own way."
 
-#: src/profiles/CompareDialog.tsx:142
+#: src/profiles/CompareDialog.tsx:146
 msgid "Compare {aName} and {bName}"
 msgstr "Compare {aName} and {bName}"
 
@@ -10148,7 +10164,7 @@ msgstr "Done ({0}): {1}"
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
-#: src/saves/SaveRow.tsx:52
+#: src/saves/SaveRow.tsx:58
 msgid "Beach farm"
 msgstr "Beach farm"
 
@@ -10227,7 +10243,7 @@ msgstr "Standard"
 msgid "Could not disable the other copy of {0}"
 msgstr "Could not disable the other copy of {0}"
 
-#: src/saves/SaveBackupsSection.tsx:145
+#: src/saves/SaveBackupsSection.tsx:153
 msgid "The backup from {when} is deleted for good, with every save in it."
 msgstr "The backup from {when} is deleted for good, with every save in it."
 
@@ -10302,7 +10318,7 @@ msgstr "Keep mine"
 msgid "{0, plural, one {# result} other {# results}}"
 msgstr "{0, plural, one {# result} other {# results}}"
 
-#: src/saves/SaveRow.tsx:47
+#: src/saves/SaveRow.tsx:53
 msgid "Riverland farm"
 msgstr "Riverland farm"
 
@@ -10486,7 +10502,7 @@ msgstr "Could not minimise the window"
 msgid "Dismissed for this save"
 msgstr "Dismissed for this save"
 
-#: src/profiles/store.ts:426
+#: src/profiles/store.ts:430
 msgid "Could not delete the profile"
 msgstr "Could not delete the profile"
 
@@ -10568,11 +10584,11 @@ msgstr "{0, plural, one {Installed · # profile} other {Installed · # profiles}
 msgid "Share link"
 msgstr "Share link"
 
-#: src/saves/BackupsDialog.tsx:158
+#: src/saves/BackupsDialog.tsx:159
 msgid "Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself."
 msgstr "Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself."
 
-#: src/saves/BackupsDialog.tsx:95
+#: src/saves/BackupsDialog.tsx:96
 #: src/saves/SaveBackupsSection.tsx:63
 msgid "Stop the game to restore saves."
 msgstr "Stop the game to restore saves."
@@ -10592,7 +10608,7 @@ msgstr "The game loads its own content"
 #. placeholder {0}: merged.updated?.length ?? 0
 #. placeholder {0}: profiles.length
 #: src/mods/updateReview/EverywhereDialog.tsx:132
-#: src/mods/updateReview/PropagateUpdate.tsx:60
+#: src/mods/updateReview/PropagateUpdate.tsx:62
 msgid "{0, plural, one {Updated in # profile} other {Updated in # profiles}}"
 msgstr "{0, plural, one {Updated in # profile} other {Updated in # profiles}}"
 
@@ -10662,7 +10678,7 @@ msgstr "{0, plural, one {Keep {1} and remove {2}.} other {Keep {3} and remove # 
 msgid "{count, plural, one {# update is available} other {# updates are available}}"
 msgstr "{count, plural, one {# update is available} other {# updates are available}}"
 
-#: src/saves/SaveBackupsSection.tsx:139
+#: src/saves/SaveBackupsSection.tsx:147
 msgid "Restore {label} to {when}?"
 msgstr "Restore {label} to {when}?"
 
@@ -10708,7 +10724,7 @@ msgstr "Drop to install into {0}"
 msgid "Newer."
 msgstr "Newer."
 
-#: src/launch/KnownGoodOffer.tsx:56
+#: src/launch/KnownGoodOffer.tsx:60
 #: src/profiles/HistoryToolbar.tsx:17
 msgid "Mark known good"
 msgstr "Mark known good"
@@ -10770,7 +10786,7 @@ msgstr "Play the open profile without SMAPI"
 msgid "About"
 msgstr "About"
 
-#: src/launch/SweepDialog.tsx:114
+#: src/launch/SweepDialog.tsx:116
 msgid "Updated fixable mods"
 msgstr "Updated fixable mods"
 
@@ -11096,7 +11112,7 @@ msgid "Switch to Notes"
 msgstr "Switch to Notes"
 
 #: src/mods/EverywhereMenuItem.tsx:35
-#: src/mods/updateReview/EverywhereDialog.tsx:140
+#: src/mods/updateReview/EverywhereDialog.tsx:141
 #: src/mods/updateReview/UpdateActions.tsx:113
 msgid "Update in all profiles ({n})"
 msgstr "Update in all profiles ({n})"
@@ -11175,7 +11191,7 @@ msgstr "No game output yet"
 msgid "{0} left out"
 msgstr "{0} left out"
 
-#: src/game/NewProfileDialog.tsx:171
+#: src/game/NewProfileDialog.tsx:172
 msgid "Could not create the profile"
 msgstr "Could not create the profile"
 
@@ -11206,7 +11222,7 @@ msgstr "Jump to first error"
 msgid "Now needs {0}"
 msgstr "Now needs {0}"
 
-#: src/saves/SaveRow.tsx:100
+#: src/saves/SaveRow.tsx:116
 msgid "New profile from this save"
 msgstr "New profile from this save"
 
@@ -11218,7 +11234,7 @@ msgstr "How profiles are ordered in the sidebar"
 msgid "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 msgstr "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 
-#: src/profiles/store.ts:398
+#: src/profiles/store.ts:402
 msgid "Could not repair the profile"
 msgstr "Could not repair the profile"
 
@@ -11913,7 +11929,7 @@ msgstr "Plugin reported an error"
 msgid "This template will be deleted. Presets already copied into profiles stay."
 msgstr "This template will be deleted. Presets already copied into profiles stay."
 
-#: src/launch/KnownGoodOffer.tsx:53
+#: src/launch/KnownGoodOffer.tsx:57
 msgid "Mark these mods known good so History can restore them if a later change breaks the game."
 msgstr "Mark these mods known good so History can restore them if a later change breaks the game."
 
@@ -12156,9 +12172,9 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 #: src/mods/problemFix/RestoreButton.tsx:17
 #: src/mods/problemFixButtons.tsx:216
 #: src/profiles/HistoryEventRow.tsx:71
-#: src/saves/BackupsDialog.tsx:233
+#: src/saves/BackupsDialog.tsx:234
 #: src/saves/SaveBackupsSection.tsx:63
-#: src/saves/SaveBackupsSection.tsx:140
+#: src/saves/SaveBackupsSection.tsx:148
 #: src/shell/TitleBar.tsx:128
 msgid "Restore"
 msgstr "Restore"
@@ -12171,7 +12187,7 @@ msgstr "Changes since last run"
 msgid "You have not endorsed this mod. Nexus asks that you download and play it first."
 msgstr "You have not endorsed this mod. Nexus asks that you download and play it first."
 
-#: src/saves/BackupsDialog.tsx:208
+#: src/saves/BackupsDialog.tsx:209
 msgid "Restore all"
 msgstr "Restore all"
 
@@ -12265,7 +12281,7 @@ msgstr "Untrack unused…"
 msgid "{gameName} was not found. Browse to its folder."
 msgstr "{gameName} was not found. Browse to its folder."
 
-#: src/saves/SaveRow.tsx:108
+#: src/saves/SaveRow.tsx:124
 msgid "Back up {label} now"
 msgstr "Back up {label} now"
 
@@ -12351,18 +12367,18 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/SearchRunsDialog.tsx:171
 #: src/game/FarmMenuItem.tsx:131
 #: src/launch/LaunchLayer.tsx:286
-#: src/launch/SweepDialog.tsx:132
+#: src/launch/SweepDialog.tsx:136
 #: src/mods/AssetMapDialog.tsx:279
 #: src/mods/AuthorDialog.tsx:165
 #: src/mods/ChangelogDialog.tsx:103
 #: src/mods/ModDetail.tsx:343
 #: src/mods/updateReview/ReviewFooter.tsx:61
 #: src/mods/updateReview/ReviewTitle.tsx:43
-#: src/profiles/CompareDialog.tsx:159
+#: src/profiles/CompareDialog.tsx:163
 #: src/profiles/HealthDialog.tsx:255
 #: src/profiles/HistoryPanel.tsx:125
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:69
-#: src/saves/BackupsDialog.tsx:177
+#: src/saves/BackupsDialog.tsx:178
 #: src/settings/sections/About.tsx:99
 #: src/settings/sections/AboutDiagnostics.tsx:219
 #: src/settings/sections/DataStoreReport.tsx:407
@@ -12464,7 +12480,7 @@ msgid "Start measuring first."
 msgstr "Start measuring first."
 
 #. placeholder {0}: to.name
-#: src/profiles/CompareDialog.tsx:108
+#: src/profiles/CompareDialog.tsx:112
 msgid "Could not change {0}"
 msgstr "Could not change {0}"
 
@@ -12525,8 +12541,8 @@ msgstr "Every mod has what it needs and nothing clashes."
 msgid "Launch"
 msgstr "Launch"
 
-#: src/saves/BackupsDialog.tsx:151
-#: src/saves/SaveBackupsSection.tsx:117
+#: src/saves/BackupsDialog.tsx:152
+#: src/saves/SaveBackupsSection.tsx:125
 msgid "Reading backups…"
 msgstr "Reading backups…"
 
@@ -12611,7 +12627,7 @@ msgstr "Confirm removals"
 msgid "Recently deleted retention"
 msgstr "Recently deleted retention"
 
-#: src/saves/SaveRow.tsx:48
+#: src/saves/SaveRow.tsx:54
 msgid "Forest farm"
 msgstr "Forest farm"
 

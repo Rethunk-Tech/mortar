@@ -92,6 +92,9 @@ type GameInfo struct {
 	Metadata []string `json:"metadata"`
 	// Paths names folders and files outside the install by role (saves, startupPreferences).
 	Paths map[string]PathTemplate `json:"paths,omitempty"`
+	// SaveFiles are patterns naming each save file directly in the saves folder, for a game that keeps a save as one
+	// file. Without them a save is a folder holding a file of its own name, as Stardew Valley's are.
+	SaveFiles []string `json:"saveFiles,omitempty"`
 	// Deploy is how the profile reaches the game: redirect (the loader points the game at the profile's mods folder,
 	// nothing is placed) or profile (the profile holds the loader and its mods, and the loader's install-side files are
 	// placed into the install for the launch and taken back after).
@@ -275,6 +278,11 @@ func (g GameInfo) Validate() error {
 	for _, name := range names {
 		if strings.ContainsAny(name, "/\\") || name == "." || name == ".." {
 			return fmt.Errorf("game %q has an unsafe file or folder name %q", g.ID, name)
+		}
+	}
+	for _, p := range g.SaveFiles {
+		if _, err := filepath.Match(p, ""); err != nil || p == "" || strings.ContainsAny(p, "/\\") {
+			return fmt.Errorf("game %q has an unusable save file pattern %q", g.ID, p)
 		}
 	}
 	for role, t := range g.Paths {

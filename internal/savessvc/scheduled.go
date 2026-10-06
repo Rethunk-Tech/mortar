@@ -51,7 +51,7 @@ func (s *Service) scheduledTickFor(gameID string, now time.Time) {
 	if err != nil || hours <= 0 {
 		return
 	}
-	savesDir, backupsDir, err := s.backupDirs(gameID)
+	l, backupsDir, err := s.backupDirs(gameID)
 	if err != nil {
 		log.Printf("scheduled save backup: %v", err)
 		return
@@ -71,7 +71,7 @@ func (s *Service) scheduledTickFor(gameID string, now time.Time) {
 	if err != nil || keep < 1 {
 		keep = backup.DefaultKeep
 	}
-	run, err := backup.Scheduled(savesDir, backupsDir, keep, now)
+	run, err := backup.Scheduled(l, backupsDir, keep, now)
 	interval := time.Duration(hours) * time.Hour
 	s.schedMu.Lock()
 	s.lastScheduled[gameID] = now
