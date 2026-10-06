@@ -150,7 +150,7 @@ msgstr "Show failed"
 msgid "Streaming"
 msgstr "Streaming"
 
-#: src/saves/SaveRow.tsx:142
+#: src/saves/SaveRow.tsx:144
 msgid "Could not back up {label}"
 msgstr "Could not back up {label}"
 
@@ -2725,7 +2725,7 @@ msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
 #: src/games/GameSelect.tsx:140
-#: src/saves/SaveRow.tsx:170
+#: src/saves/SaveRow.tsx:172
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
 
@@ -2807,7 +2807,7 @@ msgstr "This frees {0}. Deleted mods download again if a profile needs them late
 msgid "Queue"
 msgstr "Queue"
 
-#: src/share/ImportDialog.tsx:52
+#: src/share/ImportDialog.tsx:51
 msgid "Not found in the Mods folder"
 msgstr "Not found in the Mods folder"
 
@@ -2824,7 +2824,7 @@ msgid "Before this change"
 msgstr "Before this change"
 
 #: src/profiles/PackImportDialog.tsx:102
-#: src/share/ImportDialog.tsx:196
+#: src/share/ImportDialog.tsx:192
 msgid "Import from {manager}"
 msgstr "Import from {manager}"
 
@@ -3017,6 +3017,10 @@ msgstr "Measuring… {0}"
 #: src/firstrun/LoaderStep.tsx:183
 msgid "Check again"
 msgstr "Check again"
+
+#: src/saves/SaveRow.tsx:136
+msgid "{label} is no longer in the saves folder"
+msgstr "{label} is no longer in the saves folder"
 
 #: src/share/ImportPreview.tsx:70
 msgid "different file"
@@ -4356,7 +4360,7 @@ msgstr "Before"
 msgid "No download source is known for {0}."
 msgstr "No download source is known for {0}."
 
-#: src/share/ImportDialog.tsx:204
+#: src/share/ImportDialog.tsx:200
 msgid "Where the profile comes from"
 msgstr "Where the profile comes from"
 
@@ -5728,7 +5732,7 @@ msgstr "Could not close the window"
 msgid "Profile backed up"
 msgstr "Profile backed up"
 
-#: src/share/ImportDialog.tsx:259
+#: src/share/ImportDialog.tsx:255
 msgid "This profile has no mods to download"
 msgstr "This profile has no mods to download"
 
@@ -5736,7 +5740,7 @@ msgstr "This profile has no mods to download"
 msgid "Relative"
 msgstr "Relative"
 
-#: src/saves/SaveRow.tsx:169
+#: src/saves/SaveRow.tsx:171
 msgid "a deleted profile"
 msgstr "a deleted profile"
 
@@ -7620,10 +7624,6 @@ msgstr "Copy log"
 msgid "See startup"
 msgstr "See startup"
 
-#: src/saves/SaveRow.tsx:134
-msgid "No saves to back up"
-msgstr "No saves to back up"
-
 #. placeholder {0}: formatWhen(state.lastFail)
 #: src/settings/sections/Sources.tsx:45
 msgid "No answer {0}: {reason}"
@@ -7712,7 +7712,7 @@ msgstr "The page reads the profile from the link itself. Nothing is uploaded or 
 msgid "Restart now"
 msgstr "Restart now"
 
-#: src/saves/SaveRow.tsx:140
+#: src/saves/SaveRow.tsx:142
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
@@ -9141,7 +9141,7 @@ msgstr "Reset game install"
 msgid "Save backup folder"
 msgstr "Save backup folder"
 
-#: src/share/ImportDialog.tsx:222
+#: src/share/ImportDialog.tsx:218
 msgid ".mortar file"
 msgstr ".mortar file"
 
@@ -9656,7 +9656,7 @@ msgstr "{count, plural, one {{name} was updated since this run and logged # erro
 msgid "Open focused mod details"
 msgstr "Open focused mod details"
 
-#: src/saves/SaveRow.tsx:149
+#: src/saves/SaveRow.tsx:151
 msgid "Open the folder of {label}"
 msgstr "Open the folder of {label}"
 
@@ -10982,7 +10982,7 @@ msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
 #: src/profiles/ImportWizard.tsx:99
-#: src/share/ImportDialog.tsx:297
+#: src/share/ImportDialog.tsx:293
 msgid "Import a profile"
 msgstr "Import a profile"
 
@@ -11895,7 +11895,7 @@ msgstr "Display number"
 msgid "Windowed resolution height"
 msgstr "Windowed resolution height"
 
-#: src/share/ImportDialog.tsx:196
+#: src/share/ImportDialog.tsx:192
 msgid "Import profile from…"
 msgstr "Import profile from…"
 
@@ -12430,8 +12430,8 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/settings/sections/About.tsx:99
 #: src/settings/sections/AboutDiagnostics.tsx:219
 #: src/settings/sections/DataStoreReport.tsx:407
-#: src/share/ImportDialog.tsx:224
-#: src/share/ImportDialog.tsx:227
+#: src/share/ImportDialog.tsx:220
+#: src/share/ImportDialog.tsx:223
 #: src/share/ImportFooter.tsx:86
 #: src/share/ShareShell.tsx:65
 #: src/shell/TitleBar.tsx:131
@@ -12440,7 +12440,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 msgid "Close"
 msgstr "Close"
 
-#: src/share/ImportDialog.tsx:221
+#: src/share/ImportDialog.tsx:217
 #: src/share/ShareShell.tsx:118
 msgid "Link"
 msgstr "Link"

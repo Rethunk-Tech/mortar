@@ -131,7 +131,9 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
           runBackup(
             async () => {
               if (!(await CreateBackup(game, fit.folder))) {
-                useToasts.getState().push({ kind: 'info', title: t`No saves to back up` })
+                useToasts
+                  .getState()
+                  .push({ kind: 'info', title: t`${label} is no longer in the saves folder` })
                 // The save left the folder since the list was read, so the list drops its row.
                 await useSaves.getState().reload()
                 return
