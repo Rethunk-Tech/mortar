@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -94,9 +95,12 @@ export function PackImportDialog({
       .finally(() => setBusy(false))
   }
   const packages = preview?.packages ?? []
+  const manager = local.find((p) => p.path === path)?.source
   return (
     <Dialog open={open} onClose={close} fullWidth={true} maxWidth="xs">
-      <DialogTitle>{t`Import from r2modman / Thunderstore`}</DialogTitle>
+      <DialogTitle>
+        {manager ? t`Import from ${manager}` : t`Import a profile code or file`}
+      </DialogTitle>
       <DialogContent dividers={true}>
         {preview ? (
           <Box>
@@ -108,7 +112,10 @@ export function PackImportDialog({
             ))}
             {preview.configs > 0 ? (
               <Typography color="text.secondary" sx={{ fontSize: 14, mt: 1 }}>
-                {t`${preview.configs} config files come with it.`}
+                {plural(preview.configs, {
+                  one: '# config file comes with it.',
+                  other: '# config files come with it.',
+                })}
               </Typography>
             ) : null}
           </Box>
@@ -117,7 +124,7 @@ export function PackImportDialog({
             {local.length > 0 ? (
               <>
                 <Typography color="text.secondary" sx={{ fontSize: 14 }}>
-                  {t`From r2modman on this computer`}
+                  {t`From r2modman or Gale on this computer`}
                 </Typography>
                 {local.map((profile) => (
                   <Button
