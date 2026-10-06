@@ -28,6 +28,10 @@ msgstr "Performance"
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
+#: src/profiles/historyLabel.ts:74
+msgid "Switched {name} to the {detail} update channel"
+msgstr "Switched {name} to the {detail} update channel"
+
 #: src/profiles/PackImportDialog.tsx:120
 msgid "From r2modman on this computer"
 msgstr "From r2modman on this computer"
@@ -96,7 +100,7 @@ msgstr "Could not open the folder"
 msgid "Author · {author}"
 msgstr "Author · {author}"
 
-#: src/toasts/EarlierChanges.tsx:106
+#: src/toasts/EarlierChanges.tsx:117
 msgid "These changes will be reverted too:"
 msgstr "These changes will be reverted too:"
 
@@ -142,7 +146,7 @@ msgstr "Presets"
 msgid "Priority Default"
 msgstr "Priority Default"
 
-#: src/share/importCompletion.ts:123
+#: src/share/importCompletion.ts:132
 msgid "Show failed"
 msgstr "Show failed"
 
@@ -150,7 +154,7 @@ msgstr "Show failed"
 msgid "Streaming"
 msgstr "Streaming"
 
-#: src/saves/SaveRow.tsx:136
+#: src/saves/SaveRow.tsx:139
 msgid "Could not back up {label}"
 msgstr "Could not back up {label}"
 
@@ -241,7 +245,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/Toolbar.tsx:268
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChips.tsx:59
-#: src/saves/SaveRow.tsx:111
+#: src/saves/SaveRow.tsx:113
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
 #: src/toasts/HistoryButton.tsx:30
@@ -327,7 +331,7 @@ msgstr "How Play starts the game. Direct skips Steam's overlay and playtime."
 msgid "Copying mod files"
 msgstr "Copying mod files"
 
-#: src/profiles/historyLabel.ts:61
+#: src/profiles/historyLabel.ts:62
 msgid "Restored {detail} of {name}"
 msgstr "Restored {detail} of {name}"
 
@@ -387,7 +391,7 @@ msgid "Kept at this version ({0})"
 msgstr "Kept at this version ({0})"
 
 #: src/game/ProfileMenuItems.tsx:355
-#: src/profiles/HistoryPanel.tsx:50
+#: src/profiles/HistoryPanel.tsx:51
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:79
 msgid "History"
@@ -419,7 +423,7 @@ msgstr "Mortar leaves the taskbar and waits in the tray until the game exits."
 msgid "Always"
 msgstr "Always"
 
-#: src/profiles/historyLabel.ts:76
+#: src/profiles/historyLabel.ts:77
 msgid "Unlinked the collection"
 msgstr "Unlinked the collection"
 
@@ -1183,7 +1187,7 @@ msgid "Update {0} in other profiles"
 msgstr "Update {0} in other profiles"
 
 #. placeholder {0}: listNames(h.missingNames)
-#: src/profiles/HistoryPanel.tsx:42
+#: src/profiles/HistoryPanel.tsx:43
 msgid "Could not restore {0}"
 msgstr "Could not restore {0}"
 
@@ -1286,7 +1290,7 @@ msgid "All outcomes"
 msgstr "All outcomes"
 
 #: src/queue/store.ts:314
-#: src/share/importCompletion.ts:21
+#: src/share/importCompletion.ts:24
 #: src/share/ImportPreview.tsx:248
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
@@ -1316,7 +1320,7 @@ msgid "+{more} more"
 msgstr "+{more} more"
 
 #. placeholder {0}: batch.pendingSettings
-#: src/share/importCompletion.ts:113
+#: src/share/importCompletion.ts:122
 msgid "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 msgstr "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 
@@ -1667,7 +1671,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/mods/LoadOrderTab.tsx:376
 #: src/mods/ModsTab.tsx:116
 #: src/mods/typedConfig/ConfigPane.tsx:170
-#: src/mods/updateReview/updateAll.ts:53
+#: src/mods/updateReview/updateAll.ts:54
 #: src/notes/NotesTab.tsx:43
 #: src/profiles/GameModsDialog.tsx:135
 #: src/profiles/HealthDialog.tsx:228
@@ -1861,7 +1865,7 @@ msgstr "New launch preset"
 msgid "Paired computers"
 msgstr "Paired computers"
 
-#: src/profiles/historyLabel.ts:90
+#: src/profiles/historyLabel.ts:91
 msgid "Changed game install"
 msgstr "Changed game install"
 
@@ -2001,10 +2005,6 @@ msgstr "Nexus account"
 #: src/mods/updateReview/UpdateActions.tsx:95
 msgid "More actions for {0}"
 msgstr "More actions for {0}"
-
-#: src/profiles/historyLabel.ts:73
-msgid "Switched to the {name} update channel"
-msgstr "Switched to the {name} update channel"
 
 #: src/profiles/OverrideRows.tsx:27
 msgid "Update mods before Play"
@@ -2437,7 +2437,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/storeEntries.ts:99
 #: src/profiles/collectionUnlink.ts:36
 #: src/profiles/CompareDialog.tsx:105
-#: src/profiles/HistoryEventRow.tsx:44
+#: src/profiles/HistoryEventRow.tsx:45
 #: src/profiles/historyRevert.ts:110
 #: src/profiles/store.ts:194
 #: src/profiles/store.ts:237
@@ -2445,12 +2445,12 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/saves/store.ts:66
 #: src/templates/ApplyTemplateDialog.tsx:95
 #: src/templates/TemplateDialogs.tsx:226
-#: src/toasts/EarlierChanges.tsx:47
-#: src/toasts/EarlierChanges.tsx:94
+#: src/toasts/EarlierChanges.tsx:53
+#: src/toasts/EarlierChanges.tsx:105
 msgid "Undo"
 msgstr "Undo"
 
-#: src/profiles/historyLabel.ts:88
+#: src/profiles/historyLabel.ts:89
 msgid "Changed loader"
 msgstr "Changed loader"
 
@@ -2733,7 +2733,7 @@ msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
 #: src/games/GameSelect.tsx:139
-#: src/saves/SaveRow.tsx:164
+#: src/saves/SaveRow.tsx:167
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
 
@@ -3280,7 +3280,7 @@ msgstr "Check store files"
 
 #. placeholder {0}: batch.name
 #. placeholder {1}: importCountsLine(counts)
-#: src/share/importCompletion.ts:108
+#: src/share/importCompletion.ts:117
 msgid "Imported {0}: {1}"
 msgstr "Imported {0}: {1}"
 
@@ -4081,7 +4081,7 @@ msgstr "Disabled"
 msgid "{0, plural, one {Remove # mod} other {Remove # mods}}"
 msgstr "{0, plural, one {Remove # mod} other {Remove # mods}}"
 
-#: src/profiles/HistoryPanel.tsx:59
+#: src/profiles/HistoryPanel.tsx:60
 msgid "Profile changes will appear here."
 msgstr "Profile changes will appear here."
 
@@ -4203,7 +4203,7 @@ msgstr "{name} was changed outside Mortar."
 msgid "Needs your click"
 msgstr "Needs your click"
 
-#: src/saves/SaveRow.tsx:111
+#: src/saves/SaveRow.tsx:113
 msgid "This save has no recorded mod list yet."
 msgstr "This save has no recorded mod list yet."
 
@@ -4647,6 +4647,10 @@ msgstr "Finding the mod causing the crash"
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
+#: src/profiles/historyLabel.ts:68
+msgid "Applied the preset {detail} to {name}"
+msgstr "Applied the preset {detail} to {name}"
+
 #: src/mods/NexusDetails.tsx:239
 msgid "Changelog on Nexus"
 msgstr "Changelog on Nexus"
@@ -4664,7 +4668,7 @@ msgstr "Play without mods"
 #. placeholder {0}: counts.skipped
 #. placeholder {0}: res.skipped
 #: src/mods/MoveFoldersDialog.tsx:73
-#: src/share/importCompletion.ts:23
+#: src/share/importCompletion.ts:26
 msgid "{0} skipped"
 msgstr "{0} skipped"
 
@@ -4702,7 +4706,7 @@ msgstr "{count, plural, one {Restored # mod from the store} other {Restored # mo
 msgid "Needs your choice ({0})"
 msgstr "Needs your choice ({0})"
 
-#: src/profiles/historyLabel.ts:77
+#: src/profiles/historyLabel.ts:78
 msgid "Unlinked the collection {name}"
 msgstr "Unlinked the collection {name}"
 
@@ -5148,7 +5152,7 @@ msgstr "Template saved"
 msgid "Uploading…"
 msgstr "Uploading…"
 
-#: src/profiles/historyLabel.ts:96
+#: src/profiles/historyLabel.ts:97
 msgid "Changed profile settings"
 msgstr "Changed profile settings"
 
@@ -5280,7 +5284,7 @@ msgstr "All mods"
 msgid "Start measuring to view a report."
 msgstr "Start measuring to view a report."
 
-#: src/profiles/HistoryPanel.tsx:118
+#: src/profiles/HistoryPanel.tsx:123
 msgid "Download missing mods"
 msgstr "Download missing mods"
 
@@ -5320,7 +5324,7 @@ msgstr "Portable copy: data is kept in {portableDir}"
 msgid "{0, plural, one {Tag # mod} other {Tag # mods}}"
 msgstr "{0, plural, one {Tag # mod} other {Tag # mods}}"
 
-#: src/profiles/historyLabel.ts:98
+#: src/profiles/historyLabel.ts:99
 msgid "Changed the profile"
 msgstr "Changed the profile"
 
@@ -5727,7 +5731,7 @@ msgstr "This profile has no mods to download"
 msgid "Relative"
 msgstr "Relative"
 
-#: src/saves/SaveRow.tsx:163
+#: src/saves/SaveRow.tsx:166
 msgid "a deleted profile"
 msgstr "a deleted profile"
 
@@ -6099,7 +6103,7 @@ msgstr "slow {0} {ms}"
 msgid "Move…"
 msgstr "Move…"
 
-#: src/profiles/historyLabel.ts:71
+#: src/profiles/historyLabel.ts:72
 msgid "Deleted a custom category"
 msgstr "Deleted a custom category"
 
@@ -6248,7 +6252,8 @@ msgstr "The loader's log shows this plugin did not start, so its features are mi
 msgid "Versions"
 msgstr "Versions"
 
-#: src/profiles/HistoryEventRow.tsx:42
+#: src/profiles/HistoryEventRow.tsx:43
+#: src/toasts/EarlierChanges.tsx:51
 msgid "Undo this change: {label}"
 msgstr "Undo this change: {label}"
 
@@ -6257,7 +6262,7 @@ msgstr "Undo this change: {label}"
 msgid "Roll back {0}?"
 msgstr "Roll back {0}?"
 
-#: src/profiles/historyLabel.ts:63
+#: src/profiles/historyLabel.ts:64
 msgid "Edited the settings of {name}"
 msgstr "Edited the settings of {name}"
 
@@ -6630,7 +6635,7 @@ msgstr "The profile stays restorable for 30 days from Recently deleted."
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
 
-#: src/profiles/historyLabel.ts:94
+#: src/profiles/historyLabel.ts:95
 msgid "Changed launch settings"
 msgstr "Changed launch settings"
 
@@ -6910,7 +6915,7 @@ msgid "Open game settings"
 msgstr "Open game settings"
 
 #: src/sync/SyncOffers.tsx:73
-#: src/toasts/EarlierChanges.tsx:42
+#: src/toasts/EarlierChanges.tsx:43
 msgid "Show diff"
 msgstr "Show diff"
 
@@ -7590,7 +7595,7 @@ msgid "Set to {value}"
 msgstr "Set to {value}"
 
 #. placeholder {0}: later.length
-#: src/toasts/EarlierChanges.tsx:90
+#: src/toasts/EarlierChanges.tsx:101
 msgid "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 
@@ -7606,7 +7611,7 @@ msgstr "Copy log"
 msgid "See startup"
 msgstr "See startup"
 
-#: src/saves/SaveRow.tsx:130
+#: src/saves/SaveRow.tsx:133
 msgid "No saves to back up"
 msgstr "No saves to back up"
 
@@ -7698,7 +7703,7 @@ msgstr "The page reads the profile from the link itself. Nothing is uploaded or 
 msgid "Restart now"
 msgstr "Restart now"
 
-#: src/saves/SaveRow.tsx:134
+#: src/saves/SaveRow.tsx:137
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
@@ -7998,7 +8003,7 @@ msgstr "Play anyway"
 msgid "Let the operating system choose a free port"
 msgstr "Let the operating system choose a free port"
 
-#: src/profiles/historyLabel.ts:65
+#: src/profiles/historyLabel.ts:66
 msgid "Reset the settings of {name}"
 msgstr "Reset the settings of {name}"
 
@@ -8507,7 +8512,7 @@ msgstr "{0, plural, one {with # settings file, written once its mod is installed
 #: src/mods/MoveFoldersDialog.tsx:74
 #: src/mods/updateReview/updateAll.ts:31
 #: src/queue/QueueSheet.tsx:54
-#: src/share/importCompletion.ts:22
+#: src/share/importCompletion.ts:25
 msgid "{0} failed"
 msgstr "{0} failed"
 
@@ -9173,7 +9178,7 @@ msgstr "Update downloads the new file from the mod's site when Mortar can; other
 msgid "Never"
 msgstr "Never"
 
-#: src/profiles/historyLabel.ts:86
+#: src/profiles/historyLabel.ts:87
 msgid "Changed groups"
 msgstr "Changed groups"
 
@@ -9328,7 +9333,7 @@ msgid "Paste it on the mod's bug tracker."
 msgstr "Paste it on the mod's bug tracker."
 
 #. placeholder {0}: counts.failed
-#: src/mods/updateReview/updateAll.ts:51
+#: src/mods/updateReview/updateAll.ts:52
 msgid "{0, plural, one {# update failed} other {# updates failed}}"
 msgstr "{0, plural, one {# update failed} other {# updates failed}}"
 
@@ -9413,7 +9418,7 @@ msgstr "Recent address"
 msgid "You skipped this version"
 msgstr "You skipped this version"
 
-#: src/profiles/historyLabel.ts:79
+#: src/profiles/historyLabel.ts:80
 msgid "{count, plural, one {Trimmed history, dropped # older change} other {Trimmed history, dropped # older changes}}"
 msgstr "{count, plural, one {Trimmed history, dropped # older change} other {Trimmed history, dropped # older changes}}"
 
@@ -9614,7 +9619,7 @@ msgstr "{count, plural, one {{name} was updated since this run and logged # erro
 msgid "Open focused mod details"
 msgstr "Open focused mod details"
 
-#: src/saves/SaveRow.tsx:143
+#: src/saves/SaveRow.tsx:146
 msgid "Open the folder of {label}"
 msgstr "Open the folder of {label}"
 
@@ -9830,7 +9835,7 @@ msgstr "Check now"
 
 #: src/profiles/HistoryDiffView.tsx:39
 #: src/profiles/HistoryDiffView.tsx:42
-#: src/profiles/HistoryEventRow.tsx:69
+#: src/profiles/HistoryEventRow.tsx:70
 #: src/profiles/ProfilesPage.tsx:90
 #: src/saves/BackupsDialog.tsx:96
 #: src/saves/BackupsDialog.tsx:221
@@ -9841,7 +9846,7 @@ msgstr "Restore {label}"
 msgid "No updates to review"
 msgstr "No updates to review"
 
-#: src/profiles/historyLabel.ts:92
+#: src/profiles/historyLabel.ts:93
 msgid "Changed separate saves"
 msgstr "Changed separate saves"
 
@@ -9913,8 +9918,8 @@ msgstr "Ask another Mortar user to open sharing nearby."
 msgid "Could not restore the profile"
 msgstr "Could not restore the profile"
 
-#: src/profiles/HistoryPanel.tsx:58
-#: src/toasts/EarlierChanges.tsx:77
+#: src/profiles/HistoryPanel.tsx:59
+#: src/toasts/EarlierChanges.tsx:83
 msgid "No changes yet"
 msgstr "No changes yet"
 
@@ -9999,7 +10004,7 @@ msgstr "Ask before removing mods from a profile"
 msgid "This start was {by} slower than the one before."
 msgstr "This start was {by} slower than the one before."
 
-#: src/profiles/historyLabel.ts:69
+#: src/profiles/historyLabel.ts:70
 msgid "Set {detail} of {name} for the next start"
 msgstr "Set {detail} of {name} for the next start"
 
@@ -10467,10 +10472,6 @@ msgstr "{name} takes {own} of your {total} start; {0, plural, one {# content pac
 #: src/launch/PlayControl.tsx:166
 msgid "Installing {loaderName}…"
 msgstr "Installing {loaderName}…"
-
-#: src/profiles/historyLabel.ts:67
-msgid "Applied the preset {name}"
-msgstr "Applied the preset {name}"
 
 #: src/profiles/LaunchPresetDialog.tsx:84
 msgid "Follow the setting"
@@ -11214,7 +11215,7 @@ msgstr "Jump to first error"
 msgid "Now needs {0}"
 msgstr "Now needs {0}"
 
-#: src/saves/SaveRow.tsx:116
+#: src/saves/SaveRow.tsx:118
 msgid "New profile from this save"
 msgstr "New profile from this save"
 
@@ -12018,7 +12019,7 @@ msgstr "Settings sections"
 msgid "Search entries"
 msgstr "Search entries"
 
-#: src/profiles/HistoryEventRow.tsx:54
+#: src/profiles/HistoryEventRow.tsx:55
 msgid "Compare {label}"
 msgstr "Compare {label}"
 
@@ -12044,7 +12045,7 @@ msgstr "Delete {name}"
 msgid "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
 msgstr "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
 
-#: src/profiles/historyLabel.ts:58
+#: src/profiles/historyLabel.ts:59
 msgid "Went back to {when}"
 msgstr "Went back to {when}"
 
@@ -12162,7 +12163,7 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 
 #: src/mods/problemFix/RestoreButton.tsx:17
 #: src/mods/problemFixButtons.tsx:218
-#: src/profiles/HistoryEventRow.tsx:71
+#: src/profiles/HistoryEventRow.tsx:72
 #: src/saves/BackupsDialog.tsx:234
 #: src/saves/SaveBackupsSection.tsx:63
 #: src/saves/SaveBackupsSection.tsx:148
@@ -12233,7 +12234,7 @@ msgstr "Could not add the shortcut"
 msgid "Deleted profiles stay here, mods and settings included."
 msgstr "Deleted profiles stay here, mods and settings included."
 
-#. placeholder {0}: shownWaiting.length
+#. placeholder {0}: waiting.length
 #: src/queue/store.ts:361
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
@@ -12272,7 +12273,7 @@ msgstr "Untrack unused…"
 msgid "{gameName} was not found. Browse to its folder."
 msgstr "{gameName} was not found. Browse to its folder."
 
-#: src/saves/SaveRow.tsx:124
+#: src/saves/SaveRow.tsx:127
 msgid "Back up {label} now"
 msgstr "Back up {label} now"
 
@@ -12316,7 +12317,7 @@ msgstr "{0} ({1})"
 msgid "{deployed} deployed"
 msgstr "{deployed} deployed"
 
-#: src/profiles/historyLabel.ts:84
+#: src/profiles/historyLabel.ts:85
 msgid "Known good"
 msgstr "Known good"
 
@@ -12367,7 +12368,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/mods/updateReview/ReviewTitle.tsx:43
 #: src/profiles/CompareDialog.tsx:163
 #: src/profiles/HealthDialog.tsx:255
-#: src/profiles/HistoryPanel.tsx:125
+#: src/profiles/HistoryPanel.tsx:130
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:70
 #: src/saves/BackupsDialog.tsx:178
 #: src/settings/sections/About.tsx:99

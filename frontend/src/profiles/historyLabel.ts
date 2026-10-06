@@ -54,7 +54,8 @@ export function historyLabel(ev: Worded): string {
     case HistoryChange.ChangeBeforeEdit:
       return i18n._(msg`Before this change`)
     case HistoryChange.ChangeReverted: {
-      const when = formatWhen(ev.target ?? '', { withTime: true })
+      // A relative time would read "Went back to 2 minutes ago"; the point gone back to is a date.
+      const when = formatWhen(ev.target ?? '', { withTime: true, absolute: true })
       return i18n._(msg`Went back to ${when}`)
     }
     case HistoryChange.ChangeRestoredFile:
@@ -64,13 +65,13 @@ export function historyLabel(ev: Worded): string {
     case HistoryChange.ChangeConfigReset:
       return i18n._(msg`Reset the settings of ${name}`)
     case HistoryChange.ChangePresetApplied:
-      return i18n._(msg`Applied the preset ${name}`)
+      return i18n._(msg`Applied the preset ${detail} to ${name}`)
     case HistoryChange.ChangeOptionSet:
       return i18n._(msg`Set ${detail} of ${name} for the next start`)
     case HistoryChange.ChangeCategoryRemoved:
       return i18n._(msg`Deleted a custom category`)
     case HistoryChange.ChangeChannel:
-      return i18n._(msg`Switched to the ${name} update channel`)
+      return i18n._(msg`Switched ${name} to the ${detail} update channel`)
     case HistoryChange.ChangeCollectionUnlinked:
       return name === ''
         ? i18n._(msg`Unlinked the collection`)

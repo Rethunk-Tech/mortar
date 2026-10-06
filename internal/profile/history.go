@@ -66,13 +66,13 @@ const (
 	ChangeReverted HistoryChange = "reverted"
 	// ChangeRestoredFile is one mod's file put back: Name the mod, Detail the file.
 	ChangeRestoredFile  HistoryChange = "restored-file"
-	ChangeConfigEdited  HistoryChange = "config-edited" // Name: the mod
-	ChangeConfigReset   HistoryChange = "config-reset"  // Name: the mod
-	ChangePresetApplied HistoryChange = "preset-applied"
+	ChangeConfigEdited  HistoryChange = "config-edited"  // Name: the mod
+	ChangeConfigReset   HistoryChange = "config-reset"   // Name: the mod
+	ChangePresetApplied HistoryChange = "preset-applied" // Name: the mod, Detail: the preset
 	// ChangeOptionSet is a mod option set for the next start: Name the mod, Detail the option.
 	ChangeOptionSet          HistoryChange = "option-set"
 	ChangeCategoryRemoved    HistoryChange = "category-removed"
-	ChangeChannel            HistoryChange = "channel"             // Name: the update channel
+	ChangeChannel            HistoryChange = "channel"             // Name: the mod, Detail: the update channel
 	ChangeCollectionUnlinked HistoryChange = "collection-unlinked" // Name: the collection, when it had one
 	ChangeTrimmed            HistoryChange = "trimmed"             // Count: the older changes dropped
 	ChangeKnownGood          HistoryChange = "known-good"

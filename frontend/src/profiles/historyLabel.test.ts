@@ -24,15 +24,21 @@ test('historyLabel words each change from its fields', () => {
   expect(historyLabel({ change: HistoryChange.ChangeMods, count: 3 })).toBe('Changed 3 mods')
   expect(historyLabel({ change: HistoryChange.ChangeMods, count: 1 })).toBe('Changed mods')
   expect(historyLabel({ change: HistoryChange.ChangeImported, count: 1 })).toBe('Imported 1 mod')
+  expect(historyLabel({ change: HistoryChange.ChangeChannel, name: 'Beta', detail: 'beta' })).toBe(
+    'Switched Beta to the beta update channel',
+  )
+  expect(
+    historyLabel({ change: HistoryChange.ChangePresetApplied, name: 'Beta', detail: 'Night' }),
+  ).toBe('Applied the preset Night to Beta')
   expect(historyLabel({ change: HistoryChange.$zero })).toBe('Changed the profile')
 })
 
-test('a revert names its time through the date formatter, not as RFC 3339', () => {
+test('a revert names the date it went back to, even a recent one', () => {
   const label = historyLabel({
     change: HistoryChange.ChangeReverted,
-    target: '2020-10-06T04:48:44Z',
+    target: new Date(Date.now() - 60_000).toISOString(),
   })
   expect(label.startsWith('Went back to ')).toBe(true)
-  expect(label).not.toContain('T04:48:44Z')
-  expect(label).toContain('2020')
+  expect(label).not.toContain('ago')
+  expect(label).toContain(String(new Date().getFullYear()))
 })

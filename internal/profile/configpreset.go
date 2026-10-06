@@ -28,5 +28,5 @@ func (s *Service) ApplyConfigPreset(game, id, key string, uniqueID mod.ID, name 
 	if err != nil {
 		return err
 	}
-	return s.store.writeConfig(game, id, key, uniqueID, string(body), HistoryEvent{Change: ChangePresetApplied, Name: name})
+	return s.store.writeConfig(game, id, key, uniqueID, string(body), HistoryEvent{Change: ChangePresetApplied, Name: uniqueID.Local(), Detail: name})
 }
