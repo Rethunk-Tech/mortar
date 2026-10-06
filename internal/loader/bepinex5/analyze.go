@@ -54,6 +54,9 @@ var (
 
 	unityException = regexp.MustCompile(`^((?:[\w]+\.)*\w*Exception): (.*)$`)
 	stackFrame     = regexp.MustCompile(`^\s+at (?:\(wrapper [^)]*\) )?([\w.]+?)\.[^.\s(]+(?:<[^>]*>)? ?\(`)
+	// unityFrame is a frame of the stack BepInEx's Unity log listener writes after "Stack trace:": Unity's own format,
+	// "Namespace.Type.Method (args) (at <module>:0)", or "Type:Method(args)" for engine frames.
+	unityFrame = regexp.MustCompile(`^([\w.]+?)[.:][^.\s(:]+(?:<[^>]*>)? ?\(`)
 )
 
 // loaderSources are the log sources that are BepInEx, Harmony or Unity rather than a plugin speaking for itself.
@@ -73,6 +76,10 @@ func Analyze(logOutput, playerLog string) []Finding {
 	seen := map[string]bool{}
 	add := func(f Finding) {
 		key := f.Source + "|" + f.Kind + "|" + f.Plugin + "|" + f.Message
+		if f.Kind == KindUnityException {
+			// Unity writes an exception to Player.log and BepInEx copies it into LogOutput.log; it is one failure.
+			key = f.Kind + "|" + f.Plugin + "|" + f.Message
+		}
 		if f.Kind == KindPluginError {
 			key = f.Source + "|" + f.Kind + "|" + f.Plugin
 		}
@@ -81,8 +88,13 @@ func Analyze(logOutput, playerLog string) []Finding {
 			out = append(out, f)
 		}
 	}
-	for i, line := range strings.Split(logOutput, "\n") {
-		if f, ok := classify(strings.TrimRight(line, "\r")); ok && f.Kind != "" {
+	outLines := strings.Split(logOutput, "\n")
+	for i, line := range outLines {
+		f, ok := classify(strings.TrimRight(line, "\r"))
+		if !ok {
+			f, ok = unityLogException(line, outLines[i+1:])
+		}
+		if ok && f.Kind != "" {
 			f.Line, f.Source = i+1, "LogOutput.log"
 			add(f)
 		}
@@ -93,7 +105,7 @@ func Analyze(logOutput, playerLog string) []Finding {
 		if m == nil {
 			continue
 		}
-		if plugin := blamedPlugin(lines[i+1:]); plugin != "" {
+		if plugin := blamedPlugin(lines[i+1:], stackFrame); plugin != "" {
 			add(Finding{Kind: KindUnityException, Plugin: plugin, Message: m[1] + ": " + m[2], Line: i + 1, Source: "Player.log"})
 		}
 	}
@@ -170,10 +182,29 @@ func Unclassified(logOutput string) int {
 	return n
 }
 
-// blamedPlugin is the root namespace of the first stack frame that is not game, Unity or loader code.
-func blamedPlugin(stack []string) string {
+// unityLogException reads an exception Unity caught (one thrown in a plugin's Awake or Update) as BepInEx's Unity log
+// listener writes it: the exception line, "Stack trace:", then Unity's frames, which blame the first mod namespace.
+func unityLogException(line string, rest []string) (Finding, bool) {
+	m := logLine.FindStringSubmatch(strings.TrimRight(line, "\r"))
+	if m == nil || m[1] != "Error" || strings.TrimSpace(m[2]) != "Unity Log" || len(rest) == 0 ||
+		strings.TrimSpace(rest[0]) != "Stack trace:" {
+		return Finding{}, false
+	}
+	u := unityException.FindStringSubmatch(m[3])
+	if u == nil {
+		return Finding{}, false
+	}
+	plugin := blamedPlugin(rest[1:], unityFrame)
+	if plugin == "" {
+		return Finding{}, false
+	}
+	return Finding{Kind: KindUnityException, Plugin: plugin, Message: u[1] + ": " + u[2]}, true
+}
+
+// blamedPlugin is the root namespace of the first stack frame, read with frame, that is not game, Unity or loader code.
+func blamedPlugin(stack []string, frame *regexp.Regexp) string {
 	for _, l := range stack {
-		m := stackFrame.FindStringSubmatch(strings.TrimRight(l, "\r"))
+		m := frame.FindStringSubmatch(strings.TrimRight(l, "\r"))
 		if m == nil {
 			if strings.HasPrefix(l, "  at ") {
 				continue

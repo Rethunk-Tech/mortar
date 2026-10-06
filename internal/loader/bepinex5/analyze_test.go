@@ -25,6 +25,16 @@ func TestAnalyze(t *testing.T) {
 		"\nNullReferenceException: Object reference not set to an instance of an object\n" +
 		"  at LateCompany.Patches.ConnectionApproval_Patch.Postfix (Unity.Netcode.NetworkManager request) [0x00019] in <9c56>:0 \n" +
 		"ArgumentException: only game code\n  at GameNetworkManager.Start () [0x00000] in <bb>:0 \n"
+	awake := "[Info   :   BepInEx] Loading [Matrix throw 1.0.0]\n" +
+		"[Error  : Unity Log] InvalidOperationException: matrix probe failed in Awake on purpose\n" +
+		"Stack trace:\n" +
+		"MortarMatrix.MatrixProbe.Awake () (at <6f3c2a1e5b7d4c8a9e0f1b2c3d4e5f60>:0)\n" +
+		"UnityEngine.GameObject:AddComponent(Type)\n" +
+		"BepInEx.Bootstrap.Chainloader:Start()\n" +
+		"[Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object\n" +
+		"Stack trace:\n" +
+		"GameNetcodeStuff.PlayerControllerB.Update () (at <af9b1eec498a45aebd42601d6ab85015>:IL_0B14)\n" +
+		"[Info   :   BepInEx] Chainloader startup complete\n"
 	cases := []struct {
 		name, log, player string
 		want              []Finding
@@ -75,6 +85,15 @@ func TestAnalyze(t *testing.T) {
 			"[Warning:   BepInEx] Skipping [Jotunn 2.30.2] (com.jotunn.jotunn) at b/Jotunn.dll because a duplicate of it was already loaded from a/Jotunn.dll\n", "", []Finding{
 			fnd(KindDuplicateGUID, "Epic Loot 0.14.12", "a newer copy loaded instead: Epic Loot 0.14.13 at old/EpicLoot.dll", 1, "LogOutput.log"),
 			fnd(KindDuplicateGUID, "Jotunn 2.30.2", "the same copy loaded instead from a/Jotunn.dll", 2, "LogOutput.log"),
+		}},
+		// BepInEx's Unity log listener copies an exception Unity caught, such as one thrown in a plugin's Awake, with Unity's
+		// own stack format; Player.log may be unreadable, so LogOutput.log alone has to name the plugin, and once.
+		{"plugin exception through the Unity log", awake, "", []Finding{
+			fnd(KindUnityException, "MortarMatrix", "InvalidOperationException: matrix probe failed in Awake on purpose", 2, "LogOutput.log"),
+		}},
+		{"the same exception in both logs", awake, "InvalidOperationException: matrix probe failed in Awake on purpose\n" +
+			"  at MortarMatrix.MatrixProbe.Awake () [0x0007b] in <6f3c2a1e5b7d4c8a9e0f1b2c3d4e5f60>:0 \n", []Finding{
+			fnd(KindUnityException, "MortarMatrix", "InvalidOperationException: matrix probe failed in Awake on purpose", 2, "LogOutput.log"),
 		}},
 		{"nothing wrong", "[Info   :   BepInEx] Chainloader started\n", "Loading player data\n", nil},
 	}
