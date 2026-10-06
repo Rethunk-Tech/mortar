@@ -142,6 +142,9 @@ function describeMissing(
 
 function describeSetting(s: Extract<Problem, { kind: 'setting' }>['setting']): string {
   const installed = listNames(s.forNames ?? [])
+  if (!s.variant && installed === '') {
+    return i18n._(msg`${s.name}'s ${s.field} is ${s.current}: ${s.description}`)
+  }
   if (!s.variant) {
     return i18n._(
       msg`${s.name} has a ${s.field} setting for ${installed}; it is ${s.current}, so those patches are off.`,

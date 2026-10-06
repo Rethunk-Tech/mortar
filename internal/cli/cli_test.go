@@ -763,3 +763,13 @@ func TestProblemsTextLabelsActiveRowsAndCountsConflictGroups(t *testing.T) {
 		t.Fatalf("output = %q", r.out)
 	}
 }
+
+func TestProblemsTextSettingWithoutTargetModsGivesItsReason(t *testing.T) {
+	results := map[string]any{"problems": problems.Result{
+		Settings: []framework.SettingHint{{Name: "Dwarf", Field: "FarmCaveChange", Current: "true", Description: "This setting has no effect because Cave loads maps/farmcave over it."}},
+	}}
+	r := invoke(t, results, "problems", "stardew", "Farm")
+	if r.code != 0 || !strings.Contains(r.out, "setting    Dwarf FarmCaveChange=true: This setting has no effect because Cave loads maps/farmcave over it.\n") {
+		t.Fatalf("output = %q", r.out)
+	}
+}

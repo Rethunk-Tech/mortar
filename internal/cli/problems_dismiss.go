@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
 
@@ -22,10 +23,17 @@ func dismissedKindText(d problems.DismissedProblem) (kind, text string) {
 		return "listed", fmt.Sprintf("%s needs %s", d.Missing.DependentName, missingName(*d.Missing))
 	}
 	if d.Setting != nil {
-		s := d.Setting
-		return "setting", fmt.Sprintf("%s %s=%s for %s", s.Name, s.Field, s.Current, strings.Join(s.ForNames, ", "))
+		return "setting", settingText(*d.Setting)
 	}
 	return "unknown", d.Token
+}
+
+// settingText is a setting row: the mods it is for, or, for a setting with no such mods, why it is listed.
+func settingText(s framework.SettingHint) string {
+	if len(s.ForNames) == 0 {
+		return fmt.Sprintf("%s %s=%s: %s", s.Name, s.Field, s.Current, s.Description)
+	}
+	return fmt.Sprintf("%s %s=%s for %s", s.Name, s.Field, s.Current, strings.Join(s.ForNames, ", "))
 }
 
 func parseProblemIndex(s string) (int, error) {

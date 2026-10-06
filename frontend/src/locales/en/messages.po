@@ -447,7 +447,7 @@ msgid "Run checks…"
 msgstr "Run checks…"
 
 #. placeholder {0}: p.damaged.name
-#: src/mods/describe.ts:206
+#: src/mods/describe.ts:209
 msgid "{0} has damaged files."
 msgstr "{0} has damaged files."
 
@@ -982,7 +982,7 @@ msgstr "Don't ask again"
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
-#: src/mods/ModCards.tsx:463
+#: src/mods/ModCards.tsx:471
 #: src/mods/ModList.tsx:389
 msgid "{loaderName} mods"
 msgstr "{loaderName} mods"
@@ -1111,7 +1111,7 @@ msgstr "Keep this profile's saves separate?"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:157
+#: src/mods/describe.ts:160
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 
@@ -2569,7 +2569,7 @@ msgstr "Fix all"
 msgid "Ran"
 msgstr "Ran"
 
-#: src/mods/describe.ts:196
+#: src/mods/describe.ts:199
 msgid "The last launch failed: {message}."
 msgstr "The last launch failed: {message}."
 
@@ -2973,7 +2973,7 @@ msgid "Clear comparison"
 msgstr "Clear comparison"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:170
+#: src/mods/describe.ts:173
 msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
 
@@ -3446,7 +3446,7 @@ msgid "Collapsed"
 msgstr "Collapsed"
 
 #: src/launch/SweepDialog.tsx:29
-#: src/mods/ModCards.tsx:460
+#: src/mods/ModCards.tsx:468
 #: src/mods/ModList.tsx:386
 #: src/mods/Toolbar.tsx:60
 msgid "Update available"
@@ -4056,7 +4056,7 @@ msgstr "{rest, plural, one {# more} other {# more}}"
 msgid "Mortar: {label}"
 msgstr "Mortar: {label}"
 
-#: src/mods/ModCards.tsx:451
+#: src/mods/ModCards.tsx:459
 #: src/mods/ModList.tsx:362
 #: src/mods/Toolbar.tsx:180
 msgid "A mod with several tags appears under its first tag."
@@ -4086,7 +4086,7 @@ msgstr "Show in queue"
 
 #: src/mods/AuthorDialog.tsx:134
 #: src/mods/listRows.ts:134
-#: src/mods/ModCards.tsx:462
+#: src/mods/ModCards.tsx:470
 #: src/mods/ModDependencyTree.tsx:104
 #: src/mods/ModDetail.tsx:57
 #: src/mods/ModList.tsx:388
@@ -4225,7 +4225,7 @@ msgstr "Just this mod"
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
-#: src/mods/describe.ts:250
+#: src/mods/describe.ts:253
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
@@ -4565,7 +4565,7 @@ msgstr "A portable copy keeps its data beside the program."
 msgid "Save these settings to a file, or load them on another computer."
 msgstr "Save these settings to a file, or load them on another computer."
 
-#: src/mods/ModCards.tsx:458
+#: src/mods/ModCards.tsx:466
 #: src/mods/ModList.tsx:384
 msgid "Ungrouped"
 msgstr "Ungrouped"
@@ -4780,7 +4780,7 @@ msgid "Rename…"
 msgstr "Rename…"
 
 #. placeholder {0}: p.pluginClash.guid
-#: src/mods/describe.ts:215
+#: src/mods/describe.ts:218
 msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
 msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
 
@@ -4823,7 +4823,7 @@ msgstr "Untrack all…"
 msgid "Disable all"
 msgstr "Disable all"
 
-#: src/mods/describe.ts:203
+#: src/mods/describe.ts:206
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
 
@@ -5181,7 +5181,7 @@ msgstr "Profile settings, mod lists and configs are written here and offered to 
 msgid "Duplicate plugins"
 msgstr "Duplicate plugins"
 
-#: src/mods/ModCards.tsx:455
+#: src/mods/ModCards.tsx:463
 #: src/mods/ModList.tsx:381
 msgid "Unknown source"
 msgstr "Unknown source"
@@ -6178,7 +6178,7 @@ msgstr "Discard the change to {name}"
 msgid "Another preset already has this name."
 msgstr "Another preset already has this name."
 
-#: src/mods/ModCards.tsx:457
+#: src/mods/ModCards.tsx:465
 #: src/mods/ModList.tsx:383
 msgid "Unknown author"
 msgstr "Unknown author"
@@ -6395,7 +6395,7 @@ msgid "Reading {folder}…"
 msgstr "Reading {folder}…"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:172
+#: src/mods/describe.ts:175
 msgid "{0} is installed twice, and only one of them loads."
 msgstr "{0} is installed twice, and only one of them loads."
 
@@ -7631,7 +7631,7 @@ msgstr "{0, plural, one {Matched # version in {1}} other {Matched # versions in 
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:152
+#: src/mods/describe.ts:155
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 
@@ -8142,7 +8142,7 @@ msgstr "{0}: in Mortar"
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
-#: src/mods/ModCards.tsx:456
+#: src/mods/ModCards.tsx:464
 #: src/mods/ModList.tsx:382
 msgid "Untagged"
 msgstr "Untagged"
@@ -8183,7 +8183,7 @@ msgstr "{0, plural, one {Created {name}; downloading # mod} other {Created {name
 msgid "{who}: {reason}"
 msgstr "{who}: {reason}"
 
-#: src/mods/describe.ts:202
+#: src/mods/describe.ts:205
 msgid "{plugin} failed to load ({name})."
 msgstr "{plugin} failed to load ({name})."
 
@@ -8243,7 +8243,7 @@ msgstr "Money"
 msgid "Regenerate token?"
 msgstr "Regenerate token?"
 
-#: src/mods/describe.ts:199
+#: src/mods/describe.ts:202
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
@@ -8466,7 +8466,7 @@ msgstr "The backup holds up to {0}: the profile, its settings and config files, 
 msgid "Set default preset…"
 msgstr "Set default preset…"
 
-#: src/mods/ModCards.tsx:459
+#: src/mods/ModCards.tsx:467
 #: src/mods/ModList.tsx:385
 msgid "Mods with problems"
 msgstr "Mods with problems"
@@ -8505,7 +8505,7 @@ msgid "Could not read the window state"
 msgstr "Could not read the window state"
 
 #: src/mods/CategoryEditor.tsx:212
-#: src/mods/ModCards.tsx:454
+#: src/mods/ModCards.tsx:462
 #: src/mods/ModList.tsx:380
 #: src/mods/SelectionBarDialogs.tsx:125
 msgid "Uncategorised"
@@ -8560,6 +8560,14 @@ msgstr "Check later"
 #: src/settings/sections/GameSettings.tsx:277
 msgid "Reset…"
 msgstr "Reset…"
+
+#. placeholder {0}: s.name
+#. placeholder {1}: s.field
+#. placeholder {2}: s.current
+#. placeholder {3}: s.description
+#: src/mods/describe.ts:146
+msgid "{0}'s {1} is {2}: {3}"
+msgstr "{0}'s {1} is {2}: {3}"
 
 #: src/share/useImportFlow.ts:143
 msgid "A profile with that name already exists, so this one is \"{name}\""
@@ -9328,7 +9336,7 @@ msgid "Review collection update"
 msgstr "Review collection update"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:244
+#: src/mods/describe.ts:247
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
@@ -9559,7 +9567,7 @@ msgstr "Whole file"
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
-#: src/mods/describe.ts:211
+#: src/mods/describe.ts:214
 msgid "{name} is deprecated on Thunderstore."
 msgstr "{name} is deprecated on Thunderstore."
 
@@ -9579,7 +9587,7 @@ msgstr "Save backups kept"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:147
+#: src/mods/describe.ts:150
 msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
@@ -9787,7 +9795,7 @@ msgstr "Auto-enable requirements"
 
 #: src/mods/AuthorDialog.tsx:133
 #: src/mods/listRows.ts:134
-#: src/mods/ModCards.tsx:461
+#: src/mods/ModCards.tsx:469
 #: src/mods/ModDependencyTree.tsx:102
 #: src/mods/ModList.tsx:387
 #: src/mods/Sidebar.tsx:321
@@ -10015,7 +10023,7 @@ msgstr "{loader} | {store}"
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
-#: src/mods/describe.ts:210
+#: src/mods/describe.ts:213
 msgid "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 
@@ -10129,7 +10137,7 @@ msgstr "From a backup…"
 #. placeholder {0}: item.name
 #. placeholder {0}: m.name
 #: src/browse/ResultCard.tsx:93
-#: src/mods/ModCards.tsx:164
+#: src/mods/ModCards.tsx:166
 msgid "Details of {0}"
 msgstr "Details of {0}"
 
@@ -11094,7 +11102,7 @@ msgstr "Could not use that image"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:160
+#: src/mods/describe.ts:163
 msgid "{0}'s {1} is {2}; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 
@@ -11161,7 +11169,7 @@ msgstr "No problems found"
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/mods/describe.ts:248
+#: src/mods/describe.ts:251
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
@@ -11178,7 +11186,7 @@ msgid "Entry"
 msgstr "Entry"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:169
+#: src/mods/describe.ts:172
 msgid "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 msgstr "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 

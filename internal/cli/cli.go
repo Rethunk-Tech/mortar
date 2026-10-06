@@ -1768,7 +1768,7 @@ func (c *cmd) printProblems(r problems.Result) {
 		}
 	}
 	for _, x := range r.Settings {
-		fmt.Fprintf(c.out, "%s  setting    %s %s=%s for %s\n", next(), x.Name, x.Field, x.Current, strings.Join(x.ForNames, ", "))
+		fmt.Fprintf(c.out, "%s  setting    %s\n", next(), settingText(x))
 	}
 	for _, x := range r.RunErrors {
 		fmt.Fprintf(c.out, "run error  %s (%s)\n", x.Name, x.ID)
