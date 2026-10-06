@@ -137,40 +137,43 @@ function Overlay({ game }: { game: string }) {
           other: `${{ name: profileName }} · # mods`,
         })}
       </Typography>
-      <Box
-        role="log"
-        sx={{
-          width: '100%',
-          maxWidth: 720,
-          boxSizing: 'border-box',
-          minHeight: VISIBLE_LINES * LINE_HEIGHT + 2 * LOG_PAD,
-          px: 1.75,
-          py: 1.5,
-          bgcolor: 'var(--mortar-overlay-55)',
-          fontFamily: MONO,
-          fontSize: 13,
-          lineHeight: `${LINE_HEIGHT}px`,
-          color: 'text.secondary',
-          userSelect: 'text',
-        }}
-      >
-        {shown.map((line, i) => {
-          const text = format(line)
-          return (
-            <Typography
-              key={line.seq}
-              noWrap={true}
-              title={text}
-              sx={{
-                font: 'inherit',
-                color: i === shown.length - 1 ? 'var(--mortar-ink)' : 'inherit',
-              }}
-            >
-              {text}
-            </Typography>
-          )
-        })}
-      </Box>
+      {/* An empty log would be a blank band between the title and the buttons. */}
+      {shown.length > 0 && (
+        <Box
+          role="log"
+          sx={{
+            width: '100%',
+            maxWidth: 720,
+            boxSizing: 'border-box',
+            minHeight: VISIBLE_LINES * LINE_HEIGHT + 2 * LOG_PAD,
+            px: 1.75,
+            py: 1.5,
+            bgcolor: 'var(--mortar-overlay-55)',
+            fontFamily: MONO,
+            fontSize: 13,
+            lineHeight: `${LINE_HEIGHT}px`,
+            color: 'text.secondary',
+            userSelect: 'text',
+          }}
+        >
+          {shown.map((line, i) => {
+            const text = format(line)
+            return (
+              <Typography
+                key={line.seq}
+                noWrap={true}
+                title={text}
+                sx={{
+                  font: 'inherit',
+                  color: i === shown.length - 1 ? 'var(--mortar-ink)' : 'inherit',
+                }}
+              >
+                {text}
+              </Typography>
+            )
+          })}
+        </Box>
+      )}
       <Box sx={{ display: 'flex', gap: 1.25 }}>
         <Button
           variant="outlined"
