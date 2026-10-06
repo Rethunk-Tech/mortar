@@ -6,6 +6,7 @@ import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
+import { StableLabel } from '../shell/StableLabel.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
   annotateTree,
@@ -69,7 +70,7 @@ function MissingAdd({ id }: { id: string }) {
         onClick={() => download([want]).catch(reportUnexpected)}
         sx={{ height: rowMinHeight, ...noWrap, flexShrink: 0 }}
       >
-        {queued ? t`Queued` : t`Add`}
+        <StableLabel labels={[t`Add`, t`Queued`]} shown={queued ? t`Queued` : t`Add`} />
       </Button>
     </>
   )

@@ -15,6 +15,7 @@ import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { OfflineGate } from '../../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../../shell/offlineText.ts'
+import { StableLabel } from '../../shell/StableLabel.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { installableUpdate } from '../lookup.ts'
 import { useNexusDetails } from '../nexusDetails.ts'
@@ -86,7 +87,7 @@ export function UpdateActions({
             disabled={blocked}
             onClick={update.switch ? () => setConfirmSwitch(true) : install}
           >
-            {queued ? t`Queued` : t`Update`}
+            <StableLabel labels={[t`Update`, t`Queued`]} shown={queued ? t`Queued` : t`Update`} />
           </Button>
         </OfflineGate>
       ) : null}
