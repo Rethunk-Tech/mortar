@@ -391,7 +391,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	}
 	run := Run{
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
-		DurationMs: ended.Sub(started).Milliseconds(), Loader: ldr, LoaderVersion: stats.SMAPI, GameVersion: stats.Game,
+		DurationMs: ended.Sub(started).Milliseconds(), Loader: ldr, LoaderVersion: stats.SMAPI, GameVersion: cmp.Or(stats.Game, sess.gameVersion),
 		Preset: sess.preset, Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
 		Unclassified: unclassified,
 	}

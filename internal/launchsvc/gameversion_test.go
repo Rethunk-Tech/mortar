@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
@@ -92,5 +93,42 @@ func TestARunningBepInExGameRecordsTheVersionItsBridgeReports(t *testing.T) {
 	}
 	if n := asked.Load(); n != 1 {
 		t.Fatalf("asked the bridge %d times; once it answered it is not asked again", n)
+	}
+}
+
+func TestABepInExRunRecordsTheVersionItsBridgeReported(t *testing.T) {
+	datadirtest.Use(t, t.TempDir())
+	items, err := store.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ps, err := profile.Open(items)
+	if err != nil {
+		t.Fatal(err)
+	}
+	const lc = "lethal-company"
+	p, err := ps.Create(lc, "A")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := ps.ProfileDir(lc, p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "BepInEx"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	const body = "[Info   :   BepInEx] BepInEx 5.4.22 - Lethal Company\n"
+	if err := os.WriteFile(filepath.Join(dir, "BepInEx", "LogOutput.log"), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	svc := NewService(t.TempDir(), nil, ps)
+	g := game.Find(lc)
+	svc.logs[keyOf(g)] = session{buf: &launch.Buffer{}, profile: p.ID, gameVersion: "v73"}
+	svc.record(g, p.ID, time.Now(), false)
+
+	runs, err := svc.Runs(lc, p.ID)
+	if err != nil || len(runs) != 1 || runs[0].GameVersion != "v73" {
+		t.Fatalf("runs = %+v, %v", runs, err)
 	}
 }
