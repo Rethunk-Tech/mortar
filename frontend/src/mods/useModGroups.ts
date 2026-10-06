@@ -22,7 +22,34 @@ import { primeDetails, useNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 
-// The list's and the cards' rows, grouped and sorted by the user's settings, rebuilt only when an input changes.
+// The list's and the cards' rows, grouped and sorted.
+export function buildModGroups(
+  mods: Mod[],
+  profile: Profile,
+  data: Parameters<typeof toListRows>[2],
+  view: {
+    groupBy: Parameters<typeof groupSorted>[1]
+    sort: Parameters<typeof compareListRows>[2]
+    problems: Parameters<typeof modStatusProblem>[0]
+    updates: Parameters<typeof updateFor>[0]
+  },
+) {
+  const names = installedNames(mods)
+  return groupSorted(
+    toListRows(mods, profile, data),
+    view.groupBy,
+    (row) =>
+      rowGroupKey(view.groupBy, row, {
+        hasProblem: modStatusProblem(view.problems, row.mod),
+        hasUpdate: Boolean(updateFor(view.updates, row.mod, profile)),
+        names,
+        customById: data.customById,
+      }),
+    (a, b) => compareListRows(a, b, view.sort),
+  )
+}
+
+// buildModGroups by the user's settings, rebuilt only when an input changes.
 export function useModGroups(mods: Mod[], profile: Profile) {
   const groupBy = useListGroupBy()
   const listSortColumn = useSettings((s) => s.listSortColumn)
@@ -52,21 +79,16 @@ export function useModGroups(mods: Mod[], profile: Profile) {
   useEffect(() => {
     primeDetails(nexusIds === '' ? [] : nexusIds.split(',').map(Number)).catch(reportUnexpected)
   }, [nexusIds])
-  const groups = useMemo(() => {
-    const names = installedNames(mods)
-    return groupSorted(
-      toListRows(mods, profile, { byId, customById, sizes, costs, wins }),
-      groupBy,
-      (row) =>
-        rowGroupKey(groupBy, row, {
-          hasProblem: modStatusProblem(problems, row.mod),
-          hasUpdate: Boolean(updateFor(updates, row.mod, profile)),
-          names,
-          customById,
-        }),
-      (a, b) => compareListRows(a, b, sort),
-    )
-  }, [mods, profile, byId, groupBy, problems, updates, customById, sort, sizes, costs, wins])
+  const groups = useMemo(
+    () =>
+      buildModGroups(
+        mods,
+        profile,
+        { byId, customById, sizes, costs, wins },
+        { groupBy, sort, problems, updates },
+      ),
+    [mods, profile, byId, groupBy, problems, updates, customById, sort, sizes, costs, wins],
+  )
   // Rows are memoised on this list's identity, so an unchanged order keeps the previous array.
   const lastIds = useRef<string[]>([])
   const orderedIds = useMemo(() => {
