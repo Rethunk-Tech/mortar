@@ -34,6 +34,7 @@ import {
 } from './listColumns.ts'
 import { modId, nexusIdOf } from './lookup.ts'
 import { ModListTable } from './ModListVirtual.tsx'
+import { useMarked, useTabStop } from './marked.ts'
 import { contextMenuProps } from './menu.ts'
 import { useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
@@ -254,13 +255,12 @@ function ModRow({
   profile: Profile
   onArrow: (id: string, dir: -1 | 1) => void
 }) {
-  const detailId = useDetail((s) => s.detailId)
-  const selectedIds = useSelection((s) => s.ids)
   const show = useDetail((s) => s.show)
   const askRemove = useMods((s) => s.askRemove)
   const m = row.mod
   const rowId = modId(m)
-  const marked = selectedIds.includes(rowId) || (selectedIds.length === 0 && rowId === detailId)
+  const marked = useMarked(rowId)
+  const tabStop = useTabStop(orderedIds, rowId)
   const menu = contextMenuProps(m)
   const fresh = useNexusFresh(nexusIdOf(profile, m))
   return (
@@ -279,8 +279,7 @@ function ModRow({
       }}
       data-mod-row="true"
       data-mod-id={rowId}
-      // One row is the list's Tab stop: the open mod's, or the first when none is open.
-      tabIndex={(orderedIds.includes(detailId) ? detailId : orderedIds[0]) === rowId ? 0 : -1}
+      tabIndex={tabStop ? 0 : -1}
       {...menu}
       onKeyDown={(e) => {
         const run: Partial<Record<ShortcutId, () => void>> = {

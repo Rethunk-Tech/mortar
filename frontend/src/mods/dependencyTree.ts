@@ -119,6 +119,16 @@ interface ManifestDep {
 
 type DepNodeState = 'enabled' | 'disabled' | 'missing' | 'broken'
 
+function annotate(nodes: readonly TreeNode[], byID: Map<string, InstalledModState>): DepViewNode[] {
+  return nodes.map((n) => ({
+    id: n.id,
+    required: n.required,
+    cycle: n.cycle,
+    state: nodeState(n.id, byID),
+    children: annotate(n.children, byID),
+  }))
+}
+
 export interface ProfileManifest {
   id: string
   dependencies?: readonly ManifestDep[]
@@ -191,11 +201,5 @@ export function annotateTree(
   for (const m of installed) {
     byID.set(idKey(m.id), m)
   }
-  return nodes.map((n) => ({
-    id: n.id,
-    required: n.required,
-    cycle: n.cycle,
-    state: nodeState(n.id, byID),
-    children: annotateTree(n.children, installed),
-  }))
+  return annotate(nodes, byID)
 }

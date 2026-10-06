@@ -20,6 +20,7 @@ import type { ListRow } from './listColumns.ts'
 import { entryOf, modId, nexusIdOf } from './lookup.ts'
 import { ModMenu } from './ModMenu.tsx'
 import { GroupHeaderRow } from './ModsGroupHeader.tsx'
+import { useMarked, useTabStop } from './marked.ts'
 import { contextMenuProps } from './menu.ts'
 import { useNexusFresh } from './nexusDetails.ts'
 import { OverlayCountChip } from './OverlayRow.tsx'
@@ -91,11 +92,10 @@ function ModCard({
 }) {
   const { t } = useLingui()
   const openDetail = useDetail((s) => s.show)
-  const selectedId = useDetail((s) => s.detailId)
-  const selectedIds = useSelection((s) => s.ids)
   const askRemove = useMods((s) => s.askRemove)
   const id = modId(m)
-  const marked = selectedIds.includes(id) || (selectedIds.length === 0 && id === selectedId)
+  const marked = useMarked(id)
+  const tabStop = useTabStop(orderedIds, id)
   const fresh = useNexusFresh(nexusIdOf(profile, m))
   const tag = firstTag(entryOf(profile, m.key)?.tags)
   const cardSize = useSettings((s) => s.gridCardSize) || 'medium'
@@ -154,10 +154,7 @@ function ModCard({
             className="card-title"
             data-mod-id={id}
             aria-label={t`Details of ${m.name}`}
-            // One card is the grid's Tab stop: the open mod's, or the first when none is open.
-            tabIndex={
-              (orderedIds.includes(selectedId) ? selectedId : orderedIds[0]) === id ? 0 : -1
-            }
+            tabIndex={tabStop ? 0 : -1}
             onKeyDown={(e) => {
               const run: Partial<Record<string, () => void>> = {
                 left: () => onMove(id, -1),

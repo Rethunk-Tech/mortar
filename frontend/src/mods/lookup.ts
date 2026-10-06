@@ -26,11 +26,54 @@ import { idKey } from './dependents.ts'
 import { offersNexusDownload } from './nexusMark.ts'
 import { assetRows } from './problemGroups.ts'
 
+type Entry = NonNullable<Profile['entries']>[number]
+
+// Every mod row asks for its entry, so a profile's entries are indexed once; a new profile object is a new index.
+const entryIndex = new WeakMap<Entry[], Map<string, Entry>>()
+
+// Every mod row and card filters the profile's problems, so they are built once per check result.
+const problemsCache = new WeakMap<Result, Problem[]>()
+
+const buildProblems = (result: Result): Problem[] => [
+  ...(result.duplicates ?? []).map((duplicate): Problem => ({ kind: 'duplicate', duplicate })),
+  ...(result.broken ?? []).map((broken): Problem => ({ kind: 'broken', broken })),
+  ...(result.missing ?? []).map((missing): Problem => ({ kind: 'missing', missing })),
+  // Cosmetic conflicts are listed on the Problems tab only; they are never a problem to count or fix.
+  ...assetRows((result.assetConflicts ?? []).filter((asset) => !asset.cosmetic)).filter(
+    (row): row is Extract<Problem, { kind: 'asset' }> => row.kind === 'asset',
+  ),
+  ...(result.runErrors ?? []).map((runError): Problem => ({ kind: 'runError', runError })),
+  ...(result.loadFailures ?? []).map(
+    (loadFailure): Problem => ({ kind: 'loadFailure', loadFailure }),
+  ),
+  ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
+  ...(result.damaged ?? []).map((damaged): Problem => ({ kind: 'damaged', damaged })),
+  ...(result.deprecated ?? []).map((deprecated): Problem => ({ kind: 'deprecated', deprecated })),
+  ...(result.pluginClashes ?? []).map(
+    (pluginClash): Problem => ({ kind: 'pluginClash', pluginClash }),
+  ),
+]
+
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
   mods.filter((m) => m.key === mod.key && m.id !== mod.id)
 
-export const entryOf = (profile: Profile | null | undefined, key: string) =>
-  (profile?.entries ?? []).find((e) => e.key === key)
+export const entryOf = (profile: Profile | null | undefined, key: string): Entry | undefined => {
+  const entries = profile?.entries
+  if (!entries) {
+    return
+  }
+  let index = entryIndex.get(entries)
+  if (!index) {
+    index = new Map()
+    for (const e of entries) {
+      if (!index.has(e.key)) {
+        index.set(e.key, e)
+      }
+    }
+    entryIndex.set(entries, index)
+  }
+  return index.get(key)
+}
 
 export const sourceKind = (profile: Profile, mod: Mod) =>
   entryOf(profile, mod.key)?.source.kind ?? ''
@@ -82,32 +125,17 @@ export type Problem =
   | { kind: 'pluginClash'; pluginClash: PluginClash }
   | { kind: 'deprecated'; deprecated: DeprecatedPackage }
 
-export const problemsOf = (result: Result | null): Problem[] =>
-  result
-    ? [
-        ...(result.duplicates ?? []).map(
-          (duplicate): Problem => ({ kind: 'duplicate', duplicate }),
-        ),
-        ...(result.broken ?? []).map((broken): Problem => ({ kind: 'broken', broken })),
-        ...(result.missing ?? []).map((missing): Problem => ({ kind: 'missing', missing })),
-        // Cosmetic conflicts are listed on the Problems tab only; they are never a problem to count or fix.
-        ...assetRows((result.assetConflicts ?? []).filter((asset) => !asset.cosmetic)).filter(
-          (row): row is Extract<Problem, { kind: 'asset' }> => row.kind === 'asset',
-        ),
-        ...(result.runErrors ?? []).map((runError): Problem => ({ kind: 'runError', runError })),
-        ...(result.loadFailures ?? []).map(
-          (loadFailure): Problem => ({ kind: 'loadFailure', loadFailure }),
-        ),
-        ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
-        ...(result.damaged ?? []).map((damaged): Problem => ({ kind: 'damaged', damaged })),
-        ...(result.deprecated ?? []).map(
-          (deprecated): Problem => ({ kind: 'deprecated', deprecated }),
-        ),
-        ...(result.pluginClashes ?? []).map(
-          (pluginClash): Problem => ({ kind: 'pluginClash', pluginClash }),
-        ),
-      ]
-    : []
+export const problemsOf = (result: Result | null): Problem[] => {
+  if (!result) {
+    return []
+  }
+  let problems = problemsCache.get(result)
+  if (!problems) {
+    problems = buildProblems(result)
+    problemsCache.set(result, problems)
+  }
+  return problems
+}
 
 export const entryHasDrift = (result: Result | null, key: string): boolean =>
   (result?.drift ?? []).some((d) => d.kind !== 'unknown' && d.key === key)

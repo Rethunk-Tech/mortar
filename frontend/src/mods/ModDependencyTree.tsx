@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
+import { useMemo } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -171,14 +172,19 @@ export function ModDependencyTree({ mod }: { mod: Mod }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const broken = useMods((s) => s.problems?.broken)
-  const trees = buildDependencyTrees(manifestsFromMods(mods), mod.id)
-  const installed = mods.map((m) => ({
-    id: m.id,
-    enabled: m.enabled,
-    broken: (broken ?? []).some((b) => sameId(b.id, m.id)),
-  }))
-  const needs = annotateTree(trees.needs, installed)
-  const neededBy = annotateTree(trees.neededBy, installed)
+  // The trees walk every mod in the profile, so they are rebuilt only when the mods or the problems change.
+  const { needs, neededBy } = useMemo(() => {
+    const trees = buildDependencyTrees(manifestsFromMods(mods), mod.id)
+    const installed = mods.map((m) => ({
+      id: m.id,
+      enabled: m.enabled,
+      broken: (broken ?? []).some((b) => sameId(b.id, m.id)),
+    }))
+    return {
+      needs: annotateTree(trees.needs, installed),
+      neededBy: annotateTree(trees.neededBy, installed),
+    }
+  }, [mods, mod.id, broken])
   return (
     <Box>
       <Typography sx={heading}>{t`Dependencies`}</Typography>
