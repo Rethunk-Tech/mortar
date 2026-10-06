@@ -71,8 +71,8 @@ export function ImportFooter({
       ) : null}
       <Box
         sx={{
-          display: 'grid',
-          gridTemplateColumns: targetName ? '1fr 1fr 1fr 1fr 2fr' : '1fr 1fr 2fr',
+          display: 'flex',
+          alignItems: 'center',
           gap: 1,
           px: 1,
           pb: 1,
@@ -96,6 +96,7 @@ export function ImportFooter({
         >
           {t`Reset`}
         </Button>
+        <Box sx={{ flex: 1 }} />
         {targetName ? (
           <LockedReason locked={targetLocked}>
             <Button
