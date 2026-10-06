@@ -17,6 +17,7 @@ import type {
   Backup,
   Snap,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
+import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { listNames } from '../i18n/list.ts'
 import { When } from '../i18n/When.tsx'
@@ -49,14 +50,14 @@ function BackupRow({
   backup,
   busyGame,
   pending,
-  profileName,
+  profiles,
   menuOpen,
   onRestore,
 }: {
   backup: Backup
   busyGame: boolean
   pending: boolean
-  profileName: (id: string) => string
+  profiles: readonly Profile[]
   menuOpen: boolean
   onRestore: (el: HTMLElement) => void
 }) {
@@ -64,8 +65,8 @@ function BackupRow({
   const when = backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name
   const farms = (backup.saves ?? []).map((s) => s.farm || s.folder).join(', ')
   const meta = farms
-    ? t`${causeLabel(backup, profileName)} · ${formatBytes(backup.size)} · ${farms}`
-    : t`${causeLabel(backup, profileName)} · ${formatBytes(backup.size)}`
+    ? t`${causeLabel(backup, profiles)} · ${formatBytes(backup.size)} · ${farms}`
+    : t`${causeLabel(backup, profiles)} · ${formatBytes(backup.size)}`
   return (
     <Box
       sx={{
@@ -105,7 +106,17 @@ function BackupRow({
   )
 }
 
-export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function BackupsDialog({
+  open,
+  onClose,
+  game,
+  profile,
+}: {
+  open: boolean
+  onClose: () => void
+  game: string
+  profile: string
+}) {
   const { t } = useLingui()
   const { items, status, error, load, restore, setPinned, openFolder } = useSaveBackups()
   const profiles = useProfiles((s) => s.profiles)
@@ -117,11 +128,9 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
 
   useEffect(() => {
     if (open) {
-      load().catch(reportUnexpected)
+      load(game, profile).catch(reportUnexpected)
     }
-  }, [open, load])
-
-  const profileName = (id: string) => profiles.find((p) => p.id === id)?.name ?? id
+  }, [open, load, game, profile])
 
   return (
     <>
@@ -133,7 +142,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
               <Typography sx={{ fontSize: 13, color: 'error.main' }}>
                 {t`Could not list backups: ${error}`}
               </Typography>
-              <Button size="small" onClick={() => load().catch(reportUnexpected)}>
+              <Button size="small" onClick={() => load(game, profile).catch(reportUnexpected)}>
                 {t`Retry`}
               </Button>
             </Box>
@@ -155,7 +164,7 @@ export function BackupsDialog({ open, onClose }: { open: boolean; onClose: () =>
                 backup={b}
                 busyGame={busyGame}
                 pending={pending}
-                profileName={profileName}
+                profiles={profiles}
                 menuOpen={menu?.backup.name === b.name}
                 onRestore={(el) => {
                   setMenu({ backup: b, el })

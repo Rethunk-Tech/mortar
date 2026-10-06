@@ -17,7 +17,7 @@ type Target struct {
 // TargetFor resolves (dataDir is the data folder, whose backups folder is the default location) the game's backupLocation and saveBackupsKept, honouring a profile's overrides. Every kind of
 // save backup (update, restore, manual, launch) uses it, so they share one folder and one count.
 func TargetFor(dataDir string, set settings.Settings, game string, overrides map[string]string) (Target, error) {
-	dir, reads, err := Locations(dataDir, settings.ResolveAt(set, "backupLocation", settings.Scope{Game: game}, overrides))
+	dir, reads, err := Locations(dataDir, settings.ResolveAt(set, "backupLocation", settings.Scope{Game: game}, overrides), game)
 	if err != nil {
 		return Target{}, err
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
+	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/bisect"
 	"github.com/Rethunk-Tech/mortar/internal/bundles"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -426,7 +427,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		return s.Saves.ListBackups(p.Game)
+		return s.Saves.ListBackups(p.Game, p.Profile)
 	case "backups.restore":
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
@@ -446,7 +447,11 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		return nil, s.Saves.CreateBackup(p.Game, p.Name)
+		made, err := s.Saves.CreateBackup(p.Game, p.Name)
+		if err == nil && !made {
+			err = backup.ErrNoSaves
+		}
+		return nil, err
 	case "bundles":
 		if s.Bundles == nil {
 			return nil, errors.New("bundles are unavailable")

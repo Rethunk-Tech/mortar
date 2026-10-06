@@ -202,7 +202,7 @@ func TestUpdateBacksUpSavesAndHonoursLock(t *testing.T) {
 	cfg, _ := os.UserConfigDir()
 	writeFile(t, filepath.Join(cfg, "StardewValley", "Saves"), "Farm_1/Farm_1", "save")
 
-	backups, _, err := backup.Locations(e.dataDir, "")
+	backups, _, err := backup.Locations(e.dataDir, "", "stardew")
 	if err != nil {
 		t.Fatal(err)
 	}

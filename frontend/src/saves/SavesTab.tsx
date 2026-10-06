@@ -94,7 +94,12 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
       >
         {body}
       </Box>
-      <BackupsDialog open={backupsOpen} onClose={() => setBackupsOpen(false)} />
+      <BackupsDialog
+        open={backupsOpen}
+        onClose={() => setBackupsOpen(false)}
+        game={game}
+        profile={profile.id}
+      />
     </Box>
   )
 }

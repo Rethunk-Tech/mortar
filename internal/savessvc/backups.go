@@ -2,6 +2,7 @@ package savessvc
 
 import (
 	"cmp"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -20,8 +21,9 @@ import (
 // ErrBusy is returned when a restore or trim is refused because the game is launching or running.
 var ErrBusy = usererr.New(usererr.Busy, "stop the game to change save backups")
 
-// ListBackups returns save backups newest first.
-func (s *Service) ListBackups(game string) ([]backup.Backup, error) {
+// ListBackups returns the game's save backups newest first, read from the backups folders on every call. A non-empty
+// profile leaves out the backups another profile took; backups that name no profile are listed for every profile.
+func (s *Service) ListBackups(game, profile string) ([]backup.Backup, error) {
 	id, err := s.saveGame(game)
 	if err != nil {
 		return nil, err
@@ -38,7 +40,7 @@ func (s *Service) ListBackups(game string) ([]backup.Backup, error) {
 			return nil, err
 		}
 		for _, b := range listed {
-			if seen[b.Name] {
+			if seen[b.Name] || (profile != "" && b.Profile != "" && b.Profile != profile) {
 				continue
 			}
 			seen[b.Name] = true
@@ -53,7 +55,7 @@ func (s *Service) ListBackups(game string) ([]backup.Backup, error) {
 
 // SaveBackups lists, newest first, every backup that contains the save folder.
 func (s *Service) SaveBackups(game, save string) ([]backup.Backup, error) {
-	all, err := s.ListBackups(game)
+	all, err := s.ListBackups(game, "")
 	if err != nil {
 		return nil, err
 	}
@@ -131,19 +133,23 @@ func (s *Service) OpenBackupsFolder(game string) error {
 	return datadir.Open(dir)
 }
 
-// CreateBackup zips one save and marks the zip kept, with cause kind manual.
-func (s *Service) CreateBackup(game, folder string) error {
+// CreateBackup zips one save and marks the zip kept, with cause kind manual. It reports false, with no backup made,
+// when the folder holds no save.
+func (s *Service) CreateBackup(game, folder string) (bool, error) {
 	id, err := s.saveGame(game)
 	if err != nil {
-		return err
+		return false, err
 	}
 	target, err := s.target(id)
 	if err != nil {
-		return err
+		return false, err
 	}
 	now := uniqueBackupTime(target.Reads, time.Now())
 	_, err = backup.Folder(s.scanners[id].Dir, target.Dir, folder, target.Keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
-	return err
+	if errors.Is(err, backup.ErrNoSaves) {
+		return false, nil
+	}
+	return err == nil, err
 }
 
 // uniqueBackupTime moves now forward a millisecond at a time until no backup folder already holds a backup of that

@@ -110,8 +110,11 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
         onClick={() => {
           runBackup(
             async () => {
-              await CreateBackup(game, fit.folder)
-              await useSaveBackups.getState().load()
+              if (!(await CreateBackup(game, fit.folder))) {
+                useToasts.getState().push({ kind: 'info', title: t`No saves to back up` })
+                return
+              }
+              await useSaveBackups.getState().reload()
               useToasts.getState().push({ kind: 'success', title: t`Backed up ${label}` })
             },
             { errorTitle: t`Could not back up ${label}` },

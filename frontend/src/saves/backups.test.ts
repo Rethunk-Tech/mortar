@@ -12,9 +12,22 @@ const firstBackup = {
 }
 const listed = [firstBackup]
 let listImpl: () => Promise<typeof listed> = async () => listed
+let listedFor: string[] = []
+
+mock.module('@lingui/core/macro', () => ({
+  // A named placeholder arrives as { name: value }.
+  msg: (parts: TemplateStringsArray, ...values: unknown[]) =>
+    String.raw(
+      { raw: parts },
+      ...values.map((v) => (v !== null && typeof v === 'object' ? Object.values(v)[0] : v)),
+    ),
+}))
 
 mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts', () => ({
-  ListBackups: () => listImpl(),
+  ListBackups: (game: string, profile: string) => {
+    listedFor = [game, profile]
+    return listImpl()
+  },
   RestoreBackup: async (_game: string, name: string, folders: string[] | null) => {
     restored = { name, folders }
   },
@@ -22,13 +35,14 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/ser
   OpenBackupsFolder: async () => undefined,
 }))
 
-const { useSaveBackups } = await import('./backups.ts')
+const { causeLabel, useSaveBackups } = await import('./backups.ts')
 const { formatBytes } = await import('../i18n/bytes.ts')
 
 test('load fills backups newest as returned', async () => {
   listImpl = async () => listed
   useSaveBackups.setState(useSaveBackups.getInitialState(), true)
-  await useSaveBackups.getState().load()
+  await useSaveBackups.getState().load('stardew', 'p1')
+  expect(listedFor).toEqual(['stardew', 'p1'])
   expect(useSaveBackups.getState().items).toEqual(listed)
   expect(useSaveBackups.getState().status).toBe('ready')
 })
@@ -37,7 +51,13 @@ test('restore asks for the chosen zip and folders then reloads', async () => {
   listImpl = async () => listed
   restored = { name: '', folders: null }
   useSaveBackups.setState(
-    { ...useSaveBackups.getInitialState(), items: listed, status: 'ready' },
+    {
+      ...useSaveBackups.getInitialState(),
+      game: 'stardew',
+      profile: 'p1',
+      items: listed,
+      status: 'ready',
+    },
     true,
   )
   await useSaveBackups.getState().restore(firstBackup.name, ['Farm_1'])
@@ -60,8 +80,8 @@ test('a slower first list does not overwrite a later load', async () => {
     return [{ ...firstBackup, name: 'newer.zip' }]
   }
   useSaveBackups.setState(useSaveBackups.getInitialState(), true)
-  const first = useSaveBackups.getState().load()
-  const second = useSaveBackups.getState().load()
+  const first = useSaveBackups.getState().load('stardew', 'p1')
+  const second = useSaveBackups.getState().load('stardew', 'p1')
   await second
   release()
   await first
@@ -71,4 +91,33 @@ test('a slower first list does not overwrite a later load', async () => {
 test('formatBytes uses KB past a kibibyte', () => {
   expect(formatBytes(500)).toBe('500 bytes')
   expect(formatBytes(2048)).toBe('2 kB')
+})
+
+test('opening for another game never shows the rows read before', async () => {
+  let release: () => void = () => undefined
+  listImpl = () =>
+    new Promise((resolve) => {
+      release = () => resolve([])
+    })
+  useSaveBackups.setState(
+    {
+      ...useSaveBackups.getInitialState(),
+      game: 'stardew',
+      profile: 'p1',
+      items: listed,
+      status: 'ready',
+    },
+    true,
+  )
+  const loading = useSaveBackups.getState().load('lethal-company', 'p9')
+  expect(useSaveBackups.getState().items).toEqual([])
+  release()
+  await loading
+  expect(listedFor).toEqual(['lethal-company', 'p9'])
+  expect(useSaveBackups.getState().items).toEqual([])
+})
+
+test('an update backup names its profile, or says it was deleted', () => {
+  expect(causeLabel(firstBackup, [{ id: 'p1', name: 'Main' }])).toBe('Before updating Main')
+  expect(causeLabel(firstBackup, [])).toBe('Before updating a deleted profile')
 })

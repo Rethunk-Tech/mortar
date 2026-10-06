@@ -28,7 +28,7 @@ type TrimResult struct {
 
 // BackupsUsage sums backup sizes in total and per save of one game.
 func (s *Service) BackupsUsage(game string) (BackupsUsage, error) {
-	list, err := s.ListBackups(game)
+	list, err := s.ListBackups(game, "")
 	if err != nil {
 		return BackupsUsage{}, err
 	}
@@ -68,7 +68,7 @@ func (s *Service) TrimBackups(game string, keepPerSave int) (TrimResult, error) 
 	if err != nil {
 		return TrimResult{}, err
 	}
-	list, err := s.ListBackups(game)
+	list, err := s.ListBackups(game, "")
 	if err != nil {
 		return TrimResult{}, err
 	}

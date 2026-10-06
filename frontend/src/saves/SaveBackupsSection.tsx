@@ -43,7 +43,7 @@ function Row({
 }) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
-  const cause = causeLabel(backup, (id) => profiles.find((p) => p.id === id)?.name ?? id)
+  const cause = causeLabel(backup, profiles)
   const size = formatBytes(backup.size)
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -99,7 +99,7 @@ export function SaveBackupsSection({ folder, label }: { folder: string; label: s
   }, [open, load])
   const refresh = async () => {
     await load()
-    await useSaveBackups.getState().load()
+    await useSaveBackups.getState().reload()
   }
   const when = ask ? formatWhen(ask.backup.at, { withTime: true }) : ''
   return (
