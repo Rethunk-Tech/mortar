@@ -36,5 +36,6 @@ Not in the first release; re-weigh only when asked:
 - Needs Nexus's approval through app registration first (below), since it starts downloads outside Nexus's own Mod Manager Download button: an "Add to Mortar" button on Nexus listing tiles.
 - Per-profile save isolation.
 - Decided against: ModDrop as a source. It has no public listing or download API (the site is a single-page app and `/api/v1/*` answers "does not exist"), so Mortar could only build a page link. SMAPI `ModDrop:N` update keys show as an unknown source.
+- Decided against: deduplicating identical files across store items. Measured, not worth it (2026-10-05, a 1.6 GB store of 724 items, 50,257 files): files identical across items hold 76 MB, 4.7% of the store, under the 5% bar, and writable files barely change that; counting copies inside one item too it is 99 MB, 6.1%.
 - Settings considered and not taken (2026-10-02): new profiles starting as a copy of the open profile or from a bundle; an offline mode that never contacts the network.
 - Registering Mortar with Nexus (Collections still to ask about): SSO and OAuth PKCE code is ready behind a build flag (`nexussso.Slug` / `ClientID`, off while empty), waiting for Nexus approval and a slug or client id; see docs/nexus-application.md.
