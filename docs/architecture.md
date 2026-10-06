@@ -203,7 +203,7 @@ The registry (`internal/settings/registry.go`) lists each key with its scope, ty
 - `reuseFomodChoices` (true): skip the FOMOD wizard when saved choices still match. `driftChecks` (true): scan for mods changed outside Mortar.
 - `autoInstallMortarUpdates` (true): stage a found Mortar update without asking. Mortar's own channel stays `includeBetaReleases`.
 - `autoTrackNexus` (false): track a Nexus mod after install.
-- `lanName` (empty): advertised LAN device name; empty uses the host name. `lanAutoAcceptPaired` (false): auto-accept LAN shares from paired computers.
+- `lanSharing` (false): find nearby Mortars and send or receive profiles over the local network. `lanName` (empty): advertised LAN device name; empty uses the host name. `lanAutoAcceptPaired` (false): auto-accept LAN shares from paired computers.
 - `downloadFolder` (empty): archive landing folder; empty is `<datadir>/downloads`.
 - `profileOrder` (`manual`): `manual`, `name`, or `lastPlayed` for the sidebar profile list. `lastPlayed` puts this game's last launched profile first (`lastPlayed` in settings).
 - `autoRetryDownloads` (`off`): `off`, `1`, or `3` extra fetch attempts with backoff after a failed download.
