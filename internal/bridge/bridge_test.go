@@ -51,7 +51,7 @@ func serve(t *testing.T, reply string, hang bool) (port int, got chan string) {
 	return port, got
 }
 
-func state(port int) State { return State{Port: port, Token: "tok", PID: os.Getpid()} }
+func state(port int) State { return State{Port: port, Token: "tok"} }
 
 func TestSendOK(t *testing.T) {
 	port, got := serve(t, "ok\n", false)
@@ -91,7 +91,7 @@ func TestSendTimeout(t *testing.T) {
 func TestSendNothingListening(t *testing.T) {
 	ln, port := listen(t)
 	_ = ln.Close()
-	if _, err := send(t.Context(), state(port), "x"); !errors.Is(err, ErrNotReady) {
+	if _, err := send(t.Context(), state(port), "x"); !errors.Is(err, ErrNotRunning) {
 		t.Fatalf("err = %v", err)
 	}
 }
@@ -109,15 +109,15 @@ func TestReadState(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	live := fmt.Sprintf(`{"port":51234,"token":"abc","pid":%d}`, os.Getpid())
+	// A Wine PID means nothing on the host, so a pid no host process has is no reason to call the game gone.
+	live := `{"port":51234,"token":"abc","pid":2147483646}`
 	cases := []struct {
 		name, body string
 		want       error
 	}{
 		{"missing", "", ErrNotReady},
 		{"garbage", "{", ErrNotReady},
-		{"no token", fmt.Sprintf(`{"port":51234,"token":"","pid":%d}`, os.Getpid()), ErrNotReady},
-		{"dead pid", `{"port":51234,"token":"abc","pid":2147483646}`, ErrNotRunning},
+		{"no token", `{"port":51234,"token":""}`, ErrNotReady},
 		{"live", live, nil},
 	}
 	for _, c := range cases {
@@ -141,7 +141,7 @@ func TestQueryReturnsTheRepliesJSON(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(file), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	body := fmt.Sprintf(`{"port":%d,"token":"tok","pid":%d}`, port, os.Getpid())
+	body := fmt.Sprintf(`{"port":%d,"token":"tok"}`, port)
 	if err := os.WriteFile(file, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}

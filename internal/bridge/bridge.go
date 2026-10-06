@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
 // Companion is a loader's companion mod: its folder and id as the loader spells them, and the state file it writes.
@@ -39,7 +38,7 @@ const maxReply = 1 << 20
 var timeout = 3 * time.Second
 
 var (
-	// ErrNotRunning means the game process the state file names is gone.
+	// ErrNotRunning means nothing answers on the port the state file names: a game that ended without removing it.
 	ErrNotRunning = errors.New("the game is not running")
 	// ErrNotReady means the game is up but the bridge has not started yet, or the mod is missing.
 	ErrNotReady = errors.New("the bridge is not ready yet: wait until the loader has finished loading")
@@ -56,11 +55,10 @@ func (e *RejectedError) Error() string { return "command rejected: " + e.Message
 type State struct {
 	Port  int    `json:"port"`
 	Token string `json:"token"`
-	PID   int    `json:"pid"`
 }
 
-// ReadState reads the companion's state file. A missing or unreadable file is ErrNotReady, a file whose process has
-// exited ErrNotRunning.
+// ReadState reads the companion's state file. A missing or unreadable file is ErrNotReady. Whether the game behind it
+// still runs only a connection can tell: the pid a companion records is the game's own, a Wine PID under Proton.
 func ReadState(stateFile string) (State, error) {
 	b, err := fsx.ReadFile(stateFile)
 	if errors.Is(err, os.ErrNotExist) {
@@ -70,11 +68,8 @@ func ReadState(stateFile string) (State, error) {
 		return State{}, err
 	}
 	var st State
-	if json.Unmarshal(b, &st) != nil || st.Port <= 0 || st.Port > 65535 || st.Token == "" || st.PID <= 0 {
+	if json.Unmarshal(b, &st) != nil || st.Port <= 0 || st.Port > 65535 || st.Token == "" {
 		return State{}, ErrNotReady
-	}
-	if !launch.Alive(st.PID) {
-		return State{}, ErrNotRunning
 	}
 	return st, nil
 }
@@ -114,9 +109,10 @@ func send(ctx context.Context, st State, command string) (string, error) {
 		return "", &RejectedError{Message: "a command is one line"}
 	}
 	dialer := net.Dialer{Timeout: timeout}
+	// Mortar starts the game in the host's network namespace, so the companion's loopback is this one.
 	conn, err := dialer.DialContext(ctx, "tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(st.Port)))
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrNotReady, err)
+		return "", fmt.Errorf("%w: %w", ErrNotRunning, err)
 	}
 	defer func() { _ = conn.Close() }()
 	if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
