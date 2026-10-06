@@ -1679,7 +1679,7 @@ func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet, sameAuthor bool) (cla
 			}
 			if bIndex[j].overlaps(x.shapes) {
 				clash = true
-				ok, why := harmless(x, y)
+				ok, why := harmless(x, y, bIndex[j])
 				// One overlap that matters settles it: nothing later can make the pair minor again.
 				if !ok {
 					return true, false, nil
@@ -1742,8 +1742,8 @@ func hasUnknownMapLayer(p cpPatch) bool {
 // that applies in one location or weather, or on one day or festival, only matters there; two that only set
 // prices let one mod's numbers win; and a one-tile edit at a computed spot is too small to place, so it is
 // shown without counting as a problem.
-func harmless(x, y cpPatch) (bool, *framework.ConflictNote) {
-	if balanceOnly(x) && balanceOnly(y) {
+func harmless(x, y cpPatch, yIndex *shapeSet) (bool, *framework.ConflictNote) {
+	if balanceOverlap(x, y, yIndex) {
 		return true, &framework.ConflictNote{Kind: "balance"}
 	}
 	for _, p := range []cpPatch{x, y} {
@@ -1757,17 +1757,24 @@ func harmless(x, y cpPatch) (bool, *framework.ConflictNote) {
 // balanceFields are data fields that only tune prices and costs: when two collide, one mod's numbers win.
 var balanceFields = map[string]bool{"buildcost": true, "buildmaterials": true, "purchaseprice": true, "sellprice": true, "price": true, "pricemodifiers": true}
 
-// balanceOnly is a data edit whose every key sits inside a balance field.
-func balanceOnly(p cpPatch) bool {
-	if p.action != kindEditData || len(p.shapes) == 0 {
+// balanceOverlap is two data edits that only collide on balance fields (yIndex indexes y's shapes); what
+// else either sets, the other leaves alone.
+func balanceOverlap(x, y cpPatch, yIndex *shapeSet) bool {
+	if x.action != kindEditData || y.action != kindEditData {
 		return false
 	}
-	return !slices.ContainsFunc(p.shapes, func(s cpShape) bool {
-		key := s.key[strings.Index(s.key, ":")+1:]
-		return !slices.ContainsFunc(strings.FieldsFunc(key, func(r rune) bool { return r == '/' || r == '.' }), func(part string) bool {
-			return balanceFields[strings.ToLower(part)]
-		})
+	return !slices.ContainsFunc(x.shapes, func(s cpShape) bool {
+		return !balanceKey(s.key) && slices.ContainsFunc(yIndex.props[s.key], s.overlaps)
 	})
+}
+
+func balanceKey(key string) bool {
+	for part := range strings.FieldsFuncSeq(key[strings.Index(key, ":")+1:], func(r rune) bool { return r == '/' || r == '.' }) {
+		if balanceFields[strings.ToLower(part)] {
+			return true
+		}
+	}
+	return false
 }
 
 // textOnly is a data edit that only replaces lines of text: when two collide, one mod's line shows

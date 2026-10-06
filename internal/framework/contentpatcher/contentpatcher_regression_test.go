@@ -741,6 +741,24 @@ func TestBalanceOnlyDataEditsAreCosmetic(t *testing.T) {
 	if len(conflicts) != 1 || conflicts[0].Cosmetic || conflicts[0].Note != nil {
 		t.Fatalf("a size clash is real, got %#v", conflicts)
 	}
+	// Better Things also sets hay capacity and materials; Friendships Affect Prices only the cost they share.
+	conflicts = assetConflicts([]framework.Mod{
+		pack(`{"HayCapacity":"1920","BuildCost":700,"BuildMaterials":[{"ItemId":"(O)390","Amount":200}]}`),
+		syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Buildings","Fields":{"Coop":{"BuildCost":"{{Round: 4000}}"},"Barn":{"BuildCost":6000}}}]}`, nil),
+	})
+	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || conflicts[0].Note.Kind != "balance" {
+		t.Fatalf("only the shared cost collides, got %#v", conflicts)
+	}
+	shop := func(entries string) framework.Mod {
+		return syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Shops","TargetField":["RSVHeapsStore"],"Entries":`+entries+`}]}`, nil)
+	}
+	conflicts = assetConflicts([]framework.Mod{
+		shop(`{"PriceModifiers":[{"Modification":"Multiply","Amount":0.8}],"Owners":[{"Name":"Lorenzo"}]}`),
+		shop(`{"PriceModifiers":[{"Modification":"Multiply","Amount":0.9}]}`),
+	})
+	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || conflicts[0].Note.Kind != "balance" {
+		t.Fatalf("two shops' price modifiers are balance only, got %#v", conflicts)
+	}
 }
 
 func TestOneDayEditsAreSituational(t *testing.T) {
