@@ -87,7 +87,7 @@ func (s *Store) SyncPackages(gameID, id string) error {
 	}
 	var placed []string
 	for rel := range files {
-		if !strings.HasPrefix(rel, "BepInEx/config/") {
+		if !isConfig(rel) {
 			placed = append(placed, rel)
 		}
 	}
@@ -98,12 +98,11 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		return err
 	}
 	for _, rel := range slices.Sorted(maps.Keys(files)) {
+		if isConfig(rel) {
+			continue
+		}
 		dst := filepath.Join(dir, filepath.FromSlash(rel))
-		if strings.HasPrefix(rel, "BepInEx/config/") {
-			if _, err := os.Lstat(dst); err == nil {
-				continue
-			}
-		} else if placedCurrent(files[rel].src, dst) {
+		if placedCurrent(files[rel].src, dst) {
 			continue
 		}
 		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
@@ -116,7 +115,45 @@ func (s *Store) SyncPackages(gameID, id string) error {
 			return err
 		}
 	}
+	if err := seedConfigs(dir, files); err != nil {
+		return err
+	}
 	return writePlaced(dir, placed)
+}
+
+// SeedConfigs copies the config files the enabled packages ship into the profile where it has none yet, so a
+// package's settings can be edited before the first launch lays the rest of it out.
+func (s *Store) SeedConfigs(gameID, id string) error {
+	files, _, err := s.packageFiles(gameID, id)
+	if err != nil || files == nil {
+		return err
+	}
+	_, dir, err := s.readDir(gameID, id)
+	if err != nil {
+		return err
+	}
+	return seedConfigs(dir, files)
+}
+
+func isConfig(rel string) bool { return strings.HasPrefix(rel, "BepInEx/config/") }
+
+func seedConfigs(dir string, files map[string]packageFile) error {
+	for _, rel := range slices.Sorted(maps.Keys(files)) {
+		if !isConfig(rel) {
+			continue
+		}
+		dst := filepath.Join(dir, filepath.FromSlash(rel))
+		if _, err := os.Lstat(dst); err == nil {
+			continue
+		}
+		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+			return err
+		}
+		if err := datadir.CopyFile(files[rel].src, dst); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func writePlaced(dir string, rels []string) error {

@@ -28,6 +28,7 @@ type Profiles interface {
 	ReadConfig(game, id, key string, uniqueID mod.ID) (string, error)
 	ShippedConfig(game, id, key string, uniqueID mod.ID) (string, bool)
 	PluginGUIDs(game, id string, uniqueID mod.ID) []string
+	SeedConfigs(game, id string) error
 }
 
 // Service edits the config files a profile holds. A modID is a SMAPI UniqueID, a package's id (whose plugins' GUIDs
@@ -83,6 +84,9 @@ func (s *Service) Files(game, profileID, modID string) ([]ConfigFile, error) {
 	}
 	dir, err := s.cfgDir(game, profileID)
 	if err != nil {
+		return nil, err
+	}
+	if err := s.Profiles.SeedConfigs(game, profileID); err != nil {
 		return nil, err
 	}
 	ents, err := os.ReadDir(dir)

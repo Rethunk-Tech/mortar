@@ -28,6 +28,8 @@ func (f fakeProfiles) ShippedConfig(string, string, string, mod.ID) (string, boo
 	return f.shipped, f.shipped != ""
 }
 
+func (fakeProfiles) SeedConfigs(string, string) error { return nil }
+
 func (fakeProfiles) PluginGUIDs(_, _ string, id mod.ID) []string {
 	if id == "thunderstore:Ex-BetterStuff" {
 		return []string{"com.example.BetterStuff"}
