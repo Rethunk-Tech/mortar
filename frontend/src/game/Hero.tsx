@@ -267,7 +267,13 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
   const mods = userModCount(profile)
   const setTab = useTab((s) => s.setTab)
   const fits = useSaves((s) => s.fits)
-  const { fitting, total } = saveFits(fits)
+  const { fitting, recorded, total } = saveFits(fits)
+  let savesValue = t`None`
+  if (recorded > 0) {
+    savesValue = t`${fitting} of ${recorded}`
+  } else if (total > 0) {
+    savesValue = String(total)
+  }
   const updates = useBadges((s) => s.byProfile[profile.id]?.updates ?? 0)
   const problems = useBadges((s) => s.byProfile[profile.id]?.problems ?? 0)
   const hero = useSettings((s) => s.profileHero) || 'full'
@@ -334,7 +340,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
           <Card label={t`Mods`} value={String(mods)} />
           <Card
             label={t`Saves`}
-            value={total === 0 ? t`None` : t`${fitting} of ${total}`}
+            value={savesValue}
             onClick={() => setTab('saves')}
           />
           <Card label={t`Updated`} value={<When value={profile.updated} />} />

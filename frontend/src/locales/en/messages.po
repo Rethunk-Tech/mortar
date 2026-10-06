@@ -208,7 +208,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
-#: src/game/Hero.tsx:340
+#: src/game/Hero.tsx:346
 #: src/mods/Sidebar.tsx:153
 msgid "Updated"
 msgstr "Updated"
@@ -3638,7 +3638,7 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 msgid "Search archives"
 msgstr "Search archives"
 
-#: src/game/Hero.tsx:341
+#: src/game/Hero.tsx:347
 msgid "Created"
 msgstr "Created"
 
@@ -4194,7 +4194,7 @@ msgid "Get the extension"
 msgstr "Get the extension"
 
 #: src/bundles/BundlesSection.tsx:110
-#: src/game/Hero.tsx:337
+#: src/game/Hero.tsx:271
 #: src/mods/ModDependencyTree.tsx:162
 #: src/mods/Toolbar.tsx:196
 #: src/settings/prefCopy.ts:122
@@ -5343,6 +5343,10 @@ msgstr "Mortar cannot download {0} again."
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
+#: src/game/Hero.tsx:273
+msgid "{fitting} of {recorded}"
+msgstr "{fitting} of {recorded}"
+
 #: src/launch/LaunchLayer.tsx:328
 #: src/launch/LaunchLayer.tsx:329
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
@@ -6410,7 +6414,7 @@ msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:54
 #: src/firstrunTour/TourPopover.tsx:50
-#: src/game/Hero.tsx:334
+#: src/game/Hero.tsx:340
 #: src/game/ProfileWorkspace.tsx:87
 #: src/mods/ModListVirtual.tsx:279
 #: src/settings/GameSettingsPage.tsx:63
@@ -10482,10 +10486,6 @@ msgstr "Markdown"
 msgid "Could not cancel transfer"
 msgstr "Could not cancel transfer"
 
-#: src/game/Hero.tsx:337
-msgid "{fitting} of {total}"
-msgstr "{fitting} of {total}"
-
 #: src/mods/storeProblems.ts:65
 msgid "Could not dismiss the setting warning"
 msgstr "Could not dismiss the setting warning"
@@ -10811,7 +10811,7 @@ msgstr "Play {playName}"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Hero.tsx:336
+#: src/game/Hero.tsx:342
 #: src/game/ProfileWorkspace.tsx:105
 msgid "Saves"
 msgstr "Saves"

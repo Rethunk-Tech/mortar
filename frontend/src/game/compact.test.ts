@@ -12,6 +12,15 @@ test('compactMeta omits zero update and problem parts', () => {
 })
 
 test('saveFits treats an empty scan as 0 of 0', () => {
-  expect(saveFits([])).toEqual({ fitting: 0, total: 0 })
-  expect(saveFits([{ missing: [] }, { missing: ['x'] }])).toEqual({ fitting: 1, total: 2 })
+  expect(saveFits([])).toEqual({ fitting: 0, recorded: 0, total: 0 })
+  expect(saveFits([{ missing: [] }, { missing: ['x'] }])).toEqual({
+    fitting: 1,
+    recorded: 2,
+    total: 2,
+  })
+  expect(saveFits([{ unrecorded: true }, { unrecorded: true }])).toEqual({
+    fitting: 0,
+    recorded: 0,
+    total: 2,
+  })
 })

@@ -19,9 +19,12 @@ export function compactMeta(mods: number, updates: number, problems: number) {
   return parts
 }
 
-export function saveFits(fits: { missing?: unknown[] | null }[]) {
+// A save that records no mod list (Lethal Company's) can neither fit nor miss, so it counts only toward the total.
+export function saveFits(fits: { missing?: unknown[] | null; unrecorded?: boolean }[]) {
+  const recorded = fits.filter((f) => !f.unrecorded)
   return {
-    fitting: fits.filter((f) => (f.missing ?? []).length === 0).length,
+    fitting: recorded.filter((f) => (f.missing ?? []).length === 0).length,
+    recorded: recorded.length,
     total: fits.length,
   }
 }
