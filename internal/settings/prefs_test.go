@@ -112,7 +112,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"reduceMotion": "always", "profileHero": "hidden", "enableRequirements": "never",
 		"missingRequirements": "autodownload", "reuseFomodChoices": "false", "driftChecks": "false",
 		"smapiBuilds": "include", "smapiPin": "4.0.0", "bepinex5Pin": "5.4.2100", "autoInstallMortarUpdates": "false", "autoTrackNexus": "true",
-		"defaultLaunchMethod": "direct", "showSmapiConsole": "false", "skipPlayCheck": "true", "consoleLevel": "debug",
+		"defaultLaunchMethod": "direct", "showSmapiConsole": "false", "skipPlayCheck": "true", "skipIntro": "true", "consoleLevel": "debug",
 		"consoleTimestamps": "false", "consoleFollow": "false", "lanSharing": "true", "lanPort": "47641", "lanName": "Workshop",
 		"lanAutoAcceptPaired": "true", "downloadFolder": "/var/tmp/mortar-dl",
 		"profileOrder": "name", "autoRetryDownloads": "3", "pauseDownloadsWhilePlaying": "true",

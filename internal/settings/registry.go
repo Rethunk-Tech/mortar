@@ -34,6 +34,7 @@ type GameSettings struct {
 	MissingRequirements         string `json:"missingRequirements"`
 	DefaultLaunchMethod         string `json:"defaultLaunchMethod"`
 	SkipPlayCheck               bool   `json:"skipPlayCheck"`
+	SkipIntro                   bool   `json:"skipIntro"`
 	ConsoleLevel                string `json:"consoleLevel"`
 	ConsoleTimestamps           *bool  `json:"consoleTimestamps"`
 	ConsoleFollow               *bool  `json:"consoleFollow"`
@@ -164,6 +165,11 @@ var registry = []pref{
 		gp.SkipPlayCheck = on
 		putGame(s, g, gp)
 	})),
+	overridable(boolPref("skipIntro", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).SkipIntro }, func(s *Settings, g string, on bool) {
+		gp := s.GamePrefs(g)
+		gp.SkipIntro = on
+		putGame(s, g, gp)
+	})),
 	enumPref("consoleLevel", ScopeGame, ConsoleLevelWarn, consoleLevelValues, func(s Settings, g string) string { return s.GamePrefs(g).ConsoleLevel }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConsoleLevel = v; putGame(s, g, gp) }),
 	ptrPref("consoleTimestamps", ScopeGame, false, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleTimestamps }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
@@ -253,6 +259,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	}
 	dst.UpdateModsBeforePlayDefault = src.UpdateModsBeforePlayDefault
 	dst.SkipPlayCheck = src.SkipPlayCheck
+	dst.SkipIntro = src.SkipIntro
 	if src.RunsKept != 0 {
 		dst.RunsKept = src.RunsKept
 	}

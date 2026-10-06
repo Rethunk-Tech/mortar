@@ -102,6 +102,7 @@ function GamePages({
               keys={[
                 'defaultLaunchMethod',
                 ...(loader?.id === 'smapi' ? ['showSmapiConsole'] : []),
+                ...(loader?.introSkip ? ['skipIntro'] : []),
                 'updateModsBeforePlayDefault',
               ]}
               game={game}

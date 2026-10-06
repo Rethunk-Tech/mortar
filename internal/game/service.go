@@ -65,6 +65,8 @@ type LoaderRef struct {
 	Assets bool `json:"assets"`
 	// Frameworks is whether the loader's mods can be content for a framework mod, which the Framework grouping needs.
 	Frameworks bool `json:"frameworks"`
+	// IntroSkip is whether the loader's companion can skip the game's intro, which the skipIntro setting needs.
+	IntroSkip bool `json:"introSkip"`
 }
 
 func loaderRef(gameID string, l components.GameLoader) LoaderRef {
@@ -78,6 +80,7 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		_, ref.Startup = d.(loader.StartupTimings)
 		_, ref.Perf = d.(loader.InGamePerf)
 		_, ref.Overlay = d.(loader.StreamOverlay)
+		_, ref.IntroSkip = d.(loader.IntroSkipper)
 		ref.Share = loader.SharesLog(d)
 		if p, ok := d.(loader.LogPaste); ok {
 			ref.Paste = p.PasteSite()

@@ -27,6 +27,8 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
       return i18n._(msg`Update mods before Play`)
     case 'skipPlayCheck':
       return i18n._(msg`Skip pre-Play check`)
+    case 'skipIntro':
+      return i18n._(msg`Skip the intro`)
     default:
       return key
   }
@@ -43,6 +45,7 @@ export function OverridesSection({
   const premium = useNexus((s) => s.premium)
   const info = useGameInfo()
   const smapi = info?.loaderId === 'smapi'
+  const introSkip = info?.loaders?.[0]?.introSkip === true
   const nexus = (info?.sources ?? []).includes('nexus')
   return (
     <Box sx={{ mt: 2, mb: 2 }}>
@@ -50,7 +53,9 @@ export function OverridesSection({
       <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>
         {t`These apply only to this profile.`}
       </Typography>
-      {OVERRIDE_KEYS.filter((key) => smapi || key !== 'showSmapiConsole').map((key) => {
+      {OVERRIDE_KEYS.filter(
+        (key) => (smapi || key !== 'showSmapiConsole') && (introSkip || key !== 'skipIntro'),
+      ).map((key) => {
         const stored = overrides[key]
         const choice = choiceFromOverride(stored)
         const label = overrideLabel(key, i18n)

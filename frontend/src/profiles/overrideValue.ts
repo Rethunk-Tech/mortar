@@ -9,6 +9,7 @@ export const OVERRIDE_KEYS = [
   'saveBackupsKept',
   'updateModsBeforePlayDefault',
   'skipPlayCheck',
+  'skipIntro',
 ] as const
 
 export type OverrideKey = (typeof OVERRIDE_KEYS)[number]
@@ -20,6 +21,7 @@ export const OVERRIDE_VALUES: Record<OverrideKey, string[]> = {
   saveBackupsKept: Array.from({ length: 50 }, (_, i) => String(i + 1)),
   updateModsBeforePlayDefault: ['true', 'false'],
   skipPlayCheck: ['true', 'false'],
+  skipIntro: ['true', 'false'],
 }
 
 export type OverrideChoice = { useGame: true } | { useGame: false; value: string }

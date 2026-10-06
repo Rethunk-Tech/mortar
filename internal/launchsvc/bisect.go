@@ -95,6 +95,13 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 	if err != nil {
 		return false, launch.Summary{}, err
 	}
+	if s.profiles != nil {
+		withdraw, err := s.launchToMenu(gameID, profileID)
+		if err != nil {
+			return false, launch.Summary{}, err
+		}
+		defer withdraw()
+	}
 	launched := time.Now()
 	if err := s.start(runCtx, gameID, profileID, installID, "", s.LaunchesDirect(gameID, profileID)); err != nil {
 		return false, launch.Summary{}, err

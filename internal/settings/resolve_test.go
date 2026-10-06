@@ -38,7 +38,7 @@ func TestProfileOverridableKeys(t *testing.T) {
 	t.Parallel()
 	for _, key := range []string{
 		"defaultLaunchMethod", "showSmapiConsole", "backupBeforePlay",
-		"saveBackupsKept", "updateModsBeforePlayDefault", "skipPlayCheck",
+		"saveBackupsKept", "updateModsBeforePlayDefault", "skipPlayCheck", "skipIntro",
 	} {
 		if !ProfileOverridable(key) {
 			t.Fatalf("%s should be profile-overridable", key)

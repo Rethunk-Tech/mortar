@@ -57,6 +57,12 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
         { value: 'direct', label: i18n._(msg`Direct`) },
       ],
     },
+    skipIntro: {
+      label: i18n._(msg`Skip the intro`),
+      description: i18n._(
+        msg`Skip the game's boot animations on Play. Choices the game asks at start-up stay yours.`,
+      ),
+    },
     showSmapiConsole: {
       label: i18n._(msg`SMAPI console window`),
       description: i18n._(msg`Show SMAPI's own window on a direct launch`),

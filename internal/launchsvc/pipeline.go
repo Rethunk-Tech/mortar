@@ -74,6 +74,9 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 	if err := l.Contribute(ctx, plan, view); err != nil {
 		return nil, err
 	}
+	if err := s.armIntroSkip(g, l, profileID, view.Dir); err != nil {
+		return nil, err
+	}
 	extra, err := game.ParseLaunchOptions(g.ID(), s.profileLoader(g.ID(), profileID), options)
 	if err != nil {
 		return nil, err
