@@ -50,12 +50,10 @@ func (a *AppSource) Profiles(gameID string) ([]Ref, error) {
 	return out, nil
 }
 
-// Export carries switched-off mods too: the other machine is the same player's, and a payload without them would
-// remove them there and, written back, here.
+// Export carries the profile as it is: the other machine is the same player's, and a payload without its switched-off
+// mods would remove them there and, written back, here.
 func (a *AppSource) Export(gameID, id string) ([]byte, error) {
-	inc := share.DefaultInclude()
-	inc.DisabledMods = true
-	b, _, err := a.shares.ExportBytes(gameID, id, inc)
+	b, _, err := a.shares.ExportBytes(gameID, id, share.OwnInclude())
 	return b, err
 }
 

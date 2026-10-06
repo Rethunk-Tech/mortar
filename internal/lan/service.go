@@ -392,7 +392,7 @@ func (s *Service) Send(ctx context.Context, peerID, game, profileID string) erro
 	if s.deps.Shares == nil {
 		return errors.New("LAN sharing is unavailable")
 	}
-	payload, _, err := s.deps.Shares.ExportBytes(game, profileID, share.DefaultInclude())
+	payload, _, err := s.deps.Shares.ExportBytes(game, profileID, share.OwnInclude())
 	if err != nil {
 		return err
 	}

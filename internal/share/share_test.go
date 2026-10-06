@@ -620,7 +620,7 @@ func TestOverlayPlacementTravels(t *testing.T) {
 	if o := got.Entries[1].Overlay; o == nil || *o != (Overlay{From: "[CP] X", To: "[CP] X/assets"}) {
 		t.Fatalf("overlay = %+v", got.Entries[1].Overlay)
 	}
-	res, err = Encode("stardew", p, profile.ShareFacts{}, Include{DisabledMods: true})
+	res, err = Encode("stardew", p, profile.ShareFacts{}, OwnInclude())
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -107,6 +107,12 @@ func DefaultInclude() Include {
 	return Include{FomodChoices: true, Notes: true, ConfigFiles: true}
 }
 
+// OwnInclude is what goes between the player's own computers (sync, a paired LAN send): everything, switched-off mods
+// too, since a payload without them would remove them on the other side.
+func OwnInclude() Include {
+	return Include{DisabledMods: true, FomodChoices: true, Notes: true, ConfigFiles: true}
+}
+
 // Result is an encoded profile: the payload, both link forms, and the entries left out.
 type Result struct {
 	Shared  Shared
