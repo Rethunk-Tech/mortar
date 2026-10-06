@@ -43,11 +43,13 @@ type GameInfo struct {
 type LoaderRef struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
-	// Order, Console and Startup say which profile tabs the loader supports: a computed load order, a console on a
-	// published companion, and per-mod startup timings.
+	// Order, Console and Startup say which profile tabs the loader supports: a computed load order, a console that
+	// follows the loader's log, and per-mod startup timings.
 	Order   bool `json:"order"`
 	Console bool `json:"console"`
 	Startup bool `json:"startup"`
+	// Commands is whether the running game takes console commands, which needs the loader's published companion.
+	Commands bool `json:"commands"`
 	// Share is whether the loader's log can be uploaded to smapi.io, whose parser reads only SMAPI's.
 	Share bool `json:"share"`
 	// Assets is whether a content-pack framework for the loader's formats builds an asset map.
@@ -60,9 +62,10 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 	ref := LoaderRef{ID: l.ID, Name: l.Name}
 	if d, ok := LoaderOf(gameID, l.ID); ok {
 		_, ref.Order = d.(loader.WithOrder)
+		_, ref.Console = d.(loader.WithLogs)
 		_, hasConsole := d.(loader.Console)
 		_, hasCompanion := d.(loader.WithCompanion)
-		ref.Console = hasConsole && hasCompanion
+		ref.Commands = hasConsole && hasCompanion
 		_, ref.Startup = d.(loader.StartupTimings)
 		ref.Share = loader.SharesLog(d)
 		ref.Assets = framework.IndexesAssets(d.Formats())

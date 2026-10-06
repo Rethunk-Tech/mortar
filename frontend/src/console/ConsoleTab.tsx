@@ -130,7 +130,9 @@ function CommandLine({ game }: { game: string }) {
   const { t } = useLingui()
   const openId = useProfiles((s) => s.openId)
   const viewingRun = useConsole((s) => s.viewingRun)
-  const running = useLaunch((s) => canSendTo(s.status, game, openId)) && viewingRun === ''
+  const takesCommands = useProfileLoader()?.commands === true
+  const running =
+    useLaunch((s) => canSendTo(s.status, game, openId)) && viewingRun === '' && takesCommands
   const history = useConsole((s) => s.history[game] ?? NO_HISTORY)
   const send = useConsole((s) => s.send)
   const [text, setText] = useState('')
@@ -171,7 +173,7 @@ function CommandLine({ game }: { game: string }) {
         sending.current = false
       })
   }
-  // With no game to send to, the input only takes room from the log.
+  // With no game to send to, or one that takes no commands, the input only takes room from the log.
   if (!running) {
     return null
   }

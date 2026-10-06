@@ -97,11 +97,13 @@ export function firstError(rows: Entry[]): number {
 }
 
 // SMAPI pads the level to five characters; a continuation line, or the log's headerless first line, is written bare.
+// A BepInEx line has a level and source but no time; a headerless line has neither.
 export function format(e: Entry): string {
-  if (e.cont || e.time === '') {
+  if (e.cont || (e.time === '' && e.mod === '')) {
     return e.message
   }
-  return `[${e.time} ${e.level.padEnd(LEVEL_WIDTH)} ${e.mod}] ${e.message}`
+  const time = e.time === '' ? '' : `${e.time} `
+  return `[${time}${e.level.padEnd(LEVEL_WIDTH)} ${e.mod}] ${e.message}`
 }
 
 export function formatAll(rows: Entry[]): string {

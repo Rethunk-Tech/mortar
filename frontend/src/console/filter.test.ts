@@ -89,6 +89,14 @@ test('formatAll writes SMAPI lines, continuations bare', () => {
   )
 })
 
+test('formatAll writes BepInEx lines with level and source, headerless lines bare', () => {
+  const rows = [
+    { ...e(Level.Info, 'BepInEx', 'Loading [CullFactory 2.0.11]'), time: '' },
+    { ...e(Level.Info, '', 'no header yet'), time: '' },
+  ]
+  expect(formatAll(rows)).toBe('[INFO  BepInEx] Loading [CullFactory 2.0.11]\nno header yet')
+})
+
 test('shownLog is empty when the open profile does not own the log', () => {
   expect(shownLog(log, true)).toBe(log)
   expect(shownLog(log, false)).toEqual([])
