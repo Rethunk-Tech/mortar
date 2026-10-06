@@ -691,3 +691,29 @@ func TestPageFactsRoundTrip(t *testing.T) {
 		}
 	}
 }
+
+// The share page's decoder reads the same file (site/share/share.test.ts), so the app and the page agree on links.
+func TestSiteReadsTheAppsLinks(t *testing.T) {
+	t.Parallel()
+	b, err := os.ReadFile("../../site/share/testdata/go-link.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Parse(strings.TrimSpace(string(b)))
+	if err != nil || got.Name != "Lobby" || got.Game != "lethal-company" || len(got.Entries) != 2 ||
+		got.Entries[0].Package != "Alice-MoreCompany" || got.Entries[1].GitHub != "owner/repo@v1/mod.zip" {
+		t.Fatalf("parse = %+v, %v", got, err)
+	}
+	p := profile.Profile{Name: "Lobby", Entries: []profile.Entry{
+		{Key: "a", Source: profile.Source{Kind: profile.KindThunderstore, Name: "Alice-MoreCompany", Version: "1.2.3"}},
+		{Key: "b", Source: profile.Source{Kind: profile.KindGitHub, Repo: "owner/repo", Tag: "v1", Asset: "mod.zip"}},
+	}}
+	res, err := Encode("lethal-company", p, profile.ShareFacts{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	again, err := Parse(res.Web)
+	if err != nil || fmt.Sprint(again) != fmt.Sprint(got) {
+		t.Fatalf("today's encoder makes %+v, the stored link reads %+v", again, got)
+	}
+}

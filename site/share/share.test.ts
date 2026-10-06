@@ -104,3 +104,19 @@ test('reads the game version and each mod size and minimum game version', async 
   expect(newer('1.6', '1.6.0')).toBe(false)
   expect(newer('1.5.6', '1.6')).toBe(false)
 })
+
+// go-link.txt is a link the app's encoder made (internal/share TestSiteReadsTheAppsLinks reads it too), so a change
+// on either side that the other cannot read fails here or there.
+test('decodes a link the app made', async () => {
+  const link = readFileSync(new URL('testdata/go-link.txt', import.meta.url), 'utf8').trim()
+  expect(await decodeShare(link.slice(link.indexOf('#')), wasm)).toEqual({
+    name: 'Lobby',
+    game: 'lethal-company',
+    gameVersion: '',
+    sourceKeys: { github: 'lethal-company-mod', nexus: 'lethalcompany', thunderstore: 'lethal-company' },
+    entries: [
+      { kind: 'thunderstore', ns: 'Alice', name: 'MoreCompany', version: '1.2.3' },
+      { kind: 'github', repo: 'owner/repo', tag: 'v1', asset: 'mod.zip' },
+    ],
+  })
+})
