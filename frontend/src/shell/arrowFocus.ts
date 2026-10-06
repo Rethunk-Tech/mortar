@@ -80,5 +80,4 @@ function arrowFocus(
   }
 }
 
-export type { Rect }
 export { arrowFocus, nextIndex }
