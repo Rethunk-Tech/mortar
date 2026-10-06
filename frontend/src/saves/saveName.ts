@@ -3,7 +3,8 @@ import { msg } from '@lingui/core/macro'
 
 const lcSlot = /^LCSaveFile(\d+)$/
 
-// A save's display name: its farm, else Lethal Company's slot (its saves are files named by slot), else its folder.
+// A save's display name: its farm, else Lethal Company's slot (its saves are files named by slot), else its folder or
+// file without the extension (a Valheim character is <name>.fch).
 export function saveName(save: { farm: string; folder: string }): string {
   if (save.farm) {
     return save.farm
@@ -15,5 +16,5 @@ export function saveName(save: { farm: string; folder: string }): string {
   if (save.folder === 'LCChallengeFile') {
     return i18n._(msg`Challenge moon`)
   }
-  return save.folder
+  return save.folder.replace(/\.[^.]+$/, '')
 }
