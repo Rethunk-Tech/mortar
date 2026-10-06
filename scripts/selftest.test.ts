@@ -217,6 +217,8 @@ f.write('ok {"gameVersion":"v81","scene":"MainMenu","plugins":[]}\\n' if ok else
         'bridge.survived.up INFO',
       ])
       expect(rows[2]?.[2]).toContain('alive after 0 scene load(s) and destroyed after 2')
+      expect(existsSync(join(dir, 'bridge-state-up.json'))).toBe(true)
+      expect(existsSync(join(dir, 'bridge-state-down.json'))).toBe(false)
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

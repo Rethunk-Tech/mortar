@@ -207,15 +207,18 @@ mx_game_net() {
 }
 
 # mx_bridge_reachable TAG PROFILE records whether the bridge answers at the main menu: its state file in the profile
-# names a port and token, and a status query there answers ok with scene MainMenu.
+# names a port and token, and a status query there answers ok with scene MainMenu. The state file is kept in the sandbox
+# as bridge-state-TAG.json: the bridge removes it when the game exits.
 mx_bridge_reachable() {
-  local out
+  local out state
   if ! mx_wait_scene MainMenu 120; then
     mx_fail "bridge.reachable.$1" "launch ($1): the game never reached MainMenu within 120s, so the bridge was not asked"
     return
   fi
+  state="$(mx_dir "$2")/BepInEx/config/mortar-bepinex-bridge.json"
+  cp "$state" "$ROOT/bridge-state-$1.json" 2>/dev/null
   out=$(
-    mx_game_net python3 - "$(mx_dir "$2")/BepInEx/config/mortar-bepinex-bridge.json" 2>&1 <<'PY'
+    mx_game_net python3 - "$state" 2>&1 <<'PY'
 import json, socket, sys
 try:
     st = json.load(open(sys.argv[1]))
