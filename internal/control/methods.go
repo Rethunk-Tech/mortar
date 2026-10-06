@@ -243,7 +243,12 @@ func modProblems(p profile.Profile, result problems.Result, source, id string) [
 		}
 	}
 	for _, broken := range result.Broken {
-		if involves(broken.ID) {
+		switch {
+		case broken.Status == "cycle":
+			if slices.ContainsFunc(broken.Cycle, func(d problems.Dependent) bool { return involves(d.ID) }) {
+				out = append(out, ModProblem{Kind: "broken", Text: broken.Summary})
+			}
+		case involves(broken.ID):
 			out = append(out, ModProblem{Kind: "broken", Text: fmt.Sprintf("%s is broken for this game version", broken.Name)})
 		}
 	}
@@ -1558,7 +1563,7 @@ func playIssueGroups(prof profile.Profile, res problems.Result, upd problems.Upd
 	}
 	var broken []string
 	for _, b := range res.Broken {
-		if b.Status == "broken" || b.Status == "obsolete" {
+		if b.Status == "broken" || b.Status == "obsolete" || b.Status == "cycle" {
 			broken = append(broken, b.Name)
 		}
 	}

@@ -101,7 +101,7 @@ function playIssueSummary(input: {
   const broken = groupOf(
     'broken',
     (input.broken ?? [])
-      .filter((b) => b.status === 'broken' || b.status === 'obsolete')
+      .filter((b) => b.status === 'broken' || b.status === 'obsolete' || b.status === 'cycle')
       .map((b) => ({ name: b.name })),
   )
   for (const g of [missing, conflicts, updates, broken]) {

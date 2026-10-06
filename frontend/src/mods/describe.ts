@@ -41,8 +41,32 @@ function describeRunError(runError: Extract<Problem, { kind: 'runError' }>['runE
       )
 }
 
+function describeCycle(loop: readonly { name: string }[], blocksAll: boolean): string {
+  const [first, second] = loop
+  if (!first) {
+    return ''
+  }
+  if (!second) {
+    return i18n._(msg`${first.name} lists itself as a dependency, so SMAPI skips it.`)
+  }
+  if (loop.length === 2) {
+    const a = first.name
+    const b = second.name
+    return blocksAll
+      ? i18n._(msg`${a} and ${b} each wait for the other, so SMAPI loads neither.`)
+      : i18n._(msg`${a} and ${b} each wait for the other, so SMAPI skips at least one of them.`)
+  }
+  const path = [...loop, first].map((m) => m.name).join(' → ')
+  return blocksAll
+    ? i18n._(msg`${path} wait for each other in a loop, so SMAPI loads none of them.`)
+    : i18n._(msg`${path} wait for each other in a loop, so SMAPI skips at least one of them.`)
+}
+
 function describeBroken(p: Extract<Problem, { kind: 'broken' }>): string {
   const { name, brokeIn, status, summary } = p.broken
+  if (status === 'cycle') {
+    return describeCycle(p.broken.cycle ?? [], p.broken.cycleBlocksAll === true)
+  }
   if (status === 'abandoned') {
     return summary
       ? i18n._(msg`${name} is abandoned: ${summary}`)

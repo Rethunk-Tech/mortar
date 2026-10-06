@@ -10,7 +10,9 @@ export interface ModLink {
 export function modLinksOf(row: Row): ModLink[] {
   switch (row.kind) {
     case 'broken':
-      return [{ name: row.broken.name, key: row.broken.key, id: row.broken.id }]
+      return row.broken.cycle?.length
+        ? row.broken.cycle.map((m) => ({ name: m.name, key: m.key, id: m.id }))
+        : [{ name: row.broken.name, key: row.broken.key, id: row.broken.id }]
     case 'runError':
       return [{ name: row.runError.name, key: row.runError.key, id: row.runError.id }]
     case 'loadFailure':

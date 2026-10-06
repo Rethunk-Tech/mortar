@@ -111,7 +111,8 @@ type NexusFile struct {
 	Remove   bool   `json:"remove"`
 }
 
-// Broken is an enabled mod SMAPI's API marks broken, obsolete or abandoned for the game version.
+// Broken is an enabled mod SMAPI's API marks broken, obsolete or abandoned for the game version, or, with Status
+// "cycle", one of enabled mods that wait for each other (see dependencyCycles).
 type Broken struct {
 	Key         string `json:"key"`
 	ID          mod.ID `json:"id"`
@@ -120,6 +121,10 @@ type Broken struct {
 	BrokeIn     string `json:"brokeIn"`
 	Summary     string `json:"summary,omitempty"`
 	Replacement *Ref   `json:"replacement,omitempty"`
+	// Cycle is the loop's mods in dependency order; the last waits for the first.
+	Cycle []Dependent `json:"cycle,omitempty"`
+	// CycleBlocksAll is set when every link of the loop is required, so SMAPI loads none of its mods.
+	CycleBlocksAll bool `json:"cycleBlocksAll,omitempty"`
 }
 
 // Damaged is a mod whose stored files no longer match what was stored: files went missing, changed or appeared.
@@ -237,6 +242,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, r
 	r.Settings = found.Settings
 	r.Cleanup = cleanupHints(mods, found.Cleanup)
 	broken, unknown := brokenMods(ctx, m, env, enabled)
+	broken = append(broken, dependencyCycles(enabled)...)
 	r.Broken = broken
 	r.Unknown = r.Unknown || unknown
 	r.Timings = append(r.Timings, CheckTiming{Name: "others", Ms: time.Since(otherStart).Milliseconds(), Count: len(r.Duplicates) + len(r.Broken) + len(r.Cleanup)})

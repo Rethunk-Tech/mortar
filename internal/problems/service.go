@@ -705,7 +705,7 @@ func versionChangeWarning(recorded, installed string, broken []Broken) UpdateWar
 	if broken == nil {
 		return out
 	}
-	out.Broken = broken
+	out.Broken = slices.DeleteFunc(slices.Clone(broken), func(b Broken) bool { return b.Status == "cycle" })
 	return out
 }
 

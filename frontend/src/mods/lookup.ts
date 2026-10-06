@@ -153,7 +153,8 @@ export const sameId = (a: string, b: string) => idKey(a) === idKey(b)
 // A card is flagged for a broken mod, for each copy of a duplicate, and for the dependent of a missing dependency.
 export function concerns(p: Problem, mod: Mod): boolean {
   if (p.kind === 'broken') {
-    return p.broken.key === mod.key && sameId(p.broken.id, mod.id)
+    const named = p.broken.cycle?.length ? p.broken.cycle : [p.broken]
+    return named.some((m) => m.key === mod.key && sameId(m.id, mod.id))
   }
   if (p.kind === 'duplicate') {
     return (
