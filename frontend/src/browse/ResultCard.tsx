@@ -1,8 +1,10 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Card, Chip, Typography } from '@mui/material'
+import { Box, ButtonBase, Card, Tooltip, Typography } from '@mui/material'
 import { ExternalLink } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
+import { hasSourceLogo } from '../brand/sources/sourceIcons.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
@@ -39,15 +41,33 @@ function SourceBadges({
   }
   return (
     <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', pt: 0.25 }}>
-      {sources.map((id) => (
-        <Chip
-          key={id}
-          size="small"
-          label={names.get(id) ?? id}
-          variant={id === picked ? 'filled' : 'outlined'}
-          onClick={() => onPick(id)}
-        />
-      ))}
+      {sources.map((id) => {
+        const name = names.get(id) ?? id
+        const mark = hasSourceLogo(id) ? <SourceLogo id={id} size={14} /> : <span>{name}</span>
+        return (
+          <Tooltip key={id} title={name}>
+            <ButtonBase
+              aria-label={name}
+              aria-pressed={id === picked}
+              onClick={() => onPick(id)}
+              sx={{
+                minWidth: 28,
+                height: 24,
+                px: 0.5,
+                borderRadius: '6px',
+                fontSize: 12,
+                border: '1px solid',
+                borderColor: id === picked ? 'var(--mortar-ink-dim-60)' : 'var(--mortar-hairline)',
+                bgcolor: id === picked ? 'var(--mortar-hairline-16)' : 'transparent',
+                color: 'text.secondary',
+                '&:hover': { bgcolor: 'var(--mortar-hairline-muted)' },
+              }}
+            >
+              {mark}
+            </ButtonBase>
+          </Tooltip>
+        )
+      })}
     </Box>
   )
 }
