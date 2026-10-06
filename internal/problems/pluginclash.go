@@ -1,8 +1,6 @@
 package problems
 
 import (
-	"io/fs"
-	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
@@ -47,18 +45,7 @@ func pluginsIn(dir string) []dotnet.Plugin {
 	if ok {
 		return cached
 	}
-	var out []dotnet.Plugin
-	_ = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return fs.SkipDir
-		}
-		if d.IsDir() || !strings.EqualFold(filepath.Ext(path), ".dll") {
-			return nil
-		}
-		plugins, _ := dotnet.Plugins(path)
-		out = append(out, plugins...)
-		return nil
-	})
+	out := dotnet.PluginsIn(dir)
 	pluginMu.Lock()
 	pluginCache[pluginKey{dir}] = out
 	pluginMu.Unlock()

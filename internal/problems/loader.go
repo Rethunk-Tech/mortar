@@ -1,8 +1,6 @@
 package problems
 
 import (
-	"io/fs"
-	"path/filepath"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -88,21 +86,11 @@ func pluginOwners(mods []framework.Mod) map[string]framework.Mod {
 		if !m.Enabled || m.Folder == "" {
 			continue
 		}
-		_ = filepath.WalkDir(m.Folder, func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return fs.SkipDir
+		for _, pl := range dotnet.PluginsIn(m.Folder) {
+			for _, name := range []string{pl.GUID, pl.Name, pl.Name + " " + pl.Version} {
+				owners[strings.ToLower(name)] = m
 			}
-			if d.IsDir() || !strings.EqualFold(filepath.Ext(path), ".dll") {
-				return nil
-			}
-			plugins, _ := dotnet.Plugins(path)
-			for _, pl := range plugins {
-				for _, name := range []string{pl.GUID, pl.Name, pl.Name + " " + pl.Version} {
-					owners[strings.ToLower(name)] = m
-				}
-			}
-			return nil
-		})
+		}
 	}
 	return owners
 }

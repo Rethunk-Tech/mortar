@@ -3,6 +3,7 @@ package profile
 import (
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -31,4 +32,26 @@ func (s *Store) ShippedConfig(game, id, key string, uniqueID mod.ID) (string, bo
 		return "", false
 	}
 	return string(norm), true
+}
+
+// PluginGUIDs is the [BepInPlugin] GUIDs the package holding uniqueID ships, which name its BepInEx config files; nil
+// for a mod with a folder of its own.
+func (s *Store) PluginGUIDs(game, id string, uniqueID mod.ID) []string {
+	p, err := s.read(game, id)
+	if err != nil {
+		return nil
+	}
+	e, _, ok := p.FindMod("", uniqueID)
+	if !ok || !e.Package || s.items == nil {
+		return nil
+	}
+	dir, err := s.items.Path(game, e.Key)
+	if err != nil {
+		return nil
+	}
+	var out []string
+	for _, pl := range dotnet.PluginsIn(dir) {
+		out = append(out, pl.GUID)
+	}
+	return out
 }

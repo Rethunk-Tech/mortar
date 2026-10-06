@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -26,10 +27,12 @@ type Profiles interface {
 	ModFolder(game, id, key string, uniqueID mod.ID) (string, error)
 	ReadConfig(game, id, key string, uniqueID mod.ID) (string, error)
 	ShippedConfig(game, id, key string, uniqueID mod.ID) (string, bool)
+	PluginGUIDs(game, id string, uniqueID mod.ID) []string
 }
 
-// Service edits the config files a profile holds. A modID is a SMAPI UniqueID, or a BepInEx plugin GUID (or its
-// .cfg file name without the extension); an empty modID lists every .cfg of the profile.
+// Service edits the config files a profile holds. A modID is a SMAPI UniqueID, a package's id (whose plugins' GUIDs
+// name its files), or a BepInEx plugin GUID (or its .cfg file name without the extension); an empty modID lists every
+// .cfg of the profile.
 type Service struct {
 	Profiles Profiles
 	// SetJSON writes one config.json value through the profile, which keeps its key order and checks the game is
@@ -64,7 +67,9 @@ func (s *Service) cfgPath(game, id, name string) (string, error) {
 // Files lists the mod's config files in the profile.
 func (s *Service) Files(game, profileID, modID string) ([]ConfigFile, error) {
 	out := []ConfigFile{}
+	names := []string{modID}
 	if modID != "" {
+		names = append(names, s.Profiles.PluginGUIDs(game, profileID, mod.ID(modID))...)
 		if folder, err := s.Profiles.ModFolder(game, profileID, "", mod.ID(modID)); err == nil {
 			if _, err := os.Stat(filepath.Join(folder, jsonName)); err == nil {
 				out = append(out, ConfigFile{Name: jsonName, Format: FormatSMAPI, Label: jsonName})
@@ -94,7 +99,7 @@ func (s *Service) Files(game, profileID, modID string) ([]ConfigFile, error) {
 		}
 		doc := parseCfg(string(raw))
 		stem := strings.TrimSuffix(e.Name(), filepath.Ext(e.Name()))
-		if modID != "" && !strings.EqualFold(stem, modID) && !strings.EqualFold(doc.guid, modID) {
+		if modID != "" && !slices.ContainsFunc(names, func(n string) bool { return strings.EqualFold(stem, n) || strings.EqualFold(doc.guid, n) }) {
 			continue
 		}
 		label := doc.plugin

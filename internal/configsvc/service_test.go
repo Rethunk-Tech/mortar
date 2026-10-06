@@ -28,6 +28,27 @@ func (f fakeProfiles) ShippedConfig(string, string, string, mod.ID) (string, boo
 	return f.shipped, f.shipped != ""
 }
 
+func (fakeProfiles) PluginGUIDs(_, _ string, id mod.ID) []string {
+	if id == "thunderstore:Ex-BetterStuff" {
+		return []string{"com.example.BetterStuff"}
+	}
+	return nil
+}
+
+func TestFilesOfAPackageAreItsPluginsConfigs(t *testing.T) {
+	s, _ := newService(t)
+	files, err := s.Files("g", "p", "thunderstore:Ex-BetterStuff")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) != 1 || files[0].Name != "com.example.betterstuff.cfg" {
+		t.Fatalf("files = %+v, want the plugin's .cfg", files)
+	}
+	if files, _ := s.Files("g", "p", "thunderstore:Ex-Other"); len(files) != 0 {
+		t.Fatalf("another package's files = %+v, want none", files)
+	}
+}
+
 func newService(t *testing.T) (*Service, string) {
 	t.Helper()
 	dir := t.TempDir()
