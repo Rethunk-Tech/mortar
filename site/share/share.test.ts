@@ -4,7 +4,7 @@ import { brotliCompressSync, constants } from 'node:zlib'
 import { decodeShare, newer, type ShareError } from './share.js'
 
 const wasm = readFileSync(
-  new URL('../../vendor/brotli-dec-wasm/brotli_dec_wasm_bg.wasm', import.meta.url),
+  new URL('../vendor/brotli-dec-wasm/brotli_dec_wasm_bg.wasm', import.meta.url),
 )
 const encode = (v: unknown) =>
   brotliCompressSync(Buffer.from(JSON.stringify(v)), {
@@ -35,6 +35,24 @@ test('decodes a version 3 profile', async () => {
       { kind: 'github', repo: 'owner/repo', tag: 'v1.2', asset: 'mod.zip' },
       { kind: 'thunderstore', ns: 'Alice', name: 'MoreCompany', version: '1.2.3' },
     ],
+  })
+})
+
+test('decodes a Lethal Company profile of Thunderstore packages', async () => {
+  const lc = { thunderstore: 'lethal-company' }
+  const p = encode([
+    3,
+    'Lobby',
+    'lethal-company',
+    lc,
+    [{ s: 'thunderstore', ns: 'x753', name: 'More_Suits', version: '1.5.4' }],
+  ])
+  expect(await decodeShare(`#${p}`, wasm)).toEqual({
+    name: 'Lobby',
+    game: 'lethal-company',
+    gameVersion: '',
+    sourceKeys: lc,
+    entries: [{ kind: 'thunderstore', ns: 'x753', name: 'More_Suits', version: '1.5.4' }],
   })
 })
 

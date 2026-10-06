@@ -288,6 +288,20 @@ func TestDescribeGroupsAndLeftOut(t *testing.T) {
 	}
 }
 
+func TestDescribeCountsThunderstorePackages(t *testing.T) {
+	p := profile.Profile{Name: "Lobby", Entries: []profile.Entry{
+		{Key: "ts", Source: profile.Source{Kind: profile.KindThunderstore, Name: "x753-More_Suits", Version: "1.5.4"}, Mods: []profile.Component{{ID: "thunderstore:x753-More_Suits", Name: "More_Suits"}}},
+	}}
+	info, err := describe("lethal-company", p, profile.ShareFacts{})
+	if err != nil || info.Count != 1 || len(info.Groups) != 1 || info.Groups[0].Source != profile.KindThunderstore {
+		t.Fatalf("a Thunderstore package is counted and grouped: %+v, %v", info, err)
+	}
+	got, err := share.Parse(info.App)
+	if err != nil || len(got.Entries) != 1 || got.Entries[0].Package != "x753-More_Suits" || got.Entries[0].Version != "1.5.4" {
+		t.Fatalf("the link carries the package: %+v, %v", got, err)
+	}
+}
+
 func sessionOf(s *Service) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()

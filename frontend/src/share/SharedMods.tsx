@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 
 import type { ShownInfo } from './logic.ts'
@@ -19,7 +20,7 @@ const nameChip = {
 // What a share holds, by source, and what it leaves out and why. `notIn` names where the left-out mods are missing from.
 export function SharedMods({ info, notIn }: { info: ShownInfo; notIn: string }) {
   const { t } = useLingui()
-  const source = (id: string, n: number) => (id === 'github' ? t`${n} GitHub` : t`${n} Nexus`)
+  const source = (id: string, n: number) => t`${n} ${{ source: sourceLabel(id) }}`
   const reason = (id: string) => {
     switch (id) {
       case 'local':

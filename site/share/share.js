@@ -1,4 +1,4 @@
-import init, { DecompressStream } from '../../vendor/brotli-dec-wasm/brotli_dec_wasm.js'
+import init, { DecompressStream } from '../vendor/brotli-dec-wasm/brotli_dec_wasm.js'
 
 const MAX_ENCODED = 8192
 const MAX_DECODED = 65_536
@@ -15,7 +15,7 @@ const DASH = /-/g
 const UNDERSCORE = /_/g
 
 let ready
-const wasmUrl = new URL('../../vendor/brotli-dec-wasm/brotli_dec_wasm_bg.wasm', import.meta.url)
+const wasmUrl = new URL('../vendor/brotli-dec-wasm/brotli_dec_wasm_bg.wasm', import.meta.url)
 
 function inflate(bytes, wasm) {
   ready ??= init({ module_or_path: wasm ?? wasmUrl })

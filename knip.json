@@ -4,7 +4,7 @@
   "ignore": ["site/vendor/**"],
   "workspaces": {
     ".": {
-      "entry": ["site/stardew/p/app.js", "site/landing.js", "site/download.js"],
+      "entry": ["site/share/app.js", "site/landing.js", "site/download.js"],
       "project": ["site/**/*.js", "scripts/**/*.ts"]
     },
     "frontend": {

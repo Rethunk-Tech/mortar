@@ -285,7 +285,7 @@ func describe(game string, p profile.Profile, facts profile.ShareFacts, include 
 	}
 	groups := map[string]*Group{}
 	for _, e := range p.Entries {
-		if e.Source.Kind != profile.KindNexus && e.Source.Kind != profile.KindGitHub || leftKeys[e.Key] || slices.Contains(off, e.Key) {
+		if e.Source.Bundled() || leftKeys[e.Key] || slices.Contains(off, e.Key) {
 			continue
 		}
 		g := groups[e.Source.Kind]

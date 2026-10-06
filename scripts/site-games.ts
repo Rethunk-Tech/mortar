@@ -1,12 +1,15 @@
-// Writes the playable games from the bundled catalog into the site's marked blocks, so the site never lists games by
-// hand. `--check` fails instead of writing when a block is stale; the gate runs it that way.
-import { readFileSync, writeFileSync } from 'node:fs'
+// Writes the playable games from the bundled catalog into the site's marked blocks, and each game's share page
+// (site/<game>/p/, where its share links point) from scripts/share-page.html, so the site never lists games by hand.
+// `--check` fails instead of writing when anything is stale; the gate runs it that way.
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 
 const CATALOG = 'internal/components/components.json'
 const PAGES = ['site/index.html']
+const SHARE_PAGE = 'scripts/share-page.html'
 const BLOCK = /(<!-- games:start -->)[\s\S]*?(<!-- games:end -->)/g
 
 interface Game {
+  id: string
   name: string
   enabled: boolean
 }
@@ -23,9 +26,22 @@ function listed(names: string[]): string {
 }
 
 const { games } = JSON.parse(readFileSync(CATALOG, 'utf8')) as { games: Game[] }
-const text = escapeHTML(listed(games.filter((g) => g.enabled).map((g) => g.name)))
+const playable = games.filter((g) => g.enabled)
+const text = escapeHTML(listed(playable.map((g) => g.name)))
 const check = process.argv.includes('--check')
 let stale = false
+const sharePage = readFileSync(SHARE_PAGE, 'utf8')
+for (const g of playable) {
+  const path = `site/${g.id}/p/index.html`
+  const want = sharePage.replaceAll('GAME_NAME', escapeHTML(g.name))
+  if (!existsSync(path) || readFileSync(path, 'utf8') !== want) {
+    stale = true
+    if (!check) {
+      mkdirSync(`site/${g.id}/p`, { recursive: true })
+      writeFileSync(path, want)
+    }
+  }
+}
 for (const page of PAGES) {
   const before = readFileSync(page, 'utf8')
   // A function replacement, so `$&` in a game name is not read as a replacement pattern.
@@ -38,6 +54,6 @@ for (const page of PAGES) {
   }
 }
 if (check && stale) {
-  console.error('site game lists are stale: run bun scripts/site-games.ts')
+  console.error('site game lists or share pages are stale: run bun scripts/site-games.ts')
   process.exit(1)
 }
