@@ -31,6 +31,12 @@ export function historyLabel(ev: Worded): string {
       return i18n._(msg`Pinned ${name} at its version`)
     case HistoryChange.ChangeUnpinned:
       return i18n._(msg`Unpinned ${name}`)
+    case HistoryChange.ChangeTagged:
+      return i18n._(msg`Tagged ${name} with ${detail}`)
+    case HistoryChange.ChangeUntagged:
+      return i18n._(msg`Removed the tag ${detail} from ${name}`)
+    case HistoryChange.ChangeTags:
+      return i18n._(msg`Changed the tags of ${name}`)
     case HistoryChange.ChangeMods:
       return count > 1
         ? plural(count, { one: 'Changed # mod', other: 'Changed # mods' })

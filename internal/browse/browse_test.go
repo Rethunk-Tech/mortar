@@ -110,7 +110,7 @@ func TestSearchAllInterleavesAndNamesFailedSources(t *testing.T) {
 	if got := fmt.Sprint(ids); got != "[a1 b1 a2 a3]" {
 		t.Fatalf("order %s", got)
 	}
-	if page.Total != 48 || page.Pages != 3 || fmt.Sprint(page.Failed) != "[broken site]" {
+	if page.Total != 48 || page.Pages != 3 || fmt.Sprint(page.Failed) != "[broken]" {
 		t.Fatalf("page %+v", page)
 	}
 	if _, err := (&Client{}).searchAll(context.Background(), components.GameInfo{ID: "z", Sources: []components.GameSource{{ID: "broken"}}}, "x", 1, Filter{}); err == nil {

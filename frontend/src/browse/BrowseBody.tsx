@@ -2,9 +2,9 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Pagination, Typography } from '@mui/material'
 import { CloudOff, Search, SearchX } from 'lucide-react'
-import { listNames } from '../i18n/list.ts'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { unreachableNote } from '../shell/offlineText.ts'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import type { InlineError } from '../toasts/report.ts'
 import {
@@ -60,9 +60,7 @@ function ResultList({
       <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
         {plural(result.total, { one: '# result', other: '# results' })}
         {result.hidden ? ` · ${t`${result.hidden} hidden`}` : ''}
-        {result.failed && result.failed.length > 0
-          ? ` · ${t`${listNames(result.failed)} did not answer`}`
-          : ''}
+        {result.failed && result.failed.length > 0 ? ` · ${unreachableNote(result.failed)}` : ''}
       </Typography>
       <Box
         sx={{ ...(view === 'grid' ? grid : list), opacity: loading ? STALE_OPACITY : 1 }}

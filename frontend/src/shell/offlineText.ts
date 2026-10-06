@@ -5,10 +5,24 @@ import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { savedAt, unreachable, useOffline } from './offline.ts'
 
+const byLabel = (a: State, b: State) =>
+  sourceLabel(a.id).localeCompare(sourceLabel(b.id), i18n.locale)
+
+// Source names in the same order in every sentence that lists them.
+function sourceNames(ids: readonly string[]): string {
+  return listNames(ids.map(sourceLabel).sort((a, b) => a.localeCompare(b, i18n.locale)))
+}
+
+// The note for sources that did not answer, by id.
+function unreachableNote(ids: readonly string[]): string {
+  return i18n._(msg`${sourceNames(ids)} can't be reached`)
+}
+
 // The sentence for the banner and for the tooltip of each action it disables: every source that is down, each with
 // the time of the data Mortar is showing for it, or that it has nothing saved yet.
-function offlineMessage(down: State[], locale: string): string {
-  const names = listNames(down.map((s) => sourceLabel(s.id)))
+function offlineMessage(unsorted: State[], locale: string): string {
+  const down = unsorted.toSorted(byLabel)
+  const names = sourceNames(down.map((s) => s.id))
   const times = down.map((s) => savedAt(s, locale))
   if (times.every((at) => at === '')) {
     return offlineEmptyMessage(down)
@@ -30,7 +44,7 @@ function offlineMessage(down: State[], locale: string): string {
 
 // For a view with nothing at all to show, such as a search Mortar has no saved results for.
 function offlineEmptyMessage(down: State[]): string {
-  const names = listNames(down.map((s) => sourceLabel(s.id)))
+  const names = sourceNames(down.map((s) => s.id))
   return i18n._(msg`${names} can't be reached; nothing saved to show yet`)
 }
 
@@ -65,16 +79,20 @@ function useOfflineReason(ids: string[]): string {
 const UPDATE_SOURCES = ['nexus', 'github']
 
 // Mod update checks go to Nexus and GitHub; they are off only when every one of them that has answered lately is down.
+function updatesReasonOf(states: State[]): string {
+  if (offlineReasonOf(states, UPDATE_SOURCES, true) === '') {
+    return ''
+  }
+  const names = sourceNames(unreachable(states, UPDATE_SOURCES).map((s) => s.id))
+  return i18n._(msg`${names} can't be reached, so Mortar can't check for mod updates`)
+}
+
 function updatesOfflineReason(): string {
-  return offlineReasonOf(useOffline.getState().states, UPDATE_SOURCES, true)
+  return updatesReasonOf(useOffline.getState().states)
 }
 
 function useUpdatesOfflineReason(): string {
-  return offlineReasonOf(
-    useOffline((s) => s.states),
-    UPDATE_SOURCES,
-    true,
-  )
+  return updatesReasonOf(useOffline((s) => s.states))
 }
 
 // The sources an update downloads from: its own, or Nexus when it names only a Nexus mod.
@@ -87,8 +105,10 @@ function updateSources(update: { source: string; nexusId: number }): string[] {
 
 export {
   offlineMessage,
+  unreachableNote,
   updateSources,
   updatesOfflineReason,
+  updatesReasonOf,
   useOfflineEmpty,
   useOfflineReason,
   useUpdatesOfflineReason,

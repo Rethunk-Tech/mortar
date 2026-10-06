@@ -804,6 +804,12 @@ func historySummary(ev profile.HistoryEvent) string {
 		return "Pinned " + ev.Name + " at its version"
 	case profile.ChangeUnpinned:
 		return "Unpinned " + ev.Name
+	case profile.ChangeTagged:
+		return fmt.Sprintf("Tagged %s with %s", ev.Name, ev.Detail)
+	case profile.ChangeUntagged:
+		return fmt.Sprintf("Removed the tag %s from %s", ev.Detail, ev.Name)
+	case profile.ChangeTags:
+		return "Changed the tags of " + ev.Name
 	case profile.ChangeMods:
 		if ev.Count > 1 {
 			return "Changed " + mods(ev.Count)

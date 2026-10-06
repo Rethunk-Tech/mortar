@@ -30,6 +30,12 @@ test('historyLabel words each change from its fields', () => {
   expect(
     historyLabel({ change: HistoryChange.ChangePresetApplied, name: 'Beta', detail: 'Night' }),
   ).toBe('Applied the preset Night to Beta')
+  expect(historyLabel({ change: HistoryChange.ChangeTagged, name: 'Beta', detail: 'QoL' })).toBe(
+    'Tagged Beta with QoL',
+  )
+  expect(historyLabel({ change: HistoryChange.ChangeUntagged, name: 'Beta', detail: 'QoL' })).toBe(
+    'Removed the tag QoL from Beta',
+  )
   expect(historyLabel({ change: HistoryChange.$zero })).toBe('Changed the profile')
 })
 

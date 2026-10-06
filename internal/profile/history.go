@@ -51,6 +51,10 @@ const (
 	ChangeDisabled HistoryChange = "disabled" // Name: a mod or a group
 	ChangePinned   HistoryChange = "pinned"   // Name
 	ChangeUnpinned HistoryChange = "unpinned" // Name
+	ChangeTagged   HistoryChange = "tagged"   // Name, Detail: the tag added
+	ChangeUntagged HistoryChange = "untagged" // Name, Detail: the tag removed
+	// ChangeTags is any other edit of one mod's tags: Name.
+	ChangeTags HistoryChange = "tags"
 	// ChangeMods is several mods changed at once: Count when it is more than one.
 	ChangeMods     HistoryChange = "mods"
 	ChangeImported HistoryChange = "imported" // Count
@@ -1070,9 +1074,9 @@ func ModDiffCounts(before, after []Entry) (added, removed, updated int) {
 func classifyHistory(before, after []Entry) HistoryEvent {
 	bMap := indexEntries(before)
 	aMap := indexEntries(after)
-	var added, removed, updated, enabled, disabled, pinned int
-	var from, to, name string
-	pinChange := ChangePinned
+	var added, removed, updated, enabled, disabled, pinned, tagged int
+	var from, to, name, tag string
+	pinChange, tagChange := ChangePinned, ChangeTags
 	seen := map[string]struct{}{}
 	for id, ae := range aMap {
 		seen[id] = struct{}{}
@@ -1108,6 +1112,10 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 			if !ae.Pinned {
 				pinChange = ChangeUnpinned
 			}
+		case !slices.Equal(be.Tags, ae.Tags):
+			tagged++
+			name = entryName(ae)
+			tagChange, tag = tagEdit(be.Tags, ae.Tags)
 		}
 	}
 	for id := range bMap {
@@ -1119,7 +1127,7 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 			name = entryName(bMap[id])
 		}
 	}
-	count := added + removed + updated + enabled + disabled + pinned
+	count := added + removed + updated + enabled + disabled + pinned + tagged
 	switch {
 	case count > 1:
 		return HistoryEvent{Kind: historyBulk, Change: ChangeMods, Count: count}
@@ -1135,9 +1143,24 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 		return HistoryEvent{Kind: historyDisabled, Change: ChangeDisabled, Name: name, Count: 1}
 	case pinned == 1:
 		return HistoryEvent{Kind: historyPinned, Change: pinChange, Name: name, Count: 1}
+	case tagged == 1:
+		return HistoryEvent{Kind: historyBulk, Change: tagChange, Name: name, Detail: tag, Count: 1}
 	default:
 		return HistoryEvent{Kind: historyBulk, Change: ChangeMods, Count: 1}
 	}
+}
+
+// tagEdit is how one mod's tags changed: one tag added or removed, else ChangeTags.
+func tagEdit(before, after []string) (HistoryChange, string) {
+	added := slices.DeleteFunc(slices.Clone(after), func(t string) bool { return slices.Contains(before, t) })
+	removed := slices.DeleteFunc(slices.Clone(before), func(t string) bool { return slices.Contains(after, t) })
+	switch {
+	case len(added) == 1 && len(removed) == 0:
+		return ChangeTagged, added[0]
+	case len(removed) == 1 && len(added) == 0:
+		return ChangeUntagged, removed[0]
+	}
+	return ChangeTags, ""
 }
 
 func indexEntries(es []Entry) map[string]Entry {

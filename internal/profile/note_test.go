@@ -71,3 +71,31 @@ func TestSetEntryNoteTags(t *testing.T) {
 		t.Fatalf("cleared = %+v", p.Entries[0])
 	}
 }
+
+func TestTagEditsRecordWhatChanged(t *testing.T) {
+	t.Parallel()
+	s := newStore(t)
+	p := pinTestProfile(t, s)
+	name := entryName(p.Entries[0])
+	for _, c := range []struct {
+		tags   []string
+		change HistoryChange
+		detail string
+	}{
+		{[]string{"QoL"}, ChangeTagged, "QoL"},
+		{[]string{"QoL", "core"}, ChangeTagged, "core"},
+		{[]string{"core"}, ChangeUntagged, "QoL"},
+		{[]string{"art"}, ChangeTags, ""},
+	} {
+		if _, err := s.SetEntryNoteTags("stardew", p.ID, "nexus-1-1", "", c.tags); err != nil {
+			t.Fatal(err)
+		}
+		events, err := s.History("stardew", p.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if ev := events[0]; ev.Change != c.change || ev.Detail != c.detail || ev.Name != name {
+			t.Fatalf("tags %v: event %+v", c.tags, ev)
+		}
+	}
+}

@@ -138,7 +138,7 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 	var answered []Page
 	for i, err := range errs {
 		if err != nil {
-			merged.Failed = append(merged.Failed, sources[i].Name())
+			merged.Failed = append(merged.Failed, sources[i].ID())
 			continue
 		}
 		answered = append(answered, pages[i])

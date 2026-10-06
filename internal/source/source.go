@@ -135,8 +135,9 @@ type Page struct {
 	Total int `json:"total"`
 	Pages int `json:"pages,omitempty"`
 	// Hidden counts hits on this page the player's browse filters left out; Total still counts them.
-	Hidden int      `json:"hidden,omitempty"`
-	Items  []Item   `json:"items"`
+	Hidden int    `json:"hidden,omitempty"`
+	Items  []Item `json:"items"`
+	// Failed are the ids of the sources that did not answer.
 	Failed []string `json:"failed,omitempty"`
 }
 
