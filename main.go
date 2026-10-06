@@ -173,6 +173,7 @@ func run() error {
 		return serveNativeHost()
 	}
 	registerEvents()
+	chooseServerPort()
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -265,6 +266,9 @@ func run() error {
 			},
 		},
 	})
+	if pid, ok := otherInstance(dataDir); ok {
+		return fmt.Errorf("mortar (pid %d) is already running with the data folder %s", pid, dataDir)
+	}
 	// A windowsgui build has no stderr, so logs and fatal panics would end without a trace; both also go to
 	// files in the data folder, the previous run's log kept beside the current one.
 	if crash, err := fsx.OpenFile(filepath.Join(dataDir, "crash.log"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600); err == nil {
@@ -824,14 +828,7 @@ func run() error {
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, Bundles: bundlesSvc,
 		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Packs: packs, Emit: emit,
-		Quit: func() {
-			// Busy downloads or a running game get the window's own confirmation, as the tray Quit does.
-			if quitSvc.BusySummary() == "" {
-				quitSvc.ConfirmQuit()
-			} else {
-				quitSvc.RequestQuit()
-			}
-		},
+		Quit: quitSvc.ConfirmQuit, QuitBlocker: quitSvc.BusySummary,
 	}
 	go func() {
 		if err := control.Serve(queueCtx, dataDir, version, ctl.Handle); err != nil && !errors.Is(err, context.Canceled) {
