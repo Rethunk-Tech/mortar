@@ -128,6 +128,7 @@
         {
           "id": "bepinex5",
           "name": "BepInEx 5",
+          "nexusModId": 42,
           "companion": "bridge"
         }
       ],

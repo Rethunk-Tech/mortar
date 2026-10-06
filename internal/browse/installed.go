@@ -6,6 +6,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -17,13 +18,26 @@ type Holdings struct {
 	// named holds the entries of sources identified by Name (Thunderstore, Modrinth, itch.io, ...), by kind.
 	named   map[string]map[string]bool
 	bridges map[string]bool
+	// ids maps a source ref to the package identity the profile's entry or installed manifest gives it.
+	ids map[string]string
 }
 
 // Hold reads prof's entries and the manifests of its installed mods (nil when unknown) for the catalog game info.
 func Hold(info components.GameInfo, prof profile.Profile, installed []profile.Installed) Holdings {
-	h := Holdings{nexus: map[int]bool{}, github: map[string]bool{}, named: map[string]map[string]bool{}, bridges: map[string]bool{}}
+	h := Holdings{nexus: map[int]bool{}, github: map[string]bool{}, named: map[string]map[string]bool{}, bridges: map[string]bool{}, ids: map[string]string{}}
 	bundled := false
 	for _, e := range prof.Entries {
+		// An entry of several mods names no single identity.
+		if len(e.Mods) == 1 {
+			ref := e.Source.Name
+			switch e.Source.Kind {
+			case profile.KindNexus:
+				ref = strconv.Itoa(e.Source.ModID)
+			case profile.KindGitHub:
+				ref = e.Source.Repo
+			}
+			h.identify(e.Source.Kind, ref, e.Mods[0].ID)
+		}
 		switch e.Source.Kind {
 		case profile.KindNexus:
 			h.nexus[e.Source.ModID] = true
@@ -40,9 +54,11 @@ func Hold(info components.GameInfo, prof profile.Profile, installed []profile.In
 		for _, k := range m.UpdateKeys {
 			if id, ok := manifest.NexusUpdateKey(k); ok {
 				h.nexus[id] = true
+				h.identify(profile.KindNexus, strconv.Itoa(id), mod.SMAPI(m.UniqueID))
 			}
 			if repo, ok := manifest.GitHubUpdateKey(k); ok {
 				h.github[strings.ToLower(repo)] = true
+				h.identify(profile.KindGitHub, repo, mod.SMAPI(m.UniqueID))
 			}
 		}
 	}
@@ -50,6 +66,23 @@ func Hold(info components.GameInfo, prof profile.Profile, installed []profile.In
 		h.addBridges(info)
 	}
 	return h
+}
+
+// identify records that the source's ref is the package id; a ref two packages claim names none.
+func (h Holdings) identify(kind, ref string, id mod.ID) {
+	if kind == "" || ref == "" || id == "" {
+		return
+	}
+	key := kind + "|" + strings.ToLower(ref)
+	if prev, ok := h.ids[key]; ok && prev != id.Fold() {
+		id = ""
+	}
+	h.ids[key] = id.Fold()
+}
+
+// Identity is the package identity the profile gives a hit's source and id, "" when it holds no such mod.
+func (h Holdings) Identity(source, id string) string {
+	return h.ids[source+"|"+strings.ToLower(id)]
 }
 
 func (h Holdings) hold(kind, name string) {

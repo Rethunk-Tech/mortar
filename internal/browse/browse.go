@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
@@ -65,6 +67,37 @@ type Client struct {
 	Prefer []string
 	// Compat is the game's compatibility list; nil when the game has none, so nothing is marked broken.
 	Compat func(ctx context.Context) (meta.CompatIndex, error)
+	// Identity gives a hit's package identity from what the open profile holds; nil or "" falls back to the
+	// compatibility list. Hits that share an identity are one mod.
+	Identity func(source, id string) string
+}
+
+// identity resolves a hit to its package identity from the profile, then from the compatibility list's refs.
+func (c *Client) identity(ctx context.Context) identityOf {
+	var idx meta.CompatIndex
+	if c.Compat != nil {
+		idx, _ = c.Compat(ctx)
+	}
+	return func(it Item) string {
+		if c.Identity != nil {
+			if id := c.Identity(it.Source, it.ID); id != "" {
+				return id
+			}
+		}
+		var uid string
+		switch it.Source {
+		case "nexus":
+			if n, err := strconv.Atoi(it.ID); err == nil {
+				uid = idx.NexusToID[n]
+			}
+		case "github":
+			uid = idx.GitHubToID[strings.ToLower(it.ID)]
+		}
+		if uid == "" {
+			return ""
+		}
+		return mod.SMAPI(uid).Fold()
+	}
 }
 
 // Search returns one page of mods for game from the source matching text.
@@ -120,7 +153,7 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 	for i, s := range sources {
 		ids[i] = s.ID()
 	}
-	merged.Items = mergeSame(interleave(answered), ranked(c.Prefer, ids))
+	merged.Items = mergeSame(interleave(answered), ranked(c.Prefer, ids), c.identity(ctx))
 	return merged, nil
 }
 

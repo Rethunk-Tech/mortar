@@ -3,36 +3,31 @@ package browse
 import (
 	"regexp"
 	"strings"
-	"unicode"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
-
-// foldKey lowercases s and drops everything but letters and digits, so "Cool Mod!" and "cool-mod" are one name.
-func foldKey(s string) string {
-	return strings.Map(func(r rune) rune {
-		if unicode.IsLetter(r) || unicode.IsDigit(r) {
-			return unicode.ToLower(r)
-		}
-		return -1
-	}, s)
-}
-
-// minTitleLen keeps a very short name from tying unrelated mods.
-const minTitleLen = 4
 
 var (
 	githubLink      = regexp.MustCompile(`(?i)github\.com/([\w.-]+/[\w.-]+)`)
 	thunderstoreRef = regexp.MustCompile(`(?i)thunderstore\.io/c/[\w-]+/p/([\w]+)/([\w]+)`)
 )
 
-// keys are what ties two hits to one mod across sources: the game's loader, the GitHub repository or Thunderstore
-// package its site or summary links, the exact name and author, or the exact name alone. A name alone can tie two
-// different mods, but never two hits of one source, and a site's author is often the uploader.
-func keys(it Item) []string {
+// identityOf resolves a hit to its package identity (a SMAPI UniqueID or a loader plugin id), "" when none is known.
+type identityOf func(Item) string
+
+// keys are what ties two hits to one mod across sources, and only references and identities do: the game's loader,
+// the package identity both hits resolve to, the GitHub repository a hit links, or the Thunderstore package its
+// summary points at. A name never ties two hits: different mods share names, and a site's author is often the
+// uploader.
+func keys(it Item, ident identityOf) []string {
 	var out []string
 	if it.Loader {
 		out = append(out, "loader")
+	}
+	if ident != nil {
+		if id := ident(it); id != "" {
+			out = append(out, "id:"+id)
+		}
 	}
 	if it.Repo != "" {
 		out = append(out, "repo:"+strings.ToLower(it.Repo))
@@ -46,13 +41,6 @@ func keys(it Item) []string {
 	if it.Source == "thunderstore" && it.ID != "" {
 		out = append(out, "ts:"+strings.ToLower(it.ID))
 	}
-	n := foldKey(it.Name)
-	if a := foldKey(it.Author); n != "" && a != "" {
-		out = append(out, "name:"+n+"|"+a)
-	}
-	if len(n) >= minTitleLen {
-		out = append(out, "title:"+n)
-	}
 	return out
 }
 
@@ -60,7 +48,7 @@ func keys(it Item) []string {
 // hit. The card is the hit of the earliest source in order (the game's catalog order), and the rest are its Alts,
 // each with its own Installed, Obsolete, Broken and Loader. A card with a loader hit is a loader card.
 // Two hits of one source are never merged: a source already lists a mod once.
-func mergeSame(items []Item, order []string) []Item {
+func mergeSame(items []Item, order []string, ident identityOf) []Item {
 	rank := func(src string) int {
 		for i, id := range order {
 			if id == src {
@@ -73,7 +61,7 @@ func mergeSame(items []Item, order []string) []Item {
 	var groups [][]Item
 	for _, it := range items {
 		g := -1
-		for _, k := range keys(it) {
+		for _, k := range keys(it, ident) {
 			if i, ok := groupOf[k]; ok && !hasSource(groups[i], it.Source) {
 				g = i
 				break
@@ -84,7 +72,7 @@ func mergeSame(items []Item, order []string) []Item {
 			groups = append(groups, nil)
 		}
 		groups[g] = append(groups[g], it)
-		for _, k := range keys(it) {
+		for _, k := range keys(it, ident) {
 			if _, ok := groupOf[k]; !ok {
 				groupOf[k] = g
 			}

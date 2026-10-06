@@ -37,6 +37,10 @@ type CompatEntry struct {
 type CompatIndex struct {
 	ByID    map[string]CompatEntry
 	ByNexus map[int]CompatEntry
+	// NexusToID and GitHubToID (repo lowercased) name the UniqueID a Nexus page or GitHub repository publishes, which
+	// ties one mod's pages on different sites together.
+	NexusToID  map[int]string
+	GitHubToID map[string]string
 }
 
 func (idx CompatIndex) Lookup(uniqueID string, nexusID int) (CompatEntry, bool) {
@@ -127,6 +131,7 @@ func (c *Client) fetchCompat(ctx context.Context) (CompatIndex, error) {
 type rawCompatMod struct {
 	ID               json.RawMessage `json:"id"`
 	IDs              json.RawMessage `json:"ids"`
+	GitHub           string          `json:"github"`
 	Nexus            flexInt         `json:"nexus"`
 	NexusID          flexInt         `json:"nexusID"`
 	Compatibility    json.RawMessage `json:"compatibility"`
@@ -174,24 +179,55 @@ func parseCompatJSON(b []byte) (CompatIndex, error) {
 	idx := CompatIndex{
 		ByID:    make(map[string]CompatEntry, len(mods)),
 		ByNexus: make(map[int]CompatEntry, len(mods)),
+
+		NexusToID:  map[int]string{},
+		GitHubToID: map[string]string{},
 	}
 	for _, raw := range mods {
+		ids := uniqueIDsOf(raw)
+		nexus := int(raw.NexusID)
+		if nexus == 0 {
+			nexus = int(raw.Nexus)
+		}
+		// A page that publishes several mods names no single identity.
+		if len(ids) == 1 {
+			if nexus > 0 {
+				tie(idx.NexusToID, nexus, ids[0])
+			}
+			if repo := strings.ToLower(strings.TrimSpace(raw.GitHub)); repo != "" {
+				tie(idx.GitHubToID, repo, ids[0])
+			}
+		}
 		e := entryFromRaw(raw)
 		if e.Status == "" {
 			continue
 		}
-		for _, id := range uniqueIDsOf(raw) {
+		for _, id := range ids {
 			idx.ByID[strings.ToLower(id)] = e
-		}
-		nexus := int(raw.NexusID)
-		if nexus == 0 {
-			nexus = int(raw.Nexus)
 		}
 		if nexus > 0 {
 			idx.ByNexus[nexus] = e
 		}
 	}
+	dropAmbiguous(idx.NexusToID)
+	dropAmbiguous(idx.GitHubToID)
 	return idx, nil
+}
+
+// tie records that ref publishes id; a ref that publishes two ids (a repository of many mods) is marked ambiguous.
+func tie[K comparable](m map[K]string, ref K, id string) {
+	if prev, ok := m[ref]; ok && !strings.EqualFold(prev, id) {
+		id = ""
+	}
+	m[ref] = id
+}
+
+func dropAmbiguous[K comparable](m map[K]string) {
+	for k, v := range m {
+		if v == "" {
+			delete(m, k)
+		}
+	}
 }
 
 func decodeCompatMods(b []byte) ([]rawCompatMod, error) {

@@ -44,7 +44,7 @@ func (s *Service) Search(ctx context.Context, game, sourceID, text string, page 
 		c.Compat = s.Compat(game)
 	}
 	if h := s.holdings(game, profileID); h != nil {
-		c.Installed, c.Bundled = h.Has, h.Bundled
+		c.Installed, c.Bundled, c.Identity = h.Has, h.Bundled, h.Identity
 	}
 	return c.Search(ctx, game, sourceID, text, page, filter)
 }

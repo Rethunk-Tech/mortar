@@ -1,32 +1,85 @@
 package browse
 
-import "testing"
+import (
+	"context"
+	"testing"
 
-func TestMergeSameFoldsOneModAcrossSources(t *testing.T) {
+	"github.com/Rethunk-Tech/mortar/internal/meta"
+
+	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+)
+
+func TestMergeSameFoldsHitsThatLinkEachOther(t *testing.T) {
 	items := []Item{
 		{Source: "nexus", ID: "1", Name: "Cool Mod", Author: "Alice"},
 		{Source: "thunderstore", ID: "Alice-CoolMod", Name: "CoolMod", Author: "alice", Repo: "alice/cool"},
 		{Source: "github", ID: "alice/cool", Name: "alice/cool", Author: "alice", Repo: "alice/cool", Installed: true},
 		{Source: "github", ID: "bob/other", Name: "other", Author: "bob", Repo: "bob/other"},
 	}
-	got := mergeSame(items, []string{"thunderstore", "nexus", "github"})
-	if len(got) != 2 {
+	got := mergeSame(items, []string{"thunderstore", "nexus", "github"}, nil)
+	if len(got) != 3 {
 		t.Fatalf("cards = %+v", got)
 	}
-	card := got[0]
-	if card.Source != "thunderstore" || len(card.Alts) != 2 || !card.Alts[1].Installed {
+	card := got[1]
+	if card.Source != "thunderstore" || len(card.Alts) != 1 || card.Alts[0].Source != "github" || !card.Alts[0].Installed {
 		t.Errorf("merged card = %+v", card)
-	}
-	if got[1].ID != "bob/other" || len(got[1].Alts) != 0 {
-		t.Errorf("unrelated card = %+v", got[1])
 	}
 }
 
-func TestMergeSameKeepsSameNameDifferentAuthorApart(t *testing.T) {
+func TestMergeSameNeverMergesOnNames(t *testing.T) {
 	got := mergeSame([]Item{
-		{Source: "nexus", Name: "Map", Author: "a"},
-		{Source: "github", Name: "Map", Author: "b"},
-	}, []string{"nexus", "github"})
+		{Source: "nexus", ID: "1", Name: "Radar Map", Author: "same"},
+		{Source: "github", ID: "x/radar-map", Name: "Radar Map", Author: "same"},
+		{Source: "thunderstore", ID: "A-RadarMap", Name: "RadarMap", Author: "A"},
+	}, []string{"thunderstore", "nexus", "github"}, nil)
+	if len(got) != 3 {
+		t.Fatalf("cards = %+v", got)
+	}
+}
+
+func TestMergeSameTiesHitsThatShareAPackageIdentity(t *testing.T) {
+	ident := func(it Item) string {
+		switch it.ID {
+		case "7", "pathoschild/cool":
+			return "smapi:pathoschild.cool"
+		case "9":
+			return "smapi:other.mod"
+		}
+		return ""
+	}
+	got := mergeSame([]Item{
+		{Source: "nexus", ID: "7", Name: "Cool"},
+		{Source: "github", ID: "pathoschild/cool", Name: "pathoschild/cool"},
+		{Source: "nexus", ID: "9", Name: "Cool"},
+		{Source: "github", ID: "nobody/unknown", Name: "Cool"},
+	}, []string{"nexus", "github"}, ident)
+	if len(got) != 3 || len(got[0].Alts) != 1 || got[0].Alts[0].ID != "pathoschild/cool" {
+		t.Fatalf("cards = %+v", got)
+	}
+}
+
+func TestMergeSameTiesTheLoader(t *testing.T) {
+	got := mergeSame([]Item{
+		{Source: "thunderstore", ID: "BepInEx-BepInExPack", Name: "BepInExPack", Author: "BepInEx", Loader: true},
+		{Source: "nexus", ID: "1", Name: "BepInEx", Author: "u", Loader: true, Installed: true, Obsolete: true, Broken: true},
+	}, []string{"thunderstore", "nexus"}, nil)
+	if len(got) != 1 || got[0].Source != "thunderstore" || !got[0].Loader || got[0].Obsolete || got[0].Broken {
+		t.Fatalf("card = %+v", got)
+	}
+	if alt := got[0].Alts[0]; !alt.Loader || !alt.Installed || !alt.Obsolete || !alt.Broken {
+		t.Fatalf("alt = %+v", alt)
+	}
+}
+
+func TestMergeSameTiesBySummaryLinks(t *testing.T) {
+	got := mergeSame([]Item{
+		{Source: "nexus", ID: "3", Name: "Odd Title", Summary: "Source at https://github.com/Alice/Cool-Mod and more"},
+		{Source: "github", ID: "alice/cool-mod", Name: "other", Repo: "alice/cool-mod"},
+		{Source: "nexus", ID: "4", Name: "Another", Summary: "See https://thunderstore.io/c/lethal-company/p/Bob/Thing/"},
+		{Source: "thunderstore", ID: "Bob-Thing", Name: "Something"},
+	}, []string{"thunderstore", "nexus", "github"}, nil)
 	if len(got) != 2 {
 		t.Fatalf("cards = %+v", got)
 	}
@@ -40,53 +93,34 @@ func TestRankedPutsPreferredSourcesFirst(t *testing.T) {
 	}
 }
 
-func TestMergeSameTiesTheLoaderAndExactNamesAcrossSources(t *testing.T) {
-	items := []Item{
-		{Source: "thunderstore", ID: "BepInEx-BepInExPack", Name: "BepInExPack", Author: "BepInEx", Loader: true},
-		{Source: "nexus", ID: "1", Name: "BepInEx", Author: "someuploader", Loader: true},
-		{Source: "thunderstore", ID: "notnotnotswipez-MoreCompany", Name: "MoreCompany", Author: "notnotnotswipez"},
-		{Source: "nexus", ID: "2", Name: "More Company", Author: "Cyb3rdev"},
+func TestHoldingsGiveAnIdentityToTheRefsOfWhatTheProfileHolds(t *testing.T) {
+	prof := profile.Profile{Entries: []profile.Entry{
+		{Source: profile.Source{Kind: profile.KindNexus, ModID: 42}, Mods: []profile.Component{{ID: mod.SMAPI("Me.Cool")}}},
+		{Source: profile.Source{Kind: profile.KindNexus, ModID: 50}, Mods: []profile.Component{{ID: mod.SMAPI("A.One")}, {ID: mod.SMAPI("A.Two")}}},
+	}}
+	installed := []profile.Installed{{UniqueID: "Me.Cool", UpdateKeys: []string{"GitHub:Me/Cool"}}}
+	h := Hold(components.GameInfo{}, prof, installed)
+	if h.Identity("nexus", "42") != "smapi:me.cool" || h.Identity("github", "me/cool") != "smapi:me.cool" {
+		t.Fatalf("ids = %v", h.ids)
 	}
-	got := mergeSame(items, []string{"thunderstore", "nexus"})
-	if len(got) != 2 || len(got[0].Alts) != 1 || got[0].Alts[0].Source != "nexus" || len(got[1].Alts) != 1 || got[1].Source != "thunderstore" {
-		t.Fatalf("cards = %+v", got)
-	}
-}
-
-func TestMergeSameTiesBySummaryLinks(t *testing.T) {
-	got := mergeSame([]Item{
-		{Source: "nexus", ID: "3", Name: "Odd Title", Author: "u", Summary: "Source at https://github.com/Alice/Cool-Mod and more"},
-		{Source: "github", ID: "alice/cool-mod", Name: "other", Author: "x", Repo: "alice/cool-mod"},
-		{Source: "nexus", ID: "4", Name: "Another", Author: "u", Summary: "See https://thunderstore.io/c/lethal-company/p/Bob/Thing/"},
-		{Source: "thunderstore", ID: "Bob-Thing", Name: "Something", Author: "Bob"},
-	}, []string{"thunderstore", "nexus", "github"})
-	if len(got) != 2 {
-		t.Fatalf("cards = %+v", got)
+	if h.Identity("nexus", "50") != "" {
+		t.Fatal("an entry of two mods names no single identity")
 	}
 }
 
-func TestMergeSameKeepsTwoModsOfOneSourceApart(t *testing.T) {
+func TestCompatListTiesANexusAndAGitHubHitThroughTheirUniqueID(t *testing.T) {
+	c := &Client{Compat: func(context.Context) (meta.CompatIndex, error) {
+		return meta.CompatIndex{
+			NexusToID:  map[int]string{7: "Pathoschild.Cool"},
+			GitHubToID: map[string]string{"pathoschild/cool": "Pathoschild.Cool"},
+		}, nil
+	}}
 	got := mergeSame([]Item{
-		{Source: "thunderstore", ID: "A-Radar", Name: "Radar", Author: "A"},
-		{Source: "thunderstore", ID: "B-Radar", Name: "Radar", Author: "B"},
-		{Source: "nexus", ID: "9", Name: "Radar", Author: "u"},
-		{Source: "nexus", ID: "10", Name: "Maps", Author: "u"},
-		{Source: "thunderstore", ID: "C-Maps", Name: "Maps", Author: "C"},
-	}, []string{"thunderstore", "nexus"})
-	if len(got) != 3 {
+		{Source: "nexus", ID: "7", Name: "Cool"},
+		{Source: "github", ID: "Pathoschild/Cool", Name: "Pathoschild/Cool"},
+		{Source: "github", ID: "someone/else", Name: "Cool"},
+	}, []string{"nexus", "github"}, c.identity(t.Context()))
+	if len(got) != 2 || len(got[0].Alts) != 1 {
 		t.Fatalf("cards = %+v", got)
-	}
-}
-
-func TestMergeSameCarriesEachHitsFlags(t *testing.T) {
-	got := mergeSame([]Item{
-		{Source: "thunderstore", ID: "BepInEx-BepInExPack", Name: "BepInExPack", Author: "BepInEx", Loader: true},
-		{Source: "nexus", ID: "1", Name: "BepInEx", Author: "u", Loader: true, Installed: true, Obsolete: true, Broken: true},
-	}, []string{"thunderstore", "nexus"})
-	if len(got) != 1 || got[0].Source != "thunderstore" || !got[0].Loader || got[0].Obsolete || got[0].Broken {
-		t.Fatalf("card = %+v", got)
-	}
-	if alt := got[0].Alts[0]; !alt.Loader || !alt.Installed || !alt.Obsolete || !alt.Broken {
-		t.Fatalf("alt = %+v", alt)
 	}
 }

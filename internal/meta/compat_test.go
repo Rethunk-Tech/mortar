@@ -147,3 +147,24 @@ func TestCompatStatusDefaultsFollowTheSchema(t *testing.T) {
 		}
 	}
 }
+
+func TestCompatIndexTiesRefsToAUniqueIDUnlessAmbiguous(t *testing.T) {
+	idx, err := parseCompatJSON([]byte(`[
+	  {"id":"A.One","nexus":10,"github":"Me/One","status":"ok"},
+	  {"id":"B.Two","github":"Me/Many","status":"ok"},
+	  {"id":"B.Three","github":"me/many"},
+	  {"id":["C.Four","C.Five"],"nexus":11}
+	]`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if idx.NexusToID[10] != "A.One" || idx.GitHubToID["me/one"] != "A.One" {
+		t.Fatalf("ties = %v %v", idx.NexusToID, idx.GitHubToID)
+	}
+	if _, ok := idx.GitHubToID["me/many"]; ok {
+		t.Fatal("a repository of two mods names no identity")
+	}
+	if _, ok := idx.NexusToID[11]; ok {
+		t.Fatal("a page of two mods names no identity")
+	}
+}
