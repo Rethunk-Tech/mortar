@@ -3,6 +3,7 @@ import {
   emptyFilters,
   filterHistory,
   type HistoryEntry,
+  historyProfileName,
   historyProfiles,
   makeGen,
 } from './history.ts'
@@ -66,4 +67,16 @@ test('makeGen ignores a result after clear or a newer load', () => {
   expect(gen.is(second)).toBe(true)
   gen.drop()
   expect(gen.is(second)).toBe(false)
+})
+
+test('a history profile is named from the open game, by its game when it is another one, or as deleted', () => {
+  const entries = [
+    { profileId: 'a', game: 'stardew' },
+    { profileId: 'b', game: 'lethal-company' },
+    { profileId: 'gone', game: 'stardew' },
+  ] as HistoryEntry[]
+  const profiles = [{ id: 'a', name: 'Farm' }]
+  expect(historyProfileName('a', entries, 'stardew', profiles)).toBe('Farm')
+  expect(historyProfileName('b', entries, 'stardew', profiles)).toEqual({ game: 'lethal-company' })
+  expect(historyProfileName('gone', entries, 'stardew', profiles)).toBeNull()
 })

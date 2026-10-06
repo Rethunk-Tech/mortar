@@ -17,6 +17,7 @@ import {
   ClearHistory,
   RetryHistory,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
+import { gameName } from '../games/info.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { showInProfile } from '../mods/revealMod.ts'
@@ -30,6 +31,7 @@ import {
   filterHistory,
   type HistoryEntry,
   type HistoryFilters,
+  historyProfileName,
   historyProfiles,
 } from './history.ts'
 import { RetryAllButton } from './RetryAllButton.tsx'
@@ -124,7 +126,8 @@ export function HistoryList({
   onFilters,
   onCleared,
 }: {
-  entries: HistoryEntry[]
+  // null until read, so the empty message never shows before the history has been looked at.
+  entries: HistoryEntry[] | null
   filters: HistoryFilters
   onFilters: (next: HistoryFilters) => void
   onCleared: () => void
@@ -133,9 +136,17 @@ export function HistoryList({
   const failColor = useTheme().palette.error.light
   const [confirmClear, setConfirmClear] = useState(false)
   const profiles = useProfiles((s) => s.profiles)
-  const nameOf = (id: string) => profiles.find((p) => p.id === id)?.name || id
-  const rows = filterHistory(entries, filters)
-  const ids = historyProfiles(entries)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const list = entries ?? []
+  const nameOf = (id: string) => {
+    const name = historyProfileName(id, list, game, profiles)
+    if (typeof name === 'string') {
+      return name
+    }
+    return name ? t`${{ game: gameName(name.game) }} profile` : t`Deleted profile`
+  }
+  const rows = filterHistory(list, filters)
+  const ids = historyProfiles(list)
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -177,8 +188,8 @@ export function HistoryList({
             ))}
           </Select>
         </FormControl>
-        <RetryAllButton failed={entries.filter((e) => e.outcome === 'failed').length} />
-        {entries.length > 0 ? (
+        <RetryAllButton failed={list.filter((e) => e.outcome === 'failed').length} />
+        {list.length > 0 ? (
           <TipIconButton
             label={t`Clear history`}
             onClick={() => setConfirmClear(true)}
@@ -204,7 +215,7 @@ export function HistoryList({
           }
         />
       </Box>
-      {rows.length === 0 ? (
+      {entries !== null && rows.length === 0 ? (
         <EmptyState compact={true} icon={<Download />} title={t`No downloads in history.`}>
           {t`Completed downloads will appear here.`}
         </EmptyState>

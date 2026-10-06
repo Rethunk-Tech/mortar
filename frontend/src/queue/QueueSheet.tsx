@@ -141,7 +141,8 @@ export function QueueSheet() {
   const historyBatchId = useQueue((s) => s.historyBatchId)
   const items = useQueue((s) => s.state.items)
   const [view, setView] = useState<'queue' | 'history'>('queue')
-  const [history, setHistory] = useState<HistoryEntry[]>([])
+  // null until read, so opening History never flashes its empty message first.
+  const [history, setHistory] = useState<HistoryEntry[] | null>(null)
   const [filters, setFilters] = useState<HistoryFilters>(emptyFilters)
   const gen = useRef(makeGen())
   const close = () => {

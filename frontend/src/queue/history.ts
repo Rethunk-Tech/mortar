@@ -44,6 +44,21 @@ export function filterHistory(entries: HistoryEntry[], filters: HistoryFilters):
   })
 }
 
+// History spans every game, while the profile list holds only the open game's: a profile it lacks is another game's
+// (named by that game) or a deleted one (null).
+export function historyProfileName(
+  id: string,
+  entries: readonly HistoryEntry[],
+  game: string,
+  profiles: readonly { id: string; name: string }[],
+): string | { game: string } | null {
+  const of = entries.find((e) => e.profileId === id)?.game ?? game
+  if (of !== game) {
+    return { game: of }
+  }
+  return profiles.find((p) => p.id === id)?.name ?? null
+}
+
 export function historyProfiles(entries: HistoryEntry[]): string[] {
   return [...new Set(entries.map((e) => e.profileId).filter(Boolean))]
 }

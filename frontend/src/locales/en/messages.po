@@ -458,6 +458,10 @@ msgstr "No user mods in either profile."
 msgid "Keep newer"
 msgstr "Keep newer"
 
+#: src/queue/QueueHistory.tsx:146
+msgid "Deleted profile"
+msgstr "Deleted profile"
+
 #: src/settings/sections/NexusMods.tsx:86
 msgid "Untrack mods"
 msgstr "Untrack mods"
@@ -683,7 +687,7 @@ msgstr "Updated on Nexus"
 msgid "Dismiss"
 msgstr "Dismiss"
 
-#: src/queue/QueueHistory.tsx:170
+#: src/queue/QueueHistory.tsx:181
 msgid "All profiles"
 msgstr "All profiles"
 
@@ -1090,7 +1094,7 @@ msgstr "SMAPI loads mods for {ms}."
 msgid "Exclude categories"
 msgstr "Exclude categories"
 
-#: src/queue/QueueHistory.tsx:147
+#: src/queue/QueueHistory.tsx:158
 msgid "Filter by outcome"
 msgstr "Filter by outcome"
 
@@ -1277,7 +1281,7 @@ msgstr "More play options"
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
 
-#: src/queue/QueueHistory.tsx:151
+#: src/queue/QueueHistory.tsx:162
 msgid "All outcomes"
 msgstr "All outcomes"
 
@@ -1647,7 +1651,7 @@ msgstr "Unlink"
 msgid "It could not load an asset."
 msgstr "It could not load an asset."
 
-#: src/queue/QueueHistory.tsx:51
+#: src/queue/QueueHistory.tsx:53
 msgid "Download again"
 msgstr "Download again"
 
@@ -1862,7 +1866,7 @@ msgid "Changed game install"
 msgstr "Changed game install"
 
 #: src/console/outcome.ts:12
-#: src/queue/QueueHistory.tsx:65
+#: src/queue/QueueHistory.tsx:67
 msgid "Failed"
 msgstr "Failed"
 
@@ -1895,7 +1899,7 @@ msgstr "Usage"
 msgid "Folder to watch for archives"
 msgstr "Folder to watch for archives"
 
-#: src/queue/QueueHistory.tsx:194
+#: src/queue/QueueHistory.tsx:205
 msgid "Clears the list of past downloads; downloads in progress are unaffected. Failed items lose Retry until downloaded again."
 msgstr "Clears the list of past downloads; downloads in progress are unaffected. Failed items lose Retry until downloaded again."
 
@@ -2279,6 +2283,10 @@ msgstr "Try a different search."
 msgid "Not signed in"
 msgstr "Not signed in"
 
+#: src/queue/QueueHistory.tsx:146
+msgid "{game} profile"
+msgstr "{game} profile"
+
 #: src/firstrun/FindStep.tsx:164
 #: src/firstrun/GameSetup.tsx:158
 #: src/settings/sections/GameSettings.tsx:190
@@ -2373,7 +2381,7 @@ msgstr "Track a Nexus mod when Mortar installs it"
 
 #: src/mods/updateReview/EverywhereDialog.tsx:50
 #: src/queue/QueueBody.tsx:445
-#: src/queue/QueueHistory.tsx:67
+#: src/queue/QueueHistory.tsx:69
 msgid "Skipped"
 msgstr "Skipped"
 
@@ -3936,7 +3944,7 @@ msgstr "From the extra mods folder…"
 
 #: src/firstrun/GameSetup.tsx:72
 #: src/firstrunTour/TourPopover.tsx:200
-#: src/queue/QueueHistory.tsx:63
+#: src/queue/QueueHistory.tsx:65
 msgid "Done"
 msgstr "Done"
 
@@ -4794,7 +4802,7 @@ msgstr "Files of {name} changed outside Mortar"
 msgid "No account needed"
 msgstr "No account needed"
 
-#: src/queue/QueueHistory.tsx:166
+#: src/queue/QueueHistory.tsx:177
 msgid "Filter by profile"
 msgstr "Filter by profile"
 
@@ -4862,7 +4870,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/queue/QueueButton.tsx:15
 #: src/queue/QueueButton.tsx:21
 #: src/queue/QueueSheet.tsx:72
-#: src/queue/QueueSheet.tsx:183
+#: src/queue/QueueSheet.tsx:184
 #: src/settings/SettingsPage.tsx:39
 msgid "Downloads"
 msgstr "Downloads"
@@ -5010,7 +5018,7 @@ msgstr "Gold"
 msgid "Direct"
 msgstr "Direct"
 
-#: src/queue/QueueHistory.tsx:208
+#: src/queue/QueueHistory.tsx:219
 msgid "No downloads in history."
 msgstr "No downloads in history."
 
@@ -6258,7 +6266,7 @@ msgid "A folder of unpacked mods to add from the Add menu"
 msgstr "A folder of unpacked mods to add from the Add menu"
 
 #. placeholder {0}: e.name
-#: src/queue/QueueHistory.tsx:254
+#: src/queue/QueueHistory.tsx:265
 msgid "Show {0} in its profile"
 msgstr "Show {0} in its profile"
 
@@ -6561,7 +6569,7 @@ msgstr "Pick up where you left off."
 msgid "Every archive in the downloads folder is already in a profile or Mortar's store."
 msgstr "Every archive in the downloads folder is already in a profile or Mortar's store."
 
-#: src/queue/QueueHistory.tsx:193
+#: src/queue/QueueHistory.tsx:204
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
@@ -7042,7 +7050,7 @@ msgstr "Import"
 msgid "Obsolete"
 msgstr "Obsolete"
 
-#: src/queue/QueueHistory.tsx:209
+#: src/queue/QueueHistory.tsx:220
 msgid "Completed downloads will appear here."
 msgstr "Completed downloads will appear here."
 
@@ -8450,8 +8458,8 @@ msgstr "Reset…"
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
-#: src/queue/QueueHistory.tsx:183
-#: src/queue/QueueHistory.tsx:195
+#: src/queue/QueueHistory.tsx:194
+#: src/queue/QueueHistory.tsx:206
 msgid "Clear history"
 msgstr "Clear history"
 
@@ -11158,7 +11166,7 @@ msgid "Downloaded"
 msgstr "Downloaded"
 
 #: src/queue/QueueBody.tsx:445
-#: src/queue/QueueHistory.tsx:69
+#: src/queue/QueueHistory.tsx:71
 msgid "Cancelled"
 msgstr "Cancelled"
 
@@ -12047,7 +12055,7 @@ msgstr "{0, plural, one {# new archive} other {# new archives}} in your download
 msgid "Went back to {when}"
 msgstr "Went back to {when}"
 
-#: src/queue/QueueSheet.tsx:183
+#: src/queue/QueueSheet.tsx:184
 msgid "Download history"
 msgstr "Download history"
 
@@ -12687,7 +12695,7 @@ msgstr "Not in this profile"
 msgid "Switch profile"
 msgstr "Switch profile"
 
-#: src/queue/QueueHistory.tsx:237
+#: src/queue/QueueHistory.tsx:248
 msgid " · "
 msgstr " · "
 
