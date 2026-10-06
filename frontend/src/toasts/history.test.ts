@@ -4,6 +4,7 @@ import {
   historyActionState,
   laterEvents,
   prependHistory,
+  staleChange,
 } from './history.ts'
 
 test('prependHistory keeps newest first and drops past the cap', () => {
@@ -14,9 +15,11 @@ test('prependHistory keeps newest first and drops past the cap', () => {
   expect(items.at(-1)).toBe(1)
 })
 
-test(profile, 'k1', ['SpaceCore'])).toEqual({ disabled: false })
-  expect(changeStillLatest(profile, 'old', ['SpaceCore']).disabled).toBe(true)
-  expect(changeStillLatest(undefined, 'k1', ['SpaceCore']).disabled).toBe(true)
+test('an undo goes stale once its entry is no longer the latest for each mod', () => {
+  const profile = { entries: [{ key: 'k1', mods: [{ id: 'SpaceCore' }] }] }
+  expect(staleChange(profile, 'k1', ['SpaceCore'])).toBeNull()
+  expect(staleChange(profile, 'old', ['SpaceCore'])).toBe('superseded')
+  expect(staleChange(undefined, 'k1', ['SpaceCore'])).toBe('gone')
 })
 
 test('historyActionState prefers the lock reason over live()', () => {

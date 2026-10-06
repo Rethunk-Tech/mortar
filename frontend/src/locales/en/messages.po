@@ -276,6 +276,7 @@ msgstr "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
 #: src/mods/storeEntries.ts:73
 #: src/mods/storeEntries.ts:112
 #: src/profiles/historyRevert.ts:118
+#: src/toasts/history.ts:38
 msgid "That profile is gone."
 msgstr "That profile is gone."
 
@@ -670,7 +671,7 @@ msgid "No answer {0}: {error}"
 msgstr "No answer {0}: {error}"
 
 #: src/console/CrashDialog.tsx:294
-#: src/mods/problemFix/AssetFix.tsx:99
+#: src/mods/problemFix/AssetFix.tsx:103
 #: src/mods/problemFix/BrokenFix.tsx:78
 #: src/mods/problemFix/ListedFix.tsx:26
 #: src/mods/problemFix/SettingFix.tsx:100
@@ -1527,7 +1528,7 @@ msgstr "See load errors, missing dependencies, and other issues before you play.
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
-#: src/settings/SettingsShell.tsx:139
+#: src/settings/SettingsShell.tsx:138
 msgid "Search results"
 msgstr "Search results"
 
@@ -3418,7 +3419,7 @@ msgstr "Could not back up saves before Play"
 msgid "Computer paired"
 msgstr "Computer paired"
 
-#: src/launch/VanillaPlay.tsx:218
+#: src/launch/VanillaPlay.tsx:219
 msgid "Default launch preset"
 msgstr "Default launch preset"
 
@@ -3466,7 +3467,7 @@ msgstr "Could not read the game log"
 #: src/console/RunProblems.tsx:141
 #: src/mods/AssetMapDialog.tsx:87
 #: src/mods/ModMenu.tsx:126
-#: src/mods/problemFix/AssetFix.tsx:67
+#: src/mods/problemFix/AssetFix.tsx:71
 #: src/mods/problemFix/BrokenFix.tsx:86
 #: src/mods/problemFix/LoadFailureFix.tsx:60
 #: src/mods/runErrorFixButtons.tsx:48
@@ -3750,7 +3751,7 @@ msgstr "Share as r2modman code?"
 #: src/launch/PrePlayDialog.tsx:149
 #: src/launch/SaveWarnDialog.tsx:67
 #: src/launch/UpdateWarnDialog.tsx:49
-#: src/launch/VanillaPlay.tsx:238
+#: src/launch/VanillaPlay.tsx:239
 #: src/mods/AddToGroupDialog.tsx:99
 #: src/mods/CategoryEditor.tsx:154
 #: src/mods/CategoryEditor.tsx:234
@@ -4587,7 +4588,7 @@ msgstr "Log copied"
 
 #: src/launch/SmapiWarnDialog.tsx:22
 #: src/launch/VanillaPlay.tsx:57
-#: src/launch/VanillaPlay.tsx:212
+#: src/launch/VanillaPlay.tsx:213
 msgid "Play without mods"
 msgstr "Play without mods"
 
@@ -4733,7 +4734,7 @@ msgstr "Pause downloads while the game runs"
 msgid "{0} of saves"
 msgstr "{0} of saves"
 
-#: src/settings/SettingsShell.tsx:155
+#: src/settings/SettingsShell.tsx:154
 msgid "Try another word, or clear the search."
 msgstr "Try another word, or clear the search."
 
@@ -5097,7 +5098,7 @@ msgid "Redundant"
 msgstr "Redundant"
 
 #. placeholder {0}: preset?.base ? t`Standard` : preset?.name
-#: src/launch/VanillaPlay.tsx:179
+#: src/launch/VanillaPlay.tsx:180
 msgid "Play with {0}"
 msgstr "Play with {0}"
 
@@ -5339,6 +5340,10 @@ msgstr "Found"
 msgid "Before you play"
 msgstr "Before you play"
 
+#: src/toasts/history.ts:42
+msgid "This is no longer the latest change to that mod."
+msgstr "This is no longer the latest change to that mod."
+
 #: src/settings/sections/GameSettings.tsx:223
 msgid "Chosen in the game's Steam properties."
 msgstr "Chosen in the game's Steam properties."
@@ -5494,7 +5499,7 @@ msgstr "Copy"
 msgid "What happens to files the new version of a mod leaves out"
 msgstr "What happens to files the new version of a mod leaves out"
 
-#: src/settings/SettingsShell.tsx:154
+#: src/settings/SettingsShell.tsx:153
 msgid "No settings match"
 msgstr "No settings match"
 
@@ -8204,7 +8209,7 @@ msgstr "Arguments"
 msgid "The backup holds up to {0}: the profile, its settings and config files, mods no site can download again, and its own saves when it keeps them. Other mods download again when it is restored."
 msgstr "The backup holds up to {0}: the profile, its settings and config files, mods no site can download again, and its own saves when it keeps them. Other mods download again when it is restored."
 
-#: src/launch/VanillaPlay.tsx:196
+#: src/launch/VanillaPlay.tsx:197
 msgid "Set default preset…"
 msgstr "Set default preset…"
 
@@ -8327,7 +8332,7 @@ msgstr "Show the game log"
 msgid "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 
-#: src/launch/VanillaPlay.tsx:178
+#: src/launch/VanillaPlay.tsx:179
 #: src/profiles/LaunchPresetsBlock.tsx:44
 #: src/settings/sections/Appearance.tsx:68
 msgid "Default"
@@ -9120,7 +9125,7 @@ msgstr "Move up"
 msgid "Open download page"
 msgstr "Open download page"
 
-#: src/settings/sections/Launchers.tsx:28
+#: src/settings/sections/Launchers.tsx:27
 msgid "Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved."
 msgstr "Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved."
 
@@ -9616,7 +9621,7 @@ msgid "Some files could not be checked against Nexus, so a few may differ from w
 msgstr "Some files could not be checked against Nexus, so a few may differ from what was shared."
 
 #. placeholder {0}: fix.name
-#: src/mods/problemFix/AssetFix.tsx:49
+#: src/mods/problemFix/AssetFix.tsx:51
 msgid "In {0}; turns off its edits here"
 msgstr "In {0}; turns off its edits here"
 
@@ -9805,7 +9810,9 @@ msgstr "Deprecated"
 msgid "From a backup…"
 msgstr "From a backup…"
 
+#. placeholder {0}: item.name
 #. placeholder {0}: m.name
+#: src/browse/ResultCard.tsx:93
 #: src/mods/ModCards.tsx:160
 msgid "Details of {0}"
 msgstr "Details of {0}"
@@ -10067,8 +10074,8 @@ msgstr "Don't check before Play"
 msgid "Keep Mortar in the tray"
 msgstr "Keep Mortar in the tray"
 
-#: src/launch/VanillaPlay.tsx:179
-#: src/launch/VanillaPlay.tsx:232
+#: src/launch/VanillaPlay.tsx:180
+#: src/launch/VanillaPlay.tsx:233
 #: src/profiles/LaunchPresetsBlock.tsx:142
 #: src/profiles/LaunchPresetsBlock.tsx:146
 #: src/profiles/LoaderLaunchSettings.tsx:21
@@ -10594,7 +10601,7 @@ msgstr "Navigation"
 
 #. placeholder {0}: fix.field
 #. placeholder {1}: fix.value
-#: src/mods/problemFix/AssetFix.tsx:51
+#: src/mods/problemFix/AssetFix.tsx:55
 msgid "Set {0} to {1}"
 msgstr "Set {0} to {1}"
 
