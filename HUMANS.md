@@ -108,12 +108,15 @@ Same shape as the Stardew run, in `/var/tmp/mortar-regress-lc-XXXXXX`: copies th
 wails3 task linux:create:appimage     # bin/mortar-linux-x86_64.AppImage and the portable bin/mortar-linux-amd64
 wails3 task linux:nfpm                # .deb, .rpm, Arch package, bin/mortar-aur-linux-amd64
 wails3 task linux:flatpak             # bin/mortar-linux-x86_64.flatpak (needs flatpak-builder)
+wails3 task linux:flatpak:arm64       # bin/mortar-linux-aarch64.flatpak, on x86_64
 wails3 task linux:build:arm64         # bin/mortar-aur-linux-arm64 and its .deb, .rpm, Arch package
 wails3 build GOOS=windows             # bin/mortar.exe (ARCH=arm64 for Windows on ARM; wails3 task windows:package ARCH=arm64 also writes bin/mortar-arm64-installer.exe)
 MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.3
 ```
 
 `linux:build:arm64` cross-compiles on an x86_64 machine with no emulator registered: it needs `zig`, `docker` (to download the arm64 Ubuntu packages it links against, extracted under `tmp/`), `nfpm` and `qemu-aarch64`, which checks that every shared library resolves. The arm64 AppImage is built only in CI.
+
+`linux:flatpak:arm64` (`build/linux/flatpak/build-aarch64.sh`) runs that cross build with `linux:flatpak ARCH=arm64`. `flatpak-builder` runs the manifest's `build-commands` through the aarch64 SDK's `/bin/sh`, so the script registers `qemu-aarch64-static` in a user namespace's own `binfmt_misc` (Linux 6.7 or newer; no root and nothing system-wide). It needs the build:arm64 tools plus `flatpak`, and uses the host's `qemu-aarch64-static`, `flatpak-builder` and `appstreamcli-compose`, unpacking any that are missing from Fedora's packages into `tmp/rpm/` (`dnf download`, no install). The aarch64 GNOME runtime and SDK go into the user Flatpak installation. CI builds the release bundle natively on the arm64 leg.
 
 `scripts/package-matrix.sh [tag]` downloads a release's Linux assets and, in throwaway containers (podman, else docker), installs and smoke-runs the `.deb` (Debian, Ubuntu), `.rpm` (Fedora), Arch package and AppImage (extract-and-run), then the Flatpak bundle on the host in a temporary `FLATPAK_USER_DIR`. Each case runs `mortar version`, checks the binary, `.desktop`, metainfo, icon and MIME files land, uninstalls and checks nothing is left; it prints a pass/fail table and exits non-zero on any failure. `scripts/windows-installer-smoke.ps1 -Installer <exe>` does the same for the Windows installer (silent install, `mortar version`, Start Menu shortcut, autostart Run key, silent uninstall, leftovers); it needs a Windows machine or the test VM and an x64 installer.
 
