@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -2140,6 +2141,8 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 		im := mods[slices.IndexFunc(mods, func(m framework.Mod) bool { return m.Key == key })]
 		shadowed = append(shadowed, framework.Redundant{Kind: "bundled", Key: key, ID: im.ModID(), Name: im.Name, By: []framework.ModRef{bundled[key]}})
 	}
+	// A Redundant row is offered for removal, and SMAPI skips every enabled pack that requires a removed one.
+	shadowed = slices.DeleteFunc(shadowed, func(r framework.Redundant) bool { return requiredByEnabled(mods, r.ID) })
 	customFarms := map[string]string{}
 	for _, im := range mods {
 		for target, id := range readContentPack(im).farms {
@@ -2181,6 +2184,14 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 		return strings.Compare(a.Target, b.Target)
 	})
 	return out, settings, shadowed
+}
+
+// requiredByEnabled reports whether an enabled mod needs id: a required dependency, or the framework it is a
+// content pack for.
+func requiredByEnabled(mods []framework.Mod, id mod.ID) bool {
+	return slices.ContainsFunc(mods, func(m framework.Mod) bool {
+		return m.Enabled && slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return d.Required && mod.Equal(d.ModID(), id) })
+	})
 }
 
 // targetPart is the outcome of one target that two or more packs touch: a conflict, a setting that settles it, or

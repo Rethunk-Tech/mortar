@@ -99,10 +99,14 @@ func TestAnAddOnByOneAuthorStillClashesWithAStranger(t *testing.T) {
 	base, child, other := edit("Walk", "Base"), edit("Walk", "Child"), edit("Someone Else", "Other")
 	child.Dependencies = []manifest.Dependency{{UniqueID: base.UniqueID, Required: true}}
 	got := check([]framework.Mod{base, child, other})
-	if slices.ContainsFunc(got.Redundant, func(r framework.Redundant) bool { return r.Kind == "bundled" }) {
-		t.Fatalf("an add-on that requires its base is not bundled in it: %+v", got.Redundant)
+	if len(got.Redundant) != 0 {
+		t.Fatalf("neither the add-on nor the base it requires is safe to remove: %+v", got.Redundant)
 	}
 	if len(got.AssetConflicts) != 1 || !slices.Contains(got.AssetConflicts[0].Keys, child.Key) || got.AssetConflicts[0].Cosmetic {
 		t.Fatalf("the add-on has no order against the stranger, so their clash stays unsettled: %+v", got.AssetConflicts)
+	}
+	child.Dependencies[0].Required = false
+	if got := check([]framework.Mod{base, child, other}); len(got.Redundant) != 1 || got.Redundant[0].Key != base.Key || got.Redundant[0].Kind != "shadowed" {
+		t.Fatalf("an optional dependent does not keep the base it overwrites: %+v", got.Redundant)
 	}
 }
