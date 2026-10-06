@@ -1,4 +1,7 @@
-import { describe, expect, test } from 'bun:test'
+import { afterAll, describe, expect, test } from 'bun:test'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
 import { classifyLicenceText, collectNotices } from './gen-credits.ts'
 
 describe('classifyLicenceText', () => {
@@ -21,23 +24,87 @@ of this software and associated documentation files.`
 })
 
 describe('collectNotices', () => {
-  test('covers only what ships, with real licence text', async () => {
-    const notices = await collectNotices()
-    const names = notices.map((n) => n.name)
-    const blob = notices.map((n) => n.texts.join('\n')).join('\n')
-    expect(blob).not.toMatch(/no LICENSE or NOTICE/)
-    expect(names.some((n) => n.startsWith('vite@'))).toBe(false)
-    expect(names.some((n) => n.includes('@biomejs/'))).toBe(false)
-    expect(names.some((n) => n.startsWith('@babel/core@') || n.startsWith('@jest/'))).toBe(false)
-    expect(names.some((n) => n.startsWith('Go standard library'))).toBe(true)
-    expect(names.some((n) => n.startsWith('github.com/go-ole/go-ole@'))).toBe(true)
-    expect(names.some((n) => n.startsWith('github.com/miekg/dns@'))).toBe(true)
-    expect(names.some((n) => n.startsWith('github.com/hashicorp/golang-lru/v2@'))).toBe(true)
-    expect(names.some((n) => n.includes('@mui/system@'))).toBe(true)
-    expect(names.some((n) => n.includes('@emotion/react@'))).toBe(true)
-    const dns = notices.find((n) => n.name.startsWith('github.com/miekg/dns@'))
-    expect(dns?.texts.join('\n')).toMatch(/redistribution and use in source and binary forms/i)
-    const react = notices.find((n) => n.name.startsWith('react@'))
-    expect(react?.texts.join('\n')).toMatch(/permission is hereby granted/i)
+  const mitText =
+    'MIT License\n\nPermission is hereby granted, free of charge, to any person obtaining a copy'
+  const bsdText =
+    'Redistribution and use in source and binary forms, with or without modification, are permitted.\nNeither the name'
+
+  const roots: string[] = []
+  afterAll(() => {
+    for (const root of roots) {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  function tree(files: Record<string, string>): string {
+    const root = mkdtempSync(join(tmpdir(), 'gen-credits-'))
+    roots.push(root)
+    for (const [rel, text] of Object.entries(files)) {
+      mkdirSync(dirname(join(root, rel)), { recursive: true })
+      writeFileSync(join(root, rel), text)
+    }
+    return root
+  }
+
+  test('covers the linked Go modules and bundled packages once each, with their licence and NOTICE text', () => {
+    const root = tree({
+      'goroot/LICENSE': bsdText,
+      'mod/dns/LICENSE': bsdText,
+      'mod/dns/NOTICE': 'dns notice',
+      'node_modules/react/package.json': '{"name":"react","version":"19.0.0","license":"MIT"}',
+      'node_modules/react/LICENSE': mitText,
+      'node_modules/react/index.js': '',
+      'node_modules/@mui/system/package.json':
+        '{"name":"@mui/system","version":"7.0.0","license":"MIT"}',
+      'node_modules/@mui/system/LICENSE': mitText,
+      'node_modules/@mui/system/a.js': '',
+      'node_modules/@mui/system/b.js': '',
+      'node_modules/@mui/system/node_modules/react/package.json':
+        '{"name":"react","version":"18.0.0","license":"MIT"}',
+      'node_modules/@mui/system/node_modules/react/LICENSE': mitText,
+      'node_modules/@mui/system/node_modules/react/index.js': '',
+    })
+    const dnsLine = `github.com/miekg/dns\tv1.1.0\t${join(root, 'mod/dns')}`
+    const notices = collectNotices({
+      goroot: join(root, 'goroot'),
+      goVersion: 'go1.27',
+      goDeps: [dnsLine, dnsLine, 'github.com/Rethunk-Tech/mortar\t\t/repo', ''],
+      bundleInputs: [
+        join(root, 'node_modules/react/index.js'),
+        join(root, 'node_modules/@mui/system/a.js'),
+        join(root, 'node_modules/@mui/system/b.js'),
+        join(root, 'node_modules/@mui/system/node_modules/react/index.js'),
+        join(root, 'src/main.tsx'),
+      ],
+    })
+    expect(notices.map((n) => `${n.name} ${n.licence}`)).toEqual(
+      expect.arrayContaining([
+        'Go standard library go1.27 BSD-3-Clause',
+        'github.com/miekg/dns@v1.1.0 BSD-3-Clause',
+        'react@19.0.0 MIT',
+        'react@18.0.0 MIT',
+        '@mui/system@7.0.0 MIT',
+      ]),
+    )
+    expect(notices.filter((n) => n.name.startsWith('github.com/miekg/dns@'))).toHaveLength(1)
+    expect(notices.some((n) => n.name.includes('Rethunk-Tech/mortar'))).toBe(false)
+    expect(
+      notices.find((n) => n.name.startsWith('github.com/miekg/dns@'))?.texts.join('\n'),
+    ).toMatch(/dns notice/)
+  })
+
+  test('fails on a shipped package with no licence', () => {
+    const root = tree({
+      'goroot/LICENSE': bsdText,
+      'node_modules/bare/package.json': '{"name":"bare","version":"1.0.0"}',
+    })
+    expect(() =>
+      collectNotices({
+        goroot: join(root, 'goroot'),
+        goVersion: '',
+        goDeps: [],
+        bundleInputs: [join(root, 'node_modules/bare/index.js')],
+      }),
+    ).toThrow(/bare@1.0.0/)
   })
 })

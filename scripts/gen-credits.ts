@@ -263,31 +263,44 @@ function appendGoNotice(
 // modules linked into every target Mortar ships.
 const releaseTargets = ['linux', 'windows']
 
-function goModuleNotices(): NoticeEntry[] {
+// Module lines (path, version, dir) of every package linked into each release target, one `go list -deps` per OS.
+async function listGoDeps(): Promise<string[]> {
+  const outputs = await Promise.all(
+    releaseTargets.map(async (goos) => {
+      // -e: main.go embeds frontend/dist, which this build has not produced yet on a clean checkout (CI); the module
+      // list does not depend on it.
+      const proc = Bun.spawn(
+        [
+          'go',
+          'list',
+          '-e',
+          '-deps',
+          '-f',
+          '{{with .Module}}{{.Path}}\t{{.Version}}\t{{.Dir}}{{end}}',
+          '.',
+        ],
+        { cwd: repoRoot, env: { ...process.env, GOOS: goos }, stdout: 'pipe', stderr: 'pipe' },
+      )
+      const [out, err, code] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ])
+      if (code !== 0) {
+        throw new Error(`go list -deps (${goos}): ${err}`)
+      }
+      return out
+    }),
+  )
+  return outputs.flatMap((out) => out.split('\n'))
+}
+
+function goModuleNotices(lines: string[]): NoticeEntry[] {
   const seen = new Set<string>()
   const out: NoticeEntry[] = []
   const missing: string[] = []
-  for (const goos of releaseTargets) {
-    const proc = Bun.spawnSync(
-      // -e: main.go embeds frontend/dist, which this build has not produced yet on a clean checkout (CI); the module
-      // list does not depend on it.
-      [
-        'go',
-        'list',
-        '-e',
-        '-deps',
-        '-f',
-        '{{with .Module}}{{.Path}}\t{{.Version}}\t{{.Dir}}{{end}}',
-        '.',
-      ],
-      { cwd: repoRoot, env: { ...process.env, GOOS: goos }, stdout: 'pipe', stderr: 'pipe' },
-    )
-    if (proc.exitCode !== 0) {
-      throw new Error(`go list -deps (${goos}): ${proc.stderr.toString()}`)
-    }
-    for (const line of proc.stdout.toString().split('\n')) {
-      appendGoNotice(line, seen, out, missing)
-    }
+  for (const line of lines) {
+    appendGoNotice(line, seen, out, missing)
   }
   failMissing('Go modules', missing)
   return out
@@ -316,9 +329,9 @@ function npmNoticeFromDir(name: string, dir: string): NoticeEntry | { missing: s
   }
 }
 
-// The npm packages whose code is in the app's bundle, found from the bundler's module graph rather than the
-// dependency tree, which also names build-only packages that never ship.
-async function npmNotices(): Promise<NoticeEntry[]> {
+// The files in the app's bundle, from the bundler's module graph rather than the dependency tree, which also names
+// build-only packages that never ship.
+async function bundleInputs(): Promise<string[]> {
   const build = await Bun.build({
     entrypoints: [join(frontendRoot, 'src', 'main.tsx')],
     target: 'browser',
@@ -328,35 +341,35 @@ async function npmNotices(): Promise<NoticeEntry[]> {
   if (!(build.success && build.metafile)) {
     throw new Error(`bundle graph: ${build.logs.map(String).join('\n')}`)
   }
+  return Object.keys(build.metafile.inputs)
+}
+
+function npmNotices(inputs: string[]): NoticeEntry[] {
+  // Keyed by folder, not name: the bundle can hold two versions of one package, each with its own notice.
   const dirs = new Map<string, string>()
-  for (const input of Object.keys(build.metafile.inputs)) {
+  for (const input of inputs) {
     const m = PACKAGE_IN_PATH.exec(input)
-    if (m?.[1] && !dirs.has(m[1])) {
+    if (m?.[1]) {
       // The bundler reports inputs relative to the working directory.
-      dirs.set(m[1], resolve(m[0]))
+      dirs.set(resolve(m[0]), m[1])
     }
   }
-  const out: NoticeEntry[] = []
+  const out = new Map<string, NoticeEntry>()
   const missing: string[] = []
-  for (const [name, dir] of dirs) {
+  for (const [dir, name] of dirs) {
     const notice = npmNoticeFromDir(name, dir)
     if ('missing' in notice) {
       missing.push(notice.missing)
     } else {
-      out.push(notice)
+      out.set(notice.name, notice)
     }
   }
   failMissing('npm packages', missing)
-  return out
+  return [...out.values()]
 }
 
 // The Go standard library is compiled into every build; its licence is the toolchain's own LICENSE.
-function goStdlibNotice(): NoticeEntry {
-  const proc = Bun.spawnSync(['go', 'env', 'GOROOT', 'GOVERSION'], {
-    cwd: repoRoot,
-    stdout: 'pipe',
-  })
-  const [goroot = '', version = ''] = proc.stdout.toString().trim().split('\n')
+function goStdlibNotice(goroot: string, version: string): NoticeEntry {
   const text = readFileSync(join(goroot, 'LICENSE'), 'utf8').trim()
   return {
     name: `Go standard library ${version}`,
@@ -366,11 +379,31 @@ function goStdlibNotice(): NoticeEntry {
   }
 }
 
-async function collectNotices(): Promise<NoticeEntry[]> {
+/** What the notices are built from: the Go toolchain, the linked Go modules and the bundled files. */
+interface NoticeSources {
+  goroot: string
+  goVersion: string
+  goDeps: string[]
+  bundleInputs: string[]
+}
+
+// The Go graphs and the bundle graph are independent, so they load side by side.
+async function gatherSources(): Promise<NoticeSources> {
+  const env = Bun.spawn(['go', 'env', 'GOROOT', 'GOVERSION'], { cwd: repoRoot, stdout: 'pipe' })
+  const [envOut, goDeps, inputs] = await Promise.all([
+    new Response(env.stdout).text(),
+    listGoDeps(),
+    bundleInputs(),
+  ])
+  const [goroot = '', goVersion = ''] = envOut.trim().split('\n')
+  return { goroot, goVersion, goDeps, bundleInputs: inputs }
+}
+
+function collectNotices(sources: NoticeSources): NoticeEntry[] {
   const entries = [
-    goStdlibNotice(),
-    ...goModuleNotices(),
-    ...(await npmNotices()),
+    goStdlibNotice(sources.goroot, sources.goVersion),
+    ...goModuleNotices(sources.goDeps),
+    ...npmNotices(sources.bundleInputs),
     ...bundledArtwork.map(({ notice, ...credit }) => ({ ...credit, texts: [notice] })),
   ]
   entries.sort((a, b) => a.name.localeCompare(b.name))
@@ -423,7 +456,7 @@ async function main(): Promise<void> {
   if (!isCreditList(entries)) {
     throw new Error('generated credits failed shape check')
   }
-  const notices = await collectNotices()
+  const notices = collectNotices(await gatherSources())
   const outDir = join(frontendRoot, 'src', 'settings', 'generated')
   mkdirSync(outDir, { recursive: true })
   writeFileSync(join(outDir, 'credits.json'), `${JSON.stringify(entries, null, 2)}\n`)
@@ -434,4 +467,4 @@ if (import.meta.main) {
   await main()
 }
 
-export { classifyLicenceText, collectNotices }
+export { classifyLicenceText, collectNotices, type NoticeSources }
