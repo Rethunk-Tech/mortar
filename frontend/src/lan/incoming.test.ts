@@ -1,5 +1,14 @@
-import { afterEach, expect, test } from 'bun:test'
-import { useIncomingShares } from './incoming.ts'
+import { afterEach, expect, mock, test } from 'bun:test'
+
+const dismissed: number[] = []
+mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts', () => ({
+  Dismiss: (id: number) => {
+    dismissed.push(id)
+    return Promise.resolve()
+  },
+  Inbox: () => Promise.resolve([]),
+}))
+const { useIncomingShares } = await import('./incoming.ts')
 
 const arrival = (id: number) => ({
   id,
@@ -12,6 +21,7 @@ const arrival = (id: number) => ({
 
 afterEach(() => {
   useIncomingShares.setState(useIncomingShares.getInitialState(), true)
+  dismissed.length = 0
 })
 
 test('removing an expired share reports whether it was still waiting', () => {
@@ -20,4 +30,13 @@ test('removing an expired share reports whether it was still waiting', () => {
   expect(useIncomingShares.getState().remove(1)).toBe(true)
   expect(useIncomingShares.getState().items.map((a) => a.id)).toEqual([2])
   expect(useIncomingShares.getState().remove(1)).toBe(false)
+  expect(dismissed).toEqual([])
+})
+
+test('answering a share drops it from the service so a reload does not bring it back', () => {
+  useIncomingShares.getState().add(arrival(1))
+  useIncomingShares.getState().add(arrival(2))
+  useIncomingShares.getState().removeFirst()
+  expect(dismissed).toEqual([1])
+  expect(useIncomingShares.getState().items.map((a) => a.id)).toEqual([2])
 })

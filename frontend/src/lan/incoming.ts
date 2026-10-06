@@ -6,8 +6,12 @@ import type {
   Expired,
   TransferProgress,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
-import { Inbox } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
+import {
+  Dismiss,
+  Inbox,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 interface IncomingState {
@@ -55,7 +59,15 @@ const useIncomingShares = create<IncomingState>((set, get) => ({
   items: [],
   progress: {},
   add: (arrival) => set((state) => ({ items: [...state.items, arrival] })),
-  removeFirst: () => set((state) => ({ items: state.items.slice(1) })),
+  // Answering a share also drops it from the service, which keeps it until then and would hand it to the window
+  // again after a reload.
+  removeFirst: () => {
+    const [first] = get().items
+    if (first) {
+      Dismiss(first.id).catch(reportUnexpected)
+    }
+    set((state) => ({ items: state.items.slice(1) }))
+  },
   remove: (id) => {
     const present = get().items.some((item) => item.id === id)
     set((state) => ({ items: state.items.filter((item) => item.id !== id) }))

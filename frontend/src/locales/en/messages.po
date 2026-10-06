@@ -8342,7 +8342,7 @@ msgid "Clicking these links on Nexus starts the download in Mortar."
 msgstr "Clicking these links on Nexus starts the download in Mortar."
 
 #. placeholder {0}: expired.sender
-#: src/lan/incoming.ts:31
+#: src/lan/incoming.ts:35
 msgid "A share from {0} expired. Ask them to send it again."
 msgstr "A share from {0} expired. Ask them to send it again."
 
