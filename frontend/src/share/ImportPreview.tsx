@@ -327,7 +327,8 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
   const skippedSettings = preview.skippedSettings ?? []
   const counts = MOD_STATES.filter((s) => summary.counts[s] > 0)
   const detail = [
-    ready
+    // A mod whose source reports no size adds 0, so a 0 total means unknown rather than nothing to fetch.
+    ready && summary.sizeKb > 0
       ? plural(total, {
           one: `# mod · about ${size} to download`,
           other: `# mods · about ${size} to download`,
