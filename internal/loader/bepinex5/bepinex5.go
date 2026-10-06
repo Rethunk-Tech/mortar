@@ -177,12 +177,11 @@ func LaunchArgs(profileRoot string, doorstopMajor int, proton bool) []string {
 	return []string{"--doorstop-enable", "true", "--doorstop-target", target}
 }
 
-// VanillaArgs start the game with Doorstop switched off, even while its files sit in the game folder.
-func VanillaArgs(doorstopMajor int) []string {
-	if doorstopMajor >= 4 {
-		return []string{"--doorstop-enabled", "false"}
-	}
-	return []string{"--doorstop-enable", "false"}
+// VanillaArgs start the game with Doorstop switched off, even while its files sit in the game folder. A vanilla start
+// has no profile to read the Doorstop version from, and the proxy left in the folder may be either, so both
+// spellings are passed; each proxy ignores the other's.
+func VanillaArgs() []string {
+	return []string{"--doorstop-enable", "false", "--doorstop-enabled", "false"}
 }
 
 const (

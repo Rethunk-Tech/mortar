@@ -154,7 +154,7 @@ func TestABepInExGameIsTheProfileItsDoorstopTargetNames(t *testing.T) {
 		{"Proton Z: target", bepinex5.LaunchArgs(dirB, 3, true), b.ID},
 		{"native target", bepinex5.LaunchArgs(dirB, 4, false), b.ID},
 		{"started from Steam without Mortar", nil, ""},
-		{"vanilla", bepinex5.VanillaArgs(3), ""},
+		{"vanilla", bepinex5.VanillaArgs(), ""},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			svc.procDir = t.TempDir()

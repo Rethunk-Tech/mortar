@@ -125,7 +125,7 @@ func TestLaunchArgs(t *testing.T) {
 			t.Errorf("LaunchArgs(%d,%v) = %q, want %q", c.major, c.proton, got, c.want)
 		}
 	}
-	if strings.Join(VanillaArgs(3), " ") != "--doorstop-enable false" || strings.Join(VanillaArgs(4), " ") != "--doorstop-enabled false" {
+	if strings.Join(VanillaArgs(), " ") != "--doorstop-enable false --doorstop-enabled false" {
 		t.Fatal("vanilla args")
 	}
 }

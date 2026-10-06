@@ -172,9 +172,8 @@ func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
 }
 
 // Vanilla switches Doorstop off, so the game starts unmodded even while the proxy files sit in its folder.
-func (Loader) Vanilla(_ context.Context, plan *launchplan.Plan, t loader.Target) error {
-	m := readMarker(t.ProfileDir)
-	plan.AddArgs(VanillaArgs(m.Doorstop)...)
+func (Loader) Vanilla(_ context.Context, plan *launchplan.Plan, _ loader.Target) error {
+	plan.AddArgs(VanillaArgs()...)
 	return nil
 }
 

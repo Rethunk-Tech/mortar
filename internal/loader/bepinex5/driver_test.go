@@ -58,7 +58,7 @@ func TestLoaderContract(t *testing.T) {
 	if !ok {
 		t.Fatal("not a Vanilla loader")
 	}
-	if err := vanilla.Vanilla(ctx, van, tgt); err != nil || strings.Join(van.Args, " ") != "--doorstop-enabled false" {
+	if err := vanilla.Vanilla(ctx, van, tgt); err != nil || strings.Join(van.Args, " ") != "--doorstop-enable false --doorstop-enabled false" {
 		t.Fatalf("vanilla %v %v", van.Args, err)
 	}
 	logs, ok := l.(loader.WithLogs)
