@@ -343,6 +343,7 @@ type Service struct {
 	cancels      map[string]context.CancelFunc
 	installMu    sync.Mutex
 	hashMu       sync.Mutex
+	choiceMu     sync.Mutex
 	limits       map[string]*sourceLimit
 	premiumFetch chan struct{}
 	freeFetch    chan struct{}
@@ -834,13 +835,18 @@ func (s *Service) RestoreProfile(game, profileID string) {
 	s.poke()
 }
 
-// Choose picks the asset of an item waiting in StateNeedsChoice.
+// Choose picks the asset of an item waiting in StateNeedsChoice and remembers it for the repo's later releases.
 func (s *Service) Choose(id, asset string) {
 	s.mu.Lock()
+	repo := ""
 	if it := s.find(id); it != nil && it.State == StateNeedsChoice && slices.Contains(it.Assets, asset) {
 		it.State, it.Asset, it.Assets = StateQueued, asset, nil
+		repo = it.Repo
 	}
 	s.mu.Unlock()
+	if repo != "" {
+		s.remember(repo, asset)
+	}
 	s.publish(true)
 	s.poke()
 }

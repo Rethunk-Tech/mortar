@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
@@ -75,15 +76,21 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 
 // sourceLoaders are the loaders the game's catalog lists for the source, which narrow the versions a dependency may take.
 func sourceLoaders(gameID, sourceID string) []string {
-	for _, g := range game.Catalog() {
-		if g.ID != gameID {
-			continue
-		}
+	if g, ok := gameInfo(gameID); ok {
 		if src, ok := g.Source(sourceID); ok {
 			return src.Loaders
 		}
 	}
 	return nil
+}
+
+func gameInfo(gameID string) (components.GameInfo, bool) {
+	for _, g := range game.Catalog() {
+		if g.ID == gameID {
+			return g, true
+		}
+	}
+	return components.GameInfo{}, false
 }
 
 // ResolveDirect is Deps.Direct for the real sites.

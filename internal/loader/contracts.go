@@ -182,6 +182,10 @@ type Releases interface {
 	Fetch(ctx context.Context, g components.GameInfo, version, dst string) error
 }
 
+// ModArchive is a loader that can tell an archive of its mods from other files by the archive's entry names, so a
+// release with several assets can be narrowed to the one holding mods.
+type ModArchive interface{ ModArchive(names []string) bool }
+
 // InProfile is a loader whose files live in each profile's folder, so an install runs once per profile.
 type InProfile interface{ InProfile() }
 

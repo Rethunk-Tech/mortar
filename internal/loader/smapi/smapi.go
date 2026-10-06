@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
@@ -195,4 +196,14 @@ func (Loader) GameVersion(log string) string {
 		}
 	}
 	return ""
+}
+
+// ModArchive reports an archive holding a SMAPI mod: a manifest.json at any depth.
+func (Loader) ModArchive(names []string) bool {
+	for _, n := range names {
+		if strings.EqualFold(path.Base(strings.ReplaceAll(n, `\`, "/")), manifest.FileName) {
+			return true
+		}
+	}
+	return false
 }

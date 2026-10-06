@@ -13,7 +13,7 @@ import (
 )
 
 // queueAdd queues one mod from a source for the profile: Nexus by mod id (File is a file id, else the queue
-// resolves one), GitHub by owner/repo (Version is the tag, File the asset), Thunderstore by Namespace-Name
+// resolves one), GitHub by owner/repo (Version is the tag, else the newest; File the asset, else the one the release picker settles on), Thunderstore by Namespace-Name
 // (Version, else the newest, with its dependencies).
 func (s *Services) queueAdd(ctx context.Context, p Params) (any, error) {
 	if s.Queue == nil {
@@ -36,6 +36,22 @@ func (s *Services) queueAdd(ctx context.Context, p Params) (any, error) {
 		}
 	case "github":
 		req.Repo, req.Tag, req.Asset, req.FileName = p.ID, p.Version, p.File, p.File
+		if p.File == "" {
+			// Automation has nobody to answer a choice later, so an ambiguous release fails now with the choices.
+			rel, assets, err := s.Queue.GitHubAsset(ctx, p.Game, p.ID, p.Version)
+			if err != nil {
+				return nil, err
+			}
+			if len(assets) > 1 {
+				names := make([]string, len(assets))
+				for i, a := range assets {
+					names[i] = a.Name
+				}
+				return nil, fmt.Errorf("release %s of %s has several assets (%s); choose one with --file <asset>",
+					rel.Tag, p.ID, strings.Join(names, ", "))
+			}
+			req.Tag, req.Asset, req.FileName = rel.Tag, assets[0].Name, assets[0].Name
+		}
 	case "thunderstore":
 		req.Package = p.ID
 	default:

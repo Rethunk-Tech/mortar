@@ -7,10 +7,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -31,6 +35,78 @@ func (s *Service) release(ctx context.Context, it Item) (github.Release, []githu
 	return rel, assets, nil
 }
 
+// choicesFile maps a repository ("owner/repo", lower case) to the Shape of the asset the user last chose from it.
+const choicesFile = "github-choices.json"
+
+func (s *Service) choices() map[string]string {
+	m := map[string]string{}
+	_, _ = datadir.ReadJSON(filepath.Join(s.d.Dir, choicesFile), &m)
+	return m
+}
+
+// remember keeps the shape of the asset the user chose from repo, so the next release picks the same download.
+func (s *Service) remember(repo, asset string) {
+	s.choiceMu.Lock()
+	defer s.choiceMu.Unlock()
+	m := s.choices()
+	m[strings.ToLower(repo)] = github.Shape(asset)
+	if err := datadir.WriteJSON(filepath.Join(s.d.Dir, choicesFile), m); err != nil {
+		log.Printf("queue: remember the %s asset choice: %v", repo, err)
+	}
+}
+
+// pick narrows a release's archives to what to install from repo for the game: the asset shaped like the one the
+// user chose before, else the ones Installable keeps, else among those the ones whose file list one of the game's
+// loaders recognises as its mods. One asset means the choice is made; several are what the user picks from.
+func (s *Service) pick(ctx context.Context, gameID, repo string, assets []github.Asset) []github.Asset {
+	if len(assets) < 2 {
+		return assets
+	}
+	s.choiceMu.Lock()
+	shape := s.choices()[strings.ToLower(repo)]
+	s.choiceMu.Unlock()
+	if shape != "" {
+		if i := slices.IndexFunc(assets, func(a github.Asset) bool { return github.Shape(a.Name) == shape }); i >= 0 {
+			return assets[i : i+1]
+		}
+	}
+	assets = github.Installable(assets, runtime.GOOS)
+	if len(assets) < 2 {
+		return assets
+	}
+	var shapes []loader.ModArchive
+	if g, ok := gameInfo(gameID); ok {
+		for _, l := range loader.For(g) {
+			if m, ok := l.(loader.ModArchive); ok {
+				shapes = append(shapes, m)
+			}
+		}
+	}
+	if len(shapes) == 0 {
+		return assets
+	}
+	fit := slices.DeleteFunc(slices.Clone(assets), func(a github.Asset) bool {
+		names, err := github.ZipNames(ctx, s.d.HTTP, a)
+		return err != nil || !slices.ContainsFunc(shapes, func(m loader.ModArchive) bool { return m.ModArchive(names) })
+	})
+	if len(fit) == 0 {
+		return assets
+	}
+	return fit
+}
+
+// GitHubAsset is what queueing repo's release at version (the newest when empty) for the game would download: the
+// release and the asset, or the assets the user must choose from when the pick is ambiguous.
+//
+//wails:ignore
+func (s *Service) GitHubAsset(ctx context.Context, gameID, repo, version string) (github.Release, []github.Asset, error) {
+	rel, assets, err := s.release(ctx, Item{Repo: repo, Version: version})
+	if err != nil {
+		return rel, nil, err
+	}
+	return rel, s.pick(ctx, gameID, repo, assets), nil
+}
+
 // useGitHubFallback turns a Nexus item that is about to wait for a click into a download of the same version from
 // the mod's GitHub releases, when it names a repo and that release has exactly one archive. It reports whether the
 // item was switched; it asks at most once per item, so a missing release costs one lookup.
@@ -46,7 +122,7 @@ func (s *Service) useGitHubFallback(ctx context.Context, it Item) bool {
 	}
 	cur.fallbackTried = true
 	s.mu.Unlock()
-	rel, assets, err := s.release(ctx, Item{Repo: it.FallbackRepo, Version: it.Version})
+	rel, assets, err := s.GitHubAsset(ctx, it.Game, it.FallbackRepo, it.Version)
 	if err != nil || len(assets) != 1 {
 		return false
 	}
@@ -89,6 +165,9 @@ func (s *Service) resolveGitHub(ctx context.Context, it Item) error {
 	}
 	if it.Asset != "" && !slices.ContainsFunc(assets, func(a github.Asset) bool { return a.Name == it.Asset }) {
 		return fmt.Errorf("release %s of %s has no asset %s", rel.Tag, it.Repo, it.Asset)
+	}
+	if it.Asset == "" {
+		assets = s.pick(ctx, it.Game, it.Repo, assets)
 	}
 	s.mu.Lock()
 	if cur := s.find(it.ID); cur != nil {

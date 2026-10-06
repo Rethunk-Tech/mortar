@@ -1,11 +1,14 @@
 package queue
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -14,6 +17,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	_ "github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -130,6 +134,52 @@ func TestGitHubSeveralAssetsWaitForAChoice(t *testing.T) {
 	g.wait("done", g.item(StateDone))
 	if len(g.final) != 1 || g.final[0].Asset != "mod-2.0.0-alt.zip" || g.final[0].Tag != "v2.0.0" {
 		t.Errorf("installed %+v", g.final)
+	}
+	// The choice is remembered for the repo, so the next download of it does not ask again.
+	if _, err := g.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "stardew", Profile: "p2", Repo: "me/mod"}}); err != nil {
+		t.Fatal(err)
+	}
+	g.wait("the second install", func(st State) bool { return len(st.Items) == 2 && st.Items[1].State == StateDone })
+	if len(g.final) != 2 || g.final[1].Asset != "mod-2.0.0-alt.zip" {
+		t.Errorf("installed %+v", g.final)
+	}
+}
+
+// TestGitHubAssetPrefersTheLoadersShape serves a release with a source archive and two zips, only one holding a SMAPI
+// manifest; that one is picked without asking.
+func TestGitHubAssetPrefersTheLoadersShape(t *testing.T) {
+	zipOf := func(names ...string) []byte {
+		var buf bytes.Buffer
+		zw := zip.NewWriter(&buf)
+		for _, n := range names {
+			_, _ = zw.Create(n)
+		}
+		_ = zw.Close()
+		return buf.Bytes()
+	}
+	files := map[string][]byte{
+		"Mod-1.0.zip":        zipOf("Mod/manifest.json", "Mod/Mod.dll"),
+		"Mod-1.0-extras.zip": zipOf("Extras/readme.txt"),
+		"Mod-1.0-source.zip": zipOf("Mod/manifest.json", "Mod/Mod.cs"),
+	}
+	var srv *httptest.Server
+	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if name := strings.TrimPrefix(r.URL.Path, "/dl/"); files[name] != nil {
+			http.ServeContent(w, r, name, time.Time{}, bytes.NewReader(files[name]))
+			return
+		}
+		var assets []string
+		for _, n := range []string{"Mod-1.0-source.zip", "Mod-1.0-extras.zip", "Mod-1.0.zip"} {
+			assets = append(assets, fmt.Sprintf(`{"name":%q,"size":%d,"browser_download_url":%q}`, n, len(files[n]), srv.URL+"/dl/"+n))
+		}
+		fmt.Fprintf(w, `[{"tag_name":"v1.0","assets":[%s]}]`, strings.Join(assets, ","))
+	}))
+	t.Cleanup(srv.Close)
+	f := newFixture(t)
+	f.s.d.GitHub = &github.Client{HTTP: srv.Client(), CacheDir: t.TempDir(), APIBase: srv.URL, Now: f.now}
+	rel, assets, err := f.s.GitHubAsset(t.Context(), "stardew", "me/mod", "")
+	if err != nil || rel.Tag != "v1.0" || len(assets) != 1 || assets[0].Name != "Mod-1.0.zip" {
+		t.Fatalf("picked %s %+v %v", rel.Tag, assets, err)
 	}
 }
 

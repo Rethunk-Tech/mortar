@@ -131,3 +131,16 @@ func (Loader) PlayerLogRole() string { return "unityLog" }
 
 // ConfigDirs is where BepInEx plugins keep their .cfg files.
 func (Loader) ConfigDirs() []string { return []string{"BepInEx/config"} }
+
+// ModArchive reports a Thunderstore-shaped archive: manifest.json and icon.png at its root.
+func (Loader) ModArchive(names []string) bool {
+	root := func(want string) bool {
+		for _, n := range names {
+			if strings.EqualFold(n, want) {
+				return true
+			}
+		}
+		return false
+	}
+	return root("manifest.json") && root("icon.png")
+}
