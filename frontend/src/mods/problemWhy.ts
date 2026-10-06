@@ -70,14 +70,14 @@ export const problemWhy: Record<Row['kind'], Why> = {
     anchor: 'plugins-shipped-twice',
     text: () =>
       i18n._(
-        msg`Two enabled packages carry the same plugin. The loader starts only one of them, so you may be running the older copy.`,
+        msg`Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy.`,
       ),
   },
   deprecated: {
     anchor: 'deprecated-packages',
     text: () =>
       i18n._(
-        msg`The author marked this package as deprecated. It will not get fixes and may break with the next game update.`,
+        msg`The author marked this mod as deprecated. It will not get fixes and may break with the next game update.`,
       ),
   },
   drift: {

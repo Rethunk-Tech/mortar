@@ -87,7 +87,7 @@ function FarmDialog({
     }
     return row.state === 'different' ? t`Host ${row.host}, yours ${row.mine}` : t`Host ${row.host}`
   }
-  const action = (row: FarmRow) => (row.state === 'different' ? t`Update` : t`Install`)
+  const action = (row: FarmRow) => (row.state === 'different' ? t`Update` : t`Add`)
   return (
     <Dialog open={open} onClose={done} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Multiplayer mod list`}</DialogTitle>

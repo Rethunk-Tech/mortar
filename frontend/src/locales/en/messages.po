@@ -1366,6 +1366,11 @@ msgstr "Your settings could not be read"
 msgid "Update channel"
 msgstr "Update channel"
 
+#. placeholder {0}: source.scheme
+#: src/settings/sections/Downloads.tsx:180
+msgid "Opening a {0}:// link, such as Install with Mod Manager, installs the mod in Mortar."
+msgstr "Opening a {0}:// link, such as Install with Mod Manager, installs the mod in Mortar."
+
 #: src/settings/prefCopy.ts:338
 msgid "At most once a day"
 msgstr "At most once a day"
@@ -4655,6 +4660,10 @@ msgstr "Play without mods"
 msgid "{0} skipped"
 msgstr "{0} skipped"
 
+#: src/mods/problemWhy.ts:80
+msgid "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
+msgstr "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
+
 #: src/console/StartupTable.tsx:251
 msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
@@ -4944,11 +4953,6 @@ msgstr "Created · updated"
 #: src/updates/WhatsNewDialog.tsx:133
 msgid "Read the release notes on GitHub"
 msgstr "Read the release notes on GitHub"
-
-#. placeholder {0}: source.scheme
-#: src/settings/sections/Downloads.tsx:180
-msgid "Opening a {0}:// link, such as Install with Mod Manager, installs the package in Mortar."
-msgstr "Opening a {0}:// link, such as Install with Mod Manager, installs the package in Mortar."
 
 #: src/mods/ProblemsTab.tsx:217
 msgid "Problem sections"
@@ -7399,7 +7403,9 @@ msgstr "·"
 
 #: src/browse/BrowseMenu.tsx:56
 #: src/browse/CardAction.tsx:73
+#: src/console/RunProblems.tsx:137
 #: src/downloads/newDownloads.ts:35
+#: src/game/FarmMenuItem.tsx:90
 #: src/mods/AddToGroupDialog.tsx:105
 #: src/mods/ModDependencyTree.tsx:75
 #: src/mods/ModDependencyTree.tsx:75
@@ -8823,10 +8829,6 @@ msgstr "AGPL-3.0 · Rethunk-Tech/mortar"
 msgid "From collection {0}, revision {1}"
 msgstr "From collection {0}, revision {1}"
 
-#: src/mods/problemWhy.ts:73
-msgid "Two enabled packages carry the same plugin. The loader starts only one of them, so you may be running the older copy."
-msgstr "Two enabled packages carry the same plugin. The loader starts only one of them, so you may be running the older copy."
-
 #: src/console/PerformancePanelParts.tsx:187
 msgid "Measuring"
 msgstr "Measuring"
@@ -9045,6 +9047,10 @@ msgstr "{name} (disabled)"
 msgid "Existing OBS sources stop working until their URLs are copied again."
 msgstr "Existing OBS sources stop working until their URLs are copied again."
 
+#: src/mods/problemWhy.ts:73
+msgid "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
+msgstr "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
+
 #: src/console/UpdateNoteTag.tsx:22
 msgid "Updates ignored"
 msgstr "Updates ignored"
@@ -9190,10 +9196,6 @@ msgstr "Review collection update"
 #: src/mods/describe.ts:218
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
-
-#: src/mods/problemWhy.ts:80
-msgid "The author marked this package as deprecated. It will not get fixes and may break with the next game update."
-msgstr "The author marked this package as deprecated. It will not get fixes and may break with the next game update."
 
 #: src/settings/sections/ScheduledStatus.tsx:28
 msgid "Scheduled backup status"
@@ -10266,9 +10268,7 @@ msgstr "Could not verify its source"
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
-#: src/console/RunProblems.tsx:137
 #: src/fomod/Dialog.tsx:264
-#: src/game/FarmMenuItem.tsx:90
 #: src/loader/Banner.tsx:29
 #: src/settings/GameSettingsPage.tsx:58
 #: src/settings/sections/LoaderRow.tsx:93

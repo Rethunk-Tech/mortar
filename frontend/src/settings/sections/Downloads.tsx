@@ -177,7 +177,7 @@ function SourceLinks() {
     <SettingRow
       key={source.id}
       label={t`Handle ${source.name} links`}
-      description={t`Opening a ${source.scheme}:// link, such as Install with Mod Manager, installs the package in Mortar.`}
+      description={t`Opening a ${source.scheme}:// link, such as Install with Mod Manager, installs the mod in Mortar.`}
     >
       <PrefSwitch
         checked={source.handled}

@@ -134,7 +134,7 @@ function ProblemRow({
   const [confirmDup, setConfirmDup] = useState(false)
   let label = ''
   if (problem.fix === 'installDependency') {
-    label = t`Install`
+    label = t`Add`
   } else if (problem.fix === 'update') {
     label = t`Update`
   } else if (problem.fix === 'disable') {
