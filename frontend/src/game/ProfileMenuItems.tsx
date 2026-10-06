@@ -43,6 +43,7 @@ import { BackupMenuItems } from './BackupMenuItems.tsx'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
 import { ExportCodeMenuItem, ExportModpackMenuItem } from './ExportCodeMenuItem.tsx'
 import { ExportCollectionMenuItem } from './ExportCollectionMenuItem.tsx'
+import { FarmMenuItem } from './FarmMenuItem.tsx'
 import { TemplateMenuItems } from './TemplateMenuItems.tsx'
 
 // The profile actions shared by the profile page's buttons and the sidebar's context menu, so both offer the same.
@@ -324,6 +325,7 @@ function ShareMenuItems({ profile, close }: { profile: Profile; close: () => voi
     <ExportCollectionMenuItem key="export-collection" profile={profile} close={close} />,
     <ExportCodeMenuItem key="export-code" profile={profile} close={close} />,
     <ExportModpackMenuItem key="export-modpack" profile={profile} close={close} />,
+    <FarmMenuItem key="farm" profile={profile} close={close} />,
     <BackupMenuItems key="backup" profile={profile} close={close} />,
   ]
 }

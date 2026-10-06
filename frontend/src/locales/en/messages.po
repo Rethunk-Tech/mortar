@@ -257,6 +257,10 @@ msgstr "Every entry in {current} goes back to its default."
 msgid "The game could not apply the last change: {reason}"
 msgstr "The game could not apply the last change: {reason}"
 
+#: src/game/FarmMenuItem.tsx:76
+msgid "Could not queue the downloads"
+msgstr "Could not queue the downloads"
+
 #: src/mods/storeEntries.ts:73
 #: src/mods/storeEntries.ts:112
 #: src/profiles/historyRevert.ts:118
@@ -366,7 +370,7 @@ msgstr "Log level"
 msgid "Kept at this version ({0})"
 msgstr "Kept at this version ({0})"
 
-#: src/game/ProfileMenuItems.tsx:353
+#: src/game/ProfileMenuItems.tsx:355
 #: src/profiles/HistoryPanel.tsx:45
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:79
@@ -553,7 +557,7 @@ msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural,
 msgid "Startup and window"
 msgstr "Startup and window"
 
-#: src/game/ProfileMenuItems.tsx:170
+#: src/game/ProfileMenuItems.tsx:171
 msgid "Could not add it to Steam"
 msgstr "Could not add it to Steam"
 
@@ -717,7 +721,7 @@ msgstr "{0} was changed on {1} and here"
 msgid "More…"
 msgstr "More…"
 
-#: src/game/ProfileMenuItems.tsx:412
+#: src/game/ProfileMenuItems.tsx:414
 msgid "Add a bundle…"
 msgstr "Add a bundle…"
 
@@ -725,7 +729,7 @@ msgstr "Add a bundle…"
 msgid "How timestamps are shown"
 msgstr "How timestamps are shown"
 
-#: src/game/ProfileMenuItems.tsx:139
+#: src/game/ProfileMenuItems.tsx:140
 msgid "Remove the shortcut"
 msgstr "Remove the shortcut"
 
@@ -763,6 +767,10 @@ msgstr "More languages are coming."
 #: src/mods/SlowStartupSection.tsx:74
 msgid "other checks"
 msgstr "other checks"
+
+#: src/game/FarmMenuItem.tsx:97
+msgid "Copy this profile's list"
+msgstr "Copy this profile's list"
 
 #: src/mods/NexusDetails.tsx:269
 msgid "Sign in to Nexus Mods in Settings to see more from this mod's page."
@@ -919,6 +927,11 @@ msgstr "What they see"
 msgid "Rename"
 msgstr "Rename"
 
+#. placeholder {0}: listNames(manual)
+#: src/game/FarmMenuItem.tsx:73
+msgid "Install by hand: {0}"
+msgstr "Install by hand: {0}"
+
 #: src/share/ImportFooter.tsx:107
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
@@ -1014,7 +1027,7 @@ msgstr "Something changed this profile's mods folder without Mortar, by adding, 
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
-#: src/game/ProfileMenuItems.tsx:166
+#: src/game/ProfileMenuItems.tsx:167
 msgid "Already in Steam"
 msgstr "Already in Steam"
 
@@ -1283,7 +1296,7 @@ msgstr "No matches"
 msgid "Add a bundle to {profileName}"
 msgstr "Add a bundle to {profileName}"
 
-#: src/game/ProfileMenuItems.tsx:257
+#: src/game/ProfileMenuItems.tsx:258
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
@@ -2308,6 +2321,10 @@ msgstr "Skipped"
 msgid "Edit profile"
 msgstr "Edit profile"
 
+#: src/game/FarmMenuItem.tsx:105
+msgid "The host's list"
+msgstr "The host's list"
+
 #: src/console/PerformancePanelParts.tsx:86
 msgid "Calls"
 msgstr "Calls"
@@ -2320,6 +2337,10 @@ msgstr "Could not prepare the data folder move"
 #: src/settings/prefCopy.ts:197
 msgid "Compact"
 msgstr "Compact"
+
+#: src/game/FarmMenuItem.tsx:138
+msgid "Check"
+msgstr "Check"
 
 #: src/mods/SelectionBarActions.tsx:91
 msgid "Ignore update source"
@@ -2459,6 +2480,7 @@ msgid "Could not restore the warning"
 msgstr "Could not restore the warning"
 
 #: src/console/RunProblems.tsx:260
+#: src/game/FarmMenuItem.tsx:134
 msgid "Fix all"
 msgstr "Fix all"
 
@@ -2516,7 +2538,7 @@ msgstr "Medium"
 msgid "Delete permanently"
 msgstr "Delete permanently"
 
-#: src/game/ProfileMenuItems.tsx:186
+#: src/game/ProfileMenuItems.tsx:187
 #: src/profiles/HealthDialog.tsx:250
 msgid "Check this profile"
 msgstr "Check this profile"
@@ -2892,6 +2914,12 @@ msgstr "Both set: {0}"
 msgid " · {0} more required"
 msgstr " · {0} more required"
 
+#. placeholder {0}: row.host
+#. placeholder {1}: row.mine
+#: src/game/FarmMenuItem.tsx:88
+msgid "Host {0}, yours {1}"
+msgstr "Host {0}, yours {1}"
+
 #: src/mods/problemFixButtons.tsx:239
 msgid "Keep my changes"
 msgstr "Keep my changes"
@@ -2993,7 +3021,7 @@ msgstr "Search GitHub releases"
 msgid "Mortar doesn't know where to get {id}"
 msgstr "Mortar doesn't know where to get {id}"
 
-#: src/game/ProfileMenuItems.tsx:167
+#: src/game/ProfileMenuItems.tsx:168
 msgid "It shows in your Steam library the next time Steam starts."
 msgstr "It shows in your Steam library the next time Steam starts."
 
@@ -3354,8 +3382,8 @@ msgid "Custom categories"
 msgstr "Custom categories"
 
 #: src/bundles/BundlesSection.tsx:148
-#: src/game/ProfileMenuItems.tsx:84
-#: src/game/ProfileMenuItems.tsx:426
+#: src/game/ProfileMenuItems.tsx:85
+#: src/game/ProfileMenuItems.tsx:428
 #: src/mods/CategoryEditor.tsx:169
 #: src/mods/OldFilesCallouts.tsx:103
 #: src/mods/problemFixButtons.tsx:199
@@ -3764,6 +3792,10 @@ msgstr "time in its patches {ms}"
 msgid "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
 
+#: src/game/FarmMenuItem.tsx:49
+msgid "List copied"
+msgstr "List copied"
+
 #: src/launchers/LauncherList.tsx:161
 msgid "Added by you"
 msgstr "Added by you"
@@ -3808,6 +3840,10 @@ msgstr "Done"
 msgid "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 msgstr "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 
+#: src/game/FarmMenuItem.tsx:61
+msgid "Could not read that list"
+msgstr "Could not read that list"
+
 #: src/mods/ExtraFolderMenu.tsx:46
 msgid "More ways to add mods"
 msgstr "More ways to add mods"
@@ -3820,7 +3856,7 @@ msgstr "Downloads paused"
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
-#: src/game/ProfileMenuItems.tsx:206
+#: src/game/ProfileMenuItems.tsx:207
 #: src/lan/SendDialog.tsx:106
 msgid "Send to…"
 msgstr "Send to…"
@@ -3861,6 +3897,10 @@ msgstr " · {cause} · {size}"
 #: src/mods/CleanupSection.tsx:156
 msgid "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
 msgstr "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
+
+#: src/game/FarmMenuItem.tsx:86
+msgid "Off in this profile"
+msgstr "Off in this profile"
 
 #: src/i18n/list.ts:13
 msgid "{rest, plural, one {# more} other {# more}}"
@@ -4137,6 +4177,7 @@ msgid "Delete group {name}?"
 msgstr "Delete group {name}?"
 
 #: src/console/RunProblems.tsx:137
+#: src/game/FarmMenuItem.tsx:90
 #: src/loader/Banner.tsx:33
 #: src/mods/problemFix/LoadFailureFix.tsx:37
 #: src/mods/runErrorFixButtons.tsx:51
@@ -4159,6 +4200,11 @@ msgstr "Access granted"
 #: src/game/BackupMenuItems.tsx:48
 msgid "Back up to a file…"
 msgstr "Back up to a file…"
+
+#. placeholder {0}: row.host
+#: src/game/FarmMenuItem.tsx:88
+msgid "Host {0}"
+msgstr "Host {0}"
 
 #: src/launch/VanillaPlay.tsx:56
 msgid "Mortar starts the unmodded game directly, skipping SMAPI's Linux launcher. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
@@ -4311,7 +4357,7 @@ msgstr "{name} has no file Mortar can use in place of the one shared"
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
-#: src/game/ProfileMenuItems.tsx:166
+#: src/game/ProfileMenuItems.tsx:167
 msgid "Added to Steam"
 msgstr "Added to Steam"
 
@@ -4323,7 +4369,7 @@ msgstr "Enter text to search stored runs."
 msgid "No backups to delete"
 msgstr "No backups to delete"
 
-#: src/game/ProfileMenuItems.tsx:363
+#: src/game/ProfileMenuItems.tsx:365
 #: src/profiles/LaunchPresetsBlock.tsx:52
 msgid "Duplicate"
 msgstr "Duplicate"
@@ -4556,6 +4602,10 @@ msgstr "Rename…"
 #: src/mods/describe.ts:175
 msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
 msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
+
+#: src/game/FarmMenuItem.tsx:112
+msgid "This profile matches {host}."
+msgstr "This profile matches {host}."
 
 #: src/mods/updateReview/EverywhereDialog.tsx:76
 #: src/mods/updateReview/UpdateActions.tsx:62
@@ -5740,6 +5790,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 msgid "Open page"
 msgstr "Open page"
 
+#: src/game/FarmMenuItem.tsx:72
 #: src/share/ImportPreview.tsx:249
 msgid "{count} to download"
 msgstr "{count} to download"
@@ -6193,6 +6244,10 @@ msgstr "Unity exception"
 msgid "Revert"
 msgstr "Revert"
 
+#: src/game/FarmMenuItem.tsx:158
+msgid "Multiplayer mod list…"
+msgstr "Multiplayer mod list…"
+
 #. placeholder {0}: profile.name
 #: src/notes/NotesTab.tsx:129
 msgid "Notes for {0}"
@@ -6325,7 +6380,7 @@ msgstr "Console log cap"
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
-#: src/game/ProfileMenuItems.tsx:146
+#: src/game/ProfileMenuItems.tsx:147
 msgid "Shortcut removed"
 msgstr "Shortcut removed"
 
@@ -6338,7 +6393,7 @@ msgstr "Delete {0} permanently"
 msgid "Could not reach Nexus"
 msgstr "Could not reach Nexus"
 
-#: src/game/ProfileMenuItems.tsx:149
+#: src/game/ProfileMenuItems.tsx:150
 msgid "Could not remove the shortcut"
 msgstr "Could not remove the shortcut"
 
@@ -6398,7 +6453,7 @@ msgstr "New group"
 msgid "Unhide {0}?"
 msgstr "Unhide {0}?"
 
-#: src/game/ProfileMenuItems.tsx:83
+#: src/game/ProfileMenuItems.tsx:84
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
@@ -6441,7 +6496,7 @@ msgstr "Regenerate token"
 msgid "New profile from file"
 msgstr "New profile from file"
 
-#: src/game/ProfileMenuItems.tsx:130
+#: src/game/ProfileMenuItems.tsx:131
 msgid "Shortcut added"
 msgstr "Shortcut added"
 
@@ -6878,7 +6933,7 @@ msgstr "Share profile"
 msgid "Refresh"
 msgstr "Refresh"
 
-#: src/game/ProfileMenuItems.tsx:242
+#: src/game/ProfileMenuItems.tsx:243
 msgid "Choose cover image"
 msgstr "Choose cover image"
 
@@ -6923,6 +6978,10 @@ msgstr "Its folder is removed from this profile. You can undo this."
 #: src/settings/prefCopy.ts:270
 msgid "Run logs kept"
 msgstr "Run logs kept"
+
+#: src/game/FarmMenuItem.tsx:50
+msgid "Send it to the people joining you."
+msgstr "Send it to the people joining you."
 
 #. placeholder {0}: formatBytes(move.estimate.freeBytes)
 #: src/settings/sections/DataMove.tsx:82
@@ -6979,7 +7038,7 @@ msgstr "No update checks, and it can't go in a share link."
 msgid "This pack has files that always install."
 msgstr "This pack has files that always install."
 
-#: src/game/ProfileMenuItems.tsx:391
+#: src/game/ProfileMenuItems.tsx:393
 msgid "Match a friend's profile…"
 msgstr "Match a friend's profile…"
 
@@ -7116,7 +7175,7 @@ msgstr "Could not skip the update for {0}"
 msgid "Nexus mod {id}"
 msgstr "Nexus mod {id}"
 
-#: src/game/ProfileMenuItems.tsx:121
+#: src/game/ProfileMenuItems.tsx:122
 msgid "Add a shortcut that plays this profile"
 msgstr "Add a shortcut that plays this profile"
 
@@ -7205,7 +7264,7 @@ msgstr "How to share"
 msgid "No entries match."
 msgstr "No entries match."
 
-#: src/game/ProfileMenuItems.tsx:251
+#: src/game/ProfileMenuItems.tsx:252
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
@@ -7635,6 +7694,10 @@ msgstr "A file it needs could not be opened."
 #: src/profiles/GameSettings.tsx:289
 msgid "Windowed resolution width"
 msgstr "Windowed resolution width"
+
+#: src/game/FarmMenuItem.tsx:53
+msgid "Could not make the list"
+msgstr "Could not make the list"
 
 #: src/mods/problemText.ts:79
 msgid "Missing dependency"
@@ -9064,7 +9127,7 @@ msgstr "Preview"
 msgid "Remove anyway"
 msgstr "Remove anyway"
 
-#: src/game/ProfileMenuItems.tsx:381
+#: src/game/ProfileMenuItems.tsx:383
 msgid "Show in sidebar"
 msgstr "Show in sidebar"
 
@@ -9400,6 +9463,10 @@ msgstr "the mod"
 msgid "Searching…"
 msgstr "Searching…"
 
+#: src/game/FarmMenuItem.tsx:93
+msgid "Multiplayer mod list"
+msgstr "Multiplayer mod list"
+
 #: src/console/BisectDialog.tsx:118
 #: src/console/CrashDialog.tsx:57
 #: src/console/RunProblems.tsx:91
@@ -9419,7 +9486,7 @@ msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgid "Combined"
 msgstr "Combined"
 
-#: src/game/ProfileMenuItems.tsx:372
+#: src/game/ProfileMenuItems.tsx:374
 msgid "Export profile…"
 msgstr "Export profile…"
 
@@ -9785,7 +9852,7 @@ msgstr "Done ({0}): {1}"
 #. placeholder {0}: drift.folder
 #. placeholder {0}: pendingDelete ?? ''
 #: src/bundles/BundlesSection.tsx:146
-#: src/game/ProfileMenuItems.tsx:82
+#: src/game/ProfileMenuItems.tsx:83
 #: src/mods/CategoryEditor.tsx:167
 #: src/mods/ConfigPresets.tsx:155
 #: src/mods/problemFixButtons.tsx:202
@@ -9827,7 +9894,7 @@ msgstr "Reading startup reports…"
 msgid "Place here"
 msgstr "Place here"
 
-#: src/game/ProfileMenuItems.tsx:381
+#: src/game/ProfileMenuItems.tsx:383
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
 
@@ -9879,6 +9946,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
 #: src/console/RunProblems.tsx:135
 #: src/fomod/Dialog.tsx:264
+#: src/game/FarmMenuItem.tsx:90
 #: src/loader/Banner.tsx:27
 #: src/settings/GameSettingsPage.tsx:58
 #: src/settings/sections/LoaderRow.tsx:93
@@ -10526,7 +10594,7 @@ msgstr "Import a profile"
 msgid "Move data folder"
 msgstr "Move data folder"
 
-#: src/game/ProfileMenuItems.tsx:244
+#: src/game/ProfileMenuItems.tsx:245
 #: src/profiles/EditProfileDialog.tsx:427
 msgid "Could not use that image"
 msgstr "Could not use that image"
@@ -11304,7 +11372,7 @@ msgid "Nexus page"
 msgstr "Nexus page"
 
 #: src/console/PerformancePanelParts.tsx:64
-#: src/game/ProfileMenuItems.tsx:400
+#: src/game/ProfileMenuItems.tsx:402
 msgid "Compare with…"
 msgstr "Compare with…"
 
@@ -11505,7 +11573,7 @@ msgstr "Fall"
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
-#: src/game/ProfileMenuItems.tsx:157
+#: src/game/ProfileMenuItems.tsx:158
 msgid "Add this profile to Steam"
 msgstr "Add this profile to Steam"
 
@@ -11831,7 +11899,7 @@ msgstr "Take over"
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
-#: src/game/ProfileMenuItems.tsx:132
+#: src/game/ProfileMenuItems.tsx:133
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
 
@@ -11959,6 +12027,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/BisectDialog.tsx:185
 #: src/console/HelpDialog.tsx:234
 #: src/console/SearchRunsDialog.tsx:171
+#: src/game/FarmMenuItem.tsx:131
 #: src/launch/LaunchLayer.tsx:275
 #: src/launch/SweepDialog.tsx:132
 #: src/mods/AssetMapDialog.tsx:279
@@ -12242,7 +12311,7 @@ msgstr "Using your gh login"
 msgid "Share profiles on the local network"
 msgstr "Share profiles on the local network"
 
-#: src/game/ProfileMenuItems.tsx:208
+#: src/game/ProfileMenuItems.tsx:209
 msgid "Enable sharing nearby in Settings › General."
 msgstr "Enable sharing nearby in Settings › General."
 
