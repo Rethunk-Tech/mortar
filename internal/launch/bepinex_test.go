@@ -7,6 +7,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func TestParserReadsBepInExLevelsSourcesAndWrappedLines(t *testing.T) {
@@ -45,7 +47,7 @@ func TestFormatLogWritesBepInExLinesBackInItsFormat(t *testing.T) {
 // buffer every so often, which can end mid-line.
 func fakeBepInEx(t *testing.T, path string, chunks []string) {
 	t.Helper()
-	f, err := os.Create(path)
+	f, err := fsx.Create(path)
 	if err != nil {
 		t.Error(err)
 		return
