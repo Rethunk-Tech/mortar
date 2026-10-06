@@ -178,25 +178,39 @@ func TestCheckUpdatesPicksTheBundlePacksOwnFile(t *testing.T) {
 		{FileID: 175660, Name: "Alchemistry CC Bundles", Version: "2.0.0", Category: "OLD_VERSION"},
 		{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "OPTIONAL"},
 	}
-	check := func(files []nexus.BatchFile) Update {
-		t.Helper()
+	updates := func(files []nexus.BatchFile) []Update {
 		filesOf := func(context.Context, nexus.Title, []int) (map[int][]nexus.BatchFile, error) {
 			return map[int][]nexus.BatchFile{22743: files}, nil
 		}
-		got := checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf)
-		if len(got.Updates) != 1 {
-			t.Fatalf("updates = %+v, want one", got.Updates)
-		}
-		return got.Updates[0]
+		return checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates
 	}
-	if u := check(page); u.FileID != 0 || !u.PickFile {
-		t.Errorf("no newer bundle file: got file %d pick %v, want a pick on Nexus", u.FileID, u.PickFile)
+	check := func(files []nexus.BatchFile) Update {
+		t.Helper()
+		got := updates(files)
+		if len(got) != 1 {
+			t.Fatalf("updates = %+v, want one", got)
+		}
+		return got[0]
+	}
+	if got := updates(page); len(got) != 0 {
+		t.Errorf("the installed bundle file is its download's newest, so the page's 2.0.2 is not its update: %+v", got)
+	}
+	archived := slices.Concat(page[:3], []nexus.BatchFile{{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "ARCHIVED"}})
+	if u := check(archived); u.FileID != 0 || !u.PickFile {
+		t.Errorf("an archived bundle file with no successor: got file %d pick %v, want a pick on Nexus", u.FileID, u.PickFile)
 	}
 	newer := slices.Concat(page[:3], []nexus.BatchFile{
 		{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "OLD_VERSION"},
 		{FileID: 181000, Name: "Alchemistry CC Bundles", Version: "2.0.2", Category: "OPTIONAL"},
 	})
-	if u := check(newer); u.FileID != 181000 || u.PickFile {
-		t.Errorf("newer bundle file: got file %d pick %v, want 181000", u.FileID, u.PickFile)
+	if u := check(newer); u.FileID != 181000 || u.PickFile || u.Version != "2.0.2" {
+		t.Errorf("newer bundle file: got file %d pick %v version %s, want 181000 at 2.0.2", u.FileID, u.PickFile, u.Version)
+	}
+	older := slices.Concat(page[:3], []nexus.BatchFile{
+		{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "OLD_VERSION"},
+		{FileID: 179000, Name: "Alchemistry CC Bundles", Version: "2.0.1.1", Category: "OPTIONAL"},
+	})
+	if u := check(older); u.FileID != 179000 || u.Version != "2.0.1.1" {
+		t.Errorf("the row shows the downloaded file's version, not the page's: %+v", u)
 	}
 }

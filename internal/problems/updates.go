@@ -177,10 +177,18 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 				GitHubFallback: cmp.Or(githubFallback(x.UpdateKeys, res.Suggested.URL), metadataFallback(res.GitHubRepo, res.Suggested.URL)),
 				Source:         updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
 			}
+			lineDone := false
 			if files, ok := live[u.NexusID]; ok && u.GitHubRepo == "" {
-				u.FileID, u.PickFile = supersedingFile(files, x, u.NexusID, u.Version)
+				var f nexus.File
+				f, u.PickFile, lineDone = supersedingFile(files, x, u.NexusID, u.Version)
+				u.FileID = f.FileID
+				if f.Version != "" {
+					u.Version = f.Version
+				}
 			}
-			r.Updates = append(r.Updates, u)
+			if !lineDone {
+				r.Updates = append(r.Updates, u)
+			}
 		}
 		if res.Unofficial != nil {
 			r.Updates = append(r.Updates, Update{
@@ -563,13 +571,14 @@ func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, as
 	return files
 }
 
-// supersedingFile is the live file an update of x's Nexus file downloads (nexus.Supersedes). pick is set when the
-// list has the installed file but nothing supersedes it; both are zero when the installed file is not listed, which
-// leaves the choice to the queue.
-func supersedingFile(files []nexus.BatchFile, x framework.Mod, modID int, version string) (fileID int, pick bool) {
+// supersedingFile is the live file an update of x's Nexus file downloads (nexus.Supersedes), whose version the update
+// then offers. When nothing supersedes the installed file, newest is set if it is still a current file, the newest of
+// its own download, so the page's newer version belongs to another download; pick is set if it is history only. All
+// are zero when the installed file is not listed, which leaves the choice to the queue.
+func supersedingFile(files []nexus.BatchFile, x framework.Mod, modID int, version string) (file nexus.File, pick, newest bool) {
 	keyModID, have, ok := store.NexusFile(x.Key)
 	if !ok || keyModID != modID {
-		return 0, false
+		return nexus.File{}, false, false
 	}
 	list := make([]nexus.File, len(files))
 	for i, f := range files {
@@ -577,12 +586,12 @@ func supersedingFile(files []nexus.BatchFile, x framework.Mod, modID int, versio
 	}
 	installed := nexus.FileByID(list, have)
 	if installed.FileID == 0 {
-		return 0, false
+		return nexus.File{}, false, false
 	}
 	if f, ok := nexus.Supersedes(list, installed, version, x.SourceCategory); ok {
-		return f.FileID, false
+		return f, false, false
 	}
-	return 0, true
+	return nexus.File{}, nexus.Stale(installed), !nexus.Stale(installed)
 }
 
 // liveFileIsCurrent says whether the installed Nexus file is still the newest in its group (same display name) and

@@ -56,8 +56,8 @@ func betterFile(candidate, current File) bool {
 	return candidate.FileID > current.FileID
 }
 
-// stale reports a file Nexus keeps listed only as history.
-func stale(f File) bool {
+// Stale reports a file Nexus keeps listed only as history.
+func Stale(f File) bool {
 	switch strings.ToUpper(f.Category) {
 	case "OLD_VERSION", "ARCHIVED", "DELETED", "REMOVED":
 		return true
@@ -113,7 +113,7 @@ func Supersedes(files []File, installed File, version, kind string) (File, bool)
 	var group File
 	for _, f := range files {
 		// A MAIN entry never becomes an optional pack, whatever the names say.
-		if f.FileID == installed.FileID || stale(f) || !newer(f, installed) || !sameFileGroup(f, installed) ||
+		if f.FileID == installed.FileID || Stale(f) || !newer(f, installed) || !sameFileGroup(f, installed) ||
 			(strings.EqualFold(f.Category, categoryOptional) && strings.EqualFold(kind, categoryMain)) {
 			continue
 		}
@@ -127,7 +127,7 @@ func Supersedes(files []File, installed File, version, kind string) (File, bool)
 	}
 	if version != "" {
 		if f, ok := only(files, func(f File) bool {
-			return !stale(f) && strings.EqualFold(f.Category, kind) && sameVersion(f, version)
+			return !Stale(f) && strings.EqualFold(f.Category, kind) && sameVersion(f, version)
 		}); ok && f.FileID != installed.FileID {
 			return f, true
 		}
