@@ -29,7 +29,7 @@ step site-games bun scripts/site-games.ts --check
 step i18n-dupes bun scripts/i18n-dupes.ts
 step metainfo appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml
 step go-test go test -race ./...
-step vuln govulncheck ./...
+step vuln scripts/vulncheck.sh
 
 wait "$bindings_pid" || { cat "$logs/bindings"; exit 1; }
 step biome scripts/biome-strict.sh
@@ -45,4 +45,6 @@ for name in "${!pids[@]}"; do
     cat "$logs/$name"
   fi
 done
+# A passing step prints nothing, so a skipped vuln check is the one line worth showing.
+grep -h '^govulncheck skipped' "$logs/vuln" 2>/dev/null
 exit $failed
