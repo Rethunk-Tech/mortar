@@ -99,6 +99,10 @@ export const reportError = (title: string, retry?: () => unknown) => (e: unknown
 }
 
 // The sink for a promise nobody awaits. Stores report their own failures, so this only fires for one they did not expect.
+// A network failure is expected whenever a source is down, and the offline banner already says so.
 export const reportUnexpected = (e: unknown) => {
+  if (kindOf(e) === 'network') {
+    return
+  }
   toastError(i18n._(msg`Something went wrong`), e)
 }

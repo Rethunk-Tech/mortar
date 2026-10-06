@@ -225,7 +225,6 @@ func run() error {
 		Name:         "Mortar",
 		Icon:         appIcon,
 		ErrorHandler: logAppError,
-		MarshalError: usererr.Marshal,
 		PanicHandler: panicHandler(dataDir),
 		// ApplicationID is the GtkApplication / Wayland app_id and the Linux desktop file id. It must not equal
 		// UniqueID: both become D-Bus names, and GApplication also owns ApplicationID on the session bus.
@@ -748,20 +747,20 @@ func run() error {
 	}
 	gate := &startGate{}
 	for _, s := range []application.Service{
-		application.NewService(gate),
-		application.NewService(configSvc),
-		application.NewService(svc), application.NewService(gamesSvc),
-		application.NewService(profileSvc), application.NewService(loaders), application.NewService(launches), application.NewService(pick),
-		application.NewService(bundlesSvc), application.NewService(templatesSvc), application.NewService(archivesSvc),
-		application.NewService(savesSvc), application.NewService(plays), application.NewService(nexusSvc), application.NewService(&itchsource.Service{Store: store}), application.NewService(nxmSvc), application.NewService(notifier),
-		application.NewService(problemsSvc), application.NewService(queueSvc), application.NewService(shareSvc), application.NewService(syncSvc), application.NewService(lanSvc),
-		application.NewService(supportSvc), application.NewService(updates), application.NewService(bisectSvc),
-		application.NewService(dataSvc), application.NewService(toolsSvc),
-		application.NewService(checkSvc), application.NewService(&tidy.Service{Report: tidied}),
-		application.NewService(quitSvc),
-		application.NewService(browseSvc),
-		application.NewService(&netstate.Service{}),
-		application.NewService(packs),
+		bound(gate),
+		bound(configSvc),
+		bound(svc), bound(gamesSvc),
+		bound(profileSvc), bound(loaders), bound(launches), bound(pick),
+		bound(bundlesSvc), bound(templatesSvc), bound(archivesSvc),
+		bound(savesSvc), bound(plays), bound(nexusSvc), bound(&itchsource.Service{Store: store}), bound(nxmSvc), bound(notifier),
+		bound(problemsSvc), bound(queueSvc), bound(shareSvc), bound(syncSvc), bound(lanSvc),
+		bound(supportSvc), bound(updates), bound(bisectSvc),
+		bound(dataSvc), bound(toolsSvc),
+		bound(checkSvc), bound(&tidy.Service{Report: tidied}),
+		bound(quitSvc),
+		bound(browseSvc),
+		bound(&netstate.Service{}),
+		bound(packs),
 	} {
 		app.RegisterService(s)
 	}
@@ -1132,4 +1131,10 @@ func applyLinkChoices(s settings.Settings) {
 		choice["thunderstore"] = *s.ThunderstoreHandleLinks
 	}
 	source.SetHandleLinks(choice)
+}
+
+// bound registers a service whose errors reach the window with their usererr kind. Wails falls back to its default
+// marshaller per service, never to Options.MarshalError, so the kind has to be set on each one.
+func bound[T any](s *T) application.Service {
+	return application.NewServiceWithOptions(s, application.ServiceOptions{MarshalError: usererr.Marshal})
 }
