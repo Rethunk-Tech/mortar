@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sort"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -34,6 +35,30 @@ type State struct {
 	LastFail time.Time `json:"lastFail"`
 	// LastError is the network error behind LastFail; empty once a request succeeds.
 	LastError string `json:"lastError"`
+	// LastReason sorts LastError for the window to put in its own words: ReasonDNS, ReasonTimeout, ReasonRefused or
+	// ReasonOther; empty once a request succeeds.
+	LastReason string `json:"lastReason"`
+}
+
+// The reasons a source could not be reached.
+const (
+	ReasonDNS     = "dns"
+	ReasonTimeout = "timeout"
+	ReasonRefused = "refused"
+	ReasonOther   = "other"
+)
+
+func reasonOf(err error) string {
+	if _, ok := errors.AsType[*net.DNSError](err); ok {
+		return ReasonDNS
+	}
+	if errors.Is(err, syscall.ECONNREFUSED) {
+		return ReasonRefused
+	}
+	if ne, ok := errors.AsType[net.Error](err); errors.Is(err, context.DeadlineExceeded) || (ok && ne.Timeout()) {
+		return ReasonTimeout
+	}
+	return ReasonOther
 }
 
 // OnChange is called, when set, after a source flips between reachable and unreachable, so the window need not poll.
@@ -67,9 +92,9 @@ func Record(id string, err error) {
 	was, seen := st.Unreachable, st.ID != ""
 	st.ID = id
 	if err == nil {
-		st.Unreachable, st.LastOK, st.LastError = false, time.Now(), ""
+		st.Unreachable, st.LastOK, st.LastError, st.LastReason = false, time.Now(), "", ""
 	} else {
-		st.Unreachable, st.LastFail, st.LastError = true, time.Now(), err.Error()
+		st.Unreachable, st.LastFail, st.LastError, st.LastReason = true, time.Now(), err.Error(), reasonOf(err)
 	}
 	states[id] = st
 	mu.Unlock()

@@ -24,7 +24,7 @@ msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links 
 msgid "Performance"
 msgstr "Performance"
 
-#: src/console/ConsoleTab.tsx:418
+#: src/console/ConsoleTab.tsx:420
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
@@ -96,7 +96,7 @@ msgstr "Could not open the folder"
 msgid "Author · {author}"
 msgstr "Author · {author}"
 
-#: src/toasts/EarlierChanges.tsx:103
+#: src/toasts/EarlierChanges.tsx:105
 msgid "These changes will be reverted too:"
 msgstr "These changes will be reverted too:"
 
@@ -546,7 +546,7 @@ msgstr "Assets and packs"
 msgid "Allow through firewall"
 msgstr "Allow through firewall"
 
-#: src/console/ConsoleTab.tsx:356
+#: src/console/ConsoleTab.tsx:358
 msgid "No lines match the filters."
 msgstr "No lines match the filters."
 
@@ -668,11 +668,6 @@ msgstr "Needs your input"
 msgid "Updated on Nexus"
 msgstr "Updated on Nexus"
 
-#. placeholder {0}: formatWhen(state.lastFail)
-#: src/settings/sections/Sources.tsx:37
-msgid "No answer {0}: {error}"
-msgstr "No answer {0}: {error}"
-
 #: src/console/CrashDialog.tsx:294
 #: src/mods/problemFix/AssetFix.tsx:103
 #: src/mods/problemFix/BrokenFix.tsx:78
@@ -737,7 +732,7 @@ msgstr "Not in the link"
 msgid "When"
 msgstr "When"
 
-#: src/console/ConsoleTab.tsx:212
+#: src/console/ConsoleTab.tsx:214
 msgid "Type a command, for example help"
 msgstr "Type a command, for example help"
 
@@ -966,7 +961,7 @@ msgstr "Install by hand: {0}"
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
-#: src/settings/sections/Sources.tsx:97
+#: src/settings/sections/Sources.tsx:107
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
 
@@ -1140,7 +1135,7 @@ msgstr "Could not dismiss that folder"
 msgid "Could not export the collection draft"
 msgstr "Could not export the collection draft"
 
-#: src/settings/sections/Sources.tsx:57
+#: src/settings/sections/Sources.tsx:67
 msgid "Recheck"
 msgstr "Recheck"
 
@@ -1407,6 +1402,10 @@ msgstr "Skip this version"
 msgid "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 msgstr "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 
+#: src/settings/sections/Sources.tsx:40
+msgid "the connection failed"
+msgstr "the connection failed"
+
 #: src/settings/sections/Appearance.tsx:153
 msgid "Solid"
 msgstr "Solid"
@@ -1495,7 +1494,7 @@ msgstr "Changelog unavailable"
 msgid "List view"
 msgstr "List view"
 
-#: src/toasts/HistoryButton.tsx:160
+#: src/toasts/HistoryButton.tsx:161
 msgid "Earlier"
 msgstr "Earlier"
 
@@ -1515,6 +1514,10 @@ msgstr "Its main file is no longer in this profile."
 #: src/profiles/EditProfileDialog.tsx:164
 msgid "Sprout"
 msgstr "Sprout"
+
+#: src/shell/offlineText.ts:24
+msgid "{name} as of {at}"
+msgstr "{name} as of {at}"
 
 #: src/share/ShareDialog.tsx:66
 msgid "Link length"
@@ -1541,7 +1544,7 @@ msgstr "Search results"
 msgid "Import from {0}"
 msgstr "Import from {0}"
 
-#: src/console/ConsoleTab.tsx:302
+#: src/console/ConsoleTab.tsx:304
 msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
 msgstr "Play this profile and the game's log shows here as it runs. Every run is kept."
 
@@ -1597,7 +1600,7 @@ msgstr "Compares every stored mod's files with what was saved when it was added.
 msgid "Roll back"
 msgstr "Roll back"
 
-#: src/shell/offlineText.ts:13
+#: src/shell/offlineText.ts:18
 msgid "{names} can't be reached; showing what Mortar saved at {time}"
 msgstr "{names} can't be reached; showing what Mortar saved at {time}"
 
@@ -2140,7 +2143,7 @@ msgstr "A mod works better, or only works, with a setting changed. Nothing is wr
 msgid "Prerelease"
 msgstr "Prerelease"
 
-#: src/console/ConsoleTab.tsx:384
+#: src/console/ConsoleTab.tsx:386
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
@@ -2206,10 +2209,6 @@ msgstr "{n} {source}"
 #: src/queue/QueueBody.tsx:403
 msgid "Skip {0}"
 msgstr "Skip {0}"
-
-#: src/shell/offlineText.ts:14
-msgid "{names} can't be reached; showing what Mortar saved"
-msgstr "{names} can't be reached; showing what Mortar saved"
 
 #: src/mods/columnLabel.ts:9
 #: src/mods/NexusDetails.tsx:93
@@ -2410,7 +2409,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/templates/ApplyTemplateDialog.tsx:95
 #: src/templates/TemplateDialogs.tsx:226
 #: src/toasts/EarlierChanges.tsx:46
-#: src/toasts/EarlierChanges.tsx:91
+#: src/toasts/EarlierChanges.tsx:93
 msgid "Undo"
 msgstr "Undo"
 
@@ -2545,7 +2544,7 @@ msgid "Imported {name}"
 msgstr "Imported {name}"
 
 #: src/settings/sections/ItchAccount.tsx:52
-#: src/settings/sections/Sources.tsx:123
+#: src/settings/sections/Sources.tsx:133
 msgid "Account"
 msgstr "Account"
 
@@ -2668,7 +2667,7 @@ msgstr "Mortar checks for updates at startup, on F5, and at most hourly while it
 msgid "{0, plural, one {# update for {1, plural, one {# profile} other {# profiles}}} other {# updates for {2, plural, one {# profile} other {# profiles}}}}"
 msgstr "{0, plural, one {# update for {1, plural, one {# profile} other {# profiles}}} other {# updates for {2, plural, one {# profile} other {# profiles}}}}"
 
-#: src/settings/sections/Sources.tsx:90
+#: src/settings/sections/Sources.tsx:100
 msgid "Not signed in. Add your API key in Accounts."
 msgstr "Not signed in. Add your API key in Accounts."
 
@@ -2688,7 +2687,7 @@ msgstr "{count} checked later"
 msgid "Bisect from here"
 msgstr "Bisect from here"
 
-#: src/console/ConsoleTab.tsx:354
+#: src/console/ConsoleTab.tsx:356
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
@@ -3110,7 +3109,7 @@ msgstr "Update mods before Play on new profiles"
 msgid "Not downloadable here"
 msgstr "Not downloadable here"
 
-#: src/settings/sections/Sources.tsx:103
+#: src/settings/sections/Sources.tsx:113
 msgid "API key set for {itch}"
 msgstr "API key set for {itch}"
 
@@ -4489,7 +4488,7 @@ msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
 #: src/settings/sections/Downloads.tsx:107
-#: src/settings/sections/Sources.tsx:44
+#: src/settings/sections/Sources.tsx:54
 msgid "Connection"
 msgstr "Connection"
 
@@ -4541,7 +4540,7 @@ msgstr "None of this profile's mods are marked broken for the new version."
 msgid "One argument per line. Placeholders: {placeholders}."
 msgstr "One argument per line. Placeholders: {placeholders}."
 
-#: src/settings/sections/Sources.tsx:105
+#: src/settings/sections/Sources.tsx:115
 msgid "API key not set. Itch.io search is off until you add one."
 msgstr "API key not set. Itch.io search is off until you add one."
 
@@ -4721,7 +4720,7 @@ msgstr "Install {0}"
 msgid "Files of {name} changed outside Mortar"
 msgstr "Files of {name} changed outside Mortar"
 
-#: src/settings/sections/Sources.tsx:109
+#: src/settings/sections/Sources.tsx:119
 msgid "No account needed"
 msgstr "No account needed"
 
@@ -4758,7 +4757,7 @@ msgstr "Edit config"
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 
-#: src/console/ConsoleTab.tsx:289
+#: src/console/ConsoleTab.tsx:291
 msgid "Filter by level or mod, and use Save log or Copy log to pass this run on."
 msgstr "Filter by level or mod, and use Save log or Copy log to pass this run on."
 
@@ -5042,7 +5041,7 @@ msgstr "These profiles have no user mods to compare."
 msgid "How this Mortar appears to nearby installations"
 msgstr "How this Mortar appears to nearby installations"
 
-#: src/console/ConsoleTab.tsx:288
+#: src/console/ConsoleTab.tsx:290
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
 msgstr "Filter by level or mod, and use Share log to upload this run to smapi.io."
 
@@ -5263,7 +5262,7 @@ msgstr "Launch options"
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
-#: src/console/ConsoleTab.tsx:420
+#: src/console/ConsoleTab.tsx:422
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
@@ -5458,7 +5457,7 @@ msgstr "Farming skill"
 msgid "Stop the game to install {0}."
 msgstr "Stop the game to install {0}."
 
-#: src/toasts/HistoryButton.tsx:147
+#: src/toasts/HistoryButton.tsx:148
 msgid "No notifications yet"
 msgstr "No notifications yet"
 
@@ -5806,7 +5805,7 @@ msgstr "Start the game to see values"
 msgid "{summary} · {0}"
 msgstr "{summary} · {0}"
 
-#: src/console/ConsoleTab.tsx:211
+#: src/console/ConsoleTab.tsx:213
 msgid "Console command"
 msgstr "Console command"
 
@@ -5870,8 +5869,8 @@ msgstr "Could not remove the selected mods"
 #: src/commandPalette/CommandPalette.tsx:155
 #: src/settings/sections/DataImport.tsx:19
 #: src/settings/SettingsPage.tsx:43
-#: src/toasts/HistoryButton.tsx:140
-#: src/toasts/HistoryButton.tsx:211
+#: src/toasts/HistoryButton.tsx:141
+#: src/toasts/HistoryButton.tsx:212
 #: src/toasts/ToastHost.tsx:252
 msgid "Notifications"
 msgstr "Notifications"
@@ -6096,7 +6095,7 @@ msgstr "Press Play to start."
 #: src/console/PerformanceComparison.tsx:66
 #: src/mods/ChangelogDialog.tsx:35
 #: src/mods/NewSince.tsx:14
-#: src/toasts/HistoryButton.tsx:152
+#: src/toasts/HistoryButton.tsx:153
 msgid "New"
 msgstr "New"
 
@@ -6590,7 +6589,7 @@ msgstr "Nothing in this profile"
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
-#: src/console/ConsoleTab.tsx:263
+#: src/console/ConsoleTab.tsx:265
 msgid "Stop the game before reinstalling."
 msgstr "Stop the game before reinstalling."
 
@@ -6725,7 +6724,7 @@ msgstr "Update ready: applies when you close Mortar."
 msgid "Default mods view"
 msgstr "Default mods view"
 
-#: src/settings/sections/Sources.tsx:40
+#: src/settings/sections/Sources.tsx:50
 msgid "Reachable"
 msgstr "Reachable"
 
@@ -6766,7 +6765,7 @@ msgstr "{0}: {1}"
 msgid "Sync folder"
 msgstr "Sync folder"
 
-#: src/settings/sections/Sources.tsx:116
+#: src/settings/sections/Sources.tsx:126
 msgid "No account"
 msgstr "No account"
 
@@ -6879,7 +6878,7 @@ msgstr "Preparing transfer…"
 msgid "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
 msgstr "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
 
-#: src/settings/sections/Sources.tsx:137
+#: src/settings/sections/Sources.tsx:147
 msgid "Request counts appear after Mortar talks to GitHub."
 msgstr "Request counts appear after Mortar talks to GitHub."
 
@@ -6976,7 +6975,7 @@ msgstr "Remove {0} from other profiles"
 msgid "All sources"
 msgstr "All sources"
 
-#: src/toasts/HistoryButton.tsx:119
+#: src/toasts/HistoryButton.tsx:120
 msgid "Notification history"
 msgstr "Notification history"
 
@@ -7352,7 +7351,7 @@ msgstr "Choose cover image…"
 msgid "Search in Browse"
 msgstr "Search in Browse"
 
-#: src/toasts/HistoryButton.tsx:148
+#: src/toasts/HistoryButton.tsx:149
 msgid "Results of installs, updates and launches appear here."
 msgstr "Results of installs, updates and launches appear here."
 
@@ -7472,7 +7471,7 @@ msgid "Set to {value}"
 msgstr "Set to {value}"
 
 #. placeholder {0}: later.length
-#: src/toasts/EarlierChanges.tsx:87
+#: src/toasts/EarlierChanges.tsx:89
 msgid "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 
@@ -7487,6 +7486,11 @@ msgstr "Copy log"
 #: src/mods/SlowStartupSection.tsx:47
 msgid "See startup"
 msgstr "See startup"
+
+#. placeholder {0}: formatWhen(state.lastFail)
+#: src/settings/sections/Sources.tsx:45
+msgid "No answer {0}: {reason}"
+msgstr "No answer {0}: {reason}"
 
 #: src/nxm/store.ts:71
 msgid "Downloading {name} into {profileName}"
@@ -7777,7 +7781,7 @@ msgstr "Reading the changelog…"
 msgid "After"
 msgstr "After"
 
-#: src/toasts/HistoryButton.tsx:170
+#: src/toasts/HistoryButton.tsx:171
 msgid "All changes…"
 msgstr "All changes…"
 
@@ -7933,6 +7937,10 @@ msgstr "Untagged"
 #: src/nxm/store.ts:131
 msgid "Nexus link not used"
 msgstr "Nexus link not used"
+
+#: src/shell/offlineText.ts:24
+msgid "nothing saved yet from {name}"
+msgstr "nothing saved yet from {name}"
 
 #: src/browse/stats.ts:18
 msgid "{stars, plural, one {# star} other {# stars}}"
@@ -8231,6 +8239,10 @@ msgstr "Set default preset…"
 #: src/mods/ModList.tsx:385
 msgid "Mods with problems"
 msgstr "Mods with problems"
+
+#: src/settings/sections/Sources.tsx:36
+msgid "its address could not be looked up"
+msgstr "its address could not be looked up"
 
 #: src/mods/SplitCombineItems.tsx:61
 msgid "Installed separately"
@@ -8722,8 +8734,8 @@ msgstr "Dark"
 msgid "Open folder"
 msgstr "Open folder"
 
-#: src/settings/sections/Sources.tsx:139
-#: src/settings/sections/Sources.tsx:156
+#: src/settings/sections/Sources.tsx:149
+#: src/settings/sections/Sources.tsx:166
 msgid "Requests"
 msgstr "Requests"
 
@@ -8837,7 +8849,7 @@ msgstr "Their folders are removed from this profile. You can undo this."
 msgid "Clear filter"
 msgstr "Clear filter"
 
-#: src/settings/sections/Sources.tsx:118
+#: src/settings/sections/Sources.tsx:128
 msgid "Signed in"
 msgstr "Signed in"
 
@@ -8849,6 +8861,10 @@ msgstr "Search run logs"
 #: src/firstrun/FindStep.tsx:147
 msgid "{0} not installed yet"
 msgstr "{0} not installed yet"
+
+#: src/shell/offlineText.ts:34
+msgid "{names} can't be reached; nothing saved to show yet"
+msgstr "{names} can't be reached; nothing saved to show yet"
 
 #: src/console/PerformancePanelParts.tsx:213
 #: src/mods/ProblemsTab.tsx:308
@@ -9287,7 +9303,7 @@ msgstr "{name} is deprecated on Thunderstore."
 msgid "Show conflicts"
 msgstr "Show conflicts"
 
-#: src/settings/sections/Sources.tsx:120
+#: src/settings/sections/Sources.tsx:130
 msgid "Not set up"
 msgstr "Not set up"
 
@@ -10058,6 +10074,10 @@ msgstr "Reading startup reports…"
 msgid "Place here"
 msgstr "Place here"
 
+#: src/settings/sections/Sources.tsx:38
+msgid "the connection was refused"
+msgstr "the connection was refused"
+
 #: src/game/ProfileMenuItems.tsx:383
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
@@ -10331,7 +10351,7 @@ msgstr "{fitting} of {total}"
 msgid "Could not dismiss the setting warning"
 msgstr "Could not dismiss the setting warning"
 
-#: src/console/ConsoleTab.tsx:391
+#: src/console/ConsoleTab.tsx:393
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -10635,6 +10655,10 @@ msgstr "Updated fixable mods"
 msgid "Order"
 msgstr "Order"
 
+#: src/settings/sections/Sources.tsx:37
+msgid "it took too long to answer"
+msgstr "it took too long to answer"
+
 #. placeholder {0}: mod.name
 #: src/mods/detail.ts:117
 msgid "Could not roll back {0}"
@@ -10710,10 +10734,6 @@ msgstr "Move down (wins files)"
 #: src/browse/BrowseBody.tsx:126
 msgid "Clear search"
 msgstr "Clear search"
-
-#: src/settings/sections/Sources.tsx:38
-msgid "Could not be reached: {error}"
-msgstr "Could not be reached: {error}"
 
 #: src/mods/describe.ts:53
 msgid "{name} is obsolete: {summary}"
@@ -10836,6 +10856,10 @@ msgstr "{gameName} crashed"
 msgid "Stop the game to change SMAPI."
 msgstr "Stop the game to change SMAPI."
 
+#: src/shell/offlineText.ts:28
+msgid "{names} can't be reached; showing what Mortar saved ({asOf})"
+msgstr "{names} can't be reached; showing what Mortar saved ({asOf})"
+
 #: src/mods/ProblemsTab.tsx:240
 msgid "No problems found"
 msgstr "No problems found"
@@ -10907,7 +10931,7 @@ msgstr "Hide"
 msgid "Hide details"
 msgstr "Hide details"
 
-#: src/toasts/HistoryButton.tsx:155
+#: src/toasts/HistoryButton.tsx:156
 msgid "Nothing new"
 msgstr "Nothing new"
 
@@ -11019,7 +11043,7 @@ msgstr "Games"
 msgid "Language"
 msgstr "Language"
 
-#: src/console/ConsoleTab.tsx:300
+#: src/console/ConsoleTab.tsx:302
 msgid "No game output yet"
 msgstr "No game output yet"
 
@@ -11185,7 +11209,7 @@ msgstr "Show mod"
 msgid "Closing the window hides Mortar instead of quitting."
 msgstr "Closing the window hides Mortar instead of quitting."
 
-#: src/settings/sections/Sources.tsx:160
+#: src/settings/sections/Sources.tsx:170
 msgid "Free accounts click Download on Nexus for each file; Mortar opens each page in turn."
 msgstr "Free accounts click Download on Nexus for each file; Mortar opens each page in turn."
 
@@ -11220,7 +11244,7 @@ msgstr "SMAPI {0} is out"
 
 #: src/firstrun/NexusStep.tsx:26
 #: src/settings/sections/NexusMods.tsx:150
-#: src/settings/sections/Sources.tsx:87
+#: src/settings/sections/Sources.tsx:97
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
@@ -11505,7 +11529,7 @@ msgstr "Enable them too"
 
 #: src/console/LogActions.tsx:182
 #: src/settings/sections/GameSettings.tsx:375
-#: src/toasts/HistoryButton.tsx:142
+#: src/toasts/HistoryButton.tsx:143
 msgid "Clear"
 msgstr "Clear"
 
@@ -11766,7 +11790,7 @@ msgstr "This template will be deleted. Presets already copied into profiles stay
 msgid "Mark these mods known good so History can restore them if a later change breaks the game."
 msgstr "Mark these mods known good so History can restore them if a later change breaks the game."
 
-#: src/console/ConsoleTab.tsx:378
+#: src/console/ConsoleTab.tsx:380
 msgid "Show times"
 msgstr "Show times"
 
@@ -11954,7 +11978,7 @@ msgstr "Stop"
 msgid "Scheduled backups kept per save"
 msgstr "Scheduled backups kept per save"
 
-#: src/console/ConsoleTab.tsx:274
+#: src/console/ConsoleTab.tsx:276
 #: src/loader/Banner.tsx:30
 #: src/settings/sections/LoaderRow.tsx:95
 msgid "Reinstall"
@@ -12157,7 +12181,7 @@ msgstr "{deployed} deployed"
 #: src/profiles/HistoryEventRow.tsx:31
 #: src/profiles/HistoryEventRow.tsx:52
 #: src/toasts/EarlierChanges.tsx:25
-#: src/toasts/EarlierChanges.tsx:106
+#: src/toasts/EarlierChanges.tsx:108
 msgid "Known good"
 msgstr "Known good"
 
@@ -12425,7 +12449,7 @@ msgid "Start with a copy of my current saves"
 msgstr "Start with a copy of my current saves"
 
 #. placeholder {0}: formatWhen(state.lastOK)
-#: src/settings/sections/Sources.tsx:41
+#: src/settings/sections/Sources.tsx:51
 msgid "Last answered {0}"
 msgstr "Last answered {0}"
 
@@ -12467,6 +12491,10 @@ msgstr "Forest farm"
 msgid "Measure while you play, then report the mods that take the most time per frame."
 msgstr "Measure while you play, then report the mods that take the most time per frame."
 
+#: src/settings/sections/Sources.tsx:46
+msgid "Could not be reached: {reason}"
+msgstr "Could not be reached: {reason}"
+
 #: src/mods/ModMenu.tsx:210
 #: src/mods/SelectionBarActions.tsx:74
 msgid "Set category…"
@@ -12476,7 +12504,7 @@ msgstr "Set category…"
 msgid "Choose an archive first."
 msgstr "Choose an archive first."
 
-#: src/settings/sections/Sources.tsx:96
+#: src/settings/sections/Sources.tsx:106
 msgid "Using your gh login"
 msgstr "Using your gh login"
 
@@ -12557,7 +12585,7 @@ msgstr "Nothing to trim yet."
 #. placeholder {0}: rate.remaining
 #. placeholder {1}: rate.limit
 #. placeholder {2}: formatWhen(rate.reset)
-#: src/settings/sections/Sources.tsx:136
+#: src/settings/sections/Sources.tsx:146
 msgid "{0} of {1} requests left · resets {2}"
 msgstr "{0} of {1} requests left · resets {2}"
 
@@ -12578,7 +12606,7 @@ msgid "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
 msgstr "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
 
 #. placeholder {0}: sourceLabel(id)
-#: src/settings/sections/Sources.tsx:53
+#: src/settings/sections/Sources.tsx:63
 msgid "Could not recheck {0}"
 msgstr "Could not recheck {0}"
 

@@ -3,7 +3,7 @@ import { Box } from '@mui/material'
 import { useEffect, useRef } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { persist } from '../settings/persist.ts'
-import { useOfflineReason } from '../shell/offlineText.ts'
+import { useOfflineEmpty } from '../shell/offlineText.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BrowseBody } from './BrowseBody.tsx'
 import { BrowseDetails } from './BrowseDetails.tsx'
@@ -87,7 +87,7 @@ function BrowsePage({
   const setFilter = useBrowseView((s) => s.setFilter)
   const query = useBrowseQuery({ game, profileID, search, sources: searchable })
   const { filter, modes, source, setSource, draft, setDraft, page, setPage, result } = query
-  const offline = useOfflineReason(source === ALL ? searchable.map((s) => s.id) : [source])
+  const offline = useOfflineEmpty(source === ALL ? searchable.map((s) => s.id) : [source])
   const categoryNames = useCategoryNames({ categories, game, source, skip: source === GITHUB })
   const pageCount = Math.max(FIRST_PAGE, Math.ceil(pagedTotal(result) / PAGE_SIZE) || FIRST_PAGE)
   const sources = [

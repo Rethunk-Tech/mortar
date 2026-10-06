@@ -29,13 +29,23 @@ function Connection({ id, state }: { id: SourceId; state: State | undefined }) {
   const { t } = useLingui()
   const [pending, run] = usePending()
   let chip = <Chip size="small" label={t`Not contacted yet`} />
-  let detail = t`Mortar has not asked ${sourceLabel(id)} this session.`
+  let detail: ReactNode = t`Mortar has not asked ${sourceLabel(id)} this session.`
   if (state?.unreachable) {
     chip = <Chip size="small" color="error" label={t`Unreachable`} />
-    const error = state.lastError
-    detail = seen(state.lastFail)
-      ? t`No answer ${formatWhen(state.lastFail)}: ${error}`
-      : t`Could not be reached: ${error}`
+    const reasons: Record<string, string> = {
+      dns: t`its address could not be looked up`,
+      timeout: t`it took too long to answer`,
+      refused: t`the connection was refused`,
+    }
+    const reason = reasons[state.lastReason] ?? t`the connection failed`
+    // The raw error is for a bug report, so it waits in the tooltip.
+    detail = (
+      <span title={state.lastError}>
+        {seen(state.lastFail)
+          ? t`No answer ${formatWhen(state.lastFail)}: ${reason}`
+          : t`Could not be reached: ${reason}`}
+      </span>
+    )
   } else if (state && seen(state.lastOK)) {
     chip = <Chip size="small" color="success" label={t`Reachable`} />
     detail = t`Last answered ${formatWhen(state.lastOK)}`

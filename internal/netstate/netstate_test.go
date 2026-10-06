@@ -6,6 +6,9 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"os"
+	"syscall"
 	"testing"
 )
 
@@ -77,5 +80,25 @@ func TestRecordKeepsTheLastErrorUntilASuccess(t *testing.T) {
 		if s.ID == "thunderstore" && (s.Unreachable || s.LastError != "") {
 			t.Fatalf("after success %+v", s)
 		}
+	}
+}
+
+func TestRecordSortsWhyASourceCouldNotBeReached(t *testing.T) {
+	refused := &net.OpError{Op: "proxyconnect", Net: "tcp", Err: &os.SyscallError{Syscall: "connect", Err: syscall.ECONNREFUSED}}
+	for err, want := range map[error]string{
+		&url.Error{Op: "Get", URL: "https://api.nexusmods.com", Err: refused}:                         ReasonRefused,
+		&url.Error{Op: "Get", URL: "https://api.github.com", Err: &net.DNSError{Err: "no such host"}}: ReasonDNS,
+		context.DeadlineExceeded: ReasonTimeout,
+		&net.OpError{Op: "read", Net: "tcp", Err: errors.New("connection reset by peer")}: ReasonOther,
+	} {
+		states = map[string]State{}
+		Record("nexus", err)
+		if got := (&Service{}).States()[0].LastReason; got != want {
+			t.Fatalf("%v: reason %q, want %q", err, got, want)
+		}
+	}
+	Record("nexus", nil)
+	if got := (&Service{}).States()[0].LastReason; got != "" {
+		t.Fatalf("a success kept reason %q", got)
 	}
 }
