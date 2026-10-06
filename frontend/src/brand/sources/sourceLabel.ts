@@ -3,6 +3,7 @@ const LABELS: Record<string, string> = {
   github: 'GitHub',
   thunderstore: 'Thunderstore',
   modrinth: 'Modrinth',
+  curseforge: 'CurseForge',
   itch: 'itch.io',
 }
 
