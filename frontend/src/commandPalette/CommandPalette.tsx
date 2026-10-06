@@ -15,7 +15,14 @@ import {
   Share2,
   User,
 } from 'lucide-react'
-import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from 'react'
+import {
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { BisectDialog } from '../console/BisectDialog.tsx'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import type { SettingsSection } from '../nav/store.ts'
@@ -153,17 +160,15 @@ function paletteSections(i18n: I18n) {
   ]
 }
 
-export function CommandPalette() {
+const closePalette = () => useCommandPalette.getState().setOpen(false)
+
+function PaletteBody({ searchRef }: { searchRef: RefObject<HTMLInputElement | null> }) {
   const { t, i18n } = useLingui()
-  const open = useCommandPalette((s) => s.open)
-  const creating = useCommandPalette((s) => s.creating)
-  const bisect = useCommandPalette((s) => s.bisect)
   const profiles = useProfiles((s) => s.profiles)
   const openId = useProfiles((s) => s.openId)
   const game = useProfiles((s) => s.game)
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState(0)
-  const searchRef = usePaletteWindow(open)
   const sections: { id: SettingsSection; label: string }[] = paletteSections(i18n)
   const shortcutLabelMap = shortcutLabels(i18n)
   const bindings = mergeBindings(useSettings((s) => s.shortcuts))
@@ -178,22 +183,14 @@ export function CommandPalette() {
     bindings,
   })
   const current = shown[Math.min(index, Math.max(shown.length - 1, 0))]
-  const reset = () => {
-    setQuery('')
-    setIndex(0)
-  }
-  const close = () => {
-    useCommandPalette.getState().setOpen(false)
-    reset()
-  }
   const pick = (id: string) => {
     runPaletteItem(id)
-    close()
+    closePalette()
   }
   const onKey = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault()
-      close()
+      closePalette()
       return
     }
     if (e.key === 'ArrowDown') {
@@ -213,10 +210,47 @@ export function CommandPalette() {
   }
   return (
     <>
+      <TextField
+        inputRef={searchRef}
+        autoFocus={true}
+        fullWidth={true}
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value)
+          setIndex(0)
+        }}
+        onKeyDown={onKey}
+        placeholder={t`Search actions and destinations`}
+        slotProps={{
+          htmlInput: {
+            'aria-label': t`Search actions and destinations`,
+            role: 'combobox',
+            'aria-expanded': shown.length > 0,
+            'aria-controls': PALETTE_LIST_ID,
+            'aria-autocomplete': 'list',
+            'aria-activedescendant': current ? optionId(current.id) : undefined,
+          },
+        }}
+        sx={{ px: 2, pt: 2, '& .MuiInputBase-root': { userSelect: 'text' } }}
+      />
+      <PaletteRows shown={shown} currentId={current?.id} onPick={pick} />
+    </>
+  )
+}
+
+export function CommandPalette() {
+  const { t } = useLingui()
+  const open = useCommandPalette((s) => s.open)
+  const creating = useCommandPalette((s) => s.creating)
+  const bisect = useCommandPalette((s) => s.bisect)
+  const searchRef = usePaletteWindow(open)
+  // The body subscribes to profiles and settings; a closed palette renders none of it, and its query starts empty
+  // each time it opens.
+  return (
+    <>
       <Dialog
         open={open}
-        onClose={close}
-        onKeyDown={onKey}
+        onClose={closePalette}
         slotProps={{
           paper: {
             'aria-label': t`Command palette`,
@@ -224,29 +258,7 @@ export function CommandPalette() {
           },
         }}
       >
-        <TextField
-          inputRef={searchRef}
-          autoFocus={true}
-          fullWidth={true}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            setIndex(0)
-          }}
-          placeholder={t`Search actions and destinations`}
-          slotProps={{
-            htmlInput: {
-              'aria-label': t`Search actions and destinations`,
-              role: 'combobox',
-              'aria-expanded': shown.length > 0,
-              'aria-controls': PALETTE_LIST_ID,
-              'aria-autocomplete': 'list',
-              'aria-activedescendant': current ? optionId(current.id) : undefined,
-            },
-          }}
-          sx={{ px: 2, pt: 2, '& .MuiInputBase-root': { userSelect: 'text' } }}
-        />
-        <PaletteRows shown={shown} currentId={current?.id} onPick={pick} />
+        <PaletteBody searchRef={searchRef} />
       </Dialog>
       <NewProfileDialog
         open={creating}
