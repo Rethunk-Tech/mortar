@@ -182,3 +182,22 @@ test('a Steam session sent to a running Mortar lasts until its game closes', asy
   // The run's record lands just after the game goes idle, which is what the session waited for.
   await expect.poll(() => runs().length).toBe(before + 1)
 })
+
+test('a play request the window already ran does not run again when the window reloads', async ({
+  page,
+}) => {
+  const before = runs().length
+  await served(page)
+  const { child, exited } = mortar([`--play=stardew/${fine}`])
+  try {
+    expect(await within(exited)).toBe(0)
+    await expect.poll(() => runs().length, { timeout: 15_000 }).toBe(before + 1)
+    await page.reload()
+    await served(page)
+    // The stand-in game runs for 3s, so a replayed request would have started a second run by now.
+    await page.waitForTimeout(4000)
+    expect(runs().length).toBe(before + 1)
+  } finally {
+    stop(child)
+  }
+})

@@ -29,6 +29,9 @@ const RequestedEvent = "play:requested"
 
 // Request is one profile a shortcut asked to play.
 type Request struct {
+	// ID numbers a request that waits for the window, so the window can tell the event it got live from the copy
+	// Take returns; 0 for a request that never waits.
+	ID      int    `json:"id,omitempty"`
 	Game    string `json:"game"`
 	Profile string `json:"profile"`
 }
@@ -70,6 +73,7 @@ type Service struct {
 	Window  func(WindowMode)
 	mu      sync.Mutex
 	pending *Request
+	nextID  int
 	// solo is the request play mode runs for, nil outside play mode; ran is set once its game was running.
 	solo *Request
 	ran  bool
@@ -84,6 +88,8 @@ func (s *Service) Receive(args []string) bool {
 		return false
 	}
 	s.mu.Lock()
+	s.nextID++
+	r.ID = s.nextID
 	s.pending = &r
 	s.mu.Unlock()
 	if s.Emit != nil {

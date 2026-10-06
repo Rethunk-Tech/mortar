@@ -21,12 +21,29 @@ export function initPlayRequests() {
   if (typeof Events.On !== 'function') {
     return
   }
-  Events.On('play:requested', (event) => play(event.data))
-  Take()
-    .then((r) => {
-      if (r) {
-        play(r)
+  const seen = new Set<number>()
+  // A request that waits for the window also arrives as an event, and stays waiting until taken: taking it after
+  // each event keeps a reload from playing it again. Requests without an id (the tray's) never wait.
+  const arrive = (r: Request) => {
+    if (r.id) {
+      if (seen.has(r.id)) {
+        return
       }
-    })
-    .catch(reportUnexpected)
+      seen.add(r.id)
+    }
+    play(r)
+  }
+  const drain = () =>
+    Take()
+      .then((r) => {
+        if (r) {
+          arrive(r)
+        }
+      })
+      .catch(reportUnexpected)
+  Events.On('play:requested', (event) => {
+    arrive(event.data)
+    drain()
+  })
+  drain()
 }
