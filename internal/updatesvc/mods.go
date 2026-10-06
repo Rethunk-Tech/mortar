@@ -35,6 +35,7 @@ func StartModBackground(ctx context.Context, svc *settings.Service, source func(
 				return
 			}
 			keys, summary := DigestFromProfiles(profiles)
+			log.Printf("mod update check: %d profiles, %d updates in %d of them", len(profiles), summary.TotalUpdates, summary.ProfilesWith)
 			now := time.Now()
 			should, persist := DecideUpdateDigest(
 				cur.UpdateDigest,
