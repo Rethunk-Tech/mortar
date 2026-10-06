@@ -36,8 +36,12 @@ jobs:
         run: |
           set -euo pipefail
           code=true
+          site=true
           if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
             files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '.files[].filename')"
+            if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] && ! printf '%s\n' "$files" | grep -q '^site/'; then
+              site=false
+            fi
             # The compare API lists at most 300 files; a longer list runs the gate.
             if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] \
               && ! printf '%s\n' "$files" | grep -qvE '(\.md$|^docs/|^\.github/ISSUE_TEMPLATE/)'; then
@@ -46,6 +50,7 @@ jobs:
             fi
           fi
           echo "code=$code" >>"$GITHUB_OUTPUT"
+          echo "site=$site" >>"$GITHUB_OUTPUT"
 
       - name: Set up Mortar
         if: steps.changes.outputs.code == 'true'
@@ -57,3 +62,10 @@ jobs:
       - name: Offline gate
         if: steps.changes.outputs.code == 'true'
         run: bun run gate
+
+      # The site deploys from main by hand, so a change to its pages is checked against the live release here.
+      - name: Site download links
+        if: steps.changes.outputs.site == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun scripts/site-downloads.ts

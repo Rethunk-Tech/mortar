@@ -344,6 +344,13 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: build/release/verify.sh --public "$TAG"
 
+      # The site's download links follow the latest release, so a renamed asset breaks them the moment it publishes.
+      - name: Site download links
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun scripts/site-downloads.ts
+
   # Publishes the signed package repository to the `packages` branch, served at https://mortar.rethunk.tech/packages.
   package-repo:
     needs: finalize

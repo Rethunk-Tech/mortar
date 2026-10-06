@@ -17,6 +17,7 @@
     "e2e:updater": "go test -count=1 -tags updatetest -run TestUpdaterE2E ./internal/updatesvc",
     "vuln": "govulncheck ./...",
     "site:games": "bun scripts/site-games.ts --check",
+    "site:downloads": "bun scripts/site-downloads.ts",
     "i18n:dupes": "bun scripts/i18n-dupes.ts",
     "changelog": "bun scripts/changelog.ts"
   },
