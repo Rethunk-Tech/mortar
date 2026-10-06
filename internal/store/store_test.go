@@ -207,19 +207,19 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 	}
 }
 
-func TestLegacyItemsWithoutArchiveAreIncomplete(t *testing.T) {
+func TestItemsWithoutTheCompleteMarkerAreIncomplete(t *testing.T) {
 	s := newStore(t)
 	blob := strings.Repeat("a", 64)
 	dir := filepath.Join(s.root, blobsDir, blob)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.saveIndex(index{"stardew": {"legacy": {Blob: blob}}}); err != nil {
+	if err := s.saveIndex(index{"stardew": {"unmarked": {Blob: blob}}}); err != nil {
 		t.Fatal(err)
 	}
 	testfs.WriteFile(t, dir, "mod.dll", "old")
 
-	_, err := s.Path("stardew", "legacy")
+	_, err := s.Path("stardew", "unmarked")
 	if !errors.Is(err, ErrIncomplete) {
 		t.Fatalf("Path = %v", err)
 	}
