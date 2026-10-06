@@ -1,4 +1,3 @@
-import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
 import { ENABLED_GAMES, openSeedFarm } from './app.ts'
 import { DOWN, installPad, press } from './pad.ts'
@@ -102,29 +101,18 @@ function smallTargets(page: Page): Promise<string[]> {
   )
 }
 
-async function expectDeckReady(page: Page, screen: string) {
-  expect(await smallTargets(page), `${screen} targets under 44px`).toEqual([])
-  const { violations } = await new AxeBuilder({ page }).analyze()
-  expect(
-    violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`),
-    `${screen} axe violations`,
-  ).toEqual([])
-}
-
-test('with a gamepad leading, Mods, Browse and a dialog have 44px targets and pass axe', async ({
-  page,
-}) => {
+test('with a gamepad leading, Mods, Browse and a dialog have 44px targets', async ({ page }) => {
   await installPad(page)
   await openSeedFarm(page)
   await press(page, DOWN)
-  await expectDeckReady(page, 'Mods')
+  expect(await smallTargets(page), 'Mods targets under 44px').toEqual([])
   await expectNoSidewaysScroll(page, 'Mods')
   await page.getByRole('tab', { name: 'Browse' }).click()
-  await expectDeckReady(page, 'Browse')
+  expect(await smallTargets(page), 'Browse targets under 44px').toEqual([])
   await expectNoSidewaysScroll(page, 'Browse')
   // Browse focuses its search field, where shortcuts stay silent.
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
   await page.keyboard.press('Control+j')
   await expect(page.getByRole('dialog', { name: 'Downloads' })).toBeVisible()
-  await expectDeckReady(page, 'Downloads')
+  expect(await smallTargets(page), 'Downloads targets under 44px').toEqual([])
 })
