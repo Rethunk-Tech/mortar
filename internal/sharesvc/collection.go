@@ -201,7 +201,7 @@ func (s *Service) PreviewCollectionUpdate(ctx context.Context, game, profileID s
 // checkDomain refuses a Nexus link whose game domain is not this game's; what names the link ("collection", "mod")
 // for the message.
 func checkDomain(game, domain, what string) error {
-	info, ok := components.BundledGame(game)
+	info, ok := components.Game(game)
 	name, want := game, ""
 	if ok {
 		name, want = info.Name, info.NexusDomain()

@@ -51,7 +51,7 @@ func TestAProfileRunsItsOwnLoaderOfTheGamesTwo(t *testing.T) {
 	data := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", data)
 	t.Setenv("LOCALAPPDATA", data)
-	info, _ := components.BundledGame("lethal-company")
+	info, _ := components.Game("lethal-company")
 	info.Enabled = true
 	info.Loaders = append(info.Loaders, components.GameLoader{ID: "w6fake", Name: "Fake"})
 	client := components.NewClient(nil)

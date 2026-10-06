@@ -632,31 +632,15 @@ func (c *Client) Game(id string) (GameInfo, bool) {
 	if g, ok := findGame(c.manifest.Games, id); ok {
 		return g, true
 	}
-	return BundledGame(id)
+	return bundledGame(id)
 }
 
-// BundledGame returns a game's identity from the manifest compiled into Mortar.
-func BundledGame(id string) (GameInfo, bool) {
+func bundledGame(id string) (GameInfo, bool) {
 	m, err := BundledManifest()
 	if err != nil {
 		return GameInfo{}, false
 	}
 	return findGame(m.Games, id)
-}
-
-// BundledGameByNexusDomain returns the game whose Nexus source key (the v1 URL segment) is domain, from the manifest
-// compiled into Mortar; the browser extension names games by that domain.
-func BundledGameByNexusDomain(domain string) (GameInfo, bool) {
-	m, err := BundledManifest()
-	if err != nil {
-		return GameInfo{}, false
-	}
-	for _, g := range m.Games {
-		if key := g.NexusDomain(); key != "" && strings.EqualFold(key, domain) {
-			return g, true
-		}
-	}
-	return GameInfo{}, false
 }
 
 func findGame(games []GameInfo, id string) (GameInfo, bool) {

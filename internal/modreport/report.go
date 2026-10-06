@@ -41,7 +41,7 @@ func Build(in Input) Result {
 	if lines == nil {
 		lines = []string{}
 	}
-	gameInfo, _ := components.BundledGame(in.Game)
+	gameInfo, _ := components.Game(in.Game)
 	gameName := gameInfo.Name
 	var b strings.Builder
 	fmt.Fprintf(&b, "Mod: %s %s\n", in.ModName, strings.TrimSpace(in.ModVersion))

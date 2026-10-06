@@ -24,7 +24,7 @@ const driverThunderstore = "thunderstore-rules"
 
 // installerGame is the game as the installer sees it: the loaders it runs and the content targets the catalog gives it.
 func installerGame(gameID string) installer.Game {
-	info, _ := components.BundledGame(gameID)
+	info, _ := components.Game(gameID)
 	var g installer.Game
 	for _, l := range info.Loaders {
 		g.Loaders = append(g.Loaders, l.ID)

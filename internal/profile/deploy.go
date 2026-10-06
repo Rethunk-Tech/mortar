@@ -24,7 +24,7 @@ const placedFile = ".mortar-packages.json"
 // package that wins it (lowest priority first, so a later entry overrides), and how many files each entry wins over an
 // earlier one.
 func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, wins map[string]int, err error) {
-	info, ok := components.BundledGame(gameID)
+	info, ok := components.Game(gameID)
 	if !ok || info.Deploy != components.DeployProfile {
 		return nil, map[string]int{}, nil
 	}

@@ -24,7 +24,7 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 	if modID < 1 {
 		return nil
 	}
-	info, ok := components.BundledGameByNexusDomain(domain)
+	info, ok := components.GameByNexusDomain(domain)
 	if !ok {
 		return nil
 	}

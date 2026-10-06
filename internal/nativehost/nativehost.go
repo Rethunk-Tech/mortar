@@ -416,7 +416,7 @@ func nexusModProblems(domain string, modID int) []modProblem {
 	if modID < 1 {
 		return []modProblem{}
 	}
-	info, ok := components.BundledGameByNexusDomain(domain)
+	info, ok := components.GameByNexusDomain(domain)
 	if !ok {
 		return []modProblem{}
 	}
@@ -444,7 +444,7 @@ func nexusModProblems(domain string, modID int) []modProblem {
 // brokenNexusModIDs lists the Nexus pages SMAPI's compatibility list marks broken for the game version last played,
 // from the copy Mortar cached for its Problems check.
 func brokenNexusModIDs(domain string) []int {
-	info, ok := components.BundledGameByNexusDomain(domain)
+	info, ok := components.GameByNexusDomain(domain)
 	if !ok || !info.HasMetadata("smapi-compat") {
 		return nil
 	}
@@ -468,7 +468,7 @@ func brokenNexusModIDs(domain string) []int {
 
 func activeNexusModIDs(domain string) []int {
 	ids := []int{}
-	info, ok := components.BundledGameByNexusDomain(domain)
+	info, ok := components.GameByNexusDomain(domain)
 	if !ok {
 		return ids
 	}
@@ -545,7 +545,7 @@ func nexusArchiveModID(name string) int {
 
 func activeNexusUpdates(domain string) (string, []modUpdate) {
 	rows := []modUpdate{}
-	info, ok := components.BundledGameByNexusDomain(domain)
+	info, ok := components.GameByNexusDomain(domain)
 	if !ok {
 		return "", rows
 	}
@@ -619,12 +619,8 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 
 // hostGames are the games Mortar manages that a source names.
 func hostGames() []hostGame {
-	m, err := components.BundledManifest()
-	if err != nil {
-		return nil
-	}
 	var games []hostGame
-	for _, g := range m.Games {
+	for _, g := range components.Games() {
 		keys := map[string]string{}
 		for _, src := range g.Sources {
 			if src.Key != "" {
@@ -641,7 +637,7 @@ func hostGames() []hostGame {
 // activeNexusState is how far the page's game is from showing Mortar data, and the open profile's name when it is
 // ready. Off wins over everything: the user turned the connection off in Mortar.
 func activeNexusState(domain string) (string, string) {
-	info, ok := components.BundledGameByNexusDomain(domain)
+	info, ok := components.GameByNexusDomain(domain)
 	if !ok {
 		return stateNoProfile, ""
 	}
@@ -695,7 +691,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 	if modID < 1 {
 		return openProfile, nil
 	}
-	info, ok := components.BundledGameByNexusDomain(domain)
+	info, ok := components.GameByNexusDomain(domain)
 	if !ok {
 		return openProfile, nil
 	}

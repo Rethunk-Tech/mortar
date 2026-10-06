@@ -23,7 +23,7 @@ func TestForResolvesByID(t *testing.T) {
 }
 
 func TestCatalogIDsAreRegistered(t *testing.T) {
-	g, ok := components.BundledGameByNexusDomain("stardewvalley")
+	g, ok := components.GameByNexusDomain("stardewvalley")
 	if !ok {
 		t.Fatal("no stardew in catalog")
 	}

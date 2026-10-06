@@ -237,7 +237,7 @@ func (s *Service) ExportCollection(ctx context.Context, game, profileID string) 
 	if err != nil {
 		return ExportedCollection{}, err
 	}
-	info, ok := components.BundledGame(game)
+	info, ok := components.Game(game)
 	if !ok || info.NexusDomain() == "" {
 		return ExportedCollection{}, fmt.Errorf("%s has no Nexus page to make a collection for", game)
 	}

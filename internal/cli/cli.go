@@ -1333,7 +1333,7 @@ func nexusPage(game, source string) string {
 	if modID == "" || modID == "0" {
 		return ""
 	}
-	g, ok := components.BundledGame(game)
+	g, ok := components.Game(game)
 	if !ok || g.NexusDomain() == "" {
 		return ""
 	}

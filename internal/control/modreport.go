@@ -27,7 +27,7 @@ func (s *Services) modReport(gameID, profileID string, prof profile.Profile, p P
 		return modreport.Result{}, err
 	}
 	domain := ""
-	if info, ok := components.BundledGame(gameID); ok {
+	if info, ok := components.Game(gameID); ok {
 		domain = info.NexusDomain()
 	}
 	src := entrySource(prof, ref.Key)

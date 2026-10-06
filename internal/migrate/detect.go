@@ -160,6 +160,6 @@ func configDir(home string) string {
 }
 
 func importIDs(gameID string) components.ImportIDs {
-	info, _ := components.BundledGame(gameID)
+	info, _ := components.Game(gameID)
 	return info.ImportIDs
 }

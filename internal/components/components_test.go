@@ -300,14 +300,14 @@ func TestBundledGamesCarryPathTemplates(t *testing.T) {
 }
 
 func TestBundledGamesCarryTargetsAndCompanions(t *testing.T) {
-	s, _ := BundledGame("stardew")
+	s, _ := bundledGame("stardew")
 	if tgt, ok := s.Target("mods"); !ok || tgt.Root != "{profileMods}" {
 		t.Fatalf("stardew mods target = %+v", tgt)
 	}
 	if s.Loaders[0].Companion != "bridge" {
 		t.Fatalf("smapi companion = %q", s.Loaders[0].Companion)
 	}
-	lc, _ := BundledGame("lethal-company")
+	lc, _ := bundledGame("lethal-company")
 	if tgt, ok := lc.Target("profile"); !ok || tgt.Root != "{profile}" {
 		t.Fatalf("lethal-company profile target = %+v", tgt)
 	}

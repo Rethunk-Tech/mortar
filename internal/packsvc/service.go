@@ -110,7 +110,7 @@ type LocalProfile struct {
 // <data>/<the game's r2modman folder>/profiles that hold a mods.yml) and in Gale's database, found on this computer.
 // Pass a profile's Path as Source.Path.
 func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
-	info, ok := components.BundledGame(gameID)
+	info, ok := components.Game(gameID)
 	if !ok {
 		return []LocalProfile{}, nil
 	}
@@ -271,7 +271,7 @@ func winPath(p string) (string, bool) {
 
 // importRoots are the folders the game's loaders let an imported pack write loose files into.
 func importRoots(gameID string) []string {
-	info, ok := components.BundledGame(gameID)
+	info, ok := components.Game(gameID)
 	if !ok {
 		return nil
 	}

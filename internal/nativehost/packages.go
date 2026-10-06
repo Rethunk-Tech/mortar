@@ -51,11 +51,7 @@ func (h handlers) answerPackages(req request) reply {
 }
 
 func gameBySourceKey(source, key string) (components.GameInfo, bool) {
-	m, err := components.BundledManifest()
-	if err != nil {
-		return components.GameInfo{}, false
-	}
-	for _, g := range m.Games {
+	for _, g := range components.Games() {
 		for _, src := range g.Sources {
 			if src.ID == source && src.Key == key && key != "" {
 				return g, true

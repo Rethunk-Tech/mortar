@@ -707,7 +707,7 @@ func run() error {
 	browseSvc.ShowAdult = func() bool { return store.Get().ShowAdultContent }
 	browseSvc.Installed = profiles.Installed
 	browseSvc.Compat = func(game string) func(ctx context.Context) (meta.CompatIndex, error) {
-		info, ok := components.BundledGame(game)
+		info, ok := components.Game(game)
 		if !ok {
 			return nil
 		}
