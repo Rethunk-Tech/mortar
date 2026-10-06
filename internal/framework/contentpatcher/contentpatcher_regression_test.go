@@ -700,3 +700,31 @@ func TestQuerySpouseGatedEditsNeverApplyTogether(t *testing.T) {
 		t.Fatalf("an OR query does not pin the spouse, got %#v", conflicts)
 	}
 }
+
+func TestTokenizedLoadTargetResolvesFromConfig(t *testing.T) {
+	tiny := syntheticLoadPack(t, `{
+		"ConfigSchema": {"FarmToReplace": {"AllowValues": "Standard, Forest", "Default": "Forest"}},
+		"DynamicTokens": [
+			{"Name": "file", "Value": "Farm", "When": {"FarmToReplace": "Standard"}},
+			{"Name": "file", "Value": "Farm_Foraging", "When": {"FarmToReplace": "Forest"}}
+		],
+		"Changes": [{"Action": "Load", "Target": "Maps/{{file}}", "FromFile": "tiny.tmx", "Priority": "Exclusive"}]
+	}`, map[string]string{"tiny.tmx": "tiny"})
+	overgrown := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Farm_Foraging","FromFile":"overgrown.tmx","Priority":"Exclusive"}]}`, map[string]string{
+		"overgrown.tmx": "overgrown",
+	})
+	conflicts := assetConflicts([]framework.Mod{tiny, overgrown})
+	if len(conflicts) != 1 || conflicts[0].Target != "maps/farm_foraging" || conflicts[0].WinnerName != "CP applies neither" {
+		t.Fatalf("both load the Forest farm map, got %#v", conflicts)
+	}
+
+	seasonal := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/{{Season}}_Town","FromFile":"town.tmx","When":{"Season":"Summer, Fall"}}]}`, map[string]string{"town.tmx": "a"})
+	summer := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/summer_Town","FromFile":"town.tmx"}]}`, map[string]string{"town.tmx": "b"})
+	winter := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/winter_Town","FromFile":"town.tmx"}]}`, map[string]string{"town.tmx": "c"})
+	if conflicts := assetConflicts([]framework.Mod{seasonal, summer}); len(conflicts) != 1 {
+		t.Fatalf("the Summer expansion clashes, got %#v", conflicts)
+	}
+	if conflicts := assetConflicts([]framework.Mod{seasonal, winter}); len(conflicts) != 0 {
+		t.Fatalf("no Winter expansion when the change needs Summer or Fall, got %#v", conflicts)
+	}
+}

@@ -1,3 +1,3 @@
 {
-  "Changes": [{ "Action": "Load", "Target": "Maps/{{Season}}" }]
+  "Changes": [{ "Action": "Load", "Target": "Maps/{{Language}}" }]
 }

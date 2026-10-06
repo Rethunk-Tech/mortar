@@ -17,6 +17,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"runtime"
 	"slices"
 	"strconv"
@@ -183,7 +184,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 17
+const contentPackParserVersion = 18
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -1070,6 +1071,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		}
 	}
 	warmOverlayImages(root, rel, doc.Changes)
+	var dynamicValues map[string]string
 	for i, rawChange := range doc.Changes {
 		var ch cpChange
 		if json.Unmarshal(rawChange, &ch) != nil {
@@ -1126,23 +1128,136 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		}
 		fromArea := string(jsonc.Clean(ch.FromArea))
 		toArea := string(jsonc.Clean(ch.ToArea))
+		priority, _ := scalarValue(ch.Priority)
+		extra := changeDoesMore(rawChange, ch)
 		for _, t := range splitTargets(ch.Target) {
+			targets := []tokenTarget{{target: t, fromFile: ch.FromFile, when: when}}
 			if hasToken(t) {
-				pack.skips++
-				continue
+				if dynamicValues == nil {
+					dynamicValues = singleDynamicValues(pack)
+				}
+				if targets = expandTargetTokens(t, ch.FromFile, when, pack.values, dynamicValues); targets == nil {
+					pack.skips++
+					continue
+				}
 			}
-			priority, _ := scalarValue(ch.Priority)
-			pack.patches = append(pack.patches, cpPatch{
-				kind: kind, target: normalizeTarget(t), fromFile: ch.FromFile, priority: strings.TrimSpace(priority),
-				patchMode: strings.TrimSpace(ch.PatchMode), when: when,
-				shapes: shapes, spouse: when.spouse, places: when.places, image: action == kindEditImage,
-				imageDigest:   imageFileDigest(root, ch.FromFile, action == kindEditImage),
-				imageFromArea: fromArea,
-				source:        rel, index: i, action: action, toArea: toArea,
-				extra: changeDoesMore(rawChange, ch),
-			})
+			for _, tt := range targets {
+				pack.patches = append(pack.patches, cpPatch{
+					kind: kind, target: normalizeTarget(tt.target), fromFile: tt.fromFile, priority: strings.TrimSpace(priority),
+					patchMode: strings.TrimSpace(ch.PatchMode), when: tt.when,
+					shapes: shapes, spouse: tt.when.spouse, places: tt.when.places, image: action == kindEditImage,
+					imageDigest:   imageFileDigest(root, tt.fromFile, action == kindEditImage),
+					imageFromArea: fromArea,
+					source:        rel, index: i, action: action, toArea: toArea,
+					extra: extra,
+				})
+			}
 		}
 	}
+}
+
+type tokenTarget struct {
+	target   string
+	fromFile string
+	when     cpWhen
+}
+
+var (
+	plainToken  = regexp.MustCompile(`\{\{\s*([A-Za-z0-9_.]+)\s*\}\}`)
+	seasonToken = regexp.MustCompile(`(?i)\{\{\s*season\s*\}\}`)
+	seasons     = []string{"spring", "summer", "fall", "winter"}
+)
+
+// expandTargetTokens resolves a tokenized target with the pack's config values and its dynamic tokens that
+// have one value under that config. {{Season}} becomes one target per season, each gated on that season.
+// It returns nil when a token stays unknown.
+func expandTargetTokens(target, fromFile string, when cpWhen, config, dynamic map[string]string) []tokenTarget {
+	resolve := func(s, season string) (string, bool) {
+		ok := true
+		out := plainToken.ReplaceAllStringFunc(s, func(m string) string {
+			name := strings.ToLower(plainToken.FindStringSubmatch(m)[1])
+			if name == "season" && season != "" {
+				return season
+			}
+			if value, found := config[name]; found && value != "" && !strings.Contains(value, ",") {
+				return value
+			}
+			if value, found := dynamic[name]; found {
+				return value
+			}
+			ok = false
+			return m
+		})
+		return out, ok && !hasToken(out)
+	}
+	cycle := []string{""}
+	if seasonToken.MatchString(target) {
+		cycle = seasons
+		if limited := when.places["season"]; len(limited) > 0 {
+			cycle = limited
+		}
+	}
+	var out []tokenTarget
+	for _, season := range cycle {
+		t, ok := resolve(target, season)
+		if !ok {
+			return nil
+		}
+		from := fromFile
+		if resolved, ok := resolve(fromFile, season); ok {
+			from = resolved
+		}
+		w := when
+		if season != "" {
+			w = when.with(cpWhen{})
+			w.places["season"] = []string{season}
+		}
+		out = append(out, tokenTarget{target: t, fromFile: from, when: w})
+	}
+	return out
+}
+
+// singleDynamicValues are the pack's dynamic tokens that hold exactly one value under its config. A
+// definition whose When needs more than config fields may or may not apply, so its value stays possible.
+func singleDynamicValues(pack *cachedPack) map[string]string {
+	possible := map[string][]string{}
+	unknown := map[string]bool{}
+	for _, definition := range pack.tokens {
+		if hasToken(definition.value) {
+			unknown[definition.name] = true
+			continue
+		}
+		switch configOnlyState(definition.when, pack) {
+		case cpConditionTrue:
+			possible[definition.name] = []string{definition.value}
+		case cpConditionUnknown:
+			if !slices.Contains(possible[definition.name], definition.value) {
+				possible[definition.name] = append(possible[definition.name], definition.value)
+			}
+		case cpConditionFalse:
+		}
+	}
+	out := map[string]string{}
+	for name, values := range possible {
+		if len(values) == 1 && !unknown[name] {
+			out[name] = values[0]
+		}
+	}
+	return out
+}
+
+func configOnlyState(raw map[string]json.RawMessage, pack *cachedPack) cpConditionState {
+	if len(raw) == 0 {
+		return cpConditionTrue
+	}
+	w := parseWhen(raw, map[string]bool{}, pack.schema)
+	if len(w.config) != len(raw) || len(w.anyOf) > 0 || len(w.noneOf) > 0 || len(w.dynamic) > 0 || len(w.flags) > 0 {
+		return cpConditionUnknown
+	}
+	if configHolds(w.config, pack.schema, pack.values) {
+		return cpConditionTrue
+	}
+	return cpConditionFalse
 }
 
 func recordReferencedPackFiles(root, rel string, image bool, pack *cachedPack) {
