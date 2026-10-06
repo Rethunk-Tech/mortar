@@ -232,18 +232,28 @@ func (s *Store) placePackageLocked(game, id, key string, source Source, mods []C
 			_, err := s.addTo(game, p, dir, key, source, nil)
 			return err
 		}
-		old := p.Entries[i]
-		updated, changed = true, modsVersionChanged(old.Mods, mods)
-		prev := old.Source
-		old.PreviousKey, old.PreviousSource = old.Key, &prev
-		old.Key, old.Source, old.Mods = key, source, mods
-		p.Entries[i] = old
-		return nil
+		updated, changed = true, modsVersionChanged(p.Entries[i].Mods, mods)
+		ne, err := s.swapPackage(game, id, p.Entries[i], key, mods)
+		ne.Source = source
+		p.Entries[i] = ne
+		return err
 	})
 	if err != nil {
 		return Profile{}, false, false, err
 	}
 	return p, updated, changed, s.items.Touch(game, key)
+}
+
+// swapPackage is package entry e pointed at newKey, another version of it holding mods, after the pre-update save
+// backup. Nothing is copied: the launch deploys the package's files.
+func (s *Store) swapPackage(game, id string, e Entry, newKey string, mods []Component) (Entry, error) {
+	if err := s.saveBackup(game, id); err != nil {
+		return Entry{}, fmt.Errorf("back up saves: %w", err)
+	}
+	prev := e.Source
+	e.PreviousKey, e.PreviousSource = e.Key, &prev
+	e.Key, e.Mods, e.SkipVersion = newKey, mods, ""
+	return e, nil
 }
 
 // WriteFiles writes files into the profile, by slash path relative to its folder. A path that leaves the folder is

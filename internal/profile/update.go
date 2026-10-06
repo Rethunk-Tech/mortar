@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // conflictSuffix names the profile's copy of a file the target version also changed.
@@ -74,7 +75,7 @@ func (s *Store) UpdateEntries(game, id string, moves []EntryMove) (Profile, erro
 					return &DuplicateError{Key: m.NewKey, Label: entryLabel(e)}
 				}
 			}
-			ne, w, err := s.swapOverlaid(game, p, dir, ei, m.NewKey, nil)
+			ne, w, err := s.swapTo(game, p, dir, ei, m.NewKey, nil)
 			swaps = append(swaps, w)
 			if err != nil {
 				return err
@@ -142,7 +143,7 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 				return &DuplicateError{Key: newKey, Label: entryLabel(e)}
 			}
 		}
-		ne, w, err := s.swapOverlaid(game, p, dir, ei, newKey, source)
+		ne, w, err := s.swapTo(game, p, dir, ei, newKey, source)
 		sw = w
 		if err != nil {
 			return err
@@ -174,6 +175,33 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 		}
 	}
 	return p, s.items.Touch(game, keys...)
+}
+
+// swapTo switches entry ei of p to newKey: a package entry is repointed, any other gets its folder rebuilt.
+func (s *Store) swapTo(game string, p *Profile, dir string, ei int, newKey string, source *Source) (Entry, swapped, error) {
+	if p.Entries[ei].Package {
+		ne, err := s.movePackage(game, p.ID, p.Entries[ei], newKey)
+		return ne, swapped{}, err
+	}
+	return s.swapOverlaid(game, p, dir, ei, newKey, source)
+}
+
+// movePackage is package entry e switched to newKey, which must be a version of the same package. Its source takes
+// the package's version.
+func (s *Store) movePackage(game, id string, e Entry, newKey string) (Entry, error) {
+	mods, ok, err := s.packageMods(game, newKey)
+	if err != nil {
+		return Entry{}, err
+	}
+	if !ok || len(e.Mods) != 1 || !mod.Equal(mods[0].ID, e.Mods[0].ID) {
+		return Entry{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a version of %s", newKey, entryLabel(e)))
+	}
+	if mods[0].Version == "" {
+		_, _, mods[0].Version, _ = s.items.Meta(game, newKey)
+	}
+	ne, err := s.swapPackage(game, id, e, newKey, mods)
+	ne.Source.Version = mods[0].Version
+	return ne, err
 }
 
 // swapEntry builds the target version's folder beside mods/, carries over the profile's files, and renames it
@@ -479,7 +507,7 @@ func deleteOldVersion(found []manifest.Mod, uniqueID mod.ID) bool {
 	return false
 }
 
-// saveBackup zips the game's saves folder into <datadir>/backups. Games without a save folder need none.
+// saveBackup zips the game's saves into <datadir>/backups before an update. Games without a save folder need none.
 func (s *Store) saveBackup(game, profileID string) error {
 	if !gamepkg.HasSaves(game) {
 		return nil
@@ -488,9 +516,11 @@ func (s *Store) saveBackup(game, profileID string) error {
 	if s.settings != nil {
 		set = s.settings.Get()
 	}
-	savesDir, err := gamepkg.SavesDir(s.home, set, game, s.InstallOf(game, profileID))
-	if err != nil {
-		return err
+	// No install to find the saves in (a Proton prefix, say) means no saves Mortar can see, which the Saves screen
+	// shows as none; an update must not wait on the game being found.
+	savesDir, found := s.savesDir(set, game, profileID)
+	if !found {
+		return nil
 	}
 	var overrides map[string]string
 	if p, err := s.read(game, profileID); err == nil {
@@ -502,4 +532,9 @@ func (s *Store) saveBackup(game, profileID string) error {
 	}
 	_, err = backup.Saves(saves.Layout{Dir: savesDir, Files: gamepkg.SaveFiles(game)}, target.Dir, target.Keep, time.Now(), backup.Cause{Profile: profileID, Kind: backup.KindUpdate})
 	return err
+}
+
+func (s *Store) savesDir(set settings.Settings, game, profileID string) (string, bool) {
+	dir, err := gamepkg.SavesDir(s.home, set, game, s.InstallOf(game, profileID))
+	return dir, err == nil
 }

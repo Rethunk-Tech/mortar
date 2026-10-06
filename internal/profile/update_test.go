@@ -354,3 +354,76 @@ func TestUpdateEntriesIsOneChangeAndAtomic(t *testing.T) {
 		t.Fatal("accepted two targets for one entry")
 	}
 }
+
+// lcSteamHome is a home with Lethal Company in a Steam library and one save in its Proton prefix; it returns the
+// folder backups of it land in.
+func lcSteamHome(t *testing.T, e *env) string {
+	t.Helper()
+	root := filepath.Join(t.TempDir(), ".local", "share", "Steam")
+	e.home = filepath.Dir(filepath.Dir(filepath.Dir(root)))
+	apps := filepath.Join(root, "steamapps")
+	writeFile(t, apps, "libraryfolders.vdf", "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \""+root+"\"\n}\n}\n")
+	writeFile(t, apps, "appmanifest_1966720.acf", "\"AppState\"\n{\n\"installdir\" \"Lethal Company\"\n}\n")
+	writeFile(t, apps, "common/Lethal Company/Lethal Company.exe", "exe")
+	writeFile(t, apps, "compatdata/1966720/pfx/drive_c/users/steamuser/AppData/LocalLow/ZeekerssRBLX/Lethal Company/LCSaveFile1", "save")
+	backups, _, err := backup.Locations(e.dataDir, "", "lethal-company")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return backups
+}
+
+func zipsIn(t *testing.T, dir string) int {
+	t.Helper()
+	n := 0
+	for _, name := range names(t, dir) {
+		if strings.HasSuffix(name, ".zip") {
+			n++
+		}
+	}
+	return n
+}
+
+func TestPackageUpdatesBackUpSavesOncePerBatch(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	backups := lcSteamHome(t, &e)
+	a, _ := e.Create("lethal-company", "A")
+	b, _ := e.Create("lethal-company", "B")
+	v1 := Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}
+	for _, p := range []Profile{a, b} {
+		if _, err := e.InstallSource("lethal-company", p.ID, tsZip(t, "1.0.0"), v1); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := os.Stat(backups); err == nil {
+		t.Fatal("an install took a backup")
+	}
+	res, err := e.InstallSource("lethal-company", a.ID, tsZip(t, "1.1.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.1.0"})
+	if err != nil || !res.Updated {
+		t.Fatalf("update = %+v, %v", res, err)
+	}
+	if n := zipsIn(t, backups); n != 1 {
+		t.Fatalf("a package update took %d backups, want 1", n)
+	}
+	got, err := e.UpdateEverywhere("lethal-company", "thunderstore:Ns-Mod", latestStoreKey)
+	if err != nil || len(got.Updated) != 1 || got.Updated[0].ProfileID != b.ID {
+		t.Fatalf("everywhere = %+v, %v", got, err)
+	}
+	newKey := got.Updated[0].OldKey
+	pb, _ := e.read("lethal-company", b.ID)
+	if en := pb.Entries[0]; en.Source.Version != "1.1.0" || en.PreviousKey != newKey {
+		t.Fatalf("b's entry = %+v", en)
+	}
+	newKey = pb.Entries[0].Key
+	rolled, err := e.RollBack("lethal-company", b.ID, newKey)
+	if err != nil || rolled.Entries[0].Source.Version != "1.0.0" || rolled.Entries[0].Mods[0].Version != "1.0.0" {
+		t.Fatalf("roll back = %+v, %v", rolled.Entries, err)
+	}
+	if _, err := e.UpdateEntries("lethal-company", b.ID, []EntryMove{{OldKey: rolled.Entries[0].Key, NewKey: newKey}}); err != nil {
+		t.Fatal(err)
+	}
+	if n := zipsIn(t, backups); n != 1 {
+		t.Fatalf("the batch took %d backups, want 1", n)
+	}
+}

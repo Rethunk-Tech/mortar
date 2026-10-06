@@ -179,7 +179,12 @@ func (s *Store) UpdateEverywhere(game, modKeyOrID, newStoreKey string) (Everywhe
 	}
 	target := strings.TrimSpace(newStoreKey)
 	if target == "" || strings.EqualFold(target, latestStoreKey) {
-		target, err = s.latestStoreKey(game, preview.Affected[0].OldKey, modKeyOrID)
+		// A profile already at the newest version has no later one, so every other profile's key is tried too.
+		for _, hit := range preview.Affected {
+			if target, err = s.latestStoreKey(game, hit.OldKey, modKeyOrID); err == nil {
+				break
+			}
+		}
 		if err != nil {
 			return EverywhereResult{}, err
 		}
