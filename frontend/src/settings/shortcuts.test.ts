@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import {
   boundShortcut,
   conflictFor,
@@ -103,4 +104,16 @@ test('a rebound list key triggers its action and the old key no longer does', ()
   expect(boundShortcut({ key: 't' }, bindings)).toBe('mod-toggle')
   expect(boundShortcut({ key: ' ' }, bindings)).not.toBe('mod-toggle')
   expect(boundShortcut({ key: 'Enter' }, null)).toBe('mod-details')
+})
+
+test("the Go settings' default table is this one, so a rebind saves and no two tabs share a chord", () => {
+  const go = readFileSync(
+    new URL('../../../internal/settings/shortcuts.go', import.meta.url),
+    'utf8',
+  )
+  const table = /var defaultShortcuts = map\[string\]string\{([^}]*)\}/.exec(go)?.[1] ?? ''
+  const pairs = Object.fromEntries(
+    [...table.matchAll(/"([^"]+)":\s*"([^"]+)"/g)].map((m) => [m[1], m[2]]),
+  )
+  expect(pairs).toEqual(defaultBindings())
 })

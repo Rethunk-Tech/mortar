@@ -5,7 +5,8 @@ import (
 	"maps"
 )
 
-// DefaultShortcuts is the chord table Settings › Shortcuts lists when nothing is rebound.
+// DefaultShortcuts is the chord table Settings › Shortcuts lists when nothing is rebound; it matches SHORTCUTS in
+// frontend/src/settings/shortcuts.ts, which shortcuts.test.ts there checks.
 func DefaultShortcuts() map[string]string {
 	return maps.Clone(defaultShortcuts)
 }
@@ -23,12 +24,14 @@ var defaultShortcuts = map[string]string{
 	"mod-toggle":        "Space",
 	"mod-details":       "Enter",
 	"mod-remove":        "Delete",
-	"tab-mods":          "Ctrl+1",
-	"tab-problems":      "Ctrl+2",
-	"tab-saves":         "Ctrl+3",
-	"tab-notes":         "Ctrl+4",
-	"tab-console":       "Ctrl+5",
-	"tab-performance":   "Ctrl+6",
+	"tab-browse":        "Ctrl+1",
+	"tab-mods":          "Ctrl+2",
+	"tab-problems":      "Ctrl+3",
+	"tab-load-order":    "Ctrl+4",
+	"tab-saves":         "Ctrl+5",
+	"tab-notes":         "Ctrl+6",
+	"tab-console":       "Ctrl+7",
+	"tab-performance":   "Ctrl+8",
 	"new-profile":       "Ctrl+N",
 	"duplicate-profile": "Ctrl+D",
 	"rename-profile":    "F2",
