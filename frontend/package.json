@@ -35,6 +35,7 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@lingui/cli": "6.9.0",
     "@lingui/conf": "6.9.0",
     "@lingui/native-tools": "^0.1.5",

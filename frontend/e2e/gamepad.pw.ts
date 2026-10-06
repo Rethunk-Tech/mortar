@@ -1,58 +1,14 @@
 import { expect, type Page, test } from '@playwright/test'
 import { openSeedFarm } from './app.ts'
+import { A, B, DOWN, installPad, LB, press, RB, RIGHT } from './pad.ts'
 
-const A = 0
-const B = 1
-const LB = 4
-const RB = 5
-const DOWN = 13
-const RIGHT = 15
-
-// A standard-mapping pad the page polls through navigator.getGamepads, driven by setting window.pad.
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
-    const state = { buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, 0, 0] }
-    Object.assign(globalThis, { pad: state })
-    navigator.getGamepads = () => [
-      {
-        id: 'Steam Virtual Gamepad',
-        index: 0,
-        connected: true,
-        mapping: 'standard',
-        timestamp: performance.now(),
-        axes: state.axes,
-        buttons: state.buttons.map((pressed) => ({
-          pressed,
-          touched: pressed,
-          value: pressed ? 1 : 0,
-        })),
-        hapticActuators: [],
-        vibrationActuator: null,
-      } as unknown as Gamepad,
-    ]
-  })
-})
-
-/** Presses and releases one button, a few frames each, as a thumb would. */
-async function press(page: Page, button: number) {
-  for (const down of [true, false]) {
-    await page.evaluate(
-      ([b, d]) =>
-        new Promise<void>((done) => {
-          ;(globalThis as unknown as { pad: { buttons: boolean[] } }).pad.buttons[b as number] =
-            d as boolean
-          requestAnimationFrame(() => requestAnimationFrame(() => done()))
-        }),
-      [button, down] as const,
-    )
-  }
-}
+test.beforeEach(({ page }) => installPad(page))
 
 const focusedName = (page: Page) =>
   page.evaluate(() => {
     const el = document.activeElement
     return el
-      ? `${el.getAttribute('role') ?? el.tagName}:${el.textContent?.trim().slice(0, 40)}`
+      ? `${el.getAttribute('role') ?? el.tagName}:${el.getAttribute('aria-label') ?? el.textContent?.trim().slice(0, 40)}`
       : ''
   })
 

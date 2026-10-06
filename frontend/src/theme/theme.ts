@@ -32,6 +32,8 @@ const WINDOW_BUTTON_COMPACT_PX = 40
 const WINDOW_BUTTONS = 3
 const BUTTON_HEIGHT = TITLE_BAR_PX
 const BUTTON_HEIGHT_COMPACT = TITLE_BAR_COMPACT_PX
+// The smallest touch target on the Steam Deck's screen (WCAG 2.5.5), for every control while touch or a pad leads.
+const TARGET_ROOMY_PX = 44
 const FOCUS_OUTLINE_PX = 2
 // Focus a gamepad moves is script focus, which the browser rings only after keyboard use; shell/gamepad marks it here.
 const PAD_FOCUS = 'html[data-input="gamepad"]'
@@ -66,7 +68,24 @@ const noDuration = {
   leavingScreen: 0,
 }
 
-function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode) {
+const roomyTargets = {
+  'html .MuiButtonBase-root:not(.MuiSwitch-switchBase)': {
+    minWidth: TARGET_ROOMY_PX,
+    minHeight: TARGET_ROOMY_PX,
+  },
+  'html .MuiInputBase-root': { minHeight: TARGET_ROOMY_PX },
+  // A resize handle stays a thin line; an invisible strip centred on it takes the touch.
+  'html [role="separator"][tabindex="0"]::before': {
+    content: '""',
+    position: 'absolute',
+    insetBlock: 0,
+    left: '50%',
+    width: TARGET_ROOMY_PX,
+    transform: 'translateX(-50%)',
+  },
+}
+
+function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode, roomy: boolean) {
   const trackAlpha = mode === 'light' ? TRACK_ALPHA_LIGHT : TRACK_ALPHA_DARK
   return {
     ':root': {
@@ -105,6 +124,7 @@ function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode) {
       outline: `${FOCUS_OUTLINE_PX}px solid ${main}`,
       outlineOffset: FOCUS_OUTLINE_PX,
     },
+    ...(roomy ? roomyTargets : {}),
   }
 }
 
@@ -192,7 +212,7 @@ function buttonOverrides(
 
 function createMortarTheme(
   accent: AccentName,
-  opts: { compact?: boolean; reduceMotion?: boolean; mode?: ThemeMode } = {},
+  opts: { compact?: boolean; roomy?: boolean; reduceMotion?: boolean; mode?: ThemeMode } = {},
 ): Theme {
   const main = accents[accent]
   const compactUi = opts.compact === true
@@ -219,7 +239,7 @@ function createMortarTheme(
     },
     components: {
       MuiCssBaseline: {
-        styleOverrides: baselineCss(pal.primaryMain, reduceMotion, mode),
+        styleOverrides: baselineCss(pal.primaryMain, reduceMotion, mode, opts.roomy === true),
       },
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
       MuiDialog: {

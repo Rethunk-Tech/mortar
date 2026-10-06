@@ -4,6 +4,7 @@ import { useSettings } from './settings/store.ts'
 import { isAccent } from './settings/theme.ts'
 import { defaultAccent } from './theme/accents.ts'
 import { honourTheme } from './theme/palette.ts'
+import { useRoomy } from './theme/roomy.ts'
 import { createMortarTheme } from './theme/theme.ts'
 
 function honourReducedMotion(mode: string, os: boolean) {
@@ -19,6 +20,7 @@ function honourReducedMotion(mode: string, os: boolean) {
 export function Themed({ children }: { children: React.ReactNode }) {
   const accent = useSettings((s) => s.accent)
   const density = useSettings((s) => s.density)
+  const roomy = useRoomy((s) => s.roomy)
   const reduceMotion = useSettings((s) => s.reduceMotion)
   const colourTheme = useSettings((s) => s.theme)
   const [osReduce, setOsReduce] = React.useState(() =>
@@ -50,11 +52,12 @@ export function Themed({ children }: { children: React.ReactNode }) {
   const theme = React.useMemo(
     () =>
       createMortarTheme(isAccent(accent) ? accent : defaultAccent, {
-        compact: density === 'compact',
+        compact: density === 'compact' && !roomy,
+        roomy,
         reduceMotion: honourReducedMotion(reduceMotion || 'system', osReduce),
         mode: honourTheme(colourTheme || 'dark', osLight),
       }),
-    [accent, colourTheme, density, osLight, osReduce, reduceMotion],
+    [accent, colourTheme, density, osLight, osReduce, reduceMotion, roomy],
   )
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>
 }

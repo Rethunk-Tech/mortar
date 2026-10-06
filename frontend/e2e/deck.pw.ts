@@ -1,5 +1,7 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
 import { openSeedFarm } from './app.ts'
+import { DOWN, installPad, press } from './pad.ts'
 
 // The Steam Deck's screen, which Mortar fills in Game Mode.
 test.use({ viewport: { width: 1280, height: 800 } })
@@ -68,4 +70,58 @@ test('the arrow keys walk the Game select tiles', async ({ page }) => {
     'outline-offset',
     '-2px',
   )
+})
+
+/** Every visible control smaller than 44x44, as "role name WxH"; a link in a line of text is exempt (WCAG 2.5.8). */
+function smallTargets(page: Page): Promise<string[]> {
+  return page.evaluate(() =>
+    [
+      ...document.querySelectorAll<HTMLElement>(
+        'button, a[href], input:not([type="hidden"]), select, textarea, [role="button"], [role="tab"], [role="menuitem"], [role="option"], [role="checkbox"], [role="switch"], [role="radio"], [role="slider"], [tabindex="0"]',
+      ),
+    ]
+      .filter((el) => el.getClientRects().length > 0 && el.closest('[aria-hidden="true"]') === null)
+      .filter((el) => getComputedStyle(el).display !== 'inline' && !el.matches('.MuiLink-root'))
+      // A resize handle's touch strip is its ::before.
+      .filter((el) => Number.parseFloat(getComputedStyle(el, '::before').width) < 44)
+      // A checkbox, radio, switch or text input sits inside its control, which is the target.
+      .map(
+        (el) =>
+          el.closest<HTMLElement>('.MuiSwitch-root, .MuiButtonBase-root, .MuiInputBase-root') ?? el,
+      )
+      .filter((el, i, all) => all.indexOf(el) === i)
+      .map((el) => ({ el, r: el.getBoundingClientRect() }))
+      .filter(({ r }) => r.width < 44 || r.height < 44)
+      .map(
+        ({ el, r }) =>
+          `${el.getAttribute('role') ?? el.tagName.toLowerCase()} "${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}" ${Math.round(r.width)}x${Math.round(r.height)}`,
+      ),
+  )
+}
+
+async function expectDeckReady(page: Page, screen: string) {
+  expect(await smallTargets(page), `${screen} targets under 44px`).toEqual([])
+  const { violations } = await new AxeBuilder({ page }).analyze()
+  expect(
+    violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`),
+    `${screen} axe violations`,
+  ).toEqual([])
+}
+
+test('with a gamepad leading, Mods, Browse and a dialog have 44px targets and pass axe', async ({
+  page,
+}) => {
+  await installPad(page)
+  await openSeedFarm(page)
+  await press(page, DOWN)
+  await expectDeckReady(page, 'Mods')
+  await expectNoSidewaysScroll(page, 'Mods')
+  await page.getByRole('tab', { name: 'Browse' }).click()
+  await expectDeckReady(page, 'Browse')
+  await expectNoSidewaysScroll(page, 'Browse')
+  // Browse focuses its search field, where shortcuts stay silent.
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
+  await page.keyboard.press('Control+j')
+  await expect(page.getByRole('dialog', { name: 'Downloads' })).toBeVisible()
+  await expectDeckReady(page, 'Downloads')
 })

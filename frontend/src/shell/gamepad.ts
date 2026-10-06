@@ -1,4 +1,5 @@
 import { runShortcut } from '../settings/useShortcuts.ts'
+import { useRoomy } from '../theme/roomy.ts'
 import { FOCUSABLE } from './arrowFocus.ts'
 import {
   type Direction,
@@ -90,6 +91,7 @@ function switchTab(step: number) {
 function act(action: PadAction) {
   // The browser shows a focus ring only after keyboard use; this marks focus moved by the pad for the theme's ring.
   document.documentElement.dataset.input = 'gamepad'
+  useRoomy.setState({ roomy: true })
   const modal = topLayer() !== document.body
   switch (action) {
     case 'confirm': {
