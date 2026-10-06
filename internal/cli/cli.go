@@ -1837,6 +1837,9 @@ func (c *cmd) runs(p control.Params) error {
 		}
 		c.table("STARTED\tDURATION\tOUTCOME\tENDED\tPRESET\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
 		for _, r := range list {
+			if r.Error != "" {
+				fmt.Fprintf(c.out, "%s: %s\n", runStartedLabel(r.Started), r.Error)
+			}
 			if r.Cause != nil {
 				fmt.Fprintf(c.out, "%s\n", runCauseLine(r))
 			}

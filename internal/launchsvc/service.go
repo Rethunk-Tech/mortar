@@ -147,6 +147,9 @@ type Service struct {
 	// startFailed is the error of the last start of each slot that failed, until the next start; a failed state is not
 	// kept in status, so a caller that waits on a launch reads it here.
 	startFailed map[string]string
+	// lastFailure is why the last launch of each slot failed, from any path, until the next start: the failed state is
+	// not kept in status, and the run record and a waiting caller read the cause here.
+	lastFailure map[string]string
 	seq         atomic.Int64
 	// App is set after application.New so events can be emitted.
 	App *application.App
@@ -179,7 +182,7 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 	return &Service{
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
-		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{}, startFailed: map[string]string{},
+		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{}, startFailed: map[string]string{}, lastFailure: map[string]string{},
 		stopping: map[string]bool{}, reaping: map[string]bool{}, sampled: map[string]chan struct{}{},
 		EnsureLoader: func(context.Context, string, string, bool) error {
 			return errors.New("the loader cannot be installed here")
@@ -222,6 +225,7 @@ func (s *Service) set(st Status) {
 	s.mu.Lock()
 	if st.State == Launching {
 		delete(s.startFailed, key)
+		delete(s.lastFailure, key)
 	}
 	prev, had := s.status[key]
 	s.status[key] = stored
@@ -491,6 +495,21 @@ func (s *Service) startFailure(sl slot) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.startFailed[keyOf(sl)]
+}
+
+// noteFailure keeps why the game's launch failed, for the run record finishFailed writes and for LaunchFailure.
+func (s *Service) noteFailure(g game.Game, why string) {
+	s.mu.Lock()
+	s.lastFailure[keyOf(g)] = why
+	s.mu.Unlock()
+}
+
+// LaunchFailure is why the last launch of the game's install failed, "" when it did not; installID "" is the game's
+// selected install.
+func (s *Service) LaunchFailure(gameID, installID string) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.lastFailure[slotKey(gameID, installID)]
 }
 
 func (s *Service) statusOf(sl slot) Status {
@@ -1113,6 +1132,7 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 				s.say(g, profileID, line)
 			}
 		}
+		s.noteFailure(g, plainLaunchError(err, r.inst.Dir))
 		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, r.inst.Dir), Cause: causeFromBuffer(s, g, profileID, buf)})
 	case errors.As(err, &f):
@@ -1120,10 +1140,12 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 		if f.Hint == launch.HintSteamClient || f.Hint == launch.HintWine || f.Hint == launch.HintMissingExe {
 			s.say(g, profileID, f.Error())
 		}
+		s.noteFailure(g, f.Error())
 		s.finishFailed(g, profileID, buf)
 		s.failStart(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Hint: f.Hint, Error: f.Error(), Cause: causeFromBuffer(s, g, profileID, buf)})
 	default:
 		s.clearReap(g)
+		s.noteFailure(g, plainLaunchError(err, r.inst.Dir))
 		s.finishFailed(g, profileID, buf)
 		s.failStart(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, r.inst.Dir), Cause: causeFromBuffer(s, g, profileID, buf)})
 	}

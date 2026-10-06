@@ -41,10 +41,12 @@ type Run struct {
 	LoaderVersion string `json:"loaderVersion"`
 	GameVersion   string `json:"gameVersion"`
 	// Preset is the name of the launch preset the run used.
-	Preset   string         `json:"preset,omitempty"`
-	Outcome  launch.Outcome `json:"outcome"`
-	Errors   int            `json:"errors"`
-	Warnings int            `json:"warnings"`
+	Preset  string         `json:"preset,omitempty"`
+	Outcome launch.Outcome `json:"outcome"`
+	// Error is why a launch that failed to start did not start, in the words the launch reported.
+	Error    string `json:"error,omitempty"`
+	Errors   int    `json:"errors"`
+	Warnings int    `json:"warnings"`
 	// Unclassified counts the log's warnings and errors no Mortar rule recognises.
 	Unclassified int             `json:"unclassified,omitempty"`
 	Mods         []launch.ModRef `json:"mods,omitempty"`
@@ -365,6 +367,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		DurationMs: ended.Sub(started).Milliseconds(), Loader: ldr, LoaderVersion: stats.SMAPI, GameVersion: stats.Game,
 		Preset: sess.preset, Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
 		Unclassified: unclassified,
+	}
+	if failed {
+		run.Error = s.LaunchFailure(g.ID(), installOf(g))
 	}
 	if len(refs) > 0 {
 		run.Mods = append([]launch.ModRef{}, refs[0]...)

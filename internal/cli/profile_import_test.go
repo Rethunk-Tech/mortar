@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/packsvc"
 )
 
@@ -56,5 +57,13 @@ func TestProfileFarmVerbsCallTheirMethods(t *testing.T) {
 	}
 	if r = invoke(t, results, "profile", "farm", "check", "stardew", "Farm"); r.code == 0 {
 		t.Fatal("check without a list must be refused")
+	}
+}
+
+func TestRunsNameWhyAFailedLaunchDidNotStart(t *testing.T) {
+	results := map[string]any{"runs": []launchsvc.Run{{Started: "2026-10-06T02:29:19Z", Outcome: "failed", Error: "Steam would not start"}}}
+	r := invoke(t, results, "runs", "lethal-company", "Farm")
+	if r.code != 0 || !strings.Contains(r.out, "Steam would not start") {
+		t.Fatalf("runs: %+v", r)
 	}
 }

@@ -155,10 +155,18 @@ func TestRecordFailedLaunchAndUnownedLogUsesSession(t *testing.T) {
 	buf := &launch.Buffer{}
 	buf.Add(launch.Entry{Time: "19:43:50", Level: launch.Error, Mod: "Farm", Message: "broke"})
 	svc.logs["stardew/"] = session{buf: buf, profile: p.ID}
+	svc.noteFailure(g, "Steam would not start")
 	svc.record(g, p.ID, time.Now(), true)
 	runs, err := svc.Runs("stardew", p.ID)
-	if err != nil || len(runs) != 1 || runs[0].Outcome != launch.OutcomeFailed {
+	if err != nil || len(runs) != 1 || runs[0].Outcome != launch.OutcomeFailed || runs[0].Error != "Steam would not start" {
 		t.Fatalf("failed = %#v, %v", runs, err)
+	}
+	if svc.LaunchFailure("stardew", "") != "Steam would not start" {
+		t.Fatal("a waiting caller reads the cause")
+	}
+	svc.set(Status{Game: "stardew", State: Launching})
+	if svc.LaunchFailure("stardew", "") != "" {
+		t.Fatal("the next start clears the cause")
 	}
 	text, err := svc.RunLog("stardew", p.ID, runs[0].ID)
 	if err != nil || !strings.Contains(text, "broke") || strings.Contains(text, "someone-else") {

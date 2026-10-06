@@ -1558,7 +1558,13 @@ func (s *Services) awaitStart(ctx context.Context, gameID, installID string) (la
 			return st, err
 		}
 		switch st.State {
-		case launchsvc.Running, launchsvc.Idle:
+		case launchsvc.Running:
+			return st, nil
+		case launchsvc.Idle:
+			// Failed is announced but not kept, so a launch that failed reads as idle; its cause is kept apart.
+			if why := s.Launches.LaunchFailure(gameID, st.Install); why != "" {
+				return st, errors.New(why)
+			}
 			return st, nil
 		case launchsvc.Launching:
 		case launchsvc.Failed, launchsvc.NoSteam:

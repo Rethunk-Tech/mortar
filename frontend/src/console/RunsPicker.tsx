@@ -95,7 +95,7 @@ export function RunsPicker({ game }: { game: string }) {
             role="menuitemradio"
             aria-checked={viewingRun === r.id}
             selected={viewingRun === r.id}
-            title={runExitText(r.exit)}
+            title={r.error || runExitText(r.exit)}
             onClick={() => {
               viewRun(game, profile, r.id)
               setAnchor(null)
@@ -104,9 +104,10 @@ export function RunsPicker({ game }: { game: string }) {
             <ListItemText
               primary={label(r)}
               secondary={
-                r.unclassified
+                r.error ||
+                (r.unclassified
                   ? t`${plural(r.unclassified, { one: '# log line Mortar could not classify', other: '# log lines Mortar could not classify' })}`
-                  : undefined
+                  : undefined)
               }
             />
           </MenuItem>
