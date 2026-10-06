@@ -51,7 +51,11 @@ func (t *firstTag) scan(buf []byte, n, pos int, eof bool) int {
 	return pos
 }
 
-// saveFarm is a save's Game1.whichFarm and, for a custom farm, the Data/AdditionalFarms id in whichModFarm.
+// customFarm is Game1.whichFarm for any farm from Data/AdditionalFarms.
+const customFarm = 7
+
+// saveFarm is a save's farm. A save writes <whichFarm> as the vanilla farm's number, or as a custom farm's
+// Data/AdditionalFarms id, which becomes customFarm with the id in mod.
 type saveFarm struct {
 	which int
 	has   bool
@@ -59,13 +63,13 @@ type saveFarm struct {
 }
 
 // distinctKeys streams r and returns each distinct <key><string>...</string></key> key once. A byte search is
-// used instead of an XML decoder because saves reach hundreds of MB. The farm tags are the first <whichFarm>
-// and <whichModFarm>, found in the same pass.
+// used instead of an XML decoder because saves reach hundreds of MB. The farm is the first <whichFarm>, found in
+// the same pass.
 func distinctKeys(r io.Reader) (map[string]struct{}, saveFarm, error) {
 	out := map[string]struct{}{}
 	buf := make([]byte, 1<<20)
 	n := 0
-	which, modFarm := newFirstTag("whichFarm", 16), newFirstTag("whichModFarm", maxKey)
+	which := newFirstTag("whichFarm", maxKey)
 	for {
 		m, err := r.Read(buf[n:])
 		n += m
@@ -98,17 +102,15 @@ func distinctKeys(r io.Reader) (map[string]struct{}, saveFarm, error) {
 			pos = start + j + len(closer)
 		}
 		pos = which.scan(buf, n, pos, eof)
-		pos = modFarm.scan(buf, n, pos, eof)
 		n = copy(buf, buf[pos:n])
 		if eof {
 			farm := saveFarm{has: which.found}
-			farm.which, _ = strconv.Atoi(which.value)
-			// A custom farm is written as its id or as a ModFarmType element holding <Id>.
-			farm.mod = modFarm.value
-			id := newFirstTag("Id", maxKey)
-			id.scan([]byte(farm.mod), len(farm.mod), 0, true)
-			if id.found {
-				farm.mod = id.value
+			if number, err := strconv.Atoi(which.value); err == nil {
+				farm.which = number
+			} else if which.found && which.value != "" {
+				farm.which, farm.mod = customFarm, which.value
+			} else {
+				farm.has = false
 			}
 			return out, farm, nil
 		}

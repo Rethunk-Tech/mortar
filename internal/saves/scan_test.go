@@ -181,21 +181,23 @@ func TestWhichFarmSpansChunks(t *testing.T) {
 	}
 }
 
-func TestWhichModFarmIsTheCustomFarmID(t *testing.T) {
+func TestCustomFarmSavesItsID(t *testing.T) {
 	dir := t.TempDir()
-	write(t, filepath.Join(dir, "Plain_1", "Plain_1"), `<whichFarm>7</whichFarm><whichModFarm>Author.Frontier_Frontier</whichModFarm>`+item("Author.Mod/x"))
-	write(t, filepath.Join(dir, "Typed_2", "Typed_2"), `<whichFarm>7</whichFarm><whichModFarm><Id>Grandpa.Farm</Id><MapName>Farm_Grandpa</MapName></whichModFarm>`)
-	write(t, filepath.Join(dir, "Vanilla_3", "Vanilla_3"), `<whichFarm>2</whichFarm><whichModFarm xsi:nil="true" />`)
+	write(t, filepath.Join(dir, "Cookie_1", "Cookie_1"), `<whichFarm>Loafeon.Sunblossom.CFL/Sunblossom Farm</whichFarm>`+item("Author.Mod/x"))
+	write(t, filepath.Join(dir, "Vanilla_2", "Vanilla_2"), `<whichFarm>2</whichFarm>`)
 	got, err := (&Scanner{Dir: dir}).Scan(index)
 	if err != nil {
 		t.Fatal(err)
 	}
-	ids := map[string]string{}
+	farms := map[string]Info{}
 	for _, in := range got {
-		ids[in.Folder] = in.WhichModFarm
+		farms[in.Folder] = in
 	}
-	if ids["Plain_1"] != "Author.Frontier_Frontier" || ids["Typed_2"] != "Grandpa.Farm" || ids["Vanilla_3"] != "" {
-		t.Fatalf("whichModFarm = %v", ids)
+	if c := farms["Cookie_1"]; c.WhichFarm != 7 || c.WhichModFarm != "Loafeon.Sunblossom.CFL/Sunblossom Farm" {
+		t.Fatalf("custom farm = %d %q", c.WhichFarm, c.WhichModFarm)
+	}
+	if v := farms["Vanilla_2"]; v.WhichFarm != 2 || v.WhichModFarm != "" {
+		t.Fatalf("vanilla farm = %d %q", v.WhichFarm, v.WhichModFarm)
 	}
 }
 

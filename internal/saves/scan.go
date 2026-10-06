@@ -32,7 +32,7 @@ const (
 
 // Info is what a scan learned about one save. Season is 0 (spring) to 3 (winter); Day is 0 when SaveGameInfo
 // did not say. Played is when the save was last written, in Unix milliseconds. WhichFarm is Game1.whichFarm
-// (−1 when the tag is missing); WhichModFarm is the custom farm's Data/AdditionalFarms id when it is 7.
+// (−1 when the tag is missing; 7 for a custom farm, whose Data/AdditionalFarms id is WhichModFarm).
 // MillisecondsPlayed and Money come from SaveGameInfo. Used holds mod ids with lowercased locals.
 type Info struct {
 	Folder             string   `json:"folder"`
@@ -51,7 +51,7 @@ type Info struct {
 	Unrecorded bool `json:"unrecorded"`
 }
 
-const scanRev = 3
+const scanRev = 4
 
 // stamp is what a cached result was computed from; any change recomputes it. Index is the dataset index's size,
 // because a newer index can recognise IDs an older one missed. Rev is this parser's shape, so a new field
@@ -332,9 +332,7 @@ func (s *Scanner) read(folder string, index map[string][]meta.Ref) (Info, error)
 	if farm.has {
 		info.WhichFarm = farm.which
 	}
-	if !strings.HasPrefix(farm.mod, "<") {
-		info.WhichModFarm = farm.mod
-	}
+	info.WhichModFarm = farm.mod
 	seen := map[mod.ID]struct{}{}
 	for k := range keys {
 		if id, ok := uniqueID(k, index); ok {
