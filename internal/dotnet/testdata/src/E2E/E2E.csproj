@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>$(Fixture)</AssemblyName>
+    <DefineConstants>$(Fixture)</DefineConstants>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Game/Game.csproj" Private="false" />
+  </ItemGroup>
+</Project>
