@@ -647,13 +647,13 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), status)
 		return
 	}
-	if !s.allowReceive(remotePeer(r)) {
-		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
-		return
-	}
 	peer := remotePeer(r)
 	key := s.book.key(request.SenderID)
 	paired := request.SenderPort > 0 && s.consumeProof(peer, request) && proofMatches(key, request.Nonce, request.Payload, request.Proof)
+	if !paired && !s.allowReceive(peer) {
+		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
+		return
+	}
 	items := transferItems(shared)
 	if paired {
 		for i, item := range items {

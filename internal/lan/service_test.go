@@ -624,3 +624,27 @@ func TestExtractTarRefusesEscapesAndLinks(t *testing.T) {
 func fixed(payload []byte) func(bool) ([]byte, error) {
 	return func(bool) ([]byte, error) { return payload, nil }
 }
+
+func TestPairedPeerIsExemptFromTheShareRateLimit(t *testing.T) {
+	t.Parallel()
+	payload, err := base64.RawStdEncoding.DecodeString(testPayload(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	receiver, receiverAddr := pairedService(t, store.OpenAt(t.TempDir()), nil)
+	pairedSender, _ := pairedService(t, store.OpenAt(t.TempDir()), nil)
+	strangerSender, _ := pairedService(t, store.OpenAt(t.TempDir()), nil)
+	pair(t, receiver, pairedSender, receiverAddr)
+
+	for i := range 2 {
+		if err := pairedSender.sendPayload(t.Context(), receiverAddr, "stardew", fixed(payload)); err != nil {
+			t.Fatalf("paired send %d: %v", i+1, err)
+		}
+	}
+	if err := strangerSender.sendPayload(t.Context(), receiverAddr, "stardew", fixed(payload)); err != nil {
+		t.Fatalf("first unpaired send: %v", err)
+	}
+	if err := strangerSender.sendPayload(t.Context(), receiverAddr, "stardew", fixed(payload)); !errors.Is(err, ErrPeerBusy) {
+		t.Fatalf("second unpaired send: %v, want ErrPeerBusy", err)
+	}
+}
