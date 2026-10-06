@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -39,14 +40,16 @@ func (s *Store) EnabledPackages(game, id string) ([]PackageRef, error) {
 			continue
 		}
 		var id mod.ID
-		name := e.Source.Name
+		name, version := e.Source.Name, e.Source.Version
 		if len(e.Mods) > 0 {
 			id = e.Mods[0].ID
 			if e.Source.Kind != KindThunderstore {
 				name = e.Mods[0].Name
 			}
+			// A package installed from a file has no source version; its manifest's is the one it has.
+			version = cmp.Or(version, e.Mods[0].Version)
 		}
-		out = append(out, PackageRef{Key: e.Key, Source: e.Source.Kind, ID: id, Name: name, Version: e.Source.Version, Dir: dir})
+		out = append(out, PackageRef{Key: e.Key, Source: e.Source.Kind, ID: id, Name: name, Version: version, Dir: dir})
 	}
 	return out, nil
 }
