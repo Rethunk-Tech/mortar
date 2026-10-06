@@ -69,7 +69,7 @@ function NxmDefaultProfiles() {
   const [games, setGames] = useState<GameInfo[]>([])
   useEffect(() => {
     ListGames()
-      .then((gs) => setGames((gs ?? []).filter((g) => g.sources?.includes('nexus'))))
+      .then((gs) => setGames((gs ?? []).filter((g) => g.installed && g.sources?.includes('nexus'))))
       .catch(() => setGames([]))
   }, [])
   return (
@@ -209,7 +209,7 @@ function NxmLinks() {
       <SettingRow
         label={t`Handle "Mod Manager Download" links`}
         description={`${t`Clicking these links on Nexus starts the download in Mortar.`} ${
-          owner ? t`${owner} opens these links now.` : t`Mortar handles these links now.`
+          owner ? t`${owner} opens these links now.` : t`No app opens these links now.`
         }`}
       >
         <PrefSwitch
