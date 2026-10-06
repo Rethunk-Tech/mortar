@@ -78,3 +78,15 @@ func TestOneWinnerOverPacksThatClashAmongThemselves(t *testing.T) {
 		t.Fatalf("got %+v", c)
 	}
 }
+
+func TestADependentPackWinsOverWhatItsDependencyBeat(t *testing.T) {
+	testfs.DataHome(t)
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+	m := editPacks(t, "Data/animationDescriptions", "sleep", "sleep", "sleep")
+	m[0].LoadAfter = []mod.ID{m[2].ModID()}
+	m[1].Dependencies = append(m[1].Dependencies, manifest.Dependency{UniqueID: m[0].UniqueID, Required: true})
+	if c := editConflict(t, m); !c.Cosmetic || !mod.Equal(c.WinnerID, m[1].ModID()) {
+		t.Fatalf("the pack that needs the winner loads after both: %+v", c)
+	}
+}
