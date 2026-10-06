@@ -25,8 +25,9 @@ type NoticeClick struct {
 	Tab     string `json:"tab"`
 }
 
-// RunEndNotificationText chooses the desktop notification title and body from the run log summary.
-func RunEndNotificationText(gameName string, stats launch.Summary) (title, body string) {
+// RunEndNotificationText chooses the desktop notification for a run's end from its log summary. Only a crash is
+// worth a notification; ok is false for a run that closed normally.
+func RunEndNotificationText(gameName string, stats launch.Summary) (title, body string, ok bool) {
 	if stats.Crashed {
 		title = gameName + " crashed"
 		n := len(stats.Mods)
@@ -43,10 +44,9 @@ func RunEndNotificationText(gameName string, stats launch.Summary) (title, body 
 				body += "; " + desc
 			}
 		}
-		return title, body
+		return title, body, true
 	}
-	title = "Game closed"
-	return title, body
+	return "", "", false
 }
 
 // NoticeProfileFromResponse reads game, profile, and target tab from a notification activation.

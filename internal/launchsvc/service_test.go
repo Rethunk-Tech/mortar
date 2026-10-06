@@ -559,3 +559,26 @@ func TestRecoverSkipsAJournalOfALaunchStillPreparing(t *testing.T) {
 		t.Fatal("a crash's journal was not recovered")
 	}
 }
+
+func TestAnExitSeenTwiceClosesTheRunOnce(t *testing.T) {
+	svc, p := startEnv(t)
+	g := game.Find("stardew")
+	buf := &launch.Buffer{}
+	svc.logs["stardew/"] = session{buf: buf, profile: p.ID}
+	cur := Status{Game: "stardew", State: Running, Profile: p.ID}
+	svc.status["stardew/"] = cur
+	var wg sync.WaitGroup
+	for range 4 {
+		wg.Go(func() { svc.closed(g, cur, false) })
+	}
+	wg.Wait()
+	n := 0
+	for _, l := range buf.Lines() {
+		if strings.Contains(l.Message, "closed") {
+			n++
+		}
+	}
+	if n != 1 {
+		t.Fatalf("closed lines = %d, want 1: %+v", n, buf.Lines())
+	}
+}

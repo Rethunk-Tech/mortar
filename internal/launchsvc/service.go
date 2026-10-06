@@ -147,6 +147,8 @@ type Service struct {
 	// startFailed is the error of the last start of each slot that failed, until the next start; a failed state is not
 	// kept in status, so a caller that waits on a launch reads it here.
 	startFailed map[string]string
+	// closing marks a run whose end is being recorded, so a second exit report for it is ignored.
+	closing map[string]bool
 	// lastFailure is why the last launch of each slot failed, from any path, until the next start: the failed state is
 	// not kept in status, and the run record and a waiting caller read the cause here.
 	lastFailure map[string]string
@@ -182,7 +184,7 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 	return &Service{
 		home: home, settings: s, profiles: profiles, procDir: procDirRun,
 		status: map[string]Status{}, watching: map[string]bool{},
-		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{}, startFailed: map[string]string{}, lastFailure: map[string]string{},
+		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{}, startFailed: map[string]string{}, closing: map[string]bool{}, lastFailure: map[string]string{},
 		stopping: map[string]bool{}, reaping: map[string]bool{}, sampled: map[string]chan struct{}{},
 		EnsureLoader: func(context.Context, string, string, bool) error {
 			return errors.New("the loader cannot be installed here")
@@ -224,6 +226,7 @@ func (s *Service) set(st Status) {
 	}
 	s.mu.Lock()
 	if st.State == Launching {
+		delete(s.closing, key)
 		delete(s.startFailed, key)
 		delete(s.lastFailure, key)
 	}
@@ -1231,9 +1234,18 @@ func (s *Service) stopSlot(g slot) error {
 // closed ends the game's session with a console line of Mortar's own, so the log does not just stop, then marks
 // the game idle. It does nothing when a concurrent poll or Stop already closed the session.
 func (s *Service) closed(g game.Game, cur Status, stopped bool) {
-	if s.current(g).State != Running {
+	// The exit watcher, the status poll and Stop can all see the same exit; only the first one closes the run.
+	key := keyOf(g)
+	s.mu.Lock()
+	if st, ok := s.status[key]; !ok || st.State != Running || s.closing[key] {
+		s.mu.Unlock()
 		return
 	}
+	if s.closing == nil {
+		s.closing = map[string]bool{}
+	}
+	s.closing[key] = true
+	s.mu.Unlock()
 	if stopped {
 		s.mu.Lock()
 		if sess, ok := s.logs[keyOf(g)]; ok && !sess.haveExit {
@@ -1276,8 +1288,9 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 			modsDir, err := s.profiles.ModsDir(g.ID(), cur.Profile)
 			if err == nil {
 				stats := launch.Summarize(s.runText(g, cur.Profile, modsDir))
-				title, body := RunEndNotificationText(g.Name(), stats)
-				s.NotifyRunEnd(RunEndNotice{Game: g.ID(), Profile: cur.Profile, Title: title, Body: body})
+				if title, body, crashed := RunEndNotificationText(g.Name(), stats); crashed {
+					s.NotifyRunEnd(RunEndNotice{Game: g.ID(), Profile: cur.Profile, Title: title, Body: body})
+				}
 			}
 		}
 		s.record(g, cur.Profile, started, false, sess.mods)

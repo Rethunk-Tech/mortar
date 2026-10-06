@@ -110,7 +110,7 @@ func TestCrashedBeforeAcrossMidnight(t *testing.T) {
 }
 
 func TestRunEndNotificationTextExit(t *testing.T) {
-	title, body := RunEndNotificationText("Stardew Valley", launch.Summary{
+	title, body, _ := RunEndNotificationText("Stardew Valley", launch.Summary{
 		Crashed: true,
 		Exit:    launch.Exit{Code: 134, Signal: "SIGABRT"},
 	})

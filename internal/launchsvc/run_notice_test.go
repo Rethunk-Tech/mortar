@@ -7,21 +7,20 @@ import (
 )
 
 func TestRunEndNotificationTextClosed(t *testing.T) {
-	title, body := RunEndNotificationText("Stardew Valley", launch.Summary{})
-	if title != "Game closed" || body != "" {
-		t.Fatalf("got %q / %q", title, body)
+	if _, _, ok := RunEndNotificationText("Stardew Valley", launch.Summary{}); ok {
+		t.Fatal("a normal close sends a notification")
 	}
 }
 
 func TestRunEndNotificationTextCrash(t *testing.T) {
-	title, body := RunEndNotificationText("Stardew Valley", launch.Summary{
+	title, body, ok := RunEndNotificationText("Stardew Valley", launch.Summary{
 		Crashed: true,
 		Mods:    []launch.ModError{{Mod: "A"}, {Mod: "B"}},
 	})
-	if title != "Stardew Valley crashed" || body != "2 mods logged errors" {
+	if !ok || title != "Stardew Valley crashed" || body != "2 mods logged errors" {
 		t.Fatalf("got %q / %q", title, body)
 	}
-	title, body = RunEndNotificationText("Stardew Valley", launch.Summary{Crashed: true, Mods: []launch.ModError{{Mod: "A"}}})
+	title, body, _ = RunEndNotificationText("Stardew Valley", launch.Summary{Crashed: true, Mods: []launch.ModError{{Mod: "A"}}})
 	if title != "Stardew Valley crashed" || body != "1 mod logged errors" {
 		t.Fatalf("singular: got %q / %q", title, body)
 	}
