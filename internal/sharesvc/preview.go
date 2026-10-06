@@ -153,14 +153,16 @@ const (
 // resolver looks one import up. Its answers come from the mod dataset and, when signed in, Nexus's file lists;
 // a lookup that fails leaves the mod as the link named it rather than failing the preview.
 type resolver struct {
-	meta       problems.Meta
-	files      func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error)
-	signedIn   bool
-	premium    bool
-	env        problems.Environment
-	game       string
-	stored     func(game, key string) bool
-	storedKeys map[string]bool
+	meta     problems.Meta
+	files    func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error)
+	signedIn bool
+	premium  bool
+	env      problems.Environment
+	// requirements reads what Nexus pages list as required; nil skips that check.
+	requirements problems.RequirementsOf
+	game         string
+	stored       func(game, key string) bool
+	storedKeys   map[string]bool
 	// target is the profile the mods would join: what it has installed, and its entries by source.
 	target    []profile.Entry
 	installed []profile.Installed
@@ -468,11 +470,11 @@ func (r *resolver) dependencies(ctx context.Context, mods []Mod) ([]Mod, []Probl
 			}
 		}
 	}
-	found := problems.Check(ctx, r.meta, r.env, all)
+	found := problems.Check(ctx, r.meta, r.env, all, r.requirements)
 	var deps []Mod
 	var probs []Problem
 	for _, miss := range found.Missing {
-		if !dependents[miss.DependentID.Fold()] || r.addDependency(ctx, miss.Where, mods, &deps) {
+		if miss.External || !dependents[miss.DependentID.Fold()] || r.addDependency(ctx, miss.Where, mods, &deps) {
 			continue
 		}
 		p := Problem{Kind: ProblemMissing, Name: miss.DependentName, Detail: miss.ID.Local()}

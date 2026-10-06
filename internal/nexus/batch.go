@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -166,6 +167,9 @@ func (c *Client) modsChunk(ctx context.Context, domain string, ids []int, out ma
 		for _, r := range n.Requirements.Nexus.Nodes {
 			req := Requirement{Name: r.Name, URL: r.URL, Notes: r.Notes, External: true}
 			if id, err := strconv.Atoi(r.ModID); err == nil && id > 0 && !r.External && r.GameID == strconv.Itoa(n.GameID) {
+				req.ModID, req.URL, req.External = id, ModURL(domain, id), false
+			} else if d, id, ok := ParseModURL(r.URL); ok && strings.EqualFold(d, domain) {
+				// Authors often list a Nexus mod as an outside link to its page; it is that mod all the same.
 				req.ModID, req.URL, req.External = id, ModURL(domain, id), false
 			}
 			info.Requirements = append(info.Requirements, req)

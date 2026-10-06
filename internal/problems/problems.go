@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -30,7 +31,6 @@ import (
 type Meta interface {
 	Lookup(ctx context.Context, uniqueID string) ([]meta.Ref, error)
 	Page(ctx context.Context, id int) (meta.Page, error)
-	PageRequirements(ctx context.Context, domain string, pageID int) ([]meta.Requirement, error)
 	Collection(ctx context.Context, domain, slug string, revision int) (meta.Collection, error)
 	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []meta.UpdateResult
 }
@@ -72,8 +72,14 @@ type Missing struct {
 	Listed           bool   `json:"listed"`
 	Note             string `json:"note"`
 	Optional         bool   `json:"optional"`
-	Where            *Ref   `json:"where"`
+	// External marks a requirement a Nexus page names outside Nexus (a tool, another site): ID is OutsideFormat and
+	// its name, and there is nothing Mortar can add, so Where is nil and it is a note rather than a problem.
+	External bool `json:"external,omitempty"`
+	Where    *Ref `json:"where"`
 }
+
+// OutsideFormat is the id format of an External requirement, whose local part is the name the page gives it.
+const OutsideFormat = "outside"
 
 // Copy is one of two or more enabled copies of a mod. Needed and TooOld name the enabled mods that depend on the
 // mod id and whose MinimumVersion this copy meets or does not. Newest marks the highest version among the copies.
@@ -171,7 +177,13 @@ func (r Result) Count() int {
 			duplicates++
 		}
 	}
-	return len(r.Missing) + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.LoadFailures) + len(r.PluginClashes) + len(r.Drift) + len(r.Damaged)
+	missing := 0
+	for _, m := range r.Missing {
+		if !m.External {
+			missing++
+		}
+	}
+	return missing + duplicates + len(r.Broken) + conflicts + len(r.Settings) + len(r.RunErrors) + len(r.LoadFailures) + len(r.PluginClashes) + len(r.Drift) + len(r.Damaged)
 }
 
 // WarningCount is cosmetic asset conflicts plus compat, cleanup and redundancy hints.
@@ -195,8 +207,12 @@ func meets(version, minimum string) bool {
 	return deps.Satisfies(deps.SemverSMAPI, version, minimum)
 }
 
-// Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error.
-func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod) Result {
+// RequirementsOf gives the requirements listed on many Nexus pages of the checked game, in a few batched requests.
+type RequirementsOf func(ctx context.Context, modIDs []int) (map[int][]nexus.Requirement, error)
+
+// Check computes the problems of mods. Lookups that fail leave Unknown set and never return an error. reqs reads the
+// requirements Nexus pages list; nil skips that check.
+func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, reqs RequirementsOf) Result {
 	enabled := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return !x.Enabled })
 	found, timings := runFrameworks(framework.Input{Enabled: enabled, All: mods})
 	r := Result{
@@ -209,7 +225,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod) R
 	}
 	reqStart := time.Now()
 	missing := missingDeps(env.VersionScheme, enabled, mods)
-	listed, listedUnknown := listedRequirements(ctx, m, env.Nexus.Domain, enabled, mods)
+	listed, listedUnknown := listedRequirements(ctx, m, reqs, env.Nexus.Domain, enabled, mods)
 	missing = append(missing, listed...)
 	r.Timings = append(r.Timings, CheckTiming{Name: "requirements", Ms: time.Since(reqStart).Milliseconds(), Count: len(missing)})
 	r.Unknown = fillWhere(ctx, m, env.Nexus.Domain, enabled, missing)
@@ -366,21 +382,30 @@ func fetchAll[T any](ctx context.Context, ids []int, fetch func(context.Context,
 	return got, failed
 }
 
-func listedRequirements(ctx context.Context, m Meta, domain string, enabled, all []framework.Mod) ([]Missing, bool) {
+func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain string, enabled, all []framework.Mod) ([]Missing, bool) {
 	out := []Missing{}
+	if reqs == nil {
+		return out, false
+	}
 	var pageIDs []int
 	for _, d := range enabled {
 		if pageID, _, ok := store.NexusFile(d.Key); ok && !slices.Contains(pageIDs, pageID) {
 			pageIDs = append(pageIDs, pageID)
 		}
 	}
-	requirementsByPage, unknown := fetchAll(ctx, pageIDs, func(ctx context.Context, id int) ([]meta.Requirement, error) {
-		return m.PageRequirements(ctx, domain, id)
-	})
+	if len(pageIDs) == 0 {
+		return out, false
+	}
+	requirementsByPage, err := reqs(ctx, pageIDs)
+	unknown := err != nil
+	info, _ := components.GameByNexusDomain(domain)
+	for page, list := range requirementsByPage {
+		requirementsByPage[page] = slices.DeleteFunc(slices.Clone(list), func(r nexus.Requirement) bool { return isLoader(info.Loaders, r) })
+	}
 	var reqIDs []int
-	for _, reqs := range requirementsByPage {
-		for _, req := range reqs {
-			if !slices.Contains(reqIDs, req.ModID) {
+	for _, list := range requirementsByPage {
+		for _, req := range list {
+			if !req.External && !slices.Contains(reqIDs, req.ModID) {
 				reqIDs = append(reqIDs, req.ModID)
 			}
 		}
@@ -400,7 +425,18 @@ func listedRequirements(ctx context.Context, m Meta, domain string, enabled, all
 		}
 		seenEntries[entryKey] = true
 		seenRequirements := map[int]bool{}
+		seenOutside := map[string]bool{}
 		for _, req := range requirementsByPage[pageID] {
+			if req.External {
+				if name := strings.TrimSpace(req.Name); name != "" && !seenOutside[name] {
+					seenOutside[name] = true
+					out = append(out, Missing{
+						DependentID: d.ModID(), DependentName: d.Name, ID: mod.NewID(OutsideFormat, name), Reason: "absent",
+						Listed: true, External: true, Note: req.Notes, Optional: optionalRequirement(req.Notes),
+					})
+				}
+				continue
+			}
 			if seenRequirements[req.ModID] {
 				continue
 			}
@@ -454,6 +490,19 @@ func listedRequirements(ctx context.Context, m Meta, domain string, enabled, all
 		}
 	}
 	return out, unknown
+}
+
+// isLoader reports a requirement that is the game's loader, which Mortar installs itself and never as a profile entry:
+// its Nexus page, or an outside link (its own site, its releases) named as the loader, "SMAPI 4.1.6" included.
+func isLoader(loaders []components.GameLoader, r nexus.Requirement) bool {
+	name := strings.ToLower(strings.TrimSpace(r.Name))
+	return slices.ContainsFunc(loaders, func(l components.GameLoader) bool {
+		if l.NexusModID != 0 && r.ModID == l.NexusModID {
+			return true
+		}
+		own := strings.ToLower(l.Name)
+		return r.External && own != "" && (name == own || strings.HasPrefix(name, own+" "))
+	})
 }
 
 func listedDepState(all []framework.Mod, pageID int, page meta.Page, pageKnown bool) (string, bool) {
@@ -653,7 +702,7 @@ func fillWhere(ctx context.Context, m Meta, domain string, enabled []framework.M
 		if x.Reason == "disabled" {
 			continue
 		}
-		if x.Where != nil {
+		if x.Where != nil || x.External {
 			continue
 		}
 		dependent := slices.IndexFunc(enabled, func(e framework.Mod) bool { return mod.Equal(e.ModID(), x.DependentID) })

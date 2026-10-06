@@ -87,7 +87,7 @@ function playIssueSummary(input: {
   const groups: PlayIssueGroup[] = []
   const missing = groupOf(
     'missing',
-    (input.missing ?? []).filter((m) => !m.optional).map(missingName),
+    (input.missing ?? []).filter((m) => !(m.optional || m.external)).map(missingName),
   )
   const conflicts = groupOf(
     'conflicts',

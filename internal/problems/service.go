@@ -305,7 +305,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	r, err := s.shareCheck(ctx, checkKey, func() Result {
 		contentpatcher.SkipImageOverlap = depth == settings.ConflictScanSkipImages
 		defer func() { contentpatcher.SkipImageOverlap = false }()
-		r := Check(ctx, s.metaFor(gameID), env, mods)
+		r := Check(ctx, s.metaFor(gameID), env, mods, s.NexusPages.Requirements(gameID))
 		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool {
 			return !x.Enabled
 		}))...)
@@ -659,7 +659,7 @@ func (s *Service) UpdateWarning(ctx context.Context, gameID, id string) (UpdateW
 	if err != nil {
 		return UpdateWarning{}, err
 	}
-	return versionChangeWarning(recorded, env.GameVersion, Check(ctx, s.metaFor(gameID), env, mods).Broken), nil
+	return versionChangeWarning(recorded, env.GameVersion, Check(ctx, s.metaFor(gameID), env, mods, nil).Broken), nil
 }
 
 func versionChangeWarning(recorded, installed string, broken []Broken) UpdateWarning {

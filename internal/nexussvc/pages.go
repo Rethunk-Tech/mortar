@@ -2,10 +2,13 @@ package nexussvc
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 // PageName is the cache file under cache/ for a Nexus mod's page data from the batched lookup.
@@ -42,10 +45,10 @@ func (s *Service) PrimeDetails(ctx context.Context, gameID string, modIDs []int)
 }
 
 // Prime fills the page data of many mods at once: whatever is cached and fresh is kept, and the rest comes
-// from one GraphQL request per 100 mods, so a list of hundreds costs a handful of requests instead of several each.
+// from one GraphQL request per 50 mods, so a list of hundreds costs a handful of requests instead of several each.
 // It returns the best details held for each mod, which are partial (the page's headline data, no files or
-// changelogs) unless the full details were cached; Details fills in the rest when a mod is opened. A rate limit or
-// a signed-out account ends the lookup and returns what the cache has with the error.
+// changelogs) unless the full details were cached; Details fills in the rest when a mod is opened. Signed out, it
+// asks without a key. A rate limit ends the lookup and returns what the cache has with the error.
 //
 //wails:ignore
 func (s *Service) Prime(ctx context.Context, gameID string, modIDs []int) (map[int]Details, error) {
@@ -81,11 +84,20 @@ func (s *Service) Prime(ctx context.Context, gameID string, modIDs []int) (map[i
 }
 
 func (s *Service) fetchPages(ctx context.Context, domain string, ids []int) error {
+	// The page data is public: signed out, the same request goes without a key, so requirements still show.
 	c, err := Authed(s.store, s.client)
+	if errors.Is(err, ErrSignedOut) {
+		c, err = s.client, nil
+	}
 	if err != nil {
 		return err
 	}
 	infos, err := c.ModsByDomain(ctx, domain, ids)
+	if err != nil {
+		log.Printf("nexus pages: %d of %d %s mods, then %v", len(infos), len(ids), domain, err)
+	} else {
+		log.Printf("nexus pages: %d of %d %s mods in %d requests", len(infos), len(ids), domain, nexus.Requests(len(ids)))
+	}
 	for id, info := range infos {
 		meta.Put(s.meta, PageName(domain, id), Details{Page: info.Page(), Category: info.Category, Partial: true})
 	}

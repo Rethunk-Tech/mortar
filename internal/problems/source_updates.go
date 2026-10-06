@@ -343,6 +343,21 @@ func coveredBy(have []Update, key, version string) bool {
 // NexusPagesOf looks up the page of many Nexus mods of the game in one batched call.
 type NexusPagesOf func(ctx context.Context, gameID string, modIDs []int) (map[int]nexus.Page, error)
 
+// Requirements reads the requirements listed on the game's pages from the same batched page data; nil when p is.
+func (p NexusPagesOf) Requirements(gameID string) RequirementsOf {
+	if p == nil {
+		return nil
+	}
+	return func(ctx context.Context, modIDs []int) (map[int][]nexus.Requirement, error) {
+		pages, err := p(ctx, gameID, modIDs)
+		out := make(map[int][]nexus.Requirement, len(pages))
+		for id, page := range pages {
+			out[id] = page.Requirements
+		}
+		return out, err
+	}
+}
+
 // nexusPageUpdates offers the version a Nexus mod's page lists for the mods installed from Nexus that carry no update
 // key, so SMAPI's API cannot answer for them (every mod of a game with another loader): one batched lookup for all of
 // them, at a handful of requests per hundred mods. A mod is offered only when the loader's version scheme orders both

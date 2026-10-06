@@ -8,13 +8,37 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 type listedFakeMeta struct {
-	requirements   map[int][]meta.Requirement
-	requirementErr map[int]error
+	requirements map[int][]nexus.Requirement
+	// requirementErr fails the batched requirements lookup.
+	requirementErr error
 	pages          map[int]meta.Page
 	pageErr        map[int]error
+}
+
+// reqs answers the batched lookup the way NexusPagesOf.Requirements does, and counts the calls.
+func (f listedFakeMeta) reqs(calls *int) RequirementsOf {
+	return func(_ context.Context, ids []int) (map[int][]nexus.Requirement, error) {
+		*calls++
+		if f.requirementErr != nil {
+			return nil, f.requirementErr
+		}
+		out := map[int][]nexus.Requirement{}
+		for _, id := range ids {
+			if r, ok := f.requirements[id]; ok {
+				out[id] = r
+			}
+		}
+		return out, nil
+	}
+}
+
+func listedCheck(f listedFakeMeta, mods []framework.Mod) Result {
+	calls := 0
+	return Check(context.Background(), f, testEnv, mods, f.reqs(&calls))
 }
 
 func (f listedFakeMeta) Lookup(_ context.Context, uniqueID string) ([]meta.Ref, error) {
@@ -35,13 +59,6 @@ func (f listedFakeMeta) Page(_ context.Context, id int) (meta.Page, error) {
 		return meta.Page{}, err
 	}
 	return f.pages[id], nil
-}
-
-func (f listedFakeMeta) PageRequirements(_ context.Context, _ string, id int) ([]meta.Requirement, error) {
-	if err := f.requirementErr[id]; err != nil {
-		return nil, err
-	}
-	return f.requirements[id], nil
 }
 
 func (listedFakeMeta) CheckUpdates(context.Context, meta.UpdateRequest) []meta.UpdateResult {
@@ -74,12 +91,12 @@ func listedPage(id int, uniqueID string) meta.Page {
 
 func TestListedRequirementSatisfiedByPageKey(t *testing.T) {
 	fake := listedFakeMeta{
-		requirements: map[int][]meta.Requirement{520: {{ModID: 11148, Name: "Requirement"}}},
+		requirements: map[int][]nexus.Requirement{520: {{ModID: 11148, Name: "Requirement"}}},
 		pages:        map[int]meta.Page{11148: listedPage(11148, "Requirement.Mod")},
 	}
 	mods := []framework.Mod{listedDependent(), {Key: "nexus-11148-200", Enabled: true}}
 
-	result := Check(context.Background(), fake, testEnv, mods)
+	result := listedCheck(fake, mods)
 
 	if len(result.Missing) != 0 {
 		t.Fatalf("Missing = %#v, want none", result.Missing)
@@ -88,7 +105,7 @@ func TestListedRequirementSatisfiedByPageKey(t *testing.T) {
 
 func TestListedRequirementSatisfiedByDatasetUniqueID(t *testing.T) {
 	fake := listedFakeMeta{
-		requirements: map[int][]meta.Requirement{520: {{ModID: 1915, Name: "Content Patcher"}}},
+		requirements: map[int][]nexus.Requirement{520: {{ModID: 1915, Name: "Content Patcher"}}},
 		pages:        map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
 	}
 	mods := []framework.Mod{
@@ -96,7 +113,7 @@ func TestListedRequirementSatisfiedByDatasetUniqueID(t *testing.T) {
 		{Key: "local-content-patcher", Enabled: true, UniqueID: "Pathoschild.ContentPatcher"},
 	}
 
-	result := Check(context.Background(), fake, testEnv, mods)
+	result := listedCheck(fake, mods)
 
 	if len(result.Missing) != 0 {
 		t.Fatalf("Missing = %#v, want none", result.Missing)
@@ -105,11 +122,11 @@ func TestListedRequirementSatisfiedByDatasetUniqueID(t *testing.T) {
 
 func TestListedRequirementMissing(t *testing.T) {
 	fake := listedFakeMeta{
-		requirements: map[int][]meta.Requirement{520: {{ModID: 1915, Name: "Content Patcher"}}},
+		requirements: map[int][]nexus.Requirement{520: {{ModID: 1915, Name: "Content Patcher"}}},
 		pages:        map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
 	}
 
-	result := Check(context.Background(), fake, testEnv, []framework.Mod{listedDependent()})
+	result := listedCheck(fake, []framework.Mod{listedDependent()})
 
 	if len(result.Missing) != 1 {
 		t.Fatalf("Missing = %#v, want one item", result.Missing)
@@ -122,11 +139,11 @@ func TestListedRequirementMissing(t *testing.T) {
 
 func TestListedRequirementOptionalNote(t *testing.T) {
 	fake := listedFakeMeta{
-		requirements: map[int][]meta.Requirement{520: {{ModID: 14426, Name: "Gender Neutrality Mod Tokens", Notes: "For Gender Neutral Version"}}},
+		requirements: map[int][]nexus.Requirement{520: {{ModID: 14426, Name: "Gender Neutrality Mod Tokens", Notes: "For Gender Neutral Version"}}},
 		pages:        map[int]meta.Page{14426: listedPage(14426, "GenderNeutrality.Tokens")},
 	}
 
-	result := Check(context.Background(), fake, testEnv, []framework.Mod{listedDependent()})
+	result := listedCheck(fake, []framework.Mod{listedDependent()})
 
 	if len(result.Missing) != 1 || !result.Missing[0].Optional || result.Missing[0].Note != "For Gender Neutral Version" {
 		t.Fatalf("Missing = %#v, want optional noted requirement", result.Missing)
@@ -135,15 +152,52 @@ func TestListedRequirementOptionalNote(t *testing.T) {
 
 func TestListedRequirementFetchFailureIsUnknown(t *testing.T) {
 	fake := listedFakeMeta{
-		requirementErr: map[int]error{520: errors.New("offline")},
+		requirementErr: errors.New("offline"),
 	}
 
-	result := Check(context.Background(), fake, testEnv, []framework.Mod{listedDependent()})
+	result := listedCheck(fake, []framework.Mod{listedDependent()})
 
 	if !result.Unknown {
 		t.Fatal("Unknown = false, want true")
 	}
 	if len(result.Missing) != 0 {
 		t.Fatalf("Missing = %#v, want none when requirements could not be read", result.Missing)
+	}
+}
+
+func TestListedRequirementsAreOneBatchedLookup(t *testing.T) {
+	fake := listedFakeMeta{
+		requirements: map[int][]nexus.Requirement{520: {{ModID: 1915, Name: "Content Patcher"}}, 521: {{ModID: 1915}}},
+		pages:        map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
+	}
+	other := listedDependent()
+	other.Key, other.UniqueID = "nexus-521-1", "Example.Other"
+	calls := 0
+	Check(context.Background(), fake, testEnv, []framework.Mod{listedDependent(), other}, fake.reqs(&calls))
+	if calls != 1 {
+		t.Fatalf("lookups = %d, want one for every page", calls)
+	}
+}
+
+func TestListedLoaderIsNeverMissing(t *testing.T) {
+	fake := listedFakeMeta{requirements: map[int][]nexus.Requirement{520: {
+		{ModID: 2400, Name: "SMAPI"},
+		{Name: "SMAPI 4.1.6", URL: "https://github.com/Pathoschild/SMAPI/releases/tag/4.1.6", External: true},
+		{Name: "smapi", URL: "https://smapi.io", External: true},
+	}}}
+	if got := listedCheck(fake, []framework.Mod{listedDependent()}); len(got.Missing) != 0 {
+		t.Fatalf("Missing = %#v, want the game's loader skipped", got.Missing)
+	}
+}
+
+func TestListedOutsideRequirementIsANote(t *testing.T) {
+	fake := listedFakeMeta{requirements: map[int][]nexus.Requirement{520: {{Name: "Some Tool", URL: "https://example.org", External: true, Notes: "run it first"}}}}
+	got := listedCheck(fake, []framework.Mod{listedDependent()})
+	if len(got.Missing) != 1 {
+		t.Fatalf("Missing = %#v, want one note", got.Missing)
+	}
+	m := got.Missing[0]
+	if !m.External || m.Where != nil || m.ID != mod.NewID(OutsideFormat, "Some Tool") || m.Note != "run it first" || got.Count() != 0 {
+		t.Fatalf("note = %#v, count %d", m, got.Count())
 	}
 }

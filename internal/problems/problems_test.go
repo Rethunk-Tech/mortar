@@ -78,7 +78,7 @@ func TestMissingKinds(t *testing.T) {
 		}, []string{}},
 	}
 	for _, c := range cases {
-		got := Check(context.Background(), fakeMeta{}, testEnv, c.mods)
+		got := Check(context.Background(), fakeMeta{}, testEnv, c.mods, nil)
 		var reasons []string
 		for _, m := range got.Missing {
 			reasons = append(reasons, m.Reason)
@@ -99,7 +99,7 @@ func TestMissingKinds(t *testing.T) {
 func TestContentPackForIsRequired(t *testing.T) {
 	m := inst("a", "A", "1.0", true)
 	m.Dependencies = []manifest.Dependency{{UniqueID: "Pathoschild.ContentPatcher", MinimumVersion: "2.0", Required: true}}
-	got := Check(context.Background(), fakeMeta{}, testEnv, []framework.Mod{m})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []framework.Mod{m}, nil)
 	if len(got.Missing) != 1 || got.Missing[0].ID != "smapi:Pathoschild.ContentPatcher" {
 		t.Fatalf("missing = %+v", got.Missing)
 	}
@@ -162,7 +162,7 @@ func TestWhere(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		got := Check(context.Background(), c.meta, testEnv, c.mods)
+		got := Check(context.Background(), c.meta, testEnv, c.mods, nil)
 		if len(got.Missing) != 1 || !reflect.DeepEqual(got.Missing[0].Where, c.want) || got.Unknown != c.unknown {
 			t.Errorf("%s: where = %+v, unknown = %v; want %+v, %v", c.name, got.Missing, got.Unknown, c.want, c.unknown)
 		}
@@ -177,7 +177,7 @@ func TestDuplicates(t *testing.T) {
 		inst("o", "S", "1.0", true),
 		nexus,
 		inst("off", "S", "3.0", false),
-	})
+	}, nil)
 	if len(got.Duplicates) != 1 {
 		t.Fatalf("duplicates = %+v", got.Duplicates)
 	}
@@ -200,7 +200,7 @@ func TestNexusFilesInDuplicate(t *testing.T) {
 			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
 			{ID: 175477, Type: "MAIN", FileName: "WorldMap-2.0.zip", Version: "2.0"},
 		},
-	}}}, testEnv, []framework.Mod{a, b})
+	}}}, testEnv, []framework.Mod{a, b}, nil)
 	if len(got.Duplicates) != 1 || len(got.Duplicates[0].NexusFiles) != 2 {
 		t.Fatalf("nexus files = %+v", got.Duplicates)
 	}
@@ -219,7 +219,7 @@ func TestNexusFileWithoutANameIsNamedForItsMod(t *testing.T) {
 			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
 			{ID: 175477, Type: "MAIN", Version: "2.0"},
 		},
-	}}}, testEnv, []framework.Mod{a, b})
+	}}}, testEnv, []framework.Mod{a, b}, nil)
 	if len(got.Duplicates) != 1 || len(got.Duplicates[0].NexusFiles) != 2 {
 		t.Fatalf("nexus files = %+v", got.Duplicates)
 	}
@@ -238,7 +238,7 @@ func TestOptionalNexusFileDuplicateIsInformational(t *testing.T) {
 			{ID: 116403, Type: "MAIN", FileName: "WorldMap-1.0.zip", Version: "1.0"},
 			{ID: 175477, Type: "MISCELLANEOUS", FileName: "WorldMap-addon.zip", Version: "1.0"},
 		},
-	}}}, testEnv, []framework.Mod{a, b})
+	}}}, testEnv, []framework.Mod{a, b}, nil)
 	if len(got.Duplicates) != 1 || !got.Duplicates[0].NexusOptional || got.Count() != 0 {
 		t.Fatalf("optional duplicate = %+v, count = %d", got.Duplicates, got.Count())
 	}
@@ -252,7 +252,7 @@ func TestBroken(t *testing.T) {
 		"D": {Compatibility: "Broken"},
 	}}
 	mods := []framework.Mod{inst("a", "A", "1", true), inst("b", "B", "1", true), inst("c", "C", "1", true), inst("d", "D", "1", false)}
-	got := Check(context.Background(), m, testEnv, mods)
+	got := Check(context.Background(), m, testEnv, mods, nil)
 	want := []Broken{
 		{Key: "a", ID: "smapi:A", Name: "A", Status: "broken", BrokeIn: "Stardew Valley 1.6"},
 		{Key: "c", ID: "smapi:C", Name: "C", Status: "obsolete"},
@@ -260,7 +260,7 @@ func TestBroken(t *testing.T) {
 	if !reflect.DeepEqual(got.Broken, want) || got.Unknown {
 		t.Fatalf("broken = %+v, unknown = %v", got.Broken, got.Unknown)
 	}
-	off := Check(context.Background(), fakeMeta{updatesOff: true}, testEnv, mods)
+	off := Check(context.Background(), fakeMeta{updatesOff: true}, testEnv, mods, nil)
 	if len(off.Broken) != 0 || !off.Unknown {
 		t.Fatalf("offline: %+v", off)
 	}
@@ -269,7 +269,7 @@ func TestBroken(t *testing.T) {
 func TestCheckPopulatesTimings(t *testing.T) {
 	pack := inst("p", "P", "1.0", true)
 	pack.ContentPackFor = "Pathoschild.ContentPatcher"
-	got := Check(context.Background(), fakeMeta{}, testEnv, []framework.Mod{inst("a", "A", "1.0", true), pack})
+	got := Check(context.Background(), fakeMeta{}, testEnv, []framework.Mod{inst("a", "A", "1.0", true), pack}, nil)
 	names := map[string]bool{}
 	for _, tmg := range got.Timings {
 		names[tmg.Name] = true

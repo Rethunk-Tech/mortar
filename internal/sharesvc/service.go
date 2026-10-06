@@ -90,7 +90,9 @@ type Deps struct {
 	// CollectionArchive downloads a collection's curator archive by the API path Nexus reports; nil disables it.
 	CollectionArchive func(ctx context.Context, downloadLink string) ([]byte, error)
 	Env               func(game string) problems.Environment
-	Queue             Queue
+	// NexusPages gives many Nexus pages' data in a few batched requests, for the requirements they list; nil skips them.
+	NexusPages problems.NexusPagesOf
+	Queue      Queue
 	// Stored reports whether a source key is already available in Mortar's store.
 	Stored func(game, key string) bool
 	// Dir is the data folder holding pending-configs.json; empty keeps pending imports in memory only.
@@ -400,7 +402,7 @@ func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string)
 	if domain, slug, revision, ok := parseCollectionURL(text); ok {
 		return s.previewCollection(ctx, game, domain, slug, revision, profileID)
 	}
-	if domain, modID, ok := parseModPageURL(text); ok {
+	if domain, modID, ok := nexus.ParseModURL(text); ok {
 		return s.previewModPage(ctx, game, domain, modID, profileID)
 	}
 	shared, err := share.Parse(text)
@@ -597,7 +599,7 @@ func (s *Service) preview(ctx context.Context, game string, shared share.Shared,
 func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
 	r := &resolver{
 		meta: s.d.Meta, files: s.d.Files, signedIn: s.d.SignedIn(), premium: s.d.Premium(), env: s.d.Env(game),
-		game: game, stored: s.d.Stored, storedKeys: map[string]bool{},
+		game: game, stored: s.d.Stored, storedKeys: map[string]bool{}, requirements: s.d.NexusPages.Requirements(game),
 	}
 	if profileID == "" {
 		return r, nil

@@ -78,6 +78,7 @@ function offersFor(dependentIds: readonly string[], result: Result | null): Miss
   for (const missing of result?.missing ?? []) {
     if (
       missing.reason === 'absent' &&
+      !missing.external &&
       !(missing.listed && missing.optional) &&
       dependentIds.some((id) => sameId(id, missing.dependentId))
     ) {

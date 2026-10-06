@@ -89,6 +89,12 @@ function describeMissing(
   const dep = p.missing.listed
     ? p.missing.where?.pageName?.trim() || nameOf(p.missing.id)
     : nameOf(p.missing.id)
+  if (p.missing.external) {
+    const note = p.missing.note.trim()
+    return note === ''
+      ? i18n._(msg`${dependentName}'s Nexus page says it needs ${dep} from outside Nexus.`)
+      : i18n._(msg`${dependentName}'s Nexus page says it needs ${dep} from outside Nexus: ${note}`)
+  }
   if (p.missing.listed) {
     const note = p.missing.note.trim()
     return note === ''

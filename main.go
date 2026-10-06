@@ -555,7 +555,7 @@ func run() error {
 	problemsSvc.Runs = launches
 	problemsSvc.Throttle = queueSvc.SourceSlot
 	problemsSvc.GitHub = &github.Client{}
-	problemsSvc.NexusPages = func(ctx context.Context, gameID string, ids []int) (map[int]nexus.Page, error) {
+	nexusPages := func(ctx context.Context, gameID string, ids []int) (map[int]nexus.Page, error) {
 		details, err := nexusSvc.Prime(ctx, gameID, ids)
 		pages := make(map[int]nexus.Page, len(details))
 		for id, d := range details {
@@ -563,6 +563,7 @@ func run() error {
 		}
 		return pages, err
 	}
+	problemsSvc.NexusPages = nexusPages
 	problemsSvc.NexusFiles = func(ctx context.Context, t nexus.Title, ids []int) (map[int][]nexus.BatchFile, error) {
 		c, err := nexussvc.Authed(store, nexusClient)
 		if err != nil {
@@ -598,8 +599,9 @@ func run() error {
 			}
 			return c.Files(ctx, t, modID)
 		},
-		SignedIn: func() bool { return store.Get().NexusUserID != 0 },
-		Premium:  func() bool { return store.Get().NexusPremium },
+		SignedIn:   func() bool { return store.Get().NexusUserID != 0 },
+		Premium:    func() bool { return store.Get().NexusPremium },
+		NexusPages: nexusPages,
 		CollectionArchive: func(ctx context.Context, link string) ([]byte, error) {
 			c, err := nexussvc.Authed(store, nexusClient)
 			if err != nil {

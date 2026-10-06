@@ -10,6 +10,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -37,22 +39,27 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 		return nil
 	}
 	defer func() { _ = root.Close() }()
-	reqs, ok := meta.Peek[[]meta.Requirement](&meta.Client{}, meta.RequirementsCacheFile(domain, modID))
+	// The requirements ride on the page data Mortar keeps for the mod: its full details, else the batched page.
+	cache := &meta.Client{}
+	d, ok := meta.Peek[nexussvc.Details](cache, nexussvc.DetailsName(domain, modID))
+	if !ok {
+		d, ok = meta.Peek[nexussvc.Details](cache, nexussvc.PageName(domain, modID))
+	}
 	if !ok {
 		return nil
 	}
-	items := requirementItems(reqs)
+	items := requirementItems(d.Page.Requirements)
 	if len(items) == 0 {
 		return nil
 	}
 	return markRequirementPresence(items, activeProfileNexusIDs(root, info.ID))
 }
 
-func requirementItems(reqs []meta.Requirement) []requirementItem {
+func requirementItems(reqs []nexus.Requirement) []requirementItem {
 	items := make([]requirementItem, 0, len(reqs))
 	for _, req := range reqs {
 		name := strings.TrimSpace(req.Name)
-		if req.ModID < 1 {
+		if req.External || req.ModID < 1 {
 			if name == "" {
 				name = strings.TrimSpace(req.Notes)
 			}

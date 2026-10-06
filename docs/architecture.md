@@ -658,7 +658,7 @@ Saves live in one folder, `%APPDATA%\StardewValley\Saves` or `~/.config/StardewV
 - **Config presets:** a mod's `config.json` can be saved by name under `<data>/config-presets/<game>/<local id>/<name>.json` and applied to any profile's copy as one history event.
 - **Groups and health:** a profile's `groups` name sets of entries that enable or disable together in one history event; after each problem check the counts are appended to `health.json` beside `profile.json` (newest 200 points).
 
-- **Nexus-listed requirements:** Problems also report requirements named on a mod's Nexus page, including the author's note when present.
+- **Nexus-listed requirements:** Problems also report requirements named on a mod's Nexus page, including the author's note when present. They come from the batched page data (`nexussvc.Prime`, asked without a key when signed out), so a cold 811-mod profile costs 13 GraphQL requests. An outside link to a Nexus mod page of the same game counts as that mod; the game's loader (its Nexus page, or an outside link named as it) is never reported; any other outside download is a note with only Dismiss, since Mortar cannot add it.
 
 ## Nexus Mods
 

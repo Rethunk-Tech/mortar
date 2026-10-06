@@ -91,7 +91,8 @@ func TestModsByDomainReadsRequirements(t *testing.T) {
 			"modRequirements":{"nexusRequirements":{"nodes":[
 				{"modId":"1915","modName":"Content Patcher","url":"","externalRequirement":false,"notes":"Framework","gameId":"1303"},
 				{"modId":"77","modName":"Other Game Mod","url":"","externalRequirement":false,"notes":"","gameId":"9"},
-				{"modId":"","modName":"Some Tool","url":"https://example.org/tool","externalRequirement":true,"notes":"","gameId":""}]}}}]}}}`)
+				{"modId":"","modName":"Some Tool","url":"https://example.org/tool","externalRequirement":true,"notes":"","gameId":""},
+				{"modId":"","modName":"Fashion Sense","url":"https://www.nexusmods.com/stardewvalley/mods/9969?tab=files","externalRequirement":true,"notes":"","gameId":""}]}}}]}}}`)
 	}))
 	t.Cleanup(srv.Close)
 	c := New("test").WithKey("k")
@@ -104,6 +105,7 @@ func TestModsByDomainReadsRequirements(t *testing.T) {
 		{ModID: 1915, Name: "Content Patcher", URL: "https://www.nexusmods.com/stardewvalley/mods/1915", Notes: "Framework"},
 		{Name: "Other Game Mod", External: true},
 		{Name: "Some Tool", URL: "https://example.org/tool", External: true},
+		{ModID: 9969, Name: "Fashion Sense", URL: "https://www.nexusmods.com/stardewvalley/mods/9969"},
 	}
 	if r := got[3753].Page().Requirements; !slices.Equal(r, want) {
 		t.Fatalf("requirements = %+v", r)
