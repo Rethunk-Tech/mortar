@@ -82,7 +82,9 @@ export function flattenModGroups<T>(
         count: group.items.length,
       })
     }
-    if (collapsed[group.key] !== true) {
+    // Without grouping there is no header to reopen a group, so a collapse saved under another grouping (the
+    // ungrouped list shares the empty key with Uncategorised) must not hide the list.
+    if (!grouped || collapsed[group.key] !== true) {
       if (columns === undefined) {
         for (const [i, item] of group.items.entries()) {
           out.push({

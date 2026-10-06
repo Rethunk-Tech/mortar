@@ -82,3 +82,12 @@ test('stepId clamps at both ends instead of wrapping', () => {
   expect(stepId(['a', 'b', 'c', 'd'], 'b', -3)).toBe('a')
   expect(stepId(['a', 'b'], 'x', 1)).toBeUndefined()
 })
+
+test('a collapse saved under a grouping never hides the ungrouped list', () => {
+  const rows = flattenModGroups([{ key: '', items: [{ id: 'a' }] }], {
+    grouped: false,
+    collapsed: { '': true },
+    idOf,
+  })
+  expect(rows.map((row) => row.key)).toEqual(['r:a'])
+})
