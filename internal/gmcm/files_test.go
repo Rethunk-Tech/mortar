@@ -93,6 +93,9 @@ func TestParseSetFlag(t *testing.T) {
 	if err != nil || page != "main" || index != 2 || value != "true" {
 		t.Fatalf("%s %d %s %v", page, index, value, err)
 	}
+	if page, index, _, err := ParseSetFlag("/5=true"); err != nil || page != "" || index != 5 {
+		t.Fatalf("main page: %q %d %v", page, index, err)
+	}
 	if _, _, _, err := ParseSetFlag("nope"); err == nil {
 		t.Fatal("expected parse error")
 	}

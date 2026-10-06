@@ -13,8 +13,9 @@ func ParseSetFlag(spec string) (page string, index int, value string, err error)
 		return "", 0, "", fmt.Errorf("gmcm: --set wants page/index=value")
 	}
 	loc, value := spec[:eq], spec[eq+1:]
+	// GMCM's first page has the empty id, so "/2=true" sets an option on it.
 	slash := strings.LastIndexByte(loc, '/')
-	if slash <= 0 || slash == len(loc)-1 {
+	if slash < 0 || slash == len(loc)-1 {
 		return "", 0, "", fmt.Errorf("gmcm: --set wants page/index=value")
 	}
 	page = loc[:slash]
