@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -235,7 +236,9 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 	if err != nil {
 		return "", err
 	}
-	if !isPackage {
+	if isPackage {
+		mods[0].Version = cmp.Or(mods[0].Version, source.Version)
+	} else {
 		src, tmp, err := s.layoutItem(game, p.ID, key, source.fomodMap())
 		if tmp != "" {
 			defer func() { _ = fsx.RemoveAll(tmp) }()

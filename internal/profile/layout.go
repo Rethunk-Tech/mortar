@@ -2,7 +2,9 @@ package profile
 
 import (
 	"cmp"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -44,9 +46,9 @@ func (s *Store) pick(game, key string) (installer.Archive, installer.Game, insta
 	arch := installer.Open(root, key)
 	g := installerGame(game)
 	inst, _ := installer.Pick(arch, g)
-	if inst.ID() == driverThunderstore {
+	if _, statErr := os.Stat(filepath.Join(root, "manifest.json")); inst.ID() == driverThunderstore && statErr == nil {
 		// The driver names files by package, Namespace-Name, which is not the store key. An archive from disk has only
-		// the manifest's name, which the driver reads itself.
+		// the manifest's name, which the driver reads itself. A BepInEx mod without a manifest keeps the store key.
 		_, arch.Key, _, _ = s.items.Meta(game, key)
 		// A GitHub item is described by owner/repo, which may hold a dash but is no package name.
 		if _, _, isTS := strings.Cut(arch.Key, "-"); !isTS || strings.Contains(arch.Key, "/") {
@@ -166,6 +168,9 @@ func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err er
 		return nil, false, err
 	}
 	b, err := fsx.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
+	if errors.Is(err, fs.ErrNotExist) {
+		return []Component{pluginComponent(key, arch.Dir)}, true, nil
+	}
 	if err != nil {
 		return nil, false, err
 	}
@@ -187,10 +192,31 @@ func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err er
 	return []Component{{ID: mod.NewID(mod.FormatThunderstore, id), Version: m.Version, Name: m.Name, Author: author, Folder: "."}}, true, nil
 }
 
+// pluginComponent is the component of a BepInEx mod that has no Thunderstore manifest. It is named for its first
+// DLL, which is the plugin's assembly in nearly every such archive, so another file or version of the same mod
+// replaces it; an archive with no DLL is named for its store key.
+// It has no version of its own; the entry's source gives it one.
+func pluginComponent(key, dir string) Component {
+	name := key
+	var dlls []string
+	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
+		if err == nil && !d.IsDir() && strings.EqualFold(filepath.Ext(p), ".dll") {
+			dlls = append(dlls, p)
+		}
+		return nil
+	})
+	if len(dlls) > 0 {
+		slices.Sort(dlls)
+		name = strings.TrimSuffix(filepath.Base(dlls[0]), filepath.Ext(dlls[0]))
+	}
+	return Component{ID: mod.NewID(mod.FormatBepInEx, name), Name: name, Folder: "."}
+}
+
 // placePackageLocked adds a Thunderstore package to the profile, or swaps it in for another version of the same
 // package. Nothing is copied: the entry records the package, and the launch deploys its files.
 func (s *Store) placePackageLocked(game, id, key string, source Source, mods []Component) (Profile, bool, bool, error) {
 	var updated, changed bool
+	mods[0].Version = cmp.Or(mods[0].Version, source.Version)
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
 		if i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == key }); i >= 0 {
 			return &DuplicateError{Key: key, Label: entryLabel(p.Entries[i])}

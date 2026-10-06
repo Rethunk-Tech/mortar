@@ -107,6 +107,18 @@ func TestLayoutGoldens(t *testing.T) {
 				"profile:BepInEx/patchers/Ns-Gen/Gen/Gen.dll<-patchers/Gen/Gen.dll profile:BepInEx/plugins/Ns-Gen/Loose.dll<-Loose.dll",
 		},
 		{
+			"BepInEx plugin from another site, without a manifest", bep, "nexus-17-1",
+			map[string]string{"lbtokg.dll": "d", "readme.txt": "r"},
+			nil, "thunderstore-rules",
+			"profile:BepInEx/plugins/nexus-17-1/lbtokg.dll<-lbtokg.dll profile:BepInEx/plugins/nexus-17-1/readme.txt<-readme.txt",
+		},
+		{
+			"no manifest and no BepInEx content stays plain", bep, "k",
+			map[string]string{"notes.txt": "n"},
+			nil, "plain",
+			"mods:k/notes.txt<-notes.txt",
+		},
+		{
 			"Thunderstore manifest in a SMAPI game is plain", smapi, "k",
 			map[string]string{"manifest.json": `{"name":"M","version_number":"1.0.0"}`},
 			nil, "plain",
