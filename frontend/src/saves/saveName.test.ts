@@ -17,4 +17,5 @@ test('a save is named by its farm, its Lethal Company slot, or its folder or fil
   expect(saveName({ farm: '', folder: 'LCSaveFile2' })).toBe('Save file 2')
   expect(saveName({ farm: '', folder: 'LCChallengeFile' })).toBe('Challenge moon')
   expect(saveName({ farm: '', folder: 'Ragnar.fch' })).toBe('Ragnar')
+  expect(saveName({ farm: '', folder: 'worlds_local/Midgard.fwl' })).toBe('Midgard')
 })

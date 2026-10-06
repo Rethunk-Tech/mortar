@@ -8,10 +8,13 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
 
 // Snap is one save folder inside a backup zip.
@@ -31,8 +34,9 @@ type Backup struct {
 	Saves   []Snap `json:"saves"`
 }
 
-// List returns backups newest first. A zip that cannot be opened still appears, with no save list.
-func List(backupsDir string) ([]Backup, error) {
+// List returns backups newest first, each listing the saves it holds as l lays them out. A zip that cannot be opened
+// still appears, with no save list.
+func List(backupsDir string, l saves.Layout) ([]Backup, error) {
 	names, err := list(backupsDir)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -53,13 +57,13 @@ func List(backupsDir string) ([]Backup, error) {
 		}
 		c := readCause(p)
 		b.Profile, b.Kind, b.Pinned = c.Profile, c.Kind, c.Pinned
-		b.Saves, _ = snapsIn(p)
+		b.Saves, _ = snapsIn(p, l)
 		out = append(out, b)
 	}
 	return out, nil
 }
 
-func snapsIn(zipPath string) ([]Snap, error) {
+func snapsIn(zipPath string, l saves.Layout) ([]Snap, error) {
 	zr, err := zip.OpenReader(zipPath)
 	if err != nil {
 		return nil, err
@@ -71,6 +75,12 @@ func snapsIn(zipPath string) ([]Snap, error) {
 		folder, rest, ok := savePath(f.Name)
 		if !ok {
 			continue
+		}
+		if len(l.Files) > 0 {
+			// A file save's name is its whole path under Saves/; its companions are not saves of their own.
+			if folder, rest = path.Join(folder, rest), ""; f.FileInfo().IsDir() || !l.Matches(folder) {
+				continue
+			}
 		}
 		// A save that names no farm (Lethal Company's files) is left unnamed, for the reader to name by its folder.
 		if _, seen := farms[folder]; !seen {

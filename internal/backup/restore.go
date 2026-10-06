@@ -26,7 +26,8 @@ func Restore(zipPath string, l saves.Layout, backupsDir string, folders []string
 		return err
 	}
 	defer func() { _ = fsx.RemoveAll(tmp) }()
-	want, err := extractSaves(zipPath, saves.Layout{Dir: filepath.Join(tmp, "Saves"), Files: l.Files}, folders)
+	got := saves.Layout{Dir: filepath.Join(tmp, "Saves"), Files: l.Files, Companions: l.Companions}
+	want, err := extractSaves(zipPath, got, folders)
 	if err != nil {
 		return err
 	}
@@ -37,29 +38,34 @@ func Restore(zipPath string, l saves.Layout, backupsDir string, folders []string
 		return err
 	}
 	for _, folder := range want {
-		src := filepath.Join(tmp, "Saves", folder)
-		dst := filepath.Join(l.Dir, folder)
-		if _, err := os.Stat(dst); err == nil {
-			old := dst + ".mortar-restore"
-			if err := fsx.Rename(dst, old); err != nil {
+		for _, part := range got.Paths(folder) {
+			if err := replace(filepath.Join(got.Dir, filepath.FromSlash(part)), filepath.Join(l.Dir, filepath.FromSlash(part))); err != nil {
 				return err
 			}
-			if err := fsx.Rename(src, dst); err != nil {
-				_ = fsx.Rename(old, dst)
-				return err
-			}
-			if err := fsx.RemoveAll(old); err != nil {
-				return err
-			}
-			continue
-		} else if !errors.Is(err, fs.ErrNotExist) {
-			return err
-		}
-		if err := fsx.Rename(src, dst); err != nil {
-			return err
 		}
 	}
 	return nil
+}
+
+// replace moves src to dst, putting a dst already there back when the move fails.
+func replace(src, dst string) error {
+	if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+		return err
+	}
+	if _, err := os.Stat(dst); err == nil {
+		old := dst + ".mortar-restore"
+		if err := fsx.Rename(dst, old); err != nil {
+			return err
+		}
+		if err := fsx.Rename(src, dst); err != nil {
+			_ = fsx.Rename(old, dst)
+			return err
+		}
+		return fsx.RemoveAll(old)
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	return fsx.Rename(src, dst)
 }
 
 // extractSaves unpacks zipPath beside got.Dir, its Saves folder, and lists the saves in it that folders names (all

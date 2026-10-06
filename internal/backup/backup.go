@@ -148,7 +148,7 @@ func Folder(l saves.Layout, backupsDir, folder string, keep int, now time.Time, 
 func finishZip(backupsDir string, l saves.Layout, names []string, keep int, now, name time.Time, cause Cause) (string, error) {
 	dst := filepath.Join(backupsDir, FileName(name))
 	if err := datadir.WriteStream(dst, 0o600, func(w io.Writer) error {
-		return writeZip(w, l.Dir, names)
+		return writeZip(w, l, names)
 	}); err != nil {
 		return "", err
 	}
@@ -190,7 +190,22 @@ func lastChangeOf(l saves.Layout, names []string) (time.Time, error) {
 	}
 	last := fi.ModTime()
 	for _, n := range names {
-		t, err := lastChange(filepath.Join(l.Dir, n))
+		t, err := saveChange(l, n)
+		if err != nil {
+			return time.Time{}, err
+		}
+		if t.After(last) {
+			last = t
+		}
+	}
+	return last, nil
+}
+
+// saveChange is the newest modification time among save name's files (see saves.Layout.Paths).
+func saveChange(l saves.Layout, name string) (time.Time, error) {
+	var last time.Time
+	for _, p := range l.Paths(name) {
+		t, err := lastChange(filepath.Join(l.Dir, filepath.FromSlash(p)))
 		if err != nil {
 			return time.Time{}, err
 		}
@@ -220,42 +235,51 @@ func lastChange(root string) (time.Time, error) {
 	return last, err
 }
 
-// writeZip stores each named save of root under Saves/, the folder a restore reads, whatever root is called.
-func writeZip(w io.Writer, root string, names []string) error {
+// writeZip stores each named save of l, with its companions, under Saves/, the folder a restore reads, whatever
+// l.Dir is called.
+func writeZip(w io.Writer, l saves.Layout, names []string) error {
+	root := l.Dir
 	zw := zip.NewWriter(w)
 	var errs []error
 	for _, n := range names {
-		errs = append(errs, filepath.WalkDir(filepath.Join(root, n), func(p string, d fs.DirEntry, err error) error {
-			if err != nil || !d.Type().IsRegular() {
-				return err
-			}
-			rel, err := filepath.Rel(root, p)
-			if err != nil {
-				return err
-			}
-			info, err := d.Info()
-			if err != nil {
-				return err
-			}
-			h, err := zip.FileInfoHeader(info)
-			if err != nil {
-				return err
-			}
-			h.Name = path.Join("Saves", filepath.ToSlash(rel))
-			h.Method = zip.Deflate
-			zf, err := zw.CreateHeader(h)
-			if err != nil {
-				return err
-			}
-			in, err := fsx.Open(p)
-			if err != nil {
-				return err
-			}
-			_, err = io.Copy(zf, in)
-			return errors.Join(err, in.Close())
-		}))
+		for _, part := range l.Paths(n) {
+			errs = append(errs, zipTree(zw, root, filepath.Join(root, filepath.FromSlash(part))))
+		}
 	}
 	return errors.Join(append(errs, zw.Close())...)
+}
+
+// zipTree stores the files of top, a file or folder under root, at their paths under Saves/.
+func zipTree(zw *zip.Writer, root, top string) error {
+	return filepath.WalkDir(top, func(p string, d fs.DirEntry, err error) error {
+		if err != nil || !d.Type().IsRegular() {
+			return err
+		}
+		rel, err := filepath.Rel(root, p)
+		if err != nil {
+			return err
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		h, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+		h.Name = path.Join("Saves", filepath.ToSlash(rel))
+		h.Method = zip.Deflate
+		zf, err := zw.CreateHeader(h)
+		if err != nil {
+			return err
+		}
+		in, err := fsx.Open(p)
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(zf, in)
+		return errors.Join(err, in.Close())
+	})
 }
 
 // list returns the backups' names, oldest first: the timestamp names sort that way.

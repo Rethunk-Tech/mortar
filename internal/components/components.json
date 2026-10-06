@@ -230,13 +230,14 @@
       "metadata": [],
       "paths": {
         "saves": {
-          "windows": "{localLow}/IronGate/Valheim/characters_local"
+          "windows": "{localLow}/IronGate/Valheim"
         },
         "unityLog": {
           "windows": "{localLow}/IronGate/Valheim/Player.log"
         }
       },
-      "saveFiles": ["*.fch"],
+      "saveFiles": ["characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"],
+      "saveCompanions": [".db"],
       "deploy": "profile",
       "targets": [
         {

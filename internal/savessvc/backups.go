@@ -37,7 +37,7 @@ func (s *Service) ListBackups(game, profile string) ([]backup.Backup, error) {
 	var out []backup.Backup
 	seen := map[string]bool{}
 	for _, dir := range reads {
-		listed, err := backup.List(dir)
+		listed, err := backup.List(dir, s.scanners[id].Layout())
 		if err != nil {
 			return nil, err
 		}
@@ -171,7 +171,7 @@ func uniqueBackupTime(dirs []string, now time.Time) time.Time {
 }
 
 // OpenSaveFolder shows one save's folder (a direct child of the Saves folder) in the system file manager; a save kept
-// as one file shows the folder holding it.
+// as a file shows the folder holding it.
 func (s *Service) OpenSaveFolder(game, folder string) error {
 	id, err := s.saveGame(game)
 	if err != nil {
@@ -185,7 +185,7 @@ func (s *Service) OpenSaveFolder(game, folder string) error {
 		if !l.IsSave(folder) {
 			return fmt.Errorf("save %q not found", folder)
 		}
-		return datadir.Open(l.Dir)
+		return datadir.Open(filepath.Dir(filepath.Join(l.Dir, filepath.FromSlash(folder))))
 	}
 	dir, err := backup.SaveDir(l.Dir, folder)
 	if err != nil {

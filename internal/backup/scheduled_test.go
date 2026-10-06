@@ -54,7 +54,7 @@ func TestScheduledBacksUpChangedSavesAndRotatesEachSaveApart(t *testing.T) {
 		}
 	}
 
-	listed, err := List(out)
+	listed, err := List(out, folderSaves)
 	if err != nil {
 		t.Fatal(err)
 	}

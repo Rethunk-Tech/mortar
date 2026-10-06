@@ -108,7 +108,8 @@ func NewService(home string, profiles *profile.Store, store *settings.Store, cli
 			log.Printf("saves: %s: %v", id, err)
 			continue
 		}
-		scanners[id] = &saves.Scanner{Dir: savesDir, Files: game.SaveFiles(id), CacheDir: filepath.Join(base, "cache", id)}
+		l := game.SaveLayout(id, savesDir)
+		scanners[id] = &saves.Scanner{Dir: l.Dir, Files: l.Files, Companions: l.Companions, CacheDir: filepath.Join(base, "cache", id)}
 	}
 	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanners: scanners, last: NewStore(base)}, nil
 }
@@ -132,7 +133,7 @@ func (s *Service) scannerFor(gameID, profileID string) (*saves.Scanner, error) {
 	if s.pinned == nil {
 		s.pinned = map[string]*saves.Scanner{}
 	}
-	sc := &saves.Scanner{Dir: dir, Files: selected.Files, CacheDir: filepath.Join(selected.CacheDir, "install-"+pin)}
+	sc := &saves.Scanner{Dir: dir, Files: selected.Files, Companions: selected.Companions, CacheDir: filepath.Join(selected.CacheDir, "install-"+pin)}
 	s.pinned[dir] = sc
 	return sc, nil
 }

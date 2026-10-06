@@ -32,7 +32,7 @@ func Scheduled(l saves.Layout, backupsDir string, keep int, now time.Time) (Run,
 	var errs []error
 	for _, folder := range names {
 		if last, ok := newest[folder]; ok {
-			changed, err := lastChange(filepath.Join(l.Dir, folder))
+			changed, err := saveChange(l, folder)
 			if err != nil {
 				run.Failed++
 				errs = append(errs, err)

@@ -47,7 +47,7 @@ func TestScheduledBackupsFollowTheIntervalAndWaitForTheGame(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		listed, err := backup.List(dir)
+		listed, err := backup.List(dir, saves.Layout{})
 		if err != nil {
 			t.Fatal(err)
 		}

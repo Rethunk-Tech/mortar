@@ -46,3 +46,6 @@ func TestLocationsKeepEachGameApart(t *testing.T) {
 
 // layout is a Stardew-shaped saves folder.
 func layout(dir string) saves.Layout { return saves.Layout{Dir: dir} }
+
+// folderSaves lays saves out as Stardew Valley does, one folder per save; List needs only its shape.
+var folderSaves = saves.Layout{}

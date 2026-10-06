@@ -381,11 +381,21 @@ func TestSaveFilePatternsStayInTheSavesFolder(t *testing.T) {
 		Loaders: []GameLoader{{ID: "smapi"}},
 		Sources: []GameSource{{ID: "nexus"}},
 	}
-	for _, p := range []string{"", "../LCSaveFile*", "a/b", `a\b`, "["} {
+	for _, p := range []string{"", "../LCSaveFile*", "a/b/c", "/a", "*/a", "!a/b", `a\b`, "["} {
 		g.SaveFiles = []string{p}
 		if g.Validate() == nil {
 			t.Errorf("pattern %q passed", p)
 		}
+	}
+	for _, p := range []string{"worlds_local/*.fwl", "!*_backup_*"} {
+		g.SaveFiles = []string{p}
+		if err := g.Validate(); err != nil {
+			t.Errorf("pattern %q: %v", p, err)
+		}
+	}
+	g.SaveFiles, g.SaveCompanions = nil, []string{"db"}
+	if g.Validate() == nil {
+		t.Error("companion without a dot passed")
 	}
 	lc, ok := bundledGame("lethal-company")
 	if !ok || !slices.Equal(lc.SaveFiles, []string{"LCSaveFile*", "LCChallengeFile"}) {

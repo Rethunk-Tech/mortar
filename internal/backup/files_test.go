@@ -53,7 +53,7 @@ func TestFileSavesBackUpAndRestore(t *testing.T) {
 	if got, want := zipNames(t, whole), []string{"Saves/LCChallengeFile", "Saves/LCSaveFile1", "Saves/LCSaveFile2"}; !slices.Equal(got, want) {
 		t.Fatalf("whole zip = %v, want %v", got, want)
 	}
-	listed, err := List(out)
+	listed, err := List(out, l)
 	if err != nil || len(listed) != 1 || len(listed[0].Saves) != 3 || listed[0].Saves[1] != (Snap{Folder: "LCSaveFile1"}) {
 		t.Fatalf("List = %+v, %v; want a save file listed by its folder with no farm name", listed, err)
 	}
@@ -83,5 +83,54 @@ func TestFileSavesBackUpAndRestore(t *testing.T) {
 	}
 	if err := Restore(whole, l, out, []string{"LCGeneralSaveData"}, DefaultKeep, start.Add(3*time.Hour)); err == nil {
 		t.Fatal("restored a file that is not a save")
+	}
+}
+
+// TestFileSetSavesInFoldersBackUpAndRestore is Valheim's layout: characters and worlds in their own folders, a world
+// being its .fwl with the .db sharing its stem, beside .old copies and timestamped backups that are not saves.
+func TestFileSetSavesInFoldersBackUpAndRestore(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "Valheim")
+	for _, name := range []string{
+		"characters_local/Ragnar.fch", "characters_local/Ragnar.fch.old",
+		"worlds_local/Midgard.fwl", "worlds_local/Midgard.db", "worlds_local/Midgard.fwl.old", "worlds_local/Midgard.db.old",
+		"worlds_local/Midgard_backup_auto-20260101120000.fwl", "worlds_local/Midgard_backup_auto-20260101120000.db",
+		"Player.log",
+	} {
+		if err := os.MkdirAll(filepath.Dir(filepath.Join(dir, name)), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := fsx.WriteFile(filepath.Join(dir, name), []byte("v1 "+name), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	l := saves.Layout{Dir: dir, Files: []string{"characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"}, Companions: []string{".db"}}
+	if names, err := l.Names(); err != nil || !slices.Equal(names, []string{"characters_local/Ragnar.fch", "worlds_local/Midgard.fwl"}) {
+		t.Fatalf("Names = %v, %v", names, err)
+	}
+	out := t.TempDir()
+	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	whole, err := Saves(l, out, DefaultKeep, start, Cause{Kind: KindUpdate})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := zipNames(t, whole), []string{"Saves/characters_local/Ragnar.fch", "Saves/worlds_local/Midgard.db", "Saves/worlds_local/Midgard.fwl"}; !slices.Equal(got, want) {
+		t.Fatalf("whole zip = %v, want %v", got, want)
+	}
+	listed, err := List(out, l)
+	if err != nil || len(listed) != 1 || !slices.Equal(listed[0].Saves, []Snap{{Folder: "characters_local/Ragnar.fch"}, {Folder: "worlds_local/Midgard.fwl"}}) {
+		t.Fatalf("List = %+v, %v", listed, err)
+	}
+	for _, name := range []string{"worlds_local/Midgard.fwl", "worlds_local/Midgard.db"} {
+		if err := fsx.WriteFile(filepath.Join(dir, name), []byte("v2"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := Restore(whole, l, out, []string{"worlds_local/Midgard.fwl"}, DefaultKeep, start.Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"worlds_local/Midgard.fwl", "worlds_local/Midgard.db", "worlds_local/Midgard.db.old"} {
+		if b, err := fsx.ReadFile(filepath.Join(dir, name)); err != nil || string(b) != "v1 "+name {
+			t.Errorf("%s = %q, %v", name, b, err)
+		}
 	}
 }

@@ -66,7 +66,7 @@ func TestPinnedBackupSurvivesRotation(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	items, err := List(out)
+	items, err := List(out, folderSaves)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,7 +169,7 @@ func TestFolderZipsOnlyThatSaveAndStaysPinned(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	items, err := List(out)
+	items, err := List(out, folderSaves)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,7 +193,7 @@ func TestFolderZipsOnlyThatSaveAndStaysPinned(t *testing.T) {
 	if _, err := Saves(layout(saves), out, 1, start.Add(2*MinGap), Cause{Kind: KindLaunch}); err != nil {
 		t.Fatal(err)
 	}
-	after, err := List(out)
+	after, err := List(out, folderSaves)
 	if err != nil {
 		t.Fatal(err)
 	}

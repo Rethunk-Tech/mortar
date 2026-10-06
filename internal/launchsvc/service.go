@@ -27,7 +27,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/overlay"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -994,7 +993,7 @@ func (s *Service) backupChangedSaves(gameID, profileID, installID, installDir st
 		return err
 	}
 	_, err = backup.Saves(
-		saves.Layout{Dir: savesDir, Files: game.SaveFiles(gameID)},
+		game.SaveLayout(gameID, savesDir),
 		target.Dir,
 		target.Keep,
 		time.Now(),

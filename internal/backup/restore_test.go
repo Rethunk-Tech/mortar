@@ -36,7 +36,7 @@ func TestSavesRecordsCauseBesideTheZip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	listed, err := List(out)
+	listed, err := List(out, folderSaves)
 	if err != nil || len(listed) != 1 {
 		t.Fatalf("list = %v, %v", listed, err)
 	}
@@ -66,7 +66,7 @@ func TestListIsNewestFirst(t *testing.T) {
 	if _, err := Saves(layout(saves), out, DefaultKeep, start.Add(MinGap), Cause{Kind: KindUpdate}); err != nil {
 		t.Fatal(err)
 	}
-	listed, err := List(out)
+	listed, err := List(out, folderSaves)
 	if err != nil || len(listed) != 2 {
 		t.Fatalf("list = %v, %v", listed, err)
 	}
@@ -130,14 +130,14 @@ func TestRestoreAllAndPreRestoreBackup(t *testing.T) {
 	if err := os.Chtimes(filepath.Join(saves, "Alpha_1", "Alpha_1"), later, later); err != nil {
 		t.Fatal(err)
 	}
-	before, err := List(backups)
+	before, err := List(backups, folderSaves)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err := Restore(zipPath, layout(saves), filepath.Dir(zipPath), nil, DefaultKeep, later); err != nil {
 		t.Fatal(err)
 	}
-	after, err := List(backups)
+	after, err := List(backups, folderSaves)
 	if err != nil {
 		t.Fatal(err)
 	}

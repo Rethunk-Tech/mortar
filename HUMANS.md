@@ -208,6 +208,7 @@ Add the game to `games` in `components.source.json`, then publish as described u
 - `targets`: the places mod files go, each with a profile `root` (`{profileMods}`, `{profile}` or a folder below `{profile}`) and optionally `maxDepth` to cap how deep a file may sit.
 - `importIds`: the game's Vortex id (its extension's `GAME_ID`) and MO2 name (its plugin's `GameName`); leave it out for a game neither manager supports.
 - `metadata`: provider ids (`smapi-updates`, `smapi-compat`, `stardew-dataset`); none for a game without them.
+- `saveFiles` and `saveCompanions`: for a game that keeps saves as files, patterns naming them in the saves folder or one folder below it (`!` first excludes), and extensions of same-stem files beside each that belong to it; without `saveFiles` a save is a folder holding a file of its own name.
 - `r2modmanFolder`: r2modman's name for the game (the Thunderstore ecosystem schema's `internalFolderName`), which maps an imported r2modman profile to the game.
 
 ### A catalog-only game, end to end

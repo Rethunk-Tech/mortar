@@ -18,6 +18,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -92,9 +93,13 @@ type GameInfo struct {
 	Metadata []string `json:"metadata"`
 	// Paths names folders and files outside the install by role (saves, startupPreferences).
 	Paths map[string]PathTemplate `json:"paths,omitempty"`
-	// SaveFiles are patterns naming each save file directly in the saves folder, for a game that keeps a save as one
-	// file. Without them a save is a folder holding a file of its own name, as Stardew Valley's are.
+	// SaveFiles are patterns naming each save file in the saves folder or one folder below it, for a game that keeps a
+	// save as a file; a pattern starting with "!" excludes the files it matches. Without them a save is a folder holding
+	// a file of its own name, as Stardew Valley's are.
 	SaveFiles []string `json:"saveFiles,omitempty"`
+	// SaveCompanions are extensions of files beside a save file, sharing its stem, that belong to that save (a Valheim
+	// world's .db beside its .fwl).
+	SaveCompanions []string `json:"saveCompanions,omitempty"`
 	// Deploy is how the profile reaches the game: redirect (the loader points the game at the profile's mods folder,
 	// nothing is placed) or profile (the profile holds the loader and its mods, and the loader's install-side files are
 	// placed into the install for the launch and taken back after).
@@ -210,6 +215,20 @@ type GameLoader struct {
 	Package string `json:"package,omitempty"`
 }
 
+// saveFilePattern reports whether p names files in the saves folder or in one plain folder below it; an exclusion
+// ("!" first) names files in any of them by name alone.
+func saveFilePattern(p string) bool {
+	file, not := strings.CutPrefix(p, "!")
+	parts := strings.Split(file, "/")
+	if _, err := path.Match(file, ""); err != nil || strings.Contains(p, "\\") || len(parts) > 2 || not && len(parts) > 1 {
+		return false
+	}
+	if len(parts) == 2 && strings.ContainsAny(parts[0], "*?[") {
+		return false
+	}
+	return !slices.ContainsFunc(parts, func(s string) bool { return s == "" || s == "." || s == ".." })
+}
+
 // DefaultLoaderPackage is the BepInEx pack most Thunderstore communities share.
 const DefaultLoaderPackage = "BepInEx-BepInExPack"
 
@@ -312,8 +331,13 @@ func (g GameInfo) Validate() error {
 		}
 	}
 	for _, p := range g.SaveFiles {
-		if _, err := filepath.Match(p, ""); err != nil || p == "" || strings.ContainsAny(p, "/\\") {
+		if !saveFilePattern(p) {
 			return fmt.Errorf("game %q has an unusable save file pattern %q", g.ID, p)
+		}
+	}
+	for _, ext := range g.SaveCompanions {
+		if len(ext) < 2 || ext[0] != '.' || strings.ContainsAny(ext, "/\\*?[") {
+			return fmt.Errorf("game %q has an unusable save companion %q", g.ID, ext)
 		}
 	}
 	for role, t := range g.Paths {

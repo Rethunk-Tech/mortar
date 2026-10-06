@@ -9,12 +9,14 @@ import (
 	"errors"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -65,26 +67,26 @@ type cached struct {
 	Info  Info  `json:"info"`
 }
 
-// Scanner scans the saves in Dir, laid out as Files says (see Layout), and caches results in CacheDir.
+// Scanner scans the saves in Dir, laid out as Files and Companions say (see Layout), and caches results in CacheDir.
 type Scanner struct {
-	Dir      string
-	Files    []string
-	CacheDir string
-	mu       sync.Mutex
+	Dir        string
+	Files      []string
+	Companions []string
+	CacheDir   string
+	mu         sync.Mutex
 }
 
 // Layout is the scanned folder and its save shape.
-func (s *Scanner) Layout() Layout { return Layout{Dir: s.Dir, Files: s.Files} }
+func (s *Scanner) Layout() Layout {
+	return Layout{Dir: s.Dir, Files: s.Files, Companions: s.Companions}
+}
 
 // Scan returns every save in Dir, newest first. A save that cannot be read is left out and reported in the
 // error, which accompanies the readable ones.
 func (s *Scanner) Scan(index map[string][]meta.Ref) ([]Info, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	entries, err := os.ReadDir(s.Dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
+	entries, err := s.Layout().Names()
 	if err != nil {
 		return nil, err
 	}
@@ -101,16 +103,16 @@ func (s *Scanner) Scan(index map[string][]meta.Ref) ([]Info, error) {
 		wg.Go(func() {
 			sem <- struct{}{}
 			defer func() { <-sem }()
-			st, ok, err := s.stampOf(e.Name(), len(index))
+			st, ok, err := s.stampOf(e, len(index))
 			if err != nil || !ok {
 				results[i].err = err
 				return
 			}
-			if c, hit := old[e.Name()]; hit && c.Stamp == st {
+			if c, hit := old[e]; hit && c.Stamp == st {
 				results[i].c, results[i].ok = c, true
 				return
 			}
-			info, err := s.read(e.Name(), index)
+			info, err := s.read(e, index)
 			results[i].c, results[i].ok, results[i].err = cached{Stamp: st, Info: info}, err == nil, err
 		})
 	}
@@ -140,17 +142,14 @@ func (s *Scanner) Scan(index map[string][]meta.Ref) ([]Info, error) {
 func (s *Scanner) Newest(index map[string][]meta.Ref) (Info, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	entries, err := os.ReadDir(s.Dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return Info{}, nil
-	}
+	entries, err := s.Layout().Names()
 	if err != nil {
 		return Info{}, err
 	}
 	var newest string
 	var played int64
 	for _, entry := range entries {
-		st, ok, err := s.stampOf(entry.Name(), len(index))
+		st, ok, err := s.stampOf(entry, len(index))
 		if err != nil {
 			return Info{}, err
 		}
@@ -161,8 +160,8 @@ func (s *Scanner) Newest(index map[string][]meta.Ref) (Info, error) {
 		if at == 0 {
 			at = st.Main
 		}
-		if newest == "" || at > played || (at == played && entry.Name() > newest) {
-			newest, played = entry.Name(), at
+		if newest == "" || at > played || (at == played && entry > newest) {
+			newest, played = entry, at
 		}
 	}
 	if newest == "" {
@@ -172,44 +171,106 @@ func (s *Scanner) Newest(index map[string][]meta.Ref) (Info, error) {
 }
 
 // Layout is a saves folder and how a save sits in it: a file matching one of Files, or, without Files, a folder
-// holding a file of its own name (Stardew Valley).
+// holding a file of its own name (Stardew Valley). A pattern may name one folder below Dir ("worlds_local/*.fwl"),
+// and a pattern starting with "!" excludes the files it matches. A file save's name is its slash path under Dir.
+// Companions are extensions of files beside a file save that share its stem and belong to it (a Valheim world's
+// .db beside its .fwl).
 type Layout struct {
-	Dir   string
-	Files []string
+	Dir        string
+	Files      []string
+	Companions []string
 }
 
-// IsSave reports whether name, a direct child of Dir, is a save.
+// IsSave reports whether name, a save's path under Dir, is a save.
 func (l Layout) IsSave(name string) bool {
-	if name == "" || name != filepath.Base(name) || name == "." || name == ".." {
+	if name == "" || name == "." || strings.Contains(name, "\\") || path.Clean(name) != name || path.IsAbs(name) || strings.HasPrefix(name, "..") {
 		return false
 	}
-	main := filepath.Join(l.Dir, name, name)
-	if len(l.Files) > 0 {
-		if !slices.ContainsFunc(l.Files, func(p string) bool { ok, _ := filepath.Match(p, name); return ok }) {
+	if len(l.Files) == 0 {
+		if name != path.Base(name) {
 			return false
 		}
-		main = filepath.Join(l.Dir, name)
+		fi, err := os.Stat(filepath.Join(l.Dir, name, name))
+		return err == nil && fi.Mode().IsRegular()
 	}
-	fi, err := os.Stat(main)
+	if !l.Matches(name) {
+		return false
+	}
+	fi, err := os.Stat(filepath.Join(l.Dir, filepath.FromSlash(name)))
 	return err == nil && fi.Mode().IsRegular()
+}
+
+// Matches reports whether name, a slash path under Dir, is named by Files, whether or not it exists.
+func (l Layout) Matches(name string) bool {
+	in := false
+	for _, p := range l.Files {
+		if not, ok := strings.CutPrefix(p, "!"); ok {
+			if m, _ := path.Match(not, path.Base(name)); m {
+				return false
+			}
+			continue
+		}
+		if m, _ := path.Match(p, name); m {
+			in = true
+		}
+	}
+	return in
+}
+
+// Paths are the files and folders, as slash paths under Dir, that make up save name: its folder or file and, for a
+// file save, the companions that exist.
+func (l Layout) Paths(name string) []string {
+	out := []string{name}
+	stem := strings.TrimSuffix(name, path.Ext(name))
+	for _, ext := range l.Companions {
+		if c := stem + ext; c != name {
+			if fi, err := os.Stat(filepath.Join(l.Dir, filepath.FromSlash(c))); err == nil && fi.Mode().IsRegular() {
+				out = append(out, c)
+			}
+		}
+	}
+	return out
 }
 
 // Names lists the saves in Dir by name; a missing Dir holds none.
 func (l Layout) Names() ([]string, error) {
-	ents, err := os.ReadDir(l.Dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
+	dirs := []string{"."}
+	for _, p := range l.Files {
+		if d := path.Dir(p); !strings.HasPrefix(p, "!") && !slices.Contains(dirs, d) {
+			dirs = append(dirs, d)
+		}
 	}
 	var out []string
-	for _, e := range ents {
-		if l.IsSave(e.Name()) {
-			out = append(out, e.Name())
+	for _, d := range dirs {
+		ents, err := os.ReadDir(filepath.Join(l.Dir, filepath.FromSlash(d)))
+		if errors.Is(err, fs.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		for _, e := range ents {
+			if name := path.Join(d, e.Name()); l.IsSave(name) {
+				out = append(out, name)
+			}
 		}
 	}
 	return out, nil
+}
+
+// newest is the latest write among save name's files, and their total size.
+func (l Layout) newest(name string) (mtime time.Time, size int64, err error) {
+	for _, p := range l.Paths(name) {
+		fi, err := os.Stat(filepath.Join(l.Dir, filepath.FromSlash(p)))
+		if err != nil {
+			return mtime, size, err
+		}
+		if fi.ModTime().After(mtime) {
+			mtime = fi.ModTime()
+		}
+		size += fi.Size()
+	}
+	return mtime, size, nil
 }
 
 // stampOf reports ok=false for an entry that is not a save (see Layout.IsSave).
@@ -218,11 +279,11 @@ func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err erro
 		return st, false, nil
 	}
 	if len(s.Files) > 0 {
-		fi, err := os.Stat(filepath.Join(s.Dir, folder))
+		mtime, size, err := s.Layout().newest(folder)
 		if err != nil {
 			return st, false, err
 		}
-		return stamp{Main: fi.ModTime().UnixNano(), Size: fi.Size(), Rev: scanRev}, true, nil
+		return stamp{Main: mtime.UnixNano(), Size: size, Rev: scanRev}, true, nil
 	}
 	main, err := os.Stat(filepath.Join(s.Dir, folder, folder))
 	if err != nil {
@@ -240,11 +301,11 @@ func (s *Scanner) read(folder string, index map[string][]meta.Ref) (Info, error)
 	if len(s.Files) > 0 {
 		// A save kept as one file (Lethal Company's encrypted ES3) names no mods, so its fit is unknown.
 		info.Unrecorded = true
-		fi, err := os.Stat(filepath.Join(s.Dir, folder))
+		mtime, _, err := s.Layout().newest(folder)
 		if err != nil {
 			return info, err
 		}
-		info.Played = fi.ModTime().UnixMilli()
+		info.Played = mtime.UnixMilli()
 		return info, nil
 	}
 	dir := filepath.Join(s.Dir, folder)

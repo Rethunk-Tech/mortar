@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -54,8 +55,9 @@ func StartupPreferencesPath(home string, s settings.Settings, id, pin string) (s
 	return PathFor(home, s, id, pin, PathStartupPreferences)
 }
 
-// SaveFiles are the patterns naming game id's save files in its saves folder; none means each save is a folder.
-func SaveFiles(id string) []string {
+// SaveLayout is how game id's saves sit in its saves folder dir: the catalog's file patterns and companions, or a
+// folder per save when it names none.
+func SaveLayout(id, dir string) saves.Layout {
 	g, _ := catalogGame(id)
-	return g.SaveFiles
+	return saves.Layout{Dir: dir, Files: g.SaveFiles, Companions: g.SaveCompanions}
 }
