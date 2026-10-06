@@ -23,7 +23,7 @@ jobs:
       matrix:
         include:
           - { runner: ubuntu-latest, goarch: amd64, appimage_arch: x86_64, deb_arch: amd64, rpm_arch: x86_64, pkg_arch: x86_64, windows: true, flatpak: true }
-          - { runner: ubuntu-24.04-arm, goarch: arm64, appimage_arch: aarch64, deb_arch: arm64, rpm_arch: aarch64, pkg_arch: aarch64, windows: false, flatpak: false }
+          - { runner: ubuntu-24.04-arm, goarch: arm64, appimage_arch: aarch64, deb_arch: arm64, rpm_arch: aarch64, pkg_arch: aarch64, windows: false, flatpak: true }
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 40
     permissions:
@@ -108,7 +108,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.local/share/flatpak
-          key: flatpak-user-gnome-${{ steps.flatpak-runtime.outputs.version }}
+          key: flatpak-user-gnome-${{ matrix.appimage_arch }}-${{ steps.flatpak-runtime.outputs.version }}
 
       - name: Linux Flatpak
         if: matrix.flatpak
@@ -117,7 +117,7 @@ jobs:
           # preinstalled toolchains are unused here.
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
           df -h / | tail -1
-          sudo apt-get install -y --no-install-recommends flatpak
+          sudo apt-get install -y --no-install-recommends flatpak dbus-daemon
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           # Flathub's own builder: the distro flatpak-builder composes AppStream with the runner's older appstream,
           # which fails on the GNOME 51 SDK.
@@ -148,7 +148,7 @@ jobs:
           cp bin/mortar-*.${{ matrix.rpm_arch }}.rpm out/
           cp bin/mortar-*-${{ matrix.pkg_arch }}.pkg.tar.zst out/
           if [ "${{ matrix.flatpak }}" = true ]; then
-            cp bin/mortar-linux-x86_64.flatpak out/
+            cp "bin/mortar-linux-${{ matrix.appimage_arch }}.flatpak" out/
           fi
           if [ "${{ matrix.windows }}" = true ]; then
             cp bin/mortar-windows-amd64.exe bin/mortar-amd64-installer.exe \
@@ -219,6 +219,7 @@ jobs:
             bin/mortar-*-1-x86_64.pkg.tar.zst
             bin/mortar-linux-x86_64.flatpak
             bin/mortar-linux-aarch64.AppImage
+            bin/mortar-linux-aarch64.flatpak
             bin/mortar-linux-arm64
             bin/mortar-aur-linux-arm64
             bin/mortar_*_arm64.deb
