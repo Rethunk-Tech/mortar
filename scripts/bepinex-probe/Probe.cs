@@ -10,8 +10,10 @@ namespace MortarMatrix;
 [BepInPlugin("tech.rethunk.mortar.matrix." + Variant.Name, "Matrix " + Variant.Name, "1.0.0")]
 public class MatrixProbe : BaseUnityPlugin
 {
+#if BEAT
     float elapsed;
     int beats;
+#endif
 
     void Awake()
     {
@@ -28,12 +30,19 @@ public class MatrixProbe : BaseUnityPlugin
         ES3.Save("FileGameVers", 72, "LCSaveFile1");
         Logger.LogInfo("matrix " + Variant.Name + " wrote LCSaveFile1");
 #endif
+#if QUIT
+        // The pinned BepInEx 5.4.21 loses its manager object, and every plugin on it, when Lethal Company on Unity 2022
+        // unloads its first scene, so the quit timer runs on an object of its own that scene loads leave alone.
+        var clock = new GameObject("MatrixQuit") { hideFlags = HideFlags.HideAndDontSave };
+        DontDestroyOnLoad(clock);
+        clock.AddComponent<MatrixQuit>().Log = Logger;
+#endif
 #if THROW
         throw new System.InvalidOperationException("matrix probe failed in Awake on purpose");
 #endif
     }
 
-#if BEAT || QUIT
+#if BEAT
     void Update()
     {
         elapsed += Time.unscaledDeltaTime;
@@ -43,20 +52,35 @@ public class MatrixProbe : BaseUnityPlugin
         }
         elapsed = 0;
         beats++;
-#if BEAT
         Logger.LogWarning("matrix heartbeat " + beats);
         if (beats == 3)
         {
             Logger.LogError("matrix error line");
         }
-#endif
-#if QUIT
-        if (beats == 8)
-        {
-            Logger.LogInfo("matrix quitting");
-            Application.Quit();
-        }
-#endif
     }
 #endif
 }
+
+#if QUIT
+public class MatrixQuit : MonoBehaviour
+{
+    public BepInEx.Logging.ManualLogSource Log;
+    float elapsed;
+    int beats;
+
+    void Update()
+    {
+        elapsed += Time.unscaledDeltaTime;
+        if (elapsed < 1f)
+        {
+            return;
+        }
+        elapsed = 0;
+        if (++beats == 8)
+        {
+            Log.LogInfo("matrix quitting");
+            Application.Quit();
+        }
+    }
+}
+#endif
