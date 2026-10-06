@@ -97,3 +97,45 @@ test('a full Lethal Company regress with the matrix and an r2 code fits the sess
   const regress = 2
   expect(regress + declared).toBeLessThanOrEqual(3)
 })
+
+const MATRIX = join(import.meta.dir, 'regress-bepinex.sh')
+
+/** Runs a snippet with the matrix script's helpers sourced and its game-facing commands stubbed. */
+function matrixShell(body: string) {
+  return spawnSync('bash', ['-c', `source "${MATRIX}"; ${body}`], { encoding: 'utf8' })
+}
+
+test('the matrix waits for a profile file that arrives after the install returned, and gives up on one that never does', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mx-wait-'))
+  try {
+    const late = join(dir, 'late.cfg')
+    const shell = matrixShell(
+      `(sleep 1; : >"${late}") & mx_wait_files 10 "${late}"; echo late=$?; mx_wait_files 1 "${join(dir, 'never')}"; echo never=$?`,
+    )
+    expect(shell.stdout.trim().split('\n')).toEqual(['late=0', 'never=1'])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('the matrix reads the Console twice only once the first heartbeat is in', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mx-console-'))
+  try {
+    const counter = join(dir, 'calls')
+    writeFileSync(counter, '0')
+    const shell = matrixShell(`
+      sleep() { :; }
+      mx_q() { echo "\\"$1\\""; }
+      mx_wails() {
+        local n=$(($(cat "${counter}") + 1))
+        echo "$n" >"${counter}"
+        if [ "$n" -lt 4 ]; then echo '[{"message":"loading"}]'; else echo '[{"message":"matrix heartbeat 1"}]'; fi
+      }
+      mx_base=p
+      mx_console_reads
+      echo "$mx_lines1 | $(cat "${counter}")"`)
+    expect(shell.stdout.trim()).toBe('[{"message":"matrix heartbeat 1"}] | 5')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
