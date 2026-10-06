@@ -111,6 +111,10 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
       .finally(() => setSending(null))
   }
 
+  const sharedNames = new Set(
+    peers.map((peer) => peer.name).filter((name, index, all) => all.indexOf(name) !== index),
+  )
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -136,7 +140,10 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
             {peers.map((peer) => (
               <ListItem key={peer.id} disablePadding={true}>
                 <ListItemButton disabled={sending !== null} onClick={() => send(peer)}>
-                  <ListItemText primary={peer.name} />
+                  <ListItemText
+                    primary={peer.name}
+                    secondary={sharedNames.has(peer.name) ? peer.id : undefined}
+                  />
                   {sending === peer.id ? <CircularProgress size={18} /> : null}
                 </ListItemButton>
               </ListItem>
