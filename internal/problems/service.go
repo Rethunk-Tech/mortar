@@ -342,6 +342,15 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 			deprecated[d.Key] = true
 		}
 		r.PluginClashes = pluginClashes(pkgs, deprecated)
+		if all, err := s.profiles.Packages(gameID, id); err == nil {
+			missing, incompatible := pluginDeps(all, mods)
+			r.Missing = append(r.Missing, missing...)
+			for _, f := range incompatible {
+				if !slices.ContainsFunc(r.LoadFailures, func(x LoadFailure) bool { return x.Key == f.Key && x.Kind == f.Kind }) {
+					r.LoadFailures = append(r.LoadFailures, f)
+				}
+			}
+		}
 		if s.Runs != nil && runID != "" {
 			_, summary, err := s.Runs.LastRunSummary(gameID, id)
 			if err == nil {

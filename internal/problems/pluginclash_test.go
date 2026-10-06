@@ -10,7 +10,7 @@ import (
 func TestPluginClashNamesTheGUIDAndKeepsTheNewestPlugin(t *testing.T) {
 	seed := func(dir string, p ...dotnet.Plugin) {
 		pluginMu.Lock()
-		pluginCache[pluginKey{dir}] = p
+		pluginCache[pluginKey{dir}] = dotnet.Declared{Plugins: p}
 		pluginMu.Unlock()
 	}
 	seed("/a", dotnet.Plugin{GUID: "com.x.Cheats", Version: "1.2.0"}, dotnet.Plugin{GUID: "com.x.Solo", Version: "1.0.0"})
@@ -32,7 +32,7 @@ func TestPluginClashNamesTheGUIDAndKeepsTheNewestPlugin(t *testing.T) {
 func TestPluginClashKeepsTheCopyThatIsNotDeprecatedBetweenEqualVersions(t *testing.T) {
 	for _, dir := range []string{"/old", "/new"} {
 		pluginMu.Lock()
-		pluginCache[pluginKey{dir}] = []dotnet.Plugin{{GUID: "OpenDoors", Version: "1.0.1"}}
+		pluginCache[pluginKey{dir}] = dotnet.Declared{Plugins: []dotnet.Plugin{{GUID: "OpenDoors", Version: "1.0.1"}}}
 		pluginMu.Unlock()
 	}
 	got := pluginClashes([]profile.PackageRef{

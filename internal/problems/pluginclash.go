@@ -34,19 +34,22 @@ type pluginKey struct{ dir string }
 
 var (
 	pluginMu    sync.Mutex
-	pluginCache = map[pluginKey][]dotnet.Plugin{}
+	pluginCache = map[pluginKey]dotnet.Declared{}
 )
 
-// pluginsIn lists the plugins every DLL under dir declares. A store folder never changes for its key, so the answer is
-// kept for the life of the process.
-func pluginsIn(dir string) []dotnet.Plugin {
+// pluginsIn lists the plugins every DLL under dir declares.
+func pluginsIn(dir string) []dotnet.Plugin { return declaredIn(dir).Plugins }
+
+// declaredIn reads what every DLL under dir declares about its plugins. A store folder never changes for its key, so
+// the answer is kept for the life of the process.
+func declaredIn(dir string) dotnet.Declared {
 	pluginMu.Lock()
 	cached, ok := pluginCache[pluginKey{dir}]
 	pluginMu.Unlock()
 	if ok {
 		return cached
 	}
-	out := dotnet.PluginsIn(dir)
+	out := dotnet.ScanDir(dir)
 	pluginMu.Lock()
 	pluginCache[pluginKey{dir}] = out
 	pluginMu.Unlock()

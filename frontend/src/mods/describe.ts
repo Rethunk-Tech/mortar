@@ -129,6 +129,9 @@ function describeMissing(
       ? i18n._(msg`${dependentName}'s Nexus page lists ${dep} as a requirement.`)
       : i18n._(msg`${dependentName}'s Nexus page lists ${dep} as a requirement: ${note}`)
   }
+  if (p.missing.optional) {
+    return i18n._(msg`${dependentName} can use ${dep}, which this profile lacks.`)
+  }
   if (reason === 'disabled') {
     return i18n._(msg`${dependentName} needs ${dep}, which is disabled.`)
   }
@@ -191,7 +194,10 @@ export function useDescribe(): Describe {
       case 'runError':
         return describeRunError(p.runError)
       case 'loadFailure': {
-        const { plugin, name } = p.loadFailure
+        const { plugin, name, kind, dependency } = p.loadFailure
+        if (kind === 'incompatible-plugin' && dependency) {
+          return t`${plugin} declares itself incompatible with ${dependency}, which is also enabled.`
+        }
         return name !== '' && name !== plugin
           ? t`${plugin} failed to load (${name}).`
           : t`${plugin} failed to load.`

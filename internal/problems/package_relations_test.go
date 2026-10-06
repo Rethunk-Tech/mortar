@@ -136,7 +136,7 @@ func TestAGitHubInstallFindsItsThunderstoreTwinByPluginGUID(t *testing.T) {
 	pkgs, _ := profiles.EnabledPackages("lethal-company", p.ID)
 	for _, pk := range pkgs {
 		pluginMu.Lock()
-		pluginCache[pluginKey{pk.Dir}] = []dotnet.Plugin{{GUID: "com.amrv.configurablecompany", Version: "3.6.0"}}
+		pluginCache[pluginKey{pk.Dir}] = dotnet.Declared{Plugins: []dotnet.Plugin{{GUID: "com.amrv.configurablecompany", Version: "3.6.0"}}}
 		pluginMu.Unlock()
 	}
 	source.Register(fakeThunderstore{id: "nexus"})
