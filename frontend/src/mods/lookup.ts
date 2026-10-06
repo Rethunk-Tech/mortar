@@ -54,6 +54,9 @@ const buildProblems = (result: Result): Problem[] => [
   ),
 ]
 
+// Optional listed requirements and outside requirements are informational: the server's Count leaves them out.
+const countsAsMissing = (m: Missing): boolean => !(m.optional || m.external)
+
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
   mods.filter((m) => m.key === mod.key && m.id !== mod.id)
 
@@ -192,9 +195,6 @@ export function nexusKeepKey(copies: Copy[]): string | null {
   const nexus = copies.filter((c) => c.nexus)
   return nexus.length === 1 ? (nexus[0]?.key ?? null) : null
 }
-
-// Optional listed requirements and outside requirements are informational: the server's Count leaves them out.
-const countsAsMissing = (m: Missing): boolean => !(m.optional || m.external)
 
 export const missingCount = (result: Result | null): number =>
   (result?.missing ?? []).filter(countsAsMissing).length
