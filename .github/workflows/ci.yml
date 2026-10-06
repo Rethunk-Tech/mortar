@@ -1,6 +1,7 @@
 name: CI
 
-# The offline gate on every pull request and every push to main. Browser e2e and packaging stay in release.yml.
+# The offline gate on every pull request and every push to main. Packaging stays in release.yml; browser e2e is
+# opt-in locally (gate --e2e).
 on:
   pull_request:
   push:
