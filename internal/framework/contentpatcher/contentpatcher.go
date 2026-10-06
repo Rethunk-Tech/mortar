@@ -179,7 +179,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 14
+const contentPackParserVersion = 15
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -1320,7 +1320,7 @@ func dynamicTokenCondition(key string, raw json.RawMessage) (cpDynamicCondition,
 		if !condValues(raw, &values) {
 			return cpDynamicCondition{}, false
 		}
-		return cpDynamicCondition{name: name, values: values}, true
+		return cpDynamicCondition{name: name, values: values, expected: true}, true
 	}
 	param, list, ok := strings.Cut(arg, "=")
 	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {

@@ -3,6 +3,7 @@ package contentpatcher
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"image"
 	"image/color"
 	"image/png"
@@ -258,5 +259,13 @@ func TestConfigTokenValuesCompareResolved(t *testing.T) {
 	differ := check([]framework.Mod{pack("Em.Dinos2", ""), pack("Em.Animals2", "9")})
 	if len(differ.AssetConflicts) != 1 {
 		t.Fatalf("5 against 9 clashes, got %+v", differ.AssetConflicts)
+	}
+}
+
+func TestWhenSummaryPlainDynamicValue(t *testing.T) {
+	tokens := []cpTokenDefinition{{name: "livingwithsen", value: "true"}}
+	w := parseWhenWithTokens(map[string]json.RawMessage{"LivingWithSen": json.RawMessage(`"true"`)}, nil, nil, tokens)
+	if got := whenSummary(w); got != "livingwithsen=true" {
+		t.Fatalf("summary %q", got)
 	}
 }
