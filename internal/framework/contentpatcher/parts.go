@@ -25,7 +25,7 @@ import (
 // a target's or a pack's outcome.
 
 // partsCacheVersion changes whenever what a part records changes, so an older file is ignored.
-const partsCacheVersion = 4
+const partsCacheVersion = 5
 
 // partsKeep is how many checks may go by without using a part before it is dropped: enough for a few profiles' checks
 // to take turns without evicting each other.
@@ -37,8 +37,8 @@ type partEntry struct {
 	Conflict *framework.AssetConflict `json:"conflict,omitempty"`
 	Settings []framework.SettingHint  `json:"settings,omitempty"`
 	// Bundled is a pack whose patches of the target another pack by the same author already makes.
-	Bundled *framework.Redundant `json:"bundled,omitempty"`
-	Check   int                  `json:"check"`
+	Bundled []framework.Redundant `json:"bundled,omitempty"`
+	Check   int                   `json:"check"`
 }
 
 type diskParts struct {

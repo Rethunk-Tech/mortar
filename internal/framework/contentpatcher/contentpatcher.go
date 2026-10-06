@@ -2149,8 +2149,8 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 			if e.Conflict != nil {
 				out = append(out, *e.Conflict)
 			}
-			if e.Bundled != nil {
-				shadowed = addBundled(shadowed, *e.Bundled)
+			for _, b := range e.Bundled {
+				shadowed = addBundled(shadowed, b)
 			}
 			settings = append(settings, e.Settings...)
 		}
@@ -2171,9 +2171,13 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 // nothing.
 // farm is the custom farm type whose map target is, or "".
 func targetPart(kind, target string, hits []packHit, farm string) partEntry {
-	if b, ok := bundled(kind, target, hits); ok {
-		return partEntry{Bundled: &b}
-	}
+	rows, rest := bundled(kind, target, hits)
+	e := conflictPart(kind, target, rest, farm)
+	e.Bundled = rows
+	return e
+}
+
+func conflictPart(kind, target string, hits []packHit, farm string) partEntry {
 	cosmetic := false
 	var note *framework.ConflictNote
 	if kind == "edit" {
@@ -2365,9 +2369,14 @@ func normalAuthor(author string) string {
 	return strings.Join(strings.Fields(strings.ToLower(author)), " ")
 }
 
-// bundled finds, among packs by one author, one whose every patch of the target the other makes too: the
-// larger pack bundles the smaller one, so there is nothing to conflict.
-func bundled(kind, target string, hits []packHit) (framework.Redundant, bool) {
+// bundled splits off the packs whose every patch of the target another pack by the same author makes too: the
+// larger pack bundles the smaller one, so there is nothing to conflict. Loads are judged only between two packs.
+func bundled(kind, target string, hits []packHit) (rows []framework.Redundant, rest []packHit) {
+	if kind == "load" && len(hits) != 2 || !slices.ContainsFunc(hits, func(a packHit) bool {
+		return slices.ContainsFunc(hits, func(b packHit) bool { return a.key != b.key && sameAuthor(a, b) })
+	}) {
+		return nil, hits
+	}
 	sigs := make([]map[string]bool, len(hits))
 	for i, h := range hits {
 		patches := h.edits
@@ -2379,9 +2388,10 @@ func bundled(kind, target string, hits []packHit) (framework.Redundant, bool) {
 			sigs[i][patchSig(h, p)] = true
 		}
 	}
+	gone := make([]bool, len(hits))
 	for i, small := range hits {
 		for j, big := range hits {
-			if i == j || !sameAuthor(small, big) || len(sigs[i]) == 0 || len(sigs[i]) > len(sigs[j]) {
+			if i == j || gone[j] || !sameAuthor(small, big) || len(sigs[i]) == 0 || len(sigs[i]) > len(sigs[j]) {
 				continue
 			}
 			if len(sigs[i]) == len(sigs[j]) && i > j {
@@ -2391,12 +2401,22 @@ func bundled(kind, target string, hits []packHit) (framework.Redundant, bool) {
 			for s := range sigs[i] {
 				subset = subset && sigs[j][s]
 			}
-			if subset && len(hits) == 2 {
-				return framework.Redundant{Kind: "bundled", Key: small.key, ID: small.id, Name: small.name, By: []framework.ModRef{{Key: big.key, Name: big.name}}, Detail: target}, true
+			if subset {
+				gone[i] = true
+				rows = append(rows, framework.Redundant{Kind: "bundled", Key: small.key, ID: small.id, Name: small.name, By: []framework.ModRef{{Key: big.key, Name: big.name}}, Detail: target})
+				break
 			}
 		}
 	}
-	return framework.Redundant{}, false
+	if rows == nil {
+		return nil, hits
+	}
+	for i, h := range hits {
+		if !gone[i] {
+			rest = append(rest, h)
+		}
+	}
+	return rows, rest
 }
 
 // patchSig is what a patch writes, so two packs that make the same change compare equal.

@@ -827,8 +827,22 @@ func TestSameAuthorBundleIsRedundant(t *testing.T) {
 		got.Redundant[0].By[0].Name != "Em's Farm Animals" || got.Redundant[0].Detail != "animals/dinosaur" {
 		t.Fatalf("expected Em's Dinos bundled in Em's Farm Animals, got %#v", got.Redundant)
 	}
-	stranger := authoredPack(t, "Someone", `{"Changes":[`+dino+`]}`, files)
+	stranger := authoredPack(t, "Someone", `{"Changes":[`+dino+`]}`, map[string]string{"dino.png": "other dino"})
 	if got := check([]framework.Mod{stranger, animals}); slices.ContainsFunc(got.Redundant, func(r framework.Redundant) bool { return r.Kind == "bundled" }) {
 		t.Fatalf("another author's copy is not a bundle, got %#v", got.Redundant)
+	}
+	got = check([]framework.Mod{dinos, animals, stranger})
+	if len(got.Redundant) != 1 || got.Redundant[0].Key != dinos.Key {
+		t.Fatalf("Em's Dinos is bundled beside a third pack too, got %#v", got.Redundant)
+	}
+	if len(got.AssetConflicts) != 1 || slices.Contains(got.AssetConflicts[0].Keys, dinos.Key) || len(got.AssetConflicts[0].Keys) != 2 {
+		t.Fatalf("the stranger still conflicts with Em's Farm Animals alone, got %#v", got.AssetConflicts)
+	}
+	load := func(author, file string) framework.Mod {
+		return authoredPack(t, author, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"m.tmx"}]}`, map[string]string{"m.tmx": file})
+	}
+	got = check([]framework.Mod{load("Em", "a"), load("Em", "a"), load("Someone", "b")})
+	if len(got.Redundant) != 0 || len(got.AssetConflicts) != 1 || len(got.AssetConflicts[0].Keys) != 3 {
+		t.Fatalf("loads among three packs are never bundled, got %#v %#v", got.Redundant, got.AssetConflicts)
 	}
 }
