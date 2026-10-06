@@ -70,7 +70,7 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 			out = GameModOutcome{Name: slot.folder.label, Status: outcomeSkipped, Reason: "already in this profile as " + held(slot.folder)}
 		default:
 			out = GameModOutcome{Name: slot.folder.label, Status: outcomeImported}
-			if _, err := s.importFolder(game, id, slot.folder); err != nil {
+			if _, _, err := s.importFolder(game, id, slot.folder); err != nil {
 				out.Status, out.Reason = outcomeFailed, err.Error()
 				if ie, ok := errors.AsType[*InstallError](err); ok {
 					out.Reason = ie.Msg

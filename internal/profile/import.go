@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -342,31 +343,36 @@ func carryConfig(srcRoot, destDir, folder string) error {
 	return fsx.WriteFile(filepath.Join(destDir, configFileName), b, 0o600)
 }
 
-func (s *Store) importFolder(game, id string, f gameModFolder) (string, error) {
-	key, err := s.items.AddHashedDir(game, f.dir)
+// importFolder adds f to the profile and returns its store key and the history event the last of its changes recorded.
+func (s *Store) importFolder(game, id string, f gameModFolder) (key, change string, err error) {
+	key, err = s.items.AddHashedDir(game, f.dir)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	if _, err := s.AddEntry(game, id, key, f.source); err != nil {
-		return "", err
+	added, err := s.AddEntry(game, id, key, f.source)
+	if err != nil {
+		return "", "", err
 	}
+	change = added.LastChange
 	if f.disabled {
 		for _, m := range f.mods {
-			if _, err := s.SetModEnabled(game, id, key, m.ModID(), false); err != nil {
-				return "", err
+			disabled, err := s.SetModEnabled(game, id, key, m.ModID(), false)
+			if err != nil {
+				return "", "", err
 			}
+			change = disabled.LastChange
 		}
 	}
 	for _, m := range f.mods {
 		dest, err := s.ModFolder(game, id, key, m.ModID())
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		if err := carryConfig(f.dir, dest, m.Folder); err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
-	return key, nil
+	return key, change, nil
 }
 
 // ImportGameMods copies each importable folder under modsDir into the store and a new "Imported mods" profile.
@@ -408,7 +414,7 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 			continue
 		}
 		outcome := GameModOutcome{Name: slot.folder.label, Status: outcomeImported}
-		if _, err := s.importFolder(game, created.ID, slot.folder); err != nil {
+		if _, _, err := s.importFolder(game, created.ID, slot.folder); err != nil {
 			outcome.Status, outcome.Reason = outcomeFailed, err.Error()
 			if ie, ok := errors.AsType[*InstallError](err); ok {
 				outcome.Reason = ie.Msg
@@ -438,8 +444,9 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 	return res, nil
 }
 
-// ImportExternalMods copies the selected external-manager folders into an existing profile.
-func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) error {
+// ImportExternalMods copies the selected external-manager folders into an existing profile and returns the history
+// events the import recorded, oldest first; under a history batch that is the batch's one event.
+func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) ([]string, error) {
 	enabled := make(map[string]bool, len(mods))
 	paths := make(map[string]bool, len(mods))
 	for _, im := range mods {
@@ -458,21 +465,26 @@ func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) error {
 		}
 	}
 	resolveDuplicates(slots)
+	var changes []string
 	for _, slot := range slots {
 		if !slot.ready {
 			continue
 		}
-		key, err := s.importFolder(game, id, slot.folder)
+		key, change, err := s.importFolder(game, id, slot.folder)
 		if err != nil {
-			return err
+			return changes, err
 		}
+		changes = append(changes, change)
 		for _, im := range slot.folder.mods {
 			if want, ok := enabled[im.ModID().Fold()]; ok {
-				if _, err := s.SetModEnabled(game, id, key, im.ModID(), want); err != nil {
-					return err
+				toggled, err := s.SetModEnabled(game, id, key, im.ModID(), want)
+				if err != nil {
+					return changes, err
 				}
+				changes = append(changes, toggled.LastChange)
 			}
 		}
 	}
-	return s.RecordModsSnapshot(game, id)
+	changes = slices.Compact(slices.DeleteFunc(changes, func(c string) bool { return c == "" }))
+	return changes, s.RecordModsSnapshot(game, id)
 }

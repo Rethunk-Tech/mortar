@@ -923,11 +923,15 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		change = added.LastChange
 	}
 	if len(local) > 0 {
-		if err := s.d.Profiles.ImportExternalMods(game, profileID, local); err != nil {
+		imported, err := s.d.Profiles.ImportExternalMods(game, profileID, local)
+		if err != nil {
 			if created {
 				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
 			}
 			return Result{}, err
+		}
+		if len(imported) > 0 {
+			change = imported[len(imported)-1]
 		}
 	}
 	if len(local) > 0 || len(fromStore) > 0 {

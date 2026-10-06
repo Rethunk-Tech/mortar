@@ -60,6 +60,13 @@ func TestExternalImportWritesEachModsOwnConfigWithinTheCap(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	events, err := s.d.Profiles.History("stardew", res.Profile.ID)
+	if err != nil || len(events) == 0 {
+		t.Fatalf("history: %v %v", events, err)
+	}
+	if res.Profile.LastChange == "" || res.Profile.LastChange != events[0].ID {
+		t.Fatalf("LastChange %q, newest event %q", res.Profile.LastChange, events[0].ID)
+	}
 	dir, err := s.d.Profiles.ModsDir("stardew", res.Profile.ID)
 	if err != nil {
 		t.Fatal(err)
