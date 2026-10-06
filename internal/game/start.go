@@ -78,6 +78,10 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 	run := st.Runner
 	if run == nil {
 		run = func(dir, name string, args ...string) (<-chan error, error) {
+			// A relay starts no game of its own, so only a direct start goes through the guard.
+			if !cmd.Relay {
+				name, args = guarded(launchWrapper(), name, args)
+			}
 			if env.HideWindow {
 				return launch.StartHidden(context.WithoutCancel(ctx), cmd.Env, dir, name, args...)
 			}
@@ -85,6 +89,15 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 		}
 	}
 	return launch.Run(ctx, run, cmd, st.Timing, onLines)
+}
+
+// guarded runs name through wrapper when there is one: a server build's self-test sandbox names its launch guard
+// (scripts/launch-guard.sh), which caps, records and isolates every game it starts.
+func guarded(wrapper, name string, args []string) (string, []string) {
+	if wrapper == "" {
+		return name, args
+	}
+	return wrapper, append([]string{name}, args...)
 }
 
 // Command builds the direct start of plan without running it.

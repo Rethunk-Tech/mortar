@@ -395,3 +395,14 @@ func TestDirectCommandRunsBottleInstallThroughBottlesCLI(t *testing.T) {
 		t.Fatalf("command = %s %q", cmd.Name, cmd.Args)
 	}
 }
+
+func TestGuardedPutsTheWrapperFirst(t *testing.T) {
+	name, args := guarded("", "game", []string{"-a"})
+	if name != "game" || !slices.Equal(args, []string{"-a"}) {
+		t.Fatalf("no wrapper: %s %v", name, args)
+	}
+	name, args = guarded("/guard", "game", []string{"-a"})
+	if name != "/guard" || !slices.Equal(args, []string{"game", "-a"}) {
+		t.Fatalf("wrapped: %s %v", name, args)
+	}
+}
