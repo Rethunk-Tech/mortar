@@ -151,7 +151,7 @@ The registry (`internal/settings/registry.go`) lists each key with its scope, ty
 - `backgroundImage` (empty, the default wallpaper): the absolute path of the user's image; set only when it is a readable PNG, JPEG or WebP file, and empty clears it.
 - `lastGame` (empty): the game last opened; any id.
 - `lastProfile` (`{}`): game id to the id of the profile last open in it.
-- `lastPlayed` (`{}`): game id to `{profile, at, gameVersion}`. `at` is RFC3339 and recorded when a launch reaches Running; `gameVersion` is Stardew's version from that launch's SMAPI log header, and the previous value stays when the log showed none. An entry with an empty game, profile or time, or a time that does not parse, is dropped.
+- `lastPlayed` (`{}`): game id to `{profile, at, gameVersion}`. `at` is RFC3339 and recorded when a launch reaches Running; `gameVersion` is the game's version from that launch's SMAPI log header or, for BepInEx, from the running game's bridge `status` once it answers, and the previous value stays when neither gave one. An entry with an empty game, profile or time, or a time that does not parse, is dropped.
 - `gameFolders` (`{}`): game id to an install folder the user chose, which wins over store discovery; checked as a game install when set, and emptied to go back to discovery.
 - `gameStores` (`{}`): game id to the store to use when several installs are found (`steam`, `flatpak-steam`, `gog`, `gog-heroic`, `lutris`, `bottles`); an unknown value is dropped on load.
 - `launcherRoots` (`{}`): launcher id to folders the user added for it, searched before the usual places.

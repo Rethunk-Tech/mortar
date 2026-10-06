@@ -238,3 +238,8 @@ type GameVersion interface {
 	// GameVersion is the version a log's text names, "" when it names none.
 	GameVersion(log string) string
 }
+
+// RunningGameVersion is a loader whose companion tells the running game's version, for a log that names none.
+type RunningGameVersion interface {
+	RunningGameVersion(ctx context.Context, p ProfileView) (string, error)
+}

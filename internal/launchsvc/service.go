@@ -127,6 +127,8 @@ type session struct {
 	haveExit        bool
 	// stoppedAt is when the player asked Mortar to stop the game; zero for any other end.
 	stoppedAt time.Time
+	// gameVersion is what the running game's companion reported, for a loader whose log names no version.
+	gameVersion string
 }
 
 // Service exposes launch, status and stop to the frontend.
@@ -164,7 +166,8 @@ type Service struct {
 	Unlocked func()
 	// NotifyRunEnd sends a desktop notification when a run Mortar started crashed; main sets this from the tray wiring.
 	NotifyRunEnd func(RunEndNotice)
-	// OnSavePlayed is called with the save folder SMAPI loaded when a run is recorded.
+	// OnSavePlayed is called, when a run is recorded, with each save the run played: the one SMAPI loaded, or the
+	// catalog saves written during the run.
 	OnSavePlayed func(gameID, profileID, saveFolder string)
 	quit         <-chan struct{}
 	// Starter starts launch plans; tests replace its runner and lookups.
@@ -933,6 +936,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		s.emit(BackupWarningEvent, BackupWarning{Game: gameID, Profile: profileID, Error: backupErr.Error()})
 	}
 	s.watch(g)
+	go s.askGameVersion(runCtx, g)
 	if sample {
 		stopped := make(chan struct{})
 		s.mu.Lock()

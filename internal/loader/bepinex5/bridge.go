@@ -17,3 +17,18 @@ func (Loader) Companion() bridge.Companion { return bridge.BepInEx }
 func (Loader) Query(ctx context.Context, _ loader.Target, p loader.ProfileView, what string) (json.RawMessage, error) {
 	return bridge.Query(ctx, filepath.Join(p.Dir, filepath.FromSlash(bridge.BepInEx.StateFile)), what)
 }
+
+// RunningGameVersion is the game version the bridge's status reports; BepInEx's log never names it.
+func (l Loader) RunningGameVersion(ctx context.Context, p loader.ProfileView) (string, error) {
+	raw, err := l.Query(ctx, loader.Target{}, p, "status")
+	if err != nil {
+		return "", err
+	}
+	var st struct {
+		GameVersion string `json:"gameVersion"`
+	}
+	if err := json.Unmarshal(raw, &st); err != nil {
+		return "", err
+	}
+	return st.GameVersion, nil
+}
