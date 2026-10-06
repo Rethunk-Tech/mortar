@@ -1082,6 +1082,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema)), tokenName: strings.ToLower(strings.TrimSpace(tok.Name)), tokenValue: value})
 		}
 	}
+	warmOverlayImages(root, rel, doc.Changes)
 	for i, rawChange := range doc.Changes {
 		var ch cpChange
 		if json.Unmarshal(rawChange, &ch) != nil {
@@ -1817,7 +1818,10 @@ func inside(root, rel string) (string, bool) {
 	return joined, true
 }
 
-func preloadContentPacks(mods []framework.Mod) {
+func preloadContentPacks(mods []framework.Mod) { preloadPacks(mods, readContentPack) }
+
+// preloadPacks parses packs on every core, so the serial passes after it find them cached.
+func preloadPacks(mods []framework.Mod, read func(framework.Mod) cachedPack) {
 	workers := max(1, runtime.GOMAXPROCS(0))
 	sem := make(chan struct{}, workers)
 	var wg sync.WaitGroup
@@ -1825,7 +1829,7 @@ func preloadContentPacks(mods []framework.Mod) {
 		wg.Go(func() {
 			sem <- struct{}{}
 			defer func() { <-sem }()
-			_ = readContentPack(im)
+			_ = read(im)
 		})
 	}
 	wg.Wait()

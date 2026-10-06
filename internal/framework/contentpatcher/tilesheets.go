@@ -131,10 +131,9 @@ func unusedTilesheetPacks(mods []framework.Mod) []framework.Cleanup {
 	for id, assets := range assetsByID {
 		basenamesByID[id] = assetBasenames(assets)
 	}
-	for _, im := range mods {
-		if containsMod(candidates, im) {
-			continue
-		}
+	others := slices.DeleteFunc(slices.Clone(mods), func(im framework.Mod) bool { return containsMod(candidates, im) })
+	preloadPacks(others, readContentPackForCleanup)
+	for _, im := range others {
 		mentions := readContentPackForCleanup(im).mentions
 		for _, candidate := range candidates {
 			id := candidate.ModID().Fold()

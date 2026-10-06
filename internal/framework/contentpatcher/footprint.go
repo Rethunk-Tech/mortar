@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -497,12 +498,8 @@ func imagePatchShapes(root string, ch cpChange, x, y int) []cpShape {
 }
 
 func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpShape, bool) {
-	abs, ok := inside(root, rel)
+	fileKey, ok := pngFileKey(root, rel)
 	if !ok {
-		return cpShape{}, false
-	}
-	info, err := os.Stat(abs)
-	if err != nil {
 		return cpShape{}, false
 	}
 	fromKey := "full"
@@ -516,8 +513,6 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 		fromKey = strconv.Itoa(from.x) + "," + strconv.Itoa(from.y) + "," +
 			strconv.Itoa(from.w) + "," + strconv.Itoa(from.h)
 	}
-	fileKey := abs + "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" +
-		strconv.FormatInt(info.ModTime().UnixNano(), 10)
 	key := fileKey + "\x00" + fromKey + "\x00" + strconv.Itoa(x) + "," + strconv.Itoa(y)
 	if cached, ok := pngShapeCache.Load(key); ok {
 		if cells, ok := cached.(string); ok {
@@ -566,6 +561,49 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 	}
 	pngShapeCache.Store(key, cells.String())
 	return cpShape{kind: 'r', cells: cells.String()}, true
+}
+
+// pngFileKey names one version of an image file, so a decode is reused only while the file is unchanged.
+func pngFileKey(root, rel string) (string, bool) {
+	abs, ok := inside(root, rel)
+	if !ok {
+		return "", false
+	}
+	info, err := os.Stat(abs)
+	if err != nil {
+		return "", false
+	}
+	return abs + "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" + strconv.FormatInt(info.ModTime().UnixNano(), 10), true
+}
+
+// decodeSlots bounds the image decodes running at once across every pack being read.
+var decodeSlots = make(chan struct{}, max(1, runtime.GOMAXPROCS(0)))
+
+// warmOverlayImages decodes the images of rel's overlay edits on every core before the serial scan reads their
+// shapes: a recolour pack overlays hundreds of large sheets, and decoding them one by one made that single pack
+// the longest part of a cold check.
+func warmOverlayImages(root, rel string, changes []json.RawMessage) {
+	if SkipImageOverlap {
+		return
+	}
+	var wg sync.WaitGroup
+	for _, raw := range changes {
+		var ch cpChange
+		if json.Unmarshal(raw, &ch) != nil || !strings.EqualFold(strings.TrimSpace(ch.Action), kindEditImage) ||
+			!strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
+			continue
+		}
+		for _, file := range sourceFiles(root, contentSourceReference(root, rel, ch.FromFile)) {
+			wg.Go(func() {
+				decodeSlots <- struct{}{}
+				defer func() { <-decodeSlots }()
+				if key, ok := pngFileKey(root, file); ok {
+					_, _ = loadPNGAlpha(root, file, key)
+				}
+			})
+		}
+	}
+	wg.Wait()
 }
 
 func loadPNGAlpha(root, rel, fileKey string) (pngAlpha, bool) {
