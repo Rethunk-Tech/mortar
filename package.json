@@ -17,7 +17,8 @@
     "e2e:updater": "go test -count=1 -tags updatetest -run TestUpdaterE2E ./internal/updatesvc",
     "vuln": "govulncheck ./...",
     "site:games": "bun scripts/site-games.ts --check",
-    "i18n:dupes": "bun scripts/i18n-dupes.ts"
+    "i18n:dupes": "bun scripts/i18n-dupes.ts",
+    "changelog": "bun scripts/changelog.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
