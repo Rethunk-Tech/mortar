@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -346,9 +347,13 @@ func (s *Service) Mods(game, id string) ([]Mod, error) {
 	return mods, nil
 }
 
-// ShowFiles opens the folder of the mod in entry key in the system file manager.
+// ShowFiles opens the folder of the mod in entry key in the system file manager; for a package, the folder its files
+// come from.
 func (s *Service) ShowFiles(game, id, key string, uniqueID mod.ID) error {
 	dir, err := s.store.ModFolder(game, id, key, uniqueID)
+	if errors.Is(err, ErrNoModFolder) {
+		dir, err = s.store.packageDir(game, id, key, uniqueID)
+	}
 	if err != nil {
 		return err
 	}

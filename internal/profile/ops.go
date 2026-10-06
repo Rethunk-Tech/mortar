@@ -910,8 +910,26 @@ func (s *Store) tidied(what, profileName, folder string) {
 	}
 }
 
+// ErrNoModFolder is a mod whose entry has no folder of its own in the profile: a package, whose files the launch lays
+// out by its loader's rules, with its settings in the loader's config folder.
+var ErrNoModFolder = errors.New("this mod has no folder of its own in the profile")
+
+// packageDir is the store item holding the package that has uniqueID.
+func (s *Store) packageDir(game, id, key string, uniqueID mod.ID) (string, error) {
+	p, err := s.read(game, id)
+	if err != nil {
+		return "", err
+	}
+	e, _, ok := p.FindMod(key, uniqueID)
+	if !ok {
+		return "", fmt.Errorf("no mod %q in this profile", uniqueID)
+	}
+	return s.items.Path(game, e.Key)
+}
+
 // ModFolder returns the mod's folder inside the profile, under whichever name (plain or dot-prefixed) it has now.
 // key names the entry holding it, which tells apart two copies of one mod id; an empty key means the first entry that has it.
+// A package's entry is ErrNoModFolder.
 func (s *Store) ModFolder(game, id, key string, uniqueID mod.ID) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -930,6 +948,9 @@ func (s *Store) modFolderLocked(game, id, key string, uniqueID mod.ID) (string, 
 		for _, m := range e.Mods {
 			if !mod.Equal(m.ID, uniqueID) {
 				continue
+			}
+			if !e.hasFolder() {
+				return "", ErrNoModFolder
 			}
 			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, m.Folder)
 			if err != nil {

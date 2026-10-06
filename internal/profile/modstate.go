@@ -84,6 +84,9 @@ func (s *Store) ModState(game, id, key string, uniqueID mod.ID) (ModState, error
 		st.Gmcm = hasGmcmCapture(dir, m.ID)
 	}
 	folder, err := s.ModFolder(game, id, e.Key, m.ID)
+	if errors.Is(err, ErrNoModFolder) {
+		return st, nil
+	}
 	if err != nil {
 		return ModState{}, err
 	}
