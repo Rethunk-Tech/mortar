@@ -39,6 +39,9 @@ var (
 	}
 )
 
+// overrideOption is the Steam launch option that loads winhttp natively.
+const overrideOption = `WINEDLLOVERRIDES="winhttp=n,b" %command%`
+
 var winhttpOverride = regexp.MustCompile(`(?i)"?winhttp"?\s*=\s*"?(n|native)\b`)
 
 func protonChecks(g game.GameInfo) []Check {
@@ -64,13 +67,19 @@ func protonChecks(g game.GameInfo) []Check {
 
 func winhttpCheck(g game.GameInfo, compat string) Check {
 	c := Check{ID: "winhttp:" + g.ID, Status: Pass, Detail: g.Name + ": winhttp is overridden to native in the Proton prefix"}
-	reg, _ := fsx.ReadFile(filepath.Join(compat, "pfx", "user.reg"))
+	reg, err := fsx.ReadFile(filepath.Join(compat, "pfx", "user.reg"))
 	if winhttpOverride.Match(reg) || winhttpOverride.MatchString(launchOptions(g.AppID)) {
 		return c
 	}
 	c.Status = Warn
+	if err != nil {
+		// Until Proton has run the game once there is no registry for Mortar to edit at Play.
+		c.Detail = g.Name + ": Proton has not created its prefix yet, so Mortar cannot set up the loader for the first Play"
+		c.Fix = "start " + g.Name + " once from Steam and quit it; Mortar then sets the override itself, or set the Steam launch options to " + overrideOption
+		return c
+	}
 	c.Detail = g.Name + ": the Proton prefix does not load winhttp natively, so its loader will not start"
-	c.Fix = `set the Steam launch options to WINEDLLOVERRIDES="winhttp=n,b" %command%`
+	c.Fix = "set the Steam launch options to " + overrideOption
 	return c
 }
 

@@ -3,6 +3,7 @@ package doctor
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -40,6 +41,14 @@ func TestProtonChecks(t *testing.T) {
 		t.Fatalf("no loader: %v", got)
 	}
 	RegisterLoader("lc", bepinex{need: true})
+	for _, c := range protonChecks(g) {
+		if c.ID == "winhttp:lc" && !strings.Contains(c.Detail, "has not created its prefix") {
+			t.Fatalf("no registry yet: %+v", c)
+		}
+	}
+	if err := fsx.WriteFile(filepath.Join(compat, "pfx", "user.reg"), []byte("WINE REGISTRY\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	if got := status(); got["winhttp:lc"] != Warn {
 		t.Fatalf("missing override: %v", got)
 	}
