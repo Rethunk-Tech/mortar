@@ -471,7 +471,10 @@ reap_prefix() {
 
 # regress_lc is regress for Lethal Company: a direct Proton launch of a BepInEx profile with three Thunderstore plugins,
 # in its own sandbox. Steam is never started; Proton only needs Steam's client library and the .steam links, both
-# copied into the sandbox home. The Thunderstore index and downloads are cached in $REGRESS_CACHE after the first run.
+# copied into the sandbox home. Every Proton run has a network namespace of its own: steamclient.so reaches a running
+# Steam over loopback TCP whatever HOME says, and the game then registers with it under its Wine pid, which on the host
+# names a kernel thread that never exits, so Steam waits for it to shut down until Steam itself is killed.
+# The Thunderstore index and downloads are cached in $REGRESS_CACHE after the first run.
 regress_lc() {
   ROOT=$(mktemp -d /var/tmp/mortar-regress-lc-XXXXXX)
   case "$ROOT" in /var/tmp/mortar-regress-lc-??????) ;; *) echo "unexpected sandbox dir $ROOT" >&2; exit 1 ;; esac
@@ -501,6 +504,7 @@ regress_lc() {
 
   [ -d "$proton" ] || { echo "no Proton at $proton (set MORTAR_REGRESS_PROTON)" >&2; exit 1; }
   [ -f "$STEAM/linux64/steamclient.so" ] || { echo "no steamclient.so under $STEAM" >&2; exit 1; }
+  command -v bwrap >/dev/null || { echo "bwrap (bubblewrap) is needed to keep the game away from a running Steam" >&2; exit 1; }
   if [ -n "${MORTAR_REGRESS_OFFLINE:-}" ]; then
     export HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 NO_PROXY=127.0.0.1
   fi
@@ -539,7 +543,7 @@ regress_lc() {
 export STEAM_COMPAT_DATA_PATH='$compat'
 export STEAM_COMPAT_CLIENT_INSTALL_PATH='$SANDBOX_STEAM'
 export STEAM_COMPAT_APP_ID=$LC_APP_ID SteamAppId=$LC_APP_ID SteamGameId=$LC_APP_ID
-exec '$proton/proton' run "\$@"
+exec bwrap --dev-bind / / --unshare-net -- '$proton/proton' run "\$@"
 EOF
   chmod +x "$ROOT/run-proton.sh"
   # The first Proton run creates the prefix; Mortar can only add its winhttp override to a prefix that exists.
