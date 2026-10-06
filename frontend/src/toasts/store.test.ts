@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, jest, test } from 'bun:test'
-import { useToasts } from './store.ts'
+import { setLatestChange, useToasts } from './store.ts'
 
 beforeEach(() => {
   jest.useFakeTimers()
@@ -138,4 +138,19 @@ test('history is saved without actions for the next session', () => {
   const [first] = JSON.parse(saved.get('mortar.toastHistory') ?? '[]')
   expect(first.title).toBe('Saved me')
   expect(first.action).toBeUndefined()
+})
+
+test('a profile change notification keeps the history events it reports', () => {
+  const latest: Record<string, string> = { p1: 'ev1' }
+  setLatestChange((id) => latest[id] ?? '')
+  const { push } = useToasts.getState()
+  const undo = (profileId: string) => ({ label: 'Undo', run: () => undefined, profileId })
+  push({ kind: 'success', title: 'Removed A', action: undo('p1') })
+  latest.p1 = 'ev2'
+  push({ kind: 'success', title: 'Removed A', action: undo('p1') })
+  push({ kind: 'info', title: 'Saved' })
+  const [plain, removed] = useToasts.getState().history
+  expect(removed?.changes).toEqual(['ev1', 'ev2'])
+  expect(plain?.changes).toBeUndefined()
+  setLatestChange(() => '')
 })

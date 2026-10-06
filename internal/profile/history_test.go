@@ -728,3 +728,32 @@ func TestBeginUpdateBatchIsTheBaselineWithAFreshBatch(t *testing.T) {
 		t.Fatalf("batches %+v %+v, baseline %q: %v", a, b, before, err)
 	}
 }
+
+func TestAChangeReturnsTheIDOfItsHistoryEventWithoutWritingIt(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	p := addFarmMod(t, e)
+	changed, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	events, err := e.History("stardew", p.ID)
+	if err != nil || len(events) == 0 {
+		t.Fatalf("history: %v %v", events, err)
+	}
+	if changed.LastChange == "" || changed.LastChange != events[0].ID {
+		t.Fatalf("LastChange %q, newest event %q", changed.LastChange, events[0].ID)
+	}
+	_, dir, err := e.readDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	onDisk, err := readAt(dir, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if onDisk.LastChange != "" {
+		t.Fatal("profile.json holds lastChange")
+	}
+}

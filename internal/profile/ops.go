@@ -67,6 +67,7 @@ func hasID(ids []mod.ID, id mod.ID) bool {
 
 func writeProfile(dir string, p Profile) error {
 	p.FormatVersion = datadir.FormatVersion
+	p.LastChange = ""
 	path := filepath.Join(dir, fileName)
 	forgetProfile(path)
 	return datadir.WriteVersioned(path, p)

@@ -58,8 +58,8 @@ function EarlierRow({
   )
 }
 
-/** The open profile's durable change history, newest first. */
-export function EarlierChanges({ panel }: { panel: Panel }) {
+/** The open profile's durable change history, newest first, less the changes `hide` (still listed under New). */
+export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySet<string> }) {
   const { t } = useLingui()
   const [target, setTarget] = useState<HistoryEvent | null>(null)
   const later = target ? laterEvents(panel.events, target.id) : []
@@ -79,9 +79,11 @@ export function EarlierChanges({ panel }: { panel: Panel }) {
   }
   return (
     <>
-      {panel.events.map((ev) => (
-        <EarlierRow key={ev.id} ev={ev} panel={panel} onUndo={undo} />
-      ))}
+      {panel.events
+        .filter((ev) => !hide.has(ev.id))
+        .map((ev) => (
+          <EarlierRow key={ev.id} ev={ev} panel={panel} onUndo={undo} />
+        ))}
       <ConfirmDialog
         open={target !== null}
         title={plural(later.length, {

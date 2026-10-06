@@ -914,17 +914,18 @@ func entriesEqual(a, b []Entry) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func recordHistory(dir string, before, after []Entry, stateLabel, kind, label string, configs []string, keep int) error {
+// recordHistory appends the event for a change and returns its id, or "" when nothing changed.
+func recordHistory(dir string, before, after []Entry, stateLabel, kind, label string, configs []string, keep int) (string, error) {
 	if entriesEqual(before, after) {
 		if kind == "" && stateLabel == "" {
-			return nil
+			return "", nil
 		}
 		if kind == "" {
 			kind, label = historySettings, stateLabel
 		}
 		ev := HistoryEvent{Kind: kind, Label: label, Count: 1, Configs: configs}
-		_, err := appendHistory(dir, ev, after, keep)
-		return err
+		ev, err := appendHistory(dir, ev, after, keep)
+		return ev.ID, err
 	}
 	ev := classifyHistory(before, after)
 	if kind != "" {
@@ -934,8 +935,8 @@ func recordHistory(dir string, before, after []Entry, stateLabel, kind, label st
 		ev.Label = label
 	}
 	ev.Configs = configs
-	_, err := appendHistory(dir, ev, after, keep)
-	return err
+	ev, err := appendHistory(dir, ev, after, keep)
+	return ev.ID, err
 }
 
 func appendHistory(dir string, ev HistoryEvent, after []Entry, keep int) (HistoryEvent, error) {

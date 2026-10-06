@@ -188,6 +188,9 @@ type Profile struct {
 	Created       time.Time `json:"created"`
 	Updated       time.Time `json:"updated"`
 	Entries       []Entry   `json:"entries"`
+	// LastChange is the id of the history event the change that returned this profile recorded, so a notification
+	// about that change can stand in for the event. Only set on a returned value; never written to disk.
+	LastChange string `json:"lastChange,omitempty"`
 	// Groups are named sets of entry keys that toggle together.
 	Groups []Group `json:"groups,omitempty"`
 	// Origin is how the profile was created when that is known: OriginLink, OriginMortar,
@@ -671,8 +674,10 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 				log.Printf("profile %s/%s: record history: %v", game, id, err)
 			}
 			s.historyBatches[key] = batch
-		} else if err := recordHistory(dir, before, p.Entries, stateChange(stateBefore, stateOf(p)), kind, label, configs, s.historyKeep()); err != nil {
+		} else if evID, err := recordHistory(dir, before, p.Entries, stateChange(stateBefore, stateOf(p)), kind, label, configs, s.historyKeep()); err != nil {
 			log.Printf("profile %s/%s: record history: %v", game, id, err)
+		} else {
+			p.LastChange = evID
 		}
 	}
 	return p, nil

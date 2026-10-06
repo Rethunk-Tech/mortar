@@ -40,6 +40,12 @@ function saveHistory(history: ToastHistoryItem[]) {
 // Failures stay longer: they are read, not glanced at.
 const lifetime = (kind: ToastKind) => (kind === 'info' || kind === 'success' ? QUICK_MS : SLOW_MS)
 
+// The profiles store answers with the history event its last change returned; toasts cannot import it back.
+let latestChange: (profileId: string) => string = () => ''
+
+const changeOf = (input: ToastInput) =>
+  input.action?.profileId ? latestChange(input.action.profileId) : ''
+
 export type ToastKind = 'info' | 'success' | 'warning' | 'error'
 
 export interface ToastAction {
@@ -66,6 +72,8 @@ export interface Toast extends ToastInput {
 export interface ToastHistoryItem {
   id: number
   at: number
+  // The history events this notification reports, so the panel lists each change once.
+  changes?: string[]
   kind: ToastKind
   title: string
   body?: string
@@ -106,7 +114,9 @@ export const useToasts = create<{
       const [previous] = get().history
       if (previous && previous.title === input.title && now - previous.at < QUICK_MS) {
         const count = (previous.count ?? 1) + 1
-        const merged = { ...previous, at: now, count }
+        const change = changeOf(input)
+        const changes = change ? [...(previous.changes ?? []), change] : previous.changes
+        const merged = { ...previous, at: now, count, ...(changes ? { changes } : {}) }
         set((s) => ({
           history: [merged, ...s.history.slice(1)],
           toasts: s.toasts.map((toast) =>
@@ -123,9 +133,11 @@ export const useToasts = create<{
         clearTimeout(timers.get(gone.id))
         timers.delete(gone.id)
       }
+      const change = changeOf(input)
       const item: ToastHistoryItem = {
         id,
         at: now,
+        ...(change ? { changes: [change] } : {}),
         kind: input.kind,
         title: input.title,
         ...(input.body === undefined ? {} : { body: input.body }),
@@ -170,3 +182,7 @@ export const useToasts = create<{
     setHistoryOpen: (open) => set({ historyOpen: open, ...(open ? { unread: 0 } : {}) }),
   }
 })
+
+export function setLatestChange(f: (profileId: string) => string) {
+  latestChange = f
+}

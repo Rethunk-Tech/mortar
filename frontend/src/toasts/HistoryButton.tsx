@@ -103,6 +103,7 @@ function HistoryPopover({
   const panel = useHistoryPanel(profileId, open, true)
   // A change to the profile is listed once: while unread under New, then in the history under Earlier.
   const fresh = history.slice(0, freshCount)
+  const reported = new Set(fresh.flatMap((item) => item.changes ?? []))
   const readNotes = history.slice(freshCount).filter((item) => item.action?.profileId === undefined)
   return (
     <Popover
@@ -161,7 +162,7 @@ function HistoryPopover({
             {readNotes.map((item) => (
               <HistoryRow key={item.id} item={item} />
             ))}
-            <EarlierChanges panel={panel} />
+            <EarlierChanges panel={panel} hide={reported} />
           </>
         )}
       </Box>

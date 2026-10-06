@@ -33,7 +33,7 @@ import { loadGameStatus } from '../games/status.ts'
 import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportError } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { setLatestChange, useToasts } from '../toasts/store.ts'
 
 const fail = reportError
 
@@ -454,6 +454,9 @@ export const useProfiles = create<{
 
 // The command line changes profiles through the running app, which then names the game; reload it when it is open.
 export function initProfilesChanged() {
+  setLatestChange(
+    (id) => useProfiles.getState().profiles.find((p) => p.id === id)?.lastChange ?? '',
+  )
   if (typeof Events.On !== 'function') {
     return
   }
