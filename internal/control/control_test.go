@@ -361,3 +361,15 @@ func TestHandleLibraryMethods(t *testing.T) {
 		}
 	}
 }
+
+func TestModRowsCarryTheEntryNoteAndTags(t *testing.T) {
+	rows := modRows(profile.Profile{Entries: []profile.Entry{{
+		Key:  "nexus-1-2",
+		Note: "keep",
+		Tags: []string{"qol"},
+		Mods: []profile.Component{{ID: "smapi:A.Mod"}, {ID: "smapi:A.Extra"}},
+	}}})
+	if len(rows) != 2 || rows[1].Note != "keep" || len(rows[1].Tags) != 1 || rows[1].Tags[0] != "qol" {
+		t.Fatalf("rows = %+v", rows)
+	}
+}

@@ -112,6 +112,9 @@ type ModRow struct {
 	PinReason string `json:"pinReason,omitempty"`
 	Key       string `json:"key"`
 	Source    string `json:"source"`
+	// Note and Tags belong to the row's entry, so every mod of one download shows the same ones.
+	Note string   `json:"note,omitempty"`
+	Tags []string `json:"tags,omitempty"`
 }
 
 // ModInfo is one mod with what relates to it.
@@ -1127,6 +1130,7 @@ func modRows(p profile.Profile) []ModRow {
 				ID: m.ID, Name: m.Name, Version: m.Version, Author: m.Author, Key: e.Key,
 				Enabled: e.Enabled(m.ID),
 				Pinned:  e.Pinned, PinReason: e.PinReason, Source: source(e.Source),
+				Note: e.Note, Tags: e.Tags,
 			})
 		}
 	}
