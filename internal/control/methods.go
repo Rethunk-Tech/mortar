@@ -589,6 +589,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.packImport(ctx, p)
 	case "pack.exportModpack":
 		return s.packExportModpack(p)
+	case "pack.farmExport", "pack.farmCheck", "pack.farmFix":
+		return s.farmCall(ctx, method, p)
 	case "profile.backup":
 		return s.profileBackup(p)
 	case "profile.restore":
@@ -916,14 +918,14 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		var reqs []queue.Request
 		for _, u := range r.Updates {
-			if u.Unofficial || (!p.All && len(p.IDs) > 0 && !slices.ContainsFunc(typedIDs(p.IDs), func(want mod.ID) bool {
+			if u.Unofficial || u.PickFile || (!p.All && len(p.IDs) > 0 && !slices.ContainsFunc(typedIDs(p.IDs), func(want mod.ID) bool {
 				return mod.Equal(want, u.ID)
 			})) {
 				continue
 			}
 			reqs = append(reqs, queue.Request{
 				Kind: queue.KindUpdate, Game: p.Game, Profile: id, Name: u.Name, Version: u.Version,
-				CurrentKey: u.Key, ModID: u.NexusID, Repo: u.GitHubRepo, FallbackRepo: u.GitHubFallback, FallbackID: u.ID, Latest: true,
+				CurrentKey: u.Key, ModID: u.NexusID, FileID: u.FileID, Repo: u.GitHubRepo, FallbackRepo: u.GitHubFallback, FallbackID: u.ID, Latest: true,
 			})
 		}
 		if len(reqs) == 0 {

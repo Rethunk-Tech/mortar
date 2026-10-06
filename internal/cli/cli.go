@@ -569,6 +569,8 @@ func (c *cmd) dispatch() error {
 				return c.profileImport()
 			case "export":
 				return c.profileExport()
+			case "farm":
+				return c.profileFarm()
 			case "backup":
 				return c.profileBackup()
 			case "restore":
@@ -2278,6 +2280,9 @@ takes --game <id>, which may be left out when exactly one game is installed.
                                           import an r2modman code, .r2z or modpack and queue its downloads
   profile export <game> <profile> <file.zip> --format modpack [--no-configs]
                                           write a Thunderstore modpack of the profile's Thunderstore packages
+  profile farm export <game> <profile>   the mods a Stardew guest must match, as JSON to share
+  profile farm check|fix <game> <profile> <list.json|json>
+                                          what differs from the host's list; fix queues the downloads
   profile backup <game> <profile> <file.zip>  everything but the mod files: settings, history, configs
   profile restore <file.zip> [--game <id>]    new profile from a backup; downloads its mods again
   profile load-order <game> <profile>    enabled mods in SMAPI load order

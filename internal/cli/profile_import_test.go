@@ -35,3 +35,26 @@ func TestProfilePackVerbsCallTheirMethods(t *testing.T) {
 		t.Fatalf("restore: %+v %+v", r, got)
 	}
 }
+
+func TestProfileFarmVerbsCallTheirMethods(t *testing.T) {
+	results := map[string]any{
+		"pack.farmExport": packsvc.FarmList{Game: "stardew", Name: "Ours", Mods: []packsvc.FarmMod{}},
+		"pack.farmCheck":  packsvc.FarmCheck{Host: "Ours", Rows: []packsvc.FarmRow{{Name: "Pathoschild.X", Host: "2.0.0", Mine: "1.0.0", State: packsvc.FarmDifferent}}},
+		"pack.farmFix":    packsvc.FarmFix{Queued: 2, Manual: []string{"Local"}},
+	}
+	r := invoke(t, results, "profile", "farm", "export", "stardew", "Farm")
+	if r.code != 0 || r.calls[0].method != "pack.farmExport" || !strings.Contains(r.out, `"name": "Ours"`) {
+		t.Fatalf("export: %+v", r)
+	}
+	r = invoke(t, results, "profile", "farm", "check", "stardew", "Farm", `{"game":"stardew"}`)
+	if got := r.calls[0].params; r.code != 0 || got.Value != `{"game":"stardew"}` || !strings.Contains(r.out, "different\tPathoschild.X\thost 2.0.0\tyours 1.0.0") {
+		t.Fatalf("check: %+v %+v", r, got)
+	}
+	r = invoke(t, results, "profile", "farm", "fix", "stardew", "Farm", `{"game":"stardew"}`)
+	if r.code != 0 || r.calls[0].method != "pack.farmFix" || !strings.Contains(r.out, "queued 2") || !strings.Contains(r.out, "Local") {
+		t.Fatalf("fix: %+v", r)
+	}
+	if r = invoke(t, results, "profile", "farm", "check", "stardew", "Farm"); r.code == 0 {
+		t.Fatal("check without a list must be refused")
+	}
+}
