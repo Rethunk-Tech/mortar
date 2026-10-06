@@ -95,10 +95,10 @@ func TestBusyAndStopFollowTheInstall(t *testing.T) {
 	if !svc.BusyInstall(gogID) || svc.BusyInstall(folderID) || !svc.Busy("stardew") || !svc.AnyBusy() {
 		t.Fatal("busy must follow the install that runs, and stay true for the game")
 	}
-	if err := svc.StopInstall(folderID); err == nil {
+	if err := svc.StopInstall(t.Context(), folderID); err == nil {
 		t.Fatal("stopped an install that is not running")
 	}
-	if err := svc.StopInstall(gogID); err == nil {
+	if err := svc.StopInstall(t.Context(), gogID); err == nil {
 		t.Fatal("stopped an install that has not started running")
 	}
 	svc.set(Status{Game: "stardew", Install: gogID, State: Idle})

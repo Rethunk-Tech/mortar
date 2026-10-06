@@ -1192,26 +1192,26 @@ func plainLaunchError(err error, dir string) string {
 }
 
 // Stop terminates the loader process of the profile the game is running, in whichever install it runs.
-func (s *Service) Stop(gameID string) error {
+func (s *Service) Stop(ctx context.Context, gameID string) error {
 	g, err := game.Require(gameID)
 	if err != nil {
 		return err
 	}
 	for _, sl := range s.slots(g) {
 		if s.stoppable(sl) {
-			return s.stopSlot(context.Background(), sl)
+			return s.stopSlot(ctx, sl)
 		}
 	}
 	return fmt.Errorf("%s is not running", g.Name())
 }
 
 // StopInstall stops the game running from the install with this id.
-func (s *Service) StopInstall(installID string) error {
+func (s *Service) StopInstall(ctx context.Context, installID string) error {
 	sl, ok := s.findInstall(installID)
 	if !ok || !s.stoppable(sl) {
 		return usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q is not running", installID))
 	}
-	return s.stopSlot(context.Background(), sl)
+	return s.stopSlot(ctx, sl)
 }
 
 // stoppable reports whether the slot runs, by its stored state first: polling would close a run whose game is

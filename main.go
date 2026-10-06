@@ -1030,7 +1030,7 @@ func run() error {
 				name = g.Name()
 			}
 			trayMenu.Add("Stop " + name).OnClick(func(*application.Context) {
-				_ = launches.Stop(id)
+				_ = launches.Stop(context.Background(), id)
 			})
 		}
 		left := 0

@@ -100,7 +100,7 @@ func TestStoppingARunWhoseGameIsGoneClosesIt(t *testing.T) {
 	if err := os.RemoveAll(filepath.Join(svc.procDir, "4242")); err != nil {
 		t.Fatal(err)
 	}
-	if err := svc.Stop(g.ID()); err != nil {
+	if err := svc.Stop(t.Context(), g.ID()); err != nil {
 		t.Fatal(err)
 	}
 	if st := svc.current(g); st.State != Idle {
