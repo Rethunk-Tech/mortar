@@ -77,7 +77,15 @@ function Row({
   )
 }
 
-export function SaveBackupsSection({ folder, label }: { folder: string; label: string }) {
+export function SaveBackupsSection({
+  folder,
+  label,
+  profile,
+}: {
+  folder: string
+  label: string
+  profile: string
+}) {
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<Backup[] | null>(null)
@@ -154,7 +162,7 @@ export function SaveBackupsSection({ folder, label }: { folder: string; label: s
           run(async () => {
             await (kind === 'delete'
               ? DeleteBackup(game, backup.name)
-              : RestoreBackup(game, backup.name, [folder]))
+              : RestoreBackup(game, profile, backup.name, [folder]))
             setAsk(null)
             await refresh()
             if (kind === 'restore') {

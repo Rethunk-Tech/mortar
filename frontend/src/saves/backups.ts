@@ -60,7 +60,7 @@ export const useSaveBackups = create<{
       }
     },
     restore: async (name, folders) => {
-      await RestoreBackup(get().game, name, folders)
+      await RestoreBackup(get().game, get().profile, name, folders)
       await Promise.all([get().reload(), useSaves.getState().reload()])
     },
     setPinned: async (name, pinned) => {

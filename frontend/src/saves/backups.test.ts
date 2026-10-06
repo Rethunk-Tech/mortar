@@ -28,7 +28,12 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/ser
     listedFor = [game, profile]
     return listImpl()
   },
-  RestoreBackup: async (_game: string, name: string, folders: string[] | null) => {
+  RestoreBackup: async (
+    _game: string,
+    _profile: string,
+    name: string,
+    folders: string[] | null,
+  ) => {
     restored = { name, folders }
   },
   SetBackupPinned: async () => undefined,

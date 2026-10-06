@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -97,8 +98,9 @@ func (s *Service) SetBackupPinned(game, name string, pinned bool) error {
 }
 
 // RestoreBackup copies folders from the named zip into the Saves folder after zipping the current saves.
-// An empty folders list restores every save in the zip.
-func (s *Service) RestoreBackup(game, name string, folders []string) error {
+// An empty folders list restores every save in the zip. The backup taken first rotates against profile's
+// saveBackupsKept, as the profile's update and launch backups do.
+func (s *Service) RestoreBackup(game, profile, name string, folders []string) error {
 	id, err := s.saveGame(game)
 	if err != nil {
 		return err
@@ -109,7 +111,7 @@ func (s *Service) RestoreBackup(game, name string, folders []string) error {
 	if err := backupNameOK(name); err != nil {
 		return err
 	}
-	target, err := s.target(id)
+	target, err := s.target(id, profile)
 	if err != nil {
 		return err
 	}
@@ -140,7 +142,7 @@ func (s *Service) CreateBackup(game, folder string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	target, err := s.target(id)
+	target, err := s.target(id, "")
 	if err != nil {
 		return false, err
 	}
@@ -195,7 +197,8 @@ func (s *Service) saveGame(game string) (string, error) {
 	return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("game %q has no save folder", game))
 }
 
-func (s *Service) target(gameID string) (backup.Target, error) {
+// target is where the game's backups go, with profileID's overrides when it names one.
+func (s *Service) target(gameID, profileID string) (backup.Target, error) {
 	set := settings.Defaults()
 	if s.settings != nil {
 		set = s.settings.Get()
@@ -204,16 +207,26 @@ func (s *Service) target(gameID string) (backup.Target, error) {
 	if err != nil {
 		return backup.Target{}, err
 	}
-	return backup.TargetFor(dir, set, gameID, nil)
+	var overrides map[string]string
+	if s.profiles != nil && profileID != "" {
+		all, err := s.profiles.List(gameID)
+		if err != nil {
+			return backup.Target{}, err
+		}
+		if i := slices.IndexFunc(all, func(p profile.Profile) bool { return p.ID == profileID }); i >= 0 {
+			overrides = all[i].PrefOverrides()
+		}
+	}
+	return backup.TargetFor(dir, set, gameID, overrides)
 }
 
 func (s *Service) backupDirs(gameID string) (savesDir, backupsDir string, err error) {
-	target, err := s.target(gameID)
+	target, err := s.target(gameID, "")
 	return s.scanners[gameID].Dir, target.Dir, err
 }
 
 func (s *Service) backupReads(gameID string) ([]string, error) {
-	target, err := s.target(gameID)
+	target, err := s.target(gameID, "")
 	return target.Reads, err
 }
 

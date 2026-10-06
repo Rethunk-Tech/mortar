@@ -199,7 +199,7 @@ export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; ga
         profile={profile}
         game={game}
       />
-      <SaveBackupsSection folder={fit.folder} label={label} />
+      <SaveBackupsSection folder={fit.folder} label={label} profile={profile.id} />
     </Box>
   )
 }

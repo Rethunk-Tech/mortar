@@ -10,8 +10,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func TestServiceListsAndRestoresWithTempDataDirs(t *testing.T) {
@@ -27,7 +29,7 @@ func TestServiceListsAndRestoresWithTempDataDirs(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(savesDir, "Farm_1", "Farm_1"), []byte("v2"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.RestoreBackup("stardew", listed[0].Name, []string{"Farm_1"}); err != nil {
+	if err := s.RestoreBackup("stardew", "", listed[0].Name, []string{"Farm_1"}); err != nil {
 		t.Fatal(err)
 	}
 	got, err := fsx.ReadFile(filepath.Join(savesDir, "Farm_1", "Farm_1"))
@@ -41,7 +43,7 @@ func TestServiceRefusesRestoreWhileBusy(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
 	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: t.TempDir()}}, busy: func() bool { return true }}
-	if err := s.RestoreBackup("stardew", "2026-01-01T00-00-00.000.zip", nil); !errors.Is(err, ErrBusy) {
+	if err := s.RestoreBackup("stardew", "", "2026-01-01T00-00-00.000.zip", nil); !errors.Is(err, ErrBusy) {
 		t.Fatalf("err = %v", err)
 	}
 }
@@ -231,5 +233,54 @@ func TestCreateBackupOfNoSaveMakesNone(t *testing.T) {
 	}
 	if got, err := s.ListBackups("stardew", ""); err != nil || len(got) != 0 {
 		t.Fatalf("list = %+v, %v", got, err)
+	}
+}
+
+func TestRestoreRotatesAgainstTheProfilesKeepCount(t *testing.T) {
+	s, savesDir := backupService(t)
+	items, err := store.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.profiles, err = profile.Open(items); err != nil {
+		t.Fatal(err)
+	}
+	p, err := s.profiles.Create("stardew", "Main")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.profiles.SetOverride("stardew", p.ID, "saveBackupsKept", "1"); err != nil {
+		t.Fatal(err)
+	}
+	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	if _, err := s.CreateBackup("stardew", "Farm_1"); err != nil {
+		t.Fatal(err)
+	}
+	listed, err := s.ListBackups("stardew", "")
+	if err != nil || len(listed) != 1 {
+		t.Fatalf("list = %+v, %v", listed, err)
+	}
+	for range 3 {
+		if err := s.RestoreBackup("stardew", p.ID, listed[0].Name, nil); err != nil {
+			t.Fatal(err)
+		}
+		// A new pre-restore zip only replaces a recent one when the saves changed since.
+		future := time.Now().Add(time.Hour)
+		if err := os.Chtimes(filepath.Join(savesDir, "Farm_1", "Farm_1"), future, future); err != nil {
+			t.Fatal(err)
+		}
+	}
+	after, err := s.ListBackups("stardew", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	restores := 0
+	for _, b := range after {
+		if b.Kind == backup.KindRestore {
+			restores++
+		}
+	}
+	if restores != 1 {
+		t.Fatalf("%d pre-restore backups kept, want the profile's 1: %+v", restores, after)
 	}
 }
