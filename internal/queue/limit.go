@@ -78,6 +78,9 @@ func (s *Service) limitFor(ctx context.Context, source string) *sourceLimit {
 	case source == "modrinth":
 		// Modrinth allows 300 requests a minute per address.
 		l = newSourceLimit(4, 10, 5, now)
+	case source == "curseforge":
+		// CurseForge publishes no request quota for its API key; this keeps one Mortar to a few calls a second.
+		l = newSourceLimit(3, 5, 3, now)
 	case source == "thunderstore":
 		// Package downloads redirect to Thunderstore's CDN, which mod managers fetch in parallel; the anonymous-GitHub
 		// pace below (one start a second) would leave a batch waiting on the pacer rather than the network.

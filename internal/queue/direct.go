@@ -9,11 +9,12 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
 )
 
-// DirectFile is what a Modrinth or itch.io download needs: the file's address, size and digest, and the projects the
+// DirectFile is what a Modrinth, CurseForge or itch.io download needs: the file's address, size and digest, and the projects the
 // version requires.
 type DirectFile struct {
 	ID, Name, Version, FileName, URL string
@@ -26,7 +27,7 @@ type DirectFile struct {
 // DirectRef names a required project; an empty Version means its newest.
 type DirectRef struct{ ID, Version string }
 
-// expandDirect resolves a Modrinth or itch.io request and its required dependencies, dependencies first. Each
+// expandDirect resolves a Modrinth, CurseForge or itch.io request and its required dependencies, dependencies first. Each
 // project appears once.
 func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error) {
 	if s.d.Direct == nil {
@@ -48,6 +49,9 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
 		f, err := s.d.Direct(cctx, r.Source, ref.ID, ref.Version, loaders)
 		cancel()
+		if manual, ok := errors.AsType[*curseforge.NotDistributableError](err); ok {
+			return s.handOff(manual)
+		}
 		if err != nil {
 			return err
 		}
@@ -72,6 +76,19 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 		return nil, err
 	}
 	return out, nil
+}
+
+// handOff opens the page of a mod whose author forbids downloads outside CurseForge, the way a Nexus file Mortar may
+// not fetch is left to the site, and fails the request with what the user does next.
+func (s *Service) handOff(e *curseforge.NotDistributableError) error {
+	msg := e.Error() + ": download the file from its CurseForge page and add it from your computer"
+	if s.d.OpenURL == nil {
+		return errors.New(msg)
+	}
+	if err := s.d.OpenURL(e.PageURL); err != nil {
+		return err
+	}
+	return errors.New(msg + " (the page is open)")
 }
 
 // sourceLoaders are the loaders the game's catalog lists for the source, which narrow the versions a dependency may take.
@@ -104,6 +121,16 @@ func ResolveDirect(ctx context.Context, src, id, version string, loaders []strin
 		f := DirectFile{ID: id, Version: r.Version, FileName: r.FileName, URL: r.URL, SizeKB: r.Size >> 10, Digest: r.Digest}
 		for _, d := range r.Dependencies {
 			f.Dependencies = append(f.Dependencies, DirectRef{ID: d.ProjectID, Version: d.VersionID})
+		}
+		return f, nil
+	case "curseforge":
+		r, err := curseforge.Driver{}.Resolve(ctx, id, version)
+		if err != nil {
+			return DirectFile{}, err
+		}
+		f := DirectFile{ID: id, Name: r.Name, Version: r.Version, FileName: r.FileName, URL: r.URL, SizeKB: r.Size >> 10, Digest: r.Digest}
+		for _, d := range r.Dependencies {
+			f.Dependencies = append(f.Dependencies, DirectRef{ID: d})
 		}
 		return f, nil
 	case "itch":

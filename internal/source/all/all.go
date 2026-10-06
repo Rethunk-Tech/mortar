@@ -2,6 +2,7 @@
 package all
 
 import (
+	_ "github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/github"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/itch"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/modrinth"

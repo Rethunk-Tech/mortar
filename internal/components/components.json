@@ -125,6 +125,11 @@
           "gameId": 1303
         },
         {
+          "id": "curseforge",
+          "key": "4643",
+          "gameId": 669
+        },
+        {
           "id": "github",
           "key": "stardew-valley-mod"
         }

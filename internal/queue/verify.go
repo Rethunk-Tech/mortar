@@ -16,7 +16,7 @@ import (
 const packageHashFile = "package-hashes.json"
 
 // verifyDigest checks path against a "sha256:<hex>" or "sha512:<hex>" digest; an empty digest (GitHub did not
-// publish one) passes.
+// publish one) passes, and so does CurseForge's "sha1:<hex>", which only names the file for update checks.
 func verifyDigest(path, digest string) error {
 	digest = strings.ToLower(strings.TrimSpace(digest))
 	if want, ok := strings.CutPrefix(digest, "sha512:"); ok {

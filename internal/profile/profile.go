@@ -43,9 +43,10 @@ const (
 	KindGitHub = "github"
 	// KindThunderstore is a Thunderstore package: Name is "Namespace-Name" and Version the package version.
 	KindThunderstore = "thunderstore"
-	// KindModrinth and KindItch are projects from those sites: Name is the project or game id.
-	KindModrinth = "modrinth"
-	KindItch     = "itch"
+	// KindModrinth, KindCurseForge and KindItch are projects from those sites: Name is the project or game id.
+	KindModrinth   = "modrinth"
+	KindCurseForge = "curseforge"
+	KindItch       = "itch"
 )
 
 // Source says where an entry came from. Kind is KindLocal for an archive the user picked, Name its file name;
@@ -67,7 +68,7 @@ type Source struct {
 	// a Thunderstore package's site category (thunderstore.Category).
 	ModName  string `json:"modName,omitempty"`
 	Category string `json:"category,omitempty"`
-	// Digest is the downloaded file's "sha512:<hex>" where the site published one (Modrinth), which its update
+	// Digest is the downloaded file's "sha512:<hex>" where the site published one (Modrinth, CurseForge as "sha1:<hex>"), which its update
 	// check is keyed by.
 	Digest   string `json:"digest,omitempty"`
 	fomod    *fomodChoices

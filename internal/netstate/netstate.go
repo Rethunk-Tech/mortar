@@ -18,6 +18,7 @@ var probeURL = map[string]string{
 	"github":       "https://api.github.com",
 	"thunderstore": "https://thunderstore.io",
 	"modrinth":     "https://api.modrinth.com",
+	"curseforge":   "https://api.curseforge.com",
 	"itch":         "https://itch.io",
 }
 

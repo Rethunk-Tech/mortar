@@ -80,7 +80,7 @@ func (s *Store) InstallSource(game, id, path string, source Source) (InstallResu
 		key = store.NexusKey(source.ModID, source.FileID)
 	case KindThunderstore:
 		key = store.PackageKey(source.Name, source.Version)
-	case KindModrinth, KindItch:
+	case KindModrinth, KindCurseForge, KindItch:
 		key = store.PackageKey(source.Kind+":"+source.Name, source.Version)
 	default:
 		return InstallResult{}, installError(fmt.Errorf("cannot install a %q archive", source.Kind))

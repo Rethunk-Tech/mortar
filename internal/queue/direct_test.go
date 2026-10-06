@@ -5,7 +5,10 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"slices"
+	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 )
 
 func TestVerifyDigestSHA512(t *testing.T) {
@@ -44,5 +47,19 @@ func TestExpandDirectQueuesDependenciesFirstOnce(t *testing.T) {
 	}
 	if got[0].Kind != KindDependency || got[2].Kind != KindInstall || got[2].Name != "Root" || got[2].digest != "sha512:aa" || got[2].url != "u/root" {
 		t.Fatalf("%+v", got)
+	}
+}
+
+func TestExpandDirectOpensThePageOfAForbiddenFile(t *testing.T) {
+	var opened string
+	s := &Service{d: Deps{
+		OpenURL: func(u string) error { opened = u; return nil },
+		Direct: func(context.Context, string, string, string, []string) (DirectFile, error) {
+			return DirectFile{}, &curseforge.NotDistributableError{Mod: "Shut", PageURL: "https://www.curseforge.com/projects/20"}
+		},
+	}}
+	_, err := s.expandPackages(context.Background(), []Request{{Kind: KindInstall, Game: "g", Profile: "p", Source: "curseforge", Package: "20"}})
+	if err == nil || opened != "https://www.curseforge.com/projects/20" || !strings.Contains(err.Error(), "Shut") {
+		t.Fatalf("opened %q, err %v", opened, err)
 	}
 }

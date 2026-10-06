@@ -11,7 +11,7 @@ import (
 
 func TestForGameFollowsCatalogOrderAndSkipsUnregistered(t *testing.T) {
 	t.Parallel()
-	g := components.GameInfo{Sources: []components.GameSource{{ID: "curseforge"}, {ID: "nexus"}, {ID: "github"}}}
+	g := components.GameInfo{Sources: []components.GameSource{{ID: "gamebanana"}, {ID: "nexus"}, {ID: "github"}}}
 	var got []string
 	for _, s := range source.ForGame(g) {
 		got = append(got, s.ID())

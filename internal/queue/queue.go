@@ -81,7 +81,7 @@ const (
 // packagePattern is a Thunderstore "Namespace-Name"; neither part holds a dash.
 var packagePattern = regexp.MustCompile(`^[A-Za-z0-9_]+-[A-Za-z0-9_]+$`)
 
-// directIDPattern is a Modrinth project id or an itch.io game id.
+// directIDPattern is a Modrinth project id, a CurseForge mod id or an itch.io game id.
 var directIDPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]+$`)
 
 func (r Request) valid() bool {
@@ -136,7 +136,7 @@ type Item struct {
 
 	// Package is "Namespace-Name" of a Thunderstore package, downloaded from URL at Version; ModID and Repo stay empty.
 	Package string `json:"package,omitempty"`
-	// Source is "modrinth" or "itch" for a package that site serves: Package is then its project or game id and Digest
+	// Source is "modrinth", "curseforge" or "itch" for a package that site serves: Package is then its project or game id and Digest
 	// the file's "sha512:<hex>". Empty means Thunderstore.
 	Source       string            `json:"source,omitempty"`
 	Digest       string            `json:"digest,omitempty"`
@@ -221,7 +221,7 @@ type Request struct {
 	Asset      string `json:"asset"`
 	// Package is a Thunderstore "Namespace-Name"; Add queues it with everything it depends on, at Version or the newest.
 	Package string `json:"package,omitempty"`
-	// Source names the site of a Package other than Thunderstore ("modrinth" or "itch"); Add resolves its file and
+	// Source names the site of a Package other than Thunderstore ("modrinth", "curseforge" or "itch"); Add resolves its file and
 	// required dependencies.
 	Source string `json:"source,omitempty"`
 	// FallbackRepo is the mod's GitHub repo (owner/name) for a Nexus update: when the account would have to click
