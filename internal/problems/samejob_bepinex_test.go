@@ -11,8 +11,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-// Both packages ship testdata/mod.dll, whose Fixture.Patches skip Farmer.Update and transpile Game1.Draw and also
-// only add a prefix and postfixes, which say nothing about the job.
+// Both packages ship testdata/mod.dll, which skips and hooks Farmer.Update, transpiles Game1.Draw and Game1.Update, and
+// also only adds a prefix and postfixes, which say nothing about the job.
 func TestPackageFootprintsKeepTakeoversAndPairShippingOnePlugin(t *testing.T) {
 	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
@@ -35,8 +35,9 @@ func TestPackageFootprintsKeepTakeoversAndPairShippingOnePlugin(t *testing.T) {
 	fp, related := packageFootprints(pkgs, mods)
 
 	want := map[string]bool{
-		"harmony:StardewValley.Farmer::Update (prefix-skip)": true,
-		"harmony:StardewValley.Game1::Draw (transpiler)":     true,
+		"harmony:StardewValley.Farmer::Update (skip or hook)": true,
+		"harmony:StardewValley.Game1::Draw (transpiler)":      true,
+		"harmony:StardewValley.Game1::Update (transpiler)":    true,
 	}
 	one := mods[0].ModID().Fold()
 	if len(fp) != 2 || len(fp[one]) != len(want) {

@@ -16,6 +16,8 @@ const (
 	PatchPostfix    = "postfix"
 	PatchTranspiler = "transpiler"
 	PatchFinalizer  = "finalizer"
+	// PatchHook is a MonoMod HookGen On hook, which wraps the original and can skip it like a skipping prefix.
+	PatchHook = "hook"
 )
 
 // Patch is one Harmony patch an assembly declares with attributes: the method it targets as "Namespace.Type::Method"
@@ -66,8 +68,10 @@ var patchKinds = map[string]string{
 }
 
 // Patches lists the Harmony patches the assembly at path declares with [HarmonyPatch] on a class, its methods or both,
-// each method a [HarmonyPrefix]-style attribute or its name (Prefix, Postfix, Transpiler, Finalizer) marks. Patches a
-// plugin applies by calling Harmony.Patch at run time, and MonoMod hooks, carry no attribute and are not seen.
+// each method a [HarmonyPrefix]-style attribute or its name (Prefix, Postfix, Transpiler, Finalizer) marks, and the
+// HookGen hooks it subscribes: On.Type.add_Method as a hook, IL.Type.add_Method as a transpiler. Patches a plugin
+// applies by calling Harmony.Patch or new Hook(...) at run time name their target only through reflection and are not
+// seen.
 func Patches(path string) (out []Patch, err error) {
 	data, err := fsx.ReadFile(path)
 	if err != nil {
@@ -138,6 +142,27 @@ func Patches(path string) (out []Patch, err error) {
 				seen[p] = true
 				out = append(out, p)
 			}
+		}
+	}
+	for row := 1; row <= m.rows[tMemberRef]; row++ {
+		parent, ref := decode(cMemberRefParent, m.cell(tMemberRef, row, 0))
+		if parent != tTypeRef {
+			continue
+		}
+		name := m.str(m.cell(tMemberRef, row, 1))
+		ns, typ := m.typeRef(ref)
+		hooked, isHook := strings.CutPrefix(name, "add_")
+		root, gameNS, _ := strings.Cut(ns, ".")
+		kind := map[string]string{"On": PatchHook, "IL": PatchTranspiler}[root]
+		if !isHook || kind == "" {
+			continue
+		}
+		if gameNS != "" {
+			typ = gameNS + "." + typ
+		}
+		if p := (Patch{Target: typ + "::" + hooked, Kind: kind}); !seen[p] {
+			seen[p] = true
+			out = append(out, p)
 		}
 	}
 	slices.SortFunc(out, func(a, b Patch) int { return strings.Compare(a.Target+a.Kind, b.Target+b.Kind) })

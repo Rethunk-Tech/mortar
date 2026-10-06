@@ -11,9 +11,9 @@ import (
 )
 
 // bepinexMembers is what one plugin DLL changes in Lethal Company: the game members it assigns, and the game methods
-// it takes over through Harmony, a prefix that can skip the original or a transpiler that rewrites it. A prefix or
-// postfix that only adds to a method says nothing about the job, since many mods hook the same busy methods. Game
-// types sit in the global namespace and GameNetcodeStuff.
+// it takes over: a Harmony prefix that can skip the original or a HookGen hook, which match each other, or a transpiler
+// that rewrites it. A prefix or postfix that only adds to a method says nothing about the job, since many mods hook the
+// same busy methods. Game types sit in the global namespace and GameNetcodeStuff.
 func bepinexMembers(dll string) []string {
 	var out []string
 	for _, ns := range []string{"", "GameNetcodeStuff"} {
@@ -22,8 +22,11 @@ func bepinexMembers(dll string) []string {
 	}
 	patches, _ := dotnet.Patches(dll)
 	for _, p := range patches {
-		if p.Kind == dotnet.PatchSkip || p.Kind == dotnet.PatchTranspiler {
-			out = append(out, "harmony:"+p.Target+" ("+p.Kind+")")
+		switch p.Kind {
+		case dotnet.PatchSkip, dotnet.PatchHook:
+			out = append(out, "harmony:"+p.Target+" (skip or hook)")
+		case dotnet.PatchTranspiler:
+			out = append(out, "harmony:"+p.Target+" (transpiler)")
 		}
 	}
 	slices.Sort(out)

@@ -157,3 +157,34 @@ namespace HarmonyLib
     {
     }
 }
+
+namespace On.StardewValley
+{
+    // MonoMod HookGen's generated hook type: one event per game method.
+    public static class Farmer
+    {
+        public delegate void orig_Update(global::StardewValley.Farmer self);
+
+        public delegate void hook_Update(orig_Update orig, global::StardewValley.Farmer self);
+
+        public static event hook_Update Update
+        {
+            add { }
+            remove { }
+        }
+    }
+}
+
+namespace IL.StardewValley
+{
+    public delegate void Manipulator(object il);
+
+    public static class Game1
+    {
+        public static event Manipulator Update
+        {
+            add { }
+            remove { }
+        }
+    }
+}

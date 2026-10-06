@@ -124,3 +124,15 @@ namespace Fixture.Patches
         }
     }
 }
+
+namespace Fixture.Hooks
+{
+    public static class Hooks
+    {
+        public static void Apply()
+        {
+            On.StardewValley.Farmer.Update += (orig, self) => orig(self);
+            IL.StardewValley.Game1.Update += il => { };
+        }
+    }
+}

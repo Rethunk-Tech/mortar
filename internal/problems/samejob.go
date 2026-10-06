@@ -258,7 +258,7 @@ func shortMembers(members map[string]bool, weight func(string) float64) string {
 	return strings.Join(names, ", ")
 }
 
-const assemblyCacheVersion = 2
+const assemblyCacheVersion = 3
 
 type assemblyEntry struct {
 	Size   int64    `json:"size"`

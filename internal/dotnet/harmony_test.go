@@ -7,7 +7,8 @@ import (
 )
 
 // testdata/mod.dll's Fixture.Patches covers each way a patch names its target: class and method attributes merged, a
-// method found by name, a getter and a constructor, argument types, and HarmonyX's type name as a string.
+// method found by name, a getter and a constructor, argument types, and HarmonyX's type name as a string; Fixture.Hooks
+// subscribes a HookGen On hook and an IL hook.
 func TestPatchesReadsHarmonyAttributes(t *testing.T) {
 	got, err := Patches(filepath.Join("testdata", "mod.dll"))
 	if err != nil {
@@ -15,10 +16,12 @@ func TestPatchesReadsHarmonyAttributes(t *testing.T) {
 	}
 	want := []Patch{
 		{"StardewValley.Farmer::.ctor", PatchPostfix},
+		{"StardewValley.Farmer::Update", PatchHook},
 		{"StardewValley.Farmer::Update", PatchSkip},
 		{"StardewValley.Farmer::get_CurrentToolIndex", PatchPostfix},
 		{"StardewValley.Game1::Draw", PatchPrefix},
 		{"StardewValley.Game1::Draw", PatchTranspiler},
+		{"StardewValley.Game1::Update", PatchTranspiler},
 		{"StardewValley.Menus.ClickableComponent::snap", PatchFinalizer},
 	}
 	if !slices.Equal(got, want) {
