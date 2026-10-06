@@ -3861,7 +3861,7 @@ msgstr "{0, plural, one {The new version of {1} no longer includes # file. Keep 
 msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
-#: src/share/ImportPreview.tsx:367
+#: src/share/ImportPreview.tsx:330
 #: src/share/useImportFlow.ts:142
 msgid "Nothing to download"
 msgstr "Nothing to download"
@@ -4154,7 +4154,7 @@ msgid "This profile skips updates from this source for this mod."
 msgstr "This profile skips updates from this source for this mod."
 
 #. placeholder {0}: skippedSettings.length
-#: src/share/ImportPreview.tsx:380
+#: src/share/ImportPreview.tsx:392
 msgid "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
@@ -5413,7 +5413,7 @@ msgstr "The folder of {name} was deleted outside Mortar"
 msgid "Replaced by {by}, which is also enabled"
 msgstr "Replaced by {by}, which is also enabled"
 
-#: src/share/ImportPreview.tsx:367
+#: src/share/ImportPreview.tsx:330
 msgid "Ready to import"
 msgstr "Ready to import"
 
@@ -6864,6 +6864,10 @@ msgstr "Backups to keep per save"
 msgid "Update ready: applies when you close Mortar."
 msgstr "Update ready: applies when you close Mortar."
 
+#: src/share/ImportPreview.tsx:332
+msgid "Sign in to import"
+msgstr "Sign in to import"
+
 #: src/profiles/PackImportDialog.tsx:127
 msgid "From r2modman or Gale on this computer"
 msgstr "From r2modman or Gale on this computer"
@@ -7388,7 +7392,7 @@ msgstr "Updated {mods} in {profileName}"
 msgid "Search every run"
 msgstr "Search every run"
 
-#: src/share/ImportPreview.tsx:332
+#: src/share/ImportPreview.tsx:344
 msgid "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 msgstr "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 
@@ -8544,7 +8548,7 @@ msgid "Source skipped"
 msgstr "Source skipped"
 
 #. placeholder {0}: preview.settings
-#: src/share/ImportPreview.tsx:323
+#: src/share/ImportPreview.tsx:335
 msgid "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
@@ -11258,7 +11262,7 @@ msgid "No game output yet"
 msgstr "No game output yet"
 
 #. placeholder {0}: summary.leftOut
-#: src/share/ImportPreview.tsx:401
+#: src/share/ImportPreview.tsx:413
 msgid "{0} left out"
 msgstr "{0} left out"
 

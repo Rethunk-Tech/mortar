@@ -63,7 +63,7 @@ export function ImportFooter({
           </Button>
         </Box>
       ) : null}
-      <StatusBar preview={preview} summary={summary} />
+      <StatusBar preview={preview} summary={summary} needsSignIn={needsSignIn} />
       {flow.error ? (
         <Typography role="alert" sx={{ px: 1, pb: 1, fontSize: 14, color: 'error.light' }}>
           {flow.error}

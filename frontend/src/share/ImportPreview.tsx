@@ -315,10 +315,22 @@ export function Problems({
   )
 }
 
-export function StatusBar({ preview, summary }: { preview: ShownPreview; summary: Summary }) {
+export function StatusBar({
+  preview,
+  summary,
+  needsSignIn,
+}: {
+  preview: ShownPreview
+  summary: Summary
+  needsSignIn: boolean
+}) {
   const { t } = useLingui()
   const total = preview.mods.length
   const ready = summary.toImport > 0
+  let status = ready ? t`Ready to import` : t`Nothing to download`
+  if (needsSignIn) {
+    status = t`Sign in to import`
+  }
   const size = formatKb(summary.sizeKb)
   const settings = plural(preview.settings, {
     one: 'with # settings file, written once its mod is installed',
@@ -364,7 +376,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
         }}
       >
         <Info size={18} />
-        {ready ? t`Ready to import` : t`Nothing to download`}
+        {status}
       </Box>
       <Box sx={{ width: '1px', height: 24, bgcolor: SHARE_CARD.divider, flexShrink: 0 }} />
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
