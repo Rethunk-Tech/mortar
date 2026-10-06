@@ -730,7 +730,7 @@ msgstr "Type a command, for example help"
 msgid "{0} was changed on {1} and here"
 msgstr "{0} was changed on {1} and here"
 
-#: src/mods/Sidebar.tsx:551
+#: src/mods/Sidebar.tsx:559
 msgid "More…"
 msgstr "More…"
 
@@ -2419,7 +2419,7 @@ msgid "{gameName} save backups"
 msgstr "{gameName} save backups"
 
 #: src/mods/CompatChip.tsx:51
-#: src/mods/CompatSection.tsx:19
+#: src/mods/CompatSection.tsx:20
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
@@ -2785,7 +2785,7 @@ msgid "No recorded runs yet"
 msgstr "No recorded runs yet"
 
 #: src/mods/listRows.ts:116
-#: src/mods/Sidebar.tsx:455
+#: src/mods/Sidebar.tsx:459
 msgid "Archive"
 msgstr "Archive"
 
@@ -4144,7 +4144,7 @@ msgid "Copied {0} mods to {1}"
 msgstr "Copied {0} mods to {1}"
 
 #: src/mods/columnLabel.ts:8
-#: src/mods/Sidebar.tsx:474
+#: src/mods/Sidebar.tsx:478
 msgid "Version"
 msgstr "Version"
 
@@ -5543,7 +5543,7 @@ msgstr "Enter 1 or more"
 
 #: src/mods/columnLabel.ts:14
 #: src/mods/NexusDetails.tsx:106
-#: src/mods/Sidebar.tsx:496
+#: src/mods/Sidebar.tsx:500
 #: src/settings/sections/NexusMods.tsx:176
 msgid "Endorsements"
 msgstr "Endorsements"
@@ -5948,7 +5948,7 @@ msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
 #: src/browse/BrowseDetails.tsx:253
-#: src/mods/Sidebar.tsx:575
+#: src/mods/Sidebar.tsx:583
 msgid "Selected mod"
 msgstr "Selected mod"
 
@@ -6195,7 +6195,7 @@ msgstr "{0} and {count} more"
 
 #: src/mods/ModMenu.tsx:208
 #: src/mods/SelectionBarActions.tsx:108
-#: src/mods/Sidebar.tsx:509
+#: src/mods/Sidebar.tsx:513
 msgid "Also add to…"
 msgstr "Also add to…"
 
@@ -6842,7 +6842,7 @@ msgid "Results"
 msgstr "Results"
 
 #: src/mods/ModMenu.tsx:167
-#: src/mods/Sidebar.tsx:478
+#: src/mods/Sidebar.tsx:482
 msgid "Show skipped update"
 msgstr "Show skipped update"
 
@@ -7284,7 +7284,7 @@ msgstr "·"
 #: src/mods/problemFix/MissingFix.tsx:43
 #: src/mods/SelectionBar.tsx:141
 #: src/mods/SelectionBarDialogs.tsx:81
-#: src/mods/Sidebar.tsx:518
+#: src/mods/Sidebar.tsx:522
 #: src/mods/TrackedNotInProfile.tsx:93
 #: src/mods/typedConfig/Widgets.tsx:158
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:62
@@ -7533,7 +7533,7 @@ msgstr "Signed out of Nexus"
 
 #. placeholder {0}: mod.name
 #: src/mods/ModMenu.tsx:373
-#: src/mods/Sidebar.tsx:517
+#: src/mods/Sidebar.tsx:521
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
 
@@ -7561,7 +7561,7 @@ msgstr "Show in Mods"
 
 #. placeholder {0}: row.replacement
 #: src/mods/CompatChip.tsx:56
-#: src/mods/CompatSection.tsx:24
+#: src/mods/CompatSection.tsx:25
 msgid "Replacement: {0}"
 msgstr "Replacement: {0}"
 
@@ -9248,7 +9248,7 @@ msgstr "Whole file"
 msgid "Updates, missing dependencies and links from Nexus land here."
 msgstr "Updates, missing dependencies and links from Nexus land here."
 
-#: src/mods/Sidebar.tsx:491
+#: src/mods/Sidebar.tsx:495
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
@@ -9302,7 +9302,7 @@ msgid "Report it so it can be fixed."
 msgstr "Report it so it can be fixed."
 
 #: src/mods/listRows.ts:118
-#: src/mods/Sidebar.tsx:457
+#: src/mods/Sidebar.tsx:461
 #: src/settings/sections/Accounts.tsx:17
 msgid "GitHub"
 msgstr "GitHub"
@@ -9489,7 +9489,7 @@ msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
 #: src/mods/ModDetail.tsx:234
-#: src/mods/Sidebar.tsx:536
+#: src/mods/Sidebar.tsx:540
 msgid "In the same download"
 msgstr "In the same download"
 
@@ -11329,7 +11329,7 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 
 #: src/firstrun/GameSetup.tsx:159
 #: src/mods/listRows.ts:117
-#: src/mods/Sidebar.tsx:456
+#: src/mods/Sidebar.tsx:460
 #: src/shell/NexusAccount.tsx:27
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
@@ -11575,8 +11575,8 @@ msgstr "Welcome to Mortar"
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
-#: src/mods/Sidebar.tsx:491
-#: src/mods/Sidebar.tsx:493
+#: src/mods/Sidebar.tsx:495
+#: src/mods/Sidebar.tsx:497
 msgid "Mod id"
 msgstr "Mod id"
 
@@ -12180,7 +12180,7 @@ msgstr "Close"
 msgid "Link"
 msgstr "Link"
 
-#: src/mods/Sidebar.tsx:487
+#: src/mods/Sidebar.tsx:491
 msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
 

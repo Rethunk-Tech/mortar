@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { LinkedText } from './ModLinks.tsx'
 import { openPage } from './menu.ts'
 
 function CompatInfoRow({ row }: { row: Compat }) {
@@ -40,7 +41,12 @@ function CompatInfoRow({ row }: { row: Compat }) {
         borderRadius: '6px',
       }}
     >
-      <Typography sx={{ fontSize: 14 }}>{`${row.name}: ${row.status}${summary}`}</Typography>
+      <Typography sx={{ fontSize: 14 }}>
+        <LinkedText
+          text={`${row.name}: ${row.status}${summary}`}
+          links={[{ name: row.name, key: row.key, id: row.id }]}
+        />
+      </Typography>
       {unofficial}
       {replacement}
     </Box>

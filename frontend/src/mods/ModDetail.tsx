@@ -234,7 +234,7 @@ function Body({ mod, profile, relations, state, ask }: BodyProps) {
         <Section title={t`In the same download`}>
           {others.map((o) => (
             <Typography key={o.id} sx={text}>
-              {o.name}{' '}
+              <ModNameLink id={o.id} modKey={o.key} name={o.name} wrap={true} />{' '}
               <Box component="span" sx={{ color: 'text.secondary' }}>
                 {t`· updates and rolls back with this mod`}
               </Box>

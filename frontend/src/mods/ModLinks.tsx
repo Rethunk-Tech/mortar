@@ -33,6 +33,10 @@ export function LinkedText({ text, links }: { text: string; links: ModLink[] }) 
           component="button"
           color="inherit"
           onClick={() => showInMods(link)}
+          onContextMenu={(e) => {
+            e.preventDefault()
+            showInMods(link)
+          }}
           sx={{ font: 'inherit', textAlign: 'left', verticalAlign: 'baseline' }}
         >
           {link.name}

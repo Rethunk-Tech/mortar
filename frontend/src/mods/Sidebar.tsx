@@ -421,6 +421,10 @@ function ActionRows({
                   key={`${d.key}/${d.id}`}
                   component="button"
                   onClick={() => showModId(modId(d))}
+                  onContextMenu={(e) => {
+                    e.preventDefault()
+                    showModId(modId(d))
+                  }}
                   sx={{ ...rowLink, fontSize: 13, color: 'text.primary' }}
                 >
                   {d.name}
@@ -539,6 +543,10 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
               key={o.id}
               component="button"
               onClick={() => useDetail.getState().show(o)}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                useDetail.getState().show(o)
+              }}
               sx={{ display: 'block', fontSize: 13, textAlign: 'left', color: 'text.primary' }}
             >
               {o.name}
