@@ -73,9 +73,9 @@ func winhttpCheck(g game.GameInfo, compat string) Check {
 	}
 	c.Status = Warn
 	if err != nil {
-		// Until Proton has run the game once there is no registry for Mortar to edit at Play.
-		c.Detail = g.Name + ": Proton has not created its prefix yet, so Mortar cannot set up the loader for the first Play"
-		c.Fix = "start " + g.Name + " once from Steam and quit it; Mortar then sets the override itself, or set the Steam launch options to " + overrideOption
+		// A direct launch passes the override itself; a launch Steam relays needs a prefix to carry it.
+		c.Detail = g.Name + ": Proton has not created its prefix yet, so a Steam launch cannot load the loader"
+		c.Fix = "start " + g.Name + " once from Steam and quit it, or set Default launch to Direct, or set the Steam launch options to " + overrideOption
 		return c
 	}
 	c.Detail = g.Name + ": the Proton prefix does not load winhttp natively, so its loader will not start"
