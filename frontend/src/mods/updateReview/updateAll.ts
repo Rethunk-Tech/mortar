@@ -1,6 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
-import { Baseline } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { BeginUpdateBatch } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { RetryFailed } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../../i18n/index.ts'
 import { queueWants, type Want } from '../../queue/actions.ts'
@@ -61,8 +61,7 @@ async function updateAll(
   wants: Want[],
   needChoice: number,
 ): Promise<boolean> {
-  const beforeId = await Baseline(game, profileId)
-  const batchId = crypto.randomUUID()
+  const { before: beforeId, batch: batchId } = await BeginUpdateBatch(game, profileId)
   const items = await queueWants(
     wants.map((w) => ({ ...w, batchId })),
     true,

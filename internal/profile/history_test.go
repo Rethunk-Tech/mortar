@@ -710,3 +710,21 @@ func TestPlainSnapshotIsReadAndGzipped(t *testing.T) {
 		t.Fatalf("gzipped read = %v, %v", again, ok)
 	}
 }
+
+func TestBeginUpdateBatchIsTheBaselineWithAFreshBatch(t *testing.T) {
+	s := newStore(t)
+	p := mustCreate(t, s, "Farm")
+	svc := &Service{store: s}
+	a, err := svc.BeginUpdateBatch("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := svc.BeginUpdateBatch("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, err := s.Baseline("stardew", p.ID)
+	if err != nil || a.Before != before || b.Before != before || a.Batch == "" || a.Batch == b.Batch {
+		t.Fatalf("batches %+v %+v, baseline %q: %v", a, b, before, err)
+	}
+}

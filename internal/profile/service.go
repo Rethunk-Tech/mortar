@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -106,6 +107,19 @@ func (s *Service) History(game, id string) ([]HistoryEvent, error) {
 // Baseline returns the history event for the profile as it stands, recording one when there is none to revert to.
 func (s *Service) Baseline(game, id string) (string, error) {
 	return s.store.Baseline(game, id)
+}
+
+// UpdateBatch is the restore point taken before a batch of updates and the history batch id they share, so the batch
+// lands as one history event and Undo all reverts to Before.
+type UpdateBatch struct {
+	Before string `json:"before"`
+	Batch  string `json:"batch"`
+}
+
+// BeginUpdateBatch takes the restore point Update all reverts to and names the batch its queue items carry.
+func (s *Service) BeginUpdateBatch(game, id string) (UpdateBatch, error) {
+	before, err := s.store.Baseline(game, id)
+	return UpdateBatch{Before: before, Batch: ids.New()}, err
 }
 
 // HealthHistory lists problem-check snapshots for this profile, oldest first.

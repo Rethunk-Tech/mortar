@@ -940,10 +940,22 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			}
 			return nil, usererr.New(usererr.NotFound, "no update available for "+strings.Join(p.IDs, ", "))
 		}
+		var out QueuedUpdates
+		if p.All {
+			batch, err := s.Profiles.BeginUpdateBatch(p.Game, id)
+			if err != nil {
+				return nil, err
+			}
+			out.Before = batch.Before
+			for i := range reqs {
+				reqs[i].BatchID = batch.Batch
+			}
+		}
 		if _, err := s.Queue.Add(ctx, reqs); err != nil {
 			return nil, err
 		}
-		return s.Queue.State(), nil
+		out.Queued, out.Queue = len(reqs), s.Queue.State()
+		return out, nil
 	case "share":
 		res, err := share.Encode(p.Game, prof, s.Profiles.ShareFacts(p.Game, prof))
 		if errors.Is(err, share.ErrTooLarge) {
@@ -1657,4 +1669,12 @@ func updateRequest(game, profileID string, u problems.Update) queue.Request {
 		req.ModID, req.FileID, req.FallbackRepo, req.FallbackID, req.Latest = u.NexusID, u.FileID, u.GitHubFallback, u.ID, true
 	}
 	return req
+}
+
+// QueuedUpdates is what updates.queue queued. Before is the restore point Update all took, which a revert to undoes the
+// whole batch; it is empty when only named mods were queued.
+type QueuedUpdates struct {
+	Queued int         `json:"queued"`
+	Before string      `json:"before,omitempty"`
+	Queue  queue.State `json:"queue"`
 }

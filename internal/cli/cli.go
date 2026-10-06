@@ -2101,11 +2101,16 @@ func (c *cmd) update() error {
 	if len(a) == 2 && !c.all {
 		return usageError{"update needs one or more mod ids, or --all"}
 	}
-	var st queue.State
-	if err := c.call("updates.queue", control.Params{Game: a[0], Profile: a[1], IDs: a[2:], All: c.all}, &st, installTimeout); err != nil {
+	var res control.QueuedUpdates
+	if err := c.call("updates.queue", control.Params{Game: a[0], Profile: a[1], IDs: a[2:], All: c.all}, &res, installTimeout); err != nil {
 		return err
 	}
-	return c.emit(st, func() { fmt.Fprintf(c.out, "Queued updates.\n") })
+	return c.emit(res, func() {
+		fmt.Fprintf(c.out, "Queued %d updates.\n", res.Queued)
+		if res.Before != "" {
+			fmt.Fprintf(c.out, "Undo all: mortar profile revert %s %q %s\n", a[0], a[1], res.Before)
+		}
+	})
 }
 
 func (c *cmd) backups() error {

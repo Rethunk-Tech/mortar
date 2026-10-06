@@ -17,7 +17,10 @@ mock.module(queueService, () => ({
     return []
   },
 }))
-mock.module(profileService, () => ({ ...realProfile, Baseline: async () => 'before' }))
+mock.module(profileService, () => ({
+  ...realProfile,
+  BeginUpdateBatch: async () => ({ before: 'before', batch: 'batch-1' }),
+}))
 
 const { useProfiles } = await import('../../profiles/store.ts')
 const { updateAll, sameSourceUpdates } = await import('./updateAll.ts')
@@ -40,7 +43,7 @@ test('a batch of mixed sources is one Add holding only the same-source updates',
   expect(added).toHaveLength(1)
   const [reqs] = added as { repo: string; batchId: string }[][]
   expect(reqs?.map((r) => r.repo)).toEqual(['o/a', 'o/c'])
-  expect(new Set(reqs?.map((r) => r.batchId)).size).toBe(1)
+  expect(new Set(reqs?.map((r) => r.batchId))).toEqual(new Set(['batch-1']))
 })
 
 test('changes after the batch are the events past its own bulk event', () => {
