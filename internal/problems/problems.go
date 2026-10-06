@@ -264,7 +264,7 @@ func runFrameworks(in framework.Input) (framework.Findings, []CheckTiming) {
 
 func logCheckTimings(profileID string, timings []CheckTiming) {
 	for _, t := range timings {
-		log.Printf("problems: %s %s %v (%d packs)", profileID, t.Name, time.Duration(t.Ms)*time.Millisecond, t.Count)
+		log.Printf("problems: %s %s %v (%d packs)", strconv.Quote(profileID), t.Name, time.Duration(t.Ms)*time.Millisecond, t.Count)
 	}
 }
 
