@@ -197,6 +197,7 @@ interface ProfileFieldsProps {
   onGameSettings: (value: GameSettingsValues | null) => void
   overrides: Record<string, string>
   onOverrides: (value: Record<string, string>) => void
+  initialTab: FieldsTab
 }
 
 function ProfileFields({
@@ -222,12 +223,13 @@ function ProfileFields({
   onGameSettings,
   overrides,
   onOverrides,
+  initialTab,
 }: ProfileFieldsProps) {
   const { t } = useLingui()
   const ids = useId()
   // Only a game with a startup preferences file applies them; elsewhere the fields would change nothing.
   const startupSettings = useGameInfo(gameId)?.startupSettings === true
-  const [tab, setTab] = useState<FieldsTab>('appearance')
+  const [tab, setTab] = useState<FieldsTab>(initialTab)
   // A launch field Save rejected is shown, wherever the user was.
   useEffect(() => {
     if (launchError) {
@@ -333,15 +335,24 @@ function ProfileFields({
   )
 }
 
-export function EditProfileDialog({
-  profile,
-  open,
-  onClose,
-}: {
+// touching marks the form as edited before it applies a field's change.
+function touching<A>(setTouched: (touched: boolean) => void, set: (value: A) => void) {
+  return (value: A) => {
+    setTouched(true)
+    set(value)
+  }
+}
+
+interface EditProfileDialogProps {
   profile: Profile
   open: boolean
   onClose: () => void
-}) {
+  // The tab Edit profile opens on.
+  initialTab?: FieldsTab
+}
+
+export function EditProfileDialog(props: EditProfileDialogProps) {
+  const { profile, open, onClose, initialTab = 'appearance' } = props
   const { t } = useLingui()
   const setAppearance = useProfiles((s) => s.setAppearance)
   const setLaunchOptions = useProfiles((s) => s.setLaunchOptions)
@@ -364,12 +375,7 @@ export function EditProfileDialog({
   const [busy, setBusy] = useState(false)
   const [touched, setTouched] = useState(false)
   const guard = useDiscardGuard(touched, onClose)
-  const edited =
-    <A,>(set: (value: A) => void) =>
-    (value: A) => {
-      setTouched(true)
-      set(value)
-    }
+  const edited = <A,>(set: (value: A) => void) => touching(setTouched, set)
   useEffect(() => {
     if (open) {
       setTouched(false)
@@ -427,6 +433,7 @@ export function EditProfileDialog({
       >
         <DialogTitle>{t`Edit profile`}</DialogTitle>
         <ProfileFields
+          initialTab={initialTab}
           profile={profile}
           gameId={gameId}
           color={color}

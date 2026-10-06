@@ -71,3 +71,18 @@ test('a Mortar settings search that finds little offers the same search in the g
     page.locator('[data-setting-label]').getByText('Run logs kept', { exact: true }),
   ).toBeVisible()
 })
+
+test('a search for a per-profile setting such as zoom points at Edit profile', async ({ page }) => {
+  await openSeedFarm(page)
+  await page.getByRole('button', { name: 'Mortar menu' }).click()
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Search settings' }).fill('zoom')
+  await page.getByRole('button', { name: 'Search Stardew Valley settings' }).click()
+  await expect(page.getByText('Zoom is set per profile')).toBeVisible()
+  await expect(page.getByText('No settings match')).toHaveCount(0)
+  await page.getByRole('button', { name: /^Edit / }).click()
+  await expect(page.getByRole('tab', { name: 'Game settings' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+})

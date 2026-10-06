@@ -58,6 +58,7 @@ msgid "Saved in the profile's config folder and applied the next time the game s
 msgstr "Saved in the profile's config folder and applied the next time the game starts."
 
 #: src/profiles/GameSettings.tsx:350
+#: src/settings/usePerProfileRelated.tsx:29
 msgid "Start muted"
 msgstr "Start muted"
 
@@ -146,7 +147,7 @@ msgstr "Priority Default"
 msgid "Show failed"
 msgstr "Show failed"
 
-#: src/settings/GameSettingsPage.tsx:76
+#: src/settings/GameSettingsPage.tsx:78
 msgid "Streaming"
 msgstr "Streaming"
 
@@ -1543,7 +1544,7 @@ msgstr "See load errors, missing dependencies, and other issues before you play.
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
-#: src/settings/SettingsShell.tsx:140
+#: src/settings/SettingsShell.tsx:179
 msgid "Search results"
 msgstr "Search results"
 
@@ -1611,7 +1612,7 @@ msgstr "{names} can't be reached; showing what Mortar saved at {time}"
 msgid "Windows Firewall blocks incoming sends to Mortar"
 msgstr "Windows Firewall blocks incoming sends to Mortar"
 
-#: src/share/ShareDialog.tsx:454
+#: src/share/ShareDialog.tsx:459
 msgid "Not in the file"
 msgstr "Not in the file"
 
@@ -2378,7 +2379,7 @@ msgid "Skipped"
 msgstr "Skipped"
 
 #: src/game/ProfileContextMenu.tsx:47
-#: src/profiles/EditProfileDialog.tsx:428
+#: src/profiles/EditProfileDialog.tsx:434
 #: src/profiles/ProfileRow.tsx:81
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -2563,6 +2564,10 @@ msgstr "Ran"
 #: src/mods/AuthorDialog.tsx:115
 msgid "Try another spelling, or install a mod by {author} in any profile."
 msgstr "Try another spelling, or install a mod by {author} in any profile."
+
+#: src/settings/usePerProfileRelated.tsx:25
+msgid "Zoom"
+msgstr "Zoom"
 
 #: src/games/storeName.ts:10
 msgid "Lutris"
@@ -2776,6 +2781,10 @@ msgstr "Pair"
 #: src/share/ImportFooter.tsx:34
 msgid "New profile from link"
 msgstr "New profile from link"
+
+#: src/settings/usePerProfileRelated.tsx:28
+msgid "Sound volume"
+msgstr "Sound volume"
 
 #: src/browse/BrowseShow.tsx:28
 #: src/profiles/overrideValue.ts:86
@@ -3267,6 +3276,10 @@ msgstr "config.json, changed from the mod's own"
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
 
+#: src/settings/usePerProfileRelated.tsx:27
+msgid "Music volume"
+msgstr "Music volume"
+
 #: src/settings/prefCopy.ts:77
 msgid "Grid or list for new sessions"
 msgstr "Grid or list for new sessions"
@@ -3377,8 +3390,8 @@ msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
 #: src/game/ProfileWorkspace.tsx:108
-#: src/settings/GameSettingsPage.tsx:74
-#: src/settings/GameSettingsPage.tsx:137
+#: src/settings/GameSettingsPage.tsx:76
+#: src/settings/GameSettingsPage.tsx:139
 msgid "Console"
 msgstr "Console"
 
@@ -3819,7 +3832,7 @@ msgstr "Share as r2modman code?"
 #: src/mods/SelectionBarDialogs.tsx:86
 #: src/mods/SelectionBarDialogs.tsx:136
 #: src/profiles/CompareDialog.tsx:62
-#: src/profiles/EditProfileDialog.tsx:454
+#: src/profiles/EditProfileDialog.tsx:461
 #: src/profiles/GameModsDialog.tsx:164
 #: src/profiles/ImportWizard.tsx:120
 #: src/profiles/LaunchPresetDialog.tsx:91
@@ -3969,7 +3982,7 @@ msgstr "More ways to add mods"
 msgid "Downloads paused"
 msgstr "Downloads paused"
 
-#: src/settings/GameSettingsPage.tsx:157
+#: src/settings/GameSettingsPage.tsx:160
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
@@ -4559,7 +4572,7 @@ msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
 #. placeholder {0}: g.version
-#: src/settings/GameSettingsPage.tsx:87
+#: src/settings/GameSettingsPage.tsx:89
 msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
@@ -4695,7 +4708,7 @@ msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the ti
 msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 
 #. placeholder {0}: skipped.length
-#: src/share/ShareDialog.tsx:440
+#: src/share/ShareDialog.tsx:445
 msgid "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 msgstr "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 
@@ -4845,7 +4858,7 @@ msgstr "Pause downloads while the game runs"
 msgid "{0} of saves"
 msgstr "{0} of saves"
 
-#: src/settings/SettingsShell.tsx:156
+#: src/settings/SettingsShell.tsx:195
 msgid "Try another word, or clear the search."
 msgstr "Try another word, or clear the search."
 
@@ -4925,6 +4938,10 @@ msgstr "Could not read this Mortar build's version: {failed}"
 #: src/mods/ExtraFolderDialog.tsx:47
 msgid "{0, plural, one {Add # mod} other {Add # mods}}"
 msgstr "{0, plural, one {Add # mod} other {Add # mods}}"
+
+#: src/settings/usePerProfileRelated.tsx:24
+msgid "Resolution"
+msgstr "Resolution"
 
 #: src/lan/PairedComputers.tsx:191
 msgid "Could not unpair"
@@ -5015,7 +5032,7 @@ msgstr "Needs"
 msgid "Files set aside"
 msgstr "Files set aside"
 
-#: src/settings/GameSettingsPage.tsx:128
+#: src/settings/GameSettingsPage.tsx:130
 msgid "{name} profile history"
 msgstr "{name} profile history"
 
@@ -5621,7 +5638,7 @@ msgstr "Copy"
 msgid "What happens to files the new version of a mod leaves out"
 msgstr "What happens to files the new version of a mod leaves out"
 
-#: src/settings/SettingsShell.tsx:155
+#: src/settings/SettingsShell.tsx:194
 msgid "No settings match"
 msgstr "No settings match"
 
@@ -5791,7 +5808,7 @@ msgid "In Mortar"
 msgstr "In Mortar"
 
 #: src/game/ProfileWorkspace.tsx:141
-#: src/settings/GameSettingsPage.tsx:156
+#: src/settings/GameSettingsPage.tsx:159
 msgid "{name} settings"
 msgstr "{name} settings"
 
@@ -6477,8 +6494,8 @@ msgstr "Send"
 #: src/game/Hero.tsx:342
 #: src/game/ProfileWorkspace.tsx:88
 #: src/mods/ModListVirtual.tsx:283
-#: src/settings/GameSettingsPage.tsx:71
-#: src/settings/GameSettingsPage.tsx:110
+#: src/settings/GameSettingsPage.tsx:73
+#: src/settings/GameSettingsPage.tsx:112
 #: src/settings/sections/Updates.tsx:175
 msgid "Mods"
 msgstr "Mods"
@@ -6619,6 +6636,10 @@ msgstr "Other cached data"
 #: src/mods/Sidebar.tsx:236
 msgid "Update in all profiles that have it"
 msgstr "Update in all profiles that have it"
+
+#: src/settings/usePerProfileRelated.tsx:26
+msgid "UI scale"
+msgstr "UI scale"
 
 #: src/settings/prefCopy.ts:70
 msgid "Auto-accept from paired computers"
@@ -6818,6 +6839,10 @@ msgstr "{count, plural, one {# mod update available} other {# mod updates availa
 #: src/launch/VanillaPlay.tsx:55
 msgid "Play without Steam overlay"
 msgstr "Play without Steam overlay"
+
+#: src/settings/usePerProfileRelated.tsx:36
+msgid "{label} is set per profile"
+msgstr "{label} is set per profile"
 
 #: src/install/NeedsRootCallout.tsx:30
 msgid "Place…"
@@ -7903,7 +7928,9 @@ msgstr "Close details"
 msgid "{name} installed"
 msgstr "{name} installed"
 
+#. placeholder {0}: profile.name
 #. placeholder {0}: tool.name
+#: src/settings/usePerProfileRelated.tsx:37
 #: src/tools/ToolsManageDialog.tsx:57
 msgid "Edit {0}"
 msgstr "Edit {0}"
@@ -8163,7 +8190,7 @@ msgstr "That request was not valid."
 
 #: src/browse/BrowseDetails.tsx:91
 #: src/mods/NexusDetails.tsx:254
-#: src/profiles/EditProfileDialog.tsx:273
+#: src/profiles/EditProfileDialog.tsx:275
 msgid "Description"
 msgstr "Description"
 
@@ -8952,6 +8979,7 @@ msgstr "Loading…"
 
 #: src/profiles/GameSettings.tsx:171
 #: src/profiles/GameSettings.tsx:176
+#: src/settings/usePerProfileRelated.tsx:23
 msgid "Window mode"
 msgstr "Window mode"
 
@@ -9806,7 +9834,7 @@ msgstr "Maximise"
 msgid "Handle \"Mod Manager Download\" links"
 msgstr "Handle \"Mod Manager Download\" links"
 
-#: src/profiles/EditProfileDialog.tsx:455
+#: src/profiles/EditProfileDialog.tsx:462
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
@@ -10118,7 +10146,7 @@ msgid "Show file"
 msgstr "Show file"
 
 #: src/saves/BackupsDialog.tsx:152
-#: src/settings/GameSettingsPage.tsx:72
+#: src/settings/GameSettingsPage.tsx:74
 #: src/settings/sections/DataUsage.tsx:209
 #: src/settings/sections/GameSettings.tsx:411
 msgid "Save backups"
@@ -10219,8 +10247,8 @@ msgstr "Stop the game to test a launch."
 #: src/firstrunTour/TourPopover.tsx:41
 #: src/games/GameSelect.tsx:286
 #: src/launch/PlayControl.tsx:164
-#: src/settings/GameSettingsPage.tsx:70
-#: src/settings/GameSettingsPage.tsx:96
+#: src/settings/GameSettingsPage.tsx:72
+#: src/settings/GameSettingsPage.tsx:98
 msgid "Play"
 msgstr "Play"
 
@@ -10284,7 +10312,7 @@ msgstr "Beach farm"
 #: src/mods/CategoryEditor.tsx:162
 #: src/mods/ConfigPresets.tsx:134
 #: src/mods/SelectionBar.tsx:38
-#: src/profiles/EditProfileDialog.tsx:457
+#: src/profiles/EditProfileDialog.tsx:464
 #: src/profiles/LaunchPresetDialog.tsx:96
 #: src/templates/TemplateDialogs.tsx:71
 #: src/tools/ToolEditorDialog.tsx:140
@@ -10369,7 +10397,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
 #: src/fomod/Dialog.tsx:264
 #: src/loader/Banner.tsx:29
-#: src/settings/GameSettingsPage.tsx:66
+#: src/settings/GameSettingsPage.tsx:68
 #: src/settings/sections/LoaderRow.tsx:93
 #: src/settings/sections/LoaderRow.tsx:148
 msgid "Install"
@@ -10648,7 +10676,7 @@ msgid "Checked in {0}: {parts}"
 msgstr "Checked in {0}: {parts}"
 
 #. placeholder {0}: saved.path
-#: src/share/ShareDialog.tsx:434
+#: src/share/ShareDialog.tsx:439
 msgid "Saved to {0}"
 msgstr "Saved to {0}"
 
@@ -11031,7 +11059,7 @@ msgid "Move data folder"
 msgstr "Move data folder"
 
 #: src/game/ProfileMenuItems.tsx:249
-#: src/profiles/EditProfileDialog.tsx:415
+#: src/profiles/EditProfileDialog.tsx:421
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -11985,7 +12013,7 @@ msgid "Check this download"
 msgstr "Check this download"
 
 #: src/settings/sections/AboutDiagnostics.tsx:168
-#: src/share/ShareDialog.tsx:429
+#: src/share/ShareDialog.tsx:434
 msgid "Save…"
 msgstr "Save…"
 

@@ -17,6 +17,41 @@ const NARROW_WINDOW = 999
 // At most this many matching rows also offers the search on the other settings screen.
 const FEW_HITS = 3
 
+type Elsewhere = { label: string; search: (query: string) => void } | undefined
+type Related = { match: (query: string) => string[]; row: (label: string) => ReactNode } | undefined
+
+// What a search offers beside its own matches: the settings that live in another place, and the same search there.
+function SearchLeads({
+  query,
+  hits,
+  relatedLabels,
+  related,
+  elsewhere,
+}: {
+  query: string
+  hits: number
+  relatedLabels: string[]
+  related: Related
+  elsewhere: Elsewhere
+}) {
+  return (
+    <>
+      {relatedLabels.map((label) => (
+        <Box key={label}>{related?.row(label)}</Box>
+      ))}
+      {query && elsewhere && hits <= FEW_HITS ? (
+        <Button
+          startIcon={<Search size={16} />}
+          onClick={() => elsewhere.search(query)}
+          sx={{ alignSelf: 'flex-start' }}
+        >
+          {elsewhere.label}
+        </Button>
+      ) : null}
+    </>
+  )
+}
+
 export interface ShellPage<Id extends string> {
   id: Id
   label: string
@@ -38,6 +73,7 @@ export function SettingsShell<Id extends string>({
   actions = {},
   initialQuery = '',
   elsewhere,
+  related,
 }: {
   title: string
   backLabel: string
@@ -50,13 +86,16 @@ export function SettingsShell<Id extends string>({
   actions?: Partial<Record<Id, ReactNode>>
   initialQuery?: string
   // Another settings screen to run the same search on, offered when this one finds little.
-  elsewhere?: { label: string; search: (query: string) => void } | undefined
+  elsewhere?: Elsewhere
+  // Settings that live outside this screen: `match` names the ones a search finds and `row` shows each.
+  related?: Related
 }) {
   const { t } = useLingui()
   const [query, setQuery] = useState(initialQuery)
   const pane = useRef<HTMLDivElement>(null)
   const results = useRef<HTMLDivElement>(null)
   const [hits, setHits] = useState(0)
+  const relatedLabels = query && related ? related.match(query) : []
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && query) {
@@ -151,20 +190,18 @@ export function SettingsShell<Id extends string>({
               gap: 2,
             }}
           >
-            {query && hits === 0 ? (
+            {query && hits === 0 && relatedLabels.length === 0 ? (
               <EmptyState icon={<SearchX />} title={t`No settings match`} compact={true}>
                 {t`Try another word, or clear the search.`}
               </EmptyState>
             ) : null}
-            {query && elsewhere && hits <= FEW_HITS ? (
-              <Button
-                startIcon={<Search size={16} />}
-                onClick={() => elsewhere.search(query)}
-                sx={{ alignSelf: 'flex-start' }}
-              >
-                {elsewhere.label}
-              </Button>
-            ) : null}
+            <SearchLeads
+              query={query}
+              hits={hits}
+              relatedLabels={relatedLabels}
+              related={related}
+              elsewhere={elsewhere}
+            />
             {query
               ? pages.map((p) => (
                   <Box

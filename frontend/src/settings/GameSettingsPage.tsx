@@ -24,6 +24,7 @@ import { BackupsPage, ExtraModsFolder, GameFolder, LoaderPage } from './sections
 import { SourceOrder } from './sections/SourceOrder.tsx'
 import { StreamOverlay } from './sections/StreamOverlay.tsx'
 import { useSettings } from './store.ts'
+import { usePerProfileRelated } from './usePerProfileRelated.tsx'
 
 type GamePage = 'install' | 'loader' | 'play' | 'mods' | 'backups' | 'console' | 'streaming'
 
@@ -62,6 +63,7 @@ function GamePages({
   const game = useCurrentGame()
   const g = useGameInstall(game)
   const loader = useProfiles((s) => s.game?.loaders?.[0])
+  const { related, dialog } = usePerProfileRelated(game)
   const pages: ShellPage<GamePage>[] = [
     { id: 'install', label: t`Install`, icon: FolderOpen },
     ...(loader
@@ -152,16 +154,20 @@ function GamePages({
     }
   }
   return (
-    <SettingsShell
-      title={t`${name} settings`}
-      backLabel={t`Back to ${name}`}
-      onBack={close}
-      pages={pages}
-      current={page}
-      onPage={setPage}
-      render={render}
-      initialQuery={query}
-    />
+    <>
+      <SettingsShell
+        title={t`${name} settings`}
+        backLabel={t`Back to ${name}`}
+        onBack={close}
+        pages={pages}
+        current={page}
+        onPage={setPage}
+        render={render}
+        initialQuery={query}
+        related={related}
+      />
+      {dialog}
+    </>
   )
 }
 
