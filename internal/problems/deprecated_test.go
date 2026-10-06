@@ -19,7 +19,7 @@ func (f fakeDeprecations) Deprecated(context.Context, string, string) (map[strin
 }
 
 func TestDeprecatedPackagesMatchesInstalledOnesAndCarriesTheReplacement(t *testing.T) {
-	pkgs := []profile.PackageRef{{Key: "k1", Name: "Fay-Legacy", Version: "1.0.0"}, {Key: "k2", Name: "Ann-Fine"}}
+	pkgs := []profile.PackageRef{{Key: "k1", Source: profile.KindThunderstore, Name: "Fay-Legacy", Version: "1.0.0"}, {Key: "k2", Source: profile.KindThunderstore, Name: "Ann-Fine"}, {Key: "k3", Source: profile.KindGitHub, Name: "Fay-Legacy"}}
 	src := fakeDeprecations{m: map[string]thunderstore.Deprecation{"fay-legacy": {Replacement: "Alice-New"}}}
 	got := deprecatedPackages(t.Context(), src, "lethal-company", "1", pkgs)
 	if len(got) != 1 || got[0].Key != "k1" || got[0].Replacement != "Alice-New" {

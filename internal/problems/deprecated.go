@@ -38,6 +38,9 @@ func deprecatedPackages(ctx context.Context, src deprecationSource, key, version
 	}
 	var out []DeprecatedPackage
 	for _, p := range pkgs {
+		if p.Source != profile.KindThunderstore {
+			continue
+		}
 		if d, ok := dep[strings.ToLower(p.Name)]; ok {
 			out = append(out, DeprecatedPackage{Key: p.Key, ID: p.ID, Name: p.Name, Version: p.Version, Replacement: d.Replacement})
 		}

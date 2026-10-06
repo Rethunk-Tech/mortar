@@ -77,3 +77,38 @@ func TestUpdatesAfterAProblemsCheckStillAskTheGameSources(t *testing.T) {
 		t.Fatalf("updates after a Problems check = %+v, %v", got.Updates, err)
 	}
 }
+
+func TestEnabledPackagesCoverEverySourceForPluginClashes(t *testing.T) {
+	testfs.DataHome(t)
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "lethal-company", "LC")
+	install := func(src profile.Source) {
+		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{"manifest.json": `{"name":"Mod","version_number":"1.0.0","dependencies":[]}`, "Mod.dll": "x"})
+		if src.Kind == profile.KindGitHub {
+			key, _, err := profiles.StageGitHub("lethal-company", src, zip)
+			if err == nil {
+				_, err = profiles.InstallStaged("lethal-company", p.ID, key, src)
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			return
+		}
+		if _, err := profiles.InstallSource("lethal-company", p.ID, zip, src); err != nil {
+			t.Fatal(err)
+		}
+	}
+	install(profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"})
+	install(profile.Source{Kind: profile.KindGitHub, Name: "mod.zip", Repo: "ns/mod", Tag: "1.0.0", Version: "1.0.0"})
+	pkgs, err := profiles.EnabledPackages("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	kinds := map[string]bool{}
+	for _, pk := range pkgs {
+		kinds[pk.Source] = true
+	}
+	if !kinds[profile.KindThunderstore] || !kinds[profile.KindGitHub] {
+		t.Fatalf("packages = %+v, want the Thunderstore and the GitHub install", pkgs)
+	}
+}
