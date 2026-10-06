@@ -21,6 +21,7 @@ import {
   Transfer,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
+import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
@@ -28,6 +29,17 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { type InlineError, inlineError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useIncomingShares } from './incoming.ts'
+
+// A share imports into its own game and compares against that game's profiles, whatever game is open when it arrives.
+async function openGameOf(game: string) {
+  if (!isGameId(game)) {
+    return
+  }
+  if (useProfiles.getState().game?.id !== game) {
+    await useProfiles.getState().load(game)
+  }
+  useNav.getState().openGame(game)
+}
 
 export function IncomingPrompt() {
   const { t } = useLingui()
@@ -69,6 +81,7 @@ export function IncomingPrompt() {
       }
       setTransferring(false)
     }
+    await openGameOf(incoming.game)
     openImport(profileId ? { profileId, data: incoming.payload } : { data: incoming.payload })
     removeFirst()
   }
@@ -86,6 +99,7 @@ export function IncomingPrompt() {
     setTransferError(null)
     setTransferring(true)
     Transfer(incomingId)
+      .then(() => openGameOf(item.game))
       .then(() => {
         if (cancelled) {
           return
@@ -135,7 +149,14 @@ export function IncomingPrompt() {
         <DialogActions>
           <Button onClick={decline}>{t`Decline`}</Button>
           <DisabledReason title={t`Create a profile first.`} disabled={profiles.length === 0}>
-            <Button onClick={() => setChoosing(true)} disabled={profiles.length === 0}>
+            <Button
+              onClick={() =>
+                openGameOf(incomingGame)
+                  .then(() => setChoosing(true))
+                  .catch(reportUnexpected)
+              }
+              disabled={profiles.length === 0}
+            >
               {t`Compare with a profile…`}
             </Button>
           </DisabledReason>

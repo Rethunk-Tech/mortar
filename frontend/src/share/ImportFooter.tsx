@@ -29,8 +29,10 @@ export function ImportFooter({
   const { t } = useLingui()
   const needsSignIn = summary.fromNexus > 0 && !signedIn
   const canRun = !(flow.busy || needsSignIn)
+  // A share sent from a nearby Mortar shows under the file tab, but nobody picked a file.
+  const fromNearby = useImportDialog((s) => s.request?.tab === 'data')
   let runLabel = flow.tab === 'file' ? t`New profile from file` : t`New profile from link`
-  if (flow.external) {
+  if (flow.external || fromNearby) {
     runLabel = t`New profile`
   }
   const [askReplace, setAskReplace] = useState(false)

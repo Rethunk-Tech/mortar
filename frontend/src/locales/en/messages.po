@@ -327,7 +327,7 @@ msgstr "Found, with no supported games yet"
 msgid "How Play starts the game. Direct skips Steam's overlay and playtime."
 msgstr "How Play starts the game. Direct skips Steam's overlay and playtime."
 
-#: src/lan/IncomingPrompt.tsx:148
+#: src/lan/IncomingPrompt.tsx:169
 msgid "Copying mod files"
 msgstr "Copying mod files"
 
@@ -493,8 +493,8 @@ msgstr "Mod store"
 msgid "Older copies of the same mod"
 msgstr "Older copies of the same mod"
 
-#: src/lan/IncomingPrompt.tsx:139
-#: src/lan/IncomingPrompt.tsx:175
+#: src/lan/IncomingPrompt.tsx:160
+#: src/lan/IncomingPrompt.tsx:196
 msgid "Compare with a profile…"
 msgstr "Compare with a profile…"
 
@@ -619,7 +619,7 @@ msgstr "Add {0} to {1}?"
 
 #. placeholder {0}: incoming.sender
 #. placeholder {1}: incoming.profileName
-#: src/lan/IncomingPrompt.tsx:123
+#: src/lan/IncomingPrompt.tsx:137
 msgid "{0} sent you {1} ({gameName})"
 msgstr "{0} sent you {1} ({gameName})"
 
@@ -898,7 +898,7 @@ msgstr "Missing in {targetName}"
 msgid "Mortar found it in Steam's settings."
 msgstr "Mortar found it in Steam's settings."
 
-#: src/share/ImportFooter.tsx:58
+#: src/share/ImportFooter.tsx:60
 msgid "Sign in to Nexus Mods to download these mods."
 msgstr "Sign in to Nexus Mods to download these mods."
 
@@ -965,7 +965,7 @@ msgstr "Rename"
 msgid "Install by hand: {0}"
 msgstr "Install by hand: {0}"
 
-#: src/share/ImportFooter.tsx:107
+#: src/share/ImportFooter.tsx:109
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
@@ -1432,7 +1432,7 @@ msgstr "Mortar's colours. Follow system matches your computer."
 msgid "Play this profile to measure."
 msgstr "Play this profile to measure."
 
-#: src/lan/IncomingPrompt.tsx:128
+#: src/lan/IncomingPrompt.tsx:142
 msgid "The mod files can be copied directly from this Mortar."
 msgstr "The mod files can be copied directly from this Mortar."
 
@@ -2253,7 +2253,7 @@ msgstr "Dependency cycle"
 #: src/game/Sidebar.tsx:377
 #: src/game/Sidebar.tsx:395
 #: src/nxm/ArrivalDialog.tsx:164
-#: src/share/ImportFooter.tsx:34
+#: src/share/ImportFooter.tsx:36
 msgid "New profile"
 msgstr "New profile"
 
@@ -2768,7 +2768,7 @@ msgstr "Drag {path} into the GitHub issue to attach it."
 msgid "Pair"
 msgstr "Pair"
 
-#: src/share/ImportFooter.tsx:32
+#: src/share/ImportFooter.tsx:34
 msgid "New profile from link"
 msgstr "New profile from link"
 
@@ -2807,7 +2807,7 @@ msgstr "This frees {0}. Deleted mods download again if a profile needs them late
 msgid "Queue"
 msgstr "Queue"
 
-#: src/share/ImportDialog.tsx:51
+#: src/share/ImportDialog.tsx:52
 msgid "Not found in the Mods folder"
 msgstr "Not found in the Mods folder"
 
@@ -2824,7 +2824,7 @@ msgid "Before this change"
 msgstr "Before this change"
 
 #: src/profiles/PackImportDialog.tsx:102
-#: src/share/ImportDialog.tsx:192
+#: src/share/ImportDialog.tsx:158
 msgid "Import from {manager}"
 msgstr "Import from {manager}"
 
@@ -3108,7 +3108,7 @@ msgid "Before updating a deleted profile"
 msgstr "Before updating a deleted profile"
 
 #. placeholder {0}: (preview.replace?.keepLocal ?? []).length
-#: src/share/ImportFooter.tsx:162
+#: src/share/ImportFooter.tsx:164
 msgid "Local-only mods kept ({0})"
 msgstr "Local-only mods kept ({0})"
 
@@ -3668,8 +3668,8 @@ msgstr "Hidden"
 msgid "Mortar · Install {name}?"
 msgstr "Mortar · Install {name}?"
 
-#: src/share/ImportFooter.tsx:120
-#: src/share/ImportFooter.tsx:140
+#: src/share/ImportFooter.tsx:122
+#: src/share/ImportFooter.tsx:142
 msgid "Replace {targetName}"
 msgstr "Replace {targetName}"
 
@@ -3797,8 +3797,8 @@ msgstr "Share as r2modman code?"
 #: src/install/DownloadsDialog.tsx:252
 #: src/install/OverlayPlaceDialog.tsx:118
 #: src/install/RemapDialog.tsx:209
-#: src/lan/IncomingPrompt.tsx:170
-#: src/lan/IncomingPrompt.tsx:188
+#: src/lan/IncomingPrompt.tsx:191
+#: src/lan/IncomingPrompt.tsx:209
 #: src/lan/PairedComputers.tsx:60
 #: src/lan/PairedComputers.tsx:138
 #: src/lan/SendDialog.tsx:185
@@ -4285,7 +4285,7 @@ msgstr "You started this download on {site}, but you have no {gameName} profile 
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
 
-#: src/share/ImportFooter.tsx:157
+#: src/share/ImportFooter.tsx:159
 msgid "Nothing will be removed."
 msgstr "Nothing will be removed."
 
@@ -4360,7 +4360,7 @@ msgstr "Before"
 msgid "No download source is known for {0}."
 msgstr "No download source is known for {0}."
 
-#: src/share/ImportDialog.tsx:200
+#: src/share/ImportDialog.tsx:166
 msgid "Where the profile comes from"
 msgstr "Where the profile comes from"
 
@@ -5200,7 +5200,7 @@ msgstr "Play with {0}"
 msgid "New profile…"
 msgstr "New profile…"
 
-#: src/lan/IncomingPrompt.tsx:129
+#: src/lan/IncomingPrompt.tsx:143
 msgid "The files will download from each mod's source."
 msgstr "The files will download from each mod's source."
 
@@ -5732,7 +5732,7 @@ msgstr "Could not close the window"
 msgid "Profile backed up"
 msgstr "Profile backed up"
 
-#: src/share/ImportDialog.tsx:255
+#: src/share/ImportDialog.tsx:221
 msgid "This profile has no mods to download"
 msgstr "This profile has no mods to download"
 
@@ -6213,7 +6213,7 @@ msgstr "Load all changes"
 msgid "The log does not name a mod."
 msgstr "The log does not name a mod."
 
-#: src/lan/IncomingPrompt.tsx:137
+#: src/lan/IncomingPrompt.tsx:151
 msgid "Create a profile first."
 msgstr "Create a profile first."
 
@@ -6341,7 +6341,7 @@ msgstr "Reading {folder}…"
 msgid "{0} is installed twice, and only one of them loads."
 msgstr "{0} is installed twice, and only one of them loads."
 
-#: src/lan/IncomingPrompt.tsx:136
+#: src/lan/IncomingPrompt.tsx:150
 msgid "Decline"
 msgstr "Decline"
 
@@ -6679,7 +6679,7 @@ msgstr "Installed and up to date"
 msgid "Regenerate token"
 msgstr "Regenerate token"
 
-#: src/share/ImportFooter.tsx:32
+#: src/share/ImportFooter.tsx:34
 msgid "New profile from file"
 msgstr "New profile from file"
 
@@ -6993,7 +6993,7 @@ msgstr "Press {paletteKeys} to jump anywhere: profiles, settings, downloads and 
 msgid "Open backups folder"
 msgstr "Open backups folder"
 
-#: src/lan/IncomingPrompt.tsx:158
+#: src/lan/IncomingPrompt.tsx:179
 msgid "Preparing transfer…"
 msgstr "Preparing transfer…"
 
@@ -7167,7 +7167,7 @@ msgid "This mod wrote errors to the game's log the last time you played. It may 
 msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 
 #. placeholder {0}: (preview.replace?.remove ?? []).length
-#: src/share/ImportFooter.tsx:150
+#: src/share/ImportFooter.tsx:152
 msgid "These will be removed ({0})"
 msgstr "These will be removed ({0})"
 
@@ -8348,7 +8348,7 @@ msgstr "{label} is not in {0}"
 #: src/mods/ModDetail.tsx:217
 #: src/settings/sections/GameSettings.tsx:258
 #: src/settings/sections/Shortcuts.tsx:83
-#: src/share/ImportFooter.tsx:95
+#: src/share/ImportFooter.tsx:97
 msgid "Reset"
 msgstr "Reset"
 
@@ -9141,7 +9141,7 @@ msgstr "Reset game install"
 msgid "Save backup folder"
 msgstr "Save backup folder"
 
-#: src/share/ImportDialog.tsx:218
+#: src/share/ImportDialog.tsx:184
 msgid ".mortar file"
 msgstr ".mortar file"
 
@@ -9290,7 +9290,7 @@ msgstr "The log holds folder paths from this computer, which can include your us
 msgid "Open a profile first."
 msgstr "Open a profile first."
 
-#: src/lan/IncomingPrompt.tsx:143
+#: src/lan/IncomingPrompt.tsx:164
 msgid "Import as new profile"
 msgstr "Import as new profile"
 
@@ -10541,7 +10541,7 @@ msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}} · {d
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/lan/IncomingPrompt.tsx:166
+#: src/lan/IncomingPrompt.tsx:187
 msgid "Could not cancel transfer"
 msgstr "Could not cancel transfer"
 
@@ -10753,7 +10753,7 @@ msgstr "Minimise"
 #. placeholder {4}: progress.current
 #. placeholder {5}: formatBytes(progress.bytes)
 #. placeholder {6}: formatBytes(progress.rate)
-#: src/lan/IncomingPrompt.tsx:154
+#: src/lan/IncomingPrompt.tsx:175
 msgid "{0, plural, one {{1} of # mod · {2} · {3}/s} other {{4} of # mods · {5} · {6}/s}}"
 msgstr "{0, plural, one {{1} of # mod · {2} · {3}/s} other {{4} of # mods · {5} · {6}/s}}"
 
@@ -10982,7 +10982,7 @@ msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
 #: src/profiles/ImportWizard.tsx:99
-#: src/share/ImportDialog.tsx:293
+#: src/share/ImportDialog.tsx:259
 msgid "Import a profile"
 msgstr "Import a profile"
 
@@ -11637,7 +11637,7 @@ msgid "Compare saved reports"
 msgstr "Compare saved reports"
 
 #: src/mods/ConfigPresets.tsx:147
-#: src/share/ImportFooter.tsx:139
+#: src/share/ImportFooter.tsx:141
 #: src/templates/TemplateDialogs.tsx:84
 msgid "Replace {name}?"
 msgstr "Replace {name}?"
@@ -11895,7 +11895,7 @@ msgstr "Display number"
 msgid "Windowed resolution height"
 msgstr "Windowed resolution height"
 
-#: src/share/ImportDialog.tsx:192
+#: src/share/ImportDialog.tsx:158
 msgid "Import profile from…"
 msgstr "Import profile from…"
 
@@ -12148,7 +12148,7 @@ msgid "Handle {0} links"
 msgstr "Handle {0} links"
 
 #: src/queue/store.ts:132
-#: src/share/ImportFooter.tsx:60
+#: src/share/ImportFooter.tsx:62
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
 
@@ -12430,9 +12430,9 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/settings/sections/About.tsx:99
 #: src/settings/sections/AboutDiagnostics.tsx:219
 #: src/settings/sections/DataStoreReport.tsx:407
-#: src/share/ImportDialog.tsx:220
-#: src/share/ImportDialog.tsx:223
-#: src/share/ImportFooter.tsx:86
+#: src/share/ImportDialog.tsx:186
+#: src/share/ImportDialog.tsx:189
+#: src/share/ImportFooter.tsx:88
 #: src/share/ShareShell.tsx:65
 #: src/shell/TitleBar.tsx:131
 #: src/templates/TemplateDialogs.tsx:179
@@ -12440,7 +12440,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 msgid "Close"
 msgstr "Close"
 
-#: src/share/ImportDialog.tsx:217
+#: src/share/ImportDialog.tsx:183
 #: src/share/ShareShell.tsx:118
 msgid "Link"
 msgstr "Link"

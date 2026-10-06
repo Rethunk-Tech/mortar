@@ -12,6 +12,7 @@ import {
   Import,
   PickFile,
   PreviewCollectionUpdate,
+  PreviewData,
   PreviewExternal,
   PreviewFile,
   PreviewLink,
@@ -213,6 +214,10 @@ export function useImportFlow(
     },
     [game, profileId, show],
   )
+  const previewData = useCallback(
+    (data: string) => show(PreviewData(game, data, profileId)),
+    [game, profileId, show],
+  )
   const previewCollectionUpdate = useCallback(
     () => show(PreviewCollectionUpdate(game, profileId)),
     [game, profileId, show],
@@ -288,6 +293,7 @@ export function useImportFlow(
     previewLink,
     previewFile,
     previewExternal,
+    previewData,
     previewCollectionUpdate,
     paste,
     pick,

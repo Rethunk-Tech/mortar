@@ -2,7 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
-import { PreviewData } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { localId } from '../mods/dependents.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -16,6 +15,7 @@ import { ImportInput } from './ImportInput.tsx'
 import { Tiles } from './ImportPreview.tsx'
 import { missingModName, summarize } from './logic.ts'
 import { SaveImportedTemplateHost } from './SaveImportedTemplate.tsx'
+import { seedPreview } from './seedPreview.ts'
 import { type ImportRequest, useImportDialog } from './store.ts'
 import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
 
@@ -65,61 +65,34 @@ function MissingMods({
   )
 }
 
-async function seedPreview(
-  request: ImportRequest,
-  game: string,
-  flow: {
-    setTab: (tab: TabId) => void
-    setText: (text: string) => void
-    previewLink: (value: string) => Promise<void>
-    previewFile: (file: string) => Promise<void>
-    previewExternal: (value: NonNullable<ImportRequest['external']>) => Promise<void>
-    previewCollectionUpdate: () => Promise<void>
-  },
-) {
-  flow.setTab(request.tab === 'link' ? 'link' : 'file')
-  if (request.collectionUpdate) {
-    await flow.previewCollectionUpdate()
-    return
-  }
-  if (request.external) {
-    await flow.previewExternal(request.external)
-    return
-  }
-  if (request.seed && request.tab === 'link') {
-    flow.setText(request.seed)
-    await flow.previewLink(request.seed)
-    return
-  }
-  if (request.seed && request.tab === 'data') {
-    await PreviewData(game, request.seed, request.profileId)
-    return
-  }
-  if (request.seed) {
-    await flow.previewFile(request.seed)
-  }
-}
-
 function useSeedPreview(
   request: ImportRequest,
-  game: string,
   flow: {
     setTab: (tab: TabId) => void
     setText: (text: string) => void
     previewLink: (value: string) => Promise<void>
     previewFile: (file: string) => Promise<void>
+    previewData: (data: string) => Promise<void>
     previewExternal: (value: NonNullable<ImportRequest['external']>) => Promise<void>
     previewCollectionUpdate: () => Promise<void>
   },
 ) {
-  const { setTab, setText, previewLink, previewFile, previewExternal, previewCollectionUpdate } =
-    flow
+  const {
+    setTab,
+    setText,
+    previewLink,
+    previewFile,
+    previewData,
+    previewExternal,
+    previewCollectionUpdate,
+  } = flow
   useEffect(() => {
-    seedPreview(request, game, {
+    seedPreview(request, {
       setTab,
       setText,
       previewLink,
       previewFile,
+      previewData,
       previewExternal,
       previewCollectionUpdate,
     }).catch(reportUnexpected)
@@ -129,9 +102,9 @@ function useSeedPreview(
     setText,
     previewLink,
     previewFile,
+    previewData,
     previewExternal,
     previewCollectionUpdate,
-    game,
   ])
 }
 
@@ -145,7 +118,7 @@ function Body({ request }: { request: ImportRequest }) {
   const { setTab } = flow
   const source = flow.external?.source ?? ''
   const manager = SOURCE_NAMES[source] ?? source
-  useSeedPreview(request, game, flow)
+  useSeedPreview(request, flow)
 
   useEffect(() => {
     useImportDialog.setState({ busy: flow.busy })
