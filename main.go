@@ -640,7 +640,7 @@ func run() error {
 	}
 	// Queue changes reach shareSvc, so links are routed only once both exist.
 	nxmSvc.Receive(os.Args[1:])
-	solo := plays.StartSolo(os.Args[1:])
+	solo := plays.Start(os.Args[1:])
 	shareSvc.Receive(sharesvc.InDir(os.Args[1:], sharesvc.LaunchDir()))
 	shareSvc.QueueChanged(queueSvc.State())
 

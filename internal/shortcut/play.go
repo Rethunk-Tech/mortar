@@ -12,14 +12,15 @@ const (
 	WindowFull WindowMode = "full"
 )
 
-// StartSolo takes the play request Mortar was started with as play mode, for a shortcut run from Steam's Game Mode:
-// the window stays hidden unless Play is blocked, and Mortar exits when the game closes, so Steam counts the
-// shortcut's playtime. It reports whether there was a request.
+// Start takes the play request Mortar was started with. A desktop shortcut's request plays in the usual window; a
+// Steam shortcut's runs play mode, for Steam's Game Mode: the window stays hidden unless Play is blocked, and Mortar
+// exits when the game closes, so Steam counts the shortcut's playtime. It reports whether play mode started.
 //
 //wails:ignore
-func (s *Service) StartSolo(args []string) bool {
+func (s *Service) Start(args []string) bool {
 	r, ok := Parse(args)
-	if !ok {
+	if !ok || !SteamSession(args) {
+		s.Receive(args)
 		return false
 	}
 	s.mu.Lock()

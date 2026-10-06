@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
-// Play mode: Mortar was started by a shortcut, usually from Steam's Game Mode, to play one profile (launch/playMode).
+// Play mode: a Steam shortcut (--steam-session) started Mortar to play one profile (launch/playMode); a desktop
+// shortcut plays in the usual window instead.
 // cancelled is set when the blocked-Play dialog was cancelled, which quits rather than opening the full window.
 const usePlayMode = create<{ solo: boolean; cancelled: boolean }>(() => ({
   solo: false,

@@ -1,12 +1,14 @@
-// Package shortcut makes desktop shortcuts that play one profile, and takes the play request such a shortcut sends.
-// A shortcut runs Mortar with --play=<game>/<profile>; a running Mortar receives it as a second instance, and a
-// closed one starts with it, so the window plays the profile through its usual Play path either way.
+// Package shortcut makes desktop and Steam shortcuts that play one profile, and takes the play request such a
+// shortcut sends. A desktop shortcut runs Mortar with --play=<game>/<profile>; a running Mortar receives it as a
+// second instance, and a closed one starts with it, so the window plays the profile through its usual Play path
+// either way. A Steam shortcut adds --steam-session, which runs Mortar as Steam's game process (play mode).
 package shortcut
 
 import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
@@ -17,6 +19,10 @@ import (
 )
 
 const playFlag = "--play="
+
+// SteamSessionFlag marks a play request from a Steam shortcut: Mortar's process lasts as long as the run it starts,
+// so Steam counts the shortcut's playtime.
+const SteamSessionFlag = "--steam-session"
 
 // RequestedEvent tells the window a shortcut asked to play a profile.
 const RequestedEvent = "play:requested"
@@ -29,6 +35,12 @@ type Request struct {
 
 // Arg is the command-line argument that plays profile of game.
 func Arg(game, profile string) string { return playFlag + game + "/" + profile }
+
+// SteamArgs is the launch options of a Steam shortcut that plays profile of game.
+func SteamArgs(game, profile string) string { return Arg(game, profile) + " " + SteamSessionFlag }
+
+// SteamSession reports whether args carry a Steam shortcut's flag; Parse finds the request itself.
+func SteamSession(args []string) bool { return slices.Contains(args, SteamSessionFlag) }
 
 // Parse finds a play request among args.
 func Parse(args []string) (Request, bool) {
@@ -126,7 +138,7 @@ func (s *Service) Remove(game, profile string) error {
 
 // ErrFlatpakSteamShortcut means the profile's shortcut cannot go into Steam from a Flatpak: Steam on the host
 // cannot start Mortar's /app/bin/mortar, and the sandbox cannot edit Steam's files without broad host access.
-var ErrFlatpakSteamShortcut = errors.New("adding to Steam is not available in the Flatpak: use the desktop shortcut, or add Mortar to Steam as a non-Steam game with the command `flatpak run tech.rethunk.Mortar --play=<game>/<profile>`")
+var ErrFlatpakSteamShortcut = errors.New("adding to Steam is not available in the Flatpak: use the desktop shortcut, or add Mortar to Steam as a non-Steam game with the command `flatpak run tech.rethunk.Mortar --play=<game>/<profile> --steam-session`")
 
 // ErrSteamRunning means Steam is open; it rewrites its shortcut list when it exits, which would drop the new entry.
 var ErrSteamRunning = errors.New("close Steam first: it rewrites its game list when it exits")
@@ -179,7 +191,7 @@ func (s *Service) AddToSteam(game, gameName, profile, profileName string) (bool,
 		Name:          profileName + " (" + gameName + ")",
 		Exe:           exe,
 		StartDir:      filepath.Dir(exe),
-		LaunchOptions: Arg(game, profile),
+		LaunchOptions: SteamArgs(game, profile),
 		Cover:         cover,
 	})
 }

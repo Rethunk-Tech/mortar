@@ -14,7 +14,7 @@ func TestAddShortcutAppendsOnceAndKeepsExistingEntries(t *testing.T) {
 	if err != nil || !added {
 		t.Fatalf("first add: %v %v", added, err)
 	}
-	play := Shortcut{Name: "Main (Stardew Valley)", Exe: "/opt/mortar", StartDir: "/opt", LaunchOptions: "--play=stardew/p1"}
+	play := Shortcut{Name: "Main (Stardew Valley)", Exe: "/opt/mortar", StartDir: "/opt", LaunchOptions: "--play=stardew/p1 --steam-session"}
 	next, added, err := addShortcut(body, play)
 	if err != nil || !added {
 		t.Fatalf("second add: %v %v", added, err)
@@ -30,7 +30,7 @@ func TestAddShortcutAppendsOnceAndKeepsExistingEntries(t *testing.T) {
 		t.Fatalf("parsed %+v %v", root, err)
 	}
 	entry := root[0].Child[1]
-	if entry.Key != "1" || field(entry, "Exe") != `"/opt/mortar"` || field(entry, "LaunchOptions") != "--play=stardew/p1" {
+	if entry.Key != "1" || field(entry, "Exe") != `"/opt/mortar"` || field(entry, "LaunchOptions") != "--play=stardew/p1 --steam-session" {
 		t.Fatalf("entry %+v", entry)
 	}
 	if entry.Child[0].Key != "appid" || entry.Child[0].Int&0x80000000 == 0 {
@@ -42,10 +42,10 @@ func TestRemoveShortcutsDropsOnlyMortarEntriesAndRenumbers(t *testing.T) {
 	var body []byte
 	for _, sc := range []Shortcut{
 		{Name: "Other", Exe: `C:\games\other.exe`, StartDir: `C:\games`},
-		{Name: "A", Exe: `C:\Mortar\mortar.exe`, StartDir: `C:\Mortar`, LaunchOptions: "--play=stardew/a"},
+		{Name: "A", Exe: `C:\Mortar\mortar.exe`, StartDir: `C:\Mortar`, LaunchOptions: "--play=stardew/a --steam-session"},
 		{Name: "Mortar itself", Exe: `C:\Mortar\mortar.exe`, StartDir: `C:\Mortar`},
-		{Name: "B", Exe: `c:\mortar\MORTAR.exe`, StartDir: `C:\Mortar`, LaunchOptions: "--play=stardew/b"},
-		{Name: "Elsewhere", Exe: `D:\other\mortar.exe`, StartDir: `D:\other`, LaunchOptions: "--play=stardew/c"},
+		{Name: "B", Exe: `c:\mortar\MORTAR.exe`, StartDir: `C:\Mortar`, LaunchOptions: "--play=stardew/b --steam-session"},
+		{Name: "Elsewhere", Exe: `D:\other\mortar.exe`, StartDir: `D:\other`, LaunchOptions: "--play=stardew/c --steam-session"},
 	} {
 		var err error
 		if body, _, err = addShortcut(body, sc); err != nil {
