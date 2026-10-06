@@ -81,14 +81,22 @@ function describeAsset(p: Extract<Problem, { kind: 'asset' }>): string {
     : sentence
 }
 
+// An installed copy's name first (a disabled or outdated one), then the page that offers it, the id only last.
+function missingDepName(
+  m: { id: string; listed: boolean; where: { pageName: string } | null },
+  nameOf: (id: string) => string,
+): string {
+  const page = m.where?.pageName?.trim() ?? ''
+  const known = nameOf(m.id)
+  return page !== '' && (m.listed || known === localId(m.id)) ? page : known
+}
+
 function describeMissing(
   p: Extract<Problem, { kind: 'missing' }>,
   nameOf: (id: string) => string,
 ): string {
   const { dependentName, minimumVersion, installedVersion, reason } = p.missing
-  const dep = p.missing.listed
-    ? p.missing.where?.pageName?.trim() || nameOf(p.missing.id)
-    : nameOf(p.missing.id)
+  const dep = missingDepName(p.missing, nameOf)
   if (p.missing.external) {
     const note = p.missing.note.trim()
     return note === ''
@@ -216,3 +224,5 @@ export function useDescribeDrift(): (d: Drift) => string {
     return t`${name} was changed outside Mortar.`
   }
 }
+
+export { missingDepName }
