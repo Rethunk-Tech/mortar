@@ -7,7 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/saves/SavesTab.tsx:53
+#: src/saves/SavesTab.tsx:58
 msgid "No saves match"
 msgstr "No saves match"
 
@@ -1666,7 +1666,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/queue/QueueBody.tsx:255
 #: src/queue/store.ts:163
 #: src/saves/BackupsDialog.tsx:147
-#: src/saves/SavesTab.tsx:37
+#: src/saves/SavesTab.tsx:40
 #: src/settings/sections/DataStoreReport.tsx:390
 #: src/settings/sections/Storage.tsx:79
 #: src/settings/sections/Updates.tsx:38
@@ -2013,7 +2013,7 @@ msgstr "Enter a name for the profile."
 msgid "Already has it"
 msgstr "Already has it"
 
-#: src/saves/SavesTab.tsx:73
+#: src/saves/SavesTab.tsx:78
 msgid "Filter saves"
 msgstr "Filter saves"
 
@@ -2265,7 +2265,7 @@ msgstr "Repaired {name}"
 msgid "Copy load order"
 msgstr "Copy load order"
 
-#: src/saves/SavesTab.tsx:60
+#: src/saves/SavesTab.tsx:65
 msgid "Try a different search."
 msgstr "Try a different search."
 
@@ -3925,7 +3925,7 @@ msgstr "Compare {0} with…"
 msgid "Could not preview the template"
 msgstr "Could not preview the template"
 
-#: src/mods/ExtraFolderMenu.tsx:89
+#: src/mods/ExtraFolderMenu.tsx:75
 msgid "From the extra mods folder…"
 msgstr "From the extra mods folder…"
 
@@ -3943,7 +3943,7 @@ msgstr "Untrack the {gameName} mods none of your profiles use, out of {trackedCo
 msgid "Could not read that list"
 msgstr "Could not read that list"
 
-#: src/mods/ExtraFolderMenu.tsx:46
+#: src/mods/ExtraFolderMenu.tsx:43
 msgid "More ways to add mods"
 msgstr "More ways to add mods"
 
@@ -4100,10 +4100,6 @@ msgstr "slow Entry {ms}"
 #: src/settings/sections/StreamOverlay.tsx:419
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
-
-#: src/mods/ExtraFolderMenu.tsx:66
-msgid "Archive…"
-msgstr "Archive…"
 
 #: src/console/StartupTable.tsx:188
 #: src/settings/sections/About.tsx:62
@@ -5039,7 +5035,7 @@ msgstr "Clear finished"
 msgid "Enable {0}"
 msgstr "Enable {0}"
 
-#: src/saves/SavesTab.tsx:80
+#: src/saves/SavesTab.tsx:85
 msgid "Save backups…"
 msgstr "Save backups…"
 
@@ -7421,7 +7417,7 @@ msgid "Add"
 msgstr "Add"
 
 #. placeholder {0}: fits.length
-#: src/saves/SavesTab.tsx:74
+#: src/saves/SavesTab.tsx:79
 msgid "{0, plural, one {Filter # save} other {Filter # saves}}"
 msgstr "{0, plural, one {Filter # save} other {Filter # saves}}"
 
@@ -8416,7 +8412,7 @@ msgstr "Sign in to Nexus Mods in Settings before downloading from a link."
 msgid "Nexus is throttling requests until the window resets."
 msgstr "Nexus is throttling requests until the window resets."
 
-#: src/mods/ExtraFolderMenu.tsx:77
+#: src/mods/ExtraFolderMenu.tsx:63
 msgid "From the downloads folder…"
 msgstr "From the downloads folder…"
 
@@ -8977,7 +8973,7 @@ msgstr "Steps to reproduce"
 msgid "Their folders are removed from this profile. You can undo this."
 msgstr "Their folders are removed from this profile. You can undo this."
 
-#: src/saves/SavesTab.tsx:56
+#: src/saves/SavesTab.tsx:61
 msgid "Clear filter"
 msgstr "Clear filter"
 
@@ -11531,6 +11527,10 @@ msgstr "Also in these profiles"
 msgid "Icon"
 msgstr "Icon"
 
+#: src/saves/SavesTab.tsx:51
+msgid "Play this profile and save a game. Each save shows here, with its backups."
+msgstr "Play this profile and save a game. Each save shows here, with its backups."
+
 #: src/mods/problemText.ts:93
 msgid "A plugin it needs failed"
 msgstr "A plugin it needs failed"
@@ -11985,7 +11985,7 @@ msgstr "No mods yet"
 msgid "No stored run contains that text."
 msgstr "No stored run contains that text."
 
-#: src/saves/SavesTab.tsx:42
+#: src/saves/SavesTab.tsx:45
 msgid "Reading your saves…"
 msgstr "Reading your saves…"
 
@@ -12072,7 +12072,7 @@ msgstr "Your notes for this profile, for example: Friday co-op profile. Keep eve
 msgid "imported from a .mortar file"
 msgstr "imported from a .mortar file"
 
-#: src/saves/SavesTab.tsx:46
+#: src/saves/SavesTab.tsx:50
 msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 
@@ -12479,7 +12479,7 @@ msgstr "Could not change {0}"
 msgid "Leave out"
 msgstr "Leave out"
 
-#: src/saves/SavesTab.tsx:45
+#: src/saves/SavesTab.tsx:48
 msgid "No saves yet"
 msgstr "No saves yet"
 

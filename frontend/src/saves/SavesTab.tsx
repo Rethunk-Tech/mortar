@@ -4,6 +4,7 @@ import { Box, Button, Typography } from '@mui/material'
 import { History, Search, Sprout } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useGameInfo } from '../games/info.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -18,6 +19,8 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   const { t } = useLingui()
   const { fits, status, error: detail, load } = useSaves()
   const { name } = profile
+  // Only SMAPI writes the mods a save was played with into the save, so only its saves can be matched to a profile.
+  const recordsMods = useGameInfo(game)?.loaderId === 'smapi'
   const [backupsOpen, setBackupsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const shown = filterAndSortSaves(fits, query)
@@ -43,7 +46,9 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   } else if (fits.length === 0) {
     body = (
       <EmptyState icon={<Sprout size={40} aria-hidden={true} />} title={t`No saves yet`}>
-        {t`Play this profile and save a game. Each save shows here with how well it fits ${name}, so you know which mods it needs.`}
+        {recordsMods
+          ? t`Play this profile and save a game. Each save shows here with how well it fits ${name}, so you know which mods it needs.`
+          : t`Play this profile and save a game. Each save shows here, with its backups.`}
       </EmptyState>
     )
   } else if (shown.length === 0 && query.trim() !== '') {
