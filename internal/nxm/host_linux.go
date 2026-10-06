@@ -83,3 +83,22 @@ func (l *System) hostWrite(path string, b []byte) error {
 		"sh", path, string(b))
 	return err
 }
+
+func (l *System) hostRemove(path string) error {
+	if !inFlatpak() {
+		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		return nil
+	}
+	_, err := l.onHost("sh", "-c", `rm -f "$1"`, "sh", path)
+	return err
+}
+
+func (l *System) hostIsDir(path string) bool {
+	if !inFlatpak() {
+		return fsx.IsDir(path)
+	}
+	_, err := l.onHost("sh", "-c", `[ -d "$1" ]`, "sh", path)
+	return err == nil
+}

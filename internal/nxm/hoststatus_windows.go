@@ -7,6 +7,7 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
@@ -71,4 +72,9 @@ func statusForExecutable(exe string) []HostStatus {
 		return nil
 	}
 	return w.NativeHostStatus()
+}
+
+func manifestState(exe, path string) string {
+	b, err := fsx.ReadFile(path)
+	return manifestStateOf(exe, b, err)
 }

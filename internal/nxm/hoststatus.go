@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Host status values for NativeHostStatus rows.
@@ -26,8 +24,8 @@ type HostStatus struct {
 	State        string `json:"state"`
 }
 
-func manifestState(exe, path string) string {
-	b, err := fsx.ReadFile(path)
+// manifestStateOf is manifestState for a manifest already read, with the read's error.
+func manifestStateOf(exe string, b []byte, err error) string {
 	if errors.Is(err, os.ErrNotExist) {
 		return HostMissing
 	}

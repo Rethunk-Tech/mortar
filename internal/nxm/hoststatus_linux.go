@@ -5,7 +5,6 @@ package nxm
 import (
 	"path/filepath"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
@@ -26,40 +25,43 @@ var nativeHostBrowsers = []browserEntry{
 	{dir: ".mozilla", name: "Firefox", firefox: true},
 }
 
-func (l *System) nativeHostEntries() []browserEntry {
-	var out []browserEntry
+// nativeHostEntries lists the installed browsers, each with where it looks for Mortar's host manifest. Chromium
+// browsers look under the host's config folder, which inside a Flatpak is not the sandbox's own.
+func (l *System) nativeHostEntries() []hostEntry {
+	config, err := l.hostConfigHome()
+	if err != nil {
+		return nil
+	}
+	var out []hostEntry
 	for _, b := range nativeHostBrowsers {
+		dir := filepath.Join(config, b.dir)
+		manifest := filepath.Join(dir, "NativeMessagingHosts", nativehost.Name+".json")
 		if b.firefox {
-			if !fsx.IsDir(filepath.Join(l.home, b.dir)) {
-				continue
-			}
-			out = append(out, b)
-			continue
+			dir = filepath.Join(l.home, b.dir)
+			manifest = filepath.Join(dir, "native-messaging-hosts", nativehost.Name+".json")
 		}
-		if !fsx.IsDir(filepath.Join(l.configHome, b.dir)) {
-			continue
+		if l.hostIsDir(dir) {
+			out = append(out, hostEntry{browserEntry: b, manifest: manifest})
 		}
-		out = append(out, b)
 	}
 	return out
 }
 
-func manifestPath(l *System, b browserEntry) string {
-	if b.firefox {
-		return filepath.Join(l.home, b.dir, "native-messaging-hosts", nativehost.Name+".json")
-	}
-	return filepath.Join(l.configHome, b.dir, "NativeMessagingHosts", nativehost.Name+".json")
+type hostEntry struct {
+	browserEntry
+	manifest string
 }
 
 // NativeHostStatus lists each installed browser's Mortar native-messaging manifest state.
 func (l *System) NativeHostStatus() []HostStatus {
 	var out []HostStatus
-	for _, b := range l.nativeHostEntries() {
-		path := manifestPath(l, b)
+	exe := l.nativeHostExe()
+	for _, e := range l.nativeHostEntries() {
+		b, err := l.hostRead(e.manifest)
 		out = append(out, HostStatus{
-			Browser:      b.name,
-			ManifestPath: path,
-			State:        manifestState(l.exe, path),
+			Browser:      e.name,
+			ManifestPath: e.manifest,
+			State:        manifestStateOf(exe, b, err),
 		})
 	}
 	return out

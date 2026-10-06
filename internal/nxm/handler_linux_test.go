@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -395,9 +396,18 @@ func TestPackagedRegisterSetsNxmDefaultWithoutWriting(t *testing.T) {
 }
 
 func TestFlatpakSetsTheHostsDefault(t *testing.T) {
-	packaged = "flatpak"
-	t.Cleanup(func() { packaged = "" })
-	l, r := newLinux(t, "other.desktop")
+	l, _ := flatpakLinux(t, "other.desktop")
+	r := &recorder{current: "other.desktop", byMime: map[string]string{schemeMime("nxm"): "other.desktop"}}
+	host := l.run
+	l.run = func(name string, args ...string) (string, error) {
+		if !slices.Equal(args[:min(2, len(args))], []string{"--host", "xdg-mime"}) {
+			if name != "flatpak-spawn" {
+				t.Errorf("flatpak ran %s %q outside the host bridge", name, args)
+			}
+			return host(name, args...)
+		}
+		return r.run(name, args...)
+	}
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
@@ -407,11 +417,6 @@ func TestFlatpakSetsTheHostsDefault(t *testing.T) {
 	owner, err := l.Owner("nxm")
 	if err != nil || !owner.Mine {
 		t.Fatalf("owner = %+v, %v", owner, err)
-	}
-	for _, c := range r.calls {
-		if !strings.HasPrefix(c, "flatpak-spawn --host xdg-mime ") {
-			t.Errorf("flatpak ran %q, not the host's xdg-mime", c)
-		}
 	}
 	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("flatpak wrote a user desktop entry")

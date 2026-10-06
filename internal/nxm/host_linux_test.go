@@ -1,12 +1,14 @@
 package nxm
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
 
 // flatpakLinux is newLinux inside a Flatpak whose host is this machine: a host command runs here, against the test's
@@ -88,5 +90,48 @@ func TestFlatpakForwardsToThePreviousHandlerOnTheHost(t *testing.T) {
 	}
 	if err := l.ForwardOther("nxm://x", "missing.desktop"); err == nil {
 		t.Fatal("a missing entry forwarded")
+	}
+}
+
+func TestFlatpakWritesHostManifestsThatStartMortarThroughFlatpak(t *testing.T) {
+	l, _ := flatpakLinux(t, "")
+	vivaldi := filepath.Join(hostConfig(l), "vivaldi")
+	for _, d := range []string{vivaldi, filepath.Join(l.home, ".mozilla")} {
+		if err := os.MkdirAll(d, 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := l.Register(); err != nil {
+		t.Fatal(err)
+	}
+	wrapper := filepath.Join(l.home, ".var", "app", "tech.rethunk.Mortar", "native-host")
+	if b, err := fsx.ReadFile(wrapper); err != nil || !strings.Contains(string(b), `exec flatpak run --command=mortar tech.rethunk.Mortar "$@"`) {
+		t.Fatalf("wrapper %q, %v", b, err)
+	}
+	chromium := filepath.Join(vivaldi, "NativeMessagingHosts", nativehost.Name+".json")
+	firefox := filepath.Join(l.home, ".mozilla", "native-messaging-hosts", nativehost.Name+".json")
+	for _, p := range []string{chromium, firefox} {
+		var m struct {
+			Path string `json:"path"`
+		}
+		if b, err := fsx.ReadFile(p); err != nil || json.Unmarshal(b, &m) != nil || m.Path != wrapper {
+			t.Fatalf("%s: %s, %v", p, b, err)
+		}
+	}
+	for _, s := range l.NativeHostStatus() {
+		if s.State != HostOK {
+			t.Errorf("status %+v", s)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(l.configHome, "vivaldi")); !os.IsNotExist(err) {
+		t.Errorf("wrote into the sandbox's config: %v", err)
+	}
+	if err := l.Restore(nil); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{chromium, firefox} {
+		if _, err := os.Stat(p); !os.IsNotExist(err) {
+			t.Errorf("%s survived Restore: %v", p, err)
+		}
 	}
 }
