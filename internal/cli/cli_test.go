@@ -230,7 +230,7 @@ func TestBackupsListIsATable(t *testing.T) {
 	}}}
 	r := invoke(t, results, "backups", "list", "--game", "stardew")
 	if r.code != 0 || !strings.HasPrefix(r.out, "NAME") || !strings.Contains(r.out, "hours ago") ||
-		!strings.Contains(r.out, "Green Acres, LCSaveFile1") || !strings.Contains(r.out, "kept") || strings.Contains(r.out, "map[") || strings.Contains(r.out, "{") {
+		!strings.Contains(r.out, "Green Acres, Save file 1") || !strings.Contains(r.out, "kept") || strings.Contains(r.out, "map[") || strings.Contains(r.out, "{") {
 		t.Fatalf("list: %q", r.out)
 	}
 	r = invoke(t, results, "backups", "list", "--game", "stardew", "--json")
@@ -730,5 +730,14 @@ func TestGamesProfilesRunsSavesAndEnableHuman(t *testing.T) {
 	}
 	if !strings.Contains(r.out, "Spring 1, Year 2") || strings.Contains(r.out, "Year 0") {
 		t.Fatalf("saves dates: %q", r.out)
+	}
+}
+
+func TestSavesWithoutFarmsListTheAppsSaveName(t *testing.T) {
+	results := map[string]any{"saves": []savessvc.Fit{{Folder: "LCSaveFile1"}, {Folder: "worlds_local/Midgard.fwl"}}}
+	r := invoke(t, results, "saves", "lethal-company", "Lobby")
+	if r.code != 0 || !strings.HasPrefix(strings.TrimSpace(r.out), "SAVE") || strings.Contains(r.out, "FARM") ||
+		!strings.Contains(r.out, "Save file 1") || !strings.Contains(r.out, "Midgard") {
+		t.Fatalf("saves: %q", r.out)
 	}
 }

@@ -32,6 +32,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/savessvc"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
@@ -2045,6 +2046,8 @@ func (c *cmd) saves(p control.Params) error {
 			}
 		}
 	}
+	// Only Stardew Valley's saves have a farm and a farmer; other games' saves are listed by the name the app shows.
+	farms := slices.ContainsFunc(list, func(s savessvc.Fit) bool { return s.Farm != "" || s.Farmer != "" })
 	return c.emit(list, func() {
 		t := [][]string{}
 		for _, s := range list {
@@ -2063,9 +2066,18 @@ func (c *cmd) saves(p control.Params) error {
 			if s.Year > 0 {
 				date = fmt.Sprintf("%s %d, Year %d", season, s.Day, s.Year)
 			}
-			t = append(t, []string{s.Farm, s.Farmer, s.Folder, date, saveLastPlayed(s, profileNames), strings.Join(missing, ", ")})
+			rest := []string{s.Folder, date, saveLastPlayed(s, profileNames), strings.Join(missing, ", ")}
+			if farms {
+				t = append(t, append([]string{s.Farm, s.Farmer}, rest...))
+			} else {
+				t = append(t, append([]string{saves.DisplayName(s.Farm, s.Folder)}, rest...))
+			}
 		}
-		c.table("FARM\tFARMER\tFOLDER\tDATE\tLAST PLAYED WITH\tMISSING MODS", t)
+		head := "SAVE\tFOLDER\tDATE\tLAST PLAYED WITH\tMISSING MODS"
+		if farms {
+			head = "FARM\tFARMER\tFOLDER\tDATE\tLAST PLAYED WITH\tMISSING MODS"
+		}
+		c.table(head, t)
 	})
 }
 
@@ -2288,15 +2300,15 @@ func (c *cmd) backups() error {
 		}
 		rows := make([][]string, 0, len(list))
 		for _, b := range list {
-			var saves []string
+			var names []string
 			for _, sn := range b.Saves {
-				saves = append(saves, cmp.Or(sn.Farm, sn.Folder))
+				names = append(names, saves.DisplayName(sn.Farm, sn.Folder))
 			}
 			kept := ""
 			if b.Pinned {
 				kept = "kept"
 			}
-			rows = append(rows, []string{b.Name, relativeDeleted(time.UnixMilli(b.At)), b.Kind, strings.Join(saves, ", "), humanBytes(b.Size), kept})
+			rows = append(rows, []string{b.Name, relativeDeleted(time.UnixMilli(b.At)), b.Kind, strings.Join(names, ", "), humanBytes(b.Size), kept})
 		}
 		c.table("NAME\tTAKEN\tKIND\tSAVES\tSIZE\tKEPT", rows)
 	})
@@ -2494,7 +2506,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   update <game> <profile> <mod id>...|--all
                                           queue available mod updates
   backups list [--game <id>] [--json]     list save backups
-  backups create <save>                   pin a Manual backup of one save
+  backups create <save>                   pin a Manual backup of one save (its folder or its name)
   backups usage                           disk used by save backups, per save
   backups trim --keep N                   delete all but the newest N backups of each save (kept ones stay)
   cache size                              analysis cache size
