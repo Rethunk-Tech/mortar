@@ -1295,7 +1295,7 @@ msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
 msgid "Mods start"
 msgstr "Mods start"
 
-#: src/settings/sections/GameSettings.tsx:302
+#: src/settings/sections/GameSettings.tsx:308
 msgid "Reinstall {gameName} from your game launcher."
 msgstr "Reinstall {gameName} from your game launcher."
 
@@ -1320,7 +1320,7 @@ msgstr "+{more} more"
 msgid "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 msgstr "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 
-#: src/settings/sections/GameSettings.tsx:411
+#: src/settings/sections/GameSettings.tsx:417
 msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
@@ -1977,8 +1977,8 @@ msgstr "These come from a different site than you installed them from. Update al
 msgid "Host:port"
 msgstr "Host:port"
 
-#: src/settings/sections/GameSettings.tsx:334
 #: src/settings/sections/GameSettings.tsx:340
+#: src/settings/sections/GameSettings.tsx:346
 msgid "Tell me when a new SMAPI is out"
 msgstr "Tell me when a new SMAPI is out"
 
@@ -2281,9 +2281,9 @@ msgstr "{game} profile"
 
 #: src/firstrun/FindStep.tsx:164
 #: src/firstrun/GameSetup.tsx:164
-#: src/settings/sections/GameSettings.tsx:190
-#: src/settings/sections/GameSettings.tsx:192
-#: src/settings/sections/GameSettings.tsx:240
+#: src/settings/sections/GameSettings.tsx:193
+#: src/settings/sections/GameSettings.tsx:195
+#: src/settings/sections/GameSettings.tsx:246
 #: src/settings/sections/Launchers.tsx:23
 msgid "Game folder"
 msgstr "Game folder"
@@ -2927,7 +2927,7 @@ msgstr "Search all runs…"
 
 #: src/firstrun/FindStep.tsx:203
 #: src/install/NeedsRootCallout.tsx:24
-#: src/settings/sections/GameSettings.tsx:380
+#: src/settings/sections/GameSettings.tsx:386
 #: src/tools/ToolEditorDialog.tsx:112
 msgid "Choose folder…"
 msgstr "Choose folder…"
@@ -3285,7 +3285,7 @@ msgid "Imported {0}: {1}"
 msgstr "Imported {0}: {1}"
 
 #: src/firstrun/FindStep.tsx:121
-#: src/settings/sections/GameSettings.tsx:186
+#: src/settings/sections/GameSettings.tsx:189
 msgid "Found in {path}"
 msgstr "Found in {path}"
 
@@ -3441,7 +3441,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 msgid "Stop the game?"
 msgstr "Stop the game?"
 
-#: src/settings/sections/GameSettings.tsx:261
+#: src/settings/sections/GameSettings.tsx:267
 msgid "Delete the game folder, then reinstall {gameName} from your launcher."
 msgstr "Delete the game folder, then reinstall {gameName} from your launcher."
 
@@ -3739,7 +3739,7 @@ msgstr "Find {dependency}"
 msgid "{endorsements, plural, one {# follower} other {# followers}} · {dl}"
 msgstr "{endorsements, plural, one {# follower} other {# followers}} · {dl}"
 
-#: src/settings/sections/GameSettings.tsx:68
+#: src/settings/sections/GameSettings.tsx:71
 msgid "Reset game install?"
 msgstr "Reset game install?"
 
@@ -4171,7 +4171,7 @@ msgid "Loader"
 msgstr "Loader"
 
 #: src/settings/prefCopy.ts:232
-#: src/settings/sections/GameSettings.tsx:358
+#: src/settings/sections/GameSettings.tsx:364
 msgid "Extra mods folder"
 msgstr "Extra mods folder"
 
@@ -4422,10 +4422,10 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/Downloads.tsx:229
 #: src/settings/sections/Downloads.tsx:261
 #: src/settings/sections/Downloads.tsx:282
-#: src/settings/sections/GameSettings.tsx:338
-#: src/settings/sections/GameSettings.tsx:364
-#: src/settings/sections/GameSettings.tsx:367
-#: src/settings/sections/GameSettings.tsx:402
+#: src/settings/sections/GameSettings.tsx:344
+#: src/settings/sections/GameSettings.tsx:370
+#: src/settings/sections/GameSettings.tsx:373
+#: src/settings/sections/GameSettings.tsx:408
 #: src/settings/sections/General.tsx:36
 #: src/settings/sections/LoaderRow.tsx:52
 #: src/settings/sections/ModsProfiles.tsx:21
@@ -4690,7 +4690,7 @@ msgstr "{0, plural, one {# settings file was left out (too large or an unusual n
 msgid "The banner at the top of a profile"
 msgstr "The banner at the top of a profile"
 
-#: src/settings/sections/GameSettings.tsx:69
+#: src/settings/sections/GameSettings.tsx:72
 msgid "This deletes the game folder at {folder}, with every file in it, including {loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept."
 msgstr "This deletes the game folder at {folder}, with every file in it, including {loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept."
 
@@ -4714,6 +4714,10 @@ msgstr "Unlinked the collection {name}"
 #: src/profiles/store.ts:445
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
+
+#: src/settings/sections/GameSettings.tsx:221
+msgid "Steam build"
+msgstr "Steam build"
 
 #: src/profiles/EditProfileDialog.tsx:179
 msgid "Heart"
@@ -5445,7 +5449,7 @@ msgstr "Before you play"
 msgid "This is no longer the latest change to that mod."
 msgstr "This is no longer the latest change to that mod."
 
-#: src/settings/sections/GameSettings.tsx:224
+#: src/settings/sections/GameSettings.tsx:230
 msgid "Chosen in the game's Steam properties."
 msgstr "Chosen in the game's Steam properties."
 
@@ -5500,7 +5504,7 @@ msgstr "Logs of past runs stored per profile"
 msgid "Allow it in your antivirus, then Retry."
 msgstr "Allow it in your antivirus, then Retry."
 
-#: src/settings/sections/GameSettings.tsx:396
+#: src/settings/sections/GameSettings.tsx:402
 msgid "Backup location"
 msgstr "Backup location"
 
@@ -5697,7 +5701,7 @@ msgstr "Older copy skipped"
 msgid "Steam will still start {loader}"
 msgstr "Steam will still start {loader}"
 
-#: src/settings/sections/GameSettings.tsx:70
+#: src/settings/sections/GameSettings.tsx:73
 msgid "Reset install"
 msgstr "Reset install"
 
@@ -5888,7 +5892,7 @@ msgstr "Token regenerated"
 msgid "{0} in progress"
 msgstr "{0} in progress"
 
-#: src/settings/sections/GameSettings.tsx:217
+#: src/settings/sections/GameSettings.tsx:222
 msgid "Read from the game's install."
 msgstr "Read from the game's install."
 
@@ -6229,7 +6233,7 @@ msgstr "{requeued, plural, one {Retried # download} other {Retried # downloads}}
 msgid "{store} in the store"
 msgstr "{store} in the store"
 
-#: src/settings/sections/GameSettings.tsx:184
+#: src/settings/sections/GameSettings.tsx:187
 msgid "Chosen by you"
 msgstr "Chosen by you"
 
@@ -6530,7 +6534,7 @@ msgstr "Could not load what can be cleaned up"
 msgid "Unavailable"
 msgstr "Unavailable"
 
-#: src/settings/sections/GameSettings.tsx:223
+#: src/settings/sections/GameSettings.tsx:229
 msgid "Compatibility tool"
 msgstr "Compatibility tool"
 
@@ -6906,7 +6910,7 @@ msgstr "{0} · {1} unique"
 #: src/launchers/LauncherList.tsx:104
 #: src/launchers/LauncherList.tsx:134
 #: src/launchers/LauncherList.tsx:154
-#: src/settings/sections/GameSettings.tsx:193
+#: src/settings/sections/GameSettings.tsx:196
 msgid "Not found"
 msgstr "Not found"
 
@@ -6914,7 +6918,7 @@ msgstr "Not found"
 #: src/profiles/GameSettings.tsx:182
 #: src/profiles/OverrideRows.tsx:79
 #: src/settings/sections/Appearance.tsx:184
-#: src/settings/sections/GameSettings.tsx:211
+#: src/settings/sections/GameSettings.tsx:214
 msgid "Use default"
 msgstr "Use default"
 
@@ -8346,7 +8350,7 @@ msgstr "{label} is not in {0}"
 
 #: src/mods/ModDetail.tsx:183
 #: src/mods/ModDetail.tsx:217
-#: src/settings/sections/GameSettings.tsx:258
+#: src/settings/sections/GameSettings.tsx:264
 #: src/settings/sections/Shortcuts.tsx:83
 #: src/share/ImportFooter.tsx:97
 msgid "Reset"
@@ -8456,7 +8460,7 @@ msgstr "Endorse"
 msgid "Choose an archive to see what is inside"
 msgstr "Choose an archive to see what is inside"
 
-#: src/settings/sections/GameSettings.tsx:292
+#: src/settings/sections/GameSettings.tsx:298
 msgid "Remove SMAPI from Steam's launch options"
 msgstr "Remove SMAPI from Steam's launch options"
 
@@ -8464,7 +8468,7 @@ msgstr "Remove SMAPI from Steam's launch options"
 msgid "Check later"
 msgstr "Check later"
 
-#: src/settings/sections/GameSettings.tsx:270
+#: src/settings/sections/GameSettings.tsx:276
 msgid "Reset…"
 msgstr "Reset…"
 
@@ -8599,7 +8603,7 @@ msgstr "Tips will show again"
 msgid "Open the page of {name}"
 msgstr "Open the page of {name}"
 
-#: src/settings/sections/GameSettings.tsx:254
+#: src/settings/sections/GameSettings.tsx:260
 #: src/shell/FlatpakGrant.tsx:81
 msgid "Grant access"
 msgstr "Grant access"
@@ -9133,7 +9137,7 @@ msgstr "Follow system"
 msgid "Every Play"
 msgstr "Every Play"
 
-#: src/settings/sections/GameSettings.tsx:260
+#: src/settings/sections/GameSettings.tsx:266
 msgid "Reset game install"
 msgstr "Reset game install"
 
@@ -9323,7 +9327,7 @@ msgstr "Mortar finds your games through these launchers. Choose a folder for a g
 msgid "{crashed, plural, one {# crashed run} other {# crashed runs}}"
 msgstr "{crashed, plural, one {# crashed run} other {# crashed runs}}"
 
-#: src/settings/sections/GameSettings.tsx:308
+#: src/settings/sections/GameSettings.tsx:314
 msgid "Could not reset the game install"
 msgstr "Could not reset the game install"
 
@@ -9749,7 +9753,7 @@ msgstr "winner"
 msgid "Checked for updates"
 msgstr "Checked for updates"
 
-#: src/settings/sections/GameSettings.tsx:217
+#: src/settings/sections/GameSettings.tsx:221
 msgid "Game version"
 msgstr "Game version"
 
@@ -10071,7 +10075,7 @@ msgstr "Show file"
 #: src/saves/BackupsDialog.tsx:152
 #: src/settings/GameSettingsPage.tsx:64
 #: src/settings/sections/DataUsage.tsx:209
-#: src/settings/sections/GameSettings.tsx:405
+#: src/settings/sections/GameSettings.tsx:411
 msgid "Save backups"
 msgstr "Save backups"
 
@@ -10433,8 +10437,8 @@ msgstr "Already installed"
 
 #: src/games/storeName.ts:5
 #: src/settings/prefCopy.ts:56
-#: src/settings/sections/GameSettings.tsx:47
-#: src/settings/sections/GameSettings.tsx:181
+#: src/settings/sections/GameSettings.tsx:50
+#: src/settings/sections/GameSettings.tsx:184
 msgid "Steam"
 msgstr "Steam"
 
@@ -10810,8 +10814,8 @@ msgstr "Mods in this category will move to Uncategorised."
 msgid "{0} is still taking your last share"
 msgstr "{0} is still taking your last share"
 
-#: src/settings/sections/GameSettings.tsx:291
-#: src/settings/sections/GameSettings.tsx:301
+#: src/settings/sections/GameSettings.tsx:297
+#: src/settings/sections/GameSettings.tsx:307
 msgid "Game install deleted"
 msgstr "Game install deleted"
 
@@ -11020,8 +11024,8 @@ msgstr "Profile"
 
 #: src/firstrun/FindStep.tsx:182
 #: src/settings/sections/Downloads.tsx:310
-#: src/settings/sections/GameSettings.tsx:202
-#: src/settings/sections/GameSettings.tsx:418
+#: src/settings/sections/GameSettings.tsx:205
+#: src/settings/sections/GameSettings.tsx:424
 msgid "Change folder…"
 msgstr "Change folder…"
 
@@ -11420,7 +11424,7 @@ msgstr "Location"
 msgid "Updates, missing dependencies and links from mod sites land here."
 msgstr "Updates, missing dependencies and links from mod sites land here."
 
-#: src/settings/sections/GameSettings.tsx:119
+#: src/settings/sections/GameSettings.tsx:122
 msgid "Game install"
 msgstr "Game install"
 
@@ -11729,7 +11733,7 @@ msgid "Enable them too"
 msgstr "Enable them too"
 
 #: src/console/LogActions.tsx:175
-#: src/settings/sections/GameSettings.tsx:376
+#: src/settings/sections/GameSettings.tsx:382
 #: src/toasts/HistoryButton.tsx:146
 msgid "Clear"
 msgstr "Clear"
@@ -12326,7 +12330,7 @@ msgstr "What Mortar does when the game starts, then restore when it exits."
 msgid "Untrack unused…"
 msgstr "Untrack unused…"
 
-#: src/settings/sections/GameSettings.tsx:182
+#: src/settings/sections/GameSettings.tsx:185
 msgid "{gameName} was not found. Browse to its folder."
 msgstr "{gameName} was not found. Browse to its folder."
 
@@ -12562,7 +12566,7 @@ msgstr "Before ms"
 msgid "Profile hero"
 msgstr "Profile hero"
 
-#: src/settings/sections/GameSettings.tsx:293
+#: src/settings/sections/GameSettings.tsx:299
 msgid "Could not update Steam's launch options"
 msgstr "Could not update Steam's launch options"
 

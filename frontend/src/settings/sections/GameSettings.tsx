@@ -35,6 +35,9 @@ import { BackupsUsageRow } from './DataBackups.tsx'
 import { LoaderRow } from './LoaderRow.tsx'
 import { ScheduledStatus } from './ScheduledStatus.tsx'
 
+// Without a loader's reading, an install's version is Steam's build id: digits only, never a dotted version.
+const STEAM_BUILD = /^\d+$/
+
 const noShrink = { flexShrink: 0 }
 
 // A GOG install found through Heroic or Minigalaxy carries that launcher's logo.
@@ -214,7 +217,10 @@ function GameFolder({
           </Box>
         </SettingRow>
         {gameVersion ? (
-          <SettingRow label={t`Game version`} description={t`Read from the game's install.`}>
+          <SettingRow
+            label={STEAM_BUILD.test(gameVersion) ? t`Steam build` : t`Game version`}
+            description={t`Read from the game's install.`}
+          >
             <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>{gameVersion}</Box>
           </SettingRow>
         ) : null}
