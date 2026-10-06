@@ -1,4 +1,5 @@
 import { type RefObject, useLayoutEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 // useWidth is the client width of the element the ref is put on, kept current as it resizes; 0 until measured.
 function useWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
@@ -10,10 +11,11 @@ function useWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
     if (!el) {
       return
     }
-    const sync = () => setWidth(el.clientWidth)
-    const ro = new ResizeObserver(sync)
+    // Rendered before the browser paints the resize: a default-priority update would paint a frame laid out for the
+    // old width, so an opening details panel flashed the list's full column set and a sideways scrollbar.
+    const ro = new ResizeObserver(() => flushSync(() => setWidth(el.clientWidth)))
     ro.observe(el)
-    sync()
+    setWidth(el.clientWidth)
     return () => ro.disconnect()
   }, [])
   return [ref, width]

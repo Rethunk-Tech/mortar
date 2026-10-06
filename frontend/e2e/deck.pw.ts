@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { ENABLED_GAMES, openSeedFarm } from './app.ts'
 import { DOWN, installPad, press } from './pad.ts'
 
 // The Steam Deck's screen, which Mortar fills in Game Mode.
@@ -8,8 +8,11 @@ test.use({ viewport: { width: 1280, height: 800 } })
 
 /** Every visible element that scrolls sideways, page included, as "tag.class scrollWidth>clientWidth". */
 function sidewaysScrollers(page: Page): Promise<string[]> {
-  return page.evaluate(() =>
-    [document.documentElement, ...document.querySelectorAll('body *')]
+  return page.evaluate(async () => {
+    // Measured in a painted frame: the list fits its columns when a ResizeObserver reports its new width, which
+    // happens in the frame after a details panel opens, while a measurement in between sees the old column set.
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+    return [document.documentElement, ...document.querySelectorAll('body *')]
       .filter((el) => {
         const scrolls =
           el === document.documentElement ||
@@ -19,8 +22,8 @@ function sidewaysScrollers(page: Page): Promise<string[]> {
       .map(
         (el) =>
           `${el.tagName.toLowerCase()}.${[...el.classList].slice(0, 2).join('.')} ${el.scrollWidth}>${el.clientWidth}`,
-      ),
-  )
+      )
+  })
 }
 
 async function expectNoSidewaysScroll(page: Page, screen: string) {
@@ -59,7 +62,7 @@ test('the arrow keys walk the Game select tiles', async ({ page }) => {
   await openSeedFarm(page)
   await page.getByRole('button', { name: 'Game select' }).click()
   const tiles = page.locator('[data-tile]')
-  await expect(tiles).toHaveCount(2)
+  await expect(tiles).toHaveCount(ENABLED_GAMES)
   await page.getByRole('button', { name: 'Open Stardew Valley' }).focus()
   await page.keyboard.press('ArrowRight')
   expect(await tiles.nth(1).evaluate((t) => t.contains(document.activeElement))).toBe(true)
