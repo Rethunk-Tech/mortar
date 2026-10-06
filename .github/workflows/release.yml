@@ -91,9 +91,13 @@ jobs:
         run: bun run gate
 
       - name: Linux AppImage
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
         run: wails3 task linux:create:appimage
 
       - name: Linux deb, rpm and Arch packages
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
         run: sudo apt-get install -y --no-install-recommends rpm && wails3 task linux:nfpm
 
       - name: Flatpak runtime version
@@ -112,6 +116,8 @@ jobs:
 
       - name: Linux Flatpak
         if: matrix.flatpak
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
         run: |
           # The GNOME SDK, the build and its repo need more space than the hosted runner leaves free; these
           # preinstalled toolchains are unused here.
@@ -131,6 +137,8 @@ jobs:
 
       - name: Windows exe and installer
         if: matrix.windows
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
         run: |
           # Both architectures write bin/mortar.exe, so each is copied out before the next build. NSIS builds
           # an arm64-native installer from the arm64 exe (bin/mortar-arm64-installer.exe).
