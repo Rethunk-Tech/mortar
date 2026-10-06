@@ -8,13 +8,30 @@ Probe packages are Thunderstore zips the regress builds: one plugin source (`Pro
 
 A session may start the game 3 times ([testing.md](testing.md#sandbox-game-launches)), so the matrix proves everything that needs no game process before or after its launches, and runs what does in three. Each of (c) and (b) differs from (a) in one variable, so the `bridge.reachable` rows say which one, if either, costs Mortar its bridge:
 
-- **(a)** the base run's own launch, of its profile filled first with the modpack, the probe packages (Base, Beat, Nested, Own, Caps, Flat, Deep, Patcher, DupA, DupB) and two config edits, on the reinstalled latest pack (Doorstop 4). It proves that loader loading, the plugin count, the live Console, every edge case and the config edits loading, and ends with a Stop from Mortar.
+- **(a)** the base run's own launch, of its profile filled first with the modpack, the probe packages (Base, Beat, Nested, Own, Caps, Flat, Deep, Patcher, DupA, DupB) and two config edits, on the reinstalled latest pack (Doorstop 4). It is a measured launch (Measure next launch, asked through the window's call before it starts), so it also proves startup timing and in-game measuring, and the unmeasured (c) proves an ordinary launch measures nothing. It proves that loader loading, the plugin count, the live Console, every edge case and the config edits loading, and ends with a Stop from Mortar.
 - **(c)** a profile with the Throw and Quit probes on the latest pack (5.4.2305), run first while that pack is pinned. It proves crash analysis and a natural exit, and, set against (a), whether a plugin throwing in `Awake` alone takes the bridge down.
 - **(b)** a profile with the Save and Quit probes on the older pack pinned (5.4.2100, Doorstop 3), with no throwing plugin. It proves the pinned loader loading, the save the update rows use and a natural exit, and, set against (a), whether the old pack alone does.
 
 Each launch waits up to 120 s for the main menu, from the `Bridge plugin alive after scene MainMenu` line the bridge's intro runner writes into `BepInEx/LogOutput.log` (the bridge comes from the `mortar-bepinex-bridge` checkout beside this repo, which the regress builds). There `bridge.reachable.a`, `.c` and `.b` read the bridge's state file, `BepInEx/config/mortar-bepinex-bridge.json`, and send its port a `status` query from inside the game's network namespace (the game's 127.0.0.1 is not the host's, so the query runs under `nsenter` into the game process); the row passes when it answers `ok` with scene `MainMenu`. `bridge.survived.a`, `.c` and `.b` are INFO rows counting the True and False in those lines: with BepInEx's default `HideManagerGameObject = false`, Lethal Company's first scene load destroys the loader's manager object and every plugin component on it, so a False there is expected and only an unreachable bridge fails.
 
 The three launches use the whole session cap, so `MORTAR_REGRESS_R2_CODE` cannot be added: the regress refuses it up front, with the reason, instead of skipping the r2 step. A row marked *offline* runs with no game process: the profile's files, the command line Mortar would start (`launchsvc` `PreviewCommand`), Problems, the queue and the window's calls.
+
+## Measured launch and live state
+
+Mortar's own bridge client dials the bridge on the host's 127.0.0.1, which under the sandbox's `--unshare-net` is not the game's, so during (a) and (c) the matrix runs a relay (`mx_bridge_relay`) that listens on the bridge's port on the host and passes each command into the game's network namespace with `nsenter`. Mortar's calls (`MeasureInGame`, the live poll) then run unchanged. The window's events are read from the server's `/wails/events` socket into `events-a.jsonl`.
+
+| Item | Covered by |
+| --- | --- |
+| The bridge's preloader patcher is deployed and times the measured launch: `Timing this launch's plugins until scene MainMenu`, no `Failed to run Initializer` | launch (a) `startup.patcher` |
+| The startup report: `startup/<utc>.json` written after the request, `.measure-launch` and `.measure-next-launch` consumed, one row per Loading line, `entryMissed` 0, phases rising, `processStart` within the run | launch (a) `startup.report`; bridge `StartupTimerTests`, `TestPrepareStartupArmsTheBepInExPatcherOnlyForAMeasuredLaunch` |
+| Mortar's Startup view names every row by its package | launch (a) `startup.mortar`; `TestBepInExReportRowsBecomeTheirPackages` |
+| Start measuring in game wraps the plugins' patches and updates: `Measuring N plugins: X methods timed, Y could not be wrapped`, Y at most 5 or 5% | launch (a) `perf.start`; bridge `PerfTests` |
+| A summary 10 s later: fps and frame percentiles in order, rows named by package, saved and listed by `mortar perf reports` with its frame line | launch (a) `perf.summary`; `TestPerfRowsNameAndAddUpEachPackagesPlugins` |
+| Wrapping raises no exceptions the 10 s before it did not, and none names the bridge's measuring | launch (a) `perf.stable` |
+| An unmeasured launch measures nothing: `{"measured":false}` and no startup report | launch (c) `perf.unmeasured` |
+| The window's `launch:live` event reaches scene MainMenu | launch (a) `live.scene` |
+| Loaded badges: only enabled packages, and of the two packages declaring one GUID exactly one reads loaded | launch (a) `live.badges` |
+| The version the bridge reports is recorded as the version last played (the row shows the value) | after launch (a) `lastplayed.version` |
 
 ## Loader
 

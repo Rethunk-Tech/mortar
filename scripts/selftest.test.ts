@@ -224,3 +224,114 @@ f.write('ok {"gameVersion":"v81","scene":"MainMenu","plugins":[]}\\n' if ok else
     }
   },
 )
+
+test.skipIf(!netns)(
+  "the relay lets Mortar's own bridge client reach a bridge on the game's loopback",
+  () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mx-relay-'))
+    try {
+      const config = join(dir, 'profiles/lethal-company/p/BepInEx/config')
+      mkdirSync(config, { recursive: true })
+      const state = join(config, 'mortar-bepinex-bridge.json')
+      const fake = `import json, os, socket, sys
+srv = socket.socket(); srv.bind(("127.0.0.1", 0)); srv.listen(1)
+json.dump({"port": srv.getsockname()[1], "token": "t", "pid": os.getpid()}, open(sys.argv[1], "w"))
+c, _ = srv.accept(); f = c.makefile("rw")
+token, command = f.readline().strip(), f.readline().strip()
+f.write('ok {"measured":false}\\n' if (token, command) == ("t", "perf start") else "error: bad\\n"); f.flush()`
+      writeFileSync(join(dir, 'fake.py'), fake)
+      const shell = matrixShell(
+        `ROOT="${dir}"; mx_data="${dir}"
+      mx_game_pids() { python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["pid"])' "${state}"; }
+      bwrap --dev-bind / / --unshare-net -- python3 "${dir}/fake.py" "${state}" & until [ -s "${state}" ]; do sleep 0.1; done
+      mx_bridge_relay p || echo "no relay"
+      python3 -c 'import json,socket,sys
+st = json.load(open(sys.argv[1]))
+s = socket.create_connection(("127.0.0.1", st["port"]), timeout=10); s.sendall(b"t\\nperf start\\n")
+print(s.makefile().readline().strip())' "${state}"
+      mx_relay_stop; wait`,
+      )
+      expect(shell.stdout.trim()).toBe('ok {"measured":false}')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  },
+)
+
+test('the measured launch rows read the startup report, Mortar naming its rows by package, and the live badges', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mx-startup-'))
+  try {
+    const profile = join(dir, 'profiles/lethal-company/p')
+    mkdirSync(join(profile, 'BepInEx/patchers/Rethunk-MortarBepInExBridge'), { recursive: true })
+    mkdirSync(join(profile, 'startup'), { recursive: true })
+    writeFileSync(
+      join(profile, 'BepInEx/patchers/Rethunk-MortarBepInExBridge/MortarBepInExBridge.Patcher.dll'),
+      '',
+    )
+    writeFileSync(join(dir, 'measure-requested'), '')
+    const asked = new Date(Date.now() - 120_000)
+    utimesSync(join(dir, 'measure-requested'), asked, asked)
+    const log = join(dir, 'LogOutput.log')
+    writeFileSync(
+      log,
+      "[Info   :Mortar Startup] Timing this launch's plugins until scene MainMenu.\n" +
+        '[Info   :   BepInEx] Loading [A 1.0.0]\n[Info   :   BepInEx] Loading [B 1.0.0]\n',
+    )
+    const start = new Date(Date.now() - 60_000).toISOString()
+    writeFileSync(
+      join(profile, 'startup/20261006T180000Z.json'),
+      JSON.stringify({
+        processStart: start,
+        phases: {
+          bridgeEntry: 900,
+          entryDone: 3000,
+          gameLaunched: 3800,
+          titleMenu: 5000,
+          titleScreen: 9000,
+        },
+        entryMissed: 0,
+        mods: [{ id: 'a' }, { id: 'b' }],
+      }),
+    )
+    writeFileSync(
+      join(dir, 'events-a.jsonl'),
+      `${JSON.stringify({
+        name: 'launch:live',
+        data: {
+          scene: 'MainMenu',
+          mods: [
+            { id: 'thunderstore:MortarMatrix-ProbeDupA', loaded: true },
+            { id: 'thunderstore:MortarMatrix-ProbeDupB', loaded: false },
+          ],
+        },
+      })}\n`,
+    )
+    writeFileSync(
+      join(dir, 'mods-a.json'),
+      JSON.stringify([
+        { id: 'thunderstore:MortarMatrix-ProbeDupA', enabled: true },
+        { id: 'thunderstore:MortarMatrix-ProbeDupB', enabled: true },
+      ]),
+    )
+    matrixShell(
+      `ROOT="${dir}"; mx_data="${dir}"
+    mx_q() { echo "\\"$1\\""; }
+    mx_wails() { echo '[{"mods":[{"id":"thunderstore:A-A"},{"id":"bepinex:loose"}]}]'; }
+    mx_startup_rows p "${log}"; mx_live_rows p`,
+    )
+    const rows = readFileSync(join(dir, 'matrix.tsv'), 'utf8')
+      .trim()
+      .split('\n')
+      .map((l) => l.split('\t'))
+    expect(rows.map((r) => `${r[0]} ${r[1]}`)).toEqual([
+      'startup.patcher PASS',
+      'startup.report PASS',
+      'startup.mortar FAIL',
+      'live.scene PASS',
+      'live.badges PASS',
+    ])
+    expect(rows[2]?.[2]).toContain('bepinex:loose')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})

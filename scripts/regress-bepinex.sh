@@ -237,6 +237,187 @@ PY
   mx_check "bridge.reachable.$1" "launch ($1) at MainMenu: ${out#* }" test "${out%% *}" = OK
 }
 
+# mx_bridge_relay PROFILE serves the bridge's port on the host's loopback, relaying each command into the game's
+# network namespace, so Mortar's own bridge client (its live poll, MeasureInGame) reaches the bridge as it would on a
+# player's machine; the game alone has its loopback here (scripts/launch-guard.sh). mx_relay holds the relay's pid.
+mx_bridge_relay() {
+  local state pid bport
+  state="$(mx_dir "$1")/BepInEx/config/mortar-bepinex-bridge.json"
+  pid=$(mx_game_pids | head -1)
+  bport=$(mx_json "$state" 'd["port"]' 2>/dev/null)
+  [ -n "$pid" ] && [ -n "$bport" ] || return 1
+  python3 - "$bport" "$pid" >"$ROOT/relay-$1.log" 2>&1 <<'PY' &
+import socket, subprocess, sys
+port, pid = int(sys.argv[1]), sys.argv[2]
+one = ("import socket,sys\ns=socket.create_connection(('127.0.0.1',%d),timeout=10)\n"
+       "s.sendall(sys.stdin.buffer.read())\nsys.stdout.buffer.write(s.makefile('rb').readline())") % port
+srv = socket.socket()
+srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+srv.bind(("127.0.0.1", port))
+srv.listen()
+while True:
+    c, _ = srv.accept()
+    with c:
+        try:
+            f = c.makefile("rb")
+            req = f.readline() + f.readline()
+            out = subprocess.run(["nsenter", "--target", pid, "--user", "--net", "--preserve-credentials", "python3", "-c", one],
+                                 input=req, capture_output=True, timeout=15)
+            c.sendall(out.stdout)
+            command = req.splitlines()[-1:]
+            print(f"{command!r} -> {out.stdout[:80]!r} {out.stderr[-200:]!r}", flush=True)
+        except Exception as e:
+            print(f"relay: {e}", flush=True)
+PY
+  mx_relay=$!
+  sleep 0.5
+}
+
+# mx_events_start TAG records the server's window events (the Wails runtime's /wails/events socket, which the window
+# itself listens on) into $ROOT/events-TAG.jsonl until mx_events_stop.
+mx_events_start() {
+  cat >"$ROOT/events.js" <<'JS'
+const [port, out] = process.argv.slice(2)
+const fs = require('fs')
+const ws = new WebSocket(`ws://127.0.0.1:${port}/wails/events`, { headers: { Origin: `http://127.0.0.1:${port}` } })
+ws.onmessage = (e) => fs.appendFileSync(out, `${e.data}\n`)
+ws.onerror = (e) => fs.appendFileSync(out, `${JSON.stringify({ error: String(e.message ?? e) })}\n`)
+JS
+  bun "$ROOT/events.js" "$PORT" "$ROOT/events-$1.jsonl" >/dev/null 2>&1 &
+  mx_events=$!
+}
+mx_events_stop() { [ -z "${mx_events:-}" ] || kill "$mx_events" 2>/dev/null; mx_events=''; }
+mx_relay_stop() { [ -z "${mx_relay:-}" ] || kill "$mx_relay" 2>/dev/null; mx_relay=''; }
+
+# mx_startup_rows PROFILE LOG checks the measured launch's startup timing: the bridge's patcher deployed and timing,
+# its report written at MainMenu with every loaded plugin and monotonic phases, and Mortar naming its rows by package.
+mx_startup_rows() {
+  local dir patcher report out
+  dir=$(mx_dir "$1")
+  patcher=$(find "$dir/BepInEx/patchers" -name MortarBepInExBridge.Patcher.dll 2>/dev/null | head -1)
+  mx_check startup.patcher "patcher ${patcher#"$dir/"}; LogOutput.log: $(grep -m1 -o "Timing this launch's plugins[^\r]*" "$2" || echo 'no timing line'); initializer failures: $(grep -c 'Failed to run Initializer of MortarBepInExBridge' "$2")" \
+    test -n "$patcher" -a -n "$(grep -m1 "Timing this launch's plugins until scene MainMenu" "$2")" -a "$(grep -c 'Failed to run Initializer of MortarBepInExBridge' "$2")" = 0
+  for _ in $(seq 1 30); do
+    report=$(find "$dir/startup" -maxdepth 1 -name '*Z.json' -newer "$ROOT/measure-requested" 2>/dev/null | sort | tail -1)
+    [ -n "$report" ] && break
+    sleep 1
+  done
+  cp "$report" "$ROOT/startup-a.json" 2>/dev/null
+  out=$(
+    python3 - "$report" "$2" "$dir/startup" "$(date -u +%s)" 2>&1 <<'PY'
+import datetime, json, os, re, sys
+path, log, startup, now = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
+if not path:
+    sys.exit(print("BAD no startup report was written"))
+r = json.load(open(path))
+loaded = len(re.findall(r"BepInEx\] Loading \[", open(log, errors="replace").read()))
+p = r["phases"]
+marks = [p["bridgeEntry"], p["entryDone"], p["gameLaunched"], p["titleScreen"]]
+start = datetime.datetime.fromisoformat(r["processStart"].replace("Z", "+00:00")).timestamp()
+left = [n for n in (".measure-launch", ".measure-next-launch") if os.path.exists(os.path.join(startup, n))]
+ok = (len(r["mods"]) == loaded and r["entryMissed"] == 0 and all(m > 0 for m in marks) and marks == sorted(marks)
+      and p["gameLaunched"] <= (p["titleMenu"] or p["gameLaunched"]) <= p["titleScreen"] and now - 900 < start < now and not left)
+print(("OK " if ok else "BAD ") + f"{os.path.basename(path)}: {len(r['mods'])} rows for {loaded} Loading lines, entryMissed {r['entryMissed']}, "
+      f"phases {p}, processStart {r['processStart']} ({now - start:.0f}s ago), markers left {left}")
+PY
+  )
+  mx_check startup.report "${out#* }" test "${out%% *}" = OK
+  mx_wails launchsvc.Service.StartupReports '"lethal-company"' "$(mx_q "$1")" >"$ROOT/startup-mortar-a.json"
+  out=$(mx_json "$ROOT/startup-mortar-a.json" '(len(d[0]["mods"]), sum(m["id"].startswith("thunderstore:") for m in d[0]["mods"]), [m["id"] for m in d[0]["mods"] if not m["id"].startswith("thunderstore:")])' 2>&1)
+  mx_check startup.mortar "Mortar's newest startup report: (rows, rows named by a package, the rest) = $out" \
+    python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); m=d[0]["mods"]; sys.exit(not (m and all(x["id"].startswith("thunderstore:") for x in m)))' "$ROOT/startup-mortar-a.json"
+}
+
+# mx_exceptions LOG FROM [TO] counts exception lines in LOG between line numbers FROM and TO (the end without TO).
+mx_exceptions() { sed -n "$2,${3:-\$}p" "$1" 2>/dev/null | grep -c 'Exception'; }
+
+# mx_perf_rows PROFILE LOG measures in game through Mortar (MeasureInGame, via the relay) on the measured launch:
+# the bridge wraps every plugin's patches and updates, a summary 10 s later has frame stats and package-named rows and
+# is listed by `perf reports`, and wrapping raised no exception the 10 s before it had not.
+mx_perf_rows() {
+  local n0 n1 out wrapped e_before e_after mortar
+  n0=$(wc -l <"$2")
+  sleep 10
+  n1=$(wc -l <"$2")
+  e_before=$(mx_exceptions "$2" "$n0" "$n1")
+  out=$(mx_wails launchsvc.Service.MeasureInGame '"lethal-company"' "$(mx_q "$1")" true 2>&1)
+  for _ in $(seq 1 30); do
+    wrapped=$(grep -m1 -o 'Measuring [0-9]* plugins: [0-9]* methods timed, [0-9]* could not be wrapped' "$2")
+    [ -n "$wrapped" ] && break
+    sleep 1
+  done
+  mx_check perf.start "MeasureInGame(start) answered $out; LogOutput.log: ${wrapped:-no Measuring line}" \
+    python3 -c 'import re,sys; m=re.search(r"(\d+) methods timed, (\d+) could not", sys.argv[2]); sys.exit(not ("\"measured\":true" in sys.argv[1] and m and int(m[2]) <= max(5, int(m[1]) // 20)))' "$out" "$wrapped"
+  n1=$(grep -n 'Measuring [0-9]* plugins:' "$2" | head -1 | cut -d: -f1)
+  sleep 10
+  mx_wails launchsvc.Service.MeasureInGame '"lethal-company"' "$(mx_q "$1")" false >"$ROOT/perf-a.json" 2>&1
+  cli perf reports lethal-company "$1" >"$ROOT/perf-reports-a.txt" 2>&1
+  cli mods lethal-company "$1" --json >"$ROOT/mods-a.json" 2>/dev/null
+  out=$(
+    python3 - "$ROOT/perf-a.json" "$ROOT/mods-a.json" "$ROOT/perf-reports-a.txt" 2>&1 <<'PY'
+import json, sys
+try:
+    r = json.load(open(sys.argv[1]))["report"]
+except (ValueError, KeyError, TypeError) as e:
+    sys.exit(print(f"BAD no saved report: {open(sys.argv[1]).read()[:200]}"))
+names = {m["name"] for m in json.load(open(sys.argv[2]))}
+f, rows = r["frame"], r["rows"]
+unnamed = [x["name"] for x in rows if x["name"] not in names]
+listed = r["id"] in open(sys.argv[3]).read() and "fps over" in open(sys.argv[3]).read()
+ok = f["fps"] > 0 and 0 < f["p50Ms"] <= f["p95Ms"] <= f["p99Ms"] <= f["maxMs"] and f["avgMs"] < 1000 and rows and not unnamed and listed
+print(("OK " if ok else "BAD ") + f"{f['fps']:.0f} fps over {f['seconds']:.0f}s, frame ms p50 {f['p50Ms']} p95 {f['p95Ms']} p99 {f['p99Ms']} max {f['maxMs']}, "
+      f"Mono {f['monoUsed'] >> 20}/{f['monoHeap'] >> 20} MiB, {f['gcCollections']} GCs; {len(rows)} rows, top {[(x['name'], round(x['averageMs'], 2)) for x in rows[:3]]}; "
+      f"not a package name: {unnamed[:5]}; listed by perf reports with its frame line: {listed}")
+PY
+  )
+  mx_check perf.summary "${out#* }" test "${out%% *}" = OK
+  e_after=$(mx_exceptions "$2" "${n1:-$(wc -l <"$2")}")
+  mortar=$(sed -n "${n1:-1},\$p" "$2" | grep -c 'MortarBepInExBridge\.Perf\|PerfHost')
+  mx_check perf.stable "exception lines in LogOutput.log: $e_before in the 10s before wrapping, $e_after in the ${n1:+10s }after; $mortar naming the bridge's measuring" \
+    test "${e_after:-0}" -le "${e_before:-0}" -a "$mortar" = 0
+}
+
+# mx_live_rows PROFILE checks the window's launch:live events during launch (a), recorded since the relay let Mortar
+# reach the bridge: one names scene MainMenu, and its badges cover every enabled package that ships plugins, with
+# exactly one of the two duplicate-GUID probes (BepInEx loads one copy) read as loaded.
+mx_live_rows() {
+  local out
+  for _ in $(seq 1 20); do
+    grep -q '"launch:live".*"scene":"MainMenu"' "$ROOT/events-a.jsonl" 2>/dev/null && break
+    sleep 1
+  done
+  out=$(
+    python3 - "$ROOT/events-a.jsonl" "$ROOT/mods-a.json" 2>&1 <<'PY'
+import json, sys
+live = []
+for line in open(sys.argv[1]):
+    try:
+        e = json.loads(line)
+    except ValueError:
+        continue
+    if e.get("name") == "launch:live":
+        d = e.get("data")
+        live.append(d[0] if isinstance(d, list) else d)
+if not live:
+    sys.exit(print("BAD no launch:live event"))
+last = live[-1]
+print(("OK " if last.get("scene") == "MainMenu" else "BAD ") + f"{len(live)} launch:live events, last scene {last.get('scene')!r}")
+mods = {m["id"]: m["loaded"] for m in last.get("mods") or []}
+ids = {m["id"] for m in json.load(open(sys.argv[2])) if m.get("enabled")}
+dups = [mods.get(f"thunderstore:MortarMatrix-ProbeDup{x}") for x in "AB"]
+foreign = [i for i in mods if i not in ids]
+ok = mods and not foreign and sorted(map(bool, dups)) == [False, True]
+print(("OK " if ok else "BAD ") + f"{len(mods)} packages badged, {sum(mods.values())} loaded; not loaded: {[i for i, l in mods.items() if not l][:8]}; "
+      f"DupA/DupB loaded {dups}; badged but not an enabled mod: {foreign[:5]}")
+PY
+  )
+  local scene badges
+  scene=$(head -1 <<<"$out")
+  badges=$(sed -n 2p <<<"$out")
+  mx_check live.scene "${scene#* }" test "${scene%% *}" = OK
+  mx_check live.badges "${badges:-no live event to read badges from}" test "${badges%% *}" = OK
+}
+
 # mx_purged TAG requires every entry the game folder had before the first launch to hash the same and the Doorstop
 # proxy files to be gone. Files a mod itself writes into the game folder at run time (BoomboxController keeps its
 # settings and a yt-dlp.exe there) are Mortar's to leave alone; they are listed in $ROOT/game-added-TAG.txt.
@@ -526,6 +707,11 @@ PY
     else
       mx_fail mods.config "configsvc Set failed: $set_err"
     fi
+    # Launch (a) is measured, as Measure next launch asks: the bridge's patcher times startup and its plugin measures
+    # in game. The marker file dates the request, so only a report written after it counts.
+    touch "$ROOT/measure-requested"
+    out=$(mx_wails launchsvc.Service.MeasureNextLaunch '"lethal-company"' "$(mx_q "$mx_base")" 2>&1) ||
+      mx_fail startup.patcher "MeasureNextLaunch failed: $out"
   fi
   set -e -o pipefail
 }
@@ -542,6 +728,13 @@ regress_bepinex_running() {
     test "$out|$(mx_doorstop "$mx_base" "$mx_bepinex")" = "BepInEx $(mx_bep_version "$mx_bepinex") - Lethal Company|$(mx_doorstop_ok)"
   if [ -n "$mx_ready" ]; then
     mx_bridge_reachable a "$mx_base"
+    mx_events_start a
+    mx_bridge_relay "$mx_base" || mx_fail perf.start "no game process or bridge state file to relay Mortar's bridge client to"
+    mx_startup_rows "$mx_base" "$mx_log"
+    mx_perf_rows "$mx_base" "$mx_log"
+    mx_live_rows "$mx_base"
+    mx_relay_stop
+    mx_events_stop
     mx_console_reads
     # The Console of a modpack this size outgrows the kernel's 128 KiB limit on one argument, so the reads go by file.
     printf '%s' "$mx_lines1" >"$ROOT/console-a1.json"
@@ -594,6 +787,9 @@ regress_bepinex_after() {
     mx_check mods.config-file "after BepInEx rewrote the probe's .cfg: \"$(grep -m1 '^Value =' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg")\", \"$(grep -m1 '^Ratio =' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg")\"" \
       grep -q '^Ratio = 0.75' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg"
   fi
+  out=$(mx_json "$mx_data/settings.json" 'd.get("lastPlayed", {}).get("lethal-company", {})' 2>&1)
+  mx_check lastplayed.version "lastPlayed[lethal-company] after launch (a): $out" \
+    test -n "$(mx_json "$mx_data/settings.json" 'd.get("lastPlayed", {}).get("lethal-company", {}).get("gameVersion", "")' 2>/dev/null)"
   if go -C "$REPO" test ./internal/dotnet -run '^TestRealBepInExRun$' -count=1 -v -bepinex-profile "$(mx_dir "$mx_base")" >"$ROOT/guid-test.txt" 2>&1; then
     mx_pass mods.guids "$(grep -o '[0-9]* plugins found.*' "$ROOT/guid-test.txt")"
   else
@@ -647,6 +843,16 @@ PY
   # Quit probe's clock, which starts there, runs out. (c) runs first, while the newest pack is pinned.
   if [ -n "$mx_ready" ] && mx_install_probes "$mx_crash" Throw Quit >/dev/null && mx_launch "$mx_crash" c; then
     mx_bridge_reachable c "$mx_crash"
+    # (c) was not measured: its bridge measures nothing and its patcher writes no startup report. The Quit probe ends
+    # the game 8 s after the main menu, so this asks at once.
+    if mx_bridge_relay "$mx_crash"; then
+      out=$(mx_wails launchsvc.Service.MeasureInGame '"lethal-company"' "$(mx_q "$mx_crash")" true 2>&1)
+      mx_relay_stop
+    else
+      out="no game process or bridge state file to relay to"
+    fi
+    mx_check perf.unmeasured "launch (c), unmeasured: MeasureInGame(start) answered $out; startup reports: $(find "$(mx_dir "$mx_crash")/startup" -name '*Z.json' 2>/dev/null | wc -l)" \
+      test "$out|$(find "$(mx_dir "$mx_crash")/startup" -name '*Z.json' 2>/dev/null | wc -l)" = '{"measured":false}|0'
     if mx_idle 90; then
       mx_keep_logs c
       cli runs lethal-company "$mx_crash" --json >"$ROOT/runs-c.json"
