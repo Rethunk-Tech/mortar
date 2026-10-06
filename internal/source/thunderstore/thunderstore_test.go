@@ -48,6 +48,7 @@ func listing(owner, name, desc string, downloads int, dep, nsfw bool) map[string
 
 type fake struct {
 	srv                 *httptest.Server
+	mux                 *http.ServeMux
 	indexHits, chunkHit atomic.Int32
 	chunk0, chunk1      []map[string]any
 	third, evil         atomic.Bool
@@ -70,6 +71,7 @@ func newFake(t *testing.T) *fake {
 	f.chunk0[1]["categories"] = []string{"Items", "Cheats"}
 	f.chunk1[1]["categories"] = []string{"Libraries"}
 	mux := http.NewServeMux()
+	f.mux = mux
 	f.srv = httptest.NewServer(mux)
 	t.Cleanup(f.srv.Close)
 	mux.HandleFunc("/c/lethal-company/api/v1/package-listing-index/", func(w http.ResponseWriter, r *http.Request) {

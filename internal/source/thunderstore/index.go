@@ -168,6 +168,9 @@ func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
 		return nil, err
 	}
 	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, errNotFound
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("thunderstore answered %s", resp.Status)
 	}
