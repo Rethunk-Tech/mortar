@@ -180,7 +180,10 @@ function ToastCard({ toast }: { toast: Toast }) {
             {toast.title}
           </Box>
           {toast.body ? (
-            <Box component="span" sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)' }}>
+            <Box
+              component="span"
+              sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)', overflowWrap: 'anywhere' }}
+            >
               {toast.body}
             </Box>
           ) : null}

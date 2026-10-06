@@ -53,7 +53,9 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
           {item.count && item.count > 1 ? ` (×${item.count})` : ''}
         </Typography>
         {item.body ? (
-          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{item.body}</Typography>
+          <Typography sx={{ fontSize: 12, color: 'text.secondary', overflowWrap: 'anywhere' }}>
+            {item.body}
+          </Typography>
         ) : null}
         <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
           <When value={item.at} withTime={true} />
