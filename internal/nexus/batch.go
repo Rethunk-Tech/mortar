@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -13,7 +14,10 @@ const modsBatch = 100
 
 const modsQuery = `query($ids: [CompositeDomainWithIdInput!]!, $count: Int) {
   legacyModsByDomain(ids: $ids, count: $count) {
-    nodes { modId name version status summary endorsements updatedAt createdAt pictureUrl author uploader { name } category viewerEndorsed adultContent downloads }
+    nodes {
+      modId gameId name version status summary endorsements updatedAt createdAt pictureUrl author uploader { name } category viewerEndorsed adultContent downloads
+      modRequirements { nexusRequirements { nodes { modId modName url externalRequirement notes gameId } } }
+    }
   }
 }`
 
@@ -34,6 +38,18 @@ type ModInfo struct {
 	Endorsed bool
 	Created  time.Time
 	Updated  time.Time
+	// Requirements are what the mod page lists under "Nexus requirements".
+	Requirements []Requirement
+}
+
+// Requirement is one mod or outside download a mod page says is needed. A Nexus mod of the same game has ModID and
+// its page as URL; anything else (another game's mod, an outside site) is External, with whatever URL Nexus gave.
+type Requirement struct {
+	ModID    int    `json:"modId"`
+	Name     string `json:"name"`
+	URL      string `json:"url"`
+	External bool   `json:"external"`
+	Notes    string `json:"notes"`
 }
 
 // Page is the mod page data the batched lookup carries; what only a page request gives (the description, the
@@ -42,7 +58,7 @@ func (m ModInfo) Page() Page {
 	p := Page{
 		ModID: m.ModID, Name: m.Name, Summary: m.Summary, PictureURL: m.PictureURL, Version: m.Version, Author: m.Author,
 		UploadedBy: m.Author, Endorsements: m.Endorsements, Downloads: m.Downloads, Created: m.Created, Updated: m.Updated,
-		Adult: m.Adult, Status: m.Status, Available: m.Status == "published",
+		Adult: m.Adult, Status: m.Status, Available: m.Status == "published", Requirements: m.Requirements,
 	}
 	if m.Endorsed {
 		p.Endorsement = "Endorsed"
@@ -92,6 +108,7 @@ func (c *Client) modsChunk(ctx context.Context, domain string, ids []int, out ma
 			Mods struct {
 				Nodes []struct {
 					ModID        int       `json:"modId"`
+					GameID       string    `json:"gameId"`
 					Name         string    `json:"name"`
 					Version      string    `json:"version"`
 					Status       string    `json:"status"`
@@ -104,10 +121,22 @@ func (c *Client) modsChunk(ctx context.Context, domain string, ids []int, out ma
 					Uploader     struct {
 						Name string `json:"name"`
 					} `json:"uploader"`
-					Category  string `json:"category"`
-					Endorsed  *bool  `json:"viewerEndorsed"`
-					Adult     bool   `json:"adultContent"`
-					Downloads int    `json:"downloads"`
+					Category     string `json:"category"`
+					Endorsed     *bool  `json:"viewerEndorsed"`
+					Adult        bool   `json:"adultContent"`
+					Downloads    int    `json:"downloads"`
+					Requirements struct {
+						Nexus struct {
+							Nodes []struct {
+								ModID    string `json:"modId"`
+								Name     string `json:"modName"`
+								URL      string `json:"url"`
+								External bool   `json:"externalRequirement"`
+								Notes    string `json:"notes"`
+								GameID   string `json:"gameId"`
+							} `json:"nodes"`
+						} `json:"nexusRequirements"`
+					} `json:"modRequirements"`
 				} `json:"nodes"`
 			} `json:"legacyModsByDomain"`
 		} `json:"data"`
@@ -129,6 +158,13 @@ func (c *Client) modsChunk(ctx context.Context, domain string, ids []int, out ma
 		}
 		if info.Author == "" {
 			info.Author = n.Uploader.Name
+		}
+		for _, r := range n.Requirements.Nexus.Nodes {
+			req := Requirement{Name: r.Name, URL: r.URL, Notes: r.Notes, External: true}
+			if id, err := strconv.Atoi(r.ModID); err == nil && id > 0 && !r.External && r.GameID == n.GameID {
+				req.ModID, req.URL, req.External = id, ModURL(domain, id), false
+			}
+			info.Requirements = append(info.Requirements, req)
 		}
 		out[n.ModID] = info
 	}

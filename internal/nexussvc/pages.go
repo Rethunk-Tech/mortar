@@ -10,7 +10,7 @@ import (
 
 // PageName is the cache file under cache/ for a Nexus mod's page data from the batched lookup.
 func PageName(domain string, modID int) string {
-	return fmt.Sprintf("nexus/page-v1-%s-%d.json", domain, modID)
+	return fmt.Sprintf("nexus/page-v2-%s-%d.json", domain, modID)
 }
 
 // absentName marks a mod the batched lookup asked Nexus for and got nothing back (hidden, removed, a wrong id), so

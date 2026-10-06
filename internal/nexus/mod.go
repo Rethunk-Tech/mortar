@@ -73,6 +73,8 @@ type Page struct {
 	Available       bool      `json:"available"`
 	// Endorsement is the signed-in user's endorse_status (Endorsed, Abstained, Undecided); empty when Nexus omitted it.
 	Endorsement string `json:"endorsement"`
+	// Requirements come from the batched GraphQL lookup; the REST page has none.
+	Requirements []Requirement `json:"requirements"`
 }
 
 // Page fetches a mod page, uncached.

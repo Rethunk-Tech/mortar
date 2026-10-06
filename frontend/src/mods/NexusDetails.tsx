@@ -10,6 +10,8 @@ import { useNexus } from '../settings/nexus.ts'
 import { Fold } from '../shell/Fold.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
+import { DependencyChips } from './DependencyChips.tsx'
+import { nexusDependencies } from './dependencies.ts'
 import { openPage } from './menu.ts'
 import { NewSinceLooked } from './NewSince.tsx'
 import { NexusAccountActions } from './NexusAccountActions.tsx'
@@ -226,6 +228,12 @@ function Loaded({
       ) : null}
       <Facts details={details} mod={mod} />
       <NexusAccountActions modId={modId} version={mod.version} endorsement={page.endorsement} />
+      {(page.requirements ?? []).length > 0 ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Typography sx={heading}>{t`Dependencies`}</Typography>
+          <DependencyChips deps={nexusDependencies(page.requirements)} />
+        </Box>
+      ) : null}
       <Files details={details} fileId={fileId} looked={looked} />
       {logs.length > 0 ? (
         <Fold title={t`Changelog on Nexus`}>

@@ -28,7 +28,7 @@ type Details struct {
 }
 
 // Details returns a mod page's details from the cache under <datadir>/cache/nexus
-// (details-v3-… so copies from before endorsement status are not reused), refetching once they are a day
+// (details-v4-…, named for the shape it holds, so a file of an older shape is not reused), refetching once they are a day
 // old. Signed out, rate-limited or offline, it serves what is cached however old, and errors only with nothing.
 func (s *Service) Details(ctx context.Context, gameID string, modID int) (Details, error) {
 	t, err := game.NexusTitle(gameID)
@@ -43,6 +43,10 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 		page, err := c.Page(ctx, t, modID)
 		if err != nil {
 			return Details{}, err
+		}
+		// Requirements are only in the GraphQL data; a failed lookup shows the page without them.
+		if infos, err := c.ModsByDomain(ctx, t.Domain, []int{modID}); err == nil {
+			page.Requirements = infos[modID].Requirements
 		}
 		files, err := c.Files(ctx, t, modID)
 		if err != nil {
@@ -62,7 +66,7 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 
 // DetailsName is the cache file under cache/ for a Nexus mod's details.
 func DetailsName(domain string, modID int) string {
-	return fmt.Sprintf("nexus/details-v3-%s-%d.json", domain, modID)
+	return fmt.Sprintf("nexus/details-v4-%s-%d.json", domain, modID)
 }
 
 // CachedDetails returns whatever details are cached for modIDs, however old, without a network call, so a list of

@@ -52,6 +52,10 @@ func serveFixtures(t *testing.T) (*httptest.Server, *atomic.Int32) {
 	var hits atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits.Add(1)
+		if r.URL.Path == "/v2/graphql" {
+			_, _ = w.Write([]byte(`{"data":{"legacyModsByDomain":{"nodes":[{"modId":541,"gameId":"1303","modRequirements":{"nexusRequirements":{"nodes":[{"modId":"2400","modName":"SMAPI","url":"","externalRequirement":false,"notes":"","gameId":"1303"}]}}}]}}}`))
+			return
+		}
 		b, err := fsx.ReadFile(filepath.Join("..", "nexus", "testdata", files[r.URL.Path]))
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
@@ -129,10 +133,13 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 		len(d.Changelogs) != 4 || d.Changelogs[0].Version != "1.8.2" {
 		t.Fatalf("details = %+v, %v", d, err)
 	}
-	if hits.Load() != 4 {
-		t.Fatalf("hits = %d, want page, files, changelogs and categories", hits.Load())
+	if r := d.Page.Requirements; len(r) != 1 || r[0].ModID != 2400 || r[0].URL != nexus.ModURL("stardewvalley", 2400) {
+		t.Fatalf("requirements = %+v", r)
 	}
-	if _, err := s.Details(ctx, "stardew", 541); err != nil || hits.Load() != 4 {
+	if hits.Load() != 5 {
+		t.Fatalf("hits = %d, want page, requirements, files, changelogs and categories", hits.Load())
+	}
+	if _, err := s.Details(ctx, "stardew", 541); err != nil || hits.Load() != 5 {
 		t.Fatalf("fresh cache refetched: hits = %d, %v", hits.Load(), err)
 	}
 
@@ -141,10 +148,10 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 	}
 	now = now.Add(48 * time.Hour)
 	if got := s.CachedDetails("stardew", []int{541, 999}); len(got) != 1 || got[541].Category != "User Interface" ||
-		hits.Load() != 4 {
+		hits.Load() != 5 {
 		t.Fatalf("cached details = %+v, hits %d", got, hits.Load())
 	}
-	if d, err := s.Details(ctx, "stardew", 541); err != nil || d.Page.Name != "Lookup Anything" || hits.Load() != 4 {
+	if d, err := s.Details(ctx, "stardew", 541); err != nil || d.Page.Name != "Lookup Anything" || hits.Load() != 5 {
 		t.Fatalf("stale signed-out details = %+v, %v, hits %d", d.Page, err, hits.Load())
 	}
 }

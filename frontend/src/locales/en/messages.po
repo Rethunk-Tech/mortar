@@ -38,7 +38,7 @@ msgstr "Launch method"
 
 #. placeholder {0}: gone.date
 #. placeholder {0}: mark.date
-#: src/mods/NexusDetails.tsx:205
+#: src/mods/NexusDetails.tsx:207
 #: src/mods/parts.tsx:226
 #: src/mods/Sidebar.tsx:132
 msgid "Hidden on Nexus · {0}"
@@ -799,7 +799,7 @@ msgstr "other checks"
 msgid "Copy this profile's list"
 msgstr "Copy this profile's list"
 
-#: src/mods/NexusDetails.tsx:269
+#: src/mods/NexusDetails.tsx:277
 msgid "Sign in to Nexus Mods in Settings to see more from this mod's page."
 msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
 
@@ -863,7 +863,7 @@ msgstr "{n, plural, one {Also update # optional file} other {Also update # optio
 msgid "Start the game without a backup."
 msgstr "Start the game without a backup."
 
-#: src/mods/NexusDetails.tsx:97
+#: src/mods/NexusDetails.tsx:99
 msgid "Uploaded by"
 msgstr "Uploaded by"
 
@@ -1182,7 +1182,7 @@ msgstr "Could not restore {0}"
 msgid "This save was last played with {0, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
 msgstr "This save was last played with {0, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
 
-#: src/mods/NexusDetails.tsx:204
+#: src/mods/NexusDetails.tsx:206
 #: src/mods/parts.tsx:225
 #: src/mods/Sidebar.tsx:131
 msgid "Hidden on Nexus"
@@ -2208,7 +2208,7 @@ msgid "{names} can't be reached; showing what Mortar saved"
 msgstr "{names} can't be reached; showing what Mortar saved"
 
 #: src/mods/columnLabel.ts:9
-#: src/mods/NexusDetails.tsx:91
+#: src/mods/NexusDetails.tsx:93
 #: src/mods/Sidebar.tsx:144
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
@@ -2703,7 +2703,7 @@ msgstr "{0} more waiting"
 msgid "Waiting for {0}'s profile file to finish syncing. Changes made here are written out once it arrives."
 msgstr "Waiting for {0}'s profile file to finish syncing. Changes made here are written out once it arrives."
 
-#: src/mods/NexusDetails.tsx:263
+#: src/mods/NexusDetails.tsx:271
 msgid "Reading the Nexus page…"
 msgstr "Reading the Nexus page…"
 
@@ -2878,7 +2878,7 @@ msgstr "Could not disable {0}"
 msgid "Edit categories…"
 msgstr "Edit categories…"
 
-#: src/mods/NexusDetails.tsx:136
+#: src/mods/NexusDetails.tsx:138
 msgid "Installed file"
 msgstr "Installed file"
 
@@ -3017,7 +3017,7 @@ msgid "Search GitHub for mods published as releases. Add puts the latest release
 msgstr "Search GitHub for mods published as releases. Add puts the latest release in this profile."
 
 #. placeholder {0}: others.length - FILES_SHOWN
-#: src/mods/NexusDetails.tsx:169
+#: src/mods/NexusDetails.tsx:171
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
@@ -3553,7 +3553,7 @@ msgstr "Open a .mortar file someone sent you. You see what it holds before anyth
 msgid "Already has {0}"
 msgstr "Already has {0}"
 
-#: src/browse/BrowseDetails.tsx:92
+#: src/browse/BrowseDetails.tsx:98
 #: src/mods/Sidebar.tsx:391
 #: src/mods/updateReview/Row.tsx:119
 msgid "Changelog"
@@ -4423,7 +4423,7 @@ msgstr "No backups to delete"
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/browse/BrowseDetails.tsx:56
+#: src/browse/BrowseDetails.tsx:58
 #: src/launch/PrePlayDialog.tsx:90
 #: src/share/SharedMods.tsx:69
 msgid "and {count} more"
@@ -4578,7 +4578,7 @@ msgstr "Finding the mod causing the crash"
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
-#: src/mods/NexusDetails.tsx:231
+#: src/mods/NexusDetails.tsx:239
 msgid "Changelog on Nexus"
 msgstr "Changelog on Nexus"
 
@@ -4780,7 +4780,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 
 #: src/commandPalette/CommandPalette.tsx:151
 #: src/mods/columnLabel.ts:15
-#: src/mods/NexusDetails.tsx:107
+#: src/mods/NexusDetails.tsx:109
 #: src/mods/Sidebar.tsx:152
 #: src/queue/QueueButton.tsx:14
 #: src/queue/QueueButton.tsx:17
@@ -4873,7 +4873,7 @@ msgstr "Copy the command"
 msgid "Background preview"
 msgstr "Background preview"
 
-#: src/mods/NexusDetails.tsx:110
+#: src/mods/NexusDetails.tsx:112
 msgid "Created · updated"
 msgstr "Created · updated"
 
@@ -4960,7 +4960,7 @@ msgstr "Has problems"
 msgid "LAN port"
 msgstr "LAN port"
 
-#: src/browse/BrowseDetails.tsx:52
+#: src/browse/BrowseDetails.tsx:54
 msgid "{latest} (latest)"
 msgstr "{latest} (latest)"
 
@@ -5542,7 +5542,7 @@ msgid "Enter 1 or more"
 msgstr "Enter 1 or more"
 
 #: src/mods/columnLabel.ts:14
-#: src/mods/NexusDetails.tsx:106
+#: src/mods/NexusDetails.tsx:108
 #: src/mods/Sidebar.tsx:480
 #: src/settings/sections/NexusMods.tsx:176
 msgid "Endorsements"
@@ -5946,7 +5946,7 @@ msgstr "Save as template…"
 msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
-#: src/browse/BrowseDetails.tsx:253
+#: src/browse/BrowseDetails.tsx:259
 #: src/mods/Sidebar.tsx:604
 msgid "Selected mod"
 msgstr "Selected mod"
@@ -6139,7 +6139,7 @@ msgstr "Could not update: {0}"
 msgid "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 msgstr "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 
-#: src/browse/BrowseDetails.tsx:51
+#: src/browse/BrowseDetails.tsx:53
 #: src/mods/ModDetail.tsx:112
 msgid "Versions"
 msgstr "Versions"
@@ -6518,7 +6518,7 @@ msgid "Notes and tags"
 msgstr "Notes and tags"
 
 #. placeholder {0}: others.length
-#: src/mods/NexusDetails.tsx:152
+#: src/mods/NexusDetails.tsx:154
 msgid "Current files on Nexus ({0})"
 msgstr "Current files on Nexus ({0})"
 
@@ -6557,7 +6557,7 @@ msgid "Large"
 msgstr "Large"
 
 #: src/mods/columnLabel.ts:13
-#: src/mods/NexusDetails.tsx:96
+#: src/mods/NexusDetails.tsx:98
 #: src/mods/SelectionBarDialogs.tsx:121
 #: src/mods/Sidebar.tsx:149
 #: src/mods/Toolbar.tsx:198
@@ -6759,7 +6759,7 @@ msgstr "No account"
 
 #. placeholder {0}: formatCount(page.downloads, i18n.locale)
 #. placeholder {1}: formatCount(page.uniqueDownloads, i18n.locale)
-#: src/mods/NexusDetails.tsx:108
+#: src/mods/NexusDetails.tsx:110
 msgid "{0} · {1} unique"
 msgstr "{0} · {1} unique"
 
@@ -6807,7 +6807,7 @@ msgid "GOG"
 msgstr "GOG"
 
 #. placeholder {0}: entry.error ?? ''
-#: src/mods/NexusDetails.tsx:268
+#: src/mods/NexusDetails.tsx:276
 msgid "Could not read the Nexus page: {0}"
 msgstr "Could not read the Nexus page: {0}"
 
@@ -7121,7 +7121,7 @@ msgstr "Backups"
 msgid "Crash finding failed."
 msgstr "Crash finding failed."
 
-#: src/mods/NexusDetails.tsx:206
+#: src/mods/NexusDetails.tsx:208
 #: src/mods/parts.tsx:227
 #: src/mods/Sidebar.tsx:133
 msgid "Removed from Nexus"
@@ -7518,7 +7518,7 @@ msgstr "No launchers found. Continue and choose each game's folder when you open
 msgid "Wine stopped on an error before {name} started: {0}"
 msgstr "Wine stopped on an error before {name} started: {0}"
 
-#: src/browse/BrowseDetails.tsx:100
+#: src/browse/BrowseDetails.tsx:106
 msgid "Reading the mod's page…"
 msgstr "Reading the mod's page…"
 
@@ -7970,8 +7970,8 @@ msgstr "Could not pin {0}"
 msgid "That request was not valid."
 msgstr "That request was not valid."
 
-#: src/browse/BrowseDetails.tsx:89
-#: src/mods/NexusDetails.tsx:246
+#: src/browse/BrowseDetails.tsx:91
+#: src/mods/NexusDetails.tsx:254
 #: src/profiles/EditProfileDialog.tsx:302
 msgid "Description"
 msgstr "Description"
@@ -7989,7 +7989,7 @@ msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the ne
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
-#: src/browse/BrowseDetails.tsx:88
+#: src/browse/BrowseDetails.tsx:90
 msgid "Categories"
 msgstr "Categories"
 
@@ -9402,7 +9402,7 @@ msgstr "No matching mods"
 
 #. placeholder {0}: gone.date
 #. placeholder {0}: mark.date
-#: src/mods/NexusDetails.tsx:207
+#: src/mods/NexusDetails.tsx:209
 #: src/mods/parts.tsx:228
 #: src/mods/Sidebar.tsx:134
 msgid "Removed from Nexus · {0}"
@@ -10561,7 +10561,7 @@ msgstr "Mark known good"
 msgid "No archives to add"
 msgstr "No archives to add"
 
-#: src/mods/NexusDetails.tsx:199
+#: src/mods/NexusDetails.tsx:201
 msgid "Adult content"
 msgstr "Adult content"
 
@@ -11541,8 +11541,9 @@ msgstr "Could not update tags for the selected mods"
 msgid "Continue"
 msgstr "Continue"
 
-#: src/browse/BrowseDetails.tsx:91
+#: src/browse/BrowseDetails.tsx:94
 #: src/mods/ModDependencyTree.tsx:198
+#: src/mods/NexusDetails.tsx:233
 msgid "Dependencies"
 msgstr "Dependencies"
 

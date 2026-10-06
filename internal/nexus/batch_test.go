@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -80,5 +81,31 @@ func TestModsByDomainStopsAtARateLimitWithoutRetrying(t *testing.T) {
 	var limit *RateLimitError
 	if !errors.As(err, &limit) || len(got) != 100 || requests.Load() != 2 {
 		t.Fatalf("got %d mods after %d requests, err %v", len(got), requests.Load(), err)
+	}
+}
+
+// The answer's shape is Nexus's own (string ids, a requirement of another game, an outside link).
+func TestModsByDomainReadsRequirements(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = fmt.Fprint(w, `{"data":{"legacyModsByDomain":{"nodes":[{"modId":3753,"gameId":"1303","name":"SVE",
+			"modRequirements":{"nexusRequirements":{"nodes":[
+				{"modId":"1915","modName":"Content Patcher","url":"","externalRequirement":false,"notes":"Framework","gameId":"1303"},
+				{"modId":"77","modName":"Other Game Mod","url":"","externalRequirement":false,"notes":"","gameId":"9"},
+				{"modId":"","modName":"Some Tool","url":"https://example.org/tool","externalRequirement":true,"notes":"","gameId":""}]}}}]}}}`)
+	}))
+	t.Cleanup(srv.Close)
+	c := New("test").WithKey("k")
+	c.BaseURL = srv.URL
+	got, err := c.ModsByDomain(context.Background(), "stardewvalley", []int{3753})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []Requirement{
+		{ModID: 1915, Name: "Content Patcher", URL: "https://www.nexusmods.com/stardewvalley/mods/1915", Notes: "Framework"},
+		{Name: "Other Game Mod", External: true},
+		{Name: "Some Tool", URL: "https://example.org/tool", External: true},
+	}
+	if r := got[3753].Page().Requirements; !slices.Equal(r, want) {
+		t.Fatalf("requirements = %+v", r)
 	}
 }

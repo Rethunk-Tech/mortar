@@ -6,8 +6,10 @@ import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
 import { parseBBCode } from '../mods/bbcode.ts'
 import { ChangelogEntries } from '../mods/ChangelogDialog.tsx'
+import { DependencyChips } from '../mods/DependencyChips.tsx'
 import { DetailsAside } from '../mods/DetailsAside.tsx'
 import { DetailsHeader } from '../mods/DetailsHeader.tsx'
+import { type Dependency, nexusDependencies } from '../mods/dependencies.ts'
 import { MarkdownView } from '../mods/MarkdownView.tsx'
 import { Rich } from '../mods/NexusDetails.tsx'
 import { loadDetails, useNexusEntry } from '../mods/nexusDetails.ts'
@@ -77,7 +79,7 @@ interface Page {
   categories: string[]
   description: ReactNode
   versions: string[]
-  dependencies: string[]
+  dependencies: Dependency[]
   changelog: ReactNode
 }
 
@@ -88,7 +90,11 @@ function PageSections({ page }: { page: Page }) {
       <Chips title={t`Categories`} names={page.categories} />
       {page.description ? <Section title={t`Description`}>{page.description}</Section> : null}
       <Versions versions={page.versions} />
-      <Chips title={t`Dependencies`} names={page.dependencies} />
+      {page.dependencies.length > 0 ? (
+        <Section title={t`Dependencies`}>
+          <DependencyChips deps={page.dependencies} />
+        </Section>
+      ) : null}
       {page.changelog ? <Section title={t`Changelog`}>{page.changelog}</Section> : null}
     </>
   )
@@ -136,7 +142,7 @@ function NexusPage({ modId }: { modId: number }) {
         categories: details.category ? [details.category] : [],
         description: description ? <Rich blocks={parseBBCode(description)} /> : null,
         versions,
-        dependencies: [],
+        dependencies: nexusDependencies(details.page.requirements),
         changelog: changelogOf(details.changelogs),
       }}
     />
@@ -190,7 +196,7 @@ function SitePage({ game, item }: { game: string; item: BrowseItem }) {
           <Typography sx={text}>{item.summary}</Typography>
         ),
         versions: item.source === GITHUB ? logs.map((l) => l.version) : (details.versions ?? []),
-        dependencies: details.dependencies ?? [],
+        dependencies: (details.dependencies ?? []).map((name) => ({ name })),
         changelog: item.source === GITHUB ? changelogOf(logs) : changelog,
       }}
     />
