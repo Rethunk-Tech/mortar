@@ -179,6 +179,39 @@ async function afterImport(
   }
 }
 
+// Each place an import can come from, previewed for game; a picked file is also remembered as the path shown.
+function usePreviewSources(
+  game: string,
+  profileId: string,
+  show: (pending: Promise<Preview>) => Promise<void>,
+  setPath: (path: string) => void,
+) {
+  const previewLink = useCallback(
+    (value: string) => show(PreviewLink(game, value, profileId)),
+    [game, profileId, show],
+  )
+  const previewFile = useCallback(
+    (file: string) => {
+      setPath(file)
+      return show(PreviewFile(game, file, profileId))
+    },
+    [game, profileId, show, setPath],
+  )
+  const previewData = useCallback(
+    (data: string) => show(PreviewData(game, data, profileId)),
+    [game, profileId, show],
+  )
+  const previewCollectionUpdate = useCallback(
+    () => show(PreviewCollectionUpdate(game, profileId)),
+    [game, profileId, show],
+  )
+  const previewExternal = useCallback(
+    (value: ProfilePreview) => show(PreviewExternal(game, value, profileId)),
+    [game, profileId, show],
+  )
+  return { previewLink, previewFile, previewData, previewCollectionUpdate, previewExternal }
+}
+
 export type Tab = 'link' | 'file'
 
 // The import dialog's state: what was typed or picked, the preview it produced and the mods unticked.
@@ -203,29 +236,8 @@ export function useImportFlow(
       showPreview(pending, { latest, setPreviewBusy, setError, setPreview, setExcluded }),
     [],
   )
-  const previewLink = useCallback(
-    (value: string) => show(PreviewLink(game, value, profileId)),
-    [game, profileId, show],
-  )
-  const previewFile = useCallback(
-    (file: string) => {
-      setPath(file)
-      return show(PreviewFile(game, file, profileId))
-    },
-    [game, profileId, show],
-  )
-  const previewData = useCallback(
-    (data: string) => show(PreviewData(game, data, profileId)),
-    [game, profileId, show],
-  )
-  const previewCollectionUpdate = useCallback(
-    () => show(PreviewCollectionUpdate(game, profileId)),
-    [game, profileId, show],
-  )
-  const previewExternal = useCallback(
-    (value: ProfilePreview) => show(PreviewExternal(game, value, profileId)),
-    [game, profileId, show],
-  )
+  const { previewLink, previewFile, previewData, previewCollectionUpdate, previewExternal } =
+    usePreviewSources(game, profileId, show, setPath)
   const paste = async () => {
     const clip = await ReadClipboard()
     setText(clip)
