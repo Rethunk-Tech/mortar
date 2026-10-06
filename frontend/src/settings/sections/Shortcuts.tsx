@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { SettingsSection } from '../SettingsSection.tsx'
+import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { shortcutLabels } from '../shortcutLabels.ts'
 import {
   conflictFor,
@@ -45,26 +45,16 @@ function ShortcutRow({
 }) {
   const { t } = useLingui()
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: 2,
-        minHeight: 56,
-        px: 2.5,
-        py: 1,
-        fontSize: 16,
-      }}
-    >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, minWidth: 0 }}>
-        <Box component="span">{label}</Box>
-        {conflictName ? (
-          <Box component="span" sx={{ fontSize: 12, color: 'error.main' }}>
+    <SettingRow
+      label={label}
+      description={
+        conflictName ? (
+          <Box component="span" sx={{ color: 'error.main' }}>
             {t`Already used by ${conflictName}`}
           </Box>
-        ) : null}
-      </Box>
+        ) : undefined
+      }
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
         <ButtonBase
           aria-label={t`Change shortcut for ${label}, currently ${keys}`}
@@ -93,7 +83,7 @@ function ShortcutRow({
           {t`Reset`}
         </Button>
       </Box>
-    </Box>
+    </SettingRow>
   )
 }
 
