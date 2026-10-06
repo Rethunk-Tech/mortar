@@ -31,21 +31,24 @@ const CHIP = (th: Theme): Record<ModState, { bg: string; fg: string }> => ({
   unavailable: { bg: alpha(th.palette.warning.main, WARN_CHIP), fg: th.palette.warning.main },
 })
 
-const DOT = (th: Theme): Record<ModState, string> => ({
-  installed: th.palette.success.main,
-  download: th.palette.info.main,
-  dependency: th.palette.info.main,
-  later: th.palette.text.secondary,
-  unavailable: th.palette.warning.main,
-})
-
-// Share-card preview chrome: matches the public share card, not the app theme.
+// Share-card preview chrome: matches the public share card, not the app theme, so its bar stays dark in the light
+// theme too and everything on it is drawn for a dark surface.
+const GREY_PILL = { bg: 'rgba(200,200,200,0.14)', fg: '#e0e0e0', dot: '#bdbdbd' }
+const INFO_PILL = { bg: 'rgba(43,139,218,0.25)', fg: '#a3d3f7', dot: '#2b8bda' }
 const SHARE_CARD = {
   bar: '#0e1116',
   accent: '#a3d3f7',
-  leftOutBg: 'rgba(200,200,200,0.14)',
-  leftOutFg: '#e0e0e0',
-  leftOutDot: '#bdbdbd',
+  text: '#ffffff',
+  muted: 'rgba(255,255,255,0.72)',
+  divider: 'rgba(255,255,255,0.15)',
+  leftOut: GREY_PILL,
+  chip: {
+    installed: { bg: 'rgba(12,223,100,0.2)', fg: '#7ef0ad', dot: '#0cdf64' },
+    download: INFO_PILL,
+    dependency: INFO_PILL,
+    later: GREY_PILL,
+    unavailable: { bg: 'rgba(243,180,22,0.22)', fg: '#f3b416', dot: '#f3b416' },
+  } satisfies Record<ModState, { bg: string; fg: string; dot: string }>,
 }
 
 function useStateLabel() {
@@ -314,9 +317,6 @@ export function Problems({
 
 export function StatusBar({ preview, summary }: { preview: ShownPreview; summary: Summary }) {
   const { t } = useLingui()
-  const th = useTheme()
-  const chip = CHIP(th)
-  const dot = DOT(th)
   const total = preview.mods.length
   const ready = summary.toImport > 0
   const size = formatKb(summary.sizeKb)
@@ -349,6 +349,7 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
         px: '18px',
         py: 0.5,
         bgcolor: SHARE_CARD.bar,
+        color: SHARE_CARD.text,
         borderRadius: '4px',
       }}
     >
@@ -365,23 +366,23 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
         <Info size={18} />
         {ready ? t`Ready to import` : t`Nothing to download`}
       </Box>
-      <Box sx={{ width: '1px', height: 24, bgcolor: 'var(--mortar-hairline-15)', flexShrink: 0 }} />
+      <Box sx={{ width: '1px', height: 24, bgcolor: SHARE_CARD.divider, flexShrink: 0 }} />
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Typography noWrap={true} sx={{ fontSize: 16, fontWeight: 600 }} title={preview.name}>
           {preview.name}
         </Typography>
-        <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }} title={detail}>
+        <Typography noWrap={true} sx={{ fontSize: 12, color: SHARE_CARD.muted }} title={detail}>
           {detail}
         </Typography>
         {skippedSettings.length > 0 ? (
           <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: SHARE_CARD.muted }}>
               {plural(skippedSettings.length, {
                 one: '# settings file was left out (too large):',
                 other: '# settings files were left out (too large):',
               })}
             </Typography>
-            <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13, color: 'text.secondary' }}>
+            <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13, color: SHARE_CARD.muted }}>
               {skippedSettings.map((p) => (
                 <li key={p}>{p}</li>
               ))}
@@ -392,14 +393,12 @@ export function StatusBar({ preview, summary }: { preview: ShownPreview; summary
       <Box sx={{ flex: 1 }} />
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {counts.map((s) => (
-          <Pill key={s} bg={chip[s].bg} fg={chip[s].fg} dot={dot[s]}>
+          <Pill key={s} {...SHARE_CARD.chip[s]}>
             <CountLabel state={s} count={summary.counts[s]} />
           </Pill>
         ))}
         {summary.leftOut > 0 ? (
-          <Pill bg={SHARE_CARD.leftOutBg} fg={SHARE_CARD.leftOutFg} dot={SHARE_CARD.leftOutDot}>
-            {t`${summary.leftOut} left out`}
-          </Pill>
+          <Pill {...SHARE_CARD.leftOut}>{t`${summary.leftOut} left out`}</Pill>
         ) : null}
       </Box>
     </Box>
