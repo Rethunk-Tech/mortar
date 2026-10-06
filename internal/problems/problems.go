@@ -112,7 +112,7 @@ type NexusFile struct {
 }
 
 // Broken is an enabled mod SMAPI's API marks broken, obsolete or abandoned for the game version, or, with Status
-// "cycle", one of enabled mods that wait for each other (see dependencyCycles).
+// "cycle", one of enabled mods that wait for each other (see dependencyCycles and pluginCycles).
 type Broken struct {
 	Key         string `json:"key"`
 	ID          mod.ID `json:"id"`
@@ -125,6 +125,8 @@ type Broken struct {
 	Cycle []Dependent `json:"cycle,omitempty"`
 	// CycleBlocksAll is set when every link of the loop is required, so SMAPI loads none of its mods.
 	CycleBlocksAll bool `json:"cycleBlocksAll,omitempty"`
+	// CycleStopsLoader is set when the loop stops the loader itself, so no mod at all loads: BepInEx's chainloader.
+	CycleStopsLoader bool `json:"cycleStopsLoader,omitempty"`
 }
 
 // Damaged is a mod whose stored files no longer match what was stored: files went missing, changed or appeared.

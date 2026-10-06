@@ -41,6 +41,30 @@ function describeRunError(runError: Extract<Problem, { kind: 'runError' }>['runE
       )
 }
 
+// BepInEx sorts every plugin before loading any, so a loop stops the chainloader itself rather than skipping its mods.
+function describeLoaderCycle(loop: readonly { name: string }[]): string {
+  const [first, second] = loop
+  if (!first) {
+    return ''
+  }
+  if (!second) {
+    return i18n._(
+      msg`${first.name} lists itself as a dependency, so BepInEx stops before loading any plugin.`,
+    )
+  }
+  if (loop.length === 2) {
+    const a = first.name
+    const b = second.name
+    return i18n._(
+      msg`${a} and ${b} each depend on the other, so BepInEx stops before loading any plugin.`,
+    )
+  }
+  const path = [...loop, first].map((m) => m.name).join(' → ')
+  return i18n._(
+    msg`${path} depend on each other in a loop, so BepInEx stops before loading any plugin.`,
+  )
+}
+
 function describeCycle(loop: readonly { name: string }[], blocksAll: boolean): string {
   const [first, second] = loop
   if (!first) {
@@ -65,7 +89,9 @@ function describeCycle(loop: readonly { name: string }[], blocksAll: boolean): s
 function describeBroken(p: Extract<Problem, { kind: 'broken' }>): string {
   const { name, brokeIn, status, summary } = p.broken
   if (status === 'cycle') {
-    return describeCycle(p.broken.cycle ?? [], p.broken.cycleBlocksAll === true)
+    return p.broken.cycleStopsLoader
+      ? describeLoaderCycle(p.broken.cycle ?? [])
+      : describeCycle(p.broken.cycle ?? [], p.broken.cycleBlocksAll === true)
   }
   if (status === 'abandoned') {
     return summary

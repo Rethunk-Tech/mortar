@@ -101,7 +101,7 @@ msgstr "Author · {author}"
 msgid "These changes will be reverted too:"
 msgstr "These changes will be reverted too:"
 
-#: src/mods/describe.ts:156
+#: src/mods/describe.ts:182
 msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 
@@ -288,7 +288,7 @@ msgstr "That profile is gone."
 msgid "Settings imported"
 msgstr "Settings imported"
 
-#: src/mods/describe.ts:81
+#: src/mods/describe.ts:107
 msgid "{name} broke in {brokeIn}."
 msgstr "{name} broke in {brokeIn}."
 
@@ -382,7 +382,7 @@ msgstr "The download could not finish. Retry or skip it from the queue."
 msgid "Log level"
 msgstr "Log level"
 
-#: src/mods/describe.ts:127
+#: src/mods/describe.ts:153
 msgid "Balance only: one mod's prices win."
 msgstr "Balance only: one mod's prices win."
 
@@ -447,7 +447,7 @@ msgid "Run checks…"
 msgstr "Run checks…"
 
 #. placeholder {0}: p.damaged.name
-#: src/mods/describe.ts:242
+#: src/mods/describe.ts:268
 msgid "{0} has damaged files."
 msgstr "{0} has damaged files."
 
@@ -475,9 +475,13 @@ msgstr "Untrack mods"
 msgid "Reinstall loader"
 msgstr "Reinstall loader"
 
-#: src/mods/LoadOrderTab.tsx:100
+#: src/mods/LoadOrderTab.tsx:101
 msgid "Required: {label}"
 msgstr "Required: {label}"
+
+#: src/console/StartupPanel.tsx:157
+msgid "Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu."
+msgstr "Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu."
 
 #. placeholder {0}: bundle.name
 #. placeholder {0}: template.name
@@ -547,7 +551,7 @@ msgstr "Config"
 msgid "Startup: {0} {1} added {2}"
 msgstr "Startup: {0} {1} added {2}"
 
-#: src/console/StartupTable.tsx:109
+#: src/console/StartupTable.tsx:117
 msgid "Assets and packs"
 msgstr "Assets and packs"
 
@@ -831,7 +835,7 @@ msgstr "Untrack"
 msgid "More"
 msgstr "More"
 
-#: src/console/StartupPanel.tsx:132
+#: src/console/StartupPanel.tsx:140
 msgid "Mods' Entry is timed only on a measured launch."
 msgstr "Mods' Entry is timed only on a measured launch."
 
@@ -966,6 +970,10 @@ msgstr "Install by hand: {0}"
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
+#: src/mods/LoadOrderTab.tsx:398
+msgid "Enable mods in the Mods tab to see the order {loader} loads them."
+msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
+
 #: src/settings/sections/Sources.tsx:107
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
@@ -1064,7 +1072,7 @@ msgstr "That item could not be found."
 msgid "Switch to Problems"
 msgstr "Switch to Problems"
 
-#: src/console/StartupPanel.tsx:77
+#: src/console/StartupPanel.tsx:82
 msgid "Measure next launch"
 msgstr "Measure next launch"
 
@@ -1112,7 +1120,7 @@ msgstr "Keep this profile's saves separate?"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:193
+#: src/mods/describe.ts:219
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 
@@ -1129,7 +1137,7 @@ msgid "Year"
 msgstr "Year"
 
 #. placeholder {0}: first.name
-#: src/mods/describe.ts:50
+#: src/mods/describe.ts:74
 msgid "{0} lists itself as a dependency, so SMAPI skips it."
 msgstr "{0} lists itself as a dependency, so SMAPI skips it."
 
@@ -1137,7 +1145,7 @@ msgstr "{0} lists itself as a dependency, so SMAPI skips it."
 msgid "Fullscreen"
 msgstr "Fullscreen"
 
-#: src/mods/describe.ts:62
+#: src/mods/describe.ts:86
 msgid "{path} wait for each other in a loop, so SMAPI skips at least one of them."
 msgstr "{path} wait for each other in a loop, so SMAPI skips at least one of them."
 
@@ -1150,7 +1158,7 @@ msgstr "Replaces some files of the mod above"
 msgid "{0} done"
 msgstr "{0} done"
 
-#: src/mods/describe.ts:56
+#: src/mods/describe.ts:80
 msgid "{a} and {b} each wait for the other, so SMAPI loads neither."
 msgstr "{a} and {b} each wait for the other, so SMAPI loads neither."
 
@@ -1229,6 +1237,10 @@ msgstr "Show all mods"
 msgid "How thoroughly Mortar analyses overlapping files"
 msgstr "How thoroughly Mortar analyses overlapping files"
 
+#: src/console/startupHooks.ts:33
+msgid "slow load {ms}"
+msgstr "slow load {ms}"
+
 #: src/mods/DuplicateDialog.tsx:34
 msgid "Bundled with SMAPI"
 msgstr "Bundled with SMAPI"
@@ -1292,7 +1304,7 @@ msgstr "Settings from the mod's in-game menu"
 msgid "More play options"
 msgstr "More play options"
 
-#: src/mods/describe.ts:78
+#: src/mods/describe.ts:104
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
 
@@ -1306,7 +1318,7 @@ msgstr "All outcomes"
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
 
-#: src/console/StartupSections.tsx:100
+#: src/console/StartupSections.tsx:102
 msgid "Mods start"
 msgstr "Mods start"
 
@@ -1669,13 +1681,17 @@ msgstr "Download again"
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
+#: src/mods/describe.ts:64
+msgid "{path} depend on each other in a loop, so BepInEx stops before loading any plugin."
+msgstr "{path} depend on each other in a loop, so BepInEx stops before loading any plugin."
+
 #: src/browse/BrowseBody.tsx:100
 #: src/firstrun/LoaderStep.tsx:201
 #: src/firstrun/LoaderStep.tsx:269
 #: src/game/detailStates.tsx:26
 #: src/lan/SendDialog.tsx:105
 #: src/launch/LaunchLayer.tsx:312
-#: src/mods/LoadOrderTab.tsx:376
+#: src/mods/LoadOrderTab.tsx:390
 #: src/mods/ModsTab.tsx:116
 #: src/mods/typedConfig/ConfigPane.tsx:170
 #: src/mods/updateReview/updateAll.ts:54
@@ -1720,7 +1736,7 @@ msgstr "Trim…"
 msgid "Trim"
 msgstr "Trim"
 
-#: src/mods/LoadOrderTab.tsx:132
+#: src/mods/LoadOrderTab.tsx:133
 msgid "Show less"
 msgstr "Show less"
 
@@ -1754,7 +1770,7 @@ msgstr "Mortar does not have permission to do that."
 msgid "Could not ignore updates from {source}"
 msgstr "Could not ignore updates from {source}"
 
-#: src/console/StartupPanel.tsx:118
+#: src/console/StartupPanel.tsx:123
 #: src/mods/columnLabel.ts:23
 msgid "Startup"
 msgstr "Startup"
@@ -1770,6 +1786,10 @@ msgstr "Not connected yet"
 #: src/console/PerformancePanelParts.tsx:85
 msgid "Peak ms"
 msgstr "Peak ms"
+
+#: src/mods/describe.ts:59
+msgid "{a} and {b} each depend on the other, so BepInEx stops before loading any plugin."
+msgstr "{a} and {b} each depend on the other, so BepInEx stops before loading any plugin."
 
 #: src/queue/actions.ts:84
 msgid "Could not add the download"
@@ -1834,7 +1854,7 @@ msgstr "Running for {time}"
 msgid "Name"
 msgstr "Name"
 
-#: src/console/StartupTable.tsx:250
+#: src/console/StartupTable.tsx:259
 msgid "Total"
 msgstr "Total"
 
@@ -1888,7 +1908,7 @@ msgstr "Hold the download queue until the game exits"
 msgid "Adds {name}"
 msgstr "Adds {name}"
 
-#: src/mods/describe.ts:82
+#: src/mods/describe.ts:108
 msgid "{name} is marked broken for this game version."
 msgstr "{name} is marked broken for this game version."
 
@@ -2067,7 +2087,7 @@ msgstr "This game has no compatibility list, so no mod is known to be broken."
 msgid "{0} (optional file)"
 msgstr "{0} (optional file)"
 
-#: src/mods/LoadOrderTab.tsx:207
+#: src/mods/LoadOrderTab.tsx:208
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
@@ -2198,6 +2218,10 @@ msgstr "{name} was removed from Nexus"
 msgid "{0, plural, one {Remove from # profile} other {Remove from # profiles}}"
 msgstr "{0, plural, one {Remove from # profile} other {Remove from # profiles}}"
 
+#: src/console/StartupSections.tsx:125
+msgid "Each plugin's constructor and Awake, run one after another"
+msgstr "Each plugin's constructor and Awake, run one after another"
+
 #. placeholder {0}: prompt.name
 #: src/mods/EndorsePrompt.tsx:125
 msgid "Enjoying {0}? Endorse it on Nexus"
@@ -2265,7 +2289,7 @@ msgstr "Latest on Nexus"
 msgid "{0} {1}, year {2}"
 msgstr "{0} {1}, year {2}"
 
-#: src/mods/LoadOrderTab.tsx:250
+#: src/mods/LoadOrderTab.tsx:251
 msgid "Dependency cycle"
 msgstr "Dependency cycle"
 
@@ -2284,7 +2308,7 @@ msgstr "New profile"
 msgid "Repaired {name}"
 msgstr "Repaired {name}"
 
-#: src/mods/LoadOrderTab.tsx:202
+#: src/mods/LoadOrderTab.tsx:203
 msgid "Copy load order"
 msgstr "Copy load order"
 
@@ -2318,7 +2342,7 @@ msgstr "Remove from other profiles…"
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
-#: src/console/StartupTable.tsx:266
+#: src/console/StartupTable.tsx:277
 #: src/mods/ProblemRows.tsx:140
 msgid "Why?"
 msgstr "Why?"
@@ -2582,7 +2606,7 @@ msgstr "Fix all"
 msgid "Ran"
 msgstr "Ran"
 
-#: src/mods/describe.ts:232
+#: src/mods/describe.ts:258
 msgid "The last launch failed: {message}."
 msgstr "The last launch failed: {message}."
 
@@ -2670,7 +2694,7 @@ msgstr "Ignore updates from {0}"
 msgid "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 msgstr "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 
-#: src/mods/LoadOrderTab.tsx:383
+#: src/mods/LoadOrderTab.tsx:397
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
@@ -2803,6 +2827,10 @@ msgstr "Drag {path} into the GitHub issue to attach it."
 msgid "Pair"
 msgstr "Pair"
 
+#: src/console/StartupTable.tsx:105
+msgid "Load"
+msgstr "Load"
+
 #: src/share/ImportFooter.tsx:34
 msgid "New profile from link"
 msgstr "New profile from link"
@@ -2913,7 +2941,7 @@ msgstr "Desktop"
 msgid "Could not pair"
 msgstr "Could not pair"
 
-#: src/mods/describe.ts:109
+#: src/mods/describe.ts:135
 msgid "{who} both edit {target}.{winner}"
 msgstr "{who} both edit {target}.{winner}"
 
@@ -2999,7 +3027,7 @@ msgid "Clear comparison"
 msgstr "Clear comparison"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:206
+#: src/mods/describe.ts:232
 msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
 
@@ -3022,7 +3050,7 @@ msgid "Both set: {0}"
 msgstr "Both set: {0}"
 
 #. placeholder {0}: required.length - INLINE_REQUIRED
-#: src/mods/LoadOrderTab.tsx:135
+#: src/mods/LoadOrderTab.tsx:136
 msgid " · {0} more required"
 msgstr " · {0} more required"
 
@@ -3111,7 +3139,7 @@ msgid "Neither profile has a mod that matches the filter."
 msgstr "Neither profile has a mod that matches the filter."
 
 #: src/browse/BrowseMenu.tsx:50
-#: src/console/StartupTable.tsx:161
+#: src/console/StartupTable.tsx:169
 msgid "Show details"
 msgstr "Show details"
 
@@ -3208,7 +3236,7 @@ msgstr "a newer copy is kept"
 msgid "Game settings"
 msgstr "Game settings"
 
-#: src/mods/describe.ts:73
+#: src/mods/describe.ts:99
 msgid "{name} is marked abandoned and may no longer be maintained."
 msgstr "{name} is marked abandoned and may no longer be maintained."
 
@@ -3234,6 +3262,10 @@ msgstr "Open files page"
 msgid "Manual"
 msgstr "Manual"
 
+#: src/console/StartupSections.tsx:127
+msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
+msgstr "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
+
 #: src/settings/prefCopy.ts:320
 msgid "History events kept"
 msgstr "History events kept"
@@ -3242,7 +3274,7 @@ msgstr "History events kept"
 msgid "Could not stop ignoring {source} updates"
 msgstr "Could not stop ignoring {source} updates"
 
-#: src/console/StartupSections.tsx:102
+#: src/console/StartupSections.tsx:104
 msgid "First updates"
 msgstr "First updates"
 
@@ -3271,7 +3303,7 @@ msgid "Mortar found no other mod manager's profiles for this game on this comput
 msgstr "Mortar found no other mod manager's profiles for this game on this computer."
 
 #. placeholder {0}: folded.count
-#: src/console/StartupTable.tsx:316
+#: src/console/StartupTable.tsx:327
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
@@ -3303,7 +3335,7 @@ msgstr "{0, plural, one {# download added} other {# downloads added}}"
 msgid "Launch options copied"
 msgstr "Launch options copied"
 
-#: src/mods/describe.ts:105
+#: src/mods/describe.ts:131
 msgid "{who} both load {target}.{winner}"
 msgstr "{who} both load {target}.{winner}"
 
@@ -3494,7 +3526,7 @@ msgstr "Size"
 msgid "GitHub page"
 msgstr "GitHub page"
 
-#: src/mods/describe.ts:163
+#: src/mods/describe.ts:189
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 
@@ -3832,6 +3864,10 @@ msgstr "Apply"
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
+#: src/mods/LoadOrderTab.tsx:260
+msgid "The last launch loaded this here, not where its dependencies put it."
+msgstr "The last launch loaded this here, not where its dependencies put it."
+
 #: src/games/GameSelect.tsx:378
 msgid "Check launchers…"
 msgstr "Check launchers…"
@@ -3860,7 +3896,7 @@ msgstr "Share as r2modman code?"
 #: src/bundles/dialogs.tsx:223
 #: src/bundles/dialogs.tsx:285
 #: src/console/HelpDialog.tsx:262
-#: src/console/StartupPanel.tsx:56
+#: src/console/StartupPanel.tsx:58
 #: src/fomod/Dialog.tsx:254
 #: src/game/NewProfileDialog.tsx:233
 #: src/install/DownloadsDialog.tsx:252
@@ -3942,7 +3978,7 @@ msgstr "Cache cleared"
 msgid "Parallel downloads"
 msgstr "Parallel downloads"
 
-#: src/mods/describe.ts:72
+#: src/mods/describe.ts:98
 msgid "{name} is abandoned: {summary}"
 msgstr "{name} is abandoned: {summary}"
 
@@ -3960,7 +3996,7 @@ msgstr "Check these before you play."
 msgid "By game"
 msgstr "By game"
 
-#: src/mods/describe.ts:131
+#: src/mods/describe.ts:157
 msgid "Only on {value} saves; none of yours is one."
 msgstr "Only on {value} saves; none of yours is one."
 
@@ -3969,7 +4005,7 @@ msgstr "Only on {value} saves; none of yours is one."
 msgid "Choose a {0} folder"
 msgstr "Choose a {0} folder"
 
-#: src/console/startupHooks.ts:27
+#: src/console/startupHooks.ts:35
 msgid "time in its patches {ms}"
 msgstr "time in its patches {ms}"
 
@@ -4184,7 +4220,7 @@ msgstr "Dismiss all harmless overlaps?"
 msgid "Include disabled mods"
 msgstr "Include disabled mods"
 
-#: src/console/startupHooks.ts:25
+#: src/console/startupHooks.ts:33
 msgid "slow Entry {ms}"
 msgstr "slow Entry {ms}"
 
@@ -4192,7 +4228,7 @@ msgstr "slow Entry {ms}"
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
-#: src/console/StartupTable.tsx:188
+#: src/console/StartupTable.tsx:196
 #: src/settings/sections/About.tsx:62
 #: src/settings/sections/About.tsx:67
 #: src/settings/sections/Updates.tsx:164
@@ -4269,7 +4305,7 @@ msgstr "Just this mod"
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
-#: src/mods/describe.ts:286
+#: src/mods/describe.ts:312
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
@@ -4362,6 +4398,10 @@ msgstr "Choose a profile…"
 msgid "You started this download on {site}, but you have no {gameName} profile yet."
 msgstr "You started this download on {site}, but you have no {gameName} profile yet."
 
+#: src/console/StartupTable.tsx:336
+msgid "Game and BepInEx"
+msgstr "Game and BepInEx"
+
 #: src/commandPalette/CommandPalette.tsx:223
 #: src/commandPalette/CommandPalette.tsx:226
 msgid "Search actions and destinations"
@@ -4451,7 +4491,7 @@ msgstr "Where the profile comes from"
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 
-#: src/mods/LoadOrderTab.tsx:100
+#: src/mods/LoadOrderTab.tsx:101
 msgid "Missing: {label}"
 msgstr "Missing: {label}"
 
@@ -4589,7 +4629,7 @@ msgstr "and {count} more"
 msgid "The local port OBS reads the overlay from"
 msgstr "The local port OBS reads the overlay from"
 
-#: src/mods/describe.ts:170
+#: src/mods/describe.ts:196
 msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 
@@ -4764,7 +4804,7 @@ msgstr "{0} skipped"
 msgid "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
 msgstr "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
 
-#: src/console/StartupTable.tsx:251
+#: src/console/StartupTable.tsx:261
 msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 
@@ -4825,7 +4865,7 @@ msgid "Rename…"
 msgstr "Rename…"
 
 #. placeholder {0}: p.pluginClash.guid
-#: src/mods/describe.ts:251
+#: src/mods/describe.ts:277
 msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
 msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
 
@@ -4842,7 +4882,7 @@ msgstr "Checking profiles…"
 msgid "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 msgstr "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 
-#: src/console/StartupTable.tsx:186
+#: src/console/StartupTable.tsx:194
 msgid "Mortar's own SMAPI mod; it records these timings"
 msgstr "Mortar's own SMAPI mod; it records these timings"
 
@@ -4868,7 +4908,7 @@ msgstr "Untrack all…"
 msgid "Disable all"
 msgstr "Disable all"
 
-#: src/mods/describe.ts:239
+#: src/mods/describe.ts:265
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
 
@@ -5033,7 +5073,7 @@ msgstr "{remaining} of {limit} left this hour; the count resets {when}."
 msgid "Select mods on the Mods tab, then Add to bundle."
 msgstr "Select mods on the Mods tab, then Add to bundle."
 
-#: src/mods/describe.ts:173
+#: src/mods/describe.ts:199
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
@@ -5415,7 +5455,7 @@ msgstr "Libraries, icons and artwork built into Mortar, with their licences."
 msgid "Could not dismiss those folders"
 msgstr "Could not dismiss those folders"
 
-#: src/console/StartupSections.tsx:110
+#: src/console/StartupSections.tsx:120
 msgid "The title screen's intro animation (Mortar skips it on measured launches)"
 msgstr "The title screen's intro animation (Mortar skips it on measured launches)"
 
@@ -5451,7 +5491,7 @@ msgstr "Up next: {0}"
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
-#: src/console/StartupSections.tsx:103
+#: src/console/StartupSections.tsx:105
 msgid "Title intro"
 msgstr "Title intro"
 
@@ -5517,6 +5557,11 @@ msgstr "Mortar closed unexpectedly last time"
 msgid "{0} saved by sharing files"
 msgstr "{0} saved by sharing files"
 
+#. placeholder {0}: first.name
+#: src/mods/describe.ts:52
+msgid "{0} lists itself as a dependency, so BepInEx stops before loading any plugin."
+msgstr "{0} lists itself as a dependency, so BepInEx stops before loading any plugin."
+
 #. placeholder {0}: need.minimumVersion
 #. placeholder {1}: need.installedVersion
 #: src/mods/ModDetail.tsx:58
@@ -5544,7 +5589,7 @@ msgstr "This is no longer the latest change to that mod."
 msgid "Chosen in the game's Steam properties."
 msgstr "Chosen in the game's Steam properties."
 
-#: src/console/StartupTable.tsx:325
+#: src/console/StartupTable.tsx:336
 msgid "Game and SMAPI"
 msgstr "Game and SMAPI"
 
@@ -5608,7 +5653,7 @@ msgstr "Backup location"
 msgid "{first} installed into {0}"
 msgstr "{first} installed into {0}"
 
-#: src/console/StartupSections.tsx:106
+#: src/console/StartupSections.tsx:116
 msgid "From launch until SMAPI has loaded every mod's code"
 msgstr "From launch until SMAPI has loaded every mod's code"
 
@@ -5707,7 +5752,7 @@ msgstr "No settings match"
 msgid "Open the command palette"
 msgstr "Open the command palette"
 
-#: src/mods/LoadOrderTab.tsx:374
+#: src/mods/LoadOrderTab.tsx:388
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
@@ -5873,7 +5918,7 @@ msgstr "In Mortar"
 msgid "{name} settings"
 msgstr "{name} settings"
 
-#: src/console/StartupTable.tsx:271
+#: src/console/StartupTable.tsx:282
 msgid "Startup time by mod"
 msgstr "Startup time by mod"
 
@@ -5952,6 +5997,10 @@ msgstr "All values"
 #: src/settings/sections/StreamOverlay.tsx:300
 msgid "Port"
 msgstr "Port"
+
+#: src/console/StartupTable.tsx:262
+msgid "Each plugin's load (constructor and Awake) the BepInEx Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it."
+msgstr "Each plugin's load (constructor and Awake) the BepInEx Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it."
 
 #: src/bundles/dialogs.tsx:231
 msgid "Create and add"
@@ -6114,6 +6163,10 @@ msgstr "imported from a link"
 msgid "Request counts appear after Mortar talks to Nexus."
 msgstr "Request counts appear after Mortar talks to Nexus."
 
+#: src/console/StartupSections.tsx:108
+msgid "Unity starts"
+msgstr "Unity starts"
+
 #: src/settings/sections/DataMove.tsx:86
 msgid "There is not enough free space at the destination."
 msgstr "There is not enough free space at the destination."
@@ -6169,7 +6222,7 @@ msgstr "What's new in {version}"
 msgid "Profiles already made from it are not changed."
 msgstr "Profiles already made from it are not changed."
 
-#: src/mods/LoadOrderTab.tsx:197
+#: src/mods/LoadOrderTab.tsx:198
 msgid "Load order copied"
 msgstr "Load order copied"
 
@@ -6204,7 +6257,7 @@ msgid "Could not back up the profile"
 msgstr "Could not back up the profile"
 
 #. placeholder {0}: why.event ?? ''
-#: src/console/startupHooks.ts:21
+#: src/console/startupHooks.ts:29
 msgid "slow {0} {ms}"
 msgstr "slow {0} {ms}"
 
@@ -6233,7 +6286,7 @@ msgstr "Unknown author"
 msgid "In this profile"
 msgstr "In this profile"
 
-#: src/mods/describe.ts:157
+#: src/mods/describe.ts:183
 msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
 
@@ -6445,7 +6498,7 @@ msgid "Reading {folder}…"
 msgstr "Reading {folder}…"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:208
+#: src/mods/describe.ts:234
 msgid "{0} is installed twice, and only one of them loads."
 msgstr "{0} is installed twice, and only one of them loads."
 
@@ -6473,7 +6526,7 @@ msgstr "Clear cache"
 msgid "{endorsements, plural, one {# like} other {# likes}} · {dl}"
 msgstr "{endorsements, plural, one {# like} other {# likes}} · {dl}"
 
-#: src/mods/describe.ts:106
+#: src/mods/describe.ts:132
 msgid "{who} all load {target}.{winner}"
 msgstr "{who} all load {target}.{winner}"
 
@@ -6489,7 +6542,7 @@ msgstr "Mortar sends GitHub requests without a login. Run gh auth login to raise
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
-#: src/console/StartupTable.tsx:259
+#: src/console/StartupTable.tsx:270
 msgid "Time in this start minus time in the one before"
 msgstr "Time in this start minus time in the one before"
 
@@ -6547,7 +6600,7 @@ msgstr "Notes for {0}"
 msgid "The disk is full."
 msgstr "The disk is full."
 
-#: src/mods/describe.ts:93
+#: src/mods/describe.ts:119
 msgid " You chose which mod wins each clash."
 msgstr " You chose which mod wins each clash."
 
@@ -6634,7 +6687,7 @@ msgstr "The service may be busy. Try again in a minute."
 msgid "Reason (optional)"
 msgstr "Reason (optional)"
 
-#: src/console/StartupPanel.tsx:129
+#: src/console/StartupPanel.tsx:137
 msgid "Slowest mods"
 msgstr "Slowest mods"
 
@@ -6760,7 +6813,7 @@ msgstr "Unhide {0}?"
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
-#: src/mods/describe.ts:110
+#: src/mods/describe.ts:136
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
 
@@ -6902,7 +6955,7 @@ msgstr "Replaces"
 msgid "Export or share the open profile"
 msgstr "Export or share the open profile"
 
-#: src/mods/describe.ts:91
+#: src/mods/describe.ts:117
 msgid " The winner is unclear."
 msgstr " The winner is unclear."
 
@@ -6954,7 +7007,7 @@ msgstr "Nexus rejected your API key"
 msgid "Back up {0}?"
 msgstr "Back up {0}?"
 
-#: src/console/StartupSections.tsx:107
+#: src/console/StartupSections.tsx:117
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
@@ -7246,7 +7299,7 @@ msgstr "All sources"
 msgid "Notification history"
 msgstr "Notification history"
 
-#: src/console/StartupSections.tsx:115
+#: src/console/StartupSections.tsx:132
 msgid "Where the time goes"
 msgstr "Where the time goes"
 
@@ -7256,7 +7309,7 @@ msgstr "Where the time goes"
 msgid "Change folder"
 msgstr "Change folder"
 
-#: src/mods/describe.ts:166
+#: src/mods/describe.ts:192
 msgid "{dependentName} needs {dep}, which is disabled."
 msgstr "{dependentName} needs {dep}, which is disabled."
 
@@ -7293,10 +7346,6 @@ msgstr "Installing {loader}"
 #: src/mods/ModMenu.tsx:132
 msgid "More details"
 msgstr "More details"
-
-#: src/mods/LoadOrderTab.tsx:384
-msgid "Enable mods in the Mods tab to see the order SMAPI loads them."
-msgstr "Enable mods in the Mods tab to see the order SMAPI loads them."
 
 #: src/mods/problemWhy.ts:47
 msgid "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
@@ -7512,6 +7561,10 @@ msgstr "{total, plural, one {# mod · about {size} to download} other {# mods ·
 msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
+#: src/console/StartupSections.tsx:110
+msgid "Plugins load"
+msgstr "Plugins load"
+
 #: src/nxm/store.ts:84
 #: src/queue/totals.ts:105
 #: src/settings/sections/DataStoreReport.tsx:123
@@ -7697,7 +7750,7 @@ msgstr "{0, plural, one {Matched # version in {1}} other {Matched # versions in 
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:188
+#: src/mods/describe.ts:214
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 
@@ -7848,7 +7901,7 @@ msgstr "Restart now"
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
-#: src/console/StartupTable.tsx:174
+#: src/console/StartupTable.tsx:182
 msgid "Show in Mods"
 msgstr "Show in Mods"
 
@@ -8109,7 +8162,7 @@ msgstr "Hide token"
 msgid "{remaining} of {limit} left today; the count resets {when}."
 msgstr "{remaining} of {limit} left today; the count resets {when}."
 
-#: src/mods/describe.ts:99
+#: src/mods/describe.ts:125
 msgid " {winnerName} wins; {losers} overridden."
 msgstr " {winnerName} wins; {losers} overridden."
 
@@ -8183,7 +8236,7 @@ msgstr "Grant the Steam sandbox read access to Mortar's data folder, or the game
 msgid "Copy code"
 msgstr "Copy code"
 
-#: src/console/StartupTable.tsx:247
+#: src/console/StartupTable.tsx:256
 msgid "Click a mod to show it in Mods"
 msgstr "Click a mod to show it in Mods"
 
@@ -8204,7 +8257,7 @@ msgstr "Keep the newest backups of each save and delete the rest. Pinned backups
 msgid "{0}: in Mortar"
 msgstr "{0}: in Mortar"
 
-#: src/mods/LoadOrderTab.tsx:247
+#: src/mods/LoadOrderTab.tsx:248
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
@@ -8249,7 +8302,7 @@ msgstr "{0, plural, one {Created {name}; downloading # mod} other {Created {name
 msgid "{who}: {reason}"
 msgstr "{who}: {reason}"
 
-#: src/mods/describe.ts:238
+#: src/mods/describe.ts:264
 msgid "{plugin} failed to load ({name})."
 msgstr "{plugin} failed to load ({name})."
 
@@ -8309,7 +8362,7 @@ msgstr "Money"
 msgid "Regenerate token?"
 msgstr "Regenerate token?"
 
-#: src/mods/describe.ts:235
+#: src/mods/describe.ts:261
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
@@ -8377,7 +8430,7 @@ msgid "What Mortar shows when it opens."
 msgstr "What Mortar shows when it opens."
 
 #: src/console/PerformanceComparison.tsx:57
-#: src/console/StartupTable.tsx:258
+#: src/console/StartupTable.tsx:269
 msgid "Change"
 msgstr "Change"
 
@@ -8395,7 +8448,7 @@ msgstr "{name} takes {own} of your {total} start."
 msgid "{0} was changed on {1} and on this machine"
 msgstr "{0} was changed on {1} and on this machine"
 
-#: src/console/StartupSections.tsx:99
+#: src/console/StartupSections.tsx:101
 msgid "SMAPI loads mods"
 msgstr "SMAPI loads mods"
 
@@ -8582,7 +8635,7 @@ msgid "Steam was not found"
 msgstr "Steam was not found"
 
 #. placeholder {0}: p.asset.info
-#: src/mods/describe.ts:114
+#: src/mods/describe.ts:140
 msgid "These mods may add the same item: {0}."
 msgstr "These mods may add the same item: {0}."
 
@@ -8631,7 +8684,7 @@ msgstr "Reset…"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.description
-#: src/mods/describe.ts:179
+#: src/mods/describe.ts:205
 msgid "{0}'s {1} is {2}: {3}"
 msgstr "{0}'s {1} is {2}: {3}"
 
@@ -8976,6 +9029,10 @@ msgstr "{0}: {1} from {2} → {3} from {4}"
 msgid "Plain text"
 msgstr "Plain text"
 
+#: src/console/StartupSections.tsx:109
+msgid "BepInEx patches"
+msgstr "BepInEx patches"
+
 #: src/profiles/LaunchPresetsBlock.tsx:46
 msgid "Set as default"
 msgstr "Set as default"
@@ -9126,7 +9183,7 @@ msgstr "{0}: {1} missing, {2} changed, {3} extra"
 msgid "Settings file"
 msgstr "Settings file"
 
-#: src/console/StartupPanel.tsx:53
+#: src/console/StartupPanel.tsx:55
 msgid "Play now"
 msgstr "Play now"
 
@@ -9209,7 +9266,7 @@ msgstr "Changes to keep"
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
 
-#: src/console/StartupPanel.tsx:62
+#: src/console/StartupPanel.tsx:65
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 msgstr "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 
@@ -9402,7 +9459,7 @@ msgid "Review collection update"
 msgstr "Review collection update"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:280
+#: src/mods/describe.ts:306
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
@@ -9418,7 +9475,7 @@ msgstr "Retry all failed"
 msgid "Add it"
 msgstr "Add it"
 
-#: src/mods/LoadOrderTab.tsx:189
+#: src/mods/LoadOrderTab.tsx:190
 msgid "Filter load order"
 msgstr "Filter load order"
 
@@ -9455,7 +9512,7 @@ msgstr "Hide to tray"
 msgid "Log link"
 msgstr "Log link"
 
-#: src/console/startupHooks.ts:23
+#: src/console/startupHooks.ts:31
 msgid "assets and packs {ms}"
 msgstr "assets and packs {ms}"
 
@@ -9573,7 +9630,7 @@ msgstr "{0} in total"
 msgid "Follow live log"
 msgstr "Follow live log"
 
-#: src/console/StartupPanel.tsx:61
+#: src/console/StartupPanel.tsx:63
 msgid "The next launch will be measured"
 msgstr "The next launch will be measured"
 
@@ -9633,7 +9690,7 @@ msgstr "Whole file"
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
-#: src/mods/describe.ts:247
+#: src/mods/describe.ts:273
 msgid "{name} is deprecated on Thunderstore."
 msgstr "{name} is deprecated on Thunderstore."
 
@@ -9653,7 +9710,7 @@ msgstr "Save backups kept"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:183
+#: src/mods/describe.ts:209
 msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
@@ -9743,7 +9800,7 @@ msgstr "{0} of {1} requests left today · {2} of {3} this hour"
 msgid "Pause all"
 msgstr "Pause all"
 
-#: src/console/StartupTable.tsx:106
+#: src/console/StartupTable.tsx:114
 msgid "Slowest event"
 msgstr "Slowest event"
 
@@ -9759,7 +9816,7 @@ msgstr "Error in a preloader patch"
 msgid "Copy from profile…"
 msgstr "Copy from profile…"
 
-#: src/mods/LoadOrderTab.tsx:101
+#: src/mods/LoadOrderTab.tsx:102
 msgid "Optional: {label}"
 msgstr "Optional: {label}"
 
@@ -9949,7 +10006,7 @@ msgstr "Loading game settings…"
 msgid "Could not inspect the destination folder"
 msgstr "Could not inspect the destination folder"
 
-#: src/mods/describe.ts:57
+#: src/mods/describe.ts:81
 msgid "{a} and {b} each wait for the other, so SMAPI skips at least one of them."
 msgstr "{a} and {b} each wait for the other, so SMAPI skips at least one of them."
 
@@ -9957,7 +10014,7 @@ msgstr "{a} and {b} each wait for the other, so SMAPI skips at least one of them
 msgid "GOG via Heroic"
 msgstr "GOG via Heroic"
 
-#: src/console/StartupPanel.tsx:147
+#: src/console/StartupPanel.tsx:156
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
@@ -9986,7 +10043,7 @@ msgid "itch.io"
 msgstr "itch.io"
 
 #. placeholder {0}: users.length
-#: src/mods/LoadOrderTab.tsx:133
+#: src/mods/LoadOrderTab.tsx:134
 msgid "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 
@@ -10035,6 +10092,10 @@ msgstr "An empty profile. Add mods from {site} or from archives."
 msgid "{0, plural, one {{1}/# file · {2} / {3}} other {{4}/# files · {5} / {6}}}"
 msgstr "{0, plural, one {{1}/# file · {2} / {3}} other {{4}/# files · {5} / {6}}}"
 
+#: src/console/StartupPanel.tsx:66
+msgid "Press Play. The BepInEx Bridge times each plugin's load and the start up to the main menu, and shows the results here. Unity's Mono runtime cannot be sampled, so there is no Sampled column."
+msgstr "Press Play. The BepInEx Bridge times each plugin's load and the start up to the main menu, and shows the results here. Unity's Mono runtime cannot be sampled, so there is no Sampled column."
+
 #: src/firstrun/LoaderStep.tsx:173
 msgid "Mortar checks Steam's settings for it: not found yet."
 msgstr "Mortar checks Steam's settings for it: not found yet."
@@ -10044,7 +10105,7 @@ msgstr "Mortar checks Steam's settings for it: not found yet."
 msgid "Show labels"
 msgstr "Show labels"
 
-#: src/console/StartupTable.tsx:267
+#: src/console/StartupTable.tsx:278
 msgid "What costs this mod the most; open the row for every timing"
 msgstr "What costs this mod the most; open the row for every timing"
 
@@ -10098,7 +10159,7 @@ msgstr "{loader} | {store}"
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
-#: src/mods/describe.ts:246
+#: src/mods/describe.ts:272
 msgid "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 
@@ -10263,7 +10324,7 @@ msgstr "Show file"
 msgid "Save backups"
 msgstr "Save backups"
 
-#: src/console/StartupSections.tsx:109
+#: src/console/StartupSections.tsx:119
 msgid "The game's first frames; mods doing setup work in update events show up here"
 msgstr "The game's first frames; mods doing setup work in update events show up here"
 
@@ -10363,6 +10424,10 @@ msgstr "Stop the game to test a launch."
 msgid "Play"
 msgstr "Play"
 
+#: src/console/StartupSections.tsx:123
+msgid "From launch until BepInEx's preloader runs"
+msgstr "From launch until BepInEx's preloader runs"
+
 #: src/mods/HealthTooltipContent.tsx:25
 msgid "{clean} clean"
 msgstr "{clean} clean"
@@ -10381,7 +10446,7 @@ msgid "Luck skill"
 msgstr "Luck skill"
 
 #: src/console/PerformanceComparison.tsx:54
-#: src/console/StartupTable.tsx:247
+#: src/console/StartupTable.tsx:256
 msgid "Mod"
 msgstr "Mod"
 
@@ -10448,8 +10513,8 @@ msgstr "No mods in {folder}"
 msgid "From Nexus"
 msgstr "From Nexus"
 
-#: src/console/StartupPanel.tsx:84
-#: src/console/StartupPanel.tsx:85
+#: src/console/StartupPanel.tsx:89
+#: src/console/StartupPanel.tsx:90
 msgid "Reading startup reports…"
 msgstr "Reading startup reports…"
 
@@ -10507,7 +10572,7 @@ msgstr "The backup from {when} is deleted for good, with every save in it."
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
-#: src/mods/describe.ts:162
+#: src/mods/describe.ts:188
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
@@ -10591,13 +10656,17 @@ msgstr "Switch {0} to {1}?"
 msgid "{0} · in use"
 msgstr "{0} · in use"
 
-#: src/console/StartupPanel.tsx:146
+#: src/console/StartupPanel.tsx:154
 msgid "No startup measured yet"
 msgstr "No startup measured yet"
 
 #: src/settings/sections/StreamOverlay.tsx:94
 msgid "Mining skill"
 msgstr "Mining skill"
+
+#: src/console/StartupSections.tsx:111
+msgid "First scene"
+msgstr "First scene"
 
 #: src/share/ImportPreview.tsx:60
 msgid "Dependency"
@@ -10632,7 +10701,7 @@ msgstr "Changes from your other machines"
 msgid "{0} is not installed"
 msgstr "{0} is not installed"
 
-#: src/mods/LoadOrderTab.tsx:369
+#: src/mods/LoadOrderTab.tsx:383
 msgid "Reading load order…"
 msgstr "Reading load order…"
 
@@ -10840,7 +10909,7 @@ msgstr "Open replacement"
 msgid "Nothing stands out in this start."
 msgstr "Nothing stands out in this start."
 
-#: src/console/StartupSections.tsx:108
+#: src/console/StartupSections.tsx:118
 msgid "The game loads its own content"
 msgstr "The game loads its own content"
 
@@ -10897,7 +10966,7 @@ msgstr "Health"
 msgid "Could not rename the bundle"
 msgstr "Could not rename the bundle"
 
-#: src/console/PerformanceTab.tsx:26
+#: src/console/PerformanceTab.tsx:27
 msgid "In game"
 msgstr "In game"
 
@@ -11119,7 +11188,7 @@ msgstr "Move down (wins files)"
 msgid "Clear search"
 msgstr "Clear search"
 
-#: src/mods/describe.ts:77
+#: src/mods/describe.ts:103
 msgid "{name} is obsolete: {summary}"
 msgstr "{name} is obsolete: {summary}"
 
@@ -11151,12 +11220,16 @@ msgstr "Import settings"
 msgid "Warnings and errors"
 msgstr "Warnings and errors"
 
+#: src/console/StartupSections.tsx:126
+msgid "Until the game's first scene has loaded"
+msgstr "Until the game's first scene has loaded"
+
 #: src/launch/SaveWarnDialog.tsx:58
 #: src/mods/CleanupSection.tsx:65
 #: src/mods/EnableRequirementsDialog.tsx:20
 #: src/mods/EnableRequirementsDialog.tsx:55
-#: src/mods/LoadOrderTab.tsx:59
-#: src/mods/LoadOrderTab.tsx:98
+#: src/mods/LoadOrderTab.tsx:60
+#: src/mods/LoadOrderTab.tsx:99
 #: src/mods/ProblemsTab.tsx:351
 msgid "Unknown mod"
 msgstr "Unknown mod"
@@ -11187,7 +11260,7 @@ msgstr "Could not use that image"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:196
+#: src/mods/describe.ts:222
 msgid "{0}'s {1} is {2}; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 
@@ -11254,7 +11327,7 @@ msgstr "No problems found"
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/mods/describe.ts:284
+#: src/mods/describe.ts:310
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
@@ -11266,12 +11339,12 @@ msgstr "Mortar version"
 msgid "SMAPI version"
 msgstr "SMAPI version"
 
-#: src/console/StartupTable.tsx:104
+#: src/console/StartupTable.tsx:112
 msgid "Entry"
 msgstr "Entry"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:205
+#: src/mods/describe.ts:231
 msgid "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 msgstr "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 
@@ -11307,7 +11380,7 @@ msgstr "Did not load"
 msgid "Hide"
 msgstr "Hide"
 
-#: src/console/StartupTable.tsx:161
+#: src/console/StartupTable.tsx:169
 #: src/toasts/ToastHost.tsx:93
 msgid "Hide details"
 msgstr "Hide details"
@@ -11326,7 +11399,7 @@ msgstr "Preparing a temporary copy of this profile…"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/mods/describe.ts:98
+#: src/mods/describe.ts:124
 msgid " {winnerName} wins."
 msgstr " {winnerName} wins."
 
@@ -11376,7 +11449,7 @@ msgstr "Your last save needs other mods"
 msgid "Delete category"
 msgstr "Delete category"
 
-#: src/console/StartupTable.tsx:111
+#: src/console/StartupTable.tsx:119
 msgid "Sampled"
 msgstr "Sampled"
 
@@ -11436,7 +11509,7 @@ msgstr "Into a deleted profile"
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
-#: src/mods/describe.ts:129
+#: src/mods/describe.ts:155
 msgid "Only on {value}."
 msgstr "Only on {value}."
 
@@ -11613,7 +11686,7 @@ msgstr "Updates, missing dependencies and links from mod sites land here."
 msgid "Game install"
 msgstr "Game install"
 
-#: src/mods/LoadOrderTab.tsx:102
+#: src/mods/LoadOrderTab.tsx:103
 msgid "Used by: {label}"
 msgstr "Used by: {label}"
 
@@ -11632,6 +11705,10 @@ msgstr "Check for updates"
 #: src/mods/DuplicateDialog.tsx:41
 msgid "Gets update checks."
 msgstr "Gets update checks."
+
+#: src/console/StartupSections.tsx:124
+msgid "BepInEx's preloader patches the game, then Unity starts it"
+msgstr "BepInEx's preloader patches the game, then Unity starts it"
 
 #: src/firstrun/LoaderStep.tsx:33
 #: src/loader/InstallSteps.tsx:10
@@ -11709,7 +11786,7 @@ msgstr "Last run"
 msgid "Share config files"
 msgstr "Share config files"
 
-#: src/console/StartupSections.tsx:101
+#: src/console/StartupSections.tsx:103
 msgid "Game content"
 msgstr "Game content"
 
@@ -11858,7 +11935,7 @@ msgid "No differences."
 msgstr "No differences."
 
 #. placeholder {0}: packs.length - PACKS_SHOWN
-#: src/console/StartupTable.tsx:126
+#: src/console/StartupTable.tsx:134
 msgid "{0, plural, one {# more pack} other {# more packs}}"
 msgstr "{0, plural, one {# more pack} other {# more packs}}"
 
@@ -12301,6 +12378,14 @@ msgstr "Went back to {when}"
 #: src/queue/QueueSheet.tsx:184
 msgid "Download history"
 msgstr "Download history"
+
+#: src/mods/LoadOrderTab.tsx:264
+msgid "Last launch"
+msgstr "Last launch"
+
+#: src/console/StartupSections.tsx:112
+msgid "To the main menu"
+msgstr "To the main menu"
 
 #: src/browse/BrowseFilters.tsx:77
 msgid "Include categories"
@@ -12765,7 +12850,7 @@ msgstr "1 time"
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
-#: src/console/StartupPanel.tsx:32
+#: src/console/StartupPanel.tsx:33
 #: src/profiles/EditProfileDialog.tsx:170
 msgid "Launch"
 msgstr "Launch"
@@ -12835,7 +12920,7 @@ msgstr "No config.json yet"
 msgid "Save diagnostics"
 msgstr "Save diagnostics"
 
-#: src/mods/describe.ts:61
+#: src/mods/describe.ts:85
 msgid "{path} wait for each other in a loop, so SMAPI loads none of them."
 msgstr "{path} wait for each other in a loop, so SMAPI loads none of them."
 

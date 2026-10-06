@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -344,6 +345,13 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		r.PluginClashes = pluginClashes(pkgs, deprecated)
 		if all, err := s.profiles.Packages(gameID, id); err == nil {
 			missing, incompatible := pluginDeps(all, mods)
+			declared := map[string]dotnet.Declared{}
+			for _, p := range all {
+				if p.Enabled {
+					declared[p.Key] = declaredIn(p.Dir)
+				}
+			}
+			r.Broken = append(r.Broken, pluginCycles(all, declared)...)
 			r.Missing = append(r.Missing, dropCovered(missing, r.Missing)...)
 			for _, f := range incompatible {
 				if !slices.ContainsFunc(r.LoadFailures, func(x LoadFailure) bool { return x.Key == f.Key && x.Kind == f.Kind }) {
