@@ -26,7 +26,8 @@ type Route =
   | { name: 'game-setup'; game: GameId }
   | { name: 'game'; game: GameId }
   | { name: 'profiles'; game: GameId }
-  | { name: 'game-settings'; game: GameId }
+  // query opens the page already searching.
+  | { name: 'game-settings'; game: GameId; query?: string }
   | { name: 'settings'; section: SettingsSection; back: Route }
 
 // The game a route belongs to, looking through Settings to the page it was opened from.
@@ -49,6 +50,7 @@ const useNav = create<{
   closeProfiles: () => void
   openGameSettings: () => void
   closeGameSettings: () => void
+  searchGameSettings: (query: string) => void
   openSettings: (section?: SettingsSection) => void
   closeSettings: () => void
 }>((set) => ({
@@ -74,6 +76,11 @@ const useNav = create<{
     set(({ route }) =>
       route.name === 'game-settings' ? { route: { name: 'game', game: route.game } } : {},
     ),
+  searchGameSettings: (query) =>
+    set(({ route }) => {
+      const game = routeGame(route)
+      return game ? { route: { name: 'game-settings', game, query } } : {}
+    }),
   openSettings: (section) =>
     set(({ route }) => ({
       route:

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
-import { type LucideIcon, SearchX } from 'lucide-react'
+import { Box, Button, Typography } from '@mui/material'
+import { type LucideIcon, Search, SearchX } from 'lucide-react'
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SEARCH_HIT } from './prefFilter.ts'
@@ -14,6 +14,8 @@ const CONTENT_MAX = 880
 const NAV_WIDTH = 224
 const NAV_WIDTH_NARROW = 196
 const NARROW_WINDOW = 999
+// At most this many matching rows also offers the search on the other settings screen.
+const FEW_HITS = 3
 
 export interface ShellPage<Id extends string> {
   id: Id
@@ -34,6 +36,8 @@ export function SettingsShell<Id extends string>({
   onPage,
   render,
   actions = {},
+  initialQuery = '',
+  elsewhere,
 }: {
   title: string
   backLabel: string
@@ -44,12 +48,15 @@ export function SettingsShell<Id extends string>({
   render: (id: Id) => ReactNode
   // Page-wide actions sit at the right of the page title.
   actions?: Partial<Record<Id, ReactNode>>
+  initialQuery?: string
+  // Another settings screen to run the same search on, offered when this one finds little.
+  elsewhere?: { label: string; search: (query: string) => void } | undefined
 }) {
   const { t } = useLingui()
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery)
   const pane = useRef<HTMLDivElement>(null)
   const results = useRef<HTMLDivElement>(null)
-  const [noneMatch, setNoneMatch] = useState(false)
+  const [hits, setHits] = useState(0)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && query) {
@@ -65,12 +72,7 @@ export function SettingsShell<Id extends string>({
     return () => globalThis.removeEventListener('keydown', onKey)
   }, [onBack, query])
   useLayoutEffect(() => {
-    if (!query) {
-      setNoneMatch(false)
-      return
-    }
-    const root = results.current
-    setNoneMatch(root !== null && root.querySelector(SEARCH_HIT) === null)
+    setHits(query ? (results.current?.querySelectorAll(SEARCH_HIT).length ?? 0) : 0)
   }, [query])
   const pick = (id: Id) => {
     onPage(id)
@@ -149,10 +151,19 @@ export function SettingsShell<Id extends string>({
               gap: 2,
             }}
           >
-            {query && noneMatch ? (
+            {query && hits === 0 ? (
               <EmptyState icon={<SearchX />} title={t`No settings match`} compact={true}>
                 {t`Try another word, or clear the search.`}
               </EmptyState>
+            ) : null}
+            {query && elsewhere && hits <= FEW_HITS ? (
+              <Button
+                startIcon={<Search size={16} />}
+                onClick={() => elsewhere.search(query)}
+                sx={{ alignSelf: 'flex-start' }}
+              >
+                {elsewhere.label}
+              </Button>
             ) : null}
             {query
               ? pages.map((p) => (

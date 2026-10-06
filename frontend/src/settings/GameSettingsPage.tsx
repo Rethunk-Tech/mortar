@@ -47,7 +47,15 @@ function useGameInstall(game: string) {
   return { folder, store, installs, version, setVersion, load }
 }
 
-function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) => void }) {
+function GamePages({
+  page,
+  setPage,
+  query,
+}: {
+  page: GamePage
+  setPage: (p: GamePage) => void
+  query: string
+}) {
   const { t } = useLingui()
   const name = useProfiles((s) => s.game?.name ?? '')
   const close = useNav((s) => s.closeGameSettings)
@@ -152,6 +160,7 @@ function GamePages({ page, setPage }: { page: GamePage; setPage: (p: GamePage) =
       current={page}
       onPage={setPage}
       render={render}
+      initialQuery={query}
     />
   )
 }
@@ -161,6 +170,7 @@ export function GameSettingsPage() {
   const game = useCurrentGame()
   const override = useSettings((s) => s.gameFolders?.[game] ?? '')
   const chosen = useSettings((s) => s.gameStores?.[game] ?? '')
+  const query = useNav((s) => (s.route.name === 'game-settings' ? (s.route.query ?? '') : ''))
   const [page, setPage] = useState<GamePage>('install')
-  return <GamePages key={`${override}:${chosen}`} page={page} setPage={setPage} />
+  return <GamePages key={`${override}:${chosen}`} page={page} setPage={setPage} query={query} />
 }

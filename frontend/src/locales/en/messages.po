@@ -146,11 +146,11 @@ msgstr "Priority Default"
 msgid "Show failed"
 msgstr "Show failed"
 
-#: src/settings/GameSettingsPage.tsx:68
+#: src/settings/GameSettingsPage.tsx:76
 msgid "Streaming"
 msgstr "Streaming"
 
-#: src/saves/SaveRow.tsx:144
+#: src/saves/SaveRow.tsx:154
 msgid "Could not back up {label}"
 msgstr "Could not back up {label}"
 
@@ -245,7 +245,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/Toolbar.tsx:268
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChips.tsx:59
-#: src/saves/SaveRow.tsx:114
+#: src/saves/SaveRow.tsx:124
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
 #: src/toasts/HistoryButton.tsx:30
@@ -1543,7 +1543,7 @@ msgstr "See load errors, missing dependencies, and other issues before you play.
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
-#: src/settings/SettingsShell.tsx:138
+#: src/settings/SettingsShell.tsx:140
 msgid "Search results"
 msgstr "Search results"
 
@@ -2533,7 +2533,7 @@ msgstr "Add tool"
 
 #: src/commandPalette/CommandPalette.tsx:149
 #: src/settings/sections/DataImport.tsx:17
-#: src/settings/SettingsPage.tsx:37
+#: src/settings/SettingsPage.tsx:40
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -2568,7 +2568,7 @@ msgid "Lutris"
 msgstr "Lutris"
 
 #: src/commandPalette/CommandPalette.tsx:150
-#: src/settings/SettingsPage.tsx:38
+#: src/settings/SettingsPage.tsx:41
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
 
@@ -2729,7 +2729,7 @@ msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
 #: src/games/GameSelect.tsx:140
-#: src/saves/SaveRow.tsx:172
+#: src/saves/SaveRow.tsx:182
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
 
@@ -3022,7 +3022,7 @@ msgstr "Measuring… {0}"
 msgid "Check again"
 msgstr "Check again"
 
-#: src/saves/SaveRow.tsx:136
+#: src/saves/SaveRow.tsx:146
 msgid "{label} is no longer in the saves folder"
 msgstr "{label} is no longer in the saves folder"
 
@@ -3078,7 +3078,7 @@ msgid "Show: {0}"
 msgstr "Show: {0}"
 
 #: src/commandPalette/CommandPalette.tsx:152
-#: src/settings/SettingsPage.tsx:40
+#: src/settings/SettingsPage.tsx:43
 msgid "Accounts"
 msgstr "Accounts"
 
@@ -3119,7 +3119,7 @@ msgstr "Local-only mods kept ({0})"
 #: src/commandPalette/CommandPalette.tsx:156
 #: src/settings/sections/DataImport.tsx:23
 #: src/settings/sections/DataUsage.tsx:230
-#: src/settings/SettingsPage.tsx:44
+#: src/settings/SettingsPage.tsx:47
 msgid "Storage"
 msgstr "Storage"
 
@@ -3375,8 +3375,8 @@ msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
 #: src/game/ProfileWorkspace.tsx:108
-#: src/settings/GameSettingsPage.tsx:66
-#: src/settings/GameSettingsPage.tsx:129
+#: src/settings/GameSettingsPage.tsx:74
+#: src/settings/GameSettingsPage.tsx:137
 msgid "Console"
 msgstr "Console"
 
@@ -3569,7 +3569,7 @@ msgid "Bundle deleted"
 msgstr "Bundle deleted"
 
 #: src/commandPalette/CommandPalette.tsx:158
-#: src/settings/SettingsPage.tsx:46
+#: src/settings/SettingsPage.tsx:49
 msgid "Shortcuts"
 msgstr "Shortcuts"
 
@@ -3968,7 +3968,7 @@ msgstr "More ways to add mods"
 msgid "Downloads paused"
 msgstr "Downloads paused"
 
-#: src/settings/GameSettingsPage.tsx:149
+#: src/settings/GameSettingsPage.tsx:157
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
@@ -4208,7 +4208,7 @@ msgstr "{0, plural, one {# config file comes with it.} other {# config files com
 msgid "Needs your click"
 msgstr "Needs your click"
 
-#: src/saves/SaveRow.tsx:114
+#: src/saves/SaveRow.tsx:124
 msgid "This save has no recorded mod list yet."
 msgstr "This save has no recorded mod list yet."
 
@@ -4550,7 +4550,7 @@ msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
 #. placeholder {0}: g.version
-#: src/settings/GameSettingsPage.tsx:79
+#: src/settings/GameSettingsPage.tsx:87
 msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
@@ -4836,7 +4836,7 @@ msgstr "Pause downloads while the game runs"
 msgid "{0} of saves"
 msgstr "{0} of saves"
 
-#: src/settings/SettingsShell.tsx:154
+#: src/settings/SettingsShell.tsx:156
 msgid "Try another word, or clear the search."
 msgstr "Try another word, or clear the search."
 
@@ -4888,7 +4888,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/queue/QueueButton.tsx:21
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:184
-#: src/settings/SettingsPage.tsx:39
+#: src/settings/SettingsPage.tsx:42
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -5006,7 +5006,7 @@ msgstr "Needs"
 msgid "Files set aside"
 msgstr "Files set aside"
 
-#: src/settings/GameSettingsPage.tsx:120
+#: src/settings/GameSettingsPage.tsx:128
 msgid "{name} profile history"
 msgstr "{name} profile history"
 
@@ -5608,7 +5608,7 @@ msgstr "Copy"
 msgid "What happens to files the new version of a mod leaves out"
 msgstr "What happens to files the new version of a mod leaves out"
 
-#: src/settings/SettingsShell.tsx:153
+#: src/settings/SettingsShell.tsx:155
 msgid "No settings match"
 msgstr "No settings match"
 
@@ -5748,7 +5748,7 @@ msgstr "This profile has no mods to download"
 msgid "Relative"
 msgstr "Relative"
 
-#: src/saves/SaveRow.tsx:171
+#: src/saves/SaveRow.tsx:181
 msgid "a deleted profile"
 msgstr "a deleted profile"
 
@@ -5778,7 +5778,7 @@ msgid "In Mortar"
 msgstr "In Mortar"
 
 #: src/game/ProfileWorkspace.tsx:141
-#: src/settings/GameSettingsPage.tsx:148
+#: src/settings/GameSettingsPage.tsx:156
 msgid "{name} settings"
 msgstr "{name} settings"
 
@@ -5972,7 +5972,7 @@ msgstr "Could not remove the selected mods"
 
 #: src/commandPalette/CommandPalette.tsx:155
 #: src/settings/sections/DataImport.tsx:19
-#: src/settings/SettingsPage.tsx:43
+#: src/settings/SettingsPage.tsx:46
 #: src/toasts/HistoryButton.tsx:144
 #: src/toasts/HistoryButton.tsx:218
 #: src/toasts/ToastHost.tsx:255
@@ -6047,7 +6047,7 @@ msgstr "{0, plural, one {Stopped asking about # folder} other {Stopped asking ab
 #: src/firstrunTour/TourPopover.tsx:186
 #: src/fomod/Dialog.tsx:256
 #: src/profiles/ProfilesPage.tsx:327
-#: src/settings/SettingsPage.tsx:66
+#: src/settings/SettingsPage.tsx:69
 msgid "Back"
 msgstr "Back"
 
@@ -6296,6 +6296,10 @@ msgstr "Show {0} in its profile"
 msgid "Mod list format"
 msgstr "Mod list format"
 
+#: src/settings/SettingsPage.tsx:79
+msgid "Search {gameName} settings"
+msgstr "Search {gameName} settings"
+
 #: src/mods/AuthorDialog.tsx:80
 msgid "Open author page on Nexus"
 msgstr "Open author page on Nexus"
@@ -6460,8 +6464,8 @@ msgstr "Send"
 #: src/game/Hero.tsx:342
 #: src/game/ProfileWorkspace.tsx:88
 #: src/mods/ModListVirtual.tsx:283
-#: src/settings/GameSettingsPage.tsx:63
-#: src/settings/GameSettingsPage.tsx:102
+#: src/settings/GameSettingsPage.tsx:71
+#: src/settings/GameSettingsPage.tsx:110
 #: src/settings/sections/Updates.tsx:175
 msgid "Mods"
 msgstr "Mods"
@@ -7586,7 +7590,7 @@ msgid "Open Saves"
 msgstr "Open Saves"
 
 #: src/commandPalette/CommandPalette.tsx:153
-#: src/settings/SettingsPage.tsx:41
+#: src/settings/SettingsPage.tsx:44
 msgid "Source health"
 msgstr "Source health"
 
@@ -7712,7 +7716,7 @@ msgstr "The page reads the profile from the link itself. Nothing is uploaded or 
 msgid "Restart now"
 msgstr "Restart now"
 
-#: src/saves/SaveRow.tsx:142
+#: src/saves/SaveRow.tsx:152
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
@@ -7981,7 +7985,7 @@ msgstr " {winnerName} wins; {losers} overridden."
 
 #: src/commandPalette/CommandPalette.tsx:157
 #: src/settings/sections/Launchers.tsx:23
-#: src/settings/SettingsPage.tsx:45
+#: src/settings/SettingsPage.tsx:48
 msgid "Launchers"
 msgstr "Launchers"
 
@@ -9102,7 +9106,7 @@ msgstr "Slate"
 #: src/commandPalette/CommandPalette.tsx:154
 #: src/game/Hero.tsx:254
 #: src/mods/SlowStartupSection.tsx:73
-#: src/settings/SettingsPage.tsx:42
+#: src/settings/SettingsPage.tsx:45
 msgid "Updates"
 msgstr "Updates"
 
@@ -9664,7 +9668,7 @@ msgstr "{count, plural, one {{name} was updated since this run and logged # erro
 msgid "Open focused mod details"
 msgstr "Open focused mod details"
 
-#: src/saves/SaveRow.tsx:151
+#: src/saves/SaveRow.tsx:161
 msgid "Open the folder of {label}"
 msgstr "Open the folder of {label}"
 
@@ -10081,7 +10085,7 @@ msgid "Show file"
 msgstr "Show file"
 
 #: src/saves/BackupsDialog.tsx:152
-#: src/settings/GameSettingsPage.tsx:64
+#: src/settings/GameSettingsPage.tsx:72
 #: src/settings/sections/DataUsage.tsx:209
 #: src/settings/sections/GameSettings.tsx:411
 msgid "Save backups"
@@ -10183,8 +10187,8 @@ msgstr "Stop the game to test a launch."
 #: src/firstrunTour/TourPopover.tsx:46
 #: src/games/GameSelect.tsx:286
 #: src/launch/PlayControl.tsx:164
-#: src/settings/GameSettingsPage.tsx:62
-#: src/settings/GameSettingsPage.tsx:88
+#: src/settings/GameSettingsPage.tsx:70
+#: src/settings/GameSettingsPage.tsx:96
 msgid "Play"
 msgstr "Play"
 
@@ -10337,7 +10341,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
 #: src/fomod/Dialog.tsx:264
 #: src/loader/Banner.tsx:29
-#: src/settings/GameSettingsPage.tsx:58
+#: src/settings/GameSettingsPage.tsx:66
 #: src/settings/sections/LoaderRow.tsx:93
 #: src/settings/sections/LoaderRow.tsx:148
 msgid "Install"
@@ -10475,7 +10479,7 @@ msgstr "{count, plural, one {Changed # mod} other {Changed # mods}}"
 #: src/commandPalette/paletteLabels.ts:23
 #: src/mods/ModDetail.tsx:168
 #: src/mods/problemText.ts:44
-#: src/settings/SettingsPage.tsx:65
+#: src/settings/SettingsPage.tsx:68
 #: src/shell/AppMenu.tsx:115
 #: src/shell/TitleBar.tsx:120
 msgid "Settings"
@@ -10850,7 +10854,7 @@ msgid "Pick the computer showing the code, then type it."
 msgstr "Pick the computer showing the code, then type it."
 
 #: src/commandPalette/CommandPalette.tsx:159
-#: src/settings/SettingsPage.tsx:47
+#: src/settings/SettingsPage.tsx:50
 msgid "About"
 msgstr "About"
 
@@ -11282,7 +11286,7 @@ msgstr "Jump to first error"
 msgid "Now needs {0}"
 msgstr "Now needs {0}"
 
-#: src/saves/SaveRow.tsx:119
+#: src/saves/SaveRow.tsx:129
 msgid "New profile from this save"
 msgstr "New profile from this save"
 
@@ -11359,7 +11363,7 @@ msgstr "Source"
 #: src/commandPalette/CommandPalette.tsx:148
 #: src/settings/sections/DataImport.tsx:29
 #: src/settings/sections/Shortcuts.tsx:176
-#: src/settings/SettingsPage.tsx:36
+#: src/settings/SettingsPage.tsx:39
 msgid "General"
 msgstr "General"
 
@@ -12342,7 +12346,7 @@ msgstr "Untrack unused…"
 msgid "{gameName} was not found. Browse to its folder."
 msgstr "{gameName} was not found. Browse to its folder."
 
-#: src/saves/SaveRow.tsx:128
+#: src/saves/SaveRow.tsx:138
 msgid "Back up {label} now"
 msgstr "Back up {label} now"
 

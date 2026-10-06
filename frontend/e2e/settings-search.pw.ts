@@ -57,3 +57,17 @@ test('settings search finds every row by its label, on Mortar and game settings'
     game.map((l) => [l, l]),
   )
 })
+
+test('a Mortar settings search that finds little offers the same search in the game settings', async ({
+  page,
+}) => {
+  await openSeedFarm(page)
+  await page.getByRole('button', { name: 'Mortar menu' }).click()
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Search settings' }).fill('Run logs kept')
+  await page.getByRole('button', { name: 'Search Stardew Valley settings' }).click()
+  await expect(page.getByRole('textbox', { name: 'Search settings' })).toHaveValue('Run logs kept')
+  await expect(
+    page.locator('[data-setting-label]').getByText('Run logs kept', { exact: true }),
+  ).toBeVisible()
+})

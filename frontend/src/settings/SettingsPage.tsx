@@ -14,7 +14,8 @@ import {
   UserRound,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { type SettingsSection, useNav } from '../nav/store.ts'
+import { routeGame, type SettingsSection, useNav } from '../nav/store.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
 import { About } from './sections/About.tsx'
 import { Accounts } from './sections/Accounts.tsx'
@@ -32,6 +33,8 @@ import { Updates } from './sections/Updates.tsx'
 export function SettingsPage({ section }: { section: SettingsSection }) {
   const { t } = useLingui()
   const closeSettings = useNav((s) => s.closeSettings)
+  const game = useNav((s) => routeGame(s.route))
+  const gameName = useProfiles((s) => (game && s.game?.id === game ? s.game.name : ''))
   const pages: ShellPage<SettingsSection>[] = [
     { id: 'general', label: t`General`, icon: SlidersHorizontal },
     { id: 'appearance', label: t`Appearance`, icon: Palette, groupEnd: true },
@@ -70,6 +73,14 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
       onPage={(id) => useNav.getState().openSettings(id)}
       render={(id) => body[id]}
       actions={{ shortcuts: <ResetAllShortcuts /> }}
+      elsewhere={
+        gameName
+          ? {
+              label: t`Search ${gameName} settings`,
+              search: (query) => useNav.getState().searchGameSettings(query),
+            }
+          : undefined
+      }
     />
   )
 }
