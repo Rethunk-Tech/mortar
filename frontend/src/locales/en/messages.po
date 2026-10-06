@@ -3633,9 +3633,9 @@ msgstr "Could not duplicate the profile"
 msgid "Copy CSS"
 msgstr "Copy CSS"
 
-#: src/profiles/LaunchOptionsBlock.tsx:135
-msgid "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
-msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
+#: src/profiles/LaunchOptionsBlock.tsx:138
+msgid "Prefix for direct launches only (for example, gamemoderun mangohud)."
+msgstr "Prefix for direct launches only (for example, gamemoderun mangohud)."
 
 #: src/launch/PlayControl.tsx:169
 msgid "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
@@ -11106,8 +11106,8 @@ msgid " {winnerName} wins."
 msgstr " {winnerName} wins."
 
 #: src/settings/sections/Downloads.tsx:212
-msgid "Mortar handles these links now."
-msgstr "Mortar handles these links now."
+msgid "No app opens these links now."
+msgstr "No app opens these links now."
 
 #: src/profiles/LaunchPresetsBlock.tsx:196
 msgid "This launch preset will be deleted."

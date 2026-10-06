@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
+import { System } from '@wailsio/runtime'
 import { useState } from 'react'
 import { TestLaunch } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useGameBusy } from '../launch/store.ts'
@@ -122,19 +123,22 @@ function LaunchOptionsBlock({
         }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />
-      <TextField
-        fullWidth={true}
-        margin="dense"
-        label={t`Launch prefix`}
-        value={launchPrefix}
-        onChange={(event) => {
-          onLaunchPrefix(event.target.value)
-          onLaunchError(null)
-        }}
-        error={launchError?.field === 'settings'}
-        helperText={t`Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable.`}
-        slotProps={{ root: { sx: { userSelect: 'text' } } }}
-      />
+      {/* Windows launches ignore a prefix, so there is nothing to set there. */}
+      {System.IsWindows() ? null : (
+        <TextField
+          fullWidth={true}
+          margin="dense"
+          label={t`Launch prefix`}
+          value={launchPrefix}
+          onChange={(event) => {
+            onLaunchPrefix(event.target.value)
+            onLaunchError(null)
+          }}
+          error={launchError?.field === 'settings'}
+          helperText={t`Prefix for direct launches only (for example, gamemoderun mangohud).`}
+          slotProps={{ root: { sx: { userSelect: 'text' } } }}
+        />
+      )}
       <TextField
         fullWidth={true}
         margin="dense"
