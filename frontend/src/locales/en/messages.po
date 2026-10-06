@@ -182,7 +182,7 @@ msgstr "Where it came in one download with other mods, it is disabled instead."
 msgid "Click the game's name in the title bar to open the game drawer and jump to another game."
 msgstr "Click the game's name in the title bar to open the game drawer and jump to another game."
 
-#: src/saves/BackupsDialog.tsx:198
+#: src/saves/BackupsDialog.tsx:211
 #: src/saves/SaveBackupsSection.tsx:57
 msgid "Allow cleanup"
 msgstr "Allow cleanup"
@@ -936,7 +936,7 @@ msgstr "gone"
 #: src/mods/ConflictWhy.tsx:104
 #: src/nxm/ArrivalDialog.tsx:111
 #: src/profiles/CompareBulkBody.tsx:50
-#: src/saves/BackupsDialog.tsx:70
+#: src/saves/BackupsDialog.tsx:71
 msgid "{0} · {1}"
 msgstr "{0} · {1}"
 
@@ -1410,7 +1410,7 @@ msgid "Skip this version"
 msgstr "Skip this version"
 
 #. placeholder {0}: listNames(names)
-#: src/saves/BackupsDialog.tsx:42
+#: src/saves/BackupsDialog.tsx:43
 msgid "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 msgstr "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 
@@ -1539,7 +1539,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:374
+#: src/games/GameSelect.tsx:375
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -1666,7 +1666,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/profiles/LaunchPreview.tsx:85
 #: src/queue/QueueBody.tsx:255
 #: src/queue/store.ts:163
-#: src/saves/BackupsDialog.tsx:147
+#: src/saves/BackupsDialog.tsx:160
 #: src/saves/SavesTab.tsx:40
 #: src/settings/sections/DataStoreReport.tsx:390
 #: src/settings/sections/Storage.tsx:79
@@ -2720,7 +2720,7 @@ msgstr "Bisect from here"
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
-#: src/games/GameSelect.tsx:139
+#: src/games/GameSelect.tsx:140
 #: src/saves/SaveRow.tsx:170
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
@@ -3382,7 +3382,7 @@ msgstr "Device name"
 
 #. placeholder {0}: causeLabel(backup, profiles)
 #. placeholder {1}: formatBytes(backup.size)
-#: src/saves/BackupsDialog.tsx:69
+#: src/saves/BackupsDialog.tsx:70
 msgid "{0} · {1} · {farms}"
 msgstr "{0} · {1} · {farms}"
 
@@ -3755,7 +3755,7 @@ msgstr "Apply"
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
-#: src/games/GameSelect.tsx:377
+#: src/games/GameSelect.tsx:378
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
@@ -5659,7 +5659,7 @@ msgstr "Remove {name}"
 msgid "Hidden inside this mod"
 msgstr "Hidden inside this mod"
 
-#: src/saves/BackupsDialog.tsx:198
+#: src/saves/BackupsDialog.tsx:211
 #: src/saves/SaveBackupsSection.tsx:57
 msgid "Keep forever"
 msgstr "Keep forever"
@@ -5784,7 +5784,7 @@ msgid "No profiles found."
 msgstr "No profiles found."
 
 #. placeholder {0}: game.name
-#: src/games/GameSelect.tsx:233
+#: src/games/GameSelect.tsx:234
 msgid "Open {0}"
 msgstr "Open {0}"
 
@@ -5808,7 +5808,7 @@ msgstr "Could not move the old files to trash"
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
-#: src/games/GameSelect.tsx:183
+#: src/games/GameSelect.tsx:184
 #: src/games/ProfileCards.tsx:52
 #: src/profiles/store.ts:339
 msgid "Could not save the open profile"
@@ -6749,7 +6749,7 @@ msgstr "Only settings and options differ."
 msgid "Skip all"
 msgstr "Skip all"
 
-#: src/saves/BackupsDialog.tsx:144
+#: src/saves/BackupsDialog.tsx:157
 msgid "Could not list backups: {error}"
 msgstr "Could not list backups: {error}"
 
@@ -6980,7 +6980,7 @@ msgstr "Show skipped update"
 msgid "Press {paletteKeys} to jump anywhere: profiles, settings, downloads and more."
 msgstr "Press {paletteKeys} to jump anywhere: profiles, settings, downloads and more."
 
-#: src/saves/BackupsDialog.tsx:185
+#: src/saves/BackupsDialog.tsx:198
 #: src/saves/scheduledBackups.ts:30
 msgid "Open backups folder"
 msgstr "Open backups folder"
@@ -7196,7 +7196,7 @@ msgstr "{gameName}'s Steam launch options run {loader} in place of the game. Ste
 msgid "Summer"
 msgstr "Summer"
 
-#: src/saves/BackupsDialog.tsx:233
+#: src/saves/BackupsDialog.tsx:246
 msgid "Restore this backup?"
 msgstr "Restore this backup?"
 
@@ -7403,7 +7403,7 @@ msgstr "Game"
 msgid "Minutes between background update checks"
 msgstr "Minutes between background update checks"
 
-#: src/games/GameSelect.tsx:143
+#: src/games/GameSelect.tsx:144
 msgid "{playtime} played"
 msgstr "{playtime} played"
 
@@ -8747,7 +8747,7 @@ msgid "Default for Share and Export. You can change it per share."
 msgstr "Default for Share and Export. You can change it per share."
 
 #: src/App.tsx:78
-#: src/games/GameSelect.tsx:169
+#: src/games/GameSelect.tsx:170
 #: src/games/useGameTiles.ts:89
 msgid "Could not read your games"
 msgstr "Could not read your games"
@@ -8893,7 +8893,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:43
 #: src/firstrun/GameSetup.tsx:134
 #: src/firstrun/LoaderStep.tsx:221
-#: src/games/GameSelect.tsx:348
+#: src/games/GameSelect.tsx:349
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -8949,7 +8949,7 @@ msgid "Play now"
 msgstr "Play now"
 
 #. placeholder {0}: listNames(hit)
-#: src/saves/BackupsDialog.tsx:46
+#: src/saves/BackupsDialog.tsx:47
 msgid "{0} will be overwritten. A backup of the current Saves folder is made first."
 msgstr "{0} will be overwritten. A backup of the current Saves folder is made first."
 
@@ -9617,7 +9617,7 @@ msgstr "Not used by any profile"
 msgid "Add an item"
 msgstr "Add an item"
 
-#: src/saves/BackupsDialog.tsx:158
+#: src/saves/BackupsDialog.tsx:171
 msgid "No save backups yet."
 msgstr "No save backups yet."
 
@@ -9870,8 +9870,8 @@ msgstr "Check now"
 #: src/profiles/HistoryDiffView.tsx:42
 #: src/profiles/HistoryEventRow.tsx:70
 #: src/profiles/ProfilesPage.tsx:90
-#: src/saves/BackupsDialog.tsx:96
-#: src/saves/BackupsDialog.tsx:221
+#: src/saves/BackupsDialog.tsx:109
+#: src/saves/BackupsDialog.tsx:234
 msgid "Restore {label}"
 msgstr "Restore {label}"
 
@@ -9902,7 +9902,7 @@ msgstr "Overrides"
 msgid "Import…"
 msgstr "Import…"
 
-#: src/games/GameSelect.tsx:152
+#: src/games/GameSelect.tsx:153
 msgid "{loader} | {store}"
 msgstr "{loader} | {store}"
 
@@ -10001,7 +10001,7 @@ msgstr "Sparkles"
 msgid "Quit"
 msgstr "Quit"
 
-#: src/games/GameSelect.tsx:154
+#: src/games/GameSelect.tsx:155
 msgid "{loader} · {lastLine}"
 msgstr "{loader} · {lastLine}"
 
@@ -10064,7 +10064,7 @@ msgstr "Hourly count resets {0} · daily count resets {1}"
 msgid "Show file"
 msgstr "Show file"
 
-#: src/saves/BackupsDialog.tsx:139
+#: src/saves/BackupsDialog.tsx:152
 #: src/settings/GameSettingsPage.tsx:64
 #: src/settings/sections/DataUsage.tsx:209
 #: src/settings/sections/GameSettings.tsx:405
@@ -10080,6 +10080,11 @@ msgstr "The game's first frames; mods doing setup work in update events show up 
 #: src/shell/AppMenu.tsx:105
 msgid "Mortar menu"
 msgstr "Mortar menu"
+
+#: src/saves/BackupsDialog.tsx:97
+#: src/saves/BackupsDialog.tsx:101
+msgid "Kept forever"
+msgstr "Kept forever"
 
 #: src/game/detailStates.tsx:53
 #: src/game/Sidebar.tsx:392
@@ -10160,7 +10165,7 @@ msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
 
 #: src/firstrunTour/TourPopover.tsx:46
-#: src/games/GameSelect.tsx:285
+#: src/games/GameSelect.tsx:286
 #: src/launch/PlayControl.tsx:164
 #: src/settings/GameSettingsPage.tsx:62
 #: src/settings/GameSettingsPage.tsx:88
@@ -10630,11 +10635,11 @@ msgstr "{0, plural, one {Installed · # profile} other {Installed · # profiles}
 msgid "Share link"
 msgstr "Share link"
 
-#: src/saves/BackupsDialog.tsx:159
+#: src/saves/BackupsDialog.tsx:172
 msgid "Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself."
 msgstr "Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself."
 
-#: src/saves/BackupsDialog.tsx:96
+#: src/saves/BackupsDialog.tsx:109
 #: src/saves/SaveBackupsSection.tsx:63
 msgid "Stop the game to restore saves."
 msgstr "Stop the game to restore saves."
@@ -10850,7 +10855,7 @@ msgstr "it took too long to answer"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/games/GameSelect.tsx:271
+#: src/games/GameSelect.tsx:272
 msgid "Play {playName}"
 msgstr "Play {playName}"
 
@@ -11482,7 +11487,7 @@ msgstr "The author has not listed any versions here."
 msgid "Open Problems"
 msgstr "Open Problems"
 
-#: src/games/GameSelect.tsx:149
+#: src/games/GameSelect.tsx:150
 msgid "{loader} | {store} · {lastLine}"
 msgstr "{loader} | {store} · {lastLine}"
 
@@ -11792,7 +11797,7 @@ msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 msgid "Skip this update"
 msgstr "Skip this update"
 
-#: src/games/GameSelect.tsx:137
+#: src/games/GameSelect.tsx:138
 msgid "Last played with {profile} · {when}"
 msgstr "Last played with {profile} · {when}"
 
@@ -11804,8 +11809,8 @@ msgstr "Command-line control"
 msgid "Could not repair this profile"
 msgstr "Could not repair this profile"
 
-#: src/games/GameSelect.tsx:164
-#: src/games/GameSelect.tsx:181
+#: src/games/GameSelect.tsx:165
+#: src/games/GameSelect.tsx:182
 #: src/games/ProfileCards.tsx:50
 #: src/games/ProfileCards.tsx:64
 msgid "Could not save the last game"
@@ -12211,7 +12216,7 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 #: src/mods/problemFix/RestoreButton.tsx:17
 #: src/mods/problemFixButtons.tsx:218
 #: src/profiles/HistoryEventRow.tsx:72
-#: src/saves/BackupsDialog.tsx:234
+#: src/saves/BackupsDialog.tsx:247
 #: src/saves/SaveBackupsSection.tsx:63
 #: src/saves/SaveBackupsSection.tsx:148
 #: src/shell/TitleBar.tsx:128
@@ -12226,7 +12231,7 @@ msgstr "Changes since last run"
 msgid "You have not endorsed this mod. Nexus asks that you download and play it first."
 msgstr "You have not endorsed this mod. Nexus asks that you download and play it first."
 
-#: src/saves/BackupsDialog.tsx:209
+#: src/saves/BackupsDialog.tsx:222
 msgid "Restore all"
 msgstr "Restore all"
 
@@ -12417,7 +12422,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/profiles/HealthDialog.tsx:255
 #: src/profiles/HistoryPanel.tsx:131
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:70
-#: src/saves/BackupsDialog.tsx:178
+#: src/saves/BackupsDialog.tsx:191
 #: src/settings/sections/About.tsx:99
 #: src/settings/sections/AboutDiagnostics.tsx:219
 #: src/settings/sections/DataStoreReport.tsx:407
@@ -12576,7 +12581,7 @@ msgstr "Every mod has what it needs and nothing clashes."
 msgid "Launch"
 msgstr "Launch"
 
-#: src/saves/BackupsDialog.tsx:152
+#: src/saves/BackupsDialog.tsx:165
 #: src/saves/SaveBackupsSection.tsx:125
 msgid "Reading backups…"
 msgstr "Reading backups…"

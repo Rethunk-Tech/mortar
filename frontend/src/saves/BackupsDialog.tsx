@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogTitle,
   Menu,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { FolderOpen, Pin, PinOff, RotateCcw } from 'lucide-react'
@@ -92,6 +93,18 @@ function BackupRow({
           {meta}
         </Typography>
       </Box>
+      {backup.pinned && (
+        <Tooltip title={t`Kept forever`}>
+          <Box
+            component="span"
+            role="img"
+            aria-label={t`Kept forever`}
+            sx={{ display: 'flex', color: 'text.secondary' }}
+          >
+            <Pin size={14} />
+          </Box>
+        </Tooltip>
+      )}
       <TipIconButton
         label={busyGame ? t`Stop the game to restore saves.` : t`Restore ${{ label: when }}`}
         disabled={busyGame || pending}
