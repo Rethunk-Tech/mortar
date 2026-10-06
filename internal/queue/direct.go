@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -19,6 +20,8 @@ import (
 type DirectFile struct {
 	ID, Name, Version, FileName, URL string
 	SizeKB                           int64
+	// FileID is the site's exact file id where it has one (CurseForge), 0 otherwise.
+	FileID int
 	// Digest is "sha512:<hex>", or empty when the site published none.
 	Digest       string
 	Dependencies []DirectRef
@@ -69,10 +72,15 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 			q.Name = cmp.Or(f.Name, ref.ID)
 		}
 		q.FileName = f.FileName
+		q.PackageFile = f.FileID
 		out = append(out, q)
 		return nil
 	}
-	if err := visit(DirectRef{ID: r.Package, Version: r.Version}, true, 0); err != nil {
+	rootVersion := r.Version
+	if r.PackageFile != 0 {
+		rootVersion = strconv.Itoa(r.PackageFile)
+	}
+	if err := visit(DirectRef{ID: r.Package, Version: rootVersion}, true, 0); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -128,7 +136,8 @@ func ResolveDirect(ctx context.Context, src, id, version string, loaders []strin
 		if err != nil {
 			return DirectFile{}, err
 		}
-		f := DirectFile{ID: id, Name: r.Name, Version: r.Version, FileName: r.FileName, URL: r.URL, SizeKB: r.Size >> 10, Digest: r.Digest}
+		fileID, _ := strconv.Atoi(r.VersionID)
+		f := DirectFile{ID: id, Name: r.Name, Version: r.Version, FileID: fileID, FileName: r.FileName, URL: r.URL, SizeKB: r.Size >> 10, Digest: r.Digest}
 		for _, d := range r.Dependencies {
 			f.Dependencies = append(f.Dependencies, DirectRef{ID: d})
 		}

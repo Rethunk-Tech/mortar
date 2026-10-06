@@ -63,3 +63,24 @@ func TestExpandDirectOpensThePageOfAForbiddenFile(t *testing.T) {
 		t.Fatalf("opened %q, err %v", opened, err)
 	}
 }
+
+func TestExpandDirectPinsCurseForgeFileID(t *testing.T) {
+	var asked string
+	s := &Service{d: Deps{Direct: func(_ context.Context, _, _, version string, _ []string) (DirectFile, error) {
+		asked = version
+		return DirectFile{Version: "Content Patcher 2.9.1", FileID: 777, URL: "u"}, nil
+	}}}
+	got, err := s.expandDirect(context.Background(), Request{Kind: KindInstall, Source: "curseforge", Package: "309243", Version: "Content Patcher 2.9.1", PackageFile: 555})
+	if err != nil || len(got) != 1 {
+		t.Fatalf("got %v, err %v", got, err)
+	}
+	if asked != "555" {
+		t.Errorf("resolved %q, want the exact file id 555", asked)
+	}
+	if got[0].PackageFile != 777 || got[0].Version != "Content Patcher 2.9.1" {
+		t.Errorf("request carries file %d version %q", got[0].PackageFile, got[0].Version)
+	}
+	if src := packageSource(Item{Source: "curseforge", Package: "309243", Version: got[0].Version, PackageFile: got[0].PackageFile}); src.FileID != 777 {
+		t.Errorf("source file id %d", src.FileID)
+	}
+}

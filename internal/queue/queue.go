@@ -139,6 +139,7 @@ type Item struct {
 	// Source is "modrinth", "curseforge" or "itch" for a package that site serves: Package is then its project or game id and Digest
 	// the file's "sha512:<hex>". Empty means Thunderstore.
 	Source       string            `json:"source,omitempty"`
+	PackageFile  int               `json:"packageFile,omitempty"`
 	Digest       string            `json:"digest,omitempty"`
 	URL          string            `json:"url,omitempty"`
 	Repo         string            `json:"repo"`
@@ -224,6 +225,8 @@ type Request struct {
 	// Source names the site of a Package other than Thunderstore ("modrinth", "curseforge" or "itch"); Add resolves its file and
 	// required dependencies.
 	Source string `json:"source,omitempty"`
+	// PackageFile is the exact site file id of a Package; it wins over Version, which a site's authors may reuse across files.
+	PackageFile int `json:"packageFile,omitempty"`
 	// FallbackRepo is the mod's GitHub repo (owner/name) for a Nexus update: when the account would have to click
 	// Mod Manager Download, the same version's GitHub release is used instead, if there is exactly one archive.
 	FallbackRepo string `json:"fallbackRepo,omitempty"`
@@ -674,7 +677,7 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Package: r.Package, Source: r.Source, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: r.picture, Category: r.category, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
+			Package: r.Package, Source: r.Source, PackageFile: r.PackageFile, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: r.picture, Category: r.category, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
 		}
 		if it.Repo != "" {
 			it.Name = cmp.Or(it.Name, it.Repo)

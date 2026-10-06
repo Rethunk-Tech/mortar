@@ -104,3 +104,11 @@ func TestRestoreOnAnotherComputerQueuesTheModsFromTheirSources(t *testing.T) {
 		t.Fatalf("restored save: %q, %v", b, err)
 	}
 }
+
+func TestRestoreRequestPinsCurseForgeFile(t *testing.T) {
+	e := profile.Entry{Source: profile.Source{Kind: profile.KindCurseForge, Name: "309243", Version: "Content Patcher 2.9.1", FileID: 555}}
+	r, ok := restoreRequest("stardew", "p", e)
+	if !ok || r.Source != "curseforge" || r.Package != "309243" || r.PackageFile != 555 {
+		t.Errorf("request %+v ok %v", r, ok)
+	}
+}

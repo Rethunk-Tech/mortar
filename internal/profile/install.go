@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -80,7 +81,10 @@ func (s *Store) InstallSource(game, id, path string, source Source) (InstallResu
 		key = store.NexusKey(source.ModID, source.FileID)
 	case KindThunderstore:
 		key = store.PackageKey(source.Name, source.Version)
-	case KindModrinth, KindCurseForge, KindItch:
+	case KindCurseForge:
+		// File display names are author-written and repeat, so the file id keys the store item.
+		key = store.PackageKey(source.Kind+":"+source.Name, strconv.Itoa(source.FileID))
+	case KindModrinth, KindItch:
 		key = store.PackageKey(source.Kind+":"+source.Name, source.Version)
 	default:
 		return InstallResult{}, installError(fmt.Errorf("cannot install a %q archive", source.Kind))
