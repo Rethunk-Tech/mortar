@@ -32,7 +32,7 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 
 - Discovers the games in its catalog (Stardew Valley, Lethal Company and Valheim) on Steam (including Flatpak Steam), GOG, Heroic, Minigalaxy, Lutris and Bottles, and installs each game's mod loader.
 - Keeps each set of mods in its own profile, with install, update, rollback and share as a link or `.mortar` file.
-- Downloads from Nexus Mods, GitHub, Thunderstore, Modrinth and itch.io for the games that list them; never re-hosts mod files.
+- Downloads from Nexus Mods, Thunderstore, CurseForge and GitHub for the games that list them; never re-hosts mod files.
 - Edits a mod's config as a typed form, can keep a profile's saves separate, and shares profiles between your computers through a sync folder.
 - A command line for the running app: `mortar games`, `mortar mods stardew "My Farm"`, `mortar conflicts ...`, with `--json` for scripts.
 - Installs the [Mortar SMAPI Bridge](https://github.com/Rethunk-Tech/mortar-smapi-bridge) into each profile: console commands from Mortar, Generic Mod Config Menu settings, and a stream overlay. Games on BepInEx get the [Mortar BepInEx Bridge](https://github.com/Rethunk-Tech/mortar-bepinex-bridge) instead, which lets Mortar ask the running game which plugins it has loaded.
