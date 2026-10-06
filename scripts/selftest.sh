@@ -40,6 +40,10 @@ build() {
   # The server embeds frontend/dist, which every sandbox's build rewrites, so concurrent sandboxes build one at a time.
   exec 9>/var/tmp/mortar-selftest-build.lock
   flock 9
+  # A fresh clone has no generated bindings, which the frontend build imports.
+  if [ ! -d "$REPO/frontend/bindings" ]; then
+    (cd "$REPO" && GOTMPDIR=/var/tmp wails3 generate bindings -clean=true -ts -i >"$ROOT/bindings.log" 2>&1)
+  fi
   (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
   (cd "$REPO" && GOTMPDIR=/var/tmp go build -tags server -o "$ROOT/mortar-server.new" .)
   exec 9>&-
