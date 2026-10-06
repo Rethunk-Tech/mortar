@@ -84,7 +84,7 @@ func TestContentPackDiskCache(t *testing.T) {
 
 	cache = readDiskPackCache(t, cachePath)
 	entry = cache.Packs[filepath.Clean(im.Folder)]
-	entry.Pack = diskCachedPack{}
+	entry.Pack = nil
 	cache.Packs[filepath.Clean(im.Folder)] = entry
 	cache.Version = contentPackParserVersion - 1
 	raw, err := encodePackCache(cache)
@@ -207,8 +207,14 @@ func BenchmarkPackDiskCacheLoad(b *testing.B) {
 	_, packed := generatedPackCache(b)
 	b.SetBytes(int64(len(packed)))
 	for b.Loop() {
-		if _, ok := decodePackCache(packed); !ok {
+		cache, ok := decodePackCache(packed)
+		if !ok {
 			b.Fatal("decode")
+		}
+		for _, entry := range cache.Packs {
+			if _, ok := decodeDiskPack(entry.Pack); !ok {
+				b.Fatal("decode pack")
+			}
 		}
 	}
 }
@@ -314,10 +320,14 @@ func generatedPackCache(t testing.TB) (diskPackCache, []byte) {
 				shapes: []cpShape{{kind: 'r', cells: cellStr}},
 			})
 		}
+		pack, err := encodeDiskPack(diskCachedPack{Patches: diskPatches, Mentions: map[string]bool{"other.mod": true}, Skips: 1})
+		if err != nil {
+			t.Fatal(err)
+		}
 		cache.Packs["/tmp/pack-"+strconv.Itoa(i)] = diskPackEntry{
 			Fingerprint: "f" + strconv.Itoa(i),
 			Files:       []packFileStamp{{Path: "content.json", Size: 100, ModTime: 1}},
-			Pack:        diskCachedPack{Patches: diskPatches, Mentions: map[string]bool{"other.mod": true}, Skips: 1},
+			Pack:        pack,
 		}
 	}
 	packed, err := encodePackCache(cache)
@@ -450,8 +460,8 @@ func TestPackDiskCacheKeepsEveryPackItRead(t *testing.T) {
 	testfs.WriteFile(t, sheets, "content.json", `{"Changes":[{"Action":"Load","Target":"Tilesheets/Test","FromFile":"sheet.png"}]}`)
 	candidate := packs.FromDisk(framework.Mod{Enabled: true, Folder: sheets, UniqueID: "Test.Sheets", Name: "Sheets", Key: "Test.Sheets"})
 	Driver{}.Analyze(framework.Input{Enabled: []framework.Mod{on, candidate}, All: []framework.Mod{on, candidate, off}})
-	if entry := readDiskPackCache(t, cachePath).Packs[filepath.Clean(off.Folder)]; len(entry.Pack.Patches) != 2 {
-		t.Fatalf("switched-off pack on disk = %#v", entry.Pack)
+	if pack, _ := decodeDiskPack(readDiskPackCache(t, cachePath).Packs[filepath.Clean(off.Folder)].Pack); len(pack.Patches) != 2 {
+		t.Fatalf("switched-off pack on disk = %#v", pack)
 	}
 
 	resetContentPackCaches()

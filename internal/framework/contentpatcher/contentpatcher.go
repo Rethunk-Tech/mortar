@@ -179,7 +179,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 13
+const contentPackParserVersion = 14
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -198,9 +198,9 @@ type diskPackCache struct {
 type diskPackEntry struct {
 	Fingerprint string          `json:"fingerprint"`
 	Files       []packFileStamp `json:"files"`
-	Pack        diskCachedPack  `json:"pack"`
-	// dropped is set when Pack was emptied to save memory while the pack itself is held in packCache.
-	dropped bool
+	// Pack is the pack's diskCachedPack, encoded when the pack is parsed, so a save after one pack changed encodes
+	// only that pack, and the packs not read yet stay compact in memory.
+	Pack []byte `json:"pack"`
 }
 
 type diskCachedPack struct {
@@ -715,11 +715,12 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPac
 	cachePath := loadPackDiskCache()
 	if cachePath != "" {
 		if entry, ok := diskPackEntryFor(root); ok && packFingerprintValid(root, entry.Files, entry.Fingerprint) {
-			pack := cachedPackOfDisk(root, entry.Pack, entry)
-			packCache.Store(root, pack)
-			packValidated.Store(root, true)
-			clearDiskPackPayload(root)
-			return pack
+			if disk, ok := decodeDiskPack(entry.Pack); ok {
+				pack := cachedPackOfDisk(root, disk, entry)
+				packCache.Store(root, pack)
+				packValidated.Store(root, true)
+				return pack
+			}
 		}
 	}
 	// Every file is stamped before it is read, and a file changed since its stamp leaves the pack uncached, so a cache
@@ -742,11 +743,9 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPac
 	packCache.Store(root, pack)
 	packValidated.Store(root, true)
 	if cachePath != "" {
-		storeDiskPackEntry(root, diskPackEntry{
-			Fingerprint: pack.fingerprint,
-			Files:       slices.Clone(pack.files),
-			Pack:        diskPackOf(pack),
-		})
+		if disk, err := encodeDiskPack(diskPackOf(pack)); err == nil {
+			storeDiskPackEntry(root, diskPackEntry{Fingerprint: pack.fingerprint, Files: slices.Clone(pack.files), Pack: disk})
+		}
 	}
 	dropPNGAlphaUnder(root)
 	return pack
@@ -878,6 +877,17 @@ func decodePackCache(raw []byte) (diskPackCache, bool) {
 	return cache, true
 }
 
+func encodeDiskPack(pack diskCachedPack) ([]byte, error) {
+	var buf bytes.Buffer
+	err := gob.NewEncoder(&buf).Encode(pack)
+	return buf.Bytes(), err
+}
+
+func decodeDiskPack(raw []byte) (diskCachedPack, bool) {
+	var pack diskCachedPack
+	return pack, gob.NewDecoder(bytes.NewReader(raw)).Decode(&pack) == nil
+}
+
 func diskPackEntryFor(root string) (diskPackEntry, bool) {
 	packDiskState.Lock()
 	defer packDiskState.Unlock()
@@ -891,19 +901,8 @@ func storeDiskPackEntry(root string, entry diskPackEntry) {
 	if packDiskState.entries == nil {
 		packDiskState.entries = map[string]diskPackEntry{}
 	}
-	entry.Pack, entry.dropped = diskCachedPack{}, true
 	packDiskState.entries[root] = entry
 	packDiskState.dirty = true
-}
-
-func clearDiskPackPayload(root string) {
-	packDiskState.Lock()
-	defer packDiskState.Unlock()
-	entry, ok := packDiskState.entries[root]
-	if ok {
-		entry.Pack, entry.dropped = diskCachedPack{}, true
-		packDiskState.entries[root] = entry
-	}
 }
 
 func flushPackDiskCache(mods []framework.Mod) {
@@ -929,22 +928,9 @@ func flushPackDiskCache(mods []framework.Mod) {
 		packDiskState.Unlock()
 		return
 	}
-	entries := make(map[string]diskPackEntry, len(packDiskState.entries))
-	for root, entry := range packDiskState.entries {
-		if cached, ok := packCache.Load(root); ok {
-			if pack, ok := cached.(cachedPack); ok {
-				entry.Pack = diskPackOf(pack)
-			}
-		} else if entry.dropped {
-			// Its fingerprint would still match, so writing it without its payload would read back as an empty pack.
-			delete(packDiskState.entries, root)
-			continue
-		}
-		entries[root] = entry
-	}
 	packed, err := encodePackCache(diskPackCache{
 		Version: contentPackParserVersion,
-		Packs:   entries,
+		Packs:   packDiskState.entries,
 	})
 	if err != nil {
 		packDiskState.Unlock()
@@ -965,22 +951,12 @@ func flushPackDiskCache(mods []framework.Mod) {
 	}
 }
 
-// prunePackCache bounds the memoised packs to the folders of the mods just checked. A dropped pack whose disk entry
-// no longer holds its payload gets it back, so a later write keeps it for the next check of those mods.
+// prunePackCache bounds the memoised packs to the folders of the mods just checked.
 func prunePackCache(present map[string]bool) {
-	packCache.Range(func(k, v any) bool {
-		root, ok := k.(string)
-		if ok && present[root] {
-			return true
+	packCache.Range(func(k, _ any) bool {
+		if root, ok := k.(string); !ok || !present[root] {
+			packCache.Delete(k)
 		}
-		packCache.Delete(k)
-		pack, isPack := v.(cachedPack)
-		packDiskState.Lock()
-		if entry, ok := packDiskState.entries[root]; ok && entry.dropped && isPack {
-			entry.Pack, entry.dropped = diskPackOf(pack), false
-			packDiskState.entries[root] = entry
-		}
-		packDiskState.Unlock()
 		return true
 	})
 }
