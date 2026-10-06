@@ -1,8 +1,11 @@
 package queue
 
 import (
+	"cmp"
 	"context"
 	"errors"
+	"log"
+	neturl "net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -77,6 +80,14 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 	})
 	if err != nil && errors.Is(err, github.ErrLinkExpired) {
 		return err
+	}
+	if err == nil {
+		// Only the host: a download address can carry a signed key.
+		host := ""
+		if u, perr := neturl.Parse(url); perr == nil {
+			host = u.Host
+		}
+		log.Printf("download: %s from %s", cmp.Or(it.Name, it.Package, it.FileName), host)
 	}
 	return s.diskError(err, p.total)
 }

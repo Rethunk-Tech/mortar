@@ -2,11 +2,13 @@ package lan
 
 import (
 	"archive/tar"
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -195,6 +197,7 @@ func (s *Service) fetchEntry(
 			return 0, fmt.Errorf("record store entry %s: %w", key, err)
 		}
 	}
+	log.Printf("lan: %s from %s", cmp.Or(item.Package, key), incoming.Peer)
 	return received, nil
 }
 
