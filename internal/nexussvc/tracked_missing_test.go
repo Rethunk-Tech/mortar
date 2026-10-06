@@ -3,6 +3,7 @@ package nexussvc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
@@ -76,5 +78,20 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 	}
 	if len(missing) != 1 || missing[0].ModID != 200 || missing[0].DomainName != "stardewvalley" {
 		t.Fatalf("missing = %+v", missing)
+	}
+}
+
+func TestTrackedMissingIsEmptyWhenTheKeyIsGone(t *testing.T) {
+	store := testStore(t)
+	if _, err := store.Update(func(s *settings.Settings) { s.NexusUserID = 7 }); err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(store, nexus.New("1"), &meta.Client{})
+	if _, err := Authed(store, nexus.New("1")); !errors.Is(err, ErrSignedOut) {
+		t.Fatalf("a remembered account without a stored key is signed out: %v", err)
+	}
+	missing, err := s.TrackedMissing(context.Background(), "stardew", "any")
+	if err != nil || len(missing) != 0 {
+		t.Fatalf("signed out lists nothing and is not an error: %v %v", missing, err)
 	}
 }

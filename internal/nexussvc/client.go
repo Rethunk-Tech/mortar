@@ -17,6 +17,10 @@ func Authed(store *settings.Store, c *nexus.Client) (*nexus.Client, error) {
 		return nil, ErrSignedOut
 	}
 	key, err := secret.Get(keyName)
+	if errors.Is(err, secret.ErrNotFound) {
+		// The account is remembered but its key is gone (a reset or new keyring): that is signed out, not a failure.
+		return nil, ErrSignedOut
+	}
 	if err != nil {
 		return nil, err
 	}

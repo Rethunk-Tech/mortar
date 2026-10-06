@@ -14,7 +14,9 @@ import (
 
 // TrackedMissing lists tracked mods for the game's Nexus domain that no Nexus entry in the profile uses.
 func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) ([]nexus.TrackedMod, error) {
-	if _, err := s.keyed(); err != nil {
+	if _, err := s.keyed(); errors.Is(err, ErrSignedOut) {
+		return []nexus.TrackedMod{}, nil
+	} else if err != nil {
 		return nil, err
 	}
 	t, err := game.NexusTitle(gameID)

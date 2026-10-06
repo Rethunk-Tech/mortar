@@ -240,7 +240,11 @@ function Failure({ game }: { game: string }) {
   const cause = failure?.cause
   const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
   const profile = useProfiles(openProfileOf)
-  const line = useLaunchLine(game, info?.installDir ?? '')
+  // Only a launch-options failure shows the line, so no other failure asks for it.
+  const line = useLaunchLine(
+    game,
+    failure?.hint === Hint.HintLaunchOptions ? (info?.installDir ?? '') : '',
+  )
   // The dialog unmounts with `failure`, so nothing fades out with stale text.
   if (!failure) {
     return null
