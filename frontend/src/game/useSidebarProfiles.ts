@@ -7,6 +7,10 @@ import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { orderProfiles } from './profileOrder.ts'
 
+// The profile list still holds the previous game's profiles while a newly opened game loads, so badges wait for it
+// rather than ask about one game's profiles under the other's id.
+const useListedGame = () => useProfiles((s) => s.game?.id ?? '')
+
 export function useOrderedProfiles(game: string) {
   const allProfiles = useProfiles((s) => s.profiles)
   const profileOrder = useSettings((s) => s.profileOrder)
@@ -20,10 +24,6 @@ export function useOrderedProfiles(game: string) {
     ),
   }
 }
-
-// The profile list still holds the previous game's profiles while a newly opened game loads, so badges wait for it
-// rather than ask about one game's profiles under the other's id.
-const useListedGame = () => useProfiles((s) => s.game?.id ?? '')
 
 export function useSidebarBadges(game: string) {
   const { allProfiles, profiles } = useOrderedProfiles(game)
