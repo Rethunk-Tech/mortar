@@ -34,7 +34,8 @@ func keys(it Item, ident identityOf) []string {
 		out = append(out, "repo:"+strings.ToLower(it.Repo))
 	}
 	if m := githubLink.FindStringSubmatch(it.Summary); m != nil {
-		out = append(out, "repo:"+strings.ToLower(strings.TrimSuffix(m[1], ".git")))
+		// A link that ends a sentence captures its full stop, which no repository name ends in.
+		out = append(out, "repo:"+strings.ToLower(strings.TrimSuffix(strings.TrimRight(m[1], "."), ".git")))
 	}
 	if m := thunderstoreRef.FindStringSubmatch(it.Summary); m != nil {
 		out = append(out, "ts:"+strings.ToLower(m[1]+"-"+m[2]))

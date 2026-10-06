@@ -138,3 +138,16 @@ func TestCompatListTiesANexusAndAGitHubHitThroughTheirUniqueID(t *testing.T) {
 		t.Fatalf("cards = %+v", got)
 	}
 }
+
+func TestKeysDropTheFullStopAfterAGitHubLink(t *testing.T) {
+	for _, summary := range []string{
+		"Source: https://github.com/Alice/Cool-Mod.",
+		"See https://github.com/alice/cool-mod.git.",
+		"https://github.com/alice/cool-mod...",
+	} {
+		got := keys(Item{Summary: summary}, nil)
+		if len(got) != 1 || got[0] != "repo:alice/cool-mod" {
+			t.Errorf("keys(%q) = %v", summary, got)
+		}
+	}
+}
