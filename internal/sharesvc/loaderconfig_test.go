@@ -1,6 +1,7 @@
 package sharesvc
 
 import (
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,8 +12,9 @@ import (
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 )
 
-// A Lethal Company profile's BepInEx config travels in its .mortar file and lands in the importing profile; the bridge's
-// state file, binaries and files outside the config folder stay behind.
+// A Lethal Company profile's BepInEx config travels in its .mortar file and lands in the importing profile, also
+// through ImportData, the path a LAN accept takes; the bridge's state file, binaries and files outside the config
+// folder stay behind.
 func TestLoaderConfigsRoundTripThroughAMortarFile(t *testing.T) {
 	s, _ := newService(t, true)
 	src, err := s.d.Profiles.Create("lethal-company", "Lobby")
@@ -63,5 +65,16 @@ func TestLoaderConfigsRoundTripThroughAMortarFile(t *testing.T) {
 		if (err == nil) != want || (want && string(b) != files[rel]) {
 			t.Errorf("%s arrived %v (%q), want %v", rel, err == nil, b, want)
 		}
+	}
+	lan, err := s.ImportData(t.Context(), "lethal-company", base64.RawStdEncoding.EncodeToString(payload))
+	if err != nil {
+		t.Fatal(err)
+	}
+	lanDir, err := s.d.Profiles.ProfileDir("lethal-company", lan.Profile.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b, err := fsx.ReadFile(filepath.Join(lanDir, "BepInEx", "config", "Sigurd.CSync.cfg")); err != nil || string(b) != files["BepInEx/config/Sigurd.CSync.cfg"] {
+		t.Errorf("a LAN accept's import left the config behind: %q, %v", b, err)
 	}
 }

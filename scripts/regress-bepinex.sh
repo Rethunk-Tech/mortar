@@ -291,7 +291,7 @@ mx_problems() { cli problems lethal-company "$1" --json >"$ROOT/problems-$2.json
 # regress_bepinex_matrix DATA COMPAT GAME TIMEOUT PROFILE BEPINEX runs the matrix: Mortar's data folder, the Proton
 # compatdata folder, the copied game, the launch wait in seconds, the base run's profile id and the BepInEx version.
 regress_bepinex_matrix() {
-  mx_data=$1 mx_compat=$2 mx_game=$3 mx_timeout=$4 mx_base=$5 mx_bepinex=$6 mx_log=/dev/null
+  mx_data=$1 mx_compat=$2 mx_game=$3 mx_timeout=$4 mx_base=$5 mx_bepinex=$6 mx_log=/dev/null mx_edge_edited=
   # Every item runs and records its own verdict, so one failing command must not end the run.
   set +e +o pipefail
   mx_saves="$mx_compat/pfx/drive_c/users/steamuser/AppData/LocalLow/ZeekerssRBLX/Lethal Company"
@@ -491,6 +491,7 @@ PY
       cfgdir="$(mx_dir "$edge")/BepInEx/config"
       if mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$edge")" '"thunderstore:MortarMatrix-ProbeBase"' '"tech.rethunk.mortar.matrix.base.cfg"' '"General"' '"Value"' '"edited by mortar"' >/dev/null &&
         mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$edge")" '"thunderstore:FlipMods-BetterStamina"' '"FlipMods.BetterStamina.cfg"' '"CarryWeight"' '"CarryWeightPenaltyMultiplier"' '"0.75"' >/dev/null; then
+        mx_edge_edited=1
         mx_launch "$edge" edge-relaunch
         mx_stop edge-relaunch
         mx_check mods.config "after Set and a relaunch: probe logged \"$(grep -m1 -o 'matrix base cfg=[^\r]*' "$mx_log")\", BetterStamina.cfg has \"$(grep -m1 'CarryWeightPenaltyMultiplier =' "$cfgdir/FlipMods.BetterStamina.cfg")\"" \
@@ -645,6 +646,11 @@ PY
 # the probe profile, whose packages exist only as local files.
 regress_bepinex_lan() {
   local edge=$1 peer=$ROOT/peer peer_port pa pb code
+  # The send carries the config the edge step edited; without that edit there is nothing to look for at the receiver.
+  if [ -z "${mx_edge_edited:-}" ]; then
+    mx_fail share.lan "not run: the probe profile holds no edited config (edge.install or mods.config failed first)"
+    return
+  fi
   peer_port=$((PORT + 1))
   while [ -n "$(ss -ltn "sport = :$peer_port" | tail -n +2)" ]; do peer_port=$((peer_port + 1)); done
   pa=$((47600 + RANDOM % 300))
@@ -687,8 +693,10 @@ regress_bepinex_lan() {
   want=$(cli mods lethal-company "$edge" --json | python3 -c 'import json,sys; print(sorted(m["name"] for m in json.load(sys.stdin) if m["source"] == "local"))')
   local cfg
   cfg=$(find "$peer/home/.local/share/mortar/profiles/lethal-company" -name tech.rethunk.mortar.matrix.base.cfg 2>/dev/null | head -1)
-  mx_check share.lan "paired ($(head -1 "$ROOT/lan-pair-peer.txt")), sent $sent, accepted ${accepted:-nothing}; receiver's local packages $got; edited config $(grep -c 'Value = edited by mortar' "$cfg" 2>/dev/null) line(s)" \
-    test "$got" = "$want" -a -n "$cfg"
+  local edited
+  edited=$(grep -c 'Value = edited by mortar' "$cfg" 2>/dev/null || true)
+  mx_check share.lan "paired ($(head -1 "$ROOT/lan-pair-peer.txt")), sent $sent, accepted ${accepted:-nothing}; receiver's local packages $got; edited config ${edited:-0} line(s)${cfg:+ in $cfg}" \
+    test "$got" = "$want" -a "${edited:-0}" -gt 0
   local ppid
   ppid=$(ss -ltnp "sport = :$peer_port" | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2)
   if [ -n "$ppid" ] && [ "$(readlink "/proc/$ppid/exe")" = "$ROOT/mortar-server" ]; then kill "$ppid"; fi
