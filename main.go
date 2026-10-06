@@ -320,6 +320,17 @@ func run() error {
 		ns, ok, err := thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.Publisher(ctx, key, name, ver, version)
 		return ns, ok && err == nil
 	}
+	profiles.PackageLooks = func(gameID string, names []string) map[string]thunderstore.Look {
+		key := share.SourceKeys(gameID)["thunderstore"]
+		if key == "" {
+			return nil
+		}
+		looks, err := thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.CachedLooks(key, names)
+		if err != nil {
+			return nil
+		}
+		return looks
+	}
 	profiles.ShortcutRenamed = shortcut.Renamed
 	profiles.ShortcutRemoved = shortcut.Removed
 	plays.Covers = func(gameID, profileID string) ([]string, error) {
@@ -930,6 +941,11 @@ func run() error {
 				if err := profiles.RefreshDependencies(g); err != nil {
 					log.Printf("refresh dependencies: %s: %v", g, err)
 				}
+			}
+		}
+		for _, g := range game.Catalog() {
+			if err := profiles.FillPackageLooks(g.ID); err != nil {
+				log.Printf("package icons and categories: %s: %v", g.ID, err)
 			}
 		}
 	}()

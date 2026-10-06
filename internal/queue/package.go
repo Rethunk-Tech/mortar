@@ -79,6 +79,7 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 				dep.Kind, dep.Disabled = KindDependency, nil
 			}
 			dep.Package, dep.Name, dep.Version, dep.url, dep.sizeKB = id, p.Name, p.Version, p.URL, p.Size>>10
+			dep.picture, dep.category = p.Icon, p.Category
 			dep.FileName = id + "-" + p.Version + ".zip"
 			out = append(out, dep)
 		}
@@ -96,7 +97,10 @@ func (s *Service) holds(r Request, id, version string) bool {
 }
 
 func packageSource(it Item) profile.Source {
-	src := profile.Source{Kind: cmp.Or(it.Source, profile.KindThunderstore), Name: it.Package, Version: it.Version, Digest: it.Digest}
+	src := profile.Source{
+		Kind: cmp.Or(it.Source, profile.KindThunderstore), Name: it.Package, Version: it.Version, Digest: it.Digest,
+		Picture: it.Picture, Category: it.Category,
+	}
 	if len(it.Disabled) > 0 {
 		src = src.WithDisabled(it.Disabled)
 	}

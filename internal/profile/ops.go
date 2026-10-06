@@ -33,7 +33,7 @@ type Mod struct {
 	Version  string   `json:"version"`
 	Enabled  bool     `json:"enabled"`
 	Siblings []mod.ID `json:"siblings"`
-	// Picture and Endorsements come from the mod's Nexus page and are empty for other sources.
+	// Picture is the Nexus page's picture or the Thunderstore package's icon; Endorsements come from the Nexus page.
 	Picture        string   `json:"picture"`
 	Endorsements   int      `json:"endorsements"`
 	Needs          []mod.ID `json:"needs,omitempty"`

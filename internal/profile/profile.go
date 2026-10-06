@@ -24,6 +24,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -49,8 +50,8 @@ const (
 
 // Source says where an entry came from. Kind is KindLocal for an archive the user picked, Name its file name;
 // KindNexus for a Nexus file, which also names the mod, the file and its version, and holds the mod's picture and
-// endorsement count as fetched at install; or KindGitHub for a release asset, named by Repo ("owner/repo"), Tag
-// and Asset.
+// endorsement count as fetched at install; KindGitHub for a release asset, named by Repo ("owner/repo"), Tag
+// and Asset; or KindThunderstore for a package, named Namespace-Name, with its icon as Picture.
 type Source struct {
 	Kind             string `json:"kind"`
 	Name             string `json:"name"`
@@ -62,7 +63,8 @@ type Source struct {
 	Repo             string `json:"repo,omitempty"`
 	Tag              string `json:"tag,omitempty"`
 	Asset            string `json:"asset,omitempty"`
-	// ModName is the Nexus mod page's name, and Category the file's category on that page (MAIN, OPTIONAL, ...).
+	// ModName is the Nexus mod page's name, and Category the file's category on that page (MAIN, OPTIONAL, ...), or
+	// a Thunderstore package's site category (thunderstore.Category).
 	ModName  string `json:"modName,omitempty"`
 	Category string `json:"category,omitempty"`
 	// Digest is the downloaded file's "sha512:<hex>" where the site published one (Modrinth), which its update
@@ -249,6 +251,9 @@ type Store struct {
 	// Publisher is the Thunderstore namespace of the one package in the game's community index with this name and
 	// version; ok is false when none or several match. Nil means no index.
 	Publisher func(game, name, version string) (namespace string, ok bool)
+	// PackageLooks is the icon and category of each named Thunderstore package (Namespace-Name) the game's cached
+	// index holds, keyed by the lower-case name, read without the network. Nil means no index.
+	PackageLooks func(game string, names []string) map[string]thunderstore.Look
 	// ShortcutRenamed updates an existing launcher after a profile is renamed; nil means nothing.
 	ShortcutRenamed func(game, id, profileName, gameName string) error
 	// ShortcutRemoved removes launchers after a profile is deleted; nil means nothing.

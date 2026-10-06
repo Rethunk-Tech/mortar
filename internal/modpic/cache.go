@@ -1,4 +1,4 @@
-// Package modpic caches Nexus mod pictures on disk and serves them to the UI.
+// Package modpic caches mod pictures (Nexus pictures and Thunderstore package icons) on disk and serves them to the UI.
 package modpic
 
 import (
@@ -31,7 +31,7 @@ const MaxCacheBytes = 64 << 20
 
 const workers = 4
 
-var allowedHosts = []string{"staticdelivery.nexusmods.com", "images.nexusmods.com"}
+var allowedHosts = []string{"staticdelivery.nexusmods.com", "images.nexusmods.com", "ccdn.thunderstore.io", "gcdn.thunderstore.io"}
 
 var imageTypes = map[string]struct{}{
 	"image/png":  {},
@@ -40,7 +40,7 @@ var imageTypes = map[string]struct{}{
 	"image/gif":  {},
 }
 
-// Cache stores Nexus mod pictures under the data dir's cache/.
+// Cache stores mod pictures under the data dir's cache/.
 type Cache struct {
 	dir   string
 	http  *http.Client
@@ -126,12 +126,12 @@ func parsePicture(raw string) (*url.URL, error) {
 		return nil, err
 	}
 	if u.Scheme != "https" || u.User != nil || u.Hostname() == "" || u.EscapedPath() == "" || strings.Contains(u.Path, "..") {
-		return nil, fmt.Errorf("the picture URL is not a Nexus image")
+		return nil, fmt.Errorf("the picture URL is not an https image address")
 	}
 	// The request goes to the allowlist's own spelling of the host, never to text the caller supplied.
 	i := slices.Index(allowedHosts, strings.ToLower(u.Hostname()))
 	if i < 0 {
-		return nil, fmt.Errorf("the picture host is not a Nexus CDN")
+		return nil, fmt.Errorf("the picture host is not a Nexus or Thunderstore CDN")
 	}
 	u.Host = allowedHosts[i]
 	return u, nil

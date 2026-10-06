@@ -145,6 +145,12 @@ func TestAssetURLEmptyWhenInvalid(t *testing.T) {
 	}
 }
 
+func TestAssetURLTakesThunderstoreIcons(t *testing.T) {
+	if AssetURL("https://ccdn.thunderstore.io/live/repository/icons/Evaisa-HookGenPatcher-0.0.5.png") == "" {
+		t.Fatal("a Thunderstore package icon is not served")
+	}
+}
+
 func TestEnsureIgnoresEmpty(t *testing.T) {
 	c := New(t.TempDir(), http.DefaultClient)
 	c.Ensure(t.Context(), "")

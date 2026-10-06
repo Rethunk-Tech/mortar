@@ -127,7 +127,7 @@ type Item struct {
 	FileName string `json:"fileName"`
 	Version  string `json:"version"`
 	SizeKB   int64  `json:"sizeKb"`
-	// Picture is the mod page's picture URL, known once the download starts; empty for GitHub items.
+	// Picture is the mod page's picture URL, known once the download starts, or a Thunderstore package's icon; empty for GitHub items.
 	Picture  string  `json:"picture,omitempty"`
 	State    string  `json:"state"`
 	Progress float64 `json:"progress"`
@@ -245,10 +245,13 @@ type Request struct {
 
 	key     string
 	expires int64
-	// url and sizeKB are a resolved package's download, set by the closure expansion.
-	url    string
-	sizeKB int64
-	digest string
+	// url and sizeKB are a resolved package's download, and picture and category its icon and site category, set by
+	// the closure expansion.
+	url      string
+	sizeKB   int64
+	digest   string
+	picture  string
+	category string
 }
 
 // OverlayPlace is the placement of an optional file inside its main file's folder: the folder of the file laid
@@ -676,7 +679,7 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Package: r.Package, Source: r.Source, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
+			Package: r.Package, Source: r.Source, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: r.picture, Category: r.category, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
 		}
 		if it.Repo != "" {
 			it.Name = cmp.Or(it.Name, it.Repo)

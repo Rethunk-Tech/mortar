@@ -52,6 +52,7 @@ type Resolved struct {
 	Size int64
 	// Dependencies are Namespace-Name-Version strings.
 	Dependencies []string
+	Look
 }
 
 // Resolve finds the package in the community's index; an empty version means the latest.
@@ -158,6 +159,7 @@ func (d Driver) resolved(p pkg, v version) Resolved {
 	}
 	return Resolved{
 		Namespace: p.Owner, Name: p.Name, Version: v.Number, Size: v.Size, Dependencies: v.Deps,
-		URL: base + "/package/download/" + p.Owner + "/" + p.Name + "/" + v.Number + "/",
+		URL:  base + "/package/download/" + p.Owner + "/" + p.Name + "/" + v.Number + "/",
+		Icon: p.Icon, Category: Category(p.Categories),
 	}
 }
