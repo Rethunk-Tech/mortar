@@ -65,3 +65,39 @@ func TestPluginsReadsTheAttributeAndItsClassNamespace(t *testing.T) {
 		t.Fatalf("got %+v, %v", got, err)
 	}
 }
+
+func TestScanReadsDependenciesAndIncompatibilitiesOfAPluginClass(t *testing.T) {
+	got, err := Scan(filepath.Join("testdata", "mod.dll"))
+	want := []Relation{
+		{Plugin: "com.fixture.plugin", GUID: "com.fixture.hard", Kind: HardDependency},
+		{Plugin: "com.fixture.plugin", GUID: "com.fixture.min", MinVersion: "2.1.0", Kind: HardDependency},
+		{Plugin: "com.fixture.plugin", GUID: "com.fixture.soft", Kind: SoftDependency},
+		{Plugin: "com.fixture.plugin", GUID: "com.fixture.clash", Kind: Incompatible},
+	}
+	if err != nil || len(got.Plugins) != 1 || !slices.Equal(got.Relations, want) {
+		t.Fatalf("relations = %+v, %v", got.Relations, err)
+	}
+}
+
+func TestRelationArgsTellsAMinimumVersionFromFlags(t *testing.T) {
+	guid := []byte{1, 0, 1, 'g'}
+	cases := map[string]struct {
+		blob []byte
+		want Relation
+		ok   bool
+	}{
+		"flags hard":    {append(slices.Clone(guid), 1, 0, 0, 0, 0, 0), Relation{GUID: "g", Kind: HardDependency}, true},
+		"flags soft":    {append(slices.Clone(guid), 2, 0, 0, 0, 0, 0), Relation{GUID: "g", Kind: SoftDependency}, true},
+		"short minimum": {append(slices.Clone(guid), 3, '1', '.', '0', 0, 0), Relation{GUID: "g", MinVersion: "1.0", Kind: HardDependency}, true},
+		"truncated":     {append(slices.Clone(guid), 9, '1'), Relation{}, false},
+		"no prolog":     {[]byte{0, 0, 1, 'g'}, Relation{}, false},
+	}
+	for name, c := range cases {
+		if got, ok := relationArgs(c.blob, false); ok != c.ok || got != c.want {
+			t.Errorf("%s: %+v, %v", name, got, ok)
+		}
+	}
+	if got, ok := relationArgs(append(slices.Clone(guid), 0, 0), true); !ok || got.Kind != Incompatible || got.GUID != "g" {
+		t.Errorf("incompatibility: %+v, %v", got, ok)
+	}
+}

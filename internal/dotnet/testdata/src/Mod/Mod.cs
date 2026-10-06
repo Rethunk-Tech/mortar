@@ -62,6 +62,10 @@ namespace Fixture
 namespace Fixture.Plugins
 {
     [BepInEx.BepInPlugin("com.fixture.plugin", "Fixture Plugin", "1.2.3")]
+    [BepInEx.BepInDependency("com.fixture.hard")]
+    [BepInEx.BepInDependency("com.fixture.min", "2.1.0")]
+    [BepInEx.BepInDependency("com.fixture.soft", BepInEx.DependencyFlags.SoftDependency)]
+    [BepInEx.BepInIncompatibility("com.fixture.clash")]
     public class Plugin
     {
     }

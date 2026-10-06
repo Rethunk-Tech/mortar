@@ -8,11 +8,15 @@ import (
 )
 
 // PluginsIn lists the plugins every DLL under dir declares.
-func PluginsIn(dir string) []Plugin {
-	var out []Plugin
+func PluginsIn(dir string) []Plugin { return ScanDir(dir).Plugins }
+
+// ScanDir reads what every DLL under dir declares about its plugins.
+func ScanDir(dir string) Declared {
+	var out Declared
 	for _, path := range dllsIn(dir) {
-		plugins, _ := Plugins(path)
-		out = append(out, plugins...)
+		d, _ := Scan(path)
+		out.Plugins = append(out.Plugins, d.Plugins...)
+		out.Relations = append(out.Relations, d.Relations...)
 	}
 	return out
 }

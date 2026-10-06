@@ -759,17 +759,49 @@ func le32(b []byte) uint32 { return binary.LittleEndian.Uint32(b) }
 // which is how an exception's stack names the plugin.
 type Plugin struct{ GUID, Name, Version, Namespace string }
 
+// Kinds of Relation.
+const (
+	HardDependency = "hard"
+	SoftDependency = "soft"
+	Incompatible   = "incompatible"
+)
+
+// Relation is a [BepInDependency] or [BepInIncompatibility] on a plugin class: Plugin is the GUID of the plugin
+// whose class carries it, GUID the one it names. MinVersion is the dependency's minimum, empty for no minimum.
+type Relation struct{ Plugin, GUID, MinVersion, Kind string }
+
+// Declared is what an assembly says about its BepInEx plugins.
+type Declared struct {
+	Plugins   []Plugin
+	Relations []Relation
+}
+
+// maxRelations bounds what one assembly can make the reader allocate: a plugin declares a handful.
+const maxRelations = 1024
+
 // Plugins lists the BepInEx plugins the assembly at path declares; an assembly with none yields none.
-func Plugins(path string) (out []Plugin, err error) {
+func Plugins(path string) ([]Plugin, error) {
+	d, err := Scan(path)
+	return d.Plugins, err
+}
+
+// Scan reads the plugins the assembly at path declares and the dependencies and incompatibilities they carry.
+func Scan(path string) (out Declared, err error) {
 	data, err := fsx.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return Declared{}, err
 	}
 	defer malformed(path, &out, &err)
 	m, err := open(data)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", path, err)
+		return Declared{}, fmt.Errorf("%s: %w", path, err)
 	}
+	type pending struct {
+		def int
+		r   Relation
+	}
+	var found []pending
+	guidOf := map[int]string{}
 	for row := 1; row <= m.rows[tCustomAttr]; row++ {
 		kind, ctor := decode(cCustomAttributeType, m.cell(tCustomAttr, row, 1))
 		if kind != tMemberRef {
@@ -779,17 +811,46 @@ func Plugins(path string) (out []Plugin, err error) {
 		if parent != tTypeRef {
 			continue
 		}
-		if ns, name := m.typeRef(ref); ns != "BepInEx" || name != "BepInPlugin" {
+		ns, name := m.typeRef(ref)
+		if ns != "BepInEx" {
 			continue
 		}
-		if p, ok := pluginArgs(m.blob(m.cell(tCustomAttr, row, 2))); ok {
-			if kind, def := decode(cHasCustomAttribute, m.cell(tCustomAttr, row, 0)); kind == tTypeDef {
-				p.Namespace = m.str(m.cell(tTypeDef, def, 2))
+		blob := m.blob(m.cell(tCustomAttr, row, 2))
+		owner, def := decode(cHasCustomAttribute, m.cell(tCustomAttr, row, 0))
+		switch name {
+		case "BepInPlugin":
+			if p, ok := pluginArgs(blob); ok {
+				if owner == tTypeDef {
+					p.Namespace = m.str(m.cell(tTypeDef, def, 2))
+					guidOf[def] = p.GUID
+				}
+				out.Plugins = append(out.Plugins, p)
 			}
-			out = append(out, p)
+		case "BepInDependency", "BepInIncompatibility":
+			if r, ok := relationArgs(blob, name == "BepInIncompatibility"); ok && owner == tTypeDef && len(found) < maxRelations {
+				found = append(found, pending{def, r})
+			}
+		}
+	}
+	for _, f := range found {
+		if guid, ok := guidOf[f.def]; ok {
+			f.r.Plugin = guid
+			out.Relations = append(out.Relations, f.r)
 		}
 	}
 	return out, nil
+}
+
+// serString reads one compressed-length string off the front of a custom attribute blob.
+func serString(b []byte) (s string, rest []byte, ok bool) {
+	if len(b) == 0 {
+		return "", nil, false
+	}
+	n, size := compressed(append(slices.Clip(b), 0, 0, 0))
+	if int(n)+size > len(b) {
+		return "", nil, false
+	}
+	return string(b[size : size+int(n)]), b[size+int(n):], true
 }
 
 // pluginArgs reads a custom attribute blob holding three strings: the prolog 0x0001, then each as a compressed length
@@ -801,15 +862,44 @@ func pluginArgs(b []byte) (Plugin, bool) {
 	b = b[2:]
 	var args [3]string
 	for i := range args {
-		if len(b) == 0 {
+		var ok bool
+		if args[i], b, ok = serString(b); !ok {
 			return Plugin{}, false
 		}
-		n, size := compressed(append(slices.Clip(b), 0, 0, 0))
-		if int(n)+size > len(b) {
-			return Plugin{}, false
-		}
-		args[i] = string(b[size : size+int(n)])
-		b = b[size+int(n):]
 	}
 	return Plugin{GUID: args[0], Name: args[1], Version: args[2]}, true
+}
+
+// Flags of BepInDependency's DependencyFlags enum, a 4-byte argument.
+const (
+	flagHard = 1
+	flagSoft = 2
+)
+
+// relationArgs reads a BepInDependency or BepInIncompatibility blob: the prolog, the GUID, then for a dependency
+// either a minimum version string or a DependencyFlags value, and the zero count of named arguments. The two forms
+// differ in length, so the rest of the blob says which it is.
+func relationArgs(b []byte, incompatible bool) (Relation, bool) {
+	if len(b) < 2 || b[0] != 1 || b[1] != 0 {
+		return Relation{}, false
+	}
+	guid, rest, ok := serString(b[2:])
+	if !ok || guid == "" {
+		return Relation{}, false
+	}
+	if incompatible {
+		return Relation{GUID: guid, Kind: Incompatible}, true
+	}
+	if len(rest) == 6 && le32(rest) != 0 && le32(rest) <= flagSoft {
+		kind := HardDependency
+		if le32(rest) == flagSoft {
+			kind = SoftDependency
+		}
+		return Relation{GUID: guid, Kind: kind}, true
+	}
+	minimum, _, ok := serString(rest)
+	if !ok {
+		return Relation{}, false
+	}
+	return Relation{GUID: guid, MinVersion: minimum, Kind: HardDependency}, true
 }

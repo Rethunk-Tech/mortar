@@ -77,4 +77,31 @@ namespace BepInEx
         {
         }
     }
+
+    [System.Flags]
+    public enum DependencyFlags
+    {
+        HardDependency = 1,
+        SoftDependency = 2,
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true)]
+    public class BepInDependency : System.Attribute
+    {
+        public BepInDependency(string guid, DependencyFlags flags = DependencyFlags.HardDependency)
+        {
+        }
+
+        public BepInDependency(string guid, string minimumVersion)
+        {
+        }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true)]
+    public class BepInIncompatibility : System.Attribute
+    {
+        public BepInIncompatibility(string guid)
+        {
+        }
+    }
 }
