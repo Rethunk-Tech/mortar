@@ -30,6 +30,9 @@ func TestRelationsOfAThunderstorePackage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if r.PageURL != "https://thunderstore.io/c/lethal-company/p/Ns/Mod/" {
+		t.Fatalf("page = %q, want the package's Thunderstore page", r.PageURL)
+	}
 	if len(r.Needs) != 1 || r.Needs[0].ID != mod.ID("thunderstore:Ns-Lib") || r.Needs[0].Name != "Lib" || r.Needs[0].State != "ok" {
 		t.Fatalf("needs = %+v, want only Ns-Lib, met", r.Needs)
 	}

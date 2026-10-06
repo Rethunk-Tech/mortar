@@ -199,6 +199,12 @@ type LinkOptIn interface {
 	HandleLinksDefault() bool
 }
 
+// PageLinker is a source whose mods each have a page on the site; gameKey is the game's key at the source and id the
+// mod's id there.
+type PageLinker interface {
+	ModPageURL(gameKey, id string) string
+}
+
 // Hoster is a source that owns web hosts, so a bare URL can be traced back to it.
 type Hoster interface {
 	Hosts() []string

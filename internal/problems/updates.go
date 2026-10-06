@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -305,13 +306,13 @@ type Relations struct {
 }
 
 // Relate reports what the mod key/uniqueID needs and which mods need it. ok is false when the profile lacks it.
-func Relate(scheme string, mods []framework.Mod, domain, key string, uniqueID mod.ID) (r Relations, ok bool) {
+func Relate(scheme string, mods []framework.Mod, gameID, key string, uniqueID mod.ID) (r Relations, ok bool) {
 	i := slices.IndexFunc(mods, func(x framework.Mod) bool { return x.Key == key && mod.Equal(x.ModID(), uniqueID) })
 	if i < 0 {
 		return Relations{}, false
 	}
 	self := mods[i]
-	r = Relations{PageURL: pageURL(domain, self.UpdateKeys), Needs: []Need{}, NeededBy: []Dependent{}}
+	r = Relations{PageURL: modPage(gameID, self), Needs: []Need{}, NeededBy: []Dependent{}}
 	for _, dep := range self.Dependencies {
 		n := Need{ID: dep.ModID(), Name: dep.ModID().Local(), MinimumVersion: dep.MinimumVersion, Required: dep.Required, State: "ok"}
 		if j := slices.IndexFunc(mods, func(x framework.Mod) bool { return mod.Equal(x.ModID(), dep.ModID()) }); j >= 0 {
@@ -333,15 +334,38 @@ func Relate(scheme string, mods []framework.Mod, domain, key string, uniqueID mo
 	return r, true
 }
 
-// Pages maps "key/id" to the page of each mod whose update keys name one.
-func Pages(mods []framework.Mod, domain string) map[string]string {
+// Pages maps "key/id" to the page of each mod that has one.
+func Pages(mods []framework.Mod, gameID string) map[string]string {
 	out := map[string]string{}
 	for _, m := range mods {
-		if u := pageURL(domain, m.UpdateKeys); u != "" {
+		if u := modPage(gameID, m); u != "" {
 			out[m.Key+"/"+string(m.ModID())] = u
 		}
 	}
 	return out
+}
+
+// modPage is the page its update keys name, else its page at the source it was installed from.
+func modPage(gameID string, m framework.Mod) string {
+	if u := pageURL(nexusDomain(gameID), m.UpdateKeys); u != "" {
+		return u
+	}
+	entry, ok := source.Get(m.SourceKind)
+	linker, canLink := entry.Source.(source.PageLinker)
+	if !ok || !canLink || m.SourceName == "" || m.SourceKind == profile.KindNexus || m.SourceKind == profile.KindGitHub {
+		return ""
+	}
+	for _, g := range game.Catalog() {
+		if g.ID != gameID {
+			continue
+		}
+		for _, src := range g.Sources {
+			if src.ID == m.SourceKind && src.Key != "" {
+				return linker.ModPageURL(src.Key, m.SourceName)
+			}
+		}
+	}
+	return ""
 }
 
 // pageURL is the page of the first update key that names one: a Nexus mod or a GitHub repository.

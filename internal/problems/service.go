@@ -673,7 +673,7 @@ func (s *Service) Relations(gameID, id, key string, uniqueID mod.ID) (Relations,
 	if err != nil {
 		return Relations{}, err
 	}
-	r, ok := Relate(versionScheme(gameID), mods, nexusDomain(gameID), key, uniqueID)
+	r, ok := Relate(versionScheme(gameID), mods, gameID, key, uniqueID)
 	if !ok {
 		return Relations{}, errors.New("no such mod in this profile")
 	}
@@ -686,7 +686,7 @@ func (s *Service) Pages(gameID, id string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return Pages(mods, nexusDomain(gameID)), nil
+	return Pages(mods, gameID), nil
 }
 
 // maxDamagedFiles bounds the file names a Damaged row carries.
