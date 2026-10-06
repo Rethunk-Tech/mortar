@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
-import { cardState, inProfile, shownState } from './cardState.ts'
+import { cardState, inProfile, isInstalled, shownState } from './cardState.ts'
 
 const item = (over: Partial<Item>): Item =>
   ({
@@ -65,4 +65,12 @@ test('inProfile matches an entry by its own source', () => {
   expect(inProfile(profile, 'modrinth', 'sodium')).toBe(true)
   expect(inProfile(profile, 'itch', 'sodium')).toBe(false)
   expect(inProfile(undefined, 'nexus', '5')).toBe(false)
+})
+
+test('an installed loader stays installed after the profile changes', () => {
+  expect(isInstalled(false, true, true, false)).toBe(true)
+  expect(isInstalled(false, true, false, false)).toBe(false)
+  expect(isInstalled(false, true, false, true)).toBe(true)
+  expect(isInstalled(true, false, false, false)).toBe(true)
+  expect(isInstalled(false, false, true, true)).toBe(false)
 })

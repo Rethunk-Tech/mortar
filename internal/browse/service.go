@@ -89,6 +89,9 @@ func (s *Service) holdings(game, profileID string) *Holdings {
 				installed, _ = s.Installed(game, prof.ID)
 			}
 			h := Hold(info, prof, installed)
+			if id := s.Profiles.InstalledLoader(game, prof.ID); id != "" {
+				h.holdLoader(info, id)
+			}
 			return &h
 		}
 	}

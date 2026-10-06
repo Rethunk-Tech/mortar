@@ -9,6 +9,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // thunderstoreLoaderPack is the BepInEx loader's Thunderstore package, which Mortar's loader install supplies.
@@ -35,6 +36,21 @@ func (c *Client) mark(ctx context.Context, info components.GameInfo, items []Ite
 		case "thunderstore":
 			it.Loader = strings.EqualFold(it.ID, thunderstoreLoaderPack) &&
 				slices.ContainsFunc(info.Loaders, func(l components.GameLoader) bool { return strings.HasPrefix(l.ID, "bepinex") })
+		}
+	}
+}
+
+// holdLoader counts the loader with this id as held: the profile runs it although no entry names its mod page.
+func (h Holdings) holdLoader(info components.GameInfo, loaderID string) {
+	for _, l := range info.Loaders {
+		if l.ID != loaderID {
+			continue
+		}
+		if l.NexusModID != 0 {
+			h.nexus[l.NexusModID] = true
+		}
+		if strings.HasPrefix(l.ID, "bepinex") {
+			h.hold(profile.KindThunderstore, thunderstoreLoaderPack)
 		}
 	}
 }

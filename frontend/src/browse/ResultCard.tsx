@@ -21,7 +21,7 @@ import {
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
 import { CardAction } from './CardAction.tsx'
-import { cardState, inProfile, isActive, shownState } from './cardState.ts'
+import { cardState, inProfile, isActive, isInstalled, shownState } from './cardState.ts'
 import { pickedItem } from './pickedItem.ts'
 
 // One badge per source the mod is on; the filled one is where Add installs from.
@@ -116,8 +116,12 @@ function ResultCard(props: ResultCardProps) {
   const profile = useProfiles(openProfileOf)
   const searchedUpdated = useRef(profile?.updated)
   const held = inProfile(profile, source, id)
-  const installed =
-    held || (choices.some((c) => c.installed) && profile?.updated === searchedUpdated.current)
+  const installed = isInstalled(
+    held,
+    choices.some((c) => c.installed),
+    item.loader,
+    profile?.updated === searchedUpdated.current,
+  )
   const stats = useStats(item)
   const live = cardState(items, source, id, profileID)
   // A free account's click on Mod Manager Download is not ours to see; the card waits for its nxm item.
