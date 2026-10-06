@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Collapse, Link, Tooltip, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { memo, useDeferredValue, useEffect, useState } from 'react'
 import type {
   Mod,
   ModInProfile,
@@ -441,7 +441,30 @@ function ActionRows({
 const rowLink = { display: 'block', fontSize: 14, textAlign: 'left' } as const
 const isGitHub = (url: string) => URL.canParse(url) && new URL(url).hostname.endsWith('github.com')
 
+// Opening or switching paints the panel's top at once; these sections follow in a render that never blocks input,
+// and a toggle or profile save re-renders them there too.
+function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
+  const entry = entryOf(profile, mod.key)
+  return (
+    <>
+      <ModDependencyTree mod={mod} />
+      <ActionRows
+        mod={mod}
+        nexusId={nexusIdOf(profile, mod)}
+        githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
+      />
+      <AlsoInProfiles mod={mod} profile={profile} />
+      <HiddenInside mod={mod} profile={profile} />
+      <ModNoteTags profile={profile} mod={mod} />
+    </>
+  )
+}
+
+const LowerSections = memo(LowerSectionsView)
+
 function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
+  const lazyMod = useDeferredValue<Mod | null>(mod, null)
+  const lazyProfile = useDeferredValue(profile)
   const { t, i18n } = useLingui()
   const all = useMods((s) => s.mods)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
@@ -526,15 +549,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       />
       <ProblemLine mod={mod} />
       <LastRunLine mod={mod} profile={profile} />
-      <ModDependencyTree mod={mod} />
-      <ActionRows
-        mod={mod}
-        nexusId={nexusId}
-        githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
-      />
-      <AlsoInProfiles mod={mod} profile={profile} />
-      <HiddenInside mod={mod} profile={profile} />
-      <ModNoteTags profile={profile} mod={mod} />
+      {lazyMod ? <LowerSections mod={lazyMod} profile={lazyProfile} /> : null}
       {others.length > 0 ? (
         <Box>
           <Typography sx={heading}>{t`In the same download`}</Typography>
@@ -573,7 +588,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
 }
 
 // The one details sidebar of both views.
-export function ModSidebar({ profile }: { profile: Profile }) {
+function ModSidebarView({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const detailId = useDetail((s) => s.detailId)
@@ -585,3 +600,5 @@ export function ModSidebar({ profile }: { profile: Profile }) {
     </DetailsAside>
   )
 }
+
+export const ModSidebar = memo(ModSidebarView)

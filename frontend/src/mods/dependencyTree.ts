@@ -5,6 +5,12 @@ interface Edge {
   required: boolean
 }
 
+// One graph per manifest list, so walking it from another root does not rebuild it.
+const graphs = new WeakMap<
+  readonly ProfileManifest[],
+  { edges: Map<string, Edge[]>; back: Map<string, Edge[]>; spellings: Map<string, string> }
+>()
+
 function canonical(spellings: Map<string, string>, raw: string): string {
   const key = idKey(raw)
   const existing = spellings.get(key)
@@ -165,12 +171,17 @@ export function buildDependencyTrees(
   manifests: readonly ProfileManifest[],
   rootID: string,
 ): DependencyTrees {
-  const { edges, spellings } = outgoing(manifests)
-  const root = canonical(spellings, rootID)
+  let graph = graphs.get(manifests)
+  if (!graph) {
+    const { edges, spellings } = outgoing(manifests)
+    graph = { edges, back: invert(edges), spellings }
+    graphs.set(manifests, graph)
+  }
+  const root = canonical(graph.spellings, rootID)
   const stack = new Set<string>([idKey(root)])
   return {
-    needs: walk(root, edges, stack),
-    neededBy: walk(root, invert(edges), stack),
+    needs: walk(root, graph.edges, stack),
+    neededBy: walk(root, graph.back, stack),
   }
 }
 

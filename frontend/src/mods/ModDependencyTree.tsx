@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
-import { useMemo } from 'react'
+import { memo, useDeferredValue, useMemo } from 'react'
+import type { Broken } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -168,13 +169,20 @@ function Branch({ title, nodes, mods }: { title: string; nodes: DepViewNode[]; m
   )
 }
 
-export function ModDependencyTree({ mod }: { mod: Mod }) {
+function TreesView({
+  mod,
+  mods,
+  broken,
+}: {
+  mod: Mod
+  mods: Mod[]
+  broken: Broken[] | null | undefined
+}) {
   const { t } = useLingui()
-  const mods = useMods((s) => s.mods)
-  const broken = useMods((s) => s.problems?.broken)
   // The trees walk every mod in the profile, so they are rebuilt only when the mods or the problems change.
+  const manifests = useMemo(() => manifestsFromMods(mods), [mods])
   const { needs, neededBy } = useMemo(() => {
-    const trees = buildDependencyTrees(manifestsFromMods(mods), mod.id)
+    const trees = buildDependencyTrees(manifests, mod.id)
     const installed = mods.map((m) => ({
       id: m.id,
       enabled: m.enabled,
@@ -184,7 +192,7 @@ export function ModDependencyTree({ mod }: { mod: Mod }) {
       needs: annotateTree(trees.needs, installed),
       neededBy: annotateTree(trees.neededBy, installed),
     }
-  }, [mods, mod.id, broken])
+  }, [manifests, mods, mod.id, broken])
   return (
     <Box>
       <Typography sx={heading}>{t`Dependencies`}</Typography>
@@ -192,4 +200,13 @@ export function ModDependencyTree({ mod }: { mod: Mod }) {
       <Branch title={t`Needed by`} nodes={neededBy} mods={mods} />
     </Box>
   )
+}
+
+const Trees = memo(TreesView)
+
+// A toggle or a fresh check rebuilds the trees after the click has painted, not inside it.
+export function ModDependencyTree({ mod }: { mod: Mod }) {
+  const mods = useDeferredValue(useMods((s) => s.mods))
+  const broken = useDeferredValue(useMods((s) => s.problems?.broken))
+  return <Trees mod={mod} mods={mods} broken={broken} />
 }
