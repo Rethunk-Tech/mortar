@@ -222,11 +222,15 @@ func (s *Service) set(st Status) {
 			log.Printf("launch: %s %s failed: %s", st.Game, st.Profile, st.Error)
 		}
 		stored = Status{Game: st.Game, Install: st.Install, State: Idle}
-	case Idle, Launching, Running:
+	case Launching, Running:
+		log.Printf("launch: %s %s %s", st.Game, st.Profile, st.State)
+	case Idle:
 	}
 	s.mu.Lock()
-	if st.State == Launching {
+	if stored.State == Idle {
 		delete(s.closing, key)
+	}
+	if st.State == Launching {
 		delete(s.startFailed, key)
 		delete(s.lastFailure, key)
 	}
@@ -376,7 +380,7 @@ func sinceOr(t time.Time) int64 {
 	return t.UnixMilli()
 }
 
-// poll syncs the stored state with the processes, and reports whether the game is still worth watching.
+// gameProcs are the running processes of g's install.
 func (s *Service) gameProcs(g game.Game) ([]launch.Process, error) {
 	ps, err := launch.Processes(s.procDir, game.ProcessNames(g)...)
 	if err != nil {
@@ -398,6 +402,7 @@ func (s *Service) seen(g game.Game) func() bool {
 	}
 }
 
+// poll syncs the stored state with the processes, and reports whether the game is still worth watching.
 func (s *Service) poll(g game.Game) bool {
 	procs, _ := s.gameProcs(g)
 	alive := len(procs) > 0
@@ -422,12 +427,11 @@ func (s *Service) poll(g game.Game) bool {
 		delete(s.logs, keyOf(g))
 		s.mu.Unlock()
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Running, Since: sinceOr(procs[0].Start)})
-	case cur.State == Running && cur.Profile != "" && profileID == "":
-		if s.reapArmed(g) {
-			break
-		}
+	case cur.State == Running && !alive:
+		// With no game process left the run is over, whatever the exit waiter is still waiting on.
+		s.awaitReap(g)
 		s.closed(g, cur, false)
-	case cur.State == Running && cur.Profile == "" && !alive:
+	case cur.State == Running && cur.Profile != "" && profileID == "":
 		if s.reapArmed(g) {
 			break
 		}
@@ -1136,7 +1140,7 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 		}
 		if !waitOnChild(r.env.Direct, r.vanilla) {
 			s.armReap(g)
-			go s.awaitPID(g, profileID)
+			go s.awaitPID(g)
 		}
 	case errors.Is(err, launch.ErrNoSteam):
 		s.clearReap(g)
@@ -1210,20 +1214,9 @@ func (s *Service) StopInstall(installID string) error {
 }
 
 func (s *Service) stopSlot(g slot) error {
-	gameID := g.ID()
 	cur := s.current(g)
-	var err error
-	var procs []launch.Process
-	if cur.Profile == "" {
-		procs, err = s.gameProcs(g)
-	} else {
-		var dir string
-		dir, err = s.profiles.ModsDir(gameID, cur.Profile)
-		if err != nil {
-			return err
-		}
-		procs, err = s.procsFor(g, dir, cur.Profile)
-	}
+	// One game runs per install, so its processes are the run's; a profile search misses a loader inside the game.
+	procs, err := s.gameProcs(g)
 	if err != nil {
 		return err
 	}
@@ -1284,6 +1277,7 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		msg += " after " + time.Since(time.UnixMilli(cur.Since)).Round(time.Second).String()
 	}
 	s.say(g, cur.Profile, msg+".")
+	log.Printf("launch: %s %s: %s", g.ID(), cur.Profile, msg)
 	s.mu.Lock()
 	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()
