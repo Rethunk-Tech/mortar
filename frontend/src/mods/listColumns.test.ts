@@ -12,7 +12,6 @@ import {
   nextListSort,
   sanitizeListColumns,
   sanitizeListSort,
-  sortListRows,
   toggleListColumn,
   visibleListColumns,
 } from './listColumns.ts'
@@ -174,7 +173,9 @@ test('compares numbers, versions, dates and text, with missing last in both dire
   const lighter = row({ name: 'Alpha', size: 50 })
   expect(compareListRows(heavier, lighter, { column: 'size', dir: 'desc' })).toBeLessThan(0)
   expect(compareListRows(missing, heavier, { column: 'size', dir: 'asc' })).toBeGreaterThan(0)
-  const sorted = sortListRows([a, missing, b], { column: 'name', dir: 'asc' })
+  const sorted = [a, missing, b].sort((x, y) =>
+    compareListRows(x, y, { column: 'name', dir: 'asc' }),
+  )
   expect(sorted.map((r) => r.mod.name)).toEqual(['Alpha', 'Beta', 'Zed'])
 })
 

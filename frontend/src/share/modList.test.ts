@@ -5,8 +5,8 @@ import { testProfile } from '../profiles/testProfile.ts'
 import {
   DISCORD_LIMIT,
   escapeMarkdown,
-  formatDiscord,
   formatMarkdown,
+  formatModList,
   formatPlain,
   listItems,
   type ModListItem,
@@ -185,7 +185,7 @@ test('Discord keeps Markdown under 2000 characters per message', () => {
   )
   const all = formatMarkdown(items)
   expect(all.length).toBeGreaterThan(DISCORD_LIMIT)
-  const parts = formatDiscord(items)
+  const parts = formatModList('discord', items).map((p) => p.text)
   expect(parts.length).toBeGreaterThan(1)
   for (const part of parts) {
     expect(part.length).toBeLessThanOrEqual(DISCORD_LIMIT)

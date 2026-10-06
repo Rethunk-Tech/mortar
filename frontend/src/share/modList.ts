@@ -186,15 +186,10 @@ interface DiscordPart {
   text: string
 }
 
-function formatDiscord(items: readonly ModListItem[], labels?: GroupLabels): string[] {
-  return asDiscord(items, labels).map((p) => p.text)
-}
-
 export type { ModListFormat, ModListItem }
 export {
   DISCORD_LIMIT,
   escapeMarkdown,
-  formatDiscord,
   formatMarkdown,
   formatModList,
   formatPlain,

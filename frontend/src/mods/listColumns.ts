@@ -420,16 +420,6 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
   return cmpText(a.mod.name, b.mod.name)
 }
 
-function sortListRows(rows: readonly ListRow[], sort: ListColumnSort): ListRow[] {
-  return rows
-    .map((row, i) => ({ row, i }))
-    .sort((x, y) => {
-      const c = compareListRows(x.row, y.row, sort)
-      return c === 0 ? x.i - y.i : c
-    })
-    .map((x) => x.row)
-}
-
 function columnMenuFromEvent(e: {
   preventDefault: () => void
   stopPropagation: () => void
@@ -469,7 +459,6 @@ export {
   persistColumns,
   sanitizeListColumns,
   sanitizeListSort,
-  sortListRows,
   toggleListColumn,
   visibleListColumns,
 }
