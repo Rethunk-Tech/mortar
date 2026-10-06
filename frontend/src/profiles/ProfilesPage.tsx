@@ -24,6 +24,7 @@ import {
   FolderOpen,
   Plus,
   RotateCcw,
+  SearchX,
   Trash2,
   Wrench,
 } from 'lucide-react'
@@ -259,9 +260,9 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
         inputRef={inputRef}
       />
       {hits.length === 0 && query.trim() !== '' ? (
-        <Typography sx={{ mt: 1, fontSize: 13, color: 'text.secondary' }}>
-          {t`No mod matches`}
-        </Typography>
+        <EmptyState icon={<SearchX />} title={t`No mod matches`} compact={true}>
+          {t`No profile holds a mod by that name or id.`}
+        </EmptyState>
       ) : null}
       {hits.length > 0 ? (
         <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.25 }}>

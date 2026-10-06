@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Collapse, IconButton, Typography } from '@mui/material'
-import { ChevronDown, ChevronRight, Inbox } from 'lucide-react'
+import { ChevronDown, ChevronRight, Inbox, SearchX } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -214,7 +214,9 @@ export function CompareBulkBody({
       ) : null}
       <IdenticalList rows={identical} profile={profileA} />
       {needle !== '' && !hasDiff && identical.length === 0 ? (
-        <Typography sx={{ color: 'text.secondary' }}>{t`No matching mods`}</Typography>
+        <EmptyState icon={<SearchX />} title={t`No matching mods`} compact={true}>
+          {t`Neither profile has a mod that matches the filter.`}
+        </EmptyState>
       ) : null}
       {!hasDiff && identical.length === 0 && !needle ? (
         <EmptyState
