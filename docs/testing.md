@@ -32,7 +32,7 @@ go test -race ./internal/<pkg>
 
 | Run | Command | Proves |
 | --- | --- | --- |
-| Fuzz | `go test -fuzz=FuzzExtract -fuzztime=60s ./internal/archive` (also `FuzzCleanName`, `FuzzExtractZipEntries`, and `FuzzFOMODLayout`, `FuzzParse`, `FuzzParseR2Zip`, `FuzzModpackManifest` in their packages) | Hostile input never panics and never writes outside its destination. The default run replays each seed and every file in `testdata/fuzz` as a regression test |
+| Fuzz | `go test -fuzz=FuzzExtract -fuzztime=60s ./internal/archive` (also `FuzzCleanName` and `FuzzExtractZipEntries` there, and `FuzzFOMODLayout` in `internal/installer`, `FuzzParse` in `internal/nxm`, `FuzzParseR2Zip`, `FuzzModpackManifest` and `FuzzGaleRows` in `internal/pack`, `FuzzCfgSetKeepsOtherLines` in `internal/configsvc`, `FuzzParseLink` and `FuzzIndexChunkDecode` in `internal/source/thunderstore`, and `FuzzDecoders` in `internal/source/modrinth` and `internal/source/itch`) | Hostile input never panics and never writes outside its destination. The default run replays each seed and every file in `testdata/fuzz` as a regression test |
 | Property | `MORTAR_SYNC_SEEDS=2000 go test ./internal/syncsvc -run Property` | Two machines editing at random never lose or invent a change (`syncsvc/property_test.go`) |
 | Updater e2e | `wails3 task test:updater` | The self-updater swaps the binary through a signed manifest (`-tags updatetest`; skipped under `-short`) |
 | Real SMAPI installer | `MORTAR_SMOKE=1 go test ./internal/loader/smapi -run Smoke` | The real installer works on a copy of a Stardew install (needs the network) |
