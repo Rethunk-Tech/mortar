@@ -35,7 +35,7 @@ type cachedRelease struct {
 func (l Loader) loaderComponent() (components.Component, bool) {
 	client := l.Components
 	if client == nil {
-		client = configuredComponents.Load()
+		client = components.Active()
 	}
 	if client == nil {
 		return components.Component{}, false
@@ -175,7 +175,7 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dest 
 	if component, ok := l.loaderComponent(); ok && component.Version == version {
 		client := l.Components
 		if client == nil {
-			client = configuredComponents.Load()
+			client = components.Active()
 		}
 		if err := client.Download(ctx, component, dest); err != nil {
 			return fmt.Errorf("download SMAPI %s: %w", version, err)

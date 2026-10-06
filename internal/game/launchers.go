@@ -36,7 +36,8 @@ type StoreAppGame struct {
 // Launchers lists the launchers Mortar reads on this system, whether each was found, and the supported games in it.
 func Launchers(home string, s settings.Settings) ([]StoreApp, error) {
 	byLauncher := map[string][]StoreAppGame{}
-	for _, g := range games {
+	for _, id := range Implemented() {
+		g := Find(id)
 		for _, in := range collect(g, home, s) {
 			id := gamestore.LauncherOf(in.Store)
 			byLauncher[id] = append(byLauncher[id], StoreAppGame{ID: g.ID(), Name: g.Name(), Dir: in.Dir})

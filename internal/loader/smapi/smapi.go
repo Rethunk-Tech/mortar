@@ -7,7 +7,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync/atomic"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -43,20 +42,9 @@ type Loader struct {
 	LogDir string
 }
 
-// configuredComponents is set by every service that builds a component client, possibly at the same time.
-var configuredComponents atomic.Pointer[components.Client]
-
-// ConfigureComponents selects the verified component manifest used by SMAPI.
-func ConfigureComponents(client *components.Client) { configuredComponents.Store(client) }
-
 // gameInfo is Stardew Valley's catalog entry, which the bundled manifest always carries.
 func gameInfo() components.GameInfo {
-	if c := configuredComponents.Load(); c != nil {
-		if g, ok := c.Game(gameID); ok {
-			return g
-		}
-	}
-	g, _ := components.BundledGame(gameID)
+	g, _ := components.Game(gameID)
 	return g
 }
 

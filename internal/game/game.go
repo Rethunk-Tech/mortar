@@ -11,17 +11,14 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
-	"github.com/Rethunk-Tech/mortar/internal/game/lethal"
-	"github.com/Rethunk-Tech/mortar/internal/game/stardew"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
-	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
+	_ "github.com/Rethunk-Tech/mortar/internal/loader/all"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -53,8 +50,6 @@ type Identity interface {
 type Installs interface {
 	// ValidInstall reports why dir is not this game's install folder, or nil.
 	ValidInstall(dir string) error
-	// Discover prefers a still-valid override folder over Steam (st is nil without Steam) and returns "" when not installed.
-	Discover(override string, st *steam.Steam) (string, error)
 }
 
 // Loaders are the game's loader drivers in catalog order; a catalog entry without a registered driver is left out.
@@ -148,35 +143,19 @@ func ProcessNames(g Game) []string {
 	return names
 }
 
-var games = []Game{&stardew.Game{}, &lethal.Game{}}
+// coded are the games whose behaviour the catalog cannot describe; every other catalog game is a catalogOnly.
+var coded = []Game{stardewValley{"stardew"}}
 
-var configuredComponents atomic.Pointer[components.Client]
-
-// ConfigureComponents gives the registry and implemented games the verified component manifest.
-func ConfigureComponents(client *components.Client) {
-	configuredComponents.Store(client)
-	stardew.ConfigureComponents(client)
-	smapi.ConfigureComponents(client)
-}
+// ConfigureComponents selects the verified component manifest for the whole process (components.Use).
+func ConfigureComponents(client *components.Client) { components.Use(client) }
 
 // Catalog returns every game the component manifest lists, enabled or coming later. It is the bundled manifest's
 // until a verified one that lists games is selected.
-func Catalog() []components.GameInfo {
-	if c := configuredComponents.Load(); c != nil {
-		if g := c.Manifest().Games; len(g) > 0 {
-			return g
-		}
-	}
-	m, err := components.BundledManifest()
-	if err != nil {
-		return nil
-	}
-	return m.Games
-}
+func Catalog() []components.GameInfo { return components.Games() }
 
 // CatalogSerial is the serial of the component manifest in use: the verified one once selected, else the bundled one.
 func CatalogSerial() uint64 {
-	if c := configuredComponents.Load(); c != nil {
+	if c := components.Active(); c != nil {
 		if m := c.Manifest(); m.Serial > 0 {
 			return m.Serial
 		}
@@ -186,12 +165,7 @@ func CatalogSerial() uint64 {
 }
 
 func catalogGame(id string) (components.GameInfo, bool) {
-	for _, g := range Catalog() {
-		if g.ID == id {
-			return g, true
-		}
-	}
-	return components.GameInfo{}, false
+	return components.Game(id)
 }
 
 // ByNexusDomain is the enabled game whose Nexus domain is domain.
@@ -223,12 +197,15 @@ func NexusTitle(id string) (nexus.Title, error) {
 	return nexus.Title{Domain: g.NexusDomain(), ID: g.NexusID()}, nil
 }
 
-// Find returns the implemented game with this id, or nil.
+// Find returns the game with this id: its coded implementation, else the catalog's entry; nil when unlisted.
 func Find(id string) Game {
-	for _, g := range games {
+	for _, g := range coded {
 		if g.ID() == id {
 			return g
 		}
+	}
+	if _, ok := catalogGame(id); ok {
+		return catalogOnly(id)
 	}
 	return nil
 }
