@@ -56,7 +56,7 @@ const FILTERS: readonly {
   id: Exclude<ModFilter, 'all'>
   label: (i18n: I18n) => string
 }[] = [
-  { id: 'disabled', label: (i18n) => i18n._(msg`Off`) },
+  { id: 'disabled', label: (i18n) => i18n._(msg`Disabled`) },
   { id: 'update', label: (i18n) => i18n._(msg`Update available`) },
   { id: 'problem', label: (i18n) => i18n._(msg`Has problems`) },
   { id: 'pinned', label: (i18n) => i18n._(msg`Pinned`) },

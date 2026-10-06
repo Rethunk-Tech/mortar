@@ -313,7 +313,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
         <Button
           key={r.profileId}
           onClick={() => openModInProfile({ profileId: r.profileId, key: r.key, id: r.id })}
-          title={`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Off`}`}
+          title={`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Disabled`}`}
           sx={{
             ...noWrap,
             display: 'block',
@@ -326,7 +326,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
             textOverflow: 'ellipsis',
           }}
         >
-          {`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Off`}`}
+          {`${r.profileName} · ${r.version} · ${r.enabled ? t`Enabled` : t`Disabled`}`}
         </Button>
       ))}
     </Box>

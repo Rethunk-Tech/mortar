@@ -142,7 +142,7 @@ msgstr "Presets"
 msgid "Priority Default"
 msgstr "Priority Default"
 
-#: src/share/importCompletion.ts:116
+#: src/share/importCompletion.ts:123
 msgid "Show failed"
 msgstr "Show failed"
 
@@ -1281,7 +1281,7 @@ msgstr "{name} is marked obsolete and may not work with this game version."
 msgid "All outcomes"
 msgstr "All outcomes"
 
-#: src/queue/store.ts:313
+#: src/queue/store.ts:314
 #: src/share/importCompletion.ts:21
 #: src/share/ImportPreview.tsx:248
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
@@ -1312,7 +1312,7 @@ msgid "+{more} more"
 msgstr "+{more} more"
 
 #. placeholder {0}: batch.pendingSettings
-#: src/share/importCompletion.ts:106
+#: src/share/importCompletion.ts:113
 msgid "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 msgstr "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 
@@ -1461,7 +1461,7 @@ msgstr "Clear cache?"
 
 #: src/console/CrashDialog.tsx:142
 #: src/console/HelpDialog.tsx:217
-#: src/console/LogActions.tsx:40
+#: src/console/LogActions.tsx:42
 msgid "Share log…"
 msgstr "Share log…"
 
@@ -1663,7 +1663,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/mods/LoadOrderTab.tsx:376
 #: src/mods/ModsTab.tsx:116
 #: src/mods/typedConfig/ConfigPane.tsx:170
-#: src/mods/updateReview/updateAll.ts:52
+#: src/mods/updateReview/updateAll.ts:53
 #: src/notes/NotesTab.tsx:43
 #: src/profiles/GameModsDialog.tsx:135
 #: src/profiles/HealthDialog.tsx:228
@@ -2199,7 +2199,7 @@ msgstr "Show the first-run tips again"
 #: src/profiles/LaunchPresetDialog.tsx:85
 #: src/queue/actions.ts:96
 #: src/queue/store.ts:244
-#: src/queue/store.ts:361
+#: src/queue/store.ts:363
 #: src/saves/SaveGapLine.tsx:56
 #: src/settings/prefCopy.ts:353
 #: src/settings/sections/Updates.tsx:132
@@ -2425,8 +2425,8 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/profiles/historyRevert.ts:110
 #: src/profiles/store.ts:190
 #: src/profiles/store.ts:233
-#: src/queue/store.ts:295
-#: src/saves/store.ts:65
+#: src/queue/store.ts:296
+#: src/saves/store.ts:66
 #: src/templates/ApplyTemplateDialog.tsx:95
 #: src/templates/TemplateDialogs.tsx:226
 #: src/toasts/EarlierChanges.tsx:47
@@ -2765,16 +2765,7 @@ msgid "New profile from link"
 msgstr "New profile from link"
 
 #: src/browse/BrowseShow.tsx:28
-#: src/mods/AuthorDialog.tsx:134
-#: src/mods/listRows.ts:134
-#: src/mods/ModCards.tsx:457
 #: src/mods/ModDependencyTree.tsx:103
-#: src/mods/ModDetail.tsx:57
-#: src/mods/ModList.tsx:388
-#: src/mods/OptionalFileRows.tsx:122
-#: src/mods/Sidebar.tsx:316
-#: src/mods/Sidebar.tsx:329
-#: src/mods/Toolbar.tsx:59
 #: src/profiles/CompareBulkBody.tsx:129
 #: src/profiles/overrideValue.ts:86
 #: src/profiles/PackImportDialog.tsx:106
@@ -2919,7 +2910,7 @@ msgstr "Installed file"
 msgid "Connected from {0}, last seen "
 msgstr "Connected from {0}, last seen "
 
-#: src/console/LogActions.tsx:176
+#: src/console/LogActions.tsx:169
 msgid "Search all runs…"
 msgstr "Search all runs…"
 
@@ -3266,7 +3257,7 @@ msgstr "Check store files"
 
 #. placeholder {0}: batch.name
 #. placeholder {1}: importCountsLine(counts)
-#: src/share/importCompletion.ts:102
+#: src/share/importCompletion.ts:108
 msgid "Imported {0}: {1}"
 msgstr "Imported {0}: {1}"
 
@@ -4036,7 +4027,16 @@ msgstr "{count, plural, one {# problem} other {# problems}}"
 msgid "Show in queue"
 msgstr "Show in queue"
 
+#: src/mods/AuthorDialog.tsx:134
+#: src/mods/listRows.ts:134
+#: src/mods/ModCards.tsx:457
+#: src/mods/ModDetail.tsx:57
+#: src/mods/ModList.tsx:388
+#: src/mods/OptionalFileRows.tsx:122
 #: src/mods/PreviewPick.tsx:22
+#: src/mods/Sidebar.tsx:316
+#: src/mods/Sidebar.tsx:329
+#: src/mods/Toolbar.tsx:59
 #: src/profiles/GameModsDialog.tsx:37
 #: src/saves/SaveGapLine.tsx:21
 #: src/share/ImportPreview.tsx:72
@@ -4311,7 +4311,7 @@ msgstr "Mortar starts the unmodded game directly, skipping SMAPI's Linux launche
 msgid "Launch other apps with this profile."
 msgstr "Launch other apps with this profile."
 
-#: src/console/LogActions.tsx:130
+#: src/console/LogActions.tsx:123
 msgid "Jump to previous error"
 msgstr "Jump to previous error"
 
@@ -4626,7 +4626,7 @@ msgstr "Also updates {0} (same download)"
 msgid "Changelog on Nexus"
 msgstr "Changelog on Nexus"
 
-#: src/console/LogActions.tsx:156
+#: src/console/LogActions.tsx:149
 msgid "Log copied"
 msgstr "Log copied"
 
@@ -5419,7 +5419,7 @@ msgstr "Game and SMAPI"
 msgid "Stream overlay"
 msgstr "Stream overlay"
 
-#: src/launch/PrePlayDialog.tsx:196
+#: src/launch/PrePlayDialog.tsx:201
 msgid "Adding the missing mods"
 msgstr "Adding the missing mods"
 
@@ -6141,7 +6141,7 @@ msgstr "Share FOMOD choices"
 msgid "Untrack every mod you track on Nexus"
 msgstr "Untrack every mod you track on Nexus"
 
-#: src/launch/PrePlayDialog.tsx:175
+#: src/launch/PrePlayDialog.tsx:179
 msgid "Press Play to start."
 msgstr "Press Play to start."
 
@@ -6612,7 +6612,7 @@ msgstr "This update's notes mention breaking changes or new requirements"
 msgid "Copy {0}"
 msgstr "Copy {0}"
 
-#: src/bundles/applied.ts:32
+#: src/bundles/applied.ts:33
 #: src/settings/prefCopy.ts:111
 msgid "Download them"
 msgstr "Download them"
@@ -7556,7 +7556,7 @@ msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # l
 msgid "Could not untrack"
 msgstr "Could not untrack"
 
-#: src/console/LogActions.tsx:164
+#: src/console/LogActions.tsx:157
 msgid "Copy log"
 msgstr "Copy log"
 
@@ -7690,7 +7690,7 @@ msgstr "Show archive contents"
 msgid "Performance comparison"
 msgstr "Performance comparison"
 
-#: src/console/LogActions.tsx:110
+#: src/console/LogActions.tsx:103
 msgid "Save log"
 msgstr "Save log"
 
@@ -7700,7 +7700,7 @@ msgstr "Windowed"
 
 #: src/install/store.ts:295
 #: src/mods/updateReview/UndoAllConfirm.tsx:19
-#: src/mods/updateReview/updateAll.ts:40
+#: src/mods/updateReview/updateAll.ts:41
 msgid "Undo all"
 msgstr "Undo all"
 
@@ -7946,7 +7946,7 @@ msgid "Executable"
 msgstr "Executable"
 
 #: src/launch/playStart.ts:87
-#: src/launch/PrePlayDialog.tsx:210
+#: src/launch/PrePlayDialog.tsx:215
 #: src/launch/SaveWarnDialog.tsx:90
 #: src/launch/UpdateWarnDialog.tsx:52
 msgid "Play anyway"
@@ -8158,7 +8158,7 @@ msgstr "Winter"
 msgid "This profile plays on its own saves. Your shared saves are untouched."
 msgstr "This profile plays on its own saves. Your shared saves are untouched."
 
-#: src/console/LogActions.tsx:136
+#: src/console/LogActions.tsx:129
 msgid "Jump to next error"
 msgstr "Jump to next error"
 
@@ -8551,7 +8551,7 @@ msgstr "Grant access"
 msgid "{count, plural, one {{name} logged # error in the last run.} other {{name} logged # errors in the last run.}}"
 msgstr "{count, plural, one {{name} logged # error in the last run.} other {{name} logged # errors in the last run.}}"
 
-#: src/launch/PrePlayDialog.tsx:197
+#: src/launch/PrePlayDialog.tsx:202
 msgid "Press Play when the downloads finish."
 msgstr "Press Play when the downloads finish."
 
@@ -8978,7 +8978,7 @@ msgstr "The last run crashed. {0}"
 msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr "A launch ended without Mortar putting the game folder back as it was"
 
-#: src/console/LogActions.tsx:143
+#: src/console/LogActions.tsx:136
 msgid "Log actions"
 msgstr "Log actions"
 
@@ -9269,7 +9269,7 @@ msgstr "From {0}, not the site you installed it from. Updating switches its sour
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
 
-#: src/launch/PrePlayDialog.tsx:203
+#: src/launch/PrePlayDialog.tsx:208
 #: src/saves/SaveGapLine.tsx:66
 msgid "Add the missing mods"
 msgstr "Add the missing mods"
@@ -9287,7 +9287,7 @@ msgid "Paste it on the mod's bug tracker."
 msgstr "Paste it on the mod's bug tracker."
 
 #. placeholder {0}: counts.failed
-#: src/mods/updateReview/updateAll.ts:50
+#: src/mods/updateReview/updateAll.ts:51
 msgid "{0, plural, one {# update failed} other {# updates failed}}"
 msgstr "{0, plural, one {# update failed} other {# updates failed}}"
 
@@ -10475,7 +10475,7 @@ msgstr "Clear filters"
 msgid "Could not minimise the window"
 msgstr "Could not minimise the window"
 
-#: src/saves/store.ts:63
+#: src/saves/store.ts:64
 msgid "Dismissed for this save"
 msgstr "Dismissed for this save"
 
@@ -10543,7 +10543,7 @@ msgstr "Could not add the bundle"
 msgid "Reading the Mods folder…"
 msgstr "Reading the Mods folder…"
 
-#: src/console/LogActions.tsx:122
+#: src/console/LogActions.tsx:115
 msgid "Errors"
 msgstr "Errors"
 
@@ -11190,7 +11190,7 @@ msgstr "Could not build the link"
 msgid "{0, plural, one {# warning} other {# warnings}}"
 msgstr "{0, plural, one {# warning} other {# warnings}}"
 
-#: src/console/LogActions.tsx:124
+#: src/console/LogActions.tsx:117
 msgid "Jump to first error"
 msgstr "Jump to first error"
 
@@ -11643,7 +11643,7 @@ msgstr "{hours}h played"
 msgid "Enable them too"
 msgstr "Enable them too"
 
-#: src/console/LogActions.tsx:182
+#: src/console/LogActions.tsx:175
 #: src/settings/sections/GameSettings.tsx:375
 #: src/toasts/HistoryButton.tsx:144
 msgid "Clear"
@@ -11935,8 +11935,7 @@ msgstr "Get Mortar"
 msgid "Collapse or expand the profile sidebar"
 msgstr "Collapse or expand the profile sidebar"
 
-#: src/console/LogActions.tsx:48
-#: src/console/LogActions.tsx:170
+#: src/console/LogActions.tsx:163
 msgid "Save log…"
 msgstr "Save log…"
 
@@ -12221,7 +12220,7 @@ msgid "Deleted profiles stay here, mods and settings included."
 msgstr "Deleted profiles stay here, mods and settings included."
 
 #. placeholder {0}: shownWaiting.length
-#: src/queue/store.ts:359
+#: src/queue/store.ts:361
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
@@ -12384,7 +12383,7 @@ msgstr "Stop ignoring {ignoredSource} updates"
 msgid "ToArea {0}"
 msgstr "ToArea {0}"
 
-#: src/launch/PrePlayDialog.tsx:217
+#: src/launch/PrePlayDialog.tsx:222
 msgid "Update and play"
 msgstr "Update and play"
 
@@ -12524,7 +12523,7 @@ msgstr "Launch"
 msgid "Reading backups…"
 msgstr "Reading backups…"
 
-#: src/launch/PrePlayDialog.tsx:181
+#: src/launch/PrePlayDialog.tsx:186
 msgid "Enable them"
 msgstr "Enable them"
 
@@ -12537,7 +12536,7 @@ msgid "A game update replaced SMAPI's launcher"
 msgstr "A game update replaced SMAPI's launcher"
 
 #. placeholder {0}: listNames(missing, missing.length)
-#: src/bundles/applied.ts:27
+#: src/bundles/applied.ts:28
 msgid "Not downloaded yet: {0}"
 msgstr "Not downloaded yet: {0}"
 
@@ -12723,7 +12722,7 @@ msgstr "Untrack mods?"
 msgid "This tool will be removed from Mortar."
 msgstr "This tool will be removed from Mortar."
 
-#: src/launch/PrePlayDialog.tsx:174
+#: src/launch/PrePlayDialog.tsx:178
 msgid "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
 msgstr "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
 

@@ -119,7 +119,7 @@ export function InstalledOptional({
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
           <Typography sx={text}>{file?.name || row.label}</Typography>
           <Chip size="small" color="primary" variant="outlined" label={t`Installed`} sx={chipSx} />
-          {row.enabled || radio ? null : <Chip size="small" label={t`Off`} sx={chipSx} />}
+          {row.enabled || radio ? null : <Chip size="small" label={t`Disabled`} sx={chipSx} />}
         </Box>
         <FileFacts file={file} />
         <FilePaths set={set} />

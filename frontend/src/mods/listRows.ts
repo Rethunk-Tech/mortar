@@ -131,7 +131,7 @@ function toListRow(
     added: entry?.added ?? '',
     pinned: Boolean(entry?.pinned),
     source,
-    status: m.enabled ? i18n._(msg`Enabled`) : i18n._(msg`Off`),
+    status: m.enabled ? i18n._(msg`Enabled`) : i18n._(msg`Disabled`),
     note: entry?.note ?? '',
     tags: [...(entry?.tags ?? [])],
     categoryOverride: entry?.categoryOverride ?? '',

@@ -54,7 +54,7 @@ function NeedRow({ need }: { need: Need }) {
   const name = need.state === 'absent' ? need.name : <ModNameLink id={need.id} name={need.name} />
   const states: Record<string, string> = {
     absent: t`Missing`,
-    disabled: t`Off`,
+    disabled: t`Disabled`,
     outdated: t`Needs ${need.minimumVersion} or newer, has ${need.installedVersion}`,
   }
   return (

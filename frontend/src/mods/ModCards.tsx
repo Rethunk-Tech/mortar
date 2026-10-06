@@ -454,7 +454,7 @@ export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     problems: t`Mods with problems`,
     update: t`Update available`,
     enabled: t`Enabled`,
-    disabled: t`Off`,
+    disabled: t`Disabled`,
     smapi: t`${loaderName} mods`,
   })
   return (
