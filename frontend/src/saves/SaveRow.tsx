@@ -32,7 +32,7 @@ import { newProfileFromSave } from './recordedActions.ts'
 import { SaveBackupsSection } from './SaveBackupsSection.tsx'
 import { SaveDetails } from './SaveDetails.tsx'
 import { SaveGapLine } from './SaveGapLine.tsx'
-import { saveName } from './saveName.ts'
+import { saveKind, saveName } from './saveName.ts'
 import { useSaves } from './store.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
@@ -162,7 +162,7 @@ export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; ga
   const missing = fit.missing ?? []
   const style = fit.unrecorded ? FILE_STYLE : (SEASON_STYLE[fit.season] ?? SEASON_STYLE[0])
   const kind = useFarmKind(fit.whichFarm)
-  const subtitle = [fit.farmer, kind].filter(Boolean).join(' · ')
+  const subtitle = [fit.farmer, kind, saveKind(fit.folder)].filter(Boolean).join(' · ')
   const label = saveName(fit)
   const lastProfile = useProfiles.getState().profiles.find((p) => p.id === fit.lastProfileId)
   const lastGone = Boolean(fit.lastProfileId) && lastProfile === undefined

@@ -4773,6 +4773,10 @@ msgstr "Disable all"
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
 
+#: src/saves/saveName.ts:26
+msgid "Character"
+msgstr "Character"
+
 #: src/browse/BrowsePage.tsx:112
 msgid "Search {sourceName}"
 msgstr "Search {sourceName}"
@@ -10859,6 +10863,7 @@ msgstr "Templates are shared by every profile of this game. Adding one copies it
 msgid "Saves"
 msgstr "Saves"
 
+#: src/saves/saveName.ts:29
 #: src/settings/sections/StreamOverlay.tsx:138
 msgid "World"
 msgstr "World"

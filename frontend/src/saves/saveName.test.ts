@@ -9,7 +9,7 @@ mock.module('@lingui/core/macro', () => ({
 i18n.load('en', {})
 i18n.activate('en')
 
-const { saveName } = await import('./saveName.ts')
+const { saveKind, saveName } = await import('./saveName.ts')
 
 test('a save is named by its farm, its Lethal Company slot, or its folder or file', () => {
   expect(saveName({ farm: 'Sunny', folder: 'Farm_1' })).toBe('Sunny')
@@ -18,4 +18,10 @@ test('a save is named by its farm, its Lethal Company slot, or its folder or fil
   expect(saveName({ farm: '', folder: 'LCChallengeFile' })).toBe('Challenge moon')
   expect(saveName({ farm: '', folder: 'Ragnar.fch' })).toBe('Ragnar')
   expect(saveName({ farm: '', folder: 'worlds_local/Midgard.fwl' })).toBe('Midgard')
+})
+
+test('a Valheim save is a character or a world by its folder', () => {
+  expect(saveKind('characters_local/Ragnar.fch')).toBe('Character')
+  expect(saveKind('worlds_local/Midgard.fwl')).toBe('World')
+  expect(saveKind('Farm_1')).toBe('')
 })

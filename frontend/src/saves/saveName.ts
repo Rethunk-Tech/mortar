@@ -19,3 +19,14 @@ export function saveName(save: { farm: string; folder: string }): string {
   }
   return (save.folder.split('/').at(-1) ?? '').replace(extension, '')
 }
+
+// What a Valheim save is, from the folder it sits in; empty for any other game's save.
+export function saveKind(folder: string): string {
+  if (folder.startsWith('characters_local/')) {
+    return i18n._(msg`Character`)
+  }
+  if (folder.startsWith('worlds_local/')) {
+    return i18n._(msg`World`)
+  }
+  return ''
+}
