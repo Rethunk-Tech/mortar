@@ -33,6 +33,28 @@ func TestBackupBeforeEditOnlyCopiesOnce(t *testing.T) {
 	}
 }
 
+func TestAddShortcutCreatesTheAccountsFirstShortcutsFile(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, "config"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	users := `"users" { "76561198000000002" { "AccountName" "b" "MostRecent" "1" } }`
+	if err := os.WriteFile(filepath.Join(root, "config", "loginusers.vdf"), []byte(users), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	res, err := Steam{Root: root}.AddShortcut(Shortcut{Name: "Main (Stardew Valley)", Exe: "/opt/mortar", StartDir: "/opt"})
+	if err != nil || res != Added {
+		t.Fatalf("add = %v, %v", res, err)
+	}
+	dir := filepath.Join(root, "userdata", "39734274", "config")
+	if _, err := os.Stat(filepath.Join(dir, "shortcuts.vdf")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "shortcuts.vdf.mortar.bak")); !os.IsNotExist(err) {
+		t.Fatalf("a file that did not exist has no backup: %v", err)
+	}
+}
+
 func TestAtomicWriteFileLeavesOldFileOnWriteFailure(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "steam.vdf")

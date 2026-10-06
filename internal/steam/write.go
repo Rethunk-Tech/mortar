@@ -15,6 +15,10 @@ func backupBeforeEdit(path string, _ []byte, perm os.FileMode) error {
 		return err
 	}
 	body, err := fsx.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		// An account that never had the file (no non-Steam game yet) has nothing to restore.
+		return nil
+	}
 	if err != nil {
 		return err
 	}
