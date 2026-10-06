@@ -6,11 +6,14 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
 // ProfileBudget is one profile's disk use split by where it lives. Store is what its mods occupy in the shared
 // store, and Shared the part of that another profile of the game also uses, so it is not this profile's alone.
-// Deployed is the profile's own mods folder and Saves its separate saves (0 when the profile keeps none).
+// Deployed is the profile's own mods folder plus the files its loader keeps in the profile, and Saves its separate
+// saves (0 when the profile keeps none).
 type ProfileBudget struct {
 	Game     string `json:"game"`
 	ID       string `json:"id"`
@@ -21,8 +24,9 @@ type ProfileBudget struct {
 }
 
 // MeasureBudgets sizes every profile under root from the recorded store item sizes (game/key to bytes); only the
-// profile's own folders are walked. savesOf reports whether a profile keeps its own saves folder.
-func MeasureBudgets(root string, itemSizes map[string]int64, savesOf func(game, id string) bool) ([]ProfileBudget, error) {
+// profile's own folders are walked. savesOf reports whether a profile keeps its own saves folder, and loaderFiles names
+// the paths, relative to the profile's folder, that its loader keeps there.
+func MeasureBudgets(root string, itemSizes map[string]int64, savesOf func(game, id string) bool, loaderFiles func(game, id string) []string) ([]ProfileBudget, error) {
 	dirs, err := datadir.ProfileDirs(filepath.Join(root, "profiles"))
 	if err != nil {
 		return nil, err
@@ -46,6 +50,11 @@ func MeasureBudgets(root string, itemSizes map[string]int64, savesOf func(game, 
 	out := make([]ProfileBudget, 0, len(dirs))
 	for i, d := range dirs {
 		b := ProfileBudget{Game: d.Game, ID: d.ID, Deployed: dirSize(filepath.Join(d.Dir, "mods"))}
+		if loaderFiles != nil {
+			for _, rel := range loaderFiles(d.Game, d.ID) {
+				b.Deployed += dirSize(filepath.Join(d.Dir, filepath.FromSlash(rel)))
+			}
+		}
 		for _, id := range keysOf[i] {
 			b.Store += itemSizes[id]
 			if users[id] > 1 {
@@ -88,7 +97,7 @@ func (s *Service) ProfileBudgets() ([]ProfileBudget, error) {
 	for _, e := range sizes {
 		byKey[e.Game+"/"+e.Key] = e.Size
 	}
-	out, err := MeasureBudgets(dir, byKey, s.profiles.SeparateSaves)
+	out, err := MeasureBudgets(dir, byKey, s.profiles.SeparateSaves, s.loaderFiles)
 	if err != nil {
 		return nil, err
 	}
@@ -96,4 +105,14 @@ func (s *Service) ProfileBudgets() ([]ProfileBudget, error) {
 	s.budgets, s.budgetFP, s.budgetAt = out, fp, time.Now()
 	s.mu.Unlock()
 	return out, nil
+}
+
+// loaderFiles are the paths the profile's loader keeps in its folder, none for a loader that lives in the game's install.
+func (s *Service) loaderFiles(gameID, id string) []string {
+	if l, ok := game.LoaderOf(gameID, s.profiles.LoaderID(gameID, id)); ok {
+		if in, ok := l.(loader.InProfile); ok {
+			return in.ProfileFiles()
+		}
+	}
+	return nil
 }

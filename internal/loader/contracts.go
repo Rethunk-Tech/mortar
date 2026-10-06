@@ -197,7 +197,10 @@ type Releases interface {
 type ModArchive interface{ ModArchive(names []string) bool }
 
 // InProfile is a loader whose files live in each profile's folder, so an install runs once per profile.
-type InProfile interface{ InProfile() }
+type InProfile interface {
+	// ProfileFiles are those files and folders, relative to the profile's folder.
+	ProfileFiles() []string
+}
 
 // BundledCopier is a loader that ships mods of its own, which Mortar can copy from an install the loader was put into
 // outside Mortar.

@@ -17,9 +17,9 @@ import (
 // fakeLoader is a second loader that lives in each profile: a marker file stands for its files.
 type fakeLoader struct{}
 
-func (fakeLoader) ID() string        { return "w6fake" }
-func (fakeLoader) Formats() []string { return nil }
-func (fakeLoader) InProfile()        {}
+func (fakeLoader) ID() string             { return "w6fake" }
+func (fakeLoader) Formats() []string      { return nil }
+func (fakeLoader) ProfileFiles() []string { return []string{"w6fake"} }
 func (fakeLoader) Status(t loader.Target) (loader.Status, error) {
 	b, err := fsx.ReadFile(filepath.Join(t.ProfileDir, "w6fake"))
 	return loader.Status{Installed: err == nil, Version: string(b)}, nil
