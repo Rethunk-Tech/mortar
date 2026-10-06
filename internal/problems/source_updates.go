@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -35,6 +36,7 @@ func fold(s string) string {
 // a version they cover is not offered twice.
 func (s *Service) sourceUpdates(ctx context.Context, gameID string, mods []framework.Mod, have []Update) []Update {
 	out := s.nexusPageUpdates(ctx, gameID, mods, have)
+	out = append(out, s.githubUpdates(ctx, mods, append(slices.Clone(have), out...))...)
 	for _, g := range game.Catalog() {
 		if g.ID != gameID {
 			continue
@@ -46,6 +48,48 @@ func (s *Service) sourceUpdates(ctx context.Context, gameID string, mods []frame
 				return out
 			}
 		}
+	}
+	return out
+}
+
+// githubUpdates offers each GitHub-installed mod its repository's newest stable release with an archive, one repository
+// at a time under GitHub's turn; the client keeps each answer an hour. A failed lookup ends the turn, as a search does.
+func (s *Service) githubUpdates(ctx context.Context, mods []framework.Mod, have []Update) []Update {
+	if s.GitHub == nil {
+		return nil
+	}
+	var out []Update
+	for _, x := range mods {
+		owner, repo, ok := strings.Cut(x.SourceRepo, "/")
+		if x.SourceKind != profile.KindGitHub || !ok || x.IgnoreUpdates {
+			continue
+		}
+		release := func() {}
+		if s.Throttle != nil {
+			r, err := s.Throttle(ctx, profile.KindGitHub)
+			if err != nil {
+				return out
+			}
+			release = r
+		}
+		all, err := s.GitHub.Releases(ctx, owner, repo)
+		release()
+		if err != nil {
+			return out
+		}
+		r, _, err := github.Select(all, "")
+		if err != nil {
+			continue
+		}
+		version := strings.TrimLeft(r.Tag, "vV")
+		installed := strings.TrimLeft(cmp.Or(x.SourceVersion, x.Version), "vV")
+		if c, ok := meta.CompareVersions(version, installed); !ok || c <= 0 || coveredBy(append(slices.Clone(have), out...), x.Key, version) {
+			continue
+		}
+		out = append(out, Update{
+			Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: installed, Version: version,
+			URL: "https://github.com/" + x.SourceRepo + "/releases/tag/" + r.Tag, GitHubRepo: x.SourceRepo, Source: "GitHub",
+		})
 	}
 	return out
 }

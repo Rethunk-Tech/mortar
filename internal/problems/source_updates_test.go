@@ -2,12 +2,15 @@ package problems
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -203,5 +206,33 @@ func TestModrinthUpdatesAreCheckedInOneBatch(t *testing.T) {
 	}
 	if len(got) != 1 || !reflect.DeepEqual(got[0], want) {
 		t.Fatalf("updates = %+v, want %+v", got, want)
+	}
+}
+
+func TestGitHubInstalledModsGetTheirRepositorysNewerRelease(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/repos/TheAnsuz/Lethal-Company-Configurable-Company-API/releases" {
+			http.NotFound(w, r)
+			return
+		}
+		_, _ = w.Write([]byte(`[
+			{"tag_name":"3.8.0-beta","prerelease":true,"assets":[{"name":"github_release.zip"}]},
+			{"tag_name":"3.7.0","assets":[{"name":"github_release.zip"}]},
+			{"tag_name":"3.6.0","assets":[{"name":"github_release.zip"}]}]`))
+	}))
+	t.Cleanup(srv.Close)
+	turns := 0
+	s := &Service{
+		GitHub:   &github.Client{APIBase: srv.URL, CacheDir: t.TempDir()},
+		Throttle: func(context.Context, string) (func(), error) { turns++; return func() {}, nil },
+	}
+	cc := framework.Mod{Key: "gh", SourceKind: profile.KindGitHub, SourceRepo: "TheAnsuz/Lethal-Company-Configurable-Company-API", SourceVersion: "3.6.0"}
+	cc.Name, cc.Version = "Amrv.ConfigurableCompany", "3.6.0"
+	got := s.githubUpdates(t.Context(), []framework.Mod{cc}, nil)
+	if len(got) != 1 || got[0].Version != "3.7.0" || got[0].GitHubRepo != cc.SourceRepo || got[0].Source != "GitHub" || turns != 1 {
+		t.Fatalf("updates = %+v, turns %d", got, turns)
+	}
+	if again := s.githubUpdates(t.Context(), []framework.Mod{cc}, got); len(again) != 0 {
+		t.Fatalf("an update already offered was offered again: %+v", again)
 	}
 }

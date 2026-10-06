@@ -552,6 +552,7 @@ func run() error {
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	problemsSvc.Runs = launches
 	problemsSvc.Throttle = queueSvc.SourceSlot
+	problemsSvc.GitHub = &github.Client{}
 	problemsSvc.NexusPages = func(ctx context.Context, gameID string, ids []int) (map[int]nexus.Page, error) {
 		details, err := nexusSvc.Prime(ctx, gameID, ids)
 		pages := make(map[int]nexus.Page, len(details))

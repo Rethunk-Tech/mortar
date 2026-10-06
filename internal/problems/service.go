@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -39,6 +40,8 @@ type Service struct {
 	NexusFiles NexusFilesOf
 	// NexusPages gives the page data of many Nexus mods in a few batched requests; nil when signed out or unwired.
 	NexusPages NexusPagesOf
+	// GitHub reads the releases of GitHub-installed mods' repositories; nil leaves them to SMAPI's update keys.
+	GitHub *github.Client
 	// Throttle waits for a source's turn to be asked (the download queue's per-source limit) and returns the func that
 	// ends it; nil asks without waiting.
 	Throttle func(ctx context.Context, source string) (release func(), err error)
