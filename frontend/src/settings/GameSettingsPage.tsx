@@ -75,7 +75,9 @@ function GamePages({
     ...(loader?.console
       ? [{ id: 'console' as const, label: t`Console`, icon: SquareTerminal }]
       : []),
-    { id: 'streaming', label: t`Streaming`, icon: RadioIcon },
+    ...(loader?.overlay
+      ? [{ id: 'streaming' as const, label: t`Streaming`, icon: RadioIcon }]
+      : []),
   ]
   const render = (id: GamePage): ReactNode => {
     switch (id) {
@@ -150,7 +152,7 @@ function GamePages({
           </SettingsSection>
         )
       default:
-        return <StreamOverlay />
+        return loader?.overlay ? <StreamOverlay /> : null
     }
   }
   return (

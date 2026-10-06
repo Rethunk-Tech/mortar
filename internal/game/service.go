@@ -52,6 +52,8 @@ type LoaderRef struct {
 	Startup bool `json:"startup"`
 	// Commands is whether the running game takes console commands, which needs the loader's published companion.
 	Commands bool `json:"commands"`
+	// Overlay is whether the loader's companion feeds the OBS stream overlay, which the Streaming settings need.
+	Overlay bool `json:"overlay"`
 	// Share is whether the loader's log can be uploaded to smapi.io, whose parser reads only SMAPI's.
 	Share bool `json:"share"`
 	// Assets is whether a content-pack framework for the loader's formats builds an asset map.
@@ -69,6 +71,7 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		_, hasCompanion := d.(loader.WithCompanion)
 		ref.Commands = hasConsole && hasCompanion
 		_, ref.Startup = d.(loader.StartupTimings)
+		_, ref.Overlay = d.(loader.StreamOverlay)
 		ref.Share = loader.SharesLog(d)
 		ref.Assets = framework.IndexesAssets(d.Formats())
 		ref.Frameworks = framework.HasFrameworks(d.Formats())

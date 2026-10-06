@@ -157,6 +157,9 @@ type WithOrder interface {
 // StartupTimings is a loader whose companion records how long each mod adds to the game's startup.
 type StartupTimings interface{ ReportsStartup() }
 
+// StreamOverlay is a loader whose companion feeds Mortar's OBS stream overlay.
+type StreamOverlay interface{ FeedsOverlay() }
+
 // LogShare is a loader whose log smapi.io's parser reads, so Mortar may upload it there as a public link.
 type LogShare interface{ SharesLog() }
 

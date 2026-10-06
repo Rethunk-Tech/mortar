@@ -33,8 +33,18 @@ export function buildPaletteItems(input: {
   shortcutLabels: Partial<Record<ShortcutId, string>>
   labels: PaletteLabels
   collectionReview?: boolean
+  streamOverlay?: boolean
 }): PaletteItem[] {
-  const { profiles, mods, sections, shortcuts, shortcutLabels, labels, collectionReview } = input
+  const {
+    profiles,
+    mods,
+    sections,
+    shortcuts,
+    shortcutLabels,
+    labels,
+    collectionReview,
+    streamOverlay,
+  } = input
   const items: PaletteItem[] = []
   for (const profile of profiles) {
     items.push({
@@ -94,7 +104,9 @@ export function buildPaletteItems(input: {
     { id: 'action:find-crash-cause', kind: 'action', label: labels.findCrashCause },
     { id: 'action:share', kind: 'action', label: labels.share },
     { id: 'action:new-profile', kind: 'action', label: labels.newProfile },
-    { id: 'action:stream-overlay', kind: 'action', label: labels.streamOverlay },
+    ...(streamOverlay
+      ? [{ id: 'action:stream-overlay', kind: 'action' as const, label: labels.streamOverlay }]
+      : []),
     { id: 'action:recent-changes', kind: 'action', label: labels.recentChanges },
     { id: 'settings:about', kind: 'settings', label: labels.diagnostics },
     ...Object.entries(labels.tabs).map(([id, label]) => ({

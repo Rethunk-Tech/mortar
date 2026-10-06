@@ -4,7 +4,7 @@ import { collectionHeader } from '../game/collectionHeader.ts'
 import { useCollectionStatus } from '../game/useCollectionStatus.ts'
 import type { SettingsSection } from '../nav/store.ts'
 import { userModEntries } from '../profiles/count.ts'
-import { openProfileOf } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
 import { buildPaletteItems } from './items.ts'
 import { matchPaletteItems, type PaletteItem } from './match.ts'
@@ -22,6 +22,7 @@ export function usePaletteShown(input: {
 }): PaletteItem[] {
   const { i18n, query, profiles, openId, gameId, sections, shortcutLabels, bindings } = input
   const profile = openProfileOf({ profiles, openId: openId ?? '' })
+  const streamOverlay = useProfiles((s) => s.game?.loaders?.[0]?.overlay === true)
   const collectionStatus = useCollectionStatus(gameId, profile)
   const collectionReview = Boolean(
     profile?.collection && collectionHeader(collectionStatus).review !== null,
@@ -42,6 +43,7 @@ export function usePaletteShown(input: {
       shortcutLabels,
       labels: paletteActionLabels(i18n),
       collectionReview,
+      streamOverlay,
     }),
     query,
   )
