@@ -235,10 +235,10 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	for _, g := range games {
 		caps[g.ID] = g.Loaders[0]
 	}
-	if s := caps["stardew"]; !s.Order || !s.Console || !s.Startup {
+	if s := caps["stardew"]; !s.Order || !s.Console || !s.Startup || !s.Assets {
 		t.Fatalf("SMAPI = %+v", s)
 	}
-	if b := caps["lethal-company"]; b.Order || b.Console || b.Startup {
+	if b := caps["lethal-company"]; b.Order || b.Console || b.Startup || b.Assets {
 		t.Fatalf("BepInEx = %+v", b)
 	}
 }

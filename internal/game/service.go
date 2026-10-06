@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
@@ -47,6 +48,8 @@ type LoaderRef struct {
 	Order   bool `json:"order"`
 	Console bool `json:"console"`
 	Startup bool `json:"startup"`
+	// Assets is whether a content-pack framework for the loader's formats builds an asset map.
+	Assets bool `json:"assets"`
 }
 
 func loaderRef(gameID string, l components.GameLoader) LoaderRef {
@@ -57,6 +60,7 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		_, hasCompanion := d.(loader.WithCompanion)
 		ref.Console = hasConsole && hasCompanion
 		_, ref.Startup = d.(loader.StartupTimings)
+		ref.Assets = framework.IndexesAssets(d.Formats())
 	}
 	return ref
 }

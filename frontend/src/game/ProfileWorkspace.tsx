@@ -9,7 +9,7 @@ import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { useNav } from '../nav/store.ts'
 import { CrashHintCard } from '../profiles/CrashHintCard.tsx'
 import { SinceLastRun } from '../profiles/SinceLastRun.tsx'
-import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { useProfileLoader } from '../profiles/store.ts'
 import { openShare } from '../share/store.ts'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
@@ -32,12 +32,6 @@ const PerformanceTab = lazy(() =>
 )
 
 // The open profile's loader, whose capabilities decide which tabs exist.
-function useProfileLoader() {
-  const game = useProfiles((s) => s.game)
-  const loaderId = useProfiles((s) => openProfileOf(s)?.loader) || game?.loaderId
-  return game?.loaders?.find((l) => l.id === loaderId)
-}
-
 function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }) {
   const { t } = useLingui()
   const loader = useProfileLoader()

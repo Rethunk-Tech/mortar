@@ -17,6 +17,9 @@ type Driver struct{}
 
 func (Driver) ID() mod.ID { return ID }
 
+// IndexesAssets marks Content Patcher as the framework behind the asset map.
+func (Driver) IndexesAssets() {}
+
 // Matches is Content Patcher itself and every pack written for it.
 func (Driver) Matches(m framework.Mod) bool {
 	return mod.Equal(m.ModID(), ID) || isContentPatcherPack(m)

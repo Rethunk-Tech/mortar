@@ -5,7 +5,7 @@ import { Copy, Map as MapIcon, ShieldCheck } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
@@ -278,6 +278,7 @@ function ProblemActions() {
   const { t } = useLingui()
   const result = useOpenProblems()
   const [mapOpen, setMapOpen] = useState(false)
+  const hasAssetMap = useProfileLoader()?.assets
   const sectionTitle = useSectionTitle()
   const rowText = useRowText()
   const sections = result === null ? [] : problemSections(result)
@@ -293,12 +294,16 @@ function ProblemActions() {
       harmlessCount === 0)
   return (
     <>
-      <IconAction
-        label={t`Asset map`}
-        icon={<MapIcon size={16} />}
-        onClick={() => setMapOpen(true)}
-      />
-      <AssetMapDialog open={mapOpen} onClose={() => setMapOpen(false)} />
+      {hasAssetMap ? (
+        <>
+          <IconAction
+            label={t`Asset map`}
+            icon={<MapIcon size={16} />}
+            onClick={() => setMapOpen(true)}
+          />
+          <AssetMapDialog open={mapOpen} onClose={() => setMapOpen(false)} />
+        </>
+      ) : null}
       <IconAction
         label={t`Copy report`}
         icon={<Copy size={16} />}

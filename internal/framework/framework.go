@@ -68,3 +68,18 @@ func Forget() {
 		}
 	}
 }
+
+// AssetIndexer is a framework whose packs edit game assets by name, so a profile can map which mods change each asset.
+type AssetIndexer interface{ IndexesAssets() }
+
+// IndexesAssets reports whether a registered framework for one of formats maps its packs' assets.
+func IndexesAssets(formats []string) bool {
+	mu.RLock()
+	defer mu.RUnlock()
+	for _, f := range registry {
+		if _, ok := f.(AssetIndexer); ok && slices.Contains(formats, f.ID().Format()) {
+			return true
+		}
+	}
+	return false
+}
