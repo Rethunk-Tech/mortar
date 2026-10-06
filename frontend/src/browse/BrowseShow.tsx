@@ -3,7 +3,7 @@ import { Box, Button, Menu, Tooltip, Typography } from '@mui/material'
 import { Filter } from 'lucide-react'
 import { useState } from 'react'
 import { PrefSegmented } from '../settings/PrefControls.tsx'
-import { type BrowseModes, type Mode, OFF, ROWS } from './browseModes.ts'
+import { type BrowseModes, DEFAULT_MODES, type Mode, ROWS } from './browseModes.ts'
 
 // The Mods tab's "Show" button, for what Browse does with mods in the profile, obsolete ones and broken ones.
 function BrowseShow({
@@ -17,7 +17,7 @@ function BrowseShow({
 }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const active = ROWS.some((r) => modes[r] !== OFF[r])
+  const active = ROWS.some((r) => modes[r] !== DEFAULT_MODES[r])
   const labels = {
     installed: t`Mods in this profile`,
     obsolete: t`Obsolete`,
