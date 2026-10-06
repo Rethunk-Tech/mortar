@@ -58,40 +58,41 @@ export function ItchAccount() {
           </Button>
         </SettingRow>
       ) : (
-        <Box
-          component="form"
-          onSubmit={test}
-          sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
+        <SettingRow
+          label={<label htmlFor={keyId}>{t`API key`}</label>}
+          description={t`Kept in your system keyring. Create one on itch.io under Settings, API keys.`}
         >
-          <Box component="label" htmlFor={keyId} sx={{ fontSize: 14, fontWeight: 600 }}>
-            {t`API key`}
+          <Box
+            component="form"
+            onSubmit={test}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TextField
+                id={keyId}
+                type="password"
+                size="small"
+                autoComplete="off"
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+                sx={{ width: 260, maxWidth: '100%' }}
+              />
+              <Button
+                type="submit"
+                variant="outlined"
+                disabled={busy || key.trim() === ''}
+                sx={{ flexShrink: 0 }}
+              >
+                {t`Test`}
+              </Button>
+            </Box>
+            {error ? (
+              <Alert severity="error" title={error.details}>
+                {error.message}
+              </Alert>
+            ) : null}
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-            <TextField
-              id={keyId}
-              type="password"
-              size="small"
-              autoComplete="off"
-              value={key}
-              onChange={(e) => setKey(e.target.value)}
-              helperText={t`Kept in your system keyring. Create one on itch.io under Settings, API keys.`}
-              sx={{ width: 420, maxWidth: '100%' }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={busy || key.trim() === ''}
-              sx={{ flexShrink: 0, height: 40 }}
-            >
-              {t`Test`}
-            </Button>
-          </Box>
-          {error ? (
-            <Alert severity="error" title={error.details}>
-              {error.message}
-            </Alert>
-          ) : null}
-        </Box>
+        </SettingRow>
       )}
     </SettingsSection>
   )
