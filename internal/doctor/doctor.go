@@ -67,6 +67,7 @@ func FromLive(in Live) Report {
 		checks = append(checks, protonChecks(g)...)
 	}
 	checks = append(checks, deckChecks()...)
+	checks = append(checks, flatpakLibraryChecks()...)
 	handler := "off"
 	nxmStatus := Warn
 	if in.NxmHandled {
