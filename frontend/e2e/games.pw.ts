@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { ENABLED_GAMES, openSeedFarm } from './app.ts'
 
 // Browse reaches the real Nexus and GitHub search endpoints from the sandbox; the suite has no offline network
 // fixture, so that spec needs a connection.
@@ -24,7 +24,7 @@ test('hovering a Game Select tile grows it and dims the others without changing 
   await openSeedFarm(page)
   await page.getByRole('button', { name: 'Game select' }).click()
   const tiles = page.locator('[data-tile]')
-  await expect(tiles).toHaveCount(2)
+  await expect(tiles).toHaveCount(ENABLED_GAMES)
   const layout = () => tiles.evaluateAll((els) => els.map((e) => [e.clientWidth, e.clientHeight]))
   const before = await layout()
   await tiles.first().hover()

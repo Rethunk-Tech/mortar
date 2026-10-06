@@ -1,4 +1,12 @@
+import { readFileSync } from 'node:fs'
 import { expect, type Page } from '@playwright/test'
+
+const CATALOG = new URL('../../internal/components/components.json', import.meta.url)
+
+/** Game select shows a tile for each game the embedded catalog enables. */
+export const ENABLED_GAMES = (
+  JSON.parse(readFileSync(CATALOG, 'utf8')) as { games: { enabled: boolean }[] }
+).games.filter((g) => g.enabled).length
 
 /** Opens the seeded Stardew Valley on the Seed Farm profile with the first-run tour dismissed. */
 export async function openSeedFarm(page: Page) {
