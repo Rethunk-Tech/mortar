@@ -3,13 +3,16 @@ package game
 
 import (
 	"cmp"
+	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
 	"sync/atomic"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -277,10 +280,13 @@ func listedApp(appID string) (string, bool) {
 }
 
 // heroCDN is Steam's public copy of a game's hero image, the same file Steam caches locally.
-const heroCDN = "https://cdn.cloudflare.steamstatic.com/steam/apps/%s/library_hero.jpg"
+var heroCDN = "https://cdn.cloudflare.steamstatic.com/steam/apps/%s/library_hero.jpg"
 
-// ArtMiddleware serves GET /steam-art/<appid> for listed games only, from Steam's cached hero image, and redirects
-// to Steam's public copy when no local Steam has cached it, so a cover list never shows a broken image.
+// maxHero bounds a fetched hero image; Steam's are a few hundred KB.
+const maxHero = 8 << 20
+
+// ArtMiddleware serves GET /steam-art/<appid> for listed games only, from Steam's cached hero image, else from
+// Steam's public copy fetched here: the webview does not follow a redirect from the app's own scheme to https.
 func ArtMiddleware(home string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -302,7 +308,7 @@ func ArtMiddleware(home string) func(http.Handler) http.Handler {
 				}
 			}
 			if path == "" {
-				http.Redirect(w, r, fmt.Sprintf(heroCDN, listed), http.StatusFound)
+				serveRemoteArt(w, r, fmt.Sprintf(heroCDN, listed))
 				return
 			}
 			art, err := fsx.Open(path)
@@ -320,4 +326,27 @@ func ArtMiddleware(home string) func(http.Handler) http.Handler {
 			http.ServeContent(w, r, "", info.ModTime(), art)
 		})
 	}
+}
+
+func serveRemoteArt(w http.ResponseWriter, r *http.Request, url string) {
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Cache-Control", "max-age=86400")
+	_, _ = io.Copy(w, io.LimitReader(resp.Body, maxHero))
 }

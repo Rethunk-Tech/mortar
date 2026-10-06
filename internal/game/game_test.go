@@ -58,10 +58,22 @@ func TestListAndArt(t *testing.T) {
 		t.Fatalf("lethal = %+v", g)
 	}
 
+	cdn := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/1966720" {
+			http.NotFound(w, r)
+			return
+		}
+		_, _ = w.Write([]byte("hero"))
+	}))
+	defer cdn.Close()
+	was := heroCDN
+	heroCDN = cdn.URL + "/%s"
+	defer func() { heroCDN = was }()
+
 	h := ArtMiddleware(h0)(http.NotFoundHandler())
 	for path, want := range map[string]int{
 		"/steam-art/413150":  http.StatusOK,
-		"/steam-art/1966720": http.StatusFound,
+		"/steam-art/1966720": http.StatusOK,
 		"/steam-art/999":     http.StatusNotFound,
 		"/steam-art/../etc":  http.StatusNotFound,
 	} {
@@ -73,8 +85,8 @@ func TestListAndArt(t *testing.T) {
 	}
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/steam-art/1966720", nil))
-	if loc := rec.Header().Get("Location"); loc != "https://cdn.cloudflare.steamstatic.com/steam/apps/1966720/library_hero.jpg" {
-		t.Errorf("uncached art redirects to %q", loc)
+	if body := rec.Body.String(); body != "hero" {
+		t.Errorf("uncached art served %q, want Steam's public copy", body)
 	}
 	rec = httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/steam-art/413150", nil))

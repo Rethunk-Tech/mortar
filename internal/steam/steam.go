@@ -225,10 +225,12 @@ func (s Steam) HeroArt(appID string) string {
 		return ""
 	}
 	cache := filepath.Join(s.Root, "appcache", "librarycache")
-	for _, p := range []string{
+	// Newer Steam clients keep the art one folder deeper, under a content-hash name.
+	nested, _ := filepath.Glob(filepath.Join(cache, appID, "*", "library_hero.jpg"))
+	for _, p := range append([]string{
 		filepath.Join(cache, appID, "library_hero.jpg"),
 		filepath.Join(cache, appID+"_library_hero.jpg"),
-	} {
+	}, nested...) {
 		if st, err := os.Stat(p); err == nil && st.Mode().IsRegular() {
 			return p
 		}
