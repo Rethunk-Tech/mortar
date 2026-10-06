@@ -681,3 +681,22 @@ func assetConflictResults(mods []framework.Mod) ([]framework.AssetConflict, []fr
 	conflicts, settings, _ := conflictScanOf(mods)
 	return conflicts, settings
 }
+
+func TestQuerySpouseGatedEditsNeverApplyTogether(t *testing.T) {
+	pack := func(content string) framework.Mod {
+		return syntheticLoadPack(t, content, nil)
+	}
+	lurking := pack(`{"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"lurking"},
+		"When":{"{{Query: '{{Spouse}}' = 'SenS' AND {{Year}} >= 1}}":true}}]}`)
+	bear := pack(`{"DynamicTokens":[{"Name":"Partner","Value":"{{Spouse}}"}],
+		"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"bear"},
+		"When":{"Query: 'Bear' = '{{Partner}}'":true}}]}`)
+	if conflicts := assetConflicts([]framework.Mod{lurking, bear}); len(conflicts) != 0 {
+		t.Fatalf("edits for different spouses never apply together, got %#v", conflicts)
+	}
+	anyone := pack(`{"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"anyone"},
+		"When":{"Query: '{{Spouse}}' = 'SenS' OR {{Year}} > 1":true}}]}`)
+	if conflicts := assetConflicts([]framework.Mod{lurking, anyone}); len(conflicts) != 1 {
+		t.Fatalf("an OR query does not pin the spouse, got %#v", conflicts)
+	}
+}

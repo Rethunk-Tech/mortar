@@ -179,7 +179,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 15
+const contentPackParserVersion = 16
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -1266,7 +1266,7 @@ func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, sc
 			w.config = append(w.config, cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple})
 		}
 	}
-	return w.with(cpWhen{spouse: spouseOf(raw), places: placesOf(raw)})
+	return w.with(cpWhen{spouse: spouseOf(raw, tokens), places: placesOf(raw)})
 }
 
 func dynamicTokenConditionParts(key string) (string, string, bool) {

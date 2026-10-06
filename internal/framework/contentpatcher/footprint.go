@@ -1514,14 +1514,26 @@ func tokenName(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
 }
 
-var spouseQuery = regexp.MustCompile(`(?i)^query:\s*'\{\{\s*spouse\s*\}\}'\s*=\s*'([^']+)'$`)
+var (
+	spouseQuery    = regexp.MustCompile(`(?i)^'\{\{\s*([^{}\s]+)\s*\}\}'\s*=\s*'([^'{}]+)'$`)
+	spouseQueryRev = regexp.MustCompile(`(?i)^'([^'{}]+)'\s*=\s*'\{\{\s*([^{}\s]+)\s*\}\}'$`)
+	queryAnd       = regexp.MustCompile(`(?i)\s+and\s+`)
+	queryOr        = regexp.MustCompile(`(?i)\bor\b|\|\|`)
+)
 
 // spouseOf is the NPC a When block requires the player to be engaged or married to ("Relationship:Abigail":
-// "Engaged, Married" or "Query: '{{Spouse}}' = 'Abigail'": true), or "". A player has one partner at a time,
-// so two patches that need different partners never apply together.
-func spouseOf(raw map[string]json.RawMessage) string {
+// "Engaged, Married", or "Query: '{{Spouse}}' = 'Abigail'": true, alone or ANDed with other tests and
+// through a dynamic token that is just {{Spouse}}), or "". A player has one partner at a time, so two
+// patches that need different partners never apply together.
+func spouseOf(raw map[string]json.RawMessage, tokens []cpTokenDefinition) string {
 	for k, v := range raw {
 		key := strings.TrimSpace(k)
+		if inner, ok := strings.CutPrefix(key, "{{"); ok {
+			if key, ok = strings.CutSuffix(inner, "}}"); !ok {
+				continue
+			}
+			key = strings.TrimSpace(key)
+		}
 		if strings.EqualFold(key, "spouse") {
 			var npc string
 			if json.Unmarshal(v, &npc) == nil && !hasToken(npc) && strings.TrimSpace(npc) != "" {
@@ -1529,10 +1541,13 @@ func spouseOf(raw map[string]json.RawMessage) string {
 			}
 			continue
 		}
-		if m := spouseQuery.FindStringSubmatch(key); m != nil {
+		if name, expr, ok := strings.Cut(key, ":"); ok && strings.EqualFold(strings.TrimSpace(name), "query") {
 			var on bool
-			if json.Unmarshal(v, &on) == nil && on {
-				return strings.ToLower(strings.TrimSpace(m[1]))
+			if json.Unmarshal(v, &on) != nil || !on || queryOr.MatchString(expr) {
+				continue
+			}
+			if npc := querySpouse(expr, tokens); npc != "" {
+				return npc
 			}
 			continue
 		}
@@ -1548,6 +1563,40 @@ func spouseOf(raw map[string]json.RawMessage) string {
 		}
 	}
 	return ""
+}
+
+// querySpouse is the partner an AND-only Query expression compares {{Spouse}}, or a token that is just
+// {{Spouse}}, against.
+func querySpouse(expr string, tokens []cpTokenDefinition) string {
+	for _, term := range queryAnd.Split(strings.TrimSpace(expr), -1) {
+		term = strings.TrimSpace(term)
+		var token, npc string
+		if m := spouseQuery.FindStringSubmatch(term); m != nil {
+			token, npc = m[1], m[2]
+		} else if m := spouseQueryRev.FindStringSubmatch(term); m != nil {
+			token, npc = m[2], m[1]
+		} else {
+			continue
+		}
+		if strings.EqualFold(token, "spouse") || spouseAlias(tokenName(token), tokens) {
+			return strings.ToLower(strings.TrimSpace(npc))
+		}
+	}
+	return ""
+}
+
+func spouseAlias(name string, tokens []cpTokenDefinition) bool {
+	found := false
+	for _, definition := range tokens {
+		if definition.name != name {
+			continue
+		}
+		if !strings.EqualFold(strings.Join(strings.Fields(definition.value), ""), "{{spouse}}") {
+			return false
+		}
+		found = true
+	}
+	return found
 }
 
 // exclusive reports whether two edits can never be active together.

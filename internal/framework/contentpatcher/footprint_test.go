@@ -29,7 +29,7 @@ func change(t *testing.T, raw string) cpChange {
 func edit(t *testing.T, raw string, image bool) cpPatch {
 	t.Helper()
 	ch := change(t, raw)
-	return cpPatch{kind: "edit", shapes: editShapes(t.TempDir(), ch, image), spouse: spouseOf(ch.When), places: placesOf(ch.When)}
+	return cpPatch{kind: "edit", shapes: editShapes(t.TempDir(), ch, image), spouse: spouseOf(ch.When, nil), places: placesOf(ch.When)}
 }
 
 func TestEditsClash(t *testing.T) {
