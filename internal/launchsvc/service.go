@@ -285,14 +285,15 @@ func (s *Service) current(g game.Game) Status {
 
 // procsFor returns the loader processes of g's install that run modsDir.
 func (s *Service) procsFor(g game.Game, modsDir, profileID string) ([]launch.Process, error) {
-	var procs []launch.Process
 	l, _ := s.loaderOf(g.ID(), profileID)
-	if names, ok := l.(loader.ProcessNames); ok {
-		ps, err := launch.Processes(s.procDir, names.ProcessNames()...)
-		if err != nil {
-			return nil, err
-		}
-		procs = ps
+	// A loader without executables of its own runs inside the game's process.
+	names := g.GameProcesses()
+	if own, ok := l.(loader.ProcessNames); ok {
+		names = own.ProcessNames()
+	}
+	procs, err := launch.Processes(s.procDir, names...)
+	if err != nil {
+		return nil, err
 	}
 	procs = s.ownedBy(g, procs)
 	owner, _ := l.(loader.Owner)

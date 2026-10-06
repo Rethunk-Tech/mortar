@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -132,4 +133,44 @@ func TestAGameStartedOutsideMortarAfterARunClosesToo(t *testing.T) {
 func launchDirAlive(procDir string, pid int) bool {
 	_, err := os.Stat(filepath.Join(procDir, strconv.Itoa(pid)))
 	return err == nil
+}
+
+func TestABepInExGameIsTheProfileItsDoorstopTargetNames(t *testing.T) {
+	datadirtest.Use(t, t.TempDir())
+	_, profiles := testenv.Stores(t)
+	a := testenv.Profile(t, profiles, "lethal-company", "A")
+	b := testenv.Profile(t, profiles, "lethal-company", "B")
+	dirB, err := profiles.ProfileDir("lethal-company", b.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc := NewService(t.TempDir(), nil, profiles)
+	g := game.Find("lethal-company")
+	for _, c := range []struct {
+		name    string
+		args    []string
+		profile string
+	}{
+		{"Proton Z: target", bepinex5.LaunchArgs(dirB, 3, true), b.ID},
+		{"native target", bepinex5.LaunchArgs(dirB, 4, false), b.ID},
+		{"started from Steam without Mortar", nil, ""},
+		{"vanilla", bepinex5.VanillaArgs(3), ""},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			svc.procDir = t.TempDir()
+			fakeProc(t, svc, "4242", "/proton/files/bin/wine64-preloader", append([]string{protonGame}, c.args...)...)
+			if svc.poll(g); svc.current(g).State != Running || svc.current(g).Profile != c.profile {
+				t.Fatalf("status = %+v, want profile %q", svc.current(g), c.profile)
+			}
+			if svc.Running("lethal-company", a.ID) || svc.Running("lethal-company", b.ID) != (c.profile == b.ID) {
+				t.Fatal("only the profile the target names is locked")
+			}
+			if err := os.RemoveAll(filepath.Join(svc.procDir, "4242")); err != nil {
+				t.Fatal(err)
+			}
+			if svc.poll(g); svc.current(g).State != Idle {
+				t.Fatalf("state = %+v", svc.current(g))
+			}
+		})
+	}
 }
