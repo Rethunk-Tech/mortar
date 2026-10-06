@@ -112,8 +112,10 @@ const data = {
 }
 
 // About twice the CPU time five groupings took when the budget was set (75 ms); CPU, not wall, so a busy machine does
-// not fail it.
+// not fail it. Held only under MORTAR_PERF=1 (`bun run perf`), like the Go budgets: a shared CI runner's CPU is slower
+// than the machine the budget was set on.
 const BUDGET_MS = 150
+const holdBudget = process.env.MORTAR_PERF === '1'
 
 test('the Mods list builds its rows for an 811-mod profile within budget', () => {
   const build = () => {
@@ -133,6 +135,9 @@ test('the Mods list builds its rows for an 811-mod profile within budget', () =>
     }
   }
   build()
+  if (!holdBudget) {
+    return
+  }
   let best = Number.POSITIVE_INFINITY
   for (let i = 0; i < 3; i++) {
     const start = process.cpuUsage()
