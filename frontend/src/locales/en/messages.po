@@ -438,7 +438,7 @@ msgstr "{0} has damaged files."
 msgid "Deleted a profile"
 msgstr "Deleted a profile"
 
-#: src/profiles/CompareBulkBody.tsx:219
+#: src/profiles/CompareBulkBody.tsx:223
 msgid "No user mods in either profile."
 msgstr "No user mods in either profile."
 
@@ -1365,7 +1365,7 @@ msgstr "Keep {0}'s old files"
 #. placeholder {0}: crash.cause.modName
 #: src/console/ConsoleTab.tsx:124
 #: src/console/CrashDialog.tsx:258
-#: src/launch/LaunchLayer.tsx:266
+#: src/launch/LaunchLayer.tsx:270
 msgid "Caused by {0}"
 msgstr "Caused by {0}"
 
@@ -1628,7 +1628,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/firstrun/LoaderStep.tsx:200
 #: src/firstrun/LoaderStep.tsx:268
 #: src/game/detailStates.tsx:27
-#: src/launch/LaunchLayer.tsx:299
+#: src/launch/LaunchLayer.tsx:303
 #: src/mods/LoadOrderTab.tsx:376
 #: src/mods/ModsTab.tsx:116
 #: src/mods/typedConfig/ConfigPane.tsx:170
@@ -2259,7 +2259,7 @@ msgstr "Why?"
 msgid "Upload log"
 msgstr "Upload log"
 
-#: src/launch/LaunchLayer.tsx:320
+#: src/launch/LaunchLayer.tsx:324
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
@@ -3181,7 +3181,7 @@ msgid "{0, plural, one {# download added} other {# downloads added}}"
 msgstr "{0, plural, one {# download added} other {# downloads added}}"
 
 #: src/firstrun/LoaderStep.tsx:94
-#: src/launch/LaunchLayer.tsx:217
+#: src/launch/LaunchLayer.tsx:221
 msgid "Launch options copied"
 msgstr "Launch options copied"
 
@@ -5014,7 +5014,7 @@ msgstr "{gameName} closed with errors"
 msgid "Remove duplicate"
 msgstr "Remove duplicate"
 
-#: src/profiles/CompareBulkBody.tsx:221
+#: src/profiles/CompareBulkBody.tsx:225
 msgid "These profiles have no user mods to compare."
 msgstr "These profiles have no user mods to compare."
 
@@ -5257,8 +5257,8 @@ msgstr "Mortar cannot download {0} again."
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
-#: src/launch/LaunchLayer.tsx:317
-#: src/launch/LaunchLayer.tsx:318
+#: src/launch/LaunchLayer.tsx:321
+#: src/launch/LaunchLayer.tsx:322
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 msgstr "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 
@@ -5481,7 +5481,7 @@ msgstr "Different enabled state"
 
 #: src/console/HelpDialog.tsx:52
 #: src/firstrun/LoaderStep.tsx:142
-#: src/launch/LaunchLayer.tsx:223
+#: src/launch/LaunchLayer.tsx:227
 #: src/saves/lackChipActions.tsx:74
 #: src/shell/FlatpakGrant.tsx:70
 msgid "Copy"
@@ -8224,7 +8224,7 @@ msgstr "Could not read the window state"
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
-#: src/launch/LaunchLayer.tsx:314
+#: src/launch/LaunchLayer.tsx:318
 msgid "Steam was not found"
 msgstr "Steam was not found"
 
@@ -8594,7 +8594,7 @@ msgstr "Stopped asking about {folder}"
 #. placeholder {2}: sourceLabel(row.a.source.kind)
 #. placeholder {3}: row.b.version
 #. placeholder {4}: sourceLabel(row.b.source.kind)
-#: src/profiles/CompareBulkBody.tsx:206
+#: src/profiles/CompareBulkBody.tsx:194
 msgid "{0}: {1} from {2} → {3} from {4}"
 msgstr "{0}: {1} from {2} → {3} from {4}"
 
@@ -8773,7 +8773,7 @@ msgstr "You endorsed this mod."
 
 #: src/browse/browseConstants.ts:43
 #: src/console/CrashDialog.tsx:132
-#: src/launch/LaunchLayer.tsx:289
+#: src/launch/LaunchLayer.tsx:293
 #: src/mods/ModMenu.tsx:138
 #: src/mods/Sidebar.tsx:404
 #: src/mods/TrackedNotInProfile.tsx:82
@@ -9162,8 +9162,8 @@ msgstr "Adds"
 
 #: src/console/CrashDialog.tsx:154
 #: src/console/CrashDialog.tsx:206
-#: src/launch/LaunchLayer.tsx:179
-#: src/launch/LaunchLayer.tsx:282
+#: src/launch/LaunchLayer.tsx:183
+#: src/launch/LaunchLayer.tsx:286
 msgid "Open Console"
 msgstr "Open Console"
 
@@ -9357,7 +9357,7 @@ msgstr "Optional: {label}"
 msgid "Combine with…"
 msgstr "Combine with…"
 
-#: src/profiles/CompareBulkBody.tsx:213
+#: src/profiles/CompareBulkBody.tsx:217
 msgid "No matching mods"
 msgstr "No matching mods"
 
@@ -9597,7 +9597,7 @@ msgstr "Could not set the default launch preset"
 msgid "Files"
 msgstr "Files"
 
-#: src/launch/LaunchLayer.tsx:258
+#: src/launch/LaunchLayer.tsx:262
 msgid "{name} did not start"
 msgstr "{name} did not start"
 
@@ -10832,7 +10832,7 @@ msgid "Did not load"
 msgstr "Did not load"
 
 #: src/browse/BrowseShow.tsx:30
-#: src/launch/LaunchLayer.tsx:182
+#: src/launch/LaunchLayer.tsx:186
 #: src/profiles/LaunchPresetDialog.tsx:86
 #: src/saves/SaveGapLine.tsx:56
 msgid "Hide"
@@ -11042,7 +11042,7 @@ msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style 
 msgid "Could not restore the backup"
 msgstr "Could not restore the backup"
 
-#: src/launch/LaunchLayer.tsx:262
+#: src/launch/LaunchLayer.tsx:266
 msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
@@ -12141,7 +12141,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/HelpDialog.tsx:236
 #: src/console/SearchRunsDialog.tsx:171
 #: src/game/FarmMenuItem.tsx:131
-#: src/launch/LaunchLayer.tsx:275
+#: src/launch/LaunchLayer.tsx:279
 #: src/launch/SweepDialog.tsx:132
 #: src/mods/AssetMapDialog.tsx:279
 #: src/mods/AuthorDialog.tsx:165

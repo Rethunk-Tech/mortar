@@ -154,18 +154,22 @@ function Overlay({ game }: { game: string }) {
           userSelect: 'text',
         }}
       >
-        {shown.map((line, i) => (
-          <Typography
-            key={line.seq}
-            noWrap={true}
-            sx={{
-              font: 'inherit',
-              color: i === shown.length - 1 ? 'var(--mortar-ink)' : 'inherit',
-            }}
-          >
-            {format(line)}
-          </Typography>
-        ))}
+        {shown.map((line, i) => {
+          const text = format(line)
+          return (
+            <Typography
+              key={line.seq}
+              noWrap={true}
+              title={text}
+              sx={{
+                font: 'inherit',
+                color: i === shown.length - 1 ? 'var(--mortar-ink)' : 'inherit',
+              }}
+            >
+              {text}
+            </Typography>
+          )
+        })}
       </Box>
       <Box sx={{ display: 'flex', gap: 1.25 }}>
         <Button

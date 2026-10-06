@@ -190,22 +190,26 @@ export function CompareBulkBody({
       ) : null}
       {differentSource.length > 0 ? (
         <CompareSection title={t`Different source`}>
-          {differentSource.map((row) => (
-            <Typography
-              key={row.id}
-              noWrap={true}
-              sx={{
-                fontSize: 14,
-                py: 0.5,
-                minHeight: 36,
-                cursor: 'pointer',
-                '&:hover': { textDecoration: 'underline' },
-              }}
-              {...compareOpen(profileA, row.a)}
-            >
-              {t`${row.name}: ${row.a.version} from ${sourceLabel(row.a.source.kind)} → ${row.b.version} from ${sourceLabel(row.b.source.kind)}`}
-            </Typography>
-          ))}
+          {differentSource.map((row) => {
+            const text = t`${row.name}: ${row.a.version} from ${sourceLabel(row.a.source.kind)} → ${row.b.version} from ${sourceLabel(row.b.source.kind)}`
+            return (
+              <Typography
+                key={row.id}
+                noWrap={true}
+                title={text}
+                sx={{
+                  fontSize: 14,
+                  py: 0.5,
+                  minHeight: 36,
+                  cursor: 'pointer',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+                {...compareOpen(profileA, row.a)}
+              >
+                {text}
+              </Typography>
+            )
+          })}
         </CompareSection>
       ) : null}
       <IdenticalList rows={identical} profile={profileA} />
