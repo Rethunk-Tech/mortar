@@ -1321,6 +1321,9 @@ func (s *Services) runLog(gameID, id, run string) (RunLog, error) {
 }
 
 func (s *Services) shareLog(ctx context.Context, gameID, id, run string) (map[string]string, error) {
+	if err := support.CanShare(gameID, s.Store.LoaderID(gameID, id)); err != nil {
+		return nil, err
+	}
 	l, err := s.runLog(gameID, id, run)
 	if err != nil {
 		return nil, err

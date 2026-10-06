@@ -144,6 +144,9 @@ func (Loader) Send(ctx context.Context, _ loader.Target, p loader.ProfileView, c
 // ReportsStartup is true: the Mortar SMAPI Bridge times each mod's startup.
 func (Loader) ReportsStartup() {}
 
+// SharesLog marks SMAPI's log as the one smapi.io's parser reads.
+func (Loader) SharesLog() {}
+
 // Order is SMAPI's load order of the enabled mods that keep a manifest at their folder's root.
 func (Loader) Order(p loader.ProfileView) ([]loader.ComponentID, error) {
 	var mods []loadorder.Mod

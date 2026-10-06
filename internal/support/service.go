@@ -16,9 +16,11 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/logshare"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -102,8 +104,11 @@ func (s *Service) Log(gameID, profileID string) (string, error) {
 	return text, nil
 }
 
-// Upload posts the log to smapi.io and returns its page's link.
-func (s *Service) Upload(ctx context.Context, log string) (string, error) {
+// Upload posts the log of the game's loader (loaderID, "" for the primary) to smapi.io and returns its page's link.
+func (s *Service) Upload(ctx context.Context, gameID, loaderID, log string) (string, error) {
+	if err := CanShare(gameID, loaderID); err != nil {
+		return "", err
+	}
 	if strings.TrimSpace(log) == "" {
 		return "", errors.New("the log is empty")
 	}
@@ -174,4 +179,12 @@ func diagnosticsSection(report doctor.Report, home, dataDir string) string {
 	b.WriteString("```\n")
 	b.WriteString(logTailSections(dataDir, home, maxDiagnostics-b.Len()))
 	return b.String()
+}
+
+// CanShare refuses a loader whose log smapi.io's parser cannot read.
+func CanShare(gameID, loaderID string) error {
+	if l, ok := game.LoaderOf(gameID, loaderID); ok && loader.SharesLog(l) {
+		return nil
+	}
+	return usererr.New(usererr.Invalid, game.LoaderName(gameID, loaderID)+" logs cannot be shared to smapi.io; save or copy the log instead")
 }

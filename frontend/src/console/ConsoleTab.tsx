@@ -15,7 +15,7 @@ import { RunCause } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { useGameBusy, useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
@@ -278,6 +278,19 @@ function ReinstallLoader({ game }: { game: string }) {
   )
 }
 
+// ConsoleTip points at the way out for this run's log: Share log for a loader smapi.io reads, else Save and Copy.
+function ConsoleTip() {
+  const { t } = useLingui()
+  const shares = useProfileLoader()?.share === true
+  return (
+    <TipBanner tip="console">
+      {shares
+        ? t`Filter by level or mod, and use Share log to upload this run to smapi.io.`
+        : t`Filter by level or mod, and use Save log or Copy log to pass this run on.`}
+    </TipBanner>
+  )
+}
+
 // ConsoleEmpty stands in for the log until the profile has ever run, so a first visit is not an empty black box.
 function ConsoleEmpty() {
   const { t } = useLingui()
@@ -344,9 +357,7 @@ export function ConsoleTab({ game }: { game: string }) {
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <TipBanner tip="console">
-        {t`Filter by level or mod, and use Share log to upload this run to smapi.io.`}
-      </TipBanner>
+      <ConsoleTip />
       <Box
         sx={{
           display: 'flex',

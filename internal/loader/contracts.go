@@ -148,6 +148,15 @@ type WithOrder interface {
 // StartupTimings is a loader whose companion records how long each mod adds to the game's startup.
 type StartupTimings interface{ ReportsStartup() }
 
+// LogShare is a loader whose log smapi.io's parser reads, so Mortar may upload it there as a public link.
+type LogShare interface{ SharesLog() }
+
+// SharesLog reports whether l's log may be uploaded to smapi.io.
+func SharesLog(l Loader) bool {
+	_, ok := l.(LogShare)
+	return ok
+}
+
 // OrderWriter is a loader whose load order lives in a file of the game.
 type OrderWriter interface {
 	WriteOrder(ctx context.Context, t Target, order []ComponentID) error

@@ -21,6 +21,7 @@ import {
   Upload,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { openPage } from '../mods/menu.ts'
+import { useProfileLoader } from '../profiles/store.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
@@ -125,6 +126,7 @@ export function HelpDialog({ game }: { game: string }) {
   const open = useConsole((s) => s.helping)
   const setHelping = useConsole((s) => s.setHelping)
   const profile = useConsole((s) => s.shown.profile)
+  const loaderId = useProfileLoader(profile)?.id ?? ''
   const viewingRun = useConsole((s) => s.viewingRun)
   const openFor = useRef({ game, profile })
   openFor.current = { game, profile }
@@ -178,7 +180,7 @@ export function HelpDialog({ game }: { game: string }) {
       return
     }
     setUploading(true)
-    Upload(hideUserName ? anonymize(log) : log)
+    Upload(game, loaderId, hideUserName ? anonymize(log) : log)
       .then((url) => {
         if (uploadGen.current !== token) {
           return

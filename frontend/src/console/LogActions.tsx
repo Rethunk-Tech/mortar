@@ -20,7 +20,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -43,6 +43,8 @@ export function LogActions({ game }: { game: string }) {
     (s) => s.profiles.find((p) => p.id === shown.profile)?.name ?? shown.profile,
   )
   const { clear, jumpTo, setHelping } = useConsole.getState()
+  // smapi.io's parser reads only SMAPI's log, so other loaders offer Save and Copy instead.
+  const shares = useProfileLoader()?.share === true
   const [searching, setSearching] = useState(false)
   const [menu, setMenu] = useState<HTMLElement | null>(null)
   const [viewedStart, setViewedStart] = useState<Date | null>(null)
@@ -120,11 +122,20 @@ export function LogActions({ game }: { game: string }) {
         aria-expanded={menu !== null}
         onClick={(e) => setMenu(e.currentTarget)}
       />
-      <IconAction
-        label={t`Share log…`}
-        icon={<LifeBuoy size={16} />}
-        onClick={() => setHelping(true)}
-      />
+      {shares ? (
+        <IconAction
+          label={t`Share log…`}
+          icon={<LifeBuoy size={16} />}
+          onClick={() => setHelping(true)}
+        />
+      ) : (
+        <IconAction
+          label={t`Save log…`}
+          icon={<Download size={16} />}
+          disabled={!canSave}
+          onClick={saveLog}
+        />
+      )}
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
         <MenuItem
           disabled={rows.length === 0}

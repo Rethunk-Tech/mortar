@@ -468,9 +468,12 @@ export function initProfilesChanged() {
 export const openProfileOf = (s: { profiles: Profile[]; openId: string }) =>
   s.profiles.find((p) => p.id === s.openId)
 
-// useProfileLoader is the open profile's loader, whose flags say which tabs and tools apply to it.
-export function useProfileLoader() {
+// useProfileLoader is the loader of the profile with this id (the open one by default), whose flags say which tabs
+// and tools apply to it.
+export function useProfileLoader(profileId?: string) {
   const game = useProfiles((s) => s.game)
-  const loaderId = useProfiles((s) => openProfileOf(s)?.loader) || game?.loaderId
+  const loaderId =
+    useProfiles((s) => s.profiles.find((p) => p.id === (profileId ?? s.openId))?.loader) ||
+    game?.loaderId
   return game?.loaders?.find((l) => l.id === loaderId)
 }

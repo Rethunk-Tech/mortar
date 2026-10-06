@@ -11,6 +11,8 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
+	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	_ "github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
 
@@ -19,7 +21,7 @@ func upload(t *testing.T, handler http.HandlerFunc, log string) (string, error) 
 	srv := httptest.NewServer(handler)
 	t.Cleanup(srv.Close)
 	s := newService(srv.URL, "1.2.3", func(string) problems.Environment { return problems.Environment{} })
-	return s.Upload(context.Background(), log)
+	return s.Upload(context.Background(), "stardew", "", log)
 }
 
 func TestUploadRedirectIsTheLink(t *testing.T) {
@@ -128,5 +130,18 @@ func TestBugURLCarriesTheReportAndDiagnosticsOnlyWhenAsked(t *testing.T) {
 	}
 	if !strings.Contains(parse(s.BugURL("", BugReport{Diagnostics: true})).Get("body"), "**Diagnostics**") {
 		t.Fatal("diagnostics missing when asked")
+	}
+}
+
+func TestUploadRefusesALoaderSmapiIoCannotRead(t *testing.T) {
+	called := false
+	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { called = true }))
+	t.Cleanup(srv.Close)
+	s := newService(srv.URL, "1.2.3", func(string) problems.Environment { return problems.Environment{} })
+	if _, err := s.Upload(context.Background(), "lethal-company", "", "[Info   : BepInEx] hi"); err == nil {
+		t.Fatal("a BepInEx log was uploaded to smapi.io")
+	}
+	if called {
+		t.Fatal("the refusal still contacted the server")
 	}
 }

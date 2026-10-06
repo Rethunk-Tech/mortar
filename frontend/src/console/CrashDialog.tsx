@@ -26,7 +26,7 @@ import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { openMod } from '../mods/openMod.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
@@ -103,6 +103,7 @@ function MoreActions({
 }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const shares = useProfileLoader(crash.profile)?.share === true
   const close = () => setAnchor(null)
   return (
     <>
@@ -135,16 +136,18 @@ function MoreActions({
             }}
           />
         ) : null}
-        <MenuAction
-          icon={<LifeBuoy size={16} />}
-          label={t`Share log…`}
-          onClick={() => {
-            close()
-            openRun(crash, false)
-            useConsole.getState().setHelping(true)
-            onDone()
-          }}
-        />
+        {shares ? (
+          <MenuAction
+            icon={<LifeBuoy size={16} />}
+            label={t`Share log…`}
+            onClick={() => {
+              close()
+              openRun(crash, false)
+              useConsole.getState().setHelping(true)
+              onDone()
+            }}
+          />
+        ) : null}
         {withConsole ? (
           <MenuAction
             icon={<Terminal size={16} />}

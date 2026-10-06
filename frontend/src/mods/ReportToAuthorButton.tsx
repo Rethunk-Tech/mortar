@@ -30,6 +30,7 @@ import { anonymize } from '../console/anonymize.ts'
 import { shareLogConfirm } from '../console/shareLog.ts'
 import { gameName } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
+import { useProfileLoader } from '../profiles/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -130,7 +131,14 @@ export function ReportToAuthorButton({
   const [log, setLog] = useState<string | null>(null)
   const [hideUserName, setHideUserName] = useState(true)
   const [uploading, setUploading] = useState(false)
+  // smapi.io's parser reads only SMAPI's log; other loaders' reports go out without a log link.
+  const profileLoader = useProfileLoader(profile.id)
+  const shares = profileLoader?.share === true
   const start = () => {
+    if (!shares) {
+      skipShare()
+      return
+    }
     setOpen(true)
     setLog(null)
     const read = runId ? RunLog(game, profile.id, runId) : Log(game, profile.id)
@@ -186,7 +194,7 @@ export function ReportToAuthorButton({
     }
     setUploading(true)
     try {
-      const url = await Upload(hideUserName ? anonymize(log) : log)
+      const url = await Upload(game, profileLoader?.id ?? '', hideUserName ? anonymize(log) : log)
       await runWithLink(url)
     } catch (e: unknown) {
       toastError(t`Could not upload the log`, e)

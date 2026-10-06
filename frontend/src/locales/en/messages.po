@@ -24,7 +24,7 @@ msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links 
 msgid "Performance"
 msgstr "Performance"
 
-#: src/console/ConsoleTab.tsx:407
+#: src/console/ConsoleTab.tsx:418
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
@@ -534,7 +534,7 @@ msgstr "Assets and packs"
 msgid "Allow through firewall"
 msgstr "Allow through firewall"
 
-#: src/console/ConsoleTab.tsx:343
+#: src/console/ConsoleTab.tsx:356
 msgid "No lines match the filters."
 msgstr "No lines match the filters."
 
@@ -656,7 +656,7 @@ msgstr "Updated on Nexus"
 msgid "No answer {0}: {error}"
 msgstr "No answer {0}: {error}"
 
-#: src/console/CrashDialog.tsx:291
+#: src/console/CrashDialog.tsx:294
 #: src/mods/problemFix/AssetFix.tsx:99
 #: src/mods/problemFix/BrokenFix.tsx:78
 #: src/mods/problemFix/ListedFix.tsx:26
@@ -679,7 +679,7 @@ msgstr "Mods in this profile"
 msgid "Apply this profile to all waiting"
 msgstr "Apply this profile to all waiting"
 
-#: src/console/HelpDialog.tsx:59
+#: src/console/HelpDialog.tsx:60
 #: src/mods/ModDetail.tsx:168
 msgid "Open"
 msgstr "Open"
@@ -814,7 +814,7 @@ msgstr "This file is from the same Nexus page as {0}. Install it with that mod t
 msgid "Untrack"
 msgstr "Untrack"
 
-#: src/console/CrashDialog.tsx:115
+#: src/console/CrashDialog.tsx:116
 msgid "More"
 msgstr "More"
 
@@ -1364,7 +1364,7 @@ msgstr "Keep {0}'s old files"
 #. placeholder {0}: cause.modName
 #. placeholder {0}: crash.cause.modName
 #: src/console/ConsoleTab.tsx:124
-#: src/console/CrashDialog.tsx:255
+#: src/console/CrashDialog.tsx:258
 #: src/launch/LaunchLayer.tsx:266
 msgid "Caused by {0}"
 msgstr "Caused by {0}"
@@ -1432,9 +1432,9 @@ msgstr "Grid view"
 msgid "Clear cache?"
 msgstr "Clear cache?"
 
-#: src/console/CrashDialog.tsx:140
-#: src/console/HelpDialog.tsx:215
-#: src/console/LogActions.tsx:124
+#: src/console/CrashDialog.tsx:142
+#: src/console/HelpDialog.tsx:217
+#: src/console/LogActions.tsx:127
 msgid "Share log…"
 msgstr "Share log…"
 
@@ -1521,7 +1521,7 @@ msgstr "Search results"
 msgid "Import from {0}"
 msgstr "Import from {0}"
 
-#: src/console/ConsoleTab.tsx:289
+#: src/console/ConsoleTab.tsx:302
 msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
 msgstr "Play this profile and the game's log shows here as it runs. Every run is kept."
 
@@ -1612,7 +1612,7 @@ msgstr "Don't ask again about {0}"
 msgid "Unlink"
 msgstr "Unlink"
 
-#: src/console/CrashDialog.tsx:170
+#: src/console/CrashDialog.tsx:173
 msgid "It could not load an asset."
 msgstr "It could not load an asset."
 
@@ -2121,7 +2121,7 @@ msgstr "A mod works better, or only works, with a setting changed. Nothing is wr
 msgid "Prerelease"
 msgstr "Prerelease"
 
-#: src/console/ConsoleTab.tsx:373
+#: src/console/ConsoleTab.tsx:384
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
@@ -2255,7 +2255,7 @@ msgstr "Hill-top farm"
 msgid "Why?"
 msgstr "Why?"
 
-#: src/console/HelpDialog.tsx:238
+#: src/console/HelpDialog.tsx:240
 msgid "Upload log"
 msgstr "Upload log"
 
@@ -2670,7 +2670,7 @@ msgstr "{count} checked later"
 msgid "Bisect from here"
 msgstr "Bisect from here"
 
-#: src/console/ConsoleTab.tsx:341
+#: src/console/ConsoleTab.tsx:354
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
@@ -2872,7 +2872,7 @@ msgstr "Installed file"
 msgid "Connected from {0}, last seen "
 msgstr "Connected from {0}, last seen "
 
-#: src/console/LogActions.tsx:153
+#: src/console/LogActions.tsx:164
 msgid "Search all runs…"
 msgstr "Search all runs…"
 
@@ -2956,8 +2956,8 @@ msgstr "Fullscreen resolution height"
 msgid "Shared by every game"
 msgstr "Shared by every game"
 
-#: src/console/HelpDialog.tsx:206
-#: src/mods/ReportToAuthorButton.tsx:211
+#: src/console/HelpDialog.tsx:208
+#: src/mods/ReportToAuthorButton.tsx:219
 msgid "Reading the log…"
 msgstr "Reading the log…"
 
@@ -2993,7 +2993,7 @@ msgstr "Modpack saved"
 msgid "Save as template"
 msgstr "Save as template"
 
-#: src/console/HelpDialog.tsx:204
+#: src/console/HelpDialog.tsx:206
 msgid "No log for this profile yet. Play it once, then try again."
 msgstr "No log for this profile yet. Play it once, then try again."
 
@@ -3258,7 +3258,7 @@ msgstr "Report a bug"
 msgid "{size} in {path}"
 msgstr "{size} in {path}"
 
-#: src/mods/ReportToAuthorButton.tsx:238
+#: src/mods/ReportToAuthorButton.tsx:246
 msgid "Skip sharing"
 msgstr "Skip sharing"
 
@@ -3436,9 +3436,9 @@ msgstr "Not checked yet."
 msgid "Changed"
 msgstr "Changed"
 
-#: src/console/HelpDialog.tsx:160
+#: src/console/HelpDialog.tsx:162
 #: src/console/store.ts:143
-#: src/mods/ReportToAuthorButton.tsx:140
+#: src/mods/ReportToAuthorButton.tsx:148
 msgid "Could not read the game log"
 msgstr "Could not read the game log"
 
@@ -3621,7 +3621,7 @@ msgstr "Part of the OBS address; regenerate it if it leaks"
 msgid "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 msgstr "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 
-#: src/console/HelpDialog.tsx:111
+#: src/console/HelpDialog.tsx:112
 #: src/console/VirtualLog.tsx:205
 msgid "Game log"
 msgstr "Game log"
@@ -3716,7 +3716,7 @@ msgstr "Share as r2modman code?"
 #: src/bundles/ApplyBundleToProfile.tsx:74
 #: src/bundles/dialogs.tsx:223
 #: src/bundles/dialogs.tsx:285
-#: src/console/HelpDialog.tsx:234
+#: src/console/HelpDialog.tsx:236
 #: src/console/StartupPanel.tsx:56
 #: src/fomod/Dialog.tsx:254
 #: src/game/NewProfileDialog.tsx:232
@@ -3736,7 +3736,7 @@ msgstr "Share as r2modman code?"
 #: src/mods/CategoryEditor.tsx:154
 #: src/mods/CategoryEditor.tsx:234
 #: src/mods/parts.tsx:378
-#: src/mods/ReportToAuthorButton.tsx:235
+#: src/mods/ReportToAuthorButton.tsx:243
 #: src/mods/SelectionBarDialogs.tsx:86
 #: src/mods/SelectionBarDialogs.tsx:136
 #: src/profiles/CompareDialog.tsx:61
@@ -4128,7 +4128,7 @@ msgid "None"
 msgstr "None"
 
 #: src/browse/BrowseMenu.tsx:73
-#: src/console/HelpDialog.tsx:171
+#: src/console/HelpDialog.tsx:173
 #: src/share/ShareDialog.tsx:238
 msgid "Link copied"
 msgstr "Link copied"
@@ -4254,7 +4254,7 @@ msgstr "Mortar starts the unmodded game directly, skipping SMAPI's Linux launche
 msgid "Launch other apps with this profile."
 msgstr "Launch other apps with this profile."
 
-#: src/console/LogActions.tsx:103
+#: src/console/LogActions.tsx:105
 msgid "Jump to previous error"
 msgstr "Jump to previous error"
 
@@ -4574,7 +4574,7 @@ msgstr "Also updates {0} (same download)"
 msgid "Changelog on Nexus"
 msgstr "Changelog on Nexus"
 
-#: src/console/LogActions.tsx:133
+#: src/console/LogActions.tsx:144
 msgid "Log copied"
 msgstr "Log copied"
 
@@ -4741,6 +4741,10 @@ msgstr "Edit config"
 #: src/share/ImportPreview.tsx:250
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
+
+#: src/console/ConsoleTab.tsx:289
+msgid "Filter by level or mod, and use Save log or Copy log to pass this run on."
+msgstr "Filter by level or mod, and use Save log or Copy log to pass this run on."
 
 #: src/sync/SyncOffers.tsx:126
 msgid "Later"
@@ -4910,11 +4914,11 @@ msgid "Could not save the launch presets"
 msgstr "Could not save the launch presets"
 
 #. placeholder {0}: mod.name
-#: src/mods/ReportToAuthorButton.tsx:158
+#: src/mods/ReportToAuthorButton.tsx:166
 msgid "Error in {0}"
 msgstr "Error in {0}"
 
-#: src/console/CrashDialog.tsx:265
+#: src/console/CrashDialog.tsx:268
 msgid "The game log has errors."
 msgstr "The game log has errors."
 
@@ -5002,7 +5006,7 @@ msgstr "Cache"
 msgid "Browse hides mods their site marks as adult unless this is on. Installed mods are never hidden."
 msgstr "Browse hides mods their site marks as adult unless this is on. Installed mods are never hidden."
 
-#: src/console/CrashDialog.tsx:250
+#: src/console/CrashDialog.tsx:253
 msgid "{gameName} closed with errors"
 msgstr "{gameName} closed with errors"
 
@@ -5018,7 +5022,7 @@ msgstr "These profiles have no user mods to compare."
 msgid "How this Mortar appears to nearby installations"
 msgstr "How this Mortar appears to nearby installations"
 
-#: src/console/ConsoleTab.tsx:348
+#: src/console/ConsoleTab.tsx:288
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
 msgstr "Filter by level or mod, and use Share log to upload this run to smapi.io."
 
@@ -5047,8 +5051,8 @@ msgstr "Cosmetic overlaps on the Problems tab"
 msgid "Template saved"
 msgstr "Template saved"
 
-#: src/console/HelpDialog.tsx:238
-#: src/mods/ReportToAuthorButton.tsx:246
+#: src/console/HelpDialog.tsx:240
+#: src/mods/ReportToAuthorButton.tsx:254
 msgid "Uploading…"
 msgstr "Uploading…"
 
@@ -5236,7 +5240,7 @@ msgstr "Launch options"
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
-#: src/console/ConsoleTab.tsx:409
+#: src/console/ConsoleTab.tsx:420
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
@@ -5475,7 +5479,7 @@ msgstr "Show slowest mods"
 msgid "Different enabled state"
 msgstr "Different enabled state"
 
-#: src/console/HelpDialog.tsx:51
+#: src/console/HelpDialog.tsx:52
 #: src/firstrun/LoaderStep.tsx:142
 #: src/launch/LaunchLayer.tsx:223
 #: src/saves/lackChipActions.tsx:74
@@ -6648,8 +6652,8 @@ msgstr "Play without Steam overlay"
 msgid "Place…"
 msgstr "Place…"
 
-#: src/console/HelpDialog.tsx:76
-#: src/mods/ReportToAuthorButton.tsx:228
+#: src/console/HelpDialog.tsx:77
+#: src/mods/ReportToAuthorButton.tsx:236
 msgid "Hide my user name"
 msgstr "Hide my user name"
 
@@ -7184,8 +7188,8 @@ msgstr "The profile itself stays as it is."
 msgid "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
 msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
 
-#: src/console/HelpDialog.tsx:193
-#: src/mods/ReportToAuthorButton.tsx:192
+#: src/console/HelpDialog.tsx:195
+#: src/mods/ReportToAuthorButton.tsx:200
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
@@ -7444,7 +7448,7 @@ msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # l
 msgid "Could not untrack"
 msgstr "Could not untrack"
 
-#: src/console/LogActions.tsx:141
+#: src/console/LogActions.tsx:152
 msgid "Copy log"
 msgstr "Copy log"
 
@@ -7573,7 +7577,7 @@ msgstr "Show archive contents"
 msgid "Performance comparison"
 msgstr "Performance comparison"
 
-#: src/console/LogActions.tsx:86
+#: src/console/LogActions.tsx:88
 msgid "Save log"
 msgstr "Save log"
 
@@ -7653,7 +7657,7 @@ msgid "Switch and update"
 msgstr "Switch and update"
 
 #. placeholder {0}: row.count
-#: src/console/CrashDialog.tsx:274
+#: src/console/CrashDialog.tsx:277
 msgid "{0, plural, one { · # error} other { · # errors}}"
 msgstr "{0, plural, one { · # error} other { · # errors}}"
 
@@ -7754,7 +7758,7 @@ msgstr "This session"
 msgid "Other profile…"
 msgstr "Other profile…"
 
-#: src/console/CrashDialog.tsx:167
+#: src/console/CrashDialog.tsx:170
 msgid "A file it needs could not be opened."
 msgstr "A file it needs could not be opened."
 
@@ -8025,7 +8029,7 @@ msgstr "Winter"
 msgid "This profile plays on its own saves. Your shared saves are untouched."
 msgstr "This profile plays on its own saves. Your shared saves are untouched."
 
-#: src/console/LogActions.tsx:109
+#: src/console/LogActions.tsx:111
 msgid "Jump to next error"
 msgstr "Jump to next error"
 
@@ -8098,8 +8102,8 @@ msgstr "{0, plural, one {Added # mod from {name}; downloading {left, plural, one
 msgid "The unreadable changes are also deleted from history."
 msgstr "The unreadable changes are also deleted from history."
 
-#: src/console/CrashDialog.tsx:121
-#: src/console/CrashDialog.tsx:197
+#: src/console/CrashDialog.tsx:122
+#: src/console/CrashDialog.tsx:200
 msgid "Find the mod causing this"
 msgstr "Find the mod causing this"
 
@@ -8192,7 +8196,7 @@ msgstr "Mods with problems"
 msgid "Installed separately"
 msgstr "Installed separately"
 
-#: src/console/CrashDialog.tsx:264
+#: src/console/CrashDialog.tsx:267
 msgid "Mortar could not tell which mod caused this. Find the mod causing this tries halves of your mods until the crash stops; your profile is not changed."
 msgstr "Mortar could not tell which mod caused this. Find the mod causing this tries halves of your mods until the crash stops; your profile is not changed."
 
@@ -8605,7 +8609,7 @@ msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:82
 #: src/mods/ProblemsTab.tsx:376
-#: src/mods/ReportToAuthorButton.tsx:166
+#: src/mods/ReportToAuthorButton.tsx:174
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
 msgstr "Report copied"
@@ -8763,7 +8767,7 @@ msgid "You endorsed this mod."
 msgstr "You endorsed this mod."
 
 #: src/browse/browseConstants.ts:43
-#: src/console/CrashDialog.tsx:131
+#: src/console/CrashDialog.tsx:132
 #: src/launch/LaunchLayer.tsx:289
 #: src/mods/ModMenu.tsx:138
 #: src/mods/Sidebar.tsx:404
@@ -8833,7 +8837,7 @@ msgstr "The last run crashed. {0}"
 msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr "A launch ended without Mortar putting the game folder back as it was"
 
-#: src/console/LogActions.tsx:116
+#: src/console/LogActions.tsx:118
 msgid "Log actions"
 msgstr "Log actions"
 
@@ -9053,7 +9057,7 @@ msgstr "Use my normal settings"
 msgid "Hide to tray"
 msgstr "Hide to tray"
 
-#: src/console/HelpDialog.tsx:45
+#: src/console/HelpDialog.tsx:46
 msgid "Log link"
 msgstr "Log link"
 
@@ -9061,8 +9065,8 @@ msgstr "Log link"
 msgid "assets and packs {ms}"
 msgstr "assets and packs {ms}"
 
-#: src/console/HelpDialog.tsx:101
-#: src/mods/ReportToAuthorButton.tsx:218
+#: src/console/HelpDialog.tsx:102
+#: src/mods/ReportToAuthorButton.tsx:226
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
@@ -9133,7 +9137,7 @@ msgstr "A download finishes"
 msgid "Download failed"
 msgstr "Download failed"
 
-#: src/mods/ReportToAuthorButton.tsx:167
+#: src/mods/ReportToAuthorButton.tsx:175
 msgid "Paste it on the mod's bug tracker."
 msgstr "Paste it on the mod's bug tracker."
 
@@ -9151,8 +9155,8 @@ msgstr "{0} used"
 msgid "Adds"
 msgstr "Adds"
 
-#: src/console/CrashDialog.tsx:151
-#: src/console/CrashDialog.tsx:203
+#: src/console/CrashDialog.tsx:154
+#: src/console/CrashDialog.tsx:206
 #: src/launch/LaunchLayer.tsx:179
 #: src/launch/LaunchLayer.tsx:282
 msgid "Open Console"
@@ -9865,7 +9869,7 @@ msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
 msgid "Could not read the saved change {name} from {when}"
 msgstr "Could not read the saved change {name} from {when}"
 
-#: src/console/CrashDialog.tsx:173
+#: src/console/CrashDialog.tsx:176
 msgid "It encountered an error."
 msgstr "It encountered an error."
 
@@ -10263,7 +10267,7 @@ msgstr "{fitting} of {total}"
 msgid "Could not dismiss the setting warning"
 msgstr "Could not dismiss the setting warning"
 
-#: src/console/ConsoleTab.tsx:380
+#: src/console/ConsoleTab.tsx:391
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -10344,7 +10348,7 @@ msgstr "Could not add the bundle"
 msgid "Reading the Mods folder…"
 msgstr "Reading the Mods folder…"
 
-#: src/console/LogActions.tsx:95
+#: src/console/LogActions.tsx:97
 msgid "Errors"
 msgstr "Errors"
 
@@ -10755,7 +10759,7 @@ msgstr "Add all {0}"
 msgid "its log shows an error"
 msgstr "its log shows an error"
 
-#: src/console/CrashDialog.tsx:250
+#: src/console/CrashDialog.tsx:253
 msgid "{gameName} crashed"
 msgstr "{gameName} crashed"
 
@@ -10946,7 +10950,7 @@ msgstr "Games"
 msgid "Language"
 msgstr "Language"
 
-#: src/console/ConsoleTab.tsx:287
+#: src/console/ConsoleTab.tsx:300
 msgid "No game output yet"
 msgstr "No game output yet"
 
@@ -10977,7 +10981,7 @@ msgstr "Could not build the link"
 msgid "{0, plural, one {# warning} other {# warnings}}"
 msgstr "{0, plural, one {# warning} other {# warnings}}"
 
-#: src/console/LogActions.tsx:97
+#: src/console/LogActions.tsx:99
 msgid "Jump to first error"
 msgstr "Jump to first error"
 
@@ -11067,7 +11071,7 @@ msgstr "Source"
 msgid "General"
 msgstr "General"
 
-#: src/mods/ReportToAuthorButton.tsx:208
+#: src/mods/ReportToAuthorButton.tsx:216
 msgid "Report to author"
 msgstr "Report to author"
 
@@ -11434,7 +11438,7 @@ msgstr "{hours}h played"
 msgid "Enable them too"
 msgstr "Enable them too"
 
-#: src/console/LogActions.tsx:159
+#: src/console/LogActions.tsx:170
 #: src/settings/sections/GameSettings.tsx:375
 #: src/toasts/HistoryButton.tsx:142
 msgid "Clear"
@@ -11619,7 +11623,7 @@ msgstr "What to do when an installed mod still needs other mods"
 msgid "Pin selected versions"
 msgstr "Pin selected versions"
 
-#: src/mods/ReportToAuthorButton.tsx:246
+#: src/mods/ReportToAuthorButton.tsx:254
 msgid "Share log and continue"
 msgstr "Share log and continue"
 
@@ -11705,7 +11709,7 @@ msgstr "This template will be deleted. Presets already copied into profiles stay
 msgid "Mark these mods known good so History can restore them if a later change breaks the game."
 msgstr "Mark these mods known good so History can restore them if a later change breaks the game."
 
-#: src/console/ConsoleTab.tsx:367
+#: src/console/ConsoleTab.tsx:378
 msgid "Show times"
 msgstr "Show times"
 
@@ -11730,7 +11734,8 @@ msgstr "Get Mortar"
 msgid "Collapse or expand the profile sidebar"
 msgstr "Collapse or expand the profile sidebar"
 
-#: src/console/LogActions.tsx:147
+#: src/console/LogActions.tsx:133
+#: src/console/LogActions.tsx:158
 msgid "Save log…"
 msgstr "Save log…"
 
@@ -11878,7 +11883,7 @@ msgstr "Handle {0} links"
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
 
-#: src/mods/ReportToAuthorButton.tsx:201
+#: src/mods/ReportToAuthorButton.tsx:209
 msgid "Report to author…"
 msgstr "Report to author…"
 
@@ -12133,7 +12138,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 
 #: src/console/BisectDialog.tsx:174
 #: src/console/BisectDialog.tsx:185
-#: src/console/HelpDialog.tsx:234
+#: src/console/HelpDialog.tsx:236
 #: src/console/SearchRunsDialog.tsx:171
 #: src/game/FarmMenuItem.tsx:131
 #: src/launch/LaunchLayer.tsx:275

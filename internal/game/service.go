@@ -48,6 +48,8 @@ type LoaderRef struct {
 	Order   bool `json:"order"`
 	Console bool `json:"console"`
 	Startup bool `json:"startup"`
+	// Share is whether the loader's log can be uploaded to smapi.io, whose parser reads only SMAPI's.
+	Share bool `json:"share"`
 	// Assets is whether a content-pack framework for the loader's formats builds an asset map.
 	Assets bool `json:"assets"`
 }
@@ -60,6 +62,7 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		_, hasCompanion := d.(loader.WithCompanion)
 		ref.Console = hasConsole && hasCompanion
 		_, ref.Startup = d.(loader.StartupTimings)
+		ref.Share = loader.SharesLog(d)
 		ref.Assets = framework.IndexesAssets(d.Formats())
 	}
 	return ref
