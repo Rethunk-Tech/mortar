@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material'
 import { type LucideIcon, SearchX } from 'lucide-react'
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { SEARCH_HIT } from './prefFilter.ts'
 import { SettingsNav } from './SettingsNav.tsx'
 import { SettingsSearchProvider } from './SettingsSearch.tsx'
 import { dialogOpen } from './shortcuts.ts'
@@ -69,9 +70,7 @@ export function SettingsShell<Id extends string>({
       return
     }
     const root = results.current
-    setNoneMatch(
-      root !== null && root.querySelector('.settings-tiles:not(:empty), .settings-match') === null,
-    )
+    setNoneMatch(root !== null && root.querySelector(SEARCH_HIT) === null)
   }, [query])
   const pick = (id: Id) => {
     onPage(id)
@@ -165,7 +164,7 @@ export function SettingsShell<Id extends string>({
                       flexDirection: 'column',
                       gap: 2,
                       mb: 2,
-                      '&:not(:has(.settings-tiles:not(:empty), .settings-match))': {
+                      [`&:not(:has(${SEARCH_HIT}))`]: {
                         display: 'none',
                       },
                     }}

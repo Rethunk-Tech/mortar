@@ -124,7 +124,7 @@ function NexusModsSignedIn({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Searchable terms={`${t`Nexus account`} Nexus ${t`Sign out`} ${name}`} loose={true}>
+      <Searchable terms={`${t`Nexus account`} Nexus ${t`Sign out`} ${name}`}>
         <Alert
           severity="success"
           icon={<Check size={16} aria-hidden={true} />}
@@ -238,7 +238,7 @@ export function NexusSignIn() {
     return nxm.dialog
   }
   return (
-    <Searchable terms={`${t`Nexus account`} Nexus ${t`API key`} ${t`Sign in`}`} loose={true}>
+    <Searchable terms={`${t`Nexus account`} Nexus ${t`API key`} ${t`Sign in`}`}>
       {nxm.dialog}
       <Box
         component="form"

@@ -42,9 +42,5 @@ export function prefMatches(query: string, label: string, description = ''): boo
   return queryTerms(query).some((term) => haystack.includes(term))
 }
 
-export function sectionVisible(
-  query: string,
-  rows: { label: string; description?: string }[],
-): boolean {
-  return rows.some((row) => prefMatches(query, row.label, row.description ?? ''))
-}
+// What a search result is in the rendered page: a row that matched, or Searchable content that did.
+export const SEARCH_HIT = '[data-setting-label], .settings-match'

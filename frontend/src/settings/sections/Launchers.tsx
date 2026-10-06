@@ -21,7 +21,6 @@ export function Launchers() {
   return (
     <Searchable
       terms={`${t`Launchers`} Steam GOG Flatpak ${t`Game folder`} ${launchers.map((l) => l.name).join(' ')}`}
-      loose={true}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>

@@ -1,6 +1,6 @@
 import { Box, type SxProps, type Theme } from '@mui/material'
-import { Children, isValidElement, type ReactNode } from 'react'
-import { prefMatches, sectionVisible } from './prefFilter.ts'
+import type { ReactNode } from 'react'
+import { prefMatches, SEARCH_HIT } from './prefFilter.ts'
 import { useSettingsSearch } from './useSettingsSearch.ts'
 
 function nodeText(node: ReactNode): string {
@@ -26,19 +26,6 @@ export function SettingsSection({
   sx?: SxProps<Theme>
 }) {
   const query = useSettingsSearch()
-  const rows = Children.toArray(children).flatMap((child) => {
-    if (!isValidElement(child)) {
-      return []
-    }
-    const props = child.props as { label?: ReactNode; description?: ReactNode }
-    if (props.label === undefined) {
-      return []
-    }
-    return [{ label: nodeText(props.label), description: nodeText(props.description) }]
-  })
-  if (query && rows.length > 0 && !sectionVisible(query, rows)) {
-    return null
-  }
   return (
     <Box
       className="settings-section"
@@ -46,8 +33,10 @@ export function SettingsSection({
         display: 'flex',
         flexDirection: 'column',
         gap: 1,
-        // A section whose rows all filtered out (each row renders nothing) hides with its heading.
+        // A section whose rows all filtered out (each row renders nothing) hides with its heading. Rows sit
+        // inside components (PrefKeys, sub-sections), so only the rendered result says whether any matched.
         '&:has(> .settings-tiles:empty)': { display: 'none' },
+        ...(query ? { [`&:not(:has(${SEARCH_HIT}))`]: { display: 'none' } } : {}),
         ...sx,
       }}
     >
@@ -81,22 +70,14 @@ export function SettingsSection({
   )
 }
 
-// Content that is not a SettingRow takes part in search through its terms. Loose content outside a section
-// marks itself so the search results know a page still has something to show.
-export function Searchable({
-  terms,
-  loose = false,
-  children,
-}: {
-  terms: string
-  loose?: boolean
-  children: ReactNode
-}) {
+// Content that is not a SettingRow takes part in search through its terms, and marks a match so its section and
+// page stay in the results.
+export function Searchable({ terms, children }: { terms: string; children: ReactNode }) {
   const query = useSettingsSearch()
   if (!prefMatches(query, terms)) {
     return null
   }
-  return loose && query ? (
+  return query ? (
     <Box className="settings-match" sx={{ display: 'contents' }}>
       {children}
     </Box>
@@ -148,7 +129,9 @@ export function SettingRow({
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ fontSize: 16 }}>{label}</Box>
+        <Box data-setting-label={true} sx={{ fontSize: 16 }}>
+          {label}
+        </Box>
         {description ? (
           <Box sx={{ fontSize: 14, color: 'text.secondary', mt: 0.25 }}>{description}</Box>
         ) : null}

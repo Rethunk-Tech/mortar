@@ -1,17 +1,7 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { prefMatches, sectionVisible } from './prefFilter.ts'
-
-test('a settings section hides when search matches none of its rows', () => {
-  const rows = [
-    { label: 'Keep in tray', description: 'Close to the tray' },
-    { label: 'Language', description: '' },
-  ]
-  expect(sectionVisible('', rows)).toBe(true)
-  expect(sectionVisible('tray', rows)).toBe(true)
-  expect(sectionVisible('firewall', rows)).toBe(false)
-})
+import { prefMatches } from './prefFilter.ts'
 
 // The Lingui macro does not run under bun test, so labels are read from the source the catalog is extracted from.
 function copyLabels(): Map<string, string> {
