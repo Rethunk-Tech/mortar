@@ -255,3 +255,23 @@ func TestFolderSavesStayStardewShaped(t *testing.T) {
 		t.Fatalf("Names = %v, %v", names, err)
 	}
 }
+
+func TestScanRecomputesAResultCachedByAnOlderParser(t *testing.T) {
+	s := &Scanner{Dir: fixture(t), CacheDir: t.TempDir()}
+	if _, err := s.Scan(index); err != nil {
+		t.Fatal(err)
+	}
+	old := s.load()
+	for k, c := range old {
+		c.Stamp.Rev = scanRev - 1
+		c.Info.WhichModFarm = "from-an-older-parser"
+		old[k] = c
+	}
+	s.store(old)
+
+	got, err := s.Scan(index)
+
+	if err != nil || len(got) != 1 || got[0].WhichModFarm != "" {
+		t.Fatalf("scan = %+v, %v; want the older parser's entry recomputed", got, err)
+	}
+}
