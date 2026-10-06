@@ -85,6 +85,20 @@ func TestMergeSameTiesBySummaryLinks(t *testing.T) {
 	}
 }
 
+func TestSummaryLinksNeedTheRealHost(t *testing.T) {
+	for _, summary := range []string{
+		"https://evilgithub.com/Alice/Cool-Mod", "https://github.com.evil.example/Alice/Cool-Mod", "github.com/Alice/Cool-Mod",
+		"https://notthunderstore.io/c/lethal-company/p/Bob/Thing/", "https://thunderstore.io.evil.example/c/x/p/Bob/Thing/",
+	} {
+		if got := keys(Item{Source: "nexus", ID: "1", Summary: summary}, nil); len(got) != 0 {
+			t.Errorf("%s gave %v", summary, got)
+		}
+	}
+	if got := keys(Item{Source: "nexus", Summary: "at https://www.github.com/Alice/Cool-Mod and more"}, nil); len(got) != 1 || got[0] != "repo:alice/cool-mod" {
+		t.Errorf("www link gave %v", got)
+	}
+}
+
 func TestRankedPutsPreferredSourcesFirst(t *testing.T) {
 	got := ranked([]string{"github", "bogus", "github", "nexus"}, []string{"nexus", "thunderstore", "github"})
 	want := []string{"github", "nexus", "thunderstore"}

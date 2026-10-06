@@ -7,9 +7,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
+// Both need the "//" of a link right before the host, so a host that only ends in the name (evilgithub.com) is not it.
 var (
-	githubLink      = regexp.MustCompile(`(?i)github\.com/([\w.-]+/[\w.-]+)`)
-	thunderstoreRef = regexp.MustCompile(`(?i)thunderstore\.io/c/[\w-]+/p/([\w]+)/([\w]+)`)
+	githubLink      = regexp.MustCompile(`(?i)//(?:www\.)?github\.com/([\w.-]+/[\w.-]+)`)
+	thunderstoreRef = regexp.MustCompile(`(?i)//(?:www\.)?thunderstore\.io/c/[\w-]+/p/([\w]+)/([\w]+)`)
 )
 
 // identityOf resolves a hit to its package identity (a SMAPI UniqueID or a loader plugin id), "" when none is known.
