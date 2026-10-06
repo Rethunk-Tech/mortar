@@ -40,6 +40,7 @@ import { useModGroups } from './useModGroups.ts'
 import {
   flattenModGroups,
   focusModAt,
+  GROUP_HEADER_PX,
   gridColumnCount,
   gridLanePx,
   listRowId,
@@ -83,18 +84,19 @@ interface ModCardProps {
   mod: Mod
   orderedIds: readonly string[]
   profile: Profile
-  columns: number
+  // The column count at the time of a key press, read from a ref so a change of width re-lays the grid out without
+  // re-rendering every card.
+  columnsRef: { readonly current: number }
   onMove: (id: string, delta: number) => void
 }
 
 const sameCard = (a: ModCardProps, b: ModCardProps) =>
   a.mod === b.mod &&
-  a.columns === b.columns &&
   a.orderedIds === b.orderedIds &&
   a.onMove === b.onMove &&
   (a.profile === b.profile || ownSlice(a.profile, a.mod.key) === ownSlice(b.profile, b.mod.key))
 
-function ModCardView({ mod: m, orderedIds, profile, columns, onMove }: ModCardProps) {
+function ModCardView({ mod: m, orderedIds, profile, columnsRef, onMove }: ModCardProps) {
   const { t } = useLingui()
   const openDetail = useDetail((s) => s.show)
   const askRemove = useMods((s) => s.askRemove)
@@ -167,8 +169,8 @@ function ModCardView({ mod: m, orderedIds, profile, columns, onMove }: ModCardPr
               const run: Partial<Record<string, () => void>> = {
                 left: () => onMove(id, -1),
                 right: () => onMove(id, 1),
-                'mod-up': () => onMove(id, -columns),
-                'mod-down': () => onMove(id, columns),
+                'mod-up': () => onMove(id, -columnsRef.current),
+                'mod-down': () => onMove(id, columnsRef.current),
                 'mod-toggle': () => toggleActing(m).catch(reportUnexpected),
                 'mod-details': () => openDetail(m),
                 'mod-remove': () => askRemove(actingMods(m)),
@@ -243,8 +245,12 @@ function ModCardView({ mod: m, orderedIds, profile, columns, onMove }: ModCardPr
 
 const ModCard = memo(ModCardView, sameCard)
 
-function GridSlot({
-  item,
+// The rows of the virtual window as one grid: every card keeps this parent when the column count changes, so opening the
+// details panel (which narrows the grid) moves the cards by CSS instead of mounting them again. A group header spans the
+// grid, and each row is as tall as the virtualizer sized it (a card plus the gap, a header's 36 px).
+function GridWindow({
+  rows,
+  top,
   heading,
   collapsed,
   gameId,
@@ -252,12 +258,14 @@ function GridSlot({
   groupBy,
   tagHint,
   columns,
+  columnsRef,
   orderedIds,
   profile,
   groups,
   onMove,
 }: {
-  item: VirtualRow<ListRow>
+  rows: readonly VirtualRow<ListRow>[]
+  top: number
   heading: (key: string) => string
   collapsed: Record<string, boolean>
   gameId: string
@@ -265,32 +273,20 @@ function GridSlot({
   groupBy: string
   tagHint: string
   columns: number
+  columnsRef: { readonly current: number }
   orderedIds: readonly string[]
   profile: Profile
   groups: readonly { key: string; items: readonly ListRow[] }[]
   onMove: (id: string, delta: number) => void
 }) {
-  if (item.kind === 'header') {
-    return (
-      <GroupHeaderRow
-        groupKey={item.groupKey}
-        count={item.count}
-        label={heading(item.groupKey)}
-        collapsed={collapsed}
-        gameId={gameId}
-        setCollapsed={setCollapsed}
-        groupBy={groupBy}
-        tagHint={tagHint}
-        groups={groups}
-      />
-    )
-  }
-  if (item.kind !== 'lane') {
-    return null
-  }
   return (
     <Box
       sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        transform: `translateY(${top}px)`,
         display: 'grid',
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         gap: LANE_GAP_PX,
@@ -298,16 +294,41 @@ function GridSlot({
         alignContent: 'start',
       }}
     >
-      {item.items.map((r) => (
-        <ModCard
-          key={modId(r.mod)}
-          mod={r.mod}
-          orderedIds={orderedIds}
-          profile={profile}
-          columns={columns}
-          onMove={onMove}
-        />
-      ))}
+      {rows.flatMap((item) => {
+        if (item.kind === 'header') {
+          return (
+            <Box
+              key={item.key}
+              sx={{ gridColumn: '1 / -1', height: GROUP_HEADER_PX, mx: -2, mb: `-${LANE_GAP_PX}` }}
+            >
+              <GroupHeaderRow
+                groupKey={item.groupKey}
+                count={item.count}
+                label={heading(item.groupKey)}
+                collapsed={collapsed}
+                gameId={gameId}
+                setCollapsed={setCollapsed}
+                groupBy={groupBy}
+                tagHint={tagHint}
+                groups={groups}
+              />
+            </Box>
+          )
+        }
+        if (item.kind !== 'lane') {
+          return []
+        }
+        return item.items.map((r) => (
+          <ModCard
+            key={modId(r.mod)}
+            mod={r.mod}
+            orderedIds={orderedIds}
+            profile={profile}
+            columnsRef={columnsRef}
+            onMove={onMove}
+          />
+        ))
+      })}
     </Box>
   )
 }
@@ -339,6 +360,8 @@ function CardsPane({
   const lanePx = gridLanePx(laneCompact) + (cardSize === 'large' ? LARGE_LANE_EXTRA : 0)
   const [width, setWidth] = useState(0)
   const columns = gridColumnCount(width)
+  const columnsRef = useRef(columns)
+  columnsRef.current = columns
   const items = useMemo(
     () =>
       flattenModGroups(groups, {
@@ -350,6 +373,9 @@ function CardsPane({
     [collapsed, columns, groupBy, groups],
   )
   const { parentRef, virtualizer } = useModVirtual(items, lanePx)
+  const virtualItems = virtualizer.getVirtualItems()
+  const visible = virtualItems.flatMap((vi) => items[vi.index] ?? [])
+  const visibleStart = virtualItems[0]?.start ?? 0
   const detailId = useDetail((s) => s.detailId)
   // Measured before paint, so the first frame lays out the real column count rather than one column.
   useLayoutEffect(() => {
@@ -403,40 +429,22 @@ function CardsPane({
       }}
     >
       <Box sx={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-        {virtualizer.getVirtualItems().map((vi) => {
-          const item = items[vi.index]
-          if (!item) {
-            return null
-          }
-          return (
-            <Box
-              key={item.key}
-              data-index={vi.index}
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${vi.start}px)`,
-              }}
-            >
-              <GridSlot
-                item={item}
-                heading={heading}
-                collapsed={collapsed}
-                gameId={gameId}
-                setCollapsed={setCollapsed}
-                groupBy={groupBy}
-                tagHint={tagHint}
-                columns={columns}
-                orderedIds={orderedIds}
-                profile={profile}
-                groups={groups}
-                onMove={onMove}
-              />
-            </Box>
-          )
-        })}
+        <GridWindow
+          rows={visible}
+          top={visibleStart}
+          heading={heading}
+          collapsed={collapsed}
+          gameId={gameId}
+          setCollapsed={setCollapsed}
+          groupBy={groupBy}
+          tagHint={tagHint}
+          columns={columns}
+          columnsRef={columnsRef}
+          orderedIds={orderedIds}
+          profile={profile}
+          groups={groups}
+          onMove={onMove}
+        />
       </Box>
     </Box>
   )

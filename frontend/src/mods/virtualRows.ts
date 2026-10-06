@@ -5,8 +5,6 @@ import type { ListRow } from './listColumns.ts'
 import { modId } from './lookup.ts'
 
 const TYPEAHEAD_LETTER = /^\p{L}$/u
-const GROUP_HEADER_PX = 36
-
 const GRID_MIN_CARD_PX = 300
 
 const GRID_GAP_PX = 6
@@ -32,6 +30,8 @@ interface Scroller {
 }
 
 export const TYPEAHEAD_MS = 500
+
+export const GROUP_HEADER_PX = 36
 
 export const LIST_ROW_PX = 36
 

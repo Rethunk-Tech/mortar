@@ -91,3 +91,27 @@ test('a collapse saved under a grouping never hides the ungrouped list', () => {
   })
   expect(rows.map((row) => row.key)).toEqual(['r:a'])
 })
+
+// The card grid draws every card of the visible lanes as children of one grid, keyed by mod id, and lets CSS lay out the
+// columns. That keeps each card mounted when the column count changes only while the cards come out in one order,
+// whatever the count, and the headers keep their place between them.
+test('the cards and headers flow in one order at every column count', () => {
+  const enabled = Array.from({ length: 11 }, (_, i) => ({ id: `e${i}` }))
+  const disabled = Array.from({ length: 5 }, (_, i) => ({ id: `d${i}` }))
+  const many = [
+    { key: 'enabled', items: enabled },
+    { key: 'disabled', items: disabled },
+  ]
+  const flow = (columns: number) =>
+    flattenModGroups(many, { grouped: true, collapsed: {}, idOf, columns }).flatMap((row) => {
+      if (row.kind === 'header') {
+        return [row.key]
+      }
+      return row.kind === 'lane' ? row.items.map(idOf) : []
+    })
+  const wide = flow(5)
+  for (const columns of [1, 2, 3, 4, 6, 20]) {
+    expect(flow(columns)).toEqual(wide)
+  }
+  expect(wide).toEqual(['h:enabled', ...enabled.map(idOf), 'h:disabled', ...disabled.map(idOf)])
+})
