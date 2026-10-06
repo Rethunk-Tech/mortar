@@ -11,6 +11,7 @@ import {
 import { columnLabel } from '../../mods/columnLabel.ts'
 import { LIST_COLUMN_IDS, sanitizeListSort } from '../../mods/listColumns.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
+import { PAD_FOCUS } from '../../theme/theme.ts'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
@@ -128,7 +129,7 @@ export function Appearance() {
                     color: 'var(--mortar-ink)',
                     '& .MuiFormControlLabel-label': { width: '100%' },
                     '&:has(input:checked)': { borderColor: 'var(--mortar-ink)' },
-                    '&:has(input:focus-visible)': {
+                    [`&:has(input:focus-visible), ${PAD_FOCUS} &:has(input:focus)`]: {
                       outline: '2px solid',
                       outlineColor: 'primary.main',
                     },

@@ -33,6 +33,8 @@ const WINDOW_BUTTONS = 3
 const BUTTON_HEIGHT = TITLE_BAR_PX
 const BUTTON_HEIGHT_COMPACT = TITLE_BAR_COMPACT_PX
 const FOCUS_OUTLINE_PX = 2
+// Focus a gamepad moves is script focus, which the browser rings only after keyboard use; shell/gamepad marks it here.
+const PAD_FOCUS = 'html[data-input="gamepad"]'
 const MENU_RADIUS_PX = 8
 const BUTTON_RADIUS_PX = 6
 const BUTTON_FONT_PX = 13
@@ -99,7 +101,7 @@ function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode) {
       borderRadius: THUMB_RADIUS_EM,
     },
     '*::-webkit-scrollbar-thumb:hover': { background: alpha(main, THUMB_HOVER_ALPHA) },
-    ':focus-visible': {
+    [`:focus-visible, ${PAD_FOCUS} :focus`]: {
       outline: `${FOCUS_OUTLINE_PX}px solid ${main}`,
       outlineOffset: FOCUS_OUTLINE_PX,
     },
@@ -307,4 +309,4 @@ function createMortarTheme(
   return responsiveFontSizes(theme)
 }
 
-export { createMortarTheme, MONO }
+export { createMortarTheme, MONO, PAD_FOCUS }

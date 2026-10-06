@@ -1,4 +1,5 @@
 import { ButtonBase, type ButtonBaseProps } from '@mui/material'
+import { PAD_FOCUS } from '../theme/theme.ts'
 
 // A row's whole-row button, laid under its content so the row can also hold its own controls without nesting
 // them inside a button. The row is position: relative; its text ignores pointer events and its controls sit
@@ -13,7 +14,7 @@ export function CoverButton({ sx, ...props }: Omit<ButtonBaseProps, 'children'>)
           position: 'absolute',
           inset: 0,
           borderRadius: 'inherit',
-          '&.Mui-focusVisible': { outlineOffset: '-2px' },
+          [`&.Mui-focusVisible, ${PAD_FOCUS} &:focus`]: { outlineOffset: '-2px' },
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

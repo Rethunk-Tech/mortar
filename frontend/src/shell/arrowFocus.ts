@@ -80,4 +80,4 @@ function arrowFocus(
   }
 }
 
-export { arrowFocus, nextIndex }
+export { arrowFocus, FOCUSABLE, nextIndex }

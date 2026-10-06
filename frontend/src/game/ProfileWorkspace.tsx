@@ -65,6 +65,7 @@ function WorkspaceTabs({ problemsTabCount }: { problemsTabCount: number | null }
   return (
     <Tabs
       action={actions}
+      data-profile-tabs={true}
       ref={root}
       value={tab}
       onChange={(_, value: TabId) => setTab(value)}

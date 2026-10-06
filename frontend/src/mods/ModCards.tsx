@@ -9,6 +9,7 @@ import { compact, compactQuery } from '../game/compact.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { boundShortcut } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
+import { PAD_FOCUS } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { actingMods, toggleActing } from './actingMods.ts'
@@ -122,7 +123,10 @@ function ModCardView({ mod: m, orderedIds, profile, columns, onMove }: ModCardPr
         // is interactive sits above it.
         position: 'relative',
         '& > :not(.card-main)': { position: 'relative', zIndex: 1 },
-        '&:has(.card-title:focus-visible)': { outline: '2px solid', outlineColor: 'primary.main' },
+        [`&:has(.card-title:focus-visible), ${PAD_FOCUS} &:has(.card-title:focus)`]: {
+          outline: '2px solid',
+          outlineColor: 'primary.main',
+        },
         [compact]: {
           height: CARD_HEIGHT_SMALL,
           '& .tile': {
@@ -193,7 +197,7 @@ function ModCardView({ mod: m, orderedIds, profile, columns, onMove }: ModCardPr
               textAlign: 'left',
               fontFamily: 'inherit',
               color: 'inherit',
-              '&:focus-visible': { outline: 'none' },
+              [`&:focus-visible, ${PAD_FOCUS} &:focus`]: { outline: 'none' },
               '&::after': { content: '""', position: 'absolute', inset: 0 },
             }}
           >

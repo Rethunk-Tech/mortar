@@ -20,7 +20,7 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
-import { MONO } from '../theme/theme.ts'
+import { MONO, PAD_FOCUS } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { incompatibleSMAPI, isFiltered, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
@@ -197,7 +197,7 @@ function CommandLine({ game }: { game: string }) {
             : 'var(--mortar-overlay-50)',
         border: '1px solid var(--mortar-hairline-15)',
         borderRadius: '6px',
-        '&:has(:focus-visible)': {
+        [`&:has(:focus-visible), ${PAD_FOCUS} &:has(:focus)`]: {
           outline: '2px solid',
           outlineColor: 'primary.main',
           outlineOffset: '2px',
