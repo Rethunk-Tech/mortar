@@ -50,7 +50,7 @@ func (s modUpdateScanSource) ProfileModUpdates(ctx context.Context) ([]updatesvc
 			continue
 		}
 		for _, p := range all {
-			if p.Error != "" || p.Hidden {
+			if p.Error != "" {
 				continue
 			}
 			result, err := s.problemsSvc.Updates(ctx, g.ID, p.ID)

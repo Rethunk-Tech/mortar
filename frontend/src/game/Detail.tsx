@@ -4,11 +4,10 @@ import { useMods } from '../mods/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSaves } from '../saves/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { ProfilesEmpty, ProfilesFailed, ProfilesHidden, ProfilesLoading } from './detailStates.tsx'
+import { ProfilesEmpty, ProfilesFailed, ProfilesLoading } from './detailStates.tsx'
 import { ProfileWorkspace } from './ProfileWorkspace.tsx'
 
 export function Detail() {
-  const profiles = useProfiles((s) => s.profiles)
   const loaded = useProfiles((s) => s.loaded)
   const failed = useProfiles((s) => s.failed)
   const problemsResult = useMods((s) => s.problems)
@@ -34,9 +33,6 @@ export function Detail() {
   }, [game, profileId, saveKey, loadSaves])
   if (!loaded) {
     return failed ? <ProfilesFailed /> : <ProfilesLoading />
-  }
-  if (!profile && profiles.length > 0) {
-    return <ProfilesHidden />
   }
   if (!profile) {
     return <ProfilesEmpty />

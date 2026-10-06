@@ -643,14 +643,6 @@ func (s *Store) enableMods(game, id string, mods []EnableRef, enabled bool) (Pro
 	return p, also, err
 }
 
-// SetHidden hides or shows a profile in the list.
-func (s *Store) SetHidden(game, id string, hidden bool) (Profile, error) {
-	return s.update(game, id, func(p *Profile, _ string) error {
-		p.Hidden = hidden
-		return nil
-	})
-}
-
 // Reorder gives the listed profiles order 0..n-1 in the given sequence; unlisted ones follow in their current order.
 func (s *Store) Reorder(game string, ids []string) error {
 	s.mu.Lock()

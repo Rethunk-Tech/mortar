@@ -26,13 +26,12 @@ import { useSettings } from './store.ts'
 
 function stepProfile(dir: -1 | 1) {
   const { profiles, openId, open } = useProfiles.getState()
-  const visible = profiles.filter((p) => !p.hidden)
-  if (visible.length === 0) {
+  if (profiles.length === 0) {
     return
   }
-  const i = visible.findIndex((p) => p.id === openId)
+  const i = profiles.findIndex((p) => p.id === openId)
   const from = i < 0 ? 0 : i
-  const next = visible[(from + dir + visible.length) % visible.length]
+  const next = profiles[(from + dir + profiles.length) % profiles.length]
   if (next) {
     open(next.id)
   }

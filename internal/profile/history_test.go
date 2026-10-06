@@ -571,10 +571,6 @@ func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
 	e := newEnv(t)
 	alpha := mustCreate(t, e, "Alpha")
 	beta := mustCreate(t, e, "Beta")
-	hidden := mustCreate(t, e, "Hidden")
-	if _, err := e.SetHidden("stardew", hidden.ID, true); err != nil {
-		t.Fatal(err)
-	}
 	badID := "0123456789abcdef"
 	badDir := filepath.Join(e.root, "stardew", badID)
 	if err := os.MkdirAll(filepath.Join(badDir, "mods"), 0o700); err != nil {
@@ -592,9 +588,6 @@ func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
 	})
 	seedHistory(t, e, beta.ID, []HistoryEvent{
 		{ID: "b-mid", At: t2, Kind: historyAdded, Change: ChangeAdded, Name: "mid"},
-	})
-	seedHistory(t, e, hidden.ID, []HistoryEvent{
-		{ID: "h-skip", At: t3.Add(time.Hour), Kind: historyAdded, Change: ChangeAdded, Name: "hidden"},
 	})
 	if err := writeHistory(badDir, historyFileData{
 		Events:    []HistoryEvent{{ID: "d-skip", At: t3.Add(2 * time.Hour), Kind: historyAdded, Change: ChangeAdded, Name: "damaged"}},

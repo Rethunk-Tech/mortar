@@ -2,8 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Divider } from '@mui/material'
 import {
   Copy,
-  Eye,
-  EyeOff,
   FileDown,
   Gamepad2,
   GitCompare,
@@ -349,7 +347,6 @@ function MoreMenuItems({
   const profiles = useProfiles((s) => s.profiles)
   const currentGame = useProfiles((s) => s.game)
   const duplicate = useProfiles((s) => s.duplicate)
-  const setHidden = useProfiles((s) => s.setHidden)
   const [compareFrom, setCompareFrom] = useState<Profile | null>(null)
   const [compare, setCompare] = useState<{ a: Profile; b: Profile } | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -381,15 +378,6 @@ function MoreMenuItems({
       onClick={() => {
         close()
         useProfiles.getState().exportProfile(profile.id).catch(reportUnexpected)
-      }}
-    />,
-    <ProfileMenuItem
-      key="hide"
-      icon={profile.hidden ? <Eye size={16} /> : <EyeOff size={16} />}
-      label={profile.hidden ? t`Show in sidebar` : t`Hide from sidebar`}
-      onClick={() => {
-        close()
-        setHidden(profile.id, !profile.hidden).catch(reportUnexpected)
       }}
     />,
     <Divider key="sharing-divider" />,

@@ -101,12 +101,6 @@ func (s *Services) profileSet(p Params, prof profile.Profile, id string) (any, e
 			return nil, err
 		}
 		return s.Profiles.SetSkipPlayCheck(g, id, on)
-	case "hidden":
-		on, err := flag()
-		if err != nil {
-			return nil, err
-		}
-		return s.Profiles.SetHidden(g, id, on)
 	case "cover":
 		if v == "" {
 			return s.Profiles.ClearCover(g, id)

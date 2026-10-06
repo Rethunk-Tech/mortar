@@ -33,11 +33,7 @@ function ProfileCards({
 }) {
   const { t } = useLingui()
   const profileOrder = useSettings((s) => s.profileOrder)
-  const ordered = orderProfiles(
-    profiles.filter((p) => !p.hidden),
-    profileOrder,
-    lastPlayed?.profile ?? '',
-  )
+  const ordered = orderProfiles(profiles, profileOrder, lastPlayed?.profile ?? '')
   const { visible, more } = profileCardsSlice(ordered)
   const runStarted = useProfileCardsMeta(gameId, profiles, visible, lastPlayed)
 

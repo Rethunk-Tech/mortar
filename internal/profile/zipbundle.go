@@ -324,12 +324,6 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 			return Profile{}, err
 		}
 	}
-	if src.Hidden {
-		out, err = s.SetHidden(game, created.ID, true)
-		if err != nil {
-			return Profile{}, err
-		}
-	}
 	if src.Cover != "" && filepath.IsLocal(src.Cover) {
 		cover := filepath.Join(tmp, src.Cover)
 		if exists(cover) {

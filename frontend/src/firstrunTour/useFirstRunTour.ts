@@ -18,7 +18,7 @@ function useFirstRunTour() {
   const route = useNav((s) => s.route)
   const loaded = useProfiles((s) => s.loaded)
   const openId = useProfiles((s) => s.openId)
-  const hasProfile = useProfiles((s) => s.profiles.some((p) => p.id === openId && !p.hidden))
+  const hasProfile = useProfiles((s) => s.profiles.some((p) => p.id === openId))
   const replay = useTourReplay((s) => s.pending)
   const clearReplay = useTourReplay((s) => s.clear)
   const [open, setOpen] = useState(false)

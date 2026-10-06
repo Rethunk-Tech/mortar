@@ -19,8 +19,8 @@ describe('runShortcut', () => {
     useNav.setState({ route: { name: 'game', game: 'stardew' } })
     useProfiles.setState({
       profiles: [
-        { id: 'a', name: 'A', hidden: false },
-        { id: 'b', name: 'B', hidden: false },
+        { id: 'a', name: 'A' },
+        { id: 'b', name: 'B' },
       ] as never,
       openId: 'a',
       open: (id: string) => useProfiles.setState({ openId: id }),

@@ -66,7 +66,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const [applyAll, setApplyAll] = useState(false)
   const load = useCallback(() => {
     List(game)
-      .then((list) => setProfiles((list ?? []).filter((p) => !p.hidden)))
+      .then((list) => setProfiles(list ?? []))
       .catch((e: unknown) => {
         setProfiles([])
         reportUnexpected(e)

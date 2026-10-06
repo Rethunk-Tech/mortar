@@ -4,7 +4,6 @@ export const testProfile = (partial: Partial<Profile> & Pick<Profile, 'id' | 'na
   notes: '',
   cover: '',
   order: 0,
-  hidden: false,
   created: '',
   updated: '',
   entries: null,

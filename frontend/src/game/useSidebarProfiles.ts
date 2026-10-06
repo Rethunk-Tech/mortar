@@ -17,11 +17,7 @@ export function useOrderedProfiles(game: string) {
   const lastPlayedId = useSettings((s) => s.lastPlayed?.[game]?.profile ?? '')
   return {
     allProfiles,
-    profiles: orderProfiles(
-      allProfiles.filter((p) => !p.hidden),
-      profileOrder,
-      lastPlayedId,
-    ),
+    profiles: orderProfiles(allProfiles, profileOrder, lastPlayedId),
   }
 }
 

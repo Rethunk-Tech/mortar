@@ -23,7 +23,6 @@ import {
   Restore,
   RestoreFromZip,
   SetAppearance,
-  SetHidden,
   SetLaunchOptions,
   SetLaunchSettings,
   UndoRepair,
@@ -73,17 +72,17 @@ function splitListed(list: Profile[] | null | undefined) {
   }
 }
 
-const visibleId = (profiles: Profile[], id: string | undefined) =>
-  profiles.find((p) => p.id === id && !p.hidden)?.id ?? ''
+const listedId = (profiles: Profile[], id: string | undefined) =>
+  profiles.find((p) => p.id === id)?.id ?? ''
 
-const firstVisible = (profiles: Profile[]) => profiles.find((p) => !p.hidden)?.id ?? ''
+const firstListed = (profiles: Profile[]) => profiles[0]?.id ?? ''
 
-function ensureVisible(
+function ensureListed(
   get: () => { profiles: Profile[]; openId: string; open: (id: string) => void },
 ) {
   const { profiles, openId } = get()
-  if (!profiles.some((p) => p.id === openId && !p.hidden)) {
-    get().open(firstVisible(profiles))
+  if (!profiles.some((p) => p.id === openId)) {
+    get().open(firstListed(profiles))
   }
 }
 
@@ -273,7 +272,7 @@ async function read(gameId: string, current: string) {
   const { profiles } = splitListed(list)
   const damaged = damagedList ?? splitListed(list).damaged
   const last = useSettings.getState().lastProfile?.[gameId]
-  const openId = visibleId(profiles, current) || visibleId(profiles, last) || firstVisible(profiles)
+  const openId = listedId(profiles, current) || listedId(profiles, last) || firstListed(profiles)
   return { game: games.find((g) => g.id === gameId) ?? null, profiles, damaged, openId }
 }
 
@@ -302,7 +301,6 @@ export const useProfiles = create<{
   restoreZip: () => Promise<void>
   openFolder: (id: string) => Promise<void>
   repair: (id: string) => Promise<void>
-  setHidden: (id: string, hidden: boolean) => Promise<void>
   remove: (id: string) => Promise<void>
   restore: (id: string) => Promise<void>
   purge: (id: string) => Promise<void>
@@ -411,18 +409,6 @@ export const useProfiles = create<{
       })
     }
   },
-  setHidden: async (id, hidden) => {
-    const { game } = get()
-    if (!game) {
-      return
-    }
-    try {
-      get().replace(await SetHidden(game.id, id, hidden))
-      get().ensureOpen()
-    } catch (e) {
-      fail(i18n._(msg`Could not change the profile's visibility`))(e)
-    }
-  },
   remove: async (id) => {
     try {
       await deleteProfile(get, set, id)
@@ -453,7 +439,7 @@ export const useProfiles = create<{
     }
   },
   reorder: (ids) => reorderProfiles(get, set, ids),
-  ensureOpen: () => ensureVisible(get),
+  ensureOpen: () => ensureListed(get),
 }))
 
 // The command line changes profiles through the running app, which then names the game; reload it when it is open.

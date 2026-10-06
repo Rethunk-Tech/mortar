@@ -2446,7 +2446,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   profile load-order <game> <profile>    enabled mods in SMAPI load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
   profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|loader|
-                                          defaultLaunchPreset|skipPlayCheck|hidden|cover, or a per-profile game setting
+                                          defaultLaunchPreset|skipPlayCheck|cover, or a per-profile game setting
   profile steam <game> <profile>         add this profile to Steam as a non-Steam game
   game steam-launch-option <game> [--set|--clear]  read or change Steam's loader launch options
   game launch-preset-templates <game> [add|remove <name> [options [prefix [env]]]|use <name> <profile>]  game-wide launch preset templates (use copies one into a profile)
@@ -2531,7 +2531,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   store remove <game> <key>...            delete store items no profile uses
   store check <game>                      verify store files; lists damaged items
   store repair <game> <profile> <key>     fetch a damaged item again through the queue
-  bisect start <game> <profile>           crash check on a hidden copy; prints its id
+  bisect start <game> <profile>           crash check on a copy; prints its id
   bisect status|stop <id>                 follow or cancel a crash check
   backups keep <name>                     keep a save backup during rotation
   backups unkeep <name>                   stop keeping a save backup

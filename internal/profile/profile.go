@@ -184,7 +184,6 @@ type Profile struct {
 	Notes         string    `json:"notes"`
 	Cover         string    `json:"cover"`
 	Order         int       `json:"order"`
-	Hidden        bool      `json:"hidden"`
 	Created       time.Time `json:"created"`
 	Updated       time.Time `json:"updated"`
 	Entries       []Entry   `json:"entries"`

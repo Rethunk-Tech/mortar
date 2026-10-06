@@ -725,11 +725,10 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		}
 		var profile struct {
 			Name    string      `json:"name"`
-			Hidden  bool        `json:"hidden"`
 			Entries []diskEntry `json:"entries"`
 		}
 		data, err := root.ReadFile(filepath.Join("profiles", info.ID, dir.Name(), "profile.json"))
-		if err != nil || json.Unmarshal(data, &profile) != nil || profile.Hidden {
+		if err != nil || json.Unmarshal(data, &profile) != nil {
 			continue
 		}
 		var version *string

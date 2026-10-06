@@ -226,19 +226,6 @@ export function ProfileRow({
             <Typography noWrap={true} title={profile.name} sx={{ fontSize: 17, fontWeight: 600 }}>
               {profile.name}
             </Typography>
-            {profile.hidden ? (
-              <Box
-                component="span"
-                sx={{
-                  px: 1,
-                  borderRadius: '10px',
-                  bgcolor: 'var(--mortar-hairline)',
-                  fontSize: 12,
-                }}
-              >
-                {t`Hidden`}
-              </Box>
-            ) : null}
             <HealthCheckBadge game={game} profileId={profile.id} />
           </Box>
         )}

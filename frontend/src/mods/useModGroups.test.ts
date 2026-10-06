@@ -60,7 +60,6 @@ const profile: Profile = {
   notes: '',
   cover: '',
   order: 0,
-  hidden: false,
   created: '',
   updated: '',
   entries,

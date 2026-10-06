@@ -183,7 +183,7 @@ func (s *Store) recentHistory(game string, limit int) ([]RecentEvent, error) {
 	}
 	var out []RecentEvent
 	for _, p := range list {
-		if p.Error != "" || p.Hidden {
+		if p.Error != "" {
 			continue
 		}
 		events, err := s.History(game, p.ID)

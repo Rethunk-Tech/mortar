@@ -1,8 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, CircularProgress } from '@mui/material'
-import { Plus, RotateCcw, Settings2 } from 'lucide-react'
+import { Plus, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
-import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -38,24 +37,6 @@ export function ProfilesLoading() {
     <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <CircularProgress />
     </Box>
-  )
-}
-
-export function ProfilesHidden() {
-  const { t } = useLingui()
-  const openProfiles = useNav((s) => s.openProfiles)
-  return (
-    <EmptyState
-      icon={<Settings2 />}
-      title={t`All profiles are hidden`}
-      action={
-        <Button variant="contained" startIcon={<Settings2 size={16} />} onClick={openProfiles}>
-          {t`Manage profiles`}
-        </Button>
-      }
-    >
-      {t`Show one in the sidebar from Manage profiles.`}
-    </EmptyState>
   )
 }
 

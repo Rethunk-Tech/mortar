@@ -353,10 +353,6 @@ func (s *Service) Purge(game, id string) error { return s.store.Purge(game, id) 
 
 func (s *Service) PurgeTrash(game string) error { return s.store.PurgeTrash(game) }
 
-func (s *Service) SetHidden(game, id string, hidden bool) (Profile, error) {
-	return s.store.SetHidden(game, id, hidden)
-}
-
 func (s *Service) Reorder(game string, ids []string) error { return s.store.Reorder(game, ids) }
 
 // MovePackage moves a mod one place in the profile's package order, where a later package wins a file both provide.

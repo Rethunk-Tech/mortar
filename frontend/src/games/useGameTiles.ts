@@ -108,8 +108,7 @@ function useGameTiles() {
   const tileProps = (g: Game) => {
     const st = states[g.id]
     const lastId = st?.lastPlayedId ?? ''
-    const showCards =
-      g.available && g.installed && st && !st.setupNeeded && st.profiles.some((p) => !p.hidden)
+    const showCards = g.available && g.installed && st && !st.setupNeeded && st.profiles.length > 0
     return {
       game: g,
       openable: g.available,

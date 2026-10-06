@@ -276,7 +276,7 @@ func TestInvoked(t *testing.T) {
 func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
 	openID := "aaaaaaaaaaaaaaaa"
 	dir := listenControl(t, `{"global":{"lastProfile":{"stardew":"`+openID+`"}}}`)
-	writeProfile := func(id, name string, hidden bool, fileID int, body []byte) {
+	writeProfile := func(id, name string, fileID int, body []byte) {
 		t.Helper()
 		pdir := filepath.Join(dir, "profiles", "stardew", id)
 		if err := os.MkdirAll(pdir, 0o700); err != nil {
@@ -285,8 +285,7 @@ func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
 		if body == nil {
 			var err error
 			body, err = json.Marshal(map[string]any{
-				"name":   name,
-				"hidden": hidden,
+				"name": name,
 				"entries": []map[string]any{{
 					"source": map[string]any{"kind": "nexus", "modId": 1915, "fileId": fileID},
 					"mods":   []map[string]any{{"version": "2.0.0"}},
@@ -300,11 +299,10 @@ func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	writeProfile(openID, "Default", false, 111, nil)
-	writeProfile("bbbbbbbbbbbbbbbb", "Co-op", false, 222, nil)
-	writeProfile("cccccccccccccccc", "Shared", false, 111, nil)
-	writeProfile("dddddddddddddddd", "Hidden", true, 333, nil)
-	writeProfile("eeeeeeeeeeeeeeee", "Broken", false, 444, []byte("{"))
+	writeProfile(openID, "Default", 111, nil)
+	writeProfile("bbbbbbbbbbbbbbbb", "Co-op", 222, nil)
+	writeProfile("cccccccccccccccc", "Shared", 111, nil)
+	writeProfile("eeeeeeeeeeeeeeee", "Broken", 444, []byte("{"))
 	openProfile, others := nexusModProfiles("stardewvalley", 1915)
 	if openProfile.Profile != "Default" || openProfile.FileID != 111 {
 		t.Fatalf("open = %+v", openProfile)
@@ -315,9 +313,6 @@ func TestNexusModProfilesReturnsPerProfileFileIDs(t *testing.T) {
 	}
 	if byName["Co-op"] != 222 || byName["Shared"] != 111 {
 		t.Fatalf("others = %+v", others)
-	}
-	if _, ok := byName["Hidden"]; ok {
-		t.Fatalf("hidden profile listed: %+v", others)
 	}
 	if _, ok := byName["Broken"]; ok {
 		t.Fatalf("damaged profile listed: %+v", others)

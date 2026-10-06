@@ -45,7 +45,7 @@ function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string 
   const copy = prefCopy(i18n, 'nxmDefaultProfile')
   const options = [
     { value: '', label: t`Last opened profile` },
-    ...profiles.filter((p) => !p.hidden).map((p) => ({ value: p.id, label: p.name })),
+    ...profiles.map((p) => ({ value: p.id, label: p.name })),
   ]
   return (
     <SettingRow label={t`${copy.label} (${gameName})`} description={copy.description}>

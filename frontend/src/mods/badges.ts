@@ -44,7 +44,7 @@ export const useBadges = create<{
     }
     // One profile at a time: a cold problem check of a large profile is seconds of CPU, and the open profile's
     // own check should not have to share it.
-    for (const p of profiles.filter((q) => !q.hidden && q.id !== skip)) {
+    for (const p of profiles.filter((q) => q.id !== skip)) {
       try {
         const [problems, updates] = await Promise.all([Problems(game, p.id), Updates(game, p.id)])
         const missing = missingCount(problems)

@@ -461,16 +461,13 @@ func TestModsParkUnknownFoldersBeforeRebuild(t *testing.T) {
 	}
 }
 
-func TestHiddenReorderAndStoreKeys(t *testing.T) {
+func TestReorderAndStoreKeys(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("X.A")})
 	a, _ := e.Create("stardew", "A")
 	b, _ := e.Create("stardew", "B")
 	c, _ := e.Create("stardew", "C")
-	if p, err := e.SetHidden("stardew", b.ID, true); err != nil || !p.Hidden {
-		t.Fatalf("hidden = %+v, %v", p, err)
-	}
 	if err := e.Reorder("stardew", []string{c.ID, a.ID}); err != nil {
 		t.Fatal(err)
 	}

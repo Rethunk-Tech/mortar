@@ -71,17 +71,13 @@ func NewService(profiles *profile.Store, launches *launchsvc.Service) *Service {
 	}
 }
 
-// Start begins a crash check against a hidden duplicate of the requested profile.
+// Start begins a crash check against a duplicate of the requested profile.
 func (s *Service) Start(ctx context.Context, gameID, profileID string) (string, error) {
 	if gameID == "" || profileID == "" {
 		return "", errors.New("game and profile are required")
 	}
 	temp, err := s.profiles.Duplicate(gameID, profileID)
 	if err != nil {
-		return "", err
-	}
-	if _, err := s.profiles.SetHidden(gameID, temp.ID, true); err != nil {
-		_ = s.profiles.Delete(gameID, temp.ID)
 		return "", err
 	}
 	mods, err := s.profiles.UserMods(gameID, temp.ID)

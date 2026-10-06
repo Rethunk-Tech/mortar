@@ -32,7 +32,7 @@ async function openMod(a: Arrival): Promise<void> {
   await useProfiles.getState().load(game)
   const last = settings.lastProfile?.[game]
   const profilesState = useProfiles.getState()
-  if (last && profilesState.profiles.some((p) => p.id === last && !p.hidden)) {
+  if (last && profilesState.profiles.some((p) => p.id === last)) {
     profilesState.open(last)
   }
   const profile = openProfileOf(useProfiles.getState())
