@@ -9,9 +9,16 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadersvc/service.ts'
 import { gameInfo } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
+import { useNav } from '../nav/store.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+
+// Setup shows the install's progress and outcome in its own loader step, so a toast would only repeat it.
+const onSetup = () => {
+  const { name } = useNav.getState().route
+  return name === 'setup' || name === 'game-setup'
+}
 
 export const useLoader = create<{
   status: Status | null
@@ -55,13 +62,18 @@ export const useLoader = create<{
     try {
       const status = version ? await InstallVersion(game, '', version) : await Install(game, '')
       set({ status })
+      if (onSetup()) {
+        return
+      }
       const name = gameInfo(game)?.loader ?? ''
       useToasts
         .getState()
         .push({ kind: 'success', title: i18n._(msg`${name} ${status.version} is installed`) })
     } catch (e) {
       set({ error: errorMessage(e), errorDetail: errorDetails(e) })
-      toastError(i18n._(msg`Could not install ${gameInfo(game)?.loader ?? ''}`), e)
+      if (!onSetup()) {
+        toastError(i18n._(msg`Could not install ${gameInfo(game)?.loader ?? ''}`), e)
+      }
     } finally {
       set({ pending: false })
     }
