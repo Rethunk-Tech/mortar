@@ -493,12 +493,26 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 	return out, unknown
 }
 
-// installedByName reports an enabled mod whose manifest name matches an outside requirement's name. Pages name these
-// loosely ("JsonAssets" for Json Assets, often a mod that is also on Nexus), so case, spaces and punctuation are ignored.
+// installedByName reports an enabled mod that answers an outside requirement's name. Pages name these loosely
+// ("JsonAssets" for Json Assets, "BusLocations" met by its continuation "BusLocations Continued"), so case, spaces and
+// punctuation are ignored, a name may carry a suffix, and the last part of the unique id counts too.
 func installedByName(all []framework.Mod, name string) bool {
 	want := looseName(name)
-	return want != "" && slices.ContainsFunc(all, func(x framework.Mod) bool { return x.Enabled && looseName(x.Name) == want })
+	if want == "" {
+		return false
+	}
+	return slices.ContainsFunc(all, func(x framework.Mod) bool {
+		if !x.Enabled {
+			return false
+		}
+		got := looseName(x.Name)
+		idName := x.UniqueID[strings.LastIndex(x.UniqueID, ".")+1:]
+		return got == want || (len(want) >= minNamePrefix && strings.HasPrefix(got, want)) || looseName(idName) == want
+	})
 }
+
+// minNamePrefix keeps a short requirement name ("UI", "Core") from matching every mod that starts with it.
+const minNamePrefix = 6
 
 func looseName(s string) string {
 	return strings.Map(func(r rune) rune {

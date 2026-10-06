@@ -3,6 +3,7 @@ package problems
 import (
 	"context"
 	"errors"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -195,16 +196,25 @@ func TestListedOutsideRequirementInstalledIsNotANote(t *testing.T) {
 		{Name: "Fashion Sense", URL: "https://github.com/Floogen/FashionSense", External: true},
 		{Name: "JsonAssets", URL: "https://spacechase0.com", External: true},
 		{Name: "Some Tool", URL: "https://example.org", External: true},
+		{Name: "BusLocations", URL: "https://github.com/Entoarox/StardewMods", External: true},
+		{Name: "Core", URL: "https://example.org/core", External: true},
 	}}}
 	installed := []framework.Mod{
+		{Key: "nexus-21264-1", Enabled: true, UniqueID: "Ivy.BusLocationsContinued", Name: "BusLocations Continued"},
+		{Key: "nexus-1-1", Enabled: true, UniqueID: "Some.CoreTweaks", Name: "Core Tweaks"},
 		listedDependent(),
 		{Key: "nexus-9969-1", Enabled: true, UniqueID: "PeacefulEnd.FashionSense", Name: "Fashion Sense"},
 		{Key: "nexus-1720-1", Enabled: true, UniqueID: "spacechase0.JsonAssets", Name: "Json Assets"},
 		{Key: "local-tool", Enabled: false, UniqueID: "Some.Tool", Name: "Some Tool"},
 	}
 	got := listedCheck(fake, installed)
-	if len(got.Missing) != 1 || got.Missing[0].ID != mod.NewID(OutsideFormat, "Some Tool") {
-		t.Fatalf("Missing = %#v, want only the disabled Some Tool", got.Missing)
+	var ids []mod.ID
+	for _, m := range got.Missing {
+		ids = append(ids, m.ID)
+	}
+	want := []mod.ID{mod.NewID(OutsideFormat, "Some Tool"), mod.NewID(OutsideFormat, "Core")}
+	if !slices.Equal(ids, want) {
+		t.Fatalf("Missing = %v, want the disabled Some Tool and the too-short Core", ids)
 	}
 }
 
