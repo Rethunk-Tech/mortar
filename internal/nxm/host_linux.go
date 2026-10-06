@@ -1,8 +1,15 @@
 package nxm
 
 import (
+	"errors"
+	"io/fs"
+	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
@@ -25,3 +32,54 @@ for d in $dirs; do
 done
 echo "no desktop entry $1" >&2
 exit 1`
+
+// The host's files below are the user's desktop configuration (mimeapps.list, browser manifests), which a Flatpak
+// is not granted; inside one each step is a host sh script, else the plain file call.
+
+// errHostMissing is the exit status hostRead's script gives a missing file.
+const errHostMissing = 3
+
+// hostConfigHome is the host's XDG config folder; a Flatpak's own XDG_CONFIG_HOME points into its sandbox.
+func (l *System) hostConfigHome() (string, error) {
+	if !inFlatpak() {
+		return l.configHome, nil
+	}
+	return l.onHost("sh", "-c", `printf %s "${XDG_CONFIG_HOME:-$HOME/.config}"`)
+}
+
+// hostResolve follows a symlink (a dotfile manager's), so a rewrite lands in its target and the link stays.
+func (l *System) hostResolve(path string) string {
+	if inFlatpak() {
+		if out, err := l.onHost("sh", "-c", `readlink -f "$1"`, "sh", path); err == nil && out != "" {
+			return strings.TrimSuffix(out, "\n")
+		}
+		return path
+	}
+	if target, err := filepath.EvalSymlinks(path); err == nil {
+		return target
+	}
+	return path
+}
+
+func (l *System) hostRead(path string) ([]byte, error) {
+	if !inFlatpak() {
+		return fsx.ReadFile(path)
+	}
+	out, err := l.onHost("sh", "-c", `[ -e "$1" ] || exit 3; cat "$1"`, "sh", path)
+	if exit := (*exec.ExitError)(nil); errors.As(err, &exit) && exit.ExitCode() == errHostMissing {
+		return nil, fs.ErrNotExist
+	}
+	return []byte(out), err
+}
+
+func (l *System) hostWrite(path string, b []byte) error {
+	if !inFlatpak() {
+		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+			return err
+		}
+		return datadir.WriteFile(path, b, desktopPerm)
+	}
+	_, err := l.onHost("sh", "-c", `mkdir -p "$(dirname "$1")" && printf %s "$2" >"$1.mortar-new" && mv "$1.mortar-new" "$1"`,
+		"sh", path, string(b))
+	return err
+}

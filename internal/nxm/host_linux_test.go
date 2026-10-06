@@ -11,7 +11,7 @@ import (
 
 // flatpakLinux is newLinux inside a Flatpak whose host is this machine: a host command runs here, against the test's
 // folders, and a host gio only records what it was asked to launch.
-func flatpakLinux(t *testing.T, current string) (*System, *recorder, string) {
+func flatpakLinux(t *testing.T, current string) (*System, string) {
 	t.Helper()
 	packaged = "flatpak"
 	t.Cleanup(func() { packaged = "" })
@@ -33,15 +33,45 @@ func flatpakLinux(t *testing.T, current string) (*System, *recorder, string) {
 		return execRun("sh", args[2:]...)
 	}
 	t.Setenv("HOME", l.home)
-	t.Setenv("XDG_CONFIG_HOME", l.configHome)
+	t.Setenv("XDG_CONFIG_HOME", hostConfig(l))
 	t.Setenv("XDG_DATA_HOME", l.dataHome)
 	t.Setenv("XDG_DATA_DIRS", t.TempDir())
 	t.Setenv("PATH", bin+":"+os.Getenv("PATH"))
-	return l, r, launched
+	return l, launched
+}
+
+// hostConfig is the host's config folder in flatpakLinux, apart from the sandbox's own l.configHome.
+func hostConfig(l *System) string { return filepath.Join(l.home, "host-config") }
+
+func TestFlatpakRestoreDropsOurDefaultFromTheHostsMimeapps(t *testing.T) {
+	l, _ := flatpakLinux(t, "")
+	if err := os.MkdirAll(hostConfig(l), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	target := filepath.Join(hostConfig(l), "dotfiles.list")
+	list := filepath.Join(hostConfig(l), "mimeapps.list")
+	if err := fsx.WriteFile(target, []byte("[Default Applications]\nx-scheme-handler/nxm="+desktopID+";\ntext/html=a.desktop\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, list); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.Restore(nil); err != nil {
+		t.Fatal(err)
+	}
+	if fi, err := os.Lstat(list); err != nil || fi.Mode()&os.ModeSymlink == 0 {
+		t.Errorf("mimeapps.list symlink replaced: %v", err)
+	}
+	if b, _ := fsx.ReadFile(target); string(b) != "[Default Applications]\ntext/html=a.desktop\n" {
+		t.Errorf("host mimeapps.list: %q", b)
+	}
+	if _, err := os.Stat(filepath.Join(l.configHome, "mimeapps.list")); !os.IsNotExist(err) {
+		t.Errorf("wrote the sandbox's mimeapps.list: %v", err)
+	}
 }
 
 func TestFlatpakForwardsToThePreviousHandlerOnTheHost(t *testing.T) {
-	l, _, launched := flatpakLinux(t, "")
+	l, launched := flatpakLinux(t, "")
 	entry := filepath.Join(l.dataHome, "applications", "other.desktop")
 	if err := os.MkdirAll(filepath.Dir(entry), 0o700); err != nil {
 		t.Fatal(err)

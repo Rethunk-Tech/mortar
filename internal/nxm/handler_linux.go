@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -376,12 +375,12 @@ func (l *System) ForwardOther(link, previous string) error {
 
 // dropDefault removes Mortar's lines for mimes from the user's mimeapps.list: xdg-mime cannot unset a default.
 func (l *System) dropDefault(mimes ...string) error {
-	path := filepath.Join(l.configHome, "mimeapps.list")
-	// A dotfile manager's symlink is followed, so the rewrite lands in its target and the link stays.
-	if target, err := filepath.EvalSymlinks(path); err == nil {
-		path = target
+	config, err := l.hostConfigHome()
+	if err != nil {
+		return err
 	}
-	b, err := fsx.ReadFile(path)
+	path := l.hostResolve(filepath.Join(config, "mimeapps.list"))
+	b, err := l.hostRead(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil
 	}
@@ -396,7 +395,7 @@ func (l *System) dropDefault(mimes ...string) error {
 	if len(kept) == len(lines) {
 		return nil
 	}
-	return datadir.WriteFile(path, []byte(strings.Join(kept, "\n")), desktopPerm)
+	return l.hostWrite(path, []byte(strings.Join(kept, "\n")))
 }
 
 const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
