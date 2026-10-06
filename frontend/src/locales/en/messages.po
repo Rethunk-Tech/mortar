@@ -32,10 +32,6 @@ msgstr "Mod: {mod}"
 msgid "Switched {name} to the {detail} update channel"
 msgstr "Switched {name} to the {detail} update channel"
 
-#: src/profiles/PackImportDialog.tsx:120
-msgid "From r2modman on this computer"
-msgstr "From r2modman on this computer"
-
 #: src/profiles/OverrideRows.tsx:19
 msgid "Launch method"
 msgstr "Launch method"
@@ -134,7 +130,7 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
-#: src/profiles/PackImportDialog.tsx:148
+#: src/profiles/PackImportDialog.tsx:155
 msgid "Could not open the file"
 msgstr "Could not open the file"
 
@@ -154,7 +150,7 @@ msgstr "Show failed"
 msgid "Streaming"
 msgstr "Streaming"
 
-#: src/saves/SaveRow.tsx:139
+#: src/saves/SaveRow.tsx:142
 msgid "Could not back up {label}"
 msgstr "Could not back up {label}"
 
@@ -231,7 +227,7 @@ msgstr "Make {name} win"
 
 #. placeholder {0}: preview?.name ?? ''
 #. placeholder {1}: result.queued
-#: src/profiles/PackImportDialog.tsx:86
+#: src/profiles/PackImportDialog.tsx:87
 msgid "Imported {0}: {1} to install"
 msgstr "Imported {0}: {1} to install"
 
@@ -249,7 +245,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/Toolbar.tsx:268
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChips.tsx:59
-#: src/saves/SaveRow.tsx:113
+#: src/saves/SaveRow.tsx:114
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
 #: src/toasts/HistoryButton.tsx:30
@@ -372,10 +368,6 @@ msgstr "{name} needs {detail}, which Mortar cannot install"
 #: src/settings/shortcutLabels.ts:29
 msgid "Duplicate the open profile"
 msgstr "Duplicate the open profile"
-
-#: src/mods/Toolbar.tsx:421
-msgid "Or paste a share or collection link with Ctrl+V."
-msgstr "Or paste a share or collection link with Ctrl+V."
 
 #: src/profiles/HealthDialog.tsx:39
 msgid "Missing from the store"
@@ -539,7 +531,7 @@ msgstr "Back up saves every time the game starts."
 msgid "Show token"
 msgstr "Show token"
 
-#: src/firstrun/LoaderStep.tsx:112
+#: src/firstrun/LoaderStep.tsx:113
 msgid "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
 msgstr "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
 
@@ -821,7 +813,7 @@ msgstr "Your API key is kept in your system keyring."
 msgid "Mod loader updates"
 msgstr "Mod loader updates"
 
-#: src/profiles/EditProfileDialog.tsx:156
+#: src/profiles/EditProfileDialog.tsx:157
 msgid "Pink"
 msgstr "Pink"
 
@@ -873,7 +865,7 @@ msgstr "{n, plural, one {Also update # optional file} other {Also update # optio
 msgid "Start the game without a backup."
 msgstr "Start the game without a backup."
 
-#: src/saves/SaveRow.tsx:72
+#: src/saves/SaveRow.tsx:73
 msgid "Mods not recorded"
 msgstr "Mods not recorded"
 
@@ -902,7 +894,7 @@ msgstr "Free"
 msgid "Missing in {targetName}"
 msgstr "Missing in {targetName}"
 
-#: src/firstrun/LoaderStep.tsx:171
+#: src/firstrun/LoaderStep.tsx:172
 msgid "Mortar found it in Steam's settings."
 msgstr "Mortar found it in Steam's settings."
 
@@ -952,7 +944,7 @@ msgstr "{0} · {1}"
 msgid "{list} do the same job: all change {detail}"
 msgstr "{list} do the same job: all change {detail}"
 
-#: src/profiles/EditProfileDialog.tsx:176
+#: src/profiles/EditProfileDialog.tsx:177
 msgid "Star"
 msgstr "Star"
 
@@ -1004,7 +996,7 @@ msgstr "Tabs"
 msgid "Broken"
 msgstr "Broken"
 
-#: src/firstrun/LoaderStep.tsx:33
+#: src/firstrun/LoaderStep.tsx:34
 #: src/loader/InstallSteps.tsx:11
 msgid "Bundled mods added"
 msgstr "Bundled mods added"
@@ -1018,7 +1010,7 @@ msgstr "This save was last played with {0, plural, one {# mod this profile lacks
 msgid "A scheduled save backup failed"
 msgstr "A scheduled save backup failed"
 
-#: src/firstrun/LoaderStep.tsx:390
+#: src/firstrun/LoaderStep.tsx:394
 msgid "{loader} is the loader every {gameName} mod needs. Mortar puts it in each profile; the game folder stays as it is."
 msgstr "{loader} is the loader every {gameName} mod needs. Mortar puts it in each profile; the game folder stays as it is."
 
@@ -1110,7 +1102,7 @@ msgstr "Filter by outcome"
 msgid "Restored {name} from the store"
 msgstr "Restored {name} from the store"
 
-#: src/profiles/SeparateSavesRow.tsx:50
+#: src/profiles/SeparateSavesRow.tsx:52
 msgid "Keep this profile's saves separate?"
 msgstr "Keep this profile's saves separate?"
 
@@ -1311,7 +1303,7 @@ msgstr "Reinstall {gameName} from your game launcher."
 msgid "Grant access…"
 msgstr "Grant access…"
 
-#: src/profiles/EditProfileDialog.tsx:144
+#: src/profiles/EditProfileDialog.tsx:145
 msgid "Orange"
 msgstr "Orange"
 
@@ -1444,10 +1436,6 @@ msgstr "Play this profile to measure."
 msgid "The mod files can be copied directly from this Mortar."
 msgstr "The mod files can be copied directly from this Mortar."
 
-#: src/share/ShareDialog.tsx:422
-msgid "A .mortar file holds the link's mods plus each mod's settings files (.json). Send it; they open it from Mortar's Import."
-msgstr "A .mortar file holds the link's mods plus each mod's settings files (.json). Send it; they open it from Mortar's Import."
-
 #: src/settings/prefCopy.ts:275
 msgid "Newest lines kept in the Console"
 msgstr "Newest lines kept in the Console"
@@ -1488,7 +1476,7 @@ msgstr "Share log…"
 msgid "Review"
 msgstr "Review"
 
-#: src/firstrun/LoaderStep.tsx:102
+#: src/firstrun/LoaderStep.tsx:103
 msgid "Launch options set in Steam"
 msgstr "Launch options set in Steam"
 
@@ -1531,7 +1519,7 @@ msgstr "Template name"
 msgid "Its main file is no longer in this profile."
 msgstr "Its main file is no longer in this profile."
 
-#: src/profiles/EditProfileDialog.tsx:164
+#: src/profiles/EditProfileDialog.tsx:165
 msgid "Sprout"
 msgstr "Sprout"
 
@@ -1558,11 +1546,6 @@ msgstr "No supported game was found in your launchers."
 #: src/settings/SettingsShell.tsx:138
 msgid "Search results"
 msgstr "Search results"
-
-#. placeholder {0}: SOURCE_NAMES[flow.external.source] ?? flow.external.source
-#: src/share/ImportDialog.tsx:184
-msgid "Import from {0}"
-msgstr "Import from {0}"
 
 #: src/console/ConsoleTab.tsx:304
 msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
@@ -1668,9 +1651,10 @@ msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
 #: src/browse/BrowseBody.tsx:100
-#: src/firstrun/LoaderStep.tsx:200
-#: src/firstrun/LoaderStep.tsx:268
+#: src/firstrun/LoaderStep.tsx:201
+#: src/firstrun/LoaderStep.tsx:269
 #: src/game/detailStates.tsx:27
+#: src/lan/SendDialog.tsx:105
 #: src/launch/LaunchLayer.tsx:312
 #: src/mods/LoadOrderTab.tsx:376
 #: src/mods/ModsTab.tsx:116
@@ -1915,7 +1899,7 @@ msgstr "Clears the list of past downloads; downloads in progress are unaffected.
 msgid "Launch presets"
 msgstr "Launch presets"
 
-#: src/profiles/EditProfileDialog.tsx:101
+#: src/profiles/EditProfileDialog.tsx:102
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
@@ -1989,7 +1973,7 @@ msgid "These come from a different site than you installed them from. Update all
 msgstr "These come from a different site than you installed them from. Update all skips them."
 
 #: src/lan/PairedComputers.tsx:122
-#: src/lan/SendDialog.tsx:159
+#: src/lan/SendDialog.tsx:170
 msgid "Host:port"
 msgstr "Host:port"
 
@@ -2030,7 +2014,7 @@ msgstr "Already has it"
 msgid "Filter saves"
 msgstr "Filter saves"
 
-#: src/profiles/LaunchOptionsBlock.tsx:75
+#: src/profiles/LaunchOptionsBlock.tsx:76
 msgid "Uses the saved options"
 msgstr "Uses the saved options"
 
@@ -2038,7 +2022,7 @@ msgstr "Uses the saved options"
 msgid "Already retrying failed downloads"
 msgstr "Already retrying failed downloads"
 
-#: src/firstrun/LoaderStep.tsx:31
+#: src/firstrun/LoaderStep.tsx:32
 #: src/loader/InstallSteps.tsx:9
 msgid "Files added"
 msgstr "Files added"
@@ -2194,7 +2178,7 @@ msgid "Enjoying {0}? Endorse it on Nexus"
 msgstr "Enjoying {0}? Endorse it on Nexus"
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:94
+#: src/lan/SendDialog.tsx:95
 msgid "Sent to {0}"
 msgstr "Sent to {0}"
 
@@ -2292,7 +2276,7 @@ msgid "{game} profile"
 msgstr "{game} profile"
 
 #: src/firstrun/FindStep.tsx:164
-#: src/firstrun/GameSetup.tsx:158
+#: src/firstrun/GameSetup.tsx:164
 #: src/settings/sections/GameSettings.tsx:190
 #: src/settings/sections/GameSettings.tsx:192
 #: src/settings/sections/GameSettings.tsx:240
@@ -2304,7 +2288,7 @@ msgstr "Game folder"
 msgid "Remove from other profiles…"
 msgstr "Remove from other profiles…"
 
-#: src/saves/SaveRow.tsx:55
+#: src/saves/SaveRow.tsx:56
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
@@ -2321,7 +2305,7 @@ msgstr "Upload log"
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
-#: src/profiles/EditProfileDialog.tsx:148
+#: src/profiles/EditProfileDialog.tsx:149
 msgid "Lime"
 msgstr "Lime"
 
@@ -2354,7 +2338,7 @@ msgstr "Downloading"
 msgid "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 msgstr "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 
-#: src/saves/SaveRow.tsx:80
+#: src/saves/SaveRow.tsx:81
 msgid "This game's saves do not record which mods they used."
 msgstr "This game's saves do not record which mods they used."
 
@@ -2371,7 +2355,7 @@ msgstr "No scheduled backup has run yet."
 msgid "{0, plural, one {# tracked mod on Nexus is not in this profile} other {# tracked mods on Nexus are not in this profile}}"
 msgstr "{0, plural, one {# tracked mod on Nexus is not in this profile} other {# tracked mods on Nexus are not in this profile}}"
 
-#: src/firstrun/LoaderStep.tsx:110
+#: src/firstrun/LoaderStep.tsx:111
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
@@ -2390,7 +2374,7 @@ msgid "Skipped"
 msgstr "Skipped"
 
 #: src/game/ProfileContextMenu.tsx:47
-#: src/profiles/EditProfileDialog.tsx:437
+#: src/profiles/EditProfileDialog.tsx:442
 #: src/profiles/ProfileRow.tsx:81
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -2597,7 +2581,7 @@ msgstr "Account"
 msgid "Both sides changed it, so Mortar will not merge them. Pick one side."
 msgstr "Both sides changed it, so Mortar will not merge them. Pick one side."
 
-#: src/firstrun/LoaderStep.tsx:399
+#: src/firstrun/LoaderStep.tsx:403
 msgid "Installing {loader} {latest}"
 msgstr "Installing {loader} {latest}"
 
@@ -2693,7 +2677,7 @@ msgstr "No fix yet"
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
 
-#: src/lan/SendDialog.tsx:69
+#: src/lan/SendDialog.tsx:70
 msgid "Could not find Mortar users"
 msgstr "Could not find Mortar users"
 
@@ -2737,7 +2721,7 @@ msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
 #: src/games/GameSelect.tsx:139
-#: src/saves/SaveRow.tsx:167
+#: src/saves/SaveRow.tsx:170
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
 
@@ -2755,7 +2739,7 @@ msgstr "Waiting for {0}'s profile file to finish syncing. Changes made here are 
 msgid "Reading the Nexus page…"
 msgstr "Reading the Nexus page…"
 
-#: src/saves/SaveRow.tsx:76
+#: src/saves/SaveRow.tsx:77
 msgid "All mods present"
 msgstr "All mods present"
 
@@ -2835,6 +2819,11 @@ msgstr "No recorded runs yet"
 msgid "Before this change"
 msgstr "Before this change"
 
+#: src/profiles/PackImportDialog.tsx:102
+#: src/share/ImportDialog.tsx:185
+msgid "Import from {manager}"
+msgstr "Import from {manager}"
+
 #: src/mods/listRows.ts:117
 #: src/mods/Sidebar.tsx:540
 msgid "Archive"
@@ -2845,7 +2834,7 @@ msgstr "Archive"
 msgid "Switch to Mods"
 msgstr "Switch to Mods"
 
-#: src/profiles/LaunchOptionsBlock.tsx:128
+#: src/profiles/LaunchOptionsBlock.tsx:131
 #: src/profiles/LaunchPresetDialog.tsx:66
 msgid "Launch prefix"
 msgstr "Launch prefix"
@@ -2966,7 +2955,7 @@ msgstr "Place the optional file"
 msgid "Gray out"
 msgstr "Gray out"
 
-#: src/profiles/EditProfileDialog.tsx:152
+#: src/profiles/EditProfileDialog.tsx:153
 #: src/settings/sections/Appearance.tsx:72
 msgid "Sky"
 msgstr "Sky"
@@ -3021,7 +3010,7 @@ msgstr "Show the tour again"
 msgid "Measuring… {0}"
 msgstr "Measuring… {0}"
 
-#: src/firstrun/LoaderStep.tsx:182
+#: src/firstrun/LoaderStep.tsx:183
 msgid "Check again"
 msgstr "Check again"
 
@@ -3029,7 +3018,7 @@ msgstr "Check again"
 msgid "different file"
 msgstr "different file"
 
-#: src/firstrun/LoaderStep.tsx:147
+#: src/firstrun/LoaderStep.tsx:148
 msgid "Set it in Steam for me"
 msgstr "Set it in Steam for me"
 
@@ -3225,6 +3214,10 @@ msgstr "Mortar found no other mod manager's profiles for this game on this compu
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
+#: src/lan/SendDialog.tsx:104
+msgid "Try again in a few seconds."
+msgstr "Try again in a few seconds."
+
 #. placeholder {0}: summary.checked
 #: src/settings/sections/DataStoreCheck.tsx:34
 msgid "{0, plural, one {# mod checked} other {# mods checked}}"
@@ -3244,7 +3237,7 @@ msgstr "L{0}"
 msgid "{0, plural, one {# download added} other {# downloads added}}"
 msgstr "{0, plural, one {# download added} other {# downloads added}}"
 
-#: src/firstrun/LoaderStep.tsx:94
+#: src/firstrun/LoaderStep.tsx:95
 #: src/launch/LaunchLayer.tsx:225
 msgid "Launch options copied"
 msgstr "Launch options copied"
@@ -3633,10 +3626,6 @@ msgstr "Could not duplicate the profile"
 msgid "Copy CSS"
 msgstr "Copy CSS"
 
-#: src/profiles/LaunchOptionsBlock.tsx:138
-msgid "Prefix for direct launches only (for example, gamemoderun mangohud)."
-msgstr "Prefix for direct launches only (for example, gamemoderun mangohud)."
-
 #: src/launch/PlayControl.tsx:169
 msgid "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 msgstr "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
@@ -3730,7 +3719,7 @@ msgstr "Loader failed to start"
 msgid "Download the extension"
 msgstr "Download the extension"
 
-#: src/profiles/EditProfileDialog.tsx:182
+#: src/profiles/EditProfileDialog.tsx:183
 msgid "Sun"
 msgstr "Sun"
 
@@ -3778,7 +3767,7 @@ msgstr "Could not trim history"
 msgid "Performance report"
 msgstr "Performance report"
 
-#: src/profiles/EditProfileDialog.tsx:93
+#: src/profiles/EditProfileDialog.tsx:94
 msgid "Cover image"
 msgstr "Cover image"
 
@@ -3804,7 +3793,7 @@ msgstr "Share as r2modman code?"
 #: src/lan/IncomingPrompt.tsx:188
 #: src/lan/PairedComputers.tsx:60
 #: src/lan/PairedComputers.tsx:138
-#: src/lan/SendDialog.tsx:174
+#: src/lan/SendDialog.tsx:185
 #: src/launch/PrePlayDialog.tsx:151
 #: src/launch/SaveWarnDialog.tsx:69
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -3817,11 +3806,11 @@ msgstr "Share as r2modman code?"
 #: src/mods/SelectionBarDialogs.tsx:86
 #: src/mods/SelectionBarDialogs.tsx:136
 #: src/profiles/CompareDialog.tsx:62
-#: src/profiles/EditProfileDialog.tsx:463
+#: src/profiles/EditProfileDialog.tsx:468
 #: src/profiles/GameModsDialog.tsx:164
 #: src/profiles/ImportWizard.tsx:138
 #: src/profiles/LaunchPresetDialog.tsx:91
-#: src/profiles/PackImportDialog.tsx:157
+#: src/profiles/PackImportDialog.tsx:164
 #: src/settings/sections/NexusSSO.tsx:67
 #: src/settings/sections/nxmHandler.tsx:77
 #: src/shell/BugReportDialog.tsx:102
@@ -3859,12 +3848,12 @@ msgstr "{0, plural, one {The new version of {1} no longer includes # file. Keep 
 msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
-#: src/share/ImportPreview.tsx:365
+#: src/share/ImportPreview.tsx:366
 #: src/share/useImportFlow.ts:141
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
-#: src/saves/SaveRow.tsx:52
+#: src/saves/SaveRow.tsx:53
 msgid "Standard farm"
 msgstr "Standard farm"
 
@@ -3880,8 +3869,8 @@ msgstr "Parallel downloads"
 msgid "{name} is abandoned: {summary}"
 msgstr "{name} is abandoned: {summary}"
 
-#: src/profiles/EditProfileDialog.tsx:107
-#: src/profiles/EditProfileDialog.tsx:115
+#: src/profiles/EditProfileDialog.tsx:108
+#: src/profiles/EditProfileDialog.tsx:116
 #: src/settings/sections/Appearance.tsx:174
 msgid "Choose image…"
 msgstr "Choose image…"
@@ -3941,7 +3930,7 @@ msgstr "Could not preview the template"
 msgid "From the extra mods folder…"
 msgstr "From the extra mods folder…"
 
-#: src/firstrun/GameSetup.tsx:72
+#: src/firstrun/GameSetup.tsx:74
 #: src/firstrunTour/TourPopover.tsx:200
 #: src/queue/QueueHistory.tsx:65
 msgid "Done"
@@ -3972,7 +3961,7 @@ msgid "Back to {name}"
 msgstr "Back to {name}"
 
 #: src/game/ProfileMenuItems.tsx:213
-#: src/lan/SendDialog.tsx:106
+#: src/lan/SendDialog.tsx:117
 msgid "Send to…"
 msgstr "Send to…"
 
@@ -4066,7 +4055,7 @@ msgstr "Show in queue"
 #: src/mods/Toolbar.tsx:59
 #: src/profiles/CompareBulkBody.tsx:129
 #: src/profiles/GameModsDialog.tsx:37
-#: src/profiles/PackImportDialog.tsx:106
+#: src/profiles/PackImportDialog.tsx:110
 #: src/profiles/ProfilesPage.tsx:273
 #: src/profiles/ProfilesPage.tsx:282
 #: src/saves/SaveGapLine.tsx:21
@@ -4152,7 +4141,7 @@ msgid "This profile skips updates from this source for this mod."
 msgstr "This profile skips updates from this source for this mod."
 
 #. placeholder {0}: skippedSettings.length
-#: src/share/ImportPreview.tsx:378
+#: src/share/ImportPreview.tsx:379
 msgid "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
@@ -4198,11 +4187,16 @@ msgstr "Links for games Mortar does not manage open in the app that had them bef
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
+#. placeholder {0}: preview.configs
+#: src/profiles/PackImportDialog.tsx:115
+msgid "{0, plural, one {# config file comes with it.} other {# config files come with it.}}"
+msgstr "{0, plural, one {# config file comes with it.} other {# config files come with it.}}"
+
 #: src/queue/QueueBody.tsx:131
 msgid "Needs your click"
 msgstr "Needs your click"
 
-#: src/saves/SaveRow.tsx:113
+#: src/saves/SaveRow.tsx:114
 msgid "This save has no recorded mod list yet."
 msgstr "This save has no recorded mod list yet."
 
@@ -4234,7 +4228,7 @@ msgstr "Version"
 msgid "Browser extension"
 msgstr "Browser extension"
 
-#: src/profiles/EditProfileDialog.tsx:154
+#: src/profiles/EditProfileDialog.tsx:155
 msgid "Violet"
 msgstr "Violet"
 
@@ -4246,7 +4240,7 @@ msgstr "Unknown"
 msgid "Review revision {review}"
 msgstr "Review revision {review}"
 
-#: src/firstrun/LoaderStep.tsx:394
+#: src/firstrun/LoaderStep.tsx:398
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 
@@ -4266,7 +4260,7 @@ msgstr "Only assets more than one mod changes"
 msgid "Apply a template…"
 msgstr "Apply a template…"
 
-#: src/profiles/EditProfileDialog.tsx:168
+#: src/profiles/EditProfileDialog.tsx:169
 msgid "Wheat"
 msgstr "Wheat"
 
@@ -4531,7 +4525,7 @@ msgstr "Ungrouped"
 msgid "Include beta releases"
 msgstr "Include beta releases"
 
-#: src/saves/SaveRow.tsx:59
+#: src/saves/SaveRow.tsx:60
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
@@ -4565,7 +4559,7 @@ msgstr "This mod is not in the profile."
 msgid "Loading changes…"
 msgstr "Loading changes…"
 
-#: src/profiles/LaunchOptionsBlock.tsx:143
+#: src/profiles/LaunchOptionsBlock.tsx:147
 #: src/profiles/LaunchPresetDialog.tsx:71
 msgid "Launch environment"
 msgstr "Launch environment"
@@ -4713,7 +4707,7 @@ msgstr "Unlinked the collection {name}"
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
 
-#: src/profiles/EditProfileDialog.tsx:178
+#: src/profiles/EditProfileDialog.tsx:179
 msgid "Heart"
 msgstr "Heart"
 
@@ -4793,7 +4787,7 @@ msgid "{0} of {1}"
 msgstr "{0} of {1}"
 
 #. placeholder {0}: game.loader
-#: src/firstrun/GameSetup.tsx:164
+#: src/firstrun/GameSetup.tsx:172
 msgid "Install {0}"
 msgstr "Install {0}"
 
@@ -4911,7 +4905,7 @@ msgstr "Could not unpair"
 msgid "Show more"
 msgstr "Show more"
 
-#: src/profiles/EditProfileDialog.tsx:172
+#: src/profiles/EditProfileDialog.tsx:173
 msgid "Hammer"
 msgstr "Hammer"
 
@@ -4936,7 +4930,7 @@ msgstr "Select mods on the Mods tab, then Add to bundle."
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
-#: src/profiles/PackImportDialog.tsx:151
+#: src/profiles/PackImportDialog.tsx:158
 #: src/share/ImportInput.tsx:29
 msgid "Choose a file…"
 msgstr "Choose a file…"
@@ -5013,7 +5007,7 @@ msgstr "Error in {0}"
 msgid "The game log has errors."
 msgstr "The game log has errors."
 
-#: src/profiles/EditProfileDialog.tsx:146
+#: src/profiles/EditProfileDialog.tsx:147
 msgid "Gold"
 msgstr "Gold"
 
@@ -5066,7 +5060,7 @@ msgstr "Stop the game before moving the data folder."
 msgid "Earthy green"
 msgstr "Earthy green"
 
-#: src/lan/SendDialog.tsx:116
+#: src/lan/SendDialog.tsx:127
 msgid "No Mortar users found nearby."
 msgstr "No Mortar users found nearby."
 
@@ -5202,7 +5196,7 @@ msgstr "The files will download from each mod's source."
 msgid "Mortar found nothing to repair in this profile."
 msgstr "Mortar found nothing to repair in this profile."
 
-#: src/saves/SaveRow.tsx:68
+#: src/saves/SaveRow.tsx:69
 msgid "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgstr "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
 
@@ -5262,7 +5256,7 @@ msgstr "Could not add the archive"
 msgid "{0} ({gameName})"
 msgstr "{0} ({gameName})"
 
-#: src/profiles/EditProfileDialog.tsx:142
+#: src/profiles/EditProfileDialog.tsx:143
 #: src/settings/sections/Appearance.tsx:73
 msgid "Rose"
 msgstr "Rose"
@@ -5336,7 +5330,7 @@ msgstr "Changed the profile"
 msgid "No longer needs {0}"
 msgstr "No longer needs {0}"
 
-#: src/profiles/LaunchOptionsBlock.tsx:112
+#: src/profiles/LaunchOptionsBlock.tsx:113
 #: src/profiles/LaunchPresetDialog.tsx:65
 msgid "Launch options"
 msgstr "Launch options"
@@ -5359,7 +5353,7 @@ msgstr "Title intro"
 msgid "Mortar cannot download {0} again."
 msgstr "Mortar cannot download {0} again."
 
-#: src/profiles/EditProfileDialog.tsx:100
+#: src/profiles/EditProfileDialog.tsx:101
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
@@ -5390,7 +5384,7 @@ msgstr "The folder of {name} was deleted outside Mortar"
 msgid "Replaced by {by}, which is also enabled"
 msgstr "Replaced by {by}, which is also enabled"
 
-#: src/share/ImportPreview.tsx:365
+#: src/share/ImportPreview.tsx:366
 msgid "Ready to import"
 msgstr "Ready to import"
 
@@ -5583,7 +5577,7 @@ msgid "Different enabled state"
 msgstr "Different enabled state"
 
 #: src/console/HelpDialog.tsx:52
-#: src/firstrun/LoaderStep.tsx:142
+#: src/firstrun/LoaderStep.tsx:143
 #: src/launch/LaunchLayer.tsx:231
 #: src/saves/lackChipActions.tsx:74
 #: src/shell/FlatpakGrant.tsx:70
@@ -5674,7 +5668,7 @@ msgstr "Delete the unreadable changes from history?"
 msgid "Downloaded versions stay in the store for re-use."
 msgstr "Downloaded versions stay in the store for re-use."
 
-#: src/firstrun/LoaderStep.tsx:259
+#: src/firstrun/LoaderStep.tsx:260
 #: src/firstrun/NexusStep.tsx:34
 msgid "Skip for now"
 msgstr "Skip for now"
@@ -5734,7 +5728,7 @@ msgstr "This profile has no mods to download"
 msgid "Relative"
 msgstr "Relative"
 
-#: src/saves/SaveRow.tsx:166
+#: src/saves/SaveRow.tsx:169
 msgid "a deleted profile"
 msgstr "a deleted profile"
 
@@ -5970,7 +5964,7 @@ msgstr "Notifications"
 msgid "Load {0} after the other mods here, so its edit applies last"
 msgstr "Load {0} after the other mods here, so its edit applies last"
 
-#: src/profiles/LaunchOptionsBlock.tsx:59
+#: src/profiles/LaunchOptionsBlock.tsx:60
 msgid "Reached the title screen"
 msgstr "Reached the title screen"
 
@@ -6158,7 +6152,7 @@ msgstr "Harmless conflicts"
 msgid "Open recently deleted"
 msgstr "Open recently deleted"
 
-#: src/profiles/EditProfileDialog.tsx:184
+#: src/profiles/EditProfileDialog.tsx:185
 msgid "Moon"
 msgstr "Moon"
 
@@ -6303,7 +6297,7 @@ msgstr "The update for {0} did not finish"
 msgid "Dismissed"
 msgstr "Dismissed"
 
-#: src/profiles/PackImportDialog.tsx:140
+#: src/profiles/PackImportDialog.tsx:147
 msgid "Profile code"
 msgstr "Profile code"
 
@@ -6437,7 +6431,7 @@ msgstr "Use theirs"
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
-#: src/lan/SendDialog.tsx:168
+#: src/lan/SendDialog.tsx:179
 msgid "Send"
 msgstr "Send"
 
@@ -6837,6 +6831,10 @@ msgstr "Backups to keep per save"
 msgid "Update ready: applies when you close Mortar."
 msgstr "Update ready: applies when you close Mortar."
 
+#: src/profiles/PackImportDialog.tsx:127
+msgid "From r2modman or Gale on this computer"
+msgstr "From r2modman or Gale on this computer"
+
 #: src/settings/prefCopy.ts:76
 msgid "Default mods view"
 msgstr "Default mods view"
@@ -6845,7 +6843,7 @@ msgstr "Default mods view"
 msgid "Reachable"
 msgstr "Reachable"
 
-#: src/profiles/EditProfileDialog.tsx:193
+#: src/profiles/EditProfileDialog.tsx:194
 #: src/settings/sections/Appearance.tsx:84
 msgid "Colour"
 msgstr "Colour"
@@ -6900,7 +6898,7 @@ msgstr "{0} · {1} unique"
 msgid "Not found"
 msgstr "Not found"
 
-#: src/profiles/EditProfileDialog.tsx:119
+#: src/profiles/EditProfileDialog.tsx:120
 #: src/profiles/GameSettings.tsx:182
 #: src/profiles/OverrideRows.tsx:79
 #: src/settings/sections/Appearance.tsx:184
@@ -7025,7 +7023,7 @@ msgstr "Unofficial"
 msgid "Hide archive contents"
 msgstr "Hide archive contents"
 
-#: src/saves/SaveRow.tsx:57
+#: src/saves/SaveRow.tsx:58
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
 
@@ -7044,7 +7042,7 @@ msgstr "Copy {0} to {1}"
 
 #: src/commandPalette/paletteLabels.ts:11
 #: src/profiles/GameModsDialog.tsx:172
-#: src/profiles/PackImportDialog.tsx:160
+#: src/profiles/PackImportDialog.tsx:167
 #: src/profiles/ProfilesPage.tsx:351
 msgid "Import"
 msgstr "Import"
@@ -7123,7 +7121,7 @@ msgstr "older, profile has {0}"
 msgid "Share profile"
 msgstr "Share profile"
 
-#: src/lan/SendDialog.tsx:107
+#: src/lan/SendDialog.tsx:118
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -7136,11 +7134,11 @@ msgstr "Choose cover image"
 msgid "Install separately"
 msgstr "Install separately"
 
-#: src/profiles/EditProfileDialog.tsx:180
+#: src/profiles/EditProfileDialog.tsx:181
 msgid "Mountain"
 msgstr "Mountain"
 
-#: src/firstrun/LoaderStep.tsx:399
+#: src/firstrun/LoaderStep.tsx:403
 msgid "Installing {loader}"
 msgstr "Installing {loader}"
 
@@ -7299,8 +7297,8 @@ msgstr "Enter code"
 msgid "Default launch"
 msgstr "Default launch"
 
-#: src/profiles/PackImportDialog.tsx:61
-#: src/profiles/PackImportDialog.tsx:76
+#: src/profiles/PackImportDialog.tsx:62
+#: src/profiles/PackImportDialog.tsx:77
 msgid "Could not read that code or file"
 msgstr "Could not read that code or file"
 
@@ -7318,7 +7316,7 @@ msgstr "Something went wrong in this view"
 msgid "Choose a folder"
 msgstr "Choose a folder"
 
-#: src/profiles/PackImportDialog.tsx:93
+#: src/profiles/PackImportDialog.tsx:94
 msgid "Could not import"
 msgstr "Could not import"
 
@@ -7357,7 +7355,7 @@ msgstr "Updated {mods} in {profileName}"
 msgid "Search every run"
 msgstr "Search every run"
 
-#: src/share/ImportPreview.tsx:331
+#: src/share/ImportPreview.tsx:332
 msgid "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 msgstr "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 
@@ -7389,7 +7387,7 @@ msgstr "{count, plural, one {# mod} other {# mods}}"
 msgid "{cause}. Retry or skip it from the queue."
 msgstr "{cause}. Retry or skip it from the queue."
 
-#: src/saves/SaveRow.tsx:56
+#: src/saves/SaveRow.tsx:57
 msgid "Wilderness farm"
 msgstr "Wilderness farm"
 
@@ -7614,7 +7612,7 @@ msgstr "Copy log"
 msgid "See startup"
 msgstr "See startup"
 
-#: src/saves/SaveRow.tsx:133
+#: src/saves/SaveRow.tsx:134
 msgid "No saves to back up"
 msgstr "No saves to back up"
 
@@ -7706,7 +7704,7 @@ msgstr "The page reads the profile from the link itself. Nothing is uploaded or 
 msgid "Restart now"
 msgstr "Restart now"
 
-#: src/saves/SaveRow.tsx:137
+#: src/saves/SaveRow.tsx:140
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
@@ -7863,7 +7861,7 @@ msgstr "{0, plural, one {# optional file} other {# optional files}}"
 msgid "Close details"
 msgstr "Close details"
 
-#: src/firstrun/GameSetup.tsx:164
+#: src/firstrun/GameSetup.tsx:171
 #: src/queue/store.ts:289
 msgid "{name} installed"
 msgstr "{name} installed"
@@ -8124,7 +8122,7 @@ msgstr "That request was not valid."
 
 #: src/browse/BrowseDetails.tsx:91
 #: src/mods/NexusDetails.tsx:254
-#: src/profiles/EditProfileDialog.tsx:302
+#: src/profiles/EditProfileDialog.tsx:305
 msgid "Description"
 msgstr "Description"
 
@@ -8169,7 +8167,7 @@ msgstr "The download queue is empty."
 msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
-#: src/firstrun/GameSetup.tsx:132
+#: src/firstrun/GameSetup.tsx:137
 #: src/toasts/report.ts:28
 #: src/toasts/report.ts:107
 #: src/toasts/usePending.ts:31
@@ -8200,7 +8198,7 @@ msgstr "Last scheduled backup {when}"
 msgid "Winter"
 msgstr "Winter"
 
-#: src/profiles/SeparateSavesRow.tsx:46
+#: src/profiles/SeparateSavesRow.tsx:47
 msgid "This profile plays on its own saves. Your shared saves are untouched."
 msgstr "This profile plays on its own saves. Your shared saves are untouched."
 
@@ -8320,7 +8318,7 @@ msgstr "{profileName} has {0} more than once. {loader} loads only one, so pick w
 msgid "Discord"
 msgstr "Discord"
 
-#: src/lan/SendDialog.tsx:138
+#: src/lan/SendDialog.tsx:149
 msgid "Send to an address…"
 msgstr "Send to an address…"
 
@@ -8379,6 +8377,10 @@ msgstr "its address could not be looked up"
 #: src/settings/shortcutLabels.ts:41
 msgid "Play the game without mods"
 msgstr "Play the game without mods"
+
+#: src/profiles/LaunchOptionsBlock.tsx:138
+msgid "Prefix for direct launches only (for example, gamemoderun mangohud)."
+msgstr "Prefix for direct launches only (for example, gamemoderun mangohud)."
 
 #: src/mods/SplitCombineItems.tsx:61
 msgid "Installed separately"
@@ -8610,6 +8612,10 @@ msgstr "Install Mortar updates automatically"
 msgid "Challenge moon"
 msgstr "Challenge moon"
 
+#: src/profiles/ProfilesPage.tsx:385
+msgid "From another mod manager…"
+msgstr "From another mod manager…"
+
 #: src/settings/prefCopy.ts:438
 msgid "Share notes"
 msgstr "Share notes"
@@ -8630,7 +8636,7 @@ msgstr "Details copied"
 #: src/mods/ModMenu.tsx:127
 #: src/mods/problemFix/MissingFix.tsx:37
 #: src/mods/SelectionBarActions.tsx:136
-#: src/profiles/SeparateSavesRow.tsx:52
+#: src/profiles/SeparateSavesRow.tsx:54
 msgid "Enable"
 msgstr "Enable"
 
@@ -8641,6 +8647,10 @@ msgstr "Check updates and problems in the background for profiles you are not lo
 #: src/install/RemapDialog.tsx:176
 msgid "Choose the mod folder"
 msgstr "Choose the mod folder"
+
+#: src/mods/Toolbar.tsx:421
+msgid "Browse for mods, add an archive, or paste a share or collection link with Ctrl+V."
+msgstr "Browse for mods, add an archive, or paste a share or collection link with Ctrl+V."
 
 #: src/install/OverlayPlaceDialog.tsx:102
 msgid "From this file"
@@ -8877,8 +8887,8 @@ msgid "Reset every shortcut?"
 msgstr "Reset every shortcut?"
 
 #: src/firstrun/FirstRun.tsx:43
-#: src/firstrun/GameSetup.tsx:129
-#: src/firstrun/LoaderStep.tsx:220
+#: src/firstrun/GameSetup.tsx:134
+#: src/firstrun/LoaderStep.tsx:221
 #: src/games/GameSelect.tsx:348
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
@@ -9189,6 +9199,10 @@ msgstr "Changed groups"
 msgid "Focus the search"
 msgstr "Focus the search"
 
+#: src/settings/sections/Downloads.tsx:212
+msgid "No app opens these links now."
+msgstr "No app opens these links now."
+
 #: src/profiles/CompareBulkBody.tsx:138
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
@@ -9231,7 +9245,7 @@ msgid "Pin"
 msgstr "Pin"
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:98
+#: src/lan/SendDialog.tsx:109
 msgid "Could not send to {0}"
 msgstr "Could not send to {0}"
 
@@ -9392,7 +9406,7 @@ msgstr "Setup"
 msgid "{0} of {1} · {2}/s"
 msgstr "{0} of {1} · {2}/s"
 
-#: src/profiles/PackImportDialog.tsx:168
+#: src/profiles/PackImportDialog.tsx:175
 #: src/share/ImportInput.tsx:73
 msgid "Preview"
 msgstr "Preview"
@@ -9417,7 +9431,7 @@ msgstr "More than one mod changes this; the winner's version is used."
 msgid "Borderless"
 msgstr "Borderless"
 
-#: src/lan/SendDialog.tsx:147
+#: src/lan/SendDialog.tsx:158
 msgid "Recent address"
 msgstr "Recent address"
 
@@ -9531,6 +9545,10 @@ msgstr "Include notes"
 msgid "Could not pin the selected mods"
 msgstr "Could not pin the selected mods"
 
+#: src/profiles/PackImportDialog.tsx:102
+msgid "Import a profile code or file"
+msgstr "Import a profile code or file"
+
 #. placeholder {0}: limits.daily.remaining
 #. placeholder {1}: limits.daily.limit
 #. placeholder {2}: limits.hourly.remaining
@@ -9618,6 +9636,10 @@ msgstr "Enter a number from {min} to {max}"
 msgid "Close downloads"
 msgstr "Close downloads"
 
+#: src/share/ShareDialog.tsx:422
+msgid "A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import."
+msgstr "A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import."
+
 #: src/mods/describe.ts:23
 msgid "{count, plural, one {{name} was updated since this run and logged # error. First: {first}} other {{name} was updated since this run and logged # errors. First: {first}}}"
 msgstr "{count, plural, one {{name} was updated since this run and logged # error. First: {first}} other {{name} was updated since this run and logged # errors. First: {first}}}"
@@ -9626,7 +9648,7 @@ msgstr "{count, plural, one {{name} was updated since this run and logged # erro
 msgid "Open focused mod details"
 msgstr "Open focused mod details"
 
-#: src/saves/SaveRow.tsx:146
+#: src/saves/SaveRow.tsx:149
 msgid "Open the folder of {label}"
 msgstr "Open the folder of {label}"
 
@@ -9695,7 +9717,7 @@ msgstr "Search every site this game's mods come from at once. Each result instal
 msgid "Enabled {0}"
 msgstr "Enabled {0}"
 
-#: src/profiles/EditProfileDialog.tsx:174
+#: src/profiles/EditProfileDialog.tsx:175
 msgid "Pickaxe"
 msgstr "Pickaxe"
 
@@ -9732,7 +9754,7 @@ msgstr "Maximise"
 msgid "Handle \"Mod Manager Download\" links"
 msgstr "Handle \"Mod Manager Download\" links"
 
-#: src/profiles/EditProfileDialog.tsx:464
+#: src/profiles/EditProfileDialog.tsx:469
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
@@ -9822,7 +9844,7 @@ msgstr "An empty profile. Add mods from {site} or from archives."
 msgid "{0, plural, one {{1}/# file · {2} / {3}} other {{4}/# files · {5} / {6}}}"
 msgstr "{0, plural, one {{1}/# file · {2} / {3}} other {{4}/# files · {5} / {6}}}"
 
-#: src/firstrun/LoaderStep.tsx:172
+#: src/firstrun/LoaderStep.tsx:173
 msgid "Mortar checks Steam's settings for it: not found yet."
 msgstr "Mortar checks Steam's settings for it: not found yet."
 
@@ -9872,7 +9894,6 @@ msgstr "{0} adds {time} to startup (through {1})"
 msgid "Overrides"
 msgstr "Overrides"
 
-#: src/profiles/ProfilesPage.tsx:385
 #: src/settings/sections/General.tsx:268
 msgid "Import…"
 msgstr "Import…"
@@ -9916,7 +9937,7 @@ msgstr "Error"
 msgid "Empty trash"
 msgstr "Empty trash"
 
-#: src/lan/SendDialog.tsx:117
+#: src/lan/SendDialog.tsx:128
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
@@ -9967,7 +9988,7 @@ msgstr "Already in this profile."
 msgid "When a mod is on several sites, its card installs from the first one here."
 msgstr "When a mod is on several sites, its card installs from the first one here."
 
-#: src/profiles/EditProfileDialog.tsx:186
+#: src/profiles/EditProfileDialog.tsx:187
 msgid "Sparkles"
 msgstr "Sparkles"
 
@@ -10130,7 +10151,7 @@ msgstr "Find the crash cause"
 msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
 msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
 
-#: src/profiles/LaunchOptionsBlock.tsx:36
+#: src/profiles/LaunchOptionsBlock.tsx:37
 msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
 
@@ -10194,7 +10215,7 @@ msgstr "Done ({0}): {1}"
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
-#: src/saves/SaveRow.tsx:58
+#: src/saves/SaveRow.tsx:59
 msgid "Beach farm"
 msgstr "Beach farm"
 
@@ -10202,14 +10223,14 @@ msgstr "Beach farm"
 #: src/mods/CategoryEditor.tsx:162
 #: src/mods/ConfigPresets.tsx:134
 #: src/mods/SelectionBar.tsx:38
-#: src/profiles/EditProfileDialog.tsx:466
+#: src/profiles/EditProfileDialog.tsx:471
 #: src/profiles/LaunchPresetDialog.tsx:96
 #: src/templates/TemplateDialogs.tsx:71
 #: src/tools/ToolEditorDialog.tsx:140
 msgid "Save"
 msgstr "Save"
 
-#: src/profiles/LaunchOptionsBlock.tsx:121
+#: src/profiles/LaunchOptionsBlock.tsx:122
 msgid "Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs."
 msgstr "Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs."
 
@@ -10350,7 +10371,7 @@ msgstr "Keep mine"
 msgid "{0, plural, one {# result} other {# results}}"
 msgstr "{0, plural, one {# result} other {# results}}"
 
-#: src/saves/SaveRow.tsx:53
+#: src/saves/SaveRow.tsx:54
 msgid "Riverland farm"
 msgstr "Riverland farm"
 
@@ -10564,7 +10585,7 @@ msgstr "Send other games' links to {redirectName}"
 msgid "When mods changed"
 msgstr "When mods changed"
 
-#: src/firstrun/GameSetup.tsx:171
+#: src/firstrun/GameSetup.tsx:179
 msgid "First profile"
 msgstr "First profile"
 
@@ -10658,7 +10679,7 @@ msgstr "Diagnostics"
 msgid "Add category"
 msgstr "Add category"
 
-#: src/firstrun/LoaderStep.tsx:393
+#: src/firstrun/LoaderStep.tsx:397
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 
@@ -10770,6 +10791,11 @@ msgstr "Downloads resume {0}."
 #: src/mods/CategoryEditor.tsx:169
 msgid "Mods in this category will move to Uncategorised."
 msgstr "Mods in this category will move to Uncategorised."
+
+#. placeholder {0}: target.name
+#: src/lan/SendDialog.tsx:103
+msgid "{0} is still taking your last share"
+msgstr "{0} is still taking your last share"
 
 #: src/settings/sections/GameSettings.tsx:291
 #: src/settings/sections/GameSettings.tsx:301
@@ -10942,7 +10968,7 @@ msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
 #: src/profiles/ImportWizard.tsx:99
-#: src/share/ImportDialog.tsx:282
+#: src/share/ImportDialog.tsx:286
 msgid "Import a profile"
 msgstr "Import a profile"
 
@@ -10951,7 +10977,7 @@ msgid "Move data folder"
 msgstr "Move data folder"
 
 #: src/game/ProfileMenuItems.tsx:251
-#: src/profiles/EditProfileDialog.tsx:427
+#: src/profiles/EditProfileDialog.tsx:432
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -11055,7 +11081,7 @@ msgstr "Remove all"
 msgid "Show one in the sidebar from Manage profiles."
 msgstr "Show one in the sidebar from Manage profiles."
 
-#: src/profiles/SeparateSavesRow.tsx:51
+#: src/profiles/SeparateSavesRow.tsx:53
 msgid "While this profile runs, Mortar sets your shared saves aside and shows the game the profile's own folder. When the game closes, your shared saves come back as they were. Nothing is deleted."
 msgstr "While this profile runs, Mortar sets your shared saves aside and shows the game the profile's own folder. When the game closes, your shared saves come back as they were. Nothing is deleted."
 
@@ -11105,18 +11131,9 @@ msgstr "Accent colour"
 msgid " {winnerName} wins."
 msgstr " {winnerName} wins."
 
-#: src/settings/sections/Downloads.tsx:212
-msgid "No app opens these links now."
-msgstr "No app opens these links now."
-
 #: src/profiles/LaunchPresetsBlock.tsx:196
 msgid "This launch preset will be deleted."
 msgstr "This launch preset will be deleted."
-
-#. placeholder {0}: preview.configs
-#: src/profiles/PackImportDialog.tsx:111
-msgid "{0} config files come with it."
-msgstr "{0} config files come with it."
 
 #: src/commandPalette/paletteLabels.ts:30
 #: src/settings/shortcutLabels.ts:25
@@ -11178,7 +11195,7 @@ msgstr "Missing"
 msgid "Update digest notification"
 msgstr "Update digest notification"
 
-#: src/firstrun/LoaderStep.tsx:30
+#: src/firstrun/LoaderStep.tsx:31
 #: src/loader/InstallSteps.tsx:8
 msgid "Downloaded"
 msgstr "Downloaded"
@@ -11204,7 +11221,7 @@ msgid "No game output yet"
 msgstr "No game output yet"
 
 #. placeholder {0}: summary.leftOut
-#: src/share/ImportPreview.tsx:400
+#: src/share/ImportPreview.tsx:401
 msgid "{0} left out"
 msgstr "{0} left out"
 
@@ -11216,7 +11233,7 @@ msgstr "Could not create the profile"
 msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
 
-#: src/lan/SendDialog.tsx:122
+#: src/lan/SendDialog.tsx:133
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
@@ -11239,7 +11256,7 @@ msgstr "Jump to first error"
 msgid "Now needs {0}"
 msgstr "Now needs {0}"
 
-#: src/saves/SaveRow.tsx:118
+#: src/saves/SaveRow.tsx:119
 msgid "New profile from this save"
 msgstr "New profile from this save"
 
@@ -11265,7 +11282,7 @@ msgid "Empty profile"
 msgstr "Empty profile"
 
 #: src/firstrun/FindStep.tsx:146
-#: src/firstrun/LoaderStep.tsx:365
+#: src/firstrun/LoaderStep.tsx:369
 msgid "{loader} {version} installed"
 msgstr "{loader} {version} installed"
 
@@ -11328,7 +11345,7 @@ msgstr "Report to author"
 msgid "Skip the waiting downloads of this profile"
 msgstr "Skip the waiting downloads of this profile"
 
-#: src/profiles/EditProfileDialog.tsx:150
+#: src/profiles/EditProfileDialog.tsx:151
 #: src/settings/sections/Appearance.tsx:75
 msgid "Teal"
 msgstr "Teal"
@@ -11418,7 +11435,7 @@ msgstr "Check for updates"
 msgid "Gets update checks."
 msgstr "Gets update checks."
 
-#: src/firstrun/LoaderStep.tsx:32
+#: src/firstrun/LoaderStep.tsx:33
 #: src/loader/InstallSteps.tsx:10
 msgid "Launcher replaced"
 msgstr "Launcher replaced"
@@ -11464,7 +11481,7 @@ msgstr "Open Problems"
 msgid "{loader} | {store} · {lastLine}"
 msgstr "{loader} | {store} · {lastLine}"
 
-#: src/profiles/LaunchOptionsBlock.tsx:152
+#: src/profiles/LaunchOptionsBlock.tsx:156
 msgid "One VAR=value per line, for direct launches only; Steam launches ignore them."
 msgstr "One VAR=value per line, for direct launches only; Steam launches ignore them."
 
@@ -11549,7 +11566,7 @@ msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
 #: src/mods/ListColumnMenu.tsx:203
-#: src/profiles/EditProfileDialog.tsx:213
+#: src/profiles/EditProfileDialog.tsx:214
 msgid "Icon"
 msgstr "Icon"
 
@@ -11568,7 +11585,7 @@ msgstr "A plugin it needs failed"
 msgid "{0} was installed from another site. Updating installs {1} from {2} instead and keeps your settings."
 msgstr "{0} was installed from another site. Updating installs {1} from {2} instead and keeps your settings."
 
-#: src/firstrun/GameSetup.tsx:159
+#: src/firstrun/GameSetup.tsx:165
 #: src/mods/listRows.ts:118
 #: src/mods/Sidebar.tsx:541
 #: src/shell/NexusAccount.tsx:27
@@ -11671,7 +11688,7 @@ msgstr "Flatpak Steam cannot read your mods"
 msgid "Cancel {0}"
 msgstr "Cancel {0}"
 
-#: src/profiles/LaunchOptionsBlock.tsx:71
+#: src/profiles/LaunchOptionsBlock.tsx:72
 msgid "Test launch"
 msgstr "Test launch"
 
@@ -11745,8 +11762,8 @@ msgstr "Could not update tags for the selected mods"
 
 #: src/firstrun/FindStep.tsx:223
 #: src/firstrun/FirstRun.tsx:98
-#: src/firstrun/LoaderStep.tsx:185
-#: src/firstrun/LoaderStep.tsx:380
+#: src/firstrun/LoaderStep.tsx:186
+#: src/firstrun/LoaderStep.tsx:384
 #: src/firstrun/NexusStep.tsx:34
 msgid "Continue"
 msgstr "Continue"
@@ -11890,7 +11907,7 @@ msgstr "Import from the game's Mods folder"
 msgid "{0} was blocked by your antivirus"
 msgstr "{0} was blocked by your antivirus"
 
-#: src/profiles/EditProfileDialog.tsx:166
+#: src/profiles/EditProfileDialog.tsx:167
 msgid "Leaf"
 msgstr "Leaf"
 
@@ -11938,7 +11955,7 @@ msgid "See which mods slow the game"
 msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
-#: src/firstrun/GameSetup.tsx:155
+#: src/firstrun/GameSetup.tsx:161
 msgid "Set up {0}"
 msgstr "Set up {0}"
 
@@ -12222,7 +12239,7 @@ msgid "Open settings"
 msgstr "Open settings"
 
 #. placeholder {0}: outcome.cause
-#: src/profiles/LaunchOptionsBlock.tsx:62
+#: src/profiles/LaunchOptionsBlock.tsx:63
 msgid "Crashed: {0}"
 msgstr "Crashed: {0}"
 
@@ -12298,7 +12315,7 @@ msgstr "Untrack unused…"
 msgid "{gameName} was not found. Browse to its folder."
 msgstr "{gameName} was not found. Browse to its folder."
 
-#: src/saves/SaveRow.tsx:127
+#: src/saves/SaveRow.tsx:128
 msgid "Back up {label} now"
 msgstr "Back up {label} now"
 
@@ -12324,7 +12341,7 @@ msgid "Different source"
 msgstr "Different source"
 
 #. placeholder {0}: listNames(unsupported)
-#: src/profiles/PackImportDialog.tsx:88
+#: src/profiles/PackImportDialog.tsx:89
 msgid "Not from Thunderstore: {0}"
 msgstr "Not from Thunderstore: {0}"
 
@@ -12357,7 +12374,7 @@ msgstr "{n, plural, one {{0}: # line} other {{1}: # lines}}"
 msgid "Could not change how {0} links open"
 msgstr "Could not change how {0} links open"
 
-#: src/profiles/EditProfileDialog.tsx:170
+#: src/profiles/EditProfileDialog.tsx:171
 msgid "Fish"
 msgstr "Fish"
 
@@ -12426,10 +12443,6 @@ msgstr "ToArea {0}"
 #: src/launch/PrePlayDialog.tsx:224
 msgid "Update and play"
 msgstr "Update and play"
-
-#: src/profiles/PackImportDialog.tsx:99
-msgid "Import from r2modman / Thunderstore"
-msgstr "Import from r2modman / Thunderstore"
 
 #. placeholder {0}: changeLabel(c.key, c.label)
 #. placeholder {0}: row.name
@@ -12601,7 +12614,7 @@ msgstr "Remove key"
 msgid "Decide later"
 msgstr "Decide later"
 
-#: src/profiles/SeparateSavesRow.tsx:61
+#: src/profiles/SeparateSavesRow.tsx:63
 msgid "Start with a copy of my current saves"
 msgstr "Start with a copy of my current saves"
 
@@ -12640,7 +12653,7 @@ msgstr "Confirm removals"
 msgid "Recently deleted retention"
 msgstr "Recently deleted retention"
 
-#: src/saves/SaveRow.tsx:54
+#: src/saves/SaveRow.tsx:55
 msgid "Forest farm"
 msgstr "Forest farm"
 
@@ -12674,7 +12687,7 @@ msgstr "Share profiles on the local network"
 msgid "Enable sharing nearby in Settings › General."
 msgstr "Enable sharing nearby in Settings › General."
 
-#: src/firstrun/LoaderStep.tsx:105
+#: src/firstrun/LoaderStep.tsx:106
 msgid "Could not set it in Steam"
 msgstr "Could not set it in Steam"
 

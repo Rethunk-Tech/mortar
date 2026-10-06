@@ -26,6 +26,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/hashicorp/mdns"
 )
 
@@ -431,6 +432,25 @@ func TestLoopbackSendReceive(t *testing.T) {
 		}
 	case <-time.After(2 * time.Second):
 		t.Fatal("timed out waiting for arrival")
+	}
+}
+
+func TestASecondShareWithinTheRateLimitIsBusy(t *testing.T) {
+	t.Parallel()
+	payload, err := base64.RawStdEncoding.DecodeString(testPayload(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	service := NewService(Deps{})
+	server := httptest.NewServer(service.handler())
+	defer server.Close()
+	peer := strings.TrimPrefix(server.URL, "http://")
+	if err := service.sendPayload(t.Context(), peer, "stardew", fixed(payload)); err != nil {
+		t.Fatal(err)
+	}
+	err = service.sendPayload(t.Context(), peer, "stardew", fixed(payload))
+	if !errors.Is(err, ErrPeerBusy) || usererr.KindOf(err) != usererr.Busy {
+		t.Fatalf("second send: %v", err)
 	}
 }
 

@@ -29,6 +29,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/hashicorp/mdns"
 )
 
@@ -454,6 +455,9 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game string, build fu
 		return fmt.Errorf("send profile share: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return usererr.Wrap(usererr.Busy, ErrPeerBusy)
+	}
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
 		message, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
 		if text := strings.TrimSpace(string(message)); text != "" {
@@ -790,6 +794,9 @@ func validateRequest(request shareRequest) (share.Shared, error) {
 	}
 	return pv.Shared, nil
 }
+
+// ErrPeerBusy means the other Mortar took a share from this one moments ago and refuses another for a few seconds.
+var ErrPeerBusy = errors.New("the other computer is still taking the last share; try again in a few seconds")
 
 func (s *Service) allowReceive(peer string) bool {
 	now := time.Now()

@@ -20,6 +20,7 @@ import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { Peers, Send } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { errorKind } from '../toasts/errorKind.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -95,6 +96,16 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
         onClose()
       })
       .catch((error: unknown) => {
+        // Busy here is the other Mortar turning away a second share that came within seconds of the last.
+        if (errorKind(error) === 'busy') {
+          useToasts.getState().push({
+            kind: 'error',
+            title: t`${target.name} is still taking your last share`,
+            body: t`Try again in a few seconds.`,
+            action: { label: t`Retry`, run: () => send(target) },
+          })
+          return
+        }
         toastError(t`Could not send to ${target.name}`, error)
       })
       .finally(() => setSending(null))
