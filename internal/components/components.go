@@ -205,6 +205,37 @@ type GameLoader struct {
 	// Companion names the game's component (kind bridge) that Mortar installs alongside the loader so the running game
 	// can talk to Mortar.
 	Companion string `json:"companion,omitempty"`
+	// Package is the Thunderstore package (Namespace-Name) the loader ships as, for a community that packs its own
+	// build of it (Valheim's denikson-BepInExPack_Valheim); empty means DefaultLoaderPackage.
+	Package string `json:"package,omitempty"`
+}
+
+// DefaultLoaderPackage is the BepInEx pack most Thunderstore communities share.
+const DefaultLoaderPackage = "BepInEx-BepInExPack"
+
+// LoaderPackage is the Thunderstore package the game's BepInEx loader ships as.
+func (g GameInfo) LoaderPackage() string {
+	for _, l := range g.Loaders {
+		if l.Package != "" {
+			return l.Package
+		}
+	}
+	return DefaultLoaderPackage
+}
+
+// IsLoaderPackage reports whether the Thunderstore package id (Namespace-Name) is a BepInEx pack some catalog game's
+// loader installs, which the loader provides and no profile entry stands for. Pack names are unique across
+// communities, so the whole catalog answers without knowing the game.
+func IsLoaderPackage(id string) bool {
+	if strings.EqualFold(id, DefaultLoaderPackage) {
+		return true
+	}
+	for _, g := range Games() {
+		if strings.EqualFold(id, g.LoaderPackage()) {
+			return true
+		}
+	}
+	return false
 }
 
 // GameSource is a site the game's mods come from. Key is the site's name for the game (Nexus domain, Thunderstore

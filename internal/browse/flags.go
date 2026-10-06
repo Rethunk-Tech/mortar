@@ -12,9 +12,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-// thunderstoreLoaderPack is the BepInEx loader's Thunderstore package, which Mortar's loader install supplies.
-const thunderstoreLoaderPack = "BepInEx-BepInExPack"
-
 // mark sets each hit's Obsolete, Broken and Loader flags. The compatibility list is read only when the game has
 // one, and a failure to read it leaves nothing marked broken.
 func (c *Client) mark(ctx context.Context, info components.GameInfo, items []Item) {
@@ -34,7 +31,7 @@ func (c *Client) mark(ctx context.Context, info components.GameInfo, items []Ite
 			it.Broken = idx.ByNexus[id].Status == meta.StatusBroken
 			it.Loader = slices.ContainsFunc(info.Loaders, func(l components.GameLoader) bool { return l.NexusModID == id })
 		case "thunderstore":
-			it.Loader = strings.EqualFold(it.ID, thunderstoreLoaderPack) &&
+			it.Loader = strings.EqualFold(it.ID, info.LoaderPackage()) &&
 				slices.ContainsFunc(info.Loaders, func(l components.GameLoader) bool { return strings.HasPrefix(l.ID, "bepinex") })
 		}
 	}
@@ -50,7 +47,7 @@ func (h Holdings) holdLoader(info components.GameInfo, loaderID string) {
 			h.nexus[l.NexusModID] = true
 		}
 		if strings.HasPrefix(l.ID, "bepinex") {
-			h.hold(profile.KindThunderstore, thunderstoreLoaderPack)
+			h.hold(profile.KindThunderstore, info.LoaderPackage())
 		}
 	}
 }

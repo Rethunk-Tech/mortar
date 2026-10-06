@@ -6,13 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
-
-// bepInExPack is the loader package. Any 5.4.x request is satisfied by the newest 5.4.x, since mods name old pack
-// versions that the newest one still serves.
-const bepInExPack = "bepinex-bepinexpack"
 
 func packageID(namespace, name string) string { return strings.ToLower(namespace + "-" + name) }
 
@@ -36,13 +33,14 @@ func newer(a, b string) bool {
 }
 
 // pick is the version of p that ref asks for: the newest when it names none or when it is a dependency's pin, which
-// r2modman treats as a minimum; the newest 5.4.x for the loader pack; else exactly the named one.
+// r2modman treats as a minimum; the newest 5.4.x for a BepInEx loader pack, since mods name old pack versions that the
+// newest one still serves; else exactly the named one.
 func pick(p pkg, ref Ref, minimum bool) (string, error) {
 	id := packageID(p.Owner, p.Name)
-	if id == bepInExPack {
+	if components.IsLoaderPackage(p.Owner + "-" + p.Name) {
 		if ref.Version != "" {
 			if v := versionParts(ref.Version); v[0] != 5 || v[1] != 4 {
-				return "", fmt.Errorf("%s asks for BepInExPack %s, but Mortar runs BepInEx 5.4.x", id, ref.Version)
+				return "", fmt.Errorf("%s asks for %s %s, but Mortar runs BepInEx 5.4.x", id, p.Name, ref.Version)
 			}
 		}
 		best := ""
@@ -52,7 +50,7 @@ func pick(p pkg, ref Ref, minimum bool) (string, error) {
 			}
 		}
 		if best == "" {
-			return "", fmt.Errorf("no BepInExPack 5.4.x in the index")
+			return "", fmt.Errorf("no %s 5.4.x in the index", p.Name)
 		}
 		return best, nil
 	}

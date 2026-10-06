@@ -15,12 +15,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
-const (
-	packNamespace = "BepInEx"
-	packName      = "BepInExPack"
-	// lastReleases bounds the version list a picker shows.
-	lastReleases = 10
-)
+// lastReleases bounds the version list a picker shows.
+const lastReleases = 10
 
 // ProfileFiles are what InstallPack lays out in each profile's folder (BepInEx's files sit there, not in the game's
 // install), with the marker that records the installed version.
@@ -42,6 +38,12 @@ func (l Loader) thunderstoreDriver() thunderstore.Driver {
 	return thunderstore.Driver{}
 }
 
+// pack is the game's BepInEx pack as a Thunderstore namespace and name.
+func pack(g components.GameInfo) (namespace, name string) {
+	namespace, name, _ = strings.Cut(g.LoaderPackage(), "-")
+	return namespace, name
+}
+
 func communityOf(g components.GameInfo) (string, error) {
 	s, ok := g.Source("thunderstore")
 	if !ok || s.Key == "" {
@@ -50,13 +52,14 @@ func communityOf(g components.GameInfo) (string, error) {
 	return s.Key, nil
 }
 
-// Versions are the BepInEx 5 releases of BepInExPack in the game's community index, newest first.
+// Versions are the BepInEx 5 releases of the game's BepInEx pack in its community index, newest first.
 func (l Loader) Versions(ctx context.Context, g components.GameInfo) ([]string, error) {
 	key, err := communityOf(g)
 	if err != nil {
 		return nil, err
 	}
-	all, err := l.thunderstoreDriver().Versions(ctx, key, packNamespace, packName, "")
+	namespace, name := pack(g)
+	all, err := l.thunderstoreDriver().Versions(ctx, key, namespace, name, "")
 	if err != nil {
 		return nil, fmt.Errorf("look up BepInEx releases: %w", err)
 	}
@@ -84,13 +87,14 @@ func (l Loader) Latest(ctx context.Context, g components.GameInfo) (string, erro
 	return all[0], nil
 }
 
-// Fetch downloads the BepInExPack zip of version to dst.
+// Fetch downloads the game's BepInEx pack zip of version to dst.
 func (l Loader) Fetch(ctx context.Context, g components.GameInfo, version, dst string) error {
 	key, err := communityOf(g)
 	if err != nil {
 		return err
 	}
-	r, err := l.thunderstoreDriver().Resolve(ctx, key, packNamespace, packName, version, "")
+	namespace, name := pack(g)
+	r, err := l.thunderstoreDriver().Resolve(ctx, key, namespace, name, version, "")
 	if err != nil {
 		return fmt.Errorf("find BepInEx %s: %w", version, err)
 	}

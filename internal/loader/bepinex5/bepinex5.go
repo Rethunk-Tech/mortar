@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -25,7 +26,6 @@ import (
 )
 
 const (
-	packRoot        = "BepInExPack"
 	doorstopFile    = ".doorstop_version"
 	defaultDoorstop = 3
 )
@@ -41,7 +41,8 @@ type Installed struct {
 	Doorstop int
 }
 
-// InstallPack lays the BepInExPack zip's BepInExPack/ folder out into profileRoot, replacing files already there.
+// InstallPack lays the pack zip's root folder (BepInExPack/, or a community build's own name such as
+// BepInExPack_Valheim/: whichever holds the preloader) out into profileRoot, replacing files already there.
 func InstallPack(zipPath, profileRoot string) (Installed, error) {
 	if err := os.MkdirAll(profileRoot, 0o750); err != nil {
 		return Installed{}, err
@@ -55,9 +56,9 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 	if err := archive.Extract(zipPath, tmp); err != nil {
 		return Installed{}, err
 	}
-	src := filepath.Join(tmp, packRoot)
-	if !fsx.IsDir(src) {
-		return Installed{}, fmt.Errorf("the zip has no %s folder", packRoot)
+	src, err := packRoot(tmp)
+	if err != nil {
+		return Installed{}, err
 	}
 	var manifest Manifest
 	if b, err := fsx.ReadFile(filepath.Join(tmp, "manifest.json")); err == nil {
@@ -78,6 +79,20 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 		return Installed{}, err
 	}
 	return Installed{Version: manifest.Version, Doorstop: doorstopMajor(profileRoot)}, nil
+}
+
+// packRoot is the top-level folder of the extracted pack that holds BepInEx's preloader.
+func packRoot(dir string) (string, error) {
+	ents, err := os.ReadDir(dir)
+	if err != nil {
+		return "", err
+	}
+	for _, e := range ents {
+		if _, err := os.Stat(filepath.Join(dir, e.Name(), preloader)); err == nil && e.IsDir() {
+			return filepath.Join(dir, e.Name()), nil
+		}
+	}
+	return "", errors.New("the zip has no folder holding " + filepath.ToSlash(preloader))
 }
 
 func doorstopMajor(profileRoot string) int {
@@ -251,13 +266,13 @@ type Manifest struct {
 	Dependencies []string `json:"dependencies"`
 }
 
-// Needs is the packages the manifest depends on, each at least the version it names. The BepInExPack is left out:
+// Needs is the packages the manifest depends on, each at least the version it names. The BepInEx pack is left out:
 // the loader install supplies it, so no profile entry ever stands for it.
 func (m Manifest) Needs() []manifest.Dependency {
 	var out []manifest.Dependency
 	for _, s := range m.Dependencies {
 		d, err := deps.Thunderstore(s)
-		if err != nil || strings.EqualFold(d.Target.Package, "thunderstore:"+packNamespace+"-"+packName) {
+		if err != nil || components.IsLoaderPackage(strings.TrimPrefix(d.Target.Package, "thunderstore:")) {
 			continue
 		}
 		out = append(out, manifest.NewDependency(mod.ID(d.Target.Package), d.Constraint, true))

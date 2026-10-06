@@ -15,20 +15,26 @@ import (
 
 var _ interface{ NeedsWinHTTPOverride() bool } = Loader{}
 
-func buildPack(t *testing.T, doorstop string) string {
+func buildPack(t *testing.T, doorstop string) string { return buildPackIn(t, "BepInExPack", doorstop) }
+
+// buildPackIn builds a pack whose files sit under root, as a community build names it (BepInExPack_Valheim).
+func buildPackIn(t *testing.T, root, doorstop string) string {
 	t.Helper()
 	p := filepath.Join(t.TempDir(), "pack.zip")
 	var buf bytes.Buffer
 	zw := zip.NewWriter(&buf)
 	for name, body := range map[string]string{
-		"manifest.json":                                  `{"name":"BepInExPack","version_number":"5.4.2305"}`,
-		"README.md":                                      "pack",
-		"BepInExPack/winhttp.dll":                        "proxy",
-		"BepInExPack/doorstop_config.ini":                "[UnityDoorstop]",
-		"BepInExPack/.doorstop_version":                  doorstop,
-		"BepInExPack/doorstop_libs/x64/libdoorstop.so":   "lib",
-		"BepInExPack/BepInEx/core/BepInEx.Preloader.dll": "pre",
+		"manifest.json":                      `{"name":"BepInExPack","version_number":"5.4.2305"}`,
+		"README.md":                          "pack",
+		"winhttp.dll":                        "proxy",
+		"doorstop_config.ini":                "[UnityDoorstop]",
+		".doorstop_version":                  doorstop,
+		"doorstop_libs/x64/libdoorstop.so":   "lib",
+		"BepInEx/core/BepInEx.Preloader.dll": "pre",
 	} {
+		if name != "manifest.json" && name != "README.md" {
+			name = root + "/" + name
+		}
 		w, _ := zw.Create(name)
 		_, _ = w.Write([]byte(body))
 	}
@@ -43,10 +49,10 @@ func buildPack(t *testing.T, doorstop string) string {
 
 func TestInstallPackAndDoorstopFiles(t *testing.T) {
 	root := filepath.Join(t.TempDir(), "profile")
-	for range 2 { // a second install replaces in place
-		got, err := InstallPack(buildPack(t, "4.3.0.0\n"), root)
+	for _, packDir := range []string{"BepInExPack", "BepInExPack", "BepInExPack_Valheim"} { // a reinstall replaces in place
+		got, err := InstallPack(buildPackIn(t, packDir, "4.3.0.0\n"), root)
 		if err != nil || got.Version != "5.4.2305" || got.Doorstop != 4 {
-			t.Fatalf("got %+v, %v", got, err)
+			t.Fatalf("%s: got %+v, %v", packDir, got, err)
 		}
 	}
 	if !fsx.IsDir(filepath.Join(root, "BepInEx", "core")) {

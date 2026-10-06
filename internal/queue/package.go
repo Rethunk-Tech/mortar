@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -16,9 +17,6 @@ import (
 
 // closureTimeout bounds the community index refresh a package request may wait on.
 const closureTimeout = 2 * time.Minute
-
-// loaderPackage is the BepInEx pack. The profile's loader provides it, so it is never queued as a package.
-const loaderPackage = "bepinex-bepinexpack"
 
 // expandPackages replaces the Thunderstore requests of each game and profile with their packages and everything they
 // depend on, dependencies first, each with its download address; the other requests pass through. One closure covers
@@ -67,7 +65,8 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 		for _, p := range list {
 			id := p.Namespace + "-" + p.Name
 			low := strings.ToLower(id)
-			if low == loaderPackage {
+			// The profile's loader provides the BepInEx pack, so it is never queued as a package.
+			if components.IsLoaderPackage(id) {
 				continue
 			}
 			dep, isRoot := byID[low]
