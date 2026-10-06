@@ -239,8 +239,8 @@ type GameVersion interface {
 	GameVersion(log string) string
 }
 
-// Live is what a running game's companion reports: the game's version, its current scene and the GUIDs of the plugins
-// that loaded, a set in no particular order.
+// Live is what a running game's companion reports: the version the game itself shows ("" when the companion cannot
+// tell it), its current scene and the GUIDs of the plugins that loaded, a set in no particular order.
 type Live struct {
 	GameVersion string
 	Scene       string

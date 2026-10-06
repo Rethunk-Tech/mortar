@@ -21,7 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
-func TestABepInExGameReportsItsSceneVersionAndWhichPackagesLoaded(t *testing.T) {
+func TestABepInExGameReportsItsSceneOwnVersionAndWhichPackagesLoaded(t *testing.T) {
 	datadirtest.Use(t, t.TempDir())
 	set, err := settings.Open()
 	if err != nil {
@@ -62,8 +62,8 @@ func TestABepInExGameReportsItsSceneVersionAndWhichPackagesLoaded(t *testing.T) 
 	}
 	t.Cleanup(func() { _ = ln.Close() })
 	replies := make(chan string, 2)
-	replies <- `ok {"gameVersion":"v73","scene":"InitScene","plugins":[{"guid":"someone.else","version":"1.0.0"}]}`
-	replies <- `ok {"gameVersion":"v73","scene":"MainMenu","plugins":[{"guid":"COM.FIXTURE.PLUGIN","version":"1.2.3"}]}`
+	replies <- `ok {"gameVersion":"0.1","gameVersionSource":"unity","scene":"InitScene","plugins":[{"guid":"someone.else","version":"1.0.0"}]}`
+	replies <- `ok {"gameVersion":"v73","gameVersionSource":"game","scene":"MainMenu","plugins":[{"guid":"COM.FIXTURE.PLUGIN","version":"1.2.3"}]}`
 	go func() {
 		for {
 			c, err := ln.Accept()
@@ -103,6 +103,12 @@ func TestABepInExGameReportsItsSceneVersionAndWhichPackagesLoaded(t *testing.T) 
 	first, ok := svc.askLive(t.Context(), g, st, live, packages)
 	if !ok || first.Scene != "InitScene" || len(first.Mods) != 1 || first.Mods[0].Loaded {
 		t.Fatalf("before the plugin loaded: %+v", first)
+	}
+	if v := svc.logs[keyOf(g)].gameVersion; v != "" {
+		t.Fatalf("Unity's Application.version was kept as the game's: %q", v)
+	}
+	if _, played := set.Get().LastPlayed[lc]; played {
+		t.Fatalf("lastPlayed = %#v", set.Get().LastPlayed[lc])
 	}
 	second, ok := svc.askLive(t.Context(), g, st, live, packages)
 	if !ok || second.Scene != "MainMenu" || len(second.Mods) != 1 || !second.Mods[0].Loaded || second.Mods[0].ID != first.Mods[0].ID {
