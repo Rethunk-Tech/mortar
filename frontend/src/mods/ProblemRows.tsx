@@ -11,7 +11,7 @@ import { LinkedText } from './ModLinks.tsx'
 import { openPage } from './menu.ts'
 import { modLinksOf } from './modLinks.ts'
 import { DriftButtons, FixButton } from './problemFixButtons.tsx'
-import { type DismissedRow, isInfoRow, type Row } from './problemGroups.ts'
+import { type DismissedRow, isInfoRow, type Row, rowKeys } from './problemGroups.ts'
 import { isDismissedRow, useRowText } from './problemText.ts'
 import { problemGuideUrl, problemWhy } from './problemWhy.ts'
 
@@ -156,13 +156,14 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
 
 // ProblemRows lists the cards of the chosen section.
 function ProblemRows({ rows }: { rows: (Row | DismissedRow)[] }) {
+  const keys = rowKeys(rows)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {rows.map((row) =>
+      {rows.map((row, i) =>
         isDismissedRow(row) ? (
-          <ProblemRow key={row.token} row={row.row} dismissed={row} />
+          <ProblemRow key={keys[i]} row={row.row} dismissed={row} />
         ) : (
-          <ProblemRow key={JSON.stringify(row)} row={row} />
+          <ProblemRow key={keys[i]} row={row} />
         ),
       )}
     </Box>

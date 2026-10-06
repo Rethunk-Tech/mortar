@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { problemCount } from './lookup.ts'
-import { assetRows, problemSections } from './problemGroups.ts'
+import { assetRows, problemSections, rowKeys } from './problemGroups.ts'
 
 const emptyResult = (): Result => ({
   duplicates: [],
@@ -149,4 +149,31 @@ test('conflicts between the same mods with one outcome share a row', () => {
   expect(first?.kind === 'asset' && first.siblings?.map((s) => s.target)).toEqual([
     'loosesprites/map_fall',
   ])
+})
+
+test('dismissed notes sharing one requirement token get distinct row keys', () => {
+  const missing = (dependentId: string) => ({
+    dependentId,
+    dependentName: dependentId,
+    id: 'outside:Immersive Farm 2 Remastered',
+    minimumVersion: '',
+    installedVersion: '',
+    reason: 'absent',
+    listed: true,
+    note: '',
+    external: true,
+    optional: false,
+    where: null,
+  })
+  const result: Result = {
+    ...emptyResult(),
+    dismissed: ['a', 'b', 'c'].map((d) => ({
+      token: 'listed\toutside:immersive',
+      missing: missing(d),
+    })),
+  }
+  const dismissed = problemSections(result).find((s) => s.id === 'dismissed')
+  const keys = rowKeys(dismissed?.rows ?? [])
+  expect(keys).toHaveLength(3)
+  expect(new Set(keys).size).toBe(3)
 })

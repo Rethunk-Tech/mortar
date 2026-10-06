@@ -151,3 +151,15 @@ export function assetFixButtonStyle(cosmetic: boolean): {
     ? { variant: 'outlined', color: 'inherit' }
     : { variant: 'contained', color: 'warning' }
 }
+
+// rowKeys gives each row a React key unique within its list. Dismissing a requirement hides every note naming it, so
+// several dismissed rows share one token; duplicate keys leave stale rows behind when the list switches sections.
+export function rowKeys(rows: (Row | DismissedRow)[]): string[] {
+  const seen = new Map<string, number>()
+  return rows.map((entry) => {
+    const base = 'token' in entry ? entry.token : JSON.stringify(entry)
+    const n = seen.get(base) ?? 0
+    seen.set(base, n + 1)
+    return n === 0 ? base : `${base}#${n}`
+  })
+}
