@@ -43,17 +43,37 @@ SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
 # Games the shipped catalog has not enabled yet are switched on in the sandbox only (comma separated catalog ids).
 export MORTAR_ENABLE_GAMES=${MORTAR_SELFTEST_ENABLE:-lethal-company}
 
+# The last server binary built, kept under the hash of the tree it came from so an unchanged tree skips the build.
+BUILD_CACHE=/var/tmp/mortar-selftest-build
+
+# Every file the build reads that git sees; specs and docs change no binary.
+tree_key() {
+  (cd "$REPO" && git ls-files -co --exclude-standard -z -- . ':!frontend/e2e' ':!docs' ':!*.md' |
+    xargs -0 sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1)
+}
+
 build() {
-  echo "building frontend and server-mode binary"
   # The server embeds frontend/dist, which every sandbox's build rewrites, so concurrent sandboxes build one at a time.
   exec 9>/var/tmp/mortar-selftest-build.lock
   flock 9
-  # A fresh clone has no generated bindings, which the frontend build imports.
-  if [ ! -d "$REPO/frontend/bindings" ]; then
-    (cd "$REPO" && GOTMPDIR=/var/tmp wails3 generate bindings -clean=true -ts -i >"$ROOT/bindings.log" 2>&1)
+  local key
+  key=$(tree_key)
+  if [ -f "$BUILD_CACHE/$key" ]; then
+    echo "server-mode binary unchanged since the last build; reusing it"
+    cp "$BUILD_CACHE/$key" "$ROOT/mortar-server.new"
+  else
+    echo "building frontend and server-mode binary"
+    # A fresh clone has no generated bindings, which the frontend build imports.
+    if [ ! -d "$REPO/frontend/bindings" ]; then
+      (cd "$REPO" && GOTMPDIR=/var/tmp wails3 generate bindings -clean=true -ts -i >"$ROOT/bindings.log" 2>&1)
+    fi
+    (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
+    (cd "$REPO" && GOTMPDIR=/var/tmp go build -tags server -o "$ROOT/mortar-server.new" .)
+    # The build rewrites tracked catalogs only when the tree's strings moved, so the key is taken again after it.
+    rm -rf "$BUILD_CACHE"
+    mkdir -p "$BUILD_CACHE"
+    cp "$ROOT/mortar-server.new" "$BUILD_CACHE/$(tree_key)"
   fi
-  (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
-  (cd "$REPO" && GOTMPDIR=/var/tmp go build -tags server -o "$ROOT/mortar-server.new" .)
   exec 9>&-
   mv "$ROOT/mortar-server.new" "$ROOT/mortar-server"
 }
@@ -340,8 +360,8 @@ game_pids() {
 # One find instead of a readlink per process: reap runs this once per sandbox over every process on the machine.
 sandbox_pids() {
   find /proc -mindepth 2 -maxdepth 2 \( -name exe -o -name cwd \) \
-    \( -lname "$ROOT" -o -lname "$ROOT/*" -o -lname "$ROOT (deleted)" \) 2>/dev/null \
-    | cut -d/ -f3 | grep -vx "$$" | sort -u || true
+    \( -lname "$ROOT" -o -lname "$ROOT/*" -o -lname "$ROOT (deleted)" \) 2>/dev/null |
+    cut -d/ -f3 | grep -vx "$$" | sort -u || true
 }
 
 # release_sandbox stops the server, then everything else still running from $ROOT (SIGTERM, then SIGKILL, each pid
@@ -379,7 +399,11 @@ regress_traps() {
 
 regress() {
   ROOT=$(mktemp -d /var/tmp/mortar-regress-XXXXXX)
-  case "$ROOT" in /var/tmp/mortar-regress-??????) ;; *) echo "unexpected sandbox dir $ROOT" >&2; exit 1 ;; esac
+  case "$ROOT" in /var/tmp/mortar-regress-??????) ;; *)
+    echo "unexpected sandbox dir $ROOT" >&2
+    exit 1
+    ;;
+  esac
   # A failed run keeps its folder for the logs; the marker lets reap collect it later.
   mark
   PORT=$((9600 + RANDOM % 300))
@@ -481,8 +505,8 @@ reap_prefix() {
   sleep 2
   for p in "${first[@]}" "${pids[@]}"; do
     # A process that ignored SIGTERM is checked against its prefix again before it is killed.
-    if { tr '\0' '\n' <"/proc/$p/environ" | grep -qxE "(WINEPREFIX=${compat}/pfx/?|STEAM_COMPAT_DATA_PATH=${compat}/?)"; } 2>/dev/null \
-      && ! grep -q ') Z' "/proc/$p/stat" 2>/dev/null; then
+    if { tr '\0' '\n' <"/proc/$p/environ" | grep -qxE "(WINEPREFIX=${compat}/pfx/?|STEAM_COMPAT_DATA_PATH=${compat}/?)"; } 2>/dev/null &&
+      ! grep -q ') Z' "/proc/$p/stat" 2>/dev/null; then
       kill -KILL "$p" 2>/dev/null || true
     fi
   done
@@ -497,7 +521,11 @@ reap_prefix() {
 # The Thunderstore index and downloads are cached in $REGRESS_CACHE after the first run.
 regress_lc() {
   ROOT=$(mktemp -d /var/tmp/mortar-regress-lc-XXXXXX)
-  case "$ROOT" in /var/tmp/mortar-regress-lc-??????) ;; *) echo "unexpected sandbox dir $ROOT" >&2; exit 1 ;; esac
+  case "$ROOT" in /var/tmp/mortar-regress-lc-??????) ;; *)
+    echo "unexpected sandbox dir $ROOT" >&2
+    exit 1
+    ;;
+  esac
   # A failed run keeps its folder for the logs; the marker lets reap collect it later.
   mark
   PORT=$((9600 + RANDOM % 300))
@@ -524,9 +552,18 @@ regress_lc() {
   }
   regress_traps
 
-  [ -d "$proton" ] || { echo "no Proton at $proton (set MORTAR_REGRESS_PROTON)" >&2; exit 1; }
-  [ -f "$STEAM/linux64/steamclient.so" ] || { echo "no steamclient.so under $STEAM" >&2; exit 1; }
-  command -v bwrap >/dev/null || { echo "bwrap (bubblewrap) is needed to keep the game away from a running Steam" >&2; exit 1; }
+  [ -d "$proton" ] || {
+    echo "no Proton at $proton (set MORTAR_REGRESS_PROTON)" >&2
+    exit 1
+  }
+  [ -f "$STEAM/linux64/steamclient.so" ] || {
+    echo "no steamclient.so under $STEAM" >&2
+    exit 1
+  }
+  command -v bwrap >/dev/null || {
+    echo "bwrap (bubblewrap) is needed to keep the game away from a running Steam" >&2
+    exit 1
+  }
   if [ -n "${MORTAR_REGRESS_OFFLINE:-}" ]; then
     export HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 NO_PROXY=127.0.0.1
   fi
@@ -571,8 +608,8 @@ EOF
   # The first Proton run creates the prefix; Mortar can only add its winhttp override to a prefix that exists.
   echo "creating the Proton prefix"
   mkdir -p "$compat"
-  (cd "$ROOT" && env HOME="$SANDBOX_HOME" timeout 300 "$ROOT/run-proton.sh" wineboot -u >"$ROOT/wineboot.log" 2>&1) \
-    || failures+=("the Proton prefix could not be created; see $ROOT/wineboot.log")
+  (cd "$ROOT" && env HOME="$SANDBOX_HOME" timeout 300 "$ROOT/run-proton.sh" wineboot -u >"$ROOT/wineboot.log" 2>&1) ||
+    failures+=("the Proton prefix could not be created; see $ROOT/wineboot.log")
   reap_prefix "$compat" >/dev/null
 
   build
@@ -679,7 +716,8 @@ EOF
     deadline=$((SECONDS + 600))
     while [ -n "$r2_profile" ] && [ "$SECONDS" -lt "$deadline" ]; do
       cli queue --json >"$ROOT/r2-queue.json"
-      pending=$(python3 - "$ROOT/r2-queue.json" "$r2_profile" 2>"$ROOT/r2-queue-open.txt" <<'PY'
+      pending=$(
+        python3 - "$ROOT/r2-queue.json" "$r2_profile" 2>"$ROOT/r2-queue-open.txt" <<'PY'
 import json, sys
 items = [i for i in json.load(open(sys.argv[1]))["items"] if i["profileId"] == sys.argv[2]]
 print(sum(1 for i in items if i["state"] not in ("done", "failed", "skipped", "cancelled")))
@@ -687,7 +725,7 @@ for i in items:
     if i["state"] != "done":
         print(f'{i["name"]} {i["version"]}: {i["state"]} {i["error"]}', file=sys.stderr)
 PY
-)
+      )
       [ "$pending" = 0 ] && break
       sleep 2
     done
@@ -758,12 +796,24 @@ reap() {
   local hours=6 yes="" dir
   while [ $# -gt 0 ]; do
     case "$1" in
-      --hours) hours=${2:?--hours takes a number}; shift 2 ;;
-      --yes) yes=1; shift ;;
-      *) echo "reap takes --hours N and --yes" >&2; exit 2 ;;
+      --hours)
+        hours=${2:?--hours takes a number}
+        shift 2
+        ;;
+      --yes)
+        yes=1
+        shift
+        ;;
+      *)
+        echo "reap takes --hours N and --yes" >&2
+        exit 2
+        ;;
     esac
   done
-  [[ $hours =~ ^[0-9]+$ ]] || { echo "--hours takes a whole number" >&2; exit 2; }
+  [[ $hours =~ ^[0-9]+$ ]] || {
+    echo "--hours takes a whole number" >&2
+    exit 2
+  }
   local found=0
   for dir in "$BASE"/*/; do
     dir=${dir%/}
@@ -802,7 +852,10 @@ case "${1:-}" in
       "") regress ;;
       --gamelethal-company) regress_lc ;;
       --gamestardew) regress ;;
-      *) echo "regress takes --game stardew or --game lethal-company" >&2; exit 2 ;;
+      *)
+        echo "regress takes --game stardew or --game lethal-company" >&2
+        exit 2
+        ;;
     esac
     ;;
   *) mkdir -p "$ROOT" ;;
