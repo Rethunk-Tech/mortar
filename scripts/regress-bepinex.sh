@@ -5,8 +5,8 @@
 #   regress_bepinex_prepare  before the base launch: every row that needs no game process, and the base profile
 #                            filled with the modpack and the probe packages, so the base launch is launch (a)
 #   regress_bepinex_running  during launch (a): what only a running game shows
-#   regress_bepinex_after    after launch (a) is stopped: launch (b) and the rows that need neither launch
-# A session allows 3 game launches (scripts/launch-guard.sh), so the matrix adds only launch (b) to the base run's.
+#   regress_bepinex_after    after launch (a) is stopped: launches (c) and (b) and the rows that need no launch
+# A session allows 3 game launches (scripts/launch-guard.sh), so the matrix adds launches (c) and (b) to the base run's.
 # Each matrix item ends as one PASS or FAIL row in $ROOT/matrix.tsv; any FAIL fails the regress. The modpack
 # and the update packages come from Thunderstore, so the matrix needs the network.
 
@@ -105,9 +105,9 @@ mx_game_pids() {
 
 mx_state() { cli status lethal-company --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])'; }
 
-# mx_launches prints how many games the matrix starts on top of the base run's launch (a): launch (b), the one
-# mx_launch call below. The session's launch cap must have that many left before the run begins (need_launches).
-mx_launches() { echo 1; }
+# mx_launches prints how many games the matrix starts on top of the base run's launch (a): launches (c) and (b), the
+# two mx_launch calls below. The session's launch cap must have that many left before the run begins (need_launches).
+mx_launches() { echo 2; }
 
 # mx_bep_version VERSION prints the version BepInEx logs for a Thunderstore BepInExPack version (5.4.2305 -> 5.4.23.5).
 mx_bep_version() {
@@ -168,6 +168,17 @@ mx_console_reads() {
   done
   sleep 4
   mx_lines2=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
+}
+
+# mx_bridge_survived TAG LOG records whether the Mortar bridge's plugin component was still alive when each scene
+# loaded, from the "Bridge plugin alive after scene X: True|False" lines the bridge's intro-skip runner writes into
+# BepInEx's LogOutput.log at LOG. A run whose bridge predates those lines has none and fails the row.
+mx_bridge_survived() {
+  local alive dead
+  alive=$(grep -c 'Bridge plugin alive after scene .*: True' "$2" 2>/dev/null)
+  dead=$(grep -c 'Bridge plugin alive after scene .*: False' "$2" 2>/dev/null)
+  mx_check "bridge.survived.$1" "launch ($1): the bridge's plugin was alive after $alive scene load(s) and destroyed after $dead; first load: $(grep -m1 -o 'Bridge plugin alive after scene .*' "$2" || echo 'no line, the bridge predates it')" \
+    test "${alive:-0}" -gt 0 -a "${dead:-0}" -eq 0
 }
 
 # mx_purged TAG requires every entry the game folder had before the first launch to hash the same and the Doorstop
@@ -367,7 +378,7 @@ regress_bepinex_prepare() {
   loader_dir=$(mx_dir "$mx_base")
 
   # 1. Loader installs, checked on the profile's files and the previewed command line. The base run installed and
-  # pinned $mx_bepinex; launch (a) proves it loads, launch (b) proves the older pinned pack loads.
+  # pinned $mx_bepinex; launch (a) proves it loads, launches (c) and (b) prove the newest pack with a throwing plugin and the older pinned pack load.
   local v out
   for v in 5.4.2100 "$mx_bepinex"; do
     curl -fsSL -o "$ROOT/bep-$v.zip" "https://thunderstore.io/package/download/BepInEx/BepInExPack/$v/" || mx_fail loader.download "BepInExPack $v did not download"
@@ -395,13 +406,14 @@ regress_bepinex_prepare() {
   # Launch (a) runs the pinned version the base run expects.
   cli loader pin lethal-company "$mx_bepinex" >/dev/null || mx_fail loader.repin "pinning $mx_bepinex again failed"
 
-  # The profiles of launch (b) and of the rows that never launch, created now so each install reaches all of them.
+  # The profiles of launches (c) and (b) and of the rows that never launch, created now so each install reaches all of them.
   local p
   mx_crash=$(mx_profile "Matrix Crash")
+  mx_pin=$(mx_profile "Matrix Pinned")
   mx_upd=$(mx_profile "Matrix Update")
   mx_upd2=$(mx_profile "Matrix Update Two")
   mx_dep=$(mx_profile "Matrix Deprecated")
-  for p in "$mx_crash" "$mx_upd" "$mx_upd2" "$mx_dep"; do
+  for p in "$mx_crash" "$mx_pin" "$mx_upd" "$mx_upd2" "$mx_dep"; do
     cli profile set lethal-company "$p" launchPrefix "$ROOT/run-proton.sh" >/dev/null
   done
 
@@ -492,6 +504,7 @@ PY
     for want in "base cfg=edited by mortar:mods.config" "base ratio=0.75:mods.config-float" "own cfg=own-layout:edge.own-layout" "caps cfg=caps:edge.case" "flat beside=True:edge.flatten-probe"; do
       mx_check "${want#*:}" "LogOutput.log: $(grep -m1 -o "matrix ${want%%:*}" "$mx_log" || echo "no \"matrix ${want%%:*}\"")" grep -q "matrix ${want%%:*}" "$mx_log"
     done
+    mx_bridge_survived a "$mx_log"
     mx_check edge.config-placement "config placed flat: $(grep -m1 -o 'matrix base cfg=[^\r]*' "$mx_log" || echo 'no "matrix base cfg="')" grep -q 'matrix base cfg=' "$mx_log"
     mx_check edge.nested "plugins/Deep/Er/Nested.dll: $(grep -m1 -o 'Loading \[Matrix nested[^]]*\]' "$mx_log" || echo not loaded)" grep -q 'Loading \[Matrix nested' "$mx_log"
     mx_check edge.longpath "a plugin $(find "$(mx_dir "$mx_base")/BepInEx/plugins" -name Deep.dll | awk '{print length("Z:" $0)}') characters deep as Wine sees it: $(grep -m1 -o 'Loading \[Matrix deep[^]]*\]' "$mx_log" || echo not loaded)" grep -q 'Loading \[Matrix deep' "$mx_log"
@@ -569,25 +582,43 @@ PY
   mx_check problems.true "Problems after launch (a) lists $(echo "$out" | head -1); each checked against Thunderstore, the logs and the mod list$(echo "$out" | grep '^WRONG' | sed 's/^WRONG /; /' | tr -d '\n')" \
     test -z "$(echo "$out" | grep '^WRONG')" -a "${out:0:1}" = "{"
 
-  # 4. Launch (b): the older pack pinned, with a plugin that throws in Awake, one that writes the game's own save and
-  # one that quits the game, so one run shows the pinned loader loading, crash analysis and a natural exit.
-  rm -f "$mx_saves/LCSaveFile1"
-  if [ -n "$mx_ready" ] && cli loader install lethal-company 5.4.2100 >"$ROOT/loader-2100-b.txt" 2>&1 &&
-    cli loader pin lethal-company 5.4.2100 >/dev/null && mx_install_probes "$mx_crash" Throw Save Quit >/dev/null &&
-    mx_launch "$mx_crash" b; then
-    out=$(grep -m1 -o 'BepInEx 5\.[0-9.]* - Lethal Company' "$mx_log")
-    mx_check loader.pin-run "launch (b) on the pinned 5.4.2100: log opens with \"$out\"; $(mx_doorstop "$mx_crash" 5.4.2100)" \
-      test "$out|$(mx_doorstop "$mx_crash" 5.4.2100)" = "BepInEx $(mx_bep_version 5.4.2100) - Lethal Company|$(mx_doorstop_ok)"
+  # 4. Launches (c) and (b) differ in one variable each from launch (a): (c) is the newest pack with a plugin that throws
+  # in Awake, and (b) the older pack pinned with no throwing plugin. Both also run a plugin that quits the game, and
+  # (b) one that writes the game's own save. Whether the bridge's component survives the first scene load, row
+  # bridge.survived, then says which variable takes plugins down. (c) runs first, while the newest pack is pinned.
+  if [ -n "$mx_ready" ] && mx_install_probes "$mx_crash" Throw Quit >/dev/null && mx_launch "$mx_crash" c; then
+    mx_bridge_survived c "$mx_log"
     if mx_idle 90; then
-      cli runs lethal-company "$mx_crash" --json >"$ROOT/runs-b.json"
-      mx_check launch.exit "the game quit by itself; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]'); game folder: $(mx_purged b || true)" \
-        test -z "$(mx_purged b)" -a "$(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]')" = ran
+      cli runs lethal-company "$mx_crash" --json >"$ROOT/runs-c.json"
+      mx_check launch.exit "launch (c): the game quit by itself; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-c.json" 'd[0]["outcome"]'); game folder: $(mx_purged c || true)" \
+        test -z "$(mx_purged c)" -a "$(mx_json "$ROOT/runs-c.json" 'd[0]["outcome"]')" = ran
       mx_problems "$mx_crash" crash
       out=$(mx_json "$ROOT/problems-crash.json" '[(f["name"], f["kind"], f["message"][:60]) for f in d.get("loadFailures") or []]')
-      mx_check launch.crash "Problems: $out; run: loader $(mx_json "$ROOT/runs-b.json" 'd[0]["loaderVersion"]'), $(mx_json "$ROOT/runs-b.json" 'd[0]["errors"]') errors" \
-        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); r=json.load(open(sys.argv[2]))[0]; sys.exit(not (any(f["name"]=="ProbeThrow" and "matrix probe failed in Awake" in f["message"] for f in d.get("loadFailures") or []) and r["loaderVersion"] and r["errors"]>0))' "$ROOT/problems-crash.json" "$ROOT/runs-b.json"
+      mx_check launch.crash "Problems: $out; run: loader $(mx_json "$ROOT/runs-c.json" 'd[0]["loaderVersion"]'), $(mx_json "$ROOT/runs-c.json" 'd[0]["errors"]') errors" \
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); r=json.load(open(sys.argv[2]))[0]; sys.exit(not (any(f["name"]=="ProbeThrow" and "matrix probe failed in Awake" in f["message"] for f in d.get("loadFailures") or []) and r["loaderVersion"] and r["errors"]>0))' "$ROOT/problems-crash.json" "$ROOT/runs-c.json"
     else
-      mx_fail launch.exit "Mortar still reports $(mx_state) 90s after the game should have quit"
+      mx_fail launch.exit "launch (c): Mortar still reports $(mx_state) 90s after the game should have quit"
+      mx_stop c
+    fi
+    reap_prefix "$mx_compat" >/dev/null
+  else
+    mx_fail launch.c "launch (c) did not start"
+  fi
+
+  rm -f "$mx_saves/LCSaveFile1"
+  if [ -n "$mx_ready" ] && cli loader install lethal-company 5.4.2100 >"$ROOT/loader-2100-b.txt" 2>&1 &&
+    cli loader pin lethal-company 5.4.2100 >/dev/null && mx_install_probes "$mx_pin" Save Quit >/dev/null &&
+    mx_launch "$mx_pin" b; then
+    out=$(grep -m1 -o 'BepInEx 5\.[0-9.]* - Lethal Company' "$mx_log")
+    mx_check loader.pin-run "launch (b) on the pinned 5.4.2100: log opens with \"$out\"; $(mx_doorstop "$mx_pin" 5.4.2100)" \
+      test "$out|$(mx_doorstop "$mx_pin" 5.4.2100)" = "BepInEx $(mx_bep_version 5.4.2100) - Lethal Company|$(mx_doorstop_ok)"
+    mx_bridge_survived b "$mx_log"
+    if mx_idle 90; then
+      cli runs lethal-company "$mx_pin" --json >"$ROOT/runs-b.json"
+      mx_check loader.pin-exit "launch (b): the game quit by itself on the pinned pack; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]'); game folder: $(mx_purged b || true)" \
+        test -z "$(mx_purged b)" -a "$(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]')" = ran
+    else
+      mx_fail loader.pin-exit "launch (b): Mortar still reports $(mx_state) 90s after the game should have quit"
       mx_stop b
     fi
     reap_prefix "$mx_compat" >/dev/null

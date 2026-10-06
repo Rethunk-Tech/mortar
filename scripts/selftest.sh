@@ -30,7 +30,7 @@
 # from Thunderstore (cached in /var/tmp/mortar-regress-cache; MORTAR_REGRESS_OFFLINE=1 proves a rerun needs no network),
 # launches directly under Proton, and requires the plugins to load and the purge to leave the game folder identical.
 # MORTAR_REGRESS_MATRIX=1 also runs the BepInEx test matrix (scripts/regress-bepinex.sh, docs/bepinex-test-matrix.md)
-# within two launches, the base one and one more; it needs the network and the .NET SDK, and MORTAR_REGRESS_R2_EXPORT=1
+# within three launches, the base one and two more, which leaves none for MORTAR_REGRESS_R2_CODE (refused with it); it needs the network and the .NET SDK, and MORTAR_REGRESS_R2_EXPORT=1
 # also publishes an r2modman code to thunderstore.io.
 set -euo pipefail
 
@@ -653,7 +653,20 @@ reap_prefix() {
 # Steam over loopback TCP whatever HOME says, and the game then registers with it under its Wine pid, which on the host
 # names a kernel thread that never exits, so Steam waits for it to shut down until Steam itself is killed.
 # The Thunderstore index and downloads are cached in $REGRESS_CACHE after the first run.
+# regress_launches prints how many games a Lethal Company regress with the current environment starts: the base run's,
+# each of the matrix's and the r2 step's.
+regress_launches() {
+  local n=1
+  [ -n "${MORTAR_REGRESS_R2_CODE:-}" ] && n=$((n + 1))
+  [ -n "${MORTAR_REGRESS_MATRIX:-}" ] && n=$((n + $(mx_launches)))
+  echo "$n"
+}
+
 regress_lc() {
+  if [ -n "${MORTAR_REGRESS_R2_CODE:-}" ] && [ "$(regress_launches)" -gt "$LAUNCH_CAP" ]; then
+    echo "refused: MORTAR_REGRESS_R2_CODE needs launch $(regress_launches), but a session allows $LAUNCH_CAP and the base run and the matrix use $(($(regress_launches) - 1)) of them; unset MORTAR_REGRESS_R2_CODE or MORTAR_REGRESS_MATRIX" >&2
+    exit 3
+  fi
   ROOT=$(mktemp -d /var/tmp/mortar-regress-lc-XXXXXX)
   case "$ROOT" in /var/tmp/mortar-regress-lc-??????) ;; *)
     echo "unexpected sandbox dir $ROOT" >&2
@@ -686,11 +699,7 @@ regress_lc() {
   }
   regress_traps
 
-  # The base launch, the r2 step's and each of the matrix's.
-  local launches=1
-  [ -n "${MORTAR_REGRESS_R2_CODE:-}" ] && launches=$((launches + 1))
-  [ -n "${MORTAR_REGRESS_MATRIX:-}" ] && launches=$((launches + $(mx_launches)))
-  need_launches "$launches"
+  need_launches "$(regress_launches)"
   [ -d "$proton" ] || {
     echo "no Proton at $proton (set MORTAR_REGRESS_PROTON)" >&2
     exit 1

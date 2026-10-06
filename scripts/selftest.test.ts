@@ -88,14 +88,27 @@ test('destroy refuses an unmarked folder and one outside the base', () => {
   }
 })
 
-test('a full Lethal Company regress with the matrix and an r2 code fits the session cap of 3 launches', () => {
+test('the matrix fills the session cap of 3 launches with the base run and its two', () => {
   const matrix = readFileSync(join(import.meta.dir, 'regress-bepinex.sh'), 'utf8')
   const declared = Number(/^mx_launches\(\) \{ echo (\d+); \}$/m.exec(matrix)?.[1])
   const calls = matrix.split('\n').filter((l) => /mx_launch "/.test(l)).length
   expect(calls).toBe(declared)
-  // The base launch, which is also the matrix's launch (a), and the r2 step's.
-  const regress = 2
-  expect(regress + declared).toBeLessThanOrEqual(3)
+  const base = 1
+  expect(base + declared).toBe(3)
+})
+
+test('a regress that would need a fourth launch for an r2 code is refused up front, with the reason', () => {
+  const refused = spawnSync(SCRIPT, ['regress', '--game', 'lethal-company'], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      MORTAR_REGRESS_MATRIX: '1',
+      MORTAR_REGRESS_R2_CODE: 'not-uploaded',
+      MORTAR_LAUNCH_SESSION: 'test-r2-refusal',
+    },
+  })
+  expect(refused.status).toBe(3)
+  expect(refused.stderr).toContain('MORTAR_REGRESS_R2_CODE needs launch 4, but a session allows 3')
 })
 
 const MATRIX = join(import.meta.dir, 'regress-bepinex.sh')
@@ -135,6 +148,39 @@ test('the matrix reads the Console twice only once the first heartbeat is in', (
       mx_console_reads
       echo "$mx_lines1 | $(cat "${counter}")"`)
     expect(shell.stdout.trim()).toBe('[{"message":"matrix heartbeat 1"}] | 5')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('the matrix reports a bridge that survived every scene load, and one that did not or never said', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mx-bridge-'))
+  try {
+    const log = (name: string, text: string) => {
+      writeFileSync(join(dir, name), text)
+      return join(dir, name)
+    }
+    const alive = log(
+      'a.log',
+      '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene InitScene: True\n',
+    )
+    const dead = log(
+      'b.log',
+      '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene InitScene: False\n',
+    )
+    const silent = log('c.log', '[Info   :BepInEx] Chainloader startup complete\n')
+    matrixShell(
+      `ROOT="${dir}"; mx_bridge_survived a "${alive}"; mx_bridge_survived b "${dead}"; mx_bridge_survived c "${silent}"`,
+    )
+    const rows = readFileSync(join(dir, 'matrix.tsv'), 'utf8')
+      .trim()
+      .split('\n')
+      .map((l) => l.split('\t').slice(0, 2).join(' '))
+    expect(rows).toEqual([
+      'bridge.survived.a PASS',
+      'bridge.survived.b FAIL',
+      'bridge.survived.c FAIL',
+    ])
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
