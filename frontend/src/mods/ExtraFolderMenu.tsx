@@ -8,17 +8,15 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material'
-import { ChevronDown, Download, FolderOpen, Plus } from 'lucide-react'
+import { ChevronDown, Download, FolderOpen } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { openDownloadsDialog } from '../install/downloadsDialog.ts'
-import { useInstall } from '../install/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
 import { ExtraFolderDialog } from './ExtraFolderDialog.tsx'
 
-// The chevron of the Add split button: the same archive pick, an archive from the downloads folder, or the mods in
-// the game's extra mods folder when one is set.
+// The chevron of the Add split button: an archive from the downloads folder, or the mods in the game's extra mods
+// folder when one is set. The archive pick is the button beside it, so the menu does not repeat it.
 export function ExtraFolderMenu({
   folder,
   blocked,
@@ -33,7 +31,6 @@ export function ExtraFolderMenu({
 } & Pick<ButtonGroupProps, 'variant' | 'size'>) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
-  const pick = useInstall((s) => s.pick)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [open, setOpen] = useState(false)
   return (
@@ -54,17 +51,6 @@ export function ExtraFolderMenu({
         </DisabledReason>
       </ButtonGroup>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
-        <MenuItem
-          onClick={() => {
-            setAnchor(null)
-            pick().catch(reportUnexpected)
-          }}
-        >
-          <ListItemIcon>
-            <Plus size={16} aria-hidden={true} />
-          </ListItemIcon>
-          <ListItemText>{t`Archive…`}</ListItemText>
-        </MenuItem>
         <MenuItem
           onClick={() => {
             setAnchor(null)
