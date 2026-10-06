@@ -146,17 +146,29 @@ mx_idle() {
 # mx_console_reads reads the Console twice into mx_lines1 and mx_lines2: the first once the first heartbeat is in, the
 # second once the probe's error line (its third beat) is. With a modpack this size the game's first frame comes well
 # after BepInEx's "Chainloader startup complete", and a sound mod then holds the main thread for several seconds.
+# mx_read1_at and mx_read2_at are the UTC wall-clock times of the two reads, to set against Player.log.
 mx_console_reads() {
   for _ in $(seq 1 30); do
     mx_lines1=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
+    mx_read1_at=$(date -u +%T.%3N)
     case $mx_lines1 in *'matrix heartbeat'*) break ;; esac
     sleep 2
   done
   for _ in $(seq 1 30); do
     sleep 2
     mx_lines2=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
+    mx_read2_at=$(date -u +%T.%3N)
     case $mx_lines2 in *'matrix error line'*) break ;; esac
   done
+}
+
+# mx_keep_logs TAG copies launch TAG's LogOutput.log and Unity's Player.log (and Player-prev.log) into the sandbox as
+# LogOutput-TAG.log, Player-TAG.log and Player-prev-TAG.log: the next launch overwrites Unity's.
+mx_keep_logs() {
+  cp "$mx_log" "$ROOT/LogOutput-$1.log" 2>/dev/null
+  cp "$mx_saves/Player.log" "$ROOT/Player-$1.log" 2>/dev/null
+  [ ! -e "$mx_saves/Player-prev.log" ] || cp "$mx_saves/Player-prev.log" "$ROOT/Player-prev-$1.log"
+  return 0
 }
 
 # mx_bridge_survived TAG LOG records whether the Mortar bridge's plugin component was still alive when each scene
@@ -256,7 +268,7 @@ mx_stop() {
   else
     mx_fail "stop.$1" "after Stop: game pids left '${after}', reaped '${killed}', clean exit $(grep -c '^Memory Statistics:' "$mx_saves/Player.log" 2>/dev/null), purge: ${purge:-clean}"
   fi
-  cp "$mx_log" "$ROOT/LogOutput-$1.log" 2>/dev/null || true
+  mx_keep_logs "$1"
 }
 
 # mx_build_probes compiles scripts/bepinex-probe against the copied game's assemblies and the profile's BepInEx
@@ -488,7 +500,7 @@ ok = (beats(a) and len(beats(b)) > len(beats(a)) and max(e["seq"] for e in b) > 
 print(("OK " if ok else "BAD ") + f"heartbeats {len(beats(a))} then {len(beats(b))}, levels {sorted(levels)}, {len(sources)} sources")
 PY
     )
-    mx_check launch.console "Console lines read twice during launch (a): ${out#* }" test "${out%% *}" = OK
+    mx_check launch.console "Console lines read twice during launch (a), at $mx_read1_at and $mx_read2_at UTC: ${out#* }" test "${out%% *}" = OK
     for want in "base cfg=edited by mortar:mods.config" "base ratio=0.75:mods.config-float" "own cfg=own-layout:edge.own-layout" "caps cfg=caps:edge.case" "flat beside=True:edge.flatten-probe"; do
       mx_check "${want#*:}" "LogOutput.log: $(grep -m1 -o "matrix ${want%%:*}" "$mx_log" || echo "no \"matrix ${want%%:*}\"")" grep -q "matrix ${want%%:*}" "$mx_log"
     done
@@ -530,7 +542,7 @@ regress_bepinex_after() {
   fi
   mx_problems "$mx_base" pack
   out=$(
-    python3 - "$ROOT/problems-pack.json" "$ROOT/pack-mods.json" "$ROOT/LogOutput-a.log" "$mx_saves/Player.log" <<'PY'
+    python3 - "$ROOT/problems-pack.json" "$ROOT/pack-mods.json" "$ROOT/LogOutput-a.log" "$ROOT/Player-a.log" <<'PY'
 import json, re, sys, urllib.request
 p = json.load(open(sys.argv[1]))
 mods = {m["id"]: m for m in json.load(open(sys.argv[2]))}
@@ -576,6 +588,7 @@ PY
   # bridge.survived, then says which variable takes plugins down. (c) runs first, while the newest pack is pinned.
   if [ -n "$mx_ready" ] && mx_install_probes "$mx_crash" Throw Quit >/dev/null && mx_launch "$mx_crash" c; then
     if mx_idle 90; then
+      mx_keep_logs c
       cli runs lethal-company "$mx_crash" --json >"$ROOT/runs-c.json"
       mx_check launch.exit "launch (c): the game quit by itself; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-c.json" 'd[0]["outcome"]'); game folder: $(mx_purged c || true)" \
         test -z "$(mx_purged c)" -a "$(mx_json "$ROOT/runs-c.json" 'd[0]["outcome"]')" = ran
@@ -601,6 +614,7 @@ PY
     mx_check loader.pin-run "launch (b) on the pinned 5.4.2100: log opens with \"$out\"; $(mx_doorstop "$mx_pin" 5.4.2100)" \
       test "$out|$(mx_doorstop "$mx_pin" 5.4.2100)" = "BepInEx $(mx_bep_version 5.4.2100) - Lethal Company|$(mx_doorstop_ok)"
     if mx_idle 90; then
+      mx_keep_logs b
       cli runs lethal-company "$mx_pin" --json >"$ROOT/runs-b.json"
       mx_check loader.pin-exit "launch (b): the game quit by itself on the pinned pack; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]'); game folder: $(mx_purged b || true)" \
         test -z "$(mx_purged b)" -a "$(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]')" = ran

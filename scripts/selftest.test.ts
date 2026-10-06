@@ -135,10 +135,35 @@ test('the matrix reads the Console first once a heartbeat is in, then again once
       }
       mx_base=p
       mx_console_reads
-      echo "$mx_lines1 | $mx_lines2 | $(cat "${counter}")"`)
-    expect(shell.stdout.trim()).toBe(
-      '[{"message":"matrix heartbeat 1"}] | [{"message":"matrix error line"}] | 6',
-    )
+      echo "$mx_lines1 | $mx_lines2 | $(cat "${counter}")"
+      echo "$mx_read1_at $mx_read2_at"`)
+    const [reads, times] = shell.stdout.trim().split('\n')
+    expect(reads).toBe('[{"message":"matrix heartbeat 1"}] | [{"message":"matrix error line"}] | 6')
+    expect(times).toMatch(/^\d\d:\d\d:\d\d\.\d{3} \d\d:\d\d:\d\d\.\d{3}$/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('the matrix keeps the Unity logs of each launch beside its LogOutput.log, and Player-prev.log only when there is one', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mx-logs-'))
+  try {
+    const saves = join(dir, 'saves')
+    mkdirSync(saves)
+    writeFileSync(join(dir, 'LogOutput.log'), 'bepinex a')
+    writeFileSync(join(saves, 'Player.log'), 'unity a')
+    writeFileSync(join(saves, 'Player-prev.log'), 'unity before a')
+    const shell = matrixShell(`
+      ROOT="${dir}" mx_log="${join(dir, 'LogOutput.log')}" mx_saves="${saves}"
+      mx_keep_logs a
+      rm "${join(saves, 'Player-prev.log')}"; echo "unity c" >"${join(saves, 'Player.log')}"
+      mx_keep_logs c; echo "status=$?"`)
+    expect(shell.stdout.trim()).toBe('status=0')
+    expect(readFileSync(join(dir, 'LogOutput-a.log'), 'utf8')).toBe('bepinex a')
+    expect(readFileSync(join(dir, 'Player-a.log'), 'utf8')).toBe('unity a')
+    expect(readFileSync(join(dir, 'Player-prev-a.log'), 'utf8')).toBe('unity before a')
+    expect(readFileSync(join(dir, 'Player-c.log'), 'utf8')).toBe('unity c\n')
+    expect(existsSync(join(dir, 'Player-prev-c.log'))).toBe(false)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
