@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Link, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
@@ -59,20 +58,17 @@ function Card({
   label,
   value,
   onClick,
-  ariaLabel,
   tone,
 }: {
   label: string
   value: ReactNode
   onClick?: () => void
-  ariaLabel?: string
   // A coloured edge for a card that asks for attention.
   tone?: 'warning' | 'primary' | undefined
 }) {
   return (
     <Box
       component={onClick ? ButtonBase : 'div'}
-      aria-label={onClick ? ariaLabel : undefined}
       onClick={onClick}
       sx={{
         border: 0,
@@ -151,7 +147,17 @@ function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
   )
 }
 
-function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; game: string }) {
+function HeroName({
+  profile,
+  meta,
+  game,
+  compactAt,
+}: {
+  profile: Profile
+  meta: string[]
+  game: string
+  compactAt: string
+}) {
   const { t } = useLingui()
   const rename = useProfiles((s) => s.rename)
   const [editing, setEditing] = useState(false)
@@ -178,10 +184,10 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
           <>
             {profile.color || profile.icon ? (
               <>
-                <Box sx={{ flexShrink: 0, [compact]: { display: 'none' } }}>
+                <Box sx={{ flexShrink: 0, [compactAt]: { display: 'none' } }}>
                   <ProfileMark profile={profile} size={MARK_SIZE} />
                 </Box>
-                <Box sx={{ display: 'none', flexShrink: 0, [compact]: { display: 'block' } }}>
+                <Box sx={{ display: 'none', flexShrink: 0, [compactAt]: { display: 'block' } }}>
                   <ProfileMark profile={profile} size={MARK_SIZE_COMPACT} />
                 </Box>
               </>
@@ -195,7 +201,7 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
                 lineHeight: NAME_LINE_HEIGHT,
                 color: ON_ART,
                 textShadow: NAME_GLOW,
-                [compact]: {
+                [compactAt]: {
                   fontSize: NAME_FONT_COMPACT_PX,
                   lineHeight: NAME_LINE_COMPACT,
                   color: 'var(--mortar-ink)',
@@ -217,7 +223,7 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
             fontSize: DESC_FONT_PX,
             color: ON_ART_72,
             textShadow: DESC_SHADOW,
-            [compact]: { display: 'none' },
+            [compactAt]: { display: 'none' },
           }}
         >
           {profile.description}
@@ -226,7 +232,7 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
       <Typography
         title={meta.join(' · ')}
         noWrap={true}
-        sx={{ display: 'none', fontSize: META_FONT_PX, [compact]: { display: 'block' } }}
+        sx={{ display: 'none', fontSize: META_FONT_PX, [compactAt]: { display: 'block' } }}
       >
         {meta.join(' · ')}
       </Typography>
@@ -248,7 +254,6 @@ function AttentionCards() {
       label={t`Updates`}
       value={String(updateN)}
       tone="primary"
-      ariaLabel={plural(updateN, { one: 'Review # update', other: 'Review # updates' })}
       onClick={() => {
         setTab('mods')
         setReviewing(true)
@@ -279,6 +284,8 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
     return null
   }
   const forceCompact = hero === 'compact'
+  // The Compact setting applies the narrow-window layout at every width; '&' targets the element itself.
+  const compactAt = forceCompact ? '&' : compact
   return (
     <Box
       sx={{
@@ -287,24 +294,17 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
         flexShrink: 0,
         overflow: 'hidden',
         borderBottom: HERO_COMPACT_BORDER,
-        ...(forceCompact
-          ? {
-              height: HERO_COMPACT_HEIGHT_PX,
-              bgcolor: HERO_COMPACT_BG,
-            }
-          : {
-              [compact]: {
-                height: HERO_COMPACT_HEIGHT_PX,
-                bgcolor: HERO_COMPACT_BG,
-              },
-            }),
+        [compactAt]: {
+          height: HERO_COMPACT_HEIGHT_PX,
+          bgcolor: HERO_COMPACT_BG,
+        },
       }}
     >
       <Box
         sx={{
           position: 'absolute',
           inset: 0,
-          [compact]: { display: 'none' },
+          [compactAt]: { display: 'none' },
         }}
       >
         <HeroCover game={game} profile={profile} />
@@ -319,7 +319,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
           display: 'flex',
           alignItems: 'flex-end',
           gap: 2,
-          [compact]: {
+          [compactAt]: {
             top: 0,
             bottom: 0,
             left: HERO_INSET_COMPACT_PX,
@@ -328,14 +328,13 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
           },
         }}
       >
-        <HeroName profile={profile} meta={meta} game={game} />
-        <Box sx={{ display: 'flex', gap: 1, [compact]: { display: 'none' } }}>
+        <HeroName profile={profile} meta={meta} game={game} compactAt={compactAt} />
+        <Box sx={{ display: 'flex', gap: 1, [compactAt]: { display: 'none' } }}>
           <AttentionCards />
           <Card label={t`Mods`} value={String(mods)} />
           <Card
             label={t`Saves`}
             value={total === 0 ? t`None` : t`${fitting} of ${total}`}
-            ariaLabel={t`Open Saves (${fitting} of ${total})`}
             onClick={() => setTab('saves')}
           />
           <Card label={t`Updated`} value={<When value={profile.updated} />} />
