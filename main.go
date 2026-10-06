@@ -239,6 +239,9 @@ func run() error {
 			return nil
 		}
 	}
+	if forwardLaunch(dataDir, os.Args[1:]) {
+		return nil
+	}
 	updates := &updatesvc.Service{}
 	app := application.New(application.Options{
 		Name:         "Mortar",

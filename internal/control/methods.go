@@ -59,6 +59,10 @@ type InstallAsk struct {
 	Remap   *profile.RemapAsk `json:"remap,omitempty"`
 }
 
+// OpenRequestMethod hands a share link or .mortar file to the running Mortar's import dialog, as a second launch
+// would. A server build has no single-instance lock to carry that launch, so it forwards over this method.
+const OpenRequestMethod = "open.request"
+
 // Services are the running app's services the methods use.
 type Services struct {
 	Version  string
@@ -597,6 +601,15 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		r := shortcut.Request{Game: p.Game, Profile: p.Profile}
 		s.Handoff([]string{shortcut.Arg(r.Game, r.Profile)})
 		return r, nil
+	case OpenRequestMethod:
+		if s.Handoff == nil {
+			return nil, errors.New("open requests are not available")
+		}
+		if p.Path == "" {
+			return nil, errors.New("open needs a share link or .mortar file")
+		}
+		s.Handoff([]string{p.Path})
+		return map[string]string{"path": p.Path}, nil
 	case "status":
 		if p.Install != "" {
 			return s.Launches.StatusInstall(p.Game, p.Install)
