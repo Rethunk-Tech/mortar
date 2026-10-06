@@ -70,6 +70,7 @@ tree_key() {
 }
 
 build() {
+  sandbox_tmp
   # The server embeds frontend/dist, which every sandbox's build rewrites, so concurrent sandboxes build one at a time.
   exec 9>/var/tmp/mortar-selftest-build.lock
   flock 9
@@ -82,10 +83,10 @@ build() {
     echo "building frontend and server-mode binary"
     # A fresh clone has no generated bindings, which the frontend build imports.
     if [ ! -d "$REPO/frontend/bindings" ]; then
-      (cd "$REPO" && GOTMPDIR=/var/tmp wails3 generate bindings -clean=true -ts -i >"$ROOT/bindings.log" 2>&1)
+      (cd "$REPO" && wails3 generate bindings -clean=true -ts -i >"$ROOT/bindings.log" 2>&1)
     fi
     (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
-    (cd "$REPO" && GOTMPDIR=/var/tmp go build -tags server -o "$ROOT/mortar-server.new" .)
+    (cd "$REPO" && go build -tags server -o "$ROOT/mortar-server.new" .)
     # Filed under the key taken before the build: the tree can change while it runs (another worker's edit), and a
     # key taken after would file an older binary under the newer tree.
     rm -rf "$BUILD_CACHE"
@@ -229,9 +230,17 @@ stop_launches() {
   echo "stopped recorded launches: ${live[*]%%:*}"
 }
 
+# Everything the sandbox starts (server, games, Chromium, Go builds) writes its scratch under the sandbox, so a run
+# killed mid-way leaves nothing behind that destroy does not delete. On /var/tmp, like the sandbox, not tmpfs.
+sandbox_tmp() {
+  mkdir -p "$ROOT/tmp"
+  export TMPDIR=$ROOT/tmp GOTMPDIR=$ROOT/tmp
+}
+
 mark() {
   mkdir -p "$ROOT"
   touch "$ROOT/$MARKER"
+  sandbox_tmp
 }
 
 setup() {
@@ -513,6 +522,8 @@ release_sandbox() {
   if [ ${#left[@]} -gt 0 ]; then
     echo "sandbox kept, still running from it: pids ${left[*]} ($ROOT)" >&3
   elif [ "$verdict" = PASS ]; then
+    # A gvfsd-fuse killed with the sandbox leaves its mount dead, and rm cannot cross it.
+    fusermount3 -u -z "$ROOT/run/gvfs" 2>/dev/null || true
     rm -rf "$ROOT"
   else
     echo "sandbox kept for inspection: $ROOT" >&3
