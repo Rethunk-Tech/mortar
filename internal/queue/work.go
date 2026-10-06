@@ -416,12 +416,12 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 	}
 	files = safe
 	if it.FileID != 0 {
-		file = fileByID(files, it.FileID)
+		file = nexus.FileByID(files, it.FileID)
 		if it.Latest {
-			file = newestUpdate(files, file)
+			file = nexus.NewestUpdate(files, file)
 		}
 	} else {
-		file, _ = ChooseFile(files, it.Version, it.Current)
+		file, _ = nexus.ChooseFile(files, it.Version, it.Current)
 	}
 	if file.FileID == 0 {
 		return usererr.New(usererr.NotFound, "no suitable file for this mod is listed on Nexus")

@@ -1,13 +1,11 @@
-package queue
+package nexus
 
 import (
 	"testing"
-
-	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
 
 func TestNewestUpdateFollowsTheChain(t *testing.T) {
-	files := []nexus.File{
+	files := []File{
 		{FileID: 1, Version: "1.0.0", ReplacedBy: 2},
 		{FileID: 2, Version: "1.1.0", ReplacedBy: 3},
 		{FileID: 3, Version: "1.2.0"},
@@ -16,7 +14,7 @@ func TestNewestUpdateFollowsTheChain(t *testing.T) {
 	}
 	cases := map[int]int{1: 3, 2: 3, 3: 3, 9: 9, 5: 5}
 	for from, want := range cases {
-		if got := newestUpdate(files, fileByID(files, from)).FileID; got != want {
+		if got := NewestUpdate(files, FileByID(files, from)).FileID; got != want {
 			t.Errorf("from %d: got %d, want %d", from, got, want)
 		}
 	}

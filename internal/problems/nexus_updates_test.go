@@ -2,6 +2,7 @@ package problems
 
 import (
 	"context"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -159,5 +160,43 @@ func TestGitHubFallbackOnlyWhenTheUpdateIsNotOnGitHub(t *testing.T) {
 	}
 	if got := githubFallback([]string{"Nexus:6304"}, "https://www.nexusmods.com/stardewvalley/mods/6304"); got != "" {
 		t.Fatalf("no GitHub key, got %q", got)
+	}
+}
+
+// Mod 22743's page holds the main file and an optional bundle pack; SMAPI's suggested version is the page's, which
+// is the main file's. The bundle pack's update must download its own newer file, or ask for a pick when it has none.
+func TestCheckUpdatesPicksTheBundlePacksOwnFile(t *testing.T) {
+	const id = "Morghoula.AlchemistryCCCBL.Easy"
+	rm := fakeMeta{compat: map[string]meta.UpdateResult{
+		id: {Known: true, Suggested: &meta.Update{Version: "2.0.2", URL: "https://www.nexusmods.com/stardewvalley/mods/22743"}},
+	}}
+	installed := inst("nexus-22743-178711", id, "2.0.1", true)
+	installed.UpdateKeys = []string{"Nexus:22743"}
+	page := []nexus.BatchFile{
+		{FileID: 175151, Name: "Alchemistry", Version: "2.0.1", Category: "OLD_VERSION"},
+		{FileID: 175656, Name: "Alchemistry", Version: "2.0.2", Category: "MAIN"},
+		{FileID: 175660, Name: "Alchemistry CC Bundles", Version: "2.0.0", Category: "OLD_VERSION"},
+		{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "OPTIONAL"},
+	}
+	check := func(files []nexus.BatchFile) Update {
+		t.Helper()
+		filesOf := func(context.Context, nexus.Title, []int) (map[int][]nexus.BatchFile, error) {
+			return map[int][]nexus.BatchFile{22743: files}, nil
+		}
+		got := checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf)
+		if len(got.Updates) != 1 {
+			t.Fatalf("updates = %+v, want one", got.Updates)
+		}
+		return got.Updates[0]
+	}
+	if u := check(page); u.FileID != 0 || !u.PickFile {
+		t.Errorf("no newer bundle file: got file %d pick %v, want a pick on Nexus", u.FileID, u.PickFile)
+	}
+	newer := slices.Concat(page[:3], []nexus.BatchFile{
+		{FileID: 178711, Name: "Alchemistry CC Bundles", Version: "2.0.1", Category: "OLD_VERSION"},
+		{FileID: 181000, Name: "Alchemistry CC Bundles", Version: "2.0.2", Category: "OPTIONAL"},
+	})
+	if u := check(newer); u.FileID != 181000 || u.PickFile {
+		t.Errorf("newer bundle file: got file %d pick %v, want 181000", u.FileID, u.PickFile)
 	}
 }

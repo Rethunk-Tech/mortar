@@ -29,7 +29,12 @@ const update = (key: string, extra: Partial<Update> = {}) =>
 
 test('a batch of mixed sources is one Add holding only the same-source updates', async () => {
   useProfiles.setState({ game: { id: 'stardew' } as never, openId: 'p1' })
-  const list = [update('a'), update('b', { switch: true }), update('c')]
+  const list = [
+    update('a'),
+    update('b', { switch: true }),
+    update('c'),
+    update('d', { githubRepo: '', nexusId: 22_743, pickFile: true }),
+  ]
   const wants = sameSourceUpdates(list).map(updateWant)
   expect(await updateAll('stardew', 'p1', wants, 1)).toBe(true)
   expect(added).toHaveLength(1)

@@ -20,6 +20,7 @@ const updateSource = (u: Update): Partial<Want> => {
   }
   return {
     modId: u.nexusId,
+    ...(u.fileId ? { fileId: u.fileId } : {}),
     ...(u.githubFallback ? { fallbackRepo: u.githubFallback, fallbackId: u.id } : {}),
   }
 }

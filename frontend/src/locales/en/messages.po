@@ -389,6 +389,10 @@ msgstr "Discard changes?"
 msgid "a new Mortar is ready"
 msgstr "a new Mortar is ready"
 
+#: src/mods/updateReview/Row.tsx:43
+msgid "Pick the file on Nexus: its page has several downloads and none replaces the one you have."
+msgstr "Pick the file on Nexus: its page has several downloads and none replaces the one you have."
+
 #. placeholder {0}: row.name
 #: src/mods/SlowStartupSection.tsx:18
 msgid "{0} adds {time} to startup"
@@ -1993,7 +1997,7 @@ msgstr "{0} (optional file)"
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
-#: src/mods/updateReview/Row.tsx:72
+#: src/mods/updateReview/Row.tsx:77
 msgid "Changes dependencies"
 msgstr "Changes dependencies"
 
@@ -2411,7 +2415,7 @@ msgstr "{gameName} save backups"
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
-#: src/mods/ProblemsTab.tsx:289
+#: src/mods/ProblemsTab.tsx:306
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -2572,8 +2576,8 @@ msgstr "{label} is replaced by the copy in this backup. The current {label} is b
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
-#: src/mods/ProblemsTab.tsx:129
-#: src/mods/ProblemsTab.tsx:326
+#: src/mods/ProblemsTab.tsx:135
+#: src/mods/ProblemsTab.tsx:343
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -3506,7 +3510,7 @@ msgid "Already has {0}"
 msgstr "Already has {0}"
 
 #: src/mods/Sidebar.tsx:401
-#: src/mods/updateReview/Row.tsx:114
+#: src/mods/updateReview/Row.tsx:119
 msgid "Changelog"
 msgstr "Changelog"
 
@@ -3875,7 +3879,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:66
-#: src/mods/ProblemsTab.tsx:330
+#: src/mods/ProblemsTab.tsx:347
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -3968,7 +3972,7 @@ msgstr "Skip every waiting download"
 msgid "{names} seems to cause the crash"
 msgstr "{names} seems to cause the crash"
 
-#: src/mods/ProblemsTab.tsx:243
+#: src/mods/ProblemsTab.tsx:260
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
 
@@ -4353,7 +4357,7 @@ msgstr "Take Nexus links from {0}?"
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
-#: src/mods/ProblemsTab.tsx:244
+#: src/mods/ProblemsTab.tsx:261
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
@@ -4440,7 +4444,7 @@ msgstr " · {name} {0}"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:348
+#: src/mods/ProblemsTab.tsx:365
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -4829,7 +4833,7 @@ msgstr "Read the release notes on GitHub"
 msgid "Opening a {0}:// link, such as Install with Mod Manager, installs the package in Mortar."
 msgstr "Opening a {0}:// link, such as Install with Mod Manager, installs the package in Mortar."
 
-#: src/mods/ProblemsTab.tsx:211
+#: src/mods/ProblemsTab.tsx:217
 msgid "Problem sections"
 msgstr "Problem sections"
 
@@ -5031,8 +5035,8 @@ msgstr "Lavender"
 msgid "Play this profile and SMAPI's log shows here as it runs. Every run is kept."
 msgstr "Play this profile and SMAPI's log shows here as it runs. Every run is kept."
 
-#: src/mods/ProblemsTab.tsx:117
-#: src/mods/ProblemsTab.tsx:339
+#: src/mods/ProblemsTab.tsx:123
+#: src/mods/ProblemsTab.tsx:356
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -5190,7 +5194,7 @@ msgid "{0, plural, one {Tag # mod} other {Tag # mods}}"
 msgstr "{0, plural, one {Tag # mod} other {Tag # mods}}"
 
 #. placeholder {0}: listNames(removed)
-#: src/mods/updateReview/Row.tsx:68
+#: src/mods/updateReview/Row.tsx:73
 msgid "No longer needs {0}"
 msgstr "No longer needs {0}"
 
@@ -5574,8 +5578,8 @@ msgstr "Honour OS"
 msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
-#: src/mods/ProblemsTab.tsx:183
-#: src/mods/ProblemsTab.tsx:245
+#: src/mods/ProblemsTab.tsx:189
+#: src/mods/ProblemsTab.tsx:262
 msgid "Dismiss all"
 msgstr "Dismiss all"
 
@@ -5770,7 +5774,7 @@ msgstr "Share as r2modman code…"
 msgid "Load order"
 msgstr "Load order"
 
-#: src/mods/ProblemsTab.tsx:110
+#: src/mods/ProblemsTab.tsx:116
 msgid "Slow startup"
 msgstr "Slow startup"
 
@@ -5786,7 +5790,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:221
-#: src/mods/updateReview/Row.tsx:193
+#: src/mods/updateReview/Row.tsx:198
 msgid "Open page"
 msgstr "Open page"
 
@@ -6299,7 +6303,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:228
-#: src/mods/ProblemsTab.tsx:280
+#: src/mods/ProblemsTab.tsx:297
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -6733,7 +6737,7 @@ msgid "Show diff"
 msgstr "Show diff"
 
 #. placeholder {0}: update.githubFallback
-#: src/mods/updateReview/Row.tsx:48
+#: src/mods/updateReview/Row.tsx:53
 msgid "From GitHub ({0}) when its release matches, else Nexus"
 msgstr "From GitHub ({0}) when its release matches, else Nexus"
 
@@ -6823,7 +6827,7 @@ msgid "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was adde
 msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was added."
 
 #: src/mods/CompatChip.tsx:23
-#: src/mods/updateReview/Row.tsx:41
+#: src/mods/updateReview/Row.tsx:46
 msgid "Unofficial"
 msgstr "Unofficial"
 
@@ -7653,8 +7657,8 @@ msgid "Main only"
 msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
-#: src/mods/ProblemsTab.tsx:103
-#: src/mods/ProblemsTab.tsx:346
+#: src/mods/ProblemsTab.tsx:109
+#: src/mods/ProblemsTab.tsx:363
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -8520,7 +8524,7 @@ msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:82
-#: src/mods/ProblemsTab.tsx:354
+#: src/mods/ProblemsTab.tsx:371
 #: src/mods/ReportToAuthorButton.tsx:166
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
@@ -8722,7 +8726,7 @@ msgid "{0} not installed yet"
 msgstr "{0} not installed yet"
 
 #: src/console/PerformancePanelParts.tsx:213
-#: src/mods/ProblemsTab.tsx:286
+#: src/mods/ProblemsTab.tsx:303
 #: src/settings/sections/AboutDiagnostics.tsx:221
 msgid "Copy report"
 msgstr "Copy report"
@@ -9036,7 +9040,7 @@ msgid "Handle Nexus download links?"
 msgstr "Handle Nexus download links?"
 
 #. placeholder {0}: update.source
-#: src/mods/updateReview/Row.tsx:44
+#: src/mods/updateReview/Row.tsx:49
 msgid "From {0}, not the site you installed it from. Updating switches its source."
 msgstr "From {0}, not the site you installed it from. Updating switches its source."
 
@@ -9986,7 +9990,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:28
-#: src/mods/ProblemsTab.tsx:370
+#: src/mods/ProblemsTab.tsx:387
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -10577,7 +10581,7 @@ msgstr "Warnings and errors"
 #: src/mods/EnableRequirementsDialog.tsx:55
 #: src/mods/LoadOrderTab.tsx:59
 #: src/mods/LoadOrderTab.tsx:98
-#: src/mods/ProblemsTab.tsx:329
+#: src/mods/ProblemsTab.tsx:346
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -10644,7 +10648,7 @@ msgstr "A preset with this name already exists."
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
-#: src/mods/ProblemsTab.tsx:168
+#: src/mods/ProblemsTab.tsx:174
 #: src/saves/lackChips.tsx:112
 msgid "Add all {0}"
 msgstr "Add all {0}"
@@ -10662,7 +10666,7 @@ msgstr "{gameName} crashed"
 msgid "Stop the game to change SMAPI."
 msgstr "Stop the game to change SMAPI."
 
-#: src/mods/ProblemsTab.tsx:235
+#: src/mods/ProblemsTab.tsx:240
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -10881,7 +10885,7 @@ msgid "Jump to first error"
 msgstr "Jump to first error"
 
 #. placeholder {0}: listNames(added)
-#: src/mods/updateReview/Row.tsx:67
+#: src/mods/updateReview/Row.tsx:72
 msgid "Now needs {0}"
 msgstr "Now needs {0}"
 
@@ -12191,7 +12195,7 @@ msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {wai
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:237
+#: src/mods/ProblemsTab.tsx:242
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 

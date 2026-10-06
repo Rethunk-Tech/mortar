@@ -38,6 +38,11 @@ function useRowNotes(update: Update, profileId: string) {
           t`${plural(optional, { one: '# optional file will be re-applied; check it still fits this version', other: '# optional files will be re-applied; check they still fit this version' })}`,
         ]
       : []),
+    ...(update.pickFile
+      ? [
+          t`Pick the file on Nexus: its page has several downloads and none replaces the one you have.`,
+        ]
+      : []),
     ...(update.unofficial ? [t`Unofficial`] : []),
     ...(update.switch
       ? [

@@ -585,36 +585,6 @@ func TestSignedOutRefusesToQueue(t *testing.T) {
 	}
 }
 
-func TestChooseFile(t *testing.T) {
-	files := []nexus.File{
-		{FileID: 1, Version: "1.0", Category: "MAIN", IsPrimary: true},
-		{FileID: 2, Version: "2.0", Category: "OPTIONAL"},
-		{FileID: 3, Version: "2.0.0", Category: "MAIN"},
-		{FileID: 4, Version: "3.0", Category: "OPTIONAL", IsPrimary: false},
-	}
-	tests := []struct {
-		name    string
-		version string
-		current int
-		want    int
-	}{
-		{"main file at the version, equal by SMAPI's ordering", "2.0", 1, 3},
-		{"never an optional file", "3.0", 1, 1},
-		{"no version falls to the primary", "", 1, 1},
-		{"the profile already uses an optional file", "2.0", 4, 2},
-		{"an optional user still gets main when optional lacks the version", "1.0", 4, 1},
-	}
-	for _, tc := range tests {
-		got, ok := ChooseFile(files, tc.version, tc.current)
-		if !ok || got.FileID != tc.want {
-			t.Errorf("%s: got %d, %v, want %d", tc.name, got.FileID, ok, tc.want)
-		}
-	}
-	if _, ok := ChooseFile([]nexus.File{{FileID: 9, Category: "OPTIONAL"}}, "1.0", 0); ok {
-		t.Error("an optional file was chosen for a profile that has none")
-	}
-}
-
 func TestNexusDownloadOverTheCapFails(t *testing.T) {
 	f := newFixture(t)
 	f.cdn = func(w http.ResponseWriter, _ *http.Request) {

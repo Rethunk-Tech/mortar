@@ -417,7 +417,7 @@ Sections, top down:
 
 Every row's action sits on its right edge. Premium accounts download without clicks. A rate limit shows when downloads resume. A Done row whose GitHub source could not be verified says so. History is the last 1,000 finished items, with **All outcomes** and **All profiles** filters and **Clear history**. A failed download that has a partial file resumes on Retry. Closing the sheet keeps the queue running.
 
-Update review offers **Update** per mod and **Update all**, with **Open page** kept as the secondary action. Mods kept at their version (pinned) never appear in the list or in **Update all**; a collapsed **Kept at this version (N)** group under the list shows each with its installed and newer version and **Unpin**, which re-checks updates.
+Update review offers **Update** per mod and **Update all**, with **Open page** kept as the secondary action. A Nexus update with no file that supersedes the installed one ([architecture.md](architecture.md#nexus-mods), `pickFile`) stays listed without **Update**, noting **Pick the file on Nexus**, with **Open page**; Update all, Update before Play and the run-error **Update** skip it. Mods kept at their version (pinned) never appear in the list or in **Update all**; a collapsed **Kept at this version (N)** group under the list shows each with its installed and newer version and **Unpin**, which re-checks updates.
 
 - Every row also offers **Skip this version** and **Pin**, including updates Mortar cannot download.
 - Unofficial SMAPI versions are labelled unofficial and are never included in **Update all**.

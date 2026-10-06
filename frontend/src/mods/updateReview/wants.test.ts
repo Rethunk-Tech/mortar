@@ -40,3 +40,7 @@ test('a Modrinth update asks that site for the exact version it found', () => {
   } as Update
   expect(updateWant(u)).toMatchObject({ package: 'AANobbMI', source: 'modrinth', version: 'v2id' })
 })
+
+test('a Nexus update downloads the file that supersedes the installed one', () => {
+  expect(updateWant({ ...update, fileId: 181_000 }).fileId).toBe(181_000)
+})

@@ -71,6 +71,11 @@ type Update struct {
 	// when the source's listing carries both versions' dependencies.
 	AddedDeps   []string `json:"addedDeps,omitempty"`
 	RemovedDeps []string `json:"removedDeps,omitempty"`
+	// FileID is the Nexus file the update downloads, the one that supersedes the installed file. PickFile is set
+	// instead when Nexus lists the installed file but none supersedes it: a page of several downloads has no single
+	// "latest file", so the user picks it on Nexus.
+	FileID   int  `json:"fileId,omitempty"`
+	PickFile bool `json:"pickFile,omitempty"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,
@@ -159,13 +164,17 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 		}
 		x := asked[i]
 		if res.Suggested != nil {
-			r.Updates = append(r.Updates, Update{
+			u := Update{
 				Key: x.Key, ID: x.ModID(), Name: x.Name,
 				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
 				NexusID: nexusUpdate(x.UpdateKeys, res.Suggested.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
 				GitHubFallback: cmp.Or(githubFallback(x.UpdateKeys, res.Suggested.URL), metadataFallback(res.GitHubRepo, res.Suggested.URL)),
 				Source:         updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
-			})
+			}
+			if files, ok := live[u.NexusID]; ok && u.GitHubRepo == "" {
+				u.FileID, u.PickFile = supersedingFile(files, x, u.NexusID, u.Version)
+			}
+			r.Updates = append(r.Updates, u)
 		}
 		if res.Unofficial != nil {
 			r.Updates = append(r.Updates, Update{
@@ -523,6 +532,28 @@ func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, as
 		return nil
 	}
 	return files
+}
+
+// supersedingFile is the live file an update of x's Nexus file downloads (nexus.Supersedes). pick is set when the
+// list has the installed file but nothing supersedes it; both are zero when the installed file is not listed, which
+// leaves the choice to the queue.
+func supersedingFile(files []nexus.BatchFile, x framework.Mod, modID int, version string) (fileID int, pick bool) {
+	keyModID, have, ok := store.NexusFile(x.Key)
+	if !ok || keyModID != modID {
+		return 0, false
+	}
+	list := make([]nexus.File, len(files))
+	for i, f := range files {
+		list[i] = nexus.File{FileID: f.FileID, Name: f.Name, Version: f.Version, Category: f.Category}
+	}
+	installed := nexus.FileByID(list, have)
+	if installed.FileID == 0 {
+		return 0, false
+	}
+	if f, ok := nexus.Supersedes(list, installed, version, x.SourceCategory); ok {
+		return f.FileID, false
+	}
+	return 0, true
 }
 
 // liveFileIsCurrent says whether the installed Nexus file is still the newest in its group (same display name) and
