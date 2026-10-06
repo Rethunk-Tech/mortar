@@ -199,7 +199,9 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 	f := newFake(t)
 	f.chunk1 = append(f.chunk1, listing("Fay", "Legacy", "Deprecated: use Alice-MoreCompany instead", 5, true, false),
 		listing("Alice", "MoreCompanyOld", "[Deprecated, use MoreCompany instead!]", 5, true, false),
-		listing("Gus", "Horn", "Airhorn is replaced with MoreCompany", 5, true, false))
+		listing("Gus", "Horn", "Airhorn is replaced with MoreCompany", 5, true, false),
+		listing("Hal", "Warn", "[DEPRECATED] Please use https://thunderstore.io/c/lethal-company/p/Alice/MoreCompany/ instead!", 5, true, false),
+		listing("Alice", "MoreCompanyFix", "[V69]Replace with MoreCompany -> (see its page)", 5, true, false))
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	got, err := d.Deprecated(t.Context(), "lethal-company", "1.2.3")
 	if err != nil {
@@ -214,7 +216,10 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 	if got["gus-horn"].Replacement != "" {
 		t.Fatalf("a bare name of another author's package is not: %+v", got)
 	}
-	if got["fay-legacy"].Replacement != "Alice-MoreCompany" || len(got) != 4 {
+	if got["hal-warn"].Replacement != "Alice-MoreCompany" || got["alice-morecompanyfix"].Replacement != "Alice-MoreCompany" {
+		t.Fatalf("a package page link and \"Replace with\" name the replacement: %+v", got)
+	}
+	if got["fay-legacy"].Replacement != "Alice-MoreCompany" || len(got) != 6 {
 		t.Fatalf("got %+v", got)
 	}
 }

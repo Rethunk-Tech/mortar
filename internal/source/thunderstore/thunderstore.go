@@ -147,7 +147,11 @@ type Deprecation struct {
 	Replacement string
 }
 
-var replaceHint = regexp.MustCompile(`(?i)\b(deprecated|replaced|superseded|obsolete|moved|use)\b`)
+var (
+	replaceHint = regexp.MustCompile(`(?i)\b(deprecated|replace|replaced|superseded|obsolete|moved|use)\b`)
+	// packageURL is a link to a package's page, the way authors most often name the successor.
+	packageURL = regexp.MustCompile(`(?i)https?://thunderstore\.io(?:/c/[^/\s]+)?/(?:p|package)/([^/\s]+)/([^/\s?#]+)/?`)
+)
 
 // Deprecated lists the community's deprecated packages by lower-cased "Namespace-Name", from the cached index.
 func (d Driver) Deprecated(ctx context.Context, key, version string) (map[string]Deprecation, error) {
@@ -169,7 +173,8 @@ func (d Driver) Deprecated(ctx context.Context, key, version string) (map[string
 		self := strings.ToLower(p.Owner + "-" + p.Name)
 		dep := Deprecation{}
 		if replaceHint.MatchString(p.Summary) {
-			toks := strings.FieldsFunc(p.Summary, func(r rune) bool { return strings.ContainsRune(" \t\n,;:()[]\"'", r) })
+			summary := packageURL.ReplaceAllString(p.Summary, " $1-$2 ")
+			toks := strings.FieldsFunc(summary, func(r rune) bool { return strings.ContainsRune(" \t\n,;:()[]\"'", r) })
 			// Authors mostly name the successor bare ("use WeatherInjector instead"); a bare name is only trusted
 			// among the author's own packages, since across the whole index it matches common words.
 			for _, prefix := range []string{"", strings.ToLower(p.Owner) + "-"} {
