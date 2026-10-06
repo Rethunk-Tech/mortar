@@ -116,20 +116,27 @@ tasks:
         nfpm package --config build/linux/nfpm/nfpm.yaml --packager archlinux --target "bin/mortar-${VERSION}-1-${pkg_arch}.pkg.tar.zst"
         cp -a "{{.BIN_DIR}}/mortar-packaged" "{{.BIN_DIR}}/mortar-aur-linux-${bin_arch}"
 
+  flatpak:arm64:
+    summary: Builds bin/mortar-linux-aarch64.flatpak on x86_64 (cross build + qemu binfmt in a user namespace, no root)
+    cmds:
+      - bash build/linux/flatpak/build-aarch64.sh
+
   flatpak:
     summary: Builds a single-file Flatpak bundle (self-updater off)
     deps:
       - task: build
         vars:
+          ARCH: '{{.ARCH}}'
           PACKAGED: flatpak
           OUTPUT: '{{.BIN_DIR}}/mortar-packaged'
     cmds:
       - |
         set -euo pipefail
-        dest="${PWD}/bin/mortar-linux-x86_64.flatpak"
+        arch={{if eq (.ARCH | default ARCH) "arm64"}}aarch64{{else}}x86_64{{end}}
+        dest="${PWD}/bin/mortar-linux-${arch}.flatpak"
         mkdir -p bin
-        flatpak-builder --user --force-clean --install-deps-from=flathub --repo=/var/tmp/mortar-flatpak-repo /var/tmp/mortar-flatpak-build build/linux/flatpak/tech.rethunk.Mortar.yml
-        flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo /var/tmp/mortar-flatpak-repo "$dest" tech.rethunk.Mortar
+        flatpak-builder --arch="$arch" --user --force-clean --state-dir="/var/tmp/mortar-flatpak-state-${arch}" --install-deps-from=flathub --repo=/var/tmp/mortar-flatpak-repo "/var/tmp/mortar-flatpak-build-${arch}" build/linux/flatpak/tech.rethunk.Mortar.yml
+        flatpak build-bundle --arch="$arch" --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo /var/tmp/mortar-flatpak-repo "$dest" tech.rethunk.Mortar
 
   run:
     cmds:

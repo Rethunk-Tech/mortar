@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Cross-compile linux/arm64 against an Ubuntu 24.04 arm64 sysroot extracted from
 # .deb files. The debs are fetched in an amd64 container (no binfmt, no sudo).
+# Arguments name the wails3 task to run under the cross environment; the default
+# builds the nfpm packages. Every such task leaves its binary in bin/mortar-packaged.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -102,13 +104,16 @@ if [[ ! -f "$root/frontend/dist/index.html" ]]; then
 fi
 
 cd "$root"
-# The packaged build, nfpm packages and bin/mortar-aur-linux-arm64 come from the same task the native build uses;
-# the exported CC/CGO env above makes it cross-compile.
-wails3 task linux:nfpm ARCH=arm64 NFPM_ARCH=arm64
+# The packaged build comes from the same task the native build uses; the exported CC/CGO env above makes it
+# cross-compile.
+if [[ $# -eq 0 ]]; then
+  set -- linux:nfpm ARCH=arm64 NFPM_ARCH=arm64
+fi
+wails3 task "$@"
 
-file bin/mortar-aur-linux-arm64
-# No --version flag; the dynamic linker exiting after a load trace is the non-GUI smoke.
-qemu-aarch64 -L "$sysroot" -E LD_TRACE_LOADED_OBJECTS=1 ./bin/mortar-aur-linux-arm64
+file bin/mortar-packaged
+# The dynamic linker exiting after a load trace is the non-GUI smoke.
+qemu-aarch64 -L "$sysroot" -E LD_TRACE_LOADED_OBJECTS=1 ./bin/mortar-packaged
 
 missing=0
 while read -r lib; do
@@ -123,7 +128,7 @@ while read -r lib; do
         ;;
     esac
   fi
-done < <(readelf -d bin/mortar-aur-linux-arm64 | sed -n 's/.*NEEDED.*\[\(.*\)\]/\1/p')
+done < <(readelf -d bin/mortar-packaged | sed -n 's/.*NEEDED.*\[\(.*\)\]/\1/p')
 if [[ "$missing" -ne 0 ]]; then
   exit 1
 fi
