@@ -234,7 +234,13 @@ export function UsageRows({
         {games === null ? (
           <SizeRow label={t`Measuring…`} size={null} />
         ) : (
-          games.map((g) => <SizeRow key={g.game} label={g.name || g.game} size={g.size} />)
+          games.map((g) => (
+            <SizeRow
+              key={g.game}
+              label={g.game === '' ? t`Shared by every game` : g.name || g.game}
+              size={g.size}
+            />
+          ))
         )}
       </SettingsSection>
     </>

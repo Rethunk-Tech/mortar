@@ -69,6 +69,8 @@ func TestMeasureGameTotals(t *testing.T) {
 	write("profiles/beta/p1/profile.json", 2)
 	write("profiles/beta/p1/mods/b.bin", 50)
 	write("store/beta/k/m.bin", 10)
+	write("store/blobs/ab/cd.bin", 40)
+	write("store/loaders/bepinex5-1/x.bin", 9)
 	write("backups/beta/s.zip", 7)
 	write("cache/beta/c.bin", 6)
 	write("cache/nexus/beta/n.json", 1)
@@ -84,6 +86,9 @@ func TestMeasureGameTotals(t *testing.T) {
 	for _, g := range got.Games {
 		byGame[g.Game] = g.Size
 		want := g.Game
+		if g.Game == "" {
+			continue
+		}
 		if g.Game == "stardew" {
 			want = "Stardew Valley"
 		}
@@ -106,7 +111,15 @@ func TestMeasureGameTotals(t *testing.T) {
 	if _, ok := byGame["one.zip"]; ok {
 		t.Fatalf("loose backup counted as a game: %+v", got.Games)
 	}
-	if len(byGame) != 3 {
+	if byGame[""] < 40+9 {
+		t.Fatalf("shared store folders = %d games=%+v", byGame[""], got.Games)
+	}
+	for _, internal := range []string{"blobs", "loaders"} {
+		if _, ok := byGame[internal]; ok {
+			t.Fatalf("store folder %s listed as a game: %+v", internal, got.Games)
+		}
+	}
+	if len(byGame) != 4 {
 		t.Fatalf("games = %+v", got.Games)
 	}
 }

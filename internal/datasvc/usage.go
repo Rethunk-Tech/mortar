@@ -219,12 +219,25 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 			}
 		}
 	}
+	hasProfiles := map[string]bool{}
+	for _, d := range dirs {
+		hasProfiles[d.Game] = true
+	}
+	// Store folders that are not a game (the shared blob store, loader installers) are one row with an empty Game,
+	// so they are counted without being listed as games.
+	var shared int64
 	for id, n := range sizes {
 		name := id
 		if g := game.Find(id); g != nil {
 			name = g.Name()
+		} else if !hasProfiles[id] {
+			shared += n
+			continue
 		}
 		u.Games = append(u.Games, GameUsage{Game: id, Name: name, Size: n})
+	}
+	if shared > 0 {
+		u.Games = append(u.Games, GameUsage{Size: shared})
 	}
 	return u, nil
 }

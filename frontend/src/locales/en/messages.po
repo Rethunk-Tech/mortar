@@ -20,7 +20,7 @@ msgid "Allow shows Nexus pages what Mortar has. Off hides that; download links s
 msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive"
 
 #: src/console/PerformancePanelParts.tsx:177
-#: src/game/ProfileWorkspace.tsx:114
+#: src/game/ProfileWorkspace.tsx:108
 msgid "Performance"
 msgstr "Performance"
 
@@ -207,7 +207,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
-#: src/game/Hero.tsx:332
+#: src/game/Hero.tsx:333
 #: src/mods/Sidebar.tsx:151
 msgid "Updated"
 msgstr "Updated"
@@ -438,7 +438,7 @@ msgstr "{0} has damaged files."
 msgid "Deleted a profile"
 msgstr "Deleted a profile"
 
-#: src/profiles/CompareBulkBody.tsx:194
+#: src/profiles/CompareBulkBody.tsx:195
 msgid "No user mods in either profile."
 msgstr "No user mods in either profile."
 
@@ -473,7 +473,7 @@ msgstr "Density"
 msgid "Mod store"
 msgstr "Mod store"
 
-#: src/settings/sections/DataStoreReport.tsx:299
+#: src/settings/sections/DataStoreReport.tsx:300
 msgid "Older copies of the same mod"
 msgstr "Older copies of the same mod"
 
@@ -546,7 +546,7 @@ msgstr "Never for this mod"
 msgid "Search settings"
 msgstr "Search settings"
 
-#: src/game/ProfileWorkspace.tsx:112
+#: src/game/ProfileWorkspace.tsx:106
 msgid "Notes"
 msgstr "Notes"
 
@@ -650,6 +650,11 @@ msgstr "Needs your input"
 #: src/mods/columnLabel.ts:16
 msgid "Updated on Nexus"
 msgstr "Updated on Nexus"
+
+#. placeholder {0}: formatWhen(state.lastFail)
+#: src/settings/sections/Sources.tsx:37
+msgid "No answer {0}: {error}"
+msgstr "No answer {0}: {error}"
 
 #: src/console/CrashDialog.tsx:293
 #: src/mods/problemFix/AssetFix.tsx:99
@@ -832,7 +837,7 @@ msgid "{0} was last played with {1}"
 msgstr "{0} was last played with {1}"
 
 #. placeholder {0}: rows.length
-#: src/profiles/CompareBulkBody.tsx:32
+#: src/profiles/CompareBulkBody.tsx:33
 msgid "Identical ({0})"
 msgstr "Identical ({0})"
 
@@ -910,7 +915,7 @@ msgstr "gone"
 #: src/console/SearchRunsDialog.tsx:131
 #: src/mods/ConflictWhy.tsx:104
 #: src/nxm/ArrivalDialog.tsx:111
-#: src/profiles/CompareBulkBody.tsx:39
+#: src/profiles/CompareBulkBody.tsx:40
 #: src/saves/BackupsDialog.tsx:68
 msgid "{0} · {1}"
 msgstr "{0} · {1}"
@@ -1010,7 +1015,7 @@ msgstr "Find a mod in all profiles"
 msgid "Mortar does not manage mods for that game."
 msgstr "Mortar does not manage mods for that game."
 
-#: src/settings/sections/SourceOrder.tsx:64
+#: src/settings/sections/SourceOrder.tsx:66
 msgid "Move down"
 msgstr "Move down"
 
@@ -1636,7 +1641,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/queue/store.ts:163
 #: src/saves/BackupsDialog.tsx:137
 #: src/saves/SavesTab.tsx:37
-#: src/settings/sections/DataStoreReport.tsx:389
+#: src/settings/sections/DataStoreReport.tsx:390
 #: src/settings/sections/Storage.tsx:79
 #: src/settings/sections/Updates.tsx:38
 #: src/shell/ErrorBoundary.tsx:25
@@ -1652,11 +1657,11 @@ msgid "Copper"
 msgstr "Copper"
 
 #. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx:77
+#: src/firstrun/FindStep.tsx:78
 msgid "found, without {0}"
 msgstr "found, without {0}"
 
-#: src/settings/sections/DataUsage.tsx:265
+#: src/settings/sections/DataUsage.tsx:271
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
@@ -1867,7 +1872,7 @@ msgstr "Launch presets"
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
-#: src/profiles/CompareBulkBody.tsx:26
+#: src/profiles/CompareBulkBody.tsx:27
 msgid "Identical mods"
 msgstr "Identical mods"
 
@@ -2019,7 +2024,7 @@ msgid "Replaced {mods} in {profileName}"
 msgstr "Replaced {mods} in {profileName}"
 
 #. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx:79
+#: src/firstrun/FindStep.tsx:80
 msgid "has {0}"
 msgstr "has {0}"
 
@@ -2050,7 +2055,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:335
 #: src/mods/Toolbar.tsx:361
 #: src/mods/Toolbar.tsx:379
-#: src/profiles/CompareBulkBody.tsx:58
+#: src/profiles/CompareBulkBody.tsx:59
 msgid "Filter mods"
 msgstr "Filter mods"
 
@@ -2201,8 +2206,8 @@ msgstr "Dependency cycle"
 #: src/commandPalette/paletteLabels.ts:17
 #: src/firstrun/ProfileStep.tsx:136
 #: src/game/NewProfileDialog.tsx:207
-#: src/game/Sidebar.tsx:376
-#: src/game/Sidebar.tsx:394
+#: src/game/Sidebar.tsx:377
+#: src/game/Sidebar.tsx:395
 #: src/nxm/ArrivalDialog.tsx:164
 #: src/share/ImportFooter.tsx:34
 msgid "New profile"
@@ -2226,7 +2231,7 @@ msgstr "Try a different search."
 msgid "Not signed in"
 msgstr "Not signed in"
 
-#: src/firstrun/FindStep.tsx:163
+#: src/firstrun/FindStep.tsx:164
 #: src/firstrun/GameSetup.tsx:158
 #: src/settings/sections/GameSettings.tsx:181
 #: src/settings/sections/GameSettings.tsx:183
@@ -2416,7 +2421,7 @@ msgstr "{gameName} save backups"
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
-#: src/mods/ProblemsTab.tsx:306
+#: src/mods/ProblemsTab.tsx:311
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -2560,7 +2565,7 @@ msgstr "Create another profile to compare it with this one."
 msgid "Start Mortar when you sign in to this computer"
 msgstr "Start Mortar when you sign in to this computer"
 
-#: src/settings/sections/DataStoreReport.tsx:292
+#: src/settings/sections/DataStoreReport.tsx:293
 msgid "Mods no profile uses"
 msgstr "Mods no profile uses"
 
@@ -2582,7 +2587,7 @@ msgid "No enabled mods"
 msgstr "No enabled mods"
 
 #: src/mods/ProblemsTab.tsx:135
-#: src/mods/ProblemsTab.tsx:343
+#: src/mods/ProblemsTab.tsx:348
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -2726,7 +2731,7 @@ msgstr "New profile from link"
 #: src/mods/Sidebar.tsx:314
 #: src/mods/Sidebar.tsx:327
 #: src/mods/Toolbar.tsx:57
-#: src/profiles/CompareBulkBody.tsx:118
+#: src/profiles/CompareBulkBody.tsx:119
 #: src/profiles/overrideValue.ts:86
 #: src/profiles/PackImportDialog.tsx:106
 #: src/profiles/ProfilesPage.tsx:272
@@ -2757,7 +2762,7 @@ msgid "Import {count} changes"
 msgstr "Import {count} changes"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:419
+#: src/settings/sections/DataStoreReport.tsx:420
 msgid "This frees {0}. Deleted mods download again if a profile needs them later."
 msgstr "This frees {0}. Deleted mods download again if a profile needs them later."
 
@@ -2869,7 +2874,7 @@ msgstr "Connected from {0}, last seen "
 msgid "Search all runs…"
 msgstr "Search all runs…"
 
-#: src/firstrun/FindStep.tsx:202
+#: src/firstrun/FindStep.tsx:203
 #: src/install/NeedsRootCallout.tsx:22
 #: src/settings/sections/GameSettings.tsx:371
 #: src/tools/ToolEditorDialog.tsx:112
@@ -2937,13 +2942,17 @@ msgstr "Keep my changes"
 msgid "Unpinned selected mods"
 msgstr "Unpinned selected mods"
 
-#: src/game/ProfileWorkspace.tsx:77
+#: src/game/ProfileWorkspace.tsx:71
 msgid "Profile sections"
 msgstr "Profile sections"
 
 #: src/profiles/GameSettings.tsx:321
 msgid "Fullscreen resolution height"
 msgstr "Fullscreen resolution height"
+
+#: src/settings/sections/DataUsage.tsx:240
+msgid "Shared by every game"
+msgstr "Shared by every game"
 
 #: src/console/HelpDialog.tsx:206
 #: src/mods/ReportToAuthorButton.tsx:211
@@ -3079,7 +3088,7 @@ msgstr "Not downloadable here"
 msgid "API key set for {itch}"
 msgstr "API key set for {itch}"
 
-#: src/settings/sections/DataStoreReport.tsx:300
+#: src/settings/sections/DataStoreReport.tsx:301
 msgid "a newer copy is kept"
 msgstr "a newer copy is kept"
 
@@ -3095,8 +3104,8 @@ msgstr "{name} is marked abandoned and may no longer be maintained."
 msgid "Send nearby…"
 msgstr "Send nearby…"
 
-#: src/profiles/CompareBulkBody.tsx:137
-#: src/profiles/CompareBulkBody.tsx:146
+#: src/profiles/CompareBulkBody.tsx:138
+#: src/profiles/CompareBulkBody.tsx:147
 #: src/share/CompareSummary.tsx:23
 msgid "Only in {name}"
 msgstr "Only in {name}"
@@ -3207,7 +3216,7 @@ msgstr "Check store files"
 msgid "Imported {0}: {1}"
 msgstr "Imported {0}: {1}"
 
-#: src/firstrun/FindStep.tsx:120
+#: src/firstrun/FindStep.tsx:121
 #: src/settings/sections/GameSettings.tsx:177
 msgid "Found in {path}"
 msgstr "Found in {path}"
@@ -3289,7 +3298,7 @@ msgstr "Grid card size"
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
-#: src/game/ProfileWorkspace.tsx:113
+#: src/game/ProfileWorkspace.tsx:107
 #: src/settings/GameSettingsPage.tsx:66
 #: src/settings/GameSettingsPage.tsx:128
 msgid "Console"
@@ -3410,8 +3419,8 @@ msgstr "Custom categories"
 #: src/saves/SaveBackupsSection.tsx:70
 #: src/saves/SaveBackupsSection.tsx:140
 #: src/settings/prefCopy.ts:252
-#: src/settings/sections/DataStoreReport.tsx:413
-#: src/settings/sections/DataStoreReport.tsx:420
+#: src/settings/sections/DataStoreReport.tsx:414
+#: src/settings/sections/DataStoreReport.tsx:421
 #: src/templates/TemplateDialogs.tsx:116
 #: src/templates/TemplateDialogs.tsx:207
 msgid "Delete"
@@ -3553,7 +3562,7 @@ msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On 
 msgid "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 msgstr "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 
-#: src/game/Sidebar.tsx:193
+#: src/game/Sidebar.tsx:194
 msgid "Resize sidebar"
 msgstr "Resize sidebar"
 
@@ -3565,7 +3574,7 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 msgid "Search archives"
 msgstr "Search archives"
 
-#: src/game/Hero.tsx:333
+#: src/game/Hero.tsx:334
 msgid "Created"
 msgstr "Created"
 
@@ -3811,10 +3820,6 @@ msgstr "Choose a {0} folder"
 msgid "time in its patches {ms}"
 msgstr "time in its patches {ms}"
 
-#: src/saves/SavesTab.tsx:46
-msgid "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
-msgstr "Play this profile and start a farm. Each save shows here with how well it fits {name}, so you know which mods it needs."
-
 #: src/game/FarmMenuItem.tsx:49
 msgid "List copied"
 msgstr "List copied"
@@ -3902,7 +3907,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:66
-#: src/mods/ProblemsTab.tsx:347
+#: src/mods/ProblemsTab.tsx:352
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -3912,7 +3917,7 @@ msgid "In progress ({0})"
 msgstr "In progress ({0})"
 
 #. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx:130
+#: src/firstrun/FindStep.tsx:131
 msgid "Choose your {0} folder"
 msgstr "Choose your {0} folder"
 
@@ -4113,7 +4118,7 @@ msgid "Get the extension"
 msgstr "Get the extension"
 
 #: src/bundles/BundlesSection.tsx:110
-#: src/game/Hero.tsx:328
+#: src/game/Hero.tsx:329
 #: src/mods/ModDependencyTree.tsx:159
 #: src/mods/Toolbar.tsx:193
 #: src/settings/prefCopy.ts:122
@@ -4178,7 +4183,7 @@ msgstr "Apply a template…"
 msgid "Wheat"
 msgstr "Wheat"
 
-#: src/firstrun/FindStep.tsx:120
+#: src/firstrun/FindStep.tsx:121
 msgid "Folder chosen by you"
 msgstr "Folder chosen by you"
 
@@ -4293,7 +4298,7 @@ msgstr "Edit"
 
 #. placeholder {0}: picked.size
 #. placeholder {1}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:404
+#: src/settings/sections/DataStoreReport.tsx:405
 msgid "{0} selected · {1}"
 msgstr "{0} selected · {1}"
 
@@ -4339,7 +4344,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/LoaderRow.tsx:52
 #: src/settings/sections/ModsProfiles.tsx:21
 #: src/settings/sections/Notifications.tsx:35
-#: src/settings/sections/SourceOrder.tsx:45
+#: src/settings/sections/SourceOrder.tsx:46
 #: src/settings/sections/StreamOverlay.tsx:408
 #: src/settings/sections/SyncFolder.tsx:15
 #: src/settings/sections/SyncFolder.tsx:36
@@ -4356,7 +4361,7 @@ msgid "Browse mods"
 msgstr "Browse mods"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:374
+#: src/settings/sections/DataStoreReport.tsx:375
 msgid "Freed {0}"
 msgstr "Freed {0}"
 
@@ -4429,7 +4434,7 @@ msgstr "Main mod's folder"
 msgid "Code"
 msgstr "Code"
 
-#: src/settings/sections/DataUsage.tsx:276
+#: src/settings/sections/DataUsage.tsx:282
 msgid "A portable copy keeps its data beside the program."
 msgstr "A portable copy keeps its data beside the program."
 
@@ -4469,7 +4474,7 @@ msgstr " · {name} {0}"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:365
+#: src/mods/ProblemsTab.tsx:370
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -4998,7 +5003,7 @@ msgstr "{gameName} closed with errors"
 msgid "Remove duplicate"
 msgstr "Remove duplicate"
 
-#: src/profiles/CompareBulkBody.tsx:196
+#: src/profiles/CompareBulkBody.tsx:197
 msgid "These profiles have no user mods to compare."
 msgstr "These profiles have no user mods to compare."
 
@@ -5061,7 +5066,7 @@ msgid "Lavender"
 msgstr "Lavender"
 
 #: src/mods/ProblemsTab.tsx:123
-#: src/mods/ProblemsTab.tsx:356
+#: src/mods/ProblemsTab.tsx:361
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -5116,10 +5121,6 @@ msgstr "Updated from {0}"
 #: src/commandPalette/paletteLabels.ts:22
 msgid "Open mod"
 msgstr "Open mod"
-
-#: src/mods/problemText.ts:34
-msgid "Failed to load"
-msgstr "Failed to load"
 
 #: src/browse/browseConstants.ts:38
 #: src/mods/ModMenu.tsx:138
@@ -5204,7 +5205,7 @@ msgstr "Could not dismiss those folders"
 msgid "The title screen's intro animation (Mortar skips it on measured launches)"
 msgstr "The title screen's intro animation (Mortar skips it on measured launches)"
 
-#: src/settings/sections/DataUsage.tsx:261
+#: src/settings/sections/DataUsage.tsx:267
 msgid "Portable copy: data is kept in {portableDir}"
 msgstr "Portable copy: data is kept in {portableDir}"
 
@@ -5463,7 +5464,7 @@ msgstr "When you enable a mod, also enable its required mods already in the prof
 msgid "Show slowest mods"
 msgstr "Show slowest mods"
 
-#: src/profiles/CompareBulkBody.tsx:163
+#: src/profiles/CompareBulkBody.tsx:164
 msgid "Different enabled state"
 msgstr "Different enabled state"
 
@@ -5648,7 +5649,7 @@ msgstr "Could not delete the bundle"
 msgid "In Mortar"
 msgstr "In Mortar"
 
-#: src/game/ProfileWorkspace.tsx:146
+#: src/game/ProfileWorkspace.tsx:140
 #: src/settings/GameSettingsPage.tsx:147
 msgid "{name} settings"
 msgstr "{name} settings"
@@ -5790,7 +5791,7 @@ msgstr "Console command"
 msgid "Share as r2modman code…"
 msgstr "Share as r2modman code…"
 
-#: src/game/ProfileWorkspace.tsx:110
+#: src/game/ProfileWorkspace.tsx:104
 msgid "Load order"
 msgstr "Load order"
 
@@ -5902,7 +5903,7 @@ msgstr "Mortar started with default settings. The damaged file was kept at {path
 msgid "Mod config"
 msgstr "Mod config"
 
-#: src/firstrun/FindStep.tsx:210
+#: src/firstrun/FindStep.tsx:211
 #: src/launchers/LauncherList.tsx:175
 msgid "Rescan"
 msgstr "Rescan"
@@ -6304,8 +6305,8 @@ msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:54
 #: src/firstrunTour/TourPopover.tsx:50
-#: src/game/Hero.tsx:325
-#: src/game/ProfileWorkspace.tsx:93
+#: src/game/Hero.tsx:326
+#: src/game/ProfileWorkspace.tsx:87
 #: src/mods/ModListVirtual.tsx:276
 #: src/settings/GameSettingsPage.tsx:63
 #: src/settings/GameSettingsPage.tsx:102
@@ -6314,7 +6315,7 @@ msgid "Mods"
 msgstr "Mods"
 
 #. placeholder {0}: g.items.length
-#: src/settings/sections/DataStoreReport.tsx:311
+#: src/settings/sections/DataStoreReport.tsx:312
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr "{0, plural, one {# file} other {# files}}"
 
@@ -6332,7 +6333,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:228
-#: src/mods/ProblemsTab.tsx:297
+#: src/mods/ProblemsTab.tsx:300
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -6377,7 +6378,7 @@ msgstr "Reason (optional)"
 msgid "Slowest mods"
 msgstr "Slowest mods"
 
-#: src/settings/sections/DataStoreReport.tsx:387
+#: src/settings/sections/DataStoreReport.tsx:388
 msgid "Could not load what can be cleaned up"
 msgstr "Could not load what can be cleaned up"
 
@@ -6740,7 +6741,7 @@ msgstr "No account"
 msgid "{0} · {1} unique"
 msgstr "{0} · {1} unique"
 
-#: src/firstrun/FindStep.tsx:75
+#: src/firstrun/FindStep.tsx:76
 #: src/launchers/LauncherList.tsx:104
 #: src/launchers/LauncherList.tsx:134
 #: src/launchers/LauncherList.tsx:154
@@ -6948,7 +6949,7 @@ msgstr "Notification history"
 msgid "Where the time goes"
 msgstr "Where the time goes"
 
-#: src/game/Hero.tsx:329
+#: src/game/Hero.tsx:330
 msgid "Open Saves ({fitting} of {total})"
 msgstr "Open Saves ({fitting} of {total})"
 
@@ -7665,7 +7666,7 @@ msgstr "Switch to Load order"
 msgid "Close config editor"
 msgstr "Close config editor"
 
-#: src/settings/sections/DataStoreReport.tsx:280
+#: src/settings/sections/DataStoreReport.tsx:281
 msgid "Nothing to clean up."
 msgstr "Nothing to clean up."
 
@@ -7711,7 +7712,7 @@ msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
 #: src/mods/ProblemsTab.tsx:109
-#: src/mods/ProblemsTab.tsx:363
+#: src/mods/ProblemsTab.tsx:368
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -8067,7 +8068,7 @@ msgid "Bundle added"
 msgstr "Bundle added"
 
 #: src/firstrunTour/TourPopover.tsx:38
-#: src/game/ProfileWorkspace.tsx:92
+#: src/game/ProfileWorkspace.tsx:86
 msgid "Browse"
 msgstr "Browse"
 
@@ -8321,7 +8322,7 @@ msgid "{0} failed"
 msgstr "{0} failed"
 
 #: src/firstrunTour/TourPopover.tsx:62
-#: src/game/ProfileWorkspace.tsx:99
+#: src/game/ProfileWorkspace.tsx:93
 #: src/mods/ModCards.tsx:446
 #: src/mods/ModList.tsx:369
 msgid "Problems"
@@ -8570,10 +8571,10 @@ msgstr "Stopped asking about {folder}"
 
 #. placeholder {0}: row.name
 #. placeholder {1}: row.a.version
-#. placeholder {2}: row.a.source.kind
+#. placeholder {2}: sourceLabel(row.a.source.kind)
 #. placeholder {3}: row.b.version
-#. placeholder {4}: row.b.source.kind
-#: src/profiles/CompareBulkBody.tsx:181
+#. placeholder {4}: sourceLabel(row.b.source.kind)
+#: src/profiles/CompareBulkBody.tsx:182
 msgid "{0}: {1} from {2} → {3} from {4}"
 msgstr "{0}: {1} from {2} → {3} from {4}"
 
@@ -8591,7 +8592,7 @@ msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:82
-#: src/mods/ProblemsTab.tsx:371
+#: src/mods/ProblemsTab.tsx:376
 #: src/mods/ReportToAuthorButton.tsx:166
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
@@ -8660,7 +8661,7 @@ msgstr "Dark"
 
 #: src/mods/HiddenInside.tsx:75
 #: src/profiles/ProfilesPage.tsx:162
-#: src/settings/sections/DataUsage.tsx:272
+#: src/settings/sections/DataUsage.tsx:278
 msgid "Open folder"
 msgstr "Open folder"
 
@@ -8789,12 +8790,12 @@ msgid "Search run logs"
 msgstr "Search run logs"
 
 #. placeholder {0}: game.loader
-#: src/firstrun/FindStep.tsx:146
+#: src/firstrun/FindStep.tsx:147
 msgid "{0} not installed yet"
 msgstr "{0} not installed yet"
 
 #: src/console/PerformancePanelParts.tsx:213
-#: src/mods/ProblemsTab.tsx:303
+#: src/mods/ProblemsTab.tsx:308
 #: src/settings/sections/AboutDiagnostics.tsx:221
 msgid "Copy report"
 msgstr "Copy report"
@@ -8863,7 +8864,7 @@ msgid "Slate"
 msgstr "Slate"
 
 #: src/commandPalette/CommandPalette.tsx:147
-#: src/game/Hero.tsx:239
+#: src/game/Hero.tsx:240
 #: src/mods/SlowStartupSection.tsx:73
 #: src/settings/SettingsPage.tsx:42
 msgid "Updates"
@@ -8941,7 +8942,7 @@ msgid "When {0}"
 msgstr "When {0}"
 
 #. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx:191
+#: src/firstrun/FindStep.tsx:192
 msgid "{0} was not found in your launchers"
 msgstr "{0} was not found in your launchers"
 
@@ -8970,7 +8971,7 @@ msgstr "Never"
 msgid "Focus the search"
 msgstr "Focus the search"
 
-#: src/profiles/CompareBulkBody.tsx:127
+#: src/profiles/CompareBulkBody.tsx:128
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
@@ -9074,14 +9075,9 @@ msgstr "Apply a template"
 msgid "This update changed its install options. Your earlier picks are kept where they still exist."
 msgstr "This update changed its install options. Your earlier picks are kept where they still exist."
 
-#: src/settings/sections/SourceOrder.tsx:58
+#: src/settings/sections/SourceOrder.tsx:60
 msgid "Move up"
 msgstr "Move up"
-
-#. placeholder {0}: formatWhen(state.lastFail)
-#: src/settings/sections/Sources.tsx:37
-msgid "Failed {0}: {error}"
-msgstr "Failed {0}: {error}"
 
 #: src/queue/QueueBody.tsx:140
 msgid "Open download page"
@@ -9340,7 +9336,7 @@ msgstr "Optional: {label}"
 msgid "Combine with…"
 msgstr "Combine with…"
 
-#: src/profiles/CompareBulkBody.tsx:188
+#: src/profiles/CompareBulkBody.tsx:189
 msgid "No matching mods"
 msgstr "No matching mods"
 
@@ -9446,7 +9442,7 @@ msgstr "Auto-enable requirements"
 #: src/mods/Sidebar.tsx:314
 #: src/mods/Sidebar.tsx:327
 #: src/mods/Sidebar.tsx:350
-#: src/profiles/CompareBulkBody.tsx:117
+#: src/profiles/CompareBulkBody.tsx:118
 #: src/profiles/ProfilesPage.tsx:272
 #: src/profiles/ProfilesPage.tsx:281
 #: src/share/ShareDialog.tsx:304
@@ -9659,7 +9655,7 @@ msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgid "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
 msgstr "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
 
-#: src/settings/sections/DataStoreReport.tsx:418
+#: src/settings/sections/DataStoreReport.tsx:419
 msgid "Delete the selected items?"
 msgstr "Delete the selected items?"
 
@@ -9716,7 +9712,7 @@ msgstr "Add to bundle"
 msgid "Already in this profile."
 msgstr "Already in this profile."
 
-#: src/settings/sections/SourceOrder.tsx:51
+#: src/settings/sections/SourceOrder.tsx:52
 msgid "When a mod is on several sites, its card installs from the first one here."
 msgstr "When a mod is on several sites, its card installs from the first one here."
 
@@ -9804,7 +9800,7 @@ msgid "Mortar menu"
 msgstr "Mortar menu"
 
 #: src/game/detailStates.tsx:53
-#: src/game/Sidebar.tsx:391
+#: src/game/Sidebar.tsx:392
 msgid "Manage profiles"
 msgstr "Manage profiles"
 
@@ -10070,7 +10066,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:28
-#: src/mods/ProblemsTab.tsx:387
+#: src/mods/ProblemsTab.tsx:392
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -10203,7 +10199,7 @@ msgstr "Unpin version"
 msgid "Tracking"
 msgstr "Tracking"
 
-#: src/settings/sections/SourceOrder.tsx:50
+#: src/settings/sections/SourceOrder.tsx:51
 msgid "Preferred source"
 msgstr "Preferred source"
 
@@ -10243,7 +10239,7 @@ msgstr "Markdown"
 msgid "Could not cancel transfer"
 msgstr "Could not cancel transfer"
 
-#: src/game/Hero.tsx:328
+#: src/game/Hero.tsx:329
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
@@ -10567,8 +10563,8 @@ msgstr "Play {playName}"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Hero.tsx:327
-#: src/game/ProfileWorkspace.tsx:111
+#: src/game/Hero.tsx:328
+#: src/game/ProfileWorkspace.tsx:105
 msgid "Saves"
 msgstr "Saves"
 
@@ -10672,7 +10668,7 @@ msgstr "Warnings and errors"
 #: src/mods/EnableRequirementsDialog.tsx:55
 #: src/mods/LoadOrderTab.tsx:59
 #: src/mods/LoadOrderTab.tsx:98
-#: src/mods/ProblemsTab.tsx:346
+#: src/mods/ProblemsTab.tsx:351
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -10722,7 +10718,7 @@ msgstr "From the downloads folder"
 msgid "Profile"
 msgstr "Profile"
 
-#: src/firstrun/FindStep.tsx:181
+#: src/firstrun/FindStep.tsx:182
 #: src/settings/sections/Downloads.tsx:310
 #: src/settings/sections/GameSettings.tsx:193
 #: src/settings/sections/GameSettings.tsx:409
@@ -10803,13 +10799,17 @@ msgstr "While this profile runs, Mortar sets your shared saves aside and shows t
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
-#: src/settings/sections/DataStoreReport.tsx:380
+#: src/settings/sections/DataStoreReport.tsx:381
 msgid "Clean up storage"
 msgstr "Clean up storage"
 
 #: src/settings/sections/Appearance.tsx:192
 msgid "Mods view"
 msgstr "Mods view"
+
+#: src/mods/problemText.ts:34
+msgid "Did not load"
+msgstr "Did not load"
 
 #: src/browse/BrowseShow.tsx:30
 #: src/launch/LaunchLayer.tsx:182
@@ -10880,7 +10880,7 @@ msgid "Player"
 msgstr "Player"
 
 #: src/firstrunTour/TourPopover.tsx:34
-#: src/game/Sidebar.tsx:334
+#: src/game/Sidebar.tsx:335
 #: src/profiles/ProfilesPage.tsx:338
 #: src/settings/sections/AboutDiagnostics.tsx:96
 #: src/settings/sections/DataUsage.tsx:204
@@ -11000,7 +11000,7 @@ msgstr "{0, plural, one {Updated # mod} other {Updated # mods}}"
 msgid "Empty profile"
 msgstr "Empty profile"
 
-#: src/firstrun/FindStep.tsx:145
+#: src/firstrun/FindStep.tsx:146
 #: src/firstrun/LoaderStep.tsx:365
 msgid "{loader} {version} installed"
 msgstr "{loader} {version} installed"
@@ -11073,7 +11073,7 @@ msgstr "Teal"
 msgid "Could not read this profile"
 msgstr "Could not read this profile"
 
-#: src/settings/sections/DataStoreReport.tsx:287
+#: src/settings/sections/DataStoreReport.tsx:288
 msgid "Select all"
 msgstr "Select all"
 
@@ -11116,7 +11116,7 @@ msgstr "Keep this version"
 msgid "This is not a Mod Manager Download link from Nexus."
 msgstr "This is not a Mod Manager Download link from Nexus."
 
-#: src/settings/sections/DataUsage.tsx:264
+#: src/settings/sections/DataUsage.tsx:270
 #: src/settings/sections/StreamOverlay.tsx:66
 msgid "Location"
 msgstr "Location"
@@ -11140,7 +11140,7 @@ msgstr "SMAPI {0} is out"
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
-#: src/game/Hero.tsx:242
+#: src/game/Hero.tsx:243
 msgid "{updateN, plural, one {Review # update} other {Review # updates}}"
 msgstr "{updateN, plural, one {Review # update} other {Review # updates}}"
 
@@ -11470,7 +11470,7 @@ msgstr "Compare with…"
 msgid "Could not update tags for the selected mods"
 msgstr "Could not update tags for the selected mods"
 
-#: src/firstrun/FindStep.tsx:222
+#: src/firstrun/FindStep.tsx:223
 #: src/firstrun/FirstRun.tsx:98
 #: src/firstrun/LoaderStep.tsx:185
 #: src/firstrun/LoaderStep.tsx:380
@@ -11580,7 +11580,7 @@ msgstr "Missing requirements on install"
 
 #: src/settings/sections/DataBackups.tsx:109
 #: src/settings/sections/DataUsage.tsx:235
-#: src/settings/sections/DataUsage.tsx:259
+#: src/settings/sections/DataUsage.tsx:265
 msgid "Measuring…"
 msgstr "Measuring…"
 
@@ -11844,6 +11844,10 @@ msgstr "Your notes for this profile, for example: Friday co-op profile. Keep eve
 msgid "imported from a .mortar file"
 msgstr "imported from a .mortar file"
 
+#: src/saves/SavesTab.tsx:46
+msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
+msgstr "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
+
 #: src/mods/ModsTab.tsx:303
 msgid "Drop archives anywhere on the window, or use Browse to find mods."
 msgstr "Drop archives anywhere on the window, or use Browse to find mods."
@@ -11904,7 +11908,7 @@ msgstr "Mortar thinks {0} caused the crash: {1}"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
-#: src/settings/sections/DataStoreReport.tsx:304
+#: src/settings/sections/DataStoreReport.tsx:305
 msgid "Leftover files"
 msgstr "Leftover files"
 
@@ -11937,7 +11941,7 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 msgid "Restore"
 msgstr "Restore"
 
-#: src/profiles/SinceLastRun.tsx:147
+#: src/profiles/SinceLastRun.tsx:148
 msgid "Changes since last run"
 msgstr "Changes since last run"
 
@@ -12060,7 +12064,7 @@ msgstr "Back up saves only if the profile's mods changed since the last run."
 msgid "Make win"
 msgstr "Make win"
 
-#: src/profiles/CompareBulkBody.tsx:178
+#: src/profiles/CompareBulkBody.tsx:179
 msgid "Different source"
 msgstr "Different source"
 
@@ -12136,7 +12140,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/saves/BackupsDialog.tsx:168
 #: src/settings/sections/About.tsx:99
 #: src/settings/sections/AboutDiagnostics.tsx:219
-#: src/settings/sections/DataStoreReport.tsx:406
+#: src/settings/sections/DataStoreReport.tsx:407
 #: src/share/ImportDialog.tsx:213
 #: src/share/ImportDialog.tsx:216
 #: src/share/ImportFooter.tsx:86
@@ -12177,7 +12181,7 @@ msgstr "Import from r2modman / Thunderstore"
 #. placeholder {2}: c.to
 #. placeholder {2}: sideLabel(row.b, enabled, disabled)
 #. placeholder {2}: sideLabel(row.b, shared.enabled, shared.disabled)
-#: src/profiles/CompareBulkBody.tsx:167
+#: src/profiles/CompareBulkBody.tsx:168
 #: src/profiles/CompareSections.tsx:163
 #: src/settings/sections/DataImport.tsx:104
 msgid "{0}: {1} → {2}"
@@ -12221,7 +12225,7 @@ msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
 #: src/commandPalette/paletteLabels.ts:16
-#: src/game/ProfileWorkspace.tsx:141
+#: src/game/ProfileWorkspace.tsx:135
 #: src/profiles/ProfileRow.tsx:265
 msgid "Share"
 msgstr "Share"
