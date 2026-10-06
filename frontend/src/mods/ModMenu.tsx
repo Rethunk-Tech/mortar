@@ -45,6 +45,7 @@ import { ModGroupItems } from './GroupMenu.tsx'
 import { modId, nexusIdOf, updateFor } from './lookup.ts'
 import { ModActionItems } from './ModActionItems.tsx'
 import {
+  extraFileArchive,
   extraFileLabel,
   ICON_SIZE,
   type MenuAnchor,
@@ -188,6 +189,7 @@ function ModMenuItems({
       profileId={profile?.id ?? ''}
       entryKey={currentEntry?.key ?? ''}
       extraLabel={(extraKey) => extraFileLabel(currentEntry, extraKey, files)}
+      extraArchive={(extraKey) => extraFileArchive(extraKey, files)}
     />
   )
   return [

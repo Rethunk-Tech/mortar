@@ -19,6 +19,7 @@ export function SplitCombineItems({
   profileId,
   entryKey,
   extraLabel,
+  extraArchive,
 }: {
   extras: string[]
   siblings: Entry[]
@@ -28,6 +29,7 @@ export function SplitCombineItems({
   profileId: string
   entryKey: string
   extraLabel: (extraKey: string) => string
+  extraArchive: (extraKey: string) => string
 }) {
   const { t } = useLingui()
   const push = useToasts((s) => s.push)
@@ -60,7 +62,7 @@ export function SplitCombineItems({
             ).catch(reportUnexpected)
           }}
         >
-          <ListItemText secondary={locked ? lockedTip : undefined}>
+          <ListItemText secondary={locked ? lockedTip : extraArchive(extraKey) || undefined}>
             {extraLabel(extraKey)}
           </ListItemText>
         </MenuItem>

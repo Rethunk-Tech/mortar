@@ -70,6 +70,16 @@ export function contextMenuProps(mod: Mod) {
   }
 }
 
+/** The archive name of an extra file, shown under its display name; empty when the page's files are not loaded. */
+export function extraFileArchive(
+  extraKey: string,
+  files: { fileId: number; fileName: string; name: string }[] | null | undefined,
+): string {
+  const match = NEXUS_KEY.exec(extraKey)
+  const file = match ? files?.find((candidate) => candidate.fileId === Number(match[2])) : undefined
+  return file && file.fileName !== file.name ? file.fileName : ''
+}
+
 export function extraFileLabel(
   entry: Entry | undefined,
   extraKey: string,
@@ -82,7 +92,7 @@ export function extraFileLabel(
   const fileId = match ? Number(match[2]) : 0
   const file = files?.find((candidate) => candidate.fileId === fileId)
   if (file) {
-    const title = file.fileName || file.name
+    const title = file.name || file.fileName
     return file.version ? `${title} (${file.version})` : title
   }
   const prefix = `${extraKey.replaceAll('\\', '/')}/`
