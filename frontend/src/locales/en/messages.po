@@ -7120,10 +7120,6 @@ msgstr "Choose cover image"
 msgid "Install separately"
 msgstr "Install separately"
 
-#: src/mods/updateReview/ReviewFooter.tsx:46
-msgid "Update downloads the new file from Nexus or GitHub. For other pages, drop the downloaded archive on this window. Either way Mortar updates the mod in place, keeps its settings and backs up your saves first. Roll back later from the mod's details."
-msgstr "Update downloads the new file from Nexus or GitHub. For other pages, drop the downloaded archive on this window. Either way Mortar updates the mod in place, keeps its settings and backs up your saves first. Roll back later from the mod's details."
-
 #: src/profiles/EditProfileDialog.tsx:180
 msgid "Mountain"
 msgstr "Mountain"
@@ -9158,6 +9154,10 @@ msgstr "{name} ({0})"
 msgid "Updated by your package manager"
 msgstr "Updated by your package manager"
 
+#: src/mods/updateReview/ReviewFooter.tsx:46
+msgid "Update downloads the new file from the mod's site when Mortar can; otherwise, drop the downloaded archive on this window. Either way Mortar updates the mod in place, keeps its settings and backs up your saves first. Roll back later from the mod's details."
+msgstr "Update downloads the new file from the mod's site when Mortar can; otherwise, drop the downloaded archive on this window. Either way Mortar updates the mod in place, keeps its settings and backs up your saves first. Roll back later from the mod's details."
+
 #: src/settings/prefCopy.ts:103
 #: src/settings/prefCopy.ts:112
 #: src/settings/prefCopy.ts:189
@@ -9417,10 +9417,6 @@ msgstr "{count, plural, one {Trimmed history, dropped # older change} other {Tri
 #: src/install/OverlayPlaceDialog.tsx:103
 msgid "Whole file"
 msgstr "Whole file"
-
-#: src/queue/QueueBody.tsx:364
-msgid "Updates, missing dependencies and links from Nexus land here."
-msgstr "Updates, missing dependencies and links from Nexus land here."
 
 #: src/mods/Sidebar.tsx:474
 msgid "SMAPI UniqueID"
@@ -11362,6 +11358,10 @@ msgstr "This is not a Mod Manager Download link from Nexus."
 #: src/settings/sections/StreamOverlay.tsx:66
 msgid "Location"
 msgstr "Location"
+
+#: src/queue/QueueBody.tsx:364
+msgid "Updates, missing dependencies and links from mod sites land here."
+msgstr "Updates, missing dependencies and links from mod sites land here."
 
 #: src/settings/sections/GameSettings.tsx:119
 msgid "Game install"

@@ -361,7 +361,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
           </Button>
         }
       >
-        {t`Updates, missing dependencies and links from Nexus land here.`}
+        {t`Updates, missing dependencies and links from mod sites land here.`}
       </EmptyState>
     )
   }
