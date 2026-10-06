@@ -14,7 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
-func TestALocalBridgeBuildStandsInForAnUnpublishedRelease(t *testing.T) {
+func TestALocalBridgeBuildStandsInForTheRelease(t *testing.T) {
 	data := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", data)
 	t.Setenv("LOCALAPPDATA", data)
@@ -45,12 +45,8 @@ func TestALocalBridgeBuildStandsInForAnUnpublishedRelease(t *testing.T) {
 		t.Fatal(err)
 	}
 	items, profiles := testenv.Stores(t)
-	// The manifest has no bridge for the game, as the shipped catalog has none for Lethal Company.
+	// The local zip replaces the catalog's release, so nothing is downloaded.
 	svc := NewService(t.TempDir(), set, items, profiles, components.NewClient(http.DefaultClient))
-
-	if b, err := svc.ensureBridge("lethal-company"); err != nil || b.Key != "" {
-		t.Fatalf("without the variable: %+v, %v", b, err)
-	}
 	t.Setenv(localBridgeEnv, folder)
 	b, err := svc.ensureBridge("lethal-company")
 	if err != nil {

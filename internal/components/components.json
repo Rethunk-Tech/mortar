@@ -1,5 +1,5 @@
 {
-  "serial": 1791184265,
+  "serial": 1791260831,
   "components": [
     {
       "game": "stardew",
@@ -25,10 +25,24 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-smapi-bridge"
       },
-      "tag": "v0.2.0",
-      "asset": "MortarSmapiBridge-0.2.0.zip",
-      "version": "0.2.0",
-      "sha256": "81a804987b45ccb1f22a6650627fc72ef9e8917940bc696674e049831ba2de34"
+      "tag": "v0.2.1",
+      "asset": "MortarSmapiBridge-0.2.1.zip",
+      "version": "0.2.1",
+      "sha256": "953c05e814b183fa8a2914ef58f78a03854e942a2a4f5948609593915eb2a63e"
+    },
+    {
+      "game": "lethal-company",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.1.0",
+      "asset": "MortarBepInExBridge-0.1.0.zip",
+      "version": "0.1.0",
+      "sha256": "89f29adee74ea37dfc3a7247ae3d13122ea358b3168da3fb8be3363d09a9e9d6"
     }
   ],
   "games": [

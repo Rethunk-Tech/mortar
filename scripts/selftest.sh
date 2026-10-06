@@ -518,21 +518,20 @@ regress_lc() {
   ln -sfn "$SANDBOX_STEAM/linux64" "$SANDBOX_HOME/.steam/sdk64"
   ln -sfn "$SANDBOX_STEAM/linux32" "$SANDBOX_HOME/.steam/sdk32"
 
-  # The BepInEx bridge has no published release, so the sandbox runs a local build of it (MORTAR_LOCAL_BRIDGES); a
-  # machine without the bridge repo, or without dotnet, skips the bridge check and says so.
-  local bridge_repo=${MORTAR_REGRESS_BRIDGE_REPO:-$REPO/../mortar-bepinex-bridge} bridge_dir=$cache/bridge bridge=skipped
-  mkdir -p "$bridge_dir"
-  if [ -x "$bridge_repo/scripts/package.sh" ] && command -v dotnet >/dev/null; then
-    local built
-    if built=$(DIST="$ROOT/bridge-dist" "$bridge_repo/scripts/package.sh" 2>"$ROOT/bridge-build.log" | tail -1) && [ -f "$built" ]; then
+  # Profiles get the catalog's published BepInEx bridge, which an offline run cannot download. MORTAR_REGRESS_BRIDGE_REPO
+  # runs a local build of a bridge checkout instead (MORTAR_LOCAL_BRIDGES), to test it before its release.
+  local bridge=expected
+  [ -n "${MORTAR_REGRESS_OFFLINE:-}" ] && bridge=skipped
+  if [ -n "${MORTAR_REGRESS_BRIDGE_REPO:-}" ]; then
+    local bridge_dir=$ROOT/bridge built
+    mkdir -p "$bridge_dir"
+    if built=$(DIST="$ROOT/bridge-dist" "$MORTAR_REGRESS_BRIDGE_REPO/scripts/package.sh" 2>"$ROOT/bridge-build.log" | tail -1) && [ -f "$built" ]; then
       cp "$built" "$bridge_dir/lethal-company.zip"
+      export MORTAR_LOCAL_BRIDGES=$bridge_dir
+      bridge=expected
     else
       failures+=("the bridge did not build; see $ROOT/bridge-build.log")
     fi
-  fi
-  if [ -f "$bridge_dir/lethal-company.zip" ]; then
-    export MORTAR_LOCAL_BRIDGES=$bridge_dir
-    bridge=expected
   fi
   mkdir -p "$ROOT"
   cat >"$ROOT/run-proton.sh" <<EOF

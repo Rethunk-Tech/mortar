@@ -24,6 +24,18 @@
       },
       "asset": "MortarSmapiBridge-{version}.zip",
       "version": "latest"
+    },
+    {
+      "game": "lethal-company",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
     }
   ],
   "games": [

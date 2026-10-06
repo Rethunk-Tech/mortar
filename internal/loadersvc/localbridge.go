@@ -8,8 +8,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-// localBridgeEnv names a folder holding a game's bridge build as <game>.zip. It is for the self-test sandbox and tests,
-// to run a companion that has no published release yet; the shipped catalog never points at an unpublished repository.
+// localBridgeEnv names a folder holding a game's bridge build as <game>.zip, standing in for the catalog's release. It
+// is for the self-test sandbox and tests, to run a companion built from its working tree.
 const localBridgeEnv = "MORTAR_LOCAL_BRIDGES"
 
 // localBridge is the bridge component built from <folder>/<game>.zip, with the zip's own hash standing in for a
