@@ -144,21 +144,24 @@ mx_idle() {
 }
 
 # mx_console_reads reads the Console twice into mx_lines1 and mx_lines2: the first once the first heartbeat is in, the
-# second once the probe's error line (its third beat) is. With a modpack this size the game's first frame comes well
-# after BepInEx's "Chainloader startup complete", and a sound mod then holds the main thread for several seconds.
-# mx_read1_at and mx_read2_at are the UTC wall-clock times of the two reads, to set against Player.log.
+# second once the probe's error line (its third beat) is and a heartbeat has come since the first read. With a modpack
+# this size the game's first frame comes well after BepInEx's "Chainloader startup complete", and a sound mod then
+# holds the main thread for several seconds. mx_read1_at and mx_read2_at are the UTC wall-clock times of the two
+# reads, to set against Player.log.
 mx_console_reads() {
+  local beats1
   for _ in $(seq 1 30); do
     mx_lines1=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
     mx_read1_at=$(date -u +%T.%3N)
     case $mx_lines1 in *'matrix heartbeat'*) break ;; esac
     sleep 2
   done
+  beats1=$(grep -o 'matrix heartbeat' <<<"$mx_lines1" | wc -l)
   for _ in $(seq 1 30); do
     sleep 2
     mx_lines2=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
     mx_read2_at=$(date -u +%T.%3N)
-    case $mx_lines2 in *'matrix error line'*) break ;; esac
+    [[ $mx_lines2 == *'matrix error line'* ]] && [ "$(grep -o 'matrix heartbeat' <<<"$mx_lines2" | wc -l)" -gt "$beats1" ] && break
   done
 }
 
@@ -191,6 +194,18 @@ mx_wait_scene() {
   done
 }
 
+# mx_game_net CMD [ARG...] runs CMD in the running game's network namespace: scripts/launch-guard.sh starts the game
+# under bwrap --unshare-net, so the 127.0.0.1 the bridge listens on is the game's own loopback, not the host's.
+mx_game_net() {
+  local pid
+  pid=$(mx_game_pids | head -1)
+  if [ -z "$pid" ]; then
+    echo "BAD no game process to reach the bridge from"
+    return 1
+  fi
+  nsenter --target "$pid" --user --net --preserve-credentials "$@"
+}
+
 # mx_bridge_reachable TAG PROFILE records whether the bridge answers at the main menu: its state file in the profile
 # names a port and token, and a status query there answers ok with scene MainMenu.
 mx_bridge_reachable() {
@@ -200,7 +215,7 @@ mx_bridge_reachable() {
     return
   fi
   out=$(
-    python3 - "$(mx_dir "$2")/BepInEx/config/mortar-bepinex-bridge.json" <<'PY'
+    mx_game_net python3 - "$(mx_dir "$2")/BepInEx/config/mortar-bepinex-bridge.json" 2>&1 <<'PY'
 import json, socket, sys
 try:
     st = json.load(open(sys.argv[1]))
@@ -525,10 +540,13 @@ regress_bepinex_running() {
   if [ -n "$mx_ready" ]; then
     mx_bridge_reachable a "$mx_base"
     mx_console_reads
+    # The Console of a modpack this size outgrows the kernel's 128 KiB limit on one argument, so the reads go by file.
+    printf '%s' "$mx_lines1" >"$ROOT/console-a1.json"
+    printf '%s' "$mx_lines2" >"$ROOT/console-a2.json"
     out=$(
-      python3 - "$mx_lines1" "$mx_lines2" <<'PY'
+      python3 - "$ROOT/console-a1.json" "$ROOT/console-a2.json" 2>&1 <<'PY'
 import json, sys
-a, b = json.loads(sys.argv[1]), json.loads(sys.argv[2])
+a, b = (json.load(open(f)) for f in sys.argv[1:3])
 beats = lambda es: [e for e in es if e["message"].startswith("matrix heartbeat")]
 levels = {e["level"] for e in b}
 sources = {e["mod"] for e in b}

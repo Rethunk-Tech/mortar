@@ -118,7 +118,7 @@ function matrixShell(body: string) {
   return spawnSync('bash', ['-c', `source "${MATRIX}"; ${body}`], { encoding: 'utf8' })
 }
 
-test('the matrix reads the Console first once a heartbeat is in, then again once the probe has logged its error', () => {
+test('the matrix reads the Console first once a heartbeat is in, then again once the probe has logged its error and beaten since', () => {
   const dir = mkdtempSync(join(tmpdir(), 'mx-console-'))
   try {
     const counter = join(dir, 'calls')
@@ -130,15 +130,18 @@ test('the matrix reads the Console first once a heartbeat is in, then again once
         local n=$(($(cat "${counter}") + 1))
         echo "$n" >"${counter}"
         if [ "$n" -lt 4 ]; then echo '[{"message":"loading"}]'
-        elif [ "$n" -lt 6 ]; then echo '[{"message":"matrix heartbeat 1"}]'
-        else echo '[{"message":"matrix error line"}]'; fi
+        elif [ "$n" -lt 7 ]; then echo '[{"message":"matrix heartbeat 1"},{"message":"matrix error line"}]'
+        else echo '[{"message":"matrix heartbeat 1"},{"message":"matrix error line"},{"message":"matrix heartbeat 2"}]'; fi
       }
       mx_base=p
       mx_console_reads
       echo "$mx_lines1 | $mx_lines2 | $(cat "${counter}")"
       echo "$mx_read1_at $mx_read2_at"`)
     const [reads, times] = shell.stdout.trim().split('\n')
-    expect(reads).toBe('[{"message":"matrix heartbeat 1"}] | [{"message":"matrix error line"}] | 6')
+    expect(reads).toBe(
+      '[{"message":"matrix heartbeat 1"},{"message":"matrix error line"}] | ' +
+        '[{"message":"matrix heartbeat 1"},{"message":"matrix error line"},{"message":"matrix heartbeat 2"}] | 7',
+    )
     expect(times).toMatch(/^\d\d:\d\d:\d\d\.\d{3} \d\d:\d\d:\d\d\.\d{3}$/)
   } finally {
     rmSync(dir, { recursive: true, force: true })
@@ -169,41 +172,53 @@ test('the matrix keeps the Unity logs of each launch beside its LogOutput.log, a
   }
 })
 
-test('the matrix asks the bridge at the main menu and only notes whether its component survived', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'mx-bridge-'))
-  try {
-    const log = join(dir, 'LogOutput.log')
-    writeFileSync(
-      log,
-      '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene InitSceneLaunchOptions: False\n' +
-        '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene MainMenu: False\n',
-    )
-    const state = join(dir, 'profiles/lethal-company/up/BepInEx/config/mortar-bepinex-bridge.json')
-    mkdirSync(join(dir, 'profiles/lethal-company/up/BepInEx/config'), { recursive: true })
-    // A one-shot stand-in for the bridge: it writes the state file once listening and answers one status query.
-    const fake = `import json, socket, sys
+// The sandbox starts the game under bwrap --unshare-net (scripts/launch-guard.sh); a host without unprivileged user
+// namespaces cannot stand one up, and the bridge test needs one.
+const netns = spawnSync('bwrap', ['--dev-bind', '/', '/', '--unshare-net', 'true']).status === 0
+
+test.skipIf(!netns)(
+  "the matrix asks the bridge at the main menu, from inside the game's network namespace, and only notes whether its component survived",
+  () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mx-bridge-'))
+    try {
+      const log = join(dir, 'LogOutput.log')
+      writeFileSync(
+        log,
+        '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene InitSceneLaunchOptions: False\n' +
+          '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene MainMenu: False\n',
+      )
+      const state = join(
+        dir,
+        'profiles/lethal-company/up/BepInEx/config/mortar-bepinex-bridge.json',
+      )
+      mkdirSync(join(dir, 'profiles/lethal-company/up/BepInEx/config'), { recursive: true })
+      // A one-shot stand-in for the bridge, on a loopback of its own as the game is: it writes the state file once
+      // listening and answers one status query.
+      const fake = `import json, os, socket, sys
 srv = socket.socket(); srv.bind(("127.0.0.1", 0)); srv.listen(1)
-json.dump({"port": srv.getsockname()[1], "token": "t", "pid": 1}, open(sys.argv[1], "w"))
+json.dump({"port": srv.getsockname()[1], "token": "t", "pid": os.getpid()}, open(sys.argv[1], "w"))
 c, _ = srv.accept(); f = c.makefile("rw")
 ok = f.readline().strip() == "t" and f.readline().strip() == "status"
 f.write('ok {"gameVersion":"v81","scene":"MainMenu","plugins":[]}\\n' if ok else "error: unauthorized\\n"); f.flush()`
-    writeFileSync(join(dir, 'fake.py'), fake)
-    matrixShell(
-      `ROOT="${dir}"; mx_data="${dir}"; mx_log="${log}"
-      python3 "${dir}/fake.py" "${state}" & until [ -s "${state}" ]; do sleep 0.1; done
+      writeFileSync(join(dir, 'fake.py'), fake)
+      matrixShell(
+        `ROOT="${dir}"; mx_data="${dir}"; mx_log="${log}"
+      mx_game_pids() { python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["pid"])' "${state}"; }
+      bwrap --dev-bind / / --unshare-net -- python3 "${dir}/fake.py" "${state}" & until [ -s "${state}" ]; do sleep 0.1; done
       mx_bridge_reachable up up; mx_bridge_reachable down down; mx_bridge_survived up "${log}"; wait`,
-    )
-    const rows = readFileSync(join(dir, 'matrix.tsv'), 'utf8')
-      .trim()
-      .split('\n')
-      .map((l) => l.split('\t'))
-    expect(rows.map((r) => `${r[0]} ${r[1]}`)).toEqual([
-      'bridge.reachable.up PASS',
-      'bridge.reachable.down FAIL',
-      'bridge.survived.up INFO',
-    ])
-    expect(rows[2]?.[2]).toContain('alive after 0 scene load(s) and destroyed after 2')
-  } finally {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
+      )
+      const rows = readFileSync(join(dir, 'matrix.tsv'), 'utf8')
+        .trim()
+        .split('\n')
+        .map((l) => l.split('\t'))
+      expect(rows.map((r) => `${r[0]} ${r[1]}`)).toEqual([
+        'bridge.reachable.up PASS',
+        'bridge.reachable.down FAIL',
+        'bridge.survived.up INFO',
+      ])
+      expect(rows[2]?.[2]).toContain('alive after 0 scene load(s) and destroyed after 2')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  },
+)
