@@ -3,11 +3,10 @@ package profile
 import (
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -231,70 +230,81 @@ func (s *Store) UpdateEverywhere(game, modKeyOrID, newStoreKey string) (Everywhe
 	return out, nil
 }
 
+// latestStoreKey is the store item holding the newest later version of what oldKey holds. A site package
+// (Thunderstore, GitHub, Modrinth) is matched by source and package name and ordered by its version; a Nexus file by
+// mod page and upload order, keeping to files that hold the same mod; anything else by the mod inside and its
+// manifest version. An item whose version cannot be ordered is never picked.
 func (s *Store) latestStoreKey(game, oldKey, modKeyOrID string) (string, error) {
-	root, err := s.items.Path(game, oldKey)
+	keys, err := s.items.Keys(game)
 	if err != nil {
 		return "", err
 	}
-	ents, err := os.ReadDir(filepath.Dir(root))
-	if err != nil {
-		return "", err
+	oldMods := s.scanKey(game, oldKey)
+	primary := primaryMod(oldMods, mod.ID(strings.TrimSpace(modKeyOrID)))
+	oldSrc, oldPkg, oldVer, _ := s.items.Meta(game, oldKey)
+	oldPage, bestFile, nexus := store.NexusFile(oldKey)
+	best, bestVer := "", oldVer
+	if !nexus && oldPkg == "" {
+		bestVer = heldVersion(oldMods, primary)
 	}
-	wantID := mod.ID(strings.TrimSpace(modKeyOrID))
-	best, bestFile := oldKey, -1
-	if modID, fileID, ok := store.NexusFile(oldKey); ok {
-		bestFile = fileID
-		_ = modID
-	}
-	for _, ent := range ents {
-		if !ent.IsDir() || strings.HasPrefix(ent.Name(), ".") {
+	for _, key := range keys {
+		if key == oldKey {
 			continue
 		}
-		key := ent.Name()
-		src, err := s.items.Path(game, key)
-		if err != nil {
-			continue
-		}
-		found, err := manifest.Scan(src)
-		if err != nil || len(found) == 0 {
-			continue
-		}
-		if !latestMatch(found, wantID, oldKey, key) {
-			continue
-		}
-		if modID, fileID, ok := store.NexusFile(key); ok {
-			_, oldFile, oldOK := store.NexusFile(oldKey)
-			if oldOK && modID != 0 {
-				if fileID > oldFile && fileID > bestFile {
-					best, bestFile = key, fileID
-				}
+		switch {
+		case nexus:
+			page, file, ok := store.NexusFile(key)
+			if !ok || page != oldPage || file <= bestFile {
 				continue
 			}
-		}
-		if key != oldKey && (best == oldKey || key > best) {
-			best = key
+			if primary != "" && heldVersion(s.scanKey(game, key), primary) == "" {
+				continue
+			}
+			best, bestFile = key, file
+		case oldPkg != "":
+			src, pkg, ver, _ := s.items.Meta(game, key)
+			if src == oldSrc && strings.EqualFold(pkg, oldPkg) && meta.Newer(ver, bestVer) {
+				best, bestVer = key, ver
+			}
+		case primary != "":
+			if ver := heldVersion(s.scanKey(game, key), primary); meta.Newer(ver, bestVer) {
+				best, bestVer = key, ver
+			}
 		}
 	}
-	if best == oldKey {
+	if best == "" {
 		return "", fmt.Errorf("no later version in the store")
 	}
 	return best, nil
 }
 
-func latestMatch(found []manifest.Mod, wantID mod.ID, oldKey, key string) bool {
-	if key == oldKey {
-		return true
+func (s *Store) scanKey(game, key string) []manifest.Mod {
+	root, err := s.items.Path(game, key)
+	if err != nil {
+		return nil
 	}
-	if wantID == "" || key == string(wantID) {
-		return true
-	}
-	if mod.Equal(wantID, mod.ID(key)) {
-		return true
-	}
+	found, _ := manifest.Scan(root)
+	return found
+}
+
+// primaryMod is the mod whose version orders an item: the one asked for when the item holds it, else its first.
+func primaryMod(found []manifest.Mod, want mod.ID) mod.ID {
 	for _, m := range found {
-		if mod.Equal(m.ModID(), wantID) {
-			return true
+		if want != "" && mod.Equal(m.ModID(), want) {
+			return m.ModID()
 		}
 	}
-	return false
+	if len(found) == 0 {
+		return ""
+	}
+	return found[0].ModID()
+}
+
+func heldVersion(found []manifest.Mod, id mod.ID) string {
+	for _, m := range found {
+		if mod.Equal(m.ModID(), id) {
+			return m.Version
+		}
+	}
+	return ""
 }

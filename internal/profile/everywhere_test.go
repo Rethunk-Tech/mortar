@@ -101,3 +101,50 @@ func TestUpdateEverywhereTwoProfilesOneStoreItem(t *testing.T) {
 		}
 	}
 }
+
+func TestLatestStoreKeyOrdersBySourceVersion(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	pkg := func(key, source, name, version string, files map[string]string) {
+		e.item(t, key, files)
+		if err := e.items.Describe("stardew", key, source, name, version); err != nil {
+			t.Fatal(err)
+		}
+	}
+	plugin := map[string]string{"BepInEx/plugins/x.dll": "x"}
+	// Keys sort opposite to versions, so a string comparison of keys picks the wrong one.
+	pkg("pkg-c", KindThunderstore, "Ns-Mod", "1.9.0", plugin)
+	pkg("pkg-b", KindThunderstore, "Ns-Mod", "1.10.0", plugin)
+	pkg("pkg-a", KindThunderstore, "Ns-Mod", "1.2.0", plugin)
+	pkg("pkg-z", KindThunderstore, "Ns-Other", "9.0.0", plugin)
+	pkg("github-a", KindGitHub, "me/mod", "v2.0.0", plugin)
+	pkg("github-b", KindGitHub, "me/mod", "v10.0.0", plugin)
+	man := func(v string) map[string]string {
+		return map[string]string{"A/manifest.json": `{"Name":"A","Author":"me","Version":"` + v + `","UniqueID":"me.a"}`}
+	}
+	e.item(t, "local-1", man("1.9.0"))
+	e.item(t, "local-2", man("1.10.0"))
+	e.item(t, "local-0", man("1.0.0"))
+	e.item(t, "nexus-5-10", man("1.0.0"))
+	e.item(t, "nexus-5-12", man("1.1.0"))
+	e.item(t, "nexus-5-20", map[string]string{"B/manifest.json": manifestJSON("me.b")})
+	e.item(t, "nexus-6-30", man("1.0.5"))
+
+	for _, c := range []struct{ old, id, want string }{
+		{"pkg-c", "Ns-Mod", "pkg-b"},
+		{"github-a", "me/mod", "github-b"},
+		{"local-1", "smapi:me.a", "local-2"},
+		{"local-1", "local-1", "local-2"},
+		{"nexus-5-10", "smapi:me.a", "nexus-5-12"},
+	} {
+		got, err := e.latestStoreKey("stardew", c.old, c.id)
+		if err != nil || got != c.want {
+			t.Errorf("latest of %s = %q, %v; want %s", c.old, got, err, c.want)
+		}
+	}
+	for _, old := range []string{"pkg-b", "local-2", "nexus-5-12", "pkg-z"} {
+		if got, err := e.latestStoreKey("stardew", old, ""); err == nil {
+			t.Errorf("latest of %s = %q, want none", old, got)
+		}
+	}
+}
