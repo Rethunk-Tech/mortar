@@ -107,8 +107,11 @@ type cpWhen struct {
 	flags   []cpFlagCondition
 	spouse  string
 	places  map[string][]string
+	// assumed are the raw keys of the conditions this scan treats as met (time, queries, events), shown
+	// with the conflict so the user knows it may not happen on their save.
+	assumed []string
 	// conditional is set when the change, or an Include around it, has any When condition at all, including
-	// the ones this scan treats as met (time, queries, events).
+	// the assumed ones.
 	conditional bool
 }
 
@@ -146,6 +149,7 @@ func (w cpWhen) with(o cpWhen) cpWhen {
 		flags:       append(slices.Clone(w.flags), o.flags...),
 		spouse:      spouse,
 		places:      places,
+		assumed:     append(slices.Clone(w.assumed), o.assumed...),
 		conditional: w.conditional || o.conditional,
 	}
 }
@@ -179,7 +183,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 16
+const contentPackParserVersion = 17
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -252,6 +256,7 @@ type diskWhen struct {
 	Flags   []diskFlagCondition    `json:"flags,omitempty"`
 	Spouse  string                 `json:"spouse,omitempty"`
 	Places  map[string][]string    `json:"places,omitempty"`
+	Assumed []string               `json:"assumed,omitempty"`
 	Cond    bool                   `json:"cond,omitempty"`
 }
 
@@ -610,11 +615,12 @@ func decodeCellSet(raw []byte) string {
 
 func diskWhenOf(when cpWhen) diskWhen {
 	out := diskWhen{
-		AnyOf:  when.anyOf,
-		NoneOf: when.noneOf,
-		Spouse: when.spouse,
-		Places: when.places,
-		Cond:   when.conditional,
+		AnyOf:   when.anyOf,
+		NoneOf:  when.noneOf,
+		Spouse:  when.spouse,
+		Places:  when.places,
+		Assumed: when.assumed,
+		Cond:    when.conditional,
 	}
 	if when.config != nil {
 		out.Config = make([]diskConfig, len(when.config))
@@ -648,6 +654,7 @@ func cpWhenOfDisk(when diskWhen) cpWhen {
 		noneOf:      when.NoneOf,
 		spouse:      when.Spouse,
 		places:      when.Places,
+		assumed:     when.Assumed,
 		conditional: when.Cond,
 	}
 	if when.Config != nil {
@@ -1193,6 +1200,8 @@ func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, sc
 		if hasToken(k) {
 			if merged, ok := dynamicTokenWhen(k, v, tokens, mentions, schema, depth); ok {
 				w = w.withDefinition(merged)
+			} else {
+				w.assumed = appendAssumed(w.assumed, k, v, tokens)
 			}
 			continue
 		}
@@ -1234,39 +1243,62 @@ func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, sc
 			continue
 		}
 		if flags, ok := flagConditions(k, v); ok {
+			if len(flags) == 0 {
+				w.assumed = appendAssumed(w.assumed, k, v, tokens)
+			}
 			w.flags = append(w.flags, flags...)
 			continue
 		}
-		if field, ok := schema[strings.ToLower(name)]; ok {
-			var values []string
-			if !condValues(v, &values) {
+		field, ok := schema[strings.ToLower(name)]
+		if !ok {
+			w.assumed = appendAssumed(w.assumed, k, v, tokens)
+			continue
+		}
+		var values []string
+		if !condValues(v, &values) {
+			continue
+		}
+		if arg = strings.TrimSpace(arg); arg != "" {
+			// "Field |contains=A, B": true accepts A or B; false accepts every other allowed value.
+			param, list, ok := strings.Cut(arg, "=")
+			if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) || len(values) != 1 {
 				continue
 			}
-			if arg = strings.TrimSpace(arg); arg != "" {
-				// "Field |contains=A, B": true accepts A or B; false accepts every other allowed value.
-				param, list, ok := strings.Cut(arg, "=")
-				if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) || len(values) != 1 {
-					continue
-				}
-				named := splitTargets(list)
-				switch strings.ToLower(values[0]) {
-				case "true":
-					values = named
-				case "false":
-					values = slices.DeleteFunc(slices.Clone(field.allowValues), func(a string) bool {
-						return slices.ContainsFunc(named, func(n string) bool { return strings.EqualFold(n, a) })
-					})
-				default:
-					continue
-				}
-				if len(values) == 0 {
-					continue
-				}
+			named := splitTargets(list)
+			switch strings.ToLower(values[0]) {
+			case "true":
+				values = named
+			case "false":
+				values = slices.DeleteFunc(slices.Clone(field.allowValues), func(a string) bool {
+					return slices.ContainsFunc(named, func(n string) bool { return strings.EqualFold(n, a) })
+				})
+			default:
+				continue
 			}
-			w.config = append(w.config, cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple})
+			if len(values) == 0 {
+				continue
+			}
 		}
+		w.config = append(w.config, cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple})
 	}
 	return w.with(cpWhen{spouse: spouseOf(raw, tokens), places: placesOf(raw)})
+}
+
+// appendAssumed records a condition this scan treats as met, unless it is a spouse or place condition the
+// summary already names.
+func appendAssumed(assumed []string, key string, raw json.RawMessage, tokens []cpTokenDefinition) []string {
+	one := map[string]json.RawMessage{key: raw}
+	if spouseOf(one, tokens) != "" || placesOf(one) != nil {
+		return assumed
+	}
+	key = strings.TrimSpace(key)
+	if _, arg, ok := strings.Cut(key, "|"); ok && strings.Contains(strings.ToLower(arg), "contains=") {
+		var flags []string
+		if condValues(raw, &flags) && len(flags) == 1 && strings.EqualFold(flags[0], "false") {
+			key = "not " + key
+		}
+	}
+	return append(assumed, key)
 }
 
 func dynamicTokenConditionParts(key string) (string, string, bool) {
@@ -1649,6 +1681,9 @@ func configCondition(field cpSchema, arg string, raw json.RawMessage) (cpConfig,
 
 func flagConditions(key string, raw json.RawMessage) ([]cpFlagCondition, bool) {
 	name, arg, _ := strings.Cut(key, "|")
+	if base, player, ok := strings.Cut(tokenName(name), ":"); ok && strings.TrimSpace(base) == "hasflag" && flagPlayers[strings.TrimSpace(player)] {
+		name = base
+	}
 	if !strings.EqualFold(tokenName(name), "hasflag") {
 		return nil, false
 	}
@@ -1681,6 +1716,10 @@ func flagConditions(key string, raw json.RawMessage) ([]cpFlagCondition, bool) {
 	}
 	return []cpFlagCondition{{name: strings.ToLower(strings.TrimSpace(list)), present: present}}, true
 }
+
+// flagPlayers are HasFlag's player inputs. A flag is read as the same condition whichever player holds it,
+// since a profile's saves are not split by player.
+var flagPlayers = map[string]bool{"currentplayer": true, "hostplayer": true, "anyplayer": true}
 
 // condValues reads a condition value given as a string, comma list, bool or array; false when it holds a token.
 func condValues(v json.RawMessage, out *[]string) bool {

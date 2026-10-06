@@ -269,3 +269,18 @@ func TestWhenSummaryPlainDynamicValue(t *testing.T) {
 		t.Fatalf("summary %q", got)
 	}
 }
+
+func TestWhenSummaryNamesAssumedConditions(t *testing.T) {
+	w := parseWhen(map[string]json.RawMessage{
+		"HasSeenEvent":                       json.RawMessage(`"12345"`),
+		"HasFlag: hostPlayer":                json.RawMessage(`"beenToDesert"`),
+		"Hearts:Abigail":                     json.RawMessage(`"8"`),
+		"Time":                               json.RawMessage(`"{{Range: 0600, 1200}}"`),
+		"HasProfession |contains=Gemologist": json.RawMessage(`false`),
+		"Season":                             json.RawMessage(`"Spring"`),
+	}, nil, nil)
+	want := "HasFlag beentodesert; season=spring; also needs: HasSeenEvent, Hearts:Abigail, Time, not HasProfession |contains=Gemologist"
+	if got := whenSummary(w); got != want {
+		t.Fatalf("summary %q, want %q", got, want)
+	}
+}

@@ -127,6 +127,9 @@ func whenSummary(w cpWhen) string {
 	for _, token := range slices.Sorted(maps.Keys(w.places)) {
 		parts = append(parts, token+"="+strings.Join(w.places[token], ", "))
 	}
+	if len(w.assumed) > 0 {
+		parts = append(parts, "also needs: "+strings.Join(slices.Compact(slices.Sorted(slices.Values(w.assumed))), ", "))
+	}
 	return strings.Join(parts, "; ")
 }
 
