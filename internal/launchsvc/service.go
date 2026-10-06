@@ -134,6 +134,7 @@ type Service struct {
 	settings *settings.Store
 	profiles *profile.Store
 	procDir  string
+	dataDir  func() (string, error)
 
 	mu       sync.Mutex
 	status   map[string]Status
@@ -182,7 +183,7 @@ type Service struct {
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
 	return &Service{
-		home: home, settings: s, profiles: profiles, procDir: procDirRun,
+		home: home, settings: s, profiles: profiles, procDir: procDirRun, dataDir: datadir.Dir,
 		status: map[string]Status{}, watching: map[string]bool{},
 		logs: map[string]session{}, stop: map[string]context.CancelFunc{}, preparing: map[string]string{}, startFailed: map[string]string{}, closing: map[string]bool{}, lastFailure: map[string]string{},
 		stopping: map[string]bool{}, reaping: map[string]bool{}, sampled: map[string]chan struct{}{},
@@ -984,7 +985,7 @@ func (s *Service) backupChangedSaves(gameID, profileID, installID, installDir st
 	if err != nil {
 		return err
 	}
-	dataDir, err := datadir.Dir()
+	dataDir, err := s.dataDir()
 	if err != nil {
 		return err
 	}

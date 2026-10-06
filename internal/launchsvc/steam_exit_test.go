@@ -13,6 +13,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -23,8 +25,8 @@ const protonGame = `Z:\home\nomad\.local\share\Steam\steamapps\common\Lethal Com
 // ends when the game does; without, it never ends, as on a PID reused by another process.
 func steamRun(t *testing.T, timedOutFirst, exits bool) (*Service, game.Game) {
 	t.Helper()
-	datadirtest.Use(t, t.TempDir())
-	_, profiles := testenv.Stores(t)
+	data := t.TempDir()
+	profiles := profile.OpenIn(filepath.Join(data, "profiles"), store.OpenAt(filepath.Join(data, "store")))
 	p := testenv.Profile(t, profiles, "lethal-company", "A")
 	svc := NewService(t.TempDir(), nil, profiles)
 	svc.procDir = t.TempDir()
@@ -70,6 +72,7 @@ func idleWithin(svc *Service, g game.Game, limit time.Duration) bool {
 }
 
 func TestASteamRunClosesOnceTheGameIsGone(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name                 string
 		timedOutFirst, exits bool
@@ -80,6 +83,7 @@ func TestASteamRunClosesOnceTheGameIsGone(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
 			svc, g := steamRun(t, c.timedOutFirst, c.exits)
 			time.Sleep(3 * pollEvery)
 			if st := svc.current(g); st.State != Running {
@@ -96,6 +100,7 @@ func TestASteamRunClosesOnceTheGameIsGone(t *testing.T) {
 }
 
 func TestStoppingARunWhoseGameIsGoneClosesIt(t *testing.T) {
+	t.Parallel()
 	svc, g := steamRun(t, true, false)
 	if err := os.RemoveAll(filepath.Join(svc.procDir, "4242")); err != nil {
 		t.Fatal(err)
@@ -109,6 +114,7 @@ func TestStoppingARunWhoseGameIsGoneClosesIt(t *testing.T) {
 }
 
 func TestAGameStartedOutsideMortarAfterARunClosesToo(t *testing.T) {
+	t.Parallel()
 	svc, g := steamRun(t, false, true)
 	proc := filepath.Join(svc.procDir, "4242")
 	if err := os.RemoveAll(proc); err != nil {

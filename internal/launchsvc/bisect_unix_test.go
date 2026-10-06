@@ -14,7 +14,8 @@ import (
 )
 
 func TestRunForBisectStopsWhenStartupReportAppears(t *testing.T) {
-	svc, p := startEnv(t)
+	t.Parallel()
+	svc, p := parallelStartEnv(t)
 	if _, err := svc.profiles.SetOverride("stardew", p.ID, "defaultLaunchMethod", settings.LaunchDirect); err != nil {
 		t.Fatal(err)
 	}

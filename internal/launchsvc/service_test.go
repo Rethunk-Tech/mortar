@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -415,6 +416,29 @@ func TestStartLoaderUsesAppLifetime(t *testing.T) {
 
 const fakeGameEnv = "MORTAR_TEST_FAKE_GAME"
 
+// parallelStartEnv is startEnv for a parallel test: the stores, settings and the service's data folder are handed
+// their folders instead of finding them through the environment.
+func parallelStartEnv(t *testing.T) (*Service, profile.Profile) {
+	t.Helper()
+	data := t.TempDir()
+	folder := t.TempDir()
+	if err := os.WriteFile(filepath.Join(folder, "Stardew Valley.dll"), []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	set, err := settings.OpenIn(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders["stardew"] = folder }); err != nil {
+		t.Fatal(err)
+	}
+	profiles := profile.OpenIn(filepath.Join(data, "profiles"), store.OpenAt(filepath.Join(data, "store")))
+	p := testenv.Profile(t, profiles, "stardew", "A")
+	svc := NewService(t.TempDir(), set, profiles)
+	svc.dataDir = func() (string, error) { return data, nil }
+	return svc, p
+}
+
 // fakeGameEnvLines is the stand-in game's launch environment. The race runtime sleeps a second before every exit
 // unless told not to, which would triple the stand-in's runtime.
 const fakeGameEnvLines = fakeGameEnv + "=1\nGORACE=atexit_sleep_ms=0"
@@ -434,15 +458,19 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	procVisible = func(p launch.Process) bool { return p.RunsFrom(root) }
+	// A parallel test cannot t.Setenv, so the game config folder falls back to each test's own home instead of the
+	// user's.
+	if err := os.Unsetenv("XDG_CONFIG_HOME"); err != nil {
+		panic(err)
+	}
 	code := m.Run()
 	_ = os.RemoveAll(root)
 	os.Exit(code)
 }
 
 func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	t.Setenv("APPDATA", t.TempDir())
-	svc, p := startEnv(t)
+	t.Parallel()
+	svc, p := parallelStartEnv(t)
 	folder := svc.settings.Get().GameFolders["stardew"]
 	self, err := os.Executable()
 	if err != nil {
