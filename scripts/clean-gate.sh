@@ -14,8 +14,9 @@ TREE=${MORTAR_CLEAN_GATE_DIR:-/var/tmp/mortar-clean-gate}
 LOG=$TREE.log
 # Kept inside .git, which git clean never touches: it marks the tree as this script's own before anything is cleaned.
 MARKER=.git/mortar-clean-gate
-# Scratch for every step lives in the tree, which the next run's git clean empties, so a killed run leaks nothing.
-export TMPDIR=$TREE/.tmp GOTMPDIR=$TREE/.tmp
+# Scratch for every step lives in the tree's gitignored tmp/: the next run's git clean -x empties it, so a killed run
+# leaks nothing, and Biome (which honours .gitignore) never lints the tools' caches there.
+export TMPDIR=$TREE/tmp GOTMPDIR=$TREE/tmp
 
 package=""
 if [ "${1:-}" = --package ]; then
