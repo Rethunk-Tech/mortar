@@ -337,16 +337,14 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
 // The one fact the header does not already show: the source sits under the name and the switch shows on or off.
 function ModChips({ mod }: { mod: Mod }) {
   const { t } = useLingui()
+  const host = localId(mod.contentPackFor ?? '')
+  const hostName = useMods((s) => s.mods.find((m) => sameId(localId(m.id), host))?.name) || host
   if (!mod.contentPackFor) {
     return null
   }
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-      <Chip
-        size="small"
-        variant="outlined"
-        label={t`Content pack for ${localId(mod.contentPackFor)}`}
-      />
+      <Chip size="small" variant="outlined" label={t`Content pack for ${hostName}`} />
     </Box>
   )
 }
