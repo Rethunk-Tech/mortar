@@ -160,7 +160,7 @@ type Service struct {
 	EnsureLoader func(ctx context.Context, gameID, loaderID string, fromStart bool) error
 	// Unlocked is called when a game is no longer launching or running, so the queue can retry work it held.
 	Unlocked func()
-	// NotifyRunEnd sends a desktop notification when a Mortar-started run ends; main sets this from the tray wiring.
+	// NotifyRunEnd sends a desktop notification when a run Mortar started crashed; main sets this from the tray wiring.
 	NotifyRunEnd func(RunEndNotice)
 	// OnSavePlayed is called with the save folder SMAPI loaded when a run is recorded.
 	OnSavePlayed func(gameID, profileID, saveFolder string)
@@ -1297,15 +1297,6 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		started := sess.started
 		if cur.Since > 0 {
 			started = time.UnixMilli(cur.Since)
-		}
-		if s.NotifyRunEnd != nil {
-			modsDir, err := s.profiles.ModsDir(g.ID(), cur.Profile)
-			if err == nil {
-				stats := launch.Summarize(s.runText(g, cur.Profile, modsDir, time.Time{}))
-				if title, body, crashed := RunEndNotificationText(g.Name(), stats); crashed {
-					s.NotifyRunEnd(RunEndNotice{Game: g.ID(), Profile: cur.Profile, Title: title, Body: body})
-				}
-			}
 		}
 		s.record(g, cur.Profile, started, false, sess.mods)
 	}

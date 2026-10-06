@@ -340,3 +340,26 @@ func TestCauseNamesTheModSMAPILoggedTheErrorFor(t *testing.T) {
 		t.Fatalf("asset cause = %#v", got)
 	}
 }
+
+func TestRunEndNoticeOnlyForACrash(t *testing.T) {
+	svc, p, cfg, home := runEnv(t)
+	var notices []RunEndNotice
+	svc.NotifyRunEnd = func(n RunEndNotice) { notices = append(notices, n) }
+	mods, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := game.Find("stardew")
+	writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Farm] broke\n")
+	svc.record(g, p.ID, time.Now(), false)
+	svc.logs["stardew/"] = session{profile: p.ID, haveExit: true, exit: launch.Exit{Signal: "SIGTERM", Stopped: true}}
+	svc.record(g, p.ID, time.Now(), false)
+	if len(notices) != 0 {
+		t.Fatalf("errors and a stop are not crashes: %#v", notices)
+	}
+	svc.logs["stardew/"] = session{profile: p.ID, haveExit: true, exit: launch.Exit{Code: 139, Signal: "SIGSEGV"}}
+	svc.record(g, p.ID, time.Now(), false)
+	if len(notices) != 1 || notices[0].Title != "Stardew Valley crashed" || !strings.Contains(notices[0].Body, "SIGSEGV") {
+		t.Fatalf("a crash the exit status shows must notify: %#v", notices)
+	}
+}

@@ -406,6 +406,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if !failed && s.settings != nil {
 		_, _ = s.settings.AddPlaytime(g.ID(), ended.Sub(started))
 	}
+	if title, body, crashed := RunEndNotificationText(g.Name(), stats); crashed && !failed && s.NotifyRunEnd != nil {
+		s.NotifyRunEnd(RunEndNotice{Game: g.ID(), Profile: profileID, Title: title, Body: body})
+	}
 	if !failed && (stats.Crashed || (!stopped && stats.Errors > 0)) {
 		var crashCause *Cause
 		if run.Cause != nil {
