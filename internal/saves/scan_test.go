@@ -277,3 +277,39 @@ func TestScanRecomputesAResultCachedByAnOlderParser(t *testing.T) {
 		t.Fatalf("scan = %+v, %v; want the older parser's entry recomputed", got, err)
 	}
 }
+
+func TestWrittenSinceNamesTheSavesARunWrote(t *testing.T) {
+	dir := t.TempDir()
+	start := time.Now().Add(-time.Minute)
+	write := func(name string, at time.Time) {
+		path := filepath.Join(dir, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chtimes(path, at, at); err != nil {
+			t.Fatal(err)
+		}
+	}
+	before, after := start.Add(-time.Hour), start.Add(time.Second)
+	write("LCSaveFile1", after)
+	write("LCSaveFile2", before)
+	write("LCGeneralSaveData", after)
+	lc := Layout{Dir: dir, Files: []string{"LCSaveFile*", "LCChallengeFile"}}
+	if got, err := lc.WrittenSince(start); err != nil || !reflect.DeepEqual(got, []string{"LCSaveFile1"}) {
+		t.Fatalf("Lethal Company = %v, %v", got, err)
+	}
+
+	dir = t.TempDir()
+	write("characters_local/Ragnar.fch", after)
+	write("worlds_local/Midgard.fwl", before)
+	write("worlds_local/Midgard.db", after)
+	write("worlds_local/Midgard_backup_auto-1.fwl", after)
+	write("worlds_local/Old.fwl", before)
+	valheim := Layout{Dir: dir, Files: []string{"characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"}, Companions: []string{".db"}}
+	if got, err := valheim.WrittenSince(start); err != nil || !reflect.DeepEqual(got, []string{"characters_local/Ragnar.fch", "worlds_local/Midgard.fwl"}) {
+		t.Fatalf("Valheim = %v, %v", got, err)
+	}
+}

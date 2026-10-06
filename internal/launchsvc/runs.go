@@ -338,8 +338,10 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		since = started
 	}
 	text := s.runText(g, profileID, modsDir, since)
-	if folder, ok := launch.LoadedSave(text); ok && s.OnSavePlayed != nil {
-		s.OnSavePlayed(g.ID(), profileID, folder)
+	if s.OnSavePlayed != nil {
+		for _, save := range s.playedSaves(g.ID(), text, started, failed) {
+			s.OnSavePlayed(g.ID(), profileID, save)
+		}
 	}
 	stats := launch.Summarize(text)
 	ldr := cmp.Or(s.profileLoader(g.ID(), profileID), loaderID(g.ID()))
@@ -536,6 +538,25 @@ func pathWithin(path, dir string) bool {
 		return false
 	}
 	return datadir.UnderRoot(absDir, absPath)
+}
+
+// playedSaves are the saves a run played: the one SMAPI's log says it loaded, else, for a loader whose log names none,
+// every save the catalog's save patterns match that was written after the run started. Lethal Company also rewrites
+// LCGeneralSaveData and Valheim writes a character and a world each run; the patterns keep the first out and
+// count both of the second.
+func (s *Service) playedSaves(gameID, text string, started time.Time, failed bool) []string {
+	if folder, ok := launch.LoadedSave(text); ok {
+		return []string{folder}
+	}
+	if failed || started.IsZero() || s.settings == nil {
+		return nil
+	}
+	dir, err := game.SavesDir(s.home, s.settings.Get(), gameID, "")
+	if err != nil || dir == "" {
+		return nil
+	}
+	names, _ := game.SaveLayout(gameID, dir).WrittenSince(started.Add(-clockSlack))
+	return names
 }
 
 // runText is the run's loader log, else the session's console. A non-zero since skips a loader log last written

@@ -260,6 +260,21 @@ func (l Layout) Names() ([]string, error) {
 	return out, nil
 }
 
+// WrittenSince lists the saves with a file written at or after t: the saves a run that started then played.
+func (l Layout) WrittenSince(t time.Time) ([]string, error) {
+	names, err := l.Names()
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, name := range names {
+		if mtime, _, err := l.newest(name); err == nil && !mtime.Before(t) {
+			out = append(out, name)
+		}
+	}
+	return out, nil
+}
+
 // newest is the latest write among save name's files, and their total size.
 func (l Layout) newest(name string) (mtime time.Time, size int64, err error) {
 	for _, p := range l.Paths(name) {
