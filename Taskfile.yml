@@ -48,6 +48,11 @@ tasks:
     cmds:
       - scripts/selftest.sh {{.CLI_ARGS | default "start"}}
 
+  clean-gate:
+    summary: Runs the fresh-clone gate (and with --package the AppImage) at a rev in one reused clean tree (scripts/clean-gate.sh)
+    cmds:
+      - scripts/clean-gate.sh {{.CLI_ARGS}}
+
   components:refresh:
     summary: Resolves, hashes and refreshes the bundled component manifest
     cmds:
