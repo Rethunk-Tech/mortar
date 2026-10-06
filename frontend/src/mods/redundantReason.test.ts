@@ -22,3 +22,17 @@ test('same-job pairs join into one group per job', () => {
     { keys: ['x', 'y'], detail: 'NPC.hasBeenKissedToday' },
   ])
 })
+
+test('a pair listed once still forms a group with the mod that only appears in by', () => {
+  const groups = sameJobGroups([
+    {
+      kind: 'sameJob',
+      key: 'a',
+      id: 'a',
+      name: 'a',
+      by: [{ key: 'b', name: 'b' }],
+      detail: 'Farmer.CurrentToolIndex',
+    },
+  ])
+  expect(groups).toEqual([{ keys: ['a', 'b'], detail: 'Farmer.CurrentToolIndex' }])
+})

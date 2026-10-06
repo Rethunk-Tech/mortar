@@ -34,7 +34,7 @@ const (
 	sameJobRare  = 3
 )
 
-// A smaller mod is covered by a larger one when the larger changes sameJobCovered of its footprint by weight. Large
+// A smaller mod overlaps a larger one when the larger changes sameJobCovered of its footprint by weight. Large
 // mods write many common members and so cover small ones by accident: the smaller footprint must weigh at least
 // sameJobCoveredWeight, which rules out one or two common members, and every shared member must be written by at most
 // sameJobCoveredDF mods.
@@ -99,7 +99,8 @@ func footprints(mods []framework.Mod, replaces map[string][]string) map[string]m
 }
 
 // sameJob flags pairs of enabled mods whose footprints overlap, weighting each member by how few mods change it, and
-// smaller mods whose footprint a larger one covers (listed on the smaller mod only).
+// smaller mods whose footprint overlaps a larger one's (listed on the smaller mod only). A footprint sees only what a
+// mod assigns in the game, not what it draws or adds to the UI, so an overlap is a hint and never proof of redundancy.
 // Pairs that are meant to run together are left out: one depends on the other, they share an author or download,
 // or either is something another enabled mod builds on, since a framework writes what its users write.
 func sameJob(fp map[string]map[string]bool, mods []framework.Mod) []framework.Redundant {
@@ -191,12 +192,20 @@ func sameJob(fp map[string]map[string]bool, mods []framework.Mod) []framework.Re
 			}
 		}
 	}
+	// A similar pair is listed once, on the earlier mod; the later one still appears in By, which is what groups them.
+	position := map[string]int{}
+	for i, m := range code {
+		position[m.Key] = i
+	}
 	var out []framework.Redundant
-	for _, m := range code {
+	for i, m := range code {
 		id := m.ModID().Fold()
 		switch {
 		case len(by[id]) > 0:
-			out = append(out, framework.Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: by[id], Detail: shortMembers(shared[id], weight)})
+			later := slices.DeleteFunc(slices.Clone(by[id]), func(r framework.ModRef) bool { return position[r.Key] < i })
+			if len(later) > 0 {
+				out = append(out, framework.Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: later, Detail: shortMembers(shared[id], weight)})
+			}
 		case len(coveredBy[id]) > 0:
 			out = append(out, framework.Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: coveredBy[id], Detail: shortMembers(coveredShared[id], weight), Covered: true})
 		}

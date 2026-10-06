@@ -103,7 +103,7 @@ export function useRedundantRows() {
       if (item.kind === 'superseded') {
         reason = t`Replaced by ${by}, which is also enabled`
       } else if (item.covered) {
-        reason = t`Everything it changes, ${by} also changes: ${detail}`
+        reason = t`Overlaps with ${by}: both change ${detail}`
       }
       rows.push({ key: item.key, id: item.id, name: item.name, reason })
     }

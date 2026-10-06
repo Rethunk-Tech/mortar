@@ -8194,6 +8194,10 @@ msgstr "That request was not valid."
 msgid "Description"
 msgstr "Description"
 
+#: src/mods/redundantReason.ts:106
+msgid "Overlaps with {by}: both change {detail}"
+msgstr "Overlaps with {by}: both change {detail}"
+
 #: src/console/ConsoleTab.tsx:63
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
@@ -12422,10 +12426,6 @@ msgstr "Different source"
 #: src/profiles/PackImportDialog.tsx:90
 msgid "Not from Thunderstore: {0}"
 msgstr "Not from Thunderstore: {0}"
-
-#: src/mods/redundantReason.ts:106
-msgid "Everything it changes, {by} also changes: {detail}"
-msgstr "Everything it changes, {by} also changes: {detail}"
 
 #. placeholder {0}: names[level]
 #. placeholder {1}: formatCount(counts.get(level) ?? 0, i18n.locale)

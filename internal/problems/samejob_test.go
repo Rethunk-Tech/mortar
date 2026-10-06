@@ -89,7 +89,7 @@ func TestSameJobWeighsMembersByHowFewModsWriteThem(t *testing.T) {
 
 	got := sameJob(fp, mods)
 
-	if len(got) != 2 || got[0].Key != "k-a" || got[1].Key != "k-b" || got[0].Kind != "sameJob" {
+	if len(got) != 1 || got[0].Key != "k-a" || got[0].Kind != "sameJob" {
 		t.Fatalf("rows = %+v", got)
 	}
 	if !slices.Equal(got[0].By, []framework.ModRef{{Key: "k-b", Name: "b"}}) || got[0].Detail != "T.tool" {
@@ -111,7 +111,7 @@ func TestSameJobOnSmallProfilesNeedsOneFootprintInsideTheOther(t *testing.T) {
 
 	got := sameJob(fp, mods)
 
-	if len(got) != 2 || got[0].Key != "a" || got[1].Key != "b" || got[1].Detail != "T.t" {
+	if len(got) != 1 || got[0].Key != "a" || got[0].Detail != "T.t" || len(got[0].By) != 1 || got[0].By[0].Key != "b" {
 		t.Fatalf("rows = %+v", got)
 	}
 }
@@ -159,5 +159,26 @@ func TestSameJobListsASmallerModALargerOneCovers(t *testing.T) {
 	}
 	if got[0].Detail != "S.1, S.2, S.3, …" {
 		t.Fatalf("detail = %q", got[0].Detail)
+	}
+}
+
+func TestSameJobListsEachSimilarPairOnce(t *testing.T) {
+	fp := map[string]map[string]bool{
+		"smapi:a": {"T::t": true},
+		"smapi:b": {"T::t": true},
+		"smapi:c": {"T::t": true},
+	}
+	var mods []framework.Mod
+	for _, id := range []string{"a", "b", "c"} {
+		mods = append(mods, framework.Mod{Key: id, Enabled: true, UniqueID: id, Name: id})
+	}
+
+	got := sameJob(fp, mods)
+
+	if len(got) != 2 || got[0].Key != "a" || len(got[0].By) != 2 || got[1].Key != "b" || len(got[1].By) != 1 || got[1].By[0].Key != "c" {
+		t.Fatalf("rows = %+v, want a: b, c and b: c", got)
+	}
+	if n := redundantCount(got); n != 1 {
+		t.Fatalf("redundantCount = %d, want one group", n)
 	}
 }
