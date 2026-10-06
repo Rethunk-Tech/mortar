@@ -1,39 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
-import { useEffect, useState } from 'react'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
-import { ReleaseChangelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { inlineError } from '../toasts/report.ts'
 import { changelogNoteIsRisky } from './changelogRange.ts'
 import { useNexusEntry } from './nexusDetails.ts'
 import { isNewer, isSameVersion } from './nexusFormat.ts'
+import { useReleases } from './releases.ts'
 import { ChangelogText } from './updateReview/Changes.tsx'
-
-type Loaded = { logs: Changelog[] } | { error: ReturnType<typeof inlineError> } | null
-
-// GitHub releases come from the cached releases list; Nexus versions are already in the mod's cached details.
-function useReleases(open: boolean, githubRepo: string) {
-  const [state, setState] = useState<Loaded>(null)
-  const [attempt, setAttempt] = useState(0)
-  useEffect(() => {
-    if (!open || githubRepo === '' || attempt < 0) {
-      return
-    }
-    let live = true
-    setState(null)
-    ReleaseChangelog(githubRepo).then(
-      (logs) => live && setState({ logs: logs ?? [] }),
-      (e: unknown) => live && setState({ error: inlineError(e) }),
-    )
-    return () => {
-      live = false
-    }
-  }, [open, githubRepo, attempt])
-  return { state, retry: () => setAttempt((n) => n + 1) }
-}
 
 function Version({ entry, installed }: { entry: Changelog; installed: string }) {
   const { t } = useLingui()
@@ -61,6 +36,17 @@ function Version({ entry, installed }: { entry: Changelog; installed: string }) 
       {entry.body ? <ChangelogText text={entry.body} /> : null}
       {(entry.notes ?? []).map((n) => (
         <ChangelogText key={n} text={`• ${n}`} risky={changelogNoteIsRisky(n)} />
+      ))}
+    </Box>
+  )
+}
+
+/** The changelog's versions, newest first, each marked New or Installed against installed. */
+export function ChangelogEntries({ logs, installed }: { logs: Changelog[]; installed: string }) {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      {logs.map((entry) => (
+        <Version key={entry.version} entry={entry} installed={installed} />
       ))}
     </Box>
   )
@@ -100,13 +86,7 @@ export function ChangelogDialog({
       </EmptyState>
     )
   } else if (logs !== null) {
-    body = (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {logs.map((entry) => (
-          <Version key={entry.version} entry={entry} installed={installed} />
-        ))}
-      </Box>
-    )
+    body = <ChangelogEntries logs={logs} installed={installed} />
   }
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">

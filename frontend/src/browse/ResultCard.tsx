@@ -1,76 +1,15 @@
-import { plural } from '@lingui/core/macro'
-import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Card, Tooltip, Typography } from '@mui/material'
+import { Box, Card, Typography } from '@mui/material'
 import { ExternalLink } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
-import { hasSourceLogo } from '../brand/sources/sourceIcons.ts'
-import { openProfileOf, useProfiles } from '../profiles/store.ts'
-import { useQueue } from '../queue/store.ts'
+import { type MouseEvent, useState } from 'react'
 import { IconAction } from '../shell/IconAction.tsx'
-import { usePending } from '../toasts/usePending.ts'
-import {
-  GITHUB,
-  GRAY_OPACITY,
-  NEXUS,
-  openPageLabel,
-  PICTURE_PX,
-  ROW_PICTURE_PX,
-  THUNDERSTORE,
-} from './browseConstants.ts'
+import { GRAY_OPACITY, openPageLabel, PICTURE_PX, ROW_PICTURE_PX } from './browseConstants.ts'
+
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
-import { CardAction } from './CardAction.tsx'
-import { cardState, inProfile, isActive, isInstalled, shownState } from './cardState.ts'
-import { pickedItem } from './pickedItem.ts'
-
-// One badge per source the mod is on; the filled one is where Add installs from.
-function SourceBadges({
-  sources,
-  picked,
-  names,
-  onPick,
-}: {
-  sources: string[]
-  picked: string
-  names: Map<string, string>
-  onPick: (source: string) => void
-}) {
-  if (sources.length < 2) {
-    return null
-  }
-  return (
-    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', pt: 0.25 }}>
-      {sources.map((id) => {
-        const name = names.get(id) ?? id
-        const mark = hasSourceLogo(id) ? <SourceLogo id={id} size={14} /> : <span>{name}</span>
-        return (
-          <Tooltip key={id} title={name}>
-            <ButtonBase
-              aria-label={name}
-              aria-pressed={id === picked}
-              onClick={() => onPick(id)}
-              sx={{
-                minWidth: 28,
-                height: 24,
-                px: 0.5,
-                borderRadius: '6px',
-                fontSize: 12,
-                border: '1px solid',
-                borderColor: id === picked ? 'var(--mortar-ink-dim-60)' : 'var(--mortar-hairline)',
-                bgcolor: id === picked ? 'var(--mortar-hairline-16)' : 'transparent',
-                color: 'text.secondary',
-                '&:hover': { bgcolor: 'var(--mortar-hairline-muted)' },
-              }}
-            >
-              {mark}
-            </ButtonBase>
-          </Tooltip>
-        )
-      })}
-    </Box>
-  )
-}
+import { SourceBadges } from './SourceBadges.tsx'
+import { hitKey, useBrowseSelection } from './selection.ts'
+import { useStats } from './stats.ts'
+import { useCardAction } from './useCardAction.tsx'
 
 function CardPicture({ picture, size, dim }: { picture: string; size: number; dim: number }) {
   const sx = { width: size, height: size, flexShrink: 0, borderRadius: '4px', opacity: dim }
@@ -82,14 +21,6 @@ function CardPicture({ picture, size, dim }: { picture: string; size: number; di
   )
 }
 
-function useStats(item: BrowseItem): string {
-  const { t } = useLingui()
-  const { endorsements, stars, downloads } = item
-  return item.source === NEXUS
-    ? t`${plural(endorsements, { one: '# endorsement', other: '# endorsements' })} · ${plural(downloads, { one: '# download', other: '# downloads' })}`
-    : plural(stars, { one: '# star', other: '# stars' })
-}
-
 // Gray out dims the mod's picture and text; the action and its chip stay readable.
 function isGray(modes: BrowseModes, item: BrowseItem, installed: boolean): boolean {
   return (
@@ -99,60 +30,38 @@ function isGray(modes: BrowseModes, item: BrowseItem, installed: boolean): boole
   )
 }
 
+// A click on the card's own buttons and links does what they say, not select the card.
+const onControl = (e: MouseEvent<HTMLElement>) =>
+  e.target instanceof Element && e.target.closest('button, a, [role="button"]') !== null
+
 function ResultCard(props: ResultCardProps) {
-  const { row, item, premium, openUrl, profileID, modes, sourceNames } = props
-  const [pending, run] = usePending()
-  const [openedFiles, setOpenedFiles] = useState(false)
-  const items = useQueue((s) => s.state.items)
+  const { row, item, openUrl, modes, sourceNames } = props
   const { name, summary, author } = item
   // The same mod found on several sources is one card; its first source is the default and a badge picks another.
-  const primary = { source: item.source, id: item.id, url: item.url, installed: item.installed }
-  const choices = [primary, ...(item.alts ?? [])]
+  const sources = [item.source, ...(item.alts ?? []).map((a) => a.source)]
   const [picked, setPicked] = useState(item.source)
-  const { source, id, url } = choices.find((c) => c.source === picked) ?? primary
-  const shownItem = pickedItem(item, source)
-  // The profile's own entries are the live word: the search result's flag is only as new as the search, so it counts
-  // only until the profile changes.
-  const profile = useProfiles(openProfileOf)
-  const searchedUpdated = useRef(profile?.updated)
-  const held = inProfile(profile, source, id)
-  const installed = isInstalled(
-    held,
-    choices.some((c) => c.installed),
-    item.loader,
-    profile?.updated === searchedUpdated.current,
+  const source = sources.includes(picked) ? picked : item.source
+  const { shownItem, url, installed, action } = useCardAction(props, item, source)
+  const stats = useStats(shownItem)
+  const selected = useBrowseSelection(
+    (s) => s.selected !== null && hitKey(s.selected.item) === hitKey(item),
   )
-  const stats = useStats(item)
-  const live = cardState(items, source, id, profileID)
-  // A free account's click on Mod Manager Download is not ours to see; the card waits for its nxm item.
-  const queueState =
-    live.kind === 'idle' && openedFiles ? ({ kind: 'waiting-nexus' } as const) : live
-  const [watched, setWatched] = useState(false)
-  useEffect(() => {
-    if (isActive(queueState)) {
-      setWatched(true)
-    }
-  }, [queueState])
-  // A mod removed again (Undo from the bell) is no longer one this card watched arrive.
-  const wasHeld = useRef(false)
-  useEffect(() => {
-    if (held) {
-      wasHeld.current = true
-    } else if (wasHeld.current) {
-      wasHeld.current = false
-      setWatched(false)
-    }
-  }, [held])
-  const shown = shownState(queueState, installed, watched)
-  const add = () => {
-    if (source === GITHUB) {
-      return props.addGitHub(id)
-    }
-    return source === THUNDERSTORE ? props.addPackage(id) : props.addDirect(source, id)
-  }
   const dim = isGray(modes, shownItem, installed) ? GRAY_OPACITY : 1
   return (
     <Card
+      data-hit={hitKey(item)}
+      aria-current={selected ? 'true' : undefined}
+      onClick={(e) => {
+        if (!onControl(e)) {
+          useBrowseSelection.getState().select({ item, source })
+        }
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault()
+        useBrowseSelection
+          .getState()
+          .openMenu({ item, source }, { top: e.clientY, left: e.clientX })
+      }}
       sx={{
         display: 'flex',
         alignItems: row ? 'center' : 'stretch',
@@ -160,6 +69,10 @@ function ResultCard(props: ResultCardProps) {
         p: 1,
         borderRadius: '6px',
         minWidth: 0,
+        cursor: 'pointer',
+        outline: selected ? '2px solid' : 'none',
+        outlineColor: 'primary.main',
+        outlineOffset: '-2px',
       }}
     >
       <CardPicture picture={item.picture} size={row ? ROW_PICTURE_PX : PICTURE_PX} dim={dim} />
@@ -192,12 +105,7 @@ function ResultCard(props: ResultCardProps) {
         >
           {summary}
         </Typography>
-        <SourceBadges
-          sources={choices.map((c) => c.source)}
-          picked={source}
-          names={sourceNames}
-          onPick={setPicked}
-        />
+        <SourceBadges sources={sources} picked={source} names={sourceNames} onPick={setPicked} />
       </Box>
       <Box
         sx={{
@@ -213,23 +121,10 @@ function ResultCard(props: ResultCardProps) {
           icon={<ExternalLink size={15} />}
           onClick={() => openUrl(url)}
         />
-        <CardAction
-          item={shownItem}
-          source={source}
-          state={shown}
-          installed={installed}
-          premium={premium}
-          pending={pending}
-          onAdd={() => run(() => Promise.resolve(add()))}
-          onDownload={() => run(() => Promise.resolve(props.downloadNexus(id)))}
-          onOpenFiles={() => {
-            setOpenedFiles(true)
-            openUrl(`${url}?tab=files`)
-          }}
-        />
+        {action}
       </Box>
     </Card>
   )
 }
 
-export { ResultCard }
+export { CardPicture, ResultCard }

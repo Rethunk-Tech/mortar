@@ -2058,10 +2058,6 @@ msgstr "Filter mods"
 msgid "Apply {name}"
 msgstr "Apply {name}"
 
-#: src/browse/ResultCard.tsx:35
-msgid "{endorsements, plural, one {# endorsement} other {# endorsements}} · {downloads, plural, one {# download} other {# downloads}}"
-msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}} · {downloads, plural, one {# download} other {# downloads}}"
-
 #: src/settings/prefCopy.ts:464
 msgid "Remember window size and position"
 msgstr "Remember window size and position"
@@ -2482,6 +2478,10 @@ msgstr "Add tool"
 #: src/settings/SettingsPage.tsx:37
 msgid "Appearance"
 msgstr "Appearance"
+
+#: src/browse/stats.ts:13
+msgid "{downloads, plural, one {# download} other {# downloads}}"
+msgstr "{downloads, plural, one {# download} other {# downloads}}"
 
 #. placeholder {0}: status.error
 #: src/launch/store.ts:72
@@ -3520,7 +3520,7 @@ msgstr "Open a .mortar file someone sent you. You see what it holds before anyth
 msgid "Already has {0}"
 msgstr "Already has {0}"
 
-#: src/browse/BrowseDetails.tsx:90
+#: src/browse/BrowseDetails.tsx:92
 #: src/mods/Sidebar.tsx:390
 #: src/mods/updateReview/Row.tsx:119
 msgid "Changelog"
@@ -3646,6 +3646,10 @@ msgstr "Sun"
 #: src/mods/problemFix/LoadFailureFix.tsx:29
 msgid "Find {dependency}"
 msgstr "Find {dependency}"
+
+#: src/browse/stats.ts:22
+msgid "{endorsements, plural, one {# follower} other {# followers}} · {dl}"
+msgstr "{endorsements, plural, one {# follower} other {# followers}} · {dl}"
 
 #: src/settings/sections/GameSettings.tsx:62
 msgid "Reset game install?"
@@ -4295,7 +4299,7 @@ msgid "Working directory"
 msgstr "Working directory"
 
 #: src/browse/CardProgress.tsx:28
-#: src/mods/ChangelogDialog.tsx:58
+#: src/mods/ChangelogDialog.tsx:33
 #: src/mods/columnLabel.ts:17
 #: src/mods/ModDetail.tsx:68
 #: src/mods/OptionalFileRows.tsx:121
@@ -4399,6 +4403,7 @@ msgstr "No backups to delete"
 msgid "Duplicate"
 msgstr "Duplicate"
 
+#: src/browse/BrowseDetails.tsx:56
 #: src/launch/PrePlayDialog.tsx:90
 #: src/share/SharedMods.tsx:68
 msgid "and {count} more"
@@ -4928,7 +4933,7 @@ msgstr "Has problems"
 msgid "LAN port"
 msgstr "LAN port"
 
-#: src/browse/BrowseDetails.tsx:50
+#: src/browse/BrowseDetails.tsx:52
 msgid "{latest} (latest)"
 msgstr "{latest} (latest)"
 
@@ -5932,7 +5937,7 @@ msgstr "Save as template…"
 msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
-#: src/browse/BrowseDetails.tsx:251
+#: src/browse/BrowseDetails.tsx:253
 #: src/mods/Sidebar.tsx:571
 msgid "Selected mod"
 msgstr "Selected mod"
@@ -6068,7 +6073,7 @@ msgid "Press Play to start."
 msgstr "Press Play to start."
 
 #: src/console/PerformanceComparison.tsx:66
-#: src/mods/ChangelogDialog.tsx:59
+#: src/mods/ChangelogDialog.tsx:34
 #: src/mods/NewSince.tsx:14
 #: src/toasts/HistoryButton.tsx:152
 msgid "New"
@@ -6129,7 +6134,7 @@ msgstr "Could not update: {0}"
 msgid "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 msgstr "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 
-#: src/browse/BrowseDetails.tsx:49
+#: src/browse/BrowseDetails.tsx:51
 #: src/mods/ModDetail.tsx:103
 msgid "Versions"
 msgstr "Versions"
@@ -6220,6 +6225,10 @@ msgstr "Clears cached Nexus and SMAPI details and problem scans, for a revoked A
 msgid "Clear cache"
 msgstr "Clear cache"
 
+#: src/browse/stats.ts:20
+msgid "{endorsements, plural, one {# like} other {# likes}} · {dl}"
+msgstr "{endorsements, plural, one {# like} other {# likes}} · {dl}"
+
 #: src/mods/describe.ts:77
 msgid "{who} all load {target}.{winner}"
 msgstr "{who} all load {target}.{winner}"
@@ -6253,7 +6262,7 @@ msgstr "{owner} opens these links now."
 msgid "{0, plural, one {# mod selected} other {# mods selected}}"
 msgstr "{0, plural, one {# mod selected} other {# mods selected}}"
 
-#: src/mods/ChangelogDialog.tsx:118
+#: src/mods/ChangelogDialog.tsx:93
 msgid "Changelog: {name}"
 msgstr "Changelog: {name}"
 
@@ -7282,7 +7291,7 @@ msgstr "{0, plural, one {Filter # save} other {Filter # saves}}"
 msgid "{gameName} is now {0}. This profile last launched on {1}."
 msgstr "{gameName} is now {0}. This profile last launched on {1}."
 
-#: src/mods/ChangelogDialog.tsx:109
+#: src/mods/ChangelogDialog.tsx:84
 msgid "No changelog published"
 msgstr "No changelog published"
 
@@ -7479,7 +7488,7 @@ msgstr "No launchers found. Continue and choose each game's folder when you open
 msgid "Wine stopped on an error before {name} started: {0}"
 msgstr "Wine stopped on an error before {name} started: {0}"
 
-#: src/browse/BrowseDetails.tsx:98
+#: src/browse/BrowseDetails.tsx:100
 msgid "Reading the mod's page…"
 msgstr "Reading the mod's page…"
 
@@ -7709,7 +7718,7 @@ msgstr "Main only"
 msgid "Compatibility"
 msgstr "Compatibility"
 
-#: src/mods/ChangelogDialog.tsx:104
+#: src/mods/ChangelogDialog.tsx:79
 msgid "Reading the changelog…"
 msgstr "Reading the changelog…"
 
@@ -7870,7 +7879,7 @@ msgstr "Untagged"
 msgid "Nexus link not used"
 msgstr "Nexus link not used"
 
-#: src/browse/ResultCard.tsx:36
+#: src/browse/stats.ts:18
 msgid "{stars, plural, one {# star} other {# stars}}"
 msgstr "{stars, plural, one {# star} other {# stars}}"
 
@@ -7919,7 +7928,7 @@ msgstr "Could not pin {0}"
 msgid "That request was not valid."
 msgstr "That request was not valid."
 
-#: src/browse/BrowseDetails.tsx:87
+#: src/browse/BrowseDetails.tsx:89
 #: src/mods/NexusDetails.tsx:246
 #: src/profiles/EditProfileDialog.tsx:302
 msgid "Description"
@@ -7938,7 +7947,7 @@ msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the ne
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
-#: src/browse/BrowseDetails.tsx:86
+#: src/browse/BrowseDetails.tsx:88
 msgid "Categories"
 msgstr "Categories"
 
@@ -10212,6 +10221,10 @@ msgstr "Follow the setting"
 msgid "{0} needs {1}"
 msgstr "{0} needs {1}"
 
+#: src/browse/stats.ts:16
+msgid "{endorsements, plural, one {# endorsement} other {# endorsements}} · {dl}"
+msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}} · {dl}"
+
 #: src/share/ShareDialog.tsx:307
 msgid "Markdown"
 msgstr "Markdown"
@@ -11164,7 +11177,7 @@ msgstr "Now ms"
 msgid "Everything"
 msgstr "Everything"
 
-#: src/mods/ChangelogDialog.tsx:110
+#: src/mods/ChangelogDialog.tsx:85
 msgid "The author has not listed any versions here."
 msgstr "The author has not listed any versions here."
 
@@ -11456,7 +11469,7 @@ msgstr "Could not update tags for the selected mods"
 msgid "Continue"
 msgstr "Continue"
 
-#: src/browse/BrowseDetails.tsx:89
+#: src/browse/BrowseDetails.tsx:91
 #: src/mods/ModDependencyTree.tsx:183
 msgid "Dependencies"
 msgstr "Dependencies"
@@ -12056,10 +12069,6 @@ msgstr "Everything it changes, {by} also changes: {detail}"
 msgid "{0} ({1})"
 msgstr "{0} ({1})"
 
-#: src/browse/BrowseDetails.tsx:54
-msgid ", and {more} more"
-msgstr ", and {more} more"
-
 #: src/profiles/ProfileRow.tsx:135
 msgid "{deployed} deployed"
 msgstr "{deployed} deployed"
@@ -12106,7 +12115,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/launch/SweepDialog.tsx:132
 #: src/mods/AssetMapDialog.tsx:279
 #: src/mods/AuthorDialog.tsx:165
-#: src/mods/ChangelogDialog.tsx:121
+#: src/mods/ChangelogDialog.tsx:96
 #: src/mods/ModDetail.tsx:316
 #: src/mods/updateReview/ReviewFooter.tsx:61
 #: src/mods/updateReview/ReviewTitle.tsx:43

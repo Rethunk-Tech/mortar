@@ -270,3 +270,5 @@ export function NexusDetails({ mod, modId, fileId }: { mod: Mod; modId: number; 
     </Typography>
   )
 }
+
+export { Rich }

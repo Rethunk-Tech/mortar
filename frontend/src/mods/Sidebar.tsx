@@ -1,16 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Chip,
-  Collapse,
-  Drawer,
-  Link,
-  Tooltip,
-  Typography,
-  useMediaQuery,
-} from '@mui/material'
-import { TriangleAlert, X } from 'lucide-react'
+import { Box, Button, Chip, Collapse, Link, Tooltip, Typography } from '@mui/material'
+import { TriangleAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   Mod,
@@ -21,17 +11,17 @@ import {
   CopyMods,
   ProfilesWithMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { compactQuery } from '../game/compact.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
-import { IconAction } from '../shell/IconAction.tsx'
 import { OfflineGate } from '../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../shell/offlineText.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { ChangelogDialog } from './ChangelogDialog.tsx'
 import { useCustomCategories } from './customCategories.ts'
+import { DetailsAside } from './DetailsAside.tsx'
+import { DetailsHeader } from './DetailsHeader.tsx'
 import { localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { showModId, useDetail } from './detail.ts'
@@ -62,7 +52,6 @@ import { OptionalFiles } from './OptionalFiles.tsx'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
-import { ResizableAside } from './ResizableAside.tsx'
 import { useMods } from './store.ts'
 import { EditConfigButton } from './typedConfig/EditConfigButton.tsx'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
@@ -469,27 +458,18 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   })
   return (
     <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <LetterTile mod={mod} size={52} fresh={fresh} />
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 16, fontWeight: 700, overflowWrap: 'anywhere' }}>
-            {mod.name}
-          </Typography>
-          <Typography
-            component="div"
-            sx={{ fontSize: 13, color: 'text.secondary', overflowWrap: 'anywhere' }}
-          >
+      <DetailsHeader
+        picture={<LetterTile mod={mod} size={52} fresh={fresh} />}
+        title={mod.name}
+        subtitle={
+          <>
             <AuthorLink authorField={mod.author} mod={mod} profile={profile} />
             {` · ${sourceName}`}
-          </Typography>
-        </Box>
-        <ModSwitch mod={mod} />
-        <IconAction
-          label={t`Close details`}
-          icon={<X size={18} />}
-          onClick={() => useDetail.getState().show(null)}
-        />
-      </Box>
+          </>
+        }
+        controls={<ModSwitch mod={mod} />}
+        onClose={() => useDetail.getState().show(null)}
+      />
       <ModChips mod={mod} sourceName={sourceName} />
       <Field label={t`Version`} value={mod.version} />
       <ModUpdateControls mod={mod} entry={entry} />
@@ -580,45 +560,16 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   )
 }
 
-// The one details sidebar of both views: an aside at the window's normal width, a right drawer below 960px.
+// The one details sidebar of both views.
 export function ModSidebar({ profile }: { profile: Profile }) {
   const { t } = useLingui()
-  const narrow = useMediaQuery(compactQuery)
   const mods = useMods((s) => s.mods)
   const detailId = useDetail((s) => s.detailId)
   const show = useDetail((s) => s.show)
   const selected = mods.find((m) => modId(m) === detailId)
-  if (narrow) {
-    return (
-      <Drawer
-        anchor="right"
-        open={selected !== undefined}
-        onClose={() => show(null)}
-        sx={{ top: 'var(--title-bar)' }}
-        slotProps={{
-          paper: {
-            role: 'dialog',
-            'aria-label': t`Mod details`,
-            sx: {
-              width: 320,
-              top: 'var(--title-bar)',
-              height: 'calc(100% - var(--title-bar))',
-              bgcolor: 'var(--mortar-panel-92)',
-            },
-          },
-        }}
-      >
-        {selected ? <Inspector mod={selected} profile={profile} /> : null}
-      </Drawer>
-    )
-  }
-  // The details column only takes room while a mod is selected; the list gets the full width otherwise.
-  if (!selected) {
-    return null
-  }
   return (
-    <ResizableAside label={t`Selected mod`}>
-      <Inspector mod={selected} profile={profile} />
-    </ResizableAside>
+    <DetailsAside open={selected !== undefined} label={t`Selected mod`} onClose={() => show(null)}>
+      {selected ? <Inspector mod={selected} profile={profile} /> : null}
+    </DetailsAside>
   )
 }
