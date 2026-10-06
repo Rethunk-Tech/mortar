@@ -333,6 +333,9 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	if err := profiles.PurgeScratch(); err != nil {
+		log.Printf("profiles: remove leftover crash-check copies: %v", err)
+	}
 	profiles.Tidied = func(what, profileName, folder string) { tidied.Add(what, "profile "+profileName, 1, folder) }
 	profiles.Publisher = func(gameID, name, ver string) (string, bool) {
 		key := share.SourceKeys(gameID)["thunderstore"]

@@ -716,32 +716,8 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 	dup.ID, dup.Name, dup.Created, dup.Updated = newID, name, now, now
 	dup.Origin, dup.CopyOf = OriginCopy, src.Name
 	dup.Entries = slices.Clone(src.Entries)
-
-	if err := os.MkdirAll(gdir, 0o700); err != nil {
+	if err := copyProfile(gdir, srcDir, dstDir, dup); err != nil {
 		return Profile{}, err
-	}
-	tmp, err := os.MkdirTemp(gdir, tempPrefix)
-	if err != nil {
-		return Profile{}, err
-	}
-	err = os.MkdirAll(filepath.Join(tmp, "mods"), 0o700)
-	if err == nil {
-		err = datadir.MaterializeTreeExclusive(filepath.Join(srcDir, "mods"), filepath.Join(tmp, "mods"))
-	}
-	if err == nil && coverType(src.Cover) != "" {
-		err = datadir.CopyFile(filepath.Join(srcDir, src.Cover), filepath.Join(tmp, src.Cover))
-		if errors.Is(err, fs.ErrNotExist) {
-			dup.Cover, err = "", nil
-		}
-	}
-	if err == nil {
-		err = writeProfile(tmp, dup)
-	}
-	if err == nil {
-		err = fsx.Rename(tmp, dstDir)
-	}
-	if err != nil {
-		return Profile{}, errors.Join(err, fsx.RemoveAll(tmp))
 	}
 
 	all, err = s.listOK(game)
@@ -760,6 +736,38 @@ func (s *Store) Duplicate(game, id string) (Profile, error) {
 		return Profile{}, err
 	}
 	return s.read(game, newID)
+}
+
+// copyProfile writes dup into dstDir with the mods/ folder and cover of the profile in srcDir, building it beside
+// the profiles in gdir first so a failed copy leaves nothing a listing would show.
+func copyProfile(gdir, srcDir, dstDir string, dup Profile) error {
+	if err := os.MkdirAll(gdir, 0o700); err != nil {
+		return err
+	}
+	tmp, err := os.MkdirTemp(gdir, tempPrefix)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(filepath.Join(tmp, "mods"), 0o700)
+	if err == nil {
+		err = datadir.MaterializeTreeExclusive(filepath.Join(srcDir, "mods"), filepath.Join(tmp, "mods"))
+	}
+	if err == nil && coverType(dup.Cover) != "" {
+		err = datadir.CopyFile(filepath.Join(srcDir, dup.Cover), filepath.Join(tmp, dup.Cover))
+		if errors.Is(err, fs.ErrNotExist) {
+			dup.Cover, err = "", nil
+		}
+	}
+	if err == nil {
+		err = writeProfile(tmp, dup)
+	}
+	if err == nil {
+		err = fsx.Rename(tmp, dstDir)
+	}
+	if err != nil {
+		return errors.Join(err, fsx.RemoveAll(tmp))
+	}
+	return nil
 }
 
 // Mods returns the profile's mods, first rebuilding any mods/ folder content that is missing from the store.

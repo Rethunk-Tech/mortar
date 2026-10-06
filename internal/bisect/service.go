@@ -76,13 +76,13 @@ func (s *Service) Start(ctx context.Context, gameID, profileID string) (string, 
 	if gameID == "" || profileID == "" {
 		return "", errors.New("game and profile are required")
 	}
-	temp, err := s.profiles.Duplicate(gameID, profileID)
+	temp, err := s.profiles.ScratchCopy(gameID, profileID)
 	if err != nil {
 		return "", err
 	}
 	mods, err := s.profiles.UserMods(gameID, temp.ID)
 	if err != nil {
-		_ = s.profiles.Delete(gameID, temp.ID)
+		_ = s.profiles.DropScratch(gameID, temp.ID)
 		return "", err
 	}
 	var candidates []profile.Mod
@@ -95,7 +95,7 @@ func (s *Service) Start(ctx context.Context, gameID, profileID string) (string, 
 		refs = append(refs, profile.EnableRef{Key: pm.Key, ID: pm.ID})
 	}
 	if len(candidates) == 0 {
-		_ = s.profiles.Delete(gameID, temp.ID)
+		_ = s.profiles.DropScratch(gameID, temp.ID)
 		return "", errors.New("the profile has no enabled user mods")
 	}
 
@@ -122,7 +122,7 @@ func (s *Service) Start(ctx context.Context, gameID, profileID string) (string, 
 func (s *Service) run(ctx context.Context, j *job) {
 	defer j.cancel()
 	defer func() {
-		_ = s.profiles.Delete(j.game, j.tempID)
+		_ = s.profiles.DropScratch(j.game, j.tempID)
 	}()
 
 	mods := make([]Mod, 0, len(j.mods))

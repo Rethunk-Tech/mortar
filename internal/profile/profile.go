@@ -406,7 +406,7 @@ func (s *Store) profileDir(game, id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !idPattern.MatchString(id) {
+	if !idPattern.MatchString(id) && !scratchPattern.MatchString(id) {
 		return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("invalid profile id %q", id))
 	}
 	return filepath.Join(dir, id), nil
