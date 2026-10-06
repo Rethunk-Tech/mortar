@@ -810,6 +810,8 @@ func historySummary(ev profile.HistoryEvent) string {
 		return fmt.Sprintf("Removed the tag %s from %s", ev.Detail, ev.Name)
 	case profile.ChangeTags:
 		return "Changed the tags of " + ev.Name
+	case profile.ChangeNote:
+		return "Edited the note of " + ev.Name
 	case profile.ChangeMods:
 		if ev.Count > 1 {
 			return "Changed " + mods(ev.Count)

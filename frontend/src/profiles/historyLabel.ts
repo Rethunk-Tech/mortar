@@ -37,6 +37,8 @@ export function historyLabel(ev: Worded): string {
       return i18n._(msg`Removed the tag ${detail} from ${name}`)
     case HistoryChange.ChangeTags:
       return i18n._(msg`Changed the tags of ${name}`)
+    case HistoryChange.ChangeNote:
+      return i18n._(msg`Edited the note of ${name}`)
     case HistoryChange.ChangeMods:
       return count > 1
         ? plural(count, { one: 'Changed # mod', other: 'Changed # mods' })

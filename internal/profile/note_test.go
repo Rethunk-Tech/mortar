@@ -72,7 +72,7 @@ func TestSetEntryNoteTags(t *testing.T) {
 	}
 }
 
-func TestTagEditsRecordWhatChanged(t *testing.T) {
+func TestTagAndNoteEditsRecordWhatChanged(t *testing.T) {
 	t.Parallel()
 	s := newStore(t)
 	p := pinTestProfile(t, s)
@@ -86,8 +86,13 @@ func TestTagEditsRecordWhatChanged(t *testing.T) {
 		{[]string{"QoL", "core"}, ChangeTagged, "core"},
 		{[]string{"core"}, ChangeUntagged, "QoL"},
 		{[]string{"art"}, ChangeTags, ""},
+		{[]string{"art"}, ChangeNote, ""},
 	} {
-		if _, err := s.SetEntryNoteTags("stardew", p.ID, "nexus-1-1", "", c.tags); err != nil {
+		note := ""
+		if c.change == ChangeNote {
+			note = "keep"
+		}
+		if _, err := s.SetEntryNoteTags("stardew", p.ID, "nexus-1-1", note, c.tags); err != nil {
 			t.Fatal(err)
 		}
 		events, err := s.History("stardew", p.ID)

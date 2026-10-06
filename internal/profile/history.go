@@ -55,6 +55,8 @@ const (
 	ChangeUntagged HistoryChange = "untagged" // Name, Detail: the tag removed
 	// ChangeTags is any other edit of one mod's tags: Name.
 	ChangeTags HistoryChange = "tags"
+	// ChangeNote is one mod's note written, changed or cleared: Name.
+	ChangeNote HistoryChange = "note"
 	// ChangeMods is several mods changed at once: Count when it is more than one.
 	ChangeMods     HistoryChange = "mods"
 	ChangeImported HistoryChange = "imported" // Count
@@ -1074,7 +1076,7 @@ func ModDiffCounts(before, after []Entry) (added, removed, updated int) {
 func classifyHistory(before, after []Entry) HistoryEvent {
 	bMap := indexEntries(before)
 	aMap := indexEntries(after)
-	var added, removed, updated, enabled, disabled, pinned, tagged int
+	var added, removed, updated, enabled, disabled, pinned, tagged, noted int
 	var from, to, name, tag string
 	pinChange, tagChange := ChangePinned, ChangeTags
 	seen := map[string]struct{}{}
@@ -1116,6 +1118,9 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 			tagged++
 			name = entryName(ae)
 			tagChange, tag = tagEdit(be.Tags, ae.Tags)
+		case be.Note != ae.Note:
+			noted++
+			name = entryName(ae)
 		}
 	}
 	for id := range bMap {
@@ -1127,7 +1132,7 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 			name = entryName(bMap[id])
 		}
 	}
-	count := added + removed + updated + enabled + disabled + pinned + tagged
+	count := added + removed + updated + enabled + disabled + pinned + tagged + noted
 	switch {
 	case count > 1:
 		return HistoryEvent{Kind: historyBulk, Change: ChangeMods, Count: count}
@@ -1145,6 +1150,8 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 		return HistoryEvent{Kind: historyPinned, Change: pinChange, Name: name, Count: 1}
 	case tagged == 1:
 		return HistoryEvent{Kind: historyBulk, Change: tagChange, Name: name, Detail: tag, Count: 1}
+	case noted == 1:
+		return HistoryEvent{Kind: historyBulk, Change: ChangeNote, Name: name, Count: 1}
 	default:
 		return HistoryEvent{Kind: historyBulk, Change: ChangeMods, Count: 1}
 	}
