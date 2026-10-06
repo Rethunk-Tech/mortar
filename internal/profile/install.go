@@ -314,7 +314,13 @@ func installError(err error) error {
 		msg = "The archive is encrypted, and Mortar cannot open it"
 	case errors.Is(err, archive.ErrChecksum):
 		msg = "The archive is damaged"
-	case errors.Is(err, archive.ErrTraversal), errors.Is(err, archive.ErrUnsafeName), errors.Is(err, archive.ErrCaseCollision),
+	case errors.Is(err, archive.ErrCaseCollision):
+		// Windows, and Wine under Proton, cannot keep both names, so either copy could silently be the one that loads.
+		msg = "The archive holds two files whose names differ only in capital letters, which Windows cannot keep apart"
+		if ae, ok := errors.AsType[*archive.Error](err); ok && ae.Entry != "" {
+			msg += ": " + ae.Entry
+		}
+	case errors.Is(err, archive.ErrTraversal), errors.Is(err, archive.ErrUnsafeName),
 		errors.Is(err, archive.ErrLink), errors.Is(err, archive.ErrSpecialFile):
 		msg = "The archive holds files that are not safe to unpack"
 	case errors.Is(err, archive.ErrEntryTooLarge), errors.Is(err, archive.ErrArchiveTooLarge), errors.Is(err, archive.ErrTooManyEntries):

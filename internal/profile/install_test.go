@@ -55,6 +55,12 @@ func TestInstallArchive(t *testing.T) {
 		t.Fatalf("unsupported err = %v", err)
 	}
 
+	cased := buildZip(t, "Cased.zip", map[string]string{"C/manifest.json": manifestJSON("X.C"), "C/content.json": "{}", "C/Content.json": "{}"})
+	_, err = e.InstallArchive("stardew", p.ID, cased)
+	if !errors.As(err, &ie) || !errors.Is(err, archive.ErrCaseCollision) || !strings.HasPrefix(ie.Msg, "The archive holds two files whose names differ only in capital letters") {
+		t.Fatalf("case collision err = %v", err)
+	}
+
 	evil := buildZip(t, "Evil.zip", map[string]string{"../x/manifest.json": manifestJSON("X.E")})
 	_, err = e.InstallArchive("stardew", p.ID, evil)
 	if !errors.As(err, &ie) || !errors.Is(err, archive.ErrTraversal) {

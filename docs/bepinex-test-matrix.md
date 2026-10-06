@@ -66,5 +66,6 @@ Probe packages are Thunderstore zips the regress builds: one plugin source (`Pro
 | Patchers in `BepInEx/patchers` | regress `edge.patcher`, `edge.patchers` |
 | `config` placed flat, `plugins` per package | regress `edge.config-placement`; `TestRoute` |
 | A package with its own `BepInEx/` layout | regress `edge.own-layout`; `TestRoute` |
-| Case: `BEPINEX/Plugins`, `Config`, and two names differing only in case | regress `edge.case`; `TestRoute`, `TestLayoutGoldens` |
+| Case: `BEPINEX/Plugins` and `BEPINEX/Config` | regress `edge.case`; `TestRoute`, `TestLayoutGoldens` |
+| Two names in one archive differing only in case are refused, naming the file: Windows keeps one and Wine finds either, so no copy is sure to be the one that loads | `TestCaseCollision`, `TestInstallArchive` |
 | A plugin path past 260 characters as Wine sees it | regress `edge.longpath` |
