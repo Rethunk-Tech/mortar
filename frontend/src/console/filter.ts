@@ -92,6 +92,20 @@ export function visible(entries: Entry[], f: Filters): Entry[] {
   })
 }
 
+export const SHOW_ALL: Filters = { search: '', levels: LEVELS, mods: [], excludeMods: [] }
+
+// Names what keeps lines out of view, so an empty filtered log can say why. Levels are only named when they have lines.
+export function hiddenBy(entries: Entry[], f: Filters) {
+  const present = new Set(entries.map((e) => e.level))
+  return {
+    count: entries.length - visible(entries, f).length,
+    levels: LEVELS.filter((l) => present.has(l) && !f.levels.includes(l)),
+    search: f.search.trim(),
+    mods: f.mods,
+    excludeMods: f.excludeMods,
+  }
+}
+
 export function firstError(rows: Entry[]): number {
   return rows.findIndex((e) => e.level === Level.Error && !e.cont)
 }

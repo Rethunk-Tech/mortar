@@ -8,7 +8,7 @@ import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/la
 import { formatCount } from '../mods/nexusFormat.ts'
 import { countByLevel, LEVELS } from './filter.ts'
 import { levelSwatch } from './levelPalette.ts'
-import { useShownEntries } from './logHooks.ts'
+import { useLevelNames, useShownEntries } from './logHooks.ts'
 import { useConsole } from './store.ts'
 
 // Trace and Debug are rarely wanted and very long, so they live in a menu beside the everyday levels.
@@ -22,15 +22,7 @@ export function LevelToggles() {
   const toggle = useConsole((s) => s.toggleLevel)
   const counts = useMemo(() => countByLevel(entries), [entries])
   const [more, setMore] = useState<HTMLElement | null>(null)
-  const names: Record<Level, string> = {
-    [Level.$zero]: '',
-    [Level.Trace]: t`Trace`,
-    [Level.Debug]: t`Debug`,
-    [Level.Info]: t`Info`,
-    [Level.Warn]: t`Warn`,
-    [Level.Error]: t`Error`,
-    [Level.Alert]: t`Alert`,
-  }
+  const names = useLevelNames()
   return (
     <Box
       role="group"

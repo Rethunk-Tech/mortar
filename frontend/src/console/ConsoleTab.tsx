@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, Chip, Menu, MenuItem } from '@mui/material'
 import {
@@ -9,9 +10,10 @@ import {
   SquareTerminal,
   X,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { RunCause } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { listNames } from '../i18n/list.ts'
 import { useGameBusy, useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'
@@ -22,12 +24,12 @@ import { IconAction } from '../shell/IconAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { MONO, PAD_FOCUS } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
-import { incompatibleSMAPI, isFiltered, modsOf } from './filter.ts'
+import { hiddenBy, incompatibleSMAPI, isFiltered, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
 import { LevelToggles } from './LevelToggles.tsx'
 import { LinkedLog } from './LinkedLog.tsx'
 import { LogActions } from './LogActions.tsx'
-import { useShownEntries, useVisible } from './logHooks.ts'
+import { useLevelNames, useShownEntries, useVisible } from './logHooks.ts'
 import { RunProblemsStrip } from './RunProblems.tsx'
 import { RunsPicker } from './RunsPicker.tsx'
 import { canSendTo, useConsole } from './store.ts'
@@ -306,6 +308,52 @@ function ConsoleEmpty() {
   )
 }
 
+// Every line is filtered out: say how many and by what, so a quiet level chip does not read as an empty log.
+function FilteredEmpty() {
+  const { t } = useLingui()
+  const entries = useShownEntries()
+  const filters = useConsole((s) => s.filters)
+  const showAll = useConsole((s) => s.showAll)
+  const names = useLevelNames()
+  const hidden = hiddenBy(entries, filters)
+  const reasons: string[] = []
+  if (hidden.levels.length > 0) {
+    const levels = listNames(
+      hidden.levels.map((l) => names[l]),
+      hidden.levels.length,
+    )
+    reasons.push(
+      plural(hidden.levels.length, {
+        one: `the ${levels} level is off`,
+        other: `the ${levels} levels are off`,
+      }),
+    )
+  }
+  if (hidden.search !== '') {
+    reasons.push(t`the search is “${hidden.search}”`)
+  }
+  if (hidden.mods.length > 0) {
+    const mods = listNames(hidden.mods)
+    reasons.push(t`only ${mods} is shown`)
+  }
+  if (hidden.excludeMods.length > 0) {
+    const mods = listNames(hidden.excludeMods)
+    reasons.push(t`${mods} is hidden`)
+  }
+  const why = listNames(reasons, reasons.length)
+  return (
+    <>
+      {plural(hidden.count, {
+        one: `# line is hidden by the filters: ${why}.`,
+        other: `# lines are hidden by the filters: ${why}.`,
+      })}{' '}
+      <Button size="small" onClick={showAll} sx={{ verticalAlign: 'baseline' }}>
+        {plural(hidden.count, { one: 'Show it', other: 'Show all # lines' })}
+      </Button>
+    </>
+  )
+}
+
 export function ConsoleTab({ game }: { game: string }) {
   const { t } = useLingui()
   const entries = useShownEntries()
@@ -351,11 +399,11 @@ export function ConsoleTab({ game }: { game: string }) {
   if (loaded && consoleEmpty) {
     return <ConsoleEmpty />
   }
-  let empty: string | null = null
+  let empty: ReactNode = null
   if (loaded && total === 0) {
     empty = t`The console fills when the game runs.`
   } else if (loaded && rows.length === 0) {
-    empty = t`No lines match the filters.`
+    empty = <FilteredEmpty />
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>

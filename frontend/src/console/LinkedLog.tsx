@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { useEffect, useMemo, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   ModsDir,
@@ -41,7 +41,7 @@ export function LinkedLog({
   timestamps: boolean
   follow: boolean
   jump: { index: number; n: number } | null
-  empty: string | null
+  empty: ReactNode
   onUnfollow: () => void
 }) {
   const { t } = useLingui()
@@ -92,7 +92,9 @@ export function LinkedLog({
       }}
     >
       {empty ? (
-        <Typography sx={{ p: 2, font: 'inherit', color: 'text.secondary' }}>{empty}</Typography>
+        <Typography component="div" sx={{ p: 2, font: 'inherit', color: 'text.secondary' }}>
+          {empty}
+        </Typography>
       ) : (
         <VirtualLog
           rows={rows}

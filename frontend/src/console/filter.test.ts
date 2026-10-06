@@ -8,10 +8,12 @@ import {
   DEFAULT_FILTERS,
   firstError,
   formatAll,
+  hiddenBy,
   incompatibleSMAPI,
   isFiltered,
   levelsFromFloor,
   modsOf,
+  SHOW_ALL,
   shownLog,
   visible,
 } from './filter.ts'
@@ -114,4 +116,39 @@ test('incompatible SMAPI is the max-version Oops line from SMAPI itself', () => 
 test('an unknown or unloaded floor shows Warn and above, never Info', () => {
   expect(levelsFromFloor('')).toEqual(DEFAULT_FILTERS.levels)
   expect(levelsFromFloor('bogus')).toEqual(DEFAULT_FILTERS.levels)
+})
+
+// A clean BepInEx start logs only Message/Info (both parse as Info), so the default Warn floor hides every line.
+const bepinex = [
+  { ...e(Level.Info, 'BepInEx', 'BepInEx 5.4.23.5 - Lethal Company'), time: '' },
+  { ...e(Level.Info, 'BepInEx', 'Running under Unity v2022.3.62.7762112'), time: '' },
+  { ...e(Level.Info, 'MortarBepInExBridge', 'bridge listening'), time: '' },
+]
+
+test('a filtered-out BepInEx log names the Info level as what hides it, and show all brings it back', () => {
+  expect(visible(bepinex, DEFAULT_FILTERS)).toHaveLength(0)
+  expect(hiddenBy(bepinex, DEFAULT_FILTERS)).toEqual({
+    count: 3,
+    levels: [Level.Info],
+    search: '',
+    mods: [],
+    excludeMods: [],
+  })
+  expect(visible(bepinex, SHOW_ALL)).toEqual(bepinex)
+  expect(hiddenBy(bepinex, SHOW_ALL).count).toBe(0)
+})
+
+test('hiddenBy names only levels that have lines, plus search and mod filters', () => {
+  const f = { ...DEFAULT_FILTERS, search: ' x ', mods: ['SMAPI'], excludeMods: ['Cooking'] }
+  const hidden = hiddenBy(log, f)
+  expect(hidden.count).toBe(log.length)
+  expect(hidden.levels).toEqual([Level.Trace, Level.Info])
+  expect(hidden.search).toBe('x')
+  expect(hiddenBy([], DEFAULT_FILTERS)).toEqual({
+    count: 0,
+    levels: [],
+    search: '',
+    mods: [],
+    excludeMods: [],
+  })
 })

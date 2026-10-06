@@ -18,7 +18,7 @@ import { i18n } from '../i18n/index.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { toastError } from '../toasts/report.ts'
-import { DEFAULT_FILTERS, type Filters, levelsFromFloor } from './filter.ts'
+import { DEFAULT_FILTERS, type Filters, levelsFromFloor, SHOW_ALL } from './filter.ts'
 import { pushCommand } from './history.ts'
 
 // Matches the backend's launch.MaxLines, so a long session keeps the same window the log file does.
@@ -68,6 +68,7 @@ const useConsole = create<{
   setMods: (mods: string[]) => void
   setExcludeMods: (mods: string[]) => void
   clearFilters: () => void
+  showAll: () => void
   setTimestamps: (on: boolean) => void
   setFollow: (on: boolean) => void
   setHelping: (on: boolean) => void
@@ -187,6 +188,7 @@ const useConsole = create<{
     setMods: (mods) => set((s) => ({ filters: { ...s.filters, mods } })),
     setExcludeMods: (excludeMods) => set((s) => ({ filters: { ...s.filters, excludeMods } })),
     clearFilters: () => set({ filters: consoleDefaults().filters }),
+    showAll: () => set({ filters: SHOW_ALL }),
     setTimestamps: (timestamps) => set({ timestamps }),
     setFollow: (follow) => set({ follow }),
     setHelping: (helping) => set({ helping }),

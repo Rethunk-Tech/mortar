@@ -24,7 +24,7 @@ msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links 
 msgid "Performance"
 msgstr "Performance"
 
-#: src/console/ConsoleTab.tsx:420
+#: src/console/ConsoleTab.tsx:468
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
@@ -88,7 +88,7 @@ msgstr "Could not reach GitHub. Check your connection and try again."
 msgid "Template"
 msgstr "Template"
 
-#: src/console/LinkedLog.tsx:111
+#: src/console/LinkedLog.tsx:113
 #: src/mods/HiddenInside.tsx:71
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
@@ -340,7 +340,7 @@ msgstr "Restored {detail} of {name}"
 msgid "{name} is broken for {detail}"
 msgstr "{name} is broken for {detail}"
 
-#: src/console/LevelToggles.tsx:87
+#: src/console/LevelToggles.tsx:79
 msgid "More levels"
 msgstr "More levels"
 
@@ -555,10 +555,6 @@ msgstr "Assets and packs"
 msgid "Allow through firewall"
 msgstr "Allow through firewall"
 
-#: src/console/ConsoleTab.tsx:358
-msgid "No lines match the filters."
-msgstr "No lines match the filters."
-
 #: src/mods/EndorsePrompt.tsx:152
 msgid "Never for this mod"
 msgstr "Never for this mod"
@@ -741,7 +737,7 @@ msgstr "Not in the link"
 msgid "When"
 msgstr "When"
 
-#: src/console/ConsoleTab.tsx:214
+#: src/console/ConsoleTab.tsx:216
 msgid "Type a command, for example help"
 msgstr "Type a command, for example help"
 
@@ -1413,7 +1409,7 @@ msgstr "Keep {0}'s old files"
 
 #. placeholder {0}: cause.modName
 #. placeholder {0}: crash.cause.modName
-#: src/console/ConsoleTab.tsx:124
+#: src/console/ConsoleTab.tsx:126
 #: src/console/CrashDialog.tsx:258
 #: src/launch/LaunchLayer.tsx:279
 msgid "Caused by {0}"
@@ -1565,7 +1561,7 @@ msgstr "No supported game was found in your launchers."
 msgid "Search results"
 msgstr "Search results"
 
-#: src/console/ConsoleTab.tsx:304
+#: src/console/ConsoleTab.tsx:306
 msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
 msgstr "Play this profile and the game's log shows here as it runs. Every run is kept."
 
@@ -1989,6 +1985,11 @@ msgstr "Fullscreen resolution width"
 msgid "These come from a different site than you installed them from. Update all skips them."
 msgstr "These come from a different site than you installed them from. Update all skips them."
 
+#. placeholder {0}: hidden.search
+#: src/console/ConsoleTab.tsx:333
+msgid "the search is “{0}”"
+msgstr "the search is “{0}”"
+
 #: src/lan/PairedComputers.tsx:122
 #: src/lan/SendDialog.tsx:177
 msgid "Host:port"
@@ -2184,7 +2185,7 @@ msgstr "A mod works better, or only works, with a setting changed. Nothing is wr
 msgid "Prerelease"
 msgstr "Prerelease"
 
-#: src/console/ConsoleTab.tsx:386
+#: src/console/ConsoleTab.tsx:434
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
@@ -2754,7 +2755,7 @@ msgstr "{count} checked later"
 msgid "Bisect from here"
 msgstr "Bisect from here"
 
-#: src/console/ConsoleTab.tsx:356
+#: src/console/ConsoleTab.tsx:404
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
@@ -2831,6 +2832,11 @@ msgstr "SMAPI skips folders whose names start with a dot."
 #: src/settings/prefCopy.ts:120
 msgid "Default grouping"
 msgstr "Default grouping"
+
+#. placeholder {0}: hidden.count
+#: src/console/ConsoleTab.tsx:346
+msgid "{0, plural, one {# line is hidden by the filters: {why}.} other {# lines are hidden by the filters: {why}.}}"
+msgstr "{0, plural, one {# line is hidden by the filters: {why}.} other {# lines are hidden by the filters: {why}.}}"
 
 #: src/settings/shortcutLabels.ts:34
 msgid "Toggle downloads"
@@ -3387,7 +3393,7 @@ msgstr "The game is using this profile. Stop the game to change mods."
 msgid "Include FOMOD choices"
 msgstr "Include FOMOD choices"
 
-#: src/console/LevelToggles.tsx:29
+#: src/console/logHooks.ts:30
 #: src/settings/prefCopy.ts:288
 msgid "Info"
 msgstr "Info"
@@ -3558,7 +3564,7 @@ msgid "Changed"
 msgstr "Changed"
 
 #: src/console/HelpDialog.tsx:162
-#: src/console/store.ts:143
+#: src/console/store.ts:144
 #: src/mods/ReportToAuthorButton.tsx:149
 msgid "Could not read the game log"
 msgstr "Could not read the game log"
@@ -3744,6 +3750,10 @@ msgstr "Every game asset the profile's mods change, and which mod wins it. Open 
 #: src/settings/sections/StreamOverlay.tsx:307
 msgid "Part of the OBS address; regenerate it if it leaks"
 msgstr "Part of the OBS address; regenerate it if it leaks"
+
+#: src/console/ConsoleTab.tsx:341
+msgid "{mods} is hidden"
+msgstr "{mods} is hidden"
 
 #. placeholder {0}: lines.length
 #: src/profiles/SinceLastRun.tsx:120
@@ -4135,6 +4145,11 @@ msgstr "Disabled"
 #: src/mods/ModMenu.tsx:176
 msgid "{0, plural, one {Remove # mod} other {Remove # mods}}"
 msgstr "{0, plural, one {Remove # mod} other {Remove # mods}}"
+
+#. placeholder {0}: hidden.count
+#: src/console/ConsoleTab.tsx:351
+msgid "{0, plural, one {Show it} other {Show all # lines}}"
+msgstr "{0, plural, one {Show it} other {Show all # lines}}"
 
 #: src/profiles/HistoryPanel.tsx:61
 msgid "Profile changes will appear here."
@@ -4915,7 +4930,7 @@ msgstr "Edit config"
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 
-#: src/console/ConsoleTab.tsx:291
+#: src/console/ConsoleTab.tsx:293
 msgid "Filter by level or mod, and use Save log or Copy log to pass this run on."
 msgstr "Filter by level or mod, and use Save log or Copy log to pass this run on."
 
@@ -5058,7 +5073,7 @@ msgstr "Restarting…"
 msgid "Add from the downloads folder…"
 msgstr "Add from the downloads folder…"
 
-#: src/console/LevelToggles.tsx:30
+#: src/console/logHooks.ts:31
 #: src/settings/prefCopy.ts:289
 msgid "Warn"
 msgstr "Warn"
@@ -5194,7 +5209,7 @@ msgstr "These profiles have no user mods to compare."
 msgid "How this Mortar appears to nearby installations"
 msgstr "How this Mortar appears to nearby installations"
 
-#: src/console/ConsoleTab.tsx:290
+#: src/console/ConsoleTab.tsx:292
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
 msgstr "Filter by level or mod, and use Share log to upload this run to smapi.io."
 
@@ -5248,7 +5263,7 @@ msgstr "Ignore"
 msgid "Another file from a mod you have"
 msgstr "Another file from a mod you have"
 
-#: src/console/store.ts:166
+#: src/console/store.ts:167
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
@@ -5427,7 +5442,7 @@ msgstr "Launch options"
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
-#: src/console/ConsoleTab.tsx:422
+#: src/console/ConsoleTab.tsx:470
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
@@ -5700,7 +5715,7 @@ msgstr "Image"
 msgid "Problem: {text}"
 msgstr "Problem: {text}"
 
-#: src/console/LevelToggles.tsx:27
+#: src/console/logHooks.ts:28
 #: src/settings/prefCopy.ts:286
 msgid "Trace"
 msgstr "Trace"
@@ -5981,7 +5996,7 @@ msgstr "Start the game to see values"
 msgid "{summary} · {0}"
 msgstr "{summary} · {0}"
 
-#: src/console/ConsoleTab.tsx:213
+#: src/console/ConsoleTab.tsx:215
 msgid "Console command"
 msgstr "Console command"
 
@@ -6408,7 +6423,7 @@ msgstr "{0} and {count} more"
 msgid "Also add to…"
 msgstr "Also add to…"
 
-#: src/console/LevelToggles.tsx:37
+#: src/console/LevelToggles.tsx:29
 msgid "Levels"
 msgstr "Levels"
 
@@ -6469,7 +6484,7 @@ msgstr "Could not check the mods for problems"
 msgid "Time in this start minus time in the one before"
 msgstr "Time in this start minus time in the one before"
 
-#: src/console/ConsoleTab.tsx:101
+#: src/console/ConsoleTab.tsx:103
 msgid "Search the log"
 msgstr "Search the log"
 
@@ -6485,6 +6500,10 @@ msgstr "{0, plural, one {# mod selected} other {# mods selected}}"
 #: src/mods/ChangelogDialog.tsx:100
 msgid "Changelog: {name}"
 msgstr "Changelog: {name}"
+
+#: src/console/ConsoleTab.tsx:337
+msgid "only {mods} is shown"
+msgstr "only {mods} is shown"
 
 #: src/mods/AddToGroupDialog.tsx:30
 #: src/mods/AddToGroupDialog.tsx:63
@@ -6535,7 +6554,7 @@ msgstr "Direct launch preview"
 msgid "Send"
 msgstr "Send"
 
-#: src/console/ConsoleTab.tsx:54
+#: src/console/ConsoleTab.tsx:56
 #: src/firstrunTour/TourPopover.tsx:45
 #: src/game/Hero.tsx:342
 #: src/game/ProfileWorkspace.tsx:88
@@ -6800,7 +6819,7 @@ msgstr "Nothing in this profile"
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
-#: src/console/ConsoleTab.tsx:265
+#: src/console/ConsoleTab.tsx:267
 msgid "Stop the game before reinstalling."
 msgstr "Stop the game before reinstalling."
 
@@ -7523,7 +7542,7 @@ msgstr "{playtime} played"
 msgid "Could not run diagnostics"
 msgstr "Could not run diagnostics"
 
-#: src/console/ConsoleTab.tsx:124
+#: src/console/ConsoleTab.tsx:126
 msgid "·"
 msgstr "·"
 
@@ -8248,7 +8267,7 @@ msgstr "Description"
 msgid "Overlaps with {by}: both change {detail}"
 msgstr "Overlaps with {by}: both change {detail}"
 
-#: src/console/ConsoleTab.tsx:63
+#: src/console/ConsoleTab.tsx:65
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
 
@@ -8616,7 +8635,7 @@ msgstr "Clear history"
 msgid "A game's mod loader version and its update notice are in that game's settings."
 msgstr "A game's mod loader version and its update notice are in that game's settings."
 
-#: src/console/LevelToggles.tsx:28
+#: src/console/logHooks.ts:29
 #: src/profiles/LoaderLaunchSettings.tsx:22
 #: src/settings/prefCopy.ts:287
 msgid "Debug"
@@ -9856,6 +9875,11 @@ msgstr "Could not unpin {0}"
 msgid "In the same download"
 msgstr "In the same download"
 
+#. placeholder {0}: hidden.levels.length
+#: src/console/ConsoleTab.tsx:326
+msgid "{0, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
+msgstr "{0, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
+
 #: src/browse/browseConstants.ts:20
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
@@ -10082,7 +10106,7 @@ msgstr "Delete the selected items?"
 msgid "Could not download {0}"
 msgstr "Could not download {0}"
 
-#: src/console/LevelToggles.tsx:31
+#: src/console/logHooks.ts:32
 #: src/settings/prefCopy.ts:290
 msgid "Error"
 msgstr "Error"
@@ -10691,7 +10715,7 @@ msgstr "Could not cancel transfer"
 msgid "Could not dismiss the setting warning"
 msgstr "Could not dismiss the setting warning"
 
-#: src/console/ConsoleTab.tsx:393
+#: src/console/ConsoleTab.tsx:441
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -11368,7 +11392,7 @@ msgstr "Games"
 msgid "Language"
 msgstr "Language"
 
-#: src/console/ConsoleTab.tsx:302
+#: src/console/ConsoleTab.tsx:304
 msgid "No game output yet"
 msgstr "No game output yet"
 
@@ -12140,7 +12164,7 @@ msgstr "This template will be deleted. Presets already copied into profiles stay
 msgid "Mark these mods known good so History can restore them if a later change breaks the game."
 msgstr "Mark these mods known good so History can restore them if a later change breaks the game."
 
-#: src/console/ConsoleTab.tsx:380
+#: src/console/ConsoleTab.tsx:428
 msgid "Show times"
 msgstr "Show times"
 
@@ -12323,7 +12347,7 @@ msgstr "Stop"
 msgid "Scheduled backups kept per save"
 msgstr "Scheduled backups kept per save"
 
-#: src/console/ConsoleTab.tsx:276
+#: src/console/ConsoleTab.tsx:278
 #: src/loader/Banner.tsx:32
 #: src/settings/sections/LoaderRow.tsx:95
 msgid "Reinstall"
@@ -12507,7 +12531,7 @@ msgstr "Not from Thunderstore: {0}"
 
 #. placeholder {0}: names[level]
 #. placeholder {1}: formatCount(counts.get(level) ?? 0, i18n.locale)
-#: src/console/LevelToggles.tsx:118
+#: src/console/LevelToggles.tsx:110
 msgid "{0} ({1})"
 msgstr "{0} ({1})"
 
@@ -12521,7 +12545,7 @@ msgstr "Known good"
 
 #. placeholder {0}: names[level]
 #. placeholder {1}: names[level]
-#: src/console/LevelToggles.tsx:55
+#: src/console/LevelToggles.tsx:47
 msgid "{n, plural, one {{0}: # line} other {{1}: # lines}}"
 msgstr "{n, plural, one {{0}: # line} other {{1}: # lines}}"
 
@@ -12707,7 +12731,7 @@ msgstr "Profile hero"
 msgid "Could not update Steam's launch options"
 msgstr "Could not update Steam's launch options"
 
-#: src/console/LevelToggles.tsx:32
+#: src/console/logHooks.ts:33
 msgid "Alert"
 msgstr "Alert"
 
