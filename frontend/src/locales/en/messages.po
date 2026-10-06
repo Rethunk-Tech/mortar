@@ -577,7 +577,7 @@ msgstr "Last played {when}"
 #. placeholder {0}: applied.fomodMods
 #. placeholder {1}: applied.configs
 #. placeholder {2}: applied.configs
-#: src/share/useImportFlow.ts:113
+#: src/share/useImportFlow.ts:114
 msgid "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 
@@ -683,7 +683,7 @@ msgstr "Updated on Nexus"
 #: src/mods/problemFix/SettingFix.tsx:100
 #: src/profiles/CrashHintCard.tsx:104
 #: src/tips/TipBanner.tsx:37
-#: src/toasts/ToastHost.tsx:236
+#: src/toasts/ToastHost.tsx:239
 msgid "Dismiss"
 msgstr "Dismiss"
 
@@ -1502,7 +1502,7 @@ msgstr "Changelog unavailable"
 msgid "List view"
 msgstr "List view"
 
-#: src/toasts/HistoryButton.tsx:162
+#: src/toasts/HistoryButton.tsx:164
 msgid "Earlier"
 msgstr "Earlier"
 
@@ -1997,6 +1997,10 @@ msgstr "More actions for {0}"
 #: src/profiles/OverrideRows.tsx:27
 msgid "Update mods before Play"
 msgstr "Update mods before Play"
+
+#: src/saves/SaveBackupsSection.tsx:53
+msgid " · {cause} · {size} · Kept"
+msgstr " · {cause} · {size} · Kept"
 
 #: src/mods/AuthorDialog.tsx:114
 msgid "No installed mods for this author."
@@ -2568,7 +2572,7 @@ msgstr "Lutris"
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
 
-#: src/share/useImportFlow.ts:148
+#: src/share/useImportFlow.ts:149
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
@@ -2820,7 +2824,7 @@ msgid "Before this change"
 msgstr "Before this change"
 
 #: src/profiles/PackImportDialog.tsx:102
-#: src/share/ImportDialog.tsx:185
+#: src/share/ImportDialog.tsx:196
 msgid "Import from {manager}"
 msgstr "Import from {manager}"
 
@@ -3027,7 +3031,7 @@ msgid "Modpack saved"
 msgstr "Modpack saved"
 
 #: src/profiles/LaunchPresetsBlock.tsx:48
-#: src/share/useImportFlow.ts:155
+#: src/share/useImportFlow.ts:156
 #: src/templates/TemplateDialogs.tsx:67
 #: src/templates/TemplateDialogs.tsx:86
 msgid "Save as template"
@@ -3849,7 +3853,7 @@ msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
 #: src/share/ImportPreview.tsx:366
-#: src/share/useImportFlow.ts:141
+#: src/share/useImportFlow.ts:142
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
@@ -3978,7 +3982,7 @@ msgstr "Enable all"
 msgid "Could not copy the link"
 msgstr "Could not copy the link"
 
-#: src/share/useImportFlow.ts:148
+#: src/share/useImportFlow.ts:149
 msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
@@ -4352,7 +4356,7 @@ msgstr "Before"
 msgid "No download source is known for {0}."
 msgstr "No download source is known for {0}."
 
-#: src/share/ImportDialog.tsx:193
+#: src/share/ImportDialog.tsx:204
 msgid "Where the profile comes from"
 msgstr "Where the profile comes from"
 
@@ -5543,7 +5547,7 @@ msgstr "Farming skill"
 msgid "Stop the game to install {0}."
 msgstr "Stop the game to install {0}."
 
-#: src/toasts/HistoryButton.tsx:149
+#: src/toasts/HistoryButton.tsx:151
 msgid "No notifications yet"
 msgstr "No notifications yet"
 
@@ -5724,7 +5728,7 @@ msgstr "Could not close the window"
 msgid "Profile backed up"
 msgstr "Profile backed up"
 
-#: src/share/ImportDialog.tsx:248
+#: src/share/ImportDialog.tsx:259
 msgid "This profile has no mods to download"
 msgstr "This profile has no mods to download"
 
@@ -5957,9 +5961,9 @@ msgstr "Could not remove the selected mods"
 #: src/commandPalette/CommandPalette.tsx:155
 #: src/settings/sections/DataImport.tsx:19
 #: src/settings/SettingsPage.tsx:43
-#: src/toasts/HistoryButton.tsx:142
-#: src/toasts/HistoryButton.tsx:216
-#: src/toasts/ToastHost.tsx:252
+#: src/toasts/HistoryButton.tsx:144
+#: src/toasts/HistoryButton.tsx:218
+#: src/toasts/ToastHost.tsx:255
 msgid "Notifications"
 msgstr "Notifications"
 
@@ -6193,7 +6197,7 @@ msgstr "Press Play to start."
 #: src/console/PerformanceComparison.tsx:66
 #: src/mods/ChangelogDialog.tsx:35
 #: src/mods/NewSince.tsx:14
-#: src/toasts/HistoryButton.tsx:154
+#: src/toasts/HistoryButton.tsx:156
 msgid "New"
 msgstr "New"
 
@@ -6938,7 +6942,7 @@ msgstr "GOG"
 msgid "Could not read the Nexus page: {0}"
 msgstr "Could not read the Nexus page: {0}"
 
-#: src/share/useImportFlow.ts:177
+#: src/share/useImportFlow.ts:178
 msgid "Imported, but could not show the profile"
 msgstr "Imported, but could not show the profile"
 
@@ -6950,7 +6954,7 @@ msgstr "No templates"
 msgid "Check for mod updates when Mortar starts"
 msgstr "Check for mod updates when Mortar starts"
 
-#: src/share/useImportFlow.ts:140
+#: src/share/useImportFlow.ts:141
 msgid "{queued, plural, one {# download queued} other {# downloads queued}}"
 msgstr "{queued, plural, one {# download queued} other {# downloads queued}}"
 
@@ -7098,7 +7102,7 @@ msgstr "Remove {0} from other profiles"
 msgid "All sources"
 msgstr "All sources"
 
-#: src/toasts/HistoryButton.tsx:121
+#: src/toasts/HistoryButton.tsx:123
 msgid "Notification history"
 msgstr "Notification history"
 
@@ -7480,7 +7484,7 @@ msgstr "Choose cover image…"
 msgid "Search in Browse"
 msgstr "Search in Browse"
 
-#: src/toasts/HistoryButton.tsx:150
+#: src/toasts/HistoryButton.tsx:152
 msgid "Results of installs, updates and launches appear here."
 msgstr "Results of installs, updates and launches appear here."
 
@@ -7910,7 +7914,7 @@ msgstr "Reading the changelog…"
 msgid "After"
 msgstr "After"
 
-#: src/toasts/HistoryButton.tsx:172
+#: src/toasts/HistoryButton.tsx:174
 msgid "All changes…"
 msgstr "All changes…"
 
@@ -8464,7 +8468,7 @@ msgstr "Check later"
 msgid "Reset…"
 msgstr "Reset…"
 
-#: src/share/useImportFlow.ts:142
+#: src/share/useImportFlow.ts:143
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
@@ -9137,7 +9141,7 @@ msgstr "Reset game install"
 msgid "Save backup folder"
 msgstr "Save backup folder"
 
-#: src/share/ImportDialog.tsx:211
+#: src/share/ImportDialog.tsx:222
 msgid ".mortar file"
 msgstr ".mortar file"
 
@@ -10978,7 +10982,7 @@ msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
 #: src/profiles/ImportWizard.tsx:99
-#: src/share/ImportDialog.tsx:286
+#: src/share/ImportDialog.tsx:297
 msgid "Import a profile"
 msgstr "Import a profile"
 
@@ -11123,7 +11127,7 @@ msgstr "Hide"
 msgid "Hide details"
 msgstr "Hide details"
 
-#: src/toasts/HistoryButton.tsx:157
+#: src/toasts/HistoryButton.tsx:159
 msgid "Nothing new"
 msgstr "Nothing new"
 
@@ -11615,7 +11619,7 @@ msgstr "Search Nexus Mods. Download installs the mod into this profile."
 msgid "Check only enabled mods"
 msgstr "Check only enabled mods"
 
-#: src/toasts/HistoryButton.tsx:215
+#: src/toasts/HistoryButton.tsx:217
 msgid "{unread, plural, one {Notifications, # unread} other {Notifications, # unread}}"
 msgstr "{unread, plural, one {Notifications, # unread} other {Notifications, # unread}}"
 
@@ -11725,7 +11729,7 @@ msgstr "Enable them too"
 
 #: src/console/LogActions.tsx:175
 #: src/settings/sections/GameSettings.tsx:376
-#: src/toasts/HistoryButton.tsx:144
+#: src/toasts/HistoryButton.tsx:146
 msgid "Clear"
 msgstr "Clear"
 
@@ -11891,7 +11895,7 @@ msgstr "Display number"
 msgid "Windowed resolution height"
 msgstr "Windowed resolution height"
 
-#: src/share/ImportDialog.tsx:185
+#: src/share/ImportDialog.tsx:196
 msgid "Import profile from…"
 msgstr "Import profile from…"
 
@@ -12426,8 +12430,8 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/settings/sections/About.tsx:99
 #: src/settings/sections/AboutDiagnostics.tsx:219
 #: src/settings/sections/DataStoreReport.tsx:407
-#: src/share/ImportDialog.tsx:213
-#: src/share/ImportDialog.tsx:216
+#: src/share/ImportDialog.tsx:224
+#: src/share/ImportDialog.tsx:227
 #: src/share/ImportFooter.tsx:86
 #: src/share/ShareShell.tsx:65
 #: src/shell/TitleBar.tsx:131
@@ -12436,7 +12440,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 msgid "Close"
 msgstr "Close"
 
-#: src/share/ImportDialog.tsx:210
+#: src/share/ImportDialog.tsx:221
 #: src/share/ShareShell.tsx:118
 msgid "Link"
 msgstr "Link"

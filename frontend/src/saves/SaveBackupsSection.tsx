@@ -50,7 +50,7 @@ function Row({
       <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 12 }}>
         {backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name}
         <Box component="span" sx={{ color: 'text.secondary' }}>
-          {t` · ${cause} · ${size}`}
+          {backup.pinned ? t` · ${cause} · ${size} · Kept` : t` · ${cause} · ${size}`}
         </Box>
       </Typography>
       <TipIconButton
