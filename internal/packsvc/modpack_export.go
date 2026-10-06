@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -76,27 +77,14 @@ func (s *Service) ExportModpack(gameID, profileID, dest string, configs bool) (M
 	}
 	files := map[string][]byte{}
 	if configs {
-		dir, err := s.Profiles.ProfileDir(gameID, profileID)
+		cfgs, err := s.configFiles(gameID, profileID)
 		if err != nil {
 			return res, err
 		}
-		root := filepath.Join(dir, "BepInEx", "config")
-		err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-			if err != nil || !d.Type().IsRegular() {
-				return err
-			}
-			rel, err := filepath.Rel(root, path)
-			if err != nil {
-				return err
-			}
-			data, err := fsx.ReadFile(path)
-			files["config/"+filepath.ToSlash(rel)] = data
-			return err
-		})
-		if err != nil && !errors.Is(err, fs.ErrNotExist) {
-			return res, err
+		for _, f := range cfgs {
+			files[f.Path] = f.Data
 		}
-		res.Configs = len(files)
+		res.Configs = len(cfgs)
 	}
 	manifest, err := json.MarshalIndent(map[string]any{
 		"name":           packageName(p.Name),
@@ -114,6 +102,32 @@ func (s *Service) ExportModpack(gameID, profileID, dest string, configs bool) (M
 		return res, err
 	}
 	return res, writeZip(dest, files)
+}
+
+// configFiles are the profile's BepInEx/config files as a pack holds them, under config/.
+func (s *Service) configFiles(gameID, profileID string) ([]pack.File, error) {
+	dir, err := s.Profiles.ProfileDir(gameID, profileID)
+	if err != nil {
+		return nil, err
+	}
+	root := filepath.Join(dir, "BepInEx", "config")
+	var out []pack.File
+	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || !d.Type().IsRegular() {
+			return err
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		data, err := fsx.ReadFile(path)
+		out = append(out, pack.File{Path: "config/" + filepath.ToSlash(rel), Data: data})
+		return err
+	})
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (s *Service) find(gameID, profileID string) (profile.Profile, error) {

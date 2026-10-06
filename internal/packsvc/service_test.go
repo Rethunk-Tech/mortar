@@ -4,11 +4,16 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"encoding/base64"
 	"errors"
+	"io"
 	"maps"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -212,5 +217,44 @@ func TestLocalProfilesListsTheGamesR2modmanProfiles(t *testing.T) {
 	}
 	if got, _ := (&Service{}).LocalProfiles("stardew"); len(got) != 0 {
 		t.Fatalf("a game r2modman does not know: %+v", got)
+	}
+}
+
+func TestExportCodeCarriesTheConfigFolder(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "BepInEx", "config", "Sub"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "BepInEx", "config", "Sub", "a.cfg"), []byte("x=1"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var body string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		body = string(b)
+		_, _ = w.Write([]byte(`{"key":"k"}`))
+	}))
+	defer srv.Close()
+	ps := &fakeProfiles{dir: dir, list: []profile.Profile{{ID: "p1", Name: "P", Entries: []profile.Entry{
+		{Source: profile.Source{Kind: profile.KindThunderstore, Name: "A-B", Version: "1.0.0"}},
+	}}}}
+	if _, err := (&Service{Profiles: ps, Code: pack.Code{URL: srv.URL}}).ExportCode(context.Background(), "lethal-company", "p1", true); err != nil {
+		t.Fatal(err)
+	}
+	_, enc, _ := strings.Cut(body, "\n")
+	z, err := base64.StdEncoding.DecodeString(enc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zr, err := zip.NewReader(bytes.NewReader(z), int64(len(z)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	for _, f := range zr.File {
+		names = append(names, f.Name)
+	}
+	if !slices.Contains(names, "config/Sub/a.cfg") {
+		t.Errorf("code holds %v, not the profile's config file", names)
 	}
 }

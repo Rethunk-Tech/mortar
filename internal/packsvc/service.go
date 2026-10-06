@@ -305,6 +305,9 @@ func (s *Service) ExportCode(ctx context.Context, gameID, profileID string, conf
 	if len(d.Packages) == 0 {
 		return "", errors.New("the profile holds no Thunderstore packages")
 	}
+	if d.Configs, err = s.configFiles(gameID, p.ID); err != nil {
+		return "", err
+	}
 	return s.Code.ExportCode(ctx, d)
 }
 
