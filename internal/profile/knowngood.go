@@ -1,8 +1,9 @@
 package profile
 
 import (
-	"fmt"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const historyGood = "good"
@@ -56,7 +57,7 @@ func (s *Store) lastKnownGoodID(game, id string) (string, error) {
 		return "", err
 	}
 	if len(events) == 0 {
-		return "", fmt.Errorf("no known-good snapshot")
+		return "", usererr.New(usererr.NotFound, "no point in this profile's history is marked known good")
 	}
 	return events[0].ID, nil
 }

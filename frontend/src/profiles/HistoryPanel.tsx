@@ -52,6 +52,7 @@ export function HistoryPanel({
       <DialogContent>
         <HistoryToolbar
           busy={!h.game || h.busy !== ''}
+          canRestore={h.events.some((ev) => ev.kind === 'good')}
           onMark={h.markGood}
           onRestore={h.restoreGood}
         />

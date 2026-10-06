@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestHistoryDiffAddedRemovedVersionEnabled(t *testing.T) {
@@ -153,6 +155,9 @@ func TestKnownGoodMarkAndRestore(t *testing.T) {
 	e.item(t, "local-a", map[string]string{"A/manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"B/manifest.json": manifestJSON("Me.B")})
 	p := addFarmMod(t, e)
+	if _, err := e.RestoreKnownGood("stardew", p.ID); usererr.KindOf(err) != usererr.NotFound {
+		t.Fatalf("restore with nothing marked: %v, want a not-found user error", err)
+	}
 	if _, err := e.MarkKnownGood("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
