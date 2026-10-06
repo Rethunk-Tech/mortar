@@ -63,12 +63,12 @@ func TestMergeSameTiesHitsThatShareAPackageIdentity(t *testing.T) {
 func TestMergeSameTiesTheLoader(t *testing.T) {
 	got := mergeSame([]Item{
 		{Source: "thunderstore", ID: "BepInEx-BepInExPack", Name: "BepInExPack", Author: "BepInEx", Loader: true},
-		{Source: "nexus", ID: "1", Name: "BepInEx", Author: "u", Loader: true, Installed: true, Obsolete: true, Broken: true},
+		{Source: "nexus", ID: "1", Name: "BepInEx", Author: "u", Loader: true, Installed: true, Obsolete: true, Broken: true, Endorsements: 7, Downloads: 99},
 	}, []string{"thunderstore", "nexus"}, nil)
 	if len(got) != 1 || got[0].Source != "thunderstore" || !got[0].Loader || got[0].Obsolete || got[0].Broken {
 		t.Fatalf("card = %+v", got)
 	}
-	if alt := got[0].Alts[0]; !alt.Loader || !alt.Installed || !alt.Obsolete || !alt.Broken {
+	if alt := got[0].Alts[0]; !alt.Loader || !alt.Installed || !alt.Obsolete || !alt.Broken || alt.Endorsements != 7 || alt.Downloads != 99 {
 		t.Fatalf("alt = %+v", alt)
 	}
 }

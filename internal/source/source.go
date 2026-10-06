@@ -123,6 +123,10 @@ type Alt struct {
 	Obsolete  bool   `json:"obsolete"`
 	Broken    bool   `json:"broken"`
 	Loader    bool   `json:"loader"`
+	// Endorsements, Stars and Downloads are that site's own counts for the mod.
+	Endorsements int `json:"endorsements"`
+	Stars        int `json:"stars"`
+	Downloads    int `json:"downloads"`
 }
 
 // Page is one slice of search hits. A merged search across sources also sets Pages, the page count of its largest

@@ -46,7 +46,7 @@ func keys(it Item, ident identityOf) []string {
 
 // mergeSame folds hits of the same mod from different sources into one card, in the position of the group's first
 // hit. The card is the hit of the earliest source in order (the game's catalog order), and the rest are its Alts,
-// each with its own Installed, Obsolete, Broken and Loader. A card with a loader hit is a loader card.
+// each with its own Installed, Obsolete, Broken, Loader and counts. A card with a loader hit is a loader card.
 // Two hits of one source are never merged: a source already lists a mod once.
 func mergeSame(items []Item, order []string, ident identityOf) []Item {
 	rank := func(src string) int {
@@ -93,6 +93,7 @@ func mergeSame(items []Item, order []string, ident identityOf) []Item {
 				card.Alts = append(card.Alts, source.Alt{
 					Source: m.Source, ID: m.ID, URL: m.URL, Installed: m.Installed,
 					Obsolete: m.Obsolete, Broken: m.Broken, Loader: m.Loader,
+					Endorsements: m.Endorsements, Stars: m.Stars, Downloads: m.Downloads,
 				})
 			}
 		}
