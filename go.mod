@@ -47,4 +47,4 @@ require (
 	modernc.org/memory v1.12.1 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.27.0.20261004125021-d26ede43f636
+replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.0.0-beta.27.0.20261006052126-8c83de4bf39c
