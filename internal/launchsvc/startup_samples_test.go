@@ -23,7 +23,7 @@ func TestReadStartupReportsMergesSamples(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	reports, err := readStartupReports(dir)
+	reports, err := readStartupReports(dir, scopeStartupIDs)
 	if err != nil {
 		t.Fatal(err)
 	}

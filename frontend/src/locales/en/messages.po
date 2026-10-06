@@ -551,7 +551,7 @@ msgstr "Config"
 msgid "Startup: {0} {1} added {2}"
 msgstr "Startup: {0} {1} added {2}"
 
-#: src/console/StartupTable.tsx:117
+#: src/console/StartupTable.tsx:126
 msgid "Assets and packs"
 msgstr "Assets and packs"
 
@@ -1854,7 +1854,7 @@ msgstr "Running for {time}"
 msgid "Name"
 msgstr "Name"
 
-#: src/console/StartupTable.tsx:259
+#: src/console/StartupTable.tsx:268
 msgid "Total"
 msgstr "Total"
 
@@ -2342,7 +2342,7 @@ msgstr "Remove from other profiles…"
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
-#: src/console/StartupTable.tsx:277
+#: src/console/StartupTable.tsx:286
 #: src/mods/ProblemRows.tsx:140
 msgid "Why?"
 msgstr "Why?"
@@ -2827,7 +2827,7 @@ msgstr "Drag {path} into the GitHub issue to attach it."
 msgid "Pair"
 msgstr "Pair"
 
-#: src/console/StartupTable.tsx:105
+#: src/console/StartupTable.tsx:114
 msgid "Load"
 msgstr "Load"
 
@@ -3139,7 +3139,7 @@ msgid "Neither profile has a mod that matches the filter."
 msgstr "Neither profile has a mod that matches the filter."
 
 #: src/browse/BrowseMenu.tsx:50
-#: src/console/StartupTable.tsx:169
+#: src/console/StartupTable.tsx:178
 msgid "Show details"
 msgstr "Show details"
 
@@ -3303,7 +3303,7 @@ msgid "Mortar found no other mod manager's profiles for this game on this comput
 msgstr "Mortar found no other mod manager's profiles for this game on this computer."
 
 #. placeholder {0}: folded.count
-#: src/console/StartupTable.tsx:327
+#: src/console/StartupTable.tsx:336
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
@@ -4228,7 +4228,7 @@ msgstr "slow Entry {ms}"
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
-#: src/console/StartupTable.tsx:196
+#: src/console/StartupTable.tsx:205
 #: src/settings/sections/About.tsx:62
 #: src/settings/sections/About.tsx:67
 #: src/settings/sections/Updates.tsx:164
@@ -4398,7 +4398,7 @@ msgstr "Choose a profile…"
 msgid "You started this download on {site}, but you have no {gameName} profile yet."
 msgstr "You started this download on {site}, but you have no {gameName} profile yet."
 
-#: src/console/StartupTable.tsx:336
+#: src/console/StartupTable.tsx:344
 msgid "Game and BepInEx"
 msgstr "Game and BepInEx"
 
@@ -4804,7 +4804,7 @@ msgstr "{0} skipped"
 msgid "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
 msgstr "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
 
-#: src/console/StartupTable.tsx:261
+#: src/console/StartupTable.tsx:270
 msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 
@@ -4882,7 +4882,7 @@ msgstr "Checking profiles…"
 msgid "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 msgstr "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 
-#: src/console/StartupTable.tsx:194
+#: src/console/StartupTable.tsx:203
 msgid "Mortar's own SMAPI mod; it records these timings"
 msgstr "Mortar's own SMAPI mod; it records these timings"
 
@@ -5589,7 +5589,7 @@ msgstr "This is no longer the latest change to that mod."
 msgid "Chosen in the game's Steam properties."
 msgstr "Chosen in the game's Steam properties."
 
-#: src/console/StartupTable.tsx:336
+#: src/console/StartupTable.tsx:344
 msgid "Game and SMAPI"
 msgstr "Game and SMAPI"
 
@@ -5918,7 +5918,7 @@ msgstr "In Mortar"
 msgid "{name} settings"
 msgstr "{name} settings"
 
-#: src/console/StartupTable.tsx:282
+#: src/console/StartupTable.tsx:291
 msgid "Startup time by mod"
 msgstr "Startup time by mod"
 
@@ -5998,7 +5998,7 @@ msgstr "All values"
 msgid "Port"
 msgstr "Port"
 
-#: src/console/StartupTable.tsx:262
+#: src/console/StartupTable.tsx:271
 msgid "Each plugin's load (constructor and Awake) the BepInEx Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it."
 msgstr "Each plugin's load (constructor and Awake) the BepInEx Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it."
 
@@ -6542,7 +6542,7 @@ msgstr "Mortar sends GitHub requests without a login. Run gh auth login to raise
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
-#: src/console/StartupTable.tsx:270
+#: src/console/StartupTable.tsx:279
 msgid "Time in this start minus time in the one before"
 msgstr "Time in this start minus time in the one before"
 
@@ -7901,7 +7901,7 @@ msgstr "Restart now"
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
-#: src/console/StartupTable.tsx:182
+#: src/console/StartupTable.tsx:191
 msgid "Show in Mods"
 msgstr "Show in Mods"
 
@@ -8236,7 +8236,7 @@ msgstr "Grant the Steam sandbox read access to Mortar's data folder, or the game
 msgid "Copy code"
 msgstr "Copy code"
 
-#: src/console/StartupTable.tsx:256
+#: src/console/StartupTable.tsx:265
 msgid "Click a mod to show it in Mods"
 msgstr "Click a mod to show it in Mods"
 
@@ -8430,7 +8430,7 @@ msgid "What Mortar shows when it opens."
 msgstr "What Mortar shows when it opens."
 
 #: src/console/PerformanceComparison.tsx:57
-#: src/console/StartupTable.tsx:269
+#: src/console/StartupTable.tsx:278
 msgid "Change"
 msgstr "Change"
 
@@ -9800,7 +9800,7 @@ msgstr "{0} of {1} requests left today · {2} of {3} this hour"
 msgid "Pause all"
 msgstr "Pause all"
 
-#: src/console/StartupTable.tsx:114
+#: src/console/StartupTable.tsx:123
 msgid "Slowest event"
 msgstr "Slowest event"
 
@@ -10105,7 +10105,7 @@ msgstr "Mortar checks Steam's settings for it: not found yet."
 msgid "Show labels"
 msgstr "Show labels"
 
-#: src/console/StartupTable.tsx:278
+#: src/console/StartupTable.tsx:287
 msgid "What costs this mod the most; open the row for every timing"
 msgstr "What costs this mod the most; open the row for every timing"
 
@@ -10446,7 +10446,7 @@ msgid "Luck skill"
 msgstr "Luck skill"
 
 #: src/console/PerformanceComparison.tsx:54
-#: src/console/StartupTable.tsx:256
+#: src/console/StartupTable.tsx:265
 msgid "Mod"
 msgstr "Mod"
 
@@ -11339,7 +11339,7 @@ msgstr "Mortar version"
 msgid "SMAPI version"
 msgstr "SMAPI version"
 
-#: src/console/StartupTable.tsx:112
+#: src/console/StartupTable.tsx:121
 msgid "Entry"
 msgstr "Entry"
 
@@ -11380,7 +11380,7 @@ msgstr "Did not load"
 msgid "Hide"
 msgstr "Hide"
 
-#: src/console/StartupTable.tsx:169
+#: src/console/StartupTable.tsx:178
 #: src/toasts/ToastHost.tsx:93
 msgid "Hide details"
 msgstr "Hide details"
@@ -11449,7 +11449,7 @@ msgstr "Your last save needs other mods"
 msgid "Delete category"
 msgstr "Delete category"
 
-#: src/console/StartupTable.tsx:119
+#: src/console/StartupTable.tsx:128
 msgid "Sampled"
 msgstr "Sampled"
 
@@ -11935,7 +11935,7 @@ msgid "No differences."
 msgstr "No differences."
 
 #. placeholder {0}: packs.length - PACKS_SHOWN
-#: src/console/StartupTable.tsx:134
+#: src/console/StartupTable.tsx:143
 msgid "{0, plural, one {# more pack} other {# more packs}}"
 msgstr "{0, plural, one {# more pack} other {# more packs}}"
 

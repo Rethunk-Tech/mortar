@@ -181,6 +181,7 @@
         }
       },
       "saveFiles": ["LCSaveFile*", "LCChallengeFile"],
+      "titleScene": "MainMenu",
       "deploy": "profile",
       "targets": [
         {
@@ -241,6 +242,7 @@
       },
       "saveFiles": ["characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"],
       "saveCompanions": [".db"],
+      "titleScene": "start",
       "deploy": "profile",
       "targets": [
         {

@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Tooltip, Typography } from '@mui/material'
 import type { ReactNode, Ref } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import { useDuration } from './startupHooks.ts'
+import { useDuration, useSmapiStartup } from './startupHooks.ts'
 import { type Finding, type PhaseId, phaseSegments } from './startupView.ts'
 
 const PCT = 100
@@ -95,20 +95,37 @@ function Findings({ findings, onAct }: { findings: Finding[]; onAct: (finding: F
 function Phases({ report }: { report: StartupReport }) {
   const { t } = useLingui()
   const duration = useDuration()
-  const labels: Record<PhaseId, string> = {
-    smapi: t`SMAPI loads mods`,
-    entry: t`Mods start`,
-    content: t`Game content`,
-    firstTicks: t`First updates`,
-    intro: t`Title intro`,
-  }
-  const help: Record<PhaseId, string> = {
-    smapi: t`From launch until SMAPI has loaded every mod's code`,
-    entry: t`Each mod's Entry method, run one after another`,
-    content: t`The game loads its own content`,
-    firstTicks: t`The game's first frames; mods doing setup work in update events show up here`,
-    intro: t`The title screen's intro animation (Mortar skips it on measured launches)`,
-  }
+  const smapi = useSmapiStartup()
+  const labels: Record<PhaseId, string> = smapi
+    ? {
+        smapi: t`SMAPI loads mods`,
+        entry: t`Mods start`,
+        content: t`Game content`,
+        firstTicks: t`First updates`,
+        intro: t`Title intro`,
+      }
+    : {
+        smapi: t`Unity starts`,
+        entry: t`BepInEx patches`,
+        content: t`Plugins load`,
+        firstTicks: t`First scene`,
+        intro: t`To the main menu`,
+      }
+  const help: Record<PhaseId, string> = smapi
+    ? {
+        smapi: t`From launch until SMAPI has loaded every mod's code`,
+        entry: t`Each mod's Entry method, run one after another`,
+        content: t`The game loads its own content`,
+        firstTicks: t`The game's first frames; mods doing setup work in update events show up here`,
+        intro: t`The title screen's intro animation (Mortar skips it on measured launches)`,
+      }
+    : {
+        smapi: t`From launch until BepInEx's preloader runs`,
+        entry: t`BepInEx's preloader patches the game, then Unity starts it`,
+        content: t`Each plugin's constructor and Awake, run one after another`,
+        firstTicks: t`Until the game's first scene has loaded`,
+        intro: t`From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice.`,
+      }
   const segments = phaseSegments(report.phases)
   const total = segments.reduce((n, s) => n + s.ms, 0)
   return (

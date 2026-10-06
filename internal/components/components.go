@@ -105,6 +105,9 @@ type GameInfo struct {
 	// SaveCompanions are extensions of files beside a save file, sharing its stem, that belong to that save (a Valheim
 	// world's .db beside its .fwl).
 	SaveCompanions []string `json:"saveCompanions,omitempty"`
+	// TitleScene is the Unity scene of the game's main menu, where a BepInEx startup measurement ends; without it the
+	// first scene ends it.
+	TitleScene string `json:"titleScene,omitempty"`
 	// Deploy is how the profile reaches the game: redirect (the loader points the game at the profile's mods folder,
 	// nothing is placed) or profile (the profile holds the loader and its mods, and the loader's install-side files are
 	// placed into the install for the launch and taken back after).

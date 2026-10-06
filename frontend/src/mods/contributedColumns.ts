@@ -4,7 +4,7 @@ import type { ListColumnId } from './listColumns.ts'
 
 interface Offer {
   deploy: string
-  loaders: readonly string[]
+  startup: boolean
   sources: ReadonlySet<string>
 }
 
@@ -12,7 +12,7 @@ interface Offer {
 // column is core.
 const CONTRIBUTED: Partial<Record<ListColumnId, (o: Offer) => boolean>> = {
   order: (o) => o.deploy === 'profile',
-  startup: (o) => o.loaders.includes('smapi'),
+  startup: (o) => o.startup,
   endorsements: (o) => o.sources.has('nexus'),
   downloads: (o) => o.sources.has('nexus'),
   updated: (o) => o.sources.has('nexus'),
@@ -23,7 +23,7 @@ export function useColumnAvailable(): (id: ListColumnId) => boolean {
   const profile = useProfiles(openProfileOf)
   const offer: Offer = {
     deploy: game?.deploy ?? '',
-    loaders: (game?.loaders ?? []).map((l) => l.id),
+    startup: (game?.loaders ?? []).some((l) => l.startup),
     sources: new Set((profile?.entries ?? []).map((e) => e.source.kind)),
   }
   return (id) => CONTRIBUTED[id]?.(offer) ?? true

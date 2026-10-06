@@ -21,7 +21,7 @@ import type {
 import { cmpText } from '../mods/cmpText.ts'
 import { openModHandlers } from '../mods/openMod.ts'
 import { useStoredState } from '../shell/useStoredState.ts'
-import { useDuration, useWhy } from './startupHooks.ts'
+import { useDuration, useSmapiStartup, useWhy } from './startupHooks.ts'
 import { foldMods, modTotal, rowAnchor, slowestEvent, whyOf } from './startupView.ts'
 
 const PACKS_SHOWN = 25
@@ -98,6 +98,23 @@ function ModDetails({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
   const event = slowestEvent(mod)
   const packs = mod.packs ?? []
   const assets = mod.assetMs + mod.loadMs
+  const smapi = useSmapiStartup()
+  if (!smapi) {
+    return (
+      <Box
+        sx={{
+          py: 1,
+          pl: 3,
+          display: 'grid',
+          gridTemplateColumns: 'max-content max-content',
+          columnGap: 3,
+          fontSize: 13,
+        }}
+      >
+        <Detail label={t`Load`} value={mod.entryMs > 0 ? duration(mod.entryMs) : '—'} />
+      </Box>
+    )
+  }
   return (
     <Box sx={{ py: 1, pl: 3, display: 'flex', flexDirection: 'column', gap: 1, fontSize: 13 }}>
       <Box sx={{ display: 'grid', gridTemplateColumns: 'max-content max-content', columnGap: 3 }}>
@@ -231,6 +248,7 @@ export function ModTable({
 }) {
   const { t } = useLingui()
   const duration = useDuration()
+  const smapi = useSmapiStartup()
   const { shown, folded } = foldMods(report.mods)
   // Sampled times exist only after a measured launch; they include time inside each mod's patches on game code.
   const sampled = report.sampledOtherMs > 0
@@ -248,7 +266,9 @@ export function ModTable({
     {
       id: 'total',
       label: t`Total`,
-      help: t`Entry, event handlers and asset work the SMAPI Bridge timed before the title screen`,
+      help: smapi
+        ? t`Entry, event handlers and asset work the SMAPI Bridge timed before the title screen`
+        : t`Each plugin's load (constructor and Awake) the BepInEx Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it.`,
       align: 'right',
     },
     ...(comparing
@@ -320,9 +340,9 @@ export function ModTable({
           </TableRow>
         ) : null}
         <TableRow>
-          <TableCell
-            sx={{ color: 'text.secondary', pl: NAME_INDENT }}
-          >{t`Game and SMAPI`}</TableCell>
+          <TableCell sx={{ color: 'text.secondary', pl: NAME_INDENT }}>
+            {smapi ? t`Game and SMAPI` : t`Game and BepInEx`}
+          </TableCell>
           <TableCell align="right">{duration(report.otherMs)}</TableCell>
           <TableCell colSpan={comparing ? 2 : 1} />
         </TableRow>

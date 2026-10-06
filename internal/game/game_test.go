@@ -239,7 +239,7 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	if s := caps["stardew"]; !s.Order || !s.Console || !s.Commands || !s.Startup || !s.Assets || !s.Frameworks || !s.Overlay {
 		t.Fatalf("SMAPI = %+v", s)
 	}
-	if b := caps["lethal-company"]; b.Order || !b.Console || b.Commands || b.Startup || b.Assets || b.Frameworks || b.Overlay {
+	if b := caps["lethal-company"]; b.Order || !b.Console || b.Commands || !b.Startup || b.Assets || b.Frameworks || b.Overlay {
 		t.Fatalf("BepInEx = %+v", b)
 	}
 	if _, err := opener.Web(caps["lethal-company"].Paste); err != nil || caps["stardew"].Paste != "" {

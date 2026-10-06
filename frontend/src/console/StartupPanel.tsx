@@ -11,6 +11,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { Findings, Phases, Section } from './StartupSections.tsx'
 import { ModTable } from './StartupTable.tsx'
+import { useSmapiStartup } from './startupHooks.ts'
 import { type Finding, rowAnchor, startupFindings } from './startupView.ts'
 import { useStartupReports } from './useStartupReports.ts'
 
@@ -43,6 +44,7 @@ function ReportPicker({
 function MeasureBanner({ onCancel }: { onCancel: () => void }) {
   const { t } = useLingui()
   const running = useGameBusy()
+  const smapi = useSmapiStartup()
   return (
     <Alert
       severity="info"
@@ -59,7 +61,9 @@ function MeasureBanner({ onCancel }: { onCancel: () => void }) {
       }
     >
       <AlertTitle>{t`The next launch will be measured`}</AlertTitle>
-      {t`Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column.`}
+      {smapi
+        ? t`Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column.`
+        : t`Press Play. The BepInEx Bridge times each plugin's load and the start up to the main menu, and shows the results here. Unity's Mono runtime cannot be sampled, so there is no Sampled column.`}
     </Alert>
   )
 }
@@ -68,6 +72,7 @@ export function StartupPanel({ game, children }: { game: string; children: React
   const { t } = useLingui()
   const openId = useProfiles((s) => s.openId)
   const { reports, pending, measureNext, cancelMeasure } = useStartupReports(game, openId)
+  const smapi = useSmapiStartup()
   const [selected, setSelected] = useState('')
   const modsSection = useRef<HTMLElement>(null)
   const [comparing, setComparing] = useState(false)
@@ -124,7 +129,10 @@ export function StartupPanel({ game, children }: { game: string; children: React
       </Box>
       {report ? (
         <>
-          <Findings findings={startupFindings(report, previous)} onAct={act} />
+          <Findings
+            findings={startupFindings(report, previous).filter((f) => smapi || f.kind !== 'smapi')}
+            onAct={act}
+          />
           <Phases report={report} />
           <Section title={t`Slowest mods`} anchor={modsSection}>
             {report.entryTimed ? null : (
@@ -144,7 +152,9 @@ export function StartupPanel({ game, children }: { game: string; children: React
         </>
       ) : (
         <EmptyState icon={<Timer size={32} />} title={t`No startup measured yet`} action={measure}>
-          {t`Play this profile. The SMAPI Bridge records how long each mod adds before the title screen.`}
+          {smapi
+            ? t`Play this profile. The SMAPI Bridge records how long each mod adds before the title screen.`
+            : t`Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu.`}
         </EmptyState>
       )}
       {children}

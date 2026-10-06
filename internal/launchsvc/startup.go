@@ -9,10 +9,13 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -74,8 +77,8 @@ type StartupReport struct {
 
 // prepareStartup reports whether this launch was asked to be measured (consuming the request) when l times
 // startup; under SMAPI it also loads the bridge before every other mod, so the bridge can time their Entry and
-// handlers.
-func prepareStartup(l loader.Loader, modsDir string) (bool, error) {
+// handlers, and under BepInEx it arms or disarms the bridge's patcher for the launch.
+func prepareStartup(l loader.Loader, gameID, modsDir string) (bool, error) {
 	if _, ok := l.(loader.StartupTimings); !ok {
 		return false, nil
 	}
@@ -84,12 +87,16 @@ func prepareStartup(l loader.Loader, modsDir string) (bool, error) {
 			return false, err
 		}
 	}
-	marker := filepath.Join(filepath.Dir(modsDir), startupDir, measureMarker)
-	err := os.Remove(marker)
-	if errors.Is(err, fs.ErrNotExist) {
-		return false, nil
+	dir := filepath.Join(filepath.Dir(modsDir), startupDir)
+	err := os.Remove(filepath.Join(dir, measureMarker))
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return false, err
 	}
-	return err == nil, err
+	measure := err == nil
+	if l.ID() == bepinex5.ID {
+		return measure, bepinex5.RequestStartup(dir, gameID, measure)
+	}
+	return measure, nil
 }
 
 // loadBridgeEarly adds the bridge to ModsToLoadEarly, keeping anything else a user put in the file. A file that is
@@ -158,7 +165,59 @@ func (s *Service) StartupReports(gameID, profileID string) ([]StartupReport, err
 	if err != nil {
 		return nil, err
 	}
-	return readStartupReports(filepath.Join(dir, startupDir))
+	scope := scopeStartupIDs
+	if l, ok := s.loaderOf(gameID, profileID); ok && l.ID() == bepinex5.ID {
+		scope = func(r *StartupReport) { pluginsToPackages(r, s.pluginPackages(gameID, profileID)) }
+	}
+	return readStartupReports(filepath.Join(dir, startupDir), scope)
+}
+
+// startupOwner is the package a BepInEx plugin's startup time is shown under.
+type startupOwner struct {
+	ID            mod.ID
+	Name, Version string
+}
+
+// pluginPackages maps each plugin GUID (lower-cased) the profile's enabled packages declare in their DLLs to its
+// package. It reads the DLLs once per call and only when a report needs it.
+func (s *Service) pluginPackages(gameID, profileID string) func() map[string]startupOwner {
+	return sync.OnceValue(func() map[string]startupOwner {
+		owners := map[string]startupOwner{}
+		installed, err := s.profiles.Installed(gameID, profileID)
+		if err != nil {
+			return owners
+		}
+		for _, im := range installed {
+			if !im.Enabled || im.Folder == "" {
+				continue
+			}
+			for _, pl := range dotnet.PluginsIn(im.Folder) {
+				owners[strings.ToLower(pl.GUID)] = startupOwner{ID: im.ModID(), Name: im.Name, Version: im.Version}
+			}
+		}
+		return owners
+	})
+}
+
+// pluginsToPackages turns a BepInEx report's plugin rows, which the bridge names by GUID, into rows for the
+// packages that hold them, the way the rest of Mortar names mods: a package's plugins add up to one row, and a
+// plugin no package declares keeps its own row under a BepInEx id.
+func pluginsToPackages(r *StartupReport, owners func() map[string]startupOwner) {
+	out := make([]StartupMod, 0, len(r.Mods))
+	at := map[mod.ID]int{}
+	for _, m := range r.Mods {
+		row := StartupMod{ID: mod.NewID(mod.FormatBepInEx, string(m.ID)), Name: m.Name, Version: m.Version, EntryMs: m.EntryMs}
+		if o, ok := owners()[strings.ToLower(string(m.ID))]; ok {
+			row.ID, row.Name, row.Version = o.ID, o.Name, o.Version
+		}
+		if i, seen := at[row.ID]; seen {
+			out[i].EntryMs += row.EntryMs
+			continue
+		}
+		at[row.ID] = len(out)
+		out = append(out, row)
+	}
+	r.Mods = out
 }
 
 // startupReportPaths lists the bridge's reports in dir, newest first.
@@ -191,7 +250,8 @@ func LatestReplaces(profileDir string) map[string][]string {
 	return nil
 }
 
-func readStartupReports(dir string) ([]StartupReport, error) {
+// readStartupReports reads the reports in dir, newest first, with scope naming their mods as Mortar does.
+func readStartupReports(dir string, scope func(*StartupReport)) ([]StartupReport, error) {
 	names, err := startupReportPaths(dir)
 	if err != nil {
 		return nil, err
@@ -206,7 +266,7 @@ func readStartupReports(dir string) ([]StartupReport, error) {
 		if r.Mods == nil {
 			r.Mods = []StartupMod{}
 		}
-		scopeStartupIDs(&r)
+		scope(&r)
 		mergeStartupSamples(name, &r)
 		out = append(out, r)
 	}

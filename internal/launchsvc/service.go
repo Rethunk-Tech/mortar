@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/overlay"
@@ -814,7 +815,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		mode = launchplan.ModeVanilla
 	}
 	env := game.StartEnv{Direct: direct, HideWindow: !showConsole, Ready: s.seen(g)}
-	var measure bool
+	var measure, sample bool
 	var startupBefore map[string]bool
 	if waitOnChild(direct, vanilla) {
 		env.OnExit = func(x launch.Exit) { s.finishWait(g, x) }
@@ -832,18 +833,20 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
 		l, _ := s.loaderOf(g.ID(), profileID)
-		measure, err = prepareStartup(l, modsDir)
+		measure, err = prepareStartup(l, g.ID(), modsDir)
 		if err != nil {
 			return err
 		}
-		if measure {
+		// The sampler reads .NET's diagnostics port, which SMAPI's runtime has and Unity's Mono does not.
+		sample = measure && l.ID() == smapi.ID
+		if sample {
 			profileDir, profileErr := s.profiles.ProfileDir(g.ID(), profileID)
 			if profileErr != nil {
 				log.Printf("startup sampler: %s: %v", g.ID(), profileErr)
-				measure = false
+				measure, sample = false, false
 			} else if startupBefore, profileErr = startupReportIDs(filepath.Join(profileDir, startupDir)); profileErr != nil {
 				log.Printf("startup sampler: %s: %v", g.ID(), profileErr)
-				measure = false
+				measure, sample = false, false
 			}
 		}
 		cfg := overlay.BridgeConfig{OverlayEnabled: st.OverlayEnabled, OverlayPort: st.OverlayPort, OverlayToken: st.OverlayToken, StartupProfile: measure}
@@ -930,7 +933,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		s.emit(BackupWarningEvent, BackupWarning{Game: gameID, Profile: profileID, Error: backupErr.Error()})
 	}
 	s.watch(g)
-	if measure {
+	if sample {
 		stopped := make(chan struct{})
 		s.mu.Lock()
 		s.sampled[keyOf(g)] = stopped
