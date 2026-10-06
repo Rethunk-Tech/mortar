@@ -4,5 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")"
 out=$(mktemp -d "${TMPDIR:-/var/tmp}/dotnet-fixture.XXXXXX")
 trap 'rm -rf "$out" Game/obj Mod/obj' EXIT
+# Every dotnet invocation leaves an empty dir in TMPDIR, so it gets one that goes with $out.
+mkdir "$out/tmp"
+export TMPDIR="$out/tmp"
 dotnet build Mod/Mod.csproj -c Release -o "$out" -p:Deterministic=true -p:DebugType=none -nologo -v quiet
 cp "$out/Mod.dll" ../mod.dll

@@ -4,7 +4,7 @@ Where the tests are, what each opt-in run proves and how to start it. The gate t
 
 ## Budget
 
-The whole default suite, Go with `-race` and `bun test`, runs in under 30 s cold and 10 s warm. A slow path sits behind a flag below instead of in the default run. `scripts/gate.sh` runs the suite in parallel with the lint steps, so the gate takes as long as its slowest step. Cold, with empty Go and lint caches, the floor is about 56 s: `go test -race` alone is 42 s (33 s of it compiling, `modernc.org/sqlite/lib` 9 s), and the Go and lint steps together take 56 s however they are ordered. Warm is 7-8 s. `scripts/vulncheck.sh` skips govulncheck locally while `go.mod` and `go.sum` are unchanged since the last passing run; CI and `MORTAR_GATE_VULNCHECK=1` run it always.
+The whole default suite, Go with `-race` and `bun test`, runs in under 30 s cold and 10 s warm. A slow path sits behind a flag below instead of in the default run. `scripts/gate.sh` runs the suite in parallel with the lint steps, so the gate takes as long as its slowest step. Every `dotnet` invocation leaves an empty six-character dir in `TMPDIR`, so a script that runs it gives it a per-run `TMPDIR`. Cold, with empty Go and lint caches, the floor is about 56 s: `go test -race` alone is 42 s (33 s of it compiling, `modernc.org/sqlite/lib` 9 s), and the Go and lint steps together take 56 s however they are ordered. Warm is 7-8 s. `scripts/vulncheck.sh` skips govulncheck locally while `go.mod` and `go.sum` are unchanged since the last passing run; CI and `MORTAR_GATE_VULNCHECK=1` run it always.
 
 ## Where tests live
 
