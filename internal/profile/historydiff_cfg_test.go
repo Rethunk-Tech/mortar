@@ -123,3 +123,8 @@ func TestWriteHistoryPrunesDroppedSnapshotFiles(t *testing.T) {
 		t.Fatalf("kept blob missing: %v", err)
 	}
 }
+
+func captureHistoryConfigs(dir, snapshotID string, entries []Entry) {
+	idx, bodies := historyConfigIndex(dir, entries)
+	storeHistoryConfigs(dir, snapshotID, idx, bodies)
+}

@@ -131,11 +131,6 @@ func storeHistoryConfigs(dir, snapshotID string, idx map[string]map[string]strin
 	_ = datadir.WriteJSON(filepath.Join(snapDir, historySnapshotIndex), idx)
 }
 
-func captureHistoryConfigs(dir, snapshotID string, entries []Entry) {
-	idx, bodies := historyConfigIndex(dir, entries)
-	storeHistoryConfigs(dir, snapshotID, idx, bodies)
-}
-
 func loadHistoryConfigs(dir, snapshotID string, entries []Entry) map[string]map[string][]byte {
 	out := emptyConfigs()
 	if snapshotID == "" {
