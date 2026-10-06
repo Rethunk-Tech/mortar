@@ -344,7 +344,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		r.PluginClashes = pluginClashes(pkgs, deprecated)
 		if all, err := s.profiles.Packages(gameID, id); err == nil {
 			missing, incompatible := pluginDeps(all, mods)
-			r.Missing = append(r.Missing, missing...)
+			r.Missing = append(r.Missing, dropCovered(missing, r.Missing)...)
 			for _, f := range incompatible {
 				if !slices.ContainsFunc(r.LoadFailures, func(x LoadFailure) bool { return x.Key == f.Key && x.Kind == f.Kind }) {
 					r.LoadFailures = append(r.LoadFailures, f)

@@ -130,3 +130,21 @@ func highestPlugin(list []installedPlugin) string {
 	}
 	return best
 }
+
+// dropCovered removes the rows a package's Thunderstore manifest already reports. The manifest names the dependency
+// as a package, which is what Enable and Download act on, so it wins over the plugin GUID the assembly names: the two
+// are one row when they name the same installed package, or when an absent package's name is the GUID's last part.
+func dropCovered(rows, reported []Missing) []Missing {
+	return slices.DeleteFunc(rows, func(d Missing) bool {
+		guid := d.ID.Local()
+		return slices.ContainsFunc(reported, func(e Missing) bool {
+			if !mod.Equal(e.DependentID, d.DependentID) {
+				return false
+			}
+			name := e.ID.Local()
+			_, short, _ := strings.Cut(name, "-")
+			last := guid[strings.LastIndex(guid, ".")+1:]
+			return mod.Equal(e.ID, d.ID) || looseName(name) == looseName(guid) || looseName(short) == looseName(last)
+		})
+	})
+}

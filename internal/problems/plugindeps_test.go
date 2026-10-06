@@ -155,3 +155,125 @@ func TestProblemsCountsAnInstalledPluginsMissingHardDependency(t *testing.T) {
 		t.Fatalf("missing = %+v, count = %d, err = %v; want the hard and the minimum-version dependency, both counted", got.Missing, got.Count(), err)
 	}
 }
+
+// manifestProfile installs Thunderstore packages with manifests into a Lethal Company profile and returns what Problems
+// says about it.
+type manifestPkg struct {
+	name, version, deps string
+}
+
+func manifestProblems(t *testing.T, disable []string, pkgs ...manifestPkg) Result {
+	t.Helper()
+	testfs.DataHome(t)
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "lethal-company", "LC")
+	for _, pk := range pkgs {
+		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
+			"manifest.json": `{"name":"` + pk.name + `","version_number":"` + pk.version + `","dependencies":[` + pk.deps + `]}`, pk.name + ".dll": "x",
+		})
+		res, err := profiles.InstallSource("lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + pk.name, Version: pk.version})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, off := range disable {
+			if off == pk.name {
+				e := res.Profile.Entries[len(res.Profile.Entries)-1]
+				if _, err := profiles.SetModEnabled("lethal-company", p.ID, e.Key, e.Mods[0].ID, false); err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
+	}
+	source.Register(fakeThunderstore{id: "nexus"})
+	source.Register(fakeThunderstore{id: "thunderstore"})
+	t.Cleanup(func() {
+		source.Register(thunderstore.Driver{})
+		source.Register(nexussource.Driver{})
+	})
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(t.TempDir(), set, profiles, nil)
+	s.meta = fakeMeta{}
+	got, err := s.Problems(t.Context(), "lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return got
+}
+
+func TestThunderstoreManifestDependenciesAreMissingDisabledOrOutdated(t *testing.T) {
+	got := manifestProblems(t, []string{"Off"},
+		manifestPkg{"Lib", "1.0.0", ""},
+		manifestPkg{"Off", "1.0.0", ""},
+		manifestPkg{"Needy", "1.0.0", `"BepInEx-BepInExPack-5.4.2100","Ns-Gone-1.0.0","Ns-Off-1.0.0","Ns-Lib-2.0.0"`},
+	)
+
+	reasons := map[string]string{}
+	for _, m := range got.Missing {
+		reasons[m.ID.Local()] = m.Reason
+	}
+	want := map[string]string{"Ns-Gone": "absent", "Ns-Off": "disabled", "Ns-Lib": "outdated"}
+	if len(reasons) != 3 || reasons["Ns-Gone"] != want["Ns-Gone"] || reasons["Ns-Off"] != want["Ns-Off"] || reasons["Ns-Lib"] != want["Ns-Lib"] {
+		t.Fatalf("missing = %+v, want %v and no row for the loader pack", got.Missing, want)
+	}
+}
+
+func TestDropCoveredPrefersTheManifestsPackageNaming(t *testing.T) {
+	dependent := mod.NewID(mod.FormatThunderstore, "Ns-User")
+	manifest := []Missing{
+		{DependentID: dependent, ID: "thunderstore:Evaisa-LethalLib", Reason: "absent"},
+		{DependentID: dependent, ID: "thunderstore:Ns-Lib", Reason: "disabled"},
+	}
+	dll := []Missing{
+		{DependentID: dependent, ID: "bepinex:evaisa.lethallib", Reason: "absent"},
+		{DependentID: dependent, ID: "bepinex:com.sigurd.csync", Reason: "absent"},
+		{DependentID: dependent, ID: "thunderstore:Ns-Lib", Reason: "disabled"},
+		{DependentID: "thunderstore:Ns-Other", ID: "bepinex:evaisa.lethallib", Reason: "absent"},
+	}
+
+	got := dropCovered(dll, manifest)
+
+	if len(got) != 2 || got[0].ID != "bepinex:com.sigurd.csync" || got[1].DependentID != "thunderstore:Ns-Other" {
+		t.Fatalf("rows = %+v, want the CSync row and the other dependent's row", got)
+	}
+}
+
+func TestProblemsReportsAMissingPackageOnceWhenManifestAndAssemblyBothNameIt(t *testing.T) {
+	testfs.DataHome(t)
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "lethal-company", "LC")
+	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
+		"manifest.json": `{"name":"Fixture","version_number":"1.0.0","dependencies":["Ns-Hard-1.0.0"]}`, "Fixture.dll": string(dll),
+	})
+	if _, err := profiles.InstallSource("lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Fixture", Version: "1.0.0"}); err != nil {
+		t.Fatal(err)
+	}
+	source.Register(fakeThunderstore{id: "nexus"})
+	source.Register(fakeThunderstore{id: "thunderstore"})
+	t.Cleanup(func() {
+		source.Register(thunderstore.Driver{})
+		source.Register(nexussource.Driver{})
+	})
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(t.TempDir(), set, profiles, nil)
+	s.meta = fakeMeta{}
+
+	got, err := s.Problems(t.Context(), "lethal-company", p.ID)
+
+	ids := map[mod.ID]bool{}
+	for _, m := range got.Missing {
+		ids[m.ID] = true
+	}
+	if err != nil || len(got.Missing) != 2 || !ids["thunderstore:Ns-Hard"] || !ids["bepinex:com.fixture.min"] {
+		t.Fatalf("missing = %+v, err = %v; want Ns-Hard by package once, and the version-pinned GUID", got.Missing, err)
+	}
+}
