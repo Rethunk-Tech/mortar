@@ -1,0 +1,2 @@
+go test fuzz v1
+string("mortar://stardew/mod/999999999999#")
