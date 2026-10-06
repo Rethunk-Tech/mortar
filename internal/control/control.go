@@ -5,6 +5,7 @@ package control
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/subtle"
@@ -21,6 +22,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Params is every argument a method takes; each method reads the fields it needs.
@@ -104,7 +106,10 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 	go func() {
 		<-ctx.Done()
 		_ = ln.Close()
-		_ = os.Remove(path)
+		// Another instance may have taken the file over since; removing it would hide that one from the CLI.
+		if cur, err := fsx.ReadFile(path); err == nil && bytes.Equal(cur, b) {
+			_ = os.Remove(path)
+		}
 	}()
 	for {
 		conn, err := ln.Accept()

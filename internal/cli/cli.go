@@ -2545,7 +2545,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   problems check-updates <game> <profile>  look for mod updates now
   launchers [add|remove <id> <folder>]   launchers, the games in each, and your added folders
   doctor                                  versions, folders and link handling
-  quit                                    close the running app and wait until it has exited
+  quit [--force]                          close the running app and wait until it has exited; --force
+                                          quits even with downloads or a game running
   completion bash|zsh|fish                shell completion script
   version | help
 `

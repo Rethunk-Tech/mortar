@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
@@ -372,4 +373,50 @@ func TestModRowsCarryTheEntryNoteAndTags(t *testing.T) {
 	if len(rows) != 2 || rows[1].Note != "keep" || len(rows[1].Tags) != 1 || rows[1].Tags[0] != "qol" {
 		t.Fatalf("rows = %+v", rows)
 	}
+}
+
+func TestAnInstanceEndingLeavesTheControlFileOfTheOneThatReplacedIt(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, controlwire.FileName)
+	echo := func(context.Context, string, Params) (any, error) { return true, nil }
+	ctxA, cancelA := context.WithCancel(context.Background())
+	doneA := make(chan error, 1)
+	go func() { doneA <- Serve(ctxA, dir, "a", echo) }()
+	waitFile(t, path, true)
+	if pid, ok := controlwire.Live(dir); !ok || pid != os.Getpid() {
+		t.Fatalf("Live = %d, %v", pid, ok)
+	}
+	first, _ := fsx.ReadFile(path)
+	go func() { _ = Serve(t.Context(), dir, "b", echo) }()
+	for range 200 {
+		if cur, _ := fsx.ReadFile(path); len(cur) > 0 && string(cur) != string(first) {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	cancelA()
+	<-doneA
+	time.Sleep(50 * time.Millisecond)
+	var hello controlwire.Hello
+	if err := controlwire.CallDir(dir, "hello", nil, &hello, time.Second); err != nil || hello.Version != "b" {
+		t.Fatalf("the replacing instance lost its control file: %+v, %v", hello, err)
+	}
+}
+
+func TestQuitRefusesWhileBusyUnlessForced(t *testing.T) {
+	quits := make(chan struct{}, 1)
+	s := &Services{Quit: func() { quits <- struct{}{} }, QuitBlocker: func() string { return "Downloads will be interrupted" }}
+	if _, err := s.Handle(t.Context(), "app.quit", Params{}); err == nil || !strings.Contains(err.Error(), "downloads will be interrupted") {
+		t.Fatalf("busy quit: %v", err)
+	}
+	select {
+	case <-quits:
+		t.Fatal("a refused quit still quit")
+	case <-time.After(20 * time.Millisecond):
+	}
+	res, err := s.Handle(t.Context(), "app.quit", Params{Force: true})
+	if err != nil || res != os.Getpid() {
+		t.Fatalf("forced quit = %v, %v", res, err)
+	}
+	<-quits
 }

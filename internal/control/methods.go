@@ -91,8 +91,10 @@ type Services struct {
 	Packs      *packsvc.Service
 	// Emit is nil in tests that do not watch events.
 	Emit func(name string, data any)
-	// Quit closes the app as its tray Quit does; nil in tests.
+	// Quit closes the app without asking; nil in tests.
 	Quit func()
+	// QuitBlocker names what a quit would interrupt (downloads, a running game), or is empty; nil in tests.
+	QuitBlocker func() string
 }
 
 // GameRow is one supported game for `mortar games`.
@@ -276,9 +278,15 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Quit == nil {
 			return nil, errors.New("quit is not available")
 		}
-		// After the reply, so the caller hears back before the app goes away.
+		// No window may be open to ask, so a busy app refuses rather than reporting a quit it has not done.
+		if s.QuitBlocker != nil && !p.Force {
+			if why := s.QuitBlocker(); why != "" {
+				return nil, fmt.Errorf("did not quit: %s; run mortar quit --force to quit anyway", strings.ToLower(why[:1])+why[1:])
+			}
+		}
+		// After the reply, so the caller hears back before the app goes away. The pid lets it wait for the exit.
 		go s.Quit()
-		return true, nil
+		return os.Getpid(), nil
 	case "loader.versions":
 		return s.loaderVersions(ctx, p)
 	case "loader.install":

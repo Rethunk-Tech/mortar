@@ -59,6 +59,20 @@ func Running(dir string) bool {
 	return true
 }
 
+// Live returns the pid of the Mortar app that answers hello with the token in dir's control file. A port that merely
+// accepts connections may belong to another program that reused a dead app's port, so only a token match counts.
+func Live(dir string) (int, bool) {
+	d, conn, err := dial(dir)
+	if err != nil {
+		return 0, false
+	}
+	_ = conn.Close()
+	if CallDir(dir, "hello", nil, nil, 2*time.Second) != nil {
+		return 0, false
+	}
+	return d.PID, true
+}
+
 func dial(dir string) (Discovery, net.Conn, error) {
 	var d Discovery
 	root, err := os.OpenRoot(dir)
