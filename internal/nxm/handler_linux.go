@@ -15,7 +15,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -46,15 +45,8 @@ func inFlatpak() bool {
 	return err == nil
 }
 
-// mimeDefaults runs xdg-mime. Inside a Flatpak the runtime has none, and the defaults that count are the host's, so
-// it runs the host's.
-func (l *System) mimeDefaults(args ...string) (string, error) {
-	if inFlatpak() {
-		name, hostArgs := sandbox.HostArgv("", nil, "xdg-mime", args...)
-		return l.run(name, hostArgs...)
-	}
-	return l.run(xdgMime, args...)
-}
+// mimeDefaults runs xdg-mime. Inside a Flatpak the runtime has none, and the defaults that count are the host's.
+func (l *System) mimeDefaults(args ...string) (string, error) { return l.onHost(xdgMime, args...) }
 
 func schemeMime(scheme string) string { return "x-scheme-handler/" + scheme }
 
@@ -365,6 +357,13 @@ func (l *System) handBack(schemes []string, previous map[string]string) error {
 
 // ForwardOther runs the previous handler's desktop entry on link.
 func (l *System) ForwardOther(link, previous string) error {
+	if inFlatpak() {
+		if previous == "" {
+			return errors.New("no previous nxm handler")
+		}
+		_, err := l.onHost("sh", "-c", launchOnHost, "sh", previous, link)
+		return err
+	}
 	name, args, err := LinuxForwardArgv(previous, link, func(id string) (string, error) {
 		return l.desktopEntryField(id, desktopExec)
 	})
