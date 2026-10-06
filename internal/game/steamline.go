@@ -67,11 +67,21 @@ func steamExe(gameID, dir string) (string, bool) {
 	return "", false
 }
 
-// StartsLoader reports whether Steam launch options already start the game's loader.
+// StartsLoader reports whether Steam launch options already start the game's loader; never for a loader Steam does
+// not start (BepInEx, which Mortar places before each launch).
 func StartsLoader(gameID, options string) (bool, error) {
-	exe, err := requireSteamExe(gameID, "")
-	if err != nil {
+	if _, err := Require(gameID); err != nil {
 		return false, err
 	}
-	return launchHas(options, exe), nil
+	exe, ok := steamExe(gameID, "")
+	return ok && launchHas(options, exe), nil
+}
+
+// NeedsLaunchOption reports whether a Steam launch loads mods only once Steam's launch options start the loader.
+func NeedsLaunchOption(gameID string) (bool, error) {
+	if _, err := Require(gameID); err != nil {
+		return false, err
+	}
+	_, ok := steamExe(gameID, "")
+	return ok, nil
 }

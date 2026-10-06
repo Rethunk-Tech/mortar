@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   LaunchOptions,
   LaunchOptionsStartLoader,
+  NeedsLaunchOption,
   SetLaunchOption,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { useGameName } from '../games/info.ts'
@@ -303,11 +304,14 @@ export function LoaderStep({
   const checkGen = useRef(0)
 
   const readOptions = useCallback(
-    // Steam's config is unreadable until the user has run Steam once, which reads as "not set yet".
+    // Steam's config is unreadable until the user has run Steam once, which reads as "not set yet". A loader Steam
+    // does not start (BepInEx) has no launch options to set.
     () =>
       windows
-        ? LaunchOptions(game)
-            .then((options) => LaunchOptionsStartLoader(game, options))
+        ? NeedsLaunchOption(game)
+            .then(async (needs) =>
+              needs ? LaunchOptionsStartLoader(game, await LaunchOptions(game)) : true,
+            )
             .then(setLaunchSet, () => setLaunchSet(false))
         : Promise.resolve(),
     [windows, game],

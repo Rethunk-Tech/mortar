@@ -216,6 +216,11 @@ func (s *Service) LoaderLaunchLine(gameID, installDir string) (string, error) {
 	return launchWith(exe, ""), nil
 }
 
+// NeedsLaunchOption reports whether the game's loader must be started through Steam's launch options.
+func (s *Service) NeedsLaunchOption(gameID string) (bool, error) {
+	return NeedsLaunchOption(gameID)
+}
+
 // LaunchOptionsStartLoader reports whether Steam launch options already start the game's loader.
 func (s *Service) LaunchOptionsStartLoader(gameID, options string) (bool, error) {
 	return StartsLoader(gameID, options)
