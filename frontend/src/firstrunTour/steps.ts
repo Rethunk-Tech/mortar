@@ -12,9 +12,8 @@ const TOUR_STEPS = [
 
 type TourStep = (typeof TOUR_STEPS)[number]
 
-// What each step spotlights: the first selector that matches wins, so a step falls back to a control that is always
-// on screen when the list it prefers is empty or on another tab.
-const MOD_ROW = ['main [data-mod-row]', 'main [data-mod-id]', '[data-tour="mods-tab"]']
+// What each step spotlights: the first selector that matches wins.
+const MOD_ROW = ['main [data-mod-row]', 'main [data-mod-id]']
 const TOUR_ANCHORS: Record<TourStep, string[]> = {
   profiles: ['main nav'],
   browse: ['[data-tour="browse-tab"]'],
@@ -27,4 +26,7 @@ const TOUR_ANCHORS: Record<TourStep, string[]> = {
   command: ['[data-tour="app-menu"]'],
 }
 
-export { TOUR_ANCHORS, TOUR_STEPS }
+// Steps about a mod row, left out while the list shows none: there is nothing on screen for them to point at.
+const TOUR_ROW_STEPS: ReadonlySet<TourStep> = new Set(['details', 'config'])
+
+export { TOUR_ANCHORS, TOUR_ROW_STEPS, TOUR_STEPS }

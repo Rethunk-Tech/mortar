@@ -1,29 +1,14 @@
-import { TOUR_STEPS } from './steps.ts'
-
-const TOUR_STEP_COUNT = TOUR_STEPS.length
-
-const LAST_TOUR_STEP = TOUR_STEP_COUNT - 1
-
-function clampStep(step: number): number {
-  if (step < 0) {
-    return 0
-  }
-  if (step > LAST_TOUR_STEP) {
-    return LAST_TOUR_STEP
-  }
-  return step
+// shown is the ascending list of step indexes the tour walks; a step left out is passed over both ways.
+function tourStepNext(step: number, shown: number[]): number {
+  return shown.find((i) => i > step) ?? step
 }
 
-function tourStepNext(step: number): number {
-  return clampStep(step + 1)
+function tourStepBack(step: number, shown: number[]): number {
+  return shown.findLast((i) => i < step) ?? step
 }
 
-function tourStepBack(step: number): number {
-  return clampStep(step - 1)
-}
-
-function tourOnLastStep(step: number): boolean {
-  return step >= LAST_TOUR_STEP
+function tourOnLastStep(step: number, shown: number[]): boolean {
+  return step >= (shown.at(-1) ?? 0)
 }
 
 interface TourRect {
@@ -61,12 +46,4 @@ function tourEligible(o: {
   return o.onGameWithProfile && ((o.unseen && !o.dismissed) || o.replay)
 }
 
-export {
-  sameRectOr,
-  TOUR_STEP_COUNT,
-  type TourRect,
-  tourEligible,
-  tourOnLastStep,
-  tourStepBack,
-  tourStepNext,
-}
+export { sameRectOr, type TourRect, tourEligible, tourOnLastStep, tourStepBack, tourStepNext }

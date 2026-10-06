@@ -1,4 +1,4 @@
-import { TOUR_ANCHORS, TOUR_STEPS } from './steps.ts'
+import { TOUR_ANCHORS, TOUR_ROW_STEPS, TOUR_STEPS } from './steps.ts'
 
 function resolveTourAnchor(step: number): HTMLElement | null {
   const id = TOUR_STEPS[step]
@@ -11,4 +11,11 @@ function resolveTourAnchor(step: number): HTMLElement | null {
   return null
 }
 
-export { resolveTourAnchor }
+// The steps the tour walks now: every step, less the mod-row ones while no row is on screen.
+function tourShownSteps(): number[] {
+  return TOUR_STEPS.flatMap((id, i) =>
+    TOUR_ROW_STEPS.has(id) && resolveTourAnchor(i) === null ? [] : [i],
+  )
+}
+
+export { resolveTourAnchor, tourShownSteps }

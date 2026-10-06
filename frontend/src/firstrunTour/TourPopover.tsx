@@ -4,13 +4,8 @@ import { useEffect, useId, useRef } from 'react'
 import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { controlsCutout } from '../shell/controlsCutout.ts'
-import {
-  TOUR_STEP_COUNT,
-  type TourRect,
-  tourOnLastStep,
-  tourStepBack,
-  tourStepNext,
-} from './logic.ts'
+import { tourShownSteps } from './anchors.ts'
+import { type TourRect, tourOnLastStep, tourStepBack, tourStepNext } from './logic.ts'
 import { TOUR_STEPS } from './steps.ts'
 
 const TOUR_Z_INDEX = 1400
@@ -90,7 +85,8 @@ function TourPopover({
   const shortcuts = useSettings((s) => s.shortcuts)
   const paletteKeys = mergeBindings(shortcuts)['command-palette']
   const placement = placements[step] ?? 'bottom'
-  const last = tourOnLastStep(step)
+  const shown = tourShownSteps()
+  const last = tourOnLastStep(step, shown)
   const previousFocus = useRef<HTMLElement | null>(null)
   useEffect(() => {
     const el = document.activeElement
@@ -103,7 +99,7 @@ function TourPopover({
 
   const { title, body } = useTourCopy(step, paletteKeys)
 
-  const stepLabel = t`Step ${step + 1} of ${TOUR_STEP_COUNT}`
+  const stepLabel = t`Step ${shown.indexOf(step) + 1} of ${shown.length}`
 
   return (
     <>
@@ -181,7 +177,7 @@ function TourPopover({
                     <Button
                       size="small"
                       disabled={step === 0}
-                      onClick={() => setStep((s) => tourStepBack(s))}
+                      onClick={() => setStep((s) => tourStepBack(s, tourShownSteps()))}
                     >
                       {t`Back`}
                     </Button>
@@ -193,7 +189,7 @@ function TourPopover({
                         if (last) {
                           close()
                         } else {
-                          setStep((s) => tourStepNext(s))
+                          setStep((s) => tourStepNext(s, tourShownSteps()))
                         }
                       }}
                     >

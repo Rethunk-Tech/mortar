@@ -1,21 +1,17 @@
 import { expect, test } from 'bun:test'
-import {
-  sameRectOr,
-  TOUR_STEP_COUNT,
-  tourEligible,
-  tourOnLastStep,
-  tourStepBack,
-  tourStepNext,
-} from './logic.ts'
+import { sameRectOr, tourEligible, tourOnLastStep, tourStepBack, tourStepNext } from './logic.ts'
 import { tourClearSeen, tourMarkSeen, tourShouldRun } from './seen.ts'
 
-test('tour step sequencing clamps at ends', () => {
-  expect(tourStepNext(0)).toBe(1)
-  expect(tourStepNext(TOUR_STEP_COUNT - 1)).toBe(TOUR_STEP_COUNT - 1)
-  expect(tourStepBack(TOUR_STEP_COUNT - 1)).toBe(TOUR_STEP_COUNT - 2)
-  expect(tourStepBack(0)).toBe(0)
-  expect(tourOnLastStep(TOUR_STEP_COUNT - 2)).toBe(false)
-  expect(tourOnLastStep(TOUR_STEP_COUNT - 1)).toBe(true)
+test('tour steps pass over the ones left out and stop at the ends', () => {
+  // Steps 6 and 7 (indexes 5 and 6) are left out, as with no mod rows.
+  const shown = [0, 1, 2, 3, 4, 7, 8]
+  expect(tourStepNext(0, shown)).toBe(1)
+  expect(tourStepNext(4, shown)).toBe(7)
+  expect(tourStepBack(7, shown)).toBe(4)
+  expect(tourStepNext(8, shown)).toBe(8)
+  expect(tourStepBack(0, shown)).toBe(0)
+  expect(tourOnLastStep(7, shown)).toBe(false)
+  expect(tourOnLastStep(8, shown)).toBe(true)
 })
 
 test('tour seen state uses the tour tip id', () => {
