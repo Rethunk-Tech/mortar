@@ -936,7 +936,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		s.emit(BackupWarningEvent, BackupWarning{Game: gameID, Profile: profileID, Error: backupErr.Error()})
 	}
 	s.watch(g)
-	go s.askGameVersion(runCtx, g)
+	go s.followRunning(runCtx, g)
 	if sample {
 		stopped := make(chan struct{})
 		s.mu.Lock()

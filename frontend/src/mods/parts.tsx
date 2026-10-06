@@ -16,14 +16,15 @@ import {
   Switch,
   Tooltip,
 } from '@mui/material'
-import { ArrowUp, Ban, Pin, TriangleAlert } from 'lucide-react'
+import { ArrowUp, Ban, CircleCheck, CircleX, Pin, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { errorsLabel } from '../i18n/counts.ts'
 import { listNames } from '../i18n/list.ts'
+import { useLive } from '../launch/live.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { dependentsOf, localId } from './dependents.ts'
+import { dependentsOf, idKey, localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { lastRunSummary, useLastRun } from './lastRun.ts'
@@ -207,6 +208,28 @@ export function ProblemBadge({ mod }: { mod: Mod }) {
         sx={{ display: 'flex', flexShrink: 0, color: 'warning.main' }}
       >
         <TriangleAlert size={16} />
+      </Box>
+    </Tooltip>
+  )
+}
+
+// LiveBadge says, while the profile's game runs, whether any plugin of a package that ships plugins has loaded.
+export function LiveBadge({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  const openId = useProfiles((s) => s.openId)
+  const loaded = useLive((s) => (s.profile === openId ? s.loaded[idKey(mod.id)] : undefined))
+  if (loaded === undefined) {
+    return null
+  }
+  const text = loaded ? t`Loaded in the running game` : t`Not loaded in the running game`
+  return (
+    <Tooltip title={text}>
+      <Box
+        role="img"
+        aria-label={text}
+        sx={{ display: 'flex', flexShrink: 0, color: loaded ? 'success.main' : 'error.main' }}
+      >
+        {loaded ? <CircleCheck size={16} /> : <CircleX size={16} />}
       </Box>
     </Tooltip>
   )

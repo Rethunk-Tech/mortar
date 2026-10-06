@@ -239,7 +239,15 @@ type GameVersion interface {
 	GameVersion(log string) string
 }
 
-// RunningGameVersion is a loader whose companion tells the running game's version, for a log that names none.
-type RunningGameVersion interface {
-	RunningGameVersion(ctx context.Context, p ProfileView) (string, error)
+// Live is what a running game's companion reports: the game's version, its current scene and the GUIDs of the plugins
+// that loaded, a set in no particular order.
+type Live struct {
+	GameVersion string
+	Scene       string
+	Plugins     []string
+}
+
+// RunningState is a loader whose companion tells what the running game has loaded, for a log that names no version.
+type RunningState interface {
+	RunningState(ctx context.Context, p ProfileView) (Live, error)
 }

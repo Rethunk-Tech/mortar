@@ -113,6 +113,7 @@ func registerEvents() {
 	application.RegisterEvent[launchsvc.Status](launchsvc.StateEvent)
 	application.RegisterEvent[launchsvc.Lines](launchsvc.LineEvent)
 	application.RegisterEvent[launchsvc.Crash](launchsvc.CrashEvent)
+	application.RegisterEvent[launchsvc.LiveRun](launchsvc.LiveEvent)
 	application.RegisterEvent[loadersvc.Progress](loadersvc.ProgressEvent)
 	application.RegisterEvent[[]string](picker.DroppedEvent)
 	application.RegisterEvent[settings.Settings](settings.ChangedEvent)

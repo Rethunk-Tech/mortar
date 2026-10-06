@@ -8,6 +8,7 @@ import { useSettings } from '../settings/store.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { applyLive, clearLiveUnlessRunning } from './live.ts'
 import { useLaunch } from './store.ts'
 
 const useSweepUi = create<{
@@ -51,7 +52,11 @@ function toastSweep(report: SweepReport) {
 }
 
 export function initLaunch() {
-  Events.On('launch:state', (event) => useLaunch.getState().apply(event.data))
+  Events.On('launch:state', (event) => {
+    useLaunch.getState().apply(event.data)
+    clearLiveUnlessRunning(event.data)
+  })
+  Events.On('launch:live', (event) => applyLive(event.data))
   Events.On('launch:line', (event) => useConsole.getState().add(event.data))
   Events.On('launch:backup-warning', (event) => {
     const data = event.data as { error?: string }

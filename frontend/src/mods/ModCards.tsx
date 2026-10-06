@@ -29,6 +29,7 @@ import { ownSlice } from './overlayRows.ts'
 import {
   LastRunBadge,
   LetterTile,
+  LiveBadge,
   NexusGoneBadge,
   PinBadge,
   ProblemBadge,
@@ -236,6 +237,7 @@ function ModCardView({ mod: m, orderedIds, profile, columnsRef, onMove }: ModCar
       <UpdateBadge mod={m} />
       <NexusGoneBadge mod={m} />
       <ProblemBadge mod={m} />
+      <LiveBadge mod={m} />
       <LastRunBadge mod={m} />
       {tag ? <Chip size="small" label={tag} title={tag} sx={{ maxWidth: TAG_MAX_PX }} /> : null}
       <ModMenu mod={m} />

@@ -15,6 +15,7 @@ import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { playDirect } from './directPref.ts'
+import { useLive } from './live.ts'
 import { StopDialog } from './StopDialog.tsx'
 import { useLaunch } from './store.ts'
 import { VanillaPlay } from './VanillaPlay.tsx'
@@ -73,6 +74,7 @@ export function PlayControl({ game }: { game: string }) {
   const state = stateOf(status, game)
   const running = state === State.Running
   const time = useElapsed(status?.since ?? 0, running)
+  const scene = useLive((s) => (s.game === game ? s.scene : ''))
   const runningProfile = profiles.find((p) => p.id === status?.profile)
   const replaceProfile = useProfiles((s) => s.replace)
   const presets = playPresets(profiles.find((p) => p.id === openId))
@@ -110,6 +112,15 @@ export function PlayControl({ game }: { game: string }) {
             >
               {who === '' ? t`Running` : t`Running ${who}`}
             </Typography>
+            {scene ? (
+              <Typography
+                noWrap={true}
+                title={t`Current scene`}
+                sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)', minWidth: 0 }}
+              >
+                {scene}
+              </Typography>
+            ) : null}
             <Typography
               noWrap={true}
               sx={{

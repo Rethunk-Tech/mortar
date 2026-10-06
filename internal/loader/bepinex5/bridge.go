@@ -18,17 +18,25 @@ func (Loader) Query(ctx context.Context, _ loader.Target, p loader.ProfileView, 
 	return bridge.Query(ctx, filepath.Join(p.Dir, filepath.FromSlash(bridge.BepInEx.StateFile)), what)
 }
 
-// RunningGameVersion is the game version the bridge's status reports; BepInEx's log never names it.
-func (l Loader) RunningGameVersion(ctx context.Context, p loader.ProfileView) (string, error) {
+// RunningState is the bridge's status: the game version BepInEx's log never names, the scene and the loaded plugins.
+func (l Loader) RunningState(ctx context.Context, p loader.ProfileView) (loader.Live, error) {
 	raw, err := l.Query(ctx, loader.Target{}, p, "status")
 	if err != nil {
-		return "", err
+		return loader.Live{}, err
 	}
 	var st struct {
 		GameVersion string `json:"gameVersion"`
+		Scene       string `json:"scene"`
+		Plugins     []struct {
+			GUID string `json:"guid"`
+		} `json:"plugins"`
 	}
 	if err := json.Unmarshal(raw, &st); err != nil {
-		return "", err
+		return loader.Live{}, err
 	}
-	return st.GameVersion, nil
+	live := loader.Live{GameVersion: st.GameVersion, Scene: st.Scene, Plugins: make([]string, 0, len(st.Plugins))}
+	for _, pl := range st.Plugins {
+		live.Plugins = append(live.Plugins, pl.GUID)
+	}
+	return live, nil
 }

@@ -43,6 +43,7 @@ import { nestOverlays, overlaysByBase, ownSlice } from './overlayRows.ts'
 import {
   LastRunBadge,
   LetterTile,
+  LiveBadge,
   ModSwitch,
   NexusGoneBadge,
   PinBadge,
@@ -215,6 +216,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
             <PinBadge mod={m} />
             <CompatChip mod={m} />
             <ProblemBadge mod={m} />
+            <LiveBadge mod={m} />
             <NexusGoneBadge mod={m} />
             <UpdateBadge mod={m} />
             <Box component="span" title={row.status} sx={ellipsis}>
