@@ -87,7 +87,8 @@ async function served(page: Page) {
   }).toPass({ timeout: 15_000 })
 }
 
-const runs = () => cli('runs', 'stardew', fine).split('\n').slice(1)
+// JSON, since the table adds a line under a run that has an error or a cause.
+const runs = (): { outcome: string }[] => JSON.parse(cli('runs', 'stardew', fine, '--json')) ?? []
 
 let fine = ''
 let blocked = ''
@@ -152,7 +153,7 @@ test('a Steam session with a fine profile launches the game and exits when it cl
   })
   const after = runs()
   expect(after.length).toBe(before + 1)
-  expect(after[0]).toContain('Ran')
+  expect(after[0]?.outcome).toBe('ran')
 })
 
 test('a desktop shortcut plays in the full window, where Cancel leaves Mortar open', async ({
