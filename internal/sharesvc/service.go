@@ -407,24 +407,45 @@ func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string)
 	}
 	shared, err := share.Parse(text)
 	if err != nil {
+		return Preview{}, unreadable(err)
+	}
+	if err := sameGame(shared, game); err != nil {
 		return Preview{}, err
 	}
-	if shared.Game != "" {
-		if _, err := gamepkg.Require(shared.Game); err != nil {
-			return Preview{}, err
-		}
-		if shared.Game != game {
-			return Preview{}, usererr.New(usererr.Invalid, "this link is for "+shared.Game+", not "+game)
-		}
-	}
 	return s.preview(ctx, game, shared, "", nil, profileID, profile.OriginLink)
+}
+
+// sameGame refuses a share made for another game, whose mods the game could not load.
+func sameGame(shared share.Shared, game string) error {
+	if shared.Game == "" {
+		return nil
+	}
+	if _, err := gamepkg.Require(shared.Game); err != nil {
+		return err
+	}
+	if shared.Game != game {
+		return usererr.New(usererr.OtherGame, "this share is for "+shared.Game+", not "+game)
+	}
+	return nil
+}
+
+// unreadable tags why a link, file or payload someone sent could not be read, so the import dialog can say so.
+func unreadable(err error) error {
+	switch {
+	case errors.Is(err, share.ErrNewerVersion):
+		return usererr.Wrap(usererr.Outdated, err)
+	case errors.Is(err, share.ErrMalformed), errors.Is(err, share.ErrNotLink), errors.Is(err, share.ErrTooLarge),
+		errors.Is(err, share.ErrBadFile):
+		return usererr.Wrap(usererr.Damaged, err)
+	}
+	return err
 }
 
 // PreviewFile reads a .mortar file and resolves what it names.
 func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string) (Preview, error) {
 	pv, err := share.Read(file)
 	if err != nil {
-		return Preview{}, err
+		return Preview{}, unreadable(err)
 	}
 	return s.previewShared(ctx, game, pv, profileID)
 }
@@ -433,13 +454,16 @@ func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string)
 func (s *Service) previewBytes(ctx context.Context, game string, data []byte, profileID string) (Preview, error) {
 	pv, err := share.ReadBytes(data)
 	if err != nil {
-		return Preview{}, err
+		return Preview{}, unreadable(err)
 	}
 	return s.previewShared(ctx, game, pv, profileID)
 }
 
 // previewShared resolves a read .mortar file and keeps its description and groups on the session for the import.
 func (s *Service) previewShared(ctx context.Context, game string, pv share.Preview, profileID string) (Preview, error) {
+	if err := sameGame(pv.Shared, game); err != nil {
+		return Preview{}, err
+	}
 	out, err := s.preview(ctx, game, pv.Shared, pv.Notes, pv.Configs, profileID, profile.OriginMortar)
 	if err != nil {
 		return Preview{}, err
@@ -460,7 +484,7 @@ func (s *Service) previewShared(ctx context.Context, game string, pv share.Previ
 func (s *Service) PreviewData(ctx context.Context, game, encoded, profileID string) (Preview, error) {
 	data, err := base64.RawStdEncoding.DecodeString(encoded)
 	if err != nil {
-		return Preview{}, fmt.Errorf("%w: invalid payload", share.ErrBadFile)
+		return Preview{}, unreadable(fmt.Errorf("%w: invalid payload", share.ErrBadFile))
 	}
 	return s.previewBytes(ctx, game, data, profileID)
 }

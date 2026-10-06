@@ -13,6 +13,8 @@ test('errorKind reads the Wails [kind] prefix', () => {
   expect(errorKind('[disk_full] write')).toBe('disk_full')
   expect(errorKind('[damaged] json')).toBe('damaged')
   expect(errorKind('[invalid] id')).toBe('invalid')
+  expect(errorKind('[other_game] this share is for lethal-company')).toBe('other_game')
+  expect(errorKind('[outdated] made by a newer Mortar')).toBe('outdated')
 })
 
 test('an untagged bound-call error takes its kind from the Wails cause', () => {

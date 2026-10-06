@@ -24,6 +24,10 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
       return i18n._(msg`That data could not be read.`)
     case 'invalid':
       return i18n._(msg`That request was not valid.`)
+    case 'other_game':
+      return i18n._(msg`That is for another game. Open that game and import it there.`)
+    case 'outdated':
+      return i18n._(msg`That was made by a newer Mortar. Update Mortar to open it.`)
     default:
       return i18n._(msg`Something went wrong`)
   }

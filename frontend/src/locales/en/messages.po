@@ -200,7 +200,7 @@ msgid "Updated categories"
 msgstr "Updated categories"
 
 #: src/queue/store.ts:148
-#: src/toasts/report.ts:51
+#: src/toasts/report.ts:55
 msgid "Open storage settings"
 msgstr "Open storage settings"
 
@@ -1321,7 +1321,7 @@ msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
 #: src/settings/sections/AboutDiagnostics.tsx:227
-#: src/toasts/report.ts:58
+#: src/toasts/report.ts:62
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
 
@@ -1675,7 +1675,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/shell/ErrorRetry.tsx:14
 #: src/shell/LoadingRow.tsx:26
 #: src/shell/OfflineBanner.tsx:72
-#: src/toasts/report.ts:54
+#: src/toasts/report.ts:58
 msgid "Retry"
 msgstr "Retry"
 
@@ -4145,7 +4145,7 @@ msgstr "{0} {1} has several archives. Which one should Mortar install?"
 msgid "Reset {label}"
 msgstr "Reset {label}"
 
-#: src/toasts/report.ts:60
+#: src/toasts/report.ts:64
 msgid "Open log"
 msgstr "Open log"
 
@@ -4488,6 +4488,10 @@ msgstr "They move to Dismissed. Restore them from that section."
 #: src/game/ProfileMenuItems.tsx:170
 msgid "Added to Steam"
 msgstr "Added to Steam"
+
+#: src/toasts/report.ts:28
+msgid "That is for another game. Open that game and import it there."
+msgstr "That is for another game. Open that game and import it there."
 
 #: src/console/SearchRunsDialog.tsx:120
 msgid "Enter text to search stored runs."
@@ -8197,8 +8201,8 @@ msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
 #: src/firstrun/GameSetup.tsx:137
-#: src/toasts/report.ts:28
-#: src/toasts/report.ts:107
+#: src/toasts/report.ts:32
+#: src/toasts/report.ts:111
 #: src/toasts/usePending.ts:31
 msgid "Something went wrong"
 msgstr "Something went wrong"
@@ -11729,6 +11733,10 @@ msgstr "Test launch"
 #: src/mods/OptionalFileRows.tsx:167
 msgid "Download and add on top"
 msgstr "Download and add on top"
+
+#: src/toasts/report.ts:30
+msgid "That was made by a newer Mortar. Update Mortar to open it."
+msgstr "That was made by a newer Mortar. Update Mortar to open it."
 
 #. placeholder {0}: usage.profileName
 #: src/settings/sections/DataHistory.tsx:53

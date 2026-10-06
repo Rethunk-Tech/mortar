@@ -21,7 +21,11 @@ const (
 	DiskFull   Kind = "disk_full"
 	Damaged    Kind = "damaged"
 	Invalid    Kind = "invalid"
-	Unknown    Kind = "unknown"
+	// OtherGame is a share, file or link made for another game than the one it was opened in.
+	OtherGame Kind = "other_game"
+	// Outdated is something made by a newer Mortar than this one.
+	Outdated Kind = "outdated"
+	Unknown  Kind = "unknown"
 )
 
 const (
@@ -119,7 +123,7 @@ func Parse(s string) (kind Kind, raw string) {
 		if s[i] == ']' && i+1 < len(s) && s[i+1] == ' ' {
 			k := Kind(s[1:i])
 			switch k {
-			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid:
+			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated:
 				return k, s[i+2:]
 			case Unknown:
 			}

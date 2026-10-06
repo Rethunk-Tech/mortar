@@ -19,6 +19,10 @@ func Sentence(kind usererr.Kind) string {
 		return "That data could not be read."
 	case usererr.Invalid:
 		return "That request was not valid."
+	case usererr.OtherGame:
+		return "That is for another game. Open that game and import it there."
+	case usererr.Outdated:
+		return "That was made by a newer Mortar. Update Mortar to open it."
 	case usererr.Unknown:
 		return "Something went wrong."
 	default:

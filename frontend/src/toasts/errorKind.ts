@@ -8,6 +8,8 @@ const knownKinds = [
   'disk_full',
   'damaged',
   'invalid',
+  'other_game',
+  'outdated',
 ] as const
 
 const kinds = new Set<string>(knownKinds)

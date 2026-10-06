@@ -1,9 +1,11 @@
 package sharesvc
 
 import (
+	"archive/zip"
 	"bytes"
 	"context"
 	"encoding/base64"
+	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -16,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestImportDataMakesTheSharedProfileWithItsSwitchedOffMods(t *testing.T) {
@@ -82,5 +85,36 @@ func TestImportDataPlacesAPairedComputersLocalArchiveFromTheStore(t *testing.T) 
 	}
 	if !strings.Contains(res.Profile.Notes, "Gone.zip") {
 		t.Fatalf("the archive that did not arrive is not noted: %q", res.Profile.Notes)
+	}
+}
+
+func TestASharedFileSaysWhyItCannotBePreviewed(t *testing.T) {
+	s, _ := newService(t, true)
+	var other bytes.Buffer
+	if _, err := share.Write(&other, "lethal-company", profile.Profile{Name: "Crew"}, t.TempDir()); err != nil {
+		t.Fatal(err)
+	}
+	encoded := base64.RawStdEncoding.EncodeToString(other.Bytes())
+	if _, err := s.PreviewData(context.Background(), "stardew", encoded, ""); usererr.KindOf(err) != usererr.OtherGame {
+		t.Fatalf("another game's file: %v", err)
+	}
+	if _, err := s.PreviewData(context.Background(), "stardew", "not a payload", ""); usererr.KindOf(err) != usererr.Damaged {
+		t.Fatalf("a damaged payload: %v", err)
+	}
+	var newer bytes.Buffer
+	zw := zip.NewWriter(&newer)
+	w, err := zw.Create("profile.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := fmt.Fprintf(w, `{"version":%d,"name":"Later","game":"stardew"}`, share.FormatVersion+1); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	encoded = base64.RawStdEncoding.EncodeToString(newer.Bytes())
+	if _, err := s.PreviewData(context.Background(), "stardew", encoded, ""); usererr.KindOf(err) != usererr.Outdated {
+		t.Fatalf("a newer Mortar's file: %v", err)
 	}
 }
