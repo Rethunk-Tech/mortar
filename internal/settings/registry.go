@@ -114,6 +114,7 @@ var registry = []pref{
 	ptrPref("driftChecks", ScopeApp, true, func(s Settings, _ string) *bool { return s.DriftChecks }, func(s *Settings, _ string, on bool) { s.DriftChecks = &on }),
 	ptrPref("autoInstallMortarUpdates", ScopeApp, true, func(s Settings, _ string) *bool { return s.AutoInstallMortarUpdates }, func(s *Settings, _ string, on bool) { s.AutoInstallMortarUpdates = &on }),
 	sourcePref("nexus", boolPref("autoTrackNexus", ScopeSource, func(s Settings, _ string) bool { return s.AutoTrackNexus }, func(s *Settings, _ string, on bool) { s.AutoTrackNexus = on })),
+	intPref("lanPort", ScopeApp, DefaultLanPort, 0, 65535, func(s Settings, _ string) int { return s.LanPort }, func(s *Settings, _ string, n int) { s.LanPort = n }),
 	boolPref("lanSharing", ScopeApp, func(s Settings, _ string) bool { return s.LanSharing }, func(s *Settings, _ string, on bool) { s.LanSharing = on }),
 	strPref("lanName", ScopeApp, func(s Settings, _ string) string { return s.LanName }, func(s *Settings, _, v string) { s.LanName = v }),
 	boolPref("lanAutoAcceptPaired", ScopeApp, func(s Settings, _ string) bool { return s.LanAutoAcceptPaired }, func(s *Settings, _ string, on bool) { s.LanAutoAcceptPaired = on }),
