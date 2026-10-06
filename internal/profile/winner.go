@@ -16,18 +16,29 @@ func (s *Store) SetWinner(game, profileID, winnerKey string, loser mod.ID, on bo
 	if loser == "" {
 		return Profile{}, fmt.Errorf("loser unique ID is empty")
 	}
-	var drop []mod.ID
-	if !on {
-		drop = []mod.ID{loser}
-	}
 	p, err := s.updateMods(game, profileID, func(p *Profile, dir string) error {
 		i := entryIndex(p.Entries, winnerKey)
 		if i < 0 {
 			return fmt.Errorf("mod %q is not in this profile", winnerKey)
 		}
 		e := p.Entries[i]
+		if on {
+			if err := loserNeedsWinner(p.Entries, e, loser); err != nil {
+				return err
+			}
+		}
 		e.LoadAfter = setLoadAfter(e.LoadAfter, loser, on)
 		p.Entries[i] = e
+		var drop func(Component) []mod.ID
+		if !on {
+			peer := storePeer(s, game, e.Key)
+			drop = func(m Component) []mod.ID {
+				if authorDeclares(peer, m.Folder, loser) {
+					return nil
+				}
+				return []mod.ID{loser}
+			}
+		}
 		return applyLoadAfter(filepath.Join(dir, "mods", e.Key), e, drop)
 	})
 	if err != nil {
@@ -69,8 +80,8 @@ func setLoadAfter(ids []mod.ID, loser mod.ID, on bool) []mod.ID {
 	return out
 }
 
-func applyLoadAfter(root string, e Entry, drop []mod.ID) error {
-	if len(e.LoadAfter) == 0 && len(drop) == 0 {
+func applyLoadAfter(root string, e Entry, drop func(Component) []mod.ID) error {
+	if len(e.LoadAfter) == 0 && drop == nil {
 		return nil
 	}
 	for _, m := range e.Mods {
@@ -83,7 +94,11 @@ func applyLoadAfter(root string, e Entry, drop []mod.ID) error {
 		if err != nil {
 			return err
 		}
-		rewritten, err := manifest.RewriteDependencies(raw, e.LoadAfter, drop)
+		var dropped []mod.ID
+		if drop != nil {
+			dropped = drop(m)
+		}
+		rewritten, err := manifest.RewriteDependencies(raw, safeLoadAfter(e, m), dropped)
 		if err != nil {
 			return err
 		}
@@ -92,4 +107,53 @@ func applyLoadAfter(root string, e Entry, drop []mod.ID) error {
 		}
 	}
 	return nil
+}
+
+// safeLoadAfter is the entry's LoadAfter as one component may declare it: never itself, and never a component of
+// the same download that needs it, since SMAPI refuses to load a dependency cycle.
+func safeLoadAfter(e Entry, m Component) []mod.ID {
+	return slices.DeleteFunc(slices.Clone(e.LoadAfter), func(id mod.ID) bool {
+		if mod.Equal(id, m.ID) {
+			return true
+		}
+		i := slices.IndexFunc(e.Mods, func(c Component) bool { return mod.Equal(c.ID, id) })
+		return i >= 0 && slices.ContainsFunc(e.Mods[i].Needs, func(n mod.ID) bool { return mod.Equal(n, m.ID) })
+	})
+}
+
+// loserNeedsWinner refuses an order SMAPI could never honour: a loser in another download that needs the winner
+// always loads after it.
+func loserNeedsWinner(entries []Entry, winner Entry, loser mod.ID) error {
+	for _, e := range entries {
+		if e.Key == winner.Key {
+			continue
+		}
+		for _, c := range e.Mods {
+			if !mod.Equal(c.ID, loser) {
+				continue
+			}
+			for _, w := range winner.Mods {
+				if slices.ContainsFunc(c.Needs, func(n mod.ID) bool { return mod.Equal(n, w.ID) }) {
+					return fmt.Errorf("%s needs %s, so it always loads after it", c.Name, w.Name)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// authorDeclares reports whether the store's copy of a component already lists id, so undoing a win keeps it.
+func authorDeclares(peer, folder string, id mod.ID) bool {
+	if peer == "" {
+		return false
+	}
+	raw, err := fsx.ReadFile(filepath.Join(peer, filepath.FromSlash(folder), manifest.FileName))
+	if err != nil {
+		return false
+	}
+	m, err := manifest.Parse(raw)
+	if err != nil {
+		return false
+	}
+	return slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return mod.Equal(mod.SMAPI(d.UniqueID), id) })
 }

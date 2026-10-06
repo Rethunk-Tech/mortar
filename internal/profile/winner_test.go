@@ -127,3 +127,65 @@ func TestRewriteManifestDepsJSONC(t *testing.T) {
 	}
 	assertOptionalDep(t, string(out), "Me.Lose", true)
 }
+
+func TestSetWinnerNeverWritesASelfDependencyOrCycle(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "pack", map[string]string{
+		"Main/manifest.json": manifestJSON("Me.Main"),
+		"Npc/manifest.json":  `{"Name":"Npc","Author":"me","Version":"1.0.0","UniqueID":"Me.Npc","Dependencies":[{"UniqueID":"Me.Main"}]}`,
+	})
+	e.item(t, "other", map[string]string{"manifest.json": manifestJSON("Me.Other")})
+	p := mustCreate(t, e, "Farm")
+	for _, k := range []string{"pack", "other"} {
+		if _, err := e.AddEntry("stardew", p.ID, k, Source{Kind: KindLocal, Name: k + ".zip"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, loser := range []string{"smapi:Me.Npc", "smapi:Me.Other"} {
+		if _, err := e.SetWinner("stardew", p.ID, "pack", mod.ID(loser), true); err != nil {
+			t.Fatal(err)
+		}
+	}
+	main := winnerManifest(t, e, p.ID, "pack/Main")
+	npc := winnerManifest(t, e, p.ID, "pack/Npc")
+	assertOptionalDep(t, main, "Me.Npc", false)
+	assertOptionalDep(t, npc, "Me.Npc", false)
+	assertOptionalDep(t, main, "Me.Other", true)
+}
+
+func TestSetWinnerRefusesALoserThatNeedsTheWinner(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "win", map[string]string{"manifest.json": manifestJSON("Me.Win")})
+	e.item(t, "lose", map[string]string{"manifest.json": `{"Name":"Lose","Author":"me","Version":"1.0.0","UniqueID":"Me.Lose","Dependencies":[{"UniqueID":"Me.Win","IsRequired":false}]}`})
+	p := mustCreate(t, e, "Farm")
+	for _, k := range []string{"win", "lose"} {
+		if _, err := e.AddEntry("stardew", p.ID, k, Source{Kind: KindLocal, Name: k + ".zip"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := e.SetWinner("stardew", p.ID, "win", "smapi:Me.Lose", true); err == nil {
+		t.Fatal("made a mod win over one that needs it")
+	}
+	assertOptionalDep(t, winnerManifest(t, e, p.ID, "win"), "Me.Lose", false)
+}
+
+func TestUndoWinKeepsTheAuthorsOwnDependency(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "win", map[string]string{"manifest.json": `{"Name":"Win","Author":"me","Version":"1.0.0","UniqueID":"Me.Win","Dependencies":[{"UniqueID":"Me.Lose","IsRequired":false}]}`})
+	e.item(t, "lose", map[string]string{"manifest.json": manifestJSON("Me.Lose")})
+	p := mustCreate(t, e, "Farm")
+	for _, k := range []string{"win", "lose"} {
+		if _, err := e.AddEntry("stardew", p.ID, k, Source{Kind: KindLocal, Name: k + ".zip"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, on := range []bool{true, false} {
+		if _, err := e.SetWinner("stardew", p.ID, "win", "smapi:Me.Lose", on); err != nil {
+			t.Fatal(err)
+		}
+	}
+	assertOptionalDep(t, winnerManifest(t, e, p.ID, "win"), "Me.Lose", true)
+}
