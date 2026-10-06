@@ -2398,7 +2398,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   tools update <game> <id> <name> <executable> [arg...]
   lan peers | inbox                       nearby Mortars; shares waiting for you
   lan send <game> <profile> <peer>        send a profile to a peer
-  lan accept|decline <id>                 take or refuse a waiting share
+  lan accept|decline <id>                 import a waiting share as a new profile, or refuse it
   lan pair                                show a code and wait for another computer to enter it
   lan pair --code <code> [--peer host:port]  enter the code another computer shows
   lan paired | unpair <id>                computers you paired; forget one

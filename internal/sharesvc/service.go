@@ -462,6 +462,18 @@ func (s *Service) PreviewData(ctx context.Context, game, encoded, profileID stri
 	return s.previewBytes(ctx, game, data, profileID)
 }
 
+// ImportData imports a .mortar payload received from another Mortar as the import dialog does by default: every
+// mod it names, into a new profile named as the share.
+//
+//wails:ignore
+func (s *Service) ImportData(ctx context.Context, game, encoded string) (Result, error) {
+	pv, err := s.PreviewData(ctx, game, encoded, "")
+	if err != nil {
+		return Result{}, err
+	}
+	return s.Import(ctx, game, pv.Session, "", nil)
+}
+
 // PreviewExternal resolves missing external mods through the normal import resolver and keeps staged folders local.
 func (s *Service) PreviewExternal(ctx context.Context, game string, external migrate.ProfilePreview, profileID string) (Preview, error) {
 	var refs []share.Ref

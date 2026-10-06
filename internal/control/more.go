@@ -5,10 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 
+	"github.com/Rethunk-Tech/mortar/internal/lan"
+	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/templates"
 	"github.com/Rethunk-Tech/mortar/internal/tools"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 var errNoLinks = errors.New("link handling is unavailable")
@@ -154,11 +158,32 @@ func (s *Services) lanMethod(ctx context.Context, method string, p Params) (any,
 		s.Lan.Dismiss(id)
 		return struct{}{}, nil
 	}
-	if err := s.Lan.Transfer(ctx, id); err != nil {
-		return nil, err
+	return s.lanAccept(ctx, id)
+}
+
+// lanAccept takes a waiting share as the window's accept does: a paired sender's files come over first, then the
+// profile is imported with the import dialog's defaults.
+func (s *Services) lanAccept(ctx context.Context, id int) (sharesvc.Result, error) {
+	pending := s.Lan.Pending()
+	i := slices.IndexFunc(pending, func(a lan.Arrival) bool { return a.ID == id })
+	if i < 0 {
+		return sharesvc.Result{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("no waiting share %d", id))
+	}
+	arrival := pending[i]
+	if s.Shares == nil {
+		return sharesvc.Result{}, errUnavailable
+	}
+	if arrival.Paired {
+		if err := s.Lan.Transfer(ctx, id); err != nil {
+			return sharesvc.Result{}, err
+		}
+	}
+	res, err := s.Shares.ImportData(ctx, arrival.Game, arrival.Payload)
+	if err != nil {
+		return sharesvc.Result{}, err
 	}
 	s.Lan.Dismiss(id)
-	return struct{}{}, nil
+	return res, nil
 }
 
 func (s *Services) dataMove(p Params) (any, error) {

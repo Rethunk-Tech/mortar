@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 )
 
 // moreVerb is one verb that maps straight onto a control method: positional arguments in, the method's JSON out.
@@ -119,7 +120,6 @@ var moreVerbs = map[string]moreVerb{
 	"lan paired":  {method: "lan.paired"},
 	"lan unpair":  {method: "lan.unpair", args: []string{"a paired computer id"}, msg: "Unpaired.", params: nameParam},
 	"lan inbox":   {method: "lan.inbox"},
-	"lan accept":  {method: "lan.accept", args: []string{"a transfer id"}, msg: "Accepted.", timeout: installTimeout, params: nameParam},
 	"lan decline": {method: "lan.decline", args: []string{"a transfer id"}, msg: "Declined.", params: nameParam},
 	"data move": {
 		method: "data.move", args: []string{"a destination folder"}, msg: "Moved the data folder.", timeout: installTimeout,
@@ -169,6 +169,9 @@ func (c *cmd) more() (handled bool, err error) {
 	if len(c.args) >= 2 && c.args[0] == "lan" && c.args[1] == "pair" {
 		return true, c.lanPair()
 	}
+	if len(c.args) >= 2 && c.args[0] == "lan" && c.args[1] == "accept" {
+		return true, c.lanAccept()
+	}
 	var key string
 	var spec moreVerb
 	for n := min(3, len(c.args)); n >= 2; n-- {
@@ -213,6 +216,19 @@ func (c *cmd) more() (handled bool, err error) {
 			fmt.Fprintln(c.out, string(pretty))
 		}
 	})
+}
+
+// lanAccept takes a waiting share: a paired computer's files come over, then the profile is imported.
+func (c *cmd) lanAccept() error {
+	a, err := c.need(2, "a share id")
+	if err != nil {
+		return err
+	}
+	var res sharesvc.Result
+	if err := c.call("lan.accept", control.Params{Name: a[0]}, &res, installTimeout); err != nil {
+		return err
+	}
+	return c.emit(res, func() { fmt.Fprintf(c.out, "%s\tqueued %d downloads\n", res.Profile.Name, res.Queued) })
 }
 
 // pairWait is how long `lan pair` waits for the other computer, the code's own lifetime.
