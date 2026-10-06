@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -243,7 +244,8 @@ func (s *Service) LastRunSummary(gameID, profileID string) (string, launch.Summa
 	return run.ID, summary, nil
 }
 
-// LastRunIssues attributes the newest completed run's SMAPI log to user mods.
+// LastRunIssues attributes the newest completed run's loader log to user mods; a BepInEx line names its plugin, which
+// the package's DLLs map back to the package.
 func (s *Service) LastRunIssues(gameID, profileID string) (RunIssues, error) {
 	runs, err := s.Runs(gameID, profileID)
 	if err != nil {
@@ -265,7 +267,13 @@ func (s *Service) LastRunIssues(gameID, profileID string) (RunIssues, error) {
 	for i, m := range installed {
 		refs[i] = launch.ModRef{Name: m.Name, ID: m.ID}
 	}
-	return RunIssues{RunID: run.ID, Mods: launch.AttributeLog(text, refs)}, nil
+	aliases := map[string]launch.ModRef{}
+	for name, owner := range s.pluginOwners(gameID, profileID) {
+		if i := slices.IndexFunc(installed, func(m profile.Mod) bool { return m.Key == owner.Key }); i >= 0 {
+			aliases[name] = refs[i]
+		}
+	}
+	return RunIssues{RunID: run.ID, Mods: launch.AttributeLog(text, refs, aliases)}, nil
 }
 
 func (s *Service) runFile(gameID, profileID, runID string) (string, error) {

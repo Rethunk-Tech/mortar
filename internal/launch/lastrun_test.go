@@ -15,7 +15,7 @@ func TestAttributeLogMapsFixtureByNameAndUniqueID(t *testing.T) {
 		{Name: "Content Patcher", ID: "smapi:Pathoschild.ContentPatcher"},
 		{Name: "Lookup Anything", ID: "smapi:Pathoschild.LookupAnything"},
 	}
-	got := AttributeLog(string(body), mods)
+	got := AttributeLog(string(body), mods, nil)
 	if len(got) != 2 {
 		t.Fatalf("got %#v", got)
 	}
@@ -33,7 +33,7 @@ func TestAttributeLogMatchesUniqueIDColumn(t *testing.T) {
 		"[19:43:52 INFO  Pathoschild.ContentPatcher] fine\n"
 	got := AttributeLog(log, []ModRef{
 		{Name: "Content Patcher", ID: "smapi:Pathoschild.ContentPatcher"},
-	})
+	}, nil)
 	if len(got) != 1 || got[0].Errors != 1 || got[0].Warnings != 1 {
 		t.Fatalf("got %#v", got)
 	}
@@ -46,7 +46,7 @@ func TestAttributeLogIgnoresUnmappedModsAndContinuations(t *testing.T) {
 	}
 	got := AttributeLog(string(body), []ModRef{
 		{Name: "Content Patcher", ID: "smapi:Pathoschild.ContentPatcher"},
-	})
+	}, nil)
 	if len(got) != 1 || got[0].Errors != 2 {
 		t.Fatalf("unmapped SMAPI and Lookup Anything must not land; got %#v", got)
 	}
@@ -56,7 +56,7 @@ func TestAttributeLogEmptyWhenNewerRunIsClean(t *testing.T) {
 	log := "[19:43:50 INFO  Content Patcher] loaded\n"
 	got := AttributeLog(log, []ModRef{
 		{Name: "Content Patcher", ID: "smapi:Pathoschild.ContentPatcher"},
-	})
+	}, nil)
 	if len(got) != 0 {
 		t.Fatalf("clean run must clear badges; got %#v", got)
 	}
@@ -77,5 +77,13 @@ func TestMatchModColumnIsExact(t *testing.T) {
 	got, ok = MatchModColumn("spacechase0.SpaceCore", mods)
 	if !ok || got.Name != "SpaceCore" {
 		t.Fatalf("UniqueID match = %#v, %v", got, ok)
+	}
+}
+
+func TestAttributeLogMapsAPluginAliasToItsPackage(t *testing.T) {
+	pkg := ModRef{Name: "SoundAPI", ID: "thunderstore:loaforc-SoundAPI"}
+	got := AttributeLog("[Error  :Me.Loaforc.SoundAPI] boom\n", []ModRef{pkg}, map[string]ModRef{"me.loaforc.soundapi": pkg})
+	if len(got) != 1 || got[0].Name != "SoundAPI" || got[0].Errors != 1 {
+		t.Fatalf("issues = %+v", got)
 	}
 }

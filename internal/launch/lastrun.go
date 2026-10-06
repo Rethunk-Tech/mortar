@@ -40,16 +40,19 @@ func MatchModColumn(column string, mods []ModRef) (ModRef, bool) {
 	return ModRef{}, false
 }
 
-// AttributeLog counts ERROR, ALERT and WARN lines per installed mod.
-// Unmatched columns and continuation lines are ignored. A run with no
+// AttributeLog counts ERROR, ALERT and WARN lines per installed mod. A column that names no mod is looked up, lower-cased,
+// in aliases: the GUIDs and names of a BepInEx package's plugins. Unmatched columns and continuation lines are ignored. A run with no
 // matching lines for a mod yields no entry, so a newer clean run clears it.
-func AttributeLog(log string, mods []ModRef) []ModRunIssues {
+func AttributeLog(log string, mods []ModRef, aliases map[string]ModRef) []ModRunIssues {
 	byKey := map[string]*ModRunIssues{}
 	for _, e := range ParseLog(log) {
 		if e.Cont {
 			continue
 		}
 		ref, ok := MatchModColumn(e.Mod, mods)
+		if !ok {
+			ref, ok = aliases[strings.ToLower(strings.TrimSpace(e.Mod))]
+		}
 		if !ok {
 			continue
 		}
