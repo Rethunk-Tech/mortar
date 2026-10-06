@@ -22,7 +22,8 @@ type PluginCopy struct {
 }
 
 // PluginClash is a [BepInPlugin] GUID declared by more than one enabled package; BepInEx loads only one of them.
-// Keep is the key of the copy with the newest plugin version, the one "Keep newer" leaves enabled.
+// Keep is the key of the copy with the newest plugin version, the one "Keep newer" leaves enabled; between equal
+// versions it is a copy whose package is not deprecated.
 type PluginClash struct {
 	GUID   string       `json:"guid"`
 	Copies []PluginCopy `json:"copies"`
@@ -52,8 +53,9 @@ func pluginsIn(dir string) []dotnet.Plugin {
 	return out
 }
 
-// pluginClashes finds GUIDs shipped by two or more of the enabled packages, sorted by GUID.
-func pluginClashes(pkgs []profile.PackageRef) []PluginClash {
+// pluginClashes finds GUIDs shipped by two or more of the enabled packages, sorted by GUID. deprecated holds the keys
+// of packages their author deprecated.
+func pluginClashes(pkgs []profile.PackageRef, deprecated map[string]bool) []PluginClash {
 	type owner struct {
 		pkg    profile.PackageRef
 		plugin string
@@ -83,7 +85,8 @@ func pluginClashes(pkgs []profile.PackageRef) []PluginClash {
 		newest := 0
 		for i, o := range owners {
 			c.Copies = append(c.Copies, PluginCopy{Key: o.pkg.Key, ID: o.pkg.ID, Name: o.pkg.Name, Version: o.pkg.Version, PluginVersion: o.plugin})
-			if cmp, ok := meta.CompareVersions(o.plugin, owners[newest].plugin); ok && cmp > 0 {
+			cmp, ok := meta.CompareVersions(o.plugin, owners[newest].plugin)
+			if ok && (cmp > 0 || cmp == 0 && deprecated[owners[newest].pkg.Key] && !deprecated[o.pkg.Key]) {
 				newest = i
 			}
 		}
