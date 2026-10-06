@@ -338,11 +338,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
         <Box sx={{ display: 'flex', gap: 1, [compactAt]: { display: 'none' } }}>
           <AttentionCards />
           <Card label={t`Mods`} value={String(mods)} />
-          <Card
-            label={t`Saves`}
-            value={savesValue}
-            onClick={() => setTab('saves')}
-          />
+          <Card label={t`Saves`} value={savesValue} onClick={() => setTab('saves')} />
           <Card label={t`Updated`} value={<When value={profile.updated} />} />
           <Card label={t`Created`} value={<When value={profile.created} />} />
         </Box>
