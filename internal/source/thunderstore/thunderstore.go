@@ -141,7 +141,8 @@ func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
 }
 
 // Deprecation is the index's word on a package its author deprecated. Replacement is another listed package the
-// deprecated package's own summary points to ("Namespace-Name"), or empty: Thunderstore has no replacement field.
+// deprecated package's own summary points to, as "Namespace-Name" or as a bare name of the same author's, or empty:
+// Thunderstore has no replacement field.
 type Deprecation struct {
 	Replacement string
 }
@@ -168,9 +169,17 @@ func (d Driver) Deprecated(ctx context.Context, key, version string) (map[string
 		self := strings.ToLower(p.Owner + "-" + p.Name)
 		dep := Deprecation{}
 		if replaceHint.MatchString(p.Summary) {
-			for _, tok := range strings.FieldsFunc(p.Summary, func(r rune) bool { return strings.ContainsRune(" \t\n,;:()[]\"'", r) }) {
-				if name, ok := live[strings.ToLower(strings.Trim(tok, "."))]; ok && strings.ToLower(name) != self {
-					dep.Replacement = name
+			toks := strings.FieldsFunc(p.Summary, func(r rune) bool { return strings.ContainsRune(" \t\n,;:()[]\"'", r) })
+			// Authors mostly name the successor bare ("use WeatherInjector instead"); a bare name is only trusted
+			// among the author's own packages, since across the whole index it matches common words.
+			for _, prefix := range []string{"", strings.ToLower(p.Owner) + "-"} {
+				for _, tok := range toks {
+					if name, ok := live[prefix+strings.ToLower(strings.Trim(tok, ".!?"))]; ok && strings.ToLower(name) != self {
+						dep.Replacement = name
+						break
+					}
+				}
+				if dep.Replacement != "" {
 					break
 				}
 			}

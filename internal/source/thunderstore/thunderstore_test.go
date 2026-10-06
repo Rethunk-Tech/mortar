@@ -197,7 +197,9 @@ func TestCategoryFilterSortAndList(t *testing.T) {
 
 func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 	f := newFake(t)
-	f.chunk1 = append(f.chunk1, listing("Fay", "Legacy", "Deprecated: use Alice-MoreCompany instead", 5, true, false))
+	f.chunk1 = append(f.chunk1, listing("Fay", "Legacy", "Deprecated: use Alice-MoreCompany instead", 5, true, false),
+		listing("Alice", "MoreCompanyOld", "[Deprecated, use MoreCompany instead!]", 5, true, false),
+		listing("Gus", "Horn", "Airhorn is replaced with MoreCompany", 5, true, false))
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	got, err := d.Deprecated(t.Context(), "lethal-company", "1.2.3")
 	if err != nil {
@@ -206,7 +208,13 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 	if _, ok := got["eve-oldmod"]; !ok || got["eve-oldmod"].Replacement != "" {
 		t.Fatalf("a deprecated package without a pointer has no replacement: %+v", got)
 	}
-	if got["fay-legacy"].Replacement != "Alice-MoreCompany" || len(got) != 2 {
+	if got["alice-morecompanyold"].Replacement != "Alice-MoreCompany" {
+		t.Fatalf("a bare name of the author's own package is the replacement: %+v", got)
+	}
+	if got["gus-horn"].Replacement != "" {
+		t.Fatalf("a bare name of another author's package is not: %+v", got)
+	}
+	if got["fay-legacy"].Replacement != "Alice-MoreCompany" || len(got) != 4 {
 		t.Fatalf("got %+v", got)
 	}
 }
