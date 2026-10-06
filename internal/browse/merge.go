@@ -1,6 +1,7 @@
 package browse
 
 import (
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -17,14 +18,40 @@ func foldKey(s string) string {
 	}, s)
 }
 
-// keys are what ties two hits to one mod: the GitHub repository their site links, else the exact name and author.
+// minTitleLen keeps a very short name from tying unrelated mods.
+const minTitleLen = 4
+
+var (
+	githubLink      = regexp.MustCompile(`(?i)github\.com/([\w.-]+/[\w.-]+)`)
+	thunderstoreRef = regexp.MustCompile(`(?i)thunderstore\.io/c/[\w-]+/p/([\w]+)/([\w]+)`)
+)
+
+// keys are what ties two hits to one mod across sources: the game's loader, the GitHub repository or Thunderstore
+// package its site or summary links, the exact name and author, or the exact name alone. A name alone can tie two
+// different mods, but never two hits of one source, and a site's author is often the uploader.
 func keys(it Item) []string {
 	var out []string
+	if it.Loader {
+		out = append(out, "loader")
+	}
 	if it.Repo != "" {
 		out = append(out, "repo:"+strings.ToLower(it.Repo))
 	}
-	if n, a := foldKey(it.Name), foldKey(it.Author); n != "" && a != "" {
+	if m := githubLink.FindStringSubmatch(it.Summary); m != nil {
+		out = append(out, "repo:"+strings.ToLower(strings.TrimSuffix(m[1], ".git")))
+	}
+	if m := thunderstoreRef.FindStringSubmatch(it.Summary); m != nil {
+		out = append(out, "ts:"+strings.ToLower(m[1]+"-"+m[2]))
+	}
+	if it.Source == "thunderstore" && it.ID != "" {
+		out = append(out, "ts:"+strings.ToLower(it.ID))
+	}
+	n := foldKey(it.Name)
+	if a := foldKey(it.Author); n != "" && a != "" {
 		out = append(out, "name:"+n+"|"+a)
+	}
+	if len(n) >= minTitleLen {
+		out = append(out, "title:"+n)
 	}
 	return out
 }

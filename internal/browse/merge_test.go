@@ -39,3 +39,41 @@ func TestRankedPutsPreferredSourcesFirst(t *testing.T) {
 		t.Errorf("ranked = %v, want %v", got, want)
 	}
 }
+
+func TestMergeSameTiesTheLoaderAndExactNamesAcrossSources(t *testing.T) {
+	items := []Item{
+		{Source: "thunderstore", ID: "BepInEx-BepInExPack", Name: "BepInExPack", Author: "BepInEx", Loader: true},
+		{Source: "nexus", ID: "1", Name: "BepInEx", Author: "someuploader", Loader: true},
+		{Source: "thunderstore", ID: "notnotnotswipez-MoreCompany", Name: "MoreCompany", Author: "notnotnotswipez"},
+		{Source: "nexus", ID: "2", Name: "More Company", Author: "Cyb3rdev"},
+	}
+	got := mergeSame(items, []string{"thunderstore", "nexus"})
+	if len(got) != 2 || len(got[0].Alts) != 1 || got[0].Alts[0].Source != "nexus" || len(got[1].Alts) != 1 || got[1].Source != "thunderstore" {
+		t.Fatalf("cards = %+v", got)
+	}
+}
+
+func TestMergeSameTiesBySummaryLinks(t *testing.T) {
+	got := mergeSame([]Item{
+		{Source: "nexus", ID: "3", Name: "Odd Title", Author: "u", Summary: "Source at https://github.com/Alice/Cool-Mod and more"},
+		{Source: "github", ID: "alice/cool-mod", Name: "other", Author: "x", Repo: "alice/cool-mod"},
+		{Source: "nexus", ID: "4", Name: "Another", Author: "u", Summary: "See https://thunderstore.io/c/lethal-company/p/Bob/Thing/"},
+		{Source: "thunderstore", ID: "Bob-Thing", Name: "Something", Author: "Bob"},
+	}, []string{"thunderstore", "nexus", "github"})
+	if len(got) != 2 {
+		t.Fatalf("cards = %+v", got)
+	}
+}
+
+func TestMergeSameKeepsTwoModsOfOneSourceApart(t *testing.T) {
+	got := mergeSame([]Item{
+		{Source: "thunderstore", ID: "A-Radar", Name: "Radar", Author: "A"},
+		{Source: "thunderstore", ID: "B-Radar", Name: "Radar", Author: "B"},
+		{Source: "nexus", ID: "9", Name: "Radar", Author: "u"},
+		{Source: "nexus", ID: "10", Name: "Maps", Author: "u"},
+		{Source: "thunderstore", ID: "C-Maps", Name: "Maps", Author: "C"},
+	}, []string{"thunderstore", "nexus"})
+	if len(got) != 3 {
+		t.Fatalf("cards = %+v", got)
+	}
+}
