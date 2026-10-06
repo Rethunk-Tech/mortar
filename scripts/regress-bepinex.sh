@@ -446,6 +446,31 @@ mx_doorstop_files() {
 }
 mx_doorstop_ok() { echo "the pack's doorstop_config.ini and .doorstop_version; the game folder holds the same ini; the game started with the Doorstop flags for this pack"; }
 
+# mx_order_problems ORDER names each row of a `profile load-order --json` file placed before a plugin it needs. Rows
+# are plugins keyed bepinex:GUID, not packages; which plugins they cover is checked against launch (a)'s Loading lines.
+mx_order_problems() {
+  python3 - "$1" <<'PY'
+import json, sys
+order = json.load(open(sys.argv[1]))
+pos = {r["id"]: r["position"] for r in order}
+bad = [f'{r["id"]} is not a plugin row' for r in order if not r["id"].startswith("bepinex:")]
+bad += [f'{r["id"]} before its dependent {d}' for r in order for d in r.get("dependents", []) if pos.get(d, 0) < r["position"]]
+bad += [f'{r["id"]} before its requirement {d}' for r in order for d in r.get("required", []) if pos.get(d, 0) > r["position"]]
+print("; ".join(bad))
+PY
+}
+
+# mx_order_unlisted ORDER LOG names each plugin BepInEx loaded in LOG that ORDER does not list, leaving out the bridge
+# (Mortar's own, not one of the profile's mods) and the Matrix probes, installed after the order was read.
+mx_order_unlisted() {
+  python3 - "$1" "$2" <<'PY'
+import json, re, sys
+names = {r["name"] for r in json.load(open(sys.argv[1]))}
+logged = re.findall(r"BepInEx\] Loading \[(.+) [^ \]]+\]", open(sys.argv[2], errors="replace").read())
+print("; ".join(sorted({n for n in logged if n not in names and not n.startswith("Matrix ") and n != "Mortar BepInEx Bridge"})))
+PY
+}
+
 # mx_doorstop PROFILE VERSION checks, while the game runs, the profile's Doorstop files against the pack's, the ini
 # copied into the game folder, and the game's own command line: Doorstop 4 takes --doorstop-target-assembly, 3 --doorstop-target.
 mx_doorstop() {
@@ -676,18 +701,8 @@ regress_bepinex_prepare() {
   mx_check modpack.install "${#MATRIX_MODPACK[@]} packages queued; profile holds $npack entries (dependencies, the base run's plugins and the bridge included); open: ${open:-none}" \
     test -z "$open" -a "$npack" -gt "${#MATRIX_MODPACK[@]}"
   cli profile load-order lethal-company "$mx_base" --json >"$ROOT/pack-order.json"
-  out=$(
-    python3 - "$ROOT/pack-order.json" "$ROOT/pack-mods.json" <<'PY'
-import json, sys
-order = json.load(open(sys.argv[1]))
-mods = [m for m in json.load(open(sys.argv[2])) if m["enabled"] and m["source"] != "mortar"]
-pos = {r["id"]: r["position"] for r in order}
-bad = [f'{r["id"]} before its dependent {dep}' for r in order for dep in r.get("dependents", []) if pos.get(dep, 0) < r["position"]]
-missing = [m["id"] for m in mods if m["id"] not in pos]
-print("; ".join(bad + [f"{m} missing from the load order" for m in missing]))
-PY
-  )
-  mx_check modpack.loadorder "load order lists $(mx_json "$ROOT/pack-order.json" 'len(d)') packages, each after what it needs${out:+: $out}" test -z "$out"
+  out=$(mx_order_problems "$ROOT/pack-order.json")
+  mx_check modpack.loadorder "load order lists $(mx_json "$ROOT/pack-order.json" 'len(d)') plugins, each after what it needs${out:+: $out}" test -z "$out"
 
   # 3. The probe packages beside the modpack: layout edge cases, the Console's heartbeat and a duplicated GUID.
   if ! probe_err=$(mx_install_probes "$mx_base" Base Beat Nested Own Caps Flat Deep Patcher DupA DupB); then
@@ -769,6 +784,9 @@ PY
   skipped=$(grep -cE 'BepInEx\] (Skipping|Could not load) \[' "$mx_log")
   mx_check launch.count "BepInEx counted ${planned:-no} plugins to load, logged $loading Loading lines and skipped $skipped: $(grep -oE 'Skipping \[[^]]*\] because [^(]*' "$mx_log" | head -3 | tr '\n' ';')" \
     test "${planned:-x}" = "$((loading + skipped))"
+  out=$(mx_order_unlisted "$ROOT/pack-order.json" "$mx_log")
+  mx_check modpack.loadorder-run "the load order lists every modpack plugin launch (a) loaded${out:+; not listed: $out}" \
+    test "$loading" -gt 0 -a -z "$out"
   mx_check edge.flatten "MirageCore ships FSharp.Core/FSharp.Core.dll and Mirage loads it from beside its plugin: $(grep -c 'FSharp.Core.dll.*or one of its dependencies' "$mx_saves/Player.log") load failures" \
     test "$(grep -c 'FSharp.Core.dll.*or one of its dependencies' "$mx_saves/Player.log")" = 0
   mx_check edge.patchers "the modpack's preloader patchers loaded: $(grep -c 'Loaded 1 patcher method from' "$mx_log") patcher lines" \

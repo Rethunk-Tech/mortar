@@ -335,3 +335,35 @@ test('the measured launch rows read the startup report, Mortar naming its rows b
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+test('the matrix reads the load order as plugin rows and checks it covers what launch (a) loaded', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mx-order-'))
+  try {
+    const order = join(dir, 'order.json')
+    const log = join(dir, 'LogOutput.log')
+    writeFileSync(
+      order,
+      JSON.stringify([
+        { position: 1, id: 'bepinex:a.lib', name: 'Lib', dependents: ['bepinex:b.mod'] },
+        { position: 2, id: 'bepinex:b.mod', name: 'Mod', required: ['bepinex:a.lib'] },
+      ]),
+    )
+    writeFileSync(
+      log,
+      [
+        '[Info   :   BepInEx] Loading [Mortar BepInEx Bridge 0.1.0]',
+        '[Info   :   BepInEx] Loading [Lib 1.0.0]',
+        '[Info   :   BepInEx] Loading [Mod 2.1]',
+        '[Info   :   BepInEx] Loading [Matrix base 1.0.0]',
+        '[Info   :   BepInEx] Loading [Stray Thing 3.0.0]',
+        '',
+      ].join('\n'),
+    )
+    const shell = matrixShell(
+      `echo "[$(mx_order_problems "${order}")]"; echo "[$(mx_order_unlisted "${order}" "${log}")]"`,
+    )
+    expect(shell.stdout.split('\n').slice(0, 2)).toEqual(['[]', '[Stray Thing]'])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
