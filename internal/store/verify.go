@@ -107,7 +107,7 @@ func sumTreeUntil(stop func() error, dir string) (map[string]fileSum, error) {
 			return err
 		}
 		rel = filepath.ToSlash(rel)
-		if rel == completeMarker || !d.Type().IsRegular() {
+		if rel == CompleteMarker || !d.Type().IsRegular() {
 			return nil
 		}
 		info, err := d.Info()

@@ -4201,7 +4201,7 @@ msgstr "Chrome, Edge or another Chromium browser: unzip the download, open chrom
 msgid "Access granted"
 msgstr "Access granted"
 
-#: src/game/BackupMenuItems.tsx:48
+#: src/game/BackupMenuItems.tsx:36
 msgid "Back up to a file…"
 msgstr "Back up to a file…"
 
@@ -4384,7 +4384,7 @@ msgid "and {count} more"
 msgstr "and {count} more"
 
 #. placeholder {0}: r.queued
-#: src/game/BackupMenuItems.tsx:41
+#: src/game/BackupMenuItems.tsx:77
 msgid "{0} mods are downloading."
 msgstr "{0} mods are downloading."
 
@@ -4472,7 +4472,7 @@ msgid "and open it in Firefox. If that release has none, unzip the download, ope
 msgstr "and open it in Firefox. If that release has none, unzip the download, open about:debugging, choose This Firefox, then Load Temporary Add-on and pick manifest.json; Firefox removes it when it restarts."
 
 #. placeholder {0}: listNames(missing)
-#: src/game/BackupMenuItems.tsx:40
+#: src/game/BackupMenuItems.tsx:75
 msgid "Install these again by hand: {0}"
 msgstr "Install these again by hand: {0}"
 
@@ -4894,7 +4894,7 @@ msgid "No downloads in history."
 msgstr "No downloads in history."
 
 #. placeholder {0}: r.name
-#: src/game/BackupMenuItems.tsx:37
+#: src/game/BackupMenuItems.tsx:81
 msgid "Restored as {0}"
 msgstr "Restored as {0}"
 
@@ -5587,7 +5587,7 @@ msgstr "Dismiss all"
 msgid "Could not close the window"
 msgstr "Could not close the window"
 
-#: src/game/BackupMenuItems.tsx:25
+#: src/game/BackupMenuItems.tsx:29
 msgid "Profile backed up"
 msgstr "Profile backed up"
 
@@ -5953,6 +5953,7 @@ msgstr "Config of {0}"
 msgid "Download missing"
 msgstr "Download missing"
 
+#: src/game/BackupMenuItems.tsx:41
 #: src/game/BackupMenuItems.tsx:51
 msgid "Could not back up the profile"
 msgstr "Could not back up the profile"
@@ -6629,6 +6630,11 @@ msgstr "Add a tag"
 #: src/settings/sections/NexusMods.tsx:220
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
+
+#. placeholder {0}: profile.name
+#: src/game/BackupMenuItems.tsx:46
+msgid "Back up {0}?"
+msgstr "Back up {0}?"
 
 #: src/console/StartupSections.tsx:107
 msgid "Each mod's Entry method, run one after another"
@@ -7320,6 +7326,10 @@ msgstr "Could not copy the report"
 #: src/settings/sections/Shortcuts.tsx:70
 msgid "Change shortcut for {label}, currently {keys}"
 msgstr "Change shortcut for {label}, currently {keys}"
+
+#: src/game/BackupMenuItems.tsx:73
+msgid "Every mod is in place."
+msgstr "Every mod is in place."
 
 #: src/bundles/BundlesSection.tsx:43
 #: src/bundles/dialogs.tsx:196
@@ -8106,6 +8116,11 @@ msgstr "Spring"
 msgid "Arguments"
 msgstr "Arguments"
 
+#. placeholder {0}: formatBytes(size ?? 0)
+#: src/game/BackupMenuItems.tsx:47
+msgid "The backup holds up to {0}: the profile, its settings and config files, mods no site can download again, and its own saves when it keeps them. Other mods download again when it is restored."
+msgstr "The backup holds up to {0}: the profile, its settings and config files, mods no site can download again, and its own saves when it keeps them. Other mods download again when it is restored."
+
 #: src/launch/VanillaPlay.tsx:196
 msgid "Set default preset…"
 msgstr "Set default preset…"
@@ -8229,6 +8244,10 @@ msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 #: src/settings/sections/Appearance.tsx:68
 msgid "Default"
 msgstr "Default"
+
+#: src/game/BackupMenuItems.tsx:48
+msgid "Choose where to save…"
+msgstr "Choose where to save…"
 
 #: src/mods/columnLabel.ts:10
 msgid "UniqueID"
@@ -8828,7 +8847,7 @@ msgstr "Sharing"
 msgid "Copy part {0} of {1}"
 msgstr "Copy part {0} of {1}"
 
-#: src/game/BackupMenuItems.tsx:57
+#: src/game/BackupMenuItems.tsx:90
 msgid "Restore from a file…"
 msgstr "Restore from a file…"
 
@@ -10936,7 +10955,7 @@ msgstr "Could not install {0}"
 msgid "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 
-#: src/game/BackupMenuItems.tsx:60
+#: src/game/BackupMenuItems.tsx:93
 msgid "Could not restore the backup"
 msgstr "Could not restore the backup"
 

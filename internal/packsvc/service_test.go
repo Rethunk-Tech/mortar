@@ -46,7 +46,11 @@ func (*fakeProfiles) Backup(string, string) (profile.Profile, map[string][]byte,
 	return profile.Profile{}, nil, errors.New("not in this fake")
 }
 
-func (*fakeProfiles) RestoreBackup(string, profile.Profile, map[string][]byte) (profile.Profile, []profile.Entry, error) {
+func (*fakeProfiles) BackupDirs(string, profile.Profile, func(profile.Entry) bool) (map[string]string, error) {
+	return nil, errors.New("not in this fake")
+}
+
+func (*fakeProfiles) RestoreBackup(string, profile.Profile, map[string][]byte, map[string]string) (profile.Profile, []profile.Entry, error) {
 	return profile.Profile{}, nil, errors.New("not in this fake")
 }
 

@@ -10,8 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // restoreDir holds a restored profile's mod config files until their mods are placed, by entry key: a mod restored
@@ -100,13 +102,60 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 	return p, files, nil
 }
 
+// BackupDirs are the folders a backup of p carries whole, by the slash prefix their files go under in it: the store
+// item of each entry keep chooses (store/<key>/), and the profile's saves folder when it keeps its own (saves/). A
+// folder that is not there is left out.
+func (s *Store) BackupDirs(game string, p Profile, keep func(Entry) bool) (map[string]string, error) {
+	out := map[string]string{}
+	for _, e := range p.Entries {
+		if e.Source.Bundled() || !keep(e) {
+			continue
+		}
+		dir, err := s.items.Dir(game, e.Key)
+		if errors.Is(err, store.ErrNotFound) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		out["store/"+e.Key+"/"] = dir
+	}
+	if p.SeparateSaves {
+		dir, err := s.SavesFolder(game, p.ID)
+		if err != nil {
+			return nil, err
+		}
+		if exists(dir) {
+			out[savesPrefix] = dir
+		}
+	}
+	return out, nil
+}
+
+const savesPrefix = "saves/"
+
 // RestoreBackup makes a new profile from a backup, under a name no profile of the game has, and returns it with the entries
 // whose store items are missing here, which the caller downloads again. Every setting and entry of p comes back except
 // the bundled entries, which are this computer's own. A mod's config files wait in restore/ until its folder is placed.
-func (s *Store) RestoreBackup(game string, p Profile, files map[string][]byte) (Profile, []Entry, error) {
+//
+// dirs are the backup's folders as BackupDirs names them, already unpacked: each store item is added to the store
+// first, so its entry is not missing, and the saves become the new profile's own.
+func (s *Store) RestoreBackup(game string, p Profile, files map[string][]byte, dirs map[string]string) (Profile, []Entry, error) {
 	for rel := range files {
 		if !backupPath(rel, p) {
 			return Profile{}, nil, fmt.Errorf("the backup holds %q, which is not a profile file", rel)
+		}
+	}
+	for prefix, dir := range dirs {
+		if prefix == savesPrefix {
+			continue
+		}
+		key, ok := strings.CutPrefix(strings.TrimSuffix(prefix, "/"), "store/")
+		if !ok || !slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && !e.Source.Bundled() }) {
+			return Profile{}, nil, fmt.Errorf("the backup holds %q, which is no entry's store item", prefix)
+		}
+		if err := s.items.AddDir(game, key, dir); err != nil {
+			return Profile{}, nil, err
 		}
 	}
 	all, err := s.listOK(game)
@@ -121,14 +170,14 @@ func (s *Store) RestoreBackup(game string, p Profile, files map[string][]byte) (
 	if err != nil {
 		return Profile{}, nil, err
 	}
-	out, missing, err := s.restoreInto(game, created, p, files)
+	out, missing, err := s.restoreInto(game, created, p, files, dirs[savesPrefix])
 	if err != nil {
 		return Profile{}, nil, errors.Join(err, s.Delete(game, created.ID))
 	}
 	return out, missing, nil
 }
 
-func (s *Store) restoreInto(game string, created, p Profile, files map[string][]byte) (Profile, []Entry, error) {
+func (s *Store) restoreInto(game string, created, p Profile, files map[string][]byte, saves string) (Profile, []Entry, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	cur, dir, err := s.readDir(game, created.ID)
@@ -165,7 +214,25 @@ func (s *Store) restoreInto(game string, created, p Profile, files map[string][]
 			return Profile{}, nil, err
 		}
 	}
-	return out, missing, writeProfile(dir, out)
+	if err := writeProfile(dir, out); err != nil {
+		return Profile{}, nil, err
+	}
+	// Mods whose store items are here already, or came in the backup, are placed now; the rest arrive with their
+	// downloads.
+	for _, e := range out.Entries {
+		if e.Source.Bundled() || e.IsOverlay() || !e.hasFolder() || slices.ContainsFunc(missing, func(m Entry) bool { return m.Key == e.Key }) {
+			continue
+		}
+		if err := s.placeEntry(game, dir, out, e); err != nil {
+			return Profile{}, nil, fmt.Errorf("place %s: %w", e.Key, err)
+		}
+	}
+	if saves != "" {
+		if err := datadir.CopyTree(saves, filepath.Join(dir, "saves")); err != nil {
+			return Profile{}, nil, err
+		}
+	}
+	return out, missing, nil
 }
 
 // backupPath reports whether rel is a file a backup of p may carry.

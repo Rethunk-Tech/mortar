@@ -185,7 +185,7 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Remove(filepath.Join(dir, completeMarker)); err != nil {
+	if err := os.Remove(filepath.Join(dir, CompleteMarker)); err != nil {
 		t.Fatal(err)
 	}
 	second := t.TempDir()

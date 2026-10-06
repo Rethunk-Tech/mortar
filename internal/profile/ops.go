@@ -880,18 +880,25 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 		} else if !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
-		if err := s.place(game, modsDir, e); err != nil {
-			return fmt.Errorf("rebuild %s: %w", e.Key, err)
-		}
-		if err := s.layOverlays(game, p.ID, e, liveEntryDir(modsDir, e.Key), nil, overlaysOn(p.Entries, e.Key)); err != nil {
-			return fmt.Errorf("rebuild %s: %w", e.Key, err)
-		}
-		if err := applyRestored(dir, modsDir, e.Key); err != nil {
+		if err := s.placeEntry(game, dir, p, e); err != nil {
 			return fmt.Errorf("rebuild %s: %w", e.Key, err)
 		}
 		s.tidied("Rebuilt a mod folder from the store", p.Name, e.Key)
 	}
 	return nil
+}
+
+// placeEntry copies the entry's folder from the store into the profile at dir, with its overlays and any config files
+// a restore kept for it.
+func (s *Store) placeEntry(game, dir string, p Profile, e Entry) error {
+	modsDir := filepath.Join(dir, "mods")
+	if err := s.place(game, modsDir, e); err != nil {
+		return err
+	}
+	if err := s.layOverlays(game, p.ID, e, liveEntryDir(modsDir, e.Key), nil, overlaysOn(p.Entries, e.Key)); err != nil {
+		return err
+	}
+	return applyRestored(dir, modsDir, e.Key)
 }
 
 func (s *Store) tidied(what, profileName, folder string) {

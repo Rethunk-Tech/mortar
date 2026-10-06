@@ -35,7 +35,8 @@ import (
 // Unused items are deleted this long after their last use.
 const retention = 30 * 24 * time.Hour
 
-const completeMarker = ".complete"
+// CompleteMarker is the empty file an item folder gets once its files are all in place.
+const CompleteMarker = ".complete"
 
 const tempPrefix = ".tmp-"
 
@@ -407,7 +408,7 @@ func (s *Store) install(game, key, final string, fill func(tmp string) error, ne
 	}()
 	if err = fill(tmp); err == nil {
 		stripJunk(tmp)
-		marker := filepath.Join(tmp, completeMarker)
+		marker := filepath.Join(tmp, CompleteMarker)
 		if removeErr := os.Remove(marker); removeErr != nil && !errors.Is(removeErr, fs.ErrNotExist) {
 			err = removeErr
 		}
@@ -439,12 +440,12 @@ func completeItem(dir string) bool {
 	if err != nil || !info.IsDir() {
 		return false
 	}
-	marker, err := os.Lstat(filepath.Join(dir, completeMarker))
+	marker, err := os.Lstat(filepath.Join(dir, CompleteMarker))
 	return err == nil && marker.Mode().IsRegular()
 }
 
 func writeCompleteMarker(dir string) error {
-	marker := filepath.Join(dir, completeMarker)
+	marker := filepath.Join(dir, CompleteMarker)
 	if err := datadir.WriteFile(marker, nil, 0o600); err != nil {
 		return err
 	}
@@ -881,7 +882,7 @@ func (s *Store) collectBlobs(idx index, dropped map[string]bool, now time.Time) 
 			continue
 		}
 		if !dropped[e.Name()] {
-			info, err := os.Stat(filepath.Join(s.root, blobsDir, e.Name(), completeMarker))
+			info, err := os.Stat(filepath.Join(s.root, blobsDir, e.Name(), CompleteMarker))
 			if err != nil || !unusedPast(now, info.ModTime(), s.unusedFor()) {
 				continue
 			}

@@ -2,36 +2,44 @@ package packsvc
 
 import (
 	"archive/zip"
-	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 const (
 	backupDoc     = "backup.json"
 	backupVersion = 1
 	backupPrefix  = "files/"
-	// maxBackupBytes caps a backup file and everything it unpacks to, counted as read.
+	// maxBackupBytes caps what a restore holds in memory: backup.json and the files under files/, counted as read.
 	maxBackupBytes = 256 << 20
+	// maxBackupDisk caps what a restore unpacks to disk: the store items and saves, counted as read.
+	maxBackupDisk = 16 << 30
 )
 
 type backupJSON struct {
 	Version int             `json:"version"`
 	Game    string          `json:"game"`
 	Profile profile.Profile `json:"profile"`
+	// Store is the content hash (treeHash) of each store item the backup carries, by key.
+	Store map[string]string `json:"store,omitempty"`
 }
 
-// RestoreResult is the profile a backup made and what it queued. Unavailable names the mods that cannot be downloaded
-// again (one installed from a file on disk), which the profile keeps but cannot use until they are installed again.
+// RestoreResult is the profile a backup made and what it queued. Unavailable names the mods neither a source nor the
+// backup itself could bring back, which the profile keeps but cannot use until they are installed again.
 type RestoreResult struct {
 	Game        string   `json:"game"`
 	Profile     string   `json:"profile"`
@@ -40,23 +48,159 @@ type RestoreResult struct {
 	Unavailable []string `json:"unavailable"`
 }
 
-// Backup writes the profile to dest as one file: backup.json (the format version, the game and every setting and
-// entry of the profile) and under files/ its history, config files and cover. Mod files are left out; a restore
-// downloads them again.
-func (s *Service) Backup(gameID, profileID, dest string) error {
+// carried reports an entry whose files only the backup can bring back: no source downloads it again.
+func carried(game string) func(profile.Entry) bool {
+	return func(e profile.Entry) bool {
+		_, ok := restoreRequest(game, "", e)
+		return !ok
+	}
+}
+
+// BackupSize is how many bytes a backup of the profile holds before compression, so the player sees it before saving.
+func (s *Service) BackupSize(gameID, profileID string) (int64, error) {
+	p, files, err := s.Profiles.Backup(gameID, profileID)
+	if err != nil {
+		return 0, err
+	}
+	dirs, err := s.Profiles.BackupDirs(gameID, p, carried(gameID))
+	if err != nil {
+		return 0, err
+	}
+	var n int64
+	for _, data := range files {
+		n += int64(len(data))
+	}
+	for prefix, dir := range dirs {
+		err := walkFiles(dir, prefix != savesPrefix, func(_, path string, size int64) error {
+			n += size
+			return nil
+		})
+		if err != nil {
+			return 0, err
+		}
+	}
+	return n, nil
+}
+
+// Backup writes the profile to dest as one zip: backup.json (the format version, the game, every setting and entry
+// of the profile, and the hash of each store item it carries), its history, config files and cover under files/, the
+// store item of each mod no source can download again under store/<key>/, and the profile's own saves under saves/.
+// Mods a source has are left out; a restore downloads them again.
+func (s *Service) Backup(gameID, profileID, dest string) (err error) {
 	p, files, err := s.Profiles.Backup(gameID, profileID)
 	if err != nil {
 		return err
 	}
-	doc, err := json.MarshalIndent(backupJSON{Version: backupVersion, Game: gameID, Profile: p}, "", "  ")
+	dirs, err := s.Profiles.BackupDirs(gameID, p, carried(gameID))
 	if err != nil {
 		return err
 	}
-	out := map[string][]byte{backupDoc: doc}
-	for rel, data := range files {
-		out[backupPrefix+rel] = data
+	f, err := os.CreateTemp(filepath.Dir(dest), ".mortar-backup-*")
+	if err != nil {
+		return err
 	}
-	return writeZip(dest, out)
+	defer func() {
+		if err != nil {
+			_ = f.Close()
+			_ = os.Remove(f.Name())
+		}
+	}()
+	zw := zip.NewWriter(f)
+	doc := backupJSON{Version: backupVersion, Game: gameID, Profile: p, Store: map[string]string{}}
+	for prefix, dir := range dirs {
+		h := sha256.New()
+		err := walkFiles(dir, prefix != savesPrefix, func(rel, path string, _ int64) error {
+			w, err := zw.Create(prefix + rel)
+			if err != nil {
+				return err
+			}
+			src, err := fsx.Open(path)
+			if err != nil {
+				return err
+			}
+			defer func() { _ = src.Close() }()
+			sum := sha256.New()
+			if _, err := io.Copy(io.MultiWriter(w, sum), src); err != nil {
+				return err
+			}
+			fmt.Fprintf(h, "%s\x00%x\n", rel, sum.Sum(nil))
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		if key, ok := storeKey(prefix); ok {
+			doc.Store[key] = hex.EncodeToString(h.Sum(nil))
+		}
+	}
+	for rel, data := range files {
+		w, err := zw.Create(backupPrefix + rel)
+		if err != nil {
+			return err
+		}
+		if _, err := w.Write(data); err != nil {
+			return err
+		}
+	}
+	raw, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return err
+	}
+	w, err := zw.Create(backupDoc)
+	if err != nil {
+		return err
+	}
+	if _, err := w.Write(raw); err != nil {
+		return err
+	}
+	if err := errors.Join(zw.Close(), f.Close()); err != nil {
+		return err
+	}
+	return fsx.Rename(f.Name(), dest)
+}
+
+const savesPrefix = "saves/"
+
+func storeKey(prefix string) (string, bool) {
+	key, ok := strings.CutPrefix(strings.TrimSuffix(prefix, "/"), "store/")
+	return key, ok && key != "" && !strings.Contains(key, "/")
+}
+
+// walkFiles calls fn with the slash path, full path and size of every regular file below root, in walk order. A store
+// item's completion marker is the store's own and is skipped when item is set.
+func walkFiles(root string, item bool, fn func(rel, path string, size int64) error) error {
+	return filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || !d.Type().IsRegular() {
+			return err
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+		if item && rel == store.CompleteMarker {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		return fn(rel, path, info.Size())
+	})
+}
+
+// treeHash is the hash Backup records for a store item, read back from its unpacked folder.
+func treeHash(root string) (string, error) {
+	h := sha256.New()
+	err := walkFiles(root, true, func(rel, path string, _ int64) error {
+		sum, err := fsx.SHA256(path)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(h, "%s\x00%s\n", rel, sum)
+		return nil
+	})
+	return hex.EncodeToString(h.Sum(nil)), err
 }
 
 // BackupDialog asks where to save, then backs up as Backup does; an empty path means the player cancelled.
@@ -77,17 +221,37 @@ func (s *Service) BackupDialog(gameID, profileID string) (string, error) {
 	return dest, s.Backup(gameID, profileID, dest)
 }
 
-// Restore makes a new profile from the backup at path and queues the downloads of the mods this computer does not
-// have. gameID may be empty; when given it must be the backup's game.
+// Restore makes a new profile from the backup at path: the store items it carries go into the store once their hashes
+// match, its saves become the profile's, and the mods this computer still lacks are queued from their sources. gameID
+// may be empty; when given it must be the backup's game.
 func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResult, error) {
-	doc, files, err := readBackup(path)
+	tmp, err := os.MkdirTemp("", "mortar-restore-")
+	if err != nil {
+		return RestoreResult{}, err
+	}
+	defer func() { _ = os.RemoveAll(tmp) }()
+	doc, files, err := readBackup(path, tmp)
 	if err != nil {
 		return RestoreResult{}, err
 	}
 	if gameID != "" && gameID != doc.Game {
 		return RestoreResult{}, fmt.Errorf("this backup is of a %s profile, not %s", doc.Game, gameID)
 	}
-	p, missing, err := s.Profiles.RestoreBackup(doc.Game, doc.Profile, files)
+	dirs := map[string]string{}
+	if dir := filepath.Join(tmp, "saves"); exists(dir) {
+		dirs[savesPrefix] = dir
+	}
+	for key, want := range doc.Store {
+		dir := filepath.Join(tmp, "store", key)
+		if !filepath.IsLocal(key) || !exists(dir) {
+			continue
+		}
+		// A store item that does not hash as it did when backed up is left out, so its mod shows as unavailable.
+		if got, err := treeHash(dir); err == nil && got == want {
+			dirs["store/"+key+"/"] = dir
+		}
+	}
+	p, missing, err := s.Profiles.RestoreBackup(doc.Game, doc.Profile, files, dirs)
 	if err != nil {
 		return RestoreResult{}, err
 	}
@@ -106,6 +270,11 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 	items, err := s.Queue.Add(ctx, reqs)
 	res.Queued = len(items)
 	return res, err
+}
+
+func exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }
 
 // RestoreDialog asks for a backup file, then restores it as Restore does; an empty Profile means the player cancelled.
@@ -145,46 +314,43 @@ func restoreRequest(game, profileID string, e profile.Entry) (queue.Request, boo
 	return r, true
 }
 
-func readBackup(path string) (backupJSON, map[string][]byte, error) {
-	if st, err := os.Stat(path); err != nil {
-		return backupJSON{}, nil, err
-	} else if st.Size() > maxBackupBytes {
-		return backupJSON{}, nil, errors.New("the backup is too large")
-	}
-	raw, err := fsx.ReadFile(path)
-	if err != nil {
-		return backupJSON{}, nil, err
-	}
-	zr, err := zip.NewReader(bytes.NewReader(raw), int64(len(raw)))
+// readBackup reads backup.json and the files under files/ into memory and unpacks store/ and saves/ below tmp.
+func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
+	zr, err := zip.OpenReader(path)
 	if err != nil {
 		return backupJSON{}, nil, fmt.Errorf("not a Mortar profile backup: %w", err)
 	}
+	defer func() { _ = zr.Close() }()
 	files := map[string][]byte{}
 	var doc []byte
-	var total int64
+	var inMemory, onDisk int64
 	for _, f := range zr.File {
 		if f.FileInfo().IsDir() {
+			continue
+		}
+		rel, inFiles := strings.CutPrefix(f.Name, backupPrefix)
+		if f.Name != backupDoc && !inFiles {
+			if err := unpack(f, tmp, &onDisk); err != nil {
+				return backupJSON{}, nil, err
+			}
 			continue
 		}
 		rc, err := f.Open()
 		if err != nil {
 			return backupJSON{}, nil, err
 		}
-		data, err := io.ReadAll(io.LimitReader(rc, maxBackupBytes-total+1))
+		data, err := io.ReadAll(io.LimitReader(rc, maxBackupBytes-inMemory+1))
 		_ = rc.Close()
 		if err != nil {
 			return backupJSON{}, nil, err
 		}
-		if total += int64(len(data)); total > maxBackupBytes {
+		if inMemory += int64(len(data)); inMemory > maxBackupBytes {
 			return backupJSON{}, nil, errors.New("the backup unpacks to too much")
 		}
-		switch rel, ok := strings.CutPrefix(f.Name, backupPrefix); {
-		case f.Name == backupDoc:
-			doc = data
-		case ok:
+		if inFiles {
 			files[rel] = data
-		default:
-			return backupJSON{}, nil, fmt.Errorf("the backup holds %q, which Mortar does not write", f.Name)
+		} else {
+			doc = data
 		}
 	}
 	var b backupJSON
@@ -201,4 +367,41 @@ func readBackup(path string) (backupJSON, map[string][]byte, error) {
 		return backupJSON{}, nil, errors.New(backupDoc + " names no game")
 	}
 	return b, files, nil
+}
+
+// unpack writes one store/ or saves/ entry of a backup below tmp, adding its size to total.
+func unpack(f *zip.File, tmp string, total *int64) error {
+	name := f.Name
+	_, inStore := storeKeyOf(name)
+	if (!inStore && !strings.HasPrefix(name, savesPrefix)) || strings.Contains(name, "\\") || !filepath.IsLocal(filepath.FromSlash(name)) {
+		return fmt.Errorf("the backup holds %q, which Mortar does not write", name)
+	}
+	rc, err := f.Open()
+	if err != nil {
+		return err
+	}
+	defer func() { _ = rc.Close() }()
+	to := filepath.Join(tmp, filepath.FromSlash(name))
+	if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+		return err
+	}
+	out, err := fsx.Create(to)
+	if err != nil {
+		return err
+	}
+	n, err := io.Copy(out, io.LimitReader(rc, maxBackupDisk-*total+1))
+	if err := errors.Join(err, out.Close()); err != nil {
+		return err
+	}
+	if *total += n; *total > maxBackupDisk {
+		return errors.New("the backup unpacks to too much")
+	}
+	return nil
+}
+
+// storeKeyOf is the key of a store/<key>/<file> entry name.
+func storeKeyOf(name string) (string, bool) {
+	rest, ok := strings.CutPrefix(name, "store/")
+	key, file, found := strings.Cut(rest, "/")
+	return key, ok && found && key != "" && file != ""
 }

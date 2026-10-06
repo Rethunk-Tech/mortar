@@ -50,7 +50,7 @@ func TestBackupRestoresAnEqualProfileWithoutTheStore(t *testing.T) {
 		}
 	}
 
-	got, missing, err := e.RestoreBackup("stardew", src, files)
+	got, missing, err := e.RestoreBackup("stardew", src, files, nil)
 	if err != nil || len(missing) != 0 {
 		t.Fatalf("restore: missing %v, %v", missing, err)
 	}
@@ -79,11 +79,11 @@ func TestBackupRestoresAnEqualProfileWithoutTheStore(t *testing.T) {
 	}
 
 	fresh := newEnv(t)
-	_, missing, err = fresh.RestoreBackup("stardew", src, files)
+	_, missing, err = fresh.RestoreBackup("stardew", src, files, nil)
 	if err != nil || len(missing) != 2 {
 		t.Fatalf("a computer without the store items must download both: %v, %v", missing, err)
 	}
-	if _, _, err := e.RestoreBackup("stardew", src, map[string][]byte{"../escape.json": nil}); err == nil {
+	if _, _, err := e.RestoreBackup("stardew", src, map[string][]byte{"../escape.json": nil}, nil); err == nil {
 		t.Fatal("a path outside the profile must be refused")
 	}
 }
