@@ -322,3 +322,21 @@ func TestFailureBeforeTheGameStartsIsARunOfItsOwn(t *testing.T) {
 		t.Fatalf("the run's log must be its own: %q, %v", text, err)
 	}
 }
+
+func TestCauseNamesTheModSMAPILoggedTheErrorFor(t *testing.T) {
+	svc, p, _, _ := runEnv(t)
+	addSweepMod(t, svc.profiles, p.ID, "Author.FTM", "Farm Type Manager")
+	addSweepMod(t, svc.profiles, p.ID, "Author.Maps", "Map Pack")
+	crash := "[21:10:02 TRACE Map Pack] Caught an exception while probing, ignored.\n" +
+		"[21:10:03 ERROR SMAPI] An error occurred in the base update loop: NullReferenceException\n" +
+		"[21:10:03 ERROR Farm Type Manager] This mod failed in the GameLoop.UpdateTicked event. Technical details:\n" +
+		"NullReferenceException: Object reference not set to an instance of an object.\n"
+	if got := svc.cause("stardew", p.ID, crash); got.ModName != "Farm Type Manager" || got.Reason != "mod-exception" {
+		t.Fatalf("exception cause = %#v", got)
+	}
+	asset := "[21:10:01 ERROR game] Failed loading asset 'Maps/Farm' from the content manager.\n" +
+		"[21:10:01 ERROR Map Pack] Could not edit Maps/Farm: the file is missing.\n" + crash
+	if got := svc.cause("stardew", p.ID, asset); got.ModName != "Map Pack" || got.Reason != "asset-load" {
+		t.Fatalf("asset cause = %#v", got)
+	}
+}

@@ -424,37 +424,43 @@ func (s *Service) cause(gameID, profileID, text string) Cause {
 	if err != nil {
 		return Cause{}
 	}
-	lines := strings.Split(text, "\n")
-	if cause, ok := missingFileCause(mods, modsDir, lines); ok {
+	if cause, ok := missingFileCause(mods, modsDir, strings.Split(text, "\n")); ok {
 		return cause
 	}
+	// SMAPI prefixes each line with the name of the mod that logged it, which is the mod's manifest name.
+	byName := map[string]profile.Mod{}
+	for _, im := range mods {
+		if _, seen := byName[im.Name]; !seen {
+			byName[im.Name] = im
+		}
+	}
+	entries := launch.ParseLog(text)
 	asset := ""
-	for _, line := range lines {
-		if rest, _, ok := strings.Cut(line, "Failed loading asset '"); ok {
-			asset = strings.TrimSuffix(rest, "'")
+	for _, e := range entries {
+		if _, rest, ok := strings.Cut(e.Message, "Failed loading asset '"); ok {
+			asset, _, _ = strings.Cut(rest, "'")
 			break
 		}
 	}
 	if asset != "" {
-		for _, line := range lines {
-			for _, im := range mods {
-				if strings.Contains(line, "["+im.Name+"]") && strings.Contains(line, asset) {
-					return Cause{
-						ModKey: im.Key, ModName: im.Name, ID: im.ID, Reason: "asset-load",
-						Detail: fmt.Sprintf("%s: it could not load an asset. Reinstall it.", im.Name),
-					}
+		for _, e := range entries {
+			if im, ok := byName[e.Mod]; ok && strings.Contains(e.Message, asset) {
+				return Cause{
+					ModKey: im.Key, ModName: im.Name, ID: im.ID, Reason: "asset-load",
+					Detail: fmt.Sprintf("%s: it could not load an asset. Reinstall it.", im.Name),
 				}
 			}
 		}
 	}
-	for _, line := range lines {
-		for _, im := range mods {
-			if strings.Contains(line, "["+im.Name+"]") && (strings.Contains(strings.ToLower(line), "exception") ||
-				strings.Contains(strings.ToLower(line), " failed ")) {
-				return Cause{
-					ModKey: im.Key, ModName: im.Name, ID: im.ID, Reason: "mod-exception",
-					Detail: fmt.Sprintf("%s: it encountered an error. Reinstall it.", im.Name),
-				}
+	for _, e := range entries {
+		if e.Level != launch.Error && e.Level != launch.Alert {
+			continue
+		}
+		msg := strings.ToLower(e.Message)
+		if im, ok := byName[e.Mod]; ok && (strings.Contains(msg, "exception") || strings.Contains(msg, " failed ")) {
+			return Cause{
+				ModKey: im.Key, ModName: im.Name, ID: im.ID, Reason: "mod-exception",
+				Detail: fmt.Sprintf("%s: it encountered an error. Reinstall it.", im.Name),
 			}
 		}
 	}
