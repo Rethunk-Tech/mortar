@@ -136,8 +136,8 @@ func (s *Service) OpenBackupsFolder(game string) error {
 	return datadir.Open(dir)
 }
 
-// CreateBackup zips one save and marks the zip kept, with cause kind manual. It reports false, with no backup made,
-// when the folder holds no save.
+// CreateBackup zips one save, named by its folder or by the name the app shows for it, and marks the zip kept, with
+// cause kind manual. It reports false, with no backup made, when the folder holds no save.
 func (s *Service) CreateBackup(game, folder string) (bool, error) {
 	id, err := s.saveGame(game)
 	if err != nil {
@@ -148,11 +148,31 @@ func (s *Service) CreateBackup(game, folder string) (bool, error) {
 		return false, err
 	}
 	now := uniqueBackupTime(target.Reads, time.Now())
+	folder = s.saveFolder(id, folder)
 	_, err = backup.Folder(s.scanners[id].Layout(), target.Dir, folder, target.Keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
 	if errors.Is(err, backup.ErrNoSaves) {
 		return false, nil
 	}
 	return err == nil, err
+}
+
+// saveFolder is the folder of the save name names: a save's own folder, else the one save the app shows by that name;
+// anything else is returned as it is.
+func (s *Service) saveFolder(game, name string) string {
+	infos, _ := s.scanners[game].Scan(nil)
+	var match []string
+	for _, in := range infos {
+		if in.Folder == name {
+			return name
+		}
+		if strings.EqualFold(saves.DisplayName(in.Farm, in.Folder), name) {
+			match = append(match, in.Folder)
+		}
+	}
+	if len(match) == 1 {
+		return match[0]
+	}
+	return name
 }
 
 // uniqueBackupTime moves now forward a millisecond at a time until no backup folder already holds a backup of that

@@ -61,7 +61,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `nexus untrack <game> --all\|--unused` | untrack that game's Nexus mods (`--yes` skips the prompt) |
 | `update game profile <mod id>...\|--all` | queue selected or all available mod updates |
 | `queue retry\|skip [id]`, `queue pause\|resume\|clear` | control queued downloads |
-| `backups list`, `backups create <save>`, `backups restore <name> [save...]` | list, pin a Manual backup of one save, or restore |
+| `backups list`, `backups create <save>`, `backups restore <name> [save...]` | list, pin a Manual backup of one save (by folder or by the name the app shows), or restore |
 | `backups usage`, `backups trim --keep N` | save backup sizes; keep the newest N per save (pinned ones stay) |
 | `history usage <game>`, `history trim <game> <profile> --keep N` | profile history sizes; keep the newest N changes |
 | `templates list\|save\|delete\|new ...` | profile templates; `new` starts a profile from one |

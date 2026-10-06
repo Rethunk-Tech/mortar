@@ -284,3 +284,16 @@ func TestRestoreRotatesAgainstTheProfilesKeepCount(t *testing.T) {
 		t.Fatalf("%d pre-restore backups kept, want the profile's 1: %+v", restores, after)
 	}
 }
+
+func TestCreateBackupTakesTheSavesDisplayName(t *testing.T) {
+	s, savesDir := backupService(t)
+	writeFarm(t, savesDir, "Farm_1", "Sunny", "v1")
+	writeFarm(t, savesDir, "Farm_2", "Rainy", "v2")
+	if made, err := s.CreateBackup("stardew", "rainy"); !made || err != nil {
+		t.Fatalf("CreateBackup by name = %v, %v", made, err)
+	}
+	listed, err := s.ListBackups("stardew", "")
+	if err != nil || len(listed) != 1 || len(listed[0].Saves) != 1 || listed[0].Saves[0].Folder != "Farm_2" {
+		t.Fatalf("list = %+v, %v", listed, err)
+	}
+}
