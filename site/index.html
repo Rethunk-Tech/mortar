@@ -8,7 +8,7 @@
     <title>Mortar: a mod manager for PC games</title>
     <meta
       name="description"
-      content="Mortar is a free, open source desktop mod manager for PC games, starting with Stardew Valley. It installs the mod loader, keeps each set of mods in its own profile, explains conflicts and shares profiles as a link."
+      content="Mortar is a free, open source desktop mod manager for PC games, with Stardew Valley and Lethal Company supported today. It installs each game's mod loader, keeps each set of mods in its own profile, explains conflicts and shares profiles as a link."
     />
     <meta
       property="og:title"
@@ -59,7 +59,7 @@
           Mortar installs your game's mod loader, keeps every playthrough's mods
           in its own profile, tells you why something broke before you launch,
           and shares a whole profile as a link. The games come from Mortar's
-          catalog: Stardew Valley and Lethal Company.
+          catalog: <!-- games:start -->Stardew Valley and Lethal Company<!-- games:end -->.
         </p>
         <div class="cta">
           <a class="btn" id="primary-download" href="#download">
@@ -84,7 +84,7 @@
       </div>
       <ul class="facts wrap">
         <li><strong>Finds your game</strong><span>Steam, GOG, Heroic and Lutris</span></li>
-        <li><strong>Installs the mod loader</strong><span>SMAPI for Stardew Valley, kept up to date</span></li>
+        <li><strong>Installs the mod loader</strong><span>SMAPI or BepInEx, kept up to date</span></li>
         <li><strong>Nexus Mods, GitHub and Thunderstore</strong><span>straight from each mod's page</span></li>
         <li><strong>AGPL-3.0</strong><span>free, no account needed</span></li>
       </ul>
@@ -105,15 +105,16 @@
           <div class="copy">
             <h2>A profile for every playthrough</h2>
             <p>
-              Keep a vanilla-plus farm, a Stardew Valley Expanded run and a
-              co-op pack side by side. Each profile has its own mods, settings
-              and launch options, and switching is one click.
+              Keep a vanilla-plus farm, a Stardew Valley Expanded run and the
+              pack your Lethal Company crew plays side by side. Each profile has
+              its own mods, settings and launch options, and switching is one
+              click.
             </p>
             <ul class="ticks">
               <li>Install, update and roll back mods per profile</li>
               <li>Updates show the changelog before you take them</li>
               <li>Start new profiles from templates</li>
-              <li>Save backups on a schedule, with a timeline per farm</li>
+              <li>Save backups on a schedule, with a timeline per save</li>
             </ul>
           </div>
           <img
@@ -128,11 +129,83 @@
 
         <div class="feature flip">
           <div class="copy">
+            <h2>Every game in one window</h2>
+            <p>
+              Each game brings its own loader and mod sites, and Mortar handles
+              both from the same window. Pick a game, and its profiles, sources
+              and settings come with it.
+            </p>
+            <ul class="ticks">
+              <li>Finds each game in Steam, GOG, Heroic or Lutris</li>
+              <li>Installs and updates the loader the game needs</li>
+              <li>Settings for loaders, launches and saves kept per game</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/games.webp"
+            width="1400"
+            height="840"
+            loading="lazy"
+            alt="The game select screen with Stardew Valley and Lethal Company side by side"
+          />
+        </div>
+
+        <div class="feature">
+          <div class="copy">
+            <h2>Lethal Company on BepInEx</h2>
+            <p>
+              Mortar installs BepInEx for you and keeps every Thunderstore
+              package in the profile, not the game folder. At launch it places
+              BepInEx beside the game and takes it back when the game exits.
+            </p>
+            <ul class="ticks">
+              <li>Plugin settings stay with the profile and travel when you share it</li>
+              <li>Plugins that failed to load or ship twice show up in Problems</li>
+              <li>Import your r2modman or Gale profiles, or export a Thunderstore modpack</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/lethal-company.webp"
+            width="1400"
+            height="840"
+            loading="lazy"
+            alt="A Lethal Company profile in Mortar with its Thunderstore mods"
+          />
+        </div>
+
+        <div class="feature flip">
+          <div class="copy">
+            <h2>Thunderstore, Nexus Mods and GitHub in one search</h2>
+            <p>
+              Browse searches every mod site the game uses at once. Add a
+              Thunderstore package and the packages it depends on come with it.
+            </p>
+            <ul class="ticks">
+              <li>Filter by category, sort by downloads or by last update</li>
+              <li>Mods the profile already has are marked</li>
+              <li>Every download comes from the mod's own page</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/thunderstore.webp"
+            width="1400"
+            height="840"
+            loading="lazy"
+            alt="The Browse tab listing Lethal Company packages from Thunderstore"
+          />
+        </div>
+
+        <div class="feature">
+          <div class="copy">
             <h2>Know what broke before you launch</h2>
             <p>
-              Mortar reads every mod's manifest and content packs, then explains
-              problems in plain words: missing dependencies, outdated versions
-              and which mod wins each content conflict.
+              Mortar reads every mod's manifest, Content Patcher packs and the
+              loader's log, then explains problems in plain words: missing
+              dependencies, outdated versions and which mod wins each content
+              conflict.
             </p>
             <ul class="ticks">
               <li>Missing dependencies found and queued for you</li>
@@ -150,13 +223,13 @@
           />
         </div>
 
-        <div class="feature">
+        <div class="feature flip">
           <div class="copy">
             <h2>See what slows your startup</h2>
             <p>
-              With the bundled SMAPI bridge, Mortar measures how long the game
-              takes to reach the title screen and what each mod costs along the
-              way, so a slow load has a name.
+              In Stardew Valley, the bundled SMAPI bridge lets Mortar measure
+              how long the game takes to reach the title screen and what each
+              mod costs along the way, so a slow load has a name.
             </p>
             <ul class="ticks">
               <li>Time to title screen, compared with the last launch</li>
@@ -171,6 +244,30 @@
             height="800"
             loading="lazy"
             alt="The Performance tab with time to title screen and each mod's startup cost"
+          />
+        </div>
+
+        <div class="feature">
+          <div class="copy">
+            <h2>Your profiles on all your PCs</h2>
+            <p>
+              Pair two of your own computers with a short code. A profile you
+              send from one to the other arrives with its mod files, from every
+              source, so nothing downloads twice. No account is involved.
+            </p>
+            <ul class="ticks">
+              <li>Nearby computers are found on your local network</li>
+              <li>The code works once, for five minutes</li>
+              <li>An unpaired computer still gets the profile and downloads each mod</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/pairing.webp"
+            width="1400"
+            height="840"
+            loading="lazy"
+            alt="The Pair a computer dialog showing a one-time pairing code"
           />
         </div>
 
@@ -238,7 +335,7 @@
             </div>
             <h3>Save backups</h3>
             <p>
-              Scheduled and manual backups of every farm, with restore, pinning
+              Scheduled and manual backups of every save, with restore, pinning
               and a size you control.
             </p>
           </article>
@@ -358,12 +455,13 @@
             </div>
           </article>
           <article class="card">
-            <h3>SMAPI bridge</h3>
+            <h3>Game bridge</h3>
             <p>
-              A small SMAPI mod Mortar adds to each profile. It runs console
-              commands sent from Mortar, exposes Generic Mod Config Menu
+              A small mod Mortar adds to each profile. In Stardew Valley it runs
+              console commands sent from Mortar, exposes Generic Mod Config Menu
               settings, records startup timings and drives an overlay for
-              streaming.
+              streaming. In Lethal Company it tells Mortar which plugins the
+              running game loaded.
             </p>
             <div class="links">
               <a href="https://github.com/Rethunk-Tech/mortar-smapi-bridge"
