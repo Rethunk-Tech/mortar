@@ -80,6 +80,7 @@ export function MoveFoldersDialog({
           title: plural(res.imported, { one: 'Moved # mod', other: 'Moved # mods' }),
           ...(body === '' ? {} : { body }),
           ...(detail === '' ? {} : { detail }),
+          changes: [res.profile.lastChange ?? ''],
         })
         onClose(true)
       },

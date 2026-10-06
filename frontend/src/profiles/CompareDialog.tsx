@@ -101,7 +101,11 @@ export function CompareDialog({
     run(
       async () => {
         await applyWithUndo(game, to.id, change, (undo) =>
-          pushUndoToast(useToasts.getState().push, title, t`Undo`, undo),
+          pushUndoToast(useToasts.getState().push, title, {
+            label: t`Undo`,
+            run: undo,
+            profileId: to.id,
+          }),
         )
         await refresh()
       },

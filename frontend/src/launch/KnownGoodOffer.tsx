@@ -15,8 +15,12 @@ const KNOWN_GOOD = 'good'
 
 async function markKnownGood(game: string, profile: string) {
   try {
-    await MarkKnownGood(game, profile)
-    useToasts.getState().push({ kind: 'success', title: i18n._(msg`Marked known good`) })
+    const marked = await MarkKnownGood(game, profile)
+    useToasts.getState().push({
+      kind: 'success',
+      title: i18n._(msg`Marked known good`),
+      changes: [marked.id],
+    })
   } catch (e) {
     reportUnexpected(e)
   }

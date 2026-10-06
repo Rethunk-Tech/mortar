@@ -2,13 +2,12 @@ import type { ToastAction, ToastInput } from './store.ts'
 
 const MISSING_STORE_PREFIX = 'missing from the store: '
 
+// The action names its profile, so the toast lists the change that profile last recorded.
 export function pushUndoToast(
   push: (toast: ToastInput) => number,
   title: string,
-  undoLabel: string,
-  undo: () => unknown,
+  action: Required<Pick<ToastAction, 'label' | 'run' | 'profileId'>>,
 ): number {
-  const action: ToastAction = { label: undoLabel, run: undo }
   return push({ kind: 'success', title, action })
 }
 

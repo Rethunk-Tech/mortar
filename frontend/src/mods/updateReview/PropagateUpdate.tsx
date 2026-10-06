@@ -54,13 +54,16 @@ export function PropagateUpdate({
       update={{ oldKey: update.key }}
       onConfirm={async (profiles, pinned) => {
         const game = useProfiles.getState().game?.id ?? ''
-        await Promise.all(profiles.map((other) => UpdateEntry(game, other.id, update.key, newKey)))
+        const changed = await Promise.all(
+          profiles.map((other) => UpdateEntry(game, other.id, update.key, newKey)),
+        )
         useToasts.getState().push({
           kind: 'success',
           title: t`${plural(profiles.length, { one: 'Updated in # profile', other: 'Updated in # profiles' })}`,
           ...(pinned.length > 0
             ? { body: pinned.map((other) => t`pinned in ${other.name}`).join(', ') }
             : {}),
+          changes: changed.map((p) => p.lastChange ?? ''),
         })
       }}
     />

@@ -278,7 +278,7 @@ function RemoveFromOthersDialog({
       helper={t`Where it came in one download with other mods, it is disabled instead.`}
       confirmLabel={t`Remove`}
       onConfirm={async (profiles, _pinned, rows) => {
-        await Promise.all(
+        const changed = await Promise.all(
           profiles.map((other) => {
             const row = rows.find((candidate) => candidate.profileId === other.id)
             const entryMods =
@@ -287,15 +287,17 @@ function RemoveFromOthersDialog({
                 .profiles.find((candidate) => candidate.id === other.id)
                 ?.entries?.find((profileEntry) => profileEntry.key === row?.key)?.mods ?? []
             return entryMods.length > 1
-              ? SetModEnabled(game, other.id, row?.key ?? '', mod.id, false).then((result) =>
-                  useProfiles.getState().replace(result.profile),
-                )
+              ? SetModEnabled(game, other.id, row?.key ?? '', mod.id, false).then((result) => {
+                  useProfiles.getState().replace(result.profile)
+                  return result.profile
+                })
               : RemoveEntry(game, other.id, row?.key ?? '')
           }),
         )
         useToasts.getState().push({
           kind: 'success',
           title: t`${mod.name} removed from ${plural(profiles.length, { one: '# profile', other: '# profiles' })}`,
+          changes: changed.map((p) => p.lastChange ?? ''),
         })
       }}
     />

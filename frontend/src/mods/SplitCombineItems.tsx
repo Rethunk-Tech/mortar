@@ -38,7 +38,7 @@ export function SplitCombineItems({
     return null
   }
   const toast = (title: string) => (undo: () => unknown) => {
-    pushUndoToast(push, title, t`Undo`, undo)
+    pushUndoToast(push, title, { label: t`Undo`, run: undo, profileId })
   }
   return (
     <>

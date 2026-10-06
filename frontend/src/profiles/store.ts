@@ -55,7 +55,11 @@ async function restoreProfileZip(gameId: string, apply: (p: Profile) => Promise<
       return
     }
     await apply(p)
-    useToasts.getState().push({ kind: 'success', title: i18n._(msg`Created ${{ name: p.name }}`) })
+    useToasts.getState().push({
+      kind: 'success',
+      title: i18n._(msg`Created ${{ name: p.name }}`),
+      changes: [p.lastChange ?? ''],
+    })
   } catch (e) {
     fail(i18n._(msg`Could not restore the profile`))(e)
   }

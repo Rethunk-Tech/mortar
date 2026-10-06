@@ -166,6 +166,7 @@ function useCreate(game: string, onClose: () => void) {
         useToasts.getState().push({
           kind: missing.length > 0 && !queued ? 'warning' : 'success',
           title,
+          changes: [result.profile.lastChange ?? ''],
         })
       },
       { errorTitle: t`Could not create the profile` },

@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { setLatestChange, useToasts } from './store.ts'
 import {
   downloadWantsForEntries,
   entriesForKeys,
@@ -7,6 +8,7 @@ import {
   fieldsStillUndoable,
   missingModNames,
   parseMissingStoreList,
+  pushUndoToast,
   type UndoEntry,
   undoRevertTarget,
   unfetchableNames,
@@ -112,4 +114,19 @@ test('unfetchableNames lists entries with no source to download from', () => {
     entry({ key: 'k2', mods: [{ name: 'Local' }], source: { kind: 'local' } }),
   ]
   expect(unfetchableNames(entries)).toEqual(['Local'])
+})
+
+test('pushUndoToast lists the change its profile last recorded', () => {
+  setLatestChange((id) => (id === 'p1' ? 'ev1' : ''))
+  try {
+    pushUndoToast(useToasts.getState().push, 'Combined', {
+      label: 'Undo',
+      run: () => undefined,
+      profileId: 'p1',
+    })
+    expect(useToasts.getState().history[0]?.changes).toEqual(['ev1'])
+  } finally {
+    setLatestChange(() => '')
+    useToasts.setState(useToasts.getInitialState(), true)
+  }
 })

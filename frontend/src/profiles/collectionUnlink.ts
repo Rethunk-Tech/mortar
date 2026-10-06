@@ -31,6 +31,7 @@ export async function unlinkCollection(game: string, profile: Profile) {
     useToasts.getState().push({
       kind: 'success',
       title: i18n._(msg`Unlinked collection`),
+      changes: [next.lastChange ?? ''],
       action: {
         label: i18n._(msg`Undo`),
         run: () => restoreCollection(game, profile.id, previous),

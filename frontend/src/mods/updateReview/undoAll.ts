@@ -34,11 +34,13 @@ export function changesAfterBatch(
 export const useUndoAll = create<{ target: UndoAllTarget | null }>(() => ({ target: null }))
 
 export async function restoreBatch(game: string, profileId: string, beforeId: string) {
-  useProfiles.getState().replace(await Revert(game, profileId, beforeId))
+  const restored = await Revert(game, profileId, beforeId)
+  useProfiles.getState().replace(restored)
   useToasts.getState().push({
     kind: 'success',
     title: i18n._(msg`Restored the profile from before Update all`),
     body: i18n._(msg`Downloaded versions stay in the store for re-use.`),
+    changes: [restored.lastChange ?? ''],
   })
 }
 

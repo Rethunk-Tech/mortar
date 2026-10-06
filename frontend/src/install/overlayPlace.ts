@@ -33,6 +33,7 @@ export async function chooseOverlay(from: string, to: string) {
     useToasts.getState().push({
       kind: 'success',
       title: i18n._(msg`Added ${{ mods: names }} to ${{ profile: session.profileName }}`),
+      changes: [res.profile.lastChange ?? ''],
     })
   } catch (e) {
     toastError(i18n._(msg`Could not add the optional file`), e)
