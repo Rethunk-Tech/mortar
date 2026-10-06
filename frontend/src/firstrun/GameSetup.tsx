@@ -15,12 +15,14 @@ import {
   List,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { FindStep } from './FindStep.tsx'
 import { LoaderStep } from './LoaderStep.tsx'
+import { loaderChip } from './logic.ts'
 import { NexusStep } from './NexusStep.tsx'
 import { ProfileStep } from './ProfileStep.tsx'
 
@@ -110,6 +112,9 @@ export function GameSetup({ game: id }: { game: GameId }) {
   const goToProfile = useCallback(() => setStep(PROFILE), [])
   const hasLoader = Boolean(game?.loaderId)
   const signedIn = useNexus((s) => s.signedIn)
+  const loaderInstalled = useLoader(
+    (s) => s.game === id && s.status?.installed === true && !s.status.broken,
+  )
   const afterNexus = hasLoader ? LOADER : PROFILE
   // Nexus's Mod Manager Download button only matters to a game whose mods come from Nexus first; a Thunderstore
   // game gets its mods in Mortar's own Browse, and Settings has the sign-in for later.
@@ -132,6 +137,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
     const alert = loadError ?? inlineError(null, t`Something went wrong`)
     return <LoadErrorRow error={alert} onRetry={refresh} />
   }
+  const loaderState = loaderChip(step, LOADER, loaderInstalled)
   const stateOf = (n: Step) => {
     if (n < step) {
       return 'done'
@@ -161,9 +167,11 @@ export function GameSetup({ game: id }: { game: GameId }) {
           <StepChip
             n={shown(LOADER)}
             label={
-              step > LOADER ? t`${{ name: game.loader }} installed` : t`Install ${game.loader}`
+              loaderState === 'done'
+                ? t`${{ name: game.loader }} installed`
+                : t`Install ${game.loader}`
             }
-            state={stateOf(LOADER)}
+            state={loaderState}
           />
         ) : null}
         <StepChip
