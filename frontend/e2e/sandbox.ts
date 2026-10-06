@@ -19,12 +19,23 @@ function sandboxPort(): string {
   return process.env.MORTAR_E2E_PORT
 }
 
+/** The launch-cap session of a run's sandbox, and its counter files under the cap folder selftest.sh keeps. */
+const launchSession = (dir: string) => `e2e-${dir.slice(dir.lastIndexOf('-') + 1)}`
+
+const launchCounter = (dir: string) => `${BASE}/mortar-launch-cap/${launchSession(dir)}`
+
 /** A sandbox folder is only ever named from a run's pid, so a path to delete is never read from anywhere. */
 const sandboxDir = (runner: number) => `${BASE}/${PREFIX}${runner}`
 
 function selftest(dir: string, ...args: string[]) {
   execFileSync(SCRIPT, args, {
-    env: { ...process.env, MORTAR_SELFTEST_DIR: dir, MORTAR_SELFTEST_PORT: sandboxPort() },
+    env: {
+      ...process.env,
+      MORTAR_SELFTEST_DIR: dir,
+      MORTAR_SELFTEST_PORT: sandboxPort(),
+      // play.pw.ts launches a stand-in for the game, which must not spend the session's real game launches.
+      MORTAR_LAUNCH_SESSION: launchSession(dir),
+    },
     stdio: 'inherit',
   })
 }
@@ -65,7 +76,15 @@ function reap(runner: number) {
       throw new Error(`the stale e2e server ${server} in ${dir} did not stop`)
     }
   }
+  // Its hidden display and any game it recorded outlive the server; destroy stops them with the folder.
+  try {
+    selftest(dir, 'destroy')
+  } catch {
+    // A run that died before its first start has no marker for destroy to accept.
+  }
   rmSync(dir, { recursive: true, force: true })
+  rmSync(launchCounter(dir), { force: true })
+  rmSync(`${launchCounter(dir)}.lock`, { force: true })
 }
 
 /** Sandboxes left by runs that died before their teardown; a folder named for this process is an older run's. */
@@ -86,8 +105,14 @@ function freshSandbox(): () => void {
   // Specs that run the sandbox's own binary (play.pw.ts) find it here; workers inherit the main process's env.
   process.env.MORTAR_E2E_DIR = dir
   const teardown = () => {
-    selftest(dir, 'stop')
+    try {
+      selftest(dir, 'destroy')
+    } catch {
+      // A setup that failed before the sandbox was marked leaves destroy nothing it may delete.
+    }
     rmSync(dir, { recursive: true, force: true })
+    rmSync(launchCounter(dir), { force: true })
+    rmSync(`${launchCounter(dir)}.lock`, { force: true })
   }
   try {
     selftest(dir, 'start')

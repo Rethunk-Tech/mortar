@@ -11,6 +11,11 @@
 #   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
 #   scripts/selftest.sh regress [--game lethal-company]  one-shot regression run (Stardew, or Lethal Company through Proton) in its own throwaway sandbox (see below)
+#   scripts/selftest.sh harness-check         prove the launch harness with a dummy window instead of a game
+#
+# Every game a sandbox starts, from the browser or from regress, runs on the sandbox's own headless display (mutter
+# with Xwayland, its own D-Bus and runtime dir; the desktop's DISPLAY, WAYLAND_DISPLAY and bus are unset) through
+# scripts/launch-guard.sh, without the network, and each session gets at most 3 launches across all its sandboxes.
 #
 # --copy-data copies the real Mortar profiles and settings into the sandbox once (downloads, cache, trash and
 # backups are left out). Every sandbox root carries a .mortar-selftest marker, and only a marked folder directly under
@@ -46,6 +51,13 @@ SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
 export MORTAR_ENABLE_GAMES=${MORTAR_SELFTEST_ENABLE:-lethal-company}
 # shellcheck source=scripts/regress-bepinex.sh
 . "$REPO/scripts/regress-bepinex.sh"
+
+# Every game a sandbox starts goes through scripts/launch-guard.sh onto a display of the sandbox's own, and a session
+# gets at most LAUNCH_CAP launches across all its sandboxes. The session is MORTAR_LAUNCH_SESSION, else the agent
+# session, else the login session; its counter lives beside the sandboxes, since a regress sandbox lasts one run.
+LAUNCH_CAP=3
+SESSION_KEY=$(printf '%s' "${MORTAR_LAUNCH_SESSION:-${CLAUDE_CODE_SESSION_ID:-${XDG_SESSION_ID:-default}}}" | tr -c 'A-Za-z0-9_-' _)
+LAUNCH_COUNT=$BASE/mortar-launch-cap/$SESSION_KEY
 
 # The last server binary built, kept under the hash of the tree it came from so an unchanged tree skips the build.
 BUILD_CACHE=/var/tmp/mortar-selftest-build
@@ -106,6 +118,114 @@ write_library() {
     fi
   done
   printf '"libraryfolders"\n{\n\t"0"\n\t{\n\t\t"path"\t\t"%s"\n\t\t"apps"\n\t\t{\n%s\t\t}\n\t}\n}\n' "$SANDBOX_STEAM" "$apps" >"$SANDBOX_STEAM/steamapps/libraryfolders.vdf"
+}
+
+# owned PID succeeds when PID still runs and its executable or working directory is inside $ROOT.
+owned() {
+  local exe cwd
+  exe=$(readlink "/proc/$1/exe" 2>/dev/null) || return 1
+  cwd=$(readlink "/proc/$1/cwd" 2>/dev/null) || return 1
+  case "$exe/ $cwd/" in "$ROOT"/* | *" $ROOT"/*) return 0 ;; esac
+  return 1
+}
+
+# display_up starts the sandbox's hidden display once: a headless mutter with a virtual monitor, its own Xwayland, a
+# D-Bus session of its own and a private runtime dir (no desktop socket, audio or portal in it). The desktop session's
+# DISPLAY, WAYLAND_DISPLAY and bus are unset first, so nothing started on it can reach the desktop. mutter runs a
+# sleep that holds it up; display.hold records that sleep, whose exit ends mutter and its bus.
+display_up() {
+  local run=$ROOT/run
+  if [ -s "$run/display.env" ] && owned "$(cat "$ROOT/display.hold" 2>/dev/null || echo 0)"; then
+    return
+  fi
+  if ! command -v mutter >/dev/null || ! command -v dbus-run-session >/dev/null; then
+    echo "the hidden display needs mutter and dbus-run-session" >&2
+    exit 1
+  fi
+  mkdir -p "$run"
+  chmod 700 "$run"
+  rm -f "$run/display.env" "$run/display.x11"
+  # mutter runs this inside its session, where DISPLAY names the Xwayland it started.
+  cat >"$ROOT/display-hold.sh" <<'HOLD'
+echo $$ >display.hold
+printf '%s\n' "$DISPLAY" >"$XDG_RUNTIME_DIR/display.x11"
+printf 'DISPLAY=%s\nWAYLAND_DISPLAY=%s\nDBUS_SESSION_BUS_ADDRESS=%s\nXAUTHORITY=%s\n' "$DISPLAY" "$WAYLAND_DISPLAY" "$DBUS_SESSION_BUS_ADDRESS" "${XAUTHORITY:-}" >"$XDG_RUNTIME_DIR/display.env.new"
+mv "$XDG_RUNTIME_DIR/display.env.new" "$XDG_RUNTIME_DIR/display.env"
+exec sleep infinity
+HOLD
+  (cd "$ROOT" && env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u DBUS_SESSION_BUS_ADDRESS -u XDG_SESSION_TYPE -u PULSE_SERVER \
+    XDG_RUNTIME_DIR="$run" nohup dbus-run-session -- mutter --wayland --headless --virtual-monitor 1280x720 \
+    --wayland-display mortar-hidden -- sh "$ROOT/display-hold.sh" >"$ROOT/display.log" 2>&1 &)
+  for _ in $(seq 1 100); do
+    [ -s "$run/display.env" ] && return
+    sleep 0.1
+  done
+  echo "the hidden display did not start; see $ROOT/display.log" >&2
+  exit 1
+}
+
+# display_down ends the hidden display through the sleep it recorded, verified as running from the sandbox.
+display_down() {
+  local hold
+  hold=$(cat "$ROOT/display.hold" 2>/dev/null || true)
+  [ -n "$hold" ] && owned "$hold" || return 0
+  kill "$hold" 2>/dev/null || true
+  for _ in $(seq 1 50); do
+    [ -e "$ROOT/run/$(sed -n 's/^WAYLAND_DISPLAY=//p' "$ROOT/run/display.env" 2>/dev/null)" ] || break
+    sleep 0.1
+  done
+  rm -f "$ROOT/display.hold"
+}
+
+# hidden runs a command on the hidden display, with the launch guard's settings for any game it starts.
+hidden() {
+  local vars=()
+  mapfile -t vars <"$ROOT/run/display.env"
+  env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u DBUS_SESSION_BUS_ADDRESS -u XDG_SESSION_TYPE -u PULSE_SERVER \
+    XDG_RUNTIME_DIR="$ROOT/run" "${vars[@]}" MORTAR_HIDDEN_RUNTIME="$ROOT/run" \
+    MORTAR_LAUNCH_WRAPPER="$REPO/scripts/launch-guard.sh" MORTAR_LAUNCH_CAP="$LAUNCH_CAP" \
+    MORTAR_LAUNCH_COUNT="$LAUNCH_COUNT" MORTAR_LAUNCH_PIDS="$ROOT/launches.pids" "$@"
+}
+
+launches_used() { cat "$LAUNCH_COUNT" 2>/dev/null || echo 0; }
+
+# need_launches N refuses a run that would start more games than the session has left, before it does anything.
+need_launches() {
+  local left=$((LAUNCH_CAP - $(launches_used)))
+  if [ "$1" -gt "$left" ]; then
+    echo "refused: this run starts $1 games and the session ($SESSION_KEY) has $left of $LAUNCH_CAP launches left ($LAUNCH_COUNT)" >&2
+    exit 3
+  fi
+}
+
+# launch_pid PID START prints the host pid of the recorded launch PID: the guard records the pid it sees, which inside
+# the server's pid namespace is not the host's, so the host pid is the process with the same start time whose pid in
+# its innermost namespace is PID. Nothing is printed when that process is gone.
+launch_pid() {
+  local d
+  for d in /proc/[0-9]*; do
+    [ "$(sed 's/.*) //' "$d/stat" 2>/dev/null | cut -d' ' -f20)" = "$2" ] || continue
+    [ "$(awk '/^NSpid:/ {print $NF}' "$d/status" 2>/dev/null)" = "$1" ] && echo "${d#/proc/}" && return
+  done
+}
+
+# stop_launches stops every game the guard recorded in this sandbox, each found again by its start time so a reused
+# pid is never hit, then SIGKILLs what ignored SIGTERM.
+stop_launches() {
+  local pid start _ host live=()
+  [ -f "$ROOT/launches.pids" ] || return 0
+  while read -r pid start _; do
+    host=$(launch_pid "$pid" "$start")
+    [ -n "$host" ] && live+=("$host:$start")
+  done <"$ROOT/launches.pids"
+  [ ${#live[@]} -gt 0 ] || return 0
+  local p
+  for p in "${live[@]}"; do kill "${p%%:*}" 2>/dev/null || true; done
+  sleep 2
+  for p in "${live[@]}"; do
+    [ "$(sed 's/.*) //' "/proc/${p%%:*}/stat" 2>/dev/null | cut -d' ' -f20)" = "${p#*:}" ] && kill -KILL "${p%%:*}" 2>/dev/null
+  done
+  echo "stopped recorded launches: ${live[*]%%:*}"
 }
 
 mark() {
@@ -170,6 +290,8 @@ stop() {
     echo "port $PORT is held by pid $pid, which is not the self-test server; leaving it" >&2
     exit 1
   fi
+  # The hidden display stays up for the next start; destroy takes it down with the sandbox.
+  stop_launches
 }
 
 start() {
@@ -203,7 +325,9 @@ while True:
   if unshare --user --map-current-user --pid --fork --mount --mount-proc true 2>/dev/null; then
     isolate=(unshare --user --map-current-user --pid --fork --mount --mount-proc python3 -c "$reaper")
   fi
-  (cd "$ROOT" && env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" PATH="$ROOT/bin:$PATH" \
+  # The server, and every game it starts, sees only the hidden display.
+  display_up
+  (cd "$ROOT" && hidden env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" PATH="$ROOT/bin:$PATH" \
     WAILS_SERVER_HOST=127.0.0.1 WAILS_SERVER_PORT="$PORT" nohup "${isolate[@]}" ./mortar-server >"$ROOT/server.log" 2>&1 &)
   for _ in $(seq 1 30); do
     if [ -n "$(listener || true)" ]; then
@@ -374,6 +498,9 @@ sandbox_pids() {
 # is gone keeps running unseen. Anything left running keeps the folder and is named.
 release_sandbox() {
   (stop) >/dev/null 2>&1 || true
+  # stop leaves early when another program holds the port; the games and the display still go.
+  stop_launches >/dev/null 2>&1 || true
+  display_down
   local left=() i
   for i in $(seq 1 30); do
     mapfile -t left < <(sandbox_pids)
@@ -426,6 +553,7 @@ regress() {
   finish() { release_sandbox; }
   regress_traps
 
+  need_launches 1
   setup
   copy_data
   build
@@ -557,6 +685,11 @@ regress_lc() {
   }
   regress_traps
 
+  # The base launch, the r2 step's and each of the matrix's.
+  local launches=1
+  [ -n "${MORTAR_REGRESS_R2_CODE:-}" ] && launches=$((launches + 1))
+  [ -n "${MORTAR_REGRESS_MATRIX:-}" ] && launches=$((launches + $(mx_launches)))
+  need_launches "$launches"
   [ -d "$proton" ] || {
     echo "no Proton at $proton (set MORTAR_REGRESS_PROTON)" >&2
     exit 1
@@ -586,20 +719,23 @@ regress_lc() {
   ln -sfn "$SANDBOX_STEAM/linux64" "$SANDBOX_HOME/.steam/sdk64"
   ln -sfn "$SANDBOX_STEAM/linux32" "$SANDBOX_HOME/.steam/sdk32"
 
-  # Profiles get the catalog's published BepInEx bridge, which an offline run cannot download. MORTAR_REGRESS_BRIDGE_REPO
-  # runs a local build of a bridge checkout instead (MORTAR_LOCAL_BRIDGES), to test it before its release.
-  local bridge=expected
+  # Profiles get a local build of the bridge checkout beside this repo (MORTAR_REGRESS_BRIDGE_REPO names another), handed
+  # to the server through MORTAR_LOCAL_BRIDGES, so a run tests the bridge as it is before its release; without a
+  # checkout they get the catalog's published bridge, which an offline run cannot download.
+  local bridge=expected bridge_repo=${MORTAR_REGRESS_BRIDGE_REPO:-$REPO/../mortar-bepinex-bridge}
   [ -n "${MORTAR_REGRESS_OFFLINE:-}" ] && bridge=skipped
-  if [ -n "${MORTAR_REGRESS_BRIDGE_REPO:-}" ]; then
+  if [ -x "$bridge_repo/scripts/package.sh" ]; then
     local bridge_dir=$ROOT/bridge built
     mkdir -p "$bridge_dir"
-    if built=$(DIST="$ROOT/bridge-dist" "$MORTAR_REGRESS_BRIDGE_REPO/scripts/package.sh" 2>"$ROOT/bridge-build.log" | tail -1) && [ -f "$built" ]; then
+    if built=$(DIST="$ROOT/bridge-dist" "$bridge_repo/scripts/package.sh" 2>"$ROOT/bridge-build.log" | tail -1) && [ -f "$built" ]; then
       cp "$built" "$bridge_dir/lethal-company.zip"
       export MORTAR_LOCAL_BRIDGES=$bridge_dir
       bridge=expected
     else
       failures+=("the bridge did not build; see $ROOT/bridge-build.log")
     fi
+  elif [ -n "${MORTAR_REGRESS_BRIDGE_REPO:-}" ]; then
+    failures+=("no bridge checkout at $bridge_repo")
   fi
   mkdir -p "$ROOT"
   cat >"$ROOT/run-proton.sh" <<EOF
@@ -613,7 +749,8 @@ EOF
   # The first Proton run creates the prefix; Mortar can only add its winhttp override to a prefix that exists.
   echo "creating the Proton prefix"
   mkdir -p "$compat"
-  (cd "$ROOT" && env HOME="$SANDBOX_HOME" timeout 300 "$ROOT/run-proton.sh" wineboot -u >"$ROOT/wineboot.log" 2>&1) ||
+  display_up
+  (cd "$ROOT" && hidden env HOME="$SANDBOX_HOME" timeout 300 "$ROOT/run-proton.sh" wineboot -u >"$ROOT/wineboot.log" 2>&1) ||
     failures+=("the Proton prefix could not be created; see $ROOT/wineboot.log")
   reap_prefix "$compat" >/dev/null
 
@@ -786,6 +923,107 @@ PY
   [ "$verdict" = PASS ]
 }
 
+# display_peers PID prints the path of every server PID's network namespace holds a connection to. A launch has a
+# namespace of its own, and the server side of a unix connection lives in the client's namespace, so each connected
+# socket there with a path is a display, bus or other service the game reached.
+display_peers() {
+  python3 - "$1" <<'PY'
+import sys
+for line in open(f"/proc/{sys.argv[1]}/net/unix").read().splitlines()[1:]:
+    cols = line.split(None, 7)
+    if len(cols) == 8 and cols[5] == "03":
+        print(cols[7])
+PY
+}
+
+# harness_check proves the launch harness without starting a game: in a throwaway sandbox it starts a dummy GTK
+# window (zenity) through the guard three times, on Wayland and on X11, and requires each to run on the hidden display
+# and to reach no socket of the desktop session's; the fourth launch must be refused, and stopping must take exactly
+# the recorded pids. It runs under a session key of its own, so it spends none of the real session's launches.
+harness_check() {
+  ROOT=$(mktemp -d "$BASE/mortar-harness-XXXXXX")
+  case "$ROOT" in "$BASE"/mortar-harness-??????) ;; *)
+    echo "unexpected sandbox dir $ROOT" >&2
+    exit 1
+    ;;
+  esac
+  mark
+  SESSION_KEY=harness-check-$$
+  LAUNCH_COUNT=$BASE/mortar-launch-cap/$SESSION_KEY
+  verdict=FAIL
+  local desk_x=${DISPLAY:-} desk_run=${XDG_RUNTIME_DIR:-} failures=() i backend out rc=0
+  finish() {
+    rm -f "$LAUNCH_COUNT" "$LAUNCH_COUNT.lock"
+    release_sandbox
+  }
+  regress_traps
+  command -v zenity >/dev/null || {
+    echo "harness-check needs zenity as its dummy window" >&2
+    exit 1
+  }
+  display_up
+  local hidden_x
+  hidden_x=$(cat "$ROOT/run/display.x11")
+  for i in 1 2 3; do
+    backend=x11
+    [ "$i" = 1 ] && backend=wayland
+    (cd "$ROOT" && hidden env GDK_BACKEND="$backend" nohup "$REPO/scripts/launch-guard.sh" \
+      zenity --info --text "launch harness check $i" >"$ROOT/dummy-$i.log" 2>&1 &)
+  done
+  for _ in $(seq 1 100); do
+    [ -f "$ROOT/launches.pids" ] && [ "$(wc -l <"$ROOT/launches.pids")" -ge 3 ] && break
+    sleep 0.1
+  done
+  # A window is mapped once the client has talked to its display; give each a moment to connect.
+  sleep 3
+  local pid start _ peers env_of
+  while read -r pid start _; do
+    env_of=$(tr '\0' '\n' <"/proc/$pid/environ" 2>/dev/null || true)
+    [ -n "$env_of" ] || {
+      failures+=("dummy $pid exited early; see $ROOT/dummy-*.log")
+      continue
+    }
+    grep -qx "DISPLAY=$hidden_x" <<<"$env_of" || failures+=("dummy $pid has $(grep '^DISPLAY=' <<<"$env_of"), not $hidden_x")
+    grep -qx "XDG_RUNTIME_DIR=$ROOT/run" <<<"$env_of" || failures+=("dummy $pid has the desktop's runtime dir")
+    grep -qx "MORTAR_SKIP_INTRO=1" <<<"$env_of" || failures+=("dummy $pid lacks MORTAR_SKIP_INTRO=1")
+    peers=$(display_peers "$pid")
+    echo "dummy $pid ($(grep '^GDK_BACKEND=' <<<"$env_of")) talks to: $(tr '\n' ' ' <<<"$peers")"
+    if ! grep -qE "^($ROOT/run/|@?/tmp/.X11-unix/X${hidden_x#:}$)" <<<"$peers"; then
+      failures+=("dummy $pid is connected to no socket of the hidden display")
+    fi
+    if [ -n "$desk_x" ] && grep -qE "/tmp/.X11-unix/X${desk_x#:}$" <<<"$peers"; then
+      failures+=("dummy $pid reached the desktop's X server $desk_x")
+    fi
+    # The desktop's Wayland socket, session bus and audio all live in its runtime dir.
+    if [ -n "$desk_run" ] && grep -q "^$desk_run/" <<<"$peers"; then
+      failures+=("dummy $pid reached the desktop session: $(grep "^$desk_run/" <<<"$peers" | tr '\n' ' ')")
+    fi
+  done <"$ROOT/launches.pids"
+  [ "$(wc -l <"$ROOT/launches.pids")" = 3 ] || failures+=("expected 3 recorded launches, found $(wc -l <"$ROOT/launches.pids")")
+
+  out=$(cd "$ROOT" && hidden "$REPO/scripts/launch-guard.sh" zenity --info --text "fourth" 2>&1) || rc=$?
+  echo "fourth launch: exit $rc: $out"
+  [ "$rc" = 3 ] && grep -q 'used all 3' <<<"$out" || failures+=("the fourth launch was not refused (exit $rc)")
+  rc=0
+  out=$(env MORTAR_LAUNCH_COUNT="$ROOT/desktop-count" MORTAR_LAUNCH_PIDS="$ROOT/desktop.pids" \
+    MORTAR_HIDDEN_RUNTIME="$ROOT/run" "$REPO/scripts/launch-guard.sh" zenity --info 2>&1) || rc=$?
+  echo "launch from the desktop session: exit $rc: $out"
+  [ "$rc" = 3 ] && [ ! -e "$ROOT/desktop.pids" ] || failures+=("a launch with the desktop's display was not refused")
+
+  local recorded=()
+  mapfile -t recorded < <(cut -d' ' -f1 "$ROOT/launches.pids")
+  stop_launches
+  for pid in "${recorded[@]}"; do
+    [ -e "/proc/$pid" ] && ! grep -q ') Z' "/proc/$pid/stat" 2>/dev/null && failures+=("recorded pid $pid survived stop_launches")
+  done
+
+  [ ${#failures[@]} -eq 0 ] && verdict=PASS
+  echo "---- harness-check: $verdict"
+  local f
+  for f in "${failures[@]}"; do echo "FAIL: $f"; done
+  [ "$verdict" = PASS ]
+}
+
 # deletable DIR succeeds only for a folder that carries the marker and whose parent is exactly the base dir, both
 # resolved, so neither a typo nor a symlink can point a delete anywhere else.
 deletable() {
@@ -862,7 +1100,7 @@ reap() {
 }
 
 case "${1:-}" in
-  destroy | reap) ;;
+  destroy | reap | harness-check) ;;
   regress)
     case "${2:-}${3:-}" in
       "") regress ;;
@@ -899,8 +1137,9 @@ case "${1:-}" in
     reap "$@"
     ;;
   regress) ;;
+  harness-check) harness_check ;;
   *)
-    sed -n '2,18p' "$0"
+    sed -n '2,23p' "$0"
     exit 2
     ;;
 esac

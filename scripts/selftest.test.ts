@@ -1,6 +1,14 @@
 import { expect, test } from 'bun:test'
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -78,4 +86,11 @@ test('destroy refuses an unmarked folder and one outside the base', () => {
   } finally {
     rmSync(base, { recursive: true, force: true })
   }
+})
+
+test("the matrix's declared launch count is its number of launches, which the session cap is checked against", () => {
+  const matrix = readFileSync(join(import.meta.dir, 'regress-bepinex.sh'), 'utf8')
+  const declared = Number(/^mx_launches\(\) \{ echo (\d+); \}$/m.exec(matrix)?.[1])
+  const calls = matrix.split('\n').filter((l) => /mx_launch "/.test(l)).length
+  expect(calls).toBe(declared)
 })

@@ -99,6 +99,10 @@ mx_game_pids() {
 
 mx_state() { cli status lethal-company --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])'; }
 
+# mx_launches prints how many games the matrix starts (each mx_launch call below), which the session's launch cap must
+# have left before the run begins (scripts/selftest.sh need_launches).
+mx_launches() { echo 8; }
+
 # mx_launch PROFILE TAG starts the profile and waits for BepInEx to finish loading. The previous run's log is moved
 # aside first, so its last line cannot stand in for this run's.
 mx_launch() {
