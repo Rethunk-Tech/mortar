@@ -145,7 +145,13 @@ func TestRoute(t *testing.T) {
 	const pkg = "Ns-Mod"
 	cases := map[string]string{
 		"Mod.dll":                         "BepInEx/plugins/Ns-Mod/Mod.dll",
-		"Assets/x.bundle":                 "BepInEx/plugins/Ns-Mod/Assets/x.bundle",
+		"Assets/x.bundle":                 "BepInEx/plugins/Ns-Mod/x.bundle",
+		"FSharp.Core/FSharp.Core.dll":     "BepInEx/plugins/Ns-Mod/FSharp.Core.dll",
+		"Ns-Mod/BepInEx/plugins/a/b.dll":  "BepInEx/plugins/Ns-Mod/a/b.dll",
+		"Extra/Config/Ns.Mod.cfg":         "BepInEx/config/Ns.Mod.cfg",
+		"BEPINEX/Plugins/Deep/x.dll":      "BepInEx/plugins/Ns-Mod/Deep/x.dll",
+		"lib/Fix.mm.dll":                  "BepInEx/monomod/Ns-Mod/Fix.mm.dll",
+		"docs/README.md":                  "BepInEx/plugins/Ns-Mod/README.md",
 		"plugins/Mod.dll":                 "BepInEx/plugins/Ns-Mod/Mod.dll",
 		"BepInEx/plugins/sub/Mod.dll":     "BepInEx/plugins/Ns-Mod/sub/Mod.dll",
 		"config/ns.mod.cfg":               "BepInEx/config/ns.mod.cfg",

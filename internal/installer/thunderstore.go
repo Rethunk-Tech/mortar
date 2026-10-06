@@ -53,13 +53,41 @@ func (thunderstoreRules) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 	if err != nil {
 		return Layout{}, err
 	}
+	// Flattening can send two files to one place; as in r2modman, a folder's own files are placed before its
+	// subfolders' and the last one placed wins. Windows and Wine ignore case, so neither may two names differing only in case.
+	slices.SortStableFunc(all, filesFirst)
 	var l Layout
+	at := map[string]int{}
 	for _, f := range all {
 		dest := bepinex5.Route(f, pkg)
 		if dest == "" {
 			continue
 		}
-		l.Files = append(l.Files, File{Src: f, Target: TargetProfile, Rel: dest})
+		file := File{Src: f, Target: TargetProfile, Rel: dest}
+		if i, ok := at[strings.ToLower(dest)]; ok {
+			l.Files[i] = file
+			continue
+		}
+		at[strings.ToLower(dest)] = len(l.Files)
+		l.Files = append(l.Files, file)
 	}
 	return l, validate(l, g)
+}
+
+// filesFirst orders slash paths as a walk that lists a folder's files before its subfolders.
+func filesFirst(a, b string) int {
+	as, bs := strings.Split(a, "/"), strings.Split(b, "/")
+	for i := 0; i < len(as) && i < len(bs); i++ {
+		if as[i] == bs[i] {
+			continue
+		}
+		if aFile, bFile := i == len(as)-1, i == len(bs)-1; aFile != bFile {
+			if aFile {
+				return -1
+			}
+			return 1
+		}
+		return strings.Compare(as[i], bs[i])
+	}
+	return len(as) - len(bs)
 }

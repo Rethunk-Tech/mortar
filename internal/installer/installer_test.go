@@ -76,7 +76,18 @@ func TestLayoutGoldens(t *testing.T) {
 				"manifest.json": `{"name":"Mod","version_number":"1.0.0"}`, "icon.png": "i", "README.md": "r", "plugins/Mod.dll": "d", "Assets/x.bundle": "b",
 			},
 			nil, "thunderstore-rules",
-			"profile:BepInEx/plugins/Ns-Mod/Assets/x.bundle<-Assets/x.bundle profile:BepInEx/plugins/Ns-Mod/Mod.dll<-plugins/Mod.dll",
+			"profile:BepInEx/plugins/Ns-Mod/Mod.dll<-plugins/Mod.dll profile:BepInEx/plugins/Ns-Mod/x.bundle<-Assets/x.bundle",
+		},
+		{
+			// MirageCore's shape: libraries in folders of their own, loaded from beside the plugin, each with a LICENSE.
+			"Thunderstore package flattened by r2modman's rules", bep, "Ns-Core",
+			map[string]string{
+				"manifest.json": `{"name":"Core","version_number":"1.0.0"}`, "Core.dll": "c", "LICENSE": "root", "mod.dll": "m",
+				"FSharp.Core/FSharp.Core.dll": "f", "FSharp.Core/LICENSE": "fs", "SileroVAD/LICENSE": "vad", "Sub/MOD.DLL": "M",
+			},
+			nil, "thunderstore-rules",
+			"profile:BepInEx/plugins/Ns-Core/Core.dll<-Core.dll profile:BepInEx/plugins/Ns-Core/FSharp.Core.dll<-FSharp.Core/FSharp.Core.dll " +
+				"profile:BepInEx/plugins/Ns-Core/LICENSE<-SileroVAD/LICENSE profile:BepInEx/plugins/Ns-Core/MOD.DLL<-Sub/MOD.DLL",
 		},
 		{
 			"config-only Thunderstore package", bep, "Ns-Cfg",

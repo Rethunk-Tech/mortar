@@ -223,9 +223,13 @@ func withWinHTTP(lines []string, now func() (unix int64)) ([]string, bool) {
 func nowFiletime() int64 { return time.Now().Unix() }
 
 // Route is where a file of Thunderstore package pkg (Namespace-Name) goes in the profile root, from its path relPath
-// inside the package zip, or "" when the file is package metadata or unsafe. It follows r2modman's BepInEx rules: plugins,
-// patchers, monomod and core go in a folder named for the package under BepInEx/, config is flat, and a loose DLL
-// is a plugin. A BepInEx/ prefix on the path is optional.
+// inside the package zip, or "" when the file is package metadata or unsafe. It follows r2modman's BepInEx rules
+// (r2modmanPlus src/installers/InstallRulePluginInstaller.ts, buildInstallForRuleSubtype), which mod authors build
+// and test against: the first folder on the path named plugins, patchers, monomod, core or config, at any depth, is
+// that rule's folder and keeps the structure below it (plugins, patchers, monomod and core in a folder named for the
+// package, config flat). A file under no such folder is placed by its name alone, a .mm.dll in monomod and anything
+// else in plugins, so the folders above it are flattened away: packages such as MirageCore ship FSharp.Core/FSharp.Core.dll
+// and load it from beside their plugin.
 func Route(relPath, pkg string) string {
 	if pkg == "" || strings.ContainsAny(pkg, `/\:`) || pkg == "." || pkg == ".." {
 		return ""
@@ -234,27 +238,27 @@ func Route(relPath, pkg string) string {
 	if p == "." || strings.HasPrefix(p, "/") || p == ".." || strings.HasPrefix(p, "../") || strings.Contains(p, ":") {
 		return ""
 	}
-	if first, rest, ok := strings.Cut(p, "/"); ok && strings.EqualFold(first, "BepInEx") {
-		p = rest
+	segs := strings.Split(p, "/")
+	for i, dir := range segs[:len(segs)-1] {
+		rest := path.Join(segs[i+1:]...)
+		switch strings.ToLower(dir) {
+		case "config":
+			return path.Join("BepInEx", "config", rest)
+		case "plugins", "patchers", "monomod", "core":
+			return path.Join("BepInEx", strings.ToLower(dir), pkg, rest)
+		}
 	}
-	dir, rest, nested := strings.Cut(p, "/")
-	if !nested {
-		switch strings.ToLower(p) {
+	name := segs[len(segs)-1]
+	if len(segs) == 1 {
+		switch strings.ToLower(name) {
 		case "manifest.json", "icon.png", "readme.md", "changelog.md":
 			return ""
 		}
-		if strings.HasSuffix(strings.ToLower(p), ".mm.dll") {
-			return path.Join("BepInEx", "monomod", pkg, p)
-		}
-		return path.Join("BepInEx", "plugins", pkg, p)
 	}
-	switch strings.ToLower(dir) {
-	case "config":
-		return path.Join("BepInEx", "config", rest)
-	case "plugins", "patchers", "monomod", "core":
-		return path.Join("BepInEx", strings.ToLower(dir), pkg, rest)
+	if strings.HasSuffix(strings.ToLower(name), ".mm.dll") {
+		return path.Join("BepInEx", "monomod", pkg, name)
 	}
-	return path.Join("BepInEx", "plugins", pkg, p)
+	return path.Join("BepInEx", "plugins", pkg, name)
 }
 
 // Manifest is the part of a Thunderstore package's manifest.json that Mortar reads.
