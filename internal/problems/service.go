@@ -14,7 +14,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -129,7 +128,7 @@ func platform() string {
 //
 //wails:ignore
 func (s *Service) Environment(id string) Environment {
-	env := Environment{Platform: platform(), VersionScheme: versionScheme(id)}
+	env := Environment{Platform: platform(), VersionScheme: game.VersionScheme(id)}
 	env.Nexus, _ = game.NexusTitle(id)
 	if game.Find(id) == nil {
 		return env
@@ -157,16 +156,6 @@ func (s *Service) playerLog(gameID string, l loader.Loader) string {
 	}
 	b, _ := fsx.ReadFile(path)
 	return string(b)
-}
-
-// versionScheme is the version scheme of the game's loader.
-func versionScheme(gameID string) string {
-	for _, l := range game.Loaders(gameID) {
-		if v, ok := l.(loader.VersionScheme); ok {
-			return v.VersionScheme()
-		}
-	}
-	return deps.Opaque
 }
 
 // nexusDomain is the Nexus domain of a game, empty when Nexus does not host it.
@@ -673,7 +662,7 @@ func (s *Service) Relations(gameID, id, key string, uniqueID mod.ID) (Relations,
 	if err != nil {
 		return Relations{}, err
 	}
-	r, ok := Relate(versionScheme(gameID), mods, gameID, key, uniqueID)
+	r, ok := Relate(game.VersionScheme(gameID), mods, gameID, key, uniqueID)
 	if !ok {
 		return Relations{}, errors.New("no such mod in this profile")
 	}

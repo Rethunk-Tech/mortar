@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	_ "github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher" // registers the frameworks LoaderRef reads
@@ -57,6 +58,16 @@ type Installs interface {
 func Loaders(id string) []loader.Loader {
 	g, _ := catalogGame(id)
 	return loader.For(g)
+}
+
+// VersionScheme is the scheme the game's components are versioned in: its first loader's that names one, else opaque.
+func VersionScheme(id string) string {
+	for _, l := range Loaders(id) {
+		if v, ok := l.(loader.VersionScheme); ok {
+			return v.VersionScheme()
+		}
+	}
+	return deps.Opaque
 }
 
 // PrimaryLoader is the game's first loader driver.

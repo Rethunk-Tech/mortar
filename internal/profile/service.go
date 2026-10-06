@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
@@ -302,6 +303,29 @@ func (s *Service) Duplicate(game, id string) (Profile, error) { return s.store.D
 // CopyMods copies selected mods from one profile into another from the store, with no download.
 func (s *Service) CopyMods(game, fromID, toID string, uniqueIDs []mod.ID) (Profile, error) {
 	return s.store.CopyMods(game, fromID, toID, uniqueIDs)
+}
+
+// NeedsToCopy is what copying the mods ids from fromID would bring into any of the profiles toIDs with them: the
+// mods they require that a profile lacks at an accepted version, each named once.
+func (s *Service) NeedsToCopy(game, fromID string, toIDs []string, ids []mod.ID) ([]DiffSide, error) {
+	out := []DiffSide{}
+	for _, to := range toIDs {
+		needs, err := s.store.NeedsToCopy(game, fromID, to, ids)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range needs {
+			if !slices.ContainsFunc(out, func(x DiffSide) bool { return mod.Equal(x.ID, n.ID) }) {
+				out = append(out, n)
+			}
+		}
+	}
+	return out, nil
+}
+
+// CopyModsWithNeeds copies the mods into toID along with what they require that toID lacks.
+func (s *Service) CopyModsWithNeeds(game, fromID, toID string, ids []mod.ID) (Profile, error) {
+	return s.store.CopyModsWithNeeds(game, fromID, toID, ids)
 }
 
 // Delete moves the profile to the trash, where it stays restorable for 30 days.

@@ -4,10 +4,14 @@ import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { Inbox } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
+  DiffSide,
   ModInProfile,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { ProfilesWithMod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import {
+  NeedsToCopy,
+  ProfilesWithMod,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -66,6 +70,30 @@ function ProfileChoice({
   )
 }
 
+// What adding the mods to the chosen profiles brings with them, named before the user confirms.
+function useNeeds(
+  on: boolean,
+  { game, from, to, ids }: { game: string; from: string; to: string[]; ids: string[] },
+) {
+  const [needs, setNeeds] = useState<DiffSide[]>([])
+  const toKey = to.join('\n')
+  const idsKey = ids.join('\n')
+  useEffect(() => {
+    setNeeds([])
+    if (!on || toKey === '') {
+      return
+    }
+    let live = true
+    NeedsToCopy(game, from, toKey.split('\n'), idsKey.split('\n'))
+      .then((list) => live && setNeeds(list ?? []))
+      .catch(() => undefined)
+    return () => {
+      live = false
+    }
+  }, [on, game, from, toKey, idsKey])
+  return needs
+}
+
 const toggleSelected = (current: string[], id: string) =>
   current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
 const profileHasPinned = (profile: Profile, row: ModInProfile, update?: { oldKey: string }) =>
@@ -121,6 +149,7 @@ export function OtherProfilesDialog({
   helper,
   confirmLabel,
   update,
+  withNeeds = false,
   onClose,
   onConfirm,
 }: {
@@ -134,6 +163,8 @@ export function OtherProfilesDialog({
   helper?: string
   confirmLabel: string
   update?: { oldKey: string } | undefined
+  // The add brings the mods' requirements along, and the dialog names them.
+  withNeeds?: boolean
   onClose: () => void
   onConfirm: (profiles: Profile[], pinned: Profile[], rows: ModInProfile[]) => Promise<void>
 }) {
@@ -143,6 +174,12 @@ export function OtherProfilesDialog({
   const [selected, setSelected] = useState<string[]>([])
   const [pending, run] = usePending()
   const launch = useLaunchLocks()
+  const needs = useNeeds(open && withNeeds && mode === 'add', {
+    game,
+    from: currentProfileId,
+    to: selected,
+    ids: ids ?? [id],
+  })
   useEffect(() => {
     if (!open) {
       return
@@ -236,6 +273,11 @@ export function OtherProfilesDialog({
         pinned={pinned}
         locked={locked}
       />
+      {needs.length > 0 ? (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {t`Also adds what it needs: ${needs.map((n) => n.name).join(', ')}`}
+        </Typography>
+      ) : null}
     </ConfirmDialog>
   )
 }

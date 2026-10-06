@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { useState } from 'react'
 import { Create } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { CopyMods } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { CopyModsWithNeeds } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { BundleNameDialog } from '../bundles/dialogs.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { openShare } from '../share/store.ts'
@@ -138,11 +138,12 @@ function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
         id={selected[0]?.id ?? ''}
         ids={[...new Set(selected.map((mod) => mod.id))]}
         title={t`Also add selected mods to…`}
+        withNeeds={true}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {
           await Promise.all(
             profiles.map((other) =>
-              CopyMods(useProfiles.getState().game?.id ?? '', profileId, other.id, [
+              CopyModsWithNeeds(useProfiles.getState().game?.id ?? '', profileId, other.id, [
                 ...new Set(selected.map((mod) => mod.id)),
               ]),
             ),

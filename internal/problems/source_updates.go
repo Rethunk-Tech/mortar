@@ -276,7 +276,7 @@ func (s *Service) nexusPageUpdates(ctx context.Context, gameID string, mods []fr
 	if len(ids) == 0 {
 		return nil
 	}
-	scheme := versionScheme(gameID)
+	scheme := game.VersionScheme(gameID)
 	pages, _ := s.NexusPages(ctx, gameID, ids)
 	var out []Update
 	for _, id := range ids {
