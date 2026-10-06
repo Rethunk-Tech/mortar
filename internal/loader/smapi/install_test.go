@@ -143,7 +143,7 @@ func TestLoaderState(t *testing.T) {
 func TestVersionsFromLogAndRecordedWins(t *testing.T) {
 	logs := t.TempDir()
 	write(t, filepath.Join(logs, "SMAPI-latest.txt"),
-		"SMAPI 4.5.2 with Stardew Valley 1.6.15 build 24356 on Unix 6.1\n[00:00:00 TRACE SMAPI] later line\n")
+		"[00:44:29 INFO  SMAPI] SMAPI 4.5.2 with Stardew Valley 1.6.15 build 24356 on Unix 7.2.8.200\n[00:00:00 TRACE SMAPI] later line\n")
 	g := Loader{LogDir: logs}
 	if s, gv := g.logVersions(); s != "4.5.2" || gv != "1.6.15" {
 		t.Fatalf("log = %q %q", s, gv)

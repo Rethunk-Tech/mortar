@@ -35,8 +35,9 @@ const (
 	maxLauncher = 16 << 20
 )
 
-// logHeader matches the first line of SMAPI-latest.txt.
-var logHeader = regexp.MustCompile(`^SMAPI (\S+) with Stardew Valley (\S+)`)
+// logHeader matches SMAPI's version line: the first line of SMAPI-latest.txt, which carries the "[time LEVEL SMAPI] "
+// prefix of every log line, or the bare message a parsed log entry holds.
+var logHeader = regexp.MustCompile(`^(?:\[[^\]]*\] )?SMAPI (\S+) with Stardew Valley (\S+)`)
 
 func (l Loader) logDir() (string, error) {
 	if l.LogDir != "" {
