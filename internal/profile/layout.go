@@ -189,7 +189,11 @@ func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err er
 		}
 		id = author + "-" + m.Name
 	}
-	return []Component{{ID: mod.NewID(mod.FormatThunderstore, id), Version: m.Version, Name: m.Name, Author: author, Folder: "."}}, true, nil
+	var needs []mod.ID
+	for _, d := range m.Needs() {
+		needs = append(needs, d.ModID())
+	}
+	return []Component{{ID: mod.NewID(mod.FormatThunderstore, id), Version: m.Version, Name: m.Name, Author: author, Folder: ".", Needs: needs}}, true, nil
 }
 
 // pluginComponent is the component of a BepInEx mod that has no Thunderstore manifest. It is named for its first

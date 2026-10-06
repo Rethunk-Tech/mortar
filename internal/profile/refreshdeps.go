@@ -32,16 +32,8 @@ func (s *Store) refreshDependencies(game, id string) error {
 	changed := false
 	for ei := range p.Entries {
 		e := &p.Entries[ei]
-		peer := storePeer(s, game, e.Key)
-		if peer == "" {
-			continue
-		}
-		found, err := manifest.Scan(peer)
-		if err != nil {
-			continue
-		}
 		fresh := map[string]Component{}
-		for _, m := range entryMods(found) {
+		for _, m := range s.storeMods(game, *e) {
 			fresh[m.ID.Fold()] = m
 		}
 		for mi := range e.Mods {
@@ -58,4 +50,21 @@ func (s *Store) refreshDependencies(game, id string) error {
 		return nil
 	}
 	return writeProfile(dir, p)
+}
+
+// storeMods is the entry's components as its store item describes them now; nil when the item cannot be read.
+func (s *Store) storeMods(game string, e Entry) []Component {
+	if e.Package && s.items != nil {
+		mods, _, _ := s.packageMods(game, e.Key)
+		return mods
+	}
+	peer := storePeer(s, game, e.Key)
+	if peer == "" {
+		return nil
+	}
+	found, err := manifest.Scan(peer)
+	if err != nil {
+		return nil
+	}
+	return entryMods(found)
 }

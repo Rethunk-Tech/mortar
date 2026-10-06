@@ -3,10 +3,12 @@ package profile
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -398,5 +400,41 @@ func TestStoreListingKeptAcrossStarts(t *testing.T) {
 	}
 	if _, ok := got.files[filepath.Join("sub", "a.dll")]; !ok || got.stat != first.stat {
 		t.Fatalf("after a restart the item was listed again: %+v", got)
+	}
+}
+
+func TestRefreshDependenciesReadsAPackagesThunderstoreManifest(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
+		"manifest.json": `{"name":"Mod","version_number":"1.0.0","dependencies":["BepInEx-BepInExPack-5.4.2100","Ns-Lib-2.0.1"]}`, "Mod.dll": "x",
+	})
+	res, err := e.InstallSource("lethal-company", p.ID, zip, Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []mod.ID{"thunderstore:Ns-Lib"}
+	if got := res.Profile.Entries[0].Mods[0].Needs; !slices.Equal(got, want) {
+		t.Fatalf("Needs at install = %v, want %v", got, want)
+	}
+	if _, err := e.update("lethal-company", p.ID, func(p *Profile, _ string) error {
+		p.Entries[0].Mods[0].Needs = nil
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.RefreshDependencies("lethal-company"); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.read("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if needs := got.Entries[0].Mods[0].Needs; !slices.Equal(needs, want) {
+		t.Fatalf("Needs after refresh = %v, want %v", needs, want)
 	}
 }
