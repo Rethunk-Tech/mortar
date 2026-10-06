@@ -1046,6 +1046,11 @@ msgstr "Mortar does not manage mods for that game."
 msgid "Move down"
 msgstr "Move down"
 
+#: src/settings/sections/GameSettings.tsx:339
+#: src/settings/sections/GameSettings.tsx:345
+msgid "Tell me when a new mod loader version is out"
+msgstr "Tell me when a new mod loader version is out"
+
 #: src/firstrun/ProfileStep.tsx:167
 msgid "Start empty"
 msgstr "Start empty"
@@ -1330,7 +1335,7 @@ msgstr "+{more} more"
 msgid "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 msgstr "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 
-#: src/settings/sections/GameSettings.tsx:418
+#: src/settings/sections/GameSettings.tsx:414
 msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
@@ -1994,11 +1999,6 @@ msgstr "the search is “{0}”"
 #: src/lan/SendDialog.tsx:177
 msgid "Host:port"
 msgstr "Host:port"
-
-#: src/settings/sections/GameSettings.tsx:341
-#: src/settings/sections/GameSettings.tsx:347
-msgid "Tell me when a new SMAPI is out"
-msgstr "Tell me when a new SMAPI is out"
 
 #: src/settings/sections/NexusMods.tsx:127
 #: src/settings/sections/NexusMods.tsx:241
@@ -2975,7 +2975,7 @@ msgstr "Search all runs…"
 
 #: src/firstrun/FindStep.tsx:213
 #: src/install/NeedsRootCallout.tsx:24
-#: src/settings/sections/GameSettings.tsx:387
+#: src/settings/sections/GameSettings.tsx:383
 #: src/tools/ToolEditorDialog.tsx:112
 msgid "Choose folder…"
 msgstr "Choose folder…"
@@ -4245,7 +4245,7 @@ msgid "Loader"
 msgstr "Loader"
 
 #: src/settings/prefCopy.ts:232
-#: src/settings/sections/GameSettings.tsx:365
+#: src/settings/sections/GameSettings.tsx:361
 msgid "Extra mods folder"
 msgstr "Extra mods folder"
 
@@ -4389,8 +4389,8 @@ msgstr "Delete group {name}?"
 #: src/mods/updateReview/EverywhereDialog.tsx:142
 #: src/mods/updateReview/UpdateActions.tsx:90
 #: src/mods/updateReview/UpdateActions.tsx:90
+#: src/settings/loaderToast.ts:49
 #: src/settings/sections/LoaderRow.tsx:94
-#: src/settings/smapiToast.ts:35
 msgid "Update"
 msgstr "Update"
 
@@ -4500,10 +4500,10 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/Downloads.tsx:229
 #: src/settings/sections/Downloads.tsx:261
 #: src/settings/sections/Downloads.tsx:282
-#: src/settings/sections/GameSettings.tsx:345
-#: src/settings/sections/GameSettings.tsx:371
-#: src/settings/sections/GameSettings.tsx:374
-#: src/settings/sections/GameSettings.tsx:409
+#: src/settings/sections/GameSettings.tsx:343
+#: src/settings/sections/GameSettings.tsx:367
+#: src/settings/sections/GameSettings.tsx:370
+#: src/settings/sections/GameSettings.tsx:405
 #: src/settings/sections/General.tsx:36
 #: src/settings/sections/LoaderRow.tsx:52
 #: src/settings/sections/ModsProfiles.tsx:21
@@ -5594,7 +5594,7 @@ msgstr "Logs of past runs stored per profile"
 msgid "Allow it in your antivirus, then Retry."
 msgstr "Allow it in your antivirus, then Retry."
 
-#: src/settings/sections/GameSettings.tsx:403
+#: src/settings/sections/GameSettings.tsx:399
 msgid "Backup location"
 msgstr "Backup location"
 
@@ -10246,7 +10246,7 @@ msgstr "Show file"
 #: src/saves/BackupsDialog.tsx:152
 #: src/settings/GameSettingsPage.tsx:74
 #: src/settings/sections/DataUsage.tsx:209
-#: src/settings/sections/GameSettings.tsx:412
+#: src/settings/sections/GameSettings.tsx:408
 msgid "Save backups"
 msgstr "Save backups"
 
@@ -10382,6 +10382,11 @@ msgstr "Pending updates ({0})"
 #: src/settings/sections/LoaderRow.tsx:146
 msgid "Install {0} {1}?"
 msgstr "Install {0} {1}?"
+
+#. placeholder {0}: status.version
+#: src/settings/loaderToast.ts:29
+msgid "Your profiles have {0}. Update replaces each profile's copy."
+msgstr "Your profiles have {0}. Update replaces each profile's copy."
 
 #. placeholder {0}: done.length
 #. placeholder {1}: names(done)
@@ -11152,6 +11157,11 @@ msgstr "No changelog for this update"
 msgid "Import a profile"
 msgstr "Import a profile"
 
+#. placeholder {0}: status.latest
+#: src/settings/loaderToast.ts:23
+msgid "{name} {0} is out"
+msgstr "{name} {0} is out"
+
 #: src/settings/sections/DataMove.tsx:69
 msgid "Move data folder"
 msgstr "Move data folder"
@@ -11187,7 +11197,7 @@ msgstr "Profile"
 #: src/firstrun/FindStep.tsx:192
 #: src/settings/sections/Downloads.tsx:310
 #: src/settings/sections/GameSettings.tsx:206
-#: src/settings/sections/GameSettings.tsx:425
+#: src/settings/sections/GameSettings.tsx:421
 msgid "Change folder…"
 msgstr "Change folder…"
 
@@ -11594,11 +11604,6 @@ msgstr "Game install"
 msgid "Used by: {label}"
 msgstr "Used by: {label}"
 
-#. placeholder {0}: status.latest
-#: src/settings/smapiToast.ts:33
-msgid "SMAPI {0} is out"
-msgstr "SMAPI {0} is out"
-
 #: src/firstrun/NexusStep.tsx:26
 #: src/settings/sections/NexusMods.tsx:150
 #: src/settings/sections/Sources.tsx:97
@@ -11899,7 +11904,7 @@ msgid "Enable them too"
 msgstr "Enable them too"
 
 #: src/console/LogActions.tsx:175
-#: src/settings/sections/GameSettings.tsx:383
+#: src/settings/sections/GameSettings.tsx:379
 #: src/toasts/HistoryButton.tsx:146
 msgid "Clear"
 msgstr "Clear"

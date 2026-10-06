@@ -13,7 +13,7 @@ import { settledLastProfile } from '../profiles/lastProfile.ts'
 import { reportBug } from '../shell/reportBug.ts'
 import { useToasts } from '../toasts/store.ts'
 import { lastRunCrashToast } from './crashToast.ts'
-import { maybeToastSmapi } from './smapiToast.ts'
+import { maybeToastLoader } from './loaderToast.ts'
 
 function ignore() {
   return
@@ -63,7 +63,7 @@ export function useStartupChecks() {
         const game = s.lastGame || (await loadGameStatus()).games.find((g) => g.available)?.id
         if (game) {
           await useLoader.getState().check(game)
-          maybeToastSmapi(game)
+          maybeToastLoader(game)
         }
       }
     }

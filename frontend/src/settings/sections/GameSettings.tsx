@@ -336,20 +336,16 @@ function LoaderPage({
   return (
     <SettingsSection title={loader.name}>
       <LoaderRow loader={loader} onVersion={onVersion} />
-      {loader.id === 'smapi' ? (
-        <>
-          <SettingRow label={t`Tell me when a new SMAPI is out`}>
-            <PrefSwitch
-              checked={tellWhenSmapiOut}
-              onChange={(on) =>
-                persist(() => SetTellWhenSmapiOut(on), push, t`Could not save that setting`)
-              }
-              label={t`Tell me when a new SMAPI is out`}
-            />
-          </SettingRow>
-          <PrefByKey prefKey="smapiBuilds" game={game} />
-        </>
-      ) : null}
+      <SettingRow label={t`Tell me when a new mod loader version is out`}>
+        <PrefSwitch
+          checked={tellWhenSmapiOut}
+          onChange={(on) =>
+            persist(() => SetTellWhenSmapiOut(on), push, t`Could not save that setting`)
+          }
+          label={t`Tell me when a new mod loader version is out`}
+        />
+      </SettingRow>
+      {loader.id === 'smapi' ? <PrefByKey prefKey="smapiBuilds" game={game} /> : null}
     </SettingsSection>
   )
 }
