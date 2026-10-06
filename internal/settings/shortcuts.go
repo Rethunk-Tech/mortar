@@ -68,6 +68,18 @@ func rejectDuplicateShortcuts(s Settings) error {
 	return nil
 }
 
+// withShortcutOverrides keeps only the rebound chords, so a changed default reaches everyone who never rebound it.
+func withShortcutOverrides(s Settings) Settings {
+	overrides := map[string]string{}
+	for id, keys := range s.Shortcuts {
+		if defaultShortcuts[id] != keys {
+			overrides[id] = keys
+		}
+	}
+	s.Shortcuts = overrides
+	return s
+}
+
 func normalizeShortcuts(s *Settings) {
 	next := DefaultShortcuts()
 	for id, keys := range s.Shortcuts {

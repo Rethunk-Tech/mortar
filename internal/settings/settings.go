@@ -397,11 +397,14 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	normalizeNexus(&next)
 	normalizeLAN(&next)
 	normalizeShortcuts(&next)
-	if err := rejectDuplicateShortcuts(next); err != nil {
-		return s.cur, err
+	// Only a change to the shortcuts is checked, so a file that already holds a clash still saves other settings.
+	if !maps.Equal(next.Shortcuts, s.cur.Shortcuts) {
+		if err := rejectDuplicateShortcuts(next); err != nil {
+			return s.cur, err
+		}
 	}
 	next.FormatVersion = datadir.FormatVersion
-	doc, err := encodeFile(next)
+	doc, err := encodeFile(withShortcutOverrides(next))
 	if err != nil {
 		return s.cur, err
 	}
