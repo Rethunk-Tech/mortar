@@ -2,11 +2,12 @@ package pack
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 )
 
 // Modpack reads a Thunderstore modpack package: a package zip whose manifest dependencies are the mod list and
@@ -16,28 +17,22 @@ type Modpack struct{}
 // ID names the format.
 func (Modpack) ID() string { return "thunderstore-modpack" }
 
-type manifest struct {
-	Name         string   `json:"name"`
-	Version      string   `json:"version_number"`
-	Dependencies []string `json:"dependencies"`
-}
-
-func readModpack(path string) (manifest, map[string][]byte, bool) {
+func readModpack(path string) (bepinex5.Manifest, map[string][]byte, bool) {
 	data, err := readCapped(path, maxInput)
 	if err != nil {
-		return manifest{}, nil, false
+		return bepinex5.Manifest{}, nil, false
 	}
 	files, err := readZip(data)
 	if err != nil {
-		return manifest{}, nil, false
+		return bepinex5.Manifest{}, nil, false
 	}
-	var m manifest
-	if json.Unmarshal(files["manifest.json"], &m) != nil || len(m.Dependencies) == 0 {
-		return manifest{}, nil, false
+	m, err := bepinex5.ParseManifest(files["manifest.json"])
+	if err != nil || len(m.Dependencies) == 0 {
+		return bepinex5.Manifest{}, nil, false
 	}
 	for name := range files {
 		if strings.EqualFold(filepath.Ext(name), ".dll") {
-			return manifest{}, nil, false
+			return bepinex5.Manifest{}, nil, false
 		}
 	}
 	return m, files, true

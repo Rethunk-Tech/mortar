@@ -2,7 +2,6 @@ package profile
 
 import (
 	"cmp"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -127,17 +127,12 @@ func (s *Store) namePackage(game, key, fileName, fallback string) error {
 	if err != nil || inst.ID() != driverThunderstore || arch.Key != "" {
 		return err
 	}
-	var m struct {
-		Name      string `json:"name"`
-		Version   string `json:"version_number"`
-		Namespace string `json:"namespace"`
-		Author    string `json:"author"`
-	}
 	b, err := fsx.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
 	if err != nil {
 		return err
 	}
-	if err := json.Unmarshal(b, &m); err != nil {
+	m, err := bepinex5.ParseManifest(b)
+	if err != nil {
 		return err
 	}
 	if m.Namespace != "" || m.Author != "" {
@@ -170,17 +165,12 @@ func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err er
 	if err != nil || inst.ID() != driverThunderstore {
 		return nil, false, err
 	}
-	var m struct {
-		Name      string `json:"name"`
-		Version   string `json:"version_number"`
-		Namespace string `json:"namespace"`
-		Author    string `json:"author"`
-	}
 	b, err := fsx.ReadFile(filepath.Join(arch.Dir, "manifest.json"))
 	if err != nil {
 		return nil, false, err
 	}
-	if err := json.Unmarshal(b, &m); err != nil {
+	m, err := bepinex5.ParseManifest(b)
+	if err != nil {
 		return nil, false, err
 	}
 	author, _, _ := strings.Cut(arch.Key, "-")

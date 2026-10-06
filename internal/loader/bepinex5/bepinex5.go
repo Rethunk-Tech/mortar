@@ -4,6 +4,7 @@
 package bepinex5
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -55,11 +56,9 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 	if !fsx.IsDir(src) {
 		return Installed{}, fmt.Errorf("the zip has no %s folder", packRoot)
 	}
-	var manifest struct {
-		Version string `json:"version_number"`
-	}
+	var manifest Manifest
 	if b, err := fsx.ReadFile(filepath.Join(tmp, "manifest.json")); err == nil {
-		_ = json.Unmarshal(b, &manifest)
+		manifest, _ = ParseManifest(b)
 	}
 	err = filepath.WalkDir(src, func(p string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -238,4 +237,21 @@ func Route(relPath, pkg string) string {
 		return path.Join("BepInEx", strings.ToLower(dir), pkg, rest)
 	}
 	return path.Join("BepInEx", "plugins", pkg, p)
+}
+
+// Manifest is the part of a Thunderstore package's manifest.json that Mortar reads.
+type Manifest struct {
+	Name         string   `json:"name"`
+	Version      string   `json:"version_number"`
+	Namespace    string   `json:"namespace"`
+	Author       string   `json:"author"`
+	Dependencies []string `json:"dependencies"`
+}
+
+// ParseManifest reads a Thunderstore manifest.json. Thunderstore accepts manifests saved with a UTF-8 BOM, and many
+// packages ship one, but encoding/json refuses it.
+func ParseManifest(b []byte) (Manifest, error) {
+	var m Manifest
+	err := json.Unmarshal(bytes.TrimPrefix(b, []byte("\xef\xbb\xbf")), &m)
+	return m, err
 }

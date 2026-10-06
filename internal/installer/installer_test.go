@@ -87,6 +87,26 @@ func TestLayoutGoldens(t *testing.T) {
 			"profile:BepInEx/config/ns.cfg.cfg<-config/ns.cfg.cfg",
 		},
 		{
+			// The BOM is what Evaisa-HookGenPatcher's manifest carries; Thunderstore accepts it.
+			"patchers-only Thunderstore package with a BOM manifest", bep, "Evaisa-HookGenPatcher",
+			map[string]string{
+				"manifest.json": "\ufeff" + `{"name":"HookGenPatcher","version_number":"0.0.5"}`, "icon.png": "i", "README.md": "r",
+				"patchers/BepInEx.MonoMod.HookGenPatcher/HookGen.dll": "d",
+			},
+			nil, "thunderstore-rules",
+			"profile:BepInEx/patchers/Evaisa-HookGenPatcher/BepInEx.MonoMod.HookGenPatcher/HookGen.dll<-patchers/BepInEx.MonoMod.HookGenPatcher/HookGen.dll",
+		},
+		{
+			"config and patchers Thunderstore package", bep, "Ns-Gen",
+			map[string]string{
+				"manifest.json": "\ufeff" + `{"name":"Gen","version_number":"1.0.0"}`, "icon.png": "i",
+				"config/Gen.cfg": "c", "patchers/Gen/Gen.dll": "d", "BepInEx/core/Core.dll": "k", "Loose.dll": "l",
+			},
+			nil, "thunderstore-rules",
+			"profile:BepInEx/config/Gen.cfg<-config/Gen.cfg profile:BepInEx/core/Ns-Gen/Core.dll<-BepInEx/core/Core.dll " +
+				"profile:BepInEx/patchers/Ns-Gen/Gen/Gen.dll<-patchers/Gen/Gen.dll profile:BepInEx/plugins/Ns-Gen/Loose.dll<-Loose.dll",
+		},
+		{
 			"Thunderstore manifest in a SMAPI game is plain", smapi, "k",
 			map[string]string{"manifest.json": `{"name":"M","version_number":"1.0.0"}`},
 			nil, "plain",

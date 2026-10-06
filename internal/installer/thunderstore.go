@@ -1,7 +1,6 @@
 package installer
 
 import (
-	"encoding/json"
 	"io/fs"
 	"slices"
 
@@ -20,11 +19,8 @@ func manifestOf(a Archive) (name string, ok bool) {
 	if err != nil {
 		return "", false
 	}
-	var m struct {
-		Name    string `json:"name"`
-		Version string `json:"version_number"`
-	}
-	if json.Unmarshal(b, &m) != nil || m.Name == "" || m.Version == "" {
+	m, err := bepinex5.ParseManifest(b)
+	if err != nil || m.Name == "" || m.Version == "" {
 		return "", false
 	}
 	return m.Name, true
