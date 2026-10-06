@@ -113,7 +113,8 @@ type InstalledVersion interface {
 // this path role.
 type WithPlayerLog interface{ PlayerLogRole() string }
 
-// WithConfig is a loader whose mods keep settings files in the profile that Mortar may edit.
+// WithConfig is a loader whose mods keep settings files in the profile that Mortar may edit, and that a shared
+// profile carries.
 type WithConfig interface {
 	// ConfigDirs are the writable folders, relative to the profile's folder.
 	ConfigDirs() []string

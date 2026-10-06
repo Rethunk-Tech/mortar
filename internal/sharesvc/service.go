@@ -139,8 +139,10 @@ type session struct {
 	notes       string
 	description string
 	configs     []share.Config
-	origin      string
-	collection  *profile.CollectionRef
+	// loaderConfigs are the loader's own config files, written into the profile as soon as it exists.
+	loaderConfigs []share.LoaderConfig
+	origin        string
+	collection    *profile.CollectionRef
 	// archiveLink is the collection's archive path; archiveTried marks that Import already fetched it.
 	archiveLink  string
 	archiveTried bool
@@ -439,10 +441,13 @@ func (s *Service) previewShared(ctx context.Context, game string, pv share.Previ
 	if err != nil {
 		return Preview{}, err
 	}
+	out.Settings += len(pv.LoaderConfigs)
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
 		s.current.description = pv.Description
 		s.current.groups = pv.Groups
+		s.current.loaderConfigs = pv.LoaderConfigs
+		s.current.preview.Settings = out.Settings
 	}
 	s.mu.Unlock()
 	return out, nil
@@ -581,6 +586,33 @@ func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
 		return nil, err
 	}
 	return r, nil
+}
+
+// writeLoaderConfigs writes the shared loader config files that fall under the profile's own loader's config folders.
+// Unless overwrite, a file the profile already has is kept, as a mod's config is for a mod it already holds.
+func (s *Service) writeLoaderConfigs(game, profileID string, configs []share.LoaderConfig, overwrite bool) error {
+	if len(configs) == 0 {
+		return nil
+	}
+	roots := share.LoaderConfigRoots(game, s.d.Profiles.LoaderID(game, profileID))
+	dir, err := s.d.Profiles.ProfileDir(game, profileID)
+	if err != nil {
+		return err
+	}
+	files := map[string][]byte{}
+	for _, c := range configs {
+		if !share.UnderRoots(c.Path, roots) {
+			continue
+		}
+		if !overwrite && exists(filepath.Join(dir, filepath.FromSlash(c.Path))) {
+			continue
+		}
+		files[c.Path] = c.Data
+	}
+	if len(files) == 0 {
+		return nil
+	}
+	return s.d.Profiles.WriteFiles(game, profileID, files)
 }
 
 // Discard forgets the preview; closing the import dialog leaves nothing behind.
@@ -817,6 +849,12 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			_, _, held := p.FindMod("", c.ID)
 			return held
 		})
+	}
+	if err := s.writeLoaderConfigs(game, profileID, cur.loaderConfigs, created || replace); err != nil {
+		if created {
+			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+		}
+		return Result{}, err
 	}
 	if len(local) > 0 || len(reqs) > 0 {
 		if batchID == "" {
@@ -1272,4 +1310,9 @@ func (s *Service) Inbox() []Arrival {
 	out := append([]Arrival{}, s.inbox...)
 	s.inbox = nil
 	return out
+}
+
+func exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }

@@ -54,14 +54,16 @@ type Config struct {
 	Data []byte `json:"data"`
 }
 
-// Preview is what reading a .mortar file yields. The apply step writes Configs only into installed mod folders.
+// Preview is what reading a .mortar file yields. The apply step writes Configs only into installed mod folders, and
+// LoaderConfigs only under the receiving profile's loader config folders.
 type Preview struct {
 	Shared
-	Notes       string
-	Description string
-	IDs         []mod.ID
-	Configs     []Config
-	Groups      []FileGroup
+	Notes         string
+	Description   string
+	IDs           []mod.ID
+	Configs       []Config
+	LoaderConfigs []LoaderConfig
+	Groups        []FileGroup
 }
 
 type fileDoc struct {
@@ -107,8 +109,9 @@ func validID(id mod.ID) bool {
 }
 
 // Write writes the profile as a .mortar zip: profile.json with the link's entries plus name, notes and
-// description, and the .json files of each enabled mod's folder under configs/<mod id>/. modsDir is the
-// profile's mods/ folder. Config files that are over the caps or have unusual names are skipped and returned as paths.
+// description, the .json files of each enabled mod's folder under configs/<mod id>/, and the text files of the
+// loader's config folders under loader/<path in the profile>. modsDir is the profile's mods/ folder, inside the
+// profile's own. Config files that are over the caps or have unusual names are skipped and returned as paths.
 func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, include ...Include) (skipped []string, err error) {
 	inc := DefaultInclude()
 	if len(include) > 0 {
@@ -162,6 +165,15 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 			skipped = append(skipped, skip...)
 		}
 	}
+	var loaderConfigs []LoaderConfig
+	if inc.ConfigFiles && modsDir != "" {
+		found, skip, err := readLoaderConfigs(filepath.Dir(modsDir), gameID, p.Loader)
+		if err != nil {
+			return nil, err
+		}
+		loaderConfigs = found
+		skipped = append(skipped, skip...)
+	}
 	var total int64
 	kept := configs[:0]
 	for _, c := range configs {
@@ -172,6 +184,15 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 		}
 		kept = append(kept, c)
 	}
+	keptLoader := loaderConfigs[:0]
+	for _, c := range loaderConfigs {
+		total += int64(len(c.Data))
+		if total > MaxConfigTotal || len(kept)+len(keptLoader) >= MaxConfigFiles {
+			skipped = append(skipped, c.Path)
+			continue
+		}
+		keptLoader = append(keptLoader, c)
+	}
 	head, err := json.Marshal(doc)
 	if err != nil {
 		return nil, err
@@ -181,6 +202,11 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 	}
 	for _, c := range kept {
 		if err := putFile(zw, "configs/"+c.ID.Format()+"/"+c.ID.Local()+"/"+c.Path, c.Data); err != nil {
+			return nil, err
+		}
+	}
+	for _, c := range keptLoader {
+		if err := putFile(zw, loaderPrefix+c.Path, c.Data); err != nil {
 			return nil, err
 		}
 	}
@@ -343,6 +369,25 @@ func readZip(zr *zip.Reader) (Preview, error) {
 	var total int64
 	for _, f := range zr.File {
 		if f.Name == profileFile || strings.HasSuffix(f.Name, "/") && f.UncompressedSize64 == 0 {
+			continue
+		}
+		if rel, ok := strings.CutPrefix(f.Name, loaderPrefix); ok {
+			if !validLoaderConfigPath(rel) {
+				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
+			}
+			key := strings.ToLower(f.Name)
+			if seen[key] {
+				return Preview{}, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.Name)
+			}
+			seen[key] = true
+			data, err := readBounded(f, MaxConfigBytes)
+			if err != nil {
+				return Preview{}, err
+			}
+			if total += int64(len(data)); total > MaxConfigTotal {
+				return Preview{}, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
+			}
+			pv.LoaderConfigs = append(pv.LoaderConfigs, LoaderConfig{Path: rel, Data: data})
 			continue
 		}
 		rest, ok := strings.CutPrefix(f.Name, "configs/")

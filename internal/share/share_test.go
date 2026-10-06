@@ -561,14 +561,20 @@ func TestReadRejects(t *testing.T) {
 		"bad name":           {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"","entries":[]}`}},
 		"not json":           {{"profile.json", `nope`}},
 		"oversized config":   {head, {"configs/smapi/A.one/c.json", strings.Repeat(" ", MaxConfigBytes+1)}},
+		"loader traversal":   {head, {"loader/BepInEx/config/../../x.cfg", "x"}},
+		"loader absolute":    {head, {"loader//etc/x.cfg", "x"}},
+		"loader binary":      {head, {"loader/BepInEx/config/run.dll", "MZ"}},
+		"loader dotfile":     {head, {"loader/BepInEx/.x/a.cfg", "x"}},
+		"loader duplicate":   {head, {"loader/BepInEx/config/a.cfg", "x"}, {"loader/BepInEx/config/a.cfg", "y"}},
+		"loader oversized":   {head, {"loader/BepInEx/config/a.cfg", strings.Repeat(" ", MaxConfigBytes+1)}},
 		"oversized profile":  {{"profile.json", `{"version":3,"game":"stardew","sourceKeys":{"nexus":"stardewvalley"},"name":"x","notes":"` + strings.Repeat("a", maxProfileBytes) + `","entries":[]}`}},
 	} {
 		if _, err := Read(zipOf(t, files...)); err == nil {
 			t.Errorf("%s: accepted", name)
 		}
 	}
-	if _, err := Read(zipOf(t, head, [2]string{"configs/smapi/A.one/ok.json", "{}"})); err != nil {
-		t.Errorf("valid file refused: %v", err)
+	if pv, err := Read(zipOf(t, head, [2]string{"configs/smapi/A.one/ok.json", "{}"}, [2]string{"loader/BepInEx/config/ok.cfg", "x"})); err != nil || len(pv.LoaderConfigs) != 1 {
+		t.Errorf("valid file refused: %+v, %v", pv.LoaderConfigs, err)
 	}
 	if _, err := Read(filepath.Join(t.TempDir(), "missing.mortar")); err == nil {
 		t.Error("missing file accepted")

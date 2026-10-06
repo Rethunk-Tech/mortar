@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 
@@ -143,5 +144,13 @@ func SameExceptArrival(base, have Preview, missing map[string]bool) bool {
 			return false
 		}
 	}
-	return len(held) == 0
+	return len(held) == 0 && maps.Equal(loaderFiles(base), loaderFiles(have))
+}
+
+func loaderFiles(p Preview) map[string]string {
+	out := make(map[string]string, len(p.LoaderConfigs))
+	for _, c := range p.LoaderConfigs {
+		out[c.Path] = string(c.Data)
+	}
+	return out
 }
