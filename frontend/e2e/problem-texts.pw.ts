@@ -16,7 +16,11 @@ let profileId = ''
 const cli = (...args: string[]) =>
   execFileSync(`${dir}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
 
-type Pack = { author?: string; content: object; files?: Record<string, string> }
+interface Pack {
+  author?: string
+  content: object
+  files?: Record<string, string>
+}
 
 const changes = (...list: object[]) => ({ Changes: list })
 
