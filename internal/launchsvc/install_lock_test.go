@@ -67,20 +67,9 @@ func TestTwoInstallsOfOneGameAreClaimedSideBySide(t *testing.T) {
 		}
 		return errors.New("stop")
 	}
-	// Both launches fail once released; wait for them to finish, or their failure writes race the temp dir's removal.
 	defer func() {
 		close(release)
-		deadline := time.Now().Add(5 * time.Second)
-		for time.Now().Before(deadline) {
-			svc.mu.Lock()
-			n := len(svc.preparing)
-			svc.mu.Unlock()
-			if n == 0 && !svc.AnyBusy() {
-				return
-			}
-			time.Sleep(10 * time.Millisecond)
-		}
-		t.Error("the launches did not finish")
+		waitSettled(t, svc)
 	}()
 	if err := svc.Start(context.Background(), "stardew", a, false); err != nil {
 		t.Fatal(err)
@@ -210,4 +199,21 @@ func TestProcessOwnership(t *testing.T) {
 			}
 		})
 	}
+}
+
+// waitSettled waits until no launch is preparing or running, so a background launch's failure writes finish before
+// the test's temp dir is removed.
+func waitSettled(t *testing.T, svc *Service) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		svc.mu.Lock()
+		n := len(svc.preparing)
+		svc.mu.Unlock()
+		if n == 0 && !svc.AnyBusy() {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Error("the launches did not finish")
 }

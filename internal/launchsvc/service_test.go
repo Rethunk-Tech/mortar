@@ -402,6 +402,7 @@ func TestStartLoaderUsesAppLifetime(t *testing.T) {
 	if err := svc.Start(context.Background(), "stardew", p.ID, true); err != nil {
 		t.Fatal(err)
 	}
+	t.Cleanup(func() { waitSettled(t, svc) })
 	select {
 	case got := <-saw:
 		if got.Err() == nil {
