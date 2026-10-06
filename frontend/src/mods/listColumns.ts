@@ -106,6 +106,7 @@ interface ListRow {
   overrides?: number
   categoryOverride?: string
   categoryLabel: string
+  siteCategory?: string | undefined
   groupName?: string
   pinned?: boolean
   details?: Details

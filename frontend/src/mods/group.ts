@@ -231,6 +231,8 @@ interface GroupRow {
   tags: readonly string[]
   categoryOverride?: string
   details?: { category?: string }
+  // A Thunderstore package's own category, which Nexus rows take from their details instead.
+  siteCategory?: string | undefined
   groupName?: string
   mod: {
     id: string
@@ -253,7 +255,11 @@ function rowGroupKey(
   },
 ): string {
   if (by === 'category') {
-    return resolvedCategoryLabel(row.categoryOverride, row.details?.category, ctx.customById)
+    return resolvedCategoryLabel(
+      row.categoryOverride,
+      row.siteCategory ?? row.details?.category,
+      ctx.customById,
+    )
   }
   if (by === 'source') {
     return row.source

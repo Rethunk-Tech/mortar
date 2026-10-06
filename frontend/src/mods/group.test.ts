@@ -220,3 +220,20 @@ test('framework grouping names installed frameworks and keeps UniqueID when miss
     [SMAPI_MODS_GROUP, ['CP', 'Smapi']],
   ])
 })
+
+test('category grouping uses a Thunderstore package category', () => {
+  const row = {
+    source: 'Thunderstore',
+    tags: [],
+    siteCategory: 'Tools',
+    mod: { id: 'thunderstore:A-B', author: 'A', enabled: true },
+  }
+  expect(
+    rowGroupKey('category', row, {
+      hasProblem: false,
+      hasUpdate: false,
+      names: new Map(),
+      customById: new Map(),
+    }),
+  ).toBe('Tools')
+})

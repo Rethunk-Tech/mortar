@@ -135,6 +135,7 @@ function toListRow(
     tags: [...(entry?.tags ?? [])],
     categoryOverride: entry?.categoryOverride ?? '',
     categoryLabel,
+    siteCategory: entry?.source.kind === 'thunderstore' ? entry.source.category : undefined,
     groupName,
     order,
   }
