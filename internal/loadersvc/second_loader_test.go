@@ -68,7 +68,7 @@ func TestAProfileRunsItsOwnLoaderOfTheGamesTwo(t *testing.T) {
 		t.Fatal(err)
 	}
 	items, profiles := testenv.Stores(t)
-	svc := NewService(t.TempDir(), set, items, profiles, client)
+	svc := testService(t, set, items, profiles, client)
 	a := testenv.Profile(t, profiles, "lethal-company", "A")
 	b := testenv.Profile(t, profiles, "lethal-company", "B")
 	if _, err := profiles.SetLoader("lethal-company", b.ID, "nope"); err == nil {

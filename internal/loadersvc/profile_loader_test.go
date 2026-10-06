@@ -67,7 +67,7 @@ func TestEnsureInstallsAProfileLoaderIntoEveryProfile(t *testing.T) {
 		t.Fatal(err)
 	}
 	items, profiles := testenv.Stores(t)
-	svc := NewService(t.TempDir(), set, items, profiles)
+	svc := testService(t, set, items, profiles)
 	first := testenv.Profile(t, profiles, "lethal-company", "First")
 
 	st, err := svc.Ensure(t.Context(), "lethal-company", "", false)

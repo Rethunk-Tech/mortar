@@ -92,7 +92,7 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 	}
 	items, profiles := testenv.Stores(t)
 	client, bridgeHash := bridgeClient(t)
-	svc := NewService(t.TempDir(), set, items, profiles, client)
+	svc := testService(t, set, items, profiles, client)
 	early, err := profiles.Create("stardew", "Early")
 	if err != nil || len(early.Entries) != 0 {
 		t.Fatalf("early = %+v, %v", early, err)
@@ -156,7 +156,7 @@ func newEnsureEnv(t *testing.T) ensureEnv {
 		t.Fatal(err)
 	}
 	items, profiles := testenv.Stores(t)
-	svc := NewService(t.TempDir(), set, items, profiles)
+	svc := testService(t, set, items, profiles)
 	var installs atomic.Int32
 	svc.run = func(context.Context, string, string, bool) (loader.Status, error) {
 		installs.Add(1)
@@ -224,4 +224,13 @@ func TestInstallRefusesWhileTheGameRunsOutsideMortar(t *testing.T) {
 	if _, err := e.svc.install(context.Background(), "stardew", "", false); err == nil || !strings.Contains(err.Error(), "is running") {
 		t.Fatalf("err = %v, want a running refusal", err)
 	}
+}
+
+// testService is NewService over an empty process list, so a game running elsewhere on the machine never makes an
+// install refuse as busy.
+func testService(t *testing.T, s *settings.Store, items *store.Store, profiles *profile.Store, clients ...*components.Client) *Service {
+	t.Helper()
+	svc := NewService(t.TempDir(), s, items, profiles, clients...)
+	svc.procDir = t.TempDir()
+	return svc
 }
