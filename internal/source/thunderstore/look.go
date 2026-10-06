@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -33,8 +34,16 @@ func Category(cats []string) string {
 	return ""
 }
 
+// lookedUp is what CachedLooks already asked of one listing: the listing's index hash and the names it looked up.
+type lookedUp struct {
+	Hash  string   `json:"hash"`
+	Names []string `json:"names"`
+}
+
 // CachedLooks returns the Look of each package named (Namespace-Name, any case) that the community's cached listing
-// holds, keyed by the lower-case name. It never asks the network, however old the listing is.
+// holds, keyed by the lower-case name. It never asks the network, however old the listing is. Names already looked up
+// in this listing are not looked up again: a package added from disk is never in it, and decoding the listing costs
+// most of a CPU second.
 func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error) {
 	if !communityKey.MatchString(key) {
 		return nil, errors.New("not a Thunderstore community key")
@@ -48,19 +57,39 @@ func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error)
 	if err := json.Unmarshal(b, &meta); err != nil || meta.Hash == "" {
 		return nil, errors.New("no cached Thunderstore listing")
 	}
-	list, err := loadPackages(key, filepath.Join(dir, key+"-c1-"+meta.Hash+".json"))
-	if err != nil {
-		return nil, err
+	markPath := filepath.Join(dir, key+".looked.json")
+	var mark lookedUp
+	if b, err := fsx.ReadFile(markPath); err == nil {
+		_ = json.Unmarshal(b, &mark)
+	}
+	if mark.Hash != meta.Hash {
+		mark = lookedUp{Hash: meta.Hash}
 	}
 	want := map[string]bool{}
 	for _, n := range names {
-		want[strings.ToLower(n)] = true
+		if id := strings.ToLower(n); !slices.Contains(mark.Names, id) {
+			want[id] = true
+		}
+	}
+	if len(want) == 0 {
+		return map[string]Look{}, nil
+	}
+	list, err := loadPackages(key, filepath.Join(dir, key+"-c1-"+meta.Hash+".json"))
+	if err != nil {
+		return nil, err
 	}
 	out := map[string]Look{}
 	for _, p := range list {
 		if id := packageID(p.Owner, p.Name); want[id] {
 			out[id] = Look{Icon: p.Icon, Category: Category(p.Categories)}
 		}
+	}
+	for id := range want {
+		mark.Names = append(mark.Names, id)
+	}
+	slices.Sort(mark.Names)
+	if b, err := json.Marshal(mark); err == nil {
+		_ = datadir.WriteFile(markPath, b, 0o644)
 	}
 	return out, nil
 }
