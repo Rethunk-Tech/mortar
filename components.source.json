@@ -36,6 +36,18 @@
       },
       "asset": "MortarBepInExBridge-{version}.zip",
       "version": "latest"
+    },
+    {
+      "game": "valheim",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
     }
   ],
   "games": [
@@ -158,6 +170,51 @@
         {
           "id": "github",
           "key": "lethal-company-mod"
+        }
+      ]
+    },
+    {
+      "id": "valheim",
+      "name": "Valheim",
+      "enabled": false,
+      "importIds": { "vortex": "valheim", "mo2": "Valheim" },
+      "marker": "valheim.exe",
+      "r2modmanFolder": "Valheim",
+      "metadata": [],
+      "paths": {
+        "saves": { "windows": "{localLow}/IronGate/Valheim/characters_local" },
+        "unityLog": { "windows": "{localLow}/IronGate/Valheim/Player.log" }
+      },
+      "saveFiles": ["*.fch"],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": {
+        "steam": {
+          "appId": "892970"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "nexusModId": 3605,
+          "companion": "bridge",
+          "package": "denikson-BepInExPack_Valheim"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "valheim"
+        },
+        {
+          "id": "nexus",
+          "key": "valheim",
+          "gameId": 3667
+        },
+        {
+          "id": "github",
+          "key": "valheim-mod"
         }
       ]
     }

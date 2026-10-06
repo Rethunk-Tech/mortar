@@ -395,3 +395,18 @@ func TestSaveFilePatternsStayInTheSavesFolder(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestACommunityBepInExPackIsTheLoaderPackage(t *testing.T) {
+	vh, ok := Game("valheim")
+	if !ok || vh.LoaderPackage() != "denikson-BepInExPack_Valheim" {
+		t.Fatalf("valheim pack = %q", vh.LoaderPackage())
+	}
+	if lc, _ := Game("lethal-company"); lc.LoaderPackage() != DefaultLoaderPackage {
+		t.Fatalf("lethal-company pack = %q", lc.LoaderPackage())
+	}
+	for id, want := range map[string]bool{"denikson-BepInExPack_Valheim": true, "bepinex-bepinexpack": true, "denikson-Other": false} {
+		if IsLoaderPackage(id) != want {
+			t.Errorf("IsLoaderPackage(%q) = %v", id, !want)
+		}
+	}
+}

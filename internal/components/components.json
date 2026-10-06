@@ -43,6 +43,20 @@
       "asset": "MortarBepInExBridge-0.1.0.zip",
       "version": "0.1.0",
       "sha256": "89f29adee74ea37dfc3a7247ae3d13122ea358b3168da3fb8be3363d09a9e9d6"
+    },
+    {
+      "game": "valheim",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.1.0",
+      "asset": "MortarBepInExBridge-0.1.0.zip",
+      "version": "0.1.0",
+      "sha256": "89f29adee74ea37dfc3a7247ae3d13122ea358b3168da3fb8be3363d09a9e9d6"
     }
   ],
   "games": [
@@ -50,19 +64,26 @@
       "id": "stardew",
       "name": "Stardew Valley",
       "enabled": true,
-      "importIds": { "vortex": "stardewvalley", "mo2": "Stardew Valley" },
+      "importIds": {
+        "vortex": "stardewvalley",
+        "mo2": "Stardew Valley"
+      },
       "marker": "Stardew Valley.dll",
-      "metadata": ["smapi-updates", "smapi-compat", "stardew-dataset"],
+      "metadata": [
+        "smapi-updates",
+        "smapi-compat",
+        "stardew-dataset"
+      ],
       "paths": {
-        "saves": {
-          "windows": "{appData}/StardewValley/Saves",
-          "linux": "{xdgConfig}/StardewValley/Saves",
-          "darwin": "{xdgConfig}/StardewValley/Saves"
-        },
         "errorLogs": {
           "windows": "{appData}/StardewValley/ErrorLogs",
           "linux": "{xdgConfig}/StardewValley/ErrorLogs",
           "darwin": "{xdgConfig}/StardewValley/ErrorLogs"
+        },
+        "saves": {
+          "windows": "{appData}/StardewValley/Saves",
+          "linux": "{xdgConfig}/StardewValley/Saves",
+          "darwin": "{xdgConfig}/StardewValley/Saves"
         },
         "startupPreferences": {
           "windows": "{appData}/StardewValley/startup_preferences",
@@ -71,7 +92,12 @@
         }
       },
       "deploy": "redirect",
-      "targets": [{ "id": "mods", "root": "{profileMods}" }],
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profileMods}"
+        }
+      ],
       "stores": {
         "steam": {
           "appId": "413150"
@@ -113,11 +139,31 @@
           "name": "Vanilla+ quality of life",
           "description": "Small helpers that make the base game easier to read and manage, without changing how it plays.",
           "packages": [
-            { "source": "nexus", "ref": "5098", "name": "Generic Mod Config Menu" },
-            { "source": "nexus", "ref": "541", "name": "Lookup Anything" },
-            { "source": "nexus", "ref": "518", "name": "Chests Anywhere" },
-            { "source": "nexus", "ref": "7098", "name": "UI Info Suite 2" },
-            { "source": "nexus", "ref": "239", "name": "NPC Map Locations" }
+            {
+              "source": "nexus",
+              "ref": "5098",
+              "name": "Generic Mod Config Menu"
+            },
+            {
+              "source": "nexus",
+              "ref": "541",
+              "name": "Lookup Anything"
+            },
+            {
+              "source": "nexus",
+              "ref": "518",
+              "name": "Chests Anywhere"
+            },
+            {
+              "source": "nexus",
+              "ref": "7098",
+              "name": "UI Info Suite 2"
+            },
+            {
+              "source": "nexus",
+              "ref": "239",
+              "name": "NPC Map Locations"
+            }
           ]
         }
       ]
@@ -130,15 +176,25 @@
       "r2modmanFolder": "LethalCompany",
       "metadata": [],
       "paths": {
-        "saves": { "windows": "{localLow}/ZeekerssRBLX/Lethal Company" },
+        "saves": {
+          "windows": "{localLow}/ZeekerssRBLX/Lethal Company"
+        },
         "unityLog": {
           "windows": "{localLow}/ZeekerssRBLX/Lethal Company/Player.log",
           "linux": "{xdgConfig}/unity3d/ZeekerssRBLX/Lethal Company/Player.log"
         }
       },
-      "saveFiles": ["LCSaveFile*", "LCChallengeFile"],
+      "saveFiles": [
+        "LCSaveFile*",
+        "LCChallengeFile"
+      ],
       "deploy": "profile",
-      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
       "stores": {
         "steam": {
           "appId": "1966720"
@@ -165,6 +221,65 @@
         {
           "id": "github",
           "key": "lethal-company-mod"
+        }
+      ]
+    },
+    {
+      "id": "valheim",
+      "name": "Valheim",
+      "enabled": false,
+      "importIds": {
+        "vortex": "valheim",
+        "mo2": "Valheim"
+      },
+      "marker": "valheim.exe",
+      "r2modmanFolder": "Valheim",
+      "metadata": [],
+      "paths": {
+        "saves": {
+          "windows": "{localLow}/IronGate/Valheim/characters_local"
+        },
+        "unityLog": {
+          "windows": "{localLow}/IronGate/Valheim/Player.log"
+        }
+      },
+      "saveFiles": [
+        "*.fch"
+      ],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "892970"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "nexusModId": 3605,
+          "companion": "bridge",
+          "package": "denikson-BepInExPack_Valheim"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "valheim"
+        },
+        {
+          "id": "nexus",
+          "key": "valheim",
+          "gameId": 3667
+        },
+        {
+          "id": "github",
+          "key": "valheim-mod"
         }
       ]
     }
