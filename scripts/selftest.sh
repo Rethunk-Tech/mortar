@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Runs Mortar in server mode against a sandboxed home, for self-testing in a browser at http://127.0.0.1:$PORT.
-# The sandbox has its own HOME with a minimal Steam library holding copies of the games (Stardew Valley and, when installed, Lethal Company), so nothing Mortar does
+# The sandbox has its own HOME with a minimal Steam library holding copies of the games (Stardew Valley and, when installed, Lethal Company and Valheim), so nothing Mortar does
 # reaches the real game folder, the real data folder or the real Steam config.
 #
 #   scripts/selftest.sh start [--copy-data]   build, set up the sandbox if missing, start the server
@@ -29,11 +29,13 @@ APP_ID=413150
 GAME_FOLDER="Stardew Valley"
 LC_APP_ID=1966720
 LC_FOLDER="Lethal Company"
+VH_APP_ID=892970
+VH_FOLDER=Valheim
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 SANDBOX_HOME=$ROOT/home
 SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
 # Games the shipped catalog has not enabled yet are switched on in the sandbox only (comma separated catalog ids).
-export MORTAR_ENABLE_GAMES=${MORTAR_SELFTEST_ENABLE:-lethal-company}
+export MORTAR_ENABLE_GAMES=${MORTAR_SELFTEST_ENABLE:-lethal-company,valheim}
 
 build() {
   echo "building frontend and server-mode binary"
@@ -67,7 +69,7 @@ copy_game() {
 # Lists every copied game as installed, so Steam discovery finds exactly what the sandbox holds.
 write_library() {
   local apps="" app
-  for app in "$APP_ID" "$LC_APP_ID"; do
+  for app in "$APP_ID" "$LC_APP_ID" "$VH_APP_ID"; do
     if [ -f "$SANDBOX_STEAM/steamapps/appmanifest_$app.acf" ]; then
       apps+=$'\t\t\t"'$app$'"\t\t"1"\n'
     fi
@@ -79,12 +81,17 @@ setup() {
   mkdir -p "$SANDBOX_STEAM/config"
   copy_game "$APP_ID" "$GAME_FOLDER" || exit 1
   [ -f "$SANDBOX_STEAM/config/loginusers.vdf" ] || cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
-  # Lethal Company is optional: a machine without it still gets the Stardew sandbox.
+  # Lethal Company and Valheim are optional: a machine without them still gets the Stardew sandbox.
   copy_game "$LC_APP_ID" "$LC_FOLDER" || true
+  copy_game "$VH_APP_ID" "$VH_FOLDER" || true
   # An empty prefix is enough for runtime path resolution; the real one is never copied.
-  if [ -d "$SANDBOX_STEAM/steamapps/common/$LC_FOLDER" ]; then
-    mkdir -p "$SANDBOX_STEAM/steamapps/compatdata/$LC_APP_ID/pfx/drive_c/users/steamuser/AppData/LocalLow"
-  fi
+  local app folder
+  for app in "$LC_APP_ID:$LC_FOLDER" "$VH_APP_ID:$VH_FOLDER"; do
+    folder=${app#*:}
+    if [ -d "$SANDBOX_STEAM/steamapps/common/$folder" ]; then
+      mkdir -p "$SANDBOX_STEAM/steamapps/compatdata/${app%%:*}/pfx/drive_c/users/steamuser/AppData/LocalLow"
+    fi
+  done
   write_library
 }
 
