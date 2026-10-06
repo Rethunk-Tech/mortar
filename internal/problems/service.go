@@ -45,8 +45,8 @@ type Service struct {
 	// Throttle waits for a source's turn to be asked (the download queue's per-source limit) and returns the func that
 	// ends it; nil asks without waiting.
 	Throttle func(ctx context.Context, source string) (release func(), err error)
-	// SaveFarms gives the whichFarm of each save the profile plays; nil leaves farm-limited conflicts as they are.
-	SaveFarms func(ctx context.Context, gameID, profileID string) []int
+	// SaveFarms gives the farm of each save the profile plays; nil leaves farm-limited conflicts as they are.
+	SaveFarms func(ctx context.Context, gameID, profileID string) []SaveFarm
 	// AfterFirstCheck runs once, when the first problem check has finished: startup has settled by then.
 	AfterFirstCheck func()
 	firstCheck      sync.Once
@@ -355,6 +355,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 			_, summary, err := s.Runs.LastRunSummary(gameID, id)
 			if err == nil {
 				r.RunErrors = RunErrorsFromSummary(runID, summary, mods)
+				r.LoadFailures = append(r.LoadFailures, startFailure(runID, summary)...)
 			}
 		} else if r.RunErrors == nil {
 			r.RunErrors = []RunError{}

@@ -9,6 +9,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -77,6 +78,18 @@ func gameVersionFailure(gameID string, l loader.Loader, env Environment) (LoadFa
 
 // KindGameVersion is the LoadFailure kind of a game version the loader does not accept.
 const KindGameVersion = "game-version"
+
+// KindRunFailed is the LoadFailure kind of a newest run that failed to start and left no log to analyse.
+const KindRunFailed = "run-failed"
+
+// startFailure is the row for a newest run that never started. Plugin carries the run id, which is what makes the row
+// go away: the next recorded run replaces it.
+func startFailure(runID string, summary launch.Summary) []LoadFailure {
+	if summary.StartFailure == "" {
+		return nil
+	}
+	return []LoadFailure{{Plugin: runID, Kind: KindRunFailed, Message: summary.StartFailure}}
+}
 
 // pluginOwners maps every way a log names a plugin (its GUID, its name, or "name version") to the enabled package
 // whose plugin DLLs declare it. A package is the identity; the GUIDs are read from its files, since a package may hold

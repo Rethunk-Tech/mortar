@@ -175,6 +175,19 @@ func TestRecordFailedLaunchAndUnownedLogUsesSession(t *testing.T) {
 	}
 }
 
+func TestLastRunSummaryNamesWhyAFailedRunWithoutALogNeverStarted(t *testing.T) {
+	svc, p, _, _ := runEnv(t)
+	g := game.Find("stardew")
+	svc.noteFailure(g, "the game did not start in time")
+	svc.record(g, p.ID, time.Now(), true)
+
+	_, summary, err := svc.LastRunSummary("stardew", p.ID)
+
+	if err != nil || summary.StartFailure != "the game did not start in time" {
+		t.Fatalf("summary = %+v, %v", summary, err)
+	}
+}
+
 func TestClosedRunWithCrashMarksCrashed(t *testing.T) {
 	svc, p, cfg, home := runEnv(t)
 	mods, err := svc.profiles.ModsDir("stardew", p.ID)

@@ -8,6 +8,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -70,5 +71,15 @@ func TestPluginOwnersNameAPackageByItsPluginsNamespace(t *testing.T) {
 	}
 	if got, ok := pluginOwners([]framework.Mod{one, pkg("two")})["fixture"]; ok {
 		t.Fatalf("a namespace two packages share names neither: %+v", got)
+	}
+}
+
+func TestStartFailureIsALoadFailureOnlyForARunThatNeverStarted(t *testing.T) {
+	got := startFailure("run-1", launch.Summary{StartFailure: "the game did not start in time"})
+	if len(got) != 1 || got[0].Kind != KindRunFailed || got[0].Plugin != "run-1" || got[0].Message != "the game did not start in time" {
+		t.Fatalf("failures = %+v", got)
+	}
+	if got := startFailure("run-2", launch.Summary{Errors: 3}); len(got) != 0 {
+		t.Fatalf("a run that started is not a start failure: %+v", got)
 	}
 }

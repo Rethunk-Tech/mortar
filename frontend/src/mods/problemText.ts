@@ -99,6 +99,8 @@ function loadKindText(kind: string): string {
       return i18n._(msg`Needs a newer loader`)
     case 'chainloader':
       return i18n._(msg`Loader failed to start`)
+    case 'run-failed':
+      return i18n._(msg`The game never started`)
     case 'plugin-error':
       return i18n._(msg`Plugin reported an error`)
     default:

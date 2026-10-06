@@ -231,6 +231,9 @@ func (s *Service) LastRunSummary(gameID, profileID string) (string, launch.Summa
 	if run.Exit != nil {
 		launch.ApplyExit(&summary, *run.Exit)
 	}
+	if run.Outcome == launch.OutcomeFailed && strings.TrimSpace(text) == "" {
+		summary.StartFailure = cmp.Or(run.Error, "the game did not start")
+	}
 	return run.ID, summary, nil
 }
 

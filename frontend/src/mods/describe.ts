@@ -194,7 +194,10 @@ export function useDescribe(): Describe {
       case 'runError':
         return describeRunError(p.runError)
       case 'loadFailure': {
-        const { plugin, name, kind, dependency } = p.loadFailure
+        const { plugin, name, kind, dependency, message } = p.loadFailure
+        if (kind === 'run-failed') {
+          return t`The last launch failed: ${message}.`
+        }
         if (kind === 'incompatible-plugin' && dependency) {
           return t`${plugin} declares itself incompatible with ${dependency}, which is also enabled.`
         }

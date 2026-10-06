@@ -53,6 +53,8 @@ type Summary struct {
 	Mods     []ModError
 	ModRefs  []ModRef
 	Exit     Exit
+	// StartFailure is why the run never started, for a failed run that wrote no log; empty for any other.
+	StartFailure string
 }
 
 // ParseLog turns a SMAPI log into entries, hiding the same suppressed messages as the console.

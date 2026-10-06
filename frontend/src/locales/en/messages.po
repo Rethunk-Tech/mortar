@@ -447,7 +447,7 @@ msgid "Run checks…"
 msgstr "Run checks…"
 
 #. placeholder {0}: p.damaged.name
-#: src/mods/describe.ts:206
+#: src/mods/describe.ts:209
 msgid "{0} has damaged files."
 msgstr "{0} has damaged files."
 
@@ -2088,6 +2088,10 @@ msgstr "Switch to Browse"
 msgid "Could not save the tool"
 msgstr "Could not save the tool"
 
+#: src/mods/problemText.ts:103
+msgid "The game never started"
+msgstr "The game never started"
+
 #. placeholder {0}: setting.field
 #. placeholder {1}: setting.name
 #: src/mods/storeProblems.ts:83
@@ -2568,6 +2572,10 @@ msgstr "Fix all"
 #: src/console/outcome.ts:14
 msgid "Ran"
 msgstr "Ran"
+
+#: src/mods/describe.ts:199
+msgid "The last launch failed: {message}."
+msgstr "The last launch failed: {message}."
 
 #: src/mods/AuthorDialog.tsx:115
 msgid "Try another spelling, or install a mod by {author} in any profile."
@@ -4225,7 +4233,7 @@ msgstr "Just this mod"
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
-#: src/mods/describe.ts:250
+#: src/mods/describe.ts:253
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
@@ -4780,7 +4788,7 @@ msgid "Rename…"
 msgstr "Rename…"
 
 #. placeholder {0}: p.pluginClash.guid
-#: src/mods/describe.ts:215
+#: src/mods/describe.ts:218
 msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
 msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
 
@@ -4823,7 +4831,7 @@ msgstr "Untrack all…"
 msgid "Disable all"
 msgstr "Disable all"
 
-#: src/mods/describe.ts:203
+#: src/mods/describe.ts:206
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
 
@@ -8183,7 +8191,7 @@ msgstr "{0, plural, one {Created {name}; downloading # mod} other {Created {name
 msgid "{who}: {reason}"
 msgstr "{who}: {reason}"
 
-#: src/mods/describe.ts:202
+#: src/mods/describe.ts:205
 msgid "{plugin} failed to load ({name})."
 msgstr "{plugin} failed to load ({name})."
 
@@ -8243,7 +8251,7 @@ msgstr "Money"
 msgid "Regenerate token?"
 msgstr "Regenerate token?"
 
-#: src/mods/describe.ts:199
+#: src/mods/describe.ts:202
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
@@ -9324,7 +9332,7 @@ msgid "Review collection update"
 msgstr "Review collection update"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:244
+#: src/mods/describe.ts:247
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
@@ -9555,7 +9563,7 @@ msgstr "Whole file"
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
-#: src/mods/describe.ts:211
+#: src/mods/describe.ts:214
 msgid "{name} is deprecated on Thunderstore."
 msgstr "{name} is deprecated on Thunderstore."
 
@@ -10011,7 +10019,7 @@ msgstr "{loader} | {store}"
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
-#: src/mods/describe.ts:210
+#: src/mods/describe.ts:213
 msgid "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 
@@ -11157,7 +11165,7 @@ msgstr "No problems found"
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/mods/describe.ts:248
+#: src/mods/describe.ts:251
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
@@ -12074,7 +12082,7 @@ msgstr "Set up {0}"
 msgid "GOG via Minigalaxy"
 msgstr "GOG via Minigalaxy"
 
-#: src/mods/problemText.ts:103
+#: src/mods/problemText.ts:105
 msgid "Plugin reported an error"
 msgstr "Plugin reported an error"
 
