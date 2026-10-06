@@ -15,6 +15,8 @@ import { useToasts } from '../toasts/store.ts'
 
 export const useLoader = create<{
   status: Status | null
+  // The game status is for; a recheck of the same game keeps showing it, so a remounted row never flashes "not installed".
+  game: string
   installing: boolean
   steps: string[]
   // Why the last install failed; empty while one runs or after one succeeded.
@@ -28,13 +30,16 @@ export const useLoader = create<{
   install: (game: string, version?: string) => Promise<void>
 }>((set, get) => ({
   status: null,
+  game: '',
   installing: false,
   pending: false,
   steps: [],
   error: '',
   errorDetail: '',
   check: async (game) => {
-    set({ status: null })
+    if (get().game !== game) {
+      set({ status: null, game })
+    }
     try {
       set({ status: await LoaderStatus(game, '') })
     } catch {
