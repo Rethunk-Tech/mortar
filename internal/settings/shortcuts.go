@@ -3,6 +3,7 @@ package settings
 import (
 	"fmt"
 	"maps"
+	"slices"
 )
 
 // DefaultShortcuts is the chord table Settings › Shortcuts lists when nothing is rebound; it matches SHORTCUTS in
@@ -57,9 +58,24 @@ func rejectUnknownShortcuts(s Settings) error {
 	return nil
 }
 
+// formerDefaults are chords earlier builds shipped as defaults and wrote into settings.json; one found there is that
+// build's default, not something the user chose.
+var formerDefaults = map[string][]string{
+	"tab-mods":        {"Ctrl+1"},
+	"tab-problems":    {"Ctrl+2"},
+	"tab-saves":       {"Ctrl+3"},
+	"tab-notes":       {"Ctrl+4"},
+	"tab-console":     {"Ctrl+5"},
+	"tab-performance": {"Ctrl+6"},
+}
+
+// rejectDuplicateShortcuts refuses two actions on one chord; an unbound action ("") clashes with nothing.
 func rejectDuplicateShortcuts(s Settings) error {
 	used := map[string]string{}
 	for id, keys := range s.Shortcuts {
+		if keys == "" {
+			continue
+		}
 		if other, ok := used[keys]; ok {
 			return fmt.Errorf("%s is already used by %s", keys, other)
 		}
@@ -68,24 +84,38 @@ func rejectDuplicateShortcuts(s Settings) error {
 	return nil
 }
 
-// withShortcutOverrides keeps only the rebound chords, so a changed default reaches everyone who never rebound it.
-func withShortcutOverrides(s Settings) Settings {
-	overrides := map[string]string{}
-	for id, keys := range s.Shortcuts {
-		if defaultShortcuts[id] != keys {
-			overrides[id] = keys
+// userShortcuts are the chords the user chose: known ids bound to something other than a default, now or before.
+func userShortcuts(chords map[string]string) map[string]string {
+	user := map[string]string{}
+	for id, keys := range chords {
+		def, known := defaultShortcuts[id]
+		if known && keys != "" && keys != def && !slices.Contains(formerDefaults[id], keys) {
+			user[id] = keys
 		}
 	}
-	s.Shortcuts = overrides
+	return user
+}
+
+// withShortcutOverrides keeps only the user's chords, so a changed default reaches everyone who never rebound it.
+func withShortcutOverrides(s Settings) Settings {
+	s.Shortcuts = userShortcuts(s.Shortcuts)
 	return s
 }
 
+// normalizeShortcuts lays the user's chords over the defaults; a default the user took for another action is left
+// unbound, so the user's choice wins.
 func normalizeShortcuts(s *Settings) {
+	user := userShortcuts(s.Shortcuts)
+	taken := map[string]bool{}
+	for _, keys := range user {
+		taken[keys] = true
+	}
 	next := DefaultShortcuts()
-	for id, keys := range s.Shortcuts {
-		if _, ok := defaultShortcuts[id]; ok && keys != "" {
-			next[id] = keys
+	for id, keys := range next {
+		if taken[keys] {
+			next[id] = ""
 		}
 	}
+	maps.Copy(next, user)
 	s.Shortcuts = next
 }

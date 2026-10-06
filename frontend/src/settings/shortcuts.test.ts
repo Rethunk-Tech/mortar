@@ -117,3 +117,9 @@ test("the Go settings' default table is this one, so a rebind saves and no two t
   )
   expect(pairs).toEqual(defaultBindings())
 })
+
+test('an action stored unbound stays unbound and matches no key', () => {
+  const bindings = mergeBindings({ play: 'Ctrl+K', 'command-palette': '' })
+  expect(bindings['command-palette']).toBe('')
+  expect(matchShortcut({ key: 'k', ctrlKey: true }, bindings)).toBe('play')
+})

@@ -206,7 +206,8 @@ export function mergeBindings(stored?: ShortcutBindings | null): Record<Shortcut
   }
   for (const row of SHORTCUTS) {
     const keys = stored[row.id]
-    if (keys) {
+    // An empty chord is an action Mortar unbound because the user gave its default to another one.
+    if (keys !== undefined) {
       next[row.id] = keys
     }
   }
