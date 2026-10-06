@@ -59,7 +59,7 @@ export function ItchAccount() {
         </SettingRow>
       ) : (
         <SettingRow
-          label={<label htmlFor={keyId}>{t`API key`}</label>}
+          label={t`API key`}
           description={t`Kept in your system keyring. Create one on itch.io under Settings, API keys.`}
         >
           <Box
@@ -70,6 +70,7 @@ export function ItchAccount() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TextField
                 id={keyId}
+                slotProps={{ htmlInput: { 'aria-label': t`API key` } }}
                 type="password"
                 size="small"
                 autoComplete="off"
