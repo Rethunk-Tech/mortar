@@ -39,8 +39,8 @@ const components: Components = {
   img: ({ src, alt }) => <MdImage src={typeof src === 'string' ? src : undefined} alt={alt} />,
 }
 
-// MarkdownView renders a mod's README or changelog. react-markdown builds React elements and ignores raw HTML, so
-// nothing from a mod page reaches the DOM as markup.
+// MarkdownView renders a mod's README or changelog. react-markdown builds React elements and raw HTML is dropped
+// rather than shown as text, so nothing from a mod page reaches the DOM as markup.
 export function MarkdownView({ source }: { source: string }) {
   return (
     <Box
@@ -86,7 +86,7 @@ export function MarkdownView({ source }: { source: string }) {
         },
       }}
     >
-      <Markdown remarkPlugins={[remarkGfm]} components={components}>
+      <Markdown remarkPlugins={[remarkGfm]} components={components} skipHtml={true}>
         {source}
       </Markdown>
     </Box>

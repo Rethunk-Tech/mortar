@@ -17,6 +17,7 @@ test('raw HTML and non-web links never reach the page as markup', () => {
     '<script>alert(1)</script>\n\n[x](javascript:alert(1)) ![y](http://plain.example/a.png)',
   )
   expect(out).not.toContain('<script')
+  expect(out).not.toContain('&lt;')
   expect(out).not.toContain('javascript:')
   expect(out).not.toContain('plain.example')
 })
