@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -28,8 +29,20 @@ func fake(t *testing.T) Driver {
 			t.Errorf("key header %q", r.Header.Get("X-Api-Key"))
 		}
 		switch r.URL.Path {
+		case "/categories":
+			if q := r.URL.Query(); q.Get("gameId") != "669" || q.Get("classId") != "4643" {
+				t.Errorf("categories params %v", q)
+			}
+			_, _ = w.Write([]byte(`{"data":[{"id":6412,"name":"Items"},{"id":6420,"name":"Misc"}]}`))
 		case "/mods/search":
 			q := r.URL.Query()
+			if ids := q.Get("categoryIds"); ids != "" {
+				if ids != "[6412]" {
+					t.Errorf("categoryIds %q", ids)
+				}
+				_, _ = w.Write([]byte(`{"data":[{"id":10,"name":"Open Mod","categories":[{"name":"Items"}]},{"id":11,"name":"Both Mod","categories":[{"name":"Items"},{"name":"Misc"}]}],"pagination":{"totalCount":2}}`))
+				return
+			}
 			if q.Get("gameId") != "669" || q.Get("classId") != "4643" || q.Get("searchFilter") != "cp" ||
 				q.Get("sortField") != "6" || q.Get("index") != "20" || q.Get("pageSize") != "20" {
 				t.Errorf("search params %v", q)
@@ -78,6 +91,24 @@ func TestSearchMapsHitsAndPages(t *testing.T) {
 	deep, err := fake(t).Search(context.Background(), source.Query{Game: "stardew", Key: "4643", Page: 600})
 	if err != nil || len(deep.Items) != 0 {
 		t.Fatalf("past the window: %+v %v", deep, err)
+	}
+}
+
+func TestCategoriesAndFilters(t *testing.T) {
+	t.Parallel()
+	d := fake(t)
+	names, err := d.Categories(context.Background(), "4643")
+	if err != nil || !slices.Equal(names, []string{"Items", "Misc"}) {
+		t.Fatalf("%v %v", names, err)
+	}
+	q := source.Query{Game: "stardew", Key: "4643", Categories: []string{"items"}, ExcludeCategories: []string{"Misc"}}
+	page, err := d.Search(context.Background(), q)
+	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "10" {
+		t.Fatalf("%+v %v", page, err)
+	}
+	q.Categories = []string{"Nope"}
+	if page, err = d.Search(context.Background(), q); err != nil || len(page.Items) != 0 {
+		t.Fatalf("unknown include: %+v %v", page, err)
 	}
 }
 
@@ -162,6 +193,18 @@ func TestLiveStardew(t *testing.T) {
 	page, err := d.Search(t.Context(), source.Query{Game: "stardew", Key: "4643", Text: "Content Patcher", Page: 1})
 	if err != nil || len(page.Items) == 0 {
 		t.Fatalf("%+v %v", page, err)
+	}
+	cats, err := d.Categories(t.Context(), "4643")
+	if err != nil || len(cats) == 0 {
+		t.Fatalf("categories %v %v", cats, err)
+	}
+	filtered, err := d.Search(t.Context(), source.Query{Game: "stardew", Key: "4643", Categories: cats[:1], Page: 1})
+	if err != nil || len(filtered.Items) == 0 {
+		t.Fatalf("filtered by %q: %+v %v", cats[0], filtered, err)
+	}
+	all, err := d.Search(t.Context(), source.Query{Game: "stardew", Key: "4643", Page: 1})
+	if err != nil || filtered.Total >= all.Total {
+		t.Fatalf("category did not narrow: %d vs %d %v", filtered.Total, all.Total, err)
 	}
 	for _, it := range page.Items {
 		r, err := d.Resolve(t.Context(), it.ID, "")

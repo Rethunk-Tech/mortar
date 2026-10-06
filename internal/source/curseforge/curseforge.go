@@ -54,11 +54,14 @@ type Driver struct {
 	URL  string
 	// Key returns the API key; nil reads the build's key.
 	Key func() string
-	// GameSource returns the game's CurseForge entry; nil reads the catalog.
+	// GameSource returns the game's CurseForge entry (game "" asks for any); nil reads the catalog.
 	GameSource func(game string) (components.GameSource, bool)
 }
 
-var _ = source.Register(Driver{})
+var (
+	_                    = source.Register(Driver{})
+	_ source.Categorizer = Driver{}
+)
 
 // ID is the catalog id.
 func (Driver) ID() string { return "curseforge" }
@@ -304,8 +307,8 @@ func newest(files []fileResp, gameVersions []string) (fileResp, bool) {
 	return best, found
 }
 
-// Search lists mods in the game's Mods class. Category filters are not applied: the API filters by category id,
-// and the catalog names none.
+// Search lists mods in the game's Mods class. Included categories go to the API as ids; it has no exclude
+// parameter and ANDs several ids, so excluded ones are dropped from the page afterwards (the total still counts them).
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	gs, ok := d.gameSource(q.Game)
 	if !ok || gs.GameID == 0 || q.Key == "" {
@@ -327,6 +330,26 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	params.Set("sortOrder", order)
 	params.Set("index", strconv.Itoa(index))
 	params.Set("pageSize", strconv.Itoa(source.PageSize))
+	if len(q.Categories) > 0 {
+		cats, err := d.classCategories(ctx, gs.GameID, q.Key)
+		if err != nil {
+			return source.Page{}, err
+		}
+		var ids []int
+		for _, c := range cats {
+			if slices.ContainsFunc(q.Categories, func(n string) bool { return strings.EqualFold(n, c.Name) }) {
+				ids = append(ids, c.ID)
+			}
+		}
+		if len(ids) == 0 {
+			return source.Page{}, nil
+		}
+		raw, err := json.Marshal(ids)
+		if err != nil {
+			return source.Page{}, err
+		}
+		params.Set("categoryIds", string(raw))
+	}
 	var parsed struct {
 		Data       []modResp `json:"data"`
 		Pagination struct {
@@ -338,6 +361,9 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	items := make([]source.Item, 0, len(parsed.Data))
 	for _, m := range parsed.Data {
+		if !source.CategoryMatch(categoryNames(m), nil, q.ExcludeCategories) {
+			continue
+		}
 		it := source.Item{
 			Source: d.ID(), ID: strconv.Itoa(m.ID), Name: m.Name, Summary: m.Summary, Picture: m.Logo.ThumbnailURL,
 			Endorsements: m.ThumbsUpCount, Downloads: m.DownloadCount, Updated: m.DateModified,
@@ -355,6 +381,71 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		items = append(items, it)
 	}
 	return source.Page{Total: min(parsed.Pagination.TotalCount, maxWindow), Items: items}, nil
+}
+
+func categoryNames(m modResp) []string {
+	names := make([]string, len(m.Categories))
+	for i, c := range m.Categories {
+		names[i] = c.Name
+	}
+	return names
+}
+
+type category struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// categoryLists caches each class's categories for the process, keyed by API address, game and class.
+var categoryLists sync.Map
+
+func (d Driver) classCategories(ctx context.Context, gameID int, classID string) ([]category, error) {
+	key := cmp.Or(d.URL, BaseURL) + "|" + strconv.Itoa(gameID) + "|" + classID
+	if v, ok := categoryLists.Load(key); ok {
+		if cats, ok := v.([]category); ok {
+			return cats, nil
+		}
+	}
+	var out struct {
+		Data []category `json:"data"`
+	}
+	params := url.Values{"gameId": {strconv.Itoa(gameID)}, "classId": {classID}}
+	if err := d.get(ctx, "/categories", params, &out); err != nil {
+		return nil, err
+	}
+	categoryLists.Store(key, out.Data)
+	return out.Data, nil
+}
+
+// Categories lists the category names of the Mods class key, sorted. The catalog's game for a class is found by
+// scanning the games' CurseForge entries, since the API wants the game id too.
+func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
+	var sources []components.GameSource
+	if d.GameSource != nil {
+		if gs, ok := d.GameSource(""); ok {
+			sources = append(sources, gs)
+		}
+	} else {
+		for _, g := range components.Games() {
+			if gs, ok := g.Source("curseforge"); ok {
+				sources = append(sources, gs)
+			}
+		}
+	}
+	var names []string
+	for _, gs := range sources {
+		if gs.Key != key || gs.GameID == 0 {
+			continue
+		}
+		cats, err := d.classCategories(ctx, gs.GameID, key)
+		if err != nil {
+			return nil, err
+		}
+		for _, c := range cats {
+			names = append(names, c.Name)
+		}
+	}
+	return source.UniqueNames(names), nil
 }
 
 func (d Driver) mod(ctx context.Context, id string) (modResp, error) {
