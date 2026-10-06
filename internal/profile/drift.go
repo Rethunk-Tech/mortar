@@ -9,6 +9,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -133,32 +134,152 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 	}
 	prefix := root + string(filepath.Separator)
 	var st FolderStat
-	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+	var walk func(dir string) error
+	walk = func(dir string) error {
+		listing, err := listDir(dir)
 		if err != nil {
 			return err
 		}
-		if d.IsDir() {
-			return nil
-		}
-		rel := strings.TrimPrefix(path, prefix)
-		if isUserWritten(rel) {
-			return nil
-		}
-		if inPeer != nil {
-			if _, ok := inPeer[rel]; !ok {
-				if _, ok := inPeer[undotDirs(rel)]; !ok {
-					return nil
+		for _, name := range listing.Files {
+			path := filepath.Join(dir, name)
+			rel := strings.TrimPrefix(path, prefix)
+			if isUserWritten(rel) {
+				continue
+			}
+			if inPeer != nil {
+				if _, ok := inPeer[rel]; !ok {
+					if _, ok := inPeer[undotDirs(rel)]; !ok {
+						continue
+					}
 				}
 			}
+			info, err := os.Lstat(path)
+			if err != nil {
+				return err
+			}
+			st.add(info)
 		}
-		info, err := d.Info()
-		if err != nil {
-			return err
+		for _, name := range listing.Dirs {
+			if err := walk(filepath.Join(dir, name)); err != nil {
+				return err
+			}
 		}
-		st.add(info)
 		return nil
-	})
-	return st, err
+	}
+	return st, walk(root)
+}
+
+// dirListing is a directory's entries as last read. Adding, removing or renaming an entry changes the directory's own
+// modification time, so a listing taken at the same time is reused; an edit in place changes only the file, so the
+// walk still stats every file.
+type dirListing struct {
+	ModTime int64
+	Files   []string
+	Dirs    []string
+}
+
+// racyListingWindow is how recent a directory's modification time may be before its listing is not kept: an entry
+// added within the filesystem's timestamp granularity of the listing would leave the time unchanged.
+const racyListingWindow = 2 * time.Second
+
+var dirListings = struct {
+	sync.Mutex
+	byPath map[string]dirListing
+	used   map[string]bool
+	loaded bool
+	dirty  bool
+}{byPath: map[string]dirListing{}, used: map[string]bool{}}
+
+func dirListingsPath() (string, error) {
+	base, err := datadir.Dir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(base, "cache", "drift-listings.gob"), nil
+}
+
+func loadDirListingsLocked() {
+	if dirListings.loaded {
+		return
+	}
+	dirListings.loaded = true
+	path, err := dirListingsPath()
+	if err != nil {
+		return
+	}
+	raw, err := fsx.ReadFile(path)
+	if err != nil {
+		return
+	}
+	var disk map[string]dirListing
+	if gob.NewDecoder(bytes.NewReader(raw)).Decode(&disk) == nil {
+		dirListings.byPath = disk
+	}
+}
+
+func listDir(dir string) (dirListing, error) {
+	info, err := os.Lstat(dir)
+	if err != nil {
+		return dirListing{}, err
+	}
+	stamp := info.ModTime().UnixNano()
+	dirListings.Lock()
+	loadDirListingsLocked()
+	cached, ok := dirListings.byPath[dir]
+	dirListings.used[dir] = true
+	dirListings.Unlock()
+	if ok && cached.ModTime == stamp {
+		return cached, nil
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return dirListing{}, err
+	}
+	listing := dirListing{ModTime: stamp}
+	for _, e := range entries {
+		if e.IsDir() {
+			listing.Dirs = append(listing.Dirs, e.Name())
+		} else {
+			listing.Files = append(listing.Files, e.Name())
+		}
+	}
+	if time.Since(info.ModTime()) > racyListingWindow {
+		dirListings.Lock()
+		dirListings.byPath[dir] = listing
+		dirListings.dirty = true
+		dirListings.Unlock()
+	}
+	return listing, nil
+}
+
+// saveDirListings writes the listings when any changed, dropping those of directories that are gone.
+func saveDirListings() {
+	dirListings.Lock()
+	if !dirListings.dirty {
+		dirListings.Unlock()
+		return
+	}
+	for dir := range dirListings.byPath {
+		if dirListings.used[dir] {
+			continue
+		}
+		if _, err := os.Lstat(dir); err != nil {
+			delete(dirListings.byPath, dir)
+		}
+	}
+	var buf bytes.Buffer
+	err := gob.NewEncoder(&buf).Encode(dirListings.byPath)
+	dirListings.dirty = false
+	dirListings.Unlock()
+	path, pathErr := dirListingsPath()
+	if err != nil || pathErr != nil {
+		return
+	}
+	if os.MkdirAll(filepath.Dir(path), 0o700) != nil || datadir.WriteFile(path, buf.Bytes(), 0o600) != nil {
+		dirListings.Lock()
+		dirListings.dirty = true
+		dirListings.Unlock()
+	}
 }
 
 // storeListing is a store item's file list and stats. Store items do not change once installed, so a listing is
@@ -517,6 +638,7 @@ func (s *Store) unplaceKeys(game, id string, keys []string) error {
 
 func (s *Store) liveDriftState(game, id string) (Profile, string, map[string]string, map[string]FolderStat, error) {
 	defer saveStoreListings()
+	defer saveDirListings()
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return Profile{}, "", nil, nil, err
@@ -527,13 +649,28 @@ func (s *Store) liveDriftState(game, id string) (Profile, string, map[string]str
 	if err != nil {
 		return Profile{}, "", nil, nil, err
 	}
-	stats := map[string]FolderStat{}
+	stats := make(map[string]FolderStat, len(names))
+	var mu sync.Mutex
+	var errs []error
+	sem := make(chan struct{}, max(1, runtime.GOMAXPROCS(0)))
+	var wg sync.WaitGroup
 	for key, folder := range names {
-		st, err := folderStatAt(modsDir, held, folder, storePeer(s, game, key))
-		if err != nil {
-			return Profile{}, "", nil, nil, err
-		}
-		stats[key] = st
+		wg.Go(func() {
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			st, err := folderStatAt(modsDir, held, folder, storePeer(s, game, key))
+			mu.Lock()
+			defer mu.Unlock()
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+			stats[key] = st
+		})
+	}
+	wg.Wait()
+	if len(errs) > 0 {
+		return Profile{}, "", nil, nil, errs[0]
 	}
 	return p, dir, names, stats, nil
 }

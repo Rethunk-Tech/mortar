@@ -438,3 +438,47 @@ func TestRefreshDependenciesReadsAPackagesThunderstoreManifest(t *testing.T) {
 		t.Fatalf("Needs after refresh = %v, want %v", needs, want)
 	}
 }
+
+func TestFolderStatKeptListingsStillSeeEditsAndNewFiles(t *testing.T) {
+	testfs.DataHome(t)
+	reset := func() {
+		dirListings.Lock()
+		dirListings.byPath, dirListings.used, dirListings.loaded, dirListings.dirty = map[string]dirListing{}, map[string]bool{}, false, false
+		dirListings.Unlock()
+	}
+	reset()
+	t.Cleanup(reset)
+	root := t.TempDir()
+	old := time.Now().Add(-time.Hour)
+	writeTimed(t, filepath.Join(root, "sub", "a.json"), "a", old)
+	for _, dir := range []string{filepath.Join(root, "sub"), root} {
+		if err := os.Chtimes(dir, old, old); err != nil {
+			t.Fatal(err)
+		}
+	}
+	first, err := walkFolderStat(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	saveDirListings()
+	reset()
+
+	// An edit in place leaves every folder's time alone; the file's own stat still shows it.
+	writeTimed(t, filepath.Join(root, "sub", "a.json"), "edited", old.Add(time.Minute))
+	edited, err := walkFolderStat(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if edited.Files != 1 || edited.Size == first.Size || edited.Newest == first.Newest {
+		t.Fatalf("in-place edit unseen: %+v, was %+v", edited, first)
+	}
+
+	writeTimed(t, filepath.Join(root, "sub", "b.json"), "b", old)
+	added, err := walkFolderStat(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if added.Files != 2 {
+		t.Fatalf("new nested file unseen: %+v", added)
+	}
+}
