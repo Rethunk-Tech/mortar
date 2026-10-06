@@ -98,7 +98,7 @@ func TestABepInExGameReportsItsSceneOwnVersionAndWhichPackagesLoaded(t *testing.
 	if !ok {
 		t.Fatal("BepInEx reports no running state")
 	}
-	packages := svc.pluginPackages(lc, p.ID)
+	packages := svc.livePackages(lc, p.ID)
 
 	first, ok := svc.askLive(t.Context(), g, st, live, packages)
 	if !ok || first.Scene != "InitScene" || len(first.Mods) != 1 || first.Mods[0].Loaded {

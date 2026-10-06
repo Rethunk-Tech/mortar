@@ -31,18 +31,20 @@ func (l Loader) RunningState(ctx context.Context, p loader.ProfileView) (loader.
 		GameVersionSource string `json:"gameVersionSource"`
 		Scene             string `json:"scene"`
 		Plugins           []struct {
-			GUID string `json:"guid"`
+			GUID     string `json:"guid"`
+			Version  string `json:"version"`
+			Location string `json:"location"`
 		} `json:"plugins"`
 	}
 	if err := json.Unmarshal(raw, &st); err != nil {
 		return loader.Live{}, err
 	}
-	live := loader.Live{Scene: st.Scene, Plugins: make([]string, 0, len(st.Plugins))}
+	live := loader.Live{Scene: st.Scene, Plugins: make([]loader.LivePlugin, 0, len(st.Plugins))}
 	if st.GameVersionSource == "game" {
 		live.GameVersion = st.GameVersion
 	}
 	for _, pl := range st.Plugins {
-		live.Plugins = append(live.Plugins, pl.GUID)
+		live.Plugins = append(live.Plugins, loader.LivePlugin{GUID: pl.GUID, Version: pl.Version, Location: pl.Location})
 	}
 	return live, nil
 }

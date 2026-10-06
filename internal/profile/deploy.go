@@ -57,6 +57,17 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 
 type packageFile struct{ src, key string }
 
+// PackageFileOwners maps each file the enabled packages lay out below the profile's root, by slash path, to the key
+// of the entry whose copy is there. A game that is redirected has none.
+func (s *Store) PackageFileOwners(gameID, id string) (map[string]string, error) {
+	files, _, err := s.packageFiles(gameID, id)
+	owners := make(map[string]string, len(files))
+	for rel, f := range files {
+		owners[rel] = f.key
+	}
+	return owners, err
+}
+
 // PackageOverrides counts, for each entry key, the files it wins over an earlier package. A game that is
 // redirected holds its mods in the profile's mods folder and has none.
 func (s *Store) PackageOverrides(gameID, id string) (map[string]int, error) {

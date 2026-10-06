@@ -240,12 +240,16 @@ type GameVersion interface {
 }
 
 // Live is what a running game's companion reports: the version the game itself shows ("" when the companion cannot
-// tell it), its current scene and the GUIDs of the plugins that loaded, a set in no particular order.
+// tell it), its current scene and the plugins that loaded, a set in no particular order.
 type Live struct {
 	GameVersion string
 	Scene       string
-	Plugins     []string
+	Plugins     []LivePlugin
 }
+
+// LivePlugin is one loaded plugin. Location is its file's slash path below the loader's plugins folder, "" when the
+// companion does not say; it tells which of two copies of one GUID and version loaded.
+type LivePlugin struct{ GUID, Version, Location string }
 
 // RunningState is a loader whose companion tells what the running game has loaded, for a log that names no version.
 type RunningState interface {
