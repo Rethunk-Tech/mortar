@@ -113,7 +113,11 @@ test('decodes a link the app made', async () => {
     name: 'Lobby',
     game: 'lethal-company',
     gameVersion: '',
-    sourceKeys: { github: 'lethal-company-mod', nexus: 'lethalcompany', thunderstore: 'lethal-company' },
+    sourceKeys: {
+      github: 'lethal-company-mod',
+      nexus: 'lethalcompany',
+      thunderstore: 'lethal-company',
+    },
     entries: [
       { kind: 'thunderstore', ns: 'Alice', name: 'MoreCompany', version: '1.2.3' },
       { kind: 'github', repo: 'owner/repo', tag: 'v1', asset: 'mod.zip' },
