@@ -375,7 +375,7 @@ export function GameSettings({ profileId, value, onChange }: GameSettingsProps) 
   return (
     <Stack spacing={2}>
       <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6">{t`Game settings`}</Typography>
+        <Typography variant="h6" component="h3">{t`Game settings`}</Typography>
         <CopyFromProfileMenu
           gameId={gameId}
           profileId={profileId}

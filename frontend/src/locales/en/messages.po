@@ -79,7 +79,7 @@ msgid "Interface tour"
 msgstr "Interface tour"
 
 #: src/mods/updateReview/SourceGroups.tsx:11
-#: src/settings/sections/DataUsage.tsx:209
+#: src/settings/sections/DataUsage.tsx:211
 msgid "Other"
 msgstr "Other"
 
@@ -435,8 +435,8 @@ msgstr "Unlinked the collection"
 msgid "Use a file"
 msgstr "Use a file"
 
-#: src/settings/sections/DataUsage.tsx:214
-#: src/settings/sections/DataUsage.tsx:228
+#: src/settings/sections/DataUsage.tsx:216
+#: src/settings/sections/DataUsage.tsx:230
 msgid "Clean up…"
 msgstr "Clean up…"
 
@@ -1022,8 +1022,8 @@ msgstr "A scheduled save backup failed"
 msgid "{loader} is the loader every {gameName} mod needs. Mortar puts it in each profile; the game folder stays as it is."
 msgstr "{loader} is the loader every {gameName} mod needs. Mortar puts it in each profile; the game folder stays as it is."
 
-#: src/settings/sections/DataUsage.tsx:217
-#: src/settings/sections/DataUsage.tsx:228
+#: src/settings/sections/DataUsage.tsx:219
+#: src/settings/sections/DataUsage.tsx:230
 msgid "Clear cache…"
 msgstr "Clear cache…"
 
@@ -1704,7 +1704,7 @@ msgstr "Copper"
 msgid "found, without {0}"
 msgstr "found, without {0}"
 
-#: src/settings/sections/DataUsage.tsx:271
+#: src/settings/sections/DataUsage.tsx:273
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
@@ -1898,8 +1898,8 @@ msgstr "Could not resize the window"
 msgid "SMAPI unofficial builds"
 msgstr "SMAPI unofficial builds"
 
-#: src/settings/sections/DataUsage.tsx:226
 #: src/settings/sections/DataUsage.tsx:228
+#: src/settings/sections/DataUsage.tsx:230
 msgid "Usage"
 msgstr "Usage"
 
@@ -3003,7 +3003,7 @@ msgstr "Profile sections"
 msgid "Fullscreen resolution height"
 msgstr "Fullscreen resolution height"
 
-#: src/settings/sections/DataUsage.tsx:240
+#: src/settings/sections/DataUsage.tsx:242
 msgid "Shared by every game"
 msgstr "Shared by every game"
 
@@ -3117,7 +3117,7 @@ msgstr "Local-only mods kept ({0})"
 
 #: src/commandPalette/CommandPalette.tsx:156
 #: src/settings/sections/DataImport.tsx:23
-#: src/settings/sections/DataUsage.tsx:228
+#: src/settings/sections/DataUsage.tsx:230
 #: src/settings/SettingsPage.tsx:44
 msgid "Storage"
 msgstr "Storage"
@@ -3890,7 +3890,7 @@ msgstr "Choose image…"
 msgid "Check these before you play."
 msgstr "Check these before you play."
 
-#: src/settings/sections/DataUsage.tsx:233
+#: src/settings/sections/DataUsage.tsx:235
 msgid "By game"
 msgstr "By game"
 
@@ -4513,7 +4513,7 @@ msgstr "Main mod's folder"
 msgid "Code"
 msgstr "Code"
 
-#: src/settings/sections/DataUsage.tsx:282
+#: src/settings/sections/DataUsage.tsx:284
 msgid "A portable copy keeps its data beside the program."
 msgstr "A portable copy keeps its data beside the program."
 
@@ -5089,7 +5089,7 @@ msgstr "Full"
 msgid "Choose one"
 msgstr "Choose one"
 
-#: src/settings/sections/DataUsage.tsx:206
+#: src/settings/sections/DataUsage.tsx:208
 msgid "Cache"
 msgstr "Cache"
 
@@ -5318,7 +5318,7 @@ msgstr "Could not dismiss those folders"
 msgid "The title screen's intro animation (Mortar skips it on measured launches)"
 msgstr "The title screen's intro animation (Mortar skips it on measured launches)"
 
-#: src/settings/sections/DataUsage.tsx:267
+#: src/settings/sections/DataUsage.tsx:269
 msgid "Portable copy: data is kept in {portableDir}"
 msgstr "Portable copy: data is kept in {portableDir}"
 
@@ -6153,8 +6153,8 @@ msgstr "{length} of {limit} characters · too long for one Discord message"
 msgid "Harmless conflicts"
 msgstr "Harmless conflicts"
 
-#: src/settings/sections/DataUsage.tsx:220
-#: src/settings/sections/DataUsage.tsx:228
+#: src/settings/sections/DataUsage.tsx:222
+#: src/settings/sections/DataUsage.tsx:230
 msgid "Open recently deleted"
 msgstr "Open recently deleted"
 
@@ -6445,7 +6445,7 @@ msgstr "Send"
 #: src/firstrunTour/TourPopover.tsx:50
 #: src/game/Hero.tsx:342
 #: src/game/ProfileWorkspace.tsx:88
-#: src/mods/ModListVirtual.tsx:279
+#: src/mods/ModListVirtual.tsx:283
 #: src/settings/GameSettingsPage.tsx:63
 #: src/settings/GameSettingsPage.tsx:102
 #: src/settings/sections/Updates.tsx:175
@@ -7070,7 +7070,7 @@ msgstr "Pinned {name} at its version"
 msgid "Unfinished launch"
 msgstr "Unfinished launch"
 
-#: src/mods/ListColumnMenu.tsx:281
+#: src/mods/ListColumnMenu.tsx:299
 msgid "Reset to default columns"
 msgstr "Reset to default columns"
 
@@ -7306,7 +7306,7 @@ msgstr "Could not read that code or file"
 
 #: src/profiles/ProfilesPage.tsx:199
 #: src/profiles/ProfilesPage.tsx:213
-#: src/settings/sections/DataUsage.tsx:208
+#: src/settings/sections/DataUsage.tsx:210
 msgid "Recently deleted"
 msgstr "Recently deleted"
 
@@ -7794,7 +7794,7 @@ msgstr "Problems and updates"
 msgid "Every profile of this game runs the {0} installed for it, so they all switch to {1}."
 msgstr "Every profile of this game runs the {0} installed for it, so they all switch to {1}."
 
-#: src/settings/sections/DataUsage.tsx:205
+#: src/settings/sections/DataUsage.tsx:207
 msgid "Store"
 msgstr "Store"
 
@@ -8863,7 +8863,7 @@ msgstr "Dark"
 
 #: src/mods/HiddenInside.tsx:75
 #: src/profiles/ProfilesPage.tsx:163
-#: src/settings/sections/DataUsage.tsx:278
+#: src/settings/sections/DataUsage.tsx:280
 msgid "Open folder"
 msgstr "Open folder"
 
@@ -10037,7 +10037,7 @@ msgstr "Show file"
 
 #: src/saves/BackupsDialog.tsx:139
 #: src/settings/GameSettingsPage.tsx:64
-#: src/settings/sections/DataUsage.tsx:207
+#: src/settings/sections/DataUsage.tsx:209
 #: src/settings/sections/GameSettings.tsx:405
 msgid "Save backups"
 msgstr "Save backups"
@@ -11138,7 +11138,7 @@ msgstr "Player"
 #: src/game/Sidebar.tsx:335
 #: src/profiles/ProfilesPage.tsx:339
 #: src/settings/sections/AboutDiagnostics.tsx:96
-#: src/settings/sections/DataUsage.tsx:204
+#: src/settings/sections/DataUsage.tsx:206
 #: src/settings/sections/Shortcuts.tsx:158
 msgid "Profiles"
 msgstr "Profiles"
@@ -11376,7 +11376,7 @@ msgstr "Keep this version"
 msgid "This is not a Mod Manager Download link from Nexus."
 msgstr "This is not a Mod Manager Download link from Nexus."
 
-#: src/settings/sections/DataUsage.tsx:270
+#: src/settings/sections/DataUsage.tsx:272
 #: src/settings/sections/StreamOverlay.tsx:66
 msgid "Location"
 msgstr "Location"
@@ -11544,6 +11544,7 @@ msgstr "Restored {0} to before that change"
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
+#: src/mods/ListColumnMenu.tsx:203
 #: src/profiles/EditProfileDialog.tsx:213
 msgid "Icon"
 msgstr "Icon"
@@ -11842,8 +11843,8 @@ msgid "Missing requirements on install"
 msgstr "Missing requirements on install"
 
 #: src/settings/sections/DataBackups.tsx:109
-#: src/settings/sections/DataUsage.tsx:235
-#: src/settings/sections/DataUsage.tsx:265
+#: src/settings/sections/DataUsage.tsx:237
+#: src/settings/sections/DataUsage.tsx:267
 msgid "Measuring…"
 msgstr "Measuring…"
 
@@ -12674,7 +12675,7 @@ msgid "Could not set it in Steam"
 msgstr "Could not set it in Steam"
 
 #: src/settings/sections/AboutDiagnostics.tsx:100
-#: src/settings/sections/DataUsage.tsx:228
+#: src/settings/sections/DataUsage.tsx:230
 msgid "Disk space"
 msgstr "Disk space"
 

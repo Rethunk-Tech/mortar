@@ -157,6 +157,8 @@ function StorageBar({
           {segs.map((s, i) => (
             <Tooltip
               key={s.id}
+              // The bar's own label names every segment; the tooltip only describes, so a bare div carries no label.
+              describeChild={true}
               title={`${labels[s.id]} · ${formatBytes(s.size)} · ${Math.round((s.size / total) * PERCENT)}%`}
             >
               <Box
