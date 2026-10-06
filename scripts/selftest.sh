@@ -29,8 +29,9 @@
 # regress --game lethal-company builds its own sandbox, bootstraps a Proton prefix, installs BepInEx and three plugins
 # from Thunderstore (cached in /var/tmp/mortar-regress-cache; MORTAR_REGRESS_OFFLINE=1 proves a rerun needs no network),
 # launches directly under Proton, and requires the plugins to load and the purge to leave the game folder identical.
-# MORTAR_REGRESS_MATRIX=1 then runs the BepInEx test matrix (scripts/regress-bepinex.sh, docs/bepinex-test-matrix.md),
-# which needs the network and the .NET SDK; MORTAR_REGRESS_R2_EXPORT=1 also publishes an r2modman code to thunderstore.io.
+# MORTAR_REGRESS_MATRIX=1 also runs the BepInEx test matrix (scripts/regress-bepinex.sh, docs/bepinex-test-matrix.md)
+# within two launches, the base one and one more; it needs the network and the .NET SDK, and MORTAR_REGRESS_R2_EXPORT=1
+# also publishes an r2modman code to thunderstore.io.
 set -euo pipefail
 
 BASE=${MORTAR_SELFTEST_BASE:-/var/tmp}
@@ -821,6 +822,17 @@ EOF
     cp "$log" "$ROOT/LogOutput-$1.log" 2>/dev/null || true
   }
 
+  # The matrix fills the base profile first, so the base launch is also its launch (a).
+  local matrix=skipped
+  if [ -n "${MORTAR_REGRESS_MATRIX:-}" ]; then
+    if [ -n "${MORTAR_REGRESS_OFFLINE:-}" ]; then
+      failures+=("the matrix needs the network; unset MORTAR_REGRESS_OFFLINE")
+    else
+      matrix=run
+      regress_bepinex_prepare "$data" "$compat" "$game" "$timeout" "$profile" "$bepinex"
+    fi
+  fi
+
   echo "launching profile $profile (${#plugins[@]} plugins)"
   lc_launch "$profile" base
   local name
@@ -838,7 +850,12 @@ EOF
   fi
 
   echo "stopping the game"
-  lc_stop base
+  if [ "$matrix" = run ]; then
+    regress_bepinex_running "$log"
+    mx_stop a
+  else
+    lc_stop base
+  fi
 
   # MORTAR_REGRESS_R2_CODE imports an r2modman code into a new profile through `mortar profile import`, waits for its
   # downloads, launches it and requires BepInEx to load every plugin it counted. MORTAR_REGRESS_R2_DISABLE lists
@@ -898,14 +915,12 @@ PY
     fi
   fi
 
-  local matrix=skipped
-  if [ -n "${MORTAR_REGRESS_MATRIX:-}" ]; then
-    if [ -n "${MORTAR_REGRESS_OFFLINE:-}" ]; then
-      failures+=("the matrix needs the network; unset MORTAR_REGRESS_OFFLINE")
-    else
-      regress_bepinex_matrix "$data" "$compat" "$game" "$timeout" "$profile" "$bepinex"
-      matrix="$(grep -c "$(printf '\tPASS\t')" "$ROOT/matrix.tsv") PASS, $(grep -c "$(printf '\tFAIL\t')" "$ROOT/matrix.tsv") FAIL"
-    fi
+  if [ "$matrix" = run ]; then
+    regress_bepinex_after "Regress LC"
+    local failed
+    failed=$(grep -c "$(printf '\tFAIL\t')" "$ROOT/matrix.tsv")
+    matrix="$(grep -c "$(printf '\tPASS\t')" "$ROOT/matrix.tsv") PASS, $failed FAIL"
+    [ "$failed" -eq 0 ] || failures+=("matrix: $failed rows failed; see $ROOT/matrix.tsv")
   fi
 
   [ ${#failures[@]} -eq 0 ] && verdict=PASS

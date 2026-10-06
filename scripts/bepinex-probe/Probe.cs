@@ -17,6 +17,8 @@ public class MatrixProbe : BaseUnityPlugin
     {
         string value = Config.Bind("General", "Value", "default", "Written by the matrix regress.").Value;
         Logger.LogInfo("matrix " + Variant.Name + " cfg=" + value);
+        float ratio = Config.Bind("General", "Ratio", 0.5f, "A float, for Mortar's typed editor.").Value;
+        Logger.LogInfo("matrix " + Variant.Name + " ratio=" + ratio.ToString(System.Globalization.CultureInfo.InvariantCulture));
         // A data file shipped in a folder of its own, which r2modman's layout puts beside the plugin.
         string beside = Path.Combine(Path.GetDirectoryName(Info.Location), "matrix-data.txt");
         Logger.LogInfo("matrix " + Variant.Name + " beside=" + File.Exists(beside));

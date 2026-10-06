@@ -1,9 +1,14 @@
 # shellcheck shell=bash
 # The BepInEx test matrix (docs/bepinex-test-matrix.md), run by `MORTAR_REGRESS_MATRIX=1 scripts/selftest.sh regress
-# --game lethal-company` after the base run. selftest.sh sources this file; regress_lc calls regress_bepinex_matrix
-# with its sandbox set up (ROOT, PORT, data, game, compat, profile, timeout) and its helpers defined (cli, reap_prefix,
-# tree_hash). Each matrix item ends as one PASS or FAIL row in $ROOT/matrix.tsv; a FAIL is also a regress failure.
-# The modpack and the update packages come from Thunderstore, so the matrix needs the network.
+# --game lethal-company`. selftest.sh sources this file; regress_lc calls three stages with its sandbox set up (ROOT,
+# PORT, data, game, compat, profile, timeout) and its helpers defined (cli, reap_prefix, tree_hash):
+#   regress_bepinex_prepare  before the base launch: every row that needs no game process, and the base profile
+#                            filled with the modpack and the probe packages, so the base launch is launch (a)
+#   regress_bepinex_running  during launch (a): what only a running game shows
+#   regress_bepinex_after    after launch (a) is stopped: launch (b) and the rows that need neither launch
+# A session allows 3 game launches (scripts/launch-guard.sh), so the matrix adds only launch (b) to the base run's.
+# Each matrix item ends as one PASS or FAIL row in $ROOT/matrix.tsv; any FAIL fails the regress. The modpack
+# and the update packages come from Thunderstore, so the matrix needs the network.
 
 # The modpack: the 60 most-downloaded Lethal Company packages that are neither deprecated nor modpacks nor tools
 # (2026-10-06), pinned so a rerun installs the same files. Their dependencies come from the queue.
@@ -29,10 +34,11 @@ MATRIX_MODPACK=(
   scoopy-Scoopys_Variety_Mod/1.2.0
 )
 
+# A FAIL row fails the regress at its end (regress_lc reads matrix.tsv), not at once: a matrix row failing before
+# launch (a) must not keep the base run from launching.
 mx_result() {
   printf '%s\t%s\t%s\n' "$1" "$2" "$3" >>"$ROOT/matrix.tsv"
   echo "matrix $2 $1: $3"
-  [ "$2" = PASS ] || failures+=("matrix $1: $3")
 }
 mx_pass() { mx_result "$1" PASS "$2"; }
 mx_fail() { mx_result "$1" FAIL "$2"; }
@@ -99,9 +105,15 @@ mx_game_pids() {
 
 mx_state() { cli status lethal-company --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])'; }
 
-# mx_launches prints how many games the matrix starts (each mx_launch call below), which the session's launch cap must
-# have left before the run begins (scripts/selftest.sh need_launches).
-mx_launches() { echo 8; }
+# mx_launches prints how many games the matrix starts on top of the base run's launch (a): launch (b), the one
+# mx_launch call below. The session's launch cap must have that many left before the run begins (need_launches).
+mx_launches() { echo 1; }
+
+# mx_bep_version VERSION prints the version BepInEx logs for a Thunderstore BepInExPack version (5.4.2305 -> 5.4.23.5).
+mx_bep_version() {
+  local v=$1 last=${1##*.}
+  echo "${v%.*}.$((10#$last / 100)).$((10#$last % 100))"
+}
 
 # mx_launch PROFILE TAG starts the profile and waits for BepInEx to finish loading. The previous run's log is moved
 # aside first, so its last line cannot stand in for this run's.
@@ -179,6 +191,26 @@ mx_doorstop() {
   fi
 }
 
+# mx_files_and_flags PROFILE VERSION checks, with no game running, the profile's Doorstop files against BepInExPack
+# VERSION's and the command line Mortar would start the game with (launchsvc PreviewCommand): Doorstop 4 takes
+# --doorstop-target-assembly, 3 --doorstop-target, each with the profile's preloader in Z: form.
+mx_files_and_flags() {
+  local files flag target argv
+  files=$(mx_doorstop_files "$1" "$2")
+  case $(unzip -p "$ROOT/bep-$2.zip" BepInExPack/.doorstop_version 2>/dev/null) in 4*) flag=--doorstop-target-assembly ;; *) flag=--doorstop-target ;; esac
+  target="Z:$(mx_dir "$1" | sed 's:/:\\:g')\\BepInEx\\core\\BepInEx.Preloader.dll"
+  argv=$(mx_wails launchsvc.Service.PreviewCommand '"lethal-company"' "$(mx_q "$1")" '""' "$(mx_q "$ROOT/run-proton.sh")" '""' |
+    python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["error"] or " ".join(d["argv"]))')
+  if [ "$files" != "the pack's doorstop_config.ini and .doorstop_version" ]; then
+    echo "$files"
+  elif [[ "$argv" != *"$flag $target"* ]]; then
+    echo "the previewed command line lacks $flag $target: $argv"
+  else
+    echo "the pack's doorstop_config.ini and .doorstop_version; the previewed command line carries $flag with the profile's preloader"
+  fi
+}
+mx_files_and_flags_ok() { [[ "$1" == "the pack's doorstop_config.ini and .doorstop_version; the previewed"* ]]; }
+
 # mx_stop TAG stops the game from Mortar and records whether it was a polite stop: the game's own process gone before
 # anything is reaped, Unity's clean-exit statistics in Player.log, Mortar idle, and the game folder purged.
 mx_stop() {
@@ -240,7 +272,7 @@ mx_build_probes() {
   deep="plugins/$(printf 'very-long-folder-name-%02d/' $(seq 1 $(((300 - ${#winprofile}) / 23 + 1))) | sed 's:/$::')"
   # name|zip path=build file ... ; a value with no build file is written as text.
   local specs=(
-    "Base|plugins/Base.dll=base.dll|config/tech.rethunk.mortar.matrix.base.cfg=[General]\nValue = shipped\n"
+    "Base|plugins/Base.dll=base.dll|config/tech.rethunk.mortar.matrix.base.cfg=[General]\nValue = shipped\n\n# Setting type: Single\n# Default value: 0.5\nRatio = 0.5\n"
     "Beat|Beat.dll=beat.dll"
     "Nested|plugins/Deep/Er/Nested.dll=nested.dll"
     "Own|BepInEx/plugins/Own/Own.dll=own.dll|BepInEx/config/tech.rethunk.mortar.matrix.own.cfg=[General]\nValue = own-layout\n"
@@ -292,36 +324,57 @@ mx_install_probes() {
 # mx_problems PROFILE TAG writes the profile's Problems as JSON to $ROOT/problems-TAG.json.
 mx_problems() { cli problems lethal-company "$1" --json >"$ROOT/problems-$2.json"; }
 
-# regress_bepinex_matrix DATA COMPAT GAME TIMEOUT PROFILE BEPINEX runs the matrix: Mortar's data folder, the Proton
-# compatdata folder, the copied game, the launch wait in seconds, the base run's profile id and the BepInEx version.
-regress_bepinex_matrix() {
-  mx_data=$1 mx_compat=$2 mx_game=$3 mx_timeout=$4 mx_base=$5 mx_bepinex=$6 mx_log=/dev/null mx_edge_edited=
+# regress_bepinex_prepare DATA COMPAT GAME TIMEOUT PROFILE BEPINEX runs every row that needs no game process, before
+# the base launch: Mortar's data folder, the Proton compatdata folder, the copied game, the launch wait in seconds,
+# the base run's profile id and the BepInEx version it pinned. The loader rows check the profile's files and the
+# command line Mortar would start; the base profile then gets the modpack, the probe packages and two config edits,
+# which launch (a) loads.
+regress_bepinex_prepare() {
+  mx_data=$1 mx_compat=$2 mx_game=$3 mx_timeout=$4 mx_base=$5 mx_bepinex=$6 mx_log=/dev/null mx_edge_edited='' mx_ready=''
   # Every item runs and records its own verdict, so one failing command must not end the run.
   set +e +o pipefail
   mx_saves="$mx_compat/pfx/drive_c/users/steamuser/AppData/LocalLow/ZeekerssRBLX/Lethal Company"
   : >"$ROOT/matrix.tsv"
-  echo "---- BepInEx matrix"
+  echo "---- BepInEx matrix: before launch (a)"
   local loader_dir
   loader_dir=$(mx_dir "$mx_base")
 
-  # 1. Loader installs. The base run installed and pinned $mx_bepinex; its launch passed only if Doorstop started it.
-  local v
+  # 1. Loader installs, checked on the profile's files and the previewed command line. The base run installed and
+  # pinned $mx_bepinex; launch (a) proves it loads, launch (b) proves the older pinned pack loads.
+  local v out
   for v in 5.4.2100 "$mx_bepinex"; do
     curl -fsSL -o "$ROOT/bep-$v.zip" "https://thunderstore.io/package/download/BepInEx/BepInExPack/$v/" || mx_fail loader.download "BepInExPack $v did not download"
   done
   mx_check loader.fresh "BepInExPack $mx_bepinex in the profile: marker $(cat "$loader_dir/.mortar-bepinex.json"), $(mx_doorstop_files "$mx_base" "$mx_bepinex")" \
     test "$(mx_doorstop_files "$mx_base" "$mx_bepinex")" = "the pack's doorstop_config.ini and .doorstop_version"
+  if cli loader install lethal-company 5.4.2100 >"$ROOT/loader-2100.txt" 2>&1 && cli loader pin lethal-company 5.4.2100 >/dev/null; then
+    out=$(mx_files_and_flags "$mx_base" 5.4.2100)
+    mx_check loader.pin "pinned 5.4.2100 over $mx_bepinex: $out" mx_files_and_flags_ok "$out"
+  else
+    mx_fail loader.pin "installing or pinning 5.4.2100 failed: $(head -c 300 "$ROOT/loader-2100.txt")"
+  fi
+  if cli loader pin lethal-company latest >/dev/null && cli loader install lethal-company "$mx_bepinex" >"$ROOT/loader-latest.txt" 2>&1; then
+    out=$(mx_files_and_flags "$mx_base" "$mx_bepinex")
+    mx_check loader.unpin "unpinned and installed $mx_bepinex: $out" mx_files_and_flags_ok "$out"
+  else
+    mx_fail loader.unpin "unpin or install $mx_bepinex failed: $(head -c 300 "$ROOT/loader-latest.txt")"
+  fi
+  if cli loader install lethal-company "$mx_bepinex" >"$ROOT/loader-again.txt" 2>&1; then
+    out=$(mx_files_and_flags "$mx_base" "$mx_bepinex")
+    mx_check loader.reinstall "reinstalled $mx_bepinex over itself: $out" mx_files_and_flags_ok "$out"
+  else
+    mx_fail loader.reinstall "$(head -c 300 "$ROOT/loader-again.txt")"
+  fi
+  # Launch (a) runs the pinned version the base run expects.
+  cli loader pin lethal-company "$mx_bepinex" >/dev/null || mx_fail loader.repin "pinning $mx_bepinex again failed"
 
-  # Every later profile is created now, so each install below reaches all of them.
-  local pack edge crash quit upd upd2 dep p
-  pack=$(mx_profile "Matrix Pack")
-  edge=$(mx_profile "Matrix Edge")
-  crash=$(mx_profile "Matrix Crash")
-  quit=$(mx_profile "Matrix Quit")
-  upd=$(mx_profile "Matrix Update")
-  upd2=$(mx_profile "Matrix Update Two")
-  dep=$(mx_profile "Matrix Deprecated")
-  for p in "$pack" "$edge" "$crash" "$quit" "$upd" "$upd2" "$dep"; do
+  # The profiles of launch (b) and of the rows that never launch, created now so each install reaches all of them.
+  local p
+  mx_crash=$(mx_profile "Matrix Crash")
+  mx_upd=$(mx_profile "Matrix Update")
+  mx_upd2=$(mx_profile "Matrix Update Two")
+  mx_dep=$(mx_profile "Matrix Deprecated")
+  for p in "$mx_crash" "$mx_upd" "$mx_upd2" "$mx_dep"; do
     cli profile set lethal-company "$p" launchPrefix "$ROOT/run-proton.sh" >/dev/null
   done
 
@@ -334,51 +387,19 @@ regress_bepinex_matrix() {
     return
   fi
 
-  # 2. Pin an older pack (Doorstop 3, no .doorstop_version) over the newer one, launch, then follow the latest again.
-  local out
-  if cli loader install lethal-company 5.4.2100 >"$ROOT/loader-2100.txt" 2>&1 && cli loader pin lethal-company 5.4.2100 >/dev/null; then
-    if mx_launch "$mx_base" pin; then
-      out=$(grep -m1 -o 'BepInEx 5\.[0-9.]* - Lethal Company' "$mx_log")
-      mx_check loader.pin "pinned 5.4.2100; log opens with \"$out\"; $(mx_doorstop "$mx_base" 5.4.2100)" \
-        test "$out|$(mx_doorstop "$mx_base" 5.4.2100)" = "BepInEx 5.4.21.0 - Lethal Company|$(mx_doorstop_ok)"
-    fi
-    mx_stop pin
-  else
-    mx_fail loader.pin "installing or pinning 5.4.2100 failed: $(head -c 300 "$ROOT/loader-2100.txt")"
-  fi
-  if cli loader pin lethal-company latest >/dev/null && cli loader install lethal-company "$mx_bepinex" >"$ROOT/loader-latest.txt" 2>&1; then
-    if mx_launch "$mx_base" unpin; then
-      out=$(grep -m1 -o 'BepInEx 5\.[0-9.]* - Lethal Company' "$mx_log")
-      mx_check loader.unpin "unpinned and installed $mx_bepinex; log opens with \"$out\"; $(mx_doorstop "$mx_base" "$mx_bepinex")" \
-        test "$out|$(mx_doorstop "$mx_base" "$mx_bepinex")" = "BepInEx 5.4.23.5 - Lethal Company|$(mx_doorstop_ok)"
-    fi
-    mx_stop unpin
-  else
-    mx_fail loader.unpin "unpin or install $mx_bepinex failed: $(head -c 300 "$ROOT/loader-latest.txt")"
-  fi
-  if cli loader install lethal-company "$mx_bepinex" >"$ROOT/loader-again.txt" 2>&1; then
-    if mx_launch "$mx_base" reinstall; then
-      mx_check loader.reinstall "reinstalled $mx_bepinex over itself; BepInEx loaded $(grep -c 'BepInEx\] Loading \[' "$mx_log") plugins; $(mx_doorstop "$mx_base" "$mx_bepinex")" \
-        test "$(mx_doorstop "$mx_base" "$mx_bepinex")" = "$(mx_doorstop_ok)"
-    fi
-    mx_stop reinstall
-  else
-    mx_fail loader.reinstall "$(head -c 300 "$ROOT/loader-again.txt")"
-  fi
-
-  # 3. The modpack, through the queue as Browse adds it.
+  # 2. The modpack, through the queue as Browse adds it, into the base profile.
   local pkg open
   for pkg in "${MATRIX_MODPACK[@]}"; do
-    cli queue add lethal-company "$pack" "${pkg%/*}" --source thunderstore --version "${pkg##*/}" >>"$ROOT/queue-add.txt" 2>&1 ||
+    cli queue add lethal-company "$mx_base" "${pkg%/*}" --source thunderstore --version "${pkg##*/}" >>"$ROOT/queue-add.txt" 2>&1 ||
       mx_fail modpack.queue "queue add $pkg failed"
   done
-  open=$(mx_wait_queue "$pack")
-  cli mods lethal-company "$pack" --json >"$ROOT/pack-mods.json"
+  open=$(mx_wait_queue "$mx_base")
+  cli mods lethal-company "$mx_base" --json >"$ROOT/pack-mods.json"
   local npack
   npack=$(mx_json "$ROOT/pack-mods.json" 'len(d)')
-  mx_check modpack.install "${#MATRIX_MODPACK[@]} packages queued; profile holds $npack entries (dependencies and the bridge included); open: ${open:-none}" \
+  mx_check modpack.install "${#MATRIX_MODPACK[@]} packages queued; profile holds $npack entries (dependencies, the base run's plugins and the bridge included); open: ${open:-none}" \
     test -z "$open" -a "$npack" -gt "${#MATRIX_MODPACK[@]}"
-  cli profile load-order lethal-company "$pack" --json >"$ROOT/pack-order.json"
+  cli profile load-order lethal-company "$mx_base" --json >"$ROOT/pack-order.json"
   out=$(
     python3 - "$ROOT/pack-order.json" "$ROOT/pack-mods.json" <<'PY'
 import json, sys
@@ -392,26 +413,97 @@ PY
   )
   mx_check modpack.loadorder "load order lists $(mx_json "$ROOT/pack-order.json" 'len(d)') packages, each after what it needs${out:+: $out}" test -z "$out"
 
-  mx_launch "$pack" pack
+  # 3. The probe packages beside the modpack: layout edge cases, the Console's heartbeat and a duplicated GUID.
+  if ! probe_err=$(mx_install_probes "$mx_base" Base Beat Nested Own Caps Flat Deep Patcher DupA DupB); then
+    mx_fail edge.install "$probe_err"
+  else
+    mx_ready=1
+    mx_problems "$mx_base" before
+    out=$(mx_json "$ROOT/problems-before.json" '[sorted(x["version"] for x in c["copies"]) for c in d.get("pluginClashes") or [] if c["guid"] == "tech.rethunk.mortar.matrix.dup"]')
+    mx_check mods.dupguid "Problems flags tech.rethunk.mortar.matrix.dup with copies at versions $out" test "$out" = "[['1.0.0', '1.0.0']]"
+    # The typed editor writes a string and a float before the launch; BepInEx reads every .cfg at startup and rewrites
+    # it, so launch (a) logging both values and the file keeping them proves the edit is in BepInEx's own format.
+    if mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$mx_base")" '"thunderstore:MortarMatrix-ProbeBase"' '"tech.rethunk.mortar.matrix.base.cfg"' '"General"' '"Value"' '"edited by mortar"' >/dev/null &&
+      mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$mx_base")" '"thunderstore:MortarMatrix-ProbeBase"' '"tech.rethunk.mortar.matrix.base.cfg"' '"General"' '"Ratio"' '"0.75"' >/dev/null; then
+      mx_edge_edited=1
+    else
+      mx_fail mods.config "configsvc Set failed"
+    fi
+  fi
+  set -e -o pipefail
+}
+
+# regress_bepinex_running LOG checks launch (a) while the game runs, from BepInEx's LogOutput.log at LOG: the loader
+# version and Doorstop, the Console read live, the plugin count and every probe and modpack edge case loading.
+regress_bepinex_running() {
+  mx_log=$1
+  set +e +o pipefail
+  echo "---- BepInEx matrix: launch (a)"
+  local out want
+  out=$(grep -m1 -o 'BepInEx 5\.[0-9.]* - Lethal Company' "$mx_log")
+  mx_check loader.reinstall-run "launch (a) on the reinstalled $mx_bepinex: log opens with \"$out\"; $(mx_doorstop "$mx_base" "$mx_bepinex")" \
+    test "$out|$(mx_doorstop "$mx_base" "$mx_bepinex")" = "BepInEx $(mx_bep_version "$mx_bepinex") - Lethal Company|$(mx_doorstop_ok)"
+  if [ -n "$mx_ready" ]; then
+    local lines1 lines2
+    sleep 4
+    lines1=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
+    sleep 4
+    lines2=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
+    out=$(
+      python3 - "$lines1" "$lines2" <<'PY'
+import json, sys
+a, b = json.loads(sys.argv[1]), json.loads(sys.argv[2])
+beats = lambda es: [e for e in es if e["message"].startswith("matrix heartbeat")]
+levels = {e["level"] for e in b}
+sources = {e["mod"] for e in b}
+ok = (beats(a) and len(beats(b)) > len(beats(a)) and max(e["seq"] for e in b) > max(e["seq"] for e in a)
+      and all(e["level"] == "WARN" and e["mod"] == "Matrix beat" for e in beats(b))
+      and any(e["level"] == "ERROR" and e["message"] == "matrix error line" for e in b) and "BepInEx" in sources)
+print(("OK " if ok else "BAD ") + f"heartbeats {len(beats(a))} then {len(beats(b))}, levels {sorted(levels)}, {len(sources)} sources")
+PY
+    )
+    mx_check launch.console "Console lines read twice during launch (a): ${out#* }" test "${out%% *}" = OK
+    for want in "base cfg=edited by mortar:mods.config" "base ratio=0.75:mods.config-float" "own cfg=own-layout:edge.own-layout" "caps cfg=caps:edge.case" "flat beside=True:edge.flatten-probe"; do
+      mx_check "${want#*:}" "LogOutput.log: $(grep -m1 -o "matrix ${want%%:*}" "$mx_log" || echo "no \"matrix ${want%%:*}\"")" grep -q "matrix ${want%%:*}" "$mx_log"
+    done
+    mx_check edge.config-placement "config placed flat: $(grep -m1 -o 'matrix base cfg=[^\r]*' "$mx_log" || echo 'no "matrix base cfg="')" grep -q 'matrix base cfg=' "$mx_log"
+    mx_check edge.nested "plugins/Deep/Er/Nested.dll: $(grep -m1 -o 'Loading \[Matrix nested[^]]*\]' "$mx_log" || echo not loaded)" grep -q 'Loading \[Matrix nested' "$mx_log"
+    mx_check edge.longpath "a plugin $(find "$(mx_dir "$mx_base")/BepInEx/plugins" -name Deep.dll | awk '{print length("Z:" $0)}') characters deep as Wine sees it: $(grep -m1 -o 'Loading \[Matrix deep[^]]*\]' "$mx_log" || echo not loaded)" grep -q 'Loading \[Matrix deep' "$mx_log"
+    mx_check edge.patcher "patchers/MatrixPatcher.dll: $(grep -m1 -o 'matrix patcher initialized' "$mx_log" || echo not initialized)" grep -q 'matrix patcher initialized' "$mx_log"
+    mx_check mods.dupguid-runtime "BepInEx loaded the duplicated GUID $(grep -c 'Loading \[Matrix dup' "$mx_log") time(s)" test "$(grep -c 'Loading \[Matrix dup' "$mx_log")" = 1
+  fi
   local planned loading skipped
   planned=$(grep -oE 'BepInEx\] [0-9]+ plugins? to load' "$mx_log" | grep -oE '[0-9]+' | head -1)
   loading=$(grep -cE 'BepInEx\] Loading \[' "$mx_log")
   skipped=$(grep -cE 'BepInEx\] (Skipping|Could not load) \[' "$mx_log")
   mx_check launch.count "BepInEx counted ${planned:-no} plugins to load, logged $loading Loading lines and skipped $skipped: $(grep -oE 'Skipping \[[^]]*\] because [^(]*' "$mx_log" | head -3 | tr '\n' ';')" \
     test "${planned:-x}" = "$((loading + skipped))"
-  if go -C "$REPO" test ./internal/dotnet -run '^TestRealBepInExRun$' -count=1 -v -bepinex-profile "$(mx_dir "$pack")" >"$ROOT/guid-test.txt" 2>&1; then
-    mx_pass mods.guids "$(grep -o '[0-9]* plugins found.*' "$ROOT/guid-test.txt")"
-  else
-    mx_fail mods.guids "$(grep -E 'realrun_test|FAIL' "$ROOT/guid-test.txt" | head -5 | tr '\n' ' ')"
-  fi
   mx_check edge.flatten "MirageCore ships FSharp.Core/FSharp.Core.dll and Mirage loads it from beside its plugin: $(grep -c 'FSharp.Core.dll.*or one of its dependencies' "$mx_saves/Player.log") load failures" \
     test "$(grep -c 'FSharp.Core.dll.*or one of its dependencies' "$mx_saves/Player.log")" = 0
   mx_check edge.patchers "the modpack's preloader patchers loaded: $(grep -c 'Loaded 1 patcher method from' "$mx_log") patcher lines" \
     grep -q 'Loaded 1 patcher method from \[BepInEx.MonoMod.AutoHookGenPatcher' "$mx_log"
-  mx_stop pack
-  mx_problems "$pack" pack
+  set -e -o pipefail
+}
+
+# regress_bepinex_after NAME runs once launch (a) is stopped (mx_stop a): the rows that read what (a) left behind,
+# launch (b), and the rows that need no game. NAME is the base profile's name, which the LAN receiver looks up.
+regress_bepinex_after() {
+  local name=$1 out cfgdir
+  set +e +o pipefail
+  echo "---- BepInEx matrix: after launch (a)"
+  cfgdir="$(mx_dir "$mx_base")/BepInEx/config"
+  if [ -n "$mx_edge_edited" ]; then
+    mx_check mods.config-file "after BepInEx rewrote the probe's .cfg: \"$(grep -m1 '^Value =' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg")\", \"$(grep -m1 '^Ratio =' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg")\"" \
+      grep -q '^Ratio = 0.75' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg"
+  fi
+  if go -C "$REPO" test ./internal/dotnet -run '^TestRealBepInExRun$' -count=1 -v -bepinex-profile "$(mx_dir "$mx_base")" >"$ROOT/guid-test.txt" 2>&1; then
+    mx_pass mods.guids "$(grep -o '[0-9]* plugins found.*' "$ROOT/guid-test.txt")"
+  else
+    mx_fail mods.guids "$(grep -E 'realrun_test|FAIL' "$ROOT/guid-test.txt" | head -5 | tr '\n' ' ')"
+  fi
+  mx_problems "$mx_base" pack
   out=$(
-    python3 - "$ROOT/problems-pack.json" "$ROOT/pack-mods.json" "$ROOT/LogOutput-pack.log" "$mx_saves/Player.log" <<'PY'
+    python3 - "$ROOT/problems-pack.json" "$ROOT/pack-mods.json" "$ROOT/LogOutput-a.log" "$mx_saves/Player.log" <<'PY'
 import json, re, sys, urllib.request
 p = json.load(open(sys.argv[1]))
 mods = {m["id"]: m for m in json.load(open(sys.argv[2]))}
@@ -448,106 +540,55 @@ for w in wrong:
     print("WRONG " + w)
 PY
   )
-  mx_check problems.true "Problems lists $(echo "$out" | head -1); each checked against Thunderstore, the logs and the mod list$(echo "$out" | grep '^WRONG' | sed 's/^WRONG /; /' | tr -d '\n')" \
+  mx_check problems.true "Problems after launch (a) lists $(echo "$out" | head -1); each checked against Thunderstore, the logs and the mod list$(echo "$out" | grep '^WRONG' | sed 's/^WRONG /; /' | tr -d '\n')" \
     test -z "$(echo "$out" | grep '^WRONG')" -a "${out:0:1}" = "{"
 
-  # 4. Edge cases and Console, config and duplicate GUIDs, in one profile of probe packages.
-  if ! probe_err=$(mx_install_probes "$edge" Base Beat Nested Own Caps Flat Deep Patcher DupA DupB); then
-    mx_fail edge.install "$probe_err"
-  else
-    cli queue add lethal-company "$edge" FlipMods-BetterStamina --source thunderstore --version 1.5.7 >/dev/null
-    mx_wait_queue "$edge" >/dev/null
-    mx_problems "$edge" edge
-    mx_check mods.dupguid "Problems flags $(mx_json "$ROOT/problems-edge.json" '[c["guid"] for c in d.get("pluginClashes") or []]') with versions $(mx_json "$ROOT/problems-edge.json" '[x["version"] for c in d.get("pluginClashes") or [] for x in c["copies"]]')" \
-      test "$(mx_json "$ROOT/problems-edge.json" '[(c["guid"], sorted(x["version"] for x in c["copies"])) for c in d.get("pluginClashes") or []]')" = "[('tech.rethunk.mortar.matrix.dup', ['1.0.0', '1.0.0'])]"
-    if mx_launch "$edge" edge; then
-      local lines1 lines2
-      sleep 4
-      lines1=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$edge")")
-      sleep 4
-      lines2=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$edge")")
-      out=$(
-        python3 - "$lines1" "$lines2" <<'PY'
-import json, sys
-a, b = json.loads(sys.argv[1]), json.loads(sys.argv[2])
-beats = lambda es: [e for e in es if e["message"].startswith("matrix heartbeat")]
-levels = {e["level"] for e in b}
-sources = {e["mod"] for e in b}
-ok = (beats(a) and len(beats(b)) > len(beats(a)) and max(e["seq"] for e in b) > max(e["seq"] for e in a)
-      and all(e["level"] == "WARN" and e["mod"] == "Matrix beat" for e in beats(b))
-      and any(e["level"] == "ERROR" and e["message"] == "matrix error line" for e in b) and "BepInEx" in sources)
-print(("OK " if ok else "BAD ") + f"heartbeats {len(beats(a))} then {len(beats(b))}, levels {sorted(levels)}, {len(sources)} sources")
-PY
-      )
-      mx_check launch.console "Console lines read twice during the run: ${out#* }" test "${out%% *}" = OK
-      local want
-      for want in "base cfg=shipped:edge.config-placement" "own cfg=own-layout:edge.own-layout" "caps cfg=caps:edge.case" "flat beside=True:edge.flatten-probe"; do
-        mx_check "${want#*:}" "LogOutput.log: $(grep -m1 -o "matrix ${want%%:*}" "$mx_log" || echo "no \"matrix ${want%%:*}\"")" grep -q "matrix ${want%%:*}" "$mx_log"
-      done
-      mx_check edge.nested "plugins/Deep/Er/Nested.dll: $(grep -m1 -o 'Loading \[Matrix nested[^]]*\]' "$mx_log" || echo not loaded)" grep -q 'Loading \[Matrix nested' "$mx_log"
-      mx_check edge.longpath "a plugin $(find "$(mx_dir "$edge")/BepInEx/plugins" -name Deep.dll | awk '{print length("Z:" $0)}') characters deep as Wine sees it: $(grep -m1 -o 'Loading \[Matrix deep[^]]*\]' "$mx_log" || echo not loaded)" grep -q 'Loading \[Matrix deep' "$mx_log"
-      mx_check edge.patcher "patchers/MatrixPatcher.dll: $(grep -m1 -o 'matrix patcher initialized' "$mx_log" || echo not initialized)" grep -q 'matrix patcher initialized' "$mx_log"
-      mx_check mods.dupguid-runtime "BepInEx loaded the duplicated GUID $(grep -c 'Loading \[Matrix dup' "$mx_log") time(s)" test "$(grep -c 'Loading \[Matrix dup' "$mx_log")" = 1
-      mx_stop edge
-      # The typed editor writes a string and a float; BepInEx rewrites every .cfg it reads at startup, so a relaunch
-      # that keeps both values proves the edit is in BepInEx's own format.
-      local cfgdir
-      cfgdir="$(mx_dir "$edge")/BepInEx/config"
-      if mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$edge")" '"thunderstore:MortarMatrix-ProbeBase"' '"tech.rethunk.mortar.matrix.base.cfg"' '"General"' '"Value"' '"edited by mortar"' >/dev/null &&
-        mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$edge")" '"thunderstore:FlipMods-BetterStamina"' '"FlipMods.BetterStamina.cfg"' '"CarryWeight"' '"CarryWeightPenaltyMultiplier"' '"0.75"' >/dev/null; then
-        mx_edge_edited=1
-        mx_launch "$edge" edge-relaunch
-        mx_stop edge-relaunch
-        mx_check mods.config "after Set and a relaunch: probe logged \"$(grep -m1 -o 'matrix base cfg=[^\r]*' "$mx_log")\", BetterStamina.cfg has \"$(grep -m1 'CarryWeightPenaltyMultiplier =' "$cfgdir/FlipMods.BetterStamina.cfg")\"" \
-          grep -q 'matrix base cfg=edited by mortar' "$mx_log"
-        grep -q '^CarryWeightPenaltyMultiplier = 0.75' "$cfgdir/FlipMods.BetterStamina.cfg" || mx_fail mods.config-float "BetterStamina.cfg lost 0.75 across the relaunch"
-      else
-        mx_fail mods.config "configsvc Set failed"
-      fi
-    fi
-  fi
-
-  # 5. An induced plugin exception, then a natural exit.
-  if mx_install_probes "$crash" Throw >/dev/null && mx_launch "$crash" crash; then
-    sleep 3
-    mx_stop crash
-    mx_problems "$crash" crash
-    cli runs lethal-company "$crash" --json >"$ROOT/runs-crash.json"
-    out=$(mx_json "$ROOT/problems-crash.json" '[(f["name"], f["kind"], f["message"][:60]) for f in d.get("loadFailures") or []]')
-    mx_check launch.crash "Problems: $out; run: loader $(mx_json "$ROOT/runs-crash.json" 'd[0]["loaderVersion"]'), $(mx_json "$ROOT/runs-crash.json" 'd[0]["errors"]') errors, outcome $(mx_json "$ROOT/runs-crash.json" 'd[0]["outcome"]')" \
-      python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); r=json.load(open(sys.argv[2]))[0]; sys.exit(not (any(f["name"]=="ProbeThrow" and "matrix probe failed in Awake" in f["message"] for f in d.get("loadFailures") or []) and r["loaderVersion"] and r["errors"]>0))' "$ROOT/problems-crash.json" "$ROOT/runs-crash.json"
-  fi
+  # 4. Launch (b): the older pack pinned, with a plugin that throws in Awake, one that writes the game's own save and
+  # one that quits the game, so one run shows the pinned loader loading, crash analysis and a natural exit.
   rm -f "$mx_saves/LCSaveFile1"
-  if mx_install_probes "$quit" Save Quit >/dev/null && mx_launch "$quit" quit; then
+  if [ -n "$mx_ready" ] && cli loader install lethal-company 5.4.2100 >"$ROOT/loader-2100-b.txt" 2>&1 &&
+    cli loader pin lethal-company 5.4.2100 >/dev/null && mx_install_probes "$mx_crash" Throw Save Quit >/dev/null &&
+    mx_launch "$mx_crash" b; then
+    out=$(grep -m1 -o 'BepInEx 5\.[0-9.]* - Lethal Company' "$mx_log")
+    mx_check loader.pin-run "launch (b) on the pinned 5.4.2100: log opens with \"$out\"; $(mx_doorstop "$mx_crash" 5.4.2100)" \
+      test "$out|$(mx_doorstop "$mx_crash" 5.4.2100)" = "BepInEx $(mx_bep_version 5.4.2100) - Lethal Company|$(mx_doorstop_ok)"
     if mx_idle 90; then
-      cli runs lethal-company "$quit" --json >"$ROOT/runs-quit.json"
-      mx_check launch.exit "the game quit by itself; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-quit.json" 'd[0]["outcome"]'); game folder: $(mx_purged quit || true)" \
-        test -z "$(mx_purged quit)" -a "$(mx_json "$ROOT/runs-quit.json" 'd[0]["outcome"]')" = ran
+      cli runs lethal-company "$mx_crash" --json >"$ROOT/runs-b.json"
+      mx_check launch.exit "the game quit by itself; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]'); game folder: $(mx_purged b || true)" \
+        test -z "$(mx_purged b)" -a "$(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]')" = ran
+      mx_problems "$mx_crash" crash
+      out=$(mx_json "$ROOT/problems-crash.json" '[(f["name"], f["kind"], f["message"][:60]) for f in d.get("loadFailures") or []]')
+      mx_check launch.crash "Problems: $out; run: loader $(mx_json "$ROOT/runs-b.json" 'd[0]["loaderVersion"]'), $(mx_json "$ROOT/runs-b.json" 'd[0]["errors"]') errors" \
+        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); r=json.load(open(sys.argv[2]))[0]; sys.exit(not (any(f["name"]=="ProbeThrow" and "matrix probe failed in Awake" in f["message"] for f in d.get("loadFailures") or []) and r["loaderVersion"] and r["errors"]>0))' "$ROOT/problems-crash.json" "$ROOT/runs-b.json"
     else
-      mx_fail launch.exit "Mortar still reports $(mx_state) 90s after the game quit"
-      mx_stop quit
+      mx_fail launch.exit "Mortar still reports $(mx_state) 90s after the game should have quit"
+      mx_stop b
     fi
     reap_prefix "$mx_compat" >/dev/null
+  else
+    mx_fail launch.b "launch (b) did not start: $(head -c 300 "$ROOT/loader-2100-b.txt" 2>/dev/null)"
+  fi
+  if ! cli loader pin lethal-company "$mx_bepinex" >/dev/null || ! cli loader install lethal-company "$mx_bepinex" >/dev/null 2>&1; then
+    mx_fail loader.repin "pinning $mx_bepinex again after launch (b) failed"
   fi
 
-  # 6. Updates with the save the game just wrote.
-  mx_check saves.fixture "the game wrote LCSaveFile1 ($(stat -c %s "$mx_saves/LCSaveFile1" 2>/dev/null || echo 0) bytes); Saves lists $(cli saves lethal-company "$upd" --json | python3 -c 'import json,sys; print([s["folder"] for s in json.load(sys.stdin)])')" \
+  # 5. Updates with the save the game wrote in launch (b).
+  mx_check saves.fixture "the game wrote LCSaveFile1 ($(stat -c %s "$mx_saves/LCSaveFile1" 2>/dev/null || echo 0) bytes); Saves lists $(cli saves lethal-company "$mx_upd" --json | python3 -c 'import json,sys; print([s["folder"] for s in json.load(sys.stdin)])')" \
     test -s "$mx_saves/LCSaveFile1"
-  local save_sum
+  local save_sum x
   save_sum=$(sha256sum "$mx_saves/LCSaveFile1" 2>/dev/null | cut -d' ' -f1)
-  local x
   for x in AinaVT-LethalConfig:1.4.5 FlipMods-BetterStamina:1.5.6 Rune580-LethalCompany_InputUtils:0.7.12; do
-    cli queue add lethal-company "$upd" "${x%:*}" --source thunderstore --version "${x#*:}" >/dev/null
+    cli queue add lethal-company "$mx_upd" "${x%:*}" --source thunderstore --version "${x#*:}" >/dev/null
   done
-  cli queue add lethal-company "$upd2" FlipMods-BetterStamina --source thunderstore --version 1.5.6 >/dev/null
-  mx_wait_queue "$upd" >/dev/null
-  mx_wait_queue "$upd2" >/dev/null
-  cli updates lethal-company "$upd" --json >"$ROOT/updates.json"
+  cli queue add lethal-company "$mx_upd2" FlipMods-BetterStamina --source thunderstore --version 1.5.6 >/dev/null
+  mx_wait_queue "$mx_upd" >/dev/null
+  mx_wait_queue "$mx_upd2" >/dev/null
+  cli updates lethal-company "$mx_upd" --json >"$ROOT/updates.json"
   local backups_before
   backups_before=$(cli backups list --game lethal-company --json | python3 -c 'import json,sys; print(len(json.load(sys.stdin) or []))')
-  cli update lethal-company "$upd" --all >"$ROOT/update-all.txt" 2>&1
-  mx_wait_queue "$upd" >/dev/null
-  cli mods lethal-company "$upd" --json >"$ROOT/upd-mods.json"
+  cli update lethal-company "$mx_upd" --all >"$ROOT/update-all.txt" 2>&1
+  mx_wait_queue "$mx_upd" >/dev/null
+  cli mods lethal-company "$mx_upd" --json >"$ROOT/upd-mods.json"
   mx_check updates.all "updates listed $(mx_json "$ROOT/updates.json" '[u["package"] + " " + u["installed"] + "->" + u["version"] for u in d["updates"]]'); after Update all: $(mx_json "$ROOT/upd-mods.json" '[m["name"] + " " + m["version"] for m in d if m["source"] == "thunderstore"]')" \
     test "$(mx_json "$ROOT/upd-mods.json" 'sorted(m["version"] for m in d if m["source"] == "thunderstore")')" = "['0.7.13', '1.4.6', '1.5.7']"
   cli backups list --game lethal-company --json >"$ROOT/backups.json"
@@ -555,41 +596,42 @@ PY
     test "$(mx_json "$ROOT/backups.json" '(d[0]["kind"], [s["folder"] for s in d[0]["saves"]])')" = "('update', ['LCSaveFile1'])"
   local undo
   undo=$(sed -n 's/^Undo all: mortar profile revert lethal-company "[^"]*" \(.*\)$/\1/p' "$ROOT/update-all.txt")
-  if [ -n "$undo" ] && cli profile revert lethal-company "$upd" "$undo" >/dev/null 2>&1; then
-    cli mods lethal-company "$upd" --json >"$ROOT/upd-reverted.json"
+  if [ -n "$undo" ] && cli profile revert lethal-company "$mx_upd" "$undo" >/dev/null 2>&1; then
+    cli mods lethal-company "$mx_upd" --json >"$ROOT/upd-reverted.json"
     mx_check updates.rollback "Undo all ($undo) put back $(mx_json "$ROOT/upd-reverted.json" '[m["name"] + " " + m["version"] for m in d if m["source"] == "thunderstore"]')" \
       test "$(mx_json "$ROOT/upd-reverted.json" 'sorted(m["version"] for m in d if m["source"] == "thunderstore")')" = "['0.7.12', '1.4.5', '1.5.6']"
   else
     mx_fail updates.rollback "no undo id in: $(head -c 300 "$ROOT/update-all.txt")"
   fi
   cli updates apply --everywhere lethal-company thunderstore:FlipMods-BetterStamina >"$ROOT/update-everywhere.txt" 2>&1
-  mx_wait_queue "$upd2" >/dev/null
+  mx_wait_queue "$mx_upd2" >/dev/null
   mx_check updates.everywhere "$(tr '\n' ';' <"$ROOT/update-everywhere.txt" | tr -s ' ')" \
-    test "$(cli mods lethal-company "$upd2" --json | python3 -c 'import json,sys; print([m["version"] for m in json.load(sys.stdin) if m["name"] == "BetterStamina"])')" = "['1.5.7']" -a \
-    "$(cli mods lethal-company "$upd" --json | python3 -c 'import json,sys; print([m["version"] for m in json.load(sys.stdin) if m["name"] == "BetterStamina"])')" = "['1.5.7']"
+    test "$(cli mods lethal-company "$mx_upd2" --json | python3 -c 'import json,sys; print([m["version"] for m in json.load(sys.stdin) if m["name"] == "BetterStamina"])')" = "['1.5.7']" -a \
+    "$(cli mods lethal-company "$mx_upd" --json | python3 -c 'import json,sys; print([m["version"] for m in json.load(sys.stdin) if m["name"] == "BetterStamina"])')" = "['1.5.7']"
   head -c 64 /dev/urandom >"$mx_saves/LCSaveFile1"
   local newest
   newest=$(mx_json "$ROOT/backups.json" 'd[0]["name"]')
   cli backups restore "$newest" LCSaveFile1 >"$ROOT/backup-restore.txt" 2>&1
   mx_check updates.restore "restoring $newest gives LCSaveFile1 back byte for byte" test "$(sha256sum "$mx_saves/LCSaveFile1" | cut -d' ' -f1)" = "$save_sum"
 
-  # 7. Deprecated packages and their named replacements.
-  cli queue add lethal-company "$dep" VirusTLNR-MaskedFixes --source thunderstore --version 0.0.3 >/dev/null
-  mx_wait_queue "$dep" >/dev/null
-  mx_problems "$dep" dep
+  # 6. Deprecated packages and their named replacements.
+  cli queue add lethal-company "$mx_dep" VirusTLNR-MaskedFixes --source thunderstore --version 0.0.3 >/dev/null
+  mx_wait_queue "$mx_dep" >/dev/null
+  mx_problems "$mx_dep" dep
   out=$(mx_json "$ROOT/problems-dep.json" '{x["name"]: x.get("replacement", "") for x in d.get("deprecated") or []}')
   mx_check mods.deprecated "Problems: $out" test "$(mx_json "$ROOT/problems-dep.json" '{x["name"]: x.get("replacement", "") for x in d.get("deprecated") or []}.get("VirusTLNR-MaskedFixes")')" = VirusTLNR-MaskedInvisFix
 
-  # 8. Sharing.
-  regress_bepinex_sharing "$edge" "$pack"
+  # 7. Sharing the base profile, which holds Thunderstore packages and the local probe packages.
+  regress_bepinex_sharing "$mx_base" "$name"
 
   set -e -o pipefail
   echo "---- BepInEx matrix: $(grep -c "$(printf '\tPASS\t')" "$ROOT/matrix.tsv") PASS, $(grep -c "$(printf '\tFAIL\t')" "$ROOT/matrix.tsv") FAIL ($ROOT/matrix.tsv)"
 }
 
-# regress_bepinex_sharing EDGE PACK shares a probe profile (local packages only) and the modpack (Thunderstore only).
+# regress_bepinex_sharing PROFILE NAME shares the base profile: a link and a .mortar file carry its Thunderstore
+# packages, a LAN send its local probe packages and edited config too.
 regress_bepinex_sharing() {
-  local edge=$1 pack=$2 out
+  local pack=$1 name=$2 out
   # A share link carries the Thunderstore packages and imports into a new profile through the window's own calls.
   local link session res
   link=$(cli share lethal-company "$pack")
@@ -643,16 +685,16 @@ PY
   fi
 
   # A LAN send to a second paired sandbox carries the local probe packages' files and the profile's configs.
-  regress_bepinex_lan "$edge"
+  regress_bepinex_lan "$pack" "$name"
 }
 
-# regress_bepinex_lan EDGE starts a second server in $ROOT/peer with its own home, pairs it with this one and sends
-# the probe profile, whose packages exist only as local files.
+# regress_bepinex_lan PROFILE NAME starts a second server in $ROOT/peer with its own home, pairs it with this one and
+# sends the base profile, whose probe packages exist only as local files.
 regress_bepinex_lan() {
-  local edge=$1 peer=$ROOT/peer peer_port pa pb code
+  local edge=$1 name=$2 peer=$ROOT/peer peer_port pa pb code
   # The send carries the config the edge step edited; without that edit there is nothing to look for at the receiver.
   if [ -z "${mx_edge_edited:-}" ]; then
-    mx_fail share.lan "not run: the probe profile holds no edited config (edge.install or mods.config failed first)"
+    mx_fail share.lan "not run: the base profile holds no edited config (edge.install or mods.config failed first)"
     return
   fi
   peer_port=$((PORT + 1))
@@ -692,7 +734,7 @@ regress_bepinex_lan() {
     done
     [ -n "$accepted" ] && peercli lan accept "$accepted" --json >"$ROOT/lan-accept.json" 2>&1
   fi
-  got=$(peercli mods lethal-company "Matrix Edge" --json 2>/dev/null | python3 -c 'import json,sys; print(sorted(m["name"] for m in json.load(sys.stdin) if m["source"] == "local"))' 2>/dev/null)
+  got=$(peercli mods lethal-company "$name" --json 2>/dev/null | python3 -c 'import json,sys; print(sorted(m["name"] for m in json.load(sys.stdin) if m["source"] == "local"))' 2>/dev/null)
   local want
   want=$(cli mods lethal-company "$edge" --json | python3 -c 'import json,sys; print(sorted(m["name"] for m in json.load(sys.stdin) if m["source"] == "local"))')
   local cfg

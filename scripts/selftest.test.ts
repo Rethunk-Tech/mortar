@@ -88,9 +88,12 @@ test('destroy refuses an unmarked folder and one outside the base', () => {
   }
 })
 
-test("the matrix's declared launch count is its number of launches, which the session cap is checked against", () => {
+test('a full Lethal Company regress with the matrix and an r2 code fits the session cap of 3 launches', () => {
   const matrix = readFileSync(join(import.meta.dir, 'regress-bepinex.sh'), 'utf8')
   const declared = Number(/^mx_launches\(\) \{ echo (\d+); \}$/m.exec(matrix)?.[1])
   const calls = matrix.split('\n').filter((l) => /mx_launch "/.test(l)).length
   expect(calls).toBe(declared)
+  // The base launch, which is also the matrix's launch (a), and the r2 step's.
+  const regress = 2
+  expect(regress + declared).toBeLessThanOrEqual(3)
 })
