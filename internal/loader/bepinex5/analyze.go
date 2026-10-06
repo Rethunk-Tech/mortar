@@ -42,11 +42,12 @@ var (
 	incompatibleWith = regexp.MustCompile(`^Could not load \[([^\]]+)\] because it is incompatible with: (.*)$`)
 	wrongBepInEx     = regexp.MustCompile(`^Plugin \[([^\]]+)\] targets a wrong version of BepInEx \(([^)]*)\)`)
 	requiresBepInEx  = regexp.MustCompile(`^(?:Skipping|Could not load) \[([^\]]+)\].*requires BepInEx( version)?.*$`)
-	newerExists      = regexp.MustCompile(`^Skipping \[([^\]]+)\] because a newer version exists \(([^)]*)\)$`)
-	depNotLoaded     = regexp.MustCompile(`^Skipping \[([^\]]+)\] because it has a dependency that was not loaded\.`)
-	loadError        = regexp.MustCompile(`^Error loading \[([^\]]+)\] ?: (.*)$`)
-	preloaderFail    = regexp.MustCompile(`^(Failed to load patcher \[[^\]]+\]|Failed to run \[[^\]]+\] when patching \[[^\]]+\]|Failed to run (?:Initializer|Finalizer) of \S+|Could not run preloader!)(.*)$`)
-	harmonyError     = regexp.MustCompile(`^Error while running (?:static )?\S+ ([\w.]+)::\S+?\(.*\)\. Error: (.*)$`)
+	// Valheim's pack adds the GUID and both paths, and words an identical second copy as a duplicate.
+	newerExists   = regexp.MustCompile(`^Skipping \[([^\]]+)\](?: \([^)]*\) at .*?)? because (?:a newer version exists \((.*)\)|a duplicate of it was already loaded from (.*))$`)
+	depNotLoaded  = regexp.MustCompile(`^Skipping \[([^\]]+)\] because it has a dependency that was not loaded\.`)
+	loadError     = regexp.MustCompile(`^Error loading \[([^\]]+)\] ?: (.*)$`)
+	preloaderFail = regexp.MustCompile(`^(Failed to load patcher \[[^\]]+\]|Failed to run \[[^\]]+\] when patching \[[^\]]+\]|Failed to run (?:Initializer|Finalizer) of \S+|Could not run preloader!)(.*)$`)
+	harmonyError  = regexp.MustCompile(`^Error while running (?:static )?\S+ ([\w.]+)::\S+?\(.*\)\. Error: (.*)$`)
 	// Harmony rejecting a patch while a plugin loads reaches the log through Unity's logger, naming the patch method.
 	patchTarget = regexp.MustCompile(`^\w+Exception: .*for patch method (?:static )?(?:\S+ )?([\w.+]+)::`)
 	patchWords  = regexp.MustCompile(`(?i)transpiler|prefix|postfix|harmony|patch`)
@@ -127,6 +128,9 @@ func classify(line string) (f Finding, ok bool) {
 		return Finding{Kind: KindIncompatible, Plugin: g(requiresBepInEx)[1], Message: msg}, true
 	case g(newerExists) != nil:
 		g := g(newerExists)
+		if g[3] != "" {
+			return Finding{Kind: KindDuplicateGUID, Plugin: g[1], Message: "the same copy loaded instead from " + g[3]}, true
+		}
 		return Finding{Kind: KindDuplicateGUID, Plugin: g[1], Message: "a newer copy loaded instead: " + g[2]}, true
 	case g(depNotLoaded) != nil:
 		return Finding{Kind: KindDependencyNotLoaded, Plugin: g(depNotLoaded)[1], Message: msg}, true

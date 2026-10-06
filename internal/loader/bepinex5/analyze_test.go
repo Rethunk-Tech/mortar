@@ -71,6 +71,11 @@ func TestAnalyze(t *testing.T) {
 			fnd(KindChainloader, "", "Error occurred starting the game", 6, "LogOutput.log"),
 			fnd(KindPluginError, "Brutal Company", "Event table is empty", 7, "LogOutput.log"),
 		}},
+		{"valheim pack duplicates", "[Warning:   BepInEx] Skipping [Epic Loot 0.14.12] (randyknapp.mods.epicloot) at RandyKnapp-EpicLoot/EpicLoot.dll because a newer version exists (Epic Loot 0.14.13 at old/EpicLoot.dll)\n" +
+			"[Warning:   BepInEx] Skipping [Jotunn 2.30.2] (com.jotunn.jotunn) at b/Jotunn.dll because a duplicate of it was already loaded from a/Jotunn.dll\n", "", []Finding{
+			fnd(KindDuplicateGUID, "Epic Loot 0.14.12", "a newer copy loaded instead: Epic Loot 0.14.13 at old/EpicLoot.dll", 1, "LogOutput.log"),
+			fnd(KindDuplicateGUID, "Jotunn 2.30.2", "the same copy loaded instead from a/Jotunn.dll", 2, "LogOutput.log"),
+		}},
 		{"nothing wrong", "[Info   :   BepInEx] Chainloader started\n", "Loading player data\n", nil},
 	}
 	for _, c := range cases {
