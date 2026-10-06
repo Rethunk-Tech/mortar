@@ -1,5 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
+import type { ConfigFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/models.ts'
+import { Files as ReadConfigFiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/service.ts'
 import type { Relations } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { Relations as ReadRelations } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type {
@@ -24,6 +26,8 @@ interface Extras {
   id: string
   relations: Relations
   state: ModState
+  // What the config editor would open for the mod: config.json, its in-game menu or its plugins' .cfg files.
+  configFiles: ConfigFile[]
 }
 
 const fail = reportError
@@ -89,12 +93,13 @@ export const useDetail = create<{
       return
     }
     try {
-      const [relations, state] = await Promise.all([
+      const [relations, state, configFiles] = await Promise.all([
         ReadRelations(target.game, target.id, mod.key, mod.id),
         ReadModState(target.game, target.id, mod.key, mod.id),
+        ReadConfigFiles(target.game, target.id, mod.id),
       ])
       if (get().detailId === modId(mod)) {
-        set({ extras: { id: modId(mod), relations, state } })
+        set({ extras: { id: modId(mod), relations, state, configFiles: configFiles ?? [] } })
       }
     } catch (e) {
       fail(i18n._(msg`Could not read the details of ${mod.name}`))(e)

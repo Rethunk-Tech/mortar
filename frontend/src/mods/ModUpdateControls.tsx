@@ -32,24 +32,29 @@ function ModUpdateControls({ mod, entry }: { mod: Mod; entry: Entry | undefined 
       >
         {entry?.pinned ? t`Unpin version` : t`Keep this version`}
       </Button>
-      <Box>
-        <Typography
-          sx={{ fontSize: fieldSize, color: 'text.secondary' }}
-        >{t`Update channel`}</Typography>
-        <Select
-          size="small"
-          fullWidth={true}
-          value={channel}
-          inputProps={{ 'aria-label': t`Update channel` }}
-          onChange={(ev) => setUpdateChannel(mod, String(ev.target.value)).catch(reportUnexpected)}
-        >
-          {channelOptions(i18n).map((opt) => (
-            <MenuItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </Box>
+      {/* The channels are Nexus file categories, which no other source has. */}
+      {entry?.source.kind === 'nexus' ? (
+        <Box>
+          <Typography
+            sx={{ fontSize: fieldSize, color: 'text.secondary' }}
+          >{t`Update channel`}</Typography>
+          <Select
+            size="small"
+            fullWidth={true}
+            value={channel}
+            inputProps={{ 'aria-label': t`Update channel` }}
+            onChange={(ev) =>
+              setUpdateChannel(mod, String(ev.target.value)).catch(reportUnexpected)
+            }
+          >
+            {channelOptions(i18n).map((opt) => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
+      ) : null}
     </>
   )
 }

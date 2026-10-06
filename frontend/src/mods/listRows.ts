@@ -117,6 +117,7 @@ function toListRow(
     archive: i18n._(msg`Archive`),
     nexus: i18n._(msg`Nexus Mods`),
     github: i18n._(msg`GitHub`),
+    thunderstore: i18n._(msg`Thunderstore`),
   })
   const nexusId = entry?.source.kind === 'nexus' ? (entry.source.modId ?? 0) : 0
   const details = byId[nexusId]?.details

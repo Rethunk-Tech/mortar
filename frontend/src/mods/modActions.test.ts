@@ -26,4 +26,7 @@ test('the page host follows the URL', () => {
   expect(hostOf(undefined)).toBe('')
   expect(hostOf('https://github.com/a/b')).toBe('github')
   expect(hostOf('https://www.nexusmods.com/stardewvalley/mods/1')).toBe('nexus')
+  expect(hostOf('https://thunderstore.io/c/lethal-company/p/Ns/Mod/')).toBe('thunderstore')
+  expect(hostOf('https://modrinth.com/mod/x')).toBe('web')
+  expect(hostOf('https://notgithub.com/a/b')).toBe('web')
 })

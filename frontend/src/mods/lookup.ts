@@ -86,7 +86,7 @@ export const nexusIdOf = (profile: Profile, mod: Mod) => {
 
 export const kindLabel = (
   kind: string,
-  labels: { archive: string; nexus: string; github: string },
+  labels: { archive: string; nexus: string; github: string; thunderstore: string },
 ) => {
   switch (kind) {
     case 'local':
@@ -95,6 +95,8 @@ export const kindLabel = (
       return labels.nexus
     case 'github':
       return labels.github
+    case 'thunderstore':
+      return labels.thunderstore
     default:
       return kind
   }

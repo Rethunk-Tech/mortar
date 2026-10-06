@@ -53,7 +53,7 @@ import {
   useContextMenu,
   useMenuState,
 } from './menu.ts'
-import { type ModAction, modActions } from './modActions.ts'
+import { type ModAction, modActions, openPageLabel } from './modActions.ts'
 import { siteCategory } from './modSearch.ts'
 import { useNexusDetails } from './nexusDetails.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
@@ -98,7 +98,7 @@ function ModMenuItems({
   onRemoveOther: () => void
   trailing: ReactNode[]
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const showFiles = useMods((s) => s.showFiles)
   const askRemove = useMods((s) => s.askRemove)
   const selectedIds = useSelection((s) => s.ids)
@@ -136,7 +136,7 @@ function ModMenuItems({
       },
     },
     page: {
-      label: state.host === 'github' ? t`Open on GitHub` : t`Open on Nexus`,
+      label: openPageLabel(i18n, state.host),
       icon: <ExternalLink size={ICON_SIZE} />,
       run: () => {
         if (page) {

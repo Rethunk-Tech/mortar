@@ -1,4 +1,7 @@
-export type PageHost = 'nexus' | 'github' | ''
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
+
+export type PageHost = 'nexus' | 'github' | 'thunderstore' | 'web' | ''
 export type ModAction = 'toggle' | 'details' | 'page' | 'files' | 'pin' | 'skip' | 'remove'
 
 export interface MenuState {
@@ -9,13 +12,33 @@ export interface MenuState {
   hasUpdate: boolean
 }
 
-// Mod pages are on Nexus or GitHub only.
+// The site a mod's page is on, named when Mortar knows it.
 export const hostOf = (url: string | undefined): PageHost => {
-  if (!url) {
+  if (!(url && URL.canParse(url))) {
     return ''
   }
-  return new URL(url).hostname === 'github.com' ? 'github' : 'nexus'
+  const host = new URL(url).hostname
+  const on = (site: string) => host === site || host.endsWith(`.${site}`)
+  if (on('github.com')) {
+    return 'github'
+  }
+  if (on('nexusmods.com')) {
+    return 'nexus'
+  }
+  return on('thunderstore.io') ? 'thunderstore' : 'web'
 }
+
+// The action that opens a mod's page, named for its site.
+export const openPageLabel = (i18n: I18n, host: PageHost): string =>
+  i18n._(
+    {
+      github: msg`Open on GitHub`,
+      nexus: msg`Open on Nexus`,
+      thunderstore: msg`Open on Thunderstore`,
+      web: msg`Open page`,
+      '': msg`Open page`,
+    }[host],
+  )
 
 // The actions of a mod's menu, in menu order; Remove is the last and is set apart by a divider.
 export function modActions(s: MenuState): ModAction[] {

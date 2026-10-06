@@ -45,6 +45,7 @@ import { ModDependencyTree } from './ModDependencyTree.tsx'
 import { ModNoteTags } from './ModNoteTags.tsx'
 import { ModUpdateControls } from './ModUpdateControls.tsx'
 import { openPage } from './menu.ts'
+import { hostOf, openPageLabel } from './modActions.ts'
 import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
@@ -375,7 +376,7 @@ function ActionRows({
   const mine = extras?.id === modId(mod) ? extras : null
   const pageUrl = mine?.relations.pageUrl ?? ''
   const neededBy = mine?.relations.neededBy ?? []
-  const hasConfig = mine !== null && (mine.state.config !== '' || mine.state.gmcm)
+  const hasConfig = (mine?.configFiles.length ?? 0) > 0
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
       {hasConfig ? (
@@ -401,7 +402,7 @@ function ActionRows({
       ) : null}
       {pageUrl ? (
         <Link component="button" onClick={() => openPage(pageUrl)} sx={rowLink}>
-          {isGitHub(pageUrl) ? t`Open on GitHub` : t`Open on Nexus`}
+          {openPageLabel(i18n, hostOf(pageUrl))}
         </Link>
       ) : null}
       {neededBy.length > 0 ? (
@@ -439,13 +440,6 @@ function ActionRows({
 }
 
 const rowLink = { display: 'block', fontSize: 14, textAlign: 'left' } as const
-const isGitHub = (url: string) => {
-  if (!URL.canParse(url)) {
-    return false
-  }
-  const host = new URL(url).hostname
-  return host === 'github.com' || host.endsWith('.github.com')
-}
 
 // Opening or switching paints the panel's header and actions at once; the sections between follow in a render that
 // never blocks input, and a toggle or profile save re-renders them there too.
@@ -539,6 +533,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
     archive: t`Archive`,
     nexus: t`Nexus Mods`,
     github: t`GitHub`,
+    thunderstore: t`Thunderstore`,
   })
   return (
     <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>

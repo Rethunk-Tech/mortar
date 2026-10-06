@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
+import type { ConfigFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/models.ts'
 import type {
   Need,
   Relations,
@@ -28,6 +29,7 @@ import { LockedReason } from './LockedReason.tsx'
 import { entryOf, modId, siblingsOf } from './lookup.ts'
 import { ModNameLink } from './ModNameLink.tsx'
 import { openPage } from './menu.ts'
+import { hostOf } from './modActions.ts'
 import { NexusDetails } from './NexusDetails.tsx'
 import { heading } from './paper.ts'
 import { useMods } from './store.ts'
@@ -133,10 +135,14 @@ function Versions({
 function Settings({
   mod,
   state,
+  configFiles,
+  isPackage,
   ask,
 }: {
   mod: Mod
   state?: ModState | undefined
+  configFiles: ConfigFile[]
+  isPackage: boolean
   ask: () => void
 }) {
   const { t } = useLingui()
@@ -149,15 +155,20 @@ function Settings({
   }
   const file = labels[state?.config ?? '']
   const gmcm = state?.gmcm === true
+  const cfgs = configFiles.filter((f) => f.format === 'bepinex').map((f) => f.label || f.name)
   let label = file ?? t`No config.json yet`
   if (!file && gmcm) {
     label = t`Settings from the mod's in-game menu`
+  }
+  // A package's plugins keep .cfg files that BepInEx writes on the first run with the plugin, never a config.json.
+  if (isPackage) {
+    label = cfgs.length > 0 ? cfgs.join(', ') : t`No config file yet`
   }
   return (
     <Section title={t`Settings`}>
       <Box sx={row}>
         <Typography sx={{ flex: 1, ...text }}>{label}</Typography>
-        {file || gmcm ? <EditConfigButton mod={mod} /> : null}
+        {configFiles.length > 0 ? <EditConfigButton mod={mod} /> : null}
         {file ? (
           <>
             <Button
@@ -215,7 +226,7 @@ function Confirm({
   )
 }
 
-function Body({ mod, profile, relations, state, ask }: BodyProps) {
+function Body({ mod, profile, relations, state, configFiles, ask }: BodyProps) {
   const { t } = useLingui()
   const others = siblingsOf(
     useMods((s) => s.mods),
@@ -243,7 +254,13 @@ function Body({ mod, profile, relations, state, ask }: BodyProps) {
         </Section>
       ) : null}
       <Versions mod={mod} profile={profile} state={state} ask={() => ask('rollback')} />
-      <Settings mod={mod} state={state} ask={() => ask('reset')} />
+      <Settings
+        mod={mod}
+        state={state}
+        configFiles={configFiles}
+        isPackage={entryOf(profile, mod.key)?.package === true}
+        ask={() => ask('reset')}
+      />
       <CompatDetail mod={mod} />
       <Section title={t`Needed by`}>
         <Names
@@ -260,29 +277,31 @@ interface BodyProps {
   profile: Profile
   relations?: Relations | undefined
   state?: ModState | undefined
+  configFiles: ConfigFile[]
   ask: (what: Confirming) => void
-}
-
-const isGitHubPage = (url: string): boolean => {
-  try {
-    const host = new URL(url).hostname
-    return host === 'github.com' || host.endsWith('.github.com')
-  } catch {
-    return false
-  }
 }
 
 function PageLink({ url }: { url: string }) {
   const { t } = useLingui()
-  return url ? (
+  const host = hostOf(url)
+  if (host === '') {
+    return null
+  }
+  const label = {
+    github: t`GitHub page`,
+    nexus: t`Nexus page`,
+    thunderstore: t`Thunderstore page`,
+    web: t`Open page`,
+  }[host]
+  return (
     <Link
       component="button"
       onClick={() => openPage(url)}
       sx={{ ...text, alignSelf: 'flex-start' }}
     >
-      {isGitHubPage(url) ? t`GitHub page` : t`Nexus page`}
+      {label}
     </Link>
-  ) : null
+  )
 }
 
 function Details({ mod, profile }: { mod: Mod; profile: Profile }) {
@@ -316,6 +335,7 @@ function Details({ mod, profile }: { mod: Mod; profile: Profile }) {
           profile={profile}
           relations={mine?.relations}
           state={mine?.state}
+          configFiles={mine?.configFiles ?? []}
           ask={setConfirming}
         />
       </DialogContent>
