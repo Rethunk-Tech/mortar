@@ -2035,7 +2035,7 @@ msgstr "Files added"
 msgid "Loading bundles…"
 msgstr "Loading bundles…"
 
-#: src/mods/problemFixButtons.tsx:225
+#: src/mods/problemFixButtons.tsx:227
 msgid "Forget"
 msgstr "Forget"
 
@@ -2418,7 +2418,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/overlayActions.ts:36
 #: src/mods/overlayActions.ts:100
 #: src/mods/problemFix/WinFix.tsx:51
-#: src/mods/problemFixButtons.tsx:115
+#: src/mods/problemFixButtons.tsx:116
 #: src/mods/SplitCombineItems.tsx:41
 #: src/mods/storeEntries.ts:60
 #: src/mods/storeEntries.ts:99
@@ -2975,7 +2975,7 @@ msgstr " · {0} more required"
 msgid "Host {0}, yours {1}"
 msgstr "Host {0}, yours {1}"
 
-#: src/mods/problemFixButtons.tsx:239
+#: src/mods/problemFixButtons.tsx:241
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
@@ -3295,7 +3295,7 @@ msgstr "{n, plural, one {# missing requirement} other {# missing requirements}}"
 msgid "Add to profile"
 msgstr "Add to profile"
 
-#: src/mods/problemFixButtons.tsx:253
+#: src/mods/problemFixButtons.tsx:255
 #: src/profiles/HealthDialog.tsx:139
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
@@ -3469,8 +3469,8 @@ msgstr "Custom categories"
 #: src/game/ProfileMenuItems.tsx:428
 #: src/mods/CategoryEditor.tsx:170
 #: src/mods/OldFilesCallouts.tsx:103
-#: src/mods/problemFixButtons.tsx:199
-#: src/mods/problemFixButtons.tsx:204
+#: src/mods/problemFixButtons.tsx:201
+#: src/mods/problemFixButtons.tsx:206
 #: src/profiles/HealthDialog.tsx:270
 #: src/profiles/LaunchPresetsBlock.tsx:53
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:64
@@ -4182,7 +4182,7 @@ msgstr "Just this mod"
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
-#: src/mods/describe.ts:208
+#: src/mods/describe.ts:216
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
@@ -4392,7 +4392,7 @@ msgstr "Installed"
 msgid "Move mods into {0}"
 msgstr "Move mods into {0}"
 
-#: src/mods/problemFixButtons.tsx:203
+#: src/mods/problemFixButtons.tsx:205
 msgid "Mortar did not install this folder. It moves to Mortar's trash."
 msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 
@@ -5925,7 +5925,7 @@ msgstr "Archives"
 msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr "{0, plural, one {# skipped} other {# skipped}}"
 
-#: src/mods/problemFixButtons.tsx:113
+#: src/mods/problemFixButtons.tsx:114
 msgid "Moved {folder} to Mortar's trash"
 msgstr "Moved {folder} to Mortar's trash"
 
@@ -6390,8 +6390,8 @@ msgstr "Pair a computer"
 msgid "Unity exception"
 msgstr "Unity exception"
 
-#: src/mods/problemFixButtons.tsx:249
-#: src/mods/problemFixButtons.tsx:254
+#: src/mods/problemFixButtons.tsx:251
+#: src/mods/problemFixButtons.tsx:256
 #: src/profiles/HealthDialog.tsx:270
 msgid "Revert"
 msgstr "Revert"
@@ -9192,7 +9192,7 @@ msgid "Review collection update"
 msgstr "Review collection update"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:202
+#: src/mods/describe.ts:210
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
@@ -10178,7 +10178,7 @@ msgstr "Done ({0}): {1}"
 #: src/game/ProfileMenuItems.tsx:83
 #: src/mods/CategoryEditor.tsx:168
 #: src/mods/ConfigPresets.tsx:155
-#: src/mods/problemFixButtons.tsx:202
+#: src/mods/problemFixButtons.tsx:204
 #: src/profiles/LaunchPresetsBlock.tsx:195
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:74
 msgid "Delete {0}?"
@@ -11013,7 +11013,7 @@ msgstr "No problems found"
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/mods/describe.ts:206
+#: src/mods/describe.ts:214
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
@@ -11078,11 +11078,6 @@ msgstr "Hide details"
 #: src/toasts/HistoryButton.tsx:157
 msgid "Nothing new"
 msgstr "Nothing new"
-
-#. placeholder {0}: drift.key
-#: src/mods/problemFixButtons.tsx:252
-msgid "Revert {0}?"
-msgstr "Revert {0}?"
 
 #: src/console/BisectDialog.tsx:143
 msgid "Preparing a temporary copy of this profile…"
@@ -11663,6 +11658,10 @@ msgstr "Download and add on top"
 msgid "Profile history: {0}"
 msgstr "Profile history: {0}"
 
+#: src/mods/problemFixButtons.tsx:254
+msgid "Revert {entryName}?"
+msgstr "Revert {entryName}?"
+
 #: src/saves/SaveDetails.tsx:65
 msgid "{hours}h played"
 msgstr "{hours}h played"
@@ -12162,7 +12161,7 @@ msgid "Installers ask as usual; Premium accounts also get the curator's choices 
 msgstr "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 
 #: src/mods/problemFix/RestoreButton.tsx:17
-#: src/mods/problemFixButtons.tsx:216
+#: src/mods/problemFixButtons.tsx:218
 #: src/profiles/HistoryEventRow.tsx:71
 #: src/saves/BackupsDialog.tsx:234
 #: src/saves/SaveBackupsSection.tsx:63
@@ -12676,7 +12675,7 @@ msgstr "Sound volume ({value}%)"
 msgid "Reuse FOMOD choices"
 msgstr "Reuse FOMOD choices"
 
-#: src/mods/problemFixButtons.tsx:189
+#: src/mods/problemFixButtons.tsx:191
 msgid "Adopt"
 msgstr "Adopt"
 

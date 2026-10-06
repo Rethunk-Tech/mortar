@@ -17,6 +17,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { driftEntryName } from './describe.ts'
 import { LockedReason } from './LockedReason.tsx'
 import type { Problem } from './lookup.ts'
 import { AssetFix } from './problemFix/AssetFix.tsx'
@@ -141,6 +142,7 @@ export function FixButton({
 export function DriftButtons({ drift }: { drift: Drift }) {
   const { t } = useLingui()
   const load = useMods((s) => s.load)
+  const entryName = useMods((s) => driftEntryName(s.mods, drift.key))
   const replace = useProfiles((s) => s.replace)
   const locked = useLocked()
   const run = (work: () => Promise<unknown>) => {
@@ -249,7 +251,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
         t`Revert`,
         () =>
           setConfirm({
-            title: t`Revert ${drift.key}?`,
+            title: t`Revert ${entryName}?`,
             body: t`Your edits to its files are replaced with the installed copy.`,
             label: t`Revert`,
             act: () =>

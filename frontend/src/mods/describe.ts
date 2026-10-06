@@ -188,15 +188,23 @@ export function useDescribe(): Describe {
   }
 }
 
-export function useDescribeDrift(): (d: Drift) => string {
-  const { t } = useLingui()
-  const mods = useMods((s) => s.mods)
-  // A drift names an archive entry; the user knows it by the mods it installed.
-  const entryName = (key: string) =>
+// A drift names an archive entry; the user knows it by the mods it installed.
+export function driftEntryName(
+  mods: readonly { key: string; name: string }[],
+  key: string,
+): string {
+  return (
     mods
       .filter((m) => m.key === key)
       .map((m) => m.name)
       .join(', ') || key
+  )
+}
+
+export function useDescribeDrift(): (d: Drift) => string {
+  const { t } = useLingui()
+  const mods = useMods((s) => s.mods)
+  const entryName = (key: string) => driftEntryName(mods, key)
   return (d) => {
     if (d.kind === 'unknown') {
       return t`${d.folder} was added to this profile's mods folder by hand, not installed by Mortar.`
