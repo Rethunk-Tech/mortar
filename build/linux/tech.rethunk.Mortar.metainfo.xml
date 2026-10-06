@@ -19,8 +19,8 @@
       queued and every dependency checked.
     </p>
     <p>
-      The games Mortar supports come from its catalog: Stardew Valley today, with
-      mods from Nexus Mods, GitHub and Thunderstore.
+      The games Mortar supports come from its catalog: Stardew Valley and
+      Lethal Company, with mods from Nexus Mods, GitHub and Thunderstore.
     </p>
   </description>
   <launchable type="desktop-id">tech.rethunk.Mortar.desktop</launchable>

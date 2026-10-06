@@ -10,13 +10,13 @@
 
 Mortar is a desktop mod manager, built for more than one game. It finds your game, installs its mod loader, keeps each set of mods in its own profile, and launches the game with the profile you pick. A profile is shared as a link: whoever opens it gets the same mods, with anything missing installed or queued and every dependency checked.
 
-The games Mortar supports come from its catalog: Stardew Valley today, with mods from Nexus Mods, GitHub and Thunderstore. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
+The games Mortar supports come from its catalog: Stardew Valley and Lethal Company, with mods from Nexus Mods, GitHub and Thunderstore. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
 
 <p align="center"><img src="build/linux/screenshots/mods.png" alt="Mortar showing a Stardew Valley profile of 817 mods with cover art" width="900"></p>
 
 ## Getting started
 
-Download from [mortar.rethunk.tech/download](https://mortar.rethunk.tech/download/), which has the steps for each channel: signed apt, dnf, pacman and Flatpak repositories, a [Scoop bucket](https://github.com/Rethunk-Tech/scoop-bucket) and a [Homebrew tap](https://github.com/Rethunk-Tech/homebrew-tap). Or take a file from [Releases](https://github.com/Rethunk-Tech/mortar/releases/latest): a Windows installer (x64 or ARM64), or for Linux an AppImage, portable program, Flatpak, `.deb`, `.rpm` or Arch package. The AppImage and portable program need Ubuntu 24.04, Debian 13, Fedora 39 or newer (glibc 2.38); on older systems use the Flatpak. Mortar finds Stardew Valley from Steam, GOG, Heroic or Lutris and installs SMAPI itself. The [user guide](docs/user-guide.md) walks through installing, first run, Nexus sign-in, profiles, backups and troubleshooting. The Windows builds are not code-signed, so SmartScreen warns the first time one runs: choose **More info**, then **Run anyway**.
+Download from [mortar.rethunk.tech/download](https://mortar.rethunk.tech/download/), which has the steps for each channel: signed apt, dnf, pacman and Flatpak repositories, a [Scoop bucket](https://github.com/Rethunk-Tech/scoop-bucket) and a [Homebrew tap](https://github.com/Rethunk-Tech/homebrew-tap). Or take a file from [Releases](https://github.com/Rethunk-Tech/mortar/releases/latest): a Windows installer (x64 or ARM64), or for Linux an AppImage, portable program, Flatpak, `.deb`, `.rpm` or Arch package. The AppImage and portable program need Ubuntu 24.04, Debian 13, Fedora 39 or newer (glibc 2.38); on older systems use the Flatpak. Mortar finds Stardew Valley from Steam, GOG, Heroic or Lutris and installs SMAPI itself; it finds Lethal Company from Steam and installs BepInEx itself. The [user guide](docs/user-guide.md) walks through installing, first run, Nexus sign-in, profiles, backups and troubleshooting. The Windows builds are not code-signed, so SmartScreen warns the first time one runs: choose **More info**, then **Run anyway**.
 
 The optional browser extension marks Nexus Mods pages with what a profile already has and hands Mod Manager Download clicks to Mortar. It lives in its own repo, [Rethunk-Tech/mortar-browser-extension](https://github.com/Rethunk-Tech/mortar-browser-extension). Its [latest release](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest) carries a signed `mortar-browser-extension.xpi` for Firefox and `mortar-browser-extension.zip` for Chrome, Edge and other Chromium browsers (unzip it, open `chrome://extensions`, turn on Developer mode and choose **Load unpacked**); Settings › Downloads links both.
 
@@ -30,7 +30,7 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 
 ## Features
 
-- Discovers the games in its catalog (Stardew Valley today) on Steam (including Flatpak Steam), GOG, Heroic, Minigalaxy, Lutris and Bottles, and installs each game's mod loader.
+- Discovers the games in its catalog (Stardew Valley and Lethal Company) on Steam (including Flatpak Steam), GOG, Heroic, Minigalaxy, Lutris and Bottles, and installs each game's mod loader.
 - Keeps each set of mods in its own profile, with install, update, rollback and share as a link or `.mortar` file.
 - Downloads from Nexus Mods, GitHub, Thunderstore, Modrinth and itch.io for the games that list them; never re-hosts mod files.
 - Edits a mod's config as a typed form, can keep a profile's saves separate, and shares profiles between your computers through a sync folder.

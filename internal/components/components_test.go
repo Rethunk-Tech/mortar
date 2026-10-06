@@ -322,13 +322,11 @@ func TestBundledGamesCarryTargetsAndCompanions(t *testing.T) {
 }
 
 func TestSandboxCanEnableAGameThatHasNotShipped(t *testing.T) {
-	t.Setenv(enableGamesEnv, "lethal-company")
-	m, err := BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, g := range m.Games {
-		if g.Enabled != (g.ID == "lethal-company" || g.ID == "stardew") {
+	t.Setenv(enableGamesEnv, "later,other")
+	games := []GameInfo{{ID: "later"}, {ID: "unlisted"}, {ID: "other"}}
+	enableForSandbox(games)
+	for _, g := range games {
+		if g.Enabled != (g.ID != "unlisted") {
 			t.Errorf("%s enabled = %v", g.ID, g.Enabled)
 		}
 	}

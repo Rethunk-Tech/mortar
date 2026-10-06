@@ -106,7 +106,7 @@
     {
       "id": "lethal-company",
       "name": "Lethal Company",
-      "enabled": false,
+      "enabled": true,
       "marker": "Lethal Company.exe",
       "r2modmanFolder": "LethalCompany",
       "metadata": [],

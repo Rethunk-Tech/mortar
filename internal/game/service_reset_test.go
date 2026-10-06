@@ -52,7 +52,7 @@ func TestListComesFromTheCatalog(t *testing.T) {
 	if sdv.ID != "stardew" || !sdv.Available || sdv.LoaderID != "smapi" || strings.Join(sdv.Sources, ",") != "nexus,github" || sdv.AppID != "413150" {
 		t.Fatalf("stardew row = %+v", sdv)
 	}
-	if lc.ID != "lethal-company" || lc.Available || lc.LoaderID != "bepinex5" || lc.AppID != "1966720" {
+	if lc.ID != "lethal-company" || !lc.Available || lc.LoaderID != "bepinex5" || lc.AppID != "1966720" {
 		t.Fatalf("lethal-company row = %+v", lc)
 	}
 }

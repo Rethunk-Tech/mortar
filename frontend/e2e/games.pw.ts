@@ -5,9 +5,7 @@ import { openSeedFarm } from './app.ts'
 // fixture, so that spec needs a connection.
 const SEARCH_WAIT_MS = 20_000
 
-test('Game Select lists Stardew Valley before Lethal Company, which the sandbox enables', async ({
-  page,
-}) => {
+test('Game Select lists Stardew Valley before Lethal Company', async ({ page }) => {
   await openSeedFarm(page)
   await page.getByRole('button', { name: 'Game select' }).click()
   const stardew = page.getByRole('button', { name: 'Open Stardew Valley' })

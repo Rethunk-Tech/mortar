@@ -131,7 +131,7 @@ A mod that has a Generic Mod Config Menu also lists **In-game menu**, with the s
 
 ## Lethal Company and Thunderstore
 
-When the catalog enables Lethal Company, its mods are Thunderstore packages that run on BepInEx. Mortar installs BepInEx, searches Thunderstore, and keeps each package in the profile, the way it does for Stardew Valley's mods.
+Lethal Company's mods are Thunderstore packages that run on BepInEx. Mortar installs BepInEx, searches Thunderstore, and keeps each package in the profile, the way it does for Stardew Valley's mods.
 
 - **Browse:** the Browse tab searches Thunderstore's Lethal Company community along with Nexus Mods and GitHub. **Add** puts the package in the profile together with the packages it depends on; a dependency the profile still lacks is flagged on the Load order tab and in the **Before you play** list.
 - **Thunderstore links:** the **Install with Mod Manager** button on thunderstore.io opens a `ror2mm://` link. Mortar does not take these links over from another manager until you ask: run `mortar links enable --source thunderstore` (and `mortar links disable --source thunderstore` to hand them back). A package link names no game, so it installs into the open game when that game has a Thunderstore community.

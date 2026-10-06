@@ -54,7 +54,7 @@ func TestListAndArt(t *testing.T) {
 	if g := list[0]; g.ID != "stardew" || !g.Installed || g.ArtURL != "/steam-art/413150" || !g.Available || g.Store != StoreSteam {
 		t.Fatalf("stardew = %+v", g)
 	}
-	if g := list[1]; g.Installed || g.ArtURL != "" || g.Available {
+	if g := list[1]; g.Installed || g.ArtURL != "" || !g.Available {
 		t.Fatalf("lethal = %+v", g)
 	}
 

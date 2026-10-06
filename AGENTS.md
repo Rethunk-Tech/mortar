@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Mortar is a desktop mod manager for several games, with Stardew Valley enabled today: game discovery, mod loader install, per-profile mod sets, launch, and profiles shared as links. [docs/architecture.md](docs/architecture.md) holds how it works (storage, profile semantics, Stardew and Nexus facts); [docs/design.md](docs/design.md) holds decided work not yet built, pruned as it lands; screen layout and styling rules: @docs/gui-design.md; Lethal Company research: [docs/lethal-company.md](docs/lethal-company.md); threat model and the guard and test for each untrusted input: [docs/security.md](docs/security.md).
+Mortar is a desktop mod manager for several games, with Stardew Valley and Lethal Company enabled: game discovery, mod loader install, per-profile mod sets, launch, and profiles shared as links. [docs/architecture.md](docs/architecture.md) holds how it works (storage, profile semantics, Stardew and Nexus facts); [docs/design.md](docs/design.md) holds decided work not yet built, pruned as it lands; screen layout and styling rules: @docs/gui-design.md; Lethal Company research: [docs/lethal-company.md](docs/lethal-company.md); threat model and the guard and test for each untrusted input: [docs/security.md](docs/security.md).
 
 ## Testing
 
@@ -16,7 +16,7 @@ Windows bugs: the Windows 11 KVM VM in `/var/tmp/win11-vm/` (`README.txt`; `star
 - Solid window with a wallpaper backdrop under a tint, frameless with a themed title bar, and an MUI dark theme over it. Surfaces: [docs/gui-design.md](docs/gui-design.md#surfaces-and-colour). Translucent window: [docs/design.md](docs/design.md#later).
 - Games, stores, runtimes, sources, metadata providers and hosts are registries joined by the signed catalog; no code pairs one with another, and a game normally needs no code. How: [docs/architecture.md](docs/architecture.md#games-and-the-catalog), adding one: [HUMANS.md](HUMANS.md#adding-a-game). Loaders are drivers in `internal/loader` (SMAPI: `internal/loader/smapi`); `internal/game`'s `Game` holds only identity and the install folder.
 - Greenfield: no migration, compatibility or transition code. The maintainers' own data is migrated by hand.
-- The merged all-sources browse is the primary way to get mods. Lethal Company, with Thunderstore, Nexus and GitHub sources, is the next game ([docs/lethal-company.md](docs/lethal-company.md)).
+- The merged all-sources browse is the primary way to get mods. Lethal Company is modded from Thunderstore, Nexus and GitHub ([docs/lethal-company.md](docs/lethal-company.md)).
 - Anything tied to a game's loader, launcher, saves or content format (SMAPI options, launch method, backup/update-before-Play, run logs, Content Patcher display, default nxm profile, pre-Play check) is a per-game setting with per-profile override; Mortar-wide settings are app chrome only (theme, density, dates, notifications, data folder, LAN, Mortar's own updates).
 - Stardrop and Vortex are never suggested, compared against, or contributed to (reading their source for file formats is fine).
 - AUR packages are prepared and checked locally (PKGBUILD, `.SRCINFO`, makepkg/namcap in an Arch container); pushing to aur.archlinux.org needs the AUR account holder's permission for each publish, relayed by the maintainer.
