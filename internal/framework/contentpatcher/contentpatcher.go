@@ -2054,6 +2054,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 		}
 	}
 	at := map[string]map[string][]packHit{"load": {}, "edit": {}}
+	var authored []authoredPack
 	type hitAt struct{ kind, target, id string }
 	index := map[hitAt]int{}
 	for _, im := range mods {
@@ -2084,6 +2085,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 		if len(pack.patches) > 0 {
 			sig, stable = packSig(im, pack, seen)
 		}
+		own := authoredPack{key: im.Key, name: im.Name, author: normalAuthor(im.Author), root: im.Folder}
 		for _, p := range pack.patches {
 			if p.kind == "other" || !p.when.holds(seen) || !dynamicWhenHolds(p.when, pack.tokens, seen, pack.schema, config) {
 				continue
@@ -2110,19 +2112,30 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 			}
 			if p.kind == "edit" {
 				hits[i].eligible = append(hits[i].eligible, p)
-				if !configHolds(p.when.config, pack.schema, config) {
-					continue
-				}
+			}
+			if !configHolds(p.when.config, pack.schema, config) {
+				continue
+			}
+			if p.kind == "edit" {
 				hits[i].edits = append(hits[i].edits, p)
 			} else {
-				if !configHolds(p.when.config, pack.schema, config) {
-					continue
-				}
 				hits[i].loads = append(hits[i].loads, p)
 			}
+			own.patches = append(own.patches, p)
+		}
+		if own.author != "" {
+			authored = append(authored, own)
 		}
 	}
 	shadowed := shadowedPacks(mods, at)
+	bundled := bundles(authored)
+	for _, key := range slices.Sorted(maps.Keys(bundled)) {
+		if slices.ContainsFunc(shadowed, func(r framework.Redundant) bool { return r.Key == key }) {
+			continue
+		}
+		im := mods[slices.IndexFunc(mods, func(m framework.Mod) bool { return m.Key == key })]
+		shadowed = append(shadowed, framework.Redundant{Kind: "bundled", Key: key, ID: im.ModID(), Name: im.Name, By: []framework.ModRef{bundled[key]}})
+	}
 	customFarms := map[string]string{}
 	for _, im := range mods {
 		for target, id := range readContentPack(im).farms {
@@ -2145,12 +2158,9 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 				fields = append(fields, h.sig)
 				stable = stable && h.stable
 			}
-			e := run.part(partKey(fields...), stable, func() partEntry { return targetPart(kind, t, hits, farm) })
+			e := run.part(partKey(fields...), stable, func() partEntry { return targetPart(kind, t, hits, farm, bundled) })
 			if e.Conflict != nil {
 				out = append(out, *e.Conflict)
-			}
-			for _, b := range e.Bundled {
-				shadowed = addBundled(shadowed, b)
 			}
 			settings = append(settings, e.Settings...)
 		}
@@ -2170,11 +2180,42 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 // targetPart is the outcome of one target that two or more packs touch: a conflict, a setting that settles it, or
 // nothing.
 // farm is the custom farm type whose map target is, or "".
-func targetPart(kind, target string, hits []packHit, farm string) partEntry {
-	rows, rest := bundled(kind, target, hits)
-	e := conflictPart(kind, target, rest, farm)
-	e.Bundled = rows
+func targetPart(kind, target string, hits []packHit, farm string, bundled map[string]framework.ModRef) partEntry {
+	hits = withoutBundled(kind, hits, bundled)
+	e := conflictPart(kind, target, hits, farm)
+	if kind == "load" {
+		e.Settings = append(e.Settings, deadFallbackSettings(target, hits, e.Conflict)...)
+	}
 	return e
+}
+
+// deadFallbackSettings are the settings that only turn on a fallback load another pack's load always beats: the
+// pack is left out of the conflict, and its setting has no effect.
+func deadFallbackSettings(target string, hits []packHit, conflict *framework.AssetConflict) []framework.SettingHint {
+	var out []framework.SettingHint
+	for _, h := range hits {
+		if conflict != nil && slices.Contains(conflict.Keys, h.key) {
+			continue
+		}
+	hit:
+		for _, load := range h.loads {
+			for _, other := range hits {
+				if other.key == h.key {
+					continue
+				}
+				for _, otherLoad := range other.loads {
+					if !fallbackLoad(h, load, other, otherLoad) {
+						continue
+					}
+					if hint := settingForDeadLoad(h, load, other, framework.AssetConflict{Target: target}); hint != nil {
+						out = append(out, *hint)
+						break hit
+					}
+				}
+			}
+		}
+	}
+	return out
 }
 
 func conflictPart(kind, target string, hits []packHit, farm string) partEntry {
@@ -2307,8 +2348,7 @@ func clashingLoads(hits []packHit) (out []packHit) {
 
 // fallbackLoad reports a load below default priority that another pack's load of the same asset outranks:
 // the author made it the fallback for when no stronger load is installed. Under a Medium load it is a
-// fallback only when its pack names the other one. A config-gated loser stays reported so settingForDeadLoad
-// can point at the setting that turned it on, and so does one a blank load wipes.
+// fallback only when its pack names the other one; one a blank load wipes stays reported.
 func fallbackLoad(h packHit, load cpPatch, other packHit, otherLoad cpPatch) bool {
 	rank := contentPatcherPriority("load", load.priority)
 	otherRank := contentPatcherPriority("load", otherLoad.priority)
@@ -2318,8 +2358,7 @@ func fallbackLoad(h packHit, load cpPatch, other packHit, otherLoad cpPatch) boo
 	if h.mentions[other.id.Fold()] {
 		return true
 	}
-	return otherRank >= 1000 && len(load.when.config) == 0 &&
-		(loadFileBlank(h, load, load.target) || !loadFileBlank(other, otherLoad, otherLoad.target))
+	return otherRank >= 1000 && (loadFileBlank(h, load, load.target) || !loadFileBlank(other, otherLoad, otherLoad.target))
 }
 
 // clashing keeps the packs that share an overlapping edit of one target with a pack they were not built
@@ -2369,78 +2408,125 @@ func normalAuthor(author string) string {
 	return strings.Join(strings.Fields(strings.ToLower(author)), " ")
 }
 
-// bundled splits off the packs whose every patch of the target another pack by the same author makes too: the
-// larger pack bundles the smaller one, so there is nothing to conflict. Loads are judged only between two packs.
-func bundled(kind, target string, hits []packHit) (rows []framework.Redundant, rest []packHit) {
-	if kind == "load" && len(hits) != 2 || !slices.ContainsFunc(hits, func(a packHit) bool {
-		return slices.ContainsFunc(hits, func(b packHit) bool { return a.key != b.key && sameAuthor(a, b) })
-	}) {
-		return nil, hits
-	}
-	sigs := make([]map[string]bool, len(hits))
-	for i, h := range hits {
-		patches := h.edits
-		if kind == "load" {
-			patches = h.loads
-		}
-		sigs[i] = map[string]bool{}
-		for _, p := range patches {
-			sigs[i][patchSig(h, p)] = true
+// authoredPack is a pack's active Load and edit patches, kept while scanning so packs by one author can be compared.
+type authoredPack struct {
+	key, name, author, root string
+	patches                 []cpPatch
+}
+
+// bundles finds the packs whose every active patch writes where another pack by the same author also writes:
+// the larger pack bundles the smaller one. Of two packs with the same footprint, the one listed later is bundled.
+func bundles(packs []authoredPack) map[string]framework.ModRef {
+	byAuthor := map[string][]authoredPack{}
+	for _, p := range packs {
+		if p.author != "" && len(p.patches) > 0 {
+			byAuthor[p.author] = append(byAuthor[p.author], p)
 		}
 	}
-	gone := make([]bool, len(hits))
-	for i, small := range hits {
-		for j, big := range hits {
-			if i == j || gone[j] || !sameAuthor(small, big) || len(sigs[i]) == 0 || len(sigs[i]) > len(sigs[j]) {
-				continue
+	var out map[string]framework.ModRef
+	for _, group := range byAuthor {
+		if len(group) < 2 {
+			continue
+		}
+		// Targets first: they rule out almost every pair before any footprint is spelled out.
+		targets := make([]map[string]bool, len(group))
+		for i, p := range group {
+			targets[i] = map[string]bool{}
+			for _, patch := range p.patches {
+				targets[i][patch.target] = true
 			}
-			if len(sigs[i]) == len(sigs[j]) && i > j {
-				continue
+		}
+		sigs := make([]map[string]bool, len(group))
+		footprints := func(i int) map[string]bool {
+			if sigs[i] == nil {
+				sigs[i] = make(map[string]bool, len(group[i].patches))
+				for _, patch := range group[i].patches {
+					sigs[i][patchFootprint(patch)] = true
+				}
 			}
-			subset := true
-			for s := range sigs[i] {
-				subset = subset && sigs[j][s]
-			}
-			if subset {
-				gone[i] = true
-				rows = append(rows, framework.Redundant{Kind: "bundled", Key: small.key, ID: small.id, Name: small.name, By: []framework.ModRef{{Key: big.key, Name: big.name}}, Detail: target})
+			return sigs[i]
+		}
+		for i, small := range group {
+			for j, big := range group {
+				if i == j || len(small.patches) > len(big.patches) && len(targets[i]) > len(targets[j]) {
+					continue
+				}
+				if _, bundledToo := out[big.key]; bundledToo || !subsetOf(targets[i], targets[j]) {
+					continue
+				}
+				a, b := footprints(i), footprints(j)
+				if len(a) > len(b) || len(a) == len(b) && i < j || !subsetOf(a, b) || !sameLoads(small, big) {
+					continue
+				}
+				if out == nil {
+					out = map[string]framework.ModRef{}
+				}
+				out[small.key] = framework.ModRef{Key: big.key, Name: big.name}
 				break
 			}
 		}
 	}
-	if rows == nil {
-		return nil, hits
-	}
-	for i, h := range hits {
-		if !gone[i] {
-			rest = append(rest, h)
-		}
-	}
-	return rows, rest
+	return out
 }
 
-// patchSig is what a patch writes, so two packs that make the same change compare equal.
-func patchSig(h packHit, p cpPatch) string {
-	file := p.imageDigest
-	if p.kind == "load" {
-		file = imageFileDigest(h.root, p.fromFile, true)
-	}
-	return fmt.Sprintf("%s|%s|%s|%s|%s|%s|%v", p.action, p.toArea, p.imageFromArea, p.patchMode, file, p.when.places, p.shapes)
-}
-
-// addBundled adds a bundled row, folding a pack's targets into one row per bundling pack; a pack already
-// listed as shadowed keeps that row.
-func addBundled(rows []framework.Redundant, b framework.Redundant) []framework.Redundant {
-	for i, row := range rows {
-		if row.Key != b.Key {
+// sameLoads reports whether big loads every file small loads, to the same target.
+func sameLoads(small, big authoredPack) bool {
+	for _, p := range small.patches {
+		if p.kind != "load" {
 			continue
 		}
-		if row.Kind == "bundled" && row.By[0].Key == b.By[0].Key {
-			rows[i].Detail += ", " + b.Detail
+		digest := imageFileDigest(small.root, p.fromFile, true)
+		if digest == "" || !slices.ContainsFunc(big.patches, func(o cpPatch) bool {
+			return o.kind == "load" && o.target == p.target && imageFileDigest(big.root, o.fromFile, true) == digest
+		}) {
+			return false
 		}
-		return rows
 	}
-	return append(rows, b)
+	return true
+}
+
+func subsetOf(a, b map[string]bool) bool {
+	for k := range a {
+		if !b[k] {
+			return false
+		}
+	}
+	return true
+}
+
+// withoutBundled drops the packs another pack in hits bundles. Loads are judged only between two packs.
+func withoutBundled(kind string, hits []packHit, bundled map[string]framework.ModRef) []packHit {
+	if len(bundled) == 0 || kind == "load" && len(hits) != 2 {
+		return hits
+	}
+	return slices.DeleteFunc(slices.Clone(hits), func(h packHit) bool {
+		by, ok := bundled[h.key]
+		return ok && slices.ContainsFunc(hits, func(o packHit) bool { return o.key == by.Key })
+	})
+}
+
+// patchFootprint is where an edit writes, not what: packs by one author that write the same places are one
+// bundled in the other even when their sources are laid out differently. A load replaces the whole asset, so
+// sameLoads compares its file too.
+func patchFootprint(p cpPatch) string {
+	b := make([]byte, 0, 64)
+	b = append(b, p.target...)
+	b = append(b, '|')
+	b = append(b, p.action...)
+	b = append(b, '|')
+	b = append(b, strings.ToLower(strings.TrimSpace(p.patchMode))...)
+	if len(p.when.places) > 0 {
+		b = fmt.Appendf(b, "|%v", p.when.places)
+	}
+	for _, shape := range p.shapes {
+		b = append(b, '|', shape.kind)
+		for _, n := range []int{shape.x, shape.y, shape.w, shape.h} {
+			b = strconv.AppendInt(append(b, ','), int64(n), 10)
+		}
+		b = append(append(append(append(append(b, ','), shape.cells...), ','), shape.layer...), ',')
+		b = append(b, shape.key...)
+	}
+	return string(b)
 }
 
 func aware(a, b packHit) bool {

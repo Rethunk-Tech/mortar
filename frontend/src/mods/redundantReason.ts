@@ -103,7 +103,7 @@ export function useRedundantRows() {
       if (item.kind === 'superseded') {
         reason = t`Replaced by ${by}, which is also enabled`
       } else if (item.kind === 'bundled') {
-        reason = t`${by} already includes this: ${detail}`
+        reason = t`${by} already includes everything it changes`
       } else if (item.covered) {
         reason = t`Overlaps with ${by}: both change ${detail}`
       }

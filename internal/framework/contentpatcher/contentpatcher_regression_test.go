@@ -806,7 +806,7 @@ func TestFarmMapConflictsNameTheirFarmTypes(t *testing.T) {
 	}
 }
 
-func authoredPack(t *testing.T, author, content string, files map[string]string) framework.Mod {
+func packBy(t *testing.T, author, content string, files map[string]string) framework.Mod {
 	t.Helper()
 	m := syntheticLoadPack(t, content, files)
 	m.Author = author
@@ -815,7 +815,7 @@ func authoredPack(t *testing.T, author, content string, files map[string]string)
 
 func TestSameAuthorExplicitPriorityIsIntended(t *testing.T) {
 	pack := func(author, priority, value string) framework.Mod {
-		return authoredPack(t, author, `{"Changes":[{"Action":"EditData","Target":"Data/Objects","Fields":{"Cheese":{"Price":`+value+`,"Edibility":`+value+`}}`+priority+`}]}`, nil)
+		return packBy(t, author, `{"Changes":[{"Action":"EditData","Target":"Data/Objects","Fields":{"Cheese":{"Price":`+value+`,"Edibility":`+value+`}}`+priority+`}]}`, nil)
 	}
 	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"Late"`, "2")}); len(conflicts) != 0 {
 		t.Fatalf("one author's Late edit is an intended override, got %#v", conflicts)
@@ -824,7 +824,7 @@ func TestSameAuthorExplicitPriorityIsIntended(t *testing.T) {
 		t.Fatalf("another author's Late edit still conflicts, got %#v", conflicts)
 	}
 	load := func(author, priority, file string) framework.Mod {
-		return authoredPack(t, author, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"m.tmx"`+priority+`}]}`, map[string]string{"m.tmx": file})
+		return packBy(t, author, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"m.tmx"`+priority+`}]}`, map[string]string{"m.tmx": file})
 	}
 	if conflicts := assetConflicts([]framework.Mod{load("Em", "", "a"), load("Em", `,"Priority":"Exclusive"`, "b")}); len(conflicts) != 1 {
 		t.Fatalf("one author's clashing loads still conflict, got %#v", conflicts)
@@ -833,19 +833,22 @@ func TestSameAuthorExplicitPriorityIsIntended(t *testing.T) {
 
 func TestSameAuthorBundleIsRedundant(t *testing.T) {
 	dino := `{"Action":"EditImage","Target":"Animals/Dinosaur","FromFile":"dino.png","ToArea":{"X":0,"Y":0,"Width":16,"Height":16}}`
-	files := map[string]string{"dino.png": "dino"}
-	dinos := authoredPack(t, "Em", `{"Changes":[`+dino+`]}`, files)
-	animals := authoredPack(t, "Em", `{"Changes":[`+dino+`,{"Action":"EditImage","Target":"Animals/Dinosaur","FromFile":"dino.png","ToArea":{"X":16,"Y":0,"Width":16,"Height":16}}]}`, files)
+	files := map[string]string{"dino.png": "dino", "eggs.png": "eggs", "egg.png": "egg"}
+	// The same egg, cut from a sheet in one pack and from its own file in the other.
+	dinos := packBy(t, "Em", `{"Changes":[`+dino+`,
+		{"Action":"EditImage","Target":"Maps/springobjects","FromFile":"eggs.png","FromArea":{"X":0,"Y":0,"Width":16,"Height":16},"ToArea":{"X":176,"Y":64,"Width":16,"Height":16}}]}`, files)
+	animals := packBy(t, "Em", `{"Changes":[`+dino+`,{"Action":"EditImage","Target":"Animals/Dinosaur","FromFile":"dino.png","ToArea":{"X":16,"Y":0,"Width":16,"Height":16}},
+		{"Action":"EditImage","Target":"Maps/springobjects","FromFile":"egg.png","ToArea":{ "X": 176, "Y": 64, "Width": 16, "Height": 16 }}]}`, files)
 	dinos.Name, animals.Name = "Em's Dinos", "Em's Farm Animals"
 	got := check([]framework.Mod{dinos, animals})
 	if len(got.AssetConflicts) != 0 {
 		t.Fatalf("a bundled pack is not a conflict, got %#v", got.AssetConflicts)
 	}
 	if len(got.Redundant) != 1 || got.Redundant[0].Kind != "bundled" || got.Redundant[0].Key != dinos.Key ||
-		got.Redundant[0].By[0].Name != "Em's Farm Animals" || got.Redundant[0].Detail != "animals/dinosaur" {
+		got.Redundant[0].By[0].Name != "Em's Farm Animals" {
 		t.Fatalf("expected Em's Dinos bundled in Em's Farm Animals, got %#v", got.Redundant)
 	}
-	stranger := authoredPack(t, "Someone", `{"Changes":[`+dino+`]}`, map[string]string{"dino.png": "other dino"})
+	stranger := packBy(t, "Someone", `{"Changes":[`+dino+`]}`, map[string]string{"dino.png": "other dino"})
 	if got := check([]framework.Mod{stranger, animals}); slices.ContainsFunc(got.Redundant, func(r framework.Redundant) bool { return r.Kind == "bundled" }) {
 		t.Fatalf("another author's copy is not a bundle, got %#v", got.Redundant)
 	}
@@ -857,10 +860,36 @@ func TestSameAuthorBundleIsRedundant(t *testing.T) {
 		t.Fatalf("the stranger still conflicts with Em's Farm Animals alone, got %#v", got.AssetConflicts)
 	}
 	load := func(author, file string) framework.Mod {
-		return authoredPack(t, author, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"m.tmx"}]}`, map[string]string{"m.tmx": file})
+		return packBy(t, author, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"m.tmx"}]}`, map[string]string{"m.tmx": file})
 	}
 	got = check([]framework.Mod{load("Em", "a"), load("Em", "a"), load("Someone", "b")})
-	if len(got.Redundant) != 0 || len(got.AssetConflicts) != 1 || len(got.AssetConflicts[0].Keys) != 3 {
-		t.Fatalf("loads among three packs are never bundled, got %#v %#v", got.Redundant, got.AssetConflicts)
+	if len(got.AssetConflicts) != 1 || len(got.AssetConflicts[0].Keys) != 3 {
+		t.Fatalf("loads among three packs stay in the conflict, got %#v", got.AssetConflicts)
+	}
+
+	// Mr Ginger's temporary actor is Marnie Immersive's own sprite, at Low; the rest of the pack is its own.
+	ginger := packBy(t, "Lemurkat", `{"Changes":[{"Action":"Load","Target":"Characters/VoidGolem","FromFile":"golem.png","Priority":"Low"},
+		{"Action":"EditData","Target":"Data/Events/Town","Entries":{"50706117":"ginger"}}]}`, map[string]string{"golem.png": "golem"})
+	marnie := packBy(t, "Lemurkat", `{"Changes":[{"Action":"Load","Target":"Characters/VoidGolem","FromFile":"golem.png"},
+		{"Action":"EditData","Target":"Data/Events/Forest","Entries":{"50706108":"marnie"}}]}`, map[string]string{"golem.png": "golem"})
+	if got := check([]framework.Mod{ginger, marnie}); len(got.Redundant) != 0 || len(got.AssetConflicts) != 0 {
+		t.Fatalf("a pack sharing one patch with another is not bundled in it, got %#v %#v", got.Redundant, got.AssetConflicts)
+	}
+}
+
+func TestConfigGatedLowLoadUnderTwoExclusiveLoadsIsAFallback(t *testing.T) {
+	dwarf := settingPack(t, `{"FarmCaveChange":{"Default":false,"AllowValues":"true, false"}}`,
+		`[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"dwarf.json","Priority":"Low","When":{"FarmCaveChange":true}}]`,
+		`{"FarmCaveChange":"true"}`)
+	testfs.WriteFile(t, dwarf.Folder, "dwarf.json", `{"Tile":1}`)
+	exclusive := func(file string) framework.Mod {
+		return syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"cave.json"}]}`, map[string]string{"cave.json": file})
+	}
+	conflicts, settings := assetConflictResults([]framework.Mod{dwarf, exclusive(`{"Tile":2}`), exclusive(`{"Tile":3}`)})
+	if len(conflicts) != 1 || slices.Contains(conflicts[0].Keys, dwarf.Key) || conflicts[0].WinnerName != "CP applies neither" {
+		t.Fatalf("the two Exclusive loads clash without the Low one, got %#v", conflicts)
+	}
+	if len(settings) != 1 || settings[0].Field != "FarmCaveChange" || settings[0].Suggested[0] != "false" {
+		t.Fatalf("the setting that only turns on the dead load is named, got %#v", settings)
 	}
 }
