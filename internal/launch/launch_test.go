@@ -9,6 +9,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 var fast = Timing{Timeout: 300 * time.Millisecond, Poll: 5 * time.Millisecond}
@@ -102,7 +104,16 @@ func TestRunKeepsFollowingUntilContextDone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(log, []byte("one\ntwo\nthree\n"), 0o600); err != nil {
+	// Appended, as the game writes its log: rewriting the file truncates it first, and a poll that lands between the
+	// truncate and the write rightly reads the refilled log from the start, emitting "one" again.
+	f, err := fsx.OpenFile(log, os.O_WRONLY|os.O_APPEND, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.WriteString("two\nthree\n"); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
