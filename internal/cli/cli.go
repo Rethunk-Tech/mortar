@@ -3,6 +3,7 @@
 package cli
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
@@ -902,6 +904,25 @@ func harmlessMissing(r problems.Result) int {
 
 func problemsHumanCount(r problems.Result) int {
 	return r.Count() - harmlessMissing(r)
+}
+
+// loaderColumn heads the runs' loader version column with the name of the loader they used, LOADER when they used
+// different ones or it is unknown. A run that recorded no loader used the game's only one.
+func loaderColumn(game string, list []launchsvc.Run) string {
+	g, _ := components.Game(game)
+	name := ""
+	for _, r := range list {
+		id := r.Loader
+		if id == "" && len(g.Loaders) == 1 {
+			id = g.Loaders[0].ID
+		}
+		i := slices.IndexFunc(g.Loaders, func(l components.GameLoader) bool { return l.ID == id })
+		if i < 0 || (name != "" && name != g.Loaders[i].Name) {
+			return "LOADER"
+		}
+		name = g.Loaders[i].Name
+	}
+	return strings.ToUpper(cmp.Or(name, "Loader"))
 }
 
 func runStartedLabel(started string) string {
@@ -1913,7 +1934,7 @@ func (c *cmd) runs(p control.Params) error {
 				runOutcomeLabel(string(r.Outcome)), runEndedLabel(r.Exit), r.Preset, fmt.Sprint(r.Errors), fmt.Sprint(r.Warnings), r.LoaderVersion, r.GameVersion,
 			})
 		}
-		c.table("STARTED\tDURATION\tOUTCOME\tENDED\tPRESET\tERRORS\tWARNINGS\tSMAPI\tGAME", t)
+		c.table("STARTED\tDURATION\tOUTCOME\tENDED\tPRESET\tERRORS\tWARNINGS\t"+loaderColumn(p.Game, list)+"\tGAME", t)
 		for _, r := range list {
 			if r.Error != "" {
 				fmt.Fprintf(c.out, "%s: %s\n", runStartedLabel(r.Started), r.Error)
@@ -2252,7 +2273,25 @@ func (c *cmd) backups() error {
 			return usageError{"unknown backups command " + c.args[1]}
 		}
 	}
-	return show(c, "backups", control.Params{Game: game}, func(list any) { fmt.Fprintln(c.out, list) })
+	return show(c, "backups", control.Params{Game: game}, func(list []backup.Backup) {
+		if len(list) == 0 {
+			fmt.Fprintln(c.out, "No backups.")
+			return
+		}
+		rows := make([][]string, 0, len(list))
+		for _, b := range list {
+			var saves []string
+			for _, sn := range b.Saves {
+				saves = append(saves, cmp.Or(sn.Farm, sn.Folder))
+			}
+			kept := ""
+			if b.Pinned {
+				kept = "kept"
+			}
+			rows = append(rows, []string{b.Name, relativeDeleted(time.UnixMilli(b.At)), b.Kind, strings.Join(saves, ", "), humanBytes(b.Size), kept})
+		}
+		c.table("NAME\tTAKEN\tKIND\tSAVES\tSIZE\tKEPT", rows)
+	})
 }
 
 func (c *cmd) launchers() error {
@@ -2446,7 +2485,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   browse <game> <text> [--source <id>|all] [--page N]  search a source, or all of them (default)
   update <game> <profile> <mod id>...|--all
                                           queue available mod updates
-  backups list [--game <id>]              list save backups
+  backups list [--game <id>] [--json]     list save backups
   backups create <save>                   pin a Manual backup of one save
   backups usage                           disk used by save backups, per save
   backups trim --keep N                   delete all but the newest N backups of each save (kept ones stay)

@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -218,6 +219,35 @@ func TestBackupsCreate(t *testing.T) {
 	var body map[string]any
 	if err := json.Unmarshal([]byte(r.out), &body); err != nil || body["save"] != "Farm_1" {
 		t.Fatalf("create json: %v %q", err, r.out)
+	}
+}
+
+func TestBackupsListIsATable(t *testing.T) {
+	at := time.Now().Add(-3 * time.Hour).UnixMilli()
+	results := map[string]any{"backups": []backup.Backup{{
+		Name: "2026-10-01T10-00-00.000.zip", At: at, Size: 2048, Kind: backup.KindUpdate, Pinned: true,
+		Saves: []backup.Snap{{Folder: "Farm_1", Farm: "Green Acres"}, {Folder: "LCSaveFile1"}},
+	}}}
+	r := invoke(t, results, "backups", "list", "--game", "stardew")
+	if r.code != 0 || !strings.HasPrefix(r.out, "NAME") || !strings.Contains(r.out, "hours ago") ||
+		!strings.Contains(r.out, "Green Acres, LCSaveFile1") || !strings.Contains(r.out, "kept") || strings.Contains(r.out, "map[") || strings.Contains(r.out, "{") {
+		t.Fatalf("list: %q", r.out)
+	}
+	r = invoke(t, results, "backups", "list", "--game", "stardew", "--json")
+	var body []backup.Backup
+	if err := json.Unmarshal([]byte(r.out), &body); err != nil || len(body) != 1 || body[0].Saves[1].Folder != "LCSaveFile1" {
+		t.Fatalf("list json: %v %q", err, r.out)
+	}
+}
+
+func TestRunsNameTheGamesLoader(t *testing.T) {
+	results := map[string]any{"runs": []launchsvc.Run{{ID: "r", Loader: "bepinex5", LoaderVersion: "5.4.23"}}}
+	if r := invoke(t, results, "runs", "lethal-company", "LC"); r.code != 0 || !strings.Contains(r.out, "BEPINEX 5") || strings.Contains(r.out, "SMAPI") {
+		t.Fatalf("lethal runs: %q", r.out)
+	}
+	results = map[string]any{"runs": []launchsvc.Run{{ID: "r"}}}
+	if r := invoke(t, results, "runs", "stardew", "Farm"); r.code != 0 || !strings.Contains(r.out, "SMAPI") {
+		t.Fatalf("stardew runs: %q", r.out)
 	}
 }
 
