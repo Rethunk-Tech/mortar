@@ -1,0 +1,166 @@
+<!doctype html>
+<!-- Written by scripts/site-games.ts from scripts/share-page.html for each playable game. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark" />
+    <title>Mortar: shared Valheim profile</title>
+    <link rel="stylesheet" href="../../base.css" />
+    <style>
+      :root {
+        --error: rgb(199, 10, 10);
+        --warn: rgb(240, 180, 60);
+      }
+      .title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+      }
+      ul {
+        list-style: none;
+        margin: 1rem 0 0;
+        padding: 0;
+        max-height: 45vh;
+        overflow: auto;
+      }
+      li {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0 0.5rem;
+        padding: 0.3rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        overflow-wrap: anywhere;
+      }
+      .pic {
+        width: 32px;
+        height: 32px;
+        flex: none;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.06);
+        object-fit: cover;
+      }
+      li a {
+        flex: 1;
+        min-width: 8rem;
+      }
+      .size {
+        font-size: 0.8rem;
+        opacity: 0.7;
+        white-space: nowrap;
+      }
+      .flag {
+        flex-basis: 100%;
+        padding-left: calc(32px + 0.5rem);
+        font-size: 0.8rem;
+        color: var(--warn);
+      }
+      .flag[hidden],
+      #versionRow[hidden] {
+        display: none;
+      }
+      #versionRow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+      }
+      #version {
+        width: 6rem;
+        padding: 0.2rem 0.4rem;
+        font: inherit;
+        color: inherit;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+      }
+      .source {
+        display: inline-block;
+        min-width: 6.5rem;
+        font-size: 0.8rem;
+        opacity: 0.7;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
+      .btn.alt {
+        background: transparent;
+        color: var(--sand);
+        border: 1px solid var(--sand);
+      }
+      #error {
+        border-left: 4px solid var(--error);
+      }
+      .card[hidden],
+      .btn[hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 64 64"
+          aria-hidden="true"
+          fill="currentColor"
+        >
+          <rect x="6" y="12" width="24" height="11" rx="2" />
+          <rect x="34" y="12" width="24" height="11" rx="2" />
+          <rect x="6" y="27" width="10" height="11" rx="2" />
+          <rect x="20" y="27" width="24" height="11" rx="2" />
+          <rect x="48" y="27" width="10" height="11" rx="2" />
+          <rect x="6" y="42" width="24" height="11" rx="2" />
+          <rect x="34" y="42" width="24" height="11" rx="2" />
+        </svg>
+        <span>Mortar</span>
+      </header>
+      <p id="error" class="card" hidden></p>
+      <noscript
+        ><p class="card">
+          This page needs JavaScript to read the shared profile.
+        </p></noscript
+      >
+      <section id="profile" class="card" hidden>
+        <p class="muted">Valheim profile shared with you</p>
+        <p id="name" class="title"></p>
+        <p class="muted">
+          <span id="count"></span>. Mortar resolves mod names when you import.
+        </p>
+        <label id="versionRow" hidden
+          >Your game version
+          <input id="version" inputmode="decimal" autocomplete="off" />
+          <span id="flagged" class="muted"></span>
+        </label>
+        <ul id="list"></ul>
+      </section>
+      <div class="actions">
+        <a id="open" class="btn" href="mortar://" hidden
+          >Open in Mortar</a
+        >
+        <a id="download" class="btn alt" href="/download/" hidden>Get Mortar</a>
+        >
+      </div>
+      <p id="copied" class="muted" hidden>
+        Link copied. After installing Mortar, paste it into Import.
+      </p>
+      <p class="muted">
+        Everything on this page happens in your browser; the profile is never
+        sent anywhere. Pictures of GitHub and Thunderstore mods load from those
+        sites.
+      </p>
+    </main>
+    <script type="module" src="../../share/app.js"></script>
+  </body>
+</html>

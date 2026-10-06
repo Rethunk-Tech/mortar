@@ -55,7 +55,7 @@ func TestListComesFromTheCatalog(t *testing.T) {
 	if lc.ID != "lethal-company" || !lc.Available || lc.LoaderID != "bepinex5" || lc.AppID != "1966720" {
 		t.Fatalf("lethal-company row = %+v", lc)
 	}
-	if vh.ID != "valheim" || vh.Available || vh.LoaderID != "bepinex5" || vh.AppID != "892970" {
+	if vh.ID != "valheim" || !vh.Available || vh.LoaderID != "bepinex5" || vh.AppID != "892970" {
 		t.Fatalf("valheim row = %+v", vh)
 	}
 }

@@ -176,7 +176,7 @@
     {
       "id": "valheim",
       "name": "Valheim",
-      "enabled": false,
+      "enabled": true,
       "importIds": { "vortex": "valheim", "mo2": "Valheim" },
       "marker": "valheim.exe",
       "r2modmanFolder": "Valheim",
