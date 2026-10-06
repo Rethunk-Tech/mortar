@@ -71,8 +71,7 @@ func (s *Store) TrimHistory(gameID, id string, keepLast int) (HistoryUsage, erro
 		if err := writeHistory(dir, data, keepLast); err != nil {
 			return HistoryUsage{}, err
 		}
-		label := fmt.Sprintf("Trimmed history, dropped %d older changes", dropped)
-		if _, err := appendHistory(dir, HistoryEvent{Kind: historyTrimmed, Label: label, Count: dropped}, p.Entries, keepLast+1); err != nil {
+		if _, err := appendHistory(dir, HistoryEvent{Kind: historyTrimmed, Change: ChangeTrimmed, Count: dropped}, p.Entries, keepLast+1); err != nil {
 			return HistoryUsage{}, err
 		}
 		data, err = readHistory(dir)

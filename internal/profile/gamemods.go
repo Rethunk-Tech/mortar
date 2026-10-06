@@ -90,8 +90,7 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 		res.Outcomes = append(res.Outcomes, out)
 	}
 	if res.Imported > 0 {
-		label := fmt.Sprintf("Moved %d mods from the game's Mods folder", res.Imported)
-		if err := s.recordSnapshot(game, id, historyImported, label, res.Imported); err != nil {
+		if err := s.recordSnapshot(game, id, historyImported, HistoryEvent{Change: ChangeMoved}, res.Imported); err != nil {
 			return res, err
 		}
 		if err := s.RecordModsSnapshot(game, id); err != nil {

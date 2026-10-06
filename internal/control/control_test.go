@@ -324,7 +324,7 @@ func TestHandleProfileCompareAndHistory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if rows, ok := res.([]HistoryRow); !ok || len(rows) != 0 {
+	if rows, ok := res.([]profile.HistoryEvent); !ok || len(rows) != 0 {
 		t.Fatalf("empty history: %#v", res)
 	}
 }

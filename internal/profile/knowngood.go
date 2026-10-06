@@ -19,7 +19,7 @@ func (s *Store) MarkKnownGood(game, id string) (HistoryEvent, error) {
 		return HistoryEvent{}, err
 	}
 	return appendHistory(dir, HistoryEvent{
-		Kind: historyGood, Label: "Known good", Count: 1, At: time.Now().UTC(),
+		Kind: historyGood, Change: ChangeKnownGood, Count: 1, At: time.Now().UTC(),
 	}, p.Entries, s.historyKeep())
 }
 

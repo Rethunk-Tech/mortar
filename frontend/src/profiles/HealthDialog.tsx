@@ -28,6 +28,7 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { downloadWantsForEntries, type UndoEntry } from '../toasts/undo.ts'
+import { historyLabel } from './historyLabel.ts'
 import { useProfiles } from './store.ts'
 
 const KINDS = ['missing', 'drift', 'snapshot', 'journal', 'unused'] as const
@@ -56,10 +57,11 @@ function findingText(f: HealthFinding): string {
         ? i18n._(msg`The folder of ${name} was deleted outside Mortar`)
         : i18n._(msg`Files of ${name} changed outside Mortar`)
     case 'snapshot': {
+      const change = f.event ? historyLabel(f.event) : ''
       const when = absoluteWhen(f.at ?? '', i18n.locale)
       return f.cause === 'configs'
-        ? i18n._(msg`The saved change ${name} from ${when} is missing its config files`)
-        : i18n._(msg`Could not read the saved change ${name} from ${when}`)
+        ? i18n._(msg`The saved change ${change} from ${when} is missing its config files`)
+        : i18n._(msg`Could not read the saved change ${change} from ${when}`)
     }
     case 'journal':
       return i18n._(msg`A launch ended without Mortar putting the game folder back as it was`)

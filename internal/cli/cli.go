@@ -779,21 +779,86 @@ func gameConfiguredLabel(ok bool) string {
 	return "Not set up"
 }
 
-func historySummary(kind string, count int, label string) string {
-	if strings.TrimSpace(label) != "" {
-		return label
+// historySummary words a history event in English, as the window words it in the user's language.
+func historySummary(ev profile.HistoryEvent) string {
+	mods := func(n int) string {
+		if n == 1 {
+			return "1 mod"
+		}
+		return fmt.Sprintf("%d mods", n)
 	}
-	if count <= 0 {
-		return kind
+	switch ev.Change {
+	case profile.ChangeAdded:
+		return "Added " + ev.Name
+	case profile.ChangeRemoved:
+		return "Removed " + ev.Name
+	case profile.ChangeUpdated:
+		return fmt.Sprintf("Updated %s from %s to %s", ev.Name, ev.From, ev.To)
+	case profile.ChangeEnabled:
+		return "Enabled " + ev.Name
+	case profile.ChangeDisabled:
+		return "Disabled " + ev.Name
+	case profile.ChangePinned:
+		return "Pinned " + ev.Name + " at its version"
+	case profile.ChangeUnpinned:
+		return "Unpinned " + ev.Name
+	case profile.ChangeMods:
+		if ev.Count > 1 {
+			return "Changed " + mods(ev.Count)
+		}
+		return "Changed mods"
+	case profile.ChangeImported:
+		return "Imported " + mods(ev.Count)
+	case profile.ChangeMoved:
+		return "Moved " + mods(ev.Count) + " from the game's Mods folder"
+	case profile.ChangeRestored:
+		return "Restored " + mods(ev.Count)
+	case profile.ChangeRestoredFromStore:
+		if ev.Name != "" {
+			return "Restored " + ev.Name + " from the store"
+		}
+		return "Restored " + mods(ev.Count) + " from the store"
+	case profile.ChangeBeforeEdit:
+		return "Before this change"
+	case profile.ChangeReverted:
+		return "Went back to " + ev.Target.Local().Format("2006-01-02 15:04")
+	case profile.ChangeRestoredFile:
+		return fmt.Sprintf("Restored %s of %s", ev.Detail, ev.Name)
+	case profile.ChangeConfigEdited:
+		return "Edited the settings of " + ev.Name
+	case profile.ChangeConfigReset:
+		return "Reset the settings of " + ev.Name
+	case profile.ChangePresetApplied:
+		return "Applied the preset " + ev.Name
+	case profile.ChangeOptionSet:
+		return fmt.Sprintf("Set %s of %s for the next start", ev.Detail, ev.Name)
+	case profile.ChangeCategoryRemoved:
+		return "Removed a custom category"
+	case profile.ChangeChannel:
+		return "Switched to the " + ev.Name + " update channel"
+	case profile.ChangeCollectionUnlinked:
+		if ev.Name != "" {
+			return "Unlinked the collection " + ev.Name
+		}
+		return "Unlinked the collection"
+	case profile.ChangeTrimmed:
+		return fmt.Sprintf("Trimmed history, dropped %d older changes", ev.Count)
+	case profile.ChangeKnownGood:
+		return "Known good"
+	case profile.ChangeGroups:
+		return "Changed groups"
+	case profile.ChangeLoader:
+		return "Changed loader"
+	case profile.ChangeInstall:
+		return "Changed game install"
+	case profile.ChangeSaves:
+		return "Changed separate saves"
+	case profile.ChangeLaunch:
+		return "Changed launch settings"
+	case profile.ChangeSettings:
+		return "Changed profile settings"
 	}
-	noun := "change"
-	if count != 1 {
-		noun = "changes"
-	}
-	if kind != "" {
-		return fmt.Sprintf("%s · %d %s", kind, count, noun)
-	}
-	return fmt.Sprintf("%d %s", count, noun)
+	return "Changed the profile"
 }
 
 func modNamesForIDs(ids []string, mods []control.ModRow) []string {
@@ -947,7 +1012,7 @@ func (c *cmd) historyAll() error {
 		t := [][]string{}
 		for _, row := range rows {
 			t = append(t, []string{
-				row.ProfileName, row.At.Local().Format("2006-01-02 15:04"), historySummary(row.Kind, row.Count, row.Label),
+				row.ProfileName, row.At.Local().Format("2006-01-02 15:04"), historySummary(row.HistoryEvent),
 			})
 		}
 		c.table("PROFILE\tTIME\tSUMMARY", t)
@@ -1239,10 +1304,10 @@ func (c *cmd) profile() error {
 		if err != nil {
 			return err
 		}
-		return show(c, "profile.history", control.Params{Game: a[0], Profile: a[1]}, func(rows []control.HistoryRow) {
+		return show(c, "profile.history", control.Params{Game: a[0], Profile: a[1]}, func(rows []profile.HistoryEvent) {
 			t := [][]string{}
 			for _, row := range rows {
-				t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), historySummary(row.Kind, row.Count, row.Summary)})
+				t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), historySummary(row)})
 			}
 			c.table("TIME\tSUMMARY", t)
 		})

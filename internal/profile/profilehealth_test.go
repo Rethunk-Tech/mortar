@@ -3,7 +3,6 @@ package profile
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -229,8 +228,8 @@ func TestRestoreLabelNamesWhatWasRestored(t *testing.T) {
 	}
 	_, _ = svc.RepairProfile("stardew", p.ID, ids)
 	hist, _ := e.History("stardew", p.ID)
-	if len(hist) == 0 || hist[0].Kind != historyRestored || !strings.Contains(hist[0].Label, entryLabel(p.Entries[1])) ||
-		strings.Contains(hist[0].Label, entryLabel(p.Entries[0])) {
+	if len(hist) == 0 || hist[0].Kind != historyRestored || hist[0].Change != ChangeRestoredFromStore ||
+		hist[0].Name != entryLabel(p.Entries[1]) {
 		t.Fatalf("history = %#v", hist)
 	}
 }

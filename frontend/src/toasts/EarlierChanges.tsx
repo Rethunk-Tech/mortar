@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { HistoryEvent } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { When } from '../i18n/When.tsx'
 import { historyChangeSummary } from '../profiles/historyCounts.ts'
+import { historyLabel } from '../profiles/historyLabel.ts'
 import type { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { laterEvents } from './history.ts'
@@ -22,7 +23,7 @@ function EarlierRow({
 }) {
   const { t } = useLingui()
   const [diff, setDiff] = useState(false)
-  const label = ev.kind === 'good' ? t`Known good` : ev.label
+  const label = historyLabel(ev)
   const changes = historyChangeSummary(ev)
   const details = panel.items[ev.id] ?? []
   const trimmed = ev.kind === 'trimmed'
@@ -105,7 +106,7 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
         >{t`These changes will be reverted too:`}</Typography>
         {later.map((e) => (
           <Typography key={e.id} sx={{ fontSize: 13 }} color="text.secondary">
-            {e.kind === 'good' ? t`Known good` : e.label}
+            {historyLabel(e)}
           </Typography>
         ))}
       </ConfirmDialog>

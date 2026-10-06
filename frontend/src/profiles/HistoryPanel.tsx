@@ -18,6 +18,7 @@ import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { HistoryDiffView } from './HistoryDiffView.tsx'
 import { HistoryEventRow } from './HistoryEventRow.tsx'
 import { HistoryToolbar } from './HistoryToolbar.tsx'
+import { historyLabel } from './historyLabel.ts'
 import { useHistoryPanel } from './useHistoryPanel.ts'
 
 export function HistoryPanel({
@@ -32,6 +33,10 @@ export function HistoryPanel({
   const { t } = useLingui()
   const h = useHistoryPanel(profileId, open)
   const { pair } = h
+  const labelOf = (id: string) => {
+    const ev = h.events.find((e) => e.id === id)
+    return ev ? historyLabel(ev) : id
+  }
   const errorText =
     h.missingNames.length > 0
       ? t`Could not restore ${listNames(h.missingNames)}`
@@ -78,8 +83,8 @@ export function HistoryPanel({
         {pair ? (
           <HistoryDiffView
             diff={pair}
-            aLabel={h.events.find((ev) => ev.id === pair.a)?.label ?? pair.a}
-            bLabel={h.events.find((ev) => ev.id === pair.b)?.label ?? pair.b}
+            aLabel={labelOf(pair.a)}
+            bLabel={labelOf(pair.b)}
             busy={h.busy !== ''}
             onRestoreA={() => {
               const id = h.pair?.a ?? ''

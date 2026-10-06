@@ -7,6 +7,7 @@ import type {
 import { When } from '../i18n/When.tsx'
 import { historyChangeSummary } from './historyCounts.ts'
 import { itemModKey } from './historyDiff.ts'
+import { historyLabel } from './historyLabel.ts'
 
 export function HistoryEventRow({
   ev,
@@ -27,16 +28,20 @@ export function HistoryEventRow({
 }) {
   const { t } = useLingui()
   const changes = historyChangeSummary(ev)
-  const marker = ev.kind === 'good'
-  const label = marker ? t`Known good` : ev.label
+  const label = historyLabel(ev)
   const trimmed = ev.kind === 'trimmed'
   return (
     <ListItem
       disableGutters={true}
       secondaryAction={
         trimmed ? null : (
-          <Button size="small" disabled={busy} onClick={onUndo}>
-            {t`Undo ${label}`}
+          <Button
+            size="small"
+            disabled={busy}
+            onClick={onUndo}
+            aria-label={t`Undo this change: ${label}`}
+          >
+            {t`Undo`}
           </Button>
         )
       }
@@ -49,7 +54,7 @@ export function HistoryEventRow({
         slotProps={{ input: { 'aria-label': t`Compare ${label}` } }}
       />
       <ListItemText
-        primary={marker ? t`Known good` : ev.label}
+        primary={label}
         secondary={
           <>
             {changes === '' ? null : `${changes} · `}
@@ -57,8 +62,13 @@ export function HistoryEventRow({
             {(items ?? []).map((item) => (
               <Box key={`${item.kind}:${item.mod}:${item.file ?? ''}`} sx={{ mt: 0.5 }}>
                 {item.detail}{' '}
-                <Button size="small" disabled={busy} onClick={() => onRevertItem(itemModKey(item))}>
-                  {t`Restore ${label}`}
+                <Button
+                  size="small"
+                  disabled={busy}
+                  onClick={() => onRevertItem(itemModKey(item))}
+                  aria-label={t`Restore ${{ label: item.detail }}`}
+                >
+                  {t`Restore`}
                 </Button>
               </Box>
             ))}

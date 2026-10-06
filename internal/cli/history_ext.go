@@ -63,7 +63,7 @@ func (c *cmd) profileGood() error {
 		return show(c, "profile.good", p, func(rows []profile.HistoryEvent) {
 			t := [][]string{}
 			for _, row := range rows {
-				t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), row.Label})
+				t = append(t, []string{row.At.Local().Format("2006-01-02 15:04"), historySummary(row)})
 			}
 			c.table("TIME\tSUMMARY", t)
 		})
@@ -71,7 +71,7 @@ func (c *cmd) profileGood() error {
 	if c.restore {
 		return show(c, "profile.good", p, func(prof profile.Profile) { fmt.Fprintf(c.out, "%s\t%s\n", prof.ID, prof.Name) })
 	}
-	return show(c, "profile.good", p, func(ev profile.HistoryEvent) { fmt.Fprintf(c.out, "%s\t%s\n", ev.ID, ev.Label) })
+	return show(c, "profile.good", p, func(ev profile.HistoryEvent) { fmt.Fprintf(c.out, "%s\t%s\n", ev.ID, historySummary(ev)) })
 }
 
 func printHistoryDiff(c *cmd, diff profile.HistoryDiff) {

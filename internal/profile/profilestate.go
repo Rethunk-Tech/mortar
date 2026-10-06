@@ -60,7 +60,7 @@ func (st ProfileState) applyTo(p *Profile) {
 
 // stateChange names what differs between two states, or "" when nothing does. Origin and Collection are set once
 // when a profile is made, so they are restored by a revert but never start an event of their own.
-func stateChange(a, b ProfileState) string {
+func stateChange(a, b ProfileState) HistoryChange {
 	same := func(x, y any) bool {
 		xb, _ := json.Marshal(x)
 		yb, _ := json.Marshal(y)
@@ -68,18 +68,18 @@ func stateChange(a, b ProfileState) string {
 	}
 	switch {
 	case !same(a.Groups, b.Groups):
-		return "Changed groups"
+		return ChangeGroups
 	case a.Loader != b.Loader:
-		return "Changed loader"
+		return ChangeLoader
 	case a.Install != b.Install:
-		return "Changed game install"
+		return ChangeInstall
 	case a.SeparateSaves != b.SeparateSaves:
-		return "Changed separate saves"
+		return ChangeSaves
 	case a.LaunchOptions != b.LaunchOptions, a.LaunchPrefix != b.LaunchPrefix, a.LaunchEnv != b.LaunchEnv,
 		a.DefaultLaunchPreset != b.DefaultLaunchPreset, !same(a.LaunchPresets, b.LaunchPresets):
-		return "Changed launch settings"
+		return ChangeLaunch
 	case !same(a.Overrides, b.Overrides):
-		return "Changed profile settings"
+		return ChangeSettings
 	}
 	return ""
 }

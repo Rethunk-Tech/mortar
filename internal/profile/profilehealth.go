@@ -2,7 +2,6 @@ package profile
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -39,8 +38,10 @@ type HealthFinding struct {
 	Kind string `json:"kind"`
 	// Cause narrows the kind: deleted or changed for drift, unreadable or configs for a history snapshot.
 	Cause string `json:"cause,omitempty"`
-	// Items name what the finding is about: mods, store items, journal folders, or the history event's label.
+	// Items name what the finding is about: mods, store items or journal folders.
 	Items []string `json:"items"`
+	// Event is the history event a snapshot finding is about.
+	Event *HistoryEvent `json:"event,omitempty"`
 	// At is the history event's time for a snapshot finding.
 	At time.Time `json:"at,omitzero"`
 	// Repair is the action id that fixes it, "" when Mortar cannot.
@@ -147,11 +148,11 @@ func (s *Service) RepairProfile(game, id string, findingIDs []string) (Profile, 
 		restored = append(restored, nameOf[key])
 	}
 	if len(restored) > 0 {
-		label := "Restored " + restored[0] + " from the store"
-		if len(restored) > 1 {
-			label = fmt.Sprintf("Restored %d mods from the store", len(restored))
+		note := HistoryEvent{Change: ChangeRestoredFromStore}
+		if len(restored) == 1 {
+			note.Name = restored[0]
 		}
-		errs = append(errs, s.store.recordSnapshot(game, id, historyRestored, label, len(restored)))
+		errs = append(errs, s.store.recordSnapshot(game, id, historyRestored, note, len(restored)))
 	}
 	for _, ev := range drop {
 		errs = append(errs, s.store.dropHistoryEvent(game, id, ev))
@@ -255,7 +256,7 @@ func (s *Store) snapshotFindings(game, id string) ([]HealthFinding, error) {
 		}
 		if cause != "" {
 			out = append(out, HealthFinding{
-				ID: HealthSnapshot + ":" + ev.ID, Kind: HealthSnapshot, Cause: cause, Items: []string{ev.Label},
+				ID: HealthSnapshot + ":" + ev.ID, Kind: HealthSnapshot, Cause: cause, Items: []string{}, Event: &ev,
 				At: ev.At, Repair: RepairDropSnapshot,
 			})
 		}

@@ -47,7 +47,7 @@ test('a batch of mixed sources is one Add holding only the same-source updates',
 })
 
 test('changes after the batch are the events past its own bulk event', () => {
-  const ev = (id: string, kind: string) => ({ id, kind, label: id }) as HistoryEvent
+  const ev = (id: string, kind: string) => ({ id, kind }) as HistoryEvent
   const newestFirst = [ev('pinned', 'pinned'), ev('batch', 'bulk'), ev('before', 'restored')]
   expect(changesAfterBatch(newestFirst, 'before').map((e) => e.id)).toEqual(['pinned'])
   expect(changesAfterBatch(newestFirst.slice(1), 'before')).toEqual([])

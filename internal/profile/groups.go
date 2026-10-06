@@ -147,16 +147,16 @@ func (s *Store) SetGroupEnabled(game, id, name string, on bool) (Profile, error)
 	if err != nil {
 		return Profile{}, err
 	}
-	kind := historyEnabled
+	kind, change := historyEnabled, ChangeEnabled
 	if !on {
-		kind = historyDisabled
+		kind, change = historyDisabled, ChangeDisabled
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
 		return Profile{}, err
 	}
-	return s.updateLockedAs(game, id, kind, name, func(p *Profile, dir string) error {
+	return s.updateLockedAs(game, id, kind, HistoryEvent{Change: change, Name: name}, func(p *Profile, dir string) error {
 		idx := p.groupIndex(name)
 		if idx < 0 {
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("group %q not found", name))

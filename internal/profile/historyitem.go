@@ -127,7 +127,7 @@ func (s *Store) revertItemConfig(game, id, beforeSnap string, hit HistoryItem) (
 	if err != nil {
 		return Profile{}, err
 	}
-	_, err = appendHistory(dir, HistoryEvent{Kind: historyReverted, Label: "Restored " + hit.Name + " " + hit.File, Count: 1}, p.Entries, s.historyKeep())
+	_, err = appendHistory(dir, HistoryEvent{Kind: historyReverted, Change: ChangeRestoredFile, Name: hit.Name, Detail: hit.File, Count: 1}, p.Entries, s.historyKeep())
 	if err != nil {
 		return Profile{}, err
 	}

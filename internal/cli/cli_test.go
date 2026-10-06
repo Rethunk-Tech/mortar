@@ -143,7 +143,7 @@ func TestProfileCompareHistoryAndRevert(t *testing.T) {
 		"profile.compare": profile.CLICompare{
 			OnlyA: []profile.DiffSide{{ID: "smapi:A.Mod", Name: "Alpha", Version: "1", Enabled: true}},
 		},
-		"profile.history": []control.HistoryRow{{ID: "event-1", Kind: "added", Summary: "Added Alpha"}},
+		"profile.history": []profile.HistoryEvent{{ID: "event-1", Kind: "added", Change: profile.ChangeAdded, Name: "Alpha"}},
 		"profile.revert":  profile.Profile{ID: "profile-1", Name: "Farm"},
 	}
 	r := invoke(t, results, "profile", "compare", "stardew", "A", "B")
@@ -183,7 +183,7 @@ func TestProfileRepair(t *testing.T) {
 func TestHistoryAll(t *testing.T) {
 	results := map[string]any{
 		"history.all": []profile.RecentEvent{
-			{ProfileID: "p1", ProfileName: "Farm", ID: "event-2", Kind: "added", Label: "Added Beta"},
+			{ProfileID: "p1", ProfileName: "Farm", ID: "event-2", Kind: "added", Change: profile.ChangeAdded, Name: "Beta"},
 		},
 	}
 	r := invoke(t, results, "history", "stardew", "--all")

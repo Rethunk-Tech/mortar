@@ -39,19 +39,68 @@ const (
 	historyBulk      = "bulk"
 )
 
+// HistoryChange is what a history event did. The window and the CLI word it, with the event's Name, Detail, Count,
+// From, To and Target, in the reader's language.
+type HistoryChange string
+
+const (
+	ChangeAdded    HistoryChange = "added"    // Name
+	ChangeRemoved  HistoryChange = "removed"  // Name
+	ChangeUpdated  HistoryChange = "updated"  // Name, From, To
+	ChangeEnabled  HistoryChange = "enabled"  // Name: a mod or a group
+	ChangeDisabled HistoryChange = "disabled" // Name: a mod or a group
+	ChangePinned   HistoryChange = "pinned"   // Name
+	ChangeUnpinned HistoryChange = "unpinned" // Name
+	// ChangeMods is several mods changed at once: Count when it is more than one.
+	ChangeMods     HistoryChange = "mods"
+	ChangeImported HistoryChange = "imported" // Count
+	// ChangeMoved is mods moved in from the game's own Mods folder: Count.
+	ChangeMoved HistoryChange = "moved"
+	// ChangeRestored is mods restored from a profile backup: Count.
+	ChangeRestored HistoryChange = "restored"
+	// ChangeRestoredFromStore is changed or deleted mods put back from Mortar's store: Name for one, else Count.
+	ChangeRestoredFromStore HistoryChange = "restored-from-store"
+	// ChangeBeforeEdit is the profile as it was before a config edit.
+	ChangeBeforeEdit HistoryChange = "before-edit"
+	// ChangeReverted is the profile put back as it was at Target.
+	ChangeReverted HistoryChange = "reverted"
+	// ChangeRestoredFile is one mod's file put back: Name the mod, Detail the file.
+	ChangeRestoredFile  HistoryChange = "restored-file"
+	ChangeConfigEdited  HistoryChange = "config-edited" // Name: the mod
+	ChangeConfigReset   HistoryChange = "config-reset"  // Name: the mod
+	ChangePresetApplied HistoryChange = "preset-applied"
+	// ChangeOptionSet is a mod option set for the next start: Name the mod, Detail the option.
+	ChangeOptionSet          HistoryChange = "option-set"
+	ChangeCategoryRemoved    HistoryChange = "category-removed"
+	ChangeChannel            HistoryChange = "channel"             // Name: the update channel
+	ChangeCollectionUnlinked HistoryChange = "collection-unlinked" // Name: the collection, when it had one
+	ChangeTrimmed            HistoryChange = "trimmed"             // Count: the older changes dropped
+	ChangeKnownGood          HistoryChange = "known-good"
+	ChangeGroups             HistoryChange = "groups"
+	ChangeLoader             HistoryChange = "loader"
+	ChangeInstall            HistoryChange = "install"
+	ChangeSaves              HistoryChange = "saves"
+	ChangeLaunch             HistoryChange = "launch"
+	ChangeSettings           HistoryChange = "settings"
+)
+
 // HistoryEvent is metadata for one change to a profile's mod set.
 type HistoryEvent struct {
-	ID         string    `json:"id"`
-	At         time.Time `json:"at"`
-	Kind       string    `json:"kind"`
-	Label      string    `json:"label"`
-	Count      int       `json:"count,omitempty"`
-	Added      int       `json:"added,omitempty"`
-	Removed    int       `json:"removed,omitempty"`
-	Updated    int       `json:"updated,omitempty"`
-	From       string    `json:"from,omitempty"`
-	To         string    `json:"to,omitempty"`
-	SnapshotID string    `json:"snapshotId"`
+	ID   string    `json:"id"`
+	At   time.Time `json:"at"`
+	Kind string    `json:"kind"`
+	// Change, Name, Detail and Target say what the event did, for the reader to word; Kind is what history acts on.
+	Change     HistoryChange `json:"change"`
+	Name       string        `json:"name,omitempty"`
+	Detail     string        `json:"detail,omitempty"`
+	Target     time.Time     `json:"target,omitzero"`
+	Count      int           `json:"count,omitempty"`
+	Added      int           `json:"added,omitempty"`
+	Removed    int           `json:"removed,omitempty"`
+	Updated    int           `json:"updated,omitempty"`
+	From       string        `json:"from,omitempty"`
+	To         string        `json:"to,omitempty"`
+	SnapshotID string        `json:"snapshotId"`
 	// Configs are the entries whose config.json a revert put back, which makes it Mortar's own config edit.
 	Configs []string `json:"configs,omitempty"`
 	// State is the profile's settings after this event; nil on an event recorded before settings were history.
@@ -225,7 +274,7 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 	if len(missing) > 0 {
 		return Profile{}, &MissingKeys{Keys: missing, Names: namesForStoreKeys(snap, missing)}
 	}
-	label := "Reverted to " + target.At.UTC().Format(time.RFC3339)
+	note := HistoryEvent{Change: ChangeReverted, Target: target.At}
 	snap = cloneEntries(snap)
 	headID := data.Events[len(data.Events)-1].SnapshotID
 	// Config files are rolled back only to undo Mortar's own config edits, a revert that put configs back among them;
@@ -236,7 +285,7 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 		configsToo = configsToo && (ev.Kind == historyConfigEdit || len(ev.Configs) > 0)
 	}
 	state := target.State
-	return s.updateLockedAs(game, id, historyReverted, label, func(p *Profile, profDir string) error {
+	return s.updateLockedAs(game, id, historyReverted, note, func(p *Profile, profDir string) error {
 		if err := s.applyEntrySnapshot(game, p, profDir, snap); err != nil {
 			return err
 		}
@@ -443,9 +492,9 @@ func (s *Store) missingStoreKeys(game string, entries []Entry) ([]string, error)
 	return missing, nil
 }
 
-func (s *Store) updateLockedAs(game, id, kind, label string, fn func(p *Profile, dir string) error) (Profile, error) {
+func (s *Store) updateLockedAs(game, id, kind string, note HistoryEvent, fn func(p *Profile, dir string) error) (Profile, error) {
 	s.historyKind = kind
-	s.historyLabel = label
+	s.historyNote = note
 	return s.updateLocked(game, id, fn)
 }
 
@@ -567,7 +616,7 @@ func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch 
 	if ev.Count < 1 {
 		ev.Count = 1
 	}
-	ev.Label = fmt.Sprintf("Changed %d mods", ev.Count)
+	ev.Change, ev.Name = ChangeMods, ""
 	if batch.EventID == "" {
 		created, err := appendHistory(dir, ev, after, 0)
 		if err != nil {
@@ -636,18 +685,19 @@ func (s *Store) Baseline(game, id string) (string, error) {
 			return last.ID, nil
 		}
 	}
-	ev, err := appendHistory(dir, HistoryEvent{Kind: historyRestored, Label: "Before this change", Count: 1}, p.Entries, s.historyKeep())
+	ev, err := appendHistory(dir, HistoryEvent{Kind: historyRestored, Change: ChangeBeforeEdit, Count: 1}, p.Entries, s.historyKeep())
 	return ev.ID, err
 }
 
-func (s *Store) recordSnapshot(game, id, kind, label string, count int) error {
+func (s *Store) recordSnapshot(game, id, kind string, note HistoryEvent, count int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return err
 	}
-	ev := HistoryEvent{Kind: kind, Label: label, Count: count}
+	ev := note
+	ev.Kind, ev.Count = kind, count
 	_, err = appendHistory(dir, ev, p.Entries, s.historyKeep())
 	return err
 }
@@ -915,15 +965,15 @@ func entriesEqual(a, b []Entry) bool {
 }
 
 // recordHistory appends the event for a change and returns its id, or "" when nothing changed.
-func recordHistory(dir string, before, after []Entry, stateLabel, kind, label string, configs []string, keep int) (string, error) {
+func recordHistory(dir string, before, after []Entry, state HistoryChange, kind string, note HistoryEvent, configs []string, keep int) (string, error) {
 	if entriesEqual(before, after) {
-		if kind == "" && stateLabel == "" {
+		if kind == "" && state == "" {
 			return "", nil
 		}
 		if kind == "" {
-			kind, label = historySettings, stateLabel
+			kind, note = historySettings, HistoryEvent{Change: state}
 		}
-		ev := HistoryEvent{Kind: kind, Label: label, Count: 1, Configs: configs}
+		ev := HistoryEvent{Kind: kind, Change: note.Change, Name: note.Name, Detail: note.Detail, Target: note.Target, Count: 1, Configs: configs}
 		ev, err := appendHistory(dir, ev, after, keep)
 		return ev.ID, err
 	}
@@ -931,8 +981,8 @@ func recordHistory(dir string, before, after []Entry, stateLabel, kind, label st
 	if kind != "" {
 		ev.Kind = kind
 	}
-	if label != "" {
-		ev.Label = label
+	if note.Change != "" {
+		ev.Change, ev.Name, ev.Detail, ev.Target = note.Change, note.Name, note.Detail, note.Target
 	}
 	ev.Configs = configs
 	ev, err := appendHistory(dir, ev, after, keep)
@@ -1019,7 +1069,8 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 	bMap := indexEntries(before)
 	aMap := indexEntries(after)
 	var added, removed, updated, enabled, disabled, pinned int
-	var from, to, name, pinLabel string
+	var from, to, name string
+	pinChange := ChangePinned
 	seen := map[string]struct{}{}
 	for id, ae := range aMap {
 		seen[id] = struct{}{}
@@ -1052,10 +1103,8 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 		case be.Pinned != ae.Pinned:
 			pinned++
 			name = entryName(ae)
-			if ae.Pinned {
-				pinLabel = "Pinned " + name
-			} else {
-				pinLabel = "Unpinned " + name
+			if !ae.Pinned {
+				pinChange = ChangeUnpinned
 			}
 		}
 	}
@@ -1071,21 +1120,21 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 	count := added + removed + updated + enabled + disabled + pinned
 	switch {
 	case count > 1:
-		return HistoryEvent{Kind: historyBulk, Label: fmt.Sprintf("Changed %d mods", count), Count: count}
+		return HistoryEvent{Kind: historyBulk, Change: ChangeMods, Count: count}
 	case added == 1:
-		return HistoryEvent{Kind: historyAdded, Label: "Added " + name, Count: 1}
+		return HistoryEvent{Kind: historyAdded, Change: ChangeAdded, Name: name, Count: 1}
 	case removed == 1:
-		return HistoryEvent{Kind: historyRemoved, Label: "Removed " + name, Count: 1}
+		return HistoryEvent{Kind: historyRemoved, Change: ChangeRemoved, Name: name, Count: 1}
 	case updated == 1:
-		return HistoryEvent{Kind: historyUpdated, Label: fmt.Sprintf("Updated %s from %s to %s", name, from, to), Count: 1, From: from, To: to}
+		return HistoryEvent{Kind: historyUpdated, Change: ChangeUpdated, Name: name, Count: 1, From: from, To: to}
 	case enabled == 1:
-		return HistoryEvent{Kind: historyEnabled, Label: "Enabled " + name, Count: 1}
+		return HistoryEvent{Kind: historyEnabled, Change: ChangeEnabled, Name: name, Count: 1}
 	case disabled == 1:
-		return HistoryEvent{Kind: historyDisabled, Label: "Disabled " + name, Count: 1}
+		return HistoryEvent{Kind: historyDisabled, Change: ChangeDisabled, Name: name, Count: 1}
 	case pinned == 1:
-		return HistoryEvent{Kind: historyPinned, Label: pinLabel, Count: 1}
+		return HistoryEvent{Kind: historyPinned, Change: pinChange, Name: name, Count: 1}
 	default:
-		return HistoryEvent{Kind: historyBulk, Label: "Changed mods", Count: 1}
+		return HistoryEvent{Kind: historyBulk, Change: ChangeMods, Count: 1}
 	}
 }
 

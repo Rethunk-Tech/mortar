@@ -694,11 +694,11 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if err != nil {
 			return nil, err
 		}
-		out := make([]HistoryRow, 0, len(events))
-		for _, event := range events {
-			out = append(out, HistoryRow{ID: event.ID, At: event.At, Kind: event.Kind, Summary: event.Label, Count: event.Count})
+		// The CLI words each event from its fields; the settings snapshot and config list are not its to show.
+		for i := range events {
+			events[i].State, events[i].Configs = nil, nil
 		}
-		return out, nil
+		return events, nil
 	case "profile.health":
 		return s.Profiles.HealthHistory(p.Game, id)
 	case "profile.revert":
@@ -989,15 +989,6 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Launches.PerformanceReports(p.Game, id)
 	}
 	return nil, fmt.Errorf("unknown method %q", method)
-}
-
-// HistoryRow is the compact history item shown by the CLI.
-type HistoryRow struct {
-	ID      string    `json:"id"`
-	At      time.Time `json:"at"`
-	Kind    string    `json:"kind"`
-	Count   int       `json:"count"`
-	Summary string    `json:"summary"`
 }
 
 // changed runs a mutating call and tells the window to reload the game's profiles.

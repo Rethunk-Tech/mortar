@@ -3,6 +3,7 @@ package cli
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -36,7 +37,7 @@ func TestProfileChangesAndGoodCLI(t *testing.T) {
 		"profile.changes": profile.HistoryDiff{
 			Items: []profile.HistoryItem{{Kind: "added", Name: "Beta", Detail: "added Beta"}},
 		},
-		"profile.good": profile.HistoryEvent{ID: "g1", Label: "Known good"},
+		"profile.good": profile.HistoryEvent{ID: "g1", Change: profile.ChangeKnownGood},
 	}
 	r := invoke(t, results, "profile", "changes", "stardew", "Farm")
 	if r.code != 0 || !strings.Contains(r.out, "added Beta") {
@@ -55,5 +56,26 @@ func TestPlayCheckIgnoresChangesForExit(t *testing.T) {
 	r := invoke(t, results, "play", "stardew", "Farm", "--check")
 	if r.code != 0 {
 		t.Fatalf("play --check with only changes: %+v", r)
+	}
+}
+
+func TestHistorySummaryWordsEachChange(t *testing.T) {
+	at := time.Date(2026, 10, 6, 4, 48, 44, 0, time.UTC)
+	for _, c := range []struct {
+		ev   profile.HistoryEvent
+		want string
+	}{
+		{profile.HistoryEvent{Change: profile.ChangeDisabled, Name: "Seed Alpha"}, "Disabled Seed Alpha"},
+		{profile.HistoryEvent{Change: profile.ChangeUpdated, Name: "Beta", From: "1.0", To: "1.1"}, "Updated Beta from 1.0 to 1.1"},
+		{profile.HistoryEvent{Change: profile.ChangeMods, Count: 3}, "Changed 3 mods"},
+		{profile.HistoryEvent{Change: profile.ChangeMods, Count: 1}, "Changed mods"},
+		{profile.HistoryEvent{Change: profile.ChangeImported, Count: 1}, "Imported 1 mod"},
+		{profile.HistoryEvent{Change: profile.ChangeOptionSet, Name: "demo.Mod", Detail: "Count"}, "Set Count of demo.Mod for the next start"},
+		{profile.HistoryEvent{Change: profile.ChangeReverted, Target: at}, "Went back to " + at.Local().Format("2006-01-02 15:04")},
+		{profile.HistoryEvent{}, "Changed the profile"},
+	} {
+		if got := historySummary(c.ev); got != c.want {
+			t.Errorf("historySummary(%+v) = %q, want %q", c.ev, got, c.want)
+		}
 	}
 }

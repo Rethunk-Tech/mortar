@@ -186,7 +186,7 @@ func (s *Store) clearCategoryOverridesLocked(game string, customIDs []string) er
 		if !needs {
 			continue
 		}
-		s.historyKind, s.historyLabel = historySettings, "Removed a custom category"
+		s.historyKind, s.historyNote = historySettings, HistoryEvent{Change: ChangeCategoryRemoved}
 		_, err := s.updateLocked(game, p.ID, func(prof *Profile, _ string) error {
 			for i := range prof.Entries {
 				if drop[prof.Entries[i].CategoryOverride] {

@@ -153,7 +153,7 @@ func (s *Store) ResetConfig(game, id, key string, uniqueID mod.ID) error {
 	if _, err := os.Stat(filepath.Join(folder, configFile)); errors.Is(err, fs.ErrNotExist) {
 		return nil
 	}
-	return s.editConfigLocked(game, id, "Reset "+uniqueID.Local()+" settings", func() error {
+	return s.editConfigLocked(game, id, HistoryEvent{Change: ChangeConfigReset, Name: uniqueID.Local()}, func() error {
 		return os.Remove(filepath.Join(folder, configFile))
 	})
 }
@@ -194,10 +194,10 @@ func (s *Store) ReadConfig(game, id, key string, uniqueID mod.ID) (string, error
 
 // WriteConfig replaces the mod's config.json atomically after checking JSON and the path, and records a history event.
 func (s *Store) WriteConfig(game, id, key string, uniqueID mod.ID, contents string) error {
-	return s.writeConfig(game, id, key, uniqueID, contents, "Edited "+uniqueID.Local()+" settings")
+	return s.writeConfig(game, id, key, uniqueID, contents, HistoryEvent{Change: ChangeConfigEdited, Name: uniqueID.Local()})
 }
 
-func (s *Store) writeConfig(game, id, key string, uniqueID mod.ID, contents, label string) error {
+func (s *Store) writeConfig(game, id, key string, uniqueID mod.ID, contents string, note HistoryEvent) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err := s.unlocked(game, id); err != nil {
@@ -215,14 +215,14 @@ func (s *Store) writeConfig(game, id, key string, uniqueID mod.ID, contents, lab
 	if err != nil {
 		return fmt.Errorf("config.json is not valid JSON: %w", err)
 	}
-	return s.editConfigLocked(game, id, label, func() error {
+	return s.editConfigLocked(game, id, note, func() error {
 		return datadir.WriteFile(path, rewritten, 0o600)
 	})
 }
 
 // editConfigLocked runs a config.json change between two history events: one capturing the file as it was, when the
 // newest event does not already, and one capturing the result, so the edit can be undone.
-func (s *Store) editConfigLocked(game, id, label string, edit func() error) error {
+func (s *Store) editConfigLocked(game, id string, note HistoryEvent, edit func() error) error {
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return err
@@ -233,7 +233,7 @@ func (s *Store) editConfigLocked(game, id, label string, edit func() error) erro
 	if err := edit(); err != nil {
 		return err
 	}
-	s.historyKind, s.historyLabel = historyConfigEdit, label
+	s.historyKind, s.historyNote = historyConfigEdit, note
 	_, err = s.updateLocked(game, id, func(*Profile, string) error { return nil })
 	return err
 }
@@ -253,6 +253,6 @@ func (s *Store) captureBeforeEdit(dir string, p Profile) error {
 			}
 		}
 	}
-	_, err = appendHistory(dir, HistoryEvent{Kind: historyRestored, Label: "Before this change", Count: 1}, p.Entries, s.historyKeep())
+	_, err = appendHistory(dir, HistoryEvent{Kind: historyRestored, Change: ChangeBeforeEdit, Count: 1}, p.Entries, s.historyKeep())
 	return err
 }

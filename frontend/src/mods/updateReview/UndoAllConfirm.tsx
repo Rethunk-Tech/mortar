@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Typography } from '@mui/material'
 import { useState } from 'react'
+import { historyLabel } from '../../profiles/historyLabel.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { restoreBatch, useUndoAll } from './undoAll.ts'
@@ -37,7 +38,7 @@ export function UndoAllConfirm() {
       </Typography>
       {(target?.later ?? []).map((e) => (
         <Typography key={e.id} sx={{ fontSize: 13 }} color="text.secondary">
-          {e.label}
+          {historyLabel(e)}
         </Typography>
       ))}
     </ConfirmDialog>

@@ -61,10 +61,10 @@ func TestHistoryRecordsEachOperation(t *testing.T) {
 	}, false); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.recordSnapshot("stardew", p.ID, historyImported, "Imported 2 mods", 2); err != nil {
+	if err := e.recordSnapshot("stardew", p.ID, historyImported, HistoryEvent{Change: ChangeImported}, 2); err != nil {
 		t.Fatal(err)
 	}
-	if err := e.recordSnapshot("stardew", p.ID, historyRestored, "Restored 2 mods", 2); err != nil {
+	if err := e.recordSnapshot("stardew", p.ID, historyRestored, HistoryEvent{Change: ChangeRestored}, 2); err != nil {
 		t.Fatal(err)
 	}
 	events, err := e.History("stardew", p.ID)
@@ -121,6 +121,9 @@ func TestHistoryRevertRestoresEntries(t *testing.T) {
 	events, err := e.History("stardew", p.ID)
 	if err != nil || len(events) == 0 || events[0].Kind != historyReverted {
 		t.Fatalf("revert event = %+v, %v", events, err)
+	}
+	if events[0].Change != ChangeReverted || !events[0].Target.Equal(afterAdd[0].At) {
+		t.Fatalf("the revert event names the time it went back to: %+v, want %v", events[0], afterAdd[0].At)
 	}
 }
 
@@ -391,11 +394,11 @@ func TestClassifyHistoryNamesTheEntryThatChanged(t *testing.T) {
 	after := []Entry{a, b}
 	after[0].Disabled = []mod.ID{"smapi:spacechase0.GenericModConfigMenu"}
 	got := classifyHistory(before, after)
-	if got.Kind != historyDisabled || got.Label != "Disabled Generic Mod Config Menu" {
+	if got.Kind != historyDisabled || got.Change != ChangeDisabled || got.Name != "Generic Mod Config Menu" {
 		t.Fatalf("got %+v", got)
 	}
 	got = classifyHistory(after, before)
-	if got.Kind != historyEnabled || got.Label != "Enabled Generic Mod Config Menu" {
+	if got.Kind != historyEnabled || got.Change != ChangeEnabled || got.Name != "Generic Mod Config Menu" {
 		t.Fatalf("re-enable got %+v", got)
 	}
 }
@@ -570,17 +573,17 @@ func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
 	t2 := t1.Add(time.Hour)
 	t3 := t2.Add(time.Hour)
 	seedHistory(t, e, alpha.ID, []HistoryEvent{
-		{ID: "a-old", At: t1, Kind: historyAdded, Label: "Added old"},
-		{ID: "a-new", At: t3, Kind: historyAdded, Label: "Added new"},
+		{ID: "a-old", At: t1, Kind: historyAdded, Change: ChangeAdded, Name: "old"},
+		{ID: "a-new", At: t3, Kind: historyAdded, Change: ChangeAdded, Name: "new"},
 	})
 	seedHistory(t, e, beta.ID, []HistoryEvent{
-		{ID: "b-mid", At: t2, Kind: historyAdded, Label: "Added mid"},
+		{ID: "b-mid", At: t2, Kind: historyAdded, Change: ChangeAdded, Name: "mid"},
 	})
 	seedHistory(t, e, hidden.ID, []HistoryEvent{
-		{ID: "h-skip", At: t3.Add(time.Hour), Kind: historyAdded, Label: "Added hidden"},
+		{ID: "h-skip", At: t3.Add(time.Hour), Kind: historyAdded, Change: ChangeAdded, Name: "hidden"},
 	})
 	if err := writeHistory(badDir, historyFileData{
-		Events:    []HistoryEvent{{ID: "d-skip", At: t3.Add(2 * time.Hour), Kind: historyAdded, Label: "Added damaged"}},
+		Events:    []HistoryEvent{{ID: "d-skip", At: t3.Add(2 * time.Hour), Kind: historyAdded, Change: ChangeAdded, Name: "damaged"}},
 		Snapshots: map[string][]Entry{},
 	}, 0); err != nil {
 		t.Fatal(err)
@@ -607,7 +610,7 @@ func TestRecentHistoryOrdersAndSkipsDamaged(t *testing.T) {
 	for i := range many {
 		many[i] = HistoryEvent{
 			ID: fmt.Sprintf("c%02d", i), At: t1.Add(time.Duration(i) * time.Minute),
-			Kind: historyAdded, Label: "Added",
+			Kind: historyAdded, Change: ChangeAdded,
 		}
 	}
 	seedHistory(t, e, alpha.ID, many)
@@ -672,7 +675,7 @@ func TestAppendedEventsCarryTheirCounts(t *testing.T) {
 	one := []Entry{{Key: "a", Mods: []Component{{ID: "smapi:A.Mod", Version: "1.0"}}}}
 	two := append(cloneEntries(one), Entry{Key: "b", Mods: []Component{{ID: "smapi:B.Mod", Version: "1.0"}}})
 	for _, after := range [][]Entry{one, two} {
-		if _, err := appendHistory(dir, HistoryEvent{Kind: historyPinned, Label: "change"}, after, 0); err != nil {
+		if _, err := appendHistory(dir, HistoryEvent{Kind: historyPinned, Change: ChangePinned}, after, 0); err != nil {
 			t.Fatal(err)
 		}
 	}

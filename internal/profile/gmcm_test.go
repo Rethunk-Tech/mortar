@@ -3,7 +3,6 @@ package profile
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -44,7 +43,7 @@ func TestSetGmcmOptionIsPendingHistoryAndUndoable(t *testing.T) {
 		t.Fatalf("pending file = %+v, %v", onDisk, err)
 	}
 	evs, err := e.History("stardew", p.ID)
-	if err != nil || !strings.Contains(evs[0].Label, "Count") {
+	if err != nil || evs[0].Change != ChangeOptionSet || evs[0].Detail != "Count" || evs[0].Name != "demo.Mod" {
 		t.Fatalf("history head = %+v, %v", evs[0], err)
 	}
 

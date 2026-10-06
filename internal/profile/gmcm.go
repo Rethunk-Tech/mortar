@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -48,8 +47,8 @@ func (s *Store) SetGmcmOption(game, id string, uniqueID mod.ID, page string, ind
 	if gmcm.Text(edit.Value) != gmcm.Text(opt.Value) {
 		edits = append(edits, edit)
 	}
-	label := fmt.Sprintf("Set %s of %s for the next start", opt.Name, uniqueID.Local())
-	err = s.editConfigLocked(game, id, label, func() error { return gmcm.WritePending(dir, uniqueID, edits) })
+	note := HistoryEvent{Change: ChangeOptionSet, Name: uniqueID.Local(), Detail: opt.Name}
+	err = s.editConfigLocked(game, id, note, func() error { return gmcm.WritePending(dir, uniqueID, edits) })
 	return gmcm.Pending{Schema: gmcm.Schema, Edits: edits}, err
 }
 

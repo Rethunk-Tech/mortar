@@ -405,7 +405,7 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 	}
 	ok = true
 	if restored > 0 {
-		if err := s.recordSnapshot(game, created.ID, historyRestored, fmt.Sprintf("Restored %d mods", restored), restored); err != nil {
+		if err := s.recordSnapshot(game, created.ID, historyRestored, HistoryEvent{Change: ChangeRestored}, restored); err != nil {
 			return Profile{}, err
 		}
 	}
