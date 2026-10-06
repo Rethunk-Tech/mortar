@@ -58,3 +58,11 @@ namespace Fixture
         public int Read(Farmer farmer) => farmer.CurrentToolIndex + farmer.maxHealth.Value + this.own;
     }
 }
+
+namespace Fixture.Plugins
+{
+    [BepInEx.BepInPlugin("com.fixture.plugin", "Fixture Plugin", "1.2.3")]
+    public class Plugin
+    {
+    }
+}

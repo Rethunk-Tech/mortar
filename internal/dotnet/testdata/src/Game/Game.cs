@@ -66,3 +66,15 @@ namespace StardewValley.Menus
     {
     }
 }
+
+namespace BepInEx
+{
+    // BepInEx's own attribute, which the reader finds by namespace and name.
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public class BepInPlugin : System.Attribute
+    {
+        public BepInPlugin(string guid, string name, string version)
+        {
+        }
+    }
+}

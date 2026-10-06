@@ -755,8 +755,9 @@ func operand(op int) (int, bool) {
 func le16(b []byte) uint16 { return binary.LittleEndian.Uint16(b) }
 func le32(b []byte) uint32 { return binary.LittleEndian.Uint32(b) }
 
-// Plugin is one [BepInPlugin(GUID, Name, Version)] an assembly declares.
-type Plugin struct{ GUID, Name, Version string }
+// Plugin is one [BepInPlugin(GUID, Name, Version)] an assembly declares. Namespace is that of the class carrying it,
+// which is how an exception's stack names the plugin.
+type Plugin struct{ GUID, Name, Version, Namespace string }
 
 // Plugins lists the BepInEx plugins the assembly at path declares; an assembly with none yields none.
 func Plugins(path string) (out []Plugin, err error) {
@@ -782,6 +783,9 @@ func Plugins(path string) (out []Plugin, err error) {
 			continue
 		}
 		if p, ok := pluginArgs(m.blob(m.cell(tCustomAttr, row, 2))); ok {
+			if kind, def := decode(cHasCustomAttribute, m.cell(tCustomAttr, row, 0)); kind == tTypeDef {
+				p.Namespace = m.str(m.cell(tTypeDef, def, 2))
+			}
 			out = append(out, p)
 		}
 	}

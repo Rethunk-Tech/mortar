@@ -50,3 +50,25 @@ func TestGameVersionFailureNeedsAnOlderGameThanTheLoaderAccepts(t *testing.T) {
 		}
 	}
 }
+
+func TestPluginOwnersNameAPackageByItsPluginsNamespace(t *testing.T) {
+	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkg := func(key string) framework.Mod {
+		m := inst(key, key, "1.0.0", true)
+		m.Folder = t.TempDir()
+		if err := fsx.WriteFile(filepath.Join(m.Folder, "Plugin.dll"), dll, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return m
+	}
+	one := pkg("one")
+	if got := pluginOwners([]framework.Mod{one})["fixture"]; got.Key != "one" {
+		t.Fatalf("the plugin class's root namespace names its package: %+v", got)
+	}
+	if got, ok := pluginOwners([]framework.Mod{one, pkg("two")})["fixture"]; ok {
+		t.Fatalf("a namespace two packages share names neither: %+v", got)
+	}
+}
