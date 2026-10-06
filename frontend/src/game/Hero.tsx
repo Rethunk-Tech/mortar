@@ -38,10 +38,13 @@ const NAME_WEIGHT = 700
 const NAME_LINE_HEIGHT = 1.1
 const NAME_FONT_COMPACT_PX = 18
 const NAME_LINE_COMPACT = 1.3
-const NAME_GLOW = '0 0 32px color-mix(in srgb, var(--mortar-ink) 45%, transparent)'
+// The full hero always sits on game art or the dark band behind it, so its text is light in both themes; the
+// compact strip is a theme surface and takes the theme's ink.
+const ON_ART = '#ffffff'
+const ON_ART_72 = 'rgba(255, 255, 255, 0.72)'
+const NAME_GLOW = '0 1px 16px rgba(0, 0, 0, 0.6)'
 const DESC_FONT_PX = 13
-const DESC_COLOR = 'var(--mortar-ink-72)'
-const DESC_SHADOW = '0 1px 8px var(--mortar-overlay-55)'
+const DESC_SHADOW = '0 1px 8px rgba(0, 0, 0, 0.55)'
 const META_FONT_PX = 12
 const HERO_HEIGHT_PX = 190
 const HERO_COMPACT_HEIGHT_PX = 52
@@ -190,9 +193,14 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
                 fontSize: NAME_FONT_PX,
                 fontWeight: NAME_WEIGHT,
                 lineHeight: NAME_LINE_HEIGHT,
-                color: 'var(--mortar-ink)',
+                color: ON_ART,
                 textShadow: NAME_GLOW,
-                [compact]: { fontSize: NAME_FONT_COMPACT_PX, lineHeight: NAME_LINE_COMPACT },
+                [compact]: {
+                  fontSize: NAME_FONT_COMPACT_PX,
+                  lineHeight: NAME_LINE_COMPACT,
+                  color: 'var(--mortar-ink)',
+                  textShadow: 'none',
+                },
               }}
             >
               {profile.name}
@@ -207,7 +215,7 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
           sx={{
             mt: 0.5,
             fontSize: DESC_FONT_PX,
-            color: DESC_COLOR,
+            color: ON_ART_72,
             textShadow: DESC_SHADOW,
             [compact]: { display: 'none' },
           }}
