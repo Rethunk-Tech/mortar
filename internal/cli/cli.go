@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -1949,8 +1950,10 @@ func (c *cmd) saves(p control.Params) error {
 				season = seasons[s.Season]
 			}
 			missing := []string{}
-			for _, m := range s.Missing {
-				missing = append(missing, m.Name)
+			for _, m := range append(s.Missing, s.LastMissing...) {
+				if !slices.Contains(missing, m.Name) {
+					missing = append(missing, m.Name)
+				}
 			}
 			t = append(t, []string{s.Farm, s.Farmer, s.Folder, fmt.Sprintf("%s %d, Year %d", season, s.Day, s.Year), saveLastPlayed(s, profileNames), strings.Join(missing, ", ")})
 		}

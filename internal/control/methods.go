@@ -369,7 +369,15 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Saves == nil {
 			return nil, errors.New("saves are unavailable")
 		}
-		return s.Saves.Check(ctx, p.Game, p.Name, p.Profile)
+		id := ""
+		if p.Profile != "" {
+			prof, err := s.resolve(p.Game, p.Profile)
+			if err != nil {
+				return nil, err
+			}
+			id = prof.ID
+		}
+		return s.Saves.Check(ctx, p.Game, p.Name, id)
 	case "doctor":
 		return s.doctor()
 	case "launchers":
@@ -1373,9 +1381,13 @@ func (e launchWarningError) Error() string {
 		warnings = append(warnings, warning)
 	}
 	if e.gap {
+		farm := "The farm"
+		if e.save.Farmer != "" {
+			farm = e.save.Farmer + "'s farm"
+		}
 		warnings = append(warnings, fmt.Sprintf(
-			"Your last save needs other mods: %s's farm (%s) was last played with mods this profile does not have on.",
-			e.save.Farmer,
+			"Your last save needs other mods: %s (%s) was last played with mods this profile does not have on.",
+			farm,
 			e.save.Folder,
 		))
 	}
@@ -1408,7 +1420,26 @@ func (s *Services) playCheck(ctx context.Context, gameID, id string, prof profil
 	if ch := s.changesPlayGroup(ctx, gameID, id); ch.Kind != "" {
 		groups = append(groups, ch)
 	}
+	if s.Saves != nil {
+		if save, gap := adviceOnly(s.Saves.LastSaveGap(ctx, gameID, id)); gap {
+			groups = append(groups, saveGapGroup(save))
+		}
+	}
 	return groups, nil
+}
+
+// saveGapGroup is the newest save's warning that Play gives: the mods it was last played with that the profile lacks,
+// else the ones the save file itself names.
+func saveGapGroup(save savessvc.Fit) PlayIssueGroup {
+	lacks := save.LastMissing
+	if len(lacks) == 0 {
+		lacks = save.Missing
+	}
+	names := make([]string, 0, min(len(lacks), playIssueNameCap))
+	for _, l := range lacks[:min(len(lacks), playIssueNameCap)] {
+		names = append(names, l.Name)
+	}
+	return PlayIssueGroup{Kind: "save", Count: len(lacks), Names: names}
 }
 
 func playIssueGroups(prof profile.Profile, res problems.Result, upd problems.UpdatesResult, smapiNever bool) []PlayIssueGroup {
