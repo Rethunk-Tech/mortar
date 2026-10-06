@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
@@ -143,22 +144,15 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 			stale = append(stale, i)
 		}
 	}
-	dirty := false
+	var batches [][]int
 	for start := 0; start < len(stale); start += updatesBatch {
-		batch := stale[start:min(start+updatesBatch, len(stale))]
-		asked := make([]InstalledMod, len(batch))
-		for j, i := range batch {
-			asked[j] = req.Mods[i]
-		}
-		var got map[string]UpdateResult
-		err := errUpdatesPaused
-		if !now.Before(c.updatesPause) {
-			got, err = c.askUpdates(ctx, req, asked)
-			if err != nil {
-				c.updatesPause = now.Add(updatesBackoff)
-			}
-		}
-		for j, i := range batch {
+		batches = append(batches, stale[start:min(start+updatesBatch, len(stale))])
+	}
+	answers := c.askBatches(ctx, req, batches, now)
+	dirty := false
+	for b, batch := range batches {
+		got, err := answers[b].got, answers[b].err
+		for _, i := range batch {
 			k := req.key(req.Mods[i])
 			switch {
 			case err == nil:
@@ -171,7 +165,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 			case store[k].Value.Known:
 				out[i] = store[k].Value
 			default:
-				out[i] = UpdateResult{ID: asked[j].ID}
+				out[i] = UpdateResult{ID: req.Mods[i].ID}
 			}
 		}
 	}
@@ -184,6 +178,51 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 		writeEntry(path, entry[map[string]entry[UpdateResult]]{Fetched: now, Value: store, Build: appversion.Build()})
 	}
 	return out
+}
+
+type updatesAnswer struct {
+	got map[string]UpdateResult
+	err error
+}
+
+// updatesParallel bounds the batches asked of smapi.io at once: a cold profile of hundreds of mods is several
+// batches, which one after another cost about a second.
+const updatesParallel = 4
+
+// askBatches asks smapi.io about each batch of req's mods, a few at a time. A failed ask pauses asking: batches not
+// yet sent then answer errUpdatesPaused.
+func (c *Client) askBatches(ctx context.Context, req UpdateRequest, batches [][]int, now time.Time) []updatesAnswer {
+	answers := make([]updatesAnswer, len(batches))
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	slots := make(chan struct{}, updatesParallel)
+	for b, batch := range batches {
+		slots <- struct{}{}
+		mu.Lock()
+		paused := now.Before(c.updatesPause)
+		mu.Unlock()
+		if paused {
+			<-slots
+			answers[b].err = errUpdatesPaused
+			continue
+		}
+		asked := make([]InstalledMod, len(batch))
+		for j, i := range batch {
+			asked[j] = req.Mods[i]
+		}
+		wg.Go(func() {
+			defer func() { <-slots }()
+			got, err := c.askUpdates(ctx, req, asked)
+			answers[b] = updatesAnswer{got, err}
+			if err != nil {
+				mu.Lock()
+				c.updatesPause = now.Add(updatesBackoff)
+				mu.Unlock()
+			}
+		})
+	}
+	wg.Wait()
+	return answers
 }
 
 func (c *Client) askUpdates(ctx context.Context, req UpdateRequest, mods []InstalledMod) (map[string]UpdateResult, error) {

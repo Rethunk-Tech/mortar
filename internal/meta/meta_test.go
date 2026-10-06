@@ -208,14 +208,19 @@ func TestCheckUpdatesStaleThenUnknown(t *testing.T) {
 
 func TestCheckUpdatesBatchesAndSendsRequest(t *testing.T) {
 	var batches atomic.Int32
+	var mu sync.Mutex
 	var first apiRequest
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req apiRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Error(err)
 		}
-		if batches.Add(1) == 1 {
+		batches.Add(1)
+		// Batches are asked concurrently, so any full one stands for the first.
+		if len(req.Mods) == updatesBatch {
+			mu.Lock()
 			first = req
+			mu.Unlock()
 		}
 		out := make([]apiMod, len(req.Mods))
 		for i, m := range req.Mods {
