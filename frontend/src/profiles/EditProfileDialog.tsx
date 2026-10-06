@@ -17,6 +17,7 @@ import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { hasPickedCover, type StagedCover } from '../game/cover.ts'
 import { HeroCover } from '../game/HeroCover.tsx'
+import { useGameInfo } from '../games/info.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -284,6 +285,8 @@ function ProfileFields({
   onOverrides,
 }: ProfileFieldsProps) {
   const { t } = useLingui()
+  // Only a game with a startup preferences file applies them; elsewhere the fields would change nothing.
+  const startupSettings = useGameInfo(gameId)?.startupSettings === true
   return (
     <DialogContent>
       <AppearancePickers
@@ -340,7 +343,9 @@ function ProfileFields({
         launchEnv={launchEnv}
       />
       <OverridesSection overrides={overrides} onChange={onOverrides} />
-      <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
+      {startupSettings ? (
+        <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
+      ) : null}
     </DialogContent>
   )
 }

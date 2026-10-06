@@ -39,6 +39,7 @@ test('listItems drops bundled SMAPI and the bridge and keeps disabled mods', () 
       name: 'Stardew Valley',
       appId: '',
       hasSaves: false,
+      startupSettings: false,
       loader: '',
       loaderId: '',
       deploy: '',
