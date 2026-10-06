@@ -138,6 +138,7 @@ function ProfileButton({
       >
         <ProfileMark profile={profile} size={22} />
         <Box
+          title={profile.name}
           component="span"
           sx={{
             minWidth: 0,

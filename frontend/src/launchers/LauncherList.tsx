@@ -123,7 +123,7 @@ function LauncherRow({
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{launcher.name}</Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }} noWrap={true}>
+          <Typography title={summary} sx={{ fontSize: 13, color: 'text.secondary' }} noWrap={true}>
             {summary}
           </Typography>
         </Box>

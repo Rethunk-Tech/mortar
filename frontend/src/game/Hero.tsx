@@ -216,6 +216,7 @@ function HeroName({ profile, meta, game }: { profile: Profile; meta: string[]; g
         </Typography>
       ) : null}
       <Typography
+        title={meta.join(' · ')}
         noWrap={true}
         sx={{ display: 'none', fontSize: META_FONT_PX, [compact]: { display: 'block' } }}
       >

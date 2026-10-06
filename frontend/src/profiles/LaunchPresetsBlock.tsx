@@ -37,7 +37,7 @@ function PresetRow({
   const { t } = useLingui()
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}>
-      <Typography noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
+      <Typography title={name} noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
         {name}
       </Typography>
       {isDefault ? (

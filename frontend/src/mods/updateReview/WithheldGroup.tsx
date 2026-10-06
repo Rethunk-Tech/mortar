@@ -32,7 +32,7 @@ export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mo
               role="listitem"
               sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 3, py: 1 }}
             >
-              <Typography noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
+              <Typography title={u.name} noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
                 {u.name}
               </Typography>
               <Version>{u.installed}</Version>

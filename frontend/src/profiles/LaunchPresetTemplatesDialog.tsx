@@ -56,7 +56,7 @@ export function LaunchPresetTemplatesDialog({
         ) : (
           templates.map((tpl) => (
             <Box key={tpl.name} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}>
-              <Typography noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
+              <Typography title={tpl.name} noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
                 {tpl.name}
               </Typography>
               <Button onClick={() => onAdd(tpl)}>{t`Add`}</Button>

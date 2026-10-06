@@ -36,6 +36,7 @@ export function Fold({
       >
         <CoverButton onClick={() => setOpen(!open)} aria-expanded={open} aria-label={line} />
         <Box
+          title={line}
           component="span"
           sx={{
             minWidth: 0,

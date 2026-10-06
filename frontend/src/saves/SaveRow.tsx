@@ -176,7 +176,7 @@ export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; ga
           <Typography noWrap={true} title={label} sx={{ fontSize: 17, fontWeight: 700 }}>
             {label}
           </Typography>
-          <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography title={subtitle} noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
             {subtitle}
           </Typography>
         </Box>

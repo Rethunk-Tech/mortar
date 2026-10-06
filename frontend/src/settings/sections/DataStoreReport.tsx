@@ -158,6 +158,7 @@ function Row({
     >
       <Checkbox size="small" checked={checked} onChange={(ev) => onToggle(ev.target.checked)} />
       <Box
+        title={title}
         sx={{
           flex: 1,
           minWidth: 0,

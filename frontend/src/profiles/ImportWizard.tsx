@@ -108,7 +108,7 @@ export function ImportWizard({
               sx={{ justifyContent: 'space-between', textTransform: 'none', gap: 2 }}
             >
               <Box sx={{ textAlign: 'left', minWidth: 0 }}>
-                <Typography noWrap={true} sx={{ fontWeight: 600 }}>
+                <Typography title={f.name} noWrap={true} sx={{ fontWeight: 600 }}>
                   {f.name}
                 </Typography>
                 <Typography color="text.secondary" sx={{ fontSize: 12 }}>

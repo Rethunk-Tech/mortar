@@ -123,6 +123,7 @@ export function SinceLastRun({ game, profileId }: { game: string; profileId: str
           })}
         </Typography>
         <Typography
+          title={lines[0]}
           component="span"
           noWrap={true}
           sx={{ flex: 1, minWidth: 0, fontSize: 14, color: 'text.secondary' }}
