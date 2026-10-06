@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -111,6 +112,16 @@ type collectionGQL struct {
 	} `json:"data"`
 }
 
+// webPage keeps a curator's resource link only when it is an http or https page, since the import dialog opens it
+// with the system's URL handler, which would also launch other schemes' apps.
+func webPage(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" {
+		return ""
+	}
+	return raw
+}
+
 func decodeCollection(slug string, raw []byte) (Collection, error) {
 	var parsed collectionGQL
 	if err := json.Unmarshal(raw, &parsed); err != nil {
@@ -131,7 +142,7 @@ func decodeCollection(slug string, raw []byte) (Collection, error) {
 	}
 	for _, r := range rev.ExternalResources {
 		out.External = append(out.External, CollectionExternal{
-			Name: r.Name, Type: r.ResourceType, URL: r.ResourceURL, Version: r.Version, Author: r.Author, Optional: r.Optional,
+			Name: r.Name, Type: r.ResourceType, URL: webPage(r.ResourceURL), Version: r.Version, Author: r.Author, Optional: r.Optional,
 		})
 	}
 	for _, mf := range rev.ModFiles {
