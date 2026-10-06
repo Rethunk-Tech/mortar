@@ -267,8 +267,10 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
   const mods = userModCount(profile)
   const setTab = useTab((s) => s.setTab)
   const fits = useSaves((s) => s.fits)
+  const savesUnread = useSaves((s) => s.status === 'idle' || s.status === 'loading')
   const { fitting, recorded, total } = saveFits(fits)
-  let savesValue = t`None`
+  // A blank that keeps the card's height until the saves are read, so a profile never flashes None first.
+  let savesValue = savesUnread && fits.length === 0 ? '\u00a0' : t`None`
   if (recorded > 0) {
     savesValue = t`${fitting} of ${recorded}`
   } else if (total > 0) {

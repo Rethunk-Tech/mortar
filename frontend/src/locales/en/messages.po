@@ -208,7 +208,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
-#: src/game/Hero.tsx:342
+#: src/game/Hero.tsx:344
 #: src/mods/Sidebar.tsx:153
 msgid "Updated"
 msgstr "Updated"
@@ -3641,7 +3641,7 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 msgid "Search archives"
 msgstr "Search archives"
 
-#: src/game/Hero.tsx:343
+#: src/game/Hero.tsx:345
 msgid "Created"
 msgstr "Created"
 
@@ -4199,7 +4199,7 @@ msgid "Get the extension"
 msgstr "Get the extension"
 
 #: src/bundles/BundlesSection.tsx:110
-#: src/game/Hero.tsx:271
+#: src/game/Hero.tsx:273
 #: src/mods/ModDependencyTree.tsx:162
 #: src/mods/Toolbar.tsx:196
 #: src/settings/prefCopy.ts:122
@@ -5344,7 +5344,7 @@ msgstr "Mortar cannot download {0} again."
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
-#: src/game/Hero.tsx:273
+#: src/game/Hero.tsx:275
 msgid "{fitting} of {recorded}"
 msgstr "{fitting} of {recorded}"
 
@@ -6423,7 +6423,7 @@ msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:54
 #: src/firstrunTour/TourPopover.tsx:50
-#: src/game/Hero.tsx:340
+#: src/game/Hero.tsx:342
 #: src/game/ProfileWorkspace.tsx:87
 #: src/mods/ModListVirtual.tsx:279
 #: src/settings/GameSettingsPage.tsx:63
@@ -10811,7 +10811,7 @@ msgstr "Play {playName}"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Hero.tsx:341
+#: src/game/Hero.tsx:343
 #: src/game/ProfileWorkspace.tsx:105
 msgid "Saves"
 msgstr "Saves"
