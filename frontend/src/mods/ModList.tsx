@@ -11,6 +11,7 @@ import { formatDuration } from '../console/startupView.ts'
 import { compactQuery } from '../game/compact.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
+import { useProfileLoader } from '../profiles/store.ts'
 import { boundShortcut, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { useWidth } from '../shell/useWidth.ts'
@@ -360,6 +361,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   )
   const onMenu = (e: MouseEvent) => setMenu(columnMenuFromEvent(e))
   const grid = listGridColumns(cols)
+  const loaderName = useProfileLoader()?.name ?? ''
   const headingFor = listHeadingFor(groupBy, {
     category: t`Uncategorised`,
     source: t`Unknown source`,
@@ -370,7 +372,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
     update: t`Update available`,
     enabled: t`Enabled`,
     disabled: t`Off`,
-    smapi: t`SMAPI mods`,
+    smapi: t`${loaderName} mods`,
   })
   const onCommit = () => {
     if (preview) {

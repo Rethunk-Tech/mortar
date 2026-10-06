@@ -3,7 +3,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useCustomCategories } from './customCategories.ts'
@@ -24,7 +24,7 @@ import { useUpdates } from './updates.ts'
 
 // The list's and the cards' rows, grouped and sorted by the user's settings, rebuilt only when an input changes.
 export function useModGroups(mods: Mod[], profile: Profile) {
-  const groupBy = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
+  const groupBy = useListGroupBy()
   const listSortColumn = useSettings((s) => s.listSortColumn)
   const listSortDir = useSettings((s) => s.listSortDir)
   const sort = useMemo(
@@ -72,4 +72,11 @@ export function useModGroups(mods: Mod[], profile: Profile) {
     [groups],
   )
   return { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds }
+}
+
+// The saved grouping, or Status when it is Framework and the profile's loader has no framework mods to group by.
+export function useListGroupBy() {
+  const saved = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
+  const frameworks = useProfileLoader()?.frameworks ?? false
+  return saved === 'framework' && !frameworks ? 'status' : saved
 }

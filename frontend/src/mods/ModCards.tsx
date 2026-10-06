@@ -6,6 +6,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { compact, compactQuery } from '../game/compact.ts'
+import { useProfileLoader } from '../profiles/store.ts'
 import { boundShortcut } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -437,6 +438,7 @@ export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     profile,
   )
   const tagHint = t`A mod with several tags appears under its first tag.`
+  const loaderName = useProfileLoader()?.name ?? ''
   const heading = listHeadingFor(groupBy, {
     category: t`Uncategorised`,
     source: t`Unknown source`,
@@ -447,7 +449,7 @@ export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     update: t`Update available`,
     enabled: t`Enabled`,
     disabled: t`Off`,
-    smapi: t`SMAPI mods`,
+    smapi: t`${loaderName} mods`,
   })
   return (
     <CardsPane

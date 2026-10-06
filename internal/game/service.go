@@ -52,6 +52,8 @@ type LoaderRef struct {
 	Share bool `json:"share"`
 	// Assets is whether a content-pack framework for the loader's formats builds an asset map.
 	Assets bool `json:"assets"`
+	// Frameworks is whether the loader's mods can be content for a framework mod, which the Framework grouping needs.
+	Frameworks bool `json:"frameworks"`
 }
 
 func loaderRef(gameID string, l components.GameLoader) LoaderRef {
@@ -64,6 +66,7 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		_, ref.Startup = d.(loader.StartupTimings)
 		ref.Share = loader.SharesLog(d)
 		ref.Assets = framework.IndexesAssets(d.Formats())
+		ref.Frameworks = framework.HasFrameworks(d.Formats())
 	}
 	return ref
 }

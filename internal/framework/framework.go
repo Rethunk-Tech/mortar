@@ -83,3 +83,16 @@ func IndexesAssets(formats []string) bool {
 	}
 	return false
 }
+
+// HasFrameworks reports whether a registered framework is written for mods of one of formats, so a loader's mods can
+// be grouped by the framework they are content for.
+func HasFrameworks(formats []string) bool {
+	mu.RLock()
+	defer mu.RUnlock()
+	for _, f := range registry {
+		if slices.Contains(formats, f.ID().Format()) {
+			return true
+		}
+	}
+	return false
+}

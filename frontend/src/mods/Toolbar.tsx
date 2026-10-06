@@ -35,6 +35,7 @@ import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useTab } from '../game/tab.ts'
 import { useInstall } from '../install/store.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
+import { useProfileLoader } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -46,9 +47,10 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { ExtraFolderMenu } from './ExtraFolderMenu.tsx'
 import { onFilterFocus } from './filterFocus.ts'
-import { type GroupBy, sanitizeListGroupBy } from './group.ts'
+import type { GroupBy } from './group.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
+import { useListGroupBy } from './useModGroups.ts'
 
 const FILTERS: readonly {
   id: Exclude<ModFilter, 'all'>
@@ -171,7 +173,8 @@ function ShowFilterControl({
 
 function GroupByControl() {
   const { t } = useLingui()
-  const by = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
+  const by = useListGroupBy()
+  const frameworks = useProfileLoader()?.frameworks ?? false
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [editorOpen, setEditorOpen] = useState(false)
   const tagHint = t`A mod with several tags appears under its first tag.`
@@ -195,7 +198,7 @@ function GroupByControl() {
           { id: 'category' as const, label: t`Category`, Icon: Tag },
           { id: 'source' as const, label: t`Source`, Icon: Library },
           { id: 'tag' as const, label: t`Tag`, Icon: Tag, hint: tagHint },
-          { id: 'framework' as const, label: t`Framework`, Icon: Layers },
+          ...(frameworks ? [{ id: 'framework' as const, label: t`Framework`, Icon: Layers }] : []),
           { id: 'author' as const, label: t`Author`, Icon: User },
           { id: 'group' as const, label: t`Group`, Icon: FolderTree },
         ].map((item) => (
