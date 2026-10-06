@@ -147,10 +147,11 @@ func TestSetWinnerNeverWritesASelfDependencyOrCycle(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	for _, loser := range []string{"smapi:Me.Npc", "smapi:Me.Other"} {
-		if _, err := e.SetWinner("stardew", p.ID, "pack", "smapi:Me.Main", mod.ID(loser), true); err != nil {
-			t.Fatal(err)
-		}
+	if _, err := e.SetWinner("stardew", p.ID, "pack", "smapi:Me.Main", "smapi:Me.Npc", true); err == nil {
+		t.Fatal("made a pack win over one in its own download that needs it")
+	}
+	if _, err := e.SetWinner("stardew", p.ID, "pack", "smapi:Me.Main", "smapi:Me.Other", true); err != nil {
+		t.Fatal(err)
 	}
 	main := winnerManifest(t, e, p.ID, "pack/Main")
 	npc := winnerManifest(t, e, p.ID, "pack/Npc")

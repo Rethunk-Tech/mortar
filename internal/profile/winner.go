@@ -29,7 +29,7 @@ func (s *Store) SetWinner(game, profileID, winnerKey string, winner, loser mod.I
 			return fmt.Errorf("%s is not in %q", winner, winnerKey)
 		}
 		if on {
-			if err := loserNeedsWinner(p.Entries, e, e.Mods[ci], loser); err != nil {
+			if err := loserNeedsWinner(p.Entries, e.Mods[ci], loser); err != nil {
 				return err
 			}
 		}
@@ -136,13 +136,10 @@ func safeLoadAfter(e Entry, m Component) []mod.ID {
 	})
 }
 
-// loserNeedsWinner refuses an order SMAPI could never honour: a loser in another download that needs the winner
+// loserNeedsWinner refuses an order SMAPI could never honour: a loser that needs the winner, in any download,
 // always loads after it.
-func loserNeedsWinner(entries []Entry, winnerEntry Entry, winner Component, loser mod.ID) error {
+func loserNeedsWinner(entries []Entry, winner Component, loser mod.ID) error {
 	for _, e := range entries {
-		if e.Key == winnerEntry.Key {
-			continue
-		}
 		for _, c := range e.Mods {
 			if !mod.Equal(c.ID, loser) {
 				continue
