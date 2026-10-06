@@ -5,6 +5,7 @@ import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
@@ -45,20 +46,22 @@ function initUpdateDigestToast() {
     return
   }
   listening = true
-  Events.On('updates:digest', (event) => {
-    const notice = event.data as ModUpdateDigestNotice
-    if (!notice || notice.totalUpdates <= 0) {
-      return
-    }
-    useToasts.getState().push({
-      kind: 'info',
-      title: digestTitle(notice),
-      action: {
-        label: i18n._(msg`Review`),
-        run: () => openDigestReview(notice),
-      },
-    })
+  Events.On('updates:digest', (event) => showDigest(event.data as ModUpdateDigestNotice))
+}
+
+// The digest setting decides only how often a notice comes; the In Mortar switch decides whether it toasts.
+function showDigest(notice: ModUpdateDigestNotice | null) {
+  if (!notice || notice.totalUpdates <= 0 || !useSettings.getState().notifyModUpdates) {
+    return
+  }
+  useToasts.getState().push({
+    kind: 'info',
+    title: digestTitle(notice),
+    action: {
+      label: i18n._(msg`Review`),
+      run: () => openDigestReview(notice),
+    },
   })
 }
 
-export { initUpdateDigestToast }
+export { initUpdateDigestToast, showDigest }

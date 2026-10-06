@@ -331,7 +331,9 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
     notifyModUpdates: { label: i18n._(msg`Notify when updates are found`) },
     updateDigest: {
       label: i18n._(msg`Update digest notification`),
-      description: i18n._(msg`Toast when background checks find new mod updates`),
+      description: i18n._(
+        msg`How often background checks report new mod updates. The In Mortar and desktop switches choose where.`,
+      ),
       options: [
         { value: 'off', label: i18n._(msg`Off`) },
         { value: 'each', label: i18n._(msg`After each check`) },
