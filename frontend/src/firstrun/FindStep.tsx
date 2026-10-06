@@ -116,6 +116,7 @@ export function FindStep({
   const smapi = useLoader((s) => s.status)
   const check = useLoader((s) => s.check)
   const [error, setError] = useState<InlineError | null>(null)
+  const [editing, setEditing] = useState(false)
   const dir = game.installDir
   const named = storeName(game.store)
   const caption = named ? t`Found in ${{ path: t(named) }}` : t`Folder chosen by you`
@@ -157,11 +158,20 @@ export function FindStep({
           <Typography sx={{ fontSize: 13 }}>{caption}</Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <TextField
-              value={dir}
+              // Unfocused, the path is laid out right to left so a long one loses its start, not the game's folder
+              // name; the mark keeps a leading slash at the start. Focused, it is the plain path, to select and copy.
+              value={editing ? dir : `\u200e${dir}`}
+              onFocus={() => setEditing(true)}
+              onBlur={() => setEditing(false)}
               size="small"
               fullWidth={true}
               slotProps={{
-                htmlInput: { readOnly: true, 'aria-label': t`Game folder` },
+                htmlInput: {
+                  readOnly: true,
+                  'aria-label': t`Game folder`,
+                  title: dir,
+                  style: editing ? {} : { direction: 'rtl', textOverflow: 'ellipsis' },
+                },
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
