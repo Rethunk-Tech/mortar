@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -108,12 +109,22 @@ func writeEntry[T any](path string, e entry[T]) {
 // Cached returns the entry at path while it is younger than ttl, else fetches; a failed fetch falls back to a
 // stale entry, and only errors when there is none.
 func Cached[T any](c *Client, name string, ttl time.Duration, fetch func() (T, error)) (T, error) {
+	return cached(c, name, ttl, "", fetch)
+}
+
+// CachedForBuild is Cached for an answer that depends on how Mortar reads its source, so a cache another build wrote,
+// or one from before builds were stamped, is fetched again and serves only while the fetch fails.
+func CachedForBuild[T any](c *Client, name string, ttl time.Duration, fetch func() (T, error)) (T, error) {
+	return cached(c, name, ttl, appversion.Build(), fetch)
+}
+
+func cached[T any](c *Client, name string, ttl time.Duration, build string, fetch func() (T, error)) (T, error) {
 	path, err := c.cachePath(name)
 	if err != nil {
 		return fetch()
 	}
 	old, ok := readEntry[T](path)
-	if ok && c.now().Sub(old.Fetched) < ttl {
+	if ok && c.now().Sub(old.Fetched) < ttl && old.Build == build {
 		return old.Value, nil
 	}
 	v, err := fetch()
@@ -124,7 +135,7 @@ func Cached[T any](c *Client, name string, ttl time.Duration, fetch func() (T, e
 		var zero T
 		return zero, err
 	}
-	writeEntry(path, entry[T]{Fetched: c.now(), Value: v})
+	writeEntry(path, entry[T]{Fetched: c.now(), Value: v, Build: build})
 	return v, nil
 }
 

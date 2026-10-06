@@ -103,7 +103,7 @@ func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
 			return index, nil
 		}
 	}
-	index, err := Cached(c, CompatCacheFile, compatTTL, func() (CompatIndex, error) {
+	index, err := CachedForBuild(c, CompatCacheFile, compatTTL, func() (CompatIndex, error) {
 		return c.fetchCompat(ctx)
 	})
 	if err == nil {

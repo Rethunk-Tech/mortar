@@ -1,8 +1,12 @@
 package meta
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 )
 
 // Canned sample of SmapiCompatibilityList data/mods.jsonc (and the wiki dump SMAPI.Web also served).
@@ -178,5 +182,34 @@ func TestParseCompatJSONKeepsUnofficialVersion(t *testing.T) {
 	e, ok := idx.Lookup("hootless.BusLocations", 0)
 	if !ok || e.Status != StatusUnofficial || e.UnofficialVersion != "1.2.2-unofficial.1-Xytronix" || e.UnofficialURL != "https://example.com/b" {
 		t.Fatalf("entry = %+v ok=%v", e, ok)
+	}
+}
+
+func TestCompatListFetchesAgainACacheWrittenWithoutThisBuildsStamp(t *testing.T) {
+	var asked atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		asked.Add(1)
+		_, _ = w.Write([]byte(`[{"name":"Bus","id":"hootless.BusLocations","unofficialUpdate":{"version":"1.2.2-unofficial.1-Xytronix","url":"https://example.com/b"}}]`))
+	}))
+	t.Cleanup(srv.Close)
+	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), CompatURL: srv.URL}
+	path, err := c.cachePath(CompatCacheFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// An index cached before the unofficial version was kept: a day's TTL left, no build stamp, no version.
+	writeEntry(path, entry[CompatIndex]{Fetched: time.Now(), Value: CompatIndex{
+		ByID: map[string]CompatEntry{"hootless.buslocations": {Status: StatusUnofficial, UnofficialURL: "https://example.com/b"}},
+	}})
+
+	idx, err := c.CompatList(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if e, ok := idx.Lookup("hootless.BusLocations", 0); !ok || e.UnofficialVersion == "" || asked.Load() != 1 {
+		t.Fatalf("entry = %+v, asked %d times; want the old-shape cache fetched again", e, asked.Load())
+	}
+	if _, err := c.CompatList(t.Context()); err != nil || asked.Load() != 1 {
+		t.Fatalf("this build's cache answers the next call: asked %d times, %v", asked.Load(), err)
 	}
 }
