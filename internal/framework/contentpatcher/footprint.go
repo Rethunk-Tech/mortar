@@ -1522,9 +1522,9 @@ var (
 )
 
 // spouseOf is the NPC a When block requires the player to be engaged or married to ("Relationship:Abigail":
-// "Engaged, Married", or "Query: '{{Spouse}}' = 'Abigail'": true, alone or ANDed with other tests and
-// through a dynamic token that is just {{Spouse}}), or "". A player has one partner at a time, so two
-// patches that need different partners never apply together.
+// "Engaged, Married", or a Query that querySpouse reads, written in the condition or as the value of a dynamic
+// token the condition needs true), or "". A player has one partner at a time, so two patches that need
+// different partners never apply together.
 func spouseOf(raw map[string]json.RawMessage, tokens []cpTokenDefinition) string {
 	for k, v := range raw {
 		key := strings.TrimSpace(k)
@@ -1543,13 +1543,19 @@ func spouseOf(raw map[string]json.RawMessage, tokens []cpTokenDefinition) string
 		}
 		if name, expr, ok := strings.Cut(key, ":"); ok && strings.EqualFold(strings.TrimSpace(name), "query") {
 			var on bool
-			if json.Unmarshal(v, &on) != nil || !on || queryOr.MatchString(expr) {
+			if json.Unmarshal(v, &on) != nil || !on {
 				continue
 			}
 			if npc := querySpouse(expr, tokens); npc != "" {
 				return npc
 			}
 			continue
+		}
+		var flags []string
+		if len(tokens) > 0 && !strings.ContainsAny(key, ":|") && condValues(v, &flags) && len(flags) == 1 && strings.EqualFold(flags[0], "true") {
+			if npc := tokenSpouse(tokenName(key), tokens); npc != "" {
+				return npc
+			}
 		}
 		name, npc, ok := strings.Cut(key, ":")
 		if !ok || !strings.EqualFold(strings.TrimSpace(name), "relationship") || hasToken(npc) {
@@ -1566,9 +1572,23 @@ func spouseOf(raw map[string]json.RawMessage, tokens []cpTokenDefinition) string
 }
 
 // querySpouse is the partner an AND-only Query expression compares {{Spouse}}, or a token that is just
-// {{Spouse}}, against.
+// querySpouse is the partner a Query expression requires: every OR branch compares {{Spouse}} or {{Roommate}}
+// (or a token that is just {{Spouse}}) with the same NPC in one of its AND terms. A player lives with one partner
+// at a time, so a branch per partner token still names one partner.
 func querySpouse(expr string, tokens []cpTokenDefinition) string {
-	for _, term := range queryAnd.Split(strings.TrimSpace(expr), -1) {
+	partner := ""
+	for _, branch := range queryOr.Split(strings.TrimSpace(expr), -1) {
+		npc := branchSpouse(branch, tokens)
+		if npc == "" || partner != "" && npc != partner {
+			return ""
+		}
+		partner = npc
+	}
+	return partner
+}
+
+func branchSpouse(branch string, tokens []cpTokenDefinition) string {
+	for _, term := range queryAnd.Split(strings.TrimSpace(branch), -1) {
 		term = strings.TrimSpace(term)
 		var token, npc string
 		if m := spouseQuery.FindStringSubmatch(term); m != nil {
@@ -1578,11 +1598,34 @@ func querySpouse(expr string, tokens []cpTokenDefinition) string {
 		} else {
 			continue
 		}
-		if strings.EqualFold(token, "spouse") || spouseAlias(tokenName(token), tokens) {
+		if strings.EqualFold(token, "spouse") || strings.EqualFold(token, "roommate") || spouseAlias(tokenName(token), tokens) {
 			return strings.ToLower(strings.TrimSpace(npc))
 		}
 	}
 	return ""
+}
+
+// tokenSpouse is the partner a dynamic token is true for when every definition of it is a Query that names
+// one partner, such as "LivingWithSen": "{{Query: '{{Spouse}}' = 'SenS' OR '{{Roommate}}' = 'SenS'}}".
+func tokenSpouse(name string, tokens []cpTokenDefinition) string {
+	partner := ""
+	for _, definition := range tokens {
+		if definition.name != name {
+			continue
+		}
+		value := strings.TrimSpace(definition.value)
+		inner, ok := strings.CutPrefix(value, "{{")
+		if inner, ok2 := strings.CutSuffix(inner, "}}"); ok && ok2 {
+			if head, expr, ok := strings.Cut(inner, ":"); ok && strings.EqualFold(strings.TrimSpace(head), "query") {
+				if npc := querySpouse(expr, tokens); npc != "" && (partner == "" || npc == partner) {
+					partner = npc
+					continue
+				}
+			}
+		}
+		return ""
+	}
+	return partner
 }
 
 func spouseAlias(name string, tokens []cpTokenDefinition) bool {

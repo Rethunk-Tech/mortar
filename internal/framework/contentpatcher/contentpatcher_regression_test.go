@@ -699,6 +699,13 @@ func TestQuerySpouseGatedEditsNeverApplyTogether(t *testing.T) {
 	if conflicts := assetConflicts([]framework.Mod{lurking, anyone}); len(conflicts) != 1 {
 		t.Fatalf("an OR query does not pin the spouse, got %#v", conflicts)
 	}
+	// Lurking in the Dark's own shape: a token true when Sen is the spouse or the roommate.
+	living := pack(`{"DynamicTokens":[{"Name":"LivingWithSen","Value":"{{Query: '{{spouse}}' = 'SenS' OR '{{roommate}}' = 'SenS'}}","When":{"IsDitRInstalled":false}}],
+		"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"sen"},"When":{"LivingWithSen":true}}]}`)
+	teren := pack(`{"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"teren"},"When":{"Spouse":"Teren"}}]}`)
+	if conflicts := assetConflicts([]framework.Mod{living, teren}); len(conflicts) != 0 {
+		t.Fatalf("living with Sen and marrying Teren never apply together, got %#v", conflicts)
+	}
 }
 
 func TestTokenizedLoadTargetResolvesFromConfig(t *testing.T) {
