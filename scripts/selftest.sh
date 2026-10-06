@@ -599,9 +599,10 @@ EOF
       failures+=("$2: BepInEx never logged \"Chainloader startup complete\" within ${timeout}s ($(cli status lethal-company 2>&1 | head -c 200))")
     fi
   }
-  # lc_stop stops the game by verified pid, waits for Mortar to go idle (which purges the deploy) and requires the game
-  # folder to hash as it did before the first launch.
+  # lc_stop stops the game through Mortar, then reaps whatever is left of the prefix by verified pid, waits for Mortar
+  # to go idle (which purges the deploy) and requires the game folder to hash as it did before the first launch.
   lc_stop() {
+    cli stop lethal-company >"$ROOT/stop-$1.txt" 2>&1 || failures+=("$1: mortar stop failed: $(head -c 300 "$ROOT/stop-$1.txt")")
     killed="$killed $(reap_prefix "$compat")"
     local state=""
     for _ in $(seq 1 60); do
