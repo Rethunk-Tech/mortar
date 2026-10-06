@@ -335,7 +335,7 @@ msgstr "Copying mod files"
 msgid "Restored {detail} of {name}"
 msgstr "Restored {detail} of {name}"
 
-#: src/share/ImportPreview.tsx:153
+#: src/share/ImportPreview.tsx:156
 msgid "{name} is broken for {detail}"
 msgstr "{name} is broken for {detail}"
 
@@ -361,7 +361,7 @@ msgstr "Premium and GitHub downloads at once"
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
-#: src/share/ImportPreview.tsx:154
+#: src/share/ImportPreview.tsx:157
 msgid "{name} needs {detail}, which Mortar cannot install"
 msgstr "{name} needs {detail}, which Mortar cannot install"
 
@@ -869,7 +869,7 @@ msgstr "Mods not recorded"
 msgid "Uploaded by"
 msgstr "Uploaded by"
 
-#: src/firstrun/ProfileStep.tsx:73
+#: src/firstrun/ProfileStep.tsx:128
 msgid "Make your first profile"
 msgstr "Make your first profile"
 
@@ -1045,7 +1045,7 @@ msgstr "Mortar does not manage mods for that game."
 msgid "Move down"
 msgstr "Move down"
 
-#: src/firstrun/ProfileStep.tsx:110
+#: src/firstrun/ProfileStep.tsx:167
 msgid "Start empty"
 msgstr "Start empty"
 
@@ -1283,7 +1283,7 @@ msgstr "All outcomes"
 
 #: src/queue/store.ts:314
 #: src/share/importCompletion.ts:24
-#: src/share/ImportPreview.tsx:248
+#: src/share/ImportPreview.tsx:251
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
 
@@ -1329,7 +1329,7 @@ msgstr "Save diagnostics…"
 msgid "Small"
 msgstr "Small"
 
-#: src/firstrun/ProfileStep.tsx:150
+#: src/firstrun/ProfileStep.tsx:207
 msgid "From a shared link"
 msgstr "From a shared link"
 
@@ -1344,6 +1344,10 @@ msgstr "Add a bundle to {profileName}"
 #: src/game/ProfileMenuItems.tsx:262
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
+
+#: src/firstrun/ProfileStep.tsx:59
+msgid "{found, plural, one {# profile from another mod manager is on this computer. Its mods download from their own sites.} other {# profiles from other mod managers are on this computer. Their mods download from their own sites.}}"
+msgstr "{found, plural, one {# profile from another mod manager is on this computer. Its mods download from their own sites.} other {# profiles from other mod managers are on this computer. Their mods download from their own sites.}}"
 
 #: src/browse/BrowseFilters.tsx:98
 msgid "Sort: best match"
@@ -1443,7 +1447,7 @@ msgstr "Newest lines kept in the Console"
 msgid "Reset all"
 msgstr "Reset all"
 
-#: src/share/ImportPreview.tsx:252
+#: src/share/ImportPreview.tsx:255
 msgid "{count} unavailable"
 msgstr "{count} unavailable"
 
@@ -1789,7 +1793,7 @@ msgstr "Copied"
 msgid "Show in log"
 msgstr "Show in log"
 
-#: src/share/ImportPreview.tsx:195
+#: src/share/ImportPreview.tsx:198
 msgid "Page"
 msgstr "Page"
 
@@ -1803,7 +1807,7 @@ msgid "Running for {time}"
 msgstr "Running for {time}"
 
 #: src/bundles/dialogs.tsx:58
-#: src/firstrun/ProfileStep.tsx:120
+#: src/firstrun/ProfileStep.tsx:177
 #: src/mods/CategoryEditor.tsx:41
 #: src/mods/columnLabel.ts:7
 #: src/profiles/LaunchPresetDialog.tsx:60
@@ -2002,7 +2006,7 @@ msgstr " · {cause} · {size} · Kept"
 msgid "No installed mods for this author."
 msgstr "No installed mods for this author."
 
-#: src/firstrun/ProfileStep.tsx:49
+#: src/firstrun/ProfileStep.tsx:104
 msgid "Enter a name for the profile."
 msgstr "Enter a name for the profile."
 
@@ -2163,7 +2167,7 @@ msgstr "Prerelease"
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
-#: src/share/ImportPreview.tsx:151
+#: src/share/ImportPreview.tsx:154
 msgid "{name} was removed from Nexus"
 msgstr "{name} was removed from Nexus"
 
@@ -2244,7 +2248,7 @@ msgid "Dependency cycle"
 msgstr "Dependency cycle"
 
 #: src/commandPalette/paletteLabels.ts:17
-#: src/firstrun/ProfileStep.tsx:136
+#: src/firstrun/ProfileStep.tsx:193
 #: src/game/NewProfileDialog.tsx:208
 #: src/game/Sidebar.tsx:377
 #: src/game/Sidebar.tsx:395
@@ -2713,7 +2717,7 @@ msgstr "Collection draft saved"
 msgid "Abandoned"
 msgstr "Abandoned"
 
-#: src/share/ImportPreview.tsx:251
+#: src/share/ImportPreview.tsx:254
 msgid "{count} checked later"
 msgstr "{count} checked later"
 
@@ -3023,7 +3027,7 @@ msgstr "Check again"
 msgid "{label} is no longer in the saves folder"
 msgstr "{label} is no longer in the saves folder"
 
-#: src/share/ImportPreview.tsx:70
+#: src/share/ImportPreview.tsx:73
 msgid "different file"
 msgstr "different file"
 
@@ -3674,7 +3678,7 @@ msgstr "Mortar · Install {name}?"
 msgid "Replace {targetName}"
 msgstr "Replace {targetName}"
 
-#: src/firstrun/ProfileStep.tsx:35
+#: src/firstrun/ProfileStep.tsx:90
 msgid "Main"
 msgstr "Main"
 
@@ -3830,7 +3834,7 @@ msgstr "Share as r2modman code?"
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/firstrun/ProfileStep.tsx:113
+#: src/firstrun/ProfileStep.tsx:170
 msgid "A profile with only {loader}. Add mods from {site} or from archives."
 msgstr "A profile with only {loader}. Add mods from {site} or from archives."
 
@@ -3857,7 +3861,7 @@ msgstr "{0, plural, one {The new version of {1} no longer includes # file. Keep 
 msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
-#: src/share/ImportPreview.tsx:366
+#: src/share/ImportPreview.tsx:367
 #: src/share/useImportFlow.ts:142
 msgid "Nothing to download"
 msgstr "Nothing to download"
@@ -4068,7 +4072,7 @@ msgstr "Show in queue"
 #: src/profiles/ProfilesPage.tsx:273
 #: src/profiles/ProfilesPage.tsx:282
 #: src/saves/SaveGapLine.tsx:21
-#: src/share/ImportPreview.tsx:72
+#: src/share/ImportPreview.tsx:75
 #: src/share/ShareDialog.tsx:304
 msgid "Disabled"
 msgstr "Disabled"
@@ -4150,7 +4154,7 @@ msgid "This profile skips updates from this source for this mod."
 msgstr "This profile skips updates from this source for this mod."
 
 #. placeholder {0}: skippedSettings.length
-#: src/share/ImportPreview.tsx:379
+#: src/share/ImportPreview.tsx:380
 msgid "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
@@ -4277,6 +4281,10 @@ msgstr "Wheat"
 msgid "Folder chosen by you"
 msgstr "Folder chosen by you"
 
+#: src/firstrun/ProfileStep.tsx:67
+msgid "Choose a profile…"
+msgstr "Choose a profile…"
+
 #: src/nxm/ArrivalDialog.tsx:95
 msgid "You started this download on {site}, but you have no {gameName} profile yet."
 msgstr "You started this download on {site}, but you have no {gameName} profile yet."
@@ -4398,7 +4406,7 @@ msgstr "Working directory"
 #: src/mods/columnLabel.ts:17
 #: src/mods/ModDetail.tsx:77
 #: src/mods/OptionalFileRows.tsx:121
-#: src/share/ImportPreview.tsx:55
+#: src/share/ImportPreview.tsx:58
 msgid "Installed"
 msgstr "Installed"
 
@@ -4469,7 +4477,7 @@ msgstr "Verify downloads with Nexus MD5"
 msgid "Take Nexus links from {0}?"
 msgstr "Take Nexus links from {0}?"
 
-#: src/share/ImportPreview.tsx:152
+#: src/share/ImportPreview.tsx:155
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
@@ -4845,7 +4853,7 @@ msgstr "Broken for this version"
 msgid "Edit config"
 msgstr "Edit config"
 
-#: src/share/ImportPreview.tsx:250
+#: src/share/ImportPreview.tsx:253
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 
@@ -5401,7 +5409,7 @@ msgstr "The folder of {name} was deleted outside Mortar"
 msgid "Replaced by {by}, which is also enabled"
 msgstr "Replaced by {by}, which is also enabled"
 
-#: src/share/ImportPreview.tsx:366
+#: src/share/ImportPreview.tsx:367
 msgid "Ready to import"
 msgstr "Ready to import"
 
@@ -5754,7 +5762,7 @@ msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
 #: src/mods/updateReview/RowInclude.tsx:26
-#: src/share/ImportPreview.tsx:97
+#: src/share/ImportPreview.tsx:100
 msgid "Include {name}"
 msgstr "Include {name}"
 
@@ -5942,7 +5950,7 @@ msgid "Open page"
 msgstr "Open page"
 
 #: src/game/FarmMenuItem.tsx:72
-#: src/share/ImportPreview.tsx:249
+#: src/share/ImportPreview.tsx:252
 msgid "{count} to download"
 msgstr "{count} to download"
 
@@ -6535,7 +6543,7 @@ msgstr "Slowest mods"
 msgid "Could not load what can be cleaned up"
 msgstr "Could not load what can be cleaned up"
 
-#: src/share/ImportPreview.tsx:59
+#: src/share/ImportPreview.tsx:62
 msgid "Unavailable"
 msgstr "Unavailable"
 
@@ -6757,6 +6765,10 @@ msgstr "New bundle name"
 #: src/sync/SyncOffers.tsx:87
 msgid "Only settings and options differ."
 msgstr "Only settings and options differ."
+
+#: src/firstrun/ProfileStep.tsx:57
+msgid "From another mod manager"
+msgstr "From another mod manager"
 
 #: src/queue/QueueBody.tsx:314
 msgid "Skip all"
@@ -7810,7 +7822,7 @@ msgid "Store"
 msgstr "Store"
 
 #: src/browse/CardAction.tsx:47
-#: src/share/ImportPreview.tsx:56
+#: src/share/ImportPreview.tsx:59
 msgid "Download"
 msgstr "Download"
 
@@ -8160,7 +8172,7 @@ msgstr "Some checks could not run without a connection, so more problems may sho
 msgid "Categories"
 msgstr "Categories"
 
-#: src/firstrun/ProfileStep.tsx:91
+#: src/firstrun/ProfileStep.tsx:147
 msgid "Copy the mods already in {gameName}'s Mods folder into a new profile. The game folder is not changed."
 msgstr "Copy the mods already in {gameName}'s Mods folder into a new profile. The game folder is not changed."
 
@@ -8180,7 +8192,7 @@ msgstr "Unpin"
 msgid "The download queue is empty."
 msgstr "The download queue is empty."
 
-#: src/share/ImportPreview.tsx:71
+#: src/share/ImportPreview.tsx:74
 msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
@@ -8473,7 +8485,7 @@ msgstr "Choose an archive to see what is inside"
 msgid "Remove SMAPI from Steam's launch options"
 msgstr "Remove SMAPI from Steam's launch options"
 
-#: src/share/ImportPreview.tsx:58
+#: src/share/ImportPreview.tsx:61
 msgid "Check later"
 msgstr "Check later"
 
@@ -9163,7 +9175,7 @@ msgstr ".mortar file"
 msgid "Unhide"
 msgstr "Unhide"
 
-#: src/firstrun/ProfileStep.tsx:164
+#: src/firstrun/ProfileStep.tsx:221
 msgid "Preview link…"
 msgstr "Preview link…"
 
@@ -9187,7 +9199,7 @@ msgstr "When {0}"
 msgid "{0} was not found in your launchers"
 msgstr "{0} was not found in your launchers"
 
-#: src/share/ImportPreview.tsx:155
+#: src/share/ImportPreview.tsx:158
 msgid "Free account: one click on Nexus per download"
 msgstr "Free account: one click on Nexus per download"
 
@@ -9824,7 +9836,7 @@ msgstr "Combined"
 msgid "Export profile…"
 msgstr "Export profile…"
 
-#: src/share/ImportPreview.tsx:159
+#: src/share/ImportPreview.tsx:162
 msgid "Some files could not be checked against Nexus, so a few may differ from what was shared."
 msgstr "Some files could not be checked against Nexus, so a few may differ from what was shared."
 
@@ -9846,7 +9858,7 @@ msgstr "Files"
 msgid "{name} did not start"
 msgstr "{name} did not start"
 
-#: src/firstrun/ProfileStep.tsx:114
+#: src/firstrun/ProfileStep.tsx:171
 msgid "An empty profile. Add mods from {site} or from archives."
 msgstr "An empty profile. Add mods from {site} or from archives."
 
@@ -10126,7 +10138,7 @@ msgstr "Switch to Saves"
 msgid "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window."
 msgstr "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window."
 
-#: src/firstrun/ProfileStep.tsx:152
+#: src/firstrun/ProfileStep.tsx:209
 msgid "Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then."
 msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then."
 
@@ -10165,7 +10177,7 @@ msgstr "Add one to group your mods your own way."
 msgid "Compare {aName} and {bName}"
 msgstr "Compare {aName} and {bName}"
 
-#: src/firstrun/ProfileStep.tsx:95
+#: src/firstrun/ProfileStep.tsx:151
 msgid "Preview Mods folder import…"
 msgstr "Preview Mods folder import…"
 
@@ -10420,7 +10432,7 @@ msgstr "No startup measured yet"
 msgid "Mining skill"
 msgstr "Mining skill"
 
-#: src/share/ImportPreview.tsx:57
+#: src/share/ImportPreview.tsx:60
 msgid "Dependency"
 msgstr "Dependency"
 
@@ -10639,7 +10651,7 @@ msgstr "Diagnostics saved"
 msgid "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 msgstr "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
 
-#: src/firstrun/ProfileStep.tsx:157
+#: src/firstrun/ProfileStep.tsx:214
 #: src/share/ImportInput.tsx:56
 msgid "Share link"
 msgstr "Share link"
@@ -11913,7 +11925,7 @@ msgstr "Pin selected versions"
 msgid "Share log and continue"
 msgstr "Share log and continue"
 
-#: src/firstrun/ProfileStep.tsx:88
+#: src/firstrun/ProfileStep.tsx:144
 #: src/profiles/GameModsDialog.tsx:127
 msgid "Import from the game's Mods folder"
 msgstr "Import from the game's Mods folder"
@@ -12530,7 +12542,7 @@ msgstr "Start measuring first."
 msgid "Could not change {0}"
 msgstr "Could not change {0}"
 
-#: src/share/ImportPreview.tsx:205
+#: src/share/ImportPreview.tsx:208
 msgid "Leave out"
 msgstr "Leave out"
 

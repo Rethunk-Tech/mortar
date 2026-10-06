@@ -1,8 +1,10 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
-import { FolderInput, Link2, Plus } from 'lucide-react'
+import { Download, FolderInput, Link2, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { RegisterLinks } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
+import { LocalProfiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import {
   Create,
   PreviewGameMods,
@@ -13,7 +15,10 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useGameLoader, useGameName } from '../games/info.ts'
 import { type GameId, useNav } from '../nav/store.ts'
+import { useExternalImportSources } from '../profiles/externalImportSources.ts'
 import { GameModsDialog } from '../profiles/GameModsDialog.tsx'
+import { ImportWizard } from '../profiles/ImportWizard.tsx'
+import { PackImportDialog } from '../profiles/PackImportDialog.tsx'
 import { openImport } from '../share/store.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 
@@ -27,6 +32,56 @@ const cardSx = (borderColor: string) => ({
   borderColor,
   borderRadius: '8px',
 })
+
+// Shown only when another mod manager on this computer has profiles for the game.
+function ManagerImportCard({ game }: { game: GameId }) {
+  const { t } = useLingui()
+  const external = useExternalImportSources(game)
+  const [packs, setPacks] = useState(0)
+  const [wizard, setWizard] = useState(false)
+  const [packPath, setPackPath] = useState<string | null>(null)
+  useEffect(() => {
+    LocalProfiles(game)
+      .then((list) => setPacks(list?.length ?? 0))
+      .catch(() => setPacks(0))
+  }, [game])
+  const found = external.reduce((n, s) => n + (s.profiles?.length ?? 0), packs)
+  if (found === 0) {
+    return null
+  }
+  return (
+    <Box sx={cardSx('transparent')}>
+      <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>
+        <Download size={28} />
+      </Box>
+      <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`From another mod manager`}</Typography>
+      <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
+        {plural(found, {
+          one: '# profile from another mod manager is on this computer. Its mods download from their own sites.',
+          other:
+            '# profiles from other mod managers are on this computer. Their mods download from their own sites.',
+        })}
+      </Typography>
+      <Box sx={{ flex: 1 }} />
+      <Button variant="outlined" size="large" onClick={() => setWizard(true)}>
+        {t`Choose a profile…`}
+      </Button>
+      <ImportWizard
+        open={wizard}
+        game={game}
+        onClose={() => setWizard(false)}
+        onPickPack={setPackPath}
+        onOwnCode={null}
+      />
+      <PackImportDialog
+        open={packPath !== null}
+        game={game}
+        initialPath={packPath ?? ''}
+        onClose={() => setPackPath(null)}
+      />
+    </Box>
+  )
+}
 
 export function ProfileStep({ game, site }: { game: GameId; site: string }) {
   const { t } = useLingui()
@@ -75,7 +130,8 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: gameMods ? 'repeat(3, minmax(0, 1fr))' : 'repeat(2, minmax(0, 1fr))',
+          // Two to four cards: a fourth wraps into two rows rather than squeezing every card.
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
           gap: 2,
         }}
       >
@@ -96,6 +152,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
             </Button>
           </Box>
         ) : null}
+        <ManagerImportCard game={game} />
         <Box
           component="form"
           onSubmit={(e) => {
