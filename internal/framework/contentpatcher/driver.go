@@ -27,21 +27,31 @@ func (Driver) Matches(m framework.Mod) bool {
 
 // Analyze reads every enabled pack once; tilesheet cleanup also covers disabled packs.
 func (Driver) Analyze(in framework.Input) framework.Findings {
+	key := analysisKey(in)
+	if found, ok := lookupAnalysis(key); ok {
+		return found
+	}
 	defer holdPacks()()
 	clearPackValidated()
 	defer clearPackValidated()
 	defer flushMapScans(in.All)
 	// After the cleanup pass, so the switched-off packs it reads are written too and need no parse on the next check.
 	defer flushPackDiskCache(in.All)
+	reads := recordReads()
 	preloadContentPacks(in.Enabled)
 	conflicts, conflictSettings, shadowed := assetConflictScan(in.Enabled)
 	cleanup := unusedTilesheetPacks(in.All)
-	return framework.Findings{
+	found := framework.Findings{
 		AssetConflicts: conflicts,
 		Settings:       append(compatibilitySettings(in.Enabled), conflictSettings...),
 		Redundant:      shadowed,
 		Cleanup:        append(cleanup, recolourAddons(in.All)...),
 	}
+	files, complete := reads()
+	if files, stamped := packStamps(in.All, files); complete && stamped {
+		storeAnalysis(key, files, found)
+	}
+	return found
 }
 
 // Forget drops what the driver keeps between checks.

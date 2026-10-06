@@ -36,9 +36,11 @@ type mapFileList struct {
 // modMapFiles lists the map files in mod's folder; complete is false when part of the folder could not be read.
 func modMapFiles(im framework.Mod) (paths []string, complete bool) {
 	stamp := im.Key
-	if info, err := os.Stat(im.Folder); err == nil {
+	info, err := os.Stat(im.Folder)
+	if err == nil {
 		stamp += "|" + strconv.FormatInt(info.ModTime().UnixNano(), 10)
 	}
+	noteRead(im.Folder, info)
 	mapFiles.Lock()
 	cached, ok := mapFiles.byFolder[im.Folder]
 	mapFiles.Unlock()
@@ -150,17 +152,21 @@ func unusedTilesheetPacks(mods []framework.Mod) []framework.Cleanup {
 		}
 		paths, complete := modMapFiles(im)
 		if !complete {
+			noteUnstampable()
 			mapsUnreadable = true
 		}
 		for _, path := range paths {
 			info, statErr := os.Stat(path)
 			if statErr != nil {
+				noteUnstampable()
 				mapsUnreadable = true
 				continue
 			}
+			noteRead(path, info)
 			ext := strings.ToLower(filepath.Ext(path))
 			scan, readErr := mapScanFor(path, fs.FileInfoToDirEntry(info), ext)
 			if readErr != nil {
+				noteUnstampable()
 				mapsUnreadable = true
 				continue
 			}

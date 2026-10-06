@@ -732,6 +732,7 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPac
 	})
 	pack.fingerprint = packFilesFingerprint(pack.files)
 	if !packFingerprintValid(root, pack.files, pack.fingerprint) {
+		noteUnstampable()
 		dropPNGAlphaUnder(root)
 		return pack
 	}
@@ -2504,12 +2505,21 @@ func readPackPath(root, rel string) ([]byte, bool) {
 	}
 	path, ok := caseInsensitivePath(root, rel)
 	if !ok {
+		if abs, inRoot := inside(root, rel); inRoot {
+			noteRead(abs, nil)
+		}
 		return nil, false
 	}
 	relative, err := filepath.Rel(root, path)
 	if err != nil || !filepath.IsLocal(relative) {
 		return nil, false
 	}
+	info, err := os.Stat(path)
+	if err != nil {
+		noteUnstampable()
+		return nil, false
+	}
+	noteRead(path, info)
 	file, err := os.OpenInRoot(root, relative)
 	if err != nil {
 		return nil, false
