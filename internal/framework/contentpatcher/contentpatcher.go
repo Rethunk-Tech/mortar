@@ -184,7 +184,7 @@ type cachedPack struct {
 	skips       int
 }
 
-const contentPackParserVersion = 18
+const contentPackParserVersion = 19
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1

@@ -1466,7 +1466,7 @@ func mapSize(root, rel string) (w, h int, ok bool) {
 
 // placeTokens are conditions that hold one value at a time for the player: two edits that need disjoint
 // values of the same one never apply together (an edit for the East Scarp village and one for another map).
-var placeTokens = map[string]bool{"locationname": true, "locationcontext": true, "season": true, "weather": true, "dayofweek": true, "farmtype": true}
+var placeTokens = map[string]bool{"locationname": true, "locationcontext": true, "season": true, "weather": true, "dayofweek": true, "farmtype": true, "day": true, "dayevent": true}
 
 // placesOf reads the literal values a When block requires of placeTokens ("LocationName": "A, B" or
 // "Season |contains=Spring": true).
@@ -1701,11 +1701,17 @@ func hasUnknownMapLayer(p cpPatch) bool {
 }
 
 // harmless reports an overlap that cannot hurt play: two image edits only change how something looks; an edit
-// that applies in one location or weather only matters there; and a one-tile edit at a computed spot is too
-// small to place, so it is shown without counting as a problem.
+// that applies in one location or weather, or on one day or festival, only matters there; two that only set
+// prices let one mod's numbers win; and a one-tile edit at a computed spot is too small to place, so it is
+// shown without counting as a problem.
 func harmless(x, y cpPatch) (bool, *framework.ConflictNote) {
 	if balanceOnly(x) && balanceOnly(y) {
 		return true, &framework.ConflictNote{Kind: "balance"}
+	}
+	for _, p := range []cpPatch{x, y} {
+		if day := oneDay(p); day != "" {
+			return true, &framework.ConflictNote{Kind: "day", Value: day}
+		}
 	}
 	return (x.image && y.image) || (textOnly(x) && textOnly(y)) || overlayPriorityHarmless(x, y) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y), nil
 }
@@ -1762,6 +1768,26 @@ func situational(p cpPatch) bool {
 	_, context := p.places["locationcontext"]
 	_, weather := p.places["weather"]
 	return location || context || weather
+}
+
+// oneDay names the single day ("Summer 28") or festival a patch is limited to, or "".
+func oneDay(p cpPatch) string {
+	if events := p.places["dayevent"]; len(events) == 1 {
+		return titleWords(events[0])
+	}
+	season, day := p.places["season"], p.places["day"]
+	if len(season) == 1 && len(day) == 1 {
+		return titleWords(season[0]) + " " + day[0]
+	}
+	return ""
+}
+
+func titleWords(s string) string {
+	words := strings.Fields(s)
+	for i, w := range words {
+		words[i] = strings.ToUpper(w[:1]) + w[1:]
+	}
+	return strings.Join(words, " ")
 }
 
 func tinyOnly(p cpPatch) bool {

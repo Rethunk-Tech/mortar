@@ -742,3 +742,25 @@ func TestBalanceOnlyDataEditsAreCosmetic(t *testing.T) {
 		t.Fatalf("a size clash is real, got %#v", conflicts)
 	}
 }
+
+func TestOneDayEditsAreSituational(t *testing.T) {
+	pack := func(entry, when string) framework.Mod {
+		return syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Events/Town","Entries":{"Show":"`+entry+`"},"When":`+when+`}]}`, nil)
+	}
+	always := pack("a", `{}`)
+	conflicts := assetConflicts([]framework.Mod{always, pack("b", `{"Season":"Summer","Day":"28"}`)})
+	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || *conflicts[0].Note != (framework.ConflictNote{Kind: "day", Value: "Summer 28"}) {
+		t.Fatalf("a one-day edit is situational, got %#v", conflicts)
+	}
+	conflicts = assetConflicts([]framework.Mod{always, pack("c", `{"DayEvent":"egg festival"}`)})
+	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || conflicts[0].Note.Value != "Egg Festival" {
+		t.Fatalf("a festival-only edit is situational, got %#v", conflicts)
+	}
+	conflicts = assetConflicts([]framework.Mod{always, pack("d", `{"Season":"Summer"}`)})
+	if len(conflicts) != 1 || conflicts[0].Cosmetic {
+		t.Fatalf("a whole-season edit still counts, got %#v", conflicts)
+	}
+	if conflicts := assetConflicts([]framework.Mod{pack("e", `{"Day":"1"}`), pack("f", `{"Day":"2"}`)}); len(conflicts) != 0 {
+		t.Fatalf("edits for different days never apply together, got %#v", conflicts)
+	}
+}
