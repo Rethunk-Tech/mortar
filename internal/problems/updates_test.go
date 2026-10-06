@@ -73,6 +73,17 @@ func TestCheckUpdatesIncludesUnofficialWithoutReplacingSuggested(t *testing.T) {
 	}
 }
 
+func TestCheckUpdatesOffersASuggestedUnofficialBuildOnce(t *testing.T) {
+	build := meta.Update{Version: "1.4.1-unofficial.1-x", URL: "https://smapi.io/mods#a"}
+	rm := fakeMeta{compat: map[string]meta.UpdateResult{
+		"me.a": {Known: true, Suggested: &build, Unofficial: &build},
+	}}
+	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{inst("k1", "me.a", "1.3.3", true)}, false).Updates
+	if len(got) != 1 || !got[0].Unofficial || got[0].Version != build.Version {
+		t.Fatalf("got %+v", got)
+	}
+}
+
 func TestHideHeldDropsPinnedAndSkipped(t *testing.T) {
 	r := UpdatesResult{Updates: []Update{
 		{Key: "pin", Version: "2.0.0"},

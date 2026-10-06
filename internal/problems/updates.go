@@ -163,6 +163,11 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 			r.Unknown = true
 			continue
 		}
+		// For a mod whose official release is broken, SMAPI suggests the unofficial build itself; it is one update,
+		// offered as unofficial so the unofficial-builds setting governs it.
+		if res.Suggested != nil && res.Unofficial != nil && res.Suggested.Version == res.Unofficial.Version {
+			res.Suggested = nil
+		}
 		x := asked[i]
 		if res.Suggested != nil {
 			u := Update{
