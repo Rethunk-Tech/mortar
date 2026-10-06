@@ -1,12 +1,14 @@
 package lan
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http/httptest"
 	"os"
@@ -539,6 +541,41 @@ func TestEntryMACBindsHashGameAndKey(t *testing.T) {
 	} {
 		if other == mac {
 			t.Fatal("the MAC does not bind its inputs")
+		}
+	}
+}
+
+func TestExtractTarRefusesEscapesAndLinks(t *testing.T) {
+	tarOf := func(h tar.Header, body string) io.Reader {
+		var buf bytes.Buffer
+		w := tar.NewWriter(&buf)
+		h.Size = int64(len(body))
+		if err := w.WriteHeader(&h); err != nil {
+			t.Fatal(err)
+		}
+		_, _ = w.Write([]byte(body))
+		if err := w.Close(); err != nil {
+			t.Fatal(err)
+		}
+		return &buf
+	}
+	for name, h := range map[string]tar.Header{
+		"parent":   {Name: "../evil", Typeflag: tar.TypeReg, Mode: 0o600},
+		"absolute": {Name: "/evil", Typeflag: tar.TypeReg, Mode: 0o600},
+		"symlink":  {Name: "link", Linkname: "/etc", Typeflag: tar.TypeSymlink},
+		"hardlink": {Name: "hard", Linkname: "x", Typeflag: tar.TypeLink},
+	} {
+		root := t.TempDir()
+		var total int64
+		body := ""
+		if h.Typeflag == tar.TypeReg {
+			body = "x"
+		}
+		if err := extractTar(t.Context(), tarOf(h, body), root, &total, func(int64) {}); err == nil {
+			t.Errorf("%s: accepted", name)
+		}
+		if _, err := os.Stat(filepath.Join(root, "..", "evil")); err == nil {
+			t.Errorf("%s: wrote outside root", name)
 		}
 	}
 }

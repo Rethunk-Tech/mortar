@@ -112,3 +112,12 @@ type noExtra struct {
 }
 
 func (n noExtra) ReadConfig(string, string, string, mod.ID) (string, error) { return n.config, nil }
+
+func TestSetRefusesNamesOutsideTheConfigFolder(t *testing.T) {
+	s, _ := newService(t)
+	for _, name := range []string{"../../evil.cfg", "sub/x.cfg", "x.json", "/etc/passwd"} {
+		if _, err := s.cfgPath("lethal-company", "p", name); err == nil {
+			t.Errorf("cfgPath accepted %q", name)
+		}
+	}
+}
