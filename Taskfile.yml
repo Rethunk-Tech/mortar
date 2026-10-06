@@ -46,12 +46,12 @@ tasks:
   selftest:
     summary: Runs Mortar in server mode against a sandboxed home with a copied game, for browser self-tests (scripts/selftest.sh)
     cmds:
-      - scripts/selftest.sh {{.CLI_ARGS | default "start"}}
+      - scripts/selftest.sh {{.ARGS | default "start"}}
 
   clean-gate:
-    summary: Runs the fresh-clone gate (and with --package the AppImage) at a rev in one reused clean tree (scripts/clean-gate.sh)
+    summary: Runs the fresh-clone gate at REV (default HEAD) in one reused clean tree, and with PACKAGE=1 builds the AppImage (scripts/clean-gate.sh)
     cmds:
-      - scripts/clean-gate.sh {{.CLI_ARGS}}
+      - scripts/clean-gate.sh {{if .PACKAGE}}--package {{end}}{{.REV | default "HEAD"}}
 
   components:refresh:
     summary: Resolves, hashes and refreshes the bundled component manifest

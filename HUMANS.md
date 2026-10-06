@@ -19,9 +19,9 @@ lefthook install
 ```sh
 wails3 dev      # app with the Vite dev server
 wails3 build    # production binary in bin/mortar
-wails3 task selftest -- start [--copy-data]   # sandboxed server-mode Mortar at http://127.0.0.1:9455
-wails3 task selftest -- restart               # rebuild and restart after changes
-wails3 task selftest -- stop
+wails3 task selftest ARGS="start [--copy-data]"   # sandboxed server-mode Mortar at http://127.0.0.1:9455
+wails3 task selftest ARGS=restart               # rebuild and restart after changes
+wails3 task selftest ARGS=stop
 bun run --cwd frontend e2e                    # UI smoke against the running self-test server
 ```
 
