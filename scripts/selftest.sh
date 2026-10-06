@@ -11,6 +11,7 @@
 #   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
 #   scripts/selftest.sh regress [--game lethal-company]  one-shot regression run (Stardew, or Lethal Company through Proton) in its own throwaway sandbox (see below)
+#   scripts/selftest.sh curseforge            CurseForge end to end in its own throwaway sandbox; needs MORTAR_CURSEFORGE_KEY, else skips
 #   scripts/selftest.sh harness-check         prove the launch harness with a dummy window instead of a game
 #
 # Every game a sandbox starts, from the browser or from regress, runs on the sandbox's own headless display (mutter
@@ -1059,6 +1060,151 @@ harness_check() {
   [ "$verdict" = PASS ]
 }
 
+# curseforge_scenario proves CurseForge end to end in its own throwaway sandbox, with no game launched: a Stardew
+# profile, a search for Content Patcher, the top hit installed through the queue, an update check on it, and a mod whose
+# author disallows third-party distribution, which must not be downloaded. MORTAR_CURSEFORGE_KEY is the app key; it is
+# built into this sandbox's server only, and sent to the API through a config file descriptor, never on a command line
+# or in output. Unset, the scenario skips.
+curseforge_scenario() {
+  if [ -z "${MORTAR_CURSEFORGE_KEY:-}" ]; then
+    echo "SKIP curseforge: MORTAR_CURSEFORGE_KEY is not set"
+    return 0
+  fi
+  ROOT=$(mktemp -d /var/tmp/mortar-regress-cf-XXXXXX)
+  case "$ROOT" in /var/tmp/mortar-regress-cf-??????) ;; *)
+    echo "unexpected sandbox dir $ROOT" >&2
+    exit 1
+    ;;
+  esac
+  mark
+  PORT=$((9600 + RANDOM % 300))
+  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
+  SANDBOX_HOME=$ROOT/home
+  SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  verdict=FAIL
+  local failures=() t0=$SECONDS profile="" top="" blocked="" blocked_name="" mods="" fileid=""
+  local data=$SANDBOX_HOME/.local/share/mortar
+  finish() { release_sandbox; }
+  regress_traps
+
+  setup
+  build
+  start
+
+  profile=$(cli profile create stardew "CurseForge Test" | cut -f1)
+  cli browse stardew "Content Patcher" --source curseforge --json >"$ROOT/cf-browse.json" 2>&1 ||
+    failures+=("browse failed: $(head -c 300 "$ROOT/cf-browse.json")")
+  top=$(python3 -c 'import json,sys; i=json.load(open(sys.argv[1]))["items"]; print(i[0]["id"] if i and i[0]["source"]=="curseforge" else "")' "$ROOT/cf-browse.json" 2>/dev/null || true)
+  [ -n "$top" ] || failures+=("the search returned no CurseForge hit for Content Patcher")
+
+  if [ -n "$top" ]; then
+    cli queue add stardew "$profile" "$top" --source curseforge >"$ROOT/cf-add.txt" 2>&1 ||
+      failures+=("queue add failed: $(head -c 300 "$ROOT/cf-add.txt")")
+    cf_wait_queue "$profile" >"$ROOT/cf-wait.txt"
+    [ -s "$ROOT/cf-wait.txt" ] && failures+=("download did not finish: $(head -c 300 "$ROOT/cf-wait.txt")")
+    cli mods stardew "$profile" --json >"$ROOT/cf-mods.json"
+    mods=$(python3 -c 'import json,sys; print(sum(1 for m in json.load(open(sys.argv[1])) if m["source"]=="curseforge" and m["version"]))' "$ROOT/cf-mods.json")
+    [ "$mods" -ge 1 ] || failures+=("no mod with source curseforge and a version landed in the profile")
+    fileid=$(python3 - "$data/profiles/stardew" "$profile" <<'PY'
+import json, os, sys
+root = os.path.join(sys.argv[1], sys.argv[2])
+for d, _, files in os.walk(root):
+    for f in files:
+        if not f.endswith(".json"):
+            continue
+        try:
+            doc = json.load(open(os.path.join(d, f)))
+        except (OSError, ValueError):
+            continue
+        for e in doc.get("entries", []) if isinstance(doc, dict) else []:
+            src = e.get("source", {})
+            if src.get("kind") == "curseforge" and src.get("fileId"):
+                print(src["fileId"])
+                sys.exit()
+PY
+)
+    [ -n "$fileid" ] || failures+=("the profile records no CurseForge file id")
+    cli updates stardew "$profile" --json >"$ROOT/cf-updates.json" 2>&1 ||
+      failures+=("update check failed: $(head -c 300 "$ROOT/cf-updates.json")")
+  fi
+
+  # Mods whose authors disallow third-party distribution have allowModDistribution false in the API.
+  local page
+  for page in 0 50 100 150 200; do
+    curl -fsS --config <(printf 'header = "x-api-key: %s"\n' "$MORTAR_CURSEFORGE_KEY") \
+      "https://api.curseforge.com/v1/mods/search?gameId=669&sortField=2&sortOrder=desc&pageSize=50&index=$page" \
+      >"$ROOT/cf-search.json" 2>/dev/null || break
+    blocked=$(python3 - "$ROOT/cf-search.json" <<'PY'
+import json, sys
+for m in json.load(open(sys.argv[1]))["data"]:
+    if m.get("allowModDistribution") is False:
+        print(f'{m["id"]}\t{m["name"]}')
+        break
+PY
+)
+    [ -n "$blocked" ] && break
+  done
+  if [ -z "$blocked" ]; then
+    echo "note: no mod with allowModDistribution=false in the first 250 Stardew hits; handoff check skipped"
+  else
+    blocked_name=${blocked#*$'\t'}
+    # Refused with a pointer to the CurseForge page, which the sandbox's xdg-open stub logs instead of opening.
+    if cli queue add stardew "$profile" "${blocked%%$'\t'*}" --source curseforge >"$ROOT/cf-blocked.txt" 2>&1; then
+      failures+=("queue add accepted a non-distributable mod")
+    elif ! grep -q "CurseForge" "$ROOT/cf-blocked.txt"; then
+      failures+=("refusal does not point to CurseForge: $(head -c 300 "$ROOT/cf-blocked.txt")")
+    fi
+    grep -q "not opening https://www.curseforge.com/" "$ROOT/server.log" ||
+      failures+=("the mod's CurseForge page was not handed off (no opener call in server.log)")
+    cli queue --json >"$ROOT/cf-queue.json"
+    cli mods stardew "$profile" --json >"$ROOT/cf-mods2.json"
+    python3 - "$ROOT/cf-queue.json" "$ROOT/cf-mods2.json" "$blocked_name" "$mods" >"$ROOT/cf-handoff.txt" <<'PY' || failures+=("non-distributable mod ${blocked_name}: $(head -c 300 "$ROOT/cf-handoff.txt")")
+import json, sys
+queue, mods, name, before = sys.argv[1:]
+bad = [i for i in json.load(open(queue))["items"] if i["name"] == name and i["state"] in ("downloading", "installing", "done")]
+landed = sum(1 for m in json.load(open(mods)) if m["source"] == "curseforge" and m["version"])
+if bad:
+    print("downloaded: " + ", ".join(i["state"] for i in bad)); sys.exit(1)
+if landed != int(before or 0):
+    print(f"curseforge mods in the profile went from {before} to {landed}"); sys.exit(1)
+PY
+  fi
+
+  # The key must appear in no output the scenario or the server wrote.
+  if grep -rqF -- "$MORTAR_CURSEFORGE_KEY" "$ROOT" --include='*.json' --include='*.txt' --include='*.log' 2>/dev/null; then
+    failures+=("the CurseForge key appears in a log or output file under the sandbox")
+  fi
+
+  [ ${#failures[@]} -eq 0 ] && verdict=PASS
+  echo "---- curseforge: $verdict ($((SECONDS - t0))s)"
+  echo "top hit        ${top:-none}"
+  echo "installed      ${mods:-0} curseforge mods, file id ${fileid:-none}"
+  echo "non-distrib.   ${blocked_name:-none found}"
+  local f
+  for f in "${failures[@]}"; do echo "FAIL: $f"; done
+  [ "$verdict" = PASS ]
+}
+
+# cf_wait_queue PROFILE waits for the profile's downloads and prints the ones that did not finish.
+cf_wait_queue() {
+  local deadline=$((SECONDS + 180)) out=""
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    cli queue --json >"$ROOT/cf-queue.json"
+    out=$(python3 - "$ROOT/cf-queue.json" "$1" <<'PY'
+import json, sys
+items = [i for i in json.load(open(sys.argv[1]))["items"] if i["profileId"] == sys.argv[2]]
+for i in items:
+    if i["state"] != "done":
+        print(f'{i["name"]}: {i["state"]} {i["error"]}')
+PY
+)
+    [ -z "$out" ] && return 0
+    case "$out" in *failed* | *skipped* | *cancelled*) break ;; esac
+    sleep 2
+  done
+  echo "$out"
+}
+
 # deletable DIR succeeds only for a folder that carries the marker and whose parent is exactly the base dir, both
 # resolved, so neither a typo nor a symlink can point a delete anywhere else.
 deletable() {
@@ -1147,6 +1293,7 @@ case "${1:-}" in
         ;;
     esac
     ;;
+  curseforge) curseforge_scenario ;;
   *) mkdir -p "$ROOT" ;;
 esac
 case "${1:-}" in
@@ -1171,10 +1318,10 @@ case "${1:-}" in
     shift
     reap "$@"
     ;;
-  regress) ;;
+  regress | curseforge) ;;
   harness-check) harness_check ;;
   *)
-    sed -n '2,23p' "$0"
+    sed -n '2,24p' "$0"
     exit 2
     ;;
 esac
