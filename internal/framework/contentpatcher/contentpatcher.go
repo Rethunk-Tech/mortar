@@ -2163,7 +2163,9 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 			}
 			e := run.part(partKey(fields...), stable, func() partEntry { return targetPart(kind, t, hits, farm, bundled) })
 			if e.Conflict != nil {
-				out = append(out, *e.Conflict)
+				c := *e.Conflict
+				c.Farms = farmIDs(c.Farms, customFarms)
+				out = append(out, c)
 			}
 			settings = append(settings, e.Settings...)
 		}
@@ -2289,6 +2291,32 @@ func farmNeeds(kind string, hits []packHit, farm string) [][]string {
 	}
 	if !limited {
 		return nil
+	}
+	return out
+}
+
+// farmIDs spells each custom farm in farms as its Data/AdditionalFarms id: a FarmType condition only gives it
+// lower-cased.
+func farmIDs(farms [][]string, custom map[string]string) [][]string {
+	if farms == nil || len(custom) == 0 {
+		return farms
+	}
+	ids := make(map[string]string, len(custom))
+	for _, id := range custom {
+		ids[strings.ToLower(id)] = id
+	}
+	out := make([][]string, len(farms))
+	for i, need := range farms {
+		if need == nil {
+			continue
+		}
+		out[i] = make([]string, len(need))
+		for j, t := range need {
+			out[i][j] = t
+			if id, ok := ids[t]; ok {
+				out[i][j] = id
+			}
+		}
 	}
 	return out
 }

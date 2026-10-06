@@ -807,6 +807,14 @@ func TestFarmMapConflictsNameTheirFarmTypes(t *testing.T) {
 	if len(conflicts) != 1 || len(conflicts[0].Farms) != 2 || !slices.Equal(conflicts[0].Farms[1], []string{frontier.UniqueID + "_Frontier"}) {
 		t.Fatalf("both load the Frontier farm map, got %#v", conflicts)
 	}
+	frontierDesert := syntheticLoadPack(t, `{"Changes":[
+		{"Action":"EditData","Target":"Data/AdditionalFarms","Entries":{"Mod/FrontierFarm":{"ID":"FrontierFarm","MapName":"Farm_FrontierFarm"}}},
+		{"Action":"EditMap","Target":"Maps/Desert","MapProperties":{"Music":"a"},"When":{"FarmType":"FrontierFarm"}}]}`, nil)
+	desert := syntheticLoadPack(t, `{"Changes":[{"Action":"EditMap","Target":"Maps/Desert","MapProperties":{"Music":"b"}}]}`, nil)
+	conflicts = assetConflicts([]framework.Mod{frontierDesert, desert})
+	if len(conflicts) != 1 || !slices.ContainsFunc(conflicts[0].Farms, func(f []string) bool { return slices.Equal(f, []string{"FrontierFarm"}) }) {
+		t.Fatalf("a FarmType condition names the custom farm by its id, got %#v", conflicts)
+	}
 	gated := syntheticLoadPack(t, `{"Changes":[{"Action":"EditMap","Target":"Maps/Farm_Foraging","MapProperties":{"Music":"y"},"When":{"FarmType":"Standard"}}]}`, nil)
 	if conflicts := assetConflicts([]framework.Mod{edit("x"), gated}); len(conflicts) != 0 {
 		t.Fatalf("a Standard-only edit never meets the Forest map, got %#v", conflicts)
