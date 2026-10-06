@@ -2,6 +2,7 @@ package launchsvc
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -30,7 +31,7 @@ func (s *Service) problemLog(g game.Game, profileID, runID string) (string, erro
 	if err != nil {
 		return "", err
 	}
-	if text := s.runText(g, profileID, modsDir); text != "" {
+	if text := s.runText(g, profileID, modsDir, time.Time{}); text != "" {
 		return text, nil
 	}
 	runs, err := s.Runs(g.ID(), profileID)

@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func runEnv(t *testing.T) (*Service, profile.Profile, string, string) {
@@ -290,5 +291,34 @@ func TestUnityCrashMarkers(t *testing.T) {
 		if unityCrashed(text) != want {
 			t.Errorf("unityCrashed(%q) = %v", text, !want)
 		}
+	}
+}
+
+func TestFailureBeforeTheGameStartsIsARunOfItsOwn(t *testing.T) {
+	svc, p, cfg, home := runEnv(t)
+	mods, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeOwnedLog(t, cfg, home, mods, "[19:43:51 ERROR Farm] last run's error\n")
+	old := time.Now().Add(-time.Hour)
+	if err := os.Chtimes(filepath.Join(cfg, "StardewValley", "ErrorLogs", "SMAPI-latest.txt"), old, old); err != nil {
+		t.Fatal(err)
+	}
+	stale := &launch.Buffer{}
+	stale.Add(launch.Entry{Level: launch.Info, Mod: "Farm", Message: "last run's console"})
+	svc.logs["stardew/"] = session{buf: stale, profile: p.ID, preset: "Old"}
+	svc.failBeforeRun(svc.profileSlot(game.Find("stardew"), p.ID), p.ID, usererr.New(usererr.Invalid, "no Proton prefix"))
+	if svc.LaunchFailure("stardew", "") != "no Proton prefix" {
+		t.Fatal("a caller waiting on the launch must read the cause")
+	}
+	runs, err := svc.Runs("stardew", p.ID)
+	if err != nil || len(runs) != 1 || runs[0].Outcome != launch.OutcomeFailed || runs[0].Error != "no Proton prefix" ||
+		runs[0].Preset != "" || runs[0].Errors != 0 || runs[0].GameVersion != "" {
+		t.Fatalf("runs = %#v, %v", runs, err)
+	}
+	text, err := svc.RunLog("stardew", p.ID, runs[0].ID)
+	if err != nil || !strings.Contains(text, "no Proton prefix") || strings.Contains(text, "last run's") {
+		t.Fatalf("the run's log must be its own: %q, %v", text, err)
 	}
 }

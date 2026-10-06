@@ -316,7 +316,11 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if err != nil {
 		return
 	}
-	text := s.runText(g, profileID, modsDir)
+	var since time.Time
+	if failed {
+		since = started
+	}
+	text := s.runText(g, profileID, modsDir, since)
 	if folder, ok := launch.LoadedSave(text); ok && s.OnSavePlayed != nil {
 		s.OnSavePlayed(g.ID(), profileID, folder)
 	}
@@ -503,9 +507,11 @@ func pathWithin(path, dir string) bool {
 	return datadir.UnderRoot(absDir, absPath)
 }
 
-func (s *Service) runText(g game.Game, profileID, modsDir string) string {
+// runText is the run's loader log, else the session's console. A non-zero since skips a loader log last written
+// before it: a launch that failed before the game started would otherwise inherit the previous run's log.
+func (s *Service) runText(g game.Game, profileID, modsDir string, since time.Time) string {
 	if path, own, err := s.logPath(g.ID(), profileID); err == nil {
-		if text, ok := readOwnedLog(path, own, s.home, modsDir); ok {
+		if text, ok := readOwnedLog(path, own, s.home, modsDir, since); ok {
 			return text
 		}
 	}
@@ -542,14 +548,14 @@ func (s *Service) logPath(gameID, profileID string) (path string, own bool, err 
 	return path, relErr == nil && !strings.HasPrefix(rel, ".."), nil
 }
 
-func readOwnedLog(path string, own bool, home, modsDir string) (string, bool) {
+func readOwnedLog(path string, own bool, home, modsDir string, since time.Time) (string, bool) {
 	f, err := fsx.Open(path)
 	if err != nil {
 		return "", false
 	}
 	defer func() { _ = f.Close() }()
 	st, err := f.Stat()
-	if err != nil {
+	if err != nil || st.ModTime().Before(since) {
 		return "", false
 	}
 	var head []byte

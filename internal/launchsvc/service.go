@@ -645,10 +645,24 @@ func (s *Service) start(parent context.Context, gameID, profileID, installID, pr
 			}
 		}
 		if err != nil {
-			s.failStart(Status{Game: gameID, Install: sl.inst, State: Failed, Profile: profileID, Error: err.Error()})
+			s.failBeforeRun(sl, profileID, err)
 		}
 	}()
 	return nil
+}
+
+// failBeforeRun ends a launch that failed before the game was started. The cause goes to a fresh console and a failed
+// run record, so the previous run's session is never read as this one's, and to a caller waiting on the launch.
+func (s *Service) failBeforeRun(sl slot, profileID string, err error) {
+	started := time.Now()
+	_, why := usererr.Parse(err.Error())
+	s.mu.Lock()
+	s.logs[keyOf(sl)] = session{buf: &launch.Buffer{}, profile: profileID, started: started}
+	s.mu.Unlock()
+	s.say(sl, profileID, why)
+	s.noteFailure(sl, why)
+	s.record(sl, profileID, started, true)
+	s.failStart(Status{Game: sl.ID(), Install: sl.inst, State: Failed, Profile: profileID, Error: err.Error()})
 }
 
 // ForcesLoader reports whether Steam's launch options will start the loader even for a vanilla launch.
@@ -1287,7 +1301,7 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		if s.NotifyRunEnd != nil {
 			modsDir, err := s.profiles.ModsDir(g.ID(), cur.Profile)
 			if err == nil {
-				stats := launch.Summarize(s.runText(g, cur.Profile, modsDir))
+				stats := launch.Summarize(s.runText(g, cur.Profile, modsDir, time.Time{}))
 				if title, body, crashed := RunEndNotificationText(g.Name(), stats); crashed {
 					s.NotifyRunEnd(RunEndNotice{Game: g.ID(), Profile: cur.Profile, Title: title, Body: body})
 				}
