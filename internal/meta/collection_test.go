@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -46,5 +47,22 @@ func TestDecodeCollectionRevisionFixture(t *testing.T) {
 	want := CollectionExternal{Name: "Hand Mod", Type: "browse", URL: "https://example.com/mod", Version: "1.2", Author: "Sam", Optional: true}
 	if len(got.External) != 1 || got.External[0] != want || len(got.Files) != 3 {
 		t.Fatalf("external = %+v files = %d", got.External, len(got.Files))
+	}
+}
+
+func TestCollectionDropsNonWebLinksFromAnOlderCache(t *testing.T) {
+	c := &Client{CacheDir: t.TempDir()}
+	path, err := c.cachePath("nexus-collection-stardewvalley-slug-0.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeEntry(path, entry[Collection]{Fetched: time.Now(), Value: Collection{External: []CollectionExternal{
+		{Name: "app", URL: "steam://run/1"}, {Name: "page", URL: "https://example.com/mod"},
+	}}})
+
+	got, err := c.Collection(t.Context(), "stardewvalley", "slug", 0)
+
+	if err != nil || len(got.External) != 2 || got.External[0].URL != "" || got.External[1].URL != "https://example.com/mod" {
+		t.Fatalf("external = %+v, %v", got.External, err)
 	}
 }

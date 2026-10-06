@@ -51,9 +51,14 @@ type CollectionFile struct {
 
 func (c *Client) Collection(ctx context.Context, domain, slug string, revision int) (Collection, error) {
 	name := "nexus-collection-" + domain + "-" + slug + "-" + strconv.Itoa(revision) + ".json"
-	return Cached(c, name, collectionTTL, func() (Collection, error) {
+	col, err := Cached(c, name, collectionTTL, func() (Collection, error) {
 		return c.fetchCollection(ctx, domain, slug, revision)
 	})
+	// A collection cached before links were limited to web pages still holds whatever scheme the curator wrote.
+	for i := range col.External {
+		col.External[i].URL = webPage(col.External[i].URL)
+	}
+	return col, err
 }
 
 func (c *Client) fetchCollection(ctx context.Context, domain, slug string, revision int) (Collection, error) {
