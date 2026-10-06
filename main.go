@@ -49,6 +49,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
+	"github.com/Rethunk-Tech/mortar/internal/opener"
 	"github.com/Rethunk-Tech/mortar/internal/packsvc"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
@@ -287,6 +288,7 @@ func run() error {
 			},
 		},
 	})
+	openSvc := &opener.Service{Open: func(u string) error { return app.Browser.OpenURL(u) }}
 	if pid, ok := otherInstance(dataDir); ok {
 		return fmt.Errorf("mortar (pid %d) is already running with the data folder %s", pid, dataDir)
 	}
@@ -531,7 +533,7 @@ func run() error {
 		InstallPackage: profiles.InstallSource,
 		Direct:         queue.ResolveDirect,
 		GitHub:         &github.Client{},
-		OpenURL:        func(url string) error { return app.Browser.OpenURL(url) },
+		OpenURL:        openSvc.OpenWeb,
 		Running:        launches.Running,
 		Emit:           emit,
 		Dir:            dataDir,
@@ -784,6 +786,7 @@ func run() error {
 		application.NewService(loaders),
 		application.NewService(launches),
 		application.NewService(pick),
+		application.NewService(openSvc),
 		application.NewService(bundlesSvc),
 		application.NewService(templatesSvc),
 		application.NewService(archivesSvc),

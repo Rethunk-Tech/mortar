@@ -5,6 +5,8 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/opener"
+
 	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 )
 
@@ -101,10 +103,14 @@ func (s *Service) CancelSSO() {
 var errSSOOff = errors.New("nexus single sign-on is not available in this build")
 
 func (s *Service) openBrowser(url string) error {
+	web, err := opener.Web(url)
+	if err != nil {
+		return err
+	}
 	if s.App == nil {
 		return errors.New("no browser to open")
 	}
-	return s.App.Browser.OpenURL(url)
+	return s.App.Browser.OpenURL(web)
 }
 
 func (s *Service) emitSSO(st SSOState) {
