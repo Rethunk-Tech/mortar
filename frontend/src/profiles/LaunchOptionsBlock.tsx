@@ -3,6 +3,7 @@ import { Box, Button, TextField, Typography } from '@mui/material'
 import { useState } from 'react'
 import { TestLaunch } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useGameBusy } from '../launch/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { LaunchPreview } from './LaunchPreview.tsx'
 import { useProfiles } from './store.ts'
@@ -32,41 +33,43 @@ function TestLaunchRow({
   const [result, setResult] = useState('')
   return (
     <Box sx={{ mt: 1, mb: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-      <Button
-        disabled={!(gameId && !playing && !busy)}
-        onClick={() => {
-          setBusy(true)
-          setResult('')
-          onLaunchError(null)
-          const run = async () => {
-            try {
-              await setLaunchOptions(profileId, launchOptions)
-            } catch (error) {
-              onLaunchError({ field: 'options', message: errorMessage(error) })
-              return
-            }
-            try {
-              await setLaunchSettings(profileId, launchPrefix, launchEnv)
-            } catch (error) {
-              onLaunchError({ field: 'settings', message: errorMessage(error) })
-              return
-            }
-            try {
-              const outcome = await TestLaunch(gameId, profileId, '')
-              if (outcome.reachedTitle) {
-                setResult(t`Reached the title screen`)
+      <DisabledReason title={t`Stop the game to test a launch.`} disabled={playing}>
+        <Button
+          disabled={!(gameId && !playing && !busy)}
+          onClick={() => {
+            setBusy(true)
+            setResult('')
+            onLaunchError(null)
+            const run = async () => {
+              try {
+                await setLaunchOptions(profileId, launchOptions)
+              } catch (error) {
+                onLaunchError({ field: 'options', message: errorMessage(error) })
                 return
               }
-              setResult(t`Crashed: ${outcome.cause}`)
-            } catch (error) {
-              setResult(errorMessage(error))
+              try {
+                await setLaunchSettings(profileId, launchPrefix, launchEnv)
+              } catch (error) {
+                onLaunchError({ field: 'settings', message: errorMessage(error) })
+                return
+              }
+              try {
+                const outcome = await TestLaunch(gameId, profileId, '')
+                if (outcome.reachedTitle) {
+                  setResult(t`Reached the title screen`)
+                  return
+                }
+                setResult(t`Crashed: ${outcome.cause}`)
+              } catch (error) {
+                setResult(errorMessage(error))
+              }
             }
-          }
-          run()
-            .catch(reportUnexpected)
-            .finally(() => setBusy(false))
-        }}
-      >{t`Test launch`}</Button>
+            run()
+              .catch(reportUnexpected)
+              .finally(() => setBusy(false))
+          }}
+        >{t`Test launch`}</Button>
+      </DisabledReason>
       <Typography
         sx={{ fontSize: 13, color: 'text.secondary' }}
       >{t`Uses the saved options`}</Typography>
