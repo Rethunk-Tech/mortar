@@ -83,7 +83,7 @@ function FarmDialog({
   }
   const detail = (row: FarmRow) => {
     if (row.state === 'off') {
-      return t`Off in this profile`
+      return t`Disabled in this profile`
     }
     return row.state === 'different' ? t`Host ${row.host}, yours ${row.mine}` : t`Host ${row.host}`
   }

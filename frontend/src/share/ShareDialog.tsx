@@ -301,7 +301,7 @@ function CopyModList() {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [partsAnchor, setPartsAnchor] = useState<HTMLElement | null>(null)
   const items = listItems(profile, keys)
-  const labels = { enabled: t`Enabled`, disabled: t`Off` }
+  const labels = { enabled: t`Enabled`, disabled: t`Disabled` }
   const parts = formatModList(format, items, labels)
   const options: { id: ModListFormat; label: string; icon: typeof FileText }[] = [
     { id: 'markdown', label: t`Markdown`, icon: FileText },

@@ -126,7 +126,7 @@ export function CompareBulkBody({
   const { onlyA, onlyB, differentVersion, differentEnabled, differentSource, identical, hasDiff } =
     filteredCompare(diff, needle)
   const enabled = t`Enabled`
-  const disabled = t`Off`
+  const disabled = t`Disabled`
   const shared: SectionShared = { enabled, disabled, pending, lockedReason }
 
   if (!(needle || hasDiff) && identical.length > 0) {

@@ -833,7 +833,7 @@ func historySummary(ev profile.HistoryEvent) string {
 	case profile.ChangeOptionSet:
 		return fmt.Sprintf("Set %s of %s for the next start", ev.Detail, ev.Name)
 	case profile.ChangeCategoryRemoved:
-		return "Removed a custom category"
+		return "Deleted a custom category"
 	case profile.ChangeChannel:
 		return "Switched to the " + ev.Name + " update channel"
 	case profile.ChangeCollectionUnlinked:

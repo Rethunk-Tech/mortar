@@ -68,7 +68,7 @@ export function historyLabel(ev: Worded): string {
     case HistoryChange.ChangeOptionSet:
       return i18n._(msg`Set ${detail} of ${name} for the next start`)
     case HistoryChange.ChangeCategoryRemoved:
-      return i18n._(msg`Removed a custom category`)
+      return i18n._(msg`Deleted a custom category`)
     case HistoryChange.ChangeChannel:
       return i18n._(msg`Switched to the ${name} update channel`)
     case HistoryChange.ChangeCollectionUnlinked:

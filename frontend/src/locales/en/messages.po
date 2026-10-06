@@ -2772,18 +2772,12 @@ msgid "New profile from link"
 msgstr "New profile from link"
 
 #: src/browse/BrowseShow.tsx:28
-#: src/mods/ModDependencyTree.tsx:103
-#: src/profiles/CompareBulkBody.tsx:129
 #: src/profiles/overrideValue.ts:86
-#: src/profiles/PackImportDialog.tsx:106
-#: src/profiles/ProfilesPage.tsx:273
-#: src/profiles/ProfilesPage.tsx:282
 #: src/settings/prefCopy.ts:336
 #: src/settings/prefCopy.ts:403
 #: src/settings/prefCopy.ts:418
 #: src/settings/prefCopy.ts:474
 #: src/settings/sections/SyncFolder.tsx:23
-#: src/share/ShareDialog.tsx:304
 msgid "Off"
 msgstr "Off"
 
@@ -3243,6 +3237,7 @@ msgstr "Launch options copied"
 msgid "config.json, changed from the mod's own"
 msgstr "config.json, changed from the mod's own"
 
+#: src/game/FarmMenuItem.tsx:86
 #: src/launch/SaveWarnDialog.tsx:59
 #: src/mods/updateReview/Row.tsx:34
 #: src/share/SharedMods.tsx:29
@@ -3998,10 +3993,6 @@ msgstr " · {cause} · {size}"
 msgid "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
 msgstr "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
 
-#: src/game/FarmMenuItem.tsx:86
-msgid "Off in this profile"
-msgstr "Off in this profile"
-
 #: src/i18n/list.ts:13
 msgid "{rest, plural, one {# more} other {# more}}"
 msgstr "{rest, plural, one {# more} other {# more}}"
@@ -4041,6 +4032,7 @@ msgstr "Show in queue"
 #: src/mods/AuthorDialog.tsx:134
 #: src/mods/listRows.ts:134
 #: src/mods/ModCards.tsx:458
+#: src/mods/ModDependencyTree.tsx:103
 #: src/mods/ModDetail.tsx:57
 #: src/mods/ModList.tsx:388
 #: src/mods/OptionalFileRows.tsx:122
@@ -4048,9 +4040,14 @@ msgstr "Show in queue"
 #: src/mods/Sidebar.tsx:317
 #: src/mods/Sidebar.tsx:330
 #: src/mods/Toolbar.tsx:59
+#: src/profiles/CompareBulkBody.tsx:129
 #: src/profiles/GameModsDialog.tsx:37
+#: src/profiles/PackImportDialog.tsx:106
+#: src/profiles/ProfilesPage.tsx:273
+#: src/profiles/ProfilesPage.tsx:282
 #: src/saves/SaveGapLine.tsx:21
 #: src/share/ImportPreview.tsx:72
+#: src/share/ShareDialog.tsx:304
 msgid "Disabled"
 msgstr "Disabled"
 
@@ -6081,6 +6078,10 @@ msgstr "slow {0} {ms}"
 #: src/settings/sections/DataMove.tsx:43
 msgid "Move…"
 msgstr "Move…"
+
+#: src/profiles/historyLabel.ts:71
+msgid "Deleted a custom category"
+msgstr "Deleted a custom category"
 
 #: src/mods/typedConfig/ConfigPane.tsx:77
 msgid "Discard the change to {name}"
@@ -9932,10 +9933,6 @@ msgstr "Add to bundle"
 #: src/browse/BrowseMenu.tsx:42
 msgid "Already in this profile."
 msgstr "Already in this profile."
-
-#: src/profiles/historyLabel.ts:71
-msgid "Removed a custom category"
-msgstr "Removed a custom category"
 
 #: src/settings/sections/SourceOrder.tsx:52
 msgid "When a mod is on several sites, its card installs from the first one here."
