@@ -65,6 +65,8 @@ function describeAsset(p: Extract<Problem, { kind: 'asset' }>): string {
   let winner = ''
   if (winnerName === 'unclear') {
     winner = i18n._(msg` The winner is unclear.`)
+  } else if (winnerName === 'decided per entry') {
+    winner = i18n._(msg` You chose which mod wins each clash.`)
   } else if (winnerName) {
     const losers = listNames(overridden ?? [])
     winner =

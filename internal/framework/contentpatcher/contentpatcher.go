@@ -59,6 +59,7 @@ type packHit struct {
 	schema       map[string]cpSchema
 	config       map[string]string
 	clashes      map[int]bool // indices into edits that overlap an edit of a pack it was not built with
+	rivals       []mod.ID     // the packs of the hit set whose edits clash with this pack's
 	// author is the manifest Author, normalised, so two packs by one author can be told apart from strangers.
 	author string
 	// sig is the pack's share of a target's memo key (packSig), and stable whether its stamps can be trusted.
@@ -2416,6 +2417,8 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool, why *framework.Conf
 			}
 			in[i], in[j] = true, true
 			markClashes(&hits[i], &hits[j])
+			hits[i].rivals = append(hits[i].rivals, hits[j].id)
+			hits[j].rivals = append(hits[j].rivals, hits[i].id)
 			cosmetic = cosmetic && minor
 			note.add(pairNote)
 		}

@@ -101,7 +101,7 @@ msgstr "Author · {author}"
 msgid "These changes will be reverted too:"
 msgstr "These changes will be reverted too:"
 
-#: src/mods/describe.ts:123
+#: src/mods/describe.ts:125
 msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 
@@ -222,7 +222,7 @@ msgstr "List mods inside a folder whose name starts with a dot, which SMAPI skip
 msgid "{names} can't be reached, so Mortar can't check for mod updates"
 msgstr "{names} can't be reached, so Mortar can't check for mod updates"
 
-#: src/mods/problemFix/WinFix.tsx:73
+#: src/mods/problemFix/WinFix.tsx:76
 msgid "Make {name} win"
 msgstr "Make {name} win"
 
@@ -241,7 +241,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/OtherProfilesDialog.tsx:67
 #: src/mods/problemFix/AssetFix.tsx:29
 #: src/mods/problemFix/SettingFix.tsx:27
-#: src/mods/problemFix/WinFix.tsx:32
+#: src/mods/problemFix/WinFix.tsx:33
 #: src/mods/SplitCombineItems.tsx:36
 #: src/mods/Toolbar.tsx:268
 #: src/saves/lackChipActions.tsx:44
@@ -382,7 +382,7 @@ msgstr "The download could not finish. Retry or skip it from the queue."
 msgid "Log level"
 msgstr "Log level"
 
-#: src/mods/describe.ts:94
+#: src/mods/describe.ts:96
 msgid "Balance only: one mod's prices win."
 msgstr "Balance only: one mod's prices win."
 
@@ -447,7 +447,7 @@ msgid "Run checks…"
 msgstr "Run checks…"
 
 #. placeholder {0}: p.damaged.name
-#: src/mods/describe.ts:209
+#: src/mods/describe.ts:211
 msgid "{0} has damaged files."
 msgstr "{0} has damaged files."
 
@@ -978,7 +978,7 @@ msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it
 msgid "Don't ask again"
 msgstr "Don't ask again"
 
-#: src/mods/problemFix/WinFix.tsx:65
+#: src/mods/problemFix/WinFix.tsx:68
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
@@ -1111,7 +1111,7 @@ msgstr "Keep this profile's saves separate?"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:160
+#: src/mods/describe.ts:162
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 
@@ -2431,7 +2431,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/OldFilesCallouts.tsx:64
 #: src/mods/overlayActions.ts:36
 #: src/mods/overlayActions.ts:100
-#: src/mods/problemFix/WinFix.tsx:51
+#: src/mods/problemFix/WinFix.tsx:54
 #: src/mods/problemFixButtons.tsx:116
 #: src/mods/SplitCombineItems.tsx:41
 #: src/mods/storeEntries.ts:60
@@ -2569,7 +2569,7 @@ msgstr "Fix all"
 msgid "Ran"
 msgstr "Ran"
 
-#: src/mods/describe.ts:199
+#: src/mods/describe.ts:201
 msgid "The last launch failed: {message}."
 msgstr "The last launch failed: {message}."
 
@@ -2973,7 +2973,7 @@ msgid "Clear comparison"
 msgstr "Clear comparison"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:173
+#: src/mods/describe.ts:175
 msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
 
@@ -3464,7 +3464,7 @@ msgstr "Size"
 msgid "GitHub page"
 msgstr "GitHub page"
 
-#: src/mods/describe.ts:130
+#: src/mods/describe.ts:132
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 
@@ -3921,7 +3921,7 @@ msgstr "Check these before you play."
 msgid "By game"
 msgstr "By game"
 
-#: src/mods/describe.ts:98
+#: src/mods/describe.ts:100
 msgid "Only on {value} saves; none of yours is one."
 msgstr "Only on {value} saves; none of yours is one."
 
@@ -4225,7 +4225,7 @@ msgstr "Just this mod"
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
-#: src/mods/describe.ts:253
+#: src/mods/describe.ts:255
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
@@ -4545,7 +4545,7 @@ msgstr "and {count} more"
 msgid "The local port OBS reads the overlay from"
 msgstr "The local port OBS reads the overlay from"
 
-#: src/mods/describe.ts:137
+#: src/mods/describe.ts:139
 msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 
@@ -4780,7 +4780,7 @@ msgid "Rename…"
 msgstr "Rename…"
 
 #. placeholder {0}: p.pluginClash.guid
-#: src/mods/describe.ts:218
+#: src/mods/describe.ts:220
 msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
 msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
 
@@ -4823,7 +4823,7 @@ msgstr "Untrack all…"
 msgid "Disable all"
 msgstr "Disable all"
 
-#: src/mods/describe.ts:206
+#: src/mods/describe.ts:208
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
 
@@ -4988,7 +4988,7 @@ msgstr "{remaining} of {limit} left this hour; the count resets {when}."
 msgid "Select mods on the Mods tab, then Add to bundle."
 msgstr "Select mods on the Mods tab, then Add to bundle."
 
-#: src/mods/describe.ts:140
+#: src/mods/describe.ts:142
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
@@ -6188,7 +6188,7 @@ msgstr "Unknown author"
 msgid "In this profile"
 msgstr "In this profile"
 
-#: src/mods/describe.ts:124
+#: src/mods/describe.ts:126
 msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
 
@@ -6396,7 +6396,7 @@ msgid "Reading {folder}…"
 msgstr "Reading {folder}…"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:175
+#: src/mods/describe.ts:177
 msgid "{0} is installed twice, and only one of them loads."
 msgstr "{0} is installed twice, and only one of them loads."
 
@@ -6424,7 +6424,7 @@ msgstr "Clear cache"
 msgid "{endorsements, plural, one {# like} other {# likes}} · {dl}"
 msgstr "{endorsements, plural, one {# like} other {# likes}} · {dl}"
 
-#: src/mods/describe.ts:77
+#: src/mods/describe.ts:79
 msgid "{who} all load {target}.{winner}"
 msgstr "{who} all load {target}.{winner}"
 
@@ -6493,6 +6493,10 @@ msgstr "Notes for {0}"
 #: src/toasts/report.ts:22
 msgid "The disk is full."
 msgstr "The disk is full."
+
+#: src/mods/describe.ts:69
+msgid " You chose which mod wins each clash."
+msgstr " You chose which mod wins each clash."
 
 #: src/sync/SyncOffers.tsx:62
 msgid "Use theirs"
@@ -6703,7 +6707,7 @@ msgstr "Unhide {0}?"
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
-#: src/mods/describe.ts:78
+#: src/mods/describe.ts:80
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
 
@@ -7191,7 +7195,7 @@ msgstr "Where the time goes"
 msgid "Change folder"
 msgstr "Change folder"
 
-#: src/mods/describe.ts:133
+#: src/mods/describe.ts:135
 msgid "{dependentName} needs {dep}, which is disabled."
 msgstr "{dependentName} needs {dep}, which is disabled."
 
@@ -7632,7 +7636,7 @@ msgstr "{0, plural, one {Matched # version in {1}} other {Matched # versions in 
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:155
+#: src/mods/describe.ts:157
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 
@@ -8044,7 +8048,7 @@ msgstr "Hide token"
 msgid "{remaining} of {limit} left today; the count resets {when}."
 msgstr "{remaining} of {limit} left today; the count resets {when}."
 
-#: src/mods/describe.ts:73
+#: src/mods/describe.ts:75
 msgid " {winnerName} wins; {losers} overridden."
 msgstr " {winnerName} wins; {losers} overridden."
 
@@ -8184,7 +8188,7 @@ msgstr "{0, plural, one {Created {name}; downloading # mod} other {Created {name
 msgid "{who}: {reason}"
 msgstr "{who}: {reason}"
 
-#: src/mods/describe.ts:205
+#: src/mods/describe.ts:207
 msgid "{plugin} failed to load ({name})."
 msgstr "{plugin} failed to load ({name})."
 
@@ -8244,7 +8248,7 @@ msgstr "Money"
 msgid "Regenerate token?"
 msgstr "Regenerate token?"
 
-#: src/mods/describe.ts:202
+#: src/mods/describe.ts:204
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
@@ -8517,7 +8521,7 @@ msgid "Steam was not found"
 msgstr "Steam was not found"
 
 #. placeholder {0}: p.asset.info
-#: src/mods/describe.ts:81
+#: src/mods/describe.ts:83
 msgid "These mods may add the same item: {0}."
 msgstr "These mods may add the same item: {0}."
 
@@ -8566,7 +8570,7 @@ msgstr "Reset…"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.description
-#: src/mods/describe.ts:146
+#: src/mods/describe.ts:148
 msgid "{0}'s {1} is {2}: {3}"
 msgstr "{0}'s {1} is {2}: {3}"
 
@@ -9337,7 +9341,7 @@ msgid "Review collection update"
 msgstr "Review collection update"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:247
+#: src/mods/describe.ts:249
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
@@ -9568,7 +9572,7 @@ msgstr "Whole file"
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
-#: src/mods/describe.ts:214
+#: src/mods/describe.ts:216
 msgid "{name} is deprecated on Thunderstore."
 msgstr "{name} is deprecated on Thunderstore."
 
@@ -9588,7 +9592,7 @@ msgstr "Save backups kept"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:150
+#: src/mods/describe.ts:152
 msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
@@ -10024,7 +10028,7 @@ msgstr "{loader} | {store}"
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
-#: src/mods/describe.ts:213
+#: src/mods/describe.ts:215
 msgid "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 
@@ -10428,7 +10432,7 @@ msgstr "The backup from {when} is deleted for good, with every save in it."
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
-#: src/mods/describe.ts:129
+#: src/mods/describe.ts:131
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
@@ -11103,7 +11107,7 @@ msgstr "Could not use that image"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:163
+#: src/mods/describe.ts:165
 msgid "{0}'s {1} is {2}; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 
@@ -11170,7 +11174,7 @@ msgstr "No problems found"
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/mods/describe.ts:251
+#: src/mods/describe.ts:253
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
@@ -11187,7 +11191,7 @@ msgid "Entry"
 msgstr "Entry"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:172
+#: src/mods/describe.ts:174
 msgid "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 msgstr "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 
@@ -11242,7 +11246,7 @@ msgstr "Preparing a temporary copy of this profile…"
 msgid "Accent colour"
 msgstr "Accent colour"
 
-#: src/mods/describe.ts:72
+#: src/mods/describe.ts:74
 msgid " {winnerName} wins."
 msgstr " {winnerName} wins."
 
@@ -11352,7 +11356,7 @@ msgstr "Into a deleted profile"
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
-#: src/mods/describe.ts:96
+#: src/mods/describe.ts:98
 msgid "Only on {value}."
 msgstr "Only on {value}."
 
