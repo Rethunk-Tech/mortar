@@ -7,8 +7,14 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
-// whichFarmTypes are the FarmType values of Game1.whichFarm 0 to 6; 7 is any custom farm, Meadowlands included,
-// and a save does not say which.
+// SaveFarm is one save's farm: Game1.whichFarm and, when that is 7 (a custom farm, Meadowlands included), the
+// farm's Data/AdditionalFarms id from whichModFarm, "" when the save did not say.
+type SaveFarm struct {
+	Which int
+	Mod   string
+}
+
+// whichFarmTypes are the FarmType values of Game1.whichFarm 0 to 6.
 var whichFarmTypes = []string{"standard", "riverland", "forest", "hilltop", "wilderness", "fourcorners", "beach"}
 
 var farmLabels = map[string]string{
@@ -17,25 +23,29 @@ var farmLabels = map[string]string{
 }
 
 // scopeToSaveFarms marks cosmetic each conflict in which one pack's clashing patches all need a farm type none of
-// the saves (their whichFarm values) is; it stays listed, with the farm named. With no saves nothing changes.
-func scopeToSaveFarms(conflicts []framework.AssetConflict, which []int) []framework.AssetConflict {
-	if len(which) == 0 {
+// the saves is; it stays listed, with the farm named. A custom farm save that does not name its farm plays every
+// custom farm. With no saves nothing changes.
+func scopeToSaveFarms(conflicts []framework.AssetConflict, saves []SaveFarm) []framework.AssetConflict {
+	if len(saves) == 0 {
 		return conflicts
 	}
 	have := map[string]bool{}
-	custom := false
-	for _, w := range which {
-		if w >= 0 && w < len(whichFarmTypes) {
-			have[whichFarmTypes[w]] = true
-		} else {
-			custom = true
+	anyCustom := false
+	for _, s := range saves {
+		switch {
+		case s.Which >= 0 && s.Which < len(whichFarmTypes):
+			have[whichFarmTypes[s.Which]] = true
+		case s.Mod != "":
+			have[strings.ToLower(s.Mod)] = true
+		default:
+			anyCustom = true
 		}
 	}
 	played := func(t string) bool {
 		if slices.Contains(whichFarmTypes, t) {
 			return have[t]
 		}
-		return custom
+		return anyCustom || have[strings.ToLower(t)]
 	}
 	var out []framework.AssetConflict
 	for i, c := range conflicts {

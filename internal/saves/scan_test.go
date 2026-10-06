@@ -181,6 +181,24 @@ func TestWhichFarmSpansChunks(t *testing.T) {
 	}
 }
 
+func TestWhichModFarmIsTheCustomFarmID(t *testing.T) {
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "Plain_1", "Plain_1"), `<whichFarm>7</whichFarm><whichModFarm>Author.Frontier_Frontier</whichModFarm>`+item("Author.Mod/x"))
+	write(t, filepath.Join(dir, "Typed_2", "Typed_2"), `<whichFarm>7</whichFarm><whichModFarm><Id>Grandpa.Farm</Id><MapName>Farm_Grandpa</MapName></whichModFarm>`)
+	write(t, filepath.Join(dir, "Vanilla_3", "Vanilla_3"), `<whichFarm>2</whichFarm><whichModFarm xsi:nil="true" />`)
+	got, err := (&Scanner{Dir: dir}).Scan(index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ids := map[string]string{}
+	for _, in := range got {
+		ids[in.Folder] = in.WhichModFarm
+	}
+	if ids["Plain_1"] != "Author.Frontier_Frontier" || ids["Typed_2"] != "Grandpa.Farm" || ids["Vanilla_3"] != "" {
+		t.Fatalf("whichModFarm = %v", ids)
+	}
+}
+
 func TestLacking(t *testing.T) {
 	have := map[string]bool{"smapi:a.on": true, "smapi:b.off": false}
 	got := Lacking([]mod.ID{"smapi:a.on", "smapi:b.off", "smapi:c.gone", "smapi:d.dismissed"}, have, []mod.ID{"smapi:D.Dismissed"})

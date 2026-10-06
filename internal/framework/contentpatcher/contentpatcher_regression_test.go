@@ -779,7 +779,7 @@ func TestFarmMapConflictsNameTheirFarmTypes(t *testing.T) {
 	]}`, map[string]string{"frontier.tmx": "a"})
 	other := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Farm_Frontier","FromFile":"other.tmx"}]}`, map[string]string{"other.tmx": "b"})
 	conflicts = assetConflicts([]framework.Mod{frontier, other})
-	if len(conflicts) != 1 || len(conflicts[0].Farms) != 2 || !slices.Equal(conflicts[0].Farms[1], []string{"Frontier"}) {
+	if len(conflicts) != 1 || len(conflicts[0].Farms) != 2 || !slices.Equal(conflicts[0].Farms[1], []string{frontier.UniqueID + "_Frontier"}) {
 		t.Fatalf("both load the Frontier farm map, got %#v", conflicts)
 	}
 	gated := syntheticLoadPack(t, `{"Changes":[{"Action":"EditMap","Target":"Maps/Farm_Foraging","MapProperties":{"Music":"y"},"When":{"FarmType":"Standard"}}]}`, nil)

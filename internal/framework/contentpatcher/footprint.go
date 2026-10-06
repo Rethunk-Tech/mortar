@@ -1627,7 +1627,7 @@ var farmMaps = map[string]string{
 }
 
 // farmTypesOf is the farm types a patch applies on, lower-cased: its FarmType condition, else the farm whose
-// map it targets (custom names a custom farm's map target), else nil for any farm.
+// map it targets (custom is the id of the custom farm whose map is the target), else nil for any farm.
 func farmTypesOf(p cpPatch, custom string) []string {
 	if types := p.places["farmtype"]; len(types) > 0 {
 		return types

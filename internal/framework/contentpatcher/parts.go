@@ -25,7 +25,7 @@ import (
 // a target's or a pack's outcome.
 
 // partsCacheVersion changes whenever what a part records changes, so an older file is ignored.
-const partsCacheVersion = 3
+const partsCacheVersion = 4
 
 // partsKeep is how many checks may go by without using a part before it is dropped: enough for a few profiles' checks
 // to take turns without evicting each other.

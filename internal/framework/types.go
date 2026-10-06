@@ -56,8 +56,9 @@ type AssetConflict struct {
 	Evidence []ConflictEvidence `json:"evidence"`
 	// Note is why a cosmetic conflict cannot hurt play, when one reason covers every overlap.
 	Note *ConflictNote `json:"note,omitempty"`
-	// Farms is, per pack in PackIDs order, the lower-case FarmType values its clashing patches are all limited
-	// to (nil for a pack that applies on any farm); nil when no pack is limited.
+	// Farms is, per pack in PackIDs order, the farm types its clashing patches are all limited to: lower-case
+	// FarmType values, or a custom farm's Data/AdditionalFarms id (nil for a pack that applies on any farm); nil
+	// when no pack is limited.
 	Farms [][]string `json:"farms,omitempty"`
 }
 

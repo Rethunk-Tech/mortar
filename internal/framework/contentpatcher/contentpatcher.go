@@ -188,7 +188,7 @@ type cachedPack struct {
 	farms map[string]string
 }
 
-const contentPackParserVersion = 20
+const contentPackParserVersion = 21
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -2125,7 +2125,9 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 	shadowed := shadowedPacks(mods, at)
 	customFarms := map[string]string{}
 	for _, im := range mods {
-		maps.Copy(customFarms, readContentPack(im).farms)
+		for target, id := range readContentPack(im).farms {
+			customFarms[target] = modIDToken.ReplaceAllLiteralString(id, im.UniqueID)
+		}
 	}
 	out := []framework.AssetConflict{}
 	settings := []framework.SettingHint{}
@@ -2243,6 +2245,9 @@ func farmNeeds(kind string, hits []packHit, farm string) [][]string {
 	return out
 }
 
+// modIDToken is {{ModId}}, which Content Patcher fills with the pack's unique id, as a save records it.
+var modIDToken = regexp.MustCompile(`(?i)\{\{\s*modid\s*\}\}`)
+
 // recordFarms notes the map asset and id of each custom farm in Data/AdditionalFarms entries.
 func (p *cachedPack) recordFarms(raw json.RawMessage) {
 	var entries map[string]struct {
@@ -2263,7 +2268,7 @@ func (p *cachedPack) recordFarms(raw json.RawMessage) {
 		if p.farms == nil {
 			p.farms = map[string]string{}
 		}
-		p.farms["maps/"+strings.ToLower(entry.MapName)] = strings.TrimPrefix(id, "{{ModId}}_")
+		p.farms["maps/"+strings.ToLower(entry.MapName)] = id
 	}
 }
 

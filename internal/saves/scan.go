@@ -32,7 +32,8 @@ const (
 
 // Info is what a scan learned about one save. Season is 0 (spring) to 3 (winter); Day is 0 when SaveGameInfo
 // did not say. Played is when the save was last written, in Unix milliseconds. WhichFarm is Game1.whichFarm
-// (−1 when the tag is missing). MillisecondsPlayed and Money come from SaveGameInfo. Used holds mod ids with lowercased locals.
+// (−1 when the tag is missing); WhichModFarm is the custom farm's Data/AdditionalFarms id when it is 7.
+// MillisecondsPlayed and Money come from SaveGameInfo. Used holds mod ids with lowercased locals.
 type Info struct {
 	Folder             string   `json:"folder"`
 	Farm               string   `json:"farm"`
@@ -42,6 +43,7 @@ type Info struct {
 	Year               int      `json:"year"`
 	Played             int64    `json:"played"`
 	WhichFarm          int      `json:"whichFarm"`
+	WhichModFarm       string   `json:"whichModFarm,omitempty"`
 	MillisecondsPlayed int64    `json:"millisecondsPlayed"`
 	Money              int      `json:"money"`
 	Used               []mod.ID `json:"used"`
@@ -49,7 +51,7 @@ type Info struct {
 	Unrecorded bool `json:"unrecorded"`
 }
 
-const scanRev = 2
+const scanRev = 3
 
 // stamp is what a cached result was computed from; any change recomputes it. Index is the dataset index's size,
 // because a newer index can recognise IDs an older one missed. Rev is this parser's shape, so a new field
@@ -323,12 +325,15 @@ func (s *Scanner) read(folder string, index map[string][]meta.Ref) (Info, error)
 		return info, err
 	}
 	defer func() { _ = f.Close() }()
-	keys, which, hasFarm, err := distinctKeys(f)
+	keys, farm, err := distinctKeys(f)
 	if err != nil {
 		return info, err
 	}
-	if hasFarm {
-		info.WhichFarm = which
+	if farm.has {
+		info.WhichFarm = farm.which
+	}
+	if !strings.HasPrefix(farm.mod, "<") {
+		info.WhichModFarm = farm.mod
 	}
 	seen := map[mod.ID]struct{}{}
 	for k := range keys {

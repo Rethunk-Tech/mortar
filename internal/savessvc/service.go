@@ -152,10 +152,10 @@ func (s *Service) scannerFor(gameID, profileID string) (*saves.Scanner, error) {
 	return sc, nil
 }
 
-// FarmTypes is the whichFarm of each save the profile reads whose farm type is known.
+// FarmTypes is the farm of each save the profile reads whose farm type is known.
 //
 //wails:ignore
-func (s *Service) FarmTypes(ctx context.Context, game, profileID string) []int {
+func (s *Service) FarmTypes(ctx context.Context, game, profileID string) []problems.SaveFarm {
 	scanner, err := s.scannerFor(game, profileID)
 	if err != nil || scanner == nil || s.meta == nil {
 		return nil
@@ -166,10 +166,10 @@ func (s *Service) FarmTypes(ctx context.Context, game, profileID string) []int {
 		return nil
 	}
 	infos, _ := scanner.Scan(index)
-	var out []int
+	var out []problems.SaveFarm
 	for _, in := range infos {
 		if in.WhichFarm >= 0 {
-			out = append(out, in.WhichFarm)
+			out = append(out, problems.SaveFarm{Which: in.WhichFarm, Mod: in.WhichModFarm})
 		}
 	}
 	return out
