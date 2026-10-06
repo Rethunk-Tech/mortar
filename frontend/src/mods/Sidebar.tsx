@@ -447,63 +447,19 @@ const isGitHub = (url: string) => {
   return host === 'github.com' || host.endsWith('.github.com')
 }
 
-// Opening or switching paints the panel's top at once; these sections follow in a render that never blocks input,
-// and a toggle or profile save re-renders them there too.
+// Opening or switching paints the panel's header and actions at once; the sections between follow in a render that
+// never blocks input, and a toggle or profile save re-renders them there too.
 function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
-  const entry = entryOf(profile, mod.key)
-  return (
-    <>
-      <ModDependencyTree mod={mod} />
-      <ActionRows
-        mod={mod}
-        nexusId={nexusIdOf(profile, mod)}
-        githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
-      />
-      <AlsoInProfiles mod={mod} profile={profile} />
-      <HiddenInside mod={mod} profile={profile} />
-      <ModNoteTags profile={profile} mod={mod} />
-    </>
-  )
-}
-
-const LowerSections = memo(LowerSectionsView)
-
-function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
-  const lazyMod = useDeferredValue<Mod | null>(mod, null)
-  const lazyProfile = useDeferredValue(profile)
   const { t, i18n } = useLingui()
-  const all = useMods((s) => s.mods)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const setSkipSource = useMods((s) => s.setSkipSource)
-  const others = siblingsOf(all, mod)
-  const setOpen = useDetail((s) => s.setOpen)
   const game = useProfiles((s) => s.game?.id ?? '')
   const [alsoOpen, setAlsoOpen] = useState(false)
-  const kind = sourceKind(profile, mod)
   const nexusId = nexusIdOf(profile, mod)
-  const fresh = useNexusFresh(nexusId)
   const entry = entryOf(profile, mod.key)
   const offered = useUpdates((s) => updateFor(s.updates, mod, profile))
-  const sourceName = kindLabel(kind, {
-    archive: t`Archive`,
-    nexus: t`Nexus Mods`,
-    github: t`GitHub`,
-  })
   return (
-    <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
-      <DetailsHeader
-        picture={<LetterTile mod={mod} size={52} fresh={fresh} />}
-        title={mod.name}
-        subtitle={
-          <>
-            <AuthorLink authorField={mod.author} mod={mod} profile={profile} />
-            {` · ${sourceName}`}
-          </>
-        }
-        controls={<ModSwitch mod={mod} />}
-        onClose={() => useDetail.getState().show(null)}
-      />
-      <ModChips mod={mod} sourceName={sourceName} />
+    <>
       <Field label={t`Version`} value={mod.version} />
       <ModUpdateControls mod={mod} entry={entry} />
       {entry?.skipVersion && !offered ? (
@@ -555,6 +511,50 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
       />
       <ProblemLine mod={mod} />
       <LastRunLine mod={mod} profile={profile} />
+      <ModDependencyTree mod={mod} />
+      <ActionRows
+        mod={mod}
+        nexusId={nexusId}
+        githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
+      />
+      <AlsoInProfiles mod={mod} profile={profile} />
+      <HiddenInside mod={mod} profile={profile} />
+      <ModNoteTags profile={profile} mod={mod} />
+    </>
+  )
+}
+
+const LowerSections = memo(LowerSectionsView)
+
+function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
+  const lazyMod = useDeferredValue<Mod | null>(mod, null)
+  const lazyProfile = useDeferredValue(profile)
+  const { t } = useLingui()
+  const all = useMods((s) => s.mods)
+  const others = siblingsOf(all, mod)
+  const setOpen = useDetail((s) => s.setOpen)
+  const kind = sourceKind(profile, mod)
+  const fresh = useNexusFresh(nexusIdOf(profile, mod))
+  const sourceName = kindLabel(kind, {
+    archive: t`Archive`,
+    nexus: t`Nexus Mods`,
+    github: t`GitHub`,
+  })
+  return (
+    <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
+      <DetailsHeader
+        picture={<LetterTile mod={mod} size={52} fresh={fresh} />}
+        title={mod.name}
+        subtitle={
+          <>
+            <AuthorLink authorField={mod.author} mod={mod} profile={profile} />
+            {` · ${sourceName}`}
+          </>
+        }
+        controls={<ModSwitch mod={mod} />}
+        onClose={() => useDetail.getState().show(null)}
+      />
+      <ModChips mod={mod} sourceName={sourceName} />
       {lazyMod ? <LowerSections mod={lazyMod} profile={lazyProfile} /> : null}
       {others.length > 0 ? (
         <Box>
