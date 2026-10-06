@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -229,27 +231,16 @@ func TestSetWinnerOrdersOnlyTheWinningPack(t *testing.T) {
 	}
 }
 
-func TestEntryLoadAfterMovesToThePacksThatListTheLoser(t *testing.T) {
-	t.Parallel()
-	e, p := twoPackDownload(t)
-	if _, err := e.SetWinner("stardew", p.ID, "pack", "smapi:Me.Cape", "smapi:Me.Lose", true); err != nil {
-		t.Fatal(err)
-	}
-	path := filepath.Join(filepath.Dir(e.mods(p.ID)), fileName)
-	var doc map[string]json.RawMessage
-	if err := json.Unmarshal([]byte(read(t, path)), &doc); err != nil {
-		t.Fatal(err)
-	}
-	var entries []Entry
-	if err := json.Unmarshal(doc["entries"], &entries); err != nil {
-		t.Fatal(err)
-	}
+// legacyEntries is entries as an old profile wrote them: Cape's win recorded on its download, not on the pack.
+func legacyEntries(t *testing.T, entries []Entry) []byte {
+	t.Helper()
 	type legacyEntry struct {
 		Entry
 		LoadAfter []mod.ID `json:"loadAfter,omitempty"`
 	}
 	legacy := make([]legacyEntry, len(entries))
 	for i, en := range entries {
+		en.Mods = slices.Clone(en.Mods)
 		for ci := range en.Mods {
 			en.Mods[ci].LoadAfter = nil
 		}
@@ -258,10 +249,45 @@ func TestEntryLoadAfterMovesToThePacksThatListTheLoser(t *testing.T) {
 			legacy[i].LoadAfter = []mod.ID{"smapi:Me.Lose", "smapi:Me.Nowhere"}
 		}
 	}
-	var err error
-	if doc["entries"], err = json.Marshal(legacy); err != nil {
+	raw, err := json.Marshal(legacy)
+	if err != nil {
 		t.Fatal(err)
 	}
+	return raw
+}
+
+func assertCapeWins(t *testing.T, entries []Entry) {
+	t.Helper()
+	for _, c := range entries[entryIndex(entries, "pack")].Mods {
+		want := []mod.ID(nil)
+		if mod.Equal(c.ID, "smapi:Me.Cape") {
+			want = []mod.ID{"smapi:Me.Lose"}
+		}
+		if !slices.Equal(c.LoadAfter, want) {
+			t.Fatalf("%s LoadAfter = %v, want %v", c.ID, c.LoadAfter, want)
+		}
+	}
+}
+
+func capeWon(t *testing.T) (env, Profile) {
+	t.Helper()
+	e, p := twoPackDownload(t)
+	p, err := e.SetWinner("stardew", p.ID, "pack", "smapi:Me.Cape", "smapi:Me.Lose", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return e, p
+}
+
+func TestEntryLoadAfterMovesToThePacksThatListTheLoser(t *testing.T) {
+	t.Parallel()
+	e, p := capeWon(t)
+	path := filepath.Join(filepath.Dir(e.mods(p.ID)), fileName)
+	var doc map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(read(t, path)), &doc); err != nil {
+		t.Fatal(err)
+	}
+	doc["entries"] = legacyEntries(t, p.Entries)
 	raw, err := json.Marshal(doc)
 	if err != nil {
 		t.Fatal(err)
@@ -273,13 +299,37 @@ func TestEntryLoadAfterMovesToThePacksThatListTheLoser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, c := range got.Entries[entryIndex(got.Entries, "pack")].Mods {
-		want := []mod.ID(nil)
-		if mod.Equal(c.ID, "smapi:Me.Cape") {
-			want = []mod.ID{"smapi:Me.Lose"}
+	assertCapeWins(t, got.Entries)
+}
+
+func TestOldSnapshotEntryLoadAfterMovesToThePacks(t *testing.T) {
+	t.Parallel()
+	e, p := capeWon(t)
+	dir := filepath.Dir(e.mods(p.ID))
+	raw := legacyEntries(t, p.Entries)
+	if err := os.MkdirAll(filepath.Join(dir, snapshotsDir), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	var zipped bytes.Buffer
+	zw := gzip.NewWriter(&zipped)
+	if _, err := zw.Write(raw); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	const gz, plain = "aa", "bb"
+	if err := os.WriteFile(filepath.Join(dir, snapshotsDir, gz+snapshotExt), zipped.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, snapshotsDir, plain+".json"), raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{gz, plain, plain} {
+		entries, ok := readSnapshotFile(dir, id)
+		if !ok {
+			t.Fatalf("snapshot %s unread", id)
 		}
-		if !slices.Equal(c.LoadAfter, want) {
-			t.Fatalf("%s LoadAfter = %v, want %v", c.ID, c.LoadAfter, want)
-		}
+		assertCapeWins(t, entries)
 	}
 }

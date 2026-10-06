@@ -531,7 +531,7 @@ func readAt(dir, id string) (Profile, error) {
 		}
 	}
 	sanitizeAppearance(&p)
-	adoptEntryLoadAfter(b, &p, filepath.Join(dir, "mods"))
+	adoptProfileLoadAfter(b, &p, filepath.Join(dir, "mods"))
 	if statErr == nil {
 		rememberProfile(path, fi, p)
 	}

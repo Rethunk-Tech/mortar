@@ -171,22 +171,35 @@ func authorDeclares(peer, folder string, id mod.ID) bool {
 	return slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return mod.Equal(mod.SMAPI(d.UniqueID), id) })
 }
 
-// adoptEntryLoadAfter moves wins a profile file still records per download onto the packs whose manifest lists the
-// loser: that is the only trace of which pack the user meant.
-func adoptEntryLoadAfter(raw []byte, p *Profile, modsDir string) {
-	if !bytes.Contains(raw, []byte(`"loadAfter"`)) {
+// adoptProfileLoadAfter is adoptEntryLoadAfter for a whole profile file.
+func adoptProfileLoadAfter(raw []byte, p *Profile, modsDir string) {
+	if !bytes.Contains(raw, loadAfterKey) {
 		return
 	}
-	var old struct {
-		Entries []struct {
-			LoadAfter []mod.ID `json:"loadAfter"`
-		} `json:"entries"`
+	var doc struct {
+		Entries json.RawMessage `json:"entries"`
 	}
-	if json.Unmarshal(raw, &old) != nil || len(old.Entries) != len(p.Entries) {
+	if json.Unmarshal(raw, &doc) == nil {
+		adoptEntryLoadAfter(doc.Entries, p.Entries, modsDir)
+	}
+}
+
+var loadAfterKey = []byte(`"loadAfter"`)
+
+// adoptEntryLoadAfter moves wins that rawEntries, the JSON entries decoded, still records per download onto the
+// packs whose manifest lists the loser: that is the only trace of which pack the user meant.
+func adoptEntryLoadAfter(rawEntries []byte, entries []Entry, modsDir string) {
+	if !bytes.Contains(rawEntries, loadAfterKey) {
 		return
 	}
-	for i, oe := range old.Entries {
-		e := &p.Entries[i]
+	var old []struct {
+		LoadAfter []mod.ID `json:"loadAfter"`
+	}
+	if json.Unmarshal(rawEntries, &old) != nil || len(old) != len(entries) {
+		return
+	}
+	for i, oe := range old {
+		e := &entries[i]
 		for _, loser := range oe.LoadAfter {
 			for ci := range e.Mods {
 				if manifestLists(modsDir, e.Key, e.Mods[ci].Folder, loser) {

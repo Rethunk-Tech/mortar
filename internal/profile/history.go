@@ -875,10 +875,19 @@ func readSnapshotFile(dir, id string) ([]Entry, bool) {
 	if err != nil {
 		return nil, false
 	}
-	var entries []Entry
-	if err := json.NewDecoder(zr).Decode(&entries); err != nil {
+	raw, err := io.ReadAll(zr)
+	if err != nil {
 		return nil, false
 	}
+	return decodeSnapshot(dir, raw)
+}
+
+func decodeSnapshot(dir string, raw []byte) ([]Entry, bool) {
+	var entries []Entry
+	if err := json.Unmarshal(raw, &entries); err != nil {
+		return nil, false
+	}
+	adoptEntryLoadAfter(raw, entries, filepath.Join(dir, "mods"))
 	return entries, true
 }
 
@@ -889,8 +898,8 @@ func migratePlainSnapshot(dir, id, path string) ([]Entry, bool) {
 	if err != nil {
 		return nil, false
 	}
-	var entries []Entry
-	if err := json.Unmarshal(b, &entries); err != nil {
+	entries, ok := decodeSnapshot(dir, b)
+	if !ok {
 		return nil, false
 	}
 	if writeSnapshotFile(dir, id, entries) == nil {
