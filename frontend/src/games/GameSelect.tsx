@@ -18,6 +18,7 @@ import { absoluteWhen } from '../i18n/when.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
+import { arrowFocus } from '../shell/arrowFocus.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportError } from '../toasts/report.ts'
@@ -216,7 +217,11 @@ function Row({
   const { t, i18n } = useLingui()
   const loaderLine = useLoaderLine({ game, loader, lastPlayedName, lastPlayedAt, playtimeMs })
   const open = useOpenGame(game)
-  const playLast = usePlayLast(game, lastPlayedId)
+  // A game never played yet still gets Play, for its first profile.
+  const first = cards?.profiles[0]
+  const playId = lastPlayedId || first?.id || ''
+  const playName = lastPlayedName || first?.name || ''
+  const playLast = usePlayLast(game, playId)
   const content = (
     <>
       {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
@@ -258,12 +263,12 @@ function Row({
         ) : null}
       </Box>
       <Box sx={{ ...aboveOpen, display: 'flex', alignItems: 'center', gap: '14px' }}>
-        {openable && lastPlayedId ? (
+        {openable && playId ? (
           <Button
             type="button"
             variant="contained"
             size="large"
-            aria-label={t`Play ${lastPlayedName}`}
+            aria-label={t`Play ${playName}`}
             startIcon={<Play size={22} fill="currentColor" />}
             onClick={playLast}
             sx={{
@@ -287,11 +292,11 @@ function Row({
   const sx = {
     position: 'relative',
     minHeight: compact ? TILE_COMPACT_PX : TILE_MIN_PX,
+    // Text above actions on every tile, so Play and the sources sit in the same place whatever the name's length.
     display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    alignContent: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
     gap: '16px',
     px: '48px',
     py: '24px',
@@ -357,6 +362,7 @@ function GameSelect() {
           gridAutoRows: `minmax(${TILE_MIN_PX}px, 1fr)`,
           ...hoverFocus,
         }}
+        onKeyDown={(e) => arrowFocus(e, '[data-tile]')}
       >
         {ordered(status.games).map((g) => (
           <Row key={g.id} {...tileProps(g)} />
