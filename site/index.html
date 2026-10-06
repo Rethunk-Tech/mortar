@@ -8,7 +8,7 @@
     <title>Mortar: a mod manager for PC games</title>
     <meta
       name="description"
-      content="Mortar is a free, open source desktop mod manager for PC games, with Stardew Valley, Lethal Company and Valheim supported today. It installs each game's mod loader, keeps each set of mods in its own profile, explains conflicts and shares profiles as a link."
+      content="Mortar is a free, open source desktop mod manager for PC games, with Stardew Valley, Lethal Company and Valheim supported today. It installs each game's mod loader, keeps each set of mods in its own profile, explains conflicts, shares profiles as a link and plays from Steam Deck Game Mode."
     />
     <meta
       property="og:title"
@@ -16,11 +16,11 @@
     />
     <meta
       property="og:description"
-      content="Profiles, mod loader setup, Nexus Mods, GitHub and Thunderstore downloads, conflict explanations and shareable profiles. Free and open source for Linux and Windows."
+      content="Profiles, SMAPI and BepInEx setup, Nexus Mods, GitHub and Thunderstore downloads, conflict explanations, shareable profiles and Steam Deck play. Free and open source for Linux and Windows."
     />
     <meta
       property="og:image"
-      content="https://mortar.rethunk.tech/img/mods.webp"
+      content="https://mortar.rethunk.tech/img/games.webp"
     />
     <meta property="og:url" content="https://mortar.rethunk.tech/" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -76,10 +76,10 @@
         </p>
         <img
           class="shot"
-          src="img/mods.webp"
-          width="1280"
-          height="800"
-          alt="Mortar showing a Stardew Valley profile of 817 mods with cover art"
+          src="img/games.webp"
+          width="1400"
+          height="840"
+          alt="Mortar's game select with Stardew Valley, Lethal Company and Valheim"
         />
       </div>
       <ul class="facts wrap">
@@ -129,35 +129,38 @@
 
         <div class="feature flip">
           <div class="copy">
-            <h2>Every game in one window</h2>
+            <h2>Stardew Valley on SMAPI</h2>
             <p>
-              Each game brings its own loader and mod sites, and Mortar handles
-              both from the same window. Pick a game, and its profiles, sources
-              and settings come with it.
+              Mortar installs SMAPI and keeps it up to date, and handles a
+              profile of hundreds of mods with cover art, groups and filters.
+              Each game keeps its own loader, mod sites and settings, so
+              switching games is one click on Game select.
             </p>
             <ul class="ticks">
-              <li>Finds each game in Steam, GOG, Heroic or Lutris</li>
-              <li>Installs and updates the loader the game needs</li>
-              <li>Settings for loaders, launches and saves kept per game</li>
+              <li>Click Mod Manager Download on Nexus Mods and the mod lands in the right profile</li>
+              <li>Import Nexus collections with their FOMOD choices</li>
+              <li>SMAPI options set for the game or for one profile</li>
             </ul>
           </div>
           <img
             class="shot"
-            src="img/games.webp"
-            width="1400"
-            height="840"
+            src="img/mods.webp"
+            width="1280"
+            height="800"
             loading="lazy"
-            alt="The game select screen with Stardew Valley and Lethal Company side by side"
+            alt="Mortar showing a Stardew Valley profile of 817 mods with cover art"
           />
         </div>
 
         <div class="feature">
           <div class="copy">
-            <h2>Lethal Company on BepInEx</h2>
+            <h2>Lethal Company and Valheim on BepInEx</h2>
             <p>
-              Mortar installs BepInEx for you and keeps every Thunderstore
-              package in the profile, not the game folder. At launch it places
-              BepInEx beside the game and takes it back when the game exits.
+              Mortar installs the BepInEx pack each game needs and keeps every
+              Thunderstore package in the profile, not the game folder. At
+              launch it places BepInEx beside the game and takes it back when
+              the game exits. On Linux, Valheim's native build runs modded
+              without Proton.
             </p>
             <ul class="ticks">
               <li>Plugin settings stay with the profile and travel when you share it</li>
@@ -249,6 +252,31 @@
 
         <div class="feature">
           <div class="copy">
+            <h2>Play from Steam Deck Game Mode</h2>
+            <p>
+              Add a profile to Steam and start it from Game Mode like any other
+              game. Mortar stays out of sight while the game starts, shows a
+              dialog only when something needs an answer, and closes with the
+              game so Steam counts your playtime.
+            </p>
+            <ul class="ticks">
+              <li>A gamepad moves focus, confirms, goes back, switches tabs and plays</li>
+              <li>Larger touch and gamepad targets, laid out for the Deck's 1280×800 screen</li>
+              <li>Diagnostics say how launching works in Desktop Mode and in Game Mode</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/deck.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="Game select at the Steam Deck's resolution with the Lethal Company tile focused by a gamepad"
+          />
+        </div>
+
+        <div class="feature flip">
+          <div class="copy">
             <h2>Your profiles on all your PCs</h2>
             <p>
               Pair two of your own computers with a short code. A profile you
@@ -271,7 +299,7 @@
           />
         </div>
 
-        <div class="feature flip">
+        <div class="feature">
           <div class="copy">
             <h2>Looks the way you like</h2>
             <p>
@@ -460,8 +488,8 @@
               A small mod Mortar adds to each profile. In Stardew Valley it runs
               console commands sent from Mortar, exposes Generic Mod Config Menu
               settings, records startup timings and drives an overlay for
-              streaming. In Lethal Company it tells Mortar which plugins the
-              running game loaded.
+              streaming. In Lethal Company and Valheim it tells Mortar which
+              plugins the running game loaded.
             </p>
             <div class="links">
               <a href="https://github.com/Rethunk-Tech/mortar-smapi-bridge"
@@ -579,6 +607,16 @@
               <!-- games:start -->Stardew Valley, Lethal Company and Valheim<!-- games:end -->, from Steam
               (including Flatpak Steam), GOG, Heroic and Lutris. Mortar is built for many games, and more are on the
               way.
+            </p>
+          </details>
+          <details>
+            <summary>Does Mortar work on the Steam Deck?</summary>
+            <p>
+              Yes. In Desktop Mode, download the AppImage and run it. Open a
+              profile's menu, choose Add to Steam, and the profile shows up in
+              Game Mode. The Flatpak cannot add itself to Steam, so the
+              <a href="/download/#appimage">AppImage</a> is the one to use on
+              the Deck.
             </p>
           </details>
           <details>

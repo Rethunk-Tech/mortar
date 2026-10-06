@@ -8,7 +8,7 @@
     <title>Download Mortar</title>
     <meta
       name="description"
-      content="Download Mortar for Windows or Linux: installer, AppImage, Flatpak, and signed apt, dnf and pacman repositories that keep it up to date."
+      content="Download Mortar for Windows, Linux or the Steam Deck: installer, AppImage, Flatpak, and signed apt, dnf and pacman repositories that keep it up to date."
     />
     <link rel="icon" href="../favicon.png" />
     <link rel="stylesheet" href="../base.css" />
@@ -39,7 +39,7 @@
         <h1>Download Mortar</h1>
         <p class="lede">
           Free and open source. <span id="version">The latest release</span> for
-          Windows and Linux, on x64 and ARM64.
+          Windows and Linux, on x64 and ARM64, and the Steam Deck.
         </p>
       </div>
 
@@ -324,6 +324,15 @@ sudo pacman -Sy mortar</code></pre>
           <p class="muted">
             The first run adds Mortar to your applications menu and takes
             <code>nxm://</code> links and <code>.mortar</code> files.
+          </p>
+          <h3>Steam Deck</h3>
+          <p class="muted">
+            Use the x86_64 AppImage. In Desktop Mode, download it, mark it
+            executable (Properties, Permissions, or the <code>chmod</code> line
+            above) and run it. Then open a profile's menu and choose
+            <strong>Add to Steam</strong>: the profile appears in Game Mode, and
+            playing it there starts the game with that profile's mods. The
+            Flatpak cannot add itself to Steam.
           </p>
         </div>
 
