@@ -171,7 +171,7 @@ type CheckTiming struct {
 
 // Count is the number of problems, one per missing dependency, duplicate, broken mod, asset conflict, setting last-run error and loader load failure.
 func (r Result) Count() int {
-	conflicts := conflictRows(r.AssetConflicts)
+	conflicts := ConflictRows(r.AssetConflicts)
 	duplicates := 0
 	for _, duplicate := range r.Duplicates {
 		if !duplicate.NexusOptional {
@@ -873,9 +873,9 @@ func newer(a, b Ref) bool {
 	return a.FileID > b.FileID
 }
 
-// conflictRows counts non-cosmetic conflicts as the Problems tab shows them: conflicts between the same mods with the
+// ConflictRows counts non-cosmetic conflicts as the Problems tab shows them: conflicts between the same mods with the
 // same winner and fix are one row however many assets they span.
-func conflictRows(conflicts []framework.AssetConflict) int {
+func ConflictRows(conflicts []framework.AssetConflict) int {
 	rows := map[string]bool{}
 	for _, c := range conflicts {
 		if c.Cosmetic {

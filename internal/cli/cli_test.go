@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/savessvc"
@@ -739,5 +740,26 @@ func TestSavesWithoutFarmsListTheAppsSaveName(t *testing.T) {
 	if r.code != 0 || !strings.HasPrefix(strings.TrimSpace(r.out), "SAVE") || strings.Contains(r.out, "FARM") ||
 		!strings.Contains(r.out, "Save file 1") || !strings.Contains(r.out, "Midgard") {
 		t.Fatalf("saves: %q", r.out)
+	}
+}
+
+func TestProblemsTextLabelsActiveRowsAndCountsConflictGroups(t *testing.T) {
+	conflict := func(target string) framework.AssetConflict {
+		return framework.AssetConflict{Kind: "edit", Target: target, PackIDs: []mod.ID{"smapi:A", "smapi:B"}, Names: []string{"A", "B"}, WinnerName: "A"}
+	}
+	results := map[string]any{"problems": problems.Result{
+		AssetConflicts: []framework.AssetConflict{conflict("Data/One"), conflict("Data/Two")},
+		Missing:        []problems.Missing{{DependentName: "Pack", ID: "smapi:Need.Mod", Listed: true, Optional: true}},
+		Dismissed: []problems.DismissedProblem{
+			{Token: "t", Missing: &problems.Missing{DependentName: "Old", ID: "smapi:Old.Mod", Listed: true}},
+		},
+	}}
+
+	r := invoke(t, results, "problems", "stardew", "Farm")
+
+	active, dismissed := strings.Index(r.out, "Active"), strings.Index(r.out, "Dismissed (1)")
+	if r.code != 0 || !strings.HasPrefix(r.out, "1 problems: 0 missing, 0 duplicates, 0 broken, 1 conflict groups") ||
+		active < 0 || dismissed < active || strings.Index(r.out, "conflict   edit Data/One") < active {
+		t.Fatalf("output = %q", r.out)
 	}
 }

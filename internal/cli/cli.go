@@ -911,8 +911,16 @@ func harmlessMissing(r problems.Result) int {
 	return n
 }
 
+// problemsHumanCount is Count without the listed requirements, which the CLI reports as harmless. Count already
+// leaves out optional and outside requirements, so those are not subtracted again.
 func problemsHumanCount(r problems.Result) int {
-	return r.Count() - harmlessMissing(r)
+	listed := 0
+	for _, x := range r.Missing {
+		if x.Listed && !x.Optional && !x.External {
+			listed++
+		}
+	}
+	return r.Count() - listed
 }
 
 // loaderColumn heads the runs' loader version column with the name of the loader they used, LOADER when they used
@@ -1724,15 +1732,10 @@ func (c *cmd) printProblemsText(r problems.Result) {
 }
 
 func (c *cmd) printProblems(r problems.Result) {
-	conflicts := 0
-	for _, x := range r.AssetConflicts {
-		if !x.Cosmetic {
-			conflicts++
-		}
-	}
-	fmt.Fprintf(c.out, "%d problems: %d missing, %d duplicates, %d broken, %d conflicts, %d settings, %d last-run errors, %d outside edits\n",
+	conflicts := problems.ConflictRows(r.AssetConflicts)
+	fmt.Fprintf(c.out, "%d problems: %d missing, %d duplicates, %d broken, %d conflict groups, %d settings, %d last-run errors, %d outside edits\n",
 		problemsHumanCount(r), countedMissing(r), len(r.Duplicates), len(r.Broken), conflicts, len(r.Settings), len(r.RunErrors), len(r.Drift))
-	fmt.Fprintf(c.out, "Dismissed (%d)\n", len(r.Dismissed))
+	fmt.Fprintln(c.out, "Active")
 	n := 0
 	next := func() string {
 		n++
@@ -1773,6 +1776,7 @@ func (c *cmd) printProblems(r problems.Result) {
 	for _, x := range r.Drift {
 		fmt.Fprintf(c.out, "edited     %s %s\n", x.Kind, x.Folder)
 	}
+	fmt.Fprintf(c.out, "Dismissed (%d)\n", len(r.Dismissed))
 }
 
 func (c *cmd) problemsDismissed() error {
