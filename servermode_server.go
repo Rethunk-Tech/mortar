@@ -55,7 +55,7 @@ func forwardLaunch(dataDir string, args []string) bool {
 		return false
 	}
 	for _, arg := range args {
-		if !strings.Contains(arg, "://") {
+		if !strings.Contains(arg, "://") && !strings.HasPrefix(arg, "-") {
 			if abs, err := filepath.Abs(arg); err == nil {
 				arg = abs
 			}
