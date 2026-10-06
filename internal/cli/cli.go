@@ -196,7 +196,8 @@ func (c *cmd) fail(err error) int {
 	shown := err.Error()
 	if !c.verbose && code != 2 {
 		shown = Sentence(kind)
-		if kind == usererr.Unknown {
+		// An External refusal names the mod and the page that opened, which the generic sentence cannot.
+		if kind == usererr.Unknown || kind == usererr.External {
 			shown = raw
 		}
 	} else if c.verbose {
