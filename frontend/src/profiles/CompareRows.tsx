@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
+import type { compareOpen } from './compareOpen.ts'
 
 export function CompareSection({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -20,8 +21,10 @@ export function CompareDiffRow({
   bName,
   aName,
   pending,
+  open,
 }: {
   label: string
+  open?: ReturnType<typeof compareOpen>
   copyToB?: () => void
   copyToA?: () => void
   aName: string
@@ -39,7 +42,17 @@ export function CompareDiffRow({
         minHeight: 36,
       }}
     >
-      <Typography sx={{ flex: 1, fontSize: 14, minWidth: 0 }} noWrap={true} title={label}>
+      <Typography
+        sx={{
+          flex: 1,
+          fontSize: 14,
+          minWidth: 0,
+          ...(open ? { cursor: 'pointer', '&:hover': { textDecoration: 'underline' } } : {}),
+        }}
+        noWrap={true}
+        title={label}
+        {...open}
+      >
         {label}
       </Typography>
       {copyToB ? (

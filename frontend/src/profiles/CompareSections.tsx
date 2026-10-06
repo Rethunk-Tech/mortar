@@ -6,6 +6,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import type { ComparePair, CompareSide, SectionShared } from './compare.ts'
 import { sideLabel } from './compare.ts'
+import { compareOpen } from './compareOpen.ts'
 
 function SectionHeader({
   title,
@@ -60,12 +61,14 @@ function ActionButton({
 function OnlyInSection({
   title,
   rows,
+  from,
   to,
   shared,
   onCopy,
 }: {
   title: string
   rows: CompareSide[]
+  from: Profile
   to: Profile
   shared: SectionShared
   onCopy: (to: Profile, ids: string[]) => void
@@ -107,7 +110,12 @@ function OnlyInSection({
             />
           }
           label={
-            <Typography noWrap={true} sx={{ fontSize: 14 }}>
+            <Typography
+              noWrap={true}
+              sx={{ fontSize: 14 }}
+              title={side.name}
+              onContextMenu={compareOpen(from, side).onContextMenu}
+            >
               {sideLabel(side, shared.enabled, shared.disabled)}
             </Typography>
           }
@@ -157,8 +165,15 @@ function VersionSection({
         <Typography
           key={row.id}
           noWrap={true}
-          sx={{ fontSize: 14, py: 0.5, minHeight: 36 }}
+          sx={{
+            fontSize: 14,
+            py: 0.5,
+            minHeight: 36,
+            cursor: 'pointer',
+            '&:hover': { textDecoration: 'underline' },
+          }}
           title={row.name}
+          {...compareOpen(profileA, row.a)}
         >
           {t`${row.name}: ${sideLabel(row.a, shared.enabled, shared.disabled)} → ${sideLabel(row.b, shared.enabled, shared.disabled)}`}
         </Typography>

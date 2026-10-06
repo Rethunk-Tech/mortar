@@ -135,7 +135,6 @@ export function StartupPanel({ game, children }: { game: string; children: React
             <ModTable
               report={report}
               previous={previous}
-              game={game}
               comparing={comparing}
               expanded={expanded}
               onToggle={toggle}

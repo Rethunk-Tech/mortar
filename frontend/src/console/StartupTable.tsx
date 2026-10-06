@@ -19,8 +19,7 @@ import type {
   StartupReport,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { cmpText } from '../mods/cmpText.ts'
-import { showInProfile } from '../mods/revealMod.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openModHandlers } from '../mods/openMod.ts'
 import { useStoredState } from '../shell/useStoredState.ts'
 import { useDuration, useWhy } from './startupHooks.ts'
 import { foldMods, modTotal, rowAnchor, slowestEvent, whyOf } from './startupView.ts'
@@ -137,7 +136,6 @@ function ModRow({
   mod,
   sampled,
   sort,
-  game,
   open,
   onToggle,
   change,
@@ -145,7 +143,6 @@ function ModRow({
   mod: StartupMod
   sampled: boolean
   sort: ModSort
-  game: string
   open: boolean
   onToggle: () => void
   change: number | null
@@ -153,7 +150,6 @@ function ModRow({
   const { t } = useLingui()
   const duration = useDuration()
   const why = useWhy()
-  const openId = useProfiles((s) => s.openId)
   const strong = (column: ModSort) => (sort === column ? { fontWeight: 600 } : undefined)
   return (
     <>
@@ -176,12 +172,7 @@ function ModRow({
             underline="hover"
             color="inherit"
             title={t`Show in Mods`}
-            onClick={(e) => {
-              e.stopPropagation()
-              if (openId !== '') {
-                showInProfile(game, openId, 0, mod.name)
-              }
-            }}
+            {...openModHandlers({ id: mod.id })}
             sx={{
               textAlign: 'left',
               font: 'inherit',
@@ -226,7 +217,6 @@ function ModRow({
 export function ModTable({
   report,
   previous,
-  game,
   comparing,
   expanded,
   onToggle,
@@ -234,7 +224,6 @@ export function ModTable({
 }: {
   report: StartupReport
   previous: StartupReport | undefined
-  game: string
   comparing: boolean
   expanded: ReadonlySet<string>
   onToggle: (id: string) => void
@@ -316,7 +305,6 @@ export function ModTable({
             mod={mod}
             sampled={sampled}
             sort={active.column}
-            game={game}
             open={expanded.has(mod.id)}
             onToggle={() => onToggle(mod.id)}
             change={comparing ? changeOf(mod, previous) : null}

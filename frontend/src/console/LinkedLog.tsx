@@ -2,18 +2,15 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
-import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ModsDir,
   OpenConsolePath,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { useTab } from '../game/tab.ts'
-import { useDetail } from '../mods/detail.ts'
-import { useMods } from '../mods/store.ts'
+import { openMod } from '../mods/openMod.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MONO } from '../theme/theme.ts'
-import { toastError } from '../toasts/report.ts'
+import { reportUnexpected, toastError } from '../toasts/report.ts'
 import type { InstalledMod } from './consoleLinks.ts'
 import { smapiUpdateNotes } from './smapiUpdateNotes.ts'
 import { VirtualLog } from './VirtualLog.tsx'
@@ -28,26 +25,6 @@ function installedOf(
     }
   }
   return out
-}
-
-function openMod(id: string) {
-  useTab.getState().setTab('mods')
-  const shown = (mod: Mod | undefined) => {
-    if (!mod) {
-      return
-    }
-    useDetail.getState().show(mod)
-    useDetail.getState().setOpen(true)
-  }
-  const found = useMods.getState().mods.find((m) => m.id === id)
-  if (found) {
-    shown(found)
-    return
-  }
-  useMods
-    .getState()
-    .load()
-    .then(() => shown(useMods.getState().mods.find((m) => m.id === id)))
 }
 
 export function LinkedLog({
@@ -126,7 +103,9 @@ export function LinkedLog({
           jump={jump}
           mods={installed}
           roots={{ modsDir, gameDir }}
-          onMod={openMod}
+          onMod={(id) => {
+            openMod({ id }).catch(reportUnexpected)
+          }}
           onPath={(path) => {
             OpenConsolePath(game, profile, path).catch((e: unknown) => {
               toastError(t`Could not open the folder`, e)

@@ -4,6 +4,7 @@ import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/in
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { sameId } from '../lookup.ts'
+import { ModNameLink } from '../ModNameLink.tsx'
 import { openPage } from '../menu.ts'
 import { useMods } from '../store.ts'
 import { Version } from './Version.tsx'
@@ -32,9 +33,9 @@ export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mo
               role="listitem"
               sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 3, py: 1 }}
             >
-              <Typography title={u.name} noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
-                {u.name}
-              </Typography>
+              <Box sx={{ flex: 1, minWidth: 0, display: 'flex' }}>
+                <ModNameLink id={u.id} modKey={u.key} name={u.name} />
+              </Box>
               <Version>{u.installed}</Version>
               <Version isNew={true}>{u.version}</Version>
               {u.url ? <Button onClick={() => openPage(u.url)}>{t`Open on Nexus`}</Button> : null}

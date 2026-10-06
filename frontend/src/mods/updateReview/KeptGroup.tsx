@@ -6,6 +6,7 @@ import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/in
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { sameId } from '../lookup.ts'
+import { ModNameLink } from '../ModNameLink.tsx'
 import { useMods } from '../store.ts'
 import { Version } from './Version.tsx'
 
@@ -38,9 +39,9 @@ export function KeptGroup({ kept, mods }: { kept: Update[]; mods: Mod[] }) {
                 sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 3, py: 1 }}
               >
                 <Pin size={14} aria-hidden={true} />
-                <Typography title={u.name} noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
-                  {u.name}
-                </Typography>
+                <Box sx={{ flex: 1, minWidth: 0, display: 'flex' }}>
+                  <ModNameLink id={u.id} modKey={u.key} name={u.name} />
+                </Box>
                 <Version>{u.installed}</Version>
                 <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                   {t`newer: ${u.version}`}

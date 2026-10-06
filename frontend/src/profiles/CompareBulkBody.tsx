@@ -11,8 +11,9 @@ import { CompareDiffRow, CompareSection } from './CompareRows.tsx'
 import { OnlyInSection, VersionSection } from './CompareSections.tsx'
 import type { ComparePair, CompareSide, ProfileCompare, SectionShared } from './compare.ts'
 import { sideLabel } from './compare.ts'
+import { compareOpen } from './compareOpen.ts'
 
-function IdenticalList({ rows }: { rows: ComparePair[] }) {
+function IdenticalList({ rows, profile }: { rows: ComparePair[]; profile: Profile }) {
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
   if (rows.length === 0) {
@@ -36,7 +37,16 @@ function IdenticalList({ rows }: { rows: ComparePair[] }) {
       <Collapse in={open}>
         <Box sx={{ pl: 4, pt: 0.5 }}>
           {rows.map((row) => (
-            <Typography key={row.id} sx={{ fontSize: 14, py: 0.25 }}>
+            <Typography
+              key={row.id}
+              sx={{
+                fontSize: 14,
+                py: 0.25,
+                cursor: 'pointer',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+              {...compareOpen(profile, row.a)}
+            >
               {t`${row.name} · ${row.a.version}`}
             </Typography>
           ))}
@@ -137,6 +147,7 @@ export function CompareBulkBody({
         <OnlyInSection
           title={t`Only in ${{ name: aName }}`}
           rows={onlyA}
+          from={profileA}
           to={profileB}
           shared={shared}
           onCopy={(to, ids) => onCopy(profileA, to, ids)}
@@ -146,6 +157,7 @@ export function CompareBulkBody({
         <OnlyInSection
           title={t`Only in ${{ name: bName }}`}
           rows={onlyB}
+          from={profileB}
           to={profileA}
           shared={shared}
           onCopy={(to, ids) => onCopy(profileB, to, ids)}
@@ -171,6 +183,7 @@ export function CompareBulkBody({
               pending={pending}
               copyToB={() => onCopy(profileA, profileB, [row.id])}
               copyToA={() => onCopy(profileB, profileA, [row.id])}
+              open={compareOpen(profileA, row.a)}
             />
           ))}
         </CompareSection>
@@ -178,13 +191,24 @@ export function CompareBulkBody({
       {differentSource.length > 0 ? (
         <CompareSection title={t`Different source`}>
           {differentSource.map((row) => (
-            <Typography key={row.id} noWrap={true} sx={{ fontSize: 14, py: 0.5, minHeight: 36 }}>
+            <Typography
+              key={row.id}
+              noWrap={true}
+              sx={{
+                fontSize: 14,
+                py: 0.5,
+                minHeight: 36,
+                cursor: 'pointer',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+              {...compareOpen(profileA, row.a)}
+            >
               {t`${row.name}: ${row.a.version} from ${sourceLabel(row.a.source.kind)} → ${row.b.version} from ${sourceLabel(row.b.source.kind)}`}
             </Typography>
           ))}
         </CompareSection>
       ) : null}
-      <IdenticalList rows={identical} />
+      <IdenticalList rows={identical} profile={profileA} />
       {needle !== '' && !hasDiff && identical.length === 0 ? (
         <Typography sx={{ color: 'text.secondary' }}>{t`No matching mods`}</Typography>
       ) : null}

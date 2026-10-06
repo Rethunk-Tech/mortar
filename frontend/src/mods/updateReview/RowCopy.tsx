@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Tooltip, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { ModNameLink } from '../ModNameLink.tsx'
 import { Changes } from './Changes.tsx'
 
 export function RowCopy({
@@ -22,7 +23,11 @@ export function RowCopy({
     <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
         <Typography sx={{ fontSize: 16, fontWeight: 600, overflowWrap: 'anywhere', minWidth: 0 }}>
-          {update.unofficial ? t`Unofficial update available: ${update.version}` : update.name}
+          {update.unofficial ? (
+            t`Unofficial update available: ${update.version}`
+          ) : (
+            <ModNameLink id={update.id} modKey={update.key} name={update.name} wrap={true} />
+          )}
         </Typography>
         {riskyChangelog ? (
           <Tooltip title={t`This update's notes mention breaking changes or new requirements`}>

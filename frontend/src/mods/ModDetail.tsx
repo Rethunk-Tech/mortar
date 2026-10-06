@@ -26,6 +26,7 @@ import { useDetail } from './detail.ts'
 import { LockedNote } from './LockedNote.tsx'
 import { LockedReason } from './LockedReason.tsx'
 import { entryOf, modId, siblingsOf } from './lookup.ts'
+import { ModNameLink } from './ModNameLink.tsx'
 import { openPage } from './menu.ts'
 import { NexusDetails } from './NexusDetails.tsx'
 import { heading } from './paper.ts'
@@ -48,6 +49,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function NeedRow({ need }: { need: Need }) {
   const { t } = useLingui()
+  const name = need.state === 'absent' ? need.name : <ModNameLink id={need.id} name={need.name} />
   const states: Record<string, string> = {
     absent: t`Missing`,
     disabled: t`Off`,
@@ -56,7 +58,12 @@ function NeedRow({ need }: { need: Need }) {
   return (
     <Box sx={row}>
       <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, ...text }}>
-        {need.required ? need.name : t`${need.name} (optional)`}
+        {name}
+        {need.required ? null : (
+          <Box component="span" sx={{ color: 'text.secondary', ml: 0.75 }}>
+            {t`Optional`}
+          </Box>
+        )}
       </Typography>
       <Typography
         sx={{

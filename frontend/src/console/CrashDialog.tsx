@@ -19,11 +19,11 @@ import { useTab } from '../game/tab.ts'
 import { useGameName } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
-import { useDetail } from '../mods/detail.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
+import { openMod } from '../mods/openMod.ts'
 import { ReportToAuthorButton } from '../mods/ReportToAuthorButton.tsx'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -75,9 +75,7 @@ function showMod(name: string, onDone: () => void) {
   if (!mod) {
     return
   }
-  useTab.getState().setTab('mods')
-  useDetail.getState().show(mod)
-  useDetail.getState().setOpen(true)
+  openMod({ id: mod.id, key: mod.key }).catch(reportUnexpected)
   onDone()
 }
 
