@@ -206,11 +206,21 @@ function useAssetPages(open: boolean, filter: string, shared: boolean) {
   }
 }
 
-export function AssetMapDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+// focus opens the map on one asset: filtered to it with its rows expanded, as a conflict's Show conflicts does.
+export function AssetMapDialog({
+  open,
+  onClose,
+  focus,
+}: {
+  open: boolean
+  onClose: () => void
+  focus?: string
+}) {
   const { t } = useLingui()
-  const [filter, setFilter] = useState('')
+  const [filter, setFilter] = useState(focus ?? '')
   const [shared, setShared] = useState(true)
-  const [expanded, setExpanded] = useState<string | null>(null)
+  // undefined until the user opens or closes a row, so the focused asset starts open.
+  const [expanded, setExpanded] = useState<string | null | undefined>(undefined)
   const { page, more, reload } = useAssetPages(open, filter, shared)
   const targets = page?.targets ?? []
   return (
@@ -218,7 +228,7 @@ export function AssetMapDialog({ open, onClose }: { open: boolean; onClose: () =
       <DialogTitle>{t`Asset map`}</DialogTitle>
       <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-          {t`Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit.`}
+          {t`Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order.`}
         </Typography>
         <SearchField
           label={t`Find an asset`}
@@ -243,12 +253,16 @@ export function AssetMapDialog({ open, onClose }: { open: boolean; onClose: () =
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
             {targets.map((target) => {
               const id = `${target.target}\t${target.key ?? ''}`
+              const isOpen =
+                expanded === undefined
+                  ? focus !== undefined && target.target.toLowerCase() === focus.toLowerCase()
+                  : expanded === id
               return (
                 <TargetRow
                   key={id}
                   target={target}
-                  expanded={expanded === id}
-                  onToggle={() => setExpanded((cur) => (cur === id ? null : id))}
+                  expanded={isOpen}
+                  onToggle={() => setExpanded(isOpen ? null : id)}
                   onChanged={reload}
                 />
               )

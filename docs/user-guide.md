@@ -226,7 +226,7 @@ Two enabled copies of the same mod are in the profile. The game loads only one, 
 
 #### Conflicting files
 
-Two mods change the same file or asset. Only one change wins, so the other mod may look or behave wrongly. The row says which mod wins; disable the one you prefer to lose, or dismiss the row when the overlap is harmless.
+Two mods change the same file or asset. Only one change wins, so the other mod may look or behave wrongly. The row says which mod wins; disable the one you prefer to lose, or dismiss the row when the overlap is harmless. Open **Why?** and choose **Show conflicts** to see every mod that changes the asset, in load order, with the kind of change each makes and which one wins.
 
 #### Errors in the last run
 

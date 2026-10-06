@@ -2,8 +2,10 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Link, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, Info, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
+import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
 import { useTab } from '../game/tab.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { AssetMapDialog } from './AssetMapDialog.tsx'
 import { ConflictWhy } from './ConflictWhy.tsx'
 import { LinkedText } from './ModLinks.tsx'
 import { openPage } from './menu.ts'
@@ -32,8 +34,28 @@ function WhyBody({ row }: { row: Row }) {
           {`${row.loadFailure.line}: ${row.loadFailure.message}`}
         </Typography>
       ) : null}
-      {row.kind === 'asset' ? <ConflictWhy asset={row.asset} /> : null}
+      {row.kind === 'asset' ? <AssetConflictWhy asset={row.asset} /> : null}
     </Box>
+  )
+}
+
+function AssetConflictWhy({ asset }: { asset: AssetConflict }) {
+  const { t } = useLingui()
+  const [mapOpen, setMapOpen] = useState(false)
+  return (
+    <>
+      <ConflictWhy asset={asset} />
+      <Link
+        component="button"
+        onClick={() => setMapOpen(true)}
+        sx={{ alignSelf: 'flex-start', fontSize: 13 }}
+      >
+        {t`Show conflicts`}
+      </Link>
+      {mapOpen ? (
+        <AssetMapDialog open={true} focus={asset.target} onClose={() => setMapOpen(false)} />
+      ) : null}
+    </>
   )
 }
 

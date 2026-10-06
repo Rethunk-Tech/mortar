@@ -2226,7 +2226,7 @@ msgid "Installing SMAPI…"
 msgstr "Installing SMAPI…"
 
 #: src/console/StartupTable.tsx:277
-#: src/mods/ProblemRows.tsx:118
+#: src/mods/ProblemRows.tsx:140
 msgid "Why?"
 msgstr "Why?"
 
@@ -3551,6 +3551,10 @@ msgstr "Main"
 msgid "{0, plural, one {# mod in the game's Mods folder isn't in Mortar.} other {# mods in the game's Mods folder aren't in Mortar.}}"
 msgstr "{0, plural, one {# mod in the game's Mods folder isn't in Mortar.} other {# mods in the game's Mods folder aren't in Mortar.}}"
 
+#: src/mods/AssetMapDialog.tsx:231
+msgid "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
+msgstr "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
+
 #: src/settings/sections/StreamOverlay.tsx:307
 msgid "Part of the OBS address; regenerate it if it leaks"
 msgstr "Part of the OBS address; regenerate it if it leaks"
@@ -3571,7 +3575,7 @@ msgstr "Could not launch the game"
 
 #. placeholder {0}: page.all
 #. placeholder {1}: page.shared
-#: src/mods/AssetMapDialog.tsx:236
+#: src/mods/AssetMapDialog.tsx:246
 msgid "{0, plural, one {# asset} other {# assets}}, {1} changed by more than one mod"
 msgstr "{0, plural, one {# asset} other {# assets}}, {1} changed by more than one mod"
 
@@ -4082,7 +4086,7 @@ msgstr "Review revision {review}"
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 
-#: src/mods/ProblemRows.tsx:28
+#: src/mods/ProblemRows.tsx:30
 msgid "Read more in the guide"
 msgstr "Read more in the guide"
 
@@ -4090,7 +4094,7 @@ msgstr "Read more in the guide"
 msgid "This mod is pinned in this profile, so Mortar does not offer updates for it."
 msgstr "This mod is pinned in this profile, so Mortar does not offer updates for it."
 
-#: src/mods/AssetMapDialog.tsx:232
+#: src/mods/AssetMapDialog.tsx:242
 msgid "Only assets more than one mod changes"
 msgstr "Only assets more than one mod changes"
 
@@ -4712,7 +4716,7 @@ msgstr "{0, plural, one {Add # mod} other {Add # mods}}"
 msgid "Could not unpair"
 msgstr "Could not unpair"
 
-#: src/mods/AssetMapDialog.tsx:258
+#: src/mods/AssetMapDialog.tsx:272
 msgid "Show more"
 msgstr "Show more"
 
@@ -6239,7 +6243,7 @@ msgstr "Auto-retry failed downloads"
 msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
-#: src/mods/AssetMapDialog.tsx:218
+#: src/mods/AssetMapDialog.tsx:228
 #: src/mods/ProblemsTab.tsx:280
 msgid "Asset map"
 msgstr "Asset map"
@@ -7788,10 +7792,6 @@ msgstr "{plugin} failed to load ({name})."
 msgid "An install is already running."
 msgstr "An install is already running."
 
-#: src/mods/AssetMapDialog.tsx:221
-msgid "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit."
-msgstr "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit."
-
 #: src/mods/CleanupSection.tsx:157
 msgid "This change can be undone from History."
 msgstr "This change can be undone from History."
@@ -9099,6 +9099,10 @@ msgstr "SMAPI UniqueID"
 #: src/mods/describe.ts:171
 msgid "{name} is deprecated on Thunderstore."
 msgstr "{name} is deprecated on Thunderstore."
+
+#: src/mods/ProblemRows.tsx:53
+msgid "Show conflicts"
+msgstr "Show conflicts"
 
 #: src/settings/sections/Sources.tsx:120
 msgid "Not set up"
@@ -11587,11 +11591,11 @@ msgstr "No stored run contains that text."
 msgid "Reading your saves…"
 msgstr "Reading your saves…"
 
-#: src/mods/AssetMapDialog.tsx:225
+#: src/mods/AssetMapDialog.tsx:235
 msgid "Find an asset, for example Maps/Town"
 msgstr "Find an asset, for example Maps/Town"
 
-#: src/mods/AssetMapDialog.tsx:224
+#: src/mods/AssetMapDialog.tsx:234
 msgid "Find an asset"
 msgstr "Find an asset"
 
@@ -11957,7 +11961,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/SearchRunsDialog.tsx:171
 #: src/launch/LaunchLayer.tsx:275
 #: src/launch/SweepDialog.tsx:132
-#: src/mods/AssetMapDialog.tsx:265
+#: src/mods/AssetMapDialog.tsx:279
 #: src/mods/AuthorDialog.tsx:165
 #: src/mods/ChangelogDialog.tsx:116
 #: src/mods/ModDetail.tsx:316
