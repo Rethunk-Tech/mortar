@@ -50,6 +50,45 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.3.0" date="2026-10-06">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Lethal Company and Valheim: Mortar finds them, installs BepInEx, and installs mods with all their dependencies. Valheim runs natively on Linux with no Proton needed</li>
+          <li>Thunderstore is a mod source for Lethal Company and Valheim, and CurseForge is a mod source for Stardew Valley</li>
+          <li>Browse searches every source at once, shows one card per mod, and lets you pick the source by its logo; an empty search lists each source's top mods</li>
+          <li>A details panel for every mod: description, versions, dependencies and changelog, with filters by category and sort</li>
+          <li>Load order and Performance tabs for Lethal Company and Valheim: the order plugins load, how long each takes at startup, and frame times and each plugin's cost while you play</li>
+          <li>While the game runs, each mod shows whether it actually loaded, and Mortar records the game version you played</li>
+          <li>Skip the intro is a per-game setting</li>
+          <li>Problems catches much more before you press Play: missing or incompatible plugins, dependency loops, two mods shipping the same plugin, deprecated packages with their replacement, and mods that change the same game code</li>
+          <li>Crash help names the likely cause of a crash, can find the mod behind it by testing halves of your list, and shares the log with one click</li>
+          <li>Import profiles from r2modman, Gale, Vortex and Mod Organizer 2, and share as an r2modman code or a Thunderstore modpack</li>
+          <li>Back up a whole profile to one file, including its saves and mods no site can download again, and restore it as a new profile</li>
+          <li>Pair two computers with a code to send profiles over your local network, or keep them in step through a sync folder</li>
+          <li>One Updates list across all sources, with Update all, a restore point and Undo all</li>
+          <li>A config editor for mods' settings files and their in-game settings menus</li>
+          <li>Steam Deck: play with the gamepad, larger touch targets, and start games in Game Mode</li>
+          <li>Mortar finds games installed in Bottles and launches them through it</li>
+          <li>The browser extension is on the Chrome Web Store for Chrome, Edge and other Chromium browsers</li>
+          <li>Settings has Accounts and Source health pages, a per-game source order, and a search that understands common words</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>The mod list, details panel, profile checks and startup are much faster</li>
+          <li>Downloads are checked against the site's hash, and a damaged one is dropped so Retry fetches it again</li>
+          <li>Saves are backed up before every update</li>
+          <li>Only real crashes are reported as crashes, and Stop asks the game to close before ending it</li>
+          <li>SMAPI no longer refuses to start after an earlier crash</li>
+          <li>Errors explain what went wrong instead of saying "Something went wrong"</li>
+          <li>Add to Steam updates its shortcut instead of adding a second one</li>
+          <li>A damaged mod archive fails that one install instead of closing Mortar</li>
+          <li>An update never replaces an unrelated mod that came from the same page</li>
+          <li>Undo covers config edits and keeps a mod's settings when you roll it back</li>
+          <li>Menus and tooltips are solid, lists no longer flash on first draw, and keyboard shortcuts no longer take over Enter, Space and the arrow keys</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.2" date="2026-10-05">
       <description>
         <p>New</p>
@@ -77,50 +116,21 @@
         </ul>
         <p>Fixed</p>
         <ul>
-          <li>Declare direct dependencies and skip debug and strip for the prebuilt binary (namcap clean)</li>
-          <li>Rootless podman needs no chown hand-back; rebuild the package repository from any published release</li>
+          <li>The Arch package installs cleanly and lists the libraries it needs</li>
         </ul>
       </description>
     </release>
     <release version="0.2.0" date="2026-10-05">
       <description>
-        <p>New</p>
+        <p>The first public release of Mortar, a mod manager for Stardew Valley.</p>
         <ul>
-          <li>Downloads dialog names its folders; inline errors carry the cause</li>
-          <li>What's new reopens from the Mortar menu and Settings</li>
-          <li>Optional files update with their main file before Play and from a run error</li>
-          <li>Links and LAN transfers carry each optional file's placement and switch</li>
-          <li>Native data-location dialog on Linux; drop legacy templates reader; clean old exes</li>
-          <li>Mod details list optional files with their files and alternatives; update review updates them with the main file</li>
-          <li>Baseline Nexus items from their original archive when its MD5 matches Nexus</li>
-          <li>Launch preset templates carry the SMAPI console choice</li>
-          <li>Only a file without a manifest waits for its mod's main file, in the store too</li>
-          <li>Optional files keep their slot across versions, switch alternatives off, list their files and export apart</li>
-          <li>Ignore or use update source for a multi-selection, show cache size when clearing</li>
-          <li>Optional files nest under their main mod with their own switch and Remove</li>
-          <li>Bundles, templates and shares carry optional files after their main mod</li>
-          <li>A main file installs before its optional files, which skip the join question</li>
-          <li>Optional Nexus files without a manifest overlay their main file</li>
-          <li>…and 581 more</li>
-        </ul>
-        <p>Fixed</p>
-        <ul>
-          <li>Restore the cover fade into the backdrop</li>
-          <li>Rebuild's tidied notices sit back inside rebuild, so the package builds</li>
-          <li>Import the overlay place dialog once</li>
-          <li>Restore the catalog entries the release commit's stale base dropped</li>
-          <li>One keep set; one save-backup target; templates carry launch state</li>
-          <li>A version bump adds a new metainfo release instead of renaming the last</li>
-          <li>Restore the glibc check, portable update platform and guide lines a stale-base commit dropped</li>
-          <li>Announce a download written in place only once its size holds for a second</li>
-          <li>The sidebar asks for one entry's dot-hidden mods</li>
-          <li>Package removal and uninstall-cleanup undo per-user desktop integration</li>
-          <li>Throttle per-file transfer progress to the queue's 250 ms cadence</li>
-          <li>Apply always records its own history event, and Undo restores the mods, game settings and launch options</li>
-          <li>Dialog actions follow the order rule; empty Mods tab, tag and category dialogs, first-run focus refresh, truncated text titles, copy consistency, search without source JSON</li>
-          <li>Inline errors show a plain sentence with the cause in a tooltip; data move shows its destination and blocks on short space; trim rows and backup copy</li>
-          <li>Restore files 9ed5c138 reverted by mistake</li>
-          <li>…and 598 more</li>
+          <li>Finds Stardew Valley on Steam (including Flatpak Steam), GOG, Heroic and Lutris, and installs SMAPI for you</li>
+          <li>Keeps each set of mods in its own profile, with install, update, rollback and undo</li>
+          <li>Downloads from Nexus Mods and GitHub, including optional files that stay with their main mod</li>
+          <li>Shares a profile as a link or a .mortar file, or sends it to your other computers over the local network</li>
+          <li>Checks a profile before Play: missing requirements, broken or outdated mods, conflicts and errors from the last run</li>
+          <li>Console commands, Generic Mod Config Menu settings and a stream overlay through the Mortar SMAPI Bridge</li>
+          <li>Light and dark themes, What's new after each update, and updates itself on Windows and the AppImage</li>
         </ul>
       </description>
     </release>

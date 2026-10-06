@@ -1,5 +1,5 @@
 {
-  "serial": 1791260831,
+  "serial": 1791330062,
   "components": [
     {
       "game": "stardew",
@@ -25,10 +25,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-smapi-bridge"
       },
-      "tag": "v0.2.1",
-      "asset": "MortarSmapiBridge-0.2.1.zip",
-      "version": "0.2.1",
-      "sha256": "953c05e814b183fa8a2914ef58f78a03854e942a2a4f5948609593915eb2a63e"
+      "tag": "v0.2.2",
+      "asset": "MortarSmapiBridge-0.2.2.zip",
+      "version": "0.2.2",
+      "sha256": "b3f524e7efa6e41fb47ec6e9f0d6286762a7a3c8c9dcb5c94d6e7abd14364c49"
     },
     {
       "game": "lethal-company",
@@ -39,10 +39,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.1.0",
-      "asset": "MortarBepInExBridge-0.1.0.zip",
-      "version": "0.1.0",
-      "sha256": "89f29adee74ea37dfc3a7247ae3d13122ea358b3168da3fb8be3363d09a9e9d6"
+      "tag": "v0.2.0",
+      "asset": "MortarBepInExBridge-0.2.0.zip",
+      "version": "0.2.0",
+      "sha256": "3aa02f367d7dc6c904167370272ed46d0d166ca09f8b788eba729fd35301cada"
     },
     {
       "game": "valheim",
@@ -53,10 +53,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.1.0",
-      "asset": "MortarBepInExBridge-0.1.0.zip",
-      "version": "0.1.0",
-      "sha256": "89f29adee74ea37dfc3a7247ae3d13122ea358b3168da3fb8be3363d09a9e9d6"
+      "tag": "v0.2.0",
+      "asset": "MortarBepInExBridge-0.2.0.zip",
+      "version": "0.2.0",
+      "sha256": "3aa02f367d7dc6c904167370272ed46d0d166ca09f8b788eba729fd35301cada"
     }
   ],
   "games": [

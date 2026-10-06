@@ -1799,7 +1799,7 @@ msgstr "Peak ms"
 msgid "{a} and {b} each depend on the other, so BepInEx stops before loading any plugin."
 msgstr "{a} and {b} each depend on the other, so BepInEx stops before loading any plugin."
 
-#: src/queue/actions.ts:84
+#: src/queue/actions.ts:85
 msgid "Could not add the download"
 msgstr "Could not add the download"
 
@@ -2272,7 +2272,7 @@ msgstr "Show the first-run tips again"
 #: src/mods/Toolbar.tsx:146
 #: src/nxm/store.ts:53
 #: src/profiles/LaunchPresetDialog.tsx:85
-#: src/queue/actions.ts:96
+#: src/queue/actions.ts:97
 #: src/queue/store.ts:245
 #: src/queue/store.ts:364
 #: src/saves/SaveGapLine.tsx:56
@@ -3366,7 +3366,7 @@ msgid "L{0}"
 msgstr "L{0}"
 
 #. placeholder {0}: reqs.length
-#: src/queue/actions.ts:93
+#: src/queue/actions.ts:94
 msgid "{0, plural, one {# download added} other {# downloads added}}"
 msgstr "{0, plural, one {# download added} other {# downloads added}}"
 
@@ -8432,7 +8432,7 @@ msgstr "{plugin} declares itself incompatible with {dependency}, which is also e
 msgid "Unpin"
 msgstr "Unpin"
 
-#: src/queue/actions.ts:100
+#: src/queue/actions.ts:101
 msgid "The download queue is empty."
 msgstr "The download queue is empty."
 
@@ -8553,7 +8553,7 @@ msgstr "The unreadable changes are also deleted from history."
 msgid "Find the mod causing this"
 msgstr "Find the mod causing this"
 
-#: src/queue/actions.ts:51
+#: src/queue/actions.ts:52
 msgid "Downloads come from Nexus with your account, so Mortar needs your API key first."
 msgstr "Downloads come from Nexus with your account, so Mortar needs your API key first."
 
@@ -9952,7 +9952,7 @@ msgstr "Open focused mod details"
 msgid "Open the folder of {label}"
 msgstr "Open the folder of {label}"
 
-#: src/queue/actions.ts:49
+#: src/queue/actions.ts:50
 msgid "Sign in to Nexus Mods to download"
 msgstr "Sign in to Nexus Mods to download"
 
@@ -12598,7 +12598,7 @@ msgstr "This profile is too large for a link."
 msgid "Leave empty to use the game folder. Same placeholders as arguments."
 msgstr "Leave empty to use the game folder. Same placeholders as arguments."
 
-#: src/queue/actions.ts:53
+#: src/queue/actions.ts:54
 #: src/settings/shortcutLabels.ts:12
 msgid "Open settings"
 msgstr "Open settings"
