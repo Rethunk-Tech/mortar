@@ -9,13 +9,12 @@ Items marked **Measure** need a throwaway test first; those tests run outside th
 Remaining ([architecture.md](architecture.md#release)):
 
 - The fork's fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage), #6202 (OnUpdateApplied, a draft waiting on its WEP, #6203) and #6239 (service methods fall back to `Options.MarshalError`, which `errorkind_test.go` relies on). With #6197 (GTK4 transparency) all six are open and rebased on v3.0.0-beta.28, and Mortar pins the fork branch `mortar/v3.0.0-beta.28`. Once #6200, #6201, #6202 and #6239 ship in a tagged v3 beta, pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`; #6197 does not gate this, since it only serves the translucent window below. #6201 and #6202 both add `resolveTarget` in `v3/pkg/updater/spawn.go`, so whichever merges second conflicts and needs a rebase.
-- The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
 - **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; one real update through the updater, and `DisplayVersion` after it.
 
 ## Queued for v1
 
 - **Packages:** an aarch64 Flatpak bundle is blocked without qemu binfmt (or an aarch64 host): `flatpak-builder --arch=aarch64` still runs `build-commands` via the aarch64 SDK's `/bin/sh` (`bwrap: execvp /bin/sh: Exec format error`), even with only `install` of a prebuilt binary.
-- **CurseForge** as a third source, after the repository is public: apply for a 3rd-party API key, then build it without caching API data, with a User-Agent on every request, and honouring each author's distribution setting.
+- **CurseForge** as a third source: apply for a 3rd-party API key, then build it without caching API data, with a User-Agent on every request, and honouring each author's distribution setting.
 
 ## Later
 
