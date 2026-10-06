@@ -14,7 +14,8 @@ TREE=${MORTAR_CLEAN_GATE_DIR:-/var/tmp/mortar-clean-gate}
 LOG=$TREE.log
 # Kept inside .git, which git clean never touches: it marks the tree as this script's own before anything is cleaned.
 MARKER=.git/mortar-clean-gate
-export GOTMPDIR=/var/tmp TMPDIR=/var/tmp
+# Scratch for every step lives in the tree, which the next run's git clean empties, so a killed run leaks nothing.
+export TMPDIR=$TREE/.tmp GOTMPDIR=$TREE/.tmp
 
 package=""
 if [ "${1:-}" = --package ]; then
@@ -43,6 +44,7 @@ echo "clean gate at $sha in $TREE (log $LOG)"
   git fetch --quiet origin &&
     git checkout --quiet --force --detach "$sha" &&
     git clean -ffdxq -e node_modules &&
+    mkdir -p "$TMPDIR" &&
     bun install --frozen-lockfile &&
     bun run bindings &&
     bun run --cwd frontend build &&

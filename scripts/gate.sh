@@ -4,10 +4,23 @@
 # not spent waiting on the bindings. The gate takes as long as the slowest step (the race tests).
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
-export GOTMPDIR="${GOTMPDIR:-/var/tmp}" TMPDIR="${TMPDIR:-/var/tmp}" GORACE=atexit_sleep_ms=0
+export GORACE=atexit_sleep_ms=0
 
-logs=$(mktemp -d "$TMPDIR/gate.XXXXXX")
+# One folder per run holds the step logs and every step's scratch (Go test binaries, Chromium profiles, bun's temp
+# files), so a run killed mid-way leaks one folder that the next run reaps, not scattered go-build and chromium
+# dirs. On /var/tmp, not tmpfs: the race test binaries are large. The name stays short because a test binds a unix
+# socket under it, and a socket path holds 107 bytes.
+base=/var/tmp
+for old in "$base"/.mg-*; do
+  pid=${old#"$base"/.mg-}
+  if [[ $pid =~ ^[0-9]+$ ]] && [ -d "$old" ] && [ ! -L "$old" ] && ! kill -0 "$pid" 2>/dev/null; then
+    rm -rf -- "$old"
+  fi
+done
+logs=$base/.mg-$$
+mkdir -p "$logs"
 trap 'rm -rf "$logs"' EXIT
+export TMPDIR=$logs GOTMPDIR=$logs
 
 declare -A pids
 step() {
