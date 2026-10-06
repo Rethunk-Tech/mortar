@@ -28,7 +28,8 @@ export function QueueButton() {
           }}
         >
           <Badge
-            badgeContent={left}
+            // None rather than 0: a hidden badge still holds its 0, text the button's name would then lack.
+            badgeContent={left || null}
             color="primary"
             max={99}
             slotProps={{ badge: { 'aria-hidden': true } }}
