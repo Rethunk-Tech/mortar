@@ -129,9 +129,6 @@ function describeMissing(
       ? i18n._(msg`${dependentName}'s Nexus page lists ${dep} as a requirement.`)
       : i18n._(msg`${dependentName}'s Nexus page lists ${dep} as a requirement: ${note}`)
   }
-  if (p.missing.optional) {
-    return i18n._(msg`${dependentName} can use ${dep}, which this profile lacks.`)
-  }
   if (reason === 'disabled') {
     return i18n._(msg`${dependentName} needs ${dep}, which is disabled.`)
   }

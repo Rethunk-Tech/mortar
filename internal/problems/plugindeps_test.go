@@ -47,7 +47,7 @@ func TestPluginDepsHardDependencyIsMetAbsentOrTooOld(t *testing.T) {
 	if o := got[0]; o.DependentName != "old" || o.Reason != "outdated" || o.InstalledVersion != "2.0.0" || o.MinimumVersion != "2.1.0" || o.ID != lib.ID {
 		t.Fatalf("outdated row = %+v", o)
 	}
-	if g := got[1]; g.DependentName != "gone" || g.Reason != "absent" || g.ID != "bepinex:com.x.nowhere" || g.Optional {
+	if g := got[1]; g.DependentName != "gone" || g.Reason != "absent" || g.ID != "bepinex:com.x.nowhere" {
 		t.Fatalf("absent row = %+v", g)
 	}
 }
@@ -63,18 +63,15 @@ func TestPluginDepsNamesALibraryThatIsDisabled(t *testing.T) {
 	}
 }
 
-func TestPluginDepsAnAbsentSoftDependencyIsOptional(t *testing.T) {
+func TestPluginDepsIgnoresSoftDependencies(t *testing.T) {
 	user := pkgWith("user", "com.x.User", "1.0.0", true, dotnet.Relation{GUID: "com.x.extra", Kind: dotnet.SoftDependency})
 	off := pkgWith("off", "com.x.Off", "1.0.0", true, dotnet.Relation{GUID: "com.x.sleeping", Kind: dotnet.SoftDependency})
 	sleeping := pkgWith("sleeping", "com.x.Sleeping", "1.0.0", false)
 
 	got, _ := pluginDeps([]profile.PackageRef{user, off, sleeping}, nil)
 
-	if len(got) != 1 || got[0].DependentName != "user" || !got[0].Optional || got[0].Reason != "absent" {
-		t.Fatalf("missing = %+v, want one optional row; a disabled soft dependency is the player's choice", got)
-	}
-	if (Result{Missing: got}).Count() != 0 {
-		t.Fatal("an optional row is not counted")
+	if len(got) != 0 {
+		t.Fatalf("missing = %+v, want none: a soft dependency is an optional integration hook", got)
 	}
 }
 
@@ -117,10 +114,10 @@ func TestPluginDepsReadsTheAttributesOfARealAssembly(t *testing.T) {
 
 	missing, failures := pluginDeps([]profile.PackageRef{pkg, clash}, nil)
 
-	if len(missing) != 3 || len(failures) != 1 || failures[0].Dependency != "clash" {
+	if len(missing) != 2 || len(failures) != 1 || failures[0].Dependency != "clash" {
 		t.Fatalf("missing = %+v, failures = %+v", missing, failures)
 	}
-	if missing[1].MinimumVersion != "2.1.0" || !missing[2].Optional {
+	if missing[1].MinimumVersion != "2.1.0" {
 		t.Fatalf("missing = %+v", missing)
 	}
 }
@@ -154,7 +151,7 @@ func TestProblemsCountsAnInstalledPluginsMissingHardDependency(t *testing.T) {
 
 	got, err := s.Problems(t.Context(), "lethal-company", p.ID)
 
-	if err != nil || len(got.Missing) != 3 || got.Count() != 2 {
-		t.Fatalf("missing = %+v, count = %d, err = %v; want the hard and the minimum-version dependency counted and the soft one not", got.Missing, got.Count(), err)
+	if err != nil || len(got.Missing) != 2 || got.Count() != 2 {
+		t.Fatalf("missing = %+v, count = %d, err = %v; want the hard and the minimum-version dependency, both counted", got.Missing, got.Count(), err)
 	}
 }

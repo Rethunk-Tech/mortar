@@ -20,8 +20,9 @@ type installedPlugin struct {
 
 // pluginDeps checks the [BepInDependency] and [BepInIncompatibility] attributes of the enabled packages' plugins against
 // every package's plugins, before a launch has to fail to say so. pkgs holds disabled packages too, so a library that is
-// installed but switched off is named as that. A hard dependency that is absent, disabled or too old is a Missing row,
-// an absent soft one an Optional row, and an incompatibility with another enabled package a LoadFailure.
+// installed but switched off is named as that. A hard dependency that is absent, disabled or too old is a Missing row
+// and an incompatibility with another enabled package a LoadFailure. A soft dependency is an optional integration hook
+// and says nothing.
 func pluginDeps(pkgs []profile.PackageRef, mods []framework.Mod) ([]Missing, []LoadFailure) {
 	declared := make(map[string]dotnet.Declared, len(pkgs))
 	byGUID := map[string][]installedPlugin{}
@@ -60,6 +61,9 @@ func pluginDeps(pkgs []profile.PackageRef, mods []framework.Mod) ([]Missing, []L
 				}
 				continue
 			}
+			if r.Kind != dotnet.HardDependency {
+				continue
+			}
 			if m, ok := unmetDependency(r, byGUID[g], mods, p, name); ok {
 				missing = append(missing, m)
 			}
@@ -93,19 +97,16 @@ func unmetDependency(r dotnet.Relation, providers []installedPlugin, mods []fram
 		c, ok := meta.CompareVersions(x.version, r.MinVersion)
 		return r.MinVersion == "" || !ok || c >= 0
 	}
-	soft := r.Kind == dotnet.SoftDependency
 	if len(providers) == 0 {
 		others := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return x.Key == p.Key })
 		if installedByName(others, r.GUID[strings.LastIndex(r.GUID, ".")+1:]) {
 			return Missing{}, false
 		}
 	}
-	row := Missing{DependentID: p.ID, DependentName: name, ID: mod.NewID(mod.FormatBepInEx, r.GUID), MinimumVersion: r.MinVersion, Reason: "absent", Optional: soft}
+	row := Missing{DependentID: p.ID, DependentName: name, ID: mod.NewID(mod.FormatBepInEx, r.GUID), MinimumVersion: r.MinVersion, Reason: "absent"}
 	enabled := slices.DeleteFunc(slices.Clone(providers), func(x installedPlugin) bool { return !x.pkg.Enabled })
 	switch {
 	case slices.ContainsFunc(enabled, meets):
-		return Missing{}, false
-	case soft && len(providers) > 0:
 		return Missing{}, false
 	case len(enabled) > 0:
 		row.Reason, row.ID, row.InstalledVersion = "outdated", enabled[0].pkg.ID, highestPlugin(enabled)
