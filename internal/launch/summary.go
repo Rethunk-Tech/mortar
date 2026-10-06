@@ -22,7 +22,9 @@ const MaxLogBytes = MaxLines * 256
 
 var (
 	versionsRe = regexp.MustCompile(`SMAPI (\S+) with Stardew Valley (\S+)`)
-	crashRe    = regexp.MustCompile(`(?i)\bfatal\b|\bcrashed\b|game crash|failed to (launch|initialize)`)
+	// BepInEx's first line names its version and the game, never the game's version.
+	bepinexVersionRe = regexp.MustCompile(`\] BepInEx (\d+(?:\.\d+)+) - `)
+	crashRe          = regexp.MustCompile(`(?i)\bfatal\b|\bcrashed\b|game crash|failed to (launch|initialize)`)
 )
 
 // IsCrash reports a log line that means the game itself crashed. SMAPI also logs at ALERT for update notices, and a
@@ -73,6 +75,8 @@ func Summarize(log string) Summary {
 	s := Summary{}
 	if m := versionsRe.FindStringSubmatch(log); m != nil {
 		s.SMAPI, s.Game = m[1], m[2]
+	} else if m := bepinexVersionRe.FindStringSubmatch(log); m != nil {
+		s.SMAPI = m[1]
 	}
 	counts := map[string]*ModError{}
 	for _, e := range ParseLog(log) {

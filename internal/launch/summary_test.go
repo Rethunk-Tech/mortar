@@ -87,3 +87,10 @@ func TestIsCrashIgnoresUpdateAlertsAndModEntryErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestSummarizeReadsTheBepInExVersion(t *testing.T) {
+	log := "[Message:   BepInEx] BepInEx 5.4.23.5 - Lethal Company (10/4/2026 11:14:16 PM)\n[Error  :  ShipLoot] boom\n"
+	if s := Summarize(log); s.SMAPI != "5.4.23.5" || s.Game != "" || s.Errors != 1 {
+		t.Fatalf("got %+v", s)
+	}
+}
