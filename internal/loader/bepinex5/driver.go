@@ -190,6 +190,10 @@ func (Loader) Path(p loader.ProfileView) (string, error) {
 	return filepath.Join(p.Dir, "BepInEx", "LogOutput.log"), nil
 }
 
+// PasteSite is paste.gg: anonymous and general-purpose with a 15 MiB limit, above a stored run's cap, where mclo.gs
+// truncates past 25,000 lines and Pastebin takes 512 KiB without an account.
+func (Loader) PasteSite() string { return "https://paste.gg/" }
+
 // Ready is BepInEx's last startup line.
 func (Loader) Ready(line string) bool { return strings.Contains(line, "Chainloader startup complete") }
 

@@ -282,17 +282,18 @@ function ReinstallLoader({ game }: { game: string }) {
   )
 }
 
-// ConsoleTip points at the way out for this run's log: Share log for a loader smapi.io reads, else Save and Copy.
+// ConsoleTip points at the way out for this run's log: Share log for a loader smapi.io reads or with a paste site,
+// else Save and Copy.
 function ConsoleTip() {
   const { t } = useLingui()
-  const shares = useProfileLoader()?.share === true
-  return (
-    <TipBanner tip="console">
-      {shares
-        ? t`Filter by level or mod, and use Share log to upload this run to smapi.io.`
-        : t`Filter by level or mod, and use Save log or Copy log to pass this run on.`}
-    </TipBanner>
-  )
+  const loader = useProfileLoader()
+  let tip = t`Filter by level or mod, and use Save log or Copy log to pass this run on.`
+  if (loader?.share === true) {
+    tip = t`Filter by level or mod, and use Share log to upload this run to smapi.io.`
+  } else if (loader?.paste) {
+    tip = t`Filter by level or mod, and use Share log to copy this run and paste it on a paste site.`
+  }
+  return <TipBanner tip="console">{tip}</TipBanner>
 }
 
 // ConsoleEmpty stands in for the log until the profile has ever run, so a first visit is not an empty black box.

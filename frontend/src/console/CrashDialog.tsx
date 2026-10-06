@@ -103,7 +103,8 @@ function MoreActions({
 }) {
   const { t } = useLingui()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const shares = useProfileLoader(crash.profile)?.share === true
+  const profileLoader = useProfileLoader(crash.profile)
+  const shares = profileLoader?.share === true || Boolean(profileLoader?.paste)
   const close = () => setAnchor(null)
   return (
     <>

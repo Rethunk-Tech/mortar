@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
+	"github.com/Rethunk-Tech/mortar/internal/opener"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -240,6 +241,9 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	}
 	if b := caps["lethal-company"]; b.Order || !b.Console || b.Commands || b.Startup || b.Assets || b.Frameworks || b.Overlay {
 		t.Fatalf("BepInEx = %+v", b)
+	}
+	if _, err := opener.Web(caps["lethal-company"].Paste); err != nil || caps["stardew"].Paste != "" {
+		t.Fatalf("paste sites: BepInEx %q (%v), SMAPI %q", caps["lethal-company"].Paste, err, caps["stardew"].Paste)
 	}
 }
 

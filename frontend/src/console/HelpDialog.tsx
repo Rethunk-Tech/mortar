@@ -15,7 +15,10 @@ import {
 import { Clipboard } from '@wailsio/runtime'
 import { Copy, ExternalLink, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { RunLog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import {
+  RunLog,
+  Runs,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import {
   Log,
   Upload,
@@ -27,7 +30,7 @@ import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { anonymize } from './anonymize.ts'
-import { shareLogConfirm } from './shareLog.ts'
+import { pasteLogConfirm, shareLogConfirm, shareLogText } from './shareLog.ts'
 import { useConsole } from './store.ts'
 
 const button = { whiteSpace: 'nowrap' } as const
@@ -82,12 +85,14 @@ function HideUserName({
 function HelpLog({
   log,
   link,
+  paste,
   hideUserName,
   setHideUserName,
   copy,
 }: {
   log: string
   link: string
+  paste: string
   hideUserName: boolean
   setHideUserName: (value: boolean) => void
   copy: (text: string) => void
@@ -96,7 +101,9 @@ function HelpLog({
   return (
     <>
       <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-        {shareLogConfirm(i18n, new TextEncoder().encode(log).length)}
+        {paste
+          ? pasteLogConfirm(i18n, new TextEncoder().encode(log).length, paste)
+          : shareLogConfirm(i18n, new TextEncoder().encode(log).length)}
       </Typography>
       <Alert severity="warning" icon={<TriangleAlert size={16} aria-hidden={true} />}>
         {t`The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it.`}
@@ -120,13 +127,17 @@ function HelpLog({
   )
 }
 
-// Shows the SMAPI log as it is on disk and uploads it to smapi.io only once the user confirms.
+// Shows the run's log as it is on disk and, only once the user confirms, uploads it to smapi.io or, for a loader with
+// a paste site, copies it and opens that site.
 export function HelpDialog({ game }: { game: string }) {
   const { t } = useLingui()
   const open = useConsole((s) => s.helping)
   const setHelping = useConsole((s) => s.setHelping)
   const profile = useConsole((s) => s.shown.profile)
-  const loaderId = useProfileLoader(profile)?.id ?? ''
+  const profileLoader = useProfileLoader(profile)
+  const loaderId = profileLoader?.id ?? ''
+  const paste = profileLoader?.paste ?? ''
+  const pasteHost = paste ? new URL(paste).host : ''
   const viewingRun = useConsole((s) => s.viewingRun)
   const openFor = useRef({ game, profile })
   openFor.current = { game, profile }
@@ -148,8 +159,11 @@ export function HelpDialog({ game }: { game: string }) {
       return
     }
     let live = true
-    const read = viewingRun ? RunLog(game, profile, viewingRun) : Log(game, profile)
-    read.then(
+    shareLogText(viewingRun, paste !== '', {
+      live: () => Log(game, profile),
+      run: (id) => RunLog(game, profile, id),
+      runs: () => Runs(game, profile),
+    }).then(
       (text) => {
         if (live) {
           setLog(text)
@@ -166,13 +180,24 @@ export function HelpDialog({ game }: { game: string }) {
     return () => {
       live = false
     }
-  }, [open, game, profile, viewingRun, setHelping, t])
+  }, [open, game, profile, viewingRun, paste, setHelping, t])
 
   const copy = (text: string) =>
     Clipboard.SetText(text).then(
       () => useToasts.getState().push({ kind: 'success', title: t`Link copied` }),
       reportUnexpected,
     )
+
+  const copyAndOpen = () => {
+    if (!log) {
+      return
+    }
+    Clipboard.SetText(hideUserName ? anonymize(log) : log).then(() => {
+      useToasts.getState().push({ kind: 'success', title: t`Log copied` })
+      close()
+      return openPage(paste)
+    }, reportUnexpected)
+  }
 
   const upload = () => {
     const token = uploadGen.current
@@ -225,6 +250,7 @@ export function HelpDialog({ game }: { game: string }) {
           <HelpLog
             log={log ?? ''}
             link={link}
+            paste={paste}
             hideUserName={hideUserName}
             setHideUserName={setHideUserName}
             copy={copy}
@@ -235,7 +261,12 @@ export function HelpDialog({ game }: { game: string }) {
         <Button disabled={uploading} onClick={close} sx={button}>
           {link || !log ? t`Close` : t`Cancel`}
         </Button>
-        {log && !link ? (
+        {log && paste ? (
+          <Button variant="contained" onClick={copyAndOpen} sx={button}>
+            {t`Copy log and open ${pasteHost}`}
+          </Button>
+        ) : null}
+        {log && !link && !paste ? (
           <Button variant="contained" disabled={uploading} onClick={upload} sx={button}>
             {uploading ? t`Uploading…` : t`Upload log`}
           </Button>

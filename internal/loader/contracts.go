@@ -169,6 +169,10 @@ func SharesLog(l Loader) bool {
 	return ok
 }
 
+// LogPaste is a loader whose log no parser site reads, so sharing copies it and opens PasteSite for the user to
+// paste into; Mortar never uploads it.
+type LogPaste interface{ PasteSite() string }
+
 // OrderWriter is a loader whose load order lives in a file of the game.
 type OrderWriter interface {
 	WriteOrder(ctx context.Context, t Target, order []ComponentID) error

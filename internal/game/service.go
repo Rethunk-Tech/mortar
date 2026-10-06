@@ -56,6 +56,8 @@ type LoaderRef struct {
 	Overlay bool `json:"overlay"`
 	// Share is whether the loader's log can be uploaded to smapi.io, whose parser reads only SMAPI's.
 	Share bool `json:"share"`
+	// Paste is the paste site that sharing the loader's log opens, after copying the log; "" when it has none.
+	Paste string `json:"paste"`
 	// Assets is whether a content-pack framework for the loader's formats builds an asset map.
 	Assets bool `json:"assets"`
 	// Frameworks is whether the loader's mods can be content for a framework mod, which the Framework grouping needs.
@@ -73,6 +75,9 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		_, ref.Startup = d.(loader.StartupTimings)
 		_, ref.Overlay = d.(loader.StreamOverlay)
 		ref.Share = loader.SharesLog(d)
+		if p, ok := d.(loader.LogPaste); ok {
+			ref.Paste = p.PasteSite()
+		}
 		ref.Assets = framework.IndexesAssets(d.Formats())
 		ref.Frameworks = framework.HasFrameworks(d.Formats())
 	}

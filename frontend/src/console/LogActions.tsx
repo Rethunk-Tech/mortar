@@ -31,10 +31,11 @@ import { logFileName, saveLogText } from './save.ts'
 import { useConsole } from './store.ts'
 import { useConsoleEmpty } from './useConsoleEmpty.ts'
 
-// smapi.io's parser reads only SMAPI's log, so only SMAPI gets Share log beside the menu; Save log lives in the menu.
+// Share log sits beside the menu for a loader that uploads to smapi.io or has a paste site; Save log lives in the menu.
 function ShareLog() {
   const { t } = useLingui()
-  if (useProfileLoader()?.share !== true) {
+  const loader = useProfileLoader()
+  if (loader?.share !== true && !loader?.paste) {
     return null
   }
   return (
