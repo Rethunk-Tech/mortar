@@ -143,15 +143,19 @@ func tailAtBoundary(log string, limit int) string {
 	return cut
 }
 
-// FormatLog writes entries the way SMAPI pads a header line.
+// FormatLog writes entries the way their loader pads a header line.
 func FormatLog(entries []Entry) string {
 	var b strings.Builder
 	for i, e := range entries {
 		if i > 0 {
 			b.WriteByte('\n')
 		}
-		if e.Cont || e.Time == "" {
+		if e.Cont || e.Mod == "" && e.Time == "" {
 			b.WriteString(e.Message)
+			continue
+		}
+		if e.Time == "" {
+			b.WriteString(formatBepInEx(e))
 			continue
 		}
 		b.WriteByte('[')

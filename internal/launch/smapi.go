@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-// Level is a SMAPI log level.
+// Level is a console log level: SMAPI's own, which BepInEx's levels map onto.
 type Level string
 
 const (
@@ -24,8 +24,9 @@ const (
 // MaxLines bounds a Buffer.
 const MaxLines = 20000
 
-// Entry is one line of SMAPI's log. A line that continues an earlier entry's multi-line message repeats that
-// entry's time, level and mod and has Cont set, so filters keep a message's lines together.
+// Entry is one line of SMAPI's or BepInEx's log; a BepInEx line has no Time and names its source in Mod. A line that
+// continues an earlier entry's multi-line message repeats that entry's time, level and mod and has Cont set, so
+// filters keep a message's lines together.
 type Entry struct {
 	// Seq orders entries across the process, letting a reader that fetched history skip lines it already has.
 	Seq     int64  `json:"seq"`
@@ -122,7 +123,7 @@ func smapiModsLoadedEnd(log string) int {
 	return 0
 }
 
-// Parse returns the entry for one line, and false when the line belongs to a suppressed message. A line that is not
+// Parse returns the entry for one SMAPI or BepInEx line, and false when the line belongs to a suppressed message. A line that is not
 // a header continues the previous entry; with none yet it stands alone as an INFO line.
 func (p *Parser) Parse(line string) (Entry, bool) {
 	if m := header.FindStringSubmatch(line); m != nil {
@@ -130,6 +131,10 @@ func (p *Parser) Parse(line string) (Entry, bool) {
 		p.seen = true
 		p.hidden = slices.Contains(suppressed, p.last.Message)
 		return p.last, !p.hidden
+	}
+	if e, ok := parseBepInEx(line); ok {
+		p.last, p.seen, p.hidden = e, true, false
+		return e, true
 	}
 	if !p.seen {
 		return Entry{Level: Info, Message: line}, true
