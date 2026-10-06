@@ -9,8 +9,9 @@ import (
 	"time"
 )
 
-// modsBatch is how many mods one GraphQL request asks about.
-const modsBatch = 100
+// modsBatch is how many mods one GraphQL request asks about. Nexus refuses a query whose complexity passes 10,000,
+// and with each mod's requirements a mod costs about 160.
+const modsBatch = 50
 
 const modsQuery = `query($ids: [CompositeDomainWithIdInput!]!, $count: Int) {
   legacyModsByDomain(ids: $ids, count: $count) {
@@ -69,7 +70,7 @@ func (m ModInfo) Page() Page {
 // Requests is how many GraphQL requests ModsByDomain makes for n mods.
 func Requests(n int) int { return (n + modsBatch - 1) / modsBatch }
 
-// ModsByDomain looks up many of one game's mods with one GraphQL request per 100 ids, instead of one request per
+// ModsByDomain looks up many of one game's mods with one GraphQL request per 50 ids, instead of one request per
 // mod. A mod Nexus does not return is absent from the map. A refused or failed request ends the lookup with the
 // mods found so far and the error; a rate limit is returned as such, never retried.
 func (c *Client) ModsByDomain(ctx context.Context, domain string, modIDs []int) (map[int]ModInfo, error) {

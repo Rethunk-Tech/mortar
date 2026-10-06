@@ -272,7 +272,7 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	}
 }
 
-func TestPrimeDetailsAsksOncePerHundredMods(t *testing.T) {
+func TestPrimeDetailsAsksOncePerBatch(t *testing.T) {
 	var requests atomic.Int32
 	var down atomic.Bool
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -316,7 +316,7 @@ func TestPrimeDetailsAsksOncePerHundredMods(t *testing.T) {
 	if err != nil || len(got) != 800 || !got[5].Partial || got[5].Page.Version != "2.0" || got[5].Category != "Misc" {
 		t.Fatalf("got %d, %v, %+v", len(got), err, got[5])
 	}
-	if requests.Load() > 8 {
+	if int(requests.Load()) != nexus.Requests(800) {
 		t.Fatalf("800 mods cost %d requests", requests.Load())
 	}
 	before := requests.Load()

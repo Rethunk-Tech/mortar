@@ -31,7 +31,7 @@ func graphQLServer(t *testing.T, status func(n int32) int) (*Client, *atomic.Int
 				} `json:"ids"`
 			} `json:"variables"`
 		}
-		if err := json.NewDecoder(r.Body).Decode(&in); err != nil || len(in.Variables.IDs) > 100 {
+		if err := json.NewDecoder(r.Body).Decode(&in); err != nil || len(in.Variables.IDs) > modsBatch {
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
@@ -47,7 +47,7 @@ func graphQLServer(t *testing.T, status func(n int32) int) (*Client, *atomic.Int
 	return c, &requests
 }
 
-func TestModsByDomainCostsOneRequestPerHundredMods(t *testing.T) {
+func TestModsByDomainCostsOneRequestPerBatch(t *testing.T) {
 	c, requests := graphQLServer(t, func(int32) int { return http.StatusOK })
 	ids := make([]int, 800)
 	for i := range ids {
@@ -57,8 +57,8 @@ func TestModsByDomainCostsOneRequestPerHundredMods(t *testing.T) {
 	if err != nil || len(got) != 800 {
 		t.Fatalf("got %d mods, %v", len(got), err)
 	}
-	if n := requests.Load(); n > 8 {
-		t.Fatalf("800 mods cost %d requests, want at most 8", n)
+	if n := int(requests.Load()); n != Requests(800) {
+		t.Fatalf("800 mods cost %d requests, want %d", n, Requests(800))
 	}
 	p := got[7].Page()
 	if p.Name != "Mod 7" || p.Version != "1.7" || !p.Available || p.Author != "Ann" || p.Endorsement != "Endorsed" || p.Updated.Year() != 2026 {
@@ -79,7 +79,7 @@ func TestModsByDomainStopsAtARateLimitWithoutRetrying(t *testing.T) {
 	}
 	got, err := c.ModsByDomain(context.Background(), "lethalcompany", ids)
 	var limit *RateLimitError
-	if !errors.As(err, &limit) || len(got) != 100 || requests.Load() != 2 {
+	if !errors.As(err, &limit) || len(got) != modsBatch || requests.Load() != 2 {
 		t.Fatalf("got %d mods after %d requests, err %v", len(got), requests.Load(), err)
 	}
 }
