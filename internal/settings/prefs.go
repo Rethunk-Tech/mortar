@@ -164,7 +164,7 @@ func defaultPrefs() Settings {
 		ShareIncludeFomodChoices:   on(),
 		ShareIncludeNotes:          on(),
 		ShareIncludeConfigFiles:    on(),
-		VerifyNexusMD5:             false,
+		VerifyNexusMD5:             true,
 		ShowAdultContent:           false,
 		LaunchAtLogin:              false,
 		StartMinimised:             false,

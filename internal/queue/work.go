@@ -131,8 +131,22 @@ func retryBackoff(n int) time.Duration {
 	return d
 }
 
+func (s *Service) verifyMD5() bool { return s.d.VerifyNexusMD5 != nil && s.d.VerifyNexusMD5() }
+
+// lookupMD5 reads the md5 of a file the queue did not choose itself (a link or a share named it, so its list was never
+// read). It is one quota-held request; a failure leaves the download unchecked rather than failing it.
+func lookupMD5(ctx context.Context, c *nexus.Client, t nexus.Title, it Item) string {
+	files, err := c.Files(ctx, t, it.ModID)
+	if err != nil {
+		log.Printf("nexus md5: file list of mod %d: %v; installing file %d unchecked", it.ModID, err, it.FileID)
+		return ""
+	}
+	log.Printf("nexus md5: looked up file %d of mod %d", it.FileID, it.ModID)
+	return nexus.FileByID(files, it.FileID).MD5
+}
+
 func (s *Service) checkNexusMD5(path, want string) error {
-	if s.d.VerifyNexusMD5 == nil || !s.d.VerifyNexusMD5() {
+	if !s.verifyMD5() {
 		return nil
 	}
 	want = strings.ToLower(strings.TrimSpace(want))
@@ -590,7 +604,11 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		wantMD5 = cur.fileMD5
 	}
 	s.mu.Unlock()
+	if wantMD5 == "" && s.verifyMD5() {
+		wantMD5 = lookupMD5(ctx, c, t, it)
+	}
 	if err := s.checkNexusMD5(path, wantMD5); err != nil {
+		dropDownload(path)
 		return err
 	}
 	optional := manifestLess(path)

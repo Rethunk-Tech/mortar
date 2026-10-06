@@ -210,7 +210,7 @@ The registry (`internal/settings/registry.go`) lists each key with its scope, ty
 - `pauseDownloadsWhilePlaying` (false): pause new fetches while a game is launching or running; installs already wait for that profile.
 - `sidebarBadges` (`problemsAndUpdates`): `problemsAndUpdates`, `problems`, or `off`. `off` also skips background badge checks.
 - `shareIncludeDisabledMods` (false), `shareIncludeFomodChoices` (true), `shareIncludeNotes` (true), `shareIncludeConfigFiles` (true): defaults for Share and Export include options; each share can still change them.
-- `verifyNexusMD5` (false): after a Nexus download, compare the file to the API md5 when Nexus provided one; a mismatch fails as damaged.
+- `verifyNexusMD5` (true): after a Nexus download, compare the file to the md5 in the mod's file list. The md5 comes from the list the queue already read to choose the file; a download whose file was named up front (a link, a share) costs one file-list request, logged and held to the API quota. A mismatch deletes the download and fails it as damaged, for Retry to fetch again; a file Nexus lists without an md5, or a lookup that fails, installs unchecked.
 - `launchAtLogin` (false): start Mortar when the user logs in; changing it writes or removes the OS autostart entry.
 - `startMinimised` (false): create the window hidden; the tray Show brings it up.
 - `rememberWindow` (false): persist size and position on close (`window.json`) and restore on start, clamped to a visible screen.

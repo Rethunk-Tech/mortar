@@ -56,7 +56,7 @@ func TestBatchPrefDefaultsAndSet(t *testing.T) {
 	if s.ProfileOrder != ProfileOrderManual || s.AutoRetryDownloads != AutoRetryOff || s.PauseDownloadsWhilePlaying {
 		t.Fatalf("order/retry/pause defaults: %q %q %v", s.ProfileOrder, s.AutoRetryDownloads, s.PauseDownloadsWhilePlaying)
 	}
-	if s.SidebarBadges != SidebarBadgesAll || s.VerifyNexusMD5 || s.LaunchAtLogin || s.StartMinimised || s.RememberWindow {
+	if s.SidebarBadges != SidebarBadgesAll || !s.VerifyNexusMD5 || s.LaunchAtLogin || s.StartMinimised || s.RememberWindow {
 		t.Fatal("badge / verify / session defaults")
 	}
 	if ToggleOn(s.ShareIncludeDisabledMods) || !ToggleOn(s.ShareIncludeFomodChoices) || !ToggleOn(s.ShareIncludeNotes) || !ToggleOn(s.ShareIncludeConfigFiles) {

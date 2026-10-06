@@ -800,6 +800,35 @@ func TestNexusMD5MatchAllowsInstall(t *testing.T) {
 	f.wait("md5 ok", f.item(StateDone))
 }
 
+// A file named up front (a link, a share) skips the list the queue would choose from, so its md5 is looked up; a
+// mismatch drops the download, so Retry fetches it again instead of rechecking the bad copy.
+func TestNexusMD5OfANamedFileIsLookedUpAndRetryRefetches(t *testing.T) {
+	f := newFixture(t)
+	f.s.d.VerifyNexusMD5 = func() bool { return true }
+	var bad atomic.Bool
+	bad.Store(true)
+	f.cdn = func(w http.ResponseWriter, _ *http.Request) {
+		if bad.Load() {
+			fmt.Fprint(w, "not the archive")
+			return
+		}
+		fmt.Fprint(w, payload)
+	}
+	f.start()
+	named := req(10)
+	named.FileName = "a-1.0.zip"
+	if _, err := f.s.Add(t.Context(), []Request{named}); err != nil {
+		t.Fatal(err)
+	}
+	st := f.wait("md5 failed", f.item(StateFailed))
+	if !strings.Contains(st.Items[0].Error, "MD5") {
+		t.Fatalf("error %q", st.Items[0].Error)
+	}
+	bad.Store(false)
+	f.s.Retry(st.Items[0].ID)
+	f.wait("retried", f.item(StateDone))
+}
+
 func TestRouteGivesAClickedFileToAPendingUpdate(t *testing.T) {
 	f := newFixture(t)
 	f.premium.Store(false)
