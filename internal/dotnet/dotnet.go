@@ -159,14 +159,7 @@ func Writes(path, game, wrapper string) (out []string, err error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if r := recover(); r != nil {
-			if _, ok := r.(runtime.Error); !ok {
-				panic(r)
-			}
-			out, err = nil, fmt.Errorf("%s: malformed assembly: %v", path, r)
-		}
-	}()
+	defer malformed(path, &out, &err)
 	m, err := open(data)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
@@ -182,6 +175,18 @@ func Writes(path, game, wrapper string) (out []string, err error) {
 	}
 	slices.Sort(out)
 	return out, nil
+}
+
+// malformed turns an index out of range, which the readers below hit on a truncated or crafted assembly instead of
+// checking every offset, into an error for path.
+func malformed[T any](path string, out *T, err *error) {
+	if r := recover(); r != nil {
+		if _, ok := r.(runtime.Error); !ok {
+			panic(r)
+		}
+		var zero T
+		*out, *err = zero, fmt.Errorf("%s: malformed assembly: %v", path, r)
+	}
 }
 
 func open(data []byte) (*module, error) {
@@ -754,16 +759,16 @@ func le32(b []byte) uint32 { return binary.LittleEndian.Uint32(b) }
 type Plugin struct{ GUID, Name, Version string }
 
 // Plugins lists the BepInEx plugins the assembly at path declares; an assembly with none yields none.
-func Plugins(path string) ([]Plugin, error) {
+func Plugins(path string) (out []Plugin, err error) {
 	data, err := fsx.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
+	defer malformed(path, &out, &err)
 	m, err := open(data)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
-	var out []Plugin
 	for row := 1; row <= m.rows[tCustomAttr]; row++ {
 		kind, ctor := decode(cCustomAttributeType, m.cell(tCustomAttr, row, 1))
 		if kind != tMemberRef {
