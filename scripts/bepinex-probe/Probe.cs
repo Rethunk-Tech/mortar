@@ -31,8 +31,8 @@ public class MatrixProbe : BaseUnityPlugin
         Logger.LogInfo("matrix " + Variant.Name + " wrote LCSaveFile1");
 #endif
 #if QUIT
-        // The pinned BepInEx 5.4.21 loses its manager object, and every plugin on it, when Lethal Company on Unity 2022
-        // unloads its first scene, so the quit timer runs on an object of its own that scene loads leave alone.
+        // With HideManagerGameObject=false, BepInEx loses its manager object, and every plugin on it, when Lethal Company
+        // loads its first scene, so the quit timer runs on an object of its own that scene loads leave alone.
         var clock = new GameObject("MatrixQuit") { hideFlags = HideFlags.HideAndDontSave };
         DontDestroyOnLoad(clock);
         clock.AddComponent<MatrixQuit>().Log = Logger;
@@ -68,8 +68,13 @@ public class MatrixQuit : MonoBehaviour
     float elapsed;
     int beats;
 
+    // The clock starts at the main menu, so the regress can query the bridge there before the game quits.
     void Update()
     {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu")
+        {
+            return;
+        }
         elapsed += Time.unscaledDeltaTime;
         if (elapsed < 1f)
         {

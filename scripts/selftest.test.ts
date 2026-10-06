@@ -169,34 +169,40 @@ test('the matrix keeps the Unity logs of each launch beside its LogOutput.log, a
   }
 })
 
-test('the matrix reports a bridge that survived every scene load, and one that did not or never said', () => {
+test('the matrix asks the bridge at the main menu and only notes whether its component survived', () => {
   const dir = mkdtempSync(join(tmpdir(), 'mx-bridge-'))
   try {
-    const log = (name: string, text: string) => {
-      writeFileSync(join(dir, name), text)
-      return join(dir, name)
-    }
-    const alive = log(
-      'a.log',
-      '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene InitScene: True\n',
+    const log = join(dir, 'LogOutput.log')
+    writeFileSync(
+      log,
+      '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene InitSceneLaunchOptions: False\n' +
+        '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene MainMenu: False\n',
     )
-    const dead = log(
-      'b.log',
-      '[Info   :Mortar BepInEx Bridge] Bridge plugin alive after scene InitScene: False\n',
-    )
-    const silent = log('c.log', '[Info   :BepInEx] Chainloader startup complete\n')
+    const state = join(dir, 'profiles/lethal-company/up/BepInEx/config/mortar-bepinex-bridge.json')
+    mkdirSync(join(dir, 'profiles/lethal-company/up/BepInEx/config'), { recursive: true })
+    // A one-shot stand-in for the bridge: it writes the state file once listening and answers one status query.
+    const fake = `import json, socket, sys
+srv = socket.socket(); srv.bind(("127.0.0.1", 0)); srv.listen(1)
+json.dump({"port": srv.getsockname()[1], "token": "t", "pid": 1}, open(sys.argv[1], "w"))
+c, _ = srv.accept(); f = c.makefile("rw")
+ok = f.readline().strip() == "t" and f.readline().strip() == "status"
+f.write('ok {"gameVersion":"v81","scene":"MainMenu","plugins":[]}\\n' if ok else "error: unauthorized\\n"); f.flush()`
+    writeFileSync(join(dir, 'fake.py'), fake)
     matrixShell(
-      `ROOT="${dir}"; mx_bridge_survived a "${alive}"; mx_bridge_survived b "${dead}"; mx_bridge_survived c "${silent}"`,
+      `ROOT="${dir}"; mx_data="${dir}"; mx_log="${log}"
+      python3 "${dir}/fake.py" "${state}" & until [ -s "${state}" ]; do sleep 0.1; done
+      mx_bridge_reachable up up; mx_bridge_reachable down down; mx_bridge_survived up "${log}"; wait`,
     )
     const rows = readFileSync(join(dir, 'matrix.tsv'), 'utf8')
       .trim()
       .split('\n')
-      .map((l) => l.split('\t').slice(0, 2).join(' '))
-    expect(rows).toEqual([
-      'bridge.survived.a PASS',
-      'bridge.survived.b FAIL',
-      'bridge.survived.c FAIL',
+      .map((l) => l.split('\t'))
+    expect(rows.map((r) => `${r[0]} ${r[1]}`)).toEqual([
+      'bridge.reachable.up PASS',
+      'bridge.reachable.down FAIL',
+      'bridge.survived.up INFO',
     ])
+    expect(rows[2]?.[2]).toContain('alive after 0 scene load(s) and destroyed after 2')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

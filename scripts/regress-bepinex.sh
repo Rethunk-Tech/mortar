@@ -171,15 +171,52 @@ mx_keep_logs() {
   return 0
 }
 
-# mx_bridge_survived TAG LOG records whether the Mortar bridge's plugin component was still alive when each scene
-# loaded, from the "Bridge plugin alive after scene X: True|False" lines the bridge's intro-skip runner writes into
-# BepInEx's LogOutput.log at LOG. A run whose bridge predates those lines has none and fails the row.
+# mx_bridge_survived TAG LOG notes, as an INFO row, whether the bridge's plugin component was alive at each scene load,
+# from the "Bridge plugin alive after scene X: True|False" lines its intro runner writes into LogOutput.log at LOG.
+# BepInEx's default HideManagerGameObject=false lets Lethal Company's first scene load destroy that component, so
+# whether the bridge still answers is row bridge.reachable's to judge.
 mx_bridge_survived() {
   local alive dead
   alive=$(grep -c 'Bridge plugin alive after scene .*: True' "$2" 2>/dev/null)
   dead=$(grep -c 'Bridge plugin alive after scene .*: False' "$2" 2>/dev/null)
-  mx_check "bridge.survived.$1" "launch ($1): the bridge's plugin was alive after $alive scene load(s) and destroyed after $dead; first load: $(grep -m1 -o 'Bridge plugin alive after scene .*' "$2" || echo 'no line, the bridge predates it')" \
-    test "${alive:-0}" -gt 0 -a "${dead:-0}" -eq 0
+  mx_result "bridge.survived.$1" INFO "launch ($1): the bridge's plugin was alive after ${alive:-0} scene load(s) and destroyed after ${dead:-0}; first load: $(grep -m1 -o 'Bridge plugin alive after scene .*' "$2" || echo 'no line')"
+}
+
+# mx_wait_scene SCENE SECONDS waits for the bridge's intro runner to log SCENE loading in $mx_log.
+mx_wait_scene() {
+  local deadline=$((SECONDS + $2))
+  until grep -q "Bridge plugin alive after scene $1:" "$mx_log" 2>/dev/null; do
+    [ "$SECONDS" -ge "$deadline" ] && return 1
+    sleep 1
+  done
+}
+
+# mx_bridge_reachable TAG PROFILE records whether the bridge answers at the main menu: its state file in the profile
+# names a port and token, and a status query there answers ok with scene MainMenu.
+mx_bridge_reachable() {
+  local out
+  if ! mx_wait_scene MainMenu 120; then
+    mx_fail "bridge.reachable.$1" "launch ($1): the game never reached MainMenu within 120s, so the bridge was not asked"
+    return
+  fi
+  out=$(
+    python3 - "$(mx_dir "$2")/BepInEx/config/mortar-bepinex-bridge.json" <<'PY'
+import json, socket, sys
+try:
+    st = json.load(open(sys.argv[1]))
+except (OSError, ValueError) as e:
+    sys.exit(print(f"BAD no state file: {e}"))
+try:
+    with socket.create_connection(("127.0.0.1", st["port"]), timeout=5) as s:
+        s.sendall(f'{st["token"]}\nstatus\n'.encode())
+        reply = s.makefile().readline().strip()
+except OSError as e:
+    sys.exit(print(f"BAD nothing answers on port {st['port']}: {e}"))
+ok = reply.startswith("ok ") and '"scene":"MainMenu"' in reply
+print(("OK " if ok else "BAD ") + f"port {st['port']} answered {reply[:200]}")
+PY
+  )
+  mx_check "bridge.reachable.$1" "launch ($1) at MainMenu: ${out#* }" test "${out%% *}" = OK
 }
 
 # mx_purged TAG requires every entry the game folder had before the first launch to hash the same and the Doorstop
@@ -486,6 +523,7 @@ regress_bepinex_running() {
   mx_check loader.reinstall-run "launch (a) on the reinstalled $mx_bepinex: log opens with \"$out\"; $(mx_doorstop "$mx_base" "$mx_bepinex")" \
     test "$out|$(mx_doorstop "$mx_base" "$mx_bepinex")" = "BepInEx $(mx_bep_version "$mx_bepinex") - Lethal Company|$(mx_doorstop_ok)"
   if [ -n "$mx_ready" ]; then
+    mx_bridge_reachable a "$mx_base"
     mx_console_reads
     out=$(
       python3 - "$mx_lines1" "$mx_lines2" <<'PY'
@@ -584,9 +622,10 @@ PY
 
   # 4. Launches (c) and (b) differ in one variable each from launch (a): (c) is the newest pack with a plugin that throws
   # in Awake, and (b) the older pack pinned with no throwing plugin. Both also run a plugin that quits the game, and
-  # (b) one that writes the game's own save. Whether the bridge's component survives the first scene load, row
-  # bridge.survived, then says which variable takes plugins down. (c) runs first, while the newest pack is pinned.
+  # (b) one that writes the game's own save. Row bridge.reachable asks the bridge at the main menu, before the
+  # Quit probe's clock, which starts there, runs out. (c) runs first, while the newest pack is pinned.
   if [ -n "$mx_ready" ] && mx_install_probes "$mx_crash" Throw Quit >/dev/null && mx_launch "$mx_crash" c; then
+    mx_bridge_reachable c "$mx_crash"
     if mx_idle 90; then
       mx_keep_logs c
       cli runs lethal-company "$mx_crash" --json >"$ROOT/runs-c.json"
@@ -613,6 +652,7 @@ PY
     out=$(grep -m1 -o 'BepInEx 5\.[0-9.]* - Lethal Company' "$mx_log")
     mx_check loader.pin-run "launch (b) on the pinned 5.4.2100: log opens with \"$out\"; $(mx_doorstop "$mx_pin" 5.4.2100)" \
       test "$out|$(mx_doorstop "$mx_pin" 5.4.2100)" = "BepInEx $(mx_bep_version 5.4.2100) - Lethal Company|$(mx_doorstop_ok)"
+    mx_bridge_reachable b "$mx_pin"
     if mx_idle 90; then
       mx_keep_logs b
       cli runs lethal-company "$mx_pin" --json >"$ROOT/runs-b.json"
