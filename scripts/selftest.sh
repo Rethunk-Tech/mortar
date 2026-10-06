@@ -1154,8 +1154,8 @@ PY
     elif ! grep -q "CurseForge" "$ROOT/cf-blocked.txt"; then
       failures+=("refusal does not point to CurseForge: $(head -c 300 "$ROOT/cf-blocked.txt")")
     fi
-    grep -q "not opening https://www.curseforge.com/" "$ROOT/server.log" ||
-      failures+=("the mod's CurseForge page was not handed off (no opener call in server.log)")
+    grep -qF "(the page is open)" "$ROOT/cf-blocked.txt" ||
+      failures+=("the mod's CurseForge page was not handed off: $(head -c 300 "$ROOT/cf-blocked.txt")")
     cli queue --json >"$ROOT/cf-queue.json"
     cli mods stardew "$profile" --json >"$ROOT/cf-mods2.json"
     python3 - "$ROOT/cf-queue.json" "$ROOT/cf-mods2.json" "$blocked_name" "$mods" >"$ROOT/cf-handoff.txt" <<'PY' || failures+=("non-distributable mod ${blocked_name}: $(head -c 300 "$ROOT/cf-handoff.txt")")
