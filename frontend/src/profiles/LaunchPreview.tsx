@@ -92,7 +92,9 @@ export function LaunchPreview({
           sx={{
             m: 0,
             p: 1,
-            overflowX: 'auto',
+            // Wrapped rather than scrolled sideways: a scroll region would need its own keyboard stop.
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'anywhere',
             color: 'text.secondary',
             fontFamily: MONO,
             fontSize: 12,

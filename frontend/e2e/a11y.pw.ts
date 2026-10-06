@@ -91,8 +91,15 @@ async function scanGame(
     .first()
     .click({ button: 'right' })
   await page.getByRole('menuitem', { name: 'Edit profile' }).click()
-  await expect(page.getByRole('dialog', { name: 'Edit profile' })).toBeVisible()
-  found.push(...(await scan(page, `${game.name} › Edit profile`)))
+  const editor = page.getByRole('dialog', { name: 'Edit profile' })
+  await expect(editor).toBeVisible()
+  for (const tab of await editor
+    .getByRole('tablist', { name: 'Profile settings' })
+    .getByRole('tab')
+    .all()) {
+    await tab.click()
+    found.push(...(await scan(page, `${game.name} › Edit profile › ${await tab.innerText()}`)))
+  }
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog', { name: 'Edit profile' })).toBeHidden()
 

@@ -6,12 +6,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
+  Tab,
+  Tabs,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useId, useState } from 'react'
 import { GameSettings as GetGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -21,7 +21,8 @@ import { useGameInfo } from '../games/info.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { colorHex, MAX_DESCRIPTION, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
+import { AppearancePickers } from './AppearancePickers.tsx'
+import { MAX_DESCRIPTION } from './appearance.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
@@ -30,12 +31,16 @@ import { LoaderLaunchSettings } from './LoaderLaunchSettings.tsx'
 import { LoaderPicker } from './LoaderPicker.tsx'
 import { OverridesSection } from './OverrideRows.tsx'
 import { foldedOverrides } from './overrideValue.ts'
-import { ProfileMark } from './ProfileMark.tsx'
 import { SeparateSavesRow } from './SeparateSavesRow.tsx'
 import { saveProfile } from './saveProfile.ts'
 import { useProfiles } from './store.ts'
 
 const PATH_SEPARATORS = /[\\/]/
+
+// One size for every tab, so switching tabs neither resizes the dialog nor moves the tabs.
+const DIALOG_SLOTS = { paper: { sx: { height: 'calc(100% - 64px)' } } }
+
+type FieldsTab = 'appearance' | 'launch' | 'overrides' | 'game'
 
 // LaunchError is a rejected launch field: the extra SMAPI arguments, or the prefix and environment saved together.
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
@@ -123,115 +128,49 @@ function CoverField({
   )
 }
 
-function AppearancePickers({
-  profile,
-  color,
-  icon,
-  onColor,
-  onIcon,
+function FieldsTabs({
+  ids,
+  tab,
+  onTab,
+  startupSettings,
 }: {
-  profile: Profile
-  color: string
-  icon: string
-  onColor: (next: string) => void
-  onIcon: (next: string) => void
+  ids: string
+  tab: FieldsTab
+  onTab: (tab: FieldsTab) => void
+  startupSettings: boolean
 }) {
   const { t } = useLingui()
-  const colorName = (token: string) => {
-    switch (token) {
-      case 'rose':
-        return t`Rose`
-      case 'orange':
-        return t`Orange`
-      case 'gold':
-        return t`Gold`
-      case 'lime':
-        return t`Lime`
-      case 'teal':
-        return t`Teal`
-      case 'sky':
-        return t`Sky`
-      case 'violet':
-        return t`Violet`
-      case 'pink':
-        return t`Pink`
-      default:
-        return token
-    }
-  }
-  const iconName = (token: string) => {
-    switch (token) {
-      case 'sprout':
-        return t`Sprout`
-      case 'leaf':
-        return t`Leaf`
-      case 'wheat':
-        return t`Wheat`
-      case 'fish':
-        return t`Fish`
-      case 'hammer':
-        return t`Hammer`
-      case 'pickaxe':
-        return t`Pickaxe`
-      case 'star':
-        return t`Star`
-      case 'heart':
-        return t`Heart`
-      case 'mountain':
-        return t`Mountain`
-      case 'sun':
-        return t`Sun`
-      case 'moon':
-        return t`Moon`
-      case 'sparkles':
-        return t`Sparkles`
-      default:
-        return token
-    }
-  }
+  const tabProps = (id: FieldsTab) => ({
+    value: id,
+    id: `${ids}-tab-${id}`,
+    'aria-controls': `${ids}-panel-${id}`,
+  })
   return (
-    <>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Colour`}</Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-        {PROFILE_COLORS.map((token) => (
-          <Tooltip key={token} title={colorName(token)}>
-            <IconButton
-              aria-label={colorName(token)}
-              aria-pressed={color === token}
-              onClick={() => onColor(color === token ? '' : token)}
-              sx={{
-                width: 32,
-                height: 32,
-                bgcolor: colorHex(token),
-                outline: color === token ? '2px solid var(--mortar-ink)' : '2px solid transparent',
-                outlineOffset: 1,
-                '&:hover': { bgcolor: colorHex(token) },
-              }}
-            />
-          </Tooltip>
-        ))}
-      </Box>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Icon`}</Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-        {PROFILE_ICONS.map((name) => (
-          <Tooltip key={name} title={iconName(name)}>
-            <IconButton
-              aria-label={iconName(name)}
-              aria-pressed={icon === name}
-              onClick={() => onIcon(icon === name ? '' : name)}
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: '6px',
-                bgcolor: icon === name ? 'var(--mortar-hairline-12)' : 'transparent',
-              }}
-            >
-              <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />
-            </IconButton>
-          </Tooltip>
-        ))}
-      </Box>
-    </>
+    <Tabs
+      value={tab}
+      onChange={(_, next: FieldsTab) => onTab(next)}
+      aria-label={t`Profile settings`}
+      sx={{
+        minHeight: 44,
+        px: 1.5,
+        borderBottom: '1px solid var(--mortar-hairline)',
+        '& .MuiTabs-indicator': { height: 2 },
+        '& .MuiTab-root': {
+          minHeight: 44,
+          minWidth: 0,
+          px: '14px',
+          fontSize: 14,
+          fontWeight: 400,
+          color: 'text.secondary',
+          '&.Mui-selected': { color: 'var(--mortar-ink)', fontWeight: 600 },
+        },
+      }}
+    >
+      <Tab {...tabProps('appearance')} label={t`Appearance`} />
+      <Tab {...tabProps('launch')} label={t`Launch`} />
+      <Tab {...tabProps('overrides')} label={t`Overrides`} />
+      {startupSettings ? <Tab {...tabProps('game')} label={t`Game settings`} /> : null}
+    </Tabs>
   )
 }
 
@@ -285,68 +224,112 @@ function ProfileFields({
   onOverrides,
 }: ProfileFieldsProps) {
   const { t } = useLingui()
+  const ids = useId()
   // Only a game with a startup preferences file applies them; elsewhere the fields would change nothing.
   const startupSettings = useGameInfo(gameId)?.startupSettings === true
+  const [tab, setTab] = useState<FieldsTab>('appearance')
+  // A launch field Save rejected is shown, wherever the user was.
+  useEffect(() => {
+    if (launchError) {
+      setTab('launch')
+    }
+  }, [launchError])
+  // Every panel stays mounted, so a field keeps what was typed in it while another tab is open.
+  const panel = (id: FieldsTab, children: ReactNode) => (
+    <Box
+      role="tabpanel"
+      id={`${ids}-panel-${id}`}
+      aria-labelledby={`${ids}-tab-${id}`}
+      hidden={tab !== id}
+    >
+      {children}
+    </Box>
+  )
   return (
-    <DialogContent>
-      <AppearancePickers
-        profile={profile}
-        color={color}
-        icon={icon}
-        onColor={onColor}
-        onIcon={onIcon}
-      />
-      <CoverField gameId={gameId} profile={profile} staged={stagedCover} onStage={onStageCover} />
-      <TextField
-        fullWidth={true}
-        margin="dense"
-        multiline={true}
-        minRows={2}
-        label={t`Description`}
-        value={description}
-        onChange={(event) => onDescription(event.target.value)}
-        helperText={`${[...description].length}/${MAX_DESCRIPTION}`}
-        slotProps={{
-          htmlInput: { maxLength: MAX_DESCRIPTION },
-          root: { sx: { userSelect: 'text' } },
-        }}
-      />
-      <LoaderPicker gameId={gameId} profileId={profile.id} loader={profile.loader ?? ''} />
-      <SeparateSavesRow
-        gameId={gameId}
-        profileId={profile.id}
-        on={profile.separateSaves ?? false}
-      />
-      <LaunchOptionsBlock
-        gameId={gameId}
-        profileId={profile.id}
-        launchOptions={launchOptions}
-        onLaunchOptions={onLaunchOptions}
-        launchPrefix={launchPrefix}
-        onLaunchPrefix={onLaunchPrefix}
-        launchEnv={launchEnv}
-        onLaunchEnv={onLaunchEnv}
-        launchError={launchError}
-        onLaunchError={onLaunchError}
-      />
-      <LoaderLaunchSettings
-        key={profile.loader ?? ''}
-        gameId={gameId}
-        profileId={profile.id}
-        loader={profile.loader ?? ''}
-      />
-      <LaunchPresetsBlock
-        gameId={gameId}
-        profileId={profile.id}
-        launchOptions={launchOptions}
-        launchPrefix={launchPrefix}
-        launchEnv={launchEnv}
-      />
-      <OverridesSection overrides={overrides} onChange={onOverrides} />
-      {startupSettings ? (
-        <GameSettings profileId={profile.id} value={gameSettings} onChange={onGameSettings} />
-      ) : null}
-    </DialogContent>
+    <>
+      <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
+      <DialogContent sx={{ pt: 2.5 }}>
+        {panel(
+          'appearance',
+          <>
+            <AppearancePickers
+              profile={profile}
+              color={color}
+              icon={icon}
+              onColor={onColor}
+              onIcon={onIcon}
+            />
+            <CoverField
+              gameId={gameId}
+              profile={profile}
+              staged={stagedCover}
+              onStage={onStageCover}
+            />
+            <TextField
+              fullWidth={true}
+              margin="dense"
+              multiline={true}
+              minRows={2}
+              label={t`Description`}
+              value={description}
+              onChange={(event) => onDescription(event.target.value)}
+              helperText={`${[...description].length}/${MAX_DESCRIPTION}`}
+              slotProps={{
+                htmlInput: { maxLength: MAX_DESCRIPTION },
+                root: { sx: { userSelect: 'text' } },
+              }}
+            />
+          </>,
+        )}
+        {panel(
+          'launch',
+          <>
+            <LoaderPicker gameId={gameId} profileId={profile.id} loader={profile.loader ?? ''} />
+            <SeparateSavesRow
+              gameId={gameId}
+              profileId={profile.id}
+              on={profile.separateSaves ?? false}
+            />
+            <LaunchOptionsBlock
+              gameId={gameId}
+              profileId={profile.id}
+              launchOptions={launchOptions}
+              onLaunchOptions={onLaunchOptions}
+              launchPrefix={launchPrefix}
+              onLaunchPrefix={onLaunchPrefix}
+              launchEnv={launchEnv}
+              onLaunchEnv={onLaunchEnv}
+              launchError={launchError}
+              onLaunchError={onLaunchError}
+            />
+            <LoaderLaunchSettings
+              key={profile.loader ?? ''}
+              gameId={gameId}
+              profileId={profile.id}
+              loader={profile.loader ?? ''}
+            />
+            <LaunchPresetsBlock
+              gameId={gameId}
+              profileId={profile.id}
+              launchOptions={launchOptions}
+              launchPrefix={launchPrefix}
+              launchEnv={launchEnv}
+            />
+          </>,
+        )}
+        {panel('overrides', <OverridesSection overrides={overrides} onChange={onOverrides} />)}
+        {startupSettings
+          ? panel(
+              'game',
+              <GameSettings
+                profileId={profile.id}
+                value={gameSettings}
+                onChange={onGameSettings}
+              />,
+            )
+          : null}
+      </DialogContent>
+    </>
   )
 }
 
@@ -432,12 +415,15 @@ export function EditProfileDialog({
       coverFailure: t`Could not use that image`,
     })
   return (
-    <Dialog open={open} onClose={guard.request} slotProps={{ paper: { sx: { minWidth: 400 } } }}>
-      <form
+    <Dialog open={open} onClose={guard.request} fullWidth={true} slotProps={DIALOG_SLOTS}>
+      {/* The form takes the dialog's height so only the fields scroll, under fixed tabs and above a fixed footer. */}
+      <Box
+        component="form"
         onSubmit={(e) => {
           e.preventDefault()
           save().catch(reportUnexpected)
         }}
+        sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: '1 1 auto' }}
       >
         <DialogTitle>{t`Edit profile`}</DialogTitle>
         <ProfileFields
@@ -472,7 +458,7 @@ export function EditProfileDialog({
             </Button>
           </DisabledReason>
         </DialogActions>
-      </form>
+      </Box>
       {guard.dialog}
     </Dialog>
   )
