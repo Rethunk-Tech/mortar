@@ -95,13 +95,9 @@ func (Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, pr
 }
 
 // Contribute points Doorstop at the profile's preloader, declares the proxy files for the game folder and, under
-// Proton, asks for the winhttp override. It also sets BepInEx's console window to the user's choice, off unless they
-// asked for it: Mortar follows LogOutput.log into its own Console tab, the one channel that works under Proton too.
+// Proton, asks for the winhttp override.
 func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {
 	m := readMarker(p.Dir)
-	if err := applyConsole(p.Dir, m.Console); err != nil {
-		return err
-	}
 	proton := p.Runtime == "proton"
 	plan.AddArgs(LaunchArgs(p.Dir, m.Doorstop, proton)...)
 	for _, f := range DoorstopFiles(p.Dir) {
@@ -113,11 +109,31 @@ func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.Prof
 	return nil
 }
 
+// Owns is true for a game process whose Doorstop target is this profile's preloader, in either the host or the Wine
+// Z: form Contribute passes it in. A game started without Mortar's flags runs no profile Mortar can name.
+func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
+	for i, a := range p.Args[:max(len(p.Args)-1, 0)] {
+		if a != "--doorstop-target" && a != "--doorstop-target-assembly" {
+			continue
+		}
+		if t := p.Args[i+1]; t == targetPath(prof.Dir, false) || t == targetPath(prof.Dir, true) {
+			return true
+		}
+	}
+	return false
+}
+
 // Vanilla switches Doorstop off, so the game starts unmodded even while the proxy files sit in its folder.
 func (Loader) Vanilla(_ context.Context, plan *launchplan.Plan, t loader.Target) error {
 	m := readMarker(t.ProfileDir)
 	plan.AddArgs(VanillaArgs(m.Doorstop)...)
 	return nil
+}
+
+// Prelaunch sets BepInEx's console window to the user's choice, off unless they asked for it: Mortar follows
+// LogOutput.log into its own Console tab, the one channel that works under Proton too.
+func (Loader) Prelaunch(p loader.ProfileView) error {
+	return applyConsole(p.Dir, readMarker(p.Dir).Console)
 }
 
 // NeedsWinHTTPOverride is true: Doorstop injects through winhttp.dll, which Wine only loads when the prefix overrides it.

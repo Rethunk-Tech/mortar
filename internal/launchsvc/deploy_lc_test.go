@@ -94,7 +94,23 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 		return dep
 	}
 
+	cfg := filepath.Join(profileDir, "BepInEx", "config", "BepInEx.cfg")
+	testfs.WriteFile(t, profileDir, "BepInEx/config/BepInEx.cfg", "[Logging.Console]\nEnabled = true\n")
+	g, err := game.Require(lc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.launchPlan(t.Context(), g, inst, p.ID, launchplan.ModeProfile, "", "", ""); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := fsx.ReadFile(cfg); string(b) != "[Logging.Console]\nEnabled = true\n" {
+		t.Fatalf("building the plan, as the launch preview does, rewrote BepInEx.cfg: %q", b)
+	}
+
 	dep := launch()
+	if b, _ := fsx.ReadFile(cfg); string(b) != "[Logging.Console]\nEnabled = false\n" {
+		t.Errorf("the launch left BepInEx's console window on: %q", b)
+	}
 	for rel, want := range map[string]string{
 		"BepInEx/plugins/Ns-A/A.dll": "Ns-A",
 		"BepInEx/plugins/Ns-B/B.dll": "Ns-B",

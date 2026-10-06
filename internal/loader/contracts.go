@@ -57,6 +57,12 @@ type Loader interface {
 	Contribute(ctx context.Context, plan *launchplan.Plan, p ProfileView) error
 }
 
+// Prelaunch is a loader that writes profile files for a launch actually starting; Contribute stays free of side
+// effects, since a launch preview builds the same plan.
+type Prelaunch interface {
+	Prelaunch(p ProfileView) error
+}
+
 // Vanilla starts the game without the loader.
 type Vanilla interface {
 	Vanilla(ctx context.Context, plan *launchplan.Plan, t Target) error

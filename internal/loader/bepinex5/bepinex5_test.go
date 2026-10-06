@@ -203,8 +203,8 @@ func TestLaunchSettingsEditOnlyTheirLines(t *testing.T) {
 	}
 }
 
-// BepInEx writes Enabled = true into a new BepInEx.cfg, so every launch puts back the user's choice, off by default,
-// and a choice to show the window survives a reinstall of the pack.
+// BepInEx writes Enabled = true into a new BepInEx.cfg, so every real launch, never a preview, puts back the user's
+// choice, off by default, and a choice to show the window survives a reinstall of the pack.
 func TestLaunchHidesTheConsoleWindowUnlessChosen(t *testing.T) {
 	ctx := t.Context()
 	dir := t.TempDir()
@@ -216,8 +216,15 @@ func TestLaunchHidesTheConsoleWindowUnlessChosen(t *testing.T) {
 		t.Fatal(err)
 	}
 	l := Loader{}
+	before, _ := readConfig(dir)
+	if err := l.Contribute(ctx, launchplan.New(launchplan.ModeProfile), loader.ProfileView{Dir: dir}); err != nil {
+		t.Fatal(err)
+	}
+	if after, _ := readConfig(dir); after != before {
+		t.Fatalf("building the plan, as a preview does, rewrote BepInEx.cfg: %q", after)
+	}
 	enabled := func() string {
-		if err := l.Contribute(ctx, launchplan.New(launchplan.ModeProfile), loader.ProfileView{Dir: dir}); err != nil {
+		if err := l.Prelaunch(loader.ProfileView{Dir: dir}); err != nil {
 			t.Fatal(err)
 		}
 		text, _ := readConfig(dir)
