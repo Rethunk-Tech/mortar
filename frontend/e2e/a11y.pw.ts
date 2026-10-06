@@ -15,6 +15,8 @@ async function scan(page: Page, screen: string): Promise<string[]> {
     () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
   )
   const { violations } = await new AxeBuilder({ page })
+    // Mortar draws no frames, and the default mode opens a blank page per scan to merge frame results.
+    .setLegacyMode()
     .withTags(WCAG_AA)
     // Experimental, so off unless named.
     .options({
