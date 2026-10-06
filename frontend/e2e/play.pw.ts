@@ -187,5 +187,6 @@ test('a Steam session sent to a running Mortar lasts until its game closes', asy
   } finally {
     stop(child)
   }
-  expect(runs().length).toBe(before + 1)
+  // The run's record lands just after the game goes idle, which is what the session waited for.
+  await expect.poll(() => runs().length).toBe(before + 1)
 })
