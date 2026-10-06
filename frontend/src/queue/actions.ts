@@ -26,6 +26,7 @@ export type Want = Pick<Request, 'kind'> &
       | 'repo'
       | 'package'
       | 'source'
+      | 'picture'
       | 'tag'
       | 'asset'
       | 'latest'

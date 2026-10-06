@@ -52,7 +52,7 @@ interface BrowsePageProps {
   downloadNexus: (modID: string) => void
   addGitHub: (repo: string) => void
   addPackage: (id: string) => void
-  addDirect: (source: string, id: string) => void
+  addDirect: (source: string, id: string, picture: string) => void
 }
 
 interface ResultCardProps {
@@ -63,7 +63,7 @@ interface ResultCardProps {
   downloadNexus: (modID: string) => void
   addGitHub: (repo: string) => void
   addPackage: (id: string) => void
-  addDirect: (source: string, id: string) => void
+  addDirect: (source: string, id: string, picture: string) => void
   profileID: string
   modes: BrowseModes
   sourceNames: Map<string, string>

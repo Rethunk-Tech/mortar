@@ -296,6 +296,9 @@ function PageLink({ url }: { url: string }) {
     github: t`GitHub page`,
     nexus: t`Nexus page`,
     thunderstore: t`Thunderstore page`,
+    curseforge: t`CurseForge page`,
+    modrinth: t`Modrinth page`,
+    itch: t`itch.io page`,
     web: t`Open page`,
   }[host]
   return (

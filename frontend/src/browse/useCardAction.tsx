@@ -69,7 +69,9 @@ function useCardAction(props: ActionProps, item: BrowseItem, source: string): Ca
     if (source === GITHUB) {
       return props.addGitHub(id)
     }
-    return source === THUNDERSTORE ? props.addPackage(id) : props.addDirect(source, id)
+    return source === THUNDERSTORE
+      ? props.addPackage(id)
+      : props.addDirect(source, id, shownItem.picture)
   }
   const onAdd = () => run(() => Promise.resolve(addFromSource()))
   const onDownload = () => run(() => Promise.resolve(props.downloadNexus(id)))

@@ -8,6 +8,7 @@ import { testProfile } from '../profiles/testProfile.ts'
 import {
   entryHasDrift,
   installableUpdate,
+  kindLabel,
   listedAgainstNexus,
   missingCount,
   modStatusProblem,
@@ -296,4 +297,15 @@ test('optional and outside requirements are not counted as missing or as problem
   }
   expect(missingCount(result)).toBe(0)
   expect(problemCount(result)).toBe(0)
+})
+
+test('a direct source shows its brand name, not its id', () => {
+  const labels = {
+    archive: 'Archive',
+    nexus: 'Nexus Mods',
+    github: 'GitHub',
+    thunderstore: 'Thunderstore',
+  }
+  expect(kindLabel('curseforge', labels)).toBe('CurseForge')
+  expect(kindLabel('nexus', labels)).toBe('Nexus Mods')
 })

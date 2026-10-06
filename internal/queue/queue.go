@@ -227,6 +227,9 @@ type Request struct {
 	Source string `json:"source,omitempty"`
 	// PackageFile is the exact site file id of a Package; it wins over Version, which a site's authors may reuse across files.
 	PackageFile int `json:"packageFile,omitempty"`
+	// Picture is the picture URL the browse card showed for a Package, kept as the entry's picture; the sites' resolve
+	// calls do not return one.
+	Picture string `json:"picture,omitempty"`
 	// FallbackRepo is the mod's GitHub repo (owner/name) for a Nexus update: when the account would have to click
 	// Mod Manager Download, the same version's GitHub release is used instead, if there is exactly one archive.
 	FallbackRepo string `json:"fallbackRepo,omitempty"`
@@ -677,7 +680,7 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Package: r.Package, Source: r.Source, PackageFile: r.PackageFile, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: r.picture, Category: r.category, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
+			Package: r.Package, Source: r.Source, PackageFile: r.PackageFile, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: cmp.Or(r.picture, r.Picture), Category: r.category, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
 		}
 		if it.Repo != "" {
 			it.Name = cmp.Or(it.Name, it.Repo)

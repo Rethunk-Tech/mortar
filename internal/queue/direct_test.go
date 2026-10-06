@@ -85,3 +85,16 @@ func TestExpandDirectPinsCurseForgeFileID(t *testing.T) {
 		t.Errorf("source file id %d", src.FileID)
 	}
 }
+
+func TestExpandDirectKeepsThePicturePerEntryOnlyForTheRoot(t *testing.T) {
+	s := &Service{d: Deps{Direct: func(_ context.Context, _, id, _ string, _ []string) (DirectFile, error) {
+		if id == "root" {
+			return DirectFile{Version: "1", URL: "u", Dependencies: []DirectRef{{ID: "dep"}}}, nil
+		}
+		return DirectFile{Version: "1", URL: "u"}, nil
+	}}}
+	got, err := s.expandDirect(context.Background(), Request{Kind: KindInstall, Source: "curseforge", Package: "root", Picture: "https://img/p.png"})
+	if err != nil || len(got) != 2 || got[0].Picture != "" || got[1].Picture != "https://img/p.png" {
+		t.Fatalf("got %+v, err %v", got, err)
+	}
+}

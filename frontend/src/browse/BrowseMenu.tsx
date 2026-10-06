@@ -50,14 +50,23 @@ function Items({
       label={t`Show details`}
       onClick={run(() => useBrowseSelection.getState().select({ item, source }))}
     />,
-    <MenuAction
-      key="add"
-      icon={opensFiles ? <ExternalLink size={16} /> : <Plus size={16} />}
-      label={opensFiles ? t`Open files page` : t`Add`}
-      disabled={addWhy !== undefined}
-      tooltip={addWhy}
-      onClick={run(add)}
-    />,
+    shownItem.external === true ? (
+      <MenuAction
+        key="add"
+        icon={<ExternalLink size={16} />}
+        label={t`Open page`}
+        onClick={run(() => card.openUrl(url))}
+      />
+    ) : (
+      <MenuAction
+        key="add"
+        icon={opensFiles ? <ExternalLink size={16} /> : <Plus size={16} />}
+        label={opensFiles ? t`Open files page` : t`Add`}
+        disabled={addWhy !== undefined}
+        tooltip={addWhy}
+        onClick={run(add)}
+      />
+    ),
     ...choices.map((c) => (
       <MenuAction
         key={`open-${c.source}`}

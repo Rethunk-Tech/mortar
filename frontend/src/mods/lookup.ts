@@ -20,6 +20,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { idKey } from './dependents.ts'
@@ -101,7 +102,7 @@ export const kindLabel = (
     case 'thunderstore':
       return labels.thunderstore
     default:
-      return kind
+      return sourceLabel(kind)
   }
 }
 

@@ -366,9 +366,15 @@ func Pages(mods []framework.Mod, gameID string) map[string]string {
 
 // modPage is the page its update keys name, else its page at the source it was installed from.
 func modPage(gameID string, m framework.Mod) string {
-	if u := pageURL(nexusDomain(gameID), m.UpdateKeys); u != "" {
+	if u := sourcePage(gameID, m); u != "" {
 		return u
 	}
+	return pageURL(nexusDomain(gameID), m.UpdateKeys)
+}
+
+// sourcePage is the page of the site a mod was installed from, which outranks the Nexus metadata its manifest may
+// also carry. Nexus and GitHub entries take theirs from the update keys.
+func sourcePage(gameID string, m framework.Mod) string {
 	entry, ok := source.Get(m.SourceKind)
 	linker, canLink := entry.Source.(source.PageLinker)
 	if !ok || !canLink || m.SourceName == "" || m.SourceKind == profile.KindNexus || m.SourceKind == profile.KindGitHub {

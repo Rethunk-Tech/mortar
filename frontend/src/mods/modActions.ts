@@ -1,7 +1,15 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 
-export type PageHost = 'nexus' | 'github' | 'thunderstore' | 'web' | ''
+export type PageHost =
+  | 'nexus'
+  | 'github'
+  | 'thunderstore'
+  | 'curseforge'
+  | 'modrinth'
+  | 'itch'
+  | 'web'
+  | ''
 export type ModAction = 'toggle' | 'details' | 'page' | 'files' | 'pin' | 'skip' | 'remove'
 
 export interface MenuState {
@@ -25,7 +33,16 @@ export const hostOf = (url: string | undefined): PageHost => {
   if (on('nexusmods.com')) {
     return 'nexus'
   }
-  return on('thunderstore.io') ? 'thunderstore' : 'web'
+  if (on('thunderstore.io')) {
+    return 'thunderstore'
+  }
+  if (on('curseforge.com')) {
+    return 'curseforge'
+  }
+  if (on('modrinth.com')) {
+    return 'modrinth'
+  }
+  return on('itch.io') ? 'itch' : 'web'
 }
 
 // The action that opens a mod's page, named for its site.
@@ -35,6 +52,9 @@ export const openPageLabel = (i18n: I18n, host: PageHost): string =>
       github: msg`Open on GitHub`,
       nexus: msg`Open on Nexus`,
       thunderstore: msg`Open on Thunderstore`,
+      curseforge: msg`Open on CurseForge`,
+      modrinth: msg`Open on Modrinth`,
+      itch: msg`Open on itch.io`,
       web: msg`Open page`,
       '': msg`Open page`,
     }[host],

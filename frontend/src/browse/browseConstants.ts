@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 
 const ALL = 'all'
@@ -34,13 +35,8 @@ function searchHint(source: string, premium: boolean): string {
 }
 
 function openPageLabel(source: string): string {
-  if (source === GITHUB) {
-    return i18n._(msg`Open on GitHub`)
-  }
-  if (source === THUNDERSTORE) {
-    return i18n._(msg`Open on Thunderstore`)
-  }
-  return i18n._(msg`Open on Nexus`)
+  const label = sourceLabel(source)
+  return i18n._(msg`Open on ${label}`)
 }
 
 const list = { display: 'flex', flexDirection: 'column', gap: 0.75 } as const

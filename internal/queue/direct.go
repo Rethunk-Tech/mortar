@@ -66,7 +66,7 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 		}
 		q := r
 		if !root {
-			q.Kind, q.Disabled = KindDependency, nil
+			q.Kind, q.Disabled, q.Picture = KindDependency, nil, ""
 		}
 		q.Package, q.Version, q.url, q.sizeKB, q.digest = ref.ID, f.Version, f.URL, f.SizeKB, f.Digest
 		if !root || q.Name == "" {

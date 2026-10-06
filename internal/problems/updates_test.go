@@ -267,3 +267,11 @@ func TestMetadataRepoIsTheGitHubFallbackWithoutAManifestKey(t *testing.T) {
 		t.Fatalf("malformed repo: %q", got)
 	}
 }
+
+func TestPageOfADirectSourceEntryBeatsItsNexusKey(t *testing.T) {
+	cf := framework.Mod{Key: "k", UniqueID: "me.cp", SourceKind: "curseforge", SourceName: "309243", UpdateKeys: []string{"Nexus:1915"}}
+	got := Pages([]framework.Mod{cf}, "stardew")
+	if got["k/smapi:me.cp"] != "https://www.curseforge.com/projects/309243" {
+		t.Fatalf("got %v", got)
+	}
+}

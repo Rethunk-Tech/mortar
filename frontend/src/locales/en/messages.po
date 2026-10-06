@@ -205,7 +205,7 @@ msgid "Updated categories"
 msgstr "Updated categories"
 
 #: src/queue/store.ts:149
-#: src/toasts/report.ts:57
+#: src/toasts/report.ts:59
 msgid "Open storage settings"
 msgstr "Open storage settings"
 
@@ -982,6 +982,10 @@ msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
 
+#: src/mods/modActions.ts:56
+msgid "Open on Modrinth"
+msgstr "Open on Modrinth"
+
 #: src/mods/MoveFoldersDialog.tsx:117
 msgid "Don't ask again"
 msgstr "Don't ask again"
@@ -1188,7 +1192,7 @@ msgid "Last opened profile"
 msgstr "Last opened profile"
 
 #. placeholder {0}: sourceNames.get(c.source) ?? c.source
-#: src/browse/BrowseMenu.tsx:65
+#: src/browse/BrowseMenu.tsx:74
 msgid "Open page on {0}"
 msgstr "Open page on {0}"
 
@@ -1356,7 +1360,7 @@ msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
 #: src/settings/sections/AboutDiagnostics.tsx:227
-#: src/toasts/report.ts:64
+#: src/toasts/report.ts:66
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
 
@@ -1714,7 +1718,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/shell/ErrorRetry.tsx:14
 #: src/shell/LoadingRow.tsx:26
 #: src/shell/OfflineBanner.tsx:72
-#: src/toasts/report.ts:60
+#: src/toasts/report.ts:62
 msgid "Retry"
 msgstr "Retry"
 
@@ -2213,6 +2217,10 @@ msgstr "{0, plural, one {# missing dependency} other {# missing dependencies}}"
 #: src/firstrunTour/TourPopover.tsx:174
 msgid "Skip tour"
 msgstr "Skip tour"
+
+#: src/mods/modActions.ts:57
+msgid "Open on itch.io"
+msgstr "Open on itch.io"
 
 #: src/settings/sections/Storage.tsx:77
 msgid "Could not measure disk use"
@@ -3154,7 +3162,7 @@ msgstr "Save as template"
 msgid "No log for this profile yet. Play it once, then try again."
 msgstr "No log for this profile yet. Play it once, then try again."
 
-#: src/browse/browseConstants.ts:25
+#: src/browse/browseConstants.ts:26
 msgid "Search GitHub for mods published as releases. Add puts the latest release in this profile."
 msgstr "Search GitHub for mods published as releases. Add puts the latest release in this profile."
 
@@ -3172,8 +3180,7 @@ msgstr "Neither profile has a mod that matches the filter."
 msgid "Show details"
 msgstr "Show details"
 
-#: src/browse/browseConstants.ts:41
-#: src/mods/modActions.ts:37
+#: src/mods/modActions.ts:54
 msgid "Open on Thunderstore"
 msgstr "Open on Thunderstore"
 
@@ -3273,13 +3280,17 @@ msgstr "{name} is marked abandoned and may no longer be maintained."
 msgid "Send nearby…"
 msgstr "Send nearby…"
 
+#: src/mods/ModDetail.tsx:300
+msgid "Modrinth page"
+msgstr "Modrinth page"
+
 #: src/profiles/CompareBulkBody.tsx:148
 #: src/profiles/CompareBulkBody.tsx:158
 #: src/share/CompareSummary.tsx:23
 msgid "Only in {name}"
 msgstr "Only in {name}"
 
-#: src/browse/BrowseMenu.tsx:56
+#: src/browse/BrowseMenu.tsx:64
 #: src/browse/CardAction.tsx:59
 #: src/mods/OptionalFileRows.tsx:176
 #: src/queue/store.ts:141
@@ -4120,7 +4131,7 @@ msgstr "Could not undo the install"
 msgid "Enable all"
 msgstr "Enable all"
 
-#: src/browse/BrowseMenu.tsx:73
+#: src/browse/BrowseMenu.tsx:82
 msgid "Could not copy the link"
 msgstr "Could not copy the link"
 
@@ -4210,7 +4221,7 @@ msgstr "Show in queue"
 msgid "Disabled"
 msgstr "Disabled"
 
-#: src/toasts/report.ts:32
+#: src/toasts/report.ts:33
 msgid "The author only allows this download on the source's own page. Download the file there and add it from your computer."
 msgstr "The author only allows this download on the source's own page. Download the file there and add it from your computer."
 
@@ -4287,7 +4298,7 @@ msgstr "{0} {1} has several archives. Which one should Mortar install?"
 msgid "Reset {label}"
 msgstr "Reset {label}"
 
-#: src/toasts/report.ts:66
+#: src/toasts/report.ts:68
 msgid "Open log"
 msgstr "Open log"
 
@@ -4367,7 +4378,7 @@ msgstr "Get the extension"
 msgid "None"
 msgstr "None"
 
-#: src/browse/BrowseMenu.tsx:73
+#: src/browse/BrowseMenu.tsx:82
 #: src/console/HelpDialog.tsx:187
 #: src/share/ShareDialog.tsx:239
 msgid "Link copied"
@@ -4911,7 +4922,7 @@ msgstr "This profile matches {host}."
 msgid "Checking profiles…"
 msgstr "Checking profiles…"
 
-#: src/browse/browseConstants.ts:32
+#: src/browse/browseConstants.ts:33
 msgid "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 msgstr "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
 
@@ -5410,8 +5421,7 @@ msgstr "Updated from {0}"
 msgid "Open mod"
 msgstr "Open mod"
 
-#: src/browse/browseConstants.ts:38
-#: src/mods/modActions.ts:35
+#: src/mods/modActions.ts:52
 #: src/shell/BugReportDialog.tsx:104
 msgid "Open on GitHub"
 msgstr "Open on GitHub"
@@ -6111,11 +6121,12 @@ msgstr "Pin {name}"
 msgid "Premium downloads come from this Nexus server when it offers the file."
 msgstr "Premium downloads come from this Nexus server when it offers the file."
 
+#: src/browse/BrowseMenu.tsx:57
 #: src/browse/CardAction.tsx:126
-#: src/mods/modActions.ts:38
-#: src/mods/modActions.ts:39
+#: src/mods/modActions.ts:58
+#: src/mods/modActions.ts:59
 #: src/mods/ModDependencyTree.tsx:57
-#: src/mods/ModDetail.tsx:299
+#: src/mods/ModDetail.tsx:302
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:214
@@ -6551,6 +6562,10 @@ msgstr "Nothing to import"
 #: src/mods/SelectionBarActions.tsx:155
 msgid "More actions"
 msgstr "More actions"
+
+#: src/mods/modActions.ts:55
+msgid "Open on CurseForge"
+msgstr "Open on CurseForge"
 
 #: src/settings/sections/DataMods.tsx:39
 msgid "Clears cached Nexus and SMAPI details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
@@ -7655,7 +7670,7 @@ msgstr "Could not run diagnostics"
 msgid "·"
 msgstr "·"
 
-#: src/browse/BrowseMenu.tsx:56
+#: src/browse/BrowseMenu.tsx:64
 #: src/browse/CardAction.tsx:74
 #: src/console/RunProblems.tsx:137
 #: src/downloads/newDownloads.ts:35
@@ -8426,8 +8441,8 @@ msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
 #: src/firstrun/GameSetup.tsx:137
-#: src/toasts/report.ts:34
-#: src/toasts/report.ts:113
+#: src/toasts/report.ts:36
+#: src/toasts/report.ts:115
 #: src/toasts/usePending.ts:31
 msgid "Something went wrong"
 msgstr "Something went wrong"
@@ -9252,10 +9267,9 @@ msgstr "Restoring from before Update all also reverts these later changes:"
 msgid "You endorsed this mod."
 msgstr "You endorsed this mod."
 
-#: src/browse/browseConstants.ts:43
 #: src/console/CrashDialog.tsx:133
 #: src/launch/LaunchLayer.tsx:302
-#: src/mods/modActions.ts:36
+#: src/mods/modActions.ts:53
 #: src/mods/TrackedNotInProfile.tsx:82
 #: src/mods/updateReview/WithheldGroup.tsx:41
 msgid "Open on Nexus"
@@ -9997,7 +10011,7 @@ msgstr "In the same download"
 msgid "{0, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
 msgstr "{0, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
 
-#: src/browse/browseConstants.ts:20
+#: src/browse/browseConstants.ts:21
 msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 msgstr "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
 
@@ -11319,6 +11333,10 @@ msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 msgid "Loading mods"
 msgstr "Loading mods"
 
+#: src/mods/ModDetail.tsx:301
+msgid "itch.io page"
+msgstr "itch.io page"
+
 #: src/mods/ModMenu.tsx:242
 msgid "Move up (loses files)"
 msgstr "Move up (loses files)"
@@ -11923,7 +11941,7 @@ msgstr "Nexus Mods"
 msgid "Applied when the game next starts"
 msgstr "Applied when the game next starts"
 
-#: src/browse/browseConstants.ts:29
+#: src/browse/browseConstants.ts:30
 msgid "Search Nexus Mods. Download installs the mod into this profile."
 msgstr "Search Nexus Mods. Download installs the mod into this profile."
 
@@ -12383,7 +12401,7 @@ msgstr "Find an asset"
 msgid "This mod is no longer in the profile."
 msgstr "This mod is no longer in the profile."
 
-#: src/browse/BrowseMenu.tsx:72
+#: src/browse/BrowseMenu.tsx:81
 #: src/share/ShareDialog.tsx:242
 msgid "Copy link"
 msgstr "Copy link"
@@ -12743,7 +12761,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/mods/AssetMapDialog.tsx:279
 #: src/mods/AuthorDialog.tsx:165
 #: src/mods/ChangelogDialog.tsx:103
-#: src/mods/ModDetail.tsx:348
+#: src/mods/ModDetail.tsx:351
 #: src/mods/updateReview/ReviewFooter.tsx:61
 #: src/mods/updateReview/ReviewTitle.tsx:43
 #: src/profiles/CompareDialog.tsx:163
@@ -12772,6 +12790,10 @@ msgstr "Link"
 #: src/mods/Sidebar.tsx:490
 msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
+
+#: src/browse/browseConstants.ts:39
+msgid "Open on {label}"
+msgstr "Open on {label}"
 
 #. placeholder {0}: e.toArea
 #: src/mods/ConflictWhy.tsx:119
@@ -13038,6 +13060,10 @@ msgstr "Could not set it in Steam"
 #: src/settings/sections/DataUsage.tsx:230
 msgid "Disk space"
 msgstr "Disk space"
+
+#: src/mods/ModDetail.tsx:299
+msgid "CurseForge page"
+msgstr "CurseForge page"
 
 #. placeholder {0}: dropped.length
 #. placeholder {1}: names(dropped)
