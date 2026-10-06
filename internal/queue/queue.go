@@ -28,6 +28,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
@@ -77,15 +78,6 @@ const (
 	StateCancelled    = "cancelled"
 )
 
-// repoPattern is a GitHub "owner/repo"; it also keeps anything but a name out of the API URL.
-var repoPattern = regexp.MustCompile(`^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$`)
-
-// validRepo also refuses "." and "..", which the pattern admits but would move the API URL's path.
-func validRepo(repo string) bool {
-	owner, name, _ := strings.Cut(repo, "/")
-	return repoPattern.MatchString(repo) && strings.Trim(owner, ".") != "" && strings.Trim(name, ".") != ""
-}
-
 // packagePattern is a Thunderstore "Namespace-Name"; neither part holds a dash.
 var packagePattern = regexp.MustCompile(`^[A-Za-z0-9_]+-[A-Za-z0-9_]+$`)
 
@@ -97,7 +89,7 @@ func (r Request) valid() bool {
 	if r.Source != "" {
 		pkg = directIDPattern.MatchString(r.Package)
 	}
-	return r.Game != "" && r.Profile != "" && (r.ModID > 0 || validRepo(r.Repo) || pkg)
+	return r.Game != "" && r.Profile != "" && (r.ModID > 0 || manifest.ValidGitHubRepo(r.Repo) || pkg)
 }
 
 const (

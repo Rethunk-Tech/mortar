@@ -166,3 +166,17 @@ func TestParseAgainReturnsAnUnsharedCopy(t *testing.T) {
 		t.Fatal("a manifest without a UniqueID parsed")
 	}
 }
+
+func TestGitHubRepoRefusesWhatMovesTheURL(t *testing.T) {
+	for _, repo := range []string{"me/..", "./mod", "../..", "me/.", "o/r?x", "o/r#x", "o/r/s", "o /r"} {
+		if ValidGitHubRepo(repo) {
+			t.Errorf("ValidGitHubRepo(%q) = true", repo)
+		}
+		if _, ok := GitHubUpdateKey("GitHub:" + repo); ok {
+			t.Errorf("GitHubUpdateKey accepted %q", repo)
+		}
+	}
+	if !ValidGitHubRepo("me/mod.cfg") {
+		t.Error("a dotted repo name was refused")
+	}
+}

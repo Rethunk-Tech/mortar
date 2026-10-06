@@ -255,17 +255,6 @@ func TestGitHubRequestsNeedNoSignInButAValidRepo(t *testing.T) {
 	}
 }
 
-func TestAddRefusesDotRepos(t *testing.T) {
-	for _, repo := range []string{"me/..", "./mod", "../..", "me/."} {
-		if validRepo(repo) {
-			t.Errorf("validRepo(%q) = true", repo)
-		}
-	}
-	if !validRepo("me/mod.cfg") {
-		t.Error("a dotted repo name was refused")
-	}
-}
-
 func TestConfirmSurvivesARestartAndItsInstallIgnoresCancel(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.ok.Store(false)

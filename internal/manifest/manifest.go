@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -317,7 +318,17 @@ func NexusUpdateKey(key string) (int, bool) {
 func GitHubUpdateKey(key string) (string, bool) {
 	site, rest, ok := strings.Cut(key, ":")
 	rest = strings.TrimSpace(rest)
-	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && strings.Count(rest, "/") == 1
+	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && ValidGitHubRepo(rest)
+}
+
+// repoPattern is a GitHub "owner/repo"; it also keeps anything but a name out of the API URL.
+var repoPattern = regexp.MustCompile(`^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$`)
+
+// ValidGitHubRepo reports a GitHub "owner/repo". It also refuses "." and "..", which the pattern admits but would
+// move the API URL's path.
+func ValidGitHubRepo(repo string) bool {
+	owner, name, _ := strings.Cut(repo, "/")
+	return repoPattern.MatchString(repo) && strings.Trim(owner, ".") != "" && strings.Trim(name, ".") != ""
 }
 
 // ModID is the manifest's mod as a mod.ID.
