@@ -3,8 +3,10 @@ package usererr
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"net"
+	"net/url"
 	"os"
 	"syscall"
 	"testing"
@@ -66,5 +68,25 @@ func TestErrorWireAndParse(t *testing.T) {
 func TestWrapNil(t *testing.T) {
 	if Wrap(Busy, nil) != nil {
 		t.Fatal("nil")
+	}
+}
+
+func TestMarshalCarriesTheKindOfAnUntaggedError(t *testing.T) {
+	readOnly := &fs.PathError{Op: "open", Path: "profile.json", Err: syscall.EACCES}
+	if got := string(Marshal(fmt.Errorf("save profile: %w", readOnly))); got != `{"kind":"permission"}` {
+		t.Fatalf("read-only folder: %s", got)
+	}
+	// Nothing listens on the discard port, so the dial is refused the way an offline request is.
+	var d net.Dialer
+	_, derr := d.DialContext(t.Context(), "tcp", "127.0.0.1:9")
+	refused := &url.Error{Op: "Get", URL: "https://api.nexusmods.com/v1/user/tracked_mods.json", Err: derr}
+	if got := string(Marshal(fmt.Errorf("tracked mods: %w", refused))); got != `{"kind":"network"}` {
+		t.Fatalf("refused connection: %s (%v)", got, derr)
+	}
+	if Marshal(errors.New("plain")) != nil {
+		t.Fatal("an unknown error keeps the default cause")
+	}
+	if got := string(Marshal(Wrap(Busy, errors.New("running")))); got != `{"kind":"busy"}` {
+		t.Fatalf("tagged: %s", got)
 	}
 }

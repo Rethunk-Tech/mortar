@@ -72,6 +72,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/tidy"
 	"github.com/Rethunk-Tech/mortar/internal/tools"
 	"github.com/Rethunk-Tech/mortar/internal/updatesvc"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
@@ -224,6 +225,7 @@ func run() error {
 		Name:         "Mortar",
 		Icon:         appIcon,
 		ErrorHandler: logAppError,
+		MarshalError: usererr.Marshal,
 		PanicHandler: panicHandler(dataDir),
 		// ApplicationID is the GtkApplication / Wayland app_id and the Linux desktop file id. It must not equal
 		// UniqueID: both become D-Bus names, and GApplication also owns ApplicationID on the session bus.

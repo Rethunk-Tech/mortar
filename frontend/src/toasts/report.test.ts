@@ -10,6 +10,7 @@ test('toastError puts the mapped sentence in body and raw text in detail', () =>
   // The generic sentence is also the unexpected-error title, so it is not repeated as the body.
   expect(src).toContain('...(body === title ? {} : { body })')
   expect(src).toContain("...(details === '' ? {} : { detail: details })")
-  expect(src).toContain('...(action === undefined ? {} : { action })')
+  expect(src).toContain('const action = extra.action ?? nextStep(e, extra.retry)')
+  expect(src).toContain("run: () => openSettings('about')")
   expect(src).toContain('toastError(i18n._(msg`Something went wrong`), e)')
 })

@@ -11,8 +11,8 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
-import { errorDetails } from '../toasts/errorKind.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorDetails, errorKind } from '../toasts/errorKind.ts'
+import { errorMessage, toastError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { isAbstained, isEndorsed, isTracked, type TrackedMod } from './nexusAccount.ts'
 import { nexusDomain } from './nexusDomain.ts'
@@ -28,6 +28,7 @@ export function NexusAccountActions({
 }) {
   const { t } = useLingui()
   const signedIn = useNexus((s) => s.signedIn)
+  const trackedFail = t`Could not load your tracked Nexus mods`
   const [status, setStatus] = useState(endorsement)
   const [mods, setMods] = useState<TrackedMod[] | undefined>()
   const [pending, run] = usePending()
@@ -62,15 +63,16 @@ export function NexusAccountActions({
         }
       },
       (e: unknown) => {
-        if (live) {
-          reportUnexpected(e)
+        // Offline is the banner's to say; any other failure names what did not load.
+        if (live && errorKind(e) !== 'network') {
+          toastError(trackedFail, e)
         }
       },
     )
     return () => {
       live = false
     }
-  }, [signedIn, modId])
+  }, [signedIn, modId, trackedFail])
 
   if (!signedIn) {
     return null

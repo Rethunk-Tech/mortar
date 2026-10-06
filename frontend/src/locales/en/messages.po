@@ -212,7 +212,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
-#: src/game/Hero.tsx:333
+#: src/game/Hero.tsx:341
 #: src/mods/Sidebar.tsx:153
 msgid "Updated"
 msgstr "Updated"
@@ -827,7 +827,7 @@ msgstr "Resolve"
 msgid "This file is from the same Nexus page as {0}. Install it with that mod to update them as one, or as a separate mod."
 msgstr "This file is from the same Nexus page as {0}. Install it with that mod to update them as one, or as a separate mod."
 
-#: src/mods/NexusAccountActions.tsx:132
+#: src/mods/NexusAccountActions.tsx:134
 msgid "Untrack"
 msgstr "Untrack"
 
@@ -1318,6 +1318,7 @@ msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
 #: src/settings/sections/AboutDiagnostics.tsx:227
+#: src/toasts/report.ts:58
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
 
@@ -1627,7 +1628,7 @@ msgstr "Mortar has not asked {0} this session."
 msgid "Don't ask again about {0}"
 msgstr "Don't ask again about {0}"
 
-#: src/game/Hero.tsx:145
+#: src/game/Hero.tsx:148
 msgid "Unlink"
 msgstr "Unlink"
 
@@ -3603,7 +3604,7 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 msgid "Search archives"
 msgstr "Search archives"
 
-#: src/game/Hero.tsx:334
+#: src/game/Hero.tsx:342
 msgid "Created"
 msgstr "Created"
 
@@ -4078,7 +4079,7 @@ msgstr "{0} {1} has several archives. Which one should Mortar install?"
 msgid "Reset {label}"
 msgstr "Reset {label}"
 
-#: src/toasts/report.ts:59
+#: src/toasts/report.ts:60
 msgid "Open log"
 msgstr "Open log"
 
@@ -4146,7 +4147,7 @@ msgid "Get the extension"
 msgstr "Get the extension"
 
 #: src/bundles/BundlesSection.tsx:110
-#: src/game/Hero.tsx:329
+#: src/game/Hero.tsx:337
 #: src/mods/ModDependencyTree.tsx:162
 #: src/mods/Toolbar.tsx:196
 #: src/settings/prefCopy.ts:122
@@ -4177,7 +4178,7 @@ msgstr "Violet"
 msgid "Unknown"
 msgstr "Unknown"
 
-#: src/game/Hero.tsx:141
+#: src/game/Hero.tsx:144
 msgid "Review revision {review}"
 msgstr "Review revision {review}"
 
@@ -4544,7 +4545,7 @@ msgstr "One argument per line. Placeholders: {placeholders}."
 msgid "API key not set. Itch.io search is off until you add one."
 msgstr "API key not set. Itch.io search is off until you add one."
 
-#: src/mods/NexusAccountActions.tsx:86
+#: src/mods/NexusAccountActions.tsx:88
 msgid "You chose not to endorse this mod."
 msgstr "You chose not to endorse this mod."
 
@@ -5162,7 +5163,7 @@ msgstr "Open mod"
 msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
-#: src/game/Hero.tsx:168
+#: src/game/Hero.tsx:171
 #: src/game/NewProfileDialog.tsx:212
 #: src/profiles/ProfileRow.tsx:219
 msgid "Profile name"
@@ -6181,7 +6182,7 @@ msgstr "Open author page on Nexus"
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
-#: src/mods/NexusAccountActions.tsx:153
+#: src/mods/NexusAccountActions.tsx:155
 msgid "Track"
 msgstr "Track"
 
@@ -6334,7 +6335,7 @@ msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:54
 #: src/firstrunTour/TourPopover.tsx:50
-#: src/game/Hero.tsx:326
+#: src/game/Hero.tsx:334
 #: src/game/ProfileWorkspace.tsx:87
 #: src/mods/ModListVirtual.tsx:279
 #: src/settings/GameSettingsPage.tsx:63
@@ -6983,7 +6984,7 @@ msgstr "Notification history"
 msgid "Where the time goes"
 msgstr "Where the time goes"
 
-#: src/game/Hero.tsx:330
+#: src/game/Hero.tsx:338
 msgid "Open Saves ({fitting} of {total})"
 msgstr "Open Saves ({fitting} of {total})"
 
@@ -7475,7 +7476,7 @@ msgstr "Set to {value}"
 msgid "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 
-#: src/mods/NexusAccountActions.tsx:128
+#: src/mods/NexusAccountActions.tsx:130
 msgid "Could not untrack"
 msgstr "Could not untrack"
 
@@ -7546,7 +7547,7 @@ msgstr "Update check failed"
 msgid "Manage templates"
 msgstr "Manage templates"
 
-#: src/mods/NexusAccountActions.tsx:149
+#: src/mods/NexusAccountActions.tsx:151
 msgid "Could not track"
 msgstr "Could not track"
 
@@ -8031,7 +8032,7 @@ msgstr "unverified until downloaded"
 
 #: src/firstrun/GameSetup.tsx:132
 #: src/toasts/report.ts:28
-#: src/toasts/report.ts:102
+#: src/toasts/report.ts:103
 #: src/toasts/usePending.ts:31
 msgid "Something went wrong"
 msgstr "Something went wrong"
@@ -8289,7 +8290,7 @@ msgid "Upload"
 msgstr "Upload"
 
 #: src/mods/EndorsePrompt.tsx:138
-#: src/mods/NexusAccountActions.tsx:105
+#: src/mods/NexusAccountActions.tsx:107
 msgid "Endorse"
 msgstr "Endorse"
 
@@ -8683,7 +8684,7 @@ msgstr "AGPL-3.0 · Rethunk-Tech/mortar"
 
 #. placeholder {0}: line.name
 #. placeholder {1}: line.revision
-#: src/game/Hero.tsx:133
+#: src/game/Hero.tsx:136
 msgid "From collection {0}, revision {1}"
 msgstr "From collection {0}, revision {1}"
 
@@ -8802,7 +8803,7 @@ msgstr "Remove from {0}"
 msgid "Restoring from before Update all also reverts these later changes:"
 msgstr "Restoring from before Update all also reverts these later changes:"
 
-#: src/mods/NexusAccountActions.tsx:84
+#: src/mods/NexusAccountActions.tsx:86
 msgid "You endorsed this mod."
 msgstr "You endorsed this mod."
 
@@ -8919,7 +8920,7 @@ msgid "Slate"
 msgstr "Slate"
 
 #: src/commandPalette/CommandPalette.tsx:154
-#: src/game/Hero.tsx:240
+#: src/game/Hero.tsx:248
 #: src/mods/SlowStartupSection.tsx:73
 #: src/settings/SettingsPage.tsx:42
 msgid "Updates"
@@ -9420,7 +9421,7 @@ msgstr "No matching mods"
 msgid "Removed from Nexus · {0}"
 msgstr "Removed from Nexus · {0}"
 
-#: src/mods/NexusAccountActions.tsx:114
+#: src/mods/NexusAccountActions.tsx:116
 msgid "Abstain"
 msgstr "Abstain"
 
@@ -10322,7 +10323,7 @@ msgstr "Markdown"
 msgid "Could not cancel transfer"
 msgstr "Could not cancel transfer"
 
-#: src/game/Hero.tsx:329
+#: src/game/Hero.tsx:337
 msgid "{fitting} of {total}"
 msgstr "{fitting} of {total}"
 
@@ -10647,7 +10648,7 @@ msgstr "Play {playName}"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Hero.tsx:328
+#: src/game/Hero.tsx:336
 #: src/game/ProfileWorkspace.tsx:105
 msgid "Saves"
 msgstr "Saves"
@@ -10807,6 +10808,10 @@ msgstr "Change folder…"
 #: src/settings/sections/DismissedFolders.tsx:35
 msgid "Offer again"
 msgstr "Offer again"
+
+#: src/mods/NexusAccountActions.tsx:31
+msgid "Could not load your tracked Nexus mods"
+msgstr "Could not load your tracked Nexus mods"
 
 #: src/mods/ConfigPresets.tsx:148
 msgid "A preset with this name already exists."
@@ -11219,7 +11224,7 @@ msgstr "SMAPI {0} is out"
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
-#: src/game/Hero.tsx:243
+#: src/game/Hero.tsx:251
 msgid "{updateN, plural, one {Review # update} other {Review # updates}}"
 msgstr "{updateN, plural, one {Review # update} other {Review # updates}}"
 
@@ -12007,7 +12012,7 @@ msgstr "Restore"
 msgid "Changes since last run"
 msgstr "Changes since last run"
 
-#: src/mods/NexusAccountActions.tsx:82
+#: src/mods/NexusAccountActions.tsx:84
 msgid "You have not endorsed this mod. Nexus asks that you download and play it first."
 msgstr "You have not endorsed this mod. Nexus asks that you download and play it first."
 

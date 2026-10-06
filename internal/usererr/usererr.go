@@ -128,3 +128,13 @@ func Parse(s string) (kind Kind, raw string) {
 	}
 	return Unknown, s
 }
+
+// Marshal is the cause a bound call's error carries to the GUI: {"kind": ...}, so a bare stdlib error (a
+// read-only folder, a refused connection) is classified like a tagged one. Nil for Unknown keeps Wails' default.
+func Marshal(err error) []byte {
+	kind := KindOf(err)
+	if kind == Unknown {
+		return nil
+	}
+	return []byte(`{"kind":"` + string(kind) + `"}`)
+}

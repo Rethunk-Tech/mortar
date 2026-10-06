@@ -27,8 +27,17 @@ function asText(e: unknown): string {
   return String(e)
 }
 
+// A bound call's error that Go did not tag still carries its classified kind in the Wails cause.
+function causeKind(e: unknown): string | undefined {
+  const cause: unknown = e instanceof Error ? e.cause : undefined
+  if (typeof cause === 'object' && cause !== null && 'kind' in cause) {
+    return typeof cause.kind === 'string' ? cause.kind : undefined
+  }
+  return undefined
+}
+
 export function errorKind(e: unknown): ErrorKind {
-  const kind = kindRe.exec(asText(e) ?? '')?.[1]
+  const kind = kindRe.exec(asText(e) ?? '')?.[1] ?? causeKind(e)
   if (kind !== undefined && kinds.has(kind)) {
     return kind as ErrorKind
   }

@@ -44,8 +44,8 @@ function openLog(): boolean {
 }
 
 // Every error toast offers a next step: the caller's own action, Retry for a repeatable one, Settings for
-// permission and storage failures, else the log (when a game is open to hold one).
-function nextStep(e: unknown, retry: (() => unknown) | undefined): ToastAction | undefined {
+// permission and storage failures, else the game's log, or the diagnostics when no game is open.
+function nextStep(e: unknown, retry: (() => unknown) | undefined): ToastAction {
   const kind = kindOf(e)
   if (kind === 'permission' || kind === 'disk_full') {
     return { label: i18n._(msg`Open storage settings`), run: () => openSettings('storage') }
@@ -54,7 +54,8 @@ function nextStep(e: unknown, retry: (() => unknown) | undefined): ToastAction |
     return { label: i18n._(msg`Retry`), run: retry }
   }
   if (routeGame(useNav.getState().route) === null) {
-    return undefined
+    // No game, so no run log: Mortar's own log goes out with the diagnostics on About.
+    return { label: i18n._(msg`Save diagnostics…`), run: () => openSettings('about') }
   }
   return { label: i18n._(msg`Open log`), run: openLog }
 }
@@ -89,7 +90,7 @@ export function toastError(
     // An untagged error's sentence is the generic title itself, which would only repeat it.
     ...(body === title ? {} : { body }),
     ...(details === '' ? {} : { detail: details }),
-    ...(action === undefined ? {} : { action }),
+    action,
   })
 }
 

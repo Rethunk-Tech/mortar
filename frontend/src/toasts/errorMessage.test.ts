@@ -15,6 +15,16 @@ test('errorKind reads the Wails [kind] prefix', () => {
   expect(errorKind('[invalid] id')).toBe('invalid')
 })
 
+test('an untagged bound-call error takes its kind from the Wails cause', () => {
+  const readOnly = new Error('open profile.json: permission denied', {
+    cause: { kind: 'permission' },
+  })
+  expect(errorKind(readOnly)).toBe('permission')
+  expect(errorDetails(readOnly)).toBe('open profile.json: permission denied')
+  expect(errorKind(new Error('dial tcp', { cause: { kind: 'network' } }))).toBe('network')
+  expect(errorKind(new Error('x', { cause: { kind: 'bogus' } }))).toBe('unknown')
+})
+
 test('untagged text stays unknown with the raw details', () => {
   expect(errorKind('plain failure')).toBe('unknown')
   expect(errorDetails('plain failure')).toBe('plain failure')
