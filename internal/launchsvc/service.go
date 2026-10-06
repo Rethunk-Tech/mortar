@@ -1199,7 +1199,7 @@ func (s *Service) Stop(gameID string) error {
 	}
 	for _, sl := range s.slots(g) {
 		if s.stoppable(sl) {
-			return s.stopSlot(sl)
+			return s.stopSlot(context.Background(), sl)
 		}
 	}
 	return fmt.Errorf("%s is not running", g.Name())
@@ -1211,7 +1211,7 @@ func (s *Service) StopInstall(installID string) error {
 	if !ok || !s.stoppable(sl) {
 		return usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q is not running", installID))
 	}
-	return s.stopSlot(sl)
+	return s.stopSlot(context.Background(), sl)
 }
 
 // stoppable reports whether the slot runs, by its stored state first: polling would close a run whose game is
@@ -1220,7 +1220,7 @@ func (s *Service) stoppable(sl slot) bool {
 	return s.current(sl).State == Running || s.statusOf(sl).State == Running
 }
 
-func (s *Service) stopSlot(g slot) error {
+func (s *Service) stopSlot(ctx context.Context, g slot) error {
 	cur := s.current(g)
 	// One game runs per install, so its processes are the run's; a profile search misses a loader inside the game.
 	procs, err := s.gameProcs(g)
@@ -1236,7 +1236,7 @@ func (s *Service) stopSlot(g slot) error {
 	s.mu.Unlock()
 	var errs []error
 	for _, p := range procs {
-		errs = append(errs, launch.Terminate(p.PID, stopGrace))
+		errs = append(errs, launch.Stop(ctx, p, stopGrace))
 	}
 	if err := errors.Join(errs...); err != nil {
 		return err

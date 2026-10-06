@@ -5,12 +5,14 @@ package launch
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
@@ -111,5 +113,37 @@ func TestHostTerminateSignalsThroughHostKill(t *testing.T) {
 	want := []string{"--host kill -0 42", "--host kill -TERM 42", "--host kill -0 42"}
 	if !slices.Equal(calls, want) {
 		t.Fatalf("calls %q", calls)
+	}
+}
+
+func TestStopAsksAWineGameToCloseFirst(t *testing.T) {
+	dir := t.TempDir()
+	pidFile, closeLog := filepath.Join(dir, "pid"), filepath.Join(dir, "close")
+	wine := "#!/bin/sh\necho \"$@\" $WINESERVERSOCKET >\"$CLOSE_LOG\"\nkill \"$(cat \"$PID_FILE\")\"\n"
+	if err := fsx.WriteFile(filepath.Join(dir, "wine"), []byte(wine), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	game := exec.CommandContext(t.Context(), "sh", "-c", `echo $$ >"$PID_FILE"; trap "exit 0" TERM; while :; do sleep 0.1; done`)
+	game.Env = append(os.Environ(), "PID_FILE="+pidFile, "CLOSE_LOG="+closeLog, "WINESERVERSOCKET=34")
+	if err := game.Start(); err != nil {
+		t.Fatal(err)
+	}
+	go func() { _ = game.Wait() }()
+	for range 50 {
+		if _, err := os.Stat(pidFile); err == nil {
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	p := Process{PID: game.Process.Pid, Exe: filepath.Join(dir, "wine64-preloader"), Args: []string{`C:\Games\My Game.exe`}}
+	if err := Stop(t.Context(), p, 5*time.Second); err != nil {
+		t.Fatal(err)
+	}
+	got, _ := fsx.ReadFile(closeLog)
+	if strings.TrimSpace(string(got)) != "taskkill /im My Game.exe" {
+		t.Fatalf("wine ran with %q", got)
+	}
+	if wineLoader("/g/My Game.exe") != "" {
+		t.Fatal("a game's own executable is not a Wine loader")
 	}
 }

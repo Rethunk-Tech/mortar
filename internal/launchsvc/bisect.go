@@ -73,7 +73,7 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 	for {
 		if hasBridge && startupReportAfter(startup, launched) {
 			s.waitSampled(sl, time.Minute)
-			if err := s.stopSlot(sl); err != nil {
+			if err := s.stopSlot(runCtx, sl); err != nil {
 				return false, launch.Summary{}, err
 			}
 			return true, launch.Summary{}, nil
@@ -94,7 +94,7 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 				return false, launch.Summary{}, err
 			}
 			if bisectStartupFailure(lines) {
-				if err := s.stopSlot(sl); err != nil {
+				if err := s.stopSlot(runCtx, sl); err != nil {
 					return false, launch.Summary{}, err
 				}
 				return false, launch.Summary{}, nil
@@ -104,7 +104,7 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 					runningSince = time.Now()
 				}
 				if time.Since(runningSince) >= bisectStartupGrace {
-					if err := s.stopSlot(sl); err != nil {
+					if err := s.stopSlot(runCtx, sl); err != nil {
 						return false, launch.Summary{}, err
 					}
 					return true, launch.Summary{}, nil
@@ -130,7 +130,7 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 
 		select {
 		case <-runCtx.Done():
-			_ = s.stopBisectRun(sl)
+			_ = s.stopBisectRun(context.WithoutCancel(runCtx), sl)
 			if errors.Is(ctx.Err(), context.Canceled) {
 				return false, launch.Summary{}, ctx.Err()
 			}
@@ -188,9 +188,9 @@ func (s *Service) LaunchesDirect(gameID, profileID string) bool {
 	return method == settings.LaunchDirect
 }
 
-func (s *Service) stopBisectRun(sl slot) error {
+func (s *Service) stopBisectRun(ctx context.Context, sl slot) error {
 	if status := s.statusOf(sl); status.State == Running {
-		return s.stopSlot(sl)
+		return s.stopSlot(ctx, sl)
 	}
 	return nil
 }

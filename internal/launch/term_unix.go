@@ -3,13 +3,78 @@
 package launch
 
 import (
+	"context"
 	"errors"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
+
+// Stop ends a game process. A Wine game is first asked to close its windows, as quitting it would: one that registered
+// with a running Steam signs off only on a clean exit, and killed instead it stays listed under its Wine pid, which
+// Steam then waits on for good. Whatever is still running after grace is terminated.
+func Stop(ctx context.Context, p Process, grace time.Duration) error {
+	if closeWine(ctx, p, grace) {
+		deadline := time.Now().Add(grace)
+		for time.Now().Before(deadline) {
+			if !Alive(p.PID) {
+				return nil
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+	return Terminate(p.PID, grace)
+}
+
+// closeWine runs taskkill without /f in the process's own Wine environment, which posts WM_CLOSE to the windows of
+// every process with that image name in its prefix. It reports whether taskkill ran.
+func closeWine(ctx context.Context, p Process, timeout time.Duration) bool {
+	wine := wineLoader(p.Exe)
+	if wine == "" || len(p.Args) == 0 || sandbox.InFlatpak() {
+		return false
+	}
+	image := filepath.Base(strings.ReplaceAll(p.Args[0], `\`, "/"))
+	if !strings.HasSuffix(strings.ToLower(image), ".exe") {
+		return false
+	}
+	raw, err := os.ReadFile(filepath.Join("/proc", strconv.Itoa(p.PID), "environ"))
+	if err != nil {
+		return false
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, wine, "taskkill", "/im", image)
+	// WINESERVERSOCKET names a descriptor the game inherited, which taskkill does not have.
+	for kv := range strings.SplitSeq(strings.TrimRight(string(raw), "\x00"), "\x00") {
+		if !strings.HasPrefix(kv, "WINESERVERSOCKET=") {
+			cmd.Env = append(cmd.Env, kv)
+		}
+	}
+	return cmd.Run() == nil
+}
+
+// wineLoader is the wine launcher beside exe when exe is a Wine loader (Proton keeps both in one folder), or "".
+func wineLoader(exe string) string {
+	exe = strings.TrimSuffix(exe, " (deleted)")
+	switch filepath.Base(exe) {
+	case "wine", "wine64", "wine-preloader", "wine64-preloader":
+	default:
+		return ""
+	}
+	for _, name := range []string{"wine", "wine64"} {
+		path := filepath.Join(filepath.Dir(exe), name)
+		if st, err := os.Stat(path); err == nil && st.Mode().IsRegular() {
+			return path
+		}
+	}
+	return ""
+}
 
 // Terminate asks the process to exit and kills it if it is still there after grace.
 func Terminate(pid int, grace time.Duration) error {

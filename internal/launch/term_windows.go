@@ -3,6 +3,7 @@
 package launch
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"time"
@@ -30,6 +31,9 @@ func waitMillis(d time.Duration) uint32 {
 	}
 	return uint32(ms)
 }
+
+// Stop ends a game process; see Terminate.
+func Stop(_ context.Context, p Process, grace time.Duration) error { return Terminate(p.PID, grace) }
 
 // Terminate ends the process at once, since Windows has no polite signal for a GUI game, and waits up to grace
 // for it to be gone: TerminateProcess returns before the game's files are released.
