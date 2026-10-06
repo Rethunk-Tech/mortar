@@ -805,9 +805,11 @@ regress_bepinex_after() {
     mx_check mods.config-file "after BepInEx rewrote the probe's .cfg: \"$(grep -m1 '^Value =' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg")\", \"$(grep -m1 '^Ratio =' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg")\"" \
       grep -q '^Ratio = 0.75' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg"
   fi
-  out=$(mx_json "$mx_data/settings.json" 'd.get("lastPlayed", {}).get("lethal-company", {})' 2>&1)
-  mx_check lastplayed.version "lastPlayed[lethal-company] after launch (a): $out" \
-    test -n "$(mx_json "$mx_data/settings.json" 'd.get("lastPlayed", {}).get("lethal-company", {}).get("gameVersion", "")' 2>/dev/null)"
+  # settings.json keeps lastPlayed in its global block.
+  out=$(mx_json "$mx_data/settings.json" 'd.get("global", {}).get("lastPlayed", {}).get("lethal-company", {})' 2>&1)
+  mx_check lastplayed.version "lastPlayed[lethal-company] after launch (a) ($mx_base): $out" \
+    test "$(mx_json "$mx_data/settings.json" 'd.get("global", {}).get("lastPlayed", {}).get("lethal-company", {}).get("profile", "")' 2>/dev/null)" = "$mx_base" \
+    -a -n "$(mx_json "$mx_data/settings.json" 'd.get("global", {}).get("lastPlayed", {}).get("lethal-company", {}).get("gameVersion", "")' 2>/dev/null)"
   if go -C "$REPO" test ./internal/dotnet -run '^TestRealBepInExRun$' -count=1 -v -bepinex-profile "$(mx_dir "$mx_base")" >"$ROOT/guid-test.txt" 2>&1; then
     mx_pass mods.guids "$(grep -o '[0-9]* plugins found.*' "$ROOT/guid-test.txt")"
   else
