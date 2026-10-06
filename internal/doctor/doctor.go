@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
+	"github.com/Rethunk-Tech/mortar/internal/runtime"
 )
 
 // Pass, Warn and Fail are a check's result.
@@ -113,7 +114,7 @@ func gameCheck(g game.GameInfo, e problems.Environment, anyInstalled bool) Check
 		parts = append(parts, "with SMAPI "+e.APIVersion)
 	}
 	where := []string{}
-	for _, v := range []string{g.Store, e.Platform} {
+	for _, v := range []string{g.Store, runtimeOf(g, e.Platform)} {
 		if v != "" {
 			where = append(where, v)
 		}
@@ -123,4 +124,28 @@ func gameCheck(g game.GameInfo, e problems.Environment, anyInstalled bool) Check
 		c.Detail += " (" + strings.Join(where, ", ") + ")"
 	}
 	return c
+}
+
+// runtimeOf names what the selected install runs on: Proton and its version, or Wine, for a Windows build on this
+// host; else host, the host's platform.
+func runtimeOf(g game.GameInfo, host string) string {
+	for _, in := range g.Installs {
+		if in.Dir != g.InstallDir {
+			continue
+		}
+		switch in.Runtime {
+		case runtime.Proton:
+			v := in.RuntimeVersion
+			switch {
+			case v == "":
+				return "Proton"
+			case strings.Contains(strings.ToLower(v), "proton"):
+				return v
+			}
+			return "Proton " + v
+		case runtime.WinePrefix:
+			return "Wine"
+		}
+	}
+	return host
 }

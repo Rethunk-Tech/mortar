@@ -20,6 +20,9 @@ func TestFromLiveMatchesCLIPrint(t *testing.T) {
 		Games: []game.GameInfo{
 			{ID: "stardew", Name: "Stardew Valley", Installed: true, InstallDir: "/games/Stardew Valley", Store: "steam"},
 			{ID: "lethal", Name: "Lethal Company"},
+			{ID: "lc-proton", Name: "LC", Installed: true, InstallDir: "/games/LC", Store: "steam", Installs: []game.Install{
+				{Dir: "/games/LC", Runtime: "proton", RuntimeVersion: "9.0-204"},
+			}},
 		},
 		Environment: map[string]problems.Environment{
 			"stardew": {GameVersion: "1.6.15", APIVersion: "4.1.10", Platform: "Linux"},
@@ -33,12 +36,13 @@ func TestFromLiveMatchesCLIPrint(t *testing.T) {
 		"Data folder: /data/mortar\n" +
 		"Stardew Valley 1.6.15 with SMAPI 4.1.10 in \"/games/Stardew Valley\" (steam, Linux)\n" +
 		"Lethal Company: not installed\n" +
+		"LC in \"/games/LC\" (steam, Proton 9.0-204)\n" +
 		"nxm:// links: Mortar (other games go to Vortex)\n"
 	if got != want {
 		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
 	}
 	r := FromLive(in)
-	if r.Checks[0].Status != Pass || r.Checks[2].Status != Pass || r.Checks[3].Status != Pass || r.Checks[4].Status != Pass {
+	if r.Checks[0].Status != Pass || r.Checks[2].Status != Pass || r.Checks[3].Status != Pass || r.Checks[5].Status != Pass {
 		t.Fatalf("statuses: %+v", r.Checks)
 	}
 }
