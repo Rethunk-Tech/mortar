@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -428,7 +429,7 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 		seenOutside := map[string]bool{}
 		for _, req := range requirementsByPage[pageID] {
 			if req.External {
-				if name := strings.TrimSpace(req.Name); name != "" && !seenOutside[name] {
+				if name := strings.TrimSpace(req.Name); name != "" && !seenOutside[name] && !installedByName(all, name) {
 					seenOutside[name] = true
 					out = append(out, Missing{
 						DependentID: d.ModID(), DependentName: d.Name, ID: mod.NewID(OutsideFormat, name), Reason: "absent",
@@ -490,6 +491,22 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 		}
 	}
 	return out, unknown
+}
+
+// installedByName reports an enabled mod whose manifest name matches an outside requirement's name. Pages name these
+// loosely ("JsonAssets" for Json Assets, often a mod that is also on Nexus), so case, spaces and punctuation are ignored.
+func installedByName(all []framework.Mod, name string) bool {
+	want := looseName(name)
+	return want != "" && slices.ContainsFunc(all, func(x framework.Mod) bool { return x.Enabled && looseName(x.Name) == want })
+}
+
+func looseName(s string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			return unicode.ToLower(r)
+		}
+		return -1
+	}, s)
 }
 
 // isLoader reports a requirement that is the game's loader, which Mortar installs itself and never as a profile entry:

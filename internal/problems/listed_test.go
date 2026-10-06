@@ -190,6 +190,24 @@ func TestListedLoaderIsNeverMissing(t *testing.T) {
 	}
 }
 
+func TestListedOutsideRequirementInstalledIsNotANote(t *testing.T) {
+	fake := listedFakeMeta{requirements: map[int][]nexus.Requirement{520: {
+		{Name: "Fashion Sense", URL: "https://github.com/Floogen/FashionSense", External: true},
+		{Name: "JsonAssets", URL: "https://spacechase0.com", External: true},
+		{Name: "Some Tool", URL: "https://example.org", External: true},
+	}}}
+	installed := []framework.Mod{
+		listedDependent(),
+		{Key: "nexus-9969-1", Enabled: true, UniqueID: "PeacefulEnd.FashionSense", Name: "Fashion Sense"},
+		{Key: "nexus-1720-1", Enabled: true, UniqueID: "spacechase0.JsonAssets", Name: "Json Assets"},
+		{Key: "local-tool", Enabled: false, UniqueID: "Some.Tool", Name: "Some Tool"},
+	}
+	got := listedCheck(fake, installed)
+	if len(got.Missing) != 1 || got.Missing[0].ID != mod.NewID(OutsideFormat, "Some Tool") {
+		t.Fatalf("Missing = %#v, want only the disabled Some Tool", got.Missing)
+	}
+}
+
 func TestListedOutsideRequirementIsANote(t *testing.T) {
 	fake := listedFakeMeta{requirements: map[int][]nexus.Requirement{520: {{Name: "Some Tool", URL: "https://example.org", External: true, Notes: "run it first"}}}}
 	got := listedCheck(fake, []framework.Mod{listedDependent()})
