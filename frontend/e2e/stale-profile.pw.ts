@@ -32,10 +32,10 @@ test('a remembered profile deleted behind the app falls back without an error', 
     }
   })
   await page.reload()
-  // Startup checks and the profile load both read the remembered profile.
-  await page.waitForTimeout(3000)
   // Mortar reopens the last game, now on its remaining profile.
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
   await expect(page.getByRole('button', { name: /^(Open )?Seed Lobby/ }).first()).toBeVisible()
+  // Startup checks and the profile load both read the remembered profile.
+  await page.waitForLoadState('networkidle')
   expect(errors).toEqual([])
 })
