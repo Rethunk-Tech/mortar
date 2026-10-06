@@ -33,6 +33,7 @@ On Debian, Ubuntu, Fedora and Arch, install Mortar from its package repository a
 Debian and Ubuntu (amd64, arm64):
 
 ```sh
+sudo apt update && sudo apt install curl
 sudo curl -fsSLo /usr/share/keyrings/mortar-archive-keyring.gpg https://mortar.rethunk.tech/packages/mortar-archive-keyring.gpg
 sudo curl -fsSLo /etc/apt/sources.list.d/mortar.list https://mortar.rethunk.tech/packages/mortar.list
 sudo apt update && sudo apt install mortar
