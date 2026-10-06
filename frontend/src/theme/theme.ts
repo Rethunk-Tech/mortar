@@ -247,6 +247,16 @@ function createMortarTheme(
           },
         },
       },
+      // An Autocomplete's list is its own Paper, not a Menu, so without this it takes the translucent paper colour.
+      MuiAutocomplete: {
+        styleOverrides: {
+          paper: {
+            backgroundColor: s.menu,
+            border: `1px solid ${s.hairline14}`,
+            borderRadius: MENU_RADIUS_PX,
+          },
+        },
+      },
       MuiPopover: { defaultProps: { transitionDuration: 0 } },
       MuiCollapse: { defaultProps: { timeout: 0 } },
       // A sliding exit leaves the modal's backdrop mounted for its duration, so the click right after a drawer closes
