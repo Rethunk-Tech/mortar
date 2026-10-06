@@ -1,4 +1,5 @@
-import { Box, Card, Typography } from '@mui/material'
+import { useLingui } from '@lingui/react/macro'
+import { Box, ButtonBase, Card, Typography } from '@mui/material'
 import { ExternalLink } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
 import { IconAction } from '../shell/IconAction.tsx'
@@ -36,6 +37,7 @@ const onControl = (e: MouseEvent<HTMLElement>) =>
 
 function ResultCard(props: ResultCardProps) {
   const { row, item, openUrl, modes, sourceNames } = props
+  const { t } = useLingui()
   const { name, summary, author } = item
   // The same mod found on several sources is one card; its first source is the default and a badge picks another.
   const sources = [item.source, ...(item.alts ?? []).map((a) => a.source)]
@@ -86,9 +88,16 @@ function ResultCard(props: ResultCardProps) {
           opacity: dim,
         }}
       >
-        <Typography noWrap={true} title={name} sx={{ fontSize: 15, fontWeight: 600 }}>
-          {name}
-        </Typography>
+        {/* The title is the card's keyboard stop: Enter opens the details, the menu key the card's menu. */}
+        <ButtonBase
+          aria-label={t`Details of ${item.name}`}
+          onClick={() => useBrowseSelection.getState().select({ item, source })}
+          sx={{ display: 'block', minWidth: 0, textAlign: 'left', fontFamily: 'inherit' }}
+        >
+          <Typography noWrap={true} title={name} sx={{ fontSize: 15, fontWeight: 600 }}>
+            {name}
+          </Typography>
+        </ButtonBase>
         <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
           {author === '' ? stats : `${author} · ${stats}`}
         </Typography>
