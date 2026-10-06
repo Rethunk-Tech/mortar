@@ -1,6 +1,5 @@
 import { expect, test } from 'bun:test'
 import {
-  changeStillLatest,
   HISTORY_CAP,
   historyActionState,
   laterEvents,
@@ -15,16 +14,7 @@ test('prependHistory keeps newest first and drops past the cap', () => {
   expect(items.at(-1)).toBe(1)
 })
 
-test('changeStillLatest allows undo only while that entry is still the latest for each mod', () => {
-  const profile = {
-    entries: [
-      {
-        key: 'k1',
-        mods: [{ id: 'SpaceCore' }],
-      },
-    ],
-  }
-  expect(changeStillLatest(profile, 'k1', ['SpaceCore'])).toEqual({ disabled: false })
+test(profile, 'k1', ['SpaceCore'])).toEqual({ disabled: false })
   expect(changeStillLatest(profile, 'old', ['SpaceCore']).disabled).toBe(true)
   expect(changeStillLatest(undefined, 'k1', ['SpaceCore']).disabled).toBe(true)
 })
