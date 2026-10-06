@@ -69,10 +69,11 @@ build() {
     fi
     (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
     (cd "$REPO" && GOTMPDIR=/var/tmp go build -tags server -o "$ROOT/mortar-server.new" .)
-    # The build rewrites tracked catalogs only when the tree's strings moved, so the key is taken again after it.
+    # Filed under the key taken before the build: the tree can change while it runs (another worker's edit), and a
+    # key taken after would file an older binary under the newer tree.
     rm -rf "$BUILD_CACHE"
     mkdir -p "$BUILD_CACHE"
-    cp "$ROOT/mortar-server.new" "$BUILD_CACHE/$(tree_key)"
+    cp "$ROOT/mortar-server.new" "$BUILD_CACHE/$key"
   fi
   exec 9>&-
   mv "$ROOT/mortar-server.new" "$ROOT/mortar-server"
