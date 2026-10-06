@@ -194,7 +194,7 @@ msgstr "Skip this profile"
 msgid "Updated categories"
 msgstr "Updated categories"
 
-#: src/queue/store.ts:137
+#: src/queue/store.ts:148
 #: src/toasts/report.ts:51
 msgid "Open storage settings"
 msgstr "Open storage settings"
@@ -241,7 +241,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
 #: src/toasts/HistoryButton.tsx:29
-#: src/toasts/ToastHost.tsx:105
+#: src/toasts/ToastHost.tsx:132
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
 
@@ -337,7 +337,7 @@ msgid "Premium and GitHub downloads at once"
 msgstr "Premium and GitHub downloads at once"
 
 #. placeholder {0}: failed.length
-#: src/queue/store.ts:230
+#: src/queue/store.ts:241
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
@@ -357,7 +357,7 @@ msgstr "Or paste a share or collection link with Ctrl+V."
 msgid "Missing from the store"
 msgstr "Missing from the store"
 
-#: src/queue/store.ts:112
+#: src/queue/store.ts:123
 msgid "The download could not finish. Retry or skip it from the queue."
 msgstr "The download could not finish. Retry or skip it from the queue."
 
@@ -654,7 +654,7 @@ msgstr "Updated on Nexus"
 #: src/mods/problemFix/SettingFix.tsx:100
 #: src/profiles/CrashHintCard.tsx:104
 #: src/tips/TipBanner.tsx:37
-#: src/toasts/ToastHost.tsx:213
+#: src/toasts/ToastHost.tsx:236
 msgid "Dismiss"
 msgstr "Dismiss"
 
@@ -1241,7 +1241,7 @@ msgstr "{name} is marked obsolete and may not work with this game version."
 msgid "All outcomes"
 msgstr "All outcomes"
 
-#: src/queue/store.ts:302
+#: src/queue/store.ts:313
 #: src/share/importCompletion.ts:21
 #: src/share/ImportPreview.tsx:248
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
@@ -1620,7 +1620,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/profiles/HealthDialog.tsx:226
 #: src/profiles/LaunchPreview.tsx:85
 #: src/queue/QueueBody.tsx:254
-#: src/queue/store.ts:152
+#: src/queue/store.ts:163
 #: src/saves/BackupsDialog.tsx:137
 #: src/saves/SavesTab.tsx:37
 #: src/settings/sections/DataStoreReport.tsx:378
@@ -1718,7 +1718,7 @@ msgstr "Needed by"
 msgid "Skip"
 msgstr "Skip"
 
-#: src/queue/store.ts:68
+#: src/queue/store.ts:69
 msgid "Nothing in the queue needs a decision."
 msgstr "Nothing in the queue needs a decision."
 
@@ -1768,7 +1768,7 @@ msgid "Total"
 msgstr "Total"
 
 #. placeholder {0}: item.name
-#: src/queue/store.ts:126
+#: src/queue/store.ts:137
 msgid "{0} needs its main file first"
 msgstr "{0} needs its main file first"
 
@@ -2049,7 +2049,7 @@ msgstr "Filter mods"
 msgid "Apply {name}"
 msgstr "Apply {name}"
 
-#: src/browse/ResultCard.tsx:68
+#: src/browse/ResultCard.tsx:69
 msgid "{endorsements, plural, one {# endorsement} other {# endorsements}} · {downloads, plural, one {# download} other {# downloads}}"
 msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}} · {downloads, plural, one {# download} other {# downloads}}"
 
@@ -2146,8 +2146,8 @@ msgstr "Show the first-run tips again"
 #: src/nxm/store.ts:53
 #: src/profiles/LaunchPresetDialog.tsx:82
 #: src/queue/actions.ts:96
-#: src/queue/store.ts:233
-#: src/queue/store.ts:350
+#: src/queue/store.ts:244
+#: src/queue/store.ts:361
 #: src/saves/SaveGapLine.tsx:56
 #: src/settings/prefCopy.ts:353
 #: src/settings/sections/Updates.tsx:132
@@ -2374,7 +2374,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/profiles/historyRevert.ts:110
 #: src/profiles/store.ts:190
 #: src/profiles/store.ts:233
-#: src/queue/store.ts:284
+#: src/queue/store.ts:295
 #: src/saves/store.ts:65
 #: src/templates/ApplyTemplateDialog.tsx:92
 #: src/templates/TemplateDialogs.tsx:226
@@ -3093,7 +3093,7 @@ msgstr "Only in {name}"
 
 #: src/browse/CardAction.tsx:58
 #: src/mods/OptionalFileRows.tsx:176
-#: src/queue/store.ts:129
+#: src/queue/store.ts:140
 msgid "Open files page"
 msgstr "Open files page"
 
@@ -3852,7 +3852,7 @@ msgstr "Could not read that list"
 msgid "More ways to add mods"
 msgstr "More ways to add mods"
 
-#: src/queue/store.ts:242
+#: src/queue/store.ts:253
 msgid "Downloads paused"
 msgstr "Downloads paused"
 
@@ -3938,7 +3938,7 @@ msgstr "Could not read bundles"
 msgid "{count, plural, one {# problem} other {# problems}}"
 msgstr "{count, plural, one {# problem} other {# problems}}"
 
-#: src/queue/store.ts:140
+#: src/queue/store.ts:151
 msgid "Show in queue"
 msgstr "Show in queue"
 
@@ -5349,7 +5349,7 @@ msgstr "Revert {0} mods?"
 msgid "Disable and retry"
 msgstr "Disable and retry"
 
-#: src/queue/store.ts:144
+#: src/queue/store.ts:155
 msgid "Allow it in your antivirus, then Retry."
 msgstr "Allow it in your antivirus, then Retry."
 
@@ -5358,7 +5358,7 @@ msgid "Backup location"
 msgstr "Backup location"
 
 #. placeholder {0}: profile.name
-#: src/queue/store.ts:277
+#: src/queue/store.ts:288
 msgid "{first} installed into {0}"
 msgstr "{first} installed into {0}"
 
@@ -5825,7 +5825,7 @@ msgstr "Could not remove the selected mods"
 #: src/settings/SettingsPage.tsx:43
 #: src/toasts/HistoryButton.tsx:140
 #: src/toasts/HistoryButton.tsx:211
-#: src/toasts/ToastHost.tsx:229
+#: src/toasts/ToastHost.tsx:252
 msgid "Notifications"
 msgstr "Notifications"
 
@@ -5934,7 +5934,7 @@ msgstr "Load order copied"
 msgid "{0} Adds {1}."
 msgstr "{0} Adds {1}."
 
-#: src/queue/store.ts:74
+#: src/queue/store.ts:75
 msgid "That download is no longer waiting to retry."
 msgstr "That download is no longer waiting to retry."
 
@@ -6393,7 +6393,7 @@ msgstr "Shortcut removed"
 msgid "Delete {0} permanently"
 msgstr "Delete {0} permanently"
 
-#: src/queue/store.ts:150
+#: src/queue/store.ts:161
 msgid "Could not reach Nexus"
 msgstr "Could not reach Nexus"
 
@@ -6625,7 +6625,7 @@ msgstr "Note"
 msgid "Add a tag"
 msgstr "Add a tag"
 
-#: src/queue/store.ts:120
+#: src/queue/store.ts:131
 #: src/settings/sections/NexusMods.tsx:220
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
@@ -7191,6 +7191,10 @@ msgstr "Crashed"
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr "{count, plural, one {# mod} other {# mods}}"
 
+#: src/queue/store.ts:119
+msgid "{cause}. Retry or skip it from the queue."
+msgstr "{cause}. Retry or skip it from the queue."
+
 #: src/saves/SaveRow.tsx:50
 msgid "Wilderness farm"
 msgstr "Wilderness farm"
@@ -7296,7 +7300,7 @@ msgstr "Spacing of buttons and lists"
 msgid "Add a program to run alongside the game, such as a save editor or map viewer."
 msgstr "Add a program to run alongside the game, such as a save editor or map viewer."
 
-#: src/queue/store.ts:243
+#: src/queue/store.ts:254
 msgid "Retrying in {n} s."
 msgstr "Retrying in {n} s."
 
@@ -7630,7 +7634,7 @@ msgid "Close details"
 msgstr "Close details"
 
 #: src/firstrun/GameSetup.tsx:164
-#: src/queue/store.ts:278
+#: src/queue/store.ts:289
 msgid "{name} installed"
 msgstr "{name} installed"
 
@@ -7823,7 +7827,7 @@ msgstr "Untagged"
 msgid "Nexus link not used"
 msgstr "Nexus link not used"
 
-#: src/browse/ResultCard.tsx:69
+#: src/browse/ResultCard.tsx:70
 msgid "{stars, plural, one {# star} other {# stars}}"
 msgstr "{stars, plural, one {# star} other {# stars}}"
 
@@ -9596,7 +9600,7 @@ msgid "Delete the selected items?"
 msgstr "Delete the selected items?"
 
 #. placeholder {0}: item.name
-#: src/queue/store.ts:158
+#: src/queue/store.ts:169
 msgid "Could not download {0}"
 msgstr "Could not download {0}"
 
@@ -10340,7 +10344,7 @@ msgstr "Could not rename the bundle"
 msgid "In game"
 msgstr "In game"
 
-#: src/toasts/ToastHost.tsx:186
+#: src/toasts/ToastHost.tsx:93
 msgid "Details"
 msgstr "Details"
 
@@ -10709,7 +10713,7 @@ msgstr "Show one in the sidebar from Manage profiles."
 msgid "While this profile runs, Mortar sets your shared saves aside and shows the game the profile's own folder. When the game closes, your shared saves come back as they were. Nothing is deleted."
 msgstr "While this profile runs, Mortar sets your shared saves aside and shows the game the profile's own folder. When the game closes, your shared saves come back as they were. Nothing is deleted."
 
-#: src/queue/store.ts:136
+#: src/queue/store.ts:147
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
@@ -10729,7 +10733,7 @@ msgid "Hide"
 msgstr "Hide"
 
 #: src/console/StartupTable.tsx:165
-#: src/toasts/ToastHost.tsx:186
+#: src/toasts/ToastHost.tsx:93
 msgid "Hide details"
 msgstr "Hide details"
 
@@ -11461,7 +11465,7 @@ msgstr "Display"
 msgid "Welcome to Mortar"
 msgstr "Welcome to Mortar"
 
-#: src/queue/store.ts:279
+#: src/queue/store.ts:290
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
@@ -11534,7 +11538,7 @@ msgid "Import from the game's Mods folder"
 msgstr "Import from the game's Mods folder"
 
 #. placeholder {0}: item.name
-#: src/queue/store.ts:143
+#: src/queue/store.ts:154
 msgid "{0} was blocked by your antivirus"
 msgstr "{0} was blocked by your antivirus"
 
@@ -11769,7 +11773,7 @@ msgstr "{name}, descending"
 msgid "Handle {0} links"
 msgstr "Handle {0} links"
 
-#: src/queue/store.ts:121
+#: src/queue/store.ts:132
 #: src/share/ImportFooter.tsx:60
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
@@ -11912,7 +11916,7 @@ msgid "Deleted profiles stay here, mods and settings included."
 msgstr "Deleted profiles stay here, mods and settings included."
 
 #. placeholder {0}: shownWaiting.length
-#: src/queue/store.ts:348
+#: src/queue/store.ts:359
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 

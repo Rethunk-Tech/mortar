@@ -12,6 +12,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { testProfile } from '../profiles/testProfile.ts'
 import {
   applyProgress,
+  downloadFailCopy,
   entryForItem,
   installUndo,
   queueErrorDetail,
@@ -171,6 +172,14 @@ test('a finished download names the dependent it unblocks', () => {
 test('queue failures keep the raw error for details only', () => {
   expect(queueErrorDetail('dial tcp timeout')).toBe('dial tcp timeout')
   expect(queueErrorDetail('')).toBeUndefined()
+})
+
+test('a user error is the failure toast body; a raw or network error stays behind Details', () => {
+  expect(downloadFailCopy('[not_found] no suitable file for this mod is listed on Nexus')).toEqual({
+    body: 'No suitable file for this mod is listed on Nexus. Retry or skip it from the queue.',
+  })
+  expect(downloadFailCopy('[network] dial tcp timeout').detail).toBe('[network] dial tcp timeout')
+  expect(downloadFailCopy('unexpected EOF').detail).toBe('unexpected EOF')
 })
 
 test('rate-limit retry wait is at least one second', () => {

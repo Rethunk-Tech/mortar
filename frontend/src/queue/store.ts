@@ -31,6 +31,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { isTrackedImportBatch, observeImportState } from '../share/importCompletion.ts'
 import { follow } from '../shell/follow.ts'
+import { errorDetails, errorKind } from '../toasts/errorKind.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
 import { useToasts } from '../toasts/store.ts'
 import { displayName } from './totals.ts'
@@ -102,11 +103,21 @@ function retryWaitSeconds(until: number, now = Date.now()): number {
   return Math.max(1, until - Math.floor(now / MS_PER_SEC))
 }
 
+const trailingStop = /\.$/
+
 function queueErrorDetail(error: string): string | undefined {
   return error === '' ? undefined : error
 }
 
+/** The toast copy for a failed download. An error Mortar wrote for people (a `[kind] ` user error) is the body
+ * itself; a network error wraps the transport's own text, so it and any raw error stay behind Details. */
 function downloadFailCopy(error: string): { body: string; detail?: string } {
+  const kind = errorKind(error)
+  if (kind !== 'unknown' && kind !== 'network') {
+    const text = errorDetails(error).trim().replace(trailingStop, '')
+    const cause = text.charAt(0).toUpperCase() + text.slice(1)
+    return { body: i18n._(msg`${cause}. Retry or skip it from the queue.`) }
+  }
   const detail = queueErrorDetail(error)
   return {
     body: i18n._(msg`The download could not finish. Retry or skip it from the queue.`),
@@ -400,6 +411,7 @@ export const initQueue = () => {
 }
 
 export {
+  downloadFailCopy,
   entryForItem,
   installUndo,
   queueErrorDetail,

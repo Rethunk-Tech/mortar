@@ -68,6 +68,33 @@ function CopyDetail({ text }: { text: string }) {
   )
 }
 
+function DetailsButton({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  const { t } = useLingui()
+  return (
+    <ButtonBase
+      onClick={onToggle}
+      aria-expanded={open}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        height: 34,
+        px: '12px',
+        bgcolor: 'var(--mortar-hairline)',
+        borderRadius: '6px',
+        color: 'var(--mortar-ink)',
+        fontSize: 13,
+        fontWeight: 600,
+        fontFamily: 'inherit',
+        whiteSpace: 'nowrap',
+        gap: '4px',
+      }}
+    >
+      {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      {open ? t`Hide details` : t`Details`}
+    </ButtonBase>
+  )
+}
+
 // Pointer or keyboard focus inside the toast keeps it up; it times out again only once both have left.
 function useHoldWhilePresent(id: number) {
   const hold = useToasts((s) => s.hold)
@@ -136,79 +163,75 @@ function ToastCard({ toast }: { toast: Toast }) {
       ) : (
         <LetterTile mod={{ id: toast.title, name: toast.title, picture: toast.picture }} />
       )}
-      <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
-          {toast.title}
-        </Box>
-        {toast.body ? (
-          <Box component="span" sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)' }}>
-            {toast.body}
+      {/* The buttons share a row with the text only while the text keeps its minimum width; past that they wrap
+          below it, so a long message never squeezes to a word per line. */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          minWidth: 0,
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '4px 8px',
+        }}
+      >
+        <Box sx={{ flex: '1 1 180px', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
+            {toast.title}
           </Box>
-        ) : null}
-        {open && toast.detail ? (
-          <Box
-            component="pre"
-            sx={{
-              m: 0,
-              mt: '6px',
-              fontSize: 12,
-              fontFamily: 'inherit',
-              whiteSpace: 'pre-wrap',
-              color: 'var(--mortar-ink-soft)',
-            }}
-          >
-            {toast.detail}
-          </Box>
-        ) : null}
-        {open && toast.detail ? <CopyDetail text={toast.detail} /> : null}
-      </Box>
-      {toast.detail ? (
-        <ButtonBase
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            height: 34,
-            px: '12px',
-            mt: '4px',
-            bgcolor: 'var(--mortar-hairline)',
-            borderRadius: '6px',
-            color: 'var(--mortar-ink)',
-            fontSize: 13,
-            fontWeight: 600,
-            fontFamily: 'inherit',
-            whiteSpace: 'nowrap',
-            gap: '4px',
-          }}
-        >
-          {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          {open ? t`Hide details` : t`Details`}
-        </ButtonBase>
-      ) : null}
-      {action ? (
-        <Tooltip title={locked ? lockHint : ''}>
-          <span>
-            <ButtonBase
-              disabled={locked}
-              onClick={run}
+          {toast.body ? (
+            <Box component="span" sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)' }}>
+              {toast.body}
+            </Box>
+          ) : null}
+          {open && toast.detail ? (
+            <Box
+              component="pre"
               sx={{
-                height: 34,
-                px: '12px',
-                bgcolor: 'var(--mortar-hairline)',
-                borderRadius: '6px',
-                color: 'var(--mortar-ink)',
-                fontSize: 13,
-                fontWeight: 600,
+                m: 0,
+                mt: '6px',
+                fontSize: 12,
                 fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
+                whiteSpace: 'pre-wrap',
+                color: 'var(--mortar-ink-soft)',
               }}
             >
-              {action.label}
-            </ButtonBase>
-          </span>
-        </Tooltip>
-      ) : null}
+              {toast.detail}
+            </Box>
+          ) : null}
+          {open && toast.detail ? <CopyDetail text={toast.detail} /> : null}
+        </Box>
+        {toast.detail || action ? (
+          <Box sx={{ display: 'flex', gap: '8px', ml: 'auto', alignItems: 'center' }}>
+            {toast.detail ? (
+              <DetailsButton open={open} onToggle={() => setOpen((v) => !v)} />
+            ) : null}
+            {action ? (
+              <Tooltip title={locked ? lockHint : ''}>
+                <span>
+                  <ButtonBase
+                    disabled={locked}
+                    onClick={run}
+                    sx={{
+                      height: 34,
+                      px: '12px',
+                      bgcolor: 'var(--mortar-hairline)',
+                      borderRadius: '6px',
+                      color: 'var(--mortar-ink)',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      fontFamily: 'inherit',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {action.label}
+                  </ButtonBase>
+                </span>
+              </Tooltip>
+            ) : null}
+          </Box>
+        ) : null}
+      </Box>
       <IconButton
         aria-label={t`Dismiss`}
         onClick={() => dismiss(toast.id)}
