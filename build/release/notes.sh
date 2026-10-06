@@ -19,8 +19,8 @@ subjects="$(git log --no-merges --format=%s "${prev:+$prev..}$ref")"
 
 # Scopes that name code, tooling or the automation CLI rather than something a user sees, and subjects that name code
 # (camelCase or snake_case identifiers, backticks) or tooling.
-internal='^([a-z-]*svc|main|release|gate|lint|deps|build|ci|tests?|selftest|dev|fsx|datadir|data|meta|usererr|github|site|sampler|notices|credits|migrate|config|components|nativehost|errors|logs?|cli)$'
-codeish='[a-z][A-Z]|[a-z]_[a-z]|`|(^|[^a-z])(selftest|gate|lint|biome|knip|golangci|gui-design|frontend build|api types)([^a-z]|$)'
+internal='^([a-z-]*svc|main|release|gate|lint|deps|build|ci|tests?|selftest|regress|e2e|dotnet|taskfile|scripts|server|control|doctor|dev|fsx|datadir|data|meta|usererr|github|site|sampler|notices|credits|migrate|config|components|nativehost|errors|logs?|cli)$'
+codeish='[a-z][A-Z]|[A-Z]+_[A-Z]|[a-z]_[a-z]|`|(^|[^a-z])(selftest|gate|lint|biome|knip|golangci|gui-design|frontend build|api types)([^a-z]|$)'
 
 lines() { # types regex -> one sentence-case line per user-facing subject
   printf '%s\n' "$subjects" | sed -nE "s/^($1)(\(([^)]*)\))?!?: (.+)\$/\3\x1f\4/p" |
@@ -34,7 +34,18 @@ lines() { # types regex -> one sentence-case line per user-facing subject
 }
 
 new="$(lines feat)"
+changed=""
 fixed="$(lines 'fix|perf')"
+# A release with notes written for players (build/release/notes/TAG.md: "## New", "## Changed" and "## Fixed" lists)
+# uses them whole instead of commit subjects, which cannot rank a large release's headlines first.
+curated="${NOTES_FILE:-$(dirname "$0")/notes/$tag.md}"
+if [ -f "$curated" ]; then
+  section() { awk -v want="## $1" '/^## /{ on = ($0 == want); next } on && /^- /{ print substr($0, 3) }' "$curated"; }
+  new="$(section New)"
+  changed="$(section Changed)"
+  fixed="$(section Fixed)"
+  cap=100000
+fi
 if [ -n "$prev" ]; then
   changelog="https://github.com/$repo/compare/$prev...$tag"
 else
@@ -50,14 +61,21 @@ capped() { # lines -> at most $cap of them, then a count of the rest
   fi
 }
 
+group() { # title -> its lines
+  case "$1" in
+    New) printf '%s' "$new" ;;
+    Changed) printf '%s' "$changed" ;;
+    Fixed) printf '%s' "$fixed" ;;
+  esac
+}
+
 markdown() {
   local title body
-  for title in New Fixed; do
-    body="$fixed"
-    [ "$title" = New ] && body="$new"
+  for title in New Changed Fixed; do
+    body="$(group "$title")"
     [ -n "$body" ] && printf '## %s\n\n%s\n\n' "$title" "$(capped "$body" | sed 's/^/- /')"
   done
-  if [ -z "$new$fixed" ]; then
+  if [ -z "$new$changed$fixed" ]; then
     printf 'No user-facing changes.\n\n'
   fi
   printf 'The Linux AppImage and portable program need glibc 2.38 or newer (Ubuntu 24.04, Debian 13, Fedora 39 or later); older systems use the Flatpak.\n\n'
@@ -69,16 +87,15 @@ xml_escape() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'; }
 description() { # the AppStream <description>, indented for the <release> element
   local title body
   printf '      <description>\n'
-  for title in New Fixed; do
-    body="$fixed"
-    [ "$title" = New ] && body="$new"
+  for title in New Changed Fixed; do
+    body="$(group "$title")"
     if [ -n "$body" ]; then
       printf '        <p>%s</p>\n        <ul>\n' "$title"
       capped "$body" | xml_escape | sed 's|.*|          <li>&</li>|'
       printf '        </ul>\n'
     fi
   done
-  if [ -z "$new$fixed" ]; then
+  if [ -z "$new$changed$fixed" ]; then
     printf '        <p>No user-facing changes.</p>\n'
   fi
   printf '      </description>\n'

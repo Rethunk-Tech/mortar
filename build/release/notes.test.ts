@@ -34,6 +34,8 @@ beforeAll(() => {
   commit('chore(deps): bump everything')
   commit('docs: explain the thing')
   commit('refactor(mods): move code')
+  commit('feat(regress): the matrix measures launch (a)')
+  commit('feat(launch): a server build honours MORTAR_LAUNCH_WRAPPER')
   commit('feat(saves)!: back up <saves> & restore')
 })
 
@@ -65,6 +67,19 @@ describe('notes.sh', () => {
   test('caps each group and counts the rest', () => {
     const out = run([script, 'v0.2.0', 'HEAD'], { NOTES_CAP: '1' })
     expect(out).toContain('- Back up <saves> & restore\n- …and 1 more\n')
+  })
+
+  test('a release notes file replaces the commit subjects, uncapped, with a Changed group', () => {
+    const file = join(repo, 'v0.2.0.md')
+    writeFileSync(
+      file,
+      '## New\n\n- Lethal Company gets a Load order tab\n- CurseForge is a source\n\n## Changed\n\n- Settings moved\n\n## Fixed\n\n- No more crash on start\n',
+    )
+    const out = run([script, 'v0.2.0', 'HEAD'], { NOTES_FILE: file, NOTES_CAP: '1' })
+    expect(out).toContain(
+      '## New\n\n- Lethal Company gets a Load order tab\n- CurseForge is a source\n\n## Changed\n\n- Settings moved\n\n## Fixed\n\n- No more crash on start\n',
+    )
+    expect(out).not.toContain('Back up')
   })
 
   test('writes an escaped AppStream description into the release element', () => {
