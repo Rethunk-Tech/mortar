@@ -40,7 +40,7 @@ msgstr "Launch method"
 #. placeholder {0}: mark.date
 #: src/mods/NexusDetails.tsx:207
 #: src/mods/parts.tsx:226
-#: src/mods/Sidebar.tsx:133
+#: src/mods/Sidebar.tsx:134
 msgid "Hidden on Nexus · {0}"
 msgstr "Hidden on Nexus · {0}"
 
@@ -210,7 +210,7 @@ msgid "Manage tools…"
 msgstr "Manage tools…"
 
 #: src/game/Hero.tsx:344
-#: src/mods/Sidebar.tsx:154
+#: src/mods/Sidebar.tsx:155
 msgid "Updated"
 msgstr "Updated"
 
@@ -222,7 +222,7 @@ msgstr "List mods inside a folder whose name starts with a dot, which SMAPI skip
 msgid "{names} can't be reached, so Mortar can't check for mod updates"
 msgstr "{names} can't be reached, so Mortar can't check for mod updates"
 
-#: src/mods/problemFix/WinFix.tsx:76
+#: src/mods/problemFix/WinFix.tsx:82
 msgid "Make {name} win"
 msgstr "Make {name} win"
 
@@ -536,7 +536,7 @@ msgstr "Show token"
 msgid "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
 msgstr "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
 
-#: src/mods/Sidebar.tsx:386
+#: src/mods/Sidebar.tsx:387
 msgid "Config"
 msgstr "Config"
 
@@ -608,7 +608,7 @@ msgstr "Also adds what it needs: {0}"
 #. placeholder {1}: official.version
 #. placeholder {1}: update.version
 #: src/mods/parts.tsx:322
-#: src/mods/Sidebar.tsx:199
+#: src/mods/Sidebar.tsx:200
 msgid "Update available: {0} → {1}"
 msgstr "Update available: {0} → {1}"
 
@@ -751,7 +751,7 @@ msgstr "Type a command, for example help"
 msgid "{0} was changed on {1} and here"
 msgstr "{0} was changed on {1} and here"
 
-#: src/mods/Sidebar.tsx:582
+#: src/mods/Sidebar.tsx:599
 msgid "More…"
 msgstr "More…"
 
@@ -978,7 +978,7 @@ msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it
 msgid "Don't ask again"
 msgstr "Don't ask again"
 
-#: src/mods/problemFix/WinFix.tsx:68
+#: src/mods/problemFix/WinFix.tsx:74
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
@@ -1195,7 +1195,7 @@ msgstr "This save was last played with {0, plural, one {# mod this profile lacks
 
 #: src/mods/NexusDetails.tsx:206
 #: src/mods/parts.tsx:225
-#: src/mods/Sidebar.tsx:132
+#: src/mods/Sidebar.tsx:133
 msgid "Hidden on Nexus"
 msgstr "Hidden on Nexus"
 
@@ -2241,7 +2241,7 @@ msgstr "Skip {0}"
 
 #: src/mods/columnLabel.ts:9
 #: src/mods/NexusDetails.tsx:93
-#: src/mods/Sidebar.tsx:145
+#: src/mods/Sidebar.tsx:146
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
 
@@ -2431,7 +2431,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/OldFilesCallouts.tsx:64
 #: src/mods/overlayActions.ts:36
 #: src/mods/overlayActions.ts:100
-#: src/mods/problemFix/WinFix.tsx:54
+#: src/mods/problemFix/WinFix.tsx:60
 #: src/mods/problemFixButtons.tsx:116
 #: src/mods/SplitCombineItems.tsx:41
 #: src/mods/storeEntries.ts:60
@@ -2465,7 +2465,7 @@ msgid "This bundle will be deleted."
 msgstr "This bundle will be deleted."
 
 #. placeholder {0}: neededBy.length.toLocaleString(i18n.locale)
-#: src/mods/Sidebar.tsx:419
+#: src/mods/Sidebar.tsx:413
 msgid "Required by ({0})"
 msgstr "Required by ({0})"
 
@@ -2855,7 +2855,7 @@ msgid "Import from {manager}"
 msgstr "Import from {manager}"
 
 #: src/mods/listRows.ts:117
-#: src/mods/Sidebar.tsx:540
+#: src/mods/Sidebar.tsx:557
 msgid "Archive"
 msgstr "Archive"
 
@@ -3460,7 +3460,7 @@ msgstr "Edit launch preset"
 msgid "Size"
 msgstr "Size"
 
-#: src/mods/ModDetail.tsx:291
+#: src/mods/ModDetail.tsx:296
 msgid "GitHub page"
 msgstr "GitHub page"
 
@@ -3595,6 +3595,11 @@ msgstr "Bundles"
 msgid "Bundle deleted"
 msgstr "Bundle deleted"
 
+#. placeholder {0}: optionalFor.length.toLocaleString(i18n.locale)
+#: src/mods/Sidebar.tsx:417
+msgid "Optional for ({0})"
+msgstr "Optional for ({0})"
+
 #: src/commandPalette/CommandPalette.tsx:158
 #: src/settings/SettingsPage.tsx:49
 msgid "Shortcuts"
@@ -3639,7 +3644,7 @@ msgid "Already has {0}"
 msgstr "Already has {0}"
 
 #: src/browse/BrowseDetails.tsx:98
-#: src/mods/Sidebar.tsx:393
+#: src/mods/Sidebar.tsx:394
 #: src/mods/updateReview/Row.tsx:119
 msgid "Changelog"
 msgstr "Changelog"
@@ -3978,7 +3983,7 @@ msgstr "From the extra mods folder…"
 msgid "Done"
 msgstr "Done"
 
-#: src/mods/Sidebar.tsx:350
+#: src/mods/Sidebar.tsx:351
 msgid "Content pack for {hostName}"
 msgstr "Content pack for {hostName}"
 
@@ -4062,7 +4067,7 @@ msgstr "Mortar: {label}"
 msgid "A mod with several tags appears under its first tag."
 msgstr "A mod with several tags appears under its first tag."
 
-#: src/mods/Sidebar.tsx:142
+#: src/mods/Sidebar.tsx:143
 msgid "Summary"
 msgstr "Summary"
 
@@ -4092,8 +4097,8 @@ msgstr "Show in queue"
 #: src/mods/ModList.tsx:388
 #: src/mods/OptionalFileRows.tsx:122
 #: src/mods/PreviewPick.tsx:22
-#: src/mods/Sidebar.tsx:321
-#: src/mods/Sidebar.tsx:334
+#: src/mods/Sidebar.tsx:322
+#: src/mods/Sidebar.tsx:335
 #: src/mods/Toolbar.tsx:59
 #: src/profiles/CompareBulkBody.tsx:129
 #: src/profiles/GameModsDialog.tsx:37
@@ -4192,7 +4197,7 @@ msgid "Add or remove the tag"
 msgstr "Add or remove the tag"
 
 #: src/mods/parts.tsx:269
-#: src/mods/Sidebar.tsx:277
+#: src/mods/Sidebar.tsx:278
 msgid "Last run: {summary}"
 msgstr "Last run: {summary}"
 
@@ -4261,7 +4266,7 @@ msgid "Link copied"
 msgstr "Link copied"
 
 #: src/mods/columnLabel.ts:8
-#: src/mods/Sidebar.tsx:460
+#: src/mods/Sidebar.tsx:477
 msgid "Version"
 msgstr "Version"
 
@@ -4345,7 +4350,7 @@ msgstr "Delete group {name}?"
 #: src/loader/Banner.tsx:35
 #: src/mods/problemFix/LoadFailureFix.tsx:37
 #: src/mods/runErrorFixButtons.tsx:51
-#: src/mods/Sidebar.tsx:231
+#: src/mods/Sidebar.tsx:232
 #: src/mods/updateReview/EverywhereDialog.tsx:142
 #: src/mods/updateReview/UpdateActions.tsx:90
 #: src/mods/updateReview/UpdateActions.tsx:90
@@ -4921,7 +4926,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/commandPalette/CommandPalette.tsx:151
 #: src/mods/columnLabel.ts:15
 #: src/mods/NexusDetails.tsx:109
-#: src/mods/Sidebar.tsx:153
+#: src/mods/Sidebar.tsx:154
 #: src/queue/QueueButton.tsx:15
 #: src/queue/QueueButton.tsx:21
 #: src/queue/QueueSheet.tsx:72
@@ -5698,7 +5703,7 @@ msgstr "Enter 1 or more"
 
 #: src/mods/columnLabel.ts:14
 #: src/mods/NexusDetails.tsx:108
-#: src/mods/Sidebar.tsx:482
+#: src/mods/Sidebar.tsx:499
 #: src/settings/sections/NexusMods.tsx:176
 msgid "Endorsements"
 msgstr "Endorsements"
@@ -5983,10 +5988,10 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/modActions.ts:38
 #: src/mods/modActions.ts:39
 #: src/mods/ModDependencyTree.tsx:57
-#: src/mods/ModDetail.tsx:294
+#: src/mods/ModDetail.tsx:299
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
-#: src/mods/Sidebar.tsx:213
+#: src/mods/Sidebar.tsx:214
 #: src/mods/updateReview/Row.tsx:198
 msgid "Open page"
 msgstr "Open page"
@@ -6107,7 +6112,7 @@ msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
 #: src/browse/BrowseDetails.tsx:259
-#: src/mods/Sidebar.tsx:606
+#: src/mods/Sidebar.tsx:623
 msgid "Selected mod"
 msgstr "Selected mod"
 
@@ -6379,7 +6384,7 @@ msgstr "{0} and {count} more"
 
 #: src/mods/ModMenu.tsx:211
 #: src/mods/SelectionBarActions.tsx:108
-#: src/mods/Sidebar.tsx:495
+#: src/mods/Sidebar.tsx:512
 msgid "Also add to…"
 msgstr "Also add to…"
 
@@ -6654,7 +6659,7 @@ msgstr "Clear download history?"
 msgid "Other cached data"
 msgstr "Other cached data"
 
-#: src/mods/Sidebar.tsx:236
+#: src/mods/Sidebar.tsx:237
 msgid "Update in all profiles that have it"
 msgstr "Update in all profiles that have it"
 
@@ -6761,7 +6766,7 @@ msgstr "Large"
 #: src/mods/columnLabel.ts:13
 #: src/mods/NexusDetails.tsx:98
 #: src/mods/SelectionBarDialogs.tsx:121
-#: src/mods/Sidebar.tsx:150
+#: src/mods/Sidebar.tsx:151
 #: src/mods/Toolbar.tsx:198
 #: src/settings/prefCopy.ts:124
 msgid "Category"
@@ -7025,6 +7030,10 @@ msgstr "Could not read the Nexus page: {0}"
 msgid "Imported, but could not show the profile"
 msgstr "Imported, but could not show the profile"
 
+#: src/mods/ModDetail.tsx:272
+msgid "Optional for"
+msgstr "Optional for"
+
 #: src/templates/TemplateDialogs.tsx:161
 msgid "No templates"
 msgstr "No templates"
@@ -7055,7 +7064,7 @@ msgid "Results"
 msgstr "Results"
 
 #: src/mods/ModMenu.tsx:169
-#: src/mods/Sidebar.tsx:464
+#: src/mods/Sidebar.tsx:481
 msgid "Show skipped update"
 msgstr "Show skipped update"
 
@@ -7345,7 +7354,7 @@ msgstr "Crash finding failed."
 
 #: src/mods/NexusDetails.tsx:208
 #: src/mods/parts.tsx:227
-#: src/mods/Sidebar.tsx:134
+#: src/mods/Sidebar.tsx:135
 msgid "Removed from Nexus"
 msgstr "Removed from Nexus"
 
@@ -7512,7 +7521,7 @@ msgstr "·"
 #: src/mods/problemFix/MissingFix.tsx:43
 #: src/mods/SelectionBar.tsx:142
 #: src/mods/SelectionBarDialogs.tsx:81
-#: src/mods/Sidebar.tsx:505
+#: src/mods/Sidebar.tsx:522
 #: src/mods/TrackedNotInProfile.tsx:93
 #: src/mods/typedConfig/Widgets.tsx:158
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:63
@@ -7770,7 +7779,7 @@ msgstr "Signed out of Nexus"
 
 #. placeholder {0}: mod.name
 #: src/mods/ModMenu.tsx:380
-#: src/mods/Sidebar.tsx:503
+#: src/mods/Sidebar.tsx:520
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
 
@@ -8282,7 +8291,7 @@ msgstr "Could not untrack mods"
 #. placeholder {0}: unofficial.version
 #. placeholder {0}: update.version
 #: src/mods/parts.tsx:321
-#: src/mods/Sidebar.tsx:204
+#: src/mods/Sidebar.tsx:205
 #: src/mods/updateReview/RowCopy.tsx:27
 msgid "Unofficial update available: {0}"
 msgstr "Unofficial update available: {0}"
@@ -9568,7 +9577,7 @@ msgstr "{count, plural, one {Trimmed history, dropped # older change} other {Tri
 msgid "Whole file"
 msgstr "Whole file"
 
-#: src/mods/Sidebar.tsx:477
+#: src/mods/Sidebar.tsx:494
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
@@ -9622,7 +9631,7 @@ msgstr "{0, plural, one {Copy mod list (# part)} other {Copy mod list (# parts)}
 msgid "Error in a patch"
 msgstr "Error in a patch"
 
-#: src/mods/ModDetail.tsx:293
+#: src/mods/ModDetail.tsx:298
 msgid "Thunderstore page"
 msgstr "Thunderstore page"
 
@@ -9631,7 +9640,7 @@ msgid "Report it so it can be fixed."
 msgstr "Report it so it can be fixed."
 
 #: src/mods/listRows.ts:119
-#: src/mods/Sidebar.tsx:542
+#: src/mods/Sidebar.tsx:559
 #: src/settings/sections/Accounts.tsx:17
 msgid "GitHub"
 msgstr "GitHub"
@@ -9714,7 +9723,7 @@ msgstr "No matching mods"
 #. placeholder {0}: mark.date
 #: src/mods/NexusDetails.tsx:209
 #: src/mods/parts.tsx:228
-#: src/mods/Sidebar.tsx:135
+#: src/mods/Sidebar.tsx:136
 msgid "Removed from Nexus · {0}"
 msgstr "Removed from Nexus · {0}"
 
@@ -9803,8 +9812,8 @@ msgstr "Auto-enable requirements"
 #: src/mods/ModCards.tsx:469
 #: src/mods/ModDependencyTree.tsx:102
 #: src/mods/ModList.tsx:387
-#: src/mods/Sidebar.tsx:321
-#: src/mods/Sidebar.tsx:334
+#: src/mods/Sidebar.tsx:322
+#: src/mods/Sidebar.tsx:335
 #: src/profiles/CompareBulkBody.tsx:128
 #: src/profiles/ProfilesPage.tsx:273
 #: src/profiles/ProfilesPage.tsx:282
@@ -9823,7 +9832,7 @@ msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
 #: src/mods/ModDetail.tsx:245
-#: src/mods/Sidebar.tsx:563
+#: src/mods/Sidebar.tsx:580
 msgid "In the same download"
 msgstr "In the same download"
 
@@ -10871,7 +10880,7 @@ msgstr "{0, plural, one {{1} of # mod · {2} · {3}/s} other {{4} of # mods · {
 msgid "Installed: Mortar {0}"
 msgstr "Installed: Mortar {0}"
 
-#: src/mods/Sidebar.tsx:283
+#: src/mods/Sidebar.tsx:284
 msgid "Show in Console"
 msgstr "Show in Console"
 
@@ -11684,7 +11693,7 @@ msgstr "On the other computer, choose Enter code and type this. It works once, f
 msgid "Restored {0} to before that change"
 msgstr "Restored {0} to before that change"
 
-#: src/mods/Sidebar.tsx:316
+#: src/mods/Sidebar.tsx:317
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
@@ -11710,7 +11719,7 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 
 #: src/firstrun/GameSetup.tsx:165
 #: src/mods/listRows.ts:118
-#: src/mods/Sidebar.tsx:541
+#: src/mods/Sidebar.tsx:558
 #: src/settings/sections/NexusMods.tsx:300
 #: src/shell/NexusAccount.tsx:27
 msgid "Nexus Mods"
@@ -11875,7 +11884,7 @@ msgstr "Soft and warm"
 msgid "This is no longer the latest change."
 msgstr "This is no longer the latest change."
 
-#: src/mods/ModDetail.tsx:292
+#: src/mods/ModDetail.tsx:297
 msgid "Nexus page"
 msgstr "Nexus page"
 
@@ -11910,7 +11919,7 @@ msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 #: src/mods/ModMenu.tsx:169
 #: src/mods/parts.tsx:354
 #: src/mods/SelectionBarActions.tsx:82
-#: src/mods/Sidebar.tsx:226
+#: src/mods/Sidebar.tsx:227
 #: src/mods/updateReview/UpdateActions.tsx:122
 msgid "Skip this update"
 msgstr "Skip this update"
@@ -11965,8 +11974,8 @@ msgstr "Welcome to Mortar"
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
-#: src/mods/Sidebar.tsx:477
-#: src/mods/Sidebar.tsx:479
+#: src/mods/Sidebar.tsx:494
+#: src/mods/Sidebar.tsx:496
 msgid "Mod id"
 msgstr "Mod id"
 
@@ -12524,7 +12533,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/mods/AssetMapDialog.tsx:279
 #: src/mods/AuthorDialog.tsx:165
 #: src/mods/ChangelogDialog.tsx:103
-#: src/mods/ModDetail.tsx:343
+#: src/mods/ModDetail.tsx:348
 #: src/mods/updateReview/ReviewFooter.tsx:61
 #: src/mods/updateReview/ReviewTitle.tsx:43
 #: src/profiles/CompareDialog.tsx:163
@@ -12550,7 +12559,7 @@ msgstr "Close"
 msgid "Link"
 msgstr "Link"
 
-#: src/mods/Sidebar.tsx:473
+#: src/mods/Sidebar.tsx:490
 msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
 
@@ -12642,7 +12651,7 @@ msgid "No saves yet"
 msgstr "No saves yet"
 
 #: src/mods/listRows.ts:120
-#: src/mods/Sidebar.tsx:543
+#: src/mods/Sidebar.tsx:560
 msgid "Thunderstore"
 msgstr "Thunderstore"
 

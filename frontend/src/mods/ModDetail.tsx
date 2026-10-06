@@ -268,6 +268,11 @@ function Body({ mod, profile, relations, state, configFiles, ask }: BodyProps) {
           none={t`Nothing in this profile`}
         />
       </Section>
+      {(relations?.optionalFor ?? []).length > 0 ? (
+        <Section title={t`Optional for`}>
+          <Names names={(relations?.optionalFor ?? []).map((d) => d.name)} none="" />
+        </Section>
+      ) : null}
     </>
   )
 }

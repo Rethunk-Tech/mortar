@@ -214,7 +214,8 @@ func TestRelate(t *testing.T) {
 	a.UpdateKeys = []string{"Chucklefish:1", "Nexus:42@x"}
 	core := inst("k2", "me.core", "1.0.0", true)
 	user := inst("k3", "me.user", "1.0.0", true, req("me.a", ""))
-	r, ok := Relate(deps.SemverSMAPI, []framework.Mod{a, core, user}, "stardew", "k1", "smapi:me.a")
+	extra := inst("k4", "me.extra", "1.0.0", true, manifest.Dependency{UniqueID: "me.a"})
+	r, ok := Relate(deps.SemverSMAPI, []framework.Mod{a, core, user, extra}, "stardew", "k1", "smapi:me.a")
 	if !ok || r.PageURL != "https://www.nexusmods.com/stardewvalley/mods/42" {
 		t.Fatalf("relations = %+v, %v", r, ok)
 	}
@@ -227,6 +228,9 @@ func TestRelate(t *testing.T) {
 	}
 	if !reflect.DeepEqual(r.NeededBy, []Dependent{{Key: "k3", ID: "smapi:me.user", Name: "me.user"}}) {
 		t.Fatalf("neededBy = %+v", r.NeededBy)
+	}
+	if !reflect.DeepEqual(r.OptionalFor, []Dependent{{Key: "k4", ID: "smapi:me.extra", Name: "me.extra"}}) {
+		t.Fatalf("optionalFor = %+v", r.OptionalFor)
 	}
 	if _, ok := Relate(deps.SemverSMAPI, []framework.Mod{a}, "stardew", "k9", "smapi:me.a"); ok {
 		t.Fatal("unknown key related")

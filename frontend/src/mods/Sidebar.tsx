@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Collapse, Link, Tooltip, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { memo, useDeferredValue, useEffect, useState } from 'react'
+import type { Dependent } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
   Mod,
   ModInProfile,
@@ -371,13 +372,13 @@ function ActionRows({
   const extras = useDetail((s) => s.extras)
   const loadExtras = useDetail((s) => s.loadExtras)
   const [showChangelog, setShowChangelog] = useState(false)
-  const [showNeededBy, setShowNeededBy] = useState(false)
   useEffect(() => {
     loadExtras(mod).catch(reportUnexpected)
   }, [mod, loadExtras])
   const mine = extras?.id === modId(mod) ? extras : null
   const pageUrl = mine?.relations.pageUrl ?? ''
   const neededBy = mine?.relations.neededBy ?? []
+  const optionalFor = mine?.relations.optionalFor ?? []
   const hasConfig = (mine?.configFiles.length ?? 0) > 0
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
@@ -408,37 +409,53 @@ function ActionRows({
           {openPageLabel(i18n, hostOf(pageUrl))}
         </Link>
       ) : null}
-      {neededBy.length > 0 ? (
-        <>
-          <Link
-            component="button"
-            aria-expanded={showNeededBy}
-            onClick={() => setShowNeededBy((on) => !on)}
-            sx={rowLink}
-          >
-            {t`Required by (${neededBy.length.toLocaleString(i18n.locale)})`}
-          </Link>
-          <Collapse in={showNeededBy} unmountOnExit={true}>
-            <Box sx={{ pl: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-              {neededBy.map((d) => (
-                <Link
-                  key={`${d.key}/${d.id}`}
-                  component="button"
-                  onClick={() => showModId(modId(d))}
-                  onContextMenu={(e) => {
-                    e.preventDefault()
-                    showModId(modId(d))
-                  }}
-                  sx={{ ...rowLink, fontSize: 13, color: 'text.primary' }}
-                >
-                  {d.name}
-                </Link>
-              ))}
-            </Box>
-          </Collapse>
-        </>
-      ) : null}
+      <DependentRows
+        label={t`Required by (${neededBy.length.toLocaleString(i18n.locale)})`}
+        dependents={neededBy}
+      />
+      <DependentRows
+        label={t`Optional for (${optionalFor.length.toLocaleString(i18n.locale)})`}
+        dependents={optionalFor}
+      />
     </Box>
+  )
+}
+
+// A collapsed list of the mods that list this one as a dependency, each opening its own panel.
+function DependentRows({ label, dependents }: { label: string; dependents: readonly Dependent[] }) {
+  const [open, setOpen] = useState(false)
+  if (dependents.length === 0) {
+    return null
+  }
+  return (
+    <>
+      <Link
+        component="button"
+        aria-expanded={open}
+        onClick={() => setOpen((on) => !on)}
+        sx={rowLink}
+      >
+        {label}
+      </Link>
+      <Collapse in={open} unmountOnExit={true}>
+        <Box sx={{ pl: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+          {dependents.map((d) => (
+            <Link
+              key={`${d.key}/${d.id}`}
+              component="button"
+              onClick={() => showModId(modId(d))}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                showModId(modId(d))
+              }}
+              sx={{ ...rowLink, fontSize: 13, color: 'text.primary' }}
+            >
+              {d.name}
+            </Link>
+          ))}
+        </Box>
+      </Collapse>
+    </>
   )
 }
 

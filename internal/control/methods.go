@@ -129,12 +129,14 @@ type ModRow struct {
 // ModInfo is one mod with what relates to it.
 type ModInfo struct {
 	ModRow
-	Needs      []mod.ID                  `json:"needs"`
-	Optional   []mod.ID                  `json:"optional"`
-	Dependents []mod.ID                  `json:"dependents"`
-	Missing    []problems.Missing        `json:"missing"`
-	Conflicts  []framework.AssetConflict `json:"conflicts"`
-	Settings   []framework.SettingHint   `json:"settings"`
+	Needs      []mod.ID `json:"needs"`
+	Optional   []mod.ID `json:"optional"`
+	Dependents []mod.ID `json:"dependents"`
+	// OptionalFor is the mods that list this one as an optional dependency; Dependents require it.
+	OptionalFor []mod.ID                  `json:"optionalFor"`
+	Missing     []problems.Missing        `json:"missing"`
+	Conflicts   []framework.AssetConflict `json:"conflicts"`
+	Settings    []framework.SettingHint   `json:"settings"`
 }
 
 // ModProblem is a short, read-only problem shown beside a Nexus mod page.
@@ -1272,6 +1274,25 @@ func (s *Services) install(gameID, id, path string) (InstallOutcome, error) {
 	return out, nil
 }
 
+// dependentsOf is the mods of p that list uid as a dependency, split into those that require it and those that
+// list it as optional.
+func dependentsOf(p profile.Profile, uid mod.ID) (required, optional []mod.ID) {
+	required, optional = []mod.ID{}, []mod.ID{}
+	is := func(n mod.ID) bool { return mod.Equal(n, uid) }
+	for _, e := range p.Entries {
+		for _, m := range e.Mods {
+			switch {
+			case !slices.ContainsFunc(m.Needs, is):
+			case slices.ContainsFunc(m.Optional, is):
+				optional = append(optional, m.ID)
+			default:
+				required = append(required, m.ID)
+			}
+		}
+	}
+	return required, optional
+}
+
 func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile, ids []string) (ModInfo, error) {
 	if len(ids) != 1 {
 		return ModInfo{}, errors.New("name one mod by id")
@@ -1281,7 +1302,7 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 	if !ok {
 		return ModInfo{}, fmt.Errorf("profile %s has no mod %q", p.Name, uid)
 	}
-	info := ModInfo{Needs: []mod.ID{}, Optional: []mod.ID{}, Dependents: []mod.ID{}, Missing: []problems.Missing{}, Conflicts: []framework.AssetConflict{}, Settings: []framework.SettingHint{}}
+	info := ModInfo{Needs: []mod.ID{}, Optional: []mod.ID{}, Missing: []problems.Missing{}, Conflicts: []framework.AssetConflict{}, Settings: []framework.SettingHint{}}
 	for _, r := range modRows(p) {
 		if mod.Equal(r.ID, uid) {
 			info.ModRow = r
@@ -1297,13 +1318,7 @@ func (s *Services) modInfo(ctx context.Context, gameID string, p profile.Profile
 			}
 		}
 	}
-	for _, other := range p.Entries {
-		for _, m := range other.Mods {
-			if slices.ContainsFunc(m.Needs, func(n mod.ID) bool { return mod.Equal(n, uid) }) {
-				info.Dependents = append(info.Dependents, m.ID)
-			}
-		}
-	}
+	info.Dependents, info.OptionalFor = dependentsOf(p, uid)
 	res, err := s.Problems.Problems(ctx, gameID, p.ID)
 	if err != nil {
 		return info, err

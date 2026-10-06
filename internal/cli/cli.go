@@ -1627,6 +1627,7 @@ func (c *cmd) mod(p control.Params) error {
 		list("Needs", mod.Locals(m.Needs))
 		list("Optional", mod.Locals(m.Optional))
 		list("Needed by", mod.Locals(m.Dependents))
+		list("Optional for", mod.Locals(m.OptionalFor))
 		for _, x := range m.Missing {
 			fmt.Fprintf(c.out, "Missing: %s\n", missingName(x))
 		}

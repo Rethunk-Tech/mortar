@@ -311,11 +311,12 @@ type Dependent struct {
 }
 
 // Relations is how one mod stands with the others in its profile. PageURL is empty when its update keys name
-// no page Mortar knows.
+// no page Mortar knows. NeededBy is the mods that require it, OptionalFor those that list it as optional.
 type Relations struct {
-	PageURL  string      `json:"pageUrl"`
-	Needs    []Need      `json:"needs"`
-	NeededBy []Dependent `json:"neededBy"`
+	PageURL     string      `json:"pageUrl"`
+	Needs       []Need      `json:"needs"`
+	NeededBy    []Dependent `json:"neededBy"`
+	OptionalFor []Dependent `json:"optionalFor"`
 }
 
 // Relate reports what the mod key/uniqueID needs and which mods need it. ok is false when the profile lacks it.
@@ -325,7 +326,7 @@ func Relate(scheme string, mods []framework.Mod, gameID, key string, uniqueID mo
 		return Relations{}, false
 	}
 	self := mods[i]
-	r = Relations{PageURL: modPage(gameID, self), Needs: []Need{}, NeededBy: []Dependent{}}
+	r = Relations{PageURL: modPage(gameID, self), Needs: []Need{}, NeededBy: []Dependent{}, OptionalFor: []Dependent{}}
 	for _, dep := range self.Dependencies {
 		n := Need{ID: dep.ModID(), Name: dep.ModID().Local(), MinimumVersion: dep.MinimumVersion, Required: dep.Required, State: "ok"}
 		if j := slices.IndexFunc(mods, func(x framework.Mod) bool { return mod.Equal(x.ModID(), dep.ModID()) }); j >= 0 {
@@ -340,8 +341,13 @@ func Relate(scheme string, mods []framework.Mod, gameID, key string, uniqueID mo
 		if x.Key == self.Key && mod.Equal(x.ModID(), self.ModID()) {
 			continue
 		}
-		if slices.ContainsFunc(x.Dependencies, func(d manifest.Dependency) bool { return mod.Equal(d.ModID(), self.ModID()) }) {
+		i := slices.IndexFunc(x.Dependencies, func(d manifest.Dependency) bool { return mod.Equal(d.ModID(), self.ModID()) })
+		switch {
+		case i < 0:
+		case x.Dependencies[i].Required:
 			r.NeededBy = append(r.NeededBy, Dependent{Key: x.Key, ID: x.ModID(), Name: x.Name})
+		default:
+			r.OptionalFor = append(r.OptionalFor, Dependent{Key: x.Key, ID: x.ModID(), Name: x.Name})
 		}
 	}
 	return r, true
