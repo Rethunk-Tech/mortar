@@ -114,12 +114,15 @@ type Item struct {
 	Bundled bool `json:"bundled"`
 }
 
-// Alt is the same mod on another source: where to open it and install it from.
+// Alt is the same mod on another source: where to open it and install it from, and that hit's own flags.
 type Alt struct {
 	Source    string `json:"source"`
 	ID        string `json:"id"`
 	URL       string `json:"url"`
 	Installed bool   `json:"installed"`
+	Obsolete  bool   `json:"obsolete"`
+	Broken    bool   `json:"broken"`
+	Loader    bool   `json:"loader"`
 }
 
 // Page is one slice of search hits. A merged search across sources also sets Pages, the page count of its largest

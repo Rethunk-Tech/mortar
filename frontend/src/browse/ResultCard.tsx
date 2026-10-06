@@ -20,6 +20,7 @@ import type { BrowseModes } from './browseModes.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
 import { CardAction } from './CardAction.tsx'
 import { cardState, inProfile, isActive, shownState } from './cardState.ts'
+import { pickedItem } from './pickedItem.ts'
 
 // One badge per source the mod is on; the filled one is where Add installs from.
 function SourceBadges({
@@ -89,6 +90,7 @@ function ResultCard(props: ResultCardProps) {
   const choices = [primary, ...(item.alts ?? [])]
   const [picked, setPicked] = useState(item.source)
   const { source, id, url } = choices.find((c) => c.source === picked) ?? primary
+  const shownItem = pickedItem(item, source)
   // The profile's own entries are the live word: the search result's flag is only as new as the search, so it counts
   // only until the profile changes.
   const profile = useProfiles(openProfileOf)
@@ -124,7 +126,7 @@ function ResultCard(props: ResultCardProps) {
     }
     return source === THUNDERSTORE ? props.addPackage(id) : props.addDirect(source, id)
   }
-  const dim = isGray(modes, item, installed) ? GRAY_OPACITY : 1
+  const dim = isGray(modes, shownItem, installed) ? GRAY_OPACITY : 1
   return (
     <Card
       sx={{
@@ -188,7 +190,7 @@ function ResultCard(props: ResultCardProps) {
           onClick={() => openUrl(url)}
         />
         <CardAction
-          item={item}
+          item={shownItem}
           source={source}
           state={shown}
           installed={installed}
