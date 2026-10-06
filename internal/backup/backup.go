@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -65,12 +66,16 @@ func FileName(t time.Time) string { return t.UTC().Format(stamp) + ".zip" }
 
 // Saves zips savesDir into backupsDir/<timestamp>.zip through a temp file and rename, then deletes all but the
 // newest keep backups and temp files a crash left. It returns the zip's path (the newest existing one when that is
-// under MinGap old and nothing in savesDir changed since), or "" when savesDir does not exist.
+// under MinGap old and nothing in savesDir changed since), or "" when savesDir holds no save.
 func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (string, error) {
-	if _, err := os.Stat(savesDir); errors.Is(err, fs.ErrNotExist) {
+	ents, err := os.ReadDir(savesDir)
+	if errors.Is(err, fs.ErrNotExist) {
 		return "", nil
 	} else if err != nil {
 		return "", err
+	}
+	if !slices.ContainsFunc(ents, func(e fs.DirEntry) bool { return e.IsDir() && saves.IsSave(savesDir, e.Name()) }) {
+		return "", nil
 	}
 	zips, err := list(backupsDir)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -106,6 +111,9 @@ func Saves(savesDir, backupsDir string, keep int, now time.Time, cause Cause) (s
 	return finishZip(backupsDir, savesDir, "", keep, now, name, cause)
 }
 
+// ErrNoSaves is returned when a requested backup finds nothing to back up.
+var ErrNoSaves = usererr.New(usererr.NotFound, "no saves to back up")
+
 // SaveDir is the path of one save, a direct child of savesDir, and fails when folder names anything else or is missing.
 func SaveDir(savesDir, folder string) (string, error) {
 	if folder == "" || folder != filepath.Base(folder) || folder == "." || folder == ".." {
@@ -119,10 +127,13 @@ func SaveDir(savesDir, folder string) (string, error) {
 }
 
 // Folder zips one save folder into backupsDir the same way Saves does, without the recent-backup stand-in so a
-// requested backup is always a new zip.
+// requested backup is always a new zip. A folder that is not a save is ErrNoSaves.
 func Folder(savesDir, backupsDir, folder string, keep int, now time.Time, cause Cause) (string, error) {
 	if _, err := SaveDir(savesDir, folder); err != nil {
 		return "", err
+	}
+	if !saves.IsSave(savesDir, folder) {
+		return "", ErrNoSaves
 	}
 	zips, err := list(backupsDir)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {

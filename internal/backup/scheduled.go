@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
 
 // Run counts what one scheduled pass did.
@@ -32,10 +34,10 @@ func Scheduled(savesDir, backupsDir string, keep int, now time.Time) (Run, error
 	}
 	var errs []error
 	for _, e := range ents {
-		if !e.IsDir() {
+		folder := e.Name()
+		if !e.IsDir() || !saves.IsSave(savesDir, folder) {
 			continue
 		}
-		folder := e.Name()
 		if last, ok := newest[folder]; ok {
 			changed, err := lastChange(filepath.Join(savesDir, folder))
 			if err != nil {

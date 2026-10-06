@@ -1,6 +1,8 @@
 package backup
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -102,5 +104,34 @@ func TestScheduledIgnoresBackupsStampedInTheFuture(t *testing.T) {
 	}
 	if run, err := Scheduled(saves, out, 5, now); err != nil || run.Saved != 1 {
 		t.Fatalf("run after the clock was fixed = %+v %v", run, err)
+	}
+}
+
+// A folder with only a log, a settings file and a mod's config folder holds no save, so no trigger zips it.
+func TestNoBackupWithoutASave(t *testing.T) {
+	saves := filepath.Join(t.TempDir(), "Lethal Company")
+	for _, p := range []string{"Player.log", "LCGeneralSaveData", "InputUtils/binds.json", "Empty_1/notes.txt"} {
+		if err := os.MkdirAll(filepath.Dir(filepath.Join(saves, p)), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := fsx.WriteFile(filepath.Join(saves, p), []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	out := filepath.Join(t.TempDir(), "backups")
+	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	for _, kind := range []string{KindUpdate, KindLaunch, KindRestore} {
+		if got, err := Saves(saves, out, 5, now, Cause{Kind: kind}); err != nil || got != "" {
+			t.Fatalf("%s: Saves = %q, %v", kind, got, err)
+		}
+	}
+	if run, err := Scheduled(saves, out, 5, now); err != nil || run != (Run{}) {
+		t.Fatalf("Scheduled = %+v, %v", run, err)
+	}
+	if _, err := Folder(saves, out, "Empty_1", 5, now, Cause{Kind: KindManual}); !errors.Is(err, ErrNoSaves) {
+		t.Fatalf("Folder = %v, want ErrNoSaves", err)
+	}
+	if _, err := os.Stat(out); !errors.Is(err, fs.ErrNotExist) {
+		t.Fatalf("backups folder made: %v", err)
 	}
 }

@@ -171,7 +171,13 @@ func (s *Scanner) Newest(index map[string][]meta.Ref) (Info, error) {
 	return s.read(newest, index)
 }
 
-// stampOf reports ok=false for a folder that is not a save: Stardew's main file is named like its folder.
+// IsSave reports whether folder, a child of dir, is a save: Stardew's main file is named like its folder.
+func IsSave(dir, folder string) bool {
+	fi, err := os.Stat(filepath.Join(dir, folder, folder))
+	return err == nil && fi.Mode().IsRegular()
+}
+
+// stampOf reports ok=false for a folder that is not a save (see IsSave).
 func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err error) {
 	main, err := os.Stat(filepath.Join(s.Dir, folder, folder))
 	if errors.Is(err, fs.ErrNotExist) {

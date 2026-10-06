@@ -91,11 +91,9 @@ func TestSavesSkipsMissingFolder(t *testing.T) {
 
 func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
-	if err := os.MkdirAll(saves, 0o750); err != nil {
-		t.Fatal(err)
-	}
 	out := t.TempDir()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	writeSave(t, saves, "A_1", start.Add(-time.Hour))
 	if err := os.Chtimes(saves, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
 		t.Fatal(err)
 	}
@@ -119,11 +117,9 @@ func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
 
 func TestSavesBacksUpAgainWhenASaveChangedAndSweepsCrashedTemps(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
-	if err := os.MkdirAll(saves, 0o750); err != nil {
-		t.Fatal(err)
-	}
 	out := t.TempDir()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	writeSave(t, saves, "A_1", start.Add(-time.Hour))
 	if err := os.Chtimes(saves, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
 		t.Fatal(err)
 	}
@@ -214,11 +210,9 @@ func TestFolderZipsOnlyThatSaveAndStaysPinned(t *testing.T) {
 
 func TestABackwardsClockKeepsTheNewZip(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
-	if err := os.MkdirAll(saves, 0o750); err != nil {
-		t.Fatal(err)
-	}
 	out := t.TempDir()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	writeSave(t, saves, "A_1", start.Add(-time.Hour))
 	if _, err := Saves(saves, out, 1, start.Add(time.Hour), Cause{}); err != nil {
 		t.Fatal(err)
 	}
@@ -248,11 +242,9 @@ func TestSaveDirRejectsEscapesAndMissing(t *testing.T) {
 
 func TestKindsRotateSeparately(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Saves")
-	if err := os.MkdirAll(filepath.Join(saves, "A_1"), 0o700); err != nil {
-		t.Fatal(err)
-	}
 	out := t.TempDir()
 	start := time.Date(2026, 7, 1, 12, 0, 0, 0, time.UTC)
+	writeSave(t, saves, "A_1", start.Add(-time.Hour))
 	for i, kind := range []string{KindLaunch, KindUpdate, KindLaunch, KindUpdate} {
 		if _, err := Saves(saves, out, 1, start.Add(time.Duration(i)*time.Hour), Cause{Kind: kind}); err != nil {
 			t.Fatal(err)
