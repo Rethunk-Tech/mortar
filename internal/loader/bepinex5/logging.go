@@ -29,14 +29,13 @@ func configFile(profileDir string) string {
 	return filepath.Join(profileDir, "BepInEx", "config", "BepInEx.cfg")
 }
 
-// LaunchSettings are the profile's BepInEx logging options as BepInEx.cfg holds them; a file BepInEx has not written
-// yet shows BepInEx's defaults.
+// LaunchSettings are the profile's BepInEx logging options: the console window from Mortar's marker, since BepInEx's
+// own default shows it, and the log level as BepInEx.cfg holds it, BepInEx's default when the file is not written yet.
 func (Loader) LaunchSettings(profileDir string) ([]loader.LaunchSetting, error) {
 	text, err := readConfig(profileDir)
 	if err != nil {
 		return nil, err
 	}
-	console := cfgGet(text, "Logging.Console", "Enabled")
 	levels := cfgGet(text, "Logging.Console", "LogLevels")
 	level := "default"
 	if levels != "" {
@@ -52,7 +51,7 @@ func (Loader) LaunchSettings(profileDir string) ([]loader.LaunchSetting, error) 
 		choices[i] = l.choice
 	}
 	return []loader.LaunchSetting{
-		{ID: settingConsole, Value: boolText(console != "false")},
+		{ID: settingConsole, Value: boolText(readMarker(profileDir).Console)},
 		{ID: settingLogLevel, Choices: choices, Value: level},
 	}, nil
 }
@@ -68,6 +67,11 @@ func (Loader) SetLaunchSetting(profileDir, id, value string) error {
 		if value != "true" && value != "false" {
 			return fmt.Errorf("console must be true or false, not %q", value)
 		}
+		m := readMarker(profileDir)
+		m.Console = value == "true"
+		if err := writeMarker(profileDir, m); err != nil {
+			return err
+		}
 		text = cfgSet(text, "Logging.Console", "Enabled", value)
 	case settingLogLevel:
 		i := slices.IndexFunc(logLevels, func(l struct{ choice, flags string }) bool { return l.choice == value })
@@ -79,6 +83,22 @@ func (Loader) SetLaunchSetting(profileDir, id, value string) error {
 	default:
 		return fmt.Errorf("BepInEx has no setting %q", id)
 	}
+	return writeConfig(profileDir, text)
+}
+
+// applyConsole sets BepInEx.cfg's console window switch, leaving the file alone when it already says so.
+func applyConsole(profileDir string, show bool) error {
+	text, err := readConfig(profileDir)
+	if err != nil {
+		return err
+	}
+	if cfgGet(text, "Logging.Console", "Enabled") == boolText(show) {
+		return nil
+	}
+	return writeConfig(profileDir, cfgSet(text, "Logging.Console", "Enabled", boolText(show)))
+}
+
+func writeConfig(profileDir, text string) error {
 	path := configFile(profileDir)
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err

@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
 var _ interface{ NeedsWinHTTPOverride() bool } = Loader{}
@@ -170,7 +172,7 @@ func TestLaunchSettingsEditOnlyTheirLines(t *testing.T) {
 	dir := t.TempDir()
 	l := Loader{}
 	got, err := l.LaunchSettings(dir)
-	if err != nil || got[0].Value != "true" || got[1].Value != "default" {
+	if err != nil || got[0].Value != "false" || got[1].Value != "default" {
 		t.Fatalf("defaults = %+v, %v", got, err)
 	}
 	cfg := configFile(dir)
@@ -198,5 +200,42 @@ func TestLaunchSettingsEditOnlyTheirLines(t *testing.T) {
 	}
 	if l.SetLaunchSetting(dir, "logLevel", "loud") == nil || l.SetLaunchSetting(dir, "nope", "x") == nil {
 		t.Fatal("unknown values must be refused")
+	}
+}
+
+// BepInEx writes Enabled = true into a new BepInEx.cfg, so every launch puts back the user's choice, off by default,
+// and a choice to show the window survives a reinstall of the pack.
+func TestLaunchHidesTheConsoleWindowUnlessChosen(t *testing.T) {
+	ctx := t.Context()
+	dir := t.TempDir()
+	cfg := configFile(dir)
+	if err := os.MkdirAll(filepath.Dir(cfg), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(cfg, []byte("[Logging.Console]\n\nEnabled = true\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	l := Loader{}
+	enabled := func() string {
+		if err := l.Contribute(ctx, launchplan.New(launchplan.ModeProfile), loader.ProfileView{Dir: dir}); err != nil {
+			t.Fatal(err)
+		}
+		text, _ := readConfig(dir)
+		return cfgGet(text, "Logging.Console", "Enabled")
+	}
+	if got := enabled(); got != "false" {
+		t.Fatalf("default launch: Enabled = %q", got)
+	}
+	if err := l.SetLaunchSetting(dir, "console", "true"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := l.Install(ctx, loader.Target{ProfileDir: dir}, loader.Package{Archive: buildPack(t, "4.3.0.0")}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(cfg, []byte("[Logging.Console]\n\nEnabled = false\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := enabled(); got != "true" {
+		t.Fatalf("chosen console: Enabled = %q", got)
 	}
 }

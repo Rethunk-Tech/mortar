@@ -36,6 +36,16 @@ type Loader struct {
 type marker struct {
 	Version  string `json:"version"`
 	Doorstop int    `json:"doorstop"`
+	// Console is the user's choice to show BepInEx's own console window; Mortar's Console tab shows the log either way.
+	Console bool `json:"console,omitempty"`
+}
+
+func writeMarker(profileDir string, m marker) error {
+	b, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	return fsx.WriteFile(filepath.Join(profileDir, markerFile), b, 0o600)
 }
 
 func readMarker(profileDir string) marker {
@@ -76,20 +86,22 @@ func (Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, pr
 	if progress != nil {
 		progress(loader.StepFiles)
 	}
-	b, err := json.Marshal(marker(got))
-	if err != nil {
-		return "", err
-	}
-	if err := fsx.WriteFile(filepath.Join(t.ProfileDir, markerFile), b, 0o600); err != nil {
+	m := readMarker(t.ProfileDir)
+	m.Version, m.Doorstop = got.Version, got.Doorstop
+	if err := writeMarker(t.ProfileDir, m); err != nil {
 		return "", err
 	}
 	return got.Version, nil
 }
 
 // Contribute points Doorstop at the profile's preloader, declares the proxy files for the game folder and, under
-// Proton, asks for the winhttp override.
+// Proton, asks for the winhttp override. It also sets BepInEx's console window to the user's choice, off unless they
+// asked for it: Mortar follows LogOutput.log into its own Console tab, the one channel that works under Proton too.
 func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {
 	m := readMarker(p.Dir)
+	if err := applyConsole(p.Dir, m.Console); err != nil {
+		return err
+	}
 	proton := p.Runtime == "proton"
 	plan.AddArgs(LaunchArgs(p.Dir, m.Doorstop, proton)...)
 	for _, f := range DoorstopFiles(p.Dir) {
