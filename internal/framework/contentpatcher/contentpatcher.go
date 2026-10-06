@@ -2059,11 +2059,21 @@ func clashingLoads(hits []packHit) (out []packHit) {
 	return out
 }
 
-// fallbackLoad reports a load below default priority from a pack that knows the other pack, which loads the
-// same asset at a higher priority: the author made it the fallback for when the other pack is absent.
+// fallbackLoad reports a load below default priority that another pack's load of the same asset outranks:
+// the author made it the fallback for when no stronger load is installed. Under a Medium load it is a
+// fallback only when its pack names the other one. A config-gated loser stays reported so settingForDeadLoad
+// can point at the setting that turned it on, and so does one a blank load wipes.
 func fallbackLoad(h packHit, load cpPatch, other packHit, otherLoad cpPatch) bool {
 	rank := contentPatcherPriority("load", load.priority)
-	return rank < 0 && rank < contentPatcherPriority("load", otherLoad.priority) && h.mentions[other.id.Fold()]
+	otherRank := contentPatcherPriority("load", otherLoad.priority)
+	if rank >= 0 || rank >= otherRank {
+		return false
+	}
+	if h.mentions[other.id.Fold()] {
+		return true
+	}
+	return otherRank >= 1000 && len(load.when.config) == 0 &&
+		(loadFileBlank(h, load, load.target) || !loadFileBlank(other, otherLoad, otherLoad.target))
 }
 
 // clashing keeps the packs that share an overlapping edit of one target with a pack they were not built

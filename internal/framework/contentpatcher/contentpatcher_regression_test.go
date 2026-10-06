@@ -19,7 +19,7 @@ import (
 
 func TestLoadConflictWithBlankLoserIsCosmetic(t *testing.T) {
 	t.Run("blank loser", func(t *testing.T) {
-		winner := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"winner.json","Priority":"High"}]}`, map[string]string{
+		winner := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"winner.json","Priority":"Medium"}]}`, map[string]string{
 			"winner.json": `{"Tile": 1}`,
 		})
 		loser := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"LOSER.JSON","Priority":"Low"}]}`, map[string]string{
@@ -269,7 +269,7 @@ func TestIncludedBlankLoadsUsePackRootPath(t *testing.T) {
 	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
 	im := packs.FromDisk(framework.Mod{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"})
 
-	conflicts := assetConflicts([]framework.Mod{im, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json"}]}`, map[string]string{
+	conflicts := assetConflicts([]framework.Mod{im, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json","Priority":"Medium"}]}`, map[string]string{
 		"other.json": `{"value":1}`,
 	})})
 	if len(conflicts) != 1 || !conflicts[0].Cosmetic {
@@ -513,8 +513,20 @@ func TestLowLoadThatNamesTheOtherPackIsAFallback(t *testing.T) {
 		t.Fatalf("a Low load from a pack with an Aquarium compatibility patch is its fallback, got %#v", conflicts)
 	}
 	unaware := portraits("")
-	if conflicts := assetConflicts([]framework.Mod{unaware, aquarium}); len(conflicts) != 1 {
-		t.Fatalf("a Low load from a pack that never names the other still conflicts, got %#v", conflicts)
+	if conflicts := assetConflicts([]framework.Mod{unaware, aquarium}); len(conflicts) != 0 {
+		t.Fatalf("a Low load under another pack's Exclusive load is a fallback even when it never names it, got %#v", conflicts)
+	}
+	blank := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Portraits/Curator","FromFile":"Blank.json","Priority":"Low"}]}`, map[string]string{
+		"Blank.json": `{}`,
+	})
+	if conflicts := assetConflicts([]framework.Mod{blank, aquarium}); len(conflicts) != 0 {
+		t.Fatalf("a blank Low load under an unrelated Exclusive load is a fallback, got %#v", conflicts)
+	}
+	medium := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Portraits/Curator","FromFile":"curator.png","Priority":"Medium"}]}`, map[string]string{
+		"curator.png": "medium curator",
+	})
+	if conflicts := assetConflicts([]framework.Mod{unaware, medium}); len(conflicts) != 1 {
+		t.Fatalf("a Low load under an unrelated Medium load still conflicts, got %#v", conflicts)
 	}
 }
 
