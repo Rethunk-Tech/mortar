@@ -1,25 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Drawer } from '@mui/material'
-import { type KeyboardEvent, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSettings } from '../settings/store.ts'
+import { arrowFocus } from '../shell/arrowFocus.ts'
 import { Row } from './GameSelect.tsx'
 import { useGameTiles } from './useGameTiles.ts'
 
 // Compact tiles grow to share the drawer's width and wrap below this width, so a few games fill it edge to edge.
 const CARD_MIN_WIDTH_PX = 560
 const NEWEST = '￿'
-
-// moveFocus steps to the neighbouring card's button, so Left and Right walk the row and Enter opens the game.
-function moveFocus(e: KeyboardEvent<HTMLElement>) {
-  const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key]
-  if (step === undefined) {
-    return
-  }
-  const covers = [...e.currentTarget.querySelectorAll<HTMLElement>('[data-game-cover]')]
-  const at = covers.indexOf(document.activeElement as HTMLElement)
-  covers[Math.min(Math.max(at + step, 0), covers.length - 1)]?.focus()
-  e.preventDefault()
-}
 
 // A top drawer under the title bar listing the playable games, the game opened most recently first, then the rest
 // by when they were last played. Choosing one opens it on its last profile; the route change closes the drawer.
@@ -63,7 +52,11 @@ export function GameSwitcher({
         },
       }}
     >
-      <Box ref={row} onKeyDown={moveFocus} sx={{ display: 'flex', flexWrap: 'wrap' }}>
+      <Box
+        ref={row}
+        onKeyDown={(e) => arrowFocus(e, '[data-game-cover]')}
+        sx={{ display: 'flex', flexWrap: 'wrap' }}
+      >
         {games.map((g) => (
           <Box key={g.id} sx={{ flex: `1 1 ${CARD_MIN_WIDTH_PX}px`, minWidth: 0, display: 'grid' }}>
             <Row {...tileProps(g)} selected={g.id === current} compact={true} />

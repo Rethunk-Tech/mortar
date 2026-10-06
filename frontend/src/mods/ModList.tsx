@@ -13,6 +13,7 @@ import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { boundShortcut, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
+import { useWidth } from '../shell/useWidth.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { actingMods, toggleActing } from './actingMods.ts'
 import { CompatChip } from './CompatChip.tsx'
@@ -22,6 +23,7 @@ import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import { listHeadingFor } from './group.ts'
 import {
   columnMenuFromEvent,
+  fitListColumns,
   type ListColumnId,
   type ListRow,
   listGridColumns,
@@ -336,7 +338,8 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const listColumns = useSavedColumns()
   const available = useColumnAvailable()
   const visible = sanitizeListColumns(listColumns).filter(available)
-  const settled = visibleListColumns(listColumns, narrow, available)
+  const [box, width] = useWidth<HTMLDivElement>()
+  const settled = fitListColumns(visibleListColumns(listColumns, narrow, available), width)
   // While a header is dragged the table shows this order, so every row moves with it.
   const [preview, setPreview] = useState<ListColumnId[] | null>(null)
   const cols = preview ?? settled
@@ -377,36 +380,38 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   }
 
   return (
-    <ModListTable
-      grid={grid}
-      cols={cols}
-      sort={sort}
-      onMenu={onMenu}
-      onPreview={setPreview}
-      onCommit={onCommit}
-      onCancel={() => setPreview(null)}
-      groups={groups}
-      items={items}
-      groupBy={groupBy}
-      headingFor={headingFor}
-      tagHint={tagHint}
-      collapsed={collapsed}
-      gameId={gameId}
-      setCollapsed={setCollapsed}
-      visible={visible}
-      menu={menu}
-      setMenu={setMenu}
-      renderRow={(row, striped, onArrow) => (
-        <ModRow
-          row={row}
-          striped={striped}
-          cols={cols}
-          locale={i18n.locale}
-          orderedIds={orderedIds}
-          profile={profile}
-          onArrow={onArrow}
-        />
-      )}
-    />
+    <Box ref={box} sx={{ minWidth: 0, minHeight: 0, height: '100%' }}>
+      <ModListTable
+        grid={grid}
+        cols={cols}
+        sort={sort}
+        onMenu={onMenu}
+        onPreview={setPreview}
+        onCommit={onCommit}
+        onCancel={() => setPreview(null)}
+        groups={groups}
+        items={items}
+        groupBy={groupBy}
+        headingFor={headingFor}
+        tagHint={tagHint}
+        collapsed={collapsed}
+        gameId={gameId}
+        setCollapsed={setCollapsed}
+        visible={visible}
+        menu={menu}
+        setMenu={setMenu}
+        renderRow={(row, striped, onArrow) => (
+          <ModRow
+            row={row}
+            striped={striped}
+            cols={cols}
+            locale={i18n.locale}
+            orderedIds={orderedIds}
+            profile={profile}
+            onArrow={onArrow}
+          />
+        )}
+      />
+    </Box>
   )
 }

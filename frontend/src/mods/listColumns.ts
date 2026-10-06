@@ -189,6 +189,42 @@ function moveListColumn(ids: readonly ListColumnId[], from: number, to: number):
   return next
 }
 
+// A row's fixed space: its 10px gaps between tracks and 16px padding each side.
+const ROW_GAP_PX = 10
+const ROW_PAD_PX = 32
+const NAME_MIN_PX = 160
+const ICON_TRACK_PX = 26
+
+function fixedListWidth(cols: readonly ListColumnId[]): number {
+  let px = ROW_PAD_PX
+  let tracks = 0
+  for (const id of cols) {
+    // The name column brings the icon track before it.
+    const name = id === 'name'
+    px += Number.parseInt(LIST_COLUMN_WIDTH[id], 10) || 0
+    px += name ? ICON_TRACK_PX : 0
+    tracks += name ? 2 : 1
+  }
+  return px + Math.max(tracks - 1, 0) * ROW_GAP_PX
+}
+
+// fitListColumns drops the optional columns, the last of the narrow-hidden ones first, until the rest leave the name
+// NAME_MIN_PX in a list width px wide, so a small window or an open details panel never scrolls the list sideways.
+// A width of 0 is not measured yet and keeps every column.
+function fitListColumns(cols: readonly ListColumnId[], width: number): ListColumnId[] {
+  let out = [...cols]
+  if (width <= 0) {
+    return out
+  }
+  for (const id of [...NARROW_HIDE_LIST_COLUMNS].reverse()) {
+    if (fixedListWidth(out) + NAME_MIN_PX <= width) {
+      break
+    }
+    out = out.filter((c) => c !== id)
+  }
+  return out
+}
+
 function listGridColumns(cols: readonly ListColumnId[]): string {
   const parts: string[] = []
   for (const id of cols) {
@@ -422,6 +458,7 @@ export {
   compareListRows,
   DEFAULT_LIST_COLUMN_SORT,
   DEFAULT_VISIBLE_LIST_COLUMNS,
+  fitListColumns,
   LIST_COLUMN_GROUPS,
   LIST_COLUMN_IDS,
   LOCKED_LIST_COLUMNS,

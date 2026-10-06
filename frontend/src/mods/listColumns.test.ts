@@ -6,6 +6,7 @@ import {
   compareListRows,
   DEFAULT_LIST_COLUMN_SORT,
   DEFAULT_VISIBLE_LIST_COLUMNS,
+  fitListColumns,
   type ListRow,
   moveListColumn,
   nextListSort,
@@ -196,4 +197,13 @@ test('a column a loader or source contributes is left out where the profile lack
     'name',
     'startup',
   ])
+})
+
+test('columns that would squeeze the name out are dropped, the least useful first', () => {
+  const all = [...DEFAULT_VISIBLE_LIST_COLUMNS]
+  expect(fitListColumns(all, 0)).toEqual(all)
+  expect(fitListColumns(all, 2000)).toEqual(all)
+  // 1280 wide with the profile sidebar and the details panel open leaves the list about 700px.
+  const fitted = fitListColumns(all, 700)
+  expect(fitted).toEqual(['on', 'name', 'version', 'author', 'status'])
 })

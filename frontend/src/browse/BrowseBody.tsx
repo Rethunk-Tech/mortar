@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Pagination, Typography } from '@mui/material'
 import { CloudOff, Search, SearchX } from 'lucide-react'
 import { listNames } from '../i18n/list.ts'
+import { arrowFocus } from '../shell/arrowFocus.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import type { InlineError } from '../toasts/report.ts'
@@ -19,6 +20,11 @@ import {
 import type { ResultCardProps } from './browseTypes.ts'
 import { ResultCard } from './ResultCard.tsx'
 import type { BrowseResult, Status } from './useBrowseQuery.ts'
+
+// cardAction is what an arrow key lands on in a result card: its last control, the Add or Download action.
+function cardAction(card: HTMLElement): HTMLElement | null {
+  return [...card.querySelectorAll<HTMLElement>('button:not(:disabled)')].at(-1) ?? null
+}
 
 // A result card is its picture plus the card's vertical padding.
 const CARD_PAD_PX = 24
@@ -58,7 +64,10 @@ function ResultList({
           ? ` · ${t`${listNames(result.failed)} did not answer`}`
           : ''}
       </Typography>
-      <Box sx={{ ...(view === 'grid' ? grid : list), opacity: loading ? STALE_OPACITY : 1 }}>
+      <Box
+        sx={{ ...(view === 'grid' ? grid : list), opacity: loading ? STALE_OPACITY : 1 }}
+        onKeyDown={(e) => arrowFocus(e, ':scope > *', cardAction)}
+      >
         {result.items.map((item) => (
           <ResultCard
             key={`${item.source}:${item.id}`}
