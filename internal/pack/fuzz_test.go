@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"database/sql"
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"strings"
@@ -88,6 +89,33 @@ func FuzzGaleRows(f *testing.F) {
 		d, err := g.Parse(t.Context(), Input{Path: profile})
 		if err != nil {
 			return
+		}
+		for _, p := range d.Packages {
+			if !nativeID.MatchString(p.Native) {
+				t.Fatalf("malformed package %q", p.Native)
+			}
+		}
+	})
+}
+
+// FuzzCode feeds a pasted r2modman or Gale share code. A text that looks like a code key is fetched from an address
+// that refuses, so only the pasted form is read.
+func FuzzCode(f *testing.F) {
+	zipped := fuzzZip(map[string]string{exportFile: "profileName: p\ncommunity: lethal-company\nmods:\n- name: Alice-MoreCompany\n  enabled: true\n  version: {major: 1, minor: 2, patch: 3}\n", "BepInEx/config/a.cfg": "x"})
+	f.Add(codePrefix + "\n" + base64.StdEncoding.EncodeToString(zipped))
+	f.Add(codePrefix + "\n" + base64.StdEncoding.EncodeToString(fuzzZip(map[string]string{exportFile: "mods:\n- name: ../../x\n", "../a.cfg": "x"})))
+	f.Add("018f0b1c-0000-7000-8000-000000000000")
+	f.Add(codePrefix + " not base64 ")
+	c := Code{URL: "http://127.0.0.1:1"}
+	f.Fuzz(func(t *testing.T, text string) {
+		d, err := c.Parse(t.Context(), Input{Text: text})
+		if err != nil {
+			return
+		}
+		for _, fl := range append(append([]File{}, d.Configs...), d.Loose...) {
+			if strings.HasPrefix(fl.Path, "/") || fl.Path == ".." || strings.HasPrefix(fl.Path, "../") || strings.Contains(fl.Path, "/../") {
+				t.Fatalf("path escapes: %q", fl.Path)
+			}
 		}
 		for _, p := range d.Packages {
 			if !nativeID.MatchString(p.Native) {
