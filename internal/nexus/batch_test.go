@@ -87,7 +87,7 @@ func TestModsByDomainStopsAtARateLimitWithoutRetrying(t *testing.T) {
 // The answer's shape is Nexus's own (string ids, a requirement of another game, an outside link).
 func TestModsByDomainReadsRequirements(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = fmt.Fprint(w, `{"data":{"legacyModsByDomain":{"nodes":[{"modId":3753,"gameId":"1303","name":"SVE",
+		_, _ = fmt.Fprint(w, `{"data":{"legacyModsByDomain":{"nodes":[{"modId":3753,"gameId":1303,"name":"SVE",
 			"modRequirements":{"nexusRequirements":{"nodes":[
 				{"modId":"1915","modName":"Content Patcher","url":"","externalRequirement":false,"notes":"Framework","gameId":"1303"},
 				{"modId":"77","modName":"Other Game Mod","url":"","externalRequirement":false,"notes":"","gameId":"9"},

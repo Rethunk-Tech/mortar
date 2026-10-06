@@ -53,7 +53,7 @@ func serveFixtures(t *testing.T) (*httptest.Server, *atomic.Int32) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits.Add(1)
 		if r.URL.Path == "/v2/graphql" {
-			_, _ = w.Write([]byte(`{"data":{"legacyModsByDomain":{"nodes":[{"modId":541,"gameId":"1303","modRequirements":{"nexusRequirements":{"nodes":[{"modId":"2400","modName":"SMAPI","url":"","externalRequirement":false,"notes":"","gameId":"1303"}]}}}]}}}`))
+			_, _ = w.Write([]byte(`{"data":{"legacyModsByDomain":{"nodes":[{"modId":541,"gameId":1303,"modRequirements":{"nexusRequirements":{"nodes":[{"modId":"2400","modName":"SMAPI","url":"","externalRequirement":false,"notes":"","gameId":"1303"}]}}}]}}}`))
 			return
 		}
 		b, err := fsx.ReadFile(filepath.Join("..", "nexus", "testdata", files[r.URL.Path]))

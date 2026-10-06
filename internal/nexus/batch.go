@@ -66,6 +66,9 @@ func (m ModInfo) Page() Page {
 	return p
 }
 
+// Requests is how many GraphQL requests ModsByDomain makes for n mods.
+func Requests(n int) int { return (n + modsBatch - 1) / modsBatch }
+
 // ModsByDomain looks up many of one game's mods with one GraphQL request per 100 ids, instead of one request per
 // mod. A mod Nexus does not return is absent from the map. A refused or failed request ends the lookup with the
 // mods found so far and the error; a rate limit is returned as such, never retried.
@@ -108,7 +111,7 @@ func (c *Client) modsChunk(ctx context.Context, domain string, ids []int, out ma
 			Mods struct {
 				Nodes []struct {
 					ModID        int       `json:"modId"`
-					GameID       string    `json:"gameId"`
+					GameID       int       `json:"gameId"`
 					Name         string    `json:"name"`
 					Version      string    `json:"version"`
 					Status       string    `json:"status"`
@@ -161,7 +164,7 @@ func (c *Client) modsChunk(ctx context.Context, domain string, ids []int, out ma
 		}
 		for _, r := range n.Requirements.Nexus.Nodes {
 			req := Requirement{Name: r.Name, URL: r.URL, Notes: r.Notes, External: true}
-			if id, err := strconv.Atoi(r.ModID); err == nil && id > 0 && !r.External && r.GameID == n.GameID {
+			if id, err := strconv.Atoi(r.ModID); err == nil && id > 0 && !r.External && r.GameID == strconv.Itoa(n.GameID) {
 				req.ModID, req.URL, req.External = id, ModURL(domain, id), false
 			}
 			info.Requirements = append(info.Requirements, req)
