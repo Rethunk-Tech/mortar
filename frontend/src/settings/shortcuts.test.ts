@@ -10,6 +10,7 @@ import {
   parseKeys,
   SHORTCUTS,
   shortcutAllowed,
+  takeableFrom,
 } from './shortcuts.ts'
 
 describe('SHORTCUTS', () => {
@@ -122,4 +123,11 @@ test('an action stored unbound stays unbound and matches no key', () => {
   const bindings = mergeBindings({ play: 'Ctrl+K', 'command-palette': '' })
   expect(bindings['command-palette']).toBe('')
   expect(matchShortcut({ key: 'k', ctrlKey: true }, bindings)).toBe('play')
+})
+
+test("a default's chord can be taken from it, a chord the user chose cannot", () => {
+  expect(takeableFrom('play', 'Ctrl+K', defaultBindings())).toBe('command-palette')
+  const chosen = mergeBindings({ 'command-palette': 'Ctrl+J' })
+  expect(takeableFrom('play', 'Ctrl+J', chosen)).toBeNull()
+  expect(takeableFrom('play', 'Ctrl+Alt+F12', defaultBindings())).toBeNull()
 })

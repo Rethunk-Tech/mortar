@@ -15,6 +15,7 @@ import {
   type Shortcut,
   type ShortcutId,
   setShortcutCapturing,
+  takeableFrom,
 } from '../shortcuts.ts'
 import { useSettings } from '../store.ts'
 import { useSettingsSearch } from '../useSettingsSearch.ts'
@@ -32,6 +33,7 @@ function ShortcutRow({
   keys,
   recording,
   conflictName,
+  onTake,
   onRecord,
   onReset,
 }: {
@@ -40,10 +42,13 @@ function ShortcutRow({
   keys: string
   recording: boolean
   conflictName: string | null
+  onTake: (() => void) | null
   onRecord: () => void
   onReset: () => void
 }) {
   const { t } = useLingui()
+  const shown = keys || t`Not set`
+  const chip = recording ? t`Press a key` : shown
   return (
     <SettingRow
       label={label}
@@ -51,13 +56,18 @@ function ShortcutRow({
         conflictName ? (
           <Box component="span" sx={{ color: 'error.main' }}>
             {t`Already used by ${conflictName}`}
+            {onTake ? (
+              <Button size="small" onClick={onTake} sx={{ ml: 1 }}>
+                {t`Use it anyway; ${conflictName} becomes unbound`}
+              </Button>
+            ) : null}
           </Box>
         ) : undefined
       }
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
         <ButtonBase
-          aria-label={t`Change shortcut for ${label}, currently ${keys}`}
+          aria-label={t`Change shortcut for ${label}, currently ${shown}`}
           onClick={onRecord}
           sx={{
             color: 'var(--mortar-ink-sec)',
@@ -71,7 +81,7 @@ function ShortcutRow({
             whiteSpace: 'nowrap',
           }}
         >
-          {recording ? t`Press a key` : keys || ''}
+          {chip}
         </ButtonBase>
         <Button
           size="small"
@@ -115,7 +125,12 @@ export function Shortcuts() {
   const { t } = useLingui()
   const query = useSettingsSearch()
   const [recording, setRecording] = useState<ShortcutId | null>(null)
-  const [conflict, setConflict] = useState<{ id: ShortcutId; other: ShortcutId } | null>(null)
+  // keys is set when the chord is another action's default, which the user may take from it.
+  const [conflict, setConflict] = useState<{
+    id: ShortcutId
+    other: ShortcutId
+    keys: string | null
+  } | null>(null)
   const stored = useSettings((s) => s.shortcuts)
   const bindings = useMemo(() => mergeBindings(stored), [stored])
   const labels = useShortcutLabels()
@@ -138,7 +153,12 @@ export function Shortcuts() {
       }
       const other = conflictFor(recording, keys, bindings)
       if (other) {
-        setConflict({ id: recording, other })
+        const takeable = takeableFrom(recording, keys, bindings) !== null
+        setConflict({ id: recording, other, keys: takeable ? keys : null })
+        // Recording stops at a takeable chord so Tab reaches the offer instead of being recorded.
+        if (takeable) {
+          setRecording(null)
+        }
         return
       }
       setConflict(null)
@@ -174,6 +194,17 @@ export function Shortcuts() {
                 keys={bindings[row.id]}
                 recording={recording === row.id}
                 conflictName={conflict?.id === row.id ? labels[conflict.other] : null}
+                onTake={
+                  conflict?.id === row.id && conflict.keys !== null
+                    ? () => {
+                        // The settings store unbinds the default this chord belonged to.
+                        SetShortcuts({ ...bindings, [row.id]: conflict.keys }).catch(
+                          reportUnexpected,
+                        )
+                        setConflict(null)
+                      }
+                    : null
+                }
                 onRecord={() => {
                   setConflict(null)
                   setRecording(row.id)

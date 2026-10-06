@@ -227,6 +227,17 @@ export function conflictFor(
   return null
 }
 
+// A chord another action holds as its default can be taken: saving unbinds that action. A chord the user chose for
+// another action cannot, since the settings store refuses two user chords on one key.
+export function takeableFrom(
+  id: ShortcutId,
+  keys: string,
+  bindings: Record<ShortcutId, string>,
+): ShortcutId | null {
+  const other = conflictFor(id, keys, bindings)
+  return other && bindings[other] === defaultBindings()[other] ? other : null
+}
+
 export function isTypingTarget(el: TypingTarget | null): boolean {
   if (!el) {
     return false
