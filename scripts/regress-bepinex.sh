@@ -143,31 +143,20 @@ mx_idle() {
   return 1
 }
 
-# mx_wait_files SECONDS PATH... waits for every path to exist: an install returns once the queue took the package, and
-# its files reach the profile a moment later.
-mx_wait_files() {
-  local deadline=$((SECONDS + $1)) f missing
-  shift
-  while :; do
-    missing=''
-    for f in "$@"; do [ -e "$f" ] || missing=1; done
-    [ -z "$missing" ] && return 0
-    [ "$SECONDS" -ge "$deadline" ] && return 1
-    sleep 1
-  done
-}
-
-# mx_console_reads reads the Console twice into mx_lines1 and mx_lines2, the second four seconds after the first, which
-# is taken once the first heartbeat is in: with a modpack this size the game's first frame comes well after
-# BepInEx's "Chainloader startup complete".
+# mx_console_reads reads the Console twice into mx_lines1 and mx_lines2: the first once the first heartbeat is in, the
+# second once the probe's error line (its third beat) is. With a modpack this size the game's first frame comes well
+# after BepInEx's "Chainloader startup complete", and a sound mod then holds the main thread for several seconds.
 mx_console_reads() {
   for _ in $(seq 1 30); do
     mx_lines1=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
     case $mx_lines1 in *'matrix heartbeat'*) break ;; esac
     sleep 2
   done
-  sleep 4
-  mx_lines2=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
+  for _ in $(seq 1 30); do
+    sleep 2
+    mx_lines2=$(mx_wails launchsvc.Service.Lines '"lethal-company"' "$(mx_q "$mx_base")")
+    case $mx_lines2 in *'matrix error line'*) break ;; esac
+  done
 }
 
 # mx_bridge_survived TAG LOG records whether the Mortar bridge's plugin component was still alive when each scene
@@ -462,14 +451,13 @@ PY
     mx_check mods.dupguid "Problems flags tech.rethunk.mortar.matrix.dup with copies at versions $out" test "$out" = "[['1.0.0', '1.0.0']]"
     # The typed editor writes a string and a float before the launch; BepInEx reads every .cfg at startup and rewrites
     # it, so launch (a) logging both values and the file keeping them proves the edit is in BepInEx's own format.
-    local deployed
-    deployed=$(mx_dir "$mx_base")/BepInEx
-    if mx_wait_files 60 "$deployed/config/tech.rethunk.mortar.matrix.base.cfg" "$deployed/plugins/MortarMatrix-ProbeDupB" "$deployed/patchers/MortarMatrix-ProbePatcher" &&
-      mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$mx_base")" '"thunderstore:MortarMatrix-ProbeBase"' '"tech.rethunk.mortar.matrix.base.cfg"' '"General"' '"Value"' '"edited by mortar"' >/dev/null &&
-      mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$mx_base")" '"thunderstore:MortarMatrix-ProbeBase"' '"tech.rethunk.mortar.matrix.base.cfg"' '"General"' '"Ratio"' '"0.75"' >/dev/null; then
+    # Only a launch lays a package's plugins out in the profile; its shipped .cfg is seeded on the editor's first read.
+    local set_err
+    if set_err=$(mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$mx_base")" '"thunderstore:MortarMatrix-ProbeBase"' '"tech.rethunk.mortar.matrix.base.cfg"' '"General"' '"Value"' '"edited by mortar"' 2>&1) &&
+      set_err=$(mx_wails configsvc.Service.Set '"lethal-company"' "$(mx_q "$mx_base")" '"thunderstore:MortarMatrix-ProbeBase"' '"tech.rethunk.mortar.matrix.base.cfg"' '"General"' '"Ratio"' '"0.75"' 2>&1); then
       mx_edge_edited=1
     else
-      mx_fail mods.config "the probe packages never reached the profile, or configsvc Set failed"
+      mx_fail mods.config "configsvc Set failed: $set_err"
     fi
   fi
   set -e -o pipefail
@@ -587,7 +575,6 @@ PY
   # (b) one that writes the game's own save. Whether the bridge's component survives the first scene load, row
   # bridge.survived, then says which variable takes plugins down. (c) runs first, while the newest pack is pinned.
   if [ -n "$mx_ready" ] && mx_install_probes "$mx_crash" Throw Quit >/dev/null && mx_launch "$mx_crash" c; then
-    mx_bridge_survived c "$mx_log"
     if mx_idle 90; then
       cli runs lethal-company "$mx_crash" --json >"$ROOT/runs-c.json"
       mx_check launch.exit "launch (c): the game quit by itself; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-c.json" 'd[0]["outcome"]'); game folder: $(mx_purged c || true)" \
@@ -600,6 +587,7 @@ PY
       mx_fail launch.exit "launch (c): Mortar still reports $(mx_state) 90s after the game should have quit"
       mx_stop c
     fi
+    mx_bridge_survived c "$mx_log"
     reap_prefix "$mx_compat" >/dev/null
   else
     mx_fail launch.c "launch (c) did not start"
@@ -612,7 +600,6 @@ PY
     out=$(grep -m1 -o 'BepInEx 5\.[0-9.]* - Lethal Company' "$mx_log")
     mx_check loader.pin-run "launch (b) on the pinned 5.4.2100: log opens with \"$out\"; $(mx_doorstop "$mx_pin" 5.4.2100)" \
       test "$out|$(mx_doorstop "$mx_pin" 5.4.2100)" = "BepInEx $(mx_bep_version 5.4.2100) - Lethal Company|$(mx_doorstop_ok)"
-    mx_bridge_survived b "$mx_log"
     if mx_idle 90; then
       cli runs lethal-company "$mx_pin" --json >"$ROOT/runs-b.json"
       mx_check loader.pin-exit "launch (b): the game quit by itself on the pinned pack; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]'); game folder: $(mx_purged b || true)" \
@@ -621,6 +608,7 @@ PY
       mx_fail loader.pin-exit "launch (b): Mortar still reports $(mx_state) 90s after the game should have quit"
       mx_stop b
     fi
+    mx_bridge_survived b "$mx_log"
     reap_prefix "$mx_compat" >/dev/null
   else
     mx_fail launch.b "launch (b) did not start: $(head -c 300 "$ROOT/loader-2100-b.txt" 2>/dev/null)"
