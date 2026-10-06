@@ -8,7 +8,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
-  CopyMods,
+  CopyModsWithNeeds,
   ProfilesWithMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
@@ -51,6 +51,7 @@ import { formatCount, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
 import { OptionalFiles } from './OptionalFiles.tsx'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
+import { usePackageChangelog } from './packageChangelog.ts'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useMods } from './store.ts'
@@ -332,23 +333,18 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
   )
 }
 
-// What the mod is at a glance: where it came from, what kind it is, and whether it is on.
-function ModChips({ mod, sourceName }: { mod: Mod; sourceName: string }) {
+// The one fact the header does not already show: the source sits under the name and the switch shows on or off.
+function ModChips({ mod }: { mod: Mod }) {
   const { t } = useLingui()
+  if (!mod.contentPackFor) {
+    return null
+  }
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-      <Chip size="small" variant="outlined" label={sourceName} />
-      {mod.contentPackFor ? (
-        <Chip
-          size="small"
-          variant="outlined"
-          label={t`Content pack for ${localId(mod.contentPackFor)}`}
-        />
-      ) : null}
       <Chip
         size="small"
-        color={mod.enabled ? 'primary' : 'default'}
-        label={mod.enabled ? t`Enabled` : t`Disabled`}
+        variant="outlined"
+        label={t`Content pack for ${localId(mod.contentPackFor)}`}
       />
     </Box>
   )
@@ -360,12 +356,16 @@ function ActionRows({
   mod,
   nexusId,
   githubRepo,
+  thunderstorePackage,
 }: {
   mod: Mod
   nexusId: number
   githubRepo: string
+  thunderstorePackage: string
 }) {
   const { t, i18n } = useLingui()
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const packageChangelog = usePackageChangelog(game, thunderstorePackage)
   const extras = useDetail((s) => s.extras)
   const loadExtras = useDetail((s) => s.loadExtras)
   const [showChangelog, setShowChangelog] = useState(false)
@@ -385,7 +385,7 @@ function ActionRows({
           <EditConfigButton mod={mod} />
         </Box>
       ) : null}
-      {nexusId > 0 || githubRepo !== '' ? (
+      {nexusId > 0 || githubRepo !== '' || packageChangelog !== '' ? (
         <>
           <Link component="button" onClick={() => setShowChangelog(true)} sx={rowLink}>
             {t`Changelog`}
@@ -397,6 +397,7 @@ function ActionRows({
             installed={mod.version}
             nexusId={nexusId}
             githubRepo={githubRepo}
+            markdown={packageChangelog}
           />
         </>
       ) : null}
@@ -498,9 +499,12 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
         currentProfileId={profile.id}
         id={mod.id}
         title={t`Also add ${mod.name} to…`}
+        withNeeds={true}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {
-          await Promise.all(profiles.map((other) => CopyMods(game, profile.id, other.id, [mod.id])))
+          await Promise.all(
+            profiles.map((other) => CopyModsWithNeeds(game, profile.id, other.id, [mod.id])),
+          )
         }}
       />
       <ProblemLine mod={mod} />
@@ -510,6 +514,7 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
         mod={mod}
         nexusId={nexusId}
         githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
+        thunderstorePackage={entry?.source?.kind === 'thunderstore' ? entry.source.name : ''}
       />
       <AlsoInProfiles mod={mod} profile={profile} />
       <HiddenInside mod={mod} profile={profile} />
@@ -549,7 +554,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         controls={<ModSwitch mod={mod} />}
         onClose={() => useDetail.getState().show(null)}
       />
-      <ModChips mod={mod} sourceName={sourceName} />
+      <ModChips mod={mod} />
       {lazyMod ? <LowerSections mod={lazyMod} profile={lazyProfile} /> : null}
       {others.length > 0 ? (
         <Box>

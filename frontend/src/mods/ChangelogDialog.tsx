@@ -60,6 +60,7 @@ export function ChangelogDialog({
   installed,
   nexusId,
   githubRepo,
+  markdown = '',
 }: {
   open: boolean
   onClose: () => void
@@ -67,6 +68,8 @@ export function ChangelogDialog({
   installed: string
   nexusId: number
   githubRepo: string
+  // A changelog the site keeps as one Markdown page (a Thunderstore CHANGELOG), shown as it is.
+  markdown?: string
 }) {
   const { t } = useLingui()
   const nexusLogs = useNexusEntry(nexusId)?.details?.changelogs
@@ -88,6 +91,9 @@ export function ChangelogDialog({
     )
   } else if (logs !== null) {
     body = <ChangelogEntries logs={logs} installed={installed} />
+  }
+  if (markdown !== '') {
+    body = <MarkdownView source={markdown} />
   }
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
