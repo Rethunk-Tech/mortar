@@ -222,7 +222,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
       ) : null}
       <Box
         sx={{
-          flexShrink: 0,
+          flex: empty ? 1 : '0 0 auto',
           px: 2,
           pt: 1.5,
           pb: 1.5,
@@ -267,7 +267,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           }}
         />
         {result.unknown ? <OfflineChecksNote /> : null}
-        <CheckTimings timings={result.timings ?? []} />
+        {empty ? null : <CheckTimings timings={result.timings ?? []} />}
       </Box>
     </>
   )
