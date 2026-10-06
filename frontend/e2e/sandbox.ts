@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { readdirSync, readFileSync, readlinkSync, rmSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync } from 'node:fs'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
@@ -103,6 +103,10 @@ function freshSandbox(): () => void {
   const dir = sandboxDir(process.pid)
   // Specs that run the sandbox's own binary (play.pw.ts) find it here; workers inherit the main process's env.
   process.env.MORTAR_E2E_DIR = dir
+  // Chromium and the workers write their scratch (profile dirs a killed browser leaves behind) under the sandbox,
+  // which teardown and reapStale remove whole.
+  process.env.TMPDIR = `${dir}/tmp`
+  mkdirSync(process.env.TMPDIR, { recursive: true })
   const teardown = () => {
     try {
       selftest(dir, 'destroy')
