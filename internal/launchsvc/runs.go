@@ -99,6 +99,12 @@ func runLogPath(dir, id string) string {
 	return filepath.Join(dir, id+".txt")
 }
 
+// runPlayerLogPath keeps the run's Unity player log beside its loader log: the game rewrites its one player log every
+// launch, so a stored run's analysis needs its own copy.
+func runPlayerLogPath(dir, id string) string {
+	return filepath.Join(dir, id+".player.txt")
+}
+
 // Runs lists the newest recorded launches of the profile, at most the last 20.
 func (s *Service) Runs(gameID, profileID string) ([]Run, error) {
 	if _, err := game.Require(gameID); err != nil {
@@ -342,9 +348,10 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	// A run the player stopped from Mortar is a crash only when the game logged one before the stop: stopping a
 	// frozen game is how a player gets out of a crash, but the stop itself is never one.
 	stopped := sess.haveExit && sess.exit.Stopped
+	player, hasPlayer := s.playerLogSince(g.ID(), profileID, started)
 	if stopped {
 		stats.Crashed = crashedBefore(text, s.logEnd(g, profileID), sess.stoppedAt)
-	} else if !stats.Crashed && s.playerCrashed(g.ID(), profileID, started) {
+	} else if !stats.Crashed && hasPlayer && unityCrashed(player) {
 		stats.Crashed = true
 	}
 	text = launch.CapLog(text, launch.MaxLogBytes)
@@ -360,6 +367,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	}
 	if err := datadir.WriteFile(runLogPath(dir, id), []byte(text), 0o600); err != nil {
 		return
+	}
+	if hasPlayer {
+		_ = datadir.WriteFile(runPlayerLogPath(dir, id), []byte(launch.CapLog(player, launch.MaxLogBytes)), 0o600)
 	}
 	idx, err := readIndex(dir)
 	if err != nil {
@@ -405,6 +415,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	}
 	for _, old := range drop {
 		_ = os.Remove(runLogPath(dir, old.ID))
+		_ = os.Remove(runPlayerLogPath(dir, old.ID))
 	}
 	if !failed && s.settings != nil {
 		_, _ = s.settings.AddPlaytime(g.ID(), ended.Sub(started))

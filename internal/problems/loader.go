@@ -1,7 +1,6 @@
 package problems
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -91,34 +90,20 @@ func startFailure(runID string, summary launch.Summary) []LoadFailure {
 	return []LoadFailure{{Plugin: runID, Kind: KindRunFailed, Message: summary.StartFailure}}
 }
 
-// pluginOwners maps every way a log names a plugin (its GUID, its name, or "name version") to the enabled package
-// whose plugin DLLs declare it. A package is the identity; the GUIDs are read from its files, since a package may hold
-// several plugins or none and can change a GUID between versions.
-// An exception's stack names the plugin only by its code's root namespace, so that is a name too when exactly one
-// package's plugins use it.
+// pluginOwners maps every way a log names a plugin (see dotnet.Owners) to the enabled package whose plugin DLLs
+// declare it. A package is the identity; the GUIDs are read from its files, since a package may hold several plugins or
+// none and can change a GUID between versions.
 func pluginOwners(mods []framework.Mod) map[string]framework.Mod {
-	owners := map[string]framework.Mod{}
-	byNamespace := map[string][]framework.Mod{}
+	var with []framework.Mod
+	var dirs []string
 	for _, m := range mods {
-		if !m.Enabled || m.Folder == "" {
-			continue
-		}
-		for _, pl := range dotnet.PluginsIn(m.Folder) {
-			for _, name := range []string{pl.GUID, pl.Name, pl.Name + " " + pl.Version} {
-				owners[strings.ToLower(name)] = m
-			}
-			if root, _, _ := strings.Cut(pl.Namespace, "."); root != "" {
-				ns := strings.ToLower(root)
-				if !slices.ContainsFunc(byNamespace[ns], func(o framework.Mod) bool { return o.Key == m.Key }) {
-					byNamespace[ns] = append(byNamespace[ns], m)
-				}
-			}
+		if m.Enabled && m.Folder != "" {
+			with, dirs = append(with, m), append(dirs, m.Folder)
 		}
 	}
-	for ns, ms := range byNamespace {
-		if _, named := owners[ns]; !named && len(ms) == 1 {
-			owners[ns] = ms[0]
-		}
+	owners := map[string]framework.Mod{}
+	for name, i := range dotnet.Owners(dirs) {
+		owners[name] = with[i]
 	}
 	return owners
 }
