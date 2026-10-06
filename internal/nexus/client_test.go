@@ -17,7 +17,7 @@ import (
 
 var t0 = time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 
-func fixture(t *testing.T, name string) []byte {
+func fixture(t testing.TB, name string) []byte {
 	t.Helper()
 	b, err := fsx.ReadFile("testdata/" + name)
 	if err != nil {
