@@ -220,10 +220,10 @@ func (s *Service) ensureBundled(id string) (string, error) {
 	if err := s.items.AddDir(id, key, tmp); err != nil {
 		return "", err
 	}
-	if s.settings.Get().Loaders[l.ID()] == "" {
+	if s.settings.Get().Loaders[settings.LoaderKey(id, l.ID())] == "" {
 		if _, err := s.settings.Update(func(v *settings.Settings) {
 			v.Loaders = maps.Clone(v.Loaders)
-			v.Loaders[l.ID()] = st.Version
+			v.Loaders[settings.LoaderKey(id, l.ID())] = st.Version
 		}); err != nil {
 			return "", err
 		}
@@ -264,7 +264,7 @@ func (s *Service) LocalStatus(id, loaderID string) (loader.Status, error) {
 	}
 	if l, ok := game.LoaderOf(id, loaderID); ok {
 		if _, perProfile := l.(loader.InProfile); perProfile {
-			return s.profileStatus(id, l, dir, s.settings.Get().Loaders[l.ID()])
+			return s.profileStatus(id, l, dir, s.settings.Get().Loaders[settings.LoaderKey(id, l.ID())])
 		}
 	}
 	return game.LoaderStatus(id, loaderID, dir, s.settings.Get().Loaders)

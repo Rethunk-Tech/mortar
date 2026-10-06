@@ -91,7 +91,7 @@ func TestAProfileRunsItsOwnLoaderOfTheGamesTwo(t *testing.T) {
 			t.Fatalf("profile %s has the second loader: %v, want %v", id, got.Installed, want)
 		}
 	}
-	if set.Get().Loaders["w6fake"] != "1.0.0" || set.Get().Loaders["bepinex5"] != "" {
+	if set.Get().Loaders[settings.LoaderKey("lethal-company", "w6fake")] != "1.0.0" || set.Get().Loaders[settings.LoaderKey("lethal-company", "bepinex5")] != "" {
 		t.Fatalf("recorded versions = %v", set.Get().Loaders)
 	}
 }

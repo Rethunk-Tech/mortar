@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/all"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -93,7 +94,7 @@ func LoaderOf(id, loaderID string) (loader.Loader, bool) {
 }
 
 // LoaderStatus is the state of the game's loader (loaderID, "" for the primary) in the install in dir. recorded is the
-// version Mortar installed per loader id (settings.Loaders), which outranks the version the install itself reports.
+// version Mortar installed per game and loader (settings.Loaders), which outranks the version the install itself reports.
 func LoaderStatus(id, loaderID, dir string, recorded map[string]string) (loader.Status, error) {
 	l, ok := LoaderOf(id, loaderID)
 	if !ok {
@@ -104,7 +105,7 @@ func LoaderStatus(id, loaderID, dir string, recorded map[string]string) (loader.
 		return loader.Status{}, err
 	}
 	if st.Installed || st.Broken {
-		st.Version = cmp.Or(recorded[l.ID()], st.Version)
+		st.Version = cmp.Or(recorded[settings.LoaderKey(id, l.ID())], st.Version)
 	}
 	return st, nil
 }

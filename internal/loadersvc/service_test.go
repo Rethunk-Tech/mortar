@@ -119,7 +119,7 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if set.Get().Loaders["smapi"] != "4.5.2" {
+	if set.Get().Loaders[settings.LoaderKey("stardew", "smapi")] != "4.5.2" {
 		t.Fatalf("loaders = %v", set.Get().Loaders)
 	}
 }

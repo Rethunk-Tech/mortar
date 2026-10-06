@@ -305,7 +305,7 @@ func (s *Store) Refs(due bool, now time.Time) ([]Ref, error) {
 	var all []aged
 	for game, keys := range idx {
 		for key, r := range keys {
-			dir, err := s.destOf(key, r.Blob)
+			dir, err := s.destOf(game, key, r.Blob)
 			if err != nil || !completeItem(dir) {
 				continue
 			}

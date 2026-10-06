@@ -60,8 +60,8 @@ type Settings struct {
 	LauncherRoots map[string][]string `json:"launcherRoots"`
 	// LaunchersConfirmed is whether first run's launcher screen was finished; until then the app opens on it.
 	LaunchersConfirmed bool `json:"launchersConfirmed"`
-	// Loaders maps a loader id (smapi, bepinex5) to the version Mortar installed. Each loader belongs to one game, so
-	// the loader id is a sufficient key.
+	// Loaders maps LoaderKey(game, loader) to the version Mortar installed. A loader id is shared by games (bepinex5
+	// serves Lethal Company and Valheim, each with its own pack), so the game is part of the key.
 	Loaders map[string]string `json:"loaders"`
 	// Dismissed maps a save folder name to the mod ids whose missing-mod warning the user dismissed for it.
 	Dismissed map[string][]string `json:"dismissed"`
@@ -508,3 +508,6 @@ func (s *Store) AddPlaytime(game string, d time.Duration) (Settings, error) {
 		}
 	})
 }
+
+// LoaderKey is the Loaders key of a game's loader: "<game>/<loader>", such as "valheim/bepinex5".
+func LoaderKey(game, loader string) string { return game + "/" + loader }

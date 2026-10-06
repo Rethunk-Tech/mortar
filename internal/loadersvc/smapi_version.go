@@ -92,7 +92,7 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, load
 	}
 	_, perProfile := l.(loader.InProfile)
 	if version == "" && perProfile {
-		version = s.settings.Get().Loaders[l.ID()]
+		version = s.settings.Get().Loaders[settings.LoaderKey(id, l.ID())]
 	}
 	version, err = s.resolveVersion(ctx, id, loaderID, g, version)
 	if err != nil {
@@ -253,7 +253,7 @@ func (s *Service) recordLoader(id string, l loader.Loader, version string, fromS
 	}
 	next, err := s.settings.Update(func(v *settings.Settings) {
 		v.Loaders = maps.Clone(v.Loaders)
-		v.Loaders[l.ID()] = version
+		v.Loaders[settings.LoaderKey(id, l.ID())] = version
 	})
 	if err != nil {
 		return err

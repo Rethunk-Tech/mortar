@@ -1,7 +1,7 @@
 // Package store keeps each mod archive extracted once under the data folder as a content-addressed blob, names it by
 // source keys in an index, and deletes items no profile has used lately.
 //
-// On disk: blobs/<sha256> holds extracted items, loaders/<loader>/<version> the loaders' bundled mods, and
+// On disk: blobs/<sha256> holds extracted items, loaders/<game>/<loader>/<version> the loaders' bundled mods, and
 // index.json maps game and key to the folder and to the key's source, package and version.
 package store
 
@@ -107,7 +107,8 @@ func OpenAt(dir string) *Store { return &Store{root: dir} }
 // LocalKey is the key of a local archive with the given SHA-256.
 func LocalKey(sha256Hex string) string { return "local-" + sha256Hex }
 
-// LoaderKey is the key of a loader's entry for one of its versions; its folder is loaders/<loader>/<version>.
+// LoaderKey is the key of a loader's entry for one of its versions; its folder is loaders/<game>/<loader>/<version>,
+// since games that share a loader id each fetch their own pack (BepInEx 5 for Lethal Company and for Valheim).
 func LoaderKey(loaderID, version string) string { return loaderID + "-" + version }
 
 // LoaderOf parses a LoaderKey of a registered loader; ok is false for any other key.
@@ -187,13 +188,13 @@ func checkKey(id, key string) error {
 	return nil
 }
 
-// destOf is the folder an item's files live in: a loader's bundle by loader and version, any other item by blob.
-func (s *Store) destOf(key, blob string) (string, error) {
+// destOf is the folder an item's files live in: a loader's bundle by game, loader and version, any other item by blob.
+func (s *Store) destOf(game, key, blob string) (string, error) {
 	if id, v, ok := LoaderOf(key); ok {
-		if !keyPattern.MatchString(v) || !filepath.IsLocal(id) || !filepath.IsLocal(v) {
+		if !keyPattern.MatchString(v) || !filepath.IsLocal(id) || !filepath.IsLocal(v) || checkGame(game) != nil {
 			return "", fmt.Errorf("invalid store key %q", key)
 		}
-		return filepath.Join(s.root, loadersDir, id, v), nil
+		return filepath.Join(s.root, loadersDir, game, id, v), nil
 	}
 	if !blobPattern.MatchString(blob) || !filepath.IsLocal(blob) {
 		return "", fmt.Errorf("invalid store blob %q", blob)
@@ -210,7 +211,7 @@ func (s *Store) locate(idx index, game, key string) (string, error) {
 	if !ok {
 		return "", usererr.Wrap(usererr.NotFound, &Error{Game: game, Key: key, Err: ErrNotFound})
 	}
-	return s.destOf(key, r.Blob)
+	return s.destOf(game, key, r.Blob)
 }
 
 // Path returns the folder to copy into a profile: the item, or the stored content
@@ -264,7 +265,7 @@ func (s *Store) ready(game, key string, idx index) (bool, error) {
 	if !ok {
 		return false, nil
 	}
-	dir, err := s.destOf(key, r.Blob)
+	dir, err := s.destOf(game, key, r.Blob)
 	if err != nil {
 		return false, err
 	}
@@ -362,7 +363,7 @@ func (s *Store) admit(game, key string, hash func() (string, error), fill func(t
 	if err != nil {
 		return &Error{Game: game, Key: key, Err: err}
 	}
-	dest, err := s.destOf(key, blob)
+	dest, err := s.destOf(game, key, blob)
 	if err != nil {
 		return err
 	}
@@ -672,7 +673,7 @@ func (s *Store) bind(game, key, blob string) error {
 	}
 	r := idx[game][key]
 	r.Blob, r.Used = blob, time.Now().UTC()
-	if dir, err := s.destOf(key, blob); err == nil {
+	if dir, err := s.destOf(game, key, blob); err == nil {
 		r.Size, _ = datadir.Size(dir)
 	}
 	if r.Source == "" {
@@ -722,7 +723,7 @@ func (s *Store) Entries() ([]Entry, error) {
 	for _, game := range slices.Sorted(maps.Keys(idx)) {
 		for _, key := range slices.Sorted(maps.Keys(idx[game])) {
 			r := idx[game][key]
-			if dir, err := s.destOf(key, r.Blob); err == nil && completeItem(dir) {
+			if dir, err := s.destOf(game, key, r.Blob); err == nil && completeItem(dir) {
 				out = append(out, Entry{Game: game, Key: key, Dir: dir, LastUsed: r.Used, Size: r.Size})
 			}
 		}
@@ -843,7 +844,7 @@ func (s *Store) drop(game, key string, r record) error {
 	if _, _, ok := LoaderOf(key); !ok {
 		return nil
 	}
-	dir, err := s.destOf(key, r.Blob)
+	dir, err := s.destOf(game, key, r.Blob)
 	if err != nil {
 		return err
 	}
@@ -925,7 +926,7 @@ func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 	for _, game := range slices.Sorted(maps.Keys(idx)) {
 		keep := keepSet(referenced[game])
 		for _, key := range slices.Sorted(maps.Keys(idx[game])) {
-			if _, ok := s.listed(key, idx[game][key]); ok && !keep[key] {
+			if _, ok := s.listed(game, key, idx[game][key]); ok && !keep[key] {
 				out = append(out, Ref{Game: game, Key: key})
 			}
 		}
@@ -935,8 +936,8 @@ func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 
 // listed is the item's folder when it holds a whole item, the only kind Report and Unreferenced name; an entry whose
 // folder is gone is PruneDangling's, and a partial one is left to the store check.
-func (s *Store) listed(key string, r record) (string, bool) {
-	dir, err := s.destOf(key, r.Blob)
+func (s *Store) listed(game, key string, r record) (string, bool) {
+	dir, err := s.destOf(game, key, r.Blob)
 	return dir, err == nil && completeItem(dir)
 }
 
@@ -953,7 +954,7 @@ func (s *Store) PruneDangling(referenced map[string][]string) error {
 	for game, keys := range idx {
 		keep := keepSet(referenced[game])
 		for key, r := range keys {
-			dir, err := s.destOf(key, r.Blob)
+			dir, err := s.destOf(game, key, r.Blob)
 			if keep[key] || err != nil {
 				continue
 			}
@@ -999,13 +1000,13 @@ func (s *Store) Remove(refs []Ref) error {
 // Cleanup removes temp folders an interrupted run left behind and returns their paths below the store.
 func (s *Store) Cleanup() ([]string, error) {
 	parents := []string{filepath.Join(s.root, blobsDir)}
-	loaders, err := os.ReadDir(filepath.Join(s.root, loadersDir))
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	loaders, err := filepath.Glob(filepath.Join(s.root, loadersDir, "*", "*"))
+	if err != nil {
 		return nil, err
 	}
 	for _, l := range loaders {
-		if l.IsDir() {
-			parents = append(parents, filepath.Join(s.root, loadersDir, l.Name()))
+		if fi, err := os.Stat(l); err == nil && fi.IsDir() {
+			parents = append(parents, l)
 		}
 	}
 	var removed []string

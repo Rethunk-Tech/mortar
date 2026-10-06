@@ -126,7 +126,7 @@ func TestDiskFullMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	n, _ := datadir.Size(src)
-	err := s.install("stardew", "smapi-1", filepath.Join(s.root, loadersDir, "smapi", "1"), func(string) error { return syscall.ENOSPC }, func() int64 { return n })
+	err := s.install("stardew", "smapi-1", filepath.Join(s.root, loadersDir, "stardew", "smapi", "1"), func(string) error { return syscall.ENOSPC }, func() int64 { return n })
 	if !errors.Is(err, syscall.ENOSPC) || !strings.Contains(err.Error(), "needs about 4 MB") {
 		t.Fatalf("err = %v", err)
 	}
@@ -163,7 +163,7 @@ func TestAddDir(t *testing.T) {
 		t.Fatal(err)
 	}
 	dir, err := s.Path("stardew", "smapi-4.1.0")
-	if err != nil || dir != filepath.Join(s.root, "loaders", "smapi", "4.1.0") {
+	if err != nil || dir != filepath.Join(s.root, "loaders", "stardew", "smapi", "4.1.0") {
 		t.Fatalf("dir = %q, %v", dir, err)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "ConsoleCommands", "manifest.json")); err != nil {
@@ -271,7 +271,7 @@ func TestCollect(t *testing.T) {
 	if err := s.Collect(map[string][]string{"stardew": {"smapi-1"}}, now); err != nil {
 		t.Fatal(err)
 	}
-	got := names(t, filepath.Join(s.root, loadersDir, "smapi"))
+	got := names(t, filepath.Join(s.root, loadersDir, "stardew", "smapi"))
 	if len(got) != 2 || got[0] != "1" || got[1] != "3" {
 		t.Fatalf("kept %v, want smapi-1 (referenced) and smapi-3 (recent)", got)
 	}
@@ -294,7 +294,7 @@ func TestUnreferencedKeepsReferenced(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if err := os.MkdirAll(filepath.Join(s.root, loadersDir, "smapi", ".tmp-left"), 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Join(s.root, loadersDir, "stardew", "smapi", ".tmp-left"), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	got, err := s.Unreferenced(map[string][]string{"stardew": {"smapi-1"}})
@@ -307,7 +307,7 @@ func TestUnreferencedKeepsReferenced(t *testing.T) {
 	if err := s.Remove(got); err != nil {
 		t.Fatal(err)
 	}
-	kept := names(t, filepath.Join(s.root, loadersDir, "smapi"))
+	kept := names(t, filepath.Join(s.root, loadersDir, "stardew", "smapi"))
 	if len(kept) != 2 || kept[0] != ".tmp-left" || kept[1] != "1" {
 		t.Fatalf("after Remove = %v", kept)
 	}
@@ -328,14 +328,14 @@ func TestTouchAndCleanup(t *testing.T) {
 		t.Errorf("touch did not update: %v", idx)
 	}
 
-	tmp := filepath.Join(s.root, loadersDir, "smapi", tempPrefix+"123")
+	tmp := filepath.Join(s.root, loadersDir, "stardew", "smapi", tempPrefix+"123")
 	if err := os.MkdirAll(filepath.Join(tmp, "x"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if removed, err := s.Cleanup(); err != nil || len(removed) != 1 || removed[0] != "loaders/smapi/"+tempPrefix+"123" {
+	if removed, err := s.Cleanup(); err != nil || len(removed) != 1 || removed[0] != "loaders/stardew/smapi/"+tempPrefix+"123" {
 		t.Fatalf("cleanup = %v, %v", removed, err)
 	}
-	if got := names(t, filepath.Join(s.root, loadersDir, "smapi")); len(got) != 1 || got[0] != "1" {
+	if got := names(t, filepath.Join(s.root, loadersDir, "stardew", "smapi")); len(got) != 1 || got[0] != "1" {
 		t.Fatalf("after cleanup: %v", got)
 	}
 	if _, err := (&Store{root: filepath.Join(t.TempDir(), "none")}).Cleanup(); err != nil {
@@ -485,7 +485,7 @@ func TestCollectWithRetentionOffRestartsTheClock(t *testing.T) {
 	if err := s.Collect(map[string][]string{}, time.Now()); err != nil {
 		t.Fatal(err)
 	}
-	if got := names(t, filepath.Join(s.root, loadersDir, "smapi")); len(got) != 1 {
+	if got := names(t, filepath.Join(s.root, loadersDir, "stardew", "smapi")); len(got) != 1 {
 		t.Fatalf("item deleted right after retention was turned on: %v", got)
 	}
 }

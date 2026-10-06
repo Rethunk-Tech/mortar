@@ -46,7 +46,7 @@ func (s *Store) Report(referenced map[string][]string) (Report, error) {
 	}
 	out := Report{}
 	for _, game := range slices.Sorted(maps.Keys(idx)) {
-		rep := s.gameReport(idx[game], keepSet(referenced[game]))
+		rep := s.gameReport(game, idx[game], keepSet(referenced[game]))
 		if len(rep.Unused) == 0 && len(rep.Duplicates) == 0 {
 			continue
 		}
@@ -55,11 +55,11 @@ func (s *Store) Report(referenced map[string][]string) (Report, error) {
 	return out, nil
 }
 
-func (s *Store) gameReport(keys map[string]record, keep map[string]bool) GameReport {
+func (s *Store) gameReport(game string, keys map[string]record, keep map[string]bool) GameReport {
 	var unused []Item
 	var taggedItems []tagged
 	for key, r := range keys {
-		dir, ok := s.listed(key, r)
+		dir, ok := s.listed(game, key, r)
 		if !ok {
 			continue
 		}
