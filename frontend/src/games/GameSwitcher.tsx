@@ -48,7 +48,7 @@ export function GameSwitcher({
         paper: {
           role: 'dialog',
           'aria-label': t`Switch game`,
-          sx: { top: 'var(--title-bar)', bgcolor: 'var(--mortar-panel-92)' },
+          sx: { top: 'var(--title-bar)', bgcolor: 'var(--mortar-panel-solid)' },
         },
       }}
     >

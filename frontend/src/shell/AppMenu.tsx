@@ -97,7 +97,7 @@ export function AppMenu() {
               width: 280,
               top: 'var(--title-bar)',
               height: 'calc(100% - var(--title-bar))',
-              bgcolor: 'var(--mortar-panel-92)',
+              bgcolor: 'var(--mortar-panel-solid)',
             },
           },
         }}

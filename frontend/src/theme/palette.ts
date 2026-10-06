@@ -49,7 +49,6 @@ interface Surfaces {
   overlay90: string
   panel: string
   panel85: string
-  panel92: string
   panelSolid: string
   raised: string
   raised60: string
@@ -108,7 +107,6 @@ const darkSurfaces: Surfaces = {
   overlay90: 'rgba(0,0,0,0.9)',
   panel: 'rgba(40,40,48,0.78)',
   panel85: 'rgba(40,40,48,0.85)',
-  panel92: 'rgba(40,40,48,0.92)',
   panelSolid: 'rgb(40,40,48)',
   raised: 'rgba(55,55,65,0.9)',
   raised60: 'rgba(55,55,65,0.6)',
@@ -168,7 +166,6 @@ const lightSurfaces: Surfaces = {
   overlay90: 'rgba(0,0,0,0.45)',
   panel: '#ffffff',
   panel85: '#ffffff',
-  panel92: '#f7f7f9',
   panelSolid: '#ffffff',
   raised: '#ececf1',
   raised60: '#f0f0f3',
