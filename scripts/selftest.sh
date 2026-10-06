@@ -24,6 +24,8 @@
 # regress --game lethal-company builds its own sandbox, bootstraps a Proton prefix, installs BepInEx and three plugins
 # from Thunderstore (cached in /var/tmp/mortar-regress-cache; MORTAR_REGRESS_OFFLINE=1 proves a rerun needs no network),
 # launches directly under Proton, and requires the plugins to load and the purge to leave the game folder identical.
+# MORTAR_REGRESS_MATRIX=1 then runs the BepInEx test matrix (scripts/regress-bepinex.sh, docs/bepinex-test-matrix.md),
+# which needs the network and the .NET SDK; MORTAR_REGRESS_R2_EXPORT=1 also publishes an r2modman code to thunderstore.io.
 set -euo pipefail
 
 BASE=${MORTAR_SELFTEST_BASE:-/var/tmp}
@@ -42,6 +44,8 @@ SANDBOX_HOME=$ROOT/home
 SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
 # Games the shipped catalog has not enabled yet are switched on in the sandbox only (comma separated catalog ids).
 export MORTAR_ENABLE_GAMES=${MORTAR_SELFTEST_ENABLE:-lethal-company}
+# shellcheck source=scripts/regress-bepinex.sh
+. "$REPO/scripts/regress-bepinex.sh"
 
 # The last server binary built, kept under the hash of the tree it came from so an unchanged tree skips the build.
 BUILD_CACHE=/var/tmp/mortar-selftest-build
@@ -757,6 +761,16 @@ PY
     fi
   fi
 
+  local matrix=skipped
+  if [ -n "${MORTAR_REGRESS_MATRIX:-}" ]; then
+    if [ -n "${MORTAR_REGRESS_OFFLINE:-}" ]; then
+      failures+=("the matrix needs the network; unset MORTAR_REGRESS_OFFLINE")
+    else
+      regress_bepinex_matrix "$data" "$compat" "$game" "$timeout" "$profile" "$bepinex"
+      matrix="$(grep -c "$(printf '\tPASS\t')" "$ROOT/matrix.tsv") PASS, $(grep -c "$(printf '\tFAIL\t')" "$ROOT/matrix.tsv") FAIL"
+    fi
+  fi
+
   [ ${#failures[@]} -eq 0 ] && verdict=PASS
   echo "---- regress lethal-company: $verdict ($((SECONDS - t0))s)"
   echo "profile        $profile"
@@ -766,6 +780,7 @@ PY
   echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after purge"
   echo "r2 code        ${code:-none}: $r2 into ${r2_profile:-none}, $r2_listed listed, $r2_mods mods installed, BepInEx counted ${r2_plugins:-?} plugins and logged $r2_loading Loading lines, $r2_errors error lines"
   echo "stopped pids   ${killed:-none}"
+  echo "matrix         $matrix"
   local f
   for f in "${failures[@]}"; do echo "FAIL: $f"; done
   [ "$verdict" = PASS ]
