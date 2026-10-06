@@ -385,16 +385,20 @@ export function LoaderStep({
     )
   }
   const latest = status?.latest ?? ''
+  const introText = () => {
+    if (status?.perProfile) {
+      return t`${loader} is the loader every ${gameName} mod needs. Mortar puts it in each profile; the game folder stays as it is.`
+    }
+    return windows
+      ? t`${loader} is the loader every ${gameName} mod needs. It goes into the game folder.`
+      : t`${loader} is the loader every ${gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual.`
+  }
   return (
     <Panel width={680}>
       <Typography sx={{ fontSize: 22, fontWeight: 700 }}>
         {latest ? t`Installing ${loader} ${latest}` : t`Installing ${loader}`}
       </Typography>
-      <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
-        {windows
-          ? t`${loader} is the loader every ${gameName} mod needs. It goes into the game folder.`
-          : t`${loader} is the loader every ${gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual.`}
-      </Typography>
+      <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>{introText()}</Typography>
       {installing ? (
         <>
           <LinearProgress variant="determinate" value={(steps.length / ORDER.length) * PERCENT} />

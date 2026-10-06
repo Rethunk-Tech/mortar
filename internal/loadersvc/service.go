@@ -277,7 +277,7 @@ func (s *Service) profileStatus(id string, l loader.Loader, dir, recorded string
 	if err != nil {
 		return loader.Status{}, err
 	}
-	st := loader.Status{Installed: recorded != "", Version: recorded}
+	st := loader.Status{Installed: recorded != "", Version: recorded, PerProfile: true}
 	for _, p := range all {
 		if p.Error != "" || s.profiles.LoaderID(id, p.ID) != l.ID() {
 			continue

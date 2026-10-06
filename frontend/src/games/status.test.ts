@@ -9,6 +9,7 @@ const installed = (version: string): Status => ({
   gameVersion: '1.6.15',
   latest: version,
   updateAvailable: false,
+  perProfile: false,
 })
 
 test('game select names the installed SMAPI version, and SMAPI alone when it is missing', () => {

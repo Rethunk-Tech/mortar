@@ -21,6 +21,8 @@ type Status struct {
 	// Latest is empty when the release lookup failed.
 	Latest          string `json:"latest"`
 	UpdateAvailable bool   `json:"updateAvailable"`
+	// PerProfile means the loader lives in each profile's own folder (BepInEx) rather than in the game folder.
+	PerProfile bool `json:"perProfile"`
 }
 
 // Bundled receives the loader's own mods, extracted into modsDir, while the installer's files still exist.

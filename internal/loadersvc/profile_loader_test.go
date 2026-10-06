@@ -71,7 +71,7 @@ func TestEnsureInstallsAProfileLoaderIntoEveryProfile(t *testing.T) {
 	first := testenv.Profile(t, profiles, "lethal-company", "First")
 
 	st, err := svc.Ensure(t.Context(), "lethal-company", "", false)
-	if err != nil || !st.Installed || st.Version != "5.4.2304" {
+	if err != nil || !st.Installed || st.Version != "5.4.2304" || !st.PerProfile {
 		t.Fatalf("ensure = %+v, %v", st, err)
 	}
 	second := testenv.Profile(t, profiles, "lethal-company", "Second")
