@@ -6,10 +6,10 @@ import type { BrowseFilter } from './browseTypes.ts'
 const useBrowseView = create<{
   view: ViewMode
   setView: (view: ViewMode) => void
-  /** A search another screen asked Browse to run; Browse takes it once. */
   /** Category and sort choices per game, kept while Mortar runs. */
   filters: Record<string, BrowseFilter>
   setFilter: (game: string, filter: BrowseFilter) => void
+  /** A search another screen asked Browse to run; Browse takes it once. */
   pendingQuery: string
   setPendingQuery: (query: string) => void
 }>((set) => ({
