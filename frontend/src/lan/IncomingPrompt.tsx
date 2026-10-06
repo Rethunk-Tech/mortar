@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -150,7 +151,10 @@ export function IncomingPrompt() {
             <CircularProgress size={24} />
             <Typography>
               {progress
-                ? t`${progress.current} of ${progress.total} mods · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`
+                ? plural(progress.total, {
+                    one: `${progress.current} of # mod · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`,
+                    other: `${progress.current} of # mods · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`,
+                  })
                 : t`Preparing transfer…`}
             </Typography>
           </Box>

@@ -15,13 +15,13 @@ export function NexusMeter() {
       </Box>
     )
   }
-  const daily = `${limits.daily.remaining} of ${limits.daily.limit}`
-  const hourly = `${limits.hourly.remaining} of ${limits.hourly.limit}`
   const throttled =
     limits.daily.remaining <= remainingFloor || limits.hourly.remaining <= remainingFloor
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 14 }}>
-      <Box>{t`${daily} requests left today · ${hourly} this hour`}</Box>
+      <Box>
+        {t`${limits.daily.remaining} of ${limits.daily.limit} requests left today · ${limits.hourly.remaining} of ${limits.hourly.limit} this hour`}
+      </Box>
       {limits.hourly.reset && limits.daily.reset ? (
         <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
           {t`Hourly count resets ${formatWhen(limits.hourly.reset)} · daily count resets ${formatWhen(limits.daily.reset)}`}

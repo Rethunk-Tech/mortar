@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress } from '@mui/material'
 import { FolderInput } from 'lucide-react'
@@ -93,7 +94,10 @@ export function MoveDialog({
                 aria-label={t`Moving data`}
               />
               <Box role="status" sx={{ ...mono }}>
-                {t`${progress.files}/${progress.totalFiles} files · ${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`}
+                {plural(progress.totalFiles, {
+                  one: `${progress.files}/# file · ${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`,
+                  other: `${progress.files}/# files · ${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`,
+                })}
               </Box>
             </>
           ) : null}

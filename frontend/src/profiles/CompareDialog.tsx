@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { Inbox } from 'lucide-react'
@@ -108,7 +109,14 @@ export function CompareDialog({
     )
   }
   const copy = (from: Profile, to: Profile, ids: string[]) =>
-    apply(to, () => CopyMods(game, from.id, to.id, ids), t`Copied ${ids.length} mods to ${to.name}`)
+    apply(
+      to,
+      () => CopyMods(game, from.id, to.id, ids),
+      plural(ids.length, {
+        one: `Copied # mod to ${to.name}`,
+        other: `Copied # mods to ${to.name}`,
+      }),
+    )
   const match = (from: Profile, to: Profile, rows: ComparePair[]) => {
     const pairs = rows.map((row) => (from.id === profileA?.id ? [row.b, row.a] : [row.a, row.b]))
     apply(
@@ -119,7 +127,10 @@ export function CompareDialog({
           to.id,
           pairs.map(([mine, source]) => ({ oldKey: mine?.key ?? '', newKey: source?.key ?? '' })),
         ),
-      t`Matched ${rows.length} versions in ${to.name}`,
+      plural(rows.length, {
+        one: `Matched # version in ${to.name}`,
+        other: `Matched # versions in ${to.name}`,
+      }),
     )
   }
 

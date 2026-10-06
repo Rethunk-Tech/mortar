@@ -221,3 +221,21 @@ test('zustand selectors do not allocate arrays or objects', () => {
   const hits = files.flatMap(({ path, src }) => selectorHits(path, strip(src)))
   expect(hits, hits.join('\n')).toEqual([])
 })
+
+// Plurals and lists go through plural() and listNames(), so a translation can follow its own grammar.
+function copyHits(path: string, src: string): string[] {
+  const hits: string[] = []
+  for (const m of src.matchAll(/\b(?:t|msg)`((?:[^`\\]|\\.)*)`/g)) {
+    const body = m[1] ?? ''
+    const counted = /\$\{[^}]*(?:\.length|[cC]ount|\bn)\}\s+[a-z]+s\b/.test(body)
+    if (counted || body.includes('.join(')) {
+      hits.push(`${rel(path)}:${lineOf(src, m.index ?? 0)}`)
+    }
+  }
+  return hits
+}
+
+test('messages do not pre-render plurals or join lists in English', () => {
+  const hits = files.flatMap(({ path, src }) => copyHits(path, src))
+  expect(hits, hits.join('\n')).toEqual([])
+})

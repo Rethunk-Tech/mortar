@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { ArchiveRestore, HardDriveDownload } from 'lucide-react'
 import { useState } from 'react'
@@ -74,7 +75,7 @@ export function BackupMenuItems({ profile, close }: { profile: Profile; close: (
     if (missing.length > 0) {
       body = t`Install these again by hand: ${listNames(missing)}`
     } else if (r.queued > 0) {
-      body = t`${r.queued} mods are downloading.`
+      body = plural(r.queued, { one: '# mod is downloading.', other: '# mods are downloading.' })
     }
     useToasts.getState().push({
       kind: missing.length > 0 ? 'warning' : 'success',

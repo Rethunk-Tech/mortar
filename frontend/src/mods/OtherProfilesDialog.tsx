@@ -12,6 +12,7 @@ import {
   NeedsToCopy,
   ProfilesWithMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -275,7 +276,7 @@ export function OtherProfilesDialog({
       />
       {needs.length > 0 ? (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          {t`Also adds what it needs: ${needs.map((n) => n.name).join(', ')}`}
+          {t`Also adds what it needs: ${listNames(needs.map((n) => n.name))}`}
         </Typography>
       ) : null}
     </ConfirmDialog>

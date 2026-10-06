@@ -130,7 +130,7 @@ function confirmTitle(chosen: HealthFinding[]): string {
   const name = reverts[0]?.items?.[0] ?? ''
   return reverts.length === 1
     ? i18n._(msg`Revert ${name} to the installed copy?`)
-    : i18n._(msg`Revert ${reverts.length} mods?`)
+    : plural(reverts.length, { one: 'Revert # mod?', other: 'Revert # mods?' })
 }
 
 function confirmBody(chosen: HealthFinding[]): string {

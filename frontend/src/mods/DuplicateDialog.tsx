@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -87,7 +88,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
   return (
     <>
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
-        {t`${copies.length} copies of ${dup.name}`}
+        {plural(copies.length, { one: `# copy of ${dup.name}`, other: `# copies of ${dup.name}` })}
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>

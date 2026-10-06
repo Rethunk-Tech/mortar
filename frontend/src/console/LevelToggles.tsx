@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Checkbox, Menu, MenuItem } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -51,7 +52,10 @@ export function LevelToggles() {
           <ButtonBase
             key={level}
             aria-pressed={pressed}
-            aria-label={t`${names[level]}: ${n} lines`}
+            aria-label={plural(n, {
+              one: `${names[level]}: # line`,
+              other: `${names[level]}: # lines`,
+            })}
             onClick={() => toggle(level)}
             sx={{
               display: 'flex',

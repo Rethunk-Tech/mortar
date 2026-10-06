@@ -1,5 +1,5 @@
 import { i18n } from '@lingui/core'
-import { msg } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -68,7 +68,7 @@ export function ImportSettingsDialog({
     <ConfirmDialog
       open={preview !== null}
       title={t`Import settings`}
-      confirmLabel={t`Import ${count} changes`}
+      confirmLabel={plural(count, { one: 'Import # change', other: 'Import # changes' })}
       confirmDisabled={count === 0}
       maxWidth={460}
       onCancel={onClose}

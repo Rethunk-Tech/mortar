@@ -324,7 +324,12 @@ function CopyModList() {
           }}
           sx={{ height: 40, px: '14px', fontSize: 14 }}
         >
-          {parts.length > 1 ? t`Copy mod list (${parts.length} parts)` : t`Copy mod list`}
+          {parts.length > 1
+            ? plural(parts.length, {
+                one: 'Copy mod list (# part)',
+                other: 'Copy mod list (# parts)',
+              })
+            : t`Copy mod list`}
         </Button>
         <Button
           aria-label={t`Mod list format`}

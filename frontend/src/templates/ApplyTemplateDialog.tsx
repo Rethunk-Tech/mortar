@@ -30,7 +30,10 @@ import { usePending } from '../toasts/usePending.ts'
 function PreviewGroups({ preview }: { preview: Preview }) {
   const { t } = useLingui()
   const groups = [
-    { title: t`Adds ${preview.add?.length ?? 0} mods`, names: preview.add ?? [] },
+    {
+      title: plural(preview.add?.length ?? 0, { one: 'Adds # mod', other: 'Adds # mods' }),
+      names: preview.add ?? [],
+    },
     { title: t`Already has ${preview.alreadyHave?.length ?? 0}`, names: preview.alreadyHave ?? [] },
     {
       title: t`Different version ${preview.versionDiffers?.length ?? 0} (kept as is)`,
