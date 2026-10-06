@@ -2029,7 +2029,12 @@ func (c *cmd) saves(p control.Params) error {
 					missing = append(missing, m.Name)
 				}
 			}
-			t = append(t, []string{s.Farm, s.Farmer, s.Folder, fmt.Sprintf("%s %d, Year %d", season, s.Day, s.Year), saveLastPlayed(s, profileNames), strings.Join(missing, ", ")})
+			// A save that is a bare file (Lethal Company's) has no in-game date.
+			date := ""
+			if s.Year > 0 {
+				date = fmt.Sprintf("%s %d, Year %d", season, s.Day, s.Year)
+			}
+			t = append(t, []string{s.Farm, s.Farmer, s.Folder, date, saveLastPlayed(s, profileNames), strings.Join(missing, ", ")})
 		}
 		c.table("FARM\tFARMER\tFOLDER\tDATE\tLAST PLAYED WITH\tMISSING MODS", t)
 	})

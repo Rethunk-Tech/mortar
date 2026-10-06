@@ -106,20 +106,23 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
   const canFromSave = (fit.lastMods ?? []).length > 0
   return (
     <>
-      <DisabledReason
-        title={
-          locked ? t`Stop the game to change mods.` : t`This save has no recorded mod list yet.`
-        }
-        disabled={!canFromSave || locked}
-      >
-        <TipIconButton
-          label={t`New profile from this save`}
-          disabled={!canFromSave || creating || locked}
-          onClick={() => runCreate(() => newProfileFromSave(game, fit.folder))}
+      {/* A save that never records its mods (Lethal Company's) can never seed a profile. */}
+      {fit.unrecorded ? null : (
+        <DisabledReason
+          title={
+            locked ? t`Stop the game to change mods.` : t`This save has no recorded mod list yet.`
+          }
+          disabled={!canFromSave || locked}
         >
-          <UserPlus size={16} />
-        </TipIconButton>
-      </DisabledReason>
+          <TipIconButton
+            label={t`New profile from this save`}
+            disabled={!canFromSave || creating || locked}
+            onClick={() => runCreate(() => newProfileFromSave(game, fit.folder))}
+          >
+            <UserPlus size={16} />
+          </TipIconButton>
+        </DisabledReason>
+      )}
       <TipIconButton
         label={t`Back up ${label} now`}
         disabled={backingUp}

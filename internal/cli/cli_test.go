@@ -651,7 +651,7 @@ func TestGamesProfilesRunsSavesAndEnableHuman(t *testing.T) {
 		"saves": []savessvc.Fit{{
 			Folder: "Farm_1", Farm: "Green Acres", Farmer: "Sam", Season: 0, Day: 1, Year: 2,
 			LastProfileID: "abc", LastProfileAt: played,
-		}},
+		}, {Folder: "LCSaveFile1", Unrecorded: true}},
 	}
 	r := invoke(t, results, "games")
 	if r.code != 0 || !strings.Contains(r.out, "GAME") || !strings.Contains(r.out, "stardew") || !strings.Contains(r.out, "Supported") || !strings.Contains(r.out, "Not set up") {
@@ -697,5 +697,8 @@ func TestGamesProfilesRunsSavesAndEnableHuman(t *testing.T) {
 	}
 	if strings.HasPrefix(strings.TrimSpace(r.out), "FOLDER") {
 		t.Fatalf("saves folder-first: %q", r.out)
+	}
+	if !strings.Contains(r.out, "Spring 1, Year 2") || strings.Contains(r.out, "Year 0") {
+		t.Fatalf("saves dates: %q", r.out)
 	}
 }

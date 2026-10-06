@@ -54,8 +54,8 @@ func TestFileSavesBackUpAndRestore(t *testing.T) {
 		t.Fatalf("whole zip = %v, want %v", got, want)
 	}
 	listed, err := List(out)
-	if err != nil || len(listed) != 1 || len(listed[0].Saves) != 3 || listed[0].Saves[1].Folder != "LCSaveFile1" {
-		t.Fatalf("List = %+v, %v", listed, err)
+	if err != nil || len(listed) != 1 || len(listed[0].Saves) != 3 || listed[0].Saves[1] != (Snap{Folder: "LCSaveFile1"}) {
+		t.Fatalf("List = %+v, %v; want a save file listed by its folder with no farm name", listed, err)
 	}
 	one, err := Folder(l, out, "LCSaveFile2", DefaultKeep, start.Add(time.Minute), Cause{Kind: KindManual, Pinned: true})
 	if err != nil {

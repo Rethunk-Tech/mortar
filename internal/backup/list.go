@@ -72,8 +72,9 @@ func snapsIn(zipPath string) ([]Snap, error) {
 		if !ok {
 			continue
 		}
+		// A save that names no farm (Lethal Company's files) is left unnamed, for the reader to name by its folder.
 		if _, seen := farms[folder]; !seen {
-			farms[folder] = folder
+			farms[folder] = ""
 			order = append(order, folder)
 		}
 		if rest == "SaveGameInfo" && !f.FileInfo().IsDir() {
