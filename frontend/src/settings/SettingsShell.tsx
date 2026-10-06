@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import type { LucideIcon } from 'lucide-react'
+import { type LucideIcon, SearchX } from 'lucide-react'
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { EmptyState } from '../shell/EmptyState.tsx'
 import { SettingsNav } from './SettingsNav.tsx'
 import { SettingsSearchProvider } from './SettingsSearch.tsx'
 import { dialogOpen } from './shortcuts.ts'
@@ -150,9 +151,9 @@ export function SettingsShell<Id extends string>({
             }}
           >
             {query && noneMatch ? (
-              <Typography sx={{ fontSize: 15, color: 'text.secondary' }}>
-                {t`No settings match`}
-              </Typography>
+              <EmptyState icon={<SearchX />} title={t`No settings match`} compact={true}>
+                {t`Try another word, or clear the search.`}
+              </EmptyState>
             ) : null}
             {query
               ? pages.map((p) => (

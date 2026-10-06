@@ -1512,7 +1512,7 @@ msgstr "See load errors, missing dependencies, and other issues before you play.
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
-#: src/settings/SettingsShell.tsx:138
+#: src/settings/SettingsShell.tsx:139
 msgid "Search results"
 msgstr "Search results"
 
@@ -1976,7 +1976,7 @@ msgstr "Already has it"
 msgid "Filter saves"
 msgstr "Filter saves"
 
-#: src/profiles/LaunchOptionsBlock.tsx:72
+#: src/profiles/LaunchOptionsBlock.tsx:75
 msgid "Uses the saved options"
 msgstr "Uses the saved options"
 
@@ -2792,7 +2792,7 @@ msgstr "Archive"
 msgid "Switch to Mods"
 msgstr "Switch to Mods"
 
-#: src/profiles/LaunchOptionsBlock.tsx:125
+#: src/profiles/LaunchOptionsBlock.tsx:128
 #: src/profiles/LaunchPresetDialog.tsx:66
 msgid "Launch prefix"
 msgstr "Launch prefix"
@@ -3554,7 +3554,7 @@ msgstr "Could not duplicate the profile"
 msgid "Copy CSS"
 msgstr "Copy CSS"
 
-#: src/profiles/LaunchOptionsBlock.tsx:132
+#: src/profiles/LaunchOptionsBlock.tsx:135
 msgid "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
 msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
 
@@ -4486,7 +4486,7 @@ msgstr "This mod is not in the profile."
 msgid "Loading changes…"
 msgstr "Loading changes…"
 
-#: src/profiles/LaunchOptionsBlock.tsx:140
+#: src/profiles/LaunchOptionsBlock.tsx:143
 #: src/profiles/LaunchPresetDialog.tsx:71
 msgid "Launch environment"
 msgstr "Launch environment"
@@ -4722,6 +4722,10 @@ msgstr "Pause downloads while the game runs"
 #: src/profiles/ProfileRow.tsx:136
 msgid "{0} of saves"
 msgstr "{0} of saves"
+
+#: src/settings/SettingsShell.tsx:155
+msgid "Try another word, or clear the search."
+msgstr "Try another word, or clear the search."
 
 #: src/launch/UpdateWarnDialog.tsx:37
 msgid "Broken for this version"
@@ -5219,7 +5223,7 @@ msgstr "{0, plural, one {Tag # mod} other {Tag # mods}}"
 msgid "No longer needs {0}"
 msgstr "No longer needs {0}"
 
-#: src/profiles/LaunchOptionsBlock.tsx:109
+#: src/profiles/LaunchOptionsBlock.tsx:112
 #: src/profiles/LaunchPresetDialog.tsx:65
 msgid "Launch options"
 msgstr "Launch options"
@@ -5855,7 +5859,7 @@ msgstr "Notifications"
 msgid "Load {0} after the other mods here, so its edit applies last"
 msgstr "Load {0} after the other mods here, so its edit applies last"
 
-#: src/profiles/LaunchOptionsBlock.tsx:57
+#: src/profiles/LaunchOptionsBlock.tsx:59
 msgid "Reached the title screen"
 msgstr "Reached the title screen"
 
@@ -9877,6 +9881,10 @@ msgstr "Find the crash cause"
 msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
 msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
 
+#: src/profiles/LaunchOptionsBlock.tsx:36
+msgid "Stop the game to test a launch."
+msgstr "Stop the game to test a launch."
+
 #: src/firstrunTour/TourPopover.tsx:46
 #: src/games/GameSelect.tsx:285
 #: src/launch/PlayControl.tsx:164
@@ -9952,7 +9960,7 @@ msgstr "Beach farm"
 msgid "Save"
 msgstr "Save"
 
-#: src/profiles/LaunchOptionsBlock.tsx:118
+#: src/profiles/LaunchOptionsBlock.tsx:121
 msgid "Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs."
 msgstr "Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs."
 
@@ -11200,7 +11208,7 @@ msgstr "Open Problems"
 msgid "{loader} | {store} · {lastLine}"
 msgstr "{loader} | {store} · {lastLine}"
 
-#: src/profiles/LaunchOptionsBlock.tsx:149
+#: src/profiles/LaunchOptionsBlock.tsx:152
 msgid "One VAR=value per line, for direct launches only; Steam launches ignore them."
 msgstr "One VAR=value per line, for direct launches only; Steam launches ignore them."
 
@@ -11398,7 +11406,7 @@ msgstr "Flatpak Steam cannot read your mods"
 msgid "Cancel {0}"
 msgstr "Cancel {0}"
 
-#: src/profiles/LaunchOptionsBlock.tsx:69
+#: src/profiles/LaunchOptionsBlock.tsx:71
 msgid "Test launch"
 msgstr "Test launch"
 
@@ -11967,7 +11975,7 @@ msgid "Open settings"
 msgstr "Open settings"
 
 #. placeholder {0}: outcome.cause
-#: src/profiles/LaunchOptionsBlock.tsx:60
+#: src/profiles/LaunchOptionsBlock.tsx:62
 msgid "Crashed: {0}"
 msgstr "Crashed: {0}"
 
@@ -12197,7 +12205,6 @@ msgid "{0} rolled back"
 msgstr "{0} rolled back"
 
 #: src/mods/Toolbar.tsx:275
-#: src/mods/Toolbar.tsx:289
 msgid "Adding…"
 msgstr "Adding…"
 
