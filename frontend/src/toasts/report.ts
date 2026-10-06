@@ -82,10 +82,12 @@ export function toastError(
 ): void {
   const details = [errorDetails(e), extra.detail ?? ''].filter((part) => part !== '').join('\n')
   const action = extra.action ?? nextStep(e, extra.retry)
+  const body = errorMessage(e)
   useToasts.getState().push({
     kind: 'error',
     title,
-    body: errorMessage(e),
+    // An untagged error's sentence is the generic title itself, which would only repeat it.
+    ...(body === title ? {} : { body }),
     ...(details === '' ? {} : { detail: details }),
     ...(action === undefined ? {} : { action }),
   })
