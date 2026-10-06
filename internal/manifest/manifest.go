@@ -2,6 +2,7 @@
 package manifest
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -52,6 +53,8 @@ type Dependency struct {
 	UniqueID       string
 	MinimumVersion string
 	Required       bool
+	// Format is the mod.ID format UniqueID belongs to; empty is SMAPI.
+	Format string
 }
 
 // parsed holds manifests already parsed, by their exact bytes, so the same file read again (a start reads each
@@ -326,11 +329,13 @@ func (m Manifest) ContentPackForID() mod.ID {
 
 // Dep is the dependency in the model every loader shares.
 func (d Dependency) Dep() deps.Dependency {
-	return deps.SMAPI(d.UniqueID, d.MinimumVersion, d.Required)
+	out := deps.SMAPI(d.UniqueID, d.MinimumVersion, d.Required)
+	out.Target.Mod = d.ModID()
+	return out
 }
 
 // ModID is the needed mod as a mod.ID.
-func (d Dependency) ModID() mod.ID { return mod.SMAPI(d.UniqueID) }
+func (d Dependency) ModID() mod.ID { return mod.NewID(cmp.Or(d.Format, mod.FormatSMAPI), d.UniqueID) }
 
 // WithModID returns the manifest naming id, for a manifest built from another source's data.
 func (m Manifest) WithModID(id mod.ID) Manifest {
@@ -343,5 +348,9 @@ func (m Manifest) WithModID(id mod.ID) Manifest {
 
 // NewDependency is a Dependency on id.
 func NewDependency(id mod.ID, minimumVersion string, required bool) Dependency {
-	return Dependency{UniqueID: id.Local(), MinimumVersion: minimumVersion, Required: required}
+	d := Dependency{UniqueID: id.Local(), MinimumVersion: minimumVersion, Required: required}
+	if f := id.Format(); f != mod.FormatSMAPI {
+		d.Format = f
+	}
+	return d
 }

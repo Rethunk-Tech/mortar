@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -25,7 +26,7 @@ type Installed struct {
 
 // Installed reads the manifest of every mod in the profile. A mod whose folder or manifest is gone or no longer
 // parses is skipped, since nothing can be said about it. A package has no SMAPI manifest, so its components stand
-// as recorded at install, with the store item as their folder.
+// as recorded at install, with the store item as their folder and the needs its Thunderstore manifest lists.
 func (s *Store) Installed(game, id string) ([]Installed, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -73,13 +74,23 @@ func (s *Store) packageInstalled(game string, e Entry) []Installed {
 	if s.items != nil {
 		dir, _ = s.items.Path(game, e.Key)
 	}
+	var needs []manifest.Dependency
+	if dir != "" {
+		if b, err := fsx.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
+			if m, err := bepinex5.ParseManifest(b); err == nil {
+				needs = m.Needs()
+			}
+		}
+	}
 	out := make([]Installed, 0, len(e.Mods))
 	for _, c := range e.Mods {
+		mf := manifest.Manifest{Name: c.Name, Author: c.Author, Version: c.Version}.WithModID(c.ID)
+		mf.Dependencies = needs
 		out = append(out, Installed{
 			Key: e.Key, Folder: dir, Source: e.Source, Enabled: e.Enabled(c.ID),
 			Pinned: e.Pinned, SkipVersion: e.SkipVersion, SkipSources: e.SkipSources, IgnoreUpdates: e.IgnoreUpdates,
 			UpdateChannel: e.UpdateChannel, LoadAfter: e.LoadAfter,
-			Manifest: manifest.Manifest{Name: c.Name, Author: c.Author, Version: c.Version}.WithModID(c.ID),
+			Manifest: mf,
 		})
 	}
 	return out

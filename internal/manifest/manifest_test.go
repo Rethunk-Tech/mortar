@@ -27,7 +27,7 @@ func TestParseLenient(t *testing.T) {
 			Manifest{
 				UniqueID: "A.P", UpdateKeys: []string{"Nexus:1"}, ContentPackFor: "Pathoschild.ContentPatcher",
 				Dependencies: []Dependency{
-					{"B.Req", "1.2-beta", true}, {"B.Opt", "", false}, {"Pathoschild.ContentPatcher", "2.0", true},
+					{"B.Req", "1.2-beta", true, ""}, {"B.Opt", "", false, ""}, {"Pathoschild.ContentPatcher", "2.0", true, ""},
 				},
 			},
 		},
