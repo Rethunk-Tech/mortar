@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func TestContributeAndVanilla(t *testing.T) {
@@ -87,5 +88,32 @@ func TestPrelaunchClearsStartupMarkers(t *testing.T) {
 	}
 	if err := (Loader{}).Prelaunch(loader.ProfileView{InstallDir: dir}); err != nil {
 		t.Errorf("no markers: %v", err)
+	}
+}
+
+func TestOrderNeverReportsAnOptionalDependencyMissing(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name, body string) string {
+		folder := filepath.Join(dir, name)
+		if err := os.MkdirAll(folder, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(folder, "manifest.json"), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return folder
+	}
+	ranching := write("BetterRanching", `{"Name":"Better Ranching","UniqueID":"BetterRanching","Version":"1.0.0","EntryDll":"a.dll",
+		"Dependencies":[{"UniqueID":"SMAPI.Lib"},{"UniqueID":"spacechase0.GenericModConfigMenu","IsRequired":false}]}`)
+	rows, err := Loader{}.Order(loader.ProfileView{Enabled: []string{ranching, filepath.Join(dir, "absent")}})
+	if err != nil || len(rows) != 1 {
+		t.Fatalf("rows %+v err %v", rows, err)
+	}
+	r := rows[0]
+	if r.ID != mod.SMAPI("BetterRanching") || len(r.MissingRequired) != 1 || r.MissingRequired[0] != mod.SMAPI("SMAPI.Lib") {
+		t.Fatalf("row %+v", r)
+	}
+	if len(r.Optional) != 1 || len(r.Required) != 1 {
+		t.Fatalf("required = %v, optional = %v", r.Required, r.Optional)
 	}
 }

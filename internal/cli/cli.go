@@ -2448,7 +2448,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
                                           what differs from the host's list; fix queues the downloads
   profile backup <game> <profile> <file.zip>  everything but the mod files: settings, history, configs
   profile restore <file.zip> [--game <id>]    new profile from a backup; downloads its mods again
-  profile load-order <game> <profile>    enabled mods in SMAPI load order
+  profile load-order <game> <profile>    enabled mods in the loader's load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
   profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|loader|
                                           defaultLaunchPreset|skipPlayCheck|cover, or a per-profile game setting

@@ -1,39 +1,62 @@
 package profile
 
 import (
+	"errors"
+	"path/filepath"
 	"slices"
 
+	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-// LoadOrder lists the profile's enabled mods in the order SMAPI loads them.
+// LoadOrder lists the profile's enabled mods in the order its loader loads them.
 func (s *Service) LoadOrder(game, id string) ([]loadorder.Row, error) {
-	mods, err := s.store.UserMods(game, id)
+	l, _ := gamereg.LoaderOf(game, s.store.LoaderID(game, id))
+	o, ok := l.(loader.WithOrder)
+	if !ok {
+		return nil, errors.New("the profile's loader has no load order")
+	}
+	p, dir, err := s.store.readDir(game, id)
 	if err != nil {
 		return nil, err
 	}
-	return loadorder.Resolve(loadOrderInput(mods)), nil
+	enabled, err := s.store.enabledFolders(game, dir, p)
+	if err != nil {
+		return nil, err
+	}
+	return o.Order(loader.ProfileView{Game: game, Dir: dir, Enabled: enabled})
 }
 
-// loadOrderInput takes the enabled mods. A mod's Needs lists every dependency and Optional the ones its manifest does
-// not require, while the load order's Needs holds only the required ones, so an absent optional mod is never missing.
-func loadOrderInput(mods []Mod) []loadorder.Mod {
-	in := make([]loadorder.Mod, 0, len(mods))
-	for _, m := range mods {
-		if !m.Enabled {
+// enabledFolders are the folders of the profile's enabled user mods: a package's laid-out files in the store, and each
+// other mod's own folder in mods/.
+func (s *Store) enabledFolders(game, dir string, p Profile) ([]string, error) {
+	var out []string
+	modsDir := filepath.Join(dir, "mods")
+	for _, e := range p.Entries {
+		if e.Source.Bundled() {
 			continue
 		}
-		required := slices.DeleteFunc(slices.Clone(m.Needs), func(id mod.ID) bool {
-			return slices.ContainsFunc(m.Optional, func(o mod.ID) bool { return o.Fold() == id.Fold() })
-		})
-		in = append(in, loadorder.Mod{
-			ID:             m.ID,
-			Name:           m.Name,
-			Needs:          required,
-			Optional:       m.Optional,
-			ContentPackFor: m.ContentPackFor,
-		})
+		if e.Package {
+			if s.items == nil || (len(e.Mods) > 0 && !slices.ContainsFunc(e.Mods, func(m Component) bool { return e.Enabled(m.ID) })) {
+				continue
+			}
+			// A package whose files are no longer in the store has nothing to read.
+			if itemDir, err := s.items.Path(game, e.Key); err == nil {
+				out = append(out, itemDir)
+			}
+			continue
+		}
+		for _, m := range e.Mods {
+			if !e.Enabled(m.ID) {
+				continue
+			}
+			plain, _, err := ModPaths(modsDir, e.Key, m.Folder)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, plain)
+		}
 	}
-	return in
+	return out, nil
 }

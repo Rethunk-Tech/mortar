@@ -70,7 +70,8 @@ func TestParseRunCountsASkippedCopy(t *testing.T) {
 
 // TestRealBepInExRun compares the plugins Mortar reads from a profile's deployed BepInEx/plugins with what BepInEx
 // loaded in that profile's last run: every plugin BepInEx loaded is one Mortar found, every plugin Mortar found was
-// loaded or named as skipped, and BepInEx's own count matches its Loading and skipped lines. It runs only when
+// loaded or named as skipped, BepInEx's own count matches its Loading and skipped lines, and LoadOrder predicts the
+// order of the Loading lines. It runs only when
 // -bepinex-profile is given.
 func TestRealBepInExRun(t *testing.T) {
 	dir := *profileFlag
@@ -103,6 +104,22 @@ func TestRealBepInExRun(t *testing.T) {
 	for _, p := range found {
 		if !in(loaded, p) && !in(skipped, p) {
 			t.Errorf("Mortar found %s (%s %s), which BepInEx neither loaded nor skipped", p.GUID, p.Name, p.Version)
+		}
+	}
+	order := LoadOrder(ScanEach(filepath.Join(dir, "BepInEx", "plugins")))
+	var predicted []runPlugin
+	for _, p := range order {
+		if in(loaded, p.Plugin) {
+			predicted = append(predicted, runPlugin{p.Name, p.Version})
+		}
+	}
+	if len(predicted) != len(loaded) {
+		t.Errorf("Mortar orders %d of the %d plugins BepInEx loaded", len(predicted), len(loaded))
+	}
+	for i := range min(len(predicted), len(loaded)) {
+		if predicted[i].name != loaded[i].name {
+			t.Errorf("load order differs at %d: Mortar predicts %s, BepInEx loaded %s", i+1, predicted[i].name, loaded[i].name)
+			break
 		}
 	}
 	t.Logf("%d plugins found, %d loaded, %d skipped", len(found), len(loaded), len(skipped))

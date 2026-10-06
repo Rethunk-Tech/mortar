@@ -7,6 +7,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
+	"github.com/Rethunk-Tech/mortar/internal/loadorder"
 )
 
 // ProfileView is the read-only part of a profile a loader needs. It is defined here so loaders do not depend on the
@@ -146,12 +147,9 @@ type WithLaunchSettings interface {
 	SetLaunchSetting(profileDir, id, value string) error
 }
 
-// ComponentID names one loaded component.
-type ComponentID struct{ Format, ID string }
-
-// WithOrder is a loader with a computed load order.
+// WithOrder is a loader with a computed load order of the profile's enabled packages (ProfileView.Enabled).
 type WithOrder interface {
-	Order(p ProfileView) ([]ComponentID, error)
+	Order(p ProfileView) ([]loadorder.Row, error)
 }
 
 // StartupTimings is a loader whose companion records how long each mod adds to the game's startup.
@@ -172,11 +170,6 @@ func SharesLog(l Loader) bool {
 // LogPaste is a loader whose log no parser site reads, so sharing copies it and opens PasteSite for the user to
 // paste into; Mortar never uploads it.
 type LogPaste interface{ PasteSite() string }
-
-// OrderWriter is a loader whose load order lives in a file of the game.
-type OrderWriter interface {
-	WriteOrder(ctx context.Context, t Target, order []ComponentID) error
-}
 
 // WithCompanion is a loader with a companion mod that lets Mortar talk to the running game.
 type WithCompanion interface {

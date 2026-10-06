@@ -48,7 +48,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `profile match <game> <profile> <link-or-file>` | preview a friend's share against a profile |
 | `profile history <game> <profile>`, `profile revert <game> <profile> <eventId>` | restore points; revert to one |
 | `history <game> --all` | recent changes across that game's profiles |
-| `profile load-order <game> <profile>` | enabled mods in SMAPI load order |
+| `profile load-order <game> <profile>` | enabled mods (BepInEx: plugins) in the loader's load order |
 | `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <mod id>...`, `mod ... <mod id>` | list, change and inspect mods (a mod id is `<format>:<local id>`; a bare id means the game's own format, SMAPI's UniqueID for Stardew) |
 | `install <game> <profile> <archive>` | install a local archive |
 | `conflicts`, `problems [--format text]`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |

@@ -9,6 +9,7 @@ import type { Row } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { LoadOrder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useTab } from '../game/tab.ts'
+import { useGameLoader } from '../games/info.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -203,7 +204,7 @@ function OrderList({
         </Button>
       </Box>
       <Box ref={parentRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 2, py: 1.5 }}>
-        <Typography title="SMAPI" sx={{ fontSize: 13, color: 'text.secondary', mb: 1.5 }}>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1.5 }}>
           {t`The game loader chooses this order. Mortar does not change it.`}
         </Typography>
         <Box sx={{ position: 'relative', height: virtualizer.getTotalSize() }}>
@@ -249,6 +250,18 @@ function OrderList({
                           size="small"
                           label={t`Dependency cycle`}
                           color="error"
+                          variant="outlined"
+                          sx={{ height: 22 }}
+                        />
+                      </Tooltip>
+                    ) : null}
+                    {row.lastRun ? (
+                      <Tooltip
+                        title={t`The last launch loaded this here, not where its dependencies put it.`}
+                      >
+                        <Chip
+                          size="small"
+                          label={t`Last launch`}
                           variant="outlined"
                           sx={{ height: 22 }}
                         />
@@ -305,6 +318,7 @@ function OrderSkeleton({ label }: { label: string }) {
 
 export function LoadOrderTab({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
+  const loader = useGameLoader(game)
   const mods = useMods((s) => s.mods)
   const [retry, setRetry] = useState(0)
   const enabledKey = mods
@@ -381,7 +395,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   if (kind === 'empty') {
     return (
       <EmptyState icon={<ListOrdered size={40} />} title={t`No enabled mods`}>
-        {t`Enable mods in the Mods tab to see the order SMAPI loads them.`}
+        {t`Enable mods in the Mods tab to see the order ${loader} loads them.`}
       </EmptyState>
     )
   }

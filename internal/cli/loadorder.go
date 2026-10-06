@@ -38,6 +38,9 @@ func (c *cmd) printLoadOrder(rows []loadorder.Row) {
 		if row.Cycle {
 			notes = append(notes, "dependency cycle")
 		}
+		if row.LastRun {
+			notes = append(notes, "here in the last run")
+		}
 		if len(row.MissingRequired) > 0 {
 			notes = append(notes, "missing "+joinModNames(row.MissingRequired, names))
 		}

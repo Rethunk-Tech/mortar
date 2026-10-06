@@ -17,7 +17,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // ID is the catalog's id for this loader.
@@ -168,8 +167,8 @@ func (Loader) FeedsOverlay() {}
 // SharesLog marks SMAPI's log as the one smapi.io's parser reads.
 func (Loader) SharesLog() {}
 
-// Order is SMAPI's load order of the enabled mods that keep a manifest at their folder's root.
-func (Loader) Order(p loader.ProfileView) ([]loader.ComponentID, error) {
+// Order is SMAPI's load order of the enabled mods, each folder in p.Enabled keeping its manifest at its root.
+func (Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
 	var mods []loadorder.Mod
 	for _, dir := range p.Enabled {
 		b, err := fsx.ReadFile(filepath.Join(dir, manifest.FileName))
@@ -180,21 +179,17 @@ func (Loader) Order(p loader.ProfileView) ([]loader.ComponentID, error) {
 		if err != nil {
 			continue
 		}
-		m := loadorder.Mod{ID: mod.ID(mf.UniqueID), Name: mf.Name, ContentPackFor: mod.ID(mf.ContentPackFor)}
+		m := loadorder.Mod{ID: mf.ModID(), Name: mf.Name, ContentPackFor: mf.ContentPackForID()}
 		for _, d := range mf.Dependencies {
 			if d.Required {
-				m.Needs = append(m.Needs, mod.ID(d.UniqueID))
+				m.Needs = append(m.Needs, d.ModID())
 			} else {
-				m.Optional = append(m.Optional, mod.ID(d.UniqueID))
+				m.Optional = append(m.Optional, d.ModID())
 			}
 		}
 		mods = append(mods, m)
 	}
-	var out []loader.ComponentID
-	for _, row := range loadorder.Resolve(mods) {
-		out = append(out, loader.ComponentID{Format: ID, ID: string(row.ID)})
-	}
-	return out, nil
+	return loadorder.Resolve(mods), nil
 }
 
 // Companion is the Mortar SMAPI Bridge.

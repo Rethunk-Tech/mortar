@@ -1,5 +1,4 @@
-// Package loadorder lists enabled mods in the order SMAPI's ModResolver loads them.
-//
+// Package loadorder is a profile's load order as its loader computes it. Resolve is SMAPI's ModResolver order:
 // SMAPI walks required dependencies, optional dependencies, and ContentPackFor as
 // predecessors, so those mods load before anything that names them; remaining ties
 // are alphabetical by display name (then mod id). Mortar does not change that order.
@@ -22,7 +21,7 @@ type Mod struct {
 	ContentPackFor mod.ID
 }
 
-// Row is one enabled mod in SMAPI load order.
+// Row is one enabled mod, or plugin, in its loader's load order.
 type Row struct {
 	Position        int      `json:"position"`
 	ID              mod.ID   `json:"id"`
@@ -32,6 +31,8 @@ type Row struct {
 	Dependents      []mod.ID `json:"dependents,omitempty"`
 	MissingRequired []mod.ID `json:"missingRequired,omitempty"`
 	Cycle           bool     `json:"cycle,omitempty"`
+	// LastRun is a mod the loader's last run loaded at this place rather than where its dependencies predict it.
+	LastRun bool `json:"lastRun,omitempty"`
 }
 
 type node struct {
