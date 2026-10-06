@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -108,7 +109,44 @@ type Shortcut struct {
 	Exe           string
 	StartDir      string
 	LaunchOptions string
-	Cover         string
+	// Key is the launch option that names what the entry plays; an entry for the same exe whose options include it
+	// is this shortcut, whatever its other options and name, and is updated in place. Empty means the whole
+	// LaunchOptions.
+	Key   string
+	Cover string
+}
+
+func (sc Shortcut) is(e vdfNode) bool {
+	if field(e, "Exe") != quoted(sc.Exe) {
+		return false
+	}
+	if sc.Key == "" {
+		return field(e, "LaunchOptions") == sc.LaunchOptions
+	}
+	return slices.Contains(strings.Fields(field(e, "LaunchOptions")), sc.Key)
+}
+
+// update sets e's name, folder and launch options to sc's, keeping the rest (appid, playtime, the user's tags), and
+// reports whether anything changed.
+func (sc Shortcut) update(e *vdfNode) bool {
+	want := map[string]string{"AppName": sc.Name, "StartDir": quoted(sc.StartDir), "LaunchOptions": sc.LaunchOptions}
+	changed := false
+	for i, c := range e.Child {
+		if v, ok := want[c.Key]; ok && c.Kind == vdfString && c.Str != v {
+			e.Child[i].Str = v
+			changed = true
+		}
+	}
+	return changed
+}
+
+func appIDOf(e vdfNode) uint32 {
+	for _, c := range e.Child {
+		if c.Key == "appid" && c.Kind == vdfInt32 {
+			return c.Int
+		}
+	}
+	return shortcutAppID(field(e, "Exe"), field(e, "AppName"))
 }
 
 // shortcutAppID is the id Steam derives for a non-Steam shortcut, from its quoted exe and name.
@@ -154,32 +192,36 @@ func field(n vdfNode, key string) string {
 	return ""
 }
 
-// addShortcut appends sc to a shortcuts.vdf body (empty for a new file) unless an entry with the same command is
-// already there, and reports whether it added one.
-func addShortcut(body []byte, sc Shortcut) ([]byte, bool, error) {
+// addShortcut appends sc to a shortcuts.vdf body (empty for a new file), or updates the entry that already is sc in
+// place. It returns the entry's appid, which an updated entry keeps so Steam keeps its playtime, and whether the body
+// changed.
+func addShortcut(body []byte, sc Shortcut) ([]byte, uint32, bool, error) {
 	root := []vdfNode{{Kind: vdfMap, Key: "shortcuts"}}
 	if len(body) > 0 {
 		var err error
 		if root, err = readVDFMap(bufio.NewReader(bytes.NewReader(body))); err != nil {
-			return nil, false, fmt.Errorf("read shortcuts.vdf: %w", err)
+			return nil, 0, false, fmt.Errorf("read shortcuts.vdf: %w", err)
 		}
 	}
 	if len(root) != 1 || root[0].Kind != vdfMap || root[0].Key != "shortcuts" {
-		return nil, false, errors.New("shortcuts.vdf has no shortcuts list")
+		return nil, 0, false, errors.New("shortcuts.vdf has no shortcuts list")
 	}
-	for _, e := range root[0].Child {
-		if field(e, "Exe") == quoted(sc.Exe) && field(e, "LaunchOptions") == sc.LaunchOptions {
-			return body, false, nil
-		}
+	i := slices.IndexFunc(root[0].Child, sc.is)
+	if i >= 0 && !sc.update(&root[0].Child[i]) {
+		return body, appIDOf(root[0].Child[i]), false, nil
 	}
-	root[0].Child = append(root[0].Child, sc.node(len(root[0].Child)))
+	if i < 0 {
+		i = len(root[0].Child)
+		root[0].Child = append(root[0].Child, sc.node(i))
+	}
 	var buf bytes.Buffer
 	writeVDFMap(&buf, root)
-	return buf.Bytes(), true, nil
+	return buf.Bytes(), appIDOf(root[0].Child[i]), true, nil
 }
 
-// AddShortcut adds a non-Steam game to the current account's library. Steam rewrites shortcuts.vdf on exit, so
-// the caller makes sure Steam is closed. It reports whether an entry was added (false when it already exists).
+// AddShortcut adds a non-Steam game to the current account's library, or updates the entry that already is sc, and
+// writes its art either way. Steam rewrites shortcuts.vdf on exit, so the caller makes sure Steam is closed. It
+// reports whether the library changed (false when the same entry was already there).
 func (s Steam) AddShortcut(sc Shortcut) (bool, error) {
 	dir, err := s.userConfigDir()
 	if err != nil {
@@ -190,9 +232,12 @@ func (s Steam) AddShortcut(sc Shortcut) (bool, error) {
 	if err != nil && !errors.Is(err, os.ErrNotExist) && !errors.Is(err, io.EOF) {
 		return false, err
 	}
-	next, added, err := addShortcut(body, sc)
-	if err != nil || !added {
+	next, appID, changed, err := addShortcut(body, sc)
+	if err != nil {
 		return false, err
+	}
+	if !changed {
+		return false, writeGrid(dir, appID, sc.Cover)
 	}
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return false, err
@@ -203,7 +248,7 @@ func (s Steam) AddShortcut(sc Shortcut) (bool, error) {
 	if err := datadir.WriteFile(path, next, 0o600); err != nil {
 		return false, err
 	}
-	if err := writeGrid(dir, shortcutAppID(quoted(sc.Exe), sc.Name), sc.Cover); err != nil {
+	if err := writeGrid(dir, appID, sc.Cover); err != nil {
 		return true, err
 	}
 	return true, nil

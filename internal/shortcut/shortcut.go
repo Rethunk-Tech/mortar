@@ -192,6 +192,7 @@ func (s *Service) AddToSteam(game, gameName, profile, profileName string) (bool,
 		Exe:           exe,
 		StartDir:      filepath.Dir(exe),
 		LaunchOptions: SteamArgs(game, profile),
+		Key:           Arg(game, profile),
 		Cover:         cover,
 	})
 }

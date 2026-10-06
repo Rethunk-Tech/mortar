@@ -505,7 +505,7 @@ A launch through Flatpak Steam that times out while the override is missing uses
   - On Windows it is a `.lnk` under the Start menu's Mortar folder, written through `WScript.Shell` COM.
   - **Remove the shortcut** deletes that file.
   - Rename and delete of a profile rewrite or remove the matching shortcut; a failed shortcut sync is logged and does not fail the profile operation.
-  - **Add this profile to Steam** appends a non-Steam game to native Steam's `shortcuts.vdf` for the MostRecent account (quoted exe, launch options `--play=… --steam-session`, appid with the high bit set); refused while Steam is running, and when only Flatpak Steam is found, since that sandbox cannot start Mortar.
+  - **Add this profile to Steam** appends a non-Steam game to native Steam's `shortcuts.vdf` for the MostRecent account (quoted exe, launch options `--play=… --steam-session`, appid with the high bit set); an entry for Mortar's exe whose options include the profile's `--play=<game>/<profile>` is that profile's, whatever its other options or name, and is updated in place (name, launch options, art), keeping its appid and playtime; refused while Steam is running, and when only Flatpak Steam is found, since that sandbox cannot start Mortar.
   - A duplicate exe+options pair is left as it is.
   - When a cover or Steam hero image is a local file, Mortar copies it into that account's `userdata/…/config/grid` as portrait, capsule and hero art for the new shortcut.
 - **Success or failure:** `steam -applaunch` returns at once.

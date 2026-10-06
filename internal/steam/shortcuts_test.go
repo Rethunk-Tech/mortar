@@ -10,19 +10,19 @@ import (
 
 func TestAddShortcutAppendsOnceAndKeepsExistingEntries(t *testing.T) {
 	first := Shortcut{Name: "Other game", Exe: "/usr/bin/other", StartDir: "/usr/bin"}
-	body, added, err := addShortcut(nil, first)
+	body, _, added, err := addShortcut(nil, first)
 	if err != nil || !added {
 		t.Fatalf("first add: %v %v", added, err)
 	}
 	play := Shortcut{Name: "Main (Stardew Valley)", Exe: "/opt/mortar", StartDir: "/opt", LaunchOptions: "--play=stardew/p1 --steam-session"}
-	next, added, err := addShortcut(body, play)
+	next, _, added, err := addShortcut(body, play)
 	if err != nil || !added {
 		t.Fatalf("second add: %v %v", added, err)
 	}
 	if !bytes.HasPrefix(next[:len(next)-2], body[:len(body)-2]) {
 		t.Fatal("the existing entry must be kept byte for byte")
 	}
-	if _, again, err := addShortcut(next, play); err != nil || again {
+	if _, _, again, err := addShortcut(next, play); err != nil || again {
 		t.Fatalf("the same command must not be added twice: %v %v", again, err)
 	}
 	root, err := readVDFMap(bufio.NewReader(bytes.NewReader(next)))
@@ -38,6 +38,50 @@ func TestAddShortcutAppendsOnceAndKeepsExistingEntries(t *testing.T) {
 	}
 }
 
+func TestAddShortcutUpdatesTheProfilesEntryInPlace(t *testing.T) {
+	// An entry as an earlier Mortar wrote it, then played from Steam: older options and name, playtime of its own.
+	old := Shortcut{Name: "Old name", Exe: "/opt/mortar", StartDir: "/opt", LaunchOptions: "--play=stardew/p1"}.node(1)
+	for i, c := range old.Child {
+		if c.Key == "LastPlayTime" {
+			old.Child[i].Int = 1_700_000_000
+		}
+	}
+	other := Shortcut{Name: "P10", Exe: "/opt/mortar", StartDir: "/opt", LaunchOptions: "--play=stardew/p10 --steam-session"}.node(0)
+	var fixture bytes.Buffer
+	writeVDFMap(&fixture, []vdfNode{{Kind: vdfMap, Key: "shortcuts", Child: []vdfNode{other, old}}})
+
+	sc := Shortcut{
+		Name: "Main (Stardew Valley)", Exe: "/opt/mortar", StartDir: "/opt",
+		LaunchOptions: "--play=stardew/p1 --steam-session", Key: "--play=stardew/p1",
+	}
+	next, appID, changed, err := addShortcut(fixture.Bytes(), sc)
+	if err != nil || !changed {
+		t.Fatalf("update: %v %v", changed, err)
+	}
+	root, err := readVDFMap(bufio.NewReader(bytes.NewReader(next)))
+	if err != nil || len(root[0].Child) != 2 {
+		t.Fatalf("an update adds no entry: %+v %v", root, err)
+	}
+	got := root[0].Child[1]
+	if field(got, "AppName") != sc.Name || field(got, "LaunchOptions") != sc.LaunchOptions {
+		t.Fatalf("entry not updated: %+v", got)
+	}
+	if appID != appIDOf(old) || appIDOf(got) != appIDOf(old) {
+		t.Fatal("the entry keeps its appid, so Steam keeps its playtime and art")
+	}
+	for _, c := range got.Child {
+		if c.Key == "LastPlayTime" && c.Int != 1_700_000_000 {
+			t.Fatal("fields Mortar does not set are kept")
+		}
+	}
+	if field(root[0].Child[0], "AppName") != "P10" {
+		t.Fatal("another profile whose id starts the same is a different entry")
+	}
+	if _, _, again, err := addShortcut(next, sc); err != nil || again {
+		t.Fatalf("an up-to-date entry is left alone: %v %v", again, err)
+	}
+}
+
 func TestRemoveShortcutsDropsOnlyMortarEntriesAndRenumbers(t *testing.T) {
 	var body []byte
 	for _, sc := range []Shortcut{
@@ -48,7 +92,7 @@ func TestRemoveShortcutsDropsOnlyMortarEntriesAndRenumbers(t *testing.T) {
 		{Name: "Elsewhere", Exe: `D:\other\mortar.exe`, StartDir: `D:\other`, LaunchOptions: "--play=stardew/c --steam-session"},
 	} {
 		var err error
-		if body, _, err = addShortcut(body, sc); err != nil {
+		if body, _, _, err = addShortcut(body, sc); err != nil {
 			t.Fatal(err)
 		}
 	}
