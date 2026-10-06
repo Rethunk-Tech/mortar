@@ -8,7 +8,7 @@ import { historyChangeSummary } from '../profiles/historyCounts.ts'
 import { historyLabel } from '../profiles/historyLabel.ts'
 import type { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { laterEvents } from './history.ts'
+import { laterEvents, undoTarget } from './history.ts'
 
 type Panel = ReturnType<typeof useHistoryPanel>
 
@@ -19,7 +19,8 @@ function EarlierRow({
 }: {
   ev: HistoryEvent
   panel: Panel
-  onUndo: (ev: HistoryEvent) => void
+  // Absent for the oldest event, which nothing older can undo.
+  onUndo: ((ev: HistoryEvent) => void) | undefined
 }) {
   const { t } = useLingui()
   const [diff, setDiff] = useState(false)
@@ -42,8 +43,13 @@ function EarlierRow({
             {t`Show diff`}
           </Button>
         ) : null}
-        {trimmed ? null : (
-          <Button size="small" disabled={panel.busy !== ''} onClick={() => onUndo(ev)}>
+        {trimmed || onUndo === undefined ? null : (
+          <Button
+            size="small"
+            disabled={panel.busy !== ''}
+            onClick={() => onUndo(ev)}
+            aria-label={t`Undo this change: ${label}`}
+          >
             {t`Undo`}
           </Button>
         )}
@@ -66,7 +72,7 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
   const later = target ? laterEvents(panel.events, target.id) : []
   const undo = (ev: HistoryEvent) => {
     if (laterEvents(panel.events, ev.id).length === 0) {
-      panel.revertTo(ev.id).catch(() => undefined)
+      panel.revertTo(undoTarget(panel.events, ev.id)).catch(() => undefined)
     } else {
       setTarget(ev)
     }
@@ -83,7 +89,12 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
       {panel.events
         .filter((ev) => !hide.has(ev.id))
         .map((ev) => (
-          <EarlierRow key={ev.id} ev={ev} panel={panel} onUndo={undo} />
+          <EarlierRow
+            key={ev.id}
+            ev={ev}
+            panel={panel}
+            onUndo={undoTarget(panel.events, ev.id) === '' ? undefined : undo}
+          />
         ))}
       <ConfirmDialog
         open={target !== null}
@@ -96,7 +107,7 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
         onCancel={() => setTarget(null)}
         onConfirm={() => {
           if (target) {
-            panel.revertTo(target.id).catch(() => undefined)
+            panel.revertTo(undoTarget(panel.events, target.id)).catch(() => undefined)
           }
           setTarget(null)
         }}

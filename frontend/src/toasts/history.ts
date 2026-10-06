@@ -57,6 +57,15 @@ export function historyActionState(
   return live?.() ?? { disabled: false }
 }
 
+/**
+ * The event to revert to when undoing `id`: the one just older, since an event's snapshot is the profile after it.
+ * '' for the oldest event, which nothing older can undo.
+ */
+export function undoTarget(events: readonly { id: string }[], id: string): string {
+  const at = events.findIndex((e) => e.id === id)
+  return at < 0 ? '' : (events[at + 1]?.id ?? '')
+}
+
 /** Events newer than `id`, which reverting to before `id` undoes too. History lists newest first. */
 export function laterEvents<T extends { id: string }>(events: readonly T[], id: string): T[] {
   const at = events.findIndex((e) => e.id === id)

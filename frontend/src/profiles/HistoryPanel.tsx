@@ -14,6 +14,7 @@ import { listNames } from '../i18n/list.ts'
 import { download } from '../queue/actions.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
+import { undoTarget } from '../toasts/history.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { HistoryDiffView } from './HistoryDiffView.tsx'
 import { HistoryEventRow } from './HistoryEventRow.tsx'
@@ -74,7 +75,11 @@ export function HistoryPanel({
                       : [...cur, ev.id].slice(-2),
                   )
                 }
-                onUndo={() => h.revertTo(ev.id).catch(reportUnexpected)}
+                onUndo={
+                  undoTarget(h.events, ev.id) === ''
+                    ? undefined
+                    : () => h.revertTo(undoTarget(h.events, ev.id)).catch(reportUnexpected)
+                }
                 onRevertItem={(mod) => h.revertItem(ev.id, mod).catch(reportUnexpected)}
               />
             ))}

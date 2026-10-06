@@ -5,6 +5,7 @@ import {
   laterEvents,
   prependHistory,
   staleChange,
+  undoTarget,
 } from './history.ts'
 
 test('prependHistory keeps newest first and drops past the cap', () => {
@@ -37,4 +38,12 @@ test('laterEvents lists the changes newer than the one undone', () => {
   expect(laterEvents(events, 'a').map((e) => e.id)).toEqual(['c', 'b'])
   expect(laterEvents(events, 'c')).toEqual([])
   expect(laterEvents(events, 'zz')).toEqual([])
+})
+
+test('undoing an event reverts to the one before it, and the oldest has nothing to undo to', () => {
+  const events = [{ id: 'newest' }, { id: 'middle' }, { id: 'oldest' }]
+  expect(undoTarget(events, 'newest')).toBe('middle')
+  expect(undoTarget(events, 'middle')).toBe('oldest')
+  expect(undoTarget(events, 'oldest')).toBe('')
+  expect(undoTarget(events, 'gone')).toBe('')
 })

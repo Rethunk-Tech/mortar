@@ -22,7 +22,8 @@ export function HistoryEventRow({
   items: HistoryItem[]
   selected: boolean
   onToggle: () => void
-  onUndo: () => void
+  // Absent for the oldest event, which nothing older can undo.
+  onUndo: (() => void) | undefined
   onRevertItem: (mod: string) => void
   busy: boolean
 }) {
@@ -34,7 +35,7 @@ export function HistoryEventRow({
     <ListItem
       disableGutters={true}
       secondaryAction={
-        trimmed ? null : (
+        trimmed || onUndo === undefined ? null : (
           <Button
             size="small"
             disabled={busy}
