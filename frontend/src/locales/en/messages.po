@@ -299,7 +299,7 @@ msgstr "Snapshot diff"
 msgid "{name} is missing from the store"
 msgstr "{name} is missing from the store"
 
-#: src/share/ShareDialog.tsx:414
+#: src/share/ShareDialog.tsx:416
 msgid "Could not save the file"
 msgstr "Could not save the file"
 
@@ -423,7 +423,7 @@ msgstr "Always"
 msgid "Unlinked the collection"
 msgstr "Unlinked the collection"
 
-#: src/share/ShareDialog.tsx:276
+#: src/share/ShareDialog.tsx:278
 msgid "Use a file"
 msgstr "Use a file"
 
@@ -728,7 +728,7 @@ msgstr "{name} updated to {version}: {n, plural, one {# profile needs attention}
 msgid "Group mods by these names, or assign one as a mod's primary category."
 msgstr "Group mods by these names, or assign one as a mod's primary category."
 
-#: src/share/ShareDialog.tsx:282
+#: src/share/ShareDialog.tsx:284
 msgid "Not in the link"
 msgstr "Not in the link"
 
@@ -961,7 +961,7 @@ msgstr "Rename"
 msgid "Install by hand: {0}"
 msgstr "Install by hand: {0}"
 
-#: src/share/ImportFooter.tsx:109
+#: src/share/ImportFooter.tsx:110
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
@@ -1066,7 +1066,7 @@ msgstr "Measure next launch"
 msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 msgstr "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 
-#: src/share/ShareDialog.tsx:323
+#: src/share/ShareDialog.tsx:325
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
@@ -1611,7 +1611,7 @@ msgstr "{names} can't be reached; showing what Mortar saved at {time}"
 msgid "Windows Firewall blocks incoming sends to Mortar"
 msgstr "Windows Firewall blocks incoming sends to Mortar"
 
-#: src/share/ShareDialog.tsx:452
+#: src/share/ShareDialog.tsx:454
 msgid "Not in the file"
 msgstr "Not in the file"
 
@@ -1779,7 +1779,7 @@ msgstr "Nothing in the queue needs a decision."
 msgid "Saved {name} as a launch preset template"
 msgstr "Saved {name} as a launch preset template"
 
-#: src/share/ShareDialog.tsx:332
+#: src/share/ShareDialog.tsx:334
 msgid "Copy mod list"
 msgstr "Copy mod list"
 
@@ -1973,7 +1973,7 @@ msgid "These come from a different site than you installed them from. Update all
 msgstr "These come from a different site than you installed them from. Update all skips them."
 
 #: src/lan/PairedComputers.tsx:122
-#: src/lan/SendDialog.tsx:170
+#: src/lan/SendDialog.tsx:177
 msgid "Host:port"
 msgstr "Host:port"
 
@@ -3113,7 +3113,7 @@ msgid "Before updating a deleted profile"
 msgstr "Before updating a deleted profile"
 
 #. placeholder {0}: (preview.replace?.keepLocal ?? []).length
-#: src/share/ImportFooter.tsx:164
+#: src/share/ImportFooter.tsx:165
 msgid "Local-only mods kept ({0})"
 msgstr "Local-only mods kept ({0})"
 
@@ -3165,7 +3165,7 @@ msgstr "Game settings"
 msgid "{name} is marked abandoned and may no longer be maintained."
 msgstr "{name} is marked abandoned and may no longer be maintained."
 
-#: src/share/ShareShell.tsx:128
+#: src/share/ShareShell.tsx:129
 msgid "Send nearby…"
 msgstr "Send nearby…"
 
@@ -3673,8 +3673,8 @@ msgstr "Hidden"
 msgid "Mortar · Install {name}?"
 msgstr "Mortar · Install {name}?"
 
-#: src/share/ImportFooter.tsx:122
-#: src/share/ImportFooter.tsx:142
+#: src/share/ImportFooter.tsx:123
+#: src/share/ImportFooter.tsx:143
 msgid "Replace {targetName}"
 msgstr "Replace {targetName}"
 
@@ -3806,7 +3806,7 @@ msgstr "Share as r2modman code?"
 #: src/lan/IncomingPrompt.tsx:209
 #: src/lan/PairedComputers.tsx:60
 #: src/lan/PairedComputers.tsx:138
-#: src/lan/SendDialog.tsx:185
+#: src/lan/SendDialog.tsx:192
 #: src/launch/PrePlayDialog.tsx:151
 #: src/launch/SaveWarnDialog.tsx:69
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -3974,7 +3974,7 @@ msgid "Back to {name}"
 msgstr "Back to {name}"
 
 #: src/game/ProfileMenuItems.tsx:211
-#: src/lan/SendDialog.tsx:117
+#: src/lan/SendDialog.tsx:121
 msgid "Send to…"
 msgstr "Send to…"
 
@@ -4073,7 +4073,7 @@ msgstr "Show in queue"
 #: src/profiles/ProfilesPage.tsx:282
 #: src/saves/SaveGapLine.tsx:21
 #: src/share/ImportPreview.tsx:75
-#: src/share/ShareDialog.tsx:304
+#: src/share/ShareDialog.tsx:306
 msgid "Disabled"
 msgstr "Disabled"
 
@@ -4227,7 +4227,7 @@ msgstr "None"
 
 #: src/browse/BrowseMenu.tsx:73
 #: src/console/HelpDialog.tsx:173
-#: src/share/ShareDialog.tsx:238
+#: src/share/ShareDialog.tsx:239
 msgid "Link copied"
 msgstr "Link copied"
 
@@ -4294,7 +4294,7 @@ msgstr "You started this download on {site}, but you have no {gameName} profile 
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
 
-#: src/share/ImportFooter.tsx:159
+#: src/share/ImportFooter.tsx:160
 msgid "Nothing will be removed."
 msgstr "Nothing will be removed."
 
@@ -4464,7 +4464,7 @@ msgstr "Freed {0}"
 msgid "Set category"
 msgstr "Set category"
 
-#: src/share/ShareDialog.tsx:411
+#: src/share/ShareDialog.tsx:413
 msgid "File saved"
 msgstr "File saved"
 
@@ -4695,7 +4695,7 @@ msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the ti
 msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 
 #. placeholder {0}: skipped.length
-#: src/share/ShareDialog.tsx:438
+#: src/share/ShareDialog.tsx:440
 msgid "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 msgstr "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 
@@ -5089,7 +5089,7 @@ msgstr "Stop the game before moving the data folder."
 msgid "Earthy green"
 msgstr "Earthy green"
 
-#: src/lan/SendDialog.tsx:127
+#: src/lan/SendDialog.tsx:131
 msgid "No Mortar users found nearby."
 msgstr "No Mortar users found nearby."
 
@@ -5476,6 +5476,10 @@ msgstr "Game and SMAPI"
 #: src/settings/sections/StreamOverlay.tsx:424
 msgid "Stream overlay"
 msgstr "Stream overlay"
+
+#: src/share/ShareShell.tsx:133
+msgid "No mods to share. Mods left out are listed below."
+msgstr "No mods to share. Mods left out are listed below."
 
 #: src/launch/PrePlayDialog.tsx:203
 msgid "Adding the missing mods"
@@ -6164,7 +6168,7 @@ msgid "Could not check this profile"
 msgstr "Could not check this profile"
 
 #. placeholder {0}: part.n
-#: src/share/ShareDialog.tsx:372
+#: src/share/ShareDialog.tsx:374
 msgid "Part {0} copied"
 msgstr "Part {0} copied"
 
@@ -6301,7 +6305,7 @@ msgstr "A folder of unpacked mods to add from the Add menu"
 msgid "Show {0} in its profile"
 msgstr "Show {0} in its profile"
 
-#: src/share/ShareDialog.tsx:335
+#: src/share/ShareDialog.tsx:337
 msgid "Mod list format"
 msgstr "Mod list format"
 
@@ -6464,7 +6468,7 @@ msgstr "Use theirs"
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
-#: src/lan/SendDialog.tsx:179
+#: src/lan/SendDialog.tsx:186
 msgid "Send"
 msgstr "Send"
 
@@ -7158,7 +7162,7 @@ msgstr "older, profile has {0}"
 msgid "Share profile"
 msgstr "Share profile"
 
-#: src/lan/SendDialog.tsx:118
+#: src/lan/SendDialog.tsx:122
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -7192,7 +7196,7 @@ msgid "This mod wrote errors to the game's log the last time you played. It may 
 msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 
 #. placeholder {0}: (preview.replace?.remove ?? []).length
-#: src/share/ImportFooter.tsx:152
+#: src/share/ImportFooter.tsx:153
 msgid "These will be removed ({0})"
 msgstr "These will be removed ({0})"
 
@@ -8295,7 +8299,7 @@ msgstr "Bundle added"
 msgid "Browse"
 msgstr "Browse"
 
-#: src/share/ShareDialog.tsx:250
+#: src/share/ShareDialog.tsx:252
 msgid "Message copied"
 msgstr "Message copied"
 
@@ -8351,11 +8355,11 @@ msgstr "Open the import dialog"
 msgid "{profileName} has {0} more than once. {loader} loads only one, so pick which to keep. The others are disabled, not removed."
 msgstr "{profileName} has {0} more than once. {loader} loads only one, so pick which to keep. The others are disabled, not removed."
 
-#: src/share/ShareDialog.tsx:309
+#: src/share/ShareDialog.tsx:311
 msgid "Discord"
 msgstr "Discord"
 
-#: src/lan/SendDialog.tsx:149
+#: src/lan/SendDialog.tsx:156
 msgid "Send to an address…"
 msgstr "Send to an address…"
 
@@ -8834,7 +8838,7 @@ msgstr "Stopped asking about {folder}"
 msgid "{0}: {1} from {2} → {3} from {4}"
 msgstr "{0}: {1} from {2} → {3} from {4}"
 
-#: src/share/ShareDialog.tsx:308
+#: src/share/ShareDialog.tsx:310
 msgid "Plain text"
 msgstr "Plain text"
 
@@ -9152,7 +9156,7 @@ msgstr "Sharing"
 
 #. placeholder {0}: part.n
 #. placeholder {1}: parts.length
-#: src/share/ShareDialog.tsx:379
+#: src/share/ShareDialog.tsx:381
 msgid "Copy part {0} of {1}"
 msgstr "Copy part {0} of {1}"
 
@@ -9438,7 +9442,7 @@ msgstr "Follow live log"
 msgid "The next launch will be measured"
 msgstr "The next launch will be measured"
 
-#: src/share/ShareDialog.tsx:273
+#: src/share/ShareDialog.tsx:275
 msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
 msgstr "A .mortar file suits a profile this size better, and carries your mod settings too."
 
@@ -9474,7 +9478,7 @@ msgstr "More than one mod changes this; the winner's version is used."
 msgid "Borderless"
 msgstr "Borderless"
 
-#: src/lan/SendDialog.tsx:158
+#: src/lan/SendDialog.tsx:165
 msgid "Recent address"
 msgstr "Recent address"
 
@@ -9536,7 +9540,7 @@ msgid "Links"
 msgstr "Links"
 
 #. placeholder {0}: parts.length
-#: src/share/ShareDialog.tsx:328
+#: src/share/ShareDialog.tsx:330
 msgid "{0, plural, one {Copy mod list (# part)} other {Copy mod list (# parts)}}"
 msgstr "{0, plural, one {Copy mod list (# part)} other {Copy mod list (# parts)}}"
 
@@ -9679,7 +9683,7 @@ msgstr "Enter a number from {min} to {max}"
 msgid "Close downloads"
 msgstr "Close downloads"
 
-#: src/share/ShareDialog.tsx:422
+#: src/share/ShareDialog.tsx:424
 msgid "A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import."
 msgstr "A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import."
 
@@ -9730,7 +9734,7 @@ msgstr "Auto-enable requirements"
 #: src/profiles/CompareBulkBody.tsx:128
 #: src/profiles/ProfilesPage.tsx:273
 #: src/profiles/ProfilesPage.tsx:282
-#: src/share/ShareDialog.tsx:304
+#: src/share/ShareDialog.tsx:306
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -9981,7 +9985,7 @@ msgstr "Error"
 msgid "Empty trash"
 msgstr "Empty trash"
 
-#: src/lan/SendDialog.tsx:128
+#: src/lan/SendDialog.tsx:132
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
@@ -10568,7 +10572,7 @@ msgstr "{0} needs {1}"
 msgid "{endorsements, plural, one {# endorsement} other {# endorsements}} · {dl}"
 msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}} · {dl}"
 
-#: src/share/ShareDialog.tsx:307
+#: src/share/ShareDialog.tsx:309
 msgid "Markdown"
 msgstr "Markdown"
 
@@ -10639,7 +10643,7 @@ msgid "Checked in {0}: {parts}"
 msgstr "Checked in {0}: {parts}"
 
 #. placeholder {0}: saved.path
-#: src/share/ShareDialog.tsx:432
+#: src/share/ShareDialog.tsx:434
 msgid "Saved to {0}"
 msgstr "Saved to {0}"
 
@@ -11274,7 +11278,7 @@ msgstr "Could not create the profile"
 msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
 
-#: src/lan/SendDialog.tsx:133
+#: src/lan/SendDialog.tsx:137
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
@@ -11665,7 +11669,7 @@ msgid "Compare saved reports"
 msgstr "Compare saved reports"
 
 #: src/mods/ConfigPresets.tsx:147
-#: src/share/ImportFooter.tsx:141
+#: src/share/ImportFooter.tsx:142
 #: src/templates/TemplateDialogs.tsx:84
 msgid "Replace {name}?"
 msgstr "Replace {name}?"
@@ -11976,7 +11980,7 @@ msgid "Check this download"
 msgstr "Check this download"
 
 #: src/settings/sections/AboutDiagnostics.tsx:168
-#: src/share/ShareDialog.tsx:427
+#: src/share/ShareDialog.tsx:429
 msgid "Save…"
 msgstr "Save…"
 
@@ -12091,7 +12095,7 @@ msgid "This mod is no longer in the profile."
 msgstr "This mod is no longer in the profile."
 
 #: src/browse/BrowseMenu.tsx:72
-#: src/share/ShareDialog.tsx:241
+#: src/share/ShareDialog.tsx:242
 msgid "Copy link"
 msgstr "Copy link"
 
@@ -12568,7 +12572,7 @@ msgstr "No saves yet"
 msgid "Thunderstore"
 msgstr "Thunderstore"
 
-#: src/share/ShareDialog.tsx:253
+#: src/share/ShareDialog.tsx:255
 msgid "Copy as a message"
 msgstr "Copy as a message"
 

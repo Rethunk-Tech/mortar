@@ -55,7 +55,7 @@ export function ShareShell({
           sx={{
             position: 'relative',
             display: 'grid',
-            gridTemplateColumns: tab === 'link' ? 'minmax(0, 1fr) 340px' : 'minmax(0, 1fr)',
+            gridTemplateColumns: 'minmax(0, 1fr) 340px',
             height: '100%',
             minHeight: 0,
           }}
@@ -122,15 +122,29 @@ export function ShareShell({
               <Button
                 variant="outlined"
                 color="inherit"
+                disabled={info.count === 0}
                 onClick={() => onSendNearby(true)}
                 sx={{ height: 40, px: '14px', fontSize: 14 }}
               >
                 {t`Send nearby…`}
               </Button>
+              {info.count === 0 ? (
+                <Typography role="status" sx={{ fontSize: 13, color: 'warning.light' }}>
+                  {t`No mods to share. Mods left out are listed below.`}
+                </Typography>
+              ) : null}
             </Box>
             <Box sx={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>{children}</Box>
           </Box>
-          {preview}
+          {/* Keeps the column when the tab has no preview, so the header does not shift between tabs. */}
+          {preview ?? (
+            <Box
+              sx={{
+                bgcolor: 'var(--mortar-console-90)',
+                borderLeft: '1px solid var(--mortar-hairline-muted)',
+              }}
+            />
+          )}
         </Box>
       ) : null}
     </Dialog>

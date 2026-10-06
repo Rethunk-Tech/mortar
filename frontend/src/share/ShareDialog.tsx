@@ -235,6 +235,7 @@ function LinkTab({
               <Button
                 variant="contained"
                 startIcon={<Copy size={16} />}
+                disabled={count === 0}
                 onClick={() => copy(info.web, t`Link copied`)}
                 sx={{ height: 46, px: '18px', fontSize: 14 }}
               >
@@ -247,6 +248,7 @@ function LinkTab({
                 variant="outlined"
                 color="inherit"
                 startIcon={<MessageSquare size={16} />}
+                disabled={count === 0}
                 onClick={() => copy(message, t`Message copied`)}
                 sx={{ height: 40, px: '14px', fontSize: 14 }}
               >
