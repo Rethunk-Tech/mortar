@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 )
 
 func frame(t *testing.T, v any) []byte {
@@ -415,7 +416,7 @@ func TestNexusModProfilesUpdateAvailableFromCache(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(cacheDir, "details-v3-stardewvalley-1915.json"), cache, 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "cache", filepath.FromSlash(nexussvc.DetailsName("stardewvalley", 1915))), cache, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	openProfile, others := nexusModProfiles("stardewvalley", 1915)
@@ -497,7 +498,7 @@ func TestActiveNexusUpdatesFromCache(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		path := filepath.Join(cacheDir, "details-v3-stardewvalley-"+strconv.Itoa(modID)+".json")
+		path := filepath.Join(dir, "cache", filepath.FromSlash(nexussvc.DetailsName("stardewvalley", modID)))
 		if err := os.WriteFile(path, cache, 0o600); err != nil {
 			t.Fatal(err)
 		}
