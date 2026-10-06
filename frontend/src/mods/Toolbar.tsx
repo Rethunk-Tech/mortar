@@ -286,7 +286,7 @@ function AddArchive({
         }}
         sx={toolbar ? iconWhenCompact : undefined}
       >
-        <span className="label">{installing ? t`Adding…` : t`Add archive…`}</span>
+        <span className="label">{t`Add archive…`}</span>
       </Button>
     </DisabledReason>
   )
