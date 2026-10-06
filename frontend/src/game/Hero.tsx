@@ -121,7 +121,7 @@ function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
       sx={{ mt: 0.5, fontSize: META_FONT_PX, display: 'flex', alignItems: 'center', gap: 1 }}
     >
       <Link
-        href={line.url}
+        component="button"
         underline="hover"
         color="inherit"
         onClick={(e) => {

@@ -1,6 +1,6 @@
-import { Browser } from '@wailsio/runtime'
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { create } from 'zustand'
+import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type {
   Entry,
   Mod,
@@ -38,7 +38,9 @@ export function useMenuState(mod: Mod): MenuState {
 
 export const ICON_SIZE = 16
 
-export const openPage = (url: string) => Browser.OpenURL(url).catch(reportUnexpected)
+// The one way a link leaves the window: the backend opens http and https addresses only, so a link in remote data
+// (a page, a changelog, a collection) can never start another app.
+export const openPage = (url: string) => OpenWeb(url).catch(reportUnexpected)
 
 export type MenuAnchor = { el: HTMLElement } | { top: number; left: number }
 

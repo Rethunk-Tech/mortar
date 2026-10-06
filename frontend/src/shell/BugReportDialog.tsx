@@ -10,8 +10,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Browser } from '@wailsio/runtime'
 import { type SyntheticEvent, useEffect, useState } from 'react'
+import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import { BugURL } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useBugReport } from './reportBug.ts'
@@ -49,7 +49,7 @@ export function BugReportDialog() {
     const attach = diagnostics ? saveDiagnostics(game ?? '', '', true) : Promise.resolve(false)
     attach
       .then(() => BugURL(game ?? '', { ...form, diagnostics }))
-      .then((url) => Browser.OpenURL(url))
+      .then((url) => OpenWeb(url))
       .then(close, reportUnexpected)
   }
   return (

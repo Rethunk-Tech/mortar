@@ -1,6 +1,7 @@
 import { msg, plural } from '@lingui/core/macro'
-import { Browser, Events } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
+import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type {
   Entry,
   Profile,
@@ -138,7 +139,7 @@ function failureToast(item: Item) {
       body: item.error,
       action: {
         label: i18n._(msg`Open files page`),
-        run: () => Browser.OpenURL(nexusModUrl(item.modId, nexusDomain(), 'files')),
+        run: () => OpenWeb(nexusModUrl(item.modId, nexusDomain(), 'files')),
       },
     }
   }

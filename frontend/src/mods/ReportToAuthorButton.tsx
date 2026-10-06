@@ -11,13 +11,14 @@ import {
   Switch,
   Typography,
 } from '@mui/material'
-import { Browser, Clipboard } from '@wailsio/runtime'
+import { Clipboard } from '@wailsio/runtime'
 import { TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import {
   RunLines,
   RunLog,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type {
   Mod,
   Profile,
@@ -93,7 +94,7 @@ async function finishReport(opts: {
   const report = buildModReport(i18n, fields)
   await Clipboard.SetText(report.text)
   if (report.url !== '') {
-    await Browser.OpenURL(report.url)
+    await OpenWeb(report.url)
   }
   if (report.nexus) {
     push({

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, FormControlLabel, Radio, RadioGroup } from '@mui/material'
-import { Browser, System } from '@wailsio/runtime'
+import { System } from '@wailsio/runtime'
 import { FolderOpen, Undo2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Install } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
@@ -10,6 +10,7 @@ import {
   LaunchOptionsStartLoader,
   ResetInstall,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import { OpenSteamValidate } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import {
   ChooseGameFolder,
@@ -300,7 +301,7 @@ function GameFolder({
               )
             }
             if (store === 'steam' || store === 'flatpak-steam') {
-              await Browser.OpenURL(`steam://validate/${gameInfo(game)?.appId ?? ''}`)
+              await OpenSteamValidate(gameInfo(game)?.appId ?? '')
             } else {
               useToasts.getState().push({
                 kind: 'info',
