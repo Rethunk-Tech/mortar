@@ -7,7 +7,7 @@ test('the Problems tab lists the missing requirement of each seeded mod', async 
   for (const mod of ['Seed Alpha', 'Seed Beta', 'Seed Gamma']) {
     await expect(
       page.getByRole('button', {
-        name: `${mod} needs Pathoschild.ContentPatcher, which this profile lacks.`,
+        name: `${mod} needs Content Patcher, which this profile lacks.`,
       }),
     ).toBeVisible()
   }

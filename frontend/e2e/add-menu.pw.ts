@@ -1,13 +1,12 @@
 import { expect, test } from '@playwright/test'
 import { openSeedFarm } from './app.ts'
 
-test('the Add split menu lists its three sources and the extra folder dialog adds 2 mods', async ({
+test('the Add split menu lists its two folder sources and the extra folder dialog adds 2 mods', async ({
   page,
 }) => {
   await openSeedFarm(page)
   await page.getByRole('button', { name: 'More ways to add mods' }).click()
   await expect(page.getByRole('menuitem')).toHaveText([
-    'Archive…',
     'From the downloads folder…',
     'From the extra mods folder…',
   ])
