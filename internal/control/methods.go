@@ -442,7 +442,11 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		return nil, s.Saves.RestoreBackup(p.Game, p.Profile, p.Name, p.IDs)
+		id, err := s.optionalProfile(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		return nil, s.Saves.RestoreBackup(p.Game, id, p.Name, p.IDs)
 	case "backups.keep":
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
@@ -457,7 +461,11 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		if s.Saves == nil {
 			return nil, errors.New("backups are unavailable")
 		}
-		made, err := s.Saves.CreateBackup(p.Game, p.Name)
+		id, err := s.optionalProfile(p.Game, p.Profile)
+		if err != nil {
+			return nil, err
+		}
+		made, err := s.Saves.CreateBackup(p.Game, id, p.Name)
 		if err == nil && !made {
 			err = backup.ErrNoSaves
 		}
@@ -1039,6 +1047,15 @@ func (s *Services) games() ([]GameRow, error) {
 		out = append(out, GameRow{GameInfo: g, Configured: g.Installed && g.InstallDir != "", Profiles: n})
 	}
 	return out, nil
+}
+
+// optionalProfile is the id of the profile sel names, "" when sel is empty.
+func (s *Services) optionalProfile(gameID, sel string) (string, error) {
+	if sel == "" {
+		return "", nil
+	}
+	p, err := s.resolve(gameID, sel)
+	return p.ID, err
 }
 
 // resolve finds a profile by id, or by name ignoring case; an ambiguous name lists the matching ids.

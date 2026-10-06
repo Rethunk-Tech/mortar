@@ -73,9 +73,9 @@ type Service struct {
 	meta     *meta.Client
 	// scanners holds one saves scanner per implemented game that has a save folder.
 	scanners map[string]*saves.Scanner
-	// pinned holds scanners for profiles pinned to an install, by saves folder.
-	pinnedMu sync.Mutex
-	pinned   map[string]*saves.Scanner
+	// byDir holds scanners for profiles that read another saves folder (their own, or a pinned install's), by folder.
+	byDirMu sync.Mutex
+	byDir   map[string]*saves.Scanner
 	// Launches, when set, refuses restore while the game is launching or running.
 	Launches *launchsvc.Service
 	last     *Store
@@ -114,27 +114,41 @@ func NewService(home string, profiles *profile.Store, store *settings.Store, cli
 	return &Service{home: home, profiles: profiles, settings: store, meta: client, scanners: scanners, last: NewStore(base)}, nil
 }
 
-// scannerFor is the scanner of the saves folder profileID reads: its pinned install's, else the game's selected one.
+// savesDirFor is the saves folder profileID reads: its own when it keeps its saves separate, else its pinned install's
+// or the game's selected one. cache names the scan cache beside the selected folder's, "" for that folder itself.
+func (s *Service) savesDirFor(gameID, profileID string) (dir, cache string, err error) {
+	if profileID != "" && s.profiles.SeparateSaves(gameID, profileID) {
+		dir, err := s.profiles.SavesFolder(gameID, profileID)
+		return dir, "profile-" + profileID, err
+	}
+	pin := s.profiles.InstallOf(gameID, profileID)
+	if pin == "" {
+		return s.scanners[gameID].Dir, "", nil
+	}
+	dir, err = game.SavesDir(s.home, s.settings.Get(), gameID, pin)
+	return dir, "install-" + pin, err
+}
+
+// scannerFor is the scanner of the saves folder profileID reads, nil when the game has no saves folder here.
 func (s *Service) scannerFor(gameID, profileID string) (*saves.Scanner, error) {
 	selected := s.scanners[gameID]
-	pin := s.profiles.InstallOf(gameID, profileID)
-	if selected == nil || pin == "" {
+	if selected == nil || s.profiles == nil {
 		return selected, nil
 	}
-	dir, err := game.SavesDir(s.home, s.settings.Get(), gameID, pin)
-	if err != nil {
-		return nil, err
+	dir, cache, err := s.savesDirFor(gameID, profileID)
+	if err != nil || cache == "" {
+		return selected, err
 	}
-	s.pinnedMu.Lock()
-	defer s.pinnedMu.Unlock()
-	if sc, ok := s.pinned[dir]; ok {
+	s.byDirMu.Lock()
+	defer s.byDirMu.Unlock()
+	if sc, ok := s.byDir[dir]; ok {
 		return sc, nil
 	}
-	if s.pinned == nil {
-		s.pinned = map[string]*saves.Scanner{}
+	if s.byDir == nil {
+		s.byDir = map[string]*saves.Scanner{}
 	}
-	sc := &saves.Scanner{Dir: dir, Files: selected.Files, Companions: selected.Companions, CacheDir: filepath.Join(selected.CacheDir, "install-"+pin)}
-	s.pinned[dir] = sc
+	sc := &saves.Scanner{Dir: dir, Files: selected.Files, Companions: selected.Companions, CacheDir: filepath.Join(selected.CacheDir, cache)}
+	s.byDir[dir] = sc
 	return sc, nil
 }
 

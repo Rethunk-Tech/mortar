@@ -98,7 +98,7 @@ func (s *Service) SetBackupPinned(game, name string, pinned bool) error {
 	return backup.SetPinned(filepath.Dir(findBackup(reads, name)), name, pinned)
 }
 
-// RestoreBackup copies folders from the named zip into the Saves folder after zipping the current saves.
+// RestoreBackup copies folders from the named zip into the saves folder profile reads after zipping its current saves.
 // An empty folders list restores every save in the zip. The backup taken first rotates against profile's
 // saveBackupsKept, as the profile's update and launch backups do.
 func (s *Service) RestoreBackup(game, profile, name string, folders []string) error {
@@ -116,8 +116,12 @@ func (s *Service) RestoreBackup(game, profile, name string, folders []string) er
 	if err != nil {
 		return err
 	}
+	sc, err := s.scannerFor(id, profile)
+	if err != nil {
+		return err
+	}
 	src := findBackup(target.Reads, name)
-	return backup.Restore(src, s.scanners[id].Layout(), target.Dir, folders, target.Keep, time.Now())
+	return backup.Restore(src, sc.Layout(), target.Dir, folders, target.Keep, time.Now())
 }
 
 // OpenBackupsFolder shows the backups folder in the system file manager.
@@ -136,20 +140,25 @@ func (s *Service) OpenBackupsFolder(game string) error {
 	return datadir.Open(dir)
 }
 
-// CreateBackup zips one save, named by its folder or by the name the app shows for it, and marks the zip kept, with
-// cause kind manual. It reports false, with no backup made, when the folder holds no save.
-func (s *Service) CreateBackup(game, folder string) (bool, error) {
+// CreateBackup zips one save of the saves folder profile reads, named by its folder or by the name the app shows for
+// it, and marks the zip kept, with cause kind manual. It reports false, with no backup made, when the folder holds no
+// save.
+func (s *Service) CreateBackup(game, profile, folder string) (bool, error) {
 	id, err := s.saveGame(game)
 	if err != nil {
 		return false, err
 	}
-	target, err := s.target(id, "")
+	target, err := s.target(id, profile)
+	if err != nil {
+		return false, err
+	}
+	sc, err := s.scannerFor(id, profile)
 	if err != nil {
 		return false, err
 	}
 	now := uniqueBackupTime(target.Reads, time.Now())
-	folder = s.saveFolder(id, folder)
-	_, err = backup.Folder(s.scanners[id].Layout(), target.Dir, folder, target.Keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
+	folder = saveFolder(sc, folder)
+	_, err = backup.Folder(sc.Layout(), target.Dir, folder, target.Keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
 	if errors.Is(err, backup.ErrNoSaves) {
 		return false, nil
 	}
@@ -158,8 +167,8 @@ func (s *Service) CreateBackup(game, folder string) (bool, error) {
 
 // saveFolder is the folder of the save name names: a save's own folder, else the one save the app shows by that name;
 // anything else is returned as it is.
-func (s *Service) saveFolder(game, name string) string {
-	infos, _ := s.scanners[game].Scan(nil)
+func saveFolder(sc *saves.Scanner, name string) string {
+	infos, _ := sc.Scan(nil)
 	var match []string
 	for _, in := range infos {
 		if in.Folder == name {
@@ -190,28 +199,34 @@ func uniqueBackupTime(dirs []string, now time.Time) time.Time {
 	}
 }
 
-// OpenSaveFolder shows one save's folder (a direct child of the Saves folder) in the system file manager; a save kept
-// as a file shows the folder holding it.
-func (s *Service) OpenSaveFolder(game, folder string) error {
-	id, err := s.saveGame(game)
-	if err != nil {
-		return err
-	}
-	l, _, err := s.backupDirs(id)
-	if err != nil {
-		return err
-	}
-	if len(l.Files) > 0 {
-		if !l.IsSave(folder) {
-			return fmt.Errorf("save %q not found", folder)
-		}
-		return datadir.Open(filepath.Dir(filepath.Join(l.Dir, filepath.FromSlash(folder))))
-	}
-	dir, err := backup.SaveDir(l.Dir, folder)
+// OpenSaveFolder shows one save's folder (a direct child of the saves folder profile reads) in the system file
+// manager; a save kept as a file shows the folder holding it.
+func (s *Service) OpenSaveFolder(game, profile, folder string) error {
+	dir, err := s.saveFolderPath(game, profile, folder)
 	if err != nil {
 		return err
 	}
 	return datadir.Open(dir)
+}
+
+// saveFolderPath is the folder OpenSaveFolder shows.
+func (s *Service) saveFolderPath(game, profile, folder string) (string, error) {
+	id, err := s.saveGame(game)
+	if err != nil {
+		return "", err
+	}
+	sc, err := s.scannerFor(id, profile)
+	if err != nil {
+		return "", err
+	}
+	l := sc.Layout()
+	if len(l.Files) > 0 {
+		if !l.IsSave(folder) {
+			return "", fmt.Errorf("save %q not found", folder)
+		}
+		return filepath.Dir(filepath.Join(l.Dir, filepath.FromSlash(folder))), nil
+	}
+	return backup.SaveDir(l.Dir, folder)
 }
 
 // saveGame checks that game has a save folder.

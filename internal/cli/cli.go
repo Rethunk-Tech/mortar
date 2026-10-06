@@ -2249,7 +2249,7 @@ func (c *cmd) backups() error {
 			if err != nil {
 				return err
 			}
-			if err := c.call("backups.restore", control.Params{Game: game, Name: a[0], IDs: a[1:]}, nil, installTimeout); err != nil {
+			if err := c.call("backups.restore", control.Params{Game: game, Name: a[0], IDs: a[1:], Profile: c.profileFlag}, nil, installTimeout); err != nil {
 				return err
 			}
 			return c.emit(map[string]any{"restored": a[0], "saves": a[1:]}, func() {
@@ -2277,7 +2277,7 @@ func (c *cmd) backups() error {
 			if err != nil {
 				return err
 			}
-			if err := c.call("backups.create", control.Params{Game: game, Name: a[0]}, nil, readTimeout); err != nil {
+			if err := c.call("backups.create", control.Params{Game: game, Name: a[0], Profile: c.profileFlag}, nil, readTimeout); err != nil {
 				return err
 			}
 			return c.emit(map[string]any{"save": a[0]}, func() {
@@ -2506,7 +2506,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   update <game> <profile> <mod id>...|--all
                                           queue available mod updates
   backups list [--game <id>] [--json]     list save backups
-  backups create <save>                   pin a Manual backup of one save (its folder or its name)
+  backups create <save>                   pin a Manual backup of one save (its folder or its name); --profile P for P's own saves
   backups usage                           disk used by save backups, per save
   backups trim --keep N                   delete all but the newest N backups of each save (kept ones stay)
   cache size                              analysis cache size
@@ -2535,7 +2535,7 @@ takes --game <id>, which may be left out when exactly one game is installed.
   bisect status|stop <id>                 follow or cancel a crash check
   backups keep <name>                     keep a save backup during rotation
   backups unkeep <name>                   stop keeping a save backup
-  backups restore <name> [save...]        restore a save backup
+  backups restore <name> [save...]        restore a save backup; --profile P into P's own saves
   tools <game>                            configured external tools
   tools run <game> <profile> <tool>       start an external tool
   tools add <game> <name> <executable> [arg...] | remove <game> <id>

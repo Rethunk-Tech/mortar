@@ -99,7 +99,17 @@ function FitStatus({ missing, unrecorded }: { missing: number; unrecorded: boole
   )
 }
 
-function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: string }) {
+function SaveButtons({
+  fit,
+  game,
+  profileId,
+  label,
+}: {
+  fit: Fit
+  game: string
+  profileId: string
+  label: string
+}) {
   const { t } = useLingui()
   const [backingUp, runBackup] = usePending()
   const [creating, runCreate] = usePending()
@@ -130,7 +140,7 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
         onClick={() => {
           runBackup(
             async () => {
-              if (!(await CreateBackup(game, fit.folder))) {
+              if (!(await CreateBackup(game, profileId, fit.folder))) {
                 useToasts
                   .getState()
                   .push({ kind: 'info', title: t`${label} is no longer in the saves folder` })
@@ -150,7 +160,7 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
       <TipIconButton
         label={t`Open the folder of ${label}`}
         onClick={() => {
-          OpenSaveFolder(game, fit.folder).catch(reportUnexpected)
+          OpenSaveFolder(game, profileId, fit.folder).catch(reportUnexpected)
         }}
       >
         <FolderOpen size={16} />
@@ -207,7 +217,7 @@ export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; ga
             {subtitle}
           </Typography>
         </Box>
-        <SaveButtons fit={fit} game={game} label={label} />
+        <SaveButtons fit={fit} game={game} profileId={profile.id} label={label} />
       </Box>
       <SaveDetails
         fit={fit}
