@@ -2,6 +2,7 @@ import type {
   Entry,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { entryOf } from './lookup.ts'
 import type { OverlayRow, VirtualRow } from './virtualRows.ts'
 
 // The Nexus file name an optional file was installed from, or its store key.
@@ -12,11 +13,19 @@ function anyModOn(base: Entry | undefined) {
 }
 
 /** Each main entry's optional files, in the order they are laid over it. */
+// Every card and row asks, so each entries list is grouped once.
+const byBaseCache = new WeakMap<Entry[], ReadonlyMap<string, OverlayRow[]>>()
+
 export function overlaysByBase(
   profile: Pick<Profile, 'entries'> | null | undefined,
-): Map<string, OverlayRow[]> {
+): ReadonlyMap<string, OverlayRow[]> {
   const entries = profile?.entries ?? []
+  const cached = byBaseCache.get(entries)
+  if (cached) {
+    return cached
+  }
   const out = new Map<string, OverlayRow[]>()
+  byBaseCache.set(entries, out)
   for (const e of entries.filter((x) => (x.overlayOf ?? '') !== '')) {
     const baseKey = e.overlayOf ?? ''
     const row: OverlayRow = {
@@ -54,3 +63,8 @@ export function nestOverlays<T>(
 }
 
 export { overlayLabel }
+
+/** What a mod's card or row shows of its profile: its own entry and the optional files laid over it. Every save
+ * replaces the profile object, so memoised rows compare this instead. */
+export const ownSlice = (profile: Profile, key: string) =>
+  JSON.stringify([entryOf(profile, key), overlaysByBase(profile).get(key)])

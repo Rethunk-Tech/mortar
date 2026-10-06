@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Chip, Typography, useMediaQuery } from '@mui/material'
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type {
   Mod,
   Profile,
@@ -24,6 +24,7 @@ import { useMarked, useTabStop } from './marked.ts'
 import { contextMenuProps } from './menu.ts'
 import { useNexusFresh } from './nexusDetails.ts'
 import { OverlayCountChip } from './OverlayRow.tsx'
+import { ownSlice } from './overlayRows.ts'
 import {
   LastRunBadge,
   LetterTile,
@@ -77,19 +78,22 @@ function cardHeightPx(size: string): number {
 
 const ARROWS: Record<string, string | undefined> = { ArrowLeft: 'left', ArrowRight: 'right' }
 
-function ModCard({
-  mod: m,
-  orderedIds,
-  profile,
-  columns,
-  onMove,
-}: {
+interface ModCardProps {
   mod: Mod
   orderedIds: readonly string[]
   profile: Profile
   columns: number
   onMove: (id: string, delta: number) => void
-}) {
+}
+
+const sameCard = (a: ModCardProps, b: ModCardProps) =>
+  a.mod === b.mod &&
+  a.columns === b.columns &&
+  a.orderedIds === b.orderedIds &&
+  a.onMove === b.onMove &&
+  (a.profile === b.profile || ownSlice(a.profile, a.mod.key) === ownSlice(b.profile, b.mod.key))
+
+function ModCardView({ mod: m, orderedIds, profile, columns, onMove }: ModCardProps) {
   const { t } = useLingui()
   const openDetail = useDetail((s) => s.show)
   const askRemove = useMods((s) => s.askRemove)
@@ -233,6 +237,8 @@ function ModCard({
   )
 }
 
+const ModCard = memo(ModCardView, sameCard)
+
 function GridSlot({
   item,
   heading,
@@ -363,13 +369,16 @@ function CardsPane({
     virtualizer,
   })
   const navIds = useMemo(() => orderedModIds(items, (row) => modId(row.mod)), [items])
-  const onMove = (id: string, delta: number) => {
+  const move = useRef<(id: string, delta: number) => void>(() => undefined)
+  move.current = (id, delta) => {
     const next = stepId(navIds, id, delta)
     if (next && next !== id) {
       focusModAt({ items, idOf: listRowId, virtualizer, parentRef }, next)
       showModId(next)
     }
   }
+  // Stable, so memoised cards keep their props across renders while still stepping through the current items.
+  const onMove = useCallback((id: string, delta: number) => move.current(id, delta), [])
   useModTypeahead({
     items,
     nameOf: (row) => row.mod.name,

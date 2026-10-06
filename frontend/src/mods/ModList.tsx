@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, TableCell, type TableCellProps, TableRow, useMediaQuery } from '@mui/material'
 import { Pin } from 'lucide-react'
-import { type MouseEvent, type ReactNode, useMemo, useState } from 'react'
+import { type MouseEvent, memo, type ReactNode, useMemo, useState } from 'react'
 import type {
   Mod,
   Profile,
@@ -39,7 +39,7 @@ import { contextMenuProps } from './menu.ts'
 import { useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { OverlayCountChip } from './OverlayRow.tsx'
-import { nestOverlays, overlaysByBase } from './overlayRows.ts'
+import { nestOverlays, overlaysByBase, ownSlice } from './overlayRows.ts'
 import {
   LastRunBadge,
   LetterTile,
@@ -238,15 +238,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
   }
 }
 
-function ModRow({
-  row,
-  striped,
-  cols,
-  locale,
-  orderedIds,
-  profile,
-  onArrow,
-}: {
+interface ModRowProps {
   row: ListRow
   striped: boolean
   cols: readonly ListColumnId[]
@@ -254,7 +246,28 @@ function ModRow({
   orderedIds: readonly string[]
   profile: Profile
   onArrow: (id: string, dir: -1 | 1) => void
-}) {
+}
+
+// List rows are rebuilt whenever the mods or the profile change, so a row compares their fields, not their identity.
+function sameRowFields(a: ListRow, b: ListRow) {
+  const keys = Object.keys(a) as (keyof ListRow)[]
+  return (
+    keys.length === Object.keys(b).length &&
+    keys.every((k) => (k === 'tags' ? a.tags.join('\0') === b.tags.join('\0') : a[k] === b[k]))
+  )
+}
+
+const sameRow = (a: ModRowProps, b: ModRowProps) =>
+  a.striped === b.striped &&
+  a.locale === b.locale &&
+  a.orderedIds === b.orderedIds &&
+  a.onArrow === b.onArrow &&
+  a.cols.join() === b.cols.join() &&
+  sameRowFields(a.row, b.row) &&
+  (a.profile === b.profile ||
+    ownSlice(a.profile, a.row.mod.key) === ownSlice(b.profile, b.row.mod.key))
+
+function ModRowView({ row, striped, cols, locale, orderedIds, profile, onArrow }: ModRowProps) {
   const show = useDetail((s) => s.show)
   const askRemove = useMods((s) => s.askRemove)
   const m = row.mod
@@ -327,6 +340,8 @@ function ModRow({
     </TableRow>
   )
 }
+
+const ModRow = memo(ModRowView, sameRow)
 
 export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   const { t, i18n } = useLingui()

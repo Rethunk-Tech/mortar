@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Table, TableBody, TableHead, TableRow } from '@mui/material'
-import type { MouseEvent, ReactNode, Ref } from 'react'
+import { type MouseEvent, type ReactNode, type Ref, useCallback, useRef } from 'react'
 import { showModId, useDetail } from './detail.ts'
 import type { sanitizeListGroupBy } from './group.ts'
 import { HeaderCells, ListColumnMenu } from './ListColumnMenu.tsx'
@@ -257,13 +257,16 @@ export function ModListTable({
     gameId,
     virtualizer,
   })
-  const onArrow = (id: string, dir: -1 | 1) => {
+  const arrow = useRef<(id: string, dir: -1 | 1) => void>(() => undefined)
+  arrow.current = (id, dir) => {
     const next = stepId(navIds, id, dir)
     if (next && next !== id) {
       focusModAt({ items, idOf: listRowId, virtualizer, parentRef }, next)
       showModId(next)
     }
   }
+  // Stable, so memoised rows keep their props across renders while still stepping through the current items.
+  const onArrow = useCallback((id: string, dir: -1 | 1) => arrow.current(id, dir), [])
   return (
     <ListShell
       grid={grid}

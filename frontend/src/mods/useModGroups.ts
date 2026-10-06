@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   Mod,
   Profile,
@@ -67,10 +67,17 @@ export function useModGroups(mods: Mod[], profile: Profile) {
       (a, b) => compareListRows(a, b, sort),
     )
   }, [mods, profile, byId, groupBy, problems, updates, customById, sort, sizes, costs, wins])
-  const orderedIds = useMemo(
-    () => groups.flatMap((g) => g.items.map((r) => modId(r.mod))),
-    [groups],
-  )
+  // Rows are memoised on this list's identity, so an unchanged order keeps the previous array.
+  const lastIds = useRef<string[]>([])
+  const orderedIds = useMemo(() => {
+    const next = groups.flatMap((g) => g.items.map((r) => modId(r.mod)))
+    const last = lastIds.current
+    if (next.length === last.length && next.every((id, i) => id === last[i])) {
+      return last
+    }
+    lastIds.current = next
+    return next
+  }, [groups])
   return { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds }
 }
 
