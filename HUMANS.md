@@ -215,7 +215,7 @@ A game that runs on a loader Mortar has, is sold by a store Mortar has, and is m
 2. **Companion and loader components.** A loader whose release Mortar installs (SMAPI) or a companion (the bridge) is a `components` entry for the game with a GitHub source, an asset pattern and a version policy; BepInEx ships as a Thunderstore package and needs none.
 3. **Manifest.** Regenerate the embedded manifest as described under [Publishing components](#publishing-components).
 4. **Check.** `go test ./internal/components ./internal/source/all` runs `GameInfo.Validate` and `TestEveryCatalogReferenceResolves` on the entry.
-5. **Try it.** `MORTAR_ENABLE_GAMES=<id>` (the self-test sets it) enables a game the shipped catalog lists as disabled. `scripts/selftest.sh seed` fills the sandbox with a profile for it when the game is installed there; browse, install, a profile and its Problems tab are then exercised in the sandbox's browser.
+5. **Try it.** `TestACatalogOnlyGameNeedsNoCode` (`internal/game`) and `TestACatalogOnlyGameBrowsesAndAdds` (`internal/browse`) are the pattern: put the entry in a test manifest selected with `components.Use`, never the shipped catalog, and check discovery, the loader, Browse against a fake site and an install into a profile. In the sandbox, `MORTAR_ENABLE_GAMES=<id>` (the self-test sets `lethal-company`; `MORTAR_SELFTEST_ENABLE` overrides it) switches on a game the bundled manifest lists as disabled, so the entry must be in `components.source.json` and the regenerated bundled manifest first. `scripts/selftest.sh` copies only Stardew Valley and Lethal Company into its Steam library and `seed` fills profiles for those two; a new game needs its app id, folder and a seed function added to the script.
 6. **Enable.** Flip `enabled` to true and publish the manifest.
 
 ### Drivers
@@ -236,8 +236,8 @@ A new store, site, runtime, provider, host, installer, deployer, framework or lo
 ### Self-test
 
 ```sh
-go test ./internal/source/all ./internal/components ./internal/gamestore ./internal/runtime
+go test ./internal/source/all ./internal/components ./internal/gamestore ./internal/runtime ./internal/game ./internal/browse
 scripts/selftest.sh start
 ```
 
-`scripts/selftest.sh` serves a sandboxed Mortar in a browser at `http://127.0.0.1:$PORT` (default 9455), with a minimal Steam library holding copies of Stardew Valley and, when installed, Lethal Company; `setup` creates the library only. Add the game's app id and folder to the script to put a copy of a new game in the sandbox.
+`scripts/selftest.sh` serves a sandboxed Mortar in a browser at `http://127.0.0.1:$PORT` (default 9455), with a minimal Steam library holding copies of Stardew Valley and, when installed, Lethal Company; `setup` creates the library only. The script names those two games itself (`APP_ID`, `LC_APP_ID`, `LC_FOLDER`, `seed_lc`); a new game needs the same in the script before the sandbox holds a copy of it.
