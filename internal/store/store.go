@@ -345,20 +345,6 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 	})
 }
 
-// AddDirVerified copies srcDir under key and checks local content keys before installing them.
-func (s *Store) AddDirVerified(game, key, srcDir string) error {
-	if strings.HasPrefix(key, "local-") {
-		got, err := HashDir(srcDir)
-		if err != nil {
-			return err
-		}
-		if got != key {
-			return fmt.Errorf("store key hash mismatch: got %q, want %q", got, key)
-		}
-	}
-	return s.AddDir(game, key, srcDir)
-}
-
 // admit makes key name a complete folder. A key already in the index is left as it is; otherwise the content hash
 // (empty for a loader bundle, which is named by loader and version) picks the folder, and fill extracts into it
 // unless another key already put the same content there.

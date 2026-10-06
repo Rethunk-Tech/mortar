@@ -237,11 +237,9 @@ func TestLoopbackTransfer(t *testing.T) {
 	if err := senderStore.AddDir("stardew", ghKey, source); err != nil {
 		t.Fatal(err)
 	}
-	// So does an archive the sender installed from disk, which exists nowhere else.
-	localKey, err := store.HashDir(source)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// So does an archive the sender installed from disk, which exists nowhere else; its key names the archive's hash,
+	// not the folder's.
+	localKey := store.LocalKey(strings.Repeat("cd", 32))
 	if err := senderStore.AddDir("stardew", localKey, source); err != nil {
 		t.Fatal(err)
 	}
