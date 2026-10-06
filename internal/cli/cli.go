@@ -50,7 +50,7 @@ var verbs = map[string]bool{
 	"templates": true, "library": true, "archive": true,
 	"browse":  true,
 	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true, "bisect": true, "lan": true, "app": true, "support": true, "links": true,
-	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "--version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -356,6 +356,9 @@ func (c *cmd) parse(args []string) error {
 			c.fileFlag = args[i]
 		case strings.HasPrefix(a, "--file="):
 			c.fileFlag = strings.TrimPrefix(a, "--file=")
+		case a == "--version" && i == 0:
+			// Leading, it is the usual spelling of the version command; later, it picks a mod version.
+			c.args = append(c.args, "version")
 		case a == "--version":
 			if i+1 >= len(args) {
 				return usageError{"--version needs a value"}
