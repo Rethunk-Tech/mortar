@@ -31,24 +31,17 @@ import { logFileName, saveLogText } from './save.ts'
 import { useConsole } from './store.ts'
 import { useConsoleEmpty } from './useConsoleEmpty.ts'
 
-// smapi.io's parser reads only SMAPI's log, so other loaders offer Save log here instead of Share log.
-function ShareOrSave({ canSave, onSave }: { canSave: boolean; onSave: () => void }) {
+// smapi.io's parser reads only SMAPI's log, so only SMAPI gets Share log beside the menu; Save log lives in the menu.
+function ShareLog() {
   const { t } = useLingui()
-  if (useProfileLoader()?.share === true) {
-    return (
-      <IconAction
-        label={t`Share log…`}
-        icon={<LifeBuoy size={16} />}
-        onClick={() => useConsole.getState().setHelping(true)}
-      />
-    )
+  if (useProfileLoader()?.share !== true) {
+    return null
   }
   return (
     <IconAction
-      label={t`Save log…`}
-      icon={<Download size={16} />}
-      disabled={!canSave}
-      onClick={onSave}
+      label={t`Share log…`}
+      icon={<LifeBuoy size={16} />}
+      onClick={() => useConsole.getState().setHelping(true)}
     />
   )
 }
@@ -147,7 +140,7 @@ export function LogActions({ game }: { game: string }) {
         aria-expanded={menu !== null}
         onClick={(e) => setMenu(e.currentTarget)}
       />
-      <ShareOrSave canSave={canSave} onSave={saveLog} />
+      <ShareLog />
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
         <MenuItem
           disabled={rows.length === 0}
