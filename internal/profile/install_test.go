@@ -245,6 +245,12 @@ func TestInstallThunderstorePackageRecordsAnEntryWithoutAFolder(t *testing.T) {
 	if err != nil || !res.Updated || len(res.Profile.Entries) != 1 || res.Profile.Entries[0].Source.Version != "1.1.0" {
 		t.Fatalf("update = %+v, %v", res, err)
 	}
+	// Update checks read the profile through Installed, which a package has to reach without a SMAPI manifest.
+	got, err := e.Installed("lethal-company", p.ID)
+	if err != nil || len(got) != 1 || got[0].ModID() != "thunderstore:Ns-Mod" || got[0].Version != "1.1.0" ||
+		got[0].Source.Name != "Ns-Mod" || !got[0].Enabled || got[0].Folder == "" {
+		t.Fatalf("installed = %+v, %v", got, err)
+	}
 	off, err := e.SetModEnabled("lethal-company", p.ID, "", "thunderstore:Ns-Mod", false)
 	if err != nil || len(off.Entries[0].Disabled) != 1 {
 		t.Fatalf("disable = %+v, %v", off, err)

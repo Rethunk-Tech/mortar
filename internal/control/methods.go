@@ -1,6 +1,7 @@
 package control
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -923,10 +924,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			})) {
 				continue
 			}
-			reqs = append(reqs, queue.Request{
-				Kind: queue.KindUpdate, Game: p.Game, Profile: id, Name: u.Name, Version: u.Version,
-				CurrentKey: u.Key, ModID: u.NexusID, FileID: u.FileID, Repo: u.GitHubRepo, FallbackRepo: u.GitHubFallback, FallbackID: u.ID, Latest: true,
-			})
+			reqs = append(reqs, updateRequest(p.Game, id, u))
 		}
 		if len(reqs) == 0 {
 			if p.All || len(p.IDs) == 0 {
@@ -1610,4 +1608,19 @@ func typedIDs(ids []string) []mod.ID {
 		out[i] = typedID(id)
 	}
 	return out
+}
+
+// updateRequest is the queue request that installs an update, from the source the update names.
+func updateRequest(game, profileID string, u problems.Update) queue.Request {
+	req := queue.Request{Kind: queue.KindUpdate, Game: game, Profile: profileID, Name: u.Name, Version: u.Version, CurrentKey: u.Key}
+	switch {
+	case u.Package != "":
+		// A Modrinth update names its exact version, since a version number can repeat across loaders.
+		req.Package, req.Source, req.Version = u.Package, u.PackageSource, cmp.Or(u.PackageVersion, u.Version)
+	case u.GitHubRepo != "":
+		req.Repo = u.GitHubRepo
+	default:
+		req.ModID, req.FileID, req.FallbackRepo, req.FallbackID, req.Latest = u.NexusID, u.FileID, u.GitHubFallback, u.ID, true
+	}
+	return req
 }

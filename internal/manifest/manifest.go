@@ -43,6 +43,8 @@ type Manifest struct {
 	MinimumGameVersion string
 	// DeleteOldVersion tells Mortar to carry over only user-written config (such as config.json), not other edited files.
 	DeleteOldVersion bool
+	// Format is the mod.ID format UniqueID belongs to; empty is SMAPI, the only format a manifest.json is read in.
+	Format string
 }
 
 // Dependency is one mod another mod needs; Required defaults to true when the manifest omits IsRequired.
@@ -307,7 +309,12 @@ func GitHubUpdateKey(key string) (string, bool) {
 }
 
 // ModID is the manifest's mod as a mod.ID.
-func (m Manifest) ModID() mod.ID { return mod.SMAPI(m.UniqueID) }
+func (m Manifest) ModID() mod.ID {
+	if m.Format != "" {
+		return mod.NewID(m.Format, m.UniqueID)
+	}
+	return mod.SMAPI(m.UniqueID)
+}
 
 // ContentPackForID is the ContentPackFor framework as a mod.ID, empty when the manifest declares none.
 func (m Manifest) ContentPackForID() mod.ID {
@@ -325,9 +332,12 @@ func (d Dependency) Dep() deps.Dependency {
 // ModID is the needed mod as a mod.ID.
 func (d Dependency) ModID() mod.ID { return mod.SMAPI(d.UniqueID) }
 
-// WithModID returns the manifest with the SMAPI unique id of id, for a manifest built from another source's data.
+// WithModID returns the manifest naming id, for a manifest built from another source's data.
 func (m Manifest) WithModID(id mod.ID) Manifest {
-	m.UniqueID = id.Local()
+	m.UniqueID, m.Format = id.Local(), ""
+	if f := id.Format(); f != mod.FormatSMAPI {
+		m.Format = f
+	}
 	return m
 }
 
