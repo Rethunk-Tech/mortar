@@ -992,7 +992,7 @@ msgstr "Tabs"
 
 #: src/browse/BrowseShow.tsx:24
 #: src/mods/CompatChip.tsx:24
-#: src/mods/ModDependencyTree.tsx:99
+#: src/mods/ModDependencyTree.tsx:106
 msgid "Broken"
 msgstr "Broken"
 
@@ -1764,7 +1764,7 @@ msgstr "Peak ms"
 msgid "Could not add the download"
 msgstr "Could not add the download"
 
-#: src/mods/ModDependencyTree.tsx:200
+#: src/mods/ModDependencyTree.tsx:211
 #: src/mods/ModDetail.tsx:265
 msgid "Needed by"
 msgstr "Needed by"
@@ -4057,7 +4057,7 @@ msgstr "Show in queue"
 #: src/mods/AuthorDialog.tsx:134
 #: src/mods/listRows.ts:134
 #: src/mods/ModCards.tsx:458
-#: src/mods/ModDependencyTree.tsx:103
+#: src/mods/ModDependencyTree.tsx:110
 #: src/mods/ModDetail.tsx:57
 #: src/mods/ModList.tsx:388
 #: src/mods/OptionalFileRows.tsx:122
@@ -4213,7 +4213,7 @@ msgstr "Get the extension"
 
 #: src/bundles/BundlesSection.tsx:110
 #: src/game/Hero.tsx:273
-#: src/mods/ModDependencyTree.tsx:162
+#: src/mods/ModDependencyTree.tsx:173
 #: src/mods/Toolbar.tsx:196
 #: src/settings/prefCopy.ts:122
 msgid "None"
@@ -4980,7 +4980,7 @@ msgid "Warn"
 msgstr "Warn"
 
 #: src/mods/columnLabel.ts:18
-#: src/mods/ModDependencyTree.tsx:199
+#: src/mods/ModDependencyTree.tsx:210
 #: src/mods/ModDetail.tsx:237
 msgid "Needs"
 msgstr "Needs"
@@ -7241,7 +7241,7 @@ msgid "Added {name}"
 msgstr "Added {name}"
 
 #: src/mods/CompatChip.tsx:22
-#: src/mods/ModDependencyTree.tsx:96
+#: src/mods/ModDependencyTree.tsx:103
 #: src/mods/ModDetail.tsx:66
 msgid "Optional"
 msgstr "Optional"
@@ -8172,7 +8172,7 @@ msgstr "unverified until downloaded"
 msgid "Something went wrong"
 msgstr "Something went wrong"
 
-#: src/mods/ModDependencyTree.tsx:97
+#: src/mods/ModDependencyTree.tsx:104
 msgid "already listed"
 msgstr "already listed"
 
@@ -9653,7 +9653,7 @@ msgstr "Auto-enable requirements"
 #: src/mods/AuthorDialog.tsx:133
 #: src/mods/listRows.ts:134
 #: src/mods/ModCards.tsx:457
-#: src/mods/ModDependencyTree.tsx:101
+#: src/mods/ModDependencyTree.tsx:108
 #: src/mods/ModList.tsx:387
 #: src/mods/Sidebar.tsx:317
 #: src/mods/Sidebar.tsx:330
@@ -10298,7 +10298,7 @@ msgstr "Copy details"
 msgid "FromArea {0}"
 msgstr "FromArea {0}"
 
-#: src/mods/ModDependencyTree.tsx:96
+#: src/mods/ModDependencyTree.tsx:103
 msgid "Required"
 msgstr "Required"
 
@@ -11150,7 +11150,7 @@ msgstr "Sampled"
 msgid "Rename group"
 msgstr "Rename group"
 
-#: src/mods/ModDependencyTree.tsx:105
+#: src/mods/ModDependencyTree.tsx:112
 #: src/mods/ModDetail.tsx:56
 #: src/saves/SaveGapLine.tsx:26
 msgid "Missing"
@@ -11733,7 +11733,7 @@ msgid "Continue"
 msgstr "Continue"
 
 #: src/browse/BrowseDetails.tsx:94
-#: src/mods/ModDependencyTree.tsx:198
+#: src/mods/ModDependencyTree.tsx:209
 #: src/mods/NexusDetails.tsx:233
 msgid "Dependencies"
 msgstr "Dependencies"
