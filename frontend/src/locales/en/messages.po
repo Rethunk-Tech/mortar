@@ -208,7 +208,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
-#: src/game/Hero.tsx:341
+#: src/game/Hero.tsx:340
 #: src/mods/Sidebar.tsx:153
 msgid "Updated"
 msgstr "Updated"
@@ -244,7 +244,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/saves/SaveRow.tsx:95
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
-#: src/toasts/HistoryButton.tsx:29
+#: src/toasts/HistoryButton.tsx:30
 #: src/toasts/ToastHost.tsx:132
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
@@ -1502,7 +1502,7 @@ msgstr "Changelog unavailable"
 msgid "List view"
 msgstr "List view"
 
-#: src/toasts/HistoryButton.tsx:161
+#: src/toasts/HistoryButton.tsx:162
 msgid "Earlier"
 msgstr "Earlier"
 
@@ -1639,7 +1639,7 @@ msgstr "Mortar has not asked {0} this session."
 msgid "Don't ask again about {0}"
 msgstr "Don't ask again about {0}"
 
-#: src/game/Hero.tsx:148
+#: src/game/Hero.tsx:144
 msgid "Unlink"
 msgstr "Unlink"
 
@@ -3555,6 +3555,10 @@ msgstr "Bundle deleted"
 msgid "Shortcuts"
 msgstr "Shortcuts"
 
+#: src/queue/QueueButton.tsx:20
+msgid "{left, plural, one {Downloads, # left} other {Downloads, # left}}"
+msgstr "{left, plural, one {Downloads, # left} other {Downloads, # left}}"
+
 #: src/bundles/BundleRow.tsx:85
 msgid "A bundle keeps at least one mod; delete the bundle instead"
 msgstr "A bundle keeps at least one mod; delete the bundle instead"
@@ -3632,7 +3636,7 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 msgid "Search archives"
 msgstr "Search archives"
 
-#: src/game/Hero.tsx:342
+#: src/game/Hero.tsx:341
 msgid "Created"
 msgstr "Created"
 
@@ -4210,7 +4214,7 @@ msgstr "Violet"
 msgid "Unknown"
 msgstr "Unknown"
 
-#: src/game/Hero.tsx:144
+#: src/game/Hero.tsx:140
 msgid "Review revision {review}"
 msgstr "Review revision {review}"
 
@@ -4830,8 +4834,8 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/mods/columnLabel.ts:15
 #: src/mods/NexusDetails.tsx:109
 #: src/mods/Sidebar.tsx:152
-#: src/queue/QueueButton.tsx:14
-#: src/queue/QueueButton.tsx:17
+#: src/queue/QueueButton.tsx:15
+#: src/queue/QueueButton.tsx:21
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:183
 #: src/settings/SettingsPage.tsx:39
@@ -5207,7 +5211,7 @@ msgstr "Open mod"
 msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
-#: src/game/Hero.tsx:171
+#: src/game/Hero.tsx:177
 #: src/game/NewProfileDialog.tsx:212
 #: src/profiles/ProfileRow.tsx:219
 msgid "Profile name"
@@ -5506,7 +5510,7 @@ msgstr "Farming skill"
 msgid "Stop the game to install {0}."
 msgstr "Stop the game to install {0}."
 
-#: src/toasts/HistoryButton.tsx:148
+#: src/toasts/HistoryButton.tsx:149
 msgid "No notifications yet"
 msgstr "No notifications yet"
 
@@ -5743,9 +5747,7 @@ msgid "No profiles found."
 msgstr "No profiles found."
 
 #. placeholder {0}: game.name
-#. placeholder {0}: profile.name
 #: src/games/GameSelect.tsx:233
-#: src/games/ProfileCards.tsx:134
 msgid "Open {0}"
 msgstr "Open {0}"
 
@@ -5918,8 +5920,8 @@ msgstr "Could not remove the selected mods"
 #: src/commandPalette/CommandPalette.tsx:155
 #: src/settings/sections/DataImport.tsx:19
 #: src/settings/SettingsPage.tsx:43
-#: src/toasts/HistoryButton.tsx:141
-#: src/toasts/HistoryButton.tsx:212
+#: src/toasts/HistoryButton.tsx:142
+#: src/toasts/HistoryButton.tsx:216
 #: src/toasts/ToastHost.tsx:252
 msgid "Notifications"
 msgstr "Notifications"
@@ -6146,7 +6148,7 @@ msgstr "Press Play to start."
 #: src/console/PerformanceComparison.tsx:66
 #: src/mods/ChangelogDialog.tsx:35
 #: src/mods/NewSince.tsx:14
-#: src/toasts/HistoryButton.tsx:153
+#: src/toasts/HistoryButton.tsx:154
 msgid "New"
 msgstr "New"
 
@@ -7050,17 +7052,13 @@ msgstr "Remove {0} from other profiles"
 msgid "All sources"
 msgstr "All sources"
 
-#: src/toasts/HistoryButton.tsx:120
+#: src/toasts/HistoryButton.tsx:121
 msgid "Notification history"
 msgstr "Notification history"
 
 #: src/console/StartupSections.tsx:115
 msgid "Where the time goes"
 msgstr "Where the time goes"
-
-#: src/game/Hero.tsx:338
-msgid "Open Saves ({fitting} of {total})"
-msgstr "Open Saves ({fitting} of {total})"
 
 #: src/install/DownloadsDialog.tsx:100
 #: src/install/DownloadsDialog.tsx:184
@@ -7430,7 +7428,7 @@ msgstr "Choose cover image…"
 msgid "Search in Browse"
 msgstr "Search in Browse"
 
-#: src/toasts/HistoryButton.tsx:149
+#: src/toasts/HistoryButton.tsx:150
 msgid "Results of installs, updates and launches appear here."
 msgstr "Results of installs, updates and launches appear here."
 
@@ -7860,7 +7858,7 @@ msgstr "Reading the changelog…"
 msgid "After"
 msgstr "After"
 
-#: src/toasts/HistoryButton.tsx:171
+#: src/toasts/HistoryButton.tsx:172
 msgid "All changes…"
 msgstr "All changes…"
 
@@ -8123,7 +8121,7 @@ msgstr "unverified until downloaded"
 
 #: src/firstrun/GameSetup.tsx:132
 #: src/toasts/report.ts:28
-#: src/toasts/report.ts:103
+#: src/toasts/report.ts:107
 #: src/toasts/usePending.ts:31
 msgid "Something went wrong"
 msgstr "Something went wrong"
@@ -8783,7 +8781,7 @@ msgstr "AGPL-3.0 · Rethunk-Tech/mortar"
 
 #. placeholder {0}: line.name
 #. placeholder {1}: line.revision
-#: src/game/Hero.tsx:136
+#: src/game/Hero.tsx:132
 msgid "From collection {0}, revision {1}"
 msgstr "From collection {0}, revision {1}"
 
@@ -9023,7 +9021,7 @@ msgid "Slate"
 msgstr "Slate"
 
 #: src/commandPalette/CommandPalette.tsx:154
-#: src/game/Hero.tsx:248
+#: src/game/Hero.tsx:254
 #: src/mods/SlowStartupSection.tsx:73
 #: src/settings/SettingsPage.tsx:42
 msgid "Updates"
@@ -11049,7 +11047,7 @@ msgstr "Hide"
 msgid "Hide details"
 msgstr "Hide details"
 
-#: src/toasts/HistoryButton.tsx:156
+#: src/toasts/HistoryButton.tsx:157
 msgid "Nothing new"
 msgstr "Nothing new"
 
@@ -11366,10 +11364,6 @@ msgstr "SMAPI {0} is out"
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
-#: src/game/Hero.tsx:251
-msgid "{updateN, plural, one {Review # update} other {Review # updates}}"
-msgstr "{updateN, plural, one {Review # update} other {Review # updates}}"
-
 #: src/commandPalette/paletteLabels.ts:8
 #: src/settings/shortcutLabels.ts:11
 #: src/shell/AppMenu.tsx:127
@@ -11545,6 +11539,10 @@ msgstr "Search Nexus Mods. Download installs the mod into this profile."
 msgid "Check only enabled mods"
 msgstr "Check only enabled mods"
 
+#: src/toasts/HistoryButton.tsx:215
+msgid "{unread, plural, one {Notifications, # unread} other {Notifications, # unread}}"
+msgstr "{unread, plural, one {Notifications, # unread} other {Notifications, # unread}}"
+
 #: src/settings/shortcutLabels.ts:13
 msgid "Close dialog or clear selection"
 msgstr "Close dialog or clear selection"
@@ -11647,7 +11645,7 @@ msgstr "Enable them too"
 
 #: src/console/LogActions.tsx:182
 #: src/settings/sections/GameSettings.tsx:375
-#: src/toasts/HistoryButton.tsx:143
+#: src/toasts/HistoryButton.tsx:144
 msgid "Clear"
 msgstr "Clear"
 

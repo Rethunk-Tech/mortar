@@ -127,11 +127,9 @@ function ProfileCard({
   onOpen: (ev: MouseEvent) => void
 }) {
   const counts = useBadges((s) => s.byProfile[profile.id])
-  const { t } = useLingui()
   return (
     <ButtonBase
       component="div"
-      aria-label={t`Open ${profile.name}`}
       onClick={onOpen}
       sx={{
         display: 'flex',

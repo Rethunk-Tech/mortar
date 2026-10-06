@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Badge, Box, ButtonBase, Tooltip } from '@mui/material'
 import { Download } from 'lucide-react'
@@ -14,7 +15,11 @@ export function QueueButton() {
       <Tooltip title={t`Downloads`}>
         <ButtonBase
           onClick={() => setOpen(true)}
-          aria-label={t`Downloads`}
+          aria-label={
+            left > 0
+              ? plural(left, { one: 'Downloads, # left', other: 'Downloads, # left' })
+              : t`Downloads`
+          }
           sx={{
             width: 40,
             height: 40,
@@ -22,7 +27,12 @@ export function QueueButton() {
             '&:hover': { bgcolor: 'action.hover' },
           }}
         >
-          <Badge badgeContent={left} color="primary" max={99}>
+          <Badge
+            badgeContent={left}
+            color="primary"
+            max={99}
+            slotProps={{ badge: { 'aria-hidden': true } }}
+          >
             <Download size={18} aria-hidden={true} />
           </Badge>
         </ButtonBase>

@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Badge, Box, Button, IconButton, Popover, Tooltip, Typography } from '@mui/material'
 import { Bell } from 'lucide-react'
@@ -209,13 +210,22 @@ export function HistoryButton() {
     <>
       <IconButton
         ref={bell}
-        aria-label={t`Notifications`}
+        aria-label={
+          unread > 0
+            ? plural(unread, { one: 'Notifications, # unread', other: 'Notifications, # unread' })
+            : t`Notifications`
+        }
         aria-haspopup="dialog"
         aria-expanded={historyOpen}
         onClick={(e) => open(e.currentTarget)}
         sx={{ width: 40, height: 40, borderRadius: '6px' }}
       >
-        <Badge badgeContent={unread} color="primary" max={99}>
+        <Badge
+          badgeContent={unread}
+          color="primary"
+          max={99}
+          slotProps={{ badge: { 'aria-hidden': true } }}
+        >
           <Bell size={18} aria-hidden={true} />
         </Badge>
       </IconButton>
