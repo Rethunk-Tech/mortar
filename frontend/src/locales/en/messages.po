@@ -961,7 +961,7 @@ msgstr "Don't ask again"
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
-#: src/settings/sections/Shortcuts.tsx:170
+#: src/settings/sections/Shortcuts.tsx:160
 msgid "Tabs"
 msgstr "Tabs"
 
@@ -1415,8 +1415,8 @@ msgstr "Newest lines kept in the Console"
 
 #: src/mods/typedConfig/ConfigPane.tsx:158
 #: src/mods/typedConfig/ConfigPane.tsx:238
-#: src/settings/sections/Shortcuts.tsx:106
-#: src/settings/sections/Shortcuts.tsx:112
+#: src/settings/sections/Shortcuts.tsx:96
+#: src/settings/sections/Shortcuts.tsx:102
 msgid "Reset all"
 msgstr "Reset all"
 
@@ -2540,7 +2540,7 @@ msgstr "Offer to add new mod archives that land in your Downloads folder or Mort
 msgid "Empty follows the latest release"
 msgstr "Empty follows the latest release"
 
-#: src/settings/sections/Shortcuts.tsx:111
+#: src/settings/sections/Shortcuts.tsx:101
 msgid "Every key returns to its default."
 msgstr "Every key returns to its default."
 
@@ -4046,7 +4046,7 @@ msgstr "Mortar uses your gh login for GitHub requests, which raises the rate lim
 msgid "{0} {1} has several archives. Which one should Mortar install?"
 msgstr "{0} {1} has several archives. Which one should Mortar install?"
 
-#: src/settings/sections/Shortcuts.tsx:90
+#: src/settings/sections/Shortcuts.tsx:80
 msgid "Reset {label}"
 msgstr "Reset {label}"
 
@@ -6646,7 +6646,7 @@ msgstr "Place…"
 msgid "Hide my user name"
 msgstr "Hide my user name"
 
-#: src/settings/sections/Shortcuts.tsx:64
+#: src/settings/sections/Shortcuts.tsx:53
 msgid "Already used by {conflictName}"
 msgstr "Already used by {conflictName}"
 
@@ -7359,7 +7359,7 @@ msgstr "This optional file replaces files of {0}. Pick where its files go."
 msgid "Could not copy the report"
 msgstr "Could not copy the report"
 
-#: src/settings/sections/Shortcuts.tsx:70
+#: src/settings/sections/Shortcuts.tsx:60
 msgid "Change shortcut for {label}, currently {keys}"
 msgstr "Change shortcut for {label}, currently {keys}"
 
@@ -7464,7 +7464,7 @@ msgstr "Copy OBS URL"
 msgid "Command copied"
 msgstr "Command copied"
 
-#: src/settings/sections/Shortcuts.tsx:169
+#: src/settings/sections/Shortcuts.tsx:159
 msgid "Mods list"
 msgstr "Mods list"
 
@@ -8136,7 +8136,7 @@ msgstr "Send to an address…"
 msgid "Settings changes {0}"
 msgstr "Settings changes {0}"
 
-#: src/settings/sections/Shortcuts.tsx:84
+#: src/settings/sections/Shortcuts.tsx:74
 msgid "Press a key"
 msgstr "Press a key"
 
@@ -8148,7 +8148,7 @@ msgstr "{label} is not in {0}"
 #: src/mods/ModDetail.tsx:165
 #: src/mods/ModDetail.tsx:199
 #: src/settings/sections/GameSettings.tsx:249
-#: src/settings/sections/Shortcuts.tsx:93
+#: src/settings/sections/Shortcuts.tsx:83
 #: src/share/ImportFooter.tsx:95
 msgid "Reset"
 msgstr "Reset"
@@ -8670,7 +8670,7 @@ msgstr "Open folder"
 msgid "Requests"
 msgstr "Requests"
 
-#: src/settings/sections/Shortcuts.tsx:110
+#: src/settings/sections/Shortcuts.tsx:100
 msgid "Reset every shortcut?"
 msgstr "Reset every shortcut?"
 
@@ -10519,7 +10519,7 @@ msgstr "Sidebar"
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
-#: src/settings/sections/Shortcuts.tsx:167
+#: src/settings/sections/Shortcuts.tsx:157
 msgid "Navigation"
 msgstr "Navigation"
 
@@ -10884,7 +10884,7 @@ msgstr "Player"
 #: src/profiles/ProfilesPage.tsx:338
 #: src/settings/sections/AboutDiagnostics.tsx:96
 #: src/settings/sections/DataUsage.tsx:204
-#: src/settings/sections/Shortcuts.tsx:168
+#: src/settings/sections/Shortcuts.tsx:158
 msgid "Profiles"
 msgstr "Profiles"
 
@@ -11051,7 +11051,7 @@ msgstr "Source"
 
 #: src/commandPalette/CommandPalette.tsx:141
 #: src/settings/sections/DataImport.tsx:29
-#: src/settings/sections/Shortcuts.tsx:166
+#: src/settings/sections/Shortcuts.tsx:156
 #: src/settings/SettingsPage.tsx:36
 msgid "General"
 msgstr "General"

@@ -31,7 +31,7 @@ function useSectionTitle() {
       case 'runErrors':
         return t`Last run`
       case 'loadFailures':
-        return t`Failed to load`
+        return t`Did not load`
       case 'pluginClashes':
         return t`Duplicate plugins`
       case 'drift':

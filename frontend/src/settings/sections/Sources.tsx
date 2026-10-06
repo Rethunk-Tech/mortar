@@ -34,7 +34,7 @@ function Connection({ id, state }: { id: SourceId; state: State | undefined }) {
     chip = <Chip size="small" color="error" label={t`Unreachable`} />
     const error = state.lastError
     detail = seen(state.lastFail)
-      ? t`Failed ${formatWhen(state.lastFail)}: ${error}`
+      ? t`No answer ${formatWhen(state.lastFail)}: ${error}`
       : t`Could not be reached: ${error}`
   } else if (state && seen(state.lastOK)) {
     chip = <Chip size="small" color="success" label={t`Reachable`} />
