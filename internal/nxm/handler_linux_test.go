@@ -384,6 +384,8 @@ func TestPackagedRegisterSetsNxmDefaultWithoutWriting(t *testing.T) {
 	packaged = "deb"
 	t.Cleanup(func() { packaged = "" })
 	l, r := newLinux(t, "vortex.desktop")
+	// The package's system entry is the handler even beside an integrator's for the same program.
+	writeApp(t, l, gearLever, gearLeverEntry(l.exe))
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
@@ -445,48 +447,97 @@ func TestRefreshUpdatesIconsWhenAnotherCopyOwnsTheEntry(t *testing.T) {
 	}
 }
 
-func TestAnIntegratorsEntryHidesOurs(t *testing.T) {
-	l, _ := newLinux(t, "")
-	l.exe = "/home/u/Apps/mortar.appimage"
+// writeApp writes a desktop entry into the user's applications folder.
+func writeApp(t *testing.T, l *System, name, body string) {
+	t.Helper()
 	apps := filepath.Join(l.dataHome, "applications")
 	if err := os.MkdirAll(apps, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	// Our own profile shortcut and a hidden entry naming the same executable do not count as a launcher.
-	shortcut := "[Desktop Entry]\nExec=\"" + l.exe + "\" --play=stardew/x\n"
-	hiddenOther := "[Desktop Entry]\nExec=" + l.exe + "\nNoDisplay=true\n"
-	for name, body := range map[string]string{linuxAppID + ".play-stardew-x.desktop": shortcut, "other.desktop": hiddenOther} {
-		if err := fsx.WriteFile(filepath.Join(apps, name), []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+	if err := fsx.WriteFile(filepath.Join(apps, name), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
 	}
+}
+
+const gearLever = "mortar.appimage_0.desktop"
+
+func gearLeverEntry(exe string) string {
+	return "[Desktop Entry]\nName=Mortar\nExec=env DESKTOPINTEGRATION=1 " + exe + " %u\nX-AppImage-Name=Mortar\n"
+}
+
+func TestNoIntegratorWritesOurEntry(t *testing.T) {
+	l, r := newLinux(t, "")
+	// Our own profile shortcut and an entry that cannot take a link do not count as an integrator's.
+	writeApp(t, l, linuxAppID+".play-stardew-x.desktop", "[Desktop Entry]\nExec=\""+l.exe+"\" --play=stardew/x\n")
+	writeApp(t, l, "other.desktop", "[Desktop Entry]\nExec="+l.exe+"\n")
 	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
-	if desktop, _ := fsx.ReadFile(l.desktopPath()); strings.Contains(string(desktop), "NoDisplay") {
-		t.Fatalf("hidden without an integrator: %s", desktop)
+	if _, err := os.Stat(l.desktopPath()); err != nil {
+		t.Fatalf("own entry: %v", err)
 	}
+	if r.byMime[schemeMime("nxm")] != desktopID {
+		t.Fatalf("defaults: %v", r.byMime)
+	}
+}
 
-	gear := filepath.Join(apps, "mortar.desktop")
-	if err := fsx.WriteFile(gear, []byte("[Desktop Entry]\nName=Mortar\nExec=env DESKTOPINTEGRATION=1 "+l.exe+" %u\n"), 0o600); err != nil {
+func TestAnIntegratorsEntryIsTheHandler(t *testing.T) {
+	l, r := newLinux(t, "vortex.desktop")
+	l.exe = "/home/u/Apps/mortar.appimage_0.appimage"
+	writeApp(t, l, "appimagekit_other.desktop", "[Desktop Entry]\nExec=\""+l.exe+"\" %U\n")
+	writeApp(t, l, gearLever, gearLeverEntry(l.exe))
+	for range 2 {
+		if err := l.Register(); err != nil {
+			t.Fatal(err)
+		}
+		if err := l.RegisterLinks(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("wrote its own entry beside the integrator's: %v", err)
+	}
+	for _, mime := range []string{schemeMime("nxm"), mortarMime, fileMime} {
+		if r.byMime[mime] != gearLever {
+			t.Errorf("%s default %q", mime, r.byMime[mime])
+		}
+	}
+	if owner, _ := l.Owner("nxm"); !owner.Mine || owner.Name != "Mortar" {
+		t.Errorf("owner: %+v", owner)
+	}
+	if l.NotificationIcon() == "" {
+		t.Error("no notification icon")
+	}
+}
+
+func TestAnIntegratorReplacesOurStaleEntry(t *testing.T) {
+	l, r := newLinux(t, "")
+	l.exe = "/home/u/Apps/mortar.appimage_0.appimage"
+	if err := l.Register(); err != nil {
 		t.Fatal(err)
 	}
+	if err := l.RegisterLinks(); err != nil {
+		t.Fatal(err)
+	}
+	r.byMime["x-scheme-handler/http"] = "firefox.desktop"
+	writeApp(t, l, gearLever, gearLeverEntry(l.exe))
+	r.calls = nil
 	if err := l.refresh(); err != nil {
 		t.Fatal(err)
 	}
-	desktop, _ := fsx.ReadFile(l.desktopPath())
-	if !strings.Contains(string(desktop), "\nNoDisplay=true\n") || !strings.Contains(string(desktop), schemeMime("nxm")) {
-		t.Fatalf("integrated entry: %s", desktop)
+	if _, err := os.Stat(l.desktopPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("stale own entry kept: %v", err)
 	}
-
-	if err := os.Remove(gear); err != nil {
-		t.Fatal(err)
+	if !slices.Contains(r.calls, updateDB+" "+filepath.Dir(l.desktopPath())) {
+		t.Errorf("desktop database not rebuilt: %q", r.calls)
 	}
-	if err := l.refresh(); err != nil {
-		t.Fatal(err)
+	for _, mime := range append(schemeMimes(), mortarMime, fileMime) {
+		if r.byMime[mime] != gearLever {
+			t.Errorf("%s default %q", mime, r.byMime[mime])
+		}
 	}
-	if desktop, _ := fsx.ReadFile(l.desktopPath()); strings.Contains(string(desktop), "NoDisplay") {
-		t.Errorf("still hidden after the integrator's entry went: %s", desktop)
+	if r.byMime["x-scheme-handler/http"] != "firefox.desktop" {
+		t.Error("another type's default moved")
 	}
 }
 

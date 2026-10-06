@@ -69,7 +69,7 @@ func (l *System) setDefaults() error {
 }
 
 func (l *System) setDefault(mime string) error {
-	if _, err := l.mimeDefaults("default", desktopID, mime); err != nil {
+	if _, err := l.mimeDefaults("default", l.handlerID(), mime); err != nil {
 		return fmt.Errorf("xdg-mime default: %w", err)
 	}
 	return nil
@@ -123,7 +123,7 @@ func (l *System) Owner(scheme string) (Owner, error) {
 		return Owner{}, fmt.Errorf("xdg-mime query: %w", err)
 	}
 	id := strings.TrimSpace(out)
-	return Owner{ID: id, Name: l.appName(id), Mine: id == desktopID}, nil
+	return Owner{ID: id, Name: l.appName(id), Mine: id != "" && id == l.handlerID()}, nil
 }
 
 // appName is the Name= of the desktop file, or the file's id without its extension.
@@ -189,41 +189,81 @@ Categories=Game;Utility;
 Keywords=mod;manager;nexus;stardew;
 StartupWMClass=%s
 MimeType=%s
-%s`, quoteExec(l.exe), linuxAppID, mime, l.hidden())
+`, quoteExec(l.exe), linuxAppID, mime)
 }
 
-// hidden keeps Mortar's own entry out of the launcher when another visible entry in the user's applications folder
-// runs this executable: an AppImage integrator such as GearLever owns the launcher then, and this entry stays only as
-// the link and file handler, so the launcher does not list Mortar twice.
-func (l *System) hidden() string {
+// integrator is the id of an entry in the user's applications folder that an AppImage integrator (GearLever,
+// AppImageLauncher, appimaged) wrote to run this executable on a link, or "". That entry is then the launcher and the
+// link handler, and an entry of Mortar's own beside it would list Mortar twice for every scheme. An entry whose Exec
+// sets DESKTOPINTEGRATION, the integrators' mark, wins over one that only names the executable.
+func (l *System) integrator() string {
+	if skipUserDesktop() {
+		return ""
+	}
 	dir := filepath.Join(l.dataHome, "applications")
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return ""
 	}
+	found := ""
 	for _, e := range entries {
 		name := e.Name()
 		// Mortar's own entry and its profile shortcuts all start with the app id.
 		if !strings.HasSuffix(name, ".desktop") || strings.HasPrefix(name, linuxAppID) {
 			continue
 		}
-		b, err := fsx.ReadFile(filepath.Join(dir, name))
-		if err != nil || strings.Contains(string(b), "\nNoDisplay=true") {
+		argv := splitDesktopExec(desktopExec(filepath.Join(dir, name)))
+		marked := false
+		if len(argv) > 0 && filepath.Base(argv[0]) == "env" {
+			argv = argv[1:]
+			for len(argv) > 0 && strings.Contains(argv[0], "=") {
+				marked = marked || strings.HasPrefix(argv[0], "DESKTOPINTEGRATION=")
+				argv = argv[1:]
+			}
+		}
+		if len(argv) < 2 || argv[0] != l.exe || !slices.ContainsFunc(argv[1:], func(a string) bool { return a == "%u" || a == "%U" }) {
 			continue
 		}
-		for line := range strings.SplitSeq(string(b), "\n") {
-			exec, ok := strings.CutPrefix(line, "Exec=")
-			if !ok {
-				continue
-			}
-			for f := range strings.FieldsSeq(exec) {
-				if strings.Trim(f, `"`) == l.exe {
-					return "NoDisplay=true\n"
-				}
+		if marked {
+			return name
+		}
+		if found == "" {
+			found = name
+		}
+	}
+	return found
+}
+
+// handlerID is the desktop entry Mortar makes the default: an integrator's when there is one, else its own.
+func (l *System) handlerID() string {
+	if id := l.integrator(); id != "" {
+		return id
+	}
+	return desktopID
+}
+
+// yieldTo removes Mortar's own entry in favour of the integrator's entry id and moves every default it held there.
+func (l *System) yieldTo(id string) error {
+	// Notifications still attach the icon.
+	if err := l.installIcons(); err != nil {
+		return err
+	}
+	path := l.desktopPath()
+	if _, err := fsx.Stat(path); errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err := fsx.RemoveAll(path); err != nil {
+		return err
+	}
+	_, _ = l.run(updateDB, filepath.Dir(path))
+	for _, mime := range append(schemeMimes(), mortarMime, fileMime) {
+		if out, err := l.mimeDefaults("query", "default", mime); err == nil && strings.TrimSpace(out) == desktopID {
+			if _, err := l.mimeDefaults("default", id, mime); err != nil {
+				return fmt.Errorf("xdg-mime default: %w", err)
 			}
 		}
 	}
-	return ""
+	return nil
 }
 
 func quoteExec(path string) string {
@@ -287,6 +327,9 @@ func (l *System) installIcons() error {
 }
 
 func (l *System) writeDesktop(withSchemes bool) error {
+	if id := l.integrator(); id != "" {
+		return l.yieldTo(id)
+	}
 	path := l.desktopPath()
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
@@ -388,9 +431,10 @@ func (l *System) dropDefault(mimes ...string) error {
 		return err
 	}
 	lines := strings.Split(string(b), "\n")
+	ids := []string{desktopID, l.handlerID()}
 	kept := slices.DeleteFunc(slices.Clone(lines), func(s string) bool {
 		k, v, ok := strings.Cut(strings.TrimSpace(s), "=")
-		return ok && slices.Contains(mimes, k) && strings.TrimSuffix(v, ";") == desktopID
+		return ok && slices.Contains(mimes, k) && slices.Contains(ids, strings.TrimSuffix(v, ";"))
 	})
 	if len(kept) == len(lines) {
 		return nil
@@ -499,6 +543,9 @@ func execTarget(entry []byte) string {
 
 // rewrite writes the desktop entry unless current already is it, keeping the source schemes as current has them.
 func (l *System) rewrite(current []byte) error {
+	if id := l.integrator(); id != "" {
+		return l.yieldTo(id)
+	}
 	mimes := schemeMimes()
 	withSchemes := len(mimes) > 0 && strings.Contains(string(current), mimes[0])
 	if string(current) == l.desktopFile(withSchemes) {
