@@ -439,7 +439,13 @@ function ActionRows({
 }
 
 const rowLink = { display: 'block', fontSize: 14, textAlign: 'left' } as const
-const isGitHub = (url: string) => URL.canParse(url) && new URL(url).hostname.endsWith('github.com')
+const isGitHub = (url: string) => {
+  if (!URL.canParse(url)) {
+    return false
+  }
+  const host = new URL(url).hostname
+  return host === 'github.com' || host.endsWith('.github.com')
+}
 
 // Opening or switching paints the panel's top at once; these sections follow in a render that never blocks input,
 // and a toggle or profile save re-renders them there too.
