@@ -21,6 +21,7 @@ import { useDetail } from './detail.ts'
 import { problemsOf, sameId } from './lookup.ts'
 import { openPage } from './menu.ts'
 import { heading } from './paper.ts'
+import { useRequirementName } from './requirementName.ts'
 import { useMods } from './store.ts'
 
 const noWrap = { whiteSpace: 'nowrap' } as const
@@ -92,14 +93,7 @@ function NodeRow({ node, mods, depth }: { node: DepViewNode; mods: Mod[]; depth:
   const { t } = useLingui()
   const show = useDetail((s) => s.show)
   const listed = mods.find((m) => sameId(m.id, node.id))
-  // A requirement the profile lacks is named by the page that offers it, as on the Problems tab.
-  const page = useMods((s) => {
-    const hit = problemsOf(s.problems).find(
-      (p) => p.kind === 'missing' && sameId(p.missing.id, node.id),
-    )
-    return hit?.kind === 'missing' ? (hit.missing.where?.pageName?.trim() ?? '') : ''
-  })
-  const label = listed?.name || page || localId(node.id)
+  const label = useRequirementName(node.id)
   const mark = node.required ? t`Required` : t`Optional`
   const already = t`already listed`
   const edgeNote = node.cycle ? `${mark} · ${already}` : mark

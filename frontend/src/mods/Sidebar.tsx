@@ -54,6 +54,7 @@ import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { usePackageChangelog } from './packageChangelog.ts'
 import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
+import { useRequirementName } from './requirementName.ts'
 import { useMods } from './store.ts'
 import { EditConfigButton } from './typedConfig/EditConfigButton.tsx'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
@@ -337,8 +338,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
 // The one fact the header does not already show: the source sits under the name and the switch shows on or off.
 function ModChips({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const host = localId(mod.contentPackFor ?? '')
-  const hostName = useMods((s) => s.mods.find((m) => sameId(localId(m.id), host))?.name) || host
+  const hostName = useRequirementName(mod.contentPackFor ?? '')
   if (!mod.contentPackFor) {
     return null
   }
