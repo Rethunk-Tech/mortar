@@ -20,7 +20,7 @@ func (s *Store) SetWinner(game, profileID, winnerKey string, loser mod.ID, on bo
 	if !on {
 		drop = []mod.ID{loser}
 	}
-	return s.updateMods(game, profileID, func(p *Profile, dir string) error {
+	p, err := s.updateMods(game, profileID, func(p *Profile, dir string) error {
 		i := entryIndex(p.Entries, winnerKey)
 		if i < 0 {
 			return fmt.Errorf("mod %q is not in this profile", winnerKey)
@@ -30,6 +30,10 @@ func (s *Store) SetWinner(game, profileID, winnerKey string, loser mod.ID, on bo
 		p.Entries[i] = e
 		return applyLoadAfter(filepath.Join(dir, "mods", e.Key), e, drop)
 	})
+	if err != nil {
+		return Profile{}, err
+	}
+	return p, s.refreshSnapshotKey(game, profileID, winnerKey)
 }
 
 // SetWinner records or clears a LoadAfter on winnerKey for loser.

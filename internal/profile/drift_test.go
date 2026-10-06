@@ -482,3 +482,33 @@ func TestFolderStatKeptListingsStillSeeEditsAndNewFiles(t *testing.T) {
 		t.Fatalf("new nested file unseen: %+v", added)
 	}
 }
+
+func TestSetWinnerThenScanReportsNoDrift(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "Farm")
+	var winner string
+	for _, id := range []string{"X.Win", "X.Lose"} {
+		zip := buildZip(t, id+".zip", map[string]string{"A/manifest.json": manifestJSON(id)})
+		res, err := e.InstallArchive("stardew", p.ID, zip)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if winner == "" {
+			winner = res.Profile.Entries[len(res.Profile.Entries)-1].Key
+		}
+	}
+	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.SetWinner("stardew", p.ID, winner, "smapi:X.Lose", true); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.ScanModsDrift("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("after Mortar's own make-win: %#v", got)
+	}
+}
