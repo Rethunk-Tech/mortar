@@ -88,8 +88,16 @@ export async function initShare(): Promise<void> {
     const profileId = inGame ? useProfiles.getState().openId : ''
     openImport(a.kind === LINK ? { profileId, link: a.value } : { profileId, file: a.value })
   }
-  Events.On('share:arrived', (e) => arrive(e.data))
-  for (const a of (await Inbox()) ?? []) {
-    arrive(a)
+  // The service keeps every arrival in its inbox, so one the window just received would replay when it reloads or
+  // reopens from the tray unless it is read out too.
+  const drain = async () => {
+    for (const a of (await Inbox()) ?? []) {
+      arrive(a)
+    }
   }
+  Events.On('share:arrived', (e) => {
+    arrive(e.data)
+    drain().catch(reportUnexpected)
+  })
+  await drain()
 }
