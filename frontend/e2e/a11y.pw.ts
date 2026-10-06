@@ -1,0 +1,141 @@
+import AxeBuilder from '@axe-core/playwright'
+import { expect, type Page, test } from '@playwright/test'
+import { openSeedFarm } from './app.ts'
+
+const WCAG_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+const THEMES = ['Dark', 'Light'] as const
+const GAMES = [
+  { name: 'Stardew Valley', profile: 'Seed Farm' },
+  { name: 'Lethal Company', profile: 'Seed Lobby' },
+]
+
+/** Axe's WCAG 2.1 A and AA rules on the page as it stands, as "screen: rule: targets" lines. */
+async function scan(page: Page, screen: string): Promise<string[]> {
+  await page.evaluate(
+    () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+  )
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(WCAG_AA)
+    // Experimental, so off unless named.
+    .options({
+      rules: { 'label-content-name-mismatch': { enabled: true } },
+      // Passes and incomplete results are never read, and serialising them doubles a scan.
+      resultTypes: ['violations'],
+    })
+    .analyze()
+  return violations.map(
+    (v) => `${screen}: ${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+  )
+}
+
+async function openSettings(page: Page, button: string) {
+  await page.getByRole('button', { name: button, exact: true }).click()
+  await expect(page.getByRole('navigation', { name: 'Settings sections' })).toBeVisible()
+}
+
+async function setTheme(page: Page, theme: (typeof THEMES)[number]) {
+  await page.getByRole('button', { name: 'Mortar menu' }).click()
+  await openSettings(page, 'Settings')
+  await page.getByRole('textbox', { name: 'Search settings' }).fill('Theme')
+  await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: theme }).click()
+  await page.keyboard.press('Escape')
+}
+
+/** The open settings screen's first page, or every page. */
+async function scanSettings(page: Page, screen: string, every = true): Promise<string[]> {
+  const nav = page.getByRole('navigation', { name: 'Settings sections' })
+  const found: string[] = []
+  const pages = await nav.locator('button:not([aria-label])').all()
+  for (const button of every ? pages : pages.slice(0, 1)) {
+    await button.click()
+    found.push(...(await scan(page, `${screen} › ${await button.innerText()}`)))
+  }
+  await page.keyboard.press('Escape')
+  return found
+}
+
+async function scanGame(
+  page: Page,
+  game: (typeof GAMES)[number],
+  theme: (typeof THEMES)[number],
+): Promise<string[]> {
+  const found: string[] = []
+  await page.getByRole('button', { name: `Open ${game.name}` }).click({ position: { x: 8, y: 8 } })
+  await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
+  // Mods is scanned below in each of its views.
+  const tabs = page
+    .getByRole('tablist', { name: 'Profile sections' })
+    .getByRole('tab')
+    .filter({ hasNotText: /^Mods$/ })
+  for (const tab of await tabs.all()) {
+    await tab.click()
+    const [name] = (await tab.innerText()).split('\n')
+    found.push(...(await scan(page, `${game.name} › ${name}`)))
+  }
+
+  await page.getByRole('tab', { name: 'Mods' }).click()
+  for (const view of ['List view', 'Grid view']) {
+    await page.getByRole('button', { name: view }).click()
+    found.push(...(await scan(page, `${game.name} › Mods ${view}`)))
+  }
+  await page
+    .getByRole('button', { name: /^Details of / })
+    .first()
+    .click()
+  await expect(page.getByRole('complementary', { name: 'Selected mod' })).toBeVisible()
+  found.push(...(await scan(page, `${game.name} › Mods details`)))
+  await page.keyboard.press('Escape')
+
+  await page
+    .getByRole('button', { name: new RegExp(`^${game.profile}`) })
+    .first()
+    .click({ button: 'right' })
+  await page.getByRole('menuitem', { name: 'Edit profile' }).click()
+  await expect(page.getByRole('dialog', { name: 'Edit profile' })).toBeVisible()
+  found.push(...(await scan(page, `${game.name} › Edit profile`)))
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog', { name: 'Edit profile' })).toBeHidden()
+
+  await openSettings(page, `${game.name} settings`)
+  // The game's settings pages are built from the same rows as Mortar's, which are scanned in both themes.
+  found.push(...(await scanSettings(page, `${game.name} settings`, theme === 'Dark')))
+  return found
+}
+
+test('every main screen of Stardew Valley and Lethal Company passes axe in dark and light', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  // Mortar then drops its transitions, so no surface is scanned halfway through fading in.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await openSeedFarm(page)
+  const found: string[] = []
+  for (const theme of THEMES) {
+    await setTheme(page, theme)
+    await page.getByRole('button', { name: 'Game select' }).click()
+    await expect(page.locator('[data-tile]').first()).toBeVisible()
+    found.push(...(await scan(page, `${theme} › Game select`)))
+    for (const game of GAMES) {
+      found.push(...(await scanGame(page, game, theme)).map((v) => `${theme} › ${v}`))
+      await page.getByRole('button', { name: 'Game select' }).click()
+    }
+    await page
+      .getByRole('button', { name: 'Open Stardew Valley' })
+      .click({ position: { x: 8, y: 8 } })
+
+    // Downloads and notifications float over any screen, and the Mortar settings are the same for every game.
+    await page.keyboard.press('Control+j')
+    await expect(page.getByRole('dialog', { name: 'Downloads' })).toBeVisible()
+    found.push(...(await scan(page, `${theme} › Downloads`)))
+    await page.keyboard.press('Escape')
+    await page.getByRole('button', { name: /^Notifications/ }).click()
+    await expect(page.getByRole('dialog', { name: 'Notification history' })).toBeVisible()
+    found.push(...(await scan(page, `${theme} › Notifications`)))
+    await page.keyboard.press('Escape')
+    await page.getByRole('button', { name: 'Mortar menu' }).click()
+    await openSettings(page, 'Settings')
+    found.push(...(await scanSettings(page, `${theme} › Mortar settings`)))
+  }
+  await setTheme(page, 'Dark')
+  expect(found, 'axe violations').toEqual([])
+})
