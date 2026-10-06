@@ -6,6 +6,10 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source"
+	nexussource "github.com/Rethunk-Tech/mortar/internal/source/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -42,5 +46,34 @@ func TestRelationsOfAThunderstorePackage(t *testing.T) {
 	}
 	if len(r.NeededBy) != 1 || r.NeededBy[0].ID != mod.ID("thunderstore:Ns-Mod") {
 		t.Fatalf("neededBy = %+v, want Ns-Mod", r.NeededBy)
+	}
+}
+
+func TestUpdatesAfterAProblemsCheckStillAskTheGameSources(t *testing.T) {
+	testfs.DataHome(t)
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "lethal-company", "LC")
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{"manifest.json": `{"name":"Mod","version_number":"1.0.0","dependencies":[]}`, "Mod.dll": "x"})
+	if _, err := profiles.InstallSource("lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}); err != nil {
+		t.Fatal(err)
+	}
+	source.Register(fakeThunderstore{id: "nexus"})
+	source.Register(fakeThunderstore{id: "thunderstore", items: []source.Item{{ID: "Ns-Mod", Name: "Mod", Author: "Ns", Version: "2.0.0"}}})
+	t.Cleanup(func() {
+		source.Register(thunderstore.Driver{})
+		source.Register(nexussource.Driver{})
+	})
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(t.TempDir(), set, profiles, nil)
+	s.meta = fakeMeta{}
+	if _, err := s.Problems(t.Context(), "lethal-company", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.Updates(t.Context(), "lethal-company", p.ID)
+	if err != nil || len(got.Updates) != 1 || got.Updates[0].Version != "2.0.0" {
+		t.Fatalf("updates after a Problems check = %+v, %v", got.Updates, err)
 	}
 }

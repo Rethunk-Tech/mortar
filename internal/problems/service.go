@@ -93,6 +93,8 @@ type cachedUpdates struct {
 	fingerprint string
 	at          time.Time
 	result      UpdatesResult
+	// smapiOnly is SMAPI's answer alone, as a Problems check keeps it; Updates still asks the game's sources.
+	smapiOnly bool
 }
 
 // cached is a result with the fingerprint of the mods and environment it was computed for.
@@ -312,10 +314,14 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 				r.LoadFailures = append(r.LoadFailures, f)
 			}
 		}
-		r.PluginClashes = pluginClashes(pkgs)
 		if src, ok := thunderstoreSource(); ok {
 			r.Deprecated = deprecatedPackages(ctx, src, thunderstoreKey(gameID), "", pkgs)
 		}
+		deprecated := map[string]bool{}
+		for _, d := range r.Deprecated {
+			deprecated[d.Key] = true
+		}
+		r.PluginClashes = pluginClashes(pkgs, deprecated)
 		if s.Runs != nil && runID != "" {
 			_, summary, err := s.Runs.LastRunSummary(gameID, id)
 			if err == nil {
@@ -343,8 +349,11 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 			}
 			r.Timings = append(r.Timings, CheckTiming{Name: "updates", Ms: time.Since(updateStart).Milliseconds(), Count: asked})
 			if s.updates != nil && !ur.Unknown {
+				ufp := fingerprint(env, mods, "")
 				s.mu.Lock()
-				s.updates[key] = cachedUpdates{fingerprint: fingerprint(env, mods, ""), at: time.Now(), result: ur}
+				if c, ok := s.updates[key]; !ok || c.smapiOnly || c.fingerprint != ufp {
+					s.updates[key] = cachedUpdates{fingerprint: ufp, at: time.Now(), result: ur, smapiOnly: true}
+				}
 				s.mu.Unlock()
 			}
 		}
@@ -545,16 +554,23 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 	s.mu.Lock()
 	c, ok := s.updates[key]
 	s.mu.Unlock()
-	if ok && !fresh && c.fingerprint == fp && time.Since(c.at) < updatesTTL {
+	cachedSMAPI := ok && !fresh && c.fingerprint == fp && time.Since(c.at) < updatesTTL
+	if cachedSMAPI && !c.smapiOnly {
 		return hideUpdates(c.result, mods, s.settings.Get()), nil
 	}
 	set := s.settings.Get()
-	r := checkUpdates(ctx, s.metaFor(gameID), env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
-	s.fixStaleManifests(gameID, id, r.Held)
+	var r UpdatesResult
+	if cachedSMAPI {
+		r = c.result
+		r.Updates = slices.Clone(r.Updates)
+	} else {
+		r = checkUpdates(ctx, s.metaFor(gameID), env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
+		s.fixStaleManifests(gameID, id, r.Held)
+	}
 	r.Updates = append(r.Updates, s.sourceUpdates(ctx, gameID, mods, r.Updates)...)
 	if !r.Unknown {
 		s.mu.Lock()
-		s.updates[key] = cachedUpdates{fp, time.Now(), r}
+		s.updates[key] = cachedUpdates{fingerprint: fp, at: time.Now(), result: r}
 		s.mu.Unlock()
 	}
 	return hideUpdates(r, mods, set), nil
