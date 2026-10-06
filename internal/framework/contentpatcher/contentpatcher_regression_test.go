@@ -764,3 +764,26 @@ func TestOneDayEditsAreSituational(t *testing.T) {
 		t.Fatalf("edits for different days never apply together, got %#v", conflicts)
 	}
 }
+
+func TestFarmMapConflictsNameTheirFarmTypes(t *testing.T) {
+	edit := func(music string) framework.Mod {
+		return syntheticLoadPack(t, `{"Changes":[{"Action":"EditMap","Target":"Maps/Farm_Foraging","MapProperties":{"Music":"`+music+`"}}]}`, nil)
+	}
+	conflicts := assetConflicts([]framework.Mod{edit("x"), edit("z")})
+	if len(conflicts) != 1 || len(conflicts[0].Farms) != 2 || !slices.Equal(conflicts[0].Farms[0], []string{"forest"}) {
+		t.Fatalf("both edit the Forest farm map, got %#v", conflicts)
+	}
+	frontier := syntheticLoadPack(t, `{"Changes":[
+		{"Action":"EditData","Target":"Data/AdditionalFarms","Entries":{"{{ModId}}_Frontier":{"Id":"{{ModId}}_Frontier","MapName":"Farm_Frontier"}}},
+		{"Action":"Load","Target":"Maps/Farm_Frontier","FromFile":"frontier.tmx"}
+	]}`, map[string]string{"frontier.tmx": "a"})
+	other := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Farm_Frontier","FromFile":"other.tmx"}]}`, map[string]string{"other.tmx": "b"})
+	conflicts = assetConflicts([]framework.Mod{frontier, other})
+	if len(conflicts) != 1 || len(conflicts[0].Farms) != 2 || !slices.Equal(conflicts[0].Farms[1], []string{"Frontier"}) {
+		t.Fatalf("both load the Frontier farm map, got %#v", conflicts)
+	}
+	gated := syntheticLoadPack(t, `{"Changes":[{"Action":"EditMap","Target":"Maps/Farm_Foraging","MapProperties":{"Music":"y"},"When":{"FarmType":"Standard"}}]}`, nil)
+	if conflicts := assetConflicts([]framework.Mod{edit("x"), gated}); len(conflicts) != 0 {
+		t.Fatalf("a Standard-only edit never meets the Forest map, got %#v", conflicts)
+	}
+}

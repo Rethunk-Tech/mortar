@@ -1610,7 +1610,35 @@ func exclusive(a, b cpPatch) bool {
 			return true
 		}
 	}
+	// One gated on a farm type and one on a farm map only another farm type loads.
+	_, aFarm := a.places["farmtype"]
+	_, bFarm := b.places["farmtype"]
+	if aFarm != bFarm {
+		x, y := farmTypesOf(a, ""), farmTypesOf(b, "")
+		return len(x) > 0 && len(y) > 0 && !slices.ContainsFunc(x, func(v string) bool { return slices.Contains(y, v) })
+	}
 	return false
+}
+
+// farmMaps are the vanilla farm maps and the FarmType value of the farm that loads each.
+var farmMaps = map[string]string{
+	"maps/farm": "standard", "maps/farm_fishing": "riverland", "maps/farm_foraging": "forest", "maps/farm_mining": "hilltop",
+	"maps/farm_combat": "wilderness", "maps/farm_fourcorners": "fourcorners", "maps/farm_island": "beach", "maps/farm_ranch": "meadowlandsfarm",
+}
+
+// farmTypesOf is the farm types a patch applies on, lower-cased: its FarmType condition, else the farm whose
+// map it targets (custom names a custom farm's map target), else nil for any farm.
+func farmTypesOf(p cpPatch, custom string) []string {
+	if types := p.places["farmtype"]; len(types) > 0 {
+		return types
+	}
+	if t, ok := farmMaps[p.target]; ok {
+		return []string{t}
+	}
+	if custom != "" {
+		return []string{custom}
+	}
+	return nil
 }
 
 // editsClash reports whether any active edit of one pack can overwrite one of the other's, and whether every

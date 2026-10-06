@@ -152,6 +152,29 @@ func (s *Service) scannerFor(gameID, profileID string) (*saves.Scanner, error) {
 	return sc, nil
 }
 
+// FarmTypes is the whichFarm of each save the profile reads whose farm type is known.
+//
+//wails:ignore
+func (s *Service) FarmTypes(ctx context.Context, game, profileID string) []int {
+	scanner, err := s.scannerFor(game, profileID)
+	if err != nil || scanner == nil || s.meta == nil {
+		return nil
+	}
+	// The scan cache is stamped with the index it was read with; the same index keeps it warm for the Saves tab.
+	index, err := s.meta.Index(ctx)
+	if err != nil {
+		return nil
+	}
+	infos, _ := scanner.Scan(index)
+	var out []int
+	for _, in := range infos {
+		if in.WhichFarm >= 0 {
+			out = append(out, in.WhichFarm)
+		}
+	}
+	return out
+}
+
 // Saves scans the game's saves and compares each with the profile. Wails runs it off the UI thread; a first scan
 // of large saves takes well under a second, and later calls read the cache.
 func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, error) {

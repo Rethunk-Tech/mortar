@@ -182,9 +182,11 @@ type cachedPack struct {
 	mentions    map[string]bool
 	schema      map[string]cpSchema
 	skips       int
+	// farms maps the map asset of each custom farm the pack adds to Data/AdditionalFarms to the farm's id.
+	farms map[string]string
 }
 
-const contentPackParserVersion = 19
+const contentPackParserVersion = 20
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -214,6 +216,7 @@ type diskCachedPack struct {
 	Mentions map[string]bool       `json:"mentions,omitempty"`
 	Schema   map[string]diskSchema `json:"schema,omitempty"`
 	Skips    int                   `json:"skips,omitempty"`
+	Farms    map[string]string     `json:"farms,omitempty"`
 }
 
 type diskPatch struct {
@@ -312,6 +315,7 @@ func diskPackOf(pack cachedPack) diskCachedPack {
 	out := diskCachedPack{
 		Mentions: pack.mentions,
 		Skips:    pack.skips,
+		Farms:    pack.farms,
 	}
 	if pack.patches != nil {
 		out.Patches = make([]diskPatch, len(pack.patches))
@@ -348,6 +352,7 @@ func cachedPackOfDisk(root string, disk diskCachedPack, entry diskPackEntry) cac
 		mentions:    disk.Mentions,
 		schema:      make(map[string]cpSchema, len(disk.Schema)),
 		skips:       disk.Skips,
+		farms:       disk.Farms,
 	}
 	if disk.Patches != nil {
 		out.patches = make([]cpPatch, len(disk.Patches))
@@ -1114,6 +1119,9 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		case strings.EqualFold(action, kindEditData):
 			kind = "edit"
 			action = kindEditData
+			if normalizeTarget(ch.Target) == "data/additionalfarms" {
+				pack.recordFarms(ch.Entries)
+			}
 			shapes = dataShapes(root, ch, pack.values)
 			if len(shapes) == 0 {
 				kind = "other"
@@ -2113,6 +2121,10 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 		}
 	}
 	shadowed := shadowedPacks(mods, at)
+	customFarms := map[string]string{}
+	for _, im := range mods {
+		maps.Copy(customFarms, readContentPack(im).farms)
+	}
 	out := []framework.AssetConflict{}
 	settings := []framework.SettingHint{}
 	for _, kind := range []string{"load", "edit"} {
@@ -2122,13 +2134,14 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 			if len(hits) < 2 {
 				continue
 			}
-			fields := []string{kind, t}
+			farm := customFarms[t]
+			fields := []string{kind, t, farm}
 			stable := true
 			for _, h := range hits {
 				fields = append(fields, h.sig)
 				stable = stable && h.stable
 			}
-			e := run.part(partKey(fields...), stable, func() partEntry { return targetPart(kind, t, hits) })
+			e := run.part(partKey(fields...), stable, func() partEntry { return targetPart(kind, t, hits, farm) })
 			if e.Conflict != nil {
 				out = append(out, *e.Conflict)
 			}
@@ -2149,7 +2162,8 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 
 // targetPart is the outcome of one target that two or more packs touch: a conflict, a setting that settles it, or
 // nothing.
-func targetPart(kind, target string, hits []packHit) partEntry {
+// farm is the custom farm type whose map target is, or "".
+func targetPart(kind, target string, hits []packHit, farm string) partEntry {
 	cosmetic := false
 	var note *framework.ConflictNote
 	if kind == "edit" {
@@ -2182,7 +2196,67 @@ func targetPart(kind, target string, hits []packHit) partEntry {
 			c.Fixes = append(c.Fixes, fix)
 		}
 	}
+	c.Farms = farmNeeds(kind, hits, farm)
 	return partEntry{Conflict: &c}
+}
+
+// farmNeeds is, per pack in conflict order, the farm types every one of its clashing patches is limited to,
+// nil for a pack with one that applies on any farm; nil when no pack is limited.
+func farmNeeds(kind string, hits []packHit, farm string) [][]string {
+	out := make([][]string, len(hits))
+	limited := false
+	for i, h := range hits {
+		patches, clashes := h.edits, h.clashes
+		if kind == "load" {
+			patches, clashes = h.loads, h.loadClashes
+		}
+		var need []string
+		for j, p := range patches {
+			if len(clashes) > 0 && !clashes[j] {
+				continue
+			}
+			types := farmTypesOf(p, farm)
+			if len(types) == 0 {
+				need = nil
+				break
+			}
+			for _, t := range types {
+				if !slices.Contains(need, t) {
+					need = append(need, t)
+				}
+			}
+		}
+		out[i] = need
+		limited = limited || need != nil
+	}
+	if !limited {
+		return nil
+	}
+	return out
+}
+
+// recordFarms notes the map asset and id of each custom farm in Data/AdditionalFarms entries.
+func (p *cachedPack) recordFarms(raw json.RawMessage) {
+	var entries map[string]struct {
+		ID      string `json:"Id"`
+		MapName string `json:"MapName"`
+	}
+	if json.Unmarshal(jsonc.Clean(raw), &entries) != nil {
+		return
+	}
+	for key, entry := range entries {
+		if entry.MapName == "" || hasToken(entry.MapName) {
+			continue
+		}
+		id := entry.ID
+		if id == "" {
+			id = key
+		}
+		if p.farms == nil {
+			p.farms = map[string]string{}
+		}
+		p.farms["maps/"+strings.ToLower(entry.MapName)] = strings.TrimPrefix(id, "{{ModId}}_")
+	}
 }
 
 func clashingLoads(hits []packHit) (out []packHit) {

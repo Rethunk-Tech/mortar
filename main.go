@@ -580,6 +580,7 @@ func run() error {
 	bundlesSvc := bundles.NewService(profiles, dataDir)
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	problemsSvc.Runs = launches
+	problemsSvc.SaveFarms = savesSvc.FarmTypes
 	problemsSvc.Throttle = queueSvc.SourceSlot
 	problemsSvc.GitHub = &github.Client{}
 	nexusPages := func(ctx context.Context, gameID string, ids []int) (map[int]nexus.Page, error) {
