@@ -110,10 +110,10 @@ func TestFixture(t *testing.T) {
 		t.Fatalf("missing hero = %q", got)
 	}
 	nested := filepath.Join(root, "appcache", "librarycache", "2", "4e1706e4", "library_hero.jpg")
-	if err := os.MkdirAll(filepath.Dir(nested), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(nested), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(nested, []byte("jpg"), 0o644); err != nil {
+	if err := os.WriteFile(nested, []byte("jpg"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if got := s.HeroArt("2"); got != nested {
