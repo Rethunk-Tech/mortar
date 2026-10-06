@@ -4,6 +4,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestDecodeCollection(t *testing.T) {
@@ -20,7 +22,7 @@ func TestDecodeCollection(t *testing.T) {
 	}
 
 	_, err = decodeCollection("missing", []byte(`{"data":{"collectionRevision":null}}`))
-	if err == nil || !strings.Contains(err.Error(), `nexus has no collection "missing"`) {
+	if usererr.KindOf(err) != usererr.NotFound || !strings.Contains(err.Error(), `nexus has no collection "missing"`) {
 		t.Fatalf("null revision: %v", err)
 	}
 	_, err = decodeCollection("gone", []byte(`{"errors":[{"message":"not found"}]}`))

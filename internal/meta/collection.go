@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const (
@@ -128,7 +130,7 @@ func decodeCollection(slug string, raw []byte) (Collection, error) {
 		return Collection{}, err
 	}
 	if len(parsed.Errors) > 0 || parsed.Data == nil || parsed.Data.CollectionRevision == nil {
-		return Collection{}, fmt.Errorf("nexus has no collection %q", slug)
+		return Collection{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("nexus has no collection %q", slug))
 	}
 	rev := parsed.Data.CollectionRevision
 	out := Collection{
