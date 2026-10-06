@@ -229,3 +229,16 @@ func TestListedOutsideRequirementIsANote(t *testing.T) {
 		t.Fatalf("note = %#v, count %d", m, got.Count())
 	}
 }
+
+func TestOptionalListedRequirementIsNotCounted(t *testing.T) {
+	fake := listedFakeMeta{
+		requirements: map[int][]nexus.Requirement{520: {{ModID: 14426, Name: "Gender Neutrality Mod Tokens", Notes: "For Gender Neutral Version"}}},
+		pages:        map[int]meta.Page{14426: listedPage(14426, "GenderNeutrality.Tokens")},
+	}
+
+	result := listedCheck(fake, []framework.Mod{listedDependent()})
+
+	if len(result.Missing) != 1 || result.Count() != 0 {
+		t.Fatalf("Missing = %#v, Count = %d, want one optional row counting 0", result.Missing, result.Count())
+	}
+}

@@ -180,7 +180,7 @@ func (r Result) Count() int {
 	}
 	missing := 0
 	for _, m := range r.Missing {
-		if !m.External {
+		if !m.External && !m.Optional {
 			missing++
 		}
 	}

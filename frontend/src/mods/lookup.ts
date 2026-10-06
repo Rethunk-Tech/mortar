@@ -193,10 +193,15 @@ export function nexusKeepKey(copies: Copy[]): string | null {
   return nexus.length === 1 ? (nexus[0]?.key ?? null) : null
 }
 
-export const missingCount = (result: Result | null): number => result?.missing?.length ?? 0
+// Optional listed requirements and outside requirements are informational: the server's Count leaves them out.
+const countsAsMissing = (m: Missing): boolean => !(m.optional || m.external)
+
+export const missingCount = (result: Result | null): number =>
+  (result?.missing ?? []).filter(countsAsMissing).length
 
 export const problemCount = (result: Result | null): number =>
-  problemsOf(result).length + (result?.drift?.length ?? 0)
+  problemsOf(result).filter((p) => p.kind !== 'missing' || countsAsMissing(p.missing)).length +
+  (result?.drift?.length ?? 0)
 
 export const offersUpdate = (
   entry: { pinned?: boolean; skipVersion?: string; skipSources?: string[] | null } | undefined,

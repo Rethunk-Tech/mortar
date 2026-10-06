@@ -267,3 +267,33 @@ test('review updates use the same Nexus-filtered list as the count', () => {
   expect(updatesForReview(result, undefined, details).map((u) => u.key)).toEqual(['a'])
   expect(updateCount(result, undefined, details)).toBe(1)
 })
+
+test('optional and outside requirements are not counted as missing or as problems', () => {
+  const row = {
+    dependentId: 'd',
+    dependentName: 'Dep',
+    id: 'a',
+    minimumVersion: '',
+    installedVersion: '',
+    reason: 'absent',
+    listed: true,
+    note: '',
+    optional: true,
+    external: false,
+    where: null,
+  }
+  const result = {
+    missing: [row, { ...row, optional: false, external: true }],
+    duplicates: [],
+    broken: [],
+    assetConflicts: [],
+    settings: [],
+    runErrors: [],
+    drift: [],
+    dismissed: [],
+    held: [],
+    unknown: false,
+  }
+  expect(missingCount(result)).toBe(0)
+  expect(problemCount(result)).toBe(0)
+})
