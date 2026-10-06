@@ -35,9 +35,9 @@ func newer(a, b string) bool {
 	return false
 }
 
-// pick is the version of p that ref asks for: the newest when it names none, the newest 5.4.x for the loader pack,
-// else exactly the named one.
-func pick(p pkg, ref Ref) (string, error) {
+// pick is the version of p that ref asks for: the newest when it names none or when it is a dependency's pin, which
+// r2modman treats as a minimum; the newest 5.4.x for the loader pack; else exactly the named one.
+func pick(p pkg, ref Ref, minimum bool) (string, error) {
 	id := packageID(p.Owner, p.Name)
 	if id == bepInExPack {
 		if ref.Version != "" {
@@ -58,14 +58,14 @@ func pick(p pkg, ref Ref) (string, error) {
 	}
 	best := ""
 	for _, v := range p.Versions {
-		if v.Number == ref.Version {
+		if v.Number == ref.Version && !minimum {
 			return v.Number, nil
 		}
 		if best == "" || newer(v.Number, best) {
 			best = v.Number
 		}
 	}
-	if ref.Version != "" || best == "" {
+	if best == "" || (ref.Version != "" && (!minimum || newer(ref.Version, best))) {
 		return "", fmt.Errorf("%s %s is not in the index", id, ref.Version)
 	}
 	return best, nil
@@ -93,11 +93,19 @@ func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVers
 	for _, p := range list {
 		byID[packageID(p.Owner, p.Name)] = p
 	}
+	// A root named at an exact version (an imported profile or modpack) keeps it when another root depends on it;
+	// every other dependency takes the newest version, as r2modman installs them.
+	exact := map[string]bool{}
+	for _, r := range roots {
+		if r.Version != "" {
+			exact[packageID(r.Namespace, r.Name)] = true
+		}
+	}
 	chosen := map[string]string{}
 	// A later request can raise a version that an earlier visit used, so walk again until nothing rises; versions only
 	// go up, so this ends.
 	for {
-		w := &walk{byID: byID, chosen: chosen, state: map[string]int{}}
+		w := &walk{byID: byID, exact: exact, chosen: chosen, state: map[string]int{}}
 		for _, r := range roots {
 			if err := w.visit(r, nil); err != nil {
 				return nil, err
@@ -120,6 +128,7 @@ func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVers
 
 type walk struct {
 	byID   map[string]pkg
+	exact  map[string]bool
 	chosen map[string]string
 	state  map[string]int // 1 visiting, 2 done
 	order  []string
@@ -133,7 +142,7 @@ func (w *walk) visit(ref Ref, chain []string) error {
 	if !ok {
 		return fmt.Errorf("%s is not in the index (requested by %s)", id, via)
 	}
-	v, err := pick(p, ref)
+	v, err := pick(p, ref, chain != nil && !w.exact[id])
 	if err != nil {
 		return fmt.Errorf("%w (requested by %s)", err, via)
 	}
