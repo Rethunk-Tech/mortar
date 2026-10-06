@@ -42,9 +42,11 @@ export function SeparateSavesRow({
         }
         label={t`Keep this profile's saves separate`}
       />
-      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-        {t`This profile plays on its own saves. Your shared saves are untouched.`}
-      </Typography>
+      {on ? (
+        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+          {t`This profile plays on its own saves. Your shared saves are untouched.`}
+        </Typography>
+      ) : null}
       <ConfirmDialog
         open={asking}
         title={t`Keep this profile's saves separate?`}

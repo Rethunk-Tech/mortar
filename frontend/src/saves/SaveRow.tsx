@@ -33,6 +33,7 @@ import { SaveBackupsSection } from './SaveBackupsSection.tsx'
 import { SaveDetails } from './SaveDetails.tsx'
 import { SaveGapLine } from './SaveGapLine.tsx'
 import { saveName } from './saveName.ts'
+import { useSaves } from './store.ts'
 
 const nowrap = { whiteSpace: 'nowrap' } as const
 
@@ -131,6 +132,8 @@ function SaveButtons({ fit, game, label }: { fit: Fit; game: string; label: stri
             async () => {
               if (!(await CreateBackup(game, fit.folder))) {
                 useToasts.getState().push({ kind: 'info', title: t`No saves to back up` })
+                // The save left the folder since the list was read, so the list drops its row.
+                await useSaves.getState().reload()
                 return
               }
               await useSaveBackups.getState().reload()
