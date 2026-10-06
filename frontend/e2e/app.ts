@@ -13,9 +13,14 @@ export async function openSeedFarm(page: Page) {
   await page.goto('/')
   const welcome = page.getByRole('button', { name: 'Continue' })
   const farm = page.getByRole('button', { name: /^(Open )?Seed Farm/ }).first()
-  await expect(welcome.or(farm)).toBeVisible({ timeout: 30_000 })
+  // Mortar reopens the last game, which an earlier spec may have left on another one.
+  const otherGame = page.getByRole('tablist', { name: 'Profile sections' })
+  await expect(welcome.or(farm).or(otherGame).first()).toBeVisible({ timeout: 30_000 })
   if (await welcome.isVisible()) {
     await welcome.click()
+  }
+  if (!(await farm.isVisible())) {
+    await page.getByRole('button', { name: 'Game select' }).click()
   }
   await farm.click()
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
