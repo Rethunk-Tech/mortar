@@ -5,8 +5,10 @@ import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { sameId } from '../lookup.ts'
+import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
 import { applyWins } from './applyWins.ts'
+import { winnable } from './winnable.ts'
 
 const buttonHeight = 28
 
@@ -20,6 +22,7 @@ function WinFix({
   const { t } = useLingui()
   const locked = useLocked()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const mods = useMods((s) => s.mods)
   const { asset } = problem
   if (asset.kind !== 'edit') {
     return null
@@ -49,6 +52,10 @@ function WinFix({
       applyWins(winnerKey, winnerId, packIds, true).catch(reportUnexpected)
     }
   }
+  const choices = resolved ? [] : winnable(mods, packIds)
+  if (!resolved && choices.length === 0) {
+    return null
+  }
   const control = resolved ? (
     <Button
       size="small"
@@ -74,14 +81,17 @@ function WinFix({
         {t`Make a pack win`}
       </Button>
       <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
-        {names.map((name, index) => (
-          <MenuItem
-            key={`${keys[index] ?? index}/${packIds[index] ?? name}`}
-            onClick={() => choose(index)}
-          >
-            {t`Make ${name} win`}
-          </MenuItem>
-        ))}
+        {choices.map((index) => {
+          const name = names[index] ?? ''
+          return (
+            <MenuItem
+              key={`${keys[index] ?? index}/${packIds[index] ?? name}`}
+              onClick={() => choose(index)}
+            >
+              {t`Make ${name} win`}
+            </MenuItem>
+          )
+        })}
       </Menu>
     </>
   )

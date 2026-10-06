@@ -165,16 +165,19 @@ func TestSetWinnerRefusesALoserThatNeedsTheWinner(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "win", map[string]string{"manifest.json": manifestJSON("Me.Win")})
 	e.item(t, "lose", map[string]string{"manifest.json": `{"Name":"Lose","Author":"me","Version":"1.0.0","UniqueID":"Me.Lose","Dependencies":[{"UniqueID":"Me.Win","IsRequired":false}]}`})
+	e.item(t, "pack", map[string]string{"manifest.json": `{"Name":"Pack","Author":"me","Version":"1.0.0","UniqueID":"Me.Pack","ContentPackFor":{"UniqueID":"Me.Win"}}`})
 	p := mustCreate(t, e, "Farm")
-	for _, k := range []string{"win", "lose"} {
+	for _, k := range []string{"win", "lose", "pack"} {
 		if _, err := e.AddEntry("stardew", p.ID, k, Source{Kind: KindLocal, Name: k + ".zip"}); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if _, err := e.SetWinner("stardew", p.ID, "win", "smapi:Me.Win", "smapi:Me.Lose", true); err == nil {
-		t.Fatal("made a mod win over one that needs it")
+	for _, loser := range []string{"Me.Lose", "Me.Pack"} {
+		if _, err := e.SetWinner("stardew", p.ID, "win", "smapi:Me.Win", mod.SMAPI(loser), true); err == nil {
+			t.Fatalf("made a mod win over %s, which loads after it", loser)
+		}
+		assertOptionalDep(t, winnerManifest(t, e, p.ID, "win"), loser, false)
 	}
-	assertOptionalDep(t, winnerManifest(t, e, p.ID, "win"), "Me.Lose", false)
 }
 
 func TestUndoWinKeepsTheAuthorsOwnDependency(t *testing.T) {

@@ -136,15 +136,15 @@ func safeLoadAfter(e Entry, m Component) []mod.ID {
 	})
 }
 
-// loserNeedsWinner refuses an order SMAPI could never honour: a loser that needs the winner, in any download,
-// always loads after it.
+// loserNeedsWinner refuses an order SMAPI could never honour: a loser that needs the winner, in any download, or is
+// a content pack for it, always loads after it.
 func loserNeedsWinner(entries []Entry, winner Component, loser mod.ID) error {
 	for _, e := range entries {
 		for _, c := range e.Mods {
 			if !mod.Equal(c.ID, loser) {
 				continue
 			}
-			if slices.ContainsFunc(c.Needs, func(n mod.ID) bool { return mod.Equal(n, winner.ID) }) {
+			if mod.Equal(c.ContentPackFor, winner.ID) || slices.ContainsFunc(c.Needs, func(n mod.ID) bool { return mod.Equal(n, winner.ID) }) {
 				return fmt.Errorf("%s needs %s, so it always loads after it", c.Name, winner.Name)
 			}
 		}

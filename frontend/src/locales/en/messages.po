@@ -222,7 +222,7 @@ msgstr "List mods inside a folder whose name starts with a dot, which SMAPI skip
 msgid "{names} can't be reached, so Mortar can't check for mod updates"
 msgstr "{names} can't be reached, so Mortar can't check for mod updates"
 
-#: src/mods/problemFix/WinFix.tsx:82
+#: src/mods/problemFix/WinFix.tsx:91
 msgid "Make {name} win"
 msgstr "Make {name} win"
 
@@ -241,7 +241,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/OtherProfilesDialog.tsx:67
 #: src/mods/problemFix/AssetFix.tsx:29
 #: src/mods/problemFix/SettingFix.tsx:27
-#: src/mods/problemFix/WinFix.tsx:33
+#: src/mods/problemFix/WinFix.tsx:36
 #: src/mods/SplitCombineItems.tsx:36
 #: src/mods/Toolbar.tsx:268
 #: src/saves/lackChipActions.tsx:44
@@ -978,7 +978,7 @@ msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it
 msgid "Don't ask again"
 msgstr "Don't ask again"
 
-#: src/mods/problemFix/WinFix.tsx:74
+#: src/mods/problemFix/WinFix.tsx:81
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
@@ -2444,7 +2444,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/OldFilesCallouts.tsx:64
 #: src/mods/overlayActions.ts:36
 #: src/mods/overlayActions.ts:100
-#: src/mods/problemFix/WinFix.tsx:60
+#: src/mods/problemFix/WinFix.tsx:67
 #: src/mods/problemFixButtons.tsx:116
 #: src/mods/SplitCombineItems.tsx:41
 #: src/mods/storeEntries.ts:60
