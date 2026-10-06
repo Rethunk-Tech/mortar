@@ -8,7 +8,7 @@ Items marked **Measure** need a throwaway test first; those tests run outside th
 
 Remaining ([architecture.md](architecture.md#release)):
 
-- The updater fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage) and #6202 (OnUpdateApplied, draft pending a WEP); Mortar pins the fork until they ship in a tagged v3 beta; then pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`. wailsapp/wails#6197 (GTK4 transparency) does not gate this: it only serves the translucent window below.
+- The fork's fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage), #6202 (OnUpdateApplied, a draft waiting on its WEP, #6203) and #6239 (service methods fall back to `Options.MarshalError`, which `errorkind_test.go` relies on). With #6197 (GTK4 transparency) all six are open and rebased on v3.0.0-beta.28, and Mortar pins the fork branch `mortar/v3.0.0-beta.28`. Once #6200, #6201, #6202 and #6239 ship in a tagged v3 beta, pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`; #6197 does not gate this, since it only serves the translucent window below. #6201 and #6202 both add `resolveTarget` in `v3/pkg/updater/spawn.go`, so whichever merges second conflicts and needs a rebase.
 - The repo turns public at the first release and builds go on its GitHub Releases, since the updater's manifest and assets must be publicly downloadable.
 - **Measure on Windows:** how launch arguments order around `%command%`, and whether SMAPI needs `--no-terminal`; one real update through the updater, and `DisplayVersion` after it.
 
@@ -22,9 +22,7 @@ Remaining ([architecture.md](architecture.md#release)):
 - **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
 - **Steam Deck / gamepad mode** (larger targets, gamepad focus navigation, Game Mode play: a `--play` launch from a Steam shortcut starts Mortar minimised or headless, shows only a small controller-friendly prompt when Play is blocked, and exits when the game closes so Steam tracks playtime): parked 2026-10-02 (not v1).
 - **macOS build**: Stardew runs on macOS, and Stardrop ships for x64 and arm64, but Mortar has no macOS CI or test machine; it needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on. Parked 2026-10-02 (not v1).
-- **Accessibility pass** (keyboard-only navigation of every screen, focus order, screen-reader labels on icon buttons, reduced motion everywhere): parked 2026-10-03.
 - **One top toolbar** (Gale-style: game switcher and profile switcher with mod count side by side in the title bar, download status next to them): parked 2026-10-05. Play stays at the foot of the sidebar; a Play control in the top-left corner is rejected.
-- **Offline mode banner** (clear banner when Nexus/GitHub are unreachable, cached data with "as of" times, network actions disabled with a reason): parked 2026-10-03.
 
 Not in the first release; re-weigh only when asked:
 
