@@ -343,6 +343,7 @@ In game: performance reports are saved per profile and can be compared from the 
 - Empty, before measuring: a gauge icon, **See which mods slow the game**, and copy that says to start the game with this profile then measure while playing, with **Start measuring** (off until this profile is running and This session is shown).
 - After measuring starts: **Start measuring** / **Measuring**, **Show report** and **Copy report**.
 - Start measuring sends SMAPI's `performance enable` through the bridge; Show report sends `performance summary` and fills a sortable table (Mod or event, Average ms, Peak ms, Calls).
+- BepInEx (the loader's `perf` capability): the bridge measures only on a launch measured from Startup, so the empty state says to use **Measure next launch** first, and says the launch was not measured when Start measuring finds it was not. Start measuring asks the bridge for `perf start`; Show report reads `perf` as data and saves it, rows named by package (a package's plugins added up). Above the table, one line of frame stats (fps, average, 95th and 99th percentile and worst frame ms, Mono heap, garbage collections) and one saying what a row counts: Harmony prefixes, postfixes and finalizers and the plugin's own Update, LateUpdate and FixedUpdate, exclusive of nested timed calls, not transpiled code or other threads.
 - Off while the game is not running this profile or a past run is shown.
 - After Show report with no table rows: **No performance data was returned.** or **Start measuring to view a report.** when the log held no summary.
 

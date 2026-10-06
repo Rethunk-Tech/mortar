@@ -84,9 +84,10 @@ func Send(ctx context.Context, stateFile, command string) error {
 	return err
 }
 
-// Query asks the game a question and returns the JSON the companion answers with. what is status or plugins.
+// Query asks the game a question and returns the JSON the companion answers with. what is status, plugins, perf or
+// perf start.
 func Query(ctx context.Context, stateFile, what string) (json.RawMessage, error) {
-	if what != "status" && what != "plugins" {
+	if what != "status" && what != "plugins" && what != "perf" && what != "perf start" {
 		return nil, fmt.Errorf("unknown query %q", what)
 	}
 	st, err := ReadState(stateFile)

@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Copy, Gauge, Play, RefreshCw } from 'lucide-react'
-import { useMemo } from 'react'
+import { type ReactNode, useMemo } from 'react'
 import type {
   PerformanceRow,
   SavedReport,
@@ -251,12 +251,14 @@ export function PerformanceEmpty({
   busy,
   onStart,
   reports,
+  hint,
   onCompare,
 }: {
   running: boolean
   busy: boolean
   onStart: () => void
   reports: SavedReport[]
+  hint?: string | undefined
   onCompare: () => void
 }) {
   const { t } = useLingui()
@@ -284,15 +286,17 @@ export function PerformanceEmpty({
         </Box>
       }
     >
-      {running
-        ? t`Measure while you play, then report the mods that take the most time per frame.`
-        : t`Start the game with this profile, then measure here while you play.`}
+      {hint ??
+        (running
+          ? t`Measure while you play, then report the mods that take the most time per frame.`
+          : t`Start the game with this profile, then measure here while you play.`)}
     </EmptyState>
   )
 }
 
 export function MeasuredPanel({
   header,
+  summary,
   comparing,
   comparisonBefore,
   comparisonNow,
@@ -302,6 +306,7 @@ export function MeasuredPanel({
   onSort,
 }: {
   header: HeaderProps
+  summary?: ReactNode
   comparing: boolean
   comparisonBefore: PerformanceRow[]
   comparisonNow: PerformanceRow[]
@@ -323,6 +328,7 @@ export function MeasuredPanel({
       }}
     >
       <PanelHeader {...header} />
+      {summary}
       {comparing ? (
         <CompareTable before={comparisonBefore} now={comparisonNow} />
       ) : (

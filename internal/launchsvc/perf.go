@@ -26,6 +26,23 @@ type SavedReport struct {
 	RunID string           `json:"runId,omitempty"`
 	At    string           `json:"at"`
 	Rows  []PerformanceRow `json:"rows"`
+	// Frame is the frame and memory summary of a report the companion measured; nil for SMAPI's.
+	Frame *FrameSummary `json:"frame,omitempty"`
+}
+
+// FrameSummary is the frame times and memory over a measured window: frame times in ms, memory in bytes.
+type FrameSummary struct {
+	Seconds       float64 `json:"seconds"`
+	Frames        int64   `json:"frames"`
+	FPS           float64 `json:"fps"`
+	AvgMs         float64 `json:"avgMs"`
+	P50Ms         float64 `json:"p50Ms"`
+	P95Ms         float64 `json:"p95Ms"`
+	P99Ms         float64 `json:"p99Ms"`
+	MaxMs         float64 `json:"maxMs"`
+	MonoUsed      int64   `json:"monoUsed"`
+	MonoHeap      int64   `json:"monoHeap"`
+	GCCollections int     `json:"gcCollections"`
 }
 
 type performanceReportsIndex struct {
@@ -73,6 +90,10 @@ func (s *Service) PerformanceReport(lines []string) []PerformanceRow {
 }
 
 func (s *Service) SavePerformanceReport(gameID, profileID string, rows []PerformanceRow) (SavedReport, error) {
+	return s.savePerformanceReport(gameID, profileID, rows, nil)
+}
+
+func (s *Service) savePerformanceReport(gameID, profileID string, rows []PerformanceRow, frame *FrameSummary) (SavedReport, error) {
 	if _, err := game.Require(gameID); err != nil {
 		return SavedReport{}, err
 	}
@@ -89,6 +110,7 @@ func (s *Service) SavePerformanceReport(gameID, profileID string, rows []Perform
 		RunID: s.activeRunID(gameID, profileID),
 		At:    now.Format(time.RFC3339Nano),
 		Rows:  append([]PerformanceRow(nil), rows...),
+		Frame: frame,
 	}
 	dir := runsDir(modsDir)
 	index, err := readPerformanceReports(dir)

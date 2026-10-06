@@ -1974,6 +1974,10 @@ func (c *cmd) perfReports() error {
 		}
 		for _, r := range list {
 			fmt.Fprintf(c.out, "%s  %s\n", r.At, r.ID)
+			if f := r.Frame; f != nil {
+				fmt.Fprintf(c.out, "%.0f fps over %.0f s; frame ms avg %.1f, p95 %.1f, p99 %.1f, max %.1f; Mono heap %d MiB used of %d MiB; %d GCs\n",
+					f.FPS, f.Seconds, f.AvgMs, f.P95Ms, f.P99Ms, f.MaxMs, f.MonoUsed>>20, f.MonoHeap>>20, f.GCCollections)
+			}
 			rows := [][]string{}
 			for _, row := range r.Rows {
 				rows = append(rows, []string{row.Name, fmt.Sprintf("%.1f", row.AverageMs), fmt.Sprintf("%.1f", row.PeakMs), fmt.Sprintf("%.0f", row.Calls)})

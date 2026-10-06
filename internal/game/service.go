@@ -50,6 +50,9 @@ type LoaderRef struct {
 	Order   bool `json:"order"`
 	Console bool `json:"console"`
 	Startup bool `json:"startup"`
+	// Perf is whether the running game's companion measures frame times and each mod's per-frame cost on a measured
+	// launch, which Performance › In game shows.
+	Perf bool `json:"perf"`
 	// Commands is whether the running game takes console commands, which needs the loader's published companion.
 	Commands bool `json:"commands"`
 	// Overlay is whether the loader's companion feeds the OBS stream overlay, which the Streaming settings need.
@@ -73,6 +76,7 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		_, hasCompanion := d.(loader.WithCompanion)
 		ref.Commands = hasConsole && hasCompanion
 		_, ref.Startup = d.(loader.StartupTimings)
+		_, ref.Perf = d.(loader.InGamePerf)
 		_, ref.Overlay = d.(loader.StreamOverlay)
 		ref.Share = loader.SharesLog(d)
 		if p, ok := d.(loader.LogPaste); ok {

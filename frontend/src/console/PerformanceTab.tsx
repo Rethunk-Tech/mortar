@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
 import { PerformancePanel } from './PerformancePanel.tsx'
 import { StartupPanel } from './StartupPanel.tsx'
-import { useSmapiStartup } from './startupHooks.ts'
+import { usePerfQuery, useSmapiStartup } from './startupHooks.ts'
 import { useSavedReports } from './usePerformancePanel.ts'
 
 // The in-game reports are saved per profile, so a profile with none starts with the section closed.
@@ -34,12 +34,13 @@ function InGame({ game }: { game: string }) {
   )
 }
 
-// In game reads SMAPI's own performance counters, which BepInEx has none of.
+// In game reads SMAPI's performance counters through its console, or a companion that measures in game.
 export function PerformanceTab({ game }: { game: string }) {
   const smapi = useSmapiStartup()
+  const perf = usePerfQuery()
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-      <StartupPanel game={game}>{smapi ? <InGame game={game} /> : null}</StartupPanel>
+      <StartupPanel game={game}>{smapi || perf ? <InGame game={game} /> : null}</StartupPanel>
     </Box>
   )
 }

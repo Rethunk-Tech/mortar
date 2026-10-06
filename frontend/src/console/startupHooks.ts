@@ -9,6 +9,11 @@ export function useSmapiStartup(): boolean {
   return useProfileLoader()?.id === 'smapi'
 }
 
+/** Whether the open profile's companion measures in game and answers as data, rather than through SMAPI's console. */
+export function usePerfQuery(): boolean {
+  return useProfileLoader()?.perf === true
+}
+
 export function useDuration() {
   const { i18n } = useLingui()
   return (ms: number) => formatDuration(ms, i18n.locale)
