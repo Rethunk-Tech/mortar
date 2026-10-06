@@ -12,6 +12,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -70,11 +72,17 @@ type StartupReport struct {
 	OtherMs        int64         `json:"otherMs"`
 }
 
-// prepareStartup makes SMAPI load the bridge before every other mod, so the bridge can time their Entry and
-// handlers, and reports whether this launch was asked to be measured (consuming the request).
-func prepareStartup(modsDir string) (bool, error) {
-	if err := loadBridgeEarly(filepath.Join(modsDir, smapiGroupConfig)); err != nil {
-		return false, err
+// prepareStartup reports whether this launch was asked to be measured (consuming the request) when l times
+// startup; under SMAPI it also loads the bridge before every other mod, so the bridge can time their Entry and
+// handlers.
+func prepareStartup(l loader.Loader, modsDir string) (bool, error) {
+	if _, ok := l.(loader.StartupTimings); !ok {
+		return false, nil
+	}
+	if l.ID() == smapi.ID {
+		if err := loadBridgeEarly(filepath.Join(modsDir, smapiGroupConfig)); err != nil {
+			return false, err
+		}
 	}
 	marker := filepath.Join(filepath.Dir(modsDir), startupDir, measureMarker)
 	err := os.Remove(marker)

@@ -7,6 +7,9 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 )
 
 func TestPrepareStartupLoadsTheBridgeEarlyAndKeepsUserKeys(t *testing.T) {
@@ -19,7 +22,7 @@ func TestPrepareStartupLoadsTheBridgeEarlyAndKeepsUserKeys(t *testing.T) {
 		t.Fatal(err)
 	}
 	for range 2 {
-		if measure, err := prepareStartup(mods); err != nil || measure {
+		if measure, err := prepareStartup(smapi.Loader{}, mods); err != nil || measure {
 			t.Fatalf("measure %v err %v", measure, err)
 		}
 	}
@@ -40,7 +43,7 @@ func TestPrepareStartupLeavesAFileItCannotParse(t *testing.T) {
 	if err := os.WriteFile(cfgPath, []byte(raw), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := prepareStartup(mods); err != nil {
+	if _, err := prepareStartup(smapi.Loader{}, mods); err != nil {
 		t.Fatal(err)
 	}
 	if b, _ := fsx.ReadFile(cfgPath); string(b) != raw {
@@ -60,11 +63,35 @@ func TestPrepareStartupConsumesTheMeasureRequest(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(profile, startupDir, measureMarker), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if measure, err := prepareStartup(mods); err != nil || !measure {
+	if measure, err := prepareStartup(smapi.Loader{}, mods); err != nil || !measure {
 		t.Fatalf("first launch measure %v err %v", measure, err)
 	}
-	if measure, _ := prepareStartup(mods); measure {
+	if measure, _ := prepareStartup(smapi.Loader{}, mods); measure {
 		t.Fatal("second launch still measured")
+	}
+}
+
+// untimed hides every optional capability of the loader it wraps.
+type untimed struct{ loader.Loader }
+
+func TestPrepareStartupLeavesALoaderWithoutTimingsAlone(t *testing.T) {
+	profile := t.TempDir()
+	mods := filepath.Join(profile, "mods")
+	marker := filepath.Join(profile, startupDir, measureMarker)
+	if err := os.MkdirAll(filepath.Dir(marker), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(marker, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if measure, err := prepareStartup(untimed{bepinex5.Loader{}}, mods); err != nil || measure {
+		t.Fatalf("measure %v err %v", measure, err)
+	}
+	if _, err := os.Stat(filepath.Join(mods, smapiGroupConfig)); !os.IsNotExist(err) {
+		t.Fatalf("wrote the SMAPI config: %v", err)
+	}
+	if _, err := os.Stat(marker); err != nil {
+		t.Fatalf("consumed the measure request: %v", err)
 	}
 }
 

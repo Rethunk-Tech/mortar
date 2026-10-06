@@ -831,7 +831,8 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	var plan *launchplan.Plan
 	if !vanilla && profileID != "" {
 		st := s.settings.Get()
-		measure, err = prepareStartup(modsDir)
+		l, _ := s.loaderOf(g.ID(), profileID)
+		measure, err = prepareStartup(l, modsDir)
 		if err != nil {
 			return err
 		}
