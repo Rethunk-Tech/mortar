@@ -26,6 +26,7 @@ import type {
   Item,
   Report as StoreReport,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/store/models.ts'
+import { gameInfo } from '../../games/info.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
@@ -112,12 +113,20 @@ function leftoverLabel(i18n: I18n, kind: LeftoverKind): string {
   }
 }
 
-function itemName(i18n: I18n, item: Item): string {
+// A name for an item the store has none for: a Nexus file, a loader's installer or bundled mods, or Mortar's bridge.
+function itemName(i18n: I18n, game: string, item: Item): string {
   if (item.name) {
     return item.name
   }
   const id = NEXUS_KEY.exec(item.key)?.[1]
-  return id ? i18n._(msg`Nexus mod ${id}`) : item.key
+  if (id) {
+    return i18n._(msg`Nexus mod ${id}`)
+  }
+  const loader = gameInfo(game)?.loaders?.find((l) => item.key.startsWith(`${l.id}-`))
+  if (loader) {
+    return item.version ? loader.name : `${loader.name} ${item.key.slice(loader.id.length + 1)}`
+  }
+  return item.key.startsWith('bridge-') ? i18n._(msg`Mortar bridge`) : item.key
 }
 
 function Row({
@@ -258,7 +267,9 @@ function CleanupBody({
       checked={picked.has(s.id)}
       onToggle={(on) => toggle(s.id, on)}
       title={
-        s.item.version ? `${itemName(i18n, s.item)} ${s.item.version}` : itemName(i18n, s.item)
+        s.item.version
+          ? `${itemName(i18n, s.game, s.item)} ${s.item.version}`
+          : itemName(i18n, s.game, s.item)
       }
       detail={detail}
       size={s.item.size}
