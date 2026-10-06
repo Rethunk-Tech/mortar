@@ -31,6 +31,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -658,6 +659,12 @@ type Result struct {
 	Collection *CollectionApplied `json:"collection,omitempty"`
 }
 
+// storedEntry is a store item an import places directly, with the source its entry records.
+type storedEntry struct {
+	key    string
+	source profile.Source
+}
+
 func requestFor(game, profileID string, m Mod) queue.Request {
 	kind := queue.KindInstall
 	if m.State == StateDependency {
@@ -784,6 +791,9 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	var reqs []queue.Request
 	var wanted []wantedFile
 	var local []profile.ExternalMod
+	// fromStore are packages and archives already in the store, a paired computer's copies: they are placed from
+	// there, not downloaded again.
+	var fromStore []storedEntry
 	external := make(map[string]migrate.ModPreview, len(cur.external))
 	for i, im := range cur.external {
 		external[externalKey(i)] = im
@@ -796,7 +806,14 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		if m.Site == SiteLocal {
 			if im, ok := external[m.Key]; ok {
 				local = append(local, profile.ExternalMod{SourcePath: im.SourcePath, ID: im.ID, Enabled: im.Enabled})
+			} else if stored[m.Key] {
+				fromStore = append(fromStore, storedEntry{key: m.Key, source: profile.Source{Kind: profile.KindLocal, Name: m.Name}.WithDisabled(m.Disabled)})
 			}
+			continue
+		}
+		if m.Site == SiteThunderstore && stored[m.Key] {
+			src := profile.Source{Kind: profile.KindThunderstore, Name: m.Package, Version: m.Version}.WithDisabled(m.Disabled)
+			fromStore = append(fromStore, storedEntry{key: store.PackageKey(m.Package, m.Version), source: src})
 			continue
 		}
 		reqs = append(reqs, requestFor(game, "", m))
@@ -880,11 +897,20 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		return Result{}, err
 	}
-	if len(local) > 0 || len(reqs) > 0 {
+	if len(local) > 0 || len(reqs) > 0 || len(fromStore) > 0 {
 		if batchID == "" {
 			batchID = historyBatchID()
 		}
 		if err := s.d.Profiles.OpenHistoryBatch(game, profileID, batchID); err != nil {
+			if created {
+				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+			}
+			return Result{}, err
+		}
+	}
+	for _, e := range fromStore {
+		if _, err := s.d.Profiles.AddEntry(game, profileID, e.key, e.source); err != nil {
+			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
 			if created {
 				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
 			}
@@ -898,10 +924,13 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			}
 			return Result{}, err
 		}
+	}
+	if len(local) > 0 || len(fromStore) > 0 {
 		if p, err := s.find(game, profileID); err == nil {
 			res.Profile = p
 		}
-		// Copied folders are on the profile now, so their configs land at once; the rest wait for their downloads.
+		// Copied folders and store items are on the profile now, so their configs land at once; the rest wait for
+		// their downloads.
 		if len(configs) > 0 {
 			var written []mod.ID
 			err := s.d.Profiles.InMods(game, profileID, func(prof profile.Profile, modsDir string) error {

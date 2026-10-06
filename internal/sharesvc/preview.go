@@ -372,6 +372,22 @@ func (r *resolver) thunderstore(ref share.Ref) Mod {
 	}
 	if r.hasPackage(ref.Package, ref.Version) {
 		m.State = StateInstalled
+	} else if ref.Version != "" && r.storedKey(store.PackageKey(ref.Package, ref.Version)) {
+		m.State, r.storedKeys[m.Key] = StateInstalled, true
+	}
+	return m
+}
+
+// local resolves an archive the sender installed from disk. Only a paired computer's copy of its store item can
+// install it; Name is the archive's file name, which the entry keeps as its source.
+func (r *resolver) local(ref share.Ref) Mod {
+	m := Mod{
+		Key: ref.Local, Site: SiteLocal, Name: ref.LocalName, State: StateInstalled, IDs: []mod.ID{},
+		Disabled: append([]mod.ID{}, ref.Disabled...),
+	}
+	has := slices.ContainsFunc(r.target, func(e profile.Entry) bool { return e.Key == ref.Local })
+	if !has && !r.storedKey(ref.Local) {
+		m.State, m.Reason = StateUnavailable, ReasonNoFile
 	}
 	return m
 }
@@ -387,7 +403,7 @@ func (r *resolver) storedKey(key string) bool {
 func nexusIDs(refs []share.Ref) []int {
 	var ids []int
 	for _, ref := range refs {
-		if ref.GitHub == "" && ref.Package == "" && !slices.Contains(ids, ref.ModID) {
+		if ref.GitHub == "" && ref.Package == "" && ref.Local == "" && !slices.Contains(ids, ref.ModID) {
 			ids = append(ids, ref.ModID)
 		}
 	}
@@ -399,6 +415,10 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 	r.load(ctx, nexusIDs(refs))
 	mods := make([]Mod, 0, len(refs))
 	for _, ref := range refs {
+		if ref.Local != "" {
+			mods = append(mods, r.local(ref))
+			continue
+		}
 		if ref.Package != "" {
 			mods = append(mods, r.thunderstore(ref))
 			continue

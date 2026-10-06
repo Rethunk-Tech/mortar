@@ -392,20 +392,28 @@ func (s *Service) Send(ctx context.Context, peerID, game, profileID string) erro
 	if s.deps.Shares == nil {
 		return errors.New("LAN sharing is unavailable")
 	}
-	payload, _, err := s.deps.Shares.ExportBytes(game, profileID, share.OwnInclude())
-	if err != nil {
-		return err
-	}
-	return s.sendPayload(ctx, peerID, game, payload)
+	return s.sendPayload(ctx, peerID, game, func(paired bool) ([]byte, error) {
+		inc := share.OwnInclude()
+		// Archives installed from disk exist nowhere else, so they go only to a paired computer, which copies them.
+		inc.LocalFiles = paired
+		payload, _, err := s.deps.Shares.ExportBytes(game, profileID, inc)
+		return payload, err
+	})
 }
 
-func (s *Service) sendPayload(ctx context.Context, peerID, game string, payload []byte) error {
-	encoded := base64.RawStdEncoding.EncodeToString(payload)
-	shared, err := validateRequest(shareRequest{Sender: s.deviceName(), Game: game, Payload: encoded, Version: protocolVersion})
+// sendPayload sends the payload build makes, told whether the peer is paired with this computer.
+func (s *Service) sendPayload(ctx context.Context, peerID, game string, build func(paired bool) ([]byte, error)) error {
+	hello, err := s.hello(ctx, peerID)
 	if err != nil {
 		return err
 	}
-	hello, err := s.hello(ctx, peerID)
+	key := s.book.key(hello.ID)
+	payload, err := build(key != nil)
+	if err != nil {
+		return err
+	}
+	encoded := base64.RawStdEncoding.EncodeToString(payload)
+	shared, err := validateRequest(shareRequest{Sender: s.deviceName(), Game: game, Payload: encoded, Version: protocolVersion})
 	if err != nil {
 		return err
 	}
@@ -422,7 +430,6 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game string, payload 
 		Nonce:      hello.Nonce,
 		SenderPort: s.port(),
 	}
-	key := s.book.key(hello.ID)
 	if key != nil {
 		request.Proof = hmacProof(key, hello.Nonce, encoded)
 		request.Digests = s.entryDigests(key, game, transferItems(shared))

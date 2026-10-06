@@ -60,6 +60,10 @@ type Ref struct {
 	Note     string                         `json:"note,omitempty"`
 	Tags     []string                       `json:"tags,omitempty"`
 	Overlay  *Overlay                       `json:"overlay,omitempty"`
+	// Local is the store key of an archive the sender installed from disk, LocalName that archive's file name. Only a
+	// paired computer, which copies the store item, can install it.
+	Local     string `json:"local,omitempty"`
+	LocalName string `json:"localName,omitempty"`
 	// SizeKB and MinGame are for the share page alone: the mod's size on disk, rounded to two significant digits,
 	// and the oldest game version its mods declare they run on.
 	SizeKB  int64  `json:"sizeKb,omitempty"`
@@ -100,6 +104,9 @@ type Include struct {
 	FomodChoices bool `json:"fomodChoices"`
 	Notes        bool `json:"notes"`
 	ConfigFiles  bool `json:"configFiles"`
+	// LocalFiles carries archives installed from disk, for a paired computer that copies their store items; the
+	// window never asks for it.
+	LocalFiles bool `json:"-"`
 }
 
 // DefaultInclude is the registry default: disabled mods off, the rest on.
@@ -138,11 +145,16 @@ func validName(name string) bool {
 }
 
 var (
+	localRef   = regexp.MustCompile(`^local-[0-9a-f]{64}$`)
 	packageRef = regexp.MustCompile(`^[A-Za-z0-9_]+-[A-Za-z0-9_]+$`)
 	versionRef = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
 )
 
 func (r Ref) valid() bool {
+	if r.Local != "" {
+		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && localRef.MatchString(r.Local) &&
+			validName(r.LocalName) && !strings.ContainsAny(r.LocalName, `/\`)
+	}
 	if r.Package != "" {
 		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && packageRef.MatchString(r.Package) &&
 			(r.Version == "" || versionRef.MatchString(r.Version))
@@ -175,6 +187,7 @@ type wireRef struct {
 	Note     string                         `json:"note,omitempty"`
 	Tags     []string                       `json:"tags,omitempty"`
 	Overlay  *Overlay                       `json:"overlay,omitempty"`
+	Key      string                         `json:"key,omitempty"`
 	KB       int64                          `json:"kb,omitempty"`
 	Min      string                         `json:"min,omitempty"`
 }
@@ -183,6 +196,8 @@ type wireRef struct {
 func (r Ref) MarshalJSON() ([]byte, error) {
 	w := wireRef{Disabled: r.Disabled, Fomod: r.Fomod, Note: r.Note, Tags: r.Tags, Overlay: r.Overlay, KB: r.SizeKB, Min: r.MinGame}
 	switch {
+	case r.Local != "":
+		w.Source, w.Key, w.Name = "local", r.Local, r.LocalName
 	case r.Package != "":
 		w.Source, w.Version = "thunderstore", r.Version
 		w.NS, w.Name, _ = strings.Cut(r.Package, "-")
@@ -209,7 +224,9 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 	}
 	r := Ref{Disabled: w.Disabled, Fomod: w.Fomod, Note: w.Note, Tags: w.Tags, Overlay: w.Overlay, SizeKB: w.KB, MinGame: w.Min}
 	switch {
-	case w.Source == "thunderstore" && w.Mod == 0 && w.File == 0 && w.Repo == "" && w.NS != "" && w.Name != "":
+	case w.Source == "local" && w.Key != "" && w.Mod == 0 && w.File == 0 && w.Repo == "" && w.NS == "":
+		r.Local, r.LocalName = w.Key, w.Name
+	case w.Source == "thunderstore" && w.Mod == 0 && w.Key == "" && w.File == 0 && w.Repo == "" && w.NS != "" && w.Name != "":
 		r.Package, r.Version = w.NS+"-"+w.Name, w.Version
 	case w.Source == "nexus" && w.Repo == "" && w.Tag == "" && w.Asset == "":
 		r.ModID, r.FileID = w.Mod, w.File
@@ -382,6 +399,9 @@ func importEntryNoteTags(note string, tags []string) (string, []string) {
 
 // MatchesEntry reports whether the ref names the same mod file as the profile entry.
 func (r Ref) MatchesEntry(e profile.Entry) bool {
+	if r.Local != "" {
+		return e.Source.Kind == profile.KindLocal && e.Key == r.Local
+	}
 	if r.Package != "" {
 		return e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, r.Package) &&
 			(r.Version == "" || e.Source.Version == r.Version)
@@ -512,13 +532,13 @@ func roundKB(kb int64) int64 {
 func withoutDetails(s Shared) Shared {
 	out := Shared{Game: s.Game, SourceKeys: s.SourceKeys, Name: s.Name, Entries: make([]Ref, len(s.Entries)), GameVersion: s.GameVersion}
 	for i, r := range s.Entries {
-		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Package: r.Package, Version: r.Version}
+		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Package: r.Package, Version: r.Version, Local: r.Local, LocalName: r.LocalName}
 	}
 	return out
 }
 
 // refOf maps an enabled, non-bundled entry to its Ref, or says why it cannot be shared.
-func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
+func refOf(e profile.Entry, inc Include) (Ref, string) {
 	var r Ref
 	var missing string
 	switch e.Source.Kind {
@@ -532,7 +552,11 @@ func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 		r = Ref{Package: e.Source.Name, Version: e.Source.Version}
 		missing = "no Thunderstore package recorded"
 	case profile.KindLocal:
-		return Ref{}, "local archive"
+		if !inc.LocalFiles {
+			return Ref{}, "local archive"
+		}
+		r = Ref{Local: e.Key, LocalName: e.Source.Name}
+		missing = "no local archive recorded"
 	default:
 		return Ref{}, "unknown source"
 	}
@@ -543,10 +567,10 @@ func refOf(e profile.Entry, fomod, notes bool) (Ref, string) {
 		}
 		r.Overlay = &Overlay{From: e.OverlayFrom, To: e.OverlayTo, Off: e.OverlayOff}
 	}
-	if fomod {
+	if inc.FomodChoices {
 		r.Fomod = cloneFomod(e.Fomod)
 	}
-	if notes {
+	if inc.Notes {
 		r.Note = e.Note
 		r.Tags = slices.Clone(e.Tags)
 	}
@@ -588,7 +612,7 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 			off = append(off, e.Key)
 			continue
 		}
-		r, why := refOf(e, inc.FomodChoices, inc.Notes)
+		r, why := refOf(e, inc)
 		if why != "" {
 			left = append(left, LeftOut{Key: e.Key, Reason: why})
 			continue

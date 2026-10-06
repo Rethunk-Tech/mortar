@@ -527,6 +527,10 @@ func HashDir(root string) (string, error) {
 		if err != nil {
 			return err
 		}
+		// The marker is the store's bookkeeping, not content: a folder hashes the same before and after it lands.
+		if rel == CompleteMarker {
+			return nil
+		}
 		open := p
 		if info.Mode()&os.ModeSymlink != 0 {
 			open = resolved

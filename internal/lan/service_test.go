@@ -237,6 +237,14 @@ func TestLoopbackTransfer(t *testing.T) {
 	if err := senderStore.AddDir("stardew", ghKey, source); err != nil {
 		t.Fatal(err)
 	}
+	// So does an archive the sender installed from disk, which exists nowhere else.
+	localKey, err := store.HashDir(source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := senderStore.AddDir("stardew", localKey, source); err != nil {
+		t.Fatal(err)
+	}
 
 	receiverStore := store.OpenAt(t.TempDir())
 	arrivals := make(chan Arrival, 2)
@@ -255,8 +263,9 @@ func TestLoopbackTransfer(t *testing.T) {
 			{Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 2}},
 			{Key: optKey, Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 3}, OverlayOf: key, OverlayFrom: "a", OverlayTo: "b", OverlayOff: true},
 			{Key: ghKey, Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "m.zip"}},
+			{Key: localKey, Source: profile.Source{Kind: profile.KindLocal, Name: "Mine.zip"}},
 		},
-	}, t.TempDir(), share.Include{DisabledMods: true}); err != nil {
+	}, t.TempDir(), share.Include{DisabledMods: true, LocalFiles: true}); err != nil {
 		t.Fatal(err)
 	}
 	if pv, err := share.ReadBytes(payload.Bytes()); err != nil || pv.Entries[1].Overlay == nil || *pv.Entries[1].Overlay != (share.Overlay{From: "a", To: "b", Off: true}) {
@@ -264,7 +273,7 @@ func TestLoopbackTransfer(t *testing.T) {
 	}
 	send := func() Arrival {
 		t.Helper()
-		if err := sender.sendPayload(t.Context(), receiverAddr, "stardew", payload.Bytes()); err != nil {
+		if err := sender.sendPayload(t.Context(), receiverAddr, "stardew", fixed(payload.Bytes())); err != nil {
 			t.Fatal(err)
 		}
 		select {
@@ -299,6 +308,9 @@ func TestLoopbackTransfer(t *testing.T) {
 	}
 	if string(got) != "from sender" {
 		t.Fatalf("installed contents = %q", got)
+	}
+	if src, pkg, _, ok := receiverStore.Meta("stardew", localKey); !ok || src != profile.KindLocal || pkg != "Mine.zip" {
+		t.Fatalf("local entry meta = %q %q %v", src, pkg, ok)
 	}
 	if src, pkg, version, ok := receiverStore.Meta("stardew", ghKey); !ok || src != profile.KindGitHub || pkg != "o/r" || version != "v1" {
 		t.Fatalf("github entry meta = %q %q %q %v", src, pkg, version, ok)
@@ -352,7 +364,7 @@ func TestLethalCompanyProfileOverLAN(t *testing.T) {
 	})
 	sender, _ := pairedService(t, senderStore, nil)
 	pair(t, receiver, sender, receiverAddr)
-	if err := sender.sendPayload(t.Context(), receiverAddr, "lethal-company", payload.Bytes()); err != nil {
+	if err := sender.sendPayload(t.Context(), receiverAddr, "lethal-company", fixed(payload.Bytes())); err != nil {
 		t.Fatal(err)
 	}
 	arrival := <-arrivals
@@ -401,7 +413,7 @@ func TestLoopbackSendReceive(t *testing.T) {
 	server := httptest.NewServer(service.handler())
 	defer server.Close()
 
-	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", payload); err != nil {
+	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", fixed(payload)); err != nil {
 		t.Fatal(err)
 	}
 	select {
@@ -453,7 +465,7 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 	}})
 	server := httptest.NewServer(service.handler())
 	defer server.Close()
-	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", archive.Bytes()); err != nil {
+	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", fixed(archive.Bytes())); err != nil {
 		t.Fatal(err)
 	}
 	arrival := <-arrivals
@@ -578,4 +590,9 @@ func TestExtractTarRefusesEscapesAndLinks(t *testing.T) {
 			t.Errorf("%s: wrote outside root", name)
 		}
 	}
+}
+
+// fixed is a payload builder that sends the same bytes whether or not the peer is paired.
+func fixed(payload []byte) func(bool) ([]byte, error) {
+	return func(bool) ([]byte, error) { return payload, nil }
 }

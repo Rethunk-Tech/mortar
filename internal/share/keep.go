@@ -15,6 +15,8 @@ import (
 // Identity names the file a ref installs, ignoring the per-entry options (disabled mods, notes, FOMOD picks).
 func (r Ref) Identity() string {
 	switch {
+	case r.Local != "":
+		return "l:" + r.Local
 	case r.Package != "":
 		return "t:" + strings.ToLower(r.Package) + "@" + r.Version
 	case r.GitHub != "":

@@ -49,6 +49,8 @@ func identityOf(e profile.Entry) (Ref, bool) {
 			return Ref{}, false
 		}
 		return Ref{Package: e.Source.Name, Version: e.Source.Version}, true
+	case profile.KindLocal:
+		return Ref{Local: e.Key, LocalName: e.Source.Name}, true
 	default:
 		return Ref{}, false
 	}

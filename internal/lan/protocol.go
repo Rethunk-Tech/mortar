@@ -97,6 +97,8 @@ func transferItems(shared share.Shared) []transferItem {
 	for _, ref := range shared.Entries {
 		var item transferItem
 		switch {
+		case ref.Local != "":
+			item = transferItem{Key: ref.Local, Source: profile.KindLocal, Package: ref.LocalName}
 		case ref.GitHub != "":
 			repo, tag, asset := ref.GitHubParts()
 			owner, name, _ := strings.Cut(repo, "/")

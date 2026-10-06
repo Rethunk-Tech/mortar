@@ -723,3 +723,33 @@ func TestSiteReadsTheAppsLinks(t *testing.T) {
 		t.Fatalf("today's encoder makes %+v, the stored link reads %+v", again, got)
 	}
 }
+
+func TestLocalArchivesTravelOnlyWhenAsked(t *testing.T) {
+	t.Parallel()
+	key := "local-" + strings.Repeat("ab", 32)
+	p := profile.Profile{Name: "Desk", Entries: []profile.Entry{
+		{Key: key, Source: profile.Source{Kind: profile.KindLocal, Name: "PkA.zip"}},
+	}}
+	var plain bytes.Buffer
+	if _, err := Write(&plain, "stardew", p, t.TempDir(), OwnInclude()); err != nil {
+		t.Fatal(err)
+	}
+	if pv, err := ReadBytes(plain.Bytes()); err != nil || len(pv.Entries) != 0 {
+		t.Fatalf("without LocalFiles = %+v, %v", pv.Entries, err)
+	}
+	inc := OwnInclude()
+	inc.LocalFiles = true
+	var paired bytes.Buffer
+	if _, err := Write(&paired, "stardew", p, t.TempDir(), inc); err != nil {
+		t.Fatal(err)
+	}
+	pv, err := ReadBytes(paired.Bytes())
+	if err != nil || len(pv.Entries) != 1 || pv.Entries[0].Local != key || pv.Entries[0].LocalName != "PkA.zip" || !pv.Entries[0].MatchesEntry(p.Entries[0]) {
+		t.Fatalf("with LocalFiles = %+v, %v", pv.Entries, err)
+	}
+	for _, bad := range []Ref{{Local: "local-zz"}, {Local: key, LocalName: "../x.zip"}, {Local: key, LocalName: "a.zip", ModID: 1}} {
+		if bad.valid() {
+			t.Fatalf("%+v passed", bad)
+		}
+	}
+}

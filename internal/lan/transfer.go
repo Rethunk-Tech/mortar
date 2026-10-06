@@ -363,7 +363,7 @@ func writeTar(ctx context.Context, output io.Writer, root string) error {
 		if walkErr != nil {
 			return walkErr
 		}
-		if relative == "." {
+		if relative == "." || relative == store.CompleteMarker {
 			return nil
 		}
 		if entry.Type()&os.ModeSymlink != 0 {
