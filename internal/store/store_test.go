@@ -626,3 +626,49 @@ func TestEntriesCarryRecordedSizes(t *testing.T) {
 		t.Fatalf("recorded size = %d", entries[0].Size)
 	}
 }
+
+// Cleanup and the health check list the same unused items; an unreferenced entry whose folder is gone is in neither
+// list and is pruned silently, while a referenced one stays for its profile to fetch again.
+func TestUnreferencedMatchesReportAndDanglingEntriesArePruned(t *testing.T) {
+	s := newStore(t)
+	for _, k := range []string{"local-a", "local-b", "local-c"} {
+		dir := t.TempDir()
+		if err := os.WriteFile(filepath.Join(dir, "f"), []byte(k), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := s.AddDir("stardew", k, dir); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, k := range []string{"local-b", "local-c"} {
+		dir, err := s.Dir("stardew", k)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.RemoveAll(dir); err != nil {
+			t.Fatal(err)
+		}
+	}
+	keep := map[string][]string{"stardew": {"local-c"}}
+	refs, err := s.Unreferenced(keep)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rep, err := s.Report(keep)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(refs) != 1 || refs[0].Key != "local-a" || len(rep["stardew"].Unused) != 1 || rep["stardew"].Unused[0].Key != "local-a" {
+		t.Fatalf("cleanup lists %+v, the report %+v", refs, rep["stardew"].Unused)
+	}
+	if err := s.PruneDangling(keep); err != nil {
+		t.Fatal(err)
+	}
+	idx, err := s.loadIndex()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := idx["stardew"]["local-b"]; ok || len(idx["stardew"]) != 2 {
+		t.Fatalf("index after prune = %v", idx["stardew"])
+	}
+}

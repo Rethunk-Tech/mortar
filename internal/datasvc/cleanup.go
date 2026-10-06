@@ -177,7 +177,7 @@ func Apply(root string, items *store.Store, preview Preview, keep map[string][]s
 		}
 		_ = fsx.RemoveAll(filepath.Clean(abs))
 	}
-	return items.Remove(refs)
+	return errors.Join(items.Remove(refs), items.PruneDangling(keep))
 }
 
 func cacheTTL(rel string) (time.Duration, bool) {

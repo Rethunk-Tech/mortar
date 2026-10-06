@@ -59,8 +59,8 @@ func (s *Store) gameReport(keys map[string]record, keep map[string]bool) GameRep
 	var unused []Item
 	var taggedItems []tagged
 	for key, r := range keys {
-		dir, err := s.destOf(key, r.Blob)
-		if err != nil || !completeItem(dir) {
+		dir, ok := s.listed(key, r)
+		if !ok {
 			continue
 		}
 		// A loader's item holds its installer or its bundled mods, whose first manifest would misname the item.

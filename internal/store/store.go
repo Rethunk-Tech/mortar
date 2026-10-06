@@ -923,7 +923,7 @@ type Ref struct {
 	Key  string `json:"key"`
 }
 
-// Unreferenced lists items Collect does not treat as in use, using the same keep set.
+// Unreferenced lists the whole items no referenced key names: the keys Report gives as Unused for the same keep set.
 func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -935,12 +935,48 @@ func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 	for _, game := range slices.Sorted(maps.Keys(idx)) {
 		keep := keepSet(referenced[game])
 		for _, key := range slices.Sorted(maps.Keys(idx[game])) {
-			if !keep[key] {
+			if _, ok := s.listed(key, idx[game][key]); ok && !keep[key] {
 				out = append(out, Ref{Game: game, Key: key})
 			}
 		}
 	}
 	return out, nil
+}
+
+// listed is the item's folder when it holds a whole item, the only kind Report and Unreferenced name; an entry whose
+// folder is gone is PruneDangling's, and a partial one is left to the store check.
+func (s *Store) listed(key string, r record) (string, bool) {
+	dir, err := s.destOf(key, r.Blob)
+	return dir, err == nil && completeItem(dir)
+}
+
+// PruneDangling drops the index entries no referenced key names whose folder is gone, which nothing could use or
+// show; a referenced one stays, since its profile lists it as missing and can fetch it again.
+func (s *Store) PruneDangling(referenced map[string][]string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	idx, err := s.loadIndex()
+	if err != nil {
+		return err
+	}
+	pruned := false
+	for game, keys := range idx {
+		keep := keepSet(referenced[game])
+		for key, r := range keys {
+			dir, err := s.destOf(key, r.Blob)
+			if keep[key] || err != nil {
+				continue
+			}
+			if _, err := os.Lstat(dir); errors.Is(err, fs.ErrNotExist) {
+				delete(keys, key)
+				pruned = true
+			}
+		}
+	}
+	if !pruned {
+		return nil
+	}
+	return s.saveIndex(idx)
 }
 
 // Remove deletes the given items and drops them from the index; a blob goes with its last key.
