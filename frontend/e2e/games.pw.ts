@@ -62,6 +62,25 @@ test('the game title opens a switcher listing both playable games', async ({ pag
   await expect(switcher).toBeHidden()
 })
 
+test('switching games asks nothing about the previous game’s profiles', async ({ page }) => {
+  await openSeedFarm(page)
+  const refused: string[] = []
+  page.on('response', (r) => {
+    if (r.url().endsWith('/wails/runtime') && r.status() >= 400) {
+      refused.push(r.request().postData() ?? '')
+    }
+  })
+  await page.getByRole('button', { name: 'Stardew Valley' }).first().click()
+  await page
+    .getByRole('dialog', { name: 'Switch game' })
+    .getByRole('button', { name: 'Open Lethal Company' })
+    .click()
+  await expect(page.getByRole('button', { name: 'Seed Lobby' }).first()).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
+  await page.waitForLoadState('networkidle')
+  expect(refused).toEqual([])
+})
+
 test('Settings › Mods and profiles has the adult-mods switch, off by default', async ({ page }) => {
   await openSeedFarm(page)
   await page.getByRole('button', { name: 'Mortar menu' }).click()

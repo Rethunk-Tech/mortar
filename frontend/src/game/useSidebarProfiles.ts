@@ -21,8 +21,13 @@ export function useOrderedProfiles(game: string) {
   }
 }
 
+// The profile list still holds the previous game's profiles while a newly opened game loads, so badges wait for it
+// rather than ask about one game's profiles under the other's id.
+const useListedGame = () => useProfiles((s) => s.game?.id ?? '')
+
 export function useSidebarBadges(game: string) {
   const { allProfiles, profiles } = useOrderedProfiles(game)
+  const listed = useListedGame() === game
   const loadBadges = useBadges((s) => s.loadAll)
   const stamp = profiles.map((p) => `${p.id}:${String(p.updated)}`).join(',')
   const openId = useProfiles((s) => s.openId)
@@ -30,10 +35,16 @@ export function useSidebarBadges(game: string) {
   const sidebarBadges = useSettings((s) => s.sidebarBadges)
   const backgroundBadgeChecks = useSettings((s) => s.backgroundBadgeChecks)
   useEffect(() => {
-    if (stamp && modsShown && runBackgroundBadgeChecks(sidebarBadges, backgroundBadgeChecks)) {
+    if (
+      listed &&
+      stamp &&
+      modsShown &&
+      runBackgroundBadgeChecks(sidebarBadges, backgroundBadgeChecks)
+    ) {
       loadBadges(game, allProfiles, openId).catch(reportUnexpected)
     }
   }, [
+    listed,
     game,
     stamp,
     allProfiles,
@@ -47,13 +58,14 @@ export function useSidebarBadges(game: string) {
 
 export function useProfilePageBadges(game: string) {
   const allProfiles = useProfiles((s) => s.profiles)
+  const listed = useListedGame() === game
   const loadBadges = useBadges((s) => s.loadAll)
   const stamp = allProfiles.map((p) => `${p.id}:${String(p.updated)}`).join(',')
   const sidebarBadges = useSettings((s) => s.sidebarBadges)
   const backgroundBadgeChecks = useSettings((s) => s.backgroundBadgeChecks)
   useEffect(() => {
-    if (stamp && runBackgroundBadgeChecks(sidebarBadges, backgroundBadgeChecks)) {
+    if (listed && stamp && runBackgroundBadgeChecks(sidebarBadges, backgroundBadgeChecks)) {
       loadBadges(game, allProfiles, '').catch(reportUnexpected)
     }
-  }, [game, stamp, allProfiles, loadBadges, sidebarBadges, backgroundBadgeChecks])
+  }, [listed, game, stamp, allProfiles, loadBadges, sidebarBadges, backgroundBadgeChecks])
 }
