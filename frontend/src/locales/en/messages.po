@@ -11602,6 +11602,7 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 #: src/firstrun/GameSetup.tsx:165
 #: src/mods/listRows.ts:118
 #: src/mods/Sidebar.tsx:541
+#: src/settings/sections/NexusMods.tsx:300
 #: src/shell/NexusAccount.tsx:27
 msgid "Nexus Mods"
 msgstr "Nexus Mods"

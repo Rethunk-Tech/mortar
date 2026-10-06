@@ -19,11 +19,14 @@ export function SettingsSection({
   description,
   children,
   sx,
+  tiles = true,
 }: {
   title?: ReactNode
   description?: ReactNode
   children: ReactNode
   sx?: SxProps<Theme>
+  // Off for content that brings its own surfaces, such as a form or nested sections.
+  tiles?: boolean
 }) {
   const query = useSettingsSearch()
   return (
@@ -46,26 +49,30 @@ export function SettingsSection({
         </Box>
       ) : null}
       {description ? <Box sx={{ fontSize: 14, color: 'text.secondary' }}>{description}</Box> : null}
-      <Box
-        className="settings-tiles"
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1,
-          containerType: 'inline-size',
-          // Every setting is its own tile; a section is the heading above a stack of tiles.
-          // Light mode uses opaque paper: a dark tint over the wallpaper reads as grey.
-          '& > *': (theme) => ({
-            bgcolor:
-              theme.palette.mode === 'light'
-                ? theme.palette.background.paper
-                : 'var(--mortar-overlay-45)',
-            borderRadius: '6px',
-          }),
-        }}
-      >
-        {children}
-      </Box>
+      {tiles ? (
+        <Box
+          className="settings-tiles"
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+            containerType: 'inline-size',
+            // Every setting is its own tile; a section is the heading above a stack of tiles.
+            // Light mode uses opaque paper: a dark tint over the wallpaper reads as grey.
+            '& > *': (theme) => ({
+              bgcolor:
+                theme.palette.mode === 'light'
+                  ? theme.palette.background.paper
+                  : 'var(--mortar-overlay-45)',
+              borderRadius: '6px',
+            }),
+          }}
+        >
+          {children}
+        </Box>
+      ) : (
+        children
+      )}
     </Box>
   )
 }

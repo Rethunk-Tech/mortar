@@ -295,8 +295,9 @@ export function NexusMods() {
       reportUnexpected(err)
     })
   }
+  const { t } = useLingui()
   return (
-    <>
+    <SettingsSection title={t`Nexus Mods`} tiles={false}>
       <NexusSignIn />
       {signedIn ? (
         <NexusModsSignedIn
@@ -306,6 +307,6 @@ export function NexusMods() {
           onAskEndorse={onAskEndorse}
         />
       ) : null}
-    </>
+    </SettingsSection>
   )
 }
