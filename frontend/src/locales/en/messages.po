@@ -130,7 +130,7 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
-#: src/profiles/PackImportDialog.tsx:160
+#: src/profiles/PackImportDialog.tsx:161
 msgid "Could not open the file"
 msgstr "Could not open the file"
 
@@ -227,7 +227,7 @@ msgstr "Make {name} win"
 
 #. placeholder {0}: preview?.name ?? ''
 #. placeholder {1}: result.queued
-#: src/profiles/PackImportDialog.tsx:87
+#: src/profiles/PackImportDialog.tsx:88
 msgid "Imported {0}: {1} to install"
 msgstr "Imported {0}: {1} to install"
 
@@ -2828,7 +2828,7 @@ msgstr "No recorded runs yet"
 msgid "Before this change"
 msgstr "Before this change"
 
-#: src/profiles/PackImportDialog.tsx:102
+#: src/profiles/PackImportDialog.tsx:103
 #: src/share/ImportDialog.tsx:158
 msgid "Import from {manager}"
 msgstr "Import from {manager}"
@@ -3219,7 +3219,7 @@ msgstr "Downloaded mods no profile uses"
 msgid "Needs a newer loader"
 msgstr "Needs a newer loader"
 
-#: src/profiles/ImportWizard.tsx:103
+#: src/profiles/ImportWizard.tsx:101
 msgid "Mortar found no other mod manager's profiles for this game on this computer."
 msgstr "Mortar found no other mod manager's profiles for this game on this computer."
 
@@ -3821,9 +3821,9 @@ msgstr "Share as r2modman code?"
 #: src/profiles/CompareDialog.tsx:62
 #: src/profiles/EditProfileDialog.tsx:454
 #: src/profiles/GameModsDialog.tsx:164
-#: src/profiles/ImportWizard.tsx:138
+#: src/profiles/ImportWizard.tsx:126
 #: src/profiles/LaunchPresetDialog.tsx:91
-#: src/profiles/PackImportDialog.tsx:169
+#: src/profiles/PackImportDialog.tsx:170
 #: src/settings/sections/NexusSSO.tsx:67
 #: src/settings/sections/nxmHandler.tsx:77
 #: src/shell/BugReportDialog.tsx:102
@@ -4068,7 +4068,7 @@ msgstr "Show in queue"
 #: src/mods/Toolbar.tsx:59
 #: src/profiles/CompareBulkBody.tsx:129
 #: src/profiles/GameModsDialog.tsx:37
-#: src/profiles/PackImportDialog.tsx:110
+#: src/profiles/PackImportDialog.tsx:111
 #: src/profiles/ProfilesPage.tsx:273
 #: src/profiles/ProfilesPage.tsx:282
 #: src/saves/SaveGapLine.tsx:21
@@ -4201,7 +4201,7 @@ msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
 #. placeholder {0}: preview.configs
-#: src/profiles/PackImportDialog.tsx:115
+#: src/profiles/PackImportDialog.tsx:116
 msgid "{0, plural, one {# config file comes with it.} other {# config files come with it.}}"
 msgstr "{0, plural, one {# config file comes with it.} other {# config files come with it.}}"
 
@@ -4959,7 +4959,7 @@ msgstr "Select mods on the Mods tab, then Add to bundle."
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
-#: src/profiles/PackImportDialog.tsx:163
+#: src/profiles/PackImportDialog.tsx:164
 #: src/share/ImportInput.tsx:29
 msgid "Choose a file…"
 msgstr "Choose a file…"
@@ -5808,7 +5808,7 @@ msgstr "{0, plural, one {Removed # mod} other {Removed # mods}}"
 msgid "{found, plural, one {# mod update} other {# mod updates}}"
 msgstr "{found, plural, one {# mod update} other {# mod updates}}"
 
-#: src/profiles/ImportWizard.tsx:102
+#: src/profiles/ImportWizard.tsx:100
 msgid "No profiles found."
 msgstr "No profiles found."
 
@@ -6334,7 +6334,7 @@ msgstr "The update for {0} did not finish"
 msgid "Dismissed"
 msgstr "Dismissed"
 
-#: src/profiles/PackImportDialog.tsx:147
+#: src/profiles/PackImportDialog.tsx:148
 msgid "Profile code"
 msgstr "Profile code"
 
@@ -6872,7 +6872,7 @@ msgstr "Update ready: applies when you close Mortar."
 msgid "Sign in to import"
 msgstr "Sign in to import"
 
-#: src/profiles/PackImportDialog.tsx:127
+#: src/profiles/PackImportDialog.tsx:128
 msgid "From r2modman or Gale on this computer"
 msgstr "From r2modman or Gale on this computer"
 
@@ -6903,7 +6903,7 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
-#: src/profiles/ImportWizard.tsx:135
+#: src/profiles/ImportWizard.tsx:123
 msgid "Use a code or file…"
 msgstr "Use a code or file…"
 
@@ -7083,7 +7083,7 @@ msgstr "Copy {0} to {1}"
 
 #: src/commandPalette/paletteLabels.ts:11
 #: src/profiles/GameModsDialog.tsx:172
-#: src/profiles/PackImportDialog.tsx:172
+#: src/profiles/PackImportDialog.tsx:173
 #: src/profiles/ProfilesPage.tsx:351
 msgid "Import"
 msgstr "Import"
@@ -7338,8 +7338,8 @@ msgstr "Enter code"
 msgid "Default launch"
 msgstr "Default launch"
 
-#: src/profiles/PackImportDialog.tsx:62
-#: src/profiles/PackImportDialog.tsx:77
+#: src/profiles/PackImportDialog.tsx:63
+#: src/profiles/PackImportDialog.tsx:78
 msgid "Could not read that code or file"
 msgstr "Could not read that code or file"
 
@@ -7357,7 +7357,7 @@ msgstr "Something went wrong in this view"
 msgid "Choose a folder"
 msgstr "Choose a folder"
 
-#: src/profiles/PackImportDialog.tsx:94
+#: src/profiles/PackImportDialog.tsx:95
 msgid "Could not import"
 msgstr "Could not import"
 
@@ -9457,7 +9457,7 @@ msgstr "Setup"
 msgid "{0} of {1} · {2}/s"
 msgstr "{0} of {1} · {2}/s"
 
-#: src/profiles/PackImportDialog.tsx:180
+#: src/profiles/PackImportDialog.tsx:181
 #: src/share/ImportInput.tsx:73
 msgid "Preview"
 msgstr "Preview"
@@ -9592,7 +9592,7 @@ msgstr "Include notes"
 msgid "Could not pin the selected mods"
 msgstr "Could not pin the selected mods"
 
-#: src/profiles/PackImportDialog.tsx:102
+#: src/profiles/PackImportDialog.tsx:103
 msgid "Import a profile code or file"
 msgstr "Import a profile code or file"
 
@@ -11016,7 +11016,7 @@ msgstr "Unknown mod"
 msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
-#: src/profiles/ImportWizard.tsx:99
+#: src/profiles/ImportWizard.tsx:97
 #: src/share/ImportDialog.tsx:259
 msgid "Import a profile"
 msgstr "Import a profile"
@@ -12386,7 +12386,7 @@ msgid "Different source"
 msgstr "Different source"
 
 #. placeholder {0}: listNames(unsupported)
-#: src/profiles/PackImportDialog.tsx:89
+#: src/profiles/PackImportDialog.tsx:90
 msgid "Not from Thunderstore: {0}"
 msgstr "Not from Thunderstore: {0}"
 

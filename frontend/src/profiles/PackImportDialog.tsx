@@ -25,6 +25,7 @@ import { PickPackFile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { listNames } from '../i18n/list.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { FoundProfileRow } from './FoundProfileRow.tsx'
 import { packageLine } from './packImport.ts'
 
 // Imports an r2modman or Gale profile code, or a profile export file, into a new profile: the code or file is read and
@@ -127,17 +128,17 @@ export function PackImportDialog({
                   {t`From r2modman or Gale on this computer`}
                 </Typography>
                 {local.map((profile) => (
-                  <Button
+                  <FoundProfileRow
                     key={profile.path}
+                    name={profile.name}
+                    source={profile.source}
+                    mods={profile.mods}
                     disabled={busy}
-                    sx={{ justifyContent: 'flex-start' }}
                     onClick={() => {
                       setPath(profile.path)
                       read({ path: profile.path, text: '' })
                     }}
-                  >
-                    {profile.name}
-                  </Button>
+                  />
                 ))}
               </>
             ) : null}

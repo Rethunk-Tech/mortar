@@ -1,22 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { Inbox } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { LocalProfiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { ExternalPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { modsLabel } from '../i18n/counts.ts'
 import { openImport } from '../share/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useExternalImportSources } from './externalImportSources.ts'
+import { FoundProfileRow } from './FoundProfileRow.tsx'
 
 interface Found {
   key: string
@@ -104,23 +96,13 @@ export function ImportWizard({
           </EmptyState>
         ) : (
           all.map((f) => (
-            <Button
+            <FoundProfileRow
               key={f.key}
+              name={f.name}
+              source={f.source}
+              mods={f.mods}
               onClick={() => pick(f)}
-              sx={{ justifyContent: 'space-between', textTransform: 'none', gap: 2 }}
-            >
-              <Box sx={{ textAlign: 'left', minWidth: 0 }}>
-                <Typography title={f.name} noWrap={true} sx={{ fontWeight: 600 }}>
-                  {f.name}
-                </Typography>
-                <Typography color="text.secondary" sx={{ fontSize: 12 }}>
-                  {f.source}
-                </Typography>
-              </Box>
-              <Typography color="text.secondary" sx={{ fontSize: 13, flexShrink: 0 }}>
-                {modsLabel(f.mods)}
-              </Typography>
-            </Button>
+            />
           ))
         )}
       </DialogContent>
