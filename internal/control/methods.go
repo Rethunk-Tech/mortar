@@ -95,6 +95,8 @@ type Services struct {
 	Quit func()
 	// QuitBlocker names what a quit would interrupt (downloads, a running game), or is empty; nil in tests.
 	QuitBlocker func() string
+	// Handoff takes command-line arguments as if a second instance had sent them; nil in tests.
+	Handoff func(args []string)
 }
 
 // GameRow is one supported game for `mortar games`.
@@ -580,6 +582,13 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.storeRemove(p)
 	case "history.all":
 		return s.Profiles.RecentHistory(p.Game)
+	case shortcut.PlayRequestMethod:
+		if s.Handoff == nil {
+			return nil, errors.New("play requests are not available")
+		}
+		r := shortcut.Request{Game: p.Game, Profile: p.Profile}
+		s.Handoff([]string{shortcut.Arg(r.Game, r.Profile)})
+		return r, nil
 	case "status":
 		if p.Install != "" {
 			return s.Launches.StatusInstall(p.Game, p.Install)

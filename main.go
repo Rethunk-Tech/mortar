@@ -27,6 +27,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/configsvc"
 	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
@@ -161,6 +162,10 @@ func registerDoctorLoaders() {
 // profile shows as waiting on it.
 const syncScan = time.Minute
 
+// steamSessionPatience is how long a Steam session sent to a running Mortar waits for its game to start, through
+// any pre-Play dialog, before it gives up and lets Steam see the session end.
+const steamSessionPatience = 15 * time.Minute
+
 func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
 		return releaseLinks()
@@ -222,6 +227,16 @@ func run() error {
 	dataDir, err := dataDirOrRecover()
 	if err != nil {
 		return err
+	}
+	// The single-instance handoff exits this process at once, so a Steam session for a running Mortar forwards its
+	// request over the control channel instead and stays until the game closes, for Steam to count the playtime.
+	if r, ok := shortcut.Parse(os.Args[1:]); ok && shortcut.SteamSession(os.Args[1:]) {
+		if _, running := controlwire.Live(dataDir); running {
+			if err := shortcut.Follow(dataDir, r, time.Second, steamSessionPatience); err != nil {
+				log.Printf("steam session: %v", err)
+			}
+			return nil
+		}
 	}
 	updates := &updatesvc.Service{}
 	app := application.New(application.Options{
@@ -831,6 +846,7 @@ func run() error {
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, Bundles: bundlesSvc,
 		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Packs: packs, Emit: emit,
 		Quit: quitSvc.ConfirmQuit, QuitBlocker: quitSvc.BusySummary,
+		Handoff: func(args []string) { handoffs <- application.SecondInstanceData{Args: args} },
 	}
 	go func() {
 		if err := control.Serve(queueCtx, dataDir, version, ctl.Handle); err != nil && !errors.Is(err, context.Canceled) {

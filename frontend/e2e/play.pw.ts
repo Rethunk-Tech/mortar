@@ -4,7 +4,7 @@ import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
 import { sandboxPort, selftest } from './sandbox.ts'
 
-// --play runs its own server on the sandbox's port, so each test stops the shared one and starts its binary again
+// A --play start runs its own server on the sandbox's port, so each test stops the shared one and starts its binary again
 // after, with the environment it ran with (read from /proc), without the rebuild `selftest.sh start` does.
 
 const dir = process.env.MORTAR_E2E_DIR ?? ''
@@ -44,27 +44,36 @@ async function restartShared(page: Page) {
   await served(page)
 }
 
-/** Runs `mortar --play` for the profile in place of the shared server, which is back up when this returns. */
+/** Starts the sandbox's binary with args and resolves with its exit code. */
+function mortar(args: string[]) {
+  const child = spawn(`${dir}/mortar-server`, args, { cwd: dir, env, stdio: 'ignore' })
+  return { child, exited: new Promise<number | null>((done) => child.on('exit', done)) }
+}
+
+/** Only a process this test started, by its own pid. */
+function stop(child: ChildProcess) {
+  if (child.exitCode === null && child.signalCode === null && child.pid) {
+    process.kill(child.pid, 'SIGTERM')
+  }
+}
+
+/** Runs `mortar` with a play request for the profile in place of the shared server, which is back up when this
+ * returns. Steam shortcuts add --steam-session; desktop shortcuts do not. */
 async function playing(
   page: Page,
   profile: string,
   check: (exited: Promise<number | null>) => Promise<void>,
+  steam = true,
 ) {
   selftest(dir, 'stop')
-  let child: ChildProcess | null = null
+  const { child, exited } = mortar([
+    `--play=stardew/${profile}`,
+    ...(steam ? ['--steam-session'] : []),
+  ])
   try {
-    child = spawn(`${dir}/mortar-server`, [`--play=stardew/${profile}`], {
-      cwd: dir,
-      env,
-      stdio: 'ignore',
-    })
-    const running = child
-    await check(new Promise((done) => running.on('exit', (code) => done(code))))
+    await check(exited)
   } finally {
-    // Only the server this test started, by its own pid.
-    if (child?.exitCode === null && child.signalCode === null && child.pid) {
-      process.kill(child.pid, 'SIGTERM')
-    }
+    stop(child)
     await restartShared(page)
   }
 }
@@ -77,6 +86,8 @@ async function served(page: Page) {
     await page.goto('/')
   }).toPass({ timeout: 15_000 })
 }
+
+const runs = () => cli('runs', 'stardew', fine).split('\n').slice(1)
 
 let fine = ''
 let blocked = ''
@@ -101,7 +112,7 @@ test.beforeAll(() => {
   cli('settings', 'set', '--game', 'stardew', 'defaultLaunchMethod', 'direct')
 })
 
-test('--play with a blocked profile shows only the pre-Play prompt, and Cancel quits', async ({
+test('a Steam session with a blocked profile shows only the pre-Play prompt, and Cancel quits', async ({
   page,
 }) => {
   await playing(page, blocked, async (exited) => {
@@ -114,7 +125,7 @@ test('--play with a blocked profile shows only the pre-Play prompt, and Cancel q
   })
 })
 
-test('--play with a blocked profile turns into a normal session when the user picks a fix', async ({
+test('a Steam session with a blocked profile turns into a normal session when the user picks a fix', async ({
   page,
 }) => {
   await playing(page, blocked, async (exited) => {
@@ -130,8 +141,9 @@ test('--play with a blocked profile turns into a normal session when the user pi
   })
 })
 
-test('--play with a fine profile launches the game and exits when it closes', async ({ page }) => {
-  const runs = () => cli('runs', 'stardew', fine).split('\n').slice(1)
+test('a Steam session with a fine profile launches the game and exits when it closes', async ({
+  page,
+}) => {
   const before = runs().length
   await playing(page, fine, async (exited) => {
     await served(page)
@@ -141,4 +153,38 @@ test('--play with a fine profile launches the game and exits when it closes', as
   const after = runs()
   expect(after.length).toBe(before + 1)
   expect(after[0]).toContain('Ran')
+})
+
+test('a desktop shortcut plays in the full window, where Cancel leaves Mortar open', async ({
+  page,
+}) => {
+  await playing(
+    page,
+    blocked,
+    async (exited) => {
+      await served(page)
+      const prompt = page.getByRole('dialog', { name: 'Before you play' })
+      await expect(prompt).toBeVisible({ timeout: 15_000 })
+      await prompt.getByRole('button', { name: 'Cancel' }).click()
+      await expect(page.getByRole('button', { name: 'Mortar menu' })).toBeVisible()
+      expect(await Promise.race([exited, Promise.resolve('running')])).toBe('running')
+    },
+    false,
+  )
+})
+
+test('a Steam session sent to a running Mortar lasts until its game closes', async ({ page }) => {
+  const before = runs().length
+  await served(page)
+  const { child, exited } = mortar([`--play=stardew/${fine}`, '--steam-session'])
+  try {
+    // The fake game runs for 3s, so a process that only forwarded the request would be gone by now.
+    expect(await Promise.race([exited, new Promise((r) => setTimeout(r, 1500, 'running'))])).toBe(
+      'running',
+    )
+    expect(await within(exited)).toBe(0)
+  } finally {
+    stop(child)
+  }
+  expect(runs().length).toBe(before + 1)
 })
