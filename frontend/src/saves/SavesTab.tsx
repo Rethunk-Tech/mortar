@@ -43,7 +43,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   } else if (fits.length === 0) {
     body = (
       <EmptyState icon={<Sprout size={40} aria-hidden={true} />} title={t`No saves yet`}>
-        {t`Play this profile and start a farm. Each save shows here with how well it fits ${name}, so you know which mods it needs.`}
+        {t`Play this profile and save a game. Each save shows here with how well it fits ${name}, so you know which mods it needs.`}
       </EmptyState>
     )
   } else if (shown.length === 0 && query.trim() !== '') {
