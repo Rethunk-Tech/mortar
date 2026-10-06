@@ -5,6 +5,7 @@ package meta
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -83,10 +84,24 @@ func readEntry[T any](path string) (entry[T], bool) {
 	return e, true
 }
 
+// writeEntry replaces path through a temp file and rename but without fsync: a cache that cannot be written only
+// costs a refetch, and one a crash cuts short fails to parse and reads as absent, while a cold start writes hundreds
+// of entries at once.
 func writeEntry[T any](path string, e entry[T]) {
-	// A cache that cannot be written only costs a refetch.
-	if os.MkdirAll(filepath.Dir(path), 0o700) == nil {
-		_ = datadir.WriteJSON(path, e)
+	b, err := json.Marshal(e)
+	if err != nil || os.MkdirAll(filepath.Dir(path), 0o700) != nil {
+		return
+	}
+	f, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
+	if err != nil {
+		return
+	}
+	_, err = f.Write(b)
+	if err = errors.Join(err, f.Close()); err == nil {
+		err = fsx.Rename(f.Name(), path)
+	}
+	if err != nil {
+		_ = os.Remove(f.Name())
 	}
 }
 
