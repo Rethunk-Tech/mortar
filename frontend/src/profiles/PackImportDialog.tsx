@@ -147,6 +147,11 @@ export function PackImportDialog({
               label={t`Profile code`}
               value={text}
               onChange={(event) => setText(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !busy && text.trim() !== '') {
+                  read()
+                }
+              }}
             />
             <Button
               onClick={() => {
