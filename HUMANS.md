@@ -84,7 +84,7 @@ source <(mortar completion bash)
 bun run gate    # scripts/gate.sh: bindings first, then every other check in parallel; prints each failing step's log
 ```
 
-`main.go` embeds `frontend/dist`, so a fresh clone needs `bun run bindings && bun run --cwd frontend build` once before the gate, as CI's setup does. The lefthook pre-push hook runs `gate` ([rethunk-gate-cli](https://github.com/Rethunk-Tech/rethunk-gate-cli)), which runs these steps plus actionlint. Where CI runs it: [AGENTS.md](AGENTS.md#verify).
+`main.go` embeds `frontend/dist`, so a fresh clone needs `bun run bindings && bun run --cwd frontend build` once before the gate, as CI's setup does. The lefthook pre-push hook runs `gate` ([rethunk-gate-cli](https://github.com/Rethunk-Tech/rethunk-gate-cli)), which runs these steps plus actionlint. Where CI runs it: [AGENTS.md](AGENTS.md#verify). What each package's tests cover and how to run the slow, fuzz and property runs: [docs/testing.md](docs/testing.md).
 
 ### Stardew regression run (opt-in, not in the gate)
 
