@@ -210,7 +210,7 @@ function Body({ request }: { request: ImportRequest }) {
           <Tab value="link" label={t`Link`} disabled={flow.busy} />
           <Tab value="file" label={t`.mortar file`} disabled={flow.busy} />
         </Tabs>
-        <Tooltip title={t`Close`}>
+        <Tooltip title={t`Close`} describeChild={true}>
           <span>
             <IconButton
               aria-label={t`Close`}

@@ -239,3 +239,13 @@ test('messages do not pre-render plurals or join lists in English', () => {
   const hits = files.flatMap(({ path, src }) => copyHits(path, src))
   expect(hits, hits.join('\n')).toEqual([])
 })
+
+// Tooltip names its child with aria-label, which a bare span may not carry; describeChild describes it instead.
+test('a Tooltip around a bare span describes it rather than naming it', () => {
+  const hits = files.flatMap(({ path, src }) =>
+    [...src.matchAll(/<Tooltip\b((?:[^>]|=>)*?)>\s*<span>/g)]
+      .filter((m) => !(m[1] ?? '').includes('describeChild'))
+      .map((m) => `${rel(path)}:${lineOf(src, m.index ?? 0)}`),
+  )
+  expect(hits, hits.join('\n')).toEqual([])
+})

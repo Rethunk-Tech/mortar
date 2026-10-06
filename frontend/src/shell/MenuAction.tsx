@@ -34,7 +34,7 @@ export function MenuAction({
   )
   // A disabled item cannot be focused or hovered reliably, so its reason is shown as text instead of a tooltip.
   return tooltip && !disabled ? (
-    <Tooltip title={tooltip} placement="left">
+    <Tooltip title={tooltip} placement="left" describeChild={true}>
       <span>{item}</span>
     </Tooltip>
   ) : (

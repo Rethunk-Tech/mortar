@@ -46,7 +46,11 @@ export function AssetFix({
     </DisabledReason>
   )
   const fixes = (problem.asset.fixes ?? []).map((fix) => (
-    <Tooltip key={`${fix.id}/${fix.field}`} title={t`In ${fix.name}; turns off its edits here`}>
+    <Tooltip
+      key={`${fix.id}/${fix.field}`}
+      title={t`In ${fix.name}; turns off its edits here`}
+      describeChild={true}
+    >
       <span>
         {assetButton(t`Set ${fix.field} to ${fix.value}`, () =>
           setConfigValue(fix, fix.value).catch(reportUnexpected),

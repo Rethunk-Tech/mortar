@@ -59,7 +59,7 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
         </Typography>
       </Box>
       {action ? (
-        <Tooltip title={state.disabled ? (state.reason ?? '') : ''}>
+        <Tooltip title={state.disabled ? (state.reason ?? '') : ''} describeChild={true}>
           <span>
             <Button size="small" disabled={state.disabled} onClick={run} sx={{ flexShrink: 0 }}>
               {action.label}

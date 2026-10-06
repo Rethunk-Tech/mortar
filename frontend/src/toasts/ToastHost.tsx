@@ -207,7 +207,7 @@ function ToastCard({ toast }: { toast: Toast }) {
               <DetailsButton open={open} onToggle={() => setOpen((v) => !v)} />
             ) : null}
             {action ? (
-              <Tooltip title={locked ? lockHint : ''}>
+              <Tooltip title={locked ? lockHint : ''} describeChild={true}>
                 <span>
                   <ButtonBase
                     disabled={locked}

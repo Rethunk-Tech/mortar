@@ -139,7 +139,7 @@ export function PlayControl({ game }: { game: string }) {
           >
             {t`Stop game`}
           </Button>
-          <Tooltip title={t`Stop game`}>
+          <Tooltip title={t`Stop game`} describeChild={true}>
             <span>
               <IconButton
                 aria-label={t`Stop game`}

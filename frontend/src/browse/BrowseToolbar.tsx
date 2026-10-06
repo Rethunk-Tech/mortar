@@ -61,7 +61,7 @@ function SourceToggle({
           mark = <SourceLogo id={o.value} size={16} />
         }
         return (
-          <Tooltip key={o.value} title={o.unavailable ?? o.label}>
+          <Tooltip key={o.value} title={o.unavailable ?? o.label} describeChild={true}>
             <span>
               <ButtonBase
                 aria-label={o.label}

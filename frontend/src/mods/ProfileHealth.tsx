@@ -73,6 +73,8 @@ export function ProfileHealth({
           ...(sidebar ? sidebarPill : pill),
           cursor: onClick ? 'pointer' : 'default',
           bgcolor: view.tone === 'red' ? 'error.main' : 'warning.main',
+          // Dark ink falls short of 4.5:1 on the error red.
+          ...(view.tone === 'red' ? { color: 'error.contrastText' } : {}),
         }}
       >
         {view.value}

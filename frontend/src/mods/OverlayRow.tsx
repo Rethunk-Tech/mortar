@@ -78,7 +78,7 @@ export function OverlayListRow({ overlay }: { overlay: OverlayRow }) {
       </Tooltip>
       <Box role="cell" sx={{ ml: 'auto', display: 'flex' }}>
         <LockedReason locked={locked}>
-          <Tooltip title={t`Remove ${{ name: overlay.label }}`}>
+          <Tooltip title={t`Remove ${{ name: overlay.label }}`} describeChild={true}>
             <span>
               <IconButton
                 size="small"
