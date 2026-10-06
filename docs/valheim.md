@@ -21,4 +21,5 @@ Valheim leads on mod count on both sites; Risk of Rain 2 leads on downloads.
 - **Player.log:** `{localLow}/IronGate/Valheim/Player.log`.
 - **Bridge:** `mortar-bepinex-bridge` targets netstandard2.1 against BepInEx.Core 5.4.21 and uses only `Application.version`, `Application.quitting` and `SceneManager`. It needs no change for Valheim's Mono runtime.
 - **Logs:** the pack's `Chainloader startup complete` line ends with counts, which `Ready` still matches. Its plugin lines append the GUID after the bracketed name. Its duplicate-GUID skips add the GUID and both paths, and an identical second copy reads `because a duplicate of it was already loaded from <path>` (`AzumattDev/BepInEx` `Chainloader.cs`). The analyzer reads both wordings.
+- **Startup and intro:** not read. With no Valheim install there is no `assembly_valheim.dll` to inspect, so the bridge's `MORTAR_SKIP_INTRO` test-launch skip holds no Valheim steps and a test launch starts Valheim as a player's would.
 - **Unmeasured:** a real launch of a modded profile, native or under Proton. Mortar has had no Valheim install to test with; the sandbox checks ran against a stub executable.
