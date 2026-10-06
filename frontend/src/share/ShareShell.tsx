@@ -60,13 +60,12 @@ export function ShareShell({
             minHeight: 0,
           }}
         >
-          <TipIconButton
-            label={t`Close`}
-            onClick={close}
-            sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
-          >
-            <X size={18} />
-          </TipIconButton>
+          {/* Positioned here, not on the button: the tooltip's wrapper would otherwise take the grid's first cell. */}
+          <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}>
+            <TipIconButton label={t`Close`} onClick={close}>
+              <X size={18} />
+            </TipIconButton>
+          </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
             {/* Clears the dialog's absolute Close button in the top-right corner. */}
             <Box sx={{ pr: 5 }}>
@@ -74,7 +73,15 @@ export function ShareShell({
                 {t`A share link names this profile and where each mod comes from, not the files themselves.`}
               </TipBanner>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: '20px 24px 0' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 1.75,
+                p: '20px 24px 0',
+              }}
+            >
               {art ? (
                 <Box
                   component="img"
@@ -83,7 +90,8 @@ export function ShareShell({
                   sx={{ width: 64, height: 64, objectFit: 'cover', borderRadius: '8px' }}
                 />
               ) : null}
-              <Box sx={{ flex: 1, minWidth: 0 }}>
+              {/* Wide enough for a name, so a narrow window wraps the header's buttons below it. */}
+              <Box sx={{ flex: 1, minWidth: 'min(220px, 100%)' }}>
                 <Typography
                   sx={{ fontSize: 13, color: 'text.secondary' }}
                 >{t`Share profile`}</Typography>
@@ -93,7 +101,15 @@ export function ShareShell({
               </Box>
               {headerExtra}
             </Box>
-            <Box sx={{ m: '18px 24px 0', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              sx={{
+                m: '18px 24px 0',
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 1.5,
+              }}
+            >
               <TabPills
                 value={tab}
                 onChange={setTab}
