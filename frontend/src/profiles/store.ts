@@ -33,6 +33,7 @@ import { i18n } from '../i18n/index.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { setLatestChange, useToasts } from '../toasts/store.ts'
+import { settledLastProfile } from './lastProfile.ts'
 
 const fail = reportError
 
@@ -272,7 +273,12 @@ async function read(gameId: string, current: string) {
   const { profiles } = splitListed(list)
   const damaged = damagedList ?? splitListed(list).damaged
   const last = useSettings.getState().lastProfile?.[gameId]
-  const openId = listedId(profiles, current) || listedId(profiles, last) || firstListed(profiles)
+  const openId = listedId(profiles, current) || settledLastProfile(profiles, last)
+  // A remembered profile deleted elsewhere is replaced, so nothing else keeps asking for it.
+  if (last && !listedId(profiles, last) && !damaged.some((p) => p.id === last)) {
+    useSettings.setState((s) => ({ lastProfile: { ...s.lastProfile, [gameId]: openId } }))
+    SetLastProfile(gameId, openId).catch(fail(i18n._(msg`Could not save the open profile`)))
+  }
   return { game: games.find((g) => g.id === gameId) ?? null, profiles, damaged, openId }
 }
 

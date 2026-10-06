@@ -1,10 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
 import { useEffect } from 'react'
-import { Get } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import {
+  Get,
+  SetLastProfile,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LastRunCrashed } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { loadGameStatus } from '../games/status.ts'
 import { useLoader } from '../loader/store.ts'
 import { loadUpdates } from '../mods/updates.ts'
+import { settledLastProfile } from '../profiles/lastProfile.ts'
 import { reportBug } from '../shell/reportBug.ts'
 import { useToasts } from '../toasts/store.ts'
 import { lastRunCrashToast } from './crashToast.ts'
@@ -41,7 +46,17 @@ export function useStartupChecks() {
         await Promise.all(
           Object.entries(last)
             .filter(([game, profile]) => game && profile)
-            .map(([game, profile]) => loadUpdates(game, profile ?? '').catch(ignore)),
+            .map(async ([game, profile]) => {
+              // The remembered profile may have been deleted since, which the update check would reject.
+              const id = settledLastProfile((await List(game)) ?? [], profile)
+              if (id !== profile) {
+                await SetLastProfile(game, id)
+              }
+              if (id) {
+                await loadUpdates(game, id)
+              }
+            })
+            .map((p) => p.catch(ignore)),
         )
       }
       if (shouldRunStartupCheck(s.tellWhenSmapiOut)) {

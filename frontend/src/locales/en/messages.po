@@ -451,7 +451,7 @@ msgstr "Run checks…"
 msgid "{0} has damaged files."
 msgstr "{0} has damaged files."
 
-#: src/profiles/store.ts:191
+#: src/profiles/store.ts:192
 msgid "Deleted a profile"
 msgstr "Deleted a profile"
 
@@ -2267,7 +2267,7 @@ msgid "New profile"
 msgstr "New profile"
 
 #: src/mods/problemFix/DamagedFix.tsx:34
-#: src/profiles/store.ts:234
+#: src/profiles/store.ts:235
 msgid "Repaired {name}"
 msgstr "Repaired {name}"
 
@@ -2440,8 +2440,8 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/profiles/CompareDialog.tsx:105
 #: src/profiles/HistoryEventRow.tsx:45
 #: src/profiles/historyRevert.ts:110
-#: src/profiles/store.ts:193
-#: src/profiles/store.ts:236
+#: src/profiles/store.ts:194
+#: src/profiles/store.ts:237
 #: src/queue/store.ts:297
 #: src/saves/store.ts:66
 #: src/templates/ApplyTemplateDialog.tsx:95
@@ -3109,7 +3109,7 @@ msgstr "Accounts"
 msgid "Priority {0}"
 msgstr "Priority {0}"
 
-#: src/profiles/store.ts:393
+#: src/profiles/store.ts:399
 msgid "Could not open the profile folder"
 msgstr "Could not open the profile folder"
 
@@ -3326,7 +3326,7 @@ msgstr "Enable and disable mods, and update them for the open profile."
 
 #: src/game/detailStates.tsx:17
 #: src/games/ProfileCards.tsx:55
-#: src/profiles/store.ts:330
+#: src/profiles/store.ts:336
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
@@ -3344,7 +3344,7 @@ msgstr "Add to profile"
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
 
-#: src/settings/startupChecks.ts:32
+#: src/settings/startupChecks.ts:37
 #: src/shell/AppMenu.tsx:177
 #: src/shell/BugReportDialog.tsx:58
 #: src/shell/ErrorBoundary.tsx:31
@@ -3657,7 +3657,7 @@ msgstr "Steam's launch options for {name} lack the {loader} line. In Steam, righ
 msgid "Grid"
 msgstr "Grid"
 
-#: src/profiles/store.ts:104
+#: src/profiles/store.ts:105
 msgid "Could not duplicate the profile"
 msgstr "Could not duplicate the profile"
 
@@ -4332,7 +4332,7 @@ msgstr "Nothing will be removed."
 msgid "Missing required dependencies ({0})"
 msgstr "Missing required dependencies ({0})"
 
-#: src/profiles/store.ts:374
+#: src/profiles/store.ts:380
 msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
@@ -4753,7 +4753,7 @@ msgstr "Needs your choice ({0})"
 msgid "Unlinked the collection {name}"
 msgstr "Unlinked the collection {name}"
 
-#: src/profiles/store.ts:431
+#: src/profiles/store.ts:437
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
 
@@ -5463,7 +5463,7 @@ msgstr "Download folder"
 msgid "Import a shared profile…"
 msgstr "Import a shared profile…"
 
-#: src/settings/startupChecks.ts:30
+#: src/settings/startupChecks.ts:35
 msgid "Mortar closed unexpectedly last time"
 msgstr "Mortar closed unexpectedly last time"
 
@@ -5587,7 +5587,7 @@ msgstr "Scheduled save backups"
 msgid "Show again"
 msgstr "Show again"
 
-#: src/profiles/store.ts:191
+#: src/profiles/store.ts:192
 msgid "Deleted {name}"
 msgstr "Deleted {name}"
 
@@ -5798,7 +5798,7 @@ msgstr "Relative"
 msgid "a deleted profile"
 msgstr "a deleted profile"
 
-#: src/profiles/store.ts:214
+#: src/profiles/store.ts:215
 msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
@@ -5872,7 +5872,8 @@ msgstr "No profiles yet"
 
 #: src/games/GameSelect.tsx:184
 #: src/games/ProfileCards.tsx:48
-#: src/profiles/store.ts:337
+#: src/profiles/store.ts:280
+#: src/profiles/store.ts:343
 msgid "Could not save the open profile"
 msgstr "Could not save the open profile"
 
@@ -6604,7 +6605,7 @@ msgstr "Undo all also reverts later changes"
 msgid "config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs."
 msgstr "config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs."
 
-#: src/profiles/store.ts:46
+#: src/profiles/store.ts:47
 msgid "Could not export the profile"
 msgstr "Could not export the profile"
 
@@ -7425,7 +7426,7 @@ msgstr "Could not upload the log"
 #: src/game/NewProfileDialog.tsx:154
 #: src/mods/SelectionBar.tsx:46
 #: src/profiles/GameModsDialog.tsx:100
-#: src/profiles/store.ts:59
+#: src/profiles/store.ts:60
 msgid "Created {name}"
 msgstr "Created {name}"
 
@@ -9621,7 +9622,7 @@ msgstr "Error in a patch"
 msgid "Thunderstore page"
 msgstr "Thunderstore page"
 
-#: src/settings/startupChecks.ts:31
+#: src/settings/startupChecks.ts:36
 msgid "Report it so it can be fixed."
 msgstr "Report it so it can be fixed."
 
@@ -9845,7 +9846,7 @@ msgstr "Mortar could not load the profiles for this game."
 msgid "Install options"
 msgstr "Install options"
 
-#: src/profiles/store.ts:438
+#: src/profiles/store.ts:444
 msgid "Could not empty the trash"
 msgstr "Could not empty the trash"
 
@@ -10058,8 +10059,8 @@ msgstr "Empty trash"
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
-#: src/profiles/store.ts:63
-#: src/profiles/store.ts:424
+#: src/profiles/store.ts:64
+#: src/profiles/store.ts:430
 msgid "Could not restore the profile"
 msgstr "Could not restore the profile"
 
@@ -10665,7 +10666,7 @@ msgstr "Could not minimise the window"
 msgid "Dismissed for this save"
 msgstr "Dismissed for this save"
 
-#: src/profiles/store.ts:416
+#: src/profiles/store.ts:422
 msgid "Could not delete the profile"
 msgstr "Could not delete the profile"
 
@@ -11386,7 +11387,7 @@ msgstr "How profiles are ordered in the sidebar"
 msgid "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 msgstr "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 
-#: src/profiles/store.ts:400
+#: src/profiles/store.ts:406
 msgid "Could not repair the profile"
 msgstr "Could not repair the profile"
 
@@ -11970,7 +11971,7 @@ msgstr "Mod id"
 msgid "Mortar tidied up {0, plural, one {# thing} other {# things}}"
 msgstr "Mortar tidied up {0, plural, one {# thing} other {# things}}"
 
-#: src/profiles/store.ts:43
+#: src/profiles/store.ts:44
 msgid "Profile exported"
 msgstr "Profile exported"
 
