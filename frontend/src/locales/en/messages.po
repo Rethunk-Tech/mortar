@@ -6905,10 +6905,6 @@ msgstr "Use default"
 msgid "{0} version"
 msgstr "{0} version"
 
-#: src/profiles/OverrideRows.tsx:94
-msgid "SMAPI"
-msgstr "SMAPI"
-
 #: src/settings/sections/Updates.tsx:211
 msgid "Open game settings"
 msgstr "Open game settings"
@@ -8478,10 +8474,6 @@ msgstr "Debug"
 msgid "Broken or obsolete ({0})"
 msgstr "Broken or obsolete ({0})"
 
-#: src/profiles/OverrideRows.tsx:21
-msgid "Show the game log"
-msgstr "Show the game log"
-
 #: src/profiles/HealthCheckBadge.tsx:27
 msgid "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
@@ -9043,6 +9035,7 @@ msgid "Paste a share link, a collection link, or (Premium) a Nexus mod link with
 msgstr "Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V."
 
 #: src/profiles/LaunchPresetDialog.tsx:78
+#: src/profiles/OverrideRows.tsx:21
 #: src/settings/prefCopy.ts:61
 msgid "SMAPI console window"
 msgstr "SMAPI console window"

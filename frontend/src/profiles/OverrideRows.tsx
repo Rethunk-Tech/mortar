@@ -1,7 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, FormControl, InputLabel, MenuItem, Select, Tooltip, Typography } from '@mui/material'
+import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material'
 import { useGameInfo } from '../games/info.ts'
 import { useNexus } from '../settings/nexus.ts'
 import {
@@ -18,7 +18,7 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
     case 'defaultLaunchMethod':
       return i18n._(msg`Launch method`)
     case 'showSmapiConsole':
-      return i18n._(msg`Show the game log`)
+      return i18n._(msg`SMAPI console window`)
     case 'backupBeforePlay':
       return i18n._(msg`Back up saves before Play`)
     case 'saveBackupsKept':
@@ -90,13 +90,7 @@ export function OverridesSection({
             ) : null}
           </FormControl>
         )
-        return key === 'showSmapiConsole' ? (
-          <Tooltip key={key} title={t`SMAPI`}>
-            {field}
-          </Tooltip>
-        ) : (
-          field
-        )
+        return field
       })}
     </Box>
   )
