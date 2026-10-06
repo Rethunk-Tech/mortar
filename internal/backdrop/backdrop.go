@@ -106,12 +106,18 @@ func Middleware(current func() settings.Settings, system string, desktop func() 
 			// The file behind the one URL changes with the mode and the desktop, and an older file's date would win a
 			// Last-Modified revalidation, so the local file is served uncached and undated.
 			w.Header().Set("Cache-Control", "no-store")
+			w.Header().Set("Vary", "Accept")
+			jxl := !negotiates || strings.Contains(r.Header.Get("Accept"), "image/jxl")
 			for _, path := range candidates(cur, system, desktop) {
 				if path == "" {
 					continue
 				}
 				f, typ, err := open(path)
 				if err != nil {
+					continue
+				}
+				if typ == "image/jxl" && !jxl {
+					_ = f.Close()
 					continue
 				}
 				defer func() { _ = f.Close() }()

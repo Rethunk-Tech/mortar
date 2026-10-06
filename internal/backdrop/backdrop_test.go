@@ -166,3 +166,22 @@ func TestRequestedModeWinsAndIsUncached(t *testing.T) {
 		t.Fatalf("an unknown mode must fall back to settings, got %q", rec.Body.String())
 	}
 }
+
+func TestJXLNeedsAClientThatAcceptsIt(t *testing.T) {
+	if !negotiates {
+		t.Skip("the desktop window always gets the JPEG XL file")
+	}
+	dir := t.TempDir()
+	sys := write(t, dir, "sys.jxl", "jxl")
+	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
+	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, sys, none)(next)
+	for accept, want := range map[string]string{"image/jxl,image/*": "image/jxl", "image/webp,image/*": "image/jpeg"} {
+		req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path, nil)
+		req.Header.Set("Accept", accept)
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+		if got := rec.Header().Get("Content-Type"); got != want || rec.Header().Get("Vary") != "Accept" {
+			t.Errorf("Accept %q: type %q, want %q", accept, got, want)
+		}
+	}
+}
