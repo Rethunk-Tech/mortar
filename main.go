@@ -131,6 +131,7 @@ func registerEvents() {
 	application.RegisterEvent[[]syncsvc.Stall](syncsvc.StalledEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
 	application.RegisterEvent[lan.Arrival](lan.ArrivedEvent)
+	application.RegisterEvent[lan.Expired](lan.ExpiredEvent)
 	application.RegisterEvent[lan.TransferProgress](lan.TransferProgressEvent)
 	application.RegisterEvent[lan.PairedPeer](lan.PairedEvent)
 	application.RegisterEvent[launchsvc.NoticeClick](launchsvc.NoticeClickEvent)

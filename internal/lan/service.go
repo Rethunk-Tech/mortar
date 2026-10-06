@@ -36,6 +36,8 @@ import (
 const (
 	// ArrivedEvent carries an incoming LAN profile share to the window.
 	ArrivedEvent = "lan:arrived"
+	// ExpiredEvent tells the window an incoming share ran out its transfer window before it was taken.
+	ExpiredEvent = "lan:expired"
 
 	serviceType     = "_mortar._tcp"
 	maxPayloadBytes = share.MaxFileBytes
@@ -58,6 +60,12 @@ type Arrival struct {
 	Payload     string `json:"payload"`
 	ProfileName string `json:"profileName"`
 	Paired      bool   `json:"paired"`
+}
+
+// Expired names an incoming share that can no longer be transferred.
+type Expired struct {
+	ID     int    `json:"id"`
+	Sender string `json:"sender"`
 }
 
 // Peer is a nearby Mortar installation that can receive a profile share.
@@ -678,6 +686,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		response.EntryKeys = keys
 		response.Proof = responseProof(key, request.Nonce, token, keys)
 		arrivalTransfer = incomingTransfer{
+			Sender:  request.Sender,
 			Peer:    net.JoinHostPort(peer, strconv.Itoa(request.SenderPort)),
 			Game:    request.Game,
 			Token:   token,
@@ -698,6 +707,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	s.inbox = append(s.inbox, arrival)
 	if arrivalTransfer.Token != "" {
 		s.incoming[arrival.ID] = arrivalTransfer
+		time.AfterFunc(transferTTL, func() { s.expireShare(arrival.ID) })
 	}
 	s.mu.Unlock()
 	if s.deps.Emit != nil {
@@ -705,6 +715,24 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
+}
+
+// expireShare drops an incoming share whose transfer window has closed and tells the window, unless the transfer is
+// running or the share was already dismissed.
+func (s *Service) expireShare(id int) {
+	s.mu.Lock()
+	incoming, waiting := s.incoming[id]
+	_, running := s.active[id]
+	if !waiting || running {
+		s.mu.Unlock()
+		return
+	}
+	delete(s.incoming, id)
+	s.inbox = slices.DeleteFunc(s.inbox, func(a Arrival) bool { return a.ID == id })
+	s.mu.Unlock()
+	if s.deps.Emit != nil {
+		s.deps.Emit(ExpiredEvent, Expired{ID: id, Sender: incoming.Sender})
+	}
 }
 
 func (s *Service) consumeProof(peer string, request shareRequest) bool {

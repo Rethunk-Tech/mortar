@@ -648,3 +648,27 @@ func TestPairedPeerIsExemptFromTheShareRateLimit(t *testing.T) {
 		t.Fatalf("second unpaired send: %v, want ErrPeerBusy", err)
 	}
 }
+
+func TestExpiredShareIsAnnouncedAndDropped(t *testing.T) {
+	t.Parallel()
+	var events []Expired
+	s := &Service{
+		deps: Deps{Emit: func(name string, data any) {
+			if expired, ok := data.(Expired); ok && name == ExpiredEvent {
+				events = append(events, expired)
+			}
+		}},
+		inbox:    []Arrival{{ID: 1, Sender: "Alex"}, {ID: 2, Sender: "Sam"}},
+		incoming: map[int]incomingTransfer{1: {Sender: "Alex"}, 2: {Sender: "Sam"}},
+		active:   map[int]context.CancelFunc{2: func() {}},
+	}
+	s.expireShare(1)
+	s.expireShare(2)
+	s.expireShare(1)
+	if len(events) != 1 || events[0] != (Expired{ID: 1, Sender: "Alex"}) {
+		t.Fatalf("events = %+v, want one for Alex's share", events)
+	}
+	if got := s.Pending(); len(got) != 1 || got[0].ID != 2 {
+		t.Fatalf("pending = %+v, want only the share still transferring", got)
+	}
+}

@@ -47,6 +47,7 @@ type transferGrant struct {
 
 type incomingTransfer struct {
 	Peer    string
+	Sender  string
 	Game    string
 	Token   string
 	Items   []transferItem

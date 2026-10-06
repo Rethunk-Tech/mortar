@@ -3219,7 +3219,7 @@ msgstr "Downloaded mods no profile uses"
 msgid "Needs a newer loader"
 msgstr "Needs a newer loader"
 
-#: src/profiles/ImportWizard.tsx:101
+#: src/profiles/ImportWizard.tsx:95
 msgid "Mortar found no other mod manager's profiles for this game on this computer."
 msgstr "Mortar found no other mod manager's profiles for this game on this computer."
 
@@ -3821,7 +3821,7 @@ msgstr "Share as r2modman code?"
 #: src/profiles/CompareDialog.tsx:62
 #: src/profiles/EditProfileDialog.tsx:454
 #: src/profiles/GameModsDialog.tsx:164
-#: src/profiles/ImportWizard.tsx:126
+#: src/profiles/ImportWizard.tsx:120
 #: src/profiles/LaunchPresetDialog.tsx:91
 #: src/profiles/PackImportDialog.tsx:170
 #: src/settings/sections/NexusSSO.tsx:67
@@ -5808,7 +5808,7 @@ msgstr "{0, plural, one {Removed # mod} other {Removed # mods}}"
 msgid "{found, plural, one {# mod update} other {# mod updates}}"
 msgstr "{found, plural, one {# mod update} other {# mod updates}}"
 
-#: src/profiles/ImportWizard.tsx:100
+#: src/profiles/ImportWizard.tsx:94
 msgid "No profiles found."
 msgstr "No profiles found."
 
@@ -6903,7 +6903,7 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
-#: src/profiles/ImportWizard.tsx:123
+#: src/profiles/ImportWizard.tsx:117
 msgid "Use a code or file…"
 msgstr "Use a code or file…"
 
@@ -8340,6 +8340,11 @@ msgstr "Untrack every {gameName} mod on Nexus"
 #: src/settings/sections/Downloads.tsx:211
 msgid "Clicking these links on Nexus starts the download in Mortar."
 msgstr "Clicking these links on Nexus starts the download in Mortar."
+
+#. placeholder {0}: expired.sender
+#: src/lan/incoming.ts:31
+msgid "A share from {0} expired. Ask them to send it again."
+msgstr "A share from {0} expired. Ask them to send it again."
 
 #: src/profiles/ProfilesPage.tsx:107
 #: src/profiles/ProfilesPage.tsx:234
@@ -11016,7 +11021,7 @@ msgstr "Unknown mod"
 msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
-#: src/profiles/ImportWizard.tsx:97
+#: src/profiles/ImportWizard.tsx:91
 #: src/share/ImportDialog.tsx:259
 msgid "Import a profile"
 msgstr "Import a profile"
