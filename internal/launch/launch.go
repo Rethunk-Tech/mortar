@@ -111,13 +111,27 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 		cmd.Env = append(os.Environ(), env...)
 	}
 	hideWindow(cmd, hide)
+	// Stdin is a pipe held open until the process exits: SMAPI reads console commands in a loop that spins a whole
+	// core on an input already at end of file (/dev/null, NUL), and blocks quietly on an open one.
+	stdin, hold, err := os.Pipe()
+	if err != nil {
+		return nil, err
+	}
+	cmd.Stdin = stdin
 	out := newCapture(cmd)
-	if err := cmd.Start(); err != nil {
+	err = cmd.Start()
+	_ = stdin.Close()
+	if err != nil {
+		_ = hold.Close()
 		out.release()
 		return nil, err
 	}
 	done := make(chan error, 1)
-	go func() { done <- cmd.Wait() }()
+	go func() {
+		err := cmd.Wait()
+		_ = hold.Close()
+		done <- err
+	}()
 	exited := (<-chan error)(done)
 	if out != nil {
 		captured.Store(exited, out)

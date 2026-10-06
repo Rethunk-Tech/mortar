@@ -96,3 +96,17 @@ func TestAStalledLaunchIsEndedWithItsChildren(t *testing.T) {
 	_ = syscall.Kill(pid, syscall.SIGKILL)
 	t.Fatalf("child %d outlived the failed launch", pid)
 }
+
+// SMAPI's console loop spins on an input at end of file, so a launched process must see one that stays open.
+func TestStdinStaysOpenWhileTheProcessRuns(t *testing.T) {
+	exited, err := Start("", "sh", "-c", "timeout 0.3 cat; echo status=$?")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := <-exited; err != nil {
+		t.Fatal(err)
+	}
+	if out := captureOf(exited).tail(); !strings.Contains(out, "status=124") {
+		t.Fatalf("stdin hit end of file: %q", out)
+	}
+}
