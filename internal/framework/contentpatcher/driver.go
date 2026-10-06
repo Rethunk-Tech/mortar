@@ -68,4 +68,7 @@ func (Driver) Forget() {
 	resetMapScans()
 	mapScans.Unlock()
 	dropParts()
+	footprintMemo.Lock()
+	footprintMemo.last = nil
+	footprintMemo.Unlock()
 }

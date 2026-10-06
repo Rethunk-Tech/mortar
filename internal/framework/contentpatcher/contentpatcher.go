@@ -2086,6 +2086,9 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 			sig, stable = packSig(im, pack, seen)
 		}
 		own := authoredPack{key: im.Key, name: im.Name, author: normalAuthor(im.Author), root: im.Folder}
+		if stable {
+			own.sig = sig
+		}
 		for _, p := range pack.patches {
 			if p.kind == "other" || !p.when.holds(seen) || !dynamicWhenHolds(p.when, pack.tokens, seen, pack.schema, config) {
 				continue
@@ -2412,6 +2415,14 @@ func normalAuthor(author string) string {
 type authoredPack struct {
 	key, name, author, root string
 	patches                 []cpPatch
+	// sig is the pack's packSig when its stamps can be trusted, so its footprints can be reused by the next check.
+	sig string
+}
+
+// footprintMemo holds each pack's footprints from the last check by sig; a check keeps only the packs it saw.
+var footprintMemo struct {
+	sync.Mutex
+	last map[string]map[string]bool
 }
 
 // bundles finds the packs whose every active patch writes where another pack by the same author also writes:
@@ -2423,6 +2434,10 @@ func bundles(packs []authoredPack) map[string]framework.ModRef {
 			byAuthor[p.author] = append(byAuthor[p.author], p)
 		}
 	}
+	footprintMemo.Lock()
+	defer footprintMemo.Unlock()
+	last, next := footprintMemo.last, map[string]map[string]bool{}
+	defer func() { footprintMemo.last = next }()
 	var out map[string]framework.ModRef
 	for _, group := range byAuthor {
 		if len(group) < 2 {
@@ -2438,11 +2453,21 @@ func bundles(packs []authoredPack) map[string]framework.ModRef {
 		}
 		sigs := make([]map[string]bool, len(group))
 		footprints := func(i int) map[string]bool {
-			if sigs[i] == nil {
-				sigs[i] = make(map[string]bool, len(group[i].patches))
-				for _, patch := range group[i].patches {
-					sigs[i][patchFootprint(patch)] = true
+			if sigs[i] != nil {
+				return sigs[i]
+			}
+			if sig := group[i].sig; sig != "" {
+				if set, ok := last[sig]; ok {
+					sigs[i], next[sig] = set, set
+					return set
 				}
+			}
+			sigs[i] = make(map[string]bool, len(group[i].patches))
+			for _, patch := range group[i].patches {
+				sigs[i][patchFootprint(patch)] = true
+			}
+			if group[i].sig != "" {
+				next[group[i].sig] = sigs[i]
 			}
 			return sigs[i]
 		}
