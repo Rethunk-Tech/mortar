@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -269,9 +270,15 @@ func TestLoopbackTransfer(t *testing.T) {
 	if pv, err := share.ReadBytes(payload.Bytes()); err != nil || pv.Entries[1].Overlay == nil || *pv.Entries[1].Overlay != (share.Overlay{From: "a", To: "b", Off: true}) {
 		t.Fatalf("payload overlay = %+v, %v", pv.Entries, err)
 	}
+	// The payload is built knowing whether the receiver is paired, so archives from disk go only to a paired one.
+	var builtPaired []bool
 	send := func() Arrival {
 		t.Helper()
-		if err := sender.sendPayload(t.Context(), receiverAddr, "stardew", fixed(payload.Bytes())); err != nil {
+		build := func(paired bool) ([]byte, error) {
+			builtPaired = append(builtPaired, paired)
+			return payload.Bytes(), nil
+		}
+		if err := sender.sendPayload(t.Context(), receiverAddr, "stardew", build); err != nil {
 			t.Fatal(err)
 		}
 		select {
@@ -292,6 +299,9 @@ func TestLoopbackTransfer(t *testing.T) {
 	arrival := send()
 	if !arrival.Paired {
 		t.Fatal("a paired share did not receive a transfer grant")
+	}
+	if !slices.Equal(builtPaired, []bool{false, true}) {
+		t.Fatalf("payload built for paired = %v, want unpaired then paired", builtPaired)
 	}
 	if err := receiver.Transfer(t.Context(), arrival.ID); err != nil {
 		t.Fatal(err)
