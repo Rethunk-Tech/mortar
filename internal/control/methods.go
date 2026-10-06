@@ -580,9 +580,6 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return s.awaitStart(ctx, p.Game, "")
 	case "stop":
-		if _, err := s.Launches.Status(p.Game); err != nil {
-			return nil, err
-		}
 		stop := func() error { return s.Launches.Stop(p.Game) }
 		if p.Install != "" {
 			stop = func() error { return s.Launches.StopInstall(p.Install) }

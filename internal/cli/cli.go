@@ -1996,6 +1996,10 @@ func (c *cmd) status(verb, gameID string) error {
 		return err
 	}
 	return c.emit(st, func() {
+		if verb == "stop" {
+			fmt.Fprintf(c.out, "%s stopped.\n", gameID)
+			return
+		}
 		line := fmt.Sprintf("%s is %s", gameID, st.State)
 		if st.Profile != "" {
 			line += " (profile " + st.Profile + ")"

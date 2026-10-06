@@ -1198,7 +1198,7 @@ func (s *Service) Stop(gameID string) error {
 		return err
 	}
 	for _, sl := range s.slots(g) {
-		if s.current(sl).State == Running {
+		if s.stoppable(sl) {
 			return s.stopSlot(sl)
 		}
 	}
@@ -1208,10 +1208,16 @@ func (s *Service) Stop(gameID string) error {
 // StopInstall stops the game running from the install with this id.
 func (s *Service) StopInstall(installID string) error {
 	sl, ok := s.findInstall(installID)
-	if !ok || s.current(sl).State != Running {
+	if !ok || !s.stoppable(sl) {
 		return usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q is not running", installID))
 	}
 	return s.stopSlot(sl)
+}
+
+// stoppable reports whether the slot runs, by its stored state first: polling would close a run whose game is
+// already gone, and stopping that run is what closes it.
+func (s *Service) stoppable(sl slot) bool {
+	return s.current(sl).State == Running || s.statusOf(sl).State == Running
 }
 
 func (s *Service) stopSlot(g slot) error {
@@ -1235,7 +1241,8 @@ func (s *Service) stopSlot(g slot) error {
 	if err := errors.Join(errs...); err != nil {
 		return err
 	}
-	s.closed(g, cur, true)
+	// A game that had already exited closed on its own.
+	s.closed(g, cur, len(procs) > 0)
 	return nil
 }
 
@@ -1339,7 +1346,7 @@ func (s *Service) Send(gameID, command string) error {
 		return errors.New("enter a command")
 	}
 	sl, ok := s.activeSlot(g)
-	if !ok || s.current(sl).State != Running {
+	if !ok || !s.stoppable(sl) {
 		return fmt.Errorf("%s is not running", g.Name())
 	}
 	cur := s.current(sl)
