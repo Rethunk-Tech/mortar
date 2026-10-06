@@ -87,3 +87,18 @@ func RunErrorsFromSummary(runID string, summary launch.Summary, mods []framework
 	}
 	return out
 }
+
+// ranLast reports whether profileID has a recorded run newer than every other profile's. Run ids start with their
+// start time in a fixed-width form, so they order as strings.
+func ranLast(runs RunReader, gameID, profileID string, others []string) bool {
+	mine, err := runs.LastRunID(gameID, profileID)
+	if err != nil || mine == "" {
+		return false
+	}
+	for _, o := range others {
+		if theirs, err := runs.LastRunID(gameID, o); err == nil && theirs > mine {
+			return false
+		}
+	}
+	return true
+}

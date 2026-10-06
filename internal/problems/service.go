@@ -149,11 +149,26 @@ func (s *Service) Environment(id string) Environment {
 }
 
 // playerLog is the text of the Unity player log a loader's analyzers read, empty when the loader reads none or the log
-// is not there.
-func (s *Service) playerLog(gameID string, l loader.Loader) string {
+// is not there. The game keeps one player log for every profile, so it is read only for the profile that ran last.
+func (s *Service) playerLog(gameID, profileID string, l loader.Loader) string {
 	w, ok := l.(loader.WithPlayerLog)
 	if !ok {
 		return ""
+	}
+	if s.Runs != nil {
+		all, err := s.profiles.List(gameID)
+		if err != nil {
+			return ""
+		}
+		others := make([]string, 0, len(all))
+		for _, p := range all {
+			if p.ID != profileID {
+				others = append(others, p.ID)
+			}
+		}
+		if !ranLast(s.Runs, gameID, profileID, others) {
+			return ""
+		}
 	}
 	path, err := game.PathFor(s.home, s.settings.Get(), gameID, "", w.PlayerLogRole())
 	if err != nil {
@@ -311,7 +326,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		}))...)
 		if l, ok := game.LoaderOf(gameID, s.profiles.LoaderID(gameID, id)); ok {
 			if dir, err := s.profiles.ProfileDir(gameID, id); err == nil {
-				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, l), func() map[string]framework.Mod { return pluginOwners(mods) })
+				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, id, l), func() map[string]framework.Mod { return pluginOwners(mods) })
 			}
 			if f, bad := gameVersionFailure(gameID, l, env); bad {
 				r.LoadFailures = append(r.LoadFailures, f)

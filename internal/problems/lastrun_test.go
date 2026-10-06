@@ -83,3 +83,24 @@ func TestRunErrorsFromSummaryMarksModsUpdatedSinceRun(t *testing.T) {
 		t.Fatalf("updated row = %#v", got)
 	}
 }
+
+type lastRuns map[string]string
+
+func (r lastRuns) LastRunID(_, profileID string) (string, error) { return r[profileID], nil }
+
+func (lastRuns) LastRunSummary(string, string) (string, launch.Summary, error) {
+	return "", launch.Summary{}, nil
+}
+
+func TestThePlayerLogBelongsOnlyToTheProfileThatRanLast(t *testing.T) {
+	runs := lastRuns{"pack": "20261006T082718-1791275238067000000", "small": "20261006T082334-1791275014043000000"}
+	if !ranLast(runs, "lethal-company", "pack", []string{"small", "never"}) {
+		t.Fatal("the newest run's profile owns the player log")
+	}
+	if ranLast(runs, "lethal-company", "small", []string{"pack"}) {
+		t.Fatal("another profile ran after this one, so the player log is that profile's")
+	}
+	if ranLast(runs, "lethal-company", "never", []string{"pack"}) {
+		t.Fatal("a profile that never ran owns no player log")
+	}
+}
