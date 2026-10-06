@@ -181,7 +181,7 @@ func (l *System) desktopFile(withSchemes bool) string {
 	return fmt.Sprintf(`[Desktop Entry]
 Type=Application
 Name=Mortar
-Comment=Multi-game desktop mod manager
+Comment=Desktop mod manager for PC games
 Exec="%s" %%u
 Icon=mortar
 Terminal=false
