@@ -1,8 +1,13 @@
 import { expect, mock, test } from 'bun:test'
+import { i18n } from '@lingui/core'
 
 mock.module('@lingui/core/macro', () => ({
   msg: (parts: TemplateStringsArray, ...values: unknown[]) => String.raw({ raw: parts }, ...values),
 }))
+
+// The mocked msg hands Lingui the English text as its id, which an empty catalog returns as is.
+i18n.load('en', {})
+i18n.activate('en')
 
 const { saveName } = await import('./saveName.ts')
 
