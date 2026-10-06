@@ -3,6 +3,7 @@ import { Box, Collapse, IconButton, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, Inbox } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { localId } from '../mods/dependents.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -178,7 +179,7 @@ export function CompareBulkBody({
         <CompareSection title={t`Different source`}>
           {differentSource.map((row) => (
             <Typography key={row.id} noWrap={true} sx={{ fontSize: 14, py: 0.5, minHeight: 36 }}>
-              {t`${row.name}: ${row.a.version} from ${row.a.source.kind} → ${row.b.version} from ${row.b.source.kind}`}
+              {t`${row.name}: ${row.a.version} from ${sourceLabel(row.a.source.kind)} → ${row.b.version} from ${sourceLabel(row.b.source.kind)}`}
             </Typography>
           ))}
         </CompareSection>

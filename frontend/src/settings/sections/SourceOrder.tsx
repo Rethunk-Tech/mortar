@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SearchableSources } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { SourceLogo } from '../../brand/sources/SourceLogo.tsx'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { IconAction } from '../../shell/IconAction.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -53,7 +54,8 @@ function SourceOrder() {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {list.map((s, i) => (
           <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ width: 120 }}>{s.name}</Typography>
+            <SourceLogo id={s.id} size={16} />
+            <Typography sx={{ minWidth: 120 }}>{s.name}</Typography>
             <IconAction
               label={t`Move up`}
               icon={<ArrowUp size={14} />}
