@@ -305,10 +305,36 @@ func (s *Service) ExportCode(ctx context.Context, gameID, profileID string, conf
 	if len(d.Packages) == 0 {
 		return "", errors.New("the profile holds no Thunderstore packages")
 	}
+	if ref, ok := s.loaderPack(gameID, p.ID); ok {
+		d.Packages = append([]pack.Ref{ref}, d.Packages...)
+	}
 	if d.Configs, err = s.configFiles(gameID, p.ID); err != nil {
 		return "", err
 	}
 	return s.Code.ExportCode(ctx, d)
+}
+
+// loaderPack is the profile's loader as the Thunderstore package r2modman lists it among a profile's mods: r2modman
+// installs exactly the mods a code lists, so a code without it would give its importer a profile that never loads them.
+// ok is false for a loader that lives in the game folder or is missing from the profile.
+func (s *Service) loaderPack(gameID, profileID string) (pack.Ref, bool) {
+	info, ok := components.Game(gameID)
+	l, hasLoader := game.PrimaryLoader(gameID)
+	if !ok || !hasLoader {
+		return pack.Ref{}, false
+	}
+	if _, perProfile := l.(loader.InProfile); !perProfile {
+		return pack.Ref{}, false
+	}
+	dir, err := s.Profiles.ProfileDir(gameID, profileID)
+	if err != nil {
+		return pack.Ref{}, false
+	}
+	st, err := l.Status(loader.Target{Game: gameID, ProfileDir: dir})
+	if err != nil || !st.Installed || st.Version == "" {
+		return pack.Ref{}, false
+	}
+	return pack.Ref{Source: "thunderstore", Native: info.LoaderPackage(), Version: st.Version}, true
 }
 
 // allOff reports whether the entry has mods and every one is switched off.

@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"io/fs"
 	"maps"
 	"net/http"
 	"net/http/httptest"
@@ -228,6 +229,14 @@ func TestExportCodeCarriesTheConfigFolder(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "BepInEx", "config", "Sub", "a.cfg"), []byte("x=1"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.MkdirAll(filepath.Join(dir, "BepInEx", "core"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	for name, body := range map[string]string{"BepInEx/core/BepInEx.Preloader.dll": "p", ".mortar-bepinex.json": `{"version":"5.4.2305","doorstop":4}`} {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
 	var body string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		b, _ := io.ReadAll(r.Body)
@@ -256,5 +265,9 @@ func TestExportCodeCarriesTheConfigFolder(t *testing.T) {
 	}
 	if !slices.Contains(names, "config/Sub/a.cfg") {
 		t.Errorf("code holds %v, not the profile's config file", names)
+	}
+	r2x, err := fs.ReadFile(zr, "export.r2x")
+	if err != nil || !strings.Contains(string(r2x), "name: BepInEx-BepInExPack") || !strings.Contains(string(r2x), "patch: 2305") {
+		t.Errorf("r2modman installs only what a code lists, so it must list the profile's BepInEx pack: %s %v", r2x, err)
 	}
 }
