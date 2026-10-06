@@ -21,6 +21,11 @@ logs=$base/.mg-$$
 mkdir -p "$logs"
 trap 'rm -rf "$logs"' EXIT
 export TMPDIR=$logs GOTMPDIR=$logs
+# go test caches a result only while the TMPDIR and GOTMPDIR it ran under stay the same, so the race tests get one
+# fixed folder; what a killed run leaves in it is reaped once it is an hour old.
+gotmp=$base/.mg-go
+mkdir -p "$gotmp"
+find "$gotmp" -mindepth 1 -maxdepth 1 -mmin +60 -exec rm -rf -- {} +
 
 declare -A pids
 step() {
@@ -34,14 +39,21 @@ bun run bindings >"$logs/bindings" 2>&1 &
 bindings_pid=$!
 
 step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z '*.sh' | xargs -0 -r shellcheck -x"
-step golangci-linux golangci-lint run --allow-parallel-runners
-step golangci-windows env GOOS=windows golangci-lint run --allow-parallel-runners
-step golangci-updatetest golangci-lint run --allow-parallel-runners --build-tags updatetest ./internal/updatesvc/...
+# golangci-lint spends a quarter of its CPU in GC at the default GOGC, and a cold gate is CPU-bound, so lint trades
+# memory for it. The updatetest pass runs after the linux one so it reuses that pass's cache for every dependency.
+{
+  export GOGC=400
+  golangci-lint run --allow-parallel-runners
+  a=$?
+  golangci-lint run --allow-parallel-runners --build-tags updatetest ./internal/updatesvc/... && exit "$a"
+} >"$logs/golangci-linux" 2>&1 &
+pids[golangci-linux]=$!
+step golangci-windows env GOGC=400 GOOS=windows golangci-lint run --allow-parallel-runners
 step version go run ./cmd/version -check
 step site-games bun scripts/site-games.ts --check
 step i18n-dupes bun scripts/i18n-dupes.ts
 step metainfo appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml
-step go-test go test -race ./...
+step go-test env TMPDIR="$gotmp" GOTMPDIR="$gotmp" go test -race ./...
 step vuln scripts/vulncheck.sh
 
 wait "$bindings_pid" || { cat "$logs/bindings"; exit 1; }
