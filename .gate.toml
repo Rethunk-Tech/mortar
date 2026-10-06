@@ -7,3 +7,8 @@ e2e = true
 run = "bun run e2e:updater"
 timeout = "3m"
 e2e = true
+
+[gates.perf]
+run = "bun run perf"
+timeout = "2m"
+e2e = true

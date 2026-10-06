@@ -15,6 +15,7 @@
     "metainfo": "appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml",
     "gate": "scripts/gate.sh",
     "e2e:updater": "go test -count=1 -tags updatetest -run TestUpdaterE2E ./internal/updatesvc",
+    "perf": "MORTAR_PERF=1 go test -count=1 -run '^TestPerfBudgets$' ./internal/problems",
     "vuln": "govulncheck ./...",
     "site:games": "bun scripts/site-games.ts --check",
     "site:downloads": "bun scripts/site-downloads.ts",

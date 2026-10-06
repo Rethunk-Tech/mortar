@@ -57,10 +57,10 @@ linters:
     - wastedassign
     - zerologlint
   # Mortar only. It launches Steam, the SMAPI installer, a Wine prefix's own taskkill, the OS file manager, gsettings, xdg-mime, the nxm handler it replaced and itself (for the browser extension's links), so a subprocess
-  # named by a variable is the product (the updater e2e test runs go and wails3 the same way); gosec has no per-call option for that.
+  # named by a variable is the product (the updater e2e test runs go and wails3 the same way, and the performance budget restarts its own test binary); gosec has no per-call option for that.
   exclusions:
     rules:
-      - path: ^(datadir_recover_other|internal/(launch/launch|launch/term_unix|loader/smapi/install|datadir/open|datadir/copy_windows_test|backdrop/desktop|nxm/handler_linux|nxm/handler_windows|steam/steam|sandbox/sandbox|nativehost/spawn|datasvc/restart|updatesvc/e2e_test))\.go$
+      - path: ^(datadir_recover_other|internal/(launch/launch|launch/term_unix|loader/smapi/install|datadir/open|datadir/copy_windows_test|backdrop/desktop|nxm/handler_linux|nxm/handler_windows|steam/steam|sandbox/sandbox|nativehost/spawn|datasvc/restart|updatesvc/e2e_test|problems/perf_test))\.go$
         linters: [gosec]
         text: G204
       # A crafted 7z panics the reader, and an unrecovered panic exits Mortar; outside the archive package every open
