@@ -1,4 +1,5 @@
 import { i18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 
 const PERCENT = 100
@@ -96,4 +97,9 @@ export const tile = (i: Item) => ({
 // A queue item is never shown nameless: its own name, the file or repo it fetches, the source page's name, then the
 // mod's number.
 export const displayName = (i: Item, pageName = ''): string =>
-  i.name || i.fileName || i.repo || i.package || pageName || (i.modId ? `Nexus mod ${i.modId}` : '')
+  i.name ||
+  i.fileName ||
+  i.repo ||
+  i.package ||
+  pageName ||
+  (i.modId ? i18n._(msg`Nexus mod ${{ id: i.modId }}`) : '')

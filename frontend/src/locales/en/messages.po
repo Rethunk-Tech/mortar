@@ -101,7 +101,7 @@ msgid "These changes will be reverted too:"
 msgstr "These changes will be reverted too:"
 
 #. placeholder {0}: items.length
-#: src/queue/QueueBody.tsx:232
+#: src/queue/QueueBody.tsx:233
 msgid "Failed ({0})"
 msgstr "Failed ({0})"
 
@@ -191,7 +191,7 @@ msgstr "Allow cleanup"
 msgid "Revert {name} to the installed copy?"
 msgstr "Revert {name} to the installed copy?"
 
-#: src/queue/QueueBody.tsx:320
+#: src/queue/QueueBody.tsx:321
 msgid "Skip this profile"
 msgstr "Skip this profile"
 
@@ -1653,7 +1653,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/profiles/GameModsDialog.tsx:135
 #: src/profiles/HealthDialog.tsx:226
 #: src/profiles/LaunchPreview.tsx:85
-#: src/queue/QueueBody.tsx:254
+#: src/queue/QueueBody.tsx:255
 #: src/queue/store.ts:163
 #: src/saves/BackupsDialog.tsx:137
 #: src/saves/SavesTab.tsx:37
@@ -1748,7 +1748,7 @@ msgstr "Needed by"
 
 #: src/install/MergeCallout.tsx:51
 #: src/install/NeedsRootCallout.tsx:44
-#: src/queue/QueueBody.tsx:156
+#: src/queue/QueueBody.tsx:157
 msgid "Skip"
 msgstr "Skip"
 
@@ -4017,7 +4017,7 @@ msgstr "Mortar installs this itself."
 msgid "{0, plural, one {# mod already matches} other {# mods already match}} {targetName}."
 msgstr "{0, plural, one {# mod already matches} other {# mods already match}} {targetName}."
 
-#: src/queue/QueueBody.tsx:310
+#: src/queue/QueueBody.tsx:311
 msgid "Skip every waiting download"
 msgstr "Skip every waiting download"
 
@@ -4063,7 +4063,7 @@ msgstr "Mortar uses your gh login for GitHub requests, which raises the rate lim
 
 #. placeholder {0}: item.repo
 #. placeholder {1}: item.tag
-#: src/queue/QueueBody.tsx:168
+#: src/queue/QueueBody.tsx:169
 msgid "{0} {1} has several archives. Which one should Mortar install?"
 msgstr "{0} {1} has several archives. Which one should Mortar install?"
 
@@ -4126,7 +4126,7 @@ msgstr "Links for games Mortar does not manage open in the app that had them bef
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
-#: src/queue/QueueBody.tsx:130
+#: src/queue/QueueBody.tsx:131
 msgid "Needs your click"
 msgstr "Needs your click"
 
@@ -4372,7 +4372,7 @@ msgid "Could not save that setting"
 msgstr "Could not save that setting"
 
 #: src/mods/Toolbar.tsx:247
-#: src/queue/QueueBody.tsx:359
+#: src/queue/QueueBody.tsx:360
 msgid "Browse mods"
 msgstr "Browse mods"
 
@@ -4553,7 +4553,7 @@ msgstr "Copy of {name}"
 msgid "Export…"
 msgstr "Export…"
 
-#: src/queue/QueueBody.tsx:167
+#: src/queue/QueueBody.tsx:168
 msgid "Choose a file"
 msgstr "Choose a file"
 
@@ -5367,7 +5367,7 @@ msgstr "Adding the missing mods"
 msgid "Add to this profile"
 msgstr "Add to this profile"
 
-#: src/queue/QueueBody.tsx:223
+#: src/queue/QueueBody.tsx:224
 msgid "Retry failed"
 msgstr "Retry failed"
 
@@ -5610,7 +5610,7 @@ msgid "Honour OS"
 msgstr "Honour OS"
 
 #. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx:283
+#: src/queue/QueueBody.tsx:284
 msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
@@ -5882,7 +5882,7 @@ msgid "{optional, plural, one {# optional file will be re-applied; check it stil
 msgstr "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 
 #. placeholder {0}: item.repo
-#: src/queue/QueueBody.tsx:193
+#: src/queue/QueueBody.tsx:194
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
@@ -6618,7 +6618,7 @@ msgstr "New bundle name"
 msgid "Only settings and options differ."
 msgstr "Only settings and options differ."
 
-#: src/queue/QueueBody.tsx:313
+#: src/queue/QueueBody.tsx:314
 msgid "Skip all"
 msgstr "Skip all"
 
@@ -7078,7 +7078,7 @@ msgid "Could not check the game version"
 msgstr "Could not check the game version"
 
 #. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx:116
+#: src/queue/QueueBody.tsx:117
 msgid "Dismiss {0}"
 msgstr "Dismiss {0}"
 
@@ -7230,6 +7230,7 @@ msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
 #: src/nxm/store.ts:84
+#: src/queue/totals.ts:105
 #: src/settings/sections/DataStoreReport.tsx:123
 #: src/share/arrivals.ts:55
 msgid "Nexus mod {id}"
@@ -7979,7 +7980,7 @@ msgstr "Description"
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
 
-#: src/queue/QueueBody.tsx:131
+#: src/queue/QueueBody.tsx:132
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
@@ -8912,7 +8913,7 @@ msgstr "Slate"
 msgid "Updates"
 msgstr "Updates"
 
-#: src/queue/QueueBody.tsx:356
+#: src/queue/QueueBody.tsx:357
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
 
@@ -9121,7 +9122,7 @@ msgstr "This update changed its install options. Your earlier picks are kept whe
 msgid "Move up"
 msgstr "Move up"
 
-#: src/queue/QueueBody.tsx:140
+#: src/queue/QueueBody.tsx:141
 msgid "Open download page"
 msgstr "Open download page"
 
@@ -9220,7 +9221,7 @@ msgstr "Setup"
 #. placeholder {0}: formatKb(downloadedKb(item))
 #. placeholder {1}: formatKb(item.sizeKb)
 #. placeholder {2}: formatBytes(item.speed)
-#: src/queue/QueueBody.tsx:269
+#: src/queue/QueueBody.tsx:270
 msgid "{0} of {1} · {2}/s"
 msgstr "{0} of {1} · {2}/s"
 
@@ -9257,7 +9258,7 @@ msgstr "You skipped this version"
 msgid "Whole file"
 msgstr "Whole file"
 
-#: src/queue/QueueBody.tsx:363
+#: src/queue/QueueBody.tsx:364
 msgid "Updates, missing dependencies and links from Nexus land here."
 msgstr "Updates, missing dependencies and links from Nexus land here."
 
@@ -9465,11 +9466,6 @@ msgstr "Open the folder of {label}"
 #: src/queue/actions.ts:49
 msgid "Sign in to Nexus Mods to download"
 msgstr "Sign in to Nexus Mods to download"
-
-#. placeholder {0}: names(next)
-#: src/queue/QueueBody.tsx:390
-msgid "Up next: {0} and {more} more"
-msgstr "Up next: {0} and {more} more"
 
 #. placeholder {0}: copy.version
 #: src/mods/DuplicateDialog.tsx:63
@@ -11131,7 +11127,7 @@ msgstr "General"
 msgid "Report to author"
 msgstr "Report to author"
 
-#: src/queue/QueueBody.tsx:317
+#: src/queue/QueueBody.tsx:318
 msgid "Skip the waiting downloads of this profile"
 msgstr "Skip the waiting downloads of this profile"
 
@@ -11310,7 +11306,7 @@ msgid "More setting values"
 msgstr "More setting values"
 
 #: src/browse/CardProgress.tsx:46
-#: src/queue/QueueBody.tsx:270
+#: src/queue/QueueBody.tsx:271
 #: src/settings/sections/ModsProfiles.tsx:16
 msgid "Installing"
 msgstr "Installing"
@@ -11465,7 +11461,7 @@ msgid "Flatpak Steam cannot read your mods"
 msgstr "Flatpak Steam cannot read your mods"
 
 #. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx:294
+#: src/queue/QueueBody.tsx:295
 msgid "Cancel {0}"
 msgstr "Cancel {0}"
 
@@ -11702,7 +11698,7 @@ msgstr "{0, plural, one {Set category for # mod} other {Set category for # mods}
 msgid "No eligible profiles."
 msgstr "No eligible profiles."
 
-#: src/queue/QueueBody.tsx:192
+#: src/queue/QueueBody.tsx:193
 msgid "Check this download"
 msgstr "Check this download"
 
@@ -12490,7 +12486,7 @@ msgstr "Disk space"
 msgid "Skipped ({0}): {1}"
 msgstr "Skipped ({0}): {1}"
 
-#: src/queue/QueueBody.tsx:202
+#: src/queue/QueueBody.tsx:203
 msgid "Install anyway"
 msgstr "Install anyway"
 

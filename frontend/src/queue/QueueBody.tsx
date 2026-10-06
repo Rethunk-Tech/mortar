@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
+import { listNames } from '../i18n/list.ts'
 
 const DONE_FILL = 0.08
 const FAIL_FILL = 0.1
@@ -46,10 +47,10 @@ const ROW = {
 const NAME_MAX = 3
 
 const names = (items: Item[]) =>
-  items
-    .slice(0, NAME_MAX)
-    .map((i) => displayName(i))
-    .join(', ')
+  listNames(
+    items.map((i) => displayName(i)),
+    NAME_MAX,
+  )
 
 function SectionTitle({
   color,
@@ -364,7 +365,6 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       </EmptyState>
     )
   }
-  const more = next.length - NAME_MAX
   const [firstProfile] = next
   return (
     <>
@@ -387,7 +387,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       {next.length > 0 ? (
         <Fold
           bg="var(--mortar-raised-60)"
-          line={more > 0 ? t`Up next: ${names(next)} and ${more} more` : t`Up next: ${names(next)}`}
+          line={t`Up next: ${names(next)}`}
           action={firstProfile ? <NextActions item={firstProfile} /> : null}
         >
           {next.map((i) => (

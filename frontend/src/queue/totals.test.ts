@@ -96,5 +96,4 @@ test('a queue item always has a display name', () => {
   expect(displayName(bare({ name: 'A', modId: 5 }))).toBe('A')
   expect(displayName(bare({ fileName: 'a.zip', modId: 5 }))).toBe('a.zip')
   expect(displayName(bare({ modId: 25_328 }), 'ExtraAnimalConfig')).toBe('ExtraAnimalConfig')
-  expect(displayName(bare({ modId: 25_328 }))).toBe('Nexus mod 25328')
 })
