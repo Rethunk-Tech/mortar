@@ -31,6 +31,28 @@ import { logFileName, saveLogText } from './save.ts'
 import { useConsole } from './store.ts'
 import { useConsoleEmpty } from './useConsoleEmpty.ts'
 
+// smapi.io's parser reads only SMAPI's log, so other loaders offer Save log here instead of Share log.
+function ShareOrSave({ canSave, onSave }: { canSave: boolean; onSave: () => void }) {
+  const { t } = useLingui()
+  if (useProfileLoader()?.share === true) {
+    return (
+      <IconAction
+        label={t`Share log…`}
+        icon={<LifeBuoy size={16} />}
+        onClick={() => useConsole.getState().setHelping(true)}
+      />
+    )
+  }
+  return (
+    <IconAction
+      label={t`Save log…`}
+      icon={<Download size={16} />}
+      disabled={!canSave}
+      onClick={onSave}
+    />
+  )
+}
+
 export function LogActions({ game }: { game: string }) {
   const { t } = useLingui()
   const empty = useConsoleEmpty(game)
@@ -42,9 +64,8 @@ export function LogActions({ game }: { game: string }) {
   const profileName = useProfiles(
     (s) => s.profiles.find((p) => p.id === shown.profile)?.name ?? shown.profile,
   )
-  const { clear, jumpTo, setHelping } = useConsole.getState()
-  // smapi.io's parser reads only SMAPI's log, so other loaders offer Save and Copy instead.
-  const shares = useProfileLoader()?.share === true
+  const { clear, jumpTo } = useConsole.getState()
+  const loaderName = useProfileLoader()?.name ?? ''
   const [searching, setSearching] = useState(false)
   const [menu, setMenu] = useState<HTMLElement | null>(null)
   const [viewedStart, setViewedStart] = useState<Date | null>(null)
@@ -85,7 +106,11 @@ export function LogActions({ game }: { game: string }) {
         if (text === '') {
           return
         }
-        return SaveFile(t`Save log`, logFileName(profileName, viewedStart ?? new Date()), text)
+        return SaveFile(
+          t`Save log`,
+          logFileName(loaderName, profileName, viewedStart ?? new Date()),
+          text,
+        )
       })
       .catch(reportUnexpected)
   }
@@ -122,20 +147,7 @@ export function LogActions({ game }: { game: string }) {
         aria-expanded={menu !== null}
         onClick={(e) => setMenu(e.currentTarget)}
       />
-      {shares ? (
-        <IconAction
-          label={t`Share log…`}
-          icon={<LifeBuoy size={16} />}
-          onClick={() => setHelping(true)}
-        />
-      ) : (
-        <IconAction
-          label={t`Save log…`}
-          icon={<Download size={16} />}
-          disabled={!canSave}
-          onClick={saveLog}
-        />
-      )}
+      <ShareOrSave canSave={canSave} onSave={saveLog} />
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
         <MenuItem
           disabled={rows.length === 0}

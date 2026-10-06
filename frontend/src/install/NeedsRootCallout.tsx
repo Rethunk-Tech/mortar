@@ -5,12 +5,14 @@ import { Skip } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/que
 import { useProfiles } from '../profiles/store.ts'
 import { Callout } from '../queue/Callout.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { useNoModText } from './noModText.ts'
 import { useInstall } from './store.ts'
 
 export function NeedsRootCallout({ item }: { item: Item }) {
   const { t } = useLingui()
   const openRemap = useInstall((s) => s.openRemap)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === item.profileId))
+  const noModText = useNoModText(item.profileId)
   const ask = item.remap
   if (!ask) {
     return null
@@ -22,7 +24,7 @@ export function NeedsRootCallout({ item }: { item: Item }) {
   let button = variants ? t`Choose variant…` : t`Choose folder…`
   let text = variants
     ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`
-    : t`This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json.`
+    : noModText
   if (overlay) {
     label = t`Place the optional file`
     button = t`Place…`

@@ -1204,7 +1204,7 @@ msgstr "Select all mods"
 msgid "{count, plural, one {# update for {profileName}} other {# updates for {profileName}}}"
 msgstr "{count, plural, one {# update for {profileName}} other {# updates for {profileName}}}"
 
-#: src/install/RemapDialog.tsx:211
+#: src/install/RemapDialog.tsx:215
 msgid "Use this folder"
 msgstr "Use this folder"
 
@@ -1434,7 +1434,7 @@ msgstr "Clear cache?"
 
 #: src/console/CrashDialog.tsx:142
 #: src/console/HelpDialog.tsx:217
-#: src/console/LogActions.tsx:127
+#: src/console/LogActions.tsx:40
 msgid "Share log…"
 msgstr "Share log…"
 
@@ -1731,7 +1731,7 @@ msgid "Needed by"
 msgstr "Needed by"
 
 #: src/install/MergeCallout.tsx:51
-#: src/install/NeedsRootCallout.tsx:42
+#: src/install/NeedsRootCallout.tsx:44
 #: src/queue/QueueBody.tsx:156
 msgid "Skip"
 msgstr "Skip"
@@ -2872,12 +2872,12 @@ msgstr "Installed file"
 msgid "Connected from {0}, last seen "
 msgstr "Connected from {0}, last seen "
 
-#: src/console/LogActions.tsx:164
+#: src/console/LogActions.tsx:176
 msgid "Search all runs…"
 msgstr "Search all runs…"
 
 #: src/firstrun/FindStep.tsx:203
-#: src/install/NeedsRootCallout.tsx:22
+#: src/install/NeedsRootCallout.tsx:24
 #: src/settings/sections/GameSettings.tsx:379
 #: src/tools/ToolEditorDialog.tsx:112
 msgid "Choose folder…"
@@ -2907,7 +2907,7 @@ msgstr "Clear comparison"
 msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
 
-#: src/install/NeedsRootCallout.tsx:27
+#: src/install/NeedsRootCallout.tsx:29
 msgid "Place the optional file"
 msgstr "Place the optional file"
 
@@ -3722,7 +3722,7 @@ msgstr "Share as r2modman code?"
 #: src/game/NewProfileDialog.tsx:232
 #: src/install/DownloadsDialog.tsx:252
 #: src/install/OverlayPlaceDialog.tsx:118
-#: src/install/RemapDialog.tsx:205
+#: src/install/RemapDialog.tsx:209
 #: src/lan/IncomingPrompt.tsx:166
 #: src/lan/IncomingPrompt.tsx:184
 #: src/lan/PairedComputers.tsx:60
@@ -4254,7 +4254,7 @@ msgstr "Mortar starts the unmodded game directly, skipping SMAPI's Linux launche
 msgid "Launch other apps with this profile."
 msgstr "Launch other apps with this profile."
 
-#: src/console/LogActions.tsx:105
+#: src/console/LogActions.tsx:130
 msgid "Jump to previous error"
 msgstr "Jump to previous error"
 
@@ -4281,8 +4281,8 @@ msgstr "No download source is known for {0}."
 msgid "Where the profile comes from"
 msgstr "Where the profile comes from"
 
-#: src/install/NeedsRootCallout.tsx:24
-#: src/install/RemapDialog.tsx:175
+#: src/install/NeedsRootCallout.tsx:26
+#: src/install/RemapDialog.tsx:167
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 
@@ -4574,7 +4574,7 @@ msgstr "Also updates {0} (same download)"
 msgid "Changelog on Nexus"
 msgstr "Changelog on Nexus"
 
-#: src/console/LogActions.tsx:144
+#: src/console/LogActions.tsx:156
 msgid "Log copied"
 msgstr "Log copied"
 
@@ -5525,7 +5525,7 @@ msgstr "Not set up · Open it to set it up"
 msgid "Absolute"
 msgstr "Absolute"
 
-#: src/install/NeedsRootCallout.tsx:22
+#: src/install/NeedsRootCallout.tsx:24
 msgid "Choose variant…"
 msgstr "Choose variant…"
 
@@ -6114,8 +6114,8 @@ msgstr "Chosen by you"
 msgid "{0} hidden"
 msgstr "{0} hidden"
 
-#: src/install/NeedsRootCallout.tsx:21
-#: src/install/RemapDialog.tsx:170
+#: src/install/NeedsRootCallout.tsx:23
+#: src/install/RemapDialog.tsx:176
 msgid "Choose a variant"
 msgstr "Choose a variant"
 
@@ -6648,7 +6648,7 @@ msgstr "{count, plural, one {# mod update available} other {# mod updates availa
 msgid "Play without Steam overlay"
 msgstr "Play without Steam overlay"
 
-#: src/install/NeedsRootCallout.tsx:28
+#: src/install/NeedsRootCallout.tsx:30
 msgid "Place…"
 msgstr "Place…"
 
@@ -6881,7 +6881,7 @@ msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was add
 msgid "Unofficial"
 msgstr "Unofficial"
 
-#: src/install/RemapDialog.tsx:141
+#: src/install/RemapDialog.tsx:142
 msgid "Hide archive contents"
 msgstr "Hide archive contents"
 
@@ -7166,7 +7166,7 @@ msgstr "Recently deleted"
 msgid "Something went wrong in this view"
 msgstr "Something went wrong in this view"
 
-#: src/install/NeedsRootCallout.tsx:21
+#: src/install/NeedsRootCallout.tsx:23
 msgid "Choose a folder"
 msgstr "Choose a folder"
 
@@ -7364,7 +7364,7 @@ msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and mo
 msgstr "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 
 #. placeholder {0}: overlay.baseLabel
-#: src/install/NeedsRootCallout.tsx:29
+#: src/install/NeedsRootCallout.tsx:31
 msgid "This optional file replaces files of {0}. Pick where its files go."
 msgstr "This optional file replaces files of {0}. Pick where its files go."
 
@@ -7448,7 +7448,7 @@ msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # l
 msgid "Could not untrack"
 msgstr "Could not untrack"
 
-#: src/console/LogActions.tsx:152
+#: src/console/LogActions.tsx:164
 msgid "Copy log"
 msgstr "Copy log"
 
@@ -7569,7 +7569,7 @@ msgstr "Firefox:"
 msgid "Could not restore the collection link"
 msgstr "Could not restore the collection link"
 
-#: src/install/RemapDialog.tsx:141
+#: src/install/RemapDialog.tsx:142
 msgid "Show archive contents"
 msgstr "Show archive contents"
 
@@ -7577,7 +7577,7 @@ msgstr "Show archive contents"
 msgid "Performance comparison"
 msgstr "Performance comparison"
 
-#: src/console/LogActions.tsx:88
+#: src/console/LogActions.tsx:110
 msgid "Save log"
 msgstr "Save log"
 
@@ -7705,6 +7705,10 @@ msgstr "{name} installed"
 #: src/tools/ToolsManageDialog.tsx:57
 msgid "Edit {0}"
 msgstr "Edit {0}"
+
+#: src/install/noModText.ts:8
+msgid "This archive has no {loader} mod where Mortar expects one. Pick the folder that holds the mod."
+msgstr "This archive has no {loader} mod where Mortar expects one. Pick the folder that holds the mod."
 
 #. placeholder {0}: mod.name
 #: src/mods/storeEntries.ts:344
@@ -8029,7 +8033,7 @@ msgstr "Winter"
 msgid "This profile plays on its own saves. Your shared saves are untouched."
 msgstr "This profile plays on its own saves. Your shared saves are untouched."
 
-#: src/console/LogActions.tsx:111
+#: src/console/LogActions.tsx:136
 msgid "Jump to next error"
 msgstr "Jump to next error"
 
@@ -8450,7 +8454,7 @@ msgstr "Enable"
 msgid "Check updates and problems in the background for profiles you are not looking at"
 msgstr "Check updates and problems in the background for profiles you are not looking at"
 
-#: src/install/RemapDialog.tsx:170
+#: src/install/RemapDialog.tsx:176
 msgid "Choose the mod folder"
 msgstr "Choose the mod folder"
 
@@ -8625,6 +8629,7 @@ msgid "Damaged"
 msgstr "Damaged"
 
 #: src/console/RunProblems.tsx:131
+#: src/install/noModText.ts:7
 #: src/launch/PlayControl.tsx:63
 msgid "the mod loader"
 msgstr "the mod loader"
@@ -8837,7 +8842,7 @@ msgstr "The last run crashed. {0}"
 msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr "A launch ended without Mortar putting the game folder back as it was"
 
-#: src/console/LogActions.tsx:118
+#: src/console/LogActions.tsx:143
 msgid "Log actions"
 msgstr "Log actions"
 
@@ -10348,7 +10353,7 @@ msgstr "Could not add the bundle"
 msgid "Reading the Mods folder…"
 msgstr "Reading the Mods folder…"
 
-#: src/console/LogActions.tsx:97
+#: src/console/LogActions.tsx:122
 msgid "Errors"
 msgstr "Errors"
 
@@ -10981,7 +10986,7 @@ msgstr "Could not build the link"
 msgid "{0, plural, one {# warning} other {# warnings}}"
 msgstr "{0, plural, one {# warning} other {# warnings}}"
 
-#: src/console/LogActions.tsx:99
+#: src/console/LogActions.tsx:124
 msgid "Jump to first error"
 msgstr "Jump to first error"
 
@@ -11438,7 +11443,7 @@ msgstr "{hours}h played"
 msgid "Enable them too"
 msgstr "Enable them too"
 
-#: src/console/LogActions.tsx:170
+#: src/console/LogActions.tsx:182
 #: src/settings/sections/GameSettings.tsx:375
 #: src/toasts/HistoryButton.tsx:142
 msgid "Clear"
@@ -11497,11 +11502,6 @@ msgstr "Continue"
 #: src/mods/ModDependencyTree.tsx:184
 msgid "Dependencies"
 msgstr "Dependencies"
-
-#: src/install/NeedsRootCallout.tsx:25
-#: src/install/RemapDialog.tsx:176
-msgid "This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json."
-msgstr "This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json."
 
 #: src/launch/LaunchLayer.tsx:135
 #: src/share/ShareDialog.tsx:139
@@ -11734,8 +11734,8 @@ msgstr "Get Mortar"
 msgid "Collapse or expand the profile sidebar"
 msgstr "Collapse or expand the profile sidebar"
 
-#: src/console/LogActions.tsx:133
-#: src/console/LogActions.tsx:158
+#: src/console/LogActions.tsx:48
+#: src/console/LogActions.tsx:170
 msgid "Save log…"
 msgstr "Save log…"
 

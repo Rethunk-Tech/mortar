@@ -20,6 +20,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { ArchivePreview } from './ArchivePreview.tsx'
+import { useNoModText } from './noModText.ts'
 import { OverlayPlaceDialog } from './OverlayPlaceDialog.tsx'
 import { useInstall } from './store.ts'
 
@@ -156,10 +157,15 @@ function RemapBody() {
   const choose = useInstall((s) => s.chooseRoot)
   const [selected, setSelected] = useState('')
   const [dir, setDir] = useState(false)
+  const noModText = useNoModText()
   if (!session) {
     return null
   }
   const variants = session.ask.variants ?? []
+  const intro =
+    variants.length > 0
+      ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`
+      : noModText
   return (
     <Dialog
       open={true}
@@ -171,9 +177,7 @@ function RemapBody() {
       </DialogTitle>
       <DialogContent>
         <Typography variant="body2" sx={{ mb: 1 }}>
-          {variants.length > 0
-            ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`
-            : t`This archive has no SMAPI mod where Mortar expects one. Pick the folder that holds manifest.json.`}
+          {intro}
         </Typography>
         {session.archivePath ? <ArchiveContents path={session.archivePath} /> : null}
         <List dense={true} disablePadding={true}>
