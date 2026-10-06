@@ -3,6 +3,7 @@ package datasvc
 
 import (
 	"errors"
+	"log/slog"
 	"path/filepath"
 	"sync"
 	"time"
@@ -332,7 +333,16 @@ func (s *Service) MoveDataFolder(dest string) error {
 	}
 	s.setProgress(Progress{})
 	if s.Restart != nil {
-		return s.Restart()
+		// The restart ends the process, so it waits for the caller's answer (the window's call, the CLI's reply) to
+		// leave first.
+		time.AfterFunc(restartDelay, func() {
+			if err := s.Restart(); err != nil {
+				slog.Error("restart after the data folder moved", "err", err)
+			}
+		})
 	}
 	return nil
 }
+
+// restartDelay is how long a moved data folder's restart waits for MoveDataFolder's answer to reach its caller.
+const restartDelay = 500 * time.Millisecond

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
@@ -31,16 +32,23 @@ func TestMoveDataFolderRelocatesWhenIdle(t *testing.T) {
 	}
 	testfs.WriteFile(t, src, "settings.json", `{"accent":"sand"}`)
 	s := NewService(items, profiles, nil)
-	restarted := false
+	restarted := make(chan struct{})
 	s.Restart = func() error {
-		restarted = true
+		close(restarted)
 		return nil
 	}
 	dest := filepath.Join(t.TempDir(), "moved")
 	if err := s.MoveDataFolder(dest); err != nil {
 		t.Fatal(err)
 	}
-	if !restarted {
+	select {
+	case <-restarted:
+		t.Fatal("restarted before the move answered its caller")
+	default:
+	}
+	select {
+	case <-restarted:
+	case <-time.After(10 * time.Second):
 		t.Fatal("did not restart")
 	}
 	got, err := fsx.ReadFile(filepath.Join(dest, "settings.json"))

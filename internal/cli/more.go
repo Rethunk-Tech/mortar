@@ -122,7 +122,7 @@ var moreVerbs = map[string]moreVerb{
 	"lan inbox":   {method: "lan.inbox"},
 	"lan decline": {method: "lan.decline", args: []string{"a transfer id"}, msg: "Declined.", params: nameParam},
 	"data move": {
-		method: "data.move", args: []string{"a destination folder"}, msg: "Moved the data folder.", timeout: installTimeout,
+		method: "data.move", args: []string{"a destination folder"}, msg: "Moved the data folder; Mortar is restarting.", timeout: installTimeout,
 		params: func(a []string, c *cmd) (control.Params, error) {
 			return control.Params{Path: absPath(a[0]), Preview: c.previewFlag}, nil
 		},
