@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Chip, Typography, useMediaQuery } from '@mui/material'
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type {
   Mod,
   Profile,
@@ -347,7 +347,8 @@ function CardsPane({
   )
   const { parentRef, virtualizer } = useModVirtual(items, lanePx)
   const detailId = useDetail((s) => s.detailId)
-  useEffect(() => {
+  // Measured before paint, so the first frame lays out the real column count rather than one column.
+  useLayoutEffect(() => {
     const el = parentRef.current
     if (!el) {
       return

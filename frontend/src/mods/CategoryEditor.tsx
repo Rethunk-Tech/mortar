@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Plus, Tags, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import type { CustomCategory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { colorHex, PROFILE_COLORS } from '../profiles/appearance.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -84,7 +84,8 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
     }
   }, [open, gameId, load])
 
-  useEffect(() => {
+  // Copied before paint, so opening never flashes the empty state over saved categories.
+  useLayoutEffect(() => {
     if (open) {
       setDraft(stored.map((c) => ({ ...c })))
     }

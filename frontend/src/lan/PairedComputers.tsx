@@ -65,7 +65,8 @@ function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () => void 
 
 function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
-  const [peers, setPeers] = useState<Peer[]>([])
+  // null until the first scan answers, so the dialog never flashes "none found" before it has looked.
+  const [peers, setPeers] = useState<Peer[] | null>(null)
   const [target, setTarget] = useState('')
   const [manual, setManual] = useState('')
   const [code, setCode] = useState('')
@@ -75,6 +76,7 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
       setTarget('')
       setManual('')
       setCode('')
+      setPeers(null)
       return
     }
     Peers()
@@ -100,12 +102,12 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
           {t`Pick the computer showing the code, then type it.`}
         </Typography>
         <List disablePadding={true}>
-          {peers.length === 0 ? (
+          {peers?.length === 0 ? (
             <ListItem>
               <ListItemText primary={t`No Mortar computers found nearby.`} />
             </ListItem>
           ) : null}
-          {peers.map((peer) => (
+          {peers?.map((peer) => (
             <ListItem key={peer.id} disablePadding={true}>
               <ListItemButton selected={target === peer.id} onClick={() => setTarget(peer.id)}>
                 <ListItemText primary={peer.name} />
@@ -113,7 +115,7 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
             </ListItem>
           ))}
         </List>
-        {peers.length === 0 ? (
+        {peers?.length === 0 ? (
           <TextField
             fullWidth={true}
             size="small"

@@ -291,6 +291,7 @@ function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
       return
     }
     let live = true
+    setRows([])
     ProfilesWithMod(game, mod.id)
       .then((list) => {
         if (live) {

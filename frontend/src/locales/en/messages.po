@@ -208,7 +208,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
-#: src/game/Hero.tsx:346
+#: src/game/Hero.tsx:342
 #: src/mods/Sidebar.tsx:153
 msgid "Updated"
 msgstr "Updated"
@@ -531,7 +531,7 @@ msgstr "Show token"
 msgid "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
 msgstr "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
 
-#: src/mods/Sidebar.tsx:384
+#: src/mods/Sidebar.tsx:385
 msgid "Config"
 msgstr "Config"
 
@@ -724,7 +724,7 @@ msgstr "Save selection as bundle"
 msgid "{name} updated to {version}: {n, plural, one {# profile needs attention} other {# profiles need attention}}"
 msgstr "{name} updated to {version}: {n, plural, one {# profile needs attention} other {# profiles need attention}}"
 
-#: src/mods/CategoryEditor.tsx:122
+#: src/mods/CategoryEditor.tsx:123
 msgid "Group mods by these names, or assign one as a mod's primary category."
 msgstr "Group mods by these names, or assign one as a mod's primary category."
 
@@ -746,7 +746,7 @@ msgstr "Type a command, for example help"
 msgid "{0} was changed on {1} and here"
 msgstr "{0} was changed on {1} and here"
 
-#: src/mods/Sidebar.tsx:580
+#: src/mods/Sidebar.tsx:581
 msgid "More…"
 msgstr "More…"
 
@@ -981,7 +981,7 @@ msgstr "Don't ask again"
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
-#: src/mods/ModCards.tsx:458
+#: src/mods/ModCards.tsx:459
 #: src/mods/ModList.tsx:389
 msgid "{loaderName} mods"
 msgstr "{loaderName} mods"
@@ -1852,7 +1852,7 @@ msgstr "Got it"
 msgid "New launch preset"
 msgstr "New launch preset"
 
-#: src/lan/PairedComputers.tsx:174
+#: src/lan/PairedComputers.tsx:176
 msgid "Paired computers"
 msgstr "Paired computers"
 
@@ -1975,7 +1975,7 @@ msgstr "Fullscreen resolution width"
 msgid "These come from a different site than you installed them from. Update all skips them."
 msgstr "These come from a different site than you installed them from. Update all skips them."
 
-#: src/lan/PairedComputers.tsx:120
+#: src/lan/PairedComputers.tsx:122
 #: src/lan/SendDialog.tsx:159
 msgid "Host:port"
 msgstr "Host:port"
@@ -2455,7 +2455,7 @@ msgid "This bundle will be deleted."
 msgstr "This bundle will be deleted."
 
 #. placeholder {0}: neededBy.length.toLocaleString(i18n.locale)
-#: src/mods/Sidebar.tsx:417
+#: src/mods/Sidebar.tsx:418
 msgid "Required by ({0})"
 msgstr "Required by ({0})"
 
@@ -2763,7 +2763,7 @@ msgstr "game running"
 msgid "Drag {path} into the GitHub issue to attach it."
 msgstr "Drag {path} into the GitHub issue to attach it."
 
-#: src/lan/PairedComputers.tsx:142
+#: src/lan/PairedComputers.tsx:144
 msgid "Pair"
 msgstr "Pair"
 
@@ -2825,7 +2825,7 @@ msgid "Before this change"
 msgstr "Before this change"
 
 #: src/mods/listRows.ts:117
-#: src/mods/Sidebar.tsx:538
+#: src/mods/Sidebar.tsx:539
 msgid "Archive"
 msgstr "Archive"
 
@@ -2848,7 +2848,7 @@ msgstr "What happened"
 msgid "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 msgstr "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 
-#: src/mods/CategoryEditor.tsx:128
+#: src/mods/CategoryEditor.tsx:129
 msgid "No custom categories yet"
 msgstr "No custom categories yet"
 
@@ -2861,7 +2861,7 @@ msgstr "Open the next profile"
 msgid "Desktop"
 msgstr "Desktop"
 
-#: src/lan/PairedComputers.tsx:92
+#: src/lan/PairedComputers.tsx:94
 msgid "Could not pair"
 msgstr "Could not pair"
 
@@ -3403,7 +3403,7 @@ msgid "Collapsed"
 msgstr "Collapsed"
 
 #: src/launch/SweepDialog.tsx:29
-#: src/mods/ModCards.tsx:455
+#: src/mods/ModCards.tsx:456
 #: src/mods/ModList.tsx:386
 #: src/mods/Toolbar.tsx:60
 msgid "Update available"
@@ -3453,7 +3453,7 @@ msgstr "Quit Mortar?"
 msgid "Could not back up saves before Play"
 msgstr "Could not back up saves before Play"
 
-#: src/lan/PairedComputers.tsx:89
+#: src/lan/PairedComputers.tsx:91
 msgid "Computer paired"
 msgstr "Computer paired"
 
@@ -3461,20 +3461,20 @@ msgstr "Computer paired"
 msgid "Default launch preset"
 msgstr "Default launch preset"
 
-#: src/mods/CategoryEditor.tsx:119
+#: src/mods/CategoryEditor.tsx:120
 msgid "Custom categories"
 msgstr "Custom categories"
 
 #: src/bundles/BundlesSection.tsx:148
 #: src/game/ProfileMenuItems.tsx:85
 #: src/game/ProfileMenuItems.tsx:428
-#: src/mods/CategoryEditor.tsx:169
+#: src/mods/CategoryEditor.tsx:170
 #: src/mods/OldFilesCallouts.tsx:103
 #: src/mods/problemFixButtons.tsx:199
 #: src/mods/problemFixButtons.tsx:204
 #: src/profiles/HealthDialog.tsx:270
 #: src/profiles/LaunchPresetsBlock.tsx:53
-#: src/profiles/LaunchPresetTemplatesDialog.tsx:63
+#: src/profiles/LaunchPresetTemplatesDialog.tsx:64
 #: src/profiles/ProfilesPage.tsx:177
 #: src/saves/SaveBackupsSection.tsx:70
 #: src/saves/SaveBackupsSection.tsx:148
@@ -3596,7 +3596,7 @@ msgid "Already has {0}"
 msgstr "Already has {0}"
 
 #: src/browse/BrowseDetails.tsx:98
-#: src/mods/Sidebar.tsx:391
+#: src/mods/Sidebar.tsx:392
 #: src/mods/updateReview/Row.tsx:119
 msgid "Changelog"
 msgstr "Changelog"
@@ -3638,7 +3638,7 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 msgid "Search archives"
 msgstr "Search archives"
 
-#: src/game/Hero.tsx:347
+#: src/game/Hero.tsx:343
 msgid "Created"
 msgstr "Created"
 
@@ -3788,15 +3788,15 @@ msgstr "Share as r2modman code?"
 #: src/lan/IncomingPrompt.tsx:170
 #: src/lan/IncomingPrompt.tsx:188
 #: src/lan/PairedComputers.tsx:60
-#: src/lan/PairedComputers.tsx:136
+#: src/lan/PairedComputers.tsx:138
 #: src/lan/SendDialog.tsx:174
 #: src/launch/PrePlayDialog.tsx:149
 #: src/launch/SaveWarnDialog.tsx:67
 #: src/launch/UpdateWarnDialog.tsx:49
 #: src/launch/VanillaPlay.tsx:239
 #: src/mods/AddToGroupDialog.tsx:99
-#: src/mods/CategoryEditor.tsx:154
-#: src/mods/CategoryEditor.tsx:234
+#: src/mods/CategoryEditor.tsx:155
+#: src/mods/CategoryEditor.tsx:235
 #: src/mods/parts.tsx:112
 #: src/mods/ReportToAuthorButton.tsx:243
 #: src/mods/SelectionBarDialogs.tsx:86
@@ -3829,7 +3829,7 @@ msgstr "The saved change {change} from {when} is missing its config files"
 msgid "The folders are moved out of the game's Mods folder and into this profile."
 msgstr "The folders are moved out of the game's Mods folder and into this profile."
 
-#: src/profiles/LaunchPresetTemplatesDialog.tsx:75
+#: src/profiles/LaunchPresetTemplatesDialog.tsx:76
 msgid "Delete template"
 msgstr "Delete template"
 
@@ -4010,7 +4010,7 @@ msgstr "{rest, plural, one {# more} other {# more}}"
 msgid "Mortar: {label}"
 msgstr "Mortar: {label}"
 
-#: src/mods/ModCards.tsx:446
+#: src/mods/ModCards.tsx:447
 #: src/mods/ModList.tsx:362
 #: src/mods/Toolbar.tsx:180
 msgid "A mod with several tags appears under its first tag."
@@ -4040,13 +4040,13 @@ msgstr "Show in queue"
 
 #: src/mods/AuthorDialog.tsx:134
 #: src/mods/listRows.ts:134
-#: src/mods/ModCards.tsx:457
+#: src/mods/ModCards.tsx:458
 #: src/mods/ModDetail.tsx:57
 #: src/mods/ModList.tsx:388
 #: src/mods/OptionalFileRows.tsx:122
 #: src/mods/PreviewPick.tsx:22
-#: src/mods/Sidebar.tsx:316
-#: src/mods/Sidebar.tsx:329
+#: src/mods/Sidebar.tsx:317
+#: src/mods/Sidebar.tsx:330
 #: src/mods/Toolbar.tsx:59
 #: src/profiles/GameModsDialog.tsx:37
 #: src/saves/SaveGapLine.tsx:21
@@ -4208,7 +4208,7 @@ msgid "Link copied"
 msgstr "Link copied"
 
 #: src/mods/columnLabel.ts:8
-#: src/mods/Sidebar.tsx:458
+#: src/mods/Sidebar.tsx:459
 msgid "Version"
 msgstr "Version"
 
@@ -4436,7 +4436,7 @@ msgstr "Browse mods"
 msgid "Freed {0}"
 msgstr "Freed {0}"
 
-#: src/mods/CategoryEditor.tsx:220
+#: src/mods/CategoryEditor.tsx:221
 msgid "Set category"
 msgstr "Set category"
 
@@ -4496,7 +4496,7 @@ msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile 
 msgid "Main mod's folder"
 msgstr "Main mod's folder"
 
-#: src/lan/PairedComputers.tsx:129
+#: src/lan/PairedComputers.tsx:131
 msgid "Code"
 msgstr "Code"
 
@@ -4508,7 +4508,7 @@ msgstr "A portable copy keeps its data beside the program."
 msgid "Save these settings to a file, or load them on another computer."
 msgstr "Save these settings to a file, or load them on another computer."
 
-#: src/mods/ModCards.tsx:453
+#: src/mods/ModCards.tsx:454
 #: src/mods/ModList.tsx:384
 msgid "Ungrouped"
 msgstr "Ungrouped"
@@ -4882,7 +4882,7 @@ msgstr "SMAPI is not installed"
 msgid "{0, plural, one {Add # mod} other {Add # mods}}"
 msgstr "{0, plural, one {Add # mod} other {Add # mods}}"
 
-#: src/lan/PairedComputers.tsx:189
+#: src/lan/PairedComputers.tsx:191
 msgid "Could not unpair"
 msgstr "Could not unpair"
 
@@ -5109,7 +5109,7 @@ msgstr "Profile settings, mod lists and configs are written here and offered to 
 msgid "Duplicate plugins"
 msgstr "Duplicate plugins"
 
-#: src/mods/ModCards.tsx:450
+#: src/mods/ModCards.tsx:451
 #: src/mods/ModList.tsx:381
 msgid "Unknown source"
 msgstr "Unknown source"
@@ -5618,7 +5618,7 @@ msgstr "Enter 1 or more"
 
 #: src/mods/columnLabel.ts:14
 #: src/mods/NexusDetails.tsx:108
-#: src/mods/Sidebar.tsx:480
+#: src/mods/Sidebar.tsx:481
 #: src/settings/sections/NexusMods.tsx:176
 msgid "Endorsements"
 msgstr "Endorsements"
@@ -6022,7 +6022,7 @@ msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
 #: src/browse/BrowseDetails.tsx:259
-#: src/mods/Sidebar.tsx:604
+#: src/mods/Sidebar.tsx:605
 msgid "Selected mod"
 msgstr "Selected mod"
 
@@ -6090,7 +6090,7 @@ msgstr "Discard the change to {name}"
 msgid "Another preset already has this name."
 msgstr "Another preset already has this name."
 
-#: src/mods/ModCards.tsx:452
+#: src/mods/ModCards.tsx:453
 #: src/mods/ModList.tsx:383
 msgid "Unknown author"
 msgstr "Unknown author"
@@ -6285,7 +6285,7 @@ msgstr "{0} and {count} more"
 
 #: src/mods/ModMenu.tsx:211
 #: src/mods/SelectionBarActions.tsx:108
-#: src/mods/Sidebar.tsx:493
+#: src/mods/Sidebar.tsx:494
 msgid "Also add to…"
 msgstr "Also add to…"
 
@@ -6373,7 +6373,7 @@ msgid "Add to group…"
 msgstr "Add to group…"
 
 #: src/lan/PairedComputers.tsx:50
-#: src/lan/PairedComputers.tsx:178
+#: src/lan/PairedComputers.tsx:180
 msgid "Pair a computer"
 msgstr "Pair a computer"
 
@@ -6706,7 +6706,7 @@ msgstr "Could not sign in with Nexus Mods"
 msgid "Showing the first 500 matches."
 msgstr "Showing the first 500 matches."
 
-#: src/lan/PairedComputers.tsx:175
+#: src/lan/PairedComputers.tsx:177
 msgid "Profiles you send between paired computers carry their mod files, whatever the source."
 msgstr "Profiles you send between paired computers carry their mod files, whatever the source."
 
@@ -6945,7 +6945,7 @@ msgid "Results"
 msgstr "Results"
 
 #: src/mods/ModMenu.tsx:169
-#: src/mods/Sidebar.tsx:462
+#: src/mods/Sidebar.tsx:463
 msgid "Show skipped update"
 msgstr "Show skipped update"
 
@@ -7261,8 +7261,8 @@ msgstr "Not offered ({0})"
 msgid "Check interval"
 msgstr "Check interval"
 
-#: src/lan/PairedComputers.tsx:97
-#: src/lan/PairedComputers.tsx:179
+#: src/lan/PairedComputers.tsx:99
+#: src/lan/PairedComputers.tsx:181
 msgid "Enter code"
 msgstr "Enter code"
 
@@ -7396,10 +7396,10 @@ msgstr "·"
 #: src/mods/problemFix/MissingFix.tsx:43
 #: src/mods/SelectionBar.tsx:142
 #: src/mods/SelectionBarDialogs.tsx:81
-#: src/mods/Sidebar.tsx:503
+#: src/mods/Sidebar.tsx:504
 #: src/mods/TrackedNotInProfile.tsx:93
 #: src/mods/typedConfig/Widgets.tsx:158
-#: src/profiles/LaunchPresetTemplatesDialog.tsx:62
+#: src/profiles/LaunchPresetTemplatesDialog.tsx:63
 msgid "Add"
 msgstr "Add"
 
@@ -7661,7 +7661,7 @@ msgstr "Signed out of Nexus"
 
 #. placeholder {0}: mod.name
 #: src/mods/ModMenu.tsx:380
-#: src/mods/Sidebar.tsx:501
+#: src/mods/Sidebar.tsx:502
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
 
@@ -7675,7 +7675,7 @@ msgid "Restart now"
 msgstr "Restart now"
 
 #. placeholder {0}: localId(mod.contentPackFor)
-#: src/mods/Sidebar.tsx:347
+#: src/mods/Sidebar.tsx:348
 msgid "Content pack for {0}"
 msgstr "Content pack for {0}"
 
@@ -8033,7 +8033,7 @@ msgstr "{0}: in Mortar"
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
-#: src/mods/ModCards.tsx:451
+#: src/mods/ModCards.tsx:452
 #: src/mods/ModList.tsx:382
 msgid "Untagged"
 msgstr "Untagged"
@@ -8339,7 +8339,7 @@ msgstr "The backup holds up to {0}: the profile, its settings and config files, 
 msgid "Set default preset…"
 msgstr "Set default preset…"
 
-#: src/mods/ModCards.tsx:454
+#: src/mods/ModCards.tsx:455
 #: src/mods/ModList.tsx:385
 msgid "Mods with problems"
 msgstr "Mods with problems"
@@ -8369,8 +8369,8 @@ msgstr "Remove {0}?"
 msgid "Could not read the window state"
 msgstr "Could not read the window state"
 
-#: src/mods/CategoryEditor.tsx:211
-#: src/mods/ModCards.tsx:449
+#: src/mods/CategoryEditor.tsx:212
+#: src/mods/ModCards.tsx:450
 #: src/mods/ModList.tsx:380
 #: src/mods/SelectionBarDialogs.tsx:125
 msgid "Uncategorised"
@@ -8397,7 +8397,7 @@ msgstr "Nexus is throttling requests until the window resets."
 msgid "From the downloads folder…"
 msgstr "From the downloads folder…"
 
-#: src/lan/PairedComputers.tsx:105
+#: src/lan/PairedComputers.tsx:107
 msgid "No Mortar computers found nearby."
 msgstr "No Mortar computers found nearby."
 
@@ -9411,7 +9411,7 @@ msgstr "Whole file"
 msgid "Updates, missing dependencies and links from Nexus land here."
 msgstr "Updates, missing dependencies and links from Nexus land here."
 
-#: src/mods/Sidebar.tsx:475
+#: src/mods/Sidebar.tsx:476
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
@@ -9474,7 +9474,7 @@ msgid "Report it so it can be fixed."
 msgstr "Report it so it can be fixed."
 
 #: src/mods/listRows.ts:119
-#: src/mods/Sidebar.tsx:540
+#: src/mods/Sidebar.tsx:541
 #: src/settings/sections/Accounts.tsx:17
 msgid "GitHub"
 msgstr "GitHub"
@@ -9640,11 +9640,11 @@ msgstr "Auto-enable requirements"
 
 #: src/mods/AuthorDialog.tsx:133
 #: src/mods/listRows.ts:134
-#: src/mods/ModCards.tsx:456
+#: src/mods/ModCards.tsx:457
 #: src/mods/ModDependencyTree.tsx:101
 #: src/mods/ModList.tsx:387
-#: src/mods/Sidebar.tsx:316
-#: src/mods/Sidebar.tsx:329
+#: src/mods/Sidebar.tsx:317
+#: src/mods/Sidebar.tsx:330
 #: src/profiles/CompareBulkBody.tsx:128
 #: src/profiles/ProfilesPage.tsx:273
 #: src/profiles/ProfilesPage.tsx:282
@@ -9663,7 +9663,7 @@ msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
 #: src/mods/ModDetail.tsx:245
-#: src/mods/Sidebar.tsx:561
+#: src/mods/Sidebar.tsx:562
 msgid "In the same download"
 msgstr "In the same download"
 
@@ -10084,7 +10084,7 @@ msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
 msgid "It encountered an error."
 msgstr "It encountered an error."
 
-#: src/mods/CategoryEditor.tsx:130
+#: src/mods/CategoryEditor.tsx:131
 msgid "Add one to group your mods your own way."
 msgstr "Add one to group your mods your own way."
 
@@ -10160,11 +10160,11 @@ msgstr "Done ({0}): {1}"
 #. placeholder {0}: pendingDelete ?? ''
 #: src/bundles/BundlesSection.tsx:146
 #: src/game/ProfileMenuItems.tsx:83
-#: src/mods/CategoryEditor.tsx:167
+#: src/mods/CategoryEditor.tsx:168
 #: src/mods/ConfigPresets.tsx:155
 #: src/mods/problemFixButtons.tsx:202
 #: src/profiles/LaunchPresetsBlock.tsx:195
-#: src/profiles/LaunchPresetTemplatesDialog.tsx:73
+#: src/profiles/LaunchPresetTemplatesDialog.tsx:74
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
@@ -10173,7 +10173,7 @@ msgid "Beach farm"
 msgstr "Beach farm"
 
 #: src/bundles/BundlesSection.tsx:130
-#: src/mods/CategoryEditor.tsx:161
+#: src/mods/CategoryEditor.tsx:162
 #: src/mods/ConfigPresets.tsx:134
 #: src/mods/SelectionBar.tsx:38
 #: src/profiles/EditProfileDialog.tsx:466
@@ -10633,7 +10633,7 @@ msgstr "Tag"
 msgid "Diagnostics"
 msgstr "Diagnostics"
 
-#: src/mods/CategoryEditor.tsx:149
+#: src/mods/CategoryEditor.tsx:150
 msgid "Add category"
 msgstr "Add category"
 
@@ -10682,7 +10682,7 @@ msgstr "{count, plural, one {# update is available} other {# updates are availab
 msgid "Restore {label} to {when}?"
 msgstr "Restore {label} to {when}?"
 
-#: src/profiles/LaunchPresetTemplatesDialog.tsx:54
+#: src/profiles/LaunchPresetTemplatesDialog.tsx:55
 msgid "No templates yet. Use Save as template on a launch preset."
 msgstr "No templates yet. Use Save as template on a launch preset."
 
@@ -10737,7 +10737,7 @@ msgstr "No archives to add"
 msgid "Adult content"
 msgstr "Adult content"
 
-#: src/profiles/LaunchPresetTemplatesDialog.tsx:47
+#: src/profiles/LaunchPresetTemplatesDialog.tsx:48
 msgid "Launch preset templates"
 msgstr "Launch preset templates"
 
@@ -10746,7 +10746,7 @@ msgstr "Launch preset templates"
 msgid "Downloads resume {0}."
 msgstr "Downloads resume {0}."
 
-#: src/mods/CategoryEditor.tsx:168
+#: src/mods/CategoryEditor.tsx:169
 msgid "Mods in this category will move to Uncategorised."
 msgstr "Mods in this category will move to Uncategorised."
 
@@ -10773,7 +10773,7 @@ msgstr "Navigation"
 msgid "Set {0} to {1}"
 msgstr "Set {0} to {1}"
 
-#: src/lan/PairedComputers.tsx:100
+#: src/lan/PairedComputers.tsx:102
 msgid "Pick the computer showing the code, then type it."
 msgstr "Pick the computer showing the code, then type it."
 
@@ -10807,11 +10807,11 @@ msgstr "Could not roll back {0}"
 msgid "Play {playName}"
 msgstr "Play {playName}"
 
-#: src/profiles/LaunchPresetTemplatesDialog.tsx:50
+#: src/profiles/LaunchPresetTemplatesDialog.tsx:51
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Hero.tsx:342
+#: src/game/Hero.tsx:341
 #: src/game/ProfileWorkspace.tsx:105
 msgid "Saves"
 msgstr "Saves"
@@ -11117,7 +11117,7 @@ msgstr "Switch to Notes"
 msgid "Update in all profiles ({n})"
 msgstr "Update in all profiles ({n})"
 
-#: src/lan/PairedComputers.tsx:192
+#: src/lan/PairedComputers.tsx:194
 msgid "Unpair"
 msgstr "Unpair"
 
@@ -11523,7 +11523,7 @@ msgstr "On the other computer, choose Enter code and type this. It works once, f
 msgid "Restored {0} to before that change"
 msgstr "Restored {0} to before that change"
 
-#: src/mods/Sidebar.tsx:311
+#: src/mods/Sidebar.tsx:312
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
 
@@ -11544,7 +11544,7 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 
 #: src/firstrun/GameSetup.tsx:159
 #: src/mods/listRows.ts:118
-#: src/mods/Sidebar.tsx:539
+#: src/mods/Sidebar.tsx:540
 #: src/shell/NexusAccount.tsx:27
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
@@ -11795,8 +11795,8 @@ msgstr "Welcome to Mortar"
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
-#: src/mods/Sidebar.tsx:475
-#: src/mods/Sidebar.tsx:477
+#: src/mods/Sidebar.tsx:476
+#: src/mods/Sidebar.tsx:478
 msgid "Mod id"
 msgstr "Mod id"
 
@@ -11925,7 +11925,7 @@ msgstr "GOG via Minigalaxy"
 msgid "Plugin reported an error"
 msgstr "Plugin reported an error"
 
-#: src/profiles/LaunchPresetTemplatesDialog.tsx:74
+#: src/profiles/LaunchPresetTemplatesDialog.tsx:75
 msgid "This template will be deleted. Presets already copied into profiles stay."
 msgstr "This template will be deleted. Presets already copied into profiles stay."
 
@@ -12377,7 +12377,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/profiles/CompareDialog.tsx:163
 #: src/profiles/HealthDialog.tsx:255
 #: src/profiles/HistoryPanel.tsx:125
-#: src/profiles/LaunchPresetTemplatesDialog.tsx:69
+#: src/profiles/LaunchPresetTemplatesDialog.tsx:70
 #: src/saves/BackupsDialog.tsx:178
 #: src/settings/sections/About.tsx:99
 #: src/settings/sections/AboutDiagnostics.tsx:219
@@ -12397,7 +12397,7 @@ msgstr "Close"
 msgid "Link"
 msgstr "Link"
 
-#: src/mods/Sidebar.tsx:471
+#: src/mods/Sidebar.tsx:472
 msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
 
@@ -12493,7 +12493,7 @@ msgid "No saves yet"
 msgstr "No saves yet"
 
 #: src/mods/listRows.ts:120
-#: src/mods/Sidebar.tsx:541
+#: src/mods/Sidebar.tsx:542
 msgid "Thunderstore"
 msgstr "Thunderstore"
 
