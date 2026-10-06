@@ -89,11 +89,24 @@ func TestAnalyze(t *testing.T) {
 		// BepInEx's Unity log listener copies an exception Unity caught, such as one thrown in a plugin's Awake, with Unity's
 		// own stack format; Player.log may be unreadable, so LogOutput.log alone has to name the plugin, and once.
 		{"plugin exception through the Unity log", awake, "", []Finding{
-			fnd(KindUnityException, "MortarMatrix", "InvalidOperationException: matrix probe failed in Awake on purpose", 2, "LogOutput.log"),
+			fnd(KindUnityException, "Matrix throw 1.0.0", "InvalidOperationException: matrix probe failed in Awake on purpose", 2, "LogOutput.log"),
 		}},
 		{"the same exception in both logs", awake, "InvalidOperationException: matrix probe failed in Awake on purpose\n" +
 			"  at MortarMatrix.MatrixProbe.Awake () [0x0007b] in <6f3c2a1e5b7d4c8a9e0f1b2c3d4e5f60>:0 \n", []Finding{
-			fnd(KindUnityException, "MortarMatrix", "InvalidOperationException: matrix probe failed in Awake on purpose", 2, "LogOutput.log"),
+			fnd(KindUnityException, "Matrix throw 1.0.0", "InvalidOperationException: matrix probe failed in Awake on purpose", 2, "LogOutput.log"),
+		}},
+		{"two plugins share a namespace: the one loading threw", "", "[Info   :   BepInEx] Loading [Matrix quit 1.0.0]\n" +
+			"[Info   :Matrix quit] matrix quit cfg=default\n" +
+			"[Info   :   BepInEx] Loading [Matrix throw 1.0.0]\n" +
+			"[Info   :Matrix throw] matrix throw cfg=default\n" +
+			"InvalidOperationException: matrix probe failed in Awake on purpose\n" +
+			"  at MortarMatrix.MatrixProbe.Awake () [0x000cd] in <c3eb0530becb4266ab99bf2080f3d2c0>:0 \n" +
+			"UnityEngine.GameObject:Internal_AddComponentWithType(GameObject, Type)\n" +
+			"UnityEngine.GameObject:AddComponent(Type)\n" +
+			"BepInEx.Bootstrap.Chainloader:Start()\n" +
+			"UnityEngine.Application:.cctor()\n" +
+			"UnityEngine.XR.Management.XRGeneralSettings:Awake()\n", []Finding{
+			fnd(KindUnityException, "Matrix throw 1.0.0", "InvalidOperationException: matrix probe failed in Awake on purpose", 5, "Player.log"),
 		}},
 		{"nothing wrong", "[Info   :   BepInEx] Chainloader started\n", "Loading player data\n", nil},
 	}

@@ -57,6 +57,9 @@ var (
 	// unityFrame is a frame of the stack BepInEx's Unity log listener writes after "Stack trace:": Unity's own format,
 	// "Namespace.Type.Method (args) (at <module>:0)", or "Type:Method(args)" for engine frames.
 	unityFrame = regexp.MustCompile(`^([\w.]+?)[.:][^.\s(:]+(?:<[^>]*>)? ?\(`)
+	loading    = regexp.MustCompile(`^\[Info\s*:\s*BepInEx\] Loading \[([^\]]+)\]`)
+	// chainloaderStart is the frame of an exception thrown while the chainloader adds a plugin, in Awake.
+	chainloaderStart = regexp.MustCompile(`BepInEx\.Bootstrap\.Chainloader[.:]Start ?\(`)
 )
 
 // loaderSources are the log sources that are BepInEx, Harmony or Unity rather than a plugin speaking for itself.
@@ -88,24 +91,32 @@ func Analyze(logOutput, playerLog string) []Finding {
 			out = append(out, f)
 		}
 	}
+	logged := map[string]bool{}
 	outLines := strings.Split(logOutput, "\n")
 	for i, line := range outLines {
 		f, ok := classify(strings.TrimRight(line, "\r"))
 		if !ok {
-			f, ok = unityLogException(line, outLines[i+1:])
+			f, ok = unityLogException(line, outLines[:i], outLines[i+1:])
 		}
 		if ok && f.Kind != "" {
 			f.Line, f.Source = i+1, "LogOutput.log"
+			if f.Kind == KindUnityException {
+				logged[f.Message] = true
+			}
 			add(f)
 		}
 	}
 	lines := strings.Split(playerLog, "\n")
 	for i, line := range lines {
 		m := unityException.FindStringSubmatch(strings.TrimRight(line, "\r"))
-		if m == nil {
+		if m == nil || logged[m[1]+": "+m[2]] {
 			continue
 		}
-		if plugin := blamedPlugin(lines[i+1:], stackFrame); plugin != "" {
+		plugin := loadingPlugin(lines[:i], lines[i+1:])
+		if plugin == "" {
+			plugin = blamedPlugin(lines[i+1:], stackFrame)
+		}
+		if plugin != "" {
 			add(Finding{Kind: KindUnityException, Plugin: plugin, Message: m[1] + ": " + m[2], Line: i + 1, Source: "Player.log"})
 		}
 	}
@@ -184,7 +195,7 @@ func Unclassified(logOutput string) int {
 
 // unityLogException reads an exception Unity caught (one thrown in a plugin's Awake or Update) as BepInEx's Unity log
 // listener writes it: the exception line, "Stack trace:", then Unity's frames, which blame the first mod namespace.
-func unityLogException(line string, rest []string) (Finding, bool) {
+func unityLogException(line string, before, rest []string) (Finding, bool) {
 	m := logLine.FindStringSubmatch(strings.TrimRight(line, "\r"))
 	if m == nil || m[1] != "Error" || strings.TrimSpace(m[2]) != "Unity Log" || len(rest) == 0 ||
 		strings.TrimSpace(rest[0]) != "Stack trace:" {
@@ -194,11 +205,39 @@ func unityLogException(line string, rest []string) (Finding, bool) {
 	if u == nil {
 		return Finding{}, false
 	}
-	plugin := blamedPlugin(rest[1:], unityFrame)
+	plugin := loadingPlugin(before, rest[1:])
+	if plugin == "" {
+		plugin = blamedPlugin(rest[1:], unityFrame)
+	}
 	if plugin == "" {
 		return Finding{}, false
 	}
 	return Finding{Kind: KindUnityException, Plugin: plugin, Message: u[1] + ": " + u[2]}, true
+}
+
+// loadingPlugin is the plugin, as "Name Version", the chainloader last logged loading, when the exception's stack
+// runs through Chainloader.Start: the plugin threw in its own Awake, and packages can share a namespace, so the
+// stack's namespace alone may not say which one.
+func loadingPlugin(before, stack []string) string {
+	inStart := false
+	for _, l := range stack {
+		if strings.TrimSpace(l) == "" {
+			break
+		}
+		if chainloaderStart.MatchString(l) {
+			inStart = true
+			break
+		}
+	}
+	if !inStart {
+		return ""
+	}
+	for _, l := range slices.Backward(before) {
+		if m := loading.FindStringSubmatch(strings.TrimRight(l, "\r")); m != nil {
+			return m[1]
+		}
+	}
+	return ""
 }
 
 // blamedPlugin is the root namespace of the first stack frame, read with frame, that is not game, Unity or loader code.
