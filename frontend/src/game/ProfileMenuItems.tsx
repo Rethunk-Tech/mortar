@@ -27,6 +27,7 @@ import {
   Capabilities as ShortcutCapabilities,
   Exists as ShortcutExists,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/shortcut/service.ts'
+import { AddResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/steam/models.ts'
 import { bundleApplied } from '../bundles/applied.ts'
 import { ApplyBundleDialog } from '../bundles/dialogs.tsx'
 import { SendDialog } from '../lan/SendDialog.tsx'
@@ -161,12 +162,17 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
             const g = currentGame
             if (g) {
               AddToSteam(g.id, g.name, profile.id, profile.name)
-                .then((added) =>
-                  useToasts.getState().push({
-                    kind: 'success',
-                    title: added ? t`Added to Steam` : t`Already in Steam`,
-                    body: t`It shows in your Steam library the next time Steam starts.`,
-                  }),
+                .then((result) =>
+                  useToasts.getState().push(
+                    result === AddResult.Unchanged
+                      ? { kind: 'success', title: t`Already in Steam` }
+                      : {
+                          kind: 'success',
+                          title:
+                            result === AddResult.Updated ? t`Updated in Steam` : t`Added to Steam`,
+                          body: t`It shows in your Steam library the next time Steam starts.`,
+                        },
+                  ),
                 )
                 .catch(reportError(t`Could not add it to Steam`))
             }

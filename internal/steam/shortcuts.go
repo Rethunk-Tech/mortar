@@ -192,66 +192,74 @@ func field(n vdfNode, key string) string {
 	return ""
 }
 
+// AddResult is what adding a shortcut did to the library.
+type AddResult string
+
+const (
+	// Added is a new entry.
+	Added AddResult = "added"
+	// Updated is an existing entry for the same shortcut brought up to date.
+	Updated AddResult = "updated"
+	// Unchanged is an existing entry that was already current.
+	Unchanged AddResult = "unchanged"
+)
+
 // addShortcut appends sc to a shortcuts.vdf body (empty for a new file), or updates the entry that already is sc in
-// place. It returns the entry's appid, which an updated entry keeps so Steam keeps its playtime, and whether the body
-// changed.
-func addShortcut(body []byte, sc Shortcut) ([]byte, uint32, bool, error) {
+// place. It returns the entry's appid, which an updated entry keeps so Steam keeps its playtime.
+func addShortcut(body []byte, sc Shortcut) ([]byte, uint32, AddResult, error) {
 	root := []vdfNode{{Kind: vdfMap, Key: "shortcuts"}}
 	if len(body) > 0 {
 		var err error
 		if root, err = readVDFMap(bufio.NewReader(bytes.NewReader(body))); err != nil {
-			return nil, 0, false, fmt.Errorf("read shortcuts.vdf: %w", err)
+			return nil, 0, "", fmt.Errorf("read shortcuts.vdf: %w", err)
 		}
 	}
 	if len(root) != 1 || root[0].Kind != vdfMap || root[0].Key != "shortcuts" {
-		return nil, 0, false, errors.New("shortcuts.vdf has no shortcuts list")
+		return nil, 0, "", errors.New("shortcuts.vdf has no shortcuts list")
 	}
+	res := Updated
 	i := slices.IndexFunc(root[0].Child, sc.is)
 	if i >= 0 && !sc.update(&root[0].Child[i]) {
-		return body, appIDOf(root[0].Child[i]), false, nil
+		return body, appIDOf(root[0].Child[i]), Unchanged, nil
 	}
 	if i < 0 {
+		res = Added
 		i = len(root[0].Child)
 		root[0].Child = append(root[0].Child, sc.node(i))
 	}
 	var buf bytes.Buffer
 	writeVDFMap(&buf, root)
-	return buf.Bytes(), appIDOf(root[0].Child[i]), true, nil
+	return buf.Bytes(), appIDOf(root[0].Child[i]), res, nil
 }
 
 // AddShortcut adds a non-Steam game to the current account's library, or updates the entry that already is sc, and
-// writes its art either way. Steam rewrites shortcuts.vdf on exit, so the caller makes sure Steam is closed. It
-// reports whether the library changed (false when the same entry was already there).
-func (s Steam) AddShortcut(sc Shortcut) (bool, error) {
+// writes its art either way. Steam rewrites shortcuts.vdf on exit, so the caller makes sure Steam is closed.
+func (s Steam) AddShortcut(sc Shortcut) (AddResult, error) {
 	dir, err := s.userConfigDir()
 	if err != nil {
-		return false, err
+		return "", err
 	}
 	path := filepath.Join(dir, "shortcuts.vdf")
 	body, err := fsx.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) && !errors.Is(err, io.EOF) {
-		return false, err
+		return "", err
 	}
-	next, appID, changed, err := addShortcut(body, sc)
+	next, appID, res, err := addShortcut(body, sc)
 	if err != nil {
-		return false, err
+		return "", err
 	}
-	if !changed {
-		return false, writeGrid(dir, appID, sc.Cover)
+	if res != Unchanged {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
+			return "", err
+		}
+		if err := backupBeforeEdit(path, next, 0o600); err != nil {
+			return "", err
+		}
+		if err := datadir.WriteFile(path, next, 0o600); err != nil {
+			return "", err
+		}
 	}
-	if err := os.MkdirAll(dir, 0o750); err != nil {
-		return false, err
-	}
-	if err := backupBeforeEdit(path, next, 0o600); err != nil {
-		return false, err
-	}
-	if err := datadir.WriteFile(path, next, 0o600); err != nil {
-		return false, err
-	}
-	if err := writeGrid(dir, appID, sc.Cover); err != nil {
-		return true, err
-	}
-	return true, nil
+	return res, writeGrid(dir, appID, sc.Cover)
 }
 
 // removeShortcuts drops every entry of a shortcuts.vdf body that match selects and renumbers the rest, since Steam

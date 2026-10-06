@@ -3,6 +3,7 @@ package control
 import (
 	"fmt"
 
+	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -14,8 +15,7 @@ type ShortcutResult struct {
 
 // SteamShortcutResult is what profile.steam returns.
 type SteamShortcutResult struct {
-	Added   bool `json:"added"`
-	Already bool `json:"already"`
+	Result steam.AddResult `json:"result"`
 }
 
 func (s *Services) gameName(id string) (string, error) {
@@ -68,14 +68,11 @@ func (s *Services) profileSteam(gameID, profileID string) (SteamShortcutResult, 
 	if err != nil {
 		return SteamShortcutResult{}, err
 	}
-	added, err := s.Plays.AddToSteam(gameID, gameName, prof.ID, prof.Name)
+	res, err := s.Plays.AddToSteam(gameID, gameName, prof.ID, prof.Name)
 	if err != nil {
 		return SteamShortcutResult{}, err
 	}
-	if added {
-		return SteamShortcutResult{Added: true}, nil
-	}
-	return SteamShortcutResult{Already: true}, nil
+	return SteamShortcutResult{Result: res}, nil
 }
 
 // SteamLaunchOptionResult is the current or updated Steam launch options line.

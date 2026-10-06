@@ -394,7 +394,7 @@ msgstr "Log level"
 msgid "Kept at this version ({0})"
 msgstr "Kept at this version ({0})"
 
-#: src/game/ProfileMenuItems.tsx:355
+#: src/game/ProfileMenuItems.tsx:361
 #: src/profiles/HistoryPanel.tsx:51
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:79
@@ -593,7 +593,7 @@ msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural,
 msgid "Startup and window"
 msgstr "Startup and window"
 
-#: src/game/ProfileMenuItems.tsx:171
+#: src/game/ProfileMenuItems.tsx:177
 msgid "Could not add it to Steam"
 msgstr "Could not add it to Steam"
 
@@ -762,7 +762,7 @@ msgstr "{0} was changed on {1} and here"
 msgid "More…"
 msgstr "More…"
 
-#: src/game/ProfileMenuItems.tsx:414
+#: src/game/ProfileMenuItems.tsx:420
 msgid "Add a bundle…"
 msgstr "Add a bundle…"
 
@@ -770,7 +770,7 @@ msgstr "Add a bundle…"
 msgid "How timestamps are shown"
 msgstr "How timestamps are shown"
 
-#: src/game/ProfileMenuItems.tsx:140
+#: src/game/ProfileMenuItems.tsx:141
 msgid "Remove the shortcut"
 msgstr "Remove the shortcut"
 
@@ -1082,7 +1082,7 @@ msgstr "Something changed this profile's mods folder without Mortar, by adding, 
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
-#: src/game/ProfileMenuItems.tsx:167
+#: src/game/ProfileMenuItems.tsx:168
 msgid "Already in Steam"
 msgstr "Already in Steam"
 
@@ -1353,7 +1353,7 @@ msgstr "No matches"
 msgid "Add a bundle to {profileName}"
 msgstr "Add a bundle to {profileName}"
 
-#: src/game/ProfileMenuItems.tsx:258
+#: src/game/ProfileMenuItems.tsx:264
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
@@ -2530,7 +2530,7 @@ msgid "Install together"
 msgstr "Install together"
 
 #. placeholder {0}: status.version
-#: src/loader/store.ts:56
+#: src/loader/store.ts:61
 msgid "{name} {0} is installed"
 msgstr "{name} {0} is installed"
 
@@ -2621,7 +2621,7 @@ msgstr "Medium"
 msgid "Delete permanently"
 msgstr "Delete permanently"
 
-#: src/game/ProfileMenuItems.tsx:187
+#: src/game/ProfileMenuItems.tsx:193
 #: src/profiles/HealthDialog.tsx:252
 msgid "Check this profile"
 msgstr "Check this profile"
@@ -3102,7 +3102,7 @@ msgstr "Search GitHub releases"
 msgid "Mortar doesn't know where to get {id}"
 msgstr "Mortar doesn't know where to get {id}"
 
-#: src/game/ProfileMenuItems.tsx:168
+#: src/game/ProfileMenuItems.tsx:173
 msgid "It shows in your Steam library the next time Steam starts."
 msgstr "It shows in your Steam library the next time Steam starts."
 
@@ -3477,8 +3477,8 @@ msgid "Custom categories"
 msgstr "Custom categories"
 
 #: src/bundles/BundlesSection.tsx:148
-#: src/game/ProfileMenuItems.tsx:85
-#: src/game/ProfileMenuItems.tsx:428
+#: src/game/ProfileMenuItems.tsx:86
+#: src/game/ProfileMenuItems.tsx:434
 #: src/mods/CategoryEditor.tsx:170
 #: src/mods/OldFilesCallouts.tsx:103
 #: src/mods/problemFixButtons.tsx:201
@@ -3971,7 +3971,7 @@ msgstr "Downloads paused"
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
-#: src/game/ProfileMenuItems.tsx:207
+#: src/game/ProfileMenuItems.tsx:213
 #: src/lan/SendDialog.tsx:106
 msgid "Send to…"
 msgstr "Send to…"
@@ -4474,7 +4474,7 @@ msgstr "{name} has no file Mortar can use in place of the one shared"
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
-#: src/game/ProfileMenuItems.tsx:167
+#: src/game/ProfileMenuItems.tsx:172
 msgid "Added to Steam"
 msgstr "Added to Steam"
 
@@ -4486,7 +4486,7 @@ msgstr "Enter text to search stored runs."
 msgid "No backups to delete"
 msgstr "No backups to delete"
 
-#: src/game/ProfileMenuItems.tsx:365
+#: src/game/ProfileMenuItems.tsx:371
 #: src/profiles/LaunchPresetsBlock.tsx:52
 msgid "Duplicate"
 msgstr "Duplicate"
@@ -6552,7 +6552,7 @@ msgstr "Console log cap"
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
-#: src/game/ProfileMenuItems.tsx:147
+#: src/game/ProfileMenuItems.tsx:148
 msgid "Shortcut removed"
 msgstr "Shortcut removed"
 
@@ -6565,7 +6565,7 @@ msgstr "Delete {0} permanently"
 msgid "Could not reach Nexus"
 msgstr "Could not reach Nexus"
 
-#: src/game/ProfileMenuItems.tsx:150
+#: src/game/ProfileMenuItems.tsx:151
 msgid "Could not remove the shortcut"
 msgstr "Could not remove the shortcut"
 
@@ -6630,7 +6630,7 @@ msgstr "New group"
 msgid "Unhide {0}?"
 msgstr "Unhide {0}?"
 
-#: src/game/ProfileMenuItems.tsx:84
+#: src/game/ProfileMenuItems.tsx:85
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
@@ -6677,7 +6677,7 @@ msgstr "Regenerate token"
 msgid "New profile from file"
 msgstr "New profile from file"
 
-#: src/game/ProfileMenuItems.tsx:131
+#: src/game/ProfileMenuItems.tsx:132
 msgid "Shortcut added"
 msgstr "Shortcut added"
 
@@ -7127,7 +7127,7 @@ msgstr "Share profile"
 msgid "Refresh"
 msgstr "Refresh"
 
-#: src/game/ProfileMenuItems.tsx:243
+#: src/game/ProfileMenuItems.tsx:249
 msgid "Choose cover image"
 msgstr "Choose cover image"
 
@@ -7236,7 +7236,7 @@ msgstr "No update checks, and it can't go in a share link."
 msgid "This pack has files that always install."
 msgstr "This pack has files that always install."
 
-#: src/game/ProfileMenuItems.tsx:393
+#: src/game/ProfileMenuItems.tsx:399
 msgid "Match a friend's profile…"
 msgstr "Match a friend's profile…"
 
@@ -7373,7 +7373,7 @@ msgstr "Could not skip the update for {0}"
 msgid "Nexus mod {id}"
 msgstr "Nexus mod {id}"
 
-#: src/game/ProfileMenuItems.tsx:122
+#: src/game/ProfileMenuItems.tsx:123
 msgid "Add a shortcut that plays this profile"
 msgstr "Add a shortcut that plays this profile"
 
@@ -7470,7 +7470,7 @@ msgstr "How to share"
 msgid "No entries match."
 msgstr "No entries match."
 
-#: src/game/ProfileMenuItems.tsx:252
+#: src/game/ProfileMenuItems.tsx:258
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
@@ -9397,11 +9397,15 @@ msgstr "{0} of {1} · {2}/s"
 msgid "Preview"
 msgstr "Preview"
 
+#: src/game/ProfileMenuItems.tsx:172
+msgid "Updated in Steam"
+msgstr "Updated in Steam"
+
 #: src/mods/parts.tsx:117
 msgid "Remove anyway"
 msgstr "Remove anyway"
 
-#: src/game/ProfileMenuItems.tsx:383
+#: src/game/ProfileMenuItems.tsx:389
 msgid "Show in sidebar"
 msgstr "Show in sidebar"
 
@@ -9777,7 +9781,7 @@ msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgid "Combined"
 msgstr "Combined"
 
-#: src/game/ProfileMenuItems.tsx:374
+#: src/game/ProfileMenuItems.tsx:380
 msgid "Export profile…"
 msgstr "Export profile…"
 
@@ -10181,7 +10185,7 @@ msgstr "Done ({0}): {1}"
 #. placeholder {0}: drift.folder
 #. placeholder {0}: pendingDelete ?? ''
 #: src/bundles/BundlesSection.tsx:146
-#: src/game/ProfileMenuItems.tsx:83
+#: src/game/ProfileMenuItems.tsx:84
 #: src/mods/CategoryEditor.tsx:168
 #: src/mods/ConfigPresets.tsx:155
 #: src/mods/problemFixButtons.tsx:204
@@ -10235,7 +10239,7 @@ msgstr "the connection was refused"
 msgid "Removed the tag {detail} from {name}"
 msgstr "Removed the tag {detail} from {name}"
 
-#: src/game/ProfileMenuItems.tsx:383
+#: src/game/ProfileMenuItems.tsx:389
 msgid "Hide from sidebar"
 msgstr "Hide from sidebar"
 
@@ -10946,7 +10950,7 @@ msgstr "Import a profile"
 msgid "Move data folder"
 msgstr "Move data folder"
 
-#: src/game/ProfileMenuItems.tsx:245
+#: src/game/ProfileMenuItems.tsx:251
 #: src/profiles/EditProfileDialog.tsx:427
 msgid "Could not use that image"
 msgstr "Could not use that image"
@@ -11270,7 +11274,7 @@ msgid "Could not remove the mod from the bundle"
 msgstr "Could not remove the mod from the bundle"
 
 #. placeholder {0}: gameInfo(game)?.loader ?? ''
-#: src/loader/store.ts:59
+#: src/loader/store.ts:64
 msgid "Could not install {0}"
 msgstr "Could not install {0}"
 
@@ -11731,7 +11735,7 @@ msgid "Nexus page"
 msgstr "Nexus page"
 
 #: src/console/PerformancePanelParts.tsx:64
-#: src/game/ProfileMenuItems.tsx:402
+#: src/game/ProfileMenuItems.tsx:408
 msgid "Compare with…"
 msgstr "Compare with…"
 
@@ -11925,7 +11929,7 @@ msgstr "Fall"
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
-#: src/game/ProfileMenuItems.tsx:158
+#: src/game/ProfileMenuItems.tsx:159
 msgid "Add this profile to Steam"
 msgstr "Add this profile to Steam"
 
@@ -12247,7 +12251,7 @@ msgstr "Take over"
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
-#: src/game/ProfileMenuItems.tsx:133
+#: src/game/ProfileMenuItems.tsx:134
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
 
@@ -12666,7 +12670,7 @@ msgstr "Using your gh login"
 msgid "Share profiles on the local network"
 msgstr "Share profiles on the local network"
 
-#: src/game/ProfileMenuItems.tsx:209
+#: src/game/ProfileMenuItems.tsx:215
 msgid "Enable sharing nearby in Settings › General."
 msgstr "Enable sharing nearby in Settings › General."
 

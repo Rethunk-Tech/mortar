@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
 func TestProfileShortcutAndSteam(t *testing.T) {
@@ -22,7 +23,7 @@ func TestProfileShortcutAndSteam(t *testing.T) {
 	if r.code != 0 || !r.calls[0].params.Remove || !strings.Contains(r.out, "Removed") {
 		t.Fatalf("remove: %+v %q", r.calls[0], r.out)
 	}
-	r = invoke(t, map[string]any{"profile.steam": control.SteamShortcutResult{Added: true}},
+	r = invoke(t, map[string]any{"profile.steam": control.SteamShortcutResult{Result: steam.Added}},
 		"profile", "steam", "stardew", "Farm")
 	if r.code != 0 || r.calls[0].method != "profile.steam" || !strings.Contains(r.out, "Added") {
 		t.Fatalf("steam: %+v %q", r, r.out)
