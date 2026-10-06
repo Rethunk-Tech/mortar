@@ -33,11 +33,13 @@ import (
 
 const (
 	// ReleasesURL lists Mortar's releases. Published releases are immutable, so every signed manifest is its own
-	// components-<serial> release and the newest one is the current manifest.
+	// components-v2-<serial> release and the newest one is the current manifest.
 	ReleasesURL = "https://api.github.com/repos/Rethunk-Tech/mortar/releases?per_page=100"
-	tagPrefix   = "components-"
-	cacheName   = "components-manifest.json"
-	day         = 24 * time.Hour
+	// Released clients accept any manifest whose fields they recognise and ignore the rest, so a manifest in a changed
+	// schema goes under a new prefix (and cache name) that older clients never read.
+	tagPrefix = "components-v2-"
+	cacheName = "components-v2-manifest.json"
+	day       = 24 * time.Hour
 
 	maxManifest  = 8 << 20
 	maxSignature = 1 << 20

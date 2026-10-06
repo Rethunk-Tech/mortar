@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -88,10 +89,16 @@ func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
 	var server *httptest.Server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/releases" {
-			// Newest first, as GitHub lists them: an app release and a draft come before the newest manifest.
+			// Newest first, as GitHub lists them: an app release, a draft and an older schema's components-<serial> release
+			// come before the newest manifest.
 			_, _ = fmt.Fprintf(w, `[{"tag_name":"v9.9.9","assets":[{"name":"components.json","browser_download_url":"%[1]s/wrong"}]},
-				{"tag_name":"components-9","draft":true,"assets":[{"name":"components.json","browser_download_url":"%[1]s/wrong"}]},
-				{"tag_name":"components-2","assets":[{"name":"components.json","browser_download_url":"%[1]s/components.json"}]}]`, server.URL)
+				{"tag_name":"components-v2-9","draft":true,"assets":[{"name":"components.json","browser_download_url":"%[1]s/wrong"}]},
+				{"tag_name":"components-8","assets":[{"name":"components.json","browser_download_url":"%[1]s/wrong"}]},
+				{"tag_name":"components-v2-2","assets":[{"name":"components.json","browser_download_url":"%[1]s/components.json"}]}]`, server.URL)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/wrong") {
+			http.NotFound(w, r)
 			return
 		}
 		if r.URL.Path == "/components.json.sig" {
