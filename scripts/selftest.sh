@@ -938,8 +938,8 @@ PY
   if [ "$matrix" = run ]; then
     regress_bepinex_after "Regress LC"
     local failed
-    failed=$(grep -c "$(printf '\tFAIL\t')" "$ROOT/matrix.tsv")
-    matrix="$(grep -c "$(printf '\tPASS\t')" "$ROOT/matrix.tsv") PASS, $failed FAIL"
+    failed=$(grep -c "$(printf '\tFAIL\t')" "$ROOT/matrix.tsv" || true)
+    matrix="$(grep -c "$(printf '\tPASS\t')" "$ROOT/matrix.tsv" || true) PASS, $failed FAIL"
     [ "$failed" -eq 0 ] || failures+=("matrix: $failed rows failed; see $ROOT/matrix.tsv")
   fi
 
