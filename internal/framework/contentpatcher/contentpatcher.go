@@ -2086,7 +2086,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 		if len(pack.patches) > 0 {
 			sig, stable = packSig(im, pack, seen)
 		}
-		own := authoredPack{key: im.Key, name: im.Name, author: normalAuthor(im.Author), root: im.Folder}
+		own := authoredPack{key: im.Key, id: im.ModID().Fold(), name: im.Name, author: normalAuthor(im.Author), root: im.Folder, knows: knows}
 		if stable {
 			own.sig = sig
 		}
@@ -2444,8 +2444,9 @@ func normalAuthor(author string) string {
 
 // authoredPack is a pack's active Load and edit patches, kept while scanning so packs by one author can be compared.
 type authoredPack struct {
-	key, name, author, root string
-	patches                 []cpPatch
+	key, id, name, author, root string
+	patches                     []cpPatch
+	knows                       map[string]bool // the packs it depends on or names in a HasMod condition
 	// sig is the pack's packSig when its stamps can be trusted, so its footprints can be reused by the next check.
 	sig string
 }
@@ -2505,6 +2506,10 @@ func bundles(packs []authoredPack) map[string]framework.ModRef {
 		for i, small := range group {
 			for j, big := range group {
 				if i == j || len(small.patches) > len(big.patches) && len(targets[i]) > len(targets[j]) {
+					continue
+				}
+				// A pack built on the other layers over it on purpose, as an add-on does over its base.
+				if small.knows[big.id] || big.knows[small.id] {
 					continue
 				}
 				if _, bundledToo := out[big.key]; bundledToo || !subsetOf(targets[i], targets[j]) {

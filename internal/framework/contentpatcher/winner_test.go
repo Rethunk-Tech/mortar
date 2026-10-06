@@ -1,6 +1,7 @@
 package contentpatcher
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -88,5 +89,20 @@ func TestADependentPackWinsOverWhatItsDependencyBeat(t *testing.T) {
 	m[1].Dependencies = append(m[1].Dependencies, manifest.Dependency{UniqueID: m[0].UniqueID, Required: true})
 	if c := editConflict(t, m); !c.Cosmetic || !mod.Equal(c.WinnerID, m[1].ModID()) {
 		t.Fatalf("the pack that needs the winner loads after both: %+v", c)
+	}
+}
+
+func TestAnAddOnByOneAuthorStillClashesWithAStranger(t *testing.T) {
+	edit := func(author, value string) framework.Mod {
+		return packBy(t, author, `{"Changes":[{"Action":"EditData","Target":"Data/Objects","Entries":{"WalkKey":{"Name":"`+value+`"}}}]}`, nil)
+	}
+	base, child, other := edit("Walk", "Base"), edit("Walk", "Child"), edit("Someone Else", "Other")
+	child.Dependencies = []manifest.Dependency{{UniqueID: base.UniqueID, Required: true}}
+	got := check([]framework.Mod{base, child, other})
+	if slices.ContainsFunc(got.Redundant, func(r framework.Redundant) bool { return r.Kind == "bundled" }) {
+		t.Fatalf("an add-on that requires its base is not bundled in it: %+v", got.Redundant)
+	}
+	if len(got.AssetConflicts) != 1 || !slices.Contains(got.AssetConflicts[0].Keys, child.Key) || got.AssetConflicts[0].Cosmetic {
+		t.Fatalf("the add-on has no order against the stranger, so their clash stays unsettled: %+v", got.AssetConflicts)
 	}
 }
