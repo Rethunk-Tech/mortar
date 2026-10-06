@@ -48,7 +48,7 @@ ManifestDPIAware true
 
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
-# !define MUI_WELCOMEFINISHPAGE_BITMAP "resources\leftimage.bmp" #Include this to add a bitmap on the left side of the Welcome Page. Must be a size of 164x314
+!define MUI_WELCOMEFINISHPAGE_BITMAP "resources\welcome.bmp"
 !define MUI_FINISHPAGE_NOAUTOCLOSE # Wait on the INSTFILES page so the user can take a look into the details of the installation steps
 !define MUI_ABORTWARNING # This will warn the user if they exit from the installer.
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${PRODUCT_EXECUTABLE}"
@@ -68,6 +68,7 @@ ManifestDPIAware true
 #!finalize 'signtool --file "%1"'
 
 Name "${INFO_PRODUCTNAME}"
+BrandingText "${INFO_PRODUCTNAME} ${INFO_PRODUCTVERSION}"
 OutFile "..\..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
 !if "${WAILS_INSTALL_SCOPE}" == "user"
     InstallDir "$LOCALAPPDATA\Programs\${INFO_PRODUCTNAME}"
@@ -132,6 +133,12 @@ Section
     !insertmacro wails.associateCustomProtocols
     
     !insertmacro wails.writeUninstaller
+    # SHCTX follows wails.setShellContext, so these land beside the per-user or per-machine entry it wrote.
+    WriteRegStr SHCTX "${UNINST_KEY}" "URLInfoAbout" "https://mortar.rethunk.tech"
+    WriteRegStr SHCTX "${UNINST_KEY}" "HelpLink" "https://github.com/Rethunk-Tech/mortar/issues"
+    WriteRegStr SHCTX "${UNINST_KEY}" "URLUpdateInfo" "https://github.com/Rethunk-Tech/mortar/releases"
+    WriteRegDWORD SHCTX "${UNINST_KEY}" "NoModify" 1
+    WriteRegDWORD SHCTX "${UNINST_KEY}" "NoRepair" 1
 SectionEnd
 
 Section "uninstall" 
