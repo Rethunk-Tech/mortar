@@ -38,7 +38,8 @@ import { ScheduledStatus } from './ScheduledStatus.tsx'
 const noShrink = { flexShrink: 0 }
 
 // A GOG install found through Heroic or Minigalaxy carries that launcher's logo.
-const launcherOf = (store: string) => store.replace(/^gog-/, '')
+const GOG_VIA = /^gog-/
+const launcherOf = (store: string) => store.replace(GOG_VIA, '')
 
 function StoreLabel({ store }: { store: string }) {
   const { t } = useLingui()
