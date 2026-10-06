@@ -260,7 +260,7 @@ function ReinstallLoader({ game }: { game: string }) {
       }}
     >
       <DisabledReason
-        title={t`Stop the game to change SMAPI.`}
+        title={t`Stop the game before reinstalling.`}
         disabled={pending || installing || playing}
       >
         <Button
@@ -286,7 +286,7 @@ function ConsoleEmpty() {
       icon={<SquareTerminal size={40} aria-hidden={true} />}
       title={t`No game output yet`}
     >
-      {t`Play this profile and SMAPI's log shows here as it runs. Every run is kept.`}
+      {t`Play this profile and the game's log shows here as it runs. Every run is kept.`}
     </EmptyState>
   )
 }

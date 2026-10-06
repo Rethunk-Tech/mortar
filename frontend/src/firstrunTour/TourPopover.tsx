@@ -44,7 +44,7 @@ function useTourCopy(step: number, paletteKeys: string) {
       break
     case 'play':
       title = t`Play`
-      body = t`Launch the game with this profile's mods. Mortar applies your list before SMAPI starts.`
+      body = t`Launch the game with this profile's mods. Mortar applies your list before the game starts.`
       break
     case 'mods':
       title = t`Mods`

@@ -32,7 +32,7 @@ msgstr "Mod: {mod}"
 msgid "From r2modman on this computer"
 msgstr "From r2modman on this computer"
 
-#: src/profiles/OverrideRows.tsx:18
+#: src/profiles/OverrideRows.tsx:19
 msgid "Launch method"
 msgstr "Launch method"
 
@@ -157,6 +157,10 @@ msgstr "The saved change {name} from {when} is missing its config files"
 msgid "Unofficial build"
 msgstr "Unofficial build"
 
+#: src/firstrunTour/TourPopover.tsx:47
+msgid "Launch the game with this profile's mods. Mortar applies your list before the game starts."
+msgstr "Launch the game with this profile's mods. Mortar applies your list before the game starts."
+
 #: src/settings/sections/Updates.tsx:194
 msgid "Mod updates show on each profile's mod list."
 msgstr "Mod updates show on each profile's mod list."
@@ -222,7 +226,7 @@ msgstr "Make {name} win"
 msgid "Imported {0}: {1} to install"
 msgstr "Imported {0}: {1} to install"
 
-#: src/console/RunProblems.tsx:131
+#: src/console/RunProblems.tsx:133
 #: src/install/DropOverlay.tsx:102
 #: src/install/store.ts:334
 #: src/mods/DuplicateDialog.tsx:82
@@ -469,7 +473,7 @@ msgstr "Density"
 msgid "Mod store"
 msgstr "Mod store"
 
-#: src/settings/sections/DataStoreReport.tsx:288
+#: src/settings/sections/DataStoreReport.tsx:299
 msgid "Older copies of the same mod"
 msgstr "Older copies of the same mod"
 
@@ -721,7 +725,7 @@ msgstr "Type a command, for example help"
 msgid "{0} was changed on {1} and here"
 msgstr "{0} was changed on {1} and here"
 
-#: src/mods/Sidebar.tsx:547
+#: src/mods/Sidebar.tsx:551
 msgid "More…"
 msgstr "More…"
 
@@ -1378,10 +1382,6 @@ msgstr "Skip this version"
 msgid "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 msgstr "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 
-#: src/console/RunProblems.tsx:143
-msgid "Update SMAPI"
-msgstr "Update SMAPI"
-
 #: src/settings/sections/Appearance.tsx:153
 msgid "Solid"
 msgstr "Solid"
@@ -1503,7 +1503,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:370
+#: src/games/GameSelect.tsx:374
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -1515,6 +1515,10 @@ msgstr "Search results"
 #: src/share/ImportDialog.tsx:184
 msgid "Import from {0}"
 msgstr "Import from {0}"
+
+#: src/console/ConsoleTab.tsx:289
+msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
+msgstr "Play this profile and the game's log shows here as it runs. Every run is kept."
 
 #: src/settings/sections/DataStoreCheck.tsx:40
 msgid "{checked}. All files are intact."
@@ -1632,7 +1636,7 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 #: src/queue/store.ts:163
 #: src/saves/BackupsDialog.tsx:137
 #: src/saves/SavesTab.tsx:37
-#: src/settings/sections/DataStoreReport.tsx:378
+#: src/settings/sections/DataStoreReport.tsx:389
 #: src/settings/sections/Storage.tsx:79
 #: src/settings/sections/Updates.tsx:38
 #: src/shell/ErrorBoundary.tsx:25
@@ -1758,7 +1762,7 @@ msgstr "Page"
 msgid "{0, plural, one {Moved # mod} other {Moved # mods}}"
 msgstr "{0, plural, one {Moved # mod} other {Moved # mods}}"
 
-#: src/launch/PlayControl.tsx:144
+#: src/launch/PlayControl.tsx:146
 msgid "Running for {time}"
 msgstr "Running for {time}"
 
@@ -1766,7 +1770,7 @@ msgstr "Running for {time}"
 #: src/firstrun/ProfileStep.tsx:120
 #: src/mods/CategoryEditor.tsx:41
 #: src/mods/columnLabel.ts:7
-#: src/profiles/LaunchPresetDialog.tsx:58
+#: src/profiles/LaunchPresetDialog.tsx:60
 #: src/settings/prefCopy.ts:391
 #: src/tools/ToolEditorDialog.tsx:95
 msgid "Name"
@@ -1801,13 +1805,9 @@ msgstr "Could not add the launch preset"
 msgid "Got it"
 msgstr "Got it"
 
-#: src/profiles/LaunchPresetDialog.tsx:49
+#: src/profiles/LaunchPresetDialog.tsx:51
 msgid "New launch preset"
 msgstr "New launch preset"
-
-#: src/console/HelpDialog.tsx:204
-msgid "No SMAPI log for this profile yet. Play it once, then try again."
-msgstr "No SMAPI log for this profile yet. Play it once, then try again."
 
 #: src/lan/PairedComputers.tsx:174
 msgid "Paired computers"
@@ -1951,7 +1951,7 @@ msgstr "Nexus account"
 msgid "More actions for {0}"
 msgstr "More actions for {0}"
 
-#: src/profiles/OverrideRows.tsx:26
+#: src/profiles/OverrideRows.tsx:27
 msgid "Update mods before Play"
 msgstr "Update mods before Play"
 
@@ -2149,7 +2149,7 @@ msgstr "Show the first-run tips again"
 #: src/mods/Toolbar.tsx:126
 #: src/mods/Toolbar.tsx:144
 #: src/nxm/store.ts:53
-#: src/profiles/LaunchPresetDialog.tsx:82
+#: src/profiles/LaunchPresetDialog.tsx:85
 #: src/queue/actions.ts:96
 #: src/queue/store.ts:244
 #: src/queue/store.ts:361
@@ -2243,10 +2243,6 @@ msgstr "Remove from other profiles…"
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
-#: src/launch/PlayControl.tsx:164
-msgid "Installing SMAPI…"
-msgstr "Installing SMAPI…"
-
 #: src/console/StartupTable.tsx:277
 #: src/mods/ProblemRows.tsx:140
 msgid "Why?"
@@ -2289,7 +2285,7 @@ msgstr "Error while loading"
 msgid "Downloading"
 msgstr "Downloading"
 
-#: src/profiles/OverrideRows.tsx:84
+#: src/profiles/OverrideRows.tsx:88
 msgid "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 msgstr "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 
@@ -2361,7 +2357,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 
 #: src/console/BisectDialog.tsx:120
 #: src/console/CrashDialog.tsx:59
-#: src/console/RunProblems.tsx:93
+#: src/console/RunProblems.tsx:94
 #: src/install/store.ts:174
 #: src/install/store.ts:237
 #: src/mods/MoveFoldersDialog.tsx:63
@@ -2492,7 +2488,7 @@ msgstr "The program to start {name} was not found. Check that the game is still 
 msgid "Could not restore the warning"
 msgstr "Could not restore the warning"
 
-#: src/console/RunProblems.tsx:260
+#: src/console/RunProblems.tsx:262
 #: src/game/FarmMenuItem.tsx:134
 msgid "Fix all"
 msgstr "Fix all"
@@ -2564,7 +2560,7 @@ msgstr "Create another profile to compare it with this one."
 msgid "Start Mortar when you sign in to this computer"
 msgstr "Start Mortar when you sign in to this computer"
 
-#: src/settings/sections/DataStoreReport.tsx:281
+#: src/settings/sections/DataStoreReport.tsx:292
 msgid "Mods no profile uses"
 msgstr "Mods no profile uses"
 
@@ -2761,7 +2757,7 @@ msgid "Import {count} changes"
 msgstr "Import {count} changes"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:408
+#: src/settings/sections/DataStoreReport.tsx:419
 msgid "This frees {0}. Deleted mods download again if a profile needs them later."
 msgstr "This frees {0}. Deleted mods download again if a profile needs them later."
 
@@ -2792,7 +2788,7 @@ msgid "Switch to Mods"
 msgstr "Switch to Mods"
 
 #: src/profiles/LaunchOptionsBlock.tsx:125
-#: src/profiles/LaunchPresetDialog.tsx:64
+#: src/profiles/LaunchPresetDialog.tsx:66
 msgid "Launch prefix"
 msgstr "Launch prefix"
 
@@ -2986,6 +2982,10 @@ msgstr "Modpack saved"
 msgid "Save as template"
 msgstr "Save as template"
 
+#: src/console/HelpDialog.tsx:204
+msgid "No log for this profile yet. Play it once, then try again."
+msgstr "No log for this profile yet. Play it once, then try again."
+
 #: src/browse/browseConstants.ts:25
 msgid "Search GitHub for mods published as releases. Add puts the latest release in this profile."
 msgstr "Search GitHub for mods published as releases. Add puts the latest release in this profile."
@@ -3031,7 +3031,7 @@ msgstr "Download and stage a found update without asking"
 msgid "Search GitHub releases"
 msgstr "Search GitHub releases"
 
-#: src/console/RunProblems.tsx:49
+#: src/console/RunProblems.tsx:50
 msgid "Mortar doesn't know where to get {id}"
 msgstr "Mortar doesn't know where to get {id}"
 
@@ -3079,7 +3079,7 @@ msgstr "Not downloadable here"
 msgid "API key set for {itch}"
 msgstr "API key set for {itch}"
 
-#: src/settings/sections/DataStoreReport.tsx:289
+#: src/settings/sections/DataStoreReport.tsx:300
 msgid "a newer copy is kept"
 msgstr "a newer copy is kept"
 
@@ -3340,7 +3340,7 @@ msgstr "Collapsed"
 msgid "Update available"
 msgstr "Update available"
 
-#: src/profiles/LaunchPresetDialog.tsx:49
+#: src/profiles/LaunchPresetDialog.tsx:51
 msgid "Edit launch preset"
 msgstr "Edit launch preset"
 
@@ -3368,7 +3368,7 @@ msgstr "Delete the game folder, then reinstall {gameName} from your launcher."
 msgid "Go back"
 msgstr "Go back"
 
-#: src/settings/sections/DataStoreReport.tsx:109
+#: src/settings/sections/DataStoreReport.tsx:110
 msgid "Unfinished downloads and temporary files"
 msgstr "Unfinished downloads and temporary files"
 
@@ -3410,8 +3410,8 @@ msgstr "Custom categories"
 #: src/saves/SaveBackupsSection.tsx:70
 #: src/saves/SaveBackupsSection.tsx:140
 #: src/settings/prefCopy.ts:252
-#: src/settings/sections/DataStoreReport.tsx:402
-#: src/settings/sections/DataStoreReport.tsx:409
+#: src/settings/sections/DataStoreReport.tsx:413
+#: src/settings/sections/DataStoreReport.tsx:420
 #: src/templates/TemplateDialogs.tsx:116
 #: src/templates/TemplateDialogs.tsx:207
 msgid "Delete"
@@ -3425,9 +3425,15 @@ msgstr "Not checked yet."
 msgid "Changed"
 msgstr "Changed"
 
+#: src/console/HelpDialog.tsx:160
+#: src/console/store.ts:143
+#: src/mods/ReportToAuthorButton.tsx:140
+msgid "Could not read the game log"
+msgstr "Could not read the game log"
+
 #: src/console/BisectDialog.tsx:181
 #: src/console/CrashDialog.tsx:68
-#: src/console/RunProblems.tsx:139
+#: src/console/RunProblems.tsx:141
 #: src/mods/AssetMapDialog.tsx:87
 #: src/mods/ModMenu.tsx:125
 #: src/mods/problemFix/AssetFix.tsx:67
@@ -3472,10 +3478,6 @@ msgstr "Downloading {0}%"
 #: src/bundles/BundlesSection.tsx:101
 msgid "Bundles"
 msgstr "Bundles"
-
-#: src/profiles/LaunchOptionsBlock.tsx:118
-msgid "Extra SMAPI arguments for this profile. Mortar already sets the mods folder."
-msgstr "Extra SMAPI arguments for this profile. Mortar already sets the mods folder."
 
 #: src/bundles/BundlesSection.tsx:162
 msgid "Bundle deleted"
@@ -3547,7 +3549,7 @@ msgstr "Copy CSS"
 msgid "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
 msgstr "Prefix for direct launches only (for example, gamemoderun mangohud). On Windows, prefixes are unavailable."
 
-#: src/launch/PlayControl.tsx:167
+#: src/launch/PlayControl.tsx:169
 msgid "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 msgstr "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 
@@ -3608,6 +3610,7 @@ msgstr "Part of the OBS address; regenerate it if it leaks"
 msgid "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 msgstr "{0, plural, one {Since last run: # change} other {Since last run: # changes}}"
 
+#: src/console/HelpDialog.tsx:111
 #: src/console/VirtualLog.tsx:205
 msgid "Game log"
 msgstr "Game log"
@@ -3675,7 +3678,7 @@ msgstr "Apply"
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
-#: src/games/GameSelect.tsx:373
+#: src/games/GameSelect.tsx:377
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
@@ -3729,7 +3732,7 @@ msgstr "Share as r2modman code?"
 #: src/profiles/EditProfileDialog.tsx:463
 #: src/profiles/GameModsDialog.tsx:164
 #: src/profiles/ImportWizard.tsx:136
-#: src/profiles/LaunchPresetDialog.tsx:87
+#: src/profiles/LaunchPresetDialog.tsx:91
 #: src/profiles/PackImportDialog.tsx:157
 #: src/settings/sections/NexusSSO.tsx:67
 #: src/settings/sections/nxmHandler.tsx:77
@@ -4205,7 +4208,7 @@ msgstr "Could not read recently deleted profiles"
 msgid "Delete group {name}?"
 msgstr "Delete group {name}?"
 
-#: src/console/RunProblems.tsx:137
+#: src/console/RunProblems.tsx:139
 #: src/game/FarmMenuItem.tsx:90
 #: src/loader/Banner.tsx:33
 #: src/mods/problemFix/LoadFailureFix.tsx:37
@@ -4290,7 +4293,7 @@ msgstr "Edit"
 
 #. placeholder {0}: picked.size
 #. placeholder {1}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:393
+#: src/settings/sections/DataStoreReport.tsx:404
 msgid "{0} selected · {1}"
 msgstr "{0} selected · {1}"
 
@@ -4353,7 +4356,7 @@ msgid "Browse mods"
 msgstr "Browse mods"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:363
+#: src/settings/sections/DataStoreReport.tsx:374
 msgid "Freed {0}"
 msgstr "Freed {0}"
 
@@ -4364,10 +4367,6 @@ msgstr "Set category"
 #: src/share/ShareDialog.tsx:406
 msgid "File saved"
 msgstr "File saved"
-
-#: src/launch/store.ts:77
-msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or SMAPI will not see this profile."
-msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or SMAPI will not see this profile."
 
 #: src/settings/prefCopy.ts:452
 msgid "Verify downloads with Nexus MD5"
@@ -4483,7 +4482,7 @@ msgid "Loading changes…"
 msgstr "Loading changes…"
 
 #: src/profiles/LaunchOptionsBlock.tsx:140
-#: src/profiles/LaunchPresetDialog.tsx:69
+#: src/profiles/LaunchPresetDialog.tsx:71
 msgid "Launch environment"
 msgstr "Launch environment"
 
@@ -4526,7 +4525,7 @@ msgstr "API key not set. Itch.io search is off until you add one."
 msgid "You chose not to endorse this mod."
 msgstr "You chose not to endorse this mod."
 
-#: src/profiles/OverrideRows.tsx:47
+#: src/profiles/OverrideRows.tsx:51
 msgid "These apply only to this profile."
 msgstr "These apply only to this profile."
 
@@ -4542,7 +4541,7 @@ msgstr "Export…"
 msgid "Choose a file"
 msgstr "Choose a file"
 
-#: src/settings/sections/DataStoreReport.tsx:107
+#: src/settings/sections/DataStoreReport.tsx:108
 msgid "Cached GitHub release lists"
 msgstr "Cached GitHub release lists"
 
@@ -4995,7 +4994,7 @@ msgstr "Browse hides mods their site marks as adult unless this is on. Installed
 msgid "{gameName} closed with errors"
 msgstr "{gameName} closed with errors"
 
-#: src/console/RunProblems.tsx:141
+#: src/console/RunProblems.tsx:143
 msgid "Remove duplicate"
 msgstr "Remove duplicate"
 
@@ -5060,10 +5059,6 @@ msgstr "About Mortar"
 #: src/settings/sections/Appearance.tsx:73
 msgid "Lavender"
 msgstr "Lavender"
-
-#: src/console/ConsoleTab.tsx:289
-msgid "Play this profile and SMAPI's log shows here as it runs. Every run is kept."
-msgstr "Play this profile and SMAPI's log shows here as it runs. Every run is kept."
 
 #: src/mods/ProblemsTab.tsx:123
 #: src/mods/ProblemsTab.tsx:356
@@ -5213,11 +5208,6 @@ msgstr "The title screen's intro animation (Mortar skips it on measured launches
 msgid "Portable copy: data is kept in {portableDir}"
 msgstr "Portable copy: data is kept in {portableDir}"
 
-#. placeholder {0}: d.name
-#: src/mods/describe.ts:138
-msgid "{0} is installed twice, and SMAPI loads only one."
-msgstr "{0} is installed twice, and SMAPI loads only one."
-
 #. placeholder {0}: mods.length
 #: src/mods/SelectionBarDialogs.tsx:57
 msgid "{0, plural, one {Tag # mod} other {Tag # mods}}"
@@ -5229,7 +5219,7 @@ msgid "No longer needs {0}"
 msgstr "No longer needs {0}"
 
 #: src/profiles/LaunchOptionsBlock.tsx:109
-#: src/profiles/LaunchPresetDialog.tsx:63
+#: src/profiles/LaunchPresetDialog.tsx:65
 msgid "Launch options"
 msgstr "Launch options"
 
@@ -5533,7 +5523,7 @@ msgstr "Enter 1 or more"
 
 #: src/mods/columnLabel.ts:14
 #: src/mods/NexusDetails.tsx:106
-#: src/mods/Sidebar.tsx:492
+#: src/mods/Sidebar.tsx:496
 #: src/settings/sections/NexusMods.tsx:176
 msgid "Endorsements"
 msgstr "Endorsements"
@@ -5542,7 +5532,7 @@ msgstr "Endorsements"
 msgid "Two mods change the same file. Only one change wins, so the other mod may look or behave wrongly."
 msgstr "Two mods change the same file. Only one change wins, so the other mod may look or behave wrongly."
 
-#: src/console/RunProblems.tsx:191
+#: src/console/RunProblems.tsx:193
 #: src/launchers/LauncherList.tsx:61
 #: src/mods/OverlayRow.tsx:81
 #: src/mods/OverlayRow.tsx:86
@@ -5682,7 +5672,7 @@ msgstr "No profiles found."
 
 #. placeholder {0}: game.name
 #. placeholder {0}: profile.name
-#: src/games/GameSelect.tsx:229
+#: src/games/GameSelect.tsx:233
 #: src/games/ProfileCards.tsx:134
 msgid "Open {0}"
 msgstr "Open {0}"
@@ -5938,7 +5928,7 @@ msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
 #: src/browse/BrowseDetails.tsx:253
-#: src/mods/Sidebar.tsx:571
+#: src/mods/Sidebar.tsx:575
 msgid "Selected mod"
 msgstr "Selected mod"
 
@@ -6002,7 +5992,7 @@ msgstr "Move…"
 msgid "Discard the change to {name}"
 msgstr "Discard the change to {name}"
 
-#: src/profiles/LaunchPresetDialog.tsx:60
+#: src/profiles/LaunchPresetDialog.tsx:62
 msgid "Another preset already has this name."
 msgstr "Another preset already has this name."
 
@@ -6121,10 +6111,6 @@ msgstr "Choose a variant"
 msgid "{failed} could not be added"
 msgstr "{failed} could not be added"
 
-#: src/console/HelpDialog.tsx:111
-msgid "SMAPI log"
-msgstr "SMAPI log"
-
 #. placeholder {0}: errorMessage(e)
 #: src/settings/updates.ts:67
 msgid "Could not update: {0}"
@@ -6189,7 +6175,7 @@ msgstr "{0} and {count} more"
 
 #: src/mods/ModMenu.tsx:208
 #: src/mods/SelectionBarActions.tsx:108
-#: src/mods/Sidebar.tsx:505
+#: src/mods/Sidebar.tsx:509
 msgid "Also add to…"
 msgstr "Also add to…"
 
@@ -6204,6 +6190,11 @@ msgstr "Could not cancel the measured launch"
 #: src/mods/ExtraFolderDialog.tsx:56
 msgid "Reading {folder}…"
 msgstr "Reading {folder}…"
+
+#. placeholder {0}: d.name
+#: src/mods/describe.ts:138
+msgid "{0} is installed twice, and only one of them loads."
+msgstr "{0} is installed twice, and only one of them loads."
 
 #: src/lan/IncomingPrompt.tsx:135
 msgid "Decline"
@@ -6323,7 +6314,7 @@ msgid "Mods"
 msgstr "Mods"
 
 #. placeholder {0}: g.items.length
-#: src/settings/sections/DataStoreReport.tsx:300
+#: src/settings/sections/DataStoreReport.tsx:311
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr "{0, plural, one {# file} other {# files}}"
 
@@ -6386,7 +6377,7 @@ msgstr "Reason (optional)"
 msgid "Slowest mods"
 msgstr "Slowest mods"
 
-#: src/settings/sections/DataStoreReport.tsx:376
+#: src/settings/sections/DataStoreReport.tsx:387
 msgid "Could not load what can be cleaned up"
 msgstr "Could not load what can be cleaned up"
 
@@ -6451,7 +6442,7 @@ msgstr "Every archive in the downloads folder is already in a profile or Mortar'
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
-#: src/settings/sections/DataStoreReport.tsx:111
+#: src/settings/sections/DataStoreReport.tsx:112
 msgid "Other cached data"
 msgstr "Other cached data"
 
@@ -6471,9 +6462,9 @@ msgstr "Default for a profile you just created"
 msgid "Save as bundle…"
 msgstr "Save as bundle…"
 
-#: src/launch/PlayControl.tsx:138
 #: src/launch/PlayControl.tsx:140
-#: src/launch/PlayControl.tsx:143
+#: src/launch/PlayControl.tsx:142
+#: src/launch/PlayControl.tsx:145
 #: src/launch/StopDialog.tsx:25
 msgid "Stop game"
 msgstr "Stop game"
@@ -6566,6 +6557,10 @@ msgstr "Nothing in this profile"
 #: src/settings/sections/Appearance.tsx:70
 msgid "Warm and bold"
 msgstr "Warm and bold"
+
+#: src/console/ConsoleTab.tsx:263
+msgid "Stop the game before reinstalling."
+msgstr "Stop the game before reinstalling."
 
 #: src/profiles/LoaderLaunchSettings.tsx:15
 msgid "Show the console window"
@@ -6755,7 +6750,7 @@ msgstr "Not found"
 
 #: src/profiles/EditProfileDialog.tsx:119
 #: src/profiles/GameSettings.tsx:182
-#: src/profiles/OverrideRows.tsx:75
+#: src/profiles/OverrideRows.tsx:79
 #: src/settings/sections/Appearance.tsx:183
 #: src/settings/sections/GameSettings.tsx:202
 msgid "Use default"
@@ -6766,7 +6761,7 @@ msgstr "Use default"
 msgid "{0} version"
 msgstr "{0} version"
 
-#: src/profiles/OverrideRows.tsx:90
+#: src/profiles/OverrideRows.tsx:94
 msgid "SMAPI"
 msgstr "SMAPI"
 
@@ -7139,12 +7134,6 @@ msgstr "Check interval"
 msgid "Enter code"
 msgstr "Enter code"
 
-#: src/console/HelpDialog.tsx:160
-#: src/console/store.ts:143
-#: src/mods/ReportToAuthorButton.tsx:140
-msgid "Could not read the SMAPI log"
-msgstr "Could not read the SMAPI log"
-
 #: src/settings/prefCopy.ts:51
 msgid "Default launch"
 msgstr "Default launch"
@@ -7217,7 +7206,7 @@ msgid "Could not skip the update for {0}"
 msgstr "Could not skip the update for {0}"
 
 #: src/nxm/store.ts:84
-#: src/settings/sections/DataStoreReport.tsx:120
+#: src/settings/sections/DataStoreReport.tsx:123
 #: src/share/arrivals.ts:55
 msgid "Nexus mod {id}"
 msgstr "Nexus mod {id}"
@@ -7273,7 +7262,7 @@ msgstr "·"
 #: src/mods/problemFix/MissingFix.tsx:43
 #: src/mods/SelectionBar.tsx:141
 #: src/mods/SelectionBarDialogs.tsx:81
-#: src/mods/Sidebar.tsx:514
+#: src/mods/Sidebar.tsx:518
 #: src/mods/TrackedNotInProfile.tsx:93
 #: src/mods/typedConfig/Widgets.tsx:158
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:62
@@ -7320,6 +7309,10 @@ msgstr "No entries match."
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
+#: src/console/RunProblems.tsx:52
+msgid "Search in Browse"
+msgstr "Search in Browse"
+
 #: src/toasts/HistoryButton.tsx:148
 msgid "Results of installs, updates and launches appear here."
 msgstr "Results of installs, updates and launches appear here."
@@ -7347,6 +7340,10 @@ msgstr "Add a program to run alongside the game, such as a save editor or map vi
 #: src/queue/store.ts:254
 msgid "Retrying in {n} s."
 msgstr "Retrying in {n} s."
+
+#: src/console/RunProblems.tsx:145
+msgid "Update {loaderName}"
+msgstr "Update {loaderName}"
 
 #: src/firstrunTour/TourPopover.tsx:35
 msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
@@ -7514,7 +7511,7 @@ msgstr "Signed out of Nexus"
 
 #. placeholder {0}: mod.name
 #: src/mods/ModMenu.tsx:373
-#: src/mods/Sidebar.tsx:513
+#: src/mods/Sidebar.tsx:517
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
 
@@ -7633,7 +7630,7 @@ msgstr "Download"
 msgid "These come from outside Nexus, so Mortar does not download them."
 msgstr "These come from outside Nexus, so Mortar does not download them."
 
-#: src/console/RunProblems.tsx:248
+#: src/console/RunProblems.tsx:250
 msgid "Problems in this run"
 msgstr "Problems in this run"
 
@@ -7668,7 +7665,7 @@ msgstr "Switch to Load order"
 msgid "Close config editor"
 msgstr "Close config editor"
 
-#: src/settings/sections/DataStoreReport.tsx:269
+#: src/settings/sections/DataStoreReport.tsx:280
 msgid "Nothing to clean up."
 msgstr "Nothing to clean up."
 
@@ -7763,7 +7760,7 @@ msgstr "Could not make the list"
 msgid "Missing dependency"
 msgstr "Missing dependency"
 
-#: src/settings/sections/DataStoreReport.tsx:105
+#: src/settings/sections/DataStoreReport.tsx:106
 msgid "Cached Nexus mod details"
 msgstr "Cached Nexus mod details"
 
@@ -7840,6 +7837,10 @@ msgstr "Show mods of {0}"
 #: src/mods/AuthorDialog.tsx:72
 msgid "On Nexus"
 msgstr "On Nexus"
+
+#: src/shell/FlatpakGrant.tsx:39
+msgid "Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
+msgstr "Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
 
 #: src/game/ExportCodeMenuItem.tsx:39
 msgid "Copy code"
@@ -8278,7 +8279,7 @@ msgstr "Debug"
 msgid "Broken or obsolete ({0})"
 msgstr "Broken or obsolete ({0})"
 
-#: src/profiles/OverrideRows.tsx:20
+#: src/profiles/OverrideRows.tsx:21
 msgid "Show the game log"
 msgstr "Show the game log"
 
@@ -8493,10 +8494,6 @@ msgstr "Could not reset the settings of {0}"
 msgid "Could not rename the group"
 msgstr "Could not rename the group"
 
-#: src/firstrunTour/TourPopover.tsx:47
-msgid "Launch the game with this profile's mods. Mortar applies your list before SMAPI starts."
-msgstr "Launch the game with this profile's mods. Mortar applies your list before SMAPI starts."
-
 #: src/settings/sections/WatchFolders.tsx:38
 msgid "New .zip, .7z and .rar files that land in them are offered for install. Subfolders are not watched."
 msgstr "New .zip, .7z and .rar files that land in them are offered for install. Subfolders are not watched."
@@ -8610,6 +8607,11 @@ msgstr "Problems only"
 msgid "Damaged"
 msgstr "Damaged"
 
+#: src/console/RunProblems.tsx:131
+#: src/launch/PlayControl.tsx:63
+msgid "the mod loader"
+msgstr "the mod loader"
+
 #: src/settings/prefCopy.ts:465
 msgid "Restore the last window bounds on startup"
 msgstr "Restore the last window bounds on startup"
@@ -8674,7 +8676,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:43
 #: src/firstrun/GameSetup.tsx:129
 #: src/firstrun/LoaderStep.tsx:220
-#: src/games/GameSelect.tsx:344
+#: src/games/GameSelect.tsx:348
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -8782,10 +8784,6 @@ msgstr "Clear filter"
 msgid "Signed in"
 msgstr "Signed in"
 
-#: src/shell/FlatpakGrant.tsx:39
-msgid "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
-msgstr "Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods."
-
 #: src/console/SearchRunsDialog.tsx:104
 msgid "Search run logs"
 msgstr "Search run logs"
@@ -8808,10 +8806,6 @@ msgstr "Changes to keep"
 #: src/profiles/GameSettings.tsx:208
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
-
-#: src/console/RunProblems.tsx:51
-msgid "Search Nexus"
-msgstr "Search Nexus"
 
 #: src/console/StartupPanel.tsx:62
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
@@ -8842,7 +8836,7 @@ msgstr "Open manifest.json"
 msgid "Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V."
 msgstr "Paste a share link, a collection link, or (Premium) a Nexus mod link with Ctrl+V."
 
-#: src/profiles/LaunchPresetDialog.tsx:75
+#: src/profiles/LaunchPresetDialog.tsx:78
 #: src/settings/prefCopy.ts:61
 msgid "SMAPI console window"
 msgstr "SMAPI console window"
@@ -8898,7 +8892,7 @@ msgstr "Copy part {0} of {1}"
 msgid "Restore from a file…"
 msgstr "Restore from a file…"
 
-#: src/console/RunProblems.tsx:184
+#: src/console/RunProblems.tsx:186
 msgid "Remove duplicate?"
 msgstr "Remove duplicate?"
 
@@ -9229,7 +9223,7 @@ msgstr "Whole file"
 msgid "Updates, missing dependencies and links from Nexus land here."
 msgstr "Updates, missing dependencies and links from Nexus land here."
 
-#: src/mods/Sidebar.tsx:490
+#: src/mods/Sidebar.tsx:491
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
@@ -9245,7 +9239,7 @@ msgstr "Show conflicts"
 msgid "Not set up"
 msgstr "Not set up"
 
-#: src/profiles/OverrideRows.tsx:24
+#: src/profiles/OverrideRows.tsx:25
 #: src/settings/prefCopy.ts:226
 msgid "Save backups kept"
 msgstr "Save backups kept"
@@ -9262,7 +9256,7 @@ msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are o
 msgid "Could not set the update channel for {0}"
 msgstr "Could not set the update channel for {0}"
 
-#: src/launch/PlayControl.tsx:109
+#: src/launch/PlayControl.tsx:111
 msgid "Running"
 msgstr "Running"
 
@@ -9326,7 +9320,7 @@ msgstr "Pause all"
 msgid "Slowest event"
 msgstr "Slowest event"
 
-#: src/profiles/OverrideRows.tsx:28
+#: src/profiles/OverrideRows.tsx:29
 msgid "Skip pre-Play check"
 msgstr "Skip pre-Play check"
 
@@ -9361,6 +9355,10 @@ msgstr "Removed from Nexus · {0}"
 #: src/mods/NexusAccountActions.tsx:114
 msgid "Abstain"
 msgstr "Abstain"
+
+#: src/settings/sections/DataStoreReport.tsx:129
+msgid "Mortar bridge"
+msgstr "Mortar bridge"
 
 #: src/profiles/HealthDialog.tsx:42
 msgid "Not used by any profile"
@@ -9466,7 +9464,7 @@ msgid "Could not unpin {0}"
 msgstr "Could not unpin {0}"
 
 #: src/mods/ModDetail.tsx:227
-#: src/mods/Sidebar.tsx:532
+#: src/mods/Sidebar.tsx:536
 msgid "In the same download"
 msgstr "In the same download"
 
@@ -9543,7 +9541,7 @@ msgstr "Multiplayer mod list"
 
 #: src/console/BisectDialog.tsx:118
 #: src/console/CrashDialog.tsx:57
-#: src/console/RunProblems.tsx:91
+#: src/console/RunProblems.tsx:92
 msgid "Disabled {names}"
 msgstr "Disabled {names}"
 
@@ -9573,7 +9571,7 @@ msgstr "Some files could not be checked against Nexus, so a few may differ from 
 msgid "In {0}; turns off its edits here"
 msgstr "In {0}; turns off its edits here"
 
-#: src/launch/PlayControl.tsx:181
+#: src/launch/PlayControl.tsx:183
 #: src/profiles/LaunchPresetsBlock.tsx:71
 msgid "Could not set the default launch preset"
 msgstr "Could not set the default launch preset"
@@ -9632,7 +9630,7 @@ msgstr "Reset the settings of {0}?"
 msgid "{0} adds {time} to startup (through {1})"
 msgstr "{0} adds {time} to startup (through {1})"
 
-#: src/profiles/OverrideRows.tsx:45
+#: src/profiles/OverrideRows.tsx:49
 msgid "Overrides"
 msgstr "Overrides"
 
@@ -9661,7 +9659,7 @@ msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgid "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
 msgstr "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
 
-#: src/settings/sections/DataStoreReport.tsx:407
+#: src/settings/sections/DataStoreReport.tsx:418
 msgid "Delete the selected items?"
 msgstr "Delete the selected items?"
 
@@ -9832,8 +9830,8 @@ msgstr "Search every mod site at once or pick one; with nothing typed you see th
 msgid "Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then."
 msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then."
 
-#: src/console/RunProblems.tsx:145
-#: src/console/RunProblems.tsx:193
+#: src/console/RunProblems.tsx:147
+#: src/console/RunProblems.tsx:195
 #: src/mods/CleanupSection.tsx:36
 #: src/mods/CleanupSection.tsx:110
 #: src/mods/ModMenu.tsx:175
@@ -9847,7 +9845,7 @@ msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nex
 msgid "Remove"
 msgstr "Remove"
 
-#: src/launch/PlayControl.tsx:109
+#: src/launch/PlayControl.tsx:111
 msgid "Running {who}"
 msgstr "Running {who}"
 
@@ -9879,9 +9877,13 @@ msgstr "Preview Mods folder import…"
 msgid "Find the crash cause"
 msgstr "Find the crash cause"
 
+#: src/launch/store.ts:77
+msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
+msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
+
 #: src/firstrunTour/TourPopover.tsx:46
-#: src/games/GameSelect.tsx:281
-#: src/launch/PlayControl.tsx:162
+#: src/games/GameSelect.tsx:285
+#: src/launch/PlayControl.tsx:164
 #: src/settings/GameSettingsPage.tsx:62
 #: src/settings/GameSettingsPage.tsx:88
 msgid "Play"
@@ -9948,11 +9950,15 @@ msgstr "Beach farm"
 #: src/mods/ConfigPresets.tsx:134
 #: src/mods/SelectionBar.tsx:38
 #: src/profiles/EditProfileDialog.tsx:466
-#: src/profiles/LaunchPresetDialog.tsx:92
+#: src/profiles/LaunchPresetDialog.tsx:96
 #: src/templates/TemplateDialogs.tsx:71
 #: src/tools/ToolEditorDialog.tsx:140
 msgid "Save"
 msgstr "Save"
+
+#: src/profiles/LaunchOptionsBlock.tsx:118
+msgid "Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs."
+msgstr "Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs."
 
 #: src/mods/ExtraFolderDialog.tsx:62
 msgid "No mods in {folder}"
@@ -10022,7 +10028,7 @@ msgstr "Could not verify its source"
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
-#: src/console/RunProblems.tsx:135
+#: src/console/RunProblems.tsx:137
 #: src/fomod/Dialog.tsx:264
 #: src/game/FarmMenuItem.tsx:90
 #: src/loader/Banner.tsx:27
@@ -10210,7 +10216,11 @@ msgstr "Check the file hash when Nexus provides one"
 msgid "{name} takes {own} of your {total} start; {0, plural, one {# content pack causes} other {# content packs cause}} most of it."
 msgstr "{name} takes {own} of your {total} start; {0, plural, one {# content pack causes} other {# content packs cause}} most of it."
 
-#: src/profiles/LaunchPresetDialog.tsx:81
+#: src/launch/PlayControl.tsx:166
+msgid "Installing {loaderName}…"
+msgstr "Installing {loaderName}…"
+
+#: src/profiles/LaunchPresetDialog.tsx:84
 msgid "Follow the setting"
 msgstr "Follow the setting"
 
@@ -10426,7 +10436,7 @@ msgstr "Details"
 #. placeholder {1}: copies.keep.name
 #. placeholder {2}: copies.remove[0]?.name ?? ''
 #. placeholder {3}: copies.keep.name
-#: src/console/RunProblems.tsx:187
+#: src/console/RunProblems.tsx:189
 msgid "{0, plural, one {Keep {1} and remove {2}.} other {Keep {3} and remove # other copies.}}"
 msgstr "{0, plural, one {Keep {1} and remove {2}.} other {Keep {3} and remove # other copies.}}"
 
@@ -10548,6 +10558,10 @@ msgstr "Order"
 #: src/mods/detail.ts:112
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
+
+#: src/games/GameSelect.tsx:271
+msgid "Play {playName}"
+msgstr "Play {playName}"
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:50
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
@@ -10738,7 +10752,6 @@ msgstr "its log shows an error"
 msgid "{gameName} crashed"
 msgstr "{gameName} crashed"
 
-#: src/console/ConsoleTab.tsx:263
 #: src/loader/Banner.tsx:56
 msgid "Stop the game to change SMAPI."
 msgstr "Stop the game to change SMAPI."
@@ -10790,7 +10803,7 @@ msgstr "While this profile runs, Mortar sets your shared saves aside and shows t
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
-#: src/settings/sections/DataStoreReport.tsx:369
+#: src/settings/sections/DataStoreReport.tsx:380
 msgid "Clean up storage"
 msgstr "Clean up storage"
 
@@ -10800,7 +10813,7 @@ msgstr "Mods view"
 
 #: src/browse/BrowseShow.tsx:30
 #: src/launch/LaunchLayer.tsx:182
-#: src/profiles/LaunchPresetDialog.tsx:83
+#: src/profiles/LaunchPresetDialog.tsx:86
 #: src/saves/SaveGapLine.tsx:56
 msgid "Hide"
 msgstr "Hide"
@@ -10882,10 +10895,6 @@ msgstr "Your last save needs other mods"
 #: src/mods/CategoryEditor.tsx:66
 msgid "Delete category"
 msgstr "Delete category"
-
-#: src/games/GameSelect.tsx:267
-msgid "Play {lastPlayedName}"
-msgstr "Play {lastPlayedName}"
 
 #: src/console/StartupTable.tsx:112
 msgid "Sampled"
@@ -11064,7 +11073,7 @@ msgstr "Teal"
 msgid "Could not read this profile"
 msgstr "Could not read this profile"
 
-#: src/settings/sections/DataStoreReport.tsx:276
+#: src/settings/sections/DataStoreReport.tsx:287
 msgid "Select all"
 msgstr "Select all"
 
@@ -11235,7 +11244,7 @@ msgstr "More setting values"
 msgid "Installing"
 msgstr "Installing"
 
-#: src/profiles/OverrideRows.tsx:22
+#: src/profiles/OverrideRows.tsx:23
 #: src/settings/prefCopy.ts:205
 msgid "Back up saves before Play"
 msgstr "Back up saves before Play"
@@ -11543,7 +11552,8 @@ msgstr "Welcome to Mortar"
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
-#: src/mods/Sidebar.tsx:490
+#: src/mods/Sidebar.tsx:491
+#: src/mods/Sidebar.tsx:493
 msgid "Mod id"
 msgstr "Mod id"
 
@@ -11894,7 +11904,7 @@ msgstr "Mortar thinks {0} caused the crash: {1}"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
-#: src/settings/sections/DataStoreReport.tsx:293
+#: src/settings/sections/DataStoreReport.tsx:304
 msgid "Leftover files"
 msgstr "Leftover files"
 
@@ -12126,7 +12136,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/saves/BackupsDialog.tsx:168
 #: src/settings/sections/About.tsx:99
 #: src/settings/sections/AboutDiagnostics.tsx:219
-#: src/settings/sections/DataStoreReport.tsx:395
+#: src/settings/sections/DataStoreReport.tsx:406
 #: src/share/ImportDialog.tsx:213
 #: src/share/ImportDialog.tsx:216
 #: src/share/ImportFooter.tsx:86

@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { LaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useGameInfo } from '../games/info.ts'
 import { presetNameError } from './profilePresets.ts'
 
 const FOLLOW = 'follow'
@@ -30,6 +31,7 @@ export function LaunchPresetDialog({
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(preset)
+  const smapi = useGameInfo()?.loaderId === 'smapi'
   useEffect(() => {
     if (open) {
       setDraft(preset)
@@ -68,20 +70,22 @@ export function LaunchPresetDialog({
           minRows={2}
           label={t`Launch environment`}
         />
-        <TextField
-          select={true}
-          fullWidth={true}
-          margin="dense"
-          label={t`SMAPI console window`}
-          value={draft.showConsole || FOLLOW}
-          onChange={(e) =>
-            setDraft({ ...draft, showConsole: e.target.value === FOLLOW ? '' : e.target.value })
-          }
-        >
-          <MenuItem value={FOLLOW}>{t`Follow the setting`}</MenuItem>
-          <MenuItem value="true">{t`Show`}</MenuItem>
-          <MenuItem value="false">{t`Hide`}</MenuItem>
-        </TextField>
+        {smapi ? (
+          <TextField
+            select={true}
+            fullWidth={true}
+            margin="dense"
+            label={t`SMAPI console window`}
+            value={draft.showConsole || FOLLOW}
+            onChange={(e) =>
+              setDraft({ ...draft, showConsole: e.target.value === FOLLOW ? '' : e.target.value })
+            }
+          >
+            <MenuItem value={FOLLOW}>{t`Follow the setting`}</MenuItem>
+            <MenuItem value="true">{t`Show`}</MenuItem>
+            <MenuItem value="false">{t`Hide`}</MenuItem>
+          </TextField>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>{t`Cancel`}</Button>

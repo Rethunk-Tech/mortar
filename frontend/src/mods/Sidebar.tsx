@@ -487,7 +487,11 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
           {t`Stop ignoring ${ignoredSource} updates`}
         </Button>
       ))}
-      <Field label={t`Mod id`} value={localId(mod.id)} hint={t`SMAPI UniqueID`} />
+      {mod.id.startsWith('smapi:') ? (
+        <Field label={t`Mod id`} value={localId(mod.id)} hint={t`SMAPI UniqueID`} />
+      ) : (
+        <Field label={t`Mod id`} value={localId(mod.id)} />
+      )}
       {mod.endorsements > 0 ? (
         <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString(i18n.locale)} />
       ) : null}

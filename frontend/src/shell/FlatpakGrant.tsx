@@ -36,7 +36,7 @@ export function FlatpakGrant() {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 2.5, py: 1.5 }}>
         <Box sx={{ fontSize: 16 }}>{t`Flatpak Steam cannot read your mods`}</Box>
         <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
-          {t`Grant the Steam sandbox read access to Mortar's data folder, or SMAPI will not see this profile's mods.`}
+          {t`Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods.`}
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
           <Box

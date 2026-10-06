@@ -135,7 +135,7 @@ function describeDuplicate(d: Extract<Problem, { kind: 'duplicate' }>['duplicate
       ? i18n._(msg`${d.name} has multiple Nexus files installed: ${files}. One may be an add-on.`)
       : i18n._(msg`${d.name} has multiple Nexus files installed: ${files}.`)
   }
-  return i18n._(msg`${d.name} is installed twice, and SMAPI loads only one.`)
+  return i18n._(msg`${d.name} is installed twice, and only one of them loads.`)
 }
 
 // The one-line sentence for a problem, shared by the summary rows and the card badges.

@@ -115,7 +115,7 @@ function LaunchOptionsBlock({
         error={launchError?.field === 'options'}
         helperText={
           (launchError?.field === 'options' && launchError.message) ||
-          t`Extra SMAPI arguments for this profile. Mortar already sets the mods folder.`
+          t`Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs.`
         }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />

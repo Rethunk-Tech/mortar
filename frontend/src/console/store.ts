@@ -140,7 +140,7 @@ const useConsole = create<{
         const after = lastSeq(history)
         set((s) => ({ entries: [...history, ...s.entries.filter((e) => e.seq > after)] }))
       } catch (e) {
-        toastError(i18n._(msg`Could not read the SMAPI log`), e, {
+        toastError(i18n._(msg`Could not read the game log`), e, {
           retry: () => get().load(game, profile),
         })
       }

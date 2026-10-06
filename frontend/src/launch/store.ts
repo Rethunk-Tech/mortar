@@ -74,7 +74,7 @@ function failureBody(status: Status): string {
   }
   if (status.hint === Hint.HintFlatpakFS) {
     return i18n._(
-      msg`Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › ${name}) or SMAPI will not see this profile.`,
+      msg`Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › ${name}) or the game will not see this profile.`,
     )
   }
   if (status.hint === Hint.HintLaunchOptions) {

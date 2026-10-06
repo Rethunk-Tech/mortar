@@ -108,7 +108,7 @@ function HelpLog({
           htmlInput: {
             readOnly: true,
             spellCheck: false,
-            'aria-label': t`SMAPI log`,
+            'aria-label': t`Game log`,
             sx: { fontFamily: MONO, fontSize: 12, whiteSpace: 'pre', overflowX: 'auto' },
           },
         }}
@@ -157,7 +157,7 @@ export function HelpDialog({ game }: { game: string }) {
         if (!live) {
           return
         }
-        reportError(t`Could not read the SMAPI log`)(e)
+        reportError(t`Could not read the game log`)(e)
         setHelping(false)
       },
     )
@@ -201,7 +201,7 @@ export function HelpDialog({ game }: { game: string }) {
 
   let body: string | null = null
   if (log === '') {
-    body = t`No SMAPI log for this profile yet. Play it once, then try again.`
+    body = t`No log for this profile yet. Play it once, then try again.`
   } else if (log === null) {
     body = t`Reading the log…`
   }

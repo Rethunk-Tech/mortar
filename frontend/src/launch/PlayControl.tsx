@@ -9,6 +9,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { SetDefaultLaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { compact } from '../game/compact.ts'
+import { useGameLoader } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -59,6 +60,7 @@ function useElapsed(since: number, active: boolean): string {
 
 export function PlayControl({ game }: { game: string }) {
   const { t } = useLingui()
+  const loaderName = useGameLoader(game) || t`the mod loader`
   const status = useLaunch((s) => s.status)
   const stopping = useLaunch((s) => s.stopping)
   const updating = useLaunch((s) => s.updating)
@@ -161,7 +163,7 @@ export function PlayControl({ game }: { game: string }) {
   const launching = state === State.Launching
   let label = t`Play`
   if (installingLoader) {
-    label = t`Installing SMAPI…`
+    label = t`Installing ${loaderName}…`
   }
   if (updating > 0) {
     label = t`${plural(updating, { one: 'Updating # mod…', other: 'Updating # mods…' })}`

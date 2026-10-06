@@ -8,6 +8,7 @@ import { RunProblems as FetchRunProblems } from '../../bindings/github.com/Rethu
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useBrowseView } from '../browse/view.ts'
 import { useTab } from '../game/tab.ts'
+import { useGameLoader } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import { localId } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'
@@ -48,7 +49,7 @@ async function installDependency(i18n: I18n, id: string) {
       kind: 'error',
       title: i18n._(msg`Mortar doesn't know where to get ${id}`),
       action: {
-        label: i18n._(msg`Search Nexus`),
+        label: i18n._(msg`Search in Browse`),
         run: () => {
           useBrowseView.getState().setPendingQuery(id)
           useTab.getState().setTab('browse')
@@ -127,6 +128,7 @@ function ProblemRow({
   game: string
 }) {
   const { t, i18n } = useLingui()
+  const loaderName = useGameLoader(game) || t`the mod loader`
   const locked = useLocked()
   const lockHint = t`Stop the game to change mods.`
   const [confirmDup, setConfirmDup] = useState(false)
@@ -140,7 +142,7 @@ function ProblemRow({
   } else if (problem.fix === 'removeDuplicate') {
     label = t`Remove duplicate`
   } else if (problem.fix === 'updateLoader') {
-    label = t`Update SMAPI`
+    label = t`Update ${loaderName}`
   } else if (problem.fix === 'remove') {
     label = t`Remove`
   }

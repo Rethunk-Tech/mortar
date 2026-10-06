@@ -137,7 +137,7 @@ export function ReportToAuthorButton({
     read.then(
       (text) => setLog(text ?? ''),
       (e: unknown) => {
-        toastError(t`Could not read the SMAPI log`, e)
+        toastError(t`Could not read the game log`, e)
         setOpen(false)
       },
     )

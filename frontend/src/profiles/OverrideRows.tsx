@@ -2,6 +2,7 @@ import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, FormControl, InputLabel, MenuItem, Select, Tooltip, Typography } from '@mui/material'
+import { useGameInfo } from '../games/info.ts'
 import { useNexus } from '../settings/nexus.ts'
 import {
   applyRow,
@@ -40,13 +41,16 @@ export function OverridesSection({
 }) {
   const { t, i18n } = useLingui()
   const premium = useNexus((s) => s.premium)
+  const info = useGameInfo()
+  const smapi = info?.loaderId === 'smapi'
+  const nexus = (info?.sources ?? []).includes('nexus')
   return (
     <Box sx={{ mt: 2, mb: 2 }}>
       <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{t`Overrides`}</Typography>
       <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>
         {t`These apply only to this profile.`}
       </Typography>
-      {OVERRIDE_KEYS.map((key) => {
+      {OVERRIDE_KEYS.filter((key) => smapi || key !== 'showSmapiConsole').map((key) => {
         const stored = overrides[key]
         const choice = choiceFromOverride(stored)
         const label = overrideLabel(key, i18n)
@@ -79,7 +83,7 @@ export function OverridesSection({
                 </MenuItem>
               ))}
             </Select>
-            {key === 'updateModsBeforePlayDefault' && !premium ? (
+            {key === 'updateModsBeforePlayDefault' && nexus && !premium ? (
               <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
                 {t`Free Nexus accounts click each download on Nexus; those updates do not block Play.`}
               </Typography>
