@@ -2,6 +2,7 @@
 package github
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -53,6 +54,7 @@ type searchResp struct {
 	TotalCount int `json:"total_count"`
 	Items      []struct {
 		FullName        string `json:"full_name"`
+		Name            string `json:"name"`
 		Description     string `json:"description"`
 		HTMLURL         string `json:"html_url"`
 		StargazersCount int    `json:"stargazers_count"`
@@ -151,9 +153,10 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	items := make([]source.Item, 0, len(parsed.Items))
 	for _, n := range parsed.Items {
 		items = append(items, source.Item{
-			Source:  d.ID(),
-			ID:      n.FullName,
-			Name:    n.FullName,
+			Source: d.ID(),
+			ID:     n.FullName,
+			// The owner is already the author line, so the title is the repository's own name.
+			Name:    cmp.Or(n.Name, n.FullName),
 			Summary: n.Description,
 			Author:  n.Owner.Login,
 			Picture: n.Owner.AvatarURL,

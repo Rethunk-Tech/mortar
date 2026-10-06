@@ -17,7 +17,7 @@ func TestSearchQueryAndPaging(t *testing.T) {
 	var gotURL string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotURL = r.URL.String()
-		_, _ = w.Write([]byte(`{"total_count":3,"items":[{"full_name":"Pathoschild/SMAPI","description":"d","html_url":"https://github.com/Pathoschild/SMAPI","stargazers_count":9,"updated_at":"u","owner":{"login":"Pathoschild","avatar_url":"a"}}]}`))
+		_, _ = w.Write([]byte(`{"total_count":3,"items":[{"full_name":"Pathoschild/SMAPI","name":"SMAPI","description":"d","html_url":"https://github.com/Pathoschild/SMAPI","stargazers_count":9,"updated_at":"u","owner":{"login":"Pathoschild","avatar_url":"a"}}]}`))
 	}))
 	t.Cleanup(srv.Close)
 	d := &Driver{URL: srv.URL}
@@ -25,7 +25,8 @@ func TestSearchQueryAndPaging(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if page.Total != 3 || len(page.Items) != 1 || page.Items[0].Stars != 9 || page.Items[0].ID != "Pathoschild/SMAPI" {
+	if page.Total != 3 || len(page.Items) != 1 || page.Items[0].Stars != 9 || page.Items[0].ID != "Pathoschild/SMAPI" ||
+		page.Items[0].Name != "SMAPI" {
 		t.Fatalf("page %+v", page)
 	}
 	if !strings.Contains(gotURL, "topic%3Astardew-valley-mod") {
